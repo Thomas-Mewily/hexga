@@ -6,6 +6,7 @@ edition.workspace = true
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
+readme.workspace = true
 
 keywords = ["array"]
 description = "A crate that impl trait / new functions for array."

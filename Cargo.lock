@@ -16,11 +16,11 @@ checksum = "2eaa862aef602c9dace05ec59a5c85136a48747680bf45679d122fbc9430590f"
 
 [[package]]
 name = "hexga_array"
-version = "0.0.1"
+version = "0.0.2"
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "have_len",
  "hexga_number",
@@ -29,7 +29,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_math"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "default_is_triple_underscore",
  "hexga_array",
@@ -40,7 +40,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.1"
+version = "0.0.2"
 
 [[package]]
 name = "hexga_test"
@@ -54,7 +54,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.1"
+version = "0.0.2"
 
 [[package]]
 name = "proc-macro2"

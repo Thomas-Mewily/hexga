@@ -1,13 +1,17 @@
 [package]
 name = "hexga_math"
-version = "0.0.1"
-edition = "2024"
-authors = ["Mewily <thomas.mewily@gmail.com>"]
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+readme.workspace = true
+
 keywords = ["math", "vector", "matrix", "rectangle"]
 description = "Math related crate that support multi dimensionnal vector, matrix, rectangle..."
-license = "MIT OR Apache-2.0"
 categories = ["mathematics", "data-structures"]
-repository = "https://github.com/Thomas-Mewily/hexga_math"
 
 [features]
 default = ["serde", "int_are_32_bits", "float_are_32_bits"]
