@@ -3,7 +3,7 @@ resolver = "3"
 members = ["hexga_test", "hexga/*"]
 
 [workspace.package]
-version = "0.0.4"
+version = "0.0.5"
 authors = ["Mewily <thomas.mewily@gmail.com>"]
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/Thomas-Mewily/hexga"
