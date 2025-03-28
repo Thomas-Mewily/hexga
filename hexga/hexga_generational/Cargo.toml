@@ -1,0 +1,23 @@
+[package]
+name = "hexga_generational"
+version = "0.0.1"
+edition = "2024"
+authors = ["Mewily <thomas.mewily@gmail.com>"]
+keywords = ["generational", "genvec", "slotmap", "multi agent system"]
+description = "GenVec, ideal for MAS (Multi-Agent System), where each agent can be removed at any time and has references to other agents."
+license = "MIT OR Apache-2.0"
+categories = ["rust-patterns", "data-structures"]
+repository = "https://github.com/Thomas-Mewily/hexga_generational"
+
+[features]
+default = ["serde"]
+
+serde = ["dep:serde"]
+
+[dependencies]
+hexga_number = { path = "../hexga_number", default-features = false }
+
+have_len = "0.1.0"
+#typed_index = "0.2.1"
+
+serde = { version = "1.0", features = ["derive"], optional = true}
