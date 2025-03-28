@@ -31,9 +31,9 @@ serde = ["dep:serde"]
 [dependencies]
 default_is_triple_underscore = "0.2.0"
 
-hexga_number = { path = "../hexga_number" }
-hexga_array = { path = "../hexga_array" }
-hexga_typedef = { path = "../hexga_typedef", default-features = false}
+hexga_number = "0.0.2"
+hexga_array = "0.0.2"
+hexga_typedef = "0.0.2"
 
 # serializaion
 serde = { version = "1.0", features = ["derive"], optional = true}

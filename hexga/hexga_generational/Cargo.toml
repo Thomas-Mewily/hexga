@@ -18,7 +18,7 @@ default = ["serde"]
 serde = ["dep:serde"]
 
 [dependencies]
-hexga_number = { path = "../hexga_number", default-features = false }
+hexga_number = "0.0.2"
 
 have_len = "0.1.0"
 #typed_index = "0.2.1"
