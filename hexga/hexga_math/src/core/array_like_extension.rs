@@ -3,6 +3,20 @@ use crate::*;
 impl<S, T, const N : usize> ArrayLikeExtension<T,N> for S where S : ArrayLike<T,N> {}
 pub trait ArrayLikeExtension<T, const N : usize> : ArrayLike<T,N>
 {
+    fn min_element(&self) -> &T where T : PartialOrd { self.array().iter().min_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty") }
+    fn max_element(&self) -> &T where T : PartialOrd { self.array().iter().max_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty") }
+
+    fn min_element_idx(&self) -> usize where T : PartialOrd
+    { 
+        self.array().iter().enumerate()
+             .min_by(|(_,a), (_,b)| a.partial_cmp(b).unwrap()).map(|(idx,_)| idx).unwrap()
+    }
+    fn max_element_idx(&self) -> usize where T : PartialOrd
+    { 
+        self.array().iter().enumerate()
+             .max_by(|(_,a), (_,b)| a.partial_cmp(b).unwrap()).map(|(idx,_)| idx).unwrap()
+    }
+    
     /// Fill non existing component with [Default]
     fn to_array_1d(self) -> [T; 1] where T : Default
     {

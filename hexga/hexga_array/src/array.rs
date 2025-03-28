@@ -50,23 +50,6 @@ pub trait ArrayLike<T, const N : usize> :
     fn for_each<F>(&self, f : F) where F : FnMut(&T) { self.array().iter().for_each(f); }
     fn for_each_mut<F>(&mut self, f : F) where F : FnMut(&mut T) { self.array_mut().iter_mut().for_each(f); }
 
-    //fn iter<'a>(&'a self) -> impl Iterator<Item=&'a T> where T: 'a { self.array().as_slice().iter() }
-    //fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item=&'a mut T> where T: 'a { self.array_mut().as_mut_slice().iter_mut() }
-    
-    fn min_element(&self) -> &T where T : PartialOrd { self.array().iter().min_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty") }
-    fn max_element(&self) -> &T where T : PartialOrd { self.array().iter().max_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty") }
-
-    fn min_element_idx(&self) -> usize where T : PartialOrd
-    { 
-        self.array().iter().enumerate()
-             .min_by(|(_,a), (_,b)| a.partial_cmp(b).unwrap()).map(|(idx,_)| idx).unwrap()
-    }
-    fn max_element_idx(&self) -> usize where T : PartialOrd
-    { 
-        self.array().iter().enumerate()
-             .max_by(|(_,a), (_,b)| a.partial_cmp(b).unwrap()).map(|(idx,_)| idx).unwrap()
-    }
-
     fn array(&self) -> &[T; N];
     fn array_mut(&mut self) -> &mut[T; N];
 
