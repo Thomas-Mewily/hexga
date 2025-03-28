@@ -16,75 +16,75 @@ checksum = "2eaa862aef602c9dace05ec59a5c85136a48747680bf45679d122fbc9430590f"
 
 [[package]]
 name = "hexga_array"
-version = "0.0.4"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ec8080299872f0af7fef239b84d9ed5abb45c447989fe553e6fa201f30bdf41"
 
 [[package]]
 name = "hexga_array"
 version = "0.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ec8080299872f0af7fef239b84d9ed5abb45c447989fe553e6fa201f30bdf41"
 
 [[package]]
 name = "hexga_generational"
 version = "0.0.4"
 dependencies = [
  "have_len",
- "hexga_number 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_number 0.0.3",
  "serde",
 ]
 
 [[package]]
 name = "hexga_math"
-version = "0.0.4"
-dependencies = [
- "default_is_triple_underscore",
- "hexga_array 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "hexga_number 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "hexga_typedef 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde",
-]
-
-[[package]]
-name = "hexga_math"
-version = "0.0.4"
+version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "31b1491cff94921e6ab4c33911c017d67b90c6acfb83a2b8173c5d993dcd4b14"
 dependencies = [
  "default_is_triple_underscore",
- "hexga_array 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "hexga_number 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "hexga_typedef 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_array 0.0.3",
+ "hexga_number 0.0.3",
+ "hexga_typedef 0.0.3",
+ "serde",
+]
+
+[[package]]
+name = "hexga_math"
+version = "0.0.4"
+dependencies = [
+ "default_is_triple_underscore",
+ "hexga_array 0.0.3",
+ "hexga_number 0.0.3",
+ "hexga_typedef 0.0.3",
  "serde",
 ]
 
 [[package]]
 name = "hexga_number"
-version = "0.0.4"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32403a85e785f5d081e3975b7b6540150a21348c8cd9fc14db073211dd784928"
 
 [[package]]
 name = "hexga_number"
 version = "0.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32403a85e785f5d081e3975b7b6540150a21348c8cd9fc14db073211dd784928"
 
 [[package]]
 name = "hexga_test"
 version = "0.1.0"
 dependencies = [
  "have_len",
- "hexga_math 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "hexga_number 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_math 0.0.3",
+ "hexga_number 0.0.3",
 ]
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.4"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a28daf65bff5582b67bdd4e0f805c28a277df4f92a15b36d72aed4c41d699514"
 
 [[package]]
 name = "hexga_typedef"
 version = "0.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a28daf65bff5582b67bdd4e0f805c28a277df4f92a15b36d72aed4c41d699514"
 
 [[package]]
 name = "proc-macro2"
