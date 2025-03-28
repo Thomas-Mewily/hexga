@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-hexga_number = "0.0.4"
-hexga_math = "0.0.3"
-#hexga_generational = "0.0.4"
+hexga_number = { path = "../hexga/hexga_number" }
+hexga_math = { path = "../hexga/hexga_math" }
+
+#hexga_generational = "0.0.5"
 have_len = "0.1.0"

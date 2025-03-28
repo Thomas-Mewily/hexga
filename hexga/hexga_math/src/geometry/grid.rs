@@ -1,4 +1,3 @@
-
 use crate::*;
 
 // Todo : remettre le trait IterArea pour la grille les + Vecteur, + faire les itérateur sur la grille pour itérer dans un sous rectangle 
@@ -6,6 +5,8 @@ use crate::*;
 /*
 Todo : impl AsMut<&[T]> AsRef<&[T]>
 + method as_mut_slice(&self) as_slice(&mut self)
+
+
 
 pub type Grid1<T> = Grid<T, Point1, 1>;
 pub type Grid2<T> = Grid<T, Point2, 2>;
@@ -19,14 +20,14 @@ pub type Grid4<T> = Grid<T, Point4, 4>;
 /// - pos refer to a N dimensional index
 /// - idx refer to usize
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Grid<T, V : IVectorIndex<N>, const N : usize>
+pub struct Grid<T, V : Integer, const N : usize>
 {
     size   : V,
     values : Vec<T>,
 }
 
 
-impl<'a, V : IVectorIndex<N>, T, const N : usize> IntoIterator for &'a mut Grid<T, V, N> 
+impl<'a, V : Integer, T, const N : usize> IntoIterator for &'a mut Grid<T, V, N> 
 {
     type Item = <&'a mut Vec<T> as IntoIterator>::Item;
     type IntoIter = <&'a mut Vec<T> as IntoIterator>::IntoIter;
@@ -36,7 +37,7 @@ impl<'a, V : IVectorIndex<N>, T, const N : usize> IntoIterator for &'a mut Grid<
     }
 }
 
-impl<'a, V : IVectorIndex<N>, T, const N : usize> IntoIterator for &'a Grid<T, V, N> 
+impl<'a, V : Integer, T, const N : usize> IntoIterator for &'a Grid<T, V, N> 
 {
     type Item = <&'a Vec<T> as IntoIterator>::Item;
     type IntoIter = <&'a Vec<T> as IntoIterator>::IntoIter;
@@ -46,7 +47,7 @@ impl<'a, V : IVectorIndex<N>, T, const N : usize> IntoIterator for &'a Grid<T, V
     }
 }
 
-impl<V : IVectorIndex<N>, T, const N : usize> IntoIterator for Grid<T, V, N> 
+impl<V : Integer, T, const N : usize> IntoIterator for Grid<T, V, N> 
 {
     type Item = <Vec<T> as IntoIterator>::Item;
     type IntoIter = <Vec<T> as IntoIterator>::IntoIter;
@@ -57,14 +58,14 @@ impl<V : IVectorIndex<N>, T, const N : usize> IntoIterator for Grid<T, V, N>
 }
 
 #[derive(Clone)]
-pub enum GridError<V : IVectorIndex<N>, const N : usize>
+pub enum GridError<V : Integer, const N : usize>
 {
     NegativeSize(V),
     /// (dim, got)
     WrongDimension(V,usize),
 }
 
-impl<V : IVectorIndex<N>, const N : usize> Debug for GridError<V,N> where V : Debug
+impl<V : Integer, const N : usize> Debug for GridError<V,N> where V : Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult {
         match self {

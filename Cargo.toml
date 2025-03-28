@@ -9,3 +9,10 @@ license = "MIT OR Apache-2.0"
 homepage = "https://github.com/Thomas-Mewily/hexga"
 repository = "https://github.com/Thomas-Mewily/hexga"
 edition = "2024"
+
+[workspace.dependencies]
+hexga_math = { path = "./hexga/hexga_math", version = "0.0.5" }
+hexga_generational = { path = "./hexga/hexga_generational", version = "0.0.5" }
+hexga_array = { path = "./hexga/hexga_array", version = "0.0.5" }
+hexga_number = { path = "./hexga/hexga_number", version = "0.0.5" }
+hexga_typedef = { path = "./hexga/hexga_typedef", version = "0.0.5" }

@@ -35,3 +35,6 @@ pub use have_position::*;
 
 mod have_rotation;
 pub use have_rotation::*;
+
+mod grid;
+pub use grid::*;
