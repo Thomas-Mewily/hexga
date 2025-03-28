@@ -1,0 +1,11 @@
+[workspace]
+resolver = "3"
+members = ["hexga_test", "hexga/*"]
+
+[workspace.package]
+version = "0.0.1"
+authors = ["Mewily <thomas.mewily@gmail.com>"]
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/Thomas-Mewily/hexga"
+repository = "https://github.com/Thomas-Mewily/hexga"
+edition = "2024"
