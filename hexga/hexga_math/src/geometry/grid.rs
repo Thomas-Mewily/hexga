@@ -2,17 +2,20 @@ use crate::*;
 
 // Todo : remettre le trait IterArea pour la grille les + Vecteur, + faire les itérateur sur la grille pour itérer dans un sous rectangle 
 
-/*
+/* 
 Todo : impl AsMut<&[T]> AsRef<&[T]>
 + method as_mut_slice(&self) as_slice(&mut self)
+*/
 
-
-
+/* 
 pub type Grid1<T> = Grid<T, Point1, 1>;
 pub type Grid2<T> = Grid<T, Point2, 2>;
 pub type Grid3<T> = Grid<T, Point3, 3>;
 pub type Grid4<T> = Grid<T, Point4, 4>;
 
+
+IntoIter
+Iter : (idx, T)
  
 
 /// A N dimensional grid
@@ -20,14 +23,14 @@ pub type Grid4<T> = Grid<T, Point4, 4>;
 /// - pos refer to a N dimensional index
 /// - idx refer to usize
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Grid<T, V : Integer, const N : usize>
+pub struct Grid<T, I : Integer, const N : usize>
 {
-    size   : V,
+    size   : Vector<I,N>,
     values : Vec<T>,
 }
 
 
-impl<'a, V : Integer, T, const N : usize> IntoIterator for &'a mut Grid<T, V, N> 
+impl<'a, I : Integer, T, const N : usize> IntoIterator for &'a mut Grid<T, I, N> 
 {
     type Item = <&'a mut Vec<T> as IntoIterator>::Item;
     type IntoIter = <&'a mut Vec<T> as IntoIterator>::IntoIter;
@@ -37,7 +40,7 @@ impl<'a, V : Integer, T, const N : usize> IntoIterator for &'a mut Grid<T, V, N>
     }
 }
 
-impl<'a, V : Integer, T, const N : usize> IntoIterator for &'a Grid<T, V, N> 
+impl<'a, I : Integer, T, const N : usize> IntoIterator for &'a Grid<T, I, N> 
 {
     type Item = <&'a Vec<T> as IntoIterator>::Item;
     type IntoIter = <&'a Vec<T> as IntoIterator>::IntoIter;
@@ -47,7 +50,7 @@ impl<'a, V : Integer, T, const N : usize> IntoIterator for &'a Grid<T, V, N>
     }
 }
 
-impl<V : Integer, T, const N : usize> IntoIterator for Grid<T, V, N> 
+impl<I : Integer, T, const N : usize> IntoIterator for Grid<T, I, N> 
 {
     type Item = <Vec<T> as IntoIterator>::Item;
     type IntoIter = <Vec<T> as IntoIterator>::IntoIter;
@@ -58,14 +61,14 @@ impl<V : Integer, T, const N : usize> IntoIterator for Grid<T, V, N>
 }
 
 #[derive(Clone)]
-pub enum GridError<V : Integer, const N : usize>
+pub enum GridError<I : Integer, const N : usize>
 {
-    NegativeSize(V),
+    NegativeSize(I),
     /// (dim, got)
-    WrongDimension(V,usize),
+    WrongDimension(Vector<I,N>, usize),
 }
 
-impl<V : Integer, const N : usize> Debug for GridError<V,N> where V : Debug
+impl<I : Integer, const N : usize> Debug for GridError<I,N> where I : Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult {
         match self {
@@ -75,49 +78,49 @@ impl<V : Integer, const N : usize> Debug for GridError<V,N> where V : Debug
     }
 }
 
-impl<V : IVectorIndex<N>, T, const N : usize> Grid<T, V, N> 
+impl<I : Integer, T, const N : usize> Grid<T, I, N> 
 {
-    pub fn new_from_vec(size : V, values : Vec<T>) -> Option<Self> { Self::try_new_from_vec(size, values).ok() }
-    pub fn try_new_from_vec(size : V, values : Vec<T>) -> Result<Self, GridError<V,N>>
+    pub fn new_from_vec(size : I, values : Vec<T>) -> Option<Self> { Self::try_new_from_vec(size, values).ok() }
+    pub fn try_new_from_vec(size : I, values : Vec<T>) -> Result<Self, GridError<I,N>>
     {
-        if size.min_element() <= V::Value::ZERO { return Err(GridError::NegativeSize(size)); }
-        if size.area().to_usize() as usize != values.len() { return Err(GridError::NegativeSize(size)); }
+        if size.min_element() <=  I::ZERO { return Err(GridError::NegativeSize(size)); }
+        if size.area().to_usize() != values.len() { return Err(GridError::NegativeSize(size)); }
         Ok(Self { size, values })
     }
 
-    pub fn new_map<F>(size : V, mut f : F) -> Self where F : FnMut(V) -> T 
+    pub fn new_map<F>(size : I, mut f : F) -> Self where F : FnMut(I) -> T 
     {
         let s = size.area().to_usize();
         let mut values = Vec::with_capacity(s);
         for idx in 0.. s
         {
-            values.push(f(unsafe { V::from_idx_unchecked(idx, size) }));
+            values.push(f(unsafe { I::from_idx_unchecked(idx, size) }));
         }
         Self { size, values }
     }
 
     /// Fill the grid with the [Default] element
-    pub fn new(size : V) -> Self where T : Default { Self::new_map(size, |_| ___())}
-    pub fn new_with(size : V, value : T) -> Self where T : Clone { Self::new_map(size, |_idx| value.clone()) }
+    pub fn new(size : I) -> Self where T : Default { Self::new_map(size, |_| ___())}
+    pub fn new_with(size : I, value : T) -> Self where T : Clone { Self::new_map(size, |_idx| value.clone()) }
 
-    #[inline] pub fn size  (&self) -> V { self.size }
-    #[inline] pub fn size_x(&self) -> V::Value where V : VectorHaveX<N> { self.size.x() }
-    #[inline] pub fn size_y(&self) -> V::Value where V : VectorHaveY<N> { self.size.y() }
-    #[inline] pub fn size_z(&self) -> V::Value where V : VectorHaveZ<N> { self.size.z() }
-    #[inline] pub fn size_w(&self) -> V::Value where V : VectorHaveW<N> { self.size.w() }
+    #[inline] pub fn size  (&self) -> Vector<I,N> { self.size }
+    #[inline] pub fn size_x(&self) -> I where Vector<I,N> : HaveX<T> { self.size.x() }
+    #[inline] pub fn size_y(&self) -> I where Vector<I,N> : HaveY<T> { self.size.y() }
+    #[inline] pub fn size_z(&self) -> I where Vector<I,N> : HaveZ<T> { self.size.z() }
+    #[inline] pub fn size_w(&self) -> I where Vector<I,N> : HaveW<T> { self.size.w() }
 
-    pub fn rect(&self) -> Rectangle<V, N> { Rectangle::new(zero(), self.size()) }
-    #[inline] pub fn area (&self) -> V::Value { unsafe { self.size.unchecked_area() } }
+    pub fn rect(&self) -> Rectangle<I, N> { Rectangle::new(zero(), self.size()) }
+    #[inline] pub fn area (&self) -> I { self.size.area() }
 
     /// size_x
-    #[inline] pub fn width (&self) -> V::Value where V : VectorHaveX<N> { self.size_x() }
+    #[inline] pub fn width (&self) -> I where Vector<I,N> : HaveX<T> { self.size_x() }
     /// size_y
-    #[inline] pub fn height(&self) -> V::Value where V : VectorHaveY<N> { self.size_y() }
+    #[inline] pub fn height(&self) -> I where Vector<I,N> : HaveY<T> { self.size_y() }
     /// size_z
-    #[inline] pub fn depth (&self) -> V::Value where V : VectorHaveZ<N> { self.size_z() }
+    #[inline] pub fn depth (&self) -> I where Vector<I,N> : HaveZ<T> { self.size_z() }
 }
 
-impl<V : IVectorIndex<N>, T, const N : usize> Grid<T, V, N> 
+impl<I : Integer, T, const N : usize> Grid<T, I, N> 
 {
     pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator + Clone { self.into_iter() }
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> + DoubleEndedIterator { self.into_iter() }
@@ -125,12 +128,12 @@ impl<V : IVectorIndex<N>, T, const N : usize> Grid<T, V, N>
     pub fn iter_with_idx(&self) -> impl Iterator<Item=(usize, &T)> + Clone { self.iter().enumerate() }
     pub fn iter_with_idx_mut(&mut self) -> impl Iterator<Item=(usize, &mut T)> { self.iter_mut().enumerate() }
 
-    pub fn iter_with_pos(&self) -> impl Iterator<Item=(V, &T)> { self.iter().enumerate().map(|(idx, v)| (unsafe { V::from_idx_unchecked(idx, self.size) }, v)) }
-    pub fn iter_with_pos_mut(&mut self) -> impl Iterator<Item=(V, &mut T)> { let s = self.size; self.iter_mut().enumerate().map(move |(idx, v)| (unsafe { V::from_idx_unchecked(idx, s) }, v)) }
+    pub fn iter_with_pos(&self) -> impl Iterator<Item=(I, &T)> { self.iter().enumerate().map(|(idx, v)| (unsafe { I::from_idx_unchecked(idx, self.size) }, v)) }
+    pub fn iter_with_pos_mut(&mut self) -> impl Iterator<Item=(I, &mut T)> { let s = self.size; self.iter_mut().enumerate().map(move |(idx, v)| (unsafe { I::from_idx_unchecked(idx, s) }, v)) }
 
-    pub fn iter_pos(&self) -> <V as IterArea<N>>::IntoIterArea { self.size.into_iter_area() }
+    pub fn iter_pos(&self) -> <I as IterArea<N>>::IntoIterArea { self.size.into_iter_area() }
     
-    pub fn intersect_rect(&self, r : Rectangle<V,N>) -> Rectangle<V,N> { r.intersect(self.rect()) }
+    pub fn intersect_rect(&self, r : Rectangle<I,N>) -> Rectangle<I,N> { r.intersect(self.rect()) }
 
 
     //pub fn iter_pos_in_rect(&self, r : Rectangle<V,N>) -> impl Iterator<Item=V> { self.intersect_rect(r).into  }
@@ -230,5 +233,4 @@ impl<V : IVectorIndex<N>, T, const N : usize> Index<V> for Grid<T, V, N>
 impl<V : IVectorIndex<N>, T, const N : usize> IndexMut<V> for Grid<T, V, N>
 {
     fn index_mut(&mut self, index: V) -> &mut Self::Output { self.get_mut(index).unwrap() }
-}
-    */
+}*/
