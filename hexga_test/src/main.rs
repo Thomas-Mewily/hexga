@@ -5,13 +5,15 @@
 
 use std::collections::HashMap;
 
+/* 
 use hexga_generational::gen_vec::GenVec;
 use hexga_math::*;
 use have_len::*;
-
+*/
 
 fn main() 
 {
+    /* 
     let mut v = Vec2::new(1.,2.);
 
     let a = 10.degree();
@@ -46,4 +48,5 @@ fn main()
     
     let v =  Color::rgb(1., 0., 1.).to_hsla();
     println!("Hello, world2!");
+    */
 }
