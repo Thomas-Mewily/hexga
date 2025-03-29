@@ -8,6 +8,10 @@ repository.workspace = true
 license.workspace = true
 readme.workspace = true
 
+keywords = []
+description = "miscellaneous stuff, when somethings will be to big it will be on a separate crate"
+categories = ["rust-patterns"]
+
 [features]
 default = ["serde"]
 

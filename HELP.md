@@ -3,6 +3,8 @@ https://crates.io/category_slugs
 
 `cargo publish --dry-run`
 
+./share_crate.cmd
+
 - sharing multiple crate :
 
 https://www.reddit.com/r/rust/comments/a39er8/how_do_you_publish_your_cargo_workspace_packages/
