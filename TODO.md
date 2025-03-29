@@ -11,3 +11,5 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
 - Name2Reserve : réserver plus de nom sous crate io
 
 - GenHashMap
+
+- transition using a empty struct : `struct Transition;`

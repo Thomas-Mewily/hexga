@@ -198,6 +198,10 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
 
 impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
+    pub fn values(&self) -> &[T] { &self.value }
+    pub fn values_mut(&mut self) -> &mut [T] { &mut self.value }
+    pub fn into_values(self) -> Vec<T> { self.value }
+
     #[inline] pub fn is_inside(&self, pos : Vector<I,N>) -> bool { pos.is_inside(self.size) }
     #[inline] pub fn is_outside(&self, pos : Vector<I,N>) -> bool { !self.is_inside(pos) }
 
@@ -255,12 +259,12 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
     pub fn len(&self) -> usize { self.value.len() }
 }
 
-/* 
-impl<I : Integer, T, const N : usize> HaveLen for Grid<T, I, N> 
+
+impl<I, T, const N : usize> have_len::HaveLen for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 { 
-    fn len(&self) -> usize { self.values.len() }
+    fn len(&self) -> usize { self.len() }
 }
-*/
+
 
 impl<I, T, const N : usize> Index<usize> for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {

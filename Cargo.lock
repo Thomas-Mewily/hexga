@@ -32,6 +32,7 @@ name = "hexga_math"
 version = "0.0.6"
 dependencies = [
  "default_is_triple_underscore",
+ "have_len",
  "hexga_array",
  "hexga_number",
  "hexga_typedef",
@@ -54,6 +55,11 @@ dependencies = [
 [[package]]
 name = "hexga_tools"
 version = "0.0.6"
+dependencies = [
+ "have_len",
+ "hexga_number",
+ "serde",
+]
 
 [[package]]
 name = "hexga_typedef"

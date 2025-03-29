@@ -29,3 +29,10 @@ cd .\hexga_generational\
 cargo publish
 cd ..
 echo done...
+
+
+echo hexga_tools...
+cd .\hexga_tools\
+cargo publish
+cd ..
+echo done...
