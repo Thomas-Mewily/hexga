@@ -28,39 +28,90 @@ pub struct Grid<T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>
     value : Vec<T>,
 }
 
-/* 
-impl<'a, I : Integer, T, const N : usize> IntoIterator for &'a mut Grid<T, I, N> 
+#[derive(Debug)]
+pub struct IterMut<'a, T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    type Item = <&'a mut Vec<T> as IntoIterator>::Item;
-    type IntoIter = <&'a mut Vec<T> as IntoIterator>::IntoIter;
-
-    fn into_iter(self) -> Self::IntoIter {
-        (&mut self.values).into_iter()
+    value : std::iter::Enumerate<std::slice::IterMut<'a, T>>,
+    size  : Vector<I,N>,
+}
+impl<'a, T, I, const N : usize> IterMut<'a,T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    pub fn new(grid : &'a mut Grid<T,I,N>) -> Self { Self { value: grid.value.iter_mut().enumerate(), size: grid.size }}
+}
+impl<'a, T, I, const N : usize> Iterator for IterMut<'a,T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    type Item=(Vector<I,N>, &'a mut T);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.value.next().map(|(idx, v)| (unsafe { Vector::<I,N>::from_index_unchecked(idx, self.size) }, v))
     }
 }
 
-impl<'a, I : Integer, T, const N : usize> IntoIterator for &'a Grid<T, I, N> 
+impl<'a, I, T, const N : usize> IntoIterator for &'a mut Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    type Item = <&'a Vec<T> as IntoIterator>::Item;
-    type IntoIter = <&'a Vec<T> as IntoIterator>::IntoIter;
+    type Item = (Vector<I,N>, &'a mut T);
+    type IntoIter = IterMut::<'a,T,I,N>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        (&self.values).into_iter()
+    fn into_iter(self) -> Self::IntoIter { IterMut::new(self) }
+}
+
+
+#[derive(Clone, Debug)]
+pub struct Iter<'a, T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    value : std::iter::Enumerate<std::slice::Iter<'a, T>>,
+    size  : Vector<I,N>,
+}
+impl<'a, T, I, const N : usize> Iter<'a,T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    pub fn new(grid : &'a  Grid<T,I,N>) -> Self { Self { value: grid.value.iter().enumerate(), size: grid.size }}
+}
+impl<'a, T, I, const N : usize> Iterator for Iter<'a,T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    type Item=(Vector<I,N>, &'a T);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.value.next().map(|(idx, v)| (unsafe { Vector::<I,N>::from_index_unchecked(idx, self.size) }, v))
     }
 }
 
-impl<I : Integer, T, const N : usize> IntoIterator for Grid<T, I, N> 
+impl<'a, I, T, const N : usize> IntoIterator for &'a Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    type Item = <Vec<T> as IntoIterator>::Item;
-    type IntoIter = <Vec<T> as IntoIterator>::IntoIter;
+    type Item = (Vector<I,N>, &'a  T);
+    type IntoIter = Iter::<'a,T,I,N>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.values.into_iter()
+    fn into_iter(self) -> Self::IntoIter { Iter::new(self) }
+}
+
+
+
+#[derive(Debug)]
+pub struct IntoIter<T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    value : std::iter::Enumerate<std::vec::IntoIter<T>>,
+    size  : Vector<I,N>,
+}
+impl<T, I, const N : usize> IntoIter<T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    pub fn new(grid : Grid<T,I,N>) -> Self { Self { value: grid.value.into_iter().enumerate(), size: grid.size }}
+}
+impl<T, I, const N : usize> Iterator for IntoIter<T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    type Item=(Vector<I,N>, T);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.value.next().map(|(idx, v)| (unsafe { Vector::<I,N>::from_index_unchecked(idx, self.size) }, v))
     }
-}*/
+}
+
+impl<I, T, const N : usize> IntoIterator for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    type Item = (Vector<I,N>, T);
+    type IntoIter = IntoIter::<T,I,N>;
+    fn into_iter(self) -> Self::IntoIter { IntoIter::new(self) }
+}
+
+ 
 
 #[derive(Clone)]
-pub enum GridError<I : Integer, const N : usize>
+pub enum GridError<I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     NegativeSize(Vector::<I,N>),
     /// (dim, got)
@@ -120,26 +171,12 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
     #[inline] pub fn depth (&self) -> I where Vector<I,N> : HaveZ<I> { self.size_z() }
 }
 
-/* 
-impl<I : Integer, T, const N : usize> Grid<T, I, N> 
+
+impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator + Clone { self.into_iter() }
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> + DoubleEndedIterator { self.into_iter() }
-
-    pub fn iter_with_idx(&self) -> impl Iterator<Item=(usize, &T)> + Clone { self.iter().enumerate() }
-    pub fn iter_with_idx_mut(&mut self) -> impl Iterator<Item=(usize, &mut T)> { self.iter_mut().enumerate() }
-
-    pub fn iter_with_pos(&self) -> impl Iterator<Item=(I, &T)> { self.iter().enumerate().map(|(idx, v)| (unsafe { I::from_idx_unchecked(idx, self.size) }, v)) }
-    pub fn iter_with_pos_mut(&mut self) -> impl Iterator<Item=(I, &mut T)> { let s = self.size; self.iter_mut().enumerate().map(move |(idx, v)| (unsafe { I::from_idx_unchecked(idx, s) }, v)) }
-
-    pub fn iter_pos(&self) -> <I as IterArea<N>>::IntoIterArea { self.size.into_iter_area() }
-    
-    pub fn intersect_rect(&self, r : Rectangle<I,N>) -> Rectangle<I,N> { r.intersect(self.rect()) }
-
-
-    //pub fn iter_pos_in_rect(&self, r : Rectangle<V,N>) -> impl Iterator<Item=V> { self.intersect_rect(r).into  }
+    pub fn iter(&self) -> Iter<'_,T,I,N> { self.into_iter() }
+    pub fn iter_mut(&mut self) -> IterMut<'_,T,I,N> { self.into_iter() }
 }
-    */
 
 impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {

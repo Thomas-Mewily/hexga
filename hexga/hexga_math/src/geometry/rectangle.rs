@@ -298,7 +298,6 @@ impl<T,const N : usize> Rectangle<T,N> where T : ArrayLike<N> + Copy
     fn into_map_pos(mut self, )
 }
 */
-
 */
 
 impl<T,const N : usize> IterIdx<T,N> for Rectangle<T,N> where T : Integer

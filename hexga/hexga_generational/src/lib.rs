@@ -10,3 +10,4 @@ pub(crate) use hexga_number::*;
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
 pub mod gen_vec;
+pub mod prelude;

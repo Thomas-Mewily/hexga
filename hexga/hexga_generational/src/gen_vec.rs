@@ -345,8 +345,8 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.remove_index(id.index)
     }
 
-    pub fn iter<'a>(&'a self) -> Iter<'a, T, Gen> { self.into_iter() }
-    pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, T, Gen> { self.into_iter() }
+    pub fn iter(&self) -> Iter<'_, T, Gen> { self.into_iter() }
+    pub fn iter_mut(&mut self) -> IterMut<'_, T, Gen> { self.into_iter() }
 
     pub fn ids(&self) -> impl Iterator<Item = GenIDOf<T,Gen>> { self.into_iter().map(|(id, _val)| id) }
     pub fn values(&self) -> impl Iterator<Item = &T> { self.iter().map(|(_,val)| val) }
