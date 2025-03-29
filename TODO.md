@@ -7,4 +7,7 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
     - Serialization des null
     - fonction pour reset les id
 
+
+- Name2Reserve : réserver plus de nom sous crate io
+
 - GenHashMap

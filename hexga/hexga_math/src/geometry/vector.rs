@@ -88,9 +88,11 @@ impl<T,const N : usize> Vector<T,N>
     }
 }
 
+pub trait IntegerIndex : Integer + CastTo<isize> + CastTo<usize> where usize : CastTo<Self>, isize : CastTo<Self> {}
+impl<T> IntegerIndex for T where T : Integer + CastTo<isize> + CastTo<usize>, usize : CastTo<Self>, isize : CastTo<Self> {}
+
 impl<T, const N : usize> Vector<T, N> 
-    where T : Integer + CastToPrimitive<isize> + CastToPrimitive<usize>,
-    usize : CastToPrimitive<T>, isize : CastToPrimitive<T>
+    where T : IntegerIndex, usize : CastTo<T>, isize : CastTo<T>
 {
     // Index :
     pub fn is_inside(self, size : Self) -> bool
@@ -99,7 +101,7 @@ impl<T, const N : usize> Vector<T, N>
     }
     pub fn is_outside(self, size : Self) -> bool { !self.is_inside(size) }
 
-    pub fn to_idx(self, size : Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_idx_unchecked(size) }) }
+    pub fn to_index(self, size : Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_index_unchecked(size) }) }
     
     /// # Safety
     /// This function assuming that : 
@@ -108,41 +110,41 @@ impl<T, const N : usize> Vector<T, N>
     /// 
     /// ```rust
     /// use hexga_math::*;
-    /// assert_eq!(unsafe{ point2(0,0).to_idx_unchecked(point2(10, 20)) }, 0);
-    /// assert_eq!(unsafe{ point2(3,0).to_idx_unchecked(point2(10, 20)) }, 3);
-    /// assert_eq!(unsafe{ point2(3,1).to_idx_unchecked(point2(10, 20)) }, 3+1*10);
-    /// assert_eq!(unsafe{ point2(3,5).to_idx_unchecked(point2(10, 20)) }, 3+5*10);
+    /// assert_eq!(unsafe{ point2(0,0).to_index_unchecked(point2(10, 20)) }, 0);
+    /// assert_eq!(unsafe{ point2(3,0).to_index_unchecked(point2(10, 20)) }, 3);
+    /// assert_eq!(unsafe{ point2(3,1).to_index_unchecked(point2(10, 20)) }, 3+1*10);
+    /// assert_eq!(unsafe{ point2(3,5).to_index_unchecked(point2(10, 20)) }, 3+5*10);
     /// ```
-    pub unsafe fn to_idx_unchecked(self, size : Self) -> usize 
+    pub unsafe fn to_index_unchecked(self, size : Self) -> usize 
     {
         debug_assert!(size.all(|v| *v >= T::ZERO));
 
-        let mut idx_1d : usize = 0;
+        let mut index_1d : usize = 0;
         let mut area_cumulative : usize = 1;
 
         let mut i = 0;
         while i < N
         {
-            let current_axis_len : usize = <T as CastTo<usize>>::cast_to(size[i]);
-            let current_value    : usize = <T as CastTo<usize>>::cast_to(self[i]);
+            let current_axis_len : usize = <T as CastToComposite<usize>>::cast_to(size[i]);
+            let current_value    : usize = <T as CastToComposite<usize>>::cast_to(self[i]);
             
-            idx_1d          += current_value * area_cumulative;
+            index_1d          += current_value * area_cumulative;
             area_cumulative *= current_axis_len;
             i += 1;
         }
-        idx_1d
+        index_1d
     }
 
-    pub fn from_idx(idx : usize, size : Self) -> Option<Self>
+    pub fn from_index(index : usize, size : Self) -> Option<Self>
     {
-        let area : usize = <T as CastTo<usize>>::cast_to(size.area());
-        (idx < area).then(|| unsafe { Self::from_idx_unchecked(idx, size) }) 
+        let area : usize = <T as CastToComposite<usize>>::cast_to(size.area());
+        (index < area).then(|| unsafe { Self::from_index_unchecked(index, size) }) 
     }
 
     /// # Safety
     /// This function assuming that : 
     /// - The size is valid : (all axis are >= 1)
-    /// - The idx is valid (inside the grid : all axis are >= 0 and < current axis size )
+    /// - The index is valid (inside the grid : all axis are >= 0 and < current axis size )
     /// 
     /// ```rust
     /// use hexga_math::*;
@@ -151,13 +153,13 @@ impl<T, const N : usize> Vector<T, N>
     ///     let size = point2(10, 20);
     ///     for point in [point2(0,0), point2(3,0), point2(3,1), point2(0,5)]
     ///     {
-    ///         let idx = point.to_idx_unchecked(size);
-    ///         let point_back = Point2::from_idx_unchecked(idx, size);
+    ///         let index = point.to_index_unchecked(size);
+    ///         let point_back = Point2::from_index_unchecked(index, size);
     ///         assert_eq!(point, point_back);
     ///     }
     /// }
     /// ```
-    pub unsafe fn from_idx_unchecked(idx : usize, size : Self) -> Self
+    pub unsafe fn from_index_unchecked(index : usize, size : Self) -> Self
     {
         debug_assert!(size.all(|v| *v >= T::ZERO));
 
@@ -167,8 +169,8 @@ impl<T, const N : usize> Vector<T, N>
         let mut i = 0;
         while i < N 
         {
-            let current_axis_len : usize = <T as CastTo<usize>>::cast_to(size[i]);
-            result[i] = ((idx / area_cumulative) % current_axis_len).cast_to();
+            let current_axis_len : usize = <T as CastToComposite<usize>>::cast_to(size[i]);
+            result[i] = ((index / area_cumulative) % current_axis_len).cast_to();
             area_cumulative *= current_axis_len;
             i += 1;
         }

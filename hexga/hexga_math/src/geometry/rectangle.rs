@@ -121,7 +121,10 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
     pub fn height(&self) -> T where Vector<T,N> : HaveY<T> { self.size.y() }
     /// When Dimension is >= 3
     pub fn depth (&self) -> T where Vector<T,N> : HaveZ<T> { self.size.z() }
+}
 
+impl<T,const N : usize> Rectangle<T,N> where T : Copy
+{
     pub fn size(&self) -> Vector<T, N> { self.size }
     pub fn set_size(&mut self, size : Vector<T, N>) -> &mut Self { self.size = size; self }
     pub fn set_size_x(&mut self, x : T) -> &mut Self where Vector<T, N> : HaveX<T> { self.size.set_x(x); self }
@@ -171,11 +174,11 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : UnitArithmetic, T : U
     pub fn clamp_vector(&self, vector : Vector<T, N>) -> Vector<T, N> where T : PartialOrd
     { vector.max(self.min()).min(self.max()) }
     
-    pub fn intersect_or_empty(self, other : Self) -> Self where Vector<T,N> : UnitArithmetic, T : PartialOrd
+    pub fn intersect_or_empty(self, other : Self) -> Self where T : PartialOrd
     {
         Self::from_pos_to_pos(self.clamp_vector(other.min()), self.clamp_vector(other.max()))
     }
-    pub fn intersect(self, other : Self) -> Option<Self> where Vector<T,N> : UnitArithmetic, T : PartialOrd
+    pub fn intersect(self, other : Self) -> Option<Self> where T : PartialOrd
     {
         let intersect = Self::from_pos_to_pos(self.clamp_vector(other.min()), self.clamp_vector(other.max()));
         if intersect.size.is_zero()
