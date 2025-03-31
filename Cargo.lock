@@ -16,15 +16,15 @@ checksum = "2eaa862aef602c9dace05ec59a5c85136a48747680bf45679d122fbc9430590f"
 
 [[package]]
 name = "hexa_graphics"
-version = "0.0.7"
+version = "0.0.8"
 
 [[package]]
 name = "hexga_array"
-version = "0.0.7"
+version = "0.0.8"
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.7"
+version = "0.0.8"
 dependencies = [
  "have_len",
  "hexga_number",
@@ -33,7 +33,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_math"
-version = "0.0.7"
+version = "0.0.8"
 dependencies = [
  "default_is_triple_underscore",
  "have_len",
@@ -45,7 +45,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.7"
+version = "0.0.8"
 
 [[package]]
 name = "hexga_test"
@@ -58,7 +58,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_tools"
-version = "0.0.7"
+version = "0.0.8"
 dependencies = [
  "have_len",
  "hexga_number",
@@ -67,7 +67,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.7"
+version = "0.0.8"
 
 [[package]]
 name = "proc-macro2"
@@ -106,6 +106,10 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "share_crate"
+version = "0.0.8"
 
 [[package]]
 name = "syn"
