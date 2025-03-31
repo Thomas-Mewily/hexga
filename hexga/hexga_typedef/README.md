@@ -20,3 +20,7 @@ float_are_32_bits   = []
 float_are_64_bits   = []
 float_are_size_bits = []
 ```
+
+## Main Hexga crate
+
+Check `hexga` : https://crates.io/crates/hexga if you are interested in a quick start, it regroup multiple hexga crates.

@@ -18,3 +18,7 @@ use hexga_array::*;
 
 assert_eq!([1,2,3].map_with([3,2,1],|a,b| a + b), [4,4,4]);
 ```
+
+## Main Hexga crate
+
+Check `hexga` : https://crates.io/crates/hexga if you are interested in a quick start, it regroup multiple hexga crates.

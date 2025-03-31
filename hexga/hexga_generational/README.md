@@ -59,3 +59,7 @@ This is great for stuff like simulation, video game, ECS...
 This crate was mainly inspired by 
 - RustConf 2018 - Closing Keynote - Using Rust For Game Development by Catherine West <https://youtu.be/aKLntZcp27M>
 - The SlotMap data structure <https://crates.io/crates/slotmap>. If you're looking for a more widely used and established crate in the Rust ecosystem, you may want to check it out as well.
+
+## Main Hexga crate
+
+Check `hexga` : https://crates.io/crates/hexga if you are interested in a quick start, it regroup multiple hexga crates.

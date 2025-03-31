@@ -25,3 +25,7 @@ Also provide
 `assert_eq!(1.kilo(), 1000)`, 
         
 - Color (ColorRGBA, ColorHSLA). *<- They will probably be moved into another crate for graphics, but for now they stay here (because of macro)*
+
+## Main Hexga crate
+
+Check `hexga` : https://crates.io/crates/hexga if you are interested in a quick start, it regroup multiple hexga crates.
