@@ -193,7 +193,13 @@ pub struct GenIDOf<T,Gen:IGeneration>
 impl<T, Gen:IGeneration> Serialize for GenIDOf<T,Gen> where T : Serialize, Gen : Serialize {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     { 
-        (&self.index, &self.generation).serialize(serializer)
+        if self.index.is_max_value()
+        {
+            Some((self.index, self.generation))
+        }else
+        {
+            None
+        }.serialize(serializer)
     }
 }
 
@@ -201,8 +207,11 @@ impl<T, Gen:IGeneration> Serialize for GenIDOf<T,Gen> where T : Serialize, Gen :
 impl<'de, T, Gen:IGeneration> Deserialize<'de> for GenIDOf<T,Gen> where T : Deserialize<'de>, Gen : Deserialize<'de> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de>,
     {
-        let (index, generation) = <(usize, Gen)>::deserialize(deserializer)?;
-        Ok(Self::new(index, generation))
+        match Option::deserialize(deserializer)?
+        {
+            Some((index, generation)) => Ok(Self::new(index, generation)),
+            None => Ok(Self::new(usize::MAX, Gen::ZERO)),
+        }
     }
 }
 
@@ -231,6 +240,9 @@ impl<T,Gen:IGeneration> GenIDOf<T,Gen>
 
     pub fn get(self, gen_vec : &GenVecOf<T,Gen>) -> Option<&T> { gen_vec.get(self) }
     pub fn get_mut(self, gen_vec : &mut GenVecOf<T,Gen>) -> Option<&mut T> { gen_vec.get_mut(self) }
+
+    pub fn remove(self, gen_vec : &mut GenVecOf<T,Gen>) -> Option<T> { gen_vec.remove(self) }
+    pub fn exist(self, gen_vec : &GenVecOf<T,Gen>) -> bool { self.get(gen_vec).is_some() }
 
     pub const NULL : Self = GenIDOf { index: usize::MAX, generation: Gen::ZERO, value: PhantomData };
 }
@@ -609,4 +621,26 @@ mod tests
 
         debug_assert_eq!(v.get(second_key), None);
     }  
+
+    #[test]
+    fn showcase()
+    {
+        let mut entities = GenVec::new();
+        let enemi = entities.insert("zoombie");
+
+        assert_eq!(enemi.get(&entities), Some(&"zoombie"));
+        assert_eq!(entities[enemi], "zoombie");
+
+        assert!(entities.get(enemi).is_some());
+        entities.remove(enemi); // the key is no longer valid
+        assert!(entities.get(enemi).is_none()); // the value don't exist
+        
+        entities.insert("slime");
+        entities.insert("skeleton");
+        
+        for (id, entity) in entities
+        {
+            println!("{:?} => {}", id, entity)
+        }
+    }
 }

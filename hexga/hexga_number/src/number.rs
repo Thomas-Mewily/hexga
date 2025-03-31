@@ -1,7 +1,6 @@
 use std::ops::*;
 use std::hash::Hash;
 use crate::*;
-
 /// For every type that support bit based operation (and `&`, or `|`, xor `^`, not `!`, shift `<<` / `>>`...)
 pub trait BitArithmetic : 
     Sized + Copy +
@@ -77,5 +76,3 @@ impl<T> IntegerUnsigned for T where T : Integer {}
 /// iX
 pub trait IntegerSigned             : Integer + NumberNegative {}
 impl<T> IntegerSigned for T where T : Integer + NumberNegative {}
-
-//pub trait Primitive : 

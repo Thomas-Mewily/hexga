@@ -4,7 +4,7 @@
 mod func;
 pub use func::{publish_crate, create_crate};
 
-#[test]
+
 fn publish_all_crate()
 {
     let crates : Vec<&str> = include_str!("../name_2_share.md").lines().collect();
@@ -16,6 +16,9 @@ fn publish_all_crate()
 
 fn main() 
 {
+    publish_all_crate();
+
+    /* 
     let crates = 
     [
         "hexga_array",
@@ -26,7 +29,7 @@ fn main()
         "hexga_tools",
         "hexga",
     ];
-    
+    */
     //create_crate("test_to_reserce");
 
     /* 

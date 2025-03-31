@@ -92,3 +92,15 @@ impl<T, const N : usize> ArrayLike<T,N> for [T; N]
     fn array(&self) -> &[T; N] { self }
     fn array_mut(&mut self) -> &mut[T; N] { self }
 }
+
+#[cfg(test)]
+mod test_extension
+{
+    use super::*;
+    
+    #[test]
+    fn map_with() {
+        assert_eq!([1,2,3].map_with([3,2,1],|a,b| a+b), [4,4,4]);
+    }
+}
+

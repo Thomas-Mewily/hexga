@@ -9,19 +9,13 @@ pub(crate) use std::marker::PhantomData;
 #[cfg(feature = "serde")]
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
-mod bit_flags;
-pub use bit_flags::*;
-
 mod non_empty_stack;
 pub use non_empty_stack::*;
-
 
 /// While waiting for the std:never type to stabilize
 #[derive(Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Never{}
-
-
 
 pub trait Toggleable
 {

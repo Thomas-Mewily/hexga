@@ -380,3 +380,15 @@ pub trait PrefixFemto : Sized
 impl PrefixFemto for f64   { const FEMTO : Self = 1. / 1_000_000_000_000_000.; }
 impl PrefixFemto for f32   { const FEMTO : Self = 1. / 1_000_000_000_000_000.; }
 impl_composite_constant!(PrefixFemto, FEMTO);
+
+#[cfg(test)]
+mod prefix_test{
+    use crate::*;
+
+    #[test]
+    fn test_prefix() 
+    {
+        assert_eq!(1.kilo(), 1000);
+        assert_eq!([1,2].degree(), [1.degree(),2.degree()]);
+    }
+}

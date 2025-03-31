@@ -7,7 +7,7 @@ edition.workspace = true
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
-readme.workspace = true
+readme = "README.md"
 
 keywords = ["math", "vector", "matrix", "rectangle"]
 description = "Math related crate that support multi dimensionnal vector, matrix, rectangle..."

@@ -3,5 +3,6 @@ hexga_number
 hexga_typedef
 hexga_math
 hexga_generational
+hexga_bitflags
 hexga_tools
 hexga

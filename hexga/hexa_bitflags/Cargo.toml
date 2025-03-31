@@ -1,5 +1,5 @@
 [package]
-name = "hexa_graphics"
+name = "hexa_bitflags"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -9,3 +9,4 @@ edition.workspace = true
 readme = "README.md"
 
 [dependencies]
+hexga_number.workspace = true

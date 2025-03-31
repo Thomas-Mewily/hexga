@@ -6,7 +6,7 @@ edition.workspace = true
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
-readme.workspace = true
+readme = "README.md"
 
 keywords = ["generational", "genvec", "slotmap", "multi-agent-system"]
 description = "GenVec, ideal for MAS (Multi-Agent System), where each agent can be removed at any time and has references to other agents."

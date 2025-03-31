@@ -1,4 +1,6 @@
-use crate::*;
+use std::{marker::PhantomData, ops::*};
+use hexga_number::*;
+use std::fmt::{Debug,Formatter,Result as DResult};
 
 pub trait BitMasksExtension : IntegerUnsigned
 {
@@ -208,16 +210,6 @@ impl<F,U> Iterator for BitFlagsIntoIter<F,U>
     }
 }
 
-/*
-impl<F,U,T> BitAnd<T> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
-{
-    type Output=Self;
-
-    fn bitand(mut self, rhs: T) -> Self::Output {
-        self.
-    }
-}*/
-
 impl<F,U> BitAnd<Self> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitand(self, rhs: Self) -> Self::Output { Self::from_flags(self.flags.bitand(rhs.flags)) } }
 impl<F,U> BitAndAssign<Self> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitand_assign(&mut self, rhs: Self) { self.flags.bitand_assign(rhs.flags); } }
 impl<F,U> BitAnd<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitand(self, rhs: F) -> Self::Output { self.bitand(Self::from(rhs)) } }
@@ -369,6 +361,7 @@ mod big_flag_ex
         assert!(t1.have(TeamFlag::Red).not());
 
         assert_eq!(t1.into_iter().count(), blue_and_yellow.len());
+
         for (f1, f2) in t1.into_iter().zip(blue_and_yellow.iter().copied())
         {
             assert_eq!(f1, f2);
