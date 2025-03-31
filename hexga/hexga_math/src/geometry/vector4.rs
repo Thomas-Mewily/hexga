@@ -32,17 +32,14 @@ impl<T:Copy> SplatCoord4 for T {}
 impl<T> From<(T,T,T,T,)> for Vector4<T> { fn from(value: (T,T,T,T,)) -> Self { Vector4::new(value.0, value.1, value.2, value.3) }}
 impl<T> From<Vector4<T>> for (T,T,T,T,) { fn from(value: Vector4<T>) -> Self { let [x, y, z, w] = value.array; (x,y,z,w,) }}
 
-//pub type Vector4Coef<T> = Vector4<T>;
-pub type Coef4 = Vec4;
-pub type Bool4 = Vector4<bool>;
-
 pub const fn vector4<T>(x : T, y : T, z : T, w : T) -> Vector4<T> { Vector4::new(x, y, z, w) }
 
+pub type Bool4 = Vector4<bool>;
+pub const fn bool4(x : bool, y : bool, z : bool, w : bool) -> Bool4 { Bool4::new(x, y, z, w) }
+
 pub type Vec4 = Vector4<float>;
-//pub type Vec4Coef = Vec4;
 pub const fn vec4(x : float, y : float, z : float, w : float) -> Vec4 { Vec4::new(x, y, z, w) }
-//pub type Center4 = Vec4Coef;
-//pub const fn center4(x : float, y : float, z : float, w : float) -> Center4 { Center4::new(x, y, z, w) }
+pub type Coef4 = Vec4;
 
 pub type Point4 = Vector4<int>;
 pub const fn point4(x : int, y : int, z : int, w : int) -> Point4 { Point4::new(x, y, z, w) }

@@ -5,7 +5,8 @@
 
 use std::collections::HashMap;
 
-use hexga_math::{point2, Grid};
+use hexga_math::prelude::*;
+
 
 /* 
 use hexga_generational::gen_vec::GenVec;
@@ -15,6 +16,7 @@ use have_len::*;
 
 fn main() 
 {
+    let x = point2(1, 2);
     /* 
     let mut v = Vec2::new(1.,2.);
 
@@ -51,7 +53,7 @@ fn main()
     let v =  Color::rgb(1., 0., 1.).to_hsla();
     */
 
-    let mut grid = Grid::from_fn(point2(2, 3), |p| p.x + p.y);
+    let mut grid = Grid2::from_fn(point2(2, 3), |p| p.x + p.y);
     dbg!(grid);
 
     println!("Hello, world3!");

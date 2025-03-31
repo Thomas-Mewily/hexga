@@ -29,8 +29,6 @@ float_are_size_bits = ["hexga_typedef/float_are_size_bits"]
 serde = ["dep:serde"]
 
 [dependencies]
-default_is_triple_underscore = "0.2.0"
-
 hexga_number.workspace = true
 hexga_array.workspace = true
 hexga_typedef.workspace = true

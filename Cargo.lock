@@ -19,6 +19,17 @@ name = "hexa_graphics"
 version = "0.0.8"
 
 [[package]]
+name = "hexga"
+version = "0.0.8"
+dependencies = [
+ "default_is_triple_underscore",
+ "have_len",
+ "hexga_generational",
+ "hexga_math",
+ "serde",
+]
+
+[[package]]
 name = "hexga_array"
 version = "0.0.8"
 
@@ -35,7 +46,6 @@ dependencies = [
 name = "hexga_math"
 version = "0.0.8"
 dependencies = [
- "default_is_triple_underscore",
  "have_len",
  "hexga_array",
  "hexga_number",
@@ -121,6 +131,10 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "template"
+version = "0.0.8"
 
 [[package]]
 name = "unicode-ident"

@@ -1,29 +1,17 @@
-use std::process::Command;
-use std::env;
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
-fn publish_crate(name: &'static str) 
+mod func;
+pub use func::{publish_crate, create_crate};
+
+#[test]
+fn publish_all_crate()
 {
-    println!("Publishing {}...", name);
-    
-    if let Err(e) = env::set_current_dir(format!("hexga/{}", name)) {
-        eprintln!("Failed to change directory: {}", e);
-        return;
+    let crates : Vec<&str> = include_str!("../name_2_share.md").lines().collect();
+    for name in crates
+    {
+        publish_crate(name);
     }
-    
-    let status = Command::new("cargo")
-        .arg("publish")
-        .status()
-        .expect("Failed to execute cargo publish");
-    
-    if !status.success() {
-        eprintln!("Failed to publish {}", name);
-    }
-    
-    if let Err(e) = env::set_current_dir("../..") {
-        eprintln!("Failed to revert directory: {}", e);
-    }
-    
-    println!("Done publishing {}", name);
 }
 
 fn main() 
@@ -36,9 +24,14 @@ fn main()
         "hexga_math",
         "hexga_generational",
         "hexga_tools",
+        "hexga",
     ];
     
+    //create_crate("test_to_reserce");
+
+    /* 
     for &crate_name in &crates {
         publish_crate(crate_name);
     }
+    */
 }

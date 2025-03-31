@@ -7,20 +7,12 @@ Todo : impl AsMut<&[T]> AsRef<&[T]>
 + method as_mut_slice(&self) as_slice(&mut self)
 */
 
-pub type Grid1<T> = Grid<T, Point1, 1>;
-pub type Grid2<T> = Grid<T, Point2, 2>;
-pub type Grid3<T> = Grid<T, Point3, 3>;
-pub type Grid4<T> = Grid<T, Point4, 4>;
-
-/* 
-IntoIter
-Iter : (idx, T)
-*/
+pub type Grid1<T> = Grid<T, int, 1>;
+pub type Grid2<T> = Grid<T, int, 2>;
+pub type Grid3<T> = Grid<T, int, 3>;
+pub type Grid4<T> = Grid<T, int, 4>;
 
 /// A N dimensional grid
-/// 
-/// - pos refer to a N dimensional index
-/// - idx refer to usize
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Grid<T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
@@ -150,7 +142,7 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
     }
 
     /// Fill the grid with the [Default] value
-    pub fn new(size : Vector::<I,N>) -> Self where T : Default { Self::from_fn(size, |_| ___())}
+    pub fn new(size : Vector::<I,N>) -> Self where T : Default { Self::from_fn(size, |_| Default::default())}
     /// Fill the grid by cloning the value
     pub fn new_with(size : Vector::<I,N>, value : T) -> Self where T : Clone { Self::from_fn(size, |_idx| value.clone()) }
 

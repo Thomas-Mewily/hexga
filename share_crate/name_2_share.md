@@ -1,0 +1,7 @@
+hexga_array
+hexga_number
+hexga_typedef
+hexga_math
+hexga_generational
+hexga_tools
+hexga

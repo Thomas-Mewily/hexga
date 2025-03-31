@@ -31,17 +31,14 @@ impl<T:Copy> SplatCoord2 for T {}
 impl<T> From<(T,T,)> for Vector2<T> { fn from(value: (T,T,)) -> Self { Vector2::new(value.0, value.1) }}
 impl<T> From<Vector2<T>> for (T,T,) { fn from(value: Vector2<T>) -> Self { let [x, y] = value.array; (x,y,) }}
 
-//pub type Vector2Coef<T> = Vector2<T>;
-pub type Coef2 = Vec2;
-pub type Bool2 = Vector2<bool>;
-
 pub const fn vector2<T>(x : T, y : T) -> Vector2<T> { Vector2::new(x, y) }
 
+pub type Bool2 = Vector2<bool>;
+pub const fn bool2(x : bool, y : bool) -> Bool2 { Bool2::new(x, y) }
+
 pub type Vec2 = Vector2<float>;
-//pub type Vec2Coef = Vec2;
 pub const fn vec2(x : float, y : float) -> Vec2 { Vec2::new(x, y) }
-//pub type Center2 = Vec2Coef;
-//pub const fn center2(x : float, y : float) -> Center2 { Center2::new(x, y) }
+pub type Coef2 = Vec2;
 
 pub type Point2 = Vector2<int>;
 pub const fn point2(x : int, y : int) -> Point2 { Point2::new(x, y) }

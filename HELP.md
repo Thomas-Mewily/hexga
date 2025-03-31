@@ -5,6 +5,8 @@ https://crates.io/category_slugs
 
 ./share_crate.cmd
 
+cargo doc --open
+
 - sharing multiple crate :
 
 https://www.reddit.com/r/rust/comments/a39er8/how_do_you_publish_your_cargo_workspace_packages/

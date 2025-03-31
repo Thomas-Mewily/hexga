@@ -32,17 +32,14 @@ impl<T:Copy> SplatCoord3 for T {}
 impl<T> From<(T,T,T,)> for Vector3<T> { fn from(value: (T,T,T,)) -> Self { Vector3::new(value.0, value.1, value.2) }}
 impl<T> From<Vector3<T>> for (T,T,T,) { fn from(value: Vector3<T>) -> Self { let [x, y, z] = value.array; (x,y,z,) }}
 
-//pub type Vector3Coef<T> = Vector3<T>;
-pub type Coef3 = Vec3;
-pub type Bool3 = Vector3<bool>;
-
 pub const fn vector3<T>(x : T, y : T, z : T) -> Vector3<T> { Vector3::new(x, y, z) }
 
+pub type Bool3 = Vector3<bool>;
+pub const fn bool3(x : bool, y : bool, z : bool) -> Bool3 { Bool3::new(x, y, z) }
+
 pub type Vec3 = Vector3<float>;
-//pub type Vec3Coef = Vec3;
 pub const fn vec3(x : float, y : float, z : float) -> Vec3 { Vec3::new(x, y, z) }
-//pub type Center3 = Vec3Coef;
-//pub const fn center3(x : float, y : float, z : float) -> Center3 { Center3::new(x, y, z) }
+pub type Coef3 = Vec3;
 
 pub type Point3 = Vector3<int>;
 pub const fn point3(x : int, y : int, z : int) -> Point3 { Point3::new(x, y, z) }

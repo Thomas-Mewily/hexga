@@ -71,20 +71,20 @@ impl<T, const ROW : usize, const COL : usize>  Matrix<T, ROW, COL>
 }
 
 use std::fmt::*;
-impl<T, const ROW : usize, const COL : usize> Display for Matrix<T, ROW, COL> where T : Display { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> Debug for Matrix<T, ROW, COL> where T : Debug { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> Octal for Matrix<T, ROW, COL> where T : Octal { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> Binary for Matrix<T, ROW, COL> where T : Binary { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> Display  for Matrix<T, ROW, COL> where T : Display  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> Debug    for Matrix<T, ROW, COL> where T : Debug    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> Octal    for Matrix<T, ROW, COL> where T : Octal    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> Binary   for Matrix<T, ROW, COL> where T : Binary   { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
 impl<T, const ROW : usize, const COL : usize> LowerHex for Matrix<T, ROW, COL> where T : LowerHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
 impl<T, const ROW : usize, const COL : usize> UpperHex for Matrix<T, ROW, COL> where T : UpperHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
 impl<T, const ROW : usize, const COL : usize> LowerExp for Matrix<T, ROW, COL> where T : LowerExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
 impl<T, const ROW : usize, const COL : usize> UpperExp for Matrix<T, ROW, COL> where T : UpperExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> Pointer for Matrix<T, ROW, COL> where T : Pointer { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> Pointer  for Matrix<T, ROW, COL> where T : Pointer  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
 
-impl<T, const ROW : usize, const COL : usize> Default for Matrix<T,ROW,COL> where Vector<Vector<T, ROW>,COL> : Default
+impl<T, const ROW : usize, const COL : usize> Default  for Matrix<T,ROW,COL>   where Vector<Vector<T, ROW>,COL> : Default
 {
     fn default() -> Self {
-        Self { columns: ___() }
+        Self { columns: Default::default() }
     }
 }
 
@@ -415,7 +415,7 @@ impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,C
     
     fn mul(self, rhs: Matrix<T,COL,COL2>) -> Self::Output 
     {
-        let mut result = Matrix::___();
+        let mut result = Matrix::default();
 
         for colum in 0..COL2 
         {
@@ -724,7 +724,7 @@ macro_rules! matrix_have_w {
 
 matrix_have_w!(4);
 
-impl<T, const N : usize> HaveRotationX<T> for SquareMatrix<T,N> 
+impl<T, const N : usize> RotationX<T> for SquareMatrix<T,N> 
     where
         Self : HaveZ<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
         T : FloatingNumber 
@@ -736,7 +736,7 @@ impl<T, const N : usize> HaveRotationX<T> for SquareMatrix<T,N>
     }
 }
 
-impl<T, const N : usize> HaveRotationY<T> for SquareMatrix<T,N> 
+impl<T, const N : usize> RotationY<T> for SquareMatrix<T,N> 
     where
         Self : HaveZ<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
         T : FloatingNumber 
@@ -748,7 +748,7 @@ impl<T, const N : usize> HaveRotationY<T> for SquareMatrix<T,N>
     }
 }
 
-impl<T, const N : usize> HaveRotationZ<T> for SquareMatrix<T,N> 
+impl<T, const N : usize> RotationZ<T> for SquareMatrix<T,N> 
     where
         Self : HaveY<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
         T : FloatingNumber 

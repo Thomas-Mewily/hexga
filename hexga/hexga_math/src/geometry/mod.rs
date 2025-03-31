@@ -1,19 +1,19 @@
 use crate::*;
 
-mod vector;
-pub use vector::*;
+pub mod vector;
+pub(crate) use vector::*;
 
-mod vector1;
-pub use vector1::*;
+pub mod vector1;
+//pub(crate) use vector1::*;
 
-mod vector2;
-pub use vector2::*;
+pub mod vector2;
+//pub(crate) use vector2::*;
 
-mod vector3;
-pub use vector3::*;
+pub mod vector3;
+//pub(crate) use vector3::*;
 
-mod vector4;
-pub use vector4::*;
+pub mod vector4;
+//pub(crate) use vector4::*;
 
 mod vector_iter;
 pub use vector_iter::*;
@@ -21,20 +21,20 @@ pub use vector_iter::*;
 mod xyzw_related;
 pub use xyzw_related::*;
 
-mod angle;
-pub use angle::*;
+mod position;
+pub use position::*;
 
-mod rectangle;
-pub use rectangle::*;
+mod rotation;
+pub use rotation::*;
 
-mod matrix;
-pub use matrix::*;
+pub mod angle;
+pub(crate) use angle::*;
 
-mod have_position;
-pub use have_position::*;
+pub mod rectangle;
+pub(crate) use rectangle::*;
 
-mod have_rotation;
-pub use have_rotation::*;
+pub mod matrix;
+pub(crate) use matrix::*;
 
-mod grid;
-pub use grid::*;
+pub mod grid;
+pub(crate) use grid::*;

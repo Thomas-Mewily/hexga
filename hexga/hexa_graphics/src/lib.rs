@@ -1,3 +1,3 @@
-fn main() {
+fn graphic() {
     println!("Hello, world!");
 }

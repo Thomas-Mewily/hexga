@@ -4,8 +4,8 @@ pub(crate) use crate::geometry::*;
 mod lerp;
 pub use lerp::*;
 
-mod time;
-pub use time::*;
+pub mod time;
+pub(crate) use time::*;
 
-mod prefix;
-pub use prefix::*;
+pub mod prefix;
+pub(crate) use prefix::*;
