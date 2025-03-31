@@ -3,7 +3,7 @@ resolver = "3"
 members = ["hexga_test", "hexga/*", "reserved/*", "share_crate"]
 
 [workspace.package]
-version = "0.0.9"
+version = "0.0.10-beta.1"
 authors = ["Mewily <thomas.mewily@gmail.com>"]
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/Thomas-Mewily/hexga"
@@ -11,13 +11,13 @@ repository = "https://github.com/Thomas-Mewily/hexga"
 edition = "2024"
 
 [workspace.dependencies]
-hexga_math = { path = "./hexga/hexga_math", version = "0.0.9" }
-hexga_generational = { path = "./hexga/hexga_generational", version = "0.0.9" }
-hexga_array = { path = "./hexga/hexga_array", version = "0.0.9" }
-hexga_number = { path = "./hexga/hexga_number", version = "0.0.9" }
-hexga_typedef = { path = "./hexga/hexga_typedef", version = "0.0.9" }
-hexga_graphics = { path = "./hexga/hexga_graphics", version = "0.0.9" }
-hexga = { path = "./hexga/hexga", version = "0.0.9" }
+hexga_math = { path = "./hexga/hexga_math", version = "0.0.10-beta.1" }
+hexga_generational = { path = "./hexga/hexga_generational", version = "0.0.10-beta.1" }
+hexga_array = { path = "./hexga/hexga_array", version = "0.0.10-beta.1" }
+hexga_number = { path = "./hexga/hexga_number", version = "0.0.10-beta.1" }
+hexga_typedef = { path = "./hexga/hexga_typedef", version = "0.0.10-beta.1" }
+hexga_graphics = { path = "./hexga/hexga_graphics", version = "0.0.10-beta.1" }
+hexga = { path = "./hexga/hexga", version = "0.0.10-beta.1" }
 
-template = { path = "./reserved/template", version = "0.0.9" }
+template = { path = "./reserved/template", version = "0.0.10-beta.1" }
 
