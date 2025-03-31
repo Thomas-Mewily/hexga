@@ -152,7 +152,7 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
     /// Transpose the matrix
     /// 
     /// ```rust
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// 
     /// assert_eq!(
     ///     Mat2::from_col(vector2(vec2(1., 2.), vec2(3., 4.))).transpose(), 
@@ -391,7 +391,7 @@ impl<T, const COL : usize> Product for SquareMatrix<T,COL> where Self : One + Mu
 }
 
 /// ```
-/// use hexga_math::*;
+/// use hexga_math::prelude::*;
 /// 
 /// let m1  = Mat2P::from_col((point2(7, 6), point2(5, 3)).into());
 /// let m2  = Mat2P::from_col((point2(2, 5), point2(1, 1)).into());
@@ -503,7 +503,7 @@ where
     /// Inverse the matrix, or return `None` if the matrix is singular.
     /// 
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// 
     /// assert_eq!(Mat2::IDENTITY.inverse(), Some(Mat2::IDENTITY));
     /// 

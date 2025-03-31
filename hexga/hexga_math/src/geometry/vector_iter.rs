@@ -12,7 +12,7 @@ pub trait IterIdx<T, const N : usize>
     /// Work on Point, Rect and Grid ([Point1], [Point2], [Point3], [Point4], [Rect1], [Rect2], [Rect3], [Rect4]) for ex.
     /// 
     /// ```rust
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// 
     /// let expected_points = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)].map(|(x,y)| point2(x, y));
     /// 

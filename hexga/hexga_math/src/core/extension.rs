@@ -43,7 +43,7 @@ pub trait PositiveOrNegative : Zero + PartialOrd<Self> + Sized
 { 
     /// Is >= 0
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!((-1).is_positive_or_zero(), false);
     /// debug_assert_eq!(   0.is_positive_or_zero(), true);
     /// debug_assert_eq!(   1.is_positive_or_zero(), true);
@@ -52,7 +52,7 @@ pub trait PositiveOrNegative : Zero + PartialOrd<Self> + Sized
 
     /// Is <= 0
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!((-1).is_negative_or_zero(), true);
     /// debug_assert_eq!(   0.is_negative_or_zero(), true);
     /// debug_assert_eq!(   1.is_negative_or_zero(), false);
@@ -61,7 +61,7 @@ pub trait PositiveOrNegative : Zero + PartialOrd<Self> + Sized
 
     /// Is > 0
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!((-1).is_strictly_positive(), false);
     /// debug_assert_eq!(   0.is_strictly_positive(), false);
     /// debug_assert_eq!(   1.is_strictly_positive(), true);
@@ -70,7 +70,7 @@ pub trait PositiveOrNegative : Zero + PartialOrd<Self> + Sized
 
     /// Is < 0
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!((-1).is_strictly_negative(), true);
     /// debug_assert_eq!(  0.is_strictly_negative(), false);
     /// debug_assert_eq!(  1.is_strictly_negative(), false);

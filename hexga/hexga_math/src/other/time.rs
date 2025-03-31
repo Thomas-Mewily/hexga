@@ -81,14 +81,14 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// milliseconds
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1000.ms(), 1.s());
     /// ```
     pub fn from_ms (ms : T) -> Self  { Self::from_s(ms / T::THOUSAND) }
 
     /// milliseconds
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.s().ms(), 1000.);
     /// ```
     pub fn ms(self) -> T { self.second * T::THOUSAND }
@@ -96,7 +96,7 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// whole milliseconds
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(0.5.ms().whole_ms(), 0);
     /// debug_assert_eq!(1.0.ms().whole_ms(), 1);
     /// debug_assert_eq!(1.5.ms().whole_ms(), 1);
@@ -111,7 +111,7 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// Can be used to display milliseconds in a timer
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.ms().timer_ms(), 10);
     /// 
     /// debug_assert_eq!(999.ms().timer_ms(), 999);
@@ -123,21 +123,21 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// seconds
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(60.s(), 1.mins());
     /// ```
     pub const fn from_s(second : T) -> Self { Self::from_internal_unit(second) }
 
     /// total seconds
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.mins().s(), 60.);
     /// ```
     pub fn s(self) -> T { self.second }
 
     /// whole seconds
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(0.5.s().whole_s(), 0);
     /// debug_assert_eq!(1.0.s().whole_s(), 1);
     /// debug_assert_eq!(1.5.s().whole_s(), 1);
@@ -149,7 +149,7 @@ impl<T:FloatingNumber> TimeOf<T>
     /// Can be used to display seconds in a timer
     /// 
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.s().timer_s(), 10);
     /// 
     /// debug_assert_eq!(59.s().timer_s(), 59);
@@ -161,21 +161,21 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// minutes
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(60.mins(), 1.hour());
     /// ```
     pub fn from_mins(min : T) -> Self { Self::from_s(min * T::SIXTY) }
 
     /// minutes
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.hour().mins(), 60.);
     /// ```
     pub fn mins(self) -> T { self.second / T::SIXTY }
 
     /// whole minutes
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(0.5.mins().whole_mins(), 0);
     /// debug_assert_eq!(1.0.mins().whole_mins(), 1);
     /// debug_assert_eq!(1.5.mins().whole_mins(), 1);
@@ -191,7 +191,7 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// Can be used to display mins in a timer
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.mins().timer_mins(), 10);
     /// 
     /// debug_assert_eq!(59.mins().timer_mins(), 59);
@@ -203,20 +203,20 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// hours
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(24.hour(), 1.day());
     /// ```
     pub fn from_hour(hours : T) -> Self { Self::from_s(hours * (T::SIXTY * T::SIXTY)) }
     /// hours
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.day().hour(), 24.);
     /// ```
     pub fn hour(self) -> T { self.second / (T::SIXTY * T::SIXTY) }
 
 
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(0.5.hour().whole_hour(), 0);
     /// debug_assert_eq!(1.0.hour().whole_hour(), 1);
     /// debug_assert_eq!(1.5.hour().whole_hour(), 1);
@@ -232,7 +232,7 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// Can be used to display hours in a timer
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.hour().timer_hour(), 10);
     /// 
     /// debug_assert_eq!(23.hour().timer_hour(), 23);
@@ -244,19 +244,19 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// days
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.day(), (3600*24).s());
     /// ```
     pub fn from_day(day : T) -> Self { Self::from_s(day * (T::SIXTY * T::SIXTY * T::TWENTY_FOUR)) }
     /// days
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(24.hour().day(), 1.);
     /// ```
     pub fn day(self) -> T { self.second / (T::SIXTY * T::SIXTY * T::TWENTY_FOUR) }
     /// Whole days
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(0.5.day().whole_day(), 0);
     /// debug_assert_eq!(1.0.day().whole_day(), 1);
     /// debug_assert_eq!(1.5.day().whole_day(), 1);
@@ -272,7 +272,7 @@ impl<T:FloatingNumber> TimeOf<T>
 
     /// Can be used to display days in a timer
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.day().timer_day(), 10);
     /// 
     /// debug_assert_eq!(364.day().timer_day(), 364);

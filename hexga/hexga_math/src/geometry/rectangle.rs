@@ -144,7 +144,7 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : UnitArithmetic, T : U
     /// Check if a point inside the rectangle.
     /// 
     /// ```
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// 
     /// // inside :
     /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(1, 1)));

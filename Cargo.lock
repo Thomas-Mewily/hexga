@@ -15,19 +15,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2eaa862aef602c9dace05ec59a5c85136a48747680bf45679d122fbc9430590f"
 
 [[package]]
-name = "hexa_bitflags"
-version = "0.0.9"
-dependencies = [
- "hexga_number",
-]
-
-[[package]]
 name = "hexa_graphics"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 
 [[package]]
 name = "hexga"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 dependencies = [
  "default_is_triple_underscore",
  "have_len",
@@ -38,11 +31,18 @@ dependencies = [
 
 [[package]]
 name = "hexga_array"
-version = "0.0.9"
+version = "0.0.10-beta.1"
+
+[[package]]
+name = "hexga_bitflags"
+version = "0.0.10-beta.1"
+dependencies = [
+ "hexga_number",
+]
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 dependencies = [
  "have_len",
  "hexga_number",
@@ -51,7 +51,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_math"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 dependencies = [
  "have_len",
  "hexga_array",
@@ -62,7 +62,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 
 [[package]]
 name = "hexga_test"
@@ -75,7 +75,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_tools"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 dependencies = [
  "have_len",
  "hexga_number",
@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 
 [[package]]
 name = "proc-macro2"
@@ -126,7 +126,7 @@ dependencies = [
 
 [[package]]
 name = "share_crate"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 
 [[package]]
 name = "syn"
@@ -141,7 +141,7 @@ dependencies = [
 
 [[package]]
 name = "template"
-version = "0.0.9"
+version = "0.0.10-beta.1"
 
 [[package]]
 name = "unicode-ident"

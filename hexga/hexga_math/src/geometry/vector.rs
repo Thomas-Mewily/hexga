@@ -63,7 +63,7 @@ impl<T,const N : usize> Vector<T,N>
     /// `x + y + z ...`
     /// 
     /// ```rust
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// assert_eq!(point2(3,4).sum_axis(), 7);
     /// ```
     pub fn sum_axis(self) -> T where T : NumberArithmetic { self.into_iter().sum() }
@@ -109,7 +109,7 @@ impl<T, const N : usize> Vector<T, N>
     /// - The self is valid (inside the grid : all axis are >= 0 and < current axis size )
     /// 
     /// ```rust
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// assert_eq!(unsafe{ point2(0,0).to_index_unchecked(point2(10, 20)) }, 0);
     /// assert_eq!(unsafe{ point2(3,0).to_index_unchecked(point2(10, 20)) }, 3);
     /// assert_eq!(unsafe{ point2(3,1).to_index_unchecked(point2(10, 20)) }, 3+1*10);
@@ -147,7 +147,7 @@ impl<T, const N : usize> Vector<T, N>
     /// - The index is valid (inside the grid : all axis are >= 0 and < current axis size )
     /// 
     /// ```rust
-    /// use hexga_math::*;
+    /// use hexga_math::prelude::*;
     /// unsafe 
     /// {
     ///     let size = point2(10, 20);
