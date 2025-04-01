@@ -1,3 +1,4 @@
-fn graphic() {
-    println!("Hello, world!");
+pub struct Image
+{
+    
 }

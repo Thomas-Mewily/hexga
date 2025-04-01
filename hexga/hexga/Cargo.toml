@@ -25,7 +25,7 @@ float_are_32_bits   = ["hexga_math/float_are_32_bits"]
 float_are_64_bits   = ["hexga_math/float_are_64_bits"]
 float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga_generational/serde"]
+serde = ["dep:serde", "hexga_generational/serde", "hexga_math/serde"]
 
 [dependencies]
 hexga_math.workspace = true

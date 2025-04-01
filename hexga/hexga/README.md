@@ -21,15 +21,16 @@ HexGa (LibOur) stand for
 - **H**ighly **E**xtensible **G**eneral **A**pplication **L**ib **O**ur
 - **H**ighly **E**xtensible **GA**me **L**ib **O**ur
 
-(Depending of the context)
+(Depending of the context).
+
 The name was inspired by Excalibur, the sword.
 
 
 ## Other Hexga crate
 
-`hexga_math` : https://crates.io/crates/hexga_math
-`hexga_generational` : https://crates.io/crates/hexga_generational
-`hexga_array` : https://crates.io/crates/hexga_array
-`hexga_number` : https://crates.io/crates/hexga_number
-`hexga_tools` : https://crates.io/crates/hexga_tools
-`hexga_typedef` : https://crates.io/crates/hexga_typedef
+- `hexga_math` : https://crates.io/crates/hexga_math
+- `hexga_generational` : https://crates.io/crates/hexga_generational
+- `hexga_array` : https://crates.io/crates/hexga_array
+- `hexga_number` : https://crates.io/crates/hexga_number
+- `hexga_tools` : https://crates.io/crates/hexga_tools
+- `hexga_typedef` : https://crates.io/crates/hexga_typedef

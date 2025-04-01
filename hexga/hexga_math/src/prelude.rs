@@ -20,5 +20,5 @@ pub use crate::matrix::{Mat1P, Mat2P, Mat3P, Mat4P};
 pub use crate::matrix::{Mat, Matrix, SquareMatrix};
 pub use crate::matrix::{Matrix1, Matrix2, Matrix3, Matrix4};
 
-pub use crate::{time::Time,angle::Angle};
+pub use crate::{time::{Time,ToTime},angle::{Angle,ToAngle}};
 

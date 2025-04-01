@@ -5,10 +5,10 @@
 
 use std::collections::HashMap;
 
-use hexga_math::prelude::*;
+use hexga_math::{prelude::*, time::ToTime};
 
 
-/* 
+/*
 use hexga_generational::gen_vec::GenVec;
 use hexga_math::*;
 use have_len::*;
@@ -17,6 +17,7 @@ use have_len::*;
 fn main() 
 {
     let x = point2(1, 2);
+    let y = 2.9.s();
     /* 
     let mut v = Vec2::new(1.,2.);
 

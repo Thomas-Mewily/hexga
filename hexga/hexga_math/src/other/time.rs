@@ -9,7 +9,7 @@ pub type Time = TimeOf<float>;
 pub type DeltaTime = Time;
 pub type DeltaTimeOf<T> = TimeOf<T>;
 
-pub trait TimeExtension
+pub trait ToTime
 {
     type Output;
     fn ms  (self) -> Self::Output;
@@ -19,9 +19,9 @@ pub trait TimeExtension
     fn hour(self) -> Self::Output;
     fn day (self) -> Self::Output;
 }
-impl_composite_output_with_methods!(TimeExtension, ms, s, mins, hour, day);
+impl_composite_output_with_methods!(ToTime, ms, s, mins, hour, day);
 
-impl<T> TimeExtension for T where T : ToFloat<Output = float>
+impl<T> ToTime for T where T : ToFloat<Output = float>
 {
     type Output = Time;
 

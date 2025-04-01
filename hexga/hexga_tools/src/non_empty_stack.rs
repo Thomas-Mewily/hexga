@@ -40,7 +40,7 @@ impl<T> NonEmptyStack<T>
     /// use hexga_tools::*;
     /// 
     /// let mut stack = NonEmptyStack::from_vec(vec![1,2,3,4]).unwrap();
-    /// stack.clear_and_keep_last();
+    /// stack.clear_and_keep_first();
     /// assert_eq!(stack.len(), 1);
     /// assert_eq!(stack.last(), &1);
     /// ```

@@ -17,6 +17,10 @@ checksum = "2eaa862aef602c9dace05ec59a5c85136a48747680bf45679d122fbc9430590f"
 [[package]]
 name = "hexa_graphics"
 version = "0.0.10-beta.1"
+dependencies = [
+ "hexga_math",
+ "serde",
+]
 
 [[package]]
 name = "hexga"
