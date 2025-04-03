@@ -13,3 +13,9 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
 - GenHashMap
 
 - transition using a empty struct : `struct Transition;`
+
+
+- Operateur binaire/assignation : aussi les impl pour des références dont Self est copiable pour les
+- matrix
+- angle
+- time

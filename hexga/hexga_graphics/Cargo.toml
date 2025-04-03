@@ -27,3 +27,4 @@ serde = ["dep:serde", "hexga_math/serde"]
 hexga_math.workspace = true
 
 serde = { version = "1.0", features = ["derive"], optional = true}
+image = { version = "0.25.4", default-features = false, features = ["png", "gif", "jpeg"] }

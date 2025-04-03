@@ -16,7 +16,14 @@ use have_len::*;
 
 fn main() 
 {
+
+
+
+
     let x = point2(1, 2);
+    let v = &x;
+
+    let k : Point2 = v + point2(1, 2);
     let y = 2.9.s();
     /* 
     let mut v = Vec2::new(1.,2.);

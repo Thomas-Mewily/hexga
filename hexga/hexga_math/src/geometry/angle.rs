@@ -152,7 +152,11 @@ impl<T:FloatingNumber> Display for DisplayAngleDegree {
 
 
 impl<T:FloatingNumber> Mul<T> for AngleOf<T> { type Output=AngleOf<T>; fn mul(self, rhs: T) -> Self::Output { Self::from_internal(self._radian * rhs) }}
+impl<T:FloatingNumber> Mul<T> for &AngleOf<T> { type Output=AngleOf<T>; fn mul(self, rhs: T) -> Self::Output { *self / rhs }}
+impl<T:FloatingNumber> Mul<&T> for AngleOf<T> where T : Copy { type Output=AngleOf<T>; fn mul(self, rhs: &T) -> Self::Output { self / *rhs }}
+impl<T:FloatingNumber> Mul<&T> for &AngleOf<T> where T : Copy { type Output=AngleOf<T>; fn mul(self, rhs: &T) -> Self::Output { *self / *rhs }}
 impl<T:FloatingNumber> MulAssign<T> for AngleOf<T> { fn mul_assign(&mut self, rhs: T) { self._radian.mul_assign(rhs); }}
+impl<T:FloatingNumber> MulAssign<&T> for AngleOf<T> { fn mul_assign(&mut self, rhs: &T) { *self *= *rhs; }}
 
 impl<T:FloatingNumber> Div<T> for AngleOf<T> { type Output=AngleOf<T>; fn div(self, rhs: T) -> Self::Output { Self::from_internal(self._radian/ rhs) }}
 impl<T:FloatingNumber> DivAssign<T> for AngleOf<T> { fn div_assign(&mut self, rhs: T) { self._radian.div_assign(rhs); }}

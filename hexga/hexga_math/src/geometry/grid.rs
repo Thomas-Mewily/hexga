@@ -188,6 +188,72 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
     #[inline] pub fn is_outside_w(&self, w : I) -> bool where Vector<I,N> : HaveW<I> { !self.is_inside_w(w) }
 }
 
+/*
+pub trait IGrid<I, T, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    fn values(&self) -> &[T];
+    fn values_mut(&mut self) -> &mut [T];
+    fn into_values(self) -> Vec<T>;
+
+    
+    #[inline] fn is_inside(&self, pos : Vector<I,N>) -> bool { pos.is_inside(self.size) }
+    #[inline] fn is_outside(&self, pos : Vector<I,N>) -> bool { !self.is_inside(pos) }
+
+    #[inline] fn is_index_inside(&self, index : usize) -> bool { index < self.area().to_usize()  }
+    #[inline] fn is_index_outside(&self, index : usize) -> bool { !self.is_index_inside(index) }
+
+    fn position_to_index(&self, pos : Vector<I,N>) -> Option<usize> { Vector::<I,N>::to_index(pos, self.size) }
+    fn index_to_position(&self, index : usize) -> Option<Vector<I,N>> { Vector::<I,N>::from_index(index, self.size) }
+
+    fn get_index(&self, index : usize) -> Option<&T> { self.values().get(index) }
+    fn get_index_mut(&mut self, index : usize) -> Option<&mut T> { self.values().get_mut(index) }
+
+    fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.position_to_index(pos).and_then(|i| self.get_index(i)) }
+    fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
+
+    fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool
+    {
+        match (self.position_to_index(pos_a), self.position_to_index(pos_b))
+        {
+            (Some(a), Some(b)) => { self.value.swap(a, b); true }
+            _ => false
+        }
+    }
+
+    fn swap_index(&mut self, index_a : usize, index_b : usize) -> bool
+    {
+        if self.is_index_inside(index_a) && self.is_index_inside(index_b)
+        {
+            self.values_mut().swap(index_a, index_b);
+            true
+        }else { false }
+    }
+
+    fn replace_index(&mut self, val : T, index : usize) -> Option<T> { self.get_index_mut(index).map(|v| std::mem::replace(v, val)) }
+    fn replace(&mut self, val : T, pos : Vector<I,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
+    
+    /// Do nothings if the index is outside the range
+    fn set_index(&mut self, val : T, idx : usize) -> &mut Self { self.get_index_mut(idx).map(|v| *v = val); self }
+    /// Do nothings if the index is outside the range
+    fn set(&mut self, val : T, pos : Vector<I,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
+
+    /// map a function on each tile to create a new grid
+    fn map<Z, F>(&self, f : F) -> Grid<Z, I, N> where F : FnMut(&T) -> Z { Grid { size: self.size, value: self.value.iter().map(f).collect() } }
+    /// transform the current grid
+    fn map_into<Z, F>(self, f : F) -> Grid<Z, I, N> where F : FnMut(T) -> Z { Grid { size: self.size, value: self.value.into_iter().map(f).collect() } }
+
+    fn intersect_rect(&self, r : Rectangle<I,N>) -> Rectangle<I,N>  where Vector<I,N> : UnitArithmetic, I : PartialOrd { r.intersect_or_empty(self.rect()) }
+
+    fn sub_grid(&self, r : Rectangle<I, N>) -> Self where T : Clone
+    {
+        let r = self.intersect_rect(r);
+        Self::from_fn(r.size(), |p| self[p + r.pos].clone())
+    }
+
+    fn len(&self) -> usize { self.value.len() }
+}
+*/
+
 impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     pub fn values(&self) -> &[T] { &self.value }
@@ -251,10 +317,9 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
     pub fn len(&self) -> usize { self.value.len() }
 }
 
-
 impl<I, T, const N : usize> have_len::HaveLen for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 { 
-    fn len(&self) -> usize { self.len() }
+    fn len(&self) -> usize { self.values().len() }
 }
 
 

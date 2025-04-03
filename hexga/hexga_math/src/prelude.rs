@@ -1,10 +1,6 @@
 pub use crate::*;
 
 pub use crate::vector::*;
-pub use crate::vector1::*;
-pub use crate::vector2::*;
-pub use crate::vector3::*;
-pub use crate::vector4::*;
 
 pub use crate::grid::{Grid1,Grid2,Grid3,Grid4};
 
