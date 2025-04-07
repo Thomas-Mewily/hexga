@@ -8,7 +8,7 @@ repository.workspace = true
 license.workspace = true
 readme = "README.md"
 
-keywords = ["map_on", "macro"]
+keywords = ["map_on", "macro", "no-std", "no-std::no-alloc"]
 description = "Define the map_on! macro that can be used to impl a lot of trait quickly using macros."
 categories = ["rust-patterns"]
 

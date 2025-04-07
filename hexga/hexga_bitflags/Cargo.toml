@@ -8,5 +8,9 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
+keywords = ["bitflags"]
+description = "Bitflags utilities"
+categories = ["rust-patterns"]
+
 [dependencies]
 hexga_number.workspace = true

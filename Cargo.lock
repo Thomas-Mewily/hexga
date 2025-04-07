@@ -96,7 +96,7 @@ checksum = "2eaa862aef602c9dace05ec59a5c85136a48747680bf45679d122fbc9430590f"
 
 [[package]]
 name = "hexa_graphics"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 dependencies = [
  "hexga_math",
  "image",
@@ -105,7 +105,7 @@ dependencies = [
 
 [[package]]
 name = "hexga"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 dependencies = [
  "default_is_triple_underscore",
  "have_len",
@@ -116,18 +116,18 @@ dependencies = [
 
 [[package]]
 name = "hexga_array"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 
 [[package]]
 name = "hexga_bitflags"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 dependencies = [
  "hexga_number",
 ]
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 dependencies = [
  "have_len",
  "hexga_number",
@@ -136,11 +136,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_map_on"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 
 [[package]]
 name = "hexga_math"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 dependencies = [
  "have_len",
  "hexga_array",
@@ -151,7 +151,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 dependencies = [
  "hexga_map_on",
 ]
@@ -167,7 +167,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_tools"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 dependencies = [
  "have_len",
  "hexga_number",
@@ -176,7 +176,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 
 [[package]]
 name = "image"
@@ -266,7 +266,7 @@ dependencies = [
 
 [[package]]
 name = "share_crate"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 
 [[package]]
 name = "simd-adler32"
@@ -287,7 +287,7 @@ dependencies = [
 
 [[package]]
 name = "template"
-version = "0.0.10-beta.1"
+version = "0.0.10-beta.2"
 
 [[package]]
 name = "unicode-ident"
