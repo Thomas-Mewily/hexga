@@ -135,6 +135,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_map_on"
+version = "0.0.10-beta.1"
+
+[[package]]
 name = "hexga_math"
 version = "0.0.10-beta.1"
 dependencies = [
@@ -148,6 +152,9 @@ dependencies = [
 [[package]]
 name = "hexga_number"
 version = "0.0.10-beta.1"
+dependencies = [
+ "hexga_map_on",
+]
 
 [[package]]
 name = "hexga_test"

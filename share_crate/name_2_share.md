@@ -5,4 +5,5 @@ hexga_math
 hexga_generational
 hexga_bitflags
 hexga_tools
+hexga_map_on
 hexga

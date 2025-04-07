@@ -16,6 +16,13 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
 
 
 - Operateur binaire/assignation : aussi les impl pour des références dont Self est copiable pour les
-- matrix
-- angle
-- time
+    - matrix
+    - angle
+    - time
+
+- angle & time : struct X<T>(T) + faire macro pour wrap op binaires et autres
+
+- RectangleTree<Pri,const N>
+- Word<T,Pri,N> : monde multi agent où chaque agent a peut être un rectangle englobant (utilise RectangleTree)
+
+- GridSlice/GridPortion

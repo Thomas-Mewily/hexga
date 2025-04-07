@@ -15,6 +15,7 @@ hexga_math = { path = "./hexga/hexga_math", version = "0.0.10-beta.1" }
 hexga_generational = { path = "./hexga/hexga_generational", version = "0.0.10-beta.1" }
 hexga_array = { path = "./hexga/hexga_array", version = "0.0.10-beta.1" }
 hexga_number = { path = "./hexga/hexga_number", version = "0.0.10-beta.1" }
+hexga_map_on = { path = "./hexga/hexga_map_on", version = "0.0.10-beta.1" }
 hexga_typedef = { path = "./hexga/hexga_typedef", version = "0.0.10-beta.1" }
 hexga_graphics = { path = "./hexga/hexga_graphics", version = "0.0.10-beta.1" }
 hexga = { path = "./hexga/hexga", version = "0.0.10-beta.1" }

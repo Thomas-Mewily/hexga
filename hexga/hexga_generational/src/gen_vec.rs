@@ -289,6 +289,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
     pub fn len(&self) -> usize { self.len }
 
+    //pub fn rollback_insert(&mut self, id : GenIDOf<T,Gen>) -> Option<T>
     pub fn insert(&mut self, value : T) ->  GenIDOf<T,Gen>
     {
         self.len += 1;

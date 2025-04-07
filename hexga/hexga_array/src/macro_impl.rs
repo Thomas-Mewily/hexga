@@ -20,30 +20,6 @@ macro_rules! impl_fixed_array_like_op_binary_composite
             type Output=$name<<T as $op_trait_name<T>>::Output>;
             fn $op_trait_fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$op_trait_fn_name) }
         }
-
-        impl<T> $op_trait_name<$name<T>> for &$name<T> 
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output>;
-            fn $op_trait_fn_name(self, rhs: $name<T>) -> Self::Output 
-            { $op_trait_name::$op_trait_fn_name(*self, rhs) }
-        }
-
-        impl<T> $op_trait_name<&Self> for $name<T> 
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output>;
-            fn $op_trait_fn_name(self, rhs: &Self) -> Self::Output
-            { $op_trait_name::$op_trait_fn_name(self, *rhs) }
-        }
-
-        impl<T> $op_trait_name<Self> for &$name<T>
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output>;
-            fn $op_trait_fn_name(self, rhs: Self) -> Self::Output
-            { $op_trait_name::$op_trait_fn_name(*self, *rhs) }
-        }
     };
 }
 
@@ -60,31 +36,6 @@ macro_rules! impl_fixed_array_like_op_binary_non_composite
         {
             type Output=$name<<T as $op_trait_name<T>>::Output>;
             fn $op_trait_fn_name(self, rhs: T) -> Self::Output { <[T;$dim]>::from(self).map(|v| v.$op_trait_fn_name(rhs)).into() }
-        }
-
-        
-        impl<T> $op_trait_name<T> for &$name<T> 
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output>;
-            fn $op_trait_fn_name(self, rhs: T) -> Self::Output 
-            { $op_trait_name::$op_trait_fn_name(*self, rhs) }
-        }
-
-        impl<T> $op_trait_name<&T> for $name<T> 
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output>;
-            fn $op_trait_fn_name(self, rhs: &T) -> Self::Output
-            { $op_trait_name::$op_trait_fn_name(self, *rhs) }
-        }
-
-        impl<T> $op_trait_name<&T> for &$name<T>
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output>;
-            fn $op_trait_fn_name(self, rhs: &T) -> Self::Output
-            { $op_trait_name::$op_trait_fn_name(*self, *rhs) }
         }
     };
 }
@@ -112,30 +63,6 @@ macro_rules! impl_generic_array_like_op_binary_composite
             type Output=$name<<T as $op_trait_name<T>>::Output, N>;
             fn $op_trait_fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$op_trait_fn_name) }
         }
-
-        impl<T, const N: usize> $op_trait_name<$name<T, N>> for &$name<T, N> 
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output, N>;
-            fn $op_trait_fn_name(self, rhs: $name<T, N>) -> Self::Output 
-            { $op_trait_name::$op_trait_fn_name(*self, rhs) }
-        }
-
-        impl<T, const N: usize> $op_trait_name<&Self> for $name<T, N> 
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output, N>;
-            fn $op_trait_fn_name(self, rhs: &Self) -> Self::Output
-            { $op_trait_name::$op_trait_fn_name(self, *rhs) }
-        }
-
-        impl<T, const N: usize> $op_trait_name<Self> for &$name<T, N>
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output, N>;
-            fn $op_trait_fn_name(self, rhs: Self) -> Self::Output
-            { $op_trait_name::$op_trait_fn_name(*self, *rhs) }
-        }
     }
 }
 
@@ -148,30 +75,6 @@ macro_rules! impl_generic_array_like_op_binary_non_composite
         {
             type Output=$name<<T as $op_trait_name<T>>::Output,N>;
             fn $op_trait_fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$op_trait_fn_name(rhs)).into() }
-        }
-
-        impl<T, const N: usize> $op_trait_name<T> for &$name<T, N> 
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output, N>;
-            fn $op_trait_fn_name(self, rhs: T) -> Self::Output 
-            { $op_trait_name::$op_trait_fn_name(*self, rhs) }
-        }
-
-        impl<T, const N: usize> $op_trait_name<&T> for $name<T, N> 
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output, N>;
-            fn $op_trait_fn_name(self, rhs: &T) -> Self::Output
-            { $op_trait_name::$op_trait_fn_name(self, *rhs) }
-        }
-
-        impl<T, const N: usize> $op_trait_name<&T> for &$name<T, N>
-            where T: $op_trait_name<T> + Copy
-        {
-            type Output = $name<<T as $op_trait_name<T>>::Output, N>;
-            fn $op_trait_fn_name(self, rhs: &T) -> Self::Output
-            { $op_trait_name::$op_trait_fn_name(*self, *rhs) }
         }
     }
 }

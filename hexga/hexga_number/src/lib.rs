@@ -1,13 +1,10 @@
 #![allow(unused_imports)]
 
-pub(crate) use std::cmp::Ordering;
-pub(crate) use std::ops::*;
-pub(crate) use std::iter::{Sum,Product};
-pub(crate) use std::num::{Saturating, Wrapping};
-
-
-mod map_on;
-pub use map_on::*;
+use std::cmp::Ordering;
+use std::ops::*;
+use std::iter::{Sum,Product};
+use std::num::{Saturating, Wrapping};
+pub use hexga_map_on::*;
 
 mod constant;
 pub use constant::*;
