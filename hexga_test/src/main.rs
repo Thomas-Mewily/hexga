@@ -18,13 +18,8 @@ fn main()
 {
 
 
-    //let x = Grid::<char>::new(point2(2, 4));
 
-    let x = point2(1, 2);
-    let v = &x;
 
-    //let k : Point2 = v + point2(1, 2);
-    let y = 2.9.s();
     /* 
     let mut v = Vec2::new(1.,2.);
 
@@ -61,8 +56,9 @@ fn main()
     let v =  Color::rgb(1., 0., 1.).to_hsla();
     */
 
+    /* 
     let mut grid = Grid2::from_fn(point2(2, 3), |p| p.x + p.y);
     dbg!(grid);
-
+    */
     println!("Hello, world3!");
 }

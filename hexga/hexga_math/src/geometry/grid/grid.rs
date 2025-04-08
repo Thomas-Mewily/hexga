@@ -152,14 +152,23 @@ impl<I, T, const N : usize> GridBase<T, N, I> where I : IntegerIndex, usize : Ca
     #[inline] pub fn is_index_inside(&self, index : usize) -> bool { index < self.area().to_usize()  }
     #[inline] pub fn is_index_outside(&self, index : usize) -> bool { !self.is_index_inside(index) }
 
+    pub unsafe fn position_to_index_unchecked(&self, pos : Vector<I,N>) -> usize { unsafe { Vector::<I,N>::to_index_unchecked(pos, self.size) } }
+    pub unsafe fn index_to_position_unchecked(&self, index : usize) -> Vector<I,N> { unsafe { Vector::<I,N>::from_index_unchecked(index, self.size) } }
+
     pub fn position_to_index(&self, pos : Vector<I,N>) -> Option<usize> { Vector::<I,N>::to_index(pos, self.size) }
     pub fn index_to_position(&self, index : usize) -> Option<Vector<I,N>> { Vector::<I,N>::from_index(index, self.size) }
+
+
 
     pub fn get_index(&self, index : usize) -> Option<&T> { self.value.get(index) }
     pub fn get_index_mut(&mut self, index : usize) -> Option<&mut T> { self.value.get_mut(index) }
 
     pub fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.position_to_index(pos).and_then(|i| self.get_index(i)) }
     pub fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
+
+    pub unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { let idx = self.position_to_index_unchecked(pos); self.value.get_unchecked(idx) } }
+    pub unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { unsafe { let idx = self.position_to_index_unchecked(pos); self.value.get_unchecked_mut(idx)} }
+
 
     pub fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool
     {
@@ -213,14 +222,21 @@ impl<T, const N : usize, I> ISlice<T,N,I> for GridBase<T, N, I>
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.get(pos) }
+    unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { self.get_unchecked(pos) } }
+
     fn size(&self) -> Vector<I,N> { self.size() }
     fn begin(&self) -> Vector<I,N> { zero() }
+    fn subslice<'a>(&'a self, rect : Rectangle<I, N>) -> Slice<'a,T,N,I> { Slice::new(self, rect) }
+    
 }
 
 impl<T, const N : usize, I> ISliceMut<T,N,I> for GridBase<T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.get_mut(pos) }
+    unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { unsafe { self.get_unchecked_mut(pos) } }
+
+    fn subslice_mut<'a>(&'a mut self, rect : Rectangle<I, N>) -> SliceMut<'a,T,N,I> { SliceMut::new(self, rect) }
 }
 
 impl<I, T, const N : usize> Index<usize> for GridBase<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
@@ -360,3 +376,124 @@ impl<I, T, const N : usize> have_len::HaveLen for GridOf<T, N, I> where I : Inte
 
 
     */
+
+
+#[cfg(test)]
+mod grid_test
+{
+    use crate::other::point2;
+
+    #[test]
+    fn index_order() 
+    {
+        use crate::*;
+        //let x = Grid::<char>::new(point2(2, 4));
+        let size = point2(2, 3);
+
+        let grid = Grid2::from_fn(size, |p| p.x + 10 * p.y);
+    
+        /* 
+        dbg!(&grid);    
+        for y in (0..size.y).rev()
+        {
+            for x in 0..size.x
+            {
+                print!("{:2} ", grid[point2(x, y)]);
+            }
+            println!()
+        }
+        */
+    
+        let mut indice = 0;
+        assert_eq!(grid[indice], grid[point2(0,0)]);
+        assert_eq!(grid[indice], 0);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(1,0)]);
+        assert_eq!(grid[indice], 1);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(0,1)]);
+        assert_eq!(grid[indice], 10);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(1,1)]);
+        assert_eq!(grid[indice], 11);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(0,2)]);
+        assert_eq!(grid[indice], 20);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(1,2)]);
+        assert_eq!(grid[indice], 21);
+    }   
+
+    #[test]
+    fn out_of_range()
+    {
+        use crate::*;
+        let grid = Grid2::from_fn(point2(2, 3), |_| 42);
+
+        assert_eq!(grid.get(point2(0, 0)), Some(&42));
+        assert_eq!(grid.get(point2(-1, 0)), None);
+        assert_eq!(grid.get(point2(1, 0)), Some(&42));
+        assert_eq!(grid.get(point2(2, 0)), None);
+        
+        assert_eq!(grid.get(point2(0, 0)), Some(&42));
+        assert_eq!(grid.get(point2(0, -1)), None);
+        assert_eq!(grid.get(point2(0, 2)), Some(&42));
+        assert_eq!(grid.get(point2(0, 3)), None);
+    }
+
+    #[test]
+    fn slice_cmp()
+    {
+        use crate::*;
+
+        let size = point2(2, 3);
+        let grid = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
+
+        assert_eq!(grid.size(), grid.as_slice().size());
+
+        let subgrid = grid.subgrid(size.to_rect());
+
+        assert_eq!(grid, subgrid);
+
+        let smaller_size = point2(1, 2);
+        let smaller_grid = Grid2::from_fn(smaller_size, |p|  p.x + 10 * p.y);
+        let smaller_grid_from_bigger_grid = grid.subgrid(smaller_size.to_rect());
+        assert_eq!(smaller_grid, smaller_grid_from_bigger_grid);
+
+        let top_right_grid_size = point2(1, 2);
+        let offset = Vector2::ONE;
+        let top_right_grid = Grid2::from_fn(smaller_size, |p|  { let p = p + offset; p.x + 10 * p.y });
+        assert_eq!(top_right_grid, grid.subgrid(top_right_grid_size.to_rect().moved_by(offset)));
+    }
+
+    #[test]
+    fn subslice() 
+    {
+        use crate::*;
+
+        let size = point2(2, 3);
+
+        let mut grid1 = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
+        let mut grid2 = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
+
+        assert_eq!(grid1, grid2);
+        assert_eq!(grid1.as_slice(), grid2.as_slice());
+        assert_eq!(grid1.as_mut_slice(), grid2.as_mut_slice());
+
+        grid2[point2(1, 0)] = 42;
+
+        assert_ne!(grid1, grid2);
+        assert_ne!(grid1.as_slice(), grid2.as_slice());
+        assert_ne!(grid1.as_mut_slice(), grid2.as_mut_slice());
+
+        let rect = rect2p(0, 0, 1, size.y);
+        assert_eq!(grid1.as_slice().subslice(rect), grid2.as_slice().subslice(rect));
+        assert_eq!(grid1.as_mut_slice().subslice(rect), grid2.as_mut_slice().subslice(rect));
+        assert_eq!(grid1.as_mut_slice().subslice_mut(rect), grid2.as_mut_slice().subslice_mut(rect));
+    }
+}

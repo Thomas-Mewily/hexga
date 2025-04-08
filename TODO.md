@@ -3,7 +3,7 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
 ## Todo
 
 - Grid : GridSlice/GridPortion + version mut
-Grid Deref+Derefmut sur ses slices
+~~Grid Deref+Derefmut sur ses slices~~ => Pas possible, impossible d'exprimer les lifetime
 + impl Iterator sur les grid slice
 
 - GenVec : 
@@ -13,9 +13,10 @@ Grid Deref+Derefmut sur ses slices
 
 - Name2Reserve : réserver plus de nom sous crate io
 
+- Mettre hexga_map_to dans sa propre crate
 
-- transition using a empty struct : `struct Transition;`
 
+- transition fn inside an empty struct to make it extensible (trait pattern) : `struct Transition;`
 
 - Operateur binaire/assignation : aussi les impl pour des références dont Self est copiable pour les
     - matrix
