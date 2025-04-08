@@ -1,6 +1,7 @@
 use crate::*;
 
 /// A slice view to a [Grid]
+//pub trait ISlice<'a, T:'a, const N : usize, I> : Index<Vector<I,N>,Output = T> + IntoIterator<Item = (Vector<I,N>, &'a T)>
 pub trait ISlice<T, const N : usize, I> : Index<Vector<I,N>,Output = T>
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
