@@ -7,30 +7,32 @@ Todo : impl AsMut<&[T]> AsRef<&[T]>
 + method as_mut_slice(&self) as_slice(&mut self)
 */
 
-pub type Grid1<T> = Grid<T, int, 1>;
-pub type Grid2<T> = Grid<T, int, 2>;
-pub type Grid3<T> = Grid<T, int, 3>;
-pub type Grid4<T> = Grid<T, int, 4>;
+pub type Grid1<T> = Grid<T, 1>;
+pub type Grid2<T> = Grid<T, 2>;
+pub type Grid3<T> = Grid<T, 3>;
+pub type Grid4<T> = Grid<T, 4>;
+
+pub type Grid<T,const N : usize> = GridOf<T,N,int>;
 
 /// A N dimensional grid
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Grid<T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+pub struct GridOf<T, const N : usize, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     size  : Vector<I,N>,
     value : Vec<T>,
 }
 
 #[derive(Debug)]
-pub struct IterMut<'a, T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+pub struct IterMut<'a, T,const N : usize,I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     value : std::iter::Enumerate<std::slice::IterMut<'a, T>>,
     size  : Vector<I,N>,
 }
-impl<'a, T, I, const N : usize> IterMut<'a,T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<'a, T, const N : usize, I> IterMut<'a,T,N,I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    pub fn new(grid : &'a mut Grid<T,I,N>) -> Self { Self { value: grid.value.iter_mut().enumerate(), size: grid.size }}
+    pub fn new(grid : &'a mut GridOf<T,N,I>) -> Self { Self { value: grid.value.iter_mut().enumerate(), size: grid.size }}
 }
-impl<'a, T, I, const N : usize> Iterator for IterMut<'a,T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<'a, T, const N : usize, I> Iterator for IterMut<'a,T,N,I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     type Item=(Vector<I,N>, &'a mut T);
     fn next(&mut self) -> Option<Self::Item> {
@@ -38,26 +40,26 @@ impl<'a, T, I, const N : usize> Iterator for IterMut<'a,T,I,N> where I : Integer
     }
 }
 
-impl<'a, I, T, const N : usize> IntoIterator for &'a mut Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<'a, I, const N : usize, T> IntoIterator for &'a mut GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     type Item = (Vector<I,N>, &'a mut T);
-    type IntoIter = IterMut::<'a,T,I,N>;
+    type IntoIter = IterMut::<'a,T,N,I>;
 
     fn into_iter(self) -> Self::IntoIter { IterMut::new(self) }
 }
 
 
 #[derive(Clone, Debug)]
-pub struct Iter<'a, T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+pub struct Iter<'a, T, const N : usize, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     value : std::iter::Enumerate<std::slice::Iter<'a, T>>,
     size  : Vector<I,N>,
 }
-impl<'a, T, I, const N : usize> Iter<'a,T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<'a, T, const N : usize, I> Iter<'a,T,N,I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    pub fn new(grid : &'a  Grid<T,I,N>) -> Self { Self { value: grid.value.iter().enumerate(), size: grid.size }}
+    pub fn new(grid : &'a  GridOf<T,N,I>) -> Self { Self { value: grid.value.iter().enumerate(), size: grid.size }}
 }
-impl<'a, T, I, const N : usize> Iterator for Iter<'a,T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<'a, T, const N : usize, I> Iterator for Iter<'a,T,N,I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     type Item=(Vector<I,N>, &'a T);
     fn next(&mut self) -> Option<Self::Item> {
@@ -65,10 +67,10 @@ impl<'a, T, I, const N : usize> Iterator for Iter<'a,T,I,N> where I : IntegerInd
     }
 }
 
-impl<'a, I, T, const N : usize> IntoIterator for &'a Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<'a, I, T, const N : usize> IntoIterator for &'a GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     type Item = (Vector<I,N>, &'a  T);
-    type IntoIter = Iter::<'a,T,I,N>;
+    type IntoIter = Iter::<'a,T,N,I>;
 
     fn into_iter(self) -> Self::IntoIter { Iter::new(self) }
 }
@@ -76,16 +78,16 @@ impl<'a, I, T, const N : usize> IntoIterator for &'a Grid<T, I, N> where I : Int
 
 
 #[derive(Debug)]
-pub struct IntoIter<T, I, const N : usize> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+pub struct IntoIter<T, const N : usize, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     value : std::iter::Enumerate<std::vec::IntoIter<T>>,
     size  : Vector<I,N>,
 }
-impl<T, I, const N : usize> IntoIter<T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<T, const N : usize, I> IntoIter<T,N,I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    pub fn new(grid : Grid<T,I,N>) -> Self { Self { value: grid.value.into_iter().enumerate(), size: grid.size }}
+    pub fn new(grid : GridOf<T,N,I>) -> Self { Self { value: grid.value.into_iter().enumerate(), size: grid.size }}
 }
-impl<T, I, const N : usize> Iterator for IntoIter<T,I,N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<T, const N : usize, I> Iterator for IntoIter<T,N,I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     type Item=(Vector<I,N>, T);
     fn next(&mut self) -> Option<Self::Item> {
@@ -93,10 +95,10 @@ impl<T, I, const N : usize> Iterator for IntoIter<T,I,N> where I : IntegerIndex,
     }
 }
 
-impl<I, T, const N : usize> IntoIterator for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> IntoIterator for GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     type Item = (Vector<I,N>, T);
-    type IntoIter = IntoIter::<T,I,N>;
+    type IntoIter = IntoIter::<T,N,I>;
     fn into_iter(self) -> Self::IntoIter { IntoIter::new(self) }
 }
 
@@ -120,7 +122,7 @@ impl<I, const N : usize> Debug for GridError<I,N> where I : Debug, I : IntegerIn
     }
 }
 
-impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     pub fn from_vec(size : Vector::<I,N>, value : Vec<T>) -> Option<Self> { Self::try_from_vec(size, value).ok() }
     pub fn try_from_vec(size : Vector::<I,N>, value : Vec<T>) -> Result<Self, GridError<I,N>>
@@ -164,13 +166,13 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
 }
 
 
-impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    pub fn iter(&self) -> Iter<'_,T,I,N> { self.into_iter() }
-    pub fn iter_mut(&mut self) -> IterMut<'_,T,I,N> { self.into_iter() }
+    pub fn iter(&self) -> Iter<'_,T,N,I> { self.into_iter() }
+    pub fn iter_mut(&mut self) -> IterMut<'_,T,N,I> { self.into_iter() }
 }
 
-impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     pub fn iter_x(&self) -> Range<I> where Vector<I,N> : HaveX<I> { I::ZERO..self.size.x() }
     pub fn iter_y(&self) -> Range<I> where Vector<I,N> : HaveY<I> { I::ZERO..self.size.y() }
@@ -254,7 +256,7 @@ pub trait IGrid<I, T, const N : usize> where I : IntegerIndex, usize : CastTo<I>
 }
 */
 
-impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     pub fn values(&self) -> &[T] { &self.value }
     pub fn values_mut(&mut self) -> &mut [T] { &mut self.value }
@@ -302,9 +304,9 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
     pub fn set(&mut self, val : T, pos : Vector<I,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
 
     /// map a function on each tile to create a new grid
-    pub fn map<Z, F>(&self, f : F) -> Grid<Z, I, N> where F : FnMut(&T) -> Z { Grid { size: self.size, value: self.value.iter().map(f).collect() } }
+    pub fn map<Z, F>(&self, f : F) -> GridOf<Z, N, I> where F : FnMut(&T) -> Z { GridOf { size: self.size, value: self.value.iter().map(f).collect() } }
     /// transform the current grid
-    pub fn map_into<Z, F>(self, f : F) -> Grid<Z, I, N> where F : FnMut(T) -> Z { Grid { size: self.size, value: self.value.into_iter().map(f).collect() } }
+    pub fn map_into<Z, F>(self, f : F) -> GridOf<Z, N, I> where F : FnMut(T) -> Z { GridOf { size: self.size, value: self.value.into_iter().map(f).collect() } }
 
     pub fn intersect_rect(&self, r : Rectangle<I,N>) -> Rectangle<I,N>  where Vector<I,N> : UnitArithmetic, I : PartialOrd { r.intersect_or_empty(self.rect()) }
 
@@ -317,28 +319,28 @@ impl<I, T, const N : usize> Grid<T, I, N> where I : IntegerIndex, usize : CastTo
     pub fn len(&self) -> usize { self.value.len() }
 }
 
-impl<I, T, const N : usize> have_len::HaveLen for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> have_len::HaveLen for GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 { 
     fn len(&self) -> usize { self.values().len() }
 }
 
 
-impl<I, T, const N : usize> Index<usize> for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> Index<usize> for GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     type Output=T;
     fn index(&self, index: usize) -> &Self::Output { self.get_index(index).unwrap() }
 }
-impl<I, T, const N : usize> IndexMut<usize> for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> IndexMut<usize> for GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_index_mut(index).unwrap() }
 }
 
-impl<I, T, const N : usize> Index<Vector<I,N>> for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> Index<Vector<I,N>> for GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     type Output=T;
     fn index(&self, index: Vector<I,N>) -> &Self::Output { self.get(index).unwrap() }
 }
-impl<I, T, const N : usize> IndexMut<Vector<I,N>> for Grid<T, I, N> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<I, T, const N : usize> IndexMut<Vector<I,N>> for GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     fn index_mut(&mut self, index: Vector<I,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
 }
