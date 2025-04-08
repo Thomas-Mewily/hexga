@@ -263,15 +263,11 @@ impl<I, T, const N : usize> IndexMut<Vector<I,N>> for GridBase<T, N, I> where I 
     fn index_mut(&mut self, index: Vector<I,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
 }
 
-/* 
-impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<T, const N : usize, I> GridBase<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     pub fn iter(&self) -> Iter<'_,T,N,I> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_,T,N,I> { self.into_iter() }
-}
 
-impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
-{
     pub fn iter_x(&self) -> Range<I> where Vector<I,N> : HaveX<I> { I::ZERO..self.size.x() }
     pub fn iter_y(&self) -> Range<I> where Vector<I,N> : HaveY<I> { I::ZERO..self.size.y() }
     pub fn iter_z(&self) -> Range<I> where Vector<I,N> : HaveZ<I> { I::ZERO..self.size.z() }
@@ -288,7 +284,12 @@ impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : Cast
     #[inline] pub fn is_outside_w(&self, w : I) -> bool where Vector<I,N> : HaveW<I> { !self.is_inside_w(w) }
 }
 
-
+impl<T, const N : usize, I> GridBase<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+{
+    /// like a map_into
+    pub fn transform<Z, F>(self, f : F) -> GridBase<Z, N, I> where F : FnMut(T) -> Z { GridBase { size: self.size, value: self.value.into_iter().map(f).collect() } }
+}
+/* 
 impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     /// map a function on each tile to create a new grid
