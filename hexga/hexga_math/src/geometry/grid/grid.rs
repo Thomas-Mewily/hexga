@@ -237,6 +237,10 @@ impl<T, const N : usize, I> ISliceMut<T,N,I> for GridBase<T, N, I>
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { unsafe { self.get_unchecked_mut(pos) } }
 
     fn subslice_mut<'a>(&'a mut self, rect : Rectangle<I, N>) -> SliceMut<'a,T,N,I> { SliceMut::new(self, rect) }
+    
+    fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool { self.swap(pos_a, pos_b) }
+    fn replace(&mut self, val : T, pos : Vector<I,N>) ->  Option<T> { self.replace(val, pos) }
+    fn set(&mut self, val : T, pos : Vector<I,N>) -> &mut Self { self.set(val, pos) }
 }
 
 impl<I, T, const N : usize> Index<usize> for GridBase<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
@@ -260,24 +264,6 @@ impl<I, T, const N : usize> IndexMut<Vector<I,N>> for GridBase<T, N, I> where I 
 }
 
 /* 
-    #[inline] pub fn size  (&self) -> Vector<I,N> { self.size }
-    #[inline] pub fn size_x(&self) -> I where Vector<I,N> : HaveX<I> { self.size.x() }
-    #[inline] pub fn size_y(&self) -> I where Vector<I,N> : HaveY<I> { self.size.y() }
-    #[inline] pub fn size_z(&self) -> I where Vector<I,N> : HaveZ<I> { self.size.z() }
-    #[inline] pub fn size_w(&self) -> I where Vector<I,N> : HaveW<I> { self.size.w() }
-
-    pub fn rect(&self) -> Rectangle<I, N> { Rectangle::new(zero(), self.size()) }
-    #[inline] pub fn area (&self) -> I { self.size.area() }
-
-    /// Same as `.size_x()`
-    #[inline] pub fn width (&self) -> I where Vector<I,N> : HaveX<I> { self.size_x() }
-    /// Same as `.size_y()`
-    #[inline] pub fn height(&self) -> I where Vector<I,N> : HaveY<I> { self.size_y() }
-    /// Same as `.size_z()`
-    #[inline] pub fn depth (&self) -> I where Vector<I,N> : HaveZ<I> { self.size_z() }
-}
-
-
 impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     pub fn iter(&self) -> Iter<'_,T,N,I> { self.into_iter() }
@@ -305,77 +291,20 @@ impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : Cast
 
 impl<I, T, const N : usize> GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    pub fn values(&self) -> &[T] { &self.value }
-    pub fn values_mut(&mut self) -> &mut [T] { &mut self.value }
-    pub fn into_values(self) -> Vec<T> { self.value }
-
-    #[inline] pub fn is_inside(&self, pos : Vector<I,N>) -> bool { pos.is_inside(self.size) }
-    #[inline] pub fn is_outside(&self, pos : Vector<I,N>) -> bool { !self.is_inside(pos) }
-
-    #[inline] pub fn is_index_inside(&self, index : usize) -> bool { index < self.area().to_usize()  }
-    #[inline] pub fn is_index_outside(&self, index : usize) -> bool { !self.is_index_inside(index) }
-
-    pub fn position_to_index(&self, pos : Vector<I,N>) -> Option<usize> { Vector::<I,N>::to_index(pos, self.size) }
-    pub fn index_to_position(&self, index : usize) -> Option<Vector<I,N>> { Vector::<I,N>::from_index(index, self.size) }
-
-    pub fn get_index(&self, index : usize) -> Option<&T> { self.value.get(index) }
-    pub fn get_index_mut(&mut self, index : usize) -> Option<&mut T> { self.value.get_mut(index) }
-
-    pub fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.position_to_index(pos).and_then(|i| self.get_index(i)) }
-    pub fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
-
-    pub fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool
-    {
-        match (self.position_to_index(pos_a), self.position_to_index(pos_b))
-        {
-            (Some(a), Some(b)) => { self.value.swap(a, b); true }
-            _ => false
-        }
-    }
-
-    pub fn swap_index(&mut self, index_a : usize, index_b : usize) -> bool
-    {
-        if self.is_index_inside(index_a) && self.is_index_inside(index_b)
-        {
-            self.value.swap(index_a, index_b);
-            true
-        }else { false }
-    }
-
-    pub fn replace_index(&mut self, val : T, index : usize) -> Option<T> { self.get_index_mut(index).map(|v| std::mem::replace(v, val)) }
-    pub fn replace(&mut self, val : T, pos : Vector<I,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
-    
-    /// Do nothings if the index is outside the range
-    pub fn set_index(&mut self, val : T, idx : usize) -> &mut Self { self.get_index_mut(idx).map(|v| *v = val); self }
-    /// Do nothings if the index is outside the range
-    pub fn set(&mut self, val : T, pos : Vector<I,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
-
     /// map a function on each tile to create a new grid
     pub fn map<Z, F>(&self, f : F) -> GridOf<Z, N, I> where F : FnMut(&T) -> Z { GridOf { size: self.size, value: self.value.iter().map(f).collect() } }
     /// transform the current grid
     pub fn map_into<Z, F>(self, f : F) -> GridOf<Z, N, I> where F : FnMut(T) -> Z { GridOf { size: self.size, value: self.value.into_iter().map(f).collect() } }
 
     pub fn intersect_rect(&self, r : Rectangle<I,N>) -> Rectangle<I,N>  where Vector<I,N> : UnitArithmetic, I : PartialOrd { r.intersect_or_empty(self.rect()) }
-
-    pub fn sub_grid(&self, r : Rectangle<I, N>) -> Self where T : Clone
-    {
-        let r = self.intersect_rect(r);
-        Self::from_fn(r.size(), |p| self[p + r.pos].clone())
-    }
-
-    pub fn len(&self) -> usize { self.value.len() }
 }
+*/
 
-impl<I, T, const N : usize> have_len::HaveLen for GridOf<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<T, const N : usize, I> have_len::HaveLen for GridBase<T, N, I> 
+    where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 { 
-    fn len(&self) -> usize { self.values().len() }
+    fn len(&self) -> usize { self.len() }
 }
-
-
-
-
-
-    */
 
 
 #[cfg(test)]

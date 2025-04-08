@@ -7,6 +7,12 @@ pub trait ISliceMut<T, const N : usize, I> : ISlice<T,N,I> + IndexMut<Vector<I,N
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { &mut self[pos] }
 
     fn subslice_mut<'a>(&'a mut self, rect : Rectangle<I, N>) -> SliceMut<'a,T,N,I>;
+
+    fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool;
+
+    fn replace(&mut self, val : T, pos : Vector<I,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
+    /// Do nothings if the index is outside the range
+    fn set(&mut self, val : T, pos : Vector<I,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
 }
 
 
@@ -54,6 +60,12 @@ impl<'a, T, const N : usize, I> ISliceMut<T,N,I> for SliceMut<'a, T, N, I>
     fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.grid.get_mut(self.view.pos + pos) }
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { unsafe { self.grid.get_unchecked_mut(self.view.pos + pos) } }
     fn subslice_mut<'b>(&'b mut self, rect : Rectangle<I, N>) -> SliceMut<'b,T,N,I> { SliceMut::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    
+    fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool 
+    {
+        let offset = self.position();
+        self.grid.swap(pos_a + offset, pos_b + offset)
+    }
 }
 
 impl<'a, T, const N : usize, I> PartialEq for SliceMut<'a, T, N, I> 
