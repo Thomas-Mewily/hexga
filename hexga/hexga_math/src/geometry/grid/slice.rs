@@ -1,7 +1,7 @@
 use crate::*;
 
 /// A slice view to a [Grid]
-pub trait ISlice<T, const N : usize, I> : Index<Vector<I,N>> 
+pub trait ISlice<T, const N : usize, I> : Index<Vector<I,N>,Output = T>
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     /* 
@@ -38,12 +38,23 @@ pub trait ISlice<T, const N : usize, I> : Index<Vector<I,N>>
     #[inline] fn height(&self) -> I where Vector<I,N> : HaveY<I> { self.size_y() }
     /// Same as `.size_z()`
     #[inline] fn depth (&self) -> I where Vector<I,N> : HaveZ<I> { self.size_z() }
+
+    // Can't impl the trait [std::borrow::ToOwned] right now because the lifetime are impossible to express 
+    fn to_owned(&self) -> GridBase<T,N,I> where T : Clone
+    {
+        GridBase::from_fn(self.size(), |p| self[p].clone())
+    }
 }
 
+/* 
+pub struct SliceIter
+{
 
+}
+*/
 
 /// A slice inside a [Grid]
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub struct Slice<'a, T, const N : usize, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     grid : &'a GridBase<T,N,I>,

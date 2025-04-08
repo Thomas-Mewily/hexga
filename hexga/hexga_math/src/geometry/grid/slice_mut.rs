@@ -1,6 +1,6 @@
 use crate::*;
 
-pub trait ISliceMut<T, const N : usize, I> : ISlice<T,N,I> + IndexMut<Vector<I,N>>
+pub trait ISliceMut<T, const N : usize, I> : ISlice<T,N,I> + IndexMut<Vector<I,N>,Output=T>
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T>;

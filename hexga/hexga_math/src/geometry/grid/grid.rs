@@ -204,6 +204,9 @@ impl<I, T, const N : usize> GridBase<T, N, I> where I : IntegerIndex, usize : Ca
 
     pub fn size(&self) -> Vector<I,N> { self.size }
     pub fn len(&self) -> usize { self.value.len() }
+
+    pub fn as_slice<'a>(&'a self) -> grid::Slice<'a, T,N,I> { grid::Slice::from_grid(self) }
+    pub fn as_mut_slice<'a>(&'a mut self) -> grid::SliceMut<'a, T,N,I> { grid::SliceMut::from_grid(self) }
 }
 
 impl<T, const N : usize, I> ISlice<T,N,I> for GridBase<T, N, I> 
@@ -212,6 +215,12 @@ impl<T, const N : usize, I> ISlice<T,N,I> for GridBase<T, N, I>
     fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.get(pos) }
     fn size(&self) -> Vector<I,N> { self.size() }
     fn begin(&self) -> Vector<I,N> { zero() }
+}
+
+impl<T, const N : usize, I> ISliceMut<T,N,I> for GridBase<T, N, I> 
+    where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
+{
+    fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.get_mut(pos) }
 }
 
 impl<I, T, const N : usize> Index<usize> for GridBase<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
