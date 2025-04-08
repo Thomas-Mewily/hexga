@@ -57,12 +57,12 @@ macro_rules! impl_composite_types_and_methods_and_constants_for_internal_type
             )*
         }
 
-        impl<T $(, $($generic_params),* )?> $trait_name $(< $($generic_params),* >)? for $crate::rectangle::RectangleOf<T> 
+        impl<T $(, $($generic_params),* )?> $trait_name $(< $($generic_params),* >)? for $crate::rectangle::RectangleBase<T> 
             where 
             T : $trait_name $(< $($generic_params),* >)?
         {
             $(
-                type $type_name = $crate::rectangle::RectangleOf<T::$type_name>;
+                type $type_name = $crate::rectangle::RectangleBase<T::$type_name>;
             )*
             
             $(
@@ -73,7 +73,7 @@ macro_rules! impl_composite_types_and_methods_and_constants_for_internal_type
             )*
 
             $(
-                const $constant_name: Self = $crate::rectangle::RectangleOf::new(T::$constant_name, T::$constant_name);
+                const $constant_name: Self = $crate::rectangle::RectangleBase::new(T::$constant_name, T::$constant_name);
             )*
         }
 

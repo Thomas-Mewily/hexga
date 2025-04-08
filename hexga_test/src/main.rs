@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use hexga_math::{prelude::*, time::ToTime};
+use hexga_math::{grid::GridBase, prelude::*, time::ToTime};
 
 
 /*
@@ -18,7 +18,7 @@ fn main()
 {
 
 
-
+    //let x = Grid::<char>::new(point2(2, 4));
 
     let x = point2(1, 2);
     let v = &x;

@@ -1,14 +1,8 @@
 pub use crate::*;
 
-pub use crate::vector::*;
-
-pub use crate::grid::{Grid1,Grid2,Grid3,Grid4};
-
-pub use crate::rectangle::{Rect1, Rect2, Rect3, Rect4};
-pub use crate::rectangle::{rect1, rect2, rect3, rect4};
-
-pub use crate::rectangle::{Rect1P, Rect2P, Rect3P, Rect4P};
-pub use crate::rectangle::{rect1p, rect2p, rect3p, rect4p};
+pub use crate::vector::prelude::*;
+pub use crate::grid::prelude::*;
+pub use crate::rectangle::prelude::*;
 
 pub use crate::matrix::{Mat1, Mat2, Mat3, Mat4};
 pub use crate::matrix::{Mat1P, Mat2P, Mat3P, Mat4P};
