@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use hexga_math::{grid::GridBase, prelude::*, time::ToTime};
+use hexga_math::prelude::*;
 
 
 /*
@@ -17,7 +17,18 @@ use have_len::*;
 fn main() 
 {
 
+    let g = point2(2, 4).to_grid(|p| p.x + 10 * p.y);
 
+    for y in (0..g.size_y()).rev()
+    {
+        for x in 0..g.size_x()
+        {
+            print!("{:2} ", g[point2(x,y)]);
+        }
+        println!();
+    }
+
+    //g.subslice(g.rect().crop())
 
 
     /* 

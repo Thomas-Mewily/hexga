@@ -228,10 +228,16 @@ impl<T, const N : usize, I> ISlice<T,N,I> for GridBase<T, N, I>
 }
 
 impl<T, const N : usize, I> IRectangle<I, N> for GridBase<T, N, I> 
-    where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
+    where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>,
 {
     fn size(&self) -> Vector<I, N> { self.size }
     fn begin(&self) -> Vector<I,N> { zero() }
+    
+    /* 
+    fn crop (&self, begin_offset : Vector<I,N>, end_offset : Vector<I,N>) -> Self where Self : Clone {
+        self.as_slice().crop(begin_offset, end_offset).to_grid()
+    }
+    */
 }
 
 impl<T, const N : usize, I> ISliceMut<T,N,I> for GridBase<T, N, I> 

@@ -19,10 +19,7 @@ pub trait ISlice<T, const N : usize, I> : Index<Vector<I,N>,Output = T> + IRecta
     /// Clone this [Slice] into a [Grid]
     /// 
     /// Can't impl the trait [std::borrow::ToOwned] right now because the lifetime are impossible to express 
-    fn to_grid(&self) -> GridBase<T,N,I> where T : Clone
-    {
-        GridBase::from_fn(self.size(), |p| self[p].clone())
-    }
+    fn to_grid(&self) -> GridBase<T,N,I> where T : Clone { GridBase::from_fn(self.size(), |p| self[p].clone()) }
 
     fn subslice<'b>(&'b self, rect : Rectangle<I, N>) -> Slice<'b,T,N,I>;
     fn subgrid(&self, rect : Rectangle<I, N>) -> GridBase<T,N,I> where T : Clone { self.subslice(rect).to_grid() }

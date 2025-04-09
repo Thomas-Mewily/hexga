@@ -25,6 +25,8 @@ impl<T, const N : usize> Vector<T,N>
     pub fn iter(&self) -> impl Iterator<Item = &T> { self.array.iter() }
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> { self.array.iter_mut() }
     pub fn into_iter(self) -> impl Iterator<Item = T> { self.array.into_iter() }
+
+
 }
 
 impl_generic_array_like_with_op!(Vector);
@@ -178,6 +180,8 @@ impl<T, const N : usize> Vector<T, N>
         }
         Self::from_array(result)
     }
+
+    pub fn to_grid<F,U>(self, f : F) -> GridBase<U,N,T> where F : FnMut(Self) -> U { GridBase::from_fn(self, f) }
 }
 
 

@@ -1,5 +1,6 @@
 use super::*;
 
+pub use super::IRectangle;
 
 pub type Rectangle1<T> = Rectangle<T, 1>;
 pub const fn rectangle1<T>(pos_x: T, size_x: T) -> Rectangle1<T> { Rectangle1::new(Vector1::new(pos_x), Vector1::new(size_x)) }

@@ -165,6 +165,13 @@ impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
 {
     fn begin(&self) -> Vector<T,N> { self.pos  }
     fn size (&self) -> Vector<T,N> { self.size }
+
+    /* 
+    fn crop (&self, begin_offset : Vector<T,N>, end_negative_offset : Vector<T,N>) -> Self
+    {
+        self.intersect_or_empty(Rectangle::from_pos_to_pos(self.pos + begin_offset, self.size - end_negative_offset))
+    }
+    */
 }
  
 pub trait IRectangle<T, const N : usize> where T : Number
@@ -200,6 +207,7 @@ pub trait IRectangle<T, const N : usize> where T : Number
     fn max(&self) -> Vector<T,N> { self.end() }
 
     fn rect(&self) -> Rectangle<T, N> { Rectangle::new(self.begin(), self.size()) }
+    //fn crop (&self, begin_offset : Vector<T,N>, end_offset : Vector<T,N>) -> Self;
 }
 
 impl<T, const N : usize> Rectangle<T,N> where T : Copy
@@ -312,4 +320,21 @@ impl<T,const N : usize> IterIdx<T,N> for Rectangle<T,N> where T : Integer
 {
     type IterIdx = RectIter<T,N>;
     fn iter_idx(&self) -> Self::IterIdx { RectIter::new(self.pos, self.size.iter_idx()) }
+}
+
+
+#[cfg(test)]
+mod rect_test
+{
+    use super::*;
+
+    #[test]
+    fn crop_test() 
+    {
+        /* 
+        let rect = rect2p(0, 0, 10, 10);
+        let cropped = rect.crop(point2(1, 1), point2(2, 2));
+        assert_eq!(cropped, rect2p(1, 1, 8, 8));
+        */
+    }    
 }
