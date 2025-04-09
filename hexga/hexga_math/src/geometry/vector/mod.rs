@@ -51,6 +51,13 @@ impl<T,const N : usize> Vector<T,N>
     /// If any component is negative, return 0
     pub fn area(self) -> T where T : Number { self.iter().fold(T::ONE,|a, b| a * (*b).max_partial(T::ZERO)) }
     
+    // Index :
+    pub fn is_inside(self, size : Self) -> bool where T : Number
+    { 
+        self.all_with(&size, |a, m| *a >= T::ZERO && a < m)
+    }
+    pub fn is_outside(self, size : Self) -> bool where T : Number { !self.is_inside(size) }
+    
     /// Multiply each component
     /// The result can be negative
 
@@ -96,13 +103,6 @@ impl<T> IntegerIndex for T where T : Integer + CastTo<isize> + CastTo<usize>, us
 impl<T, const N : usize> Vector<T, N> 
     where T : IntegerIndex, usize : CastTo<T>, isize : CastTo<T>
 {
-    // Index :
-    pub fn is_inside(self, size : Self) -> bool
-    { 
-        self.all_with(&size, |a, m| *a >= T::ZERO && a < m)
-    }
-    pub fn is_outside(self, size : Self) -> bool { !self.is_inside(size) }
-
     pub fn to_index(self, size : Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_index_unchecked(size) }) }
     
     /// # Safety

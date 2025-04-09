@@ -224,10 +224,14 @@ impl<T, const N : usize, I> ISlice<T,N,I> for GridBase<T, N, I>
     fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { self.get_unchecked(pos) } }
 
-    fn size(&self) -> Vector<I,N> { self.size() }
-    fn begin(&self) -> Vector<I,N> { zero() }
     fn subslice<'a>(&'a self, rect : Rectangle<I, N>) -> Slice<'a,T,N,I> { Slice::new(self, rect) }
-    
+}
+
+impl<T, const N : usize, I> IRectangle<I, N> for GridBase<T, N, I> 
+    where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
+{
+    fn size(&self) -> Vector<I, N> { self.size }
+    fn begin(&self) -> Vector<I,N> { zero() }
 }
 
 impl<T, const N : usize, I> ISliceMut<T,N,I> for GridBase<T, N, I> 

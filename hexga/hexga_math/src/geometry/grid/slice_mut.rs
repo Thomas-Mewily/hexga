@@ -47,11 +47,16 @@ impl<'a, T, const N : usize, I> ISlice<T,N,I> for SliceMut<'a, T, N, I>
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
-    fn size(&self) -> Vector<I,N> { self.view.size() }
-    fn begin(&self) -> Vector<I,N> { self.view.pos }
-    fn subslice<'b>(&'b self, rect : Rectangle<I, N>) -> Slice<'b,T,N,I> { Slice::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
-    
     unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { self.grid.get_unchecked(pos) } }
+    
+    fn subslice<'b>(&'b self, rect : Rectangle<I, N>) -> Slice<'b,T,N,I> { Slice::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+}
+
+impl<'a, T, const N : usize, I> IRectangle<I,N> for SliceMut<'a, T, N, I> 
+    where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
+{
+    fn begin(&self) -> Vector<I,N> { self.view.begin() }
+    fn size (&self) -> Vector<I,N> { self.view.size()  }
 }
 
 impl<'a, T, const N : usize, I> ISliceMut<T,N,I> for SliceMut<'a, T, N, I> 

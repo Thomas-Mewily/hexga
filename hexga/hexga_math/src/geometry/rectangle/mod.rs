@@ -88,17 +88,13 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
     pub fn ana_value (&self) -> T where Vector<T,N> : HaveW<T> { self.pos.w() + self.size.w() }
     pub fn kata_value(&self) -> T where Vector<T,N> : HaveW<T> { self.pos.w() }
 
-    /// When Dimension is >= 1
-    pub fn width (&self) -> T where Vector<T,N> : HaveX<T> { self.size.x() }
-    /// When Dimension is >= 2
-    pub fn height(&self) -> T where Vector<T,N> : HaveY<T> { self.size.y() }
-    /// When Dimension is >= 3
-    pub fn depth (&self) -> T where Vector<T,N> : HaveZ<T> { self.size.z() }
+
+
+
 }
 
 impl<T,const N : usize> Rectangle<T,N> where T : Copy
 {
-    pub fn size(&self) -> Vector<T, N> { self.size }
     pub fn set_size(&mut self, size : Vector<T, N>) -> &mut Self { self.size = size; self }
     pub fn set_size_x(&mut self, x : T) -> &mut Self where Vector<T, N> : HaveX<T> { self.size.set_x(x); self }
     pub fn set_size_y(&mut self, y : T) -> &mut Self where Vector<T, N> : HaveY<T> { self.size.set_y(y); self }
@@ -165,7 +161,46 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : UnitArithmetic, T : U
     }
 }
 
+impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
+{
+    fn begin(&self) -> Vector<T,N> { self.pos  }
+    fn size (&self) -> Vector<T,N> { self.size }
+}
+ 
+pub trait IRectangle<T, const N : usize> where T : Number
+{
+    fn size(&self) -> Vector<T, N>;
 
+    #[inline] fn size_x(&self) -> T where Vector<T,N> : HaveX<T> { self.size().x() }
+    #[inline] fn size_y(&self) -> T where Vector<T,N> : HaveY<T> { self.size().y() }
+    #[inline] fn size_z(&self) -> T where Vector<T,N> : HaveZ<T> { self.size().z() }
+    #[inline] fn size_w(&self) -> T where Vector<T,N> : HaveW<T> { self.size().w() }
+
+    /// Same as `.size_x()`
+    fn width (&self) -> T where Vector<T,N> : HaveX<T> { self.size_x() }
+    /// Same as `.size_y()`
+    fn height(&self) -> T where Vector<T,N> : HaveY<T> { self.size_y() }
+    /// Same as `.size_z()`
+    fn depth (&self) -> T where Vector<T,N> : HaveZ<T> { self.size_z() }
+
+    fn area(&self) -> T where T : Number { self.size().area() }
+
+    fn is_inside(&self, pos : Vector<T,N>) -> bool { pos.is_inside(self.size()) }
+    fn is_outside(&self, pos : Vector<T,N>) -> bool { !self.is_inside(pos) }
+
+    /// same as `.begin()`
+    fn position(&self) -> Vector<T,N> { self.begin() }
+
+    fn begin(&self) -> Vector<T,N>;
+    fn end(&self) -> Vector<T,N> { self.begin() + self.size() }
+
+    /// same as `.begin()`
+    fn min(&self) -> Vector<T,N> { self.begin() }
+    /// same as `.end()`
+    fn max(&self) -> Vector<T,N> { self.end() }
+
+    fn rect(&self) -> Rectangle<T, N> { Rectangle::new(self.begin(), self.size()) }
+}
 
 impl<T, const N : usize> Rectangle<T,N> where T : Copy
 {
