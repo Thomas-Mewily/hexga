@@ -70,6 +70,11 @@ impl<'a, T, const N : usize, I> Slice<'a, T, N, I>
     {
         Self { grid, view }
     }
+
+    pub fn crop(&self, begin_offset : Vector<I,N>, end_negative_offset : Vector<I,N>) -> Self 
+    {
+        unsafe { Self::new_unchecked(self.grid, self.view.crop(begin_offset, end_negative_offset)) }
+    }
 }
 
 

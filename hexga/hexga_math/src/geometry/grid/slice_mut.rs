@@ -41,6 +41,11 @@ impl<'a, T, const N : usize, I> SliceMut<'a, T, N, I>
     {
         Self { grid, view }
     }
+
+    pub fn crop<'b>(&'b mut self, begin_offset : Vector<I,N>, end_negative_offset : Vector<I,N>) -> SliceMut<'b, T, N, I> where 'b: 'a 
+    {
+        unsafe { Self::new_unchecked(self.grid, self.view.crop(begin_offset, end_negative_offset)) }
+    }
 }
 
 impl<'a, T, const N : usize, I> ISlice<T,N,I> for SliceMut<'a, T, N, I> 

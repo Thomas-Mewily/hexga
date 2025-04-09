@@ -13,26 +13,18 @@ pub struct RectangleBase<T>
 }
 impl_fixed_array_like_with_op!(RectangleBase, 2);
 
-impl<T> Default for RectangleBase<T> where T : Zero + One
+impl<T> Default for RectangleBase<T> where T : Number
 {
     fn default() -> Self { Self::SIZED_ONE }
 }
 
-impl<T> RectangleBase<T>
-{
-    pub const fn new(pos: T, size: T) -> Self { Self { pos, size } }
-    pub const fn new_sized(size : T) -> Self where T : Zero { Self::new(T::ZERO, size) }
-
-    pub fn from_pos_to_pos(start_pos : T, end_pos : T) -> Self where T : Sub<T, Output = T> + Copy { Self::new(start_pos, end_pos - start_pos) }
-}
-
-impl<T> RectangleBase<T> where T : Zero + One
+impl<T> RectangleBase<T> where T : Number
 {
     pub const SIZED_ONE : Self = Self::new_sized(T::ONE);
 }
 
 // 2D :
-impl<T> Rectangle<T,2> where T : UnitArithmetic
+impl<T> Rectangle<T,2> where T : Number
 {
     pub fn down_left (&self) -> Vector<T,2> { self.pos }
     pub fn down_right(&self) -> Vector<T,2> where T : One + Mul<T,Output = T> + Add<T, Output=T> { self.pos + self.size * Vector::<T,2>::X }
@@ -108,7 +100,7 @@ impl<T,const N : usize> Rectangle<T,N> where T : Copy
     pub fn with_size_w(mut self, w : T) -> Self where Vector<T, N> : HaveW<T> { self.size.set_w(w); self }
 }
 
-impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : UnitArithmetic, T : UnitArithmetic
+impl<T,const N : usize> Rectangle<T,N> where T : Number
 {
     /// Check if a point inside the rectangle.
     /// 
@@ -134,20 +126,20 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : UnitArithmetic, T : U
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 10,  1)));
     /// 
     /// ```
-    pub fn is_inside(&self, point : Vector<T, N>) -> bool where T : PartialOrd
+    pub fn is_inside(&self, point : Vector<T, N>) -> bool
     {
         self.pos().all_with(&point, |a, c| c >= a) &&
         (self.pos + self.size).all_with(&point, |a, c| c <= a)
     }
     
-    pub fn clamp_vector(&self, vector : Vector<T, N>) -> Vector<T, N> where T : PartialOrd
+    pub fn clamp_vector(&self, vector : Vector<T, N>) -> Vector<T, N>
     { vector.max(self.min()).min(self.max()) }
     
-    pub fn intersect_or_empty(self, other : Self) -> Self where T : PartialOrd
+    pub fn intersect_or_empty(self, other : Self) -> Self
     {
         Self::from_pos_to_pos(self.clamp_vector(other.min()), self.clamp_vector(other.max()))
     }
-    pub fn intersect(self, other : Self) -> Option<Self> where T : PartialOrd
+    pub fn intersect(self, other : Self) -> Option<Self>
     {
         let intersect = Self::from_pos_to_pos(self.clamp_vector(other.min()), self.clamp_vector(other.max()));
         if intersect.size.is_zero()
@@ -161,17 +153,29 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : UnitArithmetic, T : U
     }
 }
 
+impl<T> RectangleBase<T> 
+{
+    /// assume the size is valid
+    pub const fn new(pos: T, size: T) -> Self { Self { pos, size } }
+    /// assume the size is valid
+    pub const fn new_sized(size : T) -> Self where T : Zero { Self::new(zero(), size) }
+}
+
+impl<T,const N : usize> Rectangle<T,N> where T : Number
+{
+    pub fn from_pos_to_pos(start_pos : Vector<T,N>, end_pos : Vector<T,N>) -> Self { Self::new(start_pos, (end_pos - start_pos).map_with(zero(), |a,b| a.max_partial(b))) }
+
+    /// return an empty rectangle if the cropped part is too big
+    pub fn crop(&self, begin_offset : Vector<T,N>, end_negative_offset : Vector<T,N>) -> Self 
+    {
+        Self::from_pos_to_pos(self.min() + begin_offset, self.max() - end_negative_offset)
+    }
+}
+
 impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
 {
     fn begin(&self) -> Vector<T,N> { self.pos  }
     fn size (&self) -> Vector<T,N> { self.size }
-
-    /* 
-    fn crop (&self, begin_offset : Vector<T,N>, end_negative_offset : Vector<T,N>) -> Self
-    {
-        self.intersect_or_empty(Rectangle::from_pos_to_pos(self.pos + begin_offset, self.size - end_negative_offset))
-    }
-    */
 }
  
 pub trait IRectangle<T, const N : usize> where T : Number
@@ -190,7 +194,7 @@ pub trait IRectangle<T, const N : usize> where T : Number
     /// Same as `.size_z()`
     fn depth (&self) -> T where Vector<T,N> : HaveZ<T> { self.size_z() }
 
-    fn area(&self) -> T where T : Number { self.size().area() }
+    fn area(&self) -> T { self.size().area() }
 
     fn is_inside(&self, pos : Vector<T,N>) -> bool { pos.is_inside(self.size()) }
     fn is_outside(&self, pos : Vector<T,N>) -> bool { !self.is_inside(pos) }
@@ -207,15 +211,6 @@ pub trait IRectangle<T, const N : usize> where T : Number
     fn max(&self) -> Vector<T,N> { self.end() }
 
     fn rect(&self) -> Rectangle<T, N> { Rectangle::new(self.begin(), self.size()) }
-    //fn crop (&self, begin_offset : Vector<T,N>, end_offset : Vector<T,N>) -> Self;
-}
-
-impl<T, const N : usize> Rectangle<T,N> where T : Copy
-{
-    pub fn area(&self) -> T where T : Number { self.size.area() }
-
-    pub fn min(&self) -> Vector<T, N> { self.pos }
-    pub fn max(&self) -> Vector<T, N> where Vector<T, N> : Add<Vector<T, N>,Output = Vector<T, N>> { self.pos + self.size }
 }
 
 /// Iter over all idx inside a rectangle
@@ -250,7 +245,7 @@ impl<T, const N : usize> Position<T, N> for Rectangle<T,N> where T : Copy
     }
 }
 
-impl<T,const N : usize> Lerpable for Rectangle<T,N> where Vector<T,N> : Lerpable
+impl<T,const N : usize> Lerpable for Rectangle<T,N> where T : Number, Vector<T,N> : Lerpable
 {
     fn lerp_unchecked(self, dest : Self, coef : float) -> Self { Self::new(self.pos.lerp(dest.pos, coef), self.size.lerp(dest.size, coef)) }
 }
@@ -329,12 +324,34 @@ mod rect_test
     use super::*;
 
     #[test]
-    fn crop_test() 
+    fn crop_normal() 
     {
-        /* 
         let rect = rect2p(0, 0, 10, 10);
         let cropped = rect.crop(point2(1, 1), point2(2, 2));
-        assert_eq!(cropped, rect2p(1, 1, 8, 8));
-        */
-    }    
+        assert_eq!(cropped, rect2p(1, 1, 7, 7));
+    }
+
+    #[test]
+    fn crop_to_much() 
+    {
+        let rect = rect2p(0, 0, 10, 10);
+        let cropped = rect.crop(point2(0, 0), point2(20, 20));
+        assert_eq!(cropped, zero());
+    }
+
+    #[test]
+    fn crop_to_much_2() 
+    {
+        let rect = rect2p(0, 0, 10, 10);
+        let cropped = rect.crop(point2(20, 20), point2(0, 0));
+        assert_eq!(cropped, rect2p(20, 20, 0, 0));
+    }
+
+    #[test]
+    fn crop_to_much_3() 
+    {
+        let rect = rect2p(0, 0, 10, 10);
+        let cropped = rect.crop(point2(20, 20), point2(20, 20));
+        assert_eq!(cropped, rect2p(20, 20, 0, 0));
+    }
 }

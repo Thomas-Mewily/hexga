@@ -216,6 +216,8 @@ impl<I, T, const N : usize> GridBase<T, N, I> where I : IntegerIndex, usize : Ca
 
     pub fn as_slice<'a>(&'a self) -> grid::Slice<'a, T,N,I> { grid::Slice::from_grid(self) }
     pub fn as_mut_slice<'a>(&'a mut self) -> grid::SliceMut<'a, T,N,I> { grid::SliceMut::from_grid(self) }
+
+    pub fn crop(&self, begin_offset : Vector<I,N>, end_negative_offset : Vector<I,N>) -> Self where T : Clone { self.as_slice().crop(begin_offset, end_negative_offset).to_grid() }
 }
 
 impl<T, const N : usize, I> ISlice<T,N,I> for GridBase<T, N, I> 
@@ -232,12 +234,6 @@ impl<T, const N : usize, I> IRectangle<I, N> for GridBase<T, N, I>
 {
     fn size(&self) -> Vector<I, N> { self.size }
     fn begin(&self) -> Vector<I,N> { zero() }
-    
-    /* 
-    fn crop (&self, begin_offset : Vector<I,N>, end_offset : Vector<I,N>) -> Self where Self : Clone {
-        self.as_slice().crop(begin_offset, end_offset).to_grid()
-    }
-    */
 }
 
 impl<T, const N : usize, I> ISliceMut<T,N,I> for GridBase<T, N, I> 
