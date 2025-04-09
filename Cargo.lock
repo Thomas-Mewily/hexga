@@ -162,7 +162,6 @@ version = "0.1.0"
 dependencies = [
  "have_len",
  "hexga_math",
- "hexga_number",
 ]
 
 [[package]]

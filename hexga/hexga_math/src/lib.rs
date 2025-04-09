@@ -11,13 +11,14 @@ use std::cmp::Ordering;
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
-pub use hexga_typedef;
-pub use hexga_array;
-pub use hexga_number;
-
+pub use hexga_typedef as typedef;
 pub use hexga_typedef::*;
-use hexga_array::*;
+
+pub use hexga_number  as number;
 use hexga_number::*;
+
+pub use hexga_array::*;
+use hexga_array::*;
 
 pub mod prelude;
 use prelude::*;

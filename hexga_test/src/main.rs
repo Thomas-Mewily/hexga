@@ -3,10 +3,9 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use hexga_math::prelude::*;
-
 
 /*
 use hexga_generational::gen_vec::GenVec;
@@ -14,11 +13,8 @@ use hexga_math::*;
 use have_len::*;
 */
 
-fn main() 
+fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 {
-
-    let g = point2(2, 4).to_grid(|p| p.x + 10 * p.y);
-
     for y in (0..g.size_y()).rev()
     {
         for x in 0..g.size_x()
@@ -27,6 +23,23 @@ fn main()
         }
         println!();
     }
+    println!();
+}
+
+fn main() 
+{
+
+    let g = point2(2, 4).to_grid(|p| p.x + 10 * p.y);
+
+    dbg_mat(&g);
+    dbg_mat(&g.crop(zero(), one()));
+
+    dbg_mat(&g.crop(one(), zero()));
+
+
+
+    
+
 
     //g.subslice(g.rect().crop())
 
