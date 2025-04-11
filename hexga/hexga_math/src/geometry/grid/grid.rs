@@ -214,19 +214,19 @@ impl<I, T, const N : usize> GridBase<T, N, I> where I : IntegerIndex, usize : Ca
     pub fn size(&self) -> Vector<I,N> { self.size }
     pub fn len(&self) -> usize { self.value.len() }
 
-    pub fn as_slice<'a>(&'a self) -> grid::Slice<'a, T,N,I> { grid::Slice::from_grid(self) }
-    pub fn as_mut_slice<'a>(&'a mut self) -> grid::SliceMut<'a, T,N,I> { grid::SliceMut::from_grid(self) }
+    pub fn view<'a>(&'a self) -> grid::GridView<'a, T,N,I> { grid::GridView::from_grid(self) }
+    pub fn view_mut<'a>(&'a mut self) -> grid::GridViewMut<'a, T,N,I> { grid::GridViewMut::from_grid(self) }
 
-    pub fn crop(&self, begin_offset : Vector<I,N>, end_negative_offset : Vector<I,N>) -> Self where T : Clone { self.as_slice().crop(begin_offset, end_negative_offset).to_grid() }
+    pub fn crop_margin(&self, margin_start : Vector<I,N>, margin_end : Vector<I,N>) -> Self where T : Clone { self.view().crop_margin(margin_start, margin_end).to_grid() }
 }
 
-impl<T, const N : usize, I> ISlice<T,N,I> for GridBase<T, N, I> 
+impl<T, const N : usize, I> IGridView<T,N,I> for GridBase<T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { self.get_unchecked(pos) } }
 
-    fn subslice<'a>(&'a self, rect : Rectangle<I, N>) -> Slice<'a,T,N,I> { Slice::new(self, rect) }
+    fn subview<'a>(&'a self, rect : Rectangle<I, N>) -> GridView<'a,T,N,I> { GridView::new(self, rect) }
 }
 
 impl<T, const N : usize, I> IRectangle<I, N> for GridBase<T, N, I> 
@@ -236,13 +236,13 @@ impl<T, const N : usize, I> IRectangle<I, N> for GridBase<T, N, I>
     fn begin(&self) -> Vector<I,N> { zero() }
 }
 
-impl<T, const N : usize, I> ISliceMut<T,N,I> for GridBase<T, N, I> 
+impl<T, const N : usize, I> IGridViewMut<T,N,I> for GridBase<T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.get_mut(pos) }
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { unsafe { self.get_unchecked_mut(pos) } }
 
-    fn subslice_mut<'a>(&'a mut self, rect : Rectangle<I, N>) -> SliceMut<'a,T,N,I> { SliceMut::new(self, rect) }
+    fn subview_mut<'a>(&'a mut self, rect : Rectangle<I, N>) -> GridViewMut<'a,T,N,I> { GridViewMut::new(self, rect) }
     
     fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool { self.swap(pos_a, pos_b) }
     fn replace(&mut self, val : T, pos : Vector<I,N>) ->  Option<T> { self.replace(val, pos) }
@@ -390,7 +390,7 @@ mod grid_test
         let size = point2(2, 3);
         let grid = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
 
-        assert_eq!(grid.size(), grid.as_slice().size());
+        assert_eq!(grid.size(), grid.view().size());
 
         let subgrid = grid.subgrid(size.to_rect());
 
@@ -418,18 +418,18 @@ mod grid_test
         let mut grid2 = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
 
         assert_eq!(grid1, grid2);
-        assert_eq!(grid1.as_slice(), grid2.as_slice());
-        assert_eq!(grid1.as_mut_slice(), grid2.as_mut_slice());
+        assert_eq!(grid1.view(), grid2.view());
+        assert_eq!(grid1.view_mut(), grid2.view_mut());
 
         grid2[point2(1, 0)] = 42;
 
         assert_ne!(grid1, grid2);
-        assert_ne!(grid1.as_slice(), grid2.as_slice());
-        assert_ne!(grid1.as_mut_slice(), grid2.as_mut_slice());
+        assert_ne!(grid1.view(), grid2.view());
+        assert_ne!(grid1.view_mut(), grid2.view_mut());
 
         let rect = rect2p(0, 0, 1, size.y);
-        assert_eq!(grid1.as_slice().subslice(rect), grid2.as_slice().subslice(rect));
-        assert_eq!(grid1.as_mut_slice().subslice(rect), grid2.as_mut_slice().subslice(rect));
-        assert_eq!(grid1.as_mut_slice().subslice_mut(rect), grid2.as_mut_slice().subslice_mut(rect));
+        assert_eq!(grid1.view().subview(rect), grid2.view().subview(rect));
+        assert_eq!(grid1.view_mut().subview(rect), grid2.view_mut().subview(rect));
+        assert_eq!(grid1.view_mut().subview_mut(rect), grid2.view_mut().subview_mut(rect));
     }
 }

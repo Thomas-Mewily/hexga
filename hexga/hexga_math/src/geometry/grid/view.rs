@@ -2,7 +2,7 @@ use crate::*;
 
 /// A slice view to a [Grid]
 //pub trait ISlice<'a, T:'a, const N : usize, I> : Index<Vector<I,N>,Output = T> + IntoIterator<Item = (Vector<I,N>, &'a T)>
-pub trait ISlice<T, const N : usize, I> : Index<Vector<I,N>,Output = T> + IRectangle<I, N>
+pub trait IGridView<T, const N : usize, I> : Index<Vector<I,N>,Output = T> + IRectangle<I, N>
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     /* 
@@ -21,26 +21,25 @@ pub trait ISlice<T, const N : usize, I> : Index<Vector<I,N>,Output = T> + IRecta
     /// Can't impl the trait [std::borrow::ToOwned] right now because the lifetime are impossible to express 
     fn to_grid(&self) -> GridBase<T,N,I> where T : Clone { GridBase::from_fn(self.size(), |p| self[p].clone()) }
 
-    fn subslice<'b>(&'b self, rect : Rectangle<I, N>) -> Slice<'b,T,N,I>;
-    fn subgrid(&self, rect : Rectangle<I, N>) -> GridBase<T,N,I> where T : Clone { self.subslice(rect).to_grid() }
-}
+    fn subview<'b>(&'b self, rect : Rectangle<I, N>) -> GridView<'b,T,N,I>;
+    fn subgrid(&self, rect : Rectangle<I, N>) -> GridBase<T,N,I> where T : Clone { self.subview(rect).to_grid() }
 
-/* 
-pub struct SliceIter
-{
-
+    fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<I,N>, &'a T)> where T: 'a
+    {
+        let r = self.rect(); 
+        r.iter_idx().map(|p| (p, unsafe { self.get_unchecked(p) }))
+    }
 }
-*/
 
 /// A slice inside a [Grid]
 #[derive(Clone, Debug, Copy)]
-pub struct Slice<'a, T, const N : usize, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+pub struct GridView<'a, T, const N : usize, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
     grid : &'a GridBase<T,N,I>,
     view : Rectangle<I,N>,
 }
 
-impl<'a, T, const N : usize, I> PartialEq for Slice<'a, T, N, I> 
+impl<'a, T, const N : usize, I> PartialEq for GridView<'a, T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>,
     T : PartialEq
 {
@@ -50,11 +49,11 @@ impl<'a, T, const N : usize, I> PartialEq for Slice<'a, T, N, I>
     }
 }
 
-impl<'a, T, const N : usize, I> Eq for Slice<'a, T, N, I> 
+impl<'a, T, const N : usize, I> Eq for GridView<'a, T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>, 
     T : Eq { }
 
-impl<'a, T, const N : usize, I> Slice<'a, T, N, I> 
+impl<'a, T, const N : usize, I> GridView<'a, T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     pub fn from_grid(grid : &'a GridBase<T,N,I>) -> Self 
@@ -71,30 +70,31 @@ impl<'a, T, const N : usize, I> Slice<'a, T, N, I>
         Self { grid, view }
     }
 
-    pub fn crop(&self, begin_offset : Vector<I,N>, end_negative_offset : Vector<I,N>) -> Self 
+    /// Can't access the outside rectangle
+    pub fn crop_margin(&self, margin_start : Vector<I,N>, margin_end : Vector<I,N>) -> Self 
     {
-        unsafe { Self::new_unchecked(self.grid, self.view.crop(begin_offset, end_negative_offset)) }
+        unsafe { Self::new_unchecked(self.grid, self.view.crop_margin(margin_start, margin_end)) }
     }
 }
 
 
-impl<'a, T, const N : usize, I> ISlice<T,N,I> for Slice<'a, T, N, I> 
+impl<'a, T, const N : usize, I> IGridView<T,N,I> for GridView<'a, T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
     unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
 
-    fn subslice<'b>(&'b self, rect : Rectangle<I, N>) -> Slice<'b,T,N,I> { Slice::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    fn subview<'b>(&'b self, rect : Rectangle<I, N>) -> GridView<'b,T,N,I> { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
 }
 
-impl<'a, T, const N : usize, I> IRectangle<I,N> for Slice<'a, T, N, I> 
+impl<'a, T, const N : usize, I> IRectangle<I,N> for GridView<'a, T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     fn begin(&self) -> Vector<I,N> { self.view.begin() }
     fn size (&self) -> Vector<I,N> { self.view.size()  }
 }
 
-impl<'a, T, const N : usize, I> Index<Vector<I,N>> for Slice<'a, T, N, I> 
+impl<'a, T, const N : usize, I> Index<Vector<I,N>> for GridView<'a, T, N, I> 
     where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I> 
 {
     type Output=T;

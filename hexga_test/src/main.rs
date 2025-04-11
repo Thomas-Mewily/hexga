@@ -28,13 +28,23 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 
 fn main() 
 {
+    /* 
 
     let g = point2(2, 4).to_grid(|p| p.x + 10 * p.y);
 
     dbg_mat(&g);
-    dbg_mat(&g.crop(zero(), one()));
+    dbg_mat(&g.crop_margin(zero(), one()));
 
-    dbg_mat(&g.crop(one(), zero()));
+    dbg_mat(&g.crop_margin(one(), zero()));
+    dbg!(rect2p(5,5,10,10).crop_margin_uncheck(100.splat2(), 100.splat2()));
+*/
+
+    let a = rect2p(5,5,10,10);
+    let b = rect2p(5,5,10,10).crop_margin_uncheck(-1.splat2(), zero());
+    dbg!(a);
+    dbg!(b);
+    assert_eq!(a, b);
+
 
 
 

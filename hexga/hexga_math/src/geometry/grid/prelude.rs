@@ -12,4 +12,4 @@ pub type Iter<'a, T, const N : usize>  = grid::Iter<'a, T, N, int>;
 pub type IterMut<'a, T, const N : usize>  = grid::IterMut<'a, T, N, int>;
 pub type IntoIter<T, const N : usize>  = grid::IntoIter<T, N, int>;
 
-pub use super::{Slice,SliceMut,ISlice,ISliceMut};
+pub use super::{GridView,GridViewMut,IGridView,IGridViewMut};

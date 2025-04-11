@@ -137,11 +137,11 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     
     pub fn intersect_or_empty(self, other : Self) -> Self
     {
-        Self::from_pos_to_pos(self.clamp_vector(other.min()), self.clamp_vector(other.max()))
+        Self::from_pos_to_pos(self.min().max(other.pos), self.max().min(other.max()))
     }
     pub fn intersect(self, other : Self) -> Option<Self>
     {
-        let intersect = Self::from_pos_to_pos(self.clamp_vector(other.min()), self.clamp_vector(other.max()));
+        let intersect = self.intersect_or_empty(other);
         if intersect.size.is_zero()
         {
             Some(intersect)
@@ -165,11 +165,42 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
 {
     pub fn from_pos_to_pos(start_pos : Vector<T,N>, end_pos : Vector<T,N>) -> Self { Self::new(start_pos, (end_pos - start_pos).map_with(zero(), |a,b| a.max_partial(b))) }
 
-    /// return an empty rectangle if the cropped part is too big
-    pub fn crop(&self, begin_offset : Vector<T,N>, end_negative_offset : Vector<T,N>) -> Self 
+    /// Can access the outside rectangle
+    /// 
+    /// ```rust
+    /// use hexga_math::prelude::*;
+    /// 
+    /// assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
+    /// 
+    /// // Can go outside
+    /// assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(-1.splat2(), zero()), rect2p(4,4,11,11));
+    /// ```
+    pub fn crop_margin_uncheck(&self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Self 
     {
-        Self::from_pos_to_pos(self.min() + begin_offset, self.max() - end_negative_offset)
+        Self::new(self.pos + margin_start, self.size - margin_start - margin_end)
     }
+
+    /// Can't access the outside rectangle
+    /// Return an empty rectangle if the cropped part is too big
+    /// 
+    /// ```rust
+    /// use hexga_math::prelude::*;
+    /// 
+    /// assert_eq!(rect2p(5,5,10,10).crop_margin(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
+    /// 
+    /// // Can't go outside
+    /// assert_eq!(rect2p(5,5,10,10).crop_margin(-1.splat2(), zero()), rect2p(5,5,10,10));
+    /// ```
+    pub fn crop_margin(&self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Self 
+    {
+        self.crop_margin_uncheck(margin_start, margin_end).intersect_or_empty(*self)
+    }
+
+    /// Can access the outside rectangle
+    pub fn crop_uncheck(&self, subrect_relative : Self) -> Self { subrect_relative.moved_by(self.pos) }
+
+    /// Can't access the outside rectangle
+    pub fn crop(&self, subrect_relative : Self) -> Self { self.intersect_or_empty(self.crop_uncheck(subrect_relative)) }
 }
 
 impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
@@ -323,11 +354,37 @@ mod rect_test
 {
     use super::*;
 
+
+    #[test]
+    fn crop_margin_uncheck() 
+    {
+        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
+
+        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(2.splat2(), zero()), rect2p(7,7,8,8));
+        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(zero(), 2.splat2()), rect2p(5,5,8,8));
+
+        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(-1.splat2(), zero()), rect2p(4,4,11,11));
+        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(zero(), -1.splat2()), rect2p(5,5,11,11));
+    }
+
+    
+    #[test]
+    fn crop_margin() 
+    {
+        assert_eq!(rect2p(5,5,10,10).crop_margin(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
+
+        assert_eq!(rect2p(5,5,10,10).crop_margin(2.splat2(), zero()), rect2p(7,7,8,8));
+        assert_eq!(rect2p(5,5,10,10).crop_margin(zero(), 2.splat2()), rect2p(5,5,8,8));
+
+        assert_eq!(rect2p(5,5,10,10).crop_margin(-1.splat2(), zero()), rect2p(5,5,10,10));
+        assert_eq!(rect2p(5,5,10,10).crop_margin(zero(), -1.splat2()), rect2p(5,5,10,10));
+    }
+
     #[test]
     fn crop_normal() 
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop(point2(1, 1), point2(2, 2));
+        let cropped = rect.crop_margin(point2(1, 1), point2(2, 2));
         assert_eq!(cropped, rect2p(1, 1, 7, 7));
     }
 
@@ -335,7 +392,7 @@ mod rect_test
     fn crop_to_much() 
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop(point2(0, 0), point2(20, 20));
+        let cropped = rect.crop_margin(point2(0, 0), point2(20, 20));
         assert_eq!(cropped, zero());
     }
 
@@ -343,7 +400,7 @@ mod rect_test
     fn crop_to_much_2() 
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop(point2(20, 20), point2(0, 0));
+        let cropped = rect.crop_margin(point2(20, 20), point2(0, 0));
         assert_eq!(cropped, rect2p(20, 20, 0, 0));
     }
 
@@ -351,7 +408,7 @@ mod rect_test
     fn crop_to_much_3() 
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop(point2(20, 20), point2(20, 20));
+        let cropped = rect.crop_margin(point2(20, 20), point2(20, 20));
         assert_eq!(cropped, rect2p(20, 20, 0, 0));
     }
 }

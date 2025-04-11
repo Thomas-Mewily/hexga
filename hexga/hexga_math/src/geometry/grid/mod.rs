@@ -5,9 +5,9 @@ pub mod prelude;
 mod grid;
 pub use grid::*;
 
-mod slice;
-pub use slice::*;
+mod view;
+pub use view::*;
 
-mod slice_mut;
-pub use slice_mut::*;
+mod view_mut;
+pub use view_mut::*;
 
