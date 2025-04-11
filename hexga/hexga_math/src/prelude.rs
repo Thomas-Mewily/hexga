@@ -10,10 +10,8 @@ pub use crate::{Position,RotationX,RotationY,RotationZ};
 
 pub use crate::typedef::*;
 
-pub use crate::graphics::*;
+pub use crate::graphics::prelude;
 
 pub use crate::core::*;
 
-
 pub use crate::{time::{Time,ToTime},angle::{Angle,ToAngle}};
-

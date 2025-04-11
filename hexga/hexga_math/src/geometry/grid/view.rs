@@ -16,13 +16,12 @@ pub trait IGridView<T, Idx, const N : usize> : Index<Vector<Idx,N>,Output = T> +
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T>;
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { &self[pos] }
 
-    /// Clone this [Slice] into a [Grid]
-    /// 
-    /// Can't impl the trait [std::borrow::ToOwned] right now because the lifetime are impossible to express 
-    fn to_grid(&self) -> GridBase<T,Idx,N> where T : Clone { GridBase::from_fn(self.size(), |p| self[p].clone()) }
+    type ToGrid;
+    fn to_grid(self) -> Self::ToGrid where T : Clone;
 
-    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> GridView<'b,T,Idx,N>;
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> GridBase<T,Idx,N> where T : Clone { self.subview(rect).to_grid() }
+    type SubView<'b> where Self: 'b;
+    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone;
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Self : Sized;
 
     fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<Idx,N>, &'a T)> where T: 'a
     {
@@ -32,7 +31,7 @@ pub trait IGridView<T, Idx, const N : usize> : Index<Vector<Idx,N>,Output = T> +
 }
 
 /// A slice inside a [Grid]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, Hash)]
 pub struct GridView<'a, T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
     grid : &'a GridBase<T,Idx,N>,
@@ -65,7 +64,7 @@ impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N>
         let view = grid.rect().intersect_or_empty(view);
         Self { grid, view }
     }
-    pub unsafe fn new_unchecked(grid : &'a GridBase<T,Idx,N>, view : Rectangle<Idx,N>) -> Self 
+    pub const unsafe fn new_unchecked(grid : &'a GridBase<T,Idx,N>, view : Rectangle<Idx,N>) -> Self 
     {
         Self { grid, view }
     }
@@ -84,7 +83,12 @@ impl<'a, T, Idx, const N : usize> IGridView<T,Idx,N> for GridView<'a, T, Idx, N>
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
 
-    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> GridView<'b,T,Idx,N> { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    type ToGrid=GridBase<T,Idx,N>;
+    fn to_grid(self) -> Self::ToGrid where T : Clone { GridBase::from_fn(self.size(), |p| self[p].clone()) }
+    
+    type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
+    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Self : Sized { self.subview(rect).to_grid() }
 }
 
 impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, T, Idx, N> 

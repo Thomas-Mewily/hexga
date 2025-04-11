@@ -2,6 +2,6 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
-use hexga_math::prelude::*;
+// use hexga_math::prelude::*;
 
 //pub type Image = GridParam

@@ -102,8 +102,8 @@ impl<T,const N : usize> Vector<T,N>
 pub trait IntegerIndex : Integer + CastTo<isize> + CastTo<usize> where usize : CastTo<Self>, isize : CastTo<Self> {}
 impl<T> IntegerIndex for T where T : Integer + CastTo<isize> + CastTo<usize>, usize : CastTo<Self>, isize : CastTo<Self> {}
 
-impl<T, const N : usize> Vector<T, N> 
-    where T : IntegerIndex, usize : CastTo<T>, isize : CastTo<T>
+impl<Idx, const N : usize> Vector<Idx, N> 
+    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
     pub fn to_index(self, size : Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_index_unchecked(size) }) }
     
@@ -121,7 +121,7 @@ impl<T, const N : usize> Vector<T, N>
     /// ```
     pub unsafe fn to_index_unchecked(self, size : Self) -> usize 
     {
-        debug_assert!(size.all(|v| *v >= T::ZERO));
+        debug_assert!(size.all(|v| *v >= Idx::ZERO));
 
         let mut index_1d : usize = 0;
         let mut area_cumulative : usize = 1;
@@ -129,8 +129,8 @@ impl<T, const N : usize> Vector<T, N>
         let mut i = 0;
         while i < N
         {
-            let current_axis_len : usize = <T as CastToComposite<usize>>::cast_to(size[i]);
-            let current_value    : usize = <T as CastToComposite<usize>>::cast_to(self[i]);
+            let current_axis_len : usize = <Idx as CastToComposite<usize>>::cast_to(size[i]);
+            let current_value    : usize = <Idx as CastToComposite<usize>>::cast_to(self[i]);
             
             index_1d          += current_value * area_cumulative;
             area_cumulative *= current_axis_len;
@@ -141,7 +141,7 @@ impl<T, const N : usize> Vector<T, N>
 
     pub fn from_index(index : usize, size : Self) -> Option<Self>
     {
-        let area : usize = <T as CastToComposite<usize>>::cast_to(size.area());
+        let area : usize = <Idx as CastToComposite<usize>>::cast_to(size.area());
         (index < area).then(|| unsafe { Self::from_index_unchecked(index, size) }) 
     }
 
@@ -165,15 +165,15 @@ impl<T, const N : usize> Vector<T, N>
     /// ```
     pub unsafe fn from_index_unchecked(index : usize, size : Self) -> Self
     {
-        debug_assert!(size.all(|v| *v >= T::ZERO));
+        debug_assert!(size.all(|v| *v >= Idx::ZERO));
 
-        let mut result = [T::ZERO; N];
+        let mut result = [Idx::ZERO; N];
         let mut area_cumulative = usize::ONE;
 
         let mut i = 0;
         while i < N 
         {
-            let current_axis_len : usize = <T as CastToComposite<usize>>::cast_to(size[i]);
+            let current_axis_len : usize = <Idx as CastToComposite<usize>>::cast_to(size[i]);
             result[i] = ((index / area_cumulative) % current_axis_len).cast_to();
             area_cumulative *= current_axis_len;
             i += 1;
@@ -181,7 +181,7 @@ impl<T, const N : usize> Vector<T, N>
         Self::from_array(result)
     }
 
-    pub fn to_grid<F,U>(self, f : F) -> GridBase<U,T,N> where F : FnMut(Self) -> U { GridBase::from_fn(self, f) }
+    pub fn to_grid<F,U>(self, f : F) -> GridBase<U,Idx,N> where F : FnMut(Self) -> U { GridBase::from_fn(self, f) }
 }
 
 

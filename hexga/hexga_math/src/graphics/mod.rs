@@ -6,3 +6,5 @@ pub use color_hsla::*;
 
 mod icolor;
 pub use icolor::*;
+
+pub mod prelude;

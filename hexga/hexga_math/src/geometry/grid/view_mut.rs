@@ -6,6 +6,7 @@ pub trait IGridViewMut<T, Idx, const N : usize> : IGridView<T,Idx,N> + IndexMut<
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T>;
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { &mut self[pos] }
 
+    type SubViewMut<'b> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> GridViewMut<'a,T,Idx,N>;
 
     fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool;
@@ -32,7 +33,7 @@ pub trait IGridViewMut<T, Idx, const N : usize> : IGridView<T,Idx,N> + IndexMut<
 
 
 /// A mutable slice inside a [Grid]
-#[derive(Debug)]
+#[derive(Debug, Hash)]
 pub struct GridViewMut<'a, T, Idx,const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
     grid : &'a mut GridBase<T,Idx,N>,
@@ -52,7 +53,7 @@ impl<'a, T, Idx, const N : usize> GridViewMut<'a, T, Idx,N>
         let view = grid.rect().intersect_or_empty(view);
         Self { grid, view }
     }
-    pub unsafe fn new_unchecked(grid : &'a mut GridBase<T,Idx,N>, view : Rectangle<Idx,N>) -> Self 
+    pub const unsafe fn new_unchecked(grid : &'a mut GridBase<T,Idx,N>, view : Rectangle<Idx,N>) -> Self 
     {
         Self { grid, view }
     }
@@ -68,7 +69,12 @@ impl<'a, T, Idx, const N : usize> IGridView<T,Idx,N> for GridViewMut<'a, T, Idx,
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(pos) } }
     
-    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> GridView<'b,T,Idx,N> { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    type ToGrid=GridBase<T,Idx,N>;
+    fn to_grid(self) -> Self::ToGrid where T : Clone { GridBase::from_fn(self.size(), |p| self[p].clone()) }
+    
+    type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
+    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Self : Sized { self.subview(rect).to_grid() }
 }
 
 impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridViewMut<'a, T, Idx,N> 
@@ -83,13 +89,15 @@ impl<'a, T, Idx, const N : usize> IGridViewMut<T,Idx,N> for GridViewMut<'a, T, I
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.grid.get_mut(self.view.pos + pos) }
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { unsafe { self.grid.get_unchecked_mut(self.view.pos + pos) } }
-    fn subview_mut<'b>(&'b mut self, rect : Rectangle<Idx, N>) -> GridViewMut<'b,T,Idx,N> { GridViewMut::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
     
     fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool 
     {
         let offset = self.position();
         self.grid.swap(pos_a + offset, pos_b + offset)
     }
+    
+    type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
+    fn subview_mut<'b>(&'b mut self, rect : Rectangle<Idx, N>) -> GridViewMut<'b,T,Idx,N> { GridViewMut::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
 }
 
 impl<'a, T, Idx, const N : usize> PartialEq for GridViewMut<'a, T, Idx,N> 

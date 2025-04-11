@@ -211,7 +211,7 @@ impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
  
 pub trait IRectangle<T, const N : usize> where T : Number
 {
-    fn size(&self) -> Vector<T, N>;
+    fn size(&self) -> Vector<T,N>;
 
     #[inline] fn size_x(&self) -> T where Vector<T,N> : HaveX<T> { self.size().x() }
     #[inline] fn size_y(&self) -> T where Vector<T,N> : HaveY<T> { self.size().y() }

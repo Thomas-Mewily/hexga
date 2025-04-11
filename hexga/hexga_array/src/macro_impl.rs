@@ -347,6 +347,11 @@ macro_rules! impl_fixed_array_like
         }
         impl<T> ::std::cmp::Eq for $name<T> where T : Eq {}
 
+        impl<T> ::std::hash::Hash for $name<T> where T : Hash
+        {
+            fn hash<H>(&self, state: &mut H) where H: Hasher { self.as_ref().hash(state); }
+        }
+
         impl<T> ::std::convert::From<T> for $name<T> where T : Copy { fn from(value: T) -> Self { Self::from([value; $dim]) } }
     
         impl<T> ::std::convert::From<[T; $dim]> for $name<T> { fn from(value: [T; $dim]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
@@ -444,6 +449,11 @@ macro_rules! impl_generic_array_like
             fn eq(&self, rhs : &Self) -> bool { self.array() == rhs.array() }
         }
         impl<T, const N : usize> ::std::cmp::Eq for $name<T,N> where T : Eq{}
+
+        impl<T, const N : usize> ::std::hash::Hash for $name<T,N> where T : Hash
+        {
+            fn hash<H>(&self, state: &mut H) where H: Hasher { self.as_ref().hash(state); }
+        }
 
         impl<T, const N : usize> ::std::convert::From<T> for $name<T,N> where T : Copy { fn from(value: T) -> Self { Self::from([value; N]) } }
 

@@ -8,7 +8,7 @@ Todo : impl AsMut<&[T]> AsRef<&[T]>
 */
 
 /// A N dimensional grid
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug, Hash)]
 pub struct GridBase<T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
     size  : Vector<Idx,N>,
@@ -213,9 +213,8 @@ pub trait IGrid<T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastT
     /// map a function on each tile to create a new grid
     fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest;
 
-    type MapInto<Dest>;
     /// `map_into`, transform the current grid by value
-    fn transform<Dest, F>(self, f : F) -> Self::MapInto<Dest> where F : FnMut(T) -> Dest, Self : Sized;
+    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest, Self : Sized;
 
     fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, Idx : PartialOrd { r.intersect_or_empty(self.rect()) }
 
@@ -241,7 +240,6 @@ impl<T, Idx, const N : usize> IGrid<T,Idx,N> for GridBase<T, Idx, N>
     type Map<Dest> = GridBase<Dest, Idx, N>;
     fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest { GridBase { size: self.size, value: self.value.iter().map(f).collect() } }
 
-    type MapInto<Dest> = GridBase<Dest, Idx, N>;
     fn transform<Z, F>(self, f : F) -> GridBase<Z, Idx, N> where F : FnMut(T) -> Z { GridBase { size: self.size, value: self.value.into_iter().map(f).collect() } }
 
     fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone { self.view().crop_margin(margin_start, margin_end).to_grid() }
@@ -259,7 +257,13 @@ impl<T, Idx, const N : usize> IGridView<T,Idx,N> for GridBase<T, Idx, N>
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.get_unchecked(pos) } }
 
-    fn subview<'a>(&'a self, rect : Rectangle<Idx, N>) -> GridView<'a,T,Idx,N> { GridView::new(self, rect) }
+    
+    type ToGrid=Self;
+    fn to_grid(self) -> Self::ToGrid where T : Clone { self }
+    
+    type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
+    fn subview<'a>(&'a self, rect : Rectangle<Idx, N>) -> Self::SubView<'a> where T : Clone { GridView::new(self, rect) }
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Self : Sized { self.view().subgrid(rect) }
 }
 
 impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> 
@@ -275,11 +279,12 @@ impl<T, Idx, const N : usize> IGridViewMut<T,Idx,N> for GridBase<T, Idx, N>
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.get_mut(pos) }
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { unsafe { self.get_unchecked_mut(pos) } }
 
-    fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> GridViewMut<'a,T,Idx,N> { GridViewMut::new(self, rect) }
-    
     fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool { self.swap(pos_a, pos_b) }
     fn replace(&mut self, val : T, pos : Vector<Idx,N>) ->  Option<T> { self.replace(val, pos) }
     fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { self.set(val, pos) }
+    
+    type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
+    fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new(self, rect) }
 }
 
 impl<T, Idx, const N : usize> Index<usize> for GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
