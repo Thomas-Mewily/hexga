@@ -1,6 +1,6 @@
 use crate::*;
 
-/// ParameterizedGrid
+/// A Grid that have some parameter associate with it
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 pub struct GridParamBase<T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {

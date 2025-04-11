@@ -87,17 +87,17 @@ impl<T, const ROW : usize> From<Matrix<T,ROW,1>> for Vector<T, ROW> where Vector
 
 impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
 {
-    pub fn from_fn<F>(mut columns : F) -> Self where F : FnMut(Point2) -> T, Self : Default
+    pub fn from_fn<F>(mut columns_and_row : F) -> Self where F : FnMut(Point2) -> T
     {
-        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| columns(point2(column as _,row as _)))))
+        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| columns_and_row(point2(column as _,row as _)))))
     }
 
-    pub fn from_fn_col_and_row<F>(mut fn_columns_then_rows : F) -> Self where F : FnMut(usize, usize) -> T, Self : Default
+    pub fn from_fn_col_and_row<F>(mut fn_columns_then_rows : F) -> Self where F : FnMut(usize, usize) -> T
     {
         Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| fn_columns_then_rows(column,row))))
     }
 
-    pub fn from_fn_row_and_col<F>(mut fn_columns_then_rows : F) -> Self where F : FnMut(usize, usize) -> T, Self : Default
+    pub fn from_fn_row_and_col<F>(mut fn_columns_then_rows : F) -> Self where F : FnMut(usize, usize) -> T
     {
         Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| fn_columns_then_rows(row,column))))
     }
@@ -111,18 +111,21 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
         }
     }
 
-    pub fn from_row(rows : Vector<Vector<T, COL>,ROW>) -> Self where Vector::<Vector<T, ROW>, COL> : Default, T : Copy
+    pub fn from_row(rows : Vector<Vector<T, COL>,ROW>) -> Self where T : Copy
     {
         Matrix::from_col(rows).transpose()
     }
-    pub fn from_row_array(rows : [[T;COL];ROW]) -> Self where Vector::<Vector<T, ROW>, COL> : Default, T : Copy
+    pub fn from_row_array(rows : [[T;COL];ROW]) -> Self where T : Copy
     {
         Self::from_row(Vector::from_array(rows.map(|array| Vector::from_array(array))))
     }
 
-    pub fn col(&self) -> Vector<Vector<T, ROW>,COL> where Vector<Vector<T, ROW>,COL> : Copy { self.columns }
-    pub fn row(&self) -> Vector<Vector<T, COL>,ROW> where Vector::<Vector<T, COL>, ROW> : Default, T : Copy { self.transpose().columns }
+    pub fn col(&self) -> Vector<Vector<T, ROW>,COL> where T : Copy { self.columns }
+    pub fn row(&self) -> Vector<Vector<T, COL>,ROW> where T : Copy { self.transpose().columns }
     
+    pub fn iter_col(&self) -> impl Iterator<Item = Vector<T, ROW>> where Vector<Vector<T, ROW>,COL> : Copy, T : Copy { self.columns.into_iter()}
+    pub fn iter_row(&self) -> impl Iterator<Item = Vector<T, COL>> where Vector<Vector<T, ROW>,COL> : Copy, T : Copy { self.transpose().into_iter()}
+
     /// Transpose the matrix
     /// 
     /// ```rust
@@ -138,18 +141,9 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
     ///     Mat::<2,3>::from_col(vector3(vec2(1., 4.), vec2(2., 5.), vec2(3., 6.)))
     /// );
     /// ```
-    pub fn transpose(&self) -> Matrix<T,COL,ROW> where Vector::<Vector<T, COL>, ROW> : Default, T : Copy
+    pub fn transpose(&self) -> Matrix<T,COL,ROW> where T : Copy
     {
-        let mut transposed_columns = Vector::<Vector<T, COL>, ROW>::default();
-
-        for i in 0..COL 
-        {
-            for j in 0..ROW
-            {
-                transposed_columns[j][i] = self[i][j];
-            }
-        }
-        Matrix::from_col(transposed_columns)
+        Matrix::from_col(Vector::from_fn(|x| Vector::from_fn(|y| self[y][x])))
     }
 }
 
@@ -383,27 +377,12 @@ impl<T, const COL : usize> Product for SquareMatrix<T,COL> where Self : One + Mu
 impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,COL,COL2>> for Matrix<T,ROW,COL>
     where
     T : NumberArithmetic,
-    Matrix<T,ROW,COL2> : Default
 {
     type Output = Matrix<T, ROW, COL2>;
     
     fn mul(self, rhs: Matrix<T,COL,COL2>) -> Self::Output 
     {
-        let mut result = Matrix::default();
-
-        for colum in 0..COL2 
-        {
-            for row in 0..ROW 
-            {
-                let mut sum = T::ZERO;
-                for k in 0..COL 
-                {
-                    sum += self[k][row] * rhs[colum][k];
-                }
-                result[colum][row] = sum;
-            }
-        }
-        result
+        Matrix::from_col(Vector::from_fn(|c| Vector::from_fn(|r| (0..COL).map(|k| self[k][r] * rhs[c][k]).sum())))
     }
 }
 

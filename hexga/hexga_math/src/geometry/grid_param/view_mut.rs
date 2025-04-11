@@ -1,7 +1,7 @@
 use crate::*;
 
 
-/// A mutable slice inside a [Grid]
+/// A mutable slice inside a [GridParam]
 #[derive(Debug, Hash)]
 pub struct GridParamViewMut<'a, T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 

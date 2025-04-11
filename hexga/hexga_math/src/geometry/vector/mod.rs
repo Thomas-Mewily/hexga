@@ -19,8 +19,9 @@ impl<T, const N : usize> Default for Vector<T, N> where [T; N] : Default
 }
 impl<T, const N : usize> Vector<T,N>
 {
+    pub fn from_fn<F>(f : F) -> Self where F : FnMut(usize) -> T { Self::from_array(std::array::from_fn(f)) }
     pub const fn from_array(array : [T; N]) -> Self { Self { array }}
-    pub fn splat(val : T) -> Self where T : Clone { Self::from_array(std::array::from_fn(|_| val.clone())) }
+    pub fn splat(val : T) -> Self where T : Clone { Self::from_fn(|_| val.clone()) }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> { self.array.iter() }
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> { self.array.iter_mut() }

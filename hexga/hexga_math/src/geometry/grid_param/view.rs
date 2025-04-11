@@ -1,7 +1,7 @@
 use crate::*;
 
 
-/// A slice inside a [Grid]
+/// A slice inside a [GridParam]
 #[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub struct GridParamView<'a, T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
