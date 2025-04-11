@@ -62,7 +62,7 @@ impl<'a, T, const N : usize, I> Iterator for Iter<'a,T,N,I> where I : IntegerInd
 
 impl<'a, T, const N : usize, I> IntoIterator for &'a GridBase<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    type Item = (Vector<I,N>, &'a  T);
+    type Item = (Vector<I,N>, &'a T);
     type IntoIter = Iter::<'a,T,N,I>;
 
     fn into_iter(self) -> Self::IntoIter { Iter::new(self) }
@@ -142,82 +142,115 @@ impl<T, const N : usize, I> GridBase<T, N, I> where I : IntegerIndex, usize : Ca
     pub fn new_with(size : Vector::<I,N>, value : T) -> Self where T : Clone { Self::from_fn(size, |_idx| value.clone()) }
 }
 
-
-impl<I, T, const N : usize> GridBase<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
+impl<T, const N : usize, I> GridBase<T, N, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>
 {
-    pub fn values(&self) -> &[T] { &self.value }
-    pub fn values_mut(&mut self) -> &mut [T] { &mut self.value }
-    pub fn into_values(self) -> Vec<T> { self.value }
+    pub fn get(&self, pos : Vector<I,N>) -> Option<&T> { IGrid::get(self, pos) }
+    pub fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { IGrid::get_mut(self, pos) }
+    
+    pub unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { IGrid::get_unchecked(self, pos) } }
+    pub unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { unsafe { IGrid::get_unchecked_mut(self, pos) } }
 
-    #[inline] pub fn is_index_inside(&self, index : usize) -> bool { index < self.area().to_usize()  }
-    #[inline] pub fn is_index_outside(&self, index : usize) -> bool { !self.is_index_inside(index) }
+    pub fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool { IGrid::swap(self, pos_a, pos_b) }
+    pub fn replace(&mut self, val : T, pos : Vector<I,N>) ->  Option<T> { IGrid::replace(self, val, pos) }
+    pub fn set(&mut self, val : T, pos : Vector<I,N>) -> &mut Self { IGrid::set(self, val, pos) }
 
-    pub unsafe fn position_to_index_unchecked(&self, pos : Vector<I,N>) -> usize { unsafe { Vector::<I,N>::to_index_unchecked(pos, self.size) } }
-    pub unsafe fn index_to_position_unchecked(&self, index : usize) -> Vector<I,N> { unsafe { Vector::<I,N>::from_index_unchecked(index, self.size) } }
-
-    pub fn position_to_index(&self, pos : Vector<I,N>) -> Option<usize> { Vector::<I,N>::to_index(pos, self.size) }
-    pub fn index_to_position(&self, index : usize) -> Option<Vector<I,N>> { Vector::<I,N>::from_index(index, self.size) }
-
-
-
-    pub fn get_index(&self, index : usize) -> Option<&T> { self.value.get(index) }
-    pub fn get_index_mut(&mut self, index : usize) -> Option<&mut T> { self.value.get_mut(index) }
-
-    pub fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.position_to_index(pos).and_then(|i| self.get_index(i)) }
-    pub fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
-
-    pub unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { let idx = self.position_to_index_unchecked(pos); self.value.get_unchecked(idx) } }
-    pub unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { unsafe { let idx = self.position_to_index_unchecked(pos); self.value.get_unchecked_mut(idx)} }
+    pub fn len(&self) -> usize { IGrid::len(self) }
+}
 
 
-    pub fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool
+pub trait IGrid<T, const N : usize, I> where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>, Self : IRectangle<I,N>
+{
+    fn values(&self) -> &[T];
+    fn values_mut(&mut self) -> &mut [T];
+
+    fn into_values(self) -> Vec<T>;
+
+    #[inline] fn is_index_inside(&self, index : usize) -> bool { index < self.area().to_usize()  }
+    #[inline] fn is_index_outside(&self, index : usize) -> bool { !self.is_index_inside(index) }
+
+    unsafe fn position_to_index_unchecked(&self, pos : Vector<I,N>) -> usize { unsafe { Vector::<I,N>::to_index_unchecked(pos, self.size()) } }
+    unsafe fn index_to_position_unchecked(&self, index : usize) -> Vector<I,N> { unsafe { Vector::<I,N>::from_index_unchecked(index, self.size()) } }
+
+    fn position_to_index(&self, pos : Vector<I,N>) -> Option<usize> { Vector::<I,N>::to_index(pos, self.size()) }
+    fn index_to_position(&self, index : usize) -> Option<Vector<I,N>> { Vector::<I,N>::from_index(index, self.size()) }
+
+    fn get_index(&self, index : usize) -> Option<&T> { self.values().get(index) }
+    fn get_index_mut(&mut self, index : usize) -> Option<&mut T> { self.values_mut().get_mut(index) }
+
+    fn get(&self, pos : Vector<I,N>) -> Option<&T> { self.position_to_index(pos).and_then(|i| self.get_index(i)) }
+    fn get_mut(&mut self, pos : Vector<I,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
+
+    unsafe fn get_unchecked(&self, pos : Vector<I,N>) -> &T { unsafe { let idx = self.position_to_index_unchecked(pos); self.values().get_unchecked(idx) } }
+    unsafe fn get_unchecked_mut(&mut self, pos : Vector<I,N>) -> &mut T { unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
+
+    fn swap(&mut self, pos_a : Vector<I,N>, pos_b : Vector<I,N>) -> bool
     {
         match (self.position_to_index(pos_a), self.position_to_index(pos_b))
         {
-            (Some(a), Some(b)) => { self.value.swap(a, b); true }
+            (Some(a), Some(b)) => { self.values_mut().swap(a, b); true }
             _ => false
         }
     }
 
-    pub fn swap_index(&mut self, index_a : usize, index_b : usize) -> bool
+    fn swap_index(&mut self, index_a : usize, index_b : usize) -> bool
     {
         if self.is_index_inside(index_a) && self.is_index_inside(index_b)
         {
-            self.value.swap(index_a, index_b);
+            self.values_mut().swap(index_a, index_b);
             true
         }else { false }
     }
 
-    pub fn replace_index(&mut self, val : T, index : usize) -> Option<T> { self.get_index_mut(index).map(|v| std::mem::replace(v, val)) }
-    pub fn replace(&mut self, val : T, pos : Vector<I,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
+    fn replace_index(&mut self, val : T, index : usize) -> Option<T> { self.get_index_mut(index).map(|v| std::mem::replace(v, val)) }
+    fn replace(&mut self, val : T, pos : Vector<I,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
     
     /// Do nothings if the index is outside the range
-    pub fn set_index(&mut self, val : T, idx : usize) -> &mut Self { self.get_index_mut(idx).map(|v| *v = val); self }
+    fn set_index(&mut self, val : T, idx : usize) -> &mut Self { self.get_index_mut(idx).map(|v| *v = val); self }
     /// Do nothings if the index is outside the range
-    pub fn set(&mut self, val : T, pos : Vector<I,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
+    fn set(&mut self, val : T, pos : Vector<I,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
 
+    type Map<Dest>;
     /// map a function on each tile to create a new grid
-    pub fn map<Z, F>(&self, f : F) -> GridBase<Z, N, I> where F : FnMut(&T) -> Z { GridBase { size: self.size, value: self.value.iter().map(f).collect() } }
+    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest;
+
+    type MapInto<Dest>;
     /// transform the current grid
-    pub fn map_into<Z, F>(self, f : F) -> GridBase<Z, N, I> where F : FnMut(T) -> Z { GridBase { size: self.size, value: self.value.into_iter().map(f).collect() } }
+    fn map_into<Dest, F>(self, f : F) -> Self::MapInto<Dest> where F : FnMut(T) -> Dest, Self : Sized;
 
-    pub fn intersect_rect(&self, r : Rectangle<I,N>) -> Rectangle<I,N>  where Vector<I,N> : UnitArithmetic, I : PartialOrd { r.intersect_or_empty(self.rect()) }
+    fn intersect_rect(&self, r : Rectangle<I,N>) -> Rectangle<I,N>  where Vector<I,N> : UnitArithmetic, I : PartialOrd { r.intersect_or_empty(self.rect()) }
 
-    /* 
-    pub fn sub_grid(&self, r : Rectangle<I, N>) -> Self where T : Clone
-    {
-        let r = self.intersect_rect(r);
-        Self::from_fn(r.size(), |p| self[p + r.pos].clone())
-    }
-    */
+    fn len(&self) -> usize { self.values().len() }
 
-    pub fn size(&self) -> Vector<I,N> { self.size }
-    pub fn len(&self) -> usize { self.value.len() }
+    fn crop_margin(&self, margin_start : Vector<I,N>, margin_end : Vector<I,N>) -> Self where T : Clone, Self : Sized;
 
-    pub fn view<'a>(&'a self) -> grid::GridView<'a, T,N,I> { grid::GridView::from_grid(self) }
-    pub fn view_mut<'a>(&'a mut self) -> grid::GridViewMut<'a, T,N,I> { grid::GridViewMut::from_grid(self) }
+    type View<'a> : IGridView<T,N,I> where Self: 'a;
+    fn view<'a>(&'a self) -> Self::View<'a>;
 
-    pub fn crop_margin(&self, margin_start : Vector<I,N>, margin_end : Vector<I,N>) -> Self where T : Clone { self.view().crop_margin(margin_start, margin_end).to_grid() }
+    type ViewMut<'a> : IGridView<T,N,I> where Self: 'a;
+    fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a>;
+}
+
+impl<I, T, const N : usize> IGrid<T,N,I> for GridBase<T, N, I> 
+    where I : IntegerIndex, usize : CastTo<I>, isize : CastTo<I>,
+{
+    fn values(&self) -> &[T] { &self.value }
+    fn values_mut(&mut self) -> &mut [T] { &mut self.value }
+
+    fn into_values(self) -> Vec<T> { self.value }
+
+    type Map<Dest> = GridBase<Dest, N, I>;
+    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest { GridBase { size: self.size, value: self.value.iter().map(f).collect() } }
+
+    type MapInto<Dest> = GridBase<Dest, N, I>;
+    fn map_into<Z, F>(self, f : F) -> GridBase<Z, N, I> where F : FnMut(T) -> Z { GridBase { size: self.size, value: self.value.into_iter().map(f).collect() } }
+
+    fn crop_margin(&self, margin_start : Vector<I,N>, margin_end : Vector<I,N>) -> Self where T : Clone { self.view().crop_margin(margin_start, margin_end).to_grid() }
+
+    type View<'a> = grid::GridView<'a, T,N,I> where Self: 'a;
+    fn view<'a>(&'a self) -> grid::GridView<'a, T,N,I> { grid::GridView::from_grid(self) }
+
+    type ViewMut<'a> = grid::GridViewMut<'a, T,N,I> where Self: 'a;
+    fn view_mut<'a>(&'a mut self) -> grid::GridViewMut<'a, T,N,I> { grid::GridViewMut::from_grid(self) }
 }
 
 impl<T, const N : usize, I> IGridView<T,N,I> for GridBase<T, N, I> 

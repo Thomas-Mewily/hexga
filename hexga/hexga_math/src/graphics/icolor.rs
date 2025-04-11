@@ -1,7 +1,22 @@
 use crate::*;
 
+pub trait ToColorRep
+{
+    type ColorRGBA;
+    fn to_rgba_coef(&self) -> Self::ColorRGBA;
+
+    type ColorHSLA;
+    fn to_hsla(&self) -> Self::ColorHSLA;
+
+    type ColorRGBAByte;
+    fn to_rgba_u8(&self) -> Self::ColorRGBAByte;
+
+    fn to_color(&self) -> Self::ColorRGBA { self.to_rgba_coef() }
+}
+
 pub trait IColor : 
     From<Color> + From<ColorByte> + From<ColorHSLA> +
+    ToColorRep<ColorRGBA = ColorRGBA, ColorHSLA = ColorHSLA, ColorRGBAByte = ColorRGBAByte>
     //Into<Color> + Into<ColorByte> + Into<ColorHSLA>
 {
     const TRANSPARENT : Self;
@@ -17,13 +32,6 @@ pub trait IColor :
     const CYAN   : Self; 
     const PINK   : Self; 
     const YELLOW : Self;
-
-
-    fn to_color(self) -> Color { self.to_rgba() }
-
-    fn to_rgba(self) -> ColorRGBA;
-    fn to_rgba_u8(self) -> ColorRGBAByte;
-    fn to_hsla(self) -> ColorHSLA;
 
     fn rgba_from_bytes_slice(rgba : &[u8]) -> Self { Self::rgba_from_bytes(rgba[0], rgba[1], rgba[2], rgba[3]) }
     fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self;

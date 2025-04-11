@@ -11,3 +11,5 @@ pub use view::*;
 mod view_mut;
 pub use view_mut::*;
 
+mod parameterized_grid;
+pub use parameterized_grid::*;

@@ -128,9 +128,12 @@ impl IColor for ColorHSLA
     const YELLOW : Self = Self { h: float::COLOR_60_DIV_360 , s: float::ONE, l: float::HALF, a: float::ONE };
     
     fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self { ColorRGBAByte::rgba(r,g,b,a).to_hsla() }
+}
 
-
-    fn to_rgba(self) -> ColorRGBA {
+impl ToColorRep for ColorHSLA
+{
+    type ColorRGBA=ColorRGBA;
+    fn to_rgba_coef(&self) -> Self::ColorRGBA {
         // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
         let r;
         let g;
@@ -161,6 +164,13 @@ impl IColor for ColorHSLA
         Color::new(r, g, b, self.a)
     }
 
-    fn to_rgba_u8(self) -> ColorRGBAByte { self.to_rgba().to_rgba_u8() }
-    fn to_hsla(self) -> ColorHSLA { self }
+    type ColorHSLA=ColorHSLA;
+    fn to_hsla(&self) -> Self::ColorHSLA {
+        *self
+    }
+
+    type ColorRGBAByte=ColorRGBAByte;
+    fn to_rgba_u8(&self) -> Self::ColorRGBAByte {
+        self.to_rgba_coef().to_rgba_u8()
+    }
 }

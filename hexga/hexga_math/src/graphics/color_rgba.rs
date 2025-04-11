@@ -1,7 +1,9 @@
 use crate::*;
 
+/// `ColorRGBAOf<float>`
 pub type Color = ColorRGBA;
 
+/// `ColorRGBAOf<float>`
 pub type ColorRGBA = ColorRGBAOf<float>;
 
 pub type ColorRGBAByte = ColorRGBAOf<u8>;
@@ -117,10 +119,10 @@ impl<T> From<ColorRGBAOf<T>> for Vector4<T> { fn from(value: ColorRGBAOf<T>) -> 
 impl<T> From<Vector3<T>> for ColorRGBAOf<T> where T : DefaultRange { fn from(value: Vector3<T>) -> Self { let [r,g,b] = value.array; ColorRGBAOf::rgb(r,g,b) }}
 impl<T> From<ColorRGBAOf<T>> for Vector3<T> { fn from(value: ColorRGBAOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
-impl From<ColorHSLA> for Color { fn from(value: ColorHSLA) -> Self { value.to_rgba() }}
+impl From<ColorHSLA> for Color { fn from(value: ColorHSLA) -> Self { value.to_color() }}
 impl From<ColorHSLA> for ColorByte { fn from(value: ColorHSLAOf<float>) -> Self { value.to_rgba_u8() }}
 
-impl From<ColorByte> for Color { fn from(value: ColorByte) -> Self { value.to_rgba() }}
+impl From<ColorByte> for Color { fn from(value: ColorByte) -> Self { value.to_color() }}
 impl From<Color> for ColorByte { fn from(value: Color) -> Self { value.to_rgba_u8() }}
 
 
@@ -133,9 +135,6 @@ impl<T> IColor for ColorRGBAOf<T>
     where 
         Self : From<Color> + From<ColorByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
         T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + DefaultRange + Copy + PartialEq + Default 
-    //+ From<Color> + From<ColorByte> + From<ColorHSLA>, 
-    //ColorRGBAOf<T> : From<Color> + From<ColorByte> + From<ColorHSLA>,
-    //float : CastTo<T>
 {
     const TRANSPARENT : Self = Self::rgba(T::MAX_RANGE, T::MAX_RANGE, T::MAX_RANGE, T::MAX_RANGE);
 
@@ -162,9 +161,19 @@ impl<T> IColor for ColorRGBAOf<T>
             T::from_coef(a.to_coef())
         )
     }
+}
 
-    fn to_hsla(self) -> ColorHSLA
-    {
+impl<T> ToColorRep for ColorRGBAOf<T> 
+    where 
+        Self : From<Color> + From<ColorByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
+        T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + DefaultRange + Copy + PartialEq + Default
+{
+    type ColorRGBA=ColorRGBA;
+
+    fn to_rgba_coef(&self) -> Self::ColorRGBA { Color::rgba(self.r.to_coef(), self.g.to_coef(), self.b.to_coef(), self.a.to_coef()) }
+
+    type ColorHSLA=ColorHSLA;
+    fn to_hsla(&self) -> Self::ColorHSLA {
         // Thank to MacroQuad, the following code was copied and edited the code from the MacroQuad crate
 
         
@@ -207,9 +216,8 @@ impl<T> IColor for ColorRGBAOf<T>
         ColorHSLA::new(h, s, l, a)
     }
 
-    fn to_rgba(self) -> Color { Color::rgba(self.r.to_coef(), self.g.to_coef(), self.b.to_coef(), self.a.to_coef()) }
-    fn to_rgba_u8(self) -> ColorRGBAByte
-    {
+    type ColorRGBAByte=ColorRGBAByte;
+    fn to_rgba_u8(&self) -> Self::ColorRGBAByte {
         ColorRGBAByte::rgba
         (
           (self.r.to_coef() * (u8::MAX as Coef)) as u8,
