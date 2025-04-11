@@ -181,7 +181,7 @@ impl<T, const N : usize> Vector<T, N>
         Self::from_array(result)
     }
 
-    pub fn to_grid<F,U>(self, f : F) -> GridBase<U,N,T> where F : FnMut(Self) -> U { GridBase::from_fn(self, f) }
+    pub fn to_grid<F,U>(self, f : F) -> GridBase<U,T,N> where F : FnMut(Self) -> U { GridBase::from_fn(self, f) }
 }
 
 
