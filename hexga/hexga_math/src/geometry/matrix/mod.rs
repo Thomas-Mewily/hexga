@@ -87,19 +87,20 @@ impl<T, const ROW : usize> From<Matrix<T,ROW,1>> for Vector<T, ROW> where Vector
 
 impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
 {
-    pub fn from_fn<F>(mut columns_and_row : F) -> Self where F : FnMut(Point2) -> T
+    /// Create a matrix from a `fn((columns,row))`
+    pub fn from_fn<F>(mut column_then_row : F) -> Self where F : FnMut(Point2) -> T
     {
-        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| columns_and_row(point2(column as _,row as _)))))
+        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| column_then_row(point2(column as _,row as _)))))
     }
 
-    pub fn from_fn_col_and_row<F>(mut fn_columns_then_rows : F) -> Self where F : FnMut(usize, usize) -> T
+    pub fn from_col_fn<F>(mut column_then_row : F) -> Self where F : FnMut(usize, usize) -> T
     {
-        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| fn_columns_then_rows(column,row))))
+        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| column_then_row(column,row))))
     }
 
-    pub fn from_fn_row_and_col<F>(mut fn_columns_then_rows : F) -> Self where F : FnMut(usize, usize) -> T
+    pub fn from_row_fn<F>(mut row_then_column : F) -> Self where F : FnMut(usize, usize) -> T
     {
-        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| fn_columns_then_rows(row,column))))
+        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| row_then_column(row,column))))
     }
 
     pub const fn from_col(columns : Vector<Vector<T, ROW>,COL>) -> Self { Self { columns }}
