@@ -7,7 +7,7 @@ pub trait IGridViewMut<T, Idx, const N : usize> : IGridView<T,Idx,N> + IndexMut<
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { &mut self[pos] }
 
     type SubViewMut<'b> where Self: 'b;
-    fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> GridViewMut<'a,T,Idx,N>;
+    fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a>;
 
     fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool;
 

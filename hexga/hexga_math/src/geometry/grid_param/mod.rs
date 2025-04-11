@@ -2,8 +2,8 @@ use crate::*;
 
 pub mod prelude;
 
-mod grid;
-pub use grid::*;
+mod grid_param;
+pub use grid_param::*;
 
 mod view;
 pub use view::*;

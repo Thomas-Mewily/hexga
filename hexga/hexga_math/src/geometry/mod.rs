@@ -20,3 +20,6 @@ pub(crate) use matrix::*;
 
 pub mod grid;
 pub(crate) use grid::*;
+
+pub mod grid_param;
+pub(crate) use grid_param::*;

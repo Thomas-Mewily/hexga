@@ -28,6 +28,8 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 
 fn main() 
 {
+    let g = GridParam2::from_fn_with_param(point2(2, 4), |p| p.x + 10 * p.y, "toto".to_owned());
+    //let g2 = g.
     /* 
 
     let g = point2(2, 4).to_grid(|p| p.x + 10 * p.y);

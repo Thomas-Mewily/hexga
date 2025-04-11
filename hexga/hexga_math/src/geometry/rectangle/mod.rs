@@ -242,6 +242,21 @@ pub trait IRectangle<T, const N : usize> where T : Number
     fn max(&self) -> Vector<T,N> { self.end() }
 
     fn rect(&self) -> Rectangle<T, N> { Rectangle::new(self.begin(), self.size()) }
+
+    fn iter_x(&self) -> Range<T> where Vector<T,N> : HaveX<T>, Range<T> : IntoIterator { self.min().x()..self.max().x() }
+    fn iter_y(&self) -> Range<T> where Vector<T,N> : HaveY<T>, Range<T> : IntoIterator { self.min().y()..self.max().y() }
+    fn iter_z(&self) -> Range<T> where Vector<T,N> : HaveZ<T>, Range<T> : IntoIterator { self.min().z()..self.max().z() }
+    fn iter_w(&self) -> Range<T> where Vector<T,N> : HaveW<T>, Range<T> : IntoIterator { self.min().w()..self.max().w() }
+
+    #[inline] fn is_inside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { x >= self.min().x() && x < self.max().x() }
+    #[inline] fn is_inside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { y >= self.min().y() && y < self.max().y() }
+    #[inline] fn is_inside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { z >= self.min().z() && z < self.max().z() }
+    #[inline] fn is_inside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { w >= self.min().w() && w < self.max().w() }
+
+    #[inline] fn is_outside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { !self.is_inside_x(x) }
+    #[inline] fn is_outside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { !self.is_inside_y(y) }
+    #[inline] fn is_outside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { !self.is_inside_z(z) }
+    #[inline] fn is_outside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { !self.is_inside_w(w) }
 }
 
 /// Iter over all idx inside a rectangle

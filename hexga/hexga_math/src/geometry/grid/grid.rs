@@ -139,7 +139,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
     /// Fill the grid with the [Default] value
     pub fn new(size : Vector::<Idx,N>) -> Self where T : Default { Self::from_fn(size, |_| Default::default())}
     /// Fill the grid by cloning the value
-    pub fn new_with(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::from_fn(size, |_idx| value.clone()) }
+    pub fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::from_fn(size, |_idx| value.clone()) }
 }
 
 impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
@@ -156,7 +156,6 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
 
     pub fn len(&self) -> usize { IGrid::len(self) }
 }
-
 
 pub trait IGrid<T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, Self : IRectangle<Idx,N>
 {
@@ -271,6 +270,16 @@ impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N>
 {
     fn size(&self) -> Vector<Idx, N> { self.size }
     fn begin(&self) -> Vector<Idx,N> { zero() }
+
+    fn iter_x(&self) -> Range<Idx> where Vector<Idx,N> : HaveX<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_x() }
+    fn iter_y(&self) -> Range<Idx> where Vector<Idx,N> : HaveY<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_y() }
+    fn iter_z(&self) -> Range<Idx> where Vector<Idx,N> : HaveZ<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_z() }
+    fn iter_w(&self) -> Range<Idx> where Vector<Idx,N> : HaveW<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_w() }
+
+    #[inline] fn is_inside_x(&self, x : Idx) -> bool where Vector<Idx,N> : HaveX<Idx> { x >= Idx::ZERO && x < self.size_x() }
+    #[inline] fn is_inside_y(&self, y : Idx) -> bool where Vector<Idx,N> : HaveY<Idx> { y >= Idx::ZERO && y < self.size_y() }
+    #[inline] fn is_inside_z(&self, z : Idx) -> bool where Vector<Idx,N> : HaveZ<Idx> { z >= Idx::ZERO && z < self.size_z() }
+    #[inline] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
 impl<T, Idx, const N : usize> IGridViewMut<T,Idx,N> for GridBase<T, Idx, N> 
@@ -311,23 +320,13 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
 {
     pub fn iter(&self) -> Iter<'_,T,Idx,N> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_,T,Idx,N> { self.into_iter() }
-
-    pub fn iter_x(&self) -> Range<Idx> where Vector<Idx,N> : HaveX<Idx> { Idx::ZERO..self.size.x() }
-    pub fn iter_y(&self) -> Range<Idx> where Vector<Idx,N> : HaveY<Idx> { Idx::ZERO..self.size.y() }
-    pub fn iter_z(&self) -> Range<Idx> where Vector<Idx,N> : HaveZ<Idx> { Idx::ZERO..self.size.z() }
-    pub fn iter_w(&self) -> Range<Idx> where Vector<Idx,N> : HaveW<Idx> { Idx::ZERO..self.size.w() }
-
-    #[inline] pub fn is_inside_x(&self, x : Idx) -> bool where Vector<Idx,N> : HaveX<Idx> { x >= Idx::ZERO && x < self.size.x() }
-    #[inline] pub fn is_inside_y(&self, y : Idx) -> bool where Vector<Idx,N> : HaveY<Idx> { y >= Idx::ZERO && y < self.size.y() }
-    #[inline] pub fn is_inside_z(&self, z : Idx) -> bool where Vector<Idx,N> : HaveZ<Idx> { z >= Idx::ZERO && z < self.size.z() }
-    #[inline] pub fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size.w() }
-
-    #[inline] pub fn is_outside_x(&self, x : Idx) -> bool where Vector<Idx,N> : HaveX<Idx> { !self.is_inside_x(x) }
-    #[inline] pub fn is_outside_y(&self, y : Idx) -> bool where Vector<Idx,N> : HaveY<Idx> { !self.is_inside_y(y) }
-    #[inline] pub fn is_outside_z(&self, z : Idx) -> bool where Vector<Idx,N> : HaveZ<Idx> { !self.is_inside_z(z) }
-    #[inline] pub fn is_outside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { !self.is_inside_w(w) }
 }
 
+impl<T, Idx, const N : usize> have_len::HaveLen for GridBase<T, Idx, N> 
+    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+{ 
+    fn len(&self) -> usize { self.len() }
+}
 /* 
 impl<T, Idx, const N : usize> GridOf<T, N, I> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
@@ -340,11 +339,7 @@ impl<T, Idx, const N : usize> GridOf<T, N, I> where Idx : IntegerIndex, usize : 
 }
 */
 
-impl<T, Idx, const N : usize> have_len::HaveLen for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
-{ 
-    fn len(&self) -> usize { self.len() }
-}
+
 
 
 #[cfg(test)]
