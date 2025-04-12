@@ -2,10 +2,10 @@ use crate::*;
 
 pub struct IoMediatorDirect<O,E> where O : IoOk, E : IoError
 {
-    read   : fn(&str, &mut Vec<u8>) -> Result<O,E>,
-    write  : fn(&str, &[u8]) -> Result<O,E>,
-    remove : fn(&str) -> Result<O,E>,
-    append : Option<fn(&str, &[u8]) -> Result<O,E>>,
+    read   : fn(&path, &mut Vec<u8>) -> Result<O,E>,
+    write  : fn(&path, &[u8]) -> Result<O,E>,
+    remove : fn(&path) -> Result<O,E>,
+    append : Option<fn(&path, &[u8]) -> Result<O,E>>,
 }
 
 impl Default for IoMediatorDirect<IoDiskOk,IoDiskError> where IoDiskOk : IoOk, IoDiskError : IoError
@@ -27,10 +27,10 @@ impl<O,E> IoMediator for IoMediatorDirect<O,E> where O : IoOk, E : IoError
     type Ok=O;
     type Err=E;
 
-    fn write(&mut self, path : &str, data : &[u8]) -> Result<Self::Ok,Self::Err> 
+    fn write(&mut self, path : &path, data : &[u8]) -> Result<Self::Ok,Self::Err> 
     { (self.write)(path,data) }
 
-    fn append(&mut self, path : &str, data : &[u8]) -> Result<Self::Ok,Self::Err> 
+    fn append(&mut self, path : &path, data : &[u8]) -> Result<Self::Ok,Self::Err> 
     { 
         match &self.append
         {
@@ -44,7 +44,7 @@ impl<O,E> IoMediator for IoMediatorDirect<O,E> where O : IoOk, E : IoError
         }
     }
 
-    fn remove(&mut self, path : &str) -> Result<Self::Ok,Self::Err> {
+    fn remove(&mut self, path : &path) -> Result<Self::Ok,Self::Err> {
         (self.remove)(path)
     }
 
@@ -52,11 +52,11 @@ impl<O,E> IoMediator for IoMediatorDirect<O,E> where O : IoOk, E : IoError
         Ok(O::default())
     }
     
-    fn read_cache(&mut self, _ : &str) -> Result<Self::Ok,Self::Err> {
+    fn read_cache(&mut self, _ : &path) -> Result<Self::Ok,Self::Err> {
         Ok(O::default())
     }
     
-    fn read(&mut self, path : &str) -> Result<Vec<u8>,Self::Err> {
+    fn read(&mut self, path : &path) -> Result<Vec<u8>,Self::Err> {
         let mut data = Vec::with_capacity(2048);
         (self.read)(path,&mut data)?;
         Ok(data)
