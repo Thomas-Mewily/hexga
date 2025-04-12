@@ -24,6 +24,11 @@ impl Default for IoMediatorDirect<(),IoDiskOk,IoDiskError> where IoDiskOk : IoOk
     }
 }
 
+impl IoMediatorDirect<(),IoDiskOk,IoDiskError> where IoDiskOk : IoOk, IoDiskError : IoError
+{
+    pub fn new_io() -> Self { Self::default() }
+}
+
 impl<Ctx,O,E> IoMediator for IoMediatorDirect<Ctx,O,E> where O : IoOk, E : IoError
 {
     type Ok=O;
