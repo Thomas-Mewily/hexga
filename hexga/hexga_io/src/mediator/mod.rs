@@ -5,19 +5,37 @@ pub use direct::*;
 
 pub type Reason = String;
 
-pub trait IoError 
+pub trait IoError
 {
-    fn new(err : Reason) -> Self;
+    fn to_io_err(err : Reason) -> Self;
 
+    fn to_io_err_with_path(path : Path, err : Reason) -> Self;
     #[allow(unused_variables)]
-    fn with_path(self, path : Path) -> Self where Self : Sized { self } 
+    fn io_err_with_path(self, path : Path) -> Self where Self : Sized { self } 
 }
 
-impl IoError for String { fn new(err : Reason) -> Self { err } }
-impl IoError for () { fn new(_err : Reason) -> Self { () } }
-impl IoError for IoDiskError {
-    fn new(err : Reason) -> Self {
+impl IoError for String 
+{ 
+    fn to_io_err(err : Reason) -> Self { err }
+    
+    fn to_io_err_with_path(path : Path, err : Reason) -> Self {
+        format!("{path} : {err}")
+    } 
+}
+impl IoError for () 
+{ 
+    fn to_io_err(_err : Reason) -> Self { () }
+    fn to_io_err_with_path(path : Path, err : Reason) -> Self { () } 
+}
+
+impl IoError for IoDiskError 
+{
+    fn to_io_err(err : Reason) -> Self {
         IoDiskError::new(std::io::ErrorKind::Other, err)
+    }
+    
+    fn to_io_err_with_path(path : Path, err : Reason) -> Self {
+        IoDiskError::new(std::io::ErrorKind::Other, String::to_io_err_with_path(path, err))
     }
 }
 
