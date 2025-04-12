@@ -2,14 +2,11 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
 
 ## Todo
 
-- Grid : GridSlice/GridPortion + version mut
-~~Grid Deref+Derefmut sur ses slices~~ => Pas possible, impossible d'exprimer les lifetime
-+ impl Iterator sur les grid slice
+- Graphic : Image : How to serialize it
 
 - GenVec : 
     - fonction pour reset les id
     - fonction rollback_insert rollback_push rollback_remove_idx ... (pour rollback dans un jeux)
-
 
 - Name2Reserve : réserver plus de nom sous crate io
 
@@ -40,6 +37,10 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
 ## Working On
 
 ## Done
+
+- Grid : GridSlice/GridPortion + version mut
+~~Grid Deref+Derefmut sur ses slices~~ => Pas possible, impossible d'exprimer les lifetime
++ impl Iterator sur les grid slice
 
 ## Other
 

@@ -135,6 +135,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_io"
+version = "0.0.10-beta.2"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "hexga_map_on"
 version = "0.0.10-beta.2"
 

@@ -3,6 +3,7 @@
 hexga_array
 hexga_map_on
 hexga_typedef
+hexga_io
 hexga_number
 hexga_math
 hexga_generational
