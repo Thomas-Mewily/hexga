@@ -1,6 +1,6 @@
 use crate::*;
 
-pub trait IGridViewMut<T, Idx, const N : usize> : IGridView<T,Idx,N> + IndexMut<Vector<Idx,N>,Output=T>
+pub trait IGridViewMut<T, Param, Idx, const N : usize> : IGridView<T,Param,Idx,N> + IndexMut<Vector<Idx,N>,Output=T>
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T>;
@@ -63,7 +63,7 @@ impl<'a, T, Idx, const N : usize> GridViewMut<'a, T, Idx,N>
     }
 }
 
-impl<'a, T, Idx, const N : usize> IGridView<T,Idx,N> for GridViewMut<'a, T, Idx,N> 
+impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
@@ -84,7 +84,7 @@ impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridViewMut<'a, T, Idx,N
     fn size (&self) -> Vector<Idx,N> { self.view.size()  }
 }
 
-impl<'a, T, Idx, const N : usize> IGridViewMut<T,Idx,N> for GridViewMut<'a, T, Idx,N> 
+impl<'a, T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.grid.get_mut(self.view.pos + pos) }

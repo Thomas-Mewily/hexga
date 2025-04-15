@@ -142,6 +142,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
     pub fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::from_fn(size, |_idx| value.clone()) }
 }
 
+// To avoid conflict of impl with [IGrid], [IGridView] and [IGridViewMut] when calling get(), get_mut()...
 impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
     pub fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { IGrid::get(self, pos) }
@@ -157,11 +158,16 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
     pub fn len(&self) -> usize { IGrid::len(self) }
 }
 
-pub trait IGrid<T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, Self : IRectangle<Idx,N>
+/// Param is just used to know if it is clonable or not because of [GridParam]
+pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, 
+    Self : IRectangle<Idx,N> 
+        + Index<Vector<Idx,N>,Output=T> + IndexMut<Vector<Idx,N>,Output=T>
+        // impl details :
+        + Index<usize,Output=T> + IndexMut<usize,Output=T>
 {
+    // Todo : Don't expose how to grid is stored inside ?
     fn values(&self) -> &[T];
     fn values_mut(&mut self) -> &mut [T];
-
     fn into_values(self) -> Vec<T>;
 
     #[inline] fn is_index_inside(&self, index : usize) -> bool { index < self.area().to_usize()  }
@@ -210,25 +216,25 @@ pub trait IGrid<T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastT
 
     type Map<Dest>;
     /// map a function on each tile to create a new grid
-    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest;
+    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, Param : Clone;
 
     /// `map_into`, transform the current grid by value
-    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest, Self : Sized;
+    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest, Param : Clone, Self : Sized;
 
     fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, Idx : PartialOrd { r.intersect_or_empty(self.rect()) }
 
     fn len(&self) -> usize { self.values().len() }
 
-    fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Self : Sized;
+    fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Param : Clone, Self : Sized;
 
-    type View<'a> : IGridView<T,Idx,N> where Self: 'a;
+    type View<'a> : IGridView<T,Param,Idx,N> where Self: 'a;
     fn view<'a>(&'a self) -> Self::View<'a>;
 
-    type ViewMut<'a> : IGridView<T,Idx,N> where Self: 'a;
+    type ViewMut<'a> : IGridView<T,Param,Idx,N> where Self: 'a;
     fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a>;
 }
 
-impl<T, Idx, const N : usize> IGrid<T,Idx,N> for GridBase<T, Idx, N> 
+impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N> 
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
 {
     fn values(&self) -> &[T] { &self.value }
@@ -250,7 +256,7 @@ impl<T, Idx, const N : usize> IGrid<T,Idx,N> for GridBase<T, Idx, N>
     fn view_mut<'a>(&'a mut self) -> grid::GridViewMut<'a, T,Idx,N> { grid::GridViewMut::from_grid(self) }
 }
 
-impl<T, Idx, const N : usize> IGridView<T,Idx,N> for GridBase<T, Idx, N> 
+impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N> 
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.get(pos) }
@@ -282,7 +288,7 @@ impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N>
     #[inline] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
-impl<T, Idx, const N : usize> IGridViewMut<T,Idx,N> for GridBase<T, Idx, N> 
+impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N> 
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.get_mut(pos) }

@@ -7,4 +7,4 @@ pub type GridParam4<T,Param> = GridParam<T, Param, 4>;
 
 pub type GridParam<T, Param, const N : usize> = GridParamBase<T,Param,int,N>;
 
-pub use super::{GridParamView,GridParamViewMut};
+pub use super::{IGridParam,GridParamView,GridParamViewMut};

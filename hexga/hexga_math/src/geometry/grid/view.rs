@@ -1,8 +1,10 @@
 use crate::*;
 
 /// A slice view to a [Grid]
-//pub trait ISlice<'a, T:'a, const N : usize, I> : Index<Vector<I,N>,Output = T> + IntoIterator<Item = (Vector<I,N>, &'a T)>
-pub trait IGridView<T, Idx, const N : usize> : Index<Vector<Idx,N>,Output = T> + IRectangle<Idx, N>
+/// 
+/// [Param] is a silent parameter, generally void, that is here to facilitate the API for [GridParam] because some function depend 
+/// if the param is clonable or not. 
+pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output = T> + IRectangle<Idx, N>
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 {
     /* 
@@ -17,11 +19,11 @@ pub trait IGridView<T, Idx, const N : usize> : Index<Vector<Idx,N>,Output = T> +
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { &self[pos] }
 
     type ToGrid;
-    fn to_grid(self) -> Self::ToGrid where T : Clone;
+    fn to_grid(self) -> Self::ToGrid where T : Clone, Param : Clone;
 
     type SubView<'b> where Self: 'b;
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone;
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Self : Sized;
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Param : Clone, Self : Sized;
 
     fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<Idx,N>, &'a T)> where T: 'a
     {
@@ -77,7 +79,7 @@ impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N>
 }
 
 
-impl<'a, T, Idx, const N : usize> IGridView<T,Idx,N> for GridView<'a, T, Idx, N> 
+impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx, N> 
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }

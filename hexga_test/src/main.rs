@@ -31,6 +31,8 @@ fn main()
     let g = GridParam2::from_fn_with_param(point2(2, 4), |p| p.x + 10 * p.y, "toto".to_owned());
     let h = g.subgrid(rect2p(1, 1, 1, 3));
     
+    let x = g.get(one());
+
     dbg_mat(g.grid());
     dbg_mat(h.grid());
 

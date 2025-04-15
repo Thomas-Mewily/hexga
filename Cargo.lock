@@ -98,6 +98,7 @@ checksum = "2eaa862aef602c9dace05ec59a5c85136a48747680bf45679d122fbc9430590f"
 name = "hexa_graphics"
 version = "0.0.10-beta.2"
 dependencies = [
+ "have_len",
  "hexga_math",
  "image",
  "serde",
