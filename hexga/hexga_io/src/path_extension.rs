@@ -12,6 +12,7 @@ pub trait StrPathExtension
 
     fn path_split(&self) -> Vec<Path>;
     
+    fn is_markup_extension(&self) -> bool;
 
     /* 
     fn file_name_and_extension(&self) -> &str;
@@ -44,6 +45,8 @@ impl StrPathExtension for &str
     fn path_split(&self) -> Vec<Path> {
         self.replace('\\', "/").split('/').map(|v| v.to_owned()).collect()
     }
+
+    fn is_markup_extension(&self) -> bool { Io::ALL_MARKUP_LANGAGE_EXTENSION.contains(self) }
     /* 
     fn file_name_and_extension(&self) -> &str {
         let path = std::path::Path::new(self);

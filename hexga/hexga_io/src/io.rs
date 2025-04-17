@@ -12,7 +12,8 @@ pub struct IoError
 
 impl IoError
 {
-    pub fn new(kind: IoErrorKind, reason : Reason) -> Self 
+    pub fn new(reason : Reason) -> Self { Self::new_with_kind(std::io::ErrorKind::Other, reason) }
+    pub fn new_with_kind(kind: IoErrorKind, reason : Reason) -> Self 
     {
         Self
         {
@@ -23,15 +24,15 @@ impl IoError
 
     pub fn new_unsuported_extension<T>(extension : &extension) -> Self 
     {
-        Self::new(std::io::ErrorKind::InvalidInput, format!("The extension .{extension} is not supported for {}", std::any::type_name::<T>()))
+        Self::new_with_kind(std::io::ErrorKind::InvalidInput, format!("The extension .{extension} is not supported for {}", std::any::type_name::<T>()))
     }
-    pub fn new_serializing<T>(extension : &extension, reason : Reason) -> Self 
+    pub fn new_serialize<T>(extension : &extension, reason : Reason) -> Self 
     {
-        Self::new(std::io::ErrorKind::InvalidInput, format!("Error while serializing {} to .{extension} : {reason}", std::any::type_name::<T>()))
+        Self::new_with_kind(std::io::ErrorKind::InvalidInput, format!("Error while serializing {} to .{extension} : {reason}", std::any::type_name::<T>()))
     }
     pub fn new_deserialize<T>(extension : &extension, reason : Reason) -> Self 
     {
-        Self::new(std::io::ErrorKind::InvalidInput, format!("Error while deserializing {} from .{extension} : {reason}", std::any::type_name::<T>()))
+        Self::new_with_kind(std::io::ErrorKind::InvalidInput, format!("Error while deserializing {} from .{extension} : {reason}", std::any::type_name::<T>()))
     }
 }
 
@@ -40,14 +41,14 @@ impl From<std::io::Error> for IoError
     fn from(value: std::io::Error) -> Self 
     {
         let r = value.to_string();
-        Self::new(value.kind(), r)
+        Self::new_with_kind(value.kind(), r)
     }
 }
 
 impl Default for  IoError
 {
     fn default() -> Self {
-        Self { kind: IoErrorKind::Other, reason: "?".to_owned() }
+        Self::new("?".to_owned())
     }
 }
 
@@ -60,14 +61,17 @@ impl Io
     /// Used for loading and saving
     pub const ALL_MARKUP_LANGAGE_EXTENSION: &'static [&'static str] = 
     &[
-        #[cfg(feature = "serde_json")]
-        Self::JSON_EXTENSION,
         #[cfg(feature = "serde_ron")]
         Self::RON_EXTENSION,
+        #[cfg(feature = "serde_json")]
+        Self::JSON_EXTENSION,
         #[cfg(feature = "serde_xml")]
         Self::XML_EXTENSION,
+
+        /* Not one of them
         #[cfg(feature = "serde_quick_bin")]
         Self::QUICK_BIN_EXTENSION,
+        */
     ];
 
     #[cfg(feature = "serde_json")]
@@ -76,6 +80,8 @@ impl Io
     pub const RON_EXTENSION  : &'static str = "ron";
     #[cfg(feature = "serde_xml")]
     pub const XML_EXTENSION  : &'static str = "xml";
+
+
     #[cfg(feature = "serde_quick_bin")]
     pub const QUICK_BIN_EXTENSION  : &'static str = "bin";
 

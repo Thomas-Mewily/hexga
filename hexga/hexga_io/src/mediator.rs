@@ -1,18 +1,17 @@
 use std::{collections::HashMap, ops::{Deref, DerefMut}};
+use std::io::Write;
 
 use crate::*;
 
 
-
-/* 
 #[allow(unused_variables)]
-pub trait Save where Self: Sized + Serialize + for<'de> Deserialize<'de>
+pub trait IoSave where Self: Sized + Serialize + for<'de> Deserialize<'de>
 {
     /// Set this to () if you are not based on another type
     /// 
     /// Useful if the current type is similar to another savable type
     /// ex : `Image` and `Texture`
-    type IoBasedOn : Save;
+    type IoBasedOn : IoSave;
 
     /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
     /// 
@@ -27,10 +26,6 @@ pub trait Save where Self: Sized + Serialize + for<'de> Deserialize<'de>
     fn open_file_extension() -> impl Iterator<Item=&'static str> { Self::open_file_custom_extension().chain(Io::ALL_MARKUP_LANGAGE_EXTENSION.iter().cloned()) }
     /// Also include the markup language extension like `json` or `ron`
     fn can_open_extension(extension : &str) -> bool { Self::open_file_extension().position(|e| e == extension).is_some() }
-
-        
-    fn save(&self, path : &extension, mediator : &mut impl IoMediator) -> IoResult { self.save_bytes(path).and_then(|bytes| mediator.save_bytes(bytes, path)) }
-    fn save_bytes(&self, extension : &extension) -> IoResult<Vec<u8>>;
 
     fn from_bytes_with_extension(bytes : &[u8], extension : &str) -> IoResult<Self> 
     {
@@ -50,11 +45,11 @@ pub trait Save where Self: Sized + Serialize + for<'de> Deserialize<'de>
             
             _ => match Self::IoBasedOn::from_bytes_with_extension(bytes, extension)
             {
-                Ok(base) => Self::from_based_on(base),
+                Ok(base) => Self::from_io_based_on(base),
                 Err(_) => match Self::can_open_custom_extension(extension)
                 {
                     true => Self::from_bytes_with_custom_extension(bytes, extension),
-                    false => Err(format!("Can't load {} from extension .{}", std::any::type_name::<Self>(), extension)),
+                    false => Err(IoError::new_unsuported_extension::<Self>(extension)),
                 },
             }
         }
@@ -64,15 +59,95 @@ pub trait Save where Self: Sized + Serialize + for<'de> Deserialize<'de>
         Err(IoError::default())
     }
 
-    fn from_based_on(base : Self::BasedOn) -> Result<Self, IoRawError> { Err(format!("can't open composite {} from raw", std::any::type_name::<Self>())) }
+    fn from_io_based_on(base : Self::IoBasedOn) -> IoResult<Self> { Err(IoError::___()) }
+
+
+
+
+    
+    /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
+    /// 
+    /// Don't include the markup language extension like `json` or `ron`
+    fn save_file_custom_extension() -> impl Iterator<Item=&'static str> { Self::IoBasedOn::save_file_custom_extension() }
+    /// Don't include the markup language extension like `json` or `ron`
+    fn can_save_custom_extension(extension : &str) -> bool { Self::save_file_custom_extension().position(|e| e == extension).is_some() }
+
+    /// Also include the markup language extension like `json` or `ron`
+    fn save_file_extension() -> impl Iterator<Item=&'static str> { Self::save_file_custom_extension().chain(Io::ALL_MARKUP_LANGAGE_EXTENSION.iter().cloned()) }
+    /// Also include the markup language extension like `json` or `ron`
+    fn can_save_extension(extension : &str) -> bool { Self::save_file_extension().position(|e| e == extension).is_some() }
+
+    fn save_bytes_with_extension<'a, W : Write>(&self, bytes : &mut W, extension : &extension) -> IoResult
+    {
+        match extension.is_markup_extension()
+        {
+            true => 
+            {
+                let str = match extension
+                {
+                    #[cfg(feature = "serde_ron")]
+                    Io::RON_EXTENSION  => self.to_ron()?,
+
+                    #[cfg(feature = "serde_json")]
+                    Io::JSON_EXTENSION =>  self.to_json()?,
+                    
+                    #[cfg(feature = "serde_xml")]
+                    Io::XML_EXTENSION => self.to_xml()?,
+                    _ => unreachable!(),
+                };
+
+                write!(bytes, "{}", str).map_err(|e| IoError::new_serialize::<Self>(extension, e.to_debug()))
+            },
+            false => match self.io_get_based_on()
+            {
+                Some(v) => v.save_bytes_with_extension(bytes, extension),
+                None => match self.io_get_based_on_by_value()
+                {
+                    Some(v) => v.save_bytes_with_extension(bytes, extension),
+
+                    None => match Self::can_save_extension(extension)
+                    {
+                        true => self.save_bytes_with_custom_extension(bytes, extension),
+                        false => Err(IoError::new_serialize::<Self>(extension, "Dev impl".to_owned())),
+                    },
+                }
+            },
+        }
+    }
+
+    fn save_bytes_with_custom_extension<'a, W: Write>(&self, bytes : &mut W, extension : &str) -> IoResult
+    {
+        Err(IoError::new_serialize::<Self>(extension, "Dev impl".to_owned()))
+    }
+
+    fn io_get_based_on_by_value(&self) -> Option<Self::IoBasedOn> { None }
+    fn io_get_based_on(&self) -> Option<&Self::IoBasedOn> { None }
+
+    /* 
+    fn save(&self, path : &path, mediator : &mut impl IoMediator) -> IoResult { self.save_bytes(path).and_then(|bytes| mediator.save_bytes(bytes, path)) }
+    fn save_bytes(&self, extension : &extension) -> IoResult<Vec<u8>>;
+    */
+
 }
 
-impl Save for bool 
+impl IoSave for Never 
 {
-    fn save_bytes(&self, extension : &extension) -> IoResult<Vec<u8>> {
-        Err(IoError::)
-    }
-}*/
+    type IoBasedOn = Never;
+
+    fn open_file_custom_extension() -> impl Iterator<Item=&'static str> { std::iter::empty() }
+    fn save_file_custom_extension() -> impl Iterator<Item=&'static str> { std::iter::empty() }
+
+    fn from_bytes_with_extension(_ : &[u8], _ : &str) -> IoResult<Self> { Err(___()) }
+    fn from_bytes_with_custom_extension(_ : &[u8], _ : &str) -> IoResult<Self> { Err(___()) }
+
+    fn save_bytes_with_extension<'a, W : Write>(&self, _ : &mut W, _ : &extension) -> IoResult { Err(___()) }
+    fn save_bytes_with_custom_extension<'a, W: Write>(&self, _ : &mut W, _ : &str) -> IoResult { Err(___()) }
+}
+
+impl IoSave for bool 
+{
+    type IoBasedOn = Never;
+}
 
 pub struct IoNodeRoot
 {
