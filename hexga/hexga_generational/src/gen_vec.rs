@@ -494,7 +494,7 @@ impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen> {
 }
 impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
 
-impl<T,Gen:IGeneration> have_len::HaveLen for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen>
 {
     fn len(&self) -> usize { self.len() }
 }

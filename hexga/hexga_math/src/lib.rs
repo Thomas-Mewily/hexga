@@ -6,7 +6,7 @@ use std::fmt::{Debug, Display, Result as DResult, Formatter};
 use std::hash::*;
 use std::marker::PhantomData;
 use std::cmp::Ordering;
-
+use hexga_base::*;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};

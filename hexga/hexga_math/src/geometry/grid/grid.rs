@@ -328,7 +328,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
     pub fn iter_mut(&mut self) -> IterMut<'_,T,Idx,N> { self.into_iter() }
 }
 
-impl<T, Idx, const N : usize> have_len::HaveLen for GridBase<T, Idx, N> 
+impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N> 
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
 { 
     fn len(&self) -> usize { self.len() }

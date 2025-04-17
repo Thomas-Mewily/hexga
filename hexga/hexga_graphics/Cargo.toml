@@ -1,5 +1,5 @@
 [package]
-name = "hexa_graphics"
+name = "hexga_graphics"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -24,8 +24,8 @@ float_are_size_bits = ["hexga_math/float_are_size_bits"]
 serde = ["dep:serde", "hexga_math/serde"]
 
 [dependencies]
+hexga_base.workspace = true
 hexga_math.workspace = true
 
 serde = { version = "1.0", features = ["derive"], optional = true}
 image = { version = "0.25.4", default-features = false, features = ["png", "gif", "jpeg"] }
-have_len = "0.1.0"

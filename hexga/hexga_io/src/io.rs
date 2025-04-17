@@ -14,11 +14,24 @@ impl IoError
 {
     pub fn new(kind: IoErrorKind, reason : Reason) -> Self 
     {
-        Self 
+        Self
         {
             kind,
             reason,
         }
+    }
+
+    pub fn new_unsuported_extension<T>(extension : &extension) -> Self 
+    {
+        Self::new(std::io::ErrorKind::InvalidInput, format!("The extension .{extension} is not supported for {}", std::any::type_name::<T>()))
+    }
+    pub fn new_serializing<T>(extension : &extension, reason : Reason) -> Self 
+    {
+        Self::new(std::io::ErrorKind::InvalidInput, format!("Error while serializing {} to .{extension} : {reason}", std::any::type_name::<T>()))
+    }
+    pub fn new_deserialize<T>(extension : &extension, reason : Reason) -> Self 
+    {
+        Self::new(std::io::ErrorKind::InvalidInput, format!("Error while deserializing {} from .{extension} : {reason}", std::any::type_name::<T>()))
     }
 }
 
@@ -34,7 +47,7 @@ impl From<std::io::Error> for IoError
 impl Default for  IoError
 {
     fn default() -> Self {
-        Self { kind: IoErrorKind::Other, reason: "".to_owned() }
+        Self { kind: IoErrorKind::Other, reason: "?".to_owned() }
     }
 }
 
@@ -44,6 +57,28 @@ pub struct Io;
 
 impl Io
 {
+    /// Used for loading and saving
+    pub const ALL_MARKUP_LANGAGE_EXTENSION: &'static [&'static str] = 
+    &[
+        #[cfg(feature = "serde_json")]
+        Self::JSON_EXTENSION,
+        #[cfg(feature = "serde_ron")]
+        Self::RON_EXTENSION,
+        #[cfg(feature = "serde_xml")]
+        Self::XML_EXTENSION,
+        #[cfg(feature = "serde_quick_bin")]
+        Self::QUICK_BIN_EXTENSION,
+    ];
+
+    #[cfg(feature = "serde_json")]
+    pub const JSON_EXTENSION : &'static str = "json";
+    #[cfg(feature = "serde_ron")]
+    pub const RON_EXTENSION  : &'static str = "ron";
+    #[cfg(feature = "serde_xml")]
+    pub const XML_EXTENSION  : &'static str = "xml";
+    #[cfg(feature = "serde_quick_bin")]
+    pub const QUICK_BIN_EXTENSION  : &'static str = "bin";
+
     pub fn disk_read(path: &path) -> Result<Vec<u8>, IoError> 
     {
         fs::read(path).map_err(|e| e.into())

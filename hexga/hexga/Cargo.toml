@@ -28,11 +28,9 @@ float_are_size_bits = ["hexga_math/float_are_size_bits"]
 serde = ["dep:serde", "hexga_generational/serde", "hexga_math/serde"]
 
 [dependencies]
+hexga_base.workspace = true
 hexga_math.workspace = true
 hexga_generational.workspace = true
-
-have_len = "0.1.0"
-default_is_triple_underscore = "0.2.0"
 
 # serialization
 serde = { version = "1.0", features = ["derive"], optional = true}

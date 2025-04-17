@@ -221,7 +221,7 @@ impl<T, Param, Idx, const N : usize> GridParamBase<T,Param,Idx, N> where Idx : I
     pub fn iter_mut(&mut self) -> IterMut<'_,T,Idx,N> { self.grid.iter_mut() }
 }
 
-impl<T, Param, Idx, const N : usize> have_len::HaveLen for GridParamBase<T,Param,Idx, N> 
+impl<T, Param, Idx, const N : usize> Length for GridParamBase<T,Param,Idx, N> 
     where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
 { 
     fn len(&self) -> usize { self.grid().len() }

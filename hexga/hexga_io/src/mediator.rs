@@ -3,6 +3,98 @@ use std::{collections::HashMap, ops::{Deref, DerefMut}};
 use crate::*;
 
 
+
+/* 
+#[allow(unused_variables)]
+pub trait Save where Self: Sized + Serialize + for<'de> Deserialize<'de>
+{
+    /// Set this to () if you are not based on another type
+    /// 
+    /// Useful if the current type is similar to another savable type
+    /// ex : `Image` and `Texture`
+    type IoBasedOn : Save;
+
+    /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
+    /// 
+    /// Don't include the markup language extension like `json` or `ron`
+    fn open_file_custom_extension() -> impl Iterator<Item=&'static str> { Self::IoBasedOn::open_file_custom_extension() }
+    /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
+    /// 
+    /// Don't include the markup language extension like `json` or `ron`
+    fn can_open_custom_extension(extension : &str) -> bool { Self::open_file_custom_extension().position(|e| e == extension).is_some() }
+
+    /// Also include the markup language extension like `json` or `ron`
+    fn open_file_extension() -> impl Iterator<Item=&'static str> { Self::open_file_custom_extension().chain(Io::ALL_MARKUP_LANGAGE_EXTENSION.iter().cloned()) }
+    /// Also include the markup language extension like `json` or `ron`
+    fn can_open_extension(extension : &str) -> bool { Self::open_file_extension().position(|e| e == extension).is_some() }
+
+        
+    fn save(&self, path : &extension, mediator : &mut impl IoMediator) -> IoResult { self.save_bytes(path).and_then(|bytes| mediator.save_bytes(bytes, path)) }
+    fn save_bytes(&self, extension : &extension) -> IoResult<Vec<u8>>;
+
+    fn from_bytes_with_extension(bytes : &[u8], extension : &str) -> IoResult<Self> 
+    {
+        match extension
+        {
+            #[cfg(feature = "serde_ron")]
+            Io::RON_EXTENSION => Self::from_ron_buf(bytes),
+
+            #[cfg(feature = "serde_json")]
+            Io::JSON_EXTENSION => Self::from_json_buf(bytes),
+
+            #[cfg(feature = "serde_xml")]
+            Io::XML_EXTENSION => Self::from_xml_buf(bytes),
+
+            #[cfg(feature = "serde_quick_bin")]
+            Io::QUICK_BIN_EXTENSION => Self::from_quick_bin_buf(bytes),
+            
+            _ => match Self::IoBasedOn::from_bytes_with_extension(bytes, extension)
+            {
+                Ok(base) => Self::from_based_on(base),
+                Err(_) => match Self::can_open_custom_extension(extension)
+                {
+                    true => Self::from_bytes_with_custom_extension(bytes, extension),
+                    false => Err(format!("Can't load {} from extension .{}", std::any::type_name::<Self>(), extension)),
+                },
+            }
+        }
+    }
+    fn from_bytes_with_custom_extension(bytes : &[u8], extension : &str) -> IoResult<Self> 
+    {
+        Err(IoError::default())
+    }
+
+    fn from_based_on(base : Self::BasedOn) -> Result<Self, IoRawError> { Err(format!("can't open composite {} from raw", std::any::type_name::<Self>())) }
+}
+
+impl Save for bool 
+{
+    fn save_bytes(&self, extension : &extension) -> IoResult<Vec<u8>> {
+        Err(IoError::)
+    }
+}*/
+
+pub struct IoNodeRoot
+{
+    pub root : IoNode,
+}
+impl Deref for IoNodeRoot { type Target = IoNode; fn deref(&self) -> &Self::Target { &self.root } }
+impl DerefMut for IoNodeRoot { fn deref_mut(&mut self) -> &mut Self::Target { &mut self.root } }
+
+pub struct IoNode
+{
+    pub name     : Path,
+    pub content  : Vec<u8>,
+    pub child    : Vec<IoNode>,
+}
+
+pub trait IoMediator
+{
+    fn save_bytes(&mut self, bytes : Vec<u8>, path : &extension) -> IoResult;
+    fn load(&mut self, path : &extension) -> IoResult;
+    fn apply(&mut self) -> IoResult<IoNodeRoot>;
+}
+
 /* 
 pub trait IoError
 {

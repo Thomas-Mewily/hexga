@@ -1,2 +1,4 @@
-pub use hexga_math::prelude::*;
+pub use hexga_base::*;
+
+pub use crate::math::prelude::*;
 pub use crate::generational::prelude::*;
