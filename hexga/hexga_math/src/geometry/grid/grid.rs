@@ -137,7 +137,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
     }
 
     /// Fill the grid with the [Default] value
-    pub fn new(size : Vector::<Idx,N>) -> Self where T : Default { Self::from_fn(size, |_| Default::default())}
+    pub fn new(size : Vector::<Idx,N>) -> Self where T : Default { Self::from_fn(size, |_| ___())}
     /// Fill the grid by cloning the value
     pub fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::from_fn(size, |_idx| value.clone()) }
 }

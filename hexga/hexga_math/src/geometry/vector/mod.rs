@@ -15,7 +15,7 @@ pub struct Vector<T, const N : usize>
 }
 impl<T, const N : usize> Default for Vector<T, N> where [T; N] : Default
 {
-    fn default() -> Self { Self { array: Default::default() } }
+    fn default() -> Self { Self { array: ___() } }
 }
 impl<T, const N : usize> Vector<T,N>
 {

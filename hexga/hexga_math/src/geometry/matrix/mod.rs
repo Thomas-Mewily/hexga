@@ -58,7 +58,7 @@ impl<T, const ROW : usize, const COL : usize> Pointer  for Matrix<T, ROW, COL> w
 impl<T, const ROW : usize, const COL : usize> Default  for Matrix<T,ROW,COL>   where Vector<Vector<T, ROW>,COL> : Default
 {
     fn default() -> Self {
-        Self { columns: Default::default() }
+        Self { columns: ___() }
     }
 }
 

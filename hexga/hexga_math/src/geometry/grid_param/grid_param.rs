@@ -18,7 +18,7 @@ pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : IntegerIndex, u
     fn from_grid_with_param(grid : GridBase<T,Idx, N>, param : Param) -> Self;
     fn unpack(self) -> (GridBase<T,Idx, N>, Param);
 
-    fn from_grid(grid : GridBase<T,Idx, N>) -> Self where Param : Default { Self::from_grid_with_param(grid, Param::default()) }
+    fn from_grid(grid : GridBase<T,Idx, N>) -> Self where Param : Default { Self::from_grid_with_param(grid, Param::___()) }
 
     fn from_vec_with_param(size : Vector::<Idx,N>, value : Vec<T>, param : Param) -> Option<Self> { Self::try_from_vec_with_param(size, value, param).ok() }
     fn from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Option<Self> where Param : Default { Self::try_from_vec(size, value).ok() }
