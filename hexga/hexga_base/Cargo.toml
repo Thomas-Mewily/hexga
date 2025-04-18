@@ -15,5 +15,7 @@ default = ["serde"]
 have_len = "0.1.0"
 default_is_triple_underscore = "0.2.0"
 
+rayon = "1.10.0"
+
 # serialization
 serde = { version = "1.0", features = ["derive"], optional = true}

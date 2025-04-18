@@ -40,19 +40,31 @@ fn main()
     dbg!(h.param());
     dbg!(g.param());
 
-    let img = Image::from_fn(point2(256, 256), |p| 
+    let mut size = 2;
+    for _ in 0..16
     {
-        if (p.x / 8 + p.y / 8) % 2 == 0 
+        println!("generating...");
+        size *= 2;
+        let img = Image::from_fn(point2(size, size), |p| 
         {
-            ColorByte::WHITE
-        }else{
-            ColorByte::BLACK
-        }.with_r((p.x % 256) as u8).with_g((p.y % 256) as u8)
-    });
+            if (p.x / 8 + p.y / 8) % 2 == 0 
+            {
+                Color::WHITE
+            }else{
+                Color::BLACK
+            }.with_r(p.x as float / size as float).with_g(p.y as float / size as float).to_rgba_u8()
+        });
+        println!("saving...");
+        let path = format!("img/hello_{size}_px.png");
+        //img.tmp_write_to_png_bytes_inside(&path);
+        println!("done generating {path}");
+        println!();
+
+    }
+
 
     //dbg_mat(img.grid());
 
-    //img.tmp_write_to_png_bytes_inside("./hello.png");
     
 
     
