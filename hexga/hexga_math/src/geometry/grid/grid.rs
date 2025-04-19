@@ -127,20 +127,11 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
 
     pub fn from_fn<F>(size : Vector::<Idx,N>, mut f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T 
     {
-        let s = size.area().to_usize();
-
-        /* 
-        let mut values = Vec::with_capacity(s);
-        for v in size.to_int().iter_idx()
+        let area = size.area().to_usize();
+        let mut values = Vec::with_capacity(area);
+        for idx in size.iter_idx()
         {
-            //values.push(f(unsafe { Vector::<Idx,N>::from_index_unchecked(idx, size) }));
-            values.push(f(unsafe { Vector::<Idx,N>::from_index_unchecked(idx, size) }));
-        }
-        */
-        let mut values = Vec::with_capacity(s);
-        for idx in 0.. s
-        {
-            values.push(f(unsafe { Vector::<Idx,N>::from_index_unchecked(idx, size) }));
+            values.push(f(idx));
         }
         Self { size, value: values }
     }
@@ -148,7 +139,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
     /// Fill the grid with the [Default] value
     pub fn new(size : Vector::<Idx,N>) -> Self where T : Default { Self::from_fn(size, |_| ___())}
     /// Fill the grid by cloning the value
-    pub fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::from_fn(size, |_idx| value.clone()) }
+    pub fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::from_fn(size, |idx| value.clone()) }
 }
 
 // To avoid conflict of impl with [IGrid], [IGridView] and [IGridViewMut] when calling get(), get_mut()...
