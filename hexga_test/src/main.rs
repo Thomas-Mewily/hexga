@@ -3,7 +3,8 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashMap, fmt::Display, hint::black_box};
+use criterion::{BenchmarkId, Criterion};
 
 use hexga_graphics::Image;
 use hexga_math::prelude::*;
@@ -29,7 +30,7 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 
 fn main() 
 {
-    let g = GridParam2::from_fn_with_param(point2(2, 4), |p| p.x + 10 * p.y, "toto".to_owned());
+    let g = GridParam2::from_fn_with_param(point2(2, 4), "toto".to_owned(), |p| p.x + 10 * p.y);
     let h = g.subgrid(rect2p(1, 1, 1, 3));
     
     let x = g.get(one());
@@ -41,6 +42,8 @@ fn main()
     dbg!(g.param());
 
     let mut size = 2;
+
+    /*
     for _ in 0..16
     {
         println!("generating...");
@@ -60,12 +63,31 @@ fn main()
         println!("done generating {path}");
         println!();
 
+    }*/
+
+
+    let mut criterion: Criterion = Criterion::default().nresamples(20).sample_size(15);
+    let mut group = criterion.benchmark_group(format!("new grid"));
+
+    for size in [16,32,64,128,256,512,1024,2048,4096] //,256]
+    {
+        group.bench_with_input(BenchmarkId::new("sequencial", size), &size, 
+            |b, size| 
+            b.iter(|| { black_box(Grid2::from_fn((*size).splat2(), |p| p.sum_axis())); })
+        );
+
+        group.bench_with_input(BenchmarkId::new("parallel", size), &size, 
+        |b, size| 
+            b.iter(|| { black_box(Grid2::from_fn_par((*size).splat2(), |p| p.sum_axis())); })
+        );
     }
+    group.finish();
 
 
+    /* 
     let x = 4.0f32;
     let y : usize = usize::cast_from(x);
-
+    */
     //dbg_mat(img.grid());
 
     

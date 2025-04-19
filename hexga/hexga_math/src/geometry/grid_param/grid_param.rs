@@ -29,7 +29,9 @@ pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
         GridBase::try_from_vec(size, value).map(|g| Self::from_grid_with_param(g, param))
     }
 
-    fn from_fn_with_param<F>(size : Vector::<Idx,N>, f : F, param : Param) -> Self where F : FnMut(Vector::<Idx,N>) -> T  { Self::from_grid_with_param(GridBase::from_fn(size, f), param) }
+    /// Create a grid from a function
+    fn from_fn_with_param<F>(size : Vector::<Idx,N>, param : Param, f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T  { Self::from_grid_with_param(GridBase::from_fn(size, f), param) }
+    /// Create a grid from a function
     fn from_fn<F>(size : Vector::<Idx,N>, f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T, Param : Default { Self::from_grid(GridBase::from_fn(size, f)) }
 
     /// Fill the grid with the [Default] value
@@ -41,6 +43,22 @@ pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone, Param : Default { Self::from_grid(GridBase::new_uniform(size, value)) }
     /// Fill the grid by cloning the value
     fn new_uniform_with_param(size : Vector::<Idx,N>, value : T, param : Param) -> Self where T : Clone { Self::from_grid_with_param(GridBase::new_uniform(size, value), param) }
+
+
+    /// Create a grid from a function in parallel
+    fn from_fn_with_param_par<F>(size : Vector::<Idx,N>, param : Param, f : F) -> Self where F : Fn(Vector::<Idx,N>) -> T + Sync, T : Send, Idx : Sync { Self::from_grid_with_param(GridBase::from_fn_par(size, f), param) }
+    /// Create a grid from a function in parallel
+    fn from_fn_par<F>(size : Vector::<Idx,N>, f : F) -> Self where F : Fn(Vector::<Idx,N>) -> T + Sync, T : Send, Idx : Sync, Param : Default { Self::from_fn_with_param_par(size, ___(), f) }
+    
+    /// Fill the grid with the [Default] value in parallel
+    fn new_with_param_par(size : Vector::<Idx,N>, param : Param) -> Self where T : Default + Send, Idx : Sync { Self::from_grid_with_param(GridBase::new_par(size), param) }
+    /// Fill the grid with the [Default] value in parallel
+    fn new_par(size : Vector::<Idx,N>) -> Self where T : Default + Send, Idx : Sync, Param : Default { Self::new_with_param_par(size, ___()) }
+    
+    /// Fill the grid by cloning the value in parallel
+    fn new_uniform_with_param_par(size : Vector::<Idx,N>, value : T, param : Param) -> Self where T : Clone + Sync + Send, Idx : Sync { Self::from_grid_with_param(GridBase::new_uniform_par(size, value), param) }
+    /// Fill the grid by cloning the value in parallel
+    fn new_uniform_par(size : Vector::<Idx,N>, value : T) -> Self where T : Clone + Sync + Send, Idx : Sync, Param : Default { Self::new_uniform_with_param_par(size, value, ___()) }
 }
 
 /// A Grid that have some parameter associate with it
@@ -135,11 +153,11 @@ impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param
         GridParamBase::from_grid_with_param(self.grid.map(f), self.param.clone())
     }
     
-    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest, Self : Sized {
+    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest {
         GridParamBase::from_grid_with_param(self.grid.transform(f), self.param)
     }
     
-    fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Self : Sized, Param : Clone {
+    fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Param : Clone {
         GridParamBase::from_grid_with_param(self.grid.crop_margin(margin_start, margin_end), self.param.clone())
     }
     
@@ -174,13 +192,14 @@ impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,P
     
     type ToGrid=GridParamBase<T,Param,Idx,N>;
     fn to_grid(self) -> Self::ToGrid where T : Clone, Param : Clone { Self::ToGrid::from_grid_with_param(self.grid.to_grid(), self.param.clone()) }
-    
+    fn to_grid_par(self) -> Self::ToGrid where T : Clone + Send + Sync, Idx : Sync, Param : Clone { Self::ToGrid::from_grid_with_param(self.grid.to_grid_par(), self.param.clone()) }
+
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Param : Clone { self.subview(rect).to_grid() }
+    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone+ Send + Sync, Idx : Sync, Param : Clone { self.subview(rect).to_grid_par() }
+
     type SubView<'b> = GridParamView<'b, T, Param, Idx, N> where Self: 'b;
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone 
     { Self::SubView::from_view(self.grid.subview(rect), &self.param) }
-        
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Param : Clone, Self : Sized 
-    { self.subview(rect).to_grid() }
 }
 
 

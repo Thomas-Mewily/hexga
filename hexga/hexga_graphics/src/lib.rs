@@ -66,11 +66,11 @@ impl<T, Idx> IGrid<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
         self.0.map(f)
     }
 
-    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest, GraphicsParam : Clone, Self : Sized {
+    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest, GraphicsParam : Clone {
         self.0.transform(f)
     }
 
-    fn crop_margin(&self, margin_start : Vector2::<Idx>, margin_end : Vector2::<Idx>) -> Self where T : Clone, GraphicsParam : Clone, Self : Sized {
+    fn crop_margin(&self, margin_start : Vector2::<Idx>, margin_end : Vector2::<Idx>) -> Self where T : Clone, GraphicsParam : Clone {
         Self(self.0.crop_margin(margin_start, margin_end))
     }
 

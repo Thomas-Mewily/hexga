@@ -20,10 +20,13 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output
 
     type ToGrid;
     fn to_grid(self) -> Self::ToGrid where T : Clone, Param : Clone;
+    fn to_grid_par(self) -> Self::ToGrid where T : Clone + Send + Sync, Idx : Sync, Param : Clone;
+
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Param : Clone;
+    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone + Send + Sync, Idx : Sync, Param : Clone;
 
     type SubView<'b> where Self: 'b;
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone;
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Param : Clone, Self : Sized;
 
     fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<Idx,N>, &'a T)> where T: 'a
     {
@@ -87,10 +90,13 @@ impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx,
 
     type ToGrid=GridBase<T,Idx,N>;
     fn to_grid(self) -> Self::ToGrid where T : Clone { GridBase::from_fn(self.size(), |p| self[p].clone()) }
-    
+    fn to_grid_par(self) -> Self::ToGrid where T : Clone + Send + Sync, Idx : Sync  { GridBase::from_fn_par(self.size(), |p| self[p].clone()) }
+
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone { self.subview(rect).to_grid() }
+    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone + Send + Sync, Idx : Sync { self.subview(rect).to_grid_par() }
+
     type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Self : Sized { self.subview(rect).to_grid() }
 }
 
 impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, T, Idx, N> 
