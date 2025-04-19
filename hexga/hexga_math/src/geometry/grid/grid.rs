@@ -9,23 +9,23 @@ Todo : impl AsMut<&[T]> AsRef<&[T]>
 
 /// A N dimensional grid
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
-pub struct GridBase<T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub struct GridBase<T, Idx, const N : usize> where Idx : IntegerIndex
 {
     size  : Vector<Idx,N>,
     value : Vec<T>,
 }
 
 #[derive(Debug)]
-pub struct IterMut<'a, T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub struct IterMut<'a, T, Idx, const N : usize> where Idx : IntegerIndex
 {
     value : std::iter::Enumerate<std::slice::IterMut<'a, T>>,
     size  : Vector<Idx,N>,
 }
-impl<'a, T, Idx, const N : usize> IterMut<'a,T,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<'a, T, Idx, const N : usize> IterMut<'a,T,Idx,N> where Idx : IntegerIndex
 {
     pub fn new(grid : &'a mut GridBase<T,Idx,N>) -> Self { Self { value: grid.value.iter_mut().enumerate(), size: grid.size }}
 }
-impl<'a, T, Idx, const N : usize> Iterator for IterMut<'a,T,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<'a, T, Idx, const N : usize> Iterator for IterMut<'a,T,Idx,N> where Idx : IntegerIndex
 {
     type Item=(Vector<Idx,N>, &'a mut T);
     fn next(&mut self) -> Option<Self::Item> {
@@ -33,7 +33,7 @@ impl<'a, T, Idx, const N : usize> Iterator for IterMut<'a,T,Idx,N> where Idx : I
     }
 }
 
-impl<'a, T, Idx, const N : usize> IntoIterator for &'a mut GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<'a, T, Idx, const N : usize> IntoIterator for &'a mut GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     type Item = (Vector<Idx,N>, &'a mut T);
     type IntoIter = IterMut::<'a,T,Idx,N>;
@@ -43,16 +43,16 @@ impl<'a, T, Idx, const N : usize> IntoIterator for &'a mut GridBase<T, Idx, N> w
 
 
 #[derive(Clone, Debug)]
-pub struct Iter<'a, T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub struct Iter<'a, T, Idx, const N : usize> where Idx : IntegerIndex
 {
     value : std::iter::Enumerate<std::slice::Iter<'a, T>>,
     size  : Vector<Idx,N>,
 }
-impl<'a, T, Idx, const N : usize> Iter<'a,T,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<'a, T, Idx, const N : usize> Iter<'a,T,Idx,N> where Idx : IntegerIndex
 {
     pub fn new(grid : &'a  GridBase<T,Idx,N>) -> Self { Self { value: grid.value.iter().enumerate(), size: grid.size }}
 }
-impl<'a, T, Idx, const N : usize> Iterator for Iter<'a,T,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<'a, T, Idx, const N : usize> Iterator for Iter<'a,T,Idx,N> where Idx : IntegerIndex
 {
     type Item=(Vector<Idx,N>, &'a T);
     fn next(&mut self) -> Option<Self::Item> {
@@ -60,7 +60,7 @@ impl<'a, T, Idx, const N : usize> Iterator for Iter<'a,T,Idx,N> where Idx : Inte
     }
 }
 
-impl<'a, T, Idx, const N : usize> IntoIterator for &'a GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<'a, T, Idx, const N : usize> IntoIterator for &'a GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     type Item = (Vector<Idx,N>, &'a T);
     type IntoIter = Iter::<'a,T,Idx,N>;
@@ -71,16 +71,16 @@ impl<'a, T, Idx, const N : usize> IntoIterator for &'a GridBase<T, Idx, N> where
 
 
 #[derive(Debug)]
-pub struct IntoIter<T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub struct IntoIter<T, Idx, const N : usize> where Idx : IntegerIndex
 {
     value : std::iter::Enumerate<std::vec::IntoIter<T>>,
     size  : Vector<Idx,N>,
 }
-impl<T, Idx, const N : usize> IntoIter<T,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> IntoIter<T,Idx,N> where Idx : IntegerIndex
 {
     pub fn new(grid : GridBase<T,Idx,N>) -> Self { Self { value: grid.value.into_iter().enumerate(), size: grid.size }}
 }
-impl<T, Idx, const N : usize> Iterator for IntoIter<T,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> Iterator for IntoIter<T,Idx,N> where Idx : IntegerIndex
 {
     type Item=(Vector<Idx,N>, T);
     fn next(&mut self) -> Option<Self::Item> {
@@ -88,7 +88,7 @@ impl<T, Idx, const N : usize> Iterator for IntoIter<T,Idx,N> where Idx : Integer
     }
 }
 
-impl<T, Idx, const N : usize> IntoIterator for GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> IntoIterator for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     type Item = (Vector<Idx,N>, T);
     type IntoIter = IntoIter::<T,Idx,N>;
@@ -98,14 +98,14 @@ impl<T, Idx, const N : usize> IntoIterator for GridBase<T, Idx, N> where Idx : I
  
 
 #[derive(Clone)]
-pub enum GridBaseError<Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub enum GridBaseError<Idx, const N : usize> where Idx : IntegerIndex
 {
     NegativeSize(Vector::<Idx,N>),
     /// (dim, got)
     WrongDimension(Vector<Idx,N>, usize),
 }
 
-impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Idx : IntegerIndex
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult {
         match self {
@@ -115,7 +115,7 @@ impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Id
     }
 }
 
-impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     pub fn from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Option<Self> { Self::try_from_vec(size, value).ok() }
     pub fn try_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Result<Self, GridBaseError<Idx,N>>
@@ -128,6 +128,15 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
     pub fn from_fn<F>(size : Vector::<Idx,N>, mut f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T 
     {
         let s = size.area().to_usize();
+
+        /* 
+        let mut values = Vec::with_capacity(s);
+        for v in size.to_int().iter_idx()
+        {
+            //values.push(f(unsafe { Vector::<Idx,N>::from_index_unchecked(idx, size) }));
+            values.push(f(unsafe { Vector::<Idx,N>::from_index_unchecked(idx, size) }));
+        }
+        */
         let mut values = Vec::with_capacity(s);
         for idx in 0.. s
         {
@@ -143,7 +152,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
 }
 
 // To avoid conflict of impl with [IGrid], [IGridView] and [IGridViewMut] when calling get(), get_mut()...
-impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     pub fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { IGrid::get(self, pos) }
     pub fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { IGrid::get_mut(self, pos) }
@@ -159,7 +168,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usiz
 }
 
 /// Param is just used to know if it is clonable or not because of [GridParam]
-pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, 
+pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex, 
     Self : IRectangle<Idx,N> 
         + Index<Vector<Idx,N>,Output=T> + IndexMut<Vector<Idx,N>,Output=T>
         // impl details :
@@ -235,7 +244,7 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize 
 }
 
 impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
 {
     fn values(&self) -> &[T] { &self.value }
     fn values_mut(&mut self) -> &mut [T] { &mut self.value }
@@ -257,7 +266,7 @@ impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N>
 }
 
 impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.get_unchecked(pos) } }
@@ -272,7 +281,7 @@ impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N>
 }
 
 impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
 {
     fn size(&self) -> Vector<Idx, N> { self.size }
     fn begin(&self) -> Vector<Idx,N> { zero() }
@@ -289,7 +298,7 @@ impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N>
 }
 
 impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.get_mut(pos) }
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { unsafe { self.get_unchecked_mut(pos) } }
@@ -302,39 +311,39 @@ impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N>
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new(self, rect) }
 }
 
-impl<T, Idx, const N : usize> Index<usize> for GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> Index<usize> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     type Output=T;
     fn index(&self, index: usize) -> &Self::Output { self.get_index(index).unwrap() }
 }
-impl<T, Idx, const N : usize> IndexMut<usize> for GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> IndexMut<usize> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_index_mut(index).unwrap() }
 }
 
-impl<T, Idx, const N : usize> Index<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> Index<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     type Output=T;
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
 }
-impl<T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
 }
 
-impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     pub fn iter(&self) -> Iter<'_,T,Idx,N> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_,T,Idx,N> { self.into_iter() }
 }
 
 impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+    where Idx : IntegerIndex
 { 
     fn len(&self) -> usize { self.len() }
 }
 /* 
-impl<T, Idx, const N : usize> GridOf<T, N, I> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+impl<T, Idx, const N : usize> GridOf<T, N, I> where Idx : IntegerIndex
 {
     /// map a function on each tile to create a new grid
     pub fn map<Z, F>(&self, f : F) -> GridOf<Z, N, I> where F : FnMut(&T) -> Z { GridOf { size: self.size, value: self.value.iter().map(f).collect() } }

@@ -1,6 +1,6 @@
 use crate::*;
 
-pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     Self : Sized + IGrid<T,Param,Idx,N>
 {
     fn grid(&self) -> &GridBase<T,Idx, N>;
@@ -45,14 +45,14 @@ pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : IntegerIndex, u
 
 /// A Grid that have some parameter associate with it
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
-pub struct GridParamBase<T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub struct GridParamBase<T, Param, Idx, const N : usize> where Idx : IntegerIndex
 {
     pub grid    : GridBase<T,Idx, N>,
     pub param   : Param,
 }
 
 impl<T,Param,Idx,const N : usize> IGridParam<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N>
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+    where Idx : IntegerIndex
 {
     fn grid(&self) -> &GridBase<T,Idx, N> { &self.grid }
     fn grid_mut(&mut self) -> &mut GridBase<T,Idx, N> { &mut self.grid }
@@ -70,7 +70,7 @@ impl<T,Param,Idx,const N : usize> IGridParam<T,Param,Idx,N> for GridParamBase<T,
 
 /* 
 /// Same constructor as grid
-impl<T,Param,Idx,const N : usize> GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T,Param,Idx,const N : usize> GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
     Param : Default
 {
     pub fn from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Option<Self> { Self::try_from_vec(size, value).ok() }
@@ -89,7 +89,7 @@ impl<T,Param,Idx,const N : usize> GridParamBase<T,Param,Idx,N> where Idx : Integ
     
 
 /// Same constructor as grid + with param
-impl<T,Param,Idx,const N : usize> GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T,Param,Idx,const N : usize> GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
     pub fn from_vec_with_param(size : Vector::<Idx,N>, value : Vec<T>, param : Param) -> Option<Self> { Self::try_from_vec_with_param(size, value, param).ok() }
     pub fn try_from_vec_with_param(size : Vector::<Idx,N>, value : Vec<T>, param : Param) -> Result<Self, GridBaseError<Idx,N>>
@@ -107,7 +107,7 @@ impl<T,Param,Idx,const N : usize> GridParamBase<T,Param,Idx,N> where Idx : Integ
 */
 
 
-impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
     fn size (&self) -> Vector<Idx,N> { self.grid.size()  }
     fn begin(&self) -> Vector<Idx,N> { self.grid.begin() }
@@ -123,7 +123,7 @@ impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Id
     #[inline] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
-impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
     fn values(&self) -> &[T] { self.grid.values() }
     fn values_mut(&mut self) -> &mut [T] { self.grid.values_mut() }
@@ -152,7 +152,7 @@ impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param
 
 
 // To avoid conflict of impl with [IGrid], [IGridView] and [IGridViewMut] when calling get(), get_mut()...
-impl<T,Param,Idx, const N : usize> GridParamBase<T, Param, Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T,Param,Idx, const N : usize> GridParamBase<T, Param, Idx, N> where Idx : IntegerIndex,
 {
     pub fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { IGrid::get(self, pos) }
     pub fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { IGrid::get_mut(self, pos) }
@@ -167,7 +167,7 @@ impl<T,Param,Idx, const N : usize> GridParamBase<T, Param, Idx, N> where Idx : I
     pub fn len(&self) -> usize { IGrid::len(self) }
 }
 
-impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(pos) } }
@@ -184,7 +184,7 @@ impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,P
 }
 
 
-impl<T,Param,Idx,const N : usize> IGridViewMut<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T,Param,Idx,const N : usize> IGridViewMut<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.grid.get_mut(pos) }
 
@@ -195,34 +195,34 @@ impl<T,Param,Idx,const N : usize> IGridViewMut<T,Param,Idx,N> for GridParamBase<
     fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool { self.grid.swap(pos_a, pos_b) }
 }
 
-impl<T, Param, Idx, const N : usize> Index<usize> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T, Param, Idx, const N : usize> Index<usize> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
 {
     type Output=T;
     fn index(&self, index: usize) -> &Self::Output { self.get_index(index).unwrap() }
 }
-impl<T, Param, Idx, const N : usize> IndexMut<usize> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T, Param, Idx, const N : usize> IndexMut<usize> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_index_mut(index).unwrap() }
 }
 
-impl<T, Param, Idx, const N : usize> Index<Vector<Idx,N>> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T, Param, Idx, const N : usize> Index<Vector<Idx,N>> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
 {
     type Output=T;
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
 }
-impl<T, Param, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T, Param, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
 {
     fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
 }
 
-impl<T, Param, Idx, const N : usize> GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+impl<T, Param, Idx, const N : usize> GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
 {
     pub fn iter(&self) -> Iter<'_,T,Idx,N> { self.grid.iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_,T,Idx,N> { self.grid.iter_mut() }
 }
 
 impl<T, Param, Idx, const N : usize> Length for GridParamBase<T,Param,Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
 { 
     fn len(&self) -> usize { self.grid().len() }
 }

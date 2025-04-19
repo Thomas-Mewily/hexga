@@ -302,7 +302,7 @@ impl<T,const N : usize> Lerpable for Rectangle<T,N> where T : Number, Vector<T,N
 impl<T,const N : usize> Rectangle<T,N> 
     where Vector<T,N> : Number,
     T : Number ,
-    usize : CastTo<T>
+    usize : CastInto<T>
 {
     pub fn split_axis(&self, axis : Vector<T,N>, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_
     {

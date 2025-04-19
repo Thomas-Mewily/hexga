@@ -21,10 +21,10 @@ pub type Image<T=ColorByte>=ImageBase<T,int>;
 /// Grid wrapper just for the serialization...
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 pub struct ImageBase<T, Idx> (GridParamBase<T,GraphicsParam,Idx, 2>)
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor;
+    where Idx : IntegerIndex, T : IColor;
 
 // To avoid conflict of impl with [IGrid], [IGridView] and [IGridViewMut] when calling get(), get_mut()...
-impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, T : IColor
 {
     pub fn get(&self, pos : Vector2::<Idx>) -> Option<&T> { IGrid::get(self, pos) }
     pub fn get_mut(&mut self, pos : Vector2::<Idx>) -> Option<&mut T> { IGrid::get_mut(self, pos) }
@@ -40,7 +40,7 @@ impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isi
 }
 
 impl<T, Idx> IGridParam<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+    where Idx : IntegerIndex, T : IColor
 {
     fn grid(&self) -> &GridBase<T,Idx, 2> { self.0.grid() }
     fn grid_mut(&mut self) -> &mut GridBase<T,Idx, 2> { self.0.grid_mut() }
@@ -53,7 +53,7 @@ impl<T, Idx> IGridParam<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
 }
 
 impl<T, Idx> IGrid<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+    where Idx : IntegerIndex, T : IColor
 {
     fn values(&self) -> &[T]  { self.0.values() }
     fn values_mut(&mut self) -> &mut [T] { self.0.values_mut() }
@@ -82,41 +82,41 @@ impl<T, Idx> IGrid<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
 }
 
 impl<T, Idx> IRectangle<Idx,2> for ImageBase<T,Idx>
-where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+where Idx : IntegerIndex, T : IColor
 {
     fn size(&self) -> Vector2::<Idx> { self.0.size() }
     fn begin(&self) -> Vector2::<Idx> { self.0.begin() }
 }
 
 
-impl<T, Idx> Index<usize> for ImageBase<T,Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+impl<T, Idx> Index<usize> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
 {
     type Output=T;
     fn index(&self, index: usize) -> &Self::Output { self.get_index(index).unwrap() }
 }
-impl<T, Idx> IndexMut<usize> for ImageBase<T,Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+impl<T, Idx> IndexMut<usize> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_index_mut(index).unwrap() }
 }
 
-impl<T, Idx> Index<Vector2::<Idx>> for ImageBase<T,Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+impl<T, Idx> Index<Vector2::<Idx>> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
 {
     type Output=T;
     fn index(&self, index: Vector2::<Idx>) -> &Self::Output { self.get(index).unwrap() }
 }
-impl<T, Idx> IndexMut<Vector2::<Idx>> for ImageBase<T,Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+impl<T, Idx> IndexMut<Vector2::<Idx>> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
 {
     fn index_mut(&mut self, index: Vector2::<Idx>) -> &mut Self::Output { self.get_mut(index).unwrap() }
 }
 
-impl<T, Idx> ImageBase<T,Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+impl<T, Idx> ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
 {
     pub fn iter(&self) -> hexga_math::grid::Iter<'_,T,Idx,2> { self.0.iter() }
     pub fn iter_mut(&mut self) -> hexga_math::grid::IterMut<'_,T,Idx,2> { self.0.iter_mut() }
 }
 
 impl<T, Idx> Length for ImageBase<T,Idx> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+    where Idx : IntegerIndex, T : IColor
 { 
     fn len(&self) -> usize { self.grid().len() }
 }
@@ -148,7 +148,7 @@ pub type ImageBase<T,Idx> = GridParamBase<T,GraphicsParam,Idx,2>;
 */
 
 
-impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, T : IColor
+impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, T : IColor
 {
     
     pub(crate) fn raw_bytes_rgba(&self) -> Vec<u8>
@@ -159,7 +159,7 @@ impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isi
         {
             for x in 0..self.size_x().to_usize()
             {
-                let pixel = self[vector2(x.cast_to(), y.cast_to())].to_rgba_u8();
+                let pixel = self[vector2(Idx::cast_from(x), Idx::cast_from(y))].to_rgba_u8();
 
                 v.push(pixel.r);
                 v.push(pixel.g);
@@ -178,8 +178,8 @@ impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, usize : CastTo<Idx>, isi
         {
             for x in 0..self.size_x().to_usize()
             {
-                let pixel = self[vector2(x.cast_to(), y.cast_to())].to_rgba_u8();
-
+                let pixel = self[vector2(Idx::cast_from(x), Idx::cast_from(y))].to_rgba_u8();
+                
                 v.push(pixel.r);
                 v.push(pixel.g);
                 v.push(pixel.b);

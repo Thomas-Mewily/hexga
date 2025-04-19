@@ -4,7 +4,7 @@ use hexga_map_on::*;
 
 /// Might lose some precision.
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
-pub trait CastTo<T>
+pub trait CastInto<T>
 {
     /// Might lose some precision.
     /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
@@ -16,7 +16,7 @@ macro_rules! impl_cast_to
 { 
     ($itself: ty, $cast_into: ty) => 
     { 
-        impl CastTo<$cast_into> for $itself
+        impl CastInto<$cast_into> for $itself
         {
             fn cast_to(self) -> $cast_into { self as _ }
         }
@@ -45,12 +45,12 @@ macro_rules! impl_cast_to_bool
 { 
     ($itself: ty) => 
     {
-        impl CastTo<bool> for $itself
+        impl CastInto<bool> for $itself
         {
             fn cast_to(self) -> bool { self == (0 as $itself) }
         }
     };
 }
 map_on_number!(impl_cast_to_bool);
-impl CastTo<bool> for bool { fn cast_to(self) -> bool { self } }
+impl CastInto<bool> for bool { fn cast_to(self) -> bool { self } }
 */

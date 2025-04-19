@@ -3,14 +3,14 @@ use crate::*;
 
 /// A slice inside a [GridParam]
 #[derive(Clone, Debug, Copy, PartialEq, Eq)]
-pub struct GridParamView<'a, T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub struct GridParamView<'a, T, Param, Idx, const N : usize> where Idx : IntegerIndex
 {
     view  : GridView<'a,T,Idx,N>,
     param : &'a Param,
 }
 
 impl<'a, T, Param, Idx, const N : usize> GridParamView<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     pub fn from_grid(grid : &'a GridParamBase<T,Param,Idx,N>) -> Self 
     { 
@@ -37,7 +37,7 @@ impl<'a, T, Param, Idx, const N : usize> GridParamView<'a, T, Param, Idx, N>
 
 
 impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamView<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.view.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.view.get_unchecked(pos) } }
@@ -54,14 +54,14 @@ impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamV
 }
 
 impl<'a, T, Param, Idx, const N : usize> IRectangle<Idx,N> for GridParamView<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     fn begin(&self) -> Vector<Idx,N> { self.view.begin() }
     fn size (&self) -> Vector<Idx,N> { self.view.size()  }
 }
 
 impl<'a, T, Param, Idx, const N : usize> Index<Vector<Idx,N>> for GridParamView<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     type Output=T;
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.view.index(index) }

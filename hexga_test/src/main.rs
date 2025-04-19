@@ -63,6 +63,9 @@ fn main()
     }
 
 
+    let x = 4.0f32;
+    let y : usize = usize::cast_from(x);
+
     //dbg_mat(img.grid());
 
     

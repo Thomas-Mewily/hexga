@@ -100,11 +100,11 @@ impl<T,const N : usize> Vector<T,N>
     }
 }
 
-pub trait IntegerIndex : Integer + CastTo<isize> + CastTo<usize> where usize : CastTo<Self>, isize : CastTo<Self> {}
-impl<T> IntegerIndex for T where T : Integer + CastTo<isize> + CastTo<usize>, usize : CastTo<Self>, isize : CastTo<Self> {}
+pub trait IntegerIndex : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> {}
+impl<T> IntegerIndex for T where T : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> {}
 
 impl<Idx, const N : usize> Vector<Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+    where Idx : IntegerIndex
 {
     pub fn to_index(self, size : Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_index_unchecked(size) }) }
     
@@ -130,8 +130,8 @@ impl<Idx, const N : usize> Vector<Idx, N>
         let mut i = 0;
         while i < N
         {
-            let current_axis_len : usize = <Idx as CastToComposite<usize>>::cast_to(size[i]);
-            let current_value    : usize = <Idx as CastToComposite<usize>>::cast_to(self[i]);
+            let current_axis_len : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(size[i]);
+            let current_value    : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(self[i]);
             
             index_1d          += current_value * area_cumulative;
             area_cumulative *= current_axis_len;
@@ -142,7 +142,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
 
     pub fn from_index(index : usize, size : Self) -> Option<Self>
     {
-        let area : usize = <Idx as CastToComposite<usize>>::cast_to(size.area());
+        let area : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(size.area());
         (index < area).then(|| unsafe { Self::from_index_unchecked(index, size) }) 
     }
 
@@ -174,8 +174,8 @@ impl<Idx, const N : usize> Vector<Idx, N>
         let mut i = 0;
         while i < N 
         {
-            let current_axis_len : usize = <Idx as CastToComposite<usize>>::cast_to(size[i]);
-            result[i] = ((index / area_cumulative) % current_axis_len).cast_to();
+            let current_axis_len : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(size[i]);
+            result[i] = Idx::cast_from((index / area_cumulative) % current_axis_len);
             area_cumulative *= current_axis_len;
             i += 1;
         }

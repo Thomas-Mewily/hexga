@@ -3,7 +3,7 @@ use crate::*;
 
 /// A mutable slice inside a [GridParam]
 #[derive(Debug, Hash)]
-pub struct GridParamViewMut<'a, T, Param, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub struct GridParamViewMut<'a, T, Param, Idx, const N : usize> where Idx : IntegerIndex
 
 {
     view  : GridViewMut<'a,T,Idx,N>,
@@ -11,7 +11,7 @@ pub struct GridParamViewMut<'a, T, Param, Idx, const N : usize> where Idx : Inte
 }
 
 impl<'a, T, Param, Idx, const N : usize> GridParamViewMut<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     pub fn from_grid(grid : &'a mut GridParamBase<T,Param,Idx,N>) -> Self 
     { 
@@ -37,7 +37,7 @@ impl<'a, T, Param, Idx, const N : usize> GridParamViewMut<'a, T, Param, Idx, N>
 }
 
 impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamViewMut<'a, T, Param, Idx,N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.view.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.view.get_unchecked(pos) } }
@@ -51,14 +51,14 @@ impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamV
 }
 
 impl<'a, T, Param, Idx, const N : usize> IRectangle<Idx,N> for GridParamViewMut<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>  
+    where Idx : IntegerIndex  
 {
     fn begin(&self) -> Vector<Idx,N> { self.view.begin() }
     fn size (&self) -> Vector<Idx,N> { self.view.size()  }
 }
 
 impl<'a, T, Param, Idx, const N : usize> IGridViewMut<T,Param,Idx,N> for GridParamViewMut<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.view.get_mut(pos) }
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { unsafe { self.view.get_unchecked_mut(pos) } }
@@ -71,7 +71,7 @@ impl<'a, T, Param, Idx, const N : usize> IGridViewMut<T,Param,Idx,N> for GridPar
 }
 
 impl<'a, T, Param, Idx, const N : usize> PartialEq for GridParamViewMut<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> ,
+    where Idx : IntegerIndex ,
     T : PartialEq,
 {
     fn eq(&self, other: &Self) -> bool {
@@ -81,19 +81,19 @@ impl<'a, T, Param, Idx, const N : usize> PartialEq for GridParamViewMut<'a, T, P
 }
 
 impl<'a, T, Param, Idx, const N : usize> Eq for GridParamViewMut<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> , 
+    where Idx : IntegerIndex , 
     T : Eq, 
 { }
 
 impl<'a, T, Param, Idx, const N : usize> Index<Vector<Idx,N>> for GridParamViewMut<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
 {
     type Output=T;
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
 }
 
 impl<'a, T, Param, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridParamViewMut<'a, T, Param, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
 {
     fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
 }

@@ -9,12 +9,12 @@ pub trait ToAngle
 }
 impl_composite_output_with_methods!(ToAngle, degree, radian, turn);
 
-impl<T> ToAngle for T where T : CastTo<float>
+impl<T> ToAngle for T where T : CastInto<float>
 {
     type Output = Angle;
-    fn degree(self) -> Angle { Angle::from_degree(self.cast_to()) }
-    fn radian(self) -> Angle { Angle::from_radian(self.cast_to()) }
-    fn turn  (self) -> Angle { Angle::from_turn  (self.cast_to()) }
+    fn degree(self) -> Angle { Angle::from_degree(self.cast_into_composite()) }
+    fn radian(self) -> Angle { Angle::from_radian(self.cast_into_composite()) }
+    fn turn  (self) -> Angle { Angle::from_turn  (self.cast_into_composite()) }
 }
 
 pub type Angle = AngleOf<float>;

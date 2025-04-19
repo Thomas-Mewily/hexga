@@ -5,7 +5,7 @@ use crate::*;
 /// [Param] is a silent parameter, generally void, that is here to facilitate the API for [GridParam] because some function depend 
 /// if the param is clonable or not. 
 pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output = T> + IRectangle<Idx, N>
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+    where Idx : IntegerIndex
 {
     /* 
     // Can't be easily optimized (they will call `self.get(pos)`), so it is better to omit them
@@ -34,14 +34,14 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output
 
 /// A slice inside a [Grid]
 #[derive(Clone, Debug, Copy, Hash)]
-pub struct GridView<'a, T, Idx, const N : usize> where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>
+pub struct GridView<'a, T, Idx, const N : usize> where Idx : IntegerIndex
 {
     grid : &'a GridBase<T,Idx,N>,
     view : Rectangle<Idx,N>,
 }
 
 impl<'a, T, Idx, const N : usize> PartialEq for GridView<'a, T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>,
+    where Idx : IntegerIndex,
     T : PartialEq
 {
     fn eq(&self, other: &Self) -> bool {
@@ -51,11 +51,11 @@ impl<'a, T, Idx, const N : usize> PartialEq for GridView<'a, T, Idx, N>
 }
 
 impl<'a, T, Idx, const N : usize> Eq for GridView<'a, T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx>, 
+    where Idx : IntegerIndex, 
     T : Eq { }
 
 impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     pub fn from_grid(grid : &'a GridBase<T,Idx,N>) -> Self 
     {
@@ -80,7 +80,7 @@ impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N>
 
 
 impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
@@ -94,14 +94,14 @@ impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx,
 }
 
 impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     fn begin(&self) -> Vector<Idx,N> { self.view.begin() }
     fn size (&self) -> Vector<Idx,N> { self.view.size()  }
 }
 
 impl<'a, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridView<'a, T, Idx, N> 
-    where Idx : IntegerIndex, usize : CastTo<Idx>, isize : CastTo<Idx> 
+    where Idx : IntegerIndex 
 {
     type Output=T;
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
