@@ -3,7 +3,7 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-use std::{collections::HashMap, fmt::Display, hint::black_box};
+use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_box};
 use criterion::{BenchmarkId, Criterion};
 
 //use hexga_graphics::Image;
@@ -32,6 +32,8 @@ fn main()
 {
     let g = Grid2::from_vec(2.splat2(), vec!["toto", "f", "bar", "x"]).unwrap();
     println!("{}", g.view().format().with_separator(" "));
+
+    let custom_serde : HashMap::<TypeId, fn(&dyn Any)>;
 
     /* 
     let g = GridParam2::from_fn_with_param(point2(2, 4), "toto".to_owned(), |p| p.x + 10 * p.y);
