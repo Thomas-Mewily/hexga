@@ -294,7 +294,7 @@ checksum = "fbd780fe5cc30f81464441920d82ac8740e2e46b29a6fad543ddd075229ce37e"
 
 [[package]]
 name = "hexga"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "hexga_base",
  "hexga_generational",
@@ -304,11 +304,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_array"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 
 [[package]]
 name = "hexga_base"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "default_is_triple_underscore",
  "have_len",
@@ -318,14 +318,14 @@ dependencies = [
 
 [[package]]
 name = "hexga_bitflags"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "hexga_number",
 ]
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "hexga_base",
  "hexga_number",
@@ -334,7 +334,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_graphics"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "hexga_base",
  "hexga_math",
@@ -344,7 +344,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_io"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "bincode",
  "hexga_base",
@@ -356,11 +356,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_map_on"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 
 [[package]]
 name = "hexga_math"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "hexga_array",
  "hexga_base",
@@ -371,7 +371,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "hexga_map_on",
 ]
@@ -387,7 +387,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_tools"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 dependencies = [
  "have_len",
  "hexga_number",
@@ -396,7 +396,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 
 [[package]]
 name = "image"
@@ -685,7 +685,7 @@ dependencies = [
 
 [[package]]
 name = "share_crate"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 
 [[package]]
 name = "simd-adler32"
@@ -706,7 +706,7 @@ dependencies = [
 
 [[package]]
 name = "template"
-version = "0.0.10-beta.2"
+version = "0.0.10-beta.3"
 
 [[package]]
 name = "tinytemplate"
