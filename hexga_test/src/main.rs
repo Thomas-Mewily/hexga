@@ -6,7 +6,7 @@
 use std::{collections::HashMap, fmt::Display, hint::black_box};
 use criterion::{BenchmarkId, Criterion};
 
-use hexga_graphics::Image;
+//use hexga_graphics::Image;
 use hexga_math::prelude::*;
 
 /*

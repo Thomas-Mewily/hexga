@@ -178,6 +178,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
 /// Param is just used to know if it is clonable or not because of [GridParam]
 pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex, 
     Self : IRectangle<Idx,N> 
+        + IGridView<T, Param, Idx, N>
         + Index<Vector<Idx,N>,Output=T> + IndexMut<Vector<Idx,N>,Output=T>
         // impl details :
         + Index<usize,Output=T> + IndexMut<usize,Output=T>
@@ -231,18 +232,14 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     /// Do nothings if the index is outside the range
     fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
 
-    type Map<Dest>;
-    /// map a function on each tile to create a new grid
-    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, Param : Clone;
-
-    /// `map_into`, transform the current grid by value
-    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest, Param : Clone;
-
     fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, Idx : PartialOrd { r.intersect_or_empty(self.rect()) }
 
     fn len(&self) -> usize { self.values().len() }
 
     fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Param : Clone;
+
+    fn transform<Dest, F>(self, f : F) -> <Self as IGridView<T,Param,Idx,N>>::Map<Dest> where F : FnMut(T) -> Dest, Param : Clone;
+    fn transform_par<Dest, F>(self, f : F) -> <Self as IGridView<T,Param,Idx,N>>::Map<Dest> where F : Fn(T) -> Dest + Sync + Send, T : Send + Sync, Dest : Send, Idx : Sync, Param : Clone;
 
     type View<'a> : IGridView<T,Param,Idx,N> where Self: 'a;
     fn view<'a>(&'a self) -> Self::View<'a>;
@@ -259,11 +256,11 @@ impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N>
 
     fn into_values(self) -> Vec<T> { self.value }
 
-    type Map<Dest> = GridBase<Dest, Idx, N>;
-    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest { GridBase { size: self.size, value: self.value.iter().map(f).collect() } }
-
-    fn transform<Z, F>(self, f : F) -> GridBase<Z, Idx, N> where F : FnMut(T) -> Z { GridBase { size: self.size, value: self.value.into_iter().map(f).collect() } }
-
+    fn transform<Dest, F>(self, f : F) -> <Self as IGridView<T,(),Idx,N>>::Map<Dest> where F : FnMut(T) -> Dest 
+    { GridBase { size: self.size, value: self.value.into_iter().map(f).collect() } }
+    fn transform_par<Dest, F>(self, f : F) -> <Self as IGridView<T,(),Idx,N>>::Map<Dest> where F : Fn(T) -> Dest + Sync + Send, T : Send + Sync, Dest : Send, Idx : Sync, () : Clone 
+    { GridBase { size: self.size, value: self.value.into_par_iter().map(f).collect() } }
+    
     fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone { self.view().crop_margin(margin_start, margin_end).to_grid() }
 
     type View<'a> = grid::GridView<'a, T,Idx,N> where Self: 'a;
@@ -271,6 +268,8 @@ impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N>
 
     type ViewMut<'a> = grid::GridViewMut<'a, T,Idx,N> where Self: 'a;
     fn view_mut<'a>(&'a mut self) -> grid::GridViewMut<'a, T,Idx,N> { grid::GridViewMut::from_grid(self) }
+    
+
 }
 
 impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N> 
@@ -279,13 +278,12 @@ impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N>
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.get_unchecked(pos) } }
 
-    
-    type ToGrid=Self;
-    fn to_grid(self) -> Self::ToGrid where T : Clone { self }
-    fn to_grid_par(self) -> Self::ToGrid where T : Clone { self }
+    type Map<Dest>=GridBase<Dest, Idx, N>;
+    fn map<Dest, F>(&self, mut f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, () : Clone { GridBase::from_fn(self.size(), |p| f(&self[p])) }
+    fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, () : Clone  { GridBase::from_fn_par(self.size(), |p| f(&self[p])) }
 
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone { self.view().subgrid(rect) }
-    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone + Send + Sync, Idx : Sync { self.view().subgrid_par(rect) }
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone { self.view().subgrid(rect) }
+    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync { self.view().subgrid_par(rect) }
 
     type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
     fn subview<'a>(&'a self, rect : Rectangle<Idx, N>) -> Self::SubView<'a> where T : Clone { GridView::new(self, rect) }

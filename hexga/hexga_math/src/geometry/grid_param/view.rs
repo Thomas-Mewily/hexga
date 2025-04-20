@@ -42,12 +42,12 @@ impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamV
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.view.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.view.get_unchecked(pos) } }
     
-    type ToGrid=GridParamBase<T,Param,Idx,N>;
-    fn to_grid(self) -> Self::ToGrid where T : Clone, Param : Clone { Self::ToGrid::from_grid_with_param(self.view.to_grid(), self.param.clone()) }
-    fn to_grid_par(self) -> Self::ToGrid where T : Clone + Send + Sync, Idx : Sync, Param : Clone { Self::ToGrid::from_grid_with_param(self.view.to_grid_par(), self.param.clone()) }
+    type Map<Dest>=GridParamBase<Dest,Param,Idx,N>;
+    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, Param : Clone { GridParamBase::from_grid_with_param(self.view.map(f), self.param.clone()) }
+    fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, Param : Clone { GridParamBase::from_grid_with_param(self.view.map_par(f), self.param.clone()) }
 
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone, Param : Clone { self.subview(rect).to_grid() }
-    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::ToGrid where T : Clone + Send + Sync, Idx : Sync, Param : Clone  { self.subview(rect).to_grid_par() }
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone, Param : Clone { self.subview(rect).to_grid() }
+    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync, Param : Clone  { self.subview(rect).to_grid_par() }
 
     type SubView<'b> = GridParamView<'b, T, Param, Idx, N> where Self: 'b;
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone

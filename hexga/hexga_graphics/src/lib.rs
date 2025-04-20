@@ -8,7 +8,7 @@ use std::{io::Write, ops::{Index, IndexMut}};
 use hexga_base::*;
 use hexga_math::{grid::GridBase, grid_param::GridParamBase, prelude::*, Color, ColorByte, IColor};
 
-
+/* 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
@@ -60,15 +60,6 @@ impl<T, Idx> IGrid<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
 
     fn into_values(self) -> Vec<T> { self.0.into_values() }
 
-    type Map<Dest>=<GridParamBase<T, GraphicsParam, Idx, 2> as hexga_math::prelude::IGrid<T,GraphicsParam,Idx,2>>::Map<Dest>;
-
-    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, GraphicsParam : Clone {
-        self.0.map(f)
-    }
-
-    fn transform<Dest, F>(self, f : F) -> Self::Map<Dest> where F : FnMut(T) -> Dest, GraphicsParam : Clone {
-        self.0.transform(f)
-    }
 
     fn crop_margin(&self, margin_start : Vector2::<Idx>, margin_end : Vector2::<Idx>) -> Self where T : Clone, GraphicsParam : Clone {
         Self(self.0.crop_margin(margin_start, margin_end))
@@ -79,6 +70,47 @@ impl<T, Idx> IGrid<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
 
     type ViewMut<'a>  = <GridParamBase<T, GraphicsParam, Idx, 2> as hexga_math::prelude::IGrid<T,GraphicsParam,Idx,2>>::ViewMut<'a> where Self: 'a;
     fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a> { self.0.view_mut() }
+    
+    fn transform<Dest, F>(self, f : F) -> <Self as IGridView<T,GraphicsParam,Idx,2>>::Map<Dest> where F : FnMut(T) -> Dest, GraphicsParam : Clone {
+        Self(self.0.transform(f))
+    }
+    
+    fn transform_par<Dest, F>(self, f : F) -> <Self as IGridView<T,GraphicsParam,Idx,2>>::Map<Dest> where F : Fn(T) -> Dest + Sync + Send, T : Send + Sync, Dest : Send, Idx : Sync, GraphicsParam : Clone {
+        Self(self.0.transform_par(f))
+    }
+}
+
+
+impl<T, Idx> IGridView<T,GraphicsParam,Idx,2> for ImageBase<T,Idx>
+    where Idx : IntegerIndex, T : IColor
+{
+    fn get(&self, pos : Vector<Idx,2>) -> Option<&T> {
+        self.0.get(pos)
+    }
+
+    type Map<Dest>;
+
+    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, GraphicsParam : Clone {
+        todo!()
+    }
+
+    fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, GraphicsParam : Clone {
+        todo!()
+    }
+
+    fn subgrid(&self, rect : hexga_math::rectangle::Rectangle<Idx, 2>) -> Self::Map<T> where T : Clone, GraphicsParam : Clone {
+        todo!()
+    }
+
+    fn subgrid_par(&self, rect : hexga_math::rectangle::Rectangle<Idx, 2>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync, GraphicsParam : Clone {
+        todo!()
+    }
+
+    type SubView<'b> where Self: 'b;
+
+    fn subview<'b>(&'b self, rect : hexga_math::rectangle::Rectangle<Idx, 2>) -> Self::SubView<'b> where T : Clone {
+        todo!()
+    }
 }
 
 impl<T, Idx> IRectangle<Idx,2> for ImageBase<T,Idx>
@@ -220,3 +252,4 @@ pub enum AntiAliasing
     /// Ideal for Pixel Art
     Nearest,
 }
+    */

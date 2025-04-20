@@ -10,3 +10,6 @@ pub use view::*;
 
 mod view_mut;
 pub use view_mut::*;
+
+mod format;
+pub use format::*;

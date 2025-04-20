@@ -2,7 +2,8 @@
 
 use std::ops::*;
 use std::iter::{Sum,Product};
-use std::fmt::{Debug, Display, Result as DResult, Formatter};
+use std::fmt::{Debug, Display, Formatter};
+type DResult =  std::fmt::Result;
 use std::hash::*;
 use std::marker::PhantomData;
 use std::cmp::Ordering;
