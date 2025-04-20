@@ -390,6 +390,7 @@ name = "hexga_tools"
 version = "0.0.10-beta.3"
 dependencies = [
  "have_len",
+ "hexga_base",
  "hexga_number",
  "serde",
 ]

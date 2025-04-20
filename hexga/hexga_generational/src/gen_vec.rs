@@ -287,8 +287,6 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.len = 0;
     }
 
-    pub fn len(&self) -> usize { self.len }
-
     //pub fn rollback_insert(&mut self, id : GenIDOf<T,Gen>) -> Option<T>
     pub fn insert(&mut self, value : T) ->  GenIDOf<T,Gen>
     {
@@ -496,7 +494,7 @@ impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
 
 impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen>
 {
-    fn len(&self) -> usize { self.len() }
+    fn len(&self) -> usize { self.len }
 }
 //impl<T,Gen:IGeneration> typed_index::IndexLike for GenIDOf<T,Gen>{}
 

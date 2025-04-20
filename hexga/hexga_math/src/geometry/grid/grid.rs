@@ -159,26 +159,10 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
     pub fn new_uniform_par(size : Vector::<Idx,N>, value : T) -> Self where T : Clone + Sync + Send, Idx : Sync { Self::from_fn_par(size, |_| value.clone()) }
 }
 
-// To avoid conflict of impl with [IGrid], [IGridView] and [IGridViewMut] when calling get(), get_mut()...
-impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
-{
-    pub fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { IGrid::get(self, pos) }
-    pub fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { IGrid::get_mut(self, pos) }
-    
-    pub unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { IGrid::get_unchecked(self, pos) } }
-    pub unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { unsafe { IGrid::get_unchecked_mut(self, pos) } }
-
-    pub fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool { IGrid::swap(self, pos_a, pos_b) }
-    pub fn replace(&mut self, val : T, pos : Vector<Idx,N>) ->  Option<T> { IGrid::replace(self, val, pos) }
-    pub fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { IGrid::set(self, val, pos) }
-
-    pub fn len(&self) -> usize { IGrid::len(self) }
-}
-
 /// Param is just used to know if it is clonable or not because of [GridParam]
 pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex, 
     Self : IRectangle<Idx,N> 
-        + IGridView<T, Param, Idx, N>
+        + IGridView<T, Param, Idx, N> + IGridViewMut<T, Param, Idx, N>
         + Index<Vector<Idx,N>,Output=T> + IndexMut<Vector<Idx,N>,Output=T>
         // impl details :
         + Index<usize,Output=T> + IndexMut<usize,Output=T>
@@ -200,21 +184,6 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     fn get_index(&self, index : usize) -> Option<&T> { self.values().get(index) }
     fn get_index_mut(&mut self, index : usize) -> Option<&mut T> { self.values_mut().get_mut(index) }
 
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.position_to_index(pos).and_then(|i| self.get_index(i)) }
-    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
-
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { let idx = self.position_to_index_unchecked(pos); self.values().get_unchecked(idx) } }
-    unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
-
-    fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool
-    {
-        match (self.position_to_index(pos_a), self.position_to_index(pos_b))
-        {
-            (Some(a), Some(b)) => { self.values_mut().swap(a, b); true }
-            _ => false
-        }
-    }
-
     fn swap_index(&mut self, index_a : usize, index_b : usize) -> bool
     {
         if self.is_index_inside(index_a) && self.is_index_inside(index_b)
@@ -225,16 +194,11 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     }
 
     fn replace_index(&mut self, val : T, index : usize) -> Option<T> { self.get_index_mut(index).map(|v| std::mem::replace(v, val)) }
-    fn replace(&mut self, val : T, pos : Vector<Idx,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
-    
+
     /// Do nothings if the index is outside the range
     fn set_index(&mut self, val : T, idx : usize) -> &mut Self { self.get_index_mut(idx).map(|v| *v = val); self }
-    /// Do nothings if the index is outside the range
-    fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
 
     fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, Idx : PartialOrd { r.intersect_or_empty(self.rect()) }
-
-    fn len(&self) -> usize { self.values().len() }
 
     fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Param : Clone;
 
@@ -275,8 +239,8 @@ impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N>
 impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N> 
     where Idx : IntegerIndex 
 {
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.get(pos) }
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.get_unchecked(pos) } }
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.position_to_index(pos).and_then(|i| self.get_index(i)) }
+    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values().get_unchecked(idx) } }
 
     type Map<Dest>=GridBase<Dest, Idx, N>;
     fn map<Dest, F>(&self, mut f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, () : Clone { GridBase::from_fn(self.size(), |p| f(&self[p])) }
@@ -309,12 +273,19 @@ impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N>
 impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N> 
     where Idx : IntegerIndex 
 {
-    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.get_mut(pos) }
-    unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { unsafe { self.get_unchecked_mut(pos) } }
+    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
+    unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
 
-    fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool { self.swap(pos_a, pos_b) }
-    fn replace(&mut self, val : T, pos : Vector<Idx,N>) ->  Option<T> { self.replace(val, pos) }
-    fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { self.set(val, pos) }
+    fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool 
+    {
+        match (self.position_to_index(pos_a), self.position_to_index(pos_b))
+        {
+            (Some(a), Some(b)) => { self.values_mut().swap(a, b); true }
+            _ => false
+        }
+    }
+    fn replace(&mut self, val : T, pos : Vector<Idx,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
+    fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
     
     type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new(self, rect) }
@@ -348,23 +319,9 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
 
 impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N> 
     where Idx : IntegerIndex
-{ 
-    fn len(&self) -> usize { self.len() }
-}
-/* 
-impl<T, Idx, const N : usize> GridOf<T, N, I> where Idx : IntegerIndex
 {
-    /// map a function on each tile to create a new grid
-    pub fn map<Z, F>(&self, f : F) -> GridOf<Z, N, I> where F : FnMut(&T) -> Z { GridOf { size: self.size, value: self.value.iter().map(f).collect() } }
-    /// transform the current grid
-    pub fn map_into<Z, F>(self, f : F) -> GridOf<Z, N, I> where F : FnMut(T) -> Z { GridOf { size: self.size, value: self.value.into_iter().map(f).collect() } }
-
-    pub fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, I : PartialOrd { r.intersect_or_empty(self.rect()) }
+    fn len(&self) -> usize { self.values().len() }
 }
-*/
-
-
-
 
 #[cfg(test)]
 mod grid_test

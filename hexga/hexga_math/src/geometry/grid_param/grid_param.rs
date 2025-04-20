@@ -164,23 +164,6 @@ impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param
     fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a> { Self::ViewMut::from_view(self.grid.view_mut(), &mut self.param) }
 }
 
-
-// To avoid conflict of impl with [IGrid], [IGridView] and [IGridViewMut] when calling get(), get_mut()...
-impl<T,Param,Idx, const N : usize> GridParamBase<T, Param, Idx, N> where Idx : IntegerIndex,
-{
-    pub fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { IGrid::get(self, pos) }
-    pub fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { IGrid::get_mut(self, pos) }
-    
-    pub unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { IGrid::get_unchecked(self, pos) } }
-    pub unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T { unsafe { IGrid::get_unchecked_mut(self, pos) } }
-
-    pub fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool { IGrid::swap(self, pos_a, pos_b) }
-    pub fn replace(&mut self, val : T, pos : Vector<Idx,N>) ->  Option<T> { IGrid::replace(self, val, pos) }
-    pub fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { IGrid::set(self, val, pos) }
-
-    pub fn len(&self) -> usize { IGrid::len(self) }
-}
-
 impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(pos) }

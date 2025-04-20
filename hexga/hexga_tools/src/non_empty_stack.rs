@@ -58,8 +58,6 @@ impl<T> NonEmptyStack<T>
     pub fn duplicate(&mut self) -> &mut Self where T : Clone { self.stack.push(self.last.clone()); self } 
     pub fn pop(&mut self) -> Option<T> { self.stack.pop().and_then(|mut v| { std::mem::swap(&mut v, &mut self.last); Some(v) }) }
 
-    pub fn len(&self) -> usize  { self.stack.len() + 1 } 
-
     pub fn into_values(mut self) -> Vec<T> { self.stack.push(self.last); self.stack }
 }
 
@@ -93,8 +91,7 @@ impl<T> IndexMut<usize> for NonEmptyStack<T>
 
 impl<T> have_len::HaveLen for NonEmptyStack<T>
 {
-    fn len(&self) -> usize { self.len() }
-
+    fn len(&self) -> usize { self.stack.len() + 1 }
     fn is_empty(&self) -> bool { false }
     fn is_not_empty(&self) -> bool { true }
 }
@@ -102,7 +99,7 @@ impl<T> have_len::HaveLen for NonEmptyStack<T>
 #[cfg(test)]
 mod non_empty_stack_test
 {
-    use super::NonEmptyStack;
+    use super::*;
 
     #[test]
     fn push() {
