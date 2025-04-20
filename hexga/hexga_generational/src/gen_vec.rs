@@ -29,6 +29,9 @@ impl<T> SlotValue<T>
             SlotValue::Free(_) => panic!("Slot was already free"),
         }
     }
+
+    pub fn is_free(&self) -> bool { matches!(self, Self::Free(_))}
+    pub fn is_used(&self) -> bool { matches!(self, Self::Used(_))}
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -290,12 +293,35 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.len = 0;
     }
 
-    /* 
-    pub fn rollback_insert(&mut self, id : GenIDOf<T,Gen>) -> Option<T>
+    pub fn rollback_insert(&mut self, id : GenIDOf<T,Gen>) -> Result<T,()>
     {
+        let idx = id.index;
+        let head = self.head;
 
+        let slot_len = self.slot.len();
+
+        let Some(slot) = self.get_slot_index_mut(idx) else { return Err(()); };
+        if slot.value.is_free() { return Err(()); }
+
+        if head.is_max_value()
+        {
+            if idx + 1 != slot_len { return Err(()); }
+        }
+
+        let can_not_decrease = !slot.can_generation_decrease();
+        let val = slot.value.take_and_free(head);
+        self.len -= 1;
+
+        if head.is_max_value() && can_not_decrease
+        {
+            self.slot.pop().ok_or(())?;
+        }else
+        {
+            self.head = idx;
+        }
+
+        Ok(val)
     }
-    */
     pub fn insert(&mut self, value : T) ->  GenIDOf<T,Gen>
     {
         self.len += 1;
@@ -337,6 +363,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.get_slot_index(idx).map(|v| v.get_id(idx)).unwrap_or(GenIDOf::NULL)
     }
 
+    /// The operation that once done just after an [Self::remove_index], put this data structure in the same state as before
     pub fn rollback_remove_index(&mut self, idx : usize, value : T) -> Result<(), ()>
     {
         let mut head = self.head;
@@ -374,7 +401,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         let head = self.head;
 
         let Some(slot) = self.get_slot_index_mut(idx) else { return None; };
-        if let SlotValue::Free(_) = slot.value { return None; };
+        if slot.value.is_free() { return None; }
 
         let val = slot.value.take_and_free(head);
 
@@ -390,6 +417,11 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         Some(val)
     }
 
+    pub fn rollback_remove(&mut self, id : GenIDOf<T,Gen>, value : T) -> Result<(), ()>
+    {
+        // Todo : missing some check to see if the last operation removal was done with id
+        self.rollback_remove_index(id.index, value)
+    }
     pub fn remove(&mut self, id : GenIDOf<T,Gen>) -> Option<T>
     {
         if self.get(id).is_none() { return None; }
@@ -714,7 +746,7 @@ mod tests
     }
 
     #[test]
-    fn rollback_empty() 
+    fn rollback_remove_empty() 
     {
         let mut gen_vec = GenVec::new();
         // dbg!(&gen_vec);
@@ -733,7 +765,7 @@ mod tests
     }  
 
     #[test]
-    fn rollback_wrapping_empty() 
+    fn rollback_remove_wrapping_empty() 
     {
         let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
         let id = gen_vec.insert(42);
@@ -747,7 +779,7 @@ mod tests
     }
 
     #[test]
-    fn rollback_wrapping() 
+    fn rollback_remove_wrapping() 
     {
         let mut gen_vec = wrapping_about_to_wrap();
         let id = gen_vec.insert(42);
@@ -761,7 +793,7 @@ mod tests
     }
 
     #[test]
-    fn rollback_wrapping_2() 
+    fn rollback_remove_wrapping_2() 
     {
         let mut gen_vec = wrapping_about_to_wrap();
         gen_vec.insert(50);
@@ -777,7 +809,7 @@ mod tests
     }
 
     #[test]
-    fn rollback_non_wrapping() 
+    fn rollback_remove_non_wrapping() 
     {
         let mut gen_vec = non_wrapping_about_to_wrap();
         // dbg!(&gen_vec);
@@ -796,7 +828,7 @@ mod tests
     }
 
     #[test]
-    fn rollback_non_wrapping_2() 
+    fn rollback_remove_non_wrapping_2() 
     {
         let mut gen_vec = non_wrapping_about_to_wrap();
         gen_vec.insert(50);
@@ -815,4 +847,98 @@ mod tests
 
         assert_eq!(gen_vec, old_gen);
     }  
+
+
+    // rollback_insert
+
+    #[test]
+    fn rollback_insert_empty() 
+    {
+        let mut gen_vec = GenVec::new();
+        let old_gen = gen_vec.clone();
+
+        // dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+        // dbg!(&gen_vec);
+        gen_vec.rollback_insert(id).unwrap();
+
+        assert_eq!(gen_vec, old_gen);
+    } 
+
+    
+    #[test]
+    fn rollback_insert_wrapping_empty() 
+    {
+        // We can't know if the gen vec is new or is the gen vec wrapped
+        
+        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let old_gen = gen_vec.clone();
+
+        dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+        dbg!(&gen_vec);
+        gen_vec.rollback_insert(id).unwrap();
+        dbg!(&gen_vec);
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_insert_wrapping() 
+    {
+        let mut gen_vec = wrapping_about_to_wrap();
+        let old_gen = gen_vec.clone();
+
+        dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+        dbg!(&gen_vec);
+        gen_vec.rollback_insert(id).unwrap();
+        dbg!(&gen_vec);
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+
+    #[test]
+    fn rollback_insert_wrapping_2() 
+    {
+        let mut gen_vec = wrapping_about_to_wrap();
+        let old_gen = gen_vec.clone();
+
+        // dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+        // dbg!(&gen_vec);
+        gen_vec.rollback_insert(id).unwrap();
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_insert_non_wrapping() 
+    {
+        let mut gen_vec = non_wrapping_about_to_wrap();
+        let old_gen = gen_vec.clone();
+
+        // dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+        // dbg!(&gen_vec);
+        gen_vec.rollback_insert(id).unwrap();
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_insert_non_wrapping_2() 
+    {
+        let mut gen_vec = non_wrapping_about_to_wrap();
+        let old_gen = gen_vec.clone();
+
+        // dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+        // dbg!(&gen_vec);
+        gen_vec.rollback_insert(id).unwrap();
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
 }
