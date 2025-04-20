@@ -7,8 +7,8 @@ type Generation=u32;
 pub type GenVec<T> = GenVecOf<T,Generation>;
 pub type GenID<T>  = GenIDOf<T,Generation>;
 
-pub trait IGeneration             : Eq + Hash + Ord + Increase + NumberAttibute + Debug + Zero + MaxValue + Copy {}
-impl<T> IGeneration for T where T : Eq + Hash + Ord + Increase + NumberAttibute + Debug + Zero + MaxValue + Copy {}
+pub trait IGeneration             : Eq + Hash + Ord + Increase + Decrease + NumberAttibute + Debug + Zero + MaxValue + MinValue + Copy {}
+impl<T> IGeneration for T where T : Eq + Hash + Ord + Increase + Decrease + NumberAttibute + Debug + Zero + MaxValue + MinValue + Copy {}
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -36,8 +36,6 @@ impl<T> SlotValue<T>
 pub struct Slot<T,Gen:IGeneration=Generation>
 {
     value      : SlotValue<T>,
-    /// even : have a value
-    /// odd  : have the next_free slot
     generation : Gen,
 }
 impl <T,Gen:IGeneration> Slot<T,Gen>
@@ -52,8 +50,13 @@ impl <T,Gen:IGeneration> Slot<T,Gen>
 
     pub fn get_id(&self, idx : usize) -> GenIDOf<T,Gen> { GenIDOf::new(idx, self.generation) }
 
-    pub fn generation_inc(&mut self) -> bool { if !self.is_generation_saturated() { self.generation.inc(); true } else { false } }
-    pub fn is_generation_saturated(&self) -> bool { !self.generation.have_succ() }
+    pub fn generation_increase(&mut self) -> bool { if self.can_generation_increase() { self.generation.increase(); true } else { false } }
+    pub fn can_generation_increase(&self) -> bool { self.generation.can_increase() }
+
+    pub fn generation_decrease(&mut self) -> bool { if self.can_generation_decrease() { self.generation.decrease(); true } else { false } }
+    pub fn can_generation_decrease(&self) -> bool { self.generation.can_decrease() }
+
+    pub fn is_generation_saturated(&self) -> bool { !self.can_generation_increase() }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -274,7 +277,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         {
             if v.have_value()
             {
-                if v.generation_inc()
+                if v.generation_increase()
                 {
                     v.value = SlotValue::Free(self.head);
                     self.head = idx;
@@ -287,7 +290,12 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.len = 0;
     }
 
-    //pub fn rollback_insert(&mut self, id : GenIDOf<T,Gen>) -> Option<T>
+    /* 
+    pub fn rollback_insert(&mut self, id : GenIDOf<T,Gen>) -> Option<T>
+    {
+
+    }
+    */
     pub fn insert(&mut self, value : T) ->  GenIDOf<T,Gen>
     {
         self.len += 1;
@@ -329,6 +337,38 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.get_slot_index(idx).map(|v| v.get_id(idx)).unwrap_or(GenIDOf::NULL)
     }
 
+    pub fn rollback_remove_index(&mut self, idx : usize, value : T) -> Result<(), ()>
+    {
+        let mut head = self.head;
+        let slot = self.get_slot_index_mut(idx).ok_or(())?;
+        let SlotValue::Free(f) = slot.value else { return Err(()); };
+        let free = f;
+
+        if f.is_not_max_value()
+        {
+            if head != idx { return Err(()); }
+            head = free;
+            if !slot.generation_decrease() { return Err(()); }
+        }else 
+        {
+            // Slot don't have a next free slot
+            if head == idx 
+            {
+                head = usize::MAX;
+                if !slot.generation_decrease() { return Err(()); }
+            }else if !slot.is_generation_saturated() 
+            { 
+                return Err(()); 
+            }
+        }
+
+        slot.value = SlotValue::Used(value);
+
+        self.head = head;
+        self.len += 1;
+
+        Ok(())
+    }
     pub fn remove_index(&mut self, idx : usize) -> Option<T>
     {
         let head = self.head;
@@ -338,7 +378,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
         let val = slot.value.take_and_free(head);
 
-        if slot.generation_inc()
+        if slot.generation_increase()
         {
             self.head = idx;
         }else
@@ -498,6 +538,7 @@ impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen>
 }
 //impl<T,Gen:IGeneration> typed_index::IndexLike for GenIDOf<T,Gen>{}
 
+#[allow(dead_code)]
 #[cfg(test)]
 mod tests 
 {
@@ -642,4 +683,136 @@ mod tests
             println!("{:?} => {}", id, entity)
         }
     }
+
+
+    fn wrapping_about_to_wrap() -> GenVecOf::<i32, Wrapping<u8>>
+    {
+        let mut v = GenVecOf::<i32, Wrapping<u8>>::new();
+
+        for i in 0..255
+        {
+            let a = v.insert(i);
+            v.remove(a);
+        }
+
+        //dbg!(v);
+        v
+    }
+
+    fn non_wrapping_about_to_wrap() -> GenVecOf::<i32, u8>
+    {
+        let mut v = GenVecOf::<i32, u8>::new();
+
+        for i in 0..255
+        {
+            let a = v.insert(i);
+            v.remove(a);
+        }
+
+        //dbg!(v);
+        v
+    }
+
+    #[test]
+    fn rollback_empty() 
+    {
+        let mut gen_vec = GenVec::new();
+        // dbg!(&gen_vec);
+
+        let id = gen_vec.insert(42);
+
+        let old_gen = gen_vec.clone();
+
+        // dbg!(&gen_vec);
+        let removed = gen_vec.remove_index(id.index).unwrap();
+        // dbg!(&gen_vec);
+        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+        // dbg!(&gen_vec);
+
+        assert_eq!(gen_vec, old_gen);
+    }  
+
+    #[test]
+    fn rollback_wrapping_empty() 
+    {
+        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let id = gen_vec.insert(42);
+
+        let old_gen = gen_vec.clone();
+
+        let removed = gen_vec.remove_index(id.index).unwrap();
+        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_wrapping() 
+    {
+        let mut gen_vec = wrapping_about_to_wrap();
+        let id = gen_vec.insert(42);
+
+        let old_gen = gen_vec.clone();
+
+        let removed = gen_vec.remove_index(id.index).unwrap();
+        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_wrapping_2() 
+    {
+        let mut gen_vec = wrapping_about_to_wrap();
+        gen_vec.insert(50);
+
+        let id = gen_vec.insert(42);
+
+        let old_gen = gen_vec.clone();
+
+        let removed = gen_vec.remove_index(id.index).unwrap();
+        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_non_wrapping() 
+    {
+        let mut gen_vec = non_wrapping_about_to_wrap();
+        // dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+        // dbg!(&gen_vec);
+
+        let old_gen = gen_vec.clone();
+
+        let removed = gen_vec.remove_index(id.index).unwrap();
+        // dbg!(&gen_vec);
+
+        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+        // dbg!(&gen_vec);
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_non_wrapping_2() 
+    {
+        let mut gen_vec = non_wrapping_about_to_wrap();
+        gen_vec.insert(50);
+
+        // dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+        // dbg!(&gen_vec);
+
+        let old_gen = gen_vec.clone();
+
+        let removed = gen_vec.remove_index(id.index).unwrap();
+        // dbg!(&gen_vec);
+
+        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+        // dbg!(&gen_vec);
+
+        assert_eq!(gen_vec, old_gen);
+    }  
 }

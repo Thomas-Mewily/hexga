@@ -57,7 +57,7 @@ impl<T, const N : usize> Iterator for VectorIter<T, N> where T : Number
         
         while i < N
         {
-            self.cur[i].inc();
+            self.cur[i].increase();
             if self.cur[i] < self.end[i]
             {
                 return Some(v);

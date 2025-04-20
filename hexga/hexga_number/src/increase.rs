@@ -4,26 +4,48 @@ use crate::*;
 pub trait Increase : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Sized
 {
     /// The increment `x++` operator
-    #[inline] fn inc (&mut self) { *self += Self::ONE; }
-    /// Return the successor `self + 1`
-    #[inline] fn succ(self) -> Self { self + Self::ONE }
-
-
+    #[inline] fn increase(&mut self) { *self += Self::ONE; }
     /// Do the current value have a successor. 
     /// 
-    /// True if not Self::MAX, except for wrapping type, they always have a succesor because they wrap
-    #[inline] fn have_succ(self) -> bool where Self : NumberAttibute + MaxValue + PartialEq { Self::OVERFLOW_BEHAVIOR.is_wrapping() || self.is_not_max_value() }
+    /// True if not Self::MAX, except for wrapping type, they always have a successor because they wrap
+    #[inline] fn can_increase(&self) -> bool where Self : NumberAttibute + MaxValue + PartialEq { Self::OVERFLOW_BEHAVIOR.is_wrapping() || self.is_not_max_value() }
+
+    /// Return the successor `self + 1`
+    #[inline] fn successor(self) -> Self { self + Self::ONE }
+    /// Do the current value have a successor. 
+    /// 
+    /// True if not Self::MAX, except for wrapping type, they always have a successor because they wrap
+    #[inline] fn have_successor(self) -> bool where Self : NumberAttibute + MaxValue + PartialEq { self.can_increase() }
 }
 impl<T> Increase for T where T : One + Add<T, Output=T> + AddAssign<Self> + Copy {}
+
+/// The `-1` operation
+pub trait Decrease : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized
+{
+    /// The decrement `x--` operator
+    #[inline] fn decrease(&mut self) { *self -= Self::ONE; }
+    /// Do the current value have a successor. 
+    /// 
+    /// True if not Self::MIN, except for wrapping type, they always have a predecessor because they wrap
+    #[inline] fn can_decrease(&self) -> bool where Self : NumberAttibute + MinValue + PartialEq { Self::OVERFLOW_BEHAVIOR.is_wrapping() || self.is_not_min_value() }
+
+    /// Return the predecessor `self - 1`
+    #[inline] fn predecessor(self) -> Self { self - Self::ONE }
+    /// Do the current value have a successor. 
+    /// 
+    /// True if not Self::MIN, except for wrapping type, they always have a predecessor because they wrap
+    #[inline] fn have_predecessor(self) -> bool where Self : NumberAttibute + MinValue + PartialEq { self.can_decrease() }
+}
+impl<T> Decrease for T where T : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized {}
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum OverflowBehavior { None, Wrapping, Saturating }
 
 impl OverflowBehavior 
 {
-    pub fn is_none(self) -> bool { matches!(self, Self::None) }
-    pub fn is_wrapping(self) -> bool { matches!(self, Self::Wrapping) }
-    pub fn is_saturating(self) -> bool { matches!(self, Self::Saturating) }
+    pub const fn is_none(self) -> bool { matches!(self, Self::None) }
+    pub const fn is_wrapping(self) -> bool { matches!(self, Self::Wrapping) }
+    pub const fn is_saturating(self) -> bool { matches!(self, Self::Saturating) }
 }
 
 pub trait NumberAttibute
