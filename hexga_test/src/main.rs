@@ -30,6 +30,10 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 
 fn main() 
 {
+    let g = Grid2::from_vec(2.splat2(), vec!["toto", "f", "bar", "x"]).unwrap();
+    println!("{}", g.view().format().with_separator(" "));
+
+    /* 
     let g = GridParam2::from_fn_with_param(point2(2, 4), "toto".to_owned(), |p| p.x + 10 * p.y);
     let h = g.subgrid(rect2p(1, 1, 1, 3));
     
@@ -42,6 +46,8 @@ fn main()
     dbg!(g.param());
 
     let mut size = 2;
+    */
+    
 
     /*
     for _ in 0..16
@@ -66,6 +72,7 @@ fn main()
     }*/
 
 
+    /* 
     let mut criterion: Criterion = Criterion::default().nresamples(20).sample_size(15);
     let mut group = criterion.benchmark_group(format!("new grid"));
 
@@ -82,7 +89,7 @@ fn main()
         );
     }
     group.finish();
-
+    */
 
     /* 
     let x = 4.0f32;

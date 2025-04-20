@@ -32,7 +32,7 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output
 
     type SubView<'b> : IGridView<T,Param,Idx,N> where Self: 'b;
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone;
-    
+
     fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<Idx,N>, &'a T)> where T: 'a
     {
         let r = self.rect(); 
@@ -85,6 +85,8 @@ impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N>
     {
         unsafe { Self::new_unchecked(self.grid, self.view.crop_margin(margin_start, margin_end)) }
     }
+
+    pub fn format(self) -> GridViewFormat<'a,T,Idx,N> { GridViewFormat::new(self) }
 }
 
 
