@@ -1,3 +1,5 @@
+use std::iter::Map;
+
 use crate::*;
 
 /// A slice view to a [Grid]
@@ -28,9 +30,9 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output
     fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone, Param : Clone;
     fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync, Param : Clone;
 
-    type SubView<'b> where Self: 'b;
+    type SubView<'b> : IGridView<T,Param,Idx,N> where Self: 'b;
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone;
-
+    
     fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<Idx,N>, &'a T)> where T: 'a
     {
         let r = self.rect(); 
