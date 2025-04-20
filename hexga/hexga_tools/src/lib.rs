@@ -6,7 +6,7 @@ use std::fmt::{Debug, Display, Formatter, Result as DResult};
 use std::marker::PhantomData;
 
 use hexga_number::*;
-use hexga_base::*;
+pub use hexga_base::*;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
