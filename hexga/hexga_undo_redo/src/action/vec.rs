@@ -1,8 +1,17 @@
+use std::fmt::Debug;
+
 use crate::*;
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Pop<T>(pub PhantomData<T>);
 impl<T> Default for Pop<T>{ fn default() -> Self { Self(PhantomData) } }
+
+impl<T> Debug for Pop<T>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Pop<{}>", std::any::type_name::<T>())
+    }
+}
 
 impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
 {
@@ -36,8 +45,16 @@ impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Clear<T>(pub PhantomData<T>);
+
+impl<T> Debug for Clear<T>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Clear<{}>", std::any::type_name::<T>())
+    }
+}
+
 impl<T> Default for Clear<T>{ fn default() -> Self { Self(PhantomData) } }
 
 impl<T> UndoAction for Clear<T> where for<'a> T: 'a + Clone
@@ -119,7 +136,7 @@ impl<T> UndoAction for Action<T> where for<'a> T: 'a + Clone
     }
 }
 
-pub trait IVecAction<T, U> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
+pub trait ActionExtension<T, U> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
 {
     fn push_action(&mut self, value: T, undo : &mut U);
     fn pop_action(&mut self, undo : &mut U) -> Option<T>;
@@ -127,7 +144,7 @@ pub trait IVecAction<T, U> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
     //fn swap_action(&mut self, undo : &mut U);
 }
 
-impl<T, U> IVecAction<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
+impl<T, U> ActionExtension<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
 {
     fn push_action(&mut self, value: T, undo: &mut U) {
         Push(value).execute(self, undo)

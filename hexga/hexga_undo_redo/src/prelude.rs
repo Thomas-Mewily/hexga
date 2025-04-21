@@ -1,2 +1,4 @@
-pub use core::*;
-pub use crate::action::vec::*;
+pub use crate::undo::*;
+pub use crate::action as action;
+
+pub use action::vec::ActionExtension;

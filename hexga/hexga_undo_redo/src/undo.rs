@@ -40,11 +40,16 @@ impl<A> UndoStack<A> for Vec<A> where A : UndoAction
 
 pub trait UndoAction : Sized
 {
+    /// The set of action that can be involved when undoing your action
     type ActionSet : UndoAction;
     type Context;
     type Output<'a>;
     
     fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::ActionSet>;
+    
+    /// Can be manually implemented for more optimisation
+    /// 
+    /// Example: `execute_without_undo` on `vec::Pop<T>` avoids an unused clone on `T` contrary to `execute`.
     fn execute_without_undo<'a>(self, context : &'a mut Self::Context) -> Self::Output<'a> { self.execute(context, &mut ()) }
 }
 

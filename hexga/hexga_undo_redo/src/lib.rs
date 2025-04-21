@@ -1,8 +1,8 @@
 //! A crate that handle the command pattern, ideal for undo redo of action
 use std::marker::PhantomData;
 
-pub mod core;
-pub use core::*;
+mod undo;
+pub use undo::*;
 
 pub mod action;
 
