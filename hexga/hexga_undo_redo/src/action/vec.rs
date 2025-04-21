@@ -54,7 +54,6 @@ impl<T> Debug for Clear<T>
         write!(f, "Clear<{}>", std::any::type_name::<T>())
     }
 }
-
 impl<T> Default for Clear<T>{ fn default() -> Self { Self(PhantomData) } }
 
 impl<T> UndoAction for Clear<T> where for<'a> T: 'a + Clone
@@ -67,14 +66,14 @@ impl<T> UndoAction for Clear<T> where for<'a> T: 'a + Clone
     {
         if !context.is_empty()
         {
-            undo.push(Action::Replace(Replace(std::mem::take(context))));
+            undo.push(Action::Set(Set(std::mem::take(context))));
         }
     }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub struct Replace<T>(pub Vec<T>);
-impl<T> UndoAction for Replace<T> where for<'a> T: 'a + Clone
+pub struct Set<T>(pub Vec<T>);
+impl<T> UndoAction for Set<T> where for<'a> T: 'a + Clone
 {
     type ActionSet = Action<T>;
     type Context=Vec<T>;
@@ -86,6 +85,43 @@ impl<T> UndoAction for Replace<T> where for<'a> T: 'a + Clone
         if !context.is_empty()
         {
             undo.push(Action::Clear(Clear(PhantomData)));
+        }
+    }
+}
+
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub struct Replace<T>(usize, T);
+
+impl<T> UndoAction for Replace<T> where for<'a> T: 'a + Clone
+{
+    type ActionSet = Self;
+    type Context=Vec<T>;
+    type Output<'ctx> = Result<T, ()>;
+    
+    fn execute<'ctx, U>(self, context : &'ctx mut Self::Context, undo : &'ctx mut U) -> Self::Output<'ctx> where U : UndoStack<Self::ActionSet> 
+    {
+        let Replace(idx, mut value) = self;
+        if idx < context.len()
+        {
+            std::mem::swap(&mut value, &mut context[idx]);
+            undo.push(Replace(idx, value.clone()));
+            Ok(value)
+        }else
+        {
+            Err(())
+        }
+    }
+
+    fn execute_without_undo<'a>(self, context : &'a mut Self::Context) -> Self::Output<'a> {
+        let Replace(idx, mut value) = self;
+        if idx < context.len()
+        {
+            std::mem::swap(&mut value, &mut context[idx]);
+            Ok(value)
+        }else
+        {
+            Err(())
         }
     }
 }
@@ -116,6 +152,7 @@ pub enum Action<T>
     Pop(Pop<T>),
     Push(Push<T>),
     Clear(Clear<T>),
+    Set(Set<T>),
     Replace(Replace<T>),
     //Swap()
 }
@@ -131,7 +168,7 @@ impl<T> UndoAction for Action<T> where for<'a> T: 'a + Clone
             Action::Pop(v) => { v.execute(context, undo); }
             Action::Push(v) => { v.execute(context, undo); },
             Action::Clear(v) => { v.execute(context, undo); }
-            Action::Replace(v) => { v.execute(context, undo); }
+            Action::Set(v) => { v.execute(context, undo); }
         };
     }
 }

@@ -3,6 +3,9 @@ use std::marker::PhantomData;
 
 pub trait UndoStack<A : UndoAction>
 {
+    // Todo : use a lambda to avoid cloning useless value
+    fn push_lambda<F>(&mut self, f : F) where F : FnMut() -> A + FnOnce() -> A;
+    A
     /// Push all the action to describe how to cancel the current one
     fn push(&mut self, action : A);
     fn handle<'a, T>(&'a mut self, f : fn(T) -> A) -> UndoStackMap<'a,Self,A,T> where Self : Sized, T : UndoAction { UndoStackMap::new(self, f) }
