@@ -1,0 +1,16 @@
+[package]
+name = "hexga_undo_redo"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+readme = "README.md"
+
+keywords = ["undo", "redo", "command", ""]
+description = "Provide a common typedef for `float`, `int` and `uint`. The precision can be changed with feature flags and can be easily shared across multiple crates."
+categories = ["rust-patterns", "data-structures"]
+
+
+[dependencies]

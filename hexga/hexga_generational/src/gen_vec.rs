@@ -869,16 +869,16 @@ mod tests
     #[test]
     fn rollback_insert_wrapping_empty() 
     {
-        // We can't know if the gen vec is new or is the gen vec wrapped
-        
+        // We can't know if the gen vec is new or is the gen vec just wrapped
+
         let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
         let old_gen = gen_vec.clone();
 
-        dbg!(&gen_vec);
+        // dbg!(&gen_vec);
         let id = gen_vec.insert(42);
-        dbg!(&gen_vec);
+        // dbg!(&gen_vec);
         gen_vec.rollback_insert(id).unwrap();
-        dbg!(&gen_vec);
+        // dbg!(&gen_vec);
 
         assert_eq!(gen_vec, old_gen);
     }
@@ -889,11 +889,11 @@ mod tests
         let mut gen_vec = wrapping_about_to_wrap();
         let old_gen = gen_vec.clone();
 
-        dbg!(&gen_vec);
+        // dbg!(&gen_vec);
         let id = gen_vec.insert(42);
-        dbg!(&gen_vec);
+        // dbg!(&gen_vec);
         gen_vec.rollback_insert(id).unwrap();
-        dbg!(&gen_vec);
+        // dbg!(&gen_vec);
 
         assert_eq!(gen_vec, old_gen);
     }

@@ -20,6 +20,7 @@ hexga_map_on       = { path = "./hexga/hexga_map_on",       version = "0.0.10-be
 hexga_typedef      = { path = "./hexga/hexga_typedef",      version = "0.0.10-beta.3" }
 hexga_graphics     = { path = "./hexga/hexga_graphics",     version = "0.0.10-beta.3" }
 hexga_io           = { path = "./hexga/hexga_io",           version = "0.0.10-beta.3" }
+hexga_undo_redo    = { path = "./hexga/hexga_undo_redo",    version = "0.0.10-beta.3" }
 hexga              = { path = "./hexga/hexga",              version = "0.0.10-beta.3" }
 
 template = { path = "./reserved/template", version = "0.0.10-beta.3" }
