@@ -72,7 +72,7 @@ impl<T> UndoAction for PushOrPop<T> where T : Clone
         {
             PushOrPop::Pop => match context.pop()
             {
-                Some(v) => undo.push(move||Self::Push(v)),
+                Some(v) => undo.push(||Self::Push(v)),
                 None => (),
             },
             PushOrPop::Push(value) => { context.push(value); undo.push(||Self::Pop); }
