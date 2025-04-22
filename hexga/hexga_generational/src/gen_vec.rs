@@ -2,13 +2,13 @@ use crate::*;
 use std::{fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}, usize};
 
 
-type Generation=u32;
+pub type Generation = u32;
 
 pub type GenVec<T> = GenVecOf<T,Generation>;
 pub type GenID<T>  = GenIDOf<T,Generation>;
 
-pub trait IGeneration             : Eq + Hash + Ord + Increase + Decrease + NumberAttibute + Debug + Zero + MaxValue + MinValue + Copy {}
-impl<T> IGeneration for T where T : Eq + Hash + Ord + Increase + Decrease + NumberAttibute + Debug + Zero + MaxValue + MinValue + Copy {}
+pub trait IGeneration             : Eq + Hash + Ord + Increase + Decrease + NumberAttibute + Debug + MaxValue + MinValue + Copy {}
+impl<T> IGeneration for T where T : Eq + Hash + Ord + Increase + Decrease + NumberAttibute + Debug + MaxValue + MinValue + Copy {}
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -62,12 +62,90 @@ impl <T,Gen:IGeneration> Slot<T,Gen>
     pub fn is_generation_saturated(&self) -> bool { !self.can_generation_increase() }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Eq, Hash)]
 pub struct GenVecOf<T,Gen:IGeneration=Generation>
 {
     slot  : Vec<Slot<T,Gen>>,
     head  : usize,
     len   : usize,
+}
+
+impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T : PartialEq
+{
+    fn eq(&self, other: &Self) -> bool 
+    {
+        if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
+        {
+            self.len == other.len && self.slot == other.slot && self.head == other.head
+        }else
+        {
+            /* 
+                We can't know if the gen vec is new or if the gen vec just wrapped arround.
+            
+                Those two are equal: (Assuming Gen::MIN value is 0)
+                A: GenVecOf { slot: [Slot { value: Free(18446744073709551615), generation: 0 }], head: 0, len: 0 }
+                B: GenVecOf { slot: [], head: 18446744073709551615, len: 0 }
+
+                Both can represent unused wrapped gen vec.
+                
+                doing :
+
+                let id = B.insert(10);
+                B.rollback_insert(id);
+
+                will put A in the same equal state/representation as B.
+
+
+                But these 2 are different, because that generation was already used.
+
+                X: GenVecOf { slot: [Slot { value: Free(18446744073709551615), generation: 1 }], head: 0, len: 0 }
+                Y: GenVecOf { slot: [], head: 18446744073709551615, len: 0 }
+            */
+
+            if self.len != other.len { return false; }
+            if self.head == other.head { return self.slot == other.slot; }
+            if !(self.head.is_max_value() ^ other.head.is_max_value()) { return false; }
+
+            if self.head.is_max_value()
+            {
+                if self.slot.len() + 1 != other.slot.len() { return false; }
+                let mid = other.head;
+                debug_assert!(!mid.is_max_value());
+
+                let slot = other.get_slot_index(mid).unwrap();
+                let SlotValue::Free(f) = slot.value else { return false; };
+                if !f.is_max_value() || !slot.generation().is_min_value() { return false; }
+
+                let self_left = &self.slot[0..mid];
+                let self_right = &self.slot[mid..];
+
+                let other_left = &other.slot[0..mid];
+                let other_right = &other.slot[mid+1..];
+
+                self_left == other_left && self_right == other_right
+            }else if other.head.is_max_value()
+            {
+                if other.slot.len() + 1 != self.slot.len() { return false; }
+                let mid = self.head;
+                debug_assert!(!mid.is_max_value());
+
+                let slot = self.get_slot_index(mid).unwrap();
+                let SlotValue::Free(f) = slot.value else { return false; };
+                if !f.is_max_value() || !slot.generation().is_min_value() { return false; }
+
+                let other_left = &other.slot[0..mid];
+                let other_right = &other.slot[mid..];
+
+                let self_left = &self.slot[0..mid];
+                let self_right = &self.slot[mid+1..];
+
+                other_left == self_left && other_right == self_right
+            }else
+            {
+                unreachable!()
+            }
+        }
+    }
 }
 
 #[cfg(feature = "serde")]
@@ -216,7 +294,7 @@ impl<'de, T, Gen:IGeneration> Deserialize<'de> for GenIDOf<T,Gen> where T : Dese
         match Option::deserialize(deserializer)?
         {
             Some((index, generation)) => Ok(Self::new(index, generation)),
-            None => Ok(Self::new(usize::MAX, Gen::ZERO)),
+            None => Ok(Self::new(usize::MAX, Gen::MIN)),
         }
     }
 }
@@ -250,7 +328,7 @@ impl<T,Gen:IGeneration> GenIDOf<T,Gen>
     pub fn remove(self, gen_vec : &mut GenVecOf<T,Gen>) -> Option<T> { gen_vec.remove(self) }
     pub fn exist(self, gen_vec : &GenVecOf<T,Gen>) -> bool { self.get(gen_vec).is_some() }
 
-    pub const NULL : Self = GenIDOf { index: usize::MAX, generation: Gen::ZERO, value: PhantomData };
+    pub const NULL : Self = GenIDOf { index: usize::MAX, generation: Gen::MIN, value: PhantomData };
 }
 impl<T,Gen:IGeneration> From<(usize,Gen)> for GenIDOf<T,Gen>
 {
@@ -333,7 +411,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
             // The last index is used for the null() key
             assert!(index != usize::MAX, "How you didn't run out of memory before ?");
 
-            let generation = Gen::ZERO;
+            let generation = Gen::MIN;
             self.slot.push(Slot { value: SlotValue::Used(value), generation });
             return GenIDOf::new(index, generation);
         }
@@ -464,7 +542,7 @@ impl<T, Gen:IGeneration> IndexMut<usize> for GenVecOf<T,Gen>
 impl<T, Gen:IGeneration> FromIterator<T> for GenVecOf<T, Gen>
 {
     fn from_iter<K: IntoIterator<Item = T>>(iter: K) -> Self {
-        let slots : Vec<Slot<T,Gen>> = iter.into_iter().map(|v| Slot::new(SlotValue::Used(v), Gen::ZERO)).collect();
+        let slots : Vec<Slot<T,Gen>> = iter.into_iter().map(|v| Slot::new(SlotValue::Used(v), Gen::MIN)).collect();
         let len = slots.len();
         Self{ slot: slots, head: usize::MAX, len }
     }
@@ -887,18 +965,64 @@ mod tests
     #[test]
     fn rollback_insert_wrapping_empty() 
     {
-        // We can't know if the gen vec is new or is the gen vec just wrapped
+        // We can't know if the gen vec is new or if the gen vec just wrapped
 
         let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
         let old_gen = gen_vec.clone();
 
-        // dbg!(&gen_vec);
+         dbg!(&gen_vec);
         let id = gen_vec.insert(42);
-        // dbg!(&gen_vec);
+         dbg!(&gen_vec);
         gen_vec.rollback_insert(id).unwrap();
-        // dbg!(&gen_vec);
+         dbg!(&gen_vec);
 
         assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_insert_wrapping_3() 
+    {
+        // We can't know if the gen vec is new or if the gen vec just wrapped
+
+        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let id = gen_vec.insert(45);
+
+        let old_gen = gen_vec.clone();
+
+         dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+         dbg!(&gen_vec);
+        gen_vec.rollback_insert(id).unwrap();
+         dbg!(&gen_vec);
+
+        assert_eq!(gen_vec, old_gen);
+    }
+
+    #[test]
+    fn rollback_insert_wrapping_dif() 
+    {
+        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let id = gen_vec.insert(45);
+        gen_vec.remove(id);
+        assert_ne!(gen_vec, GenVecOf::<i32,Wrapping<Generation>>::new());
+    }
+
+    #[test]
+    fn rollback_insert_wrapping_4() 
+    {
+        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let _ = gen_vec.insert(45);
+
+         //dbg!(&gen_vec);
+        let id = gen_vec.insert(42);
+         //dbg!(&gen_vec);
+        gen_vec.rollback_insert(id).unwrap();
+         //dbg!(&gen_vec);
+
+         let mut old_gen = GenVecOf::new();
+         old_gen.insert(50);
+
+        assert_ne!(gen_vec, old_gen);
     }
 
     #[test]

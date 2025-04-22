@@ -3,11 +3,12 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_box};
+use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_box, num::Wrapping};
 use criterion::{BenchmarkId, Criterion};
 
 //use hexga_graphics::Image;
 use hexga_math::prelude::*;
+use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
 
 /*
 use hexga_generational::gen_vec::GenVec;

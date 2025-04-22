@@ -4,6 +4,8 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
 
 - Name2Reserve : réserver plus de nom sous crate io
 
+- Undo Redo : Impl Action pour vecteur, slice, array, hashmap, hashset... struct field
+
 - Io System / Cache / Mediator
 
 - GenVec : 

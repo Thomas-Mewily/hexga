@@ -381,6 +381,7 @@ name = "hexga_test"
 version = "0.1.0"
 dependencies = [
  "criterion",
+ "hexga_generational",
  "hexga_graphics",
  "hexga_math",
 ]
