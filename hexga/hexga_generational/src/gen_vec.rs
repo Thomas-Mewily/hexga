@@ -570,6 +570,24 @@ impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen>
 }
 //impl<T,Gen:IGeneration> typed_index::IndexLike for GenIDOf<T,Gen>{}
 
+
+impl<T,Gen:IGeneration> GetIndex<usize> for GenVecOf<T,Gen>
+{
+    fn get(&self, idx : usize) -> Option<&Self::Output> { self.get_index(idx) }
+}
+impl<T,Gen:IGeneration> GetIndex<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    fn get(&self, idx : GenIDOf<T,Gen>) -> Option<&Self::Output> { self.get(idx) }
+}
+impl<T,Gen:IGeneration> GetIndexMut<usize> for GenVecOf<T,Gen>
+{
+    fn get_mut(&mut self, idx : usize) -> Option<&mut Self::Output> { self.get_index_mut(idx) }
+}
+impl<T,Gen:IGeneration> GetIndexMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    fn get_mut(&mut self, idx : GenIDOf<T,Gen>) -> Option<&mut Self::Output> { self.get_mut(idx) }
+}
+
 #[allow(dead_code)]
 #[cfg(test)]
 mod tests 

@@ -1,28 +1,31 @@
 use hexga_undo_redo::*;
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub enum PushOrPop<T>
+pub enum PushOrPop<T> where T : Clone
 {
     Pop,
     Push(T),
 }
 
-impl<T> UndoAction for PushOrPop<T>
+impl<T> UndoAction for PushOrPop<T> where T : Clone
 {
     type ActionSet = Self;
     type Context = Vec<T>;
     type Output<'a> = ();
 
     fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::ActionSet> {
+        /* 
         match self
         {
             PushOrPop::Pop => match context.pop()
             {
-                Some(v) => undo.push(Self::Push(v)),
+                Some(v) => undo.push(move||Self::Push(v)),
                 None => (),
             },
-            PushOrPop::Push(value) => { context.push(value); undo.push(Self::Pop); }
+            PushOrPop::Push(value) => { context.push(value); undo.push(||Self::Pop); }
         };
+        */
+        todo!()
     }
 }
 

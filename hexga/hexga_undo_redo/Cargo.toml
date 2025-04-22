@@ -14,3 +14,4 @@ categories = ["rust-patterns", "data-structures"]
 
 
 [dependencies]
+hexga_base.workspace = true

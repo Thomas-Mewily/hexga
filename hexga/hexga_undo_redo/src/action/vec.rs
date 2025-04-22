@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, ops::{Index, IndexMut}};
 
 use crate::*;
 
@@ -19,14 +19,9 @@ impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
     type Context=Vec<T>;
     type Output<'a> = Option<T>;
 
-    fn execute_without_undo<'a>(self, context : &'a mut Self::Context) -> Self::Output<'a> 
-    {
-        context.pop()
-    }
-
     fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::ActionSet> 
     {
-        context.pop().map(|v| { undo.push(Action::Push(Push(v.clone()))); v })
+        context.pop().map(|v| { undo.push(|| Action::Push(Push(v.clone()))); v })
     }
 }
 
@@ -41,7 +36,7 @@ impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
     fn execute<'ctx, U>(self, context : &'ctx mut Self::Context, undo : &'ctx mut U) -> Self::Output<'ctx> where U : UndoStack<Self::ActionSet> 
     {
         context.push(self.0);
-        undo.push(Action::Pop(Pop(PhantomData)));
+        undo.push(|| Action::Pop(Pop(PhantomData)));
     }
 }
 
@@ -66,7 +61,7 @@ impl<T> UndoAction for Clear<T> where for<'a> T: 'a + Clone
     {
         if !context.is_empty()
         {
-            undo.push(Action::Set(Set(std::mem::take(context))));
+            undo.push(|| Action::Set(Set(std::mem::take(context))));
         }
     }
 }
@@ -84,47 +79,58 @@ impl<T> UndoAction for Set<T> where for<'a> T: 'a + Clone
         *context = self.0;
         if !context.is_empty()
         {
-            undo.push(Action::Clear(Clear(PhantomData)));
+            undo.push(|| Action::Clear(Clear(PhantomData)));
         }
     }
 }
 
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub struct Replace<T>(usize, T);
 
-impl<T> UndoAction for Replace<T> where for<'a> T: 'a + Clone
+
+pub struct Swap<T,Idx>(Idx, T::Output) where T : GetIndexMut<Idx>;
+
+impl<T,Idx> Clone for Swap<T,Idx> where T : GetIndexMut<Idx>, Idx : Clone, T::Output : Clone
+{
+    fn clone(&self) -> Self { Self(self.0.clone(), self.1.clone()) }
+}
+impl<T,Idx> PartialEq for Swap<T,Idx> where T : GetIndexMut<Idx>, Idx : PartialEq, T::Output : PartialEq
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0 && self.1 == other.1
+    }
+}
+
+impl<T,Idx> Eq for Swap<T,Idx> where T : GetIndexMut<Idx>, Idx : Eq, T::Output : Eq {}
+use std::hash::Hash;
+impl<T,Idx> Hash for Swap<T,Idx> where T : GetIndexMut<Idx>, Idx : Hash, T::Output : Hash { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.0.hash(state); self.1.hash(state); } }
+impl<T,Idx> Debug for Swap<T,Idx> where T : GetIndexMut<Idx>, Idx : Debug, T::Output : Debug {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("Swap").field(&self.0).field(&&self.1).finish()
+    }
+}
+
+impl<T,Idx> UndoAction for Swap<T,Idx> where T: GetIndexMut<Idx>, for<'a> Idx : 'a + Clone, for<'a> T::Output : 'a + Clone,
 {
     type ActionSet = Self;
-    type Context=Vec<T>;
-    type Output<'ctx> = Result<T, ()>;
+    type Context=T;
+    type Output<'ctx> = Result<(), ()>;
     
     fn execute<'ctx, U>(self, context : &'ctx mut Self::Context, undo : &'ctx mut U) -> Self::Output<'ctx> where U : UndoStack<Self::ActionSet> 
     {
-        let Replace(idx, mut value) = self;
-        if idx < context.len()
+        let Swap(idx, mut value) = self;
+        match context.get_mut(idx.clone()) // I don't like this clone. Imagine it on a HashMap<String, ...>...
         {
-            std::mem::swap(&mut value, &mut context[idx]);
-            undo.push(Replace(idx, value.clone()));
-            Ok(value)
-        }else
-        {
-            Err(())
-        }
-    }
-
-    fn execute_without_undo<'a>(self, context : &'a mut Self::Context) -> Self::Output<'a> {
-        let Replace(idx, mut value) = self;
-        if idx < context.len()
-        {
-            std::mem::swap(&mut value, &mut context[idx]);
-            Ok(value)
-        }else
-        {
-            Err(())
+            Some(v) => 
+            {
+                std::mem::swap(&mut value, v);
+                undo.push(move || Self(idx.clone(), value));
+                Ok(())
+            },
+            None => Err(()),
         }
     }
 }
+
 
 /* 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
@@ -153,7 +159,7 @@ pub enum Action<T>
     Push(Push<T>),
     Clear(Clear<T>),
     Set(Set<T>),
-    Replace(Replace<T>),
+    Replace(Swap<Vec<T>,usize>),
     //Swap()
 }
 impl<T> UndoAction for Action<T> where for<'a> T: 'a + Clone
@@ -166,9 +172,10 @@ impl<T> UndoAction for Action<T> where for<'a> T: 'a + Clone
         match self
         {
             Action::Pop(v) => { v.execute(context, undo); }
-            Action::Push(v) => { v.execute(context, undo); },
+            Action::Push(v) => { v.execute(context, undo); }
             Action::Clear(v) => { v.execute(context, undo); }
             Action::Set(v) => { v.execute(context, undo); }
+            //Action::Replace(v) => { v.execute(context, undo); }
         };
     }
 }

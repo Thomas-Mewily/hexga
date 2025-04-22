@@ -6,7 +6,7 @@ use crate::*;
 /// 
 /// [Param] is a silent parameter, generally void, that is here to facilitate the API for [GridParam] because some function depend 
 /// if the param is clonable or not. 
-pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output = T> + IRectangle<Idx, N>
+pub trait IGridView<T, Param, Idx, const N : usize> : GetIndex<Vector<Idx,N>,Output = T> + IRectangle<Idx, N>
     where Idx : IntegerIndex
 {
     /* 
@@ -17,8 +17,8 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output
     */
 
     /// The Zero is located at the `position()`/`begin()` 
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&T>;
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { &self[pos] }
+    //fn get(&self, pos : Vector<Idx,N>) -> Option<&T>;
+    //unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { &self[pos] }
 
     type Map<Dest>;
     fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, Param : Clone;
@@ -38,6 +38,13 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Index<Vector<Idx,N>,Output
         let r = self.rect(); 
         r.iter_idx().map(|p| (p, unsafe { self.get_unchecked(p) }))
     }
+}
+
+impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridView<'a, T, Idx,N> 
+    where Idx : IntegerIndex 
+{
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
+    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
 }
 
 /// A slice inside a [Grid]
@@ -93,9 +100,6 @@ impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N>
 impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx, N> 
     where Idx : IntegerIndex 
 {
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
-
     type Map<Dest>=GridBase<Dest,Idx,N>;
     fn map<Dest, F>(&self, mut f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, () : Clone { GridBase::from_fn(self.size(), |p| f(&self[p])) }
     fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, () : Clone  { GridBase::from_fn_par(self.size(), |p| f(&self[p])) }

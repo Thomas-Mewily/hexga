@@ -86,44 +86,18 @@ impl<T,Param,Idx,const N : usize> IGridParam<T,Param,Idx,N> for GridParamBase<T,
     }
 }
 
-/* 
-/// Same constructor as grid
-impl<T,Param,Idx,const N : usize> GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
-    Param : Default
+impl<T,Param,Idx,const N : usize> GetIndex<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
+    where Idx : IntegerIndex
 {
-    pub fn from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Option<Self> { Self::try_from_vec(size, value).ok() }
-    pub fn try_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Result<Self, GridBaseError<Idx,N>>
-    {
-        GridBase::try_from_vec(size, value).map(|g| Self::from_grid(g))
-    }
-
-    pub fn from_fn<F>(size : Vector::<Idx,N>, f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T  { Self::from_grid(GridBase::from_fn(size, f)) }
-
-    /// Fill the grid with the [Default] value
-    pub fn new(size : Vector::<Idx,N>) -> Self where T : Default { Self::from_grid(GridBase::new(size)) }
-    /// Fill the grid by cloning the value
-    pub fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::from_grid(GridBase::new_uniform(size, value)) }
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> { self.grid.get(pos) }
+    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { self.grid.get_unchecked(pos) } }
 }
-    
-
-/// Same constructor as grid + with param
-impl<T,Param,Idx,const N : usize> GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
+impl<T,Param,Idx,const N : usize> GetIndexMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
+    where Idx : IntegerIndex
 {
-    pub fn from_vec_with_param(size : Vector::<Idx,N>, value : Vec<T>, param : Param) -> Option<Self> { Self::try_from_vec_with_param(size, value, param).ok() }
-    pub fn try_from_vec_with_param(size : Vector::<Idx,N>, value : Vec<T>, param : Param) -> Result<Self, GridBaseError<Idx,N>>
-    {
-        GridBase::try_from_vec(size, value).map(|g| Self::from_grid_with_param(g, param))
-    }
-
-    pub fn from_fn_with_param<F>(size : Vector::<Idx,N>, f : F, param : Param) -> Self where F : FnMut(Vector::<Idx,N>) -> T  { Self::from_grid_with_param(GridBase::from_fn(size, f), param) }
-
-    /// Fill the grid with the [Default] value
-    pub fn new_with_param(size : Vector::<Idx,N>, param : Param) -> Self where T : Default { Self::from_grid_with_param(GridBase::new(size), param) }
-    /// Fill the grid by cloning the value
-    pub fn new_uniform_with_param(size : Vector::<Idx,N>, value : T, param : Param) -> Self where T : Clone { Self::from_grid_with_param(GridBase::new_uniform(size, value), param) }
+    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut Self::Output> { self.grid.get_mut(pos) }
+    unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut Self::Output { unsafe { self.grid.get_unchecked_mut(pos) } }
 }
-*/
-
 
 impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
@@ -166,9 +140,6 @@ impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param
 
 impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(pos) }
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(pos) } }
-    
     type Map<Dest>=GridParamBase<Dest,Param,Idx,N>;
 
     fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, Param : Clone { GridParamBase::from_grid_with_param(self.grid.map(f), self.param.clone()) }
@@ -185,8 +156,6 @@ impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,P
 
 impl<T,Param,Idx,const N : usize> IGridViewMut<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
-    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.grid.get_mut(pos) }
-
     type SubViewMut<'b> = GridParamViewMut<'b, T, Param, Idx, N> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> 
     { Self::SubViewMut::from_view(self.grid.subview_mut(rect), &mut self.param) }

@@ -39,9 +39,6 @@ impl<'a, T, Param, Idx, const N : usize> GridParamView<'a, T, Param, Idx, N>
 impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamView<'a, T, Param, Idx, N> 
     where Idx : IntegerIndex,
 {
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.view.get(pos) }
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.view.get_unchecked(pos) } }
-    
     type Map<Dest>=GridParamBase<Dest,Param,Idx,N>;
     fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, Param : Clone { GridParamBase::from_grid_with_param(self.view.map(f), self.param.clone()) }
     fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, Param : Clone { GridParamBase::from_grid_with_param(self.view.map_par(f), self.param.clone()) }
@@ -52,6 +49,13 @@ impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamV
     type SubView<'b> = GridParamView<'b, T, Param, Idx, N> where Self: 'b;
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone
     { Self::SubView::from_view(self.view.subview(rect), self.param) }
+}
+
+impl<'a,T,Param,Idx,const N : usize> GetIndex<Vector<Idx,N>> for GridParamView<'a,T,Param,Idx,N>
+    where Idx : IntegerIndex
+{
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.view.get(pos) }
+    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.view.get_unchecked(pos) } }
 }
 
 impl<'a, T, Param, Idx, const N : usize> IRectangle<Idx,N> for GridParamView<'a, T, Param, Idx, N> 

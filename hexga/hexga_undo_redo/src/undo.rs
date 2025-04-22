@@ -3,11 +3,7 @@ use std::marker::PhantomData;
 
 pub trait UndoStack<A : UndoAction>
 {
-    // Todo : use a lambda to avoid cloning useless value
-    fn push_lambda<F>(&mut self, f : F) where F : FnMut() -> A + FnOnce() -> A;
-    A
-    /// Push all the action to describe how to cancel the current one
-    fn push(&mut self, action : A);
+    fn push<F>(&mut self, f : F) where F : FnMut() -> A + FnOnce() -> A;
     fn handle<'a, T>(&'a mut self, f : fn(T) -> A) -> UndoStackMap<'a,Self,A,T> where Self : Sized, T : UndoAction { UndoStackMap::new(self, f) }
 }
 
@@ -24,24 +20,26 @@ impl<'a, U, A, T> UndoStackMap<'a, U, A, T> where U : UndoStack<A>, A : UndoActi
 
 impl<'a, U, A, T> UndoStack<T> for UndoStackMap<'a, U, A, T> where U : UndoStack<A>, A : UndoAction, T : UndoAction
 {
-    fn push(&mut self, action : T) 
+    fn push<F>(&mut self, mut f : F) where F : FnMut() -> T + FnOnce() -> T
     {
-        self.undo.push((self.f)(action));
+        self.undo.push(|| (self.f)(f()));
     }
 }
 
 /// Ignore the action
 impl<A> UndoStack<A> for () where A : UndoAction 
 {
-    fn push(&mut self, _ : A) {}
+    fn push<F>(&mut self, _ : F) where F : FnMut() -> A + FnOnce() -> A {}
 }
 
 impl<A> UndoStack<A> for Vec<A> where A : UndoAction
 {
-    fn push(&mut self, action : A) { self.push(action); }
+    fn push<F>(&mut self, mut f : F) where F : FnMut() -> A + FnOnce() -> A {
+        self.push(f());
+    }
 }
 
-pub trait UndoAction : Sized
+pub trait UndoAction : Sized + Clone
 {
     /// The set of action that can be involved when undoing your action
     type ActionSet : UndoAction;
@@ -49,10 +47,6 @@ pub trait UndoAction : Sized
     type Output<'a>;
     
     fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::ActionSet>;
-    
-    /// Can be manually implemented for more optimisation
-    /// 
-    /// Example: `execute_without_undo` on `vec::Pop<T>` avoids an unused clone on `T` contrary to `execute`.
     fn execute_without_undo<'a>(self, context : &'a mut Self::Context) -> Self::Output<'a> { self.execute(context, &mut ()) }
 }
 

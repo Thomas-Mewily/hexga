@@ -12,7 +12,7 @@ pub struct Data
     even : Vec<i32>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DataAction
 {
     Odd (vec::Action<i32>), // Action done on Odd

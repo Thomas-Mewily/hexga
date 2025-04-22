@@ -402,6 +402,9 @@ version = "0.0.10-beta.3"
 [[package]]
 name = "hexga_undo_redo"
 version = "0.0.10-beta.3"
+dependencies = [
+ "hexga_base",
+]
 
 [[package]]
 name = "image"

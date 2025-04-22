@@ -1,5 +1,8 @@
 //! A minimal set of feature for every project
 
+use std::{collections::HashMap, ops::Index, slice::SliceIndex};
+use std::hash::{BuildHasher, Hash};
+
 pub use have_len::HaveLen as Length;
 pub use default_is_triple_underscore::*;
 
@@ -37,3 +40,7 @@ impl<T> ToDebug for T where T : std::fmt::Debug
         format!("{:?}", self)
     }
 }
+
+
+mod get_index;
+pub use get_index::*;

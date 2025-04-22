@@ -1,5 +1,6 @@
 //! A crate that handle the command pattern, ideal for undo redo of action
 use std::marker::PhantomData;
+use hexga_base::*;
 
 mod undo;
 pub use undo::*;
