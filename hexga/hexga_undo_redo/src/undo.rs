@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 
 pub trait UndoStack<A : UndoAction>
 {
-    fn push<F>(&mut self, f : F) where F : FnMut() -> A + FnOnce() -> A;
+    fn push<F>(&mut self, f : F) where F : FnOnce() -> A;
     fn handle<'a, T>(&'a mut self, f : fn(T) -> A) -> UndoStackMap<'a,Self,A,T> where Self : Sized, T : UndoAction { UndoStackMap::new(self, f) }
 }
 
@@ -20,7 +20,7 @@ impl<'a, U, A, T> UndoStackMap<'a, U, A, T> where U : UndoStack<A>, A : UndoActi
 
 impl<'a, U, A, T> UndoStack<T> for UndoStackMap<'a, U, A, T> where U : UndoStack<A>, A : UndoAction, T : UndoAction
 {
-    fn push<F>(&mut self, mut f : F) where F : FnMut() -> T + FnOnce() -> T
+    fn push<F>(&mut self, f : F) where F : FnOnce() -> T
     {
         self.undo.push(|| (self.f)(f()));
     }
@@ -29,12 +29,12 @@ impl<'a, U, A, T> UndoStack<T> for UndoStackMap<'a, U, A, T> where U : UndoStack
 /// Ignore the action
 impl<A> UndoStack<A> for () where A : UndoAction 
 {
-    fn push<F>(&mut self, _ : F) where F : FnMut() -> A + FnOnce() -> A {}
+    fn push<F>(&mut self, _ : F) where F : FnOnce() -> A {}
 }
 
 impl<A> UndoStack<A> for Vec<A> where A : UndoAction
 {
-    fn push<F>(&mut self, mut f : F) where F : FnMut() -> A + FnOnce() -> A {
+    fn push<F>(&mut self, f : F) where F : FnOnce() -> A {
         self.push(f());
     }
 }

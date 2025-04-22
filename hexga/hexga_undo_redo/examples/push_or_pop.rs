@@ -14,7 +14,6 @@ impl<T> UndoAction for PushOrPop<T> where T : Clone
     type Output<'a> = ();
 
     fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::ActionSet> {
-        /* 
         match self
         {
             PushOrPop::Pop => match context.pop()
@@ -24,8 +23,6 @@ impl<T> UndoAction for PushOrPop<T> where T : Clone
             },
             PushOrPop::Push(value) => { context.push(value); undo.push(||Self::Pop); }
         };
-        */
-        todo!()
     }
 }
 

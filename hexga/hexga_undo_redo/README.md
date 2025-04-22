@@ -55,13 +55,13 @@ Unlike other crate like [undo](https://crates.io/crates/undo), when doing a acti
 use hexga_undo_redo::*;
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub enum PushOrPop<T>
+pub enum PushOrPop<T> where T : Clone
 {
     Pop,
     Push(T),
 }
 
-impl<T> UndoAction for PushOrPop<T>
+impl<T> UndoAction for PushOrPop<T> where T : Clone
 {
     type ActionSet = Self;
     type Context = Vec<T>;
@@ -72,17 +72,12 @@ impl<T> UndoAction for PushOrPop<T>
         {
             PushOrPop::Pop => match context.pop()
             {
-                Some(v) => undo.push(Self::Push(v)),
+                Some(v) => undo.push(move||Self::Push(v)),
                 None => (),
             },
-            PushOrPop::Push(value) => { context.push(value); undo.push(Self::Pop); }
+            PushOrPop::Push(value) => { context.push(value); undo.push(||Self::Pop); }
         };
     }
-
-
-    // fn execute_without_undo<'a>(self, context : &'a mut Self::Context) -> Self::Output<'a>;
-    // ^^^ Can be manually implemented for more optimisation
-    // `execute_without_undo` on `vec::Pop<T>` avoids an unused clone on `T` contrary to `execute`.
 }
 
 fn main()
