@@ -5,14 +5,15 @@ pub trait GetIndex<Idx> : Index<Idx>
     //fn try_get(&self, idx : Idx) -> Result<&Self::Output, Self::Error>;
     fn get(&self, idx : Idx) -> Option<&Self::Output>;
     unsafe fn get_unchecked(&self, idx : Idx) -> &Self::Output { self.get(idx).expect("invalid index") }
-
-    // Todo : add get_disjoint?
 }
 pub trait GetIndexMut<Idx> : GetIndex<Idx>
 {
     //fn try_get(&self, idx : Idx) -> Result<&Self::Output, Self::Error>;
     fn get_mut(&mut self, idx : Idx) -> Option<&mut Self::Output>;
     unsafe fn get_unchecked_mut(&mut self, idx : Idx) -> &mut Self::Output { self.get_mut(idx).expect("invalid index") }
+
+    // Todo : add disjoint_mut when core::slice::GetDisjointMutIndex will be stable
+    // fn get_disjoint_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> where Idx : core::slice::GetDisjointMutIndex;
 }
 
 

@@ -10,7 +10,8 @@ impl<T> Default for Pop<T>{ fn default() -> Self { Self(PhantomData) } }
 impl<T> Debug for Pop<T>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Pop<{}>", std::any::type_name::<T>())
+        //write!(f, "Pop<{}>", std::any::type_name::<T>())
+        write!(f, "Pop")
     }
 }
 
@@ -133,27 +134,6 @@ impl<Idx,T> UndoAction for Swap<Idx,T> where T: GetIndexMut<Idx>, for<'a> Idx : 
     }
 }
 
-
-/* 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
-pub struct Swap<T>(pub usize, pub usize, PhantomData<T>);
-
-impl<T> UndoAction for Replace<T> where for<'a> T: 'a + Clone
-{
-    type ActionSet = Action<T>;
-    type Context=Vec<T>;
-    type Output<'ctx> = ();
-    
-    fn execute<'ctx, U>(self, context : &'ctx mut Self::Context, undo : &'ctx mut U) -> Self::Output<'ctx> where U : UndoStack<Self::ActionSet> 
-    {
-        *context = self.0;
-        if !context.is_empty()
-        {
-            undo.push(Action::Clear(Clear(PhantomData)));
-        }
-    }
-}*/
-
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum Action<T>
 {
@@ -162,7 +142,6 @@ pub enum Action<T>
     Clear(Clear<T>),
     Set(Set<T>),
     Swap(Swap<usize, Vec<T>>),
-    //Swap()
 }
 impl<T> UndoAction for Action<T> where for<'a> T: 'a + Clone
 {
