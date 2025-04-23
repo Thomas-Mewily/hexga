@@ -297,8 +297,10 @@ name = "hexga"
 version = "0.0.10-beta.3"
 dependencies = [
  "hexga_base",
+ "hexga_bitflags",
  "hexga_generational",
  "hexga_math",
+ "hexga_undo_redo",
  "serde",
 ]
 
