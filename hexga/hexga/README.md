@@ -30,6 +30,8 @@ The name was inspired by Excalibur, the sword.
 
 - `hexga_math` : https://crates.io/crates/hexga_math
 - `hexga_generational` : https://crates.io/crates/hexga_generational
+- `hexga_undo_redo` : https://crates.io/crates/hexga_undo_redo
+- `hexga_bitflags` : https://crates.io/crates/hexga_bitflags
 - `hexga_array` : https://crates.io/crates/hexga_array
 - `hexga_number` : https://crates.io/crates/hexga_number
 - `hexga_tools` : https://crates.io/crates/hexga_tools
