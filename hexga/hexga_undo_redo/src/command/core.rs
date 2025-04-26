@@ -1,13 +1,19 @@
 pub use crate::*;
 
 
+
 pub trait CommandStack<A> : ActionStack<A> where A : UndoAction
 {
-    /// Marks the beginning a command
-    fn begin(&mut self);
-    /// Marks the end of a command. Panics if `begin()` was not called before.
-    fn end(&mut self);
+    // Marks the beginning a command
+    //  fn begin(&mut self) {}
+    // Marks the end of a command. Panics if `begin()` was not called before.
+    //  fn end(&mut self) { self.done()}
 
+    /// Prepare a new command.
+    /// Mark the end of the previous command, and start to begin a new command
+    fn prepare(&mut self);
+
+    /* 
     /// Execute the whole command inside the f scope
     fn execute<R,F>(&mut self, f : F) -> R where F : FnOnce(&mut Self) -> R
     {
@@ -16,6 +22,7 @@ pub trait CommandStack<A> : ActionStack<A> where A : UndoAction
         self.end();
         r
     }
+    */
 }
 
 pub trait UndoCommandStack<A> : CommandStack<A> where A : UndoAction

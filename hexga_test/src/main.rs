@@ -34,18 +34,17 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 fn main() 
 {
 
-    let mut u = CommandStackSequenceFlatten::new();
+    //let mut u = CommandsFlow::new();
+    let mut u = Commands::new();
 
     let mut v = Vec::new();
 
-    u.execute(|s|
-        {
-            v.push_action(42, s);
-            v.push_action(50, s);
-        }
-    );
+    u.prepare();
+    v.push_action(42, &mut u);
+    v.push_action(50, &mut u);
+    u.prepare();
+    u.prepare();
 
-    //v.undo(&mut u);
 
     dbg!(&u);
     dbg!(&v);

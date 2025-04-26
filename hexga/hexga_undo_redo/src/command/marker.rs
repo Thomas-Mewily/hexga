@@ -1,193 +1,88 @@
 pub use crate::*;
 
+/* 
 
 /// A marker used to indicate the beginning or ending of a command within a sequence of actions.
 /// 
-/// Multiple commands can be nested by using multiple begin/end markers or multiple nested scopes.
+/// Every command start by Begin and finish by End, except the command composed of only 1 action.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CommandMarker<A> where A : UndoAction
 {
-    Begin(usize),
-    End(usize),
-    Nop(usize),
+    Begin,
+    End,
+    Nop,
     Action(A),
 }
-impl<A> Debug for CommandMarker<A> where A : UndoAction + Debug
+*/
+
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum CommandFlowMarker<A> where A : UndoAction
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    // Can probably reduce the size it by using u16 and doing some encoding to allow one command to rollback multiple group
+    Group(usize),
+    Action(A),
+}
+impl<A> Debug for CommandFlowMarker<A> where A : UndoAction + Debug
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
+    {
         match self 
         {
             Self::Action(v) => write!(f, "{:?}", v),
-            Self::Begin(nb) => match nb
-            {
-                1 => write!(f, "Begin"),
-                n => write!(f, "Begin x{}", n),
-            },
-            Self::End(nb) => match nb
-            {
-                1 => write!(f, "End"),
-                n => write!(f, "End x{}", n),
-            },
-            Self::Nop(nb) => match nb
-            {
-                1 => write!(f, "Nop"),
-                n => write!(f, "Nop x{}", n),
-            },
+            Self::Group(n) => write!(f, "Group({})", n),
         }
     }
 }
 
-impl<A> CommandMarker<A> where A : UndoAction
+impl<A> CommandFlowMarker<A> where A : UndoAction
 {
-    pub const fn is_begin (&self) -> bool { matches!(self, Self::Begin(_)) }
-    pub const fn is_end   (&self) -> bool { matches!(self, Self::End(_)  ) }
-    pub const fn is_nop   (&self) -> bool { matches!(self, Self::Nop(_)  ) }
+    pub const fn is_group (&self) -> bool { matches!(self, Self::Group (_)) }
     pub const fn is_action(&self) -> bool { matches!(self, Self::Action(_)) }
 
-    pub const fn is_zero_action(&self) -> bool { matches!(self, Self::Nop(0) | Self::Begin(0) | Self::End(0)) }
-
-    pub const fn is_begin_or_end (&self) -> bool { matches!(self, Self::Begin(_) | Self::End(_)) }
-}
-
-impl<A> ActionStack<A> for CommandStackMarker<A> where A : UndoAction 
-{
-    fn push<F>(&mut self, f : F) where F : FnOnce() -> A 
-    {
-        debug_assert!(self.len().is_non_zero(), "Forget to call CommandStackMarker::begin()");
-        self.actions.push(CommandMarker::Action(f()));
-    }
+    pub const fn is_nop(&self) -> bool { matches!(self, Self::Group(0)) }
+    pub const NOP : Self = CommandFlowMarker::Group(0);
 }
 
 
-
-impl<A> CommandStack<A> for CommandStackMarker<A> where A : UndoAction 
-{
-    fn begin(&mut self) { self.push(CommandMarker::Begin(1)); }
-    fn end(&mut self) 
-    { 
-        match self.last_mut()
-        {
-            Some(CommandMarker::Begin(n)) if *n >= 1 => 
-            {
-                self.actions.pop();
-                self.actions.push(CommandMarker::Nop(1));
-            },
-            Some(CommandMarker::Nop(v)) => 
-            {
-                v.increase_checked().expect("that a lot of Nop");
-            },
-            _ => self.actions.push(CommandMarker::End(1)),
-        }
-    }
-}
-
-/// Store command.
+/// A flow of commands. All action are stored inside the same sequence.
 /// 
-/// Each command starts with [CommandMarker::Begin] and ends with [CommandMarker::End],
-/// except for commands composed of only one action, which can choose to skip it if they want.
-///
-/// command that don't do any action need to emit a [CommandMarker::Nop].
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CommandStackMarker<A> where A: UndoAction
-{ 
+/// Each command end with [CommandFlowMarker::Group] with the given size,
+/// except for commands composed of only one action, 
+/// which can choose to skip it if they want in order to use less memory
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CommandsFlow<A> where A : UndoAction
+{
     // Todo : use generic sequence ? vec, vecdequeu...
-    pub actions : Vec<CommandMarker<A>>,
-}
-impl<A> Deref for CommandStackMarker<A> where A: UndoAction
-{
-    type Target=Vec<CommandMarker<A>>;
-    fn deref(&self) -> &Self::Target { &self.actions }
-}
-impl<A> DerefMut for CommandStackMarker<A> where A: UndoAction
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.actions }
+    pub actions : Vec<CommandFlowMarker<A>>,
 }
 
-impl<A> CommandStackMarker<A> where A : UndoAction
+impl<A> Default for CommandsFlow<A> where A : UndoAction { fn default() -> Self { Self::new() } }
+
+impl<A> Deref for CommandsFlow<A> where A : UndoAction { type Target=Vec<CommandFlowMarker<A>>; fn deref(&self) -> &Self::Target {&self.actions } }
+impl<A> DerefMut for CommandsFlow<A> where A : UndoAction { fn deref_mut(&mut self) -> &mut Self::Target {&mut self.actions } }
+
+impl<A> From<Vec<CommandFlowMarker<A>>> for CommandsFlow<A> where A : UndoAction { fn from(actions: Vec<CommandFlowMarker<A>>) -> Self { Self { actions } } }
+impl<A> From<CommandsFlow<A>> for Vec<CommandFlowMarker<A>> where A : UndoAction { fn from(value: CommandsFlow<A>) -> Self { value.actions } }
+
+impl<A> CommandsFlow<A> where A : UndoAction
 {
+    pub const fn from_vec(actions : Vec<CommandFlowMarker<A>>) -> Self { Self { actions } }
+
     pub const fn new() -> Self { Self { actions: Vec::new() } }
     pub fn with_capacity(capacity: usize) -> Self { Self { actions: Vec::with_capacity(capacity) } }
-    pub fn len(&self) -> usize { self.actions.len() }
+    fn len(&self) -> usize { self.actions.len() }
 
-    pub fn push(&mut self, value : CommandMarker<A>)
-    {
-        if value.is_zero_action() { return; }
-        
-        if let Some(v) = self.last_mut()
-        {
-            use CommandMarker::*;
-            match (v, value)
-            {
-                (Begin(a), Begin(b)) => 
-                {
-                    match a.checked_add(b)
-                    {
-                        Some(total) => *a = total,
-                        None => 
-                        {
-                            let rest = usize::MAX - if *a > b
-                            {
-                                *a - b
-                            }else
-                            {
-                                b - *a
-                            };
-                            *a = usize::MAX;
-                            self.push(Begin(rest)); 
-                        }
-                    }
-                }
-                (End(a), End(b)) => 
-                {
-                    match a.checked_add(b)
-                    {
-                        Some(total) => *a = total,
-                        None => 
-                        {
-                            let rest = usize::MAX - if *a > b
-                            {
-                                *a - b
-                            }else
-                            {
-                                b - *a
-                            };
-                            *a = usize::MAX;
-                            self.push(Begin(rest)); 
-                        }
-                    }
-                },
-                (Nop(a), Nop(b)) => 
-                {
-                    match a.checked_add(b)
-                    {
-                        Some(total) => *a = total,
-                        None => 
-                        {
-                            let rest = usize::MAX - if *a > b
-                            {
-                                *a - b
-                            }else
-                            {
-                                b - *a
-                            };
-                            *a = usize::MAX;
-                            self.push(Begin(rest)); 
-                        }
-                    }
-                },
-                (_, b) => { self.actions.push(b); }
-            }
-        }else
-        {
-            self.actions.push(value);
-        }
-    }
+    pub fn actions(&self) -> &[CommandFlowMarker<A>] { &self.actions }
+    pub fn actions_mut(&mut self) -> &mut [CommandFlowMarker<A>] { &mut self.actions }
+    pub fn into_actions(self) -> Vec<CommandFlowMarker<A>> { self.actions }
 }
-impl<A> Length for CommandStackMarker<A> where A : UndoAction
+
+impl<A> Length for CommandsFlow<A> where A : UndoAction
 {
     fn len(&self) -> usize { self.len() }
 }
-impl<A> Capacity for CommandStackMarker<A> where A : UndoAction
+impl<A> Capacity for CommandsFlow<A> where A : UndoAction
 {
     type Param = ();
 
@@ -200,4 +95,42 @@ impl<A> Capacity for CommandStackMarker<A> where A : UndoAction
 
     fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.actions.try_reserve(additional) }
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.actions.try_reserve_exact(additional) }
+}
+
+
+impl<A> ActionStack<A> for CommandsFlow<A> where A : UndoAction 
+{
+    fn push<F>(&mut self, f : F) where F : FnOnce() -> A 
+    {
+        debug_assert!(self.len().is_non_zero(), "Forget to call CommandStackMarker::begin()");
+
+        let group_size = match self.actions.pop()
+        {
+            Some(v) => match v
+            {
+                CommandFlowMarker::Group(nb) => nb + 1,
+                _ => unreachable!("actions should always finish by a group"),
+            }
+            None => 1,
+        };
+        self.actions.push(CommandFlowMarker::Action(f()));
+        self.actions.push(CommandFlowMarker::Group(group_size));
+    }
+}
+
+impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoAction 
+{
+    fn prepare(&mut self) 
+    {
+        if let Some(CommandFlowMarker::Group(nb)) = self.actions.last()
+        {
+            if *nb != 1
+            {
+                self.actions.push(CommandFlowMarker::NOP);
+            }
+        }else
+        {
+            self.actions.push(CommandFlowMarker::NOP);
+        }
+    }
 }
