@@ -6,9 +6,15 @@ pub type Clear  <T> = collection::Clear       <Vec<T>       >;
 pub type Set    <T> = collection::SetIndex    <Vec<T>, usize>;
 pub type Replace<T> = collection::ReplaceIndex<Vec<T>, usize>;
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Pop<T>(PhantomData<T>);
-impl<T> Default for Pop<T>{ fn default() -> Self { Self(PhantomData) } }
+pub struct Pop<T> { phantom : PhantomData<T> }
+impl<T> Pop<T> { pub const fn new() -> Self { Self { phantom: PhantomData }}}
+
+impl<T> Clone for Pop<T> { fn clone(&self) -> Self { Self::new() } }
+impl<T> Copy for Pop<T>  {}
+impl<T> PartialEq for Pop<T> { fn eq(&self, _: &Self) -> bool { true } }
+impl<T> Eq for Pop<T> {}
+impl<T> Hash for Pop<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
+impl<T> Default for Pop<T>{ fn default() -> Self { Self::new() } }
 impl<T> Debug for Pop<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Pop") } }
 
 impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
@@ -19,16 +25,23 @@ impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
 
     fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
-        context.pop().map(|v| { undo.push(|| Push(v.clone())); v })
+        context.pop().map(|v| { undo.push(|| Push::new(v.clone())); v })
     }
 
     fn execute_and_forget<'a, U>(self, context : Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> {
-        context.pop().map(|v| { undo.push(|| Push(v)); });
+        context.pop().map(|v| { undo.push(|| Push::new(v)); });
     }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub struct Push<T>(pub T);
+pub struct Push<T> { value : T }
+
+impl<T> Push<T> 
+{ 
+    pub const fn new(value : T) -> Self { Self { value }}
+    pub fn into_value(self) -> T { self.value }
+}
+
 impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
 {
     type Undo = Pop<T>;
@@ -37,8 +50,8 @@ impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
     
     fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
-        context.push(self.0);
-        undo.push(|| Pop::___());
+        context.push(self.value);
+        undo.push(|| Pop::new());
     }
 }
 
@@ -67,17 +80,17 @@ impl<T> UndoAction for Swap<T> where for<'a> T: 'a
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum Action<T> where for<'a> T : 'a + Clone
 {
-    Push(Push<T>),
-    Pop(Pop<T>),
+    Push   (Push<T>),
+    Pop    (Pop<T>),
 
-    Clear(Clear<T>),
+    Clear  (Clear<T>),
 
-    Set(Set<T>),
+    Set    (Set<T>),
     Replace(Replace<T>), 
-    Swap(Swap<T>),
+    Swap   (Swap<T>),
 
     MemReplace(mem::Replace<Vec<T>>),
-    MemTake(mem::Take<Vec<T>>),
+    MemTake   (mem::Take<Vec<T>>),
 }
 impl<T> UndoAction for Action<T> where for<'a> T : 'a + Clone
 {
@@ -127,7 +140,7 @@ pub trait ActionExtension<T, U> where for<'a> T: 'a + Clone, U: UndoStack<Action
     /// to forget it, use `try_set_action()`
     fn try_replace_action(&mut self, idx : usize, value : T, undo : &mut U) -> Result<T, ()>;
 
-    fn try_swap_action(&mut self, i : usize, j : usize, undo : &mut U) -> Result<(), ()>;
+    fn try_swap_action(&mut self, i : usize, j : usize, undo : &mut U) -> Result<(), std::slice::GetDisjointMutError>;
 }
 
 /* 
@@ -144,29 +157,24 @@ pub trait SwapExtension<Idx, U> : GetIndexMut<Idx> + Sized
 impl<T, U> ActionExtension<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
 {
     fn push_action(&mut self, value: T, undo: &mut U)
-    { Push(value)   .execute(self, &mut undo.handle(Action::Pop )) }
+    { Push::new(value)   .execute(self, &mut undo.handle(Action::Pop )) }
     
     fn pop_action (&mut self,           undo: &mut U) -> Option<T> 
-    { Pop::default().execute(self, &mut undo.handle(Action::Push)) }
+    { Pop::new().execute(self, &mut undo.handle(Action::Push)) }
 
     fn pop_action_and_forget(&mut self, undo : &mut U) 
-    { Pop::default().execute_and_forget(self, &mut undo.handle(Action::Push)) }
+    { Pop::new().execute_and_forget(self, &mut undo.handle(Action::Push)) }
 
     fn clear_action(&mut self, undo : &mut U)  
-    { Clear::default().execute(self, &mut undo.handle(Action::MemReplace)) }
+    { Clear::new().execute(self, &mut undo.handle(Action::MemReplace)) }
     
-    /* 
+    
     fn try_set_action(&mut self, idx : usize, value : T, undo : &mut U) -> Result<(), ()> 
-    { Set() ::default().execute(self, &mut undo.handle(Action::MemReplace)) }
+    { Set::new(idx, value).execute(self, &mut undo.handle(Action::Replace)) }
     
-    fn try_replace_action(&mut self, idx : usize, value : T, undo : &mut U) -> Result<T, ()> {
-        todo!()
-    }
+    fn try_replace_action(&mut self, idx : usize, value : T, undo : &mut U) -> Result<T, ()> 
+    { Replace::new(idx, value).execute(self, &mut undo.handle(Action::Replace)) }
     
-    fn try_swap_action(&mut self, i : usize, j : usize, undo : &mut U) -> Result<(), ()> {
-        todo!()
-    }
-    */
-
-
+    fn try_swap_action(&mut self, i : usize, j : usize, undo : &mut U) -> Result<(), std::slice::GetDisjointMutError> 
+    { Swap::new(i, j).execute(self, &mut undo.handle(Action::Swap)) }
 }

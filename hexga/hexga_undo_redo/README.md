@@ -61,13 +61,13 @@ pub enum PushOrPop<T> where T : Clone
     Push(T),
 }
 
-impl<T> UndoAction for PushOrPop<T> where T : Clone
+impl<T> UndoAction for PushOrPop<T> where for<'a> T : 'a + Clone
 {
-    type ActionSet = Self;
-    type Context = Vec<T>;
+    type Undo = Self;
+    type Context<'a> = &'a mut Vec<T>;
     type Output<'a> = ();
 
-    fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::ActionSet> {
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> {
         match self
         {
             PushOrPop::Pop => match context.pop()
@@ -123,6 +123,22 @@ pub enum DataAction
 {
     Odd (vec::Action<i32>), // Action done on Odd
     Even(vec::Action<i32>), // Action done on Even
+}
+
+impl UndoAction for DataAction
+{
+    type Undo = Self;
+    type Context<'a> = &'a mut Data;
+    type Output<'a> = ();
+
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    {
+        match self
+        {
+            DataAction::Odd(vec_action) => vec_action.execute(&mut context.odd, &mut undo.handle(DataAction::Even)),
+            DataAction::Even(vec_action) => vec_action.execute(&mut context.even, &mut undo.handle(DataAction::Odd)),
+        }
+    }
 }
 
 impl Data

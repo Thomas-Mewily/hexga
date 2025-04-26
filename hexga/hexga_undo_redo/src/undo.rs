@@ -55,6 +55,6 @@ pub trait UndoAction : Sized
 
 pub trait UndoExtension
 {
-    fn undo_action<'a,A>(&'a mut self, action : A) -> A::Output<'a> where A : UndoAction<Context = Self> { action.execute_without_undo(self) }
+    fn undo_action<'a,A>(&'a mut self, action : A) -> A::Output<'a> where A : UndoAction<Context<'a> = &'a mut Self> { action.execute_without_undo(self) }
 }
 impl<T> UndoExtension for T {}
