@@ -1,13 +1,14 @@
 pub use crate::*;
 
 /// A vector of command
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Commands<A> where A : UndoAction
 {
     // Todo : use generic sequence ? vec, vecdequeu...
     pub commands : Vec<Command<A>>,
 }
 
+impl<A> Debug for Commands<A> where A : UndoAction + Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.commands) } }
 impl<A> Default for Commands<A> where A : UndoAction { fn default() -> Self { Self::new() } }
 
 impl<A> Deref for Commands<A> where A : UndoAction { type Target=Vec<Command<A>>; fn deref(&self) -> &Self::Target {&self.commands } }
@@ -114,18 +115,47 @@ impl<A> CommandStack<A> for Commands<A> where A : UndoAction
         self.commands.pop()
     }
     
-    fn undo(&mut self, ctx : &mut <A as UndoAction>::Context<'_>) -> Result<(), ()> 
-    {
-        let Some(cmd) = self.commands.pop() else { return Err(()); };
+    fn remove_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>> {
+        let Some(cmd) = self.commands.pop() else { return None; };
 
         match cmd
         {
-            Command::Action(a) => a.execute_without_undo_and_forget(ctx),
-            Command::Sequence(seq) => seq.into_iter().for_each(|a| a.execute_without_undo_and_forget(ctx)),
-            Command::Nop => {},
+            Command::Action(a) => Some(IterVecOrIterOnce::Once(std::iter::once(a))),
+            Command::Sequence(seq) => Some(IterVecOrIterOnce::Vec(seq.into_iter())),
+            Command::Nop => Some(IterVecOrIterOnce::Empty(std::iter::empty())),
         }
-        Ok(())
     }
+}
+
+enum IterVecOrIterOnce<T>
+{
+    Empty(std::iter::Empty<T>),
+    Once(std::iter::Once<T>),
+    Vec(std::vec::IntoIter<T>),
+}
+
+impl<A> Iterator for IterVecOrIterOnce<A>
+{
+    type Item=A;
+    fn next(&mut self) -> Option<Self::Item> 
+    {
+        match self
+        {
+            IterVecOrIterOnce::Empty(v) => v.next(),
+            IterVecOrIterOnce::Once(v) => v.next(),
+            IterVecOrIterOnce::Vec(v) => v.next(),
+        }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        match self
+        {
+            IterVecOrIterOnce::Empty(v) => v.size_hint(),
+            IterVecOrIterOnce::Once(v) => v.size_hint(),
+            IterVecOrIterOnce::Vec(v) => v.size_hint(),
+        } 
+    }
+
 }
 
 

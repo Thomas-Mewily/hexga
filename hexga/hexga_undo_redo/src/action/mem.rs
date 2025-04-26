@@ -28,8 +28,12 @@ impl<T> UndoAction for Swap<T> where for<'a> T: 'a
 }
 
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Replace<T> { src : T }
+impl<T> Debug for Replace<T> where T : Debug
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Replace({:?})", self.src) }
+}
 
 impl<T> Replace<T> 
 { 

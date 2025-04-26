@@ -33,20 +33,31 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 
 fn main() 
 {
-
+    for _ in 0..10 { println!(); }
     //let mut u = CommandsFlow::new();
-    let mut u = Commands::new();
+    let mut u = CommandsRedo::<Commands<action::vec::Action<i32>>, action::vec::Action<i32>>::new(); // Commands::new();
 
-    let mut ctx = Vec::new();
+    let mut values = Vec::new();
 
     u.prepare();
-    ctx.push_action(42, &mut u);
-    ctx.push_action(50, &mut u);
+    values.push_action(42, &mut u);
+    values.push_action(50, &mut u);
 
-    let _ = ctx.undo(&mut u);
+    println!("value : {:?}", values);
+    println!("action : {:?}", u);
+    println!();
 
-    dbg!(&u);
-    dbg!(&ctx);
+    values.undo(&mut u);
+
+    println!("value : {:?}", values);
+    println!("action : {:?}", u);
+    println!();
+
+    values.redo(&mut u);
+
+    println!("value : {:?}", values);
+    println!("action : {:?}", u);
+    println!();
 
     /* 
     u.begin();

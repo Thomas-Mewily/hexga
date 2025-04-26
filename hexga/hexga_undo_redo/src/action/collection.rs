@@ -30,27 +30,15 @@ impl<T> UndoAction for Clear<T> where for<'a> T: 'a + Clone + Clearable + Capaci
 
 pub struct SwapIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>
 {   
-    i: Idx,
-    j: Idx, 
+    pub i: Idx,
+    pub j: Idx, 
     phantom : PhantomData<T>
 } 
 
 impl<T,Idx> SwapIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>
 {
     pub const fn new(i : Idx, j : Idx) -> Self { Self{ i, j, phantom: PhantomData } }
-
-    pub fn i_ref(&self) -> &Idx { &self.i }
-    pub fn j_ref(&self) -> &Idx { &self.j }
-
-    pub fn ij_ref(&self) -> (&Idx, &Idx) { (&self.i, &self.j) }
-
-    pub fn i(self) -> Idx { self.i }
-    pub fn j(self) -> Idx { self.j }
     pub fn ij(self) -> (Idx, Idx) { (self.i, self.j) }
-
-    pub fn i_mut(&mut self) -> &mut Idx { &mut self.i }
-    pub fn j_mut(&mut self) -> &mut Idx { &mut self.j }
-    pub fn ij_mut(&mut self) -> (&mut Idx, &mut Idx) { (&mut self.i, &mut self.j) }
 }
 
 impl<T,Idx> Copy      for SwapIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, Idx : Copy       {}
@@ -65,27 +53,15 @@ impl<T,Idx> Debug     for SwapIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx
 pub struct TradeIndex<T1,Idx1,T2,Idx2>
     where T1 : GetIndexMut<Idx1>, T2 : GetIndexMut<Idx2,Output = T1::Output>, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a
 {
-    i : Idx1,
-    j : Idx2, 
+    pub i : Idx1,
+    pub j : Idx2, 
     phantom : PhantomData<(T1,T2)>
 } 
 
 impl<T1,Idx1,T2,Idx2> TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetIndexMut<Idx1>, T2 : GetIndexMut<Idx2,Output = T1::Output>, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a
 {
     pub const fn new(i : Idx1, j : Idx2) -> Self { Self {i, j, phantom : PhantomData} }
-
-    pub fn i_ref(&self) -> &Idx1 { &self.i }
-    pub fn j_ref(&self) -> &Idx2 { &self.j }
-
-    pub fn ij_ref(&self) -> (&Idx1, &Idx2) { (&self.i, &self.j) }
-
-    pub fn i(self) -> Idx1 { self.i }
-    pub fn j(self) -> Idx2 { self.j }
     pub fn ij(self) -> (Idx1, Idx2) { (self.i, self.j) }
-
-    pub fn i_mut(&mut self) -> &mut Idx1 { &mut self.i }
-    pub fn j_mut(&mut self) -> &mut Idx2 { &mut self.j }
-    pub fn ij_mut(&mut self) -> (&mut Idx1, &mut Idx2) { (&mut self.i, &mut self.j) }
 }
 
 impl<T1,Idx1,T2,Idx2> Copy      for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetIndexMut<Idx1>, T2 : GetIndexMut<Idx2,Output = T1::Output>, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Copy,      Idx2 : Copy       {}
@@ -105,7 +81,7 @@ impl<T1,Idx1,T2,Idx2> UndoAction for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetI
     {
         let (a,b) = context;
         // not a fan of the clone
-        match (a.get_mut(self.i_ref().clone()), b.get_mut(self.j_ref().clone()))
+        match (a.get_mut(self.i.clone()), b.get_mut(self.j.clone()))
         {
             (Some(a), Some(b)) => 
             {
@@ -150,19 +126,13 @@ impl<T,Idx> UndoAction for SwapAt<T,Idx> where T: GetIndexMut<Idx>, for<'a> Idx 
 /// Like a ReplaceIndex that don't return anythings / always forgot
 pub struct SetIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
 {
-    idx   : Idx, 
-    value : T::Output
+    pub idx   : Idx, 
+    pub value : T::Output
 }
 
 impl<T,Idx> SetIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
 {
     pub const fn new(idx : Idx, value : T::Output) -> Self { Self { idx, value } }
-
-    pub fn idx(&self) -> &Idx { &self.idx }
-    pub fn idx_mut(&mut self) -> &mut Idx { &mut self.idx }
-    
-    pub fn value(&self) -> &T::Output where Idx : Copy { &self.value }
-    pub fn value_mut(&mut self) -> &mut T::Output where Idx : Copy { &mut self.value }
 }
 impl<T,Idx> Into<(Idx, T::Output)> for SetIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
 {

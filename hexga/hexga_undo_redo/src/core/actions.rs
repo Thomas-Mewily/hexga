@@ -25,9 +25,10 @@ pub trait UndoExtension
 {
     fn undo_action<'a,A>(&'a mut self, action : A) -> A::Output<'a> where A : UndoAction<Context<'a> = Self> { action.execute_without_undo(self) }
     
-    fn undo<'a,A,U>(&'a mut self, undo : &mut U) -> Result<(), ()> where U : CommandStack<A>, A : UndoAction<Context<'a> = Self>
-    { undo.undo(self) }
-    // fn redo...
+    /// Undo the last command
+    fn undo<'a,A,U>(&'a mut self, undo : &mut U) -> bool where U : CommandStack<A>, A : UndoAction<Context<'a> = Self> { undo.undo(self) }
+    /// Redo the last command
+    fn redo<'a,A,U>(&'a mut self, redo : &mut CommandsRedo<U,A>) -> bool where U : CommandStack<A>, A : UndoAction<Context<'a> = Self, Undo = A> { redo.redo(self) }
 }
 impl<T> UndoExtension for T {}
 

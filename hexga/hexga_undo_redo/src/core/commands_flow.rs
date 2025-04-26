@@ -53,13 +53,15 @@ impl<A> CommandFlowMarker<A> where A : UndoAction
 /// Each command end with [CommandFlowMarker::Group] with the given size,
 /// except for commands composed of only one action, 
 /// which can choose to skip it if they want in order to use less memory
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct CommandsFlow<A> where A : UndoAction
 {
     // Todo : use generic sequence ? vec, vecdequeu...
     pub actions : Vec<CommandFlowMarker<A>>,
+    // Todo : add a commands count here
 }
 
+impl<A> Debug for CommandsFlow<A> where A : UndoAction + Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.actions) } }
 impl<A> Default for CommandsFlow<A> where A : UndoAction { fn default() -> Self { Self::new() } }
 
 impl<A> Deref for CommandsFlow<A> where A : UndoAction { type Target=Vec<CommandFlowMarker<A>>; fn deref(&self) -> &Self::Target {&self.actions } }
@@ -204,6 +206,7 @@ impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoAction
         r
     }
     
+    /* 
     fn undo(&mut self, ctx : &mut <A as UndoAction>::Context<'_>) -> Result<(), ()> {
         let Some(commands) = self.actions.pop() else { return Err(()); };
         let group_size = commands.to_group().expect("Command flow always end by a group");
@@ -215,5 +218,12 @@ impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoAction
         debug_assert!(self.is_empty() || self.last().as_ref().unwrap().is_group());
         Ok(())
     }
-
+    */
+    
+    fn remove_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>> {
+        let Some(commands) = self.actions.pop() else { return None; };
+        let group_size = commands.to_group().expect("Command flow always end by a group");
+        let idx_begin_drain = self.len() - group_size;
+        Some(self.drain(idx_begin_drain..).rev().map(|v| v.to_action().expect("should be an action")))
+    }
 }

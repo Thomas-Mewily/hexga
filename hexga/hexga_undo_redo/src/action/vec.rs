@@ -33,13 +33,15 @@ impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Push<T> { value : T }
+impl<T> Debug for Push<T> where T : Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Push({:?})", self.value) } }
 
 impl<T> Push<T> 
 { 
     pub const fn new(value : T) -> Self { Self { value }}
     pub fn into_value(self) -> T { self.value }
+    pub fn value(&self) -> &T { &self.value }
 }
 
 impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
@@ -67,7 +69,7 @@ impl<T> UndoAction for Swap<T> where for<'a> T: 'a
     {
         // Todo : add fn is_useful(&self) -> bool; and fn is_useful_on(&self, &ctx) -> bool; in this trait.
         //if self.i() != self.j() { return; }
-        context.get_disjoint_mut([self.i(), self.j()]).map(|[a,b]|
+        context.get_disjoint_mut([self.i, self.j]).map(|[a,b]|
             {
                 std::mem::swap(a, b);
                 undo.push_undo_action(|| self);

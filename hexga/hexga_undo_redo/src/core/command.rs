@@ -5,7 +5,13 @@ pub trait CommandStack<A> : ActionStack<A> where A : UndoAction
 {
     fn prepare(&mut self);
     fn pop_command(&mut self) -> Option<Command<A>>;
-    fn undo(&mut self, ctx : &mut A::Context<'_>) -> Result<(), ()>;
+
+    fn undo(&mut self, ctx : &mut A::Context<'_>) -> bool 
+    {
+        self.remove_last_command_actions().map(|actions| actions.for_each(|a| a.execute_without_undo_and_forget(ctx))).is_some()
+    }
+    // Todo : move it to ActionStack ?
+    fn remove_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>>;
 }
 
 /* 
@@ -23,7 +29,6 @@ pub trait UndoCommandStack<A> : CommandStack<A> where A : UndoAction
 pub enum Command<A> where A : UndoAction
 {
     Action(A),
-    //Sequence(Vec<CommandSequence<A>>),
     Sequence(Vec<A>),
     Nop,
 }
