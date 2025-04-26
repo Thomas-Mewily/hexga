@@ -21,11 +21,11 @@ pub enum DataAction
 
 impl UndoAction for DataAction
 {
-    type ActionSet = Self;
+    type Undo = Self;
     type Context = Data;
     type Output<'a> = ();
 
-    fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::ActionSet> 
+    fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         match self
         {

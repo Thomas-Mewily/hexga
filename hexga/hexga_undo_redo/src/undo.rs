@@ -39,15 +39,18 @@ impl<A> UndoStack<A> for Vec<A> where A : UndoAction
     }
 }
 
-pub trait UndoAction : Sized + Clone
+pub trait UndoAction : Sized
 {
-    /// The set of action that can be involved when undoing your action
-    type ActionSet : UndoAction;
-    type Context;
+    /// The set of action that can be involved when undoing this action
+    type Undo : UndoAction;
+    type Context<'a>;
     type Output<'a>;
     
-    fn execute<'a, U>(self, context : &'a mut Self::Context, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::ActionSet>;
-    fn execute_without_undo<'a>(self, context : &'a mut Self::Context) -> Self::Output<'a> { self.execute(context, &mut ()) }
+    fn execute_and_forget<'a,U>(self, context : Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> { self.execute(context, undo); }
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo>;
+    
+    fn execute_without_undo<'a>(self, context : Self::Context<'a>) -> Self::Output<'a> { self.execute(context, &mut ()) }
+    fn execute_without_undo_and_forget<'a>(self, context : Self::Context<'a>) { self.execute_without_undo(context); }
 }
 
 pub trait UndoExtension

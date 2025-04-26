@@ -281,12 +281,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "have_len"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2eaa862aef602c9dace05ec59a5c85136a48747680bf45679d122fbc9430590f"
-
-[[package]]
 name = "hermit-abi"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -313,7 +307,7 @@ name = "hexga_base"
 version = "0.0.10-beta.3"
 dependencies = [
  "default_is_triple_underscore",
- "have_len",
+ "hexga_map_on",
  "rayon",
  "serde",
 ]
@@ -375,7 +369,7 @@ dependencies = [
 name = "hexga_number"
 version = "0.0.10-beta.3"
 dependencies = [
- "hexga_map_on",
+ "hexga_base",
 ]
 
 [[package]]
@@ -392,7 +386,6 @@ dependencies = [
 name = "hexga_tools"
 version = "0.0.10-beta.3"
 dependencies = [
- "have_len",
  "hexga_base",
  "hexga_number",
  "serde",

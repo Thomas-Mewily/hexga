@@ -13,7 +13,7 @@ pub trait GetIndexMut<Idx> : GetIndex<Idx>
     unsafe fn get_unchecked_mut(&mut self, idx : Idx) -> &mut Self::Output { self.get_mut(idx).expect("invalid index") }
 
     // Todo : add disjoint_mut when core::slice::GetDisjointMutIndex will be stable
-    // fn get_disjoint_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> where Idx : core::slice::GetDisjointMutIndex;
+    //fn get_disjoint_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]>; where Idx : core::slice::GetDisjointMutIndex;
 }
 
 

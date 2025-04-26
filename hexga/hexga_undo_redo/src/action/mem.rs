@@ -1,0 +1,101 @@
+use crate::*;
+
+
+pub struct Swap<T>(PhantomData<T>);
+
+impl<T> Clone   for Swap<T> { fn clone(&self) -> Self { Self(PhantomData) } }
+impl<T> Copy    for Swap<T> {}
+
+impl<T> PartialEq   for Swap<T> { fn eq(&self, _: &Self) -> bool { true } }
+impl<T> Eq          for Swap<T> {}
+impl<T> Hash        for Swap<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
+impl<T> Default     for Swap<T> { fn default() -> Self { Self(PhantomData) } }
+impl<T> Debug       for Swap<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Swap") } }
+
+impl<T> UndoAction for Swap<T> where for<'a> T: 'a
+{
+    type Undo = Self;
+    type Context<'a>= (&'a mut T,&'a mut  T) ;
+    type Output<'a> = ();
+    
+    fn execute<'a, U>(self, mut context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    {
+        std::mem::swap(&mut context.0, &mut context.1);
+        undo.push(|| self);
+    }
+}
+
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub struct Replace<T>(pub T);
+impl<T> Default for Replace<T> where T : Default { fn default() -> Self { Self(___()) } }
+
+impl<T> UndoAction for Replace<T> where for<'a> T: 'a + Clone
+{
+    type Undo = Replace<T>;
+    type Context<'a> = &'a mut T;
+    type Output<'ctx> = T;
+    
+    fn execute<'a, U>(mut self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    {
+        std::mem::swap(&mut self.0, context);
+        undo.push(|| Replace(self.0.clone()));
+        self.0
+    }
+
+    fn execute_and_forget<'a,U>(mut self, context : Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> {
+        std::mem::swap(&mut self.0, context);
+        undo.push(|| Replace(self.0));
+    }
+}
+
+
+
+
+pub struct Take<T>(PhantomData<T>);
+impl<T> Clone       for Take<T> { fn clone(&self) -> Self { Self(PhantomData) } }
+impl<T> Copy        for Take<T> { }
+impl<T> PartialEq   for Take<T> { fn eq(&self, _: &Self) -> bool { true } }
+impl<T> Eq          for Take<T> { }
+impl<T> Hash        for Take<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
+impl<T> Debug       for Take<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Take") } }
+impl<T> Default     for Take<T> { fn default() -> Self { Self(___()) } }
+
+impl<T> UndoAction for Take<T> where for<'a> T: 'a + Default + Clone
+{
+    type Undo = Replace<T>;
+    type Context<'a>= &'a mut T;
+    type Output<'a> = T;
+    
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    { Replace(___()).execute(context, undo) }
+
+    fn execute_and_forget<'a, U>(self, context : Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> 
+    { Replace(___()).execute_and_forget(context, undo) }
+}
+
+pub fn take<T, U>(value : &mut T, undo : &mut U) -> T where for<'a> T: 'a + Default + Clone, U: UndoStack<Replace<T>>
+{
+    Take::___().execute(value, undo)
+}
+
+pub fn take_and_forget<T, U>(value : &mut T, undo : &mut U) where for<'a> T: 'a + Default + Clone, U: UndoStack<Replace<T>>
+{
+    Take::___().execute_and_forget(value, undo)
+}
+
+
+pub fn swap<T, U>(a : &mut T, b : &mut T, undo : &mut U) where for<'a> T: 'a, U: UndoStack<Swap<T>>
+{
+    Swap::___().execute((a,b), undo);
+}
+
+pub fn replace<T, U>(dest : &mut T, src : T, undo : &mut U) -> T where for<'a> T: 'a + Clone, U: UndoStack<Replace<T>>
+{
+    Replace(src).execute(dest, undo)
+}
+
+pub fn replace_and_forget<T, U>(dest : &mut T, src : T, undo : &mut U) where for<'a> T: 'a + Clone, U: UndoStack<Replace<T>>
+{
+    Replace(src).execute_and_forget(dest, undo)
+}

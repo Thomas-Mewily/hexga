@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::ops::*;
 use std::iter::{Sum,Product};
 use std::num::{Saturating, Wrapping};
-pub use hexga_map_on::*;
+pub use hexga_base::*;
 
 mod constant;
 pub use constant::*;

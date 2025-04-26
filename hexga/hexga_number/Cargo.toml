@@ -13,4 +13,4 @@ description = "Provide basic trait and constant for number, and the macro map_on
 categories = ["mathematics", "rust-patterns"]
 
 [dependencies]
-hexga_map_on.workspace = true
+hexga_base.workspace = true

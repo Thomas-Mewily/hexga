@@ -18,7 +18,7 @@ impl<T> DerefMut for NonEmptyStack<T> { fn deref_mut(&mut self) -> &mut Self::Ta
 impl<T> NonEmptyStack<T>
 {
     pub const fn new(value : T) -> Self { Self { last: value, stack: Vec::new() }}
-    pub fn with_capacity(value : T, capacity : usize) -> Self { Self { last: value, stack: Vec::with_capacity(capacity) }}
+    pub fn with_capacity(value : T, capacity : usize) -> Self { Self { last: value, stack: Vec::with_capacity(capacity.saturating_sub(1)) }}
     pub fn from_vec(mut stack : Vec<T>) -> Option<Self> { stack.pop().and_then(|last| Some(Self{ last, stack })) }
 
     pub const fn last(&self) -> &T { &self.last }
@@ -89,11 +89,26 @@ impl<T> IndexMut<usize> for NonEmptyStack<T>
     }
 }
 
-impl<T> have_len::HaveLen for NonEmptyStack<T>
+impl<T> Length for NonEmptyStack<T>
 {
     fn len(&self) -> usize { self.stack.len() + 1 }
     fn is_empty(&self) -> bool { false }
     fn is_not_empty(&self) -> bool { true }
+}
+
+impl<T> Capacity for NonEmptyStack<T> 
+{
+    type Param=T;
+
+    fn capacity(&self) -> usize { self.stack.capacity() + 1 }
+
+    fn with_capacity_and_param(capacity: usize, value : Self::Param) -> Self { Self::with_capacity(value, capacity) }
+
+    fn reserve(&mut self, additional: usize) { self.stack.reserve(additional.saturating_sub(1)); }
+    fn reserve_exact(&mut self, additional: usize) { self.stack.reserve_exact(additional.saturating_sub(1)); }
+    
+    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.stack.try_reserve(additional.saturating_sub(1)) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.stack.try_reserve_exact(additional.saturating_sub(1)) }
 }
 
 #[cfg(test)]

@@ -11,6 +11,9 @@ HexGa : Highly Extensible (GAme | General Application) Lib Our
 - GenVec : 
     - fonction pour reset les id
     - fonction rollback_insert rollback_push rollback_remove_idx ... (pour rollback dans un jeux)
+    - clear() différent de remove_all()
+    - drain ?
+    - impl Length + Clear
 
 - Grid : divide IGrid in IGridVector (vector/slice impl) and IGrid. Maybe merge Grid and GridParam?
 

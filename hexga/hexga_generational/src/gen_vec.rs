@@ -351,8 +351,17 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     pub fn capacity(&self) -> usize { self.slot.capacity() }
     pub fn shrink_to_fit(mut self) { self.slot.shrink_to_fit(); }
 
-    /// Clear the [GenVec], while also invalidating all previous [GenID]
+
+    /// Clear the [GenVec] but don't invalidating all previous [GenID].
     pub fn clear(&mut self) 
+    {
+        self.head = usize::MAX;
+        self.len = 0;
+        self.slot.clear();
+    }
+
+    /// Clear the [GenVec], while also invalidating all previous [GenID].
+    pub fn remove_all(&mut self) 
     {
         for (idx, v) in self.slot.iter_mut().enumerate()
         {
@@ -642,12 +651,22 @@ impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen> {
 }
 impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
 
-impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen> { fn len(&self) -> usize { self.len } }
+impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen> 
 {
-    fn len(&self) -> usize { self.len }
-}
-//impl<T,Gen:IGeneration> typed_index::IndexLike for GenIDOf<T,Gen>{}
+    type Param=();
 
+    fn capacity(&self) -> usize { self.slot.capacity() }
+
+    fn with_capacity_and_param(capacity: usize, _ : Self::Param) -> Self { Self::with_capacity(capacity) }
+
+    fn reserve(&mut self, additional: usize) { self.slot.reserve(additional); }
+    fn reserve_exact(&mut self, additional: usize) { self.slot.reserve_exact(additional); }
+    
+    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.slot.try_reserve(additional) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.slot.try_reserve_exact(additional) }
+}
+impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { fn clear(&mut self) { self.clear(); } }
 
 impl<T,Gen:IGeneration> GetIndex<usize> for GenVecOf<T,Gen>
 {
@@ -721,7 +740,7 @@ mod tests
         let a = v.insert(42);
 
         assert_eq!(v.get(a), Some(&42));
-        v.clear();
+        v.remove_all();
         assert_eq!(v.get(a), None);
     }  
 

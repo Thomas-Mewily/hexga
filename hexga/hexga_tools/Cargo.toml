@@ -21,5 +21,4 @@ serde   = ["dep:serde"]
 hexga_number.workspace = true
 hexga_base.workspace = true
 
-have_len = "0.1.0"
 serde = { version = "1.0", features = ["derive"], optional = true}
