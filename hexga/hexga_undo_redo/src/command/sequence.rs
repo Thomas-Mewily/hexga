@@ -10,11 +10,11 @@ pub enum CommandSequence<A> where A : UndoAction
     Action(A),
     Sequence(Vec<CommandSequence<A>>),
     /// Nop(0) is a special action that count as 0 length action
-    Nop(usize), 
+    Nop(usize),
 }
 impl<A> CommandSequence<A> where A : UndoAction
 {
-    pub fn new() -> Self { Self::Nop(0) }
+    pub const fn new() -> Self { Self::Nop(0) }
 
     #[must_use]
     fn combine(self, other : Self) -> Self
@@ -169,6 +169,7 @@ pub type CommandStackSequenceFlatten<A> = CommandStackSequence<A>;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CommandStackSequence<A> where A : UndoAction
 {
+    // Todo : use generic sequence ? vec, vecdequeu...
     actions : Vec<CommandSequence<A>>,
     nb_action   : usize,
     begin_level : usize,
@@ -229,7 +230,7 @@ impl<A> CommandStack<A> for CommandStackSequence<A> where A : UndoAction
     }
 }
 
-impl<A> CommandStackSequenceFlatten<A> where A : UndoAction
+impl<A> CommandStackSequence<A> where A : UndoAction
 {
     pub const fn new() -> Self { Self { actions: Vec::new(), nb_action: 0, begin_level: 0 } }
     pub fn with_capacity(capacity: usize) -> Self { Self { actions: Vec::with_capacity(capacity), nb_action: 0, begin_level: 0 } }
@@ -246,11 +247,11 @@ impl<A> CommandStackSequenceFlatten<A> where A : UndoAction
     pub fn into_actions(self) -> Option<Vec<CommandSequence<A>>> { self.is_not_active().then_some(self.actions) }
 }
 
-impl<A> Length for CommandStackSequenceFlatten<A> where A : UndoAction
+impl<A> Length for CommandStackSequence<A> where A : UndoAction
 {
     fn len(&self) -> usize { self.len() }
 }
-impl<A> Capacity for CommandStackSequenceFlatten<A> where A : UndoAction
+impl<A> Capacity for CommandStackSequence<A> where A : UndoAction
 {
     type Param = ();
 
@@ -266,18 +267,25 @@ impl<A> Capacity for CommandStackSequenceFlatten<A> where A : UndoAction
 }
 
 
-impl<A> UndoCommandStack<A> for CommandStackSequenceFlatten<A> where A : UndoAction
+impl<A> UndoCommandStack<A> for CommandStackSequence<A> where A : UndoAction
 {
-    
-    fn undo_and_dont_forget<'a>(&mut self, ctx : <A as UndoAction>::Context<'a>) -> <A as UndoAction>::Output<'a> {
+    fn undo_and_dont_forget<'a>(&mut self, ctx : <A as UndoAction>::Context<'a>) -> Result<<A as UndoAction>::Output<'a>, ()> {
         todo!()
     }
 
-    fn undo(&mut self, ctx : <A as UndoAction>::Context<'_>) {
-        todo!()
+    fn undo_n(&mut self, mut n : usize, ctx : <A as UndoAction>::Context<'_>) -> Result<(), ()> 
+    {
+        if self.is_active() { return Err(()); } // discutable. Maybe introduce a new type for an CommandStackSequence that is being used
+        
+        loop
+        {
+            match self.actions.pop()
+            {
+                Some(_) => todo!(),
+                None => todo!(),
+            }
+        }
     }
-    
-
 }
 
 /* 

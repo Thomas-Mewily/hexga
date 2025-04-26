@@ -90,6 +90,7 @@ impl<A> CommandStack<A> for CommandStackMarker<A> where A : UndoAction
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CommandStackMarker<A> where A: UndoAction
 { 
+    // Todo : use generic sequence ? vec, vecdequeu...
     pub actions : Vec<CommandMarker<A>>,
 }
 impl<A> Deref for CommandStackMarker<A> where A: UndoAction
