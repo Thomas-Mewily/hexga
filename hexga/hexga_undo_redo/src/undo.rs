@@ -7,25 +7,25 @@ pub trait UndoAction : Sized
     type Context<'a>;
     type Output<'a>;
 
-    fn execute_and_forget<'a,U>(self, context : Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> { self.execute(context, undo); }
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo>;
+    fn execute_and_forget<'a,U>(self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> { self.execute(context, undo); }
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo>;
     
-    fn execute_without_undo<'a>(self, context : Self::Context<'a>) -> Self::Output<'a> { self.execute(context, &mut ()) }
-    fn execute_without_undo_and_forget<'a>(self, context : Self::Context<'a>) { self.execute_without_undo(context); }
+    fn execute_without_undo<'a>(self, context : &mut Self::Context<'a>) -> Self::Output<'a> { self.execute(context, &mut ()) }
+    fn execute_without_undo_and_forget<'a>(self, context : &mut Self::Context<'a>) { self.execute_without_undo(context); }
 }
 
 pub trait UndoExtension
 {
-    fn undo_action<'a,A>(&'a mut self, action : A) -> A::Output<'a> where A : UndoAction<Context<'a> = &'a mut Self> { action.execute_without_undo(self) }
+    fn undo_action<'a,A>(&'a mut self, action : A) -> A::Output<'a> where A : UndoAction<Context<'a> = Self> { action.execute_without_undo(self) }
     
-    fn undo_and_dont_forget<'a,A,U>(&'a mut self, undo : &mut U) -> A::Output<'a> where U : UndoCommandStack<A>, A : UndoAction<Context<'a> = &'a mut Self>
+    fn undo_and_dont_forget<'a,A,U>(&'a mut self, undo : &mut U) -> Result<A::Output<'a>, ()> where U : UndoCommandStack<A>, A : UndoAction<Context<'a> = Self>
     {
         undo.undo_and_dont_forget(self)
     }
 
-    fn undo<'a,A,U>(&'a mut self, undo : &mut U) where U : UndoCommandStack<A>, A : UndoAction<Context<'a> = &'a mut Self>
+    fn undo<'a,A,U>(&'a mut self, undo : &mut U) -> Result<(), ()> where U : UndoCommandStack<A>, A : UndoAction<Context<'a> = Self>
     {
-        undo.undo(self);
+        undo.undo(self)
     }
 }
 impl<T> UndoExtension for T {}

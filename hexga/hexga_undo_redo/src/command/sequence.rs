@@ -267,26 +267,33 @@ impl<A> Capacity for CommandStackSequence<A> where A : UndoAction
 }
 
 
+/* 
 impl<A> UndoCommandStack<A> for CommandStackSequence<A> where A : UndoAction
 {
     fn undo_and_dont_forget<'a>(&mut self, ctx : <A as UndoAction>::Context<'a>) -> Result<<A as UndoAction>::Output<'a>, ()> {
         todo!()
     }
 
-    fn undo_n(&mut self, mut n : usize, ctx : <A as UndoAction>::Context<'_>) -> Result<(), ()> 
+    fn undo_n(&mut self, mut n : usize, ctx : &mut <A as UndoAction>::Context<'_>) -> Result<(), ()> 
     {
-        if self.is_active() { return Err(()); } // discutable. Maybe introduce a new type for an CommandStackSequence that is being used
+        // discutable. Maybe introduce a new type for an CommandStackSequence that is being used.
+        // but it will complicate the end() fn
+        if self.is_active() { return Err(()); } 
         
-        loop
+        while n != 0
         {
-            match self.actions.pop()
+            let Some(a) = self.actions.pop() else { return Err(()); };
+
+            match a
             {
-                Some(_) => todo!(),
-                None => todo!(),
+                CommandSequence::Action(a) => a.execute_without_undo_and_forget(ctx),
+                CommandSequence::Sequence(command_sequences) => todo!(),
+                CommandSequence::Nop(_) => todo!(),
             }
         }
+        Ok(())
     }
-}
+}*/
 
 /* 
 pub struct CommandStackSequenceNonFlatten<A> where A : UndoAction

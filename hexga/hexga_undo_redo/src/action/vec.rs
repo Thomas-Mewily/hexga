@@ -20,15 +20,15 @@ impl<T> Debug for Pop<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std
 impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
 {
     type Undo = Push<T>;
-    type Context<'a>= &'a mut Vec<T>;
+    type Context<'a>= Vec<T>;
     type Output<'a> = Option<T>;
 
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         context.pop().map(|v| { undo.push(|| Push::new(v.clone())); v })
     }
 
-    fn execute_and_forget<'a, U>(self, context : Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
+    fn execute_and_forget<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
         context.pop().map(|v| { undo.push(|| Push::new(v)); });
     }
 }
@@ -45,10 +45,10 @@ impl<T> Push<T>
 impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
 {
     type Undo = Pop<T>;
-    type Context<'a>= &'a mut Vec<T>;
+    type Context<'a>= Vec<T>;
     type Output<'a> = ();
     
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         context.push(self.value);
         undo.push(|| Pop::new());
@@ -60,10 +60,10 @@ pub type Swap<T> = collection::SwapIndex<Vec<T>, usize>;
 impl<T> UndoAction for Swap<T> where for<'a> T: 'a
 {
     type Undo = Self;
-    type Context<'a>= &'a mut Vec<T>;
+    type Context<'a>= Vec<T>;
     type Output<'a> = Result<(), std::slice::GetDisjointMutError>;
     
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         // Todo : add fn is_useful(&self) -> bool; and fn is_useful_on(&self, &ctx) -> bool; in this trait.
         //if self.i() != self.j() { return; }
@@ -111,10 +111,10 @@ impl<T> Debug for Action<T> where for<'a> T : 'a + Clone + Debug
 impl<T> UndoAction for Action<T> where for<'a> T : 'a + Clone
 {
     type Undo = Action<T>;
-    type Context<'a>= &'a mut Vec<T>;
+    type Context<'a>= Vec<T>;
     type Output<'a> = ();
     
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         match self
         {

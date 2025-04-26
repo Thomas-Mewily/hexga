@@ -14,15 +14,15 @@ impl<T>    Debug   for Clear<T> where T : Clone + Clearable + Capacity + Length,
 impl<T> UndoAction for Clear<T> where for<'a> T: 'a + Clone + Clearable + Capacity + Length, <T as Capacity>::Param : Default
 {
     type Undo = Replace<T>;
-    type Context<'a>= &'a mut T;
+    type Context<'a>= T;
     type Output<'a> = ();
     
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         Replace::new(T::with_capacity(context.len())).execute_and_forget(context, undo);
     }
 
-    fn execute_without_undo<'a>(self, context : Self::Context<'a>) -> Self::Output<'a> {
+    fn execute_without_undo<'a>(self, context : &mut  Self::Context<'a>) -> Self::Output<'a> {
         Replace::new(T::with_capacity(0)).execute_without_undo(context);
     }
 }
@@ -98,10 +98,10 @@ impl<T1,Idx1,T2,Idx2> Debug     for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetIn
 impl<T1,Idx1,T2,Idx2> UndoAction for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetIndexMut<Idx1>, T2 : GetIndexMut<Idx2,Output = T1::Output>, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Clone, Idx2 : Clone
 {
     type Undo = Self;
-    type Context<'a>= (&'a mut T1, &'a mut T2);
+    type Context<'a>= (T1, T2);
     type Output<'a> = Result<(), ()>; // Todo : put a proper error type
     
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         let (a,b) = context;
         // not a fan of the clone
@@ -182,10 +182,10 @@ impl<T,Idx> Debug     for SetIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>
 impl<T,Idx> UndoAction for SetIndex<T,Idx>  where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
 {
     type Undo = ReplaceIndex<T,Idx>;
-    type Context<'a>= &'a mut T;
+    type Context<'a>= T;
     type Output<'ctx> = Result<(), ()>;
     
-    fn execute<'a, U>(mut self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a>  where U : ActionStack<Self::Undo> 
+    fn execute<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a>  where U : ActionStack<Self::Undo> 
     {
         // I don't like this clone. Imagine it on a HashMap<String, ...>...
         // Maybe change the api to look like the HashMap::get fn
@@ -239,10 +239,10 @@ impl<T,Idx> Debug     for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<
 impl<T,Idx> UndoAction for ReplaceIndex<T,Idx>  where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
 {
     type Undo = Self;
-    type Context<'a>= &'a mut T;
+    type Context<'a>= T;
     type Output<'ctx> = Result<T::Output, ()>;
     
-    fn execute<'a, U>(mut self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         // I don't like this clone. Imagine it on a HashMap<String, ...>...
         // Maybe change the api to look like the HashMap::get fn
@@ -258,7 +258,7 @@ impl<T,Idx> UndoAction for ReplaceIndex<T,Idx>  where for<'a> T: 'a + GetIndexMu
         }
     }
 
-    fn execute_and_forget<'a, U>(mut self, context : Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
+    fn execute_and_forget<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
         // I don't like this clone. Imagine it on a HashMap<String, ...>...
         // Maybe change the api to look like the HashMap::get fn
         match context.get_mut(self.idx.clone())

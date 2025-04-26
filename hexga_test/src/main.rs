@@ -45,7 +45,7 @@ fn main()
         }
     );
 
-    v.undo(&mut u);
+    //v.undo(&mut u);
 
     dbg!(&u);
     dbg!(&v);

@@ -23,9 +23,9 @@ pub trait UndoCommandStack<A> : CommandStack<A> where A : UndoAction
     // fn pop_to_marker(&mut self) -> CommandStackMarker<A>;
     // fn pop_to_sequence(&mut self) -> CommandStackSequence<A>;
 
-    fn undo_and_dont_forget<'a>(&mut self, ctx : A::Context<'a>) -> Result<A::Output<'a>, ()>;
-    fn undo(&mut self, ctx : A::Context<'_>) -> Result<(), ()> { self.undo_n(1, ctx) }
-    fn undo_n(&mut self, n : usize, ctx : A::Context<'_>) -> Result<(), ()>;
+    fn undo_and_dont_forget<'a>(&mut self, ctx : &mut  A::Context<'a>) -> Result<A::Output<'a>, ()>;
+    fn undo(&mut self, ctx : &mut A::Context<'_>) -> Result<(), ()> { self.undo_n(1, ctx) }
+    fn undo_n(&mut self, n : usize, ctx : &mut  A::Context<'_>) -> Result<(), ()>;
 }
 
 
