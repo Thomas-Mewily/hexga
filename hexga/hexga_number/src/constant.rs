@@ -153,7 +153,7 @@ pub trait MaxValue : Sized
 { 
     const MAX : Self; 
     fn is_max_value(&self) -> bool where Self : PartialEq { self == &Self::MAX }
-    fn is_not_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
+    fn is_non_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
 }
 macro_rules! impl_have_max_value {
     ($primitive_name: ty) => 

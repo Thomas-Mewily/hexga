@@ -23,12 +23,12 @@ impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
     type Context<'a>= &'a mut Vec<T>;
     type Output<'a> = Option<T>;
 
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         context.pop().map(|v| { undo.push(|| Push::new(v.clone())); v })
     }
 
-    fn execute_and_forget<'a, U>(self, context : Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> {
+    fn execute_and_forget<'a, U>(self, context : Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
         context.pop().map(|v| { undo.push(|| Push::new(v)); });
     }
 }
@@ -48,7 +48,7 @@ impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
     type Context<'a>= &'a mut Vec<T>;
     type Output<'a> = ();
     
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         context.push(self.value);
         undo.push(|| Pop::new());
@@ -63,7 +63,7 @@ impl<T> UndoAction for Swap<T> where for<'a> T: 'a
     type Context<'a>= &'a mut Vec<T>;
     type Output<'a> = Result<(), std::slice::GetDisjointMutError>;
     
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         // Todo : add fn is_useful(&self) -> bool; and fn is_useful_on(&self, &ctx) -> bool; in this trait.
         //if self.i() != self.j() { return; }
@@ -77,7 +77,7 @@ impl<T> UndoAction for Swap<T> where for<'a> T: 'a
 
 
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub enum Action<T> where for<'a> T : 'a + Clone
 {
     Push   (Push<T>),
@@ -92,13 +92,29 @@ pub enum Action<T> where for<'a> T : 'a + Clone
     MemReplace(mem::Replace<Vec<T>>),
     MemTake   (mem::Take<Vec<T>>),
 }
+impl<T> Debug for Action<T> where for<'a> T : 'a + Clone + Debug
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Push(v) => write!(f, "{:?}", v),
+            Self::Pop(v) => write!(f, "{:?}", v),
+            Self::Clear(v) => write!(f, "{:?}", v),
+            Self::Set(v) => write!(f, "{:?}", v),
+            Self::Replace(v) => write!(f, "{:?}", v),
+            Self::Swap(v) => write!(f, "{:?}", v),
+            Self::MemReplace(v) => write!(f, "{:?}", v),
+            Self::MemTake(v) => write!(f, "{:?}", v),
+        }
+    }
+}
+
 impl<T> UndoAction for Action<T> where for<'a> T : 'a + Clone
 {
     type Undo = Action<T>;
     type Context<'a>= &'a mut Vec<T>;
     type Output<'a> = ();
     
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         match self
         {
@@ -114,7 +130,7 @@ impl<T> UndoAction for Action<T> where for<'a> T : 'a + Clone
     }
 }
 
-pub trait ActionExtension<T, U> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
+pub trait ActionExtension<T, U> where for<'a> T: 'a + Clone, U: ActionStack<Action<T>>
 {
     fn push_action(&mut self, value: T, undo : &mut U);
 
@@ -154,10 +170,10 @@ pub trait SwapExtension<Idx, U> : GetIndexMut<Idx> + Sized
 }
 */
 
-impl<T, U> ActionExtension<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
+impl<T, U> ActionExtension<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: ActionStack<Action<T>>
 {
     fn push_action(&mut self, value: T, undo: &mut U)
-    { Push::new(value)   .execute(self, &mut undo.handle(Action::Pop )) }
+    { Push::new(value).execute(self, &mut undo.handle(Action::Pop)) }
     
     fn pop_action (&mut self,           undo: &mut U) -> Option<T> 
     { Pop::new().execute(self, &mut undo.handle(Action::Push)) }
@@ -167,7 +183,6 @@ impl<T, U> ActionExtension<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: Undo
 
     fn clear_action(&mut self, undo : &mut U)  
     { Clear::new().execute(self, &mut undo.handle(Action::MemReplace)) }
-    
     
     fn try_set_action(&mut self, idx : usize, value : T, undo : &mut U) -> Result<(), ()> 
     { Set::new(idx, value).execute(self, &mut undo.handle(Action::Replace)) }

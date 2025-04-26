@@ -25,7 +25,7 @@ impl UndoAction for DataAction
     type Context<'a> = &'a mut Data;
     type Output<'a> = ();
 
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         match self
         {
@@ -37,7 +37,7 @@ impl UndoAction for DataAction
 
 impl Data
 {
-    pub fn push_action(&mut self, value : i32, undo : &mut impl UndoStack<DataAction>)
+    pub fn push_action(&mut self, value : i32, undo : &mut impl ActionStack<DataAction>)
     {
         if value % 2 == 0
         {
@@ -52,7 +52,7 @@ impl Data
 fn main() 
 {
     let mut d = Data::default();
-    let mut undo_action = Vec::new();
+    let mut undo_action = vec![];
 
     d.push_action(42, &mut undo_action);
     d.push_action(43, &mut undo_action);

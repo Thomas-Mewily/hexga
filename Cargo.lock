@@ -308,6 +308,7 @@ version = "0.0.10-beta.3"
 dependencies = [
  "default_is_triple_underscore",
  "hexga_map_on",
+ "hexga_number",
  "rayon",
  "serde",
 ]
@@ -369,7 +370,7 @@ dependencies = [
 name = "hexga_number"
 version = "0.0.10-beta.3"
 dependencies = [
- "hexga_base",
+ "hexga_map_on",
 ]
 
 [[package]]
@@ -380,6 +381,7 @@ dependencies = [
  "hexga_generational",
  "hexga_graphics",
  "hexga_math",
+ "hexga_undo_redo",
 ]
 
 [[package]]

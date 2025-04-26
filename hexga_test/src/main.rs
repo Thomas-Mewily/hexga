@@ -3,12 +3,13 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_box, num::Wrapping};
+use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_box, marker::PhantomData, num::Wrapping};
 use criterion::{BenchmarkId, Criterion};
 
 //use hexga_graphics::Image;
 use hexga_math::prelude::*;
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
+use hexga_undo_redo::prelude::*;
 
 /*
 use hexga_generational::gen_vec::GenVec;
@@ -29,13 +30,38 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
     println!();
 }
 
+
 fn main() 
 {
+
+    let mut u = CommandStackSequenceFlatten::new();
+
+    let mut v = Vec::new();
+
+    u.execute(|s|
+        {
+            v.push_action(42, s);
+            v.push_action(50, s);
+        }
+    );
+
+    v.undo_action(&mut u);
+
+    dbg!(&u);
+    dbg!(&v);
+
+    /* 
+    u.begin();
+    
+    u.end();*/
+
+
+    /* 
     let g = Grid2::from_vec(2.splat2(), vec!["toto", "f", "bar", "x"]).unwrap();
     println!("{}", g.view().format().with_separator(" "));
 
     let custom_serde : HashMap::<TypeId, fn(&dyn Any)>;
-
+*/
     /* 
     let g = GridParam2::from_fn_with_param(point2(2, 4), "toto".to_owned(), |p| p.x + 10 * p.y);
     let h = g.subgrid(rect2p(1, 1, 1, 3));

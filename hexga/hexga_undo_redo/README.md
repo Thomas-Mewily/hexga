@@ -1,8 +1,15 @@
 ## HexGa Undo Redo
 
+Fundamentally, this crate don't directly handle `command` but lower building block call `action`. 
+The implementation for doing and undoing an action is also the same, because it just a matter of executing an different action to undo.
+
+
+A `command` is just a composition of `action`.
+
+This crate then also provide abstraction to execute command. The main challenge of command is that a command can be TODO
+
 An implementation of the [Command pattern](https://en.wikipedia.org/wiki/Command_pattern) that can be used to program undo / redo ! 
 
-The implementation for doing and undoing an action/command is also the same, because it just a matter of executing an action.
 
 ### Usage Example
 

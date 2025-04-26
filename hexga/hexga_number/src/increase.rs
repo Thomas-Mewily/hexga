@@ -8,7 +8,7 @@ pub trait Increase : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Siz
     /// Do the current value have a successor. 
     /// 
     /// True if not Self::MAX, except for wrapping type, they always have a successor because they wrap
-    #[inline] fn can_increase(&self) -> bool where Self : NumberAttibute + MaxValue + PartialEq { Self::OVERFLOW_BEHAVIOR.is_wrapping() || self.is_not_max_value() }
+    #[inline] fn can_increase(&self) -> bool where Self : NumberAttibute + MaxValue + PartialEq { Self::OVERFLOW_BEHAVIOR.is_wrapping() || self.is_non_max_value() }
 
     /// Return the successor `self + 1`
     #[inline] fn successor(self) -> Self { self + Self::ONE }

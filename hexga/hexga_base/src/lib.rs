@@ -1,10 +1,15 @@
 //! A minimal set of feature for every project
 
+use std::collections::{LinkedList, VecDeque};
+use std::ffi::{OsStr, OsString};
 use std::{collections::HashMap, ops::Index, slice::SliceIndex};
 use std::hash::{BuildHasher, Hash};
 
+pub use hexga_number as number;
+
 pub use hexga_map_on::*;
 pub use default_is_triple_underscore::*;
+pub use number::*;
 
 mod utils;
 pub use utils::*;
@@ -20,3 +25,6 @@ pub use capacity::*;
 
 mod clearable;
 pub use clearable::*;
+
+mod sequence;
+pub use sequence::*;

@@ -458,7 +458,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         let SlotValue::Free(f) = slot.value else { return Err(()); };
         let free = f;
 
-        if f.is_not_max_value()
+        if f.is_non_max_value()
         {
             if head != idx { return Err(()); }
             head = free;
@@ -1004,7 +1004,7 @@ mod tests
         // We can't know if the gen vec is new or if the gen vec just wrapped
 
         let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
-        let id = gen_vec.insert(45);
+        let _id = gen_vec.insert(45);
 
         let old_gen = gen_vec.clone();
 

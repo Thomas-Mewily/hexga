@@ -8,5 +8,6 @@ edition = "2024"
 hexga_math = { path = "../hexga/hexga_math" }
 hexga_graphics = { path = "../hexga/hexga_graphics" }
 hexga_generational = { path = "../hexga/hexga_generational" }
+hexga_undo_redo = { path = "../hexga/hexga_undo_redo" }
 criterion = "0.5.1"
 #hexga_generational = "0.0.5"

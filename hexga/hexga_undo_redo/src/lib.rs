@@ -2,12 +2,16 @@
 use std::marker::PhantomData;
 use std::fmt::Debug;
 use std::hash::Hash;
+use std::ops::{Deref,DerefMut};
 
 use hexga_base::*;
+
+pub mod action;
 
 mod undo;
 pub use undo::*;
 
-pub mod action;
+mod command;
+pub use command::*;
 
 pub mod prelude;

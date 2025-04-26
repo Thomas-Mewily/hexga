@@ -4,6 +4,7 @@
 //! and the SlotMap data structure <https://docs.rs/slotmap/latest/slotmap/>
 
 use hexga_number::*;
+#[allow(unused_imports)]
 use hexga_base::*;
 
 #[allow(unused_imports)]
