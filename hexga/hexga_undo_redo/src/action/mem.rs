@@ -29,7 +29,7 @@ impl<T> UndoAction for Swap<T> where for<'a> T: 'a
 
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Replace<T> { src : T }
+pub struct Replace<T> { pub src : T }
 impl<T> Debug for Replace<T> where T : Debug
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Replace({:?})", self.src) }
@@ -38,9 +38,6 @@ impl<T> Debug for Replace<T> where T : Debug
 impl<T> Replace<T> 
 { 
     pub const fn new(src : T) -> Self { Self { src }} 
-    pub fn src(&self) -> &T { &self.src }
-    pub fn src_mut(&mut self) -> &mut T { &mut self.src }
-    pub fn into_src(self) -> T { self.src }
 }
 
 impl<T> Default for Replace<T> where T : Default { fn default() -> Self { Self::new(___()) } }

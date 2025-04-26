@@ -134,13 +134,6 @@ impl<T,Idx> SetIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : 
 {
     pub const fn new(idx : Idx, value : T::Output) -> Self { Self { idx, value } }
 }
-impl<T,Idx> Into<(Idx, T::Output)> for SetIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
-{
-    fn into(self) -> (Idx, T::Output) {
-        let SetIndex { idx, value } = self;
-        (idx, value)
-    }
-}
 
 impl<T,Idx> Copy      for SetIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone, Idx : Copy, T::Output : Copy {}
 impl<T,Idx> Clone     for SetIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone, Idx : Clone, T::Output : Clone { fn clone(&self) -> Self { Self::new(self.idx.clone(), self.value.clone()) } }
@@ -177,26 +170,13 @@ impl<T,Idx> UndoAction for SetIndex<T,Idx>  where for<'a> T: 'a + GetIndexMut<Id
 
 pub struct ReplaceIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
 {
-    idx   : Idx, 
-    value : T::Output
+    pub idx   : Idx, 
+    pub value : T::Output
 }
 
 impl<T,Idx> ReplaceIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
 {
     pub const fn new(idx : Idx, value : T::Output) -> Self { Self { idx, value } }
-
-    pub fn idx(&self) -> &Idx { &self.idx }
-    pub fn idx_mut(&mut self) -> &mut Idx { &mut self.idx }
-
-    pub fn value(&self) -> &T::Output where Idx : Copy { &self.value }
-    pub fn value_mut(&mut self) -> &mut T::Output where Idx : Copy { &mut self.value }
-}
-impl<T,Idx> Into<(Idx, T::Output)> for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone
-{
-    fn into(self) -> (Idx, T::Output) {
-        let ReplaceIndex { idx, value } = self;
-        (idx, value)
-    }
 }
 
 impl<T,Idx> Copy      for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetIndexMut<Idx>, T::Output : Sized + Clone, Idx : Clone, Idx : Copy, T::Output : Copy {}
