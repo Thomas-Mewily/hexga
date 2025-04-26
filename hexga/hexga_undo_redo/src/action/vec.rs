@@ -25,11 +25,11 @@ impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
 
     fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
-        context.pop().map(|v| { undo.push(|| Push::new(v.clone())); v })
+        context.pop().map(|v| { undo.push_undo_action(|| Push::new(v.clone())); v })
     }
 
     fn execute_and_forget<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
-        context.pop().map(|v| { undo.push(|| Push::new(v)); });
+        context.pop().map(|v| { undo.push_undo_action(|| Push::new(v)); });
     }
 }
 
@@ -51,7 +51,7 @@ impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
     fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         context.push(self.value);
-        undo.push(|| Pop::new());
+        undo.push_undo_action(|| Pop::new());
     }
 }
 
@@ -70,7 +70,7 @@ impl<T> UndoAction for Swap<T> where for<'a> T: 'a
         context.get_disjoint_mut([self.i(), self.j()]).map(|[a,b]|
             {
                 std::mem::swap(a, b);
-                undo.push(|| self);
+                undo.push_undo_action(|| self);
             })
     }
 }

@@ -25,21 +25,15 @@ pub trait UndoExtension
 {
     fn undo_action<'a,A>(&'a mut self, action : A) -> A::Output<'a> where A : UndoAction<Context<'a> = Self> { action.execute_without_undo(self) }
     
-    fn undo_and_dont_forget<'a,A,U>(&'a mut self, undo : &mut U) -> Result<A::Output<'a>, ()> where U : UndoCommandStack<A>, A : UndoAction<Context<'a> = Self>
-    {
-        undo.undo_and_dont_forget(self)
-    }
-
-    fn undo<'a,A,U>(&'a mut self, undo : &mut U) -> Result<(), ()> where U : UndoCommandStack<A>, A : UndoAction<Context<'a> = Self>
-    {
-        undo.undo(self)
-    }
+    fn undo<'a,A,U>(&'a mut self, undo : &mut U) -> Result<(), ()> where U : CommandStack<A>, A : UndoAction<Context<'a> = Self>
+    { undo.undo(self) }
+    // fn redo...
 }
 impl<T> UndoExtension for T {}
 
 pub trait ActionStack<A> where A : UndoAction
 {
-    fn push<F>(&mut self, f : F) where F : FnOnce() -> A;
+    fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A;
     fn handle<'a, T>(&'a mut self, f : fn(T) -> A) -> UndoStackMap<'a,Self,A,T> where Self : Sized, T : UndoAction { UndoStackMap::new(self, f) }
 
     /* 
@@ -64,21 +58,21 @@ impl<'a, U, A, T> UndoStackMap<'a, U, A, T> where U : ActionStack<A>, A : UndoAc
 
 impl<'a, U, A, T> ActionStack<T> for UndoStackMap<'a, U, A, T> where U : ActionStack<A>, A : UndoAction, T : UndoAction
 {
-    fn push<F>(&mut self, f : F) where F : FnOnce() -> T
+    fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> T
     {
-        self.undo.push(|| (self.f)(f()));
+        self.undo.push_undo_action(|| (self.f)(f()));
     }
 }
 
 /// Ignore the action
 impl<A> ActionStack<A> for () where A : UndoAction 
 {
-    fn push<F>(&mut self, _ : F) where F : FnOnce() -> A {}
+    fn push_undo_action<F>(&mut self, _ : F) where F : FnOnce() -> A {}
 }
 
 impl<A> ActionStack<A> for Vec<A> where A : UndoAction
 {
-    fn push<F>(&mut self, f : F) where F : FnOnce() -> A {
+    fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A {
         self.push(f());
     }
 }

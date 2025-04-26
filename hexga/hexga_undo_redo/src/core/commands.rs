@@ -16,6 +16,8 @@ impl<A> DerefMut for Commands<A> where A : UndoAction { fn deref_mut(&mut self) 
 impl<A> From<Vec<Command<A>>> for Commands<A> where A : UndoAction { fn from(actions: Vec<Command<A>>) -> Self { Self { commands: actions } } }
 impl<A> From<Commands<A>> for Vec<Command<A>> where A : UndoAction { fn from(value: Commands<A>) -> Self { value.commands } }
 
+impl<A> From<CommandsFlow<A>> for Commands<A> where A : UndoAction { fn from(value: CommandsFlow<A>) -> Self { value.to_commands() } }
+
 impl<A> Commands<A> where A : UndoAction
 {
     pub const fn from_vec(actions : Vec<Command<A>>) -> Self { Self { commands: actions } }
@@ -27,6 +29,41 @@ impl<A> Commands<A> where A : UndoAction
     pub fn commands(&self) -> &[Command<A>] { &self.commands }
     pub fn commands_mut(&mut self) -> &mut [Command<A>] { &mut self.commands }
     pub fn into_commands(self) -> Vec<Command<A>> { self.commands }
+
+    
+    pub fn to_commands_flow(self) -> CommandsFlow<A> 
+    {
+        let mut flow = ___();
+        self.extends_commands_flow(&mut flow);
+        flow
+    }
+    pub fn extends_commands_flow(self, commands : &mut CommandsFlow<A>)
+    {
+        for cmd in self.commands
+        {
+            match cmd
+            {
+                Command::Action(a) => commands.push(CommandFlowMarker::Action(a)),
+                Command::Sequence(mut seq) => 
+                {
+                    match seq.len()
+                    {
+                        0 => commands.push(CommandFlowMarker::NOP),   
+                        1 => commands.push(CommandFlowMarker::Action(seq.pop().unwrap())),
+                        n => 
+                        {
+                            for action in seq
+                            {
+                                commands.push(CommandFlowMarker::Action(action));
+                            }
+                            commands.push(CommandFlowMarker::Group(n));
+                        }
+                    }
+                },
+                Command::Nop => commands.push(CommandFlowMarker::NOP),
+            }
+        }
+    }
 }
 
 impl<A> Length for Commands<A> where A : UndoAction
@@ -50,7 +87,7 @@ impl<A> Capacity for Commands<A> where A : UndoAction
 
 impl<A> ActionStack<A> for Commands<A> where A : UndoAction
 {
-    fn push<F>(&mut self, f : F) where F : FnOnce() -> A 
+    fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A 
     {
         let b = f();
         use Command::*;
@@ -70,6 +107,24 @@ impl<A> CommandStack<A> for Commands<A> where A : UndoAction
     fn prepare(&mut self) 
     {
         self.commands.push(Command::Nop);
+    }
+
+        
+    fn pop_command(&mut self) -> Option<Command<A>> {
+        self.commands.pop()
+    }
+    
+    fn undo(&mut self, ctx : &mut <A as UndoAction>::Context<'_>) -> Result<(), ()> 
+    {
+        let Some(cmd) = self.commands.pop() else { return Err(()); };
+
+        match cmd
+        {
+            Command::Action(a) => a.execute_without_undo_and_forget(ctx),
+            Command::Sequence(seq) => seq.into_iter().for_each(|a| a.execute_without_undo_and_forget(ctx)),
+            Command::Nop => {},
+        }
+        Ok(())
     }
 }
 

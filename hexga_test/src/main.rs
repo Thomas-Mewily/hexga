@@ -37,19 +37,16 @@ fn main()
     //let mut u = CommandsFlow::new();
     let mut u = Commands::new();
 
-    let mut v = Vec::new();
+    let mut ctx = Vec::new();
 
     u.prepare();
-    v.push_action(42, &mut u);
-    v.push_action(50, &mut u);
-    u.prepare();
-    u.prepare();
+    ctx.push_action(42, &mut u);
+    ctx.push_action(50, &mut u);
 
-    v.undo(&mut u);
-
+    let _ = ctx.undo(&mut u);
 
     dbg!(&u);
-    dbg!(&v);
+    dbg!(&ctx);
 
     /* 
     u.begin();

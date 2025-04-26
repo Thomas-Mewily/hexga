@@ -110,7 +110,7 @@ impl<T1,Idx1,T2,Idx2> UndoAction for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetI
             (Some(a), Some(b)) => 
             {
                 std::mem::swap(a, b);
-                undo.push(|| self);
+                undo.push_undo_action(|| self);
                 Ok(())
             },
             _ => Err(())
@@ -194,7 +194,7 @@ impl<T,Idx> UndoAction for SetIndex<T,Idx>  where for<'a> T: 'a + GetIndexMut<Id
             Some(v) => 
             {
                 std::mem::swap(&mut self.value, v);
-                undo.push(|| ReplaceIndex::new(self.idx.clone(), self.value));
+                undo.push_undo_action(|| ReplaceIndex::new(self.idx.clone(), self.value));
                 Ok(())
             },
             None => Err(()),
@@ -251,7 +251,7 @@ impl<T,Idx> UndoAction for ReplaceIndex<T,Idx>  where for<'a> T: 'a + GetIndexMu
             Some(v) => 
             {
                 std::mem::swap(&mut self.value, v);
-                undo.push(|| ReplaceIndex::new(self.idx.clone(), self.value.clone()));
+                undo.push_undo_action(|| ReplaceIndex::new(self.idx.clone(), self.value.clone()));
                 Ok(self.value)
             },
             None => Err(()),
@@ -266,7 +266,7 @@ impl<T,Idx> UndoAction for ReplaceIndex<T,Idx>  where for<'a> T: 'a + GetIndexMu
             Some(v) => 
             {
                 std::mem::swap(&mut self.value, v);
-                undo.push(|| ReplaceIndex::new(self.idx.clone(), self.value));
+                undo.push_undo_action(|| ReplaceIndex::new(self.idx.clone(), self.value));
             },
             None => {},
         };

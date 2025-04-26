@@ -18,10 +18,10 @@ impl<T> UndoAction for PushOrPop<T> where for<'a> T : 'a + Clone
         {
             PushOrPop::Pop => match context.pop()
             {
-                Some(v) => undo.push(||Self::Push(v)),
+                Some(v) => undo.push_undo_action(||Self::Push(v)),
                 None => (),
             },
-            PushOrPop::Push(value) => { context.push(value); undo.push(||Self::Pop); }
+            PushOrPop::Push(value) => { context.push(value); undo.push_undo_action(||Self::Pop); }
         };
     }
 }

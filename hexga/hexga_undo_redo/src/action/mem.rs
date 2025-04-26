@@ -23,7 +23,7 @@ impl<T> UndoAction for Swap<T> where for<'a> T: 'a
     fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         std::mem::swap(&mut context.0, &mut context.1);
-        undo.push(|| self);
+        undo.push_undo_action(|| self);
     }
 }
 
@@ -50,13 +50,13 @@ impl<T> UndoAction for Replace<T> where for<'a> T: 'a + Clone
     fn execute<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         std::mem::swap(&mut self.src, context);
-        undo.push(|| Replace::new(self.src.clone()));
+        undo.push_undo_action(|| Replace::new(self.src.clone()));
         self.src
     }
 
     fn execute_and_forget<'a,U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
         std::mem::swap(&mut self.src, context);
-        undo.push(|| Replace::new(self.src));
+        undo.push_undo_action(|| Replace::new(self.src));
     }
 }
 
