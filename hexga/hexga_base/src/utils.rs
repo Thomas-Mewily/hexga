@@ -34,3 +34,16 @@ impl<T> ToDebug for T where T : std::fmt::Debug
     }
 }
 
+// Useful to silence/convert to void some Err.
+
+// Some of my lib will probably have proper error type instead of () when I will have time to add them
+pub trait ResultExtension<T>
+{
+    fn ok_or_void(self) -> Result<T,()>;
+}
+impl<T,E> ResultExtension<T> for Result<T,E>
+{
+    fn ok_or_void(self) -> Result<T,()> {
+        self.map_err(|_| ())
+    }
+}

@@ -4,23 +4,49 @@ pub use crate::*;
 /// A marker used to indicate the beginning or ending of a command within a sequence of actions.
 /// 
 /// Multiple commands can be nested by using multiple begin/end markers or multiple nested scopes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CommandMarker<A> where A : UndoAction
 {
-    Begin,
-    End,
-    // A command that do nothings
-    Nop,
+    Begin(usize),
+    End(usize),
+    Nop(usize),
     Action(A),
 }
+impl<A> Debug for CommandMarker<A> where A : UndoAction + Debug
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self 
+        {
+            Self::Action(v) => write!(f, "{:?}", v),
+            Self::Begin(nb) => match nb
+            {
+                1 => write!(f, "Begin"),
+                n => write!(f, "Begin x{}", n),
+            },
+            Self::End(nb) => match nb
+            {
+                1 => write!(f, "End"),
+                n => write!(f, "End x{}", n),
+            },
+            Self::Nop(nb) => match nb
+            {
+                1 => write!(f, "Nop"),
+                n => write!(f, "Nop x{}", n),
+            },
+        }
+    }
+}
+
 impl<A> CommandMarker<A> where A : UndoAction
 {
-    pub const fn is_begin (&self) -> bool { matches!(self, Self::Begin) }
-    pub const fn is_end   (&self) -> bool { matches!(self, Self::End  ) }
-    pub const fn is_nop   (&self) -> bool { matches!(self, Self::Nop  ) }
+    pub const fn is_begin (&self) -> bool { matches!(self, Self::Begin(_)) }
+    pub const fn is_end   (&self) -> bool { matches!(self, Self::End(_)  ) }
+    pub const fn is_nop   (&self) -> bool { matches!(self, Self::Nop(_)  ) }
     pub const fn is_action(&self) -> bool { matches!(self, Self::Action(_)) }
 
-    pub const fn is_begin_or_end (&self) -> bool { matches!(self, Self::Begin | Self::End) }
+    pub const fn is_zero_action(&self) -> bool { matches!(self, Self::Nop(0) | Self::Begin(0) | Self::End(0)) }
+
+    pub const fn is_begin_or_end (&self) -> bool { matches!(self, Self::Begin(_) | Self::End(_)) }
 }
 
 impl<A> ActionStack<A> for CommandStackMarker<A> where A : UndoAction 
@@ -36,16 +62,21 @@ impl<A> ActionStack<A> for CommandStackMarker<A> where A : UndoAction
 
 impl<A> CommandStack<A> for CommandStackMarker<A> where A : UndoAction 
 {
-    fn begin(&mut self) { self.actions.push(CommandMarker::Begin); }
+    fn begin(&mut self) { self.push(CommandMarker::Begin(1)); }
     fn end(&mut self) 
     { 
-        if self.last().map(|v| v.is_begin()).unwrap_or(false) 
+        match self.last_mut()
         {
-            self.actions.pop();
-            self.actions.push(CommandMarker::Nop);
-        }else 
-        {
-            self.actions.push(CommandMarker::End);
+            Some(CommandMarker::Begin(n)) if *n >= 1 => 
+            {
+                self.actions.pop();
+                self.actions.push(CommandMarker::Nop(1));
+            },
+            Some(CommandMarker::Nop(v)) => 
+            {
+                v.increase_checked().expect("that a lot of Nop");
+            },
+            _ => self.actions.push(CommandMarker::End(1)),
         }
     }
 }
@@ -75,7 +106,81 @@ impl<A> CommandStackMarker<A> where A : UndoAction
 {
     pub const fn new() -> Self { Self { actions: Vec::new() } }
     pub fn with_capacity(capacity: usize) -> Self { Self { actions: Vec::with_capacity(capacity) } }
-    fn len(&self) -> usize { self.actions.len() }
+    pub fn len(&self) -> usize { self.actions.len() }
+
+    pub fn push(&mut self, value : CommandMarker<A>)
+    {
+        if value.is_zero_action() { return; }
+        
+        if let Some(v) = self.last_mut()
+        {
+            use CommandMarker::*;
+            match (v, value)
+            {
+                (Begin(a), Begin(b)) => 
+                {
+                    match a.checked_add(b)
+                    {
+                        Some(total) => *a = total,
+                        None => 
+                        {
+                            let rest = usize::MAX - if *a > b
+                            {
+                                *a - b
+                            }else
+                            {
+                                b - *a
+                            };
+                            *a = usize::MAX;
+                            self.push(Begin(rest)); 
+                        }
+                    }
+                }
+                (End(a), End(b)) => 
+                {
+                    match a.checked_add(b)
+                    {
+                        Some(total) => *a = total,
+                        None => 
+                        {
+                            let rest = usize::MAX - if *a > b
+                            {
+                                *a - b
+                            }else
+                            {
+                                b - *a
+                            };
+                            *a = usize::MAX;
+                            self.push(Begin(rest)); 
+                        }
+                    }
+                },
+                (Nop(a), Nop(b)) => 
+                {
+                    match a.checked_add(b)
+                    {
+                        Some(total) => *a = total,
+                        None => 
+                        {
+                            let rest = usize::MAX - if *a > b
+                            {
+                                *a - b
+                            }else
+                            {
+                                b - *a
+                            };
+                            *a = usize::MAX;
+                            self.push(Begin(rest)); 
+                        }
+                    }
+                },
+                (_, b) => { self.actions.push(b); }
+            }
+        }else
+        {
+            self.actions.push(value);
+        }
+    }
 }
 impl<A> Length for CommandStackMarker<A> where A : UndoAction
 {

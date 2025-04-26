@@ -9,15 +9,147 @@ pub enum CommandSequence<A> where A : UndoAction
 {
     Action(A),
     Sequence(Vec<CommandSequence<A>>),
-    Nop,
+    /// Nop(0) is a special action that count as 0 length action
+    Nop(usize), 
 }
+impl<A> CommandSequence<A> where A : UndoAction
+{
+    pub fn new() -> Self { Self::Nop(0) }
+
+    #[must_use]
+    fn combine(self, other : Self) -> Self
+    {
+        use CommandSequence::*;
+        match (self, other)
+        {
+            (Nop(0), b) => { b }
+            (a, Nop(0)) => { a }
+            (Nop(a), Nop(b)) => { debug_assert!(a.checked_add(b).is_some()); Nop(a+b) },
+            (a,b) => { Sequence(vec![a,b]) }
+        }
+    }
+
+    fn estimated_capacity_to_command_marker(&self) -> usize
+    {
+        match self
+        {
+            CommandSequence::Action(_) => 1,
+            CommandSequence::Sequence(s) => if s.is_empty() 
+            { 
+                1 // will be Nop
+            } else 
+            { 
+                s.len() + 2 // +2 for begin and end
+            }, 
+            CommandSequence::Nop(_) => 1,
+        }
+    }
+
+    fn extend_command_marker(self, v : &mut CommandStackMarker<A>)
+    {
+        match self
+        {
+            CommandSequence::Action(a) => v.push(CommandMarker::Action(a)),
+            CommandSequence::Sequence(seq) => 
+            {
+                if seq.is_empty() 
+                {
+                    v.push(CommandMarker::Nop(1));
+                    return;
+                }
+
+                let is_non_one = seq.len().is_non_one();
+
+                if is_non_one { v.push(CommandMarker::Begin(1)); }
+
+                for value in seq { value.extend_command_marker(v); }
+
+                if is_non_one { v.push(CommandMarker::End(1)); }
+            }
+            CommandSequence::Nop(n) => v.push(CommandMarker::Nop(n)),
+        }
+    }
+}
+
+
+impl<A> From<CommandSequence<A>> for CommandStackMarker<A> where A : UndoAction
+{
+    fn from(value: CommandSequence<A>) -> Self 
+    {
+        let capacity = value.estimated_capacity_to_command_marker();
+        let mut seq = CommandStackMarker::with_capacity(capacity);
+        value.extend_command_marker(&mut seq);
+        seq
+    }
+}
+impl<A> TryFrom<Vec<CommandMarker<A>>> for CommandSequence<A> where A : UndoAction
+{
+    type Error=();
+
+    fn try_from(value: Vec<CommandMarker<A>>) -> Result<Self, Self::Error> 
+    {
+        let mut cmd_seq = CommandSequence::new();
+        let mut seq = CommandSequence::new();
+        let mut nb_begin : usize = 0;
+
+        for marker in value.into_iter().rev()
+        {
+            match marker 
+            {
+                CommandMarker::Begin(n) => 
+                {
+                    match nb_begin.checked_add(n)
+                    {
+                        Some(v) => nb_begin = v,
+                        None => return Err(()), // Too many nested begin
+                    }
+                },
+                CommandMarker::End(n) => 
+                {
+                    if n == 0 { continue };
+                    match nb_begin.checked_sub(n)
+                    {
+                        Some(v) => nb_begin = v,
+                        None => return Err(()), // Too many end invalid input
+                    }
+
+                    if nb_begin.is_zero()
+                    {
+                        cmd_seq = cmd_seq.combine(seq);
+                        seq = CommandSequence::new();
+                    }
+                }
+                CommandMarker::Action(action) => if nb_begin.is_zero()
+                {
+                    cmd_seq = cmd_seq.combine(CommandSequence::Action(action));
+                }else
+                {
+                    seq = seq.combine(CommandSequence::Action(action));
+                }
+                CommandMarker::Nop(n) => if nb_begin.is_zero()
+                {
+                    cmd_seq = cmd_seq.combine(CommandSequence::Nop(n));
+                }else
+                {
+                    seq = seq.combine(CommandSequence::Nop(n));
+                }
+            }
+        }
+        Ok(cmd_seq.combine(seq))
+    }
+}
+
 impl<A> Debug for CommandSequence<A> where A : UndoAction + Debug
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Action(v) => write!(f, "{:?}", v),
             Self::Sequence(v) => write!(f, "Sequence{:?}", v),
-            Self::Nop => write!(f, "Nop"),
+            Self::Nop(nb) => match nb
+            {
+                1 => write!(f, "Nop"),
+                n => write!(f, "Nop x{}", n),
+            },
         }
     }
 }
@@ -26,7 +158,9 @@ impl<A> CommandSequence<A> where A : UndoAction
 {
     pub const fn is_action  (&self) -> bool { matches!(self, Self::Action(_)) }
     pub const fn is_sequence(&self) -> bool { matches!(self, Self::Sequence(_)) }
-    pub const fn is_nop     (&self) -> bool { matches!(self, Self::Nop) }
+    pub const fn is_nop     (&self) -> bool { matches!(self, Self::Nop(_)) }
+
+    pub const fn is_nop_zero(&self) -> bool { matches!(self, Self::Nop(0)) }
 }
 
 pub type CommandStackSequenceFlatten<A> = CommandStackSequence<A>;
@@ -67,7 +201,17 @@ impl<A> CommandStack<A> for CommandStackSequence<A> where A : UndoAction
 
         match self.nb_action
         {
-            0 => self.actions.push(CommandSequence::Nop),
+            0 => 
+            {
+                if let Some(CommandSequence::Nop(n)) = self.actions.last_mut()
+                {
+                    debug_assert!(n.is_max_value(), "That a lot of nop");
+                    n.increase();
+                }else
+                {
+                    self.actions.push(CommandSequence::Nop(1));
+                }
+            },
             1 => {},
             n => 
             {
@@ -121,6 +265,20 @@ impl<A> Capacity for CommandStackSequenceFlatten<A> where A : UndoAction
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.actions.try_reserve_exact(additional) }
 }
 
+
+impl<A> UndoCommandStack<A> for CommandStackSequenceFlatten<A> where A : UndoAction
+{
+    
+    fn undo_and_dont_forget<'a>(&mut self, ctx : <A as UndoAction>::Context<'a>) -> <A as UndoAction>::Output<'a> {
+        todo!()
+    }
+
+    fn undo(&mut self, ctx : <A as UndoAction>::Context<'_>) {
+        todo!()
+    }
+    
+
+}
 
 /* 
 pub struct CommandStackSequenceNonFlatten<A> where A : UndoAction

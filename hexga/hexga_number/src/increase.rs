@@ -5,6 +5,10 @@ pub trait Increase : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Siz
 {
     /// The increment `x++` operator
     #[inline] fn increase(&mut self) { *self += Self::ONE; }
+    /// The increment `x++` operator
+    #[inline] fn increase_checked(&mut self) -> Result<(), ()> where Self : NumberAttibute + MaxValue + PartialEq
+    { if self.can_increase() { self.increase(); Ok(()) } else { Err(()) } }
+
     /// Do the current value have a successor. 
     /// 
     /// True if not Self::MAX, except for wrapping type, they always have a successor because they wrap
@@ -12,6 +16,10 @@ pub trait Increase : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Siz
 
     /// Return the successor `self + 1`
     #[inline] fn successor(self) -> Self { self + Self::ONE }
+    /// Return the successor `self + 1`
+    #[inline] fn successor_checked(&mut self) -> Result<Self, ()> where Self : NumberAttibute + MaxValue + PartialEq
+    { if self.have_successor() { Ok(self.successor()) } else { Err(()) } }
+
     /// Do the current value have a successor. 
     /// 
     /// True if not Self::MAX, except for wrapping type, they always have a successor because they wrap
@@ -24,14 +32,22 @@ pub trait Decrease : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Siz
 {
     /// The decrement `x--` operator
     #[inline] fn decrease(&mut self) { *self -= Self::ONE; }
-    /// Do the current value have a successor. 
+    /// The increment `x--` operator
+    #[inline] fn decrease_checked(&mut self) -> Result<(), ()> where Self : NumberAttibute + MinValue + PartialEq
+    { if self.can_decrease() { self.decrease(); Ok(()) } else { Err(()) } }
+
+    /// Do the current value have a predecessor. 
     /// 
     /// True if not Self::MIN, except for wrapping type, they always have a predecessor because they wrap
     #[inline] fn can_decrease(&self) -> bool where Self : NumberAttibute + MinValue + PartialEq { Self::OVERFLOW_BEHAVIOR.is_wrapping() || self.is_not_min_value() }
 
     /// Return the predecessor `self - 1`
     #[inline] fn predecessor(self) -> Self { self - Self::ONE }
-    /// Do the current value have a successor. 
+    /// Return the predecessor `self - 1`
+    #[inline] fn predecessor_checked(&mut self) -> Result<Self, ()> where Self : NumberAttibute + MinValue + PartialEq
+    { if self.have_predecessor() { Ok(self.predecessor()) } else { Err(()) } }
+
+    /// Do the current value have a predecessor. 
     /// 
     /// True if not Self::MIN, except for wrapping type, they always have a predecessor because they wrap
     #[inline] fn have_predecessor(self) -> bool where Self : NumberAttibute + MinValue + PartialEq { self.can_decrease() }

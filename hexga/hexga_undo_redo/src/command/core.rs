@@ -18,13 +18,14 @@ pub trait CommandStack<A> : ActionStack<A> where A : UndoAction
     }
 }
 
-pub trait UndoCommandStack<A> : ActionStack<A> where A : UndoAction
+pub trait UndoCommandStack<A> : CommandStack<A> where A : UndoAction
 {
-    fn pop_to_marker(&mut self) -> Vec<CommandMarker<A>>;
-    fn pop_to_sequence(&mut self) -> CommandSequence<A>;
+    // Todo : use generic sequence ? vec, vecdequeu...
+    fn pop_to_marker(&mut self) -> CommandStackMarker<A>;
+    fn pop_to_sequence(&mut self) -> CommandStackSequence<A>;
 
-    fn undo_and_dont_forget<'a>(&mut self, ctx : &mut A::Context<'a>) -> A::Output<'a>;
-    fn undo(&mut self, ctx : &mut A::Context<'_>);
+    fn undo_and_dont_forget<'a>(&mut self, ctx : A::Context<'a>) -> A::Output<'a>;
+    fn undo(&mut self, ctx : A::Context<'_>);
 }
 
 

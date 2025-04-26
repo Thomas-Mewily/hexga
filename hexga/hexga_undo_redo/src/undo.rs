@@ -18,19 +18,29 @@ pub trait UndoExtension
 {
     fn undo_action<'a,A>(&'a mut self, action : A) -> A::Output<'a> where A : UndoAction<Context<'a> = &'a mut Self> { action.execute_without_undo(self) }
     
-    fn undo<'a,A,U>(&'a mut self, undo : &mut U) where U : CommandStack<A>, A : UndoAction<Context<'a> = &'a mut Self>
+    fn undo_and_dont_forget<'a,A,U>(&'a mut self, undo : &mut U) -> A::Output<'a> where U : UndoCommandStack<A>, A : UndoAction<Context<'a> = &'a mut Self>
     {
-        undo.pu
-    } //-> A::Output<'a> where A : UndoAction<Context<'a> = &'a mut Self> { action.execute_without_undo(self) }
+        undo.undo_and_dont_forget(self)
+    }
 
+    fn undo<'a,A,U>(&'a mut self, undo : &mut U) where U : UndoCommandStack<A>, A : UndoAction<Context<'a> = &'a mut Self>
+    {
+        undo.undo(self);
+    }
 }
 impl<T> UndoExtension for T {}
-
 
 pub trait ActionStack<A> where A : UndoAction
 {
     fn push<F>(&mut self, f : F) where F : FnOnce() -> A;
     fn handle<'a, T>(&'a mut self, f : fn(T) -> A) -> UndoStackMap<'a,Self,A,T> where Self : Sized, T : UndoAction { UndoStackMap::new(self, f) }
+
+    /* 
+    fn undo_action<'a>(&mut self, action : A::Context<'a>) -> A::Output<'a> where A : UndoAction<Context<'a> = &'a mut Self> 
+    { 
+        context.execute_without_undo(context)
+        action.execute_without_undo(self) 
+    }*/
 }
 
 
