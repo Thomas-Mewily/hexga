@@ -45,6 +45,8 @@ fn main()
     u.prepare();
     u.prepare();
 
+    v.undo(&mut u);
+
 
     dbg!(&u);
     dbg!(&v);

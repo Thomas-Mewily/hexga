@@ -1,5 +1,18 @@
 pub use crate::*;
 
+
+pub trait CommandStack<A> : ActionStack<A> where A : UndoAction
+{
+    fn prepare(&mut self);
+}
+
+pub trait UndoCommandStack<A> : CommandStack<A> where A : UndoAction
+{
+    fn undo_and_dont_forget<'a>(&mut self, ctx : &mut  A::Context<'a>) -> Result<A::Output<'a>, ()>;
+    fn undo(&mut self, ctx : &mut A::Context<'_>) -> Result<(), ()>;
+}
+
+
 // Todo : use the trait SequencePush instead of vec ?
 
 /// Group command that required more than one action inside a sequence

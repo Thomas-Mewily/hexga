@@ -8,10 +8,7 @@ use hexga_base::*;
 
 pub mod action;
 
-mod undo;
-pub use undo::*;
-
-mod command;
-pub use command::*;
+mod core;
+pub use core::*;
 
 pub mod prelude;

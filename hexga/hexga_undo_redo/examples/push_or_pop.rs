@@ -10,10 +10,10 @@ pub enum PushOrPop<T> where T : Clone
 impl<T> UndoAction for PushOrPop<T> where for<'a> T : 'a + Clone
 {
     type Undo = Self;
-    type Context<'a> = &'a mut Vec<T>;
+    type Context<'a> = Vec<T>;
     type Output<'a> = ();
 
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> {
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> {
         match self
         {
             PushOrPop::Pop => match context.pop()

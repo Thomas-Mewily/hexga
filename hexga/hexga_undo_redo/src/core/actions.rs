@@ -1,6 +1,13 @@
 pub use crate::*;
 
-pub trait UndoAction : Sized
+/* 
+pub trait Action
+{
+    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo>;
+
+}
+*/
+pub trait UndoAction : Sized // + Action
 {
     /// The set of action that can be involved when undoing this action
     type Undo : UndoAction;
