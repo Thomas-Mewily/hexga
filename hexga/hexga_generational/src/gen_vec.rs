@@ -668,22 +668,22 @@ impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
 }
 impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { fn clear(&mut self) { self.clear(); } }
 
-impl<T,Gen:IGeneration> GetIndex<usize> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> CollectionGet<usize> for GenVecOf<T,Gen>
 {
     type Output = <Self as Index<usize>>::Output;
     fn get(&self, idx : usize) -> Option<&Self::Output> { self.get_index(idx) }
 }
-impl<T,Gen:IGeneration> GetIndex<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> CollectionGet<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     type Output = <Self as Index<GenIDOf<T,Gen>>>::Output;
     fn get(&self, idx : GenIDOf<T,Gen>) -> Option<&Self::Output> { self.get(idx) }
 }
 
-impl<T,Gen:IGeneration> GetIndexMut<usize> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> CollectionGetMut<usize> for GenVecOf<T,Gen>
 {
     fn get_mut(&mut self, idx : usize) -> Option<&mut Self::Output> { self.get_index_mut(idx) }
 }
-impl<T,Gen:IGeneration> GetIndexMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> CollectionGetMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     fn get_mut(&mut self, idx : GenIDOf<T,Gen>) -> Option<&mut Self::Output> { self.get_mut(idx) }
 }

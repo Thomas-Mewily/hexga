@@ -1,13 +1,13 @@
 use crate::*;
 
 /// The collection have a quick way to access each element, where the index is copyable
-pub trait GetIndex<Idx> //: Index<Idx>
+pub trait CollectionGet<Idx> //: Index<Idx>
 {
     type Output : ?Sized;
     fn get(&self, idx : Idx) -> Option<&Self::Output>;
     unsafe fn get_unchecked(&self, idx : Idx) -> &Self::Output { self.get(idx).expect("invalid index") }
 }
-pub trait GetIndexMut<Idx> : GetIndex<Idx> where Idx : Copy
+pub trait CollectionGetMut<Idx> : CollectionGet<Idx> where Idx : Copy
 {
     //fn try_get(&self, idx : Idx) -> Result<&Self::Output, Self::Error>;
     fn get_mut(&mut self, idx : Idx) -> Option<&mut Self::Output>;
@@ -39,63 +39,63 @@ pub trait GetIndexMut<Idx> : GetIndex<Idx> where Idx : Copy
 }
 
 
-impl<Idx,T> GetIndex<Idx> for [T] where Idx : SliceIndex<[T]> + Copy
+impl<Idx,T> CollectionGet<Idx> for [T] where Idx : SliceIndex<[T]> + Copy
 {
     type Output = <Self as Index<Idx>>::Output;
     fn get(&self, idx : Idx) -> Option<&Self::Output> { self.get(idx) }
     unsafe fn get_unchecked(&self, idx : Idx) -> &Self::Output { unsafe { self.get_unchecked(idx) } }
     
 }
-impl<Idx,T> GetIndexMut<Idx> for [T] where Idx : SliceIndex<[T]> + Copy
+impl<Idx,T> CollectionGetMut<Idx> for [T] where Idx : SliceIndex<[T]> + Copy
 {
     fn get_mut(&mut self, idx : Idx) -> Option<&mut Self::Output> { self.get_mut(idx) }
     unsafe fn get_unchecked_mut(&mut self, idx : Idx) -> &mut Self::Output { unsafe { self.get_unchecked_mut(idx) } }
 }
 
 
-impl<Idx,T,const N : usize> GetIndex<Idx> for [T;N] where for<'a> &'a [T] : GetIndex<Idx>, Idx : SliceIndex<[T]> + Copy
+impl<Idx,T,const N : usize> CollectionGet<Idx> for [T;N] where for<'a> &'a [T] : CollectionGet<Idx>, Idx : SliceIndex<[T]> + Copy
 {
     type Output = <Self as Index<Idx>>::Output;
     fn get(&self, idx : Idx) -> Option<&Self::Output> { self.as_slice().get(idx) }
     unsafe fn get_unchecked(&self, idx : Idx) -> &Self::Output { unsafe { self.as_slice().get_unchecked(idx) } }
 }
-impl<Idx,T,const N : usize> GetIndexMut<Idx> for [T;N] where for<'a> &'a mut[T] : GetIndexMut<Idx>, for<'a> &'a[T] : GetIndex<Idx>, Idx : SliceIndex<[T]> + Copy
+impl<Idx,T,const N : usize> CollectionGetMut<Idx> for [T;N] where for<'a> &'a mut[T] : CollectionGetMut<Idx>, for<'a> &'a[T] : CollectionGet<Idx>, Idx : SliceIndex<[T]> + Copy
 {
     fn get_mut(&mut self, idx : Idx) -> Option<&mut Self::Output> { self.as_mut_slice().get_mut(idx) }
     unsafe fn get_unchecked_mut(&mut self, idx : Idx) -> &mut Self::Output { unsafe { self.as_mut_slice().get_unchecked_mut(idx) } }
 }
 
 
-impl<Idx,T> GetIndex<Idx> for Vec<T> where Idx : SliceIndex<[T]> + Copy
+impl<Idx,T> CollectionGet<Idx> for Vec<T> where Idx : SliceIndex<[T]> + Copy
 {
     type Output = <Self as Index<Idx>>::Output;
     fn get(&self, idx : Idx) -> Option<&Self::Output> { self.as_slice().get(idx) }
     unsafe fn get_unchecked(&self, idx : Idx) -> &Self::Output { unsafe { self.as_slice().get_unchecked(idx) } }
 }
-impl<Idx,T> GetIndexMut<Idx> for Vec<T> where Idx : SliceIndex<[T]> + Copy
+impl<Idx,T> CollectionGetMut<Idx> for Vec<T> where Idx : SliceIndex<[T]> + Copy
 {
     fn get_mut(&mut self, idx : Idx) -> Option<&mut Self::Output> { self.as_mut_slice().get_mut(idx) }
     unsafe fn get_unchecked_mut(&mut self, idx : Idx) -> &mut Self::Output { unsafe { self.as_mut_slice().get_unchecked_mut(idx) } }
 }
 
 
-impl<T> GetIndex<usize> for VecDeque<T>
+impl<T> CollectionGet<usize> for VecDeque<T>
 {
     type Output = <Self as Index<usize>>::Output;
     fn get(&self, idx : usize) -> Option<&Self::Output> { self.get(idx) }
 }
-impl<T> GetIndexMut<usize> for VecDeque<T>
+impl<T> CollectionGetMut<usize> for VecDeque<T>
 {
     fn get_mut(&mut self, idx : usize) -> Option<&mut Self::Output> { self.get_mut(idx) }
 }
 
-impl<Idx> GetIndex<Idx> for str where Idx : SliceIndex<str> + Copy
+impl<Idx> CollectionGet<Idx> for str where Idx : SliceIndex<str> + Copy
 {
     type Output = <Self as Index<Idx>>::Output;
     fn get(&self, idx : Idx) -> Option<&Self::Output> { self.get(idx) }
     unsafe fn get_unchecked(&self, idx : Idx) -> &Self::Output { unsafe { self.get_unchecked(idx) } }
 }
-impl<Idx> GetIndexMut<Idx> for str where Idx : SliceIndex<str> + Copy
+impl<Idx> CollectionGetMut<Idx> for str where Idx : SliceIndex<str> + Copy
 {
     fn get_mut(&mut self, idx : Idx) -> Option<&mut Self::Output> { self.get_mut(idx) }
     unsafe fn get_unchecked_mut(&mut self, idx : Idx) -> &mut Self::Output { unsafe { self.get_unchecked_mut(idx) } }
@@ -103,35 +103,35 @@ impl<Idx> GetIndexMut<Idx> for str where Idx : SliceIndex<str> + Copy
 
 
 
-impl<K,V,S,Q> GetIndex<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
+impl<K,V,S,Q> CollectionGet<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
 {
     type Output = V;
     fn get(&self, k: &Q) -> Option<&Self::Output> { self.get(k) }
 }
 
-impl<K,V,S,Q> GetIndexMut<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
+impl<K,V,S,Q> CollectionGetMut<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
 {
     fn get_mut(&mut self, k: &Q) -> Option<&mut Self::Output> where K : Borrow<Q> { self.get_mut(k) }
 }
 
-impl<K,V,Q> GetIndex<&Q> for BTreeMap<K,V> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
+impl<K,V,Q> CollectionGet<&Q> for BTreeMap<K,V> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
 {
     type Output = V;
     fn get(&self, k: &Q) -> Option<&Self::Output> where K : Borrow<Q> { self.get(k) }
 }
 
-impl<K,V,Q> GetIndexMut<&Q> for BTreeMap<K,V> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
+impl<K,V,Q> CollectionGetMut<&Q> for BTreeMap<K,V> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
 {
     fn get_mut(&mut self, k: &Q) -> Option<&mut Self::Output> where K : Borrow<Q> { self.get_mut(k) }
 }
 
-impl<K,S,Q> GetIndex<&Q> for HashSet<K,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
+impl<K,S,Q> CollectionGet<&Q> for HashSet<K,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
 {
     type Output = K;
     fn get(&self, k: &Q) -> Option<&Self::Output> { self.get(k) }
 }
 
-impl<K,Q> GetIndex<&Q> for BTreeSet<K> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
+impl<K,Q> CollectionGet<&Q> for BTreeSet<K> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
 {
     type Output = K;
     fn get(&self, k: &Q) -> Option<&Self::Output> { self.get(k) }

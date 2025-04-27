@@ -6,7 +6,7 @@ use crate::*;
 /// 
 /// [Param] is a silent parameter, generally void, that is here to facilitate the API for [GridParam] because some function depend 
 /// if the param is clonable or not. 
-pub trait IGridView<T, Param, Idx, const N : usize> : GetIndex<Vector<Idx,N>,Output = T> + IRectangle<Idx, N>
+pub trait IGridView<T, Param, Idx, const N : usize> : CollectionGet<Vector<Idx,N>,Output = T> + IRectangle<Idx, N>
     where Idx : IntegerIndex
 {
     /* 
@@ -37,7 +37,7 @@ pub trait IGridView<T, Param, Idx, const N : usize> : GetIndex<Vector<Idx,N>,Out
 }
 
 
-impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridView<'a, T, Idx,N> 
+impl<'a, T, Idx, const N : usize> CollectionGet<Vector<Idx,N>> for GridView<'a, T, Idx,N> 
     where Idx : IntegerIndex 
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;

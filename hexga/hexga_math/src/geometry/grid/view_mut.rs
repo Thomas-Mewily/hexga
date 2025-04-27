@@ -1,6 +1,6 @@
 use crate::*;
 
-pub trait IGridViewMut<T, Param, Idx, const N : usize> : IGridView<T,Param,Idx,N> + GetIndexMut<Vector<Idx,N>,Output=T>
+pub trait IGridViewMut<T, Param, Idx, const N : usize> : IGridView<T,Param,Idx,N> + CollectionGetMut<Vector<Idx,N>,Output=T>
     where Idx : IntegerIndex
 {
     type SubViewMut<'b> where Self: 'b;
@@ -71,7 +71,7 @@ impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridViewMut<'a, T, I
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
 }
 
-impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
+impl<'a, T, Idx, const N : usize> CollectionGet<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex 
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
@@ -79,7 +79,7 @@ impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridViewMut<'a, T,
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
 }
 
-impl<'a, T, Idx, const N : usize> GetIndexMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
+impl<'a, T, Idx, const N : usize> CollectionGetMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex 
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.grid.get_mut(self.view.pos + pos) }

@@ -283,7 +283,7 @@ impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N>
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new(self, rect) }
 }
 
-impl<T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridBase<T, Idx,N> 
+impl<T, Idx, const N : usize> CollectionGet<Vector<Idx,N>> for GridBase<T, Idx,N> 
     where Idx : IntegerIndex 
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
@@ -291,7 +291,7 @@ impl<T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridBase<T, Idx,N>
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { let idx = self.position_to_index_unchecked(pos); self.values().get_unchecked(idx) } }
 }
 
-impl<T, Idx, const N : usize> GetIndexMut<Vector<Idx,N>> for GridBase<T, Idx,N> 
+impl<T, Idx, const N : usize> CollectionGetMut<Vector<Idx,N>> for GridBase<T, Idx,N> 
     where Idx : IntegerIndex 
 {
     fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
