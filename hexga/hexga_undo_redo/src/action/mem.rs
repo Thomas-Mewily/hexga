@@ -22,10 +22,10 @@ impl<T> UndoableAction for Swap<T> where for<'a> T: 'a
     type Context<'a>= (&'a mut T, &'a mut T);
     type Output<'a> = ();
     
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
     {
         std::mem::swap(&mut context.0, &mut context.1);
-        undo.push_undo_action(|| self);
+        stack.push_undo_action(|| self);
     }
 }
 
@@ -50,16 +50,16 @@ impl<T> UndoableAction for Replace<T> where for<'a> T: 'a + Clone
     type Context<'a> = T;
     type Output<'ctx> = T;
     
-    fn execute_in<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    fn execute_in<'a, S>(mut self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
     {
         std::mem::swap(&mut self.src, context);
-        undo.push_undo_action(|| Replace::new(self.src.clone()));
+        stack.push_undo_action(|| Replace::new(self.src.clone()));
         self.src
     }
 
-    fn execute_and_forget_in<'a,U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> {
+    fn execute_and_forget_in<'a,S>(mut self, context : &mut Self::Context<'a>, stack : &mut S) where S : UndoStack<Self::Undo> {
         std::mem::swap(&mut self.src, context);
-        undo.push_undo_action(|| Replace::new(self.src));
+        stack.push_undo_action(|| Replace::new(self.src));
     }
 }
 
@@ -83,35 +83,34 @@ impl<T> UndoableAction for Take<T> where for<'a> T: 'a + Default + Clone
     type Context<'a>= T;
     type Output<'a> = T;
     
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
-    { Replace::new(___()).execute_in(context, undo) }
+    fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
+    { Replace::new(___()).execute_in(context, stack) }
 
-    fn execute_and_forget_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> 
-    { Replace::new(___()).execute_and_forget_in(context, undo) }
+    fn execute_and_forget_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) where S : UndoStack<Self::Undo> 
+    { Replace::new(___()).execute_and_forget_in(context, stack) }
 }
 
-pub fn take<T, U>(value : &mut T, undo : &mut U) -> T where for<'a> T: 'a + Default + Clone, U: UndoStack<Replace<T>>
+pub fn take<T, S>(value : &mut T, stack : &mut S) -> T where for<'a> T: 'a + Default + Clone, S: UndoStack<Replace<T>>
 {
-    Take::new().execute_in(value, undo)
+    Take::new().execute_in(value, stack)
 }
 
-pub fn take_and_forget<T, U>(value : &mut T, undo : &mut U) where for<'a> T: 'a + Default + Clone, U: UndoStack<Replace<T>>
+pub fn take_and_forget<T, S>(value : &mut T, stack : &mut S) where for<'a> T: 'a + Default + Clone, S: UndoStack<Replace<T>>
 {
-    Take::new().execute_and_forget_in(value, undo)
+    Take::new().execute_and_forget_in(value, stack)
 }
 
-
-pub fn swap<T, U>(a : &mut T, b : &mut T, undo : &mut U) where for<'a> T: 'a, U: UndoStack<Swap<T>>
+pub fn swap<T, S>(a : &mut T, b : &mut T, stack : &mut S) where for<'a> T: 'a, S: UndoStack<Swap<T>>
 {
-    Swap::new().execute_in(&mut (a,b), undo);
+    Swap::new().execute_in(&mut (a,b), stack);
 }
 
-pub fn replace<T, U>(dest : &mut T, src : T, undo : &mut U) -> T where for<'a> T: 'a + Clone, U: UndoStack<Replace<T>>
+pub fn replace<T, S>(dest : &mut T, src : T, stack : &mut S) -> T where for<'a> T: 'a + Clone, S: UndoStack<Replace<T>>
 {
-    Replace::new(src).execute_in(dest, undo)
+    Replace::new(src).execute_in(dest, stack)
 }
 
-pub fn replace_and_forget<T, U>(dest : &mut T, src : T, undo : &mut U) where for<'a> T: 'a + Clone, U: UndoStack<Replace<T>>
+pub fn replace_and_forget<T, S>(dest : &mut T, src : T, stack : &mut S) where for<'a> T: 'a + Clone, S: UndoStack<Replace<T>>
 {
-    Replace::new(src).execute_and_forget_in(dest, undo)
+    Replace::new(src).execute_and_forget_in(dest, stack)
 }
