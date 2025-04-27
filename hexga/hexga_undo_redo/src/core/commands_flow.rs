@@ -168,12 +168,10 @@ impl<A> UndoStack<A> for CommandsFlow<A> where A : UndoableAction
     }
     
     fn stack_undo_in<Dest>(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<<A as UndoableAction>::Undo> {
+        dest.prepare();
         self.take_last_command_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, dest))).is_some()
     }
-}
 
-impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoableAction 
-{
     fn prepare(&mut self) 
     {
         if let Some(CommandFlowMarker::Group(nb)) = self.actions.last()
@@ -187,7 +185,10 @@ impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoableAction
             self.actions.push(CommandFlowMarker::NOP);
         }
     }
-    
+}
+
+impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoableAction 
+{    
     fn pop_command(&mut self) -> Option<Command<A>> 
     {
         let Some(commands) = self.actions.pop() else { return None; };

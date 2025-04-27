@@ -104,18 +104,18 @@ impl<A> UndoStack<A> for Commands<A> where A : UndoableAction
     }
     
     fn stack_undo_in<Dest>(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<<A as UndoableAction>::Undo> {
+        dest.prepare();
         self.take_last_command_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, dest))).is_some()
     }
-} 
 
-impl<A> CommandStack<A> for Commands<A> where A : UndoableAction
-{
     fn prepare(&mut self) 
     {
         self.commands.push(Command::Nop);
     }
+} 
 
-        
+impl<A> CommandStack<A> for Commands<A> where A : UndoableAction
+{        
     fn pop_command(&mut self) -> Option<Command<A>> {
         self.commands.pop()
     }

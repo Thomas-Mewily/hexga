@@ -3,7 +3,6 @@ pub use crate::*;
 
 pub trait CommandStack<A> : UndoStack<A> where A : UndoableAction
 {
-    fn prepare(&mut self);
     fn pop_command(&mut self) -> Option<Command<A>>;
     fn take_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>>;
 }

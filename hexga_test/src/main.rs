@@ -35,7 +35,7 @@ fn main()
 {
     for _ in 0..10 { println!(); }
     //let mut u = CommandsFlow::new();
-    let mut cmds = RedoReverse::<Commands<action::vec::Action<i32>>, action::vec::Action<i32>>::new(); // Commands::new();
+    let mut cmds = Redo::<Commands<action::vec::Action<i32>>, action::vec::Action<i32>>::new(); // Commands::new();
 
     let mut values = Vec::new();
 

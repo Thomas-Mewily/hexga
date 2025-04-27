@@ -33,10 +33,7 @@ impl<T> Action for T where T : UndoableAction + Sized
 pub trait UndoExtension
 {
     /// Undo the last action/command
-    fn undo<'a,A,S>(&'a mut self, src : &mut S) -> bool where S : UndoStack<A>, A : UndoableAction<Context<'a> = Self> { src.stack_undo_in(self, &mut ()) }
-    /// Undo the last action/command
-    fn undo_in<'a,A,Src,Dest>(&'a mut self, src : &mut Src, dest : &mut Dest) -> bool where Src : UndoStack<A>, Dest : UndoStack<A::Undo>, A : UndoableAction<Context<'a> = Self> { src.stack_undo_in(self, dest) }
-    
+    fn undo<'a,A,S>(&'a mut self, src : &mut S) -> bool where S : UndoStack<A>, A : UndoableAction<Context<'a> = Self> { src.stack_undo(self) }
     // Redo the last action/command
     fn redo<'a,A,S>(&'a mut self, src : &mut S) -> bool where S : RedoStack<A>, A : UndoableAction<Context<'a> = Self> { src.stack_redo(self) }
 }
@@ -44,6 +41,9 @@ impl<T> UndoExtension for T {}
 
 pub trait UndoStack<A> where A : UndoableAction
 {
+    /// Prepare the next action/command. Can be ommited on action
+    fn prepare(&mut self);
+
     /// If true F will be called, otherwise F won't be called in `push_undo_action`
     const LOG_UNDO : bool;
 
@@ -56,7 +56,8 @@ pub trait UndoStack<A> where A : UndoableAction
 
 pub trait RedoStack<A> : UndoStack<A> where A : UndoableAction
 {
-    fn stack_redo(&mut self, ctx : &mut A::Context<'_>) -> bool;
+    fn stack_redo(&mut self, ctx : &mut A::Context<'_>) -> bool { self.stack_redo_in(ctx, &mut ()) }
+    fn stack_redo_in<Dest>(&mut self, ctx : &mut A::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<A::Undo>;
 }
 
 pub struct ActionStackMap<'a, U, A, T> where U : UndoStack<A>, A : UndoableAction, T : UndoableAction
@@ -80,6 +81,8 @@ impl<'a, U, A, T> UndoStack<T> for ActionStackMap<'a, U, A, T> where U : UndoSta
     }
     
     fn stack_undo_in<Dest>(&mut self, _ : &mut <T as UndoableAction>::Context<'_>, _ : &mut Dest) -> bool where Dest : UndoStack<T::Undo> { false }
+    
+    fn prepare(&mut self) { self.undo.prepare(); }
 }
 
 /// Ignore the action
@@ -88,6 +91,7 @@ impl<A> UndoStack<A> for () where A : UndoableAction
     const LOG_UNDO : bool = false;
     fn push_undo_action<F>(&mut self, _ : F) where F : FnOnce() -> A {}
     fn stack_undo_in<Dest>(&mut self, _ : &mut <A as UndoableAction>::Context<'_>, _ : &mut Dest) -> bool where Dest : UndoStack<A::Undo> { false }
+    fn prepare(&mut self) {}
 }
 
 // Todo impl it for sequence that support push ?
@@ -99,6 +103,9 @@ impl<A> UndoStack<A> for Vec<A> where A : UndoableAction
     }
     
     fn stack_undo_in<Dest>(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<A::Undo> {
+        dest.prepare();
         self.pop().map(|v| v.execute_and_forget_in(ctx, dest)).is_some()
     }
+
+    fn prepare(&mut self) {}
 }
