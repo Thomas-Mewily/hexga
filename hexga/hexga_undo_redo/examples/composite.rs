@@ -19,7 +19,7 @@ pub enum DataAction
     Even(vec::Action<i32>), // Action done on Even
 }
 
-impl ActionUndo for DataAction
+impl UndoableAction for DataAction
 {
     type Undo = Self;
     type Context<'a> = Data;

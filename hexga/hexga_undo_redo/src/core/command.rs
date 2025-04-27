@@ -1,15 +1,17 @@
 pub use crate::*;
 
 
-pub trait CommandStack<A> : ActionStack<A> where A : ActionUndo
+pub trait CommandStack<A> : ActionStack<A> where A : UndoableAction
 {
     fn prepare(&mut self);
     fn pop_command(&mut self) -> Option<Command<A>>;
 
+    /* 
     fn undo(&mut self, ctx : &mut A::Context<'_>) -> bool 
     {
         self.iter_last_action_actions().map(|actions| actions.for_each(|a| a.execute_and_forget(ctx))).is_some()
     }
+    */
     // Todo : move it to ActionStack ?
     fn iter_last_action_actions(&mut self) -> Option<impl Iterator<Item = A>>;
 }
@@ -26,19 +28,19 @@ pub trait UndoCommandStack<A> : CommandStack<A> where A : UndoAction
 
 /// Group command that required more than one action inside a sequence
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub enum Command<A> where A : ActionUndo
+pub enum Command<A> where A : UndoableAction
 {
     Action(A),
     Sequence(Vec<A>),
     Nop,
 }
 
-impl<A> Command<A> where A : ActionUndo
+impl<A> Command<A> where A : UndoableAction
 {
     pub const fn new() -> Self { Self::Nop}
 }
 
-impl<A> Debug for Command<A> where A : ActionUndo + Debug
+impl<A> Debug for Command<A> where A : UndoableAction + Debug
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -49,7 +51,7 @@ impl<A> Debug for Command<A> where A : ActionUndo + Debug
     }
 }
 
-impl<A> Command<A> where A : ActionUndo
+impl<A> Command<A> where A : UndoableAction
 {
     pub const fn is_action  (&self) -> bool { matches!(self, Self::Action(_)) }
     pub const fn is_sequence(&self) -> bool { matches!(self, Self::Sequence(_)) }

@@ -17,7 +17,7 @@ impl<T> Hash for Pop<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
 impl<T> Default for Pop<T>{ fn default() -> Self { Self::new() } }
 impl<T> Debug for Pop<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Pop") } }
 
-impl<T> ActionUndo for Pop<T> where for<'a> T: 'a + Clone
+impl<T> UndoableAction for Pop<T> where for<'a> T: 'a + Clone
 {
     type Undo = Push<T>;
     type Context<'a>= Vec<T>;
@@ -44,7 +44,7 @@ impl<T> Push<T>
     pub fn value(&self) -> &T { &self.value }
 }
 
-impl<T> ActionUndo for Push<T> where for<'a> T: 'a + Clone
+impl<T> UndoableAction for Push<T> where for<'a> T: 'a + Clone
 {
     type Undo = Pop<T>;
     type Context<'a>= Vec<T>;
@@ -59,7 +59,7 @@ impl<T> ActionUndo for Push<T> where for<'a> T: 'a + Clone
 
 pub type Swap<T> = collection::SwapIndex<Vec<T>, usize>;
 
-impl<T> ActionUndo for Swap<T> where for<'a> T: 'a
+impl<T> UndoableAction for Swap<T> where for<'a> T: 'a
 {
     type Undo = Self;
     type Context<'a>= Vec<T>;
@@ -110,7 +110,7 @@ impl<T> Debug for Action<T> where for<'a> T : 'a + Clone + Debug
     }
 }
 
-impl<T> ActionUndo for Action<T> where for<'a> T : 'a + Clone
+impl<T> UndoableAction for Action<T> where for<'a> T : 'a + Clone
 {
     type Undo = Action<T>;
     type Context<'a>= Vec<T>;

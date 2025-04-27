@@ -1,12 +1,12 @@
 pub use crate::*;
 
-pub struct CommandsRedo<U,A> where U : CommandStack<A>, A : ActionUndo<Undo = A>
+pub struct CommandsRedo<U,A> where U : CommandStack<A>, A : UndoableAction<Undo = A>
 {
     undo : U,
     redo : U,
     phantom : PhantomData<A>,
 }
-impl<U, A> Clone for CommandsRedo<U, A> where U: CommandStack<A> + Clone, A : ActionUndo<Undo = A>
+impl<U, A> Clone for CommandsRedo<U, A> where U: CommandStack<A> + Clone, A : UndoableAction<Undo = A>
 {
     fn clone(&self) -> Self 
     {
@@ -18,7 +18,7 @@ impl<U, A> Clone for CommandsRedo<U, A> where U: CommandStack<A> + Clone, A : Ac
     }
 }
 
-impl<U, A> Debug for CommandsRedo<U, A> where U: CommandStack<A> + Debug, A : ActionUndo<Undo = A>
+impl<U, A> Debug for CommandsRedo<U, A> where U: CommandStack<A> + Debug, A : UndoableAction<Undo = A>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CommandsRedo")
@@ -28,7 +28,7 @@ impl<U, A> Debug for CommandsRedo<U, A> where U: CommandStack<A> + Debug, A : Ac
     }
 }
 
-impl<U, A> CommandsRedo<U, A> where U: CommandStack<A>, A : ActionUndo<Undo = A>
+impl<U, A> CommandsRedo<U, A> where U: CommandStack<A>, A : UndoableAction<Undo = A>
 {
     pub fn new() -> Self where U : Default { Self::new_with_undo_redo(___(), ___()) }
     pub fn new_with_undo_redo(undo: U, redo: U) -> Self 
@@ -55,22 +55,22 @@ impl<U, A> CommandsRedo<U, A> where U: CommandStack<A>, A : ActionUndo<Undo = A>
     }
 }
 
-impl<U, A> ActionStack<A> for CommandsRedo<U,A> where U: CommandStack<A>, A : ActionUndo<Undo = A>
+impl<U, A> ActionStack<A> for CommandsRedo<U,A> where U: CommandStack<A>, A : UndoableAction<Undo = A>
 {
     const LOG_UNDO : bool = true;
-    fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A { self.undo.push_undo_action(f); }    
-}
+    fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A { self.undo.push_undo_action(f); }  
 
-impl<U, A> CommandStack<A> for CommandsRedo<U,A> where U: CommandStack<A>, A : ActionUndo<Undo = A>
-{
-    fn prepare(&mut self) { self.undo.prepare(); }
-    fn pop_command(&mut self) -> Option<Command<A>> { self.undo.pop_command() }
-
-    fn undo(&mut self, ctx : &mut <A as ActionUndo>::Context<'_>) -> bool 
+    fn undo(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>) -> bool 
     {
         self.redo.prepare();
         self.undo.iter_last_action_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, &mut self.redo))).is_some()
-    }
+    }  
+}
+
+impl<U, A> CommandStack<A> for CommandsRedo<U,A> where U: CommandStack<A>, A : UndoableAction<Undo = A>
+{
+    fn prepare(&mut self) { self.undo.prepare(); }
+    fn pop_command(&mut self) -> Option<Command<A>> { self.undo.pop_command() }
     
     fn iter_last_action_actions(&mut self) -> Option<impl Iterator<Item = A>> { self.undo.iter_last_action_actions() }
 }

@@ -7,7 +7,7 @@ pub enum PushOrPop<T> where T : Clone
     Push(T),
 }
 
-impl<T> ActionUndo for PushOrPop<T> where for<'a> T : 'a + Clone
+impl<T> UndoableAction for PushOrPop<T> where for<'a> T : 'a + Clone
 {
     type Undo = Self;
     type Context<'a> = Vec<T>;

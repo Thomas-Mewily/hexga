@@ -2,24 +2,24 @@ pub use crate::*;
 
 /// A vector of command
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct Commands<A> where A : ActionUndo
+pub struct Commands<A> where A : UndoableAction
 {
     // Todo : use generic sequence ? vec, vecdequeu...
     pub commands : Vec<Command<A>>,
 }
 
-impl<A> Debug for Commands<A> where A : ActionUndo + Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.commands) } }
-impl<A> Default for Commands<A> where A : ActionUndo { fn default() -> Self { Self::new() } }
+impl<A> Debug for Commands<A> where A : UndoableAction + Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.commands) } }
+impl<A> Default for Commands<A> where A : UndoableAction { fn default() -> Self { Self::new() } }
 
-impl<A> Deref for Commands<A> where A : ActionUndo { type Target=Vec<Command<A>>; fn deref(&self) -> &Self::Target {&self.commands } }
-impl<A> DerefMut for Commands<A> where A : ActionUndo { fn deref_mut(&mut self) -> &mut Self::Target {&mut self.commands } }
+impl<A> Deref for Commands<A> where A : UndoableAction { type Target=Vec<Command<A>>; fn deref(&self) -> &Self::Target {&self.commands } }
+impl<A> DerefMut for Commands<A> where A : UndoableAction { fn deref_mut(&mut self) -> &mut Self::Target {&mut self.commands } }
 
-impl<A> From<Vec<Command<A>>> for Commands<A> where A : ActionUndo { fn from(actions: Vec<Command<A>>) -> Self { Self { commands: actions } } }
-impl<A> From<Commands<A>> for Vec<Command<A>> where A : ActionUndo { fn from(value: Commands<A>) -> Self { value.commands } }
+impl<A> From<Vec<Command<A>>> for Commands<A> where A : UndoableAction { fn from(actions: Vec<Command<A>>) -> Self { Self { commands: actions } } }
+impl<A> From<Commands<A>> for Vec<Command<A>> where A : UndoableAction { fn from(value: Commands<A>) -> Self { value.commands } }
 
-impl<A> From<CommandsFlow<A>> for Commands<A> where A : ActionUndo { fn from(value: CommandsFlow<A>) -> Self { value.to_commands() } }
+impl<A> From<CommandsFlow<A>> for Commands<A> where A : UndoableAction { fn from(value: CommandsFlow<A>) -> Self { value.to_commands() } }
 
-impl<A> Commands<A> where A : ActionUndo
+impl<A> Commands<A> where A : UndoableAction
 {
     pub const fn from_vec(actions : Vec<Command<A>>) -> Self { Self { commands: actions } }
 
@@ -67,11 +67,11 @@ impl<A> Commands<A> where A : ActionUndo
     }
 }
 
-impl<A> Length for Commands<A> where A : ActionUndo
+impl<A> Length for Commands<A> where A : UndoableAction
 {
     fn len(&self) -> usize { self.len() }
 }
-impl<A> Capacity for Commands<A> where A : ActionUndo
+impl<A> Capacity for Commands<A> where A : UndoableAction
 {
     type Param = ();
 
@@ -86,7 +86,7 @@ impl<A> Capacity for Commands<A> where A : ActionUndo
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.commands.try_reserve_exact(additional) }
 }
 
-impl<A> ActionStack<A> for Commands<A> where A : ActionUndo
+impl<A> ActionStack<A> for Commands<A> where A : UndoableAction
 {
     const LOG_UNDO : bool = true;
     fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A 
@@ -101,10 +101,14 @@ impl<A> ActionStack<A> for Commands<A> where A : ActionUndo
             Nop => Action(b),
         };
         self.commands.push(combined);
-    }    
+    }
+
+    fn undo(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>) -> bool {
+        self.iter_last_action_actions().map(|actions| actions.for_each(|a| a.execute_and_forget(ctx))).is_some()
+    }
 } 
 
-impl<A> CommandStack<A> for Commands<A> where A : ActionUndo
+impl<A> CommandStack<A> for Commands<A> where A : UndoableAction
 {
     fn prepare(&mut self) 
     {

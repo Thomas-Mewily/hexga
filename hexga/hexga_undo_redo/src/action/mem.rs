@@ -16,7 +16,7 @@ impl<T> Hash        for Swap<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H
 impl<T> Default     for Swap<T> { fn default() -> Self { Self::new() } }
 impl<T> Debug       for Swap<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Swap") } }
 
-impl<T> ActionUndo for Swap<T> where for<'a> T: 'a
+impl<T> UndoableAction for Swap<T> where for<'a> T: 'a
 {
     type Undo = Self;
     type Context<'a>= (&'a mut T, &'a mut T);
@@ -44,7 +44,7 @@ impl<T> Replace<T>
 
 impl<T> Default for Replace<T> where T : Default { fn default() -> Self { Self::new(___()) } }
 
-impl<T> ActionUndo for Replace<T> where for<'a> T: 'a + Clone
+impl<T> UndoableAction for Replace<T> where for<'a> T: 'a + Clone
 {
     type Undo = Replace<T>;
     type Context<'a> = T;
@@ -77,7 +77,7 @@ impl<T> Hash        for Take<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H
 impl<T> Debug       for Take<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Take") } }
 impl<T> Default     for Take<T> { fn default() -> Self { Self::new() } }
 
-impl<T> ActionUndo for Take<T> where for<'a> T: 'a + Default + Clone
+impl<T> UndoableAction for Take<T> where for<'a> T: 'a + Default + Clone
 {
     type Undo = Replace<T>;
     type Context<'a>= T;
