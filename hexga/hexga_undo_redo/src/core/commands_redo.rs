@@ -51,7 +51,7 @@ impl<U, A> CommandsRedo<U, A> where U: CommandStack<A>, A : UndoableAction<Undo 
     pub fn redo(&mut self, ctx : &mut A::Context<'_>) -> bool 
     {
         self.undo.prepare();
-        self.redo.iter_last_action_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, &mut self.undo))).is_some()
+        self.redo.take_last_command_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, &mut self.undo))).is_some()
     }
 }
 
@@ -63,7 +63,7 @@ impl<U, A> ActionStack<A> for CommandsRedo<U,A> where U: CommandStack<A>, A : Un
     fn undo(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>) -> bool 
     {
         self.redo.prepare();
-        self.undo.iter_last_action_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, &mut self.redo))).is_some()
+        self.undo.take_last_command_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, &mut self.redo))).is_some()
     }  
 }
 
@@ -72,5 +72,5 @@ impl<U, A> CommandStack<A> for CommandsRedo<U,A> where U: CommandStack<A>, A : U
     fn prepare(&mut self) { self.undo.prepare(); }
     fn pop_command(&mut self) -> Option<Command<A>> { self.undo.pop_command() }
     
-    fn iter_last_action_actions(&mut self) -> Option<impl Iterator<Item = A>> { self.undo.iter_last_action_actions() }
+    fn take_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>> { self.undo.take_last_command_actions() }
 }

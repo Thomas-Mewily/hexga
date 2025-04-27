@@ -104,7 +104,7 @@ impl<A> ActionStack<A> for Commands<A> where A : UndoableAction
     }
 
     fn undo(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>) -> bool {
-        self.iter_last_action_actions().map(|actions| actions.for_each(|a| a.execute_and_forget(ctx))).is_some()
+        self.take_last_command_actions().map(|actions| actions.for_each(|a| a.execute_and_forget(ctx))).is_some()
     }
 } 
 
@@ -120,7 +120,7 @@ impl<A> CommandStack<A> for Commands<A> where A : UndoableAction
         self.commands.pop()
     }
     
-    fn iter_last_action_actions(&mut self) -> Option<impl Iterator<Item = A>> {
+    fn take_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>> {
         let Some(cmd) = self.commands.pop() else { return None; };
 
         match cmd

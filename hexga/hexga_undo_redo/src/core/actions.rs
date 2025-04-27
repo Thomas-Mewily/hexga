@@ -50,7 +50,6 @@ pub trait ActionStack<A> where A : UndoableAction
     fn handle<'a, T>(&'a mut self, f : fn(T) -> A) -> ActionStackMap<'a,Self,A,T> where Self : Sized, T : UndoableAction { ActionStackMap::new(self, f) }
 
     fn undo(&mut self, ctx : &mut A::Context<'_>) -> bool;
-
 }
 
 
