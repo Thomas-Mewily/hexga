@@ -1,9 +1,10 @@
 //! A minimal set of feature for every project
 
-use std::collections::{LinkedList, VecDeque};
+use std::collections::{LinkedList, VecDeque,HashMap,HashSet,BTreeMap,BTreeSet};
 use std::ffi::{OsStr, OsString};
-use std::{collections::HashMap, ops::Index, slice::SliceIndex};
+use std::{ops::Index, slice::SliceIndex};
 use std::hash::{BuildHasher, Hash};
+use std::borrow::Borrow;
 
 pub use hexga_number as number;
 
@@ -28,3 +29,6 @@ pub use clearable::*;
 
 mod sequence;
 pub use sequence::*;
+
+mod lookup;
+pub use lookup::*;

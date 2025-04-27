@@ -16,10 +16,6 @@ pub trait IGridView<T, Param, Idx, const N : usize> : GetIndex<Vector<Idx,N>,Out
     fn is_index_outside(&self, index : usize) -> bool { !self.is_index_inside(index) }
     */
 
-    /// The Zero is located at the `position()`/`begin()` 
-    //fn get(&self, pos : Vector<Idx,N>) -> Option<&T>;
-    //unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { &self[pos] }
-
     type Map<Dest>;
     fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, Param : Clone;
     fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, Param : Clone;
@@ -38,6 +34,14 @@ pub trait IGridView<T, Param, Idx, const N : usize> : GetIndex<Vector<Idx,N>,Out
         let r = self.rect(); 
         r.iter_idx().map(|p| (p, unsafe { self.get_unchecked(p) }))
     }
+}
+
+
+impl<'a, T, Idx, const N : usize> LookUp<Vector<Idx,N>> for GridView<'a, T, Idx,N> 
+    where Idx : IntegerIndex 
+{
+    type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
+    fn lookup(&self, k: &Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(*k) }
 }
 
 impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridView<'a, T, Idx,N> 

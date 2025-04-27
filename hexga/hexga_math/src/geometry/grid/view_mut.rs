@@ -6,11 +6,8 @@ pub trait IGridViewMut<T, Param, Idx, const N : usize> : IGridView<T,Param,Idx,N
     type SubViewMut<'b> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a>;
 
+    // Will be moved to GetIndexMut once the GetDisjoint related trait will be stable
     fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool;
-
-    fn replace(&mut self, val : T, pos : Vector<Idx,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
-    /// Do nothings if the index is outside the range
-    fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
 
     fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item=(Vector<Idx,N>, &'a mut T)> where T: 'a
     {
@@ -74,11 +71,23 @@ impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridViewMut<'a, T, I
     fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
 }
 
+impl<'a, T, Idx, const N : usize> LookUp<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
+    where Idx : IntegerIndex 
+{
+    type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
+    fn lookup(&self, k: &Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(*k) }
+}
 impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex 
 {
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(pos) } }
+    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
+}
+
+impl<'a, T, Idx, const N : usize> LookUpMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
+    where Idx : IntegerIndex 
+{
+    fn lookup_mut(&mut self, k: &Vector<Idx,N>) -> Option<&mut Self::LookUpOutput> { self.get_mut(*k) }
 }
 impl<'a, T, Idx, const N : usize> GetIndexMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex 

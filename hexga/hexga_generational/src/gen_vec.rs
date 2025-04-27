@@ -668,21 +668,42 @@ impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
 }
 impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { fn clear(&mut self) { self.clear(); } }
 
+impl<T,Gen:IGeneration> LookUp<usize> for GenVecOf<T,Gen>
+{
+    type LookUpOutput = <Self as Index<usize>>::Output;
+    fn lookup(&self, k: &usize) -> Option<&Self::LookUpOutput> { self.get_index(*k) }
+}
 impl<T,Gen:IGeneration> GetIndex<usize> for GenVecOf<T,Gen>
 {
-    fn get(&self, idx : usize) -> Option<&Self::Output> { self.get_index(idx) }
+    fn get(&self, idx : usize) -> Option<&Self::LookUpOutput> { self.get_index(idx) }
+}
+
+impl<T,Gen:IGeneration> LookUp<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    type LookUpOutput = <Self as Index<usize>>::Output;
+    fn lookup(&self, k: &GenIDOf<T,Gen>) -> Option<&Self::LookUpOutput> { self.get(*k) }
 }
 impl<T,Gen:IGeneration> GetIndex<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
-    fn get(&self, idx : GenIDOf<T,Gen>) -> Option<&Self::Output> { self.get(idx) }
+    fn get(&self, idx : GenIDOf<T,Gen>) -> Option<&Self::LookUpOutput> { self.get(idx) }
+}
+
+impl<T,Gen:IGeneration> LookUpMut<usize> for GenVecOf<T,Gen>
+{
+    fn lookup_mut(&mut self, k: &usize) -> Option<&mut Self::LookUpOutput> { self.get_index_mut(*k) }
 }
 impl<T,Gen:IGeneration> GetIndexMut<usize> for GenVecOf<T,Gen>
 {
-    fn get_mut(&mut self, idx : usize) -> Option<&mut Self::Output> { self.get_index_mut(idx) }
+    fn get_mut(&mut self, idx : usize) -> Option<&mut Self::LookUpOutput> { self.get_index_mut(idx) }
+}
+
+impl<T,Gen:IGeneration> LookUpMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    fn lookup_mut(&mut self, k: &GenIDOf<T,Gen>) -> Option<&mut Self::LookUpOutput> { self.get_mut(*k) }
 }
 impl<T,Gen:IGeneration> GetIndexMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
-    fn get_mut(&mut self, idx : GenIDOf<T,Gen>) -> Option<&mut Self::Output> { self.get_mut(idx) }
+    fn get_mut(&mut self, idx : GenIDOf<T,Gen>) -> Option<&mut Self::LookUpOutput> { self.get_mut(idx) }
 }
 
 #[allow(dead_code)]

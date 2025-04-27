@@ -58,20 +58,21 @@ pub trait ArrayLike<T, const N : usize> :
 
     fn have_idx(&self, idx : usize) -> bool { idx < N }
     
+    /* 
     fn get(&self, idx : usize) -> Option<&T> { self.slice().get(idx) }
     fn get_mut(&mut self, idx : usize) -> Option<&mut T> { self.slice_mut().get_mut(idx) }
 
     /// Panics if the component don't exist
     fn set_or_panic(&mut self, idx : usize, val : T) -> &mut Self { *self.get_mut(idx).unwrap() = val; self }
     /// Do nothings if the component don't exist
-    fn set(&mut self, idx : usize, val : T) -> &mut Self { self.get_mut(idx).map(|v| *v = val); self }
+    fn set(&mut self, idx : usize, val : T) -> bool { self.get_mut(idx).map(|v| *v = val).is_some() }
 
-    fn try_set(&mut self, idx : usize, val : T) -> Result<(), T> 
+    fn try_set(&mut self, idx : usize, val : T) -> Result<(), ()> // Todo : put a proper error type here 
     {
         match self.get_mut(idx)
         {
             Some(v) => { *v = val; Ok(()) },
-            None => Err(val),
+            None => Err(()),
         }
     }
 
@@ -80,8 +81,21 @@ pub trait ArrayLike<T, const N : usize> :
     /// Do nothings if the component don't exist
     fn with(mut self, idx : usize, val : T) -> Self { self.set(idx, val); self }
 
-    /// Replace the component and return the old component. Panic if the component don't exist
-    fn replace(&mut self, idx : usize, val : T) -> T { std::mem::replace(self.array_mut().get_mut(idx).unwrap(),val) }
+    /// Replace the component and return the old one. Panic if the component don't exist
+    fn replace(&mut self, dest : usize, src : T) -> T { std::mem::replace(self.array_mut().get_mut(idx).unwrap(),src) }
+
+    /// Try to replace the component and return the old one. 
+    fn try_replace(&mut self, dest : usize, src : T) -> Result<T, ()> 
+    { 
+        match self.array_mut().get_mut(dest)
+        {
+            Some(v) => std::mem::replace(v, src),
+            None => todo!(),
+        }
+        std::mem::replace(self.array_mut().get_mut(dest).unwrap(),src) 
+    }
+    */
+
 }
 
 

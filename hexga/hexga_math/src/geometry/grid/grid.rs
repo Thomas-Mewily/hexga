@@ -195,7 +195,7 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     fn replace_index(&mut self, val : T, index : usize) -> Option<T> { self.get_index_mut(index).map(|v| std::mem::replace(v, val)) }
 
     /// Do nothings if the index is outside the range
-    fn set_index(&mut self, val : T, idx : usize) -> &mut Self { self.get_index_mut(idx).map(|v| *v = val); self }
+    fn set_index(&mut self, val : T, idx : usize) -> bool { self.get_index_mut(idx).map(|v| *v = val).is_some() }
 
     fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, Idx : PartialOrd { r.intersect_or_empty(self.rect()) }
 
@@ -250,6 +250,14 @@ impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N>
     fn subview<'a>(&'a self, rect : Rectangle<Idx, N>) -> Self::SubView<'a> where T : Clone { GridView::new(self, rect) }
 }
 
+
+impl<T, Idx, const N : usize> LookUp<Vector<Idx,N>> for GridBase<T, Idx,N> 
+    where Idx : IntegerIndex 
+{
+    type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
+    fn lookup(&self, k: &Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(*k) }
+}
+
 impl<T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridBase<T, Idx,N> 
     where Idx : IntegerIndex 
 {
@@ -285,11 +293,15 @@ impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N>
             _ => false
         }
     }
-    fn replace(&mut self, val : T, pos : Vector<Idx,N>) ->  Option<T> { self.get_mut(pos).map(|v| std::mem::replace(v, val)) }
-    fn set(&mut self, val : T, pos : Vector<Idx,N>) -> &mut Self { self.get_mut(pos).map(|v| *v = val); self }
-    
+
     type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new(self, rect) }
+}
+
+impl<T, Idx, const N : usize> LookUpMut<Vector<Idx,N>> for GridBase<T, Idx,N> 
+    where Idx : IntegerIndex 
+{
+    fn lookup_mut(&mut self, k: &Vector<Idx,N>) -> Option<&mut Self::LookUpOutput> { self.get_mut(*k) }
 }
 
 impl<T, Idx, const N : usize> GetIndexMut<Vector<Idx,N>> for GridBase<T, Idx,N> 

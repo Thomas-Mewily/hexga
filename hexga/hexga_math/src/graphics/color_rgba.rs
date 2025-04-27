@@ -65,7 +65,7 @@ impl<T> ColorRGBAOf<T>
     /// Red
     pub fn set_r(&mut self, r : T) -> &mut Self { self.r = r; self }
     /// Red
-    pub fn replace_r(mut self, r : T) -> T { self.replace(Self::R_INDEX, r) }
+    pub fn replace_r(mut self, r : T) -> T { self.replace_or_panic(Self::R_INDEX, r) }
 
     /// Green
     pub const G_INDEX : usize = 1;
@@ -76,7 +76,7 @@ impl<T> ColorRGBAOf<T>
     /// Green
     pub fn set_g(&mut self, g : T) -> &mut Self { self.g = g; self }
     /// Green
-    pub fn replace_g(mut self, g : T) -> T { self.replace(Self::G_INDEX, g) }
+    pub fn replace_g(mut self, g : T) -> T { self.replace_or_panic(Self::G_INDEX, g) }
 
     /// Blue
     pub const B_INDEX : usize = 2;
@@ -87,7 +87,7 @@ impl<T> ColorRGBAOf<T>
     /// Blue
     pub fn set_b(&mut self, b : T) -> &mut Self { self.b = b; self }
     /// Blue
-    pub fn replace_b(mut self, b : T) -> T { self.replace(Self::B_INDEX, b) }
+    pub fn replace_b(mut self, b : T) -> T { self.replace_or_panic(Self::B_INDEX, b) }
 
     /// Alpha
     pub const A_INDEX : usize = 3;
@@ -98,7 +98,7 @@ impl<T> ColorRGBAOf<T>
     /// Alpha
     pub fn set_a(&mut self, a : T) -> &mut Self { self.a = a; self }
     /// Alpha
-    pub fn replace_a(mut self, a : T) -> T { self.replace(Self::A_INDEX, a) }
+    pub fn replace_a(mut self, a : T) -> T { self.replace_or_panic(Self::A_INDEX, a) }
 
     pub fn unpack_rgb(self) -> (T, T, T) { self.into() }
     pub fn unpack_rgba(self) -> (T, T, T, T) { self.into() }

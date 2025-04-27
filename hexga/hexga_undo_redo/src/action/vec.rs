@@ -1,10 +1,10 @@
 use crate::*;
-pub use action::collection;
+pub use action::collections;
 pub use action::mem;
 
-pub type Clear  <T> = collection::Clear       <Vec<T>       >;
-pub type Set    <T> = collection::SetIndex    <Vec<T>, usize>;
-pub type Replace<T> = collection::ReplaceIndex<Vec<T>, usize>;
+pub type Clear  <T> = collections::Clear       <Vec<T>       >;
+pub type Set    <T> = collections::SetIndex    <Vec<T>, usize>;
+pub type Replace<T> = collections::ReplaceIndex<Vec<T>, usize>;
 
 pub struct Pop<T> { phantom : PhantomData<T> }
 impl<T> Pop<T> { pub const fn new() -> Self { Self { phantom: PhantomData }}}
@@ -57,7 +57,7 @@ impl<T> UndoableAction for Push<T> where for<'a> T: 'a + Clone
     }
 }
 
-pub type Swap<T> = collection::SwapIndex<Vec<T>, usize>;
+pub type Swap<T> = collections::SwapIndex<Vec<T>, usize>;
 
 impl<T> UndoableAction for Swap<T> where for<'a> T: 'a
 {
@@ -139,8 +139,9 @@ pub trait ActionExtension<T, S> where for<'a> T: 'a + Clone, S: UndoStack<Action
     fn pop_action(&mut self, stack : &mut S) -> Option<T>;
     fn pop_action_and_forget(&mut self, stack : &mut S);
 
-    fn clear_action(&mut self, stack : &mut S);
+    //fn clear_action(&mut self, stack : &mut S);
 
+    /*
     /// Panics if `idx` is out of bounds.
     /// 
     /// Also known as `replace_action_and_forget`
@@ -153,12 +154,15 @@ pub trait ActionExtension<T, S> where for<'a> T: 'a + Clone, S: UndoStack<Action
     /// Panics if `idx` is out of bounds.
     fn swap_action(&mut self, i : usize, j : usize, stack : &mut S) { self.try_swap_action(i, j, stack).unwrap(); }
 
+     
     /// Also known as `try_replace_action_and_forget`
     fn try_set_action(&mut self, idx : usize, value : T, stack : &mut S) -> Result<(), ()>;
     /// to forget it, use `try_set_action()`
     fn try_replace_action(&mut self, idx : usize, value : T, stack : &mut S) -> Result<T, ()>;
+    */
 
-    fn try_swap_action(&mut self, i : usize, j : usize, stack : &mut S) -> Result<(), std::slice::GetDisjointMutError>;
+    // Todo move it at the same place at set_action
+    // fn try_swap_action(&mut self, i : usize, j : usize, stack : &mut S) -> Result<(), std::slice::GetDisjointMutError>;
 }
 
 
@@ -173,15 +177,19 @@ impl<T, S> ActionExtension<T, S> for Vec<T> where for<'a> T: 'a + Clone, S: Undo
     fn pop_action_and_forget(&mut self, stack : &mut S) 
     { Pop::new().execute_and_forget_in(self, &mut stack.handle(Action::Push)) }
 
+    /* 
     fn clear_action(&mut self, stack : &mut S)  
     { Clear::new().execute_in(self, &mut stack.handle(Action::MemReplace)) }
     
+    /* 
     fn try_set_action(&mut self, idx : usize, value : T, stack : &mut S) -> Result<(), ()> 
     { Set::new(idx, value).execute_in(self, &mut stack.handle(Action::Replace)) }
     
     fn try_replace_action(&mut self, idx : usize, value : T, stack : &mut S) -> Result<T, ()> 
     { Replace::new(idx, value).execute_in(self, &mut stack.handle(Action::Replace)) }
-    
+    */
+
     fn try_swap_action(&mut self, i : usize, j : usize, stack : &mut S) -> Result<(), std::slice::GetDisjointMutError> 
     { Swap::new(i, j).execute_in(self, &mut stack.handle(Action::Swap)) }
+     */
 }

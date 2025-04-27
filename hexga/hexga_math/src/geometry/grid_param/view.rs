@@ -51,6 +51,12 @@ impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamV
     { Self::SubView::from_view(self.view.subview(rect), self.param) }
 }
 
+impl<'a,T,Param,Idx,const N : usize> LookUp<Vector<Idx,N>> for GridParamView<'a,T,Param,Idx,N>
+    where Idx : IntegerIndex
+{
+    type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
+    fn lookup(&self, k: &Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(*k) }
+}
 impl<'a,T,Param,Idx,const N : usize> GetIndex<Vector<Idx,N>> for GridParamView<'a,T,Param,Idx,N>
     where Idx : IntegerIndex
 {

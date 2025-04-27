@@ -49,7 +49,7 @@ impl<T> ColorHSLAOf<T>
     /// Hue
     pub fn set_h(&mut self, h : T) -> &mut Self { self.h = h; self }
     /// Hue
-    pub fn replace_h(mut self, h : T) -> T { self.replace(Self::H_INDEX, h) }
+    pub fn replace_h(mut self, h : T) -> T { self.replace_or_panic(Self::H_INDEX, h) }
 
     /// Saturation
     pub const S_INDEX : usize = 1;
@@ -60,7 +60,7 @@ impl<T> ColorHSLAOf<T>
     /// Saturation
     pub fn set_s(&mut self, s : T) -> &mut Self { self.s = s; self }
     /// Saturation
-    pub fn replace_s(mut self, s : T) -> T { self.replace(Self::S_INDEX, s) }
+    pub fn replace_s(mut self, s : T) -> T { self.replace_or_panic(Self::S_INDEX, s) }
 
     /// Light
     pub const L_INDEX : usize = 2;
@@ -71,7 +71,7 @@ impl<T> ColorHSLAOf<T>
     /// Light
     pub fn set_l(&mut self, l : T) -> &mut Self { self.l = l; self }
     /// Light
-    pub fn replace_l(mut self, l : T) -> T { self.replace(Self::L_INDEX, l) }
+    pub fn replace_l(mut self, l : T) -> T { self.replace_or_panic(Self::L_INDEX, l) }
 
     /// Alpha
     pub const A_INDEX : usize = 3;
@@ -82,7 +82,7 @@ impl<T> ColorHSLAOf<T>
     /// Alpha
     pub fn set_a(&mut self, a : T) -> &mut Self { self.a = a; self }
     /// Alpha
-    pub fn replace_a(mut self, a : T) -> T { self.replace(Self::A_INDEX, a) }
+    pub fn replace_a(mut self, a : T) -> T { self.replace_or_panic(Self::A_INDEX, a) }
  
     pub fn unpack_hsl(self) -> (T, T, T) { (self.h, self.s, self.l) }
     pub fn unpack_hsla(self) -> (T, T, T, T) { (self.h, self.s, self.l, self.a) }

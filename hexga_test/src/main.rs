@@ -59,6 +59,9 @@ fn main()
     println!("action : {:?}", cmds);
     println!();
 
+    let g = Grid2::from_vec(2.splat2(), vec!["toto", "f", "bar", "x"]).unwrap();
+
+    //g.set(val, index)
     /* 
     u.begin();
     
