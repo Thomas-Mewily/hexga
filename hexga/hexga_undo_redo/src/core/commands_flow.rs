@@ -17,13 +17,13 @@ pub enum CommandMarker<A> where A : UndoAction
 
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum CommandFlowMarker<A> where A : UndoAction
+pub enum CommandFlowMarker<A> where A : ActionUndo
 {
     // Can probably reduce the size it by using u16 and doing some encoding to allow one command to rollback multiple group
     Group(usize),
     Action(A),
 }
-impl<A> Debug for CommandFlowMarker<A> where A : UndoAction + Debug
+impl<A> Debug for CommandFlowMarker<A> where A : ActionUndo + Debug
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
     {
@@ -35,7 +35,7 @@ impl<A> Debug for CommandFlowMarker<A> where A : UndoAction + Debug
     }
 }
 
-impl<A> CommandFlowMarker<A> where A : UndoAction
+impl<A> CommandFlowMarker<A> where A : ActionUndo
 {
     pub const fn is_group (&self) -> bool { matches!(self, Self::Group (_)) }
     pub const fn is_action(&self) -> bool { matches!(self, Self::Action(_)) }
@@ -54,25 +54,25 @@ impl<A> CommandFlowMarker<A> where A : UndoAction
 /// except for commands composed of only one action, 
 /// which can choose to skip it if they want in order to use less memory
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct CommandsFlow<A> where A : UndoAction
+pub struct CommandsFlow<A> where A : ActionUndo
 {
     // Todo : use generic sequence ? vec, vecdequeu...
     pub actions : Vec<CommandFlowMarker<A>>,
     // Todo : add a commands count here
 }
 
-impl<A> Debug for CommandsFlow<A> where A : UndoAction + Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.actions) } }
-impl<A> Default for CommandsFlow<A> where A : UndoAction { fn default() -> Self { Self::new() } }
+impl<A> Debug for CommandsFlow<A> where A : ActionUndo + Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.actions) } }
+impl<A> Default for CommandsFlow<A> where A : ActionUndo { fn default() -> Self { Self::new() } }
 
-impl<A> Deref for CommandsFlow<A> where A : UndoAction { type Target=Vec<CommandFlowMarker<A>>; fn deref(&self) -> &Self::Target {&self.actions } }
-impl<A> DerefMut for CommandsFlow<A> where A : UndoAction { fn deref_mut(&mut self) -> &mut Self::Target {&mut self.actions } }
+impl<A> Deref for CommandsFlow<A> where A : ActionUndo { type Target=Vec<CommandFlowMarker<A>>; fn deref(&self) -> &Self::Target {&self.actions } }
+impl<A> DerefMut for CommandsFlow<A> where A : ActionUndo { fn deref_mut(&mut self) -> &mut Self::Target {&mut self.actions } }
 
-impl<A> From<Vec<CommandFlowMarker<A>>> for CommandsFlow<A> where A : UndoAction { fn from(actions: Vec<CommandFlowMarker<A>>) -> Self { Self { actions } } }
-impl<A> From<CommandsFlow<A>> for Vec<CommandFlowMarker<A>> where A : UndoAction { fn from(value: CommandsFlow<A>) -> Self { value.actions } }
+impl<A> From<Vec<CommandFlowMarker<A>>> for CommandsFlow<A> where A : ActionUndo { fn from(actions: Vec<CommandFlowMarker<A>>) -> Self { Self { actions } } }
+impl<A> From<CommandsFlow<A>> for Vec<CommandFlowMarker<A>> where A : ActionUndo { fn from(value: CommandsFlow<A>) -> Self { value.actions } }
 
-impl<A> From<Commands<A>> for CommandsFlow<A> where A : UndoAction { fn from(value: Commands<A>) -> Self { value.to_commands_flow() } }
+impl<A> From<Commands<A>> for CommandsFlow<A> where A : ActionUndo { fn from(value: Commands<A>) -> Self { value.to_commands_flow() } }
 
-impl<A> CommandsFlow<A> where A : UndoAction
+impl<A> CommandsFlow<A> where A : ActionUndo
 {
     pub const fn from_vec(actions : Vec<CommandFlowMarker<A>>) -> Self { Self { actions } }
 
@@ -127,11 +127,11 @@ impl<A> CommandsFlow<A> where A : UndoAction
     }
 }
 
-impl<A> Length for CommandsFlow<A> where A : UndoAction
+impl<A> Length for CommandsFlow<A> where A : ActionUndo
 {
     fn len(&self) -> usize { self.len() }
 }
-impl<A> Capacity for CommandsFlow<A> where A : UndoAction
+impl<A> Capacity for CommandsFlow<A> where A : ActionUndo
 {
     type Param = ();
 
@@ -147,8 +147,9 @@ impl<A> Capacity for CommandsFlow<A> where A : UndoAction
 }
 
 
-impl<A> ActionStack<A> for CommandsFlow<A> where A : UndoAction 
+impl<A> ActionStack<A> for CommandsFlow<A> where A : ActionUndo 
 {
+    const LOG_UNDO : bool = true;
     fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A 
     {
         debug_assert!(self.len().is_non_zero(), "Forget to call CommandStackMarker::begin()");
@@ -167,7 +168,7 @@ impl<A> ActionStack<A> for CommandsFlow<A> where A : UndoAction
     }
 }
 
-impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoAction 
+impl<A> CommandStack<A> for CommandsFlow<A> where A : ActionUndo 
 {
     fn prepare(&mut self) 
     {
@@ -220,7 +221,7 @@ impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoAction
     }
     */
     
-    fn remove_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>> {
+    fn iter_last_action_actions(&mut self) -> Option<impl Iterator<Item = A>> {
         let Some(commands) = self.actions.pop() else { return None; };
         let group_size = commands.to_group().expect("Command flow always end by a group");
         let idx_begin_drain = self.len() - group_size;

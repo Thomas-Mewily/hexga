@@ -17,18 +17,18 @@ impl<T> Hash for Pop<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
 impl<T> Default for Pop<T>{ fn default() -> Self { Self::new() } }
 impl<T> Debug for Pop<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Pop") } }
 
-impl<T> UndoAction for Pop<T> where for<'a> T: 'a + Clone
+impl<T> ActionUndo for Pop<T> where for<'a> T: 'a + Clone
 {
     type Undo = Push<T>;
     type Context<'a>= Vec<T>;
     type Output<'a> = Option<T>;
 
-    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         context.pop().map(|v| { undo.push_undo_action(|| Push::new(v.clone())); v })
     }
 
-    fn execute_and_forget<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
+    fn execute_and_forget_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
         context.pop().map(|v| { undo.push_undo_action(|| Push::new(v)); });
     }
 }
@@ -44,13 +44,13 @@ impl<T> Push<T>
     pub fn value(&self) -> &T { &self.value }
 }
 
-impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
+impl<T> ActionUndo for Push<T> where for<'a> T: 'a + Clone
 {
     type Undo = Pop<T>;
     type Context<'a>= Vec<T>;
     type Output<'a> = ();
     
-    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         context.push(self.value);
         undo.push_undo_action(|| Pop::new());
@@ -59,13 +59,13 @@ impl<T> UndoAction for Push<T> where for<'a> T: 'a + Clone
 
 pub type Swap<T> = collection::SwapIndex<Vec<T>, usize>;
 
-impl<T> UndoAction for Swap<T> where for<'a> T: 'a
+impl<T> ActionUndo for Swap<T> where for<'a> T: 'a
 {
     type Undo = Self;
     type Context<'a>= Vec<T>;
     type Output<'a> = Result<(), std::slice::GetDisjointMutError>;
     
-    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         // Todo : add fn is_useful(&self) -> bool; and fn is_useful_on(&self, &ctx) -> bool; in this trait.
         //if self.i() != self.j() { return; }
@@ -110,24 +110,24 @@ impl<T> Debug for Action<T> where for<'a> T : 'a + Clone + Debug
     }
 }
 
-impl<T> UndoAction for Action<T> where for<'a> T : 'a + Clone
+impl<T> ActionUndo for Action<T> where for<'a> T : 'a + Clone
 {
     type Undo = Action<T>;
     type Context<'a>= Vec<T>;
     type Output<'a> = ();
     
-    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         match self
         {
-            Action::Push(v) => { v.execute_and_forget(context, &mut undo.handle(Action::Pop)); }
-            Action::Pop(v) => { v.execute_and_forget(context, &mut undo.handle(Action::Push)); }
-            Action::Clear(v) => { v.execute_and_forget(context, &mut undo.handle(Action::MemReplace)); }
-            Action::Set(v) => { v.execute_and_forget(context, &mut undo.handle(Action::Replace)); }
-            Action::Replace(v) => { v.execute_and_forget(context, &mut undo.handle(Action::Replace)); }
-            Action::Swap(v) => { v.execute_and_forget(context, &mut undo.handle(Action::Swap)); }
-            Action::MemReplace(v) => { v.execute_and_forget(context, &mut undo.handle(Action::MemReplace)); }
-            Action::MemTake(v) => { v.execute_and_forget(context, &mut undo.handle(Action::MemReplace)); }
+            Action::Push(v) => { v.execute_and_forget_in(context, &mut undo.handle(Action::Pop)); }
+            Action::Pop(v) => { v.execute_and_forget_in(context, &mut undo.handle(Action::Push)); }
+            Action::Clear(v) => { v.execute_and_forget_in(context, &mut undo.handle(Action::MemReplace)); }
+            Action::Set(v) => { v.execute_and_forget_in(context, &mut undo.handle(Action::Replace)); }
+            Action::Replace(v) => { v.execute_and_forget_in(context, &mut undo.handle(Action::Replace)); }
+            Action::Swap(v) => { v.execute_and_forget_in(context, &mut undo.handle(Action::Swap)); }
+            Action::MemReplace(v) => { v.execute_and_forget_in(context, &mut undo.handle(Action::MemReplace)); }
+            Action::MemTake(v) => { v.execute_and_forget_in(context, &mut undo.handle(Action::MemReplace)); }
         };
     }
 }
@@ -175,23 +175,23 @@ pub trait SwapExtension<Idx, U> : GetIndexMut<Idx> + Sized
 impl<T, U> ActionExtension<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: ActionStack<Action<T>>
 {
     fn push_action(&mut self, value: T, undo: &mut U)
-    { Push::new(value).execute(self, &mut undo.handle(Action::Pop)) }
+    { Push::new(value).execute_in(self, &mut undo.handle(Action::Pop)) }
     
     fn pop_action (&mut self,           undo: &mut U) -> Option<T> 
-    { Pop::new().execute(self, &mut undo.handle(Action::Push)) }
+    { Pop::new().execute_in(self, &mut undo.handle(Action::Push)) }
 
     fn pop_action_and_forget(&mut self, undo : &mut U) 
-    { Pop::new().execute_and_forget(self, &mut undo.handle(Action::Push)) }
+    { Pop::new().execute_and_forget_in(self, &mut undo.handle(Action::Push)) }
 
     fn clear_action(&mut self, undo : &mut U)  
-    { Clear::new().execute(self, &mut undo.handle(Action::MemReplace)) }
+    { Clear::new().execute_in(self, &mut undo.handle(Action::MemReplace)) }
     
     fn try_set_action(&mut self, idx : usize, value : T, undo : &mut U) -> Result<(), ()> 
-    { Set::new(idx, value).execute(self, &mut undo.handle(Action::Replace)) }
+    { Set::new(idx, value).execute_in(self, &mut undo.handle(Action::Replace)) }
     
     fn try_replace_action(&mut self, idx : usize, value : T, undo : &mut U) -> Result<T, ()> 
-    { Replace::new(idx, value).execute(self, &mut undo.handle(Action::Replace)) }
+    { Replace::new(idx, value).execute_in(self, &mut undo.handle(Action::Replace)) }
     
     fn try_swap_action(&mut self, i : usize, j : usize, undo : &mut U) -> Result<(), std::slice::GetDisjointMutError> 
-    { Swap::new(i, j).execute(self, &mut undo.handle(Action::Swap)) }
+    { Swap::new(i, j).execute_in(self, &mut undo.handle(Action::Swap)) }
 }

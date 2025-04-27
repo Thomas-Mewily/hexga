@@ -19,18 +19,18 @@ pub enum DataAction
     Even(vec::Action<i32>), // Action done on Even
 }
 
-impl UndoAction for DataAction
+impl ActionUndo for DataAction
 {
     type Undo = Self;
     type Context<'a> = Data;
     type Output<'a> = ();
 
-    fn execute<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
     {
         match self
         {
-            DataAction::Odd(vec_action) => vec_action.execute(&mut context.odd, &mut undo.handle(DataAction::Even)),
-            DataAction::Even(vec_action) => vec_action.execute(&mut context.even, &mut undo.handle(DataAction::Odd)),
+            DataAction::Odd(vec_action) => vec_action.execute_in(&mut context.odd, &mut undo.handle(DataAction::Even)),
+            DataAction::Even(vec_action) => vec_action.execute_in(&mut context.even, &mut undo.handle(DataAction::Odd)),
         }
     }
 }
