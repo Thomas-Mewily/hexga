@@ -18,7 +18,7 @@ impl<T> UndoableAction for Clear<T> where for<'a> T: 'a + Clone + Clearable + Ca
     type Context<'a>= T;
     type Output<'a> = ();
     
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         Replace::new(T::with_capacity(if U::LOG_UNDO { context.len() } else { 0 })).execute_and_forget_in(context, undo);
     }
@@ -74,7 +74,7 @@ impl<T1,Idx1,T2,Idx2> UndoableAction for TradeIndex<T1,Idx1,T2,Idx2> where T1 : 
     type Context<'a>= (T1, T2);
     type Output<'a> = Result<(), ()>; // Todo : put a proper error type
     
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         let (a,b) = context;
         // not a fan of the clone
@@ -145,7 +145,7 @@ impl<T,Idx> UndoableAction for SetIndex<T,Idx>  where for<'a> T: 'a + GetIndexMu
     type Context<'a>= T;
     type Output<'ctx> = Result<(), ()>;
     
-    fn execute_in<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a>  where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a>  where U : UndoStack<Self::Undo> 
     {
         // I don't like this clone. Imagine it on a HashMap<String, ...>...
         // Maybe change the api to look like the HashMap::get fn
@@ -189,7 +189,7 @@ impl<T,Idx> UndoableAction for ReplaceIndex<T,Idx>  where for<'a> T: 'a + GetInd
     type Context<'a>= T;
     type Output<'ctx> = Result<T::Output, ()>;
     
-    fn execute_in<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         // I don't like this clone. Imagine it on a HashMap<String, ...>...
         // Maybe change the api to look like the HashMap::get fn
@@ -205,7 +205,7 @@ impl<T,Idx> UndoableAction for ReplaceIndex<T,Idx>  where for<'a> T: 'a + GetInd
         }
     }
 
-    fn execute_and_forget_in<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
+    fn execute_and_forget_in<'a, U>(mut self, context : &mut Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> {
         // I don't like this clone. Imagine it on a HashMap<String, ...>...
         // Maybe change the api to look like the HashMap::get fn
         match context.get_mut(self.idx.clone())

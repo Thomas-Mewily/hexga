@@ -1,7 +1,7 @@
 pub use crate::*;
 
 
-pub trait CommandStack<A> : ActionStack<A> where A : UndoableAction
+pub trait CommandStack<A> : UndoStack<A> where A : UndoableAction
 {
     fn prepare(&mut self);
     fn pop_command(&mut self) -> Option<Command<A>>;

@@ -25,7 +25,7 @@ impl UndoableAction for DataAction
     type Context<'a> = Data;
     type Output<'a> = ();
 
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         match self
         {
@@ -37,7 +37,7 @@ impl UndoableAction for DataAction
 
 impl Data
 {
-    pub fn push_action(&mut self, value : i32, undo : &mut impl ActionStack<DataAction>)
+    pub fn push_action(&mut self, value : i32, undo : &mut impl UndoStack<DataAction>)
     {
         if value % 2 == 0
         {
@@ -52,24 +52,24 @@ impl Data
 fn main() 
 {
     let mut d = Data::default();
-    let mut undo_action = vec![];
+    let mut actions = vec![];
 
-    d.push_action(42, &mut undo_action);
-    d.push_action(43, &mut undo_action);
+    d.push_action(42, &mut actions);
+    d.push_action(43, &mut actions);
     println!("before");
     println!("data: {:?}", d);
-    println!("undo_action: {:?}", undo_action);
+    println!("undo_action: {:?}", actions);
     println!();
 
-    d.undo_action(undo_action.pop().unwrap());
+    d.undo(&mut actions);
     println!("after undoing 1 action");
     println!("data: {:?}", d);
-    println!("undo_action: {:?}", undo_action);
+    println!("undo_action: {:?}", actions);
     println!();
     
 
-    d.undo_action(undo_action.pop().unwrap());
+    d.undo(&mut actions);
     println!("after undoing 2 action");
     println!("data: {:?}", d);
-    println!("undo_action: {:?}", undo_action);
+    println!("undo_action: {:?}", actions);
 }

@@ -13,7 +13,7 @@ impl<T> UndoableAction for PushOrPop<T> where for<'a> T : 'a + Clone
     type Context<'a> = Vec<T>;
     type Output<'a> = ();
 
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> {
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> {
         match self
         {
             PushOrPop::Pop => match context.pop()
@@ -29,21 +29,19 @@ impl<T> UndoableAction for PushOrPop<T> where for<'a> T : 'a + Clone
 fn main()
 {
     let mut v = vec![];
-    let mut undo_action = vec![];
+    let mut actions = vec![];
 
-    PushOrPop::Push("foo").execute_in(&mut v, &mut undo_action);
-    PushOrPop::Push("bar").execute_in(&mut v, &mut undo_action);
+    PushOrPop::Push("foo").execute_in(&mut v, &mut actions);
+    PushOrPop::Push("bar").execute_in(&mut v, &mut actions);
 
     println!("before:");
     println!("vector: {:?}", v);
-    println!("undo_action: {:?}", undo_action);
+    println!("undo_action: {:?}", actions);
     println!();
 
-        v.undo_action(undo_action.pop().unwrap());
-        // same as :
-        // undo_action.pop().unwrap().execute_without_undo(&mut v);
+    v.undo(&mut actions);
 
     println!("after:");
     println!("vector: {:?}", v);
-    println!("undo_action: {:?}", undo_action);
+    println!("undo_action: {:?}", actions);
 }

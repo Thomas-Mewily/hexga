@@ -35,28 +35,28 @@ fn main()
 {
     for _ in 0..10 { println!(); }
     //let mut u = CommandsFlow::new();
-    let mut u = CommandsRedo::<Commands<action::vec::Action<i32>>, action::vec::Action<i32>>::new(); // Commands::new();
+    let mut cmds = RedoReverse::<Commands<action::vec::Action<i32>>, action::vec::Action<i32>>::new(); // Commands::new();
 
     let mut values = Vec::new();
 
-    u.prepare();
-    values.push_action(42, &mut u);
-    values.push_action(50, &mut u);
+    cmds.prepare();
+    values.push_action(42, &mut cmds);
+    values.push_action(50, &mut cmds);
 
     println!("value : {:?}", values);
-    println!("action : {:?}", u);
+    println!("action : {:?}", cmds);
     println!();
 
-    values.undo(&mut u);
+    values.undo(&mut cmds);
 
     println!("value : {:?}", values);
-    println!("action : {:?}", u);
+    println!("action : {:?}", cmds);
     println!();
 
-    values.redo(&mut u);
+    values.redo(&mut cmds);
 
     println!("value : {:?}", values);
-    println!("action : {:?}", u);
+    println!("action : {:?}", cmds);
     println!();
 
     /* 

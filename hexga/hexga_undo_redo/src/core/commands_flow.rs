@@ -147,7 +147,7 @@ impl<A> Capacity for CommandsFlow<A> where A : UndoableAction
 }
 
 
-impl<A> ActionStack<A> for CommandsFlow<A> where A : UndoableAction 
+impl<A> UndoStack<A> for CommandsFlow<A> where A : UndoableAction 
 {
     const LOG_UNDO : bool = true;
     fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A 
@@ -167,8 +167,8 @@ impl<A> ActionStack<A> for CommandsFlow<A> where A : UndoableAction
         self.actions.push(CommandFlowMarker::Group(group_size));
     }
     
-    fn undo(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>) -> bool {
-        self.take_last_command_actions().map(|actions| actions.for_each(|a| a.execute_and_forget(ctx))).is_some()
+    fn stack_undo_in<Dest>(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<<A as UndoableAction>::Undo> {
+        self.take_last_command_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, dest))).is_some()
     }
 }
 

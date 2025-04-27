@@ -23,12 +23,12 @@ impl<T> UndoableAction for Pop<T> where for<'a> T: 'a + Clone
     type Context<'a>= Vec<T>;
     type Output<'a> = Option<T>;
 
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         context.pop().map(|v| { undo.push_undo_action(|| Push::new(v.clone())); v })
     }
 
-    fn execute_and_forget_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) where U : ActionStack<Self::Undo> {
+    fn execute_and_forget_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) where U : UndoStack<Self::Undo> {
         context.pop().map(|v| { undo.push_undo_action(|| Push::new(v)); });
     }
 }
@@ -50,7 +50,7 @@ impl<T> UndoableAction for Push<T> where for<'a> T: 'a + Clone
     type Context<'a>= Vec<T>;
     type Output<'a> = ();
     
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         context.push(self.value);
         undo.push_undo_action(|| Pop::new());
@@ -65,7 +65,7 @@ impl<T> UndoableAction for Swap<T> where for<'a> T: 'a
     type Context<'a>= Vec<T>;
     type Output<'a> = Result<(), std::slice::GetDisjointMutError>;
     
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         // Todo : add fn is_useful(&self) -> bool; and fn is_useful_on(&self, &ctx) -> bool; in this trait.
         //if self.i() != self.j() { return; }
@@ -116,7 +116,7 @@ impl<T> UndoableAction for Action<T> where for<'a> T : 'a + Clone
     type Context<'a>= Vec<T>;
     type Output<'a> = ();
     
-    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : ActionStack<Self::Undo> 
+    fn execute_in<'a, U>(self, context : &mut Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
     {
         match self
         {
@@ -132,7 +132,7 @@ impl<T> UndoableAction for Action<T> where for<'a> T : 'a + Clone
     }
 }
 
-pub trait ActionExtension<T, U> where for<'a> T: 'a + Clone, U: ActionStack<Action<T>>
+pub trait ActionExtension<T, U> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
 {
     fn push_action(&mut self, value: T, undo : &mut U);
 
@@ -172,7 +172,7 @@ pub trait SwapExtension<Idx, U> : GetIndexMut<Idx> + Sized
 }
 */
 
-impl<T, U> ActionExtension<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: ActionStack<Action<T>>
+impl<T, U> ActionExtension<T, U> for Vec<T> where for<'a> T: 'a + Clone, U: UndoStack<Action<T>>
 {
     fn push_action(&mut self, value: T, undo: &mut U)
     { Push::new(value).execute_in(self, &mut undo.handle(Action::Pop)) }
