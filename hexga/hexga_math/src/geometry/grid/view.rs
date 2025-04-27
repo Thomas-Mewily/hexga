@@ -37,16 +37,10 @@ pub trait IGridView<T, Param, Idx, const N : usize> : GetIndex<Vector<Idx,N>,Out
 }
 
 
-impl<'a, T, Idx, const N : usize> LookUp<Vector<Idx,N>> for GridView<'a, T, Idx,N> 
-    where Idx : IntegerIndex 
-{
-    type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
-    fn lookup(&self, k: Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(k) }
-}
-
 impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridView<'a, T, Idx,N> 
     where Idx : IntegerIndex 
 {
+    type Output = <Self as Index<Vector<Idx,N>>>::Output;
     fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.grid.get(self.view.pos + pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
 }

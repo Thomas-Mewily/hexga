@@ -86,23 +86,12 @@ impl<T,Param,Idx,const N : usize> IGridParam<T,Param,Idx,N> for GridParamBase<T,
     }
 }
 
-impl<T,Param,Idx,const N : usize> LookUp<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
-    where Idx : IntegerIndex
-{
-    type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
-    fn lookup(&self, k: Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(k) }
-}
 impl<T,Param,Idx,const N : usize> GetIndex<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
     where Idx : IntegerIndex
 {
+    type Output = <Self as Index<Vector<Idx,N>>>::Output;
     fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> { self.grid.get(pos) }
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { self.grid.get_unchecked(pos) } }
-}
-
-impl<T,Param,Idx,const N : usize> LookUpMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
-    where Idx : IntegerIndex
-{
-    fn lookup_mut(&mut self, k: Vector<Idx,N>) -> Option<&mut Self::LookUpOutput> { self.get_mut(k) }
 }
 impl<T,Param,Idx,const N : usize> GetIndexMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
     where Idx : IntegerIndex

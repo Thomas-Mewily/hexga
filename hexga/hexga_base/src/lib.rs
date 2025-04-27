@@ -1,4 +1,4 @@
-//! A minimal set of feature for every project
+//! A 'minimal' set of feature for every project
 
 use std::collections::{LinkedList, VecDeque,HashMap,HashSet,BTreeMap,BTreeSet};
 use std::ffi::{OsStr, OsString};
@@ -29,6 +29,3 @@ pub use clearable::*;
 
 mod sequence;
 pub use sequence::*;
-
-mod lookup;
-pub use lookup::*;

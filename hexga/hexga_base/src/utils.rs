@@ -34,9 +34,9 @@ impl<T> ToDebug for T where T : std::fmt::Debug
     }
 }
 
-// Useful to silence/convert to void some Err.
-
-// Some of my lib will probably have proper error type instead of () when I will have time to add them
+/// Useful to silence/convert to void some Err.
+/// 
+/// Some of my lib will probably have proper error type instead of () when I will have time to add them
 pub trait ResultExtension<T>
 {
     fn ok_or_void(self) -> Result<T,()>;
@@ -47,3 +47,11 @@ impl<T,E> ResultExtension<T> for Result<T,E>
         self.map_err(|_| ())
     }
 }
+
+
+/*
+// Eq is imply by Ord, but I prefer to make sure this is visible
+/// A key that can be used in an HashMap (Hash + Eq), but also in a BTreeMap (Ord + Eq)
+pub trait UniversalKey : Hash + Eq + Ord {}
+impl<T> UniversalKey for T where T: Hash + Eq + Ord {}
+*/

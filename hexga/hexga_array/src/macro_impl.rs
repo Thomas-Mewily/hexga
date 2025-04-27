@@ -371,20 +371,11 @@ macro_rules! impl_fixed_array_like
         impl<T> ::std::ops::Index   <usize> for $name<T> { type Output=T; fn index(&self, index: usize) -> &Self::Output { self.array().index(index) } }
         impl<T> ::std::ops::IndexMut<usize> for $name<T> { fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.array_mut().index_mut(index) } }
     
-        impl<T> ::hexga_base::LookUp<usize> for $name<T> 
-        { 
-            type LookUpOutput = <Self as ::std::ops::Index<usize>>::Output;
-            fn lookup(&self, k: usize) -> Option<&Self::LookUpOutput> { self.get(k) }
-        }
         impl<T> ::hexga_base::GetIndex<usize> for $name<T> 
         { 
+            type Output = <Self as ::std::ops::Index<usize>>::Output;
             fn get(&self, index: usize) -> Option<&<Self as ::std::ops::Index::<usize>>::Output> { self.array().get(index) } 
             unsafe fn get_unchecked(&self, index: usize) -> &<Self as ::std::ops::Index::<usize>>::Output { unsafe { self.array().get_unchecked(index) } } 
-        }
-
-        impl<T> ::hexga_base::LookUpMut<usize> for $name<T> 
-        { 
-            fn lookup_mut(&mut self, k: usize) -> Option<&mut Self::LookUpOutput> { self.get_mut(k) }
         }
         impl<T> ::hexga_base::GetIndexMut<usize> for $name<T> 
         { 
@@ -496,21 +487,13 @@ macro_rules! impl_generic_array_like
         impl<T, const N : usize> ::std::ops::Index   <usize> for $name<T,N> { type Output=T; fn index(&self, index: usize) -> &Self::Output { self.array().index(index) } }
         impl<T, const N : usize> ::std::ops::IndexMut<usize> for $name<T,N> { fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.array_mut().index_mut(index) } }
     
-        impl<T, const N : usize> ::hexga_base::LookUp<usize> for $name<T,N> 
-        { 
-            type LookUpOutput = <Self as ::std::ops::Index<usize>>::Output;
-            fn lookup(&self, k: usize) -> Option<&Self::LookUpOutput> { self.get(k) }
-        }
         impl<T, const N : usize> ::hexga_base::GetIndex<usize> for $name<T,N> 
         { 
+            type Output = <Self as ::std::ops::Index<usize>>::Output;
             fn get(&self, index: usize) -> Option<&<Self as ::std::ops::Index::<usize>>::Output> { self.array().get(index) } 
             unsafe fn get_unchecked(&self, index: usize) -> &<Self as ::std::ops::Index::<usize>>::Output { unsafe { self.array().get_unchecked(index) } } 
         }
 
-        impl<T, const N : usize> ::hexga_base::LookUpMut<usize> for $name<T,N> 
-        { 
-            fn lookup_mut(&mut self, k: usize) -> Option<&mut Self::LookUpOutput> { self.get_mut(k) }
-        }
         impl<T, const N : usize> ::hexga_base::GetIndexMut<usize> for $name<T,N> 
         { 
             fn get_mut(&mut self, index: usize) -> Option<&mut <Self as ::std::ops::Index::<usize>>::Output> { self.array_mut().get_mut(index) } 
