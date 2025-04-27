@@ -41,7 +41,7 @@ impl<'a, T, Idx, const N : usize> LookUp<Vector<Idx,N>> for GridView<'a, T, Idx,
     where Idx : IntegerIndex 
 {
     type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
-    fn lookup(&self, k: &Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(*k) }
+    fn lookup(&self, k: Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(k) }
 }
 
 impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridView<'a, T, Idx,N> 

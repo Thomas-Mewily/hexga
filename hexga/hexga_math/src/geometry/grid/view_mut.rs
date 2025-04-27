@@ -75,7 +75,7 @@ impl<'a, T, Idx, const N : usize> LookUp<Vector<Idx,N>> for GridViewMut<'a, T, I
     where Idx : IntegerIndex 
 {
     type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
-    fn lookup(&self, k: &Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(*k) }
+    fn lookup(&self, k: Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(k) }
 }
 impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex 
@@ -87,7 +87,7 @@ impl<'a, T, Idx, const N : usize> GetIndex<Vector<Idx,N>> for GridViewMut<'a, T,
 impl<'a, T, Idx, const N : usize> LookUpMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex 
 {
-    fn lookup_mut(&mut self, k: &Vector<Idx,N>) -> Option<&mut Self::LookUpOutput> { self.get_mut(*k) }
+    fn lookup_mut(&mut self, k: Vector<Idx,N>) -> Option<&mut Self::LookUpOutput> { self.get_mut(k) }
 }
 impl<'a, T, Idx, const N : usize> GetIndexMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> 
     where Idx : IntegerIndex 

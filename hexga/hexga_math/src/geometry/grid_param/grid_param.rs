@@ -90,7 +90,7 @@ impl<T,Param,Idx,const N : usize> LookUp<Vector<Idx,N>> for GridParamBase<T,Para
     where Idx : IntegerIndex
 {
     type LookUpOutput = <Self as Index<Vector<Idx,N>>>::Output;
-    fn lookup(&self, k: &Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(*k) }
+    fn lookup(&self, k: Vector<Idx,N>) -> Option<&Self::LookUpOutput> { self.get(k) }
 }
 impl<T,Param,Idx,const N : usize> GetIndex<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
     where Idx : IntegerIndex
@@ -102,7 +102,7 @@ impl<T,Param,Idx,const N : usize> GetIndex<Vector<Idx,N>> for GridParamBase<T,Pa
 impl<T,Param,Idx,const N : usize> LookUpMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
     where Idx : IntegerIndex
 {
-    fn lookup_mut(&mut self, k: &Vector<Idx,N>) -> Option<&mut Self::LookUpOutput> { self.get_mut(*k) }
+    fn lookup_mut(&mut self, k: Vector<Idx,N>) -> Option<&mut Self::LookUpOutput> { self.get_mut(k) }
 }
 impl<T,Param,Idx,const N : usize> GetIndexMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N>
     where Idx : IntegerIndex

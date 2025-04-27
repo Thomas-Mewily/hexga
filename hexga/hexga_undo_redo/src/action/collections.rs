@@ -1,5 +1,3 @@
-use std::ops::IndexMut;
-
 use crate::*;
 
 use super::mem::Replace;

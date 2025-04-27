@@ -6,15 +6,40 @@ pub trait UniversalKey : Hash + Eq + Ord {}
 impl<T> UniversalKey for T where T: Hash + Eq + Ord {}
 
 /// HashMap, BTreeMap... but also impl for GetIndexMut like Vector
-pub trait LookUp<K, Q=K> where Q : ?Sized
+pub trait LookUp<K, Q=K>
 {
     type LookUpOutput : ?Sized;
-    fn lookup(&self, k: &Q) -> Option<&Self::LookUpOutput> where K : Borrow<Q>;
+    fn lookup(&self, k: Q) -> Option<&Self::LookUpOutput> ;
 }
 
-pub trait LookUpMut<K, Q=K> : LookUp<K, Q> where Q : ?Sized
+pub trait LookUpMut<K, Q=K> : LookUp<K, Q>
 {
-    fn lookup_mut(&mut self, k: &Q) -> Option<&mut Self::LookUpOutput> where K : Borrow<Q>;
+    fn lookup_mut(&mut self, k: Q) -> Option<&mut Self::LookUpOutput>;
+
+    
+    
+    /// Do nothings if the value don't exist
+    fn set(&mut self, k : Q, value : Self::LookUpOutput) -> bool where Self::LookUpOutput : Sized { self.lookup_mut(k).map(|v| *v = value).is_some() }
+    
+    /// Panics if the value don't exist
+    fn set_or_panic(&mut self, k : Q, value : Self::LookUpOutput) -> &mut Self where Self::LookUpOutput : Sized { *self.lookup_mut(k).unwrap() = value; self }
+    
+    fn replace(&mut self, k : Q, value : Self::LookUpOutput) -> Option<Self::LookUpOutput> where Self::LookUpOutput : Sized { self.lookup_mut(k).map(|v| std::mem::replace(v, value)) }
+    /// Panics if the value don't exist
+    fn replace_or_panic(&mut self, k : Q, value : Self::LookUpOutput) -> Self::LookUpOutput where Self::LookUpOutput : Sized { std::mem::replace(self.lookup_mut(k).expect("invalid index/key"), value) }
+    
+    // fn try_set(...) -> Result<(), ()>
+    // fn try_replace(...) -> Result<(), ()>
+
+
+    /* 
+    /// Panics if the component don't exist
+    fn set_or_panic(&mut self, idx : Idx, val : Self::Output) -> &mut Self where Self::Output : Sized { *self.get_mut(idx).unwrap() = val; self }
+    /// Do nothings if the component don't exist
+    fn set(&mut self, idx : Idx, val : Self::Output) -> bool where Self::Output : Sized { self.get_mut(idx).map(|v| *v = val).is_some() }
+    */
+    // Todo : add disjoint_mut when core::slice::GetDisjointMutIndex will be stable
+    //fn get_disjoint_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]>; where Idx : core::slice::GetDisjointMutIndex;
 }
 
 /* 
@@ -31,35 +56,35 @@ impl<T,Idx> LoopUpMut<Idx,Idx> for T where T : GetIndexMut<Idx>, Idx : Copy
 */
 
 
-impl<K,V,S,Q> LookUp<K, Q> for HashMap<K,V,S> where Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
+impl<K,V,S,Q> LookUp<K, &Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
+{
+    type LookUpOutput=V;
+    fn lookup(&self, k: &Q) -> Option<&Self::LookUpOutput> { self.get(k) }
+}
+
+impl<K,V,S,Q> LookUpMut<K, &Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
+{
+    fn lookup_mut(&mut self, k: &Q) -> Option<&mut Self::LookUpOutput> where K : Borrow<Q> { self.get_mut(k) }
+}
+
+impl<K,V,Q> LookUp<K, &Q> for BTreeMap<K,V> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
 {
     type LookUpOutput=V;
     fn lookup(&self, k: &Q) -> Option<&Self::LookUpOutput> where K : Borrow<Q> { self.get(k) }
 }
 
-impl<K,V,S,Q> LookUpMut<K, Q> for HashMap<K,V,S> where Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
+impl<K,V,Q> LookUpMut<K, &Q> for BTreeMap<K,V> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
 {
     fn lookup_mut(&mut self, k: &Q) -> Option<&mut Self::LookUpOutput> where K : Borrow<Q> { self.get_mut(k) }
 }
 
-impl<K,V,Q> LookUp<K, Q> for BTreeMap<K,V> where Q : ?Sized + Ord, K: Ord
-{
-    type LookUpOutput=V;
-    fn lookup(&self, k: &Q) -> Option<&Self::LookUpOutput> where K : Borrow<Q> { self.get(k) }
-}
-
-impl<K,V,Q> LookUpMut<K, Q> for BTreeMap<K,V> where Q : ?Sized + Ord, K: Ord
-{
-    fn lookup_mut(&mut self, k: &Q) -> Option<&mut Self::LookUpOutput> where K : Borrow<Q> { self.get_mut(k) }
-}
-
-impl<K,S,Q> LookUp<K, Q> for HashSet<K,S> where Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
+impl<K,S,Q> LookUp<K, &Q> for HashSet<K,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
 {
     type LookUpOutput=K;
     fn lookup(&self, k: &Q) -> Option<&Self::LookUpOutput> where K : Borrow<Q> { self.get(k) }
 }
 
-impl<K,Q> LookUp<K, Q> for BTreeSet<K> where Q : ?Sized + Ord, K: Ord
+impl<K,Q> LookUp<K, &Q> for BTreeSet<K> where K : Borrow<Q>, Q : ?Sized + Ord, K: Ord
 {
     type LookUpOutput=K;
     fn lookup(&self, k: &Q) -> Option<&Self::LookUpOutput> where K : Borrow<Q> { self.get(k) }

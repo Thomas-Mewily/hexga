@@ -374,7 +374,7 @@ macro_rules! impl_fixed_array_like
         impl<T> ::hexga_base::LookUp<usize> for $name<T> 
         { 
             type LookUpOutput = <Self as ::std::ops::Index<usize>>::Output;
-            fn lookup(&self, k: &usize) -> Option<&Self::LookUpOutput> { self.get(*k) }
+            fn lookup(&self, k: usize) -> Option<&Self::LookUpOutput> { self.get(k) }
         }
         impl<T> ::hexga_base::GetIndex<usize> for $name<T> 
         { 
@@ -384,7 +384,7 @@ macro_rules! impl_fixed_array_like
 
         impl<T> ::hexga_base::LookUpMut<usize> for $name<T> 
         { 
-            fn lookup_mut(&mut self, k: &usize) -> Option<&mut Self::LookUpOutput> { self.get_mut(*k) }
+            fn lookup_mut(&mut self, k: usize) -> Option<&mut Self::LookUpOutput> { self.get_mut(k) }
         }
         impl<T> ::hexga_base::GetIndexMut<usize> for $name<T> 
         { 
@@ -499,7 +499,7 @@ macro_rules! impl_generic_array_like
         impl<T, const N : usize> ::hexga_base::LookUp<usize> for $name<T,N> 
         { 
             type LookUpOutput = <Self as ::std::ops::Index<usize>>::Output;
-            fn lookup(&self, k: &usize) -> Option<&Self::LookUpOutput> { self.get(*k) }
+            fn lookup(&self, k: usize) -> Option<&Self::LookUpOutput> { self.get(k) }
         }
         impl<T, const N : usize> ::hexga_base::GetIndex<usize> for $name<T,N> 
         { 
@@ -509,7 +509,7 @@ macro_rules! impl_generic_array_like
 
         impl<T, const N : usize> ::hexga_base::LookUpMut<usize> for $name<T,N> 
         { 
-            fn lookup_mut(&mut self, k: &usize) -> Option<&mut Self::LookUpOutput> { self.get_mut(*k) }
+            fn lookup_mut(&mut self, k: usize) -> Option<&mut Self::LookUpOutput> { self.get_mut(k) }
         }
         impl<T, const N : usize> ::hexga_base::GetIndexMut<usize> for $name<T,N> 
         { 
