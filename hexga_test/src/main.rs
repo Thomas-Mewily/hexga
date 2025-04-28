@@ -7,6 +7,7 @@ use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_bo
 use criterion::{BenchmarkId, Criterion};
 
 //use hexga_graphics::Image;
+use hexga_core::prelude::*;
 use hexga_math::prelude::*;
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
 use hexga_undo_redo::prelude::*;
@@ -34,6 +35,23 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 fn main() 
 {
     for _ in 0..10 { println!(); }
+
+    let mut foo_resources: HashMap<&str, i32> =
+    [("Norway", 100),
+     ("Denmark", 50),
+     ("Iceland", 10)]
+     .iter().cloned().collect();
+
+     let bar_resources: HashMap<&str, i32> =
+     [("Greenland", 999),
+      ("Iceland", 10)]
+      .iter().cloned().collect();
+
+     dbg!(&foo_resources);
+     dbg!(&bar_resources);
+
+     foo_resources.swap_or_panic("Norway2", "Denmark");
+     dbg!(&foo_resources);
 
     /* 
     //let mut u = CommandsFlow::new();
