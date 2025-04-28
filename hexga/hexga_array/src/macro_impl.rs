@@ -347,6 +347,15 @@ macro_rules! impl_fixed_array_like
         }
         impl<T> ::std::cmp::Eq for $name<T> where T : Eq {}
 
+        impl<T> ::std::cmp::PartialOrd for $name<T> where T : PartialOrd
+        {
+            fn partial_cmp(&self, rhs : &Self) -> ::std::option::Option<::std::cmp::Ordering> { ::std::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
+        }
+        impl<T> ::std::cmp::Ord for $name<T> where T : Ord 
+        {
+            fn cmp(&self, rhs : &Self) -> ::std::cmp::Ordering { ::std::cmp::Ord::cmp(self.array(), rhs.array()) }
+        }
+
         impl<T> ::std::hash::Hash for $name<T> where T : Hash
         {
             fn hash<H>(&self, state: &mut H) where H: Hasher { self.as_ref().hash(state); }
@@ -487,7 +496,16 @@ macro_rules! impl_generic_array_like
         {
             fn eq(&self, rhs : &Self) -> bool { self.array() == rhs.array() }
         }
-        impl<T, const N : usize> ::std::cmp::Eq for $name<T,N> where T : Eq{}
+        impl<T, const N : usize> ::std::cmp::Eq for $name<T,N> where T : Eq {}
+
+        impl<T, const N : usize> ::std::cmp::PartialOrd for $name<T,N> where T : PartialOrd
+        {
+            fn partial_cmp(&self, rhs : &Self) -> ::std::option::Option<::std::cmp::Ordering> { ::std::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
+        }
+        impl<T, const N : usize> ::std::cmp::Ord for $name<T,N> where T : Ord 
+        {
+            fn cmp(&self, rhs : &Self) -> ::std::cmp::Ordering { ::std::cmp::Ord::cmp(self.array(), rhs.array()) }
+        }
 
         impl<T, const N : usize> ::std::hash::Hash for $name<T,N> where T : Hash
         {
