@@ -1,21 +1,68 @@
-pub use crate::*;
+use crate::*;
+use crate::actions::mem::*;
+use crate::actions::collections::*;
+
+/// What is the equivalent relative action when the action take place a collection.
+/// ex : `x.replace_action(42, &mut stack)`
+/// If `x` was a mutable reference to a collection, we need to track where do `x` come from :
+/// 
+/// ```rust
+/// let mut stack = Vec::new();
+/// let s = &mut stack;
+/// 
+/// let array = [1,2,3];
+/// let x : &mut i32 = array.get_mut_or_panic(1);
+/// 
+/// x.replace_action(42, s); // <- We don't know where to x come from
+/// ```
+/// 
+/// But the `replace_action` itself don't know the borrow value was relative to array
+/// 
+/// ```rust
+/// let mut stack = Vec::new();
+/// let s = &mut stack;
+/// 
+/// let array = [1,2,3];
+/// array.get_mut_or_panic_action(1,s, |value, tmp_stack| value.replace_action(42, tmp_stack)); // Ok
+/// ```
+/// 
+/// Here, the `actions::mem::Replace` will be related to the borrowed value, thus becoming :
+/// `actions::mem::Replace` -> `actions::mem::ReplaceIndex`
+pub trait Relative<C, Idx, P> : Action where C: GetMut<Idx>, Idx: Clone, P: Policy
+{
+    type Relative<'a> : Action; //<Context<'a> = Self::Context<'a>>;
+    fn relative<'a>(self, index : &Idx) -> Self::Relative<'a>; 
+}
+
+/* 
+impl<C, Idx> Relative<C, Idx, policy::Normal> for Replace<Idx> where for<'a> C: 'a + GetMut<Idx>, C::Output : Sized + Clone, Idx : Clone
+{
+    type Relative<'a> = ReplaceIndex<C,Idx,policy::Normal>;
+    fn relative<'a>(self, index : &Idx) -> Self::Relative<'a> {
+        //SwapIndex::new(i, j)
+    }
+}
+*/
+
+//impl<Idx> Relative<Idx> for : Action where for<'a> Self::Context<'a> : GetMut<Idx>
 
 /// Memorize where do the context/value come from using it's index
 #[derive(Debug)]
-pub struct ActionStackRelative<'a, S, A, T, Idx> where S : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
+pub struct ActionStackRelative<'a, S, A, C, Idx, P> where S : UndoStack<A>, A: UndoableAction, C: GetMut<Idx>, Idx: Clone, P: Policy
 {
     stack : &'a mut S,
+    collection : &'a mut C,
     index : Idx,
-    phantom : PhantomData<(A,T)>,
+    phantom : PhantomData<(A,P)>,
 }
 
-impl<'a, S, A, T, Idx> ActionStackRelative<'a, S, A, T, Idx> where S : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
+impl<'a, S, A, C, Idx, P> ActionStackRelative<'a, S, A, C, Idx, P> where S : UndoStack<A>, A: UndoableAction, C: GetMut<Idx>, Idx: Clone, P: Policy
 {
-    pub fn new(undo : &'a mut S, source : Idx) -> Self { Self { stack: undo, index: source, phantom : PhantomData }}
+    pub fn new(stack : &'a mut S, collection : &'a mut C, index : Idx) -> Self { Self { stack, collection, index, phantom : PhantomData }}
 }
 
 /*
-impl<'a, U, A, T, Idx> UndoStack<T> for ActionStackRelative<'a, U, A, T, Idx> where U : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
+impl<'a, U, A, T, Idx> UndoStack<T> for ActionStackRelative<'a, U, A, T, Idx> where U : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone, P: Policy
 {
     const LOG_UNDO : bool = U::LOG_UNDO;
 
