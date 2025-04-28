@@ -710,10 +710,10 @@ impl<T,Gen:IGeneration> GetMut<usize> for GenVecOf<T,Gen>
 impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
 {
     #[inline(always)]
-    fn try_get_disjoint_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output;N], ()> 
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output;N], ()> 
     { 
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.slot.try_get_disjoint_mut(indices).map(|slots| slots.map(|v| v.value_mut()))
+        match self.slot.try_get_many_mut(indices).map(|slots| slots.map(|v| v.value_mut()))
         {
             Ok(values) => if values.iter().any(|v| v.is_none()) { Err(()) } else { Ok(values.map(|v| v.unwrap())) },
             Err(()) => Err(()),
@@ -722,9 +722,9 @@ impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
 
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_disjoint_unchecked_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Output;N] {
+    unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Output;N] {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        unsafe { self.slot.get_disjoint_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
+        unsafe { self.slot.get_many_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
     }
 }
 impl<T,Gen:IGeneration> GetMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
@@ -738,10 +738,10 @@ impl<T,Gen:IGeneration> GetMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 impl<T,Gen:IGeneration> GetManyMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     #[inline(always)]
-    fn try_get_disjoint_mut<const N: usize>(&mut self, indices: [GenIDOf<T,Gen>; N]) -> Result<[&mut Self::Output;N], ()> 
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [GenIDOf<T,Gen>; N]) -> Result<[&mut Self::Output;N], ()> 
     { 
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.slot.try_get_disjoint_mut(indices.map(|i| i.index))
+        match self.slot.try_get_many_mut(indices.map(|i| i.index))
         {
             Ok(values) => if values.iter().enumerate().any(|(idx,v)| !v.have_value() || v.generation() != indices[idx].generation) 
             { Err(()) } else { Ok(values.map(|v| v.value_mut().unwrap())) },

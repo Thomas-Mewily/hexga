@@ -92,11 +92,11 @@ impl<'a, T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridViewMut<'a, T, I
 impl<'a, T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
 {
     #[inline(always)]
-    fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> 
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> 
     {
         let r = self.rect();
         if indices.any(|i| r.is_outside(*i)) { return Err(()); }
-        self.grid.try_get_disjoint_mut(indices.map(|pos| self.view.pos + pos))
+        self.grid.try_get_many_mut(indices.map(|pos| self.view.pos + pos))
     }
 }
 

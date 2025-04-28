@@ -109,10 +109,10 @@ impl<T,Param,Idx,const N : usize> GetMut<Vector<Idx,N>> for GridParamBase<T,Para
 impl<T,Param,Idx,const N : usize> GetManyMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
 {
     #[inline(always)]
-    fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> { self.grid.try_get_disjoint_mut(indices) }
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> { self.grid.try_get_many_mut(indices) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_disjoint_unchecked_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> [&mut Self::Output;N2] { unsafe { self.grid.get_disjoint_unchecked_mut(indices) } }
+    unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> [&mut Self::Output;N2] { unsafe { self.grid.get_many_unchecked_mut(indices) } }
 }
 
 impl<T,Param,Idx,const N : usize> Get<usize> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
@@ -141,7 +141,7 @@ impl<T,Param,Idx,const N : usize> GetManyMut<usize> for GridParamBase<T,Param,Id
 {
     #[inline(always)]
     #[track_caller]
-    fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> { self.grid.try_get_disjoint_mut(indices) }
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> { self.grid.try_get_many_mut(indices) }
 }
 
 impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,

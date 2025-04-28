@@ -73,7 +73,7 @@ impl<'a,T,Param,Idx,const N : usize> GetMut<Vector<Idx,N>> for GridParamViewMut<
 impl<'a,T,Param,Idx,const N : usize> GetManyMut<Vector<Idx,N>> for GridParamViewMut<'a,T,Param,Idx,N> where Idx : IntegerIndex
 {
     #[inline(always)]
-    fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()>  { self.view.try_get_disjoint_mut(indices) }
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()>  { self.view.try_get_many_mut(indices) }
 }
 
 impl<'a, T, Param, Idx, const N : usize> IRectangle<Idx,N> for GridParamViewMut<'a, T, Param, Idx, N> where Idx : IntegerIndex  

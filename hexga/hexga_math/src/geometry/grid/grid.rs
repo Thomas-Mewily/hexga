@@ -293,7 +293,7 @@ impl<T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridBase<T, Idx,N> where
 impl<T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : IntegerIndex 
 {
     #[inline(always)]
-    fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> {
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
         if indices.any(|x| x.is_none()) 
@@ -301,7 +301,7 @@ impl<T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridBase<T, Idx,N> w
             Err(())
         } else 
         {
-            self.try_get_disjoint_mut(indices.map(|idx| idx.unwrap()))
+            self.try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }
@@ -333,8 +333,8 @@ impl<T, Idx, const N : usize> GetMut<usize> for GridBase<T, Idx,N> where Idx : I
 impl<T, Idx, const N : usize> GetManyMut<usize> for GridBase<T, Idx,N> where Idx : IntegerIndex 
 {
     #[inline(always)]
-    fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> {
-        self.values_mut().try_get_disjoint_mut(indices)
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> {
+        self.values_mut().try_get_many_mut(indices)
     }
 }
 

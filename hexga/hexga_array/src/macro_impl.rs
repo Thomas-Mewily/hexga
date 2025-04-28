@@ -404,10 +404,10 @@ macro_rules! impl_fixed_array_like
         impl<T, Idx> ::hexga_core::collections::GetManyMut<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::GetManyMut<Idx>
         {
             #[inline(always)]
-            fn try_get_disjoint_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ()> { ::hexga_core::collections::GetManyMut::try_get_disjoint_mut(self.array_mut(), indices) }
+            fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ()> { ::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
             #[inline(always)]
             #[track_caller]
-            unsafe fn get_disjoint_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { ::hexga_core::collections::GetManyMut::get_disjoint_unchecked_mut(self.array_mut(), indices) } }
+            unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { ::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
         }
 
         impl<T> ::std::iter::IntoIterator for $name<T> where [T;$dim] : ::std::iter::IntoIterator
@@ -546,10 +546,10 @@ macro_rules! impl_generic_array_like
         impl<T, const N : usize, Idx> ::hexga_core::collections::GetManyMut<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::GetManyMut<Idx>
         {
             #[inline(always)]
-            fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ()> { ::hexga_core::collections::GetManyMut::try_get_disjoint_mut(self.array_mut(), indices) }
+            fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ()> { ::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
             #[inline(always)]
             #[track_caller]
-            unsafe fn get_disjoint_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { ::hexga_core::collections::GetManyMut::get_disjoint_unchecked_mut(self.array_mut(), indices) } }
+            unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { ::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
         }
 
         impl<T, const N : usize> ::std::iter::IntoIterator for $name<T,N> where [T;N] : ::std::iter::IntoIterator
