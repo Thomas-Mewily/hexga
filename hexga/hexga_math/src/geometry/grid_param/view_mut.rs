@@ -106,10 +106,10 @@ impl<'a, T, Param, Idx, const N : usize> Eq for GridParamViewMut<'a, T, Param, I
 impl<'a, T, Param, Idx, const N : usize> Index<Vector<Idx,N>> for GridParamViewMut<'a, T, Param, Idx, N> where Idx : IntegerIndex,
 {
     type Output=T;
-    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
+    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }
 }
 
 impl<'a, T, Param, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridParamViewMut<'a, T, Param, Idx, N> where Idx : IntegerIndex,
 {
-    fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
+    fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }

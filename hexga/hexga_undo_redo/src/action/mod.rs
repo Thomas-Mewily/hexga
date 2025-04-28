@@ -4,3 +4,4 @@ pub(crate) mod action_impl;
 pub use action_impl::*;
 
 pub mod policy;
+pub(crate) use policy::Policy;

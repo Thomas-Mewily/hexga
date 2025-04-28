@@ -5,18 +5,18 @@ use crate::*;
 
 
 
-pub struct Swap<T,Policy=policy::Normal> { phantom : PhantomData<(T,Policy)> }
+pub struct Swap<T> { phantom : PhantomData<T> }
 
-impl<T,P> Swap<T,P> { pub const fn new() -> Self { Self { phantom: PhantomData }} }
+impl<T> Swap<T> { pub const fn new() -> Self { Self { phantom: PhantomData }} }
 
-impl<T,P> Clone   for Swap<T,P> { fn clone(&self) -> Self { Self::new() } }
-impl<T,P> Copy    for Swap<T,P> {}
+impl<T> Clone   for Swap<T> { fn clone(&self) -> Self { Self::new() } }
+impl<T> Copy    for Swap<T> {}
 
-impl<T,P> PartialEq   for Swap<T,P> { fn eq(&self, _: &Self) -> bool { true } }
-impl<T,P> Eq          for Swap<T,P> {}
-impl<T,P> Hash        for Swap<T,P> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
-impl<T,P> Default     for Swap<T,P> { fn default() -> Self { Self::new() } }
-impl<T,P> Debug       for Swap<T,P> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{}Swap") } }
+impl<T> PartialEq   for Swap<T> { fn eq(&self, _: &Self) -> bool { true } }
+impl<T> Eq          for Swap<T> {}
+impl<T> Hash        for Swap<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
+impl<T> Default     for Swap<T> { fn default() -> Self { Self::new() } }
+impl<T> Debug       for Swap<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Swap") } }
 
 impl<T> UndoableAction for Swap<T> where for<'a> T: 'a
 {

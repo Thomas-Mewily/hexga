@@ -1,5 +1,65 @@
 use crate::*;
-use super::mem::Replace;
+use super::mem::*;
+
+pub struct SwapIndex<T,Idx,P=policy::Normal> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone, P : Policy
+{   
+    pub i: Idx,
+    pub j: Idx, 
+    phantom : PhantomData<(T,P)>
+} 
+
+impl<T,Idx,P> SwapIndex<T,Idx,P> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone, P : Policy
+{
+    pub const fn new(i : Idx, j : Idx) -> Self { Self{ i, j, phantom: PhantomData } }
+    pub fn ij(self) -> (Idx, Idx) { (self.i, self.j) }
+}
+
+
+impl<T,Idx> UndoableAction for SwapIndex<T,Idx,policy::Try> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone
+{
+    type Undo = Self;   type Context<'a>= T;  type Output<'a> = Result<(), ()>;
+    fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
+    {
+        stack.push_undo_action(|| self.clone());
+        context.try_swap(self.i, self.j)
+    }
+}
+impl<T,Idx> UndoableAction for SwapIndex<T,Idx,policy::Normal> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone
+{
+    type Undo = Self;  type Context<'a>= T;  type Output<'a> = bool;
+    fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
+    {
+        stack.push_undo_action(|| self.clone());
+        context.swap(self.i, self.j)
+    }
+}
+impl<T,Idx> UndoableAction for SwapIndex<T,Idx,policy::Panic> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone
+{
+    type Undo = Self;  type Context<'a>= T;  type Output<'a> = ();
+    fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
+    {
+        stack.push_undo_action(|| self.clone());
+        context.swap_or_panic(self.i, self.j)
+    }
+}
+impl<T,Idx> UndoableAction for SwapIndex<T,Idx,policy::Unchecked> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone
+{
+    type Undo = Self;  type Context<'a>= T;  type Output<'a> = ();
+    fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
+    {
+        stack.push_undo_action(|| self.clone());
+        unsafe { context.swap_unchecked(self.i, self.j) }
+    }
+}
+
+impl<T,Idx,P> Copy      for SwapIndex<T,Idx,P> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone, P : Policy, Idx : Copy       {}
+impl<T,Idx,P> Clone     for SwapIndex<T,Idx,P> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone, P : Policy                   { fn clone(&self) -> Self { Self::new(self.i.clone(), self.j.clone()) } }
+impl<T,Idx,P> Eq        for SwapIndex<T,Idx,P> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone, P : Policy, Idx : Eq         {}
+impl<T,Idx,P> PartialEq for SwapIndex<T,Idx,P> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone, P : Policy, Idx : PartialEq  { fn eq(&self, other: &Self) -> bool { self.i == other.i && self.j == other.j } }
+impl<T,Idx,P> Hash      for SwapIndex<T,Idx,P> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone, P : Policy, Idx : Hash       { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.i.hash(state); self.j.hash(state); } }
+impl<T,Idx,P> Debug     for SwapIndex<T,Idx,P> where for<'a> T: 'a + GetManyMut<Idx>, T::Output : Sized, Idx : Clone, P : Policy, Idx : Debug      { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}SwapIndex{:?}({:?},{:?})", P::DEBUG_PREFIX, self.i, self.j, P::DEBUG_SUFFIX) } }
+
+
 
 /* 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -25,69 +85,29 @@ impl<T> UndoableAction for Clear<T> where for<'a> T: 'a + Clone + Clearable + Ca
 }
 
 
-pub struct SwapIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>
-{   
-    pub i: Idx,
-    pub j: Idx, 
-    phantom : PhantomData<T>
-} 
-
-impl<T,Idx> SwapIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>
-{
-    pub const fn new(i : Idx, j : Idx) -> Self { Self{ i, j, phantom: PhantomData } }
-    pub fn ij(self) -> (Idx, Idx) { (self.i, self.j) }
-}
-
-impl<T,Idx> UndoableAction for SwapIndex<T,Idx> where for<'a> T: 'a + Clone + CollectionGetMut<Idx>
-{
-    type Undo = Self;
-    type Context<'a>= T;
-    type Output<'a> = bool;
-    
-    fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
-    {
-        context.swap(self.i, self.j)
-    }
-}
-/* 
-    some get_disjoint_mut related trait aren't stable yet...
-impl<T,Idx> UndoAction for SwapAt<T,Idx> where T: GetIndexMut<Idx>, for<'a> Idx : 'a + Clone, for<'a> T::Output : 'a + Clone, T::Output : Sized 
-{
-   
-}
-*/
-
-impl<T,Idx> Copy      for SwapIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, Idx : Copy  {}
-impl<T,Idx> Clone     for SwapIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, Idx : Clone { fn clone(&self) -> Self { Self::new(self.i.clone(), self.j.clone()) } }
-impl<T,Idx> Eq        for SwapIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, Idx : Eq         {}
-impl<T,Idx> PartialEq for SwapIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, Idx : PartialEq  { fn eq(&self, other: &Self) -> bool { self.i == other.i && self.j == other.j } }
-impl<T,Idx> Hash      for SwapIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, Idx : Hash       { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.i.hash(state); self.j.hash(state); } }
-impl<T,Idx> Debug     for SwapIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, Idx : Debug      { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.debug_tuple("Swap").field(&self.i).field(&&self.j).finish() } }
-
-
 /// 2 distincts collection trade/swap one of their value
 pub struct TradeIndex<T1,Idx1,T2,Idx2>
-    where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a
+    where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a
 {
     pub i : Idx1,
     pub j : Idx2, 
     phantom : PhantomData<(T1,T2)>
 } 
 
-impl<T1,Idx1,T2,Idx2> TradeIndex<T1,Idx1,T2,Idx2> where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a
+impl<T1,Idx1,T2,Idx2> TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a
 {
     pub const fn new(i : Idx1, j : Idx2) -> Self { Self {i, j, phantom : PhantomData} }
     pub fn ij(self) -> (Idx1, Idx2) { (self.i, self.j) }
 }
 
-impl<T1,Idx1,T2,Idx2> Copy      for TradeIndex<T1,Idx1,T2,Idx2> where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Copy,      Idx2 : Copy       {}
-impl<T1,Idx1,T2,Idx2> Clone     for TradeIndex<T1,Idx1,T2,Idx2> where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Clone,     Idx2 : Clone      { fn clone(&self) -> Self { Self::new(self.i.clone(), self.j.clone()) } }
-impl<T1,Idx1,T2,Idx2> Eq        for TradeIndex<T1,Idx1,T2,Idx2> where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Eq,        Idx2 : Eq         {}
-impl<T1,Idx1,T2,Idx2> PartialEq for TradeIndex<T1,Idx1,T2,Idx2> where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : PartialEq, Idx2 : PartialEq  { fn eq(&self, other: &Self) -> bool { self.i == other.i && self.j == other.j } }
-impl<T1,Idx1,T2,Idx2> Hash      for TradeIndex<T1,Idx1,T2,Idx2> where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Hash,      Idx2 : Hash       { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.i.hash(state); self.j.hash(state); } }
-impl<T1,Idx1,T2,Idx2> Debug     for TradeIndex<T1,Idx1,T2,Idx2> where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Debug,     Idx2 : Debug      { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.debug_tuple("Trade").field(&self.i).field(&&self.j).finish() } }
+impl<T1,Idx1,T2,Idx2> Copy      for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Copy,      Idx2 : Copy       {}
+impl<T1,Idx1,T2,Idx2> Clone     for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Clone,     Idx2 : Clone      { fn clone(&self) -> Self { Self::new(self.i.clone(), self.j.clone()) } }
+impl<T1,Idx1,T2,Idx2> Eq        for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Eq,        Idx2 : Eq         {}
+impl<T1,Idx1,T2,Idx2> PartialEq for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : PartialEq, Idx2 : PartialEq  { fn eq(&self, other: &Self) -> bool { self.i == other.i && self.j == other.j } }
+impl<T1,Idx1,T2,Idx2> Hash      for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Hash,      Idx2 : Hash       { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.i.hash(state); self.j.hash(state); } }
+impl<T1,Idx1,T2,Idx2> Debug     for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Debug,     Idx2 : Debug      { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.debug_tuple("Trade").field(&self.i).field(&&self.j).finish() } }
 
-impl<T1,Idx1,T2,Idx2> UndoableAction for TradeIndex<T1,Idx1,T2,Idx2> where T1 : CollectionGetMut<Idx1>, Idx1 : Copy, T2 : CollectionGetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Clone, Idx2 : Clone
+impl<T1,Idx1,T2,Idx2> UndoableAction for TradeIndex<T1,Idx1,T2,Idx2> where T1 : GetMut<Idx1>, Idx1 : Copy, T2 : GetMut<Idx2,Output = T1::Output>, Idx2 : Copy, T1::Output : Sized, for<'a> T1 : 'a, for<'a> T2 : 'a, Idx1 : Clone, Idx2 : Clone
 {
     type Undo = Self;
     type Context<'a>= (T1, T2);
@@ -111,35 +131,35 @@ impl<T1,Idx1,T2,Idx2> UndoableAction for TradeIndex<T1,Idx1,T2,Idx2> where T1 : 
 }
 
 /// Like a ReplaceIndex that don't return anythings / always forgot
-pub struct SetIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone
+pub struct SetIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone
 {
     pub idx   : Idx, 
     pub value : T::Output
 }
 
-pub trait SetIndexExtension<Idx> : Sized where for<'a> Self: 'a + CollectionGetMut<Idx>, Self::Output : Sized + Clone
+pub trait SetIndexExtension<Idx> : Sized where for<'a> Self: 'a + GetMut<Idx>, Self::Output : Sized + Clone
 {
     fn set_action<'a, S>(&'a mut self, value : Self::Output, idx : Idx, stack : &mut S) -> <SetIndex::<Self, Idx> as UndoableAction>::Output<'a> where S : UndoStack<<SetIndex<Self,Idx> as UndoableAction>::Undo>;
 }
-impl<T,Idx> SetIndexExtension<Idx> for T where for<'a> Self: 'a + CollectionGetMut<Idx>, Self::Output : Sized + Clone
+impl<T,Idx> SetIndexExtension<Idx> for T where for<'a> Self: 'a + GetMut<Idx>, Self::Output : Sized + Clone
 {
     fn set_action<'a, S>(&'a mut self, value : Self::Output, idx : Idx, stack : &mut S) -> <SetIndex::<Self, Idx> as UndoableAction>::Output<'a> where S : UndoStack<<SetIndex<Self,Idx> as UndoableAction>::Undo> 
     { SetIndex::new(idx, value).execute_in(self, stack) }
 }
 
-impl<T,Idx> SetIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone
+impl<T,Idx> SetIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone
 {
     pub const fn new(idx : Idx, value : T::Output) -> Self { Self { idx, value } }
 }
 
-impl<T,Idx> Copy      for SetIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : Copy, T::Output : Copy {}
-impl<T,Idx> Clone     for SetIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : Clone, T::Output : Clone { fn clone(&self) -> Self { Self::new(self.idx.clone(), self.value.clone()) } }
-impl<T,Idx> Eq        for SetIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : Eq, T::Output : Eq {}
-impl<T,Idx> PartialEq for SetIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : PartialEq, T::Output : PartialEq { fn eq(&self, other: &Self) -> bool { self.idx == other.idx && self.value == other.value } }
-impl<T,Idx> Hash      for SetIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : Hash, T::Output : Hash { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.idx.hash(state); self.value.hash(state); } }
-impl<T,Idx> Debug     for SetIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : Debug, T::Output : Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.debug_tuple("Set").field(&self.idx).field(&&self.value).finish() } }
+impl<T,Idx> Copy      for SetIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : Copy, T::Output : Copy {}
+impl<T,Idx> Clone     for SetIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : Clone, T::Output : Clone { fn clone(&self) -> Self { Self::new(self.idx.clone(), self.value.clone()) } }
+impl<T,Idx> Eq        for SetIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : Eq, T::Output : Eq {}
+impl<T,Idx> PartialEq for SetIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : PartialEq, T::Output : PartialEq { fn eq(&self, other: &Self) -> bool { self.idx == other.idx && self.value == other.value } }
+impl<T,Idx> Hash      for SetIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : Hash, T::Output : Hash { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.idx.hash(state); self.value.hash(state); } }
+impl<T,Idx> Debug     for SetIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : Debug, T::Output : Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.debug_tuple("Set").field(&self.idx).field(&&self.value).finish() } }
 
-impl<T,Idx> UndoableAction for SetIndex<T,Idx>  where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized, Idx : Clone
+impl<T,Idx> UndoableAction for SetIndex<T,Idx>  where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized, Idx : Clone
 {
     type Undo = ReplaceIndex<T,Idx>;
     type Context<'a>= T;
@@ -165,25 +185,25 @@ impl<T,Idx> UndoableAction for SetIndex<T,Idx>  where for<'a> T: 'a + Collection
 
 
 
-pub struct ReplaceIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone
+pub struct ReplaceIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone
 {
     pub index   : Idx, 
     pub value : T::Output
 }
 
-impl<T,Idx> ReplaceIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone
+impl<T,Idx> ReplaceIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone
 {
     pub const fn new(index : Idx, value : T::Output) -> Self { Self { index, value } }
 }
 
-impl<T,Idx> Copy      for ReplaceIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, T::Output : Copy {}
-impl<T,Idx> Clone     for ReplaceIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, T::Output : Clone { fn clone(&self) -> Self { Self::new(self.index.clone(), self.value.clone()) } }
-impl<T,Idx> Eq        for ReplaceIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : Eq, T::Output : Eq {}
-impl<T,Idx> PartialEq for ReplaceIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : PartialEq, T::Output : PartialEq { fn eq(&self, other: &Self) -> bool { self.index == other.index && self.value == other.value } }
-impl<T,Idx> Hash      for ReplaceIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : Hash, T::Output : Hash { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.index.hash(state); self.value.hash(state); } }
-impl<T,Idx> Debug     for ReplaceIndex<T,Idx> where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone, Idx : Debug, T::Output : Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Replace([{:?}]=>{:?})", self.index, self.value) } }
+impl<T,Idx> Copy      for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, T::Output : Copy {}
+impl<T,Idx> Clone     for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, T::Output : Clone { fn clone(&self) -> Self { Self::new(self.index.clone(), self.value.clone()) } }
+impl<T,Idx> Eq        for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : Eq, T::Output : Eq {}
+impl<T,Idx> PartialEq for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : PartialEq, T::Output : PartialEq { fn eq(&self, other: &Self) -> bool { self.index == other.index && self.value == other.value } }
+impl<T,Idx> Hash      for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : Hash, T::Output : Hash { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.index.hash(state); self.value.hash(state); } }
+impl<T,Idx> Debug     for ReplaceIndex<T,Idx> where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone, Idx : Debug, T::Output : Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Replace([{:?}]=>{:?})", self.index, self.value) } }
 
-impl<T,Idx> UndoableAction for ReplaceIndex<T,Idx>  where for<'a> T: 'a + CollectionGetMut<Idx>, T::Output : Sized + Clone
+impl<T,Idx> UndoableAction for ReplaceIndex<T,Idx>  where for<'a> T: 'a + GetMut<Idx>, T::Output : Sized + Clone
 {
     type Undo = Self;
     type Context<'a>= T;

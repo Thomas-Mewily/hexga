@@ -28,10 +28,13 @@ use hexga::prelude::*;
 HexGa (LibOur) stand for
 
 - **H**ighly **E**xtensible **G**eneral **A**pplication **L**ib **O**ur
+
+or
+
 - **H**ighly **E**xtensible **GA**me **L**ib **O**ur
+
 
 (Depending of the context)
 The name was inspired by Excalibur, the sword.
 
-
-Currently, HexGa is the continuation/start from scratch from a [school project](https://gitlab.isima.fr/thtamagnau/zz3_interpreter), as well as my personnal set of crate to do common task that I started before the school project.
+Currently, HexGa is the continuation/start from scratch from a [school project](https://gitlab.isima.fr/thtamagnau/zz3_interpreter), as well as my personnal set of crate to do common task that I started way before the school project.

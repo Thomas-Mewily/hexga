@@ -1,4 +1,4 @@
-# Todo : Remove this feature from toml once stabilized
+# Remove when #stabilized
 # cargo-features = ["get_disjoint_mut_helpers"]
 
 [workspace]

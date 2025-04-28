@@ -1,4 +1,18 @@
+//! Generalisation over collection, such as `get`, `get_mut`, `get_many_mut`, `swap`, `replace`, `set`...
+//! 
+//! Each trait follow this convention when adding a new function `foo`  :
+//!
+//! `fn try_get_foo(...) -> Result<O,E>`
+//! 
+//! `fn foo(...) -> Option<O>` (or `bool` instead of `Option<()>` when `try_get_foo` return a `Result<(), E>`)
+//! 
+//! `fn foo_or_panic(...) -> O`
+//! 
+//! `unsafe fn foo_unchecked(...) -> O`
+
 use crate::*;
+
+
 
 /// The collection have a quick way to access each element, where the index is copyable
 pub trait Get<Idx> //: Index<Idx>
@@ -47,22 +61,29 @@ pub trait GetMut<Idx> : Get<Idx>
     /// Replace the value and return the old one.
     #[inline(always)]
     fn replace(&mut self, index : Idx, value : Self::Output) -> Option<Self::Output> where Self::Output : Sized { self.get_mut(index).map(|dest| std::mem::replace(dest, value)) }
-    /// Panics if the value don't exist.
+    /// Replace the value and return the old one.
     #[inline(always)]
     #[track_caller]
     fn replace_or_panic(&mut self, index : Idx, value : Self::Output) -> Self::Output where Self::Output : Sized { self.replace(index, value).expect("invalid index") }
+    /// Replace the value and return the old one.
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn replace_unchecked(&mut self, index : Idx, value : Self::Output) -> Self::Output where Self::Output : Sized { std::mem::replace(unsafe { self.get_unchecked_mut(index) }, value) }
 
 
     /// Set the value and drop the previous one.
     #[inline(always)]
     fn try_set(&mut self, index : Idx, value : Self::Output) -> Result<(), ()> where Self::Output : Sized { self.try_replace(index, value).map(|_| ()) }
-    /// Set the value and drop the previous one. Do nothings if the value don't exist.
+    /// Set the value and drop the previous one.
     #[inline(always)]
     fn set(&mut self, index : Idx, value : Self::Output) -> bool where Self::Output : Sized { self.replace(index, value).map(|_| ()).is_some() }
-    /// Panics if the value don't exist.
+    /// Set the value and drop the previous one.
     #[inline(always)]
     #[track_caller]
     fn set_or_panic(&mut self, index : Idx, value : Self::Output) -> &mut Self where Self::Output : Sized { assert!(self.set(index, value), "invalid index"); self }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn set_unchecked(&mut self, index : Idx, value : Self::Output) -> &mut Self where Self::Output : Sized { unsafe { self.replace_unchecked(index, value) }; self }
 }
 
 pub trait GetManyMut<Idx> : GetMut<Idx>
@@ -86,19 +107,33 @@ pub trait GetManyMut<Idx> : GetMut<Idx>
     unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { self.get_many_mut(indices).expect("invalid index") }
 
     /// Swaps the values at two mutable locations, without deinitializing either one.
+    /// 
+    /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa
     #[inline(always)]
     fn try_swap(&mut self, a : Idx, b : Idx) -> Result<(), ()> where Self::Output : Sized { self.try_get_many_mut([a, b]).map(|[a,b]| std::mem::swap(a, b)) }
     /// Swaps the values at two mutable locations, without deinitializing either one.
+    /// 
+    /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa
     /// 
     /// Do nothings if some value  overlap or don't exist.
     #[inline(always)]
     fn swap(&mut self, a : Idx, b : Idx) -> bool where Self::Output : Sized { self.get_many_mut([a, b]).map(|[a,b]| std::mem::swap(a, b)).is_some() }
     /// Swaps the values at two mutable locations, without deinitializing either one.
     ///
+    /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa
+    /// 
     /// Panics if any value overlap or don't exist
     #[inline(always)]
     #[track_caller]
     fn swap_or_panic(&mut self, a : Idx, b : Idx) where Self::Output : Sized { assert!(self.swap(a, b), "invalid index") }
+    /// Swaps the values at two mutable locations, without deinitializing either one.
+    /// 
+    /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa
+    /// 
+    /// Do nothings if some value  overlap or don't exist.
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn swap_unchecked(&mut self, a : Idx, b : Idx) where Self::Output : Sized { let [a,b] = unsafe { self.get_many_unchecked_mut([a, b]) }; std::mem::swap(a, b); }
 }
 
 impl<Idx,T> Get<Idx> for [T] where Idx : SliceIndex<[T]>

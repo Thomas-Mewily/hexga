@@ -128,10 +128,10 @@ impl<'a, T, Idx, const N : usize> Eq for GridViewMut<'a, T, Idx,N> where Idx : I
 impl<'a, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
 {
     type Output=T;
-    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
+    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }
 }
 
 impl<'a, T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
 {
-    fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
+    fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }

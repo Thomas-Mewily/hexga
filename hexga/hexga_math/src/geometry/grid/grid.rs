@@ -356,12 +356,12 @@ impl<T, Idx, const N : usize> Index<Vector<Idx,N>> for GridBase<T, Idx, N> where
 {
     type Output=T;
     #[inline(always)]
-    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
+    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }
 }
 impl<T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     #[inline(always)]
-    fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
+    fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
 impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex

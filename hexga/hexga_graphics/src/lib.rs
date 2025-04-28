@@ -134,11 +134,11 @@ impl<T, Idx> IndexMut<usize> for ImageBase<T,Idx> where Idx : IntegerIndex, T : 
 impl<T, Idx> Index<Vector2::<Idx>> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
 {
     type Output=T;
-    fn index(&self, index: Vector2::<Idx>) -> &Self::Output { self.get(index).unwrap() }
+    fn index(&self, index: Vector2::<Idx>) -> &Self::Output { self.get_or_panic(index) }
 }
 impl<T, Idx> IndexMut<Vector2::<Idx>> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
 {
-    fn index_mut(&mut self, index: Vector2::<Idx>) -> &mut Self::Output { self.get_mut(index).unwrap() }
+    fn index_mut(&mut self, index: Vector2::<Idx>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
 impl<T, Idx> ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor

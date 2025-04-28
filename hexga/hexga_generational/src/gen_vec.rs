@@ -539,11 +539,11 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 impl<T, Gen:IGeneration> Index<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     type Output=T;
-    fn index(&self, index: GenIDOf<T,Gen>) -> &Self::Output { self.get(index).unwrap() }
+    fn index(&self, index: GenIDOf<T,Gen>) -> &Self::Output { self.get_or_panic(index) }
 }
 impl<T, Gen:IGeneration> IndexMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
-    fn index_mut(&mut self, index: GenIDOf<T,Gen>) -> &mut Self::Output { self.get_mut(index).unwrap() }
+    fn index_mut(&mut self, index: GenIDOf<T,Gen>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
 impl<T, Gen:IGeneration> Index<usize> for GenVecOf<T,Gen>

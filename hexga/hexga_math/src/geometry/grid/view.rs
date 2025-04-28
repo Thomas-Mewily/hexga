@@ -117,7 +117,7 @@ impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, T, Idx, N> 
 impl<'a, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridView<'a, T, Idx, N> where Idx : IntegerIndex 
 {
     type Output=T;
-    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
+    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }
 }
 
 
