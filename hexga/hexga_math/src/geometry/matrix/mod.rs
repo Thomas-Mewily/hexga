@@ -10,7 +10,7 @@ pub type SquareMatrix<T, const N : usize> = Matrix<T, N, N>;
 /// 
 /// Can be indexed `matrix[row][col]`
 #[repr(C)]
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 pub struct Matrix<T, const ROW : usize, const COL : usize>
 {
     pub columns : Vector<Vector<T, ROW>,COL>,

@@ -52,42 +52,12 @@ pub trait UndoStack<A> where A : UndoableAction
 
     fn stack_undo(&mut self, ctx : &mut A::Context<'_>) -> bool { self.stack_undo_in(ctx, &mut ()) }
     fn stack_undo_in<Dest>(&mut self, ctx : &mut A::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<A::Undo>;
+
+    fn relative_to<'a, Idx, C, P>(&'a mut self, index : Idx, collection : &'a mut C) -> ActionStackRelative<'a,Self,A,C,Idx,P> where Self : Sized, C : GetMut<Idx>, Idx : Clone, P: Policy { ActionStackRelative::new(self, collection, index) }
 }
 
 pub trait RedoStack<A> : UndoStack<A> where A : UndoableAction
 {
     fn stack_redo(&mut self, ctx : &mut A::Context<'_>) -> bool { self.stack_redo_in(ctx, &mut ()) }
     fn stack_redo_in<Dest>(&mut self, ctx : &mut A::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<A::Undo>;
-}
-
-/// What is the equivalent relative action when the action take place a collection.
-/// ex : `x.replace_action(42, &mut stack)`
-/// If `x` was a mutable reference to a collection, we need to track where do `x` come from :
-/// 
-/// ```rust
-/// let mut stack = Vec::new();
-/// let s = &mut stack;
-/// 
-/// let array = [1,2,3];
-/// let x : &mut i32 = array.get_mut_or_panic(1);
-/// 
-/// x.replace_action(42, s); // <- We don't know where to x come from
-/// ```
-/// 
-/// But the `replace_action` itself don't know the borrow value was relative to array
-/// 
-/// ```rust
-/// let mut stack = Vec::new();
-/// let s = &mut stack;
-/// 
-/// let array = [1,2,3];
-/// array.get_mut_or_panic_action(1,s, |value, tmp_stack| value.replace_action(42, tmp_stack)); // Ok
-/// ```
-/// 
-/// Here, the `actions::mem::Replace` will be related to the borrowed value, thus becoming :
-/// `actions::mem::Replace` -> `actions::mem::ReplaceIndex`
-pub trait Relative<Idx> : Action where for<'a> Self::Context<'a> : GetMut<Idx>
-{
-    type Relative<'a> : Action<Context<'a> = Self::Context<'a>>;
-    fn relative<'a>(self, idx : Idx) -> Self::Relative<'a>; 
 }
