@@ -321,7 +321,6 @@ dependencies = [
  "hexga_map_on",
  "hexga_number",
  "rayon",
- "serde",
 ]
 
 [[package]]

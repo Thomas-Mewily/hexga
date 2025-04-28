@@ -50,7 +50,7 @@ fn main()
      dbg!(&foo_resources);
      dbg!(&bar_resources);
 
-     foo_resources.swap_or_panic("Norway2", "Denmark");
+     foo_resources.swap_or_panic("Norway", "Denmark");
      dbg!(&foo_resources);
 
     /* 

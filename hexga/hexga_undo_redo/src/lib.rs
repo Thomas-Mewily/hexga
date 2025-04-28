@@ -6,9 +6,22 @@ use std::ops::{Deref,DerefMut};
 
 use hexga_core::prelude::*;
 
-pub mod action;
-
-mod core;
-pub use core::*;
-
+/// Use...
+/// 
+/// ```rust
+/// pub use hexga_undo_redo::*;
+/// ```
+/// 
+/// ... for a quick start
 pub mod prelude;
+
+/// The impl of action for all the std
+pub mod actions;
+
+/// Action related traits
+pub mod action;
+pub(crate) use action::*;
+
+/// Commands related traits and data structure
+pub mod command;
+pub(crate) use command::*;

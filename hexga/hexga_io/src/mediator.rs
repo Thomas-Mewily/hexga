@@ -130,9 +130,14 @@ pub trait IoSave where Self: Sized + Serialize + for<'de> Deserialize<'de>
 
 }
 
-impl IoSave for Never 
+/// While waiting for the std:never type to stabilize
+#[derive(Debug)]
+#[derive(Serialize, Deserialize)]
+pub enum NotSavable {}
+
+impl IoSave for NotSavable 
 {
-    type IoBasedOn = Never;
+    type IoBasedOn = NotSavable;
 
     fn open_file_custom_extension() -> impl Iterator<Item=&'static str> { std::iter::empty() }
     fn save_file_custom_extension() -> impl Iterator<Item=&'static str> { std::iter::empty() }
@@ -146,7 +151,7 @@ impl IoSave for Never
 
 impl IoSave for bool 
 {
-    type IoBasedOn = Never;
+    type IoBasedOn = NotSavable;
 }
 
 pub struct IoNodeRoot

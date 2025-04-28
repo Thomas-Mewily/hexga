@@ -1,9 +1,7 @@
+pub mod prelude;
 
-mod actions;
-pub use actions::*;
-
-mod command;
-pub use command::*;
+mod command_impl;
+pub use command_impl::*;
 
 mod commands;
 pub use commands::*;

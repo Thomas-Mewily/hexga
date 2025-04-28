@@ -1,15 +1,5 @@
-
-#[allow(unused_imports)]
-#[cfg(feature = "serde")]
-pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
-
 pub use rayon::prelude::*;
 pub use default_is_triple_underscore::*;
-
-/// While waiting for the std:never type to stabilize
-#[derive(Debug)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum Never {}
 
 pub trait Toggleable
 {
