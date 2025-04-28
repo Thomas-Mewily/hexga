@@ -119,7 +119,7 @@ impl<T1,Idx1,T2,Idx2> UndoableAction for TradeIndex<T1,Idx1,T2,Idx2> where T1 : 
 {
     type Undo = Self;
     type Context<'a>= (T1, T2);
-    type Output<'a> = Result<(), ()>; // Todo : put a proper error type
+    type Output<'a> = Result<(), ()>; // #proper_error
     
     fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
     {

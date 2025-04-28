@@ -1,11 +1,12 @@
 `#stabilized` in the code = need to refactor later when some feature will be stabilized
-`#error` in the code = need to define a proper error type for the result instead of ()
+`#proper_error` in the code = need to define a proper error type for the result instead of ()
 
 ## To-do
 
 - Name2Reserve : réserver plus de nom sous crate io
 
 - Undo Redo : Impl Action pour vecteur, slice, array, hashmap, hashset... struct field
+
 
 - Io System / Cache / Mediator
 

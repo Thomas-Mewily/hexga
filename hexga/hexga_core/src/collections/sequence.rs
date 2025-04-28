@@ -38,7 +38,7 @@ impl<T> SequencePush<T> for Vec<T>
         self.push(value);
     }
     
-    type Error = (); // Todo : put a proper error type inside
+    type Error = (); // #proper_error
     fn try_push<'a>(&'a mut self, value : T) -> Result<Self::Output<'a>, Self::Error> {
         self.push(value);
         Ok(())
@@ -52,7 +52,7 @@ impl<T> SequencePush<T> for VecDeque<T>
         self.push_back(value);
     }
     
-    type Error = (); // Todo : put a proper error type inside
+    type Error = (); //// #proper_error
     fn try_push<'a>(&'a mut self, value : T) -> Result<Self::Output<'a>, Self::Error> {
         self.push(value);
         Ok(())
@@ -66,7 +66,7 @@ impl<T> SequencePush<T> for LinkedList<T>
         self.push_back(value);
     }
     
-    type Error = (); // Todo : put a proper error type inside
+    type Error = (); // // #proper_error
     fn try_push<'a>(&'a mut self, value : T) -> Result<Self::Output<'a>, Self::Error> {
         self.push(value);
         Ok(())

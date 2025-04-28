@@ -20,7 +20,7 @@ pub trait Get<Idx> //: Index<Idx>
     type Output : ?Sized;
 
     // Returns a reference to the value.
-    fn try_get(&self, index : Idx) -> Result<&Self::Output, ()>; // Todo : use a proper error type. Same for everybody ? Associated ?
+    fn try_get(&self, index : Idx) -> Result<&Self::Output, ()>; // #proper_error
     // Returns a reference to the value.
     fn get(&self, index : Idx) -> Option<&Self::Output> { self.try_get(index).ok() }
     // Returns a reference to the value.
@@ -42,7 +42,7 @@ pub trait Get<Idx> //: Index<Idx>
 pub trait GetMut<Idx> : Get<Idx>
 {
     // Returns a mutable reference to the value.
-    fn try_get_mut(&mut self, index : Idx) -> Result<&mut Self::Output, ()>;
+    fn try_get_mut(&mut self, index : Idx) -> Result<&mut Self::Output, ()>; // #proper_error
     // Returns a mutable reference to the value.
     #[inline(always)]
     fn get_mut(&mut self, index : Idx) -> Option<&mut Self::Output> { self.try_get_mut(index).ok() }
@@ -57,7 +57,7 @@ pub trait GetMut<Idx> : Get<Idx>
 
     /// Replace the value and return the old one.
     #[inline(always)]
-    fn try_replace(&mut self, index : Idx, value : Self::Output) -> Result<Self::Output, ()> where Self::Output : Sized { self.try_get_mut(index).map(|dest| std::mem::replace(dest, value)) }
+    fn try_replace(&mut self, index : Idx, value : Self::Output) -> Result<Self::Output, ()> where Self::Output : Sized { self.try_get_mut(index).map(|dest| std::mem::replace(dest, value)) } // #proper_error
     /// Replace the value and return the old one.
     #[inline(always)]
     fn replace(&mut self, index : Idx, value : Self::Output) -> Option<Self::Output> where Self::Output : Sized { self.get_mut(index).map(|dest| std::mem::replace(dest, value)) }
@@ -70,10 +70,9 @@ pub trait GetMut<Idx> : Get<Idx>
     #[track_caller]
     unsafe fn replace_unchecked(&mut self, index : Idx, value : Self::Output) -> Self::Output where Self::Output : Sized { std::mem::replace(unsafe { self.get_unchecked_mut(index) }, value) }
 
-
     /// Set the value and drop the previous one.
     #[inline(always)]
-    fn try_set(&mut self, index : Idx, value : Self::Output) -> Result<(), ()> where Self::Output : Sized { self.try_replace(index, value).map(|_| ()) }
+    fn try_set(&mut self, index : Idx, value : Self::Output) -> Result<(), ()> where Self::Output : Sized { self.try_replace(index, value).map(|_| ()) } // #proper_error
     /// Set the value and drop the previous one.
     #[inline(always)]
     fn set(&mut self, index : Idx, value : Self::Output) -> bool where Self::Output : Sized { self.replace(index, value).map(|_| ()).is_some() }
@@ -90,27 +89,31 @@ pub trait GetManyMut<Idx> : GetMut<Idx>
 {
     /// Returns multiples mutables references to the values.
     /// All values that can be accessed with the indices must be disjoint.
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ()>;
+    #[doc(alias = "try_get_disjoint_mut")]
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ()>; // #proper_error
     /// Returns multiples mutables references to the values.
     /// All values that can be accessed with the indices must be disjoint.
     #[inline(always)]
+    #[doc(alias = "get_disjoint_mut")]
     fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { self.try_get_many_mut(indices).ok() }
     /// Returns multiples mutables references to the values.
     /// All values that can be accessed with the indices must be disjoint.
     #[inline(always)]
     #[track_caller]
+    #[doc(alias = "get_disjoint_mut_or_panic")]
     fn get_many_mut_or_panic<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { self.get_many_mut(indices).expect("invalid index") }
     /// Returns multiples mutables references to the values.
     /// All values that can be accessed with the indices must be disjoint.
     #[inline(always)]
     #[track_caller]
+    #[doc(alias = "get_disjoint_unchecked_mut")]
     unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { self.get_many_mut(indices).expect("invalid index") }
 
     /// Swaps the values at two mutable locations, without deinitializing either one.
     /// 
     /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa
     #[inline(always)]
-    fn try_swap(&mut self, a : Idx, b : Idx) -> Result<(), ()> where Self::Output : Sized { self.try_get_many_mut([a, b]).map(|[a,b]| std::mem::swap(a, b)) }
+    fn try_swap(&mut self, a : Idx, b : Idx) -> Result<(), ()> where Self::Output : Sized { self.try_get_many_mut([a, b]).map(|[a,b]| std::mem::swap(a, b)) } // #proper_error
     /// Swaps the values at two mutable locations, without deinitializing either one.
     /// 
     /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa

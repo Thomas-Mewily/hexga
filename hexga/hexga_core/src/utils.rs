@@ -29,7 +29,7 @@ impl<T> ToDebug for T where T : std::fmt::Debug
 
 /// Useful to silence/convert to void some Err.
 /// 
-/// Some of my lib will probably have proper error type instead of () when I will have time to add them
+/// Some of my lib will probably have proper error type instead of () (Look for `#proper_error` to know which error type are temporary) when I will have time to add them
 pub trait ResultExtension<T>
 {
     fn ok_or_void(self) -> Result<T,()>;
