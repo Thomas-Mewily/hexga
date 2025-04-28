@@ -20,19 +20,19 @@ pub trait Two : Sized
     #[allow(non_snake_case)]
     fn two() -> Self;
     
-    #[inline] fn is_two(&self) -> bool where Self : PartialEq<Self> { self == &Self::two() }
-    #[inline] fn is_non_two(&self) -> bool where Self : PartialEq<Self> { !self.is_two() }
+    #[inline(always)] fn is_two(&self) -> bool where Self : PartialEq<Self> { self == &Self::two() }
+    #[inline(always)] fn is_non_two(&self) -> bool where Self : PartialEq<Self> { !self.is_two() }
 }
 impl<T> Two for T where T : One + Add<T,Output = T>
 {
     // There will be a constant TWO later when const trait will be stable
-    #[inline] fn two() -> Self { Self::ONE + Self::ONE }
+    #[inline(always)] fn two() -> Self { Self::ONE + Self::ONE }
 }
 
 pub trait OddOrEven : Sized
 {
     fn is_even(&self) -> bool;
-    #[inline] fn is_odd (&self) -> bool { !self.is_even() }
+    #[inline(always)] fn is_odd (&self) -> bool { !self.is_even() }
 }
 impl<T> OddOrEven for T where T : Integer
 {
@@ -82,10 +82,10 @@ impl<T : Zero + PartialOrd<T> + Sized> PositiveOrNegative for T {}
 
 pub trait PartialOrdExtension : PartialOrd
 {
-    #[inline] fn max_partial(self, other: Self) -> Self where Self: Sized { if self >= other { self } else { other } }
-    #[inline] fn min_partial(self, other: Self) -> Self where Self: Sized { if self <= other { self } else { other } }
+    #[inline(always)] fn max_partial(self, other: Self) -> Self where Self: Sized { if self >= other { self } else { other } }
+    #[inline(always)] fn min_partial(self, other: Self) -> Self where Self: Sized { if self <= other { self } else { other } }
 
-    #[inline] fn clamp_partial(self, min: Self, max: Self) -> Self where Self: Sized
+    #[inline(always)] fn clamp_partial(self, min: Self, max: Self) -> Self where Self: Sized
     {
         // copied from rust std
         assert!(min <= max);
@@ -103,13 +103,13 @@ pub trait Absolute
 
 macro_rules! impl_abs_is_itself {
     ($primitive_name: ty) => 
-    { impl Absolute for $primitive_name { #[inline] fn abs(self) -> Self { self }} };
+    { impl Absolute for $primitive_name { #[inline(always)] fn abs(self) -> Self { self }} };
 }
 map_on_integer_unsigned!(impl_abs_is_itself);
 
 macro_rules! impl_abs {
     ($primitive_name: ty) => 
-    { impl Absolute for $primitive_name {#[inline] fn abs(self) -> Self { Self::abs(self) }}};
+    { impl Absolute for $primitive_name {#[inline(always)] fn abs(self) -> Self { Self::abs(self) }}};
 }
 map_on_integer_signed!(impl_abs);
 map_on_float!(impl_abs);

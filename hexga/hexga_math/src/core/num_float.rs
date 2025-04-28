@@ -549,10 +549,10 @@ macro_rules! impl_floating_number {
     { 
         impl FloatingNumber for $primitive_name 
         { 
-            #[inline] fn floor(self) -> Self { Self::floor(self) }
-            #[inline] fn ceil (self) -> Self { Self::ceil(self) }
-            #[inline] fn round(self) -> Self { Self::round(self) }
-            #[inline] fn trunc(self) -> Self { Self::trunc(self) }
+            #[inline(always)] fn floor(self) -> Self { Self::floor(self) }
+            #[inline(always)] fn ceil (self) -> Self { Self::ceil(self) }
+            #[inline(always)] fn round(self) -> Self { Self::round(self) }
+            #[inline(always)] fn trunc(self) -> Self { Self::trunc(self) }
 
             const PI : Self =  std::$primitive_name::consts::PI;
             const TWO_PI : Self =  Self::PI * 2.;

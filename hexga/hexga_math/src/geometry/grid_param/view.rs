@@ -51,18 +51,25 @@ impl<'a, T, Param, Idx, const N : usize> IGridView<T,Param,Idx,N> for GridParamV
     { Self::SubView::from_view(self.view.subview(rect), self.param) }
 }
 
-impl<'a,T,Param,Idx,const N : usize> CollectionGet<Vector<Idx,N>> for GridParamView<'a,T,Param,Idx,N>
+impl<'a,T,Param,Idx,const N : usize> Get<Vector<Idx,N>> for GridParamView<'a,T,Param,Idx,N>
     where Idx : IntegerIndex
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.view.get(pos) }
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { self.view.get_unchecked(pos) } }
+    #[inline(always)]
+    fn try_get(&self, pos : Vector<Idx,N>) -> Result<&Self::Output, ()> { self.view.try_get(pos) }
+    #[inline(always)]
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> { self.view.get(pos) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { self.view.get_unchecked(pos) } }
 }
 
 impl<'a, T, Param, Idx, const N : usize> IRectangle<Idx,N> for GridParamView<'a, T, Param, Idx, N> 
     where Idx : IntegerIndex 
 {
+    #[inline(always)]
     fn begin(&self) -> Vector<Idx,N> { self.view.begin() }
+    #[inline(always)]
     fn size (&self) -> Vector<Idx,N> { self.view.size()  }
 }
 

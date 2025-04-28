@@ -1,7 +1,6 @@
 use hexga_undo_redo::prelude::*;
 use hexga_undo_redo::action::vec;
 
-
 #[derive(Default, PartialEq, Eq, Debug)]
 pub struct Data
 {

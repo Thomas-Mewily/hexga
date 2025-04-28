@@ -290,8 +290,8 @@ checksum = "fbd780fe5cc30f81464441920d82ac8740e2e46b29a6fad543ddd075229ce37e"
 name = "hexga"
 version = "0.0.10-beta.3"
 dependencies = [
- "hexga_base",
  "hexga_bitflags",
+ "hexga_core",
  "hexga_generational",
  "hexga_math",
  "hexga_undo_redo",
@@ -305,13 +305,6 @@ version = "0.0.10-beta.3"
 [[package]]
 name = "hexga_base"
 version = "0.0.10-beta.3"
-dependencies = [
- "default_is_triple_underscore",
- "hexga_map_on",
- "hexga_number",
- "rayon",
- "serde",
-]
 
 [[package]]
 name = "hexga_bitflags"
@@ -321,10 +314,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_core"
+version = "0.0.10-beta.3"
+dependencies = [
+ "default_is_triple_underscore",
+ "hexga_map_on",
+ "hexga_number",
+ "rayon",
+ "serde",
+]
+
+[[package]]
 name = "hexga_generational"
 version = "0.0.10-beta.3"
 dependencies = [
- "hexga_base",
+ "hexga_core",
  "hexga_number",
  "serde",
 ]
@@ -333,7 +337,7 @@ dependencies = [
 name = "hexga_graphics"
 version = "0.0.10-beta.3"
 dependencies = [
- "hexga_base",
+ "hexga_core",
  "hexga_math",
  "image",
  "serde",
@@ -344,7 +348,7 @@ name = "hexga_io"
 version = "0.0.10-beta.3"
 dependencies = [
  "bincode",
- "hexga_base",
+ "hexga_core",
  "quick-xml",
  "ron",
  "serde",
@@ -360,7 +364,7 @@ name = "hexga_math"
 version = "0.0.10-beta.3"
 dependencies = [
  "hexga_array",
- "hexga_base",
+ "hexga_core",
  "hexga_number",
  "hexga_typedef",
  "serde",
@@ -388,7 +392,7 @@ dependencies = [
 name = "hexga_tools"
 version = "0.0.10-beta.3"
 dependencies = [
- "hexga_base",
+ "hexga_core",
  "hexga_number",
  "serde",
 ]
@@ -401,7 +405,7 @@ version = "0.0.10-beta.3"
 name = "hexga_undo_redo"
 version = "0.0.10-beta.3"
 dependencies = [
- "hexga_base",
+ "hexga_core",
 ]
 
 [[package]]

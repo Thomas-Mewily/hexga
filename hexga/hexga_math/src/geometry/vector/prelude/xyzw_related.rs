@@ -10,10 +10,10 @@ impl<T,const N : usize> Vector<T,N>
     pub fn min(self, other : Self) -> Self where T : PartialOrd { self.map_with(other, |a, b| a.min_partial(b)).into() }
     pub fn max(self, other : Self) -> Self where T : PartialOrd { self.map_with(other, |a, b| a.max_partial(b)).into() }
 
-    pub fn have_x(&self) -> bool { self.have_idx(X_INDEX) }
-    pub fn have_y(&self) -> bool { self.have_idx(Y_INDEX) }
-    pub fn have_z(&self) -> bool { self.have_idx(Z_INDEX) }
-    pub fn have_w(&self) -> bool { self.have_idx(W_INDEX) }
+    pub fn have_x(&self) -> bool { self.have_index(X_INDEX) }
+    pub fn have_y(&self) -> bool { self.have_index(Y_INDEX) }
+    pub fn have_z(&self) -> bool { self.have_index(Z_INDEX) }
+    pub fn have_w(&self) -> bool { self.have_index(W_INDEX) }
 }
 
 

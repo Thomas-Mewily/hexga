@@ -103,6 +103,7 @@ impl<T,const N : usize> Rectangle<T,N> where T : Copy
 impl<T,const N : usize> Rectangle<T,N> where T : Number
 {
     /// Check if a point inside the rectangle.
+    /// Also work for indexing
     /// 
     /// ```
     /// use hexga_math::prelude::*;
@@ -111,11 +112,11 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(1, 1)));
     /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(0, 0)));
     /// 
+    /// 
+    /// // not inside :
     /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(2, 0)));
     /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(0, 2)));
     /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(2, 2)));
-    /// 
-    /// // not inside :
     /// 
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 3,   3)));
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(-1,  -1)));
@@ -129,7 +130,7 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     pub fn is_inside(&self, point : Vector<T, N>) -> bool
     {
         self.pos().all_with(&point, |a, c| c >= a) &&
-        (self.pos + self.size).all_with(&point, |a, c| c <= a)
+        (self.pos + self.size).all_with(&point, |a, c| c < a)
     }
     
     pub fn clamp_vector(&self, vector : Vector<T, N>) -> Vector<T, N>
@@ -213,10 +214,10 @@ pub trait IRectangle<T, const N : usize> where T : Number
 {
     fn size(&self) -> Vector<T,N>;
 
-    #[inline] fn size_x(&self) -> T where Vector<T,N> : HaveX<T> { self.size().x() }
-    #[inline] fn size_y(&self) -> T where Vector<T,N> : HaveY<T> { self.size().y() }
-    #[inline] fn size_z(&self) -> T where Vector<T,N> : HaveZ<T> { self.size().z() }
-    #[inline] fn size_w(&self) -> T where Vector<T,N> : HaveW<T> { self.size().w() }
+    #[inline(always)] fn size_x(&self) -> T where Vector<T,N> : HaveX<T> { self.size().x() }
+    #[inline(always)] fn size_y(&self) -> T where Vector<T,N> : HaveY<T> { self.size().y() }
+    #[inline(always)] fn size_z(&self) -> T where Vector<T,N> : HaveZ<T> { self.size().z() }
+    #[inline(always)] fn size_w(&self) -> T where Vector<T,N> : HaveW<T> { self.size().w() }
 
     /// Same as `.size_x()`
     fn width (&self) -> T where Vector<T,N> : HaveX<T> { self.size_x() }
@@ -248,15 +249,15 @@ pub trait IRectangle<T, const N : usize> where T : Number
     fn iter_z(&self) -> Range<T> where Vector<T,N> : HaveZ<T>, Range<T> : IntoIterator { self.min().z()..self.max().z() }
     fn iter_w(&self) -> Range<T> where Vector<T,N> : HaveW<T>, Range<T> : IntoIterator { self.min().w()..self.max().w() }
 
-    #[inline] fn is_inside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { x >= self.min().x() && x < self.max().x() }
-    #[inline] fn is_inside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { y >= self.min().y() && y < self.max().y() }
-    #[inline] fn is_inside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { z >= self.min().z() && z < self.max().z() }
-    #[inline] fn is_inside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { w >= self.min().w() && w < self.max().w() }
+    #[inline(always)] fn is_inside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { x >= self.min().x() && x < self.max().x() }
+    #[inline(always)] fn is_inside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { y >= self.min().y() && y < self.max().y() }
+    #[inline(always)] fn is_inside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { z >= self.min().z() && z < self.max().z() }
+    #[inline(always)] fn is_inside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { w >= self.min().w() && w < self.max().w() }
 
-    #[inline] fn is_outside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { !self.is_inside_x(x) }
-    #[inline] fn is_outside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { !self.is_inside_y(y) }
-    #[inline] fn is_outside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { !self.is_inside_z(z) }
-    #[inline] fn is_outside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { !self.is_inside_w(w) }
+    #[inline(always)] fn is_outside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { !self.is_inside_x(x) }
+    #[inline(always)] fn is_outside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { !self.is_inside_y(y) }
+    #[inline(always)] fn is_outside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { !self.is_inside_z(z) }
+    #[inline(always)] fn is_outside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { !self.is_inside_w(w) }
 }
 
 /// Iter over all idx inside a rectangle

@@ -18,7 +18,7 @@ default = ["serde"]
 serde = ["dep:serde"]
 
 [dependencies]
-hexga_base.workspace = true
+hexga_core.workspace = true
 hexga_number.workspace = true
 
 #typed_index = "0.2.1"

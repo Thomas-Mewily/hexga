@@ -1,3 +1,5 @@
+`#stabilized` in the code = need to refactor later when some feature will be stabilized
+
 HexGa : Highly Extensible (GAme | General Application) Lib Our
 
 ## Todo

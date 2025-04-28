@@ -1,5 +1,5 @@
 [package]
-name = "hexga_tools"
+name = "hexga_core"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -9,16 +9,19 @@ license.workspace = true
 readme = "README.md"
 
 keywords = []
-description = "miscellaneous stuff, when somethings will be too big it will be on a separate crate"
+description = "Basic set of functionalities common to all hexga crate"
 categories = ["rust-patterns"]
 
 [features]
 default = ["serde"]
-
-serde   = ["dep:serde"]
+serde = ["dep:serde"]
 
 [dependencies]
+hexga_map_on.workspace = true
 hexga_number.workspace = true
-hexga_core.workspace = true
 
+default_is_triple_underscore = "0.2.0"
+rayon = "1.10.0"
+
+# serialization
 serde = { version = "1.0", features = ["derive"], optional = true}

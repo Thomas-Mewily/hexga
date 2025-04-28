@@ -76,27 +76,27 @@ impl<T:FloatingNumber> AngleOf<T>
         if tmp < Self::HALF { tmp } else { tmp - Self::FULL }
     }
 
-    #[inline] pub fn cos_sin(self) -> (T, T) { (self.cos(), self.sin()) }
-    #[inline] pub fn sin_cos(self) -> (T, T) { (self.sin(), self.cos()) }
-    #[inline] pub fn cos_cos(self) -> (T, T) { (self.cos(), self.cos()) }
-    #[inline] pub fn sin_sin(self) -> (T, T) { (self.sin(), self.sin()) }
+    #[inline(always)] pub fn cos_sin(self) -> (T, T) { (self.cos(), self.sin()) }
+    #[inline(always)] pub fn sin_cos(self) -> (T, T) { (self.sin(), self.cos()) }
+    #[inline(always)] pub fn cos_cos(self) -> (T, T) { (self.cos(), self.cos()) }
+    #[inline(always)] pub fn sin_sin(self) -> (T, T) { (self.sin(), self.sin()) }
 
-    #[inline] pub fn cos(self) -> T { self._radian.cos() }
-    #[inline] pub fn cosh(self) -> T { self._radian.cosh() }
+    #[inline(always)] pub fn cos(self) -> T { self._radian.cos() }
+    #[inline(always)] pub fn cosh(self) -> T { self._radian.cosh() }
 
-    #[inline] pub fn sin(self) -> T { self._radian.sin() }
-    #[inline] pub fn sinh(self) -> T { self._radian.sinh() }
+    #[inline(always)] pub fn sin(self) -> T { self._radian.sin() }
+    #[inline(always)] pub fn sinh(self) -> T { self._radian.sinh() }
 
-    #[inline] pub fn tan(self) -> T { self._radian.tan() }
-    #[inline] pub fn tanh(self) -> T { self._radian.tanh() }
+    #[inline(always)] pub fn tan(self) -> T { self._radian.tan() }
+    #[inline(always)] pub fn tanh(self) -> T { self._radian.tanh() }
 
     /// Return a normalized (length = 1) vector with the same angle
-    #[inline] pub fn to_vec2_normalized(self) -> Vec2 where T : Into<float> { Angle::from_internal(self._radian.into()).to_vector2_normalized() }
-    #[inline] pub fn to_vec2(self, length : T) -> Vec2 where T : Into<float> { Angle::from_internal(self._radian.into()).to_vector2(length.into()) }
+    #[inline(always)] pub fn to_vec2_normalized(self) -> Vec2 where T : Into<float> { Angle::from_internal(self._radian.into()).to_vector2_normalized() }
+    #[inline(always)] pub fn to_vec2(self, length : T) -> Vec2 where T : Into<float> { Angle::from_internal(self._radian.into()).to_vector2(length.into()) }
     
     /// Return a normalized (length = 1) vector with the same angle
-    #[inline] pub fn to_vector2_normalized(self) -> Vector2<T> { self.to_vector2(T::ONE) }
-    #[inline] pub fn to_vector2(self, length : T) -> Vector2<T> { Vector2::new(self.cos() * length, self.sin()* length) }
+    #[inline(always)] pub fn to_vector2_normalized(self) -> Vector2<T> { self.to_vector2(T::ONE) }
+    #[inline(always)] pub fn to_vector2(self, length : T) -> Vector2<T> { Vector2::new(self.cos() * length, self.sin()* length) }
 
     pub fn inside_range(self, begin : Self, end : Self) -> bool
     {

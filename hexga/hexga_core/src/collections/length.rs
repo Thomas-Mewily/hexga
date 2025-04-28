@@ -8,7 +8,7 @@ pub trait Length
     /// True if the container contains 0 elements.
     ///
     /// ```rust
-    /// use hexga_base::*;
+    /// use hexga_core::prelude::*;
     ///
     /// assert_eq!([1, 2, 3].is_empty(), false);
     ///
@@ -20,6 +20,7 @@ pub trait Length
     ///
     /// assert_eq!("".is_empty(), !("".is_not_empty()));
     /// ```
+    #[inline(always)]
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -28,7 +29,7 @@ pub trait Length
     /// Will always be different than `is_empty()`.
     ///
     /// ```rust
-    /// use hexga_base::*;
+    /// use hexga_core::prelude::*;
     ///
     /// assert_eq!([1, 2, 3].is_not_empty(), true);
     ///
@@ -40,6 +41,7 @@ pub trait Length
     ///
     /// assert_eq!("".is_empty(), !("".is_not_empty()));
     /// ```
+    #[inline(always)]
     fn is_not_empty(&self) -> bool {
         !self.is_empty()
     }

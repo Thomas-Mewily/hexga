@@ -24,7 +24,7 @@ float_are_size_bits = ["hexga_math/float_are_size_bits"]
 serde = ["dep:serde", "hexga_math/serde"]
 
 [dependencies]
-hexga_base.workspace = true
+hexga_core.workspace = true
 hexga_math.workspace = true
 
 serde = { version = "1.0", features = ["derive"], optional = true}

@@ -34,6 +34,8 @@ fn dbg_mat<T>(g : &Grid2<T>) where T : Display
 fn main() 
 {
     for _ in 0..10 { println!(); }
+
+    /* 
     //let mut u = CommandsFlow::new();
     let mut cmds = Redo::<Commands<action::vec::Action<i32>>, action::vec::Action<i32>>::new(); // Commands::new();
 
@@ -60,7 +62,8 @@ fn main()
     println!();
 
     let g = Grid2::from_vec(2.splat2(), vec!["toto", "f", "bar", "x"]).unwrap();
-
+    */
+    
     //g.set(val, index)
     /* 
     u.begin();

@@ -20,7 +20,7 @@ impl_fixed_array_like_with_op!(ColorHSLAOf, 4);
 
 impl<T> ColorHSLAOf<T>
 {
-    #[inline] pub const fn new(hue : T, saturation : T, lightness : T, alpha : T) -> Self  { Self { h: hue, s: saturation, l : lightness, a: alpha, }}
+    #[inline(always)] pub const fn new(hue : T, saturation : T, lightness : T, alpha : T) -> Self  { Self { h: hue, s: saturation, l : lightness, a: alpha, }}
     pub const fn new_hue(hue : T) -> Self where T : FloatingNumber { Self::hsl(hue, T::ONE, T::HALF) }
     pub const fn gray(coef : T) -> Self where T : FloatingNumber { Self::hsl(T::ZERO, T::ZERO, coef) }
 

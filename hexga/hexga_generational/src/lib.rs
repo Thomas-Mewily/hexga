@@ -3,9 +3,11 @@
 //! A crate mainly inspired by RustConf 2018 - Closing Keynote - Using Rust For Game Development by Catherine West : <https://youtu.be/aKLntZcp27M>
 //! and the SlotMap data structure <https://docs.rs/slotmap/latest/slotmap/>
 
+#![feature(get_disjoint_mut_helpers)]
+
 use hexga_number::*;
 #[allow(unused_imports)]
-use hexga_base::*;
+use hexga_core::prelude::*;
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]

@@ -1,19 +1,19 @@
-pub trait ExtensionToArray<T, const N : usize> : Into<[T; N]> { fn to_array(self) -> [T; N] { self.into() } }
+pub trait ExtensionToArray<T, const N : usize> : Into<[T; N]> { #[inline(always)] fn to_array(self) -> [T; N] { self.into() } }
 impl<C, T, const N : usize> ExtensionToArray<T, N> for C where C : Into<[T; N]> {}
 
-pub trait ExtensionFromArray<T, const N : usize> : From<[T; N]> { fn from_array(value : [T; N]) -> Self { value.into() } }
+pub trait ExtensionFromArray<T, const N : usize> : From<[T; N]> { #[inline(always)] fn from_array(value : [T; N]) -> Self { value.into() } }
 impl<C, T, const N : usize> ExtensionFromArray<T, N> for C where C : From<[T; N]> {}
 
-pub trait ExtensionAsArray<T, const N : usize> : AsRef<[T; N]> { fn as_array(&self) -> &[T; N] { self.as_ref() } }
+pub trait ExtensionAsArray<T, const N : usize> : AsRef<[T; N]> { #[inline(always)] fn as_array(&self) -> &[T; N] { self.as_ref() } }
 impl<C, T, const N : usize> ExtensionAsArray<T, N> for C where C : AsRef<[T; N]> {}
 
-pub trait ExtensionAsArrayMut<T, const N : usize> : AsMut<[T; N]> { fn as_array_mut(&mut self) -> &mut [T; N] { self.as_mut() } }
+pub trait ExtensionAsArrayMut<T, const N : usize> : AsMut<[T; N]> { #[inline(always)] fn as_array_mut(&mut self) -> &mut [T; N] { self.as_mut() } }
 impl<C, T, const N : usize> ExtensionAsArrayMut<T, N> for C where C : AsMut<[T; N]> {}
 
-pub trait ExtensionAsSlice<T> : AsRef<[T]> { fn as_slice(&self) -> &[T] { self.as_ref() } }
+pub trait ExtensionAsSlice<T> : AsRef<[T]> { #[inline(always)] fn as_slice(&self) -> &[T] { self.as_ref() } }
 impl<C, T> ExtensionAsSlice<T> for C where C : AsRef<[T]> {}
 
-pub trait ExtensionAsSliceMut<T> : AsMut<[T]> { fn as_mut_slice(&mut self) -> &mut [T] { self.as_mut() } }
+pub trait ExtensionAsSliceMut<T> : AsMut<[T]> { #[inline(always)] fn as_mut_slice(&mut self) -> &mut [T] { self.as_mut() } }
 impl<C, T> ExtensionAsSliceMut<T> for C where C : AsMut<[T]> {}
 
 

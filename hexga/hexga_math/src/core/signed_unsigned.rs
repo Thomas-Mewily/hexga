@@ -12,12 +12,12 @@ macro_rules! impl_signed
 {
     ($primitive_name: ty, $unsigned_primitive_name: ty) => 
     { 
-        impl ToUnsigned for $primitive_name  { type Output=$unsigned_primitive_name; #[inline] fn to_unsigned(self) -> Self::Output  {self as _ }}
+        impl ToUnsigned for $primitive_name  { type Output=$unsigned_primitive_name; #[inline(always)] fn to_unsigned(self) -> Self::Output  {self as _ }}
     };
 
     ($primitive_name: ty) => 
     { 
-        impl ToUnsigned for $primitive_name  { type Output=$primitive_name; #[inline] fn to_unsigned(self) -> Self::Output  { self }}
+        impl ToUnsigned for $primitive_name  { type Output=$primitive_name; #[inline(always)] fn to_unsigned(self) -> Self::Output  { self }}
     };
 }
 impl_signed!(i8 , u8);
@@ -40,12 +40,12 @@ macro_rules! impl_unsigned
 {
     ($primitive_name: ty, $signed_primitive_name: ty) => 
     { 
-        impl ToSigned for $primitive_name { type Output=$signed_primitive_name; #[inline] fn to_signed(self) -> Self::Output { self as _  }}
+        impl ToSigned for $primitive_name { type Output=$signed_primitive_name; #[inline(always)] fn to_signed(self) -> Self::Output { self as _  }}
     };
 
     ($primitive_name: ty) => 
     { 
-        impl ToSigned for $primitive_name  { type Output=$primitive_name; #[inline] fn to_signed(self) -> Self::Output  { self }}
+        impl ToSigned for $primitive_name  { type Output=$primitive_name; #[inline(always)] fn to_signed(self) -> Self::Output  { self }}
     };
 }
 impl_unsigned!(u8 , i8);

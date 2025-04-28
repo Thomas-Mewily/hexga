@@ -29,7 +29,7 @@ float_are_size_bits = ["hexga_typedef/float_are_size_bits"]
 serde = ["dep:serde"]
 
 [dependencies]
-hexga_base.workspace = true
+hexga_core.workspace = true
 hexga_number.workspace = true
 hexga_array.workspace = true
 hexga_typedef.workspace = true

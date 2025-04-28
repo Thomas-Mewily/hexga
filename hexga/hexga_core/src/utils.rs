@@ -4,6 +4,7 @@
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
 pub use rayon::prelude::*;
+pub use default_is_triple_underscore::*;
 
 /// While waiting for the std:never type to stabilize
 #[derive(Debug)]
@@ -16,6 +17,7 @@ pub trait Toggleable
 }
 impl Toggleable for bool
 {
+    #[inline(always)]
     fn toggle(&mut self) 
     {
         use std::ops::Not;
@@ -29,6 +31,7 @@ pub trait ToDebug
 }
 impl<T> ToDebug for T where T : std::fmt::Debug
 {
+    #[inline(always)]
     fn to_debug(&self) -> String {
         format!("{:?}", self)
     }
@@ -43,8 +46,16 @@ pub trait ResultExtension<T>
 }
 impl<T,E> ResultExtension<T> for Result<T,E>
 {
+    #[inline(always)]
     fn ok_or_void(self) -> Result<T,()> {
         self.map_err(|_| ())
+    }
+}
+impl<T> ResultExtension<T> for Option<T>
+{
+    #[inline(always)]
+    fn ok_or_void(self) -> Result<T,()> {
+        self.ok_or(())
     }
 }
 

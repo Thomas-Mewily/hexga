@@ -4,7 +4,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::{Deref,DerefMut};
 
-use hexga_base::*;
+use hexga_core::prelude::*;
 
 pub mod action;
 

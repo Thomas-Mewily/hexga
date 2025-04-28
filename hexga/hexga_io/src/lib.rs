@@ -2,7 +2,7 @@
 
 pub(crate) use std::{fs::{self, File}, io::{Read, Write}};
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
-pub(crate) use hexga_base::*;
+pub(crate) use hexga_core::prelude::*;
 
 pub type Reason = String;
 

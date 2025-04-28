@@ -52,11 +52,16 @@ impl<T,const N : usize> Vector<T,N>
     pub fn area(self) -> T where T : Number { self.iter().fold(T::ONE,|a, b| a * (*b).max_partial(T::ZERO)) }
     
     // Index :
+    #[inline(always)]
     pub fn is_inside(self, size : Self) -> bool where T : Number
     { 
         self.all_with(&size, |a, m| *a >= T::ZERO && a < m)
     }
+    #[inline(always)]
     pub fn is_outside(self, size : Self) -> bool where T : Number { !self.is_inside(size) }
+
+    #[inline(always)]
+    pub fn is_inside_rect(self, area : Rectangle<T,N>) -> bool where T : Number { area.is_inside(self) }
     
     /// Multiply each component
     /// The result can be negative
@@ -103,8 +108,10 @@ impl<T> IntegerIndex for T where T : Integer + CastInto<isize> + CastFrom<isize>
 impl<Idx, const N : usize> Vector<Idx, N> 
     where Idx : IntegerIndex
 {
+    #[inline(always)]
     pub fn to_index(self, size : Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_index_unchecked(size) }) }
     
+    #[inline(always)]
     /// # Safety
     /// This function assuming that : 
     /// - The size is valid : (all axis size are >= 1)
@@ -130,13 +137,14 @@ impl<Idx, const N : usize> Vector<Idx, N>
             let current_axis_len : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(size[i]);
             let current_value    : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(self[i]);
             
-            index_1d          += current_value * area_cumulative;
+            index_1d        += current_value * area_cumulative;
             area_cumulative *= current_axis_len;
             i += 1;
         }
         index_1d
     }
 
+    #[inline(always)]
     pub fn from_index(index : usize, size : Self) -> Option<Self>
     {
         let area : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(size.area());
@@ -161,6 +169,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
     ///     }
     /// }
     /// ```
+    #[inline(always)]
     pub unsafe fn from_index_unchecked(index : usize, size : Self) -> Self
     {
         debug_assert!(size.all(|v| *v >= Idx::ZERO));

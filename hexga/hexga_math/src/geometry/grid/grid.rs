@@ -171,31 +171,27 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     fn values_mut(&mut self) -> &mut [T];
     fn into_values(self) -> Vec<T>;
 
-    #[inline] fn is_index_inside(&self, index : usize) -> bool { index < self.area().to_usize()  }
-    #[inline] fn is_index_outside(&self, index : usize) -> bool { !self.is_index_inside(index) }
-
     unsafe fn position_to_index_unchecked(&self, pos : Vector<Idx,N>) -> usize { unsafe { Vector::<Idx,N>::to_index_unchecked(pos, self.size()) } }
     unsafe fn index_to_position_unchecked(&self, index : usize) -> Vector<Idx,N> { unsafe { Vector::<Idx,N>::from_index_unchecked(index, self.size()) } }
 
+    #[inline(always)]
     fn position_to_index(&self, pos : Vector<Idx,N>) -> Option<usize> { Vector::<Idx,N>::to_index(pos, self.size()) }
+    #[inline(always)]
     fn index_to_position(&self, index : usize) -> Option<Vector<Idx,N>> { Vector::<Idx,N>::from_index(index, self.size()) }
 
-    fn get_index(&self, index : usize) -> Option<&T> { self.values().get(index) }
-    fn get_index_mut(&mut self, index : usize) -> Option<&mut T> { self.values_mut().get_mut(index) }
 
-    fn swap_index(&mut self, index_a : usize, index_b : usize) -> bool
-    {
-        if self.is_index_inside(index_a) && self.is_index_inside(index_b)
-        {
-            self.values_mut().swap(index_a, index_b);
-            true
-        }else { false }
-    }
+    /*
+    #[inline(always)]
+    fn get_index(&self, index : usize) -> Option<&T> { self.get(index) }
+    #[inline(always)]
+    fn get_index_mut(&mut self, index : usize) -> Option<&mut T> { self.get_mut(index) }
 
+
+     
     fn replace_index(&mut self, val : T, index : usize) -> Option<T> { self.get_index_mut(index).map(|v| std::mem::replace(v, val)) }
-
     /// Do nothings if the index is outside the range
     fn set_index(&mut self, val : T, idx : usize) -> bool { self.get_index_mut(idx).map(|v| *v = val).is_some() }
+    */
 
     fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, Idx : PartialOrd { r.intersect_or_empty(self.rect()) }
 
@@ -211,8 +207,7 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a>;
 }
 
-impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex,
+impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N> where Idx : IntegerIndex,
 {
     fn values(&self) -> &[T] { &self.value }
     fn values_mut(&mut self) -> &mut [T] { &mut self.value }
@@ -235,8 +230,7 @@ impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N>
 
 }
 
-impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex 
+impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N> where Idx : IntegerIndex 
 {
 
     type Map<Dest>=GridBase<Dest, Idx, N>;
@@ -250,10 +244,11 @@ impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N>
     fn subview<'a>(&'a self, rect : Rectangle<Idx, N>) -> Self::SubView<'a> where T : Clone { GridView::new(self, rect) }
 }
 
-impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> 
-    where Idx : IntegerIndex,
+impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : IntegerIndex,
 {
+    #[inline(always)]
     fn size(&self) -> Vector<Idx, N> { self.size }
+    #[inline(always)]
     fn begin(&self) -> Vector<Idx,N> { zero() }
 
     fn iter_x(&self) -> Range<Idx> where Vector<Idx,N> : HaveX<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_x() }
@@ -261,60 +256,111 @@ impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N>
     fn iter_z(&self) -> Range<Idx> where Vector<Idx,N> : HaveZ<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_z() }
     fn iter_w(&self) -> Range<Idx> where Vector<Idx,N> : HaveW<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_w() }
 
-    #[inline] fn is_inside_x(&self, x : Idx) -> bool where Vector<Idx,N> : HaveX<Idx> { x >= Idx::ZERO && x < self.size_x() }
-    #[inline] fn is_inside_y(&self, y : Idx) -> bool where Vector<Idx,N> : HaveY<Idx> { y >= Idx::ZERO && y < self.size_y() }
-    #[inline] fn is_inside_z(&self, z : Idx) -> bool where Vector<Idx,N> : HaveZ<Idx> { z >= Idx::ZERO && z < self.size_z() }
-    #[inline] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
+    #[inline(always)] fn is_inside_x(&self, x : Idx) -> bool where Vector<Idx,N> : HaveX<Idx> { x >= Idx::ZERO && x < self.size_x() }
+    #[inline(always)] fn is_inside_y(&self, y : Idx) -> bool where Vector<Idx,N> : HaveY<Idx> { y >= Idx::ZERO && y < self.size_y() }
+    #[inline(always)] fn is_inside_z(&self, z : Idx) -> bool where Vector<Idx,N> : HaveZ<Idx> { z >= Idx::ZERO && z < self.size_z() }
+    #[inline(always)] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
 impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N> 
     where Idx : IntegerIndex 
 {
-    fn swap(&mut self, pos_a : Vector<Idx,N>, pos_b : Vector<Idx,N>) -> bool 
-    {
-        match (self.position_to_index(pos_a), self.position_to_index(pos_b))
-        {
-            (Some(a), Some(b)) => { self.values_mut().swap(a, b); true }
-            _ => false
-        }
-    }
-
     type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new(self, rect) }
 }
 
-impl<T, Idx, const N : usize> CollectionGet<Vector<Idx,N>> for GridBase<T, Idx,N> 
-    where Idx : IntegerIndex 
+impl<T, Idx, const N : usize> Get<Vector<Idx,N>> for GridBase<T, Idx,N>  where Idx : IntegerIndex 
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&T> { self.position_to_index(pos).and_then(|i| self.get_index(i)) }
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &T { unsafe { let idx = self.position_to_index_unchecked(pos); self.values().get_unchecked(idx) } }
+    #[inline(always)]
+    fn try_get(&self, pos : Vector<Idx,N>) -> Result<&Self::Output, ()> { self.get(pos).ok_or_void() }
+    #[inline(always)]
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| self.get(idx)) }
+    #[inline(always)]
+    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos); self.get_unchecked(idx) } }
 }
 
-impl<T, Idx, const N : usize> CollectionGetMut<Vector<Idx,N>> for GridBase<T, Idx,N> 
+impl<T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : IntegerIndex 
+{
+    #[inline(always)]
+    fn try_get_mut(&mut self, pos : Vector<Idx,N>) -> Result<&mut Self::Output, ()> { self.get_mut(pos).ok_or_void() }
+    #[inline(always)]
+    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut Self::Output> { self.position_to_index(pos).and_then(|i| self.get_mut(i)) }
+    #[inline(always)]
+    unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
+}
+
+impl<T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : IntegerIndex 
+{
+    #[inline(always)]
+    fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> {
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        let indices = indices.map(|pos| self.position_to_index(pos));
+        if indices.any(|x| x.is_none()) 
+        {
+            Err(())
+        } else 
+        {
+            self.try_get_disjoint_mut(indices.map(|idx| idx.unwrap()))
+        }
+    }
+}
+
+impl<T, Idx, const N : usize> Get<usize> for GridBase<T, Idx,N> 
     where Idx : IntegerIndex 
 {
-    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut T> { self.position_to_index(pos).and_then(|i| self.get_index_mut(i)) }
-    unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut T{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
+    type Output = <Self as Index<usize>>::Output;
+    #[inline(always)]
+    fn try_get(&self, index : usize) -> Result<&T, ()> { self.get(index).ok_or_void() }
+    #[inline(always)]
+    fn get(&self, index : usize) -> Option<&T> { self.values().get(index) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked(&self, index : usize) -> &T { unsafe { self.values().get_unchecked(index) } }
+}
+
+impl<T, Idx, const N : usize> GetMut<usize> for GridBase<T, Idx,N> where Idx : IntegerIndex 
+{
+    #[inline(always)]
+    fn try_get_mut(&mut self, index : usize) -> Result<&mut T, ()> { self.get_mut(index).ok_or_void() }
+    #[inline(always)]
+    fn get_mut(&mut self, index : usize) -> Option<&mut T> { self.values_mut().get_mut(index) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked_mut(&mut self, index : usize) -> &mut T{ unsafe { self.values_mut().get_unchecked_mut(index)} }
+}
+
+impl<T, Idx, const N : usize> GetManyMut<usize> for GridBase<T, Idx,N> where Idx : IntegerIndex 
+{
+    #[inline(always)]
+    fn try_get_disjoint_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> {
+        self.values_mut().try_get_disjoint_mut(indices)
+    }
 }
 
 impl<T, Idx, const N : usize> Index<usize> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     type Output=T;
-    fn index(&self, index: usize) -> &Self::Output { self.get_index(index).unwrap() }
+    #[inline(always)]
+    #[track_caller]
+    fn index(&self, index: usize) -> &Self::Output { self.get_or_panic(index) }
 }
 impl<T, Idx, const N : usize> IndexMut<usize> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_index_mut(index).unwrap() }
+    #[inline(always)]
+    #[track_caller]
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
 impl<T, Idx, const N : usize> Index<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
     type Output=T;
+    #[inline(always)]
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get(index).unwrap() }
 }
 impl<T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : IntegerIndex
 {
+    #[inline(always)]
     fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut(index).unwrap() }
 }
 
@@ -327,6 +373,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : IntegerIndex
 impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N> 
     where Idx : IntegerIndex
 {
+    #[inline(always)]
     fn len(&self) -> usize { self.values().len() }
 }
 

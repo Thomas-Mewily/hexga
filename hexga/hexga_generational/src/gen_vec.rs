@@ -432,16 +432,24 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         return GenIDOf::new(head, self.slot[head].generation);
     }
 
+    #[inline(always)]
     pub fn get_slot_index(&self, idx : usize) -> Option<&Slot<T,Gen>> { self.slot.get(idx) }
+    #[inline(always)]
     pub(crate) fn get_slot_index_mut(&mut self, idx : usize) -> Option<&mut Slot<T,Gen>> { self.slot.get_mut(idx) }
 
+    #[inline(always)]
     pub fn get_index(&self, idx : usize) -> Option<&T> { self.get_slot_index(idx).and_then(|s| s.value()) }
+    #[inline(always)]
     pub fn get_index_mut(&mut self, idx : usize) -> Option<&mut T> { self.get_slot_index_mut(idx).and_then(|s| s.value_mut()) }
 
+    #[inline(always)]
     pub fn get_slot(&self, id : GenIDOf<T,Gen>) -> Option<&Slot<T,Gen>> { self.get_slot_index(id.index).filter(|v| v.generation() == id.generation()) }
+    #[inline(always)]
     pub(crate) fn get_slot_mut(&mut self, id : GenIDOf<T,Gen>) -> Option<&mut Slot<T,Gen>> { self.get_slot_index_mut(id.index).filter(|v| v.generation() == id.generation()) }
     
+    #[inline(always)]
     pub fn get(&self, id : GenIDOf<T,Gen>) -> Option<&T> { self.get_slot(id).and_then(|v| v.value()) }
+    #[inline(always)]
     pub fn get_mut(&mut self, id : GenIDOf<T,Gen>) -> Option<&mut T> { self.get_slot_mut(id).and_then(|v| v.value_mut()) }
 
     /// Return a valid [GenID] to the current index or return null if the idx is outside the range
@@ -651,41 +659,95 @@ impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen> {
 }
 impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
 
-impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen> { fn len(&self) -> usize { self.len } }
+impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen> { #[inline(always)] fn len(&self) -> usize { self.len } }
 impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen> 
 {
     type Param=();
 
+    #[inline(always)]
     fn capacity(&self) -> usize { self.slot.capacity() }
 
+    #[inline(always)]
     fn with_capacity_and_param(capacity: usize, _ : Self::Param) -> Self { Self::with_capacity(capacity) }
 
+    #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.slot.reserve(additional); }
+    #[inline(always)]
     fn reserve_exact(&mut self, additional: usize) { self.slot.reserve_exact(additional); }
     
+    #[inline(always)]
     fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.slot.try_reserve(additional) }
+    #[inline(always)]
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.slot.try_reserve_exact(additional) }
 }
-impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { fn clear(&mut self) { self.clear(); } }
+impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { #[inline(always)] fn clear(&mut self) { self.clear(); } }
 
-impl<T,Gen:IGeneration> CollectionGet<usize> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> Get<usize> for GenVecOf<T,Gen>
 {
     type Output = <Self as Index<usize>>::Output;
+    #[inline(always)]
+    fn try_get(&self, idx : usize) -> Result<&Self::Output, ()> { self.get_index(idx).ok_or_void() }
+    #[inline(always)]
     fn get(&self, idx : usize) -> Option<&Self::Output> { self.get_index(idx) }
 }
-impl<T,Gen:IGeneration> CollectionGet<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> Get<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     type Output = <Self as Index<GenIDOf<T,Gen>>>::Output;
+    #[inline(always)]
+    fn try_get(&self, idx : GenIDOf<T,Gen>) -> Result<&Self::Output, ()> { self.get(idx).ok_or_void() }
+    #[inline(always)]
     fn get(&self, idx : GenIDOf<T,Gen>) -> Option<&Self::Output> { self.get(idx) }
 }
 
-impl<T,Gen:IGeneration> CollectionGetMut<usize> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> GetMut<usize> for GenVecOf<T,Gen>
 {
+    #[inline(always)]
+    fn try_get_mut(&mut self, idx : usize) -> Result<&mut Self::Output, ()> { self.get_index_mut(idx).ok_or_void() }
+    #[inline(always)]
     fn get_mut(&mut self, idx : usize) -> Option<&mut Self::Output> { self.get_index_mut(idx) }
 }
-impl<T,Gen:IGeneration> CollectionGetMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+
+impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
 {
+    #[inline(always)]
+    fn try_get_disjoint_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output;N], ()> 
+    { 
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        match self.slot.try_get_disjoint_mut(indices).map(|slots| slots.map(|v| v.value_mut()))
+        {
+            Ok(values) => if values.iter().any(|v| v.is_none()) { Err(()) } else { Ok(values.map(|v| v.unwrap())) },
+            Err(()) => Err(()),
+        }
+    }
+
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_disjoint_unchecked_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Output;N] {
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        unsafe { self.slot.get_disjoint_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
+    }
+}
+impl<T,Gen:IGeneration> GetMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    #[inline(always)]
+    fn try_get_mut(&mut self, idx : GenIDOf<T,Gen>) -> Result<&mut Self::Output, ()> { self.get_mut(idx).ok_or_void() }
+    #[inline(always)]
     fn get_mut(&mut self, idx : GenIDOf<T,Gen>) -> Option<&mut Self::Output> { self.get_mut(idx) }
+}
+
+impl<T,Gen:IGeneration> GetManyMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    #[inline(always)]
+    fn try_get_disjoint_mut<const N: usize>(&mut self, indices: [GenIDOf<T,Gen>; N]) -> Result<[&mut Self::Output;N], ()> 
+    { 
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        match self.slot.try_get_disjoint_mut(indices.map(|i| i.index))
+        {
+            Ok(values) => if values.iter().enumerate().any(|(idx,v)| !v.have_value() || v.generation() != indices[idx].generation) 
+            { Err(()) } else { Ok(values.map(|v| v.value_mut().unwrap())) },
+            Err(_) => Err(()),
+        }
+    }
 }
 
 #[allow(dead_code)]

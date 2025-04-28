@@ -5,12 +5,12 @@ pub trait Zero : Sized
 { 
     /// The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`
     const ZERO : Self;
-    #[inline] fn zero() -> Self { Self::ZERO }
+    #[inline(always)] fn zero() -> Self { Self::ZERO }
 
-    #[inline] fn set_zero(&mut self) -> &mut Self { *self = Self::ZERO; self }
+    #[inline(always)] fn set_zero(&mut self) -> &mut Self { *self = Self::ZERO; self }
 
-    #[inline] fn is_zero(&self) -> bool where Self : PartialEq<Self> { self == &Self::ZERO }
-    #[inline] fn is_non_zero(&self) -> bool where Self : PartialEq<Self> { !self.is_zero() }
+    #[inline(always)] fn is_zero(&self) -> bool where Self : PartialEq<Self> { self == &Self::ZERO }
+    #[inline(always)] fn is_non_zero(&self) -> bool where Self : PartialEq<Self> { !self.is_zero() }
 }
 pub const fn zero<T : Zero>() -> T { T::ZERO }
 
@@ -32,12 +32,12 @@ pub trait One : Sized
 { 
     /// The neutral element of the multiplication such that `x * X::ONE = x`
     const ONE  : Self;
-    #[inline] fn one() -> Self where Self : Sized { Self::ONE }
+    #[inline(always)] fn one() -> Self where Self : Sized { Self::ONE }
 
-    #[inline] fn set_one(&mut self) -> &mut Self { *self = Self::ONE; self }
+    #[inline(always)] fn set_one(&mut self) -> &mut Self { *self = Self::ONE; self }
 
-    #[inline] fn is_one(&self) -> bool where Self : PartialEq<Self> { self == &Self::ONE }
-    #[inline] fn is_non_one(&self) -> bool where Self : PartialEq<Self> { !self.is_one() }
+    #[inline(always)] fn is_one(&self) -> bool where Self : PartialEq<Self> { self == &Self::ONE }
+    #[inline(always)] fn is_non_one(&self) -> bool where Self : PartialEq<Self> { !self.is_one() }
 }
 pub const fn one<T : One>() -> T { T::ONE }
 
@@ -57,12 +57,12 @@ impl One for bool { const ONE : Self = true; }
 pub trait MinusOne : Sized
 { 
     const MINUS_ONE  : Self;
-    #[inline] fn minus_one() -> Self where Self : Sized { Self::MINUS_ONE }
+    #[inline(always)] fn minus_one() -> Self where Self : Sized { Self::MINUS_ONE }
 
-    #[inline] fn set_minus_one(&mut self) -> &mut Self { *self = Self::MINUS_ONE; self }
+    #[inline(always)] fn set_minus_one(&mut self) -> &mut Self { *self = Self::MINUS_ONE; self }
 
-    #[inline] fn is_minus_one(self) -> bool where Self : PartialEq<Self> + Copy { self == Self::MINUS_ONE }
-    #[inline] fn is_non_minus_one(self) -> bool where Self : PartialEq<Self> + Copy { !self.is_minus_one() }
+    #[inline(always)] fn is_minus_one(self) -> bool where Self : PartialEq<Self> + Copy { self == Self::MINUS_ONE }
+    #[inline(always)] fn is_non_minus_one(self) -> bool where Self : PartialEq<Self> + Copy { !self.is_minus_one() }
 }
 pub const fn minus_one<T : MinusOne>() -> T { T::MINUS_ONE }
 
@@ -83,8 +83,8 @@ pub trait Half : Sized
 { 
     const HALF  : Self;
     
-    #[inline] fn is_half(self) -> bool where Self : PartialEq<Self> { self == Self::HALF }
-    #[inline] fn is_non_half(self) -> bool where Self : PartialEq<Self> { !self.is_half() }
+    #[inline(always)] fn is_half(self) -> bool where Self : PartialEq<Self> { self == Self::HALF }
+    #[inline(always)] fn is_non_half(self) -> bool where Self : PartialEq<Self> { !self.is_half() }
 }
 pub const fn half<T : Half>() -> T { T::HALF }
 
@@ -103,8 +103,8 @@ impl<T, const N : usize> Half for [T;N] where T : Half
 pub trait NaNValue : Sized
 { 
     const NAN : Self; 
-    fn is_nan(&self) -> bool where Self : PartialEq { self == &Self::NAN }
-    fn is_not_nan(&self) -> bool where Self : PartialEq { !self.is_nan() }
+    #[inline(always)] fn is_nan(&self) -> bool where Self : PartialEq { self == &Self::NAN }
+    #[inline(always)] fn is_not_nan(&self) -> bool where Self : PartialEq { !self.is_nan() }
 }
 macro_rules! impl_have_nan_value {
     ($primitive_name: ty) => 
@@ -127,8 +127,8 @@ impl<T, const N : usize> NaNValue for [T;N] where T : NaNValue
 pub trait MinValue : Sized
 { 
     const MIN : Self;
-    fn is_min_value(&self) -> bool where Self : PartialEq { self == &Self::MIN }
-    fn is_not_min_value(&self) -> bool where Self : PartialEq { !self.is_min_value() }
+    #[inline(always)] fn is_min_value(&self) -> bool where Self : PartialEq { self == &Self::MIN }
+    #[inline(always)] fn is_not_min_value(&self) -> bool where Self : PartialEq { !self.is_min_value() }
 }
 
 macro_rules! impl_have_min_value {
@@ -152,8 +152,8 @@ impl<T, const N : usize> MinValue for [T;N] where T : MinValue
 pub trait MaxValue : Sized
 { 
     const MAX : Self; 
-    fn is_max_value(&self) -> bool where Self : PartialEq { self == &Self::MAX }
-    fn is_non_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
+    #[inline(always)] fn is_max_value(&self) -> bool where Self : PartialEq { self == &Self::MAX }
+    #[inline(always)] fn is_non_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
 }
 macro_rules! impl_have_max_value {
     ($primitive_name: ty) => 

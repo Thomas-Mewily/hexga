@@ -9,19 +9,9 @@ license.workspace = true
 readme = "README.md"
 
 keywords = []
-description = "Basic set of functionalities common to all hexga crate"
-categories = ["rust-patterns"]
+description = "Deprecated : renamed/moved to [Hexga Core](https://crates.io/crates/hexga_core)"
+categories = []
 
 [features]
-default = ["serde"]
-serde = ["dep:serde"]
 
 [dependencies]
-hexga_map_on.workspace = true
-hexga_number.workspace = true
-
-default_is_triple_underscore = "0.2.0"
-rayon = "1.10.0"
-
-# serialization
-serde = { version = "1.0", features = ["derive"], optional = true}

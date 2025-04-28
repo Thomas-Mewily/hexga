@@ -2,9 +2,11 @@ use crate::*;
 pub use action::collections;
 pub use action::mem;
 
+/* 
 pub type Clear  <T> = collections::Clear       <Vec<T>       >;
 pub type Set    <T> = collections::SetIndex    <Vec<T>, usize>;
 pub type Replace<T> = collections::ReplaceIndex<Vec<T>, usize>;
+pub type Swap   <T> = collections::SwapIndex   <Vec<T>, usize>;
 
 pub struct Pop<T> { phantom : PhantomData<T> }
 impl<T> Pop<T> { pub const fn new() -> Self { Self { phantom: PhantomData }}}
@@ -56,28 +58,6 @@ impl<T> UndoableAction for Push<T> where for<'a> T: 'a + Clone
         stack.push_undo_action(|| Pop::new());
     }
 }
-
-pub type Swap<T> = collections::SwapIndex<Vec<T>, usize>;
-
-impl<T> UndoableAction for Swap<T> where for<'a> T: 'a
-{
-    type Undo = Self;
-    type Context<'a>= Vec<T>;
-    type Output<'a> = Result<(), std::slice::GetDisjointMutError>;
-    
-    fn execute_in<'a, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
-    {
-        // Todo : add fn is_useful(&self) -> bool; and fn is_useful_on(&self, &ctx) -> bool; in this trait.
-        //if self.i() != self.j() { return; }
-        context.get_disjoint_mut([self.i, self.j]).map(|[a,b]|
-            {
-                std::mem::swap(a, b);
-                stack.push_undo_action(|| self);
-            })
-    }
-}
-
-
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub enum Action<T> where for<'a> T : 'a + Clone
@@ -193,3 +173,4 @@ impl<T, S> ActionExtension<T, S> for Vec<T> where for<'a> T: 'a + Clone, S: Undo
     { Swap::new(i, j).execute_in(self, &mut stack.handle(Action::Swap)) }
      */
 }
+*/

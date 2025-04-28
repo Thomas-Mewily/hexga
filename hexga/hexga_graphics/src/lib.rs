@@ -5,7 +5,7 @@
 
 use std::{io::Write, ops::{Index, IndexMut}};
 
-use hexga_base::*;
+use hexga_core::prelude::*;
 use hexga_math::{grid::GridBase, grid_param::GridParamBase, prelude::*, Color, ColorByte, IColor};
 
 /* 

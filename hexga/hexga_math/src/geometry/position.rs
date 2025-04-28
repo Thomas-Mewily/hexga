@@ -5,10 +5,14 @@ pub trait Position<T,const N : usize> where Vector<T,N> : Copy, T : Copy
     fn pos(&self) -> Vector<T,N>;
     fn set_pos(&mut self, pos : Vector<T,N>) -> &mut Self;
 
-    fn x(&self) -> T where Vector<T,N> : HaveX<T> { *self.pos().get(Vector::<T,N>::X_INDEX).unwrap() }
-    fn y(&self) -> T where Vector<T,N> : HaveY<T> { *self.pos().get(Vector::<T,N>::Y_INDEX).unwrap() }
-    fn z(&self) -> T where Vector<T,N> : HaveZ<T> { *self.pos().get(Vector::<T,N>::Z_INDEX).unwrap() }
-    fn w(&self) -> T where Vector<T,N> : HaveW<T> { *self.pos().get(Vector::<T,N>::W_INDEX).unwrap() }
+    #[track_caller]
+    fn x(&self) -> T where Vector<T,N> : HaveX<T> { *self.pos().get_or_panic(Vector::<T,N>::X_INDEX) }
+    #[track_caller]
+    fn y(&self) -> T where Vector<T,N> : HaveY<T> { *self.pos().get_or_panic(Vector::<T,N>::Y_INDEX) }
+    #[track_caller]
+    fn z(&self) -> T where Vector<T,N> : HaveZ<T> { *self.pos().get_or_panic(Vector::<T,N>::Z_INDEX) }
+    #[track_caller]
+    fn w(&self) -> T where Vector<T,N> : HaveW<T> { *self.pos().get_or_panic(Vector::<T,N>::W_INDEX) }
 
     fn set_x(&mut self, x : T) -> &mut Self where Vector<T,N> : HaveX<T> { let mut p = self.pos(); p.set(Vector::<T,N>::X_INDEX, x); self.set_pos(p); self }
     fn set_y(&mut self, y : T) -> &mut Self where Vector<T,N> : HaveY<T> { let mut p = self.pos(); p.set(Vector::<T,N>::Y_INDEX, y); self.set_pos(p); self }

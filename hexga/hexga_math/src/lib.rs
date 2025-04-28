@@ -1,5 +1,7 @@
 #![allow(unused_imports)]
 
+#![feature(get_disjoint_mut_helpers)]
+
 use std::ops::*;
 use std::iter::{Sum,Product};
 use std::fmt::{Debug, Display, Formatter};
@@ -7,7 +9,7 @@ type DResult =  std::fmt::Result;
 use std::hash::*;
 use std::marker::PhantomData;
 use std::cmp::Ordering;
-use hexga_base::*;
+use hexga_core::prelude::*;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
