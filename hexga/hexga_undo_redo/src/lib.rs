@@ -3,6 +3,9 @@ use std::marker::PhantomData;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::{Deref,DerefMut};
+use std::cmp::Ordering;
+use std::hash::Hasher;
+use std::fmt::Formatter;
 
 use hexga_core::prelude::*;
 
