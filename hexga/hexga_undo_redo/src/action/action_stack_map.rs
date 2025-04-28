@@ -2,29 +2,29 @@ pub use crate::*;
 
 /// Transform a action `T` into a more general action `A`
 #[derive(Debug)]
-pub struct ActionStackMap<'a, U, A, T> where U : UndoStack<A>, A : UndoableAction, T : UndoableAction
+pub struct ActionStackMap<'a, S, A, T> where S : UndoStack<A>, A : UndoableAction, T : UndoableAction
 {
-    undo : &'a mut U,
+    stack : &'a mut S,
     f : fn(T) -> A,
 }
 
-impl<'a, U, A, T> ActionStackMap<'a, U, A, T> where U : UndoStack<A>, A : UndoableAction, T : UndoableAction
+impl<'a, S, A, T> ActionStackMap<'a, S, A, T> where S : UndoStack<A>, A : UndoableAction, T : UndoableAction
 {
-    pub fn new(undo : &'a mut U, f : fn(T) -> A) -> Self { Self { undo, f }}
+    pub fn new(stack : &'a mut S, f : fn(T) -> A) -> Self { Self { stack, f }}
 }
 
-impl<'a, U, A, T> UndoStack<T> for ActionStackMap<'a, U, A, T> where U : UndoStack<A>, A : UndoableAction, T : UndoableAction
+impl<'a, S, A, T> UndoStack<T> for ActionStackMap<'a, S, A, T> where S : UndoStack<A>, A : UndoableAction, T : UndoableAction
 {
-    const LOG_UNDO : bool = U::LOG_UNDO;
+    const LOG_UNDO : bool = S::LOG_UNDO;
 
     fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> T
     {
-        self.undo.push_undo_action(|| (self.f)(f()));
+        self.stack.push_undo_action(|| (self.f)(f()));
     }
     
     fn stack_undo_in<Dest>(&mut self, _ : &mut <T as UndoableAction>::Context<'_>, _ : &mut Dest) -> bool where Dest : UndoStack<T::Undo> { false }
     
-    fn prepare(&mut self) { self.undo.prepare(); }
+    fn prepare(&mut self) { self.stack.prepare(); }
 }
 
 /// Ignore the action

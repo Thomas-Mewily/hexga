@@ -5,7 +5,8 @@
 
 - Name2Reserve : réserver plus de nom sous crate io
 
-- Undo Redo : Impl Action pour vecteur, slice, array, hashmap, hashset... struct field
+- Undo Redo : Impl Action pour vecteur, slice, array, hashmap, hashset... struct field.
+    - ne pas imposer d'utiliser un vecteur pour command stack / marker => use collection 
 
 
 - Io System / Cache / Mediator

@@ -9,11 +9,12 @@ pub struct Swap<T> { phantom : PhantomData<T> }
 
 impl<T> Swap<T> { pub const fn new() -> Self { Self { phantom: PhantomData }} }
 
-impl<T> Clone   for Swap<T> { fn clone(&self) -> Self { Self::new() } }
-impl<T> Copy    for Swap<T> {}
-
+impl<T> Clone       for Swap<T> { fn clone(&self) -> Self { Self::new() } }
+impl<T> Copy        for Swap<T> {}
 impl<T> PartialEq   for Swap<T> { fn eq(&self, _: &Self) -> bool { true } }
 impl<T> Eq          for Swap<T> {}
+impl<T> PartialOrd  for Swap<T> { fn partial_cmp(&self, _: &Self) -> Option<Ordering> { Some(Ordering::Equal) } }
+impl<T> Ord         for Swap<T> { fn cmp(&self, _: &Self) -> Ordering { Ordering::Equal } }
 impl<T> Hash        for Swap<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
 impl<T> Default     for Swap<T> { fn default() -> Self { Self::new() } }
 impl<T> Debug       for Swap<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Swap") } }
@@ -32,7 +33,7 @@ impl<T> UndoableAction for Swap<T> where for<'a> T: 'a
 }
 
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Replace<T> { pub src : T }
 impl<T> Debug for Replace<T> where T : Debug
 {
@@ -75,9 +76,11 @@ impl<T> Clone       for Take<T> { fn clone(&self) -> Self { Self::new() } }
 impl<T> Copy        for Take<T> { }
 impl<T> PartialEq   for Take<T> { fn eq(&self, _: &Self) -> bool { true } }
 impl<T> Eq          for Take<T> { }
+impl<T> PartialOrd  for Take<T> { fn partial_cmp(&self, _: &Self) -> Option<Ordering> { Some(Ordering::Equal) } }
+impl<T> Ord         for Take<T> { fn cmp(&self, _: &Self) -> Ordering { Ordering::Equal } }
 impl<T> Hash        for Take<T> { fn hash<H: std::hash::Hasher>(&self, _: &mut H) { } }
-impl<T> Debug       for Take<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Take") } }
 impl<T> Default     for Take<T> { fn default() -> Self { Self::new() } }
+impl<T> Debug       for Take<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Take") } }
 
 impl<T> UndoableAction for Take<T> where for<'a> T: 'a + Default + Clone
 {

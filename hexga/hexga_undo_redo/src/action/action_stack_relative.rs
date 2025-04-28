@@ -2,19 +2,20 @@ pub use crate::*;
 
 /// Memorize where do the context/value come from using it's index
 #[derive(Debug)]
-pub struct ActionStackGetMut<'a, U, A, T, Idx> where U : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
+pub struct ActionStackRelative<'a, S, A, T, Idx> where S : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
 {
-    undo : &'a mut U,
-    source : Idx,
+    stack : &'a mut S,
+    index : Idx,
     phantom : PhantomData<(A,T)>,
 }
 
-impl<'a, U, A, T, Idx> ActionStackGetMut<'a, U, A, T, Idx> where U : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
+impl<'a, S, A, T, Idx> ActionStackRelative<'a, S, A, T, Idx> where S : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
 {
-    pub fn new(undo : &'a mut U, source : Idx) -> Self { Self { undo, source, phantom : PhantomData }}
+    pub fn new(undo : &'a mut S, source : Idx) -> Self { Self { stack: undo, index: source, phantom : PhantomData }}
 }
 
-impl<'a, U, A, T, Idx> UndoStack<T> for ActionStackGetMut<'a, U, A, T, Idx> where U : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
+/*
+impl<'a, U, A, T, Idx> UndoStack<T> for ActionStackRelative<'a, U, A, T, Idx> where U : UndoStack<A>, A : UndoableAction, T : GetMut<Idx>, Idx : Clone
 {
     const LOG_UNDO : bool = U::LOG_UNDO;
 
@@ -52,3 +53,4 @@ impl<A> UndoStack<A> for Vec<A> where A : UndoableAction
 
     fn prepare(&mut self) {}
 }
+*/
