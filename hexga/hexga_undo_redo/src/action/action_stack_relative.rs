@@ -28,14 +28,17 @@ use crate::actions::collections::*;
 /// 
 /// Here, the `actions::mem::Replace` will be related to the borrowed value, thus becoming :
 /// `actions::mem::Replace` -> `actions::mem::ReplaceIndex`
-pub trait Relative<C, Idx, P> : Action where C: GetMut<Idx>, Idx: Clone, P: Policy
+
+/* 
+pub trait Relative<C,B,Idx,P> : Action where C: GetMut<Idx>, Idx : ToOwned + Borrow<B>, Idx::Owned : Clone
 {
     type Relative<'a> : Action; //<Context<'a> = Self::Context<'a>>;
     fn relative<'a>(self, index : &Idx) -> Self::Relative<'a>; 
 }
+*/
 
 /* 
-impl<C, Idx> Relative<C, Idx, policy::Normal> for Replace<Idx> where for<'a> C: 'a + GetMut<Idx>, C::Output : Sized + Clone, Idx : Clone
+impl<C,B,Idx> Relative<C,B,Idx,policy::Normal> for Replace<Idx> where for<'a> C: 'a + GetMut<Idx::Owned>, Idx : ToOwned + Borrow<B>, Idx::Owned : Clone
 {
     type Relative<'a> = ReplaceIndex<C,Idx,policy::Normal>;
     fn relative<'a>(self, index : &Idx) -> Self::Relative<'a> {
@@ -43,6 +46,7 @@ impl<C, Idx> Relative<C, Idx, policy::Normal> for Replace<Idx> where for<'a> C: 
     }
 }
 */
+
 
 //impl<Idx> Relative<Idx> for : Action where for<'a> Self::Context<'a> : GetMut<Idx>
 

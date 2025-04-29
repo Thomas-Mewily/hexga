@@ -15,7 +15,7 @@ use crate::*;
 
 
 /// The collection have a quick way to access each element, where the index is copyable
-pub trait Get<Idx> //: Index<Idx>
+pub trait Get<Idx, Q=Idx> where Idx : Borrow<Q> //: Index<Idx>
 {
     type Output : ?Sized;
 
@@ -39,6 +39,27 @@ pub trait Get<Idx> //: Index<Idx>
     #[inline(always)]
     fn is_index_invalid(&self, index : Idx) -> bool { self.get(index).is_none() }
 }
+/*
+impl<Idx,C> Get<&Idx> for C where C : Get<Idx>, Idx : Copy
+{
+    type Output=<C as Get<Idx>>::Output;
+
+    fn try_get(&self, index : &Idx) -> Result<&Self::Output, ()> { self.try_get(*index) }
+    fn get(&self, index : &Idx) -> Option<&Self::Output> { self.get(*index) }
+    fn get_or_panic(&self, index : &Idx) -> &Self::Output { self.get_or_panic(*index) }
+    unsafe fn get_unchecked(&self, index : &Idx) -> &Self::Output { unsafe { self.get_unchecked(*index) } }
+}
+impl<Idx,C> Get<&mut Idx> for C where C : Get<Idx>, Idx : Copy
+{
+    type Output=<C as Get<Idx>>::Output;
+
+    fn try_get(&self, index : &mut Idx) -> Result<&Self::Output, ()> { self.try_get(*index) }
+    fn get(&self, index : &mut Idx) -> Option<&Self::Output> { self.get(*index) }
+    fn get_or_panic(&self, index : &mut Idx) -> &Self::Output { self.get_or_panic(*index) }
+    unsafe fn get_unchecked(&self, index : &mut Idx) -> &Self::Output { unsafe { self.get_unchecked(*index) } }
+}
+    */
+
 pub trait GetMut<Idx> : Get<Idx>
 {
     // Returns a mutable reference to the value.
