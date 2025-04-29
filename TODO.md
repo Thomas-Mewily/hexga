@@ -8,6 +8,10 @@
 - Undo Redo : Impl Action pour vecteur, slice, array, hashmap, hashset... struct field.
     - ne pas imposer d'utiliser un vecteur pour command stack / marker => use collection 
 
+- Use the serde deserialize to parse command by user / auto completion. ex : command written in a video game from a player
+ex : minecraft : `/setblock 10 20 30 grass`
+contextual action ? : `/setblock ~10 ~5 8 grass` <- relative position to the caller ?
+position is a matrix ? for each component x/y/z: `positionFixed positionRelative`
 
 - Io System / Cache / Mediator
 

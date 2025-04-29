@@ -1,5 +1,6 @@
 use super::*;
 
+/* 
 // ToOwned, that way SwapIndex will also work on HashMap<String, Foo> indexed by &str (index stored as String), then it can be acceded using the borrow version of the String : &str
 pub struct SwapIndex<C,B,Idx,P=policy::Normal> where for<'a> C: 'a + GetManyMut<Idx::Owned>, C::Output : Sized + Clone, Idx : ToOwned + Borrow<B>, Idx::Owned : Clone, P : Policy
 {   
@@ -61,3 +62,5 @@ impl<C,B,Idx> UndoableAction for SwapIndex<C,B,Idx,policy::Unchecked> where for<
         unsafe { context.swap_unchecked(self.i, self.j) }
     }
 }
+
+*/

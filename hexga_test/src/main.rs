@@ -36,6 +36,18 @@ fn main()
 {
     for _ in 0..10 { println!(); }
 
+    let mut foo_resources: HashMap<String,i32> =
+    [("Norway", 100),
+     ("Denmark", 50),
+     ("Iceland", 10)]
+     .into_iter().map(|(a,b)| (a.to_owned(),b)).collect();
+
+     dbg!(&foo_resources.try_get("Iceland"));
+
+    let x = vec![1,2,3];
+
+    //let y = x.try_get(&42);
+    /* 
     let mut foo_resources: HashMap<&str, i32> =
     [("Norway", 100),
      ("Denmark", 50),
@@ -52,7 +64,7 @@ fn main()
 
      foo_resources.swap_or_panic("Norway", "Denmark");
      dbg!(&foo_resources);
-
+    */
     /* 
     //let mut u = CommandsFlow::new();
     let mut cmds = Redo::<Commands<action::vec::Action<i32>>, action::vec::Action<i32>>::new(); // Commands::new();
