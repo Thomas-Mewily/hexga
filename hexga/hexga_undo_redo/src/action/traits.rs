@@ -39,24 +39,27 @@ pub trait UndoExtension
 }
 impl<T> UndoExtension for T {}
 
-pub trait UndoStack<A> where A : UndoableAction
+pub trait UndoStack<A,G=()> where A : UndoableAction
 {
-    /// Prepare the next action/command. Can be ommited on action
-    fn prepare(&mut self);
+    /// Prepare the next group of action/command. Can be ommited on action
+    fn prepare_with_data(&mut self, group_data : G);
+
+    /// Prepare the next group of action/command. Can be ommited on action
+    fn prepare(&mut self) where G : Default { self.prepare_with_data(___());}
 
     /// If true F will be called, otherwise F won't be called in `push_undo_action`
     const LOG_UNDO : bool;
 
     fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A;
-    fn handle<'a, T>(&'a mut self, f : fn(T) -> A) -> ActionStackMap<'a,Self,A,T> where Self : Sized, T : UndoableAction { ActionStackMap::new(self, f) }
+    fn handle<'a, T>(&'a mut self, f : fn(T) -> A) -> ActionStackMap<'a,Self,A,G,T> where Self : Sized, T : UndoableAction { ActionStackMap::new(self, f) }
 
     fn stack_undo(&mut self, ctx : &mut A::Context<'_>) -> bool { self.stack_undo_in(ctx, &mut ()) }
     fn stack_undo_in<Dest>(&mut self, ctx : &mut A::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<A::Undo>;
 
-    fn relative_to<'a, Idx, C, P>(&'a mut self, index : Idx, collection : &'a mut C) -> ActionStackRelative<'a,Self,A,C,Idx,P> where Self : Sized, C : GetMut<Idx>, Idx : Clone, P: Policy { ActionStackRelative::new(self, collection, index) }
+    //fn relative_to<'a, Idx, C, P>(&'a mut self, index : Idx, collection : &'a mut C) -> ActionStackRelative<'a,Self,A,G,C,Idx,P> where Self : Sized, C : GetMut<Idx>, Idx : Clone, P: Policy { ActionStackRelative::new(self, collection, index) }
 }
 
-pub trait RedoStack<A> : UndoStack<A> where A : UndoableAction
+pub trait RedoStack<A,G=()> : UndoStack<A,G> where A : UndoableAction
 {
     fn stack_redo(&mut self, ctx : &mut A::Context<'_>) -> bool { self.stack_redo_in(ctx, &mut ()) }
     fn stack_redo_in<Dest>(&mut self, ctx : &mut A::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<A::Undo>;

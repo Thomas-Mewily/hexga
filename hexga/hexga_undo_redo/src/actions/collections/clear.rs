@@ -13,7 +13,7 @@ impl<C>    PartialEq  for Clear<C> where C : Clearable + Capacity + Length, <C a
 impl<C>    Eq         for Clear<C> where C : Clearable + Capacity + Length, <C as Capacity>::Param : Default {}
 impl<C>    PartialOrd for Clear<C> where C : Clearable + Capacity + Length, <C as Capacity>::Param : Default { fn partial_cmp(&self, _: &Self) -> Option<Ordering> { Some(Ordering::Equal) } }
 impl<C>    Ord        for Clear<C> where C : Clearable + Capacity + Length, <C as Capacity>::Param : Default { fn cmp(&self, _: &Self) -> Ordering { Ordering::Equal } }
-impl<C>    Hash       for Clear<C> where C : Clearable + Capacity + Length, <C as Capacity>::Param : Default { fn hash<H: Hasher>(&self, state: &mut H) { } }
+impl<C>    Hash       for Clear<C> where C : Clearable + Capacity + Length, <C as Capacity>::Param : Default { fn hash<H: Hasher>(&self, _: &mut H) { } }
 impl<C>    Default    for Clear<C> where C : Clearable + Capacity + Length, <C as Capacity>::Param : Default { fn default() -> Self { Self{ phantom: PhantomData } } }
 impl<C>    Debug      for Clear<C> where C : Clearable + Capacity + Length, <C as Capacity>::Param : Default { fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "Clear") } }
 

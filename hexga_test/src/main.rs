@@ -36,6 +36,21 @@ fn main()
 {
     for _ in 0..10 { println!(); }
 
+
+    let mut v = vec![1,2,3];
+    let mut actions = Vec::new();
+    println!("{:?}\n{:?}\n", v, actions);
+
+    actions.prepare();
+    
+
+    actions::mem::replace(&mut v, vec![3,4,5], &mut actions);
+    println!("{:?}\n{:?}\n", v, actions);
+
+    v.undo(&mut actions);
+    println!("{:?}\n{:?}\n", v, actions);
+
+    /* 
     let mut foo_resources: HashMap<String,i32> =
     [("Norway", 100),
      ("Denmark", 50),
@@ -45,6 +60,7 @@ fn main()
      dbg!(&foo_resources.try_get("Iceland"));
 
     let x = vec![1,2,3];
+    */
 
     //let y = x.try_get(&42);
     /* 

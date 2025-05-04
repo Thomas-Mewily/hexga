@@ -13,7 +13,7 @@ pub struct ReplaceIndex<C,Idx,P=policy::Normal> where C: GetMut<Idx>, C::Output 
     pub index : Idx,
     pub value : C::Output,
     phantom : PhantomData<(C,P)>
-} 
+}
 
 impl<C,Idx,P> ReplaceIndex<C,Idx,P> where C: GetMut<Idx>, C::Output : Sized + Clone, P : Policy
 {
@@ -21,6 +21,21 @@ impl<C,Idx,P> ReplaceIndex<C,Idx,P> where C: GetMut<Idx>, C::Output : Sized + Cl
     pub fn into_idx_value(self) -> (Idx, C::Output) { let Self { index, value, phantom : _ } = self; (index, value) }
 }
 
+/*
+impl<'a,C,Idx> UndoableAction for ReplaceIndex<C,Idx,policy::Try> 
+    where C: GetMut<Idx> + GetMut<Idx::Owned,Output=<C as Get<Idx>>::Output>, <C as Get<Idx>>::Output : Sized + Clone,
+    Idx : ToOwned, Idx::Owned : Clone,
+    ReplaceIndex<C,Idx::Owned,policy::Try> : UndoableAction<Undo = ReplaceIndex<C,Idx::Owned,policy::Try>, Context<'a> = Self::Context<'a>, Output<'a> = Self::Output<'a>>
+{
+    type Undo = ReplaceIndex<C,Idx::Owned,policy::Try>; 
+    type Context<'b>= C;
+    type Output<'b> = Result<<C as Get<Idx>>::Output, ()>;
+    fn execute_in<'b, S>(self, context : &mut Self::Context<'a>, stack : &mut S) -> Self::Output<'a> where S : UndoStack<Self::Undo> 
+    {
+        stack.push_undo_action(|| ReplaceIndex::new(self.index.to_owned(), self.value));
+        context.try_replace(self.index.borrow(), self.value)
+    }
+}*/
 /* 
 impl<'a,C,Idx> UndoableAction for ReplaceIndex<C,Idx,policy::Try> 
     where C: GetMut<Idx> + GetMut<Idx::Owned,Output=<C as Get<Idx>>::Output>, <C as Get<Idx>>::Output : Sized + Clone,

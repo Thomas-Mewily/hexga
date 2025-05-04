@@ -1,10 +1,10 @@
 pub use crate::*;
 
 
-pub trait CommandStack<A> : UndoStack<A> where A : UndoableAction
+pub trait CommandStack<A,G=()> : UndoStack<A,G> where A : UndoableAction
 {
-    fn pop_command(&mut self) -> Option<Command<A>>;
-    fn take_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>>;
+    fn pop_command(&mut self) -> Option<(G,Command<A>)>;
+    fn take_last_command_actions(&mut self) -> Option<(G, impl Iterator<Item = A>)>;
 }
 
 
@@ -21,7 +21,7 @@ pub enum Command<A> where A : UndoableAction
 
 impl<A> Command<A> where A : UndoableAction
 {
-    pub const fn new() -> Self { Self::Nop}
+    pub const fn new() -> Self { Self::Nop }
 }
 
 impl<A> Debug for Command<A> where A : UndoableAction + Debug

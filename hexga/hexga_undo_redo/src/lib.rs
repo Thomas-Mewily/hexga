@@ -1,3 +1,6 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
 //! A crate that handle the command pattern, ideal for undo redo of action
 use std::borrow::Borrow;
 use std::marker::PhantomData;

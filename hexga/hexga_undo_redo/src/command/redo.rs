@@ -4,13 +4,13 @@ pub use crate::*;
 /// Once executing an action, clear the redo timeline.
 /// 
 /// So this still suffer the [Great Undo-Redo Quandary like most software](https://github.com/zaboople/klonk/blob/master/TheGURQ.md). 
-pub struct Redo<S,A> where S : UndoStack<A>, A : UndoableAction<Undo = A>
+pub struct Redo<S,A,G> where S : UndoStack<A,G>, A : UndoableAction<Undo = A>
 {
     undo : S,
     redo : S,
-    phantom : PhantomData<A>,
+    phantom : PhantomData<(A,G)>,
 }
-impl<S, A> Clone for Redo<S, A> where S: UndoStack<A> + Clone, A : UndoableAction<Undo = A>
+impl<S, A, G> Clone for Redo<S, A, G> where S: UndoStack<A,G> + Clone, A : UndoableAction<Undo = A>
 {
     fn clone(&self) -> Self 
     {
@@ -22,7 +22,7 @@ impl<S, A> Clone for Redo<S, A> where S: UndoStack<A> + Clone, A : UndoableActio
     }
 }
 
-impl<S, A> Debug for Redo<S, A> where S: UndoStack<A> + Debug, A : UndoableAction<Undo = A>
+impl<S, A, G> Debug for Redo<S, A, G> where S: UndoStack<A,G> + Debug, A : UndoableAction<Undo = A>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Redo")
@@ -32,7 +32,7 @@ impl<S, A> Debug for Redo<S, A> where S: UndoStack<A> + Debug, A : UndoableActio
     }
 }
 
-impl<S, A> Redo<S, A> where S: UndoStack<A>, A : UndoableAction<Undo = A>
+impl<S, A, G> Redo<S, A, G> where S: UndoStack<A,G>, A : UndoableAction<Undo = A>
 {
     pub fn new() -> Self where S : Default { Self::new_with_undo_redo(___(), ___()) }
     pub fn new_with_undo_redo(undo: S, redo: S) -> Self 
@@ -54,7 +54,7 @@ impl<S, A> Redo<S, A> where S: UndoStack<A>, A : UndoableAction<Undo = A>
     pub fn into_undo_redo_stack(self) -> (S,S) { let Self { undo, redo, phantom: _ } = self; (undo, redo) }
 }
 
-impl<U, A> UndoStack<A> for Redo<U,A> where U: UndoStack<A>, A : UndoableAction<Undo = A>
+impl<S, A, G> UndoStack<A, G> for Redo<S,A,G> where S: UndoStack<A,G>, A : UndoableAction<Undo = A>
 {
     const LOG_UNDO : bool = true;
     fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A { self.undo.push_undo_action(f); }
@@ -68,10 +68,10 @@ impl<U, A> UndoStack<A> for Redo<U,A> where U: UndoStack<A>, A : UndoableAction<
         self.undo.stack_undo_in(ctx, dest)
     }
 
-    fn prepare(&mut self) { self.undo.prepare(); }
+    fn prepare_with_data(&mut self, group_data : G) { self.undo.prepare_with_data(group_data); }
 }
 
-impl<U, A> RedoStack<A> for Redo<U,A> where U: UndoStack<A>, A : UndoableAction<Undo = A>
+impl<S, A, G> RedoStack<A,G> for Redo<S,A,G> where S: UndoStack<A,G>, A : UndoableAction<Undo = A>
 {
     fn stack_redo(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>) -> bool 
     {
@@ -83,9 +83,9 @@ impl<U, A> RedoStack<A> for Redo<U,A> where U: UndoStack<A>, A : UndoableAction<
     }
 }
 
-impl<U, A> CommandStack<A> for Redo<U,A> where U: CommandStack<A>, A : UndoableAction<Undo = A>
+impl<S, A, G> CommandStack<A,G> for Redo<S,A,G> where S: CommandStack<A,G>, A : UndoableAction<Undo = A>
 {
-    fn pop_command(&mut self) -> Option<Command<A>> { self.undo.pop_command() }
+    fn pop_command(&mut self) -> Option<(G,Command<A>)> { self.undo.pop_command() }
     
-    fn take_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>> { self.undo.take_last_command_actions() }
+    fn take_last_command_actions(&mut self) -> Option<(G, impl Iterator<Item = A>)> { self.undo.take_last_command_actions() }
 }

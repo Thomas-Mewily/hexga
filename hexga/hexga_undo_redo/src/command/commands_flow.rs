@@ -17,34 +17,49 @@ pub enum CommandMarker<A> where A : UndoAction
 
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum CommandFlowMarker<A> where A : UndoableAction
+pub enum CommandFlowMarker<A,G> where A : UndoableAction
 {
     // Can probably reduce the size it by using u16 and doing some encoding to allow one command to rollback multiple group
-    Group(usize),
-    Action(A),
+    /// Annonce a group G of N GroupAction
+    Group(G,usize),
+    /// An action inside a group. G is defined in the Group.
+    GroupAction(A),
+    /// A group composed of a single action
+    Action(G,A),
 }
-impl<A> Debug for CommandFlowMarker<A> where A : UndoableAction + Debug
+impl<A,G> Debug for CommandFlowMarker<A,G> where A : UndoableAction + Debug, G : Debug
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
     {
         match self 
         {
-            Self::Action(v) => write!(f, "{:?}", v),
-            Self::Group(n) => write!(f, "Group({})", n),
+            Self::Action(g, v) => if std::mem::size_of::<G>() == 0 
+            {
+                write!(f, "Action({:?})", v)
+            } else {
+                write!(f, "Action({:?} : {:?})", g, v)
+            },
+            Self::Group(g,n) => if std::mem::size_of::<G>() == 0 
+            {
+                write!(f, "Group({})", n)
+            } else {
+                write!(f, "Group({:?} : {})", g, n)
+            },
+            Self::GroupAction(a) => write!(f, "GroupAction({:?})", a)
         }
     }
 }
 
-impl<A> CommandFlowMarker<A> where A : UndoableAction
+impl<A,G> CommandFlowMarker<A,G> where A : UndoableAction
 {
-    pub const fn is_group (&self) -> bool { matches!(self, Self::Group (_)) }
-    pub const fn is_action(&self) -> bool { matches!(self, Self::Action(_)) }
+    pub const fn is_group (&self) -> bool { matches!(self, Self::Group (_, _)) }
+    pub const fn is_action(&self) -> bool { matches!(self, Self::GroupAction(_)) }
 
-    pub fn to_group(self) -> Option<usize> { if let CommandFlowMarker::Group(value) = self { Some(value) } else { None }}
-    pub fn to_action(self) -> Option<A> { if let CommandFlowMarker::Action(value) = self { Some(value) } else { None }}
+    pub fn to_group(self) -> Option<(G,usize)> { if let CommandFlowMarker::Group(group,value) = self { Some((group, value)) } else { None }}
+    pub fn to_action(self) -> Option<A> { if let CommandFlowMarker::GroupAction(value) = self { Some(value) } else { None }}
 
-    pub const fn is_nop(&self) -> bool { matches!(self, Self::Group(0)) }
-    pub const NOP : Self = CommandFlowMarker::Group(0);
+    pub const fn is_nop(&self) -> bool { matches!(self, Self::Group(_, 0)) }
+    pub const fn nop(group_data : G) -> Self { CommandFlowMarker::Group(group_data, 0) }
 }
 
 
@@ -54,45 +69,77 @@ impl<A> CommandFlowMarker<A> where A : UndoableAction
 /// except for commands composed of only one action, 
 /// which can choose to skip it if they want in order to use less memory
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct CommandsFlow<A> where A : UndoableAction
+pub struct CommandsFlow<A,G> where A : UndoableAction
 {
     // Todo : use generic sequence ? vec, vecdequeu...
-    pub actions : Vec<CommandFlowMarker<A>>,
+    pub actions : Vec<CommandFlowMarker<A,G>>,
     // Todo : add a commands count here
 }
 
-impl<A> Debug for CommandsFlow<A> where A : UndoableAction + Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.actions) } }
-impl<A> Default for CommandsFlow<A> where A : UndoableAction { fn default() -> Self { Self::new() } }
+impl<A,G> Debug for CommandsFlow<A,G> where A : UndoableAction + Debug, G : Debug { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.actions) } }
+impl<A,G> Default for CommandsFlow<A,G> where A : UndoableAction { fn default() -> Self { Self::new() } }
 
-impl<A> Deref for CommandsFlow<A> where A : UndoableAction { type Target=Vec<CommandFlowMarker<A>>; fn deref(&self) -> &Self::Target {&self.actions } }
-impl<A> DerefMut for CommandsFlow<A> where A : UndoableAction { fn deref_mut(&mut self) -> &mut Self::Target {&mut self.actions } }
+impl<A,G> Deref for CommandsFlow<A,G> where A : UndoableAction { type Target=Vec<CommandFlowMarker<A,G>>; fn deref(&self) -> &Self::Target {&self.actions } }
+impl<A,G> DerefMut for CommandsFlow<A,G> where A : UndoableAction { fn deref_mut(&mut self) -> &mut Self::Target {&mut self.actions } }
 
-impl<A> From<Vec<CommandFlowMarker<A>>> for CommandsFlow<A> where A : UndoableAction { fn from(actions: Vec<CommandFlowMarker<A>>) -> Self { Self { actions } } }
-impl<A> From<CommandsFlow<A>> for Vec<CommandFlowMarker<A>> where A : UndoableAction { fn from(value: CommandsFlow<A>) -> Self { value.actions } }
+impl<A,G> From<Vec<CommandFlowMarker<A,G>>> for CommandsFlow<A,G> where A : UndoableAction { fn from(actions: Vec<CommandFlowMarker<A,G>>) -> Self { Self { actions } } }
+impl<A,G> From<CommandsFlow<A,G>> for Vec<CommandFlowMarker<A,G>> where A : UndoableAction { fn from(value: CommandsFlow<A,G>) -> Self { value.actions } }
 
-impl<A> From<Commands<A>> for CommandsFlow<A> where A : UndoableAction { fn from(value: Commands<A>) -> Self { value.to_commands_flow() } }
+impl<A,G> From<Commands<A,G>> for CommandsFlow<A,G> where A : UndoableAction { fn from(value: Commands<A,G>) -> Self { value.to_commands_flow() } }
 
-impl<A> CommandsFlow<A> where A : UndoableAction
+impl<A,G> CommandsFlow<A,G> where A : UndoableAction
 {
-    pub const fn from_vec(actions : Vec<CommandFlowMarker<A>>) -> Self { Self { actions } }
+    pub const fn from_vec(actions : Vec<CommandFlowMarker<A,G>>) -> Self { Self { actions } }
 
     pub const fn new() -> Self { Self { actions: Vec::new() } }
     pub fn with_capacity(capacity: usize) -> Self { Self { actions: Vec::with_capacity(capacity) } }
     fn len(&self) -> usize { self.actions.len() }
 
-    pub fn actions(&self) -> &[CommandFlowMarker<A>] { &self.actions }
-    pub fn actions_mut(&mut self) -> &mut [CommandFlowMarker<A>] { &mut self.actions }
-    pub fn into_actions(self) -> Vec<CommandFlowMarker<A>> { self.actions }
+    pub fn actions(&self) -> &[CommandFlowMarker<A,G>] { &self.actions }
+    pub fn actions_mut(&mut self) -> &mut [CommandFlowMarker<A,G>] { &mut self.actions }
+    pub fn into_actions(self) -> Vec<CommandFlowMarker<A,G>> { self.actions }
 
-    pub fn to_commands(self) -> Commands<A> 
+    pub fn to_commands(self) -> Commands<A,G> 
     {
         let mut cmds = ___();
         self.extends_commands(&mut cmds);
         cmds
     }
-    pub fn extends_commands(mut self, commands : &mut Commands<A>)
+    pub fn extends_commands(mut self, commands : &mut Commands<A,G>)
     {
+        /*
         let mut idx = 0;
+
+         
+        for v in self.actions.into_iter()
+        {
+            match v
+            {
+                CommandFlowMarker::Group(group, size) => 
+                {
+                    let individual_len = idx - size;
+
+                    for unit_action in self.drain(0..individual_len).map(|v| v.to_action().unwrap())
+                    {
+                        commands.push(Command::Action(unit_action));
+                    }
+
+                    if size.is_zero() { commands.push(Command::Nop); }
+                    else 
+                    {
+                        commands.push(Command::Sequence(self.drain(0..idx).map(|v| v.to_action().unwrap()).collect()));
+                    }
+                },
+                CommandFlowMarker::GroupAction(_) => todo!(),
+                CommandFlowMarker::Action(_, _) => todo!(),
+            }
+            idx += 1;
+        }
+        */
+
+        todo!();
+
+        /* 
         loop
         {
             let Some(v) = self.get(idx) else 
@@ -103,7 +150,7 @@ impl<A> CommandsFlow<A> where A : UndoableAction
 
             match v
             {
-                CommandFlowMarker::Group(size) => 
+                CommandFlowMarker::Group(group, size) => 
                 {
                     let size = *size;
                     let individual_len = idx - size;
@@ -124,14 +171,15 @@ impl<A> CommandsFlow<A> where A : UndoableAction
             idx += 1;
 
         }
+        */
     }
 }
 
-impl<A> Length for CommandsFlow<A> where A : UndoableAction
+impl<A,G> Length for CommandsFlow<A,G> where A : UndoableAction
 {
     fn len(&self) -> usize { self.len() }
 }
-impl<A> Capacity for CommandsFlow<A> where A : UndoableAction
+impl<A,G> Capacity for CommandsFlow<A,G> where A : UndoableAction
 {
     type Param = ();
 
@@ -147,69 +195,58 @@ impl<A> Capacity for CommandsFlow<A> where A : UndoableAction
 }
 
 
-impl<A> UndoStack<A> for CommandsFlow<A> where A : UndoableAction 
+impl<A,G> UndoStack<A,G> for CommandsFlow<A,G> where A : UndoableAction 
 {
     const LOG_UNDO : bool = true;
     fn push_undo_action<F>(&mut self, f : F) where F : FnOnce() -> A 
     {
-        debug_assert!(self.len().is_non_zero(), "Forget to call CommandStackMarker::begin()");
+        debug_assert!(self.len().is_non_zero(), "Forget to call CommandsFlow::prepare()");
 
-        let group_size = match self.actions.pop()
+        match self.actions.pop().unwrap()
         {
-            Some(v) => match v
+            CommandFlowMarker::Group(g, nb) => 
             {
-                CommandFlowMarker::Group(nb) => nb + 1,
-                _ => unreachable!("actions should always finish by a group"),
-            }
-            None => 1,
+                self.actions.push(CommandFlowMarker::GroupAction(f()));
+                self.actions.push(CommandFlowMarker::Group(g, nb+1));
+            },
+            _ => unreachable!(),
         };
-        self.actions.push(CommandFlowMarker::Action(f()));
-        self.actions.push(CommandFlowMarker::Group(group_size));
     }
     
     fn stack_undo_in<Dest>(&mut self, ctx : &mut <A as UndoableAction>::Context<'_>, dest : &mut Dest) -> bool where Dest : UndoStack<<A as UndoableAction>::Undo> {
         dest.prepare();
-        self.take_last_command_actions().map(|actions| actions.for_each(|a| a.execute_and_forget_in(ctx, dest))).is_some()
+        self.take_last_command_actions().map(|(_group, actions)| actions.for_each(|a| a.execute_and_forget_in(ctx, dest))).is_some()
     }
 
-    fn prepare(&mut self) 
+    fn prepare_with_data(&mut self, group_data : G) 
     {
-        if let Some(CommandFlowMarker::Group(nb)) = self.actions.last()
-        {
-            if *nb != 1
-            {
-                self.actions.push(CommandFlowMarker::NOP);
-            }
-        }else
-        {
-            self.actions.push(CommandFlowMarker::NOP);
-        }
+        self.actions.push(CommandFlowMarker::nop(group_data));
     }
 }
 
-impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoableAction 
+impl<A,G> CommandStack<A,G> for CommandsFlow<A,G> where A : UndoableAction 
 {    
-    fn pop_command(&mut self) -> Option<Command<A>> 
+    fn pop_command(&mut self) -> Option<(G, Command<A>)> 
     {
         let Some(commands) = self.actions.pop() else { return None; };
-        let group_size = commands.to_group().expect("Command flow always end by a group");
+        let (group_data, group_size) = commands.to_group().expect("Command flow always end by a group");
         
         let r = match group_size
         {
-            0 => Some(Command::Nop),
+            0 => Command::Nop,
             1 =>        
             { 
                 let last = self.pop().unwrap();
-                Some(Command::Action(last.to_action().unwrap()))
+                Command::Action(last.to_action().unwrap())
             }
             _ =>
             {
                 let idx_begin_drain = self.len() - group_size;
-                Some(Command::Sequence(self.drain(idx_begin_drain..).map(|v| v.to_action().unwrap()).collect()))
+                Command::Sequence(self.drain(idx_begin_drain..).map(|v| v.to_action().unwrap()).collect())
             }
         };
         debug_assert!(self.is_empty() || self.last().as_ref().unwrap().is_group());
-        r
+        Some((group_data, r))
     }
     
     /* 
@@ -226,10 +263,10 @@ impl<A> CommandStack<A> for CommandsFlow<A> where A : UndoableAction
     }
     */
     
-    fn take_last_command_actions(&mut self) -> Option<impl Iterator<Item = A>> {
+    fn take_last_command_actions(&mut self) -> Option<(G, impl Iterator<Item = A>)> {
         let Some(commands) = self.actions.pop() else { return None; };
-        let group_size = commands.to_group().expect("Command flow always end by a group");
+        let (group_data, group_size) = commands.to_group().expect("Command flow always end by a group");
         let idx_begin_drain = self.len() - group_size;
-        Some(self.drain(idx_begin_drain..).rev().map(|v| v.to_action().expect("should be an action")))
+        Some((group_data, self.drain(idx_begin_drain..).rev().map(|v| v.to_action().expect("should be an action"))))
     }
 }
