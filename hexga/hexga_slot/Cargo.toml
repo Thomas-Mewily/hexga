@@ -1,5 +1,5 @@
 [package]
-name = "hexga_undo_redo"
+name = "hexga_slot"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -8,8 +8,8 @@ repository.workspace = true
 license.workspace = true
 readme = "README.md"
 
-keywords = ["undo", "redo", "command", ""]
-description = "A library implementing the command pattern with undo and redo functionality."
+keywords = []
+description = ""
 categories = ["rust-patterns", "data-structures"]
 
 [dependencies]

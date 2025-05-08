@@ -7,6 +7,7 @@ hexga_map_on
 hexga_typedef
 hexga_number
 hexga_math
+hexga_slot
 hexga_generational
 hexga_bitflags
 hexga_tools
