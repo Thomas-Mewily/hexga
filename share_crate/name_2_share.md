@@ -1,9 +1,9 @@
 // Sorted by order of dependency.
 // Each name can only depend on the upper name
+hexga_map_on
 hexga_core
 hexga_base
 hexga_array
-hexga_map_on
 hexga_typedef
 hexga_number
 hexga_math
