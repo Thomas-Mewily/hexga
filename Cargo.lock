@@ -288,7 +288,7 @@ checksum = "fbd780fe5cc30f81464441920d82ac8740e2e46b29a6fad543ddd075229ce37e"
 
 [[package]]
 name = "hexga"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_bitflags",
  "hexga_core",
@@ -299,22 +299,22 @@ dependencies = [
 
 [[package]]
 name = "hexga_array"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 
 [[package]]
 name = "hexga_base"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 
 [[package]]
 name = "hexga_bitflags"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_number",
 ]
 
 [[package]]
 name = "hexga_core"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "default_is_triple_underscore",
  "hexga_map_on",
@@ -324,7 +324,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_core",
  "hexga_number",
@@ -333,7 +333,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_graphics"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_core",
  "hexga_math",
@@ -343,7 +343,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_io"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "bincode",
  "hexga_core",
@@ -355,11 +355,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_map_on"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 
 [[package]]
 name = "hexga_math"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_array",
  "hexga_core",
@@ -370,14 +370,14 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_map_on",
 ]
 
 [[package]]
 name = "hexga_slot"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_core",
 ]
@@ -396,7 +396,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_tools"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_core",
  "hexga_number",
@@ -405,11 +405,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 
 [[package]]
 name = "hexga_undo_redo"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 dependencies = [
  "hexga_core",
 ]
@@ -701,7 +701,7 @@ dependencies = [
 
 [[package]]
 name = "share_crate"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 
 [[package]]
 name = "simd-adler32"
@@ -722,7 +722,7 @@ dependencies = [
 
 [[package]]
 name = "template"
-version = "0.0.10-beta.4"
+version = "0.0.10-beta.5"
 
 [[package]]
 name = "tinytemplate"
