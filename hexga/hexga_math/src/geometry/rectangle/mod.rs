@@ -114,9 +114,9 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     /// 
     /// 
     /// // not inside :
-    /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(2, 0)));
-    /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(0, 2)));
-    /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(2, 2)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(2, 0)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(0, 2)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(2, 2)));
     /// 
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 3,   3)));
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(-1,  -1)));

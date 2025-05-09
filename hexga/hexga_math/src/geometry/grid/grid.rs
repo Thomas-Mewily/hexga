@@ -458,7 +458,7 @@ mod grid_test
         let subgrid = grid.subgrid(size.to_rect());
 
         assert_eq!(grid, subgrid);
-
+        
         let smaller_size = point2(1, 2);
         let smaller_grid = Grid2::from_fn(smaller_size, |p|  p.x + 10 * p.y);
         let smaller_grid_from_bigger_grid = grid.subgrid(smaller_size.to_rect());
@@ -467,6 +467,7 @@ mod grid_test
         let top_right_grid_size = point2(1, 2);
         let offset = Vector2::ONE;
         let top_right_grid = Grid2::from_fn(smaller_size, |p|  { let p = p + offset; p.x + 10 * p.y });
+        
         assert_eq!(top_right_grid, grid.subgrid(top_right_grid_size.to_rect().moved_by(offset)));
     }
 

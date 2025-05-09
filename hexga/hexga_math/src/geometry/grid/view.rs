@@ -42,7 +42,11 @@ impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridView<'a, T, Idx,N> 
     #[inline(always)]
     fn try_get(&self, pos : Vector<Idx,N>) -> Result<&Self::Output, ()> { self.get(pos).ok_or_void() }
     #[inline(always)]
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> { if self.rect().is_inside(pos) { self.grid.get(self.view.pos + pos) } else { None } }
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> 
+    { 
+        let idx = self.view.pos + pos;
+        if self.rect().is_inside(idx) { self.grid.get(idx) } else { None } 
+    }
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }

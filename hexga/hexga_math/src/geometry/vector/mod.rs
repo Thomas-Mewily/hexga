@@ -102,8 +102,8 @@ impl<T,const N : usize> Vector<T,N>
     }
 }
 
-pub trait IntegerIndex : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> {}
-impl<T> IntegerIndex for T where T : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> {}
+pub trait IntegerIndex : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
+impl<T> IntegerIndex for T where T : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
 
 impl<Idx, const N : usize> Vector<Idx, N> 
     where Idx : IntegerIndex

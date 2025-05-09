@@ -343,6 +343,11 @@ impl<T,Gen:IGeneration> Into<(usize,Gen)> for GenIDOf<T,Gen>
     }
 }
 
+impl<T,Gen:IGeneration> Default for GenVecOf<T,Gen>
+{
+    fn default() -> Self { Self::new() }
+}
+
 impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 {
     pub const fn new() -> Self { Self { slot: Vec::new(), head : usize::MAX, len : 0 }}
