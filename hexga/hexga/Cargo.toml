@@ -32,7 +32,7 @@ hexga_core.workspace = true
 hexga_math.workspace = true
 hexga_generational.workspace = true
 hexga_bitflags.workspace = true
-hexga_undo_redo.workspace = true
+#hexga_undo_redo.workspace = true
 
 # serialization
 serde = { version = "1.0", features = ["derive"], optional = true}
