@@ -1,5 +1,5 @@
 use crate::*;
-use std::{fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}, usize};
+use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}, usize};
 
 
 pub type Generation = u32;
@@ -271,6 +271,11 @@ pub struct GenIDOf<T,Gen:IGeneration>
     index      : usize,
     generation : Gen,
     value      : PhantomData<T>,
+}
+
+impl<T,Gen:IGeneration> Default for GenIDOf<T,Gen>
+{
+    fn default() -> Self { Self::NULL }
 }
 
 #[cfg(feature = "serde")]
@@ -575,28 +580,38 @@ impl<T, Gen: IGeneration> IntoIterator for GenVecOf<T, Gen> {
     type IntoIter = IntoIter<T, Gen>;
 
     fn into_iter(self) -> Self::IntoIter {
-        IntoIter {
+        IntoIter 
+        {
             iter: self.slot.into_iter().enumerate(),
+            len_remaining: self.len,
         }
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct IntoIter<T, Gen: IGeneration> {
+pub struct IntoIter<T, Gen: IGeneration> 
+{
     iter: std::iter::Enumerate<std::vec::IntoIter<Slot<T, Gen>>>,
+    len_remaining : usize,
 }
 
 impl<T, Gen: IGeneration> Iterator for IntoIter<T, Gen> {
     type Item = (GenIDOf<T, Gen>, T);
 
-    fn next(&mut self) -> Option<Self::Item> {
-        while let Some((idx, slot)) = self.iter.next() {
-            if let SlotValue::Used(value) = slot.value {
+    fn next(&mut self) -> Option<Self::Item> 
+    {
+        while let Some((idx, slot)) = self.iter.next() 
+        {
+            if let SlotValue::Used(value) = slot.value 
+            {
+                self.len_remaining -= 1;
                 return Some((GenIDOf::new(idx, slot.generation), value));
             }
         }
         None
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
 impl<T, Gen: IGeneration> FusedIterator for IntoIter<T, Gen> {}
 
@@ -608,13 +623,16 @@ impl<'a, T, Gen: IGeneration> IntoIterator for &'a GenVecOf<T, Gen> {
     fn into_iter(self) -> Self::IntoIter {
         Iter {
             iter: self.slot.iter().enumerate(),
+            len_remaining : self.len,
         }
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct Iter<'a, T, Gen: IGeneration> {
+pub struct Iter<'a, T, Gen: IGeneration> 
+{
     iter: std::iter::Enumerate<std::slice::Iter<'a, Slot<T, Gen>>>,
+    len_remaining : usize,
 }
 
 impl<'a, T, Gen: IGeneration> Iterator for Iter<'a, T, Gen> {
@@ -623,30 +641,37 @@ impl<'a, T, Gen: IGeneration> Iterator for Iter<'a, T, Gen> {
     fn next(&mut self) -> Option<Self::Item> {
         while let Some((idx, slot)) = self.iter.next() {
             if let Some(value) = slot.value() {
+                self.len_remaining -= 1;
                 return Some((GenIDOf::new(idx, slot.generation), value));
             }
         }
         None
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
 impl<'a, T, Gen: IGeneration> FusedIterator for Iter<'a, T, Gen> {}
 
 
 
-impl<'a, T, Gen: IGeneration> IntoIterator for &'a mut GenVecOf<T, Gen> {
+impl<'a, T, Gen: IGeneration> IntoIterator for &'a mut GenVecOf<T, Gen> 
+{
     type Item = (GenIDOf<T, Gen>, &'a mut T);
     type IntoIter = IterMut<'a, T, Gen>;
 
     fn into_iter(self) -> Self::IntoIter {
         IterMut {
             iter: self.slot.iter_mut().enumerate(),
+            len_remaining : self.len,
         }
     }
 }
 
 #[derive(Debug)]
-pub struct IterMut<'a, T, Gen: IGeneration> {
+pub struct IterMut<'a, T, Gen: IGeneration> 
+{
     iter: std::iter::Enumerate<std::slice::IterMut<'a, Slot<T, Gen>>>,
+    len_remaining : usize,
 }
 
 impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen> {
@@ -656,11 +681,14 @@ impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen> {
         while let Some((idx, slot)) = self.iter.next() {
             let generation = slot.generation();
             if let Some(value) = slot.value_mut() {
+                self.len_remaining -= 1;
                 return Some((GenIDOf::new(idx, generation), value));
             }
         }
         None
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
 impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
 
@@ -754,6 +782,70 @@ impl<T,Gen:IGeneration> GetManyMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
         }
     }
 }
+
+
+impl<A,Gen:IGeneration> Extend<A> for GenVecOf<A,Gen>
+{
+    fn extend<T: IntoIterator<Item = A>>(&mut self, iter: T) 
+    {
+        for val in iter.into_iter()
+        {
+            self.insert(val);
+        }
+    }
+}
+
+pub struct GenIDMap<T,Gen:IGeneration>
+{
+    map : HashMap<GenIDOf<T,Gen>,GenIDOf<T,Gen>>,
+}
+impl<T,Gen:IGeneration> Default for GenIDMap<T,Gen> { fn default() -> Self { Self { map: ___() } } }
+impl<T,Gen:IGeneration> Clone for GenIDMap<T,Gen> { fn clone(&self) -> Self { Self { map: self.map.clone() } } }
+impl<T,Gen:IGeneration> Debug for GenIDMap<T,Gen> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.debug_struct("GenIDMap").field("map", &self.map).finish() } }
+impl<T,Gen:IGeneration> PartialEq for GenIDMap<T,Gen> { fn eq(&self, other: &Self) -> bool { self.map == other.map } }
+impl<T,Gen:IGeneration> Eq for GenIDMap<T,Gen>{}
+impl<T,Gen:IGeneration> IntoIterator for GenIDMap<T,Gen>
+{
+    type Item=(GenIDOf<T,Gen>,GenIDOf<T,Gen>);
+    type IntoIter=<HashMap<GenIDOf<T,Gen>,GenIDOf<T,Gen>> as IntoIterator>::IntoIter;
+    fn into_iter(self) -> Self::IntoIter { self.map.into_iter() }
+}
+impl<T,Gen:IGeneration> GenIDMap<T,Gen>
+{
+    pub fn get(&self, src : GenIDOf<T,Gen>) -> GenIDOf<T,Gen> 
+    { 
+        debug_assert!(self.map.get(&src).is_some());
+        self.map.get(&src).copied().unwrap_or(GenIDOf::NULL)
+    }
+}
+
+pub trait GenVecExtend<Gen:IGeneration=Generation> : Sized
+{
+    fn update_id(&mut self, map : &GenIDMap<Self,Gen>);
+}
+
+impl<A,Gen:IGeneration> Extend<(GenIDOf<A,Gen>, A)> for GenVecOf<A,Gen> where A : GenVecExtend<Gen>
+{
+    fn extend<T: IntoIterator<Item = (GenIDOf<A,Gen>, A)>>(&mut self, iter: T) 
+    {
+        let it = iter.into_iter();
+        let mut h = HashMap::with_capacity(it.size_hint().0);
+
+        for (old_id, val) in it
+        {
+            let new_id = self.insert(val);
+            h.insert(old_id, new_id);
+        }
+
+        let map = GenIDMap{ map: h };
+        for old_id in map.map.keys()
+        {   
+            unsafe { self.get_unchecked_mut(*old_id) }.update_id(&map);
+        }
+    }
+}
+
+
 
 #[allow(dead_code)]
 #[cfg(test)]
