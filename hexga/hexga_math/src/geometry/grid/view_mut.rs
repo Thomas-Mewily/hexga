@@ -71,8 +71,13 @@ impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridViewMut<'a, T, Idx,
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
     #[inline(always)]
     fn try_get(&self, pos : Vector<Idx,N>) -> Result<&Self::Output, ()> { self.get(pos).ok_or_void() }
+
     #[inline(always)]
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> { if self.rect().is_inside(pos) { self.grid.get(self.view.pos + pos) } else { None } }
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> 
+    { 
+        let idx = self.view.pos + pos;
+        if self.rect().is_inside(idx) { self.grid.get(idx) } else { None } 
+    }
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
@@ -82,8 +87,13 @@ impl<'a, T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridViewMut<'a, T, I
 {
     #[inline(always)]
     fn try_get_mut(&mut self, pos : Vector<Idx,N>) -> Result<&mut Self::Output, ()> { self.get_mut(pos).ok_or_void() }
+
     #[inline(always)]
-    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut Self::Output> { if self.rect().is_inside(pos) { self.grid.get_mut(self.view.pos + pos) } else { None } }
+    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut Self::Output> 
+    { 
+        let idx = self.view.pos + pos;
+        if self.rect().is_inside(idx) { self.grid.get_mut(idx) } else { None } 
+    }
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut Self::Output { unsafe { self.grid.get_unchecked_mut(self.view.pos + pos) } }
