@@ -166,7 +166,7 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
         // impl details :
         + Index<usize,Output=T> + IndexMut<usize,Output=T>
 {
-    // Todo : Don't expose how to grid is stored inside ?
+    // Todo : Don't expose how to grid is stored inside ? Use iterator instead ?
     fn values(&self) -> &[T];
     fn values_mut(&mut self) -> &mut [T];
     fn into_values(self) -> Vec<T>;
@@ -195,7 +195,7 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
 
     fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, Idx : PartialOrd { r.intersect_or_empty(self.rect()) }
 
-    fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Param : Clone;
+    //fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Param : Clone;
 
     fn transform<Dest, F>(self, f : F) -> <Self as IGridView<T,Param,Idx,N>>::Map<Dest> where F : FnMut(T) -> Dest, Param : Clone;
     fn transform_par<Dest, F>(self, f : F) -> <Self as IGridView<T,Param,Idx,N>>::Map<Dest> where F : Fn(T) -> Dest + Sync + Send, T : Send + Sync, Dest : Send, Idx : Sync, Param : Clone;
@@ -206,6 +206,14 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : IntegerIndex,
     type ViewMut<'a> : IGridView<T,Param,Idx,N> where Self: 'a;
     fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a>;
 }
+
+// Todo : Remove T: Clone constraint
+impl<T, Idx, const N : usize> Crop<Idx,N> for GridBase<T, Idx, N> where Idx : IntegerIndex, T : Clone
+{
+    fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self>  { self.view().crop(subrect).map(|v| v.to_grid()) }
+    unsafe fn crop_unchecked(self, subrect : Rectangle<Idx, N>) -> Self { unsafe { self.view().crop_unchecked(subrect).to_grid() } }
+}
+
 
 impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N> where Idx : IntegerIndex,
 {
@@ -219,15 +227,13 @@ impl<T, Idx, const N : usize> IGrid<T,(),Idx,N> for GridBase<T, Idx, N> where Id
     fn transform_par<Dest, F>(self, f : F) -> <Self as IGridView<T,(),Idx,N>>::Map<Dest> where F : Fn(T) -> Dest + Sync + Send, T : Send + Sync, Dest : Send, Idx : Sync, () : Clone 
     { GridBase { size: self.size, value: self.value.into_par_iter().map(f).collect() } }
     
-    fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone { self.view().crop_margin(margin_start, margin_end).to_grid() }
+    //fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone { self.view().crop_margin(margin_start, margin_end).to_grid() }
 
     type View<'a> = grid::GridView<'a, T,Idx,N> where Self: 'a;
     fn view<'a>(&'a self) -> grid::GridView<'a, T,Idx,N> { grid::GridView::from_grid(self) }
 
     type ViewMut<'a> = grid::GridViewMut<'a, T,Idx,N> where Self: 'a;
     fn view_mut<'a>(&'a mut self) -> grid::GridViewMut<'a, T,Idx,N> { grid::GridViewMut::from_grid(self) }
-    
-
 }
 
 impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N> where Idx : IntegerIndex 
@@ -237,11 +243,13 @@ impl<T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridBase<T, Idx, N> wher
     fn map<Dest, F>(&self, mut f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, () : Clone { GridBase::from_fn(self.size(), |p| f(&self[p])) }
     fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, () : Clone  { GridBase::from_fn_par(self.size(), |p| f(&self[p])) }
 
+    /* 
     fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone { self.view().subgrid(rect) }
     fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync { self.view().subgrid_par(rect) }
 
     type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
-    fn subview<'a>(&'a self, rect : Rectangle<Idx, N>) -> Self::SubView<'a> where T : Clone { GridView::new(self, rect) }
+    fn crop_intersect<'a>(&'a self, rect : Rectangle<Idx, N>) -> Self::SubView<'a> where T : Clone { GridView::new(self, rect) }
+    */
 }
 
 impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : IntegerIndex,
@@ -266,7 +274,7 @@ impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N>
     where Idx : IntegerIndex 
 {
     type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
-    fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new(self, rect) }
+    fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new_intersect(self, rect) }
 }
 
 impl<T, Idx, const N : usize> Get<Vector<Idx,N>> for GridBase<T, Idx,N>  where Idx : IntegerIndex 
@@ -455,13 +463,13 @@ mod grid_test
 
         assert_eq!(grid.size(), grid.view().size());
 
-        let subgrid = grid.subgrid(size.to_rect());
+        let subgrid = grid.view().subgrid(size.to_rect());
 
         assert_eq!(grid, subgrid);
         
         let smaller_size = point2(1, 2);
         let smaller_grid = Grid2::from_fn(smaller_size, |p|  p.x + 10 * p.y);
-        let smaller_grid_from_bigger_grid = grid.subgrid(smaller_size.to_rect());
+        let smaller_grid_from_bigger_grid = grid.view().subgrid(smaller_size.to_rect());
         assert_eq!(smaller_grid, smaller_grid_from_bigger_grid);
 
         let top_right_grid_size = point2(1, 2);
@@ -492,8 +500,8 @@ mod grid_test
         assert_ne!(grid1.view_mut(), grid2.view_mut());
 
         let rect = rect2p(0, 0, 1, size.y);
-        assert_eq!(grid1.view().subview(rect), grid2.view().subview(rect));
-        assert_eq!(grid1.view_mut().subview(rect), grid2.view_mut().subview(rect));
+        assert_eq!(grid1.view().crop_intersect(rect), grid2.view().crop_intersect(rect));
+        assert_eq!(grid1.view_mut().crop_intersect(rect), grid2.view_mut().crop_intersect(rect));
         assert_eq!(grid1.view_mut().subview_mut(rect), grid2.view_mut().subview_mut(rect));
     }
 }

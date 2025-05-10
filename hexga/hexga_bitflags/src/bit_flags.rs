@@ -104,12 +104,12 @@ impl<F,U> From<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : Max
 }
 impl<F,U> Zero for BitFlags<F,U>  where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
 {
-    const ZERO : Self = unsafe { Self::from_flags_uncheck(U::ZERO) };
+    const ZERO : Self = unsafe { Self::from_flags_unchecked(U::ZERO) };
 }
 impl<F,U> BitFlags<F,U>  where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
 {
-    pub const unsafe fn from_flags_uncheck(flags : U) -> Self { Self { flags, phantom: PhantomData }}
-    pub fn from_flags(flags : U) -> Self { let max : U = U::ONE << F::MAX.into(); unsafe { Self::from_flags_uncheck(flags & (max | max - U::ONE)) } }
+    pub const unsafe fn from_flags_unchecked(flags : U) -> Self { Self { flags, phantom: PhantomData }}
+    pub fn from_flags(flags : U) -> Self { let max : U = U::ONE << F::MAX.into(); unsafe { Self::from_flags_unchecked(flags & (max | max - U::ONE)) } }
     //pub fn from_flags(flag : U) -> Self { Self::_from_flags(U::ONE << flag)}
     pub fn from_flag(flag : F) -> Self { Self::from_flags(U::ONE << flag.into()) }
 

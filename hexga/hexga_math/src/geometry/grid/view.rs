@@ -6,7 +6,7 @@ use crate::*;
 /// 
 /// [Param] is a silent parameter, generally void, that is here to facilitate the API for [GridParam] because some function depend 
 /// if the param is clonable or not. 
-pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output = T> + IRectangle<Idx, N> where Idx : IntegerIndex
+pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output = T> + IRectangle<Idx, N> + where Idx : IntegerIndex
 {
     /* 
     // Can't be easily optimized (they will call `self.get(pos)`), so it is better to omit them
@@ -22,11 +22,10 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output =
     fn to_grid(&self) -> Self::Map<T> where T : Clone, Param : Clone { self.map(|v| v.clone() )}
     fn to_grid_par(&self) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync, Param : Clone { self.map_par(|v| v.clone() )}
 
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone, Param : Clone;
-    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync, Param : Clone;
-
-    type SubView<'b> : IGridView<T,Param,Idx,N> where Self: 'b;
-    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone;
+    /// `self.crop_intersect(subrect).to_grid()`
+    fn subgrid(self, subrect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone, Param : Clone, Self : Crop<Idx,N> { self.crop_intersect(subrect).to_grid() }
+    /// `self.crop_intersect(subrect).to_grid_par()`
+    fn subgrid_par(self, subrect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync, Param : Clone, Self : Crop<Idx,N> { self.crop_intersect(subrect).to_grid_par() }
 
     fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<Idx,N>, &'a T)> where T: 'a
     {
@@ -77,7 +76,7 @@ impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N> where Idx : IntegerInd
     {
         Self { grid, view: grid.rect() }
     }
-    pub fn new(grid : &'a GridBase<T,Idx,N>, view : Rectangle<Idx,N>) -> Self 
+    pub fn new_intersect(grid : &'a GridBase<T,Idx,N>, view : Rectangle<Idx,N>) -> Self 
     {
         let view = grid.rect().intersect_or_empty(view);
         Self { grid, view }
@@ -87,15 +86,21 @@ impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N> where Idx : IntegerInd
         Self { grid, view }
     }
 
-    /// Can't access the outside rectangle
-    pub fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self 
-    {
-        unsafe { Self::new_unchecked(self.grid, self.view.crop_margin(margin_start, margin_end)) }
-    }
-
     pub fn format(self) -> GridViewFormat<'a,T,Idx,N> { GridViewFormat::new(self) }
 }
 
+impl<'a, T, Idx, const N : usize> Crop<Idx,N> for GridView<'a, T, Idx, N> where Idx : IntegerIndex
+{
+    fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self> 
+    {
+        self.view.crop(subrect).map(|r| unsafe { Self::new_unchecked(self.grid, r) })
+    }
+    unsafe fn crop_unchecked(mut self, subrect : Rectangle<Idx, N>) -> Self 
+    {
+        self.view = unsafe { self.view.crop_unchecked(subrect) };
+        self
+    }
+}
 
 impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx, N> where Idx : IntegerIndex 
 {
@@ -103,11 +108,10 @@ impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx,
     fn map<Dest, F>(&self, mut f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, () : Clone { GridBase::from_fn(self.size(), |p| f(&self[p])) }
     fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, () : Clone  { GridBase::from_fn_par(self.size(), |p| f(&self[p])) }
 
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone { self.subview(rect).to_grid() }
-    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync { self.subview(rect).to_grid_par() }
-
-    type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
-    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    //fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone { self.crop_intersect(rect).to_grid() }
+    //fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync { self.crop_intersect(rect).to_grid_par() }
+    //type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
+    //fn crop_intersect<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
 }
 
 impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, T, Idx, N> where Idx : IntegerIndex 

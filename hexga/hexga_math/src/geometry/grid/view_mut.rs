@@ -38,7 +38,7 @@ impl<'a, T, Idx, const N : usize> GridViewMut<'a, T, Idx,N> where Idx : IntegerI
         let view = grid.rect();
         Self { grid, view }
     }
-    pub fn new(grid : &'a mut GridBase<T,Idx,N>, view : Rectangle<Idx,N>) -> Self 
+    pub fn new_intersect(grid : &'a mut GridBase<T,Idx,N>, view : Rectangle<Idx,N>) -> Self 
     {
         let view = grid.rect().intersect_or_empty(view);
         Self { grid, view }
@@ -47,9 +47,18 @@ impl<'a, T, Idx, const N : usize> GridViewMut<'a, T, Idx,N> where Idx : IntegerI
     {
         Self { grid, view }
     }
-    pub fn crop_margin<'b>(&'b mut self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> GridViewMut<'b, T, Idx,N> where 'b: 'a 
+}
+
+impl<'a, T, Idx, const N : usize> Crop<Idx,N> for GridViewMut<'a, T, Idx, N> where Idx : IntegerIndex
+{
+    fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self> 
     {
-        unsafe { Self::new_unchecked(self.grid, self.view.crop_margin(margin_start, margin_end)) }
+        self.view.crop(subrect).map(|r| unsafe { Self::new_unchecked(self.grid, r) })
+    }
+    unsafe fn crop_unchecked(mut self, subrect : Rectangle<Idx, N>) -> Self 
+    {
+        self.view = unsafe { self.view.crop_unchecked(subrect) };
+        self
     }
 }
 
@@ -59,11 +68,13 @@ impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridViewMut<'a, T, I
     fn map<Dest, F>(&self, mut f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, () : Clone { GridBase::from_fn(self.size(), |p| f(&self[p])) }
     fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, () : Clone  { GridBase::from_fn_par(self.size(), |p| f(&self[p])) }
 
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone { self.subview(rect).to_grid() }
-    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone+ Send + Sync, Idx : Sync { self.subview(rect).to_grid_par() }
+    /*
+    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone { self.crop_intersect(rect).to_grid() }
+    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone+ Send + Sync, Idx : Sync { self.crop_intersect(rect).to_grid_par() }
     
     type SubView<'b> = GridView<'b,T,Idx,N> where Self: 'b;
-    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    fn crop_intersect<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    */
 }
 
 impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
@@ -121,7 +132,7 @@ impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridViewMut<'a, T, Idx,N
 impl<'a, T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
 {
     type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
-    fn subview_mut<'b>(&'b mut self, rect : Rectangle<Idx, N>) -> GridViewMut<'b,T,Idx,N> { GridViewMut::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
+    fn subview_mut<'b>(&'b mut self, rect : Rectangle<Idx, N>) -> GridViewMut<'b,T,Idx,N> { GridViewMut::new_intersect(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
 }
 
 impl<'a, T, Idx, const N : usize> PartialEq for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex,

@@ -160,6 +160,11 @@ impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Id
     #[inline(always)] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
+impl<T,Param,Idx,const N : usize> Crop<Idx,N> for GridParamBase<T,Param,Idx,N> where Param : Clone, GridBase<T,Idx,N> : Crop<Idx,N>, Idx : IntegerIndex
+{
+    fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self>  { self.grid.crop(subrect).map(|g| Self::from_grid_with_param(g, self.param)) }
+    unsafe fn crop_unchecked(self, subrect : Rectangle<Idx, N>) -> Self { Self::from_grid_with_param(unsafe { self.grid.crop_unchecked(subrect) }, self.param) }
+}
 impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
 {
     fn values(&self) -> &[T] { self.grid.values() }
@@ -173,14 +178,11 @@ impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param
     fn transform_par<Dest, F>(self, f : F) -> <Self as IGridView<T,Param,Idx,N>>::Map<Dest> where F : Fn(T) -> Dest + Sync + Send, T : Send + Sync, Dest : Send, Idx : Sync, Param : Clone 
     { GridParamBase::from_grid_with_param(self.grid.transform_par(f), self.param) }
     
-    fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Param : Clone 
-    { GridParamBase::from_grid_with_param(self.grid.crop_margin(margin_start, margin_end), self.param.clone()) }
-    
     type View<'a> = GridParamView<'a,T,Param,Idx,N> where Self: 'a;
     fn view<'a>(&'a self) -> Self::View<'a> { Self::View::from_view(self.grid.view(), &self.param) }
     
     type ViewMut<'a> = GridParamViewMut<'a,T,Param,Idx,N> where Self: 'a;
-    fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a> { Self::ViewMut::from_view(self.grid.view_mut(), &mut self.param) }
+    fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a> { Self::ViewMut::from_view_mut(self.grid.view_mut(), &mut self.param) }
 }
 
 impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
@@ -189,13 +191,6 @@ impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,P
 
     fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, Param : Clone { GridParamBase::from_grid_with_param(self.grid.map(f), self.param.clone()) }
     fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, Param : Clone { GridParamBase::from_grid_with_param(self.grid.map_par(f), self.param.clone()) }
-
-    fn subgrid(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone, Param : Clone { self.subview(rect).to_grid() }
-    fn subgrid_par(&self, rect : Rectangle<Idx, N>) -> Self::Map<T> where T : Clone+ Send + Sync, Idx : Sync, Param : Clone { self.subview(rect).to_grid_par() }
-
-    type SubView<'b> = GridParamView<'b, T, Param, Idx, N> where Self: 'b;
-    fn subview<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone 
-    { Self::SubView::from_view(self.grid.subview(rect), &self.param) }
 }
 
 
@@ -203,7 +198,7 @@ impl<T,Param,Idx,const N : usize> IGridViewMut<T,Param,Idx,N> for GridParamBase<
 {
     type SubViewMut<'b> = GridParamViewMut<'b, T, Param, Idx, N> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> 
-    { Self::SubViewMut::from_view(self.grid.subview_mut(rect), &mut self.param) }
+    { Self::SubViewMut::from_view_mut(self.grid.subview_mut(rect), &mut self.param) }
 }
 
 impl<T, Param, Idx, const N : usize> Index<usize> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,

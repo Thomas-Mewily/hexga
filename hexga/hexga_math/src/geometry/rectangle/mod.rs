@@ -132,6 +132,8 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
         self.pos().all_with(&point, |a, c| c >= a) &&
         (self.pos + self.size).all_with(&point, |a, c| c < a)
     }
+
+    pub fn is_empty(&self) -> bool { self.size.is_zero() }
     
     pub fn clamp_vector(&self, vector : Vector<T, N>) -> Vector<T, N>
     { vector.max(self.min()).min(self.max()) }
@@ -140,6 +142,7 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     {
         Self::from_pos_to_pos(self.min().max(other.pos), self.max().min(other.max()))
     }
+    /// None if any rectangle is empty
     pub fn intersect(self, other : Self) -> Option<Self>
     {
         let intersect = self.intersect_or_empty(other);
@@ -162,46 +165,107 @@ impl<T> RectangleBase<T>
     pub const fn new_sized(size : T) -> Self where T : Zero { Self::new(zero(), size) }
 }
 
+pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T : Number
+{
+    /// Crop the current rectangle to the given sub rectangle.
+    /// 
+    /// The sub rectangle will always be inside the current rectangle.
+    fn crop(self, subrect : Rectangle<T, N>) -> Option<Self>;
+
+    /// Crop the current rectangle to the given sub rectangle.
+    /// 
+    /// The sub rectangle will always be inside the current rectangle.
+    unsafe fn crop_unchecked(self, subrect : Rectangle<T, N>) -> Self { self.crop(subrect).expect("invalid subrect") }
+
+    /// Crop the current rectangle to the given sub rectangle.
+    /// 
+    /// The sub rectangle will always be inside the current rectangle.
+    #[track_caller]
+    fn crop_or_panic(self, subrect : Rectangle<T, N>) -> Self { self.crop(subrect).expect("invalid subrect") }
+
+
+    /// Crop the current rectangle to the given sub rectangle.
+    /// 
+    /// The sub rectangle will always be inside the current rectangle.
+    /// If the sub rectangle is outside or partially outside the current view, it will be intersected with the current rectangle.
+    fn crop_intersect(self, subrect : Rectangle<T, N>) -> Self
+    {
+        let rect = self.rect().intersect_or_empty(subrect);
+        unsafe { self.crop_unchecked(rect) }
+    }
+
+    fn crop_margin(self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Option<Self>
+    {
+        if margin_start.any(|a| a < &zero()) || margin_end.any(|a| a < &zero()) { return None; }
+
+        let mut subrect = self.rect();
+
+        let removed_size = margin_start + margin_end;
+        if removed_size.any_with(subrect.size(), |a,b| a > b) { return None; }
+
+        subrect.pos  += margin_start;
+        subrect.size -= removed_size;
+        
+        Some(self.crop_or_panic(subrect))
+    }
+
+    unsafe fn crop_margin_unchecked(self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Self
+    {
+        let mut subrect = self.rect();
+        subrect.pos  += margin_start;
+        subrect.size -= margin_start + margin_end;
+        unsafe { self.crop_unchecked(subrect) }
+    }
+
+    /// Crop self by adding a margin to the start and the end of the current rectangle size.
+    /// 
+    /// The sub self will always be inside the self.
+    fn crop_margin_intersect(self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Self
+    {
+        let size = self.size() - margin_start - margin_end;
+        self.crop_intersect(Rectangle::new(margin_start, size))
+    }
+}
+
+impl<T,const N : usize> Crop<T,N> for Rectangle<T,N> where T : Number
+{
+    // The Behavior is not well defined with zero sized subrect
+    // Currently it will return None
+
+    fn crop(self, subrect : Rectangle<T, N>) -> Option<Self> { self.intersect(subrect.moved_by(self.pos)) }
+    unsafe fn crop_unchecked(self, subrect : Rectangle<T, N>) -> Self { subrect.moved_by(self.pos) }
+
+    fn crop_intersect(self, subrect : Rectangle<T, N>) -> Self { self.intersect_or_empty(subrect.moved_by(self.pos)) }
+    unsafe fn crop_margin_unchecked(self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Self { Self::new(self.pos + margin_start, self.size - margin_start - margin_end) }
+}
+
+#[cfg(test)]
+mod rect_crop_test 
+{
+    use crate::prelude::*;
+
+    #[test]
+    fn crop_margin_unchecked() 
+    {
+        unsafe 
+        {
+            assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
+            assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(-1.splat2(), zero()), rect2p(4,4,11,11));
+        }
+    }
+
+    #[test]
+    fn crop_margin_intersect() 
+    {
+        assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
+        assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(-1.splat2(), zero()), rect2p(5,5,10,10));
+    }
+}
+
+
 impl<T,const N : usize> Rectangle<T,N> where T : Number
 {
     pub fn from_pos_to_pos(start_pos : Vector<T,N>, end_pos : Vector<T,N>) -> Self { Self::new(start_pos, (end_pos - start_pos).map_with(zero(), |a,b| a.max_partial(b))) }
-
-    /// Can access the outside rectangle
-    /// 
-    /// ```rust
-    /// use hexga_math::prelude::*;
-    /// 
-    /// assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
-    /// 
-    /// // Can go outside
-    /// assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(-1.splat2(), zero()), rect2p(4,4,11,11));
-    /// ```
-    pub fn crop_margin_uncheck(&self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Self 
-    {
-        Self::new(self.pos + margin_start, self.size - margin_start - margin_end)
-    }
-
-    /// Can't access the outside rectangle
-    /// Return an empty rectangle if the cropped part is too big
-    /// 
-    /// ```rust
-    /// use hexga_math::prelude::*;
-    /// 
-    /// assert_eq!(rect2p(5,5,10,10).crop_margin(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
-    /// 
-    /// // Can't go outside
-    /// assert_eq!(rect2p(5,5,10,10).crop_margin(-1.splat2(), zero()), rect2p(5,5,10,10));
-    /// ```
-    pub fn crop_margin(&self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Self 
-    {
-        self.crop_margin_uncheck(margin_start, margin_end).intersect_or_empty(*self)
-    }
-
-    /// Can access the outside rectangle
-    pub fn crop_uncheck(&self, subrect_relative : Self) -> Self { subrect_relative.moved_by(self.pos) }
-
-    /// Can't access the outside rectangle
-    pub fn crop(&self, subrect_relative : Self) -> Self { self.intersect_or_empty(self.crop_uncheck(subrect_relative)) }
 }
 
 impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
@@ -372,35 +436,38 @@ mod rect_test
 
 
     #[test]
-    fn crop_margin_uncheck() 
+    fn crop_margin_unchecked() 
     {
-        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
+        unsafe
+        {
+            assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
 
-        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(2.splat2(), zero()), rect2p(7,7,8,8));
-        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(zero(), 2.splat2()), rect2p(5,5,8,8));
+            assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(2.splat2(), zero()), rect2p(7,7,8,8));
+            assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(zero(), 2.splat2()), rect2p(5,5,8,8));
 
-        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(-1.splat2(), zero()), rect2p(4,4,11,11));
-        assert_eq!(rect2p(5,5,10,10).crop_margin_uncheck(zero(), -1.splat2()), rect2p(5,5,11,11));
+            assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(-1.splat2(), zero()), rect2p(4,4,11,11));
+            assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(zero(), -1.splat2()), rect2p(5,5,11,11));
+        }
     }
 
     
     #[test]
     fn crop_margin() 
     {
-        assert_eq!(rect2p(5,5,10,10).crop_margin(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
+        assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
 
-        assert_eq!(rect2p(5,5,10,10).crop_margin(2.splat2(), zero()), rect2p(7,7,8,8));
-        assert_eq!(rect2p(5,5,10,10).crop_margin(zero(), 2.splat2()), rect2p(5,5,8,8));
+        assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(2.splat2(), zero()), rect2p(7,7,8,8));
+        assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(zero(), 2.splat2()), rect2p(5,5,8,8));
 
-        assert_eq!(rect2p(5,5,10,10).crop_margin(-1.splat2(), zero()), rect2p(5,5,10,10));
-        assert_eq!(rect2p(5,5,10,10).crop_margin(zero(), -1.splat2()), rect2p(5,5,10,10));
+        assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(-1.splat2(), zero()), rect2p(5,5,10,10));
+        assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(zero(), -1.splat2()), rect2p(5,5,10,10));
     }
 
     #[test]
     fn crop_normal() 
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop_margin(point2(1, 1), point2(2, 2));
+        let cropped = rect.crop_margin_intersect(point2(1, 1), point2(2, 2));
         assert_eq!(cropped, rect2p(1, 1, 7, 7));
     }
 
@@ -408,7 +475,7 @@ mod rect_test
     fn crop_to_much() 
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop_margin(point2(0, 0), point2(20, 20));
+        let cropped = rect.crop_margin_intersect(point2(0, 0), point2(20, 20));
         assert_eq!(cropped, zero());
     }
 
@@ -416,7 +483,7 @@ mod rect_test
     fn crop_to_much_2() 
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop_margin(point2(20, 20), point2(0, 0));
+        let cropped = rect.crop_margin_intersect(point2(20, 20), point2(0, 0));
         assert_eq!(cropped, rect2p(20, 20, 0, 0));
     }
 
@@ -424,7 +491,7 @@ mod rect_test
     fn crop_to_much_3() 
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop_margin(point2(20, 20), point2(20, 20));
+        let cropped = rect.crop_margin_intersect(point2(20, 20), point2(20, 20));
         assert_eq!(cropped, rect2p(20, 20, 0, 0));
     }
 }
