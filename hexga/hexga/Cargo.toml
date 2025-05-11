@@ -13,7 +13,11 @@ description = "include all other console hexga crate in one !"
 categories = ["rust-patterns"]
 
 [features]
-default = ["serde", "int_are_32_bits", "float_are_32_bits"]
+default = [
+            "int_are_32_bits", "float_are_32_bits",
+            "serde", 
+            "serde_json", "serde_ron", "serde_xml", "serde_quick_bin"
+          ]
 
 int_are_8_bits    = ["hexga_math/int_are_8_bits"]
 int_are_16_bits   = ["hexga_math/int_are_16_bits"]
@@ -25,13 +29,20 @@ float_are_32_bits   = ["hexga_math/float_are_32_bits"]
 float_are_64_bits   = ["hexga_math/float_are_64_bits"]
 float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga_generational/serde", "hexga_math/serde"]
+
+
+serde = ["dep:serde", "hexga_generational/serde", "hexga_math/serde", "hexga_bitflags/serde"]
+serde_ron   = ["hexga_io/serde_ron"]
+serde_json  = ["hexga_io/serde_json"]
+serde_xml   = ["hexga_io/serde_xml"]
+serde_quick_bin  = ["hexga_io/serde_quick_bin"]
 
 [dependencies]
 hexga_core.workspace = true
 hexga_math.workspace = true
 hexga_generational.workspace = true
 hexga_bitflags.workspace = true
+hexga_io.workspace = true
 #hexga_undo_redo.workspace = true
 
 # serialization

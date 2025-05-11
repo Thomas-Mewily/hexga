@@ -12,5 +12,12 @@ keywords = ["bitflags"]
 description = "Bitflags utilities"
 categories = ["rust-patterns"]
 
+[features]
+default = ["serde"]
+
+serde = ["dep:serde"]
+
 [dependencies]
 hexga_number.workspace = true
+
+serde = { version = "1.0", features = ["derive"], optional = true}

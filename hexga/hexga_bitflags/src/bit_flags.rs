@@ -1,4 +1,5 @@
-use std::{marker::PhantomData, ops::*};
+use crate::*;
+use std::{fmt, marker::PhantomData, ops::*};
 use hexga_number::*;
 use std::fmt::{Debug,Formatter,Result as DResult};
 
@@ -70,15 +71,41 @@ impl<T, F> BitFlagsExtension<F> for T where T : IntegerUnsigned, T : From<F>
 }
 */
 
+pub trait BitFlagsIntegerUnsigned : IntegerUnsigned + fmt::Binary {}
+impl<T> BitFlagsIntegerUnsigned for T where T : IntegerUnsigned + fmt::Binary {}
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
+pub struct BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy
 {
     flags : U,
     phantom : PhantomData<F>,
 }
+
+#[cfg(feature = "serde")]
+impl<F,U> Serialize for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F> + Serialize, F : MaxValue + Copy {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
+    { 
+        self.flags.serialize(serializer)
+    }
+}
+
+
+#[cfg(feature = "serde")]
+impl<'de,F,U> Deserialize<'de> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F> + Deserialize<'de>, F : MaxValue + Copy
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let flags = U::deserialize(deserializer)?;
+        Self::try_from_flags(flags).ok_or_else(|| serde::de::Error::custom(format!("invalid value: {:#b}, expected {:#b}", flags, Self::from_flags(flags).flags())))
+    }
+}
+
+
 impl<F,U> Debug for BitFlags<F,U> 
 where 
-    U : IntegerUnsigned + From<F>, F : MaxValue + Copy, 
+    U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy, 
     F : TryFrom<U> + Debug,
     RangeInclusive<U>: Iterator<Item = U>,
 {
@@ -98,17 +125,24 @@ where
     }
 }
 
-impl<F,U> From<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
+impl<F,U> From<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy
 {
     fn from(value: F) -> Self { Self::from_flag(value) }
 }
-impl<F,U> Zero for BitFlags<F,U>  where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
+impl<F,U> Zero for BitFlags<F,U>  where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy
 {
     const ZERO : Self = unsafe { Self::from_flags_unchecked(U::ZERO) };
 }
-impl<F,U> BitFlags<F,U>  where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
+impl<F,U> BitFlags<F,U>  where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy
 {
     pub const unsafe fn from_flags_unchecked(flags : U) -> Self { Self { flags, phantom: PhantomData }}
+    
+    /// Return None if the flags contains unknow toggled bit (greater than `F::MAX`)
+    pub fn try_from_flags(flags : U) -> Option<Self> 
+    {
+        let s = Self::from_flags(flags);
+        if s.flags == flags { Some(s) } else { None }
+    }
     pub fn from_flags(flags : U) -> Self { let max : U = U::ONE << F::MAX.into(); unsafe { Self::from_flags_unchecked(flags & (max | max - U::ONE)) } }
     //pub fn from_flags(flag : U) -> Self { Self::_from_flags(U::ONE << flag)}
     pub fn from_flag(flag : F) -> Self { Self::from_flags(U::ONE << flag.into()) }
@@ -118,7 +152,7 @@ impl<F,U> BitFlags<F,U>  where U : IntegerUnsigned + From<F>, F : MaxValue + Cop
     pub fn flags(self) -> U { self.flags }
 }
 
-impl<F,U> BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
+impl<F,U> BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy
 {
     /// Set the flag using a bool
     #[must_use]
@@ -151,7 +185,7 @@ impl<F,U> BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy
 
 impl<F,U> IntoIterator for BitFlags<F,U> 
     where 
-    U : IntegerUnsigned + From<F>, 
+    U : BitFlagsIntegerUnsigned + From<F>, 
     F : MaxValue + Copy,
     F : TryFrom<U>, RangeInclusive<U>: Iterator<Item = U>
 {
@@ -164,7 +198,7 @@ impl<F,U> IntoIterator for BitFlags<F,U>
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitFlagsIntoIter<F,U> 
     where 
-    U : IntegerUnsigned + From<F>, 
+    U : BitFlagsIntegerUnsigned + From<F>, 
     F : MaxValue + Copy + TryFrom<U>, 
     RangeInclusive<U>: Iterator<Item = U>
 {
@@ -173,7 +207,7 @@ pub struct BitFlagsIntoIter<F,U>
 }
 impl<F,U> BitFlagsIntoIter<F,U>
     where 
-    U : IntegerUnsigned + From<F>, 
+    U : BitFlagsIntegerUnsigned + From<F>, 
     F : MaxValue + Copy + TryFrom<U>, 
     RangeInclusive<U>: Iterator<Item = U>
 {
@@ -182,7 +216,7 @@ impl<F,U> BitFlagsIntoIter<F,U>
 }
 impl<F,U> Iterator for BitFlagsIntoIter<F,U>
     where 
-    U : IntegerUnsigned + From<F>, 
+    U : BitFlagsIntegerUnsigned + From<F>, 
     F : MaxValue + Copy + TryFrom<U>, 
     RangeInclusive<U>: Iterator<Item = U>
 {
@@ -210,22 +244,22 @@ impl<F,U> Iterator for BitFlagsIntoIter<F,U>
     }
 }
 
-impl<F,U> BitAnd<Self> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitand(self, rhs: Self) -> Self::Output { Self::from_flags(self.flags.bitand(rhs.flags)) } }
-impl<F,U> BitAndAssign<Self> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitand_assign(&mut self, rhs: Self) { self.flags.bitand_assign(rhs.flags); } }
-impl<F,U> BitAnd<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitand(self, rhs: F) -> Self::Output { self.bitand(Self::from(rhs)) } }
-impl<F,U> BitAndAssign<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitand_assign(&mut self, rhs: F) { self.bitand_assign(Self::from(rhs)); } }
+impl<F,U> BitAnd<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitand(self, rhs: Self) -> Self::Output { Self::from_flags(self.flags.bitand(rhs.flags)) } }
+impl<F,U> BitAndAssign<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitand_assign(&mut self, rhs: Self) { self.flags.bitand_assign(rhs.flags); } }
+impl<F,U> BitAnd<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitand(self, rhs: F) -> Self::Output { self.bitand(Self::from(rhs)) } }
+impl<F,U> BitAndAssign<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitand_assign(&mut self, rhs: F) { self.bitand_assign(Self::from(rhs)); } }
 
-impl<F,U> BitOr<Self> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitor(self, rhs: Self) -> Self::Output { Self::from_flags(self.flags.bitor(rhs.flags)) } }
-impl<F,U> BitOrAssign<Self> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitor_assign(&mut self, rhs: Self) { self.flags.bitor_assign(rhs.flags); } }
-impl<F,U> BitOr<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitor(self, rhs: F) -> Self::Output { self.bitor(Self::from(rhs)) } }
-impl<F,U> BitOrAssign<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitor_assign(&mut self, rhs: F) { self.bitor_assign(Self::from(rhs)); } }
+impl<F,U> BitOr<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitor(self, rhs: Self) -> Self::Output { Self::from_flags(self.flags.bitor(rhs.flags)) } }
+impl<F,U> BitOrAssign<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitor_assign(&mut self, rhs: Self) { self.flags.bitor_assign(rhs.flags); } }
+impl<F,U> BitOr<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitor(self, rhs: F) -> Self::Output { self.bitor(Self::from(rhs)) } }
+impl<F,U> BitOrAssign<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitor_assign(&mut self, rhs: F) { self.bitor_assign(Self::from(rhs)); } }
 
-impl<F,U> BitXor<Self> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitxor(self, rhs: Self) -> Self::Output { Self::from_flags(self.flags.bitxor(rhs.flags)) } }
-impl<F,U> BitXorAssign<Self> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitxor_assign(&mut self, rhs: Self) { self.flags.bitxor_assign(rhs.flags); } }
-impl<F,U> BitXor<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitxor(self, rhs: F) -> Self::Output { self.bitxor(Self::from(rhs)) } }
-impl<F,U> BitXorAssign<F> for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitxor_assign(&mut self, rhs: F) { self.bitxor_assign(Self::from(rhs)); } }
+impl<F,U> BitXor<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitxor(self, rhs: Self) -> Self::Output { Self::from_flags(self.flags.bitxor(rhs.flags)) } }
+impl<F,U> BitXorAssign<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitxor_assign(&mut self, rhs: Self) { self.flags.bitxor_assign(rhs.flags); } }
+impl<F,U> BitXor<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitxor(self, rhs: F) -> Self::Output { self.bitxor(Self::from(rhs)) } }
+impl<F,U> BitXorAssign<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitxor_assign(&mut self, rhs: F) { self.bitxor_assign(Self::from(rhs)); } }
 
-impl<F,U> Not for BitFlags<F,U> where U : IntegerUnsigned + From<F>, F : MaxValue + Copy 
+impl<F,U> Not for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy 
 {
     type Output=Self;
     fn not(self) -> Self::Output  { Self::from_flags(!self.flags) }

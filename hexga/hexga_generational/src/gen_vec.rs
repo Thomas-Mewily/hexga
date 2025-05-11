@@ -39,6 +39,7 @@ impl<T> SlotValue<T>
 pub struct Slot<T,Gen:IGeneration=Generation>
 {
     value      : SlotValue<T>,
+    #[cfg_attr(feature = "serde", serde(rename = "gen"))]
     generation : Gen,
 }
 impl <T,Gen:IGeneration> Slot<T,Gen>

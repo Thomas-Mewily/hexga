@@ -293,6 +293,7 @@ dependencies = [
  "hexga_bitflags",
  "hexga_core",
  "hexga_generational",
+ "hexga_io",
  "hexga_math",
  "serde",
 ]
@@ -310,6 +311,7 @@ name = "hexga_bitflags"
 version = "0.0.10-beta.7"
 dependencies = [
  "hexga_number",
+ "serde",
 ]
 
 [[package]]
