@@ -855,6 +855,59 @@ mod tests
 
     use super::*;
 
+
+    #[test]
+    fn extend_test()
+    {
+        let mut g = [1,2,3].into_iter().collect::<GenVec<_>>();
+        assert_eq!(g.len(), 3);
+
+        g.extend([4,5]);
+        assert_eq!(g.len, 5);
+    }
+
+    #[test]
+    fn iter_size_hint_check()
+    {
+        let g = [1,2,3,4,5].into_iter().collect::<GenVec<_>>();
+        let mut it = g.iter();
+
+        for i in (1..=5).rev()
+        {
+            assert_eq!(it.size_hint().0, i);
+            assert_eq!(it.size_hint().1, Some(i));
+            it.next();
+        }
+    }
+
+    #[test]
+    fn iter_mut_size_hint_check()
+    {
+        let mut g = [1,2,3,4,5].into_iter().collect::<GenVec<_>>();
+        let mut it = g.iter_mut();
+
+        for i in (1..=5).rev()
+        {
+            assert_eq!(it.size_hint().0, i);
+            assert_eq!(it.size_hint().1, Some(i));
+            it.next();
+        }
+    }
+
+    #[test]
+    fn into_iter_mut_size_hint_check()
+    {
+        let g = [1,2,3,4,5].into_iter().collect::<GenVec<_>>();
+        let mut it = g.into_iter();
+
+        for i in (1..=5).rev()
+        {
+            assert_eq!(it.size_hint().0, i);
+            assert_eq!(it.size_hint().1, Some(i));
+            it.next();
+        }
+    }
+
     #[test]
     fn basic() 
     {
