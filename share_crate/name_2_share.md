@@ -7,7 +7,6 @@ hexga_base
 hexga_array
 hexga_typedef
 hexga_math
-//hexga_slot
 hexga_generational
 hexga_bitflags
 hexga_tools

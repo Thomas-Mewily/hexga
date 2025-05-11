@@ -376,13 +376,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hexga_slot"
-version = "0.0.10-beta.7"
-dependencies = [
- "hexga_core",
-]
-
-[[package]]
 name = "hexga_test"
 version = "0.1.0"
 dependencies = [
