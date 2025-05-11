@@ -62,12 +62,33 @@ impl <T,Gen:IGeneration> Slot<T,Gen>
     pub fn is_generation_saturated(&self) -> bool { !self.can_generation_increase() }
 }
 
-#[derive(Debug, Clone, Eq, Hash)]
+#[derive(Debug, Clone, Eq)]
 pub struct GenVecOf<T,Gen:IGeneration=Generation>
 {
     slot  : Vec<Slot<T,Gen>>,
     head  : usize,
     len   : usize,
+}
+
+impl<T, Gen:IGeneration> Hash for GenVecOf<T,Gen> where T : Hash
+{
+    fn hash<H: Hasher>(&self, state: &mut H) 
+    {
+        self.len.hash(state);
+
+        if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
+        {
+            self.slot.hash(state);
+            self.head.hash(state);
+        }else 
+        {
+            for (id, value) in self.iter()
+            {
+                id.hash(state);
+                value.hash(state);
+            }
+        }
+    }
 }
 
 impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T : PartialEq
@@ -550,8 +571,27 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     pub fn into_ids(self) -> impl Iterator<Item = GenIDOf<T,Gen>> { self.into_iter().map(|(id, _val)| id) }
     pub fn into_values(self) -> impl Iterator<Item = T> { self.into_iter().map(|(_id, val)| val) }
 
-    /// Use this instead of `0..gen_vec.len()`. `0..gen_vec.capacity()` is the correct way to do it internally
-    pub fn iter_index(&self) -> impl Iterator<Item = usize> { 0..self.capacity() }
+    /// The correct way to iterate over all slot index.
+    /// Use this instead of `0..gen_vec.len()`.
+    pub fn iter_index(&self) -> impl Iterator<Item = usize> + use<T, Gen> { 0..self.slot.len() }
+
+
+    pub fn retain<F>(&mut self, mut f: F) where F: FnMut(&T) -> bool
+    {
+        self.retain_mut(|elem| f(elem));
+    }
+
+    pub fn retain_mut<F>(&mut self, mut f: F) where F: FnMut(&mut T) -> bool
+    {
+        for idx in self.iter_index()
+        {
+            let Some(v) = self.get_index_mut(idx) else { continue; };
+            if !f(v)
+            {
+                self.remove_index(idx);
+            }
+        }
+    }
 }
 
 impl<T, Gen:IGeneration> Index<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
@@ -795,7 +835,7 @@ impl<T,Gen:IGeneration> GetManyMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 
 impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 {
-    /// Moves all the elements of `other` into `self`, leaving `other` empty (clear the element).
+    /// Moves all the elements of `other` into `self`, leaving `other` empty by clearing it (don't invalidate all previous [GenID]).
     pub fn append(&mut self, other: &mut GenVecOf<T,Gen>) -> impl GenIDUpdater<T,Gen> + use<T,Gen> where T : GenIDUpdatable<T,Gen>
     {
         let capacity = other.len();
@@ -1398,6 +1438,18 @@ mod tests
         gen_vec.rollback_insert(id).unwrap();
 
         assert_eq!(gen_vec, old_gen);
+    }
+
+
+    #[test]
+    fn retain_test() {
+        let mut g = GenVec::from_iter([1,2,3,4,5,6,7,8]);
+        assert_eq!(g.len(), 8);
+
+        g.retain(|x| x % 2  == 0);
+        assert_eq!(g.len(), 4);
+
+        assert!(g.into_values().eq([2,4,6,8]));
     }
 
 }

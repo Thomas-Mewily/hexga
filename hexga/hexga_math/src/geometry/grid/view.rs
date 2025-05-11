@@ -4,7 +4,7 @@ use crate::*;
 
 /// A slice view to a [Grid]
 /// 
-/// [Param] is a silent parameter, generally void, that is here to facilitate the API for [GridParam] because some function depend 
+/// `Param` is a silent parameter, generally void, that is here to facilitate the API for [GridParam] because some function depend 
 /// if the param is clonable or not. 
 pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output = T> + IRectangle<Idx, N> + where Idx : IntegerIndex
 {
