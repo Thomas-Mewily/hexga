@@ -1,5 +1,5 @@
 use crate::*;
-use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}, usize};
+use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}};
 
 
 pub type Generation = u32;
@@ -362,7 +362,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     pub fn shrink_to_fit(mut self) { self.slot.shrink_to_fit(); }
 
 
-    /// Clear the [GenVec] but don't invalidating all previous [GenID].
+    /// Clear the [GenVec] but don't invalidate all previous [GenID].
     pub fn clear(&mut self) 
     {
         self.head = usize::MAX;
@@ -370,8 +370,8 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.slot.clear();
     }
 
-    /// Clear the [GenVec], while also invalidating all previous [GenID].
-    pub fn remove_all(&mut self) 
+    /// Clear the [GenVec] and also invalidate all previous [GenID].
+    pub fn remove_all(&mut self)
     {
         for (idx, v) in self.slot.iter_mut().enumerate()
         {
@@ -532,6 +532,14 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         if self.get(id).is_none() { return None; }
         self.remove_index(id.index)
     }
+
+    /* 
+    pub(crate) fn iter_slot(&self) -> impl Iterator<Item = &Slot<T,Gen>> { self.slot.iter() }
+    pub(crate) fn iter_slot_mut(&mut self) -> impl Iterator<Item = &mut Slot<T,Gen>> { self.slot.iter_mut() }
+
+    pub(crate) fn iter_slot_with_value(&self) -> impl Iterator<Item = &Slot<T,Gen>> { self.iter_slot().filter(|e| e.have_value()) }
+    pub(crate) fn iter_slot_with_value_mut(&mut self) -> impl Iterator<Item = &mut Slot<T,Gen>> { self.iter_slot_mut().filter(|e| e.have_value()) }
+    */
 
     pub fn iter(&self) -> Iter<'_, T, Gen> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_, T, Gen> { self.into_iter() }
@@ -784,6 +792,32 @@ impl<T,Gen:IGeneration> GetManyMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 }
 
 
+
+impl<T,Gen:IGeneration> GenVecOf<T,Gen>
+{
+    /// Moves all the elements of `other` into `self`, leaving `other` empty (clear the element).
+    pub fn append(&mut self, other: &mut GenVecOf<T,Gen>) -> impl GenIDUpdater<T,Gen> + use<T,Gen> where T : GenIDUpdatable<T,Gen>
+    {
+        let capacity = other.len();
+        let mut h = HashMap::with_capacity(capacity);
+
+        for (idx, slot) in other.slot.iter_mut().enumerate().filter(|(_,s)| s.have_value())
+        {
+            let val = slot.value.take_and_free(usize::MAX);
+            let old_id = slot.get_id(idx);
+            let new_id = self.insert(val);
+            h.insert(old_id, new_id);
+        }
+        other.clear();
+
+        for new_id in h.values()
+        {   
+            unsafe { self.get_unchecked_mut(*new_id) }.update_id(&h);
+        }
+        h
+    }
+}
+
 impl<A,Gen:IGeneration> Extend<A> for GenVecOf<A,Gen>
 {
     fn extend<T: IntoIterator<Item = A>>(&mut self, iter: T) 
@@ -795,36 +829,31 @@ impl<A,Gen:IGeneration> Extend<A> for GenVecOf<A,Gen>
     }
 }
 
-pub struct GenIDMap<T,Gen:IGeneration>
+pub trait GenIDUpdater<T,Gen:IGeneration>
 {
-    map : HashMap<GenIDOf<T,Gen>,GenIDOf<T,Gen>>,
+    fn update(&self, dest : &mut GenIDOf<T,Gen>);
 }
-impl<T,Gen:IGeneration> Default for GenIDMap<T,Gen> { fn default() -> Self { Self { map: ___() } } }
-impl<T,Gen:IGeneration> Clone for GenIDMap<T,Gen> { fn clone(&self) -> Self { Self { map: self.map.clone() } } }
-impl<T,Gen:IGeneration> Debug for GenIDMap<T,Gen> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.debug_struct("GenIDMap").field("map", &self.map).finish() } }
-impl<T,Gen:IGeneration> PartialEq for GenIDMap<T,Gen> { fn eq(&self, other: &Self) -> bool { self.map == other.map } }
-impl<T,Gen:IGeneration> Eq for GenIDMap<T,Gen>{}
-impl<T,Gen:IGeneration> IntoIterator for GenIDMap<T,Gen>
+impl<T,Gen:IGeneration> GenIDUpdater<T,Gen> for HashMap<GenIDOf<T,Gen>,GenIDOf<T,Gen>>
 {
-    type Item=(GenIDOf<T,Gen>,GenIDOf<T,Gen>);
-    type IntoIter=<HashMap<GenIDOf<T,Gen>,GenIDOf<T,Gen>> as IntoIterator>::IntoIter;
-    fn into_iter(self) -> Self::IntoIter { self.map.into_iter() }
-}
-impl<T,Gen:IGeneration> GenIDMap<T,Gen>
-{
-    pub fn get(&self, src : GenIDOf<T,Gen>) -> GenIDOf<T,Gen> 
-    { 
-        debug_assert!(self.map.get(&src).is_some());
-        self.map.get(&src).copied().unwrap_or(GenIDOf::NULL)
+    fn update(&self, dest : &mut GenIDOf<T,Gen>) {
+        debug_assert!(dest.is_null() || self.get(&dest).is_some());
+        *dest = self.get(&dest).copied().unwrap_or(GenIDOf::NULL);
     }
 }
 
-pub trait GenVecExtend<Gen:IGeneration=Generation> : Sized
+
+pub trait GenIDUpdatable<T=Self,Gen:IGeneration=Generation> : Sized
 {
-    fn update_id(&mut self, map : &GenIDMap<Self,Gen>);
+    fn update_id<U : GenIDUpdater<T,Gen>>(&mut self, updater : &U);
+}
+impl<T,Gen:IGeneration> GenIDUpdatable<T,Gen> for GenIDOf<T,Gen>
+{
+    fn update_id<U : GenIDUpdater<T,Gen>>(&mut self, updater : &U) {
+        updater.update(self);
+    }
 }
 
-impl<A,Gen:IGeneration> Extend<(GenIDOf<A,Gen>, A)> for GenVecOf<A,Gen> where A : GenVecExtend<Gen>
+impl<A,Gen:IGeneration> Extend<(GenIDOf<A,Gen>, A)> for GenVecOf<A,Gen> where A : GenIDUpdatable<A,Gen>
 {
     fn extend<T: IntoIterator<Item = (GenIDOf<A,Gen>, A)>>(&mut self, iter: T) 
     {
@@ -837,10 +866,9 @@ impl<A,Gen:IGeneration> Extend<(GenIDOf<A,Gen>, A)> for GenVecOf<A,Gen> where A 
             h.insert(old_id, new_id);
         }
 
-        let map = GenIDMap{ map: h };
-        for old_id in map.map.keys()
+        for new_id in h.values()
         {   
-            unsafe { self.get_unchecked_mut(*old_id) }.update_id(&map);
+            unsafe { self.get_unchecked_mut(*new_id) }.update_id(&h);
         }
     }
 }
@@ -855,9 +883,64 @@ mod tests
 
     use super::*;
 
+    #[derive(Debug, Clone, Copy)]
+    struct Cell
+    {
+        next : GenID<Cell>,
+        value : i32,
+    }
+
+    impl GenIDUpdatable for Cell 
+    {
+        fn update_id<U : GenIDUpdater<Self,u32>>(&mut self, updater : &U) {
+            self.next.update_id(updater);
+        }
+    }
 
     #[test]
-    fn extend_test()
+    fn extend_complexe_struct()
+    {
+        let mut src = GenVec::new();
+        let first = src.insert(Cell{ next: GenID::NULL, value: 1 });
+        src.insert(Cell{ next: first, value: 2 });
+
+        let mut dest = GenVec::new();
+        let first = dest.insert(Cell{ next: GenID::NULL, value: 3 });
+        dest.insert(Cell{ next: first, value: 4 });
+
+        src.extend(dest.into_iter());
+
+        let ids = src.iter().map(|(_,v)| v.value).collect::<std::collections::HashSet<_>>();
+        assert_eq!(ids.len(), 4);
+    }
+
+    
+    #[test]
+    fn append_complexe_struct()
+    {
+        let mut src = GenVec::new();
+        let first = src.insert(Cell{ next: GenID::NULL, value: 1 });
+        src.insert(Cell{ next: first, value: 2 });
+
+        let mut dest = GenVec::new();
+        let mut first = dest.insert(Cell{ next: GenID::NULL, value: 3 });
+        let mut second = dest.insert(Cell{ next: first, value: 4 });
+
+        let updater = src.append(&mut dest);
+
+        assert_eq!(dest.len(), 0);
+
+        first.update_id(&updater);
+        second.update_id(&updater);
+
+        assert_eq!(src[first].next, GenID::NULL);
+        assert_eq!(src[first].value, 3);
+        assert_eq!(src[second].next, first);
+        assert_eq!(src[second].value, 4);
+    }
+
+    #[test]
+    fn extend_common_struct()
     {
         let mut g = [1,2,3].into_iter().collect::<GenVec<_>>();
         assert_eq!(g.len(), 3);
@@ -987,7 +1070,7 @@ mod tests
         }
 
         assert_eq!(v.len(), 0);
-        dbg!(v);
+        //dbg!(v);
     }  
 
     #[test]

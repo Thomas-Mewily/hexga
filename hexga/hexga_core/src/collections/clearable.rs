@@ -1,8 +1,10 @@
 use std::{collections::*, ffi::OsString, path::PathBuf};
 
+/// Clear the collection
 pub trait Clearable //: Length
 {
     fn clear(&mut self);
+    //fn remove_all(&mut self)
 }
 
 impl<T>         Clearable for Vec<T>            { #[inline(always)] fn clear(&mut self) { self.clear(); } }
