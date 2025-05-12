@@ -4,6 +4,7 @@
 
 Provide a common typedef for `float`, `int` and `uint`. The precision can be changed with feature flags and can be easily shared across multiple crates.
 
+You must enable one flag for int and for float precision.
 See the toml to change the precision :
 
 ```toml
