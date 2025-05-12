@@ -8,6 +8,10 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
+keywords = ["graphics"]
+description = "A crate to handle graphics stuff like loading / saving image"
+categories = ["graphics"]
+
 [features]
 default = ["serde", "int_are_32_bits", "float_are_32_bits"]
 
