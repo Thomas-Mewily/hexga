@@ -1,5 +1,9 @@
 //! Define what will be the default `int`, `uint` and `float` (and `Coef` = `float`) typedef. 
 
+
+mod check;
+use check::*;
+
 #[cfg(feature = "int_are_size_bits")]
 mod integer_typedef
 {
