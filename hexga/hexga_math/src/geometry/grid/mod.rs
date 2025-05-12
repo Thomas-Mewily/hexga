@@ -13,3 +13,6 @@ pub use view_mut::*;
 
 mod format;
 pub use format::*;
+
+mod declare_macro;
+pub use declare_macro::*;

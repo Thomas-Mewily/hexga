@@ -3,12 +3,12 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use std::{io::Write, ops::{Index, IndexMut}};
+use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}};
 
 use hexga_core::prelude::*;
-use hexga_math::{grid::GridBase, grid_param::GridParamBase, prelude::*, Color, ColorByte, IColor};
+use hexga_math::{grid::{GridBase, Iter, IterMut}, grid_param::GridParamBase, prelude::*, rectangle::Rectangle, Color, ColorByte, IColor};
 
-/* 
+
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
@@ -16,142 +16,85 @@ pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Vis
 
 pub type EncodeResult<T=()> = Result<T,String>;
 
-pub type Image<T=ColorByte>=ImageBase<T,int>;
+pub type Image<T=ColorByte> = ImageBase<T,int>;
 
-/// Grid wrapper just for the serialization...
-#[derive(PartialEq, Eq, Clone, Debug, Hash)]
-pub struct ImageBase<T, Idx> (GridParamBase<T,GraphicsParam,Idx, 2>)
-    where Idx : IntegerIndex, T : IColor;
-
-// To avoid conflict of impl with [IGrid], [IGridView] and [IGridViewMut] when calling get(), get_mut()...
-impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, T : IColor
-{
-    pub fn get(&self, pos : Vector2::<Idx>) -> Option<&T> { IGrid::get(self, pos) }
-    pub fn get_mut(&mut self, pos : Vector2::<Idx>) -> Option<&mut T> { IGrid::get_mut(self, pos) }
-    
-    pub unsafe fn get_unchecked(&self, pos : Vector2::<Idx>) -> &T { unsafe { IGrid::get_unchecked(self, pos) } }
-    pub unsafe fn get_unchecked_mut(&mut self, pos : Vector2::<Idx>) -> &mut T { unsafe { IGrid::get_unchecked_mut(self, pos) } }
-
-    pub fn swap(&mut self, pos_a : Vector2::<Idx>, pos_b : Vector2::<Idx>) -> bool { IGrid::swap(self, pos_a, pos_b) }
-    pub fn replace(&mut self, val : T, pos : Vector2::<Idx>) ->  Option<T> { IGrid::replace(self, val, pos) }
-    pub fn set(&mut self, val : T, pos : Vector2::<Idx>) -> &mut Self { IGrid::set(self, val, pos) }
-
-    pub fn len(&self) -> usize { IGrid::len(self) }
+pub struct ImageBase<T=ColorByte,Idx=int>(pub GridBase<T,Idx,2>) where T : IColor, Idx : IntegerIndex;
+impl<T, Idx> Deref for ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex {
+    type Target=GridBase<T,Idx,2>;
+    fn deref(&self) -> &Self::Target { &self.0 }
+}
+impl<T, Idx> DerefMut for ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex {
+    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.0 }
 }
 
-impl<T, Idx> IGridParam<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
-    where Idx : IntegerIndex, T : IColor
+impl<T, Idx> ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex
 {
-    fn grid(&self) -> &GridBase<T,Idx, 2> { self.0.grid() }
-    fn grid_mut(&mut self) -> &mut GridBase<T,Idx, 2> { self.0.grid_mut() }
+    pub(crate) fn raw_bytes_rgba(&self) -> Vec<u8>
+    {
+        let mut v = Vec::with_capacity(self.area().to_usize() * 4);
 
-    fn param(&self) -> &GraphicsParam { self.0.param() }
-    fn param_mut(&mut self) -> &mut GraphicsParam { self.0.param_mut() }
+        for y in (0..self.size_y().to_usize()).rev()
+        {
+            for x in 0..self.size_x().to_usize()
+            {
+                let pixel = self[vector2(Idx::cast_from(x), Idx::cast_from(y))].to_rgba_u8();
 
-    fn from_grid_with_param(grid : GridBase<T,Idx, 2>, param : GraphicsParam) -> Self { Self(GridParamBase::from_grid_with_param(grid, param)) }
-    fn unpack(self) -> (GridBase<T,Idx, 2>, GraphicsParam) { self.0.unpack() }
-}
-
-impl<T, Idx> IGrid<T,GraphicsParam,Idx, 2> for ImageBase<T,Idx>
-    where Idx : IntegerIndex, T : IColor
-{
-    fn values(&self) -> &[T]  { self.0.values() }
-    fn values_mut(&mut self) -> &mut [T] { self.0.values_mut() }
-
-    fn into_values(self) -> Vec<T> { self.0.into_values() }
-
-
-    fn crop_margin(&self, margin_start : Vector2::<Idx>, margin_end : Vector2::<Idx>) -> Self where T : Clone, GraphicsParam : Clone {
-        Self(self.0.crop_margin(margin_start, margin_end))
+                v.push(pixel.r);
+                v.push(pixel.g);
+                v.push(pixel.b);
+                v.push(pixel.a);
+            }
+        }
+        v
     }
 
-    type View<'a>  = <GridParamBase<T, GraphicsParam, Idx, 2> as hexga_math::prelude::IGrid<T,GraphicsParam,Idx,2>>::View<'a> where Self: 'a;
-    fn view<'a>(&'a self) -> Self::View<'a> { self.0.view() }
+    pub(crate) fn raw_bytes_rgb(&self) -> Vec<u8>
+    {
+        let mut v = Vec::with_capacity(self.area().to_usize() * 3);
 
-    type ViewMut<'a>  = <GridParamBase<T, GraphicsParam, Idx, 2> as hexga_math::prelude::IGrid<T,GraphicsParam,Idx,2>>::ViewMut<'a> where Self: 'a;
-    fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a> { self.0.view_mut() }
-    
-    fn transform<Dest, F>(self, f : F) -> <Self as IGridView<T,GraphicsParam,Idx,2>>::Map<Dest> where F : FnMut(T) -> Dest, GraphicsParam : Clone {
-        Self(self.0.transform(f))
-    }
-    
-    fn transform_par<Dest, F>(self, f : F) -> <Self as IGridView<T,GraphicsParam,Idx,2>>::Map<Dest> where F : Fn(T) -> Dest + Sync + Send, T : Send + Sync, Dest : Send, Idx : Sync, GraphicsParam : Clone {
-        Self(self.0.transform_par(f))
-    }
-}
-
-
-impl<T, Idx> IGridView<T,GraphicsParam,Idx,2> for ImageBase<T,Idx>
-    where Idx : IntegerIndex, T : IColor
-{
-    fn get(&self, pos : Vector<Idx,2>) -> Option<&T> {
-        self.0.get(pos)
+        for y in (0..self.size_y().to_usize()).rev()
+        {
+            for x in 0..self.size_x().to_usize()
+            {
+                let pixel = self[vector2(Idx::cast_from(x), Idx::cast_from(y))].to_rgba_u8();
+                
+                v.push(pixel.r);
+                v.push(pixel.g);
+                v.push(pixel.b);
+            }
+        }
+        v
     }
 
-    type Map<Dest>;
+    pub fn tmp_write_to_png_bytes_inside(&self, path : &str)
+    {
+        let file = std::fs::File::create(path).expect("Failed to create file");
+        let buffered_write = &mut std::io::BufWriter::new(file);
 
-    fn map<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, GraphicsParam : Clone {
-        todo!()
-    }
-
-    fn map_par<Dest, F>(&self, f : F) -> Self::Map<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, GraphicsParam : Clone {
-        todo!()
-    }
-
-    fn subgrid(&self, rect : hexga_math::rectangle::Rectangle<Idx, 2>) -> Self::Map<T> where T : Clone, GraphicsParam : Clone {
-        todo!()
-    }
-
-    fn subgrid_par(&self, rect : hexga_math::rectangle::Rectangle<Idx, 2>) -> Self::Map<T> where T : Clone + Send + Sync, Idx : Sync, GraphicsParam : Clone {
-        todo!()
-    }
-
-    type SubView<'b> where Self: 'b;
-
-    fn subview<'b>(&'b self, rect : hexga_math::rectangle::Rectangle<Idx, 2>) -> Self::SubView<'b> where T : Clone {
-        todo!()
+        image::ImageEncoder::write_image(
+            image::codecs::png::PngEncoder::new(buffered_write),
+            &*self.raw_bytes_rgba(),
+            self.width().to_usize() as _,
+            self.height().to_usize() as _,
+            image::ExtendedColorType::Rgba8,
+        ).expect("Failed to write PNG image");
     }
 }
 
-impl<T, Idx> IRectangle<Idx,2> for ImageBase<T,Idx>
-where Idx : IntegerIndex, T : IColor
-{
-    fn size(&self) -> Vector2::<Idx> { self.0.size() }
-    fn begin(&self) -> Vector2::<Idx> { self.0.begin() }
-}
+//pub type Image<T=ColorByte>=ImageBase<T,int>;
 
 
-impl<T, Idx> Index<usize> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
-{
-    type Output=T;
-    fn index(&self, index: usize) -> &Self::Output { self.get_index(index).unwrap() }
-}
-impl<T, Idx> IndexMut<usize> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
-{
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_index_mut(index).unwrap() }
-}
+/* 
+Todo : Make a declare_grid! macro and declare_gridparam! macro
+*/
 
-impl<T, Idx> Index<Vector2::<Idx>> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
-{
-    type Output=T;
-    fn index(&self, index: Vector2::<Idx>) -> &Self::Output { self.get_or_panic(index) }
-}
-impl<T, Idx> IndexMut<Vector2::<Idx>> for ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
-{
-    fn index_mut(&mut self, index: Vector2::<Idx>) -> &mut Self::Output { self.get_mut_or_panic(index) }
-}
 
-impl<T, Idx> ImageBase<T,Idx> where Idx : IntegerIndex, T : IColor
-{
-    pub fn iter(&self) -> hexga_math::grid::Iter<'_,T,Idx,2> { self.0.iter() }
-    pub fn iter_mut(&mut self) -> hexga_math::grid::IterMut<'_,T,Idx,2> { self.0.iter_mut() }
-}
 
-impl<T, Idx> Length for ImageBase<T,Idx> 
-    where Idx : IntegerIndex, T : IColor
-{ 
-    fn len(&self) -> usize { self.grid().len() }
-}
+
+
+
+
+
 
 /* 
 pub trait ImageExtension
@@ -179,8 +122,8 @@ pub type Image<T>=ImageBase<T,int>;
 pub type ImageBase<T,Idx> = GridParamBase<T,GraphicsParam,Idx,2>;
 */
 
-
-impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex, T : IColor
+/* 
+impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex
 {
     
     pub(crate) fn raw_bytes_rgba(&self) -> Vec<u8>
@@ -252,4 +195,5 @@ pub enum AntiAliasing
     /// Ideal for Pixel Art
     Nearest,
 }
-    */
+
+*/
