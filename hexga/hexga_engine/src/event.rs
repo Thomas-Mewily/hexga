@@ -1,4 +1,6 @@
 //! mainly inspired by miniquad
+use std::collections::HashSet;
+
 use crate::*;
 
 
@@ -98,12 +100,14 @@ pub enum KeyboardEvent
 impl Debug for KeyboardEvent
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
+        match self 
+        {
             Self::CharEvent(v) => write!(f, "{:?}", v),
             Self::KeyEvent(v) => write!(f, "{:?}", v),
         }
     }
 }
+
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct KeyEvent
@@ -142,12 +146,12 @@ pub enum MouseEvent
 {
     Wheel(Vec2),
     Move(Vec2),
+    Button(MouseButtonEvent),
 
     /// Represents raw hardware mouse motion event
     /// Note that these events are delivered regardless of input focus and not in pixels, but in
     /// hardware units instead. And those units may be different from pixels depending on the target platform
     RawMove(Vec2),
-    Button(MouseButtonEvent)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

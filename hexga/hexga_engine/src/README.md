@@ -1,4 +1,4 @@
-## HexGa Conf
+## HexGa Engine
 
 Render / Event loop based on [MiniQuad](https://github.com/not-fl3/miniquad)
 

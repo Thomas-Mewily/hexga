@@ -325,6 +325,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_engine"
+version = "0.0.10-beta.10"
+dependencies = [
+ "hexga_core",
+ "hexga_math",
+ "miniquad",
+ "serde",
+]
+
+[[package]]
 name = "hexga_generational"
 version = "0.0.10-beta.10"
 dependencies = [
@@ -378,25 +388,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "hexga_render"
-version = "0.0.10-beta.10"
-dependencies = [
- "hexga_core",
- "hexga_math",
- "miniquad",
- "serde",
-]
-
-[[package]]
 name = "hexga_test"
 version = "0.1.0"
 dependencies = [
  "criterion",
  "hexga_core",
+ "hexga_engine",
  "hexga_generational",
  "hexga_graphics",
  "hexga_math",
- "hexga_render",
  "hexga_undo_redo",
 ]
 

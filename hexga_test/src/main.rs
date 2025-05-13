@@ -10,7 +10,7 @@ use criterion::{BenchmarkId, Criterion};
 use hexga_core::prelude::*;
 use hexga_math::prelude::*;
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
-use hexga_render::{Conf, Event, EventLoop};
+use hexga_engine::{Conf, Event, EventLoop};
 use hexga_undo_redo::*; //prelude::*;
 
 
