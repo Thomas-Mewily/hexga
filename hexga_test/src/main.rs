@@ -13,9 +13,8 @@ use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
 use hexga_engine::{Conf, Event, EventLoop};
 use hexga_undo_redo::*; //prelude::*;
 
-
-pub struct Ctx;
-impl EventLoop for Ctx
+pub struct TestCtx;
+impl EventLoop for TestCtx
 {
     fn update(&mut self) {
         
@@ -34,5 +33,5 @@ impl EventLoop for Ctx
 fn main() 
 {
     for _ in 0..10 { println!(); }
-    Conf::new().title("hello").run(|| Ctx);
+    Conf::new().title("hello").run(|| TestCtx);
 }

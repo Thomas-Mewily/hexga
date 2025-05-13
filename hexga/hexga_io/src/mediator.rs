@@ -96,7 +96,8 @@ pub trait IoSave where Self: Sized + Serialize + for<'de> Deserialize<'de>
                     _ => unreachable!(),
                 };
 
-                write!(bytes, "{}", str).map_err(|e| IoError::new_serialize::<Self>(extension, e.to_debug()))
+                unreachable!();
+                //write!(bytes, "{}", str).map_err(|e| IoError::new_serialize::<Self>(extension, e.to_debug()))
             },
             false => match self.io_get_based_on()
             {

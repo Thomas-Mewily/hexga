@@ -1,7 +1,14 @@
 //! mainly inspired by miniquad
-use std::collections::HashSet;
-
 use crate::*;
+
+pub trait EventLoop
+{
+    fn update(&mut self);
+    fn draw(&mut self);
+
+    fn handle_event(&mut self, event : &Event) -> bool;
+}
+
 
 
 #[non_exhaustive]
@@ -26,7 +33,7 @@ impl Debug for Event
 }
 
 impl From<WindowEvent> for Event { fn from(value: WindowEvent) -> Self { Self::Window(value) } }
-impl From<FileDropEvent> for Event { fn from(value: FileDropEvent) -> Self { Self::from(WindowEvent::FileDrop(value)) } }
+impl From<DropFileEvent> for Event { fn from(value: DropFileEvent) -> Self { Self::from(WindowEvent::DropFile(value)) } }
 impl From<MouseEvent> for Event { fn from(value: MouseEvent) -> Self { Self::Mouse(value) } }
 impl From<MouseButtonEvent> for Event { fn from(value: MouseButtonEvent) -> Self { Self::from(MouseEvent::Button(value)) } }
 impl From<KeyboardEvent> for Event { fn from(value: KeyboardEvent) -> Self { Self::Keyboard(value) } }
@@ -81,13 +88,13 @@ pub enum WindowEvent
     Minimized,
     Restored,
     Quit,
-    FileDrop(FileDropEvent),
+    DropFile(DropFileEvent),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FileDropEvent
+pub struct DropFileEvent
 {
-    pub path : String,
-    pub content : Vec<u8>,
+    pub path  : std::path::PathBuf,
+    pub bytes : Vec<u8>,
 }
 
 #[non_exhaustive]

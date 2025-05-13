@@ -98,4 +98,3 @@ impl<'a, 'b: 'a> DebugExtension for std::fmt::DebugStruct<'a, 'b>
         self.field(if value { name_true } else { name_false }, &())
     }
 }
-

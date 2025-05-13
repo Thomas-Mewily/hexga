@@ -1,6 +1,7 @@
 //! mainly inspired by miniquad
 use crate::*;
 
+/* 
 pub type MetaVersion = String;
 
 #[derive(PartialEq, Clone, Copy, Debug)]
@@ -13,3 +14,4 @@ pub trait RenderBackend
 {
     
 }
+*/

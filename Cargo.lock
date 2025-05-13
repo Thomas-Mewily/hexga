@@ -328,8 +328,7 @@ dependencies = [
 name = "hexga_engine"
 version = "0.0.10-beta.10"
 dependencies = [
- "hexga_core",
- "hexga_math",
+ "hexga",
  "miniquad",
  "serde",
 ]

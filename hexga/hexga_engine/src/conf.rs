@@ -96,7 +96,11 @@ impl Conf
 {
     pub fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : EventLoop + 'static
     {
-        miniquad::start(self.into(), move || Box::new(PumpEvent::new(state())));
+        miniquad::start(self.into(), move || 
+        {
+            Context::new(Box::new(state()));
+            Box::new(Ctx)
+        });
     }
 }
 
