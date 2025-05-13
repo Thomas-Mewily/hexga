@@ -2,6 +2,7 @@
 
 
 mod check;
+#[allow(unused_imports)]
 use check::*;
 
 #[cfg(feature = "int_are_size_bits")]

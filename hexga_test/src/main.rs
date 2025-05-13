@@ -10,25 +10,29 @@ use criterion::{BenchmarkId, Criterion};
 use hexga_core::prelude::*;
 use hexga_math::prelude::*;
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
+use hexga_render::{Conf, Event, EventLoop};
 use hexga_undo_redo::*; //prelude::*;
 
+
+pub struct Ctx;
+impl EventLoop for Ctx
+{
+    fn update(&mut self) {
+        
+    }
+
+    fn draw(&mut self) {
+        
+    }
+
+    fn handle_event(&mut self, event : &Event) -> bool {
+        println!("{:?}", event);
+        true
+    }
+}
 
 fn main() 
 {
     for _ in 0..10 { println!(); }
-
-    let size = point2(2, 3);
-    let grid = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
-    let smaller_size = point2(1, 2);
-
-    let top_right_grid_size = point2(1, 2);
-    let offset = Vector2::ONE;
-    let top_right_grid = Grid2::from_fn(smaller_size, |p|  { let p = p + offset; p.x + 10 * p.y });
-    
-    dbg!(rect2p(0, 0, 2, 3).is_inside(point2(1, 1)));
-
-    let top_right_grid_from_view = grid.subgrid(top_right_grid_size.to_rect().moved_by(offset));
-    assert_eq!(top_right_grid, top_right_grid_from_view);
-    
-    println!("Hello, world3!");
+    Conf::new().title("hello").run(|| Ctx);
 }

@@ -1,3 +1,5 @@
+//! compile time to check if the feature are correctly enable 
+
 // Ensure that exactly one float flag is enabled
 #[cfg(not(any(
     feature = "float_are_32_bits",

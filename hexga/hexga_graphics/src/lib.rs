@@ -18,13 +18,19 @@ pub type EncodeResult<T=()> = Result<T,String>;
 
 pub type Image<T=ColorByte> = ImageBase<T,int>;
 
-pub struct ImageBase<T=ColorByte,Idx=int>(pub GridBase<T,Idx,2>) where T : IColor, Idx : IntegerIndex;
+pub struct ImageBase<T=ColorByte,Idx=int> where T : IColor, Idx : IntegerIndex
+{
+    pub grid   : GridBase<T,Idx,2>,
+    pub param  : GraphicsParam,
+}
+
+
 impl<T, Idx> Deref for ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex {
     type Target=GridBase<T,Idx,2>;
-    fn deref(&self) -> &Self::Target { &self.0 }
+    fn deref(&self) -> &Self::Target { &self.grid }
 }
 impl<T, Idx> DerefMut for ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex {
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.0 }
+    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.grid }
 }
 
 impl<T, Idx> ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex
@@ -178,6 +184,11 @@ impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex
     }
 }
 
+
+
+*/
+
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Default)]
 pub struct GraphicsParam
@@ -195,5 +206,3 @@ pub enum AntiAliasing
     /// Ideal for Pixel Art
     Nearest,
 }
-
-*/

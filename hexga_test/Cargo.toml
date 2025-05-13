@@ -10,5 +10,6 @@ hexga_math = { path = "../hexga/hexga_math" }
 hexga_graphics = { path = "../hexga/hexga_graphics" }
 hexga_generational = { path = "../hexga/hexga_generational" }
 hexga_undo_redo = { path = "../hexga/hexga_undo_redo" }
+hexga_render = { path = "../hexga/hexga_render" }
 criterion = "0.5.1"
 #hexga_generational = "0.0.5"
