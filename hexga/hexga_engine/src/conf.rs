@@ -3,16 +3,44 @@ use crate::*;
 
 pub use miniquad::conf::{Platform,LinuxX11Gl,LinuxBackend,WebGLVersion,AppleGfxApi};
 
+#[derive(Default)]
+pub struct MultiMediaConfig 
+{
+    pub window_config : WindowConfig,
+    pub pen_config    : PenConfig,
+}
+
+impl MultiMediaConfig
+{
+    pub fn new() -> Self { ___() }
+    pub fn with_window_config(mut self, window : WindowConfig) -> Self { self.window_config = window; self }
+    pub fn with_pen_config(mut self, pen : PenConfig) -> Self { self.pen_config = pen; self }
+}
+
+impl MultiMediaConfig
+{
+    pub fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : EventLoop + 'static
+    {
+        let Self { window_config, pen_config } = self;
+        miniquad::start(window_config.into(), move || 
+        {
+            Context::new(Box::new(state()), pen_config);
+            Box::new(Ctx)
+        });
+    }
+}
+
+
 #[derive(Debug)]
-pub struct Conf 
+pub struct WindowConfig
 {
     /// Title of the window, defaults to an empty string.
-    pub window_title: String,
+    pub title: String,
 
     /// The preferred width / height of the window
     /// 
     /// Default: (960, 540)
-    pub window_size : Point2,
+    pub size : Point2,
     
     /// Whether the rendering canvas is full-resolution on HighDPI displays.
     ///
@@ -28,7 +56,7 @@ pub struct Conf
     pub sample_count: i32,
 
     /// Determines if the application user can resize the window
-    pub window_resizable: bool,
+    pub resizable: bool,
 
     /// Miniquad allows to change the window icon programmatically.
     /// The icon will be used as
@@ -42,11 +70,11 @@ pub struct Conf
     /// settings etc.
     pub platform: Platform,
 }
-impl Conf
+impl WindowConfig
 {
     pub fn new() -> Self { ___() }
 
-    pub fn title(mut self, title : impl Into<String>) -> Self { self.window_title = title.into(); self }
+    pub fn title(mut self, title : impl Into<String>) -> Self { self.title = title.into(); self }
 
     /// Whether the rendering canvas is full-resolution on HighDPI displays.
     ///
@@ -64,7 +92,7 @@ impl Conf
     pub fn sample_count(mut self, sample_count : i32) -> Self { self.sample_count = sample_count; self }
 
     /// Determines if the application user can resize the window
-    pub fn resizeable(mut self, window_resizable : bool) -> Self { self.window_resizable = window_resizable; self }
+    pub fn resizeable(mut self, window_resizable : bool) -> Self { self.resizable = window_resizable; self }
 
     /// The icon will be used as
     /// - taskbar and titlebar icons on Windows.
@@ -78,31 +106,20 @@ impl Conf
     pub fn platform(mut self, platform : Platform) -> Self { self.platform = platform; self }
 }
 
-impl From<Conf> for miniquad::conf::Conf
+impl From<WindowConfig> for miniquad::conf::Conf
 {
-    fn from(value: Conf) -> Self {
-        let Conf{ window_title, window_size, high_dpi, fullscreen, sample_count, window_resizable, icon, platform } = value;
-        miniquad::conf::Conf { window_title, window_width : window_size.x as _, window_height : window_size.y as _, high_dpi, fullscreen, sample_count, window_resizable, icon : icon.map(|v| v.into()), platform }
+    fn from(value: WindowConfig) -> Self {
+        let WindowConfig{ title, size, high_dpi, fullscreen, sample_count, resizable, icon, platform } = value;
+        miniquad::conf::Conf { window_title : title, window_width : size.x as _, window_height : size.y as _, high_dpi, fullscreen, sample_count, window_resizable : resizable, icon : icon.map(|v| v.into()), platform }
     }
 }
-impl Default for Conf
+impl Default for WindowConfig
 {
     fn default() -> Self {
-        Self { window_title: "hexga project".to_owned(), window_size : point2(960, 540), high_dpi: false, fullscreen: false, sample_count: 1, window_resizable: true, icon: None, platform: Platform::default() }
+        Self { title: "hexga project".to_owned(), size : point2(960, 540), high_dpi: false, fullscreen: false, sample_count: 1, resizable: true, icon: None, platform: Platform::default() }
     }
 }
 
-impl Conf
-{
-    pub fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : EventLoop + 'static
-    {
-        miniquad::start(self.into(), move || 
-        {
-            Context::new(Box::new(state()));
-            Box::new(Ctx)
-        });
-    }
-}
 
 /// Icon image in three levels of detail.
 #[derive(Clone)]

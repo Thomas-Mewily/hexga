@@ -21,7 +21,7 @@ serde_xml   = ["dep:quick-xml"]
 serde_quick_bin  = ["dep:bincode"]
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0.0", features = ["derive"] }
 hexga_core.workspace = true
 
 # markup language :

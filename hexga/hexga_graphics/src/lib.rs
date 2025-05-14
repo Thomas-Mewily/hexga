@@ -6,7 +6,7 @@
 use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}};
 
 use hexga_core::prelude::*;
-use hexga_math::{grid::{GridBase, Iter, IterMut}, grid_param::GridParamBase, prelude::*, rectangle::Rectangle, Color, ColorByte, IColor};
+use hexga_math::{grid::{GridBase, Iter, IterMut}, grid_param::GridParamBase, prelude::*, rectangle::Rectangle, Color, ColorRGBAByte, IColor};
 
 
 #[allow(unused_imports)]
@@ -16,9 +16,9 @@ pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Vis
 
 pub type EncodeResult<T=()> = Result<T,String>;
 
-pub type Image<T=ColorByte> = ImageBase<T,int>;
+pub type Image<T=ColorRGBAByte> = ImageBase<T,int>;
 
-pub struct ImageBase<T=ColorByte,Idx=int> where T : IColor, Idx : IntegerIndex
+pub struct ImageBase<T=ColorRGBAByte,Idx=int> where T : IColor, Idx : IntegerIndex
 {
     pub grid   : GridBase<T,Idx,2>,
     pub param  : GraphicsParam,
@@ -43,7 +43,7 @@ impl<T, Idx> ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex
         {
             for x in 0..self.size_x().to_usize()
             {
-                let pixel = self[vector2(Idx::cast_from(x), Idx::cast_from(y))].to_rgba_u8();
+                let pixel = self[vector2(Idx::cast_from(x), Idx::cast_from(y))].to_color_byte();
 
                 v.push(pixel.r);
                 v.push(pixel.g);
@@ -62,7 +62,7 @@ impl<T, Idx> ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex
         {
             for x in 0..self.size_x().to_usize()
             {
-                let pixel = self[vector2(Idx::cast_from(x), Idx::cast_from(y))].to_rgba_u8();
+                let pixel = self[vector2(Idx::cast_from(x), Idx::cast_from(y))].to_color_byte();
                 
                 v.push(pixel.r);
                 v.push(pixel.g);

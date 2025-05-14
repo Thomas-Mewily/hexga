@@ -4,8 +4,11 @@ static mut CONTEXT : Option<Context> = None;
 
 #[allow(static_mut_refs)]
 pub(crate) fn ctx_ref() -> &'static Context  { unsafe { CONTEXT.as_ref().unwrap() } }
+
 #[allow(static_mut_refs)]
-pub(crate) fn ctx_mut() -> &'static mut Context  { unsafe { CONTEXT.as_mut().unwrap() } }
+pub(crate) fn ctx() -> &'static mut Context  { unsafe { CONTEXT.as_mut().unwrap() } }
+
+pub(crate) fn render() -> &'static mut RenderBackEnd { ctx().render.as_mut() }
 
 
 pub(crate) struct Ctx;
@@ -18,15 +21,17 @@ impl Deref for Ctx
 impl DerefMut for Ctx
 {
     #[allow(static_mut_refs)]
-    fn deref_mut(&mut self) -> &mut Self::Target { ctx_mut() }
+    fn deref_mut(&mut self) -> &mut Self::Target { ctx() }
 }
 
+
+pub type RenderBackEnd = dyn miniquad::RenderingBackend;
 
 pub(crate) struct Context
 {
     pub(crate) state  : Box<dyn EventLoop>,
     pub(crate) events : Vec<Event>,
-    pub(crate) render : Box<dyn miniquad::RenderingBackend>,
+    pub(crate) render : Box<RenderBackEnd>,
     pub(crate) pen    : ContextPen,
 }
 
@@ -46,14 +51,22 @@ impl Drop for Context
 
 impl Context
 {
-    pub(crate) fn new(state : Box<dyn EventLoop>) -> bool 
+    #[allow(static_mut_refs)]
+    pub(crate) fn new(state : Box<dyn EventLoop>, pen_param : PenConfig) -> bool 
     { 
-        #[allow(static_mut_refs)]
         unsafe 
         {
             assert!(CONTEXT.is_none(), "Can't init twice a singleton");
             if  CONTEXT.is_some() { return false; }
-            CONTEXT = Some(Self { state, events: ___(), render: miniquad::window::new_rendering_backend(), pen : ContextPen::new() });
+        }
+        
+        let mut render = miniquad::window::new_rendering_backend();
+        let pen = ContextPen::new(&mut *render, pen_param);
+        let ctx = Self { state, events: ___(), render, pen };
+        
+        unsafe 
+        {
+            CONTEXT = Some(ctx);
             true
         }
     }

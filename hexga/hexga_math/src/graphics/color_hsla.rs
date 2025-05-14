@@ -103,8 +103,8 @@ impl<T> From<ColorHSLAOf<T>> for Vector4<T> { fn from(value: ColorHSLAOf<T>) -> 
 impl<T> From<Vector3<T>> for ColorHSLAOf<T> where T : FloatingNumber { fn from(value: Vector3<T>) -> Self { let [h,s,l] = value.array; ColorHSLAOf::hsl(h,s,l) }}
 impl<T> From<ColorHSLAOf<T>> for Vector3<T> { fn from(value: ColorHSLAOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
-impl From<Color> for ColorHSLA { fn from(value: Color) -> Self { value.to_hsla() }}
-impl From<ColorRGBAByte> for ColorHSLA { fn from(value: ColorRGBAByte) -> Self { value.to_hsla() }}
+impl From<Color> for ColorHSLA { fn from(value: Color) -> Self { value.to_color_hsla() }}
+impl From<ColorRGBAByte> for ColorHSLA { fn from(value: ColorRGBAByte) -> Self { value.to_color_hsla() }}
 
 impl<C:FloatingNumber> Default for ColorHSLAOf<C>
 {
@@ -127,13 +127,13 @@ impl IColor for ColorHSLA
     const PINK   : Self = Self { h: float::COLOR_300_DIV_360, s: float::ONE, l: float::HALF, a: float::ONE };
     const YELLOW : Self = Self { h: float::COLOR_60_DIV_360 , s: float::ONE, l: float::HALF, a: float::ONE };
     
-    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self { ColorRGBAByte::rgba(r,g,b,a).to_hsla() }
+    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self { ColorRGBAByte::rgba(r,g,b,a).to_color_hsla() }
 }
 
 impl ToColorRep for ColorHSLA
 {
-    type ColorRGBA=ColorRGBA;
-    fn to_rgba_coef(&self) -> Self::ColorRGBA {
+    type ColorRGBAFloat=ColorRGBA;
+    fn to_color_float(&self) -> Self::ColorRGBAFloat {
         // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
         let r;
         let g;
@@ -165,12 +165,12 @@ impl ToColorRep for ColorHSLA
     }
 
     type ColorHSLA=ColorHSLA;
-    fn to_hsla(&self) -> Self::ColorHSLA {
+    fn to_color_hsla(&self) -> Self::ColorHSLA {
         *self
     }
 
     type ColorRGBAByte=ColorRGBAByte;
-    fn to_rgba_u8(&self) -> Self::ColorRGBAByte {
-        self.to_rgba_coef().to_rgba_u8()
+    fn to_color_byte(&self) -> Self::ColorRGBAByte {
+        self.to_color_float().to_color_byte()
     }
 }

@@ -2,21 +2,21 @@ use crate::*;
 
 pub trait ToColorRep
 {
-    type ColorRGBA;
-    fn to_rgba_coef(&self) -> Self::ColorRGBA;
+    type ColorRGBAFloat;
+    fn to_color_float(&self) -> Self::ColorRGBAFloat;
 
     type ColorHSLA;
-    fn to_hsla(&self) -> Self::ColorHSLA;
+    fn to_color_hsla(&self) -> Self::ColorHSLA;
 
     type ColorRGBAByte;
-    fn to_rgba_u8(&self) -> Self::ColorRGBAByte;
+    fn to_color_byte(&self) -> Self::ColorRGBAByte;
 
-    fn to_color(&self) -> Self::ColorRGBA { self.to_rgba_coef() }
+    fn to_color(&self) -> Self::ColorRGBAFloat { self.to_color_float() }
 }
 
 pub trait IColor : 
-    From<Color> + From<ColorByte> + From<ColorHSLA> +
-    ToColorRep<ColorRGBA = ColorRGBA, ColorHSLA = ColorHSLA, ColorRGBAByte = ColorRGBAByte>
+    From<Color> + From<ColorRGBAByte> + From<ColorHSLA> +
+    ToColorRep<ColorRGBAFloat = ColorRGBA, ColorHSLA = ColorHSLA, ColorRGBAByte = ColorRGBAByte>
     //Into<Color> + Into<ColorByte> + Into<ColorHSLA>
 {
     const TRANSPARENT : Self;
@@ -51,14 +51,14 @@ pub trait IColor :
     /// Cast to color byte and convert to u32 using : `#RRGGBBAA`
     fn to_rgba_hex(self) -> u32 
     { 
-        let ColorByte { r, g, b, a } = self.to_rgba_u8(); 
+        let ColorRGBAByte { r, g, b, a } = self.to_color_byte(); 
         ((r as u32) << 24) | ((g as u32) << 16) | ((b as u32) << 8) | (a as u32) 
     }
 
     /// Cast to color byte and format the color : `#RRGGBBAA`
     fn to_rgba_hex_string(self) -> String
     {
-        let rgba = self.to_rgba_u8();
+        let rgba = self.to_color_byte();
         format!(
             "#{:02X}{:02X}{:02X}{:02X}",
             rgba.r, 

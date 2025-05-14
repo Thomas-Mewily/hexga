@@ -11,7 +11,7 @@ fn publish_all_crate()
     for name in crates
     {
         let name = name.trim();
-        if name.starts_with("//") | name.starts_with("#") { continue; }
+        if name.starts_with("//") | name.starts_with("#") || name.is_empty() { continue; }
         publish_crate(name);
     }
 }

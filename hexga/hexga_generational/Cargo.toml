@@ -22,4 +22,4 @@ hexga_core.workspace = true
 hexga_number.workspace = true
 #typed_index = "0.2.1"
 
-serde = { version = "1.0", features = ["derive"], optional = true}
+serde = { version = "1.0.0", features = ["derive"], optional = true }

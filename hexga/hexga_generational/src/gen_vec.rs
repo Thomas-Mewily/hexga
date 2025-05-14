@@ -1152,14 +1152,14 @@ mod tests
     fn showcase()
     {
         let mut entities = GenVec::new();
-        let enemi = entities.insert("zoombie");
+        let enemy = entities.insert("zoombie");
 
-        assert_eq!(enemi.get(&entities), Some(&"zoombie"));
-        assert_eq!(entities[enemi], "zoombie");
-
-        assert!(entities.get(enemi).is_some());
-        entities.remove(enemi); // the key is no longer valid
-        assert!(entities.get(enemi).is_none()); // the value don't exist
+        assert_eq!(enemy.get(&entities), Some(&"zoombie"));
+        assert_eq!(entities[enemy], "zoombie");
+        assert!(entities.get(enemy).is_some());
+        
+        entities.remove(enemy); // the key is no longer valid
+        assert!(entities.get(enemy).is_none()); // the value don't exist
         
         entities.insert("slime");
         entities.insert("skeleton");

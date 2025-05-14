@@ -10,7 +10,7 @@ use criterion::{BenchmarkId, Criterion};
 use hexga_core::prelude::*;
 use hexga_math::prelude::*;
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
-use hexga_engine::{Conf, Event, EventLoop};
+use hexga_engine::{Event, EventLoop, MultiMediaConfig, Pen, WindowConfig};
 use hexga_undo_redo::*; //prelude::*;
 
 pub struct TestCtx;
@@ -21,7 +21,12 @@ impl EventLoop for TestCtx
     }
 
     fn draw(&mut self) {
-        
+        Pen.begin_pass();
+
+        Pen.geometry([Gpu], indexs)
+
+        Pen.end_pass();
+        Pen.commit_frame();
     }
 
     fn handle_event(&mut self, event : &Event) -> bool {
@@ -33,5 +38,7 @@ impl EventLoop for TestCtx
 fn main() 
 {
     for _ in 0..10 { println!(); }
-    Conf::new().title("hello").run(|| TestCtx);
+    MultiMediaConfig::new()
+        .with_window_config(WindowConfig::new().title("hello"))
+        .run(|| TestCtx);
 }

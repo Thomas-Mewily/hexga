@@ -31,7 +31,7 @@ float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
 
 
-serde = ["dep:serde", "hexga_generational/serde", "hexga_math/serde", "hexga_bitflags/serde"]
+serde = ["dep:serde", "hexga_generational/serde", "hexga_math/serde", "hexga_bitflags/serde", "hexga_ansi_color/serde"]
 serde_ron   = ["hexga_io/serde_ron"]
 serde_json  = ["hexga_io/serde_json"]
 serde_xml   = ["hexga_io/serde_xml"]
@@ -43,7 +43,9 @@ hexga_math.workspace = true
 hexga_generational.workspace = true
 hexga_bitflags.workspace = true
 hexga_io.workspace = true
+hexga_ansi_color.workspace = true
+
 #hexga_undo_redo.workspace = true
 
 # serialization
-serde = { version = "1.0", features = ["derive"], optional = true}
+serde = { version = "1.0.0", features = ["derive"], optional = true }
