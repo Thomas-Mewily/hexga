@@ -31,9 +31,17 @@ impl Default for GpuVertex
 impl GpuVertex
 {
     pub const fn new() -> Self { Self { pos: GpuVec3::ZERO, uv: GpuVec2::ZERO, color: GpuColor::WHITE } }
-    pub fn with_pos<P>(mut self, pos : P) -> Self where P : CastIntoComposite<GpuFloat,Output = GpuVec3> { self.pos = pos.cast_into_composite(); self }
-    pub fn with_uv<P>(mut self, uv : P) -> Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2> { self.uv = uv.cast_into_composite(); self }
-    pub fn with_color<C>(mut self, color : C) -> Self where C : IColor { self.color = color.to_gpu_color(); self }
+
+    #[must_use]
+    pub fn with_pos<P>(mut self, pos : P) -> Self where P : CastIntoComposite<GpuFloat,Output = GpuVec3> { self.set_pos(pos); self }
+    #[must_use]
+    pub fn with_uv<P>(mut self, uv : P) -> Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2> { self.set_uv(uv); self }
+    #[must_use]
+    pub fn with_color<C>(mut self, color : C) -> Self where C : IColor { self.set_color(color); self }
+
+    pub fn set_pos<P>(&mut self, pos : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec3> { self.pos = pos.cast_into_composite(); self }
+    pub fn set_uv<P>(&mut self, uv : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2> { self.uv = uv.cast_into_composite(); self }
+    pub fn set_color<C>(&mut self, color : C) -> &mut Self where C : IColor { self.color = color.to_gpu_color(); self }
 }
 
 pub type GpuVertexIdx = u16;
@@ -172,6 +180,21 @@ pub trait IPen
 
 } 
 
+impl Position<f64,3> for ContextPen 
+{
+    fn pos(&self) -> Vector<f64,3> 
+    {
+        let pos = self.last_vertex().pos;
+        CastIntoComposite::<f64>::cast_into_composite(pos)
+    }
+
+    fn set_pos(&mut self, pos : Vector<f64,3>) -> &mut Self 
+    {
+        self.last_vertex_mut().pos = CastIntoComposite::<GpuFloat>::cast_into_composite(pos);
+        self
+    }
+}
+
 impl ContextPen
 {
     pub fn begin_draw(&mut self)
@@ -205,12 +228,7 @@ impl ContextPen
 
 impl ContextPen
 {
-    pub fn down(&mut self, vertex : GpuVertex) -> &mut Self
-    {
-        self.vertex(vertex);
-        self
-    }
-
+    pub fn down(&mut self) -> &mut Self { self.vertex(); self }
     
     pub fn pos2<P>(&mut self, pos : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2>
     {
@@ -218,19 +236,19 @@ impl ContextPen
     }
     pub fn pos3<P>(&mut self, pos : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec3>
     {
-        self.last_vertex_mut().with_pos(pos);
+        self.last_vertex_mut().set_pos(pos);
         self
     }
 
     pub fn uv<P>(&mut self, uv : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2>
     { 
-        self.last_vertex_mut().with_uv(uv); 
+        self.last_vertex_mut().set_uv(uv); 
         self
     }
 
     pub fn color<C>(&mut self, color : C) -> &mut Self where C : IColor
     { 
-        self.last_vertex_mut().with_color(color); 
+        self.last_vertex_mut().set_color(color); 
         self
     }
 
@@ -238,8 +256,10 @@ impl ContextPen
 
 impl ContextPen
 {
-    // Add a new vertex at the current position
-    pub fn vertex(&mut self, vertex : GpuVertex) -> GpuVertexIdx
+    /// Add a new vertex at the current position/color/uv...
+    pub fn vertex(&mut self) -> GpuVertexIdx { self.add_vertex(*self.vertex) }
+
+    pub fn add_vertex(&mut self, vertex : GpuVertex) -> GpuVertexIdx
     {
         let idx = self.batch_vertex_buffer.len() as GpuVertexIdx;
         self.batch_vertex_buffer.push(vertex);

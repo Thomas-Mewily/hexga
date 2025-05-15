@@ -24,7 +24,16 @@ impl EventLoop for TestCtx
         Pen.begin_draw();
         Pen.begin_pass();
 
+        Pen.set_pos(zero());
+
+        Pen.color(Color::RED).pos2(vec2(-1., 1.)).down()
+           .color(Color::BLUE).pos2(vec2(1., 1.)).down()
+           .color(Color::GREEN).pos2(vec2(0.0, -1.)).down()
+           .make_triangle();
+
         
+
+        /* 
         let Rect2 { pos, size } = Rect2::new_centered(zero(), 1.8.splat2());
         let pos = GpuVec2::from(pos).with_z(0.);
         let size = GpuVec2::from(size);
@@ -42,6 +51,7 @@ impl EventLoop for TestCtx
 
         Pen.static_geometry(vertex, indices);
         Pen.draw_triangle_test();
+        */
 
         Pen.end_pass();
         Pen.end_draw();
