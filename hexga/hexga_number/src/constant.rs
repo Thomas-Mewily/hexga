@@ -1,3 +1,5 @@
+use std::num::NonZero;
+
 use crate::*;
 
 /// Define the `0` representation : The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`

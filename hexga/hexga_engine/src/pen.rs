@@ -15,11 +15,12 @@ impl DerefMut for Pen
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[repr(C)]
 pub struct GpuVertex 
 {
-    pub color : GpuColor,
     pub pos   : GpuVec3,
     pub uv    : GpuVec2,
+    pub color : GpuColor,
 }
 impl Default for GpuVertex
 {
@@ -71,13 +72,13 @@ pub struct ContextPen
     pipeline: Pipeline,
     bindings: Bindings,
 
-    vertex_buffer: BufferId,
-    index_buffer : BufferId,
+    vertex_buffer_id : BufferId,
+    index_buffer_id : BufferId,
 
     white_pixel : TextureId,
     
     batch_vertex_buffer: Vec<GpuVertex>,
-    batch_index_buffer: Vec<GpuVertexIdx>,
+    batch_index_buffer : Vec<GpuVertexIdx>,
     
     param : PenConfig,
 }
@@ -141,8 +142,8 @@ impl ContextPen
         { 
             pipeline, 
             bindings,
-            vertex_buffer,
-            index_buffer, 
+            vertex_buffer_id: vertex_buffer,
+            index_buffer_id: index_buffer, 
             white_pixel,
             param,
             batch_vertex_buffer : Vec::with_capacity(param.max_vertex),
@@ -160,8 +161,14 @@ pub trait IPen
 
 impl ContextPen
 {
+    pub fn begin_draw(&mut self)
+    {
+
+    }
     pub fn begin_pass(&mut self)
     {
+        self.batch_vertex_buffer.clear();
+        self.batch_index_buffer.clear();
         let r = render();
         r.begin_default_pass(Default::default());
         r.apply_pipeline(&self.pipeline);
@@ -169,44 +176,72 @@ impl ContextPen
 
     pub fn end_pass(&mut self)
     {
+        let r = render();
+        r.apply_bindings(&self.bindings);
+        r.buffer_update(self.vertex_buffer_id, BufferSource::slice(&self.batch_vertex_buffer));
+        r.buffer_update(self.index_buffer_id, BufferSource::slice(&self.batch_index_buffer));
+        r.draw(0, self.batch_index_buffer.len() as _, 1);
         render().end_render_pass();
     }
 
-    pub fn commit_frame(&mut self)
+    pub fn end_draw(&mut self)
     {
-        let r = render();
-        r.apply_bindings(&self.bindings);
-        r.buffer_update(self.vertex_buffer, BufferSource::slice(&self.batch_vertex_buffer));
-        r.buffer_update(self.index_buffer, BufferSource::slice(&self.batch_index_buffer));
-        r.draw(0, self.batch_index_buffer.len() as _, 1);
+        
     }
 }
 
 impl ContextPen
 {
-    pub fn geometry(&mut self, vertexs : &[GpuVertex], indexs: &[GpuVertexIdx]) -> &mut Self
+    
+    pub fn draw_triangle(&mut self) -> &mut Self
     {
+        self.geometry
+        (
+    [
+                GpuVertex::new().with_pos(gpu_vec3(-0.3, -0.3, 0.)).with_color(Color::RED),
+                GpuVertex::new().with_pos(gpu_vec3(0.3, -0.3, 0.)).with_color(Color::BLUE),
+                GpuVertex::new().with_pos(gpu_vec3(0.0, 0.3, 0.)).with_color(Color::GREEN),
+            ]
+            , 
+            [0, 1, 2]
+        )
+    }
+
+    pub fn geometry<V,I>(&mut self, vertex : V, index: I) -> &mut Self
+        where 
+        V : IntoIterator<Item=GpuVertex>, V::IntoIter : ExactSizeIterator,
+        I : IntoIterator<Item=GpuVertexIdx>, I::IntoIter : ExactSizeIterator,
+    {
+        let vertex = vertex.into_iter();
+        let index = index.into_iter();
+
         let PenConfig { max_vertex, max_index } = self.param;
-        if vertexs.len() >= max_vertex || indexs.len() >= max_index {
+        if vertex.len() >= max_vertex || index.len() >= max_index {
             warn!("geometry() exceeded max drawcall size, clamping");
         }
 
-        let vertexs = &vertexs[0..max_vertex.min(vertexs.len())];
-        let indexs = &indexs[0..max_index.min(indexs.len())];
+        let vertex_len = vertex.len().min(self.batch_vertex_buffer.capacity() - self.batch_vertex_buffer.len());
+        let indexs_len = index.len().min(self.batch_index_buffer.capacity() - self.batch_vertex_buffer.len());
 
         let vertex_offset = self.batch_vertex_buffer.len();
-        self.batch_vertex_buffer.extend(vertexs);
-        self.batch_index_buffer.extend(indexs.iter().map(|x| *x + vertex_offset as GpuVertexIdx));
-
-        let r = render();
-
+        self.batch_vertex_buffer.extend(vertex.take(vertex_len));
+        self.batch_index_buffer.extend(index.map(|x| x + vertex_offset as GpuVertexIdx).take(indexs_len));
 
         self
     }
 
-    pub fn polygons(&mut self, poly : &[GpuVertex])
+    pub fn polygons(&mut self, vertex : &[GpuVertex]) -> &mut Self
     {
-        
+        let index_count = (vertex.len() - 2) * 3;
+        let mut indices = Vec::with_capacity(index_count);
+
+        for i in 1..(vertex.len() - 1) {
+            indices.push(0);
+            indices.push(i as GpuVertexIdx);
+            indices.push((i + 1) as GpuVertexIdx);
+        }
+
+        self.geometry(vertex.iter().copied(), indices)
     }
 }
 

@@ -202,8 +202,9 @@ pub struct BitFlagsIntoIter<F,U>
     F : MaxValue + Copy + TryFrom<U>, 
     RangeInclusive<U>: Iterator<Item = U>
 {
-    bitflag : BitFlags<F,U>,
-    flag_idx : U,
+    flags : U,
+    flag_offset : U,
+    phantom : PhantomData<F>,
 }
 impl<F,U> BitFlagsIntoIter<F,U>
     where 
@@ -211,9 +212,10 @@ impl<F,U> BitFlagsIntoIter<F,U>
     F : MaxValue + Copy + TryFrom<U>, 
     RangeInclusive<U>: Iterator<Item = U>
 {
-    pub fn new_start_at(bitflag : BitFlags<F,U>, idx : U) -> Self { Self { flag_idx: idx, bitflag }}
+    pub fn new_start_at(bitflag : BitFlags<F,U>, idx : U) -> Self { Self { flag_offset: idx, flags : bitflag.flags, phantom : PhantomData }}
     pub fn new(bitflag : BitFlags<F,U>) -> Self { Self::new_start_at(bitflag, U::ZERO) }
 }
+
 impl<F,U> Iterator for BitFlagsIntoIter<F,U>
     where 
     U : BitFlagsIntegerUnsigned + From<F>, 
@@ -223,26 +225,50 @@ impl<F,U> Iterator for BitFlagsIntoIter<F,U>
     type Item=F;
     fn next(&mut self) -> Option<Self::Item> 
     {
-        debug_assert!(U::from(F::MAX) != U::MAX); // to avoid infite loop
-        loop
+        while self.flags.is_non_zero()
         {
-            if self.bitflag.flags.mask_any_one(U::ONE << self.flag_idx)
+            let f = self.flags & U::ONE == U::ONE;
+            let flag_idx = self.flag_offset;
+
+            self.flags >>= U::ONE;
+            self.flag_offset += U::ONE;
+            
+            if f 
             {
-                if let Ok(v) = F::try_from(self.flag_idx)
+                if let Ok(v) = F::try_from(flag_idx)
                 {
-                    self.flag_idx += U::ONE;
                     return Some(v);
                 }
             }
-
-            self.flag_idx += U::ONE;
-            if self.flag_idx > F::MAX.into()
-            {
-                return None;
-            }
         }
+        None
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>)
+    {
+        let nb_ones = self.flags.count_bit_ones() as _;
+        (nb_ones, Some(nb_ones))
     }
 }
+
+impl<F,U> std::iter::FusedIterator for BitFlagsIntoIter<F,U>
+    where 
+    U : BitFlagsIntegerUnsigned + From<F>, 
+    F : MaxValue + Copy + TryFrom<U>, 
+    RangeInclusive<U>: Iterator<Item = U> {}
+
+impl<F,U> std::iter::ExactSizeIterator for BitFlagsIntoIter<F,U> 
+    where 
+    U : BitFlagsIntegerUnsigned + From<F>, 
+    F : MaxValue + Copy + TryFrom<U>, 
+    RangeInclusive<U>: Iterator<Item = U>
+{
+    fn len(&self) -> usize
+    {
+        self.flags.count_bit_ones() as _
+    }
+}
+
 
 impl<F,U> BitAnd<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitand(self, rhs: Self) -> Self::Output { Self::from_flags(self.flags.bitand(rhs.flags)) } }
 impl<F,U> BitAndAssign<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitand_assign(&mut self, rhs: Self) { self.flags.bitand_assign(rhs.flags); } }

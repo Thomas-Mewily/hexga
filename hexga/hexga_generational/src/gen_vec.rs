@@ -663,7 +663,10 @@ impl<T, Gen: IGeneration> Iterator for IntoIter<T, Gen> {
     fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
 impl<T, Gen: IGeneration> FusedIterator for IntoIter<T, Gen> {}
-
+impl<T, Gen: IGeneration> ExactSizeIterator for IntoIter<T, Gen> 
+{
+    fn len(&self) -> usize { self.len_remaining }
+}
 
 impl<'a, T, Gen: IGeneration> IntoIterator for &'a GenVecOf<T, Gen> {
     type Item = (GenIDOf<T, Gen>, &'a T);

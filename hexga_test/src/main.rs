@@ -10,7 +10,7 @@ use criterion::{BenchmarkId, Criterion};
 use hexga_core::prelude::*;
 use hexga_math::prelude::*;
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
-use hexga_engine::{Event, EventLoop, MultiMediaConfig, Pen, WindowConfig};
+use hexga_engine::{Event, EventLoop, GpuVec2, GpuVertex, MultiMediaConfig, Pen, WindowConfig};
 use hexga_undo_redo::*; //prelude::*;
 
 pub struct TestCtx;
@@ -21,12 +21,29 @@ impl EventLoop for TestCtx
     }
 
     fn draw(&mut self) {
+        Pen.begin_draw();
         Pen.begin_pass();
 
-        Pen.geometry([Gpu], indexs)
+        let Rect2 { pos, size } = rect2(20.,30.,100.,200.);
+        let pos = GpuVec2::from(pos).with_z(0.);
+        let size = GpuVec2::from(size);
+        let color = Color::WHITE;
+
+        let vertex =
+        [
+            GpuVertex::new().with_pos(pos).with_color(color),
+            GpuVertex::new().with_pos(pos.moved_x(size.x)).with_color(color),
+            GpuVertex::new().with_pos(pos.moved_x(size.x).moved_y(size.y)).with_color(color),
+            GpuVertex::new().with_pos(pos.moved_y(size.y)).with_color(color),
+        ];
+
+        let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
+
+        Pen.geometry(vertex, indices);
+        Pen.draw_triangle();
 
         Pen.end_pass();
-        Pen.commit_frame();
+        Pen.end_draw();
     }
 
     fn handle_event(&mut self, event : &Event) -> bool {
