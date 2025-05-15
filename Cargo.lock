@@ -296,6 +296,7 @@ dependencies = [
  "hexga_generational",
  "hexga_io",
  "hexga_math",
+ "hexga_tools",
  "serde",
 ]
 

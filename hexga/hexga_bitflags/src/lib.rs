@@ -6,3 +6,5 @@ pub use bit_flags::*;
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+
+pub mod prelude;

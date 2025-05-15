@@ -1,7 +1,7 @@
 use super::*;
 
 /// A stack that ALWAY have one element.
-#[derive(Default, Clone, Debug, PartialEq, Eq)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct NonEmptyStack<T>
 {
     /// will be readed frequently
@@ -58,8 +58,141 @@ impl<T> NonEmptyStack<T>
     pub fn duplicate(&mut self) -> &mut Self where T : Clone { self.stack.push(self.last.clone()); self } 
     pub fn pop(&mut self) -> Option<T> { self.stack.pop().and_then(|mut v| { std::mem::swap(&mut v, &mut self.last); Some(v) }) }
 
+    pub fn iter(&self) -> Iter<'_, T> { Iter { stack: self.stack.iter(), last: Some(&self.last) } }
+    pub fn iter_mut(&mut self) -> IterMut<'_, T> { IterMut { stack: self.stack.iter_mut(), last: Some(&mut self.last) } }
+
     pub fn into_values(mut self) -> Vec<T> { self.stack.push(self.last); self.stack }
 }
+
+#[derive(Debug, Clone)]
+pub struct IntoIter<T> {
+    stack: std::vec::IntoIter<T>,
+    last: Option<T>,
+}
+
+impl<T> Iterator for IntoIter<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.stack.next().or_else(|| self.last.take())
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.stack.len() + self.last.is_some() as usize;
+        (len, Some(len))
+    }
+}
+impl<T> DoubleEndedIterator for IntoIter<T> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.last.is_some() && self.stack.len() == 0 {
+            self.last.take()
+        } else {
+            self.stack.next_back()
+        }
+    }
+}
+impl<T> std::iter::FusedIterator for IntoIter<T> {}
+impl<T> std::iter::ExactSizeIterator for IntoIter<T> { fn len(&self) -> usize { self.stack.len() + self.last.is_some() as usize } }
+
+impl<T> IntoIterator for NonEmptyStack<T> {
+    type Item = T;
+    type IntoIter = IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter {
+            stack: self.stack.into_iter(),
+            last: Some(self.last),
+        }
+    }
+}
+
+
+#[derive(Debug, Clone)]
+pub struct Iter<'a, T> {
+    stack: std::slice::Iter<'a, T>,
+    last: Option<&'a T>,
+}
+
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.stack.next().or_else(|| self.last.take())
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.stack.len() + self.last.is_some() as usize;
+        (len, Some(len))
+    }
+}
+impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.last.is_some() && self.stack.len() == 0 {
+            self.last.take()
+        } else {
+            self.stack.next_back()
+        }
+    }
+}
+impl<'a,T> std::iter::FusedIterator for Iter<'a,T> {}
+impl<'a,T> std::iter::ExactSizeIterator for Iter<'a,T> { fn len(&self) -> usize { self.stack.len() + self.last.is_some() as usize } }
+
+impl<'a, T> IntoIterator for &'a NonEmptyStack<T> {
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Iter {
+            stack: self.stack.iter(),
+            last: Some(&self.last),
+        }
+    }
+}
+
+
+
+#[derive(Debug)]
+pub struct IterMut<'a, T> {
+    stack: std::slice::IterMut<'a, T>,
+    last: Option<&'a mut T>,
+}
+
+impl<'a, T> Iterator for IterMut<'a, T> {
+    type Item = &'a mut T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.stack.next().or_else(|| self.last.take())
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.stack.len() + self.last.is_some() as usize;
+        (len, Some(len))
+    }
+}
+impl<'a, T> DoubleEndedIterator for IterMut<'a, T> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.last.is_some() && self.stack.len() == 0 {
+            self.last.take()
+        } else {
+            self.stack.next_back()
+        }
+    }
+}
+impl<'a,T> std::iter::FusedIterator for IterMut<'a,T> {}
+impl<'a,T> std::iter::ExactSizeIterator for IterMut<'a,T> { fn len(&self) -> usize { self.stack.len() + self.last.is_some() as usize } }
+
+impl<'a, T> IntoIterator for &'a mut NonEmptyStack<T> {
+    type Item = &'a mut T;
+    type IntoIter = IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IterMut {
+            stack: self.stack.iter_mut(),
+            last: Some(&mut self.last),
+        }
+    }
+}
+
 
 impl<T> Index<usize> for NonEmptyStack<T>
 {

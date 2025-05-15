@@ -7,6 +7,8 @@
 
 - Undo Redo : Impl Action pour vecteur, slice, array, hashmap, hashset... struct field.
     - ne pas imposer d'utiliser un vecteur pour command stack / marker => use collection 
+    - type de retour
+    - composable / limite scripting ?
 
 - Use the serde deserialize to parse command by user / auto completion. ex : command written in a video game from a player
 ex : minecraft : `/setblock 10 20 30 grass`
@@ -15,15 +17,9 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
 
 - Io System / Cache / Mediator
 
-- GenVec : 
-    - fonction pour reset les id
-    - fonction rollback_insert rollback_push rollback_remove_idx ... (pour rollback dans un jeux)
-    - clear() différent de remove_all()
-    - drain ?
-    - impl Length + Clear
 
 - Grid : divide IGrid in IGridVector (vector/slice impl) and IGrid. Maybe merge Grid and GridParam?
-
+Impl size_hint() and ExactSizeIterator for view and view mut
 
 - transition fn inside an empty struct to make it extensible (trait pattern) : `struct Transition;`
 
@@ -54,6 +50,13 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
 
 - Graphic : Image : How to serialize it => Custom type + impl IGridParam (still a lot of code)
 - Mettre hexga_map_to dans sa propre crate
+
+- GenVec : 
+    - fonction pour reset les id
+    - fonction rollback_insert rollback_push rollback_remove_idx ... (pour rollback dans un jeux)
+    - clear() différent de remove_all()
+    - drain ?
+    - impl Length + Clear
 
 ## Other
 

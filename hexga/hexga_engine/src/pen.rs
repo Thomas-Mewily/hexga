@@ -31,9 +31,9 @@ impl Default for GpuVertex
 impl GpuVertex
 {
     pub const fn new() -> Self { Self { pos: GpuVec3::ZERO, uv: GpuVec2::ZERO, color: GpuColor::WHITE } }
-    pub const fn with_pos(mut self, pos : GpuVec3) -> Self { self.pos = pos; self }
-    pub const fn with_uv(mut self, uv : GpuVec2) -> Self { self.uv = uv; self }
-    pub fn with_color(mut self, color : impl IColor) -> Self { self.color = color.to_gpu_color(); self }
+    pub fn with_pos<P>(mut self, pos : P) -> Self where P : CastIntoComposite<GpuFloat,Output = GpuVec3> { self.pos = pos.cast_into_composite(); self }
+    pub fn with_uv<P>(mut self, uv : P) -> Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2> { self.uv = uv.cast_into_composite(); self }
+    pub fn with_color<C>(mut self, color : C) -> Self where C : IColor { self.color = color.to_gpu_color(); self }
 }
 
 pub type GpuVertexIdx = u16;
@@ -53,9 +53,15 @@ impl Default for PenConfig
 }
 impl PenConfig
 {
-    // arbitrary constant value based on macroquad
+    // arbitrary constant value copied from on macroquad
     const DEFAULT_VERTEX_CAPACITY : usize = 8000;
     const DEFAULT_INDEX_CAPACITY  : usize = 4000;
+
+    pub fn round(mut self) -> Self
+    {
+        self.max_index = self.max_index / 3 * 3;
+        self
+    }
 }
 
 pub struct GpuMesh 
@@ -77,6 +83,9 @@ pub struct ContextPen
 
     white_pixel : TextureId,
     
+    prev_vertex_len : usize,
+    vertex : NonEmptyStack<GpuVertex>,
+
     batch_vertex_buffer: Vec<GpuVertex>,
     batch_index_buffer : Vec<GpuVertexIdx>,
     
@@ -85,6 +94,8 @@ pub struct ContextPen
 
 impl ContextPen
 {
+
+
     pub(crate) fn new(render : &mut RenderBackEnd, param : PenConfig) -> Self 
     {
         let PenConfig{ max_vertex, max_index } = param;
@@ -146,6 +157,8 @@ impl ContextPen
             index_buffer_id: index_buffer, 
             white_pixel,
             param,
+            vertex : ___(),
+            prev_vertex_len : 0,
             batch_vertex_buffer : Vec::with_capacity(param.max_vertex),
             batch_index_buffer  : Vec::with_capacity(param.max_index),
         } 
@@ -192,10 +205,74 @@ impl ContextPen
 
 impl ContextPen
 {
-    
-    pub fn draw_triangle(&mut self) -> &mut Self
+    pub fn down(&mut self, vertex : GpuVertex) -> &mut Self
     {
-        self.geometry
+        self.vertex(vertex);
+        self
+    }
+
+    
+    pub fn pos2<P>(&mut self, pos : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2>
+    {
+        self.pos3(pos.cast_into_composite().with_z(0.))
+    }
+    pub fn pos3<P>(&mut self, pos : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec3>
+    {
+        self.last_vertex_mut().with_pos(pos);
+        self
+    }
+
+    pub fn uv<P>(&mut self, uv : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2>
+    { 
+        self.last_vertex_mut().with_uv(uv); 
+        self
+    }
+
+    pub fn color<C>(&mut self, color : C) -> &mut Self where C : IColor
+    { 
+        self.last_vertex_mut().with_color(color); 
+        self
+    }
+
+}
+
+impl ContextPen
+{
+    // Add a new vertex at the current position
+    pub fn vertex(&mut self, vertex : GpuVertex) -> GpuVertexIdx
+    {
+        let idx = self.batch_vertex_buffer.len() as GpuVertexIdx;
+        self.batch_vertex_buffer.push(vertex);
+        idx
+    }
+
+    pub fn last_vertex(&self) -> &GpuVertex { &self.vertex }
+    pub fn last_vertex_mut(&mut self) -> &mut GpuVertex { &mut self.vertex }
+
+    /// Make a triangle with last 3 vertex
+    pub fn make_triangle(&mut self)
+    {
+        self.prev_vertex_len = self.batch_vertex_buffer.len();
+        self.batch_index_buffer.push((self.prev_vertex_len - 3) as GpuVertexIdx);
+        self.batch_index_buffer.push((self.prev_vertex_len - 2) as GpuVertexIdx);
+        self.batch_index_buffer.push((self.prev_vertex_len - 1) as GpuVertexIdx);
+    }
+    /* 
+    pub fn add_index(&mut self, index : GpuVertexIdx)
+    {
+        self.batch_index_buffer.push(index);
+    }
+    */
+
+    pub fn triangle(&mut self, vertex : [GpuVertex;3]) -> &mut Self
+    {
+        self.static_geometry(vertex, [0, 1, 2])
+    }
+
+
+    pub fn draw_triangle_test(&mut self) -> &mut Self
+    {
+        self.static_geometry
         (
     [
                 GpuVertex::new().with_pos(gpu_vec3(-0.3, -0.3, 0.)).with_color(Color::RED),
@@ -207,7 +284,7 @@ impl ContextPen
         )
     }
 
-    pub fn geometry<V,I>(&mut self, vertex : V, index: I) -> &mut Self
+    pub fn static_geometry<V,I>(&mut self, vertex : V, index: I) -> &mut Self
         where 
         V : IntoIterator<Item=GpuVertex>, V::IntoIter : ExactSizeIterator,
         I : IntoIterator<Item=GpuVertexIdx>, I::IntoIter : ExactSizeIterator,
@@ -220,12 +297,15 @@ impl ContextPen
             warn!("geometry() exceeded max drawcall size, clamping");
         }
 
-        let vertex_len = vertex.len().min(self.batch_vertex_buffer.capacity() - self.batch_vertex_buffer.len());
-        let indexs_len = index.len().min(self.batch_index_buffer.capacity() - self.batch_vertex_buffer.len());
+        //let vertex_len = vertex.len().min(self.batch_vertex_buffer.capacity() - self.batch_vertex_buffer.len());
+        //let indexs_len = index.len().min(self.batch_index_buffer.capacity() - self.batch_vertex_buffer.len());
 
         let vertex_offset = self.batch_vertex_buffer.len();
-        self.batch_vertex_buffer.extend(vertex.take(vertex_len));
-        self.batch_index_buffer.extend(index.map(|x| x + vertex_offset as GpuVertexIdx).take(indexs_len));
+        self.batch_index_buffer.extend(index.map(|x| x + vertex_offset as GpuVertexIdx));
+
+        self.batch_vertex_buffer.extend(vertex);
+        //self.batch_vertex_buffer.extend(vertex.take(vertex_len));
+        //self.batch_index_buffer.extend(index.map(|x| x + vertex_offset as GpuVertexIdx).take(indexs_len));
 
         self
     }
@@ -241,7 +321,7 @@ impl ContextPen
             indices.push((i + 1) as GpuVertexIdx);
         }
 
-        self.geometry(vertex.iter().copied(), indices)
+        self.static_geometry(vertex.iter().copied(), indices)
     }
 }
 

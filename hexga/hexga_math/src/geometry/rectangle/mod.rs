@@ -45,6 +45,9 @@ impl<T> Rectangle<T,2> where T : Number
 
 impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
 {
+    pub fn new_centered(pos_middle : Vector<T,N>, size : Vector<T,N>) -> Self { Self::new(pos_middle-size/ (Vector::<T,N>::two()), size) }
+    pub fn new_with_center(bottom_left : Vector<T,N>, size : Vector<T,N>, center_coef : Vector<T,N>) -> Self { Self::new(bottom_left - center_coef * size, size) }
+
     pub fn get_coef(&self, coef : Vector<T,N>) -> Vector<T,N> where Vector<T,N> : UnitArithmetic { self.pos + self.size * coef }
 
     /// The center of the coordinate, whatever the dimension

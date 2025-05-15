@@ -26,6 +26,7 @@ hexga_graphics     = { path = "./hexga/hexga_graphics",     version = "0.0.10-be
 hexga_io           = { path = "./hexga/hexga_io",           version = "0.0.10-beta.10", default-features = false }
 #hexga_undo_redo   = { path = "./hexga/hexga_undo_redo",    version = "0.0.10-beta.10", default-features = false }
 hexga_ansi_color   = { path = "./hexga/hexga_ansi_color",   version = "0.0.10-beta.10", default-features = false }
+hexga_tools        = { path = "./hexga/hexga_tools",        version = "0.0.10-beta.10", default-features = false }
 hexga              = { path = "./hexga/hexga",              version = "0.0.10-beta.10", default-features = false }
 
 template = { path = "./reserved/template", version = "0.0.10-beta.10", default-features = false }
