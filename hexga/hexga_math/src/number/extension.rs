@@ -34,7 +34,7 @@ pub trait OddOrEven : Sized
     fn is_even(&self) -> bool;
     #[inline(always)] fn is_odd (&self) -> bool { !self.is_even() }
 }
-impl<T> OddOrEven for T where T : Integer
+impl<T> OddOrEven for T where T : NumberInteger
 {
     fn is_even(&self) -> bool { (*self % Self::two()).is_zero() }
 }

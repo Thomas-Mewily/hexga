@@ -452,7 +452,7 @@ impl<T, const ROW : usize, const COL : usize> DivAssign<T> for Matrix<T,ROW,COL>
 
 impl<T, const N: usize> SquareMatrix<T, N>
 where
-    T: FloatingNumber,
+    T: Float,
 {
     /// Inverse the matrix, or return `None` if the matrix is singular.
     /// 
@@ -681,7 +681,7 @@ matrix_have_w!(4);
 impl<T, const N : usize> RotationX<T> for SquareMatrix<T,N> 
     where
         Self : HaveZ<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
-        T : FloatingNumber 
+        T : Float 
 {
     fn rotate_x(&mut self, angle : AngleOf<T>) -> &mut Self
     {
@@ -693,7 +693,7 @@ impl<T, const N : usize> RotationX<T> for SquareMatrix<T,N>
 impl<T, const N : usize> RotationY<T> for SquareMatrix<T,N> 
     where
         Self : HaveZ<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
-        T : FloatingNumber 
+        T : Float 
 {
     fn rotate_y(&mut self, angle : AngleOf<T>) -> &mut Self
     {
@@ -705,7 +705,7 @@ impl<T, const N : usize> RotationY<T> for SquareMatrix<T,N>
 impl<T, const N : usize> RotationZ<T> for SquareMatrix<T,N> 
     where
         Self : HaveY<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
-        T : FloatingNumber 
+        T : Float 
 {
     fn rotate_z(&mut self, angle : AngleOf<T>) -> &mut Self
     {
@@ -740,7 +740,7 @@ impl<T, const N : usize> Position<T,N> for SquareMatrix<T,N> where T : Copy
 
 
 /// the rotation code is mainly based on glam code
-impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + Zero, T : FloatingNumber
+impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + Zero, T : Float
 {
     pub fn from_rotation_axis(axis: Vector3<T>, angle : AngleOf<T>) -> Self
     {
@@ -793,7 +793,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + Zer
     }
 }
 
-impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveY<Vector<T,N>> + Zero, T : FloatingNumber
+impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveY<Vector<T,N>> + Zero, T : Float
 {
     pub fn from_rotation_z(angle : AngleOf<T>) -> Self
     {

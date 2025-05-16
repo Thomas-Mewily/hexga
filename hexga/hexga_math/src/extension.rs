@@ -1,5 +1,6 @@
 use crate::*;
 
+
 impl<S, T, const N : usize> ArrayLikeExtension<T,N> for S where S : ArrayLike<T,N> {}
 pub trait ArrayLikeExtension<T, const N : usize> : ArrayLike<T,N>
 {

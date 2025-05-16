@@ -27,13 +27,13 @@ pub struct AngleOf<T>
 }
 
 #[cfg(feature = "serde")]
-impl<T: FloatingNumber + Serialize> Serialize for AngleOf<T> {
+impl<T: Float + Serialize> Serialize for AngleOf<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     { self.degree().serialize(serializer) }
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T: FloatingNumber + Deserialize<'de>> Deserialize<'de> for AngleOf<T> {
+impl<'de, T: Float + Deserialize<'de>> Deserialize<'de> for AngleOf<T> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de>,
     {
         let degree = T::deserialize(deserializer)?;
@@ -42,8 +42,8 @@ impl<'de, T: FloatingNumber + Deserialize<'de>> Deserialize<'de> for AngleOf<T> 
 }
 
 
-impl<T:FloatingNumber> Zero for AngleOf<T> { const ZERO : Self = AngleOf { _radian : T::ZERO }; }
-impl<T:FloatingNumber> AngleOf<T>
+impl<T:Float> Zero for AngleOf<T> { const ZERO : Self = AngleOf { _radian : T::ZERO }; }
+impl<T:Float> AngleOf<T>
 {
     /// `360°`
     pub const FULL : Self = AngleOf { _radian : T::TWO_PI };
@@ -115,27 +115,27 @@ impl<T:FloatingNumber> AngleOf<T>
     }
 }
 
-impl<T:FloatingNumber> Debug for AngleOf<T> where T: Debug
+impl<T:Float> Debug for AngleOf<T> where T: Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult { write!(f, "{:?}°", self.degree()) }
 }
-impl<T:FloatingNumber> Display for AngleOf<T> where T: Display
+impl<T:Float> Display for AngleOf<T> where T: Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult { write!(f, "{:}°", self.degree()) }
 }
 
 /* 
-impl<T:FloatingNumber> AngleOf<T>
+impl<T:Float> AngleOf<T>
 {
     pub fn fmt_degree_with_optional_precision(self, precision : Option<T>) -> DisplayAngleDegree { DisplayAngleDegree { angle: self, precision }}
     pub fn fmt_degree_with_precision(self, precision : float) -> DisplayAngleDegree { self.fmt_degree_with_optional_precision(Some(precision)) }
     pub fn fmt_degree(self) -> DisplayAngleDegree { self.fmt_degree_with_optional_precision(None) }
 }
-impl<T:FloatingNumber> Display for AngleOf<T> where T:FloatingNumber { fn fmt(&self, f: &mut Formatter<'_>) -> DResult { self.fmt_degree_with_precision(360.).fmt(f) }}
+impl<T:Float> Display for AngleOf<T> where T:Float { fn fmt(&self, f: &mut Formatter<'_>) -> DResult { self.fmt_degree_with_precision(360.).fmt(f) }}
 
 #[derive(Clone, Copy)]
 pub struct DisplayAngleDegree{ angle : AngleOf, precision : Option<T> }
-impl<T:FloatingNumber> Display for DisplayAngleDegree {
+impl<T:Float> Display for DisplayAngleDegree {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult 
     {
         write!(f, "{}°", 
@@ -151,43 +151,43 @@ impl<T:FloatingNumber> Display for DisplayAngleDegree {
 */
 
 
-impl<T:FloatingNumber> Mul<T> for AngleOf<T> { type Output=AngleOf<T>; fn mul(self, rhs: T) -> Self::Output { Self::from_internal(self._radian * rhs) }}
-impl<T:FloatingNumber> Mul<T> for &AngleOf<T> { type Output=AngleOf<T>; fn mul(self, rhs: T) -> Self::Output { *self / rhs }}
-impl<T:FloatingNumber> Mul<&T> for AngleOf<T> where T : Copy { type Output=AngleOf<T>; fn mul(self, rhs: &T) -> Self::Output { self / *rhs }}
-impl<T:FloatingNumber> Mul<&T> for &AngleOf<T> where T : Copy { type Output=AngleOf<T>; fn mul(self, rhs: &T) -> Self::Output { *self / *rhs }}
-impl<T:FloatingNumber> MulAssign<T> for AngleOf<T> { fn mul_assign(&mut self, rhs: T) { self._radian.mul_assign(rhs); }}
-impl<T:FloatingNumber> MulAssign<&T> for AngleOf<T> { fn mul_assign(&mut self, rhs: &T) { *self *= *rhs; }}
+impl<T:Float> Mul<T> for AngleOf<T> { type Output=AngleOf<T>; fn mul(self, rhs: T) -> Self::Output { Self::from_internal(self._radian * rhs) }}
+impl<T:Float> Mul<T> for &AngleOf<T> { type Output=AngleOf<T>; fn mul(self, rhs: T) -> Self::Output { *self / rhs }}
+impl<T:Float> Mul<&T> for AngleOf<T> where T : Copy { type Output=AngleOf<T>; fn mul(self, rhs: &T) -> Self::Output { self / *rhs }}
+impl<T:Float> Mul<&T> for &AngleOf<T> where T : Copy { type Output=AngleOf<T>; fn mul(self, rhs: &T) -> Self::Output { *self / *rhs }}
+impl<T:Float> MulAssign<T> for AngleOf<T> { fn mul_assign(&mut self, rhs: T) { self._radian.mul_assign(rhs); }}
+impl<T:Float> MulAssign<&T> for AngleOf<T> { fn mul_assign(&mut self, rhs: &T) { *self *= *rhs; }}
 
-impl<T:FloatingNumber> Div<T> for AngleOf<T> { type Output=AngleOf<T>; fn div(self, rhs: T) -> Self::Output { Self::from_internal(self._radian/ rhs) }}
-impl<T:FloatingNumber> DivAssign<T> for AngleOf<T> { fn div_assign(&mut self, rhs: T) { self._radian.div_assign(rhs); }}
+impl<T:Float> Div<T> for AngleOf<T> { type Output=AngleOf<T>; fn div(self, rhs: T) -> Self::Output { Self::from_internal(self._radian/ rhs) }}
+impl<T:Float> DivAssign<T> for AngleOf<T> { fn div_assign(&mut self, rhs: T) { self._radian.div_assign(rhs); }}
 
-impl<T:FloatingNumber> Neg for AngleOf<T> { type Output=AngleOf<T>; fn neg(self) -> Self::Output { Self::from_internal(self._radian.neg()) }}
+impl<T:Float> Neg for AngleOf<T> { type Output=AngleOf<T>; fn neg(self) -> Self::Output { Self::from_internal(self._radian.neg()) }}
 
-impl<T:FloatingNumber> Add<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn add(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.add(rhs._radian)) }}
-impl<T:FloatingNumber> AddAssign<AngleOf<T>> for AngleOf<T> { fn add_assign(&mut self, rhs: AngleOf<T>) { self._radian.add_assign(rhs._radian); }}
+impl<T:Float> Add<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn add(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.add(rhs._radian)) }}
+impl<T:Float> AddAssign<AngleOf<T>> for AngleOf<T> { fn add_assign(&mut self, rhs: AngleOf<T>) { self._radian.add_assign(rhs._radian); }}
 
-impl<T:FloatingNumber> Sub<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn sub(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.sub(rhs._radian)) }}
-impl<T:FloatingNumber> SubAssign<AngleOf<T>> for AngleOf<T> { fn sub_assign(&mut self, rhs: AngleOf<T>) { self._radian.sub_assign(rhs._radian); }}
+impl<T:Float> Sub<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn sub(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.sub(rhs._radian)) }}
+impl<T:Float> SubAssign<AngleOf<T>> for AngleOf<T> { fn sub_assign(&mut self, rhs: AngleOf<T>) { self._radian.sub_assign(rhs._radian); }}
 
-impl<T:FloatingNumber> Div<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn div(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.div(rhs._radian)) }}
-impl<T:FloatingNumber> DivAssign<AngleOf<T>> for AngleOf<T> { fn div_assign(&mut self, rhs: AngleOf<T>) { self._radian.div_assign(rhs._radian); }}
+impl<T:Float> Div<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn div(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.div(rhs._radian)) }}
+impl<T:Float> DivAssign<AngleOf<T>> for AngleOf<T> { fn div_assign(&mut self, rhs: AngleOf<T>) { self._radian.div_assign(rhs._radian); }}
 
-impl<T:FloatingNumber> Rem<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn rem(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.rem(rhs._radian)) }}
-impl<T:FloatingNumber> RemAssign<AngleOf<T>> for AngleOf<T> { fn rem_assign(&mut self, rhs: AngleOf<T>) { self._radian.rem_assign(rhs._radian); }}
+impl<T:Float> Rem<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn rem(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.rem(rhs._radian)) }}
+impl<T:Float> RemAssign<AngleOf<T>> for AngleOf<T> { fn rem_assign(&mut self, rhs: AngleOf<T>) { self._radian.rem_assign(rhs._radian); }}
 
-impl<T:FloatingNumber> Sum for AngleOf<T>
+impl<T:Float> Sum for AngleOf<T>
 {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Self::ZERO, Self::add)
     }
 }
 
-impl<T:FloatingNumber> MinValue for AngleOf<T> where T : MinValue
+impl<T:Float> MinValue for AngleOf<T> where T : MinValue
 {
     const MIN : Self = Self::from_internal(T::MIN);
 }
 
-impl<T:FloatingNumber> MaxValue for AngleOf<T> where T : MaxValue
+impl<T:Float> MaxValue for AngleOf<T> where T : MaxValue
 {
     const MAX : Self = Self::from_internal(T::MAX);
 }

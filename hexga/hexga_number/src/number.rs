@@ -65,21 +65,20 @@ pub trait NumberNegative             : Number + ArithmeticNegative + MinusOne {}
 impl<T> NumberNegative for T where T : Number + ArithmeticNegative + MinusOne {}
 
 /// fX
-pub trait Floating : NumberNegative + Half + NaNValue {}
-impl<T> Floating for T where T : NumberNegative + Half + NaNValue {}
+pub trait NumberFloat             : NumberNegative + Half + NaNValue {}
+impl<T> NumberFloat for T where T : NumberNegative + Half + NaNValue {}
 
 /// uX or iX
-pub trait Integer             : Number + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + NumberAttibute {}
-impl<T> Integer for T where T : Number + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + NumberAttibute {}
+pub trait NumberInteger             : Number + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + NumberAttibute {}
+impl<T> NumberInteger for T where T : Number + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + NumberAttibute {}
 
 /// uX
-pub trait IntegerUnsigned             : Integer {}
-impl<T> IntegerUnsigned for T where T : Integer {}
+pub trait NumberIntegerUnsigned             : NumberInteger {}
+impl<T> NumberIntegerUnsigned for T where T : NumberInteger {}
 
 /// iX
-pub trait IntegerSigned             : Integer + NumberNegative {}
-impl<T> IntegerSigned for T where T : Integer + NumberNegative {}
-
+pub trait NumberIntegerSigned             : NumberInteger + NumberNegative {}
+impl<T> NumberIntegerSigned for T where T : NumberInteger + NumberNegative {}
 
 // Todo : impl it for vector / array ?
 pub trait BitManip

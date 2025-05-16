@@ -1,6 +1,14 @@
 use crate::*;
 
- 
+pub trait Integer             : NumberInteger + CastPrimitive {}
+impl<T> Integer for T where T : NumberInteger + CastPrimitive {}
+
+pub trait IntegerUnsigned             : NumberIntegerUnsigned + CastPrimitive {}
+impl<T> IntegerUnsigned for T where T : IntegerUnsigned + CastPrimitive {}
+
+pub trait IntegerSigned             : NumberIntegerSigned + CastPrimitive {}
+impl<T> IntegerSigned for T where T : IntegerSigned + CastPrimitive {}
+
 /// For type that have an unsigned equivalent
 pub trait ToUnsigned
 {
@@ -28,6 +36,7 @@ impl_signed!(isize, usize);
 map_on_integer_unsigned!(impl_signed);
 map_on_float!(impl_signed);
 impl_composite_output_with_methods!(ToUnsigned, to_unsigned);
+
 
 /// For type that have a signed equivalent
 pub trait ToSigned

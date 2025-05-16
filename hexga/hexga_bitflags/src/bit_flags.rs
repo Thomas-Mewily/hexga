@@ -3,7 +3,7 @@ use std::{fmt, marker::PhantomData, ops::*};
 use hexga_number::*;
 use std::fmt::{Debug,Formatter,Result as DResult};
 
-pub trait BitMasksExtension : IntegerUnsigned
+pub trait BitMasksExtension : NumberIntegerUnsigned
 {
     #[must_use]
     fn masked          (self, mask : Self, set : bool) -> Self { if set { self.masked_set_one(mask) } else { self.masked_set_zero(mask) } }
@@ -23,7 +23,7 @@ pub trait BitMasksExtension : IntegerUnsigned
     fn mask_any_one    (&self, mask : Self) -> bool { (*self & mask).is_non_zero() }
     fn mask_any_zero   (&self, mask : Self) -> bool { !self.mask_any_one(mask) }
 }
-impl<T> BitMasksExtension for T where T : IntegerUnsigned { }
+impl<T> BitMasksExtension for T where T : NumberIntegerUnsigned { }
 
 
 /*
@@ -71,8 +71,8 @@ impl<T, F> BitFlagsExtension<F> for T where T : IntegerUnsigned, T : From<F>
 }
 */
 
-pub trait BitFlagsIntegerUnsigned : IntegerUnsigned + fmt::Binary {}
-impl<T> BitFlagsIntegerUnsigned for T where T : IntegerUnsigned + fmt::Binary {}
+pub trait BitFlagsIntegerUnsigned : NumberIntegerUnsigned + fmt::Binary {}
+impl<T> BitFlagsIntegerUnsigned for T where T : NumberIntegerUnsigned + fmt::Binary {}
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy

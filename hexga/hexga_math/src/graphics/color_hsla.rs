@@ -21,8 +21,8 @@ impl_fixed_array_like_with_op!(ColorHSLAOf, 4);
 impl<T> ColorHSLAOf<T>
 {
     #[inline(always)] pub const fn new(hue : T, saturation : T, lightness : T, alpha : T) -> Self  { Self { h: hue, s: saturation, l : lightness, a: alpha, }}
-    pub const fn new_hue(hue : T) -> Self where T : FloatingNumber { Self::hsl(hue, T::ONE, T::HALF) }
-    pub const fn gray(coef : T) -> Self where T : FloatingNumber { Self::hsl(T::ZERO, T::ZERO, coef) }
+    pub const fn new_hue(hue : T) -> Self where T : Float { Self::hsl(hue, T::ONE, T::HALF) }
+    pub const fn gray(coef : T) -> Self where T : Float { Self::hsl(T::ZERO, T::ZERO, coef) }
 
     /// H : Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
     /// 
@@ -38,7 +38,7 @@ impl<T> ColorHSLAOf<T>
     /// S : Grayscale : `0`, `1`: pure color. 
     /// 
     /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
-    pub const fn hsl(hue : T, saturation : T, lightness : T) -> Self where T : FloatingNumber { Self::hsla(hue, saturation, lightness, T::ONE) }
+    pub const fn hsl(hue : T, saturation : T, lightness : T) -> Self where T : Float { Self::hsla(hue, saturation, lightness, T::ONE) }
 
     /// Hue
     pub const H_INDEX : usize = 0;
@@ -91,22 +91,22 @@ impl<T> ColorHSLAOf<T>
 impl<T> From<(T,T,T,T,)> for ColorHSLAOf<T> { fn from(value: (T,T,T,T,)) -> Self { ColorHSLAOf::hsla(value.0, value.1, value.2, value.3) }}
 impl<T> From<ColorHSLAOf<T>> for (T,T,T,T,) { fn from(value: ColorHSLAOf<T>) -> Self { (value.h, value.s, value.l, value.a) }}
 
-impl<T> From<(T,T,T,)> for ColorHSLAOf<T> where T : FloatingNumber { fn from(value: (T,T,T,)) -> Self { ColorHSLAOf::hsl(value.0, value.1, value.2) }}
+impl<T> From<(T,T,T,)> for ColorHSLAOf<T> where T : Float { fn from(value: (T,T,T,)) -> Self { ColorHSLAOf::hsl(value.0, value.1, value.2) }}
 impl<T> From<ColorHSLAOf<T>> for (T,T,T,) { fn from(value: ColorHSLAOf<T>) -> Self { (value.h, value.s, value.l) }}
 
-impl<T> From<[T; 3]> for ColorHSLAOf<T> where T : FloatingNumber { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorHSLAOf::hsl(r,g,b) }}
+impl<T> From<[T; 3]> for ColorHSLAOf<T> where T : Float { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorHSLAOf::hsl(r,g,b) }}
 impl<T> From<ColorHSLAOf<T>> for [T; 3] { fn from(value: ColorHSLAOf<T>) -> Self { [value.h, value.s, value.l] }}
 
 impl<T> From<Vector4<T>> for ColorHSLAOf<T> { fn from(value: Vector4<T>) -> Self { let [h,s,l,a] = value.array; ColorHSLAOf::hsla(h,s,l,a) }}
 impl<T> From<ColorHSLAOf<T>> for Vector4<T> { fn from(value: ColorHSLAOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
 
-impl<T> From<Vector3<T>> for ColorHSLAOf<T> where T : FloatingNumber { fn from(value: Vector3<T>) -> Self { let [h,s,l] = value.array; ColorHSLAOf::hsl(h,s,l) }}
+impl<T> From<Vector3<T>> for ColorHSLAOf<T> where T : Float { fn from(value: Vector3<T>) -> Self { let [h,s,l] = value.array; ColorHSLAOf::hsl(h,s,l) }}
 impl<T> From<ColorHSLAOf<T>> for Vector3<T> { fn from(value: ColorHSLAOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
 impl From<Color> for ColorHSLA { fn from(value: Color) -> Self { value.to_color_hsla() }}
 impl From<ColorRGBAByte> for ColorHSLA { fn from(value: ColorRGBAByte) -> Self { value.to_color_hsla() }}
 
-impl<C:FloatingNumber> Default for ColorHSLAOf<C>
+impl<C:Float> Default for ColorHSLAOf<C>
 {
     fn default() -> Self { Self::hsla(zero(), zero(), one(), one()) }
 }

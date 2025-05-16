@@ -17,17 +17,17 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 pub use hexga_typedef as typedef;
 pub use hexga_typedef::*;
 
-pub use hexga_number as number;
-use hexga_number::*;
+pub mod number;
+use number::*;
+
+pub mod extension;
+use extension::*;
 
 pub use hexga_array::*;
 use hexga_array::*;
 
 pub mod prelude;
 use prelude::*;
-
-mod core;
-pub use core::*;
 
 mod geometry;
 pub use geometry::*;

@@ -36,11 +36,11 @@ impl<T> ToTime for T where T : ToFloat<Output = float>
 /// 
 /// Provides conversion to other time units (seconds, minutes, days...).
 #[derive(Clone, Copy, PartialEq, PartialOrd, Default)]
-pub struct TimeOf<T:FloatingNumber> { second : T }
+pub struct TimeOf<T:Float> { second : T }
 
-impl<T:FloatingNumber> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> DResult { write!(f, "{}", self) } }
+impl<T:Float> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> DResult { write!(f, "{}", self) } }
 
-impl<T:FloatingNumber> TimeOf<T>
+impl<T:Float> TimeOf<T>
 {
     /// don't display the value if zero
     fn display_non_zero_unit(f: &mut Formatter<'_>, val : i32, unit : &str) -> DResult 
@@ -50,7 +50,7 @@ impl<T:FloatingNumber> TimeOf<T>
     { write!(f, "{}{}", val, unit) }
 }
 
-impl<T:FloatingNumber> Display for TimeOf<T>
+impl<T:Float> Display for TimeOf<T>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult 
     {
@@ -68,14 +68,14 @@ impl<T:FloatingNumber> Display for TimeOf<T>
 }
 
 
-impl<T:FloatingNumber> Zero for TimeOf<T> { const ZERO : Self = Self::from_s(T::ZERO); }
+impl<T:Float> Zero for TimeOf<T> { const ZERO : Self = Self::from_s(T::ZERO); }
 
-impl<T:FloatingNumber> Absolute for TimeOf<T> where T : Absolute
+impl<T:Float> Absolute for TimeOf<T> where T : Absolute
 {
     fn abs(self) -> Self { TimeOf::from_s(self.second.abs()) }
 }
 
-impl<T:FloatingNumber> TimeOf<T>
+impl<T:Float> TimeOf<T>
 {
     const fn from_internal_unit(internal_unit : T) -> Self { Self { second : internal_unit } }
 
@@ -283,35 +283,35 @@ impl<T:FloatingNumber> TimeOf<T>
     pub fn timer_day(self) -> i32 { self.day().abs().floor().to_i32() }
 }
 
-impl<T:FloatingNumber> Add<TimeOf<T>> for TimeOf<T> { type Output=Self; fn add(self, rhs: Self) -> Self::Output { Self::from_internal_unit(self.second.add(rhs.second)) }}
-impl<T:FloatingNumber> AddAssign<TimeOf<T>> for TimeOf<T> { fn add_assign(&mut self, rhs: Self) { self.second.add_assign(rhs.second); }}
+impl<T:Float> Add<TimeOf<T>> for TimeOf<T> { type Output=Self; fn add(self, rhs: Self) -> Self::Output { Self::from_internal_unit(self.second.add(rhs.second)) }}
+impl<T:Float> AddAssign<TimeOf<T>> for TimeOf<T> { fn add_assign(&mut self, rhs: Self) { self.second.add_assign(rhs.second); }}
 
-impl<T:FloatingNumber> Sub<TimeOf<T>> for TimeOf<T> { type Output=Self; fn sub(self, rhs: Self) -> Self::Output { Self::from_internal_unit(self.second.sub(rhs.second)) }}
-impl<T:FloatingNumber> SubAssign<TimeOf<T>> for TimeOf<T> { fn sub_assign(&mut self, rhs: Self) { self.second.sub_assign(rhs.second); }}
+impl<T:Float> Sub<TimeOf<T>> for TimeOf<T> { type Output=Self; fn sub(self, rhs: Self) -> Self::Output { Self::from_internal_unit(self.second.sub(rhs.second)) }}
+impl<T:Float> SubAssign<TimeOf<T>> for TimeOf<T> { fn sub_assign(&mut self, rhs: Self) { self.second.sub_assign(rhs.second); }}
 
-impl<T:FloatingNumber> Div<TimeOf<T>> for TimeOf<T> { type Output=T; fn div(self, rhs: Self) -> Self::Output { self.second / rhs.second } }
-impl<T:FloatingNumber> DivAssign<T> for TimeOf<T> { fn div_assign(&mut self, rhs: T) { self.second.div_assign(rhs) }}
+impl<T:Float> Div<TimeOf<T>> for TimeOf<T> { type Output=T; fn div(self, rhs: Self) -> Self::Output { self.second / rhs.second } }
+impl<T:Float> DivAssign<T> for TimeOf<T> { fn div_assign(&mut self, rhs: T) { self.second.div_assign(rhs) }}
 
-impl<T:FloatingNumber> Mul<T> for TimeOf<T> { type Output=Self; fn mul(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.mul(rhs)) }}
-impl<T:FloatingNumber> MulAssign<T> for TimeOf<T> { fn mul_assign(&mut self, rhs: T) { self.second.mul_assign(rhs); }}
+impl<T:Float> Mul<T> for TimeOf<T> { type Output=Self; fn mul(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.mul(rhs)) }}
+impl<T:Float> MulAssign<T> for TimeOf<T> { fn mul_assign(&mut self, rhs: T) { self.second.mul_assign(rhs); }}
 
-impl<T:FloatingNumber> Div<T> for TimeOf<T> { type Output=TimeOf<T>; fn div(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.div(rhs)) } }
-impl<T:FloatingNumber> Rem<T> for TimeOf<T> { type Output=TimeOf<T>; fn rem(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.rem(rhs)) } }
-impl<T:FloatingNumber> RemAssign<T> for TimeOf<T> { fn rem_assign(&mut self, rhs: T) { self.second.rem_assign(rhs); } }
+impl<T:Float> Div<T> for TimeOf<T> { type Output=TimeOf<T>; fn div(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.div(rhs)) } }
+impl<T:Float> Rem<T> for TimeOf<T> { type Output=TimeOf<T>; fn rem(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.rem(rhs)) } }
+impl<T:Float> RemAssign<T> for TimeOf<T> { fn rem_assign(&mut self, rhs: T) { self.second.rem_assign(rhs); } }
 
-impl<T:FloatingNumber> Sum for TimeOf<T>
+impl<T:Float> Sum for TimeOf<T>
 {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Self::ZERO, Self::add)
     }
 }
 
-impl<T:FloatingNumber> MinValue for TimeOf<T> where T : MinValue
+impl<T:Float> MinValue for TimeOf<T> where T : MinValue
 {
     const MIN : Self = Self::from_s(T::MIN);
 }
 
-impl<T:FloatingNumber> MaxValue for TimeOf<T> where T : MaxValue
+impl<T:Float> MaxValue for TimeOf<T> where T : MaxValue
 {
     const MAX : Self = Self::from_s(T::MAX);
 }
@@ -320,13 +320,13 @@ impl<T:FloatingNumber> MaxValue for TimeOf<T> where T : MaxValue
 
 
 #[cfg(feature = "serde")]
-impl<T: FloatingNumber> Serialize for TimeOf<T> where T : Serialize {
+impl<T: Float> Serialize for TimeOf<T> where T : Serialize {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     { self.s().serialize(serializer) }
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T: FloatingNumber> Deserialize<'de> for TimeOf<T> where T : Deserialize<'de> {
+impl<'de, T: Float> Deserialize<'de> for TimeOf<T> where T : Deserialize<'de> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de>,
     {
         Ok(Self::from_s(T::deserialize(deserializer)?))

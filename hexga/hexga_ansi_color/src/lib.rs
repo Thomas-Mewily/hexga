@@ -3,7 +3,7 @@
 //! Provides optional support for [Serde](https://docs.rs/serde/latest/serde/) (serialization / deserialization) when the "serde" feature is enabled.
 //! 
 //! ```rust
-//! use minimal_ansi_color::*;
+//! use hexga_ansi_color::*;
 //! 
 //! println!("{}I'm green{}", AnsiColor::GREEN, AnsiColor::RESET);
 //! println!("{}I'm red{}", AnsiColor::new_foreground(AnsiColorKind::Red), AnsiColor::RESET);

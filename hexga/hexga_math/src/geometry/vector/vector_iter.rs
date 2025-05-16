@@ -70,7 +70,7 @@ impl<T, const N : usize> Iterator for VectorIter<T, N> where T : Number
     }
 }
 
-impl<T,const N : usize> IterIdx<T,N> for Vector<T,N> where T : Integer
+impl<T,const N : usize> IterIdx<T,N> for Vector<T,N> where T : NumberInteger
 {
     type IterIdx = VectorIter<T,N>;
     

@@ -10,7 +10,7 @@ use criterion::{BenchmarkId, Criterion};
 use hexga_core::prelude::*;
 use hexga_math::prelude::*;
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
-use hexga_engine::{Event, EventLoop, GpuVec2, GpuVertex, MultiMediaConfig, Pen, WindowConfig};
+use hexga_engine::{Event, EventLoop, GpuVec2, Vertex, MultiMediaConfig, Pen, WindowConfig};
 use hexga_undo_redo::*; //prelude::*;
 
 pub struct TestCtx;
@@ -24,13 +24,16 @@ impl EventLoop for TestCtx
         Pen.begin_draw();
         Pen.begin_pass();
 
-        Pen.set_pos(zero());
-
-        Pen.color(Color::RED).pos2(vec2(-1., 1.)).down()
+        Pen.color(Color::RED).set_pos(vec2(-1., 1.)).down()
            .color(Color::BLUE).pos2(vec2(1., 1.)).down()
            .color(Color::GREEN).pos2(vec2(0.0, -1.)).down()
+           //.index_triangle(index);
            .make_triangle();
 
+        //for i in 0..iter_coe
+        {
+            //let angle
+        }
         
 
         /* 

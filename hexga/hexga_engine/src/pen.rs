@@ -16,19 +16,19 @@ impl DerefMut for Pen
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(C)]
-pub struct GpuVertex 
+pub struct Vertex 
 {
     pub pos   : GpuVec3,
     pub uv    : GpuVec2,
     pub color : GpuColor,
 }
-impl Default for GpuVertex
+impl Default for Vertex
 {
     fn default() -> Self {
         Self::new()
     }
 }
-impl GpuVertex
+impl Vertex
 {
     pub const fn new() -> Self { Self { pos: GpuVec3::ZERO, uv: GpuVec2::ZERO, color: GpuColor::WHITE } }
 
@@ -44,7 +44,8 @@ impl GpuVertex
     pub fn set_color<C>(&mut self, color : C) -> &mut Self where C : IColor { self.color = color.to_gpu_color(); self }
 }
 
-pub type GpuVertexIdx = u16;
+pub type VertexIdx = u16;
+pub type VertexTriangleIdx = [VertexIdx;3];
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct PenConfig
@@ -63,9 +64,10 @@ impl PenConfig
 {
     // arbitrary constant value copied from on macroquad
     const DEFAULT_VERTEX_CAPACITY : usize = 8000;
-    const DEFAULT_INDEX_CAPACITY  : usize = 4000;
+    const DEFAULT_INDEX_CAPACITY  : usize = 3600;
 
-    pub fn round(mut self) -> Self
+    pub fn align(&mut self) -> &mut Self { *self = self.aligned(); self }
+    pub fn aligned(mut self) -> Self
     {
         self.max_index = self.max_index / 3 * 3;
         self
@@ -74,8 +76,8 @@ impl PenConfig
 
 pub struct GpuMesh 
 {
-    pub vertexs: Vec<GpuVertex>,
-    pub indices: Vec<GpuVertexIdx>,
+    pub vertexs: Vec<Vertex>,
+    pub indices: Vec<VertexIdx>,
     //pub texture: Option<Texture2D>,
 }
 
@@ -91,34 +93,43 @@ pub struct ContextPen
 
     white_pixel : TextureId,
     
-    prev_vertex_len : usize,
-    vertex : NonEmptyStack<GpuVertex>,
+    prev_vertex_index : usize,
+    vertex_stack : NonEmptyStack<Vertex>,
 
-    batch_vertex_buffer: Vec<GpuVertex>,
-    batch_index_buffer : Vec<GpuVertexIdx>,
+    vertex: Vec<Vertex>,
+    index : Vec<VertexIdx>,
     
     param : PenConfig,
+}
+
+impl Drop for ContextPen
+{
+    fn drop(&mut self) 
+    {
+        render().delete_texture(self.white_pixel);
+    }
 }
 
 impl ContextPen
 {
 
 
-    pub(crate) fn new(render : &mut RenderBackEnd, param : PenConfig) -> Self 
+    pub(crate) fn new(render : &mut RenderBackEnd, mut param : PenConfig) -> Self 
     {
+        param.align();
         let PenConfig{ max_vertex, max_index } = param;
         let white_pixel = render.new_texture_from_rgba8(1, 1, &[255, 255, 255, 255]);
 
         let vertex_buffer = render.new_buffer(
             BufferType::VertexBuffer,
             BufferUsage::Immutable,
-            BufferSource::empty::<GpuVertex>(max_vertex),
+            BufferSource::empty::<Vertex>(max_vertex),
         );
         
         let index_buffer = render.new_buffer(
             BufferType::IndexBuffer,
             BufferUsage::Immutable,
-            BufferSource::empty::<GpuVertexIdx>(max_index),
+            BufferSource::empty::<VertexIdx>(max_index),
         );
 
         let bindings = Bindings {
@@ -165,10 +176,10 @@ impl ContextPen
             index_buffer_id: index_buffer, 
             white_pixel,
             param,
-            vertex : ___(),
-            prev_vertex_len : 0,
-            batch_vertex_buffer : Vec::with_capacity(param.max_vertex),
-            batch_index_buffer  : Vec::with_capacity(param.max_index),
+            prev_vertex_index : 0,
+            vertex_stack : ___(),
+            vertex : Vec::with_capacity(param.max_vertex),
+            index  : Vec::with_capacity(param.max_index),
         } 
     }
 }
@@ -180,20 +191,43 @@ pub trait IPen
 
 } 
 
-impl Position<f64,3> for ContextPen 
-{
-    fn pos(&self) -> Vector<f64,3> 
-    {
-        let pos = self.last_vertex().pos;
-        CastIntoComposite::<f64>::cast_into_composite(pos)
-    }
 
-    fn set_pos(&mut self, pos : Vector<f64,3>) -> &mut Self 
-    {
-        self.last_vertex_mut().pos = CastIntoComposite::<GpuFloat>::cast_into_composite(pos);
-        self
-    }
+macro_rules! impl_pen_pos {
+    ($float_type: ty) => 
+    { 
+        impl Position<$float_type,3> for ContextPen 
+        {
+            fn pos(&self) -> Vector<$float_type,3> 
+            {
+                let pos = self.last_vertex().pos;
+                CastIntoComposite::<$float_type>::cast_into_composite(pos)
+            }
+
+            fn set_pos(&mut self, pos : Vector<$float_type,3>) -> &mut Self 
+            {
+                self.last_vertex_mut().pos = CastIntoComposite::<GpuFloat>::cast_into_composite(pos);
+                self
+            }
+        }
+        impl Position<$float_type,2> for ContextPen 
+        {
+            fn pos(&self) -> Vector<$float_type,2> 
+            {
+                let pos = self.last_vertex().pos.to_vec2();
+                CastIntoComposite::<$float_type>::cast_into_composite(pos)
+            }
+
+            fn set_pos(&mut self, pos : Vector<$float_type,2>) -> &mut Self 
+            {
+                self.last_vertex_mut().pos = CastIntoComposite::<GpuFloat>::cast_into_composite(pos).with_z(0.);
+                self
+            }
+        }
+
+    };
 }
+map_on_float!(impl_pen_pos);
+
 
 impl ContextPen
 {
@@ -203,8 +237,8 @@ impl ContextPen
     }
     pub fn begin_pass(&mut self)
     {
-        self.batch_vertex_buffer.clear();
-        self.batch_index_buffer.clear();
+        self.vertex.clear();
+        self.index.clear();
         let r = render();
         r.begin_default_pass(Default::default());
         r.apply_pipeline(&self.pipeline);
@@ -214,9 +248,9 @@ impl ContextPen
     {
         let r = render();
         r.apply_bindings(&self.bindings);
-        r.buffer_update(self.vertex_buffer_id, BufferSource::slice(&self.batch_vertex_buffer));
-        r.buffer_update(self.index_buffer_id, BufferSource::slice(&self.batch_index_buffer));
-        r.draw(0, self.batch_index_buffer.len() as _, 1);
+        r.buffer_update(self.vertex_buffer_id, BufferSource::slice(&self.vertex));
+        r.buffer_update(self.index_buffer_id, BufferSource::slice(&self.index));
+        r.draw(0, self.index.len() as _, 1);
         render().end_render_pass();
     }
 
@@ -228,7 +262,19 @@ impl ContextPen
 
 impl ContextPen
 {
-    pub fn down(&mut self) -> &mut Self { self.vertex(); self }
+    /// Commit the contextual current vertex to the Pen
+    pub fn down(&mut self) -> &mut Self { self.commit_vertex(); self }
+
+    /// Commit the contextual current vertex to the Pen and return it's Idx
+    pub fn commit_vertex(&mut self) -> VertexIdx { self.push_vertex(*self.vertex_stack) }
+
+    /// Commit the vertex to the Pen
+    pub fn push_vertex(&mut self, vertex : Vertex) -> VertexIdx
+    {
+        let idx = self.vertex.len() as VertexIdx;
+        self.vertex.push(vertex);
+        idx
+    }
     
     pub fn pos2<P>(&mut self, pos : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2>
     {
@@ -252,43 +298,137 @@ impl ContextPen
         self
     }
 
-}
+    pub fn vertex(&mut self, vertex : Vertex) -> &mut Self { *self.last_vertex_mut() = vertex; self }
 
-impl ContextPen
-{
-    /// Add a new vertex at the current position/color/uv...
-    pub fn vertex(&mut self) -> GpuVertexIdx { self.add_vertex(*self.vertex) }
+    pub(crate) fn last_vertex(&self) -> &Vertex { &self.vertex_stack }
+    pub(crate) fn last_vertex_mut(&mut self) -> &mut Vertex { &mut self.vertex_stack }
 
-    pub fn add_vertex(&mut self, vertex : GpuVertex) -> GpuVertexIdx
-    {
-        let idx = self.batch_vertex_buffer.len() as GpuVertexIdx;
-        self.batch_vertex_buffer.push(vertex);
-        idx
-    }
 
-    pub fn last_vertex(&self) -> &GpuVertex { &self.vertex }
-    pub fn last_vertex_mut(&mut self) -> &mut GpuVertex { &mut self.vertex }
 
+
+
+
+
+    
     /// Make a triangle with last 3 vertex
     pub fn make_triangle(&mut self)
     {
-        self.prev_vertex_len = self.batch_vertex_buffer.len();
-        self.batch_index_buffer.push((self.prev_vertex_len - 3) as GpuVertexIdx);
-        self.batch_index_buffer.push((self.prev_vertex_len - 2) as GpuVertexIdx);
-        self.batch_index_buffer.push((self.prev_vertex_len - 1) as GpuVertexIdx);
+        let len = self.vertex.len();
+        self.index_triangle(
+    [
+            (len - 3) as VertexIdx,
+            (len - 2) as VertexIdx,
+            (len - 1) as VertexIdx,
+          ]
+        );
     }
-    /* 
-    pub fn add_index(&mut self, index : GpuVertexIdx)
-    {
-        self.batch_index_buffer.push(index);
-    }
-    */
 
+    //pub fn index(&self) -> [GpuVertexIdx] { self.index_batch_buffer }
+
+    pub fn begin_vertexs(&mut self) { self.prev_vertex_index = self.vertex.len(); }
+    pub fn vertex_index(&self) -> VertexIdx { (self.vertex.len() - 1) as VertexIdx }
+    pub fn vertex_len(&self) -> VertexIdx { self.vertex.len() as VertexIdx }
+
+
+    /// Also call `begin_vertexs()`
+    pub fn index_triangle(&mut self, index: VertexTriangleIdx)
+    {
+        self.index_triangle_and(index);
+        self.begin_vertexs();
+    }
+    /// Don't call `begin_vertexs()`
+    pub fn index_triangle_and(&mut self, index: VertexTriangleIdx) -> &mut Self
+    {
+        self.index.extend_from_slice(&index);
+        self
+    }
+
+    /// Also call `begin_vertexs()`
+    pub fn index_triangles<I>(&mut self, triangle_index: I) where I : IntoIterator<Item = VertexTriangleIdx>
+    {
+        self.index_triangles_and(triangle_index);
+        self.begin_vertexs();
+    }
+    /// Don't call `begin_vertexs()`
+    pub fn index_triangles_and<I>(&mut self, triangle_index: I) -> &mut Self where I : IntoIterator<Item = VertexTriangleIdx>
+    {
+        for triangle in triangle_index.into_iter() 
+        {
+            self.index_triangle(triangle);
+        }
+        self
+    }
+
+    /// Also call `begin_vertexs()`
+    pub fn make_convex_poly(&mut self)
+    {
+        self.make_convex_poly_and();
+        self.prev_vertex_index = self.vertex.len();
+    }
+    /// Don't call `begin_vertexs()`
+    pub fn make_convex_poly_and(&mut self) -> &mut Self
+    {
+        let len = self.vertex.len() - self.prev_vertex_index;
+
+        for i in 1..(len - 1) 
+        {
+            self.index_triangle_and
+            (
+         [
+                    (self.prev_vertex_index        ) as VertexIdx, 
+                    (self.prev_vertex_index + i    ) as VertexIdx, 
+                    (self.prev_vertex_index + i + 1) as VertexIdx
+                ]
+            );
+        }
+
+        self
+
+        //self.static_geometry(vertex.iter().copied(), indices)
+    }
+
+    pub fn geometry<V,I>(&mut self, vertex : V, index: I)
+        where 
+        V : IntoIterator<Item=Vertex>, V::IntoIter : ExactSizeIterator,
+        I : IntoIterator<Item=VertexTriangleIdx>, I::IntoIter : ExactSizeIterator,
+    {
+        self.geometry_and(vertex, index);
+        self.begin_vertexs();
+    }
+
+    pub fn geometry_and<V,I>(&mut self, vertex : V, index: I) -> &mut Self
+        where 
+        V : IntoIterator<Item=Vertex>, V::IntoIter : ExactSizeIterator,
+        I : IntoIterator<Item=VertexTriangleIdx>, I::IntoIter : ExactSizeIterator,
+    {
+        let vertex = vertex.into_iter();
+        let index = index.into_iter();
+
+        /* 
+        let PenConfig { max_vertex, max_index } = self.param;
+        if vertex.len() >= max_vertex || index.len() >= max_index {
+            warn!("geometry() exceeded max drawcall size, clamping");
+        }
+        */
+        //let vertex_len = vertex.len().min(self.batch_vertex_buffer.capacity() - self.batch_vertex_buffer.len());
+        //let indexs_len = index.len().min(self.batch_index_buffer.capacity() - self.batch_vertex_buffer.len());
+
+        let vertex_offset = self.vertex.len() as VertexIdx;
+        self.vertex.extend(vertex);
+        self.index.extend(index.map(|x| x.map(|v| v + vertex_offset)).flatten());
+        //self.batch_vertex_buffer.extend(vertex.take(vertex_len));
+        //self.batch_index_buffer.extend(index.map(|x| x + vertex_offset as GpuVertexIdx).take(indexs_len));
+
+        self
+    }
+    
+
+    /* 
     pub fn triangle(&mut self, vertex : [GpuVertex;3]) -> &mut Self
     {
         self.static_geometry(vertex, [0, 1, 2])
     }
-
+    
 
     pub fn draw_triangle_test(&mut self) -> &mut Self
     {
@@ -312,37 +452,24 @@ impl ContextPen
         let vertex = vertex.into_iter();
         let index = index.into_iter();
 
+        /* 
         let PenConfig { max_vertex, max_index } = self.param;
         if vertex.len() >= max_vertex || index.len() >= max_index {
             warn!("geometry() exceeded max drawcall size, clamping");
         }
-
+        */
         //let vertex_len = vertex.len().min(self.batch_vertex_buffer.capacity() - self.batch_vertex_buffer.len());
         //let indexs_len = index.len().min(self.batch_index_buffer.capacity() - self.batch_vertex_buffer.len());
 
-        let vertex_offset = self.batch_vertex_buffer.len();
-        self.batch_index_buffer.extend(index.map(|x| x + vertex_offset as GpuVertexIdx));
-
-        self.batch_vertex_buffer.extend(vertex);
+        let vertex_offset = self.vertex.len();
+        self.index.extend(index.map(|x| x + vertex_offset as GpuVertexIdx));
+        self.vertex.extend(vertex);
         //self.batch_vertex_buffer.extend(vertex.take(vertex_len));
         //self.batch_index_buffer.extend(index.map(|x| x + vertex_offset as GpuVertexIdx).take(indexs_len));
 
         self
     }
-
-    pub fn polygons(&mut self, vertex : &[GpuVertex]) -> &mut Self
-    {
-        let index_count = (vertex.len() - 2) * 3;
-        let mut indices = Vec::with_capacity(index_count);
-
-        for i in 1..(vertex.len() - 1) {
-            indices.push(0);
-            indices.push(i as GpuVertexIdx);
-            indices.push((i + 1) as GpuVertexIdx);
-        }
-
-        self.static_geometry(vertex.iter().copied(), indices)
-    }
+    */
 }
 
 

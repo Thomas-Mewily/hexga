@@ -21,12 +21,14 @@ impl<T> NonEmptyStack<T>
     pub fn with_capacity(value : T, capacity : usize) -> Self { Self { last: value, stack: Vec::with_capacity(capacity.saturating_sub(1)) }}
     pub fn from_vec(mut stack : Vec<T>) -> Option<Self> { stack.pop().and_then(|last| Some(Self{ last, stack })) }
 
+    pub fn len(&self) -> usize { self.stack.len() + 1 }
+
     pub const fn last(&self) -> &T { &self.last }
     pub const fn last_mut(&mut self) -> &mut T { &mut self.last }
 
     /// Clear the stack and keep the last element
     /// ```
-    /// use hexga_tools::*;
+    /// use hexga_tools::prelude::*;
     /// 
     /// let mut stack = NonEmptyStack::from_vec(vec![1,2,3,4]).unwrap();
     /// stack.clear_and_keep_last();
@@ -37,7 +39,7 @@ impl<T> NonEmptyStack<T>
 
     /// Clear the stack and keep the first element
     /// ```
-    /// use hexga_tools::*;
+    /// use hexga_tools::prelude::*;
     /// 
     /// let mut stack = NonEmptyStack::from_vec(vec![1,2,3,4]).unwrap();
     /// stack.clear_and_keep_first();
@@ -224,7 +226,7 @@ impl<T> IndexMut<usize> for NonEmptyStack<T>
 
 impl<T> Length for NonEmptyStack<T>
 {
-    fn len(&self) -> usize { self.stack.len() + 1 }
+    fn len(&self) -> usize { self.len() }
     fn is_empty(&self) -> bool { false }
     fn is_not_empty(&self) -> bool { true }
 }

@@ -1,22 +1,23 @@
 use crate::*;
 
+pub use hexga_number::*;
+
+pub mod prelude;
+
 mod composite;
 pub use composite::*;
-
-mod array_like_extension;
-pub use array_like_extension::*;
 
 mod cast_to;
 pub use cast_to::*;
 
-mod num_float;
-pub use num_float::*;
-
 mod extension;
 pub use extension::*;
 
-mod signed_unsigned;
-pub use signed_unsigned::*;
+mod floating;
+pub use floating::*;
+
+mod integer;
+pub use integer::*;
 
 mod default_range;
 pub use default_range::*;
