@@ -18,22 +18,22 @@ pub type EncodeResult<T=()> = Result<T,String>;
 
 pub type Image<T=ColorRGBAByte> = ImageBase<T,int>;
 
-pub struct ImageBase<T=ColorRGBAByte,Idx=int> where T : IColor, Idx : IntegerIndex
+pub struct ImageBase<T=ColorRGBAByte,Idx=int> where T : IColor, Idx : Integer
 {
     pub grid   : GridBase<T,Idx,2>,
     pub param  : GraphicsParam,
 }
 
 
-impl<T, Idx> Deref for ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex {
+impl<T, Idx> Deref for ImageBase<T, Idx> where T : IColor, Idx : Integer {
     type Target=GridBase<T,Idx,2>;
     fn deref(&self) -> &Self::Target { &self.grid }
 }
-impl<T, Idx> DerefMut for ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex {
+impl<T, Idx> DerefMut for ImageBase<T, Idx> where T : IColor, Idx : Integer {
     fn deref_mut(&mut self) -> &mut Self::Target { &mut self.grid }
 }
 
-impl<T, Idx> ImageBase<T, Idx> where T : IColor, Idx : IntegerIndex
+impl<T, Idx> ImageBase<T, Idx> where T : IColor, Idx : Integer
 {
     pub(crate) fn raw_bytes_rgba(&self) -> Vec<u8>
     {

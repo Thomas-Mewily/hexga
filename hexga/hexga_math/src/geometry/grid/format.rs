@@ -1,12 +1,12 @@
 use crate::*;
 
-pub struct GridViewFormat<'a, T, Idx, const N : usize, Sep=&'static str> where Idx : IntegerIndex, Sep : Display
+pub struct GridViewFormat<'a, T, Idx, const N : usize, Sep=&'static str> where Idx : Integer, Sep : Display
 {
     pub view  : GridView<'a,T,Idx,N>,
     pub separator : Sep,
 }
 
-impl<'a, T, Idx, const N : usize, Sep> GridViewFormat<'a, T, Idx, N, Sep> where Idx : IntegerIndex, Sep : Display
+impl<'a, T, Idx, const N : usize, Sep> GridViewFormat<'a, T, Idx, N, Sep> where Idx : Integer, Sep : Display
 {
     pub fn new_with_separator(view : GridView<'a,T,Idx,N>, separator : Sep) -> Self 
     {
@@ -22,7 +22,7 @@ impl<'a, T, Idx, const N : usize, Sep> GridViewFormat<'a, T, Idx, N, Sep> where 
     }
 }
 
-impl<'a, T, Idx, Sep> Display for GridViewFormat<'a, T, Idx, 1, Sep> where Idx : IntegerIndex, T : Display, Sep : Display
+impl<'a, T, Idx, Sep> Display for GridViewFormat<'a, T, Idx, 1, Sep> where Idx : Integer, T : Display, Sep : Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult 
     {
@@ -49,7 +49,7 @@ impl<'a, T, Idx, Sep> Display for GridViewFormat<'a, T, Idx, 1, Sep> where Idx :
 }
 
 
-impl<'a, T, Idx, Sep> Display for GridViewFormat<'a, T, Idx, 2, Sep> where Idx : IntegerIndex, T : Display, Sep : Display
+impl<'a, T, Idx, Sep> Display for GridViewFormat<'a, T, Idx, 2, Sep> where Idx : Integer, T : Display, Sep : Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult 
     {

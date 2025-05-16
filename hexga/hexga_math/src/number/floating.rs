@@ -555,7 +555,7 @@ macro_rules! impl_floating_number {
             #[inline(always)] fn trunc(self) -> Self { Self::trunc(self) }
 
             const PI : Self =  std::$primitive_name::consts::PI;
-            const TWO_PI : Self =  Self::PI * 2.;
+            const TWO_PI : Self  =  Self::PI * 2.;
             const HALF_PI : Self =  Self::PI * 0.5;
 
             const ANGLE_FULL_DEGREE  : Self = 360.;

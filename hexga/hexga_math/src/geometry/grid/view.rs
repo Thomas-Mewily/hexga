@@ -6,7 +6,7 @@ use crate::*;
 /// 
 /// `Param` is a silent parameter, generally void, that is here to facilitate the API for [GridParam] because some function depend 
 /// if the param is clonable or not. 
-pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output = T> + IRectangle<Idx, N> + where Idx : IntegerIndex
+pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output = T> + IRectangle<Idx, N> + where Idx : Integer
 {
     /* 
     // Can't be easily optimized (they will call `self.get(pos)`), so it is better to omit them
@@ -35,7 +35,7 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output =
 }
 
 
-impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridView<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridView<'a, T, Idx,N> where Idx : Integer 
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
     #[inline(always)]
@@ -53,14 +53,14 @@ impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridView<'a, T, Idx,N> 
 
 /// A slice inside a [Grid]
 #[derive(Clone, Debug, Copy, Hash)]
-pub struct GridView<'a, T, Idx, const N : usize> where Idx : IntegerIndex
+pub struct GridView<'a, T, Idx, const N : usize> where Idx : Integer
 {
     grid : &'a GridBase<T,Idx,N>,
     view : Rectangle<Idx,N>,
 }
 
 
-impl<'a, T, Idx, const N : usize> PartialEq for GridView<'a, T, Idx, N> where Idx : IntegerIndex, T : PartialEq
+impl<'a, T, Idx, const N : usize> PartialEq for GridView<'a, T, Idx, N> where Idx : Integer, T : PartialEq
 {
     fn eq(&self, other: &Self) -> bool {
         if self.size() != other.size() { return false; }
@@ -68,9 +68,9 @@ impl<'a, T, Idx, const N : usize> PartialEq for GridView<'a, T, Idx, N> where Id
     }
 }
 
-impl<'a, T, Idx, const N : usize> Eq for GridView<'a, T, Idx, N> where Idx : IntegerIndex, T : Eq { }
+impl<'a, T, Idx, const N : usize> Eq for GridView<'a, T, Idx, N> where Idx : Integer, T : Eq { }
 
-impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N> where Idx : Integer 
 {
     pub fn from_grid(grid : &'a GridBase<T,Idx,N>) -> Self 
     {
@@ -89,7 +89,7 @@ impl<'a, T, Idx, const N : usize> GridView<'a, T, Idx, N> where Idx : IntegerInd
     pub fn format(self) -> GridViewFormat<'a,T,Idx,N> { GridViewFormat::new(self) }
 }
 
-impl<'a, T, Idx, const N : usize> Crop<Idx,N> for GridView<'a, T, Idx, N> where Idx : IntegerIndex
+impl<'a, T, Idx, const N : usize> Crop<Idx,N> for GridView<'a, T, Idx, N> where Idx : Integer
 {
     fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self> 
     {
@@ -102,7 +102,7 @@ impl<'a, T, Idx, const N : usize> Crop<Idx,N> for GridView<'a, T, Idx, N> where 
     }
 }
 
-impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx, N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx, N> where Idx : Integer 
 {
     type Map<Dest>=GridBase<Dest,Idx,N>;
     fn map<Dest, F>(&self, mut f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, () : Clone { GridBase::from_fn(self.size(), |p| f(&self[p])) }
@@ -114,7 +114,7 @@ impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridView<'a, T, Idx,
     //fn crop_intersect<'b>(&'b self, rect : Rectangle<Idx, N>) -> Self::SubView<'b> where T : Clone { GridView::new(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
 }
 
-impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, T, Idx, N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, T, Idx, N> where Idx : Integer 
 {
     #[inline(always)]
     fn begin(&self) -> Vector<Idx,N> { self.view.begin() }
@@ -122,7 +122,7 @@ impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, T, Idx, N> 
     fn size (&self) -> Vector<Idx,N> { self.view.size()  }
 }
 
-impl<'a, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridView<'a, T, Idx, N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridView<'a, T, Idx, N> where Idx : Integer 
 {
     type Output=T;
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }

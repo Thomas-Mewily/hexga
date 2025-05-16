@@ -1,7 +1,7 @@
 use crate::*;
 
 pub trait IGridViewMut<T, Param, Idx, const N : usize> : IGridView<T,Param,Idx,N> + GetMut<Vector<Idx,N>,Output=T>
-    where Idx : IntegerIndex
+    where Idx : Integer
 {
     type SubViewMut<'b> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a>;
@@ -25,13 +25,13 @@ pub trait IGridViewMut<T, Param, Idx, const N : usize> : IGridView<T,Param,Idx,N
 
 /// A mutable slice inside a [Grid]
 #[derive(Debug, Hash)]
-pub struct GridViewMut<'a, T, Idx,const N : usize> where Idx : IntegerIndex
+pub struct GridViewMut<'a, T, Idx,const N : usize> where Idx : Integer
 {
     grid : &'a mut GridBase<T,Idx,N>,
     view : Rectangle<Idx,N>,
 }
 
-impl<'a, T, Idx, const N : usize> GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     pub fn from_grid(grid : &'a mut GridBase<T,Idx,N>) -> Self 
     {
@@ -49,7 +49,7 @@ impl<'a, T, Idx, const N : usize> GridViewMut<'a, T, Idx,N> where Idx : IntegerI
     }
 }
 
-impl<'a, T, Idx, const N : usize> Crop<Idx,N> for GridViewMut<'a, T, Idx, N> where Idx : IntegerIndex
+impl<'a, T, Idx, const N : usize> Crop<Idx,N> for GridViewMut<'a, T, Idx, N> where Idx : Integer
 {
     fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self> 
     {
@@ -62,7 +62,7 @@ impl<'a, T, Idx, const N : usize> Crop<Idx,N> for GridViewMut<'a, T, Idx, N> whe
     }
 }
 
-impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     type Map<Dest>=GridBase<Dest,Idx,N>;
     fn map<Dest, F>(&self, mut f : F) -> Self::Map<Dest> where F : FnMut(&T) -> Dest, () : Clone { GridBase::from_fn(self.size(), |p| f(&self[p])) }
@@ -77,7 +77,7 @@ impl<'a, T, Idx, const N : usize> IGridView<T,(),Idx,N> for GridViewMut<'a, T, I
     */
 }
 
-impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
     #[inline(always)]
@@ -94,7 +94,7 @@ impl<'a, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridViewMut<'a, T, Idx,
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { self.grid.get_unchecked(self.view.pos + pos) } }
 }
 
-impl<'a, T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     #[inline(always)]
     fn try_get_mut(&mut self, pos : Vector<Idx,N>) -> Result<&mut Self::Output, ()> { self.get_mut(pos).ok_or_void() }
@@ -110,7 +110,7 @@ impl<'a, T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridViewMut<'a, T, I
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut Self::Output { unsafe { self.grid.get_unchecked_mut(self.view.pos + pos) } }
 }
 
-impl<'a, T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     #[inline(always)]
     fn try_get_many_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> 
@@ -121,7 +121,7 @@ impl<'a, T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridViewMut<'a, 
     }
 }
 
-impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     #[inline(always)]
     fn begin(&self) -> Vector<Idx,N> { self.view.begin() }
@@ -129,13 +129,13 @@ impl<'a, T, Idx, const N : usize> IRectangle<Idx,N> for GridViewMut<'a, T, Idx,N
     fn size (&self) -> Vector<Idx,N> { self.view.size()  }
 }
 
-impl<'a, T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
     fn subview_mut<'b>(&'b mut self, rect : Rectangle<Idx, N>) -> GridViewMut<'b,T,Idx,N> { GridViewMut::new_intersect(self.grid, self.view.intersect_or_empty(rect.moved_by(self.position()))) }
 }
 
-impl<'a, T, Idx, const N : usize> PartialEq for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex,
+impl<'a, T, Idx, const N : usize> PartialEq for GridViewMut<'a, T, Idx,N> where Idx : Integer,
     T : PartialEq
 {
     fn eq(&self, other: &Self) -> bool {
@@ -144,15 +144,15 @@ impl<'a, T, Idx, const N : usize> PartialEq for GridViewMut<'a, T, Idx,N> where 
     }
 }
 
-impl<'a, T, Idx, const N : usize> Eq for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex, T : Eq { }
+impl<'a, T, Idx, const N : usize> Eq for GridViewMut<'a, T, Idx,N> where Idx : Integer, T : Eq { }
 
-impl<'a, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     type Output=T;
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }
 }
 
-impl<'a, T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : IntegerIndex 
+impl<'a, T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridViewMut<'a, T, Idx,N> where Idx : Integer 
 {
     fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }

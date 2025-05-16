@@ -1,6 +1,6 @@
 use crate::*;
 
-pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : IntegerIndex, Self : Sized + IGrid<T,Param,Idx,N>
+pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : Integer, Self : Sized + IGrid<T,Param,Idx,N>
 {
     fn grid(&self) -> &GridBase<T,Idx, N>;
     fn grid_mut(&mut self) -> &mut GridBase<T,Idx, N>;
@@ -62,13 +62,13 @@ pub trait IGridParam<T, Param, Idx, const N : usize> where Idx : IntegerIndex, S
 
 /// A Grid that have some parameter associate with it
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
-pub struct GridParamBase<T, Param, Idx, const N : usize> where Idx : IntegerIndex
+pub struct GridParamBase<T, Param, Idx, const N : usize> where Idx : Integer
 {
     pub grid    : GridBase<T,Idx, N>,
     pub param   : Param,
 }
 
-impl<T,Param,Idx,const N : usize> IGridParam<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
+impl<T,Param,Idx,const N : usize> IGridParam<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : Integer
 {
     fn grid(&self) -> &GridBase<T,Idx, N> { &self.grid }
     fn grid_mut(&mut self) -> &mut GridBase<T,Idx, N> { &mut self.grid }
@@ -84,7 +84,7 @@ impl<T,Param,Idx,const N : usize> IGridParam<T,Param,Idx,N> for GridParamBase<T,
     }
 }
 
-impl<T,Param,Idx,const N : usize> Get<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
+impl<T,Param,Idx,const N : usize> Get<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N> where Idx : Integer
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
     #[inline(always)]
@@ -95,7 +95,7 @@ impl<T,Param,Idx,const N : usize> Get<Vector<Idx,N>> for GridParamBase<T,Param,I
     #[track_caller]
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { self.grid.get_unchecked(pos) } }
 }
-impl<T,Param,Idx,const N : usize> GetMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
+impl<T,Param,Idx,const N : usize> GetMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N> where Idx : Integer
 {
     #[inline(always)]
     fn try_get_mut(&mut self, pos : Vector<Idx,N>) -> Result<&mut Self::Output, ()> { self.grid.try_get_mut(pos) }
@@ -106,7 +106,7 @@ impl<T,Param,Idx,const N : usize> GetMut<Vector<Idx,N>> for GridParamBase<T,Para
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut Self::Output { unsafe { self.grid.get_unchecked_mut(pos) } }
 }
 
-impl<T,Param,Idx,const N : usize> GetManyMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
+impl<T,Param,Idx,const N : usize> GetManyMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx,N> where Idx : Integer
 {
     #[inline(always)]
     fn try_get_many_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> { self.grid.try_get_many_mut(indices) }
@@ -115,7 +115,7 @@ impl<T,Param,Idx,const N : usize> GetManyMut<Vector<Idx,N>> for GridParamBase<T,
     unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> [&mut Self::Output;N2] { unsafe { self.grid.get_many_unchecked_mut(indices) } }
 }
 
-impl<T,Param,Idx,const N : usize> Get<usize> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
+impl<T,Param,Idx,const N : usize> Get<usize> for GridParamBase<T,Param,Idx,N> where Idx : Integer
 {
     type Output = <Self as Index<usize>>::Output;
     #[inline(always)]
@@ -126,7 +126,7 @@ impl<T,Param,Idx,const N : usize> Get<usize> for GridParamBase<T,Param,Idx,N> wh
     #[track_caller]
     unsafe fn get_unchecked(&self, index : usize) -> &Self::Output { unsafe { self.grid.get_unchecked(index) } }
 }
-impl<T,Param,Idx,const N : usize> GetMut<usize> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
+impl<T,Param,Idx,const N : usize> GetMut<usize> for GridParamBase<T,Param,Idx,N> where Idx : Integer
 {
     #[inline(always)]
     fn try_get_mut(&mut self, index : usize) -> Result<&mut Self::Output, ()> { self.grid.try_get_mut(index) }
@@ -137,14 +137,14 @@ impl<T,Param,Idx,const N : usize> GetMut<usize> for GridParamBase<T,Param,Idx,N>
     unsafe fn get_unchecked_mut(&mut self, index : usize) -> &mut Self::Output { unsafe { self.grid.get_unchecked_mut(index) } }
 }
 
-impl<T,Param,Idx,const N : usize> GetManyMut<usize> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex
+impl<T,Param,Idx,const N : usize> GetManyMut<usize> for GridParamBase<T,Param,Idx,N> where Idx : Integer
 {
     #[inline(always)]
     #[track_caller]
     fn try_get_many_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> { self.grid.try_get_many_mut(indices) }
 }
 
-impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
+impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : Integer,
 {
     fn size (&self) -> Vector<Idx,N> { self.grid.size()  }
     fn begin(&self) -> Vector<Idx,N> { self.grid.begin() }
@@ -160,12 +160,12 @@ impl<T,Param,Idx,const N : usize> IRectangle<Idx,N> for GridParamBase<T,Param,Id
     #[inline(always)] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
-impl<T,Param,Idx,const N : usize> Crop<Idx,N> for GridParamBase<T,Param,Idx,N> where Param : Clone, GridBase<T,Idx,N> : Crop<Idx,N>, Idx : IntegerIndex
+impl<T,Param,Idx,const N : usize> Crop<Idx,N> for GridParamBase<T,Param,Idx,N> where Param : Clone, GridBase<T,Idx,N> : Crop<Idx,N>, Idx : Integer
 {
     fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self>  { self.grid.crop(subrect).map(|g| Self::from_grid_with_param(g, self.param)) }
     unsafe fn crop_unchecked(self, subrect : Rectangle<Idx, N>) -> Self { Self::from_grid_with_param(unsafe { self.grid.crop_unchecked(subrect) }, self.param) }
 }
-impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
+impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : Integer,
 {
     fn values(&self) -> &[T] { self.grid.values() }
     fn values_mut(&mut self) -> &mut [T] { self.grid.values_mut() }
@@ -185,7 +185,7 @@ impl<T,Param,Idx,const N : usize> IGrid<T,Param,Idx,N> for GridParamBase<T,Param
     fn view_mut<'a>(&'a mut self) -> Self::ViewMut<'a> { Self::ViewMut::from_view_mut(self.grid.view_mut(), &mut self.param) }
 }
 
-impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
+impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : Integer,
 {
     type Map<Dest>=GridParamBase<Dest,Param,Idx,N>;
 
@@ -194,45 +194,45 @@ impl<T,Param,Idx,const N : usize> IGridView<T,Param,Idx,N> for GridParamBase<T,P
 }
 
 
-impl<T,Param,Idx,const N : usize> IGridViewMut<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : IntegerIndex,
+impl<T,Param,Idx,const N : usize> IGridViewMut<T,Param,Idx,N> for GridParamBase<T,Param,Idx,N> where Idx : Integer,
 {
     type SubViewMut<'b> = GridParamViewMut<'b, T, Param, Idx, N> where Self: 'b;
     fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> 
     { Self::SubViewMut::from_view_mut(self.grid.subview_mut(rect), &mut self.param) }
 }
 
-impl<T, Param, Idx, const N : usize> Index<usize> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
+impl<T, Param, Idx, const N : usize> Index<usize> for GridParamBase<T,Param,Idx, N> where Idx : Integer,
 {
     type Output=T;
     #[track_caller]
     fn index(&self, index: usize) -> &Self::Output { self.get_or_panic(index) }
 }
-impl<T, Param, Idx, const N : usize> IndexMut<usize> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
+impl<T, Param, Idx, const N : usize> IndexMut<usize> for GridParamBase<T,Param,Idx, N> where Idx : Integer,
 {
     #[track_caller]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-impl<T, Param, Idx, const N : usize> Index<Vector<Idx,N>> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
+impl<T, Param, Idx, const N : usize> Index<Vector<Idx,N>> for GridParamBase<T,Param,Idx, N> where Idx : Integer,
 {
     type Output=T;
     #[track_caller]
     fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }
 }
-impl<T, Param, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
+impl<T, Param, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridParamBase<T,Param,Idx, N> where Idx : Integer,
 {
     #[track_caller]
     fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-impl<T, Param, Idx, const N : usize> GridParamBase<T,Param,Idx, N> where Idx : IntegerIndex,
+impl<T, Param, Idx, const N : usize> GridParamBase<T,Param,Idx, N> where Idx : Integer,
 {
     pub fn iter(&self) -> Iter<'_,T,Idx,N> { self.grid.iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_,T,Idx,N> { self.grid.iter_mut() }
 }
 
 impl<T, Param, Idx, const N : usize> Length for GridParamBase<T,Param,Idx, N> 
-    where Idx : IntegerIndex,
+    where Idx : Integer,
 { 
     fn len(&self) -> usize { self.grid().len() }
 }

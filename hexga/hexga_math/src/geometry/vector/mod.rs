@@ -102,11 +102,13 @@ impl<T,const N : usize> Vector<T,N>
     }
 }
 
+/* 
 pub trait IntegerIndex : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
 impl<T> IntegerIndex for T where T : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
+*/
 
 impl<Idx, const N : usize> Vector<Idx, N> 
-    where Idx : IntegerIndex
+    where Idx : Integer
 {
     #[inline(always)]
     pub fn to_index(self, size : Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_index_unchecked(size) }) }
