@@ -23,7 +23,7 @@ pub trait CastIntoComposite<T>
 
 /// Might lose some precision.
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
-pub trait CastInto<T> : CastIntoComposite<T,Output = T> {}
+pub trait CastInto<T> : CastIntoComposite<T,Output = T> + Sized { fn cast_into(self) -> Self::Output { self.cast_into_composite() } }
 impl<T,T2> CastInto<T> for T2 where T2 : CastIntoComposite<T,Output = T> {}
 
 /// Might lose some precision.

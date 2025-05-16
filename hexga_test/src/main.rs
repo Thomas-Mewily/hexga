@@ -30,10 +30,21 @@ impl EventLoop for TestCtx
            //.index_triangle(index);
            .make_triangle();
 
-        //for i in 0..iter_coe
+        Pen.color(Color::PINK);
+
+        /* 
+        for i in (0.0..1.0).samples(8)
         {
-            //let angle
+            Pen.set_pos(Angle::from_turn(i).to_vec2(0.25)).down();
         }
+        */
+
+        for i in (Angle::ZERO..Angle::FLAT).samples(8)
+        {
+            Pen.set_pos(Angle::from_turn(i).to_vec2(0.25)).down();
+        }
+
+        Pen.make_convex_poly();
         
 
         /* 
