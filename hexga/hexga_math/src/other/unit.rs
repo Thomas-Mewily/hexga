@@ -74,7 +74,16 @@ macro_rules! impl_new_unit_or_number
                 WrappedIterator::new(<RangeToInclusive<T> as RangeSampleExtension<I>>::sample(..=unsafe { self.end.inner_value() }, nb_sample))
             }
         }
+        impl<T, I> RangeSampleExtension<I> for RangeFrom<$name<T>> where RangeFrom<T> : RangeSampleExtension<I,Item=T>
+        {
+            type Output = WrappedIterator<$name<T>,T,<RangeFrom<T> as RangeSampleExtension<I>>::Output>;
+            type Item = $name<T>;
 
+            fn sample(self, nb_sample: I) -> Self::Output 
+            {
+                WrappedIterator::new(<RangeFrom<T> as RangeSampleExtension<I>>::sample(unsafe{self.start.inner_value()}.., nb_sample))
+            }
+        }
 
         
         impl<T> RangeStepExtension for Range<$name<T>> where Range<T> : RangeStepExtension<Item=T>
@@ -116,6 +125,16 @@ macro_rules! impl_new_unit_or_number
             fn step(self, step : Self::Item) -> Self::Output 
             {
                 WrappedIterator::new(<RangeToInclusive<T> as RangeStepExtension>::step(..=unsafe { self.end.inner_value() }, unsafe { step.inner_value() }))
+            }
+        }
+        impl<T> RangeStepExtension for RangeFrom<$name<T>> where RangeFrom<T> : RangeStepExtension<Item=T>
+        {
+            type Output = WrappedIterator<$name<T>,T,<RangeFrom<T> as RangeStepExtension>::Output>;
+            type Item = $name<T>;
+
+            fn step(self, step : Self::Item) -> Self::Output 
+            {
+                WrappedIterator::new(<RangeFrom<T> as RangeStepExtension>::step(unsafe { self.start.inner_value() }.., unsafe { step.inner_value() }))
             }
         }
     }

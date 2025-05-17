@@ -106,3 +106,14 @@ impl<I,T> RangeSampleExtension<I> for RangeToInclusive<T> where I : Integer + Ca
         (T::MIN_RANGE..=self.end).sample(nb_sample)
     }
 }
+
+impl<I,T> RangeSampleExtension<I> for RangeFrom<T> where I : Integer + CastInto<T>, T : Number + DefaultRange
+{
+    type Output = RangeSample<I, T>;
+    type Item = T;
+
+    fn sample(self, nb_sample: I) -> Self::Output 
+    {
+        (self.start..=T::MAX_RANGE).sample(nb_sample)
+    }
+}

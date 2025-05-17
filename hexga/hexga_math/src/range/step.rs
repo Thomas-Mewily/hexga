@@ -90,3 +90,13 @@ impl<T> RangeStepExtension for RangeToInclusive<T> where T : Number + DefaultRan
         (T::MIN_RANGE..=self.end).step(step)
     }
 }
+
+impl<T> RangeStepExtension for RangeFrom<T> where T : Number + DefaultRange
+{
+    type Output = RangeStep<T>;
+    type Item = T;
+    fn step(self, step: T) -> Self::Output
+    {
+        (self.start..=T::MAX_RANGE).step(step)
+    }
+}
