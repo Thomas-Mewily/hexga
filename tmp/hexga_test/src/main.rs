@@ -32,7 +32,7 @@ impl EventLoop for TestCtx
            .make_triangle();
 
         Pen.color(Color::PINK);
-        for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 10.)
+        for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 7.)
         {
             Pen.set_pos(Angle::from_turn(c).to_vec2(0.5)).down();
         }
