@@ -70,3 +70,23 @@ impl<T> RangeStepExtension<T> for RangeInclusive<T> where T : Number
         RangeStep { start, end, step }
     }
 }
+
+impl<T> RangeStepExtension<T> for RangeTo<T> where T : Number
+{
+    type Output = RangeStep<T>;
+    type Item = T;
+    fn step(self, step: T) -> Self::Output
+    {
+        (T::ZERO..self.end).step(step)
+    }
+}
+
+impl<T> RangeStepExtension<T> for RangeToInclusive<T> where T : Number
+{
+    type Output = RangeStep<T>;
+    type Item = T;
+    fn step(self, step: T) -> Self::Output
+    {
+        (T::ZERO..=self.end).step(step)
+    }
+}

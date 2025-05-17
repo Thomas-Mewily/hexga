@@ -126,6 +126,32 @@ impl<T: Float> DefaultRange for AngleOf<T>
 }
 
 /* 
+impl<T: Float, I> RangeSampleExtension<I> for AngleOf<T> where T : RangeSampleExtension<I,Item=T>
+{
+    type Output = WrappedIterator<Self,T,<T as RangeSampleExtension<I>>::Output>;
+    type Item = Self;
+
+    fn sample(self, nb_sample: I) -> Self::Output 
+    {
+        WrappedIterator::new(<T as RangeSampleExtension<I>>::sample(unsafe { self.inner_value() }, nb_sample))
+    }
+}
+*/
+
+/*
+impl<T: Float, I> RangeSampleExtension<I> for AngleOf<T> where T : RangeSampleExtension<I,Item=T>
+{
+    type Output = WrappedIterator<Self,T,<T as RangeSampleExtension<I>>::Output>;
+    type Item = Self;
+
+    fn sample(self, nb_sample: I) -> Self::Output {
+        <T as RangeSampleExtension<I>>::sample(self, nb_sample)
+    }
+}
+    */
+
+
+/* 
 impl<T:Float> AngleOf<T>
 {
     pub fn fmt_degree_with_optional_precision(self, precision : Option<T>) -> DisplayAngleDegree { DisplayAngleDegree { angle: self, precision }}

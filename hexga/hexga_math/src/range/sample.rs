@@ -33,7 +33,7 @@ impl<I,T> Iterator for RangeSample<I,T> where I : Integer, T : Number, I : CastI
     }
 }
 
-impl<I,T> DoubleEndedIterator for RangeSample<I,T> where I : Integer, T : Number, I : CastInto<T> 
+impl<I,T> DoubleEndedIterator for RangeSample<I,T> where I : Integer, T : Number, I : CastInto<T>
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.current >= self.nb_sample {
@@ -82,5 +82,27 @@ impl<I,T> RangeSampleExtension<I> for RangeInclusive<T> where I : Integer, T : N
             begin: start,
             step,
         }
+    }
+}
+
+
+impl<I,T> RangeSampleExtension<I> for RangeTo<T> where I : Integer, T : Number, I : CastInto<T>
+{
+    type Output = RangeSample<I, T>;
+    type Item = T;
+
+    fn sample(self, nb_sample: I) -> Self::Output 
+    {
+        (T::ZERO..self.end).sample(nb_sample)
+    }
+}
+impl<I,T> RangeSampleExtension<I> for RangeToInclusive<T> where I : Integer, T : Number, I : CastInto<T>
+{
+    type Output = RangeSample<I, T>;
+    type Item = T;
+
+    fn sample(self, nb_sample: I) -> Self::Output 
+    {
+        (T::ZERO..=self.end).sample(nb_sample)
     }
 }
