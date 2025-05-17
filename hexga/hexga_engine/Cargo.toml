@@ -7,6 +7,10 @@ homepage.workspace = true
 repository.workspace = true
 edition.workspace = true
 
+keywords = []
+description = "A small (work in progress) game framework"
+categories = ["game-development", "rendering", "multimedia", "graphics"]
+
 [features]
 default = ["serde", "int_are_32_bits", "float_are_32_bits"]
 

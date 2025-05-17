@@ -7,6 +7,7 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 ## HexGa Engine
 
 Render / Event loop based on [MiniQuad](https://github.com/not-fl3/miniquad)
+Not finished yet, but published because I'm still using it
 
 ## Main Hexga crate
 
