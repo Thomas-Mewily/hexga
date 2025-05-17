@@ -10,7 +10,7 @@ pub trait RangeSampleExtension<I=usize>
 }
 
 #[derive(Clone, Debug)]
-pub struct RangeSample<I,T> where I : Integer, T : Number, I : CastInto<T>
+pub struct RangeSample<I,T> where I : Integer + CastInto<T>, T : Number
 {
     current   : I,
     nb_sample : I,
@@ -18,7 +18,7 @@ pub struct RangeSample<I,T> where I : Integer, T : Number, I : CastInto<T>
     step      : T,
 }
 
-impl<I,T> Iterator for RangeSample<I,T> where I : Integer, T : Number, I : CastInto<T>
+impl<I,T> Iterator for RangeSample<I,T> where I : Integer + CastInto<T>, T : Number
 {
     type Item = T;
 
@@ -33,7 +33,7 @@ impl<I,T> Iterator for RangeSample<I,T> where I : Integer, T : Number, I : CastI
     }
 }
 
-impl<I,T> DoubleEndedIterator for RangeSample<I,T> where I : Integer, T : Number, I : CastInto<T>
+impl<I,T> DoubleEndedIterator for RangeSample<I,T> where I : Integer + CastInto<T>, T : Number
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.current >= self.nb_sample {
@@ -44,10 +44,10 @@ impl<I,T> DoubleEndedIterator for RangeSample<I,T> where I : Integer, T : Number
         }
     }
 }
-impl<I,T> FusedIterator for RangeSample<I,T> where I : Integer, T : Number, I : CastInto<T>  {}
+impl<I,T> FusedIterator for RangeSample<I,T> where I : Integer + CastInto<T>, T : Number  {}
 
 
-impl<I,T> RangeSampleExtension<I> for Range<T> where I : Integer, T : Number, I : CastInto<T>
+impl<I,T> RangeSampleExtension<I> for Range<T> where I : Integer + CastInto<T>, T : Number
 {
     type Output = RangeSample<I,T>;
     type Item = T;
@@ -66,7 +66,7 @@ impl<I,T> RangeSampleExtension<I> for Range<T> where I : Integer, T : Number, I 
     }
 }
 
-impl<I,T> RangeSampleExtension<I> for RangeInclusive<T> where I : Integer, T : Number, I : CastInto<T>
+impl<I,T> RangeSampleExtension<I> for RangeInclusive<T> where I : Integer + CastInto<T>, T : Number
 {
     type Output = RangeSample<I,T>;
     type Item = T;
@@ -86,23 +86,23 @@ impl<I,T> RangeSampleExtension<I> for RangeInclusive<T> where I : Integer, T : N
 }
 
 
-impl<I,T> RangeSampleExtension<I> for RangeTo<T> where I : Integer, T : Number, I : CastInto<T>
+impl<I,T> RangeSampleExtension<I> for RangeTo<T> where I : Integer + CastInto<T>, T : Number + DefaultRange
 {
     type Output = RangeSample<I, T>;
     type Item = T;
 
     fn sample(self, nb_sample: I) -> Self::Output 
     {
-        (T::ZERO..self.end).sample(nb_sample)
+        (T::MIN_RANGE..self.end).sample(nb_sample)
     }
 }
-impl<I,T> RangeSampleExtension<I> for RangeToInclusive<T> where I : Integer, T : Number, I : CastInto<T>
+impl<I,T> RangeSampleExtension<I> for RangeToInclusive<T> where I : Integer + CastInto<T>, T : Number + DefaultRange
 {
     type Output = RangeSample<I, T>;
     type Item = T;
 
     fn sample(self, nb_sample: I) -> Self::Output 
     {
-        (T::ZERO..=self.end).sample(nb_sample)
+        (T::MIN_RANGE..=self.end).sample(nb_sample)
     }
 }

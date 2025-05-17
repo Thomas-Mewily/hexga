@@ -35,7 +35,6 @@ Impl size_hint() and ExactSizeIterator for view and view mut
         - `Op<&T> for &T`
         ... Self and T copiable + support base op
 
-- angle & time : struct X<T>(T) + faire macro pour wrap op binaires et autres
 
 - S'intérésser aux structure de quadtree déjà existante
 - RectangleTree<Pri,const N>
@@ -59,6 +58,10 @@ Impl size_hint() and ExactSizeIterator for view and view mut
     - clear() différent de remove_all()
     - drain ?
     - impl Length + Clear
+
+- angle & time : struct X<T>(T) + faire macro pour wrap op binaires et autres
+
+- iterator with sample() and step() for Float and unit of mesure (Time, Angle...)
 
 ## Other
 

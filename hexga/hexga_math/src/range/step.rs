@@ -2,12 +2,12 @@ use crate::*;
 use std::{ops::{Range, RangeInclusive}};
 use std::iter::{FusedIterator,Map};
 
-pub trait RangeStepExtension<T>
+pub trait RangeStepExtension
 {
     type Output : Iterator<Item = Self::Item> + DoubleEndedIterator + FusedIterator;
     type Item;
     /// Should emit an empty iterator if step is zero (not well defined)
-    fn step(self, step: T) -> Self::Output;
+    fn step(self, step: Self::Item) -> Self::Output;
 }
 
 // Not [Copy] because Range<T> don't impl Copy because iterator are used by reference most of the time
@@ -51,7 +51,7 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T : Number
 impl<T> FusedIterator for RangeStep<T> where T : Number  {}
 
 
-impl<T> RangeStepExtension<T> for Range<T> where T : Number
+impl<T> RangeStepExtension for Range<T> where T : Number
 {
     type Output = RangeStep<T>;
     type Item = T;
@@ -60,7 +60,7 @@ impl<T> RangeStepExtension<T> for Range<T> where T : Number
         RangeStep { start: self.start, end: self.end - step, step }
     }
 }
-impl<T> RangeStepExtension<T> for RangeInclusive<T> where T : Number
+impl<T> RangeStepExtension for RangeInclusive<T> where T : Number
 {
     type Output = RangeStep<T>;
     type Item = T;
@@ -71,22 +71,22 @@ impl<T> RangeStepExtension<T> for RangeInclusive<T> where T : Number
     }
 }
 
-impl<T> RangeStepExtension<T> for RangeTo<T> where T : Number
+impl<T> RangeStepExtension for RangeTo<T> where T : Number + DefaultRange
 {
     type Output = RangeStep<T>;
     type Item = T;
     fn step(self, step: T) -> Self::Output
     {
-        (T::ZERO..self.end).step(step)
+        (T::MIN_RANGE..self.end).step(step)
     }
 }
 
-impl<T> RangeStepExtension<T> for RangeToInclusive<T> where T : Number
+impl<T> RangeStepExtension for RangeToInclusive<T> where T : Number + DefaultRange
 {
     type Output = RangeStep<T>;
     type Item = T;
     fn step(self, step: T) -> Self::Output
     {
-        (T::ZERO..=self.end).step(step)
+        (T::MIN_RANGE..=self.end).step(step)
     }
 }
