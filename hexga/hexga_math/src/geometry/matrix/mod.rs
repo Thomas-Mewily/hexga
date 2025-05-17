@@ -383,6 +383,8 @@ impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,C
     
     fn mul(self, rhs: Matrix<T,COL,COL2>) -> Self::Output 
     {
+        // Todo : match on ROW / COL, COL2
+        // and specialize it for 1x1, 2x2, 3x3 and 4x4 matrix
         Matrix::from_col(Vector::from_fn(|c| Vector::from_fn(|r| (0..COL).map(|k| self[k][r] * rhs[c][k]).sum())))
     }
 }

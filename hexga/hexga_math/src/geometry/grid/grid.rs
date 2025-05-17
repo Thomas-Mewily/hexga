@@ -1,12 +1,5 @@
 use crate::*;
 
-// Todo : remettre le trait IterArea pour la grille les + Vecteur, + faire les itérateur sur la grille pour itérer dans un sous rectangle 
-
-/* 
-Todo : impl AsMut<&[T]> AsRef<&[T]>
-+ method as_mut_slice(&self) as_slice(&mut self)
-*/
-
 /// A N dimensional grid
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer

@@ -7,7 +7,7 @@ use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_bo
 use criterion::{BenchmarkId, Criterion};
 
 //use hexga_graphics::Image;
-use hexga::prelude::*;
+use hexga::{math::Lerpable, prelude::*};
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
 use hexga_engine::{Event, EventLoop, GpuVec2, Vertex, MultiMediaConfig, Pen, WindowConfig};
 
@@ -41,6 +41,9 @@ impl EventLoop for TestCtx
             Pen.set_pos(angle.to_vec2(0.25)).down();
         }
         Pen.make_convex_poly();
+
+        //Pen.color(Color::YELLOW.lerp(Color::WHITE, 0.5));
+
 
         /* 
         Pen.color(Color::YELLOW);
