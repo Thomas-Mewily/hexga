@@ -12,7 +12,9 @@ pub use crate::typedef::*;
 
 pub use crate::graphics::prelude::*;
 
-pub use crate::number::*;
+pub use crate::number::prelude::*;
+
+pub use crate::range::prelude::*;
 
 pub use crate::extension::*;
 

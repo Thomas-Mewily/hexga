@@ -20,6 +20,9 @@ pub use hexga_typedef::*;
 pub mod number;
 use number::*;
 
+pub mod range;
+use range::*;
+
 pub mod extension;
 use extension::*;
 
