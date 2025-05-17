@@ -34,6 +34,10 @@ impl EventLoop for TestCtx
         }
         Pen.make_convex_poly();
 
+        for angle in (Angle::ZERO..Angle::FLAT).sample(8)
+        {
+            Pen.set_pos(angle.to_vec2(0.25)).down();
+        }
         /* 
         // for i in Angle::sample(8)
         for angle in Angle.sample(8)

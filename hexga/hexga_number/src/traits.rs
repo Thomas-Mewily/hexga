@@ -33,6 +33,17 @@ macro_rules! impl_abs {
 map_on_integer_signed!(impl_abs);
 map_on_float!(impl_abs);
 
+impl<T> Abs for Wrapping<T> where T : Abs
+{
+    type Output=Wrapping<T::Output>;
+    fn abs(self) -> Self::Output { Wrapping(self.0.abs()) }
+}
+impl<T> Abs for Saturating<T> where T : Abs
+{
+    type Output=Saturating<T::Output>;
+    fn abs(self) -> Self::Output { Saturating(self.0.abs()) }
+}
+
 impl<T,T2, const N : usize> Abs for [T;N] where T : Abs<Output = T2> 
 {
     type Output=[T2;N];

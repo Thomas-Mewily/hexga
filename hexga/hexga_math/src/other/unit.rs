@@ -65,7 +65,7 @@ macro_rules! new_unit
             fn rem_assign(&mut self, rhs : Self) { self.0.rem_assign(rhs.0); }
         }
 
-        map_on_constant!
+        map_on_constant_unit!
         (
             (($trait_name: tt, $constant_name: tt)) =>
             {
@@ -136,6 +136,13 @@ macro_rules! new_number
         {
             fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
                 iter.fold(Self::ZERO, Self::add)
+            }
+        }
+
+        impl<T> Product for $name<T> where T : std::ops::Mul<T,Output=T> + One
+        {
+            fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
+                iter.fold(Self::ONE, Self::mul)
             }
         }
 

@@ -151,6 +151,22 @@ impl<T> Constant for T where T : Zero + One + MinusOne + Half + NaNValue + MinVa
 */
 
 #[macro_export]
+macro_rules! map_on_constant_unit {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!
+        (
+            (
+                (Zero, ZERO),
+                (NaNValue, NAN),
+                (MinValue, MIN),
+                (MaxValue, MAX)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}
+
+#[macro_export]
 macro_rules! map_on_constant {
     ($($macro_arms:tt)*) => {
         $crate::map_on!

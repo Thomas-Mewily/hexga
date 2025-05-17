@@ -117,6 +117,14 @@ impl<T:Float> Display for AngleOf<T> where T: Display
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult { write!(f, "{:}°", self.degree()) }
 }
 
+impl<T: Float> DefaultRange for AngleOf<T>
+{
+    const MIN_RANGE  : Self = Self::ZERO;
+    const HALF_RANGE : Self = Self::FLAT;
+    const MAX_RANGE  : Self = Self::FULL;
+    const RANGE      : Self = Self::FULL;
+}
+
 /* 
 impl<T:Float> AngleOf<T>
 {
