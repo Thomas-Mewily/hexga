@@ -1,161 +1,44 @@
-
-// Fixed Binary Operator 
-#[macro_export]
-macro_rules! impl_fixed_array_like_op_binary
-{
-    ($name: ident, $dim : expr, $op_trait_name: ident, $op_trait_fn_name : ident) =>
-    {
-        impl_fixed_array_like_op_binary_composite!($name,$dim,$op_trait_name,$op_trait_fn_name);
-        impl_fixed_array_like_op_binary_non_composite!($name,$dim,$op_trait_name,$op_trait_fn_name);
-    }
-}
-
-#[macro_export]
-macro_rules! impl_fixed_array_like_op_binary_composite
-{
-    ($name: ident, $dim : expr, $op_trait_name: ident, $op_trait_fn_name : ident) =>
-    {
-        impl<T> $op_trait_name<Self> for $name<T> where T : $op_trait_name<T>
-        {
-            type Output=$name<<T as $op_trait_name<T>>::Output>;
-            fn $op_trait_fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$op_trait_fn_name) }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! impl_fixed_array_like_op_binary_non_composite
-{
-    ($name: ident, $dim : expr, $op_trait_name: ident, $op_trait_fn_name : ident) =>
-    {
-        // Currently binary op are closed (only work with the same type), they are not like
-        // impl<T,O> $op_trait_name<T> for $name<T> where T : $op_trait_name<O> + Copy
-        // because this cause conflict of implementation, especially in the case of matrix multiplication by 
-        // a scalar T, a Vector<T,N>, another Matrix with the good size
-        impl<T> $op_trait_name<T> for $name<T> where T : $op_trait_name<T> + Copy
-        {
-            type Output=$name<<T as $op_trait_name<T>>::Output>;
-            fn $op_trait_fn_name(self, rhs: T) -> Self::Output { <[T;$dim]>::from(self).map(|v| v.$op_trait_fn_name(rhs)).into() }
-        }
-    };
-}
-
-
-// Generic Binary Operator 
-#[macro_export]
-macro_rules! impl_generic_array_like_op_binary
-{
-    ($name: ident, $op_trait_name: ident, $op_trait_fn_name : ident) =>
-    {
-        impl_generic_array_like_op_binary_composite!($name,$op_trait_name,$op_trait_fn_name);
-        impl_generic_array_like_op_binary_non_composite!($name,$op_trait_name,$op_trait_fn_name);
-    }
-}
-
-#[macro_export]
-macro_rules! impl_generic_array_like_op_binary_composite
-{
-    ($name: ident, $op_trait_name: ident, $op_trait_fn_name : ident) =>
-    {
-        impl<T, const N : usize> $op_trait_name<Self> for $name<T, N> 
-            where T : $op_trait_name<T>
-        {
-            type Output=$name<<T as $op_trait_name<T>>::Output, N>;
-            fn $op_trait_fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$op_trait_fn_name) }
-        }
-    }
-}
-
-#[macro_export]
-macro_rules! impl_generic_array_like_op_binary_non_composite
-{
-    ($name: ident, $op_trait_name: ident, $op_trait_fn_name : ident) =>
-    {
-        impl<T, const N : usize> $op_trait_name<T> for $name<T,N> where T : $op_trait_name<T> + Copy
-        {
-            type Output=$name<<T as $op_trait_name<T>>::Output,N>;
-            fn $op_trait_fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$op_trait_fn_name(rhs)).into() }
-        }
-    }
-}
-
-
-#[macro_export]
-macro_rules! impl_fixed_array_like_op_assign
-{
-    ($name: ident, $dim : expr, $op_trait_name: ident, $op_trait_fn_name : ident) =>
-    {
-        impl<T> $op_trait_name<Self> for $name<T> where T : $op_trait_name
-        {
-            fn $op_trait_fn_name(&mut self, rhs: Self) 
-            {
-                let arr : [T; $dim] = rhs.into();
-                self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$op_trait_fn_name(b));
-            }
-        }
-
-        impl<T> $op_trait_name<&Self> for $name<T> where T : $op_trait_name + Copy
-        {
-            fn $op_trait_fn_name(&mut self, rhs: &Self) { $op_trait_name::$op_trait_fn_name(self,*rhs) }
-        }
-    }
-}
-
-#[macro_export]
-macro_rules! impl_generic_array_like_op_assign
-{
-    ($name: ident, $op_trait_name: ident, $op_trait_fn_name : ident) =>
-    {
-        impl<T, const N : usize> $op_trait_name<Self> for $name<T,N> where T : $op_trait_name
-        {
-            fn $op_trait_fn_name(&mut self, rhs: Self) 
-            {
-                let arr : [T; N] = rhs.into();
-                self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$op_trait_fn_name(b));
-            }
-        }
-
-        impl<T, const N : usize> $op_trait_name<&Self> for $name<T,N> where T : $op_trait_name + Copy
-        {
-            fn $op_trait_fn_name(&mut self, rhs: &Self) { $op_trait_name::$op_trait_fn_name(self,*rhs) }
-        }
-    }
-}
-
 #[macro_export]
 macro_rules! impl_fixed_array_like_op
 {
     ($name: ident, $dim : expr) => 
     {
-        impl_fixed_array_like_op_binary!($name, $dim, Add, add);
-        impl_fixed_array_like_op_assign!($name, $dim, AddAssign, add_assign);
+        $crate::map_on::map_on_operator_binary!(
+            (($trait_name: tt, $fn_name: tt)) =>
+            {
+                impl<T> ::std::ops::$trait_name<Self> for $name<T> 
+                    where T : $trait_name<T>
+                {
+                    type Output=$name<<T as ::std::ops::$trait_name<T>>::Output>;
+                    fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
+                }
 
-        impl_fixed_array_like_op_binary!($name, $dim, Sub, sub);
-        impl_fixed_array_like_op_assign!($name, $dim, SubAssign, sub_assign);
+                impl<T> ::std::ops::$trait_name<T> for $name<T> where T : $trait_name<T> + Copy
+                {
+                    type Output=$name<<T as ::std::ops::$trait_name<T>>::Output>;
+                    fn $fn_name(self, rhs: T) -> Self::Output { <[T;$dim]>::from(self).map(|v| v.$fn_name(rhs)).into() }
+                }
+            }
+        );
 
-        impl_fixed_array_like_op_binary!($name, $dim, Mul, mul);
-        impl_fixed_array_like_op_assign!($name, $dim, MulAssign, mul_assign);
+        $crate::map_on::map_on_operator_assign!(
+            (($trait_name: tt, $fn_name: tt)) =>
+            {
+                impl<T> ::std::ops::$trait_name<Self> for $name<T> where T : $trait_name
+                {
+                    fn $fn_name(&mut self, rhs: Self) 
+                    {
+                        let arr : [T; $dim] = rhs.into();
+                        self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
+                    }
+                }
 
-        impl_fixed_array_like_op_binary!($name, $dim, Div, div);
-        impl_fixed_array_like_op_assign!($name, $dim, DivAssign, div_assign);
-
-        impl_fixed_array_like_op_binary!($name, $dim, Rem, rem);
-        impl_fixed_array_like_op_assign!($name, $dim, RemAssign, rem_assign);
-
-        impl_fixed_array_like_op_binary!($name, $dim, BitAnd, bitand);
-        impl_fixed_array_like_op_assign!($name, $dim, BitAndAssign, bitand_assign);
-
-        impl_fixed_array_like_op_binary!($name, $dim, BitOr, bitor);
-        impl_fixed_array_like_op_assign!($name, $dim, BitOrAssign, bitor_assign);
-
-        impl_fixed_array_like_op_binary!($name, $dim, BitXor, bitxor);
-        impl_fixed_array_like_op_assign!($name, $dim, BitXorAssign, bitxor_assign);
-
-        impl_fixed_array_like_op_binary!($name, $dim, Shr, shr);
-        impl_fixed_array_like_op_assign!($name, $dim, ShrAssign, shr_assign);
-
-        impl_fixed_array_like_op_binary!($name, $dim, Shl, shl);
-        impl_fixed_array_like_op_assign!($name, $dim, ShlAssign, shl_assign);
+                impl<T> ::std::ops::$trait_name<&Self> for $name<T> where T : $trait_name + Copy
+                {
+                    fn $fn_name(&mut self, rhs: &Self) { $trait_name::$fn_name(self,*rhs) }
+                }
+            }
+        );
         
         // ================= Unary =========
 
@@ -251,40 +134,49 @@ macro_rules! impl_fixed_array_like_display
     }
 }
 
+
+
 #[macro_export]
 macro_rules! impl_generic_array_like_op
 {
     ($name: ident) => 
     {
-        impl_generic_array_like_op_binary!($name, Add, add);
-        impl_generic_array_like_op_assign!($name, AddAssign, add_assign);
+        $crate::map_on::map_on_operator_binary!(
+            (($trait_name: tt, $fn_name: tt)) =>
+            {
+                impl<T, const N : usize> $trait_name<Self> for $name<T,N> 
+                    where T : $trait_name<T>
+                {
+                    type Output=$name<<T as ::std::ops::$trait_name<T>>::Output,N>;
+                    fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
+                }
 
-        impl_generic_array_like_op_binary!($name, Sub, sub);
-        impl_generic_array_like_op_assign!($name, SubAssign, sub_assign);
+                impl<T, const N : usize> $trait_name<T> for $name<T,N> where T : $trait_name<T> + Copy
+                {
+                    type Output=$name<<T as ::std::ops::$trait_name<T>>::Output,N>;
+                    fn $fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$fn_name(rhs)).into() }
+                }
+            }
+        );
 
-        impl_generic_array_like_op_binary!($name, Mul, mul);
-        impl_generic_array_like_op_assign!($name, MulAssign, mul_assign);
+        $crate::map_on::map_on_operator_assign!(
+            (($trait_name: tt, $fn_name: tt)) =>
+            {
+                impl<T, const N : usize> $trait_name<Self> for $name<T,N> where T : $trait_name
+                {
+                    fn $fn_name(&mut self, rhs: Self) 
+                    {
+                        let arr : [T; N] = rhs.into();
+                        self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
+                    }
+                }
 
-        impl_generic_array_like_op_binary!($name, Div, div);
-        impl_generic_array_like_op_assign!($name, DivAssign, div_assign);
-
-        impl_generic_array_like_op_binary!($name, Rem, rem);
-        impl_generic_array_like_op_assign!($name, RemAssign, rem_assign);
-
-        impl_generic_array_like_op_binary!($name, BitAnd, bitand);
-        impl_generic_array_like_op_assign!($name, BitAndAssign, bitand_assign);
-
-        impl_generic_array_like_op_binary!($name, BitOr, bitor);
-        impl_generic_array_like_op_assign!($name, BitOrAssign, bitor_assign);
-
-        impl_generic_array_like_op_binary!($name, BitXor, bitxor);
-        impl_generic_array_like_op_assign!($name, BitXorAssign, bitxor_assign);
-
-        impl_generic_array_like_op_binary!($name, Shr, shr);
-        impl_generic_array_like_op_assign!($name, ShrAssign, shr_assign);
-
-        impl_generic_array_like_op_binary!($name, Shl, shl);
-        impl_generic_array_like_op_assign!($name, ShlAssign, shl_assign);
+                impl<T, const N : usize> $trait_name<&Self> for $name<T,N> where T : $trait_name + Copy
+                {
+                    fn $fn_name(&mut self, rhs: &Self) { $trait_name::$fn_name(self,*rhs) }
+                }
+            }
+        );
 
         // ================= Unary =========
 

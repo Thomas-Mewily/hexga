@@ -13,3 +13,4 @@ description = "A crate that impl trait / new functions for array."
 categories = ["rust-patterns"]
 
 [dependencies]
+hexga_map_on.workspace = true

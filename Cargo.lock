@@ -310,6 +310,9 @@ dependencies = [
 [[package]]
 name = "hexga_array"
 version = "0.0.10-beta.11"
+dependencies = [
+ "hexga_map_on",
+]
 
 [[package]]
 name = "hexga_base"
