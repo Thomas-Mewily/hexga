@@ -3,11 +3,13 @@ use super::*;
 /* 
 pub type DeltaTime = Rel<Time>;
 pub type FixedTime = Fix<Time>;
-*/
 
-macro_rules! new_unit {
+
+macro_rules! new_unit 
+{
     ($name:ident) => 
     {
+        #[derive(Debug)]
         struct $name<T>(T);
 
         impl<T> $name<T>
@@ -17,3 +19,4 @@ macro_rules! new_unit {
         }
     };
 }
+*/

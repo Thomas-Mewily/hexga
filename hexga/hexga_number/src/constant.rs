@@ -15,9 +15,8 @@ pub trait Zero : Sized
     #[inline(always)] fn is_non_zero(&self) -> bool where Self : PartialEq<Self> { !self.is_zero() }
 }
 pub const fn zero<T : Zero>() -> T { T::ZERO }
+map_on_number!(($primitive_name: ty) => { impl Zero for $primitive_name { const ZERO : Self = 0 as Self; } });
 
-macro_rules! impl_have_zero { ($primitive_name: ty) => { impl Zero for $primitive_name { const ZERO : Self = 0 as Self; } }; }
-map_on_number!(impl_have_zero);
 impl<T> Zero for Wrapping<T> where T : Zero  { const ZERO : Self = Wrapping(T::ZERO); }
 impl<T> Zero for Saturating<T> where T : Zero  { const ZERO : Self = Saturating(T::ZERO); }
 
@@ -43,8 +42,8 @@ pub trait One : Sized
 }
 pub const fn one<T : One>() -> T { T::ONE }
 
-macro_rules! impl_have_one { ($primitive_name: ty) => { impl One for $primitive_name { const ONE : Self = 1 as Self; } }; }
-map_on_number!(impl_have_one);
+map_on_number!(($primitive_name: ty) => { impl One for $primitive_name { const ONE : Self = 1 as Self; } });
+
 impl<T> One for Wrapping<T> where T : One  { const ONE : Self = Wrapping(T::ONE); }
 impl<T> One for Saturating<T> where T : One  { const ONE : Self = Saturating(T::ONE); }
 
@@ -68,8 +67,7 @@ pub trait MinusOne : Sized
 }
 pub const fn minus_one<T : MinusOne>() -> T { T::MINUS_ONE }
 
-macro_rules! impl_have_minus_one { ($primitive_name: ty) => { impl MinusOne for $primitive_name { const MINUS_ONE : Self = 1 as Self; } }; }
-map_on_number!(impl_have_minus_one);
+map_on_number!(($primitive_name: ty) => { impl MinusOne for $primitive_name { const MINUS_ONE : Self = 1 as Self; } });
 impl<T> MinusOne for Wrapping<T> where T : MinusOne  { const MINUS_ONE : Self = Wrapping(T::MINUS_ONE); }
 impl<T> MinusOne for Saturating<T> where T : MinusOne  { const MINUS_ONE : Self = Saturating(T::MINUS_ONE); }
 
@@ -90,8 +88,7 @@ pub trait Half : Sized
 }
 pub const fn half<T : Half>() -> T { T::HALF }
 
-macro_rules! impl_have_half { ($primitive_name: ty) => { impl Half for $primitive_name { const HALF : Self = 0.5; } }; }
-map_on_float!(impl_have_half);
+map_on_float!(($primitive_name: ty) => { impl Half for $primitive_name { const HALF : Self = 0.5; } });
 impl<T> Half for Wrapping<T> where T : Half  { const HALF : Self = Wrapping(T::HALF); }
 impl<T> Half for Saturating<T> where T : Half  { const HALF : Self = Saturating(T::HALF); }
 
@@ -108,16 +105,7 @@ pub trait NaNValue : Sized
     #[inline(always)] fn is_nan(&self) -> bool where Self : PartialEq { self == &Self::NAN }
     #[inline(always)] fn is_not_nan(&self) -> bool where Self : PartialEq { !self.is_nan() }
 }
-macro_rules! impl_have_nan_value {
-    ($primitive_name: ty) => 
-    {
-        impl NaNValue for $primitive_name 
-        {
-            const NAN : Self = Self::NAN;
-        }
-    };
-}
-map_on_float!(impl_have_nan_value);
+map_on_float!(($primitive_name: ty) =>  { impl NaNValue for $primitive_name { const NAN : Self = Self::NAN; }};);
 
 impl<T, const N : usize> NaNValue for [T;N] where T : NaNValue
 {
@@ -133,16 +121,7 @@ pub trait MinValue : Sized
     #[inline(always)] fn is_not_min_value(&self) -> bool where Self : PartialEq { !self.is_min_value() }
 }
 
-macro_rules! impl_have_min_value {
-    ($primitive_name: ty) => 
-    {
-        impl MinValue for $primitive_name 
-        {
-            const MIN : Self = Self::MIN;
-        }
-    };
-}
-map_on_number!(impl_have_min_value);
+map_on_number!(($primitive_name: ty) => { impl MinValue for $primitive_name { const MIN : Self = Self::MIN; }});
 impl<T> MinValue for Wrapping<T> where T : MinValue  { const MIN : Self = Wrapping(T::MIN); }
 impl<T> MinValue for Saturating<T> where T : MinValue  { const MIN : Self = Saturating(T::MIN); }
 
@@ -157,16 +136,7 @@ pub trait MaxValue : Sized
     #[inline(always)] fn is_max_value(&self) -> bool where Self : PartialEq { self == &Self::MAX }
     #[inline(always)] fn is_non_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
 }
-macro_rules! impl_have_max_value {
-    ($primitive_name: ty) => 
-    {
-        impl MaxValue for $primitive_name 
-        {
-            const MAX : Self = Self::MAX;
-        }
-    };
-}
-map_on_number!(impl_have_max_value);
+map_on_number!(($primitive_name: ty) => { impl MaxValue for $primitive_name { const MAX : Self = Self::MAX; } });
 impl<T> MaxValue for Wrapping<T> where T : MaxValue  { const MAX : Self = Wrapping(T::MAX); }
 impl<T> MaxValue for Saturating<T> where T : MaxValue  { const MAX : Self = Saturating(T::MAX); }
 
