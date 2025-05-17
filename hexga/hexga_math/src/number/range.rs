@@ -1,18 +1,5 @@
 use crate::*;
 
-pub trait FloatRange<F> : Sized
-{
-    fn step(self, step: F) -> impl Iterator<Item = F> + DoubleEndedIterator + std::iter::FusedIterator;
-    fn samples(self, n: usize) -> impl Iterator<Item = F> + DoubleEndedIterator + std::iter::FusedIterator;
-}
-
-/* 
-pub trait FloatRangeMinMax<F> : Sized where F : Float
-{
-
-}
-*/
-
 // Not [Copy] because Range<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug)]
@@ -23,6 +10,33 @@ pub struct FloatIt<F> where F : Float
     right : F,
     step  : F,
 }
+
+pub trait FloatRange<F> : Sized
+{
+    fn step(self, step: F) -> impl Iterator<Item = F> + DoubleEndedIterator + std::iter::FusedIterator;
+
+    /// Returns an iterator that yields `n` evenly spaced samples over the range.
+    ///
+    /// For exclusive ranges ([Range]), `n` must be at least 1, and the samples will not include the end value.
+    /// For inclusive ranges ([RangeInclusive]), `n` must be at least 2, and the samples will include both start and end.
+    /// 
+    /// ```
+    /// 
+    /// ```
+    ///
+    /// # Panics
+    /// Panics if `n` is less than the required minimum.
+    fn sample(self, n: usize) -> impl Iterator<Item = F> + DoubleEndedIterator + std::iter::FusedIterator;
+}
+
+/* 
+pub trait FloatRangeMinMax<F> : Sized where F : Float
+{
+
+}
+*/
+
+
 
 impl<F> Iterator for FloatIt<F> where F : Float
 {
@@ -71,7 +85,7 @@ impl<F> FloatRange<F> for std::ops::Range<F> where F : Float
         }
     }
 
-    fn samples(self, n: usize)-> impl Iterator<Item = F> + DoubleEndedIterator + std::iter::FusedIterator 
+    fn sample(self, n: usize)-> impl Iterator<Item = F> + DoubleEndedIterator + std::iter::FusedIterator 
     {
         assert!(n >= 1, "Need at least one sample");
         let step = (self.end - self.start) / F::cast_from(n);
@@ -93,7 +107,7 @@ impl<F> FloatRange<F> for std::ops::RangeInclusive<F> where F : Float {
         }
     }
 
-    fn samples(self, n: usize) -> impl Iterator<Item = F> + DoubleEndedIterator + std::iter::FusedIterator
+    fn sample(self, n: usize) -> impl Iterator<Item = F> + DoubleEndedIterator + std::iter::FusedIterator
     {
         assert!(n >= 2, "Need at least two samples for inclusive range");
         let (start, end) = self.clone().into_inner();

@@ -47,8 +47,8 @@ impl<T:Float> FloatRange<AngleOf<T>> for AngleOf<T> where T : FloatRange<T>
         self._radian.step(step._radian).map(|v| Self::from_internal(v))
     }
 
-    fn samples(self, n: usize) -> impl Iterator<Item = AngleOf<T>> + DoubleEndedIterator + std::iter::FusedIterator {
-        self._radian.samples(n).map(|v| Self::from_internal(v))
+    fn sample(self, n: usize) -> impl Iterator<Item = AngleOf<T>> + DoubleEndedIterator + std::iter::FusedIterator {
+        self._radian.sample(n).map(|v| Self::from_internal(v))
     }
 }
 

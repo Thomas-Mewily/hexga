@@ -27,24 +27,26 @@ impl EventLoop for TestCtx
         Pen.color(Color::RED).set_pos(vec2(-1., 1.)).down()
            .color(Color::BLUE).pos2(vec2(1., 1.)).down()
            .color(Color::GREEN).pos2(vec2(0.0, -1.)).down()
-           //.index_triangle(index);
            .make_triangle();
 
         Pen.color(Color::PINK);
-
-        /* 
-        for i in (0.0..1.0).samples(8)
+        for i in (0.0..1.0).sample(8)
         {
             Pen.set_pos(Angle::from_turn(i).to_vec2(0.25)).down();
         }
-        */
-
-        for i in (Angle::ZERO..Angle::FLAT).samples(8)
-        {
-            Pen.set_pos(Angle::from_turn(i).to_vec2(0.25)).down();
-        }
-
         Pen.make_convex_poly();
+
+        // for i in Angle::sample(8)
+        for angle in Angle.sample(8)
+        {
+            Pen.set_pos(angle.to_vec2(0.25)).down();
+        }
+        
+        for angle in (Angle::ZERO..Angle::FLAT).sample(8)
+        {
+            Pen.set_pos(angle.to_vec2(0.25)).down();
+        }
+        
         
 
         /* 
