@@ -10,11 +10,11 @@ macro_rules! new_unit
         impl<T> $name<T>
         {
             /// Return the inner value.
-            /// The unit is not specified
+            /// Unsafe because it expose the inner value, but the unit is not specified and may change
             pub unsafe fn inner_value(self) -> T { self.0 }
 
             /// Create from the inner value.
-            /// The unit is not specified
+            /// Unsafe because it expose the inner value, but the unit is not specified and may change
             pub const unsafe fn from_inner_value(inner_value : T) -> Self { Self(inner_value) }
         }
 
@@ -91,6 +91,15 @@ macro_rules! new_unit
                 }
             }
         );
+
+        impl<T,T2> CastIntoComposite<T2> for $name<T> where T : CastIntoComposite<T2>
+        {
+            type Output=AngleOf<T::Output>;
+
+            fn cast_into_composite(self) -> Self::Output {
+                AngleOf(self.0.cast_into_composite())
+            }
+        }
     };
 }
 pub(crate) use new_unit;
@@ -157,6 +166,15 @@ macro_rules! new_number
                 }
             }
         );
+
+        impl<T,T2> CastIntoComposite<T2> for $name<T> where T : CastIntoComposite<T2>
+        {
+            type Output=AngleOf<T::Output>;
+
+            fn cast_into_composite(self) -> Self::Output {
+                AngleOf(self.0.cast_into_composite())
+            }
+        }
     };
 }
 pub(crate) use new_number;
