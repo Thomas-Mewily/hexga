@@ -5,13 +5,13 @@ macro_rules! new_unit
     ($(#[$attr:meta])* $name:ident) => {
         $(#[$attr])*
         #[derive(Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd, Hash)]
-        struct $name<T>(pub(crate) T);
+        pub struct $name<T>(pub(crate) T);
 
         impl<T> $name<T>
         {
             /// Return the inner value.
             /// The unit is not specified
-            pub const unsafe fn inner_value(self) -> T { self.0 }
+            pub unsafe fn inner_value(self) -> T { self.0 }
 
             /// Create from the inner value.
             /// The unit is not specified
@@ -101,7 +101,7 @@ macro_rules! new_number
     ($(#[$attr:meta])* $name:ident) => {
         $(#[$attr])*
         #[derive(PartialEq, Eq, Ord, PartialOrd, Hash)]
-        struct $name<T>(pub T);
+        pub struct $name<T>(pub T);
 
         map_on_operator_binary!(
             (($trait_name: tt, $fn_name: tt)) => 

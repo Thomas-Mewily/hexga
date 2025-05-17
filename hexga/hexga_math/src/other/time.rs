@@ -9,7 +9,6 @@ pub type Time = TimeOf<float>;
 pub type DeltaTime = Time;
 pub type DeltaTimeOf<T> = TimeOf<T>;
 
-
 new_unit!(
     /// Represents time using, which can be used as an instant or a duration.
     /// 
@@ -273,6 +272,15 @@ impl<T:Float> TimeOf<T>
     /// debug_assert_eq!(900.day().timer_day(), 900);
     /// ```
     pub fn timer_day(self) -> i32 { self.day().abs().floor().to_i32() }
+}
+
+
+impl<T: Float> DefaultRange for TimeOf<T> where T : DefaultRange
+{
+    const MIN_RANGE  : Self = Self(T::MIN_RANGE);
+    const HALF_RANGE : Self = Self(T::HALF_RANGE);
+    const MAX_RANGE  : Self = Self(T::MAX_RANGE);
+    const RANGE      : Self = Self(T::RANGE);
 }
 
 #[cfg(feature = "serde")]
