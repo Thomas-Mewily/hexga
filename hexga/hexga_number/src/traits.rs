@@ -5,6 +5,7 @@ pub trait Abs
     type Output;
     fn abs(self) -> Self::Output;
 }
+
 map_on_integer_unsigned!(
     ($primitive_name: ty) => 
     { 
@@ -16,7 +17,8 @@ map_on_integer_unsigned!(
         } 
     }
 );
-map_on_integer_signed!(
+
+macro_rules! impl_abs {
     ($primitive_name: ty) => 
     { 
         impl Abs for $primitive_name 
@@ -25,19 +27,12 @@ map_on_integer_signed!(
             #[inline(always)]
             fn abs(self) -> Self::Output { self.abs() }
         } 
-    }
-);
-map_on_float!(
-    ($primitive_name: ty) => 
-    { 
-        impl Abs for $primitive_name 
-        { 
-            type Output = Self;
-            #[inline(always)]
-            fn abs(self) -> Self::Output { self.abs() }
-        } 
-    }
-);
+    };
+}
+
+map_on_integer_signed!(impl_abs);
+map_on_float!(impl_abs);
+
 impl<T,T2, const N : usize> Abs for [T;N] where T : Abs<Output = T2> 
 {
     type Output=[T2;N];
