@@ -1,6 +1,17 @@
 use std::process::Command;
 use std::{env, fs, path::Path};
 
+pub fn publish_all_crate()
+{
+    let crates : Vec<&str> = include_str!("../name_2_share.md").lines().collect();
+    for name in crates
+    {
+        let name = name.trim();
+        if name.starts_with("//") | name.starts_with("#") || name.is_empty() { continue; }
+        publish_crate(name);
+    }
+}
+
 pub fn publish_crate(name: &'static str) 
 {
     println!("Publishing {}...", name);

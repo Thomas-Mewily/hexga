@@ -3,7 +3,6 @@
 
 ## To-do
 
--  Move the Abs trait from Math to Number
 
 - Name2Reserve : réserver plus de nom sous crate io
 
@@ -44,6 +43,8 @@ Impl size_hint() and ExactSizeIterator for view and view mut
 ## Working On
 
 ## Done
+
+-  Move the Abs trait from Math to Number
 
 - Grid : GridSlice/GridPortion + version mut
 ~~Grid Deref+Derefmut sur ses slices~~ => Pas possible, impossible d'exprimer les lifetime

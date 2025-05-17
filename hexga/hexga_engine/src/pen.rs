@@ -354,7 +354,7 @@ impl ContextPen
     {
         for triangle in triangle_index.into_iter() 
         {
-            self.index_triangle(triangle);
+            self.index_triangle_and(triangle);
         }
         self
     }
@@ -363,12 +363,13 @@ impl ContextPen
     pub fn make_convex_poly(&mut self)
     {
         self.make_convex_poly_and();
-        self.prev_vertex_index = self.vertex.len();
+        self.begin_vertexs();
     }
     /// Don't call `begin_vertexs()`
     pub fn make_convex_poly_and(&mut self) -> &mut Self
     {
         let len = self.vertex.len() - self.prev_vertex_index;
+        if len == 0 { return self; }
 
         for i in 1..(len - 1) 
         {

@@ -11,11 +11,15 @@ use hexga::{math::Lerpable, prelude::*};
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
 use hexga_engine::{Event, EventLoop, GpuVec2, Vertex, MultiMediaConfig, Pen, WindowConfig};
 
-pub struct TestCtx;
+#[derive(Default)]
+pub struct TestCtx
+{
+    time : Time,
+}
 impl EventLoop for TestCtx
 {
     fn update(&mut self) {
-        
+        self.time += (1./60.).s();
     }
 
     fn draw(&mut self) {
@@ -28,19 +32,20 @@ impl EventLoop for TestCtx
            .make_triangle();
 
         Pen.color(Color::PINK);
-        for c in (0.0..1.0).sample(8)
+        for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 10.)
         {
             Pen.set_pos(Angle::from_turn(c).to_vec2(0.5)).down();
         }
         Pen.make_convex_poly();
 
+        /* 
         Pen.color(Color::YELLOW);
-        for angle in (..=Angle::FLAT).step(2.degree()) //.sample(8)
+        for angle in (..=Angle::FLAT).step(67.degree()) //.sample(8)
         {
-            dbg!(&angle);
             Pen.set_pos(angle.to_vec2(0.25)).down();
         }
         Pen.make_convex_poly();
+        */
 
         //Pen.color(Color::YELLOW.lerp(Color::WHITE, 0.5));
 
@@ -100,5 +105,5 @@ fn main()
     for _ in 0..10 { println!(); }
     MultiMediaConfig::new()
         .with_window_config(WindowConfig::new().title("hello"))
-        .run(|| TestCtx);
+        .run(|| TestCtx::___());
 }
