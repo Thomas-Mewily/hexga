@@ -6,8 +6,11 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## HexGa Engine
 
+A small game framework.
+
 Render / Event loop based on [MiniQuad](https://github.com/not-fl3/miniquad)
-Not finished yet, but published because I'm still using it
+
+Not finished yet / work in progress...
 
 ## Main Hexga crate
 
