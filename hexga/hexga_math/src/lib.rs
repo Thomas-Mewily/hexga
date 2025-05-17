@@ -14,6 +14,9 @@ use hexga_core::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
+pub mod prelude;
+use prelude::*;
+
 pub use hexga_typedef as typedef;
 pub use hexga_typedef::*;
 
@@ -28,9 +31,6 @@ use extension::*;
 
 pub use hexga_array::*;
 use hexga_array::*;
-
-pub mod prelude;
-use prelude::*;
 
 mod geometry;
 pub use geometry::*;

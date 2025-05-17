@@ -45,6 +45,7 @@ hexga_bitflags.workspace = true
 hexga_io.workspace = true
 hexga_ansi_color.workspace = true
 hexga_tools.workspace = true
+hexga_map_on.workspace = true
 
 #hexga_undo_redo.workspace = true
 

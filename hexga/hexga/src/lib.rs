@@ -7,4 +7,6 @@ pub use hexga_bitflags as bitflags;
 pub use hexga_math as math;
 pub use hexga_ansi_color as ansi_color;
 pub use hexga_tools as tools;
+pub use hexga_map_on as map_on;
+
 //pub use hexga_undo_redo as undo;

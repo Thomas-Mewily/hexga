@@ -295,6 +295,7 @@ dependencies = [
  "hexga_core",
  "hexga_generational",
  "hexga_io",
+ "hexga_map_on",
  "hexga_math",
  "hexga_tools",
  "serde",
