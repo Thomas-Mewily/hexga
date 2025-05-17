@@ -193,7 +193,7 @@ macro_rules! map_on_operator_binary_arithmetic {
     };
 }
 
-/// `BitOr`, `BitAnd`, Shl`, `Shr`
+/// `BitOr`, `BitAnd`, `Shl`, `Shr`
 #[macro_export]
 macro_rules! map_on_operator_binary_bit {
     ($($macro_arms:tt)*) => {
@@ -210,7 +210,7 @@ macro_rules! map_on_operator_binary_bit {
     };
 }
 
-/// (`Add`, `Sub`) + (`Mul`, `Div`, `Rem`) + (`BitOr`, `BitAnd`, Shl`, `Shr`)
+/// (`Add`, `Sub`) + (`Mul`, `Div`, `Rem`) + (`BitOr`, `BitAnd`, `Shl`, `Shr`)
 #[macro_export]
 macro_rules! map_on_operator_binary 
 {
@@ -257,7 +257,7 @@ macro_rules! map_on_operator_assign_arithmetic {
     };
 }
 
-/// `BitOrAssign`, `BitAndAssign`, ShlAssign`, `ShrAssign`
+/// `BitOrAssign`, `BitAndAssign`, `ShlAssign`, `ShrAssign`
 #[macro_export]
 macro_rules! map_on_operator_assign_bit {
     ($($macro_arms:tt)*) => {
@@ -274,7 +274,7 @@ macro_rules! map_on_operator_assign_bit {
     };
 }
 
-/// (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`) + (`BitOrAssign`, `BitAndAssign`, ShlAssign`, `ShrAssign`)
+/// (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`) + (`BitOrAssign`, `BitAndAssign`, `ShlAssign`, `ShrAssign`)
 #[macro_export]
 macro_rules! map_on_operator_assign 
 {

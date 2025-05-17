@@ -58,6 +58,20 @@ Available `map_on!` macro :
 - `map_on_number!` : (`u8`, `u16`, `u32`, `u64`, `usize`) + (`i8`, `i16`, `i32`, `i64`, `isize`) + (`f32`, `f64`)
 - `map_on_number_and_bool!` : (`u8`, `u16`, `u32`, `u64`, `usize`) + (`i8`, `i16`, `i32`, `i64`, `isize`) + (`f32`, `f64`) + (`bool`)
 
+- `map_on_operator_binary_arithmetic_unit` : `Add`, `Sub`
+- `map_on_operator_binary_arithmetic` : (`Add`, `Sub`) + (`Mul`, `Div`, `Rem`)
+- `map_on_operator_binary_bit` : `BitOr`, `BitAnd`, `Shl`, `Shr`
+- `map_on_operator_binary` : (`Add`, `Sub`) + (`Mul`, `Div`, `Rem`) + (`BitOr`, `BitAnd`, `Shl`, `Shr`)
+
+- `map_on_operator_assign_arithmetic_unit` : `AddAssign`, `SubAssign`
+- `map_on_operator_assign_arithmetic` : (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`)
+- `map_on_operator_assign_bit` : `BitOrAssign`, `BitAndAssign`, `ShlAssign`, `ShrAssign`
+- `map_on_operator_assign` : (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`) + (`BitOrAssign`, `BitAndAssign`, `ShlAssign`, `ShrAssign`)
+
+- `map_on_operator_unary_bit` : `Not`
+- `map_on_operator_unary_arithmetic_unit` : `Abs` (Note : `Abs` should be a user defined trait, currently there isn't such a operator on the standard lib)
+- `map_on_operator_unary` : (`Not`) + (`Abs`)
+
 ## More Example
 
 You can also use the `map_on!` macro to call another macro :
