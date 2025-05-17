@@ -195,7 +195,7 @@ macro_rules! map_on_operator_binary_arithmetic {
 
 /// `BitOr`, `BitAnd`, Shl`, `Shr`
 #[macro_export]
-macro_rules! map_on_operator_binary_arithmetic_bit {
+macro_rules! map_on_operator_binary_bit {
     ($($macro_arms:tt)*) => {
         $crate::map_on!
         (
@@ -216,14 +216,84 @@ macro_rules! map_on_operator_binary
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on_operator_binary_arithmetic!($($macro_arms)*);
-        $crate::map_on_operator_binary_arithmetic_bit!($($macro_arms)*);
+        $crate::map_on_operator_binary_bit!($($macro_arms)*);
     };
 }
 
 
+
+
+
+/// `AddAssign`, `SubAssign`
+#[macro_export]
+macro_rules! map_on_operator_assign_arithmetic_unit {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!
+        (
+            (
+                (AddAssign, add_assign),
+                (SubAssign, sub_assign)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}
+
+
+/// (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`)
+#[macro_export]
+macro_rules! map_on_operator_assign_arithmetic {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on_operator_assign_arithmetic_unit!($($macro_arms)*);
+        $crate::map_on!
+        (
+            (
+                (MulAssign, mul_assign),
+                (DivAssign, div_assign),
+                (RemAssign, rem_assign)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}
+
+/// `BitOrAssign`, `BitAndAssign`, ShlAssign`, `ShrAssign`
+#[macro_export]
+macro_rules! map_on_operator_assign_bit {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!
+        (
+            (
+                (BitOrAssign, bitor_assign),
+                (BitAndAssign, bitand_assign),
+                (ShlAssign, shl_assign),
+                (ShrAssign, shr_assign)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}
+
+/// (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`) + (`BitOrAssign`, `BitAndAssign`, ShlAssign`, `ShrAssign`)
+#[macro_export]
+macro_rules! map_on_operator_assign 
+{
+    ($($macro_arms:tt)*) => {
+        $crate::map_on_operator_assign_arithmetic!($($macro_arms)*);
+        $crate::map_on_operator_assign_bit!($($macro_arms)*);
+    };
+}
+
+
+
+
+
+
+
+
 /// `Not`
 #[macro_export]
-macro_rules! map_on_operator_unary_arithmetic_bit 
+macro_rules! map_on_operator_unary_bit 
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on!
@@ -242,6 +312,6 @@ macro_rules! map_on_operator_unary_arithmetic_bit
 macro_rules! map_on_operator_unary
 {
     ($($macro_arms:tt)*) => {
-        $crate::map_on_operator_unary_arithmetic_bit!($($macro_arms)*);
+        $crate::map_on_operator_unary_bit!($($macro_arms)*);
     };
 }

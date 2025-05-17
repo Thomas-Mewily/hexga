@@ -144,3 +144,23 @@ impl<T, const N : usize> MaxValue for [T;N] where T : MaxValue
 {
     const MAX : Self = [T::MAX; N];
 }
+
+
+#[macro_export]
+macro_rules! map_on_constant {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!
+        (
+            (
+                (Zero, ZERO),
+                (One, ONE),
+                (MinusOne, MINUS_ONE),
+                (Half, HALF),
+                (NaNValue, NAN),
+                (MinValue, MIN),
+                (MaxValue, MAX)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}

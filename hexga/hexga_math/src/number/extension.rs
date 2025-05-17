@@ -1,15 +1,12 @@
 use crate::*;
 
-impl_composite_constant_for_internal_type!(Zero, ZERO);
-
-impl_composite_constant_for_internal_type!(One, ONE);
-
-impl_composite_constant_for_internal_type!(Half, HALF);
-
-impl_composite_constant_for_internal_type!(NaNValue, NAN);
-
-impl_composite_constant_for_internal_type!(MinValue, MIN);
-impl_composite_constant_for_internal_type!(MaxValue, MAX);
+map_on_constant!
+(
+    (($trait_name: tt, $constant_name: tt)) =>
+    {
+        impl_composite_constant_for_internal_type!($trait_name, $constant_name);
+    }
+);
 
 /// Define the `2` representation for the number
 pub trait Two : Sized
