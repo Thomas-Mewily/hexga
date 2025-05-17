@@ -41,17 +41,6 @@ impl<'de, T: Float + Deserialize<'de>> Deserialize<'de> for AngleOf<T> {
     }
 }
 
-impl<T:Float> FloatRange<AngleOf<T>> for AngleOf<T> where T : FloatRange<T>
-{
-    fn step(self, step: AngleOf<T>) -> impl Iterator<Item = AngleOf<T>> + DoubleEndedIterator + std::iter::FusedIterator {
-        self._radian.step(step._radian).map(|v| Self::from_internal(v))
-    }
-
-    fn sample(self, n: usize) -> impl Iterator<Item = AngleOf<T>> + DoubleEndedIterator + std::iter::FusedIterator {
-        self._radian.sample(n).map(|v| Self::from_internal(v))
-    }
-}
-
 impl<T:Float> Zero for AngleOf<T> { const ZERO : Self = AngleOf { _radian : T::ZERO }; }
 impl<T:Float> AngleOf<T>
 {
