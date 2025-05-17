@@ -145,6 +145,10 @@ impl<T, const N : usize> MaxValue for [T;N] where T : MaxValue
     const MAX : Self = [T::MAX; N];
 }
 
+/* 
+pub trait Constant             : Zero + One + MinusOne + Half + NaNValue + MinValue + MaxValue {}
+impl<T> Constant for T where T : Zero + One + MinusOne + Half + NaNValue + MinValue + MaxValue {}
+*/
 
 #[macro_export]
 macro_rules! map_on_constant {

@@ -70,8 +70,9 @@ impl<T:Float> Display for TimeOf<T>
 
 impl<T:Float> Zero for TimeOf<T> { const ZERO : Self = Self::from_s(T::ZERO); }
 
-impl<T:Float> Absolute for TimeOf<T> where T : Absolute
+impl<T:Float> Absolute for TimeOf<T> where T : Absolute<Output = T>
 {
+    type Output = TimeOf<T>;
     fn abs(self) -> Self { TimeOf::from_s(self.second.abs()) }
 }
 

@@ -8,6 +8,9 @@ map_on_constant!
     }
 );
 
+impl_composite_output_with_methods_for_internal_type!(Absolute,abs);
+
+
 /// Define the `2` representation for the number
 pub trait Two : Sized
 { 
@@ -93,24 +96,6 @@ pub trait PartialOrdExtension : PartialOrd
 }
 impl<T : PartialOrd> PartialOrdExtension for T{}
 
-pub trait Absolute 
-{
-    fn abs(self) -> Self;
-}
-
-macro_rules! impl_abs_is_itself {
-    ($primitive_name: ty) => 
-    { impl Absolute for $primitive_name { #[inline(always)] fn abs(self) -> Self { self }} };
-}
-map_on_integer_unsigned!(impl_abs_is_itself);
-
-macro_rules! impl_abs {
-    ($primitive_name: ty) => 
-    { impl Absolute for $primitive_name {#[inline(always)] fn abs(self) -> Self { Self::abs(self) }}};
-}
-map_on_integer_signed!(impl_abs);
-map_on_float!(impl_abs);
-impl_composite_with_methods!(Absolute,(abs,Self));
 
 
 pub trait TakeHalf : Sized

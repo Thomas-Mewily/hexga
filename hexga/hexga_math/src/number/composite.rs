@@ -156,6 +156,16 @@ macro_rules! impl_composite_constant_for_internal_type {
 }
 pub(crate) use impl_composite_constant_for_internal_type;
 
+/// To impl a trait that only expose method and an associate Self::Output type
+macro_rules! impl_composite_output_with_methods_for_internal_type {
+    ($trait_name:ident $( < $($generic_params:tt),* > )?, $( $method_name:ident ),+ ) => {
+        impl_composite_types_and_methods_and_constants_for_internal_type!($trait_name $(< $($generic_params),* >)?, { Output }, { $( ($method_name, Self::Output) ),+ }, { });
+    };
+}
+pub(crate) use impl_composite_output_with_methods_for_internal_type;
+
+
+
 /// To impl a trait that only expose constant value
 macro_rules! impl_composite_constant {
     ($trait_name:ident $( < $($generic_params:tt),* > )?, $( $constant_name:ident ),+ ) => {

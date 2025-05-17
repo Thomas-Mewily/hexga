@@ -9,8 +9,8 @@ pub use hexga_map_on::*;
 mod constant;
 pub use constant::*;
 
-mod increase;
-pub use increase::*;
+mod traits;
+pub use traits::*;
 
 mod number;
 pub use number::*;

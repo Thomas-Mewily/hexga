@@ -1,5 +1,50 @@
 use crate::*;
 
+pub trait Absolute 
+{
+    type Output;
+    fn abs(self) -> Self::Output;
+}
+map_on_integer_unsigned!(
+    ($primitive_name: ty) => 
+    { 
+        impl Absolute for $primitive_name 
+        { 
+            type Output = Self;
+            #[inline(always)]
+            fn abs(self) -> Self::Output { self }
+        } 
+    }
+);
+map_on_integer_signed!(
+    ($primitive_name: ty) => 
+    { 
+        impl Absolute for $primitive_name 
+        { 
+            type Output = Self;
+            #[inline(always)]
+            fn abs(self) -> Self::Output { self.abs() }
+        } 
+    }
+);
+map_on_float!(
+    ($primitive_name: ty) => 
+    { 
+        impl Absolute for $primitive_name 
+        { 
+            type Output = Self;
+            #[inline(always)]
+            fn abs(self) -> Self::Output { self.abs() }
+        } 
+    }
+);
+impl<T,T2, const N : usize> Absolute for [T;N] where T : Absolute<Output = T2> 
+{
+    type Output=[T2;N];
+    fn abs(self) -> Self::Output { self.map(|v| v.abs()) }
+}
+
+
 /// The `+1` operation
 pub trait Increase : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Sized
 {
