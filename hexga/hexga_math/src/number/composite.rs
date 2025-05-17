@@ -182,7 +182,7 @@ macro_rules! impl_composite_output_with_methods {
 }
 pub(crate) use impl_composite_output_with_methods;
 
-
+/* 
 /// To impl a trait that only expose method with a custom non associate output type
 macro_rules! impl_composite_with_methods {
     ($trait_name:ident $( < $($generic_params:tt),* > )?, $( ($method_name:ident, $output_name:path) ),+ ) => {
@@ -190,3 +190,4 @@ macro_rules! impl_composite_with_methods {
     };
 }
 pub(crate) use impl_composite_with_methods;
+*/

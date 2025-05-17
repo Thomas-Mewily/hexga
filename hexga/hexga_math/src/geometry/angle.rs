@@ -1,5 +1,11 @@
 use crate::*;
 
+new_unit!(
+    /// 2D Angle, support degree, radian, turn...
+    AngleOf
+);
+pub type Angle = AngleOf<float>;
+
 pub trait ToAngle
 {
     type Output;
@@ -17,15 +23,6 @@ impl<T> ToAngle for T where T : CastInto<float>
     fn turn  (self) -> Angle { Angle::from_turn  (self.cast_into_composite()) }
 }
 
-pub type Angle = AngleOf<float>;
-
-/// 2D Angle, support degree, radian, turn...
-#[derive(Default, Clone, Copy, PartialEq, PartialOrd)]
-pub struct AngleOf<T>
-{
-    _radian : T,
-}
-
 #[cfg(feature = "serde")]
 impl<T: Float + Serialize> Serialize for AngleOf<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
@@ -41,31 +38,28 @@ impl<'de, T: Float + Deserialize<'de>> Deserialize<'de> for AngleOf<T> {
     }
 }
 
-impl<T:Float> Zero for AngleOf<T> { const ZERO : Self = AngleOf { _radian : T::ZERO }; }
 impl<T:Float> AngleOf<T>
 {
     /// `360°`
-    pub const FULL : Self = AngleOf { _radian : T::TWO_PI };
+    pub const FULL : Self = AngleOf(T::TWO_PI);
     /// `180°`
-    pub const HALF : Self = AngleOf { _radian : T::PI };
+    pub const HALF : Self = AngleOf(T::PI);
     /// `180°`
-    pub const FLAT : Self = AngleOf { _radian : T::PI };
+    pub const FLAT : Self = AngleOf(T::PI);
     /// `90°`
-    pub const RIGHT : Self = AngleOf { _radian : T::HALF_PI };
+    pub const RIGHT : Self = AngleOf(T::HALF_PI);
 
-    pub fn from_radian(rad    : T) -> Self { Self { _radian: rad }}
-    pub fn from_degree(degree : T) -> Self { Self { _radian: degree * (T::ANGLE_FULL_RADIAN / T::ANGLE_FULL_DEGREE)  }}
-    pub fn from_turn  (coef   : T) -> Self { Self { _radian: coef * T::ANGLE_FULL_RADIAN  }}
+    pub fn from_radian(rad    : T) -> Self { Self(rad) }
+    pub fn from_degree(degree : T) -> Self { Self(degree * (T::ANGLE_FULL_RADIAN / T::ANGLE_FULL_DEGREE)) }
+    pub fn from_turn  (coef   : T) -> Self { Self(coef * T::ANGLE_FULL_RADIAN) }
 
-    const fn from_internal(rad : T) -> Self { Self { _radian: rad } }
-
-    pub fn radian(self) -> T { self._radian }
-    pub fn degree(self) -> T { self._radian * (T::ANGLE_FULL_DEGREE / T::ANGLE_FULL_RADIAN) }
-    pub fn turn  (self) -> T { self._radian  / T::ANGLE_FULL_RADIAN }
+    pub fn radian(self) -> T { self.0 }
+    pub fn degree(self) -> T { self.0 * (T::ANGLE_FULL_DEGREE / T::ANGLE_FULL_RADIAN) }
+    pub fn turn  (self) -> T { self.0  / T::ANGLE_FULL_RADIAN }
 
     // Todo : check for a better way to do it
     /// `[0, 2PI[`
-    pub fn normalized_positive(self) -> Self { Self::from_radian((self._radian % T::ANGLE_FULL_RADIAN + T::ANGLE_FULL_RADIAN) % T::ANGLE_FULL_RADIAN)  }
+    pub fn normalized_positive(self) -> Self { Self::from_radian((self.0 % T::ANGLE_FULL_RADIAN + T::ANGLE_FULL_RADIAN) % T::ANGLE_FULL_RADIAN)  }
     
     // Todo : check for a better way to do it
     /// `]PI; PI]`
@@ -80,18 +74,18 @@ impl<T:Float> AngleOf<T>
     #[inline(always)] pub fn cos_cos(self) -> (T, T) { (self.cos(), self.cos()) }
     #[inline(always)] pub fn sin_sin(self) -> (T, T) { (self.sin(), self.sin()) }
 
-    #[inline(always)] pub fn cos(self) -> T { self._radian.cos() }
-    #[inline(always)] pub fn cosh(self) -> T { self._radian.cosh() }
+    #[inline(always)] pub fn cos(self) -> T { self.0.cos() }
+    #[inline(always)] pub fn cosh(self) -> T { self.0.cosh() }
 
-    #[inline(always)] pub fn sin(self) -> T { self._radian.sin() }
-    #[inline(always)] pub fn sinh(self) -> T { self._radian.sinh() }
+    #[inline(always)] pub fn sin(self) -> T { self.0.sin() }
+    #[inline(always)] pub fn sinh(self) -> T { self.0.sinh() }
 
-    #[inline(always)] pub fn tan(self) -> T { self._radian.tan() }
-    #[inline(always)] pub fn tanh(self) -> T { self._radian.tanh() }
+    #[inline(always)] pub fn tan(self) -> T { self.0.tan() }
+    #[inline(always)] pub fn tanh(self) -> T { self.0.tanh() }
 
     /// Return a normalized (length = 1) vector with the same angle
-    #[inline(always)] pub fn to_vec2_normalized(self) -> Vec2 where T : Into<float> { Angle::from_internal(self._radian.into()).to_vector2_normalized() }
-    #[inline(always)] pub fn to_vec2(self, length : T) -> Vec2 where T : Into<float> { Angle::from_internal(self._radian.into()).to_vector2(length.into()) }
+    #[inline(always)] pub fn to_vec2_normalized(self) -> Vec2 where T : Into<float> { unsafe { Angle::from_inner_value(self.0.into()).to_vector2_normalized() } }
+    #[inline(always)] pub fn to_vec2(self, length : T) -> Vec2 where T : Into<float> { unsafe { Angle::from_inner_value(self.0.into()).to_vector2(length.into()) } }
     
     /// Return a normalized (length = 1) vector with the same angle
     #[inline(always)] pub fn to_vector2_normalized(self) -> Vector2<T> { self.to_vector2(T::ONE) }
@@ -103,13 +97,13 @@ impl<T:Float> AngleOf<T>
         let begin_normalized = begin.normalized_positive();
         let end_normalized   = end.normalized_positive();
 
-        if begin_normalized._radian <= end_normalized._radian
+        if begin_normalized.0 <= end_normalized.0
         {
-            self_normalized._radian >= begin_normalized._radian && self_normalized._radian <= end_normalized._radian
+            self_normalized.0 >= begin_normalized.0 && self_normalized.0 <= end_normalized.0
         }
         else
         {
-            self_normalized._radian >= begin_normalized._radian || self_normalized._radian <= end_normalized._radian
+            self_normalized.0 >= begin_normalized.0 || self_normalized.0 <= end_normalized.0
         }
     }
 }
@@ -148,45 +142,3 @@ impl<T:Float> Display for DisplayAngleDegree {
     }
 }
 */
-
-
-impl<T:Float> Mul<T> for AngleOf<T> { type Output=AngleOf<T>; fn mul(self, rhs: T) -> Self::Output { Self::from_internal(self._radian * rhs) }}
-impl<T:Float> Mul<T> for &AngleOf<T> { type Output=AngleOf<T>; fn mul(self, rhs: T) -> Self::Output { *self / rhs }}
-impl<T:Float> Mul<&T> for AngleOf<T> where T : Copy { type Output=AngleOf<T>; fn mul(self, rhs: &T) -> Self::Output { self / *rhs }}
-impl<T:Float> Mul<&T> for &AngleOf<T> where T : Copy { type Output=AngleOf<T>; fn mul(self, rhs: &T) -> Self::Output { *self / *rhs }}
-impl<T:Float> MulAssign<T> for AngleOf<T> { fn mul_assign(&mut self, rhs: T) { self._radian.mul_assign(rhs); }}
-impl<T:Float> MulAssign<&T> for AngleOf<T> { fn mul_assign(&mut self, rhs: &T) { *self *= *rhs; }}
-
-impl<T:Float> Div<T> for AngleOf<T> { type Output=AngleOf<T>; fn div(self, rhs: T) -> Self::Output { Self::from_internal(self._radian/ rhs) }}
-impl<T:Float> DivAssign<T> for AngleOf<T> { fn div_assign(&mut self, rhs: T) { self._radian.div_assign(rhs); }}
-
-impl<T:Float> Neg for AngleOf<T> { type Output=AngleOf<T>; fn neg(self) -> Self::Output { Self::from_internal(self._radian.neg()) }}
-
-impl<T:Float> Add<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn add(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.add(rhs._radian)) }}
-impl<T:Float> AddAssign<AngleOf<T>> for AngleOf<T> { fn add_assign(&mut self, rhs: AngleOf<T>) { self._radian.add_assign(rhs._radian); }}
-
-impl<T:Float> Sub<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn sub(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.sub(rhs._radian)) }}
-impl<T:Float> SubAssign<AngleOf<T>> for AngleOf<T> { fn sub_assign(&mut self, rhs: AngleOf<T>) { self._radian.sub_assign(rhs._radian); }}
-
-impl<T:Float> Div<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn div(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.div(rhs._radian)) }}
-impl<T:Float> DivAssign<AngleOf<T>> for AngleOf<T> { fn div_assign(&mut self, rhs: AngleOf<T>) { self._radian.div_assign(rhs._radian); }}
-
-impl<T:Float> Rem<AngleOf<T>> for AngleOf<T> { type Output=AngleOf<T>; fn rem(self, rhs: AngleOf<T>) -> Self::Output { Self::from_internal(self._radian.rem(rhs._radian)) }}
-impl<T:Float> RemAssign<AngleOf<T>> for AngleOf<T> { fn rem_assign(&mut self, rhs: AngleOf<T>) { self._radian.rem_assign(rhs._radian); }}
-
-impl<T:Float> Sum for AngleOf<T>
-{
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Self::ZERO, Self::add)
-    }
-}
-
-impl<T:Float> MinValue for AngleOf<T> where T : MinValue
-{
-    const MIN : Self = Self::from_internal(T::MIN);
-}
-
-impl<T:Float> MaxValue for AngleOf<T> where T : MaxValue
-{
-    const MAX : Self = Self::from_internal(T::MAX);
-}

@@ -306,7 +306,7 @@ macro_rules! map_on_operator_unary_bit
     };
 }
 
-/// `Abs`
+/// `Neg`, `Abs`
 #[macro_export]
 macro_rules! map_on_operator_unary_arithmetic_unit 
 {
@@ -314,6 +314,7 @@ macro_rules! map_on_operator_unary_arithmetic_unit
         $crate::map_on!
         (
             (
+                (Neg, neg),
                 (Abs, abs)
             ), 
             $($macro_arms)*
@@ -322,7 +323,7 @@ macro_rules! map_on_operator_unary_arithmetic_unit
 }
 
 
-/// (`Not`) + (`Abs`)
+/// (`Not`) + (`Neg`, `Abs`)
 #[macro_export]
 macro_rules! map_on_operator_unary
 {

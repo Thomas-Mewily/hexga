@@ -69,8 +69,8 @@ Available `map_on!` macro :
 - `map_on_operator_assign` : (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`) + (`BitOrAssign`, `BitAndAssign`, `ShlAssign`, `ShrAssign`)
 
 - `map_on_operator_unary_bit` : `Not`
-- `map_on_operator_unary_arithmetic_unit` : `Abs` (Note : `Abs` should be a user defined trait, currently there isn't such a operator on the standard lib)
-- `map_on_operator_unary` : (`Not`) + (`Abs`)
+- `map_on_operator_unary_arithmetic_unit` : `Neg`, `Abs` (Note : `Abs` should be a user defined trait, currently there isn't such a operator on the standard lib)
+- `map_on_operator_unary` : (`Not`) + (`Neg`, `Abs`)
 
 ## More Example
 
