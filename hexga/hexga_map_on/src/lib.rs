@@ -80,6 +80,27 @@ macro_rules! map_on {
     };
 
     (@expand_tokens ()) => {};
+
+
+    // Entry point for list of pairs with inline macro arms
+    ( ( $(($a:tt, $b:tt)),* $(,)? ), ($($params:tt)*) => $body:block ) => {
+        const _: () = {
+            macro_rules! __map_on_inliner {
+                ($($params)*) => $body
+            }
+
+            $(
+                __map_on_inliner!($a, $b);
+            )*
+        };
+    };
+
+    // Simple case: single identifiers
+    ( ($($types:tt),+), $mac:ident $(, $args:tt)* ) => {
+        $(
+            $mac!($types $(, $args)*);
+        )+
+    };
 }
 
 /// `u8`, `u16`, `u32`, `u64`, `usize`
@@ -138,22 +159,89 @@ macro_rules! map_on_number_and_bool
     };
 }
 
-/* 
-// TODO
-/// All standard binary operator traits from `core::ops`
-///
-/// Includes: Add, Sub, Mul, Div, Rem, BitAnd, BitOr, BitXor, Shl, Shr
+
+/// `Add`, `Sub`
 #[macro_export]
-macro_rules! map_on_operator_binary {
-    ($mac:ident $(, $args:tt)* ) => 
-    {
+macro_rules! map_on_operator_binary_arithmetic_unit {
+    ($($macro_arms:tt)*) => {
         $crate::map_on!
         (
             (
-                (std::ops::Add, add)
+                (Add, add),
+                (Sub, sub)
             ), 
-            $mac $(, $args)*
+            $($macro_arms)*
         );
     };
 }
-*/
+
+
+/// (`Add`, `Sub`) + (`Mul`, `Div`, `Rem`)
+#[macro_export]
+macro_rules! map_on_operator_binary_arithmetic {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on_operator_binary_arithmetic_unit!($($macro_arms)*);
+        $crate::map_on!
+        (
+            (
+                (Mul, mul),
+                (Div, div),
+                (Rem, rem)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}
+
+/// `BitOr`, `BitAnd`, Shl`, `Shr`
+#[macro_export]
+macro_rules! map_on_operator_binary_arithmetic_bit {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!
+        (
+            (
+                (BitOr, bitor),
+                (BitAnd, bitand),
+                (Shl, shl),
+                (Shr, shr)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}
+
+/// (`Add`, `Sub`) + (`Mul`, `Div`, `Rem`) + (`BitOr`, `BitAnd`, Shl`, `Shr`)
+#[macro_export]
+macro_rules! map_on_operator_binary 
+{
+    ($($macro_arms:tt)*) => {
+        $crate::map_on_operator_binary_arithmetic!($($macro_arms)*);
+        $crate::map_on_operator_binary_arithmetic_bit!($($macro_arms)*);
+    };
+}
+
+
+/// `Not`
+#[macro_export]
+macro_rules! map_on_operator_unary_arithmetic_bit 
+{
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!
+        (
+            (
+                (Not, not)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}
+
+
+/// (`Not`)
+#[macro_export]
+macro_rules! map_on_operator_unary
+{
+    ($($macro_arms:tt)*) => {
+        $crate::map_on_operator_unary_arithmetic_bit!($($macro_arms)*);
+    };
+}

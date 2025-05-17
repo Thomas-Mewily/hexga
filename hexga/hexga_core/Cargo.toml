@@ -17,7 +17,6 @@ categories = ["rust-patterns"]
 #serde = ["dep:serde"]
 
 [dependencies]
-hexga_map_on.workspace = true
 hexga_number.workspace = true
 
 default_is_triple_underscore = "0.2.0"

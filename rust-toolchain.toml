@@ -1,2 +1,5 @@
 [toolchain]
 channel = "nightly"
+
+# Remove when #stabilized
+# cargo-features = ["get_disjoint_mut_helpers"]

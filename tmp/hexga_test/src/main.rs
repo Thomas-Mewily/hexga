@@ -7,11 +7,9 @@ use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_bo
 use criterion::{BenchmarkId, Criterion};
 
 //use hexga_graphics::Image;
-use hexga_core::prelude::*;
-use hexga_math::prelude::*;
+use hexga::prelude::*;
 use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
 use hexga_engine::{Event, EventLoop, GpuVec2, Vertex, MultiMediaConfig, Pen, WindowConfig};
-use hexga_undo_redo::*; //prelude::*;
 
 pub struct TestCtx;
 impl EventLoop for TestCtx
