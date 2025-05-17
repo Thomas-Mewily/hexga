@@ -30,18 +30,26 @@ impl EventLoop for TestCtx
         Pen.color(Color::PINK);
         for c in (0.0..1.0).sample(8)
         {
-            //dbg!(c);
             Pen.set_pos(Angle::from_turn(c).to_vec2(0.5)).down();
         }
         Pen.make_convex_poly();
 
+        Pen.color(Color::YELLOW);
+        for angle in (..=Angle::FLAT).step(2.degree()) //.sample(8)
+        {
+            dbg!(&angle);
+            Pen.set_pos(angle.to_vec2(0.25)).down();
+        }
+        Pen.make_convex_poly();
+
+        /* 
         Pen.color(Color::YELLOW);
         for angle in (..).sample(8)
         {
             Pen.set_pos(angle.to_vec2(0.25)).down();
         }
         Pen.make_convex_poly();
-
+        */
         /* 
         // for i in Angle::sample(8)
         for angle in Angle.sample(8)
@@ -49,12 +57,10 @@ impl EventLoop for TestCtx
             Pen.set_pos(angle.to_vec2(0.25)).down();
         }
         
-        for angle in (Angle::ZERO..Angle::FLAT).sample(8)
-        {
-            Pen.set_pos(angle.to_vec2(0.25)).down();
-        }
+
         */
         
+
 
         /* 
         let Rect2 { pos, size } = Rect2::new_centered(zero(), 1.8.splat2());

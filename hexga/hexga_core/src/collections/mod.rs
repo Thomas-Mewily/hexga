@@ -1,5 +1,6 @@
-pub mod prelude;
+use crate::*;
 
+pub mod prelude;
 
 mod length;
 pub use length::*;
@@ -15,3 +16,7 @@ pub use clearable::*;
 
 mod sequence;
 pub use sequence::*;
+
+mod collect_to;
+pub use collect_to::*;
+

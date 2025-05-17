@@ -917,7 +917,27 @@ impl<A,Gen:IGeneration> Extend<(GenIDOf<A,Gen>, A)> for GenVecOf<A,Gen> where A 
     }
 }
 
+pub trait CollectToGenVecExtension<T,Gen:IGeneration=Generation> : Sized + IntoIterator<Item = T>
+{
+    fn to_genvec(self) -> GenVecOf<T,Generation>
+    {
+        GenVecOf::from_iter(self)
+    }
+}
+impl<I,T1> CollectToGenVecExtension<T1> for I where I : IntoIterator<Item = T1> {}
 
+/* 
+pub trait CollectToGenVecWithIDExtension<T,Gen:IGeneration=Generation> : Sized + IntoIterator<Item = (GenIDOf<T,Gen>, T)>
+{
+    fn to_genvec(self) -> GenVecOf<T,Generation>
+    {
+        GenVecOf::from_iter(self)
+    }
+}
+impl<I,T> CollectToGenVecWithIDExtension<T> for I where I : IntoIterator<Item = (GenIDOf<T,Gen>, T)> {}
+
+impl<I,T> CollectToGenVecWithIndexExtension<T> for I where I : IntoIterator<Item = (usize, T)> {}
+*/
 
 #[allow(dead_code)]
 #[cfg(test)]

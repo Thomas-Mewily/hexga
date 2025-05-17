@@ -8,7 +8,6 @@ use std::{ops::Index, slice::SliceIndex};
 use core::slice::GetDisjointMutIndex;
 use std::hash::{BuildHasher, Hash};
 use std::borrow::Borrow;
-
 pub use hexga_number as number;
 //pub use hexga_map_on as map_on;
 
