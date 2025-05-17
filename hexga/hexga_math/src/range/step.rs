@@ -25,35 +25,34 @@ impl<T> Iterator for RangeStep<T> where T : Number
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.start > self.end 
+        if self.start <= self.end 
         {
-            None
-        } else {
             let val = self.start;
             self.start += self.step;
-            if self.start == val { return None }
-            Some(val)
+            if self.start == val { None } else { Some(val) }
+        } else 
+        {
+            None
         }
     }
 }
 impl<T> DoubleEndedIterator for RangeStep<T> where T : Number 
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.end < self.start 
+        if self.end >= self.start 
+        {
+            let val = self.end;
+            self.end -= self.step;
+            if self.end == val { None } else { Some(val)}
+        } else 
         {
             // Force the iterator to stop at the first value
             if self.end + self.step > self.start
             {
                 self.step = T::ZERO;
                 self.end = self.start;
-                return Some(self.start);
-            }
-            None
-        } else {
-            let val = self.end;
-            self.end -= self.step;
-            if self.end == val { return None }
-            Some(val)
+                Some(self.start)
+            } else { None }
         }
     }
 }
@@ -94,44 +93,40 @@ impl<T> Iterator for RangeStepInclusive<T> where T : Number
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.start > self.end 
+        if self.start <= self.end 
+        {
+            let val = self.start;
+            self.start += self.step;
+            if self.start == val { return None } else { Some(val) }
+        } else 
         {
             // Force the iterator to stop at the first value
             if self.start - self.step < self.end
             {
                 self.step = T::ZERO;
                 self.start = self.end;
-                return Some(self.end);
-            }
-            None
-        } else 
-        {
-            let val = self.start;
-            self.start += self.step;
-            if self.start == val { return None }
-            Some(val)
+                Some(self.end)
+            } else { None }
         }
     }
 }
 impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : Number 
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.end < self.start 
+        if self.end >= self.start 
+        {
+            let val = self.end;
+            self.end -= self.step;
+            if self.end == val { return None } else { Some(val) }
+        } else 
         {
             // Force the iterator to stop at the first value
             if self.end + self.step > self.start
             {
                 self.step = T::ZERO;
                 self.end = self.start;
-                return Some(self.start);
-            }
-            None
-        } else 
-        {
-            let val = self.end;
-            self.end -= self.step;
-            if self.end == val { return None }
-            Some(val)
+                Some(self.start)
+            } else { None }
         }
     }
 }
