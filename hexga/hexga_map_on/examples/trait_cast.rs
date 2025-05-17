@@ -32,8 +32,7 @@ map_on_number!(impl_cast_to);
 
 fn main()
 {
-    let casted : i8 = 20.5f32.cast_to();
-    assert_eq!(20.5f32 as i8, casted);
+    assert_eq!(20.5f32 as i8, 20.5f32.cast_to());
 
     assert_eq!(4.5 as u32, 4.5.cast_to());
     assert_eq!(4u8 as i64, 4u8.cast_to());

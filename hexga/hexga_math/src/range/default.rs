@@ -18,7 +18,7 @@ macro_rules! impl_have_min_max {
             const MIN_RANGE  : Self = Self::ZERO;
             const HALF_RANGE : Self = Self::MAX / 2;
             const MAX_RANGE  : Self = Self::MAX;
-            const RANGE          : Self = Self::MAX_RANGE - Self::MIN_RANGE;
+            const RANGE      : Self = Self::MAX_RANGE - Self::MIN_RANGE;
         }
     };
 }
@@ -31,7 +31,7 @@ macro_rules! impl_have_min_max_for_float {
             const MIN_RANGE  : Self = Self::ZERO;
             const HALF_RANGE : Self = Self::ONE / 2.;
             const MAX_RANGE  : Self = Self::ONE;
-            const RANGE          : Self = Self::MAX_RANGE - Self::MIN_RANGE;
+            const RANGE      : Self = Self::MAX_RANGE - Self::MIN_RANGE;
         }
     };
 }
