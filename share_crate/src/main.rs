@@ -19,24 +19,4 @@ fn publish_all_crate()
 fn main() 
 {
     publish_all_crate();
-
-    /* 
-    let crates = 
-    [
-        "hexga_array",
-        "hexga_number",
-        "hexga_typedef",
-        "hexga_math",
-        "hexga_generational",
-        "hexga_tools",
-        "hexga",
-    ];
-    */
-    //create_crate("test_to_reserce");
-
-    /* 
-    for &crate_name in &crates {
-        publish_crate(crate_name);
-    }
-    */
 }
