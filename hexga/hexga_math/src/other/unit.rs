@@ -2,9 +2,21 @@ use super::*;
 
 macro_rules! new_unit
 {
-    ($name : ident) => {
-        #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Hash)]
-        struct $name<T>(T);
+    ($(#[$attr:meta])* $name:ident) => {
+        $(#[$attr])*
+        #[derive(Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd, Hash)]
+        struct $name<T>(pub(crate) T);
+
+        impl<T> $name<T>
+        {
+            /// Return the inner value.
+            /// The unit is not specified
+            pub const unsafe fn inner_value(self) -> T { self.0 }
+
+            /// Create from the inner value.
+            /// The unit is not specified
+            pub const unsafe fn from_inner_value(inner_value : T) -> Self { Self(inner_value) }
+        }
 
         map_on_operator_binary_arithmetic_unit!(
             (($trait_name: tt, $fn_name: tt)) => 
@@ -31,6 +43,16 @@ macro_rules! new_unit
         {
             type Output = T;
             fn div(self, rhs : Self) -> Self::Output { self.0.div(rhs.0) }
+        }
+
+        impl<T> std::ops::Div<T> for $name<T> where T : std::ops::Div<T,Output=T>
+        {
+            type Output = Self;
+            fn div(self, rhs : T) -> Self::Output { Self(self.0.div(rhs)) }
+        }
+        impl<T> std::ops::DivAssign<T> for $name<T> where T : std::ops::DivAssign<T>
+        {
+            fn div_assign(&mut self, rhs : T) { self.0.div_assign(rhs); }
         }
 
         impl<T> std::ops::Rem<Self> for $name<T> where T : std::ops::Rem<T,Output=T>
@@ -76,9 +98,10 @@ pub(crate) use new_unit;
 
 macro_rules! new_number
 {
-    ($name : ident) => {
-        #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Hash)]
-        struct $name<T>(T);
+    ($(#[$attr:meta])* $name:ident) => {
+        $(#[$attr])*
+        #[derive(PartialEq, Eq, Ord, PartialOrd, Hash)]
+        struct $name<T>(pub T);
 
         map_on_operator_binary!(
             (($trait_name: tt, $fn_name: tt)) => 

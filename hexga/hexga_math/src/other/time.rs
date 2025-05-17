@@ -9,8 +9,13 @@ pub type Time = TimeOf<float>;
 pub type DeltaTime = Time;
 pub type DeltaTimeOf<T> = TimeOf<T>;
 
-new_unit!(TimeOf2);
 
+new_unit!(
+    /// Represents time using, which can be used as an instant or a duration.
+    /// 
+    /// Provides conversion to other time units (seconds, minutes, days...).
+    TimeOf
+);
 
 pub trait ToTime
 {
@@ -34,12 +39,6 @@ impl<T> ToTime for T where T : ToFloat<Output = float>
     fn hour(self) -> Self::Output { Time::from_hour(self.to_float()) }
     fn day (self) -> Self::Output { Time::from_day(self.to_float()) }
 }
-
-/// Represents time using, which can be used as an instant or a duration.
-/// 
-/// Provides conversion to other time units (seconds, minutes, days...).
-#[derive(Clone, Copy, PartialEq, PartialOrd, Default)]
-pub struct TimeOf<T:Float> { second : T }
 
 impl<T:Float> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> DResult { write!(f, "{}", self) } }
 
@@ -70,19 +69,8 @@ impl<T:Float> Display for TimeOf<T>
     }
 }
 
-
-impl<T:Float> Zero for TimeOf<T> { const ZERO : Self = Self::from_s(T::ZERO); }
-
-impl<T:Float> Abs for TimeOf<T> where T : Abs<Output = T>
-{
-    type Output = TimeOf<T>;
-    fn abs(self) -> Self { TimeOf::from_s(self.second.abs()) }
-}
-
 impl<T:Float> TimeOf<T>
 {
-    const fn from_internal_unit(internal_unit : T) -> Self { Self { second : internal_unit } }
-
     /// milliseconds
     /// ```
     /// use hexga_math::prelude::*;
@@ -95,7 +83,7 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.s().ms(), 1000.);
     /// ```
-    pub fn ms(self) -> T { self.second * T::THOUSAND }
+    pub fn ms(self) -> T { self.0 * T::THOUSAND }
 
 
     /// whole milliseconds
@@ -130,14 +118,14 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(60.s(), 1.mins());
     /// ```
-    pub const fn from_s(second : T) -> Self { Self::from_internal_unit(second) }
+    pub const fn from_s(second : T) -> Self { Self(second) }
 
     /// total seconds
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.mins().s(), 60.);
     /// ```
-    pub fn s(self) -> T { self.second }
+    pub fn s(self) -> T { self.0 }
 
     /// whole seconds
     /// ```
@@ -175,7 +163,7 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.hour().mins(), 60.);
     /// ```
-    pub fn mins(self) -> T { self.second / T::SIXTY }
+    pub fn mins(self) -> T { self.0 / T::SIXTY }
 
     /// whole minutes
     /// ```
@@ -216,7 +204,7 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.day().hour(), 24.);
     /// ```
-    pub fn hour(self) -> T { self.second / (T::SIXTY * T::SIXTY) }
+    pub fn hour(self) -> T { self.0 / (T::SIXTY * T::SIXTY) }
 
 
     /// ```
@@ -257,7 +245,7 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(24.hour().day(), 1.);
     /// ```
-    pub fn day(self) -> T { self.second / (T::SIXTY * T::SIXTY * T::TWENTY_FOUR) }
+    pub fn day(self) -> T { self.0 / (T::SIXTY * T::SIXTY * T::TWENTY_FOUR) }
     /// Whole days
     /// ```
     /// use hexga_math::prelude::*;
@@ -286,42 +274,6 @@ impl<T:Float> TimeOf<T>
     /// ```
     pub fn timer_day(self) -> i32 { self.day().abs().floor().to_i32() }
 }
-
-impl<T:Float> Add<TimeOf<T>> for TimeOf<T> { type Output=Self; fn add(self, rhs: Self) -> Self::Output { Self::from_internal_unit(self.second.add(rhs.second)) }}
-impl<T:Float> AddAssign<TimeOf<T>> for TimeOf<T> { fn add_assign(&mut self, rhs: Self) { self.second.add_assign(rhs.second); }}
-
-impl<T:Float> Sub<TimeOf<T>> for TimeOf<T> { type Output=Self; fn sub(self, rhs: Self) -> Self::Output { Self::from_internal_unit(self.second.sub(rhs.second)) }}
-impl<T:Float> SubAssign<TimeOf<T>> for TimeOf<T> { fn sub_assign(&mut self, rhs: Self) { self.second.sub_assign(rhs.second); }}
-
-impl<T:Float> Div<TimeOf<T>> for TimeOf<T> { type Output=T; fn div(self, rhs: Self) -> Self::Output { self.second / rhs.second } }
-impl<T:Float> DivAssign<T> for TimeOf<T> { fn div_assign(&mut self, rhs: T) { self.second.div_assign(rhs) }}
-
-impl<T:Float> Mul<T> for TimeOf<T> { type Output=Self; fn mul(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.mul(rhs)) }}
-impl<T:Float> MulAssign<T> for TimeOf<T> { fn mul_assign(&mut self, rhs: T) { self.second.mul_assign(rhs); }}
-
-impl<T:Float> Div<T> for TimeOf<T> { type Output=TimeOf<T>; fn div(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.div(rhs)) } }
-impl<T:Float> Rem<T> for TimeOf<T> { type Output=TimeOf<T>; fn rem(self, rhs: T) -> Self::Output { Self::from_internal_unit(self.second.rem(rhs)) } }
-impl<T:Float> RemAssign<T> for TimeOf<T> { fn rem_assign(&mut self, rhs: T) { self.second.rem_assign(rhs); } }
-
-impl<T:Float> Sum for TimeOf<T>
-{
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Self::ZERO, Self::add)
-    }
-}
-
-impl<T:Float> MinValue for TimeOf<T> where T : MinValue
-{
-    const MIN : Self = Self::from_s(T::MIN);
-}
-
-impl<T:Float> MaxValue for TimeOf<T> where T : MaxValue
-{
-    const MAX : Self = Self::from_s(T::MAX);
-}
-
-
-
 
 #[cfg(feature = "serde")]
 impl<T: Float> Serialize for TimeOf<T> where T : Serialize {
