@@ -38,9 +38,14 @@ impl<Dest,T> CastFromComposite<Dest> for Dest::Output where Dest : CastIntoCompo
 */
 impl_composite_output_with_methods!(CastIntoComposite<CastToOut>, cast_into_composite);
 
-/// Wrap the coef inside for a new type.
-/// Used to differenciate the type Coef and float because they are the same
-pub struct CoefWrapper(pub Coef);
+new_number!(
+    /// Wrap the coef inside for a new type.
+    /// Used to differenciate the type Coef and float because they are the same for CastIntoComposite impl
+    CoefWrapperOf
+);
+
+pub type CoefWrapper = CoefWrapperOf<float>;
+
 impl<T> CastIntoComposite<CoefWrapper> for T where T : CastInto<float> + DefaultRange + UnitArithmetic
 {
     type Output=Coef;
