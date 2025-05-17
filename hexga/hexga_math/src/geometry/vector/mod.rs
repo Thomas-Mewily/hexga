@@ -83,7 +83,7 @@ impl<T,const N : usize> Vector<T,N>
     pub fn sum_axis(self) -> T where T : NumberArithmetic { self.into_iter().sum() }
 
     /// [Manhattan distance](https://fr.wikipedia.org/wiki/Distance_de_Manhattan)
-    pub fn length_manhattan(self) -> T where T : NumberArithmetic, Self : Absolute<Output=Self> + Copy { self.abs().sum_axis() }
+    pub fn length_manhattan(self) -> T where T : NumberArithmetic, Self : Abs<Output=Self> + Copy { self.abs().sum_axis() }
     pub fn length_squared(self) -> T where T : NumberArithmetic { self.into_iter().map(|v| v * v).sum() }
     pub fn have_length(self) -> bool where T : Zero + PartialEq { self.into_iter().any(|c| c.is_non_zero()) }
 

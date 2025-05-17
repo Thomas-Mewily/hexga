@@ -8,7 +8,7 @@ map_on_constant!
     }
 );
 
-impl_composite_output_with_methods_for_internal_type!(Absolute,abs);
+impl_composite_output_with_methods_for_internal_type!(Abs,abs);
 
 
 /// Define the `2` representation for the number

@@ -3,7 +3,7 @@
 
 ## To-do
 
--  Move the Absolute trait from Math to Number
+-  Move the Abs trait from Math to Number
 
 - Name2Reserve : réserver plus de nom sous crate io
 

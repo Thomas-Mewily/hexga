@@ -9,6 +9,9 @@ pub type Time = TimeOf<float>;
 pub type DeltaTime = Time;
 pub type DeltaTimeOf<T> = TimeOf<T>;
 
+new_unit!(TimeOf2);
+
+
 pub trait ToTime
 {
     type Output;
@@ -70,7 +73,7 @@ impl<T:Float> Display for TimeOf<T>
 
 impl<T:Float> Zero for TimeOf<T> { const ZERO : Self = Self::from_s(T::ZERO); }
 
-impl<T:Float> Absolute for TimeOf<T> where T : Absolute<Output = T>
+impl<T:Float> Abs for TimeOf<T> where T : Abs<Output = T>
 {
     type Output = TimeOf<T>;
     fn abs(self) -> Self { TimeOf::from_s(self.second.abs()) }

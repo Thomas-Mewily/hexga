@@ -1,6 +1,6 @@
 use crate::*;
 
-pub trait Absolute 
+pub trait Abs 
 {
     type Output;
     fn abs(self) -> Self::Output;
@@ -8,7 +8,7 @@ pub trait Absolute
 map_on_integer_unsigned!(
     ($primitive_name: ty) => 
     { 
-        impl Absolute for $primitive_name 
+        impl Abs for $primitive_name 
         { 
             type Output = Self;
             #[inline(always)]
@@ -19,7 +19,7 @@ map_on_integer_unsigned!(
 map_on_integer_signed!(
     ($primitive_name: ty) => 
     { 
-        impl Absolute for $primitive_name 
+        impl Abs for $primitive_name 
         { 
             type Output = Self;
             #[inline(always)]
@@ -30,7 +30,7 @@ map_on_integer_signed!(
 map_on_float!(
     ($primitive_name: ty) => 
     { 
-        impl Absolute for $primitive_name 
+        impl Abs for $primitive_name 
         { 
             type Output = Self;
             #[inline(always)]
@@ -38,7 +38,7 @@ map_on_float!(
         } 
     }
 );
-impl<T,T2, const N : usize> Absolute for [T;N] where T : Absolute<Output = T2> 
+impl<T,T2, const N : usize> Abs for [T;N] where T : Abs<Output = T2> 
 {
     type Output=[T2;N];
     fn abs(self) -> Self::Output { self.map(|v| v.abs()) }

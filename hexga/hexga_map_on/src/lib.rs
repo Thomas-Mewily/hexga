@@ -306,12 +306,28 @@ macro_rules! map_on_operator_unary_bit
     };
 }
 
+/// `Abs`
+#[macro_export]
+macro_rules! map_on_operator_unary_arithmetic_unit 
+{
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!
+        (
+            (
+                (Abs, abs)
+            ), 
+            $($macro_arms)*
+        );
+    };
+}
 
-/// (`Not`)
+
+/// (`Not`) + (`Abs`)
 #[macro_export]
 macro_rules! map_on_operator_unary
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on_operator_unary_bit!($($macro_arms)*);
+        $crate::map_on_operator_unary_arithmetic_unit!($($macro_arms)*);
     };
 }
