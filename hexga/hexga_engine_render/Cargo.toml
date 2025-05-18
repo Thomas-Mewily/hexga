@@ -8,7 +8,7 @@ repository.workspace = true
 edition.workspace = true
 
 keywords = []
-description = "Traits are data structure to define the Hexga Engine"
+description = "Rendering interface for the Hexga Engine"
 categories = []
 
 [features]

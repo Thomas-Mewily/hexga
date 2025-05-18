@@ -20,4 +20,8 @@ hexga_graphics
 hexga_ansi_color
 //hexga_undo_redo
 hexga
+
+hexga_engine_render
+hexga_engine_core
+
 hexga_engine

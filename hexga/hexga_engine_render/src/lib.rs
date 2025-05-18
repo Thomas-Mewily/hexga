@@ -1,4 +1,4 @@
-//! A rendering interface based on [miniquad](https://github.com/not-fl3/miniquad)
+//! Rendering interface for the Hexga Engine based on [miniquad](https://github.com/not-fl3/miniquad)
 use std::{fmt::Debug, marker::PhantomData, ops::{Deref, DerefMut}};
 
 /* 

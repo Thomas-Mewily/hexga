@@ -1,4 +1,4 @@
-//! mainly based on miniquad
+//! mainly based on [MiniQuad](https://github.com/not-fl3/miniquad)
 use crate::*;
 
 pub use miniquad::conf::{Platform,LinuxX11Gl,LinuxBackend,WebGLVersion,AppleGfxApi};

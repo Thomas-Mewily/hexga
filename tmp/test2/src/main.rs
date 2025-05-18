@@ -16,4 +16,6 @@ fn main()
     dbg!(it.next_back());
     dbg!(it.next_back());
     dbg!(it.next_back());
+
+    dbg!(rect2p(4,4,6,6).iter_idx().to_vec());
 }

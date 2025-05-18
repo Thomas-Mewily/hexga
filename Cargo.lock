@@ -397,6 +397,7 @@ name = "hexga_engine"
 version = "0.0.10-beta.11"
 dependencies = [
  "hexga 0.0.10-beta.11",
+ "hexga_engine_core",
  "miniquad",
  "serde",
 ]
@@ -409,6 +410,24 @@ checksum = "7cee3b3588374eb37aef8652a9333a13814a99e84defdb64aa9db7214f87136c"
 dependencies = [
  "hexga 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "miniquad",
+ "serde",
+]
+
+[[package]]
+name = "hexga_engine_core"
+version = "0.0.10-beta.11"
+dependencies = [
+ "hexga 0.0.10-beta.11",
+ "hexga_engine_render",
+ "miniquad",
+ "serde",
+]
+
+[[package]]
+name = "hexga_engine_events"
+version = "0.0.10-beta.11"
+dependencies = [
+ "hexga 0.0.10-beta.11",
  "serde",
 ]
 
