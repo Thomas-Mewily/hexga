@@ -1,6 +1,4 @@
 //! mainly based on miniquad
-use std::{fmt::Debug, marker::PhantomData};
-
 use crate::*;
 
 
@@ -18,7 +16,7 @@ pub enum BufferUsage {
     Stream,
 }
 
-pub type BufferID = usize;
+pub type Buffer = usize;
 
 
 
@@ -28,12 +26,25 @@ struct UntypedSlice<'a>
     layout  : BufferLayout,
     phantom : PhantomData<&'a ()>,
 }
+impl<'a> Deref for UntypedSlice<'a>
+{
+    type Target=BufferLayout;
+    fn deref(&self) -> &Self::Target { &self.layout }
+}
+impl<'a> DerefMut for UntypedSlice<'a>
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.layout }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BufferLayout
 {
     pub len          : usize,
     pub element_size : usize,
+}
+impl BufferLayout
+{
+    pub const fn size(&self) -> usize { self.len * self.element_size }
 }
 
 pub struct BufferSource<'a>
@@ -144,7 +155,7 @@ pub struct VertexAttribute {
 }
 
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
-pub struct ShaderID(usize);
+pub struct Shader(usize);
 
 /// Define front- and back-facing polygons.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -285,9 +296,9 @@ pub struct BufferData
 // miniquad render wrapper
 pub trait Render
 {
-    fn new_buffer<'a>(&mut self, data: BufferData, source : BufferSource<'a>) -> Option<BufferID>;
-    fn buffer_update(&mut self, dest: BufferID, source: &BufferSource) -> Result<(), ()>;
-    fn delete_buffer(&mut self, id : BufferID);
+    fn new_buffer   (&mut self, data: BufferData, source : BufferSource) -> Option<Buffer>;
+    fn buffer_update(&mut self, dest: Buffer, source: &BufferSource) -> Result<(), ()>;
+    fn delete_buffer(&mut self, id : Buffer);
 
     fn new_texture             (&mut self, data : &TextureData) -> Texture;
     fn texture_update          (&mut self, dest : Texture, source : &TextureData);
@@ -305,10 +316,93 @@ pub trait Render
     fn apply_pipeline (&mut self, pipeline: Pipeline);
     fn delete_pipeline(&mut self, pipeline: Pipeline);
 
-    fn new_shader   (&mut self, data : &ShaderData) -> ShaderID;
-    fn delete_shader(&mut self, program: ShaderID);
+    fn new_shader   (&mut self, data : &ShaderData) -> Shader;
+    fn delete_shader(&mut self, program: Shader);
 
-    fn apply_viewport(&mut self, rect : GpuMat2);
+    fn apply_viewport(&mut self, rect : Rect2P);
+    fn apply_scissor(&mut self, rect : Rect2P);
+
+    fn apply_bindings_view(&mut self, binding : BindingsView);
+    fn apply_bindings(&mut self, binding : &Bindings) { self.apply_bindings_view(binding.view()); }
+
+    fn apply_uniforms(&mut self, uniforms: UniformsSource) {
+        self.apply_uniforms_from_bytes(unsafe { std::slice::from_raw_parts(uniforms.0.data as _, uniforms.0.len) })
+    }
+    fn apply_uniforms_from_bytes(&mut self, uniform_ptr: &[u8]);
+
+    fn clear(&mut self, data : ClearData);
+
+    fn begin_default_pass(&mut self, action: PassAction);
+    fn begin_pass(&mut self, pass: Option<RenderPass>, action: PassAction);
+    fn end_render_pass(&mut self);
+
+    fn end_frame(&mut self);
+    fn draw(&mut self, base_element: usize, num_elements: usize, num_instances: usize);
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PassAction 
+{
+    Nothing,
+    Clear(ClearData)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ClearData
+{
+    pub color: Option<Color>,
+    pub depth: Option<f32>,
+    //pub stencil: Option<i32>,
+}
+
+pub struct UniformsSource<'a>(UntypedSlice<'a>);
+
+
+/// Geometry bindings
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Bindings {
+    /// Vertex buffers. Data contained in the buffer must match layout
+    /// specified in the `Pipeline`.
+    ///
+    /// Most commonly vertex buffer will contain `(x,y,z,w)` coordinates of the
+    /// vertex in 3d space, as well as `(u,v)` coordinates that map the vertex
+    /// to some position in the corresponding `Texture`.
+    pub vertex_buffers: Vec<Buffer>,
+    /// Index buffer which instructs the GPU in which order to draw vertices
+    /// from a vertex buffer, with each subsequent 3 indices forming a
+    /// triangle.
+    pub index_buffer: Buffer,
+    /// Textures to be used with when drawing the geometry in the fragment
+    /// shader.
+    pub images: Vec<Texture>,
+}
+
+impl Bindings
+{
+    fn view<'a>(&'a self) -> BindingsView<'a> 
+    {
+        let Self { vertex_buffers, index_buffer, images } = self;
+        BindingsView { vertex_buffers, index_buffer : *index_buffer, images }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct BindingsView<'a>
+{
+    /// Vertex buffers. Data contained in the buffer must match layout
+    /// specified in the `Pipeline`.
+    ///
+    /// Most commonly vertex buffer will contain `(x,y,z,w)` coordinates of the
+    /// vertex in 3d space, as well as `(u,v)` coordinates that map the vertex
+    /// to some position in the corresponding `Texture`.
+    pub vertex_buffers: &'a [Buffer],
+    /// Index buffer which instructs the GPU in which order to draw vertices
+    /// from a vertex buffer, with each subsequent 3 indices forming a
+    /// triangle.
+    pub index_buffer: Buffer,
+    /// Textures to be used with when drawing the geometry in the fragment
+    /// shader.
+    pub images: &'a [Texture],
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -323,6 +417,6 @@ pub struct PipelineData
 {
     pub buffer_layout: Vec<BufferLayout>, 
     pub attributes: Vec<VertexAttribute>,
-    pub shader: ShaderID,
+    pub shader: Shader,
     pub params: PipelineParams,
 }
