@@ -1,7 +1,7 @@
 use crate::*;
 
-pub trait Integer             : NumberInteger + CastPrimitive + Abs + DefaultRange {}
-impl<T> Integer for T where T : NumberInteger + CastPrimitive + Abs + DefaultRange {}
+pub trait Integer             : NumberInteger + CastPrimitive + Abs + RangeDefault {}
+impl<T> Integer for T where T : NumberInteger + CastPrimitive + Abs + RangeDefault {}
 
 pub trait IntegerUnsigned             : NumberIntegerUnsigned + CastPrimitive {}
 impl<T> IntegerUnsigned for T where T : IntegerUnsigned + CastPrimitive {}

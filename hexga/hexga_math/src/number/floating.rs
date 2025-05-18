@@ -3,7 +3,7 @@ use crate::*;
 /// Generalized function and constant for floating point like `f32`, `f64`...
 /// 
 /// The func impl and documentation are copied from the Rust std because those are the same function, generalized in this trait
-pub trait Float : NumberFloat + CastPrimitive + Abs<Output=Self> + DefaultRange +
+pub trait Float : NumberFloat + CastPrimitive + Abs<Output=Self> + RangeDefault +
     PrefixDecade + PrefixHundred + PrefixThousand + PrefixMillion + PrefixBillion + PrefixQuadrillion
 { 
     /// Archimedes' constant (π)

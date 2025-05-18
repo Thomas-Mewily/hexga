@@ -1,24 +1,30 @@
 use crate::*;
+use std::ops::{Range, RangeInclusive};
 
 /// For floating the range is : `[0., 1.]`. For integers the range is : `[0, MAX]`, even for signed
-pub trait DefaultRange : MinValue + MaxValue //+ CastTo + FromFloat + UnitArithmeticCanBePositive
+pub trait RangeDefault : MinValue + MaxValue //+ CastTo + FromFloat + UnitArithmeticCanBePositive
 { 
-    const MIN_RANGE  : Self;
+    const RANGE_MIN  : Self;
     /// Useful for stuff like Color::GRAY
-    const HALF_RANGE : Self;
-    const MAX_RANGE  : Self;
+    const RANGE_HALF : Self;
+    const RANGE_MAX  : Self;
 
-    /// `MAX_RANGE - MIN_RANGE`
+    /// `RANGE_MAX - RANGE_MIN`
     const RANGE : Self;
+
+    // `Self::RANGE_MIN..Self::RANGE_MAX`
+    fn range() -> Range<Self> { Self::RANGE_MIN..Self::RANGE_MAX }
+    // `Self::RANGE_MIN..=Self::RANGE_MAX`
+    fn range_inclusive() -> RangeInclusive<Self> { Self::RANGE_MIN..=Self::RANGE_MAX }
 }
 macro_rules! impl_have_min_max {
     ($primitive_name: ty) => 
-    { impl DefaultRange for $primitive_name 
+    { impl RangeDefault for $primitive_name 
         { 
-            const MIN_RANGE  : Self = Self::ZERO;
-            const HALF_RANGE : Self = Self::MAX / 2;
-            const MAX_RANGE  : Self = Self::MAX;
-            const RANGE      : Self = Self::MAX_RANGE - Self::MIN_RANGE;
+            const RANGE_MIN  : Self = Self::ZERO;
+            const RANGE_HALF : Self = Self::MAX / 2;
+            const RANGE_MAX  : Self = Self::MAX;
+            const RANGE      : Self = Self::RANGE_MAX - Self::RANGE_MIN;
         }
     };
 }
@@ -26,12 +32,12 @@ map_on_integer!(impl_have_min_max);
 
 macro_rules! impl_have_min_max_for_float {
     ($primitive_name: ty) => 
-    { impl DefaultRange for $primitive_name 
+    { impl RangeDefault for $primitive_name 
         { 
-            const MIN_RANGE  : Self = Self::ZERO;
-            const HALF_RANGE : Self = Self::ONE / 2.;
-            const MAX_RANGE  : Self = Self::ONE;
-            const RANGE      : Self = Self::MAX_RANGE - Self::MIN_RANGE;
+            const RANGE_MIN  : Self = Self::ZERO;
+            const RANGE_HALF : Self = Self::ONE / 2.;
+            const RANGE_MAX  : Self = Self::ONE;
+            const RANGE      : Self = Self::RANGE_MAX - Self::RANGE_MIN;
         }
     };
 }

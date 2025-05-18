@@ -10,6 +10,7 @@ use std::hash::*;
 use std::marker::PhantomData;
 use std::cmp::Ordering;
 use hexga_core::prelude::*;
+use std::ops::{Range, RangeInclusive};
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};

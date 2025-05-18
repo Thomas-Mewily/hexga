@@ -16,9 +16,9 @@ pub trait FromCoef
 { 
     fn from_coef(coef : Coef) -> Self;
 }
-impl<T> FromCoef for T where T : DefaultRange + ToFloat<Output = float>, float : CastInto<T>
+impl<T> FromCoef for T where T : RangeDefault + ToFloat<Output = float>, float : CastInto<T>
 {
-    fn from_coef(coef : Coef) -> Self { (Self::RANGE.to_float() * coef + Self::MIN_RANGE.to_float()).cast_into_composite() }
+    fn from_coef(coef : Coef) -> Self { (Self::RANGE.to_float() * coef + Self::RANGE_MIN.to_float()).cast_into_composite() }
 }
 
 // Float

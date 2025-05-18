@@ -275,11 +275,11 @@ impl<T:Float> TimeOf<T>
 }
 
 
-impl<T: Float> DefaultRange for TimeOf<T> where T : DefaultRange
+impl<T: Float> RangeDefault for TimeOf<T> where T : RangeDefault
 {
-    const MIN_RANGE  : Self = Self(T::MIN_RANGE);
-    const HALF_RANGE : Self = Self(T::HALF_RANGE);
-    const MAX_RANGE  : Self = Self(T::MAX_RANGE);
+    const RANGE_MIN  : Self = Self(T::RANGE_MIN);
+    const RANGE_HALF : Self = Self(T::RANGE_HALF);
+    const RANGE_MAX  : Self = Self(T::RANGE_MAX);
     const RANGE      : Self = Self(T::RANGE);
 }
 

@@ -117,39 +117,13 @@ impl<T:Float> Display for AngleOf<T> where T: Display
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult { write!(f, "{:}°", self.degree()) }
 }
 
-impl<T: Float> DefaultRange for AngleOf<T>
+impl<T: Float> RangeDefault for AngleOf<T>
 {
-    const MIN_RANGE  : Self = Self::ZERO;
-    const HALF_RANGE : Self = Self::FLAT;
-    const MAX_RANGE  : Self = Self::FULL;
+    const RANGE_MIN  : Self = Self::ZERO;
+    const RANGE_HALF : Self = Self::FLAT;
+    const RANGE_MAX  : Self = Self::FULL;
     const RANGE      : Self = Self::FULL;
 }
-
-/* 
-impl<T: Float, I> RangeSampleExtension<I> for AngleOf<T> where T : RangeSampleExtension<I,Item=T>
-{
-    type Output = WrappedIterator<Self,T,<T as RangeSampleExtension<I>>::Output>;
-    type Item = Self;
-
-    fn sample(self, nb_sample: I) -> Self::Output 
-    {
-        WrappedIterator::new(<T as RangeSampleExtension<I>>::sample(unsafe { self.inner_value() }, nb_sample))
-    }
-}
-*/
-
-/*
-impl<T: Float, I> RangeSampleExtension<I> for AngleOf<T> where T : RangeSampleExtension<I,Item=T>
-{
-    type Output = WrappedIterator<Self,T,<T as RangeSampleExtension<I>>::Output>;
-    type Item = Self;
-
-    fn sample(self, nb_sample: I) -> Self::Output {
-        <T as RangeSampleExtension<I>>::sample(self, nb_sample)
-    }
-}
-    */
-
 
 /* 
 impl<T:Float> AngleOf<T>

@@ -46,12 +46,12 @@ new_number!(
 
 pub type CoefWrapper = CoefWrapperOf<float>;
 
-impl<T> CastIntoComposite<CoefWrapper> for T where T : CastInto<float> + DefaultRange + UnitArithmetic
+impl<T> CastIntoComposite<CoefWrapper> for T where T : CastInto<float> + RangeDefault + UnitArithmetic
 {
     type Output=Coef;
 
     fn cast_into_composite(self) -> Self::Output {
-        (self - Self::MIN_RANGE).to_float() / Self::RANGE.to_float() + Self::MIN_RANGE.to_float()
+        (self - Self::RANGE_MIN).to_float() / Self::RANGE.to_float() + Self::RANGE_MIN.to_float()
     }
 }
 

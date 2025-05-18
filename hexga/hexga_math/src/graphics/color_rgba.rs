@@ -32,8 +32,8 @@ impl<T> ColorRGBAOf<T>
     pub const fn new(red : T, green : T, blue : T, alpha : T) -> Self { Self { r:red, g:green, b:blue, a:alpha }}
 
     pub const fn rgba(red : T, green : T, blue : T, alpha : T) -> Self { Self::new(red, green, blue, alpha) }
-    pub const fn rgb (red : T, green : T, blue : T) -> Self where T : DefaultRange { Self::rgba(red, green, blue, T::MAX_RANGE) }
-    pub const fn gray(rgb : T) -> Self where T : DefaultRange + Copy { Self::rgb(rgb, rgb, rgb) }
+    pub const fn rgb (red : T, green : T, blue : T) -> Self where T : RangeDefault { Self::rgba(red, green, blue, T::RANGE_MAX) }
+    pub const fn gray(rgb : T) -> Self where T : RangeDefault + Copy { Self::rgb(rgb, rgb, rgb) }
 
     pub fn rgba_ref(&    self) -> &    [T; 4] { self.as_array() }
     pub fn rgba_mut(&mut self) -> &mut [T; 4] { self.as_array_mut() }
@@ -53,7 +53,7 @@ impl<T> ColorRGBAOf<T>
 
     pub fn splat_rgba(rgba : T) -> Self where T : Clone { Self::new(rgba.clone(), rgba.clone(), rgba.clone(), rgba) }
     /// Alpha is at max
-    pub fn splat_rgb(rgb : T) -> Self where T : Clone + DefaultRange { Self::splat_rgb_with_a(rgb, T::MAX_RANGE) }
+    pub fn splat_rgb(rgb : T) -> Self where T : Clone + RangeDefault { Self::splat_rgb_with_a(rgb, T::RANGE_MAX) }
     pub fn splat_rgb_with_a(rgb : T, a : T) -> Self where T : Clone { Self::new(rgb.clone(), rgb.clone(), rgb.clone(), a) }
 
     /// Red
@@ -107,16 +107,16 @@ impl<T> ColorRGBAOf<T>
 impl<T> From<(T,T,T,T,)> for ColorRGBAOf<T> { fn from(value: (T,T,T,T,)) -> Self { ColorRGBAOf::rgba(value.0, value.1, value.2, value.3) }}
 impl<T> From<ColorRGBAOf<T>> for (T,T,T,T,) { fn from(value: ColorRGBAOf<T>) -> Self { (value.r, value.g, value.b, value.a) }}
 
-impl<T> From<(T,T,T,)> for ColorRGBAOf<T> where T : DefaultRange { fn from(value: (T,T,T,)) -> Self { ColorRGBAOf::rgb(value.0, value.1, value.2) }}
+impl<T> From<(T,T,T,)> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: (T,T,T,)) -> Self { ColorRGBAOf::rgb(value.0, value.1, value.2) }}
 impl<T> From<ColorRGBAOf<T>> for (T,T,T,) { fn from(value: ColorRGBAOf<T>) -> Self { (value.r, value.g, value.b) }}
 
-impl<T> From<[T; 3]> for ColorRGBAOf<T> where T : DefaultRange { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorRGBAOf::rgb(r,g,b) }}
+impl<T> From<[T; 3]> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorRGBAOf::rgb(r,g,b) }}
 impl<T> From<ColorRGBAOf<T>> for [T; 3] { fn from(value: ColorRGBAOf<T>) -> Self { [value.r, value.g, value.b] }}
 
 impl<T> From<Vector4<T>> for ColorRGBAOf<T> { fn from(value: Vector4<T>) -> Self { let [r,g,b,a] = value.array; ColorRGBAOf::rgba(r,g,b,a) }}
 impl<T> From<ColorRGBAOf<T>> for Vector4<T> { fn from(value: ColorRGBAOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
 
-impl<T> From<Vector3<T>> for ColorRGBAOf<T> where T : DefaultRange { fn from(value: Vector3<T>) -> Self { let [r,g,b] = value.array; ColorRGBAOf::rgb(r,g,b) }}
+impl<T> From<Vector3<T>> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: Vector3<T>) -> Self { let [r,g,b] = value.array; ColorRGBAOf::rgb(r,g,b) }}
 impl<T> From<ColorRGBAOf<T>> for Vector3<T> { fn from(value: ColorRGBAOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
 impl From<ColorHSLA> for Color { fn from(value: ColorHSLA) -> Self { value.to_color() }}
@@ -126,29 +126,29 @@ impl From<ColorRGBAByte> for Color { fn from(value: ColorRGBAByte) -> Self { val
 impl From<Color> for ColorRGBAByte { fn from(value: Color) -> Self { value.to_color_byte() }}
 
 
-impl<T> Default for ColorRGBAOf<T> where T : DefaultRange
+impl<T> Default for ColorRGBAOf<T> where T : RangeDefault
 {
-    fn default() -> Self { Self { r: T::MAX_RANGE, g: T::MAX_RANGE, b: T::MAX_RANGE, a: T::MAX_RANGE } }
+    fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX } }
 }
 
 impl<T> IColor for ColorRGBAOf<T> 
     where 
         Self : From<Color> + From<ColorRGBAByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
-        T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + DefaultRange + Copy + PartialEq + Default 
+        T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + RangeDefault + Copy + PartialEq + Default 
 {
-    const TRANSPARENT : Self = Self::rgba(T::MAX_RANGE, T::MAX_RANGE, T::MAX_RANGE, T::MAX_RANGE);
+    const TRANSPARENT : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
 
-    const BLACK : Self = Self { r: T::MIN_RANGE , g: T::MIN_RANGE , b: T::MIN_RANGE , a: T::MAX_RANGE };
-    const GRAY  : Self = Self { r: T::HALF_RANGE, g: T::HALF_RANGE, b: T::HALF_RANGE, a: T::MAX_RANGE };
-    const WHITE : Self = Self { r: T::MAX_RANGE , g: T::MAX_RANGE , b: T::MAX_RANGE , a: T::MAX_RANGE };
+    const BLACK : Self = Self { r: T::RANGE_MIN , g: T::RANGE_MIN , b: T::RANGE_MIN , a: T::RANGE_MAX };
+    const GRAY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX };
+    const WHITE : Self = Self { r: T::RANGE_MAX , g: T::RANGE_MAX , b: T::RANGE_MAX , a: T::RANGE_MAX };
     
-    const RED    : Self = Self::rgba(T::MAX_RANGE, T::MIN_RANGE, T::MIN_RANGE, T::MAX_RANGE);
-    const GREEN  : Self = Self::rgba(T::MIN_RANGE, T::MAX_RANGE, T::MIN_RANGE, T::MAX_RANGE);
-    const BLUE   : Self = Self::rgba(T::MIN_RANGE, T::MIN_RANGE, T::MAX_RANGE, T::MAX_RANGE);
+    const RED    : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MIN, T::RANGE_MAX);
+    const GREEN  : Self = Self::rgba(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX);
+    const BLUE   : Self = Self::rgba(T::RANGE_MIN, T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX);
     
-    const CYAN   : Self = Self::rgba(T::MIN_RANGE, T::MAX_RANGE, T::MAX_RANGE, T::MAX_RANGE);
-    const PINK   : Self = Self::rgba(T::MAX_RANGE, T::MIN_RANGE, T::MAX_RANGE, T::MAX_RANGE);
-    const YELLOW : Self = Self::rgba(T::MAX_RANGE, T::MAX_RANGE, T::MIN_RANGE, T::MAX_RANGE);
+    const CYAN   : Self = Self::rgba(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
+    const PINK   : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX);
+    const YELLOW : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX);
     
     fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self 
     {
@@ -166,7 +166,7 @@ impl<T> IColor for ColorRGBAOf<T>
 impl<T> ToColorRep for ColorRGBAOf<T> 
     where 
         Self : From<Color> + From<ColorRGBAByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
-        T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + DefaultRange + Copy + PartialEq + Default
+        T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + RangeDefault + Copy + PartialEq + Default
 {
     type ColorRGBAFloat=ColorRGBA;
 
