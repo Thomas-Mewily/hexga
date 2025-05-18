@@ -1,6 +1,6 @@
 use crate::*;
 
-pub use hexga_number::*;
+pub use hexga_number::prelude::*;
 
 pub use crate::number::composite::*;
 pub use crate::number::cast_to::*;

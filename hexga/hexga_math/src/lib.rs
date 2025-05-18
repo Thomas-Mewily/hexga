@@ -22,7 +22,7 @@ pub use hexga_typedef as typedef;
 pub use hexga_typedef::*;
 
 pub mod number;
-use number::*;
+use number::prelude::*;
 
 pub mod range;
 use range::*;

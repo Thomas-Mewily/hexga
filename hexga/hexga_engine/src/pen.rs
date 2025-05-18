@@ -1,5 +1,7 @@
 use crate::*;
-use miniquad::{Pipeline,Bindings,BufferId,TextureId,BufferType,BufferUsage,BufferSource,Backend,ShaderSource,VertexAttribute,PipelineParams,BufferLayout,VertexFormat,ShaderMeta,UniformBlockLayout};
+use hexga::math::unit::WrappedIterator;
+use miniquad::{Bindings,BufferId,TextureId,BufferType,BufferUsage,BufferSource,Backend,ShaderSource,VertexAttribute,PipelineParams,BufferLayout,VertexFormat,ShaderMeta,UniformBlockLayout};
+type PipelineID = miniquad::Pipeline;
 
 pub struct Pen;
 
@@ -85,7 +87,7 @@ pub struct GpuMesh
 #[derive(Debug)]
 pub struct ContextPen
 {
-    pipeline: Pipeline,
+    pipeline: PipelineID,
     bindings: Bindings,
 
     vertex_buffer_id : BufferId,
@@ -310,7 +312,7 @@ impl ContextPen
 
 
     
-    /// Make a triangle with last 3 vertex
+    /// Make a triangle with the last 3 vertex
     pub fn make_triangle(&mut self)
     {
         let len = self.vertex.len();
@@ -325,16 +327,16 @@ impl ContextPen
 
     //pub fn index(&self) -> [GpuVertexIdx] { self.index_batch_buffer }
 
-    pub fn begin_vertexs(&mut self) { self.prev_vertex_index = self.vertex.len(); }
-    pub fn vertex_index(&self) -> VertexIdx { (self.vertex.len() - 1) as VertexIdx }
-    pub fn vertex_len(&self) -> VertexIdx { self.vertex.len() as VertexIdx }
+    pub fn begin_vertex(&mut self) { self.prev_vertex_index = self.vertex.len(); }
+    pub(crate) fn vertex_index(&self) -> VertexIdx { (self.vertex.len() - 1) as VertexIdx }
+    pub(crate) fn vertex_len(&self) -> VertexIdx { self.vertex.len() as VertexIdx }
 
 
     /// Also call `begin_vertexs()`
     pub fn index_triangle(&mut self, index: VertexTriangleIdx)
     {
         self.index_triangle_and(index);
-        self.begin_vertexs();
+        self.begin_vertex();
     }
     /// Don't call `begin_vertexs()`
     pub fn index_triangle_and(&mut self, index: VertexTriangleIdx) -> &mut Self
@@ -347,7 +349,7 @@ impl ContextPen
     pub fn index_triangles<I>(&mut self, triangle_index: I) where I : IntoIterator<Item = VertexTriangleIdx>
     {
         self.index_triangles_and(triangle_index);
-        self.begin_vertexs();
+        self.begin_vertex();
     }
     /// Don't call `begin_vertexs()`
     pub fn index_triangles_and<I>(&mut self, triangle_index: I) -> &mut Self where I : IntoIterator<Item = VertexTriangleIdx>
@@ -363,19 +365,19 @@ impl ContextPen
     pub fn make_convex_poly(&mut self)
     {
         self.make_convex_poly_and();
-        self.begin_vertexs();
+        self.begin_vertex();
     }
     /// Don't call `begin_vertexs()`
     pub fn make_convex_poly_and(&mut self) -> &mut Self
     {
         let len = self.vertex.len() - self.prev_vertex_index;
-        if len == 0 { return self; }
+        if len <= 2 { return self; }
 
         for i in 1..(len - 1) 
         {
             self.index_triangle_and
             (
-         [
+            [
                     (self.prev_vertex_index        ) as VertexIdx, 
                     (self.prev_vertex_index + i    ) as VertexIdx, 
                     (self.prev_vertex_index + i + 1) as VertexIdx
@@ -384,8 +386,6 @@ impl ContextPen
         }
 
         self
-
-        //self.static_geometry(vertex.iter().copied(), indices)
     }
 
     pub fn geometry<V,I>(&mut self, vertex : V, index: I)
@@ -394,7 +394,7 @@ impl ContextPen
         I : IntoIterator<Item=VertexTriangleIdx>, I::IntoIter : ExactSizeIterator,
     {
         self.geometry_and(vertex, index);
-        self.begin_vertexs();
+        self.begin_vertex();
     }
 
     pub fn geometry_and<V,I>(&mut self, vertex : V, index: I) -> &mut Self
@@ -414,7 +414,7 @@ impl ContextPen
         //let vertex_len = vertex.len().min(self.batch_vertex_buffer.capacity() - self.batch_vertex_buffer.len());
         //let indexs_len = index.len().min(self.batch_index_buffer.capacity() - self.batch_vertex_buffer.len());
 
-        let vertex_offset = self.vertex.len() as VertexIdx;
+        let vertex_offset = self.vertex_len();
         self.vertex.extend(vertex);
         self.index.extend(index.map(|x| x.map(|v| v + vertex_offset)).flatten());
         //self.batch_vertex_buffer.extend(vertex.take(vertex_len));
@@ -471,6 +471,52 @@ impl ContextPen
         self
     }
     */
+}
+
+
+impl ContextPen
+{
+    pub fn circle<I>(&mut self, radius : float, nb_point : I) 
+        where Angle : RangeDefaultSampleExtension<I>,
+        Range<Angle> : RangeSampleExtension<I,Item = Angle>
+    {
+        self.circle_and(radius, nb_point);
+        self.begin_vertex();
+    }
+    
+    pub fn circle_and<I>(&mut self, radius : float, nb_point : I) 
+        where Angle : RangeDefaultSampleExtension<I>,
+        Range<Angle> : RangeSampleExtension<I,Item = Angle>
+    {
+        let pos : Vec2 = self.pos();
+        for angle in Angle::sample(nb_point)
+        {
+            
+            Pen.set_pos(pos + angle.to_vec2_normalized()  * radius).down();
+        }
+        Pen.make_convex_poly_and();
+    }
+
+    pub fn ellipse<I>(&mut self, radius : Vec2, nb_point : I) 
+        where Angle : RangeDefaultSampleExtension<I>,
+        Range<Angle> : RangeSampleExtension<I,Item = Angle>
+    {
+        self.ellipse_and(radius, nb_point);
+        self.begin_vertex();
+    }
+
+    pub fn ellipse_and<I>(&mut self, radius : Vec2, nb_point : I) 
+        where Angle : RangeDefaultSampleExtension<I>,
+        Range<Angle> : RangeSampleExtension<I,Item = Angle>
+    {
+        let pos : Vec2 = self.pos();
+        for angle in Angle::sample(nb_point)
+        {
+            
+            Pen.set_pos(pos + angle.to_vec2_normalized()  * radius).down();
+        }
+        Pen.make_convex_poly_and();
+    }
 }
 
 

@@ -29,7 +29,6 @@ macro_rules! impl_abs {
         } 
     };
 }
-
 map_on_integer_signed!(impl_abs);
 map_on_float!(impl_abs);
 

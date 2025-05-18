@@ -5,7 +5,7 @@
 
 #![feature(get_disjoint_mut_helpers)]
 
-use hexga_number::*;
+use hexga_number::prelude::*;
 #[allow(unused_imports)]
 use hexga_core::prelude::*;
 

@@ -12,6 +12,12 @@ pub type GpuVec2 = Vector2<GpuFloat>;
 pub type GpuVec3 = Vector3<GpuFloat>;
 pub type GpuVec4 = Vector4<GpuFloat>;
 
+pub type GpuMat1 = Matrix1<GpuFloat>;
+pub type GpuMat2 = Matrix2<GpuFloat>;
+pub type GpuMat3 = Matrix3<GpuFloat>;
+pub type GpuMat4 = Matrix4<GpuFloat>;
+
+
 pub trait ToGpuColor
 {
     fn to_gpu_color(self) -> GpuColor;

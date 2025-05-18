@@ -14,9 +14,9 @@ impl_composite_output_with_methods_for_internal_type!(Abs,abs);
 /// Define the `2` representation for the number
 pub trait Two : Sized
 { 
-    //const TWO  : Self;
+    // Can't do a `const TWO  : Self; = Self::ONE + Self::ONE` because can't tell rust that the add operator should be const for custom type
 
-    // Can't do a `const TWO  : Self; = Self::ONE + Self::ONE` because the add operator is non const
+    /// There will be a constant TWO later when const trait will be stable
     #[allow(non_snake_case)]
     fn two() -> Self;
     
@@ -25,8 +25,24 @@ pub trait Two : Sized
 }
 impl<T> Two for T where T : One + Add<T,Output = T>
 {
-    // There will be a constant TWO later when const trait will be stable
     #[inline(always)] fn two() -> Self { Self::ONE + Self::ONE }
+}
+
+/// Define the `3` representation for the number
+pub trait Three : Sized
+{ 
+    // Can't do a `const THREE  : Self; = Self::ONE + Self::ONE + Self::ONE` because can't tell rust that the add operator should be const for custom type
+
+    /// There will be a constant THREE later when const trait will be stable
+    #[allow(non_snake_case)]
+    fn three() -> Self;
+    
+    #[inline(always)] fn is_three(&self) -> bool where Self : PartialEq<Self> { self == &Self::three() }
+    #[inline(always)] fn is_non_three(&self) -> bool where Self : PartialEq<Self> { !self.is_three() }
+}
+impl<T> Three for T where T : One + Add<T,Output = T>
+{
+    #[inline(always)] fn three() -> Self { Self::ONE + Self::ONE + Self::ONE }
 }
 
 pub trait OddOrEven : Sized

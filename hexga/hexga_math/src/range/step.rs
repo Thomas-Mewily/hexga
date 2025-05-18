@@ -31,7 +31,7 @@ impl<T> RangeDefaultStepInclusiveExtension for T where T : RangeDefault, RangeIn
 // Not [Copy] because Range<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
-pub struct RangeStep<T> where T : PrimitiveNumber
+pub struct RangeStep<T> where T : NumberPrimitive
 {
     pub start  : T,
     pub end    : T,
@@ -39,7 +39,7 @@ pub struct RangeStep<T> where T : PrimitiveNumber
 }
 
 
-impl<T> Iterator for RangeStep<T> where T : PrimitiveNumber 
+impl<T> Iterator for RangeStep<T> where T : NumberPrimitive 
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -60,7 +60,7 @@ impl<T> Iterator for RangeStep<T> where T : PrimitiveNumber
         }
     }
 }
-impl<T> DoubleEndedIterator for RangeStep<T> where T : PrimitiveNumber 
+impl<T> DoubleEndedIterator for RangeStep<T> where T : NumberPrimitive 
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.end >= self.start 
@@ -94,10 +94,10 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T : PrimitiveNumber
         }
     }
 }
-impl<T> FusedIterator for RangeStep<T> where T : PrimitiveNumber  {}
+impl<T> FusedIterator for RangeStep<T> where T : NumberPrimitive  {}
 
 
-impl<T> RangeStepExtension for Range<T> where T : PrimitiveNumber
+impl<T> RangeStepExtension for Range<T> where T : NumberPrimitive
 {
     type Output = RangeStep<T>;
     type Item = T;
@@ -106,7 +106,7 @@ impl<T> RangeStepExtension for Range<T> where T : PrimitiveNumber
         RangeStep { start: self.start, end: self.end - step, step }
     }
 }
-impl<T> RangeStepExtension for RangeTo<T> where T : PrimitiveNumber + RangeDefault
+impl<T> RangeStepExtension for RangeTo<T> where T : NumberPrimitive + RangeDefault
 {
     type Output = RangeStep<T>;
     type Item = T;
@@ -120,14 +120,14 @@ impl<T> RangeStepExtension for RangeTo<T> where T : PrimitiveNumber + RangeDefau
 // Not [Copy] because RangeInclusive<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
-pub struct RangeStepInclusive<T> where T : PrimitiveNumber
+pub struct RangeStepInclusive<T> where T : NumberPrimitive
 {
     pub start  : T,
     pub end    : T,
     pub step   : T,
 }
 
-impl<T> Iterator for RangeStepInclusive<T> where T : PrimitiveNumber 
+impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive 
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -162,7 +162,7 @@ impl<T> Iterator for RangeStepInclusive<T> where T : PrimitiveNumber
         }
     }
 }
-impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : PrimitiveNumber 
+impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : NumberPrimitive 
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.end >= self.start 
@@ -196,10 +196,10 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : PrimitiveNumber
         }
     }
 }
-impl<T> FusedIterator for RangeStepInclusive<T> where T : PrimitiveNumber  {}
+impl<T> FusedIterator for RangeStepInclusive<T> where T : NumberPrimitive  {}
 
 
-impl<T> RangeStepExtension for RangeFrom<T> where T : PrimitiveNumber + RangeDefault
+impl<T> RangeStepExtension for RangeFrom<T> where T : NumberPrimitive + RangeDefault
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
@@ -208,7 +208,7 @@ impl<T> RangeStepExtension for RangeFrom<T> where T : PrimitiveNumber + RangeDef
         (self.start..=T::RANGE_MAX).step(step)
     }
 }
-impl<T> RangeStepExtension for RangeInclusive<T> where T : PrimitiveNumber
+impl<T> RangeStepExtension for RangeInclusive<T> where T : NumberPrimitive
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
@@ -218,7 +218,7 @@ impl<T> RangeStepExtension for RangeInclusive<T> where T : PrimitiveNumber
         RangeStepInclusive { start, end, step }
     }
 }
-impl<T> RangeStepExtension for RangeToInclusive<T> where T : PrimitiveNumber + RangeDefault
+impl<T> RangeStepExtension for RangeToInclusive<T> where T : NumberPrimitive + RangeDefault
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
