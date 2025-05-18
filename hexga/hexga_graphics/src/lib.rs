@@ -18,11 +18,19 @@ pub type EncodeResult<T=()> = Result<T,String>;
 
 pub type Image<T=ColorRGBAByte> = ImageBase<T,int>;
 
+pub type ImageRGBAByte = Image<ColorRGBAByte>;
+pub type ImageRGBAByteView<'a> = ImageBaseView<'a,ColorRGBAByte>;
+
+// Todo : wrap the grid and reverse the indexing convention
+// Pixels should be arranged in memory in rows, with the top row first (like in miniquad/SDL...)
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct ImageBase<T=ColorRGBAByte,Idx=int> where T : IColor, Idx : Integer
 {
-    pub grid   : GridBase<T,Idx,2>,
-    pub param  : GraphicsParam,
+    pub grid : GridBase<T,Idx,2>,
 }
+
+pub type ImageBaseView<'a, T=ColorRGBAByte,Idx=int> = GridView<'a,T,Idx,2>;
 
 
 impl<T, Idx> Deref for ImageBase<T, Idx> where T : IColor, Idx : Integer {
@@ -188,7 +196,7 @@ impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex
 
 */
 
-
+/*
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Default)]
 pub struct GraphicsParam
@@ -218,3 +226,4 @@ impl AntiAliasing
 
     pub fn is_same_as(self, other : Self) -> bool { (self.is_same() || other.is_same()) || (self == other) }
 }
+    */

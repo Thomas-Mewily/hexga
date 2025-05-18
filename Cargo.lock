@@ -346,6 +346,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_engine_core"
+version = "0.0.10-beta.11"
+dependencies = [
+ "hexga",
+ "hexga_graphics",
+ "serde",
+]
+
+[[package]]
 name = "hexga_generational"
 version = "0.0.10-beta.11"
 dependencies = [

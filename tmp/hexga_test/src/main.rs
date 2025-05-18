@@ -3,6 +3,7 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
+/* 
 use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_box, marker::PhantomData, num::Wrapping};
 use criterion::{BenchmarkId, Criterion};
 
@@ -135,4 +136,11 @@ fn main()
     MultiMediaConfig::new()
         .with_window_config(WindowConfig::new().title("hello"))
         .run(|| TestCtx::___());
+}
+*/
+
+
+fn main() 
+{
+    for _ in 0..10 { println!(); }
 }

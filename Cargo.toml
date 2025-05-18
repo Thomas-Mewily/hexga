@@ -28,4 +28,5 @@ hexga_io           = { path = "./hexga/hexga_io",           version = "0.0.10-be
 hexga_ansi_color   = { path = "./hexga/hexga_ansi_color",   version = "0.0.10-beta.11", default-features = false }
 hexga_tools        = { path = "./hexga/hexga_tools",        version = "0.0.10-beta.11", default-features = false }
 hexga              = { path = "./hexga/hexga",              version = "0.0.10-beta.11", default-features = false }
+hexga_engine_core  = { path = "./hexga/hexga_engine_core",  version = "0.0.10-beta.11", default-features = false }
 hexga_engine       = { path = "./hexga/hexga_engine",       version = "0.0.10-beta.11", default-features = false }
