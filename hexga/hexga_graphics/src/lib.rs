@@ -202,7 +202,19 @@ pub struct GraphicsParam
 pub enum AntiAliasing
 {
     #[default]
+    /// Use the same anti-aliasing as the previous rendering pass
+    Same,
+
     Linear,
     /// Ideal for Pixel Art
     Nearest,
+}
+
+impl AntiAliasing
+{
+    pub const fn is_same(self) -> bool { matches!(self, AntiAliasing::Same) }
+    pub const fn is_linear(self) -> bool { matches!(self, AntiAliasing::Linear) }
+    pub const fn is_nearest(self) -> bool { matches!(self, AntiAliasing::Nearest) }
+
+    pub fn is_same_as(self, other : Self) -> bool { (self.is_same() || other.is_same()) || (self == other) }
 }

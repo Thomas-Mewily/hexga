@@ -3,6 +3,11 @@ use hexga::math::unit::WrappedIterator;
 use miniquad::{Bindings,BufferId,TextureId,BufferType,BufferUsage,BufferSource,Backend,ShaderSource,VertexAttribute,PipelineParams,BufferLayout,VertexFormat,ShaderMeta,UniformBlockLayout};
 type PipelineID = miniquad::Pipeline;
 
+pub trait Render
+{
+    
+}
+
 pub struct Pen;
 
 impl Deref for Pen
