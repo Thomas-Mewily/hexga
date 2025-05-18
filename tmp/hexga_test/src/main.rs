@@ -38,6 +38,29 @@ impl EventLoop for TestCtx
         }
         Pen.make_convex_poly();
 
+        Pen.end_pass();
+        Pen.end_draw();
+    }
+
+
+
+
+
+
+
+
+
+    
+        //for c in (0.0..1.0).sample(128. + (self.time.s() * 1.).cos() * 7.)
+
+        /* 
+                Pen.color(Color::PINK);
+        for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 7.)
+        {
+            Pen.set_pos(Angle::from_turn(c).to_vec2(0.5 + (c.turn() * 6.0).cos() * 0.2)).down();
+        }
+        */
+
         /* 
         Pen.color(Color::YELLOW);
         for angle in (..=Angle::FLAT).step(67.degree()) //.sample(8)
@@ -90,9 +113,7 @@ impl EventLoop for TestCtx
         Pen.draw_triangle_test();
         */
 
-        Pen.end_pass();
-        Pen.end_draw();
-    }
+
 
     fn handle_event(&mut self, event : &Event) -> bool {
         println!("{:?}", event);

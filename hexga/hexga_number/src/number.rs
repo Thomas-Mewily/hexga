@@ -60,25 +60,32 @@ impl<T> ArithmeticNegative for T where T : Neg<Output = Self> {}
 pub trait Number             : NumberArithmetic + One + PartialEq + PartialOrd + MinValue + MaxValue {}
 impl<T> Number for T where T : NumberArithmetic + One + PartialEq + PartialOrd + MinValue + MaxValue {}
 
-/// fX or iX
 pub trait NumberNegative             : Number + ArithmeticNegative + MinusOne {}
 impl<T> NumberNegative for T where T : Number + ArithmeticNegative + MinusOne {}
 
+/// fX or uX or iX
+pub trait PrimitiveNumber : Number + PrimitiveNumberCategory {}
+impl<T> PrimitiveNumber for T where T : Number + PrimitiveNumberCategory {}
+
+/// fX or or iX
+pub trait PrimitiveNumberNegative : PrimitiveNumber + NumberNegative {}
+impl<T> PrimitiveNumberNegative for T where T : PrimitiveNumber +  NumberNegative {}
+
 /// fX
-pub trait NumberFloat             : NumberNegative + Half + NaNValue {}
-impl<T> NumberFloat for T where T : NumberNegative + Half + NaNValue {}
+pub trait NumberFloat             : PrimitiveNumberNegative + Half + NaNValue {}
+impl<T> NumberFloat for T where T : PrimitiveNumberNegative + Half + NaNValue {}
 
 /// uX or iX
-pub trait NumberInteger             : Number + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + NumberAttibute {}
-impl<T> NumberInteger for T where T : Number + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + NumberAttibute {}
+pub trait NumberInteger             : PrimitiveNumber + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior {}
+impl<T> NumberInteger for T where T : PrimitiveNumber + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior {}
 
 /// uX
 pub trait NumberIntegerUnsigned             : NumberInteger {}
 impl<T> NumberIntegerUnsigned for T where T : NumberInteger {}
 
 /// iX
-pub trait NumberIntegerSigned             : NumberInteger + NumberNegative {}
-impl<T> NumberIntegerSigned for T where T : NumberInteger + NumberNegative {}
+pub trait NumberIntegerSigned             : NumberInteger + PrimitiveNumberNegative {}
+impl<T> NumberIntegerSigned for T where T : NumberInteger + PrimitiveNumberNegative {}
 
 // Todo : impl it for vector / array ?
 pub trait BitManip

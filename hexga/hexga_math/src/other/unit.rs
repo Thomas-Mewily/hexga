@@ -181,10 +181,14 @@ macro_rules! new_unit
             }
         );
 
-        impl<T> std::ops::Div<Self> for $name<T> where T : std::ops::Div<T,Output=T>
+        impl<T> std::ops::Mul<T> for $name<T> where T : std::ops::Mul<T,Output=T>
         {
-            type Output = T;
-            fn div(self, rhs : Self) -> Self::Output { self.0.div(rhs.0) }
+            type Output = Self;
+            fn mul(self, rhs : T) -> Self::Output { Self(self.0.mul(rhs)) }
+        }
+        impl<T> std::ops::MulAssign<T> for $name<T> where T : std::ops::MulAssign<T>
+        {
+            fn mul_assign(&mut self, rhs : T) { self.0.mul_assign(rhs); }
         }
 
         impl<T> std::ops::Div<T> for $name<T> where T : std::ops::Div<T,Output=T>

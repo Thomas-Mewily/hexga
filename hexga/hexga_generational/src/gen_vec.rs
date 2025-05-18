@@ -7,8 +7,8 @@ pub type Generation = u32;
 pub type GenVec<T> = GenVecOf<T,Generation>;
 pub type GenID<T>  = GenIDOf<T,Generation>;
 
-pub trait IGeneration             : Eq + Hash + Ord + Increase + Decrease + NumberAttibute + Debug + MaxValue + MinValue + Copy {}
-impl<T> IGeneration for T where T : Eq + Hash + Ord + Increase + Decrease + NumberAttibute + Debug + MaxValue + MinValue + Copy {}
+pub trait IGeneration             : Eq + Hash + Ord + Increase + Decrease + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
+impl<T> IGeneration for T where T : Eq + Hash + Ord + Increase + Decrease + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

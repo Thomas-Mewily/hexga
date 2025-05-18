@@ -55,8 +55,10 @@ pub trait HaveXAndOne<T> : HaveX<T>
     /// `+ X`
     const RIGHT : Self = Self::X;
     /// `+ X`
+    #[must_use]
     fn right(self) -> Self where Self : Add<Self,Output=Self> { self + Self::X }
     /// `- X`
+    #[must_use]
     fn left (self) -> Self where Self : Sub<Self,Output=Self> { self - Self::X }
 }
 pub trait HaveXAndMinusOne<T> : HaveX<T>
@@ -80,8 +82,10 @@ pub trait HaveYAndOne<T> : HaveY<T>
     /// `+ Y`
     const UP : Self = Self::Y;
     /// `+ Y`
+    #[must_use]
     fn up(self) -> Self where Self : Add<Self,Output=Self> { self + Self::Y }
     /// `- Y`
+    #[must_use]
     fn down(self) -> Self where Self : Sub<Self,Output=Self> { self - Self::Y }
 }
 pub trait HaveYAndMinusOne<T> : HaveY<T>
@@ -105,8 +109,10 @@ pub trait HaveZAndOne<T> : HaveZ<T>
     /// `+ Z`
     const FORWARD : Self = Self::Z;
     /// `+ Z`
+    #[must_use]
     fn forward(self) -> Self where Self : Add<Self,Output=Self> { self + Self::Z }
     /// `- Z`
+    #[must_use]
     fn backward(self) -> Self where Self : Sub<Self,Output=Self> { self - Self::Z }
 }
 pub trait HaveZAndMinusOne<T> : HaveZ<T>
@@ -130,8 +136,10 @@ pub trait HaveWAndOne<T> : HaveW<T>
     /// `+ W`
     const ANA : Self = Self::W;
     /// `+ W`
+    #[must_use]
     fn ana(self) -> Self where Self : Add<Self,Output=Self> { self + Self::W }
     /// `- W`
+    #[must_use]
     fn kata (self) -> Self where Self : Sub<Self,Output=Self> { self - Self::W }
 }
 pub trait HaveWAndMinusOne<T> : HaveW<T>
