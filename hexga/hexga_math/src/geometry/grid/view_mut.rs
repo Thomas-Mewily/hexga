@@ -8,7 +8,7 @@ pub trait IGridViewMut<T, Param, Idx, const N : usize> : IGridView<T,Param,Idx,N
 
     fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item=(Vector<Idx,N>, &'a mut T)> where T: 'a
     {
-        let r = self.rect();
+        let r = self.size();
 
         // SAFELY get a raw pointer to the underlying storage
         let ptr = self as *mut Self;

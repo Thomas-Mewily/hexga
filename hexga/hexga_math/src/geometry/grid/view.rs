@@ -29,7 +29,7 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output =
 
     fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<Idx,N>, &'a T)> where T: 'a
     {
-        let r = self.rect(); 
+        let r = self.size(); 
         r.iter_idx().map(|p| (p, unsafe { self.get_unchecked(p) }))
     }
 }

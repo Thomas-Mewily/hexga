@@ -17,5 +17,5 @@ fn main()
     dbg!(it.next_back());
     dbg!(it.next_back());
 
-    dbg!(rect2p(4,4,6,6).iter_idx().to_vec());
+    dbg!(rect2p(8,8,112,112).iter_idx().to_vec());
 }
