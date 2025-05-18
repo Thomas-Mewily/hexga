@@ -1,35 +1,4 @@
-//! mainly based on miniquad
 use crate::*;
-
-mod buffer;
-use buffer::*;
-
-mod untyped_slice;
-use untyped_slice::*;
-
-mod render_pass;
-use render_pass::*;
-
-mod vertex;
-use vertex::*;
-
-mod shader;
-use shader::*;
-
-mod pipeline;
-use pipeline::*;
-
-mod texture;
-use texture::*;
-
-mod bindings;
-use bindings::*;
-
-pub mod prelude
-{
-    //pub use super::buffer::Buffer;
-    pub use super::texture::Texture;
-}
 
 
 // #proper_error
@@ -77,6 +46,3 @@ pub trait Render
     fn end_frame(&mut self);
     fn draw(&mut self, base_element: usize, num_elements: usize, num_instances: usize);
 }
-
-
-

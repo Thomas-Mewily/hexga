@@ -290,14 +290,31 @@ checksum = "f154ce46856750ed433c8649605bf7ed2de3bc35fd9d2a9f30cddd873c80cb08"
 name = "hexga"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_ansi_color",
- "hexga_bitflags",
- "hexga_core",
- "hexga_generational",
- "hexga_io",
- "hexga_map_on",
- "hexga_math",
- "hexga_tools",
+ "hexga_ansi_color 0.0.10-beta.11",
+ "hexga_bitflags 0.0.10-beta.11",
+ "hexga_core 0.0.10-beta.11",
+ "hexga_generational 0.0.10-beta.11",
+ "hexga_io 0.0.10-beta.11",
+ "hexga_map_on 0.0.10-beta.11",
+ "hexga_math 0.0.10-beta.11",
+ "hexga_tools 0.0.10-beta.11",
+ "serde",
+]
+
+[[package]]
+name = "hexga"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ddeb6cb182cfb8d7a900fcf5571e41802e18b39cc701d337c6c9ec09c509fc58"
+dependencies = [
+ "hexga_ansi_color 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_bitflags 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_core 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_generational 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_io 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_map_on 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_math 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_tools 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
 ]
 
@@ -309,10 +326,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_ansi_color"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63cb5bb1313ed605765087113781b413115c37296347999d51b7102893409d2d"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "hexga_array"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_map_on",
+ "hexga_map_on 0.0.10-beta.11",
+]
+
+[[package]]
+name = "hexga_array"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8ca1a1be83a46446e40326bb37c6d7e8c20fb072b7cbb4334c1c86e4f302193"
+dependencies = [
+ "hexga_map_on 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -323,7 +358,17 @@ version = "0.0.10-beta.11"
 name = "hexga_bitflags"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_number",
+ "hexga_number 0.0.10-beta.11",
+ "serde",
+]
+
+[[package]]
+name = "hexga_bitflags"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88dc3efef30bed248609e641fe95c19c5c70bc7fd8e84c6a9ca39f3860b6cc57"
+dependencies = [
+ "hexga_number 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
 ]
 
@@ -332,7 +377,18 @@ name = "hexga_core"
 version = "0.0.10-beta.11"
 dependencies = [
  "default_is_triple_underscore",
- "hexga_number",
+ "hexga_number 0.0.10-beta.11",
+ "rayon",
+]
+
+[[package]]
+name = "hexga_core"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf525a008031abc796fda07fa186a0eca7f850477eab74a2e5492377137fad55"
+dependencies = [
+ "default_is_triple_underscore",
+ "hexga_number 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "rayon",
 ]
 
@@ -340,16 +396,27 @@ dependencies = [
 name = "hexga_engine"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga",
+ "hexga 0.0.10-beta.11",
  "miniquad",
  "serde",
 ]
 
 [[package]]
-name = "hexga_engine_core"
+name = "hexga_engine"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cee3b3588374eb37aef8652a9333a13814a99e84defdb64aa9db7214f87136c"
+dependencies = [
+ "hexga 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "miniquad",
+ "serde",
+]
+
+[[package]]
+name = "hexga_engine_render"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga",
+ "hexga 0.0.10-beta.11",
  "hexga_graphics",
  "serde",
 ]
@@ -358,8 +425,19 @@ dependencies = [
 name = "hexga_generational"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_core",
- "hexga_number",
+ "hexga_core 0.0.10-beta.11",
+ "hexga_number 0.0.10-beta.11",
+ "serde",
+]
+
+[[package]]
+name = "hexga_generational"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32c4ad4646c93d481679cbebea73790a9a844f66b1fda75391cb222882a024ea"
+dependencies = [
+ "hexga_core 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_number 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
 ]
 
@@ -367,8 +445,8 @@ dependencies = [
 name = "hexga_graphics"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_core",
- "hexga_math",
+ "hexga_core 0.0.10-beta.11",
+ "hexga_math 0.0.10-beta.11",
  "image",
  "serde",
 ]
@@ -378,7 +456,21 @@ name = "hexga_io"
 version = "0.0.10-beta.11"
 dependencies = [
  "bincode",
- "hexga_core",
+ "hexga_core 0.0.10-beta.11",
+ "quick-xml",
+ "ron",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "hexga_io"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7d6423c17b1d5a125e8a46eb01c6691d3cf101203ce0a78994e78512c40b05e"
+dependencies = [
+ "bincode",
+ "hexga_core 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "quick-xml",
  "ron",
  "serde",
@@ -390,13 +482,32 @@ name = "hexga_map_on"
 version = "0.0.10-beta.11"
 
 [[package]]
+name = "hexga_map_on"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a2e7a6a7f0ab8d0b6a4707b6040b0ae4e882ddd0f634c53afa9888cb026164f"
+
+[[package]]
 name = "hexga_math"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_array",
- "hexga_core",
- "hexga_number",
- "hexga_typedef",
+ "hexga_array 0.0.10-beta.11",
+ "hexga_core 0.0.10-beta.11",
+ "hexga_number 0.0.10-beta.11",
+ "hexga_typedef 0.0.10-beta.11",
+ "serde",
+]
+
+[[package]]
+name = "hexga_math"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "718c7162560cb55ad35d36db91368e5564e57c4961aaef48481e0a8251c24da5"
+dependencies = [
+ "hexga_array 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_core 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_number 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_typedef 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
 ]
 
@@ -404,7 +515,16 @@ dependencies = [
 name = "hexga_number"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_map_on",
+ "hexga_map_on 0.0.10-beta.11",
+]
+
+[[package]]
+name = "hexga_number"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0420292cf104f77b9a367cb729e67b4ed84f34c6dbc2ca82225277a878047b2b"
+dependencies = [
+ "hexga_map_on 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -412,18 +532,28 @@ name = "hexga_test"
 version = "0.0.10-beta.11"
 dependencies = [
  "criterion",
- "hexga",
- "hexga_engine",
- "hexga_generational",
+ "hexga 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_engine 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_generational 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "hexga_tools"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_core",
- "hexga_number",
+ "hexga_core 0.0.10-beta.11",
+ "hexga_number 0.0.10-beta.11",
  "serde",
+]
+
+[[package]]
+name = "hexga_tools"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98dab37422203bb2d097480cc641800a3ec565a65125b6642be04bb83bf13b7e"
+dependencies = [
+ "hexga_core 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hexga_number 0.0.10-beta.11 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -431,10 +561,16 @@ name = "hexga_typedef"
 version = "0.0.10-beta.11"
 
 [[package]]
+name = "hexga_typedef"
+version = "0.0.10-beta.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19d0332df0650d44f4ac203e0e8b04a142a87c9b5fb0b5248b646e501209aea0"
+
+[[package]]
 name = "hexga_undo_redo"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_core",
+ "hexga_core 0.0.10-beta.11",
 ]
 
 [[package]]
@@ -783,10 +919,10 @@ dependencies = [
 name = "test2"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga",
- "hexga_engine",
- "hexga_generational",
- "hexga_map_on",
+ "hexga 0.0.10-beta.11",
+ "hexga_engine 0.0.10-beta.11",
+ "hexga_generational 0.0.10-beta.11",
+ "hexga_map_on 0.0.10-beta.11",
 ]
 
 [[package]]

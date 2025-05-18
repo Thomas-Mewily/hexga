@@ -59,7 +59,7 @@ impl Default for PipelineParams
         { 
             cull_face: CullFace::Nothing, 
             front_face_order: FrontFaceOrder::CounterClockwise, 
-            color_mask: Default::default(), 
+            color_mask: ColorMask::splat_rgba(false), 
             primitive_type: PrimitiveType::Triangles,
         }
     }

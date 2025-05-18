@@ -3,7 +3,6 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-/* 
 use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_box, marker::PhantomData, num::Wrapping};
 use criterion::{BenchmarkId, Criterion};
 
@@ -33,19 +32,24 @@ impl EventLoop for TestCtx
            .make_triangle();
 
         Pen.color(Color::PINK);
+        for c in (0.0..1.0).sample(42)
+        {
+            Pen.set_pos(Angle::from_turn(c).to_vec2(0.5)).down();
+        }
+        Pen.make_convex_poly();
 
         /* 
         for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 7.)
         {
             Pen.set_pos(Angle::from_turn(c).to_vec2(0.5)).down();
         }
-        */
 
         for angle in Angle::sample(3)
         {
             Pen.set_pos(angle.to_vec2(0.5)).down();
         }
         Pen.make_convex_poly();
+        */
 
         Pen.end_pass();
         Pen.end_draw();
@@ -137,10 +141,9 @@ fn main()
         .with_window_config(WindowConfig::new().title("hello"))
         .run(|| TestCtx::___());
 }
-*/
 
-
+/* 
 fn main() 
 {
     for _ in 0..10 { println!(); }
-}
+}*/

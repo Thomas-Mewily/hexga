@@ -14,19 +14,19 @@ edition = "2024"
 
 #hexga_test         = { path = "./tmp/hexga_test",         version = "0.0.10-beta.11", default-features = false }
 
-hexga_core         = { path = "./hexga/hexga_core",         version = "0.0.10-beta.11", default-features = false }
-hexga_math         = { path = "./hexga/hexga_math",         version = "0.0.10-beta.11", default-features = false }
-hexga_generational = { path = "./hexga/hexga_generational", version = "0.0.10-beta.11", default-features = false }
-hexga_array        = { path = "./hexga/hexga_array",        version = "0.0.10-beta.11", default-features = false }
-hexga_number       = { path = "./hexga/hexga_number",       version = "0.0.10-beta.11", default-features = false }
-hexga_map_on       = { path = "./hexga/hexga_map_on",       version = "0.0.10-beta.11", default-features = false }
-hexga_typedef      = { path = "./hexga/hexga_typedef",      version = "0.0.10-beta.11", default-features = false }
-hexga_bitflags     = { path = "./hexga/hexga_bitflags",     version = "0.0.10-beta.11", default-features = false }
-hexga_graphics     = { path = "./hexga/hexga_graphics",     version = "0.0.10-beta.11", default-features = false }
-hexga_io           = { path = "./hexga/hexga_io",           version = "0.0.10-beta.11", default-features = false }
-#hexga_undo_redo   = { path = "./hexga/hexga_undo_redo",    version = "0.0.10-beta.11", default-features = false }
-hexga_ansi_color   = { path = "./hexga/hexga_ansi_color",   version = "0.0.10-beta.11", default-features = false }
-hexga_tools        = { path = "./hexga/hexga_tools",        version = "0.0.10-beta.11", default-features = false }
-hexga              = { path = "./hexga/hexga",              version = "0.0.10-beta.11", default-features = false }
-hexga_engine_core  = { path = "./hexga/hexga_engine_core",  version = "0.0.10-beta.11", default-features = false }
-hexga_engine       = { path = "./hexga/hexga_engine",       version = "0.0.10-beta.11", default-features = false }
+hexga_core          = { path = "./hexga/hexga_core",          version = "0.0.10-beta.11", default-features = false }
+hexga_math          = { path = "./hexga/hexga_math",          version = "0.0.10-beta.11", default-features = false }
+hexga_generational  = { path = "./hexga/hexga_generational",  version = "0.0.10-beta.11", default-features = false }
+hexga_array         = { path = "./hexga/hexga_array",         version = "0.0.10-beta.11", default-features = false }
+hexga_number        = { path = "./hexga/hexga_number",        version = "0.0.10-beta.11", default-features = false }
+hexga_map_on        = { path = "./hexga/hexga_map_on",        version = "0.0.10-beta.11", default-features = false }
+hexga_typedef       = { path = "./hexga/hexga_typedef",       version = "0.0.10-beta.11", default-features = false }
+hexga_bitflags      = { path = "./hexga/hexga_bitflags",      version = "0.0.10-beta.11", default-features = false }
+hexga_graphics      = { path = "./hexga/hexga_graphics",      version = "0.0.10-beta.11", default-features = false }
+hexga_io            = { path = "./hexga/hexga_io",            version = "0.0.10-beta.11", default-features = false }
+#hexga_undo_redo    = { path = "./hexga/hexga_undo_redo",     version = "0.0.10-beta.11", default-features = false }
+hexga_ansi_color    = { path = "./hexga/hexga_ansi_color",    version = "0.0.10-beta.11", default-features = false }
+hexga_tools         = { path = "./hexga/hexga_tools",         version = "0.0.10-beta.11", default-features = false }
+hexga               = { path = "./hexga/hexga",               version = "0.0.10-beta.11", default-features = false }
+hexga_engine_render = { path = "./hexga/hexga_engine_render", version = "0.0.10-beta.11", default-features = false }
+hexga_engine        = { path = "./hexga/hexga_engine",        version = "0.0.10-beta.11", default-features = false }
