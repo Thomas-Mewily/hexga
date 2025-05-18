@@ -25,3 +25,4 @@ hexga_engine_render
 hexga_engine_core
 
 hexga_engine
+quad_hexga_engine

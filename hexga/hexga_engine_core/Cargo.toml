@@ -8,7 +8,7 @@ repository.workspace = true
 edition.workspace = true
 
 keywords = []
-description = "A small (work in progress) game framework"
+description = "The heart of the Hexga Game Engine"
 categories = ["game-development", "rendering", "multimedia", "graphics"]
 
 [features]
