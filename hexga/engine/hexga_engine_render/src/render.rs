@@ -1,5 +1,10 @@
 use crate::*;
 
+pub trait LoopDraw
+{
+    fn draw(&mut self);
+}
+impl LoopDraw for () { fn draw(&mut self) {} }
 
 // #proper_error
 // miniquad render wrapper

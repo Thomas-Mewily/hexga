@@ -1,9 +1,9 @@
 //! Window / Events interface for the Hexga Engine based on [MiniQuad](https://github.com/not-fl3/miniquad)
 
-mod events;
-pub use events::*;
+mod window;
+pub use window::*;
 
 pub mod prelude
 {
-    pub use crate::events::*;
+    pub use crate::window::*;
 }

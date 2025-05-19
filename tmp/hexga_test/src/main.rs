@@ -3,26 +3,23 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-use std::{any::{Any, TypeId}, collections::HashMap, fmt::Display, hint::black_box, marker::PhantomData, num::Wrapping};
-use criterion::{BenchmarkId, Criterion};
+pub use quad_hexga_engine::prelude::*;
 
-//use hexga_graphics::Image;
-use hexga::{math::Lerpable, prelude::*};
-use hexga_generational::{gen_vec::{GenVecOf, Generation}, prelude::*};
-use hexga_engine::{Event, EventLoop, GpuVec2, Vertex, MultiMediaConfig, Pen, WindowConfig};
 
 #[derive(Default)]
 pub struct TestCtx
 {
     time : Time,
 }
-impl EventLoop for TestCtx
+impl LoopWindow for TestCtx
 {
-    fn update(&mut self) {
+    fn window_update(&mut self) {
         self.time += (1./60.).s();
     }
 
-    fn draw(&mut self) {
+    fn window_draw(&mut self) 
+    {
+        
         Pen.begin_draw();
         Pen.begin_pass();
 
@@ -135,7 +132,7 @@ impl EventLoop for TestCtx
 
 
 
-    fn handle_event(&mut self, event : &Event) -> bool {
+    fn window_handle_event(&mut self, event : Event) -> bool {
         println!("{:?}", event);
         true
     }

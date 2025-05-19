@@ -1,29 +1,22 @@
 #![allow(unused_imports)]
+use std::{fmt::Debug, ops::*};
 use hexga::prelude::*;
 use hexga::ansi_color::AnsiColor;
-use miniquad::EventHandler;
 
-use std::{fmt::Debug, ops::*};
 
-/* 
-mod log;
-pub use log::*;
+pub use hexga_engine_render as render;
+pub use hexga_engine_events as events;
+pub use hexga;
 
-mod event;
-pub use event::*;
+pub mod window;
 
-mod conf;
-pub use conf::*;
+use events::prelude::*;
+use render::prelude::*;
 
-mod gpu;
-pub use gpu::*;
-
-mod pen;
-pub use pen::*;
-
-mod context;
-pub use context::*;
-
-mod render_backend;
-pub use render_backend::*;
-*/
+pub mod prelude
+{
+    pub use crate::hexga ::prelude::*;
+    pub use crate::render::prelude::*;
+    pub use crate::events::prelude::*;
+    pub use crate::window::prelude::*;
+}

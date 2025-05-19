@@ -1,5 +1,6 @@
 use crate::*;
 
+/* 
 static mut CONTEXT : Option<Context> = None;
 
 #[allow(static_mut_refs)]
@@ -157,3 +158,4 @@ impl EventHandler for Ctx
 //pub type EventResult<T=Event> = Result<T,()>;
 
 
+*/

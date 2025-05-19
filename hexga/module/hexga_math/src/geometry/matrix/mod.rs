@@ -287,19 +287,20 @@ impl<T, const N : usize> Half for SquareMatrix<T,N> where T : Half + Zero + Copy
     };
 }
 
-impl<T, const ROW : usize, const COL : usize> MinValue for Matrix<T,ROW,COL> where T : MinValue + Copy
-{
-    const MIN : Self = Self::from_col(Vector::from_array([Vector::from_array([T::MIN; ROW]); COL]));
-}
-impl<T, const ROW : usize, const COL : usize> MaxValue for Matrix<T,ROW,COL> where T : MaxValue + Copy
-{
-    const MAX : Self = Self::from_col(Vector::from_array([Vector::from_array([T::MAX; ROW]); COL]));
-}
-impl<T, const ROW : usize, const COL : usize> NaNValue for Matrix<T,ROW,COL> where T : NaNValue + Copy
-{
-    const NAN : Self = Self::from_col(Vector::from_array([Vector::from_array([T::NAN; ROW]); COL]));
-}
-
+map_on!(
+    (
+        (MinValue, MIN),
+        (MaxValue, MAX),
+        (NaNValue, NAN)
+    ),
+    (($trait_name : ident, $constant_name : ident)) => 
+    {
+        impl<T, const ROW : usize, const COL : usize> $trait_name for Matrix<T,ROW,COL> where T : $trait_name + Copy
+        {
+            const $constant_name : Self = Self::from_col(Vector::from_array([Vector::from_array([T::$constant_name; ROW]); COL]));
+        }
+    }
+);
 
 impl<T, const ROW : usize, const COL : usize> Add<Self> for Matrix<T,ROW,COL> 
     where 

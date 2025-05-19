@@ -4,10 +4,10 @@ This crate is currently in **beta** and **experimental**.
 It is subject to **breaking changes** in future releases.  
 Use it at your own risk, and keep in mind that the API may change in future versions.
 
-## HexGa Engine
+## HexGa Engine Window
 
-Hexga Game Engine
-Add featured on top of the Hexga Game Engine Core
+Window handling interface for the Hexga Engine.
+This crate don't contain any platform specific implementation.
 
 Mainly based/inspired based on the [MiniQuad crate](https://github.com/not-fl3/miniquad)
 Not finished yet / work in progress...

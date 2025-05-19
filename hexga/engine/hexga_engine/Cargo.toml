@@ -29,6 +29,5 @@ serde = ["dep:serde", "hexga_engine_core/serde"]
 [dependencies]
 hexga_engine_core.workspace = true
 
-miniquad = "0.4.8"
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 

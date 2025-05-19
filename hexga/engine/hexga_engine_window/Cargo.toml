@@ -1,5 +1,5 @@
 [package]
-name = "hexga_engine_events"
+name = "hexga_engine_window"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -8,7 +8,7 @@ repository.workspace = true
 edition.workspace = true
 
 keywords = []
-description = "Events interface for the Hexga Engine"
+description = "Window interface for the Hexga Engine"
 categories = []
 
 [features]

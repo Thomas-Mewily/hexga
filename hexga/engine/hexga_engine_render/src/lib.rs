@@ -31,14 +31,14 @@ pub mod bindings;
 use bindings::*;
 
 mod render;
-use render::*;
+pub use render::*;
 
 mod untyped_slice;
-use untyped_slice::*;
+pub use untyped_slice::*;
 
 pub mod prelude
 {
     //pub use super::buffer::Buffer;
     pub use super::texture::Texture;
-    pub use super::render::Render;
+    pub use super::render::{Render, LoopDraw};
 }

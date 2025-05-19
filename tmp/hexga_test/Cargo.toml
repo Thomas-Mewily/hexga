@@ -11,35 +11,30 @@ edition.workspace = true
 default = [
             "int_are_32_bits", "float_are_32_bits",
             "serde", 
-            "serde_json", "serde_ron", "serde_xml", "serde_quick_bin"
+            #"serde_json", "serde_ron", "serde_xml", "serde_quick_bin"
           ]
 
-int_are_8_bits    = ["hexga/int_are_8_bits"]
-int_are_16_bits   = ["hexga/int_are_16_bits"]
-int_are_32_bits   = ["hexga/int_are_32_bits"]
-int_are_64_bits   = ["hexga/int_are_64_bits"]
-int_are_size_bits = ["hexga/int_are_size_bits"]
+int_are_8_bits    = ["quad_hexga_engine/int_are_8_bits"]
+int_are_16_bits   = ["quad_hexga_engine/int_are_16_bits"]
+int_are_32_bits   = ["quad_hexga_engine/int_are_32_bits"]
+int_are_64_bits   = ["quad_hexga_engine/int_are_64_bits"]
+int_are_size_bits = ["quad_hexga_engine/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga/float_are_32_bits"]
-float_are_64_bits   = ["hexga/float_are_64_bits"]
-float_are_size_bits = ["hexga/float_are_size_bits"]
+float_are_32_bits   = ["quad_hexga_engine/float_are_32_bits"]
+float_are_64_bits   = ["quad_hexga_engine/float_are_64_bits"]
+float_are_size_bits = ["quad_hexga_engine/float_are_size_bits"]
 
-serde           = ["hexga/serde"]
+serde           = ["quad_hexga_engine/serde"]
 
-serde_json      = ["hexga/serde_json"]
-serde_ron       = ["hexga/serde_ron"]
-serde_xml       = ["hexga/serde_xml"]
-serde_quick_bin = ["hexga/serde_quick_bin"]
+# serde_json      = ["hexga/serde_json"]
+# serde_ron       = ["hexga/serde_ron"]
+# serde_xml       = ["hexga/serde_xml"]
+# serde_quick_bin = ["hexga/serde_quick_bin"]
 
 [dependencies]
 #hexga.workspace = true
 #hexga_graphics.workspace = true
 #hexga_generational.workspace = true
-#hexga_engine.workspace = true
-
-hexga = "0.0.10-beta.11"
-hexga_generational = "0.0.10-beta.11"
-hexga_engine = "0.0.10-beta.11"
-
-criterion = "0.5.1"
+quad_hexga_engine.workspace = true
+#criterion = "0.5.1"
 #hexga_generational = "0.0.5"

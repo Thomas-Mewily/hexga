@@ -22,4 +22,4 @@ macro_rules! error {
     };
 }
 
-pub(crate) use crate::{log, warn, error};
+pub use crate::{log, warn, error};
