@@ -6,12 +6,12 @@ use hexga::ansi_color::AnsiColor;
 
 pub use hexga_engine_render as render;
 pub use hexga_engine_events as events;
+pub use hexga_engine_window as window;
 pub use hexga;
 
-pub mod window;
+pub mod log;
 
-use events::prelude::*;
-use render::prelude::*;
+use prelude::*;
 
 pub mod prelude
 {

@@ -6,10 +6,12 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## HexGa Engine Core
 
-A small game framework.
-Regroup the Rendering part `hexga_engine_render` with the Events part `hexga_engine_events` crate
+Game Engine interface for the Hexga Engine.
 
-Render / Event loop based on [MiniQuad](https://github.com/not-fl3/miniquad)
+Regroup together : 
+- Render part `hexga_engine_render`,
+- Events part `hexga_engine_events`,
+- Window part `hexga_engine_window`.
 
 Not finished yet / work in progress...
 
