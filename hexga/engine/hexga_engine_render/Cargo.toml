@@ -12,22 +12,9 @@ description = "Rendering interface for the Hexga Engine"
 categories = []
 
 [features]
-default = ["serde", "int_are_32_bits", "float_are_32_bits"]
+default = ["serde"]
 
-int_are_8_bits    = ["hexga/int_are_8_bits", "hexga_graphics/int_are_8_bits"]
-int_are_16_bits   = ["hexga/int_are_16_bits", "hexga_graphics/int_are_16_bits"]
-int_are_32_bits   = ["hexga/int_are_32_bits", "hexga_graphics/int_are_32_bits"]
-int_are_64_bits   = ["hexga/int_are_64_bits", "hexga_graphics/int_are_64_bits"]
-int_are_size_bits = ["hexga/int_are_size_bits", "hexga_graphics/int_are_size_bits"]
-
-float_are_32_bits   = ["hexga/float_are_32_bits", "hexga_graphics/float_are_32_bits"]
-float_are_64_bits   = ["hexga/float_are_64_bits", "hexga_graphics/float_are_64_bits"]
-float_are_size_bits = ["hexga/float_are_size_bits", "hexga_graphics/float_are_size_bits"]
-
-serde = ["dep:serde", "hexga/serde"]
+serde = ["dep:serde"]
 
 [dependencies]
-hexga.workspace = true
-hexga_graphics.workspace = true
-
 serde = { version = "1.0.0", features = ["derive"], optional = true }

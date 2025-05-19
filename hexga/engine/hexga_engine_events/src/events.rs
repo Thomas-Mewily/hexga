@@ -1,6 +1,8 @@
 //! mainly inspired by miniquad
 use std::fmt::Debug;
-use hexga::prelude::*;
+use hexga_core::prelude::*;
+
+pub type EventsVec2 = (f32, f32);
 
 pub trait LoopEvent
 {
@@ -45,7 +47,7 @@ pub struct TouchEvent
 {
     pub phase    : TouchPhase,
     pub id       : TouchID,
-    pub position : Vec2,
+    pub position : EventsVec2,
 }
 
 pub type TouchID = u64;
@@ -71,7 +73,7 @@ impl TouchPhase
 #[derive(Debug, Clone, PartialEq)]
 pub enum WindowEvent
 {
-    Resize(Vec2),
+    Resize(EventsVec2),
     Minimized,
     Restored,
     Quit,
@@ -138,20 +140,20 @@ impl Debug for CharEvent
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MouseEvent
 {
-    Wheel(Vec2),
-    Move(Vec2),
+    Wheel(EventsVec2),
+    Move(EventsVec2),
     Button(MouseButtonEvent),
 
     /// Represents raw hardware mouse motion event
     /// Note that these events are delivered regardless of input focus and not in pixels, but in
     /// hardware units instead. And those units may be different from pixels depending on the target platform
-    RawMove(Vec2),
+    RawMove(EventsVec2),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MouseButtonEvent
 {
-    pub position : Vec2,
+    pub position : EventsVec2,
     pub button   : MouseButton,
     pub press    : bool,
 }
@@ -181,7 +183,6 @@ pub struct KeyMods {
     pub alt  : bool,
     pub logo : bool,
 }
-
 
 impl Debug for KeyMods
 {

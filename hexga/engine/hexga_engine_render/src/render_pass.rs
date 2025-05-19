@@ -13,7 +13,7 @@ pub enum PassAction
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ClearData
 {
-    pub color: Option<Color>,
+    pub color: Option<RenderColorRGBA>,
     pub depth: Option<f32>,
     //pub stencil: Option<i32>,
 }

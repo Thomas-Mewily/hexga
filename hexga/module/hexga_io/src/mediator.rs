@@ -81,23 +81,17 @@ pub trait IoSave where Self: Sized + Serialize + for<'de> Deserialize<'de>
     {
         match extension.is_markup_extension()
         {
-            true => 
+            true => match extension
             {
-                let str = match extension
-                {
-                    #[cfg(feature = "serde_ron")]
-                    Io::RON_EXTENSION  => self.to_ron()?,
+                #[cfg(feature = "serde_ron")]
+                Io::RON_EXTENSION  => self.to_ron()?,
 
-                    #[cfg(feature = "serde_json")]
-                    Io::JSON_EXTENSION =>  self.to_json()?,
-                    
-                    #[cfg(feature = "serde_xml")]
-                    Io::XML_EXTENSION => self.to_xml()?,
-                    _ => unreachable!(),
-                };
-
-                unreachable!();
-                //write!(bytes, "{}", str).map_err(|e| IoError::new_serialize::<Self>(extension, e.to_debug()))
+                #[cfg(feature = "serde_json")]
+                Io::JSON_EXTENSION =>  self.to_json()?,
+                
+                #[cfg(feature = "serde_xml")]
+                Io::XML_EXTENSION => self.to_xml()?,
+                _ => unreachable!(),
             },
             false => match self.io_get_based_on()
             {

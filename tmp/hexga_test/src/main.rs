@@ -20,20 +20,6 @@ impl LoopWindow for TestCtx
     fn window_draw(&mut self) 
     {
         
-        Pen.begin_draw();
-        Pen.begin_pass();
-
-        Pen.color(Color::RED).set_pos(vec2(-1., 1.)).down()
-           .color(Color::BLUE).pos2(vec2(1., 1.)).down()
-           .color(Color::GREEN).pos2(vec2(0.0, -1.)).down()
-           .make_triangle();
-
-        Pen.color(Color::PINK);
-        for c in (Angle::ZERO..Angle::FULL).sample(40)
-        {
-            Pen.set_pos(c.to_vec2(0.5)).down();
-        }
-        Pen.make_convex_poly();
 
         /* 
         for angle in Angle::sample(3)
@@ -43,7 +29,6 @@ impl LoopWindow for TestCtx
         */
         
         /* 
-        for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 7.)
         {
             Pen.set_pos(Angle::from_turn(c).to_vec2(0.5)).down();
         }
@@ -150,4 +135,24 @@ fn main()
 fn main() 
 {
     for _ in 0..10 { println!(); }
-}*/
+}
+    
+        Pen.begin_draw();
+        Pen.begin_pass();
+
+        Pen.color(Color::RED).set_pos(vec2(-1., 1.)).down()
+           .color(Color::BLUE).pos2(vec2(1., 1.)).down()
+           .color(Color::GREEN).pos2(vec2(0.0, -1.)).down()
+           .make_triangle();
+
+        Pen.color(Color::PINK);
+        
+        //  for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 7.)
+        for c in (Angle::ZERO..Angle::FULL).sample(40)
+        {
+            Pen.set_pos(c.to_vec2(0.5)).down();
+        }
+        Pen.make_convex_poly();
+    
+    
+*/

@@ -49,7 +49,7 @@ pub struct PipelineParams
     pub stencil_test: Option<StencilState>,
     */
 
-    pub color_mask: ColorMask,
+    pub color_mask: RenderColorRGBAMask,
     pub primitive_type: PrimitiveType,
 }
 impl Default for PipelineParams
@@ -59,7 +59,7 @@ impl Default for PipelineParams
         { 
             cull_face: CullFace::Nothing, 
             front_face_order: FrontFaceOrder::CounterClockwise, 
-            color_mask: ColorMask::splat_rgba(false), 
+            color_mask: (true, true, true, true), 
             primitive_type: PrimitiveType::Triangles,
         }
     }
@@ -71,5 +71,3 @@ pub enum PrimitiveType {
     Lines,
     Points,
 }
-
-type ColorMask = ColorRGBAOf<bool>;

@@ -6,10 +6,14 @@ pub mod render;
 pub mod window;
 pub mod events;
 
+pub mod config;
+
 use prelude::*;
 
 pub mod prelude
 {
     use crate::*;
     pub use engine_core::prelude::*;
+
+    use crate::config::prelude::*;
 }

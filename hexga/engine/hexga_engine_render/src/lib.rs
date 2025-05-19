@@ -1,13 +1,8 @@
 //! Rendering interface for the Hexga Engine based on [miniquad](https://github.com/not-fl3/miniquad)
 use std::{fmt::Debug, marker::PhantomData, ops::{Deref, DerefMut}};
 
-/* 
-mod gpu;
-use gpu::*;
-*/
-
-use hexga::prelude::*;
-use hexga_graphics::*;
+pub type RenderColorRGBA = (f32, f32, f32, f32);
+pub type RenderColorRGBAMask = (bool, bool, bool, bool);
 
 pub mod buffer;
 use buffer::*;

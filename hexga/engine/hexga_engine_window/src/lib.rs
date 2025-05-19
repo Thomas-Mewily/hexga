@@ -5,5 +5,5 @@ pub use window::*;
 
 pub mod prelude
 {
-    pub use crate::window::LoopWindow;
+    pub use crate::window::{LoopWindow,WindowConfig};
 }

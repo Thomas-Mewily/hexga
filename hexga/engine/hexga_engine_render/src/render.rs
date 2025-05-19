@@ -17,10 +17,10 @@ pub trait Render
     fn new_texture             (&mut self, data : &TextureData) -> Texture;
     fn texture_update          (&mut self, dest : Texture, source : &TextureData);
     fn texture_set_mag_filter  (&mut self, id : Texture, filter: FilterMode);
-    fn texture_set_wrap        (&mut self, id : Texture, wrap : TextureWrap2);
+    fn texture_set_wrap        (&mut self, id : Texture, wrap : (TextureWrap, TextureWrap));
     fn texture_generate_mipmaps(&mut self, id : Texture);
     fn texture_read_pixels     (&mut self, id : Texture, source : &mut TextureSource);
-    fn texture_update_view     (&mut self, id : Texture, view : &mut TextureView);
+    fn texture_update_portion  (&mut self, id : Texture, pos : (u32, u32), size : (u32, u32), data : &[u8]);
     fn delete_texture          (&mut self, id : Texture);
 
     fn new_render_pass   (&mut self, texture : Texture, depth : Option<Texture>) -> RenderPass;
@@ -33,8 +33,8 @@ pub trait Render
     fn new_shader   (&mut self, data : &ShaderData) -> Shader;
     fn delete_shader(&mut self, program: Shader);
 
-    fn apply_viewport(&mut self, rect : Rect2P);
-    fn apply_scissor(&mut self, rect : Rect2P);
+    fn apply_viewport(&mut self, pos : (u32, u32), size : (u32, u32));
+    fn apply_scissor (&mut self, pos : (u32, u32), size : (u32, u32));
 
     fn apply_bindings_view(&mut self, binding : BindingsView);
     fn apply_bindings(&mut self, binding : &Bindings) { self.apply_bindings_view(binding.view()); }

@@ -3,7 +3,7 @@ use super::*;
 
 pub struct TextureParam
 {
-    pub wrap: TextureWrap,
+    pub wrap : (TextureWrap, TextureWrap),
     pub min_filter: FilterMode,
     pub mag_filter: FilterMode,
     pub mipmap_filter: MipmapFilterMode,
@@ -28,14 +28,7 @@ pub struct TextureData
 pub enum TextureSource
 {
     None,
-    RGBAByte(ImageRGBAByte),
-}
-
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub enum TextureView<'a>
-{
-    None,
-    RGBAByte(ImageRGBAByteView<'a>),
+    RGBAByte(Vec<u8>),
 }
 
 pub type Texture = usize;
@@ -73,5 +66,3 @@ pub enum TextureWrap {
     /// Samples at coord x + 1 map to coord 1.
     Clamp,
 }
-
-pub type TextureWrap2 = Vector2<TextureWrap>;
