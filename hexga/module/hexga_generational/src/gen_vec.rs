@@ -1,6 +1,9 @@
 use crate::*;
 use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}};
 
+// Todo : introduce a new type
+pub type SlotVec<T> = GenVec<T>;
+pub type SlotID<T> = GenID<T>;
 
 pub type Generation = u32;
 
@@ -825,6 +828,9 @@ impl<T,Gen:IGeneration> GetManyMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
     #[inline(always)]
     fn try_get_many_mut<const N: usize>(&mut self, indices: [GenIDOf<T,Gen>; N]) -> Result<[&mut Self::Output;N], ()> 
     { 
+        // Todo: use O(N) complexity to check the overlaping
+        // Check SlotMap imply that put tmp Free slot in the current indices to
+
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         match self.slot.try_get_many_mut(indices.map(|i| i.index))
         {

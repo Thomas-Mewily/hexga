@@ -1,7 +1,8 @@
 use super::*;
 
-#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
-pub struct Shader(usize);
+/// Not RAII. Manual deletion of shader is required using [ContextRender::delete_shader].
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
+pub struct RawShaderID { pub index : usize }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UniformDesc 
@@ -11,16 +12,7 @@ pub struct UniformDesc
     pub nb           : usize,
 }
 
-pub struct UniformsSource<'a>(pub(crate) UntypedSlice<'a>);
-
-impl<'a> UniformsSource<'a>
-{
-    pub fn as_slice(&self) -> &[u8] 
-    {
-        unsafe { std::slice::from_raw_parts(self.0.data as _, self.0.len) }
-    }
-}
-
+pub struct UniformsSource<'a> { pub source : UntypedSlice<'a> }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UniformBlockLayout {
@@ -33,6 +25,7 @@ pub struct ShaderMeta {
     pub images  : Vec<String>,
 }
 
+#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ShaderSource 
 {
@@ -71,18 +64,27 @@ pub enum UniformType {
 }
 
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ShaderData
 {
-    source: ShaderSource,
-    meta  : ShaderMeta,
+    pub source: ShaderSource,
+    pub meta  : ShaderMeta,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct PipelineData
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ShaderType {
+    Vertex,
+    Fragment,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ShaderError 
 {
-    pub buffer_layout: Vec<BufferLayout>, 
-    pub attributes: Vec<VertexAttribute>,
-    pub shader: Shader,
-    pub params: PipelineParams,
+    CompilationError {
+        shader_type: ShaderType,
+        error_message: String,
+    },
+    LinkError(String),
+    /// Shader strings should never contains \00 in the middle
+    FFINulError(std::ffi::NulError),
 }

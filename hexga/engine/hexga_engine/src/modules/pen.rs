@@ -167,7 +167,7 @@ impl ContextPen
                 },
             ],
             shader,
-            PipelineParams::default(),
+            PipelineParam::default(),
         );
 
         Self 

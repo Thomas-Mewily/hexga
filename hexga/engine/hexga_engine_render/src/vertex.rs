@@ -2,7 +2,8 @@ use super::*;
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum VertexFormat {
+pub enum VertexFormat 
+{
     /// One 32-bit wide float (equivalent to `f32`)
     Float1,
     /// Two 32-bit wide floats (equivalent to `[f32; 2]`)
@@ -43,7 +44,7 @@ pub enum VertexFormat {
 pub struct VertexAttribute {
     pub name: String,
     pub format: VertexFormat,
-    pub buffer_index: usize,
+    pub buffer_index: RawBufferID,
     /// This flag affects integer VertexFormats, Byte*, Short*, Int*
     /// Taking Byte4 as an example:
     /// On Metal, it might be received as either `float4` or `uint4`
@@ -53,4 +54,30 @@ pub struct VertexAttribute {
     /// Note that `uvec4` requires at least `150` glsl version
     /// Before setting `gl_pass_as_float` to false, better check `context.info().has_integer_attributes()` and double check that shaders are at least `150`
     pub gl_pass_as_float: bool,
+}
+
+
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub enum VertexStep {
+    #[default]
+    PerVertex,
+    PerInstance,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct VertexBufferLayout {
+    pub stride: i32,
+    pub step_func: VertexStep,
+    pub step_rate: i32,
+}
+
+impl Default for VertexBufferLayout {
+    fn default() -> VertexBufferLayout {
+        VertexBufferLayout {
+            stride: 0,
+            step_func: VertexStep::PerVertex,
+            step_rate: 1,
+        }
+    }
 }

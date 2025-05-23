@@ -5,5 +5,12 @@ pub use window::*;
 
 pub mod prelude
 {
-    pub use crate::window::{LoopWindow,WindowConfig};
+    pub use crate::window::{ContextWindow,WindowConfig};
+}
+
+/// Modules/Items without the prelude
+#[doc(hidden)]
+pub mod modules 
+{
+    pub use super::window::*;
 }

@@ -15,7 +15,9 @@ pub enum BufferUsage {
     Stream,
 }
 
-pub type Buffer = usize;
+/// Not RAII. Manual deletion of buffer is required using [ContextRender::delete_buffer].
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
+pub struct RawBufferID { pub index : usize }
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -26,20 +28,12 @@ pub struct BufferLayout
 }
 impl BufferLayout
 {
+    /// `self.len * self.element_size`
     pub const fn size(&self) -> usize { self.len * self.element_size }
 }
 
-pub struct BufferSource<'a>
-{
-    inner : BufferSourceInner<'a>,
-}
-
-impl<'a> Debug for BufferSourceInner<'a> 
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str("BufferSource") }
-}
-
-enum BufferSourceInner<'a>
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
+pub enum BufferSource<'a>
 {
     UntypedSlice(UntypedSlice<'a>),
     Empty(BufferLayout),
@@ -48,6 +42,6 @@ enum BufferSourceInner<'a>
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BufferData
 {
-    buf_type : BufferType, 
-    usage    : BufferUsage, 
+    pub buf_type : BufferType, 
+    pub usage    : BufferUsage, 
 }

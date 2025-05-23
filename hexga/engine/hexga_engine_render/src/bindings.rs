@@ -10,14 +10,14 @@ pub struct Bindings {
     /// Most commonly vertex buffer will contain `(x,y,z,w)` coordinates of the
     /// vertex in 3d space, as well as `(u,v)` coordinates that map the vertex
     /// to some position in the corresponding `Texture`.
-    pub vertex_buffers: Vec<Buffer>,
+    pub vertex_buffers: Vec<RawShaderID>,
     /// Index buffer which instructs the GPU in which order to draw vertices
     /// from a vertex buffer, with each subsequent 3 indices forming a
     /// triangle.
-    pub index_buffer: Buffer,
+    pub index_buffer: RawShaderID,
     /// Textures to be used with when drawing the geometry in the fragment
     /// shader.
-    pub images: Vec<Texture>,
+    pub images: Vec<RawTextureID>,
 }
 
 impl Bindings
@@ -33,17 +33,17 @@ impl Bindings
 pub struct BindingsView<'a>
 {
     /// Vertex buffers. Data contained in the buffer must match layout
-    /// specified in the `Pipeline`.
+    /// specified in the `PipelineID`.
     ///
     /// Most commonly vertex buffer will contain `(x,y,z,w)` coordinates of the
     /// vertex in 3d space, as well as `(u,v)` coordinates that map the vertex
     /// to some position in the corresponding `Texture`.
-    pub vertex_buffers: &'a [Buffer],
+    pub vertex_buffers: &'a [RawShaderID],
     /// Index buffer which instructs the GPU in which order to draw vertices
     /// from a vertex buffer, with each subsequent 3 indices forming a
     /// triangle.
-    pub index_buffer: Buffer,
+    pub index_buffer: RawShaderID,
     /// Textures to be used with when drawing the geometry in the fragment
     /// shader.
-    pub images: &'a [Texture],
+    pub images: &'a [RawTextureID],
 }

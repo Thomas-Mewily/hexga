@@ -17,7 +17,7 @@ pub enum CursorIcon
     NWSEResize,
 }
 
-pub trait LoopWindow
+pub trait ContextWindow
 {
     fn get_clipboard(&mut self) -> Option<String>;
     fn set_clipboard(&mut self, text : &str);
@@ -30,25 +30,25 @@ pub trait LoopWindow
     /// Ask the user for a quitting confirmation and quit
     fn request_quit(&mut self);
 
-    fn get_position_tuple(&mut self) -> (u32, u32);
-    fn set_position_tuple(&mut self, pos : (u32, u32)); 
+    fn get_position_tuple(&mut self) -> (i32, i32);
+    fn set_position_tuple(&mut self, pos : (i32, i32)); 
 
     /// Current window size in pixel (taking dpi in account)
-    fn get_size_tuple(&mut self) -> (u32, u32);
+    fn get_screen_size_tuple(&mut self) -> (u32, u32);
     fn set_size_tuple(&mut self, size : (u32, u32));
 
 
     fn set_fullscreen(&mut self, fullscreen: bool);
 
 
-    fn show_keyboard(show: bool);
+    fn show_keyboard(&mut self, show: bool);
 
-    fn show_mouse(shown: bool);
+    fn show_mouse(&mut self, show: bool);
     fn grab_mouse(&mut self, grab: bool);
-    fn set_mouse_cursor(cursor_icon: CursorIcon);
+    fn set_mouse_cursor(&mut self, cursor_icon: CursorIcon);
 }
 
-impl LoopWindow for ()
+impl ContextWindow for ()
 {
     fn get_clipboard(&mut self) -> Option<String> { None }
     fn set_clipboard(&mut self, _text : &str) {}
@@ -59,18 +59,18 @@ impl LoopWindow for ()
     fn quit(&mut self) {}
     fn request_quit(&mut self) {}
 
-    fn get_position_tuple(&mut self) -> (u32, u32) { (0, 0) }
-    fn set_position_tuple(&mut self, _pos : (u32, u32)) {}
+    fn get_position_tuple(&mut self) -> (i32, i32) { (0, 0) }
+    fn set_position_tuple(&mut self, _pos : (i32, i32)) {}
 
-    fn get_size_tuple(&mut self) -> (u32, u32) { (1, 1) }
+    fn get_screen_size_tuple(&mut self) -> (u32, u32) { (1, 1) }
     fn set_size_tuple(&mut self, _size : (u32, u32)) {}
 
     fn set_fullscreen(&mut self, _fullscreen: bool) {}
-    fn show_keyboard(_show: bool) {}
+    fn show_keyboard(&mut self, _show: bool) {}
 
-    fn show_mouse(_shown: bool) {}
+    fn show_mouse(&mut self, _show: bool) {}
     fn grab_mouse(&mut self, _grab: bool) {}
-    fn set_mouse_cursor(_cursor_icon: CursorIcon) {}
+    fn set_mouse_cursor(&mut self, _cursor_icon: CursorIcon) {}
 }
 
 
@@ -97,7 +97,7 @@ pub struct WindowConfig
     /// MSAA sample count
     ///
     /// Default: 1
-    pub sample_count: i32,
+    pub sample_count: u32,
 
     /// Determines if the application user can resize the window
     pub resizable: bool,
@@ -203,7 +203,7 @@ impl WindowConfig
     /// MSAA sample count
     ///
     /// Default: 1
-    pub fn sample_count(mut self, sample_count : i32) -> Self { self.sample_count = sample_count; self }
+    pub fn sample_count(mut self, sample_count : u32) -> Self { self.sample_count = sample_count; self }
 
     /// Determines if the application user can resize the window
     pub fn resizeable(mut self, window_resizable : bool) -> Self { self.resizable = window_resizable; self }

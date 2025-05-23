@@ -1,7 +1,9 @@
 use super::*;
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
-pub struct Pipeline(usize);
+/// Not RAII. Manual deletion of pipeline is required using [ContextRender::delete_pipeline].
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
+pub struct RawPipelineID { pub index : usize }
+
 
 /// Define front- and back-facing polygons.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -33,34 +35,38 @@ pub enum Comparison {
 }
 */
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct PipelineParams 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PipelineParam 
 {
     pub cull_face: CullFace,
     pub front_face_order: FrontFaceOrder,
 
-    /* 
-    pub depth_test: Comparison,
+    pub depth_test: DepthComparison,
     pub depth_write: bool,
-    pub depth_write_offset: Option<GpuVec2>,
+    pub depth_write_offset: Option<[f32;2]>,
 
     pub color_blend: Option<BlendState>,
     pub alpha_blend: Option<BlendState>,
     pub stencil_test: Option<StencilState>,
-    */
 
     pub color_mask: RenderColorRGBAMask,
     pub primitive_type: PrimitiveType,
 }
-impl Default for PipelineParams
+impl Default for PipelineParam
 {
     fn default() -> Self {
         Self 
         { 
             cull_face: CullFace::Nothing, 
             front_face_order: FrontFaceOrder::CounterClockwise, 
-            color_mask: (true, true, true, true), 
+            color_mask: [true;4], 
             primitive_type: PrimitiveType::Triangles,
+            depth_test: DepthComparison::Always, // no depth test,
+            depth_write: false,
+            depth_write_offset: None,
+            color_blend: None,
+            alpha_blend: None,
+            stencil_test: None,
         }
     }
 }
@@ -70,4 +76,25 @@ pub enum PrimitiveType {
     Triangles,
     Lines,
     Points,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PipelineData
+{
+    pub buffer_layout: Vec<VertexBufferLayout>, 
+    pub attributes: Vec<VertexAttribute>,
+    pub shader: RawShaderID,
+    pub param : PipelineParam,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+pub enum DepthComparison {
+    Never,
+    Less,
+    LessOrEqual,
+    Greater,
+    GreaterOrEqual,
+    Equal,
+    NotEqual,
+    Always,
 }

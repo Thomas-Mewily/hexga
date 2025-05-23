@@ -2,18 +2,21 @@
 
 use hexga_engine_core as engine_core;
 
-pub mod render;
-pub mod window;
-pub mod events;
-
-pub mod config;
-
+pub use modules::*;
 use prelude::*;
 
 pub mod prelude
 {
-    use crate::*;
-    pub use engine_core::prelude::*;
+    //pub use engine_core::prelude::*;
+    pub use crate::engine_core::hexga::prelude::*;
 
-    use crate::config::prelude::*;
+    pub use crate::config::prelude::*;
+    pub use crate::window::prelude::*;
+    pub use crate::events::prelude::*;
+
+    pub use crate::multi_media::prelude::*;
 }
+
+/// Modules/Items without the prelude
+#[doc(hidden)]
+pub mod modules;

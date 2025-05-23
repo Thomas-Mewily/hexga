@@ -1,1 +1,5 @@
-pub use crate::gen_vec::{GenVec,GenID,CollectToGenVecExtension};
+pub use crate::gen_vec::
+{
+    GenVec,GenID,CollectToGenVecExtension,
+    SlotVec,SlotID,
+};

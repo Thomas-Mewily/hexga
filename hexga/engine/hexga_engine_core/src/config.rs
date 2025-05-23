@@ -18,3 +18,11 @@ impl MultiMediaConfig
     pub fn with_window_config(mut self, window : WindowConfig) -> Self { self.window_config = window; self }
     //pub fn with_pen_config(mut self, pen : PenConfig) -> Self { self.pen_config = pen; self }
 }
+
+impl MultiMediaConfig
+{
+    // Impl this function from a trait in your engine implementation
+    /*
+    pub fn run_with_context<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoopWithContext + 'static
+    */
+}

@@ -11,115 +11,19 @@ pub struct TestCtx
 {
     time : Time,
 }
-impl LoopWindow for TestCtx
+impl MainLoop for TestCtx
 {
-    fn window_update(&mut self) {
-        self.time += (1./60.).s();
+    fn handle_event(&mut self, event : Event) -> bool {
+        dbg!(event);
+        false
     }
 
-    fn window_draw(&mut self) 
-    {
+    fn update(&mut self) {
         
-
-        /* 
-        for angle in Angle::sample(3)
-        {
-            Pen.set_pos(angle.to_vec2(0.5)).down();
-        }
-        */
-        
-        /* 
-        {
-            Pen.set_pos(Angle::from_turn(c).to_vec2(0.5)).down();
-        }
-
-        for angle in Angle::sample(3)
-        {
-            Pen.set_pos(angle.to_vec2(0.5)).down();
-        }
-        Pen.make_convex_poly();
-        */
-
-        Pen.end_pass();
-        Pen.end_draw();
     }
 
-
-
-
-
-
-
-
-
-    
-        //for c in (0.0..1.0).sample(128. + (self.time.s() * 1.).cos() * 7.)
-
-        /* 
-                Pen.color(Color::PINK);
-        for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 7.)
-        {
-            Pen.set_pos(Angle::from_turn(c).to_vec2(0.5 + (c.turn() * 6.0).cos() * 0.2)).down();
-        }
-        */
-
-        /* 
-        Pen.color(Color::YELLOW);
-        for angle in (..=Angle::FLAT).step(67.degree()) //.sample(8)
-        {
-            Pen.set_pos(angle.to_vec2(0.25)).down();
-        }
-        Pen.make_convex_poly();
-        */
-
-        //Pen.color(Color::YELLOW.lerp(Color::WHITE, 0.5));
-
-
-        /* 
-        Pen.color(Color::YELLOW);
-        for angle in (..).sample(8)
-        {
-            Pen.set_pos(angle.to_vec2(0.25)).down();
-        }
-        Pen.make_convex_poly();
-        */
-        /* 
-        // for i in Angle::sample(8)
-        for angle in Angle.sample(8)
-        {
-            Pen.set_pos(angle.to_vec2(0.25)).down();
-        }
+    fn draw(&mut self) {
         
-
-        */
-        
-
-
-        /* 
-        let Rect2 { pos, size } = Rect2::new_centered(zero(), 1.8.splat2());
-        let pos = GpuVec2::from(pos).with_z(0.);
-        let size = GpuVec2::from(size);
-        let color = Color::WHITE;
-
-        let vertex =
-        [
-            GpuVertex::new().with_pos(pos).with_color(color),
-            GpuVertex::new().with_pos(pos.moved_x(size.x)).with_color(color),
-            GpuVertex::new().with_pos(pos.moved_x(size.x).moved_y(size.y)).with_color(color),
-            GpuVertex::new().with_pos(pos.moved_y(size.y)).with_color(color),
-        ];
-
-        let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
-
-        Pen.static_geometry(vertex, indices);
-        Pen.draw_triangle_test();
-        */
-
-
-
-    fn window_handle_event(&mut self, event : Event) -> bool {
-        println!("{:?}", event);
-        true
     }
 }
 

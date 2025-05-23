@@ -1,8 +1,8 @@
 //! Rendering interface for the Hexga Engine based on [miniquad](https://github.com/not-fl3/miniquad)
 use std::{fmt::Debug, marker::PhantomData, ops::{Deref, DerefMut}};
 
-pub type RenderColorRGBA = (f32, f32, f32, f32);
-pub type RenderColorRGBAMask = (bool, bool, bool, bool);
+pub type RenderColorRGBA = [f32;4];
+pub type RenderColorRGBAMask = [bool;4];
 
 pub mod buffer;
 use buffer::*;
@@ -12,6 +12,12 @@ use render_pass::*;
 
 pub mod vertex;
 use vertex::*;
+
+pub mod blend;
+use blend::*;
+
+pub mod stencil;
+use stencil::*;
 
 pub mod shader;
 use shader::*;
@@ -34,6 +40,14 @@ pub use untyped_slice::*;
 pub mod prelude
 {
     //pub use super::buffer::Buffer;
-    pub use super::texture::Texture;
-    pub use super::render::{Render, LoopDraw};
+    pub use super::texture::RawTextureID;
+    pub use super::render::ContextRender;
+}
+
+/// Modules/Items without the prelude
+#[doc(hidden)]
+pub mod modules 
+{
+    pub use super::{buffer,render_pass,vertex,shader,pipeline,texture,bindings,blend,stencil};
+    pub use super::{ContextRender, UntypedSlice};
 }

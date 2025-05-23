@@ -1,9 +1,14 @@
 use crate::*;
 
-pub use hexga_engine_window::{CursorIcon, LoopWindow, WindowConfig};
+pub use hexga_engine_window::modules::*;
+pub use super::window::*;
 
+pub trait IconExtension
+{
+    //pub fn with_16x16_icon(&mut self, icon : Image);
+}
 
-pub trait LoopWindowExtension
+pub trait ContextWindowExtension
 {
     fn get_position(&mut self) -> Point2;
     fn set_position(&mut self, pos : Point2); 
@@ -11,7 +16,7 @@ pub trait LoopWindowExtension
     fn get_size(&mut self) -> Point2;
     fn set_size(&mut self, size : Point2);
 }
-impl<T> LoopWindowExtension for T where T : LoopWindow
+impl<T> ContextWindowExtension for T where T : ContextWindow
 {
     fn get_position(&mut self) -> Point2 
     {
@@ -24,18 +29,11 @@ impl<T> LoopWindowExtension for T where T : LoopWindow
     }
 
     fn get_size(&mut self) -> Point2 {
-        let (x,y) = self.get_size_tuple();
+        let (x,y) = self.get_screen_size_tuple();
         point2(x as _, y  as _)
     }
 
     fn set_size(&mut self, size : Point2) {
         self.set_size_tuple((size.x as _, size.y as _ ));
     }
-}
-
-pub mod prelude
-{
-    use crate::*;
-    pub use super::LoopWindowExtension;
-    pub use hexga_engine_window::prelude::*;
 }

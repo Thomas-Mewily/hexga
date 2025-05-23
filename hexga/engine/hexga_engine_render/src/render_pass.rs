@@ -1,6 +1,8 @@
 use super::*;
 
-pub type RenderPass = usize;
+/// Not RAII. Manual deletion of render_pass is required using [ContextRender::delete_render_pass].
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
+pub struct RenderPassID { pub index : usize }
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -15,5 +17,5 @@ pub struct ClearData
 {
     pub color: Option<RenderColorRGBA>,
     pub depth: Option<f32>,
-    //pub stencil: Option<i32>,
+    pub stencil: Option<i32>,
 }
