@@ -10,7 +10,7 @@ impl LoopDraw for () { fn draw(&mut self) {} }
 
 // #proper_error
 // miniquad render wrapper
-pub trait ContextRender
+pub trait RenderBackend
 {
     fn new_buffer   (&mut self, data: BufferData, source : BufferSource) -> RawBufferID;
     fn buffer_update(&mut self, dest: RawBufferID, source: &BufferSource);
@@ -55,7 +55,7 @@ pub trait ContextRender
 }
 
 
-impl ContextRender for ()
+impl RenderBackend for ()
 {
     fn new_buffer   (&mut self, _: BufferData, _ : BufferSource) -> RawBufferID { RawBufferID::default() }
     fn buffer_update(&mut self, _: RawBufferID, _: &BufferSource) {}

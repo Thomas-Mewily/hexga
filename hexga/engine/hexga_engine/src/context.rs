@@ -1,6 +1,4 @@
-use crate::{pen::ContextPen, *};
-
-pub use engine_core::multi_media::modules::*;
+use crate::*;
 
 pub trait MainLoop
 {
@@ -12,11 +10,12 @@ pub trait MainLoop
 pub(crate) struct Context
 {
     // state       : Box<dyn MainLoopWithContext>,
-    multi_media : Box<dyn ContextMultiMedia>,
-    pen         : ContextPen,
+    pub(crate) multi_media : Box<dyn ContextMultiMedia>,
 
-    textures : GenVec<RawTextureID>,
-    textures_to_remove : Vec<GenID<RawTextureID>>,
+    pub(crate) render : ContextRender,
+    pub(crate) pen    : ContextPen,
+
+
     
     // other stuff
 }
@@ -35,12 +34,12 @@ static mut CONTEXT : Option<Context> = None;
 #[doc(hidden)]
 #[allow(dead_code)]
 #[allow(static_mut_refs)]
-fn hexga_context_ref() -> &'static Context  { unsafe { CONTEXT.as_ref().unwrap() } }
+pub(crate) fn ctx_ref() -> &'static Context  { unsafe { CONTEXT.as_ref().unwrap() } }
 
 #[doc(hidden)]
 #[allow(dead_code)]
 #[allow(static_mut_refs)]
-fn hexga_context() -> &'static mut Context  { unsafe { CONTEXT.as_mut().unwrap() } }
+pub(crate) fn ctx() -> &'static mut Context  { unsafe { CONTEXT.as_mut().unwrap() } }
 
 #[doc(hidden)]
 #[allow(static_mut_refs)]

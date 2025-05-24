@@ -197,14 +197,6 @@ dependencies = [
 name = "hexga_engine"
 version = "0.0.10-beta.11"
 dependencies = [
- "hexga_engine_core",
- "serde",
-]
-
-[[package]]
-name = "hexga_engine_core"
-version = "0.0.10-beta.11"
-dependencies = [
  "hexga",
  "hexga_engine_events",
  "hexga_engine_render",

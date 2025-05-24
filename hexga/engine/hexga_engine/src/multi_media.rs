@@ -1,13 +1,7 @@
 use crate::*;
 
-/* 
-pub trait MainLoopWithContextMultiMedia
-{
-    fn handle_event(&mut self, event : Event, ctx : &mut dyn ContextMultiMedia) -> bool;
-    fn update(&mut self, ctx : &mut dyn ContextMultiMedia);
-    fn draw(&mut self, ctx : &mut dyn ContextMultiMedia);
-}
-*/
+pub trait ContextMultiMedia : ContextWindow + RenderBackend {}
+impl<T> ContextMultiMedia for T where T : ContextWindow + RenderBackend {}
 
 #[derive(Default, PartialEq, Eq, Clone, Hash)]
 pub struct MultiMediaParam 
@@ -29,4 +23,18 @@ impl MultiMediaParam
     /*
     pub fn run_with_context<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoopWithContext + 'static
     */
+}
+
+
+pub mod prelude
+{
+    use crate::*;
+    pub use super::{ContextMultiMedia,MultiMediaParam};
+}
+
+/// Modules/Items without the prelude
+#[doc(hidden)]
+pub mod modules
+{
+    pub use super::{ContextMultiMedia,MultiMediaParam};
 }

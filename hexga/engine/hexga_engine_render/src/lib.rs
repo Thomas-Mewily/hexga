@@ -44,7 +44,7 @@ pub mod prelude
 {
     //pub use super::buffer::Buffer;
     pub use super::texture::RawTextureID;
-    pub use super::render::ContextRender;
+    pub use super::render::RenderBackend;
     pub use super::gpu::*;
 }
 
@@ -53,5 +53,5 @@ pub mod prelude
 pub mod modules 
 {
     pub use super::{buffer,render_pass,vertex,shader,pipeline,texture,bindings,blend,stencil,gpu};
-    pub use super::{ContextRender, UntypedSlice};
+    pub use super::{RenderBackend, UntypedSlice};
 }

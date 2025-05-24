@@ -6,10 +6,13 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## HexGa Engine
 
-Hexga Game Engine
-Add featured on top of the Hexga Game Engine Core
+Game Engine interface for the Hexga Engine.
 
-Mainly based/inspired based on the [MiniQuad crate](https://github.com/not-fl3/miniquad)
+Regroup together : 
+- Render part `hexga_engine_render`,
+- Events part `hexga_engine_events`,
+- Window part `hexga_engine_window`.
+
 Not finished yet / work in progress...
 
 ## Main Hexga Engine Implementation

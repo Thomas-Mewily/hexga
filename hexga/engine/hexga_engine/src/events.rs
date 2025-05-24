@@ -1,13 +1,16 @@
-pub use modules::*;
+use crate::*;
+
+use modules::*;
 
 pub mod prelude
 {
-    pub use hexga_engine_core::prelude::*;
+    use crate::*;
+    pub use hexga_engine_events::prelude::*;
 }
 
 /// Modules/Items without the prelude
 #[doc(hidden)]
 pub mod modules
 {
-    pub use hexga_engine_core::modules::*;
+    pub use hexga_engine_events::modules::*;
 }
