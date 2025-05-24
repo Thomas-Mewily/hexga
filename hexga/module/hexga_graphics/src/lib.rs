@@ -6,9 +6,19 @@
 use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}};
 
 use hexga_core::prelude::*;
-use hexga_math::{grid::{GridBase, Iter, IterMut}, grid_param::GridParamBase, prelude::*, rectangle::Rectangle, Color, ColorRGBAByte, IColor};
+use hexga_math::prelude::*;
+
+pub type Image<P> = ImageBase<P,int>;
+pub struct ImageBase<P=ColorRGBAByte,Idx=int>
+{
+    pixels : Vec<P>,
+    size   : Vector2<Idx>,
+}
+
+type TestG = Grid2<i32>;
 
 
+/* 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
@@ -226,4 +236,5 @@ impl AntiAliasing
 
     pub fn is_same_as(self, other : Self) -> bool { (self.is_same() || other.is_same()) || (self == other) }
 }
+    */
     */

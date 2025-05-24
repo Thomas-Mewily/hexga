@@ -186,6 +186,13 @@ pub trait IGrid<T, Param, Idx, const N : usize> where Idx : Integer,
     fn set_index(&mut self, val : T, idx : usize) -> bool { self.get_index_mut(idx).map(|v| *v = val).is_some() }
     */
 
+    /*
+    fn subgrid(&self, r : Rectangle<Idx,N>) -> Option<Self>
+    {
+        self.view().subgrid(r)
+    }
+    */
+
     fn intersect_rect(&self, r : Rectangle<Idx,N>) -> Rectangle<Idx,N>  where Vector<Idx,N> : UnitArithmetic, Idx : PartialOrd { r.intersect_or_empty(self.rect()) }
 
     //fn crop_margin(&self, margin_start : Vector<Idx,N>, margin_end : Vector<Idx,N>) -> Self where T : Clone, Param : Clone;
