@@ -5,7 +5,7 @@ pub use window::*;
 
 pub mod prelude
 {
-    pub use crate::window::{ContextWindow,WindowConfig};
+    pub use crate::window::{ContextWindow,WindowParam};
 }
 
 /// Modules/Items without the prelude

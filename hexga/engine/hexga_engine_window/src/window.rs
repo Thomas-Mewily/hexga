@@ -1,5 +1,7 @@
 //! mainly inspired by miniquad
 
+use hexga_math::prelude::*;
+
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
 pub enum CursorIcon 
 {
@@ -22,7 +24,7 @@ pub trait ContextWindow
     fn get_clipboard(&mut self) -> Option<String>;
     fn set_clipboard(&mut self, text : &str);
 
-    fn dpi_scale_f32(&mut self) -> f32;
+    fn dpi_scale(&mut self) -> float;
     fn is_dpi_hight(&mut self) -> bool;
 
     /// Quit the window
@@ -30,12 +32,12 @@ pub trait ContextWindow
     /// Ask the user for a quitting confirmation and quit
     fn request_quit(&mut self);
 
-    fn get_position_tuple(&mut self) -> (i32, i32);
-    fn set_position_tuple(&mut self, pos : (i32, i32)); 
+    fn get_position(&mut self) -> Point2;
+    fn set_position(&mut self, pos : Point2); 
 
     /// Current window size in pixel (taking dpi in account)
-    fn get_screen_size_tuple(&mut self) -> (u32, u32);
-    fn set_size_tuple(&mut self, size : (u32, u32));
+    fn get_screen_size_tuple(&mut self) -> Point2;
+    fn set_size(&mut self, size : Point2);
 
 
     fn set_fullscreen(&mut self, fullscreen: bool);
@@ -53,17 +55,17 @@ impl ContextWindow for ()
     fn get_clipboard(&mut self) -> Option<String> { None }
     fn set_clipboard(&mut self, _text : &str) {}
 
-    fn dpi_scale_f32(&mut self) -> f32 { 1.0 }
+    fn dpi_scale(&mut self) -> f32 { 1.0 }
     fn is_dpi_hight(&mut self) -> bool { false }
 
     fn quit(&mut self) {}
     fn request_quit(&mut self) {}
 
-    fn get_position_tuple(&mut self) -> (i32, i32) { (0, 0) }
-    fn set_position_tuple(&mut self, _pos : (i32, i32)) {}
+    fn get_position(&mut self) -> Point2 { Point2::ZERO }
+    fn set_position(&mut self, _pos : Point2) {}
 
-    fn get_screen_size_tuple(&mut self) -> (u32, u32) { (1, 1) }
-    fn set_size_tuple(&mut self, _size : (u32, u32)) {}
+    fn get_screen_size_tuple(&mut self) -> Point2 { Point2::ONE }
+    fn set_size(&mut self, _size : Point2) {}
 
     fn set_fullscreen(&mut self, _fullscreen: bool) {}
     fn show_keyboard(&mut self, _show: bool) {}
@@ -76,7 +78,7 @@ impl ContextWindow for ()
 
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
-pub struct WindowConfig
+pub struct WindowParam
 {
     /// Title of the window, defaults to an empty string.
     pub title: String,
@@ -84,7 +86,7 @@ pub struct WindowConfig
     /// The preferred width / height of the window
     /// 
     /// Default: [960, 540]
-    pub size : (u32, u32),
+    pub size : Point2,
     
     /// Whether the rendering canvas is full-resolution on HighDPI displays.
     ///
@@ -114,11 +116,11 @@ pub struct WindowConfig
     pub platform: Platform,
 }
 
-impl Default for WindowConfig
+impl Default for WindowParam
 {
     fn default() -> Self 
     {
-        Self { title: "hexga window".to_owned(), size : (960, 540), high_dpi: false, fullscreen: false, sample_count: 1, resizable: true, icon: None, platform: Platform::default() }
+        Self { title: "hexga window".to_owned(), size : point2(960, 540), high_dpi: false, fullscreen: false, sample_count: 1, resizable: true, icon: None, platform: Platform::default() }
     }
 }
 
@@ -184,7 +186,7 @@ impl Default for Platform
     }
 }
 
-impl WindowConfig
+impl WindowParam
 {
     pub fn new() -> Self { Self::default() }
 

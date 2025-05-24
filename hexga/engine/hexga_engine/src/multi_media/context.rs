@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{pen::ContextPen, *};
 
 pub use engine_core::multi_media::modules::*;
 
@@ -11,29 +11,47 @@ pub trait MainLoop
 
 pub(crate) struct Context
 {
-    //state       : Box<dyn MainLoopWithContext>,
+    // state       : Box<dyn MainLoopWithContext>,
     multi_media : Box<dyn ContextMultiMedia>,
+    pen         : ContextPen,
+
+    textures : GenVec<RawTextureID>,
+    textures_to_remove : Vec<GenID<RawTextureID>>,
+    
     // other stuff
+}
+
+impl Context
+{
+    pub(crate) fn new(mut multi_media : Box<dyn ContextMultiMedia>, param : MultiMediaParam) -> Self 
+    {
+        let pen = ContextPen::new(multi_media.as_mut(), param.pen_param);
+        Self { multi_media, pen, textures: ___(), textures_to_remove: ___() }
+    }
 }
 
 static mut CONTEXT : Option<Context> = None;
 
+#[doc(hidden)]
+#[allow(dead_code)]
 #[allow(static_mut_refs)]
-pub(crate) fn ctx_ref() -> &'static Context  { unsafe { CONTEXT.as_ref().unwrap() } }
+fn hexga_context_ref() -> &'static Context  { unsafe { CONTEXT.as_ref().unwrap() } }
 
+#[doc(hidden)]
+#[allow(dead_code)]
 #[allow(static_mut_refs)]
-pub(crate) fn ctx() -> &'static mut Context  { unsafe { CONTEXT.as_mut().unwrap() } }
+fn hexga_context() -> &'static mut Context  { unsafe { CONTEXT.as_mut().unwrap() } }
 
 #[doc(hidden)]
 #[allow(static_mut_refs)]
-pub unsafe fn set_context(ctx : Option<Box<dyn ContextMultiMedia>>) -> Option<Box<dyn ContextMultiMedia>>
+pub unsafe fn set_context(ctx : Option<(Box<dyn ContextMultiMedia>, MultiMediaParam)>) -> Option<Box<dyn ContextMultiMedia>>
 {
     unsafe
     {
         match ctx
         {
-            Some(ctx) => {
-                CONTEXT = Some(Context::new(ctx));
+            Some((ctx, param)) => {
+                CONTEXT = Some(Context::new(ctx, param));
                 return None;
             },
             None => {
@@ -44,13 +62,7 @@ pub unsafe fn set_context(ctx : Option<Box<dyn ContextMultiMedia>>) -> Option<Bo
 }
 
 
-impl Context
-{
-    pub(crate) fn new(multi_media : Box<dyn ContextMultiMedia>) -> Self 
-    {
-        Self { multi_media }
-    }
-}
+
 /* 
 impl<S,MultiMedia> MainLoopWithContext for ContextState<S,MultiMedia> 
     where S : MainLoopWithContextMultiMedia, MultiMedia : ContextMultiMedia

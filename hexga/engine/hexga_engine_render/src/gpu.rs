@@ -5,7 +5,6 @@
 #![allow(dead_code)]
 use crate::*;
 
-/* 
 pub type GpuMat1 = Matrix1<GpuFloat>;
 pub type GpuMat2 = Matrix2<GpuFloat>;
 pub type GpuMat3 = Matrix3<GpuFloat>;
@@ -35,9 +34,7 @@ pub const fn gpu_vec3(x : GpuFloat, y : GpuFloat, z : GpuFloat) -> GpuVec3 { Gpu
 pub const fn gpu_vec4(x : GpuFloat, y : GpuFloat, z : GpuFloat, w : GpuFloat) -> GpuVec4 { GpuVec4::new(x, y, z, w) }
 
 
-pub type GpuRect2 = Rectangle2<GpuInt>;
-
-
+pub type GpuRect2 = Rectangle2<GpuFloat>;
 
 pub type GpuInt  = i32;
 
@@ -62,7 +59,6 @@ pub const fn gpu_point2(x : GpuInt, y : GpuInt) -> GpuPoint2 { GpuPoint2::new(x,
 pub const fn gpu_point3(x : GpuInt, y : GpuInt, z : GpuInt) -> GpuPoint3 { GpuPoint3::new(x, y, z) }
 pub const fn gpu_point4(x : GpuInt, y : GpuInt, z : GpuInt, w : GpuInt) -> GpuPoint4 { GpuPoint4::new(x, y, z, w) }
 
-
 pub type GpuUint = u32;
 
 pub trait ToGpuUint
@@ -76,8 +72,6 @@ impl<T> ToGpuUint for T where T : ToU32
     fn to_gpu_uint(self) -> Self::Output { self.to_u32() }
 }
 
-
-
 pub trait ToGpuColor
 {
     fn to_gpu_color(self) -> GpuColor;
@@ -90,7 +84,7 @@ impl<T> ToGpuColor for T where T : IColor
         GpuColor::rgba(r as _, g as _, b as _, a as _)
     }
 }
-pub type GpuColor = ColorRGBAByte;
+pub type GpuColor = ColorRGBAOf<float>;
 
 
 
@@ -99,4 +93,3 @@ pub type GpuColor = ColorRGBAByte;
 
 //pub type GpuImage<T> = Image<T, GpuImageParam>;
 //pub type GpuImageRGBAByte = GpuImage<GpuColor>;
-*/

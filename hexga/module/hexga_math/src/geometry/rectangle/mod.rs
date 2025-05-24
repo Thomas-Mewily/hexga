@@ -23,6 +23,20 @@ impl<T> RectangleBase<T> where T : Number
     pub const SIZED_ONE : Self = Self::new_sized(T::ONE);
 }
 
+impl<T> From<(T,T)> for RectangleBase<T>
+{
+    fn from(value: (T,T)) -> Self {
+        Self::new(value.0, value.1)
+    }
+}
+
+impl<T> From<RectangleBase<T>> for (T,T)
+{
+    fn from(value: RectangleBase<T>) -> Self {
+        (value.pos, value.size)
+    }
+}
+
 // 2D :
 impl<T> Rectangle<T,2> where T : Number
 {

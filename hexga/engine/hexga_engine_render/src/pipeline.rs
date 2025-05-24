@@ -43,13 +43,13 @@ pub struct PipelineParam
 
     pub depth_test: DepthComparison,
     pub depth_write: bool,
-    pub depth_write_offset: Option<[f32;2]>,
+    pub depth_write_offset: Option<Vec2>,
 
     pub color_blend: Option<BlendState>,
     pub alpha_blend: Option<BlendState>,
     pub stencil_test: Option<StencilState>,
 
-    pub color_mask: RenderColorRGBAMask,
+    pub color_mask: ColorRGBAMask,
     pub primitive_type: PrimitiveType,
 }
 impl Default for PipelineParam
@@ -59,7 +59,7 @@ impl Default for PipelineParam
         { 
             cull_face: CullFace::Nothing, 
             front_face_order: FrontFaceOrder::CounterClockwise, 
-            color_mask: [true;4], 
+            color_mask: ColorRGBAMask::new(true, true, true, true), 
             primitive_type: PrimitiveType::Triangles,
             depth_test: DepthComparison::Always, // no depth test,
             depth_write: false,

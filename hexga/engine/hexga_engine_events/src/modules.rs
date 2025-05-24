@@ -1,8 +1,7 @@
-//! mainly inspired by miniquad
 use std::fmt::Debug;
 use hexga_core::prelude::*;
 
-pub type EventsVec2 = (f32, f32);
+use hexga_math::prelude::Vec2;
 
 pub trait LoopEvent
 {
@@ -12,13 +11,13 @@ impl LoopEvent for () { fn handle_event(&mut self, _ : &Event) -> bool { true } 
 
 
 #[non_exhaustive]
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Event
 {
-    Window(WindowEvent),
-    Mouse(MouseEvent),
+    Window  (WindowEvent  ),
+    Mouse   (MouseEvent   ),
     Keyboard(KeyboardEvent),
-    Touch(TouchEvent),
+    Touch   (TouchEvent   ),
 }
 impl Debug for Event
 {
@@ -33,7 +32,8 @@ impl Debug for Event
 }
 
 impl From<WindowEvent> for Event { fn from(value: WindowEvent) -> Self { Self::Window(value) } }
-impl From<DropFileEvent> for Event { fn from(value: DropFileEvent) -> Self { Self::from(WindowEvent::DropFile(value)) } }
+//impl From<DropFileEvent> for Event { fn from(value: DropFileEvent) -> Self { Self::from(WindowEvent::DropFile(value)) } }
+impl From<MouseMove> for Event { fn from(value: MouseMove) -> Self { Self::Mouse(MouseEvent::Move(value)) } }
 impl From<MouseEvent> for Event { fn from(value: MouseEvent) -> Self { Self::Mouse(value) } }
 impl From<MouseButtonEvent> for Event { fn from(value: MouseButtonEvent) -> Self { Self::from(MouseEvent::Button(value)) } }
 impl From<KeyboardEvent> for Event { fn from(value: KeyboardEvent) -> Self { Self::Keyboard(value) } }
@@ -41,13 +41,12 @@ impl From<CharEvent> for Event { fn from(value: CharEvent) -> Self { Self::from(
 impl From<KeyEvent> for Event { fn from(value: KeyEvent) -> Self { Self::from(KeyboardEvent::KeyEvent(value)) } }
 impl From<TouchEvent> for Event { fn from(value: TouchEvent) -> Self { Self::Touch(value) } }
 
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TouchEvent
 {
     pub phase    : TouchPhase,
     pub id       : TouchID,
-    pub position : EventsVec2,
+    pub position : Vec2,
 }
 
 pub type TouchID = u64;
@@ -70,21 +69,24 @@ impl TouchPhase
 }
 
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum WindowEvent
 {
-    Resize(EventsVec2),
+    Resize(Vec2),
     Minimized,
     Restored,
     Quit,
-    DropFile(DropFileEvent),
+    DropFile, //(DropFileEvent),
 }
+
+/* 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DropFileEvent
 {
     pub path  : std::path::PathBuf,
     pub bytes : Vec<u8>,
 }
+    */
 
 #[non_exhaustive]
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -140,20 +142,27 @@ impl Debug for CharEvent
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MouseEvent
 {
-    Wheel(EventsVec2),
-    Move(EventsVec2),
+    Wheel(Vec2),
+    Move(MouseMove),
     Button(MouseButtonEvent),
 
     /// Represents raw hardware mouse motion event
     /// Note that these events are delivered regardless of input focus and not in pixels, but in
     /// hardware units instead. And those units may be different from pixels depending on the target platform
-    RawMove(EventsVec2),
+    RawMove(Vec2),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MouseMove
+{
+    pub position : Vec2,
+    // delta : Vec2
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MouseButtonEvent
 {
-    pub position : EventsVec2,
+    pub position : Vec2,
     pub button   : MouseButton,
     pub press    : bool,
 }

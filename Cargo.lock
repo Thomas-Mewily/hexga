@@ -217,6 +217,7 @@ name = "hexga_engine_events"
 version = "0.0.10-beta.11"
 dependencies = [
  "hexga_core",
+ "hexga_math",
  "serde",
 ]
 
@@ -224,6 +225,7 @@ dependencies = [
 name = "hexga_engine_render"
 version = "0.0.10-beta.11"
 dependencies = [
+ "hexga_math",
  "serde",
 ]
 
@@ -231,6 +233,7 @@ dependencies = [
 name = "hexga_engine_window"
 version = "0.0.10-beta.11"
 dependencies = [
+ "hexga_math",
  "serde",
 ]
 

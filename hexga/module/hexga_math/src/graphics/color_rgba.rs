@@ -2,9 +2,11 @@ use crate::*;
 
 /// `ColorRGBAOf<float>`
 pub type Color = ColorRGBA;
+pub type ColorMask = ColorRGBAOf<bool>;
 
 /// `ColorRGBAOf<float>`
 pub type ColorRGBA = ColorRGBAFloat;
+pub type ColorRGBAMask = ColorRGBAOf<bool>;
 
 pub type ColorRGBAFloat = ColorRGBAOf<float>;
 pub type ColorRGBAByte = ColorRGBAOf<u8>;

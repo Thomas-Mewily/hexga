@@ -30,8 +30,8 @@ impl MainLoop for TestCtx
 fn main() 
 {
     for _ in 0..10 { println!(); }
-    MultiMediaConfig::new()
-        .with_window_config(WindowConfig::new().title("hello"))
+    MultiMediaParam::new()
+        .window(WindowParam::new().title("hello"))
         .run(|| TestCtx::___());
 }
 

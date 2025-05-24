@@ -1,20 +1,12 @@
 use crate::*;
-use hexga::math::unit::WrappedIterator;
-use miniquad::{Bindings,BufferId,TextureId,BufferType,BufferUsage,BufferSource,Backend,ShaderSource,VertexAttribute,PipelineParams,BufferLayout,VertexFormat,ShaderMeta,UniformBlockLayout};
-type PipelineID = miniquad::Pipeline;
+
+pub mod prelude
+{
+    pub use super::{Pen,PenParam};
+    pub(crate) use super::ContextPen;
+}
 
 pub struct Pen;
-
-impl Deref for Pen
-{
-    type Target=ContextPen;
-    fn deref(&self) -> &Self::Target { &ctx().pen }
-}
-impl DerefMut for Pen
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut ctx().pen }
-}
-
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(C)]
@@ -49,20 +41,20 @@ impl Vertex
 pub type VertexIdx = u16;
 pub type VertexTriangleIdx = [VertexIdx;3];
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub struct PenConfig
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+pub struct PenParam
 {
     pub max_vertex: usize,
     pub max_index : usize
 }
-impl Default for PenConfig
+impl Default for PenParam
 {
     fn default() -> Self 
     {
         Self { max_vertex: Self::DEFAULT_VERTEX_CAPACITY, max_index: Self::DEFAULT_INDEX_CAPACITY }
     }
 }
-impl PenConfig
+impl PenParam
 {
     // arbitrary constant value copied from on macroquad
     const DEFAULT_VERTEX_CAPACITY : usize = 8000;
@@ -101,7 +93,7 @@ pub struct ContextPen
     vertex: Vec<Vertex>,
     index : Vec<VertexIdx>,
     
-    param : PenConfig,
+    param : PenParam,
 }
 
 impl Drop for ContextPen
@@ -114,12 +106,10 @@ impl Drop for ContextPen
 
 impl ContextPen
 {
-
-
-    pub(crate) fn new(render : &mut RenderBackEnd, mut param : PenConfig) -> Self 
+    pub(crate) fn new(render : &mut dyn ContextMultiMedia, mut param : PenParam) -> Self 
     {
         param.align();
-        let PenConfig{ max_vertex, max_index } = param;
+        let PenParam{ max_vertex, max_index } = param;
         let white_pixel = render.new_texture_from_rgba8(1, 1, &[255, 255, 255, 255]);
 
         let vertex_buffer = render.new_buffer(

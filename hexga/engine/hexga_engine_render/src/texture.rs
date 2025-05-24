@@ -1,15 +1,17 @@
 use super::*;
 
+pub type TextureWrap2 = Vector2<TextureWrap>;
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct TextureParam
 {
     pub format : TextureFormat,
-    pub wrap : [TextureWrap;2],
+    pub wrap : TextureWrap2,
     pub min_filter: FilterMode,
     pub mag_filter: FilterMode,
     pub mipmap_filter: MipmapFilterMode,
     pub allocate_mipmaps: bool,
-    pub size : [u32;2],
+    pub size : Point2,
     /// Only used for render textures. `sample_count > 1` allows anti-aliased render textures.
     ///
     /// On OpenGL, for a `sample_count > 1` render texture, render buffer object will
@@ -29,7 +31,7 @@ pub struct TextureData
 pub enum TextureSource
 {
     Empty,
-    RGBA8(Vec<u8>),
+    RGBA8(Vec<u8>), // Fix it : use a grid / image
 }
 
 #[repr(u8)]

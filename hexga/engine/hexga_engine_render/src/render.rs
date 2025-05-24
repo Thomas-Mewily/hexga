@@ -22,7 +22,7 @@ pub trait ContextRender
     fn texture_set_wrap        (&mut self, id : RawTextureID, wrap : (TextureWrap, TextureWrap));
     fn texture_generate_mipmaps(&mut self, id : RawTextureID);
     fn texture_read_pixels     (&mut self, id : RawTextureID, dest : &mut TextureSource);
-    fn texture_update_portion  (&mut self, id : RawTextureID, pos : (u32, u32), size : (u32, u32), source : &texture::TextureSource);
+    fn texture_update_portion  (&mut self, id : RawTextureID, rect : Rect2P, source : &texture::TextureSource);
     fn delete_texture          (&mut self, id : RawTextureID);
 
     fn new_render_pass   (&mut self, texture : RawTextureID, depth : Option<RawTextureID>) -> RenderPassID;
@@ -35,8 +35,8 @@ pub trait ContextRender
     fn new_shader   (&mut self, data : &ShaderData) -> Result<RawShaderID, ShaderError>;
     fn delete_shader(&mut self, program: RawShaderID);
 
-    fn apply_viewport(&mut self, pos : (u32, u32), size : (u32, u32));
-    fn apply_scissor (&mut self, pos : (u32, u32), size : (u32, u32));
+    fn apply_viewport(&mut self, viewport : Rect2P);
+    fn apply_scissor (&mut self, scissor : Rect2P);
 
     fn apply_bindings_view(&mut self, binding : BindingsView);
     fn apply_bindings(&mut self, binding : &Bindings) { self.apply_bindings_view(binding.view()); }
@@ -67,7 +67,7 @@ impl ContextRender for ()
     fn texture_set_wrap        (&mut self, _ : RawTextureID, _ : (TextureWrap, TextureWrap)) {}
     fn texture_generate_mipmaps(&mut self, _ : RawTextureID) {}
     fn texture_read_pixels     (&mut self, _ : RawTextureID, _ : &mut TextureSource) {}
-    fn texture_update_portion  (&mut self, _ : RawTextureID, _ : (u32, u32), _ : (u32, u32), _ : &texture::TextureSource) {}
+    fn texture_update_portion  (&mut self, _ : RawTextureID, _ : Rect2P, _ : &texture::TextureSource) {}
     fn delete_texture          (&mut self, _ : RawTextureID) {}
     
     fn new_render_pass   (&mut self, _ : RawTextureID, _ : Option<RawTextureID>) -> RenderPassID { RenderPassID::default() }
@@ -77,8 +77,8 @@ impl ContextRender for ()
     fn delete_pipeline(&mut self, _: RawPipelineID) {}
     fn new_shader   (&mut self, _ : &ShaderData) -> Result<RawShaderID, ShaderError> { Ok(RawShaderID::default()) }
     fn delete_shader(&mut self, _: RawShaderID) {}
-    fn apply_viewport(&mut self, _ : (u32, u32), _ : (u32, u32)) {}
-    fn apply_scissor (&mut self, _ : (u32, u32), _ : (u32, u32)) {}
+    fn apply_viewport(&mut self, _ : Rect2P) {}
+    fn apply_scissor (&mut self, _ : Rect2P) {}
     fn apply_bindings_view(&mut self, _ : BindingsView) {}
     fn apply_uniforms_from_bytes(&mut self, _: &[u8]) {}
     fn clear(&mut self, _ : ClearData) {}
@@ -87,5 +87,4 @@ impl ContextRender for ()
     fn end_render_pass(&mut self) {}
     fn end_frame(&mut self) {}
     fn draw(&mut self, _: usize, _: usize, _: usize) {}
-    
 }

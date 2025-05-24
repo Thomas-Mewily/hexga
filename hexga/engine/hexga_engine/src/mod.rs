@@ -1,4 +1,4 @@
-pub use crate::engine_core::hexga as hexga;
+pub use crate::engine_core::hexga::modules::*;
 
 pub mod render;
 pub mod window;

@@ -1,5 +1,4 @@
 use hexga_engine::render::*;
-
 use crate::*;
 
 /// MiniQuad <=> Hexga Engine conversion
@@ -189,16 +188,16 @@ impl Convert for miniquad::KeyCode
     }
 }
 
-impl Convert for MultiMediaConfig
+impl Convert for MultiMediaParam
 {
     type Output=miniquad::conf::Conf;
 
     fn convert(self) -> Self::Output {
-        let Self { window_config } = self;
-        let WindowConfig 
+        let Self { window_param: window_config } = self;
+        let WindowParam 
         { 
             title: window_title, 
-            size: (width, height),
+            size,
             high_dpi,
             fullscreen, 
             sample_count, 
@@ -210,8 +209,8 @@ impl Convert for MultiMediaConfig
         miniquad::conf::Conf
         {
             window_title,
-            window_width: width as _,
-            window_height: height as _,
+            window_width: size.x as _,
+            window_height: size.y as _,
             high_dpi,
             fullscreen,
             sample_count: sample_count as _,
@@ -640,7 +639,7 @@ impl Convert for pipeline::PipelineParam
             stencil_test 
         } = self;
 
-        let [cr, rg, rb, ra] = color_mask;
+        let [cr, rg, rb, ra] = color_mask.into();
         
         miniquad::PipelineParams 
         { 
@@ -801,7 +800,7 @@ impl Convert for render_pass::PassAction
             render_pass::PassAction::Clear(clear_data) => 
             miniquad::PassAction::Clear
             {
-                color: clear_data.color.map(|[r,g,b,a]| (r as _, g as _, b as _, a as _)),
+                color: clear_data.color.map(|c| c.convert()),
                 depth: clear_data.depth,
                 stencil: clear_data.stencil,
             },
@@ -809,6 +808,16 @@ impl Convert for render_pass::PassAction
     }
 }
 
+impl Convert for Color
+{
+    type Output=(f32,f32,f32,f32);
+
+    fn convert(self) -> Self::Output 
+    {
+        let [r,g,b,a] = self.into();
+        (r as _, g as _, b as _, a as _)
+    }
+}
 
 impl Convert for buffer::BufferType
 {

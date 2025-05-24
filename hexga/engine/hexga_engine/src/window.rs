@@ -12,7 +12,6 @@ pub mod prelude
 #[doc(hidden)]
 pub mod modules 
 {
-    use crate::*;
     pub use super::engine_core::window::modules::*;
 }
 

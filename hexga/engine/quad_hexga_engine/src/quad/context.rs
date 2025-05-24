@@ -1,40 +1,7 @@
 pub use hexga_engine::modules::*;
-use hexga_engine::render::{pipeline::RawPipelineID, ContextRender};
 
 use crate::*;
-
-mod convert;
-use convert::*;
-
-#[derive(Clone)]
-struct QuadState<S> where S : MainLoop
-{
-    state : S,
-}
-
-impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoop
-{
-    fn update(&mut self) {
-        self.state.update();
-    }
-
-    fn draw(&mut self) {
-        self.state.draw();
-    }
-
-    fn char_event(&mut self, character: char, keymods: miniquad::KeyMods, repeat: bool) 
-    {
-        self.state.handle_event(CharEvent {
-            character,
-            keymods: keymods.convert(),
-            repeat,
-        }.into());
-    }
-
-    fn files_dropped_event(&mut self) {
-        self.state.handle_event(Event::Window(()))
-    }
-}
+use super::convert::*;
 
 pub struct QuadContext
 {
@@ -128,14 +95,15 @@ impl ContextRender for QuadContext
         self.render.texture_read_pixels(id, dest);
     }
 
-    fn texture_update_portion  (&mut self, id : texture::RawTextureID, pos : (u32, u32), size : (u32, u32), source : &texture::TextureSource) {
+    fn texture_update_portion  (&mut self, id : texture::RawTextureID, portion : Rect2P, source : &texture::TextureSource) {
         let src = match &source
         {
             texture::TextureSource::Empty => return,
             texture::TextureSource::RGBA8(items) => items.as_slice(),
         };
         let id = self.texture[id.index];
-        self.render.texture_update_part(id, pos.0 as _, pos.1 as _, size.0 as _, size.1 as _, src);
+        let (pos, size) = portion.into();
+        self.render.texture_update_part(id, pos.x as _, pos.y as _, size.x as _, size.y as _, src);
     }
 
     fn delete_texture(&mut self, id : texture::RawTextureID) {
@@ -179,7 +147,7 @@ impl ContextRender for QuadContext
         let miniquad_shader_id = unsafe { std::mem::transmute(shader.index) };
 
         let pipeline = self.render.new_pipeline(&miniquad_layout,  &miniquad_attribute, miniquad_shader_id, param.convert());
-        RawPipelineID{ index: unsafe { std::mem::transmute(pipeline) } } 
+        pipeline::RawPipelineID{ index: unsafe { std::mem::transmute(pipeline) } } 
     }
 
     fn apply_pipeline (&mut self, pipeline: pipeline::RawPipelineID) {
@@ -211,12 +179,15 @@ impl ContextRender for QuadContext
         self.render.delete_shader(unsafe { std::mem::transmute(program.index) });
     }
 
-    fn apply_viewport(&mut self, pos : (u32, u32), size : (u32, u32)) {
-        self.render.apply_viewport(pos.0 as _, pos.1 as _, size.0 as _, size.1 as _);
+    fn apply_viewport(&mut self, viewport : Rect2P) 
+    {
+        let (pos, size) = viewport.into();
+        self.render.apply_viewport(pos.x as _, pos.y as _, size.x as _, size.y as _);
     }
 
-    fn apply_scissor (&mut self, pos : (u32, u32), size : (u32, u32)) {
-        self.render.apply_scissor_rect(pos.0 as _, pos.1 as _, size.0 as _, size.1 as _);
+    fn apply_scissor (&mut self, scissor : Rect2P) {
+        let (pos, size) = scissor.into();
+        self.render.apply_scissor_rect(pos.x as _, pos.y as _, size.x as _, size.y as _);
     }
 
     fn apply_bindings_view(&mut self, binding : bindings::BindingsView) 
@@ -247,7 +218,7 @@ impl ContextRender for QuadContext
     fn clear(&mut self, data : render_pass::ClearData) 
     {
         let render_pass::ClearData { color, depth, stencil } = data;
-        let color = color.map(|[r,g,b,a]| (r,g,b,a));
+        let color = color.map(|c| c.convert());
         self.render.clear(color, depth, stencil);
     }
 
@@ -285,7 +256,7 @@ impl ContextWindow for QuadContext
         miniquad::window::clipboard_set(text);
     }
 
-    fn dpi_scale_f32(&mut self) -> f32 {
+    fn dpi_scale(&mut self) -> f32 {
         miniquad::window::dpi_scale() as _
     }
 
@@ -301,22 +272,22 @@ impl ContextWindow for QuadContext
         miniquad::window::request_quit();
     }
 
-    fn get_position_tuple(&mut self) -> (i32, i32) {
+    fn get_position(&mut self) -> Point2 {
         let (x,y) = miniquad::window::get_window_position();
-        (x as _, y as _)
+        point2(x as _, y as _)
     }
 
-    fn set_position_tuple(&mut self, (x,y) : (i32, i32)) {
-        miniquad::window::set_window_position(x as _, y as _);
+    fn set_position(&mut self, pos : Point2) {
+        miniquad::window::set_window_position(pos.x as _,pos.y as _);
     }
 
-    fn get_screen_size_tuple(&mut self) -> (u32, u32) {
+    fn get_screen_size_tuple(&mut self) -> Point2 {
         let (x,y) = miniquad::window::screen_size();
-        (x as _, y as _)
+        point2(x as _, y as _)
     }
 
-    fn set_size_tuple(&mut self, (x, y) : (u32, u32)) {
-        miniquad::window::set_window_size(x as  _, y as _);
+    fn set_size(&mut self, size : Point2) {
+        miniquad::window::set_window_size(size.x as  _, size.y as _);
     }
 
     fn set_fullscreen(&mut self, fullscreen: bool) {
@@ -349,15 +320,15 @@ pub trait QuadRunner
     fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoop + 'static;
 }
 
-impl QuadRunner for MultiMediaConfig
+impl QuadRunner for MultiMediaParam
 {
     fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoop + 'static 
     {
-        miniquad::start(self.convert(), move || 
+        miniquad::start(self.clone().convert(), move || 
         {
             let ctx = Box::new(QuadContext{ render: miniquad::window::new_rendering_backend(), texture: ___(), tmp_vertex: ___(), tmp_textures: ___() });
             unsafe { multi_media::set_context(Some(ctx)); }
-            Box::new(QuadState { state : state() })
+            Box::new(super::QuadState { state : state() })
         }
         );
     }
