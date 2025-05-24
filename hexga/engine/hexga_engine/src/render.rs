@@ -17,6 +17,7 @@ pub mod modules
     pub use RenderBackend;
 }
 
+/* 
 pub struct Render;
 impl Deref for Render
 {
@@ -37,3 +38,4 @@ pub struct ContextRender
 {
     texture
 }
+    */

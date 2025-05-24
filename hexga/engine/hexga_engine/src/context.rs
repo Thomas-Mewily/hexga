@@ -1,5 +1,10 @@
 use crate::*;
 
+pub mod prelude
+{
+    pub use super::MainLoop;
+}
+
 pub trait MainLoop
 {
     fn handle_event(&mut self, event : Event) -> bool;
@@ -7,14 +12,21 @@ pub trait MainLoop
     fn draw(&mut self);
 }
 
-pub(crate) struct Context
+pub struct Context
 {
+    pub(crate) thread_id : std::thread::ThreadId,
     // state       : Box<dyn MainLoopWithContext>,
     pub(crate) multi_media : Box<dyn ContextMultiMedia>,
 
-    pub(crate) render : ContextRender,
+    //pub(crate) render : ContextRender,
     pub(crate) pen    : ContextPen,
-
+/*
+Window,
+Asset,
+Audio,
+Pen,
+Events,
+*/
 
     
     // other stuff
@@ -22,39 +34,53 @@ pub(crate) struct Context
 
 impl Context
 {
-    pub(crate) fn new(mut multi_media : Box<dyn ContextMultiMedia>, param : MultiMediaParam) -> Self 
+    pub fn new(mut multi_media : Box<dyn ContextMultiMedia>, param : MultiMediaParam) -> Self 
     {
+        todo!()
+        /* 
         let pen = ContextPen::new(multi_media.as_mut(), param.pen_param);
         Self { multi_media, pen, textures: ___(), textures_to_remove: ___() }
+        */
     }
 }
 
-static mut CONTEXT : Option<Context> = None;
+pub(crate) static mut CONTEXT : Option<Context> = None;
 
 #[doc(hidden)]
 #[allow(dead_code)]
 #[allow(static_mut_refs)]
-pub(crate) fn ctx_ref() -> &'static Context  { unsafe { CONTEXT.as_ref().unwrap() } }
+pub(crate) fn ctx_ref() -> &'static Context  
+{ 
+    let ctx = unsafe { CONTEXT.as_ref().unwrap() };
+    assert_eq!(ctx.thread_id, std::thread::current().id(), "Can only use the context in the same thread");
+    ctx
+}
 
 #[doc(hidden)]
 #[allow(dead_code)]
 #[allow(static_mut_refs)]
-pub(crate) fn ctx() -> &'static mut Context  { unsafe { CONTEXT.as_mut().unwrap() } }
+pub(crate) fn ctx() -> &'static mut Context 
+{ 
+    let ctx = unsafe { CONTEXT.as_mut().unwrap() };
+    assert_eq!(ctx.thread_id, std::thread::current().id(), "Can only use the context in the same thread");
+    ctx
+}
 
 #[doc(hidden)]
 #[allow(static_mut_refs)]
-pub unsafe fn set_context(ctx : Option<(Box<dyn ContextMultiMedia>, MultiMediaParam)>) -> Option<Box<dyn ContextMultiMedia>>
+pub unsafe fn set_context(ctx : Option<Context>) -> Option<Context>
 {
     unsafe
     {
         match ctx
         {
-            Some((ctx, param)) => {
-                CONTEXT = Some(Context::new(ctx, param));
+            Some(ctx) => 
+            {
+                CONTEXT = Some(ctx);
                 return None;
             },
             None => {
-                CONTEXT.take().map(|v| v.multi_media)
+                CONTEXT.take()
             }
         }
     }

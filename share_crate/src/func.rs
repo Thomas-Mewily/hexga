@@ -16,7 +16,8 @@ pub fn publish_crate(name: &'static str)
 {
     println!("Publishing {}...", name);
     
-    env::set_current_dir(format!("hexga/{}", name)).unwrap();
+    let folder = if name.contains("engine") { "engine" } else { "module" };
+    env::set_current_dir(format!("hexga/{folder}/{name}")).unwrap();
     
     let status = Command::new("cargo")
         .arg("publish")

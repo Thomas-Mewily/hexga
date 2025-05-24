@@ -11,7 +11,7 @@ impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoop
 {
     fn update(&mut self) 
     {
-        Context.begin
+        //Context.begin
         self.state.update();
     }
 

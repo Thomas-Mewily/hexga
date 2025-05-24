@@ -193,7 +193,7 @@ impl Convert for MultiMediaParam
     type Output=miniquad::conf::Conf;
 
     fn convert(self) -> Self::Output {
-        let Self { window_param: window_config } = self;
+        let Self { window_param, pen_param : _ } = self;
         let WindowParam 
         { 
             title: window_title, 
@@ -204,7 +204,7 @@ impl Convert for MultiMediaParam
             resizable, 
             icon, 
             platform 
-        } = window_config;
+        } = window_param;
 
         miniquad::conf::Conf
         {
@@ -409,7 +409,7 @@ impl Convert for texture::TextureParam
             access : _ 
         } = self;
 
-        let [width, height] = size;
+        let [width, height] = size.into();
 
         miniquad::TextureParams 
         { 
@@ -647,7 +647,7 @@ impl Convert for pipeline::PipelineParam
             front_face_order: front_face_order.convert(), 
             depth_test: depth_test.convert(), 
             depth_write: depth_write, 
-            depth_write_offset: depth_write_offset.map(|[x,y]| (x as _, y as _)), 
+            depth_write_offset: depth_write_offset.map(|v| (v.x as _, v.y as _)), 
             color_blend: color_blend.map(|v| v.convert()), 
             alpha_blend: alpha_blend.map(|v| v.convert()), 
             stencil_test: stencil_test.map(|v| v.convert()), 

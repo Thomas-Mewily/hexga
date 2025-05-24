@@ -79,6 +79,7 @@ pub struct GpuMesh
 #[derive(Debug)]
 pub struct ContextPen
 {
+    /* 
     pipeline: PipelineID,
     bindings: Bindings,
 
@@ -92,6 +93,7 @@ pub struct ContextPen
 
     vertex: Vec<Vertex>,
     index : Vec<VertexIdx>,
+    */
     
     param : PenParam,
 }
@@ -100,10 +102,11 @@ impl Drop for ContextPen
 {
     fn drop(&mut self) 
     {
-        render().delete_texture(self.white_pixel);
+        //render().delete_texture(self.white_pixel);
     }
 }
 
+/* 
 impl ContextPen
 {
     pub(crate) fn new(render : &mut dyn ContextMultiMedia, mut param : PenParam) -> Self 
@@ -585,3 +588,4 @@ pub(crate) mod shader
         }
     }
 }
+*/

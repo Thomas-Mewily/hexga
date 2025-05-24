@@ -1,3 +1,4 @@
+use hexga_engine::context::Context;
 pub use hexga_engine::modules::*;
 
 use crate::*;
@@ -13,7 +14,7 @@ pub struct QuadContext
 
 use render::*;
 
-impl ContextRender for QuadContext
+impl RenderBackend for QuadContext
 {
     fn new_buffer   (&mut self, data: buffer::BufferData, source : buffer::BufferSource) -> buffer::RawBufferID 
     {
@@ -45,7 +46,7 @@ impl ContextRender for QuadContext
             data.param.convert()
         );
 
-        let [wrap_x, wrap_y] = data.param.wrap;
+        let [wrap_x, wrap_y] = data.param.wrap.into();
         if wrap_x != wrap_y
         {
             self.render.texture_set_wrap(t, wrap_x.convert(), wrap_y.convert());
@@ -327,7 +328,7 @@ impl QuadRunner for MultiMediaParam
         miniquad::start(self.clone().convert(), move || 
         {
             let ctx = Box::new(QuadContext{ render: miniquad::window::new_rendering_backend(), texture: ___(), tmp_vertex: ___(), tmp_textures: ___() });
-            unsafe { multi_media::set_context(Some(ctx)); }
+            unsafe { context::set_context(Some(Context::new(ctx, self))); }
             Box::new(super::QuadState { state : state() })
         }
         );
