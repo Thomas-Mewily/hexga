@@ -8,9 +8,9 @@ use super::*;
 ///
 /// Example:
 ///```
-///# use hexga_engine_render::blend::{BlendState, BlendFactor, BlendValue, Equation};
+///# use hexga_engine_render::blend::{BlendState, BlendFactor, BlendValue, BlendEquation};
 ///BlendState::new(
-///    Equation::Add,
+///    BlendEquation::Add,
 ///    BlendFactor::Value(BlendValue::SourceAlpha),
 ///    BlendFactor::OneMinusValue(BlendValue::SourceAlpha)
 ///);
@@ -22,6 +22,20 @@ pub struct BlendState {
     pub equation: BlendEquation,
     pub sfactor: BlendFactor,
     pub dfactor: BlendFactor,
+}
+
+impl BlendState{
+    pub fn new(
+        equation: BlendEquation,
+        sfactor: BlendFactor,
+        dfactor: BlendFactor,
+    ) -> Self {
+        Self {
+            equation,
+            sfactor,
+            dfactor,
+        }
+    }
 }
 
 /// Specifies how incoming RGBA values (source) and the RGBA in framebuffer (destination)

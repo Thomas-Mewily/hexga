@@ -1,4 +1,7 @@
 #![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
 use std::{fmt::Debug, ops::*};
 use hexga::prelude::*;
 use hexga::ansi_color::AnsiColor;

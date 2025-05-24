@@ -1,7 +1,7 @@
 //pub use super::*;
 
 use hexga_typedef::*;
-pub use super::{Vector,IterIdx};
+pub use super::{Vector,IterIndex};
 
 pub type Point<const N : usize> = Vector<int,   N>;
 pub type Bool <const N : usize> = Vector<bool,  N>;

@@ -51,6 +51,18 @@ impl<T,const N : usize> Vector<T,N>
     /// If any component is negative, return 0
     pub fn area(self) -> T where T : Number { self.iter().fold(T::ONE,|a, b| a * (*b).max_partial(T::ZERO)) }
     
+    pub fn all_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_zero()) }
+    pub fn all_non_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_non_zero()) }
+
+    pub fn any_zero(self) -> bool where T : Zero + PartialEq { self.any(|v| v.is_zero()) }
+    pub fn any_non_zero(self) -> bool where T : Zero + PartialEq { self.any(|v| v.is_non_zero()) }
+
+    pub fn all_positive_or_zero(self) -> bool where T : PositiveOrNegative { self.all(|v| v.is_positive_or_zero()) }
+    pub fn any_positive_or_zero(self) -> bool where T : PositiveOrNegative { self.any(|v| v.is_positive_or_zero()) }
+
+    pub fn all_strictly_positive(self) -> bool where T : PositiveOrNegative { self.all(|v| v.is_strictly_positive()) }
+    pub fn any_strictly_negative(self) -> bool where T : PositiveOrNegative { self.any(|v| v.is_strictly_negative()) }
+
     // Index :
     #[inline(always)]
     pub fn is_inside(self, size : Self) -> bool where T : Number

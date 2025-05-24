@@ -8,14 +8,6 @@ use hexga_map_on::*;
 
 fn main() 
 {
-    let mut it = (0.0..1.0).step(0.3);
-
-    dbg!(it.next());
-    dbg!(it.next());
-    dbg!(it.next_back());
-    dbg!(it.next_back());
-    dbg!(it.next_back());
-    dbg!(it.next_back());
-
-    dbg!(rect2p(8,8,112,112).iter_idx().to_vec());
+    //let mut grid = Grid2::new(point2(42, 42));
+    dbg!(vector3(4, 6, 2).iter_index().to_vec());
 }

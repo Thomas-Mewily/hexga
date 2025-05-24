@@ -26,6 +26,7 @@ Asset,
 Audio,
 Pen,
 Events,
+Permission ? (from where asset can be loaded / exported ? You don't want to load and share the "asset" "C:/private/password.txt")
 */
 
     

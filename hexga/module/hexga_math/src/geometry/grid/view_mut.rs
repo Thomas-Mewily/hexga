@@ -13,7 +13,7 @@ pub trait IGridViewMut<T, Param, Idx, const N : usize> : IGridView<T,Param,Idx,N
         // SAFELY get a raw pointer to the underlying storage
         let ptr = self as *mut Self;
     
-        r.iter_idx().map(move |p| {
+        r.iter_index().map(move |p| {
             // SAFETY : each position is unique, so the same tiles can't be returned twice or more,
             // so each element only have one mutable borrow at a time
             let t = unsafe { (*ptr).get_unchecked_mut(p) };
@@ -140,7 +140,7 @@ impl<'a, T, Idx, const N : usize> PartialEq for GridViewMut<'a, T, Idx,N> where 
 {
     fn eq(&self, other: &Self) -> bool {
         if self.size() != other.size() { return false; }
-        self.size().iter_idx().all(|p| unsafe { self.get_unchecked(p) == other.get_unchecked(p) })
+        self.size().iter_index().all(|p| unsafe { self.get_unchecked(p) == other.get_unchecked(p) })
     }
 }
 

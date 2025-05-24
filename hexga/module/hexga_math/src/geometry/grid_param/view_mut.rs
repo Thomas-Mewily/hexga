@@ -97,7 +97,7 @@ impl<'a, T, Param, Idx, const N : usize> PartialEq for GridParamViewMut<'a, T, P
 {
     fn eq(&self, other: &Self) -> bool {
         if self.size() != other.size() { return false; }
-        self.size().iter_idx().all(|p| unsafe { self.get_unchecked(p) == other.get_unchecked(p) })
+        self.size().iter_index().all(|p| unsafe { self.get_unchecked(p) == other.get_unchecked(p) })
     }
 }
 

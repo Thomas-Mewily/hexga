@@ -123,7 +123,7 @@ impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : Integer
     {
         let area = size.area().to_usize();
         let mut value = Vec::with_capacity(area);
-        for idx in size.iter_idx()
+        for idx in size.iter_index()
         {
             value.push(f(idx));
         }

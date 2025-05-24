@@ -30,7 +30,7 @@ pub trait IGridView<T, Param, Idx, const N : usize> : Get<Vector<Idx,N>,Output =
     fn iter<'a>(&'a self) -> impl Iterator<Item=(Vector<Idx,N>, &'a T)> where T: 'a
     {
         let r = self.size(); 
-        r.iter_idx().map(|p| (p, unsafe { self.get_unchecked(p) }))
+        r.iter_index().map(|p| (p, unsafe { self.get_unchecked(p) }))
     }
 }
 
@@ -64,7 +64,7 @@ impl<'a, T, Idx, const N : usize> PartialEq for GridView<'a, T, Idx, N> where Id
 {
     fn eq(&self, other: &Self) -> bool {
         if self.size() != other.size() { return false; }
-        self.size().iter_idx().all(|p| unsafe { self.get_unchecked(p) == other.get_unchecked(p) })
+        self.size().iter_index().all(|p| unsafe { self.get_unchecked(p) == other.get_unchecked(p) })
     }
 }
 

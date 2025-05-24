@@ -439,10 +439,10 @@ impl<T,const N : usize> Rectangle<T,N> where T : ArrayLike<N> + Copy
 */
 */
 
-impl<T,const N : usize> IterIdx<T,N> for Rectangle<T,N> where T : NumberInteger
+impl<T,const N : usize> IterIndex<T,N> for Rectangle<T,N> where T : NumberInteger
 {
-    type IterIdx = RectIter<T,N>;
-    fn iter_idx(&self) -> Self::IterIdx { RectIter::new(self.pos, self.size.iter_idx()) }
+    type IterIndex = RectIter<T,N>;
+    fn iter_index(&self) -> Self::IterIndex { RectIter::new(self.pos, self.size.iter_index()) }
 }
 
 

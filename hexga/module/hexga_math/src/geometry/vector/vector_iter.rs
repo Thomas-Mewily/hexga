@@ -1,9 +1,9 @@
 use crate::*;
 
 
-pub trait IterIdx<T, const N : usize>
+pub trait IterIndex<T, const N : usize>
 {
-    type IterIdx : Iterator<Item=Vector<T,N>>;
+    type IterIndex : Iterator<Item=Vector<T,N>>;
 
     /// Iter over all point in self.
     /// 
@@ -16,12 +16,12 @@ pub trait IterIdx<T, const N : usize>
     /// 
     /// let expected_points = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)].map(|(x,y)| point2(x, y));
     /// 
-    /// for (i, expected) in point2(2, 3).iter_idx().zip(expected_points.iter())
+    /// for (i, expected) in point2(2, 3).iter_index().zip(expected_points.iter())
     /// {
     ///     assert_eq!(&i, expected);
     /// }
     /// ```
-    fn iter_idx(&self) -> Self::IterIdx;
+    fn iter_index(&self) -> Self::IterIndex;
 }
 
 /// Iter over all idx from Vec::ZERO to the current vector
@@ -50,8 +50,6 @@ impl<T, const N : usize> Iterator for VectorIter<T, N> where T : Number
 
     fn next(&mut self) -> Option<Self::Item> 
     {
-        if self.cur.array() == self.end.array() { return None; }
-
         let v = self.cur;
         let mut i = 0;
         
@@ -65,16 +63,25 @@ impl<T, const N : usize> Iterator for VectorIter<T, N> where T : Number
             self.cur[i] = T::ZERO;
             i += 1;
         }
+
         self.cur = self.end;
-        Some(v)
+
+        if self.end.all_zero()
+        {
+            None
+        }else
+        {
+            self.end = zero();
+            Some(v)
+        }
     }
 }
 
-impl<T,const N : usize> IterIdx<T,N> for Vector<T,N> where T : NumberInteger
+impl<T,const N : usize> IterIndex<T,N> for Vector<T,N> where T : NumberInteger
 {
-    type IterIdx = VectorIter<T,N>;
+    type IterIndex = VectorIter<T,N>;
     
-    fn iter_idx(&self) -> Self::IterIdx {
-        Self::IterIdx::new(*self)
+    fn iter_index(&self) -> Self::IterIndex {
+        Self::IterIndex::new(*self)
     }
 }
