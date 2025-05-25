@@ -36,6 +36,13 @@ impl<T> ColorRGBAOf<T>
     pub const fn rgb (red : T, green : T, blue : T) -> Self where T : RangeDefault { Self::rgba(red, green, blue, T::RANGE_MAX) }
     pub const fn gray(rgb : T) -> Self where T : RangeDefault + Copy { Self::rgb(rgb, rgb, rgb) }
 
+    pub const fn splat_rgba(rgba : T) -> Self where T : Copy { Self::new(rgba, rgba, rgba, rgba) }
+    /// Alpha is at max
+    pub const fn splat_rgb(rgb : T) -> Self where T : Copy + RangeDefault { Self::splat_rgb_with_a(rgb, T::RANGE_MAX) }
+    pub const fn splat_rgb_with_a(rgb : T, a : T) -> Self where T : Copy { Self::new(rgb, rgb, rgb, a) }
+
+
+    
     pub fn rgba_ref(&    self) -> &    [T; 4] { self.as_array() }
     pub fn rgba_mut(&mut self) -> &mut [T; 4] { self.as_array_mut() }
 
@@ -48,14 +55,6 @@ impl<T> ColorRGBAOf<T>
         unsafe { &mut *(self.as_array_mut().as_mut_ptr() as *mut [T; 3]) }
     }
 
-    pub(crate) const fn const_splat(rgba : T) -> Self where T : Copy { Self::new(rgba, rgba, rgba, rgba) }
-    pub(crate) const fn const_splat_rgba(rgba : T) -> Self where T : Copy { Self::const_splat(rgba) }
-    pub(crate) const fn const_splat_rgb(rgb : T, a : T) -> Self where T : Copy { Self::new(rgb, rgb, rgb, a) }
-
-    pub fn splat_rgba(rgba : T) -> Self where T : Clone { Self::new(rgba.clone(), rgba.clone(), rgba.clone(), rgba) }
-    /// Alpha is at max
-    pub fn splat_rgb(rgb : T) -> Self where T : Clone + RangeDefault { Self::splat_rgb_with_a(rgb, T::RANGE_MAX) }
-    pub fn splat_rgb_with_a(rgb : T, a : T) -> Self where T : Clone { Self::new(rgb.clone(), rgb.clone(), rgb.clone(), a) }
 
     /// Red
     pub const R_INDEX : usize = 0;

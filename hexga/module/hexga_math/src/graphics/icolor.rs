@@ -85,6 +85,7 @@ pub trait ToColor : Sized
 }
 
 
+
 pub trait IColor<T> : 
     Sized +
     ToColor

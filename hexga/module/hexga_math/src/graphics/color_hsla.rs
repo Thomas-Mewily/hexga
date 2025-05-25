@@ -44,6 +44,12 @@ impl<T> ColorHSLAOf<T>
     pub const fn hsl(hue : T, saturation : T, lightness : T) -> Self where T : Float { Self::hsla(hue, saturation, lightness, T::ONE) }
 
 
+    pub const fn splat_hsla(hsla : T) -> Self where T : Copy { Self::new(hsla, hsla, hsla, hsla) }
+    /// Alpha is at max
+    pub const fn splat_hsl(hsl : T) -> Self where T : Copy + RangeDefault { Self::splat_hsl_with_a(hsl, T::RANGE_MAX) }
+    pub const fn splat_hsl_with_a(hsl : T, a : T) -> Self where T : Copy { Self::new(hsl, hsl, hsl, a) }
+
+
     pub fn hsla_ref(&    self) -> &    [T; 4] { self.as_array() }
     pub fn hsla_mut(&mut self) -> &mut [T; 4] { self.as_array_mut() }
 
