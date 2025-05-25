@@ -54,7 +54,7 @@ pub trait IGrid<T, Idx, const N : usize> :
 
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     #[inline(always)]
-    fn position_to_index(&self, pos : Vector<Idx,N>) -> Option<usize> { pos.is_inside(self.size()).then(|| unsafe { self.position_to_index_unchecked(self.size()) }) }
+    fn position_to_index(&self, pos : Vector<Idx,N>) -> Option<usize> { pos.is_inside(self.size()).then(|| unsafe { self.position_to_index_unchecked(pos) }) }
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     #[inline(always)]
     fn index_to_position(&self, index : usize) -> Option<Vector<Idx,N>> { (index < self.size().area_usize()).then(|| unsafe { self.index_to_position_unchecked(index) }) }
