@@ -129,13 +129,24 @@ impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
     const GRAY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX };
     const WHITE : Self = Self { r: T::RANGE_MAX , g: T::RANGE_MAX , b: T::RANGE_MAX , a: T::RANGE_MAX };
     
-    const RED    : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MIN, T::RANGE_MAX);
-    const GREEN  : Self = Self::rgba(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX);
-    const BLUE   : Self = Self::rgba(T::RANGE_MIN, T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX);
+    const RED    : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MIN);
+    const GREEN  : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MIN);
+    const BLUE   : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MIN, T::RANGE_MAX);
     
-    const CYAN   : Self = Self::rgba(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
-    const PINK   : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX);
-    const YELLOW : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX);
+    const CYAN   : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX);
+    const MAGENTA: Self = Self::rgb(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX);
+    const YELLOW : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MIN);
+
+    const SPRING : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_HALF);
+    const AZURE  : Self = Self::rgb(T::RANGE_MIN, T::RANGE_HALF, T::RANGE_MAX);
+    const VIOLET : Self = Self::rgb(T::RANGE_HALF, T::RANGE_MIN, T::RANGE_MAX);
+    const ROSE   : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_HALF);
+    const ORANGE : Self = Self::rgb(T::RANGE_MAX, T::RANGE_HALF, T::RANGE_MIN);
+    const LIME   : Self = Self::rgb(T::RANGE_HALF, T::RANGE_MAX, T::RANGE_MIN);
+    const CANARY : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_HALF);
+    const PINK   : Self = Self::rgb(T::RANGE_MAX, T::RANGE_HALF, T::RANGE_MAX);
+    const GLACE  : Self = Self::rgb(T::RANGE_HALF, T::RANGE_MAX, T::RANGE_MAX);
+
     
     fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive + CastRangeFrom<T>
     {
@@ -208,7 +219,7 @@ impl<T> ToColor for ColorRGBAOf<T> where T : Primitive
     {
         match (T::PRIMITIVE_NUMBER_TYPE, std::mem::size_of::<T>())
         {
-            (NumberType::Bool, 1) => ColorKind::RGBABool,
+            (NumberType::Bool,  1) => ColorKind::RGBABool,
             (NumberType::Float, 4) => ColorKind::RGBAF32,
             (NumberType::Float, 8) => ColorKind::RGBAF64,
             (NumberType::IntegerUnsigned, 1) => ColorKind::RGBAByte,

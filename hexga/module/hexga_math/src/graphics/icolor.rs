@@ -144,6 +144,9 @@ impl<T> ToColor for [T] where T : ToColor
     const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
 }
 
+/// Constant color name are based on https://colornames.org/ 
+/// 
+/// (+-1 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#ff7f00`)
 pub trait IColor<T> : 
     Sized +
     ToColor
@@ -154,22 +157,67 @@ pub trait IColor<T> :
         ColorRGBABool = ColorRGBABool,
     >
     where T : Primitive
-    //From<ColorRGBAOf<f32>> + From<ColorRGBAOf<f64>> + From<ColorRGBAByte> + From<ColorHSLA> +
-    //Into<Color> + Into<ColorByte> + Into<ColorHSLA>
 {
     const TRANSPARENT : Self;
 
+    /// #000000
+    /// 
+    /// ⬛ : ⬛⬛⬛
     const BLACK : Self;
+    /// #777777
     const GRAY  : Self;
+    /// #FFFFFF
+    /// 
+    /// ⬜ : 🟥🟩🟦
     const WHITE : Self;
     
+    /// #FF0000
+    /// 
+    /// 🟥 : 🟥⬛⬛
     const RED    : Self; 
-    const GREEN  : Self; 
+    /// #00FF00
+    /// 
+    /// 🟩 : ⬛🟩⬛
+    const GREEN  : Self;
+    /// #0000FF
+    /// 
+    /// 🟦 : ⬛⬛🟦
     const BLUE   : Self; 
     
+    /// #00FFFF
+    /// 
+    /// _ : ⬛🟩🟦
     const CYAN   : Self; 
-    const PINK   : Self; 
+
+    /// #FF00FF
+    /// 
+    /// _ : 🟥⬛🟦
+    const MAGENTA   : Self;
+
+    /// #FFFF00
+    /// 
+    /// 🟨 : 🟥🟩⬛
     const YELLOW : Self;
+
+    /// #00FF7F
+    const SPRING : Self;
+    /// #007FFF
+    const AZURE : Self;
+    /// #7F00FF
+    const VIOLET : Self;
+    /// #FF007F
+    const ROSE : Self;
+    /// #FF7F00
+    const ORANGE : Self;
+    /// #7FFF00
+    const LIME : Self;
+    /// #FFFF7F
+    const CANARY : Self; // hard to find an official name for this one with the website
+    /// #FF7FFF
+    const PINK : Self; // hard to find an official name for this one with the website
+    /// #7FFFFF
+    const GLACE : Self; // hard to find an official name for this one with the website
+
 
     fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive + CastRangeFrom<T>;
     fn to_color_hsla_of<T2>(self) -> ColorHSLAOf<T2> where T2 : Float + CastRangeFrom<T>;
@@ -188,29 +236,6 @@ pub trait IColor<T> :
     {
         ColorRGBAByte::new(r, g, b, a).to_color_rgba_of()
     }
-    
-    /* 
-    fn rgba_from_bytes_slice(rgba : &[u8]) -> Self { Self::rgba_from_bytes(rgba[0], rgba[1], rgba[2], rgba[3]) }
-    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self;
-
-    fn from_rgb_hex(hex: u32) -> Self 
-    {
-        let bytes: [u8; 4] = hex.to_be_bytes();
-        Self::rgba_from_bytes_slice(&bytes)
-    }
-    fn from_rgba_hex(hex: u32) -> Self 
-    {
-        let mut bytes: [u8; 4] = hex.to_be_bytes();
-        bytes[3] = u8::MAX;
-        Self::rgba_from_bytes_slice(&bytes)
-    }
-
-    /// Cast to color byte and convert to u32 using : `#RRGGBBAA`
-    fn to_rgba_hex(self) -> u32 
-    { 
-        let ColorRGBAByte { r, g, b, a } = self.to_color_byte(); 
-        ((r as u32) << 24) | ((g as u32) << 16) | ((b as u32) << 8) | (a as u32) 
-    }
 
     /// Cast to color byte and format the color : `#RRGGBBAA`
     fn to_rgba_hex_string(self) -> String
@@ -224,13 +249,4 @@ pub trait IColor<T> :
             rgba.a,
         )
     }
-
-    /* 
-    // For encoding purpose when saving an image
-    fn slice_to_bytes(slice : &[Self]) -> Cow<'_, [u8]>
-    {
-
-    }
-    */
-    */
 }

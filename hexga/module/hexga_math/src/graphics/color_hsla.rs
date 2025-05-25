@@ -131,17 +131,28 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
 {
     const TRANSPARENT : Self = Self::hsla(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
     
-    const BLACK : Self = Self { h: T::ZERO, s: T::ZERO, l: T::ZERO, a: T::ONE };
-    const GRAY  : Self = Self { h: T::ZERO, s: T::ZERO, l: T::HALF, a: T::ONE };
-    const WHITE : Self = Self { h: T::ZERO, s: T::ZERO, l: T::ONE , a: T::ONE };
+    const BLACK : Self = Self::hsl(T::ZERO,T::ZERO,T::ZERO);
+    const GRAY  : Self = Self::hsl(T::ZERO,T::ZERO,T::HALF);
+    const WHITE : Self = Self::hsl(T::ZERO,T::ZERO,T::ONE);
 
-    const RED    : Self = Self { h: T::ZERO,              s: T::ONE, l: T::HALF, a: T::ONE };
-    const GREEN  : Self = Self { h: T::COLOR_120_DIV_360, s: T::ONE, l: T::HALF, a: T::ONE };
-    const BLUE   : Self = Self { h: T::COLOR_240_DIV_360, s: T::ONE, l: T::HALF, a: T::ONE };
+    const RED    : Self = Self::hsl(T::ZERO, T::ONE,T::HALF);
+    const GREEN  : Self = Self::hsl(T::COLOR_120_DIV_360,T::ONE,T::HALF);
+    const BLUE   : Self = Self::hsl(T::COLOR_240_DIV_360,T::ONE,T::HALF);
     
-    const CYAN   : Self = Self { h: T::COLOR_180_DIV_360, s: T::ONE, l: T::HALF, a: T::ONE };
-    const PINK   : Self = Self { h: T::COLOR_300_DIV_360, s: T::ONE, l: T::HALF, a: T::ONE };
-    const YELLOW : Self = Self { h: T::COLOR_60_DIV_360 , s: T::ONE, l: T::HALF, a: T::ONE };
+    const CYAN   : Self = Self::hsl(T::COLOR_180_DIV_360,T::ONE,T::HALF);
+    const MAGENTA: Self = Self::hsl(T::COLOR_300_DIV_360,T::ONE,T::HALF);
+    const YELLOW : Self = Self::hsl(T::COLOR_60_DIV_360 ,T::ONE,T::HALF);
+
+    const SPRING : Self = Self::hsl(T::COLOR_150_DIV_360, T::ONE, T::HALF);
+    const AZURE  : Self = Self::hsl(T::COLOR_210_DIV_360, T::ONE, T::HALF);
+    const VIOLET : Self = Self::hsl(T::COLOR_270_DIV_360, T::ONE, T::HALF);
+    const ROSE   : Self = Self::hsl(T::COLOR_330_DIV_360, T::ONE, T::HALF);
+    const ORANGE : Self = Self::hsl(T::COLOR_30_DIV_360, T::ONE, T::HALF);
+    const LIME   : Self = Self::hsl(T::COLOR_90_DIV_360, T::ONE, T::HALF);
+    const CANARY : Self = Self::hsl(T::COLOR_60_DIV_360, T::ONE, T::COLOR_270_DIV_360);
+    const PINK   : Self = Self::hsl(T::COLOR_300_DIV_360, T::ONE, T::COLOR_270_DIV_360);
+    const GLACE  : Self = Self::hsl(T::COLOR_180_DIV_360, T::ONE, T::COLOR_270_DIV_360);
+
     
     fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive, T2 : CastRangeFrom<T> 
     {

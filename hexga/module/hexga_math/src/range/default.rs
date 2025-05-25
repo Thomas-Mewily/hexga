@@ -6,6 +6,8 @@ pub trait RangeDefault : MinValue + MaxValue //+ CastTo + FromFloat + UnitArithm
 { 
     const RANGE_MIN  : Self;
     /// Useful for stuff like Color::GRAY
+    /// 
+    /// `RANGE / 2 + RANGE`
     const RANGE_HALF : Self;
     const RANGE_MAX  : Self;
 
