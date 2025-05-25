@@ -49,8 +49,32 @@ impl<T,const N : usize> Vector<T,N>
     /// Will always be >= 0.
     /// 
     /// If any component is negative, return 0
-    pub fn area(self) -> T where T : Number { self.iter().fold(T::ONE,|a, b| a * (*b).max_partial(T::ZERO)) }
-    pub fn area_usize(self) -> usize where T : Integer { self.iter().fold(usize::ONE,|a, b| a * (*b).max_partial(T::ZERO).to_usize()) }
+    pub fn area(self) -> T where T : Number 
+    { 
+        self.iter().fold(T::ONE,|a, b| a * (*b).max_partial(T::ZERO))
+    }
+    /// Will always be >= 0.
+    /// 
+    /// If any component is negative, return 0
+    pub fn area_usize(self) -> usize where T : Integer 
+    { 
+        if T::PRIMITIVE_NUMBER_TYPE.is_integer_unsigned()
+        {
+            self.iter().map(|v| v.to_usize()).product()
+        }else
+        {
+            self.iter().fold(usize::ONE,|a, b| a * (*b).max_partial(T::ZERO).to_usize())
+        }
+    }
+
+    /// Multiply each component
+    /// The result can be negative
+    pub unsafe fn area_signed(self) -> T where T : Number { self.into_iter().product() }
+    
+    /// True is area() > 0
+    pub fn have_area(self) -> bool where T : Number { self.area().is_non_zero() }
+    /// True is area_usize() > 0
+    pub fn have_area_usize(self) -> bool where T : Integer { self.area_usize().is_non_zero() }
     
     pub fn all_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_zero()) }
     pub fn all_non_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_non_zero()) }
@@ -76,17 +100,6 @@ impl<T,const N : usize> Vector<T,N>
     #[inline(always)]
     pub fn is_inside_rect(self, area : Rectangle<T,N>) -> bool where T : Number { area.is_inside(self) }
     
-    /// Multiply each component
-    /// The result can be negative
-
-    /// Multiply each component
-    /// The result can be negative
-    pub unsafe fn area_signed(self) -> T where T : Number { self.into_iter().product() }
-    
-    /// True is area() > 0
-    pub fn have_area(self) -> bool where T : Number { self.area().is_non_zero() }
-    /// True is area_usize() > 0
-    pub fn have_area_usize(self) -> bool where T : Integer { self.area_usize().is_non_zero() }
 
     /// `x + y + z ...`
     /// 
@@ -150,8 +163,8 @@ impl<Idx, const N : usize> Vector<Idx, N>
         let mut i = 0;
         while i < N
         {
-            let current_axis_len : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(size[i]);
-            let current_value    : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(self[i]);
+            let current_axis_len : usize = size[i].to_usize();
+            let current_value    : usize = self[i].to_usize();
             
             index_1d        += current_value * area_cumulative;
             area_cumulative *= current_axis_len;
@@ -163,8 +176,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
     #[inline(always)]
     pub fn from_index(index : usize, size : Self) -> Option<Self>
     {
-        let area : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(size.area());
-        (index < area).then(|| unsafe { Self::from_index_unchecked(index, size) }) 
+        (index < size.area_usize()).then(|| unsafe { Self::from_index_unchecked(index, size) }) 
     }
 
     /// # Safety
@@ -196,7 +208,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
         let mut i = 0;
         while i < N 
         {
-            let current_axis_len : usize = <Idx as CastIntoComposite<usize>>::cast_into_composite(size[i]);
+            let current_axis_len = size[i].to_usize();
             result[i] = Idx::cast_from((index / area_cumulative) % current_axis_len);
             area_cumulative *= current_axis_len;
             i += 1;

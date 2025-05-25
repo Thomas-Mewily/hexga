@@ -38,17 +38,27 @@ pub trait IGrid<T, Idx, const N : usize> :
     fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T>);
 
 
-    /// If you override this, you probably also want to override `from_fn` and `from_fn_par`
+    /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
+    ///
+    /// If you override this, you probably also want to override [IGrid::index_to_position_unchecked] and [IGrid::external_position_to_position_unchecked]
     unsafe fn position_to_index_unchecked(&self, pos : Vector<Idx,N>) -> usize { unsafe { Vector::<Idx,N>::to_index_unchecked(pos, self.size()) } }
-    /// If you override this, you probably also want to override `from_fn` and `from_fn_par`
+    /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
+    ///
+    /// If you override this, you probably also want to override [IGrid::position_to_index_unchecked] and [IGrid::external_position_to_position_unchecked]
     unsafe fn index_to_position_unchecked(&self, index : usize) -> Vector<Idx,N> { unsafe { Vector::<Idx,N>::from_index_unchecked(index, self.size()) } }
+    #[allow(unused_variables)]
+    /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
+    ///
+    /// If you override this, you probably also want to override [IGrid::position_to_index_unchecked] and [IGrid::index_to_position_unchecked]
+    unsafe fn external_position_to_position_unchecked(pos : Vector<Idx,N>, size : Vector<Idx,N>) -> Vector<Idx,N> { pos }
 
-    /// If you override this, you probably also want to override `from_fn` and `from_fn_par`
+    /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     #[inline(always)]
-    fn position_to_index(&self, pos : Vector<Idx,N>) -> Option<usize> { Vector::<Idx,N>::to_index(pos, self.size()) }
-    /// If you override this, you probably also want to override `from_fn` and `from_fn_par`
+    fn position_to_index(&self, pos : Vector<Idx,N>) -> Option<usize> { pos.is_inside(self.size()).then(|| unsafe { self.position_to_index_unchecked(self.size()) }) }
+    /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     #[inline(always)]
-    fn index_to_position(&self, index : usize) -> Option<Vector<Idx,N>> { Vector::<Idx,N>::from_index(index, self.size()) }
+    fn index_to_position(&self, index : usize) -> Option<Vector<Idx,N>> { (index < self.size().area_usize()).then(|| unsafe { self.index_to_position_unchecked(index) }) }
+
 
 
     fn from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Option<Self> { Self::try_from_vec(size, value).ok() }
@@ -69,7 +79,7 @@ pub trait IGrid<T, Idx, const N : usize> :
         let mut value = Vec::with_capacity(area);
         for idx in size.iter_index()
         {
-            value.push(f(idx));
+            value.push(f(unsafe { Self::external_position_to_position_unchecked(idx,size) }));
         }
         unsafe { Self::unchecked_from_vec(size, value) }
     }
@@ -78,7 +88,7 @@ pub trait IGrid<T, Idx, const N : usize> :
     {
         let area = size.area_usize();
         let mut values = Vec::with_capacity(area);
-        (0..area).into_par_iter().map(|i| f(unsafe { Vector::<Idx, N>::from_index_unchecked(i, size) })).collect_into_vec(&mut values);
+        (0..area).into_par_iter().map(|i| f(unsafe { Self::external_position_to_position_unchecked(Vector::<Idx, N>::from_index_unchecked(i, size), size) })).collect_into_vec(&mut values);
         unsafe { Self::unchecked_from_vec(size, values) }
     }
 
@@ -88,6 +98,11 @@ pub trait IGrid<T, Idx, const N : usize> :
     /// Create a new grid and fill it by [Clone] the value
     fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::try_from_vec(size, vec![value; size.area_usize()]).unwrap() }
 
+
+
+
+
+    
     fn iter(&self) -> GridViewIter<'_, Self, T, Idx, N> { GridViewIter::new(self) }
     fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, N> { GridViewIterMut::new(self) }
 

@@ -144,14 +144,14 @@ impl NumberType
     pub const fn is_integer(self) -> bool { self.is_integer_signed() || self.is_integer_unsigned() }
 }
 
-pub trait PrimitiveNumberCategory
+pub trait PrimitiveNumberType
 {
     const PRIMITIVE_NUMBER_TYPE : NumberType;
 }
 map_on_integer_unsigned!(
     ($typename:ident) => 
     { 
-        impl PrimitiveNumberCategory for $typename 
+        impl PrimitiveNumberType for $typename 
         { 
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::IntegerUnsigned;
         }
@@ -160,7 +160,7 @@ map_on_integer_unsigned!(
 map_on_integer_signed!(
     ($typename:ident) => 
     { 
-        impl PrimitiveNumberCategory for $typename 
+        impl PrimitiveNumberType for $typename 
         { 
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::IntegerSigned;
         }
@@ -169,7 +169,7 @@ map_on_integer_signed!(
 map_on_float!(
     ($typename:ident) => 
     { 
-        impl PrimitiveNumberCategory for $typename 
+        impl PrimitiveNumberType for $typename 
         { 
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::Float;
         }

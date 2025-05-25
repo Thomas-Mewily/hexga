@@ -159,7 +159,6 @@ impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N>
 }
 
 
-
 impl<T, Idx, const N : usize> Crop<Idx,N> for GridBase<T, Idx, N>
     where Idx : Integer,
     T : Clone

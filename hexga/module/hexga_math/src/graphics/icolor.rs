@@ -1,3 +1,7 @@
+use std::borrow::Cow;
+use std::mem;
+use std::slice;
+
 use crate::*;
 
 pub trait ToColorRep
@@ -67,4 +71,12 @@ pub trait IColor :
             rgba.a,
         )
     }
+
+    /* 
+    // For encoding purpose when saving an image
+    fn slice_to_bytes(slice : &[Self]) -> Cow<'_, [u8]>
+    {
+
+    }
+    */
 }

@@ -163,6 +163,18 @@ impl<T> IColor for ColorRGBAOf<T>
             T::from_coef(a.to_coef())
         )
     }
+
+    /* 
+    fn slice_to_bytes(slice : &[Self]) -> std::borrow::Cow<'_, [u8]>
+    {
+        // ColorMask exist, so T can't be NumberPrimitive. Make NumberPrimitiveType more general and add bool ?
+        if 
+        let byte_len = slice.len() * std::mem::size_of::<Self>();
+        let ptr = slice.as_ptr() as *const u8;
+        let bytes = unsafe { std::slice::from_raw_parts(ptr, byte_len) };
+        std::borrow::Cow::Borrowed(bytes)
+    }
+    */
 }
 
 impl<T> ToColorRep for ColorRGBAOf<T> 
