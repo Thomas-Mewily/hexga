@@ -145,7 +145,7 @@ dependencies = [
 
 [[package]]
 name = "hexga"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_ansi_color",
  "hexga_bitflags",
@@ -160,25 +160,25 @@ dependencies = [
 
 [[package]]
 name = "hexga_ansi_color"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "hexga_array"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_map_on",
 ]
 
 [[package]]
 name = "hexga_base"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 
 [[package]]
 name = "hexga_bitflags"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_number",
  "serde",
@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_core"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "default_is_triple_underscore",
  "hexga_number",
@@ -195,7 +195,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_engine"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga",
  "hexga_engine_events",
@@ -206,7 +206,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_engine_events"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_core",
  "hexga_math",
@@ -215,7 +215,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_engine_render"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_math",
  "serde",
@@ -223,7 +223,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_engine_window"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_math",
  "serde",
@@ -231,7 +231,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_core",
  "hexga_number",
@@ -240,7 +240,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_graphics"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_core",
  "hexga_math",
@@ -250,7 +250,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_io"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "bincode",
  "hexga_core",
@@ -262,11 +262,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_map_on"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 
 [[package]]
 name = "hexga_math"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_array",
  "hexga_core",
@@ -277,21 +277,21 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_map_on",
 ]
 
 [[package]]
 name = "hexga_test"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "quad_hexga_engine",
 ]
 
 [[package]]
 name = "hexga_tools"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_core",
  "hexga_number",
@@ -300,11 +300,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 
 [[package]]
 name = "hexga_undo_redo"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_core",
 ]
@@ -422,7 +422,7 @@ dependencies = [
 
 [[package]]
 name = "quad_hexga_engine"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga_engine",
  "miniquad",
@@ -521,7 +521,7 @@ dependencies = [
 
 [[package]]
 name = "share_crate"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 
 [[package]]
 name = "simd-adler32"
@@ -542,7 +542,7 @@ dependencies = [
 
 [[package]]
 name = "test2"
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 dependencies = [
  "hexga",
  "hexga_engine",

@@ -28,7 +28,7 @@ pub fn publish_crate(name: &'static str)
         eprintln!("Failed to publish {}", name);
     }
     
-    env::set_current_dir("../..").unwrap();
+    env::set_current_dir("../../..").unwrap();
     println!("Done publishing {}", name);
 }
 

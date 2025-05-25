@@ -18,10 +18,6 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
 
 - Io System / Cache / Mediator
 
-
-- Grid : divide IGrid in IGridVector (vector/slice impl) and IGrid. Maybe merge Grid and GridParam?
-Impl size_hint() and ExactSizeIterator for view and view mut
-
 - transition fn inside an empty struct to make it extensible (trait pattern) : `struct Transition;`
 
 - Operateur binaire/assignation : aussi les impl pour des références dont Self est copiable pour les
@@ -68,6 +64,9 @@ projeter orhtogonal ?
 - angle & time : struct X<T>(T) + faire macro pour wrap op binaires et autres
 
 - iterator with sample() and step() for Float and unit of mesure (Time, Angle...)
+
+- Grid : divide IGrid in IGridVector (vector/slice impl) and IGrid. Maybe merge Grid and GridParam?
+Impl size_hint() and ExactSizeIterator for view and view mut
 
 ## Other
 

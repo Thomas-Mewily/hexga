@@ -66,3 +66,5 @@ impl<'a, G, T, Idx, const N : usize> Iterator for GridViewIterMut<'a, G, T, Idx,
         self.rect.size_hint()
     }
 }
+impl<'a, G, T, Idx, const N : usize> std::iter::FusedIterator for GridViewIterMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, RectangleIter<Idx,N> : std::iter::FusedIterator {}
+impl<'a, G, T, Idx, const N : usize> std::iter::ExactSizeIterator for GridViewIterMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, RectangleIter<Idx,N> : std::iter::ExactSizeIterator {}

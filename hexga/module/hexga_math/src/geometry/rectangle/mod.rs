@@ -2,6 +2,9 @@ use crate::*;
 
 pub mod prelude;
 
+mod iter;
+pub use iter::*;
+
 pub type Rectangle<T, const N : usize> = RectangleBase<Vector<T, N>>;
 
 /// A `N` dimension rectangle
@@ -362,28 +365,6 @@ pub trait IRectangle<T, const N : usize> where T : Number
     #[inline(always)] fn is_outside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { !self.is_inside_w(w) }
 }
 
-/// Iter over all idx inside a rectangle
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct RectangleIter<T, const N : usize> where T : Integer
-{
-    offset : Vector<T,N>,
-    iter   : VectorIter<T, N>,
-}
-impl<T, const N : usize> RectangleIter<T,N> where T : Integer
-{
-    pub fn new(rect : Rectangle<T,N>) -> Self { Self::from_vec_iter(rect.pos, rect.size.iter_index()) }
-    pub const fn from_vec_iter(offset : Vector<T,N>, iter : VectorIter<T, N>) -> Self { Self { offset, iter } }
-}
-
-impl<T, const N : usize> Iterator for RectangleIter<T,N> where T : Integer
-{
-    type Item = <VectorIter<T, N> as Iterator>::Item;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next().map(|v| v + self.offset)
-    }
-}
-
 
 impl<T, const N : usize> Position<T, N> for Rectangle<T,N> where T : Copy
 {
@@ -462,9 +443,9 @@ impl<T,const N : usize> Rectangle<T,N> where T : ArrayLike<N> + Copy
 */
 */
 
-impl<T,const N : usize> IterIndex<T,N> for Rectangle<T,N> where T : Integer
+impl<Idx,const N : usize> IterIndex<Idx,N> for Rectangle<Idx,N> where Idx : Integer
 {
-    type IterIndex = RectangleIter<T,N>;
+    type IterIndex = RectangleIter<Idx,N>;
     fn iter_index(&self) -> Self::IterIndex { RectangleIter::from_vec_iter(self.pos, self.size.iter_index()) }
 }
 

@@ -26,28 +26,28 @@ pub trait IterIndex<T, const N : usize>
 
 /// Iter over all idx from Vec::ZERO to the current vector
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct VectorIter<T, const N : usize> where T : Integer
+pub struct VectorIter<Idx, const N : usize> where Idx : Integer
 {
-    cur : Vector<T,N>,
-    end : Vector<T,N>,
+    cur : Vector<Idx,N>,
+    end : Vector<Idx,N>,
 }
 
-impl<T, const N : usize> VectorIter<T, N> where T : Integer
+impl<Idx, const N : usize> VectorIter<Idx, N> where Idx : Integer
 {
-    pub fn from_cur_to_end(cur : Vector<T,N>, end : Vector<T,N>) -> Self
+    pub fn from_cur_to_end(cur : Vector<Idx,N>, end : Vector<Idx,N>) -> Self
     {
         Self { cur, end : if end.have_area_usize() { end } else { Vector::ZERO } }
     }
 
-    pub fn new(end : Vector<T,N>) -> Self
+    pub fn new(end : Vector<Idx,N>) -> Self
     {
         Self::from_cur_to_end(Vector::ZERO, end)
     }
 }
 
-impl<T, const N : usize> Iterator for VectorIter<T, N> where T : Integer
+impl<Idx, const N : usize> Iterator for VectorIter<Idx, N> where Idx : Integer
 {
-    type Item=Vector<T,N>;
+    type Item=Vector<Idx,N>;
 
     fn next(&mut self) -> Option<Self::Item> 
     {
@@ -61,7 +61,7 @@ impl<T, const N : usize> Iterator for VectorIter<T, N> where T : Integer
             {
                 return Some(v);
             }
-            self.cur[i] = T::ZERO;
+            self.cur[i] = Idx::ZERO;
             i += 1;
         }
 
@@ -77,20 +77,24 @@ impl<T, const N : usize> Iterator for VectorIter<T, N> where T : Integer
         }
     }
 
-    /* 
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        todo!()
-        //let total = self.end.area_usize();
+    fn size_hint(&self) -> (usize, Option<usize>) 
+    {
+        let len = self.len();
+        (len, Some(len))
     }
-    */
 }
-impl<T, const N : usize> std::iter::FusedIterator for VectorIter<T, N> where T : Integer {}
-//impl<T, const N : usize> std::iter::ExactSizeIterator for VectorIter<T, N> where T : Integer  {}
-
-
-impl<T,const N : usize> IterIndex<T,N> for Vector<T,N> where T : Integer
+impl<Idx, const N : usize> std::iter::FusedIterator for VectorIter<Idx, N> where Idx : Integer {}
+impl<Idx, const N : usize> std::iter::ExactSizeIterator for VectorIter<Idx, N> where Idx : Integer  
 {
-    type IterIndex = VectorIter<T,N>;
+    fn len(&self) -> usize {
+        self.end.area_usize() - unsafe { Vector::<Idx,N>::to_index_unchecked(self.cur, self.end) }
+    }
+}
+
+
+impl<Idx,const N : usize> IterIndex<Idx,N> for Vector<Idx,N> where Idx : Integer
+{
+    type IterIndex = VectorIter<Idx,N>;
     
     fn iter_index(&self) -> Self::IterIndex {
         Self::IterIndex::new(*self)
