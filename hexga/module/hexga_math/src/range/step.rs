@@ -1,5 +1,5 @@
 use crate::*;
-use std::iter::{FusedIterator,Map};
+use std::{hint::unreachable_unchecked, iter::{FusedIterator,Map}};
 
 pub trait RangeStepExtension
 {
@@ -51,8 +51,8 @@ impl<T> Iterator for RangeStep<T> where T : NumberPrimitive
             match T::PRIMITIVE_NUMBER_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
-                // Reached the limit of floating-point precision
                 NumberType::Float => if self.start == val { None } else { Some(val) },
+                NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         } else 
         {
@@ -72,7 +72,8 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T : NumberPrimitive
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
-                NumberType::Float => if self.end == val { None } else { Some(val) }
+                NumberType::Float => if self.end == val { None } else { Some(val) },
+                NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         } else 
         {
@@ -89,7 +90,8 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T : NumberPrimitive
                         self.end = self.start;
                         Some(self.start)
                     } else { None }
-                }
+                },
+                NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         }
     }
@@ -140,7 +142,8 @@ impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
-                NumberType::Float => if self.start == val { None } else { Some(val) }
+                NumberType::Float => if self.start == val { None } else { Some(val) },
+                NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         } else 
         {
@@ -157,7 +160,8 @@ impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive
                         self.start = self.end;
                         Some(self.end)
                     } else { None }
-                }
+                },
+                NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         }
     }
@@ -174,7 +178,8 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : NumberPrimitive
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
-                NumberType::Float => if self.end == val { return None } else { Some(val) }
+                NumberType::Float => if self.end == val { return None } else { Some(val) },
+                NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         } else 
         {
@@ -191,7 +196,8 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : NumberPrimitive
                         self.end = self.start;
                         Some(self.start)
                     } else { None }
-                }
+                },
+                NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         }
     }

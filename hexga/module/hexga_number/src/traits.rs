@@ -135,23 +135,25 @@ pub enum NumberType
     IntegerSigned,
     IntegerUnsigned,
     Float,
+    Bool,
 }
 impl NumberType
 {
     pub const fn is_integer_signed(self) -> bool { matches!(self, Self::IntegerSigned) }
     pub const fn is_integer_unsigned(self) -> bool { matches!(self, Self::IntegerUnsigned) }
     pub const fn is_float(self) -> bool { matches!(self, Self::Float) }
+    pub const fn is_bool(self) -> bool { matches!(self, Self::Bool) }
     pub const fn is_integer(self) -> bool { self.is_integer_signed() || self.is_integer_unsigned() }
 }
 
-pub trait PrimitiveNumberType
+pub trait PrimitiveType
 {
     const PRIMITIVE_NUMBER_TYPE : NumberType;
 }
 map_on_integer_unsigned!(
     ($typename:ident) => 
     { 
-        impl PrimitiveNumberType for $typename 
+        impl PrimitiveType for $typename 
         { 
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::IntegerUnsigned;
         }
@@ -160,7 +162,7 @@ map_on_integer_unsigned!(
 map_on_integer_signed!(
     ($typename:ident) => 
     { 
-        impl PrimitiveNumberType for $typename 
+        impl PrimitiveType for $typename 
         { 
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::IntegerSigned;
         }
@@ -169,7 +171,7 @@ map_on_integer_signed!(
 map_on_float!(
     ($typename:ident) => 
     { 
-        impl PrimitiveNumberType for $typename 
+        impl PrimitiveType for $typename 
         { 
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::Float;
         }

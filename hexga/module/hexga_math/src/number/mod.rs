@@ -10,6 +10,9 @@ use composite::*;
 mod cast_to;
 use cast_to::*;
 
+mod cast_range_to;
+use cast_range_to::*;
+
 mod extension;
 use extension::*;
 

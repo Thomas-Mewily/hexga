@@ -65,8 +65,8 @@ pub trait NumberNegative             : Number + ArithmeticNegative + MinusOne {}
 impl<T> NumberNegative for T where T : Number + ArithmeticNegative + MinusOne {}
 
 /// fX or uX or iX
-pub trait NumberPrimitive : Number + PrimitiveNumberType {}
-impl<T> NumberPrimitive for T where T : Number + PrimitiveNumberType {}
+pub trait NumberPrimitive : Number + PrimitiveType {}
+impl<T> NumberPrimitive for T where T : Number + PrimitiveType {}
 
 /// fX or or iX
 pub trait NumberPrimitiveNegative : NumberPrimitive + NumberNegative {}

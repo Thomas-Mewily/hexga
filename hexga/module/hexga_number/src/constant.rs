@@ -122,6 +122,7 @@ pub trait MinValue : Sized
 }
 
 map_on_number!(($primitive_name: ty) => { impl MinValue for $primitive_name { const MIN : Self = Self::MIN; }});
+impl MinValue for bool { const MIN : Self = false; }
 impl<T> MinValue for Wrapping<T> where T : MinValue  { const MIN : Self = Wrapping(T::MIN); }
 impl<T> MinValue for Saturating<T> where T : MinValue  { const MIN : Self = Saturating(T::MIN); }
 
@@ -137,6 +138,7 @@ pub trait MaxValue : Sized
     #[inline(always)] fn is_non_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
 }
 map_on_number!(($primitive_name: ty) => { impl MaxValue for $primitive_name { const MAX : Self = Self::MAX; } });
+impl MaxValue for bool { const MAX : Self = true; }
 impl<T> MaxValue for Wrapping<T> where T : MaxValue  { const MAX : Self = Wrapping(T::MAX); }
 impl<T> MaxValue for Saturating<T> where T : MaxValue  { const MAX : Self = Saturating(T::MAX); }
 
