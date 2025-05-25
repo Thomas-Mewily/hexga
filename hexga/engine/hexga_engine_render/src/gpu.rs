@@ -72,11 +72,11 @@ impl<T> ToGpuUint for T where T : ToU32
     fn to_gpu_uint(self) -> Self::Output { self.to_u32() }
 }
 
-pub trait ToGpuColor
+pub trait ToGpuColor<T>
 {
     fn to_gpu_color(self) -> GpuColor;
 }
-impl<T,T2> ToGpuColor for T where T : IColor<T2>, T2 : Primitive
+impl<S,T> ToGpuColor<T> for S where S : IColor<T>, T : Primitive
 {
     fn to_gpu_color(self) -> GpuColor 
     {

@@ -31,11 +31,11 @@ impl Vertex
     #[must_use]
     pub fn with_uv<P>(mut self, uv : P) -> Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2> { self.set_uv(uv); self }
     #[must_use]
-    pub fn with_color<C>(mut self, color : C) -> Self where C : IColor { self.set_color(color); self }
+    pub fn with_color<T, C>(mut self, color : C) -> Self where C : ToGpuColor<T> { self.set_color(color); self }
 
     pub fn set_pos<P>(&mut self, pos : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec3> { self.pos = pos.cast_into_composite(); self }
     pub fn set_uv<P>(&mut self, uv : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2> { self.uv = uv.cast_into_composite(); self }
-    pub fn set_color<C>(&mut self, color : C) -> &mut Self where C : IColor { self.color = color.to_gpu_color(); self }
+    pub fn set_color<T, C>(&mut self, color : C) -> &mut Self where C : ToGpuColor<T>  { self.color = color.to_gpu_color(); self }
 }
 
 pub type VertexIdx = u16;

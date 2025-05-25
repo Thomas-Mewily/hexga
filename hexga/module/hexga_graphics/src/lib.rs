@@ -432,6 +432,7 @@ impl AntiAliasing
     */
     */
 
+    /* 
 impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : IColor
 {
     pub fn tmp_write_to_png_bytes_inside(&self, path : &str)
@@ -451,3 +452,4 @@ impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : IColor
     }
 }
 
+*/
