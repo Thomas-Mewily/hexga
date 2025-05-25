@@ -42,3 +42,11 @@ macro_rules! impl_have_min_max_for_float {
     };
 }
 map_on_float!(impl_have_min_max_for_float);
+
+impl RangeDefault for bool
+{
+    const RANGE_MIN  : Self = false;
+    const RANGE_HALF : Self = false;
+    const RANGE_MAX  : Self = true;
+    const RANGE : Self = true;
+}

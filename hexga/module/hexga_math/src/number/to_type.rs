@@ -1,5 +1,6 @@
 use crate::*;
 
+/*
 // Coef
 pub trait ToCoef
 { 
@@ -20,6 +21,7 @@ impl<T> FromCoef for T where T : RangeDefault + ToFloat<Output = float>, float :
 {
     fn from_coef(coef : Coef) -> Self { (Self::RANGE.to_float() * coef + Self::RANGE_MIN.to_float()).cast_into_composite() }
 }
+    */
 
 // Float
 pub trait ToFloat

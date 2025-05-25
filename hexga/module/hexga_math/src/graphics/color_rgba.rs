@@ -133,10 +133,10 @@ impl<T> Default for ColorRGBAOf<T> where T : RangeDefault
     fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX } }
 }
 
-impl<T> IColor for ColorRGBAOf<T> 
-    where 
-        Self : From<Color> + From<ColorRGBAByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
-        T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + RangeDefault + Copy + PartialEq + Default 
+impl<T> IColor for ColorRGBAOf<T> where T : Primitive
+    //where 
+    //    Self : From<Color> + From<ColorRGBAByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
+    //    T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + RangeDefault + Copy + PartialEq + Default 
 {
     const TRANSPARENT : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
 
