@@ -17,7 +17,6 @@ pub struct ImageBase<P=ColorRGBAByte,Idx=int>
 
 type TestG = Grid2<i32>;
 
-//! Override from_fn IGrid for image
 
 /* 
 #[allow(unused_imports)]
@@ -56,7 +55,7 @@ impl<T, Idx> ImageBase<T, Idx> where T : IColor, Idx : Integer
 {
     pub(crate) fn raw_bytes_rgba(&self) -> Vec<u8>
     {
-        let mut v = Vec::with_capacity(self.area().to_usize() * 4);
+        let mut v = Vec::with_capacity(self.area_usize() * 4);
 
         for y in (0..self.size_y().to_usize()).rev()
         {
@@ -75,7 +74,7 @@ impl<T, Idx> ImageBase<T, Idx> where T : IColor, Idx : Integer
 
     pub(crate) fn raw_bytes_rgb(&self) -> Vec<u8>
     {
-        let mut v = Vec::with_capacity(self.area().to_usize() * 3);
+        let mut v = Vec::with_capacity(self.area_usize() * 3);
 
         for y in (0..self.size_y().to_usize()).rev()
         {
@@ -153,7 +152,7 @@ impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex
     
     pub(crate) fn raw_bytes_rgba(&self) -> Vec<u8>
     {
-        let mut v = Vec::with_capacity(self.area().to_usize() * 4);
+        let mut v = Vec::with_capacity(self.area_usize() * 4);
 
         for y in (0..self.size_y().to_usize()).rev()
         {
@@ -172,7 +171,7 @@ impl<T,Idx> ImageBase<T, Idx> where Idx : IntegerIndex
 
     pub(crate) fn raw_bytes_rgb(&self) -> Vec<u8>
     {
-        let mut v = Vec::with_capacity(self.area().to_usize() * 3);
+        let mut v = Vec::with_capacity(self.area_usize() * 3);
 
         for y in (0..self.size_y().to_usize()).rev()
         {

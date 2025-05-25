@@ -195,6 +195,7 @@ impl<T> RectangleBase<T>
     pub const fn new_sized(size : T) -> Self where T : Zero { Self::new(zero(), size) }
 }
 
+/// Crop a selection to a sub selection, where the sub selection is contained in the selection.
 pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T : Number
 {
     /// Crop the current rectangle to the given sub rectangle.
@@ -262,7 +263,11 @@ impl<T,const N : usize> Crop<T,N> for Rectangle<T,N> where T : Number
     // The Behavior is not well defined with zero sized subrect
     // Currently it will return None
 
-    fn crop(self, subrect : Rectangle<T, N>) -> Option<Self> { self.intersect(subrect.moved_by(self.pos)) }
+    fn crop(self, mut subrect : Rectangle<T, N>) -> Option<Self> 
+    { 
+        subrect.move_by(self.pos);
+        if self.is_rect_inside(subrect) { Some(subrect) } else { None }
+    }
     unsafe fn crop_unchecked(self, subrect : Rectangle<T, N>) -> Self { subrect.moved_by(self.pos) }
 
     fn crop_intersect(self, subrect : Rectangle<T, N>) -> Self { self.intersect_or_empty(subrect.moved_by(self.pos)) }
@@ -300,12 +305,13 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
 
 impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
 {
-    fn begin(&self) -> Vector<T,N> { self.pos  }
-    fn size (&self) -> Vector<T,N> { self.size }
+    fn pos (&self) -> Vector<T,N> { self.pos  }
+    fn size(&self) -> Vector<T,N> { self.size }
 }
  
 pub trait IRectangle<T, const N : usize> where T : Number
 {
+    fn pos (&self) -> Vector<T,N>;
     fn size(&self) -> Vector<T,N>;
 
     #[inline(always)] fn size_x(&self) -> T where Vector<T,N> : HaveX<T> { self.size().x() }
@@ -326,15 +332,16 @@ pub trait IRectangle<T, const N : usize> where T : Number
     fn is_inside(&self, pos : Vector<T,N>) -> bool { pos.is_inside(self.size()) }
     fn is_outside(&self, pos : Vector<T,N>) -> bool { !self.is_inside(pos) }
 
-    /// same as `.begin()`
-    fn position(&self) -> Vector<T,N> { self.begin() }
+    #[inline(always)]
+    fn begin(&self) -> Vector<T,N> { self.pos()}
+    #[inline(always)]
+    fn end(&self) -> Vector<T,N> { self.pos() + self.size() }
 
-    fn begin(&self) -> Vector<T,N>;
-    fn end(&self) -> Vector<T,N> { self.begin() + self.size() }
-
     /// same as `.begin()`
+    #[inline(always)]
     fn min(&self) -> Vector<T,N> { self.begin() }
     /// same as `.end()`
+    #[inline(always)]
     fn max(&self) -> Vector<T,N> { self.end() }
 
     fn rect(&self) -> Rectangle<T, N> { Rectangle::new(self.begin(), self.size()) }
@@ -356,14 +363,16 @@ pub trait IRectangle<T, const N : usize> where T : Number
 }
 
 /// Iter over all idx inside a rectangle
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RectangleIter<T, const N : usize> where T : Integer
 {
-    pub offset : Vector<T,N>,
-    pub iter : VectorIter<T, N>,
+    offset : Vector<T,N>,
+    iter   : VectorIter<T, N>,
 }
 impl<T, const N : usize> RectangleIter<T,N> where T : Integer
 {
-    pub const fn new(offset : Vector<T,N>, iter : VectorIter<T, N>) -> Self { Self { offset, iter } }
+    pub fn new(rect : Rectangle<T,N>) -> Self { Self::from_vec_iter(rect.pos, rect.size.iter_index()) }
+    pub const fn from_vec_iter(offset : Vector<T,N>, iter : VectorIter<T, N>) -> Self { Self { offset, iter } }
 }
 
 impl<T, const N : usize> Iterator for RectangleIter<T,N> where T : Integer
@@ -456,7 +465,7 @@ impl<T,const N : usize> Rectangle<T,N> where T : ArrayLike<N> + Copy
 impl<T,const N : usize> IterIndex<T,N> for Rectangle<T,N> where T : Integer
 {
     type IterIndex = RectangleIter<T,N>;
-    fn iter_index(&self) -> Self::IterIndex { RectangleIter::new(self.pos, self.size.iter_index()) }
+    fn iter_index(&self) -> Self::IterIndex { RectangleIter::from_vec_iter(self.pos, self.size.iter_index()) }
 }
 
 
@@ -524,5 +533,19 @@ mod rect_test
         let rect = rect2p(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(point2(20, 20), point2(20, 20));
         assert_eq!(cropped, rect2p(20, 20, 0, 0));
+    }
+
+    #[test]
+    fn crop_2()
+    {
+        let r = rect2p(0, 0, 2, 3);
+        assert_eq!(r.crop(rect2p(0, 0, 0, 0)), Some(rect2p(0, 0, 0, 0)));
+        assert_eq!(r.crop(r), Some(r));
+        assert_eq!(r.crop(rect2p(0, 0, 2, 4)), None);
+
+        for idx in r.iter_index()
+        {
+            assert_eq!(r.is_inside(idx), true);
+        }
     }
 }

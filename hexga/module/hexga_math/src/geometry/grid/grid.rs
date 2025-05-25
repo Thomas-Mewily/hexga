@@ -3,7 +3,7 @@ use crate::*;
 
 
 /// A N dimensional grid
-#[derive(PartialEq, Eq, Clone, Debug, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Hash)]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
 {
     size  : Vector<Idx,N>,
@@ -12,22 +12,37 @@ pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
 
 impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer 
 {
+    type WithType<U> = GridBase<U, Idx, N>;
+
     fn values(&self) -> &[T] { &self.value }
-    fn values_mut(&mut self) -> &mut [T] { &mut self.value}
+    fn values_mut(&mut self) -> &mut [T] { &mut self.value }
 
     fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T>) {  (self.size, self.value) }
-
     unsafe fn unchecked_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Self { Self { size, value } }
 }
 
+impl<T, Idx, const N : usize> IGridViewMut<Self, T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer 
+{
+    fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, N> { GridViewIterMut::new(self) }
+    fn for_each_mut<F>(&mut self, f : F) where F : FnMut((Vector<Idx,N>,&mut T)) { self.view_mut().for_each_mut(f) }
+    fn view(&self) -> GridView<'_,Self,T,Idx,N> { GridView::new(self) }
+}
 
+impl<T, Idx, const N : usize> AsRef<[T]> for GridBase<T, Idx, N> where Idx : Integer
+{
+    fn as_ref(&self) -> &[T] { &self.value }
+}
+impl<T, Idx, const N : usize> AsMut<[T]> for GridBase<T, Idx, N> where Idx : Integer
+{
+    fn as_mut(&mut self) -> &mut [T] { &mut self.value }
+}
 
-impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : Integer,
+impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx, N> { self.size }
     #[inline(always)]
-    fn begin(&self) -> Vector<Idx,N> { zero() }
+    fn pos(&self) -> Vector<Idx,N> { zero() }
 
     fn iter_x(&self) -> Range<Idx> where Vector<Idx,N> : HaveX<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_x() }
     fn iter_y(&self) -> Range<Idx> where Vector<Idx,N> : HaveY<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_y() }
@@ -40,12 +55,6 @@ impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where I
     #[inline(always)] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
-impl<T, Idx, const N : usize> IGridViewMut<T,(),Idx,N> for GridBase<T, Idx, N> 
-    where Idx : Integer 
-{
-    type SubViewMut<'b> = GridViewMut<'b,T,Idx,N> where Self: 'b;
-    fn subview_mut<'a>(&'a mut self, rect : Rectangle<Idx, N>) -> Self::SubViewMut<'a> { GridViewMut::new_intersect(self, rect) }
-}
 
 impl<T, Idx, const N : usize> Get<Vector<Idx,N>> for GridBase<T, Idx,N>  where Idx : Integer 
 {
@@ -147,4 +156,139 @@ impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N>
 {
     #[inline(always)]
     fn len(&self) -> usize { self.values().len() }
+}
+
+
+
+impl<T, Idx, const N : usize> Crop<Idx,N> for GridBase<T, Idx, N>
+    where Idx : Integer,
+    T : Clone
+{
+    fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self> {
+        self.view().crop(subrect).map(|v| v.to_grid())
+    }
+}
+
+
+
+
+#[cfg(test)]
+mod grid_test
+{
+    use crate::other::point2;
+
+    #[test]
+    fn index_order() 
+    {
+        use crate::*;
+        //let x = Grid::<char>::new(point2(2, 4));
+        let size = point2(2, 3);
+
+        let grid = Grid2::from_fn(size, |p| p.x + 10 * p.y);
+    
+        /* 
+        dbg!(&grid);    
+        for y in (0..size.y).rev()
+        {
+            for x in 0..size.x
+            {
+                print!("{:2} ", grid[point2(x, y)]);
+            }
+            println!()
+        }
+        */
+    
+        let mut indice = 0;
+        assert_eq!(grid[indice], grid[point2(0,0)]);
+        assert_eq!(grid[indice], 0);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(1,0)]);
+        assert_eq!(grid[indice], 1);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(0,1)]);
+        assert_eq!(grid[indice], 10);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(1,1)]);
+        assert_eq!(grid[indice], 11);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(0,2)]);
+        assert_eq!(grid[indice], 20);
+
+        indice += 1;
+        assert_eq!(grid[indice], grid[point2(1,2)]);
+        assert_eq!(grid[indice], 21);
+    }   
+
+    #[test]
+    fn out_of_range()
+    {
+        use crate::*;
+        let grid = Grid2::from_fn(point2(2, 3), |_| 42);
+
+        assert_eq!(grid.get(point2(0, 0)), Some(&42));
+        assert_eq!(grid.get(point2(-1, 0)), None);
+        assert_eq!(grid.get(point2(1, 0)), Some(&42));
+        assert_eq!(grid.get(point2(2, 0)), None);
+        
+        assert_eq!(grid.get(point2(0, 0)), Some(&42));
+        assert_eq!(grid.get(point2(0, -1)), None);
+        assert_eq!(grid.get(point2(0, 2)), Some(&42));
+        assert_eq!(grid.get(point2(0, 3)), None);
+    }
+
+    #[test]
+    fn slice_cmp()
+    {
+        use crate::*;
+
+        let size = point2(2, 3);
+        let grid = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
+
+        assert_eq!(grid.size(), grid.view().size());
+
+        let subgrid = grid.view().subgrid(size.to_rect());
+
+        assert_eq!(grid, subgrid);
+        
+        let smaller_size = point2(1, 2);
+        let smaller_grid = Grid2::from_fn(smaller_size, |p|  p.x + 10 * p.y);
+        let smaller_grid_from_bigger_grid = grid.view().subgrid(smaller_size.to_rect());
+        assert_eq!(smaller_grid, smaller_grid_from_bigger_grid);
+
+        let top_right_grid_size = point2(1, 2);
+        let offset = Vector2::ONE;
+        let top_right_grid = Grid2::from_fn(smaller_size, |p|  { let p = p + offset; p.x + 10 * p.y });
+        
+        assert_eq!(top_right_grid, grid.subgrid(top_right_grid_size.to_rect().moved_by(offset)));
+    }
+
+    #[test]
+    fn subslice() 
+    {
+        use crate::*;
+
+        let size = point2(2, 3);
+
+        let mut grid1 = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
+        let mut grid2 = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
+
+        assert_eq!(grid1, grid2);
+        assert_eq!(grid1.view(), grid2.view());
+        assert_eq!(grid1.view_mut(), grid2.view_mut());
+
+        grid2[point2(1, 0)] = 42;
+
+        assert_ne!(grid1, grid2);
+        assert_ne!(grid1.view(), grid2.view());
+        assert_ne!(grid1.view_mut(), grid2.view_mut());
+
+        let rect = rect2p(0, 0, 1, size.y);
+        assert_eq!(grid1.view().crop_intersect(rect), grid2.view().crop_intersect(rect));
+        assert_eq!(grid1.view_mut().crop_intersect(rect), grid2.view_mut().crop_intersect(rect));
+        assert_eq!(grid1.view_mut().subview(rect), grid2.view_mut().subview(rect));
+    }
 }

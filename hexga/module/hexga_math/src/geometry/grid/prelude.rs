@@ -8,4 +8,4 @@ pub type Grid4<T> = Grid<T, 4>;
 pub type Grid<T, const N : usize> = GridBase<T,int,N>;
 pub type GridError<const N : usize> = super::GridBaseError<int,N>;
 
-//pub use super::{IGrid,GridView,GridViewMut,IGridView,IGridViewMut};
+pub use super::{IGrid,GridBase,IGridViewMut};

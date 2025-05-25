@@ -25,10 +25,11 @@ pub trait IterIndex<T, const N : usize>
 }
 
 /// Iter over all idx from Vec::ZERO to the current vector
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VectorIter<T, const N : usize> where T : Integer
 {
-    pub cur : Vector<T,N>,
-    pub end : Vector<T,N>,
+    cur : Vector<T,N>,
+    end : Vector<T,N>,
 }
 
 impl<T, const N : usize> VectorIter<T, N> where T : Integer

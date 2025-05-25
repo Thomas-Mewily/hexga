@@ -20,6 +20,11 @@ pub struct Context
 
     //pub(crate) render : ContextRender,
     pub(crate) pen    : ContextPen,
+
+
+    // Because Context is not Send and not Sync
+    _marker: PhantomData<std::rc::Rc<()>>,
+
 /*
 Window,
 Asset,
