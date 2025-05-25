@@ -50,6 +50,7 @@ impl<T,const N : usize> Vector<T,N>
     /// 
     /// If any component is negative, return 0
     pub fn area(self) -> T where T : Number { self.iter().fold(T::ONE,|a, b| a * (*b).max_partial(T::ZERO)) }
+    pub fn area_usize(self) -> usize where T : Integer { self.iter().fold(usize::ONE,|a, b| a * (*b).max_partial(T::ZERO).to_usize()) }
     
     pub fn all_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_zero()) }
     pub fn all_non_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_non_zero()) }
@@ -84,7 +85,8 @@ impl<T,const N : usize> Vector<T,N>
     
     /// True is area() > 0
     pub fn have_area(self) -> bool where T : Number { self.area().is_non_zero() }
-
+    /// True is area_usize() > 0
+    pub fn have_area_usize(self) -> bool where T : Integer { self.area_usize().is_non_zero() }
 
     /// `x + y + z ...`
     /// 

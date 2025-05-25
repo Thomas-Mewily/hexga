@@ -17,6 +17,7 @@ pub struct ImageBase<P=ColorRGBAByte,Idx=int>
 
 type TestG = Grid2<i32>;
 
+//! Override from_fn IGrid for image
 
 /* 
 #[allow(unused_imports)]

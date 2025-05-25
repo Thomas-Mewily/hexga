@@ -12,8 +12,6 @@
 
 use crate::*;
 
-
-
 /// The collection have a quick way to access each element, where the index is copyable
 pub trait Get<Idx> //where Idx : Borrow<Q> //: Index<Idx>
 {

@@ -146,8 +146,21 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     /// ```
     pub fn is_inside(&self, point : Vector<T, N>) -> bool
     {
-        self.pos().all_with(&point, |a, c| c >= a) &&
-        (self.pos + self.size).all_with(&point, |a, c| c < a)
+        self.min().all_with(&point, |axis, other_axis| other_axis >= axis) &&
+        self.max().all_with(&point, |axis, other_axis| other_axis <  axis)
+    }
+
+    /// Check if a point inside the rectangle.
+    /// Don't work for indexing
+    pub fn is_inside_inclusif(&self, point : Vector<T, N>) -> bool
+    {
+        self.min().all_with(&point, |axis, other_axis| other_axis >= axis) &&
+        self.max().all_with(&point, |axis, other_axis| other_axis <= axis)
+    }
+
+    pub fn is_rect_inside(&self, rect : Rectangle<T, N>) -> bool
+    {
+        self.is_inside(rect.min()) && self.is_inside_inclusif(rect.max())
     }
 
     pub fn is_empty(&self) -> bool { self.size.is_zero() }
@@ -308,6 +321,7 @@ pub trait IRectangle<T, const N : usize> where T : Number
     fn depth (&self) -> T where Vector<T,N> : HaveZ<T> { self.size_z() }
 
     fn area(&self) -> T { self.size().area() }
+    fn area_usize(&self) -> usize where T : Integer { self.size().area_usize() }
 
     fn is_inside(&self, pos : Vector<T,N>) -> bool { pos.is_inside(self.size()) }
     fn is_outside(&self, pos : Vector<T,N>) -> bool { !self.is_inside(pos) }
@@ -342,17 +356,17 @@ pub trait IRectangle<T, const N : usize> where T : Number
 }
 
 /// Iter over all idx inside a rectangle
-pub struct RectIter<T, const N : usize> where T : Number
+pub struct RectangleIter<T, const N : usize> where T : Integer
 {
     pub offset : Vector<T,N>,
     pub iter : VectorIter<T, N>,
 }
-impl<T, const N : usize> RectIter<T,N> where T : Number
+impl<T, const N : usize> RectangleIter<T,N> where T : Integer
 {
     pub const fn new(offset : Vector<T,N>, iter : VectorIter<T, N>) -> Self { Self { offset, iter } }
 }
 
-impl<T, const N : usize> Iterator for RectIter<T,N> where T : Number
+impl<T, const N : usize> Iterator for RectangleIter<T,N> where T : Integer
 {
     type Item = <VectorIter<T, N> as Iterator>::Item;
 
@@ -439,10 +453,10 @@ impl<T,const N : usize> Rectangle<T,N> where T : ArrayLike<N> + Copy
 */
 */
 
-impl<T,const N : usize> IterIndex<T,N> for Rectangle<T,N> where T : NumberInteger
+impl<T,const N : usize> IterIndex<T,N> for Rectangle<T,N> where T : Integer
 {
-    type IterIndex = RectIter<T,N>;
-    fn iter_index(&self) -> Self::IterIndex { RectIter::new(self.pos, self.size.iter_index()) }
+    type IterIndex = RectangleIter<T,N>;
+    fn iter_index(&self) -> Self::IterIndex { RectangleIter::new(self.pos, self.size.iter_index()) }
 }
 
 
