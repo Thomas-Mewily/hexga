@@ -22,8 +22,8 @@ hexga_ansi_color
 hexga
 
 hexga_engine_render
-hexga_engine_window
 hexga_engine_events
+hexga_engine_window
 
 hexga_engine
 quad_hexga_engine

@@ -3,7 +3,7 @@ resolver = "3"
 members = ["hexga/module/*", "hexga/engine/*", "tmp/*", "share_crate"]
 
 [workspace.package]
-version = "0.0.10-beta.11"
+version = "0.0.10-beta.12"
 authors = ["Mewily <thomas.mewily@gmail.com>"]
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/Thomas-Mewily/hexga"
@@ -12,26 +12,26 @@ edition = "2024"
 
 [workspace.dependencies]
 
-#hexga_test         = { path = "./tmp/hexga_test",         version = "0.0.10-beta.11", default-features = false }
+#hexga_test         = { path = "./tmp/hexga_test",         version = "0.0.10-beta.12", default-features = false }
 
-hexga_core             = { path = "./hexga/module/hexga_core",              version = "0.0.10-beta.11", default-features = false }
-hexga_math             = { path = "./hexga/module/hexga_math",              version = "0.0.10-beta.11", default-features = false }
-hexga_generational     = { path = "./hexga/module/hexga_generational",      version = "0.0.10-beta.11", default-features = false }
-hexga_array            = { path = "./hexga/module/hexga_array",             version = "0.0.10-beta.11", default-features = false }
-hexga_number           = { path = "./hexga/module/hexga_number",            version = "0.0.10-beta.11", default-features = false }
-hexga_map_on           = { path = "./hexga/module/hexga_map_on",            version = "0.0.10-beta.11", default-features = false }
-hexga_typedef          = { path = "./hexga/module/hexga_typedef",           version = "0.0.10-beta.11", default-features = false }
-hexga_bitflags         = { path = "./hexga/module/hexga_bitflags",          version = "0.0.10-beta.11", default-features = false }
-hexga_graphics         = { path = "./hexga/module/hexga_graphics",          version = "0.0.10-beta.11", default-features = false }
-hexga_io               = { path = "./hexga/module/hexga_io",                version = "0.0.10-beta.11", default-features = false }
-#hexga_undo_redo       = { path = "./hexga/module/hexga_undo_redo",         version = "0.0.10-beta.11", default-features = false }
-hexga_ansi_color       = { path = "./hexga/module/hexga_ansi_color",        version = "0.0.10-beta.11", default-features = false }
-hexga_tools            = { path = "./hexga/module/hexga_tools",             version = "0.0.10-beta.11", default-features = false }
-hexga                  = { path = "./hexga/module/hexga",                   version = "0.0.10-beta.11", default-features = false }
+hexga_core             = { path = "./hexga/module/hexga_core",              version = "0.0.10-beta.12", default-features = false }
+hexga_math             = { path = "./hexga/module/hexga_math",              version = "0.0.10-beta.12", default-features = false }
+hexga_generational     = { path = "./hexga/module/hexga_generational",      version = "0.0.10-beta.12", default-features = false }
+hexga_array            = { path = "./hexga/module/hexga_array",             version = "0.0.10-beta.12", default-features = false }
+hexga_number           = { path = "./hexga/module/hexga_number",            version = "0.0.10-beta.12", default-features = false }
+hexga_map_on           = { path = "./hexga/module/hexga_map_on",            version = "0.0.10-beta.12", default-features = false }
+hexga_typedef          = { path = "./hexga/module/hexga_typedef",           version = "0.0.10-beta.12", default-features = false }
+hexga_bitflags         = { path = "./hexga/module/hexga_bitflags",          version = "0.0.10-beta.12", default-features = false }
+hexga_graphics         = { path = "./hexga/module/hexga_graphics",          version = "0.0.10-beta.12", default-features = false }
+hexga_io               = { path = "./hexga/module/hexga_io",                version = "0.0.10-beta.12", default-features = false }
+#hexga_undo_redo       = { path = "./hexga/module/hexga_undo_redo",         version = "0.0.10-beta.12", default-features = false }
+hexga_ansi_color       = { path = "./hexga/module/hexga_ansi_color",        version = "0.0.10-beta.12", default-features = false }
+hexga_tools            = { path = "./hexga/module/hexga_tools",             version = "0.0.10-beta.12", default-features = false }
+hexga                  = { path = "./hexga/module/hexga",                   version = "0.0.10-beta.12", default-features = false }
 
 
-hexga_engine_render    = { path = "./hexga/engine/hexga_engine_render",     version = "0.0.10-beta.11", default-features = false }
-hexga_engine_events    = { path = "./hexga/engine/hexga_engine_events",     version = "0.0.10-beta.11", default-features = false }
-hexga_engine_window    = { path = "./hexga/engine/hexga_engine_window",     version = "0.0.10-beta.11", default-features = false }
-hexga_engine           = { path = "./hexga/engine/hexga_engine",            version = "0.0.10-beta.11", default-features = false }
-quad_hexga_engine      = { path = "./hexga/engine/quad_hexga_engine",       version = "0.0.10-beta.11", default-features = false }
+hexga_engine_render    = { path = "./hexga/engine/hexga_engine_render",     version = "0.0.10-beta.12", default-features = false }
+hexga_engine_events    = { path = "./hexga/engine/hexga_engine_events",     version = "0.0.10-beta.12", default-features = false }
+hexga_engine_window    = { path = "./hexga/engine/hexga_engine_window",     version = "0.0.10-beta.12", default-features = false }
+hexga_engine           = { path = "./hexga/engine/hexga_engine",            version = "0.0.10-beta.12", default-features = false }
+quad_hexga_engine      = { path = "./hexga/engine/quad_hexga_engine",       version = "0.0.10-beta.12", default-features = false }
