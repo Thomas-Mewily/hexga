@@ -38,6 +38,7 @@ impl<Dest,T> CastFromComposite<Dest> for Dest::Output where Dest : CastIntoCompo
 */
 impl_composite_output_with_methods!(CastIntoComposite<CastToOut>, cast_into_composite);
 
+/* 
 new_number!(
     /// Wrap the coef inside for a new type.
     /// Used to differenciate the type Coef and float because they are the same for CastIntoComposite impl
@@ -54,7 +55,7 @@ impl<T> CastIntoComposite<CoefWrapper> for T where T : CastInto<float> + RangeDe
         (self - Self::RANGE_MIN).to_float() / Self::RANGE.to_float() + Self::RANGE_MIN.to_float()
     }
 }
-
+*/
 
 
 // Double recursive macro :)
