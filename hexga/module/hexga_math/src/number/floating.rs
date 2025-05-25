@@ -6,6 +6,18 @@ use crate::*;
 pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     PrefixDecade + PrefixHundred + PrefixThousand + PrefixMillion + PrefixBillion + PrefixQuadrillion
 { 
+    /// 2.
+    const TWO : Self;
+    /// 3.
+    const THREE : Self;
+    /// 6.
+    const SIX : Self;
+    /// 60.
+    const SIXTY : Self;
+    /// 24.
+    const TWENTY_FOUR : Self;
+    
+    
     /// Archimedes' constant (π)
     const PI : Self;
 
@@ -32,10 +44,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     const ANGLE_FLAT_TURN : Self = Self::ANGLE_HALF_TURN;
     const ANGLE_RIGHT_TURN : Self;
 
-    /// 60.
-    const SIXTY : Self;
-    /// 24.
-    const TWENTY_FOUR : Self;
+
 
     const COLOR_30_DIV_360  : Self;
     const COLOR_60_DIV_360  : Self;
@@ -555,9 +564,17 @@ macro_rules! impl_floating_number {
             #[inline(always)] fn round(self) -> Self { Self::round(self) }
             #[inline(always)] fn trunc(self) -> Self { Self::trunc(self) }
 
+            const TWO   : Self = 2.0;
+            const THREE : Self = 3.0;
+            const SIX   : Self = 6.0;
+            const TWENTY_FOUR : Self = 24.;
+            const SIXTY : Self = 60.;
+
             const PI : Self =  std::$primitive_name::consts::PI;
             const TWO_PI : Self  =  Self::PI * 2.;
             const HALF_PI : Self =  Self::PI * 0.5;
+
+
 
             const ANGLE_FULL_DEGREE  : Self = 360.;
             const ANGLE_HALF_DEGREE  : Self = 180.;
@@ -578,8 +595,7 @@ macro_rules! impl_floating_number {
             const COLOR_300_DIV_360 : Self = 300. / 360. ;
             const COLOR_330_DIV_360 : Self = 330. / 360. ;
 
-            const TWENTY_FOUR : Self = 24.;
-            const SIXTY : Self = 60.;
+
 
             fn sqrt(self) -> Self { self.sqrt() }
 

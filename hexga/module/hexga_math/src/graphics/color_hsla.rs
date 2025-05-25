@@ -1,7 +1,10 @@
 use crate::*;
 
 
-pub type ColorHSLA     = ColorHSLAOf<float>;
+pub type ColorHSLA      = ColorHSLAFloat;
+pub type ColorHSLAFloat = ColorHSLAOf<float>;
+pub type ColorHSLAF32   = ColorHSLAOf<f32>;
+pub type ColorHSLAF64   = ColorHSLAOf<f64>;
 
 #[repr(C)]
 pub struct ColorHSLAOf<T>
@@ -39,6 +42,19 @@ impl<T> ColorHSLAOf<T>
     /// 
     /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
     pub const fn hsl(hue : T, saturation : T, lightness : T) -> Self where T : Float { Self::hsla(hue, saturation, lightness, T::ONE) }
+
+
+    pub fn hsla_ref(&    self) -> &    [T; 4] { self.as_array() }
+    pub fn hsla_mut(&mut self) -> &mut [T; 4] { self.as_array_mut() }
+
+    pub fn hsl_ref(&self) -> &[T; 3] {
+        // SAFETY: ColorHSLAOf<T> always has at least 3 fields, and they are laid out contiguously.
+        unsafe { &*(self.as_array().as_ptr() as *const [T; 3]) }
+    }
+    pub fn hsl_mut(&mut self) -> &mut [T; 3] {
+        // SAFETY: ColorHSLAOf<T> always has at least 3 fields, and they are laid out contiguously.
+        unsafe { &mut *(self.as_array_mut().as_mut_ptr() as *mut [T; 3]) }
+    }
 
     /// Hue
     pub const H_INDEX : usize = 0;
@@ -83,9 +99,6 @@ impl<T> ColorHSLAOf<T>
     pub fn set_a(&mut self, a : T) -> &mut Self { self.a = a; self }
     /// Alpha
     pub fn replace_a(mut self, a : T) -> T { self.replace_or_panic(Self::A_INDEX, a) }
- 
-    pub fn unpack_hsl(self) -> (T, T, T) { (self.h, self.s, self.l) }
-    pub fn unpack_hsla(self) -> (T, T, T, T) { (self.h, self.s, self.l, self.a) }
 }
 
 impl<T> From<(T,T,T,T,)> for ColorHSLAOf<T> { fn from(value: (T,T,T,T,)) -> Self { ColorHSLAOf::hsla(value.0, value.1, value.2, value.3) }}
@@ -103,74 +116,83 @@ impl<T> From<ColorHSLAOf<T>> for Vector4<T> { fn from(value: ColorHSLAOf<T>) -> 
 impl<T> From<Vector3<T>> for ColorHSLAOf<T> where T : Float { fn from(value: Vector3<T>) -> Self { let [h,s,l] = value.array; ColorHSLAOf::hsl(h,s,l) }}
 impl<T> From<ColorHSLAOf<T>> for Vector3<T> { fn from(value: ColorHSLAOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
-impl From<Color> for ColorHSLA { fn from(value: Color) -> Self { value.to_color_hsla() }}
-impl From<ColorRGBAByte> for ColorHSLA { fn from(value: ColorRGBAByte) -> Self { value.to_color_hsla() }}
-
 impl<C:Float> Default for ColorHSLAOf<C>
 {
     fn default() -> Self { Self::hsla(zero(), zero(), one(), one()) }
 }
 
-impl IColor for ColorHSLA
+impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
 {
-    const TRANSPARENT : Self = Self::hsla(float::ZERO, float::ZERO, float::ZERO, float::ZERO);
+    const TRANSPARENT : Self = Self::hsla(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
     
-    const BLACK : Self = Self { h: float::ZERO, s: float::ZERO, l: float::ZERO, a: float::ONE };
-    const GRAY  : Self = Self { h: float::ZERO, s: float::ZERO, l: float::HALF, a: float::ONE };
-    const WHITE : Self = Self { h: float::ZERO, s: float::ZERO, l: float::ONE , a: float::ONE };
+    const BLACK : Self = Self { h: T::ZERO, s: T::ZERO, l: T::ZERO, a: T::ONE };
+    const GRAY  : Self = Self { h: T::ZERO, s: T::ZERO, l: T::HALF, a: T::ONE };
+    const WHITE : Self = Self { h: T::ZERO, s: T::ZERO, l: T::ONE , a: T::ONE };
 
-    const RED    : Self = Self { h: float::ZERO,              s: float::ONE, l: float::HALF, a: float::ONE };
-    const GREEN  : Self = Self { h: float::COLOR_120_DIV_360, s: float::ONE, l: float::HALF, a: float::ONE };
-    const BLUE   : Self = Self { h: float::COLOR_240_DIV_360, s: float::ONE, l: float::HALF, a: float::ONE };
+    const RED    : Self = Self { h: T::ZERO,              s: T::ONE, l: T::HALF, a: T::ONE };
+    const GREEN  : Self = Self { h: T::COLOR_120_DIV_360, s: T::ONE, l: T::HALF, a: T::ONE };
+    const BLUE   : Self = Self { h: T::COLOR_240_DIV_360, s: T::ONE, l: T::HALF, a: T::ONE };
     
-    const CYAN   : Self = Self { h: float::COLOR_180_DIV_360, s: float::ONE, l: float::HALF, a: float::ONE };
-    const PINK   : Self = Self { h: float::COLOR_300_DIV_360, s: float::ONE, l: float::HALF, a: float::ONE };
-    const YELLOW : Self = Self { h: float::COLOR_60_DIV_360 , s: float::ONE, l: float::HALF, a: float::ONE };
+    const CYAN   : Self = Self { h: T::COLOR_180_DIV_360, s: T::ONE, l: T::HALF, a: T::ONE };
+    const PINK   : Self = Self { h: T::COLOR_300_DIV_360, s: T::ONE, l: T::HALF, a: T::ONE };
+    const YELLOW : Self = Self { h: T::COLOR_60_DIV_360 , s: T::ONE, l: T::HALF, a: T::ONE };
     
-    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self { ColorRGBAByte::rgba(r,g,b,a).to_color_hsla() }
-}
-
-impl ToColorRep for ColorHSLA
-{
-    type ColorRGBAFloat=ColorRGBA;
-    fn to_color_float(&self) -> Self::ColorRGBAFloat {
+    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive, T2 : CastRangeFrom<T> 
+    {
         // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
         let r;
         let g;
         let b;
     
-        if self.s == 0.0 {  r = self.l; g = self.l; b = self.l; }
+        if self.s == T::ZERO {  r = self.l; g = self.l; b = self.l; }
         else {
-            fn hue_to_rgb(p: Coef, q: Coef, mut t: Coef) -> Coef {
-                if t < 0.0 { t += 1.0 }
-                if t > 1.0 { t -= 1.0 }
-                if t < 1.0 / 6.0 { return p + (q - p) * 6.0 * t; }
-                if t < 1.0 / 2.0 { return q; }
-                if t < 2.0 / 3.0 { return p + (q - p) * (2.0 / 3.0 - t) * 6.0; }
+            fn hue_to_rgb<T>(p: T, q: T, mut t: T) -> T where T : Float {
+                if t < T::ZERO { t += T::ONE }
+                if t > T::ONE { t -= T::ONE }
+                if t < T::ONE / T::SIX { return p + (q - p) * T::SIX * t; }
+                if t < T::ONE / T::TWO { return q; }
+                if t < T::TWO / T::THREE { return p + (q - p) * (T::TWO / T::THREE - t) * T::SIX; }
                 p
             }
     
-            let q = if self.l < 0.5 {
-                self.l * (1.0 + self.s)
+            let q = if self.l < T::HALF {
+                self.l * (T::ONE + self.s)
             } else {
                 self.l + self.s - self.l * self.s
             };
-            let p = 2.0 * self.l - q;
-            r = hue_to_rgb(p, q, self.h + 1.0 / 3.0);
+            let p = T::TWO * self.l - q;
+            r = hue_to_rgb(p, q, self.h + T::ONE / T::THREE);
             g = hue_to_rgb(p, q, self.h);
-            b = hue_to_rgb(p, q, self.h - 1.0 / 3.0);
+            b = hue_to_rgb(p, q, self.h - T::ONE / T::THREE);
         }
     
-        Color::new(r, g, b, self.a)
+        ColorRGBAOf::from_array([r, g, b, self.a].map(|v| T2::cast_range_from(v)))
     }
+    
+    fn to_color_hsla_of<T2>(self) -> ColorHSLAOf<T2> where T2 : Float + CastRangeFrom<T> 
+    {
+        ColorHSLAOf::from_array(self.to_array4().map(|v| T2::cast_range_from(v)))
+    }
+}
 
-    type ColorHSLA=ColorHSLA;
-    fn to_color_hsla(&self) -> Self::ColorHSLA {
-        *self
-    }
 
-    type ColorRGBAByte=ColorRGBAByte;
-    fn to_color_byte(&self) -> Self::ColorRGBAByte {
-        self.to_color_float().to_color_byte()
-    }
+impl<T> ToColor for ColorHSLAOf<T> where T : Float
+{
+    type ColorRGBAF32 = ColorRGBAOf<f32>;
+    fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { self.to_color_rgba_of() }
+
+    type ColorRGBAF64 = ColorRGBAOf<f64>;
+    fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 { self.to_color_rgba_of() }
+    
+    type ColorRGBAByte = ColorRGBAByte;
+    fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte { self.to_color_rgba_of() }
+    
+    type ColorRGBABool = ColorRGBAMask;
+    fn to_color_rgba_bool(&self) -> Self::ColorRGBABool { self.to_color_rgba_of() }
+    
+    type ColorHSLAF32 = ColorHSLAF32;
+    fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 { self.to_color_hsla_of() }
+    
+    type ColorHSLAF64 = ColorHSLAF64;
+    fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.to_color_hsla_of() }
 }

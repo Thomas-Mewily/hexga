@@ -236,7 +236,7 @@ macro_rules! new_unit
 }
 pub(crate) use new_unit;
 
-
+#[allow(unused_macros)]
 macro_rules! new_number
 {
     ($(#[$attr:meta])* $name:ident) => {

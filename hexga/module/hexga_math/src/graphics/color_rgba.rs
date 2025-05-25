@@ -6,8 +6,11 @@ pub type ColorMask  = ColorRGBAMask;
 
 pub type ColorRGBA      = ColorRGBAOf<float>;
 pub type ColorRGBAFloat = ColorRGBAOf<float>;
+pub type ColorRGBAF32   = ColorRGBAOf<f32>;
+pub type ColorRGBAF64   = ColorRGBAOf<f64>;
 pub type ColorRGBAByte  = ColorRGBAOf<u8>;
-pub type ColorRGBAMask  = ColorRGBAOf<bool>;
+pub type ColorRGBAMask  = ColorRGBABool;
+pub type ColorRGBABool  = ColorRGBAOf<bool>;
 
 #[repr(C)]
 pub struct ColorRGBAOf<T>
@@ -36,13 +39,13 @@ impl<T> ColorRGBAOf<T>
     pub fn rgba_ref(&    self) -> &    [T; 4] { self.as_array() }
     pub fn rgba_mut(&mut self) -> &mut [T; 4] { self.as_array_mut() }
 
-    pub fn rgb_ref (&    self) -> &    [T; 3] { self.rgba_ref()[0..3].try_into().unwrap() }
-    pub fn rgb_mut (&mut self) -> &mut [T; 3] 
-    {
-        let ptr = self.rgba_mut().as_mut_ptr();
-        unsafe {
-            &mut *(ptr as *mut [T; 3])
-        } 
+    pub fn rgb_ref(&self) -> &[T; 3] {
+        // SAFETY: ColorRGBAOf<T> always has at least 3 fields, and they are laid out contiguously.
+        unsafe { &*(self.as_array().as_ptr() as *const [T; 3]) }
+    }
+    pub fn rgb_mut(&mut self) -> &mut [T; 3] {
+        // SAFETY: ColorRGBAOf<T> always has at least 3 fields, and they are laid out contiguously.
+        unsafe { &mut *(self.as_array_mut().as_mut_ptr() as *mut [T; 3]) }
     }
 
     pub(crate) const fn const_splat(rgba : T) -> Self where T : Copy { Self::new(rgba, rgba, rgba, rgba) }
@@ -97,9 +100,6 @@ impl<T> ColorRGBAOf<T>
     pub fn set_a(&mut self, a : T) -> &mut Self { self.a = a; self }
     /// Alpha
     pub fn replace_a(mut self, a : T) -> T { self.replace_or_panic(Self::A_INDEX, a) }
-
-    pub fn unpack_rgb(self) -> (T, T, T) { self.into() }
-    pub fn unpack_rgba(self) -> (T, T, T, T) { self.into() }
 }
 
 impl<T> From<(T,T,T,T,)> for ColorRGBAOf<T> { fn from(value: (T,T,T,T,)) -> Self { ColorRGBAOf::rgba(value.0, value.1, value.2, value.3) }}
@@ -108,10 +108,8 @@ impl<T> From<ColorRGBAOf<T>> for (T,T,T,T,) { fn from(value: ColorRGBAOf<T>) -> 
 impl<T> From<(T,T,T,)> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: (T,T,T,)) -> Self { ColorRGBAOf::rgb(value.0, value.1, value.2) }}
 impl<T> From<ColorRGBAOf<T>> for (T,T,T,) { fn from(value: ColorRGBAOf<T>) -> Self { (value.r, value.g, value.b) }}
 
-/*
 impl<T> From<[T; 3]> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorRGBAOf::rgb(r,g,b) }}
 impl<T> From<ColorRGBAOf<T>> for [T; 3] { fn from(value: ColorRGBAOf<T>) -> Self { [value.r, value.g, value.b] }}
-*/
 
 impl<T> From<Vector4<T>> for ColorRGBAOf<T> { fn from(value: Vector4<T>) -> Self { let [r,g,b,a] = value.array; ColorRGBAOf::rgba(r,g,b,a) }}
 impl<T> From<ColorRGBAOf<T>> for Vector4<T> { fn from(value: ColorRGBAOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
@@ -119,23 +117,12 @@ impl<T> From<ColorRGBAOf<T>> for Vector4<T> { fn from(value: ColorRGBAOf<T>) -> 
 impl<T> From<Vector3<T>> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: Vector3<T>) -> Self { let [r,g,b] = value.array; ColorRGBAOf::rgb(r,g,b) }}
 impl<T> From<ColorRGBAOf<T>> for Vector3<T> { fn from(value: ColorRGBAOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
-/* 
-impl From<ColorHSLA> for Color { fn from(value: ColorHSLA) -> Self { value.to_color() }}
-impl From<ColorHSLA> for ColorRGBAByte { fn from(value: ColorHSLAOf<float>) -> Self { value.to_color_byte() }}
-
-impl From<ColorRGBAByte> for Color { fn from(value: ColorRGBAByte) -> Self { value.to_color() }}
-impl From<Color> for ColorRGBAByte { fn from(value: Color) -> Self { value.to_color_byte() }}
-*/
-
 impl<T> Default for ColorRGBAOf<T> where T : Primitive
 {
     fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX } }
 }
 
 impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
-    //where 
-    //    Self : From<Color> + From<ColorRGBAByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
-    //    T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + RangeDefault + Copy + PartialEq + Default 
 {
     const TRANSPARENT : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
 
@@ -151,90 +138,70 @@ impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
     const PINK   : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX);
     const YELLOW : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX);
     
-    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2>  where T2 : Primitive, T : CastRangeInto<T2>
+    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive + CastRangeFrom<T>
     {
-        let array : [T;4] = self.to_array();
-        array.map(|v| T2::cast_range_from(v)).to_rgba()
+        self.into_array4().map(|v| T2::cast_range_from(v)).to_rgba()
     }
     
+    fn to_color_hsla_of<T2>(self) -> ColorHSLAOf<T2> where T2 : Float + CastRangeFrom<T> {
 
-
-    /* 
-    fn slice_to_bytes(slice : &[Self]) -> std::borrow::Cow<'_, [u8]>
-    {
-        // ColorMask exist, so T can't be NumberPrimitive. Make NumberPrimitiveType more general and add bool ?
-        if 
-        let byte_len = slice.len() * std::mem::size_of::<Self>();
-        let ptr = slice.as_ptr() as *const u8;
-        let bytes = unsafe { std::slice::from_raw_parts(ptr, byte_len) };
-        std::borrow::Cow::Borrowed(bytes)
-    }
-    */
-}
-
-/*
-impl<T> ToColorRep for ColorRGBAOf<T> 
-    where 
-        Self : From<Color> + From<ColorRGBAByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
-        T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + RangeDefault + Copy + PartialEq + Default
-{
-    type ColorRGBAFloat=ColorRGBA;
-
-    fn to_color_float(&self) -> Self::ColorRGBAFloat { Color::rgba(self.r.to_coef(), self.g.to_coef(), self.b.to_coef(), self.a.to_coef()) }
-
-    type ColorHSLA=ColorHSLA;
-    fn to_color_hsla(&self) -> Self::ColorHSLA {
         // Thank to MacroQuad, the following code was copied and edited the code from the MacroQuad crate
-
+        let [r, g, b, a] = self.to_array4().map(|v| T2::cast_range_from(v));
+        let f = [r, g, b];
         
-
-        let f = self.to_float();
-        let (r, g, b, a) = f.unpack_rgba();
-
         let max = *f.max_element();
         let min = *f.min_element();
 
         // Luminosity is the average of the max and min rgb color intensities.
-        let l= (max + min) / 2.0;
+        let l= (max + min) / T2::TWO;
 
         // Saturation
         let delta = max - min;
-        if delta == 0.0 { return ColorHSLA::new(0.0, 0.0, l, a); }
+        if delta.is_zero() { return ColorHSLAOf::new(T2::ZERO, T2::ZERO, l, a); }
 
         // it's not gray
-        let s : float = if l < 0.5 
+        let s = if l < T2::HALF 
         {
             delta / (max + min)
         } else {
-            delta / (2.0 - max - min)
+            delta / (T2::TWO - max - min)
         };
 
         // Hue
-        let r2 = (((max - r) / 6.0) + (delta / 2.0)) / delta;
-        let g2 = (((max - g) / 6.0) + (delta / 2.0)) / delta;
-        let b2 = (((max - b) / 6.0) + (delta / 2.0)) / delta;
+        let r2 = (((max - r) / T2::SIX) + (delta / T2::TWO)) / delta;
+        let g2 = (((max - g) / T2::SIX) + (delta / T2::TWO)) / delta;
+        let b2 = (((max - b) / T2::SIX) + (delta / T2::TWO)) / delta;
 
         let mut h = match max {
             x if x == r => b2 - g2,
-            x if x == g => (1.0 / 3.0) + r2 - b2,
-            _ => (2.0 / 3.0) + g2 - r2,
+            x if x == g => (T2::ONE / T2::THREE) + r2 - b2,
+            _ => (T2::TWO / T2::THREE) + g2 - r2,
         };
 
         // Fix wraparounds
-        if h < 0. { h += 1.0; } else if h > 1. { h -= 1.0; }
+        if h < T2::ZERO { h += T2::ONE; } else if h > T2::ONE { h -= T2::ONE; }
 
-        ColorHSLA::new(h, s, l, a)
-    }
-
-    type ColorRGBAByte=ColorRGBAByte;
-    fn to_color_byte(&self) -> Self::ColorRGBAByte {
-        ColorRGBAByte::rgba
-        (
-          (self.r.to_coef() * (u8::MAX as Coef)) as u8,
-        (self.g.to_coef() * (u8::MAX as Coef)) as u8,
-         (self.b.to_coef() * (u8::MAX as Coef)) as u8,
-        (self.a.to_coef() * (u8::MAX as Coef)) as u8
-        )
+        ColorHSLAOf::new(h, s, l, a)
     }
 }
-    */
+
+impl<T> ToColor for ColorRGBAOf<T> where T : Primitive
+{
+    type ColorRGBAF32 = ColorRGBAOf<f32>;
+    fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { self.to_color_rgba_of() }
+
+    type ColorRGBAF64 = ColorRGBAOf<f64>;
+    fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 { self.to_color_rgba_of() }
+    
+    type ColorRGBAByte = ColorRGBAByte;
+    fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte { self.to_color_rgba_of() }
+    
+    type ColorRGBABool = ColorRGBAMask;
+    fn to_color_rgba_bool(&self) -> Self::ColorRGBABool { self.to_color_rgba_of() }
+    
+    type ColorHSLAF32 = ColorHSLAF32;
+    fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 { self.to_color_hsla_of() }
+    
+    type ColorHSLAF64 = ColorHSLAF64;
+    fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.to_color_hsla_of() }
+}
