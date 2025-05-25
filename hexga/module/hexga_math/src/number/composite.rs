@@ -25,6 +25,28 @@ macro_rules! impl_composite_types_and_methods_and_constants_for_external_type
                 const $constant_name: Self = [T::$constant_name; N];
             )*
         }
+
+        /* // Vector don't support constant
+        impl<T $(, $($generic_params),* )?> $trait_name $(< $($generic_params),* >)? for Vec<T>
+        where
+            T: $trait_name $(< $($generic_params),* >)?
+        {
+            $(
+                type $type_name = Vec<T::$type_name>;
+            )*
+            
+            $(
+                fn $method_name(self) -> $output_name 
+                {
+                    // Todo
+                }
+            )*
+
+            $(
+                const $constant_name: Self = [T::$constant_name; N];
+            )*
+        }
+        */
     };
 }
 pub(crate) use impl_composite_types_and_methods_and_constants_for_external_type;

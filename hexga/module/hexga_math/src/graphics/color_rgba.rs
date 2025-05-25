@@ -203,4 +203,17 @@ impl<T> ToColor for ColorRGBAOf<T> where T : Primitive
     
     type ColorHSLAF64 = ColorHSLAF64;
     fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.to_color_hsla_of() }
+
+    const COLOR_INSIDE : ColorKind = 
+    {
+        match (T::PRIMITIVE_NUMBER_TYPE, std::mem::size_of::<T>())
+        {
+            (NumberType::Bool, 1) => ColorKind::RGBABool,
+            (NumberType::Float, 4) => ColorKind::RGBAF32,
+            (NumberType::Float, 8) => ColorKind::RGBAF64,
+            (NumberType::IntegerUnsigned, 1) => ColorKind::RGBAByte,
+            (NumberType::IntegerUnsigned, 2) => ColorKind::RGBAU16,
+            _ => ColorKind::Unknow,
+        }
+    };
 }

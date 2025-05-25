@@ -547,6 +547,7 @@ dependencies = [
  "hexga",
  "hexga_engine",
  "hexga_generational",
+ "hexga_graphics",
  "hexga_map_on",
 ]
 

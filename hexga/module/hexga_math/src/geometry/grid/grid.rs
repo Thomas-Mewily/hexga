@@ -62,12 +62,7 @@ impl<T, Idx, const N : usize> Get<Vector<Idx,N>> for GridBase<T, Idx,N>  where I
     #[inline(always)]
     fn try_get(&self, pos : Vector<Idx,N>) -> Result<&Self::Output, ()> { self.get(pos).ok_or_void() }
     #[inline(always)]
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> 
-    { 
-        let x = self.position_to_index(pos);
-        dbg!(x);
-        self.position_to_index(pos).and_then(|idx| self.get(idx)) 
-    }
+    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| self.get(idx)) }
     #[inline(always)]
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos); self.get_unchecked(idx) } }
 }

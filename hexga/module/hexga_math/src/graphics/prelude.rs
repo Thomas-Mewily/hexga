@@ -4,12 +4,20 @@ pub use super::color_rgba::*;
 //pub use color_hsla::*;
 pub use super::icolor::*;
 
-pub fn rgba(red : float, green : float, blue : float, alpha : float) -> ColorRGBA
+pub const fn rgba(red : float, green : float, blue : float, alpha : float) -> ColorRGBA
 {
-    ColorRGBA::new(red, green, blue, alpha)
+    ColorRGBA::rgba(red, green, blue, alpha)
+}
+pub const fn rgb(red : float, green : float, blue : float) -> ColorRGBA
+{
+    ColorRGBA::rgb(red, green, blue)
 }
 
-pub fn rgba_byte(red : u8, green : u8, blue : u8, alpha : u8) -> ColorRGBAByte
+pub const fn rgba_byte(red : u8, green : u8, blue : u8, alpha : u8) -> ColorRGBAByte
 {
-    ColorRGBAByte::new(red, green, blue, alpha)
+    ColorRGBAByte::rgba(red, green, blue, alpha)
+}
+pub const fn rgb_byte(red : u8, green : u8, blue : u8) -> ColorRGBAByte
+{
+    ColorRGBAByte::rgb(red, green, blue)
 }

@@ -453,3 +453,83 @@ impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : IColor
 }
 
 */
+
+
+impl<C,Idx> ToColor for ImageBase<C, Idx> where Idx : Integer, C : ToColor
+{
+    type ColorRGBAF32 = ImageBase<C::ColorRGBAF32, Idx>;
+    fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 {
+        Self::ColorRGBAF32 { pixels: self.pixels.to_color_rgba_f32(), size: self.size() }
+    }
+
+    type ColorRGBAF64 = ImageBase<C::ColorRGBAF64, Idx>;
+    fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 {
+        Self::ColorRGBAF64 { pixels: self.pixels.to_color_rgba_f64(), size: self.size() }
+    }
+
+    type ColorRGBAByte = ImageBase<C::ColorRGBAByte, Idx>;
+    fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte {
+        Self::ColorRGBAByte { pixels: self.pixels.to_color_rgba_byte(), size: self.size() }
+    }
+
+    type ColorRGBABool = ImageBase<C::ColorRGBABool, Idx>;
+    fn to_color_rgba_bool(&self) -> Self::ColorRGBABool {
+        Self::ColorRGBABool { pixels: self.pixels.to_color_rgba_bool(), size: self.size() }
+    }
+
+    type ColorHSLAF32 = ImageBase<C::ColorHSLAF32, Idx>;
+    fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 {
+        Self::ColorHSLAF32 { pixels: self.pixels.to_color_hsla_f32(), size: self.size() }
+    }
+
+    type ColorHSLAF64 = ImageBase<C::ColorHSLAF64, Idx>;
+    fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 {
+        Self::ColorHSLAF64 { pixels: self.pixels.to_color_hsla_f64(), size: self.size() }
+    }
+    
+    const COLOR_INSIDE : ColorKind = C::COLOR_INSIDE;
+}
+
+impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : ToColor
+{
+    pub fn tmp_write_to_png_bytes_inside(&self, path : &str)
+    {
+        let file = std::fs::File::create(path).expect("Failed to create file");
+        let buffered_write = &mut std::io::BufWriter::new(file);
+
+        match C::COLOR_INSIDE
+        {
+            ColorKind::RGBAByte => 
+            {
+                image::ImageEncoder::write_image(
+                    image::codecs::png::PngEncoder::new(buffered_write),
+                    unsafe {
+                        std::slice::from_raw_parts(
+                            self.pixels().as_ptr() as *const u8,
+                            self.pixels().len() * std::mem::size_of::<C>(),
+                        )
+                    },
+                    self.width().to_usize() as _,
+                    self.height().to_usize() as _,
+                    image::ExtendedColorType::Rgba8,
+                ).expect("Failed to write PNG Rgba8 image");
+            },
+            ColorKind::RGBAU16 => 
+            {
+                image::ImageEncoder::write_image(
+                    image::codecs::png::PngEncoder::new(buffered_write),
+                    unsafe {
+                        std::slice::from_raw_parts(
+                            self.pixels().as_ptr() as *const u8,
+                            self.pixels().len() * std::mem::size_of::<C>(),
+                        )
+                    },
+                    self.width().to_usize() as _,
+                    self.height().to_usize() as _,
+                    image::ExtendedColorType::Rgba16,
+                ).expect("Failed to write PNG Rgba16 mage");
+            },
+            _ => todo!(),
+        }
+    }
+}

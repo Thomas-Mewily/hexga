@@ -201,4 +201,11 @@ impl<T> ToColor for ColorHSLAOf<T> where T : Float
     
     type ColorHSLAF64 = ColorHSLAF64;
     fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.to_color_hsla_of() }
+    
+    const COLOR_INSIDE : ColorKind = match std::mem::size_of::<T>()
+        {
+            4 => ColorKind::HSLAF32,
+            8 => ColorKind::HSLAF64,
+            _ => ColorKind::Unknow,
+        };
 }

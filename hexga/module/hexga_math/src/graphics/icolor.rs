@@ -4,8 +4,22 @@ use std::slice;
 
 use crate::*;
 
-pub trait ToColor : Sized
+pub enum ColorKind
+{
+    RGBABool,
+    RGBAByte,
+    RGBAU16,
+    RGBAF32,
+    RGBAF64,
+    HSLAF32,
+    HSLAF64,
+    Unknow,
+}
+
+pub trait ToColor
 {   
+    const COLOR_INSIDE : ColorKind;
+
     #[cfg(any(
         feature = "float_are_32_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "32")
@@ -84,7 +98,51 @@ pub trait ToColor : Sized
     fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64;
 }
 
+impl<T, const N : usize> ToColor for [T;N] where T : ToColor
+{
+    type ColorRGBAF32 = [T::ColorRGBAF32;N];
+    fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { std::array::from_fn(|i| self[i].to_color_rgba_f32()) }
 
+    type ColorRGBAF64 = [T::ColorRGBAF64;N];
+    fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 { std::array::from_fn(|i| self[i].to_color_rgba_f64()) }
+
+    type ColorRGBAByte = [T::ColorRGBAByte;N];
+    fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte { std::array::from_fn(|i| self[i].to_color_rgba_byte()) }
+
+    type ColorRGBABool = [T::ColorRGBABool;N];
+    fn to_color_rgba_bool(&self) -> Self::ColorRGBABool { std::array::from_fn(|i| self[i].to_color_rgba_bool()) }
+
+    type ColorHSLAF32 = [T::ColorHSLAF32;N];
+    fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 { std::array::from_fn(|i| self[i].to_color_hsla_f32()) }
+
+    type ColorHSLAF64 = [T::ColorHSLAF64;N];
+    fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { std::array::from_fn(|i| self[i].to_color_hsla_f64()) }
+    
+    const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
+}
+
+impl<T> ToColor for [T] where T : ToColor
+{
+    type ColorRGBAF32 = Vec<T::ColorRGBAF32>;
+    fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { self.iter().map(|v| v.to_color_rgba_f32()).collect() }
+
+    type ColorRGBAF64 = Vec<T::ColorRGBAF64>;
+    fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 { self.iter().map(|v| v.to_color_rgba_f64()).collect() }
+
+    type ColorRGBAByte = Vec<T::ColorRGBAByte>;
+    fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte { self.iter().map(|v| v.to_color_rgba_byte()).collect() }
+
+    type ColorRGBABool = Vec<T::ColorRGBABool>;
+    fn to_color_rgba_bool(&self) -> Self::ColorRGBABool { self.iter().map(|v| v.to_color_rgba_bool()).collect() }
+
+    type ColorHSLAF32 = Vec<T::ColorHSLAF32>;
+    fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 { self.iter().map(|v| v.to_color_hsla_f32()).collect() }
+
+    type ColorHSLAF64 = Vec<T::ColorHSLAF64>;
+    fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.iter().map(|v| v.to_color_hsla_f64()).collect() }
+
+    const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
+}
 
 pub trait IColor<T> : 
     Sized +
