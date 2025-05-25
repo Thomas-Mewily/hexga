@@ -18,9 +18,10 @@ pub trait ToColorRep
     fn to_color(&self) -> Self::ColorRGBAFloat { self.to_color_float() }
 }
 
-pub trait IColor : 
-    From<Color> + From<ColorRGBAByte> + From<ColorHSLA> +
-    ToColorRep<ColorRGBAFloat = ColorRGBA, ColorHSLA = ColorHSLA, ColorRGBAByte = ColorRGBAByte>
+pub trait IColor<T> : Sized
+    where T : Primitive
+    //From<ColorRGBAOf<f32>> + From<ColorRGBAOf<f64>> + From<ColorRGBAByte> + From<ColorHSLA> +
+    //ToColorRep<ColorRGBAFloat = ColorRGBA, ColorHSLA = ColorHSLA, ColorRGBAByte = ColorRGBAByte>
     //Into<Color> + Into<ColorByte> + Into<ColorHSLA>
 {
     const TRANSPARENT : Self;
@@ -37,6 +38,32 @@ pub trait IColor :
     const PINK   : Self; 
     const YELLOW : Self;
 
+    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive, T : CastRangeInto<T2>;
+
+    fn to_color(self) -> Color { self.to_color_rgba_of::<float>() }
+    fn to_color_byte(self) -> ColorByte { self.to_color_rgba_of::<u8>() }
+
+    fn to_color_rgba(self) -> ColorRGBA { self.to_color_rgba_of::<float>() }
+    fn to_color_rgba_float(self) -> ColorRGBAFloat { self.to_color_rgba_of::<float>() }
+    fn to_color_rgba_byte(self) -> ColorRGBAByte   { self.to_color_rgba_of::<u8>() }
+    fn to_color_rgba_mask(self) -> ColorRGBAMask   { self.to_color_rgba_of::<bool>() }
+
+    fn rgba_from_hex(hex: u32) -> ColorRGBAOf<T> where u8 : CastRangeInto<T>
+    {
+        let [r,g,b,a] = hex.to_be_bytes();
+        Self::rgba_from_bytes(r,g,b,a)
+    }
+    fn rgba_from_array(rgba : [u8;4]) -> ColorRGBAOf<T> where u8 : CastRangeInto<T>
+    {
+        let [r,g,b,a] = rgba;
+        Self::rgba_from_bytes(r,g,b,a)
+    }
+    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> ColorRGBAOf<T> where u8 : CastRangeInto<T>
+    {
+        ColorRGBAByte::new(r, g, b, a).to_color_rgba_of()
+    }
+    
+    /* 
     fn rgba_from_bytes_slice(rgba : &[u8]) -> Self { Self::rgba_from_bytes(rgba[0], rgba[1], rgba[2], rgba[3]) }
     fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self;
 
@@ -78,5 +105,6 @@ pub trait IColor :
     {
 
     }
+    */
     */
 }

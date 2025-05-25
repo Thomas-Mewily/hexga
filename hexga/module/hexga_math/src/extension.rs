@@ -145,11 +145,22 @@ pub trait ArrayLikeExtension<T, const N : usize> : ArrayLike<T,N>
     fn to_vector3_filled(self, fill : T) -> Vector3<T> where T : Clone { self.to_array_3d_filled(fill).into() }
     /// Fill non existing component with the given value
     fn to_vector4_filled(self, fill : T) -> Vector4<T> where T : Clone { self.to_array_4d_filled(fill).into() }
+
+
+    fn to_rgba(self) -> ColorRGBAOf<T> where T : Default { ColorRGBAOf::from_array(self.to_array_4d()) }
 }
 
+/* 
+pub trait ArrayLikeExtension1D<T> : ArrayLike<T,1>
+{
+    fn to_array_2d_filled(self, fill : T) where T : Copy;
+    fn to_array_3d_filled(self, fill : T) where T : Copy;
+}
+    */
 
 
 
+/*
 pub trait ToVectorFilled<T, const N : usize> : Sized where T : Copy
 {
     fn to_vector_filled(self, fill : T) -> Vector<T,N>;
@@ -170,3 +181,4 @@ impl<T> ToVectorFilled<T, 4> for Vector<T, 3>  where T : Copy { fn to_vector_fil
 impl<T> ToVectorFilled<T, 4> for Vector<T, 4>  where T : Copy { fn to_vector_filled(self, fill : T) -> Vector<T,4> { self.to_vector4_filled(fill) } }
 
 impl<T, const N : usize> ToVectorFilled<T, N> for T  where T : Copy { fn to_vector_filled(self, _ : T) -> Vector<T,N> { Vector::splat(self) } }
+*/

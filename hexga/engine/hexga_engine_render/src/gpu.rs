@@ -76,12 +76,11 @@ pub trait ToGpuColor
 {
     fn to_gpu_color(self) -> GpuColor;
 }
-impl<T> ToGpuColor for T where T : IColor
+impl<T,T2> ToGpuColor for T where T : IColor<T2>, T2 : Primitive
 {
     fn to_gpu_color(self) -> GpuColor 
     {
-        let ColorRGBAByte { r, g, b, a } = self.to_color_byte();
-        GpuColor::rgba(r as _, g as _, b as _, a as _)
+        self.to_color_rgba_of::<GpuFloat>()
     }
 }
 pub type GpuColor = ColorRGBAOf<float>;

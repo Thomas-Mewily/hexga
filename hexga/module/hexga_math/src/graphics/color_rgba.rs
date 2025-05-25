@@ -1,15 +1,13 @@
 use crate::*;
 
-/// `ColorRGBAOf<float>`
-pub type Color = ColorRGBA;
-pub type ColorMask = ColorRGBAOf<bool>;
+pub type Color      = ColorRGBA;
+pub type ColorByte  = ColorRGBAByte;
+pub type ColorMask  = ColorRGBAMask;
 
-/// `ColorRGBAOf<float>`
-pub type ColorRGBA = ColorRGBAFloat;
-pub type ColorRGBAMask = ColorRGBAOf<bool>;
-
+pub type ColorRGBA      = ColorRGBAOf<float>;
 pub type ColorRGBAFloat = ColorRGBAOf<float>;
-pub type ColorRGBAByte = ColorRGBAOf<u8>;
+pub type ColorRGBAByte  = ColorRGBAOf<u8>;
+pub type ColorRGBAMask  = ColorRGBAOf<bool>;
 
 #[repr(C)]
 pub struct ColorRGBAOf<T>
@@ -25,8 +23,6 @@ pub struct ColorRGBAOf<T>
 }
 impl_fixed_array_like_with_op!(ColorRGBAOf, 4);
 
-
-impl From<u32> for ColorRGBAByte { fn from(value: u32) -> Self { Self::from_rgba_hex(value) } }
 
 #[allow(dead_code)]
 impl<T> ColorRGBAOf<T>
@@ -112,8 +108,10 @@ impl<T> From<ColorRGBAOf<T>> for (T,T,T,T,) { fn from(value: ColorRGBAOf<T>) -> 
 impl<T> From<(T,T,T,)> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: (T,T,T,)) -> Self { ColorRGBAOf::rgb(value.0, value.1, value.2) }}
 impl<T> From<ColorRGBAOf<T>> for (T,T,T,) { fn from(value: ColorRGBAOf<T>) -> Self { (value.r, value.g, value.b) }}
 
+/*
 impl<T> From<[T; 3]> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorRGBAOf::rgb(r,g,b) }}
 impl<T> From<ColorRGBAOf<T>> for [T; 3] { fn from(value: ColorRGBAOf<T>) -> Self { [value.r, value.g, value.b] }}
+*/
 
 impl<T> From<Vector4<T>> for ColorRGBAOf<T> { fn from(value: Vector4<T>) -> Self { let [r,g,b,a] = value.array; ColorRGBAOf::rgba(r,g,b,a) }}
 impl<T> From<ColorRGBAOf<T>> for Vector4<T> { fn from(value: ColorRGBAOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
@@ -121,19 +119,20 @@ impl<T> From<ColorRGBAOf<T>> for Vector4<T> { fn from(value: ColorRGBAOf<T>) -> 
 impl<T> From<Vector3<T>> for ColorRGBAOf<T> where T : RangeDefault { fn from(value: Vector3<T>) -> Self { let [r,g,b] = value.array; ColorRGBAOf::rgb(r,g,b) }}
 impl<T> From<ColorRGBAOf<T>> for Vector3<T> { fn from(value: ColorRGBAOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
+/* 
 impl From<ColorHSLA> for Color { fn from(value: ColorHSLA) -> Self { value.to_color() }}
 impl From<ColorHSLA> for ColorRGBAByte { fn from(value: ColorHSLAOf<float>) -> Self { value.to_color_byte() }}
 
 impl From<ColorRGBAByte> for Color { fn from(value: ColorRGBAByte) -> Self { value.to_color() }}
 impl From<Color> for ColorRGBAByte { fn from(value: Color) -> Self { value.to_color_byte() }}
+*/
 
-
-impl<T> Default for ColorRGBAOf<T> where T : RangeDefault
+impl<T> Default for ColorRGBAOf<T> where T : Primitive
 {
     fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX } }
 }
 
-impl<T> IColor for ColorRGBAOf<T> where T : Primitive
+impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
     //where 
     //    Self : From<Color> + From<ColorRGBAByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
     //    T : ToCoef<Output=Coef> + FromCoef + ToFloat<Output=float> + RangeDefault + Copy + PartialEq + Default 
@@ -152,17 +151,13 @@ impl<T> IColor for ColorRGBAOf<T> where T : Primitive
     const PINK   : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX);
     const YELLOW : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX);
     
-    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> Self 
+    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2>  where T2 : Primitive, T : CastRangeInto<T2>
     {
-        Self::new
-        (
-            // Todo : do better I guess... Specialization isn't here...
-            T::from_coef(r.to_coef()), 
-            T::from_coef(g.to_coef()),
-            T::from_coef(b.to_coef()),
-            T::from_coef(a.to_coef())
-        )
+        let array : [T;4] = self.to_array();
+        array.map(|v| T2::cast_range_from(v)).to_rgba()
     }
+    
+
 
     /* 
     fn slice_to_bytes(slice : &[Self]) -> std::borrow::Cow<'_, [u8]>
@@ -177,6 +172,7 @@ impl<T> IColor for ColorRGBAOf<T> where T : Primitive
     */
 }
 
+/*
 impl<T> ToColorRep for ColorRGBAOf<T> 
     where 
         Self : From<Color> + From<ColorRGBAByte> + From<ColorHSLA> + ToFloat<Output = ColorRGBAOf<float>>,
@@ -241,3 +237,4 @@ impl<T> ToColorRep for ColorRGBAOf<T>
         )
     }
 }
+    */

@@ -177,3 +177,7 @@ map_on_float!(
         }
     }
 );
+impl PrimitiveType for bool
+{
+    const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::Bool;
+}

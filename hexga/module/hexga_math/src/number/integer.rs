@@ -10,8 +10,8 @@ pub trait IntegerSigned             : NumberIntegerSigned + Primitive {}
 impl<T> IntegerSigned for T where T : IntegerSigned + Primitive {}
 
 /// iX uX fX bool
-pub trait Primitive : RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive {}
-impl<T> Primitive for T where T : RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive {}
+pub trait Primitive : RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive + Default + PartialEq + PartialOrd + Debug {}
+impl<T> Primitive for T where T : RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive + Default + PartialEq + PartialOrd + Debug {}
 
 /// For type that have an unsigned equivalent
 pub trait ToUnsigned
