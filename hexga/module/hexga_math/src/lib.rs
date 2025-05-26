@@ -39,5 +39,8 @@ pub use geometry::*;
 mod other;
 pub use other::*;
 
-mod graphics;
-pub use graphics::*;
+mod color;
+pub use color::*;
+
+pub mod graph;
+use graph::*;

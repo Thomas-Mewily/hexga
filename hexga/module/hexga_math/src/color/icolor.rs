@@ -238,7 +238,7 @@ pub trait IColor<T> :
     }
 
     /// Cast to color byte and format the color : `#RRGGBBAA`
-    fn to_rgba_hex_string(self) -> String
+    fn to_rgba_byte_hex_string(self) -> String
     {
         let rgba = self.to_color_byte();
         format!(

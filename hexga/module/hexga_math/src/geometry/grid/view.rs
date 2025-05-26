@@ -189,15 +189,15 @@ impl<'a, G, T, Idx, const N : usize> GridView<'a, G, T, Idx, N>
     }
 
     /// `self.crop_intersect(subrect).to_grid()`
-    pub fn subgrid(&self, subrect : Rectangle<Idx, N>) -> G where T : Clone, Self : Crop<Idx,N> { self.crop_intersect(subrect).to_grid() }
+    pub fn subgrid(&self, subrect : Rectangle<Idx, N>) -> G where T : Clone, Self : Crop<Idx,N> { self.subview_intersect(subrect).to_grid() }
 
-    pub fn map<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> 
+    pub fn transform<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> 
         where F : FnMut(&T) -> Dest
     {
         <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
     }
 
-    pub fn map_par<Dest, F>(&self, f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, G : Sync
+    pub fn transform_par<Dest, F>(&self, f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, G : Sync
     {
         <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
     }

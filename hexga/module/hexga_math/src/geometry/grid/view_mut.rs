@@ -149,20 +149,20 @@ impl<'a, G, T, Idx, const N : usize> GridViewMut<'a, G, T, Idx, N>
     }
 
 
-    pub fn subview(self, mut rect : Rectangle<Idx,N>) -> Option<Self>
+    pub fn subview<'b>(&'b mut self, mut rect : Rectangle<Idx,N>) -> Option<GridViewMut<'b,G,T,Idx,N>>
     {
         rect.move_by(self.rect.pos);
         if !self.rect().is_rect_inside(rect) {
             return None;
         }else
         {
-            Some(unsafe { Self::from_rect_unchecked(self.grid, rect) })
+            Some(unsafe { GridViewMut::from_rect_unchecked(self.grid, rect) })
         }
     }
-    pub fn subview_intersect(self, mut rect : Rectangle<Idx,N>) -> Self
+    pub fn subview_intersect<'b>(&'b mut self, mut rect : Rectangle<Idx,N>) -> GridViewMut<'b,G,T,Idx,N>
     {
         rect.move_by(self.rect.pos);
-        unsafe { Self::from_rect_unchecked(self.grid, self.rect().intersect_or_empty(rect)) }
+        unsafe { GridViewMut::from_rect_unchecked(self.grid, self.rect().intersect_or_empty(rect)) }
     }
 
     pub fn to_grid(&self) -> G where T : Clone
@@ -171,15 +171,15 @@ impl<'a, G, T, Idx, const N : usize> GridViewMut<'a, G, T, Idx, N>
     }
 
     /// `self.crop_intersect(subrect).to_grid()`
-    pub fn subgrid(self, subrect : Rectangle<Idx, N>) -> G where T : Clone, Self : Crop<Idx,N> { self.crop_intersect(subrect).to_grid() }
+    pub fn subgrid(&mut self, subrect : Rectangle<Idx, N>) -> G where T : Clone, Self : Crop<Idx,N> { self.subview_intersect(subrect).to_grid() }
 
-    pub fn map<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> 
+    pub fn transform<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> 
         where F : FnMut(&T) -> Dest
     {
         <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
     }
 
-    pub fn map_par<Dest, F>(&self, f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, G : Sync
+    pub fn transform_par<Dest, F>(&self, f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, G : Sync
     {
         <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
     }

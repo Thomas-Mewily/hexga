@@ -62,7 +62,7 @@ fn main()
         
         println!(
             "    /// {}
-    const COLOR_NAME : Self;", co.to_rgba_hex_string());
+    const COLOR_NAME : Self;", co.to_rgba_byte_hex_string());
     }
 
     let img = ImageBase::from_vec(point2(c.len() as _, 1), c).unwrap();
