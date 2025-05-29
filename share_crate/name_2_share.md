@@ -5,6 +5,10 @@ hexga_map_on
 hexga_number
 
 hexga_core
+
+hexga_io
+hexga_io_derive
+
 hexga_bitflags
 
 // hexga_base // moved to hexga_core
@@ -15,8 +19,8 @@ hexga_generational
 hexga_math
 
 hexga_tools
-hexga_io
-hexga_io_derive
+
+
 hexga_graphics
 hexga_ansi_color
 //hexga_undo_redo
