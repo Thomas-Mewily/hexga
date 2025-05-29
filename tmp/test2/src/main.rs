@@ -7,8 +7,16 @@ use hexga::prelude::*;
 use hexga_map_on::*;
 use hexga_graphics::*;
 
-fn main() 
+fn main()
 {
+    for markup in Io::MARKUP_EXTENSIONS
+    {
+        let r = [1,2,3,4].save_to_disk(&format!("./array.{markup}"));
+        println!("{:?}", r);
+    }
+
+
+    /*
     dbg!(Color::WHITE);
     dbg!(Color::RED);
 
@@ -20,11 +28,11 @@ fn main()
 
     dbg!(ColorMask::RED | ColorMask::BLUE);
 
-    /* 
-    let img = ImageBase::from_fn(point2(u8::MAX as _, u8::MAX as _), 
+
+    let img = ImageBase::from_fn(point2(u8::MAX as _, u8::MAX as _),
     |p| ColorRGBAOf::rgb(p.x as u8, p.y as u8, zero()));
     img.tmp_write_to_png_bytes_inside("./tmp/picture32.png");
-    */
+
 
     for nb_sample in 2..4
     {
@@ -36,7 +44,7 @@ fn main()
             {
                 for b in u8::sample_inclusive(nb_sample)
                 {
-                    c.push(rgb_byte(r, g, b));  
+                    c.push(rgb_byte(r, g, b));
                 }
             }
         }
@@ -59,7 +67,7 @@ fn main()
 
     for co in c.iter().skip(3)
     {
-        
+
         println!(
             "    /// {}
     const COLOR_NAME : Self;", co.to_rgba_byte_hex_string());
@@ -68,6 +76,7 @@ fn main()
     let img = ImageBase::from_vec(point2(c.len() as _, 1), c).unwrap();
     img.tmp_write_to_png_bytes_inside(&format!("./tmp/constant_color_half.png"));
 
-    
+
     //|p| ColorRGBAOf::rgb(p.x as u8, p.y as u8, zero()));
+    */
 }

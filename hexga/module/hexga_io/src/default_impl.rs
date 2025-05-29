@@ -44,9 +44,7 @@ impl_io_save!(
     bool,
     char,
     Option<T>, Result<T,E>,
-    Vec<T>,
-    LinkedList<T>,
-    VecDeque<T>,
+    Vec<T>, LinkedList<T>, VecDeque<T>,
 );
 
 
@@ -66,31 +64,39 @@ impl<T> IoSave for BinaryHeap<T> where T : IoSave + Ord  {}
 impl<T> IoLoad for BinaryHeap<T> where T : IoLoad + Ord  {}
 
 
+impl<T> IoSave for &[T] where T : IoSave {}
+
+impl IoSave for str
+{
+    fn save_own_extensions() -> impl Iterator<Item = &'static str> { ["txt", "md"].iter().copied() }
+
+    fn save_to_with_own_extension_pathless<W, Fs>(&self, _ : &extension, mut w : W, _ : &mut Fs) -> IoResult where W : Write, Fs : IoFs
+    {
+        w.write_all(self.as_bytes()).map_err(|e| IoErrorKind::from_internal_error(e))
+    }
+}
+impl IoSave for String
+{
+    fn save_own_extensions() -> impl Iterator<Item = &'static str> { str::save_own_extensions() }
+
+    fn save_to_with_own_extension_pathless<W, Fs>(&self, extension : &extension, w : W, fs : &mut Fs) -> IoResult
+            where W : Write, Fs : IoFs
+    { self.as_str().save_to_with_own_extension_pathless(extension, w, fs) }
+}
+impl IoLoad for String
+{
+    const CAN_BE_LOADED_FROM_TEXT : bool = true;
+    fn load_own_extensions() -> impl Iterator<Item = &'static str> { Self::save_own_extensions() }
+    fn load_from_str_with_own_extension_pathless(data : &str, _ : &extension) -> IoResult<Self> { Ok(data.to_owned()) }
+}
+
+
+
 #[cfg(feature = "rc")]
 impl_io_save!(
     Rc<T>, RcWeak<T>,
     Arc<T>, ArcWeak<T>,
 );
-
-
-impl IoSave for String
-{
-    fn save_own_extensions() -> impl Iterator<Item = &'static str> { ["txt", "md"].iter().copied() }
-
-    fn save_to_with_own_extension_pathless<W, Fs>(&self, _ : &extension, mut w : W, _ : &mut Fs) -> IoResult
-            where W : Write, Fs : IoFs
-    {
-        w.write_all(self.as_bytes()).map_err(|e| IoErrorKind::from_internal_error(e))
-    }
-}
-impl IoLoad for String
-{
-
-    const CAN_BE_LOADED_FROM_TEXT : bool = true;
-    fn load_from_str_with_own_extension_pathless(data : &str, _ : &extension) -> IoResult<Self> {
-        Ok(data.to_owned())
-    }
-}
 
 impl<T> IoSave for Cell<T> where T : IoSave + Copy {}
 impl<T> IoLoad for Cell<T> where T : IoLoad + Copy {}
@@ -122,28 +128,8 @@ impl<T: IoSave> IoSave for Saturating<T> {
 impl<T: IoLoad> IoLoad for Saturating<T> where for<'de> Saturating<T>: serde::Deserialize<'de> {
 }
 
-impl<T> IoSave for [T; 0]
-{
-}
-
-macro_rules! array_impls {
-    ($($len:tt)+) => {
-        $(
-            impl<T> IoSave for [T; $len] where T : IoSave {}
-            impl<T> IoLoad for [T; $len] where T : IoLoad {}
-        )+
-    }
-}
-
-array_impls! {
-    01 02 03 04 05 06 07 08 09 10
-    11 12 13 14 15 16 17 18 19 20
-    21 22 23 24 25 26 27 28 29 30
-    31 32
-}
-
-
-
+impl<T, const N : usize> IoSave for [T; N] where [T; N] : Serialize {} //, T : IoSave
+impl<T, const N : usize> IoLoad for [T; N] where Self : for<'de> Deserialize<'de> {}
 
 
 #[cfg_attr(docsrs, doc(fake_variadic))]

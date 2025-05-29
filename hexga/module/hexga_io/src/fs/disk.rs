@@ -23,11 +23,10 @@ impl IoFsDisk
 
 pub trait SaveToDisk : IoSave
 {
-    fn save_to_disk<W>(&self, path : &path, w : W) -> IoSaveResult
-        where W : IoWrite
+    fn save_to_disk(&self, path : &path) -> IoSaveResult
     {
         let mut fs_disk = IoFsDisk::new();
-        self.save_to_with_extension(path, path.extension().unwrap_or_default(), w, &mut fs_disk)?;
+        self.save_to(path, &mut fs_disk)?;
         fs_disk.commit().to_save_error(path)
     }
 }

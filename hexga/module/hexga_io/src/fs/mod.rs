@@ -7,34 +7,39 @@ pub use disk::*;
 #[allow(unused_variables)]
 pub trait IoFs : Sized
 {
-    fn save<T>(&mut self, path : Path, value : &T) where T : IoSave
+    fn save<T>(&mut self, path : &path, value : &T) -> IoResult where T : IoSave + ?Sized
     {
-        if self.premature_abord() && self.have_error() { return; }
+        if self.premature_abord() && self.have_error() { return Err(IoErrorKind::FsPrematureAbord); }
 
-        let Some(path) = self.canonicalize_path(&path) else
+        let path_abs = match self.absolute_path(&path)
         {
-            self.add_write_error(path, IoErrorKind::InvalidPath);
-            return;
+            Some(abs) => abs,
+            None =>
+            {
+                self.add_write_error(path, IoErrorKind::InvalidPath);
+                return Err(IoErrorKind::InvalidPath);
+            }
         };
 
-        if let Err(e) = self.have_permission_to_write(&path)
+        if let Err(kind) = self.have_permission_to_write(&path_abs)
         {
-            self.add_write_error(path, e);
-            return;
+            let k = kind.clone();
+            self.add_write_error(path_abs, kind);
+            return Err(k);
         }
 
         let mut data = Vec::with_capacity(1024);
 
-        match value.save_to(&path, &mut data, self)
+        match value.save_with_reader(&path_abs, &mut data, self)
         {
             Ok(_) => {},
-            Err(err) => self.add_error(err),
+            Err(err) => { let k = err.kind.clone(); self.add_error(err); return Err(k); }
         }
 
-        match unsafe { self.save_bytes_unchecked(path, &data) }
+        match unsafe { self.save_bytes_unchecked(path_abs, &data) }
         {
-            Ok(_) => todo!(),
-            Err(err) => self.add_error(err),
+            Ok(_) => Ok(()),
+            Err(err) => { let k = err.kind.clone(); self.add_error(err); return Err(k); }
         }
     }
 
@@ -54,9 +59,9 @@ pub trait IoFs : Sized
     fn add_read_error (&mut self, path : impl Into<Path>, kind : IoErrorKind) { self.add_error(IoError::read (path, kind)); }
     fn add_write_error(&mut self, path : impl Into<Path>, kind : IoErrorKind) { self.add_error(IoError::write(path, kind)); }
 
-    fn canonicalize_path(&self, path : &path) -> Option<Path>
+    fn absolute_path(&self, path : &path) -> Option<Path>
     {
-        match std::fs::canonicalize(path)
+        match std::path::absolute(path)
         {
             Ok(v) => v.to_str().map(|v| v.to_owned()),
             Err(_) => None,

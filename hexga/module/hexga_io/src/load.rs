@@ -28,7 +28,7 @@ impl<T> IoLoad for T where T : IoLoadFrom + for<'de> Deserialize<'de>
 }
 
 #[allow(unused_variables)]
-pub trait IoLoad : Sized + for<'de> Deserialize<'de>
+pub trait IoLoad : for<'de> Deserialize<'de>
 {
     // Main function to override :
 

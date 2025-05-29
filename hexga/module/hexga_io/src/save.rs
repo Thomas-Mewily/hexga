@@ -15,16 +15,16 @@ impl<T> IoSave for T where T : IoSaveFrom + Serialize
 {
     fn save_own_extensions() -> impl Iterator<Item = &'static str> { T::From::save_own_extensions() }
 
-    fn save_to_with_extension<W, Fs>(&self, path : &path, extension : &extension, w : W, fs : &mut Fs) -> IoSaveResult
+    fn save_with_reader_and_extension<W, Fs>(&self, path : &path, extension : &extension, w : W, fs : &mut Fs) -> IoSaveResult
             where W : Write, Fs : IoFs
     {
         if let Some(v) = self.save_from_based_on_ref()
         {
-            return v.save_to_with_extension(path, extension, w, fs);
+            return v.save_with_reader_and_extension(path, extension, w, fs);
         }
         if let Some(v) = self.save_from_based_on()
         {
-            return v.save_to_with_extension(path, extension, w, fs);
+            return v.save_with_reader_and_extension(path, extension, w, fs);
         }
         Err(IoErrorKind::FromBasedOnFailed { dest: std::any::type_name::<Self>().to_owned(), src: std::any::type_name::<T>().to_owned(), reason: "bad implementation".to_string() }).to_save_error(path)
     }
@@ -69,14 +69,18 @@ pub trait IoSave : Serialize
     /// Also include the markup language extension like `json` or `ron`
     fn can_save_extension(extension: &str) -> bool { Self::save_extensions().any(|ext| ext == extension) }
 
-
-    fn save_to<W, Fs>(&self, path : &path, w : W, fs : &mut Fs) -> IoSaveResult
-        where W : IoWrite, Fs : IoFs
+    fn save_to<Fs>(&self, path : &path, fs : &mut Fs) -> IoSaveResult where Fs : IoFs
     {
-        self.save_to_with_extension(path, path.extension().unwrap_or_default(), w, fs)
+        fs.save(path, self).to_save_error(path)
     }
 
-    fn save_to_with_extension<W, Fs>(&self, path : &path, extension : &extension, mut w : W, fs : &mut Fs) -> IoSaveResult
+    fn save_with_reader<W, Fs>(&self, path : &path, w : W, fs : &mut Fs) -> IoSaveResult
+        where W : IoWrite, Fs : IoFs
+    {
+        self.save_with_reader_and_extension(path, path.extension().unwrap_or_default(), w, fs)
+    }
+
+    fn save_with_reader_and_extension<W, Fs>(&self, path : &path, extension : &extension, mut w : W, fs : &mut Fs) -> IoSaveResult
         where W : IoWrite, Fs : IoFs
     {
         match extension
