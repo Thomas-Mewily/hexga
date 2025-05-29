@@ -6,8 +6,9 @@
 /// - Trigonometric functions (sin, cos, tan, etc.).
 ///
 /// ```rust
-/// use hexga_math::geometry::angle::{Angle, ToAngle};
-/// let a = 90.0.degree();
+/// use hexga_math::prelude::*;
+///
+/// let a = 90.0f32.degree();
 /// println!("Angle in radians: {}", a.radian());
 /// println!("Angle in degrees: {}", a.degree());
 /// ```
@@ -31,6 +32,7 @@ new_unit!(
 /// See [`AngleOf`] to use your own precision.
 pub type Angle = AngleOf<float>;
 
+
 pub trait ToAngle
 {
     type Output;
@@ -48,18 +50,57 @@ impl<T> ToAngle for T where T : CastInto<float>
     fn turn  (self) -> Angle { Angle::from_turn  (self.cast_into_composite()) }
 }
 
+
+#[cfg(feature = "hexga_io")]
+impl<T> hexga_io::IoLoad for AngleOf<T> where T: Float + for<'de> Deserialize<'de> {}
+#[cfg(feature = "hexga_io")]
+impl<T> hexga_io::IoSave for AngleOf<T> where T: Float + Serialize {}
+
 #[cfg(feature = "serde")]
-impl<T: Float + Serialize> Serialize for AngleOf<T> {
+impl<T> Serialize for AngleOf<T> where T: Float + Serialize
+{
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     { self.degree().serialize(serializer) }
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T: Float + Deserialize<'de>> Deserialize<'de> for AngleOf<T> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de>,
+impl<'de, T> Deserialize<'de> for AngleOf<T> where T: Float + Deserialize<'de>
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
     {
-        let degree = T::deserialize(deserializer)?;
-        Ok(AngleOf::from_degree(degree))
+        #[cfg_attr(feature = "serde", derive(Deserialize), serde(untagged))]
+        enum AngleInput<T> where T: Float
+        {
+            Degree (T),
+            Prefix { deg: Option<T>, rad: Option<T>, turn: Option<T> },
+            // Postfix (String) // To support "90°", "90deg" "3.14rad" ?
+        }
+
+        match AngleInput::deserialize(deserializer)
+        {
+            Ok(v) => match v
+            {
+                AngleInput::Degree(d) => Ok(Self::from_degree(d)),
+                AngleInput::Prefix { deg, rad, turn } =>
+                {
+                    match deg.is_some() as u8 + rad.is_some() as u8 + turn.is_some() as u8
+                    {
+                        0 => Err(serde::de::Error::custom("Missing `deg`, `rad` or `turn`")),
+                        1 =>
+                        {
+                            if let Some(d) = deg  { return Ok(Self::from_degree(d)) }
+                            if let Some(r) = rad  { return Ok(unsafe { Self::from_inner_value(r) }) }
+                            if let Some(t) = turn { return Ok(Self::from_turn(t)) }
+                            unreachable!()
+                        }
+                        _ => Err(serde::de::Error::custom("Only one of `deg`, `rad` or `turn` is expected")),
+                    }
+                },
+            }
+            Err(_) => Err(serde::de::Error::custom("Expected an Angle in degree, ex `90`. Available unit: `deg`, `rad` or `turn`. ex: `(deg:45)`.")),
+        }
     }
 }
 

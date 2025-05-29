@@ -14,6 +14,7 @@ pub mod modules
     pub use hexga_ansi_color as ansi_color;
     pub use hexga_tools as tools;
     pub use hexga_map_on as map_on;
+    #[cfg(feature = "hexga_io")]
     pub use hexga_io as io;
     //pub use hexga_undo_redo as undo;
 }

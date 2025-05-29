@@ -11,10 +11,13 @@ readme = "README.md"
 
 keywords = ["math", "vector", "matrix", "rectangle"]
 description = "Math related crate that support multi dimensionnal vector, matrix, rectangle..."
-categories = ["mathematics", "data-structures"]
+categories = ["mathematics", "data-structures", "algorithms", "rust-patterns"]
 
 [features]
-default = ["serde", "hexga_io", "int_are_32_bits", "float_are_32_bits"]
+default = [
+    "serde", "hexga_io", "hexga_io_derive",
+    "int_are_32_bits", "float_are_32_bits"
+]
 
 int_are_8_bits    = ["hexga_typedef/int_are_8_bits"]
 int_are_16_bits   = ["hexga_typedef/int_are_16_bits"]
@@ -28,6 +31,7 @@ float_are_size_bits = ["hexga_typedef/float_are_size_bits"]
 
 serde = ["dep:serde"]
 hexga_io = ["dep:hexga_io", "serde"]
+hexga_io_derive = ["hexga_io/derive", "hexga_io"]
 
 [dependencies]
 hexga_core.workspace = true

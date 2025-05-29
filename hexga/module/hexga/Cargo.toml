@@ -29,7 +29,7 @@ float_are_32_bits   = ["hexga_math/float_are_32_bits"]
 float_are_64_bits   = ["hexga_math/float_are_64_bits"]
 float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
-hexga_io_derive = ["hexga_io/derive"]
+hexga_io_derive = ["hexga_io/derive", "hexga_io"]
 
 hexga_io = ["dep:hexga_io", "serde",
   #"hexga_generational/hexga_io",

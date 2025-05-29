@@ -4,7 +4,7 @@ use crate::*;
 
 /// Define the `0` representation : The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`
 pub trait Zero : Sized
-{ 
+{
     /// The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`
     const ZERO : Self;
     #[inline(always)] fn zero() -> Self { Self::ZERO }
@@ -20,6 +20,14 @@ map_on_number!(($primitive_name: ty) => { impl Zero for $primitive_name { const 
 impl<T> Zero for Wrapping<T> where T : Zero  { const ZERO : Self = Wrapping(T::ZERO); }
 impl<T> Zero for Saturating<T> where T : Zero  { const ZERO : Self = Saturating(T::ZERO); }
 
+pub trait UnwrapZero
+{
+    type Output : Zero;
+    fn unwrap_or_zero(self) -> Self::Output;
+}
+impl<T> UnwrapZero for Option<T> where T : Zero { type Output = T; fn unwrap_or_zero(self) -> Self::Output { self.unwrap_or(T::ZERO) }}
+impl<T,E> UnwrapZero for Result<T,E> where T : Zero { type Output = T; fn unwrap_or_zero(self) -> Self::Output { self.unwrap_or(T::ZERO) }}
+
 impl<T, const N : usize> Zero for [T;N] where T : Zero
 {
     const ZERO : Self = [T::ZERO; N];
@@ -30,7 +38,7 @@ impl Zero for bool { const ZERO : Self = false; }
 
 /// Define the `1` representation : The neutral element of the multiplication such that `x * X::ONE = x`
 pub trait One : Sized
-{ 
+{
     /// The neutral element of the multiplication such that `x * X::ONE = x`
     const ONE  : Self;
     #[inline(always)] fn one() -> Self where Self : Sized { Self::ONE }
@@ -56,7 +64,7 @@ impl One for bool { const ONE : Self = true; }
 
 /// Define the `-1` representation
 pub trait MinusOne : Sized
-{ 
+{
     const MINUS_ONE  : Self;
     #[inline(always)] fn minus_one() -> Self where Self : Sized { Self::MINUS_ONE }
 
@@ -80,9 +88,9 @@ impl<T, const N : usize> MinusOne for [T;N] where T : MinusOne
 
 /// Define the `0.5` representation
 pub trait Half : Sized
-{ 
+{
     const HALF  : Self;
-    
+
     #[inline(always)] fn is_half(self) -> bool where Self : PartialEq<Self> { self == Self::HALF }
     #[inline(always)] fn is_non_half(self) -> bool where Self : PartialEq<Self> { !self.is_half() }
 }
@@ -100,8 +108,8 @@ impl<T, const N : usize> Half for [T;N] where T : Half
 
 /// Define the Not a Number (NaN) representation
 pub trait NaNValue : Sized
-{ 
-    const NAN : Self; 
+{
+    const NAN : Self;
     #[inline(always)] fn is_nan(&self) -> bool where Self : PartialEq { self == &Self::NAN }
     #[inline(always)] fn is_not_nan(&self) -> bool where Self : PartialEq { !self.is_nan() }
 }
@@ -115,7 +123,7 @@ impl<T, const N : usize> NaNValue for [T;N] where T : NaNValue
 
 
 pub trait MinValue : Sized
-{ 
+{
     const MIN : Self;
     #[inline(always)] fn is_min_value(&self) -> bool where Self : PartialEq { self == &Self::MIN }
     #[inline(always)] fn is_not_min_value(&self) -> bool where Self : PartialEq { !self.is_min_value() }
@@ -132,8 +140,8 @@ impl<T, const N : usize> MinValue for [T;N] where T : MinValue
 }
 
 pub trait MaxValue : Sized
-{ 
-    const MAX : Self; 
+{
+    const MAX : Self;
     #[inline(always)] fn is_max_value(&self) -> bool where Self : PartialEq { self == &Self::MAX }
     #[inline(always)] fn is_non_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
 }
@@ -147,7 +155,7 @@ impl<T, const N : usize> MaxValue for [T;N] where T : MaxValue
     const MAX : Self = [T::MAX; N];
 }
 
-/* 
+/*
 pub trait Constant             : Zero + One + MinusOne + Half + NaNValue + MinValue + MaxValue {}
 impl<T> Constant for T where T : Zero + One + MinusOne + Half + NaNValue + MinValue + MaxValue {}
 */
@@ -162,7 +170,7 @@ macro_rules! map_on_constant_unit {
                 (NaNValue, NAN),
                 (MinValue, MIN),
                 (MaxValue, MAX)
-            ), 
+            ),
             $($macro_arms)*
         );
     };
@@ -181,7 +189,7 @@ macro_rules! map_on_constant {
                 (NaNValue, NAN),
                 (MinValue, MIN),
                 (MaxValue, MAX)
-            ), 
+            ),
             $($macro_arms)*
         );
     };

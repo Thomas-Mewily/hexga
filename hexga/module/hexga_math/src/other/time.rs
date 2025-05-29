@@ -42,7 +42,7 @@ pub trait ToTime
     type Output;
     fn ms  (self) -> Self::Output;
     fn s   (self) -> Self::Output;
-    /// With an `s` to avoid the confusion with the min function
+    /// With an `s` to avoid the confusion with the min function...
     fn mins(self) -> Self::Output;
     fn hour(self) -> Self::Output;
     fn day (self) -> Self::Output;
@@ -82,7 +82,7 @@ impl<T:Float> Display for TimeOf<T>
 
         Self::display_non_zero_unit(f, self.timer_day(), "d")?;
         Self::display_non_zero_unit(f, self.timer_hour(), "h")?;
-        Self::display_non_zero_unit(f, self.timer_mins(), "m")?;
+        Self::display_non_zero_unit(f, self.timer_mins(), "min")?;
         Self::display_non_zero_unit(f, self.timer_s(), "s")?;
         Self::display_non_zero_unit(f, self.timer_ms(), "ms")?;
         Ok(())
@@ -304,16 +304,59 @@ impl<T: Float> RangeDefault for TimeOf<T> where T : RangeDefault
     const RANGE      : Self = Self(T::RANGE);
 }
 
+#[cfg(feature = "hexga_io")]
+impl<T> hexga_io::IoLoad for TimeOf<T> where T: Float + for<'de> Deserialize<'de> {}
+#[cfg(feature = "hexga_io")]
+impl<T> hexga_io::IoSave for TimeOf<T> where T: Float + Serialize {}
+
+
 #[cfg(feature = "serde")]
-impl<T: Float> Serialize for TimeOf<T> where T : Serialize {
+impl<T> Serialize for TimeOf<T> where T : Float + Serialize
+{
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     { self.s().serialize(serializer) }
 }
 
+
 #[cfg(feature = "serde")]
-impl<'de, T: Float> Deserialize<'de> for TimeOf<T> where T : Deserialize<'de> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de>,
+impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
     {
-        Ok(Self::from_s(T::deserialize(deserializer)?))
+        #[cfg_attr(feature = "serde", derive(Deserialize), serde(untagged))]
+        enum TimeInput<T> where T: Float
+        {
+            Second (T),
+            Prefix { ms : Option<T>, s : Option<T>, min : Option<T>, h: Option<T>, d: Option<T> },
+            // Postfix (String) // To support "90s", "90s" "3.14min" ?
+        }
+
+        match TimeInput::deserialize(deserializer)
+        {
+            Ok(v) => match v
+            {
+                TimeInput::Second(s) => Ok(Self::from_s(s)),
+                TimeInput::Prefix { ms, s, min, h, d } =>
+                {
+                    if ms.is_none() && s.is_none() && min.is_none() && h.is_none() && d.is_none()
+                    {
+                        Err(serde::de::Error::custom("Missing `s`, `ms`, `min`, `h` or `d`"))
+                    }else
+                    {
+                        Ok
+                        (
+                            Self::from_ms(ms.unwrap_or_zero()) +
+                            Self::from_s(s.unwrap_or_zero()) +
+                            Self::from_mins(min.unwrap_or_zero()) +
+                            Self::from_hour(h.unwrap_or_zero()) +
+                            Self::from_day(d.unwrap_or_zero())
+                        )
+                    }
+                }
+            }
+            Err(_) =>  Err(serde::de::Error::custom("Expected a Time in second ex: `3`. Available combinable unit: `s`, `ms`, `min`, `h` or `d`. ex: `(min:1,s:30)`.")),
+        }
     }
 }

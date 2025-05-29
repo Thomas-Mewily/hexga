@@ -33,6 +33,7 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
 
 - HexgaIo : default extension for saving if not specified + guess extension when loading
 
+- Hexga math : easing / tweening fn
 
 - S'intérésser aux structure de quadtree déjà existante
 - RectangleTree<Pri,const N>

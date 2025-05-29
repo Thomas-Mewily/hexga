@@ -1,36 +1,58 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, ItemStruct, Item, DeriveInput};
+use syn::{parse_macro_input, parse_quote, DeriveInput, GenericParam, Generics, Item, ItemStruct};
 
 #[proc_macro_derive(Save)]
 pub fn derive_save(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     let ident = &ast.ident;
+    let generics = add_save_trait_bounds(ast.generics);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-    let quoted = quote! {
-        impl ::hexga_io::IoLoad for #ident
-        where
-            #ident: ::serde::ser::Serialize
-        {}
+    let expanded = quote! {
+        impl #impl_generics ::hexga_io::IoSave for #ident #ty_generics #where_clause {}
     };
 
-    quoted.into()
+    expanded.into()
 }
+
+// Adds `T: ::hexga_io::IoLoad` for each generic type parameter `T`
+fn add_save_trait_bounds(mut generics: Generics) -> Generics {
+    for param in generics.params.iter_mut() {
+        if let GenericParam::Type(ty) = param {
+            ty.bounds.push(parse_quote!(::hexga_io::IoSave));
+        }
+    }
+    generics
+}
+
+
+
 
 #[proc_macro_derive(Load)]
 pub fn derive_load(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     let ident = &ast.ident;
+    let generics = add_load_trait_bounds(ast.generics);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-    let quoted = quote! {
-        impl ::hexga_io::IoSave for #ident
-        where
-            #ident: for<'de> ::serde::de::Deserialize<'de>
-        {}
+    let expanded = quote! {
+        impl #impl_generics ::hexga_io::IoLoad for #ident #ty_generics #where_clause {}
     };
 
-    quoted.into()
+    expanded.into()
 }
+
+// Adds `T: ::hexga_io::IoLoad` for each generic type parameter `T`
+fn add_load_trait_bounds(mut generics: Generics) -> Generics {
+    for param in generics.params.iter_mut() {
+        if let GenericParam::Type(ty) = param {
+            ty.bounds.push(parse_quote!(::hexga_io::IoLoad));
+        }
+    }
+    generics
+}
+
 
 
 #[proc_macro_attribute]

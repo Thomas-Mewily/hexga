@@ -5,7 +5,7 @@ use super::*;
 macro_rules! impl_new_unit_or_number
 {
     ($name:ident) => {
-        
+
         impl<T> Sum for $name<T> where T : std::ops::Add<T,Output=T> + Zero
         {
             fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
@@ -38,7 +38,7 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<Range<T> as RangeSampleExtension<I>>::Output>;
             type Item = $name<T>;
 
-            fn sample(self, nb_sample: I) -> Self::Output 
+            fn sample(self, nb_sample: I) -> Self::Output
             {
                 WrappedIterator::new(<Range<T> as RangeSampleExtension<I>>::sample(unsafe { self.start.inner_value() }..unsafe { self.end.inner_value() }, nb_sample))
             }
@@ -48,7 +48,7 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<RangeInclusive<T> as RangeSampleExtension<I>>::Output>;
             type Item = $name<T>;
 
-            fn sample(self, nb_sample: I) -> Self::Output 
+            fn sample(self, nb_sample: I) -> Self::Output
             {
                 let (start, end) = self.into_inner();
                 WrappedIterator::new(<RangeInclusive<T> as RangeSampleExtension<I>>::sample(unsafe { start.inner_value() }..=unsafe { end.inner_value() }, nb_sample))
@@ -59,7 +59,7 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<RangeTo<T> as RangeSampleExtension<I>>::Output>;
             type Item = $name<T>;
 
-            fn sample(self, nb_sample: I) -> Self::Output 
+            fn sample(self, nb_sample: I) -> Self::Output
             {
                 WrappedIterator::new(<RangeTo<T> as RangeSampleExtension<I>>::sample(..unsafe { self.end.inner_value() }, nb_sample))
             }
@@ -69,7 +69,7 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<RangeToInclusive<T> as RangeSampleExtension<I>>::Output>;
             type Item = $name<T>;
 
-            fn sample(self, nb_sample: I) -> Self::Output 
+            fn sample(self, nb_sample: I) -> Self::Output
             {
                 WrappedIterator::new(<RangeToInclusive<T> as RangeSampleExtension<I>>::sample(..=unsafe { self.end.inner_value() }, nb_sample))
             }
@@ -79,19 +79,19 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<RangeFrom<T> as RangeSampleExtension<I>>::Output>;
             type Item = $name<T>;
 
-            fn sample(self, nb_sample: I) -> Self::Output 
+            fn sample(self, nb_sample: I) -> Self::Output
             {
                 WrappedIterator::new(<RangeFrom<T> as RangeSampleExtension<I>>::sample(unsafe{self.start.inner_value()}.., nb_sample))
             }
         }
 
-        
+
         impl<T> RangeStepExtension for Range<$name<T>> where Range<T> : RangeStepExtension<Item=T>
         {
             type Output = WrappedIterator<$name<T>,T,<Range<T> as RangeStepExtension>::Output>;
             type Item = $name<T>;
 
-            fn step(self, step : Self::Item) -> Self::Output 
+            fn step(self, step : Self::Item) -> Self::Output
             {
                 WrappedIterator::new(<Range<T> as RangeStepExtension>::step(unsafe { self.start.inner_value() }..unsafe { self.end.inner_value() }, unsafe { step.inner_value() }))
             }
@@ -101,7 +101,7 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<RangeInclusive<T> as RangeStepExtension>::Output>;
             type Item = $name<T>;
 
-            fn step(self, step : Self::Item) -> Self::Output 
+            fn step(self, step : Self::Item) -> Self::Output
             {
                 let (start, end) = self.into_inner();
                 WrappedIterator::new(<RangeInclusive<T> as RangeStepExtension>::step(unsafe { start.inner_value() }..=unsafe { end.inner_value() }, unsafe { step.inner_value() }))
@@ -112,7 +112,7 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<RangeTo<T> as RangeStepExtension>::Output>;
             type Item = $name<T>;
 
-            fn step(self, step : Self::Item) -> Self::Output 
+            fn step(self, step : Self::Item) -> Self::Output
             {
                 WrappedIterator::new(<RangeTo<T> as RangeStepExtension>::step(..unsafe { self.end.inner_value() }, unsafe { step.inner_value() }))
             }
@@ -122,7 +122,7 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<RangeToInclusive<T> as RangeStepExtension>::Output>;
             type Item = $name<T>;
 
-            fn step(self, step : Self::Item) -> Self::Output 
+            fn step(self, step : Self::Item) -> Self::Output
             {
                 WrappedIterator::new(<RangeToInclusive<T> as RangeStepExtension>::step(..=unsafe { self.end.inner_value() }, unsafe { step.inner_value() }))
             }
@@ -132,7 +132,7 @@ macro_rules! impl_new_unit_or_number
             type Output = WrappedIterator<$name<T>,T,<RangeFrom<T> as RangeStepExtension>::Output>;
             type Item = $name<T>;
 
-            fn step(self, step : Self::Item) -> Self::Output 
+            fn step(self, step : Self::Item) -> Self::Output
             {
                 WrappedIterator::new(<RangeFrom<T> as RangeStepExtension>::step(unsafe { self.start.inner_value() }.., unsafe { step.inner_value() }))
             }
@@ -161,7 +161,7 @@ macro_rules! new_unit
         }
 
         map_on_operator_binary_arithmetic_unit!(
-            (($trait_name: tt, $fn_name: tt)) => 
+            (($trait_name: tt, $fn_name: tt)) =>
             {
                 impl<T> std::ops::$trait_name<Self> for $name<T> where T : std::ops::$trait_name<T,Output=T>
                 {
@@ -172,7 +172,7 @@ macro_rules! new_unit
         );
 
         map_on_operator_assign_arithmetic_unit!(
-            (($trait_name: tt, $fn_name: tt)) => 
+            (($trait_name: tt, $fn_name: tt)) =>
             {
                 impl<T> std::ops::$trait_name<Self> for $name<T> where T : std::ops::$trait_name<T>
                 {
@@ -245,7 +245,7 @@ macro_rules! new_number
         pub struct $name<T>(pub T);
 
         map_on_operator_binary!(
-            (($trait_name: tt, $fn_name: tt)) => 
+            (($trait_name: tt, $fn_name: tt)) =>
             {
                 impl<T> std::ops::$trait_name<Self> for $name<T> where T : std::ops::$trait_name<T,Output=T>
                 {
@@ -256,7 +256,7 @@ macro_rules! new_number
         );
 
         map_on_operator_assign!(
-            (($trait_name: tt, $fn_name: tt)) => 
+            (($trait_name: tt, $fn_name: tt)) =>
             {
                 impl<T> std::ops::$trait_name<Self> for $name<T> where T : std::ops::$trait_name<T>
                 {
@@ -333,33 +333,33 @@ impl<Wrapped,Precision,It> Debug for WrappedIterator<Wrapped,Precision,It> where
 }
 
 impl<Wrapped,Precision,It> Copy for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Copy{}
-impl<Wrapped,Precision,It> Clone for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Clone 
+impl<Wrapped,Precision,It> Clone for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Clone
 {
     fn clone(&self) -> Self {
         Self { it: self.it.clone(), phantom: PhantomData }
     }
 }
 
-impl<Wrapped,Precision,It> PartialEq for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : PartialEq 
+impl<Wrapped,Precision,It> PartialEq for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : PartialEq
 {
     fn eq(&self, other: &Self) -> bool { PartialEq::eq(&self, &other) }
 }
 impl<Wrapped,Precision,It> Eq for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Eq {}
 
-impl<Wrapped,Precision,It> PartialOrd for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : PartialOrd 
+impl<Wrapped,Precision,It> PartialOrd for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : PartialOrd
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         PartialOrd::partial_cmp(&self.it, &other.it)
     }
 }
-impl<Wrapped,Precision,It> Ord for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Ord 
+impl<Wrapped,Precision,It> Ord for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Ord
 {
     fn cmp(&self, other: &Self) -> Ordering {
         Ord::cmp(&self.it, &other.it)
     }
 }
 
-impl<Wrapped,Precision,It> Hash for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Hash 
+impl<Wrapped,Precision,It> Hash for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Hash
 {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.it.hash(state);
@@ -380,7 +380,7 @@ impl<Wrapped,Precision,It> DoubleEndedIterator for WrappedIterator<Wrapped,Preci
     fn next_back(&mut self) -> Option<Self::Item> {
         self.it.next_back().map(|v| unsafe { Wrapped::from_inner_value(v) })
     }
-} 
+}
 
 impl<Wrapped,Precision,It> FusedIterator for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : FusedIterator{}
 impl<Wrapped,Precision,It> ExactSizeIterator for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : ExactSizeIterator{}
