@@ -1,3 +1,35 @@
+//! # Geometry Rectangle Module
+//!
+//! This module provides generic, N-dimensional rectangles and related utilities for geometric computations.
+//! It supports rectangles in arbitrary dimensions, with methods for construction, manipulation, cropping, intersection, and iteration.
+//!
+//! ## Features
+//!
+//! - Generic `Rectangle<T, N>` type for N-dimensional rectangles
+//! - Construction from position and size, or from two corner points
+//! - Querying rectangle corners, edges, and center points
+//! - Cropping and margin operations
+//! - Intersection checks
+//! - Iteration over rectangle indices (for integer types)
+//! - Traits for rectangle-like types (`IRectangle`, `Crop`)
+//!
+//! ## Usage
+//!
+//! ```rust
+//! use hexga_math::prelude::*;
+//!
+//! let rect = rect2p(0, 0, 10, 10);
+//! assert!(rect.is_inside(point2(5, 5)));
+//!
+//! let cropped = rect.crop_margin_intersect(point2(2, 2), point2(2, 2));
+//! assert_eq!(cropped, rect2p(2, 2, 6, 6));
+//! ```
+//!
+//! ## See Also
+//!
+//! - [`Vector`] for N-dimensional vector operations
+//! - [`IRectangle`] trait for rectangle-like abstractions
+//! - [`Crop`] trait for cropping operations
 use crate::*;
 
 pub mod prelude;
@@ -8,6 +40,7 @@ pub use iter::*;
 pub type Rectangle<T, const N : usize> = RectangleBase<Vector<T, N>>;
 
 /// A `N` dimension rectangle
+///
 #[repr(C)]
 pub struct RectangleBase<T>
 {
@@ -45,19 +78,19 @@ impl<T> Rectangle<T,2> where T : Number
 {
     pub fn down_left (&self) -> Vector<T,2> { self.pos }
     pub fn down_right(&self) -> Vector<T,2> where T : One + Mul<T,Output = T> + Add<T, Output=T> { self.pos + self.size * Vector::<T,2>::X }
-    
+
     /// Same as down_left()
     pub fn bottom_left (&self) -> Vector<T,2> { self.down_left() }
     /// Same as down_right()
     pub fn bottom_right(&self) -> Vector<T,2> where T : One + Mul<T,Output = T> + Add<T, Output=T> { self.down_right() }
-    
+
     pub fn up_right  (&self) -> Vector<T,2> where T : Add<T, Output=T> { self.pos + self.size }
-    pub fn up_left   (&self) -> Vector<T,2> where T : One, T : Mul<T,Output = T> + Add<T, Output=T> { self.pos + self.size * Vector::<T,2>::Y } 
+    pub fn up_left   (&self) -> Vector<T,2> where T : One, T : Mul<T,Output = T> + Add<T, Output=T> { self.pos + self.size * Vector::<T,2>::Y }
 
     /// Same as up_right()
     pub fn top_right  (&self) -> Vector<T,2> where T : Add<T, Output=T> { self.up_right() }
     /// Same as up_left()
-    pub fn top_left   (&self) -> Vector<T,2> where T : One, T : Mul<T,Output = T> + Add<T, Output=T> { self.up_left() } 
+    pub fn top_left   (&self) -> Vector<T,2> where T : One, T : Mul<T,Output = T> + Add<T, Output=T> { self.up_left() }
 }
 
 impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
@@ -70,7 +103,7 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
     /// The center of the coordinate, whatever the dimension
     pub fn middle      (&self) -> Vector<T,N> { self.pos + self.size.take_half() }
     pub fn center      (&self) -> Vector<T,N> { self.pos + self.size.take_half() }
-    
+
     pub fn middle_right(&self) -> Vector<T,N> where Vector<T,N> : HaveX<T> { self.middle().with_x(self.right_value()) }
     pub fn middle_left (&self) -> Vector<T,N> where Vector<T,N> : HaveX<T> { self.middle().with_x(self.left_value ()) }
 
@@ -85,15 +118,15 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
 
     pub fn right_value (&self) -> T where Vector<T,N> : HaveX<T> { self.pos.x() + self.size.x() }
     pub fn left_value  (&self) -> T where Vector<T,N> : HaveX<T> { self.pos.x() }
-    
+
     pub fn up_value    (&self) -> T where Vector<T,N> : HaveY<T> { self.pos.y() + self.size.y() }
     pub fn down_value  (&self) -> T where Vector<T,N> : HaveY<T> { self.pos.y() }
-    
+
     /// Same as up_value()
     pub fn top_value  (&self) -> T where Vector<T,N> : HaveY<T> { self.up_value() }
     /// Same as down_value()
     pub fn bottom_value  (&self) -> T where Vector<T,N> : HaveY<T> { self.down_value() }
-    
+
     pub fn forward_value (&self) -> T where Vector<T,N> : HaveZ<T> { self.pos.z() + self.size.z() }
     pub fn backward_value(&self) -> T where Vector<T,N> : HaveZ<T> { self.pos.z() }
 
@@ -124,20 +157,20 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
 {
     /// Check if a point inside the rectangle.
     /// Also work for indexing
-    /// 
+    ///
     /// ```
     /// use hexga_math::prelude::*;
-    /// 
+    ///
     /// // inside :
     /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(1, 1)));
     /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(0, 0)));
-    /// 
-    /// 
+    ///
+    ///
     /// // not inside :
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(2, 0)));
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(0, 2)));
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(2, 2)));
-    /// 
+    ///
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 3,   3)));
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(-1,  -1)));
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(-1,  -1)));
@@ -145,7 +178,7 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 1, -10)));
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(-10,  1)));
     /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 10,  1)));
-    /// 
+    ///
     /// ```
     pub fn is_inside(&self, point : Vector<T, N>) -> bool
     {
@@ -167,10 +200,10 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     }
 
     pub fn is_empty(&self) -> bool { self.size.is_zero() }
-    
+
     pub fn clamp_vector(&self, vector : Vector<T, N>) -> Vector<T, N>
     { vector.max(self.min()).min(self.max()) }
-    
+
     pub fn intersect_or_empty(self, other : Self) -> Self
     {
         Self::from_pos_to_pos(self.min().max(other.pos), self.max().min(other.max()))
@@ -190,7 +223,7 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
     }
 }
 
-impl<T> RectangleBase<T> 
+impl<T> RectangleBase<T>
 {
     /// assume the size is valid
     pub const fn new(pos: T, size: T) -> Self { Self { pos, size } }
@@ -202,24 +235,24 @@ impl<T> RectangleBase<T>
 pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T : Number
 {
     /// Crop the current rectangle to the given sub rectangle.
-    /// 
+    ///
     /// The sub rectangle will always be inside the current rectangle.
     fn crop(self, subrect : Rectangle<T, N>) -> Option<Self>;
 
     /// Crop the current rectangle to the given sub rectangle.
-    /// 
+    ///
     /// The sub rectangle will always be inside the current rectangle.
     unsafe fn crop_unchecked(self, subrect : Rectangle<T, N>) -> Self { self.crop(subrect).expect("invalid subrect") }
 
     /// Crop the current rectangle to the given sub rectangle.
-    /// 
+    ///
     /// The sub rectangle will always be inside the current rectangle.
     #[track_caller]
     fn crop_or_panic(self, subrect : Rectangle<T, N>) -> Self { self.crop(subrect).expect("invalid subrect") }
 
 
     /// Crop the current rectangle to the given sub rectangle.
-    /// 
+    ///
     /// The sub rectangle will always be inside the current rectangle.
     /// If the sub rectangle is outside or partially outside the current view, it will be intersected with the current rectangle.
     fn crop_intersect(self, subrect : Rectangle<T, N>) -> Self
@@ -239,7 +272,7 @@ pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T : Number
 
         subrect.pos  += margin_start;
         subrect.size -= removed_size;
-        
+
         Some(self.crop_or_panic(subrect))
     }
 
@@ -252,7 +285,7 @@ pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T : Number
     }
 
     /// Crop self by adding a margin to the start and the end of the current rectangle size.
-    /// 
+    ///
     /// The sub self will always be inside the self.
     fn crop_margin_intersect(self, margin_start : Vector<T,N>, margin_end : Vector<T,N>) -> Self
     {
@@ -266,8 +299,8 @@ impl<T,const N : usize> Crop<T,N> for Rectangle<T,N> where T : Number
     // The Behavior is not well defined with zero sized subrect
     // Currently it will return None
 
-    fn crop(self, mut subrect : Rectangle<T, N>) -> Option<Self> 
-    { 
+    fn crop(self, mut subrect : Rectangle<T, N>) -> Option<Self>
+    {
         subrect.move_by(self.pos);
         if self.is_rect_inside(subrect) { Some(subrect) } else { None }
     }
@@ -278,14 +311,14 @@ impl<T,const N : usize> Crop<T,N> for Rectangle<T,N> where T : Number
 }
 
 #[cfg(test)]
-mod rect_crop_test 
+mod rect_crop_test
 {
     use crate::prelude::*;
 
     #[test]
-    fn crop_margin_unchecked() 
+    fn crop_margin_unchecked()
     {
-        unsafe 
+        unsafe
         {
             assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
             assert_eq!(rect2p(5,5,10,10).crop_margin_unchecked(-1.splat2(), zero()), rect2p(4,4,11,11));
@@ -293,7 +326,7 @@ mod rect_crop_test
     }
 
     #[test]
-    fn crop_margin_intersect() 
+    fn crop_margin_intersect()
     {
         assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
         assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(-1.splat2(), zero()), rect2p(5,5,10,10));
@@ -311,7 +344,7 @@ impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
     fn pos (&self) -> Vector<T,N> { self.pos  }
     fn size(&self) -> Vector<T,N> { self.size }
 }
- 
+
 pub trait IRectangle<T, const N : usize> where T : Number
 {
     fn pos (&self) -> Vector<T,N>;
@@ -385,7 +418,7 @@ impl<T,const N : usize> Lerpable for Rectangle<T,N> where T : Number, Vector<T,N
 
 /*
 
-impl<T,const N : usize> Rectangle<T,N> 
+impl<T,const N : usize> Rectangle<T,N>
     where Vector<T,N> : Number,
     T : Number ,
     usize : CastInto<T>
@@ -398,23 +431,23 @@ impl<T,const N : usize> Rectangle<T,N>
         (0..nb).map(move |i| Rectangle::new(self.pos + offset * Vector::splat(i.cast_to()), size))
     }
 
-    
+
     pub fn split_x(&self, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_ where Vector<T,N> : HaveXAndOne<T> { self.split_axis(Vector::<T,N>::X, nb) }
     pub fn split_y(&self, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_ where Vector<T,N> : HaveYAndOne<T> { self.split_axis(Vector::<T,N>::Y, nb) }
     pub fn split_z(&self, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_ where Vector<T,N> : HaveZAndOne<T> { self.split_axis(Vector::<T,N>::Z, nb) }
     pub fn split_w(&self, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_ where Vector<T,N> : HaveWAndOne<T> { self.split_axis(Vector::<T,N>::W, nb) }
 
-    pub fn split_min(&self, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_ where 
+    pub fn split_min(&self, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_ where
     {
         self.split_axis(Vector::ZERO.with(self.size.min_element_idx(), T::ONE), nb)
     }
 
-    pub fn split_max(&self, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_ where 
+    pub fn split_max(&self, nb : usize) -> impl Iterator<Item = Rectangle<T,N>> + '_ where
     {
         self.split_axis(Vector::ZERO.with(self.size.max_element_idx(), T::ONE), nb)
     }
 
-    pub fn split_on(&self, nb : usize, split_on : SplitOn) -> impl Iterator<Item = Rectangle<T,N>> + '_ where 
+    pub fn split_on(&self, nb : usize, split_on : SplitOn) -> impl Iterator<Item = Rectangle<T,N>> + '_ where
     {
         let v = match split_on
         {
@@ -434,7 +467,7 @@ pub enum SplitOn
     Max,
 }
 
-/* 
+/*
 impl<T,const N : usize> Rectangle<T,N> where T : ArrayLike<N> + Copy
 {
     fn map_pos(&mut self, )
@@ -457,7 +490,7 @@ mod rect_test
 
 
     #[test]
-    fn crop_margin_unchecked() 
+    fn crop_margin_unchecked()
     {
         unsafe
         {
@@ -471,9 +504,9 @@ mod rect_test
         }
     }
 
-    
+
     #[test]
-    fn crop_margin() 
+    fn crop_margin()
     {
         assert_eq!(rect2p(5,5,10,10).crop_margin_intersect(2.splat2(), 2.splat2()), rect2p(7,7,6,6));
 
@@ -485,7 +518,7 @@ mod rect_test
     }
 
     #[test]
-    fn crop_normal() 
+    fn crop_normal()
     {
         let rect = rect2p(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(point2(1, 1), point2(2, 2));
@@ -493,7 +526,7 @@ mod rect_test
     }
 
     #[test]
-    fn crop_to_much() 
+    fn crop_to_much()
     {
         let rect = rect2p(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(point2(0, 0), point2(20, 20));
@@ -501,7 +534,7 @@ mod rect_test
     }
 
     #[test]
-    fn crop_to_much_2() 
+    fn crop_to_much_2()
     {
         let rect = rect2p(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(point2(20, 20), point2(0, 0));
@@ -509,7 +542,7 @@ mod rect_test
     }
 
     #[test]
-    fn crop_to_much_3() 
+    fn crop_to_much_3()
     {
         let rect = rect2p(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(point2(20, 20), point2(20, 20));

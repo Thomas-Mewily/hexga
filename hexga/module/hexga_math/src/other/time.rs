@@ -1,17 +1,38 @@
 use super::*;
 
-/* 
+/*
 pub type DeltaTime = Rel<Time>;
 pub type FixedTime = Fix<Time>;
 */
 
+/// Represents time which can be used as an instant or a duration.
+///
+/// Provides conversion to other time units (seconds, minutes, days...).
+///
+///
+/// Uses `float` as its underlying representation.
+///
+/// See [`TimeOf`] to use your own precision.
 pub type Time = TimeOf<float>;
+
+/// Represents time which can be used as an instant or a duration.
+///
+/// Provides conversion to other time units (seconds, minutes, days...).
+///
+///
+/// Uses `float` as its underlying representation.
+///
+/// See [`DeltaTimeOf`] to use your own precision.
 pub type DeltaTime = Time;
+
+/// Represents time which can be used as an instant or a duration.
+///
+/// Provides conversion to other time units (seconds, minutes, days...).
 pub type DeltaTimeOf<T> = TimeOf<T>;
 
 new_unit!(
-    /// Represents time using, which can be used as an instant or a duration.
-    /// 
+    /// Represents time which can be used as an instant or a duration.
+    ///
     /// Provides conversion to other time units (seconds, minutes, days...).
     TimeOf
 );
@@ -44,16 +65,16 @@ impl<T:Float> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> DRes
 impl<T:Float> TimeOf<T>
 {
     /// don't display the value if zero
-    fn display_non_zero_unit(f: &mut Formatter<'_>, val : i32, unit : &str) -> DResult 
+    fn display_non_zero_unit(f: &mut Formatter<'_>, val : i32, unit : &str) -> DResult
     { if val != 0 {  Self::display_unit(f, val, unit)?; write!(f, " ") } else { Ok(())} }
 
-    fn display_unit(f: &mut Formatter<'_>, val : i32, unit : &str) -> DResult 
+    fn display_unit(f: &mut Formatter<'_>, val : i32, unit : &str) -> DResult
     { write!(f, "{}{}", val, unit) }
 }
 
 impl<T:Float> Display for TimeOf<T>
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> DResult 
+    fn fmt(&self, f: &mut Formatter<'_>) -> DResult
     {
         if self.is_zero() { return write!(f, "0s"); }
 
@@ -93,7 +114,7 @@ impl<T:Float> TimeOf<T>
     /// debug_assert_eq!(1.5.ms().whole_ms(), 1);
     /// debug_assert_eq!(1.9.ms().whole_ms(), 1);
     /// debug_assert_eq!(2.0.ms().whole_ms(), 2);
-    /// 
+    ///
     /// debug_assert_eq!(-0.5.ms().whole_ms(),  0);
     /// debug_assert_eq!(-2.0.ms().whole_ms(), -2);
     /// debug_assert_eq!(-1.9.ms().whole_ms(), -1);
@@ -104,7 +125,7 @@ impl<T:Float> TimeOf<T>
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.ms().timer_ms(), 10);
-    /// 
+    ///
     /// debug_assert_eq!(999.ms().timer_ms(), 999);
     /// debug_assert_eq!(1000.ms().timer_ms(), 0);
     /// debug_assert_eq!(1001.ms().timer_ms(), 1);
@@ -138,11 +159,11 @@ impl<T:Float> TimeOf<T>
     pub fn whole_s(self) -> i32 { self.s().round_toward_zero().to_i32() }
 
     /// Can be used to display seconds in a timer
-    /// 
+    ///
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.s().timer_s(), 10);
-    /// 
+    ///
     /// debug_assert_eq!(59.s().timer_s(), 59);
     /// debug_assert_eq!(60.s().timer_s(), 0);
     /// debug_assert_eq!(61.s().timer_s(), 1);
@@ -172,7 +193,7 @@ impl<T:Float> TimeOf<T>
     /// debug_assert_eq!(1.5.mins().whole_mins(), 1);
     /// debug_assert_eq!(1.9.mins().whole_mins(), 1);
     /// debug_assert_eq!(2.0.mins().whole_mins(), 2);
-    /// 
+    ///
     /// debug_assert_eq!(-0.5.mins().whole_mins(),  0);
     /// debug_assert_eq!(-2.0.mins().whole_mins(), -2);
     /// debug_assert_eq!(-1.9.mins().whole_mins(), -1);
@@ -184,7 +205,7 @@ impl<T:Float> TimeOf<T>
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.mins().timer_mins(), 10);
-    /// 
+    ///
     /// debug_assert_eq!(59.mins().timer_mins(), 59);
     /// debug_assert_eq!(60.mins().timer_mins(), 0);
     /// debug_assert_eq!(61.mins().timer_mins(), 1);
@@ -213,7 +234,7 @@ impl<T:Float> TimeOf<T>
     /// debug_assert_eq!(1.5.hour().whole_hour(), 1);
     /// debug_assert_eq!(1.9.hour().whole_hour(), 1);
     /// debug_assert_eq!(2.0.hour().whole_hour(), 2);
-    /// 
+    ///
     /// debug_assert_eq!(-0.5.hour().whole_hour(),  0);
     /// debug_assert_eq!(-2.0.hour().whole_hour(), -2);
     /// debug_assert_eq!(-1.9.hour().whole_hour(), -1);
@@ -225,7 +246,7 @@ impl<T:Float> TimeOf<T>
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.hour().timer_hour(), 10);
-    /// 
+    ///
     /// debug_assert_eq!(23.hour().timer_hour(), 23);
     /// debug_assert_eq!(24.hour().timer_hour(), 0);
     /// debug_assert_eq!(25.hour().timer_hour(), 1);
@@ -253,7 +274,7 @@ impl<T:Float> TimeOf<T>
     /// debug_assert_eq!(1.5.day().whole_day(), 1);
     /// debug_assert_eq!(1.9.day().whole_day(), 1);
     /// debug_assert_eq!(2.0.day().whole_day(), 2);
-    /// 
+    ///
     /// debug_assert_eq!(-0.5.day().whole_day(),  0);
     /// debug_assert_eq!(-2.0.day().whole_day(), -2);
     /// debug_assert_eq!(-1.9.day().whole_day(), -1);
@@ -265,7 +286,7 @@ impl<T:Float> TimeOf<T>
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(10.5.day().timer_day(), 10);
-    /// 
+    ///
     /// debug_assert_eq!(364.day().timer_day(), 364);
     /// debug_assert_eq!(365.day().timer_day(), 365);
     /// debug_assert_eq!(366.day().timer_day(), 366);

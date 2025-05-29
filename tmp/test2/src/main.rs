@@ -57,10 +57,16 @@ fn main()
     let float32 = 2.5f32;
     let float64 = 2.5f64;
     let float32_to_64 = f64::cast_from(float32);
+    assert_eq!(float32_to_64, float32_to_64);
 
+    // The most generic way to do it
+    let float32_to_64 = <f32 as CastIntoComposite<f64>>::cast_into_composite(float32);
+    assert_eq!(float32_to_64, float32_to_64);
+
+    // Example applied  to a vector
     let vec_f32 = Vector2::<f32>::new(0.5, 0.5);
     let vec_f64 = Vector2::<f64>::new(0.5, 0.5);
-    let vec_f32_to_f64 = Vector2::<f64>::cast_from(vec_f32);
+    let vec_f32_to_f64 = <Vector2::<f32> as CastIntoComposite<f64>>::cast_into_composite(vec_f32);
     assert_eq!(vec_f32_to_f64, vec_f64);
 
 

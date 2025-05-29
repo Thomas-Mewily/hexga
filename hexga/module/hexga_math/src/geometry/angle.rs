@@ -1,9 +1,34 @@
+/// This module provides a generic 2D angle type `AngleOf<T>` that supports units such as degrees, radians, and turns.
+///
+/// # Features
+/// - Conversion between degrees, radians, and turns.
+/// - Normalization of angles to standard ranges.
+/// - Trigonometric functions (sin, cos, tan, etc.).
+///
+/// ```rust
+/// use hexga_math::geometry::angle::{Angle, ToAngle};
+/// let a = 90.0.degree();
+/// println!("Angle in radians: {}", a.radian());
+/// println!("Angle in degrees: {}", a.degree());
+/// ```
 use crate::*;
 
 new_unit!(
     /// 2D Angle, support degree, radian, turn...
+    ///
+    /// Provides conversion to other angle units
     AngleOf
 );
+
+
+/// 2D Angle, support degree, radian, turn...
+///
+/// Provides conversion to other angle units
+///
+///
+/// Uses `float` as its underlying representation.
+///
+/// See [`AngleOf`] to use your own precision.
 pub type Angle = AngleOf<float>;
 
 pub trait ToAngle

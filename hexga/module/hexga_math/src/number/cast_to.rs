@@ -2,21 +2,50 @@ use crate::*;
 
 // Similar to Trait From / Into, but those trait suppose no loss when converting, so it is impossible to cast a f32 to a i64 for exemple
 
-/// Might lose some precision.
-/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
+/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
+/// keyword: `4f32 as u64`, but generic friendly.
 ///
-/// The Output type can be a little bit different for composite type, but it is still related to the generic type :
+/// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
+///
+/// The [CastIntoComposite] trait is the most generic way to use it.
+///
+/// The Output type can be a little bit different for composite type, but it should still be related to the generic type.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(i32::cast_from(255u8), 255i32);
 /// assert_eq!(i32::cast_from(12.3f32), 12);
+/// ```
 ///
-/// assert_eq!(<u8 as CastInto<i32>>::cast_into(255u8), 255i32);
-/// // Also work with composite
-/// assert_eq!(<[u8;2] as CastIntoComposite<i32>>::cast_into_composite([42u8, 99u8]), [42i32,99i32]);
-///```
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// let float32 = 2.5f32;
+/// let float64 = 2.5f64;
+/// let float32_to_64 = f64::cast_from(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+///
+/// let float32_to_64 = <f32 as CastInto<f64>>::cast_into(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+///
+/// // The most generic way to do it
+/// let float32_to_64 = <f32 as CastIntoComposite<f64>>::cast_into_composite(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+/// ```
+///
+/// Only the [CastIntoComposite] will be working with composite :
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// let vec_f32 = Vector2::<f32>::new(0.5, 0.5);
+/// let vec_f64 = Vector2::<f64>::new(0.5, 0.5);
+/// let vec_f32_to_f64 = <Vector2::<f32> as CastIntoComposite<f64>>::cast_into_composite(vec_f32);
+/// assert_eq!(vec_f32_to_f64, vec_f64);
+/// ```
+///
+/// There is no `CastFromComposite` trait because it is impossible to impl it.
 pub trait CastIntoComposite<T>
 {
     type Output;
@@ -26,43 +55,106 @@ pub trait CastIntoComposite<T>
 }
 
 
-/// Might lose some precision.
-/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
+/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
+/// keyword: `4f32 as u64`, but generic friendly.
+///
+/// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
+///
+/// The [CastIntoComposite] trait is the most generic way to use it.
+///
+/// The Output type can be a little bit different for composite type, but it should still be related to the generic type.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(i32::cast_from(255u8), 255i32);
 /// assert_eq!(i32::cast_from(12.3f32), 12);
+/// ```
 ///
-/// assert_eq!(<u8 as CastInto<i32>>::cast_into(255u8), 255i32);
-/// // Also work with composite
-/// assert_eq!(<[u8;2] as CastIntoComposite<i32>>::cast_into_composite([42u8, 99u8]), [42i32,99i32]);
-///```
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// let float32 = 2.5f32;
+/// let float64 = 2.5f64;
+/// let float32_to_64 = f64::cast_from(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+///
+/// let float32_to_64 = <f32 as CastInto<f64>>::cast_into(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+///
+/// // The most generic way to do it
+/// let float32_to_64 = <f32 as CastIntoComposite<f64>>::cast_into_composite(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+/// ```
+///
+/// Only the [CastIntoComposite] will be working with composite :
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// let vec_f32 = Vector2::<f32>::new(0.5, 0.5);
+/// let vec_f64 = Vector2::<f64>::new(0.5, 0.5);
+/// let vec_f32_to_f64 = <Vector2::<f32> as CastIntoComposite<f64>>::cast_into_composite(vec_f32);
+/// assert_eq!(vec_f32_to_f64, vec_f64);
+/// ```
+///
+/// There is no `CastFromComposite` trait because it is impossible to impl it.
 pub trait CastInto<T> : CastIntoComposite<T,Output = T> + Sized { fn cast_into(self) -> Self::Output { self.cast_into_composite() } }
 impl<T,T2> CastInto<T> for T2 where T2 : CastIntoComposite<T,Output = T> {}
 
-/// Might lose some precision.
-/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
+/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
+/// keyword: `4f32 as u64`, but generic friendly.
+///
+/// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
+///
+/// The [CastIntoComposite] trait is the most generic way to use it.
+///
+/// The Output type can be a little bit different for composite type, but it should still be related to the generic type.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(i32::cast_from(255u8), 255i32);
 /// assert_eq!(i32::cast_from(12.3f32), 12);
+/// ```
 ///
-/// assert_eq!(<u8 as CastInto<i32>>::cast_into(255u8), 255i32);
-/// // Also work with composite
-/// assert_eq!(<[u8;2] as CastIntoComposite<i32>>::cast_into_composite([42u8, 99u8]), [42i32,99i32]);
-///```
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// let float32 = 2.5f32;
+/// let float64 = 2.5f64;
+/// let float32_to_64 = f64::cast_from(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+///
+/// let float32_to_64 = <f32 as CastInto<f64>>::cast_into(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+///
+/// // The most generic way to do it
+/// let float32_to_64 = <f32 as CastIntoComposite<f64>>::cast_into_composite(float32);
+/// assert_eq!(float32_to_64, float32_to_64);
+/// ```
+///
+/// Only the [CastIntoComposite] will be working with composite :
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// let vec_f32 = Vector2::<f32>::new(0.5, 0.5);
+/// let vec_f64 = Vector2::<f64>::new(0.5, 0.5);
+/// let vec_f32_to_f64 = <Vector2::<f32> as CastIntoComposite<f64>>::cast_into_composite(vec_f32);
+/// assert_eq!(vec_f32_to_f64, vec_f64);
+/// ```
+///
+/// There is no `CastFromComposite` trait because it is impossible to impl it.
 pub trait CastFrom<T> { fn cast_from(value : T) -> Self; }
 impl<Src,Dest> CastFrom<Dest> for Src where Dest : CastInto<Src> { fn cast_from(value : Dest) -> Self { value.cast_into_composite() } }
 
 /*
-pub trait CastFromComposite<T> { fn cast_from(value : T) -> Self; }
+pub trait CastFromComposite<T> { fn cast_from_composite(value : T) -> Self; }
 // the type parameter `T` is not constrained by the impl trait, self type, or predicates. unconstrained type parameter
-impl<Dest,T> CastFromComposite<Dest> for Dest::Output where Dest : CastIntoComposite<T> { fn cast_from(value : Dest) -> Self { value.cast_into() } }
+impl<Dest,T> CastFromComposite<Dest> for Dest::Output where Dest : CastIntoComposite<T> { fn cast_from_composite(value : Dest) -> Self { value.cast_into() } }
 */
+
 impl_composite_output_with_methods!(CastIntoComposite<CastToOut>, cast_into_composite);
 
 /*

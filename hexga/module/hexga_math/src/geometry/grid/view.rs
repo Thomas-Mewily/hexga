@@ -1,7 +1,10 @@
 use crate::*;
 
+/// A view to a N dimensional grid.
+///
+/// Can only shrink / be cropped.
 pub struct GridView<'a, G, T, Idx, const N : usize>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer
 {
@@ -11,12 +14,12 @@ pub struct GridView<'a, G, T, Idx, const N : usize>
 }
 
 impl<'a, G, T, Idx, const N : usize> Debug for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
     T : Debug
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result 
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
     {
         f.debug_struct("GridView").field("grid", &self.iter().map(|(_,v)| v).to_vec()).field("rect", &self.rect).finish()
     }
@@ -24,12 +27,12 @@ impl<'a, G, T, Idx, const N : usize> Debug for GridView<'a, G, T, Idx, N>
 
 
 impl<'a, G, T, Idx, const N : usize> Copy for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
-    Idx : Integer 
+    Idx : Integer
 {}
 impl<'a, G, T, Idx, const N : usize> Clone for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer
 {
@@ -43,26 +46,26 @@ impl<'a, G, T, Idx, const N : usize> Clone for GridView<'a, G, T, Idx, N>
 }
 
 impl<'a, G, T, Idx, const N : usize> PartialEq for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
     T : PartialEq
 {
-    fn eq(&self, other: &Self) -> bool 
+    fn eq(&self, other: &Self) -> bool
     {
         self.rect == other.rect && self.iter().eq(other.iter())
     }
 }
 
 impl<'a, G, T, Idx, const N : usize> Eq for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
     T : Eq
 {}
 
 impl<'a, G, T, Idx, const N : usize> Hash for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
     T : Hash
@@ -77,7 +80,7 @@ impl<'a, G, T, Idx, const N : usize> Hash for GridView<'a, G, T, Idx, N>
 }
 
 impl<'a, G, T, Idx, const N : usize> PartialOrd for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
     T : PartialOrd
@@ -93,7 +96,7 @@ impl<'a, G, T, Idx, const N : usize> PartialOrd for GridView<'a, G, T, Idx, N>
 }
 
 impl<'a, G, T, Idx, const N : usize> Ord for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
     T : Ord
@@ -110,7 +113,7 @@ impl<'a, G, T, Idx, const N : usize> Ord for GridView<'a, G, T, Idx, N>
 
 
 impl<'a, G, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer
 {
@@ -120,7 +123,7 @@ impl<'a, G, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, G, T, Id
 }
 
 impl<'a, G, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer
 {
@@ -132,7 +135,7 @@ impl<'a, G, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridView<'a, G, T, I
 }
 
 impl<'a, G, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer
 {
@@ -144,7 +147,7 @@ impl<'a, G, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridView<'a, G, T,
 
 
 impl<'a, G, T, Idx, const N : usize> GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer
 {
@@ -191,7 +194,7 @@ impl<'a, G, T, Idx, const N : usize> GridView<'a, G, T, Idx, N>
     /// `self.crop_intersect(subrect).to_grid()`
     pub fn subgrid(&self, subrect : Rectangle<Idx, N>) -> G where T : Clone, Self : Crop<Idx,N> { self.subview_intersect(subrect).to_grid() }
 
-    pub fn transform<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> 
+    pub fn transform<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
         where F : FnMut(&T) -> Dest
     {
         <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
@@ -208,11 +211,11 @@ impl<'a, G, T, Idx, const N : usize> GridView<'a, G, T, Idx, N>
 
 
 impl<'a, G, T, Idx, const N : usize> Crop<Idx,N> for GridView<'a, G, T, Idx, N>
-    where 
+    where
     G : IGrid<T, Idx, N>,
     Idx : Integer
 {
-    fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self> 
+    fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self>
     {
         self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) })
     }

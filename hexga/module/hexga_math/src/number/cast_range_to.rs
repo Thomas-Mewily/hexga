@@ -1,8 +1,11 @@
 use crate::*;
 
-/// Remap the value [RangeDefault] to the default range of target type.
+/// Remap the value [RangeDefault] to the default range of target type,
+/// in a generic friendly way.
 ///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
+///
+/// The [CastRangeIntoComposite] trait is the most generic way to use it.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
@@ -47,9 +50,12 @@ pub trait CastRangeIntoComposite<T>
     fn cast_range_into_composite(self) -> Self::Output;
 }
 
-/// Remap the value [RangeDefault] to the default range of target type.
+/// Remap the value [RangeDefault] to the default range of target type,
+/// in a generic friendly way.
 ///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
+///
+/// The [CastRangeIntoComposite] trait is the most generic way to use it.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
@@ -90,9 +96,12 @@ pub trait CastRangeIntoComposite<T>
 pub trait CastRangeInto<T> : CastRangeIntoComposite<T,Output = T> + Sized { fn cast_range_into(self) -> Self::Output { self.cast_range_into_composite() } }
 impl<T,T2> CastRangeInto<T> for T2 where T2 : CastRangeIntoComposite<T,Output = T> {}
 
-/// Remap the value [RangeDefault] to the default range of target type.
+/// Remap the value [RangeDefault] to the default range of target type,
+/// in a generic friendly way.
 ///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
+///
+/// The [CastRangeIntoComposite] trait is the most generic way to use it.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;

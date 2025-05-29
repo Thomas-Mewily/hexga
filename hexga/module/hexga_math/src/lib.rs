@@ -1,21 +1,30 @@
-//! A Math library
+//! # A Math library that contains
 //!
-//! Allow you to manipulate N dimensionnal math stuff (2d, 3d, 4d, ...) like vector/point of any type (float, int, uint, or even user defined) :
+//! ### N Dimension stuff
+//!
+//! This crate define N dimensionnal math stuff (2d, 3d, 4d, ... nd) like vector/point of any type (float, int, uint, or even user defined) :
 //! - [Vector] (fixed size array wrapper)
 //! - [Rectangle]
 //! - [Grid]
 //! - [Matrix]
 //!
-//! The crate also provide support for casting primitive type in a generic way,
-//! that also work insite composite type using the trait [CastInto] and [CastIntoComposite].
-//! Similar traits [CastRangeIntoComposite] and [CastRangeInto] exist for remapping the range of an primitive to another primitive range.
 //!
-//!
-//! Also have other useful type like
+//! ### Useful type like
 //! - [Angle]
 //! - [Time],
 //! - [ColorRGBA] with any precision (also handle the conversion between different primitive precision)
 //! - [ColorHSLA] of various precision
+//!
+//! ### Generic Casting trait
+//! The crate also provide generic traits for casting with the same behavior as the [as keyword](https://practice.course.rs/type-conversions/as.html) :
+//! - [CastInto], [CastFrom] and [CastIntoComposite],
+//!
+//! ### Generic Remapping trait
+//!
+//! Similar traits for casting remapping the range of an primitive to another primitive range also exist :
+//! - [CastRangeInto], [CastRangeFrom] and [CastRangeIntoComposite]
+//!
+//! ### Quick start with the prelude
 //!
 //! There are some quick typedef in the prelude :
 //! - [int], [uint] and [float]  : The default primitive precision used in the typedef. (can be change with the feature flags)
@@ -24,13 +33,14 @@
 //! - [Rect2], [Rect3], [Rect4] for Rectangle of [float],
 //! - [Rect2P], [Rect3P], [Rect4P] for Rectangle of [int] (`P` for point),
 //! - [Mat2], [Mat3], [Mat4] for Matrix of [float], and [Mat2P], [Mat3P], [Mat4P] use [int],
-//! - [Grid2], [Grid3], [Grid3]
+//! - [Grid2], [Grid3], [Grid3]  can only be indexed by [Point] by default.
+//!
+//! ### More advanced type
 //!
 //! If you need more control about the precision, each type have another more generic long base type :
 //! - [Grid] type uses a [Point] for the indexing precision, but that can be changed by using with the [GridBase] type.
 //! - [Angle] and [Time] use a [float] precision that can be changed using [AngleOf] and [TimeOf]
 //! - [ColorRGBA] and [ColorHSLA] also use a [float] precision that can be changed using [ColorRGBAOf] and [ColorRGBAOf]
-//!
 #![allow(unused_imports)]
 
 #![feature(get_disjoint_mut_helpers)]

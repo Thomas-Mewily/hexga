@@ -7,8 +7,18 @@ pub mod prelude;
 mod vector_iter;
 pub use vector_iter::*;
 
-
+///
 /// A wrapper for an array that applies binary operators component-wise.
+///
+/// Also supports scalar operation (e.g., `Vector<T,N> op T`).
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(vec2(1.0, 2.0) + Vec2::ONE, vec2(2.0, 3.0));
+///
+/// assert_eq!(vector3(true, false, true) & Vector3::ZERO, vector3(false, false, false));
+/// ```
 pub struct Vector<T, const N : usize>
 {
     pub array : [T; N]
