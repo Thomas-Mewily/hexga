@@ -5,18 +5,38 @@ pub use std::io::Read as IoRead;
 
 // Can't use a reader because we are not sur about the formatting, and a reader can't go back
 
+pub trait IoLoadFrom : Sized
+{
+    type From : IoLoad;
+    fn load_from_based_on(base : Self::From) -> IoResult<Self>;
+}
+impl<T> IoLoad for T where T : IoLoadFrom + for<'de> Deserialize<'de>
+{
+    fn load_own_extensions() -> impl Iterator<Item = &'static str> { T::From::load_own_extensions() }
+    const CAN_BE_LOADED_FROM_TEXT : bool = T::CAN_BE_LOADED_FROM_TEXT;
+
+    fn load_from_bytes_with_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self>
+    {
+        if let Ok(base) = T::From::load_from_bytes_with_extension(data, path, extension)
+        {
+            Self::load_from_based_on(base)
+        }else
+        {
+            Err(IoErrorKind::FromBasedOnFailed { dest: std::any::type_name::<Self>().to_owned(), src: std::any::type_name::<T>().to_owned(), reason: "bad implementation".to_string() })
+        }.to_load_error(path)
+    }
+}
+
 #[allow(unused_variables)]
 pub trait IoLoad : Sized + for<'de> Deserialize<'de>
 {
     // Main function to override :
 
-    type BasedOn : IoLoad;
-    fn load_from_based_on(base : Self::BasedOn) -> IoResult<Self> { Err(IoErrorKind::FromBasedOnFailed { dest: std::any::type_name::<Self>().to_owned(), src: std::any::type_name::<Self::BasedOn>().to_owned(), reason: "bad implementation".to_string() }) }
 
     /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
     ///
     /// Don't include the markup language extension like `json` or `ron`
-    fn load_own_extensions() -> impl Iterator<Item = &'static str> { Self::BasedOn::load_own_extensions() }
+    fn load_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
 
     fn load_from_bytes_with_own_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self> { Self::load_from_bytes_with_own_extension_pathless(data, extension).to_load_error(path) }
     fn load_from_bytes_with_own_extension_pathless(data : &[u8], extension : &extension) -> IoResult<Self> { Err(IoErrorKind::Unimplemented) }
@@ -75,11 +95,6 @@ pub trait IoLoad : Sized + for<'de> Deserialize<'de>
             _ => {},
         }
 
-        if let Ok(base) = Self::BasedOn::load_from_bytes_with_extension(data, path, extension)
-        {
-            return Self::load_from_based_on(base).to_load_error(path);
-        }
-
         if !Self::can_open_own_extension(extension)
         {
             return Err(IoErrorKind::unsupported_open_extension::<Self>(extension).to_load_error(path));
@@ -110,26 +125,4 @@ pub trait IoLoad : Sized + for<'de> Deserialize<'de>
             },
         }
     }
-}
-
-impl IoLoad for IoNotBasedOn
-{
-    type BasedOn = IoNotBasedOn;
-
-    fn load_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
-    fn load_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
-
-    fn can_open_extension(_: &str) -> bool { false }
-    fn can_open_own_extension(_: &str) -> bool { false }
-    fn load_from_reader<R>(_ : R, _ : &path) -> IoLoadResult<Self> where R : Read { Err(IoError::load("", IoErrorKind::FromNotBaseOn)) }
-
-    fn load_from_based_on(_ : Self::BasedOn) -> IoResult<Self> { Err(IoErrorKind::FromNotBaseOn) }
-
-    fn load_from_bytes(_ : &[u8], _ : &path) -> IoLoadResult<Self> { Err(IoError::load("", IoErrorKind::FromNotBaseOn)) }
-    fn load_from_bytes_with_extension(_ : &[u8], _ : &path, _ : &extension) -> IoLoadResult<Self> { Err(IoError::load("", IoErrorKind::FromNotBaseOn)) }
-    fn load_from_bytes_with_own_extension(_ : &[u8], _ : &path, _ : &extension) -> IoLoadResult<Self> { Err(IoError::load("", IoErrorKind::FromNotBaseOn)) }
-    fn load_from_bytes_with_own_extension_pathless(_ : &[u8], _ : &extension) -> IoResult<Self> { Err(IoErrorKind::FromNotBaseOn) }
-
-    fn load_from_str_with_own_extension(_ : &str, _ : &path, _ : &extension) -> IoLoadResult<Self> { Err(IoError::load("", IoErrorKind::FromNotBaseOn)) }
-    fn load_from_str_with_own_extension_pathless(_ : &str, _ : &extension) -> IoResult<Self> { Err(IoErrorKind::FromNotBaseOn) }
 }

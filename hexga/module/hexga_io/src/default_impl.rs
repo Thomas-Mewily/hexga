@@ -21,12 +21,10 @@ macro_rules! impl_io_save {
         $(
             impl$(<$( $generic: IoSave ),+>)? IoSave for $name$(<$( $generic ),+>)?
             {
-                type BasedOn = IoNotBasedOn;
             }
 
             impl$(<$( $generic: IoLoad ),+>)? IoLoad for $name$(<$( $generic ),+>)?
             {
-                type BasedOn = IoNotBasedOn;
             }
         )*
     };
@@ -52,20 +50,20 @@ impl_io_save!(
 );
 
 
-impl<K,V,S> IoSave for HashMap<K,V,S> where K : IoSave + Eq + Hash, V : IoSave, S : BuildHasher + Default { type BasedOn = IoNotBasedOn; }
-impl<K,V,S> IoLoad for HashMap<K,V,S> where K : IoLoad + Eq + Hash, V : IoLoad, S : BuildHasher + Default { type BasedOn = IoNotBasedOn; }
+impl<K,V,S> IoSave for HashMap<K,V,S> where K : IoSave + Eq + Hash, V : IoSave, S : BuildHasher + Default {}
+impl<K,V,S> IoLoad for HashMap<K,V,S> where K : IoLoad + Eq + Hash, V : IoLoad, S : BuildHasher + Default {}
 
-impl<K,  S> IoSave for HashSet<K,  S> where K : IoSave + Eq + Hash,             S : BuildHasher + Default { type BasedOn = IoNotBasedOn; }
-impl<K,  S> IoLoad for HashSet<K,  S> where K : IoLoad + Eq + Hash,             S : BuildHasher + Default { type BasedOn = IoNotBasedOn; }
+impl<K,  S> IoSave for HashSet<K,  S> where K : IoSave + Eq + Hash,             S : BuildHasher + Default {}
+impl<K,  S> IoLoad for HashSet<K,  S> where K : IoLoad + Eq + Hash,             S : BuildHasher + Default {}
 
-impl<K,V> IoSave for BTreeMap<K,V> where K : IoSave + Ord, V : IoSave { type BasedOn = IoNotBasedOn; }
-impl<K,V> IoLoad for BTreeMap<K,V> where K : IoLoad + Ord, V : IoLoad { type BasedOn = IoNotBasedOn; }
+impl<K,V> IoSave for BTreeMap<K,V> where K : IoSave + Ord, V : IoSave {}
+impl<K,V> IoLoad for BTreeMap<K,V> where K : IoLoad + Ord, V : IoLoad {}
 
-impl<K> IoSave for BTreeSet<K> where K : IoSave + Ord  { type BasedOn = IoNotBasedOn; }
-impl<K> IoLoad for BTreeSet<K> where K : IoLoad + Ord  { type BasedOn = IoNotBasedOn; }
+impl<K> IoSave for BTreeSet<K> where K : IoSave + Ord  {}
+impl<K> IoLoad for BTreeSet<K> where K : IoLoad + Ord  {}
 
-impl<T> IoSave for BinaryHeap<T> where T : IoSave + Ord  { type BasedOn = IoNotBasedOn; }
-impl<T> IoLoad for BinaryHeap<T> where T : IoLoad + Ord  { type BasedOn = IoNotBasedOn; }
+impl<T> IoSave for BinaryHeap<T> where T : IoSave + Ord  {}
+impl<T> IoLoad for BinaryHeap<T> where T : IoLoad + Ord  {}
 
 
 #[cfg(feature = "rc")]
@@ -77,7 +75,6 @@ impl_io_save!(
 
 impl IoSave for String
 {
-    type BasedOn = IoNotBasedOn;
     fn save_own_extensions() -> impl Iterator<Item = &'static str> { ["txt", "md"].iter().copied() }
 
     fn save_to_with_own_extension_pathless<W, Fs>(&self, _ : &extension, mut w : W, _ : &mut Fs) -> IoResult
@@ -88,7 +85,6 @@ impl IoSave for String
 }
 impl IoLoad for String
 {
-    type BasedOn = IoNotBasedOn;
 
     const CAN_BE_LOADED_FROM_TEXT : bool = true;
     fn load_from_str_with_own_extension_pathless(data : &str, _ : &extension) -> IoResult<Self> {
@@ -96,8 +92,8 @@ impl IoLoad for String
     }
 }
 
-impl<T> IoSave for Cell<T> where T : IoSave + Copy { type BasedOn = IoNotBasedOn; }
-impl<T> IoLoad for Cell<T> where T : IoLoad + Copy { type BasedOn = IoNotBasedOn; }
+impl<T> IoSave for Cell<T> where T : IoSave + Copy {}
+impl<T> IoLoad for Cell<T> where T : IoLoad + Copy {}
 
 
 // https://docs.rs/serde/latest/serde/trait.Serialize.html#impl-Serialize-for-str
@@ -121,23 +117,20 @@ impl_io_save!(
 );
 
 impl<T: IoSave> IoSave for Saturating<T> {
-    type BasedOn = IoNotBasedOn;
 }
 
 impl<T: IoLoad> IoLoad for Saturating<T> where for<'de> Saturating<T>: serde::Deserialize<'de> {
-    type BasedOn = IoNotBasedOn;
 }
 
 impl<T> IoSave for [T; 0]
 {
-    type BasedOn = IoNotBasedOn;
 }
 
 macro_rules! array_impls {
     ($($len:tt)+) => {
         $(
-            impl<T> IoSave for [T; $len] where T : IoSave { type BasedOn = IoNotBasedOn; }
-            impl<T> IoLoad for [T; $len] where T : IoLoad { type BasedOn = IoNotBasedOn; }
+            impl<T> IoSave for [T; $len] where T : IoSave {}
+            impl<T> IoLoad for [T; $len] where T : IoLoad {}
         )+
     }
 }
@@ -158,8 +151,8 @@ array_impls! {
     docsrs,
     doc = "This trait is implemented for tuples up to 16 items long."
 )]
-impl<T> IoSave for (T,) where T : IoSave { type BasedOn = IoNotBasedOn; }
-impl<T> IoLoad for (T,) where T : IoLoad { type BasedOn = IoNotBasedOn; }
+impl<T> IoSave for (T,) where T : IoSave {}
+impl<T> IoLoad for (T,) where T : IoLoad {}
 
 macro_rules! tuple_impls {
     // Each line provides a count and a list of index-type pairs
@@ -170,12 +163,10 @@ macro_rules! tuple_impls {
     ) => {
         $(
             impl<$( $typ: IoSave ),+> IoSave for ( $( $typ ),+ ) {
-                type BasedOn = IoNotBasedOn;
-            }
+                        }
 
             impl<$( $typ: IoLoad ),+> IoLoad for ( $( $typ ),+ ) {
-                type BasedOn = IoNotBasedOn;
-            }
+                        }
         )*
     };
 }

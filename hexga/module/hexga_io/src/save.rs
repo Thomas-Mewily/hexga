@@ -3,22 +3,43 @@ use crate::*;
 pub type IoSaveResult<T=()> = Result<T, IoError>;
 pub use std::io::Write as IoWrite;
 
+pub trait IoSaveFrom
+{
+    type From : IoSave;
+
+    fn save_from_based_on(&self) -> Option<Self::From> { None }
+    fn save_from_based_on_ref(&self) -> Option<&Self::From> { None }
+}
+
+impl<T> IoSave for T where T : IoSaveFrom + Serialize
+{
+    fn save_own_extensions() -> impl Iterator<Item = &'static str> { T::From::save_own_extensions() }
+
+    fn save_to_with_extension<W, Fs>(&self, path : &path, extension : &extension, w : W, fs : &mut Fs) -> IoSaveResult
+            where W : Write, Fs : IoFs
+    {
+        if let Some(v) = self.save_from_based_on_ref()
+        {
+            return v.save_to_with_extension(path, extension, w, fs);
+        }
+        if let Some(v) = self.save_from_based_on()
+        {
+            return v.save_to_with_extension(path, extension, w, fs);
+        }
+        Err(IoErrorKind::FromBasedOnFailed { dest: std::any::type_name::<Self>().to_owned(), src: std::any::type_name::<T>().to_owned(), reason: "bad implementation".to_string() }).to_save_error(path)
+    }
+
+}
 
 #[allow(unused_variables)]
 pub trait IoSave : Serialize
 {
     // Main function to override :
 
-    type BasedOn : ?Sized + IoSave;
-
-    fn save_from_based_on(&self) -> Option<Self::BasedOn> { None }
-    fn save_from_based_on_ref(&self) -> Option<&Self::BasedOn> { None }
-
     /// Dedicated file extension to save the value. ex `png`, `jpeg` for image
     ///
     /// Don't include the markup language extension like `json` or `ron`
-    fn save_own_extensions() -> impl Iterator<Item = &'static str>
-    { Self::BasedOn::save_own_extensions() }
+    fn save_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
 
 
     // The path is usefull the save composite file (ex: saving a gif but every frame is in a subfolder relative to the path)
@@ -80,46 +101,6 @@ pub trait IoSave : Serialize
             _ => {}
         }
 
-        if let Some(v) = self.save_from_based_on_ref()
-        {
-            return v.save_to_with_extension(path, extension, w, fs);
-        }
-        if let Some(v) = self.save_from_based_on()
-        {
-            return v.save_to_with_extension(path, extension, w, fs);
-        }
-
         self.save_to_with_own_extension(path, extension, w, fs)
-    }
-}
-
-impl IoSave for IoNotBasedOn
-{
-    type BasedOn = IoNotBasedOn;
-
-    fn save_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
-    fn save_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
-
-    fn can_save_extension(_: &str) -> bool { false }
-    fn can_save_own_extension(_: &str) -> bool { false }
-
-    fn save_from_based_on(&self) -> Option<Self::BasedOn> { None }
-    fn save_from_based_on_ref(&self) -> Option<&Self::BasedOn> { None }
-
-    fn save_to<W, Fs>(&self, path : &path, _ : W, _ : &mut Fs) -> IoSaveResult
-            where W : Write, Fs : IoFs
-    { Err(IoError::save(path, IoErrorKind::FromNotBaseOn)) }
-
-    fn save_to_with_extension<W, Fs>(&self, path : &path, _ : &extension, _ : W, _ : &mut Fs) -> IoSaveResult
-            where W : Write, Fs : IoFs
-    { Err(IoError::save(path, IoErrorKind::FromNotBaseOn)) }
-
-    fn save_to_with_own_extension<W, Fs>(&self, path : &path, _ : &extension, _ : W, _ : &mut Fs) -> IoSaveResult
-            where W : Write, Fs : IoFs
-        { Err(IoError::save(path, IoErrorKind::FromNotBaseOn)) }
-
-    fn save_to_with_own_extension_pathless<W, Fs>(&self, _ : &extension, _ : W, _ : &mut Fs) -> IoResult
-            where W : Write, Fs : IoFs {
-        Err(IoErrorKind::FromNotBaseOn)
     }
 }
