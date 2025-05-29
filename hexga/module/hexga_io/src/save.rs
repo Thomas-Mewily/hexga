@@ -5,10 +5,21 @@ pub use std::io::Write as IoWrite;
 
 #[allow(unused_variables)]
 pub trait IoSave : Sized + Serialize + for<'de> Deserialize<'de>
+    /*
+    where
+    for<'a> &'a Self : Serialize,
+    for<'a, 'de> &'a Self : Deserialize<'de>,
+    */
 {
     // Main function to override :
 
     type BasedOn : IoSave;
+    /*
+         + ?Sized
+        where
+            for<'a>      &'a Self::BasedOn : Serialize,
+            for<'a, 'de> &'a Self::BasedOn : Deserialize<'de>;
+    */
 
     fn save_from_based_on(&self) -> Option<Self::BasedOn> { None }
     fn save_from_based_on_ref(&self) -> Option<&Self::BasedOn> { None }

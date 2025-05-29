@@ -9,6 +9,9 @@ pub(crate) use hexga_core::prelude::*;
 mod core;
 pub use core::*;
 
+mod default_impl;
+pub use default_impl::*;
+
 pub mod fs;
 use fs::*;
 

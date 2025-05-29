@@ -4,7 +4,8 @@ use crate::*;
 
 
 pub type IoResult<T=()> = Result<T, IoErrorKind>;
-pub type IoErrorInternal = std::io::ErrorKind;
+pub type IoErrorInternalKind = std::io::ErrorKind;
+pub type IoErrorInternal     = std::io::Error;
 
 
 #[derive(Default, Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
@@ -13,7 +14,7 @@ pub enum IoErrorKind
     #[default]
     Unknow,
     Unimplemented,
-    Internal(IoErrorInternal),
+    Internal(Reason, IoErrorInternalKind),
     FromNotBaseOn,
     FromBasedOnFailed    { dest : TypeName, src : TypeName, reason : Reason },
     UnsupportedExtension { name : TypeName, got : Extension, expected : Vec<Extension> },
@@ -35,6 +36,9 @@ impl IoErrorKind
 
 impl IoErrorKind
 {
+    pub fn from_internal_error(err : IoErrorInternal) -> IoErrorKind { IoErrorKind::Internal(err.to_string(), err.kind()) }
+    pub fn from_internal_error_kind(err : IoErrorInternalKind) -> IoErrorKind { IoErrorKind::Internal("".to_owned(), err) }
+
     pub fn unsupported_open_extension<T>(ext : &extension) -> Self where T : IoLoad { Self::UnsupportedExtension { name: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
     //pub fn unsupported_save_extension<T>(ext : &extension) -> Self where T : IoSave { Self::UnsupportedExtension { name: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
 
@@ -86,17 +90,17 @@ impl<T,E> ToIoError for Result<T,E> where E : ToIoError
     type Output = Result<T,E::Output>;
     fn to_io_error(self, mode : IoMode, path : impl Into<Path>) -> Self::Output { self.map_err(|e| e.to_io_error(mode, path)) }
 }
-impl ToIoError for IoErrorInternal
+impl ToIoError for IoErrorInternalKind
 {
     type Output=IoError;
     fn to_io_error(self, mode : IoMode, path : impl Into<Path>) -> Self::Output {
-        IoError::new(mode, path, IoErrorKind::Internal(self))
+        IoError::new(mode, path, IoErrorKind::from_internal_error_kind(self))
     }
 }
 impl ToIoError for std::io::Error
 {
     type Output=IoError;
     fn to_io_error(self, mode : IoMode, path : impl Into<Path>) -> Self::Output {
-        self.kind().to_io_error(mode, path)
+        IoError::new(mode, path, IoErrorKind::from_internal_error(self))
     }
 }
