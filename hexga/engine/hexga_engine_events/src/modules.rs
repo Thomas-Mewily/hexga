@@ -52,7 +52,7 @@ pub struct TouchEvent
 pub type TouchID = u64;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
-pub enum TouchPhase 
+pub enum TouchPhase
 {
     Begin,
     Move,
@@ -79,12 +79,12 @@ pub enum WindowEvent
     DropFile, //(DropFileEvent),
 }
 
-/* 
+/*
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DropFileEvent
 {
-    pub path  : std::path::PathBuf,
-    pub bytes : Vec<u8>,
+    pub path : std::path::PathBuf,
+    pub data : Vec<u8>,
 }
     */
 
@@ -98,7 +98,7 @@ pub enum KeyboardEvent
 impl Debug for KeyboardEvent
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self 
+        match self
         {
             Self::CharEvent(v) => write!(f, "{:?}", v),
             Self::KeyEvent(v) => write!(f, "{:?}", v),
@@ -195,7 +195,7 @@ pub struct KeyMods {
 
 impl Debug for KeyMods
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
         if self.is_default() { return Ok(()); }
         f.debug_struct("KeyMods").field_if_not_default("shift", &self.shift).field_if_not_default("ctrl", &self.ctrl).field_if_not_default("alt", &self.alt).field_if_not_default("logo", &self.logo).finish()

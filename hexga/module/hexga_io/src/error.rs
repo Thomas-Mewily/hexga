@@ -71,32 +71,32 @@ pub trait ToIoError : Sized
 {
     type Output;
 
-    fn to_io_error (self, mode : IoMode, path : &path) -> Self::Output;
-    fn to_load_error(self, path : &path) -> Self::Output { Self::to_io_error(self, IoMode::Read, path) }
-    fn to_save_error(self, path : &path) -> Self::Output { Self::to_io_error(self, IoMode::Write, path) }
+    fn to_io_error (self, mode : IoMode, path : impl Into<Path>) -> Self::Output;
+    fn to_load_error(self, path : impl Into<Path>) -> Self::Output { Self::to_io_error(self, IoMode::Read, path) }
+    fn to_save_error(self, path : impl Into<Path>) -> Self::Output { Self::to_io_error(self, IoMode::Write, path) }
 }
 
 impl ToIoError for IoErrorKind
 {
     type Output = IoError;
-    fn to_io_error(self, mode : IoMode, path : &path) -> Self::Output { IoError::new(mode, path, self) }
+    fn to_io_error(self, mode : IoMode, path : impl Into<Path>) -> Self::Output { IoError::new(mode, path, self) }
 }
 impl<T,E> ToIoError for Result<T,E> where E : ToIoError
 {
     type Output = Result<T,E::Output>;
-    fn to_io_error(self, mode : IoMode, path : &path) -> Self::Output { self.map_err(|e| e.to_io_error(mode, path)) }
+    fn to_io_error(self, mode : IoMode, path : impl Into<Path>) -> Self::Output { self.map_err(|e| e.to_io_error(mode, path)) }
 }
 impl ToIoError for IoErrorInternal
 {
     type Output=IoError;
-    fn to_io_error(self, mode : IoMode, path : &path) -> Self::Output {
+    fn to_io_error(self, mode : IoMode, path : impl Into<Path>) -> Self::Output {
         IoError::new(mode, path, IoErrorKind::Internal(self))
     }
 }
 impl ToIoError for std::io::Error
 {
     type Output=IoError;
-    fn to_io_error(self, mode : IoMode, path : &path) -> Self::Output {
+    fn to_io_error(self, mode : IoMode, path : impl Into<Path>) -> Self::Output {
         self.kind().to_io_error(mode, path)
     }
 }

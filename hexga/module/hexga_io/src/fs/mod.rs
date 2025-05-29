@@ -9,7 +9,7 @@ pub trait IoFs : Sized
 {
     fn save<T>(&mut self, path : Path, value : &T) where T : IoSave
     {
-        if self.have_error() { return; }
+        if self.premature_abord() && self.have_error() { return; }
 
         let Some(path) = self.canonicalize_path(&path) else
         {
@@ -23,26 +23,30 @@ pub trait IoFs : Sized
             return;
         }
 
-        let mut bytes = Vec::with_capacity(1024);
+        let mut data = Vec::with_capacity(1024);
 
-        match value.save_to(&path, &mut bytes, self)
+        match value.save_to(&path, &mut data, self)
         {
             Ok(_) => {},
             Err(err) => self.add_error(err),
         }
 
-        self.save_bytes(path, bytes);
+        match unsafe { self.save_bytes_unchecked(path, &data) }
+        {
+            Ok(_) => todo!(),
+            Err(err) => self.add_error(err),
+        }
     }
 
     fn have_permission_to_write(&self, path : &path) -> IoResult { Ok(()) }
 
-    // The permission where not checked when calling this function
-    unsafe fn save_bytes_unchecked(&mut self, path : &path, bytes : &[u8]) -> IoSaveResult;
+    /// The permission was not checked when calling this function
+    unsafe fn save_bytes_unchecked(&mut self, path : Path, data : &[u8]) -> IoSaveResult;
 
-    /// If there was an error, stop all next to avoid useless serialization
+    /// If there was an error, try stop all the next operation to avoid useless serialization
     fn premature_abord(&self) -> bool;
 
-    fn commit(self) -> Result<(), Vec<IoSaveResult>>;
+    fn commit(self) -> Result<(), Vec<IoError>>;
 
     fn have_error(&self) -> bool { false }
     fn add_error(&mut self, err : IoError);
@@ -50,12 +54,12 @@ pub trait IoFs : Sized
     fn add_read_error (&mut self, path : impl Into<Path>, kind : IoErrorKind) { self.add_error(IoError::read (path, kind)); }
     fn add_write_error(&mut self, path : impl Into<Path>, kind : IoErrorKind) { self.add_error(IoError::write(path, kind)); }
 
-    fn canonicalize_path(&self, path : &path) -> Option<Path>;
-
-    fn is_canonicalized_path_valid(&self, path : &path) -> bool;
-    fn is_path_valid(&self, path : &path) -> bool
+    fn canonicalize_path(&self, path : &path) -> Option<Path>
     {
-        let Some(canonicalized) = self.canonicalize_path(path) else { return false; };
-        self.is_canonicalized_path_valid(&canonicalized)
+        match std::fs::canonicalize(path)
+        {
+            Ok(v) => v.to_str().map(|v| v.to_owned()),
+            Err(_) => None,
+        }
     }
 }

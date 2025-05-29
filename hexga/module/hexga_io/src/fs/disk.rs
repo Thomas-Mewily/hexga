@@ -4,18 +4,25 @@ use std::fs as f;
 use std::fs::File;
 
 // Todo : add permission and stuff
-#[derive(Clone, Debug, Default)]
-pub struct IoFsDiskStepByStep
+#[derive(Clone, Debug)]
+pub struct IoFsDisk
 {
-    err : Vec<IoSaveResult>,
+    premature_abord : bool,
+    err : Vec<IoError>,
 }
 
-impl IoFsDiskStepByStep
+impl Default for IoFsDisk
 {
-
+    fn default() -> Self { Self::new() }
+}
+impl IoFsDisk
+{
+    pub const fn new() -> Self { Self::new_with_premature_abord(true) }
+    pub const fn new_with_premature_abord(premature_abord : bool) -> Self { Self { premature_abord, err: Vec::new() } }
 }
 
-impl IoFsDiskStepByStep
+/*
+impl IoFsDisk
 {
     pub fn disk_read(&self, path: &path) -> IoLoadResult<Vec<u8>>
     {
@@ -79,13 +86,25 @@ impl IoFsDiskStepByStep
     }
     */
 }
+*/
 
-impl IoFs for IoFsDiskStepByStep
+impl IoFs for IoFsDisk
 {
     fn have_error(&self) -> bool { self.err.is_not_empty() }
 
-    fn save_in_writer<W>(&mut self, w : W, path : Path) {
-        if self.have_error() { return; }
-        self.dis
+    fn premature_abord(&self) -> bool {
+        self.premature_abord
+    }
+
+    unsafe fn save_bytes_unchecked(&mut self, path : Path, data : &[u8]) -> IoSaveResult {
+        f::write(&path, data).to_save_error(path)
+    }
+
+    fn commit(self) -> Result<(), Vec<IoError>> {
+        if self.err.is_empty() { Ok(()) } else { Err(self.err) }
+    }
+
+    fn add_error(&mut self, err : IoError) {
+        self.err.push(err);
     }
 }
