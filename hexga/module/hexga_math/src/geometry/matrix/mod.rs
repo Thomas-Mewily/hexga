@@ -7,14 +7,18 @@ use prelude::*;
 pub type SquareMatrix<T, const N : usize> = Matrix<T, N, N>;
 
 /// ROW rows, COL columns.
-/// 
+///
 /// Can be indexed `matrix[row][col]`
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
+//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
 pub struct Matrix<T, const ROW : usize, const COL : usize>
 {
     pub columns : Vector<Vector<T, ROW>,COL>,
 }
+
+//#[cfg(feature = "hexga_io")]
+
 
 impl<T, const ROW : usize, const COL : usize> Deref for Matrix<T, ROW, COL>
 {
@@ -65,7 +69,7 @@ impl<T, const ROW : usize, const COL : usize> Default  for Matrix<T,ROW,COL>   w
 impl<T, const ROW : usize> Matrix<T,ROW,1>
 {
     /// From a `Mx1` vector
-    pub const fn from_vector(vector : Vector<T, ROW>) -> Self 
+    pub const fn from_vector(vector : Vector<T, ROW>) -> Self
     {
         Self::from_col(Vector::from_array([vector]))
     }
@@ -79,7 +83,7 @@ impl<T, const ROW : usize> From<Vector<T, ROW>> for Matrix<T,ROW,1>
 }
 impl<T, const ROW : usize> From<Matrix<T,ROW,1>> for Vector<T, ROW> where Vector<T,ROW> : Default
 {
-    fn from(mut value: Matrix<T,ROW,1>) -> Self 
+    fn from(mut value: Matrix<T,ROW,1>) -> Self
     {
         std::mem::take(&mut value.columns[0])
     }
@@ -104,10 +108,10 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
     }
 
     pub const fn from_col(columns : Vector<Vector<T, ROW>,COL>) -> Self { Self { columns }}
-    pub fn from_col_array(columns : [[T;ROW];COL]) -> Self 
-    { 
-        Self 
-        { 
+    pub fn from_col_array(columns : [[T;ROW];COL]) -> Self
+    {
+        Self
+        {
             columns :  Vector::from_array(columns.map(|array| Vector::from_array(array)))
         }
     }
@@ -123,20 +127,20 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
 
     pub fn col(&self) -> Vector<Vector<T, ROW>,COL> where T : Copy { self.columns }
     pub fn row(&self) -> Vector<Vector<T, COL>,ROW> where T : Copy { self.transpose().columns }
-    
+
     pub fn iter_col(&self) -> impl Iterator<Item = Vector<T, ROW>> where Vector<Vector<T, ROW>,COL> : Copy, T : Copy { self.columns.into_iter()}
     pub fn iter_row(&self) -> impl Iterator<Item = Vector<T, COL>> where Vector<Vector<T, ROW>,COL> : Copy, T : Copy { self.transpose().into_iter()}
 
     /// Transpose the matrix
-    /// 
+    ///
     /// ```rust
     /// use hexga_math::prelude::*;
-    /// 
+    ///
     /// assert_eq!(
-    ///     Mat2::from_col(vector2(vec2(1., 2.), vec2(3., 4.))).transpose(), 
+    ///     Mat2::from_col(vector2(vec2(1., 2.), vec2(3., 4.))).transpose(),
     ///     Mat2::from_col(vector2(vec2(1., 3.), vec2(2., 4.)))
     /// );
-    /// 
+    ///
     /// assert_eq!(
     ///     Mat::<3,2>::from_col(vector2(vec3(1., 2., 3.), vec3(4., 5., 6.))).transpose(),
     ///     Mat::<2,3>::from_col(vector3(vec2(1., 4.), vec2(2., 5.), vec2(3., 6.)))
@@ -149,9 +153,9 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
 }
 
 // 2D
-impl<T> SquareMatrix<T,2> 
-    where 
-    Self : Copy, 
+impl<T> SquareMatrix<T,2>
+    where
+    Self : Copy,
     SquareMatrix<T, 2> : Mul<Vector<T, 2>, Output = Vector<T, 2>>,
     Vector<T, 2> : Into< Vector<T, 1>>
 {
@@ -167,9 +171,9 @@ impl<T> SquareMatrix<T,2>
 }
 
 // 3D
-impl<T> SquareMatrix<T,3> 
-    where 
-    Self : Copy, 
+impl<T> SquareMatrix<T,3>
+    where
+    Self : Copy,
     SquareMatrix<T, 3> : Mul<Vector<T, 3>, Output = Vector<T, 3>>,
     Vector<T, 3> : Into< Vector<T, 2>>
 {
@@ -185,9 +189,9 @@ impl<T> SquareMatrix<T,3>
 }
 
 // 4D
-impl<T> SquareMatrix<T,4> 
-    where 
-    Self : Copy, 
+impl<T> SquareMatrix<T,4>
+    where
+    Self : Copy,
     SquareMatrix<T, 4> : Mul<Vector<T, 4>, Output = Vector<T, 4>>,
     Vector<T, 4> : Into< Vector<T, 3>>
 {
@@ -203,12 +207,12 @@ impl<T> SquareMatrix<T,4>
 }
 
 
-impl<T, const N : usize> SquareMatrix<T,N> 
+impl<T, const N : usize> SquareMatrix<T,N>
     where
-    Self : Copy, 
+    Self : Copy,
     SquareMatrix<T, N>: Mul<Vector<T, N>, Output = Vector<T, N>>
 {
-    /* 
+    /*
     /// The last value/component will be replaced by 0 because it is relative/a vector in math terms.
     pub fn transform_relative(self, relative : Vector<T, N>) -> Vector<T, N> where T : Zero
     {
@@ -221,7 +225,7 @@ impl<T, const N : usize> SquareMatrix<T,N>
         self.transform(fixed.with(N-1, T::ZERO))
     }
     */
-    /// The last value/component is 0 if it is a relative/vector/delta, 1 if it is fixed/point/position in math terms. 
+    /// The last value/component is 0 if it is a relative/vector/delta, 1 if it is fixed/point/position in math terms.
     pub fn transform(self, value : Vector<T, N>) -> Vector<T, N>
     {
         self * value
@@ -241,6 +245,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where T : One + Zero + Copy
     /// Same as [One]
     pub const IDENTITY : Self = Self::ONE;
 }
+
 
 impl<T, const N : usize> One for SquareMatrix<T,N> where T : One + Zero + Copy
 {
@@ -293,7 +298,7 @@ map_on!(
         (MaxValue, MAX),
         (NaNValue, NAN)
     ),
-    (($trait_name : ident, $constant_name : ident)) => 
+    (($trait_name : ident, $constant_name : ident)) =>
     {
         impl<T, const ROW : usize, const COL : usize> $trait_name for Matrix<T,ROW,COL> where T : $trait_name + Copy
         {
@@ -302,20 +307,20 @@ map_on!(
     }
 );
 
-impl<T, const ROW : usize, const COL : usize> Add<Self> for Matrix<T,ROW,COL> 
-    where 
+impl<T, const ROW : usize, const COL : usize> Add<Self> for Matrix<T,ROW,COL>
+    where
     Vector<Vector<T, ROW>, COL> : Add<Vector<Vector<T, ROW>, COL>,Output = Vector<Vector<T, ROW>, COL>>
 {
     type Output = Self;
-    
-    fn add(self, rhs: Self) -> Self::Output 
+
+    fn add(self, rhs: Self) -> Self::Output
     {
         Self::from_col(self.columns.add(rhs.columns))
     }
 }
 
-impl<T, const ROW : usize, const COL : usize> AddAssign<Self> for Matrix<T,ROW,COL> 
-    where 
+impl<T, const ROW : usize, const COL : usize> AddAssign<Self> for Matrix<T,ROW,COL>
+    where
     Self : Add<Self,Output = Self> + Copy
 {
     fn add_assign(&mut self, rhs: Self) {
@@ -324,20 +329,20 @@ impl<T, const ROW : usize, const COL : usize> AddAssign<Self> for Matrix<T,ROW,C
 }
 
 
-impl<T, const ROW : usize, const COL : usize> Sub<Self> for Matrix<T,ROW,COL> 
-    where 
+impl<T, const ROW : usize, const COL : usize> Sub<Self> for Matrix<T,ROW,COL>
+    where
     Vector<Vector<T, ROW>, COL> : Sub<Vector<Vector<T, ROW>, COL>,Output = Vector<Vector<T, ROW>, COL>>
 {
     type Output = Self;
-    
-    fn sub(self, rhs: Self) -> Self::Output 
+
+    fn sub(self, rhs: Self) -> Self::Output
     {
         Self::from_col(self.columns.sub(rhs.columns))
     }
 }
 
-impl<T, const ROW : usize, const COL : usize> SubAssign<Self> for Matrix<T,ROW,COL> 
-    where 
+impl<T, const ROW : usize, const COL : usize> SubAssign<Self> for Matrix<T,ROW,COL>
+    where
     Self : Sub<Self,Output = Self> + Copy
 {
     fn sub_assign(&mut self, rhs: Self) {
@@ -362,18 +367,18 @@ impl<T, const COL : usize> Product for SquareMatrix<T,COL> where Self : One + Mu
 
 /// ```
 /// use hexga_math::prelude::*;
-/// 
+///
 /// let m1  = Mat2P::from_col((point2(7, 6), point2(5, 3)).into());
 /// let m2  = Mat2P::from_col((point2(2, 5), point2(1, 1)).into());
 /// let m3  = Mat2P::from_col((point2(39, 27), point2(12, 9)).into());
-/// 
+///
 /// assert_eq!(m1 * m2, m3);
-/// 
-/// 
+///
+///
 /// let m1 = Matrix::<i32,2,3>::from_col(vector3(vector2(1, 4), vector2(2, 5), vector2(3, 6)));
 /// let m2 = Matrix::<i32,3,2>::from_col(vector2(vector3(7, 9, 11), vector3(8, 10, 12)));
 /// let m3 = Matrix::<i32,2,2>::from_col(vector2(vector2(1*7+2*9+3*11, 4*7+5*9+6*11), vector2(1*8+2*10+3*12, 4*8+5*10+6*12)));
-/// 
+///
 /// assert_eq!(m1 * m2, m3);
 /// ```
 impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,COL,COL2>> for Matrix<T,ROW,COL>
@@ -381,8 +386,8 @@ impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,C
     T : NumberArithmetic,
 {
     type Output = Matrix<T, ROW, COL2>;
-    
-    fn mul(self, rhs: Matrix<T,COL,COL2>) -> Self::Output 
+
+    fn mul(self, rhs: Matrix<T,COL,COL2>) -> Self::Output
     {
         // Todo : match on ROW / COL, COL2
         // and specialize it for 1x1, 2x2, 3x3 and 4x4 matrix
@@ -392,15 +397,15 @@ impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,C
 
 
 impl<T, const ROW : usize, const COL : usize> Mul<Vector<T,COL>> for Matrix<T,ROW,COL>
-    where 
+    where
     T : NumberArithmetic,
     //Matrix<T,ROW,COL> : Mul<Matrix<T,ROW,1>>,
     Self : Mul<Matrix<T,COL,1>, Output = Matrix<T,ROW,1>>,
     Vector<T,COL> : From<Matrix::<T,ROW,1>>
 {
     type Output = Vector<T,COL>;
-    
-    fn mul(self, rhs: Vector<T,COL>) -> Self::Output 
+
+    fn mul(self, rhs: Vector<T,COL>) -> Self::Output
     {
         let m : Matrix::<T,COL,1> = rhs.into();
         let r = self * m;
@@ -408,8 +413,8 @@ impl<T, const ROW : usize, const COL : usize> Mul<Vector<T,COL>> for Matrix<T,RO
     }
 }
 
-impl<T, const COL : usize> MulAssign<Self> for SquareMatrix<T,COL> 
-    where 
+impl<T, const COL : usize> MulAssign<Self> for SquareMatrix<T,COL>
+    where
     Self : Mul<Self,Output = Self> + Copy
 {
     fn mul_assign(&mut self, rhs: Self) {
@@ -420,8 +425,8 @@ impl<T, const COL : usize> MulAssign<Self> for SquareMatrix<T,COL>
 impl<T, const ROW : usize, const COL : usize> Mul<T> for Matrix<T,ROW,COL> where T : Copy + Mul<T>
 {
     type Output = Matrix<T::Output,ROW,COL>;
-    
-    fn mul(self, rhs: T) -> Self::Output 
+
+    fn mul(self, rhs: T) -> Self::Output
     {
         Matrix::from_col(self.columns.map(|v| v.map(|i| i.mul(rhs))))
     }
@@ -437,8 +442,8 @@ impl<T, const ROW : usize, const COL : usize> MulAssign<T> for Matrix<T,ROW,COL>
 impl<T, const ROW : usize, const COL : usize> Div<T> for Matrix<T,ROW,COL> where T : Copy + Div<T>
 {
     type Output = Matrix<T::Output,ROW,COL>;
-    
-    fn div(self, rhs: T) -> Self::Output 
+
+    fn div(self, rhs: T) -> Self::Output
     {
         Matrix::from_col(self.columns.map(|v| v.map(|i| i.div(rhs))))
     }
@@ -458,42 +463,42 @@ where
     T: Float,
 {
     /// Inverse the matrix, or return `None` if the matrix is singular.
-    /// 
+    ///
     /// ```
     /// use hexga_math::prelude::*;
-    /// 
+    ///
     /// assert_eq!(Mat2::IDENTITY.inverse(), Some(Mat2::IDENTITY));
-    /// 
+    ///
     /// // Non inversible matrix
     /// let mut m2 = Mat2::IDENTITY;
     /// m2.set_y(vec2(0., 0.));
     /// assert_eq!(m2.inverse(), None);
-    /// 
+    ///
     /// let m2 = Mat2::from_col(vector2(vec2(1., 3.), vec2(2., 4.)));
     /// let m2_inv = m2.inverse().unwrap();
-    /// 
+    ///
     /// assert_eq!(m2 * m2_inv, Mat2::IDENTITY);
     /// ```
-    pub fn inverse(mut self) -> Option<Self> 
+    pub fn inverse(mut self) -> Option<Self>
     {
         let mut augmented = Self::IDENTITY;
 
-        for i in 0..N 
+        for i in 0..N
         {
             if self[i][i] == T::ZERO { return None; }
 
             let pivot = self[i][i];
 
-            for j in 0..N 
+            for j in 0..N
             {
                 self[i][j] /= pivot;
                 augmented[i][j] /=  pivot;
             }
 
-            for k in (i + 1)..N 
+            for k in (i + 1)..N
             {
                 let factor = self[k][i];
-                for j in 0..N 
+                for j in 0..N
                 {
                     self[k][j] = self[k][j] - factor * self[i][j];
                     let a = augmented[i][j];
@@ -502,12 +507,12 @@ where
             }
         }
 
-        for i in (0..N).rev() 
+        for i in (0..N).rev()
         {
-            for k in 0..i 
+            for k in 0..i
             {
                 let factor = self[k][i];
-                for j in 0..N 
+                for j in 0..N
                 {
                     let a = self[i][j];
                     self[k][j] -= factor * a;
@@ -525,11 +530,11 @@ where
 // Todo : impl det in a generic way once const generic will be here.
 // Do a match on N, and hardcode the case for N in 0..=4
 
-// There is no generic way to compute the determinant of a matrix, because it required calculaing the submatrix, but at the moment const generic operation are not possible 
+// There is no generic way to compute the determinant of a matrix, because it required calculaing the submatrix, but at the moment const generic operation are not possible
 // I also don't want any heap allocation when computing the determinant
 impl<T> SquareMatrix<T, 0> where T: NumberArithmetic + One,
 {
-    pub fn det(&self) -> T 
+    pub fn det(&self) -> T
     {
         T::ONE
     }
@@ -537,7 +542,7 @@ impl<T> SquareMatrix<T, 0> where T: NumberArithmetic + One,
 
 impl<T> SquareMatrix<T, 1> where T: NumberArithmetic + One,
 {
-    pub fn det(&self) -> T 
+    pub fn det(&self) -> T
     {
         self[0][0]
     }
@@ -545,7 +550,7 @@ impl<T> SquareMatrix<T, 1> where T: NumberArithmetic + One,
 
 impl<T> SquareMatrix<T, 2> where T: NumberArithmetic + One,
 {
-    pub fn det(&self) -> T 
+    pub fn det(&self) -> T
     {
         self[0][0] * self[1][1] - self[0][1] * self[1][0]
     }
@@ -553,7 +558,7 @@ impl<T> SquareMatrix<T, 2> where T: NumberArithmetic + One,
 
 impl<T> SquareMatrix<T, 3> where T: NumberArithmetic + One,
 {
-    pub fn det(&self) -> T 
+    pub fn det(&self) -> T
     {
           self[0][0] * (self[1][1] * self[2][2] - self[1][2] * self[2][1])
         - self[0][1] * (self[1][0] * self[2][2] - self[1][2] * self[2][0])
@@ -563,7 +568,7 @@ impl<T> SquareMatrix<T, 3> where T: NumberArithmetic + One,
 
 impl<T> SquareMatrix<T, 4> where T: NumberArithmetic + One,
 {
-    pub fn det(&self) -> T 
+    pub fn det(&self) -> T
     {
         let a = self[2][2] * self[3][3] - self[2][3] * self[3][2];
         let b = self[2][1] * self[3][3] - self[2][3] * self[3][1];
@@ -572,28 +577,28 @@ impl<T> SquareMatrix<T, 4> where T: NumberArithmetic + One,
         let e = self[2][0] * self[3][2] - self[2][2] * self[3][0];
         let f = self[2][0] * self[3][1] - self[2][1] * self[3][0];
 
-        self[0][0] * 
+        self[0][0] *
         (
               self[1][1] * a
             - self[1][2] * b
             + self[1][3] * c
         )
 
-        - self[0][1] * 
+        - self[0][1] *
         (
             self[1][0] * a
           - self[1][2] * d
           + self[1][3] * e
         )
 
-        + self[0][2] * 
+        + self[0][2] *
         (
             self[1][0] * b
           - self[1][1] * d
           + self[1][3] * f
         )
-        
-        - self[0][3] * 
+
+        - self[0][3] *
         (
             self[1][0] * c
           - self[1][1] * e
@@ -604,14 +609,14 @@ impl<T> SquareMatrix<T, 4> where T: NumberArithmetic + One,
 
 
 macro_rules! matrix_have_x {
-    ($dim : expr) => 
+    ($dim : expr) =>
     {
         impl<T> HaveX<Vector<T,$dim>> for SquareMatrix<T,$dim>
         {
             fn iter_x<'a>(&'a self) -> impl Iterator<Item=&'a Vector<T,$dim>> where Vector<T,$dim>: 'a {
                 self.columns.as_array().as_slice()[0..=Self::X_INDEX].iter()
             }
-        
+
             fn iter_x_mut<'a>(&'a mut self) -> impl Iterator<Item=&'a mut Vector<T,$dim>> where Vector<T,$dim>: 'a {
                 self.columns.as_array_mut().as_mut_slice()[0..=Self::X_INDEX].iter_mut()
             }
@@ -625,14 +630,14 @@ matrix_have_x!(3);
 matrix_have_x!(4);
 
 macro_rules! matrix_have_y {
-    ($dim : expr) => 
+    ($dim : expr) =>
     {
         impl<T> HaveY<Vector<T,$dim>> for SquareMatrix<T,$dim>
         {
             fn iter_xy<'a>(&'a self) -> impl Iterator<Item=&'a Vector<T,$dim>> where Vector<T,$dim>: 'a {
                 self.columns.as_array().as_slice()[0..=Self::Y_INDEX].iter()
             }
-        
+
             fn iter_xy_mut<'a>(&'a mut self) -> impl Iterator<Item=&'a mut Vector<T,$dim>> where Vector<T,$dim>: 'a {
                 self.columns.as_array_mut().as_mut_slice()[0..=Self::Y_INDEX].iter_mut()
             }
@@ -645,14 +650,14 @@ matrix_have_y!(3);
 matrix_have_y!(4);
 
 macro_rules! matrix_have_z {
-    ($dim : expr) => 
+    ($dim : expr) =>
     {
         impl<T> HaveZ<Vector<T,$dim>> for SquareMatrix<T,$dim>
         {
             fn iter_xyz<'a>(&'a self) -> impl Iterator<Item=&'a Vector<T,$dim>> where Vector<T,$dim>: 'a {
                 self.columns.as_array().as_slice()[0..=Self::Z_INDEX].iter()
             }
-        
+
             fn iter_xyz_mut<'a>(&'a mut self) -> impl Iterator<Item=&'a mut Vector<T,$dim>> where Vector<T,$dim>: 'a {
                 self.columns.as_array_mut().as_mut_slice()[0..=Self::Z_INDEX].iter_mut()
             }
@@ -664,14 +669,14 @@ matrix_have_z!(3);
 matrix_have_z!(4);
 
 macro_rules! matrix_have_w {
-    ($dim : expr) => 
+    ($dim : expr) =>
     {
         impl<T> HaveW<Vector<T,$dim>> for SquareMatrix<T,$dim>
         {
             fn iter_xyzw<'a>(&'a self) -> impl Iterator<Item=&'a Vector<T,$dim>> where Vector<T,$dim>: 'a {
                 self.columns.as_array().as_slice()[0..=Self::W_INDEX].iter()
             }
-        
+
             fn iter_xyzw_mut<'a>(&'a mut self) -> impl Iterator<Item=&'a mut Vector<T,$dim>> where Vector<T,$dim>: 'a {
                 self.columns.as_array_mut().as_mut_slice()[0..=Self::W_INDEX].iter_mut()
             }
@@ -681,10 +686,10 @@ macro_rules! matrix_have_w {
 
 matrix_have_w!(4);
 
-impl<T, const N : usize> RotationX<T> for SquareMatrix<T,N> 
+impl<T, const N : usize> RotationX<T> for SquareMatrix<T,N>
     where
-        Self : HaveZ<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
-        T : Float 
+        Self : HaveZ<Vector<T,N>> + Zero + Mul<Self, Output = Self>,
+        T : Float
 {
     fn rotate_x(&mut self, angle : AngleOf<T>) -> &mut Self
     {
@@ -693,10 +698,10 @@ impl<T, const N : usize> RotationX<T> for SquareMatrix<T,N>
     }
 }
 
-impl<T, const N : usize> RotationY<T> for SquareMatrix<T,N> 
+impl<T, const N : usize> RotationY<T> for SquareMatrix<T,N>
     where
-        Self : HaveZ<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
-        T : Float 
+        Self : HaveZ<Vector<T,N>> + Zero + Mul<Self, Output = Self>,
+        T : Float
 {
     fn rotate_y(&mut self, angle : AngleOf<T>) -> &mut Self
     {
@@ -705,10 +710,10 @@ impl<T, const N : usize> RotationY<T> for SquareMatrix<T,N>
     }
 }
 
-impl<T, const N : usize> RotationZ<T> for SquareMatrix<T,N> 
+impl<T, const N : usize> RotationZ<T> for SquareMatrix<T,N>
     where
-        Self : HaveY<Vector<T,N>> + Zero + Mul<Self, Output = Self>, 
-        T : Float 
+        Self : HaveY<Vector<T,N>> + Zero + Mul<Self, Output = Self>,
+        T : Float
 {
     fn rotate_z(&mut self, angle : AngleOf<T>) -> &mut Self
     {
@@ -802,7 +807,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveY<Vector<T,N>> + Zer
     {
         let (sina, cosa) = T::sin_cos(angle.radian());
         let mut r = Self::ZERO;
-        
+
         r[Self::X_INDEX][Self::X_INDEX] =  cosa;
         r[Self::X_INDEX][Self::Y_INDEX] =  sina;
         r[Self::Y_INDEX][Self::X_INDEX] = -sina;
@@ -830,7 +835,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + One
     {
         //let translation = translation.to_vector_filled(T::ZERO);
         let mut r = Self::IDENTITY;
-        for i in 0..N 
+        for i in 0..N
         {
             r[N-1][i] += translation[i];
         }
@@ -845,7 +850,7 @@ mod test_matrix
     use crate::*;
 
     #[test]
-    fn rotation_zero_on_z() 
+    fn rotation_zero_on_z()
     {
         let m = Mat2::from_col_array([[1.,2.], [3.,4.]]);
         assert_eq!(m.rotated_z(0.degree()), m);

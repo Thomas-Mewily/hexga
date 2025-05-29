@@ -11,7 +11,7 @@ pub struct ColorHSLAOf<T>
 {
     /// Hue. Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
     pub h : T,
-    /// Saturation. Grayscale : `0`, `1`: pure color. 
+    /// Saturation. Grayscale : `0`, `1`: pure color.
     pub s : T,
     /// Light. Black & White level. `0` = black, `0.5` = pure color, `1` = white
     pub l : T,
@@ -28,18 +28,18 @@ impl<T> ColorHSLAOf<T>
     pub const fn gray(coef : T) -> Self where T : Float { Self::hsl(T::ZERO, T::ZERO, coef) }
 
     /// H : Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
-    /// 
-    /// S : Grayscale : `0`, `1`: pure color. 
-    /// 
+    ///
+    /// S : Grayscale : `0`, `1`: pure color.
+    ///
     /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
     pub const fn hsla(hue : T, saturation : T, lightness : T, alpha : T) -> Self { Self::new(hue, saturation, lightness, alpha) }
 
     /// Alpha is at max
     ///
     /// H : Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
-    /// 
-    /// S : Grayscale : `0`, `1`: pure color. 
-    /// 
+    ///
+    /// S : Grayscale : `0`, `1`: pure color.
+    ///
     /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
     pub const fn hsl(hue : T, saturation : T, lightness : T) -> Self where T : Float { Self::hsla(hue, saturation, lightness, T::ONE) }
 
@@ -130,7 +130,7 @@ impl<C:Float> Default for ColorHSLAOf<C>
 impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
 {
     const TRANSPARENT : Self = Self::hsla(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
-    
+
     const BLACK : Self = Self::hsl(T::ZERO,T::ZERO,T::ZERO);
     const GRAY  : Self = Self::hsl(T::ZERO,T::ZERO,T::HALF);
     const WHITE : Self = Self::hsl(T::ZERO,T::ZERO,T::ONE);
@@ -138,7 +138,7 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
     const RED    : Self = Self::hsl(T::ZERO, T::ONE,T::HALF);
     const GREEN  : Self = Self::hsl(T::COLOR_120_DIV_360,T::ONE,T::HALF);
     const BLUE   : Self = Self::hsl(T::COLOR_240_DIV_360,T::ONE,T::HALF);
-    
+
     const CYAN   : Self = Self::hsl(T::COLOR_180_DIV_360,T::ONE,T::HALF);
     const MAGENTA: Self = Self::hsl(T::COLOR_300_DIV_360,T::ONE,T::HALF);
     const YELLOW : Self = Self::hsl(T::COLOR_60_DIV_360 ,T::ONE,T::HALF);
@@ -153,14 +153,14 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
     const PINK   : Self = Self::hsl(T::COLOR_300_DIV_360, T::ONE, T::COLOR_270_DIV_360);
     const GLACE  : Self = Self::hsl(T::COLOR_180_DIV_360, T::ONE, T::COLOR_270_DIV_360);
 
-    
-    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive, T2 : CastRangeFrom<T> 
+
+    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive, T2 : CastRangeFrom<T>
     {
         // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
         let r;
         let g;
         let b;
-    
+
         if self.s == T::ZERO {  r = self.l; g = self.l; b = self.l; }
         else {
             fn hue_to_rgb<T>(p: T, q: T, mut t: T) -> T where T : Float {
@@ -171,7 +171,7 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
                 if t < T::TWO / T::THREE { return p + (q - p) * (T::TWO / T::THREE - t) * T::SIX; }
                 p
             }
-    
+
             let q = if self.l < T::HALF {
                 self.l * (T::ONE + self.s)
             } else {
@@ -182,11 +182,11 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
             g = hue_to_rgb(p, q, self.h);
             b = hue_to_rgb(p, q, self.h - T::ONE / T::THREE);
         }
-    
+
         ColorRGBAOf::from_array([r, g, b, self.a].map(|v| T2::cast_range_from(v)))
     }
-    
-    fn to_color_hsla_of<T2>(self) -> ColorHSLAOf<T2> where T2 : Float + CastRangeFrom<T> 
+
+    fn to_color_hsla_of<T2>(self) -> ColorHSLAOf<T2> where T2 : Float + CastRangeFrom<T>
     {
         ColorHSLAOf::from_array(self.to_array4().map(|v| T2::cast_range_from(v)))
     }
@@ -200,19 +200,19 @@ impl<T> ToColor for ColorHSLAOf<T> where T : Float
 
     type ColorRGBAF64 = ColorRGBAOf<f64>;
     fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 { self.to_color_rgba_of() }
-    
+
     type ColorRGBAByte = ColorRGBAByte;
     fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte { self.to_color_rgba_of() }
-    
+
     type ColorRGBABool = ColorRGBAMask;
     fn to_color_rgba_bool(&self) -> Self::ColorRGBABool { self.to_color_rgba_of() }
-    
+
     type ColorHSLAF32 = ColorHSLAF32;
     fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 { self.to_color_hsla_of() }
-    
+
     type ColorHSLAF64 = ColorHSLAF64;
     fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.to_color_hsla_of() }
-    
+
     const COLOR_INSIDE : ColorKind = match std::mem::size_of::<T>()
         {
             4 => ColorKind::HSLAF32,

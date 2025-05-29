@@ -356,6 +356,12 @@ macro_rules! impl_fixed_array_like
                 Ok(<[T;$dim]>::deserialize(deserializer)?.into())
             }
         }
+
+        #[cfg(feature = "hexga_io")]
+        impl<T> ::hexga_io::IoSave for $name<T> where [T;$dim] : ::hexga_io::IoSave {}
+
+        #[cfg(feature = "hexga_io")]
+        impl<T> ::hexga_io::IoLoad for $name<T> where [T;$dim] : ::hexga_io::IoLoad {}
     };
 }
 
@@ -507,6 +513,12 @@ macro_rules! impl_generic_array_like
                 Ok(<[T;N]>::deserialize(deserializer)?.into())
             }
         }
+
+        #[cfg(feature = "hexga_io")]
+        impl<T, const N : usize> ::hexga_io::IoSave for $name<T,N> where [T;N] : ::hexga_io::IoSave {}
+
+        #[cfg(feature = "hexga_io")]
+        impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where [T;N] : ::hexga_io::IoLoad {}
     };
 }
 

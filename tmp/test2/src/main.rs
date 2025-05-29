@@ -15,6 +15,9 @@ fn main()
         println!("{:?}", r);
     }
 
+    //Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
+    Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
+
 
     /*
     dbg!(Color::WHITE);

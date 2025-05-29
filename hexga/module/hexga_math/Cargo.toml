@@ -14,7 +14,7 @@ description = "Math related crate that support multi dimensionnal vector, matrix
 categories = ["mathematics", "data-structures"]
 
 [features]
-default = ["serde", "io", "int_are_32_bits", "float_are_32_bits"]
+default = ["serde", "hexga_io", "int_are_32_bits", "float_are_32_bits"]
 
 int_are_8_bits    = ["hexga_typedef/int_are_8_bits"]
 int_are_16_bits   = ["hexga_typedef/int_are_16_bits"]
@@ -27,7 +27,7 @@ float_are_64_bits   = ["hexga_typedef/float_are_64_bits"]
 float_are_size_bits = ["hexga_typedef/float_are_size_bits"]
 
 serde = ["dep:serde"]
-io = ["dep:hexga_io", "serde"]
+hexga_io = ["dep:hexga_io", "serde"]
 
 [dependencies]
 hexga_core.workspace = true
