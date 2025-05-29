@@ -46,7 +46,7 @@ pub trait IoFs : Sized
     /// If there was an error, try stop all the next operation to avoid useless serialization
     fn premature_abord(&self) -> bool;
 
-    fn commit(self) -> Result<(), Vec<IoError>>;
+    fn commit(self) -> IoResult;
 
     fn have_error(&self) -> bool { false }
     fn add_error(&mut self, err : IoError);

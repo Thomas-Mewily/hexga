@@ -21,6 +21,7 @@ pub enum IoErrorKind
     EncodingBadUtf8      { valid_up_to : usize, error_len : Option<usize>},
     Encoding(Reason),
     InvalidPath,
+    Composite(Vec<IoError>),
     Markup(TypeName, Extension, Reason),
 }
 

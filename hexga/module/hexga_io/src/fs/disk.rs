@@ -21,6 +21,18 @@ impl IoFsDisk
     pub const fn new_with_premature_abord(premature_abord : bool) -> Self { Self { premature_abord, err: Vec::new() } }
 }
 
+pub trait SaveToDisk : IoSave
+{
+    fn save_to_disk<W>(&self, path : &path, w : W) -> IoSaveResult
+        where W : IoWrite
+    {
+        let mut fs_disk = IoFsDisk::new();
+        self.save_to_with_extension(path, path.extension().unwrap_or_default(), w, &mut fs_disk)?;
+        fs_disk.commit().to_save_error(path)
+    }
+}
+impl<T> SaveToDisk for T where T : IoSave {}
+
 /*
 impl IoFsDisk
 {
@@ -100,8 +112,8 @@ impl IoFs for IoFsDisk
         f::write(&path, data).to_save_error(path)
     }
 
-    fn commit(self) -> Result<(), Vec<IoError>> {
-        if self.err.is_empty() { Ok(()) } else { Err(self.err) }
+    fn commit(self) -> IoResult {
+        if self.err.is_empty() { Ok(()) } else { Err(IoErrorKind::Composite(self.err)) }
     }
 
     fn add_error(&mut self, err : IoError) {
