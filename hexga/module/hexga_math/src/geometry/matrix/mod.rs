@@ -12,13 +12,48 @@ pub type SquareMatrix<T, const N : usize> = Matrix<T, N, N>;
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 //#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
+//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct Matrix<T, const ROW : usize, const COL : usize>
 {
     pub columns : Vector<Vector<T, ROW>,COL>,
 }
 
-//#[cfg(feature = "hexga_io")]
+#[cfg(feature = "serde")]
+impl<T, const ROW: usize, const COL: usize> serde::Serialize for Matrix<T, ROW, COL>
+where
+    Vector<Vector<T, ROW>, COL>: serde::Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.columns.serialize(serializer)
+    }
+}
 
+#[cfg(feature = "hexga_io")]
+impl<T, const ROW: usize, const COL: usize> IoLoad for Matrix<T, ROW, COL>
+    where Vector<Vector<T, ROW>, COL>: IoLoad
+{}
+
+#[cfg(feature = "hexga_io")]
+impl<T, const ROW: usize, const COL: usize> IoSave for Matrix<T, ROW, COL>
+    where Vector<Vector<T, ROW>, COL>: IoSave
+{}
+
+#[cfg(feature = "serde")]
+impl<'de, T, const ROW: usize, const COL: usize> serde::Deserialize<'de> for Matrix<T, ROW, COL>
+where
+    Vector<Vector<T, ROW>, COL>: serde::Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let columns = Vector::<Vector<T, ROW>, COL>::deserialize(deserializer)?;
+        Ok(Self { columns })
+    }
+}
 
 impl<T, const ROW : usize, const COL : usize> Deref for Matrix<T, ROW, COL>
 {
@@ -48,16 +83,16 @@ impl<T, const ROW : usize, const COL : usize>  Matrix<T, ROW, COL>
     }
 }
 
-use std::fmt::*;
-impl<T, const ROW : usize, const COL : usize> Display  for Matrix<T, ROW, COL> where T : Display  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> Debug    for Matrix<T, ROW, COL> where T : Debug    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> Octal    for Matrix<T, ROW, COL> where T : Octal    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> Binary   for Matrix<T, ROW, COL> where T : Binary   { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> LowerHex for Matrix<T, ROW, COL> where T : LowerHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> UpperHex for Matrix<T, ROW, COL> where T : UpperHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> LowerExp for Matrix<T, ROW, COL> where T : LowerExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> UpperExp for Matrix<T, ROW, COL> where T : UpperExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> Pointer  for Matrix<T, ROW, COL> where T : Pointer  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+use std::fmt;
+impl<T, const ROW : usize, const COL : usize> fmt::Display  for Matrix<T, ROW, COL> where T : fmt::Display  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Debug    for Matrix<T, ROW, COL> where T : fmt::Debug    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Octal    for Matrix<T, ROW, COL> where T : fmt::Octal    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Binary   for Matrix<T, ROW, COL> where T : fmt::Binary   { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::LowerHex for Matrix<T, ROW, COL> where T : fmt::LowerHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::UpperHex for Matrix<T, ROW, COL> where T : fmt::UpperHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::LowerExp for Matrix<T, ROW, COL> where T : fmt::LowerExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::UpperExp for Matrix<T, ROW, COL> where T : fmt::UpperExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Pointer  for Matrix<T, ROW, COL> where T : fmt::Pointer  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
 
 impl<T, const ROW : usize, const COL : usize> Default  for Matrix<T,ROW,COL>   where Vector<Vector<T, ROW>,COL> : Default
 {

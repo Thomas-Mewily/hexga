@@ -52,9 +52,9 @@ impl<T> ToAngle for T where T : CastInto<float>
 
 
 #[cfg(feature = "hexga_io")]
-impl<T> hexga_io::IoLoad for AngleOf<T> where T: Float + for<'de> Deserialize<'de> {}
+impl<T> IoLoad for AngleOf<T> where T: Float + for<'de> Deserialize<'de> {}
 #[cfg(feature = "hexga_io")]
-impl<T> hexga_io::IoSave for AngleOf<T> where T: Float + Serialize {}
+impl<T> IoSave for AngleOf<T> where T: Float + Serialize {}
 
 #[cfg(feature = "serde")]
 impl<T> Serialize for AngleOf<T> where T: Float + Serialize

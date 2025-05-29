@@ -52,7 +52,7 @@
 use std::ops::*;
 use std::iter::{Sum,Product};
 use std::fmt::{Debug, Display, Formatter};
-type DResult =  std::fmt::Result;
+type DResult = std::fmt::Result;
 use std::hash::*;
 use std::marker::PhantomData;
 use std::cmp::Ordering;
@@ -63,7 +63,7 @@ use std::ops::{Range, RangeInclusive};
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
 #[cfg(feature = "hexga_io_derive")]
-use hexga_io::{Save, Load};
+use hexga_io::{Save, Load, IoSave, IoLoad};
 
 pub mod prelude;
 use prelude::*;
