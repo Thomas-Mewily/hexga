@@ -270,6 +270,7 @@ version = "0.0.10-beta.12"
 dependencies = [
  "hexga_array",
  "hexga_core",
+ "hexga_io",
  "hexga_number",
  "hexga_typedef",
  "serde",

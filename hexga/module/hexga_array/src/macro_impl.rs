@@ -1,12 +1,12 @@
 #[macro_export]
 macro_rules! impl_fixed_array_like_op
 {
-    ($name: ident, $dim : expr) => 
+    ($name: ident, $dim : expr) =>
     {
         $crate::map_on::map_on_operator_binary!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T> ::std::ops::$trait_name<Self> for $name<T> 
+                impl<T> ::std::ops::$trait_name<Self> for $name<T>
                     where T : $trait_name<T>
                 {
                     type Output=$name<<T as ::std::ops::$trait_name<T>>::Output>;
@@ -26,7 +26,7 @@ macro_rules! impl_fixed_array_like_op
             {
                 impl<T> ::std::ops::$trait_name<Self> for $name<T> where T : $trait_name
                 {
-                    fn $fn_name(&mut self, rhs: Self) 
+                    fn $fn_name(&mut self, rhs: Self)
                     {
                         let arr : [T; $dim] = rhs.into();
                         self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
@@ -39,7 +39,7 @@ macro_rules! impl_fixed_array_like_op
                 }
             }
         );
-        
+
         // ================= Unary =========
 
         impl<T> ::std::ops::Not for $name<T> where T : Not
@@ -89,9 +89,9 @@ macro_rules! impl_generic_array_like_display
 {
     ($name: ident, $trait_name :ident) =>
     {
-        impl<T, const N : usize> std::fmt::$trait_name  for $name<T,N> where T : std::fmt::$trait_name  
-        { 
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
+        impl<T, const N : usize> std::fmt::$trait_name  for $name<T,N> where T : std::fmt::$trait_name
+        {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
             {
                 write!(f, "(")?;
                 let mut it = self.array().iter().peekable();
@@ -114,9 +114,9 @@ macro_rules! impl_fixed_array_like_display
 {
     ($name: ident, $trait_name :ident) =>
     {
-        impl<T> std::fmt::$trait_name  for $name<T> where T : std::fmt::$trait_name  
-        { 
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
+        impl<T> std::fmt::$trait_name  for $name<T> where T : std::fmt::$trait_name
+        {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
             {
                 write!(f, "(")?;
                 let mut it = self.array().iter().peekable();
@@ -139,12 +139,12 @@ macro_rules! impl_fixed_array_like_display
 #[macro_export]
 macro_rules! impl_generic_array_like_op
 {
-    ($name: ident) => 
+    ($name: ident) =>
     {
         $crate::map_on::map_on_operator_binary!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T, const N : usize> $trait_name<Self> for $name<T,N> 
+                impl<T, const N : usize> $trait_name<Self> for $name<T,N>
                     where T : $trait_name<T>
                 {
                     type Output=$name<<T as ::std::ops::$trait_name<T>>::Output,N>;
@@ -164,7 +164,7 @@ macro_rules! impl_generic_array_like_op
             {
                 impl<T, const N : usize> $trait_name<Self> for $name<T,N> where T : $trait_name
                 {
-                    fn $fn_name(&mut self, rhs: Self) 
+                    fn $fn_name(&mut self, rhs: Self)
                     {
                         let arr : [T; N] = rhs.into();
                         self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
@@ -193,7 +193,7 @@ macro_rules! impl_generic_array_like_op
         }
 
         // ================= Iter =========
-        
+
         impl<T, const N : usize> ::std::iter::Sum for $name<T,N> where Self : ::hexga_number::Zero + ::std::ops::Add<Self,Output = Self>
         {
             fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
@@ -225,8 +225,8 @@ macro_rules! impl_generic_array_like_op
 #[macro_export]
 macro_rules! impl_fixed_array_like
 {
-    ($name: ident, $dim : expr) => 
-    { 
+    ($name: ident, $dim : expr) =>
+    {
         impl<T> ::std::marker::Copy  for $name<T> where T : Copy {}
         impl<T> ::std::clone::Clone for $name<T> where T : Clone
         {
@@ -243,7 +243,7 @@ macro_rules! impl_fixed_array_like
         {
             fn partial_cmp(&self, rhs : &Self) -> ::std::option::Option<::std::cmp::Ordering> { ::std::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
         }
-        impl<T> ::std::cmp::Ord for $name<T> where T : Ord 
+        impl<T> ::std::cmp::Ord for $name<T> where T : Ord
         {
             fn cmp(&self, rhs : &Self) -> ::std::cmp::Ordering { ::std::cmp::Ord::cmp(self.array(), rhs.array()) }
         }
@@ -254,7 +254,7 @@ macro_rules! impl_fixed_array_like
         }
 
         impl<T> ::std::convert::From<T> for $name<T> where T : Copy { fn from(value: T) -> Self { Self::from([value; $dim]) } }
-    
+
         impl<T> ::std::convert::From<[T; $dim]> for $name<T> { fn from(value: [T; $dim]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
         impl<T> ::std::convert::From<$name<T>> for [T; $dim] { fn from(value: $name<T>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
 
@@ -270,36 +270,36 @@ macro_rules! impl_fixed_array_like
         }
 
         impl<T, Idx> ::std::ops::Index<Idx> for $name<T> where [T;$dim] : ::std::ops::Index<Idx>
-        { 
-            type Output=<[T;$dim] as ::std::ops::Index<Idx>>::Output; 
-            fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) } 
+        {
+            type Output=<[T;$dim] as ::std::ops::Index<Idx>>::Output;
+            fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
         }
         impl<T, Idx> ::std::ops::IndexMut<Idx> for $name<T> where [T;$dim] : ::std::ops::IndexMut<Idx>
-        { 
-            fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) } 
+        {
+            fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
         }
-    
+
         impl<T, Idx> ::hexga_core::collections::Get<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::Get<Idx>
-        { 
+        {
             type Output = <[T;$dim] as ::hexga_core::collections::Get<Idx>>::Output;
 
             #[inline(always)]
             fn try_get(&self, index: Idx) -> Result<&Self::Output, ()> { ::hexga_core::collections::Get::try_get(self.array(), index) }
             #[inline(always)]
-            fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_core::collections::Get::get(self.array(), index) } 
+            fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_core::collections::Get::get(self.array(), index) }
             #[inline(always)]
             #[track_caller]
-            unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_core::collections::Get::get_unchecked(self.array(), index) } } 
+            unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
         }
         impl<T, Idx> ::hexga_core::collections::GetMut<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::GetMut<Idx>
-        { 
+        {
             #[inline(always)]
-            fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, ()> { ::hexga_core::collections::GetMut::try_get_mut(self.array_mut(), index) } 
+            fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, ()> { ::hexga_core::collections::GetMut::try_get_mut(self.array_mut(), index) }
             #[inline(always)]
-            fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) } 
+            fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
             #[inline(always)]
             #[track_caller]
-            unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { ::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } } 
+            unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { ::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
         }
 
         impl<T, Idx> ::hexga_core::collections::GetManyMut<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::GetManyMut<Idx>
@@ -315,28 +315,28 @@ macro_rules! impl_fixed_array_like
         {
             type Item = <[T;$dim] as ::std::iter::IntoIterator>::Item;
             type IntoIter = <[T;$dim] as ::std::iter::IntoIterator>::IntoIter;
-        
-            fn into_iter(self) -> Self::IntoIter 
+
+            fn into_iter(self) -> Self::IntoIter
             {
                 self.to_array().into_iter()
             }
         }
-        
+
         impl<'a, T> ::std::iter::IntoIterator for &'a $name<T> where &'a [T;$dim] : ::std::iter::IntoIterator
         {
             type Item = <&'a [T;$dim] as ::std::iter::IntoIterator>::Item;
             type IntoIter = <&'a [T;$dim] as ::std::iter::IntoIterator>::IntoIter;
-        
+
             fn into_iter(self) -> Self::IntoIter {
                 self.as_array().into_iter()
             }
         }
-        
+
         impl<'a, T> ::std::iter::IntoIterator for &'a mut $name<T> where &'a mut [T;$dim] : ::std::iter::IntoIterator
         {
             type Item = <&'a mut [T;$dim] as IntoIterator>::Item;
             type IntoIter = <&'a mut [T;$dim] as IntoIterator>::IntoIter;
-        
+
             fn into_iter(self) -> Self::IntoIter {
                 self.as_array_mut().into_iter()
             }
@@ -364,8 +364,8 @@ macro_rules! impl_fixed_array_like
 #[macro_export]
 macro_rules! impl_fixed_array_like_with_op
 {
-    ($name: ident, $dim : expr) => 
-    { 
+    ($name: ident, $dim : expr) =>
+    {
         impl_fixed_array_like_op!($name, $dim);
         impl_fixed_array_like!($name, $dim);
     };
@@ -376,8 +376,8 @@ macro_rules! impl_fixed_array_like_with_op
 #[macro_export]
 macro_rules! impl_generic_array_like
 {
-    ($name: ident) => 
-    { 
+    ($name: ident) =>
+    {
         impl<T, const N : usize> ::std::marker::Copy  for $name<T,N> where T : Copy  {}
         impl<T, const N : usize> ::std::clone::Clone for $name<T,N> where T : Clone
         {
@@ -394,7 +394,7 @@ macro_rules! impl_generic_array_like
         {
             fn partial_cmp(&self, rhs : &Self) -> ::std::option::Option<::std::cmp::Ordering> { ::std::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
         }
-        impl<T, const N : usize> ::std::cmp::Ord for $name<T,N> where T : Ord 
+        impl<T, const N : usize> ::std::cmp::Ord for $name<T,N> where T : Ord
         {
             fn cmp(&self, rhs : &Self) -> ::std::cmp::Ordering { ::std::cmp::Ord::cmp(self.array(), rhs.array()) }
         }
@@ -421,36 +421,36 @@ macro_rules! impl_generic_array_like
         }
 
         impl<T, const N : usize, Idx> ::std::ops::Index<Idx> for $name<T,N> where [T;N] : ::std::ops::Index<Idx>
-        { 
-            type Output=<[T;N] as ::std::ops::Index<Idx>>::Output; 
-            fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) } 
+        {
+            type Output=<[T;N] as ::std::ops::Index<Idx>>::Output;
+            fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
         }
         impl<T, const N : usize, Idx> ::std::ops::IndexMut<Idx> for $name<T,N> where [T;N] : ::std::ops::IndexMut<Idx>
-        { 
-            fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) } 
+        {
+            fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
         }
-    
+
         impl<T, const N : usize, Idx> ::hexga_core::collections::Get<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::Get<Idx>
-        { 
+        {
             type Output = <[T;N] as ::hexga_core::collections::Get<Idx>>::Output;
 
             #[inline(always)]
             fn try_get(&self, index: Idx) -> Result<&Self::Output, ()> { ::hexga_core::collections::Get::try_get(self.array(), index) }
             #[inline(always)]
-            fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_core::collections::Get::get(self.array(), index) } 
+            fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_core::collections::Get::get(self.array(), index) }
             #[inline(always)]
             #[track_caller]
-            unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_core::collections::Get::get_unchecked(self.array(), index) } } 
+            unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
         }
         impl<T, const N : usize, Idx> ::hexga_core::collections::GetMut<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::GetMut<Idx>
-        { 
+        {
             #[inline(always)]
-            fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, ()> { ::hexga_core::collections::GetMut::try_get_mut(self.array_mut(), index) } 
+            fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, ()> { ::hexga_core::collections::GetMut::try_get_mut(self.array_mut(), index) }
             #[inline(always)]
-            fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) } 
+            fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
             #[inline(always)]
             #[track_caller]
-            unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { ::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } } 
+            unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { ::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
         }
 
         impl<T, const N : usize, Idx> ::hexga_core::collections::GetManyMut<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::GetManyMut<Idx>
@@ -466,28 +466,28 @@ macro_rules! impl_generic_array_like
         {
             type Item = <[T;N] as ::std::iter::IntoIterator>::Item;
             type IntoIter = <[T;N] as ::std::iter::IntoIterator>::IntoIter;
-        
-            fn into_iter(self) -> Self::IntoIter 
+
+            fn into_iter(self) -> Self::IntoIter
             {
                 self.to_array().into_iter()
             }
         }
-        
+
         impl<'a, T, const N : usize> ::std::iter::IntoIterator for &'a $name<T,N> where &'a [T;N] : ::std::iter::IntoIterator
         {
             type Item = <&'a [T;N] as ::std::iter::IntoIterator>::Item;
             type IntoIter = <&'a [T;N] as ::std::iter::IntoIterator>::IntoIter;
-        
+
             fn into_iter(self) -> Self::IntoIter {
                 self.as_array().into_iter()
             }
         }
-        
+
         impl<'a, T, const N : usize> ::std::iter::IntoIterator for &'a mut $name<T,N> where &'a mut [T;N] : ::std::iter::IntoIterator
         {
             type Item = <&'a mut [T;N] as IntoIterator>::Item;
             type IntoIter = <&'a mut [T;N] as IntoIterator>::IntoIter;
-        
+
             fn into_iter(self) -> Self::IntoIter {
                 self.as_array_mut().into_iter()
             }
@@ -513,8 +513,8 @@ macro_rules! impl_generic_array_like
 #[macro_export]
 macro_rules! impl_generic_array_like_with_op
 {
-    ($name: ident) => 
-    { 
+    ($name: ident) =>
+    {
         impl_generic_array_like_op!($name);
         impl_generic_array_like!($name);
     };
