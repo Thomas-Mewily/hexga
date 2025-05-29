@@ -16,7 +16,7 @@ impl<T> IoSave for T where T : IoSaveFrom + Serialize
     fn save_own_extensions() -> impl Iterator<Item = &'static str> { T::From::save_own_extensions() }
 
     fn save_with_reader_and_extension<W, Fs>(&self, path : &path, extension : &extension, w : W, fs : &mut Fs) -> IoSaveResult
-            where W : Write, Fs : IoFs
+            where W : Write, Fs : IoFsWrite
     {
         if let Some(v) = self.save_from_based_on_ref()
         {
@@ -44,11 +44,11 @@ pub trait IoSave : Serialize
 
     // The path is usefull the save composite file (ex: saving a gif but every frame is in a subfolder relative to the path)
     fn save_to_with_own_extension<W, Fs>(&self, path : &path, extension : &extension, w : W, fs : &mut Fs) -> IoSaveResult
-        where W : IoWrite, Fs : IoFs
+        where W : IoWrite, Fs : IoFsWrite
     { self.save_to_with_own_extension_pathless(extension, w, fs).to_save_error(path) }
 
     fn save_to_with_own_extension_pathless<W, Fs>(&self, extension : &extension, w : W, fs : &mut Fs) -> IoResult
-        where W : IoWrite, Fs : IoFs
+        where W : IoWrite, Fs : IoFsWrite
     {
         Err(IoErrorKind::Unimplemented)
     }
@@ -60,28 +60,33 @@ pub trait IoSave : Serialize
 
 
     /// Don't include the markup language extension like `json` or `ron`
-    fn can_save_own_extension(extension: &str) -> bool { Self::save_own_extensions().any(|ext| ext == extension) }
+    fn can_save_own_extension(extension: &extension) -> bool { Self::save_own_extensions().any(|ext| ext == extension) }
 
 
     /// Also include the markup language extension like `json` or `ron`
     fn save_extensions() -> impl Iterator<Item = &'static str> { Self::save_own_extensions().chain(Io::MARKUP_EXTENSIONS.iter().copied()) }
 
     /// Also include the markup language extension like `json` or `ron`
-    fn can_save_extension(extension: &str) -> bool { Self::save_extensions().any(|ext| ext == extension) }
+    fn can_save_extension(extension: &extension) -> bool { Self::save_extensions().any(|ext| ext == extension) }
 
-    fn save_to<Fs>(&self, path : &path, fs : &mut Fs) -> IoSaveResult where Fs : IoFs
+    fn save_to<Fs>(&self, path : &path, fs : &mut Fs) -> IoSaveResult where Fs : IoFsWrite
     {
-        fs.save(path, self).to_save_error(path)
+        self.save_to_with_extension(path, path.extension_or_empty(), fs)
+    }
+
+    fn save_to_with_extension<Fs>(&self, path : &path, extension: &extension, fs : &mut Fs) -> IoSaveResult where Fs : IoFsWrite
+    {
+        fs.save_with_extension(path, extension, self).to_save_error(path)
     }
 
     fn save_with_reader<W, Fs>(&self, path : &path, w : W, fs : &mut Fs) -> IoSaveResult
-        where W : IoWrite, Fs : IoFs
+        where W : IoWrite, Fs : IoFsWrite
     {
-        self.save_with_reader_and_extension(path, path.extension().unwrap_or_default(), w, fs)
+        self.save_with_reader_and_extension(path, path.extension_or_empty(), w, fs)
     }
 
     fn save_with_reader_and_extension<W, Fs>(&self, path : &path, extension : &extension, mut w : W, fs : &mut Fs) -> IoSaveResult
-        where W : IoWrite, Fs : IoFs
+        where W : IoWrite, Fs : IoFsWrite
     {
         match extension
         {

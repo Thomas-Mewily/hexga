@@ -70,7 +70,7 @@ impl IoSave for str
 {
     fn save_own_extensions() -> impl Iterator<Item = &'static str> { ["txt", "md"].iter().copied() }
 
-    fn save_to_with_own_extension_pathless<W, Fs>(&self, _ : &extension, mut w : W, _ : &mut Fs) -> IoResult where W : Write, Fs : IoFs
+    fn save_to_with_own_extension_pathless<W, Fs>(&self, _ : &extension, mut w : W, _ : &mut Fs) -> IoResult where W : Write, Fs : IoFsWrite
     {
         w.write_all(self.as_bytes()).map_err(|e| IoErrorKind::from_internal_error(e))
     }
@@ -80,7 +80,7 @@ impl IoSave for String
     fn save_own_extensions() -> impl Iterator<Item = &'static str> { str::save_own_extensions() }
 
     fn save_to_with_own_extension_pathless<W, Fs>(&self, extension : &extension, w : W, fs : &mut Fs) -> IoResult
-            where W : Write, Fs : IoFs
+            where W : Write, Fs : IoFsWrite
     { self.as_str().save_to_with_own_extension_pathless(extension, w, fs) }
 }
 impl IoLoad for String

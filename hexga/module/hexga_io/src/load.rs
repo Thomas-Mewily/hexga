@@ -38,15 +38,13 @@ pub trait IoLoad : for<'de> Deserialize<'de>
     /// Don't include the markup language extension like `json` or `ron`
     fn load_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
 
+
     fn load_from_bytes_with_own_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self> { Self::load_from_bytes_with_own_extension_pathless(data, extension).to_load_error(path) }
     fn load_from_bytes_with_own_extension_pathless(data : &[u8], extension : &extension) -> IoResult<Self> { Err(IoErrorKind::Unimplemented) }
 
     const CAN_BE_LOADED_FROM_TEXT : bool = false;
     fn load_from_str_with_own_extension(data : &str, path : &path, extension : &extension) -> IoLoadResult<Self> { Self::load_from_str_with_own_extension_pathless(data, extension).to_load_error(path) }
     fn load_from_str_with_own_extension_pathless(data : &str, extension : &extension) -> IoResult<Self> { Err(IoErrorKind::Unimplemented) }
-
-
-
 
 
     // impl details :
@@ -61,6 +59,15 @@ pub trait IoLoad : for<'de> Deserialize<'de>
     /// Also include the markup language extension like `json` or `ron`
     fn can_open_extension(extension: &str) -> bool { Self::load_extensions().any(|ext| ext == extension) }
 
+    fn load_from<Fs>(path : &path, fs : &mut Fs) -> IoLoadResult<Self> where Fs : IoFsRead
+    {
+        Self::load_from_with_extension(path, path.extension_or_empty(), fs)
+    }
+    fn load_from_with_extension<Fs>(path : &path, extension: &extension, fs : &mut Fs) -> IoLoadResult<Self> where Fs : IoFsRead
+    {
+        fs.load_with_extension(path, extension).to_save_error(path)
+    }
+
     /// Support bytes and str
     fn load_from_reader<R>(mut r : R, path : &path) -> IoLoadResult<Self> where R : IoRead
     {
@@ -72,8 +79,7 @@ pub trait IoLoad : for<'de> Deserialize<'de>
     /// Support bytes and str
     fn load_from_bytes(data : &[u8], path : &path) -> IoLoadResult<Self>
     {
-        let ext = path.extension().unwrap_or_default();
-        Self::load_from_bytes_with_extension(data, path, ext)
+        Self::load_from_bytes_with_extension(data, path, path.extension_or_empty())
     }
     /// Support bytes and str
     fn load_from_bytes_with_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self>

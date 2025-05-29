@@ -1,6 +1,5 @@
 use crate::*;
 
-use std::fs as f;
 use std::fs::File;
 
 // Todo : add permission and stuff
@@ -30,7 +29,19 @@ pub trait SaveToDisk : IoSave
         fs_disk.commit().to_save_error(path)
     }
 }
-impl<T> SaveToDisk for T where T : IoSave {}
+impl<T> SaveToDisk for T where T : IoSave + ?Sized {}
+
+pub trait LoadToDisk : IoLoad
+{
+    fn load_from_disk(path : &path) -> IoLoadResult<Self>
+    {
+        let mut fs_disk = IoFsDisk::new();
+        let s = Self::load_from(path, &mut fs_disk)?;
+        fs_disk.commit().to_load_error(path)?;
+        Ok(s)
+    }
+}
+impl<T> LoadToDisk for T where T : IoLoad + ?Sized {}
 
 /*
 impl IoFsDisk
@@ -107,15 +118,26 @@ impl IoFs for IoFsDisk
         self.premature_abord
     }
 
-    unsafe fn save_bytes_unchecked(&mut self, path : Path, data : &[u8]) -> IoSaveResult {
-        f::write(&path, data).to_save_error(path)
-    }
-
     fn commit(self) -> IoResult {
         if self.err.is_empty() { Ok(()) } else { Err(IoErrorKind::Composite(self.err)) }
     }
 
     fn add_error(&mut self, err : IoError) {
         self.err.push(err);
+    }
+}
+
+impl IoFsWrite for IoFsDisk
+{
+    unsafe fn write_bytes_unchecked(&mut self, path : Path, data : &[u8]) -> IoSaveResult {
+        std::fs::write(&path, data).to_save_error(path)
+    }
+}
+
+impl IoFsRead for IoFsDisk
+{
+    unsafe fn read_bytes_unchecked(&mut self, path : Path) -> IoResult<Vec<u8>>
+    {
+        std::fs::read(&path).map_err(|v| IoErrorKind::from_internal_error(v))
     }
 }

@@ -6,7 +6,11 @@ pub use crate::
     IoSave,IoSaveFrom,IoSaveResult,
     IoLoad,IoLoadFrom,IoLoadResult,
 
-    fs::{IoFs,IoFsDisk,SaveToDisk}
+    fs::
+    {
+        IoFs,IoFsWrite,IoFsRead,
+        IoFsDisk,SaveToDisk
+    }
 };
 
 #[cfg(feature = "derive")]

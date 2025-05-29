@@ -4,7 +4,7 @@
 #![allow(unused_variables)]
 
 use hexga::prelude::*;
-use hexga_io::MarkupExtensionFromRon;
+use hexga_io::{fs::LoadToDisk, MarkupExtensionFromRon};
 use hexga_map_on::*;
 use hexga_graphics::*;
 
@@ -30,6 +30,33 @@ fn main()
     Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
 
     90.degree().save_to_disk("./tmp/test2/asset/angle.ron").unwrap();
+
+
+    "Hello file !".save_to_disk("./myfile.txt").unwrap();
+
+    let read = String::load_from_disk("./myfile.txt").unwrap();
+    assert_eq!("Hello file !", read);
+
+    // io derive (serde::Serdialize, serde::Deserialize) and (hexga_io::Load, hexga_io::Save)
+    #[io]
+    #[derive(PartialEq, Debug)]
+    struct Person
+    {
+        age : i32,
+        name : String,
+    }
+
+    let mut fs = IoFsDisk::new();
+
+        let person = Person { age: 42, name: "Life".to_owned() };
+        person.save_to("./person.json", &mut fs).unwrap();
+        person.save_to("./person.ron" , &mut fs).unwrap();
+
+    fs.commit().unwrap();
+
+    assert_eq!(Person::load_from_disk("./person.ron"), Ok(person));
+
+
 
     /*
     dbg!(Angle::from_ron("45"));
