@@ -5,30 +5,56 @@ use crate::*;
 /// Might lose some precision.
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
 ///
-/// The Output type can be a little bit different, but still related to the generic type :
+/// The Output type can be a little bit different for composite type, but it is still related to the generic type :
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
-/// use std::any::{TypeId};
 ///
-/// assert_eq!(TypeId::of::<<[u8;1] as CastIntoComposite<u16>>::Output>(), TypeId::of::<[u16;1]>())
-/// ```
+/// assert_eq!(i32::cast_from(255u8), 255i32);
+/// assert_eq!(i32::cast_from(12.3f32), 12);
+///
+/// assert_eq!(<u8 as CastInto<i32>>::cast_into(255u8), 255i32);
+/// // Also work with composite
+/// assert_eq!(<[u8;2] as CastIntoComposite<i32>>::cast_into_composite([42u8, 99u8]), [42i32,99i32]);
+///```
 pub trait CastIntoComposite<T>
 {
     type Output;
     /// Might lose some precision.
-    /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
+    /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`, but can be used in a generic way.
     fn cast_into_composite(self) -> Self::Output;
 }
 
 
 /// Might lose some precision.
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(i32::cast_from(255u8), 255i32);
+/// assert_eq!(i32::cast_from(12.3f32), 12);
+///
+/// assert_eq!(<u8 as CastInto<i32>>::cast_into(255u8), 255i32);
+/// // Also work with composite
+/// assert_eq!(<[u8;2] as CastIntoComposite<i32>>::cast_into_composite([42u8, 99u8]), [42i32,99i32]);
+///```
 pub trait CastInto<T> : CastIntoComposite<T,Output = T> + Sized { fn cast_into(self) -> Self::Output { self.cast_into_composite() } }
 impl<T,T2> CastInto<T> for T2 where T2 : CastIntoComposite<T,Output = T> {}
 
 /// Might lose some precision.
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(i32::cast_from(255u8), 255i32);
+/// assert_eq!(i32::cast_from(12.3f32), 12);
+///
+/// assert_eq!(<u8 as CastInto<i32>>::cast_into(255u8), 255i32);
+/// // Also work with composite
+/// assert_eq!(<[u8;2] as CastIntoComposite<i32>>::cast_into_composite([42u8, 99u8]), [42i32,99i32]);
+///```
 pub trait CastFrom<T> { fn cast_from(value : T) -> Self; }
 impl<Src,Dest> CastFrom<Dest> for Src where Dest : CastInto<Src> { fn cast_from(value : Dest) -> Self { value.cast_into_composite() } }
 

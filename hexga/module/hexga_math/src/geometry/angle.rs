@@ -60,10 +60,10 @@ impl<T:Float> AngleOf<T>
     // Todo : check for a better way to do it
     /// `[0, 2PI[`
     pub fn normalized_positive(self) -> Self { Self::from_radian((self.0 % T::ANGLE_FULL_RADIAN + T::ANGLE_FULL_RADIAN) % T::ANGLE_FULL_RADIAN)  }
-    
+
     // Todo : check for a better way to do it
     /// `]PI; PI]`
-    pub fn normalized(self) -> Self 
+    pub fn normalized(self) -> Self
     {
         let tmp = self.normalized_positive();
         if tmp < Self::HALF { tmp } else { tmp - Self::FULL }
@@ -86,7 +86,7 @@ impl<T:Float> AngleOf<T>
     /// Return a normalized (length = 1) vector with the same angle
     #[inline(always)] pub fn to_vec2_normalized(self) -> Vec2 where T : Into<float> { unsafe { Angle::from_inner_value(self.0.into()).to_vector2_normalized() } }
     #[inline(always)] pub fn to_vec2(self, length : T) -> Vec2 where T : Into<float> { unsafe { Angle::from_inner_value(self.0.into()).to_vector2(length.into()) } }
-    
+
     /// Return a normalized (length = 1) vector with the same angle
     #[inline(always)] pub fn to_vector2_normalized(self) -> Vector2<T> { self.to_vector2(T::ONE) }
     #[inline(always)] pub fn to_vector2(self, length : T) -> Vector2<T> { Vector2::new(self.cos() * length, self.sin()* length) }
@@ -125,7 +125,7 @@ impl<T: Float> RangeDefault for AngleOf<T>
     const RANGE      : Self = Self::FULL;
 }
 
-/* 
+/*
 impl<T:Float> AngleOf<T>
 {
     pub fn fmt_degree_with_optional_precision(self, precision : Option<T>) -> DisplayAngleDegree { DisplayAngleDegree { angle: self, precision }}
@@ -137,9 +137,9 @@ impl<T:Float> Display for AngleOf<T> where T:Float { fn fmt(&self, f: &mut Forma
 #[derive(Clone, Copy)]
 pub struct DisplayAngleDegree{ angle : AngleOf, precision : Option<T> }
 impl<T:Float> Display for DisplayAngleDegree {
-    fn fmt(&self, f: &mut Formatter<'_>) -> DResult 
+    fn fmt(&self, f: &mut Formatter<'_>) -> DResult
     {
-        write!(f, "{}°", 
+        write!(f, "{}°",
         {
             match self.precision
             {

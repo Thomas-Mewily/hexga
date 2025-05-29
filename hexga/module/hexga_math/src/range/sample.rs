@@ -71,11 +71,11 @@ impl<I,T> RangeSampleExtension<I> for Range<T> where I : Number + CastInto<T>, T
     type Output = RangeSample<I,T>;
     type Item = T;
 
-    fn sample(self, nb_sample: I) -> Self::Output 
+    fn sample(self, nb_sample: I) -> Self::Output
     {
         let (start, end) = (self.start, self.end);
         let step = if nb_sample.is_zero() { T::ZERO } else { (end - start) / T::cast_from(nb_sample) };
-        RangeSample 
+        RangeSample
         {
             current: I::ZERO,
             nb_sample,
@@ -90,11 +90,11 @@ impl<I,T> RangeSampleExtension<I> for RangeInclusive<T> where I : Number + CastI
     type Output = RangeSample<I,T>;
     type Item = T;
 
-    fn sample(self, nb_sample: I) -> Self::Output 
+    fn sample(self, nb_sample: I) -> Self::Output
     {
         let (start, end) = self.into_inner();
         let step = if nb_sample.is_zero() { T::ZERO } else { (end - start) / T::cast_from(nb_sample - I::ONE) };
-        RangeSample 
+        RangeSample
         {
             current: I::ZERO,
             nb_sample,
@@ -110,7 +110,7 @@ impl<I,T> RangeSampleExtension<I> for RangeTo<T> where I : Number + CastInto<T>,
     type Output = RangeSample<I, T>;
     type Item = T;
 
-    fn sample(self, nb_sample: I) -> Self::Output 
+    fn sample(self, nb_sample: I) -> Self::Output
     {
         (T::RANGE_MIN..self.end).sample(nb_sample)
     }
@@ -120,7 +120,7 @@ impl<I,T> RangeSampleExtension<I> for RangeToInclusive<T> where I : Number + Cas
     type Output = RangeSample<I, T>;
     type Item = T;
 
-    fn sample(self, nb_sample: I) -> Self::Output 
+    fn sample(self, nb_sample: I) -> Self::Output
     {
         (T::RANGE_MIN..=self.end).sample(nb_sample)
     }
@@ -131,7 +131,7 @@ impl<I,T> RangeSampleExtension<I> for RangeFrom<T> where I : Number + CastInto<T
     type Output = RangeSample<I, T>;
     type Item = T;
 
-    fn sample(self, nb_sample: I) -> Self::Output 
+    fn sample(self, nb_sample: I) -> Self::Output
     {
         (self.start..=T::RANGE_MAX).sample(nb_sample)
     }

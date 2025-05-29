@@ -1,7 +1,45 @@
 use crate::*;
 
-/// Might lose some precision.
-/// Cast the default range of the value to the target range of the other value
+/// Remap the value [RangeDefault] to the default range of target type.
+///
+/// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(u8::cast_range_from(1f32), 255u8);
+/// assert_eq!(u8::cast_range_from(0f32), 0u8);
+/// assert_eq!(u8::cast_range_from(0.5f32), 127u8);
+/// ```
+///
+/// Also support casting to another type with the same size :
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(u8::cast_range_from(0i8), 0u8);
+/// assert_eq!(u8::cast_range_from(127i8), 254u8);
+///
+/// assert_eq!(i8::cast_range_from(0u8), 0i8);
+/// assert_eq!(i8::cast_range_from(255u8), 127i8);
+///
+/// assert_eq!(u8::cast_range_from(128u8), 128u8);
+///
+/// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
+/// ```
+///
+/// Also work with composite like [std::array], [Vector], [ColorRGBA]...
+///
+/// ```
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
+/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
+///
+/// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
+///             ColorRGBAOf::<u16>::RED
+///            );
+/// ```
 pub trait CastRangeIntoComposite<T>
 {
     type Output;
@@ -9,9 +47,89 @@ pub trait CastRangeIntoComposite<T>
     fn cast_range_into_composite(self) -> Self::Output;
 }
 
+/// Remap the value [RangeDefault] to the default range of target type.
+///
+/// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(u8::cast_range_from(1f32), 255u8);
+/// assert_eq!(u8::cast_range_from(0f32), 0u8);
+/// assert_eq!(u8::cast_range_from(0.5f32), 127u8);
+/// ```
+///
+/// Also support casting to another type with the same size :
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(u8::cast_range_from(0i8), 0u8);
+/// assert_eq!(u8::cast_range_from(127i8), 254u8);
+///
+/// assert_eq!(i8::cast_range_from(0u8), 0i8);
+/// assert_eq!(i8::cast_range_from(255u8), 127i8);
+///
+/// assert_eq!(u8::cast_range_from(128u8), 128u8);
+///
+/// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
+/// ```
+///
+/// Also work with composite like [std::array], [Vector], [ColorRGBA]...
+///
+/// ```
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
+/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
+///
+/// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
+///             ColorRGBAOf::<u16>::RED
+///            );
+/// ```
 pub trait CastRangeInto<T> : CastRangeIntoComposite<T,Output = T> + Sized { fn cast_range_into(self) -> Self::Output { self.cast_range_into_composite() } }
 impl<T,T2> CastRangeInto<T> for T2 where T2 : CastRangeIntoComposite<T,Output = T> {}
 
+/// Remap the value [RangeDefault] to the default range of target type.
+///
+/// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(u8::cast_range_from(1f32), 255u8);
+/// assert_eq!(u8::cast_range_from(0f32), 0u8);
+/// assert_eq!(u8::cast_range_from(0.5f32), 127u8);
+/// ```
+///
+/// Also support casting to another type with the same size :
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(u8::cast_range_from(0i8), 0u8);
+/// assert_eq!(u8::cast_range_from(127i8), 254u8);
+///
+/// assert_eq!(i8::cast_range_from(0u8), 0i8);
+/// assert_eq!(i8::cast_range_from(255u8), 127i8);
+///
+/// assert_eq!(u8::cast_range_from(128u8), 128u8);
+///
+/// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
+/// ```
+///
+/// Also work with composite like [std::array], [Vector], [ColorRGBA]...
+///
+/// ```
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
+/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
+///
+/// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
+///             ColorRGBAOf::<u16>::RED
+///            );
+/// ```
 pub trait CastRangeFrom<T> { fn cast_range_from(value : T) -> Self; }
 impl<Src,Dest> CastRangeFrom<Dest> for Src where Dest : CastRangeInto<Src> { fn cast_range_from(value : Dest) -> Self { value.cast_range_into_composite() } }
 
@@ -20,46 +138,54 @@ impl_composite_output_with_methods!(CastRangeIntoComposite<CastToRangeOut>, cast
 
 
 // Double recursive macro :)
-macro_rules! impl_cast_range_to_integer 
-{ 
-    ($itself: ty, $other: ty) => 
-    { 
+macro_rules! impl_cast_range_to_integer
+{
+    ($itself: ty, $other: ty) =>
+    {
         impl CastRangeIntoComposite<$other> for $itself
         {
             type Output = $other;
-            fn cast_range_into_composite(self) -> Self::Output 
+            #[inline(always)]
+            fn cast_range_into_composite(self) -> Self::Output
             {
+                // The match can be inlined by the compiler since it is matching on compile time constant
                 match (Self::PRIMITIVE_NUMBER_TYPE, <$other>::PRIMITIVE_NUMBER_TYPE)
                 {
-                    (NumberType::IntegerSigned, NumberType::IntegerSigned) => 
+                    (NumberType::IntegerSigned, NumberType::IntegerSigned) =>
                     {
-                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>() 
+                        if std::mem::size_of::<Self>() == std::mem::size_of::<$other>() { return self as $other; }
+                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>()
                         {
                             // down cast
-                            (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
+                            return (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
                         }else
                         {
                             // up cast
                             ((self as $other) * (<$other>::RANGE / (Self::RANGE as $other)))
                         }
                     },
-                    (NumberType::IntegerSigned, NumberType::IntegerUnsigned) => 
+                    (NumberType::IntegerSigned, NumberType::IntegerUnsigned) =>
                     {
-                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>() 
+                        if std::mem::size_of::<Self>() > std::mem::size_of::<$other>()
                         {
                             // down cast
                             (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
                         }else
                         {
-                            // up cast
+                            // up cast or same size
                             ((self as $other) * (<$other>::RANGE / (Self::RANGE as $other)))
                         }
                     },
                     (NumberType::IntegerSigned, NumberType::Float) => ((self as $other - Self::RANGE_MIN as $other) / (Self::RANGE as $other)) ,
                     (NumberType::IntegerSigned, NumberType::Bool) => if (self > Self::ZERO) { <$other>::RANGE_MAX } else { <$other>::RANGE_MIN },
-                    (NumberType::IntegerUnsigned, NumberType::IntegerSigned) => 
+                    (NumberType::IntegerUnsigned, NumberType::IntegerSigned) =>
                     {
-                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>() 
+                        if std::mem::size_of::<Self>() == std::mem::size_of::<$other>()
+                        {
+                            // same size, but different range
+                            return (self / (Self::RANGE / (<$other>::RANGE as $itself))) as $other
+                        }
+                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>()
                         {
                             // down cast
                             (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
@@ -69,9 +195,10 @@ macro_rules! impl_cast_range_to_integer
                             ((self as $other) * (<$other>::RANGE / (Self::RANGE as $other)))
                         }
                     },
-                    (NumberType::IntegerUnsigned, NumberType::IntegerUnsigned) => 
+                    (NumberType::IntegerUnsigned, NumberType::IntegerUnsigned) =>
                     {
-                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>() 
+                        if std::mem::size_of::<Self>() == std::mem::size_of::<$other>() { return self as $other; }
+                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>()
                         {
                             // down cast
                             (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
@@ -94,12 +221,12 @@ macro_rules! impl_cast_range_to_integer
                 }
             }
         }
-    }; 
+    };
 
-    ($other: ty) => 
+    ($other: ty) =>
     {
         map_on_number!(impl_cast_range_to_integer,$other);
-    }; 
+    };
 }
 map_on_number!(impl_cast_range_to_integer);
 
@@ -109,7 +236,7 @@ map_on_number!(
         impl CastRangeIntoComposite<$type_name> for bool
         {
             type Output = $type_name;
-            fn cast_range_into_composite(self) -> Self::Output 
+            fn cast_range_into_composite(self) -> Self::Output
             {
                 if self { <$type_name>::RANGE_MAX } else { <$type_name>::RANGE_MIN }
             }
@@ -117,7 +244,7 @@ map_on_number!(
         impl CastRangeIntoComposite<bool> for $type_name
         {
             type Output = bool;
-            fn cast_range_into_composite(self) -> Self::Output 
+            fn cast_range_into_composite(self) -> Self::Output
             {
                 self > Self::ZERO
             }
@@ -148,15 +275,15 @@ pub trait CastRangeFloat             : CastRangeIntoFloat + CastRangeFromFloat {
 impl<T> CastRangeFloat for T where T : CastRangeIntoFloat + CastRangeFromFloat {}
 
 /// uX
-pub trait CastRangeIntoIntegerUnsigned : 
-    CastRangeInto<u8 > + 
+pub trait CastRangeIntoIntegerUnsigned :
+    CastRangeInto<u8 > +
     CastRangeInto<u16> +
     CastRangeInto<u32> +
     CastRangeInto<u64> +
     CastRangeInto<usize>
 {}
 impl<T> CastRangeIntoIntegerUnsigned for T where T :
-    CastRangeInto<u8 > + 
+    CastRangeInto<u8 > +
     CastRangeInto<u16> +
     CastRangeInto<u32> +
     CastRangeInto<u64> +
@@ -164,15 +291,15 @@ impl<T> CastRangeIntoIntegerUnsigned for T where T :
 {}
 
 /// uX
-pub trait CastRangeFromIntegerUnsigned : 
-    CastRangeFrom<u8 > + 
+pub trait CastRangeFromIntegerUnsigned :
+    CastRangeFrom<u8 > +
     CastRangeFrom<u16> +
     CastRangeFrom<u32> +
     CastRangeFrom<u64> +
     CastRangeFrom<usize>
 {}
 impl<T> CastRangeFromIntegerUnsigned for T where T :
-    CastRangeFrom<u8 > + 
+    CastRangeFrom<u8 > +
     CastRangeFrom<u16> +
     CastRangeFrom<u32> +
     CastRangeFrom<u64> +
@@ -185,15 +312,15 @@ impl<T> CastRangeIntegerUnsigned for T where T : CastRangeFromIntegerUnsigned + 
 
 
 /// iX
-pub trait CastRangeIntoIntegerSigned : 
-    CastRangeInto<i8 > + 
+pub trait CastRangeIntoIntegerSigned :
+    CastRangeInto<i8 > +
     CastRangeInto<i16> +
     CastRangeInto<i32> +
     CastRangeInto<i64> +
     CastRangeInto<isize>
 {}
 impl<T> CastRangeIntoIntegerSigned for T where T :
-    CastRangeInto<i8 > + 
+    CastRangeInto<i8 > +
     CastRangeInto<i16> +
     CastRangeInto<i32> +
     CastRangeInto<i64> +
@@ -201,15 +328,15 @@ impl<T> CastRangeIntoIntegerSigned for T where T :
 {}
 
 /// iX
-pub trait CastRangeFromIntegerSigned : 
-    CastRangeFrom<i8 > + 
+pub trait CastRangeFromIntegerSigned :
+    CastRangeFrom<i8 > +
     CastRangeFrom<i16> +
     CastRangeFrom<i32> +
     CastRangeFrom<i64> +
     CastRangeFrom<isize>
 {}
 impl<T> CastRangeFromIntegerSigned for T where T :
-    CastRangeFrom<i8 > + 
+    CastRangeFrom<i8 > +
     CastRangeFrom<i16> +
     CastRangeFrom<i32> +
     CastRangeFrom<i64> +
@@ -279,7 +406,7 @@ mod cast_range_test
     use super::*;
 
     #[test]
-    fn identity() 
+    fn identity()
     {
         macro_rules! check_identity {
             ($type_name : ident) => {

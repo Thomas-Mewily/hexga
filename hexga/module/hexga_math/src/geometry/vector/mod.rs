@@ -47,17 +47,17 @@ impl<T,const N : usize> Vector<T,N>
     // Vector related
 
     /// Will always be >= 0.
-    /// 
+    ///
     /// If any component is negative, return 0
-    pub fn area(self) -> T where T : Number 
-    { 
+    pub fn area(self) -> T where T : Number
+    {
         self.iter().fold(T::ONE,|a, b| a * (*b).max_partial(T::ZERO))
     }
     /// Will always be >= 0.
-    /// 
+    ///
     /// If any component is negative, return 0
-    pub fn area_usize(self) -> usize where T : Integer 
-    { 
+    pub fn area_usize(self) -> usize where T : Integer
+    {
         if T::PRIMITIVE_NUMBER_TYPE.is_integer_unsigned()
         {
             self.iter().map(|v| v.to_usize()).product()
@@ -70,12 +70,12 @@ impl<T,const N : usize> Vector<T,N>
     /// Multiply each component
     /// The result can be negative
     pub unsafe fn area_signed(self) -> T where T : Number { self.into_iter().product() }
-    
+
     /// True is area() > 0
     pub fn have_area(self) -> bool where T : Number { self.area().is_non_zero() }
     /// True is area_usize() > 0
     pub fn have_area_usize(self) -> bool where T : Integer { self.area_usize().is_non_zero() }
-    
+
     pub fn all_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_zero()) }
     pub fn all_non_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_non_zero()) }
 
@@ -91,7 +91,7 @@ impl<T,const N : usize> Vector<T,N>
     // Index :
     #[inline(always)]
     pub fn is_inside(self, size : Self) -> bool where T : Number
-    { 
+    {
         self.all_with(&size, |a, m| *a >= T::ZERO && a < m)
     }
     #[inline(always)]
@@ -99,10 +99,10 @@ impl<T,const N : usize> Vector<T,N>
 
     #[inline(always)]
     pub fn is_inside_rect(self, area : Rectangle<T,N>) -> bool where T : Number { area.is_inside(self) }
-    
+
 
     /// `x + y + z ...`
-    /// 
+    ///
     /// ```rust
     /// use hexga_math::prelude::*;
     /// assert_eq!(point2(3,4).sum_axis(), 7);
@@ -129,23 +129,23 @@ impl<T,const N : usize> Vector<T,N>
     }
 }
 
-/* 
+/*
 pub trait IntegerIndex : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
 impl<T> IntegerIndex for T where T : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
 */
 
-impl<Idx, const N : usize> Vector<Idx, N> 
+impl<Idx, const N : usize> Vector<Idx, N>
     where Idx : Integer
 {
     #[inline(always)]
     pub fn to_index(self, size : Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_index_unchecked(size) }) }
-    
+
     #[inline(always)]
     /// # Safety
-    /// This function assuming that : 
+    /// This function assuming that :
     /// - The size is valid : (all axis size are >= 1)
     /// - The self is valid (inside the grid : all axis are >= 0 and < current axis size )
-    /// 
+    ///
     /// ```rust
     /// use hexga_math::prelude::*;
     /// assert_eq!(unsafe{ point2(0,0).to_index_unchecked(point2(10, 20)) }, 0);
@@ -153,7 +153,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
     /// assert_eq!(unsafe{ point2(3,1).to_index_unchecked(point2(10, 20)) }, 3+1*10);
     /// assert_eq!(unsafe{ point2(3,5).to_index_unchecked(point2(10, 20)) }, 3+5*10);
     /// ```
-    pub unsafe fn to_index_unchecked(self, size : Self) -> usize 
+    pub unsafe fn to_index_unchecked(self, size : Self) -> usize
     {
         debug_assert!(size.all(|v| *v >= Idx::ZERO));
 
@@ -165,7 +165,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
         {
             let current_axis_len : usize = size[i].to_usize();
             let current_value    : usize = self[i].to_usize();
-            
+
             index_1d        += current_value * area_cumulative;
             area_cumulative *= current_axis_len;
             i += 1;
@@ -176,17 +176,17 @@ impl<Idx, const N : usize> Vector<Idx, N>
     #[inline(always)]
     pub fn from_index(index : usize, size : Self) -> Option<Self>
     {
-        (index < size.area_usize()).then(|| unsafe { Self::from_index_unchecked(index, size) }) 
+        (index < size.area_usize()).then(|| unsafe { Self::from_index_unchecked(index, size) })
     }
 
     /// # Safety
-    /// This function assuming that : 
+    /// This function assuming that :
     /// - The size is valid : (all axis are >= 1)
     /// - The index is valid (inside the grid : all axis are >= 0 and < current axis size )
-    /// 
+    ///
     /// ```rust
     /// use hexga_math::prelude::*;
-    /// unsafe 
+    /// unsafe
     /// {
     ///     let size = point2(10, 20);
     ///     for point in [point2(0,0), point2(3,0), point2(3,1), point2(0,5)]
@@ -206,7 +206,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
         let mut area_cumulative = usize::ONE;
 
         let mut i = 0;
-        while i < N 
+        while i < N
         {
             let current_axis_len = size[i].to_usize();
             result[i] = Idx::cast_from((index / area_cumulative) % current_axis_len);
@@ -226,29 +226,29 @@ impl<T, const N : usize> Vector<T,N> where Self : NumberArithmetic, T : Float
     pub fn distance_to(self, target : Self) -> T { self.vector_to(target).length() }
 
     pub fn length(self) -> T { self.length_squared().sqrt() }
-    
+
     pub fn normalize(&mut self) -> &mut Self { *self = self.normalized(); self }
     pub fn normalized(self) -> Self
     {
-        if self.have_length() 
+        if self.have_length()
         {
             self / Self::splat(self.length())
         }
-        else 
-        { 
+        else
+        {
             Self::ZERO
         }
     }
 
     /// set the angle of the `(x, y)` axis
     pub fn set_angle(&mut self, angle : AngleOf<T>) -> &mut Self where Self : HaveY<T>
-    { 
-        let a = angle.to_vector2(self.length()); self.set_x(a.x).set_y(a.y); 
+    {
+        let a = angle.to_vector2(self.length()); self.set_x(a.x).set_y(a.y);
         self
     }
 
     /// Using the `(x, y)` axis
-    pub fn angle(self) -> AngleOf<T> where Self : HaveY<T> { AngleOf::from_radian(self.y().atan2(self.x())) } 
+    pub fn angle(self) -> AngleOf<T> where Self : HaveY<T> { AngleOf::from_radian(self.y().atan2(self.x())) }
 
     pub fn set_length(&mut self, length : T) { *self = self.normalized() * Self::splat(length);  }
     pub fn with_length(mut self, length : T) -> Self { self.set_length(length); self }

@@ -30,9 +30,49 @@ fn main()
 
     let p = Person{ age: 42, name: "Idk what name to choose".to_owned() };
 
-    let v = 255u8.cast_into::<u16>();
+    assert_eq!(u8::cast_range_from(1f32), 255u8);
+    assert_eq!(u8::cast_range_from(0f32), 0u8);
+    assert_eq!(u8::cast_range_from(0.5f32), 127u8);
 
-    p.save_to_disk("./tmp/test2/asset/person.ron").unwrap();
+    // Also support casting the same size, but different precision
+    assert_eq!(u8::cast_range_from(0i8), 0u8);
+    assert_eq!(u8::cast_range_from(127i8), 254u8);
+
+    assert_eq!(i8::cast_range_from(0u8), 0i8);
+    assert_eq!(i8::cast_range_from(255u8), 127i8);
+
+    assert_eq!(u8::cast_range_from(128u8), 128u8);
+
+
+
+    assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
+
+    // Also work with composite like [std::array], [Vector], [ColorRGBA]...
+    assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
+    assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
+    assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
+                ColorRGBAOf::<u16>::RED
+            );
+
+    let float32 = 2.5f32;
+    let float64 = 2.5f64;
+    let float32_to_64 = f64::cast_from(float32);
+
+    let vec_f32 = Vector2::<f32>::new(0.5, 0.5);
+    let vec_f64 = Vector2::<f64>::new(0.5, 0.5);
+    let vec_f32_to_f64 = Vector2::<f64>::cast_from(vec_f32);
+    assert_eq!(vec_f32_to_f64, vec_f64);
+
+
+
+    assert_eq!(<u8 as CastRangeInto<u16>>::cast_range_into(u8::MAX), u16::MAX);
+
+
+    assert_eq!(<u8 as CastInto<i32>>::cast_into(255u8), 255i32);
+    // Also work with composite
+    assert_eq!(<[u8;2] as CastIntoComposite<i32>>::cast_into_composite([42u8, 99u8]), [42i32,99i32]);
+
+    vec_f32.save_to_disk("./tmp/test2/asset/person.ron").unwrap();
 
     //u8::MAX.cast_range_into()
     //let x = u16::cast_range_from(u8::MAX)
