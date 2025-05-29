@@ -4,22 +4,11 @@ pub type IoSaveResult<T=()> = Result<T, IoError>;
 pub use std::io::Write as IoWrite;
 
 #[allow(unused_variables)]
-pub trait IoSave : Sized + Serialize + for<'de> Deserialize<'de>
-    /*
-    where
-    for<'a> &'a Self : Serialize,
-    for<'a, 'de> &'a Self : Deserialize<'de>,
-    */
+pub trait IoSave : Serialize + for<'de> Deserialize<'de>
 {
     // Main function to override :
 
-    type BasedOn : IoSave;
-    /*
-         + ?Sized
-        where
-            for<'a>      &'a Self::BasedOn : Serialize,
-            for<'a, 'de> &'a Self::BasedOn : Deserialize<'de>;
-    */
+    type BasedOn : ?Sized + IoSave;
 
     fn save_from_based_on(&self) -> Option<Self::BasedOn> { None }
     fn save_from_based_on_ref(&self) -> Option<&Self::BasedOn> { None }
@@ -27,7 +16,8 @@ pub trait IoSave : Sized + Serialize + for<'de> Deserialize<'de>
     /// Dedicated file extension to save the value. ex `png`, `jpeg` for image
     ///
     /// Don't include the markup language extension like `json` or `ron`
-    fn save_own_extensions() -> impl Iterator<Item = &'static str> { Self::BasedOn::save_own_extensions() }
+    fn save_own_extensions() -> impl Iterator<Item = &'static str>
+    { Self::BasedOn::save_own_extensions() }
 
 
     // The path is usefull the save composite file (ex: saving a gif but every frame is in a subfolder relative to the path)
