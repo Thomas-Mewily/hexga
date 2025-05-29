@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-pub(crate) use std::{fs::{self, File}, io::{Read, Write}};
+pub(crate) use std::io::{Read, BufReader, Write, BufWriter};
 
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 pub(crate) use hexga_core::prelude::*;
@@ -9,6 +9,8 @@ pub(crate) use hexga_core::prelude::*;
 mod core;
 pub use core::*;
 
+pub mod fs;
+use fs::*;
 
 mod error;
 pub use error::*;
