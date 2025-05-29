@@ -12,7 +12,8 @@ Check [the documentation](https://docs.rs/hexga_math/latest/hexga_math/) to find
 
 ### N Dimension stuff
 
-This crate define N dimensionnal math stuff (2d, 3d, 4d, ... nd) like vector/point of any type (float, int, uint, or even user defined) :
+This crate define N dimensionnal math stuff (2d, 3d, 4d, ... nd) like vector/point of any type (float, int, uint, or even user defined):
+
 - [Vector](https://docs.rs/hexga_math/latest/hexga_math/vector/index.html) (fixed size array wrapper)
 - [Rectangle](https://docs.rs/hexga_math/latest/hexga_math/rectangle/struct.RectangleBase.html)
 - [Grid](https://docs.rs/hexga_math/latest/hexga_math/grid/index.html)
@@ -24,49 +25,65 @@ This crate define N dimensionnal math stuff (2d, 3d, 4d, ... nd) like vector/poi
 - [ColorRGBA] with any precision (also handle the conversion between different primitive precision)
 - [ColorHSLA] of various precision
 
+```rust
+use hexga_math::prelude::*;
+
+assert_eq!([1,2].degree(), [1.degree(),2.degree()]);
+assert_eq!(1.kilo(), 1000);
+```
+
 ### Generic Casting trait
 The crate also provide generic traits for casting with the same behavior as the [as keyword](https://practice.course.rs/type-conversions/as.html) :
-- [CastInto], [CastFrom] and [CastIntoComposite],
+- [CastInto](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastInto.html), [CastFrom](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastFrom.html) and [CastIntoComposite](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastIntoComposite.html),
+
+```rust
+use hexga_math::prelude::*;
+
+assert_eq!(i32::cast_from(255u8), 255i32);
+assert_eq!(i32::cast_from(12.3f32), 12);
+
+let vec_f32 = Vector2::<f32>::new(0.5, 0.5);
+let vec_f64 = Vector2::<f64>::new(0.5, 0.5);
+let vec_f32_to_f64 = <Vector2::<f32> as CastIntoComposite<f64>>::cast_into_composite(vec_f32);
+assert_eq!(vec_f32_to_f64, vec_f64);
+```
 
 ### Generic Remapping trait
 Similar traits for casting remapping the range of an primitive to another primitive range also exist :
-- [CastRangeInto], [CastRangeFrom] and [CastRangeIntoComposite]
+- [CastRangeInto](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastRangeInto.html), [CastRangeFrom](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastRangeFrom.html) and [CastRangeIntoComposite](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastRangeIntoComposite.html)
+
+```rust
+use hexga_math::prelude::*;
+
+assert_eq!(u8::cast_range_from(1f32), 255u8);
+assert_eq!(u8::cast_range_from(127i8), 254u8);
+assert_eq!(i8::cast_range_from(255u8), 127i8);
+
+assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
+            ColorRGBAOf::<u16>::RED
+          );
+```
+
 
 ### Quick start with the prelude
+
 There are some quick typedef in the prelude :
-- [int], [uint] and [float]  : The default primitive precision used in the typedef. (can be change with the feature flags)
-- [Point2], [Point3], [Point4] for Vector of [int],
-- [Vec2], [Vec3], [Vec4] for Vector of [float],
-- [Rect2], [Rect3], [Rect4] for Rectangle of [float],
-- [Rect2P], [Rect3P], [Rect4P] for Rectangle of [int] (`P` for point),
-- [Mat2], [Mat3], [Mat4] for Matrix of [float], and [Mat2P], [Mat3P], [Mat4P] use [int],
-- [Grid2], [Grid3], [Grid3] can only be indexed by [Point] by default.
+- `int`, `uint` and `float`  : The default primitive precision used in the typedef. (can be change with the feature flags)
+- `Point2`, `Point3`, `Point4` for Vector of `int`,
+- `Vec2`, `Vec3`, `Vec4` for Vector of `float`,
+- `Rect2`, `Rect3`, `Rect4` for Rectangle of `float`,
+- `Rect2P`, `Rect3P`, `Rect4P` for Rectangle of `int` (`P` for point),
+- `Mat2`, `Mat3`, `Mat4` for Matrix of `float`, and `Mat2P`, `Mat3P`, `Mat4P` use `int`,
+- `Grid2`, `Grid3`, `Grid3` can only be indexed by `Point` by default.
 
 
 ### More advanced type
-If you need more control about the precision, each type have another more generic long base type :
-- [Grid] type uses a [Point] for the indexing precision, but that can be changed by using with the [GridBase] type.
-- [Angle] and [Time] use a [float] precision that can be changed using [AngleOf] and [TimeOf]
-- [ColorRGBA] and [ColorHSLA] also use a [float] precision that can be changed using [ColorRGBAOf] and [ColorRGBAOf]
 
-Provide math related structure for multiple dimension, with a lot of typedef to them like :
+If you need more control about the precision, each type have another more generic long base type:
 
-- Vector (`Vec2`,`Vec3`,`Vec4` for a vector of float,... `Point2`,`Point3`,`Point4` for int...)
-
-- Rectangle (`Rect2`,`Rect3`,`Rect4` for float, `Rect2P`,`Rect3P`,`Rect4P` for int/point)
-
-- Matrix (`Matrix`, `Mat2`,`Mat3`,`Mat4` for float, `Mat2P`,`Mat3P`,`Mat4P` for int , `SquareMatrix`...)
-
-- Grid (`Grid2`, `Grid3`, `Grid4`...)
-
-Also provide
-
-- some lightweight unit of measurement : `Time`, `Angle`.
-`assert_eq!([1,2].degree(), [1.degree(),2.degree()])`
-
-- some prefix : kilo, giga, mega...
-`assert_eq!(1.kilo(), 1000)`,
-
+- `Grid` type uses a `Point` for the indexing precision, but that can be changed by using with the `GridBase` type.
+- `Angle` and `Time` use a `float` precision that can be changed using `AngleOf` and `TimeOf`
+- `ColorRGBA` and `ColorHSLA` also use a `float` precision that can be changed using `ColorRGBAOf` and `ColorRGBAOf`
 
 ## Main Hexga crate
 

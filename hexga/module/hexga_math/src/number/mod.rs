@@ -5,22 +5,22 @@ pub use hexga_number::*;
 pub mod prelude;
 
 mod composite;
-use composite::*;
+pub use composite::*;
 
 mod cast_to;
-use cast_to::*;
+pub use cast_to::*;
 
 mod cast_range_to;
-use cast_range_to::*;
+pub use cast_range_to::*;
 
 mod extension;
-use extension::*;
+pub use extension::*;
 
 mod floating;
-use floating::*;
+pub use floating::*;
 
 mod integer;
-use integer::*;
+pub use integer::*;
 
 mod to_type;
-use to_type::*;
+pub use to_type::*;
