@@ -8,6 +8,9 @@ pub(crate) use hexga_core::prelude::*;
 pub mod fs;
 use fs::*;
 
+#[cfg(feature = "derive")]
+pub use hexga_io_derive::*;
+
 pub mod prelude;
 
 mod core;

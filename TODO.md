@@ -7,7 +7,7 @@
 - Name2Reserve : réserver plus de nom sous crate io
 
 - Undo Redo : Impl Action pour vecteur, slice, array, hashmap, hashset... struct field.
-    - ne pas imposer d'utiliser un vecteur pour command stack / marker => use collection 
+    - ne pas imposer d'utiliser un vecteur pour command stack / marker => use collection
     - type de retour
     - composable / limite scripting ?
 
@@ -24,11 +24,14 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
     - matrix
     - angle
     - time...
-    Le faire de manière clean : 
+    Le faire de manière clean :
         - `Op<&T> for T`
         - `Op<T> for &T`
         - `Op<&T> for &T`
         ... Self and T copiable + support base op
+
+
+- HexgaIo : default extension for saving if not specified + guess extension when loading
 
 
 - S'intérésser aux structure de quadtree déjà existante
@@ -54,7 +57,7 @@ projeter orhtogonal ?
 - Graphic : Image : How to serialize it => Custom type + impl IGridParam (still a lot of code)
 - Mettre hexga_map_to dans sa propre crate
 
-- GenVec : 
+- GenVec :
     - fonction pour reset les id
     - fonction rollback_insert rollback_push rollback_remove_idx ... (pour rollback dans un jeux)
     - clear() différent de remove_all()

@@ -6,12 +6,15 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## HexGa IO
 
-Some abstraction over the input/output system based on Serde. (work in progress).
+Io file abstraction based on serde to allow loading/saving and converting bytes with a custom user define extension,
+but also support common markup extension(json, ron, xml...)
 
-Allow to load data type with custom user defined extension, or common markup extension(json, ron, xml...).
+Goal :
+- Simple to use
+- Allow to save composite file
 
-Goal : Simple to use
-Non Goal : Async
+Non Goal :
+- Async Loading (use handle instead)
 
 ## Main Hexga crate
 

@@ -16,6 +16,7 @@ hexga_math
 
 hexga_tools
 hexga_io
+hexga_io_derive
 hexga_graphics
 hexga_ansi_color
 //hexga_undo_redo

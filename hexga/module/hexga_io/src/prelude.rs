@@ -8,3 +8,6 @@ pub use crate::
 
     fs::{IoFs,IoFsDisk,SaveToDisk}
 };
+
+#[cfg(feature = "derive")]
+pub use hexga_io_derive::*;

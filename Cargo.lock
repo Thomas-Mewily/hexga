@@ -254,10 +254,20 @@ version = "0.0.10-beta.12"
 dependencies = [
  "bincode",
  "hexga_core",
+ "hexga_io_derive",
  "quick-xml",
  "ron",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "hexga_io_derive"
+version = "0.0.10-beta.12"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -549,7 +559,9 @@ dependencies = [
  "hexga_engine",
  "hexga_generational",
  "hexga_graphics",
+ "hexga_io",
  "hexga_map_on",
+ "serde",
 ]
 
 [[package]]

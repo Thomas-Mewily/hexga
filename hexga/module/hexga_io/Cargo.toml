@@ -9,15 +9,17 @@ edition.workspace = true
 readme = "README.md"
 
 keywords = []
-description = "io abstraction"
-categories = ["filesystem"]
+description = "io file abstraction based on serde to allow loading/saving/converting bytes with a custom extension"
+categories = ["filesystem", "encoding"]
 
 [features]
 default = ["serde_json", "serde_ron", "serde_xml", "serde_quick_bin",
-    "rc"
+    "rc", "derive"
 ]
 
 rc  = ["serde/rc"]
+
+derive = ["dep:hexga_io_derive"]
 
 serde_ron   = ["dep:ron"]
 serde_json  = ["dep:serde_json"]
@@ -25,7 +27,8 @@ serde_xml   = ["dep:quick-xml"]
 serde_quick_bin  = ["dep:bincode"]
 
 [dependencies]
-serde = { version = "1.0.0", features = ["derive"] }
+serde = { version = "1.0.0" }
+hexga_io_derive = { workspace = true, optional = true }
 hexga_core.workspace = true
 
 # markup language :

@@ -7,6 +7,16 @@ use hexga::prelude::*;
 use hexga_map_on::*;
 use hexga_graphics::*;
 
+use serde::{Serialize, Deserialize};
+
+//#[derive(Serialize, Deserialize, Save, Load)]
+#[io]
+struct Person
+{
+    age : i32,
+    name : String,
+}
+
 fn main()
 {
     for markup in Io::MARKUP_EXTENSIONS
@@ -18,6 +28,9 @@ fn main()
     //Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
     Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
 
+    let p = Person{ age: 42, name: "Idk what name to choose".to_owned() };
+
+    p.save_to_disk("./tmp/test2/asset/person.ron").unwrap();
 
     /*
     dbg!(Color::WHITE);
