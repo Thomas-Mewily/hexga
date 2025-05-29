@@ -8,7 +8,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::num::*;
 use std::ops::*;
 use std::rc::{Rc, Weak as RcWeak};
-use std::sync::{Arc, Weak as ArcWeak};
+use std::sync::{Arc, Mutex, RwLock, Weak as ArcWeak};
 
 use crate::*;
 
@@ -24,7 +24,7 @@ macro_rules! impl_io_save {
                 type BasedOn = IoNotBasedOn;
             }
 
-            impl$(<$( $generic: IoSave ),+>)? IoLoad for $name$(<$( $generic ),+>)?
+            impl$(<$( $generic: IoLoad ),+>)? IoLoad for $name$(<$( $generic ),+>)?
             {
                 type BasedOn = IoNotBasedOn;
             }
@@ -45,7 +45,7 @@ impl_io_save!(
     f32, f64,
     bool,
     char,
-    Option<T>,
+    Option<T>, Result<T,E>,
     Vec<T>,
     LinkedList<T>,
     VecDeque<T>,
@@ -112,8 +112,21 @@ impl_io_save!(
     RefCell<T>,
 
     Reverse<T>,
+
     PhantomData<T>,
+
+    Wrapping<T>,
+
+    Mutex<T>, RwLock<T>,
 );
+
+impl<T: IoSave> IoSave for Saturating<T> {
+    type BasedOn = IoNotBasedOn;
+}
+
+impl<T: IoLoad> IoLoad for Saturating<T> where for<'de> Saturating<T>: serde::Deserialize<'de> {
+    type BasedOn = IoNotBasedOn;
+}
 
 impl<T> IoSave for [T; 0]
 {

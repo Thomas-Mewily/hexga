@@ -42,8 +42,8 @@ impl IoErrorKind
     pub fn unsupported_open_extension<T>(ext : &extension) -> Self where T : IoLoad { Self::UnsupportedExtension { name: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
     //pub fn unsupported_save_extension<T>(ext : &extension) -> Self where T : IoSave { Self::UnsupportedExtension { name: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
 
-    pub fn serialize<T>(ext : &extension, err : impl ToDebug) -> Self { IoErrorKind::Markup(std::any::type_name::<T>().to_owned(), ext.to_owned(), err.to_debug()) }
-    pub fn deserialize<T>(ext : &extension, err : impl ToDebug) -> Self { IoErrorKind::Markup(std::any::type_name::<T>().to_owned(), ext.to_owned(), err.to_debug()) }
+    pub fn serialize<T: ?Sized>(ext : &extension, err : impl ToDebug) -> Self { IoErrorKind::Markup(std::any::type_name::<T>().to_owned(), ext.to_owned(), err.to_debug()) }
+    pub fn deserialize<T: ?Sized>(ext : &extension, err : impl ToDebug) -> Self { IoErrorKind::Markup(std::any::type_name::<T>().to_owned(), ext.to_owned(), err.to_debug()) }
 }
 
 // Todo : do a better job for io error

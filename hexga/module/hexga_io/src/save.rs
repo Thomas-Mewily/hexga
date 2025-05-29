@@ -3,8 +3,9 @@ use crate::*;
 pub type IoSaveResult<T=()> = Result<T, IoError>;
 pub use std::io::Write as IoWrite;
 
+
 #[allow(unused_variables)]
-pub trait IoSave : Serialize + for<'de> Deserialize<'de>
+pub trait IoSave : Serialize
 {
     // Main function to override :
 

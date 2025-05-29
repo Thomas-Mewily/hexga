@@ -6,7 +6,7 @@ pub use std::io::Read as IoRead;
 // Can't use a reader because we are not sur about the formatting, and a reader can't go back
 
 #[allow(unused_variables)]
-pub trait IoLoad : Sized + Serialize + for<'de> Deserialize<'de>
+pub trait IoLoad : Sized + for<'de> Deserialize<'de>
 {
     // Main function to override :
 

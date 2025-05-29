@@ -17,7 +17,7 @@ default = ["serde_json", "serde_ron", "serde_xml", "serde_quick_bin",
     "rc"
 ]
 
-rc = ["serde/rc"]
+rc  = ["serde/rc"]
 
 serde_ron   = ["dep:ron"]
 serde_json  = ["dep:serde_json"]
