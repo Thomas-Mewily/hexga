@@ -1,17 +1,18 @@
 {
-    "idleHeartbeats": 142747,
-    "navigatingHeartbeats": 47495,
-    "totalCodingHeartbeats": 475043,
+    "idleHeartbeats": 143061,
+    "navigatingHeartbeats": 47589,
+    "totalCodingHeartbeats": 475244,
     "languageHeartbeats": {
         "jsonc": 2214,
         "toml": 20658,
-        "rust": 430544,
+        "rust": 430606,
         "scminput": 4879,
         "plaintext": 1635,
-        "markdown": 14625,
+        "markdown": 14758,
         "bat": 350,
         "json": 45,
-        "powershell": 93
+        "powershell": 93,
+        "ignore": 6
     },
     "fileHeartbeats": {
         ".vscode/settings.json": 713,
@@ -100,7 +101,7 @@
         "hexga/hexga_math/README.md": 1304,
         "hexga/hexga_tools/Cargo.toml": 113,
         "hexga/hexga/README.md": 819,
-        "share_crate/name_2_share.md": 1308,
+        "share_crate/name_2_share.md": 1353,
         "hexga/hexga_bitflags/Cargo.toml": 200,
         "hexga/hexga_math/src/other/time.rs": 391,
         "hexga/hexga_tools/src/non_empty_stack.rs": 1210,
@@ -367,7 +368,7 @@
         "hexga/module/hexga_io/src/io.rs": 2785,
         "hexga/module/hexga_io/src/error.rs": 4196,
         "hexga/module/hexga_io/src/load.rs": 2897,
-        "hexga/module/hexga_io/src/save.rs": 6049,
+        "hexga/module/hexga_io/src/save.rs": 6111,
         "hexga/module/hexga_io/src/fs/mod.rs": 3110,
         "hexga/module/hexga_io/src/default_impl.rs": 4400,
         "\\diagnostic message [0]": 451,
@@ -381,6 +382,8 @@
         "hexga/module/hexga_math/README.md": 1184,
         "hexga/module/hexga_math/src/geometry/angle.rs": 2261,
         "hexga/module/hexga_math/src/number/mod.rs": 287,
-        "hexga/module/hexga_math/src/other/time.rs": 355
+        "hexga/module/hexga_math/src/other/time.rs": 355,
+        "hexga/module/hexga_io_derive/README.md": 88,
+        ".gitignore": 6
     }
 }

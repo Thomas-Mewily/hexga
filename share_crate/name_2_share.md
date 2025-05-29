@@ -6,8 +6,8 @@ hexga_number
 
 hexga_core
 
-hexga_io
 hexga_io_derive
+hexga_io
 
 hexga_bitflags
 
