@@ -98,3 +98,14 @@ impl<'a, 'b: 'a> DebugExtension for std::fmt::DebugStruct<'a, 'b>
         self.field(if value { name_true } else { name_false }, &())
     }
 }
+
+/*
+pub trait IteratorExtension<T> where T : PartialEq
+{
+    fn contains(self, value : &T) -> bool;
+}
+impl<I,T> IteratorExtension<T> for I where I : Iterator<Item = T>, T : PartialEq
+{
+    fn contains(mut self, value : &T) -> bool { self.position(|v| &v == value).is_some() }
+} 
+*/
