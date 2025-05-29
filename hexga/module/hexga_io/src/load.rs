@@ -13,7 +13,7 @@ pub trait IoLoadFrom : Sized
 impl<T> IoLoad for T where T : IoLoadFrom + for<'de> Deserialize<'de>
 {
     fn load_own_extensions() -> impl Iterator<Item = &'static str> { T::From::load_own_extensions() }
-    const CAN_BE_LOADED_FROM_TEXT : bool = T::CAN_BE_LOADED_FROM_TEXT;
+    const CAN_BE_LOADED_FROM_TEXT : bool = T::From::CAN_BE_LOADED_FROM_TEXT;
 
     fn load_from_bytes_with_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self>
     {

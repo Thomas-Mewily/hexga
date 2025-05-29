@@ -25,12 +25,18 @@ fn main()
         println!("{:?}", r);
     }
 
-    //Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
+    Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
     Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
 
     let p = Person{ age: 42, name: "Idk what name to choose".to_owned() };
 
+    let v = 255u8.cast_into::<u16>();
+
     p.save_to_disk("./tmp/test2/asset/person.ron").unwrap();
+
+    //u8::MAX.cast_range_into()
+    //let x = u16::cast_range_from(u8::MAX)
+    //dbg!(u)
 
     /*
     dbg!(Color::WHITE);

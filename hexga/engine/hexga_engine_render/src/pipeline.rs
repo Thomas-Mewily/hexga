@@ -1,6 +1,6 @@
 use super::*;
 
-/// Not RAII. Manual deletion of pipeline is required using [ContextRender::delete_pipeline].
+/// Not RAII. Manual deletion of pipeline is required using [RenderBackend::delete_pipeline].
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct RawPipelineID { pub index : usize }
 
@@ -20,7 +20,7 @@ pub enum CullFace {
     Back,
 }
 
-/* 
+/*
 /// A pixel-wise comparison function.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Comparison {
@@ -36,7 +36,7 @@ pub enum Comparison {
 */
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct PipelineParam 
+pub struct PipelineParam
 {
     pub cull_face: CullFace,
     pub front_face_order: FrontFaceOrder,
@@ -55,11 +55,11 @@ pub struct PipelineParam
 impl Default for PipelineParam
 {
     fn default() -> Self {
-        Self 
-        { 
-            cull_face: CullFace::Nothing, 
-            front_face_order: FrontFaceOrder::CounterClockwise, 
-            color_mask: ColorMask::new(true, true, true, true), 
+        Self
+        {
+            cull_face: CullFace::Nothing,
+            front_face_order: FrontFaceOrder::CounterClockwise,
+            color_mask: ColorMask::new(true, true, true, true),
             primitive_type: PrimitiveType::Triangles,
             depth_test: DepthComparison::Always, // no depth test,
             depth_write: false,
@@ -81,7 +81,7 @@ pub enum PrimitiveType {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PipelineData
 {
-    pub buffer_layout: Vec<VertexBufferLayout>, 
+    pub buffer_layout: Vec<VertexBufferLayout>,
     pub attributes: Vec<VertexAttribute>,
     pub shader: RawShaderID,
     pub param : PipelineParam,

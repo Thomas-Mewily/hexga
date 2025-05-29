@@ -4,13 +4,13 @@ use crate::*;
 
 /// Might lose some precision.
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
-/// 
+///
 /// The Output type can be a little bit different, but still related to the generic type :
-/// 
+///
 /// ```rust
 /// use hexga_math::prelude::*;
 /// use std::any::{TypeId};
-/// 
+///
 /// assert_eq!(TypeId::of::<<[u8;1] as CastIntoComposite<u16>>::Output>(), TypeId::of::<[u16;1]>())
 /// ```
 pub trait CastIntoComposite<T>
@@ -20,6 +20,7 @@ pub trait CastIntoComposite<T>
     /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
     fn cast_into_composite(self) -> Self::Output;
 }
+
 
 /// Might lose some precision.
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
@@ -31,14 +32,14 @@ impl<T,T2> CastInto<T> for T2 where T2 : CastIntoComposite<T,Output = T> {}
 pub trait CastFrom<T> { fn cast_from(value : T) -> Self; }
 impl<Src,Dest> CastFrom<Dest> for Src where Dest : CastInto<Src> { fn cast_from(value : Dest) -> Self { value.cast_into_composite() } }
 
-/* 
+/*
 pub trait CastFromComposite<T> { fn cast_from(value : T) -> Self; }
 // the type parameter `T` is not constrained by the impl trait, self type, or predicates. unconstrained type parameter
 impl<Dest,T> CastFromComposite<Dest> for Dest::Output where Dest : CastIntoComposite<T> { fn cast_from(value : Dest) -> Self { value.cast_into() } }
 */
 impl_composite_output_with_methods!(CastIntoComposite<CastToOut>, cast_into_composite);
 
-/* 
+/*
 new_number!(
     /// Wrap the coef inside for a new type.
     /// Used to differenciate the type Coef and float because they are the same for CastIntoComposite impl
@@ -59,28 +60,28 @@ impl<T> CastIntoComposite<CoefWrapper> for T where T : CastInto<float> + RangeDe
 
 
 // Double recursive macro :)
-macro_rules! impl_cast_to 
-{ 
-    ($itself: ty, $cast_into: ty) => 
-    { 
+macro_rules! impl_cast_to
+{
+    ($itself: ty, $cast_into: ty) =>
+    {
         impl CastIntoComposite<$cast_into> for $itself
         {
             type Output = $cast_into;
             fn cast_into_composite(self) -> Self::Output { self as _ }
         }
-    }; 
+    };
 
-    ($cast_into: ty) => 
+    ($cast_into: ty) =>
     {
         map_on_number!(impl_cast_to,$cast_into);
-    }; 
+    };
 }
 map_on_number!(impl_cast_to);
 
 
-macro_rules! impl_cast_to_bool 
-{ 
-    ($itself: ty) => 
+macro_rules! impl_cast_to_bool
+{
+    ($itself: ty) =>
     {
         impl CastIntoComposite<bool> for $itself
         {
@@ -111,15 +112,15 @@ pub trait CastFloat             : CastIntoFloat + CastFromFloat {}
 impl<T> CastFloat for T where T : CastIntoFloat + CastFromFloat {}
 
 /// uX
-pub trait CastIntoIntegerUnsigned : 
-    CastInto<u8 > + 
+pub trait CastIntoIntegerUnsigned :
+    CastInto<u8 > +
     CastInto<u16> +
     CastInto<u32> +
     CastInto<u64> +
     CastInto<usize>
 {}
 impl<T> CastIntoIntegerUnsigned for T where T :
-    CastInto<u8 > + 
+    CastInto<u8 > +
     CastInto<u16> +
     CastInto<u32> +
     CastInto<u64> +
@@ -127,15 +128,15 @@ impl<T> CastIntoIntegerUnsigned for T where T :
 {}
 
 /// uX
-pub trait CastFromIntegerUnsigned : 
-    CastFrom<u8 > + 
+pub trait CastFromIntegerUnsigned :
+    CastFrom<u8 > +
     CastFrom<u16> +
     CastFrom<u32> +
     CastFrom<u64> +
     CastFrom<usize>
 {}
 impl<T> CastFromIntegerUnsigned for T where T :
-    CastFrom<u8 > + 
+    CastFrom<u8 > +
     CastFrom<u16> +
     CastFrom<u32> +
     CastFrom<u64> +
@@ -148,15 +149,15 @@ impl<T> CastIntegerUnsigned for T where T : CastFromIntegerUnsigned + CastFromIn
 
 
 /// iX
-pub trait CastIntoIntegerSigned : 
-    CastInto<i8 > + 
+pub trait CastIntoIntegerSigned :
+    CastInto<i8 > +
     CastInto<i16> +
     CastInto<i32> +
     CastInto<i64> +
     CastInto<isize>
 {}
 impl<T> CastIntoIntegerSigned for T where T :
-    CastInto<i8 > + 
+    CastInto<i8 > +
     CastInto<i16> +
     CastInto<i32> +
     CastInto<i64> +
@@ -164,15 +165,15 @@ impl<T> CastIntoIntegerSigned for T where T :
 {}
 
 /// iX
-pub trait CastFromIntegerSigned : 
-    CastFrom<i8 > + 
+pub trait CastFromIntegerSigned :
+    CastFrom<i8 > +
     CastFrom<i16> +
     CastFrom<i32> +
     CastFrom<i64> +
     CastFrom<isize>
 {}
 impl<T> CastFromIntegerSigned for T where T :
-    CastFrom<i8 > + 
+    CastFrom<i8 > +
     CastFrom<i16> +
     CastFrom<i32> +
     CastFrom<i64> +

@@ -17,7 +17,7 @@ pub enum ColorKind
 }
 
 pub trait ToColor
-{   
+{
     const COLOR_INSIDE : ColorKind;
 
     #[cfg(any(
@@ -117,7 +117,7 @@ impl<T, const N : usize> ToColor for [T;N] where T : ToColor
 
     type ColorHSLAF64 = [T::ColorHSLAF64;N];
     fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { std::array::from_fn(|i| self[i].to_color_hsla_f64()) }
-    
+
     const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
 }
 
@@ -144,15 +144,15 @@ impl<T> ToColor for [T] where T : ToColor
     const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
 }
 
-/// Constant color name are based on https://colornames.org/ 
-/// 
-/// (+-1 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#ff7f00`)
-pub trait IColor<T> : 
+/// Constant color name are based on <https://colornames.org/>
+///
+/// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#ff7f00`)
+pub trait IColor<T> :
     Sized +
     ToColor
     <
-        ColorRGBAF32 = ColorRGBAOf<f32>, ColorRGBAF64 = ColorRGBAOf<f64>, 
-        ColorHSLAF32 = ColorHSLAF32, ColorHSLAF64 = ColorHSLAF64, 
+        ColorRGBAF32 = ColorRGBAOf<f32>, ColorRGBAF64 = ColorRGBAOf<f64>,
+        ColorHSLAF32 = ColorHSLAF32, ColorHSLAF64 = ColorHSLAF64,
         ColorRGBAByte = ColorRGBAByte,
         ColorRGBABool = ColorRGBABool,
     >
@@ -161,41 +161,41 @@ pub trait IColor<T> :
     const TRANSPARENT : Self;
 
     /// #000000
-    /// 
+    ///
     /// ⬛ : ⬛⬛⬛
     const BLACK : Self;
     /// #777777
     const GRAY  : Self;
     /// #FFFFFF
-    /// 
+    ///
     /// ⬜ : 🟥🟩🟦
     const WHITE : Self;
-    
+
     /// #FF0000
-    /// 
+    ///
     /// 🟥 : 🟥⬛⬛
-    const RED    : Self; 
+    const RED    : Self;
     /// #00FF00
-    /// 
+    ///
     /// 🟩 : ⬛🟩⬛
     const GREEN  : Self;
     /// #0000FF
-    /// 
+    ///
     /// 🟦 : ⬛⬛🟦
-    const BLUE   : Self; 
-    
+    const BLUE   : Self;
+
     /// #00FFFF
-    /// 
+    ///
     /// _ : ⬛🟩🟦
-    const CYAN   : Self; 
+    const CYAN   : Self;
 
     /// #FF00FF
-    /// 
+    ///
     /// _ : 🟥⬛🟦
     const MAGENTA   : Self;
 
     /// #FFFF00
-    /// 
+    ///
     /// 🟨 : 🟥🟩⬛
     const YELLOW : Self;
 
@@ -243,9 +243,9 @@ pub trait IColor<T> :
         let rgba = self.to_color_byte();
         format!(
             "#{:02X}{:02X}{:02X}{:02X}",
-            rgba.r, 
-            rgba.g,  
-            rgba.b,       
+            rgba.r,
+            rgba.g,
+            rgba.b,
             rgba.a,
         )
     }

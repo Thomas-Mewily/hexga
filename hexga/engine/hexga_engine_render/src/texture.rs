@@ -41,7 +41,7 @@ pub enum TextureSource
 pub enum TextureFormat {
     //RGB8,
     RGBA8,
-    /* 
+    /*
     RGBA16F,
     Depth,
     Depth32,
@@ -49,7 +49,7 @@ pub enum TextureFormat {
     */
 }
 
-/// Not RAII. Manual deletion of texture is required using [ContextRender::delete_texture].
+/// Not RAII. Manual deletion of texture is required using [RenderBackend::delete_texture].
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct RawTextureID { pub index : usize }
 

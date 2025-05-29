@@ -10,5 +10,5 @@ pub(crate) use time::*;
 pub mod prefix;
 pub(crate) use prefix::*;
 
-pub mod unit;
-pub(crate) use unit::*;
+mod unit;
+pub use unit::*;

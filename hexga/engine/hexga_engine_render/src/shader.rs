@@ -1,11 +1,11 @@
-use super::*;
+use crate::*;
 
-/// Not RAII. Manual deletion of shader is required using [ContextRender::delete_shader].
+/// Not RAII. Manual deletion of shader is required using [RenderBackend::delete_shader].
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct RawShaderID { pub index : usize }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UniformDesc 
+pub struct UniformDesc
 {
     pub name         : String,
     pub uniform_type : UniformType,
@@ -27,7 +27,7 @@ pub struct ShaderMeta {
 
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ShaderSource 
+pub enum ShaderSource
 {
     GLSL(ShaderSourceGLSL),
 }
@@ -78,7 +78,7 @@ pub enum ShaderType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ShaderError 
+pub enum ShaderError
 {
     CompilationError {
         shader_type: ShaderType,

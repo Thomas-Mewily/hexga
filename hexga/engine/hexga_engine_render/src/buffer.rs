@@ -2,7 +2,7 @@ use super::*;
 
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum BufferType 
+pub enum BufferType
 {
     VertexBuffer,
     IndexBuffer,
@@ -15,7 +15,7 @@ pub enum BufferUsage {
     Stream,
 }
 
-/// Not RAII. Manual deletion of buffer is required using [ContextRender::delete_buffer].
+/// Not RAII. Manual deletion of buffer is required using [RenderBackend::delete_buffer].
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct RawBufferID { pub index : usize }
 
@@ -42,6 +42,6 @@ pub enum BufferSource<'a>
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BufferData
 {
-    pub buf_type : BufferType, 
-    pub usage    : BufferUsage, 
+    pub buf_type : BufferType,
+    pub usage    : BufferUsage,
 }

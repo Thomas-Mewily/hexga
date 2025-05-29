@@ -1,12 +1,12 @@
 use super::*;
 
-/// Not RAII. Manual deletion of render_pass is required using [ContextRender::delete_render_pass].
+/// Not RAII. Manual deletion of render_pass is required using [RenderBackend::delete_render_pass].
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct RenderPassID { pub index : usize }
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum PassAction 
+pub enum PassAction
 {
     Nothing,
     Clear(ClearData)

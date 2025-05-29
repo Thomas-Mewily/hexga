@@ -3,7 +3,7 @@
 use hexga_math::prelude::*;
 
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
-pub enum CursorIcon 
+pub enum CursorIcon
 {
     Default,
     Help,
@@ -33,7 +33,7 @@ pub trait ContextWindow
     fn request_quit(&mut self);
 
     fn get_position(&mut self) -> Point2;
-    fn set_position(&mut self, pos : Point2); 
+    fn set_position(&mut self, pos : Point2);
 
     /// Current window size in pixel (taking dpi in account)
     fn get_screen_size_tuple(&mut self) -> Point2;
@@ -84,10 +84,10 @@ pub struct WindowParam
     pub title: String,
 
     /// The preferred width / height of the window
-    /// 
+    ///
     /// Default: [960, 540]
     pub size : Point2,
-    
+
     /// Whether the rendering canvas is full-resolution on HighDPI displays.
     ///
     /// Default: false
@@ -118,7 +118,7 @@ pub struct WindowParam
 
 impl Default for WindowParam
 {
-    fn default() -> Self 
+    fn default() -> Self
     {
         Self { title: "hexga window".to_owned(), size : point2(960, 540), high_dpi: false, fullscreen: false, sample_count: 1, resizable: true, icon: None, platform: Platform::default() }
     }
@@ -143,7 +143,7 @@ impl std::fmt::Debug for Icon {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Platform 
+pub struct Platform
 {
     /// Optional swap interval (vertical sync).
     ///
@@ -153,16 +153,9 @@ pub struct Platform
     /// not a reliable way to limit the game's FPS.
     pub swap_interval: Option<i32>,
 
-    /// If `true`, the event loop will block until [`schedule_update`] is called.
+    /// If `true`, the event loop will block until an schedule update will be is called.
     ///
     /// This can reduce CPU usage to nearly zero while waiting for events.
-    ///
-    /// It is recommended to call `schedule_update` at the end of `resize_event`
-    /// or any relevant mouse/keyboard input.
-    ///
-    /// `schedule_update` may be used from other threads to "wake up" the window.
-    ///
-    /// [`schedule_update`]: super::window::schedule_update
     pub blocking_event_loop: bool,
 
     /// If `true`, the framebuffer includes an alpha channel.
@@ -175,13 +168,13 @@ pub struct Platform
 
 impl Default for Platform
 {
-    fn default() -> Self 
+    fn default() -> Self
     {
-        Self 
-        { 
-            swap_interval: None, 
-            blocking_event_loop: false, 
-            framebuffer_alpha: false 
+        Self
+        {
+            swap_interval: None,
+            blocking_event_loop: false,
+            framebuffer_alpha: false
         }
     }
 }
