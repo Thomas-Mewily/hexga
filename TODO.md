@@ -3,6 +3,8 @@
 
 ## To-do
 
+- HexgaIo : default extension for saving if not specified + guess extension when loading
+- impl io save/load grid, image/gif, asset game engine
 
 - Name2Reserve : réserver plus de nom sous crate io
 
@@ -31,7 +33,6 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
         ... Self and T copiable + support base op
 
 
-- HexgaIo : default extension for saving if not specified + guess extension when loading
 
 - Hexga math : easing / tweening fn
 
