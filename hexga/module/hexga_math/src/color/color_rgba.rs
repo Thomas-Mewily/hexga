@@ -42,7 +42,7 @@ impl<T> ColorRGBAOf<T>
     pub const fn splat_rgb_with_a(rgb : T, a : T) -> Self where T : Copy { Self::new(rgb, rgb, rgb, a) }
 
 
-    
+
     pub fn rgba_ref(&    self) -> &    [T; 4] { self.as_array() }
     pub fn rgba_mut(&mut self) -> &mut [T; 4] { self.as_array_mut() }
 
@@ -128,11 +128,11 @@ impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
     const BLACK : Self = Self { r: T::RANGE_MIN , g: T::RANGE_MIN , b: T::RANGE_MIN , a: T::RANGE_MAX };
     const GRAY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX };
     const WHITE : Self = Self { r: T::RANGE_MAX , g: T::RANGE_MAX , b: T::RANGE_MAX , a: T::RANGE_MAX };
-    
+
     const RED    : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MIN);
     const GREEN  : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MIN);
     const BLUE   : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MIN, T::RANGE_MAX);
-    
+
     const CYAN   : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MAX);
     const MAGENTA: Self = Self::rgb(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MAX);
     const YELLOW : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MIN);
@@ -147,18 +147,18 @@ impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
     const PINK   : Self = Self::rgb(T::RANGE_MAX, T::RANGE_HALF, T::RANGE_MAX);
     const GLACE  : Self = Self::rgb(T::RANGE_HALF, T::RANGE_MAX, T::RANGE_MAX);
 
-    
+
     fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive + CastRangeFrom<T>
     {
         self.into_array4().map(|v| T2::cast_range_from(v)).to_rgba()
     }
-    
+
     fn to_color_hsla_of<T2>(self) -> ColorHSLAOf<T2> where T2 : Float + CastRangeFrom<T> {
 
         // Thank to MacroQuad, the following code was copied and edited the code from the MacroQuad crate
         let [r, g, b, a] = self.to_array4().map(|v| T2::cast_range_from(v));
         let f = [r, g, b];
-        
+
         let max = *f.max_element();
         let min = *f.min_element();
 
@@ -170,7 +170,7 @@ impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
         if delta.is_zero() { return ColorHSLAOf::new(T2::ZERO, T2::ZERO, l, a); }
 
         // it's not gray
-        let s = if l < T2::HALF 
+        let s = if l < T2::HALF
         {
             delta / (max + min)
         } else {
@@ -202,20 +202,20 @@ impl<T> ToColor for ColorRGBAOf<T> where T : Primitive
 
     type ColorRGBAF64 = ColorRGBAOf<f64>;
     fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 { self.to_color_rgba_of() }
-    
+
     type ColorRGBAByte = ColorRGBAByte;
     fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte { self.to_color_rgba_of() }
-    
+
     type ColorRGBABool = ColorRGBAMask;
     fn to_color_rgba_bool(&self) -> Self::ColorRGBABool { self.to_color_rgba_of() }
-    
+
     type ColorHSLAF32 = ColorHSLAF32;
     fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 { self.to_color_hsla_of() }
-    
+
     type ColorHSLAF64 = ColorHSLAF64;
     fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.to_color_hsla_of() }
 
-    const COLOR_INSIDE : ColorKind = 
+    const COLOR_INSIDE : ColorKind =
     {
         match (T::PRIMITIVE_NUMBER_TYPE, std::mem::size_of::<T>())
         {

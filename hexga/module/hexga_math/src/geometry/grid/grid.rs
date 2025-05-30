@@ -2,7 +2,7 @@ use crate::*;
 
 
 
-/// A N dimensional grid
+/// A N-dimensional grid
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Hash)]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
 {
@@ -10,7 +10,7 @@ pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
     value : Vec<T>,
 }
 
-impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer 
+impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
 {
     type WithType<U> = GridBase<U, Idx, N>;
 
@@ -21,11 +21,26 @@ impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx
     unsafe fn unchecked_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Self { Self { size, value } }
 }
 
-impl<T, Idx, const N : usize> IGridViewMut<Self, T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer 
+impl<T, Idx, const N : usize> IGridView<Self, T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
 {
+    type WithLifetime<'a> = GridView<'a, Self, T, Idx, N> where Self: 'a;
+    fn view<'a,'b>(&'a self) -> Self::WithLifetime<'b> where 'a : 'b { GridView::new(self) }
+
+    unsafe fn grid_unchecked(&self) -> &Self { self }
+
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b> where 'a: 'b
+    { unsafe { GridView::from_rect_unchecked(self, rect) } }
+}
+
+impl<T, Idx, const N : usize> IGridViewMut<Self, T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
+{
+    type WithLifetimeMut<'a> = GridViewMut<'a, Self, T, Idx, N> where Self: 'a;
+    fn view_mut<'a,'b>(&'a mut self) -> Self::WithLifetimeMut<'b> where 'a : 'b { GridViewMut::new(self) }
+
     fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, N> { GridViewIterMut::new(self) }
     fn for_each_mut<F>(&mut self, f : F) where F : FnMut((Vector<Idx,N>,&mut T)) { self.view_mut().for_each_mut(f) }
-    fn view(&self) -> GridView<'_,Self,T,Idx,N> { GridView::new(self) }
+
+    unsafe fn grid_mut_unchecked(&mut self) -> &mut Self { self }
 }
 
 impl<T, Idx, const N : usize> AsRef<[T]> for GridBase<T, Idx, N> where Idx : Integer
@@ -56,7 +71,7 @@ impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where I
 }
 
 
-impl<T, Idx, const N : usize> Get<Vector<Idx,N>> for GridBase<T, Idx,N>  where Idx : Integer 
+impl<T, Idx, const N : usize> Get<Vector<Idx,N>> for GridBase<T, Idx,N>  where Idx : Integer
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
     #[inline(always)]
@@ -67,7 +82,7 @@ impl<T, Idx, const N : usize> Get<Vector<Idx,N>> for GridBase<T, Idx,N>  where I
     unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos); self.get_unchecked(idx) } }
 }
 
-impl<T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : Integer 
+impl<T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : Integer
 {
     #[inline(always)]
     fn try_get_mut(&mut self, pos : Vector<Idx,N>) -> Result<&mut Self::Output, ()> { self.get_mut(pos).ok_or_void() }
@@ -77,24 +92,24 @@ impl<T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridBase<T, Idx,N> where
     unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
 }
 
-impl<T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : Integer 
+impl<T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : Integer
 {
     #[inline(always)]
     fn try_get_many_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
-        if indices.any(|x| x.is_none()) 
+        if indices.any(|x| x.is_none())
         {
             Err(())
-        } else 
+        } else
         {
             self.try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }
 
-impl<T, Idx, const N : usize> Get<usize> for GridBase<T, Idx,N> 
-    where Idx : Integer 
+impl<T, Idx, const N : usize> Get<usize> for GridBase<T, Idx,N>
+    where Idx : Integer
 {
     type Output = <Self as Index<usize>>::Output;
     #[inline(always)]
@@ -106,7 +121,7 @@ impl<T, Idx, const N : usize> Get<usize> for GridBase<T, Idx,N>
     unsafe fn get_unchecked(&self, index : usize) -> &T { unsafe { self.values().get_unchecked(index) } }
 }
 
-impl<T, Idx, const N : usize> GetMut<usize> for GridBase<T, Idx,N> where Idx : Integer 
+impl<T, Idx, const N : usize> GetMut<usize> for GridBase<T, Idx,N> where Idx : Integer
 {
     #[inline(always)]
     fn try_get_mut(&mut self, index : usize) -> Result<&mut T, ()> { self.get_mut(index).ok_or_void() }
@@ -117,7 +132,7 @@ impl<T, Idx, const N : usize> GetMut<usize> for GridBase<T, Idx,N> where Idx : I
     unsafe fn get_unchecked_mut(&mut self, index : usize) -> &mut T{ unsafe { self.values_mut().get_unchecked_mut(index)} }
 }
 
-impl<T, Idx, const N : usize> GetManyMut<usize> for GridBase<T, Idx,N> where Idx : Integer 
+impl<T, Idx, const N : usize> GetManyMut<usize> for GridBase<T, Idx,N> where Idx : Integer
 {
     #[inline(always)]
     fn try_get_many_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> {
@@ -151,7 +166,7 @@ impl<T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridBase<T, Idx, N> wh
     fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N> 
+impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N>
     where Idx : Integer
 {
     #[inline(always)]
@@ -177,16 +192,16 @@ mod grid_test
     use crate::other::point2;
 
     #[test]
-    fn index_order() 
+    fn index_order()
     {
         use crate::*;
         //let x = Grid::<char>::new(point2(2, 4));
         let size = point2(2, 3);
 
         let grid = Grid2::from_fn(size, |p| p.x + 10 * p.y);
-    
-        /* 
-        dbg!(&grid);    
+
+        /*
+        dbg!(&grid);
         for y in (0..size.y).rev()
         {
             for x in 0..size.x
@@ -196,7 +211,7 @@ mod grid_test
             println!()
         }
         */
-    
+
         let mut indice = 0;
         assert_eq!(grid[indice], grid[point2(0,0)]);
         assert_eq!(grid[indice], 0);
@@ -220,7 +235,7 @@ mod grid_test
         indice += 1;
         assert_eq!(grid[indice], grid[point2(1,2)]);
         assert_eq!(grid[indice], 21);
-    }   
+    }
 
     #[test]
     fn out_of_range()
@@ -232,7 +247,7 @@ mod grid_test
         assert_eq!(grid.get(point2(-1, 0)), None);
         assert_eq!(grid.get(point2(1, 0)), Some(&42));
         assert_eq!(grid.get(point2(2, 0)), None);
-        
+
         assert_eq!(grid.get(point2(0, 0)), Some(&42));
         assert_eq!(grid.get(point2(0, -1)), None);
         assert_eq!(grid.get(point2(0, 2)), Some(&42));
@@ -252,7 +267,7 @@ mod grid_test
         let subgrid = grid.view().subgrid(size.to_rect());
 
         assert_eq!(grid, subgrid);
-        
+
         let smaller_size = point2(1, 2);
         let smaller_grid = Grid2::from_fn(smaller_size, |p|  p.x + 10 * p.y);
         let smaller_grid_from_bigger_grid = grid.view().subgrid(smaller_size.to_rect());
@@ -261,12 +276,12 @@ mod grid_test
         let top_right_grid_size = point2(1, 2);
         let offset = Vector2::ONE;
         let top_right_grid = Grid2::from_fn(smaller_size, |p|  { let p = p + offset; p.x + 10 * p.y });
-        
+
         assert_eq!(top_right_grid, grid.subgrid(top_right_grid_size.to_rect().moved_by(offset)));
     }
 
     #[test]
-    fn subslice() 
+    fn subslice()
     {
         use crate::*;
 

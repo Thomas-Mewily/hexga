@@ -341,7 +341,9 @@ impl<T,const N : usize> Rectangle<T,N> where T : Number
 
 impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
 {
+    #[inline(always)]
     fn pos (&self) -> Vector<T,N> { self.pos  }
+    #[inline(always)]
     fn size(&self) -> Vector<T,N> { self.size }
 }
 
@@ -356,16 +358,23 @@ pub trait IRectangle<T, const N : usize> where T : Number
     #[inline(always)] fn size_w(&self) -> T where Vector<T,N> : HaveW<T> { self.size().w() }
 
     /// Same as `.size_x()`
+    #[inline(always)]
     fn width (&self) -> T where Vector<T,N> : HaveX<T> { self.size_x() }
     /// Same as `.size_y()`
+    #[inline(always)]
     fn height(&self) -> T where Vector<T,N> : HaveY<T> { self.size_y() }
     /// Same as `.size_z()`
+    #[inline(always)]
     fn depth (&self) -> T where Vector<T,N> : HaveZ<T> { self.size_z() }
 
+    #[inline(always)]
     fn area(&self) -> T { self.size().area() }
+    #[inline(always)]
     fn area_usize(&self) -> usize where T : Integer { self.size().area_usize() }
 
+    #[inline(always)]
     fn is_inside(&self, pos : Vector<T,N>) -> bool { pos.is_inside(self.size()) }
+    #[inline(always)]
     fn is_outside(&self, pos : Vector<T,N>) -> bool { !self.is_inside(pos) }
 
     #[inline(always)]
@@ -380,6 +389,7 @@ pub trait IRectangle<T, const N : usize> where T : Number
     #[inline(always)]
     fn max(&self) -> Vector<T,N> { self.end() }
 
+    #[inline(always)]
     fn rect(&self) -> Rectangle<T, N> { Rectangle::new(self.begin(), self.size()) }
 
     fn iter_x(&self) -> Range<T> where Vector<T,N> : HaveX<T>, Range<T> : IntoIterator { self.min().x()..self.max().x() }

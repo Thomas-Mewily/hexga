@@ -1,6 +1,70 @@
 use crate::*;
 
-/// A view to a N dimensional grid.
+
+/// Trait to a view into an N-dimensional grid.
+///
+/// Can only shrink / be cropped.
+pub trait IGridView<G, T, Idx, const N : usize> :
+      IRectangle<Idx,N>
+    + Get<Vector<Idx,N>,Output=T>
+    + Index<Vector<Idx,N>,Output=T>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer
+{
+    type WithLifetime<'a> : IGridView<G,T,Idx,N> where Self: 'a;
+    fn view<'a,'b>(&'a self) -> Self::WithLifetime<'b> where 'a : 'b;
+
+    fn subview<'a, 'b>(&'a self, mut rect : Rectangle<Idx,N>) -> Option<Self::WithLifetime<'b>> where 'a: 'b
+    {
+        rect.move_by(self.pos());
+        if !self.rect().is_rect_inside(rect)
+        {
+            return None;
+        }else
+        {
+            Some(unsafe { self.subview_from_translated_rect_unchecked(rect) })
+        }
+    }
+    fn subview_intersect<'a,'b>(&'a self, mut rect : Rectangle<Idx,N>) -> Self::WithLifetime<'b> where 'a: 'b
+    {
+        rect.move_by(self.pos());
+        unsafe { self.subview_from_translated_rect_unchecked(self.rect().intersect_or_empty(rect)) }
+    }
+
+
+    fn to_grid(&self) -> G where T : Clone
+    {
+        G::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
+    }
+
+    fn iter(&self) -> GridViewIter<'_, G, T, Idx, N> { unsafe { GridViewIter::from_rect_unchecked( self.grid_unchecked(), self.rect()) } }
+    fn for_each<F>(&self, f : F) where F : FnMut((Vector<Idx,N>,&T)) { self.iter().for_each(f); }
+
+    /// `self.crop_intersect(subrect).to_grid()`
+    fn subgrid(&self, subrect : Rectangle<Idx, N>) -> G where T : Clone, Self : Crop<Idx,N> { self.subview_intersect(subrect).to_grid() }
+
+    fn transform<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
+        where F : FnMut(&T) -> Dest
+    {
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
+    }
+
+    fn transform_par<Dest, F>(&self, f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, G : Sync, Self : Sync
+    {
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
+    }
+
+
+    #[doc(hidden)]
+    unsafe fn grid_unchecked(&self) -> &G;
+
+    #[doc(hidden)]
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b> where 'a: 'b;
+}
+
+
+/// A view to a N-dimensional grid.
 ///
 /// Can only shrink / be cropped.
 pub struct GridView<'a, G, T, Idx, const N : usize>
@@ -11,6 +75,19 @@ pub struct GridView<'a, G, T, Idx, const N : usize>
     grid : &'a G,
     rect : Rectangle<Idx,N>,
     phantom : std::marker::PhantomData<T>,
+}
+
+impl<'c, G, T, Idx, const N : usize> IGridView<G, T, Idx, N> for GridView<'c, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer
+{
+    type WithLifetime<'a> = GridView<'a, G, T, Idx, N> where Self: 'a;
+    fn view<'a,'b>(&'a self) -> Self::WithLifetime<'b> where 'a : 'b { unsafe { GridView::from_rect_unchecked(self.grid, self.rect) } }
+
+    unsafe fn grid_unchecked(&self) -> &G { self.grid }
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b> where 'a: 'b
+    { unsafe { GridView::from_rect_unchecked(self.grid, rect) } }
 }
 
 impl<'a, G, T, Idx, const N : usize> Debug for GridView<'a, G, T, Idx, N>
@@ -118,8 +195,12 @@ impl<'a, G, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, G, T, Id
     Idx : Integer
 {
     /// The view is relative to itself, so the position is zero
+    #[inline(always)]
     fn pos(&self) -> Vector<Idx,N> { zero() }
+    #[inline(always)]
     fn size(&self) -> Vector<Idx,N> { self.rect.size }
+    #[inline(always)]
+    fn rect(&self) -> Rectangle<Idx, N> { self.rect }
 }
 
 impl<'a, G, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridView<'a, G, T, Idx, N>
@@ -168,45 +249,6 @@ impl<'a, G, T, Idx, const N : usize> GridView<'a, G, T, Idx, N>
     {
         unsafe { Self::from_rect_unchecked(grid, grid.rect().intersect_or_empty(rect)) }
     }
-
-
-    pub fn subview(&self, mut rect : Rectangle<Idx,N>) -> Option<Self>
-    {
-        rect.move_by(self.rect.pos);
-        if !self.rect().is_rect_inside(rect) {
-            return None;
-        }else
-        {
-            Some(unsafe { Self::from_rect_unchecked(self.grid, rect) })
-        }
-    }
-    pub fn subview_intersect(&self, mut rect : Rectangle<Idx,N>) -> Self
-    {
-        rect.move_by(self.rect.pos);
-        unsafe { Self::from_rect_unchecked(self.grid, self.rect().intersect_or_empty(rect)) }
-    }
-
-    pub fn to_grid(&self) -> G where T : Clone
-    {
-        G::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
-    }
-
-    /// `self.crop_intersect(subrect).to_grid()`
-    pub fn subgrid(&self, subrect : Rectangle<Idx, N>) -> G where T : Clone, Self : Crop<Idx,N> { self.subview_intersect(subrect).to_grid() }
-
-    pub fn transform<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
-        where F : FnMut(&T) -> Dest
-    {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
-    }
-
-    pub fn transform_par<Dest, F>(&self, f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, G : Sync
-    {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
-    }
-
-    pub fn iter(&self) -> GridViewIter<'_, G, T, Idx, N> { GridViewIter::from_rect(self.grid, self.rect()).unwrap() }
-    pub fn for_each<F>(&self, f : F) where F : FnMut((Vector<Idx,N>,&T)) { self.iter().for_each(f); }
 }
 
 

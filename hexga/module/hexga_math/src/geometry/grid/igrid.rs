@@ -17,12 +17,9 @@ impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Id
     }
 }
 
-pub trait IGrid<T, Idx, const N : usize> : 
-    Get<Vector<Idx,N>,Output = T> + GetMut<Vector<Idx,N>,Output = T> + GetManyMut<Vector<Idx,N>,Output=T>
-    + Index<Vector<Idx,N>, Output = T>
-    + IndexMut<Vector<Idx,N>, Output = T>
-    + IRectangle<Idx, N>
-    + AsRef<[T]>
+pub trait IGrid<T, Idx, const N : usize> :
+// AsRef / AsMut: impl details
+      AsRef<[T]>
     + AsMut<[T]>
     //+ Crop<Idx,N> // if T is Clone
     + IGridViewMut<Self,T,Idx,N>
@@ -73,7 +70,7 @@ pub trait IGrid<T, Idx, const N : usize> :
     unsafe fn unchecked_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Self;
 
     /// Create a grid from a function
-    fn from_fn<F>(size : Vector::<Idx,N>, mut f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T 
+    fn from_fn<F>(size : Vector::<Idx,N>, mut f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T
     {
         let area = size.area_usize();
         let mut value = Vec::with_capacity(area);
@@ -84,7 +81,7 @@ pub trait IGrid<T, Idx, const N : usize> :
         unsafe { Self::unchecked_from_vec(size, value) }
     }
     /// Create a grid from a function in parallel
-    fn from_fn_par<F>(size : Vector::<Idx,N>, f : F) -> Self where F : Fn(Vector::<Idx,N>) -> T + Sync, T : Send, Idx : Sync 
+    fn from_fn_par<F>(size : Vector::<Idx,N>, f : F) -> Self where F : Fn(Vector::<Idx,N>) -> T + Sync, T : Send, Idx : Sync
     {
         let area = size.area_usize();
         let mut values = Vec::with_capacity(area);
@@ -97,20 +94,6 @@ pub trait IGrid<T, Idx, const N : usize> :
 
     /// Create a new grid and fill it by [Clone] the value
     fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::try_from_vec(size, vec![value; size.area_usize()]).unwrap() }
-
-
-
-
-
-    
-    fn iter(&self) -> GridViewIter<'_, Self, T, Idx, N> { GridViewIter::new(self) }
-    fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, N> { GridViewIterMut::new(self) }
-
-    //fn view(&self) -> GridView<'_,Self,T,Idx,N> { GridView::new(self) }
-    fn view_mut(&mut self) -> GridViewMut<'_,Self,T,Idx,N> { GridViewMut::new(self) }
-    
-    /// `self.view().crop_intersect(subrect).to_grid()`
-    fn subgrid(&self, rect : Rectangle<Idx,N>) -> Self where T : Clone { self.view().subgrid(rect) }
 }
 
 

@@ -1,18 +1,18 @@
 {
-    "idleHeartbeats": 143061,
-    "navigatingHeartbeats": 47589,
-    "totalCodingHeartbeats": 475244,
+    "idleHeartbeats": 144005,
+    "navigatingHeartbeats": 48325,
+    "totalCodingHeartbeats": 480164,
     "languageHeartbeats": {
-        "jsonc": 2214,
+        "jsonc": 2266,
         "toml": 20658,
-        "rust": 430606,
-        "scminput": 4879,
+        "rust": 434682,
+        "scminput": 5228,
         "plaintext": 1635,
-        "markdown": 14758,
+        "markdown": 15156,
         "bat": 350,
         "json": 45,
         "powershell": 93,
-        "ignore": 6
+        "ignore": 51
     },
     "fileHeartbeats": {
         ".vscode/settings.json": 713,
@@ -67,7 +67,7 @@
         "git\\scm2\\input": 70,
         "git\\scm3\\input": 107,
         "hexga/hexga_generational/src/gen_vec.rs": 17213,
-        "git\\scm0\\input": 4426,
+        "git\\scm0\\input": 4775,
         "HELP.md": 373,
         "share_crate.cmd": 350,
         "hexga/hexga_generational/Cargo.toml": 947,
@@ -127,7 +127,7 @@
         "hexga/hexga_math/src/geometry/vector/vector_iter.rs": 941,
         "hexga/hexga_math/src/geometry/matrix/prelude.rs": 114,
         "hexga/hexga_math/src/geometry/rectangle/prelude.rs": 104,
-        "c:\\Users\\TTD\\AppData\\Roaming\\Code\\User\\settings.json": 1501,
+        "c:\\Users\\TTD\\AppData\\Roaming\\Code\\User\\settings.json": 1553,
         "hexga/hexga_math/src/geometry/grid/mod.rs": 537,
         "hexga/hexga_math/src/geometry/grid/view.rs": 6080,
         "hexga/hexga_graphics/src/lib.rs": 6743,
@@ -342,12 +342,12 @@
         "hexga/module/hexga_math/src/geometry/vector/mod.rs": 1686,
         "hexga/module/hexga_math/src/geometry/vector/vector_iter.rs": 871,
         "hexga/engine/hexga_engine_render/src/blend.rs": 251,
-        "hexga/module/hexga_math/src/geometry/grid/grid.rs": 2029,
+        "hexga/module/hexga_math/src/geometry/grid/grid.rs": 2327,
         "hexga/module/hexga_math/src/geometry/mod.rs": 121,
         "hexga/module/hexga_number/src/number.rs": 433,
         "hexga/module/hexga_math/src/geometry/grid/igrid.rs": 3999,
-        "hexga/module/hexga_math/src/geometry/grid/view.rs": 2561,
-        "hexga/module/hexga_math/src/geometry/grid/view_mut.rs": 1594,
+        "hexga/module/hexga_math/src/geometry/grid/view.rs": 5089,
+        "hexga/module/hexga_math/src/geometry/grid/view_mut.rs": 2562,
         "hexga/module/hexga_math/src/geometry/grid/iter_mut.rs": 282,
         "hexga/module/hexga_math/src/geometry/grid/mod.rs": 694,
         "hexga/module/hexga_math/src/geometry/grid/iter.rs": 448,
@@ -384,6 +384,9 @@
         "hexga/module/hexga_math/src/number/mod.rs": 287,
         "hexga/module/hexga_math/src/other/time.rs": 355,
         "hexga/module/hexga_io_derive/README.md": 88,
-        ".gitignore": 6
+        ".gitignore": 51,
+        "e:\\Me\\Rust\\HexGa\\version\\27\\share_crate\\name_2_share.md": 68,
+        "cool/README.MD": 330,
+        "hexga/module/hexga_graphics/src/image.rs": 282
     }
 }
