@@ -15,7 +15,7 @@ pub trait RangeStepExtension
 pub trait RangeStepIter : NumberPrimitive
 {
     // Using Range, last value is excluded
-    fn iter(max_excluded : Self) -> RangeStep<Self> { RangeStep { start: Self::ZERO, end: max_excluded, step: Self::ONE } }
+    fn iter(max_excluded : Self) -> RangeStep<Self> { RangeStep { idx: Self::ZERO, end: max_excluded, step: Self::ONE } }
 }
 impl<T> RangeStepIter for T where T : NumberPrimitive {}
 
@@ -41,11 +41,13 @@ impl<T> RangeDefaultStepInclusiveExtension for T where T : RangeDefault, RangeIn
 // Not [Copy] because Range<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct RangeStep<T> where T : NumberPrimitive
 {
-    pub start  : T,
-    pub end    : T,
-    pub step   : T,
+    pub idx  : T,
+    pub end  : T,
+    pub step : T,
 }
 
 
@@ -53,15 +55,15 @@ impl<T> Iterator for RangeStep<T> where T : NumberPrimitive
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.start <= self.end
+        if self.idx <= self.end
         {
-            let val = self.start;
-            self.start += self.step;
+            let val = self.idx;
+            self.idx += self.step;
 
             match T::PRIMITIVE_NUMBER_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
-                NumberType::Float => if self.start == val { None } else { Some(val) },
+                NumberType::Float => if self.idx == val { None } else { Some(val) },
                 NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         } else
@@ -73,7 +75,7 @@ impl<T> Iterator for RangeStep<T> where T : NumberPrimitive
 impl<T> DoubleEndedIterator for RangeStep<T> where T : NumberPrimitive
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.end >= self.start
+        if self.end >= self.idx
         {
             let val = self.end;
             self.end -= self.step;
@@ -94,11 +96,11 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T : NumberPrimitive
                 NumberType::Float =>
                 {
                     // Force the iterator to stop at the first value
-                    if self.end + self.step > self.start
+                    if self.end + self.step > self.idx
                     {
                         self.step = T::ZERO;
-                        self.end = self.start;
-                        Some(self.start)
+                        self.end = self.idx;
+                        Some(self.idx)
                     } else { None }
                 },
                 NumberType::Bool => unsafe { unreachable_unchecked() },
@@ -115,7 +117,7 @@ impl<T> RangeStepExtension for Range<T> where T : NumberPrimitive
     type Item = T;
     fn step(self, step: T) -> Self::Output
     {
-        RangeStep { start: self.start, end: self.end - step, step }
+        RangeStep { idx: self.start, end: self.end - step, step }
     }
 }
 impl<T> RangeStepExtension for RangeTo<T> where T : NumberPrimitive + RangeDefault
@@ -132,27 +134,29 @@ impl<T> RangeStepExtension for RangeTo<T> where T : NumberPrimitive + RangeDefau
 // Not [Copy] because RangeInclusive<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct RangeStepInclusive<T> where T : NumberPrimitive
 {
-    pub start  : T,
-    pub end    : T,
-    pub step   : T,
+    pub idx  : T,
+    pub end  : T,
+    pub step : T,
 }
 
 impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.start <= self.end
+        if self.idx <= self.end
         {
-            let val = self.start;
-            self.start += self.step;
+            let val = self.idx;
+            self.idx += self.step;
 
             match T::PRIMITIVE_NUMBER_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
-                NumberType::Float => if self.start == val { None } else { Some(val) },
+                NumberType::Float => if self.idx == val { None } else { Some(val) },
                 NumberType::Bool => unsafe { unreachable_unchecked() },
             }
         } else
@@ -164,10 +168,10 @@ impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive
                 NumberType::Float =>
                 {
                     // Force the iterator to stop at the first value
-                    if self.start - self.step < self.end
+                    if self.idx - self.step < self.end
                     {
                         self.step = T::ZERO;
-                        self.start = self.end;
+                        self.idx = self.end;
                         Some(self.end)
                     } else { None }
                 },
@@ -179,7 +183,7 @@ impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive
 impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : NumberPrimitive
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.end >= self.start
+        if self.end >= self.idx
         {
             let val = self.end;
             self.end -= self.step;
@@ -200,11 +204,11 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : NumberPrimitive
                 NumberType::Float =>
                 {
                     // Force the iterator to stop at the first value
-                    if self.end + self.step > self.start
+                    if self.end + self.step > self.idx
                     {
                         self.step = T::ZERO;
-                        self.end = self.start;
-                        Some(self.start)
+                        self.end = self.idx;
+                        Some(self.idx)
                     } else { None }
                 },
                 NumberType::Bool => unsafe { unreachable_unchecked() },
@@ -231,7 +235,7 @@ impl<T> RangeStepExtension for RangeInclusive<T> where T : NumberPrimitive
     fn step(self, step: T) -> Self::Output
     {
         let (start, end) = self.into_inner();
-        RangeStepInclusive { start, end, step }
+        RangeStepInclusive { idx: start, end, step }
     }
 }
 impl<T> RangeStepExtension for RangeToInclusive<T> where T : NumberPrimitive + RangeDefault

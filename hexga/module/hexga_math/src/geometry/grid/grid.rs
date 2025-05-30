@@ -3,20 +3,13 @@ use crate::*;
 /// A N-dimensional grid
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
 {
     pub(crate) size   : Vector<Idx,N>,
     pub(crate) values : Vec<T>,
 }
 
-#[cfg(feature = "hexga_io")]
-impl<T, Idx, const N : usize> IoLoad for GridBase<T,Idx,N>
-    where GridBase<T,Idx,N> : for<'de> Deserialize<'de>, Idx : Integer
-{}
-#[cfg(feature = "hexga_io")]
-impl<T, Idx, const N : usize> IoSave for GridBase<T,Idx,N>
-    where GridBase<T,Idx,N> : Serialize, Idx : Integer
-{}
 
 impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
 {

@@ -26,8 +26,8 @@ pub trait IterIndex<T, const N : usize>
 
 /// Iter over all idx from Vec::ZERO to the current vector
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct VectorIter<Idx, const N : usize> where Idx : Integer
 {
     cur : Vector<Idx,N>,

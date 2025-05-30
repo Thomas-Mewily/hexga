@@ -62,11 +62,8 @@ use std::ops::{Range, RangeInclusive};
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
-#[cfg(feature = "hexga_io_derive")]
-use hexga_io::{Save, Load};
-
 #[cfg(feature = "hexga_io")]
-use hexga_io::{IoSave, IoLoad};
+use hexga_io::{IoSave, IoLoad, Save, Load};
 
 
 pub mod prelude;

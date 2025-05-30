@@ -11,49 +11,13 @@ pub type SquareMatrix<T, const N : usize> = Matrix<T, N, N>;
 /// Can be indexed `matrix[row][col]`
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
-//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
-//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct Matrix<T, const ROW : usize, const COL : usize>
 {
     pub columns : Vector<Vector<T, ROW>,COL>,
 }
 
-#[cfg(feature = "serde")]
-impl<T, const ROW: usize, const COL: usize> serde::Serialize for Matrix<T, ROW, COL>
-where
-    Vector<Vector<T, ROW>, COL>: serde::Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        self.columns.serialize(serializer)
-    }
-}
-
-#[cfg(feature = "hexga_io")]
-impl<T, const ROW: usize, const COL: usize> IoLoad for Matrix<T, ROW, COL>
-    where Vector<Vector<T, ROW>, COL>: IoLoad
-{}
-
-#[cfg(feature = "hexga_io")]
-impl<T, const ROW: usize, const COL: usize> IoSave for Matrix<T, ROW, COL>
-    where Vector<Vector<T, ROW>, COL>: IoSave
-{}
-
-#[cfg(feature = "serde")]
-impl<'de, T, const ROW: usize, const COL: usize> serde::Deserialize<'de> for Matrix<T, ROW, COL>
-where
-    Vector<Vector<T, ROW>, COL>: serde::Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let columns = Vector::<Vector<T, ROW>, COL>::deserialize(deserializer)?;
-        Ok(Self { columns })
-    }
-}
 
 impl<T, const ROW : usize, const COL : usize> Deref for Matrix<T, ROW, COL>
 {

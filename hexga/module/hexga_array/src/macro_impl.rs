@@ -350,13 +350,71 @@ macro_rules! impl_fixed_array_like
         }
 
         #[cfg(feature = "serde")]
-        impl<'de, T> ::serde::Deserialize<'de> for $name<T> where T: ::serde::Deserialize<'de>
+        const _ : () =
         {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: ::serde::Deserializer<'de>,
+            // Thank serde for not supporting the deserialization of variadic array...
+            #[derive(Debug)]
+            struct Arr<T>(pub [T; $dim]);
+
+            impl<'de, T> ::serde::Deserialize<'de> for $name<T> where T: ::serde::Deserialize<'de>
             {
-                Ok(<[T;$dim]>::deserialize(deserializer)?.into())
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                where
+                    D: Deserializer<'de>,
+                {
+                    struct ArrVisitor<T>(PhantomData<T>);
+
+                    impl<'de, T> Visitor<'de> for ArrVisitor<T>
+                    where
+                        T: Deserialize<'de>,
+                    {
+                        type Value = Arr<T>;
+
+                        fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                            write!(formatter, "an {}", std::any::type_name::<$name<T>>())
+                        }
+
+                        fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+                        where
+                            A: ::serde::de::SeqAccess<'de>,
+                        {
+                            // SAFETY: We'll ensure every element is initialized or properly dropped
+                            let mut data: [::std::mem::MaybeUninit<T>; $dim] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+                            for i in 0..$dim {
+                                match seq.next_element()? {
+                                    Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
+                                    None => {
+                                        if ::core::mem::needs_drop::<T>() {
+                                            // Drop any already initialized elements before returning
+                                            for j in 0..i {
+                                                unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
+                                            }
+                                        }
+                                        return Err(::serde::de::Error::invalid_length(i, &self));
+                                    }
+                                }
+                            }
+
+                            // Ensure no extra elements
+                            if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
+                                if ::core::mem::needs_drop::<T>() {
+                                    for i in 0..$dim {
+                                        unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
+                                    }
+                                }
+                                return Err(::serde::de::Error::invalid_length($dim + 1, &self));
+                            }
+
+                            // SAFETY: All elements are initialized
+                            let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T; $dim]) };
+                            Ok(Arr(result))
+                        }
+                    }
+
+                    deserializer.deserialize_tuple($dim, ArrVisitor::<T>(PhantomData)).map(|arr| $name::<T>::from(arr.0))
+                }
             }
-        }
+        };
 
         #[cfg(feature = "hexga_io")]
         impl<T> ::hexga_io::IoSave for $name<T> where T : ::hexga_io::IoSave {}
@@ -508,19 +566,78 @@ macro_rules! impl_generic_array_like
         }
 
         #[cfg(feature = "serde")]
-        impl<'de, T, const N : usize> ::serde::Deserialize<'de> for $name<T,N> where [T;N]: ::serde::Deserialize<'de>
+        const _ : () =
         {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: ::serde::Deserializer<'de>,
+            // Thank serde for not supporting the deserialization of variadic array...
+            #[derive(Debug)]
+            struct Arr<T, const N: usize>(pub [T; N]);
+
+            impl<'de, T, const N: usize> ::serde::Deserialize<'de> for $name<T,N> where T: ::serde::Deserialize<'de>
             {
-                Ok(<[T;N]>::deserialize(deserializer)?.into())
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                where
+                    D: Deserializer<'de>,
+                {
+                    struct ArrVisitor<T, const N: usize>(PhantomData<T>);
+
+                    impl<'de, T, const N: usize> Visitor<'de> for ArrVisitor<T, N>
+                    where
+                        T: Deserialize<'de>,
+                    {
+                        type Value = Arr<T, N>;
+
+                        fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                            write!(formatter, "an {} of length {}", std::any::type_name::<$name<T,N>>(), N)
+                        }
+
+                        fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+                        where
+                            A: ::serde::de::SeqAccess<'de>,
+                        {
+                            // SAFETY: We'll ensure every element is initialized or properly dropped
+                            let mut data: [::std::mem::MaybeUninit<T>; N] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+                            for i in 0..N {
+                                match seq.next_element()? {
+                                    Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
+                                    None => {
+                                        if ::core::mem::needs_drop::<T>() {
+                                            // Drop any already initialized elements before returning
+                                            for j in 0..i {
+                                                unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
+                                            }
+                                        }
+                                        return Err(::serde::de::Error::invalid_length(i, &self));
+                                    }
+                                }
+                            }
+
+                            // Ensure no extra elements
+                            if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
+                                if ::core::mem::needs_drop::<T>() {
+                                    for i in 0..N {
+                                        unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
+                                    }
+                                }
+                                return Err(::serde::de::Error::invalid_length(N + 1, &self));
+                            }
+
+                            // SAFETY: All elements are initialized
+                            let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T; N]) };
+                            Ok(Arr(result))
+                        }
+                    }
+
+                    deserializer.deserialize_tuple(N, ArrVisitor::<T, N>(PhantomData)).map(|arr| $name::<T, N>::from(arr.0))
+                }
             }
-        }
+        };
+
 
         #[cfg(feature = "hexga_io")]
         impl<T, const N : usize> ::hexga_io::IoSave for $name<T,N> where T: ::hexga_io::IoSave {}
 
         #[cfg(feature = "hexga_io")]
-        impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where [T;N]: ::hexga_io::IoLoad {}
+        impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where T: ::hexga_io::IoLoad {}
     };
 }
 

@@ -15,7 +15,7 @@ categories = ["mathematics", "data-structures", "algorithms", "rust-patterns"]
 
 [features]
 default = [
-    "serde", "hexga_io", "hexga_io_derive",
+    "serde", "hexga_io",
     "int_are_32_bits", "float_are_32_bits"
 ]
 
@@ -30,8 +30,7 @@ float_are_64_bits   = ["hexga_typedef/float_are_64_bits"]
 float_are_size_bits = ["hexga_typedef/float_are_size_bits"]
 
 serde = ["dep:serde"]
-hexga_io = ["dep:hexga_io", "serde"]
-hexga_io_derive = ["hexga_io/derive", "hexga_io"]
+hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
 
 [dependencies]
 hexga_core.workspace = true

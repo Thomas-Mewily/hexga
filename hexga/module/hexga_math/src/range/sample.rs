@@ -28,13 +28,15 @@ impl<I,T> RangeDefaultSampleInclusiveExtension<I> for T where T : RangeDefault, 
 }
 
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Debug)]
 pub struct RangeSample<I,T> where I : Number + CastInto<T>, T : Number
 {
-    current   : I,
-    nb_sample : I,
-    begin     : T,
-    step      : T,
+    pub idx   : I,
+    pub end   : I,
+    pub offset: T,
+    pub step  : T,
 }
 
 impl<I,T> Iterator for RangeSample<I,T> where I : Number + CastInto<T>, T : Number
@@ -42,11 +44,11 @@ impl<I,T> Iterator for RangeSample<I,T> where I : Number + CastInto<T>, T : Numb
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current >= self.nb_sample {
+        if self.idx >= self.end {
             None
         } else {
-            let val = self.begin + T::cast_from(self.current) * self.step;
-            self.current.increase();
+            let val = self.offset + T::cast_from(self.idx) * self.step;
+            self.idx.increase();
             Some(val)
         }
     }
@@ -55,11 +57,11 @@ impl<I,T> Iterator for RangeSample<I,T> where I : Number + CastInto<T>, T : Numb
 impl<I,T> DoubleEndedIterator for RangeSample<I,T> where I : Number + CastInto<T>, T : Number
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.current >= self.nb_sample {
+        if self.idx >= self.end {
             None
         } else {
-            self.nb_sample.decrease();
-            Some(self.begin + T::cast_from(self.current) * self.step)
+            self.end.decrease();
+            Some(self.offset + T::cast_from(self.idx) * self.step)
         }
     }
 }
@@ -77,9 +79,9 @@ impl<I,T> RangeSampleExtension<I> for Range<T> where I : Number + CastInto<T>, T
         let step = if nb_sample.is_zero() { T::ZERO } else { (end - start) / T::cast_from(nb_sample) };
         RangeSample
         {
-            current: I::ZERO,
-            nb_sample,
-            begin: start,
+            idx: I::ZERO,
+            end: nb_sample,
+            offset: start,
             step,
         }
     }
@@ -96,9 +98,9 @@ impl<I,T> RangeSampleExtension<I> for RangeInclusive<T> where I : Number + CastI
         let step = if nb_sample.is_zero() { T::ZERO } else { (end - start) / T::cast_from(nb_sample - I::ONE) };
         RangeSample
         {
-            current: I::ZERO,
-            nb_sample,
-            begin: start,
+            idx: I::ZERO,
+            end: nb_sample,
+            offset: start,
             step,
         }
     }
