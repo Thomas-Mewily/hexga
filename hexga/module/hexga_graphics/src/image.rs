@@ -12,10 +12,18 @@ pub trait ToImage
     type Output;
     fn to_image(self) -> Self::Output;
 }
-
-impl<T,Idx> ToImage for GridBase<T,Idx,2> where T : ToColor, Idx : Integer
+impl<C,Idx> From<GridBase<C,Idx,2>> for ImageBase<C, Idx> where C : ToColor, Idx : Integer
 {
-    type Output = ImageBase<T, Idx>;
+    fn from(value: GridBase<C,Idx,2>) -> Self { value.to_image() }
+}
+impl<'a,C,Idx> From<GridView<'a,GridBase<C,Idx,2>,C,Idx,2>> for ImageBase<C, Idx> where C : ToColor, Idx : Integer
+{
+    fn from(value: GridView<'a,GridBase<C,Idx,2>,C,Idx,2>) -> Self { value.to_image() }
+}
+
+impl<C,Idx> ToImage for GridBase<C,Idx,2> where C : ToColor, Idx : Integer
+{
+    type Output = ImageBase<C, Idx>;
     fn to_image(mut self) -> Self::Output
     {
         let (w,h) = self.size().into();
@@ -31,9 +39,9 @@ impl<T,Idx> ToImage for GridBase<T,Idx,2> where T : ToColor, Idx : Integer
     }
 }
 
-impl<'a,T,Idx> ToImage for GridView<'a,GridBase<T,Idx,2>,T,Idx,2> where T : ToColor + Clone, Idx : Integer
+impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToColor + Clone, Idx : Integer
 {
-    type Output = ImageBase<T, Idx>;
+    type Output = ImageBase<C, Idx>;
     fn to_image(self) -> Self::Output
     {
         let size = self.size();
@@ -41,6 +49,11 @@ impl<'a,T,Idx> ToImage for GridView<'a,GridBase<T,Idx,2>,T,Idx,2> where T : ToCo
             unsafe { self.get_unchecked(vector2(p.x, size.y - p.y - Idx::ONE)) }.clone()
         )
     }
+}
+impl<'a,C,Idx> ToImage for GridViewMut<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToColor + Clone, Idx : Integer
+{
+    type Output = ImageBase<C, Idx>;
+    fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
 

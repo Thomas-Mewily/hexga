@@ -1,18 +1,18 @@
 {
-    "idleHeartbeats": 144970,
-    "navigatingHeartbeats": 48445,
-    "totalCodingHeartbeats": 484392,
+    "idleHeartbeats": 145005,
+    "navigatingHeartbeats": 48478,
+    "totalCodingHeartbeats": 484883,
     "languageHeartbeats": {
         "jsonc": 2266,
         "toml": 20658,
-        "rust": 438838,
-        "scminput": 5300,
+        "rust": 439237,
+        "scminput": 5347,
         "plaintext": 1635,
         "markdown": 15156,
         "bat": 350,
         "json": 45,
         "powershell": 93,
-        "ignore": 51
+        "ignore": 96
     },
     "fileHeartbeats": {
         ".vscode/settings.json": 713,
@@ -67,7 +67,7 @@
         "git\\scm2\\input": 70,
         "git\\scm3\\input": 107,
         "hexga/hexga_generational/src/gen_vec.rs": 17213,
-        "git\\scm0\\input": 4847,
+        "git\\scm0\\input": 4894,
         "HELP.md": 373,
         "share_crate.cmd": 350,
         "hexga/hexga_generational/Cargo.toml": 947,
@@ -384,12 +384,12 @@
         "hexga/module/hexga_math/src/number/mod.rs": 287,
         "hexga/module/hexga_math/src/other/time.rs": 355,
         "hexga/module/hexga_io_derive/README.md": 88,
-        ".gitignore": 51,
+        ".gitignore": 96,
         "e:\\Me\\Rust\\HexGa\\version\\27\\share_crate\\name_2_share.md": 68,
         "cool/README.MD": 330,
-        "hexga/module/hexga_graphics/src/image.rs": 2275,
+        "hexga/module/hexga_graphics/src/image.rs": 2588,
         "hexga/module/hexga_number/src/traits.rs": 183,
         "hexga/module/hexga_math/src/range/step.rs": 1159,
-        "hexga/module/hexga_math/src/color/icolor.rs": 135
+        "hexga/module/hexga_math/src/color/icolor.rs": 221
     }
 }

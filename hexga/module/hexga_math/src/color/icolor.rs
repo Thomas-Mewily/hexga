@@ -151,14 +151,14 @@ pub trait ToColor :
         ColorHSLAF32 = ColorHSLAF32, ColorHSLAF64 = ColorHSLAF64,
         ColorRGBAByte = ColorRGBAByte,
         ColorRGBABool = ColorRGBABool,
-    > {}
+    > + Copy {}
 impl<T> ToColor for T where T: ToColorComposite
     <
         ColorRGBAF32 = ColorRGBAOf<f32>, ColorRGBAF64 = ColorRGBAOf<f64>,
         ColorHSLAF32 = ColorHSLAF32, ColorHSLAF64 = ColorHSLAF64,
         ColorRGBAByte = ColorRGBAByte,
         ColorRGBABool = ColorRGBABool,
-    > {}
+    > + Copy {}
 
 /// Constant color name are based on <https://colornames.org/>
 ///
