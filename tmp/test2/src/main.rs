@@ -41,8 +41,22 @@ fn main()
     Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
     Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
 
-    Grid2::from_fn((3,4).into(), |p| p.sum_axis()) .save_to_disk("./tmp/test2/asset/grid.ron").unwrap();
+    //Grid2::from_fn((3,4), |p| p.sum_axis()) .save_to_disk("./tmp/test2/asset/grid.ron").unwrap();
 
+
+    let i = Image::from_fn((16, 16), |(x,y)|
+    {
+        if (x + y) / 8 % 2 == 0
+        {
+            ColorByte::BLACK
+        }else
+        {
+            ColorByte::WHITE
+        }
+    });
+
+    //dbg!(&i);
+    i.save_to_disk("./tmp/test2/asset/image_byte.ron").unwrap();
 
 
     /*

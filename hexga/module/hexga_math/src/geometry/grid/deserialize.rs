@@ -6,8 +6,7 @@ use crate::*;
 #[cfg(feature = "serde")]
 impl<'de, T, Idx, const N : usize> Deserialize<'de> for GridBase<T, Idx, N>
     where
-        Idx: Integer,
-        Vector<Idx,N>: Deserialize<'de>,
+        Idx: Integer + Deserialize<'de>,
         T: Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -20,8 +19,7 @@ impl<'de, T, Idx, const N : usize> Deserialize<'de> for GridBase<T, Idx, N>
 
         impl<'de, T, Idx, const N : usize> Visitor<'de> for GridVisitor<T, Idx, N>
         where
-            Idx: Integer,
-            Vector<Idx,N>: Deserialize<'de>,
+            Idx: Integer + Deserialize<'de>,
             T: Deserialize<'de>,
         {
             type Value = GridBase<T,Idx,N>;

@@ -1,6 +1,14 @@
 use crate::*;
 
+mod deserialize;
+pub use deserialize::*;
+
 pub type Image<C=ColorRGBAByte> = ImageBase<C,int>;
+
+pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;
+
+#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ImageBase<C,Idx> where Idx : Integer
 {
     pixels : Vec<C>,
@@ -12,16 +20,16 @@ pub trait ToImage
     type Output;
     fn to_image(self) -> Self::Output;
 }
-impl<C,Idx> From<GridBase<C,Idx,2>> for ImageBase<C, Idx> where C : ToColor, Idx : Integer
+impl<C,Idx> From<GridBase<C,Idx,2>> for ImageBase<C, Idx> where Idx : Integer
 {
     fn from(value: GridBase<C,Idx,2>) -> Self { value.to_image() }
 }
-impl<'a,C,Idx> From<GridView<'a,GridBase<C,Idx,2>,C,Idx,2>> for ImageBase<C, Idx> where C : ToColor, Idx : Integer
+impl<'a,C,Idx> From<GridView<'a,GridBase<C,Idx,2>,C,Idx,2>> for ImageBase<C, Idx> where Idx : Integer, C : Clone
 {
     fn from(value: GridView<'a,GridBase<C,Idx,2>,C,Idx,2>) -> Self { value.to_image() }
 }
 
-impl<C,Idx> ToImage for GridBase<C,Idx,2> where C : ToColor, Idx : Integer
+impl<C,Idx> ToImage for GridBase<C,Idx,2> where Idx : Integer
 {
     type Output = ImageBase<C, Idx>;
     fn to_image(mut self) -> Self::Output
@@ -39,7 +47,7 @@ impl<C,Idx> ToImage for GridBase<C,Idx,2> where C : ToColor, Idx : Integer
     }
 }
 
-impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToColor, Idx : Integer
+impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where Idx : Integer, C : Clone
 {
     type Output = ImageBase<C, Idx>;
     fn to_image(self) -> Self::Output
@@ -50,14 +58,14 @@ impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToCo
         )
     }
 }
-impl<'a,C,Idx> ToImage for GridViewMut<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToColor, Idx : Integer
+impl<'a,C,Idx> ToImage for GridViewMut<'a,GridBase<C,Idx,2>,C,Idx,2> where Idx : Integer, C : Clone
 {
     type Output = ImageBase<C, Idx>;
     fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
 
-impl<'a,C,Idx> ToImage for GridView<'a,ImageBase<C,Idx>,C,Idx,2> where C : ToColor, Idx : Integer
+impl<'a,C,Idx> ToImage for GridView<'a,ImageBase<C,Idx>,C,Idx,2> where Idx : Integer, C : Clone
 {
     type Output = ImageBase<C, Idx>;
     fn to_image(self) -> Self::Output
@@ -65,13 +73,13 @@ impl<'a,C,Idx> ToImage for GridView<'a,ImageBase<C,Idx>,C,Idx,2> where C : ToCol
         Self::Output::from_fn(self.size(), |p| unsafe { self.get_unchecked(p) }.clone() )
     }
 }
-impl<'a,C,Idx> ToImage for GridViewMut<'a,ImageBase<C,Idx>,C,Idx,2> where C : ToColor, Idx : Integer
+impl<'a,C,Idx> ToImage for GridViewMut<'a,ImageBase<C,Idx>,C,Idx,2> where Idx : Integer, C : Clone
 {
     type Output = ImageBase<C, Idx>;
     fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
-impl<C,Idx> ImageBase<C,Idx> where C : ToColor, Idx : Integer
+impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : Clone
 {
     pub fn pixels(&self) -> &[C] { self.values() }
     pub fn pixels_mut(&mut self) -> &mut[C] { self.values_mut() }
@@ -312,6 +320,52 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToCo
 
     const COLOR_INSIDE : ColorKind = C::COLOR_INSIDE;
 }
+
+/*
+impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : ToColor
+{
+    pub fn tmp_write_to_png_bytes_inside(&self, path : &str)
+    {
+        let file = std::fs::File::create(path).expect("Failed to create file");
+        let buffered_write = &mut std::io::BufWriter::new(file);
+
+        match C::COLOR_INSIDE
+        {
+            ColorKind::RGBAByte =>
+            {
+                ::image::ImageEncoder::write_image(
+                    ::image::codecs::png::PngEncoder::new(buffered_write),
+                    unsafe {
+                        std::slice::from_raw_parts(
+                            self.pixels().as_ptr() as *const u8,
+                            self.pixels().len() * std::mem::size_of::<C>(),
+                        )
+                    },
+                    self.width().to_usize() as _,
+                    self.height().to_usize() as _,
+                    ::image::ExtendedColorType::Rgba8,
+                ).expect("Failed to write PNG Rgba8 image");
+            },
+            ColorKind::RGBAU16 =>
+            {
+                ::image::ImageEncoder::write_image(
+                    ::image::codecs::png::PngEncoder::new(buffered_write),
+                    unsafe {
+                        std::slice::from_raw_parts(
+                            self.pixels().as_ptr() as *const u8,
+                            self.pixels().len() * std::mem::size_of::<C>(),
+                        )
+                    },
+                    self.width().to_usize() as _,
+                    self.height().to_usize() as _,
+                    ::image::ExtendedColorType::Rgba16,
+                ).expect("Failed to write PNG Rgba16 mage");
+            },
+            _ => todo!(),
+        }
+    }
+}
+*/
 
 
 impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : ToColor

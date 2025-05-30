@@ -29,8 +29,8 @@ float_are_64_bits   = ["hexga_math/float_are_64_bits"]
 float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
 serde = ["dep:serde", "hexga_math/serde"]
+hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
 
-hexga_io = ["dep:hexga_io", "serde"]
 
 [dependencies]
 hexga_core.workspace = true

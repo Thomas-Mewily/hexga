@@ -75,22 +75,35 @@ pub trait IGrid<T, Idx, const N : usize> :
     unsafe fn from_vec_unchecked(size : Vector::<Idx,N>, value : Vec<T>) -> Self;
 
     /// Create a grid from a function
-    fn from_fn<F>(size : Vector::<Idx,N>, mut f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T
+    fn from_fn<P,F>(size : P, mut f : F) -> Self
+        where
+        F : FnMut(P) -> T,
+        P : Into<Vector::<Idx,N>>,
+        Vector::<Idx,N> : Into<P>,
     {
+        let size = size.into();
         let area = size.area_usize();
         let mut value = Vec::with_capacity(area);
         for idx in size.iter_index()
         {
-            value.push(f(unsafe { Self::external_position_to_position_unchecked(idx,size) }));
+            value.push(f(unsafe { Self::external_position_to_position_unchecked(idx,size) }.into()));
         }
         unsafe { Self::from_vec_unchecked(size, value) }
     }
     /// Create a grid from a function in parallel
-    fn from_fn_par<F>(size : Vector::<Idx,N>, f : F) -> Self where F : Fn(Vector::<Idx,N>) -> T + Sync, T : Send, Idx : Sync
+    fn from_fn_par<P,F>(size : P, f : F) -> Self
+        where
+        F : Fn(P) -> T + Sync,
+        P : Into<Vector::<Idx,N>>,
+        Vector::<Idx,N> : Into<P>,
+
+        T : Send,
+        Idx : Sync,
     {
+        let size = size.into();
         let area = size.area_usize();
         let mut values = Vec::with_capacity(area);
-        (0..area).into_par_iter().map(|i| f(unsafe { Self::external_position_to_position_unchecked(Vector::<Idx, N>::from_index_unchecked(i, size), size) })).collect_into_vec(&mut values);
+        (0..area).into_par_iter().map(|i| f(unsafe { Self::external_position_to_position_unchecked(Vector::<Idx, N>::from_index_unchecked(i, size), size) }.into())).collect_into_vec(&mut values);
         unsafe { Self::from_vec_unchecked(size, values) }
     }
 

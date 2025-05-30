@@ -6,13 +6,21 @@ use crate::*;
 
 pub enum ColorKind
 {
+    /// Pixel is 1-bit RGB with an alpha channel
     RGBABool,
+    /// Pixel is 8-bit RGB with an alpha channel
     RGBAByte,
+    /// Pixel is 16-bit RGBA with an alpha channel
     RGBAU16,
+    /// Pixel is 32-bit float RGB with an alpha channel
     RGBAF32,
+    /// Pixel is 64-bit float RGB with an alpha channel. Casted to RGBAF32 if not supported
     RGBAF64,
+    /// Pixel is 32-bit float HSL with an alpha channel. Casted to RGBAByte if not supported
     HSLAF32,
+    /// Pixel is 64-bit float HSL with an alpha channel. Casted to RGBAByte if not supported
     HSLAF64,
+    // Casted to RGBAByte if not supported
     Unknow,
 }
 
