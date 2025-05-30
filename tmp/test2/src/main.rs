@@ -20,11 +20,13 @@ struct Person
 
 fn main()
 {
+    /*
     for markup in Io::MARKUP_EXTENSIONS
     {
         let r = [1,2,3,4].save_to_disk(&format!("./array.{markup}"));
         println!("{:?}", r);
     }
+    */
 
     Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
     Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
