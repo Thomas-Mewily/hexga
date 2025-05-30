@@ -18,7 +18,7 @@ impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx
     fn values_mut(&mut self) -> &mut [T] { &mut self.value }
 
     fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T>) {  (self.size, self.value) }
-    unsafe fn unchecked_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Self { Self { size, value } }
+    unsafe fn from_vec_unchecked(size : Vector::<Idx,N>, value : Vec<T>) -> Self { Self { size, value } }
 }
 
 

@@ -1,11 +1,11 @@
 {
-    "idleHeartbeats": 144815,
-    "navigatingHeartbeats": 48422,
-    "totalCodingHeartbeats": 481593,
+    "idleHeartbeats": 144970,
+    "navigatingHeartbeats": 48445,
+    "totalCodingHeartbeats": 484392,
     "languageHeartbeats": {
         "jsonc": 2266,
         "toml": 20658,
-        "rust": 436039,
+        "rust": 438838,
         "scminput": 5300,
         "plaintext": 1635,
         "markdown": 15156,
@@ -387,8 +387,9 @@
         ".gitignore": 51,
         "e:\\Me\\Rust\\HexGa\\version\\27\\share_crate\\name_2_share.md": 68,
         "cool/README.MD": 330,
-        "hexga/module/hexga_graphics/src/image.rs": 520,
+        "hexga/module/hexga_graphics/src/image.rs": 2275,
         "hexga/module/hexga_number/src/traits.rs": 183,
-        "hexga/module/hexga_math/src/range/step.rs": 250
+        "hexga/module/hexga_math/src/range/step.rs": 1159,
+        "hexga/module/hexga_math/src/color/icolor.rs": 135
     }
 }

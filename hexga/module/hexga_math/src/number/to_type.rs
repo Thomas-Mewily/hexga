@@ -3,9 +3,9 @@ use crate::*;
 /*
 // Coef
 pub trait ToCoef
-{ 
+{
     type Output;
-    fn to_coef(self) -> Self::Output; 
+    fn to_coef(self) -> Self::Output;
 }
 impl<T> ToCoef for T where T : CastIntoComposite<CoefWrapper>
 {
@@ -14,7 +14,7 @@ impl<T> ToCoef for T where T : CastIntoComposite<CoefWrapper>
 }
 
 pub trait FromCoef
-{ 
+{
     fn from_coef(coef : Coef) -> Self;
 }
 impl<T> FromCoef for T where T : RangeDefault + ToFloat<Output = float>, float : CastInto<T>
@@ -25,9 +25,9 @@ impl<T> FromCoef for T where T : RangeDefault + ToFloat<Output = float>, float :
 
 // Float
 pub trait ToFloat
-{ 
+{
     type Output;
-    fn to_float(self) -> Self::Output; 
+    fn to_float(self) -> Self::Output;
 }
 impl<T> ToFloat for T where T : CastIntoComposite<float>
 {
@@ -36,9 +36,9 @@ impl<T> ToFloat for T where T : CastIntoComposite<float>
 }
 
 pub trait ToF32
-{ 
+{
     type Output;
-    fn to_f32(self) -> Self::Output; 
+    fn to_f32(self) -> Self::Output;
 }
 impl<T> ToF32 for T where T : CastIntoComposite<f32>
 {
@@ -47,9 +47,9 @@ impl<T> ToF32 for T where T : CastIntoComposite<f32>
 }
 
 pub trait ToF64
-{ 
+{
     type Output;
-    fn to_f64(self) -> Self::Output; 
+    fn to_f64(self) -> Self::Output;
 }
 impl<T> ToF64 for T where T : CastIntoComposite<f64>
 {
@@ -59,10 +59,10 @@ impl<T> ToF64 for T where T : CastIntoComposite<f64>
 
 
 // iX
-pub trait ToInt  
-{ 
+pub trait ToInt
+{
     type Output;
-    fn to_int(self) -> Self::Output; 
+    fn to_int(self) -> Self::Output;
 }
 impl<T> ToInt for T where T : CastIntoComposite<int>
 {
@@ -70,10 +70,10 @@ impl<T> ToInt for T where T : CastIntoComposite<int>
     fn to_int(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToI8  
-{ 
+pub trait ToI8
+{
     type Output;
-    fn to_i8(self) -> Self::Output; 
+    fn to_i8(self) -> Self::Output;
 }
 impl<T> ToI8 for T where T : CastIntoComposite<i8>
 {
@@ -81,10 +81,10 @@ impl<T> ToI8 for T where T : CastIntoComposite<i8>
     fn to_i8(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToI16  
-{ 
+pub trait ToI16
+{
     type Output;
-    fn to_i16(self) -> Self::Output; 
+    fn to_i16(self) -> Self::Output;
 }
 impl<T> ToI16 for T where T : CastIntoComposite<i16>
 {
@@ -92,10 +92,10 @@ impl<T> ToI16 for T where T : CastIntoComposite<i16>
     fn to_i16(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToI32  
-{ 
+pub trait ToI32
+{
     type Output;
-    fn to_i32(self) -> Self::Output; 
+    fn to_i32(self) -> Self::Output;
 }
 impl<T> ToI32 for T where T : CastIntoComposite<i32>
 {
@@ -103,10 +103,10 @@ impl<T> ToI32 for T where T : CastIntoComposite<i32>
     fn to_i32(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToI64  
-{ 
+pub trait ToI64
+{
     type Output;
-    fn to_i64(self) -> Self::Output; 
+    fn to_i64(self) -> Self::Output;
 }
 impl<T> ToI64 for T where T : CastIntoComposite<i64>
 {
@@ -114,10 +114,10 @@ impl<T> ToI64 for T where T : CastIntoComposite<i64>
     fn to_i64(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToISize  
-{ 
+pub trait ToISize
+{
     type Output;
-    fn to_isize(self) -> Self::Output; 
+    fn to_isize(self) -> Self::Output;
 }
 impl<T> ToISize for T where T : CastIntoComposite<isize>
 {
@@ -126,10 +126,10 @@ impl<T> ToISize for T where T : CastIntoComposite<isize>
 }
 
 // uX
-pub trait ToUInt  
-{ 
+pub trait ToUInt
+{
     type Output;
-    fn to_uint(self) -> Self::Output; 
+    fn to_uint(self) -> Self::Output;
 }
 impl<T> ToUInt for T where T : CastIntoComposite<uint>
 {
@@ -137,10 +137,10 @@ impl<T> ToUInt for T where T : CastIntoComposite<uint>
     fn to_uint(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToU8  
-{ 
+pub trait ToU8
+{
     type Output;
-    fn to_u8(self) -> Self::Output; 
+    fn to_u8(self) -> Self::Output;
 }
 impl<T> ToU8 for T where T : CastIntoComposite<u8>
 {
@@ -148,10 +148,10 @@ impl<T> ToU8 for T where T : CastIntoComposite<u8>
     fn to_u8(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToU16  
-{ 
+pub trait ToU16
+{
     type Output;
-    fn to_u16(self) -> Self::Output; 
+    fn to_u16(self) -> Self::Output;
 }
 impl<T> ToU16 for T where T : CastIntoComposite<u16>
 {
@@ -159,10 +159,10 @@ impl<T> ToU16 for T where T : CastIntoComposite<u16>
     fn to_u16(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToU32  
-{ 
+pub trait ToU32
+{
     type Output;
-    fn to_u32(self) -> Self::Output; 
+    fn to_u32(self) -> Self::Output;
 }
 impl<T> ToU32 for T where T : CastIntoComposite<u32>
 {
@@ -170,10 +170,10 @@ impl<T> ToU32 for T where T : CastIntoComposite<u32>
     fn to_u32(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToU64  
-{ 
+pub trait ToU64
+{
     type Output;
-    fn to_u64(self) -> Self::Output; 
+    fn to_u64(self) -> Self::Output;
 }
 impl<T> ToU64 for T where T : CastIntoComposite<u64>
 {
@@ -181,10 +181,10 @@ impl<T> ToU64 for T where T : CastIntoComposite<u64>
     fn to_u64(self) -> Self::Output { self.cast_into_composite() }
 }
 
-pub trait ToUSize  
-{ 
+pub trait ToUSize
+{
     type Output;
-    fn to_usize(self) -> Self::Output; 
+    fn to_usize(self) -> Self::Output;
 }
 impl<T> ToUSize for T where T : CastIntoComposite<usize>
 {

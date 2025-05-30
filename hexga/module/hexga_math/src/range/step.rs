@@ -7,7 +7,17 @@ pub trait RangeStepExtension
     type Item;
     /// Should emit an empty iterator if step is zero (not well defined)
     fn step(self, step: Self::Item) -> Self::Output;
+    fn step_by_one(self) -> Self::Output where Self : Sized, Self::Item : One { self.step(Self::Item::ONE) }
 }
+
+
+// Todo : Remove once the Step trait will be stabilized
+pub trait RangeStepIter : NumberPrimitive
+{
+    // Using Range, last value is excluded
+    fn iter(max_excluded : Self) -> RangeStep<Self> { RangeStep { start: Self::ZERO, end: max_excluded, step: Self::ONE } }
+}
+impl<T> RangeStepIter for T where T : NumberPrimitive {}
 
 pub trait RangeDefaultStepExtension : RangeDefault where Range<Self> : RangeStepExtension
 {
@@ -39,11 +49,11 @@ pub struct RangeStep<T> where T : NumberPrimitive
 }
 
 
-impl<T> Iterator for RangeStep<T> where T : NumberPrimitive 
+impl<T> Iterator for RangeStep<T> where T : NumberPrimitive
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.start <= self.end 
+        if self.start <= self.end
         {
             let val = self.start;
             self.start += self.step;
@@ -54,16 +64,16 @@ impl<T> Iterator for RangeStep<T> where T : NumberPrimitive
                 NumberType::Float => if self.start == val { None } else { Some(val) },
                 NumberType::Bool => unsafe { unreachable_unchecked() },
             }
-        } else 
+        } else
         {
             None
         }
     }
 }
-impl<T> DoubleEndedIterator for RangeStep<T> where T : NumberPrimitive 
+impl<T> DoubleEndedIterator for RangeStep<T> where T : NumberPrimitive
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.end >= self.start 
+        if self.end >= self.start
         {
             let val = self.end;
             self.end -= self.step;
@@ -75,13 +85,13 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T : NumberPrimitive
                 NumberType::Float => if self.end == val { None } else { Some(val) },
                 NumberType::Bool => unsafe { unreachable_unchecked() },
             }
-        } else 
+        } else
         {
             match T::PRIMITIVE_NUMBER_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => None,
                 // Reached the limit of floating-point precision
-                NumberType::Float => 
+                NumberType::Float =>
                 {
                     // Force the iterator to stop at the first value
                     if self.end + self.step > self.start
@@ -129,11 +139,11 @@ pub struct RangeStepInclusive<T> where T : NumberPrimitive
     pub step   : T,
 }
 
-impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive 
+impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.start <= self.end 
+        if self.start <= self.end
         {
             let val = self.start;
             self.start += self.step;
@@ -145,13 +155,13 @@ impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive
                 NumberType::Float => if self.start == val { None } else { Some(val) },
                 NumberType::Bool => unsafe { unreachable_unchecked() },
             }
-        } else 
+        } else
         {
             match T::PRIMITIVE_NUMBER_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => None,
                 // Reached the limit of floating-point precision
-                NumberType::Float => 
+                NumberType::Float =>
                 {
                     // Force the iterator to stop at the first value
                     if self.start - self.step < self.end
@@ -166,10 +176,10 @@ impl<T> Iterator for RangeStepInclusive<T> where T : NumberPrimitive
         }
     }
 }
-impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : NumberPrimitive 
+impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : NumberPrimitive
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.end >= self.start 
+        if self.end >= self.start
         {
             let val = self.end;
             self.end -= self.step;
@@ -181,13 +191,13 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T : NumberPrimitive
                 NumberType::Float => if self.end == val { return None } else { Some(val) },
                 NumberType::Bool => unsafe { unreachable_unchecked() },
             }
-        } else 
+        } else
         {
             match T::PRIMITIVE_NUMBER_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => None,
                 // Reached the limit of floating-point precision
-                NumberType::Float => 
+                NumberType::Float =>
                 {
                     // Force the iterator to stop at the first value
                     if self.end + self.step > self.start
@@ -265,7 +275,7 @@ mod range_test
     }
 
 
-    
+
     #[test]
     fn range_float()
     {

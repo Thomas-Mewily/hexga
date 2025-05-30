@@ -57,6 +57,12 @@ impl<'c, G, T, Idx, const N : usize> IGridView<G,T,Idx,N> for GridViewMut<'c, G,
     { unsafe { GridView::from_rect_unchecked(self.grid_unchecked(), rect) } }
 }
 
+/*
+impl<'c, G, T, Idx, const N : usize> IGridViewNonOwned<G, T, Idx, N> for GridViewMut<'c, G, T, Idx, N> where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer {}
+*/
+
 impl<'c, G, T, Idx, const N : usize> IGridViewMut<G,T,Idx,N> for GridViewMut<'c, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,

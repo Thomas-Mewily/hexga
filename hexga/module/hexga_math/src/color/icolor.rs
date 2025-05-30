@@ -16,7 +16,7 @@ pub enum ColorKind
     Unknow,
 }
 
-pub trait ToColor
+pub trait ToColorComposite
 {
     const COLOR_INSIDE : ColorKind;
 
@@ -98,7 +98,7 @@ pub trait ToColor
     fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64;
 }
 
-impl<T, const N : usize> ToColor for [T;N] where T : ToColor
+impl<T, const N : usize> ToColorComposite for [T;N] where T : ToColorComposite
 {
     type ColorRGBAF32 = [T::ColorRGBAF32;N];
     fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { std::array::from_fn(|i| self[i].to_color_rgba_f32()) }
@@ -121,7 +121,7 @@ impl<T, const N : usize> ToColor for [T;N] where T : ToColor
     const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
 }
 
-impl<T> ToColor for [T] where T : ToColor
+impl<T> ToColorComposite for [T] where T : ToColorComposite
 {
     type ColorRGBAF32 = Vec<T::ColorRGBAF32>;
     fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { self.iter().map(|v| v.to_color_rgba_f32()).collect() }
@@ -144,18 +144,26 @@ impl<T> ToColor for [T] where T : ToColor
     const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
 }
 
-/// Constant color name are based on <https://colornames.org/>
-///
-/// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#ff7f00`)
-pub trait IColor<T> :
-    Sized +
-    ToColor
+pub trait ToColor :
+    ToColorComposite
     <
         ColorRGBAF32 = ColorRGBAOf<f32>, ColorRGBAF64 = ColorRGBAOf<f64>,
         ColorHSLAF32 = ColorHSLAF32, ColorHSLAF64 = ColorHSLAF64,
         ColorRGBAByte = ColorRGBAByte,
         ColorRGBABool = ColorRGBABool,
-    >
+    > {}
+impl<T> ToColor for T where T: ToColorComposite
+    <
+        ColorRGBAF32 = ColorRGBAOf<f32>, ColorRGBAF64 = ColorRGBAOf<f64>,
+        ColorHSLAF32 = ColorHSLAF32, ColorHSLAF64 = ColorHSLAF64,
+        ColorRGBAByte = ColorRGBAByte,
+        ColorRGBABool = ColorRGBABool,
+    > {}
+
+/// Constant color name are based on <https://colornames.org/>
+///
+/// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#ff7f00`)
+pub trait IColor<T> : Sized + ToColor
     where T : Primitive
 {
     const TRANSPARENT : Self;

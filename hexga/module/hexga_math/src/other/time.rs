@@ -37,7 +37,10 @@ new_unit!(
     TimeOf
 );
 
-pub trait ToTime
+pub trait ToTime<T> : ToTimeComposite<Output = TimeOf<T>> where T : CastIntoAnyFloat {}
+impl<S,T> ToTime<T> for S where S : ToTimeComposite<Output = TimeOf<T>>, T : CastIntoAnyFloat {}
+
+pub trait ToTimeComposite
 {
     type Output;
     fn ms  (self) -> Self::Output;
@@ -47,9 +50,9 @@ pub trait ToTime
     fn hour(self) -> Self::Output;
     fn day (self) -> Self::Output;
 }
-impl_composite_output_with_methods!(ToTime, ms, s, mins, hour, day);
+impl_composite_output_with_methods!(ToTimeComposite, ms, s, mins, hour, day);
 
-impl<T> ToTime for T where T : ToFloat<Output = float>
+impl<T> ToTimeComposite for T where T : ToFloat<Output = float>
 {
     type Output = Time;
 

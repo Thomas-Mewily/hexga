@@ -29,12 +29,6 @@ pub trait IGrid<T, Idx, const N : usize> :
     + IndexMut<Vector<Idx,N>, Output = T>
 
     + Sized
-
-// AsRef / AsMut: impl details
-    //  AsRef<[T]>
-    //+ AsMut<[T]>
-    //+ Crop<Idx,N> // if T is Clone
-    //+ IGridViewMut<Self,T,Idx,N>
     where Idx : Integer
 {
     type WithType<U> : IGrid<U, Idx, N>;
@@ -75,10 +69,10 @@ pub trait IGrid<T, Idx, const N : usize> :
         if *size.min_element() <= Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
         let area_size = size.area_usize();
         if area_size != value.len() { return Err(GridBaseError::WrongDimension(size, area_size)); }
-        Ok(unsafe { Self::unchecked_from_vec(size, value) })
+        Ok(unsafe { Self::from_vec_unchecked(size, value) })
     }
 
-    unsafe fn unchecked_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Self;
+    unsafe fn from_vec_unchecked(size : Vector::<Idx,N>, value : Vec<T>) -> Self;
 
     /// Create a grid from a function
     fn from_fn<F>(size : Vector::<Idx,N>, mut f : F) -> Self where F : FnMut(Vector::<Idx,N>) -> T
@@ -89,7 +83,7 @@ pub trait IGrid<T, Idx, const N : usize> :
         {
             value.push(f(unsafe { Self::external_position_to_position_unchecked(idx,size) }));
         }
-        unsafe { Self::unchecked_from_vec(size, value) }
+        unsafe { Self::from_vec_unchecked(size, value) }
     }
     /// Create a grid from a function in parallel
     fn from_fn_par<F>(size : Vector::<Idx,N>, f : F) -> Self where F : Fn(Vector::<Idx,N>) -> T + Sync, T : Send, Idx : Sync
@@ -97,7 +91,7 @@ pub trait IGrid<T, Idx, const N : usize> :
         let area = size.area_usize();
         let mut values = Vec::with_capacity(area);
         (0..area).into_par_iter().map(|i| f(unsafe { Self::external_position_to_position_unchecked(Vector::<Idx, N>::from_index_unchecked(i, size), size) })).collect_into_vec(&mut values);
-        unsafe { Self::unchecked_from_vec(size, values) }
+        unsafe { Self::from_vec_unchecked(size, values) }
     }
 
     /// Create a new grid and fill it with the [Default] value

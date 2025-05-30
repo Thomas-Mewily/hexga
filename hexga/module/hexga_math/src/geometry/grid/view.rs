@@ -1,5 +1,17 @@
 use crate::*;
 
+/*
+/// Just for [GridView] and [GridViewMut] that don't own the underlying grid
+pub trait IGridViewNonOwned<G, T, Idx, const N : usize> :
+      IRectangle<Idx,N>
+    + Get<Vector<Idx,N>,Output=T>
+    + Index<Vector<Idx,N>,Output=T>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer
+{
+}
+*/
 
 /// Trait to a view into an N-dimensional grid.
 ///
@@ -76,6 +88,12 @@ pub struct GridView<'a, G, T, Idx, const N : usize>
     rect : Rectangle<Idx,N>,
     phantom : std::marker::PhantomData<T>,
 }
+
+/*
+impl<'c, G, T, Idx, const N : usize> IGridViewNonOwned<G, T, Idx, N> for GridView<'c, G, T, Idx, N> where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer {}
+*/
 
 impl<'c, G, T, Idx, const N : usize> IGridView<G, T, Idx, N> for GridView<'c, G, T, Idx, N>
     where

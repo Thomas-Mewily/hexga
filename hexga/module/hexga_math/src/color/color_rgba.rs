@@ -195,7 +195,7 @@ impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
     }
 }
 
-impl<T> ToColor for ColorRGBAOf<T> where T : Primitive
+impl<T> ToColorComposite for ColorRGBAOf<T> where T : Primitive
 {
     type ColorRGBAF32 = ColorRGBAOf<f32>;
     fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { self.to_color_rgba_of() }

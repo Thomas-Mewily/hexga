@@ -32,22 +32,24 @@ new_unit!(
 /// See [`AngleOf`] to use your own precision.
 pub type Angle = AngleOf<float>;
 
+pub trait ToAngle<T> : ToAngleComposite<Output = AngleOf<T>> where T : CastIntoAnyFloat {}
+impl<S,T> ToAngle<T> for S where S : ToAngleComposite<Output = AngleOf<T>>, T : CastIntoAnyFloat {}
 
-pub trait ToAngle
+pub trait ToAngleComposite
 {
     type Output;
     fn degree(self) -> Self::Output;
     fn radian(self) -> Self::Output;
     fn turn  (self) -> Self::Output;
 }
-impl_composite_output_with_methods!(ToAngle, degree, radian, turn);
+impl_composite_output_with_methods!(ToAngleComposite, degree, radian, turn);
 
-impl<T> ToAngle for T where T : CastInto<float>
+impl<T> ToAngleComposite for T where T : ToFloat<Output = float>
 {
     type Output = Angle;
-    fn degree(self) -> Angle { Angle::from_degree(self.cast_into_composite()) }
-    fn radian(self) -> Angle { Angle::from_radian(self.cast_into_composite()) }
-    fn turn  (self) -> Angle { Angle::from_turn  (self.cast_into_composite()) }
+    fn degree(self) -> Angle { Angle::from_degree(self.to_float()) }
+    fn radian(self) -> Angle { Angle::from_radian(self.to_float()) }
+    fn turn  (self) -> Angle { Angle::from_turn  (self.to_float()) }
 }
 
 

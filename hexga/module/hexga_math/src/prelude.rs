@@ -18,6 +18,6 @@ pub use crate::range::prelude::*;
 
 pub use crate::extension::*;
 
-pub use crate::{time::{Time,ToTime},angle::{Angle,ToAngle}};
+pub use crate::{time::{Time,ToTimeComposite},angle::{Angle,ToAngleComposite}};
 
 pub use crate::{ArrayLike,extension::ArrayLikeExtension};

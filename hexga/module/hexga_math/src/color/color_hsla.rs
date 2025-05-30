@@ -193,7 +193,8 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
 }
 
 
-impl<T> ToColor for ColorHSLAOf<T> where T : Float
+
+impl<T> ToColorComposite for ColorHSLAOf<T> where T : Float
 {
     type ColorRGBAF32 = ColorRGBAOf<f32>;
     fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { self.to_color_rgba_of() }

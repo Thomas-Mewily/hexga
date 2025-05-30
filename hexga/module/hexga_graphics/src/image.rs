@@ -13,26 +13,36 @@ pub trait ToImage
     fn to_image(self) -> Self::Output;
 }
 
-impl<'a,T,Idx> ToImage for GridView<'a,GridBase<T,Idx,2>,T,Idx,2> where T : ToColor, Idx : Integer
+impl<T,Idx> ToImage for GridBase<T,Idx,2> where T : ToColor, Idx : Integer
 {
     type Output = ImageBase<T, Idx>;
     fn to_image(mut self) -> Self::Output
     {
-        /*
         let (w,h) = self.size().into();
-
-        for y in (0..h /2).step_by()
+        for x in Idx::iter(w)
         {
-            for x in 0..w
+            for y in Idx::iter(h / Idx::two())
             {
-                self.swap(vec2(x, y), vec2(x, h-y-1));
+                unsafe { self.swap_unchecked(vector2(x, y), vector2(x, h - y - Idx::ONE)) };
             }
         }
         let (size, values) = self.into_size_and_values();
-        */
-        todo!();
+        unsafe { ImageBase::from_vec_unchecked(size, values) }
     }
 }
+
+impl<'a,T,Idx> ToImage for GridView<'a,GridBase<T,Idx,2>,T,Idx,2> where T : ToColor + Clone, Idx : Integer
+{
+    type Output = ImageBase<T, Idx>;
+    fn to_image(self) -> Self::Output
+    {
+        let size = self.size();
+        Self::Output::from_fn(size, |p|
+            unsafe { self.get_unchecked(vector2(p.x, size.y - p.y - Idx::ONE)) }.clone()
+        )
+    }
+}
+
 
 /*
 impl<'a,G,T,Idx> ToImage for GridView<'a,G,T,Idx,2> where T : ToColor, Idx : Integer, G : IGrid<T,Idx,2>
@@ -70,7 +80,7 @@ impl<C,Idx> IGrid<C,Idx,2> for ImageBase<C,Idx> where Idx : Integer
 
     fn into_size_and_values(self) -> (Vector2<Idx>, Vec<C>) { (self.size, self.pixels) }
 
-    unsafe fn unchecked_from_vec(size : Vector2::<Idx>, pixels : Vec<C>) -> Self {
+    unsafe fn from_vec_unchecked(size : Vector2::<Idx>, pixels : Vec<C>) -> Self {
         Self { pixels, size }
     }
 
@@ -464,7 +474,7 @@ impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : IColor
 */
 
 
-impl<C,Idx> ToColor for ImageBase<C, Idx> where Idx : Integer, C : ToColor
+impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite
 {
     type ColorRGBAF32 = ImageBase<C::ColorRGBAF32, Idx>;
     fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 {
