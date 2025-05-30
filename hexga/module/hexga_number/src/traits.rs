@@ -1,32 +1,32 @@
 use crate::*;
 
-pub trait Abs 
+pub trait Abs
 {
     type Output;
     fn abs(self) -> Self::Output;
 }
 
 map_on_integer_unsigned!(
-    ($primitive_name: ty) => 
-    { 
-        impl Abs for $primitive_name 
-        { 
+    ($primitive_name: ty) =>
+    {
+        impl Abs for $primitive_name
+        {
             type Output = Self;
             #[inline(always)]
             fn abs(self) -> Self::Output { self }
-        } 
+        }
     }
 );
 
 macro_rules! impl_abs {
-    ($primitive_name: ty) => 
-    { 
-        impl Abs for $primitive_name 
-        { 
+    ($primitive_name: ty) =>
+    {
+        impl Abs for $primitive_name
+        {
             type Output = Self;
             #[inline(always)]
             fn abs(self) -> Self::Output { self.abs() }
-        } 
+        }
     };
 }
 map_on_integer_signed!(impl_abs);
@@ -43,7 +43,7 @@ impl<T> Abs for Saturating<T> where T : Abs
     fn abs(self) -> Self::Output { Saturating(self.0.abs()) }
 }
 
-impl<T,T2, const N : usize> Abs for [T;N] where T : Abs<Output = T2> 
+impl<T,T2, const N : usize> Abs for [T;N] where T : Abs<Output = T2>
 {
     type Output=[T2;N];
     fn abs(self) -> Self::Output { self.map(|v| v.abs()) }
@@ -59,8 +59,8 @@ pub trait Increase : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Siz
     #[inline(always)] fn increase_checked(&mut self) -> Result<(), ()> where Self : OverflowBehavior + MaxValue + PartialEq
     { if self.can_increase() { self.increase(); Ok(()) } else { Err(()) } }
 
-    /// Do the current value have a successor. 
-    /// 
+    /// Do the current value have a successor.
+    ///
     /// True if not Self::MAX, except for wrapping type, they always have a successor because they wrap
     #[inline(always)] fn can_increase(&self) -> bool where Self : OverflowBehavior + MaxValue + PartialEq { Self::OVERFLOW_BEHAVIOR.is_wrapping() || self.is_non_max_value() }
 
@@ -70,8 +70,8 @@ pub trait Increase : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Siz
     #[inline(always)] fn successor_checked(&mut self) -> Result<Self, ()> where Self : OverflowBehavior + MaxValue + PartialEq
     { if self.have_successor() { Ok(self.successor()) } else { Err(()) } }
 
-    /// Do the current value have a successor. 
-    /// 
+    /// Do the current value have a successor.
+    ///
     /// True if not Self::MAX, except for wrapping type, they always have a successor because they wrap
     #[inline(always)] fn have_successor(self) -> bool where Self : OverflowBehavior + MaxValue + PartialEq { self.can_increase() }
 }
@@ -86,8 +86,8 @@ pub trait Decrease : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Siz
     #[inline(always)] fn decrease_checked(&mut self) -> Result<(), ()> where Self : OverflowBehavior + MinValue + PartialEq
     { if self.can_decrease() { self.decrease(); Ok(()) } else { Err(()) } }
 
-    /// Do the current value have a predecessor. 
-    /// 
+    /// Do the current value have a predecessor.
+    ///
     /// True if not Self::MIN, except for wrapping type, they always have a predecessor because they wrap
     #[inline(always)] fn can_decrease(&self) -> bool where Self : OverflowBehavior + MinValue + PartialEq { Self::OVERFLOW_BEHAVIOR.is_wrapping() || self.is_not_min_value() }
 
@@ -97,17 +97,19 @@ pub trait Decrease : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Siz
     #[inline(always)] fn predecessor_checked(&mut self) -> Result<Self, ()> where Self : OverflowBehavior + MinValue + PartialEq
     { if self.have_predecessor() { Ok(self.predecessor()) } else { Err(()) } }
 
-    /// Do the current value have a predecessor. 
-    /// 
+    /// Do the current value have a predecessor.
+    ///
     /// True if not Self::MIN, except for wrapping type, they always have a predecessor because they wrap
     #[inline(always)] fn have_predecessor(self) -> bool where Self : OverflowBehavior + MinValue + PartialEq { self.can_decrease() }
 }
 impl<T> Decrease for T where T : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized {}
 
+
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum OverflowPolicy { None, Wrapping, Saturating }
 
-impl OverflowPolicy 
+impl OverflowPolicy
 {
     #[inline(always)] pub const fn is_none(self) -> bool { matches!(self, Self::None) }
     #[inline(always)] pub const fn is_wrapping(self) -> bool { matches!(self, Self::Wrapping) }
@@ -116,11 +118,11 @@ impl OverflowPolicy
 
 pub trait OverflowBehavior
 {
-    const OVERFLOW_BEHAVIOR : OverflowPolicy = OverflowPolicy::None; 
+    const OVERFLOW_BEHAVIOR : OverflowPolicy = OverflowPolicy::None;
 }
 
 map_on_integer!(
-    ($primitive_name: ty) => 
+    ($primitive_name: ty) =>
     {
         impl OverflowBehavior for $primitive_name {}
     };
@@ -151,28 +153,28 @@ pub trait PrimitiveType
     const PRIMITIVE_NUMBER_TYPE : NumberType;
 }
 map_on_integer_unsigned!(
-    ($typename:ident) => 
-    { 
-        impl PrimitiveType for $typename 
-        { 
+    ($typename:ident) =>
+    {
+        impl PrimitiveType for $typename
+        {
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::IntegerUnsigned;
         }
     }
 );
 map_on_integer_signed!(
-    ($typename:ident) => 
-    { 
-        impl PrimitiveType for $typename 
-        { 
+    ($typename:ident) =>
+    {
+        impl PrimitiveType for $typename
+        {
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::IntegerSigned;
         }
     }
 );
 map_on_float!(
-    ($typename:ident) => 
-    { 
-        impl PrimitiveType for $typename 
-        { 
+    ($typename:ident) =>
+    {
+        impl PrimitiveType for $typename
+        {
             const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::Float;
         }
     }

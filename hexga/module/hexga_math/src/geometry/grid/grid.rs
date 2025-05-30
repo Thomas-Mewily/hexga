@@ -21,27 +21,6 @@ impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx
     unsafe fn unchecked_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Self { Self { size, value } }
 }
 
-impl<T, Idx, const N : usize> IGridView<Self, T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
-{
-    type WithLifetime<'a> = GridView<'a, Self, T, Idx, N> where Self: 'a;
-    fn view<'a,'b>(&'a self) -> Self::WithLifetime<'b> where 'a : 'b { GridView::new(self) }
-
-    unsafe fn grid_unchecked(&self) -> &Self { self }
-
-    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b> where 'a: 'b
-    { unsafe { GridView::from_rect_unchecked(self, rect) } }
-}
-
-impl<T, Idx, const N : usize> IGridViewMut<Self, T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
-{
-    type WithLifetimeMut<'a> = GridViewMut<'a, Self, T, Idx, N> where Self: 'a;
-    fn view_mut<'a,'b>(&'a mut self) -> Self::WithLifetimeMut<'b> where 'a : 'b { GridViewMut::new(self) }
-
-    fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, N> { GridViewIterMut::new(self) }
-    fn for_each_mut<F>(&mut self, f : F) where F : FnMut((Vector<Idx,N>,&mut T)) { self.view_mut().for_each_mut(f) }
-
-    unsafe fn grid_mut_unchecked(&mut self) -> &mut Self { self }
-}
 
 impl<T, Idx, const N : usize> AsRef<[T]> for GridBase<T, Idx, N> where Idx : Integer
 {

@@ -1,11 +1,11 @@
 {
-    "idleHeartbeats": 144371,
-    "navigatingHeartbeats": 48372,
-    "totalCodingHeartbeats": 480285,
+    "idleHeartbeats": 144815,
+    "navigatingHeartbeats": 48422,
+    "totalCodingHeartbeats": 481593,
     "languageHeartbeats": {
         "jsonc": 2266,
         "toml": 20658,
-        "rust": 434731,
+        "rust": 436039,
         "scminput": 5300,
         "plaintext": 1635,
         "markdown": 15156,
@@ -260,7 +260,7 @@
         "tmp/hexga_test/Cargo.toml": 409,
         "tmp/hexga_test/src/main.rs": 2206,
         "tmp/test2/Cargo.toml": 296,
-        "tmp/test2/src/main.rs": 7136,
+        "tmp/test2/src/main.rs": 7282,
         "hexga/hexga_map_on/examples/trait_operator.rs": 355,
         "hexga/hexga_math/src/number/extension.rs": 335,
         "hexga/hexga_math/src/other/unit.rs": 3003,
@@ -345,7 +345,7 @@
         "hexga/module/hexga_math/src/geometry/grid/grid.rs": 2372,
         "hexga/module/hexga_math/src/geometry/mod.rs": 121,
         "hexga/module/hexga_number/src/number.rs": 433,
-        "hexga/module/hexga_math/src/geometry/grid/igrid.rs": 3999,
+        "hexga/module/hexga_math/src/geometry/grid/igrid.rs": 4284,
         "hexga/module/hexga_math/src/geometry/grid/view.rs": 5089,
         "hexga/module/hexga_math/src/geometry/grid/view_mut.rs": 2562,
         "hexga/module/hexga_math/src/geometry/grid/iter_mut.rs": 282,
@@ -354,7 +354,7 @@
         "hexga/module/hexga_graphics/src/lib.rs": 2050,
         "hexga/module/hexga_math/src/graphics/icolor.rs": 6454,
         "hexga/module/hexga_number/src/constant.rs": 92,
-        "hexga/module/hexga_math/src/number/integer.rs": 219,
+        "hexga/module/hexga_math/src/number/integer.rs": 425,
         "hexga/module/hexga_math/src/number/cast_to.rs": 778,
         "hexga/module/hexga_math/src/number/cast_range_to.rs": 4354,
         "hexga/module/hexga_math/src/range/default.rs": 356,
@@ -387,6 +387,8 @@
         ".gitignore": 51,
         "e:\\Me\\Rust\\HexGa\\version\\27\\share_crate\\name_2_share.md": 68,
         "cool/README.MD": 330,
-        "hexga/module/hexga_graphics/src/image.rs": 282
+        "hexga/module/hexga_graphics/src/image.rs": 520,
+        "hexga/module/hexga_number/src/traits.rs": 183,
+        "hexga/module/hexga_math/src/range/step.rs": 250
     }
 }

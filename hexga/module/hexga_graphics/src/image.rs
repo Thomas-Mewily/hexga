@@ -1,4 +1,3 @@
-/*
 use crate::*;
 
 pub type Image<C=ColorRGBAByte> = ImageBase<C,int>;
@@ -8,22 +7,34 @@ pub struct ImageBase<C,Idx> where Idx : Integer
     size   : Vector2<Idx>,
 }
 
-/*
 pub trait ToImage
 {
     type Output;
     fn to_image(self) -> Self::Output;
 }
 
-impl<T,Idx> ToImage for GridBase<T,Idx,2> where T : ToColor, Idx : Integer
+impl<'a,T,Idx> ToImage for GridView<'a,GridBase<T,Idx,2>,T,Idx,2> where T : ToColor, Idx : Integer
 {
-    type Output = Self;
-    fn to_image(self) -> Self::Output
+    type Output = ImageBase<T, Idx>;
+    fn to_image(mut self) -> Self::Output
     {
-        todo!()
+        /*
+        let (w,h) = self.size().into();
+
+        for y in (0..h /2).step_by()
+        {
+            for x in 0..w
+            {
+                self.swap(vec2(x, y), vec2(x, h-y-1));
+            }
+        }
+        let (size, values) = self.into_size_and_values();
+        */
+        todo!();
     }
 }
 
+/*
 impl<'a,G,T,Idx> ToImage for GridView<'a,G,T,Idx,2> where T : ToColor, Idx : Integer, G : IGrid<T,Idx,2>
 {
     type Output = Self;
@@ -32,7 +43,7 @@ impl<'a,G,T,Idx> ToImage for GridView<'a,G,T,Idx,2> where T : ToColor, Idx : Int
         self.to_grid()
     }
 }
-    */
+*/
 
 impl<C,Idx> ImageBase<C,Idx> where Idx : Integer
 {
@@ -74,22 +85,6 @@ impl<C,Idx> IGrid<C,Idx,2> for ImageBase<C,Idx> where Idx : Integer
     }
 }
 
-
-impl<T, Idx> IGridViewMut<Self, T, Idx, 2> for ImageBase<T, Idx> where Idx : Integer
-{
-    fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, 2> { GridViewIterMut::new(self) }
-    fn for_each_mut<F>(&mut self, f : F) where F : FnMut((Vector2<Idx>,&mut T)) { self.view_mut().for_each_mut(f) }
-    fn view(&self) -> GridView<'_,Self,T,Idx,2> { GridView::new(self) }
-}
-
-impl<T, Idx> AsRef<[T]> for ImageBase<T, Idx> where Idx : Integer
-{
-    fn as_ref(&self) -> &[T] { &self.pixels }
-}
-impl<T, Idx> AsMut<[T]> for ImageBase<T, Idx> where Idx : Integer
-{
-    fn as_mut(&mut self) -> &mut [T] { &mut self.pixels }
-}
 
 impl<T, Idx> IRectangle<Idx, 2> for ImageBase<T, Idx> where Idx : Integer
 {
@@ -547,4 +542,3 @@ impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : ToColor
         }
     }
 }
-    */

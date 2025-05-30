@@ -22,13 +22,13 @@ pub trait ToUnsigned
 }
 macro_rules! impl_signed
 {
-    ($primitive_name: ty, $unsigned_primitive_name: ty) => 
-    { 
+    ($primitive_name: ty, $unsigned_primitive_name: ty) =>
+    {
         impl ToUnsigned for $primitive_name  { type Output=$unsigned_primitive_name; #[inline(always)] fn to_unsigned(self) -> Self::Output  {self as _ }}
     };
 
-    ($primitive_name: ty) => 
-    { 
+    ($primitive_name: ty) =>
+    {
         impl ToUnsigned for $primitive_name  { type Output=$primitive_name; #[inline(always)] fn to_unsigned(self) -> Self::Output  { self }}
     };
 }
@@ -51,13 +51,13 @@ pub trait ToSigned
 }
 macro_rules! impl_unsigned
 {
-    ($primitive_name: ty, $signed_primitive_name: ty) => 
-    { 
+    ($primitive_name: ty, $signed_primitive_name: ty) =>
+    {
         impl ToSigned for $primitive_name { type Output=$signed_primitive_name; #[inline(always)] fn to_signed(self) -> Self::Output { self as _  }}
     };
 
-    ($primitive_name: ty) => 
-    { 
+    ($primitive_name: ty) =>
+    {
         impl ToSigned for $primitive_name  { type Output=$primitive_name; #[inline(always)] fn to_signed(self) -> Self::Output  { self }}
     };
 }
