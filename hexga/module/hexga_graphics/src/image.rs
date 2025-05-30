@@ -313,6 +313,7 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToCo
     const COLOR_INSIDE : ColorKind = C::COLOR_INSIDE;
 }
 
+
 impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : ToColor
 {
     pub fn tmp_write_to_png_bytes_inside(&self, path : &str)

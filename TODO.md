@@ -4,6 +4,9 @@
 ## To-do
 
 - HexgaIo : default extension for saving if not specified + guess extension when loading
+- Parse extra extension as argument a give them during serialization. Ex: `mygrid.save("mygrid.flat.ron")` => `flat` is an argument
+
+
 - impl io save/load grid, image/gif, asset game engine
 
 - Name2Reserve : réserver plus de nom sous crate io

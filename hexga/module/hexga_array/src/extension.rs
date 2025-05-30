@@ -13,6 +13,18 @@ impl<C, T> ExtensionToArray3<T> for C where C : Into<[T; 3]> {}
 pub trait ExtensionToArray4<T> : Into<[T; 4]> { #[inline(always)] fn to_array4(self) -> [T; 4] { self.into() } }
 impl<C, T> ExtensionToArray4<T> for C where C : Into<[T; 4]> {}
 
+pub trait ExtensionToArray5<T> : Into<[T; 5]> { #[inline(always)] fn to_array5(self) -> [T; 5] { self.into() } }
+impl<C, T> ExtensionToArray5<T> for C where C : Into<[T; 5]> {}
+
+pub trait ExtensionToArray6<T> : Into<[T; 6]> { #[inline(always)] fn to_array6(self) -> [T; 6] { self.into() } }
+impl<C, T> ExtensionToArray6<T> for C where C : Into<[T; 6]> {}
+
+pub trait ExtensionToArray7<T> : Into<[T; 7]> { #[inline(always)] fn to_array7(self) -> [T; 7] { self.into() } }
+impl<C, T> ExtensionToArray7<T> for C where C : Into<[T; 7]> {}
+
+pub trait ExtensionToArray8<T> : Into<[T; 8]> { #[inline(always)] fn to_array8(self) -> [T; 8] { self.into() } }
+impl<C, T> ExtensionToArray8<T> for C where C : Into<[T; 8]> {}
+
 
 pub trait ExtensionFromArray<T, const N : usize> : From<[T; N]> { #[inline(always)] fn from_array(value : [T; N]) -> Self { value.into() } }
 impl<C, T, const N : usize> ExtensionFromArray<T, N> for C where C : From<[T; N]> {}

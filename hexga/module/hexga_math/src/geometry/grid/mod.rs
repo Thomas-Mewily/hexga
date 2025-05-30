@@ -2,6 +2,9 @@ use crate::*;
 
 pub mod prelude;
 
+mod deserialize;
+pub use deserialize::*;
+
 mod grid;
 pub use grid::*;
 

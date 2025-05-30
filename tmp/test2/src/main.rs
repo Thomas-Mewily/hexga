@@ -18,6 +18,16 @@ struct Person
     name : String,
 }
 
+struct VArray<const N : usize>(pub [i32;N]);
+
+impl<const N : usize> ::serde::Serialize for VArray<N> //where [T;N] : ::serde::Serialize
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: ::serde::Serializer,
+    {
+        self.0.serialize(serializer)
+    }
+}
+
 fn main()
 {
     /*
@@ -30,6 +40,9 @@ fn main()
 
     Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
     Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
+
+    Grid2::from_fn((3,4).into(), |p| p.sum_axis()) .save_to_disk("./tmp/test2/asset/grid.ron").unwrap();
+
 
 
     /*

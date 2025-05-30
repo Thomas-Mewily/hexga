@@ -343,14 +343,15 @@ macro_rules! impl_fixed_array_like
         }
 
         #[cfg(feature = "serde")]
-        impl<T> ::serde::Serialize for $name<T> where [T;$dim] : ::serde::Serialize
+        impl<T> ::serde::Serialize for $name<T> where T: ::serde::Serialize
         {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: ::serde::Serializer,
             { self.as_array().serialize(serializer) }
         }
 
         #[cfg(feature = "serde")]
-        impl<'de, T> ::serde::Deserialize<'de> for $name<T> where [T;$dim] : ::serde::Deserialize<'de>{
+        impl<'de, T> ::serde::Deserialize<'de> for $name<T> where T: ::serde::Deserialize<'de>
+        {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: ::serde::Deserializer<'de>,
             {
                 Ok(<[T;$dim]>::deserialize(deserializer)?.into())
@@ -358,10 +359,10 @@ macro_rules! impl_fixed_array_like
         }
 
         #[cfg(feature = "hexga_io")]
-        impl<T> ::hexga_io::IoSave for $name<T> where [T;$dim] : ::hexga_io::IoSave {}
+        impl<T> ::hexga_io::IoSave for $name<T> where T : ::hexga_io::IoSave {}
 
         #[cfg(feature = "hexga_io")]
-        impl<T> ::hexga_io::IoLoad for $name<T> where [T;$dim] : ::hexga_io::IoLoad {}
+        impl<T> ::hexga_io::IoLoad for $name<T> where T : ::hexga_io::IoLoad {}
     };
 }
 
@@ -500,14 +501,15 @@ macro_rules! impl_generic_array_like
         }
 
         #[cfg(feature = "serde")]
-        impl<T, const N : usize> ::serde::Serialize for $name<T,N> where [T;N] : ::serde::Serialize
+        impl<T, const N : usize> ::serde::Serialize for $name<T,N> where T : ::serde::Serialize
         {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: ::serde::Serializer,
             { self.as_array().serialize(serializer) }
         }
 
         #[cfg(feature = "serde")]
-        impl<'de, T, const N : usize> ::serde::Deserialize<'de> for $name<T,N> where [T;N] : ::serde::Deserialize<'de>{
+        impl<'de, T, const N : usize> ::serde::Deserialize<'de> for $name<T,N> where [T;N]: ::serde::Deserialize<'de>
+        {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: ::serde::Deserializer<'de>,
             {
                 Ok(<[T;N]>::deserialize(deserializer)?.into())
@@ -515,10 +517,10 @@ macro_rules! impl_generic_array_like
         }
 
         #[cfg(feature = "hexga_io")]
-        impl<T, const N : usize> ::hexga_io::IoSave for $name<T,N> where [T;N] : ::hexga_io::IoSave {}
+        impl<T, const N : usize> ::hexga_io::IoSave for $name<T,N> where T: ::hexga_io::IoSave {}
 
         #[cfg(feature = "hexga_io")]
-        impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where [T;N] : ::hexga_io::IoLoad {}
+        impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where [T;N]: ::hexga_io::IoLoad {}
     };
 }
 

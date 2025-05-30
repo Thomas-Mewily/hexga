@@ -243,6 +243,7 @@ name = "hexga_graphics"
 version = "0.0.10-beta.13"
 dependencies = [
  "hexga_core",
+ "hexga_io",
  "hexga_math",
  "image",
  "serde",

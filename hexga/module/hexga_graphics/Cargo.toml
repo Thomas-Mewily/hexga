@@ -13,7 +13,10 @@ description = "A crate to handle graphics stuff like loading / saving image"
 categories = ["graphics"]
 
 [features]
-default = ["serde", "int_are_32_bits", "float_are_32_bits"]
+default = [
+    "serde", "hexga_io",
+    "int_are_32_bits", "float_are_32_bits"
+]
 
 int_are_8_bits    = ["hexga_math/int_are_8_bits"]
 int_are_16_bits   = ["hexga_math/int_are_16_bits"]
@@ -27,9 +30,13 @@ float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
 serde = ["dep:serde", "hexga_math/serde"]
 
+hexga_io = ["dep:hexga_io", "serde"]
+
 [dependencies]
 hexga_core.workspace = true
 hexga_math.workspace = true
+hexga_io = { workspace = true, optional = true }
+
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 image = { version = "0.25.4", default-features = false, features = ["png", "gif", "jpeg"] }

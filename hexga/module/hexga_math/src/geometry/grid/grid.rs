@@ -2,31 +2,41 @@ use crate::*;
 
 /// A N-dimensional grid
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
 {
-    size  : Vector<Idx,N>,
-    value : Vec<T>,
+    pub(crate) size   : Vector<Idx,N>,
+    pub(crate) values : Vec<T>,
 }
+
+#[cfg(feature = "hexga_io")]
+impl<T, Idx, const N : usize> IoLoad for GridBase<T,Idx,N>
+    where GridBase<T,Idx,N> : for<'de> Deserialize<'de>, Idx : Integer
+{}
+#[cfg(feature = "hexga_io")]
+impl<T, Idx, const N : usize> IoSave for GridBase<T,Idx,N>
+    where GridBase<T,Idx,N> : Serialize, Idx : Integer
+{}
 
 impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
 {
     type WithType<U> = GridBase<U, Idx, N>;
 
-    fn values(&self) -> &[T] { &self.value }
-    fn values_mut(&mut self) -> &mut [T] { &mut self.value }
+    fn values(&self) -> &[T] { &self.values }
+    fn values_mut(&mut self) -> &mut [T] { &mut self.values }
 
-    fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T>) {  (self.size, self.value) }
-    unsafe fn from_vec_unchecked(size : Vector::<Idx,N>, value : Vec<T>) -> Self { Self { size, value } }
+    fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T>) {  (self.size, self.values) }
+    unsafe fn from_vec_unchecked(size : Vector::<Idx,N>, value : Vec<T>) -> Self { Self { size, values: value } }
 }
 
 
 impl<T, Idx, const N : usize> AsRef<[T]> for GridBase<T, Idx, N> where Idx : Integer
 {
-    fn as_ref(&self) -> &[T] { &self.value }
+    fn as_ref(&self) -> &[T] { &self.values }
 }
 impl<T, Idx, const N : usize> AsMut<[T]> for GridBase<T, Idx, N> where Idx : Integer
 {
-    fn as_mut(&mut self) -> &mut [T] { &mut self.value }
+    fn as_mut(&mut self) -> &mut [T] { &mut self.values }
 }
 
 impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : Integer
