@@ -53,13 +53,9 @@ fn main()
         {
             ColorByte::WHITE
         }
-    });
-
-    //dbg!(&ron::ser::to_string(&i));
+    }).save_to_disk("./tmp/test2/asset/image_byte.ron").unwrap();
 
 
-    //dbg!(&i);
-    i.save_to_disk("./tmp/test2/asset/image_byte.ron").unwrap();
 
 
     /*

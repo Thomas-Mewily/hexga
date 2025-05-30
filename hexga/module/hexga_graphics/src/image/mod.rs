@@ -11,8 +11,8 @@ pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ImageBase<C,Idx> where Idx : Integer
 {
-    pixels : Vec<C>,
     size   : Vector2<Idx>,
+    pixels : Vec<C>,
 }
 
 pub trait ToImage
