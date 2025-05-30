@@ -7,7 +7,7 @@ pub type Image<C=ColorRGBAByte> = ImageBase<C,int>;
 
 pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;
 
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Image"))]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ImageBase<C,Idx> where Idx : Integer
 {

@@ -55,6 +55,9 @@ fn main()
         }
     });
 
+    //dbg!(&ron::ser::to_string(&i));
+
+
     //dbg!(&i);
     i.save_to_disk("./tmp/test2/asset/image_byte.ron").unwrap();
 

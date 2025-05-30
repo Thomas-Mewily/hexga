@@ -2,7 +2,7 @@ use crate::*;
 
 /// A N-dimensional grid
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Grid"))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
 {
