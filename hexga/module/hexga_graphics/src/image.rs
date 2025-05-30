@@ -39,7 +39,7 @@ impl<C,Idx> ToImage for GridBase<C,Idx,2> where C : ToColor, Idx : Integer
     }
 }
 
-impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToColor + Clone, Idx : Integer
+impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToColor, Idx : Integer
 {
     type Output = ImageBase<C, Idx>;
     fn to_image(self) -> Self::Output
@@ -50,31 +50,34 @@ impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToCo
         )
     }
 }
-impl<'a,C,Idx> ToImage for GridViewMut<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToColor + Clone, Idx : Integer
+impl<'a,C,Idx> ToImage for GridViewMut<'a,GridBase<C,Idx,2>,C,Idx,2> where C : ToColor, Idx : Integer
 {
     type Output = ImageBase<C, Idx>;
     fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
 
-/*
-impl<'a,G,T,Idx> ToImage for GridView<'a,G,T,Idx,2> where T : ToColor, Idx : Integer, G : IGrid<T,Idx,2>
+impl<'a,C,Idx> ToImage for GridView<'a,ImageBase<C,Idx>,C,Idx,2> where C : ToColor, Idx : Integer
 {
-    type Output = Self;
+    type Output = ImageBase<C, Idx>;
     fn to_image(self) -> Self::Output
     {
-        self.to_grid()
+        Self::Output::from_fn(self.size(), |p| unsafe { self.get_unchecked(p) }.clone() )
     }
 }
-*/
+impl<'a,C,Idx> ToImage for GridViewMut<'a,ImageBase<C,Idx>,C,Idx,2> where C : ToColor, Idx : Integer
+{
+    type Output = ImageBase<C, Idx>;
+    fn to_image(self) -> Self::Output { self.view().to_image() }
+}
 
-impl<C,Idx> ImageBase<C,Idx> where Idx : Integer
+impl<C,Idx> ImageBase<C,Idx> where C : ToColor, Idx : Integer
 {
     pub fn pixels(&self) -> &[C] { self.values() }
     pub fn pixels_mut(&mut self) -> &mut[C] { self.values_mut() }
 
     /// `self.view().crop_intersect(subrect).to_grid()`
-    fn subimage(&self, rect : Rectangle2<Idx>) -> Self where C : Clone { self.subgrid(rect) }
+    fn subimage(&self, rect : Rectangle2<Idx>) -> Self { self.subview_intersect(rect).to_image() }
 }
 
 impl<C,Idx> ImageBase<C,Idx> where Idx : Integer
@@ -234,10 +237,10 @@ impl<T, Idx> Length for ImageBase<T, Idx>
 
 impl<T, Idx> Crop<Idx,2> for ImageBase<T, Idx>
     where Idx : Integer,
-    T : Clone
+    T : ToColor
 {
     fn crop(self, subrect : Rectangle2<Idx>) -> Option<Self> {
-        self.view().crop(subrect).map(|v| v.to_grid())
+        self.view().crop(subrect).map(|v| v.to_image())
     }
 }
 

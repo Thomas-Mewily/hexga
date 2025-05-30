@@ -1,7 +1,5 @@
 use crate::*;
 
-
-
 /// A N-dimensional grid
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Hash)]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer

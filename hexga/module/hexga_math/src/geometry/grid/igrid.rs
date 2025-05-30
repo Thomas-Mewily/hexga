@@ -123,3 +123,35 @@ impl<T, Idx, const N : usize, S> IGridViewMut<Self, T, Idx, N> for S where S : I
 
     unsafe fn grid_mut_unchecked(&mut self) -> &mut Self { self }
 }
+
+
+
+pub trait ToGrid<T, Idx, const N : usize> where Idx : Integer
+{
+    type Output : IGrid<T, Idx, N>;
+    fn to_grid(self) -> Self::Output;
+}
+
+impl<T, Idx, const N : usize> ToGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
+{
+    type Output=Self;
+    fn to_grid(self) -> Self::Output { self }
+}
+
+impl<'a, T, Idx, const N : usize> ToGrid<T, Idx, N> for GridView<'a,GridBase<T, Idx, N>, T, Idx, N> where Idx : Integer, T : Clone
+{
+    type Output=GridBase<T, Idx, N>;
+    fn to_grid(self) -> Self::Output
+    {
+        GridBase::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
+    }
+}
+
+impl<'a, T, Idx, const N : usize> ToGrid<T, Idx, N> for GridViewMut<'a,GridBase<T, Idx, N>, T, Idx, N> where Idx : Integer, T : Clone
+{
+    type Output=GridBase<T, Idx, N>;
+    fn to_grid(self) -> Self::Output
+    {
+        GridBase::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
+    }
+}

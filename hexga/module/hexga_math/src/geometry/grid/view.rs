@@ -45,16 +45,18 @@ pub trait IGridView<G, T, Idx, const N : usize> :
     }
 
 
-    fn to_grid(&self) -> G where T : Clone
-    {
-        G::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
-    }
-
     fn iter(&self) -> GridViewIter<'_, G, T, Idx, N> { unsafe { GridViewIter::from_rect_unchecked( self.grid_unchecked(), self.rect()) } }
     fn for_each<F>(&self, f : F) where F : FnMut((Vector<Idx,N>,&T)) { self.iter().for_each(f); }
 
     /// `self.crop_intersect(subrect).to_grid()`
-    fn subgrid(&self, subrect : Rectangle<Idx, N>) -> G where T : Clone, Self : Crop<Idx,N> { self.subview_intersect(subrect).to_grid() }
+    fn subgrid<'a,'b>(&'a self, subrect : Rectangle<Idx, N>) -> G
+    where
+        T : Clone,
+        Self : Crop<Idx,N>,
+        Self::WithLifetime<'b> : ToGrid<T,Idx,N,Output = G>, 'a: 'b
+    {
+        self.subview_intersect(subrect).to_grid()
+    }
 
     fn transform<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
         where F : FnMut(&T) -> Dest
