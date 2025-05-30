@@ -1,11 +1,11 @@
 {
     "idleHeartbeats": 145005,
     "navigatingHeartbeats": 48478,
-    "totalCodingHeartbeats": 484883,
+    "totalCodingHeartbeats": 484961,
     "languageHeartbeats": {
         "jsonc": 2266,
         "toml": 20658,
-        "rust": 439237,
+        "rust": 439315,
         "scminput": 5347,
         "plaintext": 1635,
         "markdown": 15156,
@@ -390,6 +390,6 @@
         "hexga/module/hexga_graphics/src/image.rs": 2588,
         "hexga/module/hexga_number/src/traits.rs": 183,
         "hexga/module/hexga_math/src/range/step.rs": 1159,
-        "hexga/module/hexga_math/src/color/icolor.rs": 221
+        "hexga/module/hexga_math/src/color/icolor.rs": 299
     }
 }
