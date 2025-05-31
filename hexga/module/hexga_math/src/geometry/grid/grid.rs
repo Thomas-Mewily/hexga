@@ -112,8 +112,6 @@ impl<T, Idx, const N : usize> Crop<Idx,N> for GridBase<T, Idx, N>
 }
 
 
-
-
 #[cfg(test)]
 mod grid_test
 {

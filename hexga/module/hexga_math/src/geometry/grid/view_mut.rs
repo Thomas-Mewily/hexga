@@ -25,6 +25,31 @@ pub trait IGridViewMut<G, T, Idx, const N : usize> :
 
     fn fill_uniform(&mut self, value : T) where T : Clone { self.for_each_mut(|(_,v)| { *v = value.clone(); }); }
 
+    fn update_from_or_panic<O,G2>(&mut self, other : &O)
+            where
+        O : IGridView<G2,T,Idx,N>,
+        G2 : IGrid<T,Idx,N>,
+        T : Clone,
+        { self.update_from(other).unwrap() }
+
+    fn update_from<O,G2>(&mut self, other : &O) -> Result<(), ()>
+        where
+        O : IGridView<G2,T,Idx,N>,
+        G2 : IGrid<T,Idx,N>,
+        T : Clone,
+    {
+        if self.size() != other.size() { return Err(()); }
+
+        let pos = self.pos();
+
+        for idx in self.size().iter_index()
+        {
+            self[idx + pos] = other[idx].clone();
+        }
+
+        Ok(())
+    }
+
     #[doc(hidden)]
     unsafe fn grid_mut_unchecked(&mut self) -> &mut G;
 }
@@ -74,7 +99,6 @@ impl<'c, G, T, Idx, const N : usize> IGridViewMut<G,T,Idx,N> for GridViewMut<'c,
 
     fn iter_mut(&mut self) -> GridViewIterMut<'_, G, T, Idx, N> { GridViewIterMut::from_rect(self.grid, self.rect()).unwrap() }
     fn for_each_mut<F>(&mut self, f : F) where F : FnMut((Vector<Idx,N>,&mut T)) { self.iter_mut().for_each(f); }
-
 
     #[doc(hidden)]
     unsafe fn grid_mut_unchecked(&mut self) -> &mut G { self.grid }

@@ -69,6 +69,23 @@ pub trait IGridView<G, T, Idx, const N : usize> :
         <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
     }
 
+    fn update_into_or_panic<O,G2>(&self, other : &mut O)
+        where
+        O : IGridViewMut<G2,T,Idx,N>,
+        G2 : IGrid<T,Idx,N>,
+        T : Clone,
+        Self : Sized
+    { self.update_into(other).unwrap() }
+    fn update_into<O,G2>(&self, other : &mut O) -> Result<(), ()>
+        where
+        O : IGridViewMut<G2,T,Idx,N>,
+        G2 : IGrid<T,Idx,N>,
+        T : Clone,
+        Self : Sized
+    {
+        other.update_from(self)
+    }
+
 
     #[doc(hidden)]
     unsafe fn grid_unchecked(&self) -> &G;
