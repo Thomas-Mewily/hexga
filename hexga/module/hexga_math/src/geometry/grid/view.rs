@@ -223,34 +223,36 @@ impl<'a, G, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, G, T, Id
     fn rect(&self) -> Rectangle<Idx, N> { self.rect }
 }
 
-impl<'a, G, T, Idx, const N : usize> Get<Vector<Idx,N>> for GridView<'a, G, T, Idx, N>
+impl<'a, P, G, T, Idx, const N : usize> Get<P> for GridView<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
-    Idx : Integer
+    Idx : Integer,
+    P : Into<Vector<Idx,N>>
 {
     type Output = <G as Get<Vector<Idx,N>>>::Output;
 
-    fn try_get(&self, index : Vector<Idx,N>) -> Result<&Self::Output, ()> { self.grid.try_get(index + self.rect.pos) }
-    fn get(&self, index : Vector<Idx,N>) -> Option<&Self::Output> { self.grid.get(index + self.rect.pos) }
-    unsafe fn get_unchecked(&self, index : Vector<Idx,N>) -> &Self::Output { unsafe { self.grid.get_unchecked(index + self.rect.pos) } }
+    fn try_get(&self, index : P) -> Result<&Self::Output, ()> { self.grid.try_get(index.into() + self.rect.pos) }
+    fn get(&self, index : P) -> Option<&Self::Output> { self.grid.get(index.into() + self.rect.pos) }
+    unsafe fn get_unchecked(&self, index : P) -> &Self::Output { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
 }
 
-impl<'a, G, T, Idx, const N : usize> Index<Vector<Idx,N>> for GridView<'a, G, T, Idx, N>
+impl<'a, P, G, T, Idx, const N : usize> Index<P> for GridView<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
-    Idx : Integer
+    Idx : Integer,
+    P : Into<Vector<Idx,N>>
 {
     type Output = <Self as Get<Vector<Idx,N>>>::Output;
 
     #[track_caller]
-    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }
+    fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
 }
 
 
 impl<'a, G, T, Idx, const N : usize> GridView<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
-    Idx : Integer
+    Idx : Integer,
 {
     pub fn new(grid : &'a G) -> Self { unsafe { Self::from_rect_unchecked(grid, grid.rect()) } }
 

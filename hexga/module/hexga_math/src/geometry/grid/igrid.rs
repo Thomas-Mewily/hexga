@@ -25,6 +25,10 @@ pub trait IGrid<T, Idx, const N : usize> :
     + Get<Vector<Idx,N>,Output=T>
     + Index<Vector<Idx,N>,Output=T>
 
+    /*
+    + for<'a> Get<Rectangle<Idx,N>,Output=GridView<'a,>
+    + Index<Rectangle<Idx,N>,Output=T>
+*/
     + GetMut<Vector<Idx,N>,Output = T> + GetManyMut<Vector<Idx,N>,Output=T>
     + IndexMut<Vector<Idx,N>, Output = T>
 
@@ -43,7 +47,7 @@ pub trait IGrid<T, Idx, const N : usize> :
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
     /// If you override this, you probably also want to override [IGrid::index_to_position_unchecked] and [IGrid::external_position_to_position_unchecked]
-    unsafe fn position_to_index_unchecked(&self, pos : Vector<Idx,N>) -> usize { unsafe { Vector::<Idx,N>::to_index_unchecked(pos, self.size()) } }
+    unsafe fn position_to_index_unchecked<P>(&self, pos : P) -> usize where P: Into<Vector<Idx,N>> { unsafe { Vector::<Idx,N>::to_index_unchecked(pos.into(), self.size()) } }
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
     /// If you override this, you probably also want to override [IGrid::position_to_index_unchecked] and [IGrid::external_position_to_position_unchecked]
@@ -52,27 +56,28 @@ pub trait IGrid<T, Idx, const N : usize> :
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
     /// If you override this, you probably also want to override [IGrid::position_to_index_unchecked] and [IGrid::index_to_position_unchecked]
-    unsafe fn external_position_to_position_unchecked(pos : Vector<Idx,N>, size : Vector<Idx,N>) -> Vector<Idx,N> { pos }
+    unsafe fn external_position_to_position_unchecked<P>(pos : P, size : P) -> P where P: Into<Vector<Idx,N>> + From<Vector<Idx,N>> { pos }
 
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     #[inline(always)]
-    fn position_to_index(&self, pos : Vector<Idx,N>) -> Option<usize> { pos.is_inside(self.size()).then(|| unsafe { self.position_to_index_unchecked(pos) }) }
+    fn position_to_index<P>(&self, pos: P) -> Option<usize> where P: Into<Vector<Idx,N>> { let pos = pos.into(); pos.is_inside(self.size()).then(|| unsafe { self.position_to_index_unchecked(pos) }) }
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     #[inline(always)]
     fn index_to_position(&self, index : usize) -> Option<Vector<Idx,N>> { (index < self.size().area_usize()).then(|| unsafe { self.index_to_position_unchecked(index) }) }
 
 
 
-    fn from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Option<Self> { Self::try_from_vec(size, value).ok() }
-    fn try_from_vec(size : Vector::<Idx,N>, value : Vec<T>) -> Result<Self, GridBaseError<Idx,N>>
+    fn from_vec<P>(size : P, value : Vec<T>) -> Option<Self> where P: Into<Vector<Idx,N>> { Self::try_from_vec(size, value).ok() }
+    fn try_from_vec<P>(size : P, value : Vec<T>) -> Result<Self, GridBaseError<Idx,N>> where P: Into<Vector<Idx,N>>
     {
+        let size = size.into();
         if *size.min_element() <= Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
         let area_size = size.area_usize();
         if area_size != value.len() { return Err(GridBaseError::WrongDimension(size, area_size)); }
         Ok(unsafe { Self::from_vec_unchecked(size, value) })
     }
 
-    unsafe fn from_vec_unchecked(size : Vector::<Idx,N>, value : Vec<T>) -> Self;
+    unsafe fn from_vec_unchecked<P>(size : P, value : Vec<T>) -> Self where P: Into<Vector<Idx,N>>;
 
     /*
     /// [-1.0..=1.0]
@@ -94,27 +99,27 @@ pub trait IGrid<T, Idx, const N : usize> :
     */
 
     /// Create a grid from a function
-    fn from_fn<S,F>(size : S, mut f : F) -> Self
+    fn from_fn<P,F>(size : P, mut f : F) -> Self
         where
-        F : FnMut(S) -> T,
-        S : Into<Vector::<Idx,N>>,
-        Vector::<Idx,N> : Into<S>,
+        F : FnMut(P) -> T,
+        P : Into<Vector::<Idx,N>>,
+        Vector::<Idx,N> : Into<P>,
     {
         let size = size.into();
         let area = size.area_usize();
         let mut value = Vec::with_capacity(area);
         for idx in size.iter_index()
         {
-            value.push(f(unsafe { Self::external_position_to_position_unchecked(idx,size) }.into()));
+            value.push(f(unsafe { Self::external_position_to_position_unchecked::<Vector<Idx,N>>(idx,size) }.into()));
         }
         unsafe { Self::from_vec_unchecked(size, value) }
     }
     /// Create a grid from a function in parallel
-    fn from_fn_par<S,F>(size : S, f : F) -> Self
+    fn from_fn_par<P,F>(size : P, f : F) -> Self
         where
-        F : Fn(S) -> T + Sync,
-        S : Into<Vector::<Idx,N>>,
-        Vector::<Idx,N> : Into<S>,
+        F : Fn(P) -> T + Sync,
+        P : Into<Vector::<Idx,N>>,
+        Vector::<Idx,N> : Into<P>,
 
         T : Send,
         Idx : Sync,
@@ -122,7 +127,7 @@ pub trait IGrid<T, Idx, const N : usize> :
         let size = size.into();
         let area = size.area_usize();
         let mut values = Vec::with_capacity(area);
-        (0..area).into_par_iter().map(|i| f(unsafe { Self::external_position_to_position_unchecked(Vector::<Idx, N>::from_index_unchecked(i, size), size) }.into())).collect_into_vec(&mut values);
+        (0..area).into_par_iter().map(|i| f(unsafe { Self::external_position_to_position_unchecked::<Vector<Idx,N>>(Vector::<Idx, N>::from_index_unchecked(i, size), size) }.into())).collect_into_vec(&mut values);
         unsafe { Self::from_vec_unchecked(size, values) }
     }
 

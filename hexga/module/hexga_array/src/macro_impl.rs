@@ -253,7 +253,8 @@ macro_rules! impl_fixed_array_like
             fn hash<H>(&self, state: &mut H) where H: Hasher { self.as_ref().hash(state); }
         }
 
-        impl<T> ::std::convert::From<T> for $name<T> where T : Copy { fn from(value: T) -> Self { Self::from([value; $dim]) } }
+        // Grid should be indexable by usize index, grid2[10] mean at index 10, not grid2[10.splat2()]
+        //impl<T> ::std::convert::From<T> for $name<T> where T : Copy { fn from(value: T) -> Self { Self::from([value; $dim]) } }
 
         impl<T> ::std::convert::From<[T; $dim]> for $name<T> { fn from(value: [T; $dim]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
         impl<T> ::std::convert::From<$name<T>> for [T; $dim] { fn from(value: $name<T>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
@@ -469,7 +470,7 @@ macro_rules! impl_generic_array_like
             fn hash<H>(&self, state: &mut H) where H: Hasher { self.as_ref().hash(state); }
         }
 
-        impl<T, const N : usize> ::std::convert::From<T> for $name<T,N> where T : Copy { fn from(value: T) -> Self { Self::from([value; N]) } }
+        //impl<T, const N : usize> ::std::convert::From<T> for $name<T,N> where T : Copy { fn from(value: T) -> Self { Self::from([value; N]) } }
 
         impl<T, const N : usize> ::std::convert::From<[T; N]> for $name<T,N> { fn from(value: [T; N]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
         impl<T, const N : usize> ::std::convert::From<$name<T,N>> for [T; N] { fn from(value: $name<T,N>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }

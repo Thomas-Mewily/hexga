@@ -6,6 +6,8 @@ use crate::*;
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
 {
+    // The size is will be deserialized first before the values,
+    // then we can give a hint to serde about the size of the vector to alloc when deserializing
     pub(crate) size   : Vector<Idx,N>,
     pub(crate) values : Vec<T>,
 }
@@ -19,18 +21,9 @@ impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx
     fn values_mut(&mut self) -> &mut [T] { &mut self.values }
 
     fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T>) {  (self.size, self.values) }
-    unsafe fn from_vec_unchecked(size : Vector::<Idx,N>, value : Vec<T>) -> Self { Self { size, values: value } }
+    unsafe fn from_vec_unchecked<P>(size : P, value : Vec<T>) -> Self where P : Into<Vector::<Idx,N>> { Self { size : size.into(), values: value } }
 }
 
-
-impl<T, Idx, const N : usize> AsRef<[T]> for GridBase<T, Idx, N> where Idx : Integer
-{
-    fn as_ref(&self) -> &[T] { &self.values }
-}
-impl<T, Idx, const N : usize> AsMut<[T]> for GridBase<T, Idx, N> where Idx : Integer
-{
-    fn as_mut(&mut self) -> &mut [T] { &mut self.values }
-}
 
 impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : Integer
 {
@@ -51,33 +44,33 @@ impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where I
 }
 
 
-impl<T, Idx, const N : usize> Get<Vector<Idx,N>> for GridBase<T, Idx,N>  where Idx : Integer
+impl<P, T, Idx, const N : usize> Get<P> for GridBase<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
     #[inline(always)]
-    fn try_get(&self, pos : Vector<Idx,N>) -> Result<&Self::Output, ()> { self.get(pos).ok_or_void() }
+    fn try_get(&self, pos : P) -> Result<&Self::Output, ()> { self.get(pos.into()).ok_or_void() }
     #[inline(always)]
-    fn get(&self, pos : Vector<Idx,N>) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| Some(unsafe { self.get_unchecked(idx)} ) ) }
+    fn get(&self, pos : P) -> Option<&Self::Output> { self.position_to_index(pos.into()).and_then(|idx| Some(unsafe { self.get_unchecked(idx)} ) ) }
     #[inline(always)]
-    unsafe fn get_unchecked(&self, pos : Vector<Idx,N>) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos); self.get_unchecked(idx) } }
+    unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.get_unchecked(idx) } }
 }
 
-impl<T, Idx, const N : usize> GetMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : Integer
+impl<P, T, Idx, const N : usize> GetMut<P> for GridBase<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, pos : Vector<Idx,N>) -> Result<&mut Self::Output, ()> { self.get_mut(pos).ok_or_void() }
+    fn try_get_mut(&mut self, pos : P) -> Result<&mut Self::Output, ()> { self.get_mut(pos.into()).ok_or_void() }
     #[inline(always)]
-    fn get_mut(&mut self, pos : Vector<Idx,N>) -> Option<&mut Self::Output> { self.position_to_index(pos).and_then(|i| Some(unsafe { self.get_unchecked_mut(i) })) }
+    fn get_mut(&mut self, pos : P) -> Option<&mut Self::Output> { self.position_to_index(pos.into()).and_then(|i| Some(unsafe { self.get_unchecked_mut(i) })) }
     #[inline(always)]
-    unsafe fn get_unchecked_mut(&mut self, pos : Vector<Idx,N>) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
+    unsafe fn get_unchecked_mut(&mut self, pos : P) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.values_mut().get_unchecked_mut(idx)} }
 }
 
-impl<T, Idx, const N : usize> GetManyMut<Vector<Idx,N>> for GridBase<T, Idx,N> where Idx : Integer
+impl<P, T, Idx, const N : usize> GetManyMut<P> for GridBase<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(&mut self, indices: [Vector<Idx,N>; N2]) -> Result<[&mut Self::Output;N2], ()> {
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ()> {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        let indices = indices.map(|pos| self.position_to_index(pos));
+        let indices = indices.map(|pos| self.position_to_index(pos.into()));
         if indices.any(|x| x.is_none())
         {
             Err(())
@@ -134,16 +127,16 @@ impl<T, Idx, const N : usize> IndexMut<usize> for GridBase<T, Idx, N> where Idx 
     fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-impl<T, Idx, const N : usize> Index<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : Integer
+impl<P, T, Idx, const N : usize> Index<P> for GridBase<T, Idx, N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     type Output=T;
     #[inline(always)]
-    fn index(&self, index: Vector<Idx,N>) -> &Self::Output { self.get_or_panic(index) }
+    fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
 }
-impl<T, Idx, const N : usize> IndexMut<Vector<Idx,N>> for GridBase<T, Idx, N> where Idx : Integer
+impl<P, T, Idx, const N : usize> IndexMut<P> for GridBase<T, Idx, N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     #[inline(always)]
-    fn index_mut(&mut self, index: Vector<Idx,N>) -> &mut Self::Output { self.get_mut_or_panic(index) }
+    fn index_mut(&mut self, index: P) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
 impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N>
