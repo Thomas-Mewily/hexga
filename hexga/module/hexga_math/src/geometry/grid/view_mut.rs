@@ -40,11 +40,9 @@ pub trait IGridViewMut<G, T, Idx, const N : usize> :
     {
         if self.size() != other.size() { return Err(()); }
 
-        let pos = self.pos();
-
         for idx in self.size().iter_index()
         {
-            self[idx + pos] = other[idx].clone();
+            self[idx] = other[idx].clone();
         }
 
         Ok(())
