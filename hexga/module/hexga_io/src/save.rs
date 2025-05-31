@@ -28,7 +28,6 @@ impl<T> IoSave for T where T : IoSaveFrom + Serialize
         }
         Err(IoErrorKind::FromBasedOnFailed { dest: std::any::type_name::<Self>().to_owned(), src: std::any::type_name::<T>().to_owned(), reason: "bad implementation".to_string() }).to_save_error(path)
     }
-
 }
 
 #[allow(unused_variables)]
@@ -40,6 +39,7 @@ pub trait IoSave : Serialize
     ///
     /// Don't include the markup language extension like `json` or `ron`
     fn save_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
+
 
 
     // The path is usefull the save composite file (ex: saving a gif but every frame is in a subfolder relative to the path)
@@ -57,6 +57,9 @@ pub trait IoSave : Serialize
 
 
     // impl details :
+
+    /// When saving, if the extension is missing, the file will use this extension by default
+    fn save_default_extension() -> Option<&'static str> { Self::save_own_extensions().next() }
 
 
     /// Don't include the markup language extension like `json` or `ron`
@@ -88,6 +91,11 @@ pub trait IoSave : Serialize
     fn save_with_reader_and_extension<W, Fs>(&self, path : &path, extension : &extension, mut w : W, fs : &mut Fs) -> IoSaveResult
         where W : IoWrite, Fs : IoFsWrite
     {
+        if extension.is_empty()
+        {
+            return Err(IoErrorKind::missing_save_extension::<Self>().to_save_error(path));
+        }
+
         match extension
         {
             #[cfg(feature = "serde_ron")]
@@ -110,6 +118,15 @@ pub trait IoSave : Serialize
             _ => {}
         }
 
-        self.save_to_with_own_extension(path, extension, w, fs)
+        if !Self::can_save_own_extension(extension)
+        {
+            return Err(IoErrorKind::unsupported_save_extension::<Self>(extension).to_save_error(path));
+        }
+
+        match self.save_to_with_own_extension(path, extension, w, fs)
+        {
+            Ok(o) => Ok(o),
+            Err(e) => if e.kind.is_unimplemented_or_unknow() { Err(IoErrorKind::unsupported_save_extension::<Self>(extension).to_save_error(path)) } else { Err(e) },
+        }
     }
 }

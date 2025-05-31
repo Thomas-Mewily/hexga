@@ -1,85 +1,5 @@
 use crate::*;
 
-// Todo : check https://github.com/RReverser/serde-ndim/tree/main
-// Support nested array during deserialization
-
-
-#[cfg(feature = "serde")]
-impl<'de, T, Idx> Deserialize<'de> for ImageBase<T, Idx>
-    where
-        Idx: Integer + Deserialize<'de>,
-        T: Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct ImageVisitor<T, Idx,> {
-            marker: std::marker::PhantomData<(T, Idx)>,
-        }
-
-        impl<'de, T, Idx,> Visitor<'de> for ImageVisitor<T, Idx>
-        where
-            Idx: Integer + Deserialize<'de>,
-            T:  Deserialize<'de>,
-        {
-            type Value = ImageBase<T,Idx>;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("An Image with an `size` and `pixels`")
-            }
-
-            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-            where
-                A: serde::de::MapAccess<'de>,
-            {
-                let mut size: Option<Vector2<Idx>> = None;
-                let mut pixels: Option<Vec<T>> = None;
-
-                while let Some(key) = map.next_key()?
-                {
-                    match key
-                    {
-                        "size" => {
-                            if size.is_some() {
-                                return Err(serde::de::Error::duplicate_field("size"));
-                            }
-                            size = Some(map.next_value()?);
-                        }
-                        "pixels" => {
-                            if pixels.is_some() {
-                                return Err(serde::de::Error::duplicate_field("pixels"));
-                            }
-                            pixels = Some(map.next_value()?);
-                        }
-                        _ => { let _ = map.next_value::<serde::de::IgnoredAny>()?; }
-                    }
-                }
-
-                let size = size.ok_or_else(|| serde::de::Error::missing_field("size"))?;
-                let pixels = pixels.ok_or_else(|| serde::de::Error::missing_field("pixels"))?;
-
-                match ImageBase::try_from_vec(size, pixels)
-                {
-                    Ok(g) => Ok(g),
-                    Err(e) => Err(serde::de::Error::custom(
-                        match e
-                        {
-                            ImageBaseError::NegativeSize(vector) => format!("Area component of the image can't be negative : {:?}", vector),
-                            ImageBaseError::WrongDimension(vector, got) => format!("The area of the image ({:?} => {} pixels) does not match the number of pixels ({})", vector, vector.area_usize(), got),
-                        }
-                    ))
-                }
-            }
-        }
-
-        deserializer.deserialize_struct("Image", &["size", "pixels"], ImageVisitor {
-            marker: std::marker::PhantomData,
-        })
-    }
-}
-
-
 
 /*
 #[cfg(feature = "hexga_io")]
@@ -91,7 +11,7 @@ impl<C,Idx> hexga_io::IoLoad for ImageBase<C,Idx>
     fn load_own_extensions() -> impl Iterator<Item = &'static str> {
         [
             "png",
-            "jpeg", "jpg",
+            //"jpeg", "jpg",
             "gif",
         ].iter().copied()
     }
@@ -153,7 +73,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
     fn save_own_extensions() -> impl Iterator<Item = &'static str> {
         [
             "png",
-            "jpeg", "jpg",
+            //"jpeg", "jpg",
             "gif",
         ].iter().copied()
     }
@@ -231,6 +151,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                     _ => self.transform(|p| p.to_color_rgba_byte()).save_to_with_own_extension_pathless(extension, w, fs),
                 }
             },
+            /*
             "jpeg" | "jpg" =>
             {
                 match C::COLOR_INSIDE
@@ -299,6 +220,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                     _ => self.transform(|p| p.to_color_rgba_byte()).save_to_with_own_extension_pathless(extension, w, fs),
                 }
             },
+            */
             "gif" =>
             {
                 match C::COLOR_INSIDE

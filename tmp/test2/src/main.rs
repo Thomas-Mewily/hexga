@@ -6,7 +6,7 @@
 use hexga::prelude::*;
 use hexga_io::{fs::LoadToDisk, MarkupExtensionFromRon};
 use hexga_map_on::*;
-use hexga_graphics::*;
+use hexga_graphics::prelude::*;
 
 use serde::{Serialize, Deserialize};
 
@@ -38,12 +38,13 @@ fn main()
     }
     */
 
-    Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
-    Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
+    //Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
+    //Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
 
     //Grid2::from_fn((3,4), |p| p.sum_axis()) .save_to_disk("./tmp/test2/asset/grid.ron").unwrap();
 
 
+    /*
     let i = Image::from_fn((16, 16), |(x,y)|
     {
         if (x + y) / 8 % 2 == 0
@@ -53,9 +54,25 @@ fn main()
         {
             ColorByte::WHITE
         }
-    }).save_to_disk("./tmp/test2/asset/image_byte.ron").unwrap();
+    }).save_to_disk("./tmp/test2/asset/image_byte.jpg").unwrap();
+    */
 
+    let i = Image::from_fn((16, 16), |(x,y)|
+    {
+        ColorByte::rgb(x as u8 * 16, y as u8 * 16, 0)
+    }).save_to_disk("./tmp/test2/asset/image_byte.png").unwrap();
 
+    let x = 64;
+    let i = Image::from_fn((x, x), |(x,y)|
+    {
+        if (x + y * x) / 2 % 3 == 0
+        {
+            ColorByte::BLACK
+        }else
+        {
+            ColorByte::WHITE
+        }
+    }).save_to_disk("./tmp/test2/asset/test_img").unwrap();
 
 
     /*

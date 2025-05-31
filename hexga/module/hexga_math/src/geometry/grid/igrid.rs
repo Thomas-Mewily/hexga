@@ -74,12 +74,31 @@ pub trait IGrid<T, Idx, const N : usize> :
 
     unsafe fn from_vec_unchecked(size : Vector::<Idx,N>, value : Vec<T>) -> Self;
 
-    /// Create a grid from a function
-    fn from_fn<P,F>(size : P, mut f : F) -> Self
+    /*
+    /// [-1.0..=1.0]
+    fn from_fn_ndc_with_precision<S,P,F>(size : S, mut f : F) -> Self
         where
-        F : FnMut(P) -> T,
-        P : Into<Vector::<Idx,N>>,
-        Vector::<Idx,N> : Into<P>,
+        S : Into<Vector::<Idx,N>>,
+        P : Float,
+        F : FnMut(Vector<P,N>) -> T,
+    {
+        let size : Vector::<Idx,N> = size.into();
+
+        //let size_float = Vector::<Idx,N> as CastIntoComposite<:: size.cast_into_composite::<P>();
+
+        Self::from_fn(size, |p|
+            {
+                f(p.to_float() / size_float)
+            })
+    }
+    */
+
+    /// Create a grid from a function
+    fn from_fn<S,F>(size : S, mut f : F) -> Self
+        where
+        F : FnMut(S) -> T,
+        S : Into<Vector::<Idx,N>>,
+        Vector::<Idx,N> : Into<S>,
     {
         let size = size.into();
         let area = size.area_usize();
@@ -91,11 +110,11 @@ pub trait IGrid<T, Idx, const N : usize> :
         unsafe { Self::from_vec_unchecked(size, value) }
     }
     /// Create a grid from a function in parallel
-    fn from_fn_par<P,F>(size : P, f : F) -> Self
+    fn from_fn_par<S,F>(size : S, f : F) -> Self
         where
-        F : Fn(P) -> T + Sync,
-        P : Into<Vector::<Idx,N>>,
-        Vector::<Idx,N> : Into<P>,
+        F : Fn(S) -> T + Sync,
+        S : Into<Vector::<Idx,N>>,
+        Vector::<Idx,N> : Into<S>,
 
         T : Send,
         Idx : Sync,

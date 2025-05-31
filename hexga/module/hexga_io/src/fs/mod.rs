@@ -33,11 +33,11 @@ pub trait IoFsWrite : IoFs
     {
         self.save_with_extension(path, path.extension_or_empty(), value)
     }
-    fn save_with_extension<T>(&mut self, path : &path, extension: &extension, value : &T) -> IoResult where T : IoSave + ?Sized
+    fn save_with_extension<T>(&mut self, path : &path, mut extension: &extension, value : &T) -> IoResult where T : IoSave + ?Sized
     {
         if self.premature_abord() && self.have_error() { return Err(IoErrorKind::FsPrematureAbord); }
 
-        let path_abs = match self.absolute_path(&path)
+        let mut path_abs = match self.absolute_path(&path)
         {
             Some(abs) => abs,
             None =>
@@ -46,6 +46,12 @@ pub trait IoFsWrite : IoFs
                 return Err(IoErrorKind::InvalidPath);
             }
         };
+
+        if extension.is_empty()
+        {
+            extension = T::save_default_extension().unwrap_or_default();
+            path_abs = path_abs.as_str().with_extension(extension);
+        }
 
         if let Err(kind) = self.have_permission_to_write(&path_abs)
         {

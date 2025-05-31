@@ -2,8 +2,10 @@ use crate::*;
 
 pub mod prelude;
 
-mod deserialize;
-pub use deserialize::*;
+#[cfg(feature = "serde")]
+mod serde;
+#[cfg(feature = "serde")]
+pub use serde::*;
 
 mod grid;
 pub use grid::*;

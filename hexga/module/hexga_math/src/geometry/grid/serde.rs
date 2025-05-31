@@ -3,7 +3,60 @@ use crate::*;
 // Todo : check https://github.com/RReverser/serde-ndim/tree/main
 // Support nested array during deserialization
 
-#[cfg(feature = "serde")]
+use serde::de::{DeserializeSeed, Deserializer, SeqAccess, Visitor};
+use std::marker::PhantomData;
+use std::fmt;
+
+struct VecWithSizeHint<T> {
+    len: usize,
+    _marker: PhantomData<T>,
+}
+
+impl<'de, T> DeserializeSeed<'de> for VecWithSizeHint<T>
+where
+    T: serde::Deserialize<'de>,
+{
+    type Value = Vec<T>;
+
+    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct HintVisitor<T> {
+            len: usize,
+            _marker: PhantomData<T>,
+        }
+
+        impl<'de, T> Visitor<'de> for HintVisitor<T>
+        where
+            T: serde::Deserialize<'de>,
+        {
+            type Value = Vec<T>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                write!(formatter, "a sequence with {} elements", self.len)
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: SeqAccess<'de>,
+            {
+                let mut vec = Vec::with_capacity(self.len);
+                while let Some(value) = seq.next_element()? {
+                    vec.push(value);
+                }
+                Ok(vec)
+            }
+        }
+
+        deserializer.deserialize_seq(HintVisitor {
+            len: self.len,
+            _marker: PhantomData,
+        })
+    }
+}
+
+
 impl<'de, T, Idx, const N : usize> Deserialize<'de> for GridBase<T, Idx, N>
     where
         Idx: Integer + Deserialize<'de>,
@@ -49,7 +102,15 @@ impl<'de, T, Idx, const N : usize> Deserialize<'de> for GridBase<T, Idx, N>
                             if values.is_some() {
                                 return Err(serde::de::Error::duplicate_field("values"));
                             }
-                            values = Some(map.next_value()?);
+                            if let Some(ref sz) = size {
+                                let seed = VecWithSizeHint::<T> {
+                                    len: sz.area_usize(),
+                                    _marker: PhantomData,
+                                };
+                                values = Some(map.next_value_seed(seed)?);
+                            } else {
+                                values = Some(map.next_value()?);
+                            }
                         }
                         _ => { let _ = map.next_value::<serde::de::IgnoredAny>()?; }
                     }

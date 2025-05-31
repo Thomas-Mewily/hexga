@@ -36,11 +36,38 @@ pub trait IoLoad : for<'de> Deserialize<'de>
     /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
     ///
     /// Don't include the markup language extension like `json` or `ron`
+    ///
+    /// The first value also determines the default extension in [IoLoad::load_default_extension].
     fn load_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
 
-
-    fn load_from_bytes_with_own_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self> { Self::load_from_bytes_with_own_extension_pathless(data, extension).to_load_error(path) }
-    fn load_from_bytes_with_own_extension_pathless(data : &[u8], extension : &extension) -> IoResult<Self> { Err(IoErrorKind::Unimplemented) }
+    fn load_from_bytes_with_own_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self>
+    {
+        if Self::CAN_BE_LOADED_FROM_TEXT
+        {
+            match str::from_utf8(data)
+            {
+                Ok(txt) => Self::load_from_str_with_own_extension(txt, path, extension),
+                Err(txt_err) => Err(IoErrorKind::EncodingBadUtf8 { valid_up_to: txt_err.valid_up_to(), error_len: txt_err.error_len() }.to_load_error(path))
+            }
+        }else
+        {
+            Self::load_from_bytes_with_own_extension_pathless(data, extension).to_load_error(path)
+        }
+    }
+    fn load_from_bytes_with_own_extension_pathless(data : &[u8], extension : &extension) -> IoResult<Self>
+    {
+        if Self::CAN_BE_LOADED_FROM_TEXT
+        {
+            match str::from_utf8(data)
+            {
+                Ok(txt) => Self::load_from_str_with_own_extension_pathless(txt, extension),
+                Err(txt_err) => Err(IoErrorKind::EncodingBadUtf8 { valid_up_to: txt_err.valid_up_to(), error_len: txt_err.error_len() })
+            }
+        }else
+        {
+            Err(IoErrorKind::Unimplemented)
+        }
+    }
 
     const CAN_BE_LOADED_FROM_TEXT : bool = false;
     fn load_from_str_with_own_extension(data : &str, path : &path, extension : &extension) -> IoLoadResult<Self> { Self::load_from_str_with_own_extension_pathless(data, extension).to_load_error(path) }
@@ -81,6 +108,7 @@ pub trait IoLoad : for<'de> Deserialize<'de>
     {
         Self::load_from_bytes_with_extension(data, path, path.extension_or_empty())
     }
+
     /// Support bytes and str
     fn load_from_bytes_with_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self>
     {
@@ -101,34 +129,25 @@ pub trait IoLoad : for<'de> Deserialize<'de>
             _ => {},
         }
 
-        if !Self::can_open_own_extension(extension)
+        if Self::can_open_own_extension(extension)
+        {
+            return Self::load_from_bytes_with_own_extension(data, path, extension);
+        }
+
+        if !extension.is_empty()
         {
             return Err(IoErrorKind::unsupported_open_extension::<Self>(extension).to_load_error(path));
         }
 
-        match Self::load_from_bytes_with_own_extension(data, path, extension)
+        for ext in Self::load_own_extensions()
         {
-            Ok(o) => Ok(o),
-            Err(e) =>
+            match Self::load_from_bytes_with_own_extension(data, path, ext)
             {
-                if Self::CAN_BE_LOADED_FROM_TEXT
-                {
-                    match str::from_utf8(data)
-                    {
-                        Ok(txt) => Self::load_from_str_with_own_extension(txt, path, extension),
-                        Err(txt_err) => if e.kind.is_unimplemented_or_unknow()
-                        {
-                            Err(IoErrorKind::EncodingBadUtf8 { valid_up_to: txt_err.valid_up_to(), error_len: txt_err.error_len() }.to_load_error(path))
-                        }else
-                        {
-                            Err(e)
-                        }
-                    }
-                }else
-                {
-                    Err(e)
-                }
-            },
+                Ok(v) => return Ok(v),
+                Err(e) => {},
+            }
         }
+
+        Err(IoErrorKind::missing_load_extension::<Self>().to_load_error(path))
     }
 }

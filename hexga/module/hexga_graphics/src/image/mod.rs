@@ -1,7 +1,14 @@
 use crate::*;
 
-mod deserialize;
-pub use deserialize::*;
+#[cfg(feature = "serde")]
+mod serde;
+#[cfg(feature = "serde")]
+pub use serde::*;
+
+#[cfg(feature = "hexga_io")]
+mod hexga_io;
+#[cfg(feature = "hexga_io")]
+pub use hexga_io::*;
 
 pub type Image<C=ColorRGBAByte> = ImageBase<C,int>;
 

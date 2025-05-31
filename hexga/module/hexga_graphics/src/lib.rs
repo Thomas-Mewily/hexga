@@ -18,5 +18,9 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 use hexga_io::{IoSave, IoLoad, IoError, IoErrorKind, Save, Load};
 
 pub mod image;
-pub use image::*;
+use image::*;
 
+pub mod prelude
+{
+    pub use super::image::{Image, ToImage};
+}

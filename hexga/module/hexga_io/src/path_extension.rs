@@ -28,6 +28,7 @@ pub trait StrPathExtension
     */
 }
 
+
 impl StrPathExtension for &str
 {
     fn extension(&self) -> Option<&extension>
