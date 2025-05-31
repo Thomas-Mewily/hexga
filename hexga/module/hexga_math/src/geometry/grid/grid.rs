@@ -50,9 +50,9 @@ impl<P, T, Idx, const N : usize> Get<P> for GridBase<T, Idx,N> where Idx : Integ
     #[inline(always)]
     fn try_get(&self, pos : P) -> Result<&Self::Output, ()> { self.get(pos.into()).ok_or_void() }
     #[inline(always)]
-    fn get(&self, pos : P) -> Option<&Self::Output> { self.position_to_index(pos.into()).and_then(|idx| Some(unsafe { self.get_unchecked(idx)} ) ) }
+    fn get(&self, pos : P) -> Option<&Self::Output> { self.position_to_index(pos.into()).and_then(|idx| Some(unsafe { self.values().get_unchecked(idx)} ) ) }
     #[inline(always)]
-    unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.get_unchecked(idx) } }
+    unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.values().get_unchecked(idx) } }
 }
 
 impl<P, T, Idx, const N : usize> GetMut<P> for GridBase<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
@@ -60,7 +60,7 @@ impl<P, T, Idx, const N : usize> GetMut<P> for GridBase<T, Idx,N> where Idx : In
     #[inline(always)]
     fn try_get_mut(&mut self, pos : P) -> Result<&mut Self::Output, ()> { self.get_mut(pos.into()).ok_or_void() }
     #[inline(always)]
-    fn get_mut(&mut self, pos : P) -> Option<&mut Self::Output> { self.position_to_index(pos.into()).and_then(|i| Some(unsafe { self.get_unchecked_mut(i) })) }
+    fn get_mut(&mut self, pos : P) -> Option<&mut Self::Output> { self.position_to_index(pos.into()).and_then(|i| Some(unsafe { self.values_mut().get_unchecked_mut(i) })) }
     #[inline(always)]
     unsafe fn get_unchecked_mut(&mut self, pos : P) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.values_mut().get_unchecked_mut(idx)} }
 }
@@ -76,56 +76,11 @@ impl<P, T, Idx, const N : usize> GetManyMut<P> for GridBase<T, Idx,N> where Idx 
             Err(())
         } else
         {
-            self.try_get_many_mut(indices.map(|idx| idx.unwrap()))
+            self.values_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }
 
-impl<T, Idx, const N : usize> Get<usize> for GridBase<T, Idx,N>
-    where Idx : Integer
-{
-    type Output = <Self as Index<usize>>::Output;
-    #[inline(always)]
-    fn try_get(&self, index : usize) -> Result<&T, ()> { self.get(index).ok_or_void() }
-    #[inline(always)]
-    fn get(&self, index : usize) -> Option<&T> { self.values().get(index) }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked(&self, index : usize) -> &T { unsafe { self.values().get_unchecked(index) } }
-}
-
-impl<T, Idx, const N : usize> GetMut<usize> for GridBase<T, Idx,N> where Idx : Integer
-{
-    #[inline(always)]
-    fn try_get_mut(&mut self, index : usize) -> Result<&mut T, ()> { self.get_mut(index).ok_or_void() }
-    #[inline(always)]
-    fn get_mut(&mut self, index : usize) -> Option<&mut T> { self.values_mut().get_mut(index) }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked_mut(&mut self, index : usize) -> &mut T{ unsafe { self.values_mut().get_unchecked_mut(index)} }
-}
-
-impl<T, Idx, const N : usize> GetManyMut<usize> for GridBase<T, Idx,N> where Idx : Integer
-{
-    #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> {
-        self.values_mut().try_get_many_mut(indices)
-    }
-}
-
-impl<T, Idx, const N : usize> Index<usize> for GridBase<T, Idx, N> where Idx : Integer
-{
-    type Output=T;
-    #[inline(always)]
-    #[track_caller]
-    fn index(&self, index: usize) -> &Self::Output { self.get_or_panic(index) }
-}
-impl<T, Idx, const N : usize> IndexMut<usize> for GridBase<T, Idx, N> where Idx : Integer
-{
-    #[inline(always)]
-    #[track_caller]
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_mut_or_panic(index) }
-}
 
 impl<P, T, Idx, const N : usize> Index<P> for GridBase<T, Idx, N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
@@ -186,28 +141,28 @@ mod grid_test
         */
 
         let mut indice = 0;
-        assert_eq!(grid[indice], grid[point2(0,0)]);
-        assert_eq!(grid[indice], 0);
+        assert_eq!(grid.values()[indice], grid[point2(0,0)]);
+        assert_eq!(grid.values()[indice], 0);
 
         indice += 1;
-        assert_eq!(grid[indice], grid[point2(1,0)]);
-        assert_eq!(grid[indice], 1);
+        assert_eq!(grid.values()[indice], grid[point2(1,0)]);
+        assert_eq!(grid.values()[indice], 1);
 
         indice += 1;
-        assert_eq!(grid[indice], grid[point2(0,1)]);
-        assert_eq!(grid[indice], 10);
+        assert_eq!(grid.values()[indice], grid[point2(0,1)]);
+        assert_eq!(grid.values()[indice], 10);
 
         indice += 1;
-        assert_eq!(grid[indice], grid[point2(1,1)]);
-        assert_eq!(grid[indice], 11);
+        assert_eq!(grid.values()[indice], grid[point2(1,1)]);
+        assert_eq!(grid.values()[indice], 11);
 
         indice += 1;
-        assert_eq!(grid[indice], grid[point2(0,2)]);
-        assert_eq!(grid[indice], 20);
+        assert_eq!(grid.values()[indice], grid[point2(0,2)]);
+        assert_eq!(grid.values()[indice], 20);
 
         indice += 1;
-        assert_eq!(grid[indice], grid[point2(1,2)]);
-        assert_eq!(grid[indice], 21);
+        assert_eq!(grid.values()[indice], grid[point2(1,2)]);
+        assert_eq!(grid.values()[indice], 21);
     }
 
     #[test]

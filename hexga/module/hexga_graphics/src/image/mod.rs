@@ -28,6 +28,25 @@ pub struct ImageBase<C,Idx> where Idx : Integer
     pixels : Vec<C>,
 }
 
+impl<C,Idx> ImageBase<C,Idx> where Idx : Integer
+{
+    pub fn pixels(&self) -> &[C] { self.values() }
+    pub fn pixels_mut(&mut self) -> &mut[C] { self.values_mut() }
+
+    /// `self.view().crop_intersect(subrect).to_grid()`
+    fn subimage(&self, rect : Rectangle2<Idx>) -> Self where C : Clone { self.subview_intersect(rect).to_image() }
+}
+
+impl<C,Idx> ImageBase<C,Idx> where Idx : Integer
+{
+    pub(crate) fn flip_y<P>(&self, mut pos : P) -> P where P: Into<Vector2::<Idx>> + From<Vector2::<Idx>>
+    { unsafe { Self::external_position_to_position_unchecked(pos.into(), self.size).into() } }
+}
+
+
+
+
+
 pub trait ToImage
 {
     type Output;
@@ -92,21 +111,6 @@ impl<'a,C,Idx> ToImage for GridViewMut<'a,ImageBase<C,Idx>,C,Idx,2> where Idx : 
     fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
-impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : Clone
-{
-    pub fn pixels(&self) -> &[C] { self.values() }
-    pub fn pixels_mut(&mut self) -> &mut[C] { self.values_mut() }
-
-    /// `self.view().crop_intersect(subrect).to_grid()`
-    fn subimage(&self, rect : Rectangle2<Idx>) -> Self { self.subview_intersect(rect).to_image() }
-}
-
-impl<C,Idx> ImageBase<C,Idx> where Idx : Integer
-{
-    pub(crate) fn flip_y<P>(&self, mut pos : P) -> P where P: Into<Vector2::<Idx>> + From<Vector2::<Idx>>
-    { unsafe { Self::external_position_to_position_unchecked(pos.into(), self.size).into() } }
-}
-
 
 impl<C,Idx> IGrid<C,Idx,2> for ImageBase<C,Idx> where Idx : Integer
 {
@@ -158,13 +162,13 @@ impl<T, Idx> IRectangle<Idx, 2> for ImageBase<T, Idx> where Idx : Integer
 
 impl<P, T, Idx> Get<P> for ImageBase<T, Idx>  where Idx : Integer, P : Into<Vector2<Idx>>
 {
-    type Output = <Self as Index<Vector2<Idx>>>::Output;
+    type Output = T;
     #[inline(always)]
     fn try_get(&self, pos : P) -> Result<&Self::Output, ()> { self.get(pos).ok_or_void() }
     #[inline(always)]
-    fn get(&self, pos : P) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| self.get(idx)) }
+    fn get(&self, pos : P) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) })) }
     #[inline(always)]
-    unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.get_unchecked(idx) } }
+    unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.pixels().get_unchecked(idx) } }
 }
 
 impl<P, T, Idx> GetMut<P> for ImageBase<T, Idx> where Idx : Integer, P : Into<Vector2<Idx>>
@@ -172,7 +176,7 @@ impl<P, T, Idx> GetMut<P> for ImageBase<T, Idx> where Idx : Integer, P : Into<Ve
     #[inline(always)]
     fn try_get_mut(&mut self, pos : P) -> Result<&mut Self::Output, ()> { self.get_mut(pos).ok_or_void() }
     #[inline(always)]
-    fn get_mut(&mut self, pos : P) -> Option<&mut Self::Output> { self.position_to_index(pos).and_then(|i| self.get_mut(i)) }
+    fn get_mut(&mut self, pos : P) -> Option<&mut Self::Output> { self.position_to_index(pos).and_then(|i| Some(unsafe { self.pixels_mut().get_unchecked_mut(i) })) }
     #[inline(always)]
     unsafe fn get_unchecked_mut(&mut self, pos : P) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
 }
@@ -188,7 +192,7 @@ impl<P, T, Idx> GetManyMut<P> for ImageBase<T, Idx> where Idx : Integer, P : Int
             Err(())
         } else
         {
-            self.try_get_many_mut(indices.map(|idx| idx.unwrap()))
+            self.pixels_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }
@@ -205,52 +209,6 @@ impl<P, T, Idx> IndexMut<P> for ImageBase<T, Idx> where Idx : Integer, P : Into<
     fn index_mut(&mut self, index: P) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-/*
-impl<T, Idx> Get<usize> for ImageBase<T, Idx> where Idx : Integer
-{
-    type Output = <Self as Index<usize>>::Output;
-    #[inline(always)]
-    fn try_get(&self, index : usize) -> Result<&T, ()> { self.get(index).ok_or_void() }
-    #[inline(always)]
-    fn get(&self, index : usize) -> Option<&T> { self.values().get(index) }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked(&self, index : usize) -> &T { unsafe { self.values().get_unchecked(index) } }
-}
-
-impl<T, Idx> GetMut<usize> for ImageBase<T, Idx> where Idx : Integer
-{
-    #[inline(always)]
-    fn try_get_mut(&mut self, index : usize) -> Result<&mut T, ()> { self.get_mut(index).ok_or_void() }
-    #[inline(always)]
-    fn get_mut(&mut self, index : usize) -> Option<&mut T> { self.values_mut().get_mut(index) }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked_mut(&mut self, index : usize) -> &mut T{ unsafe { self.values_mut().get_unchecked_mut(index)} }
-}
-
-impl<T, Idx> GetManyMut<usize> for ImageBase<T, Idx> where Idx : Integer
-{
-    #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(&mut self, indices: [usize; N2]) -> Result<[&mut Self::Output;N2], ()> {
-        self.values_mut().try_get_many_mut(indices)
-    }
-}
-
-impl<T, Idx> Index<usize> for ImageBase<T, Idx> where Idx : Integer
-{
-    type Output=T;
-    #[inline(always)]
-    #[track_caller]
-    fn index(&self, index: usize) -> &Self::Output { self.get_or_panic(index) }
-}
-impl<T, Idx> IndexMut<usize> for ImageBase<T, Idx> where Idx : Integer
-{
-    #[inline(always)]
-    #[track_caller]
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_mut_or_panic(index) }
-}
-*/
 
 
 impl<T, Idx> Length for ImageBase<T, Idx>
@@ -338,95 +296,4 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToCo
     }
 
     const COLOR_INSIDE : ColorKind = C::COLOR_INSIDE;
-}
-
-/*
-impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : ToColor
-{
-    pub fn tmp_write_to_png_bytes_inside(&self, path : &str)
-    {
-        let file = std::fs::File::create(path).expect("Failed to create file");
-        let buffered_write = &mut std::io::BufWriter::new(file);
-
-        match C::COLOR_INSIDE
-        {
-            ColorKind::RGBAByte =>
-            {
-                ::image::ImageEncoder::write_image(
-                    ::image::codecs::png::PngEncoder::new(buffered_write),
-                    unsafe {
-                        std::slice::from_raw_parts(
-                            self.pixels().as_ptr() as *const u8,
-                            self.pixels().len() * std::mem::size_of::<C>(),
-                        )
-                    },
-                    self.width().to_usize() as _,
-                    self.height().to_usize() as _,
-                    ::image::ExtendedColorType::Rgba8,
-                ).expect("Failed to write PNG Rgba8 image");
-            },
-            ColorKind::RGBAU16 =>
-            {
-                ::image::ImageEncoder::write_image(
-                    ::image::codecs::png::PngEncoder::new(buffered_write),
-                    unsafe {
-                        std::slice::from_raw_parts(
-                            self.pixels().as_ptr() as *const u8,
-                            self.pixels().len() * std::mem::size_of::<C>(),
-                        )
-                    },
-                    self.width().to_usize() as _,
-                    self.height().to_usize() as _,
-                    ::image::ExtendedColorType::Rgba16,
-                ).expect("Failed to write PNG Rgba16 mage");
-            },
-            _ => todo!(),
-        }
-    }
-}
-*/
-
-
-impl<C,Idx> ImageBase<C,Idx> where Idx : Integer, C : ToColor
-{
-    pub fn tmp_write_to_png_bytes_inside(&self, path : &str)
-    {
-        let file = std::fs::File::create(path).expect("Failed to create file");
-        let buffered_write = &mut std::io::BufWriter::new(file);
-
-        match C::COLOR_INSIDE
-        {
-            ColorKind::RGBAByte =>
-            {
-                ::image::ImageEncoder::write_image(
-                    ::image::codecs::png::PngEncoder::new(buffered_write),
-                    unsafe {
-                        std::slice::from_raw_parts(
-                            self.pixels().as_ptr() as *const u8,
-                            self.pixels().len() * std::mem::size_of::<C>(),
-                        )
-                    },
-                    self.width().to_usize() as _,
-                    self.height().to_usize() as _,
-                    ::image::ExtendedColorType::Rgba8,
-                ).expect("Failed to write PNG Rgba8 image");
-            },
-            ColorKind::RGBAU16 =>
-            {
-                ::image::ImageEncoder::write_image(
-                    ::image::codecs::png::PngEncoder::new(buffered_write),
-                    unsafe {
-                        std::slice::from_raw_parts(
-                            self.pixels().as_ptr() as *const u8,
-                            self.pixels().len() * std::mem::size_of::<C>(),
-                        )
-                    },
-                    self.width().to_usize() as _,
-                    self.height().to_usize() as _,
-                    ::image::ExtendedColorType::Rgba16,
-                ).expect("Failed to write PNG Rgba16 mage");
-            },
-            _ => todo!(),
-        }
-    }
 }
