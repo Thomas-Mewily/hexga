@@ -87,21 +87,6 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
             {
                 match C::COLOR_INSIDE
                 {
-                    ColorKind::RGBABool =>
-                    {
-                        ::image::ImageEncoder::write_image(
-                            ::image::codecs::png::PngEncoder::new(w),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba1,
-                        ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba1 image : {}", e.to_string())))
-                    }
                     ColorKind::RGBAByte =>
                     {
                         ::image::ImageEncoder::write_image(
@@ -156,21 +141,6 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
             {
                 match C::COLOR_INSIDE
                 {
-                    ColorKind::RGBABool =>
-                    {
-                        ::image::ImageEncoder::write_image(
-                            ::image::codecs::jpeg::JpegEncoder::new(w),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba1,
-                        ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .jpeg rgba1 image : {}", e.to_string())))
-                    }
                     ColorKind::RGBAByte =>
                     {
                         ::image::ImageEncoder::write_image(

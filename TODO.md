@@ -51,6 +51,16 @@ projeter orhtogonal ?
 
 - ColorRGB (without A). Support for jpg / jpeg that don't support an A
 
+- ECS ? (not imposed, but the ability the create component, delete them, iterate...)
+
+
+- SDF Signed Distance Field
+https://iquilezles.org/articles/distfunctions/
+https://iquilezles.org/articles/distfunctions2d/
+https://wbrbr.org/publications/LipschitzPruning/
+
+- SVF : Signed Vector Field (can also be used for collision)
+
 ## Working On
 
 ## Done

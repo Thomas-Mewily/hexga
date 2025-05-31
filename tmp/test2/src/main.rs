@@ -57,6 +57,8 @@ fn main()
     }).save_to_disk("./tmp/test2/asset/image_byte.jpg").unwrap();
     */
 
+    //let x : f32 = 32u8.cast_into();
+
     let i = Image::from_fn((16, 16), |(x,y)|
     {
         ColorByte::rgb(x as u8 * 16, y as u8 * 16, 0)
@@ -75,7 +77,14 @@ fn main()
     }).save_to_disk("./tmp/test2/asset/test_img").unwrap();
 
 
-    /*
+    let s = 512.splat2();
+    let i= Image::from_fn_ndc(s, |v|
+        if v.length() <= 0.6 { ColorBool::WHITE } else { ColorBool::BLACK }
+    );
+    i.save_to_disk("./tmp/test2/asset/test3.png").unwrap();
+
+
+    /*D
     dbg!(Angle::from_ron("45"));
     dbg!(Angle::from_ron("(rad: 2.0)"));
     dbg!(Angle::from_ron("(deg: 2.0)"));
