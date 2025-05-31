@@ -49,6 +49,8 @@ vec2(1,0) => forward to the current dir
 vec2(-1,0) => backward...
 projeter orhtogonal ?
 
+- ColorRGB (without A). Support for jpg / jpeg that don't support an A
+
 ## Working On
 
 ## Done
