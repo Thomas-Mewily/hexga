@@ -80,22 +80,25 @@ pub trait IGrid<T, Idx, const N : usize> :
 
     /*
     /// [-1.0..=1.0]
-    fn from_fn_ndc_with_precision<S,P,F>(size : S, mut f : F) -> Self
+    fn from_fn_ndc_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
         where
-        S : Into<Vector::<Idx,N>>,
-        P : Float,
-        F : FnMut(Vector<P,N>) -> T,
+        P : Into<Vector::<Idx,N>>,
+        Precision : Float,
+        F : FnMut(Vector<Precision,N>) -> T,
     {
+        /*
         let size : Vector::<Idx,N> = size.into();
 
-        //let size_float = Vector::<Idx,N> as CastIntoComposite<:: size.cast_into_composite::<P>();
+        let size_float = Vector::<Precision,N> as CastIntoComposite<:: size.cast_into_composite::<P>();
 
         Self::from_fn(size, |p|
             {
                 f(p.to_float() / size_float)
             })
+        */
+
     }
-    */
+*/
 
     /// Create a grid from a function
     fn from_fn<P,F>(size : P, mut f : F) -> Self
