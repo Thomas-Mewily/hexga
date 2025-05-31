@@ -16,7 +16,7 @@ use render::*;
 
 impl RenderBackend for QuadContext
 {
-    fn new_buffer   (&mut self, data: buffer::BufferData, source : buffer::BufferSource) -> buffer::RawBufferID 
+    fn new_buffer   (&mut self, data: buffer::BufferData, source : buffer::BufferSource) -> buffer::RawBufferID
     {
         self.render.new_buffer(data.buf_type.convert(), data.usage.convert(), source.convert()).convert()
     }
@@ -30,7 +30,7 @@ impl RenderBackend for QuadContext
         self.render.delete_buffer(id.convert());
     }
 
-    fn new_texture(&mut self, data : &texture::TextureData) -> texture::RawTextureID 
+    fn new_texture(&mut self, data : &texture::TextureData) -> texture::RawTextureID
     {
         let src = match &data.source
         {
@@ -41,8 +41,8 @@ impl RenderBackend for QuadContext
         let access = data.param.access.convert();
 
         let t = self.render.new_texture(
-            access, 
-            src, 
+            access,
+            src,
             data.param.convert()
         );
 
@@ -57,7 +57,7 @@ impl RenderBackend for QuadContext
     }
 
     fn texture_update(&mut self, dest : texture::RawTextureID, data : &texture::TextureData) {
-        
+
         let src = match &data.source
         {
             texture::TextureSource::Empty => return,
@@ -69,7 +69,7 @@ impl RenderBackend for QuadContext
         self.render.texture_update(id, src);
     }
 
-    fn texture_set_mag_filter  (&mut self, id : texture::RawTextureID, filter: texture::FilterMode) 
+    fn texture_set_mag_filter  (&mut self, id : texture::RawTextureID, filter: texture::FilterMode)
     {
         let id = self.texture[id.index];
         self.render.texture_set_mag_filter(id, filter.convert());
@@ -85,7 +85,7 @@ impl RenderBackend for QuadContext
         self.render.texture_generate_mipmaps(id);
     }
 
-    fn texture_read_pixels     (&mut self, id : texture::RawTextureID, dest : &mut texture::TextureSource) 
+    fn texture_read_pixels     (&mut self, id : texture::RawTextureID, dest : &mut texture::TextureSource)
     {
         let dest = match dest
         {
@@ -123,32 +123,32 @@ impl RenderBackend for QuadContext
         self.render.delete_render_pass(unsafe { std::mem::transmute(id.index) });
     }
 
-    fn new_pipeline   (&mut self, data : &pipeline::PipelineData) -> pipeline::RawPipelineID 
+    fn new_pipeline   (&mut self, data : &pipeline::PipelineData) -> pipeline::RawPipelineID
     {
-        let pipeline::PipelineData 
-        { 
-            buffer_layout, 
-            attributes, 
-            shader, 
-            param 
+        let pipeline::PipelineData
+        {
+            buffer_layout,
+            attributes,
+            shader,
+            param
         } = data;
 
         let miniquad_layout : Vec<miniquad::BufferLayout> = buffer_layout.iter().map(|v| v.convert()).collect();
         let miniquad_attribute : Vec<miniquad::VertexAttribute> = attributes.iter()
-        .map(|v| 
+        .map(|v|
             miniquad::VertexAttribute
-            { 
+            {
                 name: unsafe { std::mem::transmute::<&str, &'static str>(&v.name) },
-                format: v.format.convert(), 
-                buffer_index: v.buffer_index.index, 
-                gl_pass_as_float: v.gl_pass_as_float 
+                format: v.format.convert(),
+                buffer_index: v.buffer_index.index,
+                gl_pass_as_float: v.gl_pass_as_float
             }
         ).collect();
 
         let miniquad_shader_id = unsafe { std::mem::transmute(shader.index) };
 
         let pipeline = self.render.new_pipeline(&miniquad_layout,  &miniquad_attribute, miniquad_shader_id, param.convert());
-        pipeline::RawPipelineID{ index: unsafe { std::mem::transmute(pipeline) } } 
+        pipeline::RawPipelineID{ index: unsafe { std::mem::transmute(pipeline) } }
     }
 
     fn apply_pipeline (&mut self, pipeline: pipeline::RawPipelineID) {
@@ -159,7 +159,7 @@ impl RenderBackend for QuadContext
         self.render.delete_pipeline(unsafe { std::mem::transmute(pipeline.index) });
     }
 
-    fn new_shader   (&mut self, data : &shader::ShaderData) -> Result<shader::RawShaderID, shader::ShaderError> 
+    fn new_shader   (&mut self, data : &shader::ShaderData) -> Result<shader::RawShaderID, shader::ShaderError>
     {
         let shader::ShaderData { source, meta } = data;
         let (vertex, fragment) = match source
@@ -168,7 +168,7 @@ impl RenderBackend for QuadContext
             _ => unreachable!(),
         };
         let shader = self.render.new_shader(miniquad::ShaderSource::Glsl { vertex, fragment }, meta.convert());
-        
+
         match shader
         {
             Ok(shader) => Ok(shader::RawShaderID{ index: unsafe { std::mem::transmute(shader) } }),
@@ -180,7 +180,7 @@ impl RenderBackend for QuadContext
         self.render.delete_shader(unsafe { std::mem::transmute(program.index) });
     }
 
-    fn apply_viewport(&mut self, viewport : Rect2P) 
+    fn apply_viewport(&mut self, viewport : Rect2P)
     {
         let (pos, size) = viewport.into();
         self.render.apply_viewport(pos.x as _, pos.y as _, size.x as _, size.y as _);
@@ -191,7 +191,7 @@ impl RenderBackend for QuadContext
         self.render.apply_scissor_rect(pos.x as _, pos.y as _, size.x as _, size.y as _);
     }
 
-    fn apply_bindings_view(&mut self, binding : bindings::BindingsView) 
+    fn apply_bindings_view(&mut self, binding : bindings::BindingsView)
     {
         self.tmp_vertex.clear();
         for v in binding.vertex_buffers.iter()
@@ -216,7 +216,7 @@ impl RenderBackend for QuadContext
         self.render.apply_uniforms_from_bytes(uniform_ptr.as_ptr(), uniform_ptr.len());
     }
 
-    fn clear(&mut self, data : render_pass::ClearData) 
+    fn clear(&mut self, data : render_pass::ClearData)
     {
         let render_pass::ClearData { color, depth, stencil } = data;
         let color = color.map(|c| c.convert());
@@ -314,8 +314,9 @@ impl ContextWindow for QuadContext
 
 //+ ContextRender
 
-//impl ContextMultiMedia for 
+//impl ContextMultiMedia for
 
+/*
 pub trait QuadRunner
 {
     fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoop + 'static;
@@ -323,9 +324,9 @@ pub trait QuadRunner
 
 impl QuadRunner for MultiMediaParam
 {
-    fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoop + 'static 
+    fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoop + 'static
     {
-        miniquad::start(self.clone().convert(), move || 
+        miniquad::start(self.clone().convert(), move ||
         {
             let ctx = Box::new(QuadContext{ render: miniquad::window::new_rendering_backend(), texture: ___(), tmp_vertex: ___(), tmp_textures: ___() });
             unsafe { context::set_context(Some(Context::new(ctx, self))); }
@@ -334,3 +335,4 @@ impl QuadRunner for MultiMediaParam
         );
     }
 }
+*/

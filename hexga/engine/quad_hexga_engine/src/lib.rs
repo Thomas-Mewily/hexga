@@ -11,7 +11,7 @@ pub mod quad;
 pub mod prelude
 {
     pub use hexga_engine::prelude::*;
-    pub use crate::quad::QuadRunner;
+    //pub use crate::quad::QuadRunner;
 }
 
 /// Modules/Items without the prelude

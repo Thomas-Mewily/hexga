@@ -19,28 +19,28 @@ impl MainLoop for TestCtx
     }
 
     fn update(&mut self) {
-        
+
     }
 
     fn draw(&mut self) {
-        
+
     }
 }
 
-fn main() 
+fn main()
 {
     for _ in 0..10 { println!(); }
     MultiMediaParam::new()
         .window(WindowParam::new().title("hello"))
-        .run(|| TestCtx::___());
+        //.run(|| TestCtx::___());
 }
 
-/* 
-fn main() 
+/*
+fn main()
 {
     for _ in 0..10 { println!(); }
 }
-    
+
         Pen.begin_draw();
         Pen.begin_pass();
 
@@ -50,13 +50,13 @@ fn main()
            .make_triangle();
 
         Pen.color(Color::PINK);
-        
+
         //  for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 7.)
         for c in (Angle::ZERO..Angle::FULL).sample(40)
         {
             Pen.set_pos(c.to_vec2(0.5)).down();
         }
         Pen.make_convex_poly();
-    
-    
+
+
 */

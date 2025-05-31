@@ -34,29 +34,28 @@ Events,
 Permission ? (from where asset can be loaded / exported ? You don't want to load and share the "asset" "C:/private/password.txt")
 */
 
-    
+
     // other stuff
 }
 
+/*
 impl Context
 {
-    pub fn new(mut multi_media : Box<dyn ContextMultiMedia>, param : MultiMediaParam) -> Self 
+    pub fn new(mut multi_media : Box<dyn ContextMultiMedia>, param : MultiMediaParam) -> Self
     {
-        todo!()
-        /* 
         let pen = ContextPen::new(multi_media.as_mut(), param.pen_param);
         Self { multi_media, pen, textures: ___(), textures_to_remove: ___() }
-        */
     }
 }
+*/
 
 pub(crate) static mut CONTEXT : Option<Context> = None;
 
 #[doc(hidden)]
 #[allow(dead_code)]
 #[allow(static_mut_refs)]
-pub(crate) fn ctx_ref() -> &'static Context  
-{ 
+pub(crate) fn ctx_ref() -> &'static Context
+{
     let ctx = unsafe { CONTEXT.as_ref().unwrap() };
     assert_eq!(ctx.thread_id, std::thread::current().id(), "Can only use the context in the same thread");
     ctx
@@ -65,8 +64,8 @@ pub(crate) fn ctx_ref() -> &'static Context
 #[doc(hidden)]
 #[allow(dead_code)]
 #[allow(static_mut_refs)]
-pub(crate) fn ctx() -> &'static mut Context 
-{ 
+pub(crate) fn ctx() -> &'static mut Context
+{
     let ctx = unsafe { CONTEXT.as_mut().unwrap() };
     assert_eq!(ctx.thread_id, std::thread::current().id(), "Can only use the context in the same thread");
     ctx
@@ -80,7 +79,7 @@ pub unsafe fn set_context(ctx : Option<Context>) -> Option<Context>
     {
         match ctx
         {
-            Some(ctx) => 
+            Some(ctx) =>
             {
                 CONTEXT = Some(ctx);
                 return None;
@@ -94,11 +93,11 @@ pub unsafe fn set_context(ctx : Option<Context>) -> Option<Context>
 
 
 
-/* 
-impl<S,MultiMedia> MainLoopWithContext for ContextState<S,MultiMedia> 
+/*
+impl<S,MultiMedia> MainLoopWithContext for ContextState<S,MultiMedia>
     where S : MainLoopWithContextMultiMedia, MultiMedia : ContextMultiMedia
 {
-    fn handle_event(&mut self, event : Event, ctx : &mut Context) -> bool 
+    fn handle_event(&mut self, event : Event, ctx : &mut Context) -> bool
     {
         let mut c = Context { multi_media: ctx };
         self.state.handle_event(event, &mut c)
