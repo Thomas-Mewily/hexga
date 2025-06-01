@@ -227,12 +227,12 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
 
 
 
-impl<T> CastIntoComposite<T> for ColorHslaOf<T> where T : CastIntoComposite<T>
+impl<T,Dest> CastIntoComposite<Dest> for ColorHslaOf<T> where T : CastIntoComposite<Dest>
 {
     type Output=ColorHslaOf<T::Output>;
     fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
 }
-impl<T> CastRangeIntoComposite<T> for ColorHslaOf<T> where T : CastRangeIntoComposite<T>
+impl<T,Dest> CastRangeIntoComposite<Dest> for ColorHslaOf<T> where T : CastRangeIntoComposite<Dest>
 {
     type Output=ColorHslaOf<T::Output>;
     fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }

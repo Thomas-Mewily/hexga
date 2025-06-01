@@ -39,8 +39,11 @@ fn main()
     }
     */
 
-    //Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
-    //Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
+    let x = 32.to_float();
+
+    Mat2P::IDENTITY.save_to_disk("./tmp/test2/asset/matrix.ron").unwrap();
+    Vec3::ONE.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
+    42.save_to_disk("./tmp/test2/asset/vec3.ron").unwrap();
 
     //Grid2::from_fn((3,4), |p| p.sum_axis()) .save_to_disk("./tmp/test2/asset/grid.ron").unwrap();
 
@@ -59,6 +62,8 @@ fn main()
     }).save_to_disk("./tmp/test2/asset/image_byte.jpg").unwrap();
     */
 
+
+
     dbg!(ColorU8::RED);
     dbg!(ColorRgbaF32::RED);
 
@@ -73,7 +78,12 @@ fn main()
     let i = Image::from_fn((16, 16), |(x,y)|
     {
         ColorU8::rgb(x as u8 * 16, y as u8 * 16, 0)
-    }).save_to_disk("./tmp/test2/asset/image_byte.png").unwrap();
+    });//.save_to_disk("./tmp/test2/asset/image_byte.png").unwrap();
+
+    let j = Color::YELLOW;
+    let k = j.to_u8();
+
+    let m = i.to_u16();
 
     let x = 64;
     let i = Image::from_fn((x, x), |(x,y)|
@@ -96,6 +106,8 @@ fn main()
         if v.length() <= 0.6 { ColorU8::RED } else { ColorU8::BLACK }
     );
 
+
+
     //let c = petit_cercle.to_color_rgba_f64();
 
     dbg!(&petit_cercle.update_into(&mut gros_cercle.view_mut().crop_intersect(petit_cercle.rect())));
@@ -105,7 +117,8 @@ fn main()
     //gros_cercle.view_mut().swap
 
 
-    gros_cercle.save_to_disk("./tmp/test2/asset/mon_cercle").unwrap();
+    gros_cercle.save_to_disk("./tmp/test2/asset/mon_cercle.ron").unwrap();
+
 
     /*D
     dbg!(Angle::from_ron("45"));

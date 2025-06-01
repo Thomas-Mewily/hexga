@@ -236,12 +236,12 @@ impl<T> ToColorComposite for ColorRgbaOf<T> where T: Primitive
 }
 
 
-impl<T> CastIntoComposite<T> for ColorRgbaOf<T> where T : CastIntoComposite<T>
+impl<T,Dest> CastIntoComposite<Dest> for ColorRgbaOf<T> where T : CastIntoComposite<Dest>
 {
     type Output=ColorRgbaOf<T::Output>;
     fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
 }
-impl<T> CastRangeIntoComposite<T> for ColorRgbaOf<T> where T : CastRangeIntoComposite<T>
+impl<T,Dest> CastRangeIntoComposite<Dest> for ColorRgbaOf<T> where T : CastRangeIntoComposite<Dest>
 {
     type Output=ColorRgbaOf<T::Output>;
     fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }

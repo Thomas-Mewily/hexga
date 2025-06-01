@@ -21,6 +21,7 @@ pub use vector_iter::*;
 /// ```
 pub struct Vector<T, const N : usize>
 {
+    // Not simd because we accept everythings.
     pub array : [T; N]
 }
 impl<T, const N : usize> Default for Vector<T, N> where [T; N] : Default

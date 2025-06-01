@@ -320,12 +320,12 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToCo
 }
 
 
-impl<C,Idx> CastIntoComposite<C> for ImageBase<C, Idx> where Idx : Integer, C : CastIntoComposite<C>
+impl<C,Idx,Dest> CastIntoComposite<Dest> for ImageBase<C, Idx> where Idx : Integer, C : CastIntoComposite<Dest>
 {
     type Output=ImageBase<C::Output, Idx>;
     fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
 }
-impl<C,Idx> CastRangeIntoComposite<C> for ImageBase<C, Idx> where Idx : Integer, C : CastRangeIntoComposite<C>
+impl<C,Idx,Dest> CastRangeIntoComposite<Dest> for ImageBase<C, Idx> where Idx : Integer, C : CastRangeIntoComposite<Dest>
 {
     type Output=ImageBase<C::Output, Idx>;
     fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
