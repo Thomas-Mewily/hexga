@@ -9,7 +9,7 @@ pub(crate) struct QuadState<S> where S : MainLoop
 
 impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoop
 {
-    fn update(&mut self) 
+    fn update(&mut self)
     {
         //Context.begin
         self.state.update();
@@ -19,7 +19,7 @@ impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoop
         self.state.draw();
     }
 
-    fn char_event(&mut self, character: char, keymods: miniquad::KeyMods, repeat: bool) 
+    fn char_event(&mut self, character: char, keymods: miniquad::KeyMods, repeat: bool)
     {
         self.state.handle_event(CharEvent {
             character,
@@ -28,7 +28,7 @@ impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoop
         }.into());
     }
 
-    fn files_dropped_event(&mut self) 
+    fn files_dropped_event(&mut self)
     {
         self.state.handle_event(WindowEvent::DropFile.into());
     }
@@ -71,24 +71,24 @@ impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoop
             }.into());
     }
 
-    fn mouse_motion_event(&mut self, x: f32, y: f32) 
+    fn mouse_motion_event(&mut self, x: f32, y: f32)
     {
         self.state.handle_event(MouseMove{ position : vec2(x as _, y as _) }.into());
     }
 
-    fn mouse_wheel_event(&mut self, _x: f32, _y: f32) 
+    fn mouse_wheel_event(&mut self, _x: f32, _y: f32)
     {
         self.state.handle_event(MouseEvent::Wheel(vec2(_x as _, _y as _)).into());
     }
 
-    fn quit_requested_event(&mut self) 
-    { 
-        self.state.handle_event(WindowEvent::Quit.into()); 
+    fn quit_requested_event(&mut self)
+    {
+        self.state.handle_event(WindowEvent::Quit.into());
     }
 
-    fn raw_mouse_motion(&mut self, dx: f32, dy: f32) 
-    { 
-        self.state.handle_event(MouseEvent::RawMove(vec2(dx as _, dy as _)).into()); 
+    fn raw_mouse_motion(&mut self, dx: f32, dy: f32)
+    {
+        self.state.handle_event(MouseEvent::RawMove(vec2(dx as _, dy as _)).into());
     }
 
     fn resize_event(&mut self, _width: f32, _height: f32) {
@@ -100,7 +100,7 @@ impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoop
             {
                 phase: phase.convert(),
                 position: vec2(x as _, y as _),
-                id,
+                id : TouchID::new(id),
             }.into());
     }
 

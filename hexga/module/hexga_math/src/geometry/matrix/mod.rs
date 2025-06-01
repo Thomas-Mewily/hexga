@@ -48,15 +48,15 @@ impl<T, const ROW : usize, const COL : usize>  Matrix<T, ROW, COL>
 }
 
 use std::fmt;
-impl<T, const ROW : usize, const COL : usize> fmt::Display  for Matrix<T, ROW, COL> where T : fmt::Display  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> fmt::Debug    for Matrix<T, ROW, COL> where T : fmt::Debug    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> fmt::Octal    for Matrix<T, ROW, COL> where T : fmt::Octal    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> fmt::Binary   for Matrix<T, ROW, COL> where T : fmt::Binary   { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> fmt::LowerHex for Matrix<T, ROW, COL> where T : fmt::LowerHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> fmt::UpperHex for Matrix<T, ROW, COL> where T : fmt::UpperHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> fmt::LowerExp for Matrix<T, ROW, COL> where T : fmt::LowerExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> fmt::UpperExp for Matrix<T, ROW, COL> where T : fmt::UpperExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
-impl<T, const ROW : usize, const COL : usize> fmt::Pointer  for Matrix<T, ROW, COL> where T : fmt::Pointer  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Display  for Matrix<T, ROW, COL> where T: fmt::Display  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Debug    for Matrix<T, ROW, COL> where T: fmt::Debug    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Octal    for Matrix<T, ROW, COL> where T: fmt::Octal    { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Binary   for Matrix<T, ROW, COL> where T: fmt::Binary   { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::LowerHex for Matrix<T, ROW, COL> where T: fmt::LowerHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::UpperHex for Matrix<T, ROW, COL> where T: fmt::UpperHex { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::LowerExp for Matrix<T, ROW, COL> where T: fmt::LowerExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::UpperExp for Matrix<T, ROW, COL> where T: fmt::UpperExp { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
+impl<T, const ROW : usize, const COL : usize> fmt::Pointer  for Matrix<T, ROW, COL> where T: fmt::Pointer  { fn fmt(&self, f: &mut Formatter<'_>) -> DResult  { self._fmt(f, T::fmt) } }
 
 impl<T, const ROW : usize, const COL : usize> Default  for Matrix<T,ROW,COL>   where Vector<Vector<T, ROW>,COL> : Default
 {
@@ -115,17 +115,17 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
         }
     }
 
-    pub fn from_row(rows : Vector<Vector<T, COL>,ROW>) -> Self where T : Copy
+    pub fn from_row(rows : Vector<Vector<T, COL>,ROW>) -> Self where T: Copy
     {
         Matrix::from_col(rows).transpose()
     }
-    pub fn from_row_array(rows : [[T;COL];ROW]) -> Self where T : Copy
+    pub fn from_row_array(rows : [[T;COL];ROW]) -> Self where T: Copy
     {
         Self::from_row(Vector::from_array(rows.map(|array| Vector::from_array(array))))
     }
 
-    pub fn col(&self) -> Vector<Vector<T, ROW>,COL> where T : Copy { self.columns }
-    pub fn row(&self) -> Vector<Vector<T, COL>,ROW> where T : Copy { self.transpose().columns }
+    pub fn col(&self) -> Vector<Vector<T, ROW>,COL> where T: Copy { self.columns }
+    pub fn row(&self) -> Vector<Vector<T, COL>,ROW> where T: Copy { self.transpose().columns }
 
     pub fn iter_col(&self) -> impl Iterator<Item = Vector<T, ROW>> where Vector<Vector<T, ROW>,COL> : Copy, T : Copy { self.columns.into_iter()}
     pub fn iter_row(&self) -> impl Iterator<Item = Vector<T, COL>> where Vector<Vector<T, ROW>,COL> : Copy, T : Copy { self.transpose().into_iter()}
@@ -145,7 +145,7 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
     ///     Mat::<2,3>::from_col(vector3(vec2(1., 4.), vec2(2., 5.), vec2(3., 6.)))
     /// );
     /// ```
-    pub fn transpose(&self) -> Matrix<T,COL,ROW> where T : Copy
+    pub fn transpose(&self) -> Matrix<T,COL,ROW> where T: Copy
     {
         Matrix::from_col(Vector::from_fn(|x| Vector::from_fn(|y| self[y][x])))
     }
@@ -158,12 +158,12 @@ impl<T> SquareMatrix<T,2>
     SquareMatrix<T, 2> : Mul<Vector<T, 2>, Output = Vector<T, 2>>,
     Vector<T, 2> : Into< Vector<T, 1>>
 {
-    pub fn transform_relative(self, relative : Vector<T, 1>) -> Vector<T, 1> where T : Zero
+    pub fn transform_relative(self, relative : Vector<T, 1>) -> Vector<T, 1> where T: Zero
     {
         self.transform(relative.with_y(T::ZERO)).into()
     }
 
-    pub fn transform_position(self, position : Vector<T, 1>) -> Vector<T, 1> where T : One
+    pub fn transform_position(self, position : Vector<T, 1>) -> Vector<T, 1> where T: One
     {
         self.transform(position.with_y(T::ONE)).into()
     }
@@ -176,12 +176,12 @@ impl<T> SquareMatrix<T,3>
     SquareMatrix<T, 3> : Mul<Vector<T, 3>, Output = Vector<T, 3>>,
     Vector<T, 3> : Into< Vector<T, 2>>
 {
-    pub fn transform_relative(self, relative : Vector<T, 2>) -> Vector<T, 2> where T : Zero
+    pub fn transform_relative(self, relative : Vector<T, 2>) -> Vector<T, 2> where T: Zero
     {
         self.transform(relative.with_z(T::ZERO)).into()
     }
 
-    pub fn transform_position(self, position : Vector<T, 2>) -> Vector<T, 2> where T : One
+    pub fn transform_position(self, position : Vector<T, 2>) -> Vector<T, 2> where T: One
     {
         self.transform(position.with_z(T::ONE)).into()
     }
@@ -194,12 +194,12 @@ impl<T> SquareMatrix<T,4>
     SquareMatrix<T, 4> : Mul<Vector<T, 4>, Output = Vector<T, 4>>,
     Vector<T, 4> : Into< Vector<T, 3>>
 {
-    pub fn transform_relative(self, relative : Vector<T, 3>) -> Vector<T, 3> where T : Zero
+    pub fn transform_relative(self, relative : Vector<T, 3>) -> Vector<T, 3> where T: Zero
     {
         self.transform(relative.with_w(T::ZERO)).into()
     }
 
-    pub fn transform_position(self, position : Vector<T, 3>) -> Vector<T, 3> where T : One
+    pub fn transform_position(self, position : Vector<T, 3>) -> Vector<T, 3> where T: One
     {
         self.transform(position.with_w(T::ONE)).into()
     }
@@ -213,13 +213,13 @@ impl<T, const N : usize> SquareMatrix<T,N>
 {
     /*
     /// The last value/component will be replaced by 0 because it is relative/a vector in math terms.
-    pub fn transform_relative(self, relative : Vector<T, N>) -> Vector<T, N> where T : Zero
+    pub fn transform_relative(self, relative : Vector<T, N>) -> Vector<T, N> where T: Zero
     {
         self.transform(relative.with(N-1, T::ZERO))
     }
 
     /// The last value/component will be replaced by 1 because it is fixed/point in math terms.
-    pub fn transform_fixed(self, fixed : Vector<T, N>) -> Vector<T, N> where T : Zero
+    pub fn transform_fixed(self, fixed : Vector<T, N>) -> Vector<T, N> where T: Zero
     {
         self.transform(fixed.with(N-1, T::ZERO))
     }
@@ -239,14 +239,14 @@ impl<T, const ROW : usize, const COL : usize> Zero for Matrix<T,ROW,COL> where V
     const ZERO : Self = Self::from_col(Vector::<Vector::<T, ROW>, COL>::ZERO);
 }
 
-impl<T, const N : usize> SquareMatrix<T,N> where T : One + Zero + Copy
+impl<T, const N : usize> SquareMatrix<T,N> where T: One + Zero + Copy
 {
     /// Same as [One]
     pub const IDENTITY : Self = Self::ONE;
 }
 
 
-impl<T, const N : usize> One for SquareMatrix<T,N> where T : One + Zero + Copy
+impl<T, const N : usize> One for SquareMatrix<T,N> where T: One + Zero + Copy
 {
     const ONE : Self =
     {
@@ -261,7 +261,7 @@ impl<T, const N : usize> One for SquareMatrix<T,N> where T : One + Zero + Copy
     };
 }
 
-impl<T, const N : usize> MinusOne for SquareMatrix<T,N> where T : MinusOne + Zero + Copy
+impl<T, const N : usize> MinusOne for SquareMatrix<T,N> where T: MinusOne + Zero + Copy
 {
     const MINUS_ONE : Self =
     {
@@ -276,7 +276,7 @@ impl<T, const N : usize> MinusOne for SquareMatrix<T,N> where T : MinusOne + Zer
     };
 }
 
-impl<T, const N : usize> Half for SquareMatrix<T,N> where T : Half + Zero + Copy
+impl<T, const N : usize> Half for SquareMatrix<T,N> where T: Half + Zero + Copy
 {
     const HALF : Self =
     {
@@ -299,7 +299,7 @@ map_on!(
     ),
     (($trait_name : ident, $constant_name : ident)) =>
     {
-        impl<T, const ROW : usize, const COL : usize> $trait_name for Matrix<T,ROW,COL> where T : $trait_name + Copy
+        impl<T, const ROW : usize, const COL : usize> $trait_name for Matrix<T,ROW,COL> where T: $trait_name + Copy
         {
             const $constant_name : Self = Self::from_col(Vector::from_array([Vector::from_array([T::$constant_name; ROW]); COL]));
         }
@@ -421,7 +421,7 @@ impl<T, const COL : usize> MulAssign<Self> for SquareMatrix<T,COL>
     }
 }
 
-impl<T, const ROW : usize, const COL : usize> Mul<T> for Matrix<T,ROW,COL> where T : Copy + Mul<T>
+impl<T, const ROW : usize, const COL : usize> Mul<T> for Matrix<T,ROW,COL> where T: Copy + Mul<T>
 {
     type Output = Matrix<T::Output,ROW,COL>;
 
@@ -431,14 +431,14 @@ impl<T, const ROW : usize, const COL : usize> Mul<T> for Matrix<T,ROW,COL> where
     }
 }
 
-impl<T, const ROW : usize, const COL : usize> MulAssign<T> for Matrix<T,ROW,COL> where T : Copy + Mul<T,Output = T>
+impl<T, const ROW : usize, const COL : usize> MulAssign<T> for Matrix<T,ROW,COL> where T: Copy + Mul<T,Output = T>
 {
     fn mul_assign(&mut self, rhs: T) {
         *self = (*self).mul(rhs);
     }
 }
 
-impl<T, const ROW : usize, const COL : usize> Div<T> for Matrix<T,ROW,COL> where T : Copy + Div<T>
+impl<T, const ROW : usize, const COL : usize> Div<T> for Matrix<T,ROW,COL> where T: Copy + Div<T>
 {
     type Output = Matrix<T::Output,ROW,COL>;
 
@@ -448,7 +448,7 @@ impl<T, const ROW : usize, const COL : usize> Div<T> for Matrix<T,ROW,COL> where
     }
 }
 
-impl<T, const ROW : usize, const COL : usize> DivAssign<T> for Matrix<T,ROW,COL> where T : Copy + Div<T,Output = T>
+impl<T, const ROW : usize, const COL : usize> DivAssign<T> for Matrix<T,ROW,COL> where T: Copy + Div<T,Output = T>
 {
     fn div_assign(&mut self, rhs: T) {
         *self = (*self).div(rhs);
@@ -721,7 +721,7 @@ impl<T, const N : usize> RotationZ<T> for SquareMatrix<T,N>
     }
 }
 
-impl<T, const N : usize> Position<Vector<T,N>,N> for SquareMatrix<T,N> where T : Copy
+impl<T, const N : usize> Position<Vector<T,N>,N> for SquareMatrix<T,N> where T: Copy
 {
     fn pos(&self) -> Vector<Vector<T,N>,N> {
         self.col()
@@ -733,7 +733,7 @@ impl<T, const N : usize> Position<Vector<T,N>,N> for SquareMatrix<T,N> where T :
     }
 }
 
-impl<T, const N : usize> Position<T,N> for SquareMatrix<T,N> where T : Copy
+impl<T, const N : usize> Position<T,N> for SquareMatrix<T,N> where T: Copy
 {
     fn pos(&self) -> Vector<T,N> {
         self.columns[N-1]
@@ -830,7 +830,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + One
         r
     }
     /// Put an [Zero] for the last component
-    pub fn from_translation(translation: Vector<T,N>) -> Self where T : Zero + AddAssign<T>
+    pub fn from_translation(translation: Vector<T,N>) -> Self where T: Zero + AddAssign<T>
     {
         //let translation = translation.to_vector_filled(T::ZERO);
         let mut r = Self::IDENTITY;

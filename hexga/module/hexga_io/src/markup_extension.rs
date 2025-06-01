@@ -9,7 +9,7 @@ pub trait MarkupExtensionToRon : Serialize
     fn to_ron (&self) -> IoResult<String> { ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::___()).map_err(|e| IoErrorKind::serialize::<Self>(Io::RON_EXTENSION, e.to_debug())) }
 }
 #[cfg(feature = "serde_ron")]
-impl<T> MarkupExtensionToRon for T where T : Serialize {}
+impl<T> MarkupExtensionToRon for T where T: Serialize {}
 
 #[cfg(feature = "serde_ron")]
 pub trait MarkupExtensionFromRon : for<'de> Deserialize<'de>
@@ -19,7 +19,7 @@ pub trait MarkupExtensionFromRon : for<'de> Deserialize<'de>
     fn from_ron    (ron : &str) -> IoResult<Self> { ron::de::from_str(ron).map_err(|e| IoErrorKind::deserialize::<Self>(Io::RON_EXTENSION, e.to_debug())) }
 }
 #[cfg(feature = "serde_ron")]
-impl<T> MarkupExtensionFromRon for T where T : for<'de> Deserialize<'de> {}
+impl<T> MarkupExtensionFromRon for T where T: for<'de> Deserialize<'de> {}
 
 
 
@@ -30,7 +30,7 @@ pub trait MarkupExtensionToJson : Serialize
     fn to_json(&self) -> IoResult<String> { serde_json::ser::to_string_pretty(&self).map_err(|e| IoErrorKind::serialize::<Self>(Io::JSON_EXTENSION, e.to_debug())) }
 }
 #[cfg(feature = "serde_json")]
-impl<T> MarkupExtensionToJson for T where T : Serialize {}
+impl<T> MarkupExtensionToJson for T where T: Serialize {}
 
 #[cfg(feature = "serde_json")]
 pub trait MarkupExtensionFromJson : for<'de> Deserialize<'de>
@@ -40,7 +40,7 @@ pub trait MarkupExtensionFromJson : for<'de> Deserialize<'de>
     fn from_json    (json : &str) -> IoResult<Self> { serde_json::de::from_str(json).map_err(|e| IoErrorKind::deserialize::<Self>(Io::JSON_EXTENSION, e.to_debug())) }
 }
 #[cfg(feature = "serde_json")]
-impl<T> MarkupExtensionFromJson for T where T : for<'de> Deserialize<'de> {}
+impl<T> MarkupExtensionFromJson for T where T: for<'de> Deserialize<'de> {}
 
 
 
@@ -52,7 +52,7 @@ pub trait MarkupExtensionToXml : Serialize
     fn to_xml (&self) -> IoResult<String> { quick_xml::se::to_string(&self).map_err(|e| IoErrorKind::serialize::<Self>(Io::XML_EXTENSION, e.to_debug())) }
 }
 #[cfg(feature = "serde_xml")]
-impl<T> MarkupExtensionToXml for T where T : Serialize {}
+impl<T> MarkupExtensionToXml for T where T: Serialize {}
 
 #[cfg(feature = "serde_xml")]
 pub trait MarkupExtensionFromXml : for<'de> Deserialize<'de>
@@ -62,7 +62,7 @@ pub trait MarkupExtensionFromXml : for<'de> Deserialize<'de>
     fn from_xml    (xml : &str) -> IoResult<Self> { quick_xml::de::from_str(xml).map_err(|e| IoErrorKind::deserialize::<Self>(Io::XML_EXTENSION, e.to_debug())) }
 }
 #[cfg(feature = "serde_xml")]
-impl<T> MarkupExtensionFromXml for T where T : for<'de> Deserialize<'de> {}
+impl<T> MarkupExtensionFromXml for T where T: for<'de> Deserialize<'de> {}
 
 
 
@@ -77,7 +77,7 @@ pub trait MarkupExtensionToQuickBin : Serialize
     fn to_quick_bin(&self) -> IoResult<Vec<u8>> { bincode::serialize(self).map_err(|e| IoErrorKind::serialize::<Self>(Io::QUICK_BIN_EXTENSION, e.to_debug())) }
 }
 #[cfg(feature = "serde_quick_bin")]
-impl<T> MarkupExtensionToQuickBin for T where T : Serialize {}
+impl<T> MarkupExtensionToQuickBin for T where T: Serialize {}
 
 #[cfg(feature = "serde_quick_bin")]
 pub trait MarkupExtensionFromQuickBin : for<'de> Deserialize<'de>
@@ -86,4 +86,4 @@ pub trait MarkupExtensionFromQuickBin : for<'de> Deserialize<'de>
     fn from_quick_bin_with_reader<R : IoRead>(reader : R) -> IoResult<Self> { bincode::deserialize_from(reader).map_err(|e| IoErrorKind::deserialize::<Self>(Io::XML_EXTENSION, e.to_debug())) }
 }
 #[cfg(feature = "serde_quick_bin")]
-impl<T> MarkupExtensionFromQuickBin for T where T : for<'de> Deserialize<'de> {}
+impl<T> MarkupExtensionFromQuickBin for T where T: for<'de> Deserialize<'de> {}

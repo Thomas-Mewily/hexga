@@ -17,6 +17,8 @@ use super::*;
 ///```
 /// This will be `source_color * source_color.a + destination_color * (1 - source_color.a)`
 /// Wich is quite common set up for alpha blending.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BlendState {
     pub equation: BlendEquation,
@@ -40,6 +42,8 @@ impl BlendState{
 
 /// Specifies how incoming RGBA values (source) and the RGBA in framebuffer (destination)
 /// are combined.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum BlendEquation {
     /// Adds source and destination. Source and destination are multiplied
@@ -54,6 +58,8 @@ pub enum BlendEquation {
 }
 
 /// Blend factors.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum BlendFactor {
     Zero,
@@ -64,8 +70,11 @@ pub enum BlendFactor {
 }
 
 /// Blend values.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum BlendValue {
+pub enum BlendValue
+{
     SourceColor,
     SourceAlpha,
     DestinationColor,

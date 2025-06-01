@@ -273,15 +273,15 @@ impl CastRangeIntoComposite<bool> for bool
 
 /// fX
 pub trait CastRangeIntoFloat             : CastRangeInto<f32> + CastRangeInto<f64> {}
-impl<T> CastRangeIntoFloat for T where T : CastRangeInto<f32> + CastRangeInto<f64> {}
+impl<T> CastRangeIntoFloat for T where T: CastRangeInto<f32> + CastRangeInto<f64> {}
 
 /// fX
 pub trait CastRangeFromFloat             : CastRangeFrom<f32> + CastRangeFrom<f64> {}
-impl<T> CastRangeFromFloat for T where T : CastRangeFrom<f32> + CastRangeFrom<f64> {}
+impl<T> CastRangeFromFloat for T where T: CastRangeFrom<f32> + CastRangeFrom<f64> {}
 
 /// fX
 pub trait CastRangeFloat             : CastRangeIntoFloat + CastRangeFromFloat {}
-impl<T> CastRangeFloat for T where T : CastRangeIntoFloat + CastRangeFromFloat {}
+impl<T> CastRangeFloat for T where T: CastRangeIntoFloat + CastRangeFromFloat {}
 
 /// uX
 pub trait CastRangeIntoIntegerUnsigned :
@@ -291,7 +291,7 @@ pub trait CastRangeIntoIntegerUnsigned :
     CastRangeInto<u64> +
     CastRangeInto<usize>
 {}
-impl<T> CastRangeIntoIntegerUnsigned for T where T :
+impl<T> CastRangeIntoIntegerUnsigned for T where T:
     CastRangeInto<u8 > +
     CastRangeInto<u16> +
     CastRangeInto<u32> +
@@ -307,7 +307,7 @@ pub trait CastRangeFromIntegerUnsigned :
     CastRangeFrom<u64> +
     CastRangeFrom<usize>
 {}
-impl<T> CastRangeFromIntegerUnsigned for T where T :
+impl<T> CastRangeFromIntegerUnsigned for T where T:
     CastRangeFrom<u8 > +
     CastRangeFrom<u16> +
     CastRangeFrom<u32> +
@@ -317,7 +317,7 @@ impl<T> CastRangeFromIntegerUnsigned for T where T :
 
 /// uX
 pub trait CastRangeIntegerUnsigned             : CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
-impl<T> CastRangeIntegerUnsigned for T where T : CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
+impl<T> CastRangeIntegerUnsigned for T where T: CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
 
 
 /// iX
@@ -328,7 +328,7 @@ pub trait CastRangeIntoIntegerSigned :
     CastRangeInto<i64> +
     CastRangeInto<isize>
 {}
-impl<T> CastRangeIntoIntegerSigned for T where T :
+impl<T> CastRangeIntoIntegerSigned for T where T:
     CastRangeInto<i8 > +
     CastRangeInto<i16> +
     CastRangeInto<i32> +
@@ -344,7 +344,7 @@ pub trait CastRangeFromIntegerSigned :
     CastRangeFrom<i64> +
     CastRangeFrom<isize>
 {}
-impl<T> CastRangeFromIntegerSigned for T where T :
+impl<T> CastRangeFromIntegerSigned for T where T:
     CastRangeFrom<i8 > +
     CastRangeFrom<i16> +
     CastRangeFrom<i32> +
@@ -354,59 +354,59 @@ impl<T> CastRangeFromIntegerSigned for T where T :
 
 /// iX
 pub trait CastRangeIntegerSigned             : CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
-impl<T> CastRangeIntegerSigned for T where T : CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
+impl<T> CastRangeIntegerSigned for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
 
 
 /// iX uX
 pub trait CastRangeIntoInteger             : CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
-impl<T> CastRangeIntoInteger for T where T : CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
+impl<T> CastRangeIntoInteger for T where T: CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
 
 /// iX uX
 pub trait CastRangeFromInteger             : CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
-impl<T> CastRangeFromInteger for T where T : CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
+impl<T> CastRangeFromInteger for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
 
 /// iX uX
 pub trait CastRangeInteger             : CastRangeIntoInteger + CastRangeFromInteger {}
-impl<T> CastRangeInteger for T where T : CastRangeIntoInteger + CastRangeFromInteger {}
+impl<T> CastRangeInteger for T where T: CastRangeIntoInteger + CastRangeFromInteger {}
 
 
 /// bool
 pub trait CastRangeIntoBool             : CastRangeInto<bool> {}
-impl<T> CastRangeIntoBool for T where T : CastRangeInto<bool> {}
+impl<T> CastRangeIntoBool for T where T: CastRangeInto<bool> {}
 
 /// bool
 pub trait CastRangeFromBool             : CastRangeFrom<bool> {}
-impl<T> CastRangeFromBool for T where T : CastRangeFrom<bool> {}
+impl<T> CastRangeFromBool for T where T: CastRangeFrom<bool> {}
 
 /// bool
 pub trait CastRangeBool             : CastRangeIntoBool + CastRangeFromBool {}
-impl<T> CastRangeBool for T where T : CastRangeIntoBool + CastRangeFromBool {}
+impl<T> CastRangeBool for T where T: CastRangeIntoBool + CastRangeFromBool {}
 
 
 /// iX uX fX
 pub trait CastRangeIntoNumber             : CastRangeIntoInteger + CastRangeIntoFloat {}
-impl<T> CastRangeIntoNumber for T where T : CastRangeIntoInteger + CastRangeIntoFloat {}
+impl<T> CastRangeIntoNumber for T where T: CastRangeIntoInteger + CastRangeIntoFloat {}
 
 /// iX uX fX
 pub trait CastRangeFromNumber             : CastRangeFromInteger + CastRangeFromFloat {}
-impl<T> CastRangeFromNumber for T where T : CastRangeFromInteger + CastRangeFromFloat {}
+impl<T> CastRangeFromNumber for T where T: CastRangeFromInteger + CastRangeFromFloat {}
 
 /// iX uX fX
 pub trait CastRangeNumber             : CastRangeInteger + CastRangeFloat {}
-impl<T> CastRangeNumber for T where T : CastRangeInteger + CastRangeFloat {}
+impl<T> CastRangeNumber for T where T: CastRangeInteger + CastRangeFloat {}
 
 
 /// iX uX fX bool
 pub trait CastRangeIntoPrimitive             : CastRangeIntoNumber + CastRangeIntoBool {}
-impl<T> CastRangeIntoPrimitive for T where T : CastRangeIntoNumber + CastRangeIntoBool {}
+impl<T> CastRangeIntoPrimitive for T where T: CastRangeIntoNumber + CastRangeIntoBool {}
 
 /// iX uX fX bool
 pub trait CastRangeFromPrimitive             : CastRangeFromNumber + CastRangeFromBool {}
-impl<T> CastRangeFromPrimitive for T where T : CastRangeFromNumber + CastRangeFromBool {}
+impl<T> CastRangeFromPrimitive for T where T: CastRangeFromNumber + CastRangeFromBool {}
 
 /// iX uX fX bool
 pub trait CastRangePrimitive             : CastRangeIntoPrimitive + CastRangeFromPrimitive {}
-impl<T> CastRangePrimitive for T where T : CastRangeIntoPrimitive + CastRangeFromPrimitive {}
+impl<T> CastRangePrimitive for T where T: CastRangeIntoPrimitive + CastRangeFromPrimitive {}
 
 
 #[cfg(test)]

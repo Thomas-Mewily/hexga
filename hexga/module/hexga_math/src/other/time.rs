@@ -37,7 +37,7 @@ new_unit!(
     TimeOf
 );
 
-pub trait ToTime<T> : ToTimeComposite<Output = TimeOf<T>> where T : CastIntoAnyFloat {}
+pub trait ToTime<T> : ToTimeComposite<Output = TimeOf<T>> where T: CastIntoAnyFloat {}
 impl<S,T> ToTime<T> for S where S : ToTimeComposite<Output = TimeOf<T>>, T : CastIntoAnyFloat {}
 
 pub trait ToTimeComposite
@@ -52,7 +52,7 @@ pub trait ToTimeComposite
 }
 impl_composite_output_with_methods!(ToTimeComposite, ms, s, mins, hour, day);
 
-impl<T> ToTimeComposite for T where T : ToFloat<Output = float>
+impl<T> ToTimeComposite for T where T: ToFloat<Output = float>
 {
     type Output = Time;
 
@@ -299,7 +299,7 @@ impl<T:Float> TimeOf<T>
 }
 
 
-impl<T: Float> RangeDefault for TimeOf<T> where T : RangeDefault
+impl<T: Float> RangeDefault for TimeOf<T> where T: RangeDefault
 {
     const RANGE_MIN  : Self = Self(T::RANGE_MIN);
     const RANGE_HALF : Self = Self(T::RANGE_HALF);
@@ -314,7 +314,7 @@ impl<T> IoSave for TimeOf<T> where T: Float + Serialize {}
 
 
 #[cfg(feature = "serde")]
-impl<T> Serialize for TimeOf<T> where T : Float + Serialize
+impl<T> Serialize for TimeOf<T> where T: Float + Serialize
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     { self.s().serialize(serializer) }

@@ -13,7 +13,7 @@ pub trait BitMasksExtension : NumberIntegerUnsigned
     fn masked_set_zero (self, mask : Self) -> Self { self & !mask }
     #[must_use]
     fn masked_toggle   (self, mask : Self) -> Self { self ^ mask  }
-    
+
     fn mask            (&mut self, mask : Self, set : bool) -> &mut Self { *self = self.masked(mask, set); self }
     fn mask_set_one    (&mut self, mask : Self) -> &mut Self { *self = self.masked_set_one(mask); self }
     fn mask_set_zero   (&mut self, mask : Self) -> &mut Self { *self = self.masked_set_zero(mask); self }
@@ -23,7 +23,7 @@ pub trait BitMasksExtension : NumberIntegerUnsigned
     fn mask_any_one    (&self, mask : Self) -> bool { (*self & mask).is_non_zero() }
     fn mask_any_zero   (&self, mask : Self) -> bool { !self.mask_any_one(mask) }
 }
-impl<T> BitMasksExtension for T where T : NumberIntegerUnsigned { }
+impl<T> BitMasksExtension for T where T: NumberIntegerUnsigned { }
 
 
 /*
@@ -55,15 +55,15 @@ pub trait BitFlagsExtension<F> : Sized + From<F>
     fn have_flag       (self, bit_idx : F) -> bool;
 }
 
- 
-impl<T, F> BitFlagsExtension<F> for T where T : IntegerUnsigned, T : From<F> 
+
+impl<T, F> BitFlagsExtension<F> for T where T: IntegerUnsigned, T : From<F>
 {
-    fn with_flag       (self, bit_idx : F, set : bool) -> Self { self.masked(Self::ONE << bit_idx.into(),set) } 
+    fn with_flag       (self, bit_idx : F, set : bool) -> Self { self.masked(Self::ONE << bit_idx.into(),set) }
     fn flagged         (self, bit_idx : F) -> Self { self.masked_set_one(Self::ONE << bit_idx.into()) }
     fn removed_flag    (self, bit_idx : F) -> Self { self.masked_set_zero(Self::ONE << bit_idx.into()) }
     fn toggled_flag    (self, bit_idx : F) -> Self { self.masked_toggle(Self::ONE << bit_idx.into()) }
 
-    fn set_flag        (&mut self, bit_idx : F, set : bool) -> &mut Self { self.mask(Self::ONE << bit_idx.into(),set); self } 
+    fn set_flag        (&mut self, bit_idx : F, set : bool) -> &mut Self { self.mask(Self::ONE << bit_idx.into(),set); self }
     fn flag            (&mut self, bit_idx : F) -> &mut Self { self.mask_set_one(Self::ONE << bit_idx.into()); self }
     fn remove_flag     (&mut self, bit_idx : F) -> &mut Self { self.mask_set_zero(Self::ONE << bit_idx.into()); self }
     fn toggle_flag     (&mut self, bit_idx : F) -> &mut Self { self.mask_toggle(Self::ONE << bit_idx.into()); self }
@@ -72,7 +72,7 @@ impl<T, F> BitFlagsExtension<F> for T where T : IntegerUnsigned, T : From<F>
 */
 
 pub trait BitFlagsIntegerUnsigned : NumberIntegerUnsigned + fmt::Binary {}
-impl<T> BitFlagsIntegerUnsigned for T where T : NumberIntegerUnsigned + fmt::Binary {}
+impl<T> BitFlagsIntegerUnsigned for T where T: NumberIntegerUnsigned + fmt::Binary {}
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy
@@ -84,7 +84,7 @@ pub struct BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxVal
 #[cfg(feature = "serde")]
 impl<F,U> Serialize for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F> + Serialize, F : MaxValue + Copy {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
-    { 
+    {
         self.flags.serialize(serializer)
     }
 }
@@ -103,13 +103,13 @@ impl<'de,F,U> Deserialize<'de> for BitFlags<F,U> where U : BitFlagsIntegerUnsign
 }
 
 
-impl<F,U> Debug for BitFlags<F,U> 
-where 
-    U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy, 
+impl<F,U> Debug for BitFlags<F,U>
+where
+    U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy,
     F : TryFrom<U> + Debug,
     RangeInclusive<U>: Iterator<Item = U>,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> DResult 
+    fn fmt(&self, f: &mut Formatter<'_>) -> DResult
     {
         let mut it = self.into_iter().peekable();
         write!(f, "[")?;
@@ -136,9 +136,9 @@ impl<F,U> Zero for BitFlags<F,U>  where U : BitFlagsIntegerUnsigned + From<F>, F
 impl<F,U> BitFlags<F,U>  where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy
 {
     pub const unsafe fn from_flags_unchecked(flags : U) -> Self { Self { flags, phantom: PhantomData }}
-    
+
     /// Return None if the flags contains unknow toggled bit (greater than `F::MAX`)
-    pub fn try_from_flags(flags : U) -> Option<Self> 
+    pub fn try_from_flags(flags : U) -> Option<Self>
     {
         let s = Self::from_flags(flags);
         if s.flags == flags { Some(s) } else { None }
@@ -183,9 +183,9 @@ impl<F,U> BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValu
     pub fn have_all(&self, flags : &[F]) -> bool { flags.iter().all(|f| self.have(*f)) }
 }
 
-impl<F,U> IntoIterator for BitFlags<F,U> 
-    where 
-    U : BitFlagsIntegerUnsigned + From<F>, 
+impl<F,U> IntoIterator for BitFlags<F,U>
+    where
+    U : BitFlagsIntegerUnsigned + From<F>,
     F : MaxValue + Copy,
     F : TryFrom<U>, RangeInclusive<U>: Iterator<Item = U>
 {
@@ -196,10 +196,10 @@ impl<F,U> IntoIterator for BitFlags<F,U>
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BitFlagsIntoIter<F,U> 
-    where 
-    U : BitFlagsIntegerUnsigned + From<F>, 
-    F : MaxValue + Copy + TryFrom<U>, 
+pub struct BitFlagsIntoIter<F,U>
+    where
+    U : BitFlagsIntegerUnsigned + From<F>,
+    F : MaxValue + Copy + TryFrom<U>,
     RangeInclusive<U>: Iterator<Item = U>
 {
     flags : U,
@@ -207,9 +207,9 @@ pub struct BitFlagsIntoIter<F,U>
     phantom : PhantomData<F>,
 }
 impl<F,U> BitFlagsIntoIter<F,U>
-    where 
-    U : BitFlagsIntegerUnsigned + From<F>, 
-    F : MaxValue + Copy + TryFrom<U>, 
+    where
+    U : BitFlagsIntegerUnsigned + From<F>,
+    F : MaxValue + Copy + TryFrom<U>,
     RangeInclusive<U>: Iterator<Item = U>
 {
     pub fn new_start_at(bitflag : BitFlags<F,U>, idx : U) -> Self { Self { flag_offset: idx, flags : bitflag.flags, phantom : PhantomData }}
@@ -217,13 +217,13 @@ impl<F,U> BitFlagsIntoIter<F,U>
 }
 
 impl<F,U> Iterator for BitFlagsIntoIter<F,U>
-    where 
-    U : BitFlagsIntegerUnsigned + From<F>, 
-    F : MaxValue + Copy + TryFrom<U>, 
+    where
+    U : BitFlagsIntegerUnsigned + From<F>,
+    F : MaxValue + Copy + TryFrom<U>,
     RangeInclusive<U>: Iterator<Item = U>
 {
     type Item=F;
-    fn next(&mut self) -> Option<Self::Item> 
+    fn next(&mut self) -> Option<Self::Item>
     {
         while self.flags.is_non_zero()
         {
@@ -232,8 +232,8 @@ impl<F,U> Iterator for BitFlagsIntoIter<F,U>
 
             self.flags >>= U::ONE;
             self.flag_offset += U::ONE;
-            
-            if f 
+
+            if f
             {
                 if let Ok(v) = F::try_from(flag_idx)
                 {
@@ -252,15 +252,15 @@ impl<F,U> Iterator for BitFlagsIntoIter<F,U>
 }
 
 impl<F,U> std::iter::FusedIterator for BitFlagsIntoIter<F,U>
-    where 
-    U : BitFlagsIntegerUnsigned + From<F>, 
-    F : MaxValue + Copy + TryFrom<U>, 
+    where
+    U : BitFlagsIntegerUnsigned + From<F>,
+    F : MaxValue + Copy + TryFrom<U>,
     RangeInclusive<U>: Iterator<Item = U> {}
 
-impl<F,U> std::iter::ExactSizeIterator for BitFlagsIntoIter<F,U> 
-    where 
-    U : BitFlagsIntegerUnsigned + From<F>, 
-    F : MaxValue + Copy + TryFrom<U>, 
+impl<F,U> std::iter::ExactSizeIterator for BitFlagsIntoIter<F,U>
+    where
+    U : BitFlagsIntegerUnsigned + From<F>,
+    F : MaxValue + Copy + TryFrom<U>,
     RangeInclusive<U>: Iterator<Item = U>
 {
     fn len(&self) -> usize
@@ -285,7 +285,7 @@ impl<F,U> BitXorAssign<Self> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned
 impl<F,U> BitXor<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { type Output=Self; fn bitxor(self, rhs: F) -> Self::Output { self.bitxor(Self::from(rhs)) } }
 impl<F,U> BitXorAssign<F> for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy { fn bitxor_assign(&mut self, rhs: F) { self.bitxor_assign(Self::from(rhs)); } }
 
-impl<F,U> Not for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy 
+impl<F,U> Not for BitFlags<F,U> where U : BitFlagsIntegerUnsigned + From<F>, F : MaxValue + Copy
 {
     type Output=Self;
     fn not(self) -> Self::Output  { Self::from_flags(!self.flags) }
@@ -338,9 +338,9 @@ mod big_flag_ex
     }
 
     #[test]
-    fn old_version() 
+    fn old_version()
     {
-        /* 
+        /*
         let mut t = Team::ZERO.flagged(TeamFlag::Blue).flagged(TeamFlag::Red);
 
         assert!(t.have_flag(TeamFlag::Blue));
@@ -362,9 +362,9 @@ mod big_flag_ex
     }
 
 
-    
+
     #[test]
-    fn new_version() 
+    fn new_version()
     {
         let mut t1 = Team::ZERO.added(TeamFlag::Blue).added(TeamFlag::Red);
 
@@ -378,7 +378,7 @@ mod big_flag_ex
 
 
     #[test]
-    fn new_version_some_op() 
+    fn new_version_some_op()
     {
         let mut t1 = Team::ZERO | TeamFlag::Blue | TeamFlag::Red;
 
@@ -395,7 +395,7 @@ mod big_flag_ex
 
 
     #[test]
-    fn rep() 
+    fn rep()
     {
         let t1 = Team::ZERO | TeamFlag::Blue | TeamFlag::Red;
 
@@ -407,7 +407,7 @@ mod big_flag_ex
 
 
     #[test]
-    fn iteration() 
+    fn iteration()
     {
         let mut t1 = Team::new(); // same as Team::ZERO;
         let blue_and_yellow = [TeamFlag::Blue, TeamFlag::Yellow];

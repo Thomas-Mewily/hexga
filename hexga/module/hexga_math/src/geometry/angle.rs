@@ -32,7 +32,7 @@ new_unit!(
 /// See [`AngleOf`] to use your own precision.
 pub type Angle = AngleOf<float>;
 
-pub trait ToAngle<T> : ToAngleComposite<Output = AngleOf<T>> where T : CastIntoAnyFloat {}
+pub trait ToAngle<T> : ToAngleComposite<Output = AngleOf<T>> where T: CastIntoAnyFloat {}
 impl<S,T> ToAngle<T> for S where S : ToAngleComposite<Output = AngleOf<T>>, T : CastIntoAnyFloat {}
 
 pub trait ToAngleComposite
@@ -44,7 +44,7 @@ pub trait ToAngleComposite
 }
 impl_composite_output_with_methods!(ToAngleComposite, degree, radian, turn);
 
-impl<T> ToAngleComposite for T where T : ToFloat<Output = float>
+impl<T> ToAngleComposite for T where T: ToFloat<Output = float>
 {
     type Output = Angle;
     fn degree(self) -> Angle { Angle::from_degree(self.to_float()) }
@@ -152,8 +152,8 @@ impl<T:Float> AngleOf<T>
     #[inline(always)] pub fn tanh(self) -> T { self.0.tanh() }
 
     /// Return a normalized (length = 1) vector with the same angle
-    #[inline(always)] pub fn to_vec2_normalized(self) -> Vec2 where T : Into<float> { unsafe { Angle::from_inner_value(self.0.into()).to_vector2_normalized() } }
-    #[inline(always)] pub fn to_vec2(self, length : T) -> Vec2 where T : Into<float> { unsafe { Angle::from_inner_value(self.0.into()).to_vector2(length.into()) } }
+    #[inline(always)] pub fn to_vec2_normalized(self) -> Vec2 where T: Into<float> { unsafe { Angle::from_inner_value(self.0.into()).to_vector2_normalized() } }
+    #[inline(always)] pub fn to_vec2(self, length : T) -> Vec2 where T: Into<float> { unsafe { Angle::from_inner_value(self.0.into()).to_vector2(length.into()) } }
 
     /// Return a normalized (length = 1) vector with the same angle
     #[inline(always)] pub fn to_vector2_normalized(self) -> Vector2<T> { self.to_vector2(T::ONE) }

@@ -31,7 +31,7 @@ impl<T, const N : usize> Vector<T,N>
 {
     pub fn from_fn<F>(f : F) -> Self where F : FnMut(usize) -> T { Self::from_array(std::array::from_fn(f)) }
     pub const fn from_array(array : [T; N]) -> Self { Self { array }}
-    pub fn splat(val : T) -> Self where T : Clone { Self::from_fn(|_| val.clone()) }
+    pub fn splat(val : T) -> Self where T: Clone { Self::from_fn(|_| val.clone()) }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> { self.array.iter() }
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> { self.array.iter_mut() }
@@ -59,14 +59,14 @@ impl<T,const N : usize> Vector<T,N>
     /// Will always be >= 0.
     ///
     /// If any component is negative, return 0
-    pub fn area(self) -> T where T : Number
+    pub fn area(self) -> T where T: Number
     {
         self.iter().fold(T::ONE,|a, b| a * (*b).max_partial(T::ZERO))
     }
     /// Will always be >= 0.
     ///
     /// If any component is negative, return 0
-    pub fn area_usize(self) -> usize where T : Integer
+    pub fn area_usize(self) -> usize where T: Integer
     {
         if T::PRIMITIVE_NUMBER_TYPE.is_integer_unsigned()
         {
@@ -79,36 +79,36 @@ impl<T,const N : usize> Vector<T,N>
 
     /// Multiply each component
     /// The result can be negative
-    pub unsafe fn area_signed(self) -> T where T : Number { self.into_iter().product() }
+    pub unsafe fn area_signed(self) -> T where T: Number { self.into_iter().product() }
 
     /// True is area() > 0
-    pub fn have_area(self) -> bool where T : Number { self.area().is_non_zero() }
+    pub fn have_area(self) -> bool where T: Number { self.area().is_non_zero() }
     /// True is area_usize() > 0
-    pub fn have_area_usize(self) -> bool where T : Integer { self.area_usize().is_non_zero() }
+    pub fn have_area_usize(self) -> bool where T: Integer { self.area_usize().is_non_zero() }
 
-    pub fn all_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_zero()) }
-    pub fn all_non_zero(self) -> bool where T : Zero + PartialEq { self.all(|v| v.is_non_zero()) }
+    pub fn all_zero(self) -> bool where T: Zero + PartialEq { self.all(|v| v.is_zero()) }
+    pub fn all_non_zero(self) -> bool where T: Zero + PartialEq { self.all(|v| v.is_non_zero()) }
 
-    pub fn any_zero(self) -> bool where T : Zero + PartialEq { self.any(|v| v.is_zero()) }
-    pub fn any_non_zero(self) -> bool where T : Zero + PartialEq { self.any(|v| v.is_non_zero()) }
+    pub fn any_zero(self) -> bool where T: Zero + PartialEq { self.any(|v| v.is_zero()) }
+    pub fn any_non_zero(self) -> bool where T: Zero + PartialEq { self.any(|v| v.is_non_zero()) }
 
-    pub fn all_positive_or_zero(self) -> bool where T : PositiveOrNegative { self.all(|v| v.is_positive_or_zero()) }
-    pub fn any_positive_or_zero(self) -> bool where T : PositiveOrNegative { self.any(|v| v.is_positive_or_zero()) }
+    pub fn all_positive_or_zero(self) -> bool where T: PositiveOrNegative { self.all(|v| v.is_positive_or_zero()) }
+    pub fn any_positive_or_zero(self) -> bool where T: PositiveOrNegative { self.any(|v| v.is_positive_or_zero()) }
 
-    pub fn all_strictly_positive(self) -> bool where T : PositiveOrNegative { self.all(|v| v.is_strictly_positive()) }
-    pub fn any_strictly_negative(self) -> bool where T : PositiveOrNegative { self.any(|v| v.is_strictly_negative()) }
+    pub fn all_strictly_positive(self) -> bool where T: PositiveOrNegative { self.all(|v| v.is_strictly_positive()) }
+    pub fn any_strictly_negative(self) -> bool where T: PositiveOrNegative { self.any(|v| v.is_strictly_negative()) }
 
     // Index :
     #[inline(always)]
-    pub fn is_inside(self, size : Self) -> bool where T : Number
+    pub fn is_inside(self, size : Self) -> bool where T: Number
     {
         self.all_with(&size, |a, m| *a >= T::ZERO && a < m)
     }
     #[inline(always)]
-    pub fn is_outside(self, size : Self) -> bool where T : Number { !self.is_inside(size) }
+    pub fn is_outside(self, size : Self) -> bool where T: Number { !self.is_inside(size) }
 
     #[inline(always)]
-    pub fn is_inside_rect(self, area : Rectangle<T,N>) -> bool where T : Number { area.is_inside(self) }
+    pub fn is_inside_rect(self, area : Rectangle<T,N>) -> bool where T: Number { area.is_inside(self) }
 
 
     /// `x + y + z ...`
@@ -117,15 +117,15 @@ impl<T,const N : usize> Vector<T,N>
     /// use hexga_math::prelude::*;
     /// assert_eq!(point2(3,4).sum_axis(), 7);
     /// ```
-    pub fn sum_axis(self) -> T where T : NumberArithmetic { self.into_iter().sum() }
+    pub fn sum_axis(self) -> T where T: NumberArithmetic { self.into_iter().sum() }
 
     /// [Manhattan distance](https://fr.wikipedia.org/wiki/Distance_de_Manhattan)
-    pub fn length_manhattan(self) -> T where T : NumberArithmetic, Self : Abs<Output=Self> + Copy { self.abs().sum_axis() }
-    pub fn length_squared(self) -> T where T : NumberArithmetic { self.into_iter().map(|v| v * v).sum() }
-    pub fn have_length(self) -> bool where T : Zero + PartialEq { self.into_iter().any(|c| c.is_non_zero()) }
+    pub fn length_manhattan(self) -> T where T: NumberArithmetic, Self : Abs<Output=Self> + Copy { self.abs().sum_axis() }
+    pub fn length_squared(self) -> T where T: NumberArithmetic { self.into_iter().map(|v| v * v).sum() }
+    pub fn have_length(self) -> bool where T: Zero + PartialEq { self.into_iter().any(|c| c.is_non_zero()) }
 
     /// The dot product : `x1 * x2 + y1 * y2 + z1 * z2 + ...`
-    pub fn dot(self, other : Self) -> T where T : NumberArithmetic
+    pub fn dot(self, other : Self) -> T where T: NumberArithmetic
     {
         self.array.into_iter().zip(other.array.into_iter()).fold(T::ZERO, |acc,(a, b)| acc + a * b)
     }
@@ -141,7 +141,7 @@ impl<T,const N : usize> Vector<T,N>
 
 /*
 pub trait IntegerIndex : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
-impl<T> IntegerIndex for T where T : Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
+impl<T> IntegerIndex for T where T: Integer + CastInto<isize> + CastFrom<isize> + CastInto<usize> + CastFrom<usize> + Debug {}
 */
 
 impl<Idx, const N : usize> Vector<Idx, N>
@@ -265,7 +265,7 @@ impl<T, const N : usize> Vector<T,N> where Self : NumberArithmetic, T : Float
 
 
 
-    pub fn vector_to_limited_by_speed(self, target : Self, speed : T) -> Self where T : PartialOrd
+    pub fn vector_to_limited_by_speed(self, target : Self, speed : T) -> Self where T: PartialOrd
     {
         let dif= self.vector_to(target);
         if dif.is_zero() { return Self::ZERO; };
@@ -275,7 +275,7 @@ impl<T, const N : usize> Vector<T,N> where Self : NumberArithmetic, T : Float
     }
 
     /// return a bool to know if the point reached the destination
-    pub fn move_to(&mut self, target : Self, speed : T) -> bool where T : PartialOrd, Self : AddAssign<Self>
+    pub fn move_to(&mut self, target : Self, speed : T) -> bool where T: PartialOrd, Self : AddAssign<Self>
     {
         if self.distance_to(target) <= speed
         {

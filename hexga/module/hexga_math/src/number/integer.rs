@@ -1,17 +1,17 @@
 use crate::*;
 
 pub trait Integer             : NumberInteger + Abs + Primitive {}
-impl<T> Integer for T where T : NumberInteger + Abs + Primitive {}
+impl<T> Integer for T where T: NumberInteger + Abs + Primitive {}
 
 pub trait IntegerUnsigned             : NumberIntegerUnsigned + Primitive {}
-impl<T> IntegerUnsigned for T where T : IntegerUnsigned + Primitive {}
+impl<T> IntegerUnsigned for T where T: IntegerUnsigned + Primitive {}
 
 pub trait IntegerSigned             : NumberIntegerSigned + Primitive {}
-impl<T> IntegerSigned for T where T : IntegerSigned + Primitive {}
+impl<T> IntegerSigned for T where T: IntegerSigned + Primitive {}
 
 /// iX uX fX bool
 pub trait Primitive : RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive + Default + PartialEq + PartialOrd + Copy + Debug {}
-impl<T> Primitive for T where T : RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive + Default + PartialEq + PartialOrd + Copy + Debug {}
+impl<T> Primitive for T where T: RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive + Default + PartialEq + PartialOrd + Copy + Debug {}
 
 /// For type that have an unsigned equivalent
 pub trait ToUnsigned

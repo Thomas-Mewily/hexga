@@ -3,6 +3,13 @@
 use std::{fmt::Debug, marker::PhantomData, ops::Deref};
 
 use hexga_math::prelude::*;
+use hexga_graphics::prelude::*;
+
+#[cfg(feature = "serde")]
+use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+
+#[cfg(feature = "hexga_io")]
+use hexga_io::{IoSave, IoLoad, Save, Load};
 
 pub mod buffer;
 use buffer::*;
@@ -50,7 +57,7 @@ pub mod prelude
 
 /// Modules/Items without the prelude
 #[doc(hidden)]
-pub mod modules 
+pub mod modules
 {
     pub use super::{buffer,render_pass,vertex,shader,pipeline,texture,bindings,blend,stencil,gpu};
     pub use super::{RenderBackend, UntypedSlice};

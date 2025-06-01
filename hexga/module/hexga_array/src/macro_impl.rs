@@ -7,13 +7,13 @@ macro_rules! impl_fixed_array_like_op
             (($trait_name: tt, $fn_name: tt)) =>
             {
                 impl<T> ::std::ops::$trait_name<Self> for $name<T>
-                    where T : $trait_name<T>
+                    where T: $trait_name<T>
                 {
                     type Output=$name<<T as ::std::ops::$trait_name<T>>::Output>;
                     fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
                 }
 
-                impl<T> ::std::ops::$trait_name<T> for $name<T> where T : $trait_name<T> + Copy
+                impl<T> ::std::ops::$trait_name<T> for $name<T> where T: $trait_name<T> + Copy
                 {
                     type Output=$name<<T as ::std::ops::$trait_name<T>>::Output>;
                     fn $fn_name(self, rhs: T) -> Self::Output { <[T;$dim]>::from(self).map(|v| v.$fn_name(rhs)).into() }
@@ -24,7 +24,7 @@ macro_rules! impl_fixed_array_like_op
         $crate::map_on::map_on_operator_assign!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T> ::std::ops::$trait_name<Self> for $name<T> where T : $trait_name
+                impl<T> ::std::ops::$trait_name<Self> for $name<T> where T: $trait_name
                 {
                     fn $fn_name(&mut self, rhs: Self)
                     {
@@ -33,7 +33,7 @@ macro_rules! impl_fixed_array_like_op
                     }
                 }
 
-                impl<T> ::std::ops::$trait_name<&Self> for $name<T> where T : $trait_name + Copy
+                impl<T> ::std::ops::$trait_name<&Self> for $name<T> where T: $trait_name + Copy
                 {
                     fn $fn_name(&mut self, rhs: &Self) { $trait_name::$fn_name(self,*rhs) }
                 }
@@ -42,13 +42,13 @@ macro_rules! impl_fixed_array_like_op
 
         // ================= Unary =========
 
-        impl<T> ::std::ops::Not for $name<T> where T : Not
+        impl<T> ::std::ops::Not for $name<T> where T: ::std::ops::Not
         {
             type Output = $name<T::Output>;
             fn not(self) -> Self::Output { self.map(|v| v.not()) }
         }
 
-        impl<T> ::std::ops::Neg for $name<T> where T : Neg
+        impl<T> ::std::ops::Neg for $name<T> where T: ::std::ops::Neg
         {
             type Output = $name<T::Output>;
             fn neg(self) -> Self::Output { self.map(|v| v.neg()) }
@@ -56,14 +56,14 @@ macro_rules! impl_fixed_array_like_op
 
         // ================= Iter =========
 
-        impl<T> ::std::iter::Sum for $name<T> where Self : Zero + Add<Self,Output = Self>
+        impl<T> ::std::iter::Sum for $name<T> where Self : Zero + ::std::ops::Add<Self,Output = Self>
         {
             fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
                 iter.fold(Self::ZERO, Self::add)
             }
         }
 
-        impl<T> ::std::iter::Product for $name<T> where Self : One + Mul<Self,Output = Self>
+        impl<T> ::std::iter::Product for $name<T> where Self : One +::std::ops:: Mul<Self,Output = Self>
         {
             fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
                 iter.fold(Self::ONE, Self::mul)
@@ -89,7 +89,7 @@ macro_rules! impl_generic_array_like_display
 {
     ($name: ident, $trait_name :ident) =>
     {
-        impl<T, const N : usize> std::fmt::$trait_name  for $name<T,N> where T : std::fmt::$trait_name
+        impl<T, const N : usize> std::fmt::$trait_name  for $name<T,N> where T: std::fmt::$trait_name
         {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
             {
@@ -114,7 +114,7 @@ macro_rules! impl_fixed_array_like_display
 {
     ($name: ident, $trait_name :ident) =>
     {
-        impl<T> std::fmt::$trait_name  for $name<T> where T : std::fmt::$trait_name
+        impl<T> std::fmt::$trait_name  for $name<T> where T: std::fmt::$trait_name
         {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
             {
@@ -145,13 +145,13 @@ macro_rules! impl_generic_array_like_op
             (($trait_name: tt, $fn_name: tt)) =>
             {
                 impl<T, const N : usize> $trait_name<Self> for $name<T,N>
-                    where T : $trait_name<T>
+                    where T: $trait_name<T>
                 {
                     type Output=$name<<T as ::std::ops::$trait_name<T>>::Output,N>;
                     fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
                 }
 
-                impl<T, const N : usize> $trait_name<T> for $name<T,N> where T : $trait_name<T> + Copy
+                impl<T, const N : usize> $trait_name<T> for $name<T,N> where T: $trait_name<T> + Copy
                 {
                     type Output=$name<<T as ::std::ops::$trait_name<T>>::Output,N>;
                     fn $fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$fn_name(rhs)).into() }
@@ -162,7 +162,7 @@ macro_rules! impl_generic_array_like_op
         $crate::map_on::map_on_operator_assign!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T, const N : usize> $trait_name<Self> for $name<T,N> where T : $trait_name
+                impl<T, const N : usize> $trait_name<Self> for $name<T,N> where T: $trait_name
                 {
                     fn $fn_name(&mut self, rhs: Self)
                     {
@@ -171,7 +171,7 @@ macro_rules! impl_generic_array_like_op
                     }
                 }
 
-                impl<T, const N : usize> $trait_name<&Self> for $name<T,N> where T : $trait_name + Copy
+                impl<T, const N : usize> $trait_name<&Self> for $name<T,N> where T: $trait_name + Copy
                 {
                     fn $fn_name(&mut self, rhs: &Self) { $trait_name::$fn_name(self,*rhs) }
                 }
@@ -180,13 +180,13 @@ macro_rules! impl_generic_array_like_op
 
         // ================= Unary =========
 
-        impl<T, const N : usize> ::std::ops::Not for $name<T,N> where T : Not
+        impl<T, const N : usize> ::std::ops::Not for $name<T,N> where T: ::std::ops::Not
         {
             type Output = $name<T::Output,N>;
             fn not(self) -> Self::Output { self.map(|v| v.not()) }
         }
 
-        impl<T, const N : usize> ::std::ops::Neg for $name<T,N> where T : Neg
+        impl<T, const N : usize> ::std::ops::Neg for $name<T,N> where T: ::std::ops::Neg
         {
             type Output = $name<T::Output,N>;
             fn neg(self) -> Self::Output { self.map(|v| v.neg()) }
@@ -227,34 +227,34 @@ macro_rules! impl_fixed_array_like
 {
     ($name: ident, $dim : expr) =>
     {
-        impl<T> ::std::marker::Copy  for $name<T> where T : Copy {}
-        impl<T> ::std::clone::Clone for $name<T> where T : Clone
+        impl<T> ::std::marker::Copy  for $name<T> where T: Copy {}
+        impl<T> ::std::clone::Clone for $name<T> where T: Clone
         {
             fn clone(&self) -> Self { self.array().clone().into() }
         }
 
-        impl<T> ::std::cmp::PartialEq for $name<T> where T : PartialEq
+        impl<T> ::std::cmp::PartialEq for $name<T> where T: PartialEq
         {
             fn eq(&self, rhs : &Self) -> bool { self.array() == rhs.array() }
         }
-        impl<T> ::std::cmp::Eq for $name<T> where T : Eq {}
+        impl<T> ::std::cmp::Eq for $name<T> where T: Eq {}
 
-        impl<T> ::std::cmp::PartialOrd for $name<T> where T : PartialOrd
+        impl<T> ::std::cmp::PartialOrd for $name<T> where T: PartialOrd
         {
             fn partial_cmp(&self, rhs : &Self) -> ::std::option::Option<::std::cmp::Ordering> { ::std::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
         }
-        impl<T> ::std::cmp::Ord for $name<T> where T : Ord
+        impl<T> ::std::cmp::Ord for $name<T> where T: Ord
         {
             fn cmp(&self, rhs : &Self) -> ::std::cmp::Ordering { ::std::cmp::Ord::cmp(self.array(), rhs.array()) }
         }
 
-        impl<T> ::std::hash::Hash for $name<T> where T : Hash
+        impl<T> ::std::hash::Hash for $name<T> where T: ::std::hash::Hash
         {
-            fn hash<H>(&self, state: &mut H) where H: Hasher { self.as_ref().hash(state); }
+            fn hash<H>(&self, state: &mut H) where H: ::std::hash::Hasher { self.as_ref().hash(state); }
         }
 
         // Grid should be indexable by usize index, grid2[10] mean at index 10, not grid2[10.splat2()]
-        //impl<T> ::std::convert::From<T> for $name<T> where T : Copy { fn from(value: T) -> Self { Self::from([value; $dim]) } }
+        //impl<T> ::std::convert::From<T> for $name<T> where T: Copy { fn from(value: T) -> Self { Self::from([value; $dim]) } }
 
         impl<T> ::std::convert::From<[T; $dim]> for $name<T> { fn from(value: [T; $dim]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
         impl<T> ::std::convert::From<$name<T>> for [T; $dim] { fn from(value: $name<T>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
@@ -363,7 +363,7 @@ macro_rules! impl_fixed_array_like
                 where
                     D: Deserializer<'de>,
                 {
-                    struct ArrVisitor<T>(PhantomData<T>);
+                    struct ArrVisitor<T>(::std::marker::PhantomData<T>);
 
                     impl<'de, T> Visitor<'de> for ArrVisitor<T>
                     where
@@ -412,16 +412,16 @@ macro_rules! impl_fixed_array_like
                         }
                     }
 
-                    deserializer.deserialize_tuple($dim, ArrVisitor::<T>(PhantomData)).map(|arr| $name::<T>::from(arr.0))
+                    deserializer.deserialize_tuple($dim, ArrVisitor::<T>(::std::marker::PhantomData)).map(|arr| $name::<T>::from(arr.0))
                 }
             }
         };
 
         #[cfg(feature = "hexga_io")]
-        impl<T> ::hexga_io::IoSave for $name<T> where T : ::hexga_io::IoSave {}
+        impl<T> ::hexga_io::IoSave for $name<T> where T: ::hexga_io::IoSave {}
 
         #[cfg(feature = "hexga_io")]
-        impl<T> ::hexga_io::IoLoad for $name<T> where T : ::hexga_io::IoLoad {}
+        impl<T> ::hexga_io::IoLoad for $name<T> where T: ::hexga_io::IoLoad {}
     };
 }
 
@@ -444,33 +444,33 @@ macro_rules! impl_generic_array_like
 {
     ($name: ident) =>
     {
-        impl<T, const N : usize> ::std::marker::Copy  for $name<T,N> where T : Copy  {}
-        impl<T, const N : usize> ::std::clone::Clone for $name<T,N> where T : Clone
+        impl<T, const N : usize> ::std::marker::Copy  for $name<T,N> where T: Copy  {}
+        impl<T, const N : usize> ::std::clone::Clone for $name<T,N> where T: Clone
         {
             fn clone(&self) -> Self { self.array().clone().into() }
         }
 
-        impl<T, const N : usize> ::std::cmp::PartialEq for $name<T,N> where T : PartialEq
+        impl<T, const N : usize> ::std::cmp::PartialEq for $name<T,N> where T: PartialEq
         {
             fn eq(&self, rhs : &Self) -> bool { self.array() == rhs.array() }
         }
-        impl<T, const N : usize> ::std::cmp::Eq for $name<T,N> where T : Eq {}
+        impl<T, const N : usize> ::std::cmp::Eq for $name<T,N> where T: Eq {}
 
-        impl<T, const N : usize> ::std::cmp::PartialOrd for $name<T,N> where T : PartialOrd
+        impl<T, const N : usize> ::std::cmp::PartialOrd for $name<T,N> where T: PartialOrd
         {
             fn partial_cmp(&self, rhs : &Self) -> ::std::option::Option<::std::cmp::Ordering> { ::std::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
         }
-        impl<T, const N : usize> ::std::cmp::Ord for $name<T,N> where T : Ord
+        impl<T, const N : usize> ::std::cmp::Ord for $name<T,N> where T: Ord
         {
             fn cmp(&self, rhs : &Self) -> ::std::cmp::Ordering { ::std::cmp::Ord::cmp(self.array(), rhs.array()) }
         }
 
-        impl<T, const N : usize> ::std::hash::Hash for $name<T,N> where T : Hash
+        impl<T, const N : usize> ::std::hash::Hash for $name<T,N> where T: Hash
         {
             fn hash<H>(&self, state: &mut H) where H: Hasher { self.as_ref().hash(state); }
         }
 
-        //impl<T, const N : usize> ::std::convert::From<T> for $name<T,N> where T : Copy { fn from(value: T) -> Self { Self::from([value; N]) } }
+        //impl<T, const N : usize> ::std::convert::From<T> for $name<T,N> where T: Copy { fn from(value: T) -> Self { Self::from([value; N]) } }
 
         impl<T, const N : usize> ::std::convert::From<[T; N]> for $name<T,N> { fn from(value: [T; N]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
         impl<T, const N : usize> ::std::convert::From<$name<T,N>> for [T; N] { fn from(value: $name<T,N>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
@@ -560,7 +560,7 @@ macro_rules! impl_generic_array_like
         }
 
         #[cfg(feature = "serde")]
-        impl<T, const N : usize> ::serde::Serialize for $name<T,N> where T : ::serde::Serialize
+        impl<T, const N : usize> ::serde::Serialize for $name<T,N> where T: ::serde::Serialize
         {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: ::serde::Serializer,
             { self.as_array().serialize(serializer) }
@@ -579,7 +579,7 @@ macro_rules! impl_generic_array_like
                 where
                     D: Deserializer<'de>,
                 {
-                    struct ArrVisitor<T, const N: usize>(PhantomData<T>);
+                    struct ArrVisitor<T, const N: usize>(::std::marker::PhantomData<T>);
 
                     impl<'de, T, const N: usize> Visitor<'de> for ArrVisitor<T, N>
                     where
@@ -628,7 +628,7 @@ macro_rules! impl_generic_array_like
                         }
                     }
 
-                    deserializer.deserialize_tuple(N, ArrVisitor::<T, N>(PhantomData)).map(|arr| $name::<T, N>::from(arr.0))
+                    deserializer.deserialize_tuple(N, ArrVisitor::<T, N>(::std::marker::PhantomData)).map(|arr| $name::<T, N>::from(arr.0))
                 }
             }
         };

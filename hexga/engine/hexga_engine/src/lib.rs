@@ -7,6 +7,8 @@ use hexga::prelude::*;
 use hexga::ansi_color::AnsiColor;
 use std::marker::PhantomData;
 
+pub use hexga_graphics::prelude::*;
+
 pub use hexga;
 pub mod log;
 

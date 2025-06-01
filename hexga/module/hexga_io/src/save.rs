@@ -11,7 +11,7 @@ pub trait IoSaveFrom
     fn save_from_based_on_ref(&self) -> Option<&Self::From> { None }
 }
 
-impl<T> IoSave for T where T : IoSaveFrom + Serialize
+impl<T> IoSave for T where T: IoSaveFrom + Serialize
 {
     fn save_own_extensions() -> impl Iterator<Item = &'static str> { T::From::save_own_extensions() }
 

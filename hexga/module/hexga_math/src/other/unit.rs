@@ -6,14 +6,14 @@ macro_rules! impl_new_unit_or_number
 {
     ($name:ident) => {
 
-        impl<T> Sum for $name<T> where T : std::ops::Add<T,Output=T> + Zero
+        impl<T> Sum for $name<T> where T: std::ops::Add<T,Output=T> + Zero
         {
             fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
                 iter.fold(Self::ZERO, Self::add)
             }
         }
 
-        impl<T,T2> CastIntoComposite<T2> for $name<T> where T : CastIntoComposite<T2>
+        impl<T,T2> CastIntoComposite<T2> for $name<T> where T: CastIntoComposite<T2>
         {
             type Output=$name<T::Output>;
 
@@ -163,7 +163,7 @@ macro_rules! new_unit
         map_on_operator_binary_arithmetic_unit!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T> std::ops::$trait_name<Self> for $name<T> where T : std::ops::$trait_name<T,Output=T>
+                impl<T> std::ops::$trait_name<Self> for $name<T> where T: std::ops::$trait_name<T,Output=T>
                 {
                     type Output = Self;
                     fn $fn_name(self, rhs : Self) -> Self::Output { Self(self.0.$fn_name(rhs.0)) }
@@ -174,39 +174,39 @@ macro_rules! new_unit
         map_on_operator_assign_arithmetic_unit!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T> std::ops::$trait_name<Self> for $name<T> where T : std::ops::$trait_name<T>
+                impl<T> std::ops::$trait_name<Self> for $name<T> where T: std::ops::$trait_name<T>
                 {
                     fn $fn_name(&mut self, rhs : Self) { self.0.$fn_name(rhs.0); }
                 }
             }
         );
 
-        impl<T> std::ops::Mul<T> for $name<T> where T : std::ops::Mul<T,Output=T>
+        impl<T> std::ops::Mul<T> for $name<T> where T: std::ops::Mul<T,Output=T>
         {
             type Output = Self;
             fn mul(self, rhs : T) -> Self::Output { Self(self.0.mul(rhs)) }
         }
-        impl<T> std::ops::MulAssign<T> for $name<T> where T : std::ops::MulAssign<T>
+        impl<T> std::ops::MulAssign<T> for $name<T> where T: std::ops::MulAssign<T>
         {
             fn mul_assign(&mut self, rhs : T) { self.0.mul_assign(rhs); }
         }
 
-        impl<T> std::ops::Div<T> for $name<T> where T : std::ops::Div<T,Output=T>
+        impl<T> std::ops::Div<T> for $name<T> where T: std::ops::Div<T,Output=T>
         {
             type Output = Self;
             fn div(self, rhs : T) -> Self::Output { Self(self.0.div(rhs)) }
         }
-        impl<T> std::ops::DivAssign<T> for $name<T> where T : std::ops::DivAssign<T>
+        impl<T> std::ops::DivAssign<T> for $name<T> where T: std::ops::DivAssign<T>
         {
             fn div_assign(&mut self, rhs : T) { self.0.div_assign(rhs); }
         }
 
-        impl<T> std::ops::Rem<Self> for $name<T> where T : std::ops::Rem<T,Output=T>
+        impl<T> std::ops::Rem<Self> for $name<T> where T: std::ops::Rem<T,Output=T>
         {
             type Output = Self;
             fn rem(self, rhs : Self) -> Self::Output { Self(self.0.rem(rhs.0)) }
         }
-        impl<T> std::ops::RemAssign<Self> for $name<T> where T : std::ops::RemAssign<T>
+        impl<T> std::ops::RemAssign<Self> for $name<T> where T: std::ops::RemAssign<T>
         {
             fn rem_assign(&mut self, rhs : Self) { self.0.rem_assign(rhs.0); }
         }
@@ -215,7 +215,7 @@ macro_rules! new_unit
         (
             (($trait_name: tt, $constant_name: tt)) =>
             {
-                impl<T> $trait_name for $name<T> where T : $trait_name { const $constant_name : Self = Self(T::$constant_name); }
+                impl<T> $trait_name for $name<T> where T: $trait_name { const $constant_name : Self = Self(T::$constant_name); }
             }
         );
 
@@ -223,7 +223,7 @@ macro_rules! new_unit
         (
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T> $trait_name for $name<T> where T : $trait_name<Output = T>
+                impl<T> $trait_name for $name<T> where T: $trait_name<Output = T>
                 {
                     type Output = $name<T>;
                     fn $fn_name(self) -> Self { Self(self.0.$fn_name()) }
@@ -247,7 +247,7 @@ macro_rules! new_number
         map_on_operator_binary!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T> std::ops::$trait_name<Self> for $name<T> where T : std::ops::$trait_name<T,Output=T>
+                impl<T> std::ops::$trait_name<Self> for $name<T> where T: std::ops::$trait_name<T,Output=T>
                 {
                     type Output = Self;
                     fn $fn_name(self, rhs : Self) -> Self::Output { Self(self.0.$fn_name(rhs.0)) }
@@ -258,7 +258,7 @@ macro_rules! new_number
         map_on_operator_assign!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T> std::ops::$trait_name<Self> for $name<T> where T : std::ops::$trait_name<T>
+                impl<T> std::ops::$trait_name<Self> for $name<T> where T: std::ops::$trait_name<T>
                 {
                     fn $fn_name(&mut self, rhs : Self) { self.0.$fn_name(rhs.0); }
                 }
@@ -269,11 +269,11 @@ macro_rules! new_number
         (
             (($trait_name: tt, $constant_name: tt)) =>
             {
-                impl<T> $trait_name for $name<T> where T : $trait_name { const $constant_name : Self = Self(T::$constant_name); }
+                impl<T> $trait_name for $name<T> where T: $trait_name { const $constant_name : Self = Self(T::$constant_name); }
             }
         );
 
-        impl<T> Product for $name<T> where T : std::ops::Mul<T,Output=T> + One
+        impl<T> Product for $name<T> where T: std::ops::Mul<T,Output=T> + One
         {
             fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
                 iter.fold(Self::ONE, Self::mul)
@@ -284,7 +284,7 @@ macro_rules! new_number
         (
             (($trait_name: tt, $fn_name: tt)) =>
             {
-                impl<T> $trait_name for $name<T> where T : $trait_name<Output = T>
+                impl<T> $trait_name for $name<T> where T: $trait_name<Output = T>
                 {
                     type Output = $name<T>;
                     fn $fn_name(self) -> Self { Self(self.0.$fn_name()) }

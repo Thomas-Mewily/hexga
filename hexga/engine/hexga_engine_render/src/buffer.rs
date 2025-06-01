@@ -1,13 +1,16 @@
 use super::*;
 
-
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum BufferType
+pub enum BufferKind
 {
     VertexBuffer,
     IndexBuffer,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BufferUsage {
     Immutable,
@@ -20,6 +23,8 @@ pub enum BufferUsage {
 pub struct RawBufferID { pub index : usize }
 
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BufferLayout
 {
@@ -39,9 +44,11 @@ pub enum BufferSource<'a>
     Empty(BufferLayout),
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BufferData
 {
-    pub buf_type : BufferType,
-    pub usage    : BufferUsage,
+    pub kind  : BufferKind,
+    pub usage : BufferUsage,
 }

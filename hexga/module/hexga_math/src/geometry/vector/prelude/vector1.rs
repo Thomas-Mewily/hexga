@@ -39,7 +39,7 @@ pub type Coef1 = Vec1;
 pub type Point1 = Vector1<int>;
 pub const fn point1(x : int) -> Point1 { Point1::new(x) }
 
-impl<T> HaveX<T> for Vector1<T> 
+impl<T> HaveX<T> for Vector1<T>
 {
     fn iter_x<'a>(&'a self) -> impl Iterator<Item=&'a T> where T: 'a {
         self.array().as_slice()[0..=Self::X_INDEX].iter()
@@ -49,11 +49,11 @@ impl<T> HaveX<T> for Vector1<T>
         self.array_mut().as_mut_slice()[0..=Self::X_INDEX].iter_mut()
     }
 }
-impl<T> HaveXAndOne<T> for Vector1<T> where T : One + Zero { const X : Self = Vector1::new(T::ONE); }
-impl<T> HaveXAndMinusOne<T> for Vector1<T> where T : MinusOne + Zero { const MINUS_X : Self = Vector1::new(T::MINUS_ONE); }
+impl<T> HaveXAndOne<T> for Vector1<T> where T: One + Zero { const X : Self = Vector1::new(T::ONE); }
+impl<T> HaveXAndMinusOne<T> for Vector1<T> where T: MinusOne + Zero { const MINUS_X : Self = Vector1::new(T::MINUS_ONE); }
 
-impl<T> From<Vector2<T>> for Vector1<T> where T : Default { fn from(value: Vector2<T>) -> Self { value.to_vector1() } }
-impl<T> From<Vector3<T>> for Vector1<T> where T : Default { fn from(value: Vector3<T>) -> Self { value.to_vector1() } }
-impl<T> From<Vector4<T>> for Vector1<T> where T : Default { fn from(value: Vector4<T>) -> Self { value.to_vector1() } }
+impl<T> From<Vector2<T>> for Vector1<T> where T: Default { fn from(value: Vector2<T>) -> Self { value.to_vector1() } }
+impl<T> From<Vector3<T>> for Vector1<T> where T: Default { fn from(value: Vector3<T>) -> Self { value.to_vector1() } }
+impl<T> From<Vector4<T>> for Vector1<T> where T: Default { fn from(value: Vector4<T>) -> Self { value.to_vector1() } }
 
 pub type Vector1Iter<T> = VectorIter<Vector1<T>, 1>;

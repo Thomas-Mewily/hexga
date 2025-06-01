@@ -23,7 +23,7 @@ pub trait IGridViewMut<G, T, Idx, const N : usize> :
     }
     //fn fill_fn_par<F>(&mut self, f : F) -> Self where F : Fn(Vector::<Idx,N>) -> T + Sync, T : Send, Idx : Sync;
 
-    fn fill_uniform(&mut self, value : T) where T : Clone { self.for_each_mut(|(_,v)| { *v = value.clone(); }); }
+    fn fill_uniform(&mut self, value : T) where T: Clone { self.for_each_mut(|(_,v)| { *v = value.clone(); }); }
 
     fn update_from_or_panic<O,G2>(&mut self, other : &O)
             where

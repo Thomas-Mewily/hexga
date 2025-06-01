@@ -5,8 +5,8 @@ pub trait CollectExtension<T> : Sized + IntoIterator<Item = T>
     fn to_vec(self) -> Vec<T> { self.into_iter().collect() }
     fn to_linkedlist(self) -> LinkedList<T> { self.into_iter().collect() }
     fn to_vecdeque(self) -> VecDeque<T> { self.into_iter().collect() }
-    fn to_hashset(self) -> HashSet<T> where T : Eq + Hash { self.into_iter().collect() }
-    fn to_btreeset(self) -> BTreeSet<T> where T : Ord { self.into_iter().collect() }
+    fn to_hashset(self) -> HashSet<T> where T: Eq + Hash { self.into_iter().collect() }
+    fn to_btreeset(self) -> BTreeSet<T> where T: Ord { self.into_iter().collect() }
 }
 impl<I,T> CollectExtension<T> for I where I : IntoIterator<Item = T> {}
 

@@ -6,6 +6,8 @@ pub struct RawPipelineID { pub index : usize }
 
 
 /// Define front- and back-facing polygons.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FrontFaceOrder {
     Clockwise,
@@ -13,6 +15,8 @@ pub enum FrontFaceOrder {
 }
 
 /// Specify whether front- or back-facing polygons can be culled.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CullFace {
     Nothing,
@@ -35,6 +39,8 @@ pub enum Comparison {
 }
 */
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PipelineParam
 {
@@ -71,6 +77,8 @@ impl Default for PipelineParam
     }
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum PrimitiveType {
     Triangles,
@@ -87,6 +95,8 @@ pub struct PipelineData
     pub param : PipelineParam,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum DepthComparison {
     Never,

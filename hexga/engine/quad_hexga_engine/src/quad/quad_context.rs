@@ -18,7 +18,7 @@ impl RenderBackend for QuadContext
 {
     fn new_buffer   (&mut self, data: buffer::BufferData, source : buffer::BufferSource) -> buffer::RawBufferID
     {
-        self.render.new_buffer(data.buf_type.convert(), data.usage.convert(), source.convert()).convert()
+        self.render.new_buffer(data.kind.convert(), data.usage.convert(), source.convert()).convert()
     }
 
     fn buffer_update(&mut self, dest: buffer::RawBufferID, source: &buffer::BufferSource)
@@ -319,12 +319,12 @@ impl ContextWindow for QuadContext
 /*
 pub trait QuadRunner
 {
-    fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoop + 'static;
+    fn run<T>(self, state : impl 'static + FnOnce() -> T) where T: MainLoop + 'static;
 }
 
 impl QuadRunner for MultiMediaParam
 {
-    fn run<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoop + 'static
+    fn run<T>(self, state : impl 'static + FnOnce() -> T) where T: MainLoop + 'static
     {
         miniquad::start(self.clone().convert(), move ||
         {

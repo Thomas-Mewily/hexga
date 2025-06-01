@@ -10,7 +10,7 @@ pub trait IoLoadFrom : Sized
     type From : IoLoad;
     fn load_from_based_on(base : Self::From) -> IoResult<Self>;
 }
-impl<T> IoLoad for T where T : IoLoadFrom + for<'de> Deserialize<'de>
+impl<T> IoLoad for T where T: IoLoadFrom + for<'de> Deserialize<'de>
 {
     fn load_own_extensions() -> impl Iterator<Item = &'static str> { T::From::load_own_extensions() }
     const CAN_BE_LOADED_FROM_TEXT : bool = T::From::CAN_BE_LOADED_FROM_TEXT;

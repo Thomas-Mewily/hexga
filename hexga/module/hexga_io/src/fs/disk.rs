@@ -29,7 +29,7 @@ pub trait SaveToDisk : IoSave
         fs_disk.commit().to_save_error(path)
     }
 }
-impl<T> SaveToDisk for T where T : IoSave + ?Sized {}
+impl<T> SaveToDisk for T where T: IoSave + ?Sized {}
 
 pub trait LoadToDisk : IoLoad
 {
@@ -41,7 +41,7 @@ pub trait LoadToDisk : IoLoad
         Ok(s)
     }
 }
-impl<T> LoadToDisk for T where T : IoLoad + ?Sized {}
+impl<T> LoadToDisk for T where T: IoLoad + ?Sized {}
 
 /*
 impl IoFsDisk

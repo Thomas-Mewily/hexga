@@ -13,11 +13,11 @@ pub const fn rgb(red : float, green : float, blue : float) -> ColorRgba
     ColorRgba::rgb(red, green, blue)
 }
 
-pub const fn rgba_byte(red : u8, green : u8, blue : u8, alpha : u8) -> ColorRgbaByte
+pub const fn rgba_byte(red : u8, green : u8, blue : u8, alpha : u8) -> ColorRgbaU8
 {
-    ColorRgbaByte::rgba(red, green, blue, alpha)
+    ColorRgbaU8::rgba(red, green, blue, alpha)
 }
-pub const fn rgb_byte(red : u8, green : u8, blue : u8) -> ColorRgbaByte
+pub const fn rgb_byte(red : u8, green : u8, blue : u8) -> ColorRgbaU8
 {
-    ColorRgbaByte::rgb(red, green, blue)
+    ColorRgbaU8::rgb(red, green, blue)
 }

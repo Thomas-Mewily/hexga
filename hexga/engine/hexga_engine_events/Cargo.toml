@@ -12,7 +12,10 @@ description = "Events interface for the Hexga Engine"
 categories = []
 
 [features]
-default = ["serde", "int_are_32_bits", "float_are_32_bits"]
+default = [
+    "serde", "hexga_io",
+    "int_are_32_bits", "float_are_32_bits"
+]
 
 int_are_8_bits    = ["hexga_math/int_are_8_bits"]
 int_are_16_bits   = ["hexga_math/int_are_16_bits"]
@@ -24,11 +27,13 @@ float_are_32_bits   = ["hexga_math/float_are_32_bits"]
 float_are_64_bits   = ["hexga_math/float_are_64_bits"]
 float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga_math/serde"]
+serde = ["dep:serde", "dep:hexga_io", "hexga_math/serde"]
+hexga_io = ["dep:hexga_io", "serde"]
 
 [dependencies]
 hexga_core.workspace = true
 hexga_math.workspace = true
+hexga_io = { workspace = true, optional = true }
 
-serde = { version = "1.0.0", features = ["derive"], optional = true }
+serde = { version = "1.0.210", features = ["derive"], optional = true }
 

@@ -87,7 +87,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
             {
                 match C::COLOR_INSIDE
                 {
-                    ColorKind::RgbaU16 =>
+                    ColorKind::RgbaU8 =>
                     {
                         ::image::ImageEncoder::write_image(
                             ::image::codecs::png::PngEncoder::new(w),

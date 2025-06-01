@@ -194,16 +194,16 @@ impl Convert for MultiMediaParam
 
     fn convert(self) -> Self::Output {
         let Self { window_param, pen_param : _ } = self;
-        let WindowParam 
-        { 
-            title: window_title, 
+        let WindowParam
+        {
+            title: window_title,
             size,
             high_dpi,
-            fullscreen, 
-            sample_count, 
-            resizable, 
-            icon, 
-            platform 
+            fullscreen,
+            sample_count,
+            resizable,
+            icon,
+            platform
         } = window_param;
 
         miniquad::conf::Conf
@@ -225,7 +225,7 @@ impl Convert for window::Icon
 {
     type Output = miniquad::conf::Icon;
 
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         let Self { rgba_16x16, rgba_32x32, rgba_64x64 } = self;
         Self::Output { small: rgba_16x16, medium: rgba_32x32, big: rgba_64x64 }
@@ -250,7 +250,7 @@ impl Convert for window::CursorIcon
 {
     type Output =  miniquad::CursorIcon;
 
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -294,9 +294,9 @@ impl<'b> ConvertRef for buffer::BufferSource<'b>
         // I'm not sure about the alignement
         match &self
         {
-            buffer::BufferSource::UntypedSlice(untyped_slice) 
+            buffer::BufferSource::UntypedSlice(untyped_slice)
                 => miniquad::BufferSource::slice(&*untyped_slice),
-            buffer::BufferSource::Empty(buffer_layout) 
+            buffer::BufferSource::Empty(buffer_layout)
                 => miniquad::BufferSource::empty::<u8>(buffer_layout.size()),
         }
     }
@@ -305,7 +305,7 @@ impl<'b> ConvertRef for buffer::BufferSource<'b>
 impl Convert for texture::TextureAccess
 {
     type Output = miniquad::TextureAccess;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -318,7 +318,7 @@ impl Convert for texture::TextureAccess
 impl Convert for texture::TextureFormat
 {
     type Output = miniquad::TextureFormat;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -330,7 +330,7 @@ impl Convert for texture::TextureFormat
 impl Convert for texture::TextureWrap
 {
     type Output = miniquad::TextureWrap;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -344,7 +344,7 @@ impl Convert for texture::TextureWrap
 impl Convert for texture::FilterMode
 {
     type Output = miniquad::FilterMode;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -357,7 +357,7 @@ impl Convert for texture::FilterMode
 impl Convert for texture::MipmapFilterMode
 {
     type Output = miniquad::MipmapFilterMode;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -371,7 +371,7 @@ impl Convert for texture::MipmapFilterMode
 impl Convert for vertex::VertexStep
 {
     type Output = miniquad::VertexStep;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -384,7 +384,7 @@ impl Convert for vertex::VertexStep
 impl Convert for vertex::VertexBufferLayout
 {
     type Output = miniquad::BufferLayout;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         let Self { stride, step_func, step_rate } = self;
         miniquad::BufferLayout { stride, step_func: step_func.convert(), step_rate }
@@ -396,33 +396,33 @@ impl Convert for texture::TextureParam
     type Output = miniquad::TextureParams;
     fn convert(self) -> Self::Output
     {
-        let Self 
-        { 
-            format, 
-            wrap, 
-            min_filter, 
-            mag_filter, 
-            mipmap_filter, 
-            allocate_mipmaps, 
+        let Self
+        {
+            format,
+            wrap,
+            min_filter,
+            mag_filter,
+            mipmap_filter,
+            allocate_mipmaps,
             size,
-            sample_count, 
-            access : _ 
+            sample_count,
+            access : _
         } = self;
 
         let [width, height] = size.into();
 
-        miniquad::TextureParams 
-        { 
-            kind: miniquad::TextureKind::Texture2D, 
-            format: format.convert(), 
-            wrap: wrap[0].convert(), 
-            min_filter: min_filter.convert(), 
-            mag_filter: mag_filter.convert(), 
-            mipmap_filter: mipmap_filter.convert(), 
+        miniquad::TextureParams
+        {
+            kind: miniquad::TextureKind::Texture2D,
+            format: format.convert(),
+            wrap: wrap[0].convert(),
+            min_filter: min_filter.convert(),
+            mag_filter: mag_filter.convert(),
+            mipmap_filter: mipmap_filter.convert(),
             width: width as _,
             height: height as _,
             allocate_mipmaps,
-            sample_count : sample_count as _ 
+            sample_count : sample_count as _
         }
     }
 }
@@ -459,7 +459,7 @@ impl Convert for pipeline::DepthComparison
 {
     type Output=miniquad::Comparison;
 
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -480,7 +480,7 @@ impl Convert for blend::BlendFactor
 {
     type Output=miniquad::BlendFactor;
 
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -497,7 +497,7 @@ impl Convert for blend::BlendState
 {
     type Output=miniquad::BlendState;
 
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         let Self { equation, sfactor, dfactor } = self;
         miniquad::BlendState::new(equation.convert(), sfactor.convert(), dfactor.convert())
@@ -558,15 +558,15 @@ impl Convert for stencil::StencilFaceState
 
     fn convert(self) -> Self::Output {
         let Self { fail_op, depth_fail_op, pass_op, test_func, test_ref, test_mask, write_mask } = self;
-        miniquad::StencilFaceState 
-        { 
-            fail_op: fail_op.convert(), 
-            depth_fail_op: depth_fail_op.convert(), 
-            pass_op: pass_op.convert(), 
-            test_func: test_func.convert(), 
-            test_ref, 
-            test_mask, 
-            write_mask 
+        miniquad::StencilFaceState
+        {
+            fail_op: fail_op.convert(),
+            depth_fail_op: depth_fail_op.convert(),
+            pass_op: pass_op.convert(),
+            test_func: test_func.convert(),
+            test_ref,
+            test_mask,
+            write_mask
         }
     }
 }
@@ -596,10 +596,10 @@ impl Convert for stencil::StencilState
 
     fn convert(self) -> Self::Output {
         let Self { front, back } = self;
-        miniquad::StencilState 
-        { 
-            front: front.convert(), 
-            back: back.convert() 
+        miniquad::StencilState
+        {
+            front: front.convert(),
+            back: back.convert()
         }
     }
 }
@@ -623,36 +623,36 @@ impl Convert for pipeline::PrimitiveType
 impl Convert for pipeline::PipelineParam
 {
     type Output = miniquad::PipelineParams;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
-        let Self 
-        { 
-            cull_face, 
-            front_face_order, 
-            color_mask, 
-            primitive_type, 
-            depth_test, 
-            depth_write, 
-            depth_write_offset, 
-            color_blend, 
-            alpha_blend, 
-            stencil_test 
+        let Self
+        {
+            cull_face,
+            front_face_order,
+            color_mask,
+            primitive_type,
+            depth_test,
+            depth_write,
+            depth_write_offset,
+            color_blend,
+            alpha_blend,
+            stencil_test
         } = self;
 
         let [cr, rg, rb, ra] = color_mask.into();
-        
-        miniquad::PipelineParams 
-        { 
-            cull_face: cull_face.convert(), 
-            front_face_order: front_face_order.convert(), 
-            depth_test: depth_test.convert(), 
-            depth_write: depth_write, 
-            depth_write_offset: depth_write_offset.map(|v| (v.x as _, v.y as _)), 
-            color_blend: color_blend.map(|v| v.convert()), 
-            alpha_blend: alpha_blend.map(|v| v.convert()), 
-            stencil_test: stencil_test.map(|v| v.convert()), 
+
+        miniquad::PipelineParams
+        {
+            cull_face: cull_face.convert(),
+            front_face_order: front_face_order.convert(),
+            depth_test: depth_test.convert(),
+            depth_write: depth_write,
+            depth_write_offset: depth_write_offset.map(|v| (v.x as _, v.y as _)),
+            color_blend: color_blend.map(|v| v.convert()),
+            alpha_blend: alpha_blend.map(|v| v.convert()),
+            stencil_test: stencil_test.map(|v| v.convert()),
             color_write:  (cr, rg, rb, ra),
-            primitive_type: primitive_type.convert(), 
+            primitive_type: primitive_type.convert(),
         }
     }
 }
@@ -660,7 +660,7 @@ impl Convert for pipeline::PipelineParam
 impl Convert for vertex::VertexFormat
 {
     type Output = miniquad::VertexFormat;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -692,10 +692,10 @@ impl ConvertRef for shader::ShaderMeta
 
     fn convert<'a>(&'a self) -> Self::Output<'a> {
         let Self { uniforms, images } = self;
-        miniquad::ShaderMeta 
-        { 
-            uniforms: uniforms.convert(), 
-            images: images.iter().map(|v| v.clone()).collect() 
+        miniquad::ShaderMeta
+        {
+            uniforms: uniforms.convert(),
+            images: images.iter().map(|v| v.clone()).collect()
         }
     }
 }
@@ -707,9 +707,9 @@ impl ConvertRef for shader::UniformBlockLayout
 
     fn convert<'a>(&'a self) -> Self::Output<'a> {
         let Self { uniforms } = self;
-        miniquad::UniformBlockLayout 
-        { 
-            uniforms: uniforms.iter().map(|v| v.convert()).collect() 
+        miniquad::UniformBlockLayout
+        {
+            uniforms: uniforms.iter().map(|v| v.convert()).collect()
         }
     }
 }
@@ -718,7 +718,7 @@ impl ConvertRef for shader::UniformDesc
 {
     type Output<'a> = miniquad::UniformDesc;
 
-    fn convert<'a>(&'a self) -> Self::Output<'a> 
+    fn convert<'a>(&'a self) -> Self::Output<'a>
     {
         let Self { name, uniform_type, nb } = self;
         miniquad::UniformDesc { name : name.clone(), uniform_type: uniform_type.convert(), array_count: *nb }
@@ -729,7 +729,7 @@ impl ConvertRef for shader::UniformDesc
 impl Convert for shader::UniformType
 {
     type Output = miniquad::UniformType;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -749,7 +749,7 @@ impl Convert for shader::UniformType
 impl Convert for shader::ShaderType
 {
     type Output = miniquad::ShaderType;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -762,7 +762,7 @@ impl Convert for shader::ShaderType
 impl Convert for miniquad::ShaderType
 {
     type Output = shader::ShaderType;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
@@ -775,16 +775,16 @@ impl Convert for miniquad::ShaderType
 impl Convert for miniquad::ShaderError
 {
     type Output = shader::ShaderError;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
-            miniquad::ShaderError::CompilationError { shader_type, error_message } => 
+            miniquad::ShaderError::CompilationError { shader_type, error_message } =>
                 shader::ShaderError::CompilationError { shader_type: shader_type.convert(), error_message },
-            miniquad::ShaderError::LinkError(v) => 
+            miniquad::ShaderError::LinkError(v) =>
                 shader::ShaderError::LinkError(v),
-            miniquad::ShaderError::FFINulError(v) => 
-                shader::ShaderError::FFINulError(v),
+            miniquad::ShaderError::FFINulError(v) =>
+                shader::ShaderError::FFINulError(v.nul_position(), v.into_vec()),
         }
     }
 }
@@ -792,12 +792,12 @@ impl Convert for miniquad::ShaderError
 impl Convert for render_pass::PassAction
 {
     type Output = miniquad::PassAction;
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
             render_pass::PassAction::Nothing => miniquad::PassAction::Nothing,
-            render_pass::PassAction::Clear(clear_data) => 
+            render_pass::PassAction::Clear(clear_data) =>
             miniquad::PassAction::Clear
             {
                 color: clear_data.color.map(|c| c.convert()),
@@ -812,23 +812,23 @@ impl Convert for Color
 {
     type Output=(f32,f32,f32,f32);
 
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         let [r,g,b,a] = self.into();
         (r as _, g as _, b as _, a as _)
     }
 }
 
-impl Convert for buffer::BufferType
+impl Convert for buffer::BufferKind
 {
     type Output=miniquad::BufferType;
 
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {
-            buffer::BufferType::VertexBuffer => miniquad::BufferType::VertexBuffer,
-            buffer::BufferType::IndexBuffer => miniquad::BufferType::IndexBuffer,
+            buffer::BufferKind::VertexBuffer => miniquad::BufferType::VertexBuffer,
+            buffer::BufferKind::IndexBuffer => miniquad::BufferType::IndexBuffer,
         }
     }
 }
@@ -837,7 +837,7 @@ impl Convert for buffer::BufferUsage
 {
     type Output=miniquad::BufferUsage;
 
-    fn convert(self) -> Self::Output 
+    fn convert(self) -> Self::Output
     {
         match self
         {

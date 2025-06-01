@@ -22,8 +22,6 @@ This crate define N dimensionnal math stuff (2d, 3d, 4d, ... nd) like vector/poi
 ### Useful type like
 - [Angle](https://docs.rs/hexga_math/latest/hexga_math/angle/struct.AngleOf.html),
 - [Time](https://docs.rs/hexga_math/latest/hexga_math/time/struct.TimeOf.html),
-- [ColorRGBA] with any precision (also handle the conversion between different primitive precision)
-- [ColorHSLA] of various precision
 
 ```rust
 use hexga_math::prelude::*;
@@ -58,10 +56,6 @@ use hexga_math::prelude::*;
 assert_eq!(u8::cast_range_from(1f32), 255u8);
 assert_eq!(u8::cast_range_from(127i8), 254u8);
 assert_eq!(i8::cast_range_from(255u8), 127i8);
-
-assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
-            ColorRGBAOf::<u16>::RED
-          );
 ```
 
 
@@ -79,11 +73,10 @@ There are some quick typedef in the prelude :
 
 ### More advanced type
 
-If you need more control about the precision, each type have another more generic long base type:
+If you need more control about the precision, each type have another more generic base type:
 
 - `Grid` type uses a `Point` for the indexing precision, but that can be changed by using with the `GridBase` type.
 - `Angle` and `Time` use a `float` precision that can be changed using `AngleOf` and `TimeOf`
-- `ColorRGBA` and `ColorHSLA` also use a `float` precision that can be changed using `ColorRGBAOf` and `ColorRGBAOf`
 
 ## Main Hexga crate
 

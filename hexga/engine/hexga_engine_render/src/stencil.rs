@@ -1,7 +1,8 @@
 use super::*;
 
 
-
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct StencilState {
     pub front: StencilFaceState,
@@ -9,6 +10,8 @@ pub struct StencilState {
 }
 
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct StencilFaceState {
     /// Operation to use when stencil test fails
@@ -37,6 +40,8 @@ pub struct StencilFaceState {
 }
 
 /// Operations performed on current stencil value when comparison test passes or fails.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum StencilOp {
     /// Default value
@@ -51,6 +56,8 @@ pub enum StencilOp {
 }
 
 /// Depth and stencil compare function
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum StencilCompareFunc {
     /// Default value

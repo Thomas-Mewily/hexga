@@ -1,7 +1,16 @@
 //! Window / Events interface for the Hexga Engine based on [MiniQuad](https://github.com/not-fl3/miniquad)
+#![allow(unused_imports)]
 
 mod window;
 pub use window::*;
+
+
+#[cfg(feature = "serde")]
+use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+
+#[cfg(feature = "hexga_io")]
+use hexga_io::{IoSave, IoLoad, Save, Load};
+
 
 pub mod prelude
 {
@@ -10,7 +19,7 @@ pub mod prelude
 
 /// Modules/Items without the prelude
 #[doc(hidden)]
-pub mod modules 
+pub mod modules
 {
     pub use super::window::*;
 }

@@ -1,8 +1,10 @@
 use super::*;
 
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum VertexFormat 
+pub enum VertexFormat
 {
     /// One 32-bit wide float (equivalent to `f32`)
     Float1,
@@ -57,7 +59,8 @@ pub struct VertexAttribute {
 }
 
 
-
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub enum VertexStep {
     #[default]
@@ -65,6 +68,8 @@ pub enum VertexStep {
     PerInstance,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct VertexBufferLayout {
     pub stride: i32,

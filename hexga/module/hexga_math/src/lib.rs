@@ -14,8 +14,6 @@
 //!
 //! - [Angle]
 //! - [Time],
-//! - [ColorRGBA] with any precision (also handle the conversion between different primitive precision)
-//! - [ColorHSLA] of various precision
 //!
 //! ### Generic Casting trait
 //! The crate also provide generic traits for casting with the same behavior as the [as keyword](https://practice.course.rs/type-conversions/as.html) :
@@ -40,11 +38,10 @@
 //!
 //! ### More advanced type
 //!
-//! If you need more control about the precision, each type have another more generic long base type :
+//! If you need more control about the precision, each type have another more generic base type :
 //!
 //! - [Grid] type uses a [Point] for the indexing precision, but that can be changed by using with the [GridBase] type.
 //! - [Angle] and [Time] use a [float] precision that can be changed using [AngleOf] and [TimeOf]
-//! - [ColorRGBA] and [ColorHSLA] also use a [float] precision that can be changed using [ColorRGBAOf] and [ColorRGBAOf]
 #![allow(unused_imports)]
 
 #![feature(get_disjoint_mut_helpers)]
@@ -89,9 +86,6 @@ pub use geometry::*;
 
 mod other;
 pub use other::*;
-
-mod color;
-pub use color::*;
 
 pub mod graph;
 use graph::*;

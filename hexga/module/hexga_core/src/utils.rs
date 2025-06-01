@@ -10,7 +10,7 @@ pub trait Toggleable
 impl Toggleable for bool
 {
     #[inline(always)]
-    fn toggle(&mut self) 
+    fn toggle(&mut self)
     {
         use std::ops::Not;
         *self = self.not();
@@ -21,7 +21,7 @@ pub trait ToDebug
 {
     fn to_debug(&self) -> String;
 }
-impl<T> ToDebug for T where T : std::fmt::Debug
+impl<T> ToDebug for T where T: std::fmt::Debug
 {
     #[inline(always)]
     fn to_debug(&self) -> String {
@@ -30,7 +30,7 @@ impl<T> ToDebug for T where T : std::fmt::Debug
 }
 
 /// Useful to silence/convert to void some Err.
-/// 
+///
 /// Some of my lib will probably have proper error type instead of () (Look for `#proper_error` to know which error type are temporary) when I will have time to add them
 pub trait ResultExtension<T>
 {
@@ -59,12 +59,12 @@ pub trait UniversalKey : Hash + Eq + Ord {}
 impl<T> UniversalKey for T where T: Hash + Eq + Ord {}
 */
 
-pub trait DefaultExtension : Default + PartialEq 
+pub trait DefaultExtension : Default + PartialEq
 {
     fn is_default(&self) -> bool { self == &___() }
     fn is_not_default(&self) -> bool { !self.is_default() }
 }
-impl<T> DefaultExtension for T where T : Default + PartialEq {}
+impl<T> DefaultExtension for T where T: Default + PartialEq {}
 
 pub trait DebugExtension
 {
@@ -78,10 +78,10 @@ pub trait DebugExtension
 
     fn field_bool(&mut self, value : bool, name_true : &str, name_false : &str) -> &mut Self;
 }
- 
+
 impl<'a, 'b: 'a> DebugExtension for std::fmt::DebugStruct<'a, 'b>
 {
-    fn field_if<T : Debug>(&mut self, name: &str, value: &T, pred : impl FnOnce(&T) -> bool) -> &mut Self 
+    fn field_if<T : Debug>(&mut self, name: &str, value: &T, pred : impl FnOnce(&T) -> bool) -> &mut Self
     {
         if pred(value)
         {
@@ -89,23 +89,23 @@ impl<'a, 'b: 'a> DebugExtension for std::fmt::DebugStruct<'a, 'b>
         }
         self
     }
-    
+
     fn field<T : Debug>(&mut self, name: &str, value: &T) -> &mut Self {
         self.field(name, value)
     }
-    
+
     fn field_bool(&mut self, value : bool, name_true : &str, name_false : &str) -> &mut Self {
         self.field(if value { name_true } else { name_false }, &())
     }
 }
 
 /*
-pub trait IteratorExtension<T> where T : PartialEq
+pub trait IteratorExtension<T> where T: PartialEq
 {
     fn contains(self, value : &T) -> bool;
 }
 impl<I,T> IteratorExtension<T> for I where I : Iterator<Item = T>, T : PartialEq
 {
     fn contains(mut self, value : &T) -> bool { self.position(|v| &v == value).is_some() }
-} 
+}
 */

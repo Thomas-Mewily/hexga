@@ -1,10 +1,10 @@
 use crate::*;
 
 pub trait ContextMultiMedia : ContextWindow + RenderBackend {}
-impl<T> ContextMultiMedia for T where T : ContextWindow + RenderBackend {}
+impl<T> ContextMultiMedia for T where T: ContextWindow + RenderBackend {}
 
 #[derive(Default, PartialEq, Eq, Clone, Hash)]
-pub struct MultiMediaParam 
+pub struct MultiMediaParam
 {
     pub window_param : WindowParam,
     pub pen_param : PenParam,
@@ -21,7 +21,7 @@ impl MultiMediaParam
 {
     // Impl this function from a trait in your engine implementation
     /*
-    pub fn run_with_context<T>(self, state : impl 'static + FnOnce() -> T) where T : MainLoopWithContext + 'static
+    pub fn run_with_context<T>(self, state : impl 'static + FnOnce() -> T) where T: MainLoopWithContext + 'static
     */
 }
 

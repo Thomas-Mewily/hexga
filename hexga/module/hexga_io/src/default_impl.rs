@@ -60,11 +60,11 @@ impl<K,V> IoLoad for BTreeMap<K,V> where K : IoLoad + Ord, V : IoLoad {}
 impl<K> IoSave for BTreeSet<K> where K : IoSave + Ord  {}
 impl<K> IoLoad for BTreeSet<K> where K : IoLoad + Ord  {}
 
-impl<T> IoSave for BinaryHeap<T> where T : IoSave + Ord  {}
-impl<T> IoLoad for BinaryHeap<T> where T : IoLoad + Ord  {}
+impl<T> IoSave for BinaryHeap<T> where T: IoSave + Ord  {}
+impl<T> IoLoad for BinaryHeap<T> where T: IoLoad + Ord  {}
 
 
-impl<T> IoSave for &[T] where T : IoSave {}
+impl<T> IoSave for &[T] where T: IoSave {}
 
 impl IoSave for str
 {
@@ -98,8 +98,8 @@ impl_io_save!(
     Arc<T>, ArcWeak<T>,
 );
 
-impl<T> IoSave for Cell<T> where T : IoSave + Copy {}
-impl<T> IoLoad for Cell<T> where T : IoLoad + Copy {}
+impl<T> IoSave for Cell<T> where T: IoSave + Copy {}
+impl<T> IoLoad for Cell<T> where T: IoLoad + Copy {}
 
 
 // https://docs.rs/serde/latest/serde/trait.Serialize.html#impl-Serialize-for-str
@@ -137,8 +137,8 @@ impl<T, const N : usize> IoLoad for [T; N] where Self : for<'de> Deserialize<'de
     docsrs,
     doc = "This trait is implemented for tuples up to 16 items long."
 )]
-impl<T> IoSave for (T,) where T : IoSave {}
-impl<T> IoLoad for (T,) where T : IoLoad {}
+impl<T> IoSave for (T,) where T: IoSave {}
+impl<T> IoLoad for (T,) where T: IoLoad {}
 
 macro_rules! tuple_impls {
     // Each line provides a count and a list of index-type pairs

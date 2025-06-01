@@ -49,12 +49,12 @@ pub struct RectangleBase<T>
 }
 impl_fixed_array_like_with_op!(RectangleBase, 2);
 
-impl<T> Default for RectangleBase<T> where T : Number
+impl<T> Default for RectangleBase<T> where T: Number
 {
     fn default() -> Self { Self::SIZED_ONE }
 }
 
-impl<T> RectangleBase<T> where T : Number
+impl<T> RectangleBase<T> where T: Number
 {
     pub const SIZED_ONE : Self = Self::new_sized(T::ONE);
 }
@@ -74,23 +74,23 @@ impl<T> From<RectangleBase<T>> for (T,T)
 }
 
 // 2D :
-impl<T> Rectangle<T,2> where T : Number
+impl<T> Rectangle<T,2> where T: Number
 {
     pub fn down_left (&self) -> Vector<T,2> { self.pos }
-    pub fn down_right(&self) -> Vector<T,2> where T : One + Mul<T,Output = T> + Add<T, Output=T> { self.pos + self.size * Vector::<T,2>::X }
+    pub fn down_right(&self) -> Vector<T,2> where T: One + Mul<T,Output = T> + Add<T, Output=T> { self.pos + self.size * Vector::<T,2>::X }
 
     /// Same as down_left()
     pub fn bottom_left (&self) -> Vector<T,2> { self.down_left() }
     /// Same as down_right()
-    pub fn bottom_right(&self) -> Vector<T,2> where T : One + Mul<T,Output = T> + Add<T, Output=T> { self.down_right() }
+    pub fn bottom_right(&self) -> Vector<T,2> where T: One + Mul<T,Output = T> + Add<T, Output=T> { self.down_right() }
 
-    pub fn up_right  (&self) -> Vector<T,2> where T : Add<T, Output=T> { self.pos + self.size }
-    pub fn up_left   (&self) -> Vector<T,2> where T : One, T : Mul<T,Output = T> + Add<T, Output=T> { self.pos + self.size * Vector::<T,2>::Y }
+    pub fn up_right  (&self) -> Vector<T,2> where T: Add<T, Output=T> { self.pos + self.size }
+    pub fn up_left   (&self) -> Vector<T,2> where T: One, T : Mul<T,Output = T> + Add<T, Output=T> { self.pos + self.size * Vector::<T,2>::Y }
 
     /// Same as up_right()
-    pub fn top_right  (&self) -> Vector<T,2> where T : Add<T, Output=T> { self.up_right() }
+    pub fn top_right  (&self) -> Vector<T,2> where T: Add<T, Output=T> { self.up_right() }
     /// Same as up_left()
-    pub fn top_left   (&self) -> Vector<T,2> where T : One, T : Mul<T,Output = T> + Add<T, Output=T> { self.up_left() }
+    pub fn top_left   (&self) -> Vector<T,2> where T: One, T : Mul<T,Output = T> + Add<T, Output=T> { self.up_left() }
 }
 
 impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
@@ -138,7 +138,7 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
 
 }
 
-impl<T,const N : usize> Rectangle<T,N> where T : Copy
+impl<T,const N : usize> Rectangle<T,N> where T: Copy
 {
     pub fn set_size(&mut self, size : Vector<T, N>) -> &mut Self { self.size = size; self }
     pub fn set_size_x(&mut self, x : T) -> &mut Self where Vector<T, N> : HaveX<T> { self.size.set_x(x); self }
@@ -153,7 +153,7 @@ impl<T,const N : usize> Rectangle<T,N> where T : Copy
     pub fn with_size_w(mut self, w : T) -> Self where Vector<T, N> : HaveW<T> { self.size.set_w(w); self }
 }
 
-impl<T,const N : usize> Rectangle<T,N> where T : Number
+impl<T,const N : usize> Rectangle<T,N> where T: Number
 {
     /// Check if a point inside the rectangle.
     /// Also work for indexing
@@ -228,11 +228,11 @@ impl<T> RectangleBase<T>
     /// assume the size is valid
     pub const fn new(pos: T, size: T) -> Self { Self { pos, size } }
     /// assume the size is valid
-    pub const fn new_sized(size : T) -> Self where T : Zero { Self::new(zero(), size) }
+    pub const fn new_sized(size : T) -> Self where T: Zero { Self::new(zero(), size) }
 }
 
 /// Crop a selection to a sub selection, where the sub selection is contained in the selection.
-pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T : Number
+pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T: Number
 {
     /// Crop the current rectangle to the given sub rectangle.
     ///
@@ -294,7 +294,7 @@ pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T : Number
     }
 }
 
-impl<T,const N : usize> Crop<T,N> for Rectangle<T,N> where T : Number
+impl<T,const N : usize> Crop<T,N> for Rectangle<T,N> where T: Number
 {
     // The Behavior is not well defined with zero sized subrect
     // Currently it will return None
@@ -334,12 +334,12 @@ mod rect_crop_test
 }
 
 
-impl<T,const N : usize> Rectangle<T,N> where T : Number
+impl<T,const N : usize> Rectangle<T,N> where T: Number
 {
     pub fn from_pos_to_pos(start_pos : Vector<T,N>, end_pos : Vector<T,N>) -> Self { Self::new(start_pos, (end_pos - start_pos).map_with(zero(), |a,b| a.max_partial(b))) }
 }
 
-impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
+impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T: Number
 {
     #[inline(always)]
     fn pos (&self) -> Vector<T,N> { self.pos  }
@@ -347,7 +347,7 @@ impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T : Number
     fn size(&self) -> Vector<T,N> { self.size }
 }
 
-pub trait IRectangle<T, const N : usize> where T : Number
+pub trait IRectangle<T, const N : usize> where T: Number
 {
     fn pos (&self) -> Vector<T,N>;
     fn size(&self) -> Vector<T,N>;
@@ -370,7 +370,7 @@ pub trait IRectangle<T, const N : usize> where T : Number
     #[inline(always)]
     fn area(&self) -> T { self.size().area() }
     #[inline(always)]
-    fn area_usize(&self) -> usize where T : Integer { self.size().area_usize() }
+    fn area_usize(&self) -> usize where T: Integer { self.size().area_usize() }
 
     #[inline(always)]
     fn is_inside(&self, pos : Vector<T,N>) -> bool { pos.is_inside(self.size()) }
@@ -409,7 +409,7 @@ pub trait IRectangle<T, const N : usize> where T : Number
 }
 
 
-impl<T, const N : usize> Position<T, N> for Rectangle<T,N> where T : Copy
+impl<T, const N : usize> Position<T, N> for Rectangle<T,N> where T: Copy
 {
     fn pos(&self) -> Vector<T,N> {
         self.pos
@@ -420,7 +420,7 @@ impl<T, const N : usize> Position<T, N> for Rectangle<T,N> where T : Copy
     }
 }
 
-impl<T,const N : usize> Lerpable for Rectangle<T,N> where T : Number, Vector<T,N> : Lerpable
+impl<T,const N : usize> Lerpable for Rectangle<T,N> where T: Number, Vector<T,N> : Lerpable
 {
     fn lerp_unchecked(self, dest : Self, coef : float) -> Self { Self::new(self.pos.lerp(dest.pos, coef), self.size.lerp(dest.size, coef)) }
 }
@@ -478,7 +478,7 @@ pub enum SplitOn
 }
 
 /*
-impl<T,const N : usize> Rectangle<T,N> where T : ArrayLike<N> + Copy
+impl<T,const N : usize> Rectangle<T,N> where T: ArrayLike<N> + Copy
 {
     fn map_pos(&mut self, )
     fn into_map_pos(mut self, )

@@ -113,10 +113,10 @@ pub trait IGrid<T, Idx, const N : usize> :
     }
 
     /// Create a new grid and fill it with the [Default] value
-    fn new(size : Vector::<Idx,N>) -> Self where T : Default { Self::try_from_vec(size, (0..size.area_usize()).map(|_| ___()).collect()).unwrap() }
+    fn new(size : Vector::<Idx,N>) -> Self where T: Default { Self::try_from_vec(size, (0..size.area_usize()).map(|_| ___()).collect()).unwrap() }
 
     /// Create a new grid and fill it by [Clone] the value
-    fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T : Clone { Self::try_from_vec(size, vec![value; size.area_usize()]).unwrap() }
+    fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T: Clone { Self::try_from_vec(size, vec![value; size.area_usize()]).unwrap() }
 
 
 

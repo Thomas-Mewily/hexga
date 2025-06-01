@@ -4,6 +4,8 @@ use crate::*;
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct RawShaderID { pub index : usize }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UniformDesc
 {
@@ -14,17 +16,23 @@ pub struct UniformDesc
 
 pub struct UniformsSource<'a> { pub source : UntypedSlice<'a> }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UniformBlockLayout {
     pub uniforms: Vec<UniformDesc>,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ShaderMeta {
     pub uniforms: UniformBlockLayout,
     pub images  : Vec<String>,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ShaderSource
@@ -32,6 +40,8 @@ pub enum ShaderSource
     GLSL(ShaderSourceGLSL),
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ShaderSourceGLSL
 {
@@ -40,7 +50,8 @@ pub struct ShaderSourceGLSL
 }
 
 
-
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum UniformType {
     /// One 32-bit wide float (equivalent to `f32`)
@@ -63,7 +74,8 @@ pub enum UniformType {
     Mat4,
 }
 
-
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ShaderData
 {
@@ -71,12 +83,16 @@ pub struct ShaderData
     pub meta  : ShaderMeta,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ShaderType {
     Vertex,
     Fragment,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShaderError
 {
@@ -86,5 +102,5 @@ pub enum ShaderError
     },
     LinkError(String),
     /// Shader strings should never contains \00 in the middle
-    FFINulError(std::ffi::NulError),
+    FFINulError(usize, Vec<u8>),
 }

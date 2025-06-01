@@ -7,8 +7,8 @@ const W_INDEX : usize = 3;
 
 impl<T,const N : usize> Vector<T,N>
 {
-    pub fn min(self, other : Self) -> Self where T : PartialOrd { self.map_with(other, |a, b| a.min_partial(b)).into() }
-    pub fn max(self, other : Self) -> Self where T : PartialOrd { self.map_with(other, |a, b| a.max_partial(b)).into() }
+    pub fn min(self, other : Self) -> Self where T: PartialOrd { self.map_with(other, |a, b| a.min_partial(b)).into() }
+    pub fn max(self, other : Self) -> Self where T: PartialOrd { self.map_with(other, |a, b| a.max_partial(b)).into() }
 
     pub fn have_x(&self) -> bool { self.is_index_valid(X_INDEX) }
     pub fn have_y(&self) -> bool { self.is_index_valid(Y_INDEX) }
@@ -21,24 +21,24 @@ impl<T,const N : usize> Vector<T,N>
 impl<T,const N : usize> Vector<T,N>
 {
     /// Fill non existing component with [Default]
-    pub fn to_1d(self) -> Vector1<T> where T : Default { self.to_vector1() }
+    pub fn to_1d(self) -> Vector1<T> where T: Default { self.to_vector1() }
     /// Fill non existing component with the given value
-    pub fn to_1d_filled(self, fill : T) -> Vector1<T> where T : Clone { self.to_vector1_filled(fill) }
+    pub fn to_1d_filled(self, fill : T) -> Vector1<T> where T: Clone { self.to_vector1_filled(fill) }
 
     /// Fill non existing component with [Default]
-    pub fn to_2d(self) -> Vector2<T> where T : Default { self.to_vector2() }
+    pub fn to_2d(self) -> Vector2<T> where T: Default { self.to_vector2() }
     /// Fill non existing component with the given value
-    pub fn to_2d_filled(self, fill : T) -> Vector2<T> where T : Clone { self.to_vector2_filled(fill) }
+    pub fn to_2d_filled(self, fill : T) -> Vector2<T> where T: Clone { self.to_vector2_filled(fill) }
 
     /// Fill non existing component with [Default]
-    pub fn to_3d(self) -> Vector3<T> where T : Default { self.to_vector3() }
+    pub fn to_3d(self) -> Vector3<T> where T: Default { self.to_vector3() }
     /// Fill non existing component with the given value
-    pub fn to_3d_filled(self, fill : T) -> Vector3<T> where T : Clone { self.to_vector3_filled(fill) }
+    pub fn to_3d_filled(self, fill : T) -> Vector3<T> where T: Clone { self.to_vector3_filled(fill) }
 
     /// Fill non existing component with [Default]
-    pub fn to_4d(self) -> Vector4<T> where T : Default { self.to_vector4() }
+    pub fn to_4d(self) -> Vector4<T> where T: Default { self.to_vector4() }
     /// Fill non existing component with the given value
-    pub fn to_4d_filled(self, fill : T) -> Vector4<T> where T : Clone { self.to_vector4_filled(fill) }
+    pub fn to_4d_filled(self, fill : T) -> Vector4<T> where T: Clone { self.to_vector4_filled(fill) }
 }
 
 

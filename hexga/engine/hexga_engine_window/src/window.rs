@@ -1,10 +1,14 @@
 //! mainly inspired by miniquad
 
 use hexga_math::prelude::*;
+use crate::*;
 
-#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq, Default)]
 pub enum CursorIcon
 {
+    #[default]
     Default,
     Help,
     Pointer,
@@ -76,7 +80,8 @@ impl ContextWindow for ()
 }
 
 
-
+//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct WindowParam
 {
@@ -124,6 +129,8 @@ impl Default for WindowParam
     }
 }
 
+//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 /// Icon image in three levels of detail.
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Icon {
@@ -142,6 +149,8 @@ impl std::fmt::Debug for Icon {
     }
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Platform
 {

@@ -32,18 +32,18 @@ macro_rules! impl_abs {
 map_on_integer_signed!(impl_abs);
 map_on_float!(impl_abs);
 
-impl<T> Abs for Wrapping<T> where T : Abs
+impl<T> Abs for Wrapping<T> where T: Abs
 {
     type Output=Wrapping<T::Output>;
     fn abs(self) -> Self::Output { Wrapping(self.0.abs()) }
 }
-impl<T> Abs for Saturating<T> where T : Abs
+impl<T> Abs for Saturating<T> where T: Abs
 {
     type Output=Saturating<T::Output>;
     fn abs(self) -> Self::Output { Saturating(self.0.abs()) }
 }
 
-impl<T,T2, const N : usize> Abs for [T;N] where T : Abs<Output = T2>
+impl<T,T2, const N : usize> Abs for [T;N] where T: Abs<Output = T2>
 {
     type Output=[T2;N];
     fn abs(self) -> Self::Output { self.map(|v| v.abs()) }
@@ -75,7 +75,7 @@ pub trait Increase : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Siz
     /// True if not Self::MAX, except for wrapping type, they always have a successor because they wrap
     #[inline(always)] fn have_successor(self) -> bool where Self : OverflowBehavior + MaxValue + PartialEq { self.can_increase() }
 }
-impl<T> Increase for T where T : One + Add<T, Output=T> + AddAssign<Self> + Copy {}
+impl<T> Increase for T where T: One + Add<T, Output=T> + AddAssign<Self> + Copy {}
 
 /// The `-1` operation
 pub trait Decrease : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized
@@ -102,7 +102,7 @@ pub trait Decrease : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Siz
     /// True if not Self::MIN, except for wrapping type, they always have a predecessor because they wrap
     #[inline(always)] fn have_predecessor(self) -> bool where Self : OverflowBehavior + MinValue + PartialEq { self.can_decrease() }
 }
-impl<T> Decrease for T where T : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized {}
+impl<T> Decrease for T where T: One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized {}
 
 
 

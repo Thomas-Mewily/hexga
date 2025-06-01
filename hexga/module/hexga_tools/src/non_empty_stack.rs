@@ -29,7 +29,7 @@ impl<T> NonEmptyStack<T>
     /// Clear the stack and keep the last element
     /// ```
     /// use hexga_tools::prelude::*;
-    /// 
+    ///
     /// let mut stack = NonEmptyStack::from_vec(vec![1,2,3,4]).unwrap();
     /// stack.clear_and_keep_last();
     /// assert_eq!(stack.len(), 1);
@@ -40,13 +40,13 @@ impl<T> NonEmptyStack<T>
     /// Clear the stack and keep the first element
     /// ```
     /// use hexga_tools::prelude::*;
-    /// 
+    ///
     /// let mut stack = NonEmptyStack::from_vec(vec![1,2,3,4]).unwrap();
     /// stack.clear_and_keep_first();
     /// assert_eq!(stack.len(), 1);
     /// assert_eq!(stack.last(), &1);
     /// ```
-    pub fn clear_and_keep_first(&mut self) 
+    pub fn clear_and_keep_first(&mut self)
     {
         if self.stack.is_empty() { return; }
         std::mem::swap(&mut self.last, &mut self.stack[0]);
@@ -54,10 +54,10 @@ impl<T> NonEmptyStack<T>
     }
 
     /// Replace the last value
-    pub fn replace(&mut self, mut value : T) -> T { std::mem::swap(&mut self.last, &mut value); value } 
+    pub fn replace(&mut self, mut value : T) -> T { std::mem::swap(&mut self.last, &mut value); value }
     pub fn push(&mut self, mut value : T) { std::mem::swap(&mut self.last, &mut value); self.stack.push(value); }
     /// Clone the last element and push it
-    pub fn duplicate(&mut self) -> &mut Self where T : Clone { self.stack.push(self.last.clone()); self } 
+    pub fn duplicate(&mut self) -> &mut Self where T: Clone { self.stack.push(self.last.clone()); self }
     pub fn pop(&mut self) -> Option<T> { self.stack.pop().and_then(|mut v| { std::mem::swap(&mut v, &mut self.last); Some(v) }) }
 
     pub fn iter(&self) -> Iter<'_, T> { Iter { stack: self.stack.iter(), last: Some(&self.last) } }
@@ -200,13 +200,13 @@ impl<T> Index<usize> for NonEmptyStack<T>
 {
     type Output=T;
 
-    fn index(&self, index: usize) -> &Self::Output 
+    fn index(&self, index: usize) -> &Self::Output
     {
         if index + 1 == self.len()
         {
             &self.last
-        }else 
-        { 
+        }else
+        {
             &self.stack[index]
         }
     }
@@ -217,8 +217,8 @@ impl<T> IndexMut<usize> for NonEmptyStack<T>
         if index + 1 == self.len()
         {
             &mut self.last
-        }else 
-        { 
+        }else
+        {
             &mut self.stack[index]
         }
     }
@@ -231,7 +231,7 @@ impl<T> Length for NonEmptyStack<T>
     fn is_not_empty(&self) -> bool { true }
 }
 
-impl<T> Capacity for NonEmptyStack<T> 
+impl<T> Capacity for NonEmptyStack<T>
 {
     type Param=T;
 
@@ -241,7 +241,7 @@ impl<T> Capacity for NonEmptyStack<T>
 
     fn reserve(&mut self, additional: usize) { self.stack.reserve(additional.saturating_sub(1)); }
     fn reserve_exact(&mut self, additional: usize) { self.stack.reserve_exact(additional.saturating_sub(1)); }
-    
+
     fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.stack.try_reserve(additional.saturating_sub(1)) }
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.stack.try_reserve_exact(additional.saturating_sub(1)) }
 }

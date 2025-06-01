@@ -5,19 +5,20 @@
 #![allow(dead_code)]
 use crate::*;
 
+pub type GpuFloat = f32;
+
 pub type GpuMat1 = Matrix1<GpuFloat>;
 pub type GpuMat2 = Matrix2<GpuFloat>;
 pub type GpuMat3 = Matrix3<GpuFloat>;
 pub type GpuMat4 = Matrix4<GpuFloat>;
 
-pub type GpuFloat = f32;
 
 pub trait ToGpuFloat
 {
     type Output;
     fn to_gpu_float(self) -> Self::Output;
 }
-impl<T> ToGpuFloat for T where T : ToF32
+impl<T> ToGpuFloat for T where T: ToF32
 {
     type Output=T::Output;
     fn to_gpu_float(self) -> Self::Output { self.to_f32() }
@@ -48,7 +49,7 @@ pub trait ToGpuInt
     type Output;
     fn to_gpu_int(self) -> Self::Output;
 }
-impl<T> ToGpuInt for T where T : ToI32
+impl<T> ToGpuInt for T where T: ToI32
 {
     type Output=T::Output;
     fn to_gpu_int(self) -> Self::Output { self.to_i32() }
@@ -66,7 +67,7 @@ pub trait ToGpuUint
     type Output;
     fn to_gpu_uint(self) -> Self::Output;
 }
-impl<T> ToGpuUint for T where T : ToU32
+impl<T> ToGpuUint for T where T: ToU32
 {
     type Output=T::Output;
     fn to_gpu_uint(self) -> Self::Output { self.to_u32() }
@@ -83,7 +84,7 @@ impl<S,T> ToGpuColor<T> for S where S : IColor<T>, T : Primitive
         self.to_rgba_of::<GpuFloat>()
     }
 }
-pub type GpuColor = ColorRgbaOf<float>;
+pub type GpuColor = ColorRgbaOf<GpuFloat>;
 
 
 

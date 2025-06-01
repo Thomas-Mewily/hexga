@@ -1,6 +1,6 @@
 ## HexGa Undo Redo
 
-Fundamentally, this crate don't directly handle `command` but lower building block call `action`. 
+Fundamentally, this crate don't directly handle `command` but lower building block call `action`.
 The implementation for doing and undoing an action is also the same, because it just a matter of executing an different action to undo.
 
 
@@ -8,7 +8,7 @@ A `command` is just a composition of `action`.
 
 This crate then also provide abstraction to execute command. The main challenge of command is that a command can be TODO
 
-An implementation of the [Command pattern](https://en.wikipedia.org/wiki/Command_pattern) that can be used to program undo / redo ! 
+An implementation of the [Command pattern](https://en.wikipedia.org/wiki/Command_pattern) that can be used to program undo / redo !
 
 
 ### Usage Example
@@ -49,20 +49,20 @@ Unlike other crate like [undo](https://crates.io/crates/undo), when doing a acti
 
 - Pros :
     - Allow some small optimisations, like avoiding emitting an undo action if there is no need.
-    
+
     - You can define how to undo an action by calling multiple other undo action. Composition become easier, so some complexe action like `replacing all even value by 0 in a vector` become trivial to implement (you can emit multiples `action::vec::Replace` without allocating a new vector for the action)
 
     - Very conveniant for video game/simulation application.
 
 
-- Cons : 
+- Cons :
     - 1 action executed = N actions to undo it (generally 0 or 1), so to undo 1 action you need to use some sentinel value.
 
 ```rust
 use hexga_undo_redo::*;
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-pub enum PushOrPop<T> where T : Clone
+pub enum PushOrPop<T> where T: Clone
 {
     Pop,
     Push(T),
@@ -119,7 +119,7 @@ This crate also handle the composition of multiple action, even if they have the
 #[derive(Default, PartialEq, Eq, Debug)]
 pub struct Data
 {
-    // Note that both field have the **same** type, 
+    // Note that both field have the **same** type,
     // but we need to but there needs to be a way to differentiate
     // if a action is done on `odd` or `even`
     odd  : Vec<i32>,
@@ -138,7 +138,7 @@ impl UndoAction for DataAction
     type Context<'a> = &'a mut Data;
     type Output<'a> = ();
 
-    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo> 
+    fn execute<'a, U>(self, context : Self::Context<'a>, undo : &mut U) -> Self::Output<'a> where U : UndoStack<Self::Undo>
     {
         match self
         {
@@ -162,7 +162,7 @@ impl Data
     }
 }
 
-fn main() 
+fn main()
 {
     let mut d = Data::default();
     let mut undo_action = Vec::new();

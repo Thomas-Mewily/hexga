@@ -42,11 +42,11 @@ impl IoErrorKind
     pub fn from_internal_error     (err : IoErrorInternal) -> IoErrorKind { IoErrorKind::Internal(err.to_string(), err.kind()) }
     pub fn from_internal_error_kind(err : IoErrorInternalKind) -> IoErrorKind { IoErrorKind::Internal("".to_owned(), err) }
 
-    pub fn missing_load_extension<T: ?Sized>() -> Self where T : IoLoad { Self::MissingExtension { name: std::any::type_name::<T>().to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
-    pub fn missing_save_extension<T: ?Sized>() -> Self where T : IoSave { Self::MissingExtension { name: std::any::type_name::<T>().to_owned(), expected: T::save_extensions().map(|v| v.to_owned()).collect() }}
+    pub fn missing_load_extension<T: ?Sized>() -> Self where T: IoLoad { Self::MissingExtension { name: std::any::type_name::<T>().to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
+    pub fn missing_save_extension<T: ?Sized>() -> Self where T: IoSave { Self::MissingExtension { name: std::any::type_name::<T>().to_owned(), expected: T::save_extensions().map(|v| v.to_owned()).collect() }}
 
-    pub fn unsupported_open_extension<T: ?Sized>(ext : &extension) -> Self where T : IoLoad { Self::UnsupportedExtension { name: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
-    pub fn unsupported_save_extension<T: ?Sized>(ext : &extension) -> Self where T : IoSave { Self::UnsupportedExtension { name: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::save_extensions().map(|v| v.to_owned()).collect() }}
+    pub fn unsupported_open_extension<T: ?Sized>(ext : &extension) -> Self where T: IoLoad { Self::UnsupportedExtension { name: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
+    pub fn unsupported_save_extension<T: ?Sized>(ext : &extension) -> Self where T: IoSave { Self::UnsupportedExtension { name: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::save_extensions().map(|v| v.to_owned()).collect() }}
 
     pub fn serialize<T: ?Sized>  (ext : &extension, err : impl ToDebug) -> Self { IoErrorKind::Markup(std::any::type_name::<T>().to_owned(), ext.to_owned(), err.to_debug()) }
     pub fn deserialize<T: ?Sized>(ext : &extension, err : impl ToDebug) -> Self { IoErrorKind::Markup(std::any::type_name::<T>().to_owned(), ext.to_owned(), err.to_debug()) }

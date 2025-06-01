@@ -1,8 +1,8 @@
 use crate::*;
 
-/* 
+/*
 pub trait Collection : Length /* + Capacity */ {}  // slice and str don't impl capacity
-impl<T : ?Sized> Collection for T where T : Length {}
+impl<T : ?Sized> Collection for T where T: Length {}
 */
 
 /// A special kind of collection where the order of insertion / deletion is conserved with index and pop()
@@ -32,7 +32,7 @@ pub trait Push<T>
     /// Push a value and return it's index.
     fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error>;
 }
-/* 
+/*
 pub trait Insert<T>
 {
     type Output;
@@ -48,9 +48,9 @@ pub trait Insert<T>
 pub trait InsertSequence<T> : Push<T> + Extend<T>
 {
     /// Some special collection kind like SlotVec or GenVec need to be aware that you are pushing a sequence.
-    /// 
+    ///
     /// Return the index of the first inserted element, or none if the sequence is empty
-    fn insert_sequence<'a, S>(&mut self, sequence : S) -> Option<Self::Output> where S : IntoIterator<Item=T> 
+    fn insert_sequence<'a, S>(&mut self, sequence : S) -> Option<Self::Output> where S : IntoIterator<Item=T>
     {
         let mut it = sequence.into_iter();
 
@@ -78,7 +78,7 @@ pub trait Pop<T>
     type Error;
     fn try_pop(&mut self) -> Result<T, Self::Error>;
 }
-/* 
+/*
 pub trait RemoveSequence<T> : InsertSequence<T>
 {
     fn pop_sequence(&mut self, index : Self::Output) -> Option<impl Iterator<Item = T>> { self.try_pop_sequence(index).ok() }
@@ -90,13 +90,13 @@ pub trait RemoveSequence<T> : InsertSequence<T>
 impl<T> Push<T> for Vec<T>
 {
     type Output = usize;
-    fn push(&mut self, value : T) -> Self::Output 
+    fn push(&mut self, value : T) -> Self::Output
     {
         let l = self.len();
         self.push(value);
         l
     }
-    
+
     type Error = (); // #proper_error
     fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error> { Ok(Push::push(self, value)) }
 }
@@ -104,13 +104,13 @@ impl<T> Push<T> for Vec<T>
 impl<T> Push<T> for VecDeque<T>
 {
     type Output = usize;
-    fn push(&mut self, value : T) -> Self::Output 
+    fn push(&mut self, value : T) -> Self::Output
     {
         let l = self.len();
         self.push_back(value);
         l
     }
-    
+
     type Error = (); // #proper_error
     fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error> { Ok(Push::push(self, value)) }
 }
@@ -121,7 +121,7 @@ impl<T> Push<T> for LinkedList<T>
     fn push(&mut self, value : T) -> Self::Output {
         self.push_back(value);
     }
-    
+
     type Error = (); // #proper_error
     fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error> {
         self.push(value);
@@ -135,7 +135,7 @@ impl Push<char> for String
     fn push(&mut self, value : char) -> Self::Output {
         self.push(value);
     }
-    
+
     type Error = (); // #proper_error
     fn try_push(&mut self, value : char) -> Result<Self::Output, Self::Error> {
         self.push(value);
@@ -149,7 +149,7 @@ impl<'b> Push<&'b OsStr> for OsString
     fn push(&mut self, value : &'b OsStr) -> Self::Output {
         self.push(value);
     }
-    
+
     type Error = (); // #proper_error
     fn try_push(&mut self, value : &'b OsStr) -> Result<Self::Output, Self::Error> {
         self.push(value);

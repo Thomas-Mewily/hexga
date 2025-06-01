@@ -2,7 +2,7 @@ use crate::*;
 
 /// 2 dimensions : x, y
 #[repr(C)]
-pub struct CoordXY<T> 
+pub struct CoordXY<T>
 {
     pub x : T,
     pub y : T,
@@ -43,7 +43,7 @@ pub type Coef2 = Vec2;
 pub type Point2 = Vector2<int>;
 pub const fn point2(x : int, y : int) -> Point2 { Point2::new(x, y) }
 
-impl<T> HaveX<T> for Vector2<T> 
+impl<T> HaveX<T> for Vector2<T>
 {
     fn iter_x<'a>(&'a self) -> impl Iterator<Item=&'a T> where T: 'a {
         self.array().as_slice()[0..=Self::X_INDEX].iter()
@@ -53,10 +53,10 @@ impl<T> HaveX<T> for Vector2<T>
         self.array_mut().as_mut_slice()[0..=Self::X_INDEX].iter_mut()
     }
 }
-impl<T> HaveXAndOne<T> for Vector2<T> where T : One + Zero { const X : Self = Vector2::new(T::ONE, T::ZERO); }
-impl<T> HaveXAndMinusOne<T> for Vector2<T> where T : MinusOne + Zero { const MINUS_X : Self = Vector2::new(T::MINUS_ONE, T::ZERO); }
+impl<T> HaveXAndOne<T> for Vector2<T> where T: One + Zero { const X : Self = Vector2::new(T::ONE, T::ZERO); }
+impl<T> HaveXAndMinusOne<T> for Vector2<T> where T: MinusOne + Zero { const MINUS_X : Self = Vector2::new(T::MINUS_ONE, T::ZERO); }
 
-impl<T> HaveY<T> for Vector2<T> 
+impl<T> HaveY<T> for Vector2<T>
 {
     fn iter_xy<'a>(&'a self) -> impl Iterator<Item=&'a T> where T: 'a {
         self.array().as_slice()[0..=Self::Y_INDEX].iter()
@@ -66,13 +66,13 @@ impl<T> HaveY<T> for Vector2<T>
         self.array_mut().as_mut_slice()[0..=Self::Y_INDEX].iter_mut()
     }
 }
-impl<T> HaveYAndOne<T> for Vector2<T> where T : One + Zero { const Y : Self = Vector2::new(T::ZERO, T::ONE); }
-impl<T> HaveYAndMinusOne<T> for Vector2<T> where T : MinusOne + Zero { const MINUS_Y : Self = Vector2::new(T::ZERO, T::MINUS_ONE); }
+impl<T> HaveYAndOne<T> for Vector2<T> where T: One + Zero { const Y : Self = Vector2::new(T::ZERO, T::ONE); }
+impl<T> HaveYAndMinusOne<T> for Vector2<T> where T: MinusOne + Zero { const MINUS_Y : Self = Vector2::new(T::ZERO, T::MINUS_ONE); }
 
 
-impl<T> From<Vector1<T>> for Vector2<T> where T : Default { fn from(value: Vector1<T>) -> Self { value.to_vector2() } }
-impl<T> From<Vector3<T>> for Vector2<T> where T : Default { fn from(value: Vector3<T>) -> Self { value.to_vector2() } }
-impl<T> From<Vector4<T>> for Vector2<T> where T : Default { fn from(value: Vector4<T>) -> Self { value.to_vector2() } }
+impl<T> From<Vector1<T>> for Vector2<T> where T: Default { fn from(value: Vector1<T>) -> Self { value.to_vector2() } }
+impl<T> From<Vector3<T>> for Vector2<T> where T: Default { fn from(value: Vector3<T>) -> Self { value.to_vector2() } }
+impl<T> From<Vector4<T>> for Vector2<T> where T: Default { fn from(value: Vector4<T>) -> Self { value.to_vector2() } }
 
 pub type Vector2Iter<T> = VectorIter<Vector2<T>, 2>;
 

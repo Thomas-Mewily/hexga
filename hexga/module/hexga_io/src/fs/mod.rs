@@ -29,11 +29,11 @@ pub trait IoFs : Sized
 
 pub trait IoFsWrite : IoFs
 {
-    fn save<T>(&mut self, path : &path, value : &T) -> IoResult where T : IoSave + ?Sized
+    fn save<T>(&mut self, path : &path, value : &T) -> IoResult where T: IoSave + ?Sized
     {
         self.save_with_extension(path, path.extension_or_empty(), value)
     }
-    fn save_with_extension<T>(&mut self, path : &path, mut extension: &extension, value : &T) -> IoResult where T : IoSave + ?Sized
+    fn save_with_extension<T>(&mut self, path : &path, mut extension: &extension, value : &T) -> IoResult where T: IoSave + ?Sized
     {
         if self.premature_abord() && self.have_error() { return Err(IoErrorKind::FsPrematureAbord); }
 
@@ -84,9 +84,9 @@ pub trait IoFsWrite : IoFs
 
 pub trait IoFsRead : IoFs
 {
-    fn load<T>(&mut self, path : &path) -> IoResult<T> where T : IoLoad + ?Sized { self.load_with_extension(path, path.extension_or_empty()) }
+    fn load<T>(&mut self, path : &path) -> IoResult<T> where T: IoLoad + ?Sized { self.load_with_extension(path, path.extension_or_empty()) }
 
-    fn load_with_extension<T>(&mut self, path : &path, extension : &extension) -> IoResult<T> where T : IoLoad + ?Sized
+    fn load_with_extension<T>(&mut self, path : &path, extension : &extension) -> IoResult<T> where T: IoLoad + ?Sized
     {
         if self.premature_abord() && self.have_error() { return Err(IoErrorKind::FsPrematureAbord); }
 

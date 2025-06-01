@@ -62,6 +62,9 @@ pub trait ToColorComposite
     type RgbaU8;
     fn to_rgba_u8(&self) -> Self::RgbaU8;
 
+    type RgbaU16;
+    fn to_rgba_u16(&self) -> Self::RgbaU16;
+
     type RgbaBool;
     fn to_rgba_bool(&self) -> Self::RgbaBool;
     fn to_rgba_mask(&self) -> Self::RgbaBool { self.to_rgba_bool() }
@@ -84,7 +87,7 @@ pub trait ToColorComposite
     fn to_hsla_f64(&self) -> Self::HslaF64;
 }
 
-impl<T, const N : usize> ToColorComposite for [T;N] where T : ToColorComposite
+impl<T, const N : usize> ToColorComposite for [T;N] where T: ToColorComposite
 {
     type RgbaF32 = [T::RgbaF32;N];
     fn to_rgba_f32(&self) -> Self::RgbaF32 { std::array::from_fn(|i| self[i].to_rgba_f32()) }
@@ -94,6 +97,9 @@ impl<T, const N : usize> ToColorComposite for [T;N] where T : ToColorComposite
 
     type RgbaU8 = [T::RgbaU8;N];
     fn to_rgba_u8(&self) -> Self::RgbaU8 { std::array::from_fn(|i| self[i].to_rgba_u8()) }
+
+    type RgbaU16 = [T::RgbaU16;N];
+    fn to_rgba_u16(&self) -> Self::RgbaU16 { std::array::from_fn(|i| self[i].to_rgba_u16()) }
 
     type RgbaBool = [T::RgbaBool;N];
     fn to_rgba_bool(&self) -> Self::RgbaBool { std::array::from_fn(|i| self[i].to_rgba_bool()) }
@@ -107,7 +113,7 @@ impl<T, const N : usize> ToColorComposite for [T;N] where T : ToColorComposite
     const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
 }
 
-impl<T> ToColorComposite for [T] where T : ToColorComposite
+impl<T> ToColorComposite for [T] where T: ToColorComposite
 {
     type RgbaF32 = Vec<T::RgbaF32>;
     fn to_rgba_f32(&self) -> Self::RgbaF32 { self.iter().map(|v| v.to_rgba_f32()).collect() }
@@ -117,6 +123,9 @@ impl<T> ToColorComposite for [T] where T : ToColorComposite
 
     type RgbaU8 = Vec<T::RgbaU8>;
     fn to_rgba_u8(&self) -> Self::RgbaU8 { self.iter().map(|v| v.to_rgba_u8()).collect() }
+
+    type RgbaU16 = Vec<T::RgbaU16>;
+    fn to_rgba_u16(&self) -> Self::RgbaU16 { self.iter().map(|v| v.to_rgba_u16()).collect() }
 
     type RgbaBool = Vec<T::RgbaBool>;
     fn to_rgba_bool(&self) -> Self::RgbaBool { self.iter().map(|v| v.to_rgba_bool()).collect() }
@@ -135,14 +144,14 @@ pub trait ToColor :
     <
         RgbaF32 = ColorRgbaOf<f32>, RgbaF64 = ColorRgbaOf<f64>,
         HslaF32 = ColorHslaF32, HslaF64 = ColorHslaF64,
-        RgbaU8 = ColorRgbaByte,
+        RgbaU8 = ColorRgbaU8,
         RgbaBool = ColorRgbaBool,
     > + Copy {}
 impl<T> ToColor for T where T: ToColorComposite
     <
         RgbaF32 = ColorRgbaOf<f32>, RgbaF64 = ColorRgbaOf<f64>,
         HslaF32 = ColorHslaF32, HslaF64 = ColorHslaF64,
-        RgbaU8 = ColorRgbaByte,
+        RgbaU8 = ColorRgbaU8,
         RgbaBool = ColorRgbaBool,
     > + Copy {}
 
@@ -150,7 +159,7 @@ impl<T> ToColor for T where T: ToColorComposite
 ///
 /// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#ff7f00`)
 pub trait IColor<T> : Sized + ToColor
-    where T : Primitive
+    where T: Primitive
 {
     const TRANSPARENT : Self;
 
@@ -216,19 +225,19 @@ pub trait IColor<T> : Sized + ToColor
     fn to_rgba_of<T2>(self) -> ColorRgbaOf<T2> where T2 : Primitive + CastRangeFrom<T>;
     fn to_hsla_of<T2>(self) -> ColorHslaOf<T2> where T2 : Float + CastRangeFrom<T>;
 
-    fn rgba_from_hex(hex: u32) -> ColorRgbaOf<T> where T : CastRangeFrom<u8>
+    fn rgba_from_hex(hex: u32) -> ColorRgbaOf<T> where T: CastRangeFrom<u8>
     {
         let [r,g,b,a] = hex.to_be_bytes();
         Self::rgba_from_bytes(r,g,b,a)
     }
-    fn rgba_from_array(rgba : [u8;4]) -> ColorRgbaOf<T> where T : CastRangeFrom<u8>
+    fn rgba_from_array(rgba : [u8;4]) -> ColorRgbaOf<T> where T: CastRangeFrom<u8>
     {
         let [r,g,b,a] = rgba;
         Self::rgba_from_bytes(r,g,b,a)
     }
-    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> ColorRgbaOf<T> where T : CastRangeFrom<u8>
+    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> ColorRgbaOf<T> where T: CastRangeFrom<u8>
     {
-        ColorRgbaByte::new(r, g, b, a).to_rgba_of()
+        ColorRgbaU8::new(r, g, b, a).to_rgba_of()
     }
 
     /// Cast to color byte and format the color : `#RRGGBBAA`

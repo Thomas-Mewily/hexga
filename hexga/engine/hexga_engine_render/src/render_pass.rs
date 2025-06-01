@@ -5,6 +5,8 @@ use super::*;
 pub struct RenderPassID { pub index : usize }
 
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PassAction
 {
@@ -12,10 +14,12 @@ pub enum PassAction
     Clear(ClearData)
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ClearData
 {
     pub color: Option<Color>,
-    pub depth: Option<f32>,
+    pub depth: Option<GpuFloat>,
     pub stencil: Option<i32>,
 }

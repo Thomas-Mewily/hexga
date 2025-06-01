@@ -13,7 +13,7 @@ pub trait RangeDefaultSampleExtension<I=usize> : RangeDefault where Range<Self> 
     /// Sample using the [RangeDefault] : `Self::RANGE_MIN..Self::MAX`
     fn sample(nb_sample: I) -> <Range::<Self> as RangeSampleExtension<I>>::Output;
 }
-impl<I,T> RangeDefaultSampleExtension<I> for T where T : RangeDefault, Range<T> : RangeSampleExtension<I>
+impl<I,T> RangeDefaultSampleExtension<I> for T where T: RangeDefault, Range<T> : RangeSampleExtension<I>
 {
     fn sample(nb_sample: I) -> <Range::<Self> as RangeSampleExtension<I>>::Output { (Self::RANGE_MIN..Self::RANGE_MAX).sample(nb_sample) }
 }
@@ -22,7 +22,7 @@ pub trait RangeDefaultSampleInclusiveExtension<I=usize> : RangeDefault where Ran
     /// Sample using the [RangeDefault] : `Self::RANGE_MIN..=Self::MAX`
     fn sample_inclusive(nb_sample: I) -> <RangeInclusive::<Self> as RangeSampleExtension<I>>::Output;
 }
-impl<I,T> RangeDefaultSampleInclusiveExtension<I> for T where T : RangeDefault, RangeInclusive<T> : RangeSampleExtension<I>
+impl<I,T> RangeDefaultSampleInclusiveExtension<I> for T where T: RangeDefault, RangeInclusive<T> : RangeSampleExtension<I>
 {
     fn sample_inclusive(nb_sample: I) -> <RangeInclusive::<Self> as RangeSampleExtension<I>>::Output { (Self::RANGE_MIN..=Self::RANGE_MAX).sample(nb_sample) }
 }

@@ -1,3 +1,4 @@
+use crate::*;
 use std::fmt::Debug;
 use hexga_core::prelude::*;
 
@@ -11,6 +12,8 @@ impl LoopEvent for () { fn handle_event(&mut self, _ : &Event) -> bool { true } 
 
 
 #[non_exhaustive]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, PartialEq)]
 pub enum Event
 {
@@ -41,6 +44,8 @@ impl From<CharEvent> for Event { fn from(value: CharEvent) -> Self { Self::from(
 impl From<KeyEvent> for Event { fn from(value: KeyEvent) -> Self { Self::from(KeyboardEvent::KeyEvent(value)) } }
 impl From<TouchEvent> for Event { fn from(value: TouchEvent) -> Self { Self::Touch(value) } }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TouchEvent
 {
@@ -49,8 +54,14 @@ pub struct TouchEvent
     pub position : Vec2,
 }
 
-pub type TouchID = u64;
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct TouchID { pub index : u64 }
+impl TouchID { pub const fn new(index : u64) -> Self { Self { index }}}
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum TouchPhase
 {
@@ -69,6 +80,8 @@ impl TouchPhase
 }
 
 #[non_exhaustive]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum WindowEvent
 {
@@ -89,6 +102,8 @@ pub struct DropFileEvent
     */
 
 #[non_exhaustive]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum KeyboardEvent
 {
@@ -107,6 +122,8 @@ impl Debug for KeyboardEvent
 }
 
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct KeyEvent
 {
@@ -124,6 +141,8 @@ impl Debug for KeyEvent
     }
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CharEvent
 {
@@ -139,6 +158,8 @@ impl Debug for CharEvent
 }
 
 #[non_exhaustive]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MouseEvent
 {
@@ -152,6 +173,8 @@ pub enum MouseEvent
     RawMove(Vec2),
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MouseMove
 {
@@ -159,6 +182,8 @@ pub struct MouseMove
     // delta : Vec2
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MouseButtonEvent
 {
@@ -168,6 +193,8 @@ pub struct MouseButtonEvent
 }
 
 #[non_exhaustive]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum MouseButton
@@ -185,6 +212,8 @@ impl MouseButton
     pub fn is_unknown(&self) -> bool { matches!(self, Self::Unknown) }
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Copy, Clone, PartialEq, Hash, Eq, Default)]
 pub struct KeyMods {
     pub shift: bool,
@@ -203,6 +232,8 @@ impl Debug for KeyMods
 }
 
 #[non_exhaustive]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
 #[repr(u16)]
 /// These keycode values are based off of X11's `keysymdef.h`.
