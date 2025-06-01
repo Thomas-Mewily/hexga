@@ -102,7 +102,12 @@ impl<'de, T, Idx> Deserialize<'de> for ImageBase<T, Idx>
                             if pixels.is_some() {
                                 return Err(serde::de::Error::duplicate_field("pixels"));
                             }
-                            if let Some(ref sz) = size {
+                            if let Some(ref sz) = size
+                            {
+                                if sz.area_usize_checked().is_none()
+                                {
+                                    return Err(serde::de::Error::custom(ImageBaseError::<Idx>::ToBig(*sz).to_debug()));
+                                }
                                 let seed = VecWithSizeHint::<T> {
                                     len: sz.area_usize(),
                                     _marker: PhantomData,
@@ -122,13 +127,7 @@ impl<'de, T, Idx> Deserialize<'de> for ImageBase<T, Idx>
                 match ImageBase::try_from_vec(size, pixels)
                 {
                     Ok(g) => Ok(g),
-                    Err(e) => Err(serde::de::Error::custom(
-                        match e
-                        {
-                            ImageBaseError::NegativeSize(vector) => format!("Area component of the image can't be negative : {:?}", vector),
-                            ImageBaseError::WrongDimension(vector, got) => format!("The area of the image ({:?} => {} pixels) does not match the number of pixels ({})", vector, vector.area_usize(), got),
-                        }
-                    ))
+                    Err(e) => Err(serde::de::Error::custom(e.to_debug()))
                 }
             }
         }

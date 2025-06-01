@@ -78,9 +78,10 @@ impl<T,const N : usize> Vector<T,N>
         }
     }
 
-    /// If any component is negative, return None,
+    /// If any component is strictly negative, return None,
+    ///
     /// If the multiplication overflow, return None
-    pub fn checked_area_usize(self) -> Option<usize> where T: Integer
+    pub fn area_usize_checked(self) -> Option<usize> where T: Integer
     {
         let mut area = 1usize;
         for v in self.iter()

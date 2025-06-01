@@ -6,13 +6,15 @@ pub enum GridBaseError<Idx, const N : usize> where Idx : Integer
     NegativeSize(Vector::<Idx,N>),
     /// (dim, got)
     WrongDimension(Vector<Idx,N>, usize),
+    ToBig(Vector<Idx,N>),
 }
 impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Idx : Integer
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> DResult {
         match self {
-            Self::NegativeSize(size) => write!(f, "grid have a negative size {:?}", size),
-            Self::WrongDimension(size, got) => write!(f, "grid vector have a wrong dimension : expected {:?} elements for a {:?} grid but only got {:?} elements", size.area(), size, got),
+            GridBaseError::NegativeSize(size) => write!(f, "Can't have a negative size {:?}", size),
+            GridBaseError::WrongDimension(size, got) => write!(f, "Wrong dimension : expected {:?} elements for a {:?} grid but got {:?} elements", size.area_usize(), size, got),
+            GridBaseError::ToBig(size) => write!(f, "The size {:?} is too big !", size),
         }
     }
 }
@@ -71,7 +73,12 @@ pub trait IGrid<T, Idx, const N : usize> :
     {
         let size = size.into();
         if *size.min_element() <= Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
-        let area_size = size.area_usize();
+
+        let area_size= match size.area_usize_checked()
+        {
+            Some(v) => v,
+            None => return Err(GridBaseError::ToBig(size)),
+        };
         if area_size != value.len() { return Err(GridBaseError::WrongDimension(size, area_size)); }
         Ok(unsafe { Self::from_vec_unchecked(size, value) })
     }

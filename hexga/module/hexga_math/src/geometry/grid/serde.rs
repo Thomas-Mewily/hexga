@@ -102,7 +102,12 @@ impl<'de, T, Idx, const N : usize> Deserialize<'de> for GridBase<T, Idx, N>
                             if values.is_some() {
                                 return Err(serde::de::Error::duplicate_field("values"));
                             }
-                            if let Some(ref sz) = size {
+                            if let Some(ref sz) = size
+                            {
+                                if sz.area_usize_checked().is_none()
+                                {
+                                    return Err(serde::de::Error::custom(GridBaseError::<Idx,N>::ToBig(*sz).to_debug()));
+                                }
                                 let seed = VecWithSizeHint::<T> {
                                     len: sz.area_usize(),
                                     _marker: PhantomData,
@@ -122,13 +127,7 @@ impl<'de, T, Idx, const N : usize> Deserialize<'de> for GridBase<T, Idx, N>
                 match GridBase::try_from_vec(size, values)
                 {
                     Ok(g) => Ok(g),
-                    Err(e) => Err(serde::de::Error::custom(
-                        match e
-                        {
-                            GridBaseError::NegativeSize(vector) => format!("Area component of the grid can't be negative : {:?}", vector),
-                            GridBaseError::WrongDimension(vector, got) => format!("The area of the grid ({:?} => {} values) does not match the number of values ({})", vector, vector.area_usize(), got),
-                        }
-                    ))
+                    Err(e) => Err(serde::de::Error::custom(e.to_debug()))
                 }
             }
         }
