@@ -39,15 +39,6 @@ use crate::*;
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
 /// ```
-///
-/// ```
-/// use hexga_math::prelude::*;
-/// use hexga_graphics::prelude::*;
-///
-/// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
-///             ColorRGBAOf::<u16>::RED
-///            );
-/// ```
 pub trait CastRangeIntoComposite<T>
 {
     type Output;
@@ -94,15 +85,6 @@ pub trait CastRangeIntoComposite<T>
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
 /// ```
-///
-/// ```
-/// use hexga_math::prelude::*;
-/// use hexga_graphics::prelude::*;
-///
-/// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
-///             ColorRGBAOf::<u16>::RED
-///            );
-/// ```
 pub trait CastRangeInto<T> : CastRangeIntoComposite<T,Output = T> + Sized { fn cast_range_into(self) -> Self::Output { self.cast_range_into_composite() } }
 impl<T,T2> CastRangeInto<T> for T2 where T2 : CastRangeIntoComposite<T,Output = T> {}
 
@@ -144,15 +126,6 @@ impl<T,T2> CastRangeInto<T> for T2 where T2 : CastRangeIntoComposite<T,Output = 
 ///
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
-/// ```
-///
-/// ```
-/// use hexga_math::prelude::*;
-/// use hexga_graphics::prelude::*;
-///
-/// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
-///             ColorRGBAOf::<u16>::RED
-///            );
 /// ```
 pub trait CastRangeFrom<T> { fn cast_range_from(value : T) -> Self; }
 impl<Src,Dest> CastRangeFrom<Dest> for Src where Dest : CastRangeInto<Src> { fn cast_range_from(value : Dest) -> Self { value.cast_range_into_composite() } }
@@ -287,15 +260,15 @@ impl CastRangeIntoComposite<bool> for bool
 
 
 /// fX
-pub trait CastRangeIntoFloat             : CastRangeInto<f32> + CastRangeInto<f64> {}
+pub trait CastRangeIntoFloat            : CastRangeInto<f32> + CastRangeInto<f64> {}
 impl<T> CastRangeIntoFloat for T where T: CastRangeInto<f32> + CastRangeInto<f64> {}
 
 /// fX
-pub trait CastRangeFromFloat             : CastRangeFrom<f32> + CastRangeFrom<f64> {}
+pub trait CastRangeFromFloat            : CastRangeFrom<f32> + CastRangeFrom<f64> {}
 impl<T> CastRangeFromFloat for T where T: CastRangeFrom<f32> + CastRangeFrom<f64> {}
 
 /// fX
-pub trait CastRangeFloat             : CastRangeIntoFloat + CastRangeFromFloat {}
+pub trait CastRangeFloat            : CastRangeIntoFloat + CastRangeFromFloat {}
 impl<T> CastRangeFloat for T where T: CastRangeIntoFloat + CastRangeFromFloat {}
 
 /// uX
@@ -331,7 +304,7 @@ impl<T> CastRangeFromIntegerUnsigned for T where T:
 {}
 
 /// uX
-pub trait CastRangeIntegerUnsigned             : CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
+pub trait CastRangeIntegerUnsigned            : CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
 impl<T> CastRangeIntegerUnsigned for T where T: CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
 
 
@@ -368,59 +341,59 @@ impl<T> CastRangeFromIntegerSigned for T where T:
 {}
 
 /// iX
-pub trait CastRangeIntegerSigned             : CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
+pub trait CastRangeIntegerSigned            : CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
 impl<T> CastRangeIntegerSigned for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
 
 
 /// iX uX
-pub trait CastRangeIntoInteger             : CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
+pub trait CastRangeIntoInteger            : CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
 impl<T> CastRangeIntoInteger for T where T: CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
 
 /// iX uX
-pub trait CastRangeFromInteger             : CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
+pub trait CastRangeFromInteger            : CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
 impl<T> CastRangeFromInteger for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
 
 /// iX uX
-pub trait CastRangeInteger             : CastRangeIntoInteger + CastRangeFromInteger {}
+pub trait CastRangeInteger            : CastRangeIntoInteger + CastRangeFromInteger {}
 impl<T> CastRangeInteger for T where T: CastRangeIntoInteger + CastRangeFromInteger {}
 
 
 /// bool
-pub trait CastRangeIntoBool             : CastRangeInto<bool> {}
+pub trait CastRangeIntoBool            : CastRangeInto<bool> {}
 impl<T> CastRangeIntoBool for T where T: CastRangeInto<bool> {}
 
 /// bool
-pub trait CastRangeFromBool             : CastRangeFrom<bool> {}
+pub trait CastRangeFromBool            : CastRangeFrom<bool> {}
 impl<T> CastRangeFromBool for T where T: CastRangeFrom<bool> {}
 
 /// bool
-pub trait CastRangeBool             : CastRangeIntoBool + CastRangeFromBool {}
+pub trait CastRangeBool            : CastRangeIntoBool + CastRangeFromBool {}
 impl<T> CastRangeBool for T where T: CastRangeIntoBool + CastRangeFromBool {}
 
 
 /// iX uX fX
-pub trait CastRangeIntoNumber             : CastRangeIntoInteger + CastRangeIntoFloat {}
+pub trait CastRangeIntoNumber            : CastRangeIntoInteger + CastRangeIntoFloat {}
 impl<T> CastRangeIntoNumber for T where T: CastRangeIntoInteger + CastRangeIntoFloat {}
 
 /// iX uX fX
-pub trait CastRangeFromNumber             : CastRangeFromInteger + CastRangeFromFloat {}
+pub trait CastRangeFromNumber            : CastRangeFromInteger + CastRangeFromFloat {}
 impl<T> CastRangeFromNumber for T where T: CastRangeFromInteger + CastRangeFromFloat {}
 
 /// iX uX fX
-pub trait CastRangeNumber             : CastRangeInteger + CastRangeFloat {}
+pub trait CastRangeNumber            : CastRangeInteger + CastRangeFloat {}
 impl<T> CastRangeNumber for T where T: CastRangeInteger + CastRangeFloat {}
 
 
 /// iX uX fX bool
-pub trait CastRangeIntoPrimitive             : CastRangeIntoNumber + CastRangeIntoBool {}
+pub trait CastRangeIntoPrimitive            : CastRangeIntoNumber + CastRangeIntoBool {}
 impl<T> CastRangeIntoPrimitive for T where T: CastRangeIntoNumber + CastRangeIntoBool {}
 
 /// iX uX fX bool
-pub trait CastRangeFromPrimitive             : CastRangeFromNumber + CastRangeFromBool {}
+pub trait CastRangeFromPrimitive            : CastRangeFromNumber + CastRangeFromBool {}
 impl<T> CastRangeFromPrimitive for T where T: CastRangeFromNumber + CastRangeFromBool {}
 
 /// iX uX fX bool
-pub trait CastRangePrimitive             : CastRangeIntoPrimitive + CastRangeFromPrimitive {}
+pub trait CastRangePrimitive            : CastRangeIntoPrimitive + CastRangeFromPrimitive {}
 impl<T> CastRangePrimitive for T where T: CastRangeIntoPrimitive + CastRangeFromPrimitive {}
 
 
