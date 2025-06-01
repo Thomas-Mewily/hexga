@@ -73,6 +73,9 @@ fn main()
     let a = 90.degree();
     let ma = [1,2,3].degree();
 
+    let i = Grid2::<i32>::new(___());
+    let k = i.to_u16();
+
     //let x : f32 = 32u8.cast_into();
 
     let i = Image::from_fn((16, 16), |(x,y)|

@@ -111,6 +111,49 @@ impl<T, Idx, const N : usize> Crop<Idx,N> for GridBase<T, Idx, N>
     }
 }
 
+impl<T, Idx, const N : usize, Dest> CastIntoComposite<Dest> for GridBase<T, Idx, N>
+    where Idx : Integer, T : CastIntoComposite<Dest>
+{
+    type Output = GridBase<T::Output,Idx,N>;
+    fn cast_into_composite(self) -> Self::Output {
+        self.map(|v| v.cast_into_composite())
+    }
+}
+impl<T, Idx, const N : usize, Dest> CastRangeIntoComposite<Dest> for GridBase<T, Idx, N>
+    where Idx : Integer, T : CastRangeIntoComposite<Dest>
+{
+    type Output = GridBase<T::Output,Idx,N>;
+    fn cast_range_into_composite(self) -> Self::Output {
+        self.map(|v| v.cast_range_into_composite())
+    }
+}
+impl<T, Idx, const N : usize> ToUnsigned for GridBase<T, Idx, N>
+    where Idx : Integer, T : ToUnsigned
+{
+    type Output = GridBase<T::Output,Idx,N>;
+
+    fn to_unsigned(self) -> Self::Output {
+        self.map(|v| v.to_unsigned())
+    }
+}
+impl<T, Idx, const N : usize> ToSigned for GridBase<T, Idx, N>
+    where Idx : Integer, T : ToSigned
+{
+    type Output = GridBase<T::Output,Idx,N>;
+
+    fn to_signed(self) -> Self::Output {
+        self.map(|v| v.to_signed())
+    }
+}
+
+impl<T, Idx, const N : usize> Abs for GridBase<T, Idx, N>
+    where Idx : Integer, T : Abs
+{
+    type Output = GridBase<T::Output,Idx,N>;
+    fn abs(self) -> Self::Output {
+        self.map(|v| v.abs())
+    }
+}
 
 #[cfg(test)]
 mod grid_test

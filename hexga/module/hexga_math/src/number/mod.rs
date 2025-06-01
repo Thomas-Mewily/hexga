@@ -22,5 +22,5 @@ pub use floating::*;
 mod integer;
 pub use integer::*;
 
-mod to_type;
-pub use to_type::*;
+mod cast_to_primitive;
+pub use cast_to_primitive::*;

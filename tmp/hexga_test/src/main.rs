@@ -22,7 +22,7 @@ impl MainLoop for TestCtx
 
     }
 
-    fn draw(&mut self, ctx : &mut Context) {
+    fn draw(&mut self) {
 
     }
 }
