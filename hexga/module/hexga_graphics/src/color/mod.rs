@@ -1,8 +1,8 @@
-mod color_rgba;
-pub use color_rgba::*;
+mod rgba;
+pub use rgba::*;
 
-mod color_hsla;
-pub use color_hsla::*;
+mod hsla;
+pub use hsla::*;
 
 mod icolor;
 pub use icolor::*;

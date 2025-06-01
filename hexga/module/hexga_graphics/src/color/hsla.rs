@@ -224,3 +224,38 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
             _ => ColorKind::Unknow,
         };
 }
+
+
+
+impl<T> CastIntoComposite<T> for ColorHslaOf<T> where T : CastIntoComposite<T>
+{
+    type Output=ColorHslaOf<T::Output>;
+    fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
+}
+impl<T> CastRangeIntoComposite<T> for ColorHslaOf<T> where T : CastRangeIntoComposite<T>
+{
+    type Output=ColorHslaOf<T::Output>;
+    fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
+}
+impl<T> ToUnsigned for ColorHslaOf<T> where T : ToUnsigned
+{
+    type Output=ColorHslaOf<T::Output>;
+    fn to_unsigned(self) -> Self::Output { self.map(|v| v.to_unsigned()) }
+}
+impl<T> ToSigned for ColorHslaOf<T> where T : ToSigned
+{
+    type Output=ColorHslaOf<T::Output>;
+    fn to_signed(self) -> Self::Output { self.map(|v| v.to_signed()) }
+}
+impl<T> Abs for ColorHslaOf<T> where T : Abs
+{
+    type Output=ColorHslaOf<T::Output>;
+    fn abs(self) -> Self::Output { self.map(|v| v.abs()) }
+}
+map_on_constant!
+(
+    (($trait_name: tt, $constant_name: tt)) =>
+    {
+        impl<T> $trait_name for ColorHslaOf<T> where T: $trait_name + Copy { const $constant_name : Self = Self::splat_hsla(T::$constant_name); }
+    }
+);

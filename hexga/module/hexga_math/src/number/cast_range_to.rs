@@ -31,13 +31,18 @@ use crate::*;
 /// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
 /// ```
 ///
-/// Also work with composite like [std::array], [Vector], [ColorRGBA]...
+/// Also work with composite like [std::array], [Vector]...
 ///
 /// ```
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
+/// ```
+///
+/// ```
+/// use hexga_math::prelude::*;
+/// use hexga_graphics::prelude::*;
 ///
 /// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
 ///             ColorRGBAOf::<u16>::RED
@@ -81,13 +86,18 @@ pub trait CastRangeIntoComposite<T>
 /// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
 /// ```
 ///
-/// Also work with composite like [std::array], [Vector], [ColorRGBA]...
+/// Also work with composite like [std::array], [Vector]...
 ///
 /// ```
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
+/// ```
+///
+/// ```
+/// use hexga_math::prelude::*;
+/// use hexga_graphics::prelude::*;
 ///
 /// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
 ///             ColorRGBAOf::<u16>::RED
@@ -127,13 +137,18 @@ impl<T,T2> CastRangeInto<T> for T2 where T2 : CastRangeIntoComposite<T,Output = 
 /// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
 /// ```
 ///
-/// Also work with composite like [std::array], [Vector], [ColorRGBA]...
+/// Also work with composite like [std::array], [Vector]...
 ///
 /// ```
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
 /// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
+/// ```
+///
+/// ```
+/// use hexga_math::prelude::*;
+/// use hexga_graphics::prelude::*;
 ///
 /// assert_eq!(<ColorRGBAOf::<u8> as CastRangeIntoComposite<u16>>::cast_range_into_composite(ColorRGBAOf::<u8>::RED),
 ///             ColorRGBAOf::<u16>::RED

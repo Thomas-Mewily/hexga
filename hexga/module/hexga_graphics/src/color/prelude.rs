@@ -1,6 +1,6 @@
 use crate::*;
 
-pub use super::color_rgba::*;
+pub use super::rgba::*;
 //pub use color_hsla::*;
 pub use super::icolor::*;
 

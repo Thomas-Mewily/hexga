@@ -234,3 +234,37 @@ impl<T> ToColorComposite for ColorRgbaOf<T> where T: Primitive
         }
     };
 }
+
+
+impl<T> CastIntoComposite<T> for ColorRgbaOf<T> where T : CastIntoComposite<T>
+{
+    type Output=ColorRgbaOf<T::Output>;
+    fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
+}
+impl<T> CastRangeIntoComposite<T> for ColorRgbaOf<T> where T : CastRangeIntoComposite<T>
+{
+    type Output=ColorRgbaOf<T::Output>;
+    fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
+}
+impl<T> ToUnsigned for ColorRgbaOf<T> where T : ToUnsigned
+{
+    type Output=ColorRgbaOf<T::Output>;
+    fn to_unsigned(self) -> Self::Output { self.map(|v| v.to_unsigned()) }
+}
+impl<T> ToSigned for ColorRgbaOf<T> where T : ToSigned
+{
+    type Output=ColorRgbaOf<T::Output>;
+    fn to_signed(self) -> Self::Output { self.map(|v| v.to_signed()) }
+}
+impl<T> Abs for ColorRgbaOf<T> where T : Abs
+{
+    type Output=ColorRgbaOf<T::Output>;
+    fn abs(self) -> Self::Output { self.map(|v| v.abs()) }
+}
+map_on_constant!
+(
+    (($trait_name: tt, $constant_name: tt)) =>
+    {
+        impl<T> $trait_name for ColorRgbaOf<T> where T: $trait_name + Copy { const $constant_name : Self = Self::splat_rgba(T::$constant_name); }
+    }
+);
