@@ -145,6 +145,7 @@ pub trait ToColor :
         RgbaF32 = ColorRgbaOf<f32>, RgbaF64 = ColorRgbaOf<f64>,
         HslaF32 = ColorHslaF32, HslaF64 = ColorHslaF64,
         RgbaU8 = ColorRgbaU8,
+        RgbaU16 = ColorRgbaU16,
         RgbaBool = ColorRgbaBool,
     > + Copy {}
 impl<T> ToColor for T where T: ToColorComposite
@@ -152,6 +153,7 @@ impl<T> ToColor for T where T: ToColorComposite
         RgbaF32 = ColorRgbaOf<f32>, RgbaF64 = ColorRgbaOf<f64>,
         HslaF32 = ColorHslaF32, HslaF64 = ColorHslaF64,
         RgbaU8 = ColorRgbaU8,
+        RgbaU16 = ColorRgbaU16,
         RgbaBool = ColorRgbaBool,
     > + Copy {}
 
@@ -228,14 +230,14 @@ pub trait IColor<T> : Sized + ToColor
     fn rgba_from_hex(hex: u32) -> ColorRgbaOf<T> where T: CastRangeFrom<u8>
     {
         let [r,g,b,a] = hex.to_be_bytes();
-        Self::rgba_from_bytes(r,g,b,a)
+        Self::rgba_from_u8(r,g,b,a)
     }
     fn rgba_from_array(rgba : [u8;4]) -> ColorRgbaOf<T> where T: CastRangeFrom<u8>
     {
         let [r,g,b,a] = rgba;
-        Self::rgba_from_bytes(r,g,b,a)
+        Self::rgba_from_u8(r,g,b,a)
     }
-    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> ColorRgbaOf<T> where T: CastRangeFrom<u8>
+    fn rgba_from_u8(r : u8, g : u8, b : u8, a : u8) -> ColorRgbaOf<T> where T: CastRangeFrom<u8>
     {
         ColorRgbaU8::new(r, g, b, a).to_rgba_of()
     }

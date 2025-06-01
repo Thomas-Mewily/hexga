@@ -51,6 +51,15 @@ impl<'a,C,Idx> From<GridView<'a,GridBase<C,Idx,2>,C,Idx,2>> for ImageBase<C, Idx
     fn from(value: GridView<'a,GridBase<C,Idx,2>,C,Idx,2>) -> Self { value.to_image() }
 }
 
+impl<C,Idx> ToImage for ImageBase<C,Idx> where Idx : Integer
+{
+    type Output=Self;
+    fn to_image(self) -> Self::Output {
+        self
+    }
+}
+
+
 impl<C,Idx> ToImage for GridBase<C,Idx,2> where Idx : Integer
 {
     type Output = ImageBase<C, Idx>;
@@ -68,6 +77,23 @@ impl<C,Idx> ToImage for GridBase<C,Idx,2> where Idx : Integer
         unsafe { ImageBase::from_vec_unchecked(size, values) }
     }
 }
+impl<C,Idx> ToGrid<C,Idx,2> for ImageBase<C, Idx> where Idx : Integer
+{
+    type Output = GridBase<C, Idx,2>;
+    fn to_grid(mut self) -> Self::Output {
+        let (w,h) = self.size().into();
+        for x in Idx::iter(w)
+        {
+            for y in Idx::iter(h / Idx::two())
+            {
+                unsafe { self.swap_unchecked(vector2(x, y), vector2(x, h - y - Idx::ONE)) };
+            }
+        }
+        let (size, values) = self.into_size_and_values();
+        unsafe { GridBase::from_vec_unchecked(size, values) }
+    }
+}
+
 
 impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where Idx : Integer, C : Clone
 {
@@ -294,27 +320,27 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToCo
 }
 
 
-impl<C,Idx> CastIntoComposite<C> for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite, C : CastIntoComposite<C>
+impl<C,Idx> CastIntoComposite<C> for ImageBase<C, Idx> where Idx : Integer, C : CastIntoComposite<C>
 {
     type Output=ImageBase<C::Output, Idx>;
     fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
 }
-impl<C,Idx> CastRangeIntoComposite<C> for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite, C : CastRangeIntoComposite<C>
+impl<C,Idx> CastRangeIntoComposite<C> for ImageBase<C, Idx> where Idx : Integer, C : CastRangeIntoComposite<C>
 {
     type Output=ImageBase<C::Output, Idx>;
     fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
 }
-impl<C,Idx> ToUnsigned for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite, C : ToUnsigned
+impl<C,Idx> ToUnsigned for ImageBase<C, Idx> where Idx : Integer, C : ToUnsigned
 {
     type Output=ImageBase<C::Output, Idx>;
     fn to_unsigned(self) -> Self::Output { self.map(|v| v.to_unsigned()) }
 }
-impl<C,Idx> ToSigned for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite, C : ToSigned
+impl<C,Idx> ToSigned for ImageBase<C, Idx> where Idx : Integer, C : ToSigned
 {
     type Output=ImageBase<C::Output, Idx>;
     fn to_signed(self) -> Self::Output { self.map(|v| v.to_signed()) }
 }
-impl<C,Idx> Abs for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite, C : Abs
+impl<C,Idx> Abs for ImageBase<C, Idx> where Idx : Integer, C : Abs
 {
     type Output=ImageBase<C::Output, Idx>;
     fn abs(self) -> Self::Output { self.map(|v| v.abs()) }

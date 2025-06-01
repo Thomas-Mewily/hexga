@@ -63,7 +63,7 @@ fn main()
     dbg!(ColorRgbaF32::RED);
 
     let c = ColorU8::RED;
-    let c2 = c.to_float();
+    let c2 = c.to_u8();
 
     let a = 90.degree();
     let ma = [1,2,3].degree();
