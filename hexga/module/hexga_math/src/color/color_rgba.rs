@@ -1,17 +1,17 @@
 use crate::*;
 
-pub type Color      = ColorRGBA;
-pub type ColorByte  = ColorRGBAByte;
-pub type ColorBool  = ColorRGBABool;
-pub type ColorMask  = ColorRGBAMask;
+pub type Color      = ColorRgba;
+pub type ColorU8    = ColorRgbaByte;
+pub type ColorBool  = ColorRgbaBool;
+pub type ColorMask  = ColorRgbaMask;
 
-pub type ColorRGBA      = ColorRGBAOf<float>;
-pub type ColorRGBAFloat = ColorRGBAOf<float>;
-pub type ColorRGBAF32   = ColorRGBAOf<f32>;
-pub type ColorRGBAF64   = ColorRGBAOf<f64>;
-pub type ColorRGBAByte  = ColorRGBAOf<u8>;
-pub type ColorRGBAMask  = ColorRGBABool;
-pub type ColorRGBABool  = ColorRGBAOf<bool>;
+pub type ColorRgba      = ColorRGBAOf<float>;
+pub type ColorRgbaFloat = ColorRGBAOf<float>;
+pub type ColorRgbaF32   = ColorRGBAOf<f32>;
+pub type ColorRgbaF64   = ColorRGBAOf<f64>;
+pub type ColorRgbaByte  = ColorRGBAOf<u8>;
+pub type ColorRgbaMask  = ColorRgbaBool;
+pub type ColorRgbaBool  = ColorRGBAOf<bool>;
 
 #[repr(C)]
 pub struct ColorRGBAOf<T>
@@ -198,33 +198,33 @@ impl<T> IColor<T> for ColorRGBAOf<T> where T : Primitive
 
 impl<T> ToColorComposite for ColorRGBAOf<T> where T : Primitive
 {
-    type ColorRGBAF32 = ColorRGBAOf<f32>;
-    fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { self.to_color_rgba_of() }
+    type RgbaF32 = ColorRGBAOf<f32>;
+    fn to_color_rgba_f32(&self) -> Self::RgbaF32 { self.to_color_rgba_of() }
 
-    type ColorRGBAF64 = ColorRGBAOf<f64>;
-    fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 { self.to_color_rgba_of() }
+    type RgbaF64 = ColorRGBAOf<f64>;
+    fn to_color_rgba_f64(&self) -> Self::RgbaF64 { self.to_color_rgba_of() }
 
-    type ColorRGBAByte = ColorRGBAByte;
-    fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte { self.to_color_rgba_of() }
+    type RgbaU8 = ColorRgbaByte;
+    fn to_color_rgba_byte(&self) -> Self::RgbaU8 { self.to_color_rgba_of() }
 
-    type ColorRGBABool = ColorRGBAMask;
-    fn to_color_rgba_bool(&self) -> Self::ColorRGBABool { self.to_color_rgba_of() }
+    type RgbaBool = ColorRgbaMask;
+    fn to_color_rgba_bool(&self) -> Self::RgbaBool { self.to_color_rgba_of() }
 
-    type ColorHSLAF32 = ColorHSLAF32;
-    fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 { self.to_color_hsla_of() }
+    type HslaF32 = ColorHSLAF32;
+    fn to_color_hsla_f32(&self) -> Self::HslaF32 { self.to_color_hsla_of() }
 
-    type ColorHSLAF64 = ColorHSLAF64;
-    fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.to_color_hsla_of() }
+    type HslaF64 = ColorHSLAF64;
+    fn to_color_hsla_f64(&self) -> Self::HslaF64 { self.to_color_hsla_of() }
 
     const COLOR_INSIDE : ColorKind =
     {
         match (T::PRIMITIVE_NUMBER_TYPE, std::mem::size_of::<T>())
         {
-            (NumberType::Bool,  1) => ColorKind::RGBABool,
-            (NumberType::Float, 4) => ColorKind::RGBAF32,
-            (NumberType::Float, 8) => ColorKind::RGBAF64,
-            (NumberType::IntegerUnsigned, 1) => ColorKind::RGBAByte,
-            (NumberType::IntegerUnsigned, 2) => ColorKind::RGBAU16,
+            (NumberType::Bool,  1) => ColorKind::RgbaBool,
+            (NumberType::Float, 4) => ColorKind::RgbaF32,
+            (NumberType::Float, 8) => ColorKind::RgbaF64,
+            (NumberType::IntegerUnsigned, 1) => ColorKind::RgbaU8,
+            (NumberType::IntegerUnsigned, 2) => ColorKind::RgbaU16,
             _ => ColorKind::Unknow,
         }
     };

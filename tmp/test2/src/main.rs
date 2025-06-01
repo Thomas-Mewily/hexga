@@ -28,6 +28,7 @@ impl<const N : usize> ::serde::Serialize for VArray<N> //where [T;N] : ::serde::
     }
 }
 
+
 fn main()
 {
     /*
@@ -44,6 +45,7 @@ fn main()
     //Grid2::from_fn((3,4), |p| p.sum_axis()) .save_to_disk("./tmp/test2/asset/grid.ron").unwrap();
 
 
+    //90.degree().save_to_disk("./tmp/test2/asset/mon_angle.ron").unwrap();
     /*
     let i = Image::from_fn((16, 16), |(x,y)|
     {
@@ -57,11 +59,20 @@ fn main()
     }).save_to_disk("./tmp/test2/asset/image_byte.jpg").unwrap();
     */
 
+    dbg!(ColorU8::RED);
+    dbg!(ColorRgbaF32::RED);
+
+    let c = ColorU8::RED;
+    let c2 = c.to_float();
+
+    let a = 90.degree();
+    let ma = [1,2,3].degree();
+
     //let x : f32 = 32u8.cast_into();
 
     let i = Image::from_fn((16, 16), |(x,y)|
     {
-        ColorByte::rgb(x as u8 * 16, y as u8 * 16, 0)
+        ColorU8::rgb(x as u8 * 16, y as u8 * 16, 0)
     }).save_to_disk("./tmp/test2/asset/image_byte.png").unwrap();
 
     let x = 64;
@@ -69,20 +80,32 @@ fn main()
     {
         if (x + y * x) / 2 % 3 == 0
         {
-            ColorByte::BLACK
+            ColorU8::BLACK
         }else
         {
-            ColorByte::WHITE
+            ColorU8::WHITE
         }
     }).save_to_disk("./tmp/test2/asset/test_img").unwrap();
 
 
-    let s = 512.splat2();
-    let i= Image::from_fn_ndc(s, |v|
-        if v.length() <= 0.6 { ColorBool::WHITE } else { ColorBool::BLACK }
+    let mut gros_cercle= Image::from_fn_ndc(32.splat2(), |v|
+        if v.length() <= 0.6 { ColorU8::WHITE } else { ColorU8::BLACK }
     );
-    i.save_to_disk("./tmp/test2/asset/test3.png").unwrap();
 
+    let petit_cercle= Image::from_fn_ndc(16.splat2(), |v|
+        if v.length() <= 0.6 { ColorU8::RED } else { ColorU8::BLACK }
+    );
+
+    //let c = petit_cercle.to_color_rgba_f64();
+
+    dbg!(&petit_cercle.update_into(&mut gros_cercle.view_mut().crop_intersect(petit_cercle.rect())));
+
+
+    //petit_cercle.to_float();
+    //gros_cercle.view_mut().swap
+
+
+    gros_cercle.save_to_disk("./tmp/test2/asset/mon_cercle").unwrap();
 
     /*D
     dbg!(Angle::from_ron("45"));

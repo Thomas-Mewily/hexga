@@ -87,7 +87,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
             {
                 match C::COLOR_INSIDE
                 {
-                    ColorKind::RGBAByte =>
+                    ColorKind::RgbaU16 =>
                     {
                         ::image::ImageEncoder::write_image(
                             ::image::codecs::png::PngEncoder::new(w),
@@ -102,7 +102,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                             ::image::ExtendedColorType::Rgba8,
                         ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba8 image : {}", e.to_string())))
                     },
-                    ColorKind::RGBAU16 =>
+                    ColorKind::RgbaU16 =>
                     {
                         ::image::ImageEncoder::write_image(
                             ::image::codecs::png::PngEncoder::new(w),
@@ -117,7 +117,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                             ::image::ExtendedColorType::Rgba16,
                         ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba16 image : {}", e.to_string())))
                     },
-                    ColorKind::RGBAF32 =>
+                    ColorKind::RgbaF32 =>
                     {
                         ::image::ImageEncoder::write_image(
                             ::image::codecs::png::PngEncoder::new(w),
@@ -132,7 +132,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                             ::image::ExtendedColorType::Rgba32F,
                         ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba32F image : {}", e.to_string())))
                     },
-                    ColorKind::RGBAF64 => self.transform(|p| p.to_color_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
+                    ColorKind::RgbaF64 => self.transform(|p| p.to_color_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
                     _ => self.transform(|p| p.to_color_rgba_byte()).save_to_with_own_extension_pathless(extension, w, fs),
                 }
             },
@@ -195,7 +195,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
             {
                 match C::COLOR_INSIDE
                 {
-                    ColorKind::RGBAByte =>
+                    ColorKind::RgbaU16 =>
                     {
                         let mut encoder = ::image::codecs::gif::GifEncoder::new(w);
                         let result = encoder.encode(
@@ -211,7 +211,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                         );
                         result.map_err(|e| IoErrorKind::Encoding(format!("Failed to save .gif rgba8 image : {}", e.to_string())))
                     },
-                    ColorKind::RGBAU16 =>
+                    ColorKind::RgbaU16 =>
                     {
                         let mut encoder = ::image::codecs::gif::GifEncoder::new(w);
                         let result = encoder.encode(
@@ -227,7 +227,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                         );
                         result.map_err(|e| IoErrorKind::Encoding(format!("Failed to save .gif rgba16 image : {}", e.to_string())))
                     },
-                    ColorKind::RGBAF32 =>
+                    ColorKind::RgbaF32 =>
                     {
                         let mut encoder = ::image::codecs::gif::GifEncoder::new(w);
                         let result = encoder.encode(
@@ -243,7 +243,7 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                         );
                         result.map_err(|e| IoErrorKind::Encoding(format!("Failed to save .gif rgba32F image : {}", e.to_string())))
                     },
-                    ColorKind::RGBAF64 => self.transform(|p| p.to_color_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
+                    ColorKind::RgbaF64 => self.transform(|p| p.to_color_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
                     _ => self.transform(|p| p.to_color_rgba_byte()).save_to_with_own_extension_pathless(extension, w, fs),
                 }
             }

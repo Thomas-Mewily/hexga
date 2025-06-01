@@ -196,28 +196,28 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
 
 impl<T> ToColorComposite for ColorHSLAOf<T> where T : Float
 {
-    type ColorRGBAF32 = ColorRGBAOf<f32>;
-    fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 { self.to_color_rgba_of() }
+    type RgbaF32 = ColorRGBAOf<f32>;
+    fn to_color_rgba_f32(&self) -> Self::RgbaF32 { self.to_color_rgba_of() }
 
-    type ColorRGBAF64 = ColorRGBAOf<f64>;
-    fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 { self.to_color_rgba_of() }
+    type RgbaF64 = ColorRGBAOf<f64>;
+    fn to_color_rgba_f64(&self) -> Self::RgbaF64 { self.to_color_rgba_of() }
 
-    type ColorRGBAByte = ColorRGBAByte;
-    fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte { self.to_color_rgba_of() }
+    type RgbaU8 = ColorRgbaByte;
+    fn to_color_rgba_byte(&self) -> Self::RgbaU8 { self.to_color_rgba_of() }
 
-    type ColorRGBABool = ColorRGBAMask;
-    fn to_color_rgba_bool(&self) -> Self::ColorRGBABool { self.to_color_rgba_of() }
+    type RgbaBool = ColorRgbaMask;
+    fn to_color_rgba_bool(&self) -> Self::RgbaBool { self.to_color_rgba_of() }
 
-    type ColorHSLAF32 = ColorHSLAF32;
-    fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 { self.to_color_hsla_of() }
+    type HslaF32 = ColorHSLAF32;
+    fn to_color_hsla_f32(&self) -> Self::HslaF32 { self.to_color_hsla_of() }
 
-    type ColorHSLAF64 = ColorHSLAF64;
-    fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 { self.to_color_hsla_of() }
+    type HslaF64 = ColorHSLAF64;
+    fn to_color_hsla_f64(&self) -> Self::HslaF64 { self.to_color_hsla_of() }
 
     const COLOR_INSIDE : ColorKind = match std::mem::size_of::<T>()
         {
-            4 => ColorKind::HSLAF32,
-            8 => ColorKind::HSLAF64,
+            4 => ColorKind::HslaF32,
+            8 => ColorKind::HslaF64,
             _ => ColorKind::Unknow,
         };
 }

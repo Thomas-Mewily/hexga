@@ -10,7 +10,7 @@ mod hexga_io;
 #[cfg(feature = "hexga_io")]
 pub use hexga_io::*;
 
-pub type Image<C=ColorRGBAByte> = ImageBase<C,int>;
+pub type Image<C=ColorRgbaByte> = ImageBase<C,int>;
 
 pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;
 
@@ -265,34 +265,34 @@ impl AntiAliasing
 
 impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite
 {
-    type ColorRGBAF32 = ImageBase<C::ColorRGBAF32, Idx>;
-    fn to_color_rgba_f32(&self) -> Self::ColorRGBAF32 {
-        Self::ColorRGBAF32 { pixels: self.pixels.to_color_rgba_f32(), size: self.size() }
+    type RgbaF32 = ImageBase<C::RgbaF32, Idx>;
+    fn to_color_rgba_f32(&self) -> Self::RgbaF32 {
+        Self::RgbaF32 { pixels: self.pixels.to_color_rgba_f32(), size: self.size() }
     }
 
-    type ColorRGBAF64 = ImageBase<C::ColorRGBAF64, Idx>;
-    fn to_color_rgba_f64(&self) -> Self::ColorRGBAF64 {
-        Self::ColorRGBAF64 { pixels: self.pixels.to_color_rgba_f64(), size: self.size() }
+    type RgbaF64 = ImageBase<C::RgbaF64, Idx>;
+    fn to_color_rgba_f64(&self) -> Self::RgbaF64 {
+        Self::RgbaF64 { pixels: self.pixels.to_color_rgba_f64(), size: self.size() }
     }
 
-    type ColorRGBAByte = ImageBase<C::ColorRGBAByte, Idx>;
-    fn to_color_rgba_byte(&self) -> Self::ColorRGBAByte {
-        Self::ColorRGBAByte { pixels: self.pixels.to_color_rgba_byte(), size: self.size() }
+    type RgbaU8 = ImageBase<C::RgbaU8, Idx>;
+    fn to_color_rgba_byte(&self) -> Self::RgbaU8 {
+        Self::RgbaU8 { pixels: self.pixels.to_color_rgba_byte(), size: self.size() }
     }
 
-    type ColorRGBABool = ImageBase<C::ColorRGBABool, Idx>;
-    fn to_color_rgba_bool(&self) -> Self::ColorRGBABool {
-        Self::ColorRGBABool { pixels: self.pixels.to_color_rgba_bool(), size: self.size() }
+    type RgbaBool = ImageBase<C::RgbaBool, Idx>;
+    fn to_color_rgba_bool(&self) -> Self::RgbaBool {
+        Self::RgbaBool { pixels: self.pixels.to_color_rgba_bool(), size: self.size() }
     }
 
-    type ColorHSLAF32 = ImageBase<C::ColorHSLAF32, Idx>;
-    fn to_color_hsla_f32(&self) -> Self::ColorHSLAF32 {
-        Self::ColorHSLAF32 { pixels: self.pixels.to_color_hsla_f32(), size: self.size() }
+    type HslaF32 = ImageBase<C::HslaF32, Idx>;
+    fn to_color_hsla_f32(&self) -> Self::HslaF32 {
+        Self::HslaF32 { pixels: self.pixels.to_color_hsla_f32(), size: self.size() }
     }
 
-    type ColorHSLAF64 = ImageBase<C::ColorHSLAF64, Idx>;
-    fn to_color_hsla_f64(&self) -> Self::ColorHSLAF64 {
-        Self::ColorHSLAF64 { pixels: self.pixels.to_color_hsla_f64(), size: self.size() }
+    type HslaF64 = ImageBase<C::HslaF64, Idx>;
+    fn to_color_hsla_f64(&self) -> Self::HslaF64 {
+        Self::HslaF64 { pixels: self.pixels.to_color_hsla_f64(), size: self.size() }
     }
 
     const COLOR_INSIDE : ColorKind = C::COLOR_INSIDE;

@@ -1,5 +1,5 @@
-//! All the binding to the current lib 
-//! 
+//! All the binding to the current lib
+//!
 //! Contains all the stateless function for rendering, getting the input...
 
 #![allow(dead_code)]
@@ -13,9 +13,9 @@ pub type GpuMat4 = Matrix4<GpuFloat>;
 pub type GpuFloat = f32;
 
 pub trait ToGpuFloat
-{ 
+{
     type Output;
-    fn to_gpu_float(self) -> Self::Output; 
+    fn to_gpu_float(self) -> Self::Output;
 }
 impl<T> ToGpuFloat for T where T : ToF32
 {
@@ -44,9 +44,9 @@ pub type GpuPoint3 = Vector3<GpuInt>;
 pub type GpuPoint4 = Vector4<GpuInt>;
 
 pub trait ToGpuInt
-{ 
+{
     type Output;
-    fn to_gpu_int(self) -> Self::Output; 
+    fn to_gpu_int(self) -> Self::Output;
 }
 impl<T> ToGpuInt for T where T : ToI32
 {
@@ -62,9 +62,9 @@ pub const fn gpu_point4(x : GpuInt, y : GpuInt, z : GpuInt, w : GpuInt) -> GpuPo
 pub type GpuUint = u32;
 
 pub trait ToGpuUint
-{ 
+{
     type Output;
-    fn to_gpu_uint(self) -> Self::Output; 
+    fn to_gpu_uint(self) -> Self::Output;
 }
 impl<T> ToGpuUint for T where T : ToU32
 {
@@ -78,7 +78,7 @@ pub trait ToGpuColor<T>
 }
 impl<S,T> ToGpuColor<T> for S where S : IColor<T>, T : Primitive
 {
-    fn to_gpu_color(self) -> GpuColor 
+    fn to_gpu_color(self) -> GpuColor
     {
         self.to_color_rgba_of::<GpuFloat>()
     }
