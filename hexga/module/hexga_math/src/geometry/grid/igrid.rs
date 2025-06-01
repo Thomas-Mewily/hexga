@@ -74,7 +74,7 @@ pub trait IGrid<T, Idx, const N : usize> :
         let size = size.into();
         if *size.min_element() <= Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
 
-        let area_size= match size.area_usize_checked()
+        let area_size = match size.area_usize_checked()
         {
             Some(v) => v,
             None => return Err(GridBaseError::ToBig(size)),
