@@ -16,14 +16,13 @@ categories = ["rust-patterns", "data-structures"]
 default = ["serde", "hexga_io"]
 
 serde = ["dep:serde"]
-hexga_io = ["serde", "dep:hexga_io", "dep:hexga_io_derive"]
+hexga_io = ["serde", "dep:hexga_io", "hexga_io/derive"]
 
 [dependencies]
 hexga_core.workspace = true
 hexga_number.workspace = true
 
 hexga_io = { workspace = true, optional = true }
-hexga_io_derive = { workspace = true, optional = true }
 
 #typed_index = "0.2.1"
 
