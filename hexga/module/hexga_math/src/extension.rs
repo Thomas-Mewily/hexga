@@ -8,16 +8,16 @@ pub trait ArrayLikeExtension<T, const N : usize> : ArrayLike<T,N>
     fn max_element(&self) -> &T where T : PartialOrd { self.array().iter().max_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty") }
 
     fn min_element_idx(&self) -> usize where T : PartialOrd
-    { 
+    {
         self.array().iter().enumerate()
              .min_by(|(_,a), (_,b)| a.partial_cmp(b).unwrap()).map(|(idx,_)| idx).unwrap()
     }
     fn max_element_idx(&self) -> usize where T : PartialOrd
-    { 
+    {
         self.array().iter().enumerate()
              .max_by(|(_,a), (_,b)| a.partial_cmp(b).unwrap()).map(|(idx,_)| idx).unwrap()
     }
-    
+
     /// Fill non existing component with [Default]
     fn into_array1(self) -> [T; 1] where T : Default
     {
@@ -100,7 +100,7 @@ pub trait ArrayLikeExtension<T, const N : usize> : ArrayLike<T,N>
     /// Fill non existing component with [Default]
     fn to_point4(self) -> Point4 where int : From<T>, T : Default { self.into_array4().map(|v| v.into()).into() }
 
-    
+
     /// Fill non existing component with the given value
     fn to_point1_filled(self, fill : int) -> Point1 where int : From<T> { self.map(|v| int::from(v)).into_array1_filled(fill).into() }
     /// Fill non existing component with the given value
@@ -147,11 +147,11 @@ pub trait ArrayLikeExtension<T, const N : usize> : ArrayLike<T,N>
     fn to_vector4_filled(self, fill : T) -> Vector4<T> where T : Clone { self.into_array4_filled(fill).into() }
 
 
-    fn to_rgba(self) -> ColorRGBAOf<T> where T : Default { ColorRGBAOf::from_array(self.into_array4()) }
-    fn to_hlsa(self) -> ColorHSLAOf<T> where T : Default { ColorHSLAOf::from_array(self.into_array4()) }
+    fn to_rgba(self) -> ColorRgbaOf<T> where T : Default { ColorRgbaOf::from_array(self.into_array4()) }
+    fn to_hlsa(self) -> ColorHslaOf<T> where T : Default { ColorHslaOf::from_array(self.into_array4()) }
 }
 
-/* 
+/*
 pub trait ArrayLikeExtension1D<T> : ArrayLike<T,1>
 {
     fn to_array_2d_filled(self, fill : T) where T : Copy;

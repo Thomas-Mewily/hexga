@@ -80,10 +80,10 @@ impl<S,T> ToGpuColor<T> for S where S : IColor<T>, T : Primitive
 {
     fn to_gpu_color(self) -> GpuColor
     {
-        self.to_color_rgba_of::<GpuFloat>()
+        self.to_rgba_of::<GpuFloat>()
     }
 }
-pub type GpuColor = ColorRGBAOf<float>;
+pub type GpuColor = ColorRgbaOf<float>;
 
 
 

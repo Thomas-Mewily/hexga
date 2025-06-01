@@ -132,8 +132,8 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                             ::image::ExtendedColorType::Rgba32F,
                         ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba32F image : {}", e.to_string())))
                     },
-                    ColorKind::RgbaF64 => self.transform(|p| p.to_color_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
-                    _ => self.transform(|p| p.to_color_rgba_byte()).save_to_with_own_extension_pathless(extension, w, fs),
+                    ColorKind::RgbaF64 => self.transform(|p| p.to_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
+                    _ => self.transform(|p| p.to_rgba_u8()).save_to_with_own_extension_pathless(extension, w, fs),
                 }
             },
             /*
@@ -243,8 +243,8 @@ impl<C,Idx> hexga_io::IoSave for ImageBase<C,Idx>
                         );
                         result.map_err(|e| IoErrorKind::Encoding(format!("Failed to save .gif rgba32F image : {}", e.to_string())))
                     },
-                    ColorKind::RgbaF64 => self.transform(|p| p.to_color_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
-                    _ => self.transform(|p| p.to_color_rgba_byte()).save_to_with_own_extension_pathless(extension, w, fs),
+                    ColorKind::RgbaF64 => self.transform(|p| p.to_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
+                    _ => self.transform(|p| p.to_rgba_u8()).save_to_with_own_extension_pathless(extension, w, fs),
                 }
             }
             _ => Err(___())

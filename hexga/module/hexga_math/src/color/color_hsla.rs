@@ -1,13 +1,13 @@
 use crate::*;
 
 
-pub type ColorHSLA      = ColorHSLAFloat;
-pub type ColorHSLAFloat = ColorHSLAOf<float>;
-pub type ColorHSLAF32   = ColorHSLAOf<f32>;
-pub type ColorHSLAF64   = ColorHSLAOf<f64>;
+pub type ColorHsla      = ColorHslaFloat;
+pub type ColorHslaFloat = ColorHslaOf<float>;
+pub type ColorHslaF32   = ColorHslaOf<f32>;
+pub type ColorHslaF64   = ColorHslaOf<f64>;
 
 #[repr(C)]
-pub struct ColorHSLAOf<T>
+pub struct ColorHslaOf<T>
 {
     /// Hue. Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
     pub h : T,
@@ -18,10 +18,10 @@ pub struct ColorHSLAOf<T>
     /// Alpha
     pub a : T,
 }
-impl_fixed_array_like_with_op!(ColorHSLAOf, 4);
+impl_fixed_array_like_with_op!(ColorHslaOf, 4);
 
 
-impl<T> ColorHSLAOf<T>
+impl<T> ColorHslaOf<T>
 {
     #[inline(always)] pub const fn new(hue : T, saturation : T, lightness : T, alpha : T) -> Self  { Self { h: hue, s: saturation, l : lightness, a: alpha, }}
     pub const fn new_hue(hue : T) -> Self where T : Float { Self::hsl(hue, T::ONE, T::HALF) }
@@ -107,27 +107,27 @@ impl<T> ColorHSLAOf<T>
     pub fn replace_a(mut self, a : T) -> T { self.replace_or_panic(Self::A_INDEX, a) }
 }
 
-impl<T> From<(T,T,T,T,)> for ColorHSLAOf<T> { fn from(value: (T,T,T,T,)) -> Self { ColorHSLAOf::hsla(value.0, value.1, value.2, value.3) }}
-impl<T> From<ColorHSLAOf<T>> for (T,T,T,T,) { fn from(value: ColorHSLAOf<T>) -> Self { (value.h, value.s, value.l, value.a) }}
+impl<T> From<(T,T,T,T,)> for ColorHslaOf<T> { fn from(value: (T,T,T,T,)) -> Self { ColorHslaOf::hsla(value.0, value.1, value.2, value.3) }}
+impl<T> From<ColorHslaOf<T>> for (T,T,T,T,) { fn from(value: ColorHslaOf<T>) -> Self { (value.h, value.s, value.l, value.a) }}
 
-impl<T> From<(T,T,T,)> for ColorHSLAOf<T> where T : Float { fn from(value: (T,T,T,)) -> Self { ColorHSLAOf::hsl(value.0, value.1, value.2) }}
-impl<T> From<ColorHSLAOf<T>> for (T,T,T,) { fn from(value: ColorHSLAOf<T>) -> Self { (value.h, value.s, value.l) }}
+impl<T> From<(T,T,T,)> for ColorHslaOf<T> where T : Float { fn from(value: (T,T,T,)) -> Self { ColorHslaOf::hsl(value.0, value.1, value.2) }}
+impl<T> From<ColorHslaOf<T>> for (T,T,T,) { fn from(value: ColorHslaOf<T>) -> Self { (value.h, value.s, value.l) }}
 
-impl<T> From<[T; 3]> for ColorHSLAOf<T> where T : Float { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorHSLAOf::hsl(r,g,b) }}
-impl<T> From<ColorHSLAOf<T>> for [T; 3] { fn from(value: ColorHSLAOf<T>) -> Self { [value.h, value.s, value.l] }}
+impl<T> From<[T; 3]> for ColorHslaOf<T> where T : Float { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorHslaOf::hsl(r,g,b) }}
+impl<T> From<ColorHslaOf<T>> for [T; 3] { fn from(value: ColorHslaOf<T>) -> Self { [value.h, value.s, value.l] }}
 
-impl<T> From<Vector4<T>> for ColorHSLAOf<T> { fn from(value: Vector4<T>) -> Self { let [h,s,l,a] = value.array; ColorHSLAOf::hsla(h,s,l,a) }}
-impl<T> From<ColorHSLAOf<T>> for Vector4<T> { fn from(value: ColorHSLAOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
+impl<T> From<Vector4<T>> for ColorHslaOf<T> { fn from(value: Vector4<T>) -> Self { let [h,s,l,a] = value.array; ColorHslaOf::hsla(h,s,l,a) }}
+impl<T> From<ColorHslaOf<T>> for Vector4<T> { fn from(value: ColorHslaOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
 
-impl<T> From<Vector3<T>> for ColorHSLAOf<T> where T : Float { fn from(value: Vector3<T>) -> Self { let [h,s,l] = value.array; ColorHSLAOf::hsl(h,s,l) }}
-impl<T> From<ColorHSLAOf<T>> for Vector3<T> { fn from(value: ColorHSLAOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
+impl<T> From<Vector3<T>> for ColorHslaOf<T> where T : Float { fn from(value: Vector3<T>) -> Self { let [h,s,l] = value.array; ColorHslaOf::hsl(h,s,l) }}
+impl<T> From<ColorHslaOf<T>> for Vector3<T> { fn from(value: ColorHslaOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
-impl<C:Float> Default for ColorHSLAOf<C>
+impl<C:Float> Default for ColorHslaOf<C>
 {
     fn default() -> Self { Self::hsla(zero(), zero(), one(), one()) }
 }
 
-impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
+impl<T> IColor<T> for ColorHslaOf<T> where T : Float
 {
     const TRANSPARENT : Self = Self::hsla(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
 
@@ -154,7 +154,7 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
     const GLACE  : Self = Self::hsl(T::COLOR_180_DIV_360, T::ONE, T::COLOR_270_DIV_360);
 
 
-    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive, T2 : CastRangeFrom<T>
+    fn to_rgba_of<T2>(self) -> ColorRgbaOf<T2> where T2 : Primitive, T2 : CastRangeFrom<T>
     {
         // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
         let r;
@@ -183,36 +183,36 @@ impl<T> IColor<T> for ColorHSLAOf<T> where T : Float
             b = hue_to_rgb(p, q, self.h - T::ONE / T::THREE);
         }
 
-        ColorRGBAOf::from_array([r, g, b, self.a].map(|v| T2::cast_range_from(v)))
+        ColorRgbaOf::from_array([r, g, b, self.a].map(|v| T2::cast_range_from(v)))
     }
 
-    fn to_color_hsla_of<T2>(self) -> ColorHSLAOf<T2> where T2 : Float + CastRangeFrom<T>
+    fn to_hsla_of<T2>(self) -> ColorHslaOf<T2> where T2 : Float + CastRangeFrom<T>
     {
-        ColorHSLAOf::from_array(self.to_array4().map(|v| T2::cast_range_from(v)))
+        ColorHslaOf::from_array(self.to_array4().map(|v| T2::cast_range_from(v)))
     }
 }
 
 
 
-impl<T> ToColorComposite for ColorHSLAOf<T> where T : Float
+impl<T> ToColorComposite for ColorHslaOf<T> where T : Float
 {
-    type RgbaF32 = ColorRGBAOf<f32>;
-    fn to_color_rgba_f32(&self) -> Self::RgbaF32 { self.to_color_rgba_of() }
+    type RgbaF32 = ColorRgbaOf<f32>;
+    fn to_rgba_f32(&self) -> Self::RgbaF32 { self.to_rgba_of() }
 
-    type RgbaF64 = ColorRGBAOf<f64>;
-    fn to_color_rgba_f64(&self) -> Self::RgbaF64 { self.to_color_rgba_of() }
+    type RgbaF64 = ColorRgbaOf<f64>;
+    fn to_rgba_f64(&self) -> Self::RgbaF64 { self.to_rgba_of() }
 
     type RgbaU8 = ColorRgbaByte;
-    fn to_color_rgba_byte(&self) -> Self::RgbaU8 { self.to_color_rgba_of() }
+    fn to_rgba_u8(&self) -> Self::RgbaU8 { self.to_rgba_of() }
 
     type RgbaBool = ColorRgbaMask;
-    fn to_color_rgba_bool(&self) -> Self::RgbaBool { self.to_color_rgba_of() }
+    fn to_rgba_bool(&self) -> Self::RgbaBool { self.to_rgba_of() }
 
-    type HslaF32 = ColorHSLAF32;
-    fn to_color_hsla_f32(&self) -> Self::HslaF32 { self.to_color_hsla_of() }
+    type HslaF32 = ColorHslaF32;
+    fn to_hsla_f32(&self) -> Self::HslaF32 { self.to_hsla_of() }
 
-    type HslaF64 = ColorHSLAF64;
-    fn to_color_hsla_f64(&self) -> Self::HslaF64 { self.to_color_hsla_of() }
+    type HslaF64 = ColorHslaF64;
+    fn to_hsla_f64(&self) -> Self::HslaF64 { self.to_hsla_of() }
 
     const COLOR_INSIDE : ColorKind = match std::mem::size_of::<T>()
         {

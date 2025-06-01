@@ -266,33 +266,33 @@ impl AntiAliasing
 impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite
 {
     type RgbaF32 = ImageBase<C::RgbaF32, Idx>;
-    fn to_color_rgba_f32(&self) -> Self::RgbaF32 {
-        Self::RgbaF32 { pixels: self.pixels.to_color_rgba_f32(), size: self.size() }
+    fn to_rgba_f32(&self) -> Self::RgbaF32 {
+        Self::RgbaF32 { pixels: self.pixels.to_rgba_f32(), size: self.size() }
     }
 
     type RgbaF64 = ImageBase<C::RgbaF64, Idx>;
-    fn to_color_rgba_f64(&self) -> Self::RgbaF64 {
-        Self::RgbaF64 { pixels: self.pixels.to_color_rgba_f64(), size: self.size() }
+    fn to_rgba_f64(&self) -> Self::RgbaF64 {
+        Self::RgbaF64 { pixels: self.pixels.to_rgba_f64(), size: self.size() }
     }
 
     type RgbaU8 = ImageBase<C::RgbaU8, Idx>;
-    fn to_color_rgba_byte(&self) -> Self::RgbaU8 {
-        Self::RgbaU8 { pixels: self.pixels.to_color_rgba_byte(), size: self.size() }
+    fn to_rgba_u8(&self) -> Self::RgbaU8 {
+        Self::RgbaU8 { pixels: self.pixels.to_rgba_u8(), size: self.size() }
     }
 
     type RgbaBool = ImageBase<C::RgbaBool, Idx>;
-    fn to_color_rgba_bool(&self) -> Self::RgbaBool {
-        Self::RgbaBool { pixels: self.pixels.to_color_rgba_bool(), size: self.size() }
+    fn to_rgba_bool(&self) -> Self::RgbaBool {
+        Self::RgbaBool { pixels: self.pixels.to_rgba_bool(), size: self.size() }
     }
 
     type HslaF32 = ImageBase<C::HslaF32, Idx>;
-    fn to_color_hsla_f32(&self) -> Self::HslaF32 {
-        Self::HslaF32 { pixels: self.pixels.to_color_hsla_f32(), size: self.size() }
+    fn to_hsla_f32(&self) -> Self::HslaF32 {
+        Self::HslaF32 { pixels: self.pixels.to_hsla_f32(), size: self.size() }
     }
 
     type HslaF64 = ImageBase<C::HslaF64, Idx>;
-    fn to_color_hsla_f64(&self) -> Self::HslaF64 {
-        Self::HslaF64 { pixels: self.pixels.to_color_hsla_f64(), size: self.size() }
+    fn to_hsla_f64(&self) -> Self::HslaF64 {
+        Self::HslaF64 { pixels: self.pixels.to_hsla_f64(), size: self.size() }
     }
 
     const COLOR_INSIDE : ColorKind = C::COLOR_INSIDE;

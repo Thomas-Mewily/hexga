@@ -32,99 +32,77 @@ pub trait ToColorComposite
         feature = "float_are_32_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "32")
     ))]
-    fn to_color(&self) -> Self::RgbaF32 { self.to_color_rgba_float() }
+    fn to_color(&self) -> Self::RgbaF32 { self.to_rgba() }
     #[cfg(any(
         feature = "float_are_64_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "64")
     ))]
     fn to_color(&self) -> Self::RgbaF64 { self.to_color_rgba_float() }
 
-    fn to_color_byte(&self) -> Self::RgbaU8 { self.to_color_rgba_byte() }
+    fn to_color_u8(&self) -> Self::RgbaU8 { self.to_rgba_u8() }
 
-    #[cfg(any(
-        feature = "float_are_32_bits",
-        all(feature = "float_are_size_bits", target_pointer_width = "32")
-    ))]
-    fn to_color_rgba(&self) -> Self::RgbaF32 { self.to_color_rgba_float() }
-    #[cfg(any(
-        feature = "float_are_64_bits",
-        all(feature = "float_are_size_bits", target_pointer_width = "64")
-    ))]
-    fn to_color_rgba(&self) -> Self::RgbaF64 { self.to_color_rgba_float() }
 
     type RgbaF32;
-    fn to_color_rgba_f32(&self) -> Self::RgbaF32;
+    fn to_rgba_f32(&self) -> Self::RgbaF32;
 
     type RgbaF64;
-    fn to_color_rgba_f64(&self) -> Self::RgbaF64;
+    fn to_rgba_f64(&self) -> Self::RgbaF64;
 
     #[cfg(any(
         feature = "float_are_32_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "32")
     ))]
-    fn to_color_rgba_float(&self) -> Self::RgbaF32 { self.to_color_rgba_f32() }
+    fn to_rgba(&self) -> Self::RgbaF32 { self.to_rgba_f32() }
     #[cfg(any(
         feature = "float_are_64_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "64")
     ))]
-    fn to_color_rgba_float(&self) -> Self::RgbaF64 { self.to_color_rgba_f64() }
+    fn to_rgba(&self) -> Self::RgbaF64 { self.to_color_rgba_f64() }
 
     type RgbaU8;
-    fn to_color_rgba_byte(&self) -> Self::RgbaU8;
+    fn to_rgba_u8(&self) -> Self::RgbaU8;
 
     type RgbaBool;
-    fn to_color_rgba_bool(&self) -> Self::RgbaBool;
-    fn to_color_rgba_mask(&self) -> Self::RgbaBool { self.to_color_rgba_bool() }
-
+    fn to_rgba_bool(&self) -> Self::RgbaBool;
+    fn to_rgba_mask(&self) -> Self::RgbaBool { self.to_rgba_bool() }
 
 
     #[cfg(any(
         feature = "float_are_32_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "32")
     ))]
-    fn to_color_hsla(&self) -> Self::HslaF32 { self.to_color_hsla_f32() }
+    fn to_hsla(&self) -> Self::HslaF32 { self.to_hsla_f32() }
     #[cfg(any(
         feature = "float_are_64_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "64")
     ))]
-    fn to_color_hsla(&self) -> Self::HslaF64 { self.to_color_hsla_f64() }
-
-    #[cfg(any(
-        feature = "float_are_32_bits",
-        all(feature = "float_are_size_bits", target_pointer_width = "32")
-    ))]
-    fn to_color_hsla_float(&self) -> Self::HslaF32 { self.to_color_hsla_f32() }
-    #[cfg(any(
-        feature = "float_are_64_bits",
-        all(feature = "float_are_size_bits", target_pointer_width = "64")
-    ))]
-    fn to_color_hsla_float(&self) -> Self::HslaF64 { self.to_color_hsla_f64() }
+    fn to_hsla(&self) -> Self::HslaF64 { self.to_color_hsla_f64() }
 
     type HslaF32;
-    fn to_color_hsla_f32(&self) -> Self::HslaF32;
+    fn to_hsla_f32(&self) -> Self::HslaF32;
     type HslaF64;
-    fn to_color_hsla_f64(&self) -> Self::HslaF64;
+    fn to_hsla_f64(&self) -> Self::HslaF64;
 }
 
 impl<T, const N : usize> ToColorComposite for [T;N] where T : ToColorComposite
 {
     type RgbaF32 = [T::RgbaF32;N];
-    fn to_color_rgba_f32(&self) -> Self::RgbaF32 { std::array::from_fn(|i| self[i].to_color_rgba_f32()) }
+    fn to_rgba_f32(&self) -> Self::RgbaF32 { std::array::from_fn(|i| self[i].to_rgba_f32()) }
 
     type RgbaF64 = [T::RgbaF64;N];
-    fn to_color_rgba_f64(&self) -> Self::RgbaF64 { std::array::from_fn(|i| self[i].to_color_rgba_f64()) }
+    fn to_rgba_f64(&self) -> Self::RgbaF64 { std::array::from_fn(|i| self[i].to_rgba_f64()) }
 
     type RgbaU8 = [T::RgbaU8;N];
-    fn to_color_rgba_byte(&self) -> Self::RgbaU8 { std::array::from_fn(|i| self[i].to_color_rgba_byte()) }
+    fn to_rgba_u8(&self) -> Self::RgbaU8 { std::array::from_fn(|i| self[i].to_rgba_u8()) }
 
     type RgbaBool = [T::RgbaBool;N];
-    fn to_color_rgba_bool(&self) -> Self::RgbaBool { std::array::from_fn(|i| self[i].to_color_rgba_bool()) }
+    fn to_rgba_bool(&self) -> Self::RgbaBool { std::array::from_fn(|i| self[i].to_rgba_bool()) }
 
     type HslaF32 = [T::HslaF32;N];
-    fn to_color_hsla_f32(&self) -> Self::HslaF32 { std::array::from_fn(|i| self[i].to_color_hsla_f32()) }
+    fn to_hsla_f32(&self) -> Self::HslaF32 { std::array::from_fn(|i| self[i].to_hsla_f32()) }
 
     type HslaF64 = [T::HslaF64;N];
-    fn to_color_hsla_f64(&self) -> Self::HslaF64 { std::array::from_fn(|i| self[i].to_color_hsla_f64()) }
+    fn to_hsla_f64(&self) -> Self::HslaF64 { std::array::from_fn(|i| self[i].to_hsla_f64()) }
 
     const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
 }
@@ -132,22 +110,22 @@ impl<T, const N : usize> ToColorComposite for [T;N] where T : ToColorComposite
 impl<T> ToColorComposite for [T] where T : ToColorComposite
 {
     type RgbaF32 = Vec<T::RgbaF32>;
-    fn to_color_rgba_f32(&self) -> Self::RgbaF32 { self.iter().map(|v| v.to_color_rgba_f32()).collect() }
+    fn to_rgba_f32(&self) -> Self::RgbaF32 { self.iter().map(|v| v.to_rgba_f32()).collect() }
 
     type RgbaF64 = Vec<T::RgbaF64>;
-    fn to_color_rgba_f64(&self) -> Self::RgbaF64 { self.iter().map(|v| v.to_color_rgba_f64()).collect() }
+    fn to_rgba_f64(&self) -> Self::RgbaF64 { self.iter().map(|v| v.to_rgba_f64()).collect() }
 
     type RgbaU8 = Vec<T::RgbaU8>;
-    fn to_color_rgba_byte(&self) -> Self::RgbaU8 { self.iter().map(|v| v.to_color_rgba_byte()).collect() }
+    fn to_rgba_u8(&self) -> Self::RgbaU8 { self.iter().map(|v| v.to_rgba_u8()).collect() }
 
     type RgbaBool = Vec<T::RgbaBool>;
-    fn to_color_rgba_bool(&self) -> Self::RgbaBool { self.iter().map(|v| v.to_color_rgba_bool()).collect() }
+    fn to_rgba_bool(&self) -> Self::RgbaBool { self.iter().map(|v| v.to_rgba_bool()).collect() }
 
     type HslaF32 = Vec<T::HslaF32>;
-    fn to_color_hsla_f32(&self) -> Self::HslaF32 { self.iter().map(|v| v.to_color_hsla_f32()).collect() }
+    fn to_hsla_f32(&self) -> Self::HslaF32 { self.iter().map(|v| v.to_hsla_f32()).collect() }
 
     type HslaF64 = Vec<T::HslaF64>;
-    fn to_color_hsla_f64(&self) -> Self::HslaF64 { self.iter().map(|v| v.to_color_hsla_f64()).collect() }
+    fn to_hsla_f64(&self) -> Self::HslaF64 { self.iter().map(|v| v.to_hsla_f64()).collect() }
 
     const COLOR_INSIDE : ColorKind = T::COLOR_INSIDE;
 }
@@ -155,15 +133,15 @@ impl<T> ToColorComposite for [T] where T : ToColorComposite
 pub trait ToColor :
     ToColorComposite
     <
-        RgbaF32 = ColorRGBAOf<f32>, RgbaF64 = ColorRGBAOf<f64>,
-        HslaF32 = ColorHSLAF32, HslaF64 = ColorHSLAF64,
+        RgbaF32 = ColorRgbaOf<f32>, RgbaF64 = ColorRgbaOf<f64>,
+        HslaF32 = ColorHslaF32, HslaF64 = ColorHslaF64,
         RgbaU8 = ColorRgbaByte,
         RgbaBool = ColorRgbaBool,
     > + Copy {}
 impl<T> ToColor for T where T: ToColorComposite
     <
-        RgbaF32 = ColorRGBAOf<f32>, RgbaF64 = ColorRGBAOf<f64>,
-        HslaF32 = ColorHSLAF32, HslaF64 = ColorHSLAF64,
+        RgbaF32 = ColorRgbaOf<f32>, RgbaF64 = ColorRgbaOf<f64>,
+        HslaF32 = ColorHslaF32, HslaF64 = ColorHslaF64,
         RgbaU8 = ColorRgbaByte,
         RgbaBool = ColorRgbaBool,
     > + Copy {}
@@ -235,28 +213,28 @@ pub trait IColor<T> : Sized + ToColor
     const GLACE : Self; // hard to find an official name for this one with the website
 
 
-    fn to_color_rgba_of<T2>(self) -> ColorRGBAOf<T2> where T2 : Primitive + CastRangeFrom<T>;
-    fn to_color_hsla_of<T2>(self) -> ColorHSLAOf<T2> where T2 : Float + CastRangeFrom<T>;
+    fn to_rgba_of<T2>(self) -> ColorRgbaOf<T2> where T2 : Primitive + CastRangeFrom<T>;
+    fn to_hsla_of<T2>(self) -> ColorHslaOf<T2> where T2 : Float + CastRangeFrom<T>;
 
-    fn rgba_from_hex(hex: u32) -> ColorRGBAOf<T> where T : CastRangeFrom<u8>
+    fn rgba_from_hex(hex: u32) -> ColorRgbaOf<T> where T : CastRangeFrom<u8>
     {
         let [r,g,b,a] = hex.to_be_bytes();
         Self::rgba_from_bytes(r,g,b,a)
     }
-    fn rgba_from_array(rgba : [u8;4]) -> ColorRGBAOf<T> where T : CastRangeFrom<u8>
+    fn rgba_from_array(rgba : [u8;4]) -> ColorRgbaOf<T> where T : CastRangeFrom<u8>
     {
         let [r,g,b,a] = rgba;
         Self::rgba_from_bytes(r,g,b,a)
     }
-    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> ColorRGBAOf<T> where T : CastRangeFrom<u8>
+    fn rgba_from_bytes(r : u8, g : u8, b : u8, a : u8) -> ColorRgbaOf<T> where T : CastRangeFrom<u8>
     {
-        ColorRgbaByte::new(r, g, b, a).to_color_rgba_of()
+        ColorRgbaByte::new(r, g, b, a).to_rgba_of()
     }
 
     /// Cast to color byte and format the color : `#RRGGBBAA`
-    fn to_rgba_byte_hex_string(self) -> String
+    fn to_rgba_u8_hex_string(self) -> String
     {
-        let rgba = self.to_color_byte();
+        let rgba = self.to_color_u8();
         format!(
             "#{:02X}{:02X}{:02X}{:02X}",
             rgba.r,
