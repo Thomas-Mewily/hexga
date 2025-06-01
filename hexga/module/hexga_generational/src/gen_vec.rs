@@ -13,6 +13,7 @@ pub type GenID<T>  = GenIDOf<T,Generation>;
 pub trait IGeneration             : Eq + Hash + Ord + Increase + Decrease + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
 impl<T> IGeneration for T where T: Eq + Hash + Ord + Increase + Decrease + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
 
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum SlotValue<T>
@@ -37,6 +38,7 @@ impl<T> SlotValue<T>
     pub fn is_used(&self) -> bool { matches!(self, Self::Used(_))}
 }
 
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Slot<T,Gen:IGeneration=Generation>
@@ -66,6 +68,7 @@ impl <T,Gen:IGeneration> Slot<T,Gen>
     pub fn is_generation_saturated(&self) -> bool { !self.can_generation_increase() }
 }
 
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Eq)]
 pub struct GenVecOf<T,Gen:IGeneration=Generation>
 {
@@ -291,6 +294,7 @@ where
     }
 }
 
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GenIDOf<T,Gen:IGeneration>
 {
     index      : usize,
@@ -666,10 +670,7 @@ impl<T, Gen: IGeneration> Iterator for IntoIter<T, Gen> {
     fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
 impl<T, Gen: IGeneration> FusedIterator for IntoIter<T, Gen> {}
-impl<T, Gen: IGeneration> ExactSizeIterator for IntoIter<T, Gen>
-{
-    fn len(&self) -> usize { self.len_remaining }
-}
+impl<T, Gen: IGeneration> ExactSizeIterator for IntoIter<T, Gen> { fn len(&self) -> usize { self.len_remaining } }
 
 impl<'a, T, Gen: IGeneration> IntoIterator for &'a GenVecOf<T, Gen> {
     type Item = (GenIDOf<T, Gen>, &'a T);
@@ -706,6 +707,7 @@ impl<'a, T, Gen: IGeneration> Iterator for Iter<'a, T, Gen> {
     fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
 impl<'a, T, Gen: IGeneration> FusedIterator for Iter<'a, T, Gen> {}
+impl<'a, T, Gen: IGeneration> ExactSizeIterator for Iter<'a, T, Gen> { fn len(&self) -> usize { self.len_remaining } }
 
 
 
@@ -746,6 +748,8 @@ impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen> {
     fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
 impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
+impl<'a, T, Gen: IGeneration> ExactSizeIterator for IterMut<'a, T, Gen> { fn len(&self) -> usize { self.len_remaining } }
+
 
 impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen> { #[inline(always)] fn len(&self) -> usize { self.len } }
 impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
