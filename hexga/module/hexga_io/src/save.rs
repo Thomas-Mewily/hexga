@@ -88,6 +88,7 @@ pub trait IoSave : Serialize
         self.save_with_reader_and_extension(path, path.extension_or_empty(), w, fs)
     }
 
+    #[allow(unused_mut)] // The writter must be mutable `mut w : W`
     fn save_with_reader_and_extension<W, Fs>(&self, path : &path, extension : &extension, mut w : W, fs : &mut Fs) -> IoSaveResult
         where W : IoWrite, Fs : IoFsWrite
     {
