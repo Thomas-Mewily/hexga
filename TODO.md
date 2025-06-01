@@ -36,6 +36,8 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
         ... Self and T copiable + support base op
 
 
+- Math : Ray (rayon)
+
 
 - Hexga math : easing / tweening fn
 

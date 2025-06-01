@@ -301,3 +301,48 @@ impl<'a, G, T, Idx, const N : usize> Crop<Idx,N> for GridView<'a, G, T, Idx, N>
         self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) })
     }
 }
+
+
+// I'm not sure about the `T : CastIntoComposite<Dest> + Copy` semantic for the moment, `&'a T : CastIntoComposite<Dest>` make more sens
+impl<'a, 'b, G, T, Idx, const N : usize, Dest> CastIntoComposite<Dest> for GridView<'a,G, T, Idx, N>
+    where Idx : Integer, G : IGrid<T, Idx, N>, T : CastIntoComposite<Dest> + Copy
+{
+    type Output = G::WithType<T::Output>;
+    fn cast_into_composite(self) -> Self::Output {
+        self.transform(|v| v.cast_into_composite())
+    }
+}
+impl<'a, G, T, Idx, const N : usize, Dest> CastRangeIntoComposite<Dest> for GridView<'a,G, T, Idx, N>
+    where Idx : Integer, G : IGrid<T, Idx, N>, T : CastRangeIntoComposite<Dest> + Copy
+{
+    type Output = G::WithType<T::Output>;
+    fn cast_range_into_composite(self) -> Self::Output {
+        self.transform(|v| v.cast_range_into_composite())
+    }
+}
+impl<'a, G, T, Idx, const N : usize> ToUnsigned for GridView<'a,G, T, Idx, N>
+    where Idx : Integer, G : IGrid<T, Idx, N>, T : ToUnsigned + Copy
+{
+    type Output = G::WithType<T::Output>;
+
+    fn to_unsigned(self) -> Self::Output {
+        self.transform(|v| v.to_unsigned())
+    }
+}
+impl<'a, G, T, Idx, const N : usize> ToSigned for GridView<'a,G, T, Idx, N>
+    where Idx : Integer, G : IGrid<T, Idx, N>, T : ToSigned + Copy
+{
+    type Output = G::WithType<T::Output>;
+
+    fn to_signed(self) -> Self::Output {
+        self.transform(|v| v.to_signed())
+    }
+}
+impl<'a, G, T, Idx, const N : usize> Abs for GridView<'a,G, T, Idx, N>
+    where Idx : Integer, G : IGrid<T, Idx, N>, T : Abs + Copy
+{
+    type Output = G::WithType<T::Output>;
+    fn abs(self) -> Self::Output {
+        self.transform(|v| v.abs())
+    }
+}
