@@ -3,7 +3,7 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-pub use quad_hexga_engine::prelude::*;
+pub use hexga_engine::prelude::*;
 
 
 #[derive(Default)]

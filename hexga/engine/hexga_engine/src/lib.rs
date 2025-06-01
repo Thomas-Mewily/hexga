@@ -1,56 +1,22 @@
-#![allow(unused_imports)]
+//! implementation of the Hexga Engine Base using [MiniQuad](https://github.com/not-fl3/miniquad)
 #![allow(dead_code)]
-#![allow(unused_variables)]
-#![allow(unused_mut)]
-use std::{fmt::Debug, ops::*};
-use hexga::prelude::*;
-use hexga::ansi_color::AnsiColor;
-use std::marker::PhantomData;
-use hexga_graphics::prelude::*;
 
-pub use hexga_engine_core as engine_core;
-pub use hexga;
-
-pub mod window;
-pub mod render;
-pub mod events;
-
-pub mod pen;
-pub mod multi_media;
-
-pub mod context;
-
+use hexga_engine_base::*;
 use prelude::*;
+
+pub mod quad;
+
 
 pub mod prelude
 {
-    pub use crate::hexga ::prelude::*;
-
-    pub use crate::render::prelude::*;
-    pub use crate::events::prelude::*;
-    pub use crate::window::prelude::*;
-
-    pub use crate::multi_media::prelude::*;
-
-    pub use crate::context::prelude::*;
-    pub use crate::pen::prelude::*;
-
-    pub(crate) use crate::engine_core::prelude::*;
+    pub use hexga_engine_base::prelude::*;
+    //pub use crate::quad::QuadRunner;
 }
 
 /// Modules/Items without the prelude
 #[doc(hidden)]
 pub mod modules
 {
-    pub use super::hexga;
-
-    pub use super::window;
-    pub use super::render;
-    pub use super::events;
-
-
-    pub use super::multi_media;
-
-    pub use super::context;
-    pub use super::pen;
+    pub use super::quad;
+    pub use hexga_engine_base::modules::*;
 }

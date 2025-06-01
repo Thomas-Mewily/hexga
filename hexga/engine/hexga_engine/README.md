@@ -1,20 +1,14 @@
 🚧 **Warning: Experimental Crate!** 🚧
 
-This crate is currently in **beta** and **experimental**.  
-It is subject to **breaking changes** in future releases.  
+This crate is currently in **beta** and **experimental**.
+It is subject to **breaking changes** in future releases.
 Use it at your own risk, and keep in mind that the API may change in future versions.
 
-## HexGa Engine
+## Hexga Engine
 
-Game Engine interface for the Hexga Engine.
-
-Regroup together : 
-- Render part `hexga_engine_render`,
-- Events part `hexga_engine_events`,
-- Window part `hexga_engine_window`.
-
+An implementation of the HexGa Engine Base using [MiniQuad](https://github.com/not-fl3/miniquad)
 Not finished yet / work in progress...
 
-## Main Hexga Engine Implementation
+## Main Hexga crate
 
-Check `quad_hexga_engine` : https://crates.io/crates/quad_hexga_engine if you want to use the engine ready to use !
+Check `hexga` : https://crates.io/crates/hexga if you are interested in the non multi-media crate, it regroup multiple hexga crates.

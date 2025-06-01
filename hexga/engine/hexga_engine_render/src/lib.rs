@@ -3,6 +3,8 @@
 use std::{fmt::Debug, marker::PhantomData, ops::Deref};
 
 use hexga_math::prelude::*;
+
+pub use hexga_graphics;
 use hexga_graphics::prelude::*;
 
 #[cfg(feature = "serde")]

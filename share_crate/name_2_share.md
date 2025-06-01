@@ -30,5 +30,7 @@ hexga_engine_render
 hexga_engine_events
 hexga_engine_window
 
+hexga_engine_core
+hexga_engine_base
+
 hexga_engine
-quad_hexga_engine

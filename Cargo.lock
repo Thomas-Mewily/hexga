@@ -151,6 +151,7 @@ dependencies = [
  "hexga_bitflags",
  "hexga_core",
  "hexga_generational",
+ "hexga_graphics",
  "hexga_io",
  "hexga_map_on",
  "hexga_math",
@@ -195,6 +196,17 @@ dependencies = [
 
 [[package]]
 name = "hexga_engine"
+version = "0.0.10-beta.14"
+dependencies = [
+ "hexga_engine_base",
+ "hexga_io",
+ "hexga_io_derive",
+ "miniquad",
+ "serde",
+]
+
+[[package]]
+name = "hexga_engine_base"
 version = "0.0.10-beta.14"
 dependencies = [
  "hexga",
@@ -259,6 +271,8 @@ name = "hexga_generational"
 version = "0.0.10-beta.14"
 dependencies = [
  "hexga_core",
+ "hexga_io",
+ "hexga_io_derive",
  "hexga_number",
  "serde",
 ]
@@ -323,7 +337,7 @@ dependencies = [
 name = "hexga_test"
 version = "0.0.10-beta.14"
 dependencies = [
- "quad_hexga_engine",
+ "hexga_engine",
 ]
 
 [[package]]
@@ -455,15 +469,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "02b3e5e68a3a1a02aad3ec490a98007cbc13c37cbe84a3cd7b8e406d76e7f778"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "quad_hexga_engine"
-version = "0.0.10-beta.14"
-dependencies = [
- "hexga_engine_core",
- "miniquad",
- "serde",
 ]
 
 [[package]]
