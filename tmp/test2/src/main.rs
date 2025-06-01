@@ -29,6 +29,15 @@ impl<const N : usize> ::serde::Serialize for VArray<N> //where [T;N] : ::serde::
 }
 
 
+pub trait IPreferGrey<T>
+{
+    const GREY : Self;
+}
+impl<T, Kolor> IPreferGrey<T> for Kolor where Kolor : IColor<T>, T : Primitive
+{
+    const GREY : Self = Self::GREY;
+}
+
 fn main()
 {
     /*

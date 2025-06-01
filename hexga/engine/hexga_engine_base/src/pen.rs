@@ -10,7 +10,7 @@ pub struct Pen;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(C)]
-pub struct Vertex 
+pub struct Vertex
 {
     pub pos   : GpuVec3,
     pub uv    : GpuVec2,
@@ -49,7 +49,7 @@ pub struct PenParam
 }
 impl Default for PenParam
 {
-    fn default() -> Self 
+    fn default() -> Self
     {
         Self { max_vertex: Self::DEFAULT_VERTEX_CAPACITY, max_index: Self::DEFAULT_INDEX_CAPACITY }
     }
@@ -68,7 +68,7 @@ impl PenParam
     }
 }
 
-pub struct GpuMesh 
+pub struct GpuMesh
 {
     pub vertexs: Vec<Vertex>,
     pub indices: Vec<VertexIdx>,
@@ -77,9 +77,9 @@ pub struct GpuMesh
 
 
 #[derive(Debug)]
-pub struct ContextPen
+pub(crate) struct ContextPen
 {
-    /* 
+    /*
     pipeline: PipelineID,
     bindings: Bindings,
 
@@ -87,29 +87,29 @@ pub struct ContextPen
     index_buffer_id : BufferId,
 
     white_pixel : TextureId,
-    
+
     prev_vertex_index : usize,
     vertex_stack : NonEmptyStack<Vertex>,
 
     vertex: Vec<Vertex>,
     index : Vec<VertexIdx>,
     */
-    
+
     param : PenParam,
 }
 
 impl Drop for ContextPen
 {
-    fn drop(&mut self) 
+    fn drop(&mut self)
     {
         //render().delete_texture(self.white_pixel);
     }
 }
 
-/* 
+/*
 impl ContextPen
 {
-    pub(crate) fn new(render : &mut dyn ContextMultiMedia, mut param : PenParam) -> Self 
+    pub(crate) fn new(render : &mut dyn ContextMultiMedia, mut param : PenParam) -> Self
     {
         param.align();
         let PenParam{ max_vertex, max_index } = param;
@@ -120,7 +120,7 @@ impl ContextPen
             BufferUsage::Immutable,
             BufferSource::empty::<Vertex>(max_vertex),
         );
-        
+
         let index_buffer = render.new_buffer(
             BufferType::IndexBuffer,
             BufferUsage::Immutable,
@@ -163,19 +163,19 @@ impl ContextPen
             PipelineParam::default(),
         );
 
-        Self 
-        { 
-            pipeline, 
+        Self
+        {
+            pipeline,
             bindings,
             vertex_buffer_id: vertex_buffer,
-            index_buffer_id: index_buffer, 
+            index_buffer_id: index_buffer,
             white_pixel,
             param,
             prev_vertex_index : 0,
             vertex_stack : ___(),
             vertex : Vec::with_capacity(param.max_vertex),
             index  : Vec::with_capacity(param.max_index),
-        } 
+        }
     }
 }
 
@@ -184,35 +184,35 @@ impl ContextPen
 pub trait IPen
 {
 
-} 
+}
 
 
 macro_rules! impl_pen_pos {
-    ($float_type: ty) => 
-    { 
-        impl Position<$float_type,3> for ContextPen 
+    ($float_type: ty) =>
+    {
+        impl Position<$float_type,3> for ContextPen
         {
-            fn pos(&self) -> Vector<$float_type,3> 
+            fn pos(&self) -> Vector<$float_type,3>
             {
                 let pos = self.last_vertex().pos;
                 CastIntoComposite::<$float_type>::cast_into_composite(pos)
             }
 
-            fn set_pos(&mut self, pos : Vector<$float_type,3>) -> &mut Self 
+            fn set_pos(&mut self, pos : Vector<$float_type,3>) -> &mut Self
             {
                 self.last_vertex_mut().pos = CastIntoComposite::<GpuFloat>::cast_into_composite(pos);
                 self
             }
         }
-        impl Position<$float_type,2> for ContextPen 
+        impl Position<$float_type,2> for ContextPen
         {
-            fn pos(&self) -> Vector<$float_type,2> 
+            fn pos(&self) -> Vector<$float_type,2>
             {
                 let pos = self.last_vertex().pos.to_vec2();
                 CastIntoComposite::<$float_type>::cast_into_composite(pos)
             }
 
-            fn set_pos(&mut self, pos : Vector<$float_type,2>) -> &mut Self 
+            fn set_pos(&mut self, pos : Vector<$float_type,2>) -> &mut Self
             {
                 self.last_vertex_mut().pos = CastIntoComposite::<GpuFloat>::cast_into_composite(pos).with_z(0.);
                 self
@@ -251,7 +251,7 @@ impl ContextPen
 
     pub fn end_draw(&mut self)
     {
-        
+
     }
 }
 
@@ -270,7 +270,7 @@ impl ContextPen
         self.vertex.push(vertex);
         idx
     }
-    
+
     pub fn pos2<P>(&mut self, pos : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2>
     {
         self.pos3(pos.cast_into_composite().with_z(0.))
@@ -282,14 +282,14 @@ impl ContextPen
     }
 
     pub fn uv<P>(&mut self, uv : P) -> &mut Self where P : CastIntoComposite<GpuFloat,Output = GpuVec2>
-    { 
-        self.last_vertex_mut().set_uv(uv); 
+    {
+        self.last_vertex_mut().set_uv(uv);
         self
     }
 
     pub fn color<C>(&mut self, color : C) -> &mut Self where C : IColor
-    { 
-        self.last_vertex_mut().set_color(color); 
+    {
+        self.last_vertex_mut().set_color(color);
         self
     }
 
@@ -304,7 +304,7 @@ impl ContextPen
 
 
 
-    
+
     /// Make a triangle with the last 3 vertex
     pub fn make_triangle(&mut self)
     {
@@ -347,7 +347,7 @@ impl ContextPen
     /// Don't call `begin_vertexs()`
     pub fn index_triangles_and<I>(&mut self, triangle_index: I) -> &mut Self where I : IntoIterator<Item = VertexTriangleIdx>
     {
-        for triangle in triangle_index.into_iter() 
+        for triangle in triangle_index.into_iter()
         {
             self.index_triangle_and(triangle);
         }
@@ -366,13 +366,13 @@ impl ContextPen
         let len = self.vertex.len() - self.prev_vertex_index;
         if len <= 2 { return self; }
 
-        for i in 1..(len - 1) 
+        for i in 1..(len - 1)
         {
             self.index_triangle_and
             (
             [
-                    (self.prev_vertex_index        ) as VertexIdx, 
-                    (self.prev_vertex_index + i    ) as VertexIdx, 
+                    (self.prev_vertex_index        ) as VertexIdx,
+                    (self.prev_vertex_index + i    ) as VertexIdx,
                     (self.prev_vertex_index + i + 1) as VertexIdx
                 ]
             );
@@ -382,7 +382,7 @@ impl ContextPen
     }
 
     pub fn geometry<V,I>(&mut self, vertex : V, index: I)
-        where 
+        where
         V : IntoIterator<Item=Vertex>, V::IntoIter : ExactSizeIterator,
         I : IntoIterator<Item=VertexTriangleIdx>, I::IntoIter : ExactSizeIterator,
     {
@@ -391,14 +391,14 @@ impl ContextPen
     }
 
     pub fn geometry_and<V,I>(&mut self, vertex : V, index: I) -> &mut Self
-        where 
+        where
         V : IntoIterator<Item=Vertex>, V::IntoIter : ExactSizeIterator,
         I : IntoIterator<Item=VertexTriangleIdx>, I::IntoIter : ExactSizeIterator,
     {
         let vertex = vertex.into_iter();
         let index = index.into_iter();
 
-        /* 
+        /*
         let PenConfig { max_vertex, max_index } = self.param;
         if vertex.len() >= max_vertex || index.len() >= max_index {
             warn!("geometry() exceeded max drawcall size, clamping");
@@ -415,14 +415,14 @@ impl ContextPen
 
         self
     }
-    
 
-    /* 
+
+    /*
     pub fn triangle(&mut self, vertex : [GpuVertex;3]) -> &mut Self
     {
         self.static_geometry(vertex, [0, 1, 2])
     }
-    
+
 
     pub fn draw_triangle_test(&mut self) -> &mut Self
     {
@@ -433,20 +433,20 @@ impl ContextPen
                 GpuVertex::new().with_pos(gpu_vec3(0.3, -0.3, 0.)).with_color(Color::BLUE),
                 GpuVertex::new().with_pos(gpu_vec3(0.0, 0.3, 0.)).with_color(Color::GREEN),
             ]
-            , 
+            ,
             [0, 1, 2]
         )
     }
 
     pub fn static_geometry<V,I>(&mut self, vertex : V, index: I) -> &mut Self
-        where 
+        where
         V : IntoIterator<Item=GpuVertex>, V::IntoIter : ExactSizeIterator,
         I : IntoIterator<Item=GpuVertexIdx>, I::IntoIter : ExactSizeIterator,
     {
         let vertex = vertex.into_iter();
         let index = index.into_iter();
 
-        /* 
+        /*
         let PenConfig { max_vertex, max_index } = self.param;
         if vertex.len() >= max_vertex || index.len() >= max_index {
             warn!("geometry() exceeded max drawcall size, clamping");
@@ -469,28 +469,28 @@ impl ContextPen
 
 impl ContextPen
 {
-    pub fn circle<I>(&mut self, radius : float, nb_point : I) 
+    pub fn circle<I>(&mut self, radius : float, nb_point : I)
         where Angle : RangeDefaultSampleExtension<I>,
         Range<Angle> : RangeSampleExtension<I,Item = Angle>
     {
         self.circle_and(radius, nb_point);
         self.begin_vertex();
     }
-    
-    pub fn circle_and<I>(&mut self, radius : float, nb_point : I) 
+
+    pub fn circle_and<I>(&mut self, radius : float, nb_point : I)
         where Angle : RangeDefaultSampleExtension<I>,
         Range<Angle> : RangeSampleExtension<I,Item = Angle>
     {
         let pos : Vec2 = self.pos();
         for angle in Angle::sample(nb_point)
         {
-            
+
             Pen.set_pos(pos + angle.to_vec2_normalized()  * radius).down();
         }
         Pen.make_convex_poly_and();
     }
 
-    pub fn ellipse<I>(&mut self, radius : Vec2, nb_point : I) 
+    pub fn ellipse<I>(&mut self, radius : Vec2, nb_point : I)
         where Angle : RangeDefaultSampleExtension<I>,
         Range<Angle> : RangeSampleExtension<I,Item = Angle>
     {
@@ -498,14 +498,14 @@ impl ContextPen
         self.begin_vertex();
     }
 
-    pub fn ellipse_and<I>(&mut self, radius : Vec2, nb_point : I) 
+    pub fn ellipse_and<I>(&mut self, radius : Vec2, nb_point : I)
         where Angle : RangeDefaultSampleExtension<I>,
         Range<Angle> : RangeSampleExtension<I,Item = Angle>
     {
         let pos : Vec2 = self.pos();
         for angle in Angle::sample(nb_point)
         {
-            
+
             Pen.set_pos(pos + angle.to_vec2_normalized()  * radius).down();
         }
         Pen.make_convex_poly_and();
@@ -516,7 +516,7 @@ impl ContextPen
 
 
 
-pub(crate) mod shader 
+pub(crate) mod shader
 {
     use super::*;
     pub const VERTEX: &str = r#"
@@ -579,10 +579,10 @@ pub(crate) mod shader
     "#;
 
     pub fn meta() -> ShaderMeta {
-        ShaderMeta 
+        ShaderMeta
         {
             images: vec!["tex".to_string()],
-            uniforms: UniformBlockLayout { 
+            uniforms: UniformBlockLayout {
                 uniforms: vec![],
             },
         }

@@ -129,7 +129,7 @@ impl<T> IColor<T> for ColorRgbaOf<T> where T: Primitive
     const TRANSPARENT : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
 
     const BLACK : Self = Self { r: T::RANGE_MIN , g: T::RANGE_MIN , b: T::RANGE_MIN , a: T::RANGE_MAX };
-    const GRAY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX };
+    const GREY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX };
     const WHITE : Self = Self { r: T::RANGE_MAX , g: T::RANGE_MAX , b: T::RANGE_MAX , a: T::RANGE_MAX };
 
     const RED    : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MIN);

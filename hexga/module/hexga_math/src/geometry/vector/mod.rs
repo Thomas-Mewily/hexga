@@ -78,6 +78,20 @@ impl<T,const N : usize> Vector<T,N>
         }
     }
 
+    /// If any component is negative, return None,
+    /// If the multiplication overflow, return None
+    pub fn checked_area_usize(self) -> Option<usize> where T: Integer
+    {
+        let mut area = 1usize;
+        for v in self.iter()
+        {
+            if T::PRIMITIVE_NUMBER_TYPE.is_integer_signed() && v < &T::ZERO { return None; }
+            let dim : usize = v.to_usize();
+            area = area.checked_mul(dim)?;
+        }
+        Some(area)
+    }
+
     /// Multiply each component
     /// The result can be negative
     pub unsafe fn area_signed(self) -> T where T: Number { self.into_iter().product() }

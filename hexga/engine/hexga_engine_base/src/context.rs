@@ -16,7 +16,7 @@ pub struct Context
 {
     pub(crate) thread_id : std::thread::ThreadId,
     // state       : Box<dyn MainLoopWithContext>,
-    pub(crate) multi_media : Box<dyn ContextMultiMedia>,
+    pub(crate) multi_media : Box<dyn ContextMultiMedia>, // use an Arc instead ? and lock it during draw ?
 
     //pub(crate) render : ContextRender,
     pub(crate) pen    : ContextPen,

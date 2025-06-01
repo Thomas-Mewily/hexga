@@ -132,7 +132,7 @@ impl<T> IColor<T> for ColorHslaOf<T> where T: Float
     const TRANSPARENT : Self = Self::hsla(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
 
     const BLACK : Self = Self::hsl(T::ZERO,T::ZERO,T::ZERO);
-    const GRAY  : Self = Self::hsl(T::ZERO,T::ZERO,T::HALF);
+    const GREY  : Self = Self::hsl(T::ZERO,T::ZERO,T::HALF);
     const WHITE : Self = Self::hsl(T::ZERO,T::ZERO,T::ONE);
 
     const RED    : Self = Self::hsl(T::ZERO, T::ONE,T::HALF);

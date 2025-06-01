@@ -170,7 +170,22 @@ pub trait IColor<T> : Sized + ToColor
     /// ⬛ : ⬛⬛⬛
     const BLACK : Self;
     /// #777777
-    const GRAY  : Self;
+    ///
+    /// If ou prefeter the name `Grey`, just do :
+    ///
+    /// ```
+    /// use hexga_graphics::prelude::*;
+    ///
+    /// pub trait IPreferGrey<T>
+    /// {
+    ///    const GREY : Self;
+    /// }
+    /// impl<T, Kolor> IPreferGrey<T> for Kolor where Kolor : IColor<T>, T : Primitive
+    /// {
+    ///    const GREY : Self = Self::GREY;
+    /// }
+    /// ```
+    const GREY  : Self;
     /// #FFFFFF
     ///
     /// ⬜ : 🟥🟩🟦
