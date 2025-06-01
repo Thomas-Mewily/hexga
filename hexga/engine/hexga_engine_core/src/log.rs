@@ -1,4 +1,4 @@
-// Todo : use a dedicated crate ?
+// Todo : use a dedicated crate
 use crate::*;
 
 #[macro_export]

@@ -1,8 +1,5 @@
 use crate::*;
 
-pub trait ContextMultiMedia : ContextWindow + RenderBackend {}
-impl<T> ContextMultiMedia for T where T: ContextWindow + RenderBackend {}
-
 #[derive(Default, PartialEq, Eq, Clone, Hash)]
 pub struct MultiMediaParam
 {
@@ -29,12 +26,12 @@ impl MultiMediaParam
 pub mod prelude
 {
     use crate::*;
-    pub use super::{ContextMultiMedia,MultiMediaParam};
+    pub use super::MultiMediaParam;
 }
 
 /// Modules/Items without the prelude
 #[doc(hidden)]
 pub mod modules
 {
-    pub use super::{ContextMultiMedia,MultiMediaParam};
+    pub use super::MultiMediaParam;
 }

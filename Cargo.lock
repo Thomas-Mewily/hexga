@@ -198,6 +198,21 @@ name = "hexga_engine"
 version = "0.0.10-beta.14"
 dependencies = [
  "hexga",
+ "hexga_engine_core",
+ "hexga_engine_events",
+ "hexga_engine_render",
+ "hexga_engine_window",
+ "hexga_graphics",
+ "hexga_io",
+ "hexga_io_derive",
+ "serde",
+]
+
+[[package]]
+name = "hexga_engine_core"
+version = "0.0.10-beta.14"
+dependencies = [
+ "hexga",
  "hexga_engine_events",
  "hexga_engine_render",
  "hexga_engine_window",
@@ -446,7 +461,7 @@ dependencies = [
 name = "quad_hexga_engine"
 version = "0.0.10-beta.14"
 dependencies = [
- "hexga_engine",
+ "hexga_engine_core",
  "miniquad",
  "serde",
 ]

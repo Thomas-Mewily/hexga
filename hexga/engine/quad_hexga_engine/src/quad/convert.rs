@@ -1,4 +1,4 @@
-use hexga_engine::render::*;
+use hexga_engine_core::render::*;
 use crate::*;
 
 /// MiniQuad <=> Hexga Engine conversion
@@ -188,12 +188,11 @@ impl Convert for miniquad::KeyCode
     }
 }
 
-impl Convert for MultiMediaParam
+impl Convert for WindowParam
 {
     type Output=miniquad::conf::Conf;
 
     fn convert(self) -> Self::Output {
-        let Self { window_param, pen_param : _ } = self;
         let WindowParam
         {
             title: window_title,
@@ -204,7 +203,7 @@ impl Convert for MultiMediaParam
             resizable,
             icon,
             platform
-        } = window_param;
+        } = self;
 
         miniquad::conf::Conf
         {

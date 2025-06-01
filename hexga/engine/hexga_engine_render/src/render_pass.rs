@@ -2,7 +2,7 @@ use super::*;
 
 /// Not RAII. Manual deletion of render_pass is required using [RenderBackend::delete_render_pass].
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
-pub struct RenderPassID { pub index : usize }
+pub struct RawRenderPassID { pub index : usize }
 
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

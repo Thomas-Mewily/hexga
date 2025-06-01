@@ -1,0 +1,43 @@
+[package]
+name = "hexga_engine_core"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+keywords = []
+description = "The Core the Hexga Game Engine, implementation free without RAII"
+categories = ["game-development", "rendering", "multimedia", "graphics"]
+
+[features]
+default = [
+    "serde", "hexga_io",
+    "int_are_32_bits", "float_are_32_bits"
+]
+
+int_are_8_bits    = ["hexga/int_are_8_bits", "hexga_engine_render/int_are_8_bits", "hexga_engine_events/int_are_8_bits", "hexga_engine_window/int_are_8_bits", "hexga_graphics/int_are_8_bits"]
+int_are_16_bits   = ["hexga/int_are_16_bits", "hexga_engine_render/int_are_16_bits", "hexga_engine_events/int_are_16_bits", "hexga_engine_window/int_are_16_bits", "hexga_graphics/int_are_16_bits"]
+int_are_32_bits   = ["hexga/int_are_32_bits", "hexga_engine_render/int_are_32_bits", "hexga_engine_events/int_are_32_bits", "hexga_engine_window/int_are_32_bits", "hexga_graphics/int_are_32_bits"]
+int_are_64_bits   = ["hexga/int_are_64_bits", "hexga_engine_render/int_are_64_bits", "hexga_engine_events/int_are_64_bits", "hexga_engine_window/int_are_64_bits", "hexga_graphics/int_are_64_bits"]
+int_are_size_bits = ["hexga/int_are_size_bits", "hexga_engine_render/int_are_size_bits", "hexga_engine_events/int_are_size_bits", "hexga_engine_window/int_are_size_bits", "hexga_graphics/int_are_size_bits"]
+
+float_are_32_bits   = ["hexga/float_are_32_bits", "hexga_engine_render/float_are_32_bits", "hexga_engine_events/float_are_32_bits", "hexga_engine_window/float_are_32_bits", "hexga_graphics/float_are_32_bits"]
+float_are_64_bits   = ["hexga/float_are_64_bits", "hexga_engine_render/float_are_64_bits", "hexga_engine_events/float_are_64_bits", "hexga_engine_window/float_are_64_bits", "hexga_graphics/float_are_64_bits"]
+float_are_size_bits = ["hexga/float_are_size_bits", "hexga_engine_render/float_are_size_bits", "hexga_engine_events/float_are_size_bits", "hexga_engine_window/float_are_size_bits", "hexga_graphics/float_are_size_bits"]
+
+
+serde = ["dep:serde", "hexga/serde", "hexga_engine_render/serde", "hexga_engine_events/serde", "hexga_engine_window/serde"]
+hexga_io = ["dep:hexga_io", "dep:hexga_io_derive", "hexga/hexga_io", "hexga_engine_render/hexga_io", "hexga_engine_events/hexga_io", "hexga_engine_window/hexga_io", "hexga_graphics/hexga_io"]
+
+[dependencies]
+hexga.workspace = true
+hexga_engine_render.workspace = true
+hexga_engine_events.workspace = true
+hexga_engine_window.workspace = true
+hexga_graphics.workspace = true
+hexga_io = { workspace = true, optional = true }
+hexga_io_derive = { workspace = true, optional = true }
+
+serde = { version = "1.0.0", features = ["derive"], optional = true }

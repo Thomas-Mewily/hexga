@@ -1,6 +1,6 @@
 use crate::*;
 
-/* 
+/*
 pub trait LoopDraw
 {
     fn draw(&mut self);
@@ -25,8 +25,8 @@ pub trait RenderBackend
     fn texture_update_portion  (&mut self, id : RawTextureID, rect : Rect2P, source : &texture::TextureSource);
     fn delete_texture          (&mut self, id : RawTextureID);
 
-    fn new_render_pass   (&mut self, texture : RawTextureID, depth : Option<RawTextureID>) -> RenderPassID;
-    fn delete_render_pass(&mut self, id: RenderPassID);
+    fn new_render_pass   (&mut self, texture : RawTextureID, depth : Option<RawTextureID>) -> RawRenderPassID;
+    fn delete_render_pass(&mut self, id: RawRenderPassID);
 
     fn new_pipeline   (&mut self, data : &PipelineData) -> RawPipelineID;
     fn apply_pipeline (&mut self, pipeline: RawPipelineID);
@@ -47,7 +47,7 @@ pub trait RenderBackend
     fn clear(&mut self, data : ClearData);
 
     fn begin_default_pass(&mut self, action: PassAction);
-    fn begin_pass(&mut self, pass: Option<RenderPassID>, action: PassAction);
+    fn begin_pass(&mut self, pass: Option<RawRenderPassID>, action: PassAction);
     fn end_render_pass(&mut self);
 
     fn end_frame(&mut self);
@@ -69,9 +69,9 @@ impl RenderBackend for ()
     fn texture_read_pixels     (&mut self, _ : RawTextureID, _ : &mut TextureSource) {}
     fn texture_update_portion  (&mut self, _ : RawTextureID, _ : Rect2P, _ : &texture::TextureSource) {}
     fn delete_texture          (&mut self, _ : RawTextureID) {}
-    
-    fn new_render_pass   (&mut self, _ : RawTextureID, _ : Option<RawTextureID>) -> RenderPassID { RenderPassID::default() }
-    fn delete_render_pass(&mut self, _: RenderPassID) {}
+
+    fn new_render_pass   (&mut self, _ : RawTextureID, _ : Option<RawTextureID>) -> RawRenderPassID { RawRenderPassID::default() }
+    fn delete_render_pass(&mut self, _: RawRenderPassID) {}
     fn new_pipeline   (&mut self, _ : &PipelineData) -> RawPipelineID { RawPipelineID::default() }
     fn apply_pipeline (&mut self, _: RawPipelineID) {}
     fn delete_pipeline(&mut self, _: RawPipelineID) {}
@@ -83,7 +83,7 @@ impl RenderBackend for ()
     fn apply_uniforms_from_bytes(&mut self, _: &[u8]) {}
     fn clear(&mut self, _ : ClearData) {}
     fn begin_default_pass(&mut self, _: PassAction) {}
-    fn begin_pass(&mut self, _: Option<RenderPassID>, _: PassAction) {}
+    fn begin_pass(&mut self, _: Option<RawRenderPassID>, _: PassAction) {}
     fn end_render_pass(&mut self) {}
     fn end_frame(&mut self) {}
     fn draw(&mut self, _: usize, _: usize, _: usize) {}

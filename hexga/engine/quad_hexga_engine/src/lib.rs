@@ -1,16 +1,15 @@
 //! implementation of the Hexga Engine using MiniQuad
 #![allow(dead_code)]
 
-pub use hexga_engine::*;
+use hexga_engine_core::*;
 use prelude::*;
-
 
 pub mod quad;
 
 
 pub mod prelude
 {
-    pub use hexga_engine::prelude::*;
+    pub use hexga_engine_core::prelude::*;
     //pub use crate::quad::QuadRunner;
 }
 
@@ -19,5 +18,5 @@ pub mod prelude
 pub mod modules
 {
     pub use super::quad;
-    pub use hexga_engine::modules::*;
+    pub use hexga_engine_core::modules::*;
 }

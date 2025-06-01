@@ -1,5 +1,5 @@
 //use hexga_engine::context::Context;
-pub use hexga_engine::modules::*;
+use hexga_engine_core::modules::*;
 
 use crate::*;
 use super::convert::*;
@@ -112,14 +112,14 @@ impl RenderBackend for QuadContext
         self.render.delete_texture(id);
     }
 
-    fn new_render_pass   (&mut self, texture : texture::RawTextureID, depth : Option<texture::RawTextureID>) -> render_pass::RenderPassID {
+    fn new_render_pass   (&mut self, texture : texture::RawTextureID, depth : Option<texture::RawTextureID>) -> render_pass::RawRenderPassID {
         let id = self.texture[texture.index];
         let depth = depth.map(|v| self.texture[v.index]);
         let miniquad_pass_id = self.render.new_render_pass(id, depth);
-        render_pass::RenderPassID{ index: unsafe { std::mem::transmute(miniquad_pass_id) } }
+        render_pass::RawRenderPassID{ index: unsafe { std::mem::transmute(miniquad_pass_id) } }
     }
 
-    fn delete_render_pass(&mut self, id: render_pass::RenderPassID) {
+    fn delete_render_pass(&mut self, id: render_pass::RawRenderPassID) {
         self.render.delete_render_pass(unsafe { std::mem::transmute(id.index) });
     }
 
@@ -227,7 +227,7 @@ impl RenderBackend for QuadContext
         self.render.begin_default_pass(action.convert());
     }
 
-    fn begin_pass(&mut self, pass: Option<render_pass::RenderPassID>, action: render_pass::PassAction) {
+    fn begin_pass(&mut self, pass: Option<render_pass::RawRenderPassID>, action: render_pass::PassAction) {
         self.render.begin_pass(
             pass.map(|v| unsafe { std::mem::transmute(v.index) }),
             action.convert()

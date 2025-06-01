@@ -14,20 +14,20 @@ categories = ["game-development", "rendering", "multimedia", "graphics"]
 [features]
 default = ["serde", "int_are_32_bits", "float_are_32_bits"]
 
-int_are_8_bits    = ["hexga_engine/int_are_8_bits"]
-int_are_16_bits   = ["hexga_engine/int_are_16_bits"]
-int_are_32_bits   = ["hexga_engine/int_are_32_bits"]
-int_are_64_bits   = ["hexga_engine/int_are_64_bits"]
-int_are_size_bits = ["hexga_engine/int_are_size_bits"]
+int_are_8_bits    = ["hexga_engine_core/int_are_8_bits"]
+int_are_16_bits   = ["hexga_engine_core/int_are_16_bits"]
+int_are_32_bits   = ["hexga_engine_core/int_are_32_bits"]
+int_are_64_bits   = ["hexga_engine_core/int_are_64_bits"]
+int_are_size_bits = ["hexga_engine_core/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga_engine/float_are_32_bits"]
-float_are_64_bits   = ["hexga_engine/float_are_64_bits"]
-float_are_size_bits = ["hexga_engine/float_are_size_bits"]
+float_are_32_bits   = ["hexga_engine_core/float_are_32_bits"]
+float_are_64_bits   = ["hexga_engine_core/float_are_64_bits"]
+float_are_size_bits = ["hexga_engine_core/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga_engine/serde"]
+serde = ["dep:serde", "hexga_engine_core/serde"]
 
 [dependencies]
-hexga_engine.workspace = true
+hexga_engine_core.workspace = true
 
 miniquad = "0.4.8"
 serde = { version = "1.0.0", features = ["derive"], optional = true }

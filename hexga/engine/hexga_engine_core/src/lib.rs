@@ -6,24 +6,23 @@ use std::{fmt::Debug, ops::*};
 use hexga::prelude::*;
 use hexga::ansi_color::AnsiColor;
 use std::marker::PhantomData;
-use hexga_graphics::prelude::*;
 
-pub use hexga_engine_core as engine_core;
+pub use hexga_graphics::prelude::*;
+
 pub use hexga;
+pub mod log;
 
 pub mod window;
 pub mod render;
 pub mod events;
 
-pub mod pen;
 pub mod multi_media;
-
-pub mod context;
 
 use prelude::*;
 
 pub mod prelude
 {
+    pub use crate::log::*;
     pub use crate::hexga ::prelude::*;
 
     pub use crate::render::prelude::*;
@@ -31,11 +30,6 @@ pub mod prelude
     pub use crate::window::prelude::*;
 
     pub use crate::multi_media::prelude::*;
-
-    pub use crate::context::prelude::*;
-    pub use crate::pen::prelude::*;
-
-    pub(crate) use crate::engine_core::prelude::*;
 }
 
 /// Modules/Items without the prelude
@@ -43,14 +37,11 @@ pub mod prelude
 pub mod modules
 {
     pub use super::hexga;
+    pub use super::log;
 
     pub use super::window;
     pub use super::render;
     pub use super::events;
 
-
     pub use super::multi_media;
-
-    pub use super::context;
-    pub use super::pen;
 }

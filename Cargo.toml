@@ -34,5 +34,8 @@ hexga                  = { path = "./hexga/module/hexga",                   vers
 hexga_engine_render    = { path = "./hexga/engine/hexga_engine_render",     version = "0.0.10-beta.14", default-features = false }
 hexga_engine_events    = { path = "./hexga/engine/hexga_engine_events",     version = "0.0.10-beta.14", default-features = false }
 hexga_engine_window    = { path = "./hexga/engine/hexga_engine_window",     version = "0.0.10-beta.14", default-features = false }
+
+hexga_engine_core      = { path = "./hexga/engine/hexga_engine_core",       version = "0.0.10-beta.14", default-features = false }
 hexga_engine           = { path = "./hexga/engine/hexga_engine",            version = "0.0.10-beta.14", default-features = false }
+
 quad_hexga_engine      = { path = "./hexga/engine/quad_hexga_engine",       version = "0.0.10-beta.14", default-features = false }
