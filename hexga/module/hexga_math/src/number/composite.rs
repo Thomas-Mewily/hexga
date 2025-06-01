@@ -98,50 +98,6 @@ macro_rules! impl_composite_types_and_methods_and_constants_for_internal_type
                 const $constant_name: Self = $crate::rectangle::RectangleBase::new(T::$constant_name, T::$constant_name);
             )*
         }
-
-        /*
-        impl<T $(, $($generic_params),* )?> $trait_name $(< $($generic_params),* >)? for ColorRgbaOf<T>
-        where
-            T: $trait_name $(< $($generic_params),* >)?
-        {
-            $(
-                type $type_name = ColorRgbaOf<T::$type_name>;
-            )*
-
-            $(
-                fn $method_name(self) -> $output_name
-                {
-                    self.map(|v| v.$method_name())
-                }
-            )*
-
-            $(
-                const $constant_name: Self = ColorRgbaOf::new(T::$constant_name, T::$constant_name, T::$constant_name, T::$constant_name);
-            )*
-        }
-        */
-
-        /*
-        impl<T> $trait_name for ColorHslaOf<T>
-        where
-            T: $trait_name
-        {
-            $(
-                type $type_name = ColorHslaOf<T::$type_name>;
-            )*
-
-            $(
-                fn $method_name(self) -> $output_name
-                {
-                    self.map(|v| v.$method_name())
-                }
-            )*
-
-            $(
-                const $constant_name: Self = ColorHslaOf::new(T::$constant_name, T::$constant_name, T::$constant_name, T::$constant_name);
-            )*
-        }
-        */
     };
 }
 pub(crate) use impl_composite_types_and_methods_and_constants_for_internal_type;
