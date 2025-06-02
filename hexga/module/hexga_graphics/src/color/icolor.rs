@@ -171,18 +171,19 @@ pub trait IColor<T> : Sized + ToColor
     const BLACK : Self;
     /// #777777
     ///
-    /// If ou prefeter the name `Grey`, just do :
+    /// If you preferer the name `Gray`, just do :
     ///
     /// ```
     /// use hexga_graphics::prelude::*;
+    /// use hexga_math::prelude::*;
     ///
-    /// pub trait IPreferGrey<T>
+    /// pub trait IPreferGray<T>
     /// {
-    ///    const GREY : Self;
+    ///    const GRAY : Self;
     /// }
-    /// impl<T, Kolor> IPreferGrey<T> for Kolor where Kolor : IColor<T>, T : Primitive
+    /// impl<T, Kolor> IPreferGray<T> for Kolor where Kolor : IColor<T>, T : Primitive
     /// {
-    ///    const GREY : Self = Self::GREY;
+    ///    const GRAY : Self = Self::GREY;
     /// }
     /// ```
     const GREY  : Self;

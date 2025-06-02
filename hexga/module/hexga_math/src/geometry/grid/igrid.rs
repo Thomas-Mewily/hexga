@@ -1,5 +1,6 @@
 use crate::*;
 
+#[non_exhaustive]
 #[derive(Clone)]
 pub enum GridBaseError<Idx, const N : usize> where Idx : Integer
 {
