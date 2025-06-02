@@ -26,7 +26,8 @@ impl DerefMut for Context
 {
     fn deref_mut(&mut self) -> &mut Self::Target { ctx() }
 }
-
+impl AsRef<Ctx> for Context { fn as_ref(&self) -> &Ctx { &*self } }
+impl AsMut<Ctx> for Context { fn as_mut(&mut self) -> &mut Ctx { &mut *self } }
 
 pub struct Ctx
 {
@@ -54,16 +55,20 @@ Permission ? (from where asset can be loaded / exported ? You don't want to load
     // other stuff
 }
 
-/*
-impl Context
+impl Ctx
 {
     pub fn new(mut multi_media : Box<dyn ContextMultiMedia>, param : MultiMediaParam) -> Self
     {
-        let pen = ContextPen::new(multi_media.as_mut(), param.pen_param);
-        Self { multi_media, pen, textures: ___(), textures_to_remove: ___() }
+        //let pen = ContextPen::new(multi_media.as_mut(), param.pen_param);
+        //Self { multi_media, pen, textures: ___(), textures_to_remove: ___() }
+
+        Self
+        {
+            thread_id: std::thread::current().id(),
+            multi_media,
+        }
     }
 }
-*/
 
 pub(crate) static mut CONTEXT : Option<Ctx> = None;
 
@@ -107,7 +112,29 @@ pub unsafe fn set_context(ctx : Option<Ctx>) -> Option<Ctx>
     }
 }
 
+pub struct ContextRunner<S> where S : MainLoopWithContext
+{
+    pub state : S,
+}
+impl<S> ContextRunner<S> where S : MainLoopWithContext
+{
+    pub fn new(state : S) -> Self { Self { state } }
+}
 
+impl<S> MainLoopWithContext for ContextRunner<S> where S : MainLoopWithContext
+{
+    fn handle_event_with(&mut self, event : Event, ctx : &mut Ctx) -> bool {
+        self.state.handle_event_with(event, ctx)
+    }
+
+    fn update_with(&mut self, ctx : &mut Ctx) {
+        self.state.update_with(ctx)
+    }
+
+    fn draw_with(&mut self, ctx : &mut Ctx) {
+        self.state.draw_with(ctx)
+    }
+}
 
 /*
 impl<S,MultiMedia> MainLoopWithContext for ContextState<S,MultiMedia>

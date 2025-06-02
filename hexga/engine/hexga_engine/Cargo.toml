@@ -17,24 +17,24 @@ default = [
     "int_are_32_bits", "float_are_32_bits"
 ]
 
-int_are_8_bits    = ["hexga_engine_base/int_are_8_bits"]
-int_are_16_bits   = ["hexga_engine_base/int_are_16_bits"]
-int_are_32_bits   = ["hexga_engine_base/int_are_32_bits"]
-int_are_64_bits   = ["hexga_engine_base/int_are_64_bits"]
-int_are_size_bits = ["hexga_engine_base/int_are_size_bits"]
+int_are_8_bits    = ["hexga_engine_base/int_are_8_bits", "hexga_engine_core/int_are_8_bits"]
+int_are_16_bits   = ["hexga_engine_base/int_are_16_bits", "hexga_engine_core/int_are_16_bits"]
+int_are_32_bits   = ["hexga_engine_base/int_are_32_bits", "hexga_engine_core/int_are_32_bits"]
+int_are_64_bits   = ["hexga_engine_base/int_are_64_bits", "hexga_engine_core/int_are_64_bits"]
+int_are_size_bits = ["hexga_engine_base/int_are_size_bits", "hexga_engine_core/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga_engine_base/float_are_32_bits"]
-float_are_64_bits   = ["hexga_engine_base/float_are_64_bits"]
-float_are_size_bits = ["hexga_engine_base/float_are_size_bits"]
+float_are_32_bits   = ["hexga_engine_base/float_are_32_bits", "hexga_engine_core/float_are_32_bits"]
+float_are_64_bits   = ["hexga_engine_base/float_are_64_bits", "hexga_engine_core/float_are_64_bits"]
+float_are_size_bits = ["hexga_engine_base/float_are_size_bits", "hexga_engine_core/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga_engine_base/serde"]
-hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde", "hexga_engine_base/hexga_io"]
+serde = ["dep:serde", "hexga_engine_base/serde", "hexga_engine_core/serde"]
+hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde", "hexga_engine_base/hexga_io", "hexga_engine_core/hexga_io"]
 
 [dependencies]
 hexga_engine_base.workspace = true
 hexga_io = { workspace = true, optional = true }
 hexga_io_derive = { workspace = true, optional = true }
-hexga_engine_backend_quad = { workspace = true }
+hexga_engine_core = { workspace = true }
 
 miniquad = "0.4.8"
 serde = { version = "1.0.0", features = ["derive"], optional = true }

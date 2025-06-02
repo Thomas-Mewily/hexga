@@ -4,12 +4,12 @@ use hexga_engine_core::modules::*;
 use crate::*;
 use super::convert::*;
 
-pub struct QuadContext
+pub(crate) struct QuadContext
 {
-    tmp_vertex  : Vec<miniquad::BufferId>,
-    tmp_textures : Vec<miniquad::TextureId>,
-    render       : Box<dyn miniquad::RenderingBackend>,
-    texture      : SlotVec<miniquad::TextureId>,
+    pub(crate) tmp_vertex   : Vec<miniquad::BufferId>,
+    pub(crate) tmp_textures : Vec<miniquad::TextureId>,
+    pub(crate) render       : Box<dyn miniquad::RenderingBackend>,
+    pub(crate) textures     : SlotVec<miniquad::TextureId>,
 }
 
 use render::*;
@@ -52,7 +52,7 @@ impl RenderBackend for QuadContext
             self.render.texture_set_wrap(t, wrap_x.convert(), wrap_y.convert());
         }
 
-        let id = self.texture.insert(t);
+        let id = self.textures.insert(t);
         texture::RawTextureID { index: id.index() }
     }
 
@@ -64,24 +64,24 @@ impl RenderBackend for QuadContext
             texture::TextureSource::RGBA8(items) => items,
         };
 
-        let id = self.texture[dest.index];
+        let id = self.textures[dest.index];
 
         self.render.texture_update(id, src);
     }
 
     fn texture_set_mag_filter  (&mut self, id : texture::RawTextureID, filter: texture::FilterMode)
     {
-        let id = self.texture[id.index];
+        let id = self.textures[id.index];
         self.render.texture_set_mag_filter(id, filter.convert());
     }
 
     fn texture_set_wrap        (&mut self, id : texture::RawTextureID, wrap : (texture::TextureWrap, texture::TextureWrap)) {
-        let id = self.texture[id.index];
+        let id = self.textures[id.index];
         self.render.texture_set_wrap(id, wrap.0.convert(), wrap.1.convert());
     }
 
     fn texture_generate_mipmaps(&mut self, id : texture::RawTextureID) {
-        let id = self.texture[id.index];
+        let id = self.textures[id.index];
         self.render.texture_generate_mipmaps(id);
     }
 
@@ -92,7 +92,7 @@ impl RenderBackend for QuadContext
             texture::TextureSource::Empty => return,
             texture::TextureSource::RGBA8(items) => items.as_mut_slice(),
         };
-        let id = self.texture[id.index];
+        let id = self.textures[id.index];
         self.render.texture_read_pixels(id, dest);
     }
 
@@ -102,19 +102,19 @@ impl RenderBackend for QuadContext
             texture::TextureSource::Empty => return,
             texture::TextureSource::RGBA8(items) => items.as_slice(),
         };
-        let id = self.texture[id.index];
+        let id = self.textures[id.index];
         let (pos, size) = portion.into();
         self.render.texture_update_part(id, pos.x as _, pos.y as _, size.x as _, size.y as _, src);
     }
 
     fn delete_texture(&mut self, id : texture::RawTextureID) {
-        let id = self.texture.remove_index(id.index).unwrap();
+        let id = self.textures.remove_index(id.index).unwrap();
         self.render.delete_texture(id);
     }
 
     fn new_render_pass   (&mut self, texture : texture::RawTextureID, depth : Option<texture::RawTextureID>) -> render_pass::RawRenderPassID {
-        let id = self.texture[texture.index];
-        let depth = depth.map(|v| self.texture[v.index]);
+        let id = self.textures[texture.index];
+        let depth = depth.map(|v| self.textures[v.index]);
         let miniquad_pass_id = self.render.new_render_pass(id, depth);
         render_pass::RawRenderPassID{ index: unsafe { std::mem::transmute(miniquad_pass_id) } }
     }
@@ -202,7 +202,7 @@ impl RenderBackend for QuadContext
         self.tmp_textures.clear();
         for v in binding.images.iter()
         {
-            self.tmp_textures.push(self.texture[v.index]);
+            self.tmp_textures.push(self.textures[v.index]);
         }
 
         self.render.apply_bindings_from_slice(
@@ -247,7 +247,7 @@ impl RenderBackend for QuadContext
     }
 }
 
-impl ContextWindow for QuadContext
+impl hexga_engine_core::window::ContextWindow for QuadContext
 {
     fn get_clipboard(&mut self) -> Option<String> {
         miniquad::window::clipboard_get()
@@ -307,7 +307,7 @@ impl ContextWindow for QuadContext
         miniquad::window::set_cursor_grab(grab);
     }
 
-    fn set_mouse_cursor(&mut self, cursor_icon: window::CursorIcon) {
+    fn set_mouse_cursor(&mut self, cursor_icon: hexga_engine_core::window::CursorIcon) {
         miniquad::window::set_mouse_cursor(cursor_icon.convert());
     }
 }

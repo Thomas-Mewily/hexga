@@ -1,4 +1,4 @@
-use hexga_engine_core::render::*;
+use engine_base::engine_core::render::*;
 use crate::*;
 
 /// MiniQuad <=> Hexga Engine conversion
@@ -188,7 +188,7 @@ impl Convert for miniquad::KeyCode
     }
 }
 
-impl Convert for WindowParam
+impl Convert for hexga_engine_base::engine_core::window::WindowParam
 {
     type Output=miniquad::conf::Conf;
 
@@ -220,7 +220,7 @@ impl Convert for WindowParam
     }
 }
 
-impl Convert for window::Icon
+impl Convert for engine_base::engine_core::window::Icon
 {
     type Output = miniquad::conf::Icon;
 
@@ -231,7 +231,7 @@ impl Convert for window::Icon
     }
 }
 
-impl Convert for window::Platform
+impl Convert for engine_base::engine_core::window::Platform
 {
     type Output = miniquad::conf::Platform;
 
@@ -245,7 +245,7 @@ impl Convert for window::Platform
     }
 }
 
-impl Convert for window::CursorIcon
+impl Convert for engine_base::engine_core::window::CursorIcon
 {
     type Output =  miniquad::CursorIcon;
 
@@ -253,18 +253,18 @@ impl Convert for window::CursorIcon
     {
         match self
         {
-            window::CursorIcon::Default => miniquad::CursorIcon::Default,
-            window::CursorIcon::Help => miniquad::CursorIcon::Help,
-            window::CursorIcon::Pointer => miniquad::CursorIcon::Pointer,
-            window::CursorIcon::Wait => miniquad::CursorIcon::Wait,
-            window::CursorIcon::Crosshair => miniquad::CursorIcon::Crosshair,
-            window::CursorIcon::Text => miniquad::CursorIcon::Text,
-            window::CursorIcon::Move => miniquad::CursorIcon::Move,
-            window::CursorIcon::NotAllowed => miniquad::CursorIcon::NotAllowed,
-            window::CursorIcon::EWResize => miniquad::CursorIcon::EWResize,
-            window::CursorIcon::NSResize => miniquad::CursorIcon::NSResize,
-            window::CursorIcon::NESWResize => miniquad::CursorIcon::NESWResize,
-            window::CursorIcon::NWSEResize => miniquad::CursorIcon::NWSEResize,
+            engine_base::engine_core::window::CursorIcon::Default => miniquad::CursorIcon::Default,
+            engine_base::engine_core::window::CursorIcon::Help => miniquad::CursorIcon::Help,
+            engine_base::engine_core::window::CursorIcon::Pointer => miniquad::CursorIcon::Pointer,
+            engine_base::engine_core::window::CursorIcon::Wait => miniquad::CursorIcon::Wait,
+            engine_base::engine_core::window::CursorIcon::Crosshair => miniquad::CursorIcon::Crosshair,
+            engine_base::engine_core::window::CursorIcon::Text => miniquad::CursorIcon::Text,
+            engine_base::engine_core::window::CursorIcon::Move => miniquad::CursorIcon::Move,
+            engine_base::engine_core::window::CursorIcon::NotAllowed => miniquad::CursorIcon::NotAllowed,
+            engine_base::engine_core::window::CursorIcon::EWResize => miniquad::CursorIcon::EWResize,
+            engine_base::engine_core::window::CursorIcon::NSResize => miniquad::CursorIcon::NSResize,
+            engine_base::engine_core::window::CursorIcon::NESWResize => miniquad::CursorIcon::NESWResize,
+            engine_base::engine_core::window::CursorIcon::NWSEResize => miniquad::CursorIcon::NWSEResize,
         }
     }
 }

@@ -39,5 +39,3 @@ hexga_engine_core      = { path = "./hexga/engine/hexga_engine_core",       vers
 hexga_engine_base      = { path = "./hexga/engine/hexga_engine_base",       version = "0.0.10-beta.16", default-features = false }
 
 hexga_engine           = { path = "./hexga/engine/hexga_engine",            version = "0.0.10-beta.16", default-features = false }
-
-hexga_engine_backend_quad = { path = "./hexga/engine/hexga_engine_backend_quad", version = "0.0.10-beta.16", default-features = false }
