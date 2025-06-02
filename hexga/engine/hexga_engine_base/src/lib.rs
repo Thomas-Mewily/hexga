@@ -16,7 +16,7 @@ pub use hexga::graphics;
 pub mod window;
 pub mod events;
 
-//pub mod pen;
+pub mod pen;
 pub mod multi_media;
 
 pub mod context;
@@ -33,7 +33,7 @@ pub mod prelude
     pub use crate::multi_media::prelude::*;
 
     pub use crate::context::prelude::*;
-    //pub use crate::pen::prelude::*;
+    pub use crate::pen::prelude::*;
 
     pub use crate::graphics::prelude::*;
 
@@ -52,7 +52,7 @@ pub mod modules
     pub use super::multi_media;
 
     pub use super::context;
-    //pub use super::pen;
+    pub use super::pen;
 
     pub use super::graphics;
 }

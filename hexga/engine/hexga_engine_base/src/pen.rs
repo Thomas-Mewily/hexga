@@ -1,6 +1,63 @@
 use crate::*;
 
+define_ctx_type!(Pen, CtxPen);
+
+#[derive(Debug)]
+pub(crate) struct PenInternal
+{
+    /*
+    pipeline: PipelineID,
+    bindings: Bindings,
+
+    vertex_buffer_id : BufferId,
+    index_buffer_id : BufferId,
+
+    white_pixel : TextureId,
+
+    prev_vertex_index : usize,
+    vertex_stack : NonEmptyStack<Vertex>,
+
+    vertex: Vec<Vertex>,
+    index : Vec<VertexIdx>,
+    */
+
+    //time : TimeOf<f64>,
+
+    //param : PenParam,
+}
+
+impl PenInternal
+{
+    pub fn new(ctx_multi : &mut dyn ContextMultiMedia) -> Self
+    {
+        Self {  }
+    }
+
+    pub fn begin_draw(&mut self)
+    {
+
+    }
+}
+
+
+
+
+
+
+
+
+
+pub mod prelude
+{
+    pub(crate) use super::{PenInternal,CtxPen};
+    pub use super::Pen;
+}
+
+
+
 /*
+
+
 pub mod prelude
 {
     pub use super::{Pen,PenParam};

@@ -3,29 +3,34 @@ use crate::*;
 pub mod prelude
 {
     pub(crate) use super::Ctx;
+    pub(crate) use super::define_ctx_type;
 }
 
-/*
-pub struct Pen;
-pub struct ContextOf<'a, T>
-{
-    ctx : &'a mut Context,
-    phantom : PhantomData<T>,
+macro_rules! define_ctx_type {
+    ($name:ident, $ctx_type:ident) => {
+        pub struct $name;
+        impl Deref for $name { type Target=$ctx_type<'static>; fn deref(&self) -> &Self::Target { unsafe { std::mem::transmute($crate::context::ctx()) } } }
+        impl DerefMut for $name { fn deref_mut(&mut self) -> &mut Self::Target { unsafe { std::mem::transmute($crate::context::ctx()) } } }
+        impl AsRef<$ctx_type<'static>> for Pen { fn as_ref(&self) -> &$ctx_type<'static> { &*self } }
+        impl AsMut<$ctx_type<'static>> for Pen { fn as_mut(&mut self) -> &mut $ctx_type<'static> { &mut *self } }
+        pub type $ctx_type<'a> = $crate::context::CtxMut<'a, $name>;
+    };
 }
-pub type ContextPen<'a> = ContextOf<Pen>;
-*/
+pub(crate) use define_ctx_type;
+
+pub struct CtxMut<'a,T> { ctx : &'a mut Ctx, phantom : PhantomData<T>, }
+impl<'a,T> CtxMut<'a,T>
+{
+    pub(crate) const fn new(ctx : &'a mut Ctx) -> Self { Self { ctx, phantom: PhantomData }}
+    pub(crate) fn ctx(&mut self) -> &mut Ctx { self.ctx }
+}
+
+
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
 pub struct Context;
-impl Deref for Context
-{
-    type Target=Ctx;
-    fn deref(&self) -> &Self::Target { ctx_ref() }
-}
-impl DerefMut for Context
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { ctx() }
-}
+impl Deref for Context { type Target=Ctx; fn deref(&self) -> &Self::Target { ctx_ref() } }
+impl DerefMut for Context { fn deref_mut(&mut self) -> &mut Self::Target { ctx() } }
 impl AsRef<Ctx> for Context { fn as_ref(&self) -> &Ctx { &*self } }
 impl AsMut<Ctx> for Context { fn as_mut(&mut self) -> &mut Ctx { &mut *self } }
 
@@ -35,6 +40,7 @@ pub struct Ctx
     // state       : Box<dyn MainLoopWithContext>,
     pub(crate) multi_media : Box<dyn ContextMultiMedia>, // use an Arc instead ? and lock it during draw ?
 
+    pub(crate) pen : PenInternal,
     //pub(crate) render : ContextRender,
     //pub(crate) pen    : ContextPen,
 
@@ -62,12 +68,20 @@ impl Ctx
         //let pen = ContextPen::new(multi_media.as_mut(), param.pen_param);
         //Self { multi_media, pen, textures: ___(), textures_to_remove: ___() }
 
+        let pen = PenInternal::new(multi_media.as_mut());
+
         Self
         {
             thread_id: std::thread::current().id(),
             multi_media,
+            pen,
         }
     }
+}
+
+impl Ctx
+{
+    pub fn pen<'a>(&'a mut self) -> CtxPen<'a> { CtxPen::new(self) }
 }
 
 pub(crate) static mut CONTEXT : Option<Ctx> = None;
