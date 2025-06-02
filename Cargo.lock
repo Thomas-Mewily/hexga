@@ -198,7 +198,19 @@ dependencies = [
 name = "hexga_engine"
 version = "0.0.10-beta.16"
 dependencies = [
+ "hexga_engine_backend_quad",
  "hexga_engine_base",
+ "hexga_io",
+ "hexga_io_derive",
+ "miniquad",
+ "serde",
+]
+
+[[package]]
+name = "hexga_engine_backend_quad"
+version = "0.0.10-beta.16"
+dependencies = [
+ "hexga_engine_core",
  "hexga_io",
  "hexga_io_derive",
  "miniquad",

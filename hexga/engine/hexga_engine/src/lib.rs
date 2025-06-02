@@ -1,22 +1,28 @@
-//! implementation of the Hexga Engine Base using [MiniQuad](https://github.com/not-fl3/miniquad)
-#![allow(dead_code)]
 
-use hexga_engine_base::*;
+#[allow(unused_imports)]
 use prelude::*;
-
-pub mod quad;
-
 
 pub mod prelude
 {
     pub use hexga_engine_base::prelude::*;
-    //pub use crate::quad::QuadRunner;
 }
+
+pub use modules::*;
 
 /// Modules/Items without the prelude
 #[doc(hidden)]
 pub mod modules
 {
-    pub use super::quad;
     pub use hexga_engine_base::modules::*;
+}
+
+pub trait ContextRun
+{
+    fn run<T>(self, state : impl 'static + FnOnce() -> T) where T: MainLoop + 'static;
+}
+impl ContextRun for MultiMediaParam
+{
+    fn run<T>(self, state : impl 'static + FnOnce() -> T) where T: MainLoop + 'static {
+        todo!()
+    }
 }

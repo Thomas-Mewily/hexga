@@ -2,28 +2,44 @@ use crate::*;
 
 pub mod prelude
 {
-    pub use super::MainLoop;
+    pub(crate) use super::Ctx;
 }
 
-pub trait MainLoop
+/*
+pub struct Pen;
+pub struct ContextOf<'a, T>
 {
-    fn handle_event(&mut self, event : Event) -> bool;
-    fn update(&mut self);
-    fn draw(&mut self);
+    ctx : &'a mut Context,
+    phantom : PhantomData<T>,
+}
+pub type ContextPen<'a> = ContextOf<Pen>;
+*/
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
+pub struct Context;
+impl Deref for Context
+{
+    type Target=Ctx;
+    fn deref(&self) -> &Self::Target { ctx_ref() }
+}
+impl DerefMut for Context
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { ctx() }
 }
 
-pub struct Context
+
+pub struct Ctx
 {
     pub(crate) thread_id : std::thread::ThreadId,
     // state       : Box<dyn MainLoopWithContext>,
     pub(crate) multi_media : Box<dyn ContextMultiMedia>, // use an Arc instead ? and lock it during draw ?
 
     //pub(crate) render : ContextRender,
-    pub(crate) pen    : ContextPen,
+    //pub(crate) pen    : ContextPen,
 
 
     // Because Context is not Send and not Sync
-    _marker: PhantomData<std::rc::Rc<()>>,
+    //_marker: PhantomData<std::rc::Rc<()>>,
 
 /*
 Window,
@@ -49,12 +65,12 @@ impl Context
 }
 */
 
-pub(crate) static mut CONTEXT : Option<Context> = None;
+pub(crate) static mut CONTEXT : Option<Ctx> = None;
 
 #[doc(hidden)]
 #[allow(dead_code)]
 #[allow(static_mut_refs)]
-pub(crate) fn ctx_ref() -> &'static Context
+pub(crate) fn ctx_ref() -> &'static Ctx
 {
     let ctx = unsafe { CONTEXT.as_ref().unwrap() };
     assert_eq!(ctx.thread_id, std::thread::current().id(), "Can only use the context in the same thread");
@@ -64,7 +80,7 @@ pub(crate) fn ctx_ref() -> &'static Context
 #[doc(hidden)]
 #[allow(dead_code)]
 #[allow(static_mut_refs)]
-pub(crate) fn ctx() -> &'static mut Context
+pub(crate) fn ctx() -> &'static mut Ctx
 {
     let ctx = unsafe { CONTEXT.as_mut().unwrap() };
     assert_eq!(ctx.thread_id, std::thread::current().id(), "Can only use the context in the same thread");
@@ -73,7 +89,7 @@ pub(crate) fn ctx() -> &'static mut Context
 
 #[doc(hidden)]
 #[allow(static_mut_refs)]
-pub unsafe fn set_context(ctx : Option<Context>) -> Option<Context>
+pub unsafe fn set_context(ctx : Option<Ctx>) -> Option<Ctx>
 {
     unsafe
     {

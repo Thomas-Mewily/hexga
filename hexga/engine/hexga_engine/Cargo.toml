@@ -34,6 +34,7 @@ hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde", "hexga_engine_base/hexga
 hexga_engine_base.workspace = true
 hexga_io = { workspace = true, optional = true }
 hexga_io_derive = { workspace = true, optional = true }
+hexga_engine_backend_quad = { workspace = true }
 
 miniquad = "0.4.8"
 serde = { version = "1.0.0", features = ["derive"], optional = true }

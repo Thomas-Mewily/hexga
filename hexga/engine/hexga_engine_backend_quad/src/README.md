@@ -6,7 +6,8 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## Hexga Engine
 
-The usable Hexga Engine, that use the [MiniQuad](https://github.com/not-fl3/miniquad) backend.
+An implementation of the HexGa Engine Core using [MiniQuad](https://github.com/not-fl3/miniquad)
+Not finished yet / work in progress...
 
 ## Main Hexga crate
 

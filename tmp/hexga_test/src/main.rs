@@ -31,6 +31,10 @@ fn main()
 {
     for _ in 0..10 { println!(); }
 
+    MultiMediaParam::new()
+        .window(WindowParam::new().title("hello"));
+        //.run(|| TestCtx::___())
+
     /*
     MultiMediaParam::new()
         .window(WindowParam::new().title("hello"))

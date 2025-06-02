@@ -1,4 +1,4 @@
-use hexga_engine_base::render::*;
+use hexga_engine_core::render::*;
 use crate::*;
 
 /// MiniQuad <=> Hexga Engine conversion
