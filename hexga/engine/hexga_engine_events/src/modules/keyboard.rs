@@ -1,105 +1,7 @@
 use crate::*;
-use std::fmt::Debug;
-use hexga_core::prelude::*;
-
-use hexga_math::prelude::Vec2;
-
-pub trait LoopEvent
-{
-    fn handle_event(&mut self, event : &Event) -> bool;
-}
-impl LoopEvent for () { fn handle_event(&mut self, _ : &Event) -> bool { true } }
 
 
-#[non_exhaustive]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Clone, Copy, PartialEq)]
-pub enum Event
-{
-    Window  (WindowEvent  ),
-    Mouse   (MouseEvent   ),
-    Keyboard(KeyboardEvent),
-    Touch   (TouchEvent   ),
-}
-impl Debug for Event
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Window(v) => write!(f, "{:?}", v),
-            Self::Mouse(v) => write!(f, "{:?}", v),
-            Self::Keyboard(v) => write!(f, "{:?}", v),
-            Self::Touch(v) => write!(f, "{:?}", v),
-        }
-    }
-}
 
-impl From<WindowEvent> for Event { fn from(value: WindowEvent) -> Self { Self::Window(value) } }
-//impl From<DropFileEvent> for Event { fn from(value: DropFileEvent) -> Self { Self::from(WindowEvent::DropFile(value)) } }
-impl From<MouseMove> for Event { fn from(value: MouseMove) -> Self { Self::Mouse(MouseEvent::Move(value)) } }
-impl From<MouseEvent> for Event { fn from(value: MouseEvent) -> Self { Self::Mouse(value) } }
-impl From<MouseButtonEvent> for Event { fn from(value: MouseButtonEvent) -> Self { Self::from(MouseEvent::Button(value)) } }
-impl From<KeyboardEvent> for Event { fn from(value: KeyboardEvent) -> Self { Self::Keyboard(value) } }
-impl From<CharEvent> for Event { fn from(value: CharEvent) -> Self { Self::from(KeyboardEvent::CharEvent(value)) } }
-impl From<KeyEvent> for Event { fn from(value: KeyEvent) -> Self { Self::from(KeyboardEvent::KeyEvent(value)) } }
-impl From<TouchEvent> for Event { fn from(value: TouchEvent) -> Self { Self::Touch(value) } }
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct TouchEvent
-{
-    pub phase    : TouchPhase,
-    pub id       : TouchID,
-    pub position : Vec2,
-}
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct TouchID { pub index : u64 }
-impl TouchID { pub const fn new(index : u64) -> Self { Self { index }}}
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
-pub enum TouchPhase
-{
-    Begin,
-    Move,
-    End,
-    Cancel,
-}
-
-impl TouchPhase
-{
-    pub fn is_start (&self) -> bool { matches!(self, Self::Begin ) }
-    pub fn is_move  (&self) -> bool { matches!(self, Self::Move  ) }
-    pub fn is_end   (&self) -> bool { matches!(self, Self::End   ) }
-    pub fn is_cancel(&self) -> bool { matches!(self, Self::Cancel) }
-}
-
-#[non_exhaustive]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum WindowEvent
-{
-    Resize(Vec2),
-    Minimized,
-    Restored,
-    Quit,
-    DropFile, //(DropFileEvent),
-}
-
-/*
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct DropFileEvent
-{
-    pub path : std::path::PathBuf,
-    pub data : Vec<u8>,
-}
-    */
 
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -160,79 +62,6 @@ impl Debug for CharEvent
     }
 }
 
-#[non_exhaustive]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum MouseEvent
-{
-    Wheel(Vec2),
-    Move(MouseMove),
-    Button(MouseButtonEvent),
-
-    /// Represents raw hardware mouse motion event
-    /// Note that these events are delivered regardless of input focus and not in pixels, but in
-    /// hardware units instead. And those units may be different from pixels depending on the target platform
-    RawMove(Vec2),
-}
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct MouseMove
-{
-    pub position : Vec2,
-    // delta : Vec2
-}
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct MouseButtonEvent
-{
-    pub position : Vec2,
-    pub button   : MouseButton,
-    pub press    : bool,
-}
-
-#[non_exhaustive]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
-#[repr(u8)]
-pub enum MouseButton
-{
-    Left = 0,
-    Middle = 1,
-    Right = 2,
-    Unknown = 255,
-}
-impl MouseButton
-{
-    pub fn is_left   (&self) -> bool { matches!(self, Self::Left   ) }
-    pub fn is_right  (&self) -> bool { matches!(self, Self::Right  ) }
-    pub fn is_middle (&self) -> bool { matches!(self, Self::Middle ) }
-    pub fn is_unknown(&self) -> bool { matches!(self, Self::Unknown) }
-}
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Copy, Clone, PartialEq, Hash, Eq, Default)]
-pub struct KeyMods {
-    pub shift: bool,
-    pub ctrl : bool,
-    pub alt  : bool,
-    pub logo : bool,
-}
-
-impl Debug for KeyMods
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        if self.is_default() { return Ok(()); }
-        f.debug_struct("KeyMods").field_if_not_default("shift", &self.shift).field_if_not_default("ctrl", &self.ctrl).field_if_not_default("alt", &self.alt).field_if_not_default("logo", &self.logo).finish()
-    }
-}
 
 /// Contains the platform-native physical key identifier
 ///
@@ -260,65 +89,113 @@ pub enum NativeKeyCode
     /// An XKB "keycode".
     Xkb(u32),
 }
+impl std::fmt::Debug for NativeKeyCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use NativeKeyCode::{Android, MacOS, Unidentified, Windows, Xkb};
+        let mut debug_tuple;
+        match self {
+            Unidentified => {
+                debug_tuple = f.debug_tuple("Unidentified");
+            },
+            Android(code) => {
+                debug_tuple = f.debug_tuple("Android");
+                debug_tuple.field(&format_args!("0x{code:04X}"));
+            },
+            MacOS(code) => {
+                debug_tuple = f.debug_tuple("MacOS");
+                debug_tuple.field(&format_args!("0x{code:04X}"));
+            },
+            Windows(code) => {
+                debug_tuple = f.debug_tuple("Windows");
+                debug_tuple.field(&format_args!("0x{code:04X}"));
+            },
+            Xkb(code) => {
+                debug_tuple = f.debug_tuple("Xkb");
+                debug_tuple.field(&format_args!("0x{code:04X}"));
+            },
+        }
+        debug_tuple.finish()
+    }
+}
 
-/// Based on [Winit KeyCode](https://docs.rs/winit/0.30.11/winit/keyboard/enum.KeyCode.html)
-/// https://docs.rs/winit-gtk/latest/winit/event/enum.VirtualKeyCode.html
-/// https://docs.rs/miniquad/latest/miniquad/enum.KeyCode.html
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[derive(Copy, Clone, PartialEq, Hash, Eq, Default)]
+pub struct KeyMods
+{
+    pub shift: bool,
+    pub ctrl : bool,
+    pub alt  : bool,
+    pub logo : bool,
+}
+
+impl Debug for KeyMods
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+        if self.is_default() { return Ok(()); }
+        f.debug_struct("KeyMods").field_if_not_default("shift", &self.shift).field_if_not_default("ctrl", &self.ctrl).field_if_not_default("alt", &self.alt).field_if_not_default("logo", &self.logo).finish()
+    }
+}
+
+
+
+// Based on
+// - [Winit KeyCode](https://docs.rs/winit/0.30.11/winit/keyboard/enum.KeyCode.html)
+// - [Winit-gtk](https://docs.rs/winit-gtk/latest/winit/event/enum.VirtualKeyCode.html)
+// - [Miniquad](https://docs.rs/miniquad/latest/miniquad/enum.KeyCode.html)
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum KeyCode
 {
-              /// <kbd>0</kbd> on a US keyboard.
-    Key0 = 0, /// <kbd>1</kbd> on a US keyboard.
-    Key1 = 1, /// <kbd>2</kbd> on a US keyboard.
-    Key2 = 2, /// <kbd>3</kbd> on a US keyboard.
-    Key3 = 3, /// <kbd>4</kbd> on a US keyboard.
-    Key4 = 4, /// <kbd>5</kbd> on a US keyboard.
-    Key5 = 5, /// <kbd>6</kbd> on a US keyboard.
-    Key6 = 6, /// <kbd>7</kbd> on a US keyboard.
-    Key7 = 7, /// <kbd>8</kbd> on a US keyboard.
-    Key8 = 8, /// <kbd>9</kbd> on a US keyboard.
-    Key9 = 9,
+          /// <kbd>0</kbd> on a US keyboard.
+    Key0, /// <kbd>1</kbd> on a US keyboard.
+    Key1, /// <kbd>2</kbd> on a US keyboard.
+    Key2, /// <kbd>3</kbd> on a US keyboard.
+    Key3, /// <kbd>4</kbd> on a US keyboard.
+    Key4, /// <kbd>5</kbd> on a US keyboard.
+    Key5, /// <kbd>6</kbd> on a US keyboard.
+    Key6, /// <kbd>7</kbd> on a US keyboard.
+    Key7, /// <kbd>8</kbd> on a US keyboard.
+    Key8, /// <kbd>9</kbd> on a US keyboard.
+    Key9,
 
-            /// <kbd>a</kbd> on a US keyboard. Labeled <kbd>q</kbd> on an AZERTY (e.g., French) keyboard.
-    A = 10, /// <kbd>b</kbd> on a US keyboard.
-    B = 11, /// <kbd>c</kbd> on a US keyboard.
-    C = 12, /// <kbd>d</kbd> on a US keyboard.
-    D = 13, /// <kbd>e</kbd> on a US keyboard.
-    E = 14, /// <kbd>f</kbd> on a US keyboard.
-    F = 15, /// <kbd>g</kbd> on a US keyboard.
-    G = 16, /// <kbd>h</kbd> on a US keyboard.
-    H = 17, /// <kbd>i</kbd> on a US keyboard.
-    I = 18, /// <kbd>j</kbd> on a US keyboard.
-    J = 19, /// <kbd>k</kbd> on a US keyboard.
-    K = 20, /// <kbd>l</kbd> on a US keyboard.
-    L = 21, /// <kbd>m</kbd> on a US keyboard.
-    M = 22, /// <kbd>n</kbd> on a US keyboard.
-    N = 23, /// <kbd>o</kbd> on a US keyboard.
-    O = 24, /// <kbd>p</kbd> on a US keyboard.
-    P = 25, /// <kbd>q</kbd> on a US keyboard. Labeled <kbd>a</kbd> on an AZERTY (e.g., French) keyboard.
-    Q = 26, /// <kbd>r</kbd> on a US keyboard.
-    R = 27, /// <kbd>s</kbd> on a US keyboard.
-    S = 28, /// <kbd>t</kbd> on a US keyboard.
-    T = 29, /// <kbd>u</kbd> on a US keyboard.
-    U = 30, /// <kbd>v</kbd> on a US keyboard.
-    V = 31, /// <kbd>w</kbd> on a US keyboard. Labeled <kbd>z</kbd> on an AZERTY (e.g., French) keyboard.
-    W = 32, /// <kbd>x</kbd> on a US keyboard.
-    X = 34, /// <kbd>y</kbd> on a US keyboard. Labeled <kbd>z</kbd> on a QWERTZ (e.g., German) keyboard.
-    Y = 35, /// <kbd>z</kbd> on a US keyboard. Labeled <kbd>w</kbd> on an AZERTY (e.g., French) keyboard, and <kbd>y</kbd> on a QWERTZ (e.g., German) keyboard.
-    Z = 36, /// <kbd> </kbd> (space)
-    Space,
+       /// <kbd>a</kbd> on a US keyboard. Labeled <kbd>q</kbd> on an AZERTY (e.g., French) keyboard.
+    A, /// <kbd>b</kbd> on a US keyboard.
+    B, /// <kbd>c</kbd> on a US keyboard.
+    C, /// <kbd>d</kbd> on a US keyboard.
+    D, /// <kbd>e</kbd> on a US keyboard.
+    E, /// <kbd>f</kbd> on a US keyboard.
+    F, /// <kbd>g</kbd> on a US keyboard.
+    G, /// <kbd>h</kbd> on a US keyboard.
+    H, /// <kbd>i</kbd> on a US keyboard.
+    I, /// <kbd>j</kbd> on a US keyboard.
+    J, /// <kbd>k</kbd> on a US keyboard.
+    K, /// <kbd>l</kbd> on a US keyboard.
+    L, /// <kbd>m</kbd> on a US keyboard.
+    M, /// <kbd>n</kbd> on a US keyboard.
+    N, /// <kbd>o</kbd> on a US keyboard.
+    O, /// <kbd>p</kbd> on a US keyboard.
+    P, /// <kbd>q</kbd> on a US keyboard. Labeled <kbd>a</kbd> on an AZERTY (e.g., French) keyboard.
+    Q, /// <kbd>r</kbd> on a US keyboard.
+    R, /// <kbd>s</kbd> on a US keyboard.
+    S, /// <kbd>t</kbd> on a US keyboard.
+    T, /// <kbd>u</kbd> on a US keyboard.
+    U, /// <kbd>v</kbd> on a US keyboard.
+    V, /// <kbd>w</kbd> on a US keyboard. Labeled <kbd>z</kbd> on an AZERTY (e.g., French) keyboard.
+    W, /// <kbd>x</kbd> on a US keyboard.
+    X, /// <kbd>y</kbd> on a US keyboard. Labeled <kbd>z</kbd> on a QWERTZ (e.g., German) keyboard.
+    Y, /// <kbd>z</kbd> on a US keyboard. Labeled <kbd>w</kbd> on an AZERTY (e.g., French) keyboard, and <kbd>y</kbd> on a QWERTZ (e.g., German) keyboard.
+    Z,
 
-
-    /// <kbd>←</kbd>
-    Right,
-    /// <kbd>↑</kbd>
-    Left,
-    /// <kbd>→</kbd>
-    Up,
-    /// <kbd>↓</kbd>
+           /// <kbd> </kbd> (space)
+    Space, /// <kbd>←</kbd>
+    Right, /// <kbd>↑</kbd>
+    Left,  /// <kbd>→</kbd>
+    Up,    /// <kbd>↓</kbd>
     Down,
 
     /// <kbd>Shift</kbd> or <kbd>⇧</kbd>
@@ -345,16 +222,7 @@ pub enum KeyCode
     Comma,
     /// <kbd>=</kbd> on a US keyboard.
     Equal,
-    /// Located between the left <kbd>Shift</kbd> and <kbd>Z</kbd> keys.
-    /// Labeled <kbd>\\</kbd> on a UK keyboard.
-    IntlBackslash,
-    /// Located between the <kbd>/</kbd> and right <kbd>Shift</kbd> keys.
-    /// Labeled <kbd>\\</kbd> (ro) on a Japanese keyboard.
-    IntlRo,
-    /// Located between the <kbd>=</kbd> and <kbd>Backspace</kbd> keys.
-    /// Labeled <kbd>¥</kbd> (yen) on a Japanese keyboard. <kbd>\\</kbd> on a
-    /// Russian keyboard.
-    IntlYen,
+
     /// <kbd>-</kbd> on a US keyboard.
     Minus,
     /// <kbd>.</kbd> on a US keyboard.
@@ -375,15 +243,40 @@ pub enum KeyCode
     Backspace,
     /// <kbd>CapsLock</kbd> or <kbd>⇪</kbd>
     CapsLock,
-    /// The application context menu key, which is typically found between the right
-    /// <kbd>Super</kbd> key and the right <kbd>Control</kbd> key.
-    ContextMenu,
+
     /// <kbd>Control</kbd> or <kbd>⌃</kbd>
     ControlLeft,
     /// <kbd>Control</kbd> or <kbd>⌃</kbd>
     ControlRight,
     /// <kbd>Enter</kbd> or <kbd>↵</kbd>. Labeled <kbd>Return</kbd> on Apple keyboards.
     Enter,
+
+    /// <kbd>⌦</kbd>. The forward delete key.
+    /// Note that on Apple keyboards, the key labelled <kbd>Delete</kbd> on the main part of
+    /// the keyboard is encoded as [`Backspace`].
+    ///
+    /// [`Backspace`]: Self::Backspace
+    Delete,
+    /// <kbd>Esc</kbd> or <kbd>⎋</kbd>
+    Escape,
+    /// <kbd>Pause Break</kbd>
+    Pause,
+
+    /// Located between the left <kbd>Shift</kbd> and <kbd>Z</kbd> keys.
+    /// Labeled <kbd>\\</kbd> on a UK keyboard.
+    IntlBackslash,
+    /// Located between the <kbd>/</kbd> and right <kbd>Shift</kbd> keys.
+    /// Labeled <kbd>\\</kbd> (ro) on a Japanese keyboard.
+    IntlRo,
+    /// Located between the <kbd>=</kbd> and <kbd>Backspace</kbd> keys.
+    /// Labeled <kbd>¥</kbd> (yen) on a Japanese keyboard. <kbd>\\</kbd> on a
+    /// Russian keyboard.
+    IntlYen,
+
+    /// The application context menu key, which is typically found between the right
+    /// <kbd>Super</kbd> key and the right <kbd>Control</kbd> key.
+    ContextMenu,
+
     /// The Windows, <kbd>⌘</kbd>, <kbd>Command</kbd>, or other OS symbol key.
     SuperLeft,
     /// The Windows, <kbd>⌘</kbd>, <kbd>Command</kbd>, or other OS symbol key.
@@ -409,12 +302,6 @@ pub enum KeyCode
     Lang5,
     /// Japanese: <kbd>無変換</kbd> (muhenkan)
     NonConvert,
-    /// <kbd>⌦</kbd>. The forward delete key.
-    /// Note that on Apple keyboards, the key labelled <kbd>Delete</kbd> on the main part of
-    /// the keyboard is encoded as [`Backspace`].
-    ///
-    /// [`Backspace`]: Self::Backspace
-    Delete,
     /// <kbd>Page Down</kbd>, <kbd>End</kbd>, or <kbd>↘</kbd>
     End,
     /// <kbd>Help</kbd>. Not present on standard PC keyboards.
@@ -507,8 +394,8 @@ pub enum KeyCode
     NumpadStar,
     /// <kbd>-</kbd>
     NumpadSubtract,
-    /// <kbd>Esc</kbd> or <kbd>⎋</kbd>
-    Escape,
+
+
     /// <kbd>Fn</kbd> This is typically a hardware key that does not generate a separate code.
     Fn,
     /// <kbd>FLock</kbd> or <kbd>FnLock</kbd>. Function Lock key. Found on the Microsoft
@@ -518,8 +405,7 @@ pub enum KeyCode
     PrintScreen,
     /// <kbd>Scroll Lock</kbd>
     ScrollLock,
-    /// <kbd>Pause Break</kbd>
-    Pause,
+
     /// Some laptops place this key to the left of the <kbd>↑</kbd> key.
     ///
     /// This also the "back" button (triangle) on Android.
