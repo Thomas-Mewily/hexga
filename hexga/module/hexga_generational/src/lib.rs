@@ -17,5 +17,12 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
+use gen_vec::*;
 pub mod gen_vec;
+
+/*
+use gen_hash_map::*;
+pub mod gen_hash_map;
+*/
+
 pub mod prelude;

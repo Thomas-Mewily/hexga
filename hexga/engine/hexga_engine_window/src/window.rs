@@ -1,5 +1,8 @@
 //! mainly inspired by miniquad
 
+use std::default;
+
+use hexga_generational::prelude::GenVec;
 use hexga_math::prelude::*;
 use crate::*;
 
@@ -22,6 +25,8 @@ pub enum CursorIcon
     NESWResize,
     NWSEResize,
 }
+
+
 
 pub trait ContextWindow
 {
@@ -79,6 +84,18 @@ impl ContextWindow for ()
     fn set_mouse_cursor(&mut self, _cursor_icon: CursorIcon) {}
 }
 
+pub struct App
+{
+    windows : GenVec<Window>,
+}
+
+pub struct Window
+{
+    window : winit::window::Window,
+    param  : WindowParam,
+    id     : WindowID,
+    childs : Vec<WindowID>,
+}
 
 //#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 //#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
@@ -114,18 +131,37 @@ pub struct WindowParam
     /// - dock and titlebar icon on  MacOs.
     /// - TODO: favicon on HTML5
     /// - TODO: taskbar and titlebar(highly dependent on the WM) icons on Linux
-    pub icon: Option<Icon>,
+    pub icon: Option<Box<Icon>>,
 
-    /// Platform specific settings. Hints to OS for context creation, driver-specific
-    /// settings etc.
-    pub platform: Platform,
+    pub can_be_free : bool,
 }
+
+#[derive(Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum WindowMode
+{
+    Free,
+    /// Inside another window
+    #[default]
+    Nested,
+}
+
+pub type WindowID = usize;
 
 impl Default for WindowParam
 {
     fn default() -> Self
     {
-        Self { title: "hexga window".to_owned(), size : point2(960, 540), high_dpi: false, fullscreen: false, sample_count: 1, resizable: true, icon: None, platform: Platform::default() }
+        Self
+        {
+            title: String::new(),
+            size : point2(960, 540),
+            high_dpi: false,
+            fullscreen: false,
+            sample_count: 1,
+            resizable: true,
+            icon: None,
+            can_be_free : true,
+        }
     }
 }
 
@@ -217,7 +253,7 @@ impl WindowParam
     /// - dock and titlebar icon on  MacOs.
     /// - TODO: favicon on HTML5
     /// - TODO: taskbar and titlebar(highly dependent on the WM) icons on Linux
-    pub fn icon(mut self, icon : Option<Icon>) -> Self { self.icon = icon; self }
+    pub fn icon(mut self, icon : Option<Icon>) -> Self { self.icon = icon.map(|v| Box::new(v)); self }
 
     /// Platform specific settings. Hints to OS for context creation, driver-specific
     /// settings etc.
