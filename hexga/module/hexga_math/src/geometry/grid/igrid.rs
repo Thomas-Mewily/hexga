@@ -73,7 +73,7 @@ pub trait IGrid<T, Idx, const N : usize> :
     fn try_from_vec<P>(size : P, value : Vec<T>) -> Result<Self, GridBaseError<Idx,N>> where P: Into<Vector<Idx,N>>
     {
         let size = size.into();
-        if *size.min_element() <= Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
+        if *size.min_element() < Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
 
         let area_size = match size.area_usize_checked()
         {

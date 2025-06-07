@@ -1,6 +1,48 @@
+use hexga_engine_render::texture::TextureData;
+
 use crate::*;
 
 define_ctx_type!(Pen, CtxPen);
+
+pub type VertexIdx = u16;
+pub type VertexTriangleIdx = [VertexIdx;3];
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+pub struct PenParam
+{
+    pub max_vertex: usize,
+    pub max_index : usize
+}
+impl Default for PenParam
+{
+    fn default() -> Self
+    {
+        Self { max_vertex: Self::DEFAULT_VERTEX_CAPACITY, max_index: Self::DEFAULT_INDEX_CAPACITY }
+    }
+}
+impl PenParam
+{
+    // arbitrary constant value copied from on macroquad
+    const DEFAULT_VERTEX_CAPACITY : usize = 8000;
+    const DEFAULT_INDEX_CAPACITY  : usize = 3600;
+
+    pub fn align(&mut self) -> &mut Self { *self = self.aligned(); self }
+    pub fn aligned(mut self) -> Self
+    {
+        self.max_index = self.max_index / 3 * 3;
+        self
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[repr(C)]
+pub struct Vertex
+{
+    pub pos    : GpuVec3,
+    pub uv     : GpuVec2,
+    pub color  : GpuColor,
+    pub normal : GpuVec4,
+}
 
 #[derive(Debug)]
 pub(crate) struct PenInternal
@@ -16,21 +58,23 @@ pub(crate) struct PenInternal
 
     prev_vertex_index : usize,
     vertex_stack : NonEmptyStack<Vertex>,
-
-    vertex: Vec<Vertex>,
-    index : Vec<VertexIdx>,
     */
+    white_pixel : RawTextureID,
 
-    //time : TimeOf<f64>,
+    param : PenParam,
 
-    //param : PenParam,
+    vertex_buffer : Vec<Vertex>,
+    index_buffer  : Vec<VertexIdx>,
 }
 
 impl PenInternal
 {
     pub fn new(ctx_multi : &mut dyn ContextMultiMedia) -> Self
     {
-        Self {  }
+        //let white_pixel = ctx_multi.new_texture(TextureData::)
+        //Self {  }
+        //Self { white_pixel: (), param: (), vertex_buffer: (), index_buffer: () }
+        todo!();
     }
 
     pub fn begin_draw(&mut self)
@@ -99,32 +143,7 @@ impl Vertex
 pub type VertexIdx = u16;
 pub type VertexTriangleIdx = [VertexIdx;3];
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
-pub struct PenParam
-{
-    pub max_vertex: usize,
-    pub max_index : usize
-}
-impl Default for PenParam
-{
-    fn default() -> Self
-    {
-        Self { max_vertex: Self::DEFAULT_VERTEX_CAPACITY, max_index: Self::DEFAULT_INDEX_CAPACITY }
-    }
-}
-impl PenParam
-{
-    // arbitrary constant value copied from on macroquad
-    const DEFAULT_VERTEX_CAPACITY : usize = 8000;
-    const DEFAULT_INDEX_CAPACITY  : usize = 3600;
 
-    pub fn align(&mut self) -> &mut Self { *self = self.aligned(); self }
-    pub fn aligned(mut self) -> Self
-    {
-        self.max_index = self.max_index / 3 * 3;
-        self
-    }
-}
 
 pub struct GpuMesh
 {
