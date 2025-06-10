@@ -3,62 +3,58 @@ use crate::*;
 
 
 
-#[non_exhaustive]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub enum KeyboardEvent
-{
-    CharEvent(CharEvent),
-    KeyEvent(KeyEvent),
-}
-impl Debug for KeyboardEvent
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self
-        {
-            Self::CharEvent(v) => write!(f, "{:?}", v),
-            Self::KeyEvent(v) => write!(f, "{:?}", v),
-        }
-    }
-}
-
+// pub struct KeyEventPredicate
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct KeyEvent
 {
-    pub character: char,
-
-    pub keycode  : KeyCode,
-    pub keymods  : KeyMods,
+    pub character : Option<char>,
+    pub key       : KeyCode,
+    pub modifiers : KeyMods,
 
     pub repeat  : bool,
     pub press   : bool,
 }
+impl KeyEvent
+{
+    pub fn char(&self) -> Option<char> { self.character }
+    pub fn key (&self) -> KeyCode { self.key }
+    pub fn is_repeat(&self) -> bool { self.repeat }
+    pub fn is_press(&self) -> bool { self.press }
+}
+
 impl Debug for KeyEvent
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("KeyEvent").field("keycode", &self.keycode)
-            .field_if_not_default("keymods", &self.keymods)
-            .field_if_not_default("repeat", &self.repeat).field("press", &self.press).finish()
+        f.debug_struct("KeyEvent").field("keycode", &self.key)
+            .field_if_not_default("modifiers", &self.modifiers)
+            .field("key", &self.key)
+            .field_if_not_default("char", &self.character)
+            .field_if_not_default("repeat", &self.repeat)
+            .field("press", &self.press).finish()
     }
 }
 
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct CharEvent
+#[derive(Default, Copy, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
+pub struct KeyMods
 {
-    pub character: char,
-    pub keymods  : KeyMods,
-    pub repeat   : bool
+    pub shift: bool,
+    pub ctrl : bool,
+    pub alt  : bool,
+    pub logo : bool,
 }
-impl Debug for CharEvent
+
+impl Debug for KeyMods
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CharEvent").field("char", &self.character).field_if_not_default("keymods", &self.keymods).field_if_not_default("repeat", &self.repeat).finish()
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+        if self.is_default() { return Ok(()); }
+        f.debug_struct("KeyMods").field_if_not_default("shift", &self.shift).field_if_not_default("ctrl", &self.ctrl).field_if_not_default("alt", &self.alt).field_if_not_default("logo", &self.logo).finish()
     }
 }
 
@@ -76,10 +72,10 @@ impl Debug for CharEvent
 /// - On non-web platforms, support assigning keybinds to virtually any key through a UI.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum NativeKeyCode
+pub enum UnknowKeyCode
 {
-    /// Unidentified
-    Unidentified,
+    /// Unknow
+    Unknow,
     /// An Android "scancode".
     Android(u32),
     /// A macOS "scancode".
@@ -89,13 +85,13 @@ pub enum NativeKeyCode
     /// An XKB "keycode".
     Xkb(u32),
 }
-impl std::fmt::Debug for NativeKeyCode {
+impl std::fmt::Debug for UnknowKeyCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use NativeKeyCode::{Android, MacOS, Unidentified, Windows, Xkb};
+        use UnknowKeyCode::{Android, MacOS, Unknow, Windows, Xkb};
         let mut debug_tuple;
         match self {
-            Unidentified => {
-                debug_tuple = f.debug_tuple("Unidentified");
+            Unknow => {
+                debug_tuple = f.debug_tuple("Unknow");
             },
             Android(code) => {
                 debug_tuple = f.debug_tuple("Android");
@@ -118,29 +114,6 @@ impl std::fmt::Debug for NativeKeyCode {
     }
 }
 
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Copy, Clone, PartialEq, Hash, Eq, Default)]
-pub struct KeyMods
-{
-    pub shift: bool,
-    pub ctrl : bool,
-    pub alt  : bool,
-    pub logo : bool,
-}
-
-impl Debug for KeyMods
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        if self.is_default() { return Ok(()); }
-        f.debug_struct("KeyMods").field_if_not_default("shift", &self.shift).field_if_not_default("ctrl", &self.ctrl).field_if_not_default("alt", &self.alt).field_if_not_default("logo", &self.logo).finish()
-    }
-}
-
-
-
 // Based on
 // - [Winit KeyCode](https://docs.rs/winit/0.30.11/winit/keyboard/enum.KeyCode.html)
 // - [Winit-gtk](https://docs.rs/winit-gtk/latest/winit/event/enum.VirtualKeyCode.html)
@@ -151,6 +124,8 @@ impl Debug for KeyMods
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum KeyCode
 {
+    Unknow(UnknowKeyCode),
+
           /// <kbd>0</kbd> on a US keyboard.
     Key0, /// <kbd>1</kbd> on a US keyboard.
     Key1, /// <kbd>2</kbd> on a US keyboard.

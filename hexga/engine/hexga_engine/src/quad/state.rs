@@ -39,8 +39,8 @@ impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoopWithContext
     fn key_down_event(&mut self, keycode: miniquad::KeyCode, keymods: miniquad::KeyMods, repeat: bool) {
         self.state.handle_event_with(KeyEvent
             {
-                keycode: keycode.convert(),
-                keymods: keymods.convert(),
+                key: keycode.convert(),
+                modifiers: keymods.convert(),
                 repeat: repeat,
                 press: true,
             }.into(), Context.as_mut());
@@ -49,8 +49,8 @@ impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoopWithContext
     fn key_up_event(&mut self, keycode: miniquad::KeyCode, keymods: miniquad::KeyMods) {
         self.state.handle_event_with(KeyEvent
             {
-                keycode: keycode.convert(),
-                keymods: keymods.convert(),
+                key: keycode.convert(),
+                modifiers: keymods.convert(),
                 repeat: false,
                 press: false,
             }.into(), Context.as_mut());

@@ -8,10 +8,21 @@ use crate::*;
 pub enum WindowEvent
 {
     Resize(Vec2),
-    Minimized,
-    Restored,
+    Move  (Vec2),
+
+    Focus(bool),
+
+    /// The window has been occluded (completely hidden from view).
+    ///
+    /// This is different to window visibility as it depends on whether the window is closed,
+    /// minimised, set invisible, or fully occluded by another window.
+    Visible(bool),
+
     Quit,
-    DropFile, //(DropFileEvent),
+
+    //DropFile(PathBuf), //(DropFileEvent),
+    // HoverFile(PathBuf)
+    //HoverFileCancel
 }
 
 /*

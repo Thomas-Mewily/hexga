@@ -7,14 +7,10 @@ use crate::*;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MouseEvent
 {
-    Wheel(Vec2),
+    Enter(bool),
     Move(MouseMove),
+    Wheel(Vec2),
     Button(MouseButtonEvent),
-
-    /// Represents raw hardware mouse motion event
-    /// Note that these events are delivered regardless of input focus and not in pixels, but in
-    /// hardware units instead. And those units may be different from pixels depending on the target platform
-    RawMove(Vec2),
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -23,7 +19,7 @@ pub enum MouseEvent
 pub struct MouseMove
 {
     pub position : Vec2,
-    // delta : Vec2
+    pub delta    : Vec2
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -40,18 +36,21 @@ pub struct MouseButtonEvent
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
-#[repr(u8)]
 pub enum MouseButton
 {
-    Left = 0,
-    Middle = 1,
-    Right = 2,
-    Unknown = 255,
+    Left,
+    Right,
+    Middle,
+    Back,
+    Forward,
+    Unknow(u16),
 }
 impl MouseButton
 {
     pub fn is_left   (&self) -> bool { matches!(self, Self::Left   ) }
     pub fn is_right  (&self) -> bool { matches!(self, Self::Right  ) }
     pub fn is_middle (&self) -> bool { matches!(self, Self::Middle ) }
-    pub fn is_unknown(&self) -> bool { matches!(self, Self::Unknown) }
+    pub fn is_back   (&self) -> bool { matches!(self, Self::Back   ) }
+    pub fn is_forward(&self) -> bool { matches!(self, Self::Forward) }
+    pub fn is_unknow (&self) -> bool { matches!(self, Self::Unknow(_)) }
 }
