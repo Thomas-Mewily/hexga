@@ -308,7 +308,7 @@ impl<T,Gen:IGeneration> Default for GenVecIDOf<T,Gen>
 }
 
 #[cfg(feature = "serde")]
-impl<T, Gen:IGeneration> Serialize for GenVecIDOf<T,Gen> where T: Serialize, Gen : Serialize {
+impl<T, Gen:IGeneration> Serialize for GenVecIDOf<T,Gen> where Gen : Serialize {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     {
         if self.index.is_max_value()
@@ -322,7 +322,7 @@ impl<T, Gen:IGeneration> Serialize for GenVecIDOf<T,Gen> where T: Serialize, Gen
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T, Gen:IGeneration> Deserialize<'de> for GenVecIDOf<T,Gen> where T: Deserialize<'de>, Gen : Deserialize<'de> {
+impl<'de, T, Gen:IGeneration> Deserialize<'de> for GenVecIDOf<T,Gen> where Gen : Deserialize<'de> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de>,
     {
         match Option::deserialize(deserializer)?

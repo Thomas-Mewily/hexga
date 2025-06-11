@@ -4,19 +4,19 @@ use crate::*;
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub enum MouseEvent
 {
-    Enter(bool),
-    Move(MouseMove),
-    Wheel(Vec2),
+    Enter (bool),
+    Move  (MouseMoveEvent),
+    Wheel (Vec2),
     Button(MouseButtonEvent),
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct MouseMove
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct MouseMoveEvent
 {
     pub position : Vec2,
     pub delta    : Vec2
@@ -24,7 +24,7 @@ pub struct MouseMove
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct MouseButtonEvent
 {
     pub position : Vec2,

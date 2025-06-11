@@ -76,7 +76,7 @@ impl<S> miniquad::EventHandler for QuadState<S> where S : MainLoopWithContext
 
     fn mouse_motion_event(&mut self, x: f32, y: f32)
     {
-        self.state.handle_event_with(MouseMove{ position : vec2(x as _, y as _) }.into(), Context.as_mut());
+        self.state.handle_event_with(MouseMoveEvent{ position : vec2(x as _, y as _) }.into(), Context.as_mut());
     }
 
     fn mouse_wheel_event(&mut self, _x: f32, _y: f32)

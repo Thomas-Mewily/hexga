@@ -1,9 +1,8 @@
-//! Window / Events interface for the Hexga Engine based on [MiniQuad](https://github.com/not-fl3/miniquad)
+//! Window / Events interface for the Hexga Engine based on [Winit](https://crates.io/crates/winit)
 #![allow(unused_imports)]
 
-mod window;
-pub use window::*;
-
+pub mod window;
+pub mod event;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
@@ -11,15 +10,22 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
+pub(crate) type EventLoop = winit::event_loop::EventLoop<()>;
+pub(crate) type ActiveEventLoop = winit::event_loop::ActiveEventLoop;
+pub(crate) use hexga_core::prelude::*;
+
+use prelude::*;
 
 pub mod prelude
 {
-    pub use crate::window::{ContextWindow,WindowParam};
+    pub use crate::window::prelude::*;
+    pub use crate::event::prelude::*;
 }
 
 /// Modules/Items without the prelude
 #[doc(hidden)]
 pub mod modules
 {
-    pub use super::window::*;
+    pub use super::window;
+    pub use super::event;
 }

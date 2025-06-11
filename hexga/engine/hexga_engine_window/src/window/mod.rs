@@ -2,9 +2,54 @@
 
 use std::default;
 
-use hexga_generational::prelude::GenVec;
+use hexga_generational::prelude::{GenVec, GenVecID};
 use hexga_math::prelude::*;
 use crate::*;
+
+pub mod prelude
+{
+    pub use super::{ContextWindow,WindowParam};
+    pub use super::WindowID;
+}
+
+pub trait AppLoop
+{
+    //type Output;
+
+    fn handle_localized_event(&mut self, event : LocalizedEvent, ctx : &mut AppContextInternal) -> bool
+    {
+        /*
+        if let Event::Device(DeviceEvent::Draw) = event
+        {
+            self.draw();
+            return true;
+        }
+        */
+        self.handle_event(event.event, ctx)
+    }
+
+    #[allow(unused_variables)]
+    fn handle_event(&mut self, event : Event, ctx : &mut AppContextInternal) -> bool { false }
+
+    fn update(&mut self, ctx : &mut AppContextInternal);
+    fn draw(&mut self, ctx : &mut AppContextInternal);
+
+    fn run(&mut self) -> AppResult where Self : Sized
+    {
+        let ev_loop = EventLoop::new().map_err(|e| <AppErrorEventLoop as Into<AppError>>::into(e))?;
+
+        let mut runner = AppRunner
+        {
+            app : self,
+            ctx: AppContextInternal { windows: ___() },
+        };
+
+        ev_loop.run_app(&mut runner).map_err(|e| e.into())
+    }
+}
+
+pub type WindowID = GenVecID<Window>;
+
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
@@ -84,9 +129,107 @@ impl ContextWindow for ()
     fn set_mouse_cursor(&mut self, _cursor_icon: CursorIcon) {}
 }
 
-pub struct App
+pub struct AppBuilder;
+
+/*
+struct AppEventLoop<'a, A> where A : AppLoop
+{
+    runner : AppRunner<'a, A>,
+    event_loop : EventLoop,
+}
+*/
+
+
+struct AppRunner<'a, A> where A : AppLoop
+{
+    app : &'a mut A,
+    ctx : AppContextInternal,
+}
+
+pub trait EventLoopRunner
+{
+    //fn run<A : AppLoop>(self, app : &mut A) -> AppResult;
+   fn create_window(&mut self, param : WindowParam) -> AppResult<WindowID>;
+}
+
+
+
+pub(crate) static mut EVENT_LOOP : Option<&'static EventLoop> = None;
+
+#[doc(hidden)]
+pub(crate) fn event_loop() -> &'static EventLoop
+{
+    let ctx = unsafe { EVENT_LOOP.as_ref().unwrap() };
+    ctx
+}
+
+#[doc(hidden)]
+#[allow(static_mut_refs)]
+pub unsafe fn set_event_loop(event_loop : Option<&'static EventLoop>) -> Option<&EventLoop>
+{
+    unsafe
+    {
+        match event_loop
+        {
+            Some(event_loop) =>
+            {
+                EVENT_LOOP = Some(event_loop);
+                return None;
+            },
+            None => {
+                EVENT_LOOP.take()
+            }
+        }
+    }
+}
+
+
+impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A : AppLoop
+{
+    fn resumed(&mut self, ev_loop: &ActiveEventLoop)
+    {
+        ev_loop.cre
+        unsafe { set_event_loop(Some(ev_loop.event_loop())).unwrap() };
+
+        self.app.handle_localized_event(DeviceEvent::Resume.into());
+    }
+
+    fn window_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        window_id: winit::window::WindowId,
+        event: winit::event::WindowEvent,
+    ) {
+        todo!()
+    }
+}
+
+struct AppContext<'a>
+{
+    internal : &'a mut AppContextInternal,
+    active_event_loop : &'a ActiveEventLoop
+}
+
+struct AppContextInternal
 {
     windows : GenVec<Window>,
+}
+
+pub type AppResult<T=()> = Result<T,AppError>;
+
+pub type AppErrorEventLoop = winit::error::EventLoopError;
+
+//#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum AppError
+{
+    Unknow,
+    EventLoop(AppErrorEventLoop),
+}
+impl From<AppErrorEventLoop> for AppError
+{
+    fn from(value: AppErrorEventLoop) -> Self {
+        Self::EventLoop(value)
+    }
 }
 
 pub struct Window
@@ -97,6 +240,9 @@ pub struct Window
     childs : Vec<WindowID>,
 }
 
+
+
+
 //#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 //#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -105,11 +251,14 @@ pub struct WindowParam
     /// Title of the window, defaults to an empty string.
     pub title: String,
 
+    /*
     /// The preferred width / height of the window
     ///
     /// Default: [960, 540]
     pub size : Point2,
+    */
 
+    /*
     /// Whether the rendering canvas is full-resolution on HighDPI displays.
     ///
     /// Default: false
@@ -134,7 +283,10 @@ pub struct WindowParam
     pub icon: Option<Box<Icon>>,
 
     pub can_be_free : bool,
+    */
 }
+
+/*
 
 #[derive(Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum WindowMode
@@ -144,8 +296,6 @@ pub enum WindowMode
     #[default]
     Nested,
 }
-
-pub type WindowID = usize;
 
 impl Default for WindowParam
 {
@@ -259,3 +409,4 @@ impl WindowParam
     /// settings etc.
     pub fn platform(mut self, platform : Platform) -> Self { self.platform = platform; self }
 }
+*/
