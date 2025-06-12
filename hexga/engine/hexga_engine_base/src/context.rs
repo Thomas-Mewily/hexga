@@ -1,11 +1,13 @@
 use crate::*;
 
+
 pub mod prelude
 {
     pub(crate) use super::Ctx;
-    pub(crate) use super::define_ctx_type;
+    //pub(crate) use super::define_ctx_type;
 }
 
+/*
 macro_rules! define_ctx_type {
     ($name:ident, $ctx_type:ident) => {
         pub struct $name;
@@ -26,7 +28,6 @@ impl<'a,T> CtxMut<'a,T>
 }
 
 
-
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
 pub struct Context;
 impl Deref for Context { type Target=Ctx; fn deref(&self) -> &Self::Target { ctx_ref() } }
@@ -34,13 +35,16 @@ impl DerefMut for Context { fn deref_mut(&mut self) -> &mut Self::Target { ctx()
 impl AsRef<Ctx> for Context { fn as_ref(&self) -> &Ctx { &*self } }
 impl AsMut<Ctx> for Context { fn as_mut(&mut self) -> &mut Ctx { &mut *self } }
 
+*/
+
+
 pub struct Ctx
 {
     pub(crate) thread_id : std::thread::ThreadId,
     // state       : Box<dyn MainLoopWithContext>,
-    pub(crate) multi_media : Box<dyn ContextMultiMedia>, // use an Arc instead ? and lock it during draw ?
+    //pub(crate) multi_media : Box<dyn ContextMultiMedia>, // use an Arc instead ? and lock it during draw ?
 
-    pub(crate) pen : PenInternal,
+    //pub(crate) pen : PenInternal,
     //pub(crate) render : ContextRender,
     //pub(crate) pen    : ContextPen,
 
@@ -61,6 +65,7 @@ Permission ? (from where asset can be loaded / exported ? You don't want to load
     // other stuff
 }
 
+/*
 impl Ctx
 {
     pub fn new(mut multi_media : Box<dyn ContextMultiMedia>, param : MultiMediaParam) -> Self
@@ -83,7 +88,6 @@ impl Ctx
 {
     pub fn pen<'a>(&'a mut self) -> CtxPen<'a> { CtxPen::new(self) }
 }
-
 pub(crate) static mut CONTEXT : Option<Ctx> = None;
 
 #[doc(hidden)]
@@ -168,4 +172,5 @@ impl<S,MultiMedia> MainLoopWithContext for ContextState<S,MultiMedia>
         todo!()
     }
 }
+*/
 */

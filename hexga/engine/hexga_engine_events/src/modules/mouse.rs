@@ -29,7 +29,7 @@ pub struct MouseButtonEvent
 {
     pub position : Vec2,
     pub button   : MouseButton,
-    pub press    : bool,
+    pub action   : EventAction,
 }
 
 #[non_exhaustive]

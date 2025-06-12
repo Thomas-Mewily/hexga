@@ -2,7 +2,7 @@ use hexga_engine_render::texture::TextureData;
 
 use crate::*;
 
-define_ctx_type!(Pen, CtxPen);
+//define_ctx_type!(Pen, CtxPen);
 
 pub type VertexIdx = u16;
 pub type VertexTriangleIdx = [VertexIdx;3];
@@ -69,6 +69,7 @@ pub(crate) struct PenInternal
 
 impl PenInternal
 {
+    /*
     pub fn new(ctx_multi : &mut dyn ContextMultiMedia) -> Self
     {
         //let white_pixel = ctx_multi.new_texture(TextureData::)
@@ -76,6 +77,8 @@ impl PenInternal
         //Self { white_pixel: (), param: (), vertex_buffer: (), index_buffer: () }
         todo!();
     }
+
+        */
 
     pub fn begin_draw(&mut self)
     {
@@ -93,8 +96,8 @@ impl PenInternal
 
 pub mod prelude
 {
-    pub(crate) use super::{PenInternal,CtxPen};
-    pub use super::Pen;
+    //pub(crate) use super::{PenInternal,CtxPen};
+    //pub use super::Pen;
 }
 
 

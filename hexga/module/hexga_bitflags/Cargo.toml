@@ -13,11 +13,13 @@ description = "Bitflags utilities"
 categories = ["rust-patterns"]
 
 [features]
-default = ["serde"]
+default = ["serde", "hexga_io"]
 
 serde = ["dep:serde"]
+hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
 
 [dependencies]
 hexga_number.workspace = true
+hexga_io = { workspace = true, optional = true }
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }

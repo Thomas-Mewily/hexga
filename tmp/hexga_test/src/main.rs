@@ -3,7 +3,8 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-pub use hexga_engine::prelude::*;
+pub use hexga_engine_window::prelude::*;
+pub use hexga_math::prelude::*;
 
 
 #[derive(Default)]
@@ -11,6 +12,7 @@ pub struct TestCtx
 {
     time : Time,
 }
+/*
 impl MainLoop for TestCtx
 {
     fn handle_event(&mut self, event : Event) -> bool {
@@ -26,15 +28,19 @@ impl MainLoop for TestCtx
 
     }
 }
+*/
 
 fn main()
 {
     for _ in 0..10 { println!(); }
 
+    /*
     MultiMediaParam::new()
         .window(WindowParam::new().title("hello"))
         .run(|| TestCtx::___());
+    */
 
+    println!("hello world");
     /*
     MultiMediaParam::new()
         .window(WindowParam::new().title("hello"))

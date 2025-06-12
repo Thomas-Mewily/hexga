@@ -35,6 +35,7 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
         - `Op<&T> for &T`
         ... Self and T copiable + support base op
 
+Grid from matrice ?
 
 - Math : Ray (rayon)
 

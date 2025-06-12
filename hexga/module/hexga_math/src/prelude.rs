@@ -2,7 +2,6 @@
 
 pub use crate::vector::prelude::*;
 pub use crate::grid::prelude::*;
-//pub use crate::grid_param::prelude::*;
 pub use crate::rectangle::prelude::*;
 pub use crate::matrix::prelude::*;
 

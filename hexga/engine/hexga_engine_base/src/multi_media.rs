@@ -1,9 +1,10 @@
 use crate::*;
 
+/*
 #[derive(Default, PartialEq, Eq, Clone, Hash)]
 pub struct MultiMediaParam
 {
-    pub window_param : WindowParam,
+    //pub window_param : WindowParam,
 }
 
 impl MultiMediaParam
@@ -44,3 +45,10 @@ pub mod modules
 {
     pub use super::MultiMediaParam;
 }
+*/
+
+
+/// Modules/Items without the prelude
+#[doc(hidden)]
+pub mod modules{}
+pub mod prelude{}

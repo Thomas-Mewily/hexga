@@ -2,8 +2,6 @@ use crate::*;
 pub use hexga_engine_events::modules::*;
 
 #[non_exhaustive]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, PartialEq)]
 pub struct LocalizedEvent
 {

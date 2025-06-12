@@ -1,20 +1,23 @@
+use std::default;
+
 use crate::*;
 
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum Action
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum EventAction
 {
     Press,
+    #[default]
     Release,
 }
-impl Action
+impl EventAction
 {
-    pub fn is_press(self) -> bool { matches!(self, Action::Press) }
-    pub fn is_release(self) -> bool { matches!(self, Action::Release) }
+    pub fn is_press(self) -> bool { matches!(self, EventAction::Press) }
+    pub fn is_release(self) -> bool { matches!(self, EventAction::Release) }
 }
-impl From<bool> for Action
+impl From<bool> for EventAction
 {
     fn from(value: bool) -> Self {
         if value { Self::Press } else { Self::Release }

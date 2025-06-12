@@ -15,14 +15,14 @@ pub struct KeyEvent
     pub modifiers : KeyMods,
 
     pub repeat  : bool,
-    pub press   : bool,
+    pub action  : EventAction,
 }
 impl KeyEvent
 {
     pub fn char(&self) -> Option<char> { self.character }
     pub fn key (&self) -> KeyCode { self.key }
     pub fn is_repeat(&self) -> bool { self.repeat }
-    pub fn is_press(&self) -> bool { self.press }
+    pub fn action(&self) -> EventAction { self.action }
 }
 
 impl Debug for KeyEvent
@@ -33,7 +33,7 @@ impl Debug for KeyEvent
             .field("key", &self.key)
             .field_if_not_default("char", &self.character)
             .field_if_not_default("repeat", &self.repeat)
-            .field("press", &self.press).finish()
+            .field("action", &self.action).finish()
     }
 }
 
@@ -72,7 +72,7 @@ impl Debug for KeyMods
 /// - On non-web platforms, support assigning keybinds to virtually any key through a UI.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum UnknowKeyCode
+pub enum KeyCodeUnknow
 {
     /// Unknow
     Unknow,
@@ -85,9 +85,9 @@ pub enum UnknowKeyCode
     /// An XKB "keycode".
     Xkb(u32),
 }
-impl std::fmt::Debug for UnknowKeyCode {
+impl std::fmt::Debug for KeyCodeUnknow {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use UnknowKeyCode::{Android, MacOS, Unknow, Windows, Xkb};
+        use KeyCodeUnknow::{Android, MacOS, Unknow, Windows, Xkb};
         let mut debug_tuple;
         match self {
             Unknow => {
@@ -124,7 +124,7 @@ impl std::fmt::Debug for UnknowKeyCode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum KeyCode
 {
-    Unknow(UnknowKeyCode),
+    Unknow(KeyCodeUnknow),
 
           /// <kbd>0</kbd> on a US keyboard.
     Key0, /// <kbd>1</kbd> on a US keyboard.
@@ -168,10 +168,10 @@ pub enum KeyCode
 
            /// <kbd> </kbd> (space)
     Space, /// <kbd>←</kbd>
-    Right, /// <kbd>↑</kbd>
-    Left,  /// <kbd>→</kbd>
-    Up,    /// <kbd>↓</kbd>
-    Down,
+    ArrowRight, /// <kbd>↑</kbd>
+    ArrowLeft,  /// <kbd>→</kbd>
+    ArrowUp,    /// <kbd>↓</kbd>
+    ArrowDown,
 
     /// <kbd>Shift</kbd> or <kbd>⇧</kbd>
     ShiftLeft,
