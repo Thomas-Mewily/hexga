@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::fmt::{self, Debug, Display};
 use std::ops::*;
 use std::hash::Hash;
 use crate::*;
@@ -65,8 +65,8 @@ pub trait NumberNegative             : Number + ArithmeticNegative + MinusOne {}
 impl<T> NumberNegative for T where T: Number + ArithmeticNegative + MinusOne {}
 
 /// fX or uX or iX
-pub trait NumberPrimitive : Number + PrimitiveType {}
-impl<T> NumberPrimitive for T where T: Number + PrimitiveType {}
+pub trait NumberPrimitive : Number + PrimitiveType + Display  {}
+impl<T> NumberPrimitive for T where T: Number + PrimitiveType + Display {}
 
 /// fX or or iX
 pub trait NumberPrimitiveNegative : NumberPrimitive + NumberNegative {}
@@ -77,8 +77,8 @@ pub trait NumberFloat             : NumberPrimitiveNegative + Half + NaNValue {}
 impl<T> NumberFloat for T where T: NumberPrimitiveNegative + Half + NaNValue {}
 
 /// uX or iX
-pub trait NumberInteger             : NumberPrimitive + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior {}
-impl<T> NumberInteger for T where T: NumberPrimitive + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior {}
+pub trait NumberInteger             : NumberPrimitive + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior + fmt::Binary + fmt::LowerHex + fmt::UpperHex + fmt::Octal + fmt::LowerExp + fmt::UpperExp {}
+impl<T> NumberInteger for T where T: NumberPrimitive + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior + fmt::Binary + fmt::LowerHex + fmt::UpperHex + fmt::Octal + fmt::LowerExp + fmt::UpperExp {}
 
 /// uX
 pub trait NumberIntegerUnsigned             : NumberInteger {}
