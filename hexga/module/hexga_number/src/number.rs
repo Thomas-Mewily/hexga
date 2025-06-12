@@ -65,8 +65,8 @@ pub trait NumberNegative             : Number + ArithmeticNegative + MinusOne {}
 impl<T> NumberNegative for T where T: Number + ArithmeticNegative + MinusOne {}
 
 /// fX or uX or iX
-pub trait NumberPrimitive : Number + PrimitiveType + Display  {}
-impl<T> NumberPrimitive for T where T: Number + PrimitiveType + Display {}
+pub trait NumberPrimitive            : Number + PrimitiveType + Display + fmt::LowerExp + fmt::UpperExp {}
+impl<T> NumberPrimitive for T where T: Number + PrimitiveType + Display + fmt::LowerExp + fmt::UpperExp {}
 
 /// fX or or iX
 pub trait NumberPrimitiveNegative : NumberPrimitive + NumberNegative {}
@@ -77,8 +77,8 @@ pub trait NumberFloat             : NumberPrimitiveNegative + Half + NaNValue {}
 impl<T> NumberFloat for T where T: NumberPrimitiveNegative + Half + NaNValue {}
 
 /// uX or iX
-pub trait NumberInteger             : NumberPrimitive + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior + fmt::Binary + fmt::LowerHex + fmt::UpperHex + fmt::Octal + fmt::LowerExp + fmt::UpperExp {}
-impl<T> NumberInteger for T where T: NumberPrimitive + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior + fmt::Binary + fmt::LowerHex + fmt::UpperHex + fmt::Octal + fmt::LowerExp + fmt::UpperExp {}
+pub trait NumberInteger            : NumberPrimitive + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior + fmt::Binary + fmt::Octal + fmt::LowerHex + fmt::UpperHex {}
+impl<T> NumberInteger for T where T: NumberPrimitive + Eq + Hash + Ord + BitManip + BitArithmetic + Increase + OverflowBehavior + fmt::Binary + fmt::Octal + fmt::LowerHex + fmt::UpperHex {}
 
 /// uX
 pub trait NumberIntegerUnsigned             : NumberInteger {}
