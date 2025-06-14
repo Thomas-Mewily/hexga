@@ -2,22 +2,44 @@ use super::*;
 
 pub trait AppLoop
 {
-    fn handle_localized_event<AppCtx>(&mut self, event : LocalizedEvent, ctx : &mut AppCtx) -> bool where AppCtx: AppContext
+    fn handle_localized_event<AppCtx>(&mut self, event: LocalizedEvent, ctx: &mut AppCtx) -> bool where AppCtx: AppContext
     {
-        if let Event::Device(DeviceEvent::Draw) = event.event
-        {
-            self.draw(ctx);
-            return true;
-        }
         self.handle_event(event.event, ctx)
     }
+
+    /*
+    fn handle_event_special<AppCtx>(&mut self, event: &LocalizedEvent, ctx: &mut AppCtx) -> bool where AppCtx: AppContext
+    {
+        if let Event::Device(d) = event.event
+        {
+            match d
+            {
+                DeviceEvent::Resume => { self.resume(ctx); true }
+                DeviceEvent::Update => { self.update(ctx); true }
+                DeviceEvent::Draw   => { self.draw(ctx); true }
+                _ => false,
+            }
+        } else
+        {
+            false
+        }
+    }
+    */
 
     #[allow(unused_variables)]
     fn handle_event<AppCtx>(&mut self, event : Event, ctx : &mut AppCtx) -> bool where AppCtx: AppContext
     { false }
 
+    #[allow(unused_variables)]
+    fn resume<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext {}
+    #[allow(unused_variables)]
+    fn pause<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext {}
+
     fn update<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext;
     fn draw<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext;
+
+
+
 
     fn run_with_window(&mut self, window : Option<WindowParam>) -> AppResult where Self : Sized
     {
@@ -149,6 +171,10 @@ impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A 
     fn memory_warning(&mut self, active_event_loop: &winit::event_loop::ActiveEventLoop)
     {
         self.handle_localized_event(DeviceEvent::MemoryWarning.into(), active_event_loop);
+    }
+
+    fn about_to_wait(&mut self, active_event_loop: &winit::event_loop::ActiveEventLoop) {
+        self.handle_localized_event(DeviceEvent::Update.into(), active_event_loop);
     }
 }
 
@@ -541,6 +567,8 @@ impl AppContextInternal
 
         return Some(localized_event);
     }
+
+
 }
 
 

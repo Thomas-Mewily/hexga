@@ -8,7 +8,7 @@ pub enum DeviceEvent
 {
     Added, Removed,
     Resume,
-    Draw,
+    Update, Draw,
     MemoryWarning,
 }
 impl Debug for DeviceEvent
@@ -19,6 +19,7 @@ impl Debug for DeviceEvent
             DeviceEvent::Added => write!(f, "Added"),
             DeviceEvent::Removed => write!(f, "Removed"),
             DeviceEvent::Resume => write!(f, "Resume"),
+            DeviceEvent::Update => write!(f, "Update"),
             DeviceEvent::Draw => write!(f, "Draw"),
             DeviceEvent::MemoryWarning => write!(f, "MemoryWarning"),
         }
