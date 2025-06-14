@@ -47,6 +47,7 @@ pub enum Event
     Window  (WindowEvent),
     Mouse   (MouseEvent ),
     Key     (KeyEvent   ),
+    Modifier(ModifierEvent),
     Touch   (TouchEvent ),
     Device  (DeviceEvent)
 }
@@ -58,6 +59,7 @@ impl Debug for Event
             Event::Window(v) => write!(f, "{:?}", v),
             Event::Mouse(v) => write!(f, "{:?}", v),
             Event::Key(v) => write!(f, "{:?}", v),
+            Event::Modifier(v) => write!(f, "{:?}", v),
             Event::Touch(v) => write!(f, "{:?}", v),
             Event::Device(v) => write!(f, "{:?}", v),
         }
@@ -69,5 +71,6 @@ impl From<MouseMoveEvent  > for Event { fn from(value: MouseMoveEvent) -> Self {
 impl From<MouseButtonEvent> for Event { fn from(value: MouseButtonEvent) -> Self { Self::from(MouseEvent::Button(value)) } }
 impl From<MouseEvent > for Event { fn from(value: MouseEvent) -> Self { Self::Mouse(value) } }
 impl From<KeyEvent   > for Event { fn from(value: KeyEvent) -> Self { Self::from(Event::Key(value)) } }
+impl From<ModifierEvent> for Event { fn from(value: ModifierEvent) -> Self { Self::from(Event::Modifier(value)) } }
 impl From<TouchEvent > for Event { fn from(value: TouchEvent) -> Self { Self::Touch(value) } }
 impl From<DeviceEvent> for Event { fn from(value: DeviceEvent) -> Self { Self::Device(value) } }

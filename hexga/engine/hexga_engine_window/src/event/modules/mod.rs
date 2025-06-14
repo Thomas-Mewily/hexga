@@ -46,6 +46,7 @@ impl From<MouseMoveEvent  > for LocalizedEvent { fn from(value: MouseMoveEvent) 
 impl From<MouseButtonEvent> for LocalizedEvent { fn from(value: MouseButtonEvent) -> Self { Self::new_os(value.into()) } }
 impl From<MouseEvent > for LocalizedEvent { fn from(value: MouseEvent) -> Self { Self::new_os(value.into()) } }
 impl From<KeyEvent   > for LocalizedEvent { fn from(value: KeyEvent) -> Self { Self::new_os(value.into()) } }
+impl From<ModifierEvent> for LocalizedEvent { fn from(value: ModifierEvent) -> Self { Self::new_os(value.into()) } }
 impl From<TouchEvent > for LocalizedEvent { fn from(value: TouchEvent) -> Self { Self::new_os(value.into()) } }
 impl From<DeviceEvent> for LocalizedEvent { fn from(value: DeviceEvent) -> Self { Self::new_os(value.into()) } }
 

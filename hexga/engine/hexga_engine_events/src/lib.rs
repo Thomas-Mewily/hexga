@@ -4,6 +4,7 @@
 use std::fmt::Debug;
 use hexga_core::prelude::*;
 use hexga_math::prelude::Vec2;
+use hexga_bitflags::bitindex;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};

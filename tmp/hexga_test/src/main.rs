@@ -3,15 +3,30 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
+use hexga_engine_window::app::AppLoop;
 pub use hexga_engine_window::prelude::*;
 pub use hexga_math::prelude::*;
+pub use hexga_core::prelude::*;
+
 
 
 #[derive(Default)]
-pub struct TestCtx
+pub struct MyApp
 {
     time : Time,
 }
+
+impl AppLoop for MyApp
+{
+    fn update<R>(&mut self, ctx : &mut R) where R: hexga_engine_window::app::AppContext {
+        todo!()
+    }
+
+    fn draw<R>(&mut self, ctx : &mut R) where R: hexga_engine_window::app::AppContext {
+
+    }
+}
+
 /*
 impl MainLoop for TestCtx
 {
@@ -40,36 +55,8 @@ fn main()
         .run(|| TestCtx::___());
     */
 
-    println!("hello world");
-    /*
-    MultiMediaParam::new()
-        .window(WindowParam::new().title("hello"))
-        */
-        //.run(|| TestCtx::___());
+    let mut app = MyApp::___();
+    app.run().unwrap();
+
+
 }
-
-/*
-fn main()
-{
-    for _ in 0..10 { println!(); }
-}
-
-        Pen.begin_draw();
-        Pen.begin_pass();
-
-        Pen.color(Color::RED).set_pos(vec2(-1., 1.)).down()
-           .color(Color::BLUE).pos2(vec2(1., 1.)).down()
-           .color(Color::GREEN).pos2(vec2(0.0, -1.)).down()
-           .make_triangle();
-
-        Pen.color(Color::PINK);
-
-        //  for c in (0.0..1.0).sample(9. + (self.time.s() * 1.).cos() * 7.)
-        for c in (Angle::ZERO..Angle::FULL).sample(40)
-        {
-            Pen.set_pos(c.to_vec2(0.5)).down();
-        }
-        Pen.make_convex_poly();
-
-
-*/

@@ -27,12 +27,14 @@ float_are_32_bits   = ["hexga_math/float_are_32_bits"]
 float_are_64_bits   = ["hexga_math/float_are_64_bits"]
 float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
-serde = ["dep:serde", "dep:hexga_io", "hexga_math/serde"]
+serde = ["dep:serde", "dep:hexga_io", "hexga_math/serde", "hexga_bitflags/serde"]
 hexga_io = ["dep:hexga_io", "dep:hexga_io_derive", "serde", "hexga_math/hexga_io"]
 
 [dependencies]
 hexga_core.workspace = true
 hexga_math.workspace = true
+hexga_bitflags.workspace = true
+
 hexga_io = { workspace = true, optional = true }
 hexga_io_derive = { workspace = true, optional = true }
 

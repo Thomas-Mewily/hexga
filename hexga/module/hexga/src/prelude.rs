@@ -2,7 +2,7 @@ pub use hexga_core::prelude::*;
 
 pub use crate::generational::prelude::*;
 pub use crate::math::prelude::*;
-pub use crate::bitflags::prelude::*;
+pub use crate::bitflags::bitindex;
 pub use crate::tools::prelude::*;
 pub use crate::graphics::prelude::*;
 //pub use crate::map_on::*;

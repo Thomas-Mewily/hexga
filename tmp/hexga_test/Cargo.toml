@@ -34,6 +34,7 @@ serde           = ["hexga_engine_window/serde", "hexga_math/serde"]
 [dependencies]
 #hexga.workspace = true
 #hexga_graphics.workspace = true
+hexga_core.workspace = true
 hexga_math.workspace = true
 hexga_engine_window.workspace = true
 #hexga_generational.workspace = true

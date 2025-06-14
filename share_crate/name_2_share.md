@@ -10,7 +10,6 @@ hexga_io_derive
 hexga_io
 
 hexga_bitflags
-hexga_bitflags_macro
 
 // hexga_base // moved to hexga_core
 hexga_array

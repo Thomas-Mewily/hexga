@@ -1,25 +1,31 @@
-use hexga_bitflags_macro::*;
+use hexga_bitflags::*;
 
-#[bitflags]
+#[bitindex]
 #[repr(u8)]
-enum Team {
-    Blue,
+enum Color
+{
     Red,
-    Yellow = 5,
-    Green, // = 6
-    BlueOrRed = (Team::Blue | Self::Red),
+    Green,
+    Blue = 5,
+    Yellow, // = 6
+    RedAndBlue = Color::Red | Self::Blue, // only defined in ColorFlags
     Purple, // 7
+    GreenAndYellowAndPurple = ((Color::Yellow | Self::Purple)) | Self::Green, // only defined in ColorFlags
 }
-
 
 fn main()
 {
-    let mut acc = TeamFlags::EMPTY;
-    for x in Team::ALL
+    let mut flags = Color::Red | Color::Blue;
+    assert_eq!(flags, ColorFlags::RedAndBlue);
+    assert_eq!(flags, ColorFlags::Red | ColorFlags::Blue);
+
+    assert!(flags.contains(Color::Red));
+
+    for color in ColorFlags::GreenAndYellowAndPurple
     {
-        acc |= x;
-        dbg!(x);
-        dbg!(acc);
+        println!("{:?}", color);
     }
-    println!("hello");
+
+    flags.remove(Color::Red);
+    let _blue = Color::try_from(flags).unwrap();
 }

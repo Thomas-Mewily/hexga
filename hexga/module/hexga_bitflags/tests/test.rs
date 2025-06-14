@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use hexga_bitflags_macro::*;
+    use hexga_bitflags::*;
 
-    #[bitflags]
-    #[repr(u16)]
+    #[bitindex]
+    #[repr(u8)]
     enum Color
     {
         Red,
@@ -56,5 +56,8 @@ mod tests {
 
         assert_eq!(ColorFlags::RedAndBlue.collect::<Vec<_>>(), vec![Color::Red, Color::Blue]);
         assert_eq!(ColorFlags::GreenAndYellowAndPurple.collect::<Vec<_>>(), vec![Color::Green, Color::Yellow, Color::Purple]);
+
+        assert_eq!(ColorFlags::RedAndBlue & Color::Red, Color::Red);
+        assert_eq!(ColorFlags::RedAndBlue & Color::Red, ColorFlags::Red);
     }
 }

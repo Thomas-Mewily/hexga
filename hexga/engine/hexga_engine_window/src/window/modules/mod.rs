@@ -1,6 +1,6 @@
 use std::default;
 
-use hexga_bitflags::prelude::BoolFlags;
+use hexga_bitflags::bitindex;
 use hexga_generational::prelude::{GenVec, GenVecID};
 use hexga_graphics::image::Image;
 use hexga_math::prelude::*;
@@ -18,6 +18,7 @@ impl From<winit::window::WindowId> for WindowID
 mod cursor;
 pub use cursor::*;
 
+#[allow(dead_code)]
 pub struct Window
 {
     pub(crate) window : winit::window::Window,
@@ -25,9 +26,7 @@ pub struct Window
     pub(crate) childs : Vec<WindowID>,
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[bitindex]
 #[repr(u8)]
 pub enum WindowButton
 {
@@ -35,31 +34,6 @@ pub enum WindowButton
     Minimize,
     Maximize,
 }
-impl MaxValue for WindowButton
-{
-    const MAX : Self = Self::Maximize;
-}
-impl From<WindowButton> for u8
-{
-    fn from(value: WindowButton) -> Self {
-        value as u8
-    }
-}
-impl TryFrom<u8> for WindowButton
-{
-    type Error=();
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            0 => Ok(WindowButton::Close),
-            1 => Ok(WindowButton::Minimize),
-            2 => Ok(WindowButton::Maximize),
-            _ => Err(()),
-        }
-    }
-}
-
-pub type WindowButtonsFlag = BoolFlags<WindowButton, u8>;
-
 
 /// A window level groups windows with respect to their z-position.
 ///
@@ -114,13 +88,15 @@ pub struct WindowParam
     pub visible: bool,
     pub transparent: bool,
 
-    pub buttons : WindowButtonsFlag,
+    pub buttons : WindowButtonFlags,
     pub level : WindowLevel,
 
     pub icon: Option<Icon>,
     pub active: bool,
-    pub cursor: CursorIcon,
-    pub grab  : CursorGrab,
+
+    pub cursor_icon         : CursorIcon,
+    pub cursor_grab    : CursorGrab,
+    pub cursor_visible : bool,
 
     pub dpi : float,
 }
@@ -136,7 +112,7 @@ impl Into<winit::window::WindowAttributes> for WindowParam
         att.resizable = self.resizable;
         att.visible = self.visible;
         att.transparent = self.transparent;
-        att.decorations = self.buttons != WindowButtonsFlag::ZERO;
+        att.decorations = self.buttons != WindowButtonFlags::ZERO;
         att.window_level = self.level.into();
         att.window_icon = self.icon.map(|icon|
         {
@@ -145,8 +121,7 @@ impl Into<winit::window::WindowAttributes> for WindowParam
             winit::window::Icon::from_rgba(rgba2, size.x as _, size.y as _).unwrap()
         });
         att.active = self.active;
-        //att.cursor = self.cursor.into();
-        todo!();
+        att.cursor = winit::window::Cursor::Icon(self.cursor_icon.into());
         att
     }
 }
@@ -161,13 +136,14 @@ impl Default for WindowParam
             resizable: true,
             visible: true,
             transparent: false,
-            buttons: WindowButtonsFlag::ZERO | WindowButton::Close | WindowButton::Minimize | WindowButton::Maximize,
+            buttons: WindowButton::Close | WindowButton::Minimize | WindowButton::Maximize,
             level: ___(),
             icon: ___(),
             active: true,
-            cursor: ___(),
-            grab: ___(),
+            cursor_icon: ___(),
+            cursor_grab: ___(),
             dpi: 1.,
+            cursor_visible: true,
         }
     }
 }
@@ -202,7 +178,7 @@ impl WindowParam
         self.transparent = transparent;
         self
     }
-    pub fn with_buttons(mut self, buttons: WindowButtonsFlag) -> Self {
+    pub fn with_buttons(mut self, buttons: WindowButtonFlags) -> Self {
         self.buttons = buttons;
         self
     }
@@ -218,12 +194,16 @@ impl WindowParam
         self.active = active;
         self
     }
-    pub fn with_cursor(mut self, cursor: CursorIcon) -> Self {
-        self.cursor = cursor;
+    pub fn with_cursor_icon(mut self, cursor: CursorIcon) -> Self {
+        self.cursor_icon = cursor;
         self
     }
-    pub fn with_grab(mut self, grab: CursorGrab) -> Self {
-        self.grab = grab;
+    pub fn with_cursor_grab(mut self, cursor_grab: CursorGrab) -> Self {
+        self.cursor_grab = cursor_grab;
+        self
+    }
+    pub fn with_cursor_visible(mut self, cursor_visible: bool) -> Self {
+        self.cursor_visible = cursor_visible;
         self
     }
     pub fn with_dpi(mut self, dpi: float) -> Self {
@@ -290,80 +270,5 @@ impl std::fmt::Debug for Icon {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Icon").finish()
     }
-}
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Platform
-{
-    /// Optional swap interval (vertical sync).
-    ///
-    /// Note that this is highly platform- and driver-dependent.
-    /// There is no guarantee the FPS will match the specified `swap_interval`.
-    /// In other words, `swap_interval` is only a hint to the GPU driver and
-    /// not a reliable way to limit the game's FPS.
-    pub swap_interval: Option<i32>,
-
-    /// If `true`, the event loop will block until an schedule update will be is called.
-    ///
-    /// This can reduce CPU usage to nearly zero while waiting for events.
-    pub blocking_event_loop: bool,
-
-    /// If `true`, the framebuffer includes an alpha channel.
-    /// Currently supported only on Android.
-    ///
-    /// - TODO: Make it works on web, on web it should make a transparent HTML5 canvas
-    /// - TODO: Document(and check) what does it actually mean on android. Transparent window?
-    pub framebuffer_alpha  : bool,
-}
-
-impl Default for Platform
-{
-    fn default() -> Self
-    {
-        Self
-        {
-            swap_interval: None,
-            blocking_event_loop: false,
-            framebuffer_alpha: false
-        }
-    }
-}
-
-impl WindowParam
-{
-    pub fn new() -> Self { Self::default() }
-
-    pub fn title(mut self, title : impl Into<String>) -> Self { self.title = title.into(); self }
-
-    /// Whether the rendering canvas is full-resolution on HighDPI displays.
-    ///
-    /// Default: false
-    pub fn high_dpi(mut self, high_dpi : bool) -> Self { self.high_dpi = high_dpi; self }
-
-    /// Whether the window should be created in fullscreen mode, ignored on wasm/android.
-    ///
-    /// Default: false
-    pub fn fullscreen(mut self, fullscreen : bool) -> Self { self.fullscreen = fullscreen; self }
-
-    /// MSAA sample count
-    ///
-    /// Default: 1
-    pub fn sample_count(mut self, sample_count : u32) -> Self { self.sample_count = sample_count; self }
-
-    /// Determines if the application user can resize the window
-    pub fn resizeable(mut self, window_resizable : bool) -> Self { self.resizable = window_resizable; self }
-
-    /// The icon will be used as
-    /// - taskbar and titlebar icons on Windows.
-    /// - dock and titlebar icon on  MacOs.
-    /// - TODO: favicon on HTML5
-    /// - TODO: taskbar and titlebar(highly dependent on the WM) icons on Linux
-    pub fn icon(mut self, icon : Option<Icon>) -> Self { self.icon = icon.map(|v| Box::new(v)); self }
-
-    /// Platform specific settings. Hints to OS for context creation, driver-specific
-    /// settings etc.
-    pub fn platform(mut self, platform : Platform) -> Self { self.platform = platform; self }
 }
 */

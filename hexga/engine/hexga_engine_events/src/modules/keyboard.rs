@@ -12,7 +12,7 @@ pub struct KeyEvent
 {
     pub character : Option<char>,
     pub key       : KeyCode,
-    pub modifiers : KeyMods,
+    pub modifiers : KeyModsFlags,
 
     pub repeat  : bool,
     pub action  : EventAction,
@@ -38,26 +38,35 @@ impl Debug for KeyEvent
 }
 
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Default, Copy, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
-pub struct KeyMods
+#[bitindex]
+#[repr(u8)]
+pub enum KeyMods
 {
-    pub shift: bool,
-    pub ctrl : bool,
-    pub alt  : bool,
-    pub logo : bool,
+    LeftShift,
+    RightShift,
+    Shift = Self::LeftShift | Self::RightShift,
+
+    LeftControl,
+    RightControl,
+    Control = Self::LeftControl | Self::RightControl,
+
+    LeftAlt,
+    RightAlt,
+    Alt = Self::LeftAlt | Self::RightAlt,
+
+    LeftSuper,
+    RightSuper,
+    Super = Self::LeftSuper | Self::RightSuper,
 }
 
-impl Debug for KeyMods
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        if self.is_default() { return Ok(()); }
-        f.debug_struct("KeyMods").field_if_not_default("shift", &self.shift).field_if_not_default("ctrl", &self.ctrl).field_if_not_default("alt", &self.alt).field_if_not_default("logo", &self.logo).finish()
-    }
-}
+/// Keymodifiers changed
+pub type ModifierEvent = KeyModsFlags;
 
+impl Default for KeyModsFlags
+{
+    fn default() -> Self { Self::ZERO }
+}
 
 /// Contains the platform-native physical key identifier
 ///
