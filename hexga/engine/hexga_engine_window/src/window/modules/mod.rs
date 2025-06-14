@@ -1,6 +1,6 @@
 use std::default;
 
-use hexga_bitflags::BoolFlags;
+use hexga_bitflags::prelude::BoolFlags;
 use hexga_generational::prelude::{GenVec, GenVecID};
 use hexga_graphics::image::Image;
 use hexga_math::prelude::*;

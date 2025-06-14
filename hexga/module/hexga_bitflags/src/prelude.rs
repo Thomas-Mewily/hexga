@@ -1,2 +1,2 @@
 
-pub use crate::BoolFlags;
+pub use crate::bitflags::BoolFlags;

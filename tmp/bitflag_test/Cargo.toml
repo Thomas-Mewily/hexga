@@ -8,3 +8,4 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
+hexga_bitflags_macro.workspace = true

@@ -22,6 +22,7 @@ hexga_number           = { path = "./hexga/module/hexga_number",            vers
 hexga_map_on           = { path = "./hexga/module/hexga_map_on",            version = "0.0.10-beta.16", default-features = false }
 hexga_typedef          = { path = "./hexga/module/hexga_typedef",           version = "0.0.10-beta.16", default-features = false }
 hexga_bitflags         = { path = "./hexga/module/hexga_bitflags",          version = "0.0.10-beta.16", default-features = false }
+hexga_bitflags_macro   = { path = "./hexga/module/hexga_bitflags_macro",    version = "0.0.10-beta.16", default-features = false }
 hexga_graphics         = { path = "./hexga/module/hexga_graphics",          version = "0.0.10-beta.16", default-features = false }
 hexga_io               = { path = "./hexga/module/hexga_io",                version = "0.0.10-beta.16", default-features = false }
 hexga_io_derive        = { path = "./hexga/module/hexga_io_derive",         version = "0.0.10-beta.16", default-features = false }

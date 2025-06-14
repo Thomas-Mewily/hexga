@@ -1,10 +1,10 @@
 //! A crate that handle bit flag logic with `BitFlags<Enum,Rep>`
 
-mod bit_mask;
-pub use bit_mask::*;
+mod bitmask;
+pub use bitmask::*;
 
-mod bit_flags;
-pub use bit_flags::*;
+mod bitflags;
+mod bitflags2;
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
