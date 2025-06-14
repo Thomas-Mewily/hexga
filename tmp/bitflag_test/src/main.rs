@@ -14,33 +14,12 @@ enum Team {
 
 fn main()
 {
-    assert_eq!(TeamFlags::BlueOrRed, Team::Blue | Team::Red);
-    dbg!(Team::Blue);
-    dbg!(TeamFlags::Blue);
-    dbg!(TeamFlags::BlueOrRed);
-
-
-    //let x = Team::Blue | Team::Green;
-    //TeamFlags::BlueOrRed
-
-    let x = TeamFlags::from(Team::Blue);
-
-
-    let t = Team::Green;
-    for t in TeamFlags::BlueOrRed | Team::Green
+    let mut acc = TeamFlags::EMPTY;
+    for x in Team::ALL
     {
-        dbg!(t);
+        acc |= x;
+        dbg!(x);
+        dbg!(acc);
     }
-
-    //dbg!(x);
-
-    //let combo = TeamFlags::Blue | TeamFlags::Red;
-
-    /*
-    println!("Combo: {}", combo.flags);
-    for team in combo.iter() {
-        println!("Contains: {:?}", team as u8);
-    }
-    */
     println!("hello");
 }

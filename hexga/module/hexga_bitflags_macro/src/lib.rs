@@ -74,8 +74,38 @@ pub fn bitflags(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let nb_variant = enum_variants.len();
 
+    #[cfg(feature = "serde")]
+    let serde_serialize_deserialize = quote! { #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] };
+    #[cfg(feature = "serde")]
+    let serde_serialize_transparent = quote! { #[cfg_attr(feature = "serde", derive(Serialize), serde(transparent))] };
+    #[cfg(feature = "serde")]
+    let serde_deserialiaze_flags = quote!
+    {
+        #[cfg(feature = "serde")]
+        impl<'de> ::serde::Deserialize<'de> for #struct_name {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+            D: ::serde::Deserializer<'de>,
+            {
+                let bits = <#repr_type as serde::Deserialize>::deserialize(deserializer)?;
+                Self::try_from_bits(bits).map_err(|invalid_bits| D::Error::invalid_value(
+                    serde::de::Unexpected::Unsigned(invalid_bits as u64),
+                    &"a valid bitflag value",
+                ))
+            }
+        }
+    };
+
+    #[cfg(not(feature = "serde"))]
+    let serde_serialize_deserialize = quote! {};
+    #[cfg(not(feature = "serde"))]
+    let serde_serialize_transparent = quote! {};
+    #[cfg(not(feature = "serde"))]
+    let serde_deserialiaze_flags = quote! {};
+
     let output = quote! {
 
+        #serde_serialize_deserialize
         #[repr(#repr_type)]
         #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
         pub enum #enum_name
@@ -181,12 +211,15 @@ pub fn bitflags(_attr: TokenStream, item: TokenStream) -> TokenStream {
             fn from(value: #enum_name) -> Self { value.flags() }
         }
 
+        #serde_serialize_transparent
         #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
         pub struct #struct_name
         {
             #[doc(hidden)]
             _bits_do_not_use_it: #repr_type
         }
+
+        #serde_deserialiaze_flags
 
         impl ::std::fmt::Debug for #struct_name
         {
@@ -209,6 +242,37 @@ pub fn bitflags(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
                 }
                 write!(f, ")")
+            }
+        }
+        impl ::std::fmt::Binary for #struct_name
+        {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                ::std::fmt::Binary::fmt(&self._bits_do_not_use_it, f)
+            }
+        }
+        impl ::std::fmt::LowerHex for #struct_name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                ::std::fmt::LowerHex::fmt(&self._bits_do_not_use_it, f)
+            }
+        }
+        impl ::std::fmt::UpperHex for #struct_name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                ::std::fmt::UpperHex::fmt(&self._bits_do_not_use_it, f)
+            }
+        }
+        impl ::std::fmt::LowerExp for #struct_name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                ::std::fmt::LowerExp::fmt(&self._bits_do_not_use_it, f)
+            }
+        }
+        impl ::std::fmt::UpperExp for #struct_name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                ::std::fmt::UpperExp::fmt(&self._bits_do_not_use_it, f)
+            }
+        }
+        impl ::std::fmt::Octal for #struct_name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                ::std::fmt::Octal::fmt(&self._bits_do_not_use_it, f)
             }
         }
 
@@ -272,6 +336,9 @@ pub fn bitflags(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #[must_use]
             #[inline(always)]
             pub fn intersection<T>(self, other: T) -> Self where T: Into<Self> { self & other }
+            #[must_use]
+            #[inline(always)]
+            pub fn complement(self) -> Self { !self }
 
             #[must_use]
             #[inline(always)]
@@ -329,6 +396,9 @@ pub fn bitflags(_attr: TokenStream, item: TokenStream) -> TokenStream {
             /// Conditionnaly insert or remove some flags
             #[inline(always)]
             pub fn set<T>(&mut self, other: T, insert: bool) -> &mut Self where T: Into<Self> { if insert { self.insert(other) } else { self.remove(other) } }
+
+            /// Unsets all bits in the flags to 0.
+            pub fn clear(&mut self) { *self = Self::EMPTY; }
         }
 
         impl<T> std::ops::BitOr<T> for #struct_name where T: Into<Self>

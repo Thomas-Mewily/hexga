@@ -16,7 +16,7 @@ categories = ["rust-patterns"]
 proc-macro = true
 
 [features]
-default = ["serde", "hexga_io"]
+default = []
 
 serde = ["dep:serde"]
 hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
