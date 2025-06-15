@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::*;
 
-pub mod prelude { pub use super::modules::{IAppContext,AppContext}; }
+pub mod prelude { pub use super::modules::{IAppWindowContext,AppWindowContext}; }
 
 pub use modules::*;
 

@@ -3,7 +3,7 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
-use hexga_engine_window::app::AppLoop;
+use hexga_engine_window::app::{AppWindowLoop, AppWindowRun};
 pub use hexga_engine_window::prelude::*;
 pub use hexga_math::prelude::*;
 pub use hexga_core::prelude::*;
@@ -16,9 +16,9 @@ pub struct MyApp
     time : Time,
 }
 
-impl AppLoop for MyApp
+impl AppWindowLoop for MyApp
 {
-    fn handle_event(&mut self, event : Event, ctx: &mut AppContext) -> bool
+    fn handle_event(&mut self, event : Event, ctx: &mut AppWindowContext) -> bool
     {
         if event.is_copy()
         {
@@ -33,11 +33,11 @@ impl AppLoop for MyApp
         true
     }
 
-    fn update(&mut self, ctx: &mut AppContext) {
+    fn update(&mut self, ctx: &mut AppWindowContext) {
 
     }
 
-    fn draw(&mut self, ctx: &mut AppContext) {
+    fn draw(&mut self, ctx: &mut AppWindowContext) {
 
     }
 }

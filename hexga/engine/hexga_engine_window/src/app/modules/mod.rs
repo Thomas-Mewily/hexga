@@ -2,12 +2,12 @@ use serde::de;
 
 use super::*;
 
-pub trait AppLoop
+pub trait AppWindowLoop
 {
     /// Handles a message from the application. This is the main entry for handling messages, and events.
     ///
     /// This is also responsible for dispatching special events like the [AppLoop::update], [AppLoop::draw], [AppLoop::pause], [AppLoop::resume].
-    fn handle_message(&mut self, message: AppMessage, ctx: &mut AppContext) -> bool
+    fn handle_message(&mut self, message: AppMessage, ctx: &mut AppWindowContext) -> bool
     {
         match message
         {
@@ -15,16 +15,17 @@ pub trait AppLoop
             {
                 if let Event::Window(WindowEvent::Draw) = localized_event.event
                 {
-                    self.draw(ctx);
-                }else
+                    self.draw_window(localized_event.window, ctx);
+                }
+                else
                 {
                     return self.handle_localized_event(localized_event, ctx)
                 }
             },
             AppMessage::Device(device_message) => match device_message
             {
-                DeviceMessage::Added   => self.device_add(ctx),
-                DeviceMessage::Removed => self.device_remove(ctx),
+                DeviceMessage::Added   => self.device_added(ctx),
+                DeviceMessage::Removed => self.device_removed(ctx),
                 DeviceMessage::Resume  => self.resume(ctx),
                 DeviceMessage::Update  => self.update(ctx),
                 DeviceMessage::MemoryWarning => self.warning_memory(ctx),
@@ -33,29 +34,33 @@ pub trait AppLoop
         true
     }
 
-    fn handle_localized_event(&mut self, event: LocalizedEvent, ctx: &mut AppContext) -> bool
+    fn handle_localized_event(&mut self, event: LocalizedEvent, ctx: &mut AppWindowContext) -> bool
     {
         self.handle_event(event.event, ctx)
     }
 
-    fn handle_event(&mut self, event : Event, ctx: &mut AppContext) -> bool
+    fn handle_event(&mut self, event : Event, ctx: &mut AppWindowContext) -> bool
     {
         let _ = event;
         let _ = ctx;
         false
     }
 
-    fn resume(&mut self, ctx: &mut AppContext) { let _ = ctx; }
-    fn pause(&mut self, ctx: &mut AppContext) { let _ = ctx; }
+    fn resume(&mut self, ctx: &mut AppWindowContext) { let _ = ctx; }
+    fn pause(&mut self, ctx: &mut AppWindowContext) { let _ = ctx; }
 
-    fn update(&mut self, ctx: &mut AppContext) { let _ = ctx; }
-    fn draw(&mut self, ctx: &mut AppContext);
+    fn update(&mut self, ctx: &mut AppWindowContext) { let _ = ctx; }
+    fn draw(&mut self, ctx: &mut AppWindowContext);
+    fn draw_window(&mut self, window : WindowID, ctx: &mut AppWindowContext) { let _ = window; self.draw(ctx); }
 
-    fn device_add(&mut self, ctx: &mut AppContext) { let _ = ctx; }
-    fn device_remove(&mut self, ctx: &mut AppContext) { let _ = ctx; }
-    fn warning_memory(&mut self, ctx: &mut AppContext) { let _ = ctx; }
+    fn device_added(&mut self, ctx: &mut AppWindowContext) { let _ = ctx; }
+    fn device_removed(&mut self, ctx: &mut AppWindowContext) { let _ = ctx; }
+    fn warning_memory(&mut self, ctx: &mut AppWindowContext) { let _ = ctx; }
+}
 
 
+pub trait AppWindowRun : AppWindowLoop
+{
     fn run_with_window(&mut self, window : Option<WindowParam>) -> AppResult where Self : Sized
     {
         let ev_loop = EventLoop::new().map_err(|e| <AppErrorEventLoop as Into<AppError>>::into(e))?;
@@ -73,16 +78,17 @@ pub trait AppLoop
         self.run_with_window(Some(___()))
     }
 }
+impl<T> AppWindowRun for T where T: AppWindowLoop {}
 
 
 
-struct AppRunner<'a, A> where A : AppLoop
+struct AppRunner<'a, A> where A : AppWindowLoop
 {
     app : &'a mut A,
     ctx : AppContextInternal,
 }
 
-impl<'a,A> AppRunner<'a,A> where A : AppLoop
+impl<'a,A> AppRunner<'a,A> where A : AppWindowLoop
 {
     fn handle_message(&mut self, message: impl Into<AppMessage>, active_event_loop: &ActiveEventLoop) -> bool
     {
@@ -92,9 +98,9 @@ impl<'a,A> AppRunner<'a,A> where A : AppLoop
     }
 }
 
-pub type AppContext<'a> = dyn IAppContext + 'a;
+pub type AppWindowContext<'a> = dyn IAppWindowContext + 'a;
 
-pub trait IAppContext
+pub trait IAppWindowContext
 {
     //fn run<A : AppLoop>(self, app : &mut A) -> AppResult;
    fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>;
@@ -138,7 +144,7 @@ impl WinitConvertWithDpi for winit::dpi::PhysicalPosition<f64>
     fn convert_with_dpi(self, dpi : float) -> Self::Output { self.to_logical(dpi as _).convert() }
 }
 
-impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A : AppLoop
+impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A : AppWindowLoop
 {
 
     fn window_event(
@@ -213,7 +219,7 @@ struct AppCtx<'a>
     ctx : &'a mut AppContextInternal,
     active_event_loop : &'a ActiveEventLoop
 }
-impl IAppContext for AppCtx<'_>
+impl IAppWindowContext for AppCtx<'_>
 {
     fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>
     {

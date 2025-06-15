@@ -12,7 +12,7 @@ edition = "2024"
 
 [workspace.dependencies]
 
-#hexga_test         = { path = "./tmp/hexga_test",         version = "0.0.10-beta.16", default-features = false }
+#test_window         = { path = "./tmp/test_window",         version = "0.0.10-beta.16", default-features = false }
 
 hexga_core             = { path = "./hexga/module/hexga_core",              version = "0.0.10-beta.16", default-features = false }
 hexga_math             = { path = "./hexga/module/hexga_math",              version = "0.0.10-beta.16", default-features = false }

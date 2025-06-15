@@ -1,5 +1,5 @@
 [package]
-name = "hexga_test"
+name = "test_window"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
