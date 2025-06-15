@@ -9,6 +9,15 @@ pub struct LocalizedEvent
     pub event  : Event,
     pub device : DeviceID,
 }
+impl std::ops::Deref for LocalizedEvent
+{
+    type Target = Event;
+    fn deref(&self) -> &Self::Target { &self.event }
+}
+impl std::ops::DerefMut for LocalizedEvent
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.event }
+}
 
 
 impl LocalizedEvent

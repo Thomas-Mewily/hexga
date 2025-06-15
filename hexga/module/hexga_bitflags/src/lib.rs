@@ -488,8 +488,14 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             /// Returns true if all flags are contained.
             #[inline(always)]
-            pub fn contains<T>(self, other: T) -> bool where T: Into<Self> { let other = other.into(); self & other == other }
+            pub fn contains<T>(self, other: T) -> bool where T: Into<Self> { self.contains_all(other) }
 
+            /// Returns true if all flags are contained.
+            #[inline(always)]
+            pub fn contains_all<T>(self, other: T) -> bool where T: Into<Self> { let other = other.into(); self & other == other }
+            /// Returns true if at least one flags is contained.
+            #[inline(always)]
+            pub fn contains_any<T>(self, other: T) -> bool where T: Into<Self> { let other = other.into(); (self & other).is_not_empty() }
 
             /// Toggles the matching bits
             #[must_use]

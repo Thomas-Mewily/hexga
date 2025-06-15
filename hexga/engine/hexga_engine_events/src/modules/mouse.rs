@@ -50,6 +50,10 @@ pub struct MouseButtonEvent
     pub button   : MouseButton,
     pub action   : EventAction,
 }
+impl IEventAction for MouseButtonEvent
+{
+    fn is_press(&self) -> bool { self.action.is_not_default() }
+}
 
 impl Debug for MouseButtonEvent
 {

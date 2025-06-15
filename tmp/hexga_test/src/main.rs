@@ -18,8 +18,18 @@ pub struct MyApp
 
 impl AppLoop for MyApp
 {
-    fn handle_event(&mut self, event : Event, ctx: &mut AppContext) -> bool {
-        dbg!(event);
+    fn handle_event(&mut self, event : Event, ctx: &mut AppContext) -> bool
+    {
+        if event.is_copy()
+        {
+            println!("COPY");
+            dbg!(event);
+        }
+        if event.is_paste()
+        {
+            println!("PASTE");
+        }
+        //dbg!(event);
         true
     }
 

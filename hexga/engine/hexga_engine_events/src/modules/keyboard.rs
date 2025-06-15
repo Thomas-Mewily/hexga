@@ -22,7 +22,26 @@ impl KeyEvent
     pub fn char(&self) -> Option<char> { self.character }
     pub fn key (&self) -> KeyCode { self.key }
     pub fn is_repeat(&self) -> bool { self.repeat }
+    pub fn is_not_repeat(&self) -> bool { !self.repeat }
     pub fn action(&self) -> EventAction { self.action }
+}
+
+pub trait IsCopyPaste
+{
+    /// `Control + C` just pressed
+    fn is_copy(&self) -> bool;
+    /// `Control + V` just pressed
+    fn is_paste(&self) -> bool;
+}
+
+impl IsCopyPaste for KeyEvent
+{
+    fn is_copy(&self) -> bool { self.action.is_press() && self.modifiers.contains_any(KeyMods::Control) && self.key == KeyCode::C && self.is_not_repeat() }
+    fn is_paste(&self) -> bool { self.action.is_press() && self.modifiers.contains_any(KeyMods::Control) && self.key == KeyCode::V }
+}
+impl IEventAction for KeyEvent
+{
+    fn is_press(&self) -> bool { self.action.is_not_default() }
 }
 
 impl Debug for KeyEvent

@@ -12,11 +12,18 @@ pub enum EventAction
     #[default]
     Release,
 }
-impl EventAction
+impl IEventAction for EventAction
 {
-    pub fn is_press(self) -> bool { matches!(self, EventAction::Press) }
-    pub fn is_release(self) -> bool { matches!(self, EventAction::Release) }
+    fn is_press(&self) -> bool { matches!(self, EventAction::Press) }
+    fn is_release(&self) -> bool { matches!(self, EventAction::Release) }
 }
+
+pub trait IEventAction
+{
+    fn is_press(&self) -> bool;
+    fn is_release(&self) -> bool { !self.is_press()}
+}
+
 impl From<bool> for EventAction
 {
     fn from(value: bool) -> Self {
@@ -62,6 +69,27 @@ impl Debug for Event
             Event::Touch(v) => write!(f, "{:?}", v),
         }
     }
+}
+
+impl Event
+{
+    pub fn as_mouse(&self) -> Option<&MouseEvent> {  if let Event::Mouse(e) = self { Some(e) } else { None } }
+    pub fn as_key(&self) -> Option<&KeyEvent> {  if let Event::Key(e) = self { Some(e) } else { None } }
+    pub fn as_modifier(&self) -> Option<&ModifierEvent> {  if let Event::Modifier(e) = self { Some(e) } else { None } }
+    pub fn as_touch(&self) -> Option<&TouchEvent> {  if let Event::Touch(e) = self { Some(e) } else { None } }
+    pub fn as_window(&self) -> Option<&WindowEvent> {  if let Event::Window(e) = self { Some(e) } else { None } }
+
+    pub fn is_mouse(&self) -> bool { self.as_mouse().is_some() }
+    pub fn is_key(&self) -> bool { self.as_key().is_some() }
+    pub fn is_modifier(&self) -> bool { self.as_modifier().is_some() }
+    pub fn is_touch(&self) -> bool { self.as_touch().is_some() }
+    pub fn is_window(&self) -> bool { self.as_window().is_some() }
+}
+
+impl IsCopyPaste for Event
+{
+    fn is_copy(&self) -> bool { self.as_key().map_or(false, |k| k.is_copy()) }
+    fn is_paste(&self) -> bool { self.as_key().map_or(false, |k| k.is_paste()) }
 }
 
 impl From<WindowEvent> for Event { fn from(value: WindowEvent) -> Self { Self::Window(value) } }
