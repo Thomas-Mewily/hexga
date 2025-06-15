@@ -49,7 +49,7 @@ pub trait AppLoop
     fn pause(&mut self, ctx: &mut AppContext) { let _ = ctx; }
 
     fn update(&mut self, ctx: &mut AppContext) { let _ = ctx; }
-    fn draw(&mut self, ctx: &mut AppContext) { let _ = ctx; }
+    fn draw(&mut self, ctx: &mut AppContext);
 
     fn device_add(&mut self, ctx: &mut AppContext) { let _ = ctx; }
     fn device_remove(&mut self, ctx: &mut AppContext) { let _ = ctx; }
@@ -87,12 +87,12 @@ impl<'a,A> AppRunner<'a,A> where A : AppLoop
     fn handle_message(&mut self, message: impl Into<AppMessage>, active_event_loop: &ActiveEventLoop) -> bool
     {
         let Self { app, ctx } = self;
-        let mut app_ctx : AppCtx<'a> = AppCtx { ctx, active_event_loop };
+        let mut app_ctx = AppCtx { ctx, active_event_loop };
         app.handle_message(message.into(), &mut app_ctx)
     }
 }
 
-pub type AppContext = dyn IAppContext;
+pub type AppContext<'a> = dyn IAppContext + 'a;
 
 pub trait IAppContext
 {

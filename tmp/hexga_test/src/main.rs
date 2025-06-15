@@ -18,32 +18,19 @@ pub struct MyApp
 
 impl AppLoop for MyApp
 {
-    fn update<R>(&mut self, ctx : &mut R) where R: hexga_engine_window::app::IAppContext {
-        todo!()
-    }
-
-    fn draw<R>(&mut self, ctx : &mut R) where R: hexga_engine_window::app::IAppContext {
-
-    }
-}
-
-/*
-impl MainLoop for TestCtx
-{
-    fn handle_event(&mut self, event : Event) -> bool {
+    fn handle_event(&mut self, event : Event, ctx: &mut AppContext) -> bool {
         dbg!(event);
-        false
+        true
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, ctx: &mut AppContext) {
 
     }
 
-    fn draw(&mut self) {
+    fn draw(&mut self, ctx: &mut AppContext) {
 
     }
 }
-*/
 
 fn main()
 {
@@ -57,6 +44,4 @@ fn main()
 
     let mut app = MyApp::___();
     app.run().unwrap();
-
-
 }
