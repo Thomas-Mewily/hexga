@@ -21,6 +21,3 @@ pub use touch::*;
 
 mod window;
 pub use window::*;
-
-mod device;
-pub use device::*;

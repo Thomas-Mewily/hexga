@@ -1,7 +1,38 @@
+use serde::de;
+
 use super::*;
 
 pub trait AppLoop
 {
+    /// Handles a message from the application. This is the main entry for handling messages, and events.
+    ///
+    /// This is also responsible for dispatching special events like the [AppLoop::update], [AppLoop::draw], [AppLoop::pause], [AppLoop::resume].
+    fn handle_message<AppCtx>(&mut self, message: AppMessage, ctx: &mut AppCtx) -> bool where AppCtx: AppContext
+    {
+        match message
+        {
+            AppMessage::LocalizedEvent(localized_event) =>
+            {
+                if let Event::Window(WindowEvent::Draw) = localized_event.event
+                {
+                    self.draw(ctx);
+                }else
+                {
+                    return self.handle_localized_event(localized_event, ctx)
+                }
+            },
+            AppMessage::Device(device_message) => match device_message
+            {
+                DeviceMessage::Added   => self.device_add(ctx),
+                DeviceMessage::Removed => self.device_remove(ctx),
+                DeviceMessage::Resume  => self.resume(ctx),
+                DeviceMessage::Update  => self.update(ctx),
+                DeviceMessage::MemoryWarning => self.warning_memory(ctx),
+            },
+        }
+        true
+    }
+
     fn handle_localized_event<AppCtx>(&mut self, event: LocalizedEvent, ctx: &mut AppCtx) -> bool where AppCtx: AppContext
     {
         self.handle_event(event.event, ctx)
@@ -26,19 +57,22 @@ pub trait AppLoop
     }
     */
 
-    #[allow(unused_variables)]
     fn handle_event<AppCtx>(&mut self, event : Event, ctx : &mut AppCtx) -> bool where AppCtx: AppContext
-    { false }
+    {
+        let _ = event;
+        let _ = ctx;
+        false
+    }
 
-    #[allow(unused_variables)]
-    fn resume<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext {}
-    #[allow(unused_variables)]
-    fn pause<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext {}
+    fn resume<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
+    fn pause<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
 
-    fn update<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext;
-    fn draw<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext;
+    fn update<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
+    fn draw<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
 
-
+    fn device_add<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
+    fn device_remove<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
+    fn warning_memory<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
 
 
     fn run_with_window(&mut self, window : Option<WindowParam>) -> AppResult where Self : Sized
@@ -69,11 +103,11 @@ struct AppRunner<'a, A> where A : AppLoop
 
 impl<'a,A> AppRunner<'a,A> where A : AppLoop
 {
-    fn handle_localized_event(&mut self, localized_event : LocalizedEvent, active_event_loop: &ActiveEventLoop)
+    fn handle_message(&mut self, message: impl Into<AppMessage>, active_event_loop: &ActiveEventLoop) -> bool
     {
         let Self { app, ctx } = self;
         let mut app_ctx = AppCtx { ctx, active_event_loop };
-        app.handle_localized_event(localized_event, &mut app_ctx);
+        app.handle_message(message.into(), &mut app_ctx)
     }
 }
 
@@ -135,8 +169,8 @@ impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A 
 
         match self.ctx.convert_winit_event(window_id, winit_event)
         {
-            Some(e) => self.handle_localized_event(e, active_event_loop),
-            None => {},
+            Some(e) => self.handle_message(e, active_event_loop),
+            None => return,
         };
     }
 
@@ -147,14 +181,14 @@ impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A 
             event: winit::event::DeviceEvent,
         )
     {
-        let event : Event = match event
+        let msg = match event
         {
-            winit::event::DeviceEvent::Added => DeviceEvent::Added.into(),
-            winit::event::DeviceEvent::Removed => DeviceEvent::Removed.into(),
+            winit::event::DeviceEvent::Added => DeviceMessage::Added,
+            winit::event::DeviceEvent::Removed => DeviceMessage::Removed,
             _ => return,
         };
 
-        self.handle_localized_event(event.into(), active_event_loop);
+        self.handle_message(msg, active_event_loop);
     }
 
     fn resumed(&mut self, active_event_loop: &ActiveEventLoop)
@@ -165,16 +199,16 @@ impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A 
             let mut app_ctx = AppCtx { ctx, active_event_loop };
             app_ctx.new_window(w).expect("Failed to create the main window");
         }
-        self.handle_localized_event(DeviceEvent::Resume.into(), active_event_loop);
+        self.handle_message(DeviceMessage::Resume, active_event_loop);
     }
 
     fn memory_warning(&mut self, active_event_loop: &winit::event_loop::ActiveEventLoop)
     {
-        self.handle_localized_event(DeviceEvent::MemoryWarning.into(), active_event_loop);
+        self.handle_message(DeviceMessage::MemoryWarning, active_event_loop);
     }
 
     fn about_to_wait(&mut self, active_event_loop: &winit::event_loop::ActiveEventLoop) {
-        self.handle_localized_event(DeviceEvent::Update.into(), active_event_loop);
+        self.handle_message(DeviceMessage::Update, active_event_loop);
     }
 }
 
@@ -554,13 +588,13 @@ impl AppContextInternal
             },
             winit::event::WindowEvent::ThemeChanged(_theme) => return None,
             winit::event::WindowEvent::Occluded(v) => WindowEvent::Visible(v).into(),
-            winit::event::WindowEvent::RedrawRequested => DeviceEvent::Draw.into(),
+            winit::event::WindowEvent::RedrawRequested => WindowEvent::Draw.into(),
             _ => return None,
         };
 
         let localized_event = LocalizedEvent
         {
-            window : Some(window_id),
+            window : window_id,
             event,
             device: DeviceID::OS, // Todo : fit it
         };
@@ -594,4 +628,16 @@ impl std::fmt::Display for AppError
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
+}
+
+
+#[non_exhaustive]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct DeviceID(usize);
+
+impl DeviceID
+{
+    pub const OS : Self = DeviceID(0);
 }

@@ -2,10 +2,12 @@
 #![allow(unused_imports)]
 
 pub mod window;
+pub mod message;
 pub mod event;
 pub mod app;
 
 use window::*;
+use message::*;
 use event::*;
 use app::*;
 
@@ -26,6 +28,7 @@ use prelude::*;
 pub mod prelude
 {
     pub use crate::window::prelude::*;
+    pub use crate::message::prelude::*;
     pub use crate::event::prelude::*;
     pub use crate::app::prelude::*;
 }
@@ -35,6 +38,7 @@ pub mod prelude
 pub mod modules
 {
     pub use super::window;
+    pub use super::message;
     pub use super::event;
     pub use super::app;
 }

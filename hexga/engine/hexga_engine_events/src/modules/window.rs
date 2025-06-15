@@ -18,6 +18,8 @@ pub enum WindowEvent
     /// minimised, set invisible, or fully occluded by another window.
     Visible(bool),
 
+    Draw,
+
     Quit,
 
     //DropFile(PathBuf), //(DropFileEvent),
