@@ -7,7 +7,7 @@ pub trait AppLoop
     /// Handles a message from the application. This is the main entry for handling messages, and events.
     ///
     /// This is also responsible for dispatching special events like the [AppLoop::update], [AppLoop::draw], [AppLoop::pause], [AppLoop::resume].
-    fn handle_message<AppCtx>(&mut self, message: AppMessage, ctx: &mut AppCtx) -> bool where AppCtx: AppContext
+    fn handle_message(&mut self, message: AppMessage, ctx: &mut AppContext) -> bool
     {
         match message
         {
@@ -33,46 +33,27 @@ pub trait AppLoop
         true
     }
 
-    fn handle_localized_event<AppCtx>(&mut self, event: LocalizedEvent, ctx: &mut AppCtx) -> bool where AppCtx: AppContext
+    fn handle_localized_event(&mut self, event: LocalizedEvent, ctx: &mut AppContext) -> bool
     {
         self.handle_event(event.event, ctx)
     }
 
-    /*
-    fn handle_event_special<AppCtx>(&mut self, event: &LocalizedEvent, ctx: &mut AppCtx) -> bool where AppCtx: AppContext
-    {
-        if let Event::Device(d) = event.event
-        {
-            match d
-            {
-                DeviceEvent::Resume => { self.resume(ctx); true }
-                DeviceEvent::Update => { self.update(ctx); true }
-                DeviceEvent::Draw   => { self.draw(ctx); true }
-                _ => false,
-            }
-        } else
-        {
-            false
-        }
-    }
-    */
-
-    fn handle_event<AppCtx>(&mut self, event : Event, ctx : &mut AppCtx) -> bool where AppCtx: AppContext
+    fn handle_event(&mut self, event : Event, ctx: &mut AppContext) -> bool
     {
         let _ = event;
         let _ = ctx;
         false
     }
 
-    fn resume<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
-    fn pause<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
+    fn resume(&mut self, ctx: &mut AppContext) { let _ = ctx; }
+    fn pause(&mut self, ctx: &mut AppContext) { let _ = ctx; }
 
-    fn update<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
-    fn draw<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
+    fn update(&mut self, ctx: &mut AppContext) { let _ = ctx; }
+    fn draw(&mut self, ctx: &mut AppContext) { let _ = ctx; }
 
-    fn device_add<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
-    fn device_remove<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
-    fn warning_memory<AppCtx>(&mut self, ctx : &mut AppCtx) where AppCtx: AppContext { let _ = ctx; }
+    fn device_add(&mut self, ctx: &mut AppContext) { let _ = ctx; }
+    fn device_remove(&mut self, ctx: &mut AppContext) { let _ = ctx; }
+    fn warning_memory(&mut self, ctx: &mut AppContext) { let _ = ctx; }
 
 
     fn run_with_window(&mut self, window : Option<WindowParam>) -> AppResult where Self : Sized
@@ -106,14 +87,14 @@ impl<'a,A> AppRunner<'a,A> where A : AppLoop
     fn handle_message(&mut self, message: impl Into<AppMessage>, active_event_loop: &ActiveEventLoop) -> bool
     {
         let Self { app, ctx } = self;
-        let mut app_ctx = AppCtx { ctx, active_event_loop };
+        let mut app_ctx : AppCtx<'a> = AppCtx { ctx, active_event_loop };
         app.handle_message(message.into(), &mut app_ctx)
     }
 }
 
+pub type AppContext = dyn IAppContext;
 
-
-pub trait AppContext
+pub trait IAppContext
 {
     //fn run<A : AppLoop>(self, app : &mut A) -> AppResult;
    fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>;
@@ -217,7 +198,7 @@ struct AppCtx<'a>
     ctx : &'a mut AppContextInternal,
     active_event_loop : &'a ActiveEventLoop
 }
-impl AppContext for AppCtx<'_>
+impl IAppContext for AppCtx<'_>
 {
     fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>
     {

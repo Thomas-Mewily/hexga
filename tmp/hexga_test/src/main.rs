@@ -18,11 +18,11 @@ pub struct MyApp
 
 impl AppLoop for MyApp
 {
-    fn update<R>(&mut self, ctx : &mut R) where R: hexga_engine_window::app::AppContext {
+    fn update<R>(&mut self, ctx : &mut R) where R: hexga_engine_window::app::IAppContext {
         todo!()
     }
 
-    fn draw<R>(&mut self, ctx : &mut R) where R: hexga_engine_window::app::AppContext {
+    fn draw<R>(&mut self, ctx : &mut R) where R: hexga_engine_window::app::IAppContext {
 
     }
 }
