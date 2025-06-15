@@ -36,8 +36,23 @@ pub trait IsCopyPaste
 
 impl IsCopyPaste for KeyEvent
 {
-    fn is_copy(&self) -> bool { self.action.is_press() && self.modifiers.contains_any(KeyMods::Control) && self.key == KeyCode::C && self.is_not_repeat() }
-    fn is_paste(&self) -> bool { self.action.is_press() && self.modifiers.contains_any(KeyMods::Control) && self.key == KeyCode::V }
+    fn is_copy(&self) -> bool
+    {
+        self.action.is_press() &&
+        (
+            self.modifiers.contains_any(KeyMods::Control) && self.key == KeyCode::C && self.is_not_repeat() ||
+            self.key == KeyCode::Copy
+        )
+    }
+
+    fn is_paste(&self) -> bool
+    {
+        self.action.is_press() &&
+        (
+            self.modifiers.contains_any(KeyMods::Control) && self.key == KeyCode::V ||
+            self.key == KeyCode::Paste
+        )
+    }
 }
 impl IEventAction for KeyEvent
 {
