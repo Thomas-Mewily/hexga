@@ -43,21 +43,45 @@ impl Debug for KeyEvent
 #[repr(u8)]
 pub enum KeyMods
 {
-    LeftShift,
-    RightShift,
-    Shift = Self::LeftShift | Self::RightShift,
+    ShiftLeft,
+    ShiftRight,
+    Shift = Self::ShiftLeft | Self::ShiftRight,
 
-    LeftControl,
-    RightControl,
-    Control = Self::LeftControl | Self::RightControl,
+    ControlLeft,
+    ControlRight,
+    Control = Self::ControlLeft | Self::ControlRight,
 
-    LeftAlt,
-    RightAlt,
-    Alt = Self::LeftAlt | Self::RightAlt,
+    AltLeft,
+    AltRight,
+    Alt = Self::AltLeft | Self::AltRight,
 
-    LeftSuper,
-    RightSuper,
-    Super = Self::LeftSuper | Self::RightSuper,
+    SuperLeft,
+    SuperRight,
+    Super = Self::SuperLeft | Self::SuperRight,
+}
+
+impl KeyMods
+{
+    pub fn from_keycode(key : KeyCode) -> Option<Self> { Self::try_from(key).ok() }
+}
+
+impl TryFrom<KeyCode> for KeyMods
+{
+    type Error = ();
+    fn try_from(value: KeyCode) -> Result<KeyMods, Self::Error> {
+        match value
+        {
+            KeyCode::ShiftLeft => Ok(Self::ShiftLeft),
+            KeyCode::ShiftRight => Ok(Self::ShiftRight),
+            KeyCode::ControlLeft => Ok(Self::ControlLeft),
+            KeyCode::ControlRight => Ok(Self::ControlRight),
+            KeyCode::AltLeft => Ok(Self::AltLeft),
+            KeyCode::AltRight => Ok(Self::AltRight),
+            KeyCode::SuperLeft => Ok(Self::SuperLeft),
+            KeyCode::SuperRight => Ok(Self::SuperRight),
+            _ => Err(()),
+        }
+    }
 }
 
 /// Keymodifiers changed
@@ -547,4 +571,12 @@ pub enum KeyCode
     F34,
     /// General-purpose function key.
     F35,
+}
+
+impl KeyCode
+{
+    pub fn is_modifier_key(&self) -> bool
+    {
+        matches!(self, Self::ShiftLeft | Self::ShiftRight | Self::ControlLeft | Self::ControlRight | Self::AltLeft | Self::AltRight | Self::SuperLeft | Self::SuperRight)
+    }
 }

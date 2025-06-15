@@ -4,7 +4,7 @@ mod tests {
 
     #[bitindex]
     #[repr(u8)]
-    enum Color
+    pub enum Color
     {
         Red,
         Green,

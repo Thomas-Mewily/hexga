@@ -131,8 +131,10 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut enum_variants = Vec::new();
     let mut enum_variants_name = Vec::new();
-    let mut struct_const = Vec::new();
+    let mut struct_non_composite_const = Vec::new();
+    let mut struct_composite_const = Vec::new();
     let mut index: usize = 0;
+    let visibility = &input.vis;
 
     let enum_name = &input.ident;
     let struct_name = format_ident!("{enum_name}Flags");
@@ -158,15 +160,16 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 _ =>
                 {
                     let tt = add_bits_field(expr);
-                    struct_const.push(quote! {
-                        pub const #flag_ident: Self = Self { _bits_do_not_use_it: #tt };
+                    struct_composite_const.push(quote! {
+                        #[allow(non_upper_case_globals)]
+                        pub const #flag_ident: #struct_name = #struct_name { _bits_do_not_use_it: #tt };
                     });
                     continue;
                 },
             };
         }
 
-        struct_const.push(quote! { pub const #flag_ident: Self = Self { _bits_do_not_use_it: 1 << (#enum_name::#flag_ident as #repr_type) }; });
+        struct_non_composite_const.push(quote! { pub const #flag_ident: #struct_name = #struct_name { _bits_do_not_use_it: 1 << (#enum_name::#flag_ident as #repr_type) }; });
         enum_variants_name.push(flag_ident.clone());
         let value = quote! {
             #index as #repr_type
@@ -228,7 +231,7 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #serde_serialize_deserialize
         #[repr(#repr_type)]
         #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-        pub enum #enum_name
+        #visibility enum #enum_name
         {
             #(#enum_variants)*
         }
@@ -247,6 +250,8 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 #(#struct_name { _bits_do_not_use_it: 1 << Self::#enum_variants_name as #repr_type },
                 )*
             ];
+
+            #(#struct_composite_const)*
 
             /// The bit index
             pub const fn index(self) -> usize { self as #repr_type as usize }
@@ -335,7 +340,7 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
         #serde_serialize_transparent
         #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-        pub struct #struct_name
+        #visibility struct #struct_name
         {
             #[doc(hidden)]
             _bits_do_not_use_it: #repr_type
@@ -412,7 +417,9 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #[allow(non_upper_case_globals)]
         impl #struct_name
         {
-            #(#struct_const)*
+            #(#struct_non_composite_const)*
+            #(#struct_composite_const)*
+
 
             /// A constant with all the valid bit set to `1` (non used bit are still `0`)
             pub const ALL: Self = Self { _bits_do_not_use_it: #( #enum_name::#enum_variants_name.bits() |)* 0 };

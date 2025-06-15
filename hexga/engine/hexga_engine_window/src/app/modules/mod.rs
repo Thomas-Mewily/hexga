@@ -150,7 +150,21 @@ impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A 
 
         match self.ctx.convert_winit_event(window_id, winit_event)
         {
-            Some(e) => self.handle_message(e, active_event_loop),
+            Some(e) =>
+            {
+                self.handle_message(e, active_event_loop);
+                if let Event::Key(k) = e.event
+                {
+                    if !k.is_repeat()
+                    {
+                        if let Some(mods) = KeyMods::from_keycode(k.key)
+                        {
+                            self.ctx.modifier.set(mods, k.action.is_press());
+                            self.handle_message(LocalizedEvent::new(window_id.into(), self.ctx.modifier.into(), DeviceID::OS), active_event_loop);
+                        }
+                    }
+                }
+            },
             None => return,
         };
     }
@@ -458,7 +472,7 @@ impl AppContextInternal
                         winit::keyboard::KeyCode::F33 => KeyCode::F33,
                         winit::keyboard::KeyCode::F34 => KeyCode::F34,
                         winit::keyboard::KeyCode::F35 => KeyCode::F35,
-                        _ => todo!(),
+                        _ => return None,
                     },
                     winit::keyboard::PhysicalKey::Unidentified(native_key_code) => KeyCode::Unknow(match native_key_code
                         {
@@ -476,6 +490,8 @@ impl AppContextInternal
                     winit::event::ElementState::Released => EventAction::Release,
                 };
 
+
+
                 KeyEvent
                 {
                     character,
@@ -485,21 +501,7 @@ impl AppContextInternal
                     action: action,
                 }.into()
             },
-            winit::event::WindowEvent::ModifiersChanged(modifiers) =>
-            {
-                modifier.set(KeyMods::LeftShift, modifiers.lshift_state().is_not_default());
-                modifier.set(KeyMods::RightShift, modifiers.rshift_state().is_not_default());
-
-                modifier.set(KeyMods::LeftControl, modifiers.lcontrol_state().is_not_default());
-                modifier.set(KeyMods::RightControl, modifiers.rcontrol_state().is_not_default());
-
-                modifier.set(KeyMods::LeftAlt, modifiers.lalt_state().is_not_default());
-                modifier.set(KeyMods::RightAlt, modifiers.ralt_state().is_not_default());
-
-                modifier.set(KeyMods::LeftSuper, modifiers.lsuper_state().is_not_default());
-                modifier.set(KeyMods::RightSuper, modifiers.rsuper_state().is_not_default());
-                (*modifier).into()
-            },
+            winit::event::WindowEvent::ModifiersChanged(_modifiers) => return None,
             winit::event::WindowEvent::Ime(_) => return None,
             winit::event::WindowEvent::CursorMoved { device_id : _, position } =>
             {
