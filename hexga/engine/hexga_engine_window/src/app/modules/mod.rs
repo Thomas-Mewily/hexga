@@ -169,6 +169,7 @@ impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A 
         };
     }
 
+
     fn device_event(
             &mut self,
             active_event_loop: &winit::event_loop::ActiveEventLoop,
