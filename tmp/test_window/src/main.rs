@@ -23,11 +23,15 @@ impl AppWindowLoop for MyApp
         if event.is_copy()
         {
             println!("COPY");
-            dbg!(event);
         }
         if event.is_paste()
         {
             println!("PASTE");
+        }
+        if event.is_alt_f4()
+        {
+            println!("EXIT");
+            ctx.exit();
         }
         //dbg!(event);
         true

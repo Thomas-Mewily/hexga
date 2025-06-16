@@ -26,16 +26,23 @@ impl KeyEvent
     pub fn action(&self) -> EventAction { self.action }
 }
 
-pub trait IsCopyPaste
+pub trait KeyboardShortcuts
 {
+    fn is_alt_f4(&self) -> bool;
+
     /// `Control + C` just pressed
     fn is_copy(&self) -> bool;
     /// `Control + V` just pressed
     fn is_paste(&self) -> bool;
 }
 
-impl IsCopyPaste for KeyEvent
+impl KeyboardShortcuts for KeyEvent
 {
+    fn is_alt_f4(&self) -> bool
+    {
+        self.action.is_press() && self.modifiers.contains_any(KeyMods::Alt) && self.key == KeyCode::F4 && self.is_not_repeat()
+    }
+
     fn is_copy(&self) -> bool
     {
         self.action.is_press() &&

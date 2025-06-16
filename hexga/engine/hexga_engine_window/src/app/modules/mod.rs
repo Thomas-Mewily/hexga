@@ -106,6 +106,8 @@ pub trait IAppWindowContext
     //fn run<A : AppLoop>(self, app : &mut A) -> AppResult;
    fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>;
 
+    fn exit(&mut self);
+
    fn clipboard_get(&mut self) -> Option<String>;
    fn clipboard_set(&mut self, paste : String) -> Result<(), ()>;
 }
@@ -239,6 +241,8 @@ impl<'a> DerefMut for AppCtx<'a>
 
 impl IAppWindowContext for AppCtx<'_>
 {
+    fn exit(&mut self) { self.active_event_loop.exit(); }
+
     fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>
     {
         let dpi = param.dpi;

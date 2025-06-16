@@ -1,4 +1,4 @@
-use hexga_engine_render::texture::TextureData;
+use hexga_engine_graphics::texture::TextureData;
 
 use crate::*;
 

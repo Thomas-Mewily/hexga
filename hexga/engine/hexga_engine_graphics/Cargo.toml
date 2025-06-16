@@ -1,5 +1,5 @@
 [package]
-name = "hexga_engine_render"
+name = "hexga_engine_graphics"
 version.workspace = true
 authors.workspace = true
 license.workspace = true

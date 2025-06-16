@@ -86,10 +86,11 @@ impl Event
     pub fn is_window(&self) -> bool { self.as_window().is_some() }
 }
 
-impl IsCopyPaste for Event
+impl KeyboardShortcuts for Event
 {
     fn is_copy(&self) -> bool { self.as_key().map_or(false, |k| k.is_copy()) }
     fn is_paste(&self) -> bool { self.as_key().map_or(false, |k| k.is_paste()) }
+    fn is_alt_f4(&self) -> bool { self.as_key().map_or(false, |k| k.is_alt_f4()) }
 }
 
 impl From<WindowEvent> for Event { fn from(value: WindowEvent) -> Self { Self::Window(value) } }

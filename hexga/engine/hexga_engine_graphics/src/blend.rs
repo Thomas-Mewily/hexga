@@ -8,7 +8,7 @@ use super::*;
 ///
 /// Example:
 ///```
-///# use hexga_engine_render::blend::{BlendState, BlendFactor, BlendValue, BlendEquation};
+///# use hexga_engine_graphics::blend::{BlendState, BlendFactor, BlendValue, BlendEquation};
 ///BlendState::new(
 ///    BlendEquation::Add,
 ///    BlendFactor::Value(BlendValue::SourceAlpha),

@@ -571,7 +571,7 @@ dependencies = [
  "hexga",
  "hexga_engine_core",
  "hexga_engine_events",
- "hexga_engine_render",
+ "hexga_engine_graphics",
  "hexga_engine_window",
  "hexga_graphics",
  "hexga_io",
@@ -585,7 +585,7 @@ version = "0.0.10-beta.16"
 dependencies = [
  "hexga",
  "hexga_engine_events",
- "hexga_engine_render",
+ "hexga_engine_graphics",
  "hexga_engine_window",
  "hexga_graphics",
  "hexga_io",
@@ -606,7 +606,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hexga_engine_render"
+name = "hexga_engine_graphics"
 version = "0.0.10-beta.16"
 dependencies = [
  "hexga_graphics",
@@ -1519,6 +1519,15 @@ dependencies = [
  "hexga_map_on",
  "ron",
  "serde",
+]
+
+[[package]]
+name = "test_graphics"
+version = "0.0.10-beta.16"
+dependencies = [
+ "hexga_core",
+ "hexga_engine_graphics",
+ "hexga_math",
 ]
 
 [[package]]

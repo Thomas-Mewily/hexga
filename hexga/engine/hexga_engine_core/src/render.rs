@@ -5,7 +5,7 @@ pub use modules::*;
 pub mod prelude
 {
     use crate::*;
-    pub use hexga_engine_render::prelude::*;
+    pub use hexga_engine_graphics::prelude::*;
     pub use RenderBackend;
 }
 
@@ -13,6 +13,6 @@ pub mod prelude
 #[doc(hidden)]
 pub mod modules
 {
-    pub use hexga_engine_render::modules::*;
+    pub use hexga_engine_graphics::modules::*;
     pub use RenderBackend;
 }
