@@ -22,6 +22,7 @@ pub(crate) type ActiveEventLoop = winit::event_loop::ActiveEventLoop;
 pub(crate) use hexga_core::prelude::*;
 pub(crate) use hexga_generational::prelude::*;
 pub(crate) use hexga_math::prelude::*;
+pub(crate) use std::ops::{Deref,DerefMut};
 
 use prelude::*;
 

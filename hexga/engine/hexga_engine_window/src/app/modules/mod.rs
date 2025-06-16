@@ -1,3 +1,4 @@
+use copypasta::{ClipboardContext, ClipboardProvider};
 use serde::de;
 
 use super::*;
@@ -104,6 +105,9 @@ pub trait IAppWindowContext
 {
     //fn run<A : AppLoop>(self, app : &mut A) -> AppResult;
    fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>;
+
+   fn clipboard_get(&mut self) -> Option<String>;
+   fn clipboard_set(&mut self, paste : String) -> Result<(), ()>;
 }
 
 
@@ -219,6 +223,20 @@ struct AppCtx<'a>
     ctx : &'a mut AppContextInternal,
     active_event_loop : &'a ActiveEventLoop
 }
+impl<'a> Deref for AppCtx<'a>
+{
+    type Target = AppContextInternal;
+    fn deref(&self) -> &Self::Target {
+        self.ctx
+    }
+}
+impl<'a> DerefMut for AppCtx<'a>
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.ctx
+    }
+}
+
 impl IAppWindowContext for AppCtx<'_>
 {
     fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>
@@ -245,9 +263,22 @@ impl IAppWindowContext for AppCtx<'_>
         self.ctx.windows.insert(id, win);
         Ok(id)
     }
+
+    fn clipboard_get(&mut self) -> Option<String> {
+        self.copy_paste.as_mut().and_then(|ctx| ctx.get_contents().ok())
+    }
+
+    fn clipboard_set(&mut self, paste : String) -> Result<(), ()> {
+        let r = self.copy_paste.as_mut()
+            .and_then(|ctx| ctx.set_contents(paste).ok());
+        if r.is_some() {
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
 }
 
-#[derive(Default)]
 struct AppContextInternal
 {
     windows  : HashMap<WindowID, Window>,
@@ -255,14 +286,38 @@ struct AppContextInternal
     mouse : Option<Vec2>,
     modifier : KeyModsFlags,
 
+    copy_paste : Option<ClipboardContext>,
+
     default_window : Option<WindowParam>,
+}
+
+impl Default for AppContextInternal
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl AppContextInternal
+{
+    fn new() -> Self
+    {
+        Self
+        {
+            windows: ___(),
+            mouse: ___(),
+            modifier: ___(),
+            copy_paste: ClipboardContext::new().ok(),
+            default_window: ___()
+        }
+    }
 }
 
 impl AppContextInternal
 {
     fn convert_winit_event(&mut self, window_id: winit::window::WindowId, winit_event: winit::event::WindowEvent) -> Option<LocalizedEvent>
     {
-        let Self { windows, mouse, modifier, default_window : _ } = self;
+        let Self { windows, mouse, modifier, default_window : _, copy_paste : _ } = self;
 
         let window_id = window_id.into();
         let dpi = windows.get(&window_id).map(|w| w.dpi).unwrap_or(1.);

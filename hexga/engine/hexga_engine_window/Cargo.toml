@@ -43,3 +43,4 @@ hexga_io_derive = { workspace = true, optional = true }
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 winit = "0.30.11"
+copypasta = "0.10.2"
