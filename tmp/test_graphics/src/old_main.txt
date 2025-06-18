@@ -1,0 +1,88 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_mut)]
+#![allow(unused_variables)]
+
+use std::rc::Rc;
+
+use hexga_engine_window::app::{AppWindowLoop, AppWindowRun};
+pub use hexga_engine_window::prelude::*;
+pub use hexga_math::prelude::*;
+pub use hexga_core::prelude::*;
+
+use wgpu::{Adapter, Device, Instance, Queue, RenderPipeline, Surface, SurfaceConfiguration};
+use winit::event_loop::EventLoopProxy;
+
+
+#[derive(Default)]
+pub struct MyApp
+{
+    time : Time,
+    maybe_graphics : MaybeGraphics,
+}
+
+struct GraphicsBuilder {
+    event_loop_proxy: Option<EventLoopProxy<Graphics>>,
+}
+
+enum MaybeGraphics {
+    Builder(GraphicsBuilder),
+    Graphics(Graphics),
+}
+
+#[allow(dead_code)]
+struct Graphics
+{
+    window: Rc<Window>,
+    instance: Instance,
+    surface: Surface<'static>,
+    surface_config: SurfaceConfiguration,
+    adapter: Adapter,
+    device: Device,
+    queue: Queue,
+    render_pipeline: RenderPipeline,
+}
+
+impl AppWindowLoop for MyApp
+{
+    fn handle_event(&mut self, event : Event, ctx: &mut AppWindowContext) -> bool
+    {
+        if event.is_copy()
+        {
+            println!("COPY");
+        }
+        if event.is_paste()
+        {
+            println!("PASTE");
+        }
+        if event.is_alt_f4()
+        {
+            println!("EXIT");
+            ctx.exit();
+        }
+        //dbg!(event);
+        true
+    }
+
+    fn update(&mut self, ctx: &mut AppWindowContext) {
+
+    }
+
+    fn draw(&mut self, ctx: &mut AppWindowContext) {
+
+    }
+}
+
+fn main()
+{
+    for _ in 0..10 { println!(); }
+
+    /*
+    MultiMediaParam::new()
+        .window(WindowParam::new().title("hello"))
+        .run(|| TestCtx::___());
+    */
+
+    let mut app = MyApp::___();
+    app.run_with_window(None).unwrap();
+}

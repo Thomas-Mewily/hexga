@@ -59,9 +59,10 @@ pub trait AppWindowLoop
     fn warning_memory(&mut self, ctx: &mut AppWindowContext) { let _ = ctx; }
 }
 
-
 pub trait AppWindowRun : AppWindowLoop
 {
+    //fn init_and_run<F>(f : F) where F : FnOnce(&mut EventLoop)
+
     fn run_with_window(&mut self, window : Option<WindowParam>) -> AppResult where Self : Sized
     {
         let ev_loop = EventLoop::new().map_err(|e| <AppErrorEventLoop as Into<AppError>>::into(e))?;
