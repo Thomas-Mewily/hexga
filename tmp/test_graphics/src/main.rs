@@ -1,6 +1,7 @@
 use crate::app::App;
 use winit::error::EventLoopError;
 use winit::event_loop::{ControlFlow, EventLoop};
+use hexga_math::prelude::*;
 
 mod app;
 mod wgpu_ctx;

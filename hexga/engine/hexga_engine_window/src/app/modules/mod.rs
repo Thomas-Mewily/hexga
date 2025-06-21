@@ -75,6 +75,8 @@ pub trait AppWindowRun : AppWindowLoop
         runner.ctx.default_window = window;
         ev_loop.run_app(&mut runner).map_err(|e| e.into())
     }
+
+
     fn run(&mut self) -> AppResult where Self : Sized
     {
         self.run_with_window(Some(___()))

@@ -1972,6 +1972,9 @@ dependencies = [
  "hexga_engine_window",
  "hexga_math",
  "pollster",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "wgpu",
  "winit",
 ]

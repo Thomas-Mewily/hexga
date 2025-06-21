@@ -38,10 +38,19 @@ hexga_core.workspace = true
 hexga_math.workspace = true
 hexga_engine_window.workspace = true
 
+
+# non web
+pollster = { version = "0.4" }
+
+# web
+wasm-bindgen = "0.2.92"
+wasm-bindgen-futures = "0.4.42"
+web-sys = { version = "0.3.69", features = ["Document", "Element", "Window", "console", "HtmlCanvasElement", "HtmlCollection"] }
+
+
 wgpu = { version = "25.0.0" }
 #wgpu = { version = "25.0.2", default-features = false, features = ["webgl", "wgsl"] }
 winit = "0.30.11"
-pollster = { version = "0.4" }
 bytemuck = "1.23.0"
 #hexga_generational.workspace = true
 #hexga_engine.workspace = true

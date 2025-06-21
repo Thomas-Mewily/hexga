@@ -1,3 +1,4 @@
+use  crate::*;
 use crate::vertex::{create_vertex_buffer_layout, VERTEX_INDEX_LIST, VERTEX_LIST};
 use std::borrow::Cow;
 use std::sync::Arc;
@@ -83,7 +84,15 @@ impl<'window> WgpuCtx<'window> {
         }
     }
 
-    pub fn new(window: Arc<Window>) -> WgpuCtx<'window> {
+    pub fn new(window: Arc<Window>) -> WgpuCtx<'window>
+    {
+        //#[cfg(target_arch = "wasm32")]
+            wasm_bindgen_futures::spawn_local(async move {
+                let gfx = gfx_fut.await;
+                assert!(event_loop_proxy.send_event(gfx).is_ok());
+            });
+
+        #[cfg(not(target_arch = "wasm32"))]
         pollster::block_on(WgpuCtx::new_async(window))
     }
 

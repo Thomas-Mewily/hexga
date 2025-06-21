@@ -5,10 +5,13 @@ use winit::event::WindowEvent;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Window, WindowId};
 
+use hexga_math::*;
+
 use crate::wgpu_ctx::WgpuCtx;
 
 #[derive(Default)]
-pub struct App<'window> {
+pub struct App<'window>
+{
     window: Option<Arc<Window>>,
     wgpu_ctx: Option<WgpuCtx<'window>>,
 }
