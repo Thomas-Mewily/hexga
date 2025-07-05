@@ -1,5 +1,3 @@
-use std::{default, sync::Arc};
-
 use hexga_bitflags::bitindex;
 use hexga_generational::prelude::{GenVec, GenVecID};
 use hexga_graphics::image::Image;
@@ -8,6 +6,15 @@ use crate::*;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct WindowID(pub(crate) winit::window::WindowId);
+
+impl std::fmt::Debug for WindowID
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+        write!(f, "Window#{:?}", self.0)
+    }
+}
+
 impl From<winit::window::WindowId> for WindowID
 {
     fn from(value: winit::window::WindowId) -> Self {
@@ -22,14 +29,26 @@ impl WindowID
 mod cursor;
 pub use cursor::*;
 
+mod context;
+pub use context::*;
+
+
+
+
+
+
+pub type SharedWinitWindow = Arc<winit::window::Window>;
+
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct Window
 {
-    pub(crate) window : Arc<winit::window::Window>,
+    pub(crate) window : SharedWinitWindow,
     pub(crate) param  : WindowParam,
     pub(crate) id     : WindowID,
     pub(crate) childs : Vec<WindowID>,
 }
+
 
 impl Window
 {
@@ -42,7 +61,7 @@ impl Window
     pub fn logical_size(&self) -> Vec2 { self.physical_size().to_vec2() / self.param.dpi }
 
 
-    pub fn winit_window(&self) -> &Arc<winit::window::Window> { &self.window }
+    pub fn winit_window(&self) -> &SharedWinitWindow { &self.window }
 }
 
 #[bitindex]

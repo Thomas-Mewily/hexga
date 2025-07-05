@@ -6,5 +6,5 @@ pub mod modules;
 
 pub mod prelude
 {
-    pub use super::modules::{Window, WindowID};
+    pub use super::modules::{Window, WindowID, WindowLoop, WindowCtx, WindowRun, IWindowRunParam, WindowParam};
 }

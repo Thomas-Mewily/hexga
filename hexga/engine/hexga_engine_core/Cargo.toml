@@ -8,8 +8,8 @@ repository.workspace = true
 edition.workspace = true
 
 keywords = []
-description = "The Core the Hexga Game Engine, implementation free without RAII"
-categories = ["game-development", "rendering", "multimedia", "graphics"]
+description = "Deleted, merged with hexga_engine"
+categories = [""]
 
 [features]
 default = [
