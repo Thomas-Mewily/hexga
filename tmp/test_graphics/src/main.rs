@@ -2,23 +2,21 @@ use hexga_engine::{prelude::*, AppRunParam};
 
 struct App;
 
+fn debug_millis() -> u32
+{
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u32 % 1000
+}
+
 impl AppLoop for App
 {
     fn update(&mut self, ctx: &mut AppCtx)
     {
-        let now = std::time::SystemTime::now();
-        if let Ok(duration) = now.duration_since(std::time::UNIX_EPOCH) {
-            let seconds = duration.as_millis() % 1000;
-            println!("updated: {}", seconds);
-        }
+        println!("updated: {}", debug_millis());
     }
 
-    fn draw(&mut self, ctx: &mut AppCtx) {
-        let now = std::time::SystemTime::now();
-        if let Ok(duration) = now.duration_since(std::time::UNIX_EPOCH) {
-            let seconds = duration.as_millis() % 1000;
-            println!("draw: {}", seconds);
-        }
+    fn draw(&mut self, ctx: &mut AppCtx)
+    {
+        println!("draw: {}", debug_millis());
     }
 }
 
