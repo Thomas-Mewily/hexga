@@ -803,11 +803,14 @@ dependencies = [
 name = "hexga_engine_graphics"
 version = "0.0.10-beta.16"
 dependencies = [
+ "hexga_engine_window",
  "hexga_graphics",
  "hexga_io",
  "hexga_io_derive",
  "hexga_math",
+ "pollster",
  "serde",
+ "wgpu",
 ]
 
 [[package]]
@@ -1967,16 +1970,7 @@ dependencies = [
 name = "test_graphics"
 version = "0.0.10-beta.16"
 dependencies = [
- "bytemuck",
- "hexga_core",
- "hexga_engine_window",
- "hexga_math",
- "pollster",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "wgpu",
- "winit",
+ "hexga_engine",
 ]
 
 [[package]]

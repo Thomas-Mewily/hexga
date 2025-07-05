@@ -17,23 +17,28 @@ default = [
     "int_are_32_bits", "float_are_32_bits"
 ]
 
-int_are_8_bits    = ["hexga_math/int_are_8_bits", "hexga_graphics/int_are_8_bits"]
-int_are_16_bits   = ["hexga_math/int_are_16_bits", "hexga_graphics/int_are_16_bits"]
-int_are_32_bits   = ["hexga_math/int_are_32_bits", "hexga_graphics/int_are_32_bits"]
-int_are_64_bits   = ["hexga_math/int_are_64_bits", "hexga_graphics/int_are_64_bits"]
-int_are_size_bits = ["hexga_math/int_are_size_bits", "hexga_graphics/int_are_size_bits"]
+int_are_8_bits    = ["hexga_math/int_are_8_bits", "hexga_graphics/int_are_8_bits", "hexga_engine_window/int_are_8_bits"]
+int_are_16_bits   = ["hexga_math/int_are_16_bits", "hexga_graphics/int_are_16_bits", "hexga_engine_window/int_are_16_bits"]
+int_are_32_bits   = ["hexga_math/int_are_32_bits", "hexga_graphics/int_are_32_bits", "hexga_engine_window/int_are_32_bits"]
+int_are_64_bits   = ["hexga_math/int_are_64_bits", "hexga_graphics/int_are_64_bits", "hexga_engine_window/int_are_64_bits"]
+int_are_size_bits = ["hexga_math/int_are_size_bits", "hexga_graphics/int_are_size_bits", "hexga_engine_window/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga_math/float_are_32_bits", "hexga_graphics/float_are_32_bits"]
-float_are_64_bits   = ["hexga_math/float_are_64_bits", "hexga_graphics/float_are_64_bits"]
-float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_graphics/float_are_size_bits"]
+float_are_32_bits   = ["hexga_math/float_are_32_bits", "hexga_graphics/float_are_32_bits", "hexga_engine_window/float_are_32_bits"]
+float_are_64_bits   = ["hexga_math/float_are_64_bits", "hexga_graphics/float_are_64_bits", "hexga_engine_window/float_are_64_bits"]
+float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_graphics/float_are_size_bits", "hexga_engine_window/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga_math/serde", "hexga_graphics/serde"]
-hexga_io = ["dep:hexga_io", "dep:hexga_io_derive", "serde", "hexga_math/hexga_io", "hexga_graphics/hexga_io"]
+serde = ["dep:serde", "hexga_math/serde", "hexga_graphics/serde", "hexga_engine_window/serde"]
+hexga_io = ["dep:hexga_io", "dep:hexga_io_derive", "serde", "hexga_math/hexga_io", "hexga_graphics/hexga_io", "hexga_engine_window/hexga_io"]
 
 [dependencies]
 hexga_math.workspace = true
 hexga_graphics.workspace = true
+hexga_engine_window.workspace = true
+
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
 hexga_io_derive = { workspace = true, optional = true }
 
-serde = { version = "1.0.0", features = ["derive"], optional = true }
+
+pollster = { version = "0.4" }
+wgpu = { version = "25.0.0" }

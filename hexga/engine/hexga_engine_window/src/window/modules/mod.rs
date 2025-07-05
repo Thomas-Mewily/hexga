@@ -1,4 +1,4 @@
-use std::default;
+use std::{default, sync::Arc};
 
 use hexga_bitflags::bitindex;
 use hexga_generational::prelude::{GenVec, GenVecID};
@@ -14,6 +14,10 @@ impl From<winit::window::WindowId> for WindowID
         Self(value)
     }
 }
+impl WindowID
+{
+    pub fn winit_window_id(&self) -> winit::window::WindowId { self.0 }
+}
 
 mod cursor;
 pub use cursor::*;
@@ -21,9 +25,24 @@ pub use cursor::*;
 #[allow(dead_code)]
 pub struct Window
 {
-    pub(crate) window : winit::window::Window,
-    pub(crate) dpi    : float,
+    pub(crate) window : Arc<winit::window::Window>,
+    pub(crate) param  : WindowParam,
+    pub(crate) id     : WindowID,
     pub(crate) childs : Vec<WindowID>,
+}
+
+impl Window
+{
+    pub fn id(&self) -> WindowID { self.id }
+    pub fn param(&self) -> &WindowParam { &self.param }
+
+    //pub fn size(&self) -> Point2 { self.physical_size() }
+
+    pub fn physical_size(&self) -> Point2 { self.window.inner_size().convert() }
+    pub fn logical_size(&self) -> Vec2 { self.physical_size().to_vec2() / self.param.dpi }
+
+
+    pub fn winit_window(&self) -> &Arc<winit::window::Window> { &self.window }
 }
 
 #[bitindex]

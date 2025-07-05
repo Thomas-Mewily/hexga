@@ -40,10 +40,9 @@ hexga_engine_window.workspace = true
 hexga_engine_core.workspace = true
 hexga_graphics.workspace = true
 
-
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
 hexga_io_derive = { workspace = true, optional = true }
 
-serde = { version = "1.0.0", features = ["derive"], optional = true }
 
 #todo : add a feature "full" to include all of hexga

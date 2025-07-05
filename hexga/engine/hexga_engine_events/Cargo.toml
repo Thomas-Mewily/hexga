@@ -35,8 +35,9 @@ hexga_core.workspace = true
 hexga_math.workspace = true
 hexga_bitflags.workspace = true
 
+
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
 hexga_io_derive = { workspace = true, optional = true }
 
-serde = { version = "1.0.0", features = ["derive"], optional = true }
 

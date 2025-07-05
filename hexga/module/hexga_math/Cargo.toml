@@ -39,6 +39,6 @@ hexga_array.workspace = true
 hexga_typedef.workspace = true
 
 # serialization
-serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 

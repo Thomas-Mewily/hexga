@@ -3,6 +3,8 @@ use serde::de;
 
 use super::*;
 
+
+
 pub trait AppWindowLoop
 {
     /// Handles a message from the application. This is the main entry for handling messages, and events.
@@ -115,24 +117,42 @@ pub trait IAppWindowContext
    fn clipboard_set(&mut self, paste : String) -> Result<(), ()>;
 }
 
-
-pub(crate) trait WinitConvertWithDpi
+pub trait WinitConvert<Output>
 {
-    type Output;
-    fn convert_with_dpi(self, dpi : float) -> Self::Output;
-}
-pub(crate) trait WinitConvert
-{
-    type Output;
-    fn convert(self) -> Self::Output;
+    fn convert(self) -> Output;
 }
 
-impl WinitConvert for winit::dpi::LogicalSize<f64>
+
+impl<T> WinitConvert<Vec2> for winit::dpi::LogicalSize<T> where T : ToFloat<Output = float>
 {
-    type Output = Vec2;
-    fn convert(self) -> Self::Output { vec2(self.width as _, self.height as _) }
+    fn convert(self) -> Vec2 { vec2(self.width.to_float(), self.height.to_float()) }
 }
-impl WinitConvertWithDpi for winit::dpi::PhysicalSize<u32>
+impl<T> WinitConvert<Point2> for winit::dpi::LogicalSize<T> where T : ToInt<Output = int>
+{
+    fn convert(self) -> Point2 { point2(self.width.to_int(), self.height.to_int()) }
+}
+
+
+impl<T> WinitConvert<Vec2> for winit::dpi::PhysicalSize<T> where T : ToFloat<Output = float>
+{
+    fn convert(self) -> Vec2 { vec2(self.width.to_float(), self.height.to_float()) }
+}
+impl<T> WinitConvert<Point2> for winit::dpi::PhysicalSize<T> where T : ToInt<Output = int>
+{
+    fn convert(self) -> Point2 { point2(self.width.to_int(), self.height.to_int()) }
+}
+
+
+impl<T> WinitConvert<Vec2> for winit::dpi::PhysicalPosition<T> where T : ToFloat<Output = float>
+{
+    fn convert(self) -> Vec2 { vec2(self.x.to_float(), self.y.to_float()) }
+}
+impl<T> WinitConvert<Point2> for winit::dpi::PhysicalPosition<T> where T : ToInt<Output = int>
+{
+    fn convert(self) -> Point2 { point2(self.x.to_int(), self.y.to_int()) }
+}
+/*
+impl WinitConvertWithDpi<Vec2> for winit::dpi::PhysicalSize<u32>
 {
     type Output = Vec2;
     fn convert_with_dpi(self, dpi : float) -> Self::Output { self.to_logical(dpi as _).convert() }
@@ -142,6 +162,7 @@ impl WinitConvert for winit::dpi::LogicalPosition<f64>
     type Output = Vec2;
     fn convert(self) -> Self::Output { vec2(self.x as _, self.y as _) }
 }
+
 impl WinitConvertWithDpi for winit::dpi::PhysicalPosition<i32>
 {
     type Output = Vec2;
@@ -152,6 +173,10 @@ impl WinitConvertWithDpi for winit::dpi::PhysicalPosition<f64>
     type Output = Vec2;
     fn convert_with_dpi(self, dpi : float) -> Self::Output { self.to_logical(dpi as _).convert() }
 }
+*/
+
+
+
 
 impl<'a, A> winit::application::ApplicationHandler for AppRunner<'a, A> where A : AppWindowLoop
 {
@@ -248,12 +273,11 @@ impl IAppWindowContext for AppCtx<'_>
 
     fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>
     {
-        let dpi = param.dpi;
         let cursor_visible = param.cursor_visible;
         let cursor_grab = param.cursor_grab;
 
         let window = self.active_event_loop
-            .create_window(param.into())
+            .create_window(param.clone().into())
             .map_err(|_| AppError::Unknow)?;
 
         let _ = window.set_cursor_grab(cursor_grab.into());
@@ -262,9 +286,10 @@ impl IAppWindowContext for AppCtx<'_>
         let id = WindowID(window.id());
         let win = Window
         {
-            window,
+            window : Arc::new(window),
             childs: ___(),
-            dpi: dpi,
+            id,
+            param,
         };
 
         self.ctx.windows.insert(id, win);
@@ -327,12 +352,12 @@ impl AppContextInternal
         let Self { windows, mouse, modifier, default_window : _, copy_paste : _ } = self;
 
         let window_id = window_id.into();
-        let dpi = windows.get(&window_id).map(|w| w.dpi).unwrap_or(1.);
+        let dpi = windows.get(&window_id).map(|w| w.param().dpi).unwrap_or(1.);
 
         let event : Event = match winit_event
         {
-            winit::event::WindowEvent::Resized(physical_size) => WindowEvent::Resize(physical_size.convert_with_dpi(dpi)).into(),
-            winit::event::WindowEvent::Moved(physical_position) => WindowEvent::Move(physical_position.convert_with_dpi(dpi)).into(),
+            winit::event::WindowEvent::Resized(physical_size) => WindowEvent::Resize(physical_size.convert()).into(),
+            winit::event::WindowEvent::Moved(physical_position) => WindowEvent::Move(physical_position.convert()).into(),
             winit::event::WindowEvent::CloseRequested => WindowEvent::Quit.into(),
             winit::event::WindowEvent::Destroyed => return None,
             winit::event::WindowEvent::DroppedFile(_path_buf) => return None,
@@ -574,7 +599,7 @@ impl AppContextInternal
             winit::event::WindowEvent::Ime(_) => return None,
             winit::event::WindowEvent::CursorMoved { device_id : _, position } =>
             {
-                let position = position.convert_with_dpi(dpi);
+                let position = position.convert();
                 let old_mouse = mouse.unwrap_or(position);
                 *mouse = Some(position);
 
@@ -591,8 +616,7 @@ impl AppContextInternal
                 let delta = match delta
                 {
                     winit::event::MouseScrollDelta::LineDelta(x, y) => vec2(x as _, y as _),
-                    winit::event::MouseScrollDelta::PixelDelta(physical_position) =>
-                        physical_position.convert_with_dpi(dpi),
+                    winit::event::MouseScrollDelta::PixelDelta(physical_position) => physical_position.convert(),
                 };
                 MouseEvent::Wheel(delta).into()
             },
@@ -630,7 +654,7 @@ impl AppContextInternal
                         winit::event::TouchPhase::Ended => TouchPhase::End,
                         winit::event::TouchPhase::Cancelled => TouchPhase::Cancel,
                     },
-                    position: touch.location.convert_with_dpi(dpi),
+                    position: touch.location.convert(),
                 }.into()
             },
             winit::event::WindowEvent::ScaleFactorChanged { scale_factor: _, inner_size_writer: _ } =>

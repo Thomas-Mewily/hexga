@@ -32,8 +32,8 @@ new_unit!(
 /// See [`AngleOf`] to use your own precision.
 pub type Angle = AngleOf<float>;
 
-pub trait ToAngle<T> : ToAngleComposite<Output = AngleOf<T>> where T: CastIntoAnyFloat {}
-impl<S,T> ToAngle<T> for S where S : ToAngleComposite<Output = AngleOf<T>>, T : CastIntoAnyFloat {}
+pub trait ToAngle<T> : ToAngleComposite<Output = AngleOf<T>> where T: CastIntoFloat {}
+impl<S,T> ToAngle<T> for S where S : ToAngleComposite<Output = AngleOf<T>>, T : CastIntoFloat {}
 
 pub trait ToAngleComposite
 {

@@ -58,7 +58,10 @@ hexga_core.workspace = true
 hexga_math.workspace = true
 hexga_generational.workspace = true
 hexga_bitflags.workspace = true
+
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
+
 hexga_ansi_color.workspace = true
 hexga_tools.workspace = true
 hexga_map_on.workspace = true
@@ -67,4 +70,3 @@ hexga_graphics.workspace = true
 #hexga_undo_redo.workspace = true
 
 # serialization
-serde = { version = "1.0.0", features = ["derive"], optional = true }

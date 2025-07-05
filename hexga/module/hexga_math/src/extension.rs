@@ -92,41 +92,41 @@ pub trait ArrayLikeExtension<T, const N : usize> : ArrayLike<T,N>
     }
 
     /// Fill non existing component with [Default]
-    fn to_point1(self) -> Point1 where int : From<T>, T : Default { self.into_array1().map(|v| v.into()).into() }
+    fn to_point1(self) -> Point1 where T: ToInt<Output = int> + Default { self.into_array1().map(|v| v.to_int()).into() }
     /// Fill non existing component with [Default]
-    fn to_point2(self) -> Point2 where int : From<T>, T : Default { self.into_array2().map(|v| v.into()).into() }
+    fn to_point2(self) -> Point2 where T: ToInt<Output = int> + Default { self.into_array2().map(|v| v.to_int()).into() }
     /// Fill non existing component with [Default]
-    fn to_point3(self) -> Point3 where int : From<T>, T : Default { self.into_array3().map(|v| v.into()).into() }
+    fn to_point3(self) -> Point3 where T: ToInt<Output = int> + Default { self.into_array3().map(|v| v.to_int()).into() }
     /// Fill non existing component with [Default]
-    fn to_point4(self) -> Point4 where int : From<T>, T : Default { self.into_array4().map(|v| v.into()).into() }
+    fn to_point4(self) -> Point4 where T: ToInt<Output = int> + Default { self.into_array4().map(|v| v.to_int()).into() }
 
 
     /// Fill non existing component with the given value
-    fn to_point1_filled(self, fill : int) -> Point1 where int : From<T> { self.map(|v| int::from(v)).into_array1_filled(fill).into() }
+    fn to_point1_filled(self, fill : int) -> Point1 where T : ToInt<Output = int> { self.map(|v| v.to_int()).into_array1_filled(fill).into() }
     /// Fill non existing component with the given value
-    fn to_point2_filled(self, fill : int) -> Point2 where int : From<T> { self.map(|v| int::from(v)).into_array2_filled(fill).into() }
+    fn to_point2_filled(self, fill : int) -> Point2 where T : ToInt<Output = int> { self.map(|v| v.to_int()).into_array2_filled(fill).into() }
     /// Fill non existing component with the given value
-    fn to_point3_filled(self, fill : int) -> Point3 where int : From<T> { self.map(|v| int::from(v)).into_array3_filled(fill).into() }
+    fn to_point3_filled(self, fill : int) -> Point3 where T : ToInt<Output = int> { self.map(|v| v.to_int()).into_array3_filled(fill).into() }
     /// Fill non existing component with the given value
-    fn to_point4_filled(self, fill : int) -> Point4 where int : From<T> { self.map(|v| int::from(v)).into_array4_filled(fill).into() }
+    fn to_point4_filled(self, fill : int) -> Point4 where T : ToInt<Output = int> { self.map(|v| v.to_int()).into_array4_filled(fill).into() }
 
     /// Fill non existing component with [Default]
-    fn to_vec1(self) -> Vec1 where float : From<T>, T : Default { self.into_array1().map(|v| v.into()).into() }
+    fn to_vec1(self) -> Vec1 where T: ToFloat<Output = float> + Default { self.into_array1().map(|v| v.to_float()).into() }
     /// Fill non existing component with [Default]
-    fn to_vec2(self) -> Vec2 where float : From<T>, T : Default { self.into_array2().map(|v| v.into()).into() }
+    fn to_vec2(self) -> Vec2 where T: ToFloat<Output = float> + Default { self.into_array2().map(|v| v.to_float()).into() }
     /// Fill non existing component with [Default]
-    fn to_vec3(self) -> Vec3 where float : From<T>, T : Default { self.into_array3().map(|v| v.into()).into() }
+    fn to_vec3(self) -> Vec3 where T: ToFloat<Output = float> + Default { self.into_array3().map(|v| v.to_float()).into() }
     /// Fill non existing component with [Default]
-    fn to_vec4(self) -> Vec4 where float : From<T>, T : Default { self.into_array4().map(|v| v.into()).into() }
+    fn to_vec4(self) -> Vec4 where T: ToFloat<Output = float> + Default { self.into_array4().map(|v| v.to_float()).into() }
 
     /// Fill non existing component with the given value
-    fn to_vec1_filled(self, fill : float) -> Vec1 where float : From<T> { self.map(|v| float::from(v)).into_array1_filled(fill).into() }
+    fn to_vec1_filled(self, fill : float) -> Vec1 where T: ToFloat<Output = float> { self.map(|v| v.to_float()).into_array1_filled(fill).into() }
     /// Fill non existing component with the given value
-    fn to_vec2_filled(self, fill : float) -> Vec2 where float : From<T> { self.map(|v| float::from(v)).into_array2_filled(fill).into() }
+    fn to_vec2_filled(self, fill : float) -> Vec2 where T: ToFloat<Output = float> { self.map(|v| v.to_float()).into_array2_filled(fill).into() }
     /// Fill non existing component with the given value
-    fn to_vec3_filled(self, fill : float) -> Vec3 where float : From<T> { self.map(|v| float::from(v)).into_array3_filled(fill).into() }
+    fn to_vec3_filled(self, fill : float) -> Vec3 where T: ToFloat<Output = float> { self.map(|v| v.to_float()).into_array3_filled(fill).into() }
     /// Fill non existing component with the given value
-    fn to_vec4_filled(self, fill : float) -> Vec4 where float : From<T> { self.map(|v| float::from(v)).into_array4_filled(fill).into() }
+    fn to_vec4_filled(self, fill : float) -> Vec4 where T: ToFloat<Output = float> { self.map(|v| v.to_float()).into_array4_filled(fill).into() }
 
     /// Fill non existing component with [Default]
     fn to_vector1(self) -> Vector1<T> where T: Default { self.into_array1().into() }

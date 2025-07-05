@@ -23,6 +23,8 @@ pub(crate) use hexga_core::prelude::*;
 pub(crate) use hexga_generational::prelude::*;
 pub(crate) use hexga_math::prelude::*;
 pub(crate) use std::ops::{Deref,DerefMut};
+pub(crate) use std::sync::Arc;
+
 
 use prelude::*;
 

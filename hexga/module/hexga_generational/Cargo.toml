@@ -22,8 +22,8 @@ hexga_io = ["serde", "dep:hexga_io", "hexga_io/derive"]
 hexga_core.workspace = true
 hexga_number.workspace = true
 
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
 
 #typed_index = "0.2.1"
 
-serde = { version = "1.0.0", features = ["derive"], optional = true }

@@ -38,9 +38,9 @@ hexga_engine_events.workspace = true
 hexga_generational.workspace = true
 hexga_bitflags.workspace = true
 
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
 hexga_io_derive = { workspace = true, optional = true }
 
-serde = { version = "1.0.0", features = ["derive"], optional = true }
 winit = "0.30.11"
 copypasta = "0.10.2"

@@ -37,8 +37,8 @@ new_unit!(
     TimeOf
 );
 
-pub trait ToTime<T> : ToTimeComposite<Output = TimeOf<T>> where T: CastIntoAnyFloat {}
-impl<S,T> ToTime<T> for S where S : ToTimeComposite<Output = TimeOf<T>>, T : CastIntoAnyFloat {}
+pub trait ToTime<T> : ToTimeComposite<Output = TimeOf<T>> where T: CastIntoFloat {}
+impl<S,T> ToTime<T> for S where S : ToTimeComposite<Output = TimeOf<T>>, T : CastIntoFloat {}
 
 pub trait ToTimeComposite
 {

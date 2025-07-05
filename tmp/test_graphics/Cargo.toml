@@ -14,17 +14,17 @@ default = [
             #"serde_json", "serde_ron", "serde_xml", "serde_quick_bin"
           ]
 
-int_are_8_bits    = ["hexga_engine_window/int_are_8_bits", "hexga_math/int_are_8_bits"]
-int_are_16_bits   = ["hexga_engine_window/int_are_16_bits", "hexga_math/int_are_16_bits"]
-int_are_32_bits   = ["hexga_engine_window/int_are_32_bits", "hexga_math/int_are_32_bits"]
-int_are_64_bits   = ["hexga_engine_window/int_are_64_bits", "hexga_math/int_are_64_bits"]
-int_are_size_bits = ["hexga_engine_window/int_are_size_bits", "hexga_math/int_are_size_bits"]
+int_are_8_bits    = ["hexga_engine/int_are_8_bits"]
+int_are_16_bits   = ["hexga_engine/int_are_16_bits"]
+int_are_32_bits   = ["hexga_engine/int_are_32_bits"]
+int_are_64_bits   = ["hexga_engine/int_are_64_bits"]
+int_are_size_bits = ["hexga_engine/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga_engine_window/float_are_32_bits", "hexga_math/float_are_32_bits"]
-float_are_64_bits   = ["hexga_engine_window/float_are_64_bits", "hexga_math/float_are_64_bits"]
-float_are_size_bits = ["hexga_engine_window/float_are_size_bits", "hexga_math/float_are_size_bits"]
+float_are_32_bits   = ["hexga_engine/float_are_32_bits"]
+float_are_64_bits   = ["hexga_engine/float_are_64_bits"]
+float_are_size_bits = ["hexga_engine/float_are_size_bits"]
 
-serde           = ["hexga_engine_window/serde", "hexga_math/serde"]
+serde           = ["hexga_engine/serde"]
 
 # serde_json      = ["hexga/serde_json"]
 # serde_ron       = ["hexga/serde_ron"]
@@ -34,24 +34,25 @@ serde           = ["hexga_engine_window/serde", "hexga_math/serde"]
 [dependencies]
 #hexga.workspace = true
 #hexga_graphics.workspace = true
-hexga_core.workspace = true
-hexga_math.workspace = true
-hexga_engine_window.workspace = true
+#hexga_core.workspace = true
+#hexga_math.workspace = true
+hexga_engine.workspace = true
+#hexga_engine_window.workspace = true
 
 
 # non web
-pollster = { version = "0.4" }
+# pollster = { version = "0.4" }
 
-# web
-wasm-bindgen = "0.2.92"
-wasm-bindgen-futures = "0.4.42"
-web-sys = { version = "0.3.69", features = ["Document", "Element", "Window", "console", "HtmlCanvasElement", "HtmlCollection"] }
+# # web
+# wasm-bindgen = "0.2.92"
+# wasm-bindgen-futures = "0.4.42"
+# web-sys = { version = "0.3.69", features = ["Document", "Element", "Window", "console", "HtmlCanvasElement", "HtmlCollection"] }
 
 
-wgpu = { version = "25.0.0" }
-#wgpu = { version = "25.0.2", default-features = false, features = ["webgl", "wgsl"] }
-winit = "0.30.11"
-bytemuck = "1.23.0"
+# wgpu = { version = "25.0.0" }
+# #wgpu = { version = "25.0.2", default-features = false, features = ["webgl", "wgsl"] }
+# winit = "0.30.11"
+# bytemuck = "1.23.0"
 #hexga_generational.workspace = true
 #hexga_engine.workspace = true
 #criterion = "0.5.1"

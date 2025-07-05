@@ -1,66 +1,81 @@
-//! Rendering interface for the Hexga Engine based on [miniquad](https://github.com/not-fl3/miniquad)
+#![allow(dead_code)]
 #![allow(unused_imports)]
-use std::{fmt::Debug, marker::PhantomData, ops::Deref};
 
-use hexga_math::prelude::*;
-
-pub use hexga_graphics;
-use hexga_graphics::prelude::*;
-
-#[cfg(feature = "serde")]
-use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
-
-#[cfg(feature = "hexga_io")]
-use hexga_io::{IoSave, IoLoad, Save, Load};
-
-pub mod buffer;
-use buffer::*;
-
-pub mod render_pass;
-use render_pass::*;
-
-pub mod vertex;
-use vertex::*;
-
-pub mod blend;
-use blend::*;
-
-pub mod stencil;
-use stencil::*;
-
-pub mod shader;
-use shader::*;
-
-pub mod pipeline;
-use pipeline::*;
-
-pub mod texture;
-use texture::*;
-
-pub mod bindings;
-use bindings::*;
-
-mod render;
-pub use render::*;
-
-mod untyped_slice;
-pub use untyped_slice::*;
-
-pub mod gpu;
-use gpu::*;
+// Thank to https://github.com/w4ngzhen/wgpu_winit_example
 
 pub mod prelude
 {
-    //pub use super::buffer::Buffer;
-    pub use super::texture::RawTextureID;
-    pub use super::render::RenderBackend;
-    pub use super::gpu::*;
+    pub use super::Graphics;
 }
 
-/// Modules/Items without the prelude
-#[doc(hidden)]
-pub mod modules
+use std::sync::Arc;
+
+use wgpu::{ShaderSource, Trace, MemoryHints};
+use hexga_engine_window::prelude::*;
+
+
+pub struct Graphics
 {
-    pub use super::{buffer,render_pass,vertex,shader,pipeline,texture,bindings,blend,stencil,gpu};
-    pub use super::{RenderBackend, UntypedSlice};
+    adapter: wgpu::Adapter,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+
+    surface: wgpu::Surface<'static>,
+    surface_config: wgpu::SurfaceConfiguration,
+
+    /*
+    render_pipeline: wgpu::RenderPipeline,
+    vertex_buffer: wgpu::Buffer,
+    */
+}
+
+
+impl Graphics
+{
+    pub async fn new_async(window: &Window) -> Self
+    {
+        let instance = wgpu::Instance::default();
+        let surface = instance.create_surface(window.winit_window().clone()).unwrap();
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::default(),
+                force_fallback_adapter: false,
+                compatible_surface: Some(&surface),
+            })
+            .await
+            .expect("Failed to find an appropriate adapter");
+        // Create the logical device and command queue
+
+        let (device, queue) = adapter
+            .request_device(&wgpu::DeviceDescriptor
+            {
+                label: None,
+                required_features: wgpu::Features::empty(),
+                // Make sure we use the texture resolution limits from the adapter, so we can support images the size of the swapchain.
+                required_limits: wgpu::Limits::downlevel_webgl2_defaults()
+                    .using_resolution(adapter.limits()),
+                memory_hints: MemoryHints::Performance,
+                trace: Trace::Off,
+            })
+            .await
+            .expect("Failed to create device");
+
+
+        let size = window.physical_size();
+        let surface_config = surface.get_default_config(&adapter, size.x as _, size.y as _).unwrap();
+        surface.configure(&device, &surface_config);
+
+        Graphics
+        {
+            surface,
+            surface_config,
+            adapter,
+            device,
+            queue,
+        }
+    }
+
+    pub fn new(window: &Window) -> Self {
+        pollster::block_on(Self::new_async(window))
+    }
 }
