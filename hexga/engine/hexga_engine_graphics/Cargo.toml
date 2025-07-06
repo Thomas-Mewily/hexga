@@ -37,6 +37,7 @@ hexga_core.workspace = true
 hexga_math.workspace = true
 hexga_graphics.workspace = true
 hexga_engine_window.workspace = true
+hexga_generational.workspace = true
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }

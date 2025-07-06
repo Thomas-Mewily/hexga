@@ -41,26 +41,38 @@ pub type SharedWinitWindow = std::sync::Arc<winit::window::Window>;
 
 
 #[allow(dead_code)]
-#[derive(Debug)]
-pub struct Window
+pub struct Window<W>
 {
     pub(crate) window : SharedWinitWindow,
-    pub(crate) param  : WindowParam,
+    pub(crate) param  : WindowParam<W>,
     pub(crate) id     : WindowID,
     pub(crate) childs : Vec<WindowID>,
 }
 
+impl<W> Debug for Window<W>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Window")
+            .field("id", &self.id)
+            .field("param", &self.param)
+            .field("childs", &self.childs)
+            .finish()
+    }
+}
 
-impl Window
+
+impl<W> Window<W>
 {
     pub fn id(&self) -> WindowID { self.id }
-    pub fn param(&self) -> &WindowParam { &self.param }
+    pub fn param(&self) -> &WindowParam<W> { &self.param }
+
+    pub fn data(&self) -> &W { &self.param.data }
+    pub fn data_mut(&mut self) -> &mut W { &mut self.param.data }
 
     //pub fn size(&self) -> Point2 { self.physical_size() }
 
     pub fn physical_size(&self) -> Point2 { self.window.inner_size().convert() }
     pub fn logical_size(&self) -> Vec2 { self.physical_size().to_vec2() / self.param.dpi }
-
 
     pub fn winit_window(&self) -> &SharedWinitWindow { &self.window }
 }
@@ -114,8 +126,8 @@ impl Into<winit::window::WindowLevel> for WindowLevel
 
 //#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 //#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[derive(Debug, PartialEq, PartialOrd, Clone)]
-pub struct WindowParam
+#[derive(PartialEq, PartialOrd, Clone)]
+pub struct WindowParam<W>
 {
     /// Title of the window, defaults to an empty string.
     pub title: String,
@@ -138,9 +150,37 @@ pub struct WindowParam
     pub cursor_visible : bool,
 
     pub dpi : float,
+
+    pub close_when_parent_exit : bool,
+
+    pub data : W,
 }
 
-impl Into<winit::window::WindowAttributes> for WindowParam
+
+impl<W> Debug for WindowParam<W>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WindowParam")
+            .field("title", &self.title)
+            .field("size", &self.size)
+            .field("position", &self.position)
+            .field("resizable", &self.resizable)
+            .field("visible", &self.visible)
+            .field("transparent", &self.transparent)
+            .field("buttons", &self.buttons)
+            .field("level", &self.level)
+            .field("icon", &self.icon)
+            .field("active", &self.active)
+            .field("cursor_icon", &self.cursor_icon)
+            .field("cursor_grab", &self.cursor_grab)
+            .field("cursor_visible", &self.cursor_visible)
+            .field("dpi", &self.dpi)
+            .field("close_when_parent_exit", &self.close_when_parent_exit)
+            .finish()
+    }
+}
+
+impl<W> Into<winit::window::WindowAttributes> for WindowParam<W>
 {
     fn into(self) -> winit::window::WindowAttributes {
         let mut att = winit::window::Window::default_attributes();
@@ -165,10 +205,18 @@ impl Into<winit::window::WindowAttributes> for WindowParam
     }
 }
 
-impl Default for WindowParam
+impl<W> Default for WindowParam<W> where W: Default
 {
-    fn default() -> Self {
-        Self {
+    fn default() -> Self { Self::new_with_data(___())}
+}
+impl<W> WindowParam<W>
+{
+    pub fn new() -> Self where W: Default { ___() }
+
+    pub fn new_with_data(data : W) -> Self
+    {
+        Self
+        {
             title: ___(),
             size: ___(),
             position: ___(),
@@ -183,13 +231,32 @@ impl Default for WindowParam
             cursor_grab: ___(),
             dpi: 1.,
             cursor_visible: true,
+            close_when_parent_exit: true,
+            data,
         }
     }
-}
-impl WindowParam
-{
-    pub fn new() -> Self {
-        Self::default()
+
+    pub fn clone_with_data<T2>(&self, data: T2) -> WindowParam<T2>
+    {
+        WindowParam
+        {
+            title: self.title.clone(),
+            size: self.size,
+            position: self.position,
+            resizable: self.resizable,
+            visible: self.visible,
+            transparent: self.transparent,
+            buttons: self.buttons,
+            level: self.level,
+            icon: self.icon.clone(),
+            active: self.active,
+            cursor_icon: self.cursor_icon,
+            cursor_grab: self.cursor_grab,
+            dpi: self.dpi,
+            cursor_visible: self.cursor_visible,
+            close_when_parent_exit: self.close_when_parent_exit,
+            data,
+        }
     }
 
     pub fn with_title(mut self, title: &str) -> Self {
@@ -247,6 +314,14 @@ impl WindowParam
     }
     pub fn with_dpi(mut self, dpi: float) -> Self {
         self.dpi = dpi;
+        self
+    }
+    pub fn with_close_when_parent_exit(mut self, close_when_parent_exit: bool) -> Self {
+        self.close_when_parent_exit = close_when_parent_exit;
+        self
+    }
+    pub fn with_data(mut self, data: W) -> Self {
+        self.data = data;
         self
     }
 }

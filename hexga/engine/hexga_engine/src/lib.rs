@@ -1,4 +1,4 @@
-use hexga_engine_graphics::prelude::*;
+use hexga_engine_graphics::{prelude::*, WindowGraphicsData};
 use hexga_engine_window::{event::IDeviceMessage, prelude::*, window::{EventLoopProxy, WindowContext, WindowRunParam}};
 use hexga_core::prelude::*;//
 use std::fmt::Debug;
@@ -21,7 +21,7 @@ pub mod prelude
 #[derive(Debug)]
 pub struct AppContext
 {
-    window_context : WindowContext,
+    window_context : WindowContext<WindowGraphicsData>,
     graphics : Asset<Graphics, Option<EventLoopProxy<Graphics>>>,
 }
 
@@ -101,28 +101,29 @@ pub trait AppLoop
     fn exit(&mut self, ctx: &mut AppCtx) { let _ = ctx; }
 }
 
-impl<'a, T : ?Sized>  WindowLoop<Graphics> for AppRunner<'a, T> where T : AppLoop
+impl<'a, T : ?Sized>  WindowLoop<Graphics, WindowGraphicsData> for AppRunner<'a, T> where T : AppLoop
 {
-    fn handle_message(&mut self, message: AppMessageInternal, ctx: &mut WindowCtx) -> bool
+    fn handle_message(&mut self, message: AppMessageInternal, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool
     {
         let m = message.clone_with_user_message(());
         self.dispatch_message(message, ctx);
         self.data.handle_message(m, &mut self.ctx)
     }
 
-    fn user_event(&mut self, graphic: Graphics, _ : &mut WindowCtx)
+    fn user_event(&mut self, graphic: Graphics, _ : &mut WindowCtx<WindowGraphicsData>)
     {
         self.ctx.graphics = Asset::Loaded(graphic);
     }
 
-    fn resume(&mut self, ctx: &mut WindowCtx)
+    fn resume(&mut self, ctx: &mut WindowCtx<WindowGraphicsData>)
     {
 
         if let Asset::Loadding(proxy) = &mut self.ctx.graphics
         {
             if let Some(proxy) = proxy.take()
             {
-
+                todo!();
+                //ctx
             }
         }
     }
@@ -131,29 +132,29 @@ impl<'a, T : ?Sized>  WindowLoop<Graphics> for AppRunner<'a, T> where T : AppLoo
 #[derive(Default, Debug)]
 pub struct AppRunParam
 {
-    window_param : WindowRunParam,
+    window_param : WindowRunParam<WindowGraphicsData>,
     graphics_param : GraphicsParam,
 }
 impl AppRunParam
 {
     pub fn new() -> Self { ___() }
 
-    pub fn window_param(&self) -> &WindowRunParam { &self.window_param }
-    pub fn window_param_mut(&mut self) -> &mut WindowRunParam { &mut self.window_param }
-    pub fn with_window_param(self, window_param : WindowRunParam) -> Self { Self { window_param, ..self } }
+    pub fn window_param(&self) -> &WindowRunParam<WindowGraphicsData> { &self.window_param }
+    pub fn window_param_mut(&mut self) -> &mut WindowRunParam<WindowGraphicsData> { &mut self.window_param }
+    pub fn with_window_param(self, window_param : WindowRunParam<WindowGraphicsData>) -> Self { Self { window_param, ..self } }
 
     pub fn graphics_param(&self) -> &GraphicsParam { &self.graphics_param }
     pub fn graphics_param_mut(&mut self) -> &mut GraphicsParam { &mut self.graphics_param }
     pub fn with_graphics_param(self, graphics_param : GraphicsParam) -> Self { Self { graphics_param, ..self } }
 }
 
-impl IWindowRunParam for AppRunParam
+impl IWindowRunParam<WindowGraphicsData> for AppRunParam
 {
     fn wait_for_event(&self) -> bool { self.window_param.wait_for_event() }
     fn with_wait_for_event(self, wait_for_event : bool) -> Self { Self { window_param: self.window_param.with_wait_for_event(wait_for_event), ..self } }
 
-    fn default_window(&self) -> Option<&WindowParam> { self.window_param.default_window() }
-    fn with_default_window(self, default_window : Option<WindowParam>) -> Self { Self { window_param: self.window_param.with_default_window(default_window), ..self } }
+    fn default_window(&self) -> Option<&WindowParam<WindowGraphicsData>> { self.window_param.default_window() }
+    fn with_default_window(self, default_window : Option<WindowParam<WindowGraphicsData>>) -> Self { Self { window_param: self.window_param.with_default_window(default_window), ..self } }
 }
 
 impl IGraphicsParam for AppRunParam
@@ -168,7 +169,7 @@ pub trait AppRun : AppLoop
     fn run_with_param<'a>(&'a mut self, param : AppRunParam) -> Result<(), ()>
     {
         let mut runner = AppRunner { ctx: ___(), data: self };
-        let r = <AppRunner<'a, Self> as WindowRun<Graphics>>::run_with_param_and_init_from_event_loop
+        let r = <AppRunner<'a, Self> as WindowRun<Graphics, WindowGraphicsData>>::run_with_param_and_init_from_event_loop
         (&mut runner,
             param.window_param,
             |s, event_loop|

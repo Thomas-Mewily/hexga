@@ -1,3 +1,5 @@
+use std::collections::btree_map::Keys;
+
 use copypasta::{ClipboardContext, ClipboardProvider};
 use serde::de;
 
@@ -5,18 +7,18 @@ use super::*;
 
 
 
-pub trait WindowLoop<T=()>
+pub trait WindowLoop<UserEvent=(), WindowData=()>
 {
     /// Handles a message from the application.
     ///
     /// This is the main entry for handling messages, and events, and it call `dispatch_message`
-    fn handle_message(&mut self, message: EventMessage<T>, ctx: &mut WindowCtx) -> bool
+    fn handle_message(&mut self, message: EventMessage<UserEvent>, ctx: &mut WindowCtx<WindowData>) -> bool
     {
         self.dispatch_message(message, ctx)
     }
 
     /// This is also responsible for dispatching special events like the [AppLoop::update], [AppLoop::draw], [AppLoop::pause], [AppLoop::resume].
-    fn dispatch_message(&mut self, message: EventMessage<T>, ctx: &mut WindowCtx) -> bool
+    fn dispatch_message(&mut self, message: EventMessage<UserEvent>, ctx: &mut WindowCtx<WindowData>) -> bool
     {
         match message
         {
@@ -45,54 +47,56 @@ pub trait WindowLoop<T=()>
         true
     }
 
-    fn handle_localized_event(&mut self, event: LocalizedEvent, ctx: &mut WindowCtx) -> bool
+    fn handle_localized_event(&mut self, event: LocalizedEvent, ctx: &mut WindowCtx<WindowData>) -> bool
     {
         self.handle_event(event.event, ctx)
     }
 
-    fn handle_event(&mut self, event : Event, ctx: &mut WindowCtx) -> bool
+    fn handle_event(&mut self, event : Event, ctx: &mut WindowCtx<WindowData>) -> bool
     {
         let _ = event;
         let _ = ctx;
         false
     }
 
-    fn resume(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
-    fn pause(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
+    fn resume(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
+    fn pause(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
 
-    fn update(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
-    fn draw(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
-    fn draw_window(&mut self, window : WindowID, ctx: &mut WindowCtx) { let _ = window; self.draw(ctx); }
+    fn update(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
+    fn draw(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
+    fn draw_window(&mut self, window : WindowID, ctx: &mut WindowCtx<WindowData>) { let _ = window; self.draw(ctx); }
 
     // Called when on exit
-    fn exit(&mut self, ctx: &mut WindowCtx) { ctx.exit(); }
+    fn exit(&mut self, ctx: &mut WindowCtx<WindowData>) { ctx.exit(); }
 
-    fn device_added(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
-    fn device_removed(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
-    fn warning_memory(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
+    fn device_added(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
+    fn device_removed(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
+    fn warning_memory(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
 
-    fn user_event(&mut self, event: T, ctx: &mut WindowCtx) { let _ = (event, ctx); }
+    fn user_event(&mut self, event: UserEvent, ctx: &mut WindowCtx<WindowData>) { let _ = (event, ctx); }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct WindowRunParam
+pub struct WindowRunParam<W>
 {
-    pub default_window : Option<WindowParam>,
+    pub default_window : Option<WindowParam<W>>,
     pub wait_for_event : bool,
 }
 
-impl Default for WindowRunParam
+const DEFAULT_WAIT_FOR_EVENT : bool = false;
+
+impl<W> Default for WindowRunParam<W> where W: Default
 {
-    fn default() -> Self { Self { default_window: Some(___()), wait_for_event: false } }
+    fn default() -> Self { Self { default_window: Some(___()), wait_for_event: DEFAULT_WAIT_FOR_EVENT } }
 }
 
-pub trait IWindowRunParam : Sized
+pub trait IWindowRunParam<W> : Sized
 {
     fn wait_for_event(&self) -> bool;
     fn with_wait_for_event(self, wait_for_event : bool) -> Self;
 
-    fn default_window(&self) -> Option<&WindowParam>;
-    fn with_default_window(self, default_window : Option<WindowParam>) -> Self;
+    fn default_window(&self) -> Option<&WindowParam<W>>;
+    fn with_default_window(self, default_window : Option<WindowParam<W>>) -> Self;
 
     /// A default configuration for game.
     fn game() -> Self where Self: Default { Self::___().with_wait_for_event(false) }
@@ -100,23 +104,24 @@ pub trait IWindowRunParam : Sized
     fn software() -> Self where Self: Default { Self::___().with_wait_for_event(true) }
 }
 
-impl WindowRunParam
+impl<W> WindowRunParam<W>
 {
-    pub fn new() -> Self { ___() }
+    pub fn new() -> Self where W: Default { ___() }
+    pub fn new_without_default_window() -> Self { Self { default_window: None, wait_for_event: DEFAULT_WAIT_FOR_EVENT } }
 }
-impl IWindowRunParam for WindowRunParam
+impl<W> IWindowRunParam<W> for WindowRunParam<W>
 {
     fn wait_for_event(&self) -> bool { self.wait_for_event }
     fn with_wait_for_event(self, wait_for_event : bool) -> Self { Self { wait_for_event, ..self } }
 
-    fn default_window(&self) -> Option<&WindowParam> { self.default_window.as_ref() }
-    fn with_default_window(self, default_window : Option<WindowParam>) -> Self { Self { default_window, ..self } }
+    fn default_window(&self) -> Option<&WindowParam<W>> { self.default_window.as_ref() }
+    fn with_default_window(self, default_window : Option<WindowParam<W>>) -> Self { Self { default_window, ..self } }
 }
 
-pub trait WindowRun<T> : WindowLoop<T> where T: 'static
+pub trait WindowRun<T,W> : WindowLoop<T,W> where T: 'static
 {
     #[doc(hidden)]
-    fn run_with_param_and_init_from_event_loop<F>(&mut self, param : WindowRunParam, f : F) -> AppResult where Self: Sized, F : FnOnce(&mut Self, &mut EventLoop<T>)
+    fn run_with_param_and_init_from_event_loop<F>(&mut self, param : WindowRunParam<W>, f : F) -> AppResult where Self: Sized, F : FnOnce(&mut Self, &mut EventLoop<T>)
     {
         let mut event_loop = EventLoop::<T>::with_user_event().build().map_err(|e| <AppErrorEventLoop as Into<AppError>>::into(e))?;
         event_loop.set_control_flow(if param.wait_for_event { winit::event_loop::ControlFlow::Wait } else { winit::event_loop::ControlFlow::Poll });
@@ -134,27 +139,27 @@ pub trait WindowRun<T> : WindowLoop<T> where T: 'static
         event_loop.run_app(&mut runner).map_err(|e| e.into())
     }
 
-    fn run_with_param(&mut self, param : WindowRunParam) -> AppResult where Self: Sized
+    fn run_with_param(&mut self, param : WindowRunParam<W>) -> AppResult where Self: Sized
     {
         self.run_with_param_and_init_from_event_loop(param, |_,_| {})
     }
 
-    fn run(&mut self) -> AppResult where Self: Sized { self.run_with_param(___()) }
+    fn run(&mut self) -> AppResult where Self: Sized, W: Default { self.run_with_param(___()) }
 }
-impl<S,T> WindowRun<T> for S where S: WindowLoop<T>, T: 'static {}
+impl<S,T,W> WindowRun<T,W> for S where S: WindowLoop<T,W>, T: 'static {}
 
 
 
-struct WindowRunner<'a, A : ?Sized, T> where A : WindowLoop<T>, T: 'static
+struct WindowRunner<'a, A : ?Sized, T, W> where A : WindowLoop<T,W>, T: 'static
 {
     app : &'a mut A,
-    ctx : WindowContext,
+    ctx : WindowContext<W>,
     _phantom : PhantomData<T>,
 }
 
-impl<'a,A: ?Sized, T> WindowRunner<'a,A,T> where A : WindowLoop<T>, T: 'static
+impl<'a,A: ?Sized, T,W> WindowRunner<'a,A,T,W> where A : WindowLoop<T,W>, T: 'static
 {
-    fn new(app : &'a mut A, ctx : WindowContext) -> Self
+    fn new(app : &'a mut A, ctx : WindowContext<W>) -> Self
     {
         Self { app, ctx, _phantom: PhantomData }
     }
@@ -167,12 +172,21 @@ impl<'a,A: ?Sized, T> WindowRunner<'a,A,T> where A : WindowLoop<T>, T: 'static
     }
 }
 
-pub type WindowCtx<'a> = dyn IWindowCtx + 'a;
+pub type WindowCtx<'a, W=()> = dyn IWindowCtx<W> + 'a;
 
-pub trait IWindowCtx
+pub trait IWindowCtx<W>
 {
     //fn run<A : AppLoop>(self, app : &mut A) -> AppResult;
-   fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>;
+   fn new_window(&mut self, param : WindowParam<W>) -> AppResult<&mut Window<W>>;
+   fn window(&mut self, id : WindowID) -> Option<&Window<W>>;
+   fn window_data(&mut self, id : WindowID) -> Option<&W>;
+   fn window_data_mut(&mut self, id : WindowID) -> Option<&mut W>;
+   fn window_exist(&mut self, id : WindowID) -> bool { self.window(id).is_some() }
+   fn delete_window(&mut self, id : WindowID);
+
+
+   fn iter_windows_id<'a>(&'a mut self) -> Box<dyn Iterator<Item = WindowID> + 'a>; // Don't like this box dyn
+   fn default_window_id(&mut self) -> Option<WindowID>;
 
    fn exit(&mut self);
 
@@ -242,7 +256,7 @@ impl WinitConvertWithDpi for winit::dpi::PhysicalPosition<f64>
 
 
 
-impl<'a, A, T> winit::application::ApplicationHandler<T> for WindowRunner<'a, A, T> where A : WindowLoop<T>, T: 'static
+impl<'a, A, T, W> winit::application::ApplicationHandler<T> for WindowRunner<'a, A, T, W> where A : WindowLoop<T,W>, T: 'static
 {
     fn window_event(
         &mut self,
@@ -292,11 +306,11 @@ impl<'a, A, T> winit::application::ApplicationHandler<T> for WindowRunner<'a, A,
 
     fn resumed(&mut self, event_loop: &ActiveEventLoop)
     {
-        if let Some(w) = self.ctx.default_window.take()
+        if let Some(param) = self.ctx.default_window.take()
         {
             let Self { app : _, ctx, _phantom } = self;
             let mut app_ctx = AppCtx { ctx, active_event_loop: event_loop };
-            app_ctx.new_window(w).expect("Failed to create the main window");
+            app_ctx.new_window(param).expect("Failed to create the main window");
         }
         self.handle_message(DeviceMessage::Resume, event_loop);
     }
@@ -319,36 +333,38 @@ impl<'a, A, T> winit::application::ApplicationHandler<T> for WindowRunner<'a, A,
     }
 }
 
-struct AppCtx<'a>
+struct AppCtx<'a,W>
 {
-    ctx : &'a mut WindowContext,
+    ctx : &'a mut WindowContext<W>,
     active_event_loop : &'a ActiveEventLoop
 }
-impl<'a> Deref for AppCtx<'a>
+impl<'a, W> Deref for AppCtx<'a, W>
 {
-    type Target = WindowContext;
+    type Target = WindowContext<W>;
     fn deref(&self) -> &Self::Target {
         self.ctx
     }
 }
-impl<'a> DerefMut for AppCtx<'a>
+impl<'a, W> DerefMut for AppCtx<'a, W>
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.ctx
     }
 }
 
-impl IWindowCtx for AppCtx<'_>
+impl<W> IWindowCtx<W> for AppCtx<'_, W>
 {
     fn exit(&mut self) { self.active_event_loop.exit(); }
 
-    fn new_window(&mut self, param : WindowParam) -> AppResult<WindowID>
+    fn iter_windows_id<'a>(&'a mut self) -> Box<dyn Iterator<Item = WindowID> + 'a> { Box::new(self.ctx.windows.keys().copied()) }
+
+    fn new_window(&mut self, param : WindowParam<W>) -> AppResult<&mut Window<W>>
     {
         let cursor_visible = param.cursor_visible;
         let cursor_grab = param.cursor_grab;
 
         let window = self.active_event_loop
-            .create_window(param.clone().into())
+            .create_window(param.clone_with_data(()).into())
             .map_err(|_| AppError::Unknow)?;
 
         let _ = window.set_cursor_grab(cursor_grab.into());
@@ -364,8 +380,30 @@ impl IWindowCtx for AppCtx<'_>
         };
 
         self.ctx.windows.insert(id, win);
-        Ok(id)
+        Ok(self.ctx.windows.get_mut(&id).unwrap())
     }
+
+    fn delete_window(&mut self, id : WindowID) {
+        if let Some(parent) = self.ctx.windows.remove(&id)
+        {
+            for child_id in parent.childs.iter().copied()
+            {
+                // Remove the child from the parent
+                if let Some(child) = self.window_mut(child_id)
+                {
+                    if child.param.close_when_parent_exit
+                    {
+                        self.delete_window(child_id);
+                    }
+                }
+            }
+        }
+    }
+
+    fn window(&mut self, id : WindowID) -> Option<&Window<W>> { self.ctx.window(id) }
+
+    fn window_data(&mut self, id : WindowID) -> Option<&W> { self.window(id).map(|w| w.data()) }
+    fn window_data_mut(&mut self, id : WindowID) -> Option<&mut W> { self.window_mut(id).map(|w| w.data_mut()) }
 
     fn clipboard_get(&mut self) -> Option<String> {
         self.copy_paste.as_mut().and_then(|ctx| ctx.get_contents().ok())
@@ -380,23 +418,27 @@ impl IWindowCtx for AppCtx<'_>
             Err(())
         }
     }
+
+    fn default_window_id(&mut self) -> Option<WindowID> { self.ctx.default_window_id }
 }
 
-pub struct WindowContext
+pub struct WindowContext<W>
 {
-    windows  : HashMap<WindowID, Window>,
+    windows  : HashMap<WindowID, Window<W>>,
 
     mouse    : Option<Vec2>,
     modifier : KeyModsFlags,
 
     copy_paste : Option<ClipboardContext>,
 
-    default_window : Option<WindowParam>,
+    default_window : Option<WindowParam<W>>,
+    default_window_id : Option<WindowID>,
+
     // If true update will be called on every event, otherwise it will be called frequently
     wait_for_event : bool,
 }
 
-impl std::fmt::Debug for WindowContext
+impl<W> std::fmt::Debug for WindowContext<W>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
@@ -411,14 +453,14 @@ impl std::fmt::Debug for WindowContext
 }
 
 
-impl Default for WindowContext
+impl<W> Default for WindowContext<W>
 {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl WindowContext
+impl<W> WindowContext<W>
 {
     fn new() -> Self
     {
@@ -430,15 +472,26 @@ impl WindowContext
             copy_paste: ClipboardContext::new().ok(),
             default_window: ___(),
             wait_for_event: false,
+            default_window_id: None,
         }
+    }
+
+    fn window(&mut self, id : WindowID) -> Option<&Window<W>>
+    {
+        self.windows.get(&id)
+    }
+
+    fn window_mut(&mut self, id : WindowID) -> Option<&mut Window<W>>
+    {
+        self.windows.get_mut(&id)
     }
 }
 
-impl WindowContext
+impl<W> WindowContext<W>
 {
     fn convert_winit_event(&mut self, window_id: winit::window::WindowId, winit_event: winit::event::WindowEvent) -> Option<LocalizedEvent>
     {
-        let Self { windows, mouse, modifier, default_window: _, copy_paste: _, wait_for_event: _ } = self;
+        let Self { windows, mouse, modifier, default_window: _, copy_paste: _, wait_for_event: _, default_window_id : _ } = self;
 
         let window_id = window_id.into();
         let _dpi = windows.get(&window_id).map(|w| w.param().dpi).unwrap_or(1.);
