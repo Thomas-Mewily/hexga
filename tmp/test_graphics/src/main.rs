@@ -19,6 +19,7 @@ impl AppLoop for App
     fn draw(&mut self, ctx: &mut AppCtx)
     {
         println!("draw: {}", debug_millis());
+        ctx.draw();
     }
 }
 

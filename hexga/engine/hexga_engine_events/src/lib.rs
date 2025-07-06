@@ -3,7 +3,7 @@
 
 use std::fmt::Debug;
 use hexga_core::prelude::*;
-use hexga_math::prelude::Vec2;
+use hexga_math::prelude::*;
 use hexga_bitflags::bitindex;
 
 #[cfg(feature = "serde")]

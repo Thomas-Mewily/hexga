@@ -7,7 +7,7 @@ use crate::*;
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub enum WindowEvent
 {
-    Resize(Vec2),
+    Resize(Point2),
     Move  (Vec2),
 
     Focus(bool),

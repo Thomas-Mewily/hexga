@@ -577,6 +577,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
     pub fn ids(&self) -> impl Iterator<Item = GenVecIDOf<T,Gen>> { self.into_iter().map(|(id, _val)| id) }
     pub fn values(&self) -> impl Iterator<Item = &T> { self.iter().map(|(_,val)| val) }
+    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut T> { self.iter_mut().map(|(_,val)| val) }
 
     pub fn into_ids(self) -> impl Iterator<Item = GenVecIDOf<T,Gen>> { self.into_iter().map(|(id, _val)| id) }
     pub fn into_values(self) -> impl Iterator<Item = T> { self.into_iter().map(|(_id, val)| val) }

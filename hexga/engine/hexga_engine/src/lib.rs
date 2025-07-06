@@ -27,11 +27,16 @@ pub struct AppContext
     graphics : Graphics,
 }
 
-impl IAppCtx for AppContext { }
+impl IAppCtx for AppContext
+{
+    fn draw(&mut self) {
+        self.graphics.draw_all_window();
+    }
+}
 
 pub trait IAppCtx : Debug
 {
-
+    fn draw(&mut self);
 }
 
 
@@ -103,9 +108,9 @@ impl<'a, T : ?Sized> WindowLoop<GraphicsEvent, WindowGraphicsData> for AppRunner
         self.data.handle_message(m.with_window_data_type(), &mut self.ctx)
     }
 
-    fn user_event(&mut self, graphic: GraphicsEvent, _ : &mut WindowCtx<WindowGraphicsData>)
+    fn user_event(&mut self, graphic: GraphicsEvent, ctx : &mut WindowCtx<WindowGraphicsData>)
     {
-        self.ctx.graphics.handle_event(graphic);
+        self.ctx.graphics.handle_event(graphic, ctx);
     }
 
     fn resume(&mut self, ctx: &mut WindowCtx<WindowGraphicsData>)
@@ -116,6 +121,34 @@ impl<'a, T : ?Sized> WindowLoop<GraphicsEvent, WindowGraphicsData> for AppRunner
         {
             self.ctx.graphics.resume(ctx, proxy.clone());
         }
+    }
+
+    fn draw_window(&mut self, window_id : WindowID<WindowGraphicsData>, ctx: &mut WindowCtx<WindowGraphicsData>)
+    {
+        let Some(window) = ctx.window(window_id) else {
+            return;
+        };
+        self.ctx.graphics.draw_window(window);
+    }
+
+    fn handle_localized_event(&mut self, event: LocalizedEvent<WindowGraphicsData>, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool {
+        let LocalizedEvent { window: window_id, event, device : _, .. } =  event;
+        let Some(window) = ctx.window(window_id) else {
+            return false;
+        };
+
+        dbg!(&event);
+        match event
+        {
+            Event::Window(w) => match w
+            {
+                WindowEvent::Resize(size) => { self.ctx.graphics.resize_window(window, size); },
+                WindowEvent::Visible(_visible) => {}, // Maybe can do something with this
+                _ => {},
+            }
+            _ => {}
+        }
+        true
     }
 
     fn pause(&mut self, ctx: &mut WindowCtx<WindowGraphicsData>)
