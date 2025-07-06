@@ -50,7 +50,7 @@ impl IGraphicsParam for GraphicsParam
 impl Graphics
 {
     pub async fn new_async(window: &Window) -> Self { Self::new_with_param_async(window, ___()).await }
-    pub async fn new_with_param_async(window: &Window, param : GraphicsParam) -> Self
+    pub async fn new_with_param_async(window: &Window, _param : GraphicsParam) -> Self
     {
         let instance = wgpu::Instance::default();
         let surface = instance.create_surface(window.winit_window().clone()).unwrap();

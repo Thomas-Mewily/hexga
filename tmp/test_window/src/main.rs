@@ -14,7 +14,7 @@ pub struct MyApp
     time : Time,
 }
 
-impl WindowLoop<()> for MyApp
+impl WindowLoop for MyApp
 {
     fn handle_event(&mut self, event : Event, ctx: &mut WindowCtx) -> bool
     {

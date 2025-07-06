@@ -19,6 +19,23 @@ impl<T> EventMessage<T>
 
     pub fn as_user(&self) -> Option<&T> { if let EventMessage::User(user) = self { Some(user) } else { None } }
     pub fn as_user_mut(&mut self) -> Option<&mut T> { if let EventMessage::User(user) = self { Some(user) } else { None } }
+
+    pub fn clone_with_user_message<T2>(&self, user: T2) -> EventMessage<T2>
+    {
+        match self {
+            EventMessage::LocalizedEvent(event) => EventMessage::LocalizedEvent(event.clone()),
+            EventMessage::Device(message) => EventMessage::Device(*message),
+            EventMessage::User(_) => EventMessage::User(user),
+        }
+    }
+    pub fn with_replaced_user_message<T2>(self, user: T2) -> EventMessage<T2>
+    {
+        match self {
+            EventMessage::LocalizedEvent(event) => EventMessage::LocalizedEvent(event),
+            EventMessage::Device(message) => EventMessage::Device(message),
+            EventMessage::User(_) => EventMessage::User(user),
+        }
+    }
 }
 
 

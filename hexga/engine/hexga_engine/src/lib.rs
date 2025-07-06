@@ -48,7 +48,8 @@ struct AppRunner<'a, T : ?Sized> where T : AppLoop
 }
 
 pub type AppCtx<'a> = dyn IAppCtx + 'a;
-pub type AppMessage = EventMessage<Graphics>;
+pub type AppMessageInternal = EventMessage<Graphics>;
+pub type AppMessage = EventMessage;
 
 pub trait AppLoop
 {
@@ -57,24 +58,24 @@ pub trait AppLoop
         match message
         {
             EventMessage::LocalizedEvent(localized_event) =>
-                    {
-                        if let Event::Window(WindowEvent::Draw) = localized_event.event
-                        {
-                            self.draw(ctx);
-                        }
-                        else
-                        {
-                            return self.handle_localized_event(localized_event, ctx);
-                        }
-                    },
+            {
+                if let Event::Window(WindowEvent::Draw) = localized_event.event
+                {
+                    self.draw(ctx);
+                }
+                else
+                {
+                    return self.handle_localized_event(localized_event, ctx);
+                }
+            },
             EventMessage::Device(device_message) => match device_message
-                    {
-                        DeviceMessage::Resume  => self.resume(ctx),
-                        DeviceMessage::Update  => self.update(ctx),
-                        DeviceMessage::Exit    => self.exit(ctx),
-                        _ => {},
-                    },
-            EventMessage::User(_u) => {},
+            {
+                DeviceMessage::Resume  => self.resume(ctx),
+                DeviceMessage::Update  => self.update(ctx),
+                DeviceMessage::Exit    => self.exit(ctx),
+                _ => {},
+            },
+            EventMessage::User(_) => {},
         }
         true
     }
@@ -102,17 +103,28 @@ pub trait AppLoop
 
 impl<'a, T : ?Sized>  WindowLoop<Graphics> for AppRunner<'a, T> where T : AppLoop
 {
-    fn handle_message(&mut self, message: AppMessage, ctx: &mut WindowCtx) -> bool
+    fn handle_message(&mut self, message: AppMessageInternal, ctx: &mut WindowCtx) -> bool
     {
-        if message.is_resume()
-        {
-
-        }
-        self.data.handle_message(message, &mut self.ctx)
+        let m = message.clone_with_user_message(());
+        self.dispatch_message(message, ctx);
+        self.data.handle_message(m, &mut self.ctx)
     }
 
-    fn user_event(&mut self, graphic: Graphics, ctx: &mut WindowCtx) {
+    fn user_event(&mut self, graphic: Graphics, _ : &mut WindowCtx)
+    {
         self.ctx.graphics = Asset::Loaded(graphic);
+    }
+
+    fn resume(&mut self, ctx: &mut WindowCtx)
+    {
+
+        if let Asset::Loadding(proxy) = &mut self.ctx.graphics
+        {
+            if let Some(proxy) = proxy.take()
+            {
+
+            }
+        }
     }
 }
 
@@ -156,7 +168,14 @@ pub trait AppRun : AppLoop
     fn run_with_param<'a>(&'a mut self, param : AppRunParam) -> Result<(), ()>
     {
         let mut runner = AppRunner { ctx: ___(), data: self };
-        let r = <AppRunner<'a, Self> as WindowRun<Graphics>>::run_with_param(&mut runner, param.window_param);
+        let r = <AppRunner<'a, Self> as WindowRun<Graphics>>::run_with_param_and_init_from_event_loop
+        (&mut runner,
+            param.window_param,
+            |s, event_loop|
+            {
+                s.ctx.graphics = Asset::Loadding(Some(event_loop.create_proxy()));
+            }
+        );
 
         if r.is_err()
         {
