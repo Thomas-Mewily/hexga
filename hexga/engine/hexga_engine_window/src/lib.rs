@@ -7,13 +7,15 @@ pub mod event;
 use window::*;
 use event::*;
 
+use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
+
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
-pub(crate) type EventLoop = winit::event_loop::EventLoop<()>;
+pub(crate) type EventLoop<T> = winit::event_loop::EventLoop<T>;
 pub(crate) type ActiveEventLoop = winit::event_loop::ActiveEventLoop;
 pub(crate) use hexga_core::prelude::*;
 pub(crate) use hexga_generational::prelude::*;

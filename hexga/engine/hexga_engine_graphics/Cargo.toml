@@ -31,6 +31,9 @@ serde = ["dep:serde", "hexga_math/serde", "hexga_graphics/serde", "hexga_engine_
 hexga_io = ["dep:hexga_io", "dep:hexga_io_derive", "serde", "hexga_math/hexga_io", "hexga_graphics/hexga_io", "hexga_engine_window/hexga_io"]
 
 [dependencies]
+
+hexga_core.workspace = true
+
 hexga_math.workspace = true
 hexga_graphics.workspace = true
 hexga_engine_window.workspace = true

@@ -3,17 +3,17 @@
 
 // Thank to https://github.com/w4ngzhen/wgpu_winit_example
 
-pub mod prelude
-{
-    pub use super::Graphics;
-}
 
-use std::sync::Arc;
-
+use hexga_core::prelude::*;
 use wgpu::{ShaderSource, Trace, MemoryHints};
 use hexga_engine_window::prelude::*;
 
+pub mod prelude
+{
+    pub use super::{Graphics, GraphicsParam, IGraphicsParam};
+}
 
+#[derive(Debug)]
 pub struct Graphics
 {
     adapter: wgpu::Adapter,
@@ -29,15 +29,34 @@ pub struct Graphics
     */
 }
 
+#[derive(Default, Debug, Clone, PartialEq)]
+pub struct GraphicsParam
+{
+
+}
+impl GraphicsParam
+{
+    pub fn new() -> Self { ___() }
+}
+pub trait IGraphicsParam : Default
+{
+
+}
+impl IGraphicsParam for GraphicsParam
+{
+
+}
 
 impl Graphics
 {
-    pub async fn new_async(window: &Window) -> Self
+    pub async fn new_async(window: &Window) -> Self { Self::new_with_param_async(window, ___()).await }
+    pub async fn new_with_param_async(window: &Window, param : GraphicsParam) -> Self
     {
         let instance = wgpu::Instance::default();
         let surface = instance.create_surface(window.winit_window().clone()).unwrap();
         let adapter = instance
-            .request_adapter(&wgpu::RequestAdapterOptions {
+            .request_adapter(&wgpu::RequestAdapterOptions
+                {
                 power_preference: wgpu::PowerPreference::default(),
                 force_fallback_adapter: false,
                 compatible_surface: Some(&surface),
@@ -75,7 +94,15 @@ impl Graphics
         }
     }
 
-    pub fn new(window: &Window) -> Self {
-        pollster::block_on(Self::new_async(window))
+    pub fn new(window: &Window) -> Self { Self::new_with_param(window, ___()) }
+    pub fn new_with_param(window: &Window, param : GraphicsParam) -> Self
+    {
+        // Todo: Handle WASM and probably need some rework for supporting Android
+
+        #[cfg(not(target_arch = "wasm32"))]
+        return pollster::block_on(Self::new_with_param_async(window, param));
+
+        //#[cfg(target_arch = "wasm32")]
+        //return wasm_bindgen_futures::spawn_local(create_graphics(window, proxy));
     }
 }

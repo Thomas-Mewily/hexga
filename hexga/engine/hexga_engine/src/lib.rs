@@ -1,5 +1,10 @@
-use hexga_engine_window::{prelude::*, window::{WindowContext, WindowRunParam}};
+use hexga_engine_graphics::prelude::*;
+use hexga_engine_window::{event::IDeviceMessage, prelude::*, window::{EventLoopProxy, WindowContext, WindowRunParam}};
 use hexga_core::prelude::*;//
+use std::fmt::Debug;
+
+mod asset;
+use asset::*;
 
 pub mod prelude
 {
@@ -13,11 +18,20 @@ pub mod prelude
     pub use hexga_engine_window::window::IWindowRunParam; // `game()` `software()` shortcut
 }
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct AppContext
 {
     window_context : WindowContext,
+    graphics : Asset<Graphics, Option<EventLoopProxy<Graphics>>>,
 }
+
+impl Default for AppContext
+{
+    fn default() -> Self {
+        Self { window_context: ___(), graphics: Asset::Loadding(None) }
+    }
+}
+
 
 impl IAppCtx for AppContext { }
 
@@ -34,6 +48,7 @@ struct AppRunner<'a, T : ?Sized> where T : AppLoop
 }
 
 pub type AppCtx<'a> = dyn IAppCtx + 'a;
+pub type AppMessage = EventMessage<AppGraphics>;
 
 pub trait AppLoop
 {
@@ -41,24 +56,25 @@ pub trait AppLoop
     {
         match message
         {
-            AppMessage::LocalizedEvent(localized_event) =>
-            {
-                if let Event::Window(WindowEvent::Draw) = localized_event.event
-                {
-                    self.draw(ctx);
-                }
-                else
-                {
-                    return self.handle_localized_event(localized_event, ctx);
-                }
-            },
-            AppMessage::Device(device_message) => match device_message
-            {
-                DeviceMessage::Resume  => self.resume(ctx),
-                DeviceMessage::Update  => self.update(ctx),
-                DeviceMessage::Exit    => self.exit(ctx),
-                _ => {},
-            },
+            EventMessage::LocalizedEvent(localized_event) =>
+                    {
+                        if let Event::Window(WindowEvent::Draw) = localized_event.event
+                        {
+                            self.draw(ctx);
+                        }
+                        else
+                        {
+                            return self.handle_localized_event(localized_event, ctx);
+                        }
+                    },
+            EventMessage::Device(device_message) => match device_message
+                    {
+                        DeviceMessage::Resume  => self.resume(ctx),
+                        DeviceMessage::Update  => self.update(ctx),
+                        DeviceMessage::Exit    => self.exit(ctx),
+                        _ => {},
+                    },
+            EventMessage::User(_u) => {},
         }
         true
     }
@@ -84,26 +100,59 @@ pub trait AppLoop
     fn exit(&mut self, ctx: &mut AppCtx) { let _ = ctx; }
 }
 
-impl<'a, T : ?Sized>  WindowLoop for AppRunner<'a, T> where T : AppLoop
+impl<'a, T : ?Sized>  WindowLoop<AppGraphics> for AppRunner<'a, T> where T : AppLoop
 {
     fn handle_message(&mut self, message: AppMessage, ctx: &mut WindowCtx) -> bool
     {
+        if message.is_resume()
+        {
+
+        }
         self.data.handle_message(message, &mut self.ctx)
+    }
+
+    fn user_event(&mut self, graphic: AppGraphics, ctx: &mut WindowCtx) {
+        self.ctx.graphics = Asset::Loaded(graphic);
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq)]
+type AppGraphics = Graphics;
+type WindowAppRunParam = WindowRunParam<AppGraphics>;
+
+#[derive(Default, Debug)]
 pub struct AppRunParam
 {
-    window_param : WindowRunParam,
+    window_param : WindowAppRunParam,
+    graphics_param : GraphicsParam,
 }
-impl IWindowRunParam for AppRunParam
+impl AppRunParam
+{
+    pub fn new() -> Self { ___() }
+
+    pub fn window_param(&self) -> &WindowAppRunParam { &self.window_param }
+    pub fn window_param_mut(&mut self) -> &mut WindowAppRunParam { &mut self.window_param }
+    pub fn with_window_param(self, window_param : WindowAppRunParam) -> Self { Self { window_param, ..self } }
+
+    pub fn graphics_param(&self) -> &GraphicsParam { &self.graphics_param }
+    pub fn graphics_param_mut(&mut self) -> &mut GraphicsParam { &mut self.graphics_param }
+    pub fn with_graphics_param(self, graphics_param : GraphicsParam) -> Self { Self { graphics_param, ..self } }
+}
+
+impl IWindowRunParam<AppGraphics> for AppRunParam
 {
     fn wait_for_event(&self) -> bool { self.window_param.wait_for_event() }
-    fn with_wait_for_event(self, wait_for_event : bool) -> Self { Self { window_param: self.window_param.with_wait_for_event(wait_for_event) } }
+    fn with_wait_for_event(self, wait_for_event : bool) -> Self { Self { window_param: self.window_param.with_wait_for_event(wait_for_event), ..self } }
 
     fn default_window(&self) -> Option<&WindowParam> { self.window_param.default_window() }
-    fn with_default_window(self, default_window : Option<WindowParam>) -> Self { Self { window_param: self.window_param.with_default_window(default_window) } }
+    fn with_default_window(self, default_window : Option<WindowParam>) -> Self { Self { window_param: self.window_param.with_default_window(default_window), ..self } }
+
+    fn event_loop_param(&self) -> &AppGraphics { self.window_param.event_loop_param() }
+    fn with_event_loop_param(self, event_loop_param : AppGraphics) -> Self { Self { window_param: self.window_param.with_event_loop_param(event_loop_param), ..self } }
+}
+
+impl IGraphicsParam for AppRunParam
+{
+
 }
 
 pub trait AppRun : AppLoop
@@ -113,7 +162,7 @@ pub trait AppRun : AppLoop
     fn run_with_param<'a>(&'a mut self, param : AppRunParam) -> Result<(), ()>
     {
         let mut runner = AppRunner { ctx: ___(), data: self };
-        let r = <AppRunner<'a, Self> as WindowRun>::run_with_param(&mut runner, param.window_param);
+        let r = <AppRunner<'a, Self> as WindowRun<AppGraphics>>::run_with_param(&mut runner, param.window_param);
 
         if r.is_err()
         {

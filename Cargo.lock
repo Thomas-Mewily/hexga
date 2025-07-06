@@ -806,6 +806,7 @@ dependencies = [
 name = "hexga_engine_graphics"
 version = "0.0.10-beta.16"
 dependencies = [
+ "hexga_core",
  "hexga_engine_window",
  "hexga_graphics",
  "hexga_io",

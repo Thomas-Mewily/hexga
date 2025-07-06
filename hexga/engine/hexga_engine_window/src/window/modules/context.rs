@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use copypasta::{ClipboardContext, ClipboardProvider};
 use serde::de;
 
@@ -7,35 +5,36 @@ use super::*;
 
 
 
-pub trait WindowLoop
+pub trait WindowLoop<T>
 {
     /// Handles a message from the application. This is the main entry for handling messages, and events.
     ///
     /// This is also responsible for dispatching special events like the [AppLoop::update], [AppLoop::draw], [AppLoop::pause], [AppLoop::resume].
-    fn handle_message(&mut self, message: AppMessage, ctx: &mut WindowCtx) -> bool
+    fn handle_message(&mut self, message: EventMessage<T>, ctx: &mut WindowCtx) -> bool
     {
         match message
         {
-            AppMessage::LocalizedEvent(localized_event) =>
-            {
-                if let Event::Window(WindowEvent::Draw) = localized_event.event
-                {
-                    self.draw_window(localized_event.window, ctx);
-                }
-                else
-                {
-                    return self.handle_localized_event(localized_event, ctx)
-                }
-            },
-            AppMessage::Device(device_message) => match device_message
-            {
-                DeviceMessage::Added   => self.device_added(ctx),
-                DeviceMessage::Removed => self.device_removed(ctx),
-                DeviceMessage::Resume  => self.resume(ctx),
-                DeviceMessage::Update  => self.update(ctx),
-                DeviceMessage::Exit    => { self.exit(ctx); ctx.exit(); },
-                DeviceMessage::MemoryWarning => self.warning_memory(ctx),
-            },
+            EventMessage::LocalizedEvent(localized_event) =>
+                    {
+                        if let Event::Window(WindowEvent::Draw) = localized_event.event
+                        {
+                            self.draw_window(localized_event.window, ctx);
+                        }
+                        else
+                        {
+                            return self.handle_localized_event(localized_event, ctx)
+                        }
+                    },
+            EventMessage::Device(device_message) => match device_message
+                    {
+                        DeviceMessage::Added   => self.device_added(ctx),
+                        DeviceMessage::Removed => self.device_removed(ctx),
+                        DeviceMessage::Resume  => self.resume(ctx),
+                        DeviceMessage::Update  => self.update(ctx),
+                        DeviceMessage::Exit    => { self.exit(ctx); ctx.exit(); },
+                        DeviceMessage::MemoryWarning => self.warning_memory(ctx),
+                    },
+            EventMessage::User(user) => self.user_event(user, ctx),
         }
         true
     }
@@ -65,22 +64,25 @@ pub trait WindowLoop
     fn device_added(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
     fn device_removed(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
     fn warning_memory(&mut self, ctx: &mut WindowCtx) { let _ = ctx; }
+
+    fn user_event(&mut self, event: T, ctx: &mut WindowCtx) { let _ = (event, ctx); }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct WindowRunParam
+pub struct WindowRunParam<T /*= ()*/> where T: 'static
 {
     pub default_window : Option<WindowParam>,
     // If true update will be called on every event, otherwise it will be called frequently
     pub wait_for_event : bool,
+    pub event_loop_param : T,
 }
 
-impl Default for WindowRunParam
+impl<T> Default for WindowRunParam<T> where T: 'static + Default
 {
-    fn default() -> Self { Self { default_window: Some(___()), wait_for_event: false } }
+    fn default() -> Self { Self { default_window: Some(___()), wait_for_event: false, event_loop_param: ___() } }
 }
 
-pub trait IWindowRunParam : Sized + Default
+pub trait IWindowRunParam<T=()> : Sized
 {
     fn wait_for_event(&self) -> bool;
     fn with_wait_for_event(self, wait_for_event : bool) -> Self;
@@ -88,59 +90,68 @@ pub trait IWindowRunParam : Sized + Default
     fn default_window(&self) -> Option<&WindowParam>;
     fn with_default_window(self, default_window : Option<WindowParam>) -> Self;
 
+    fn event_loop_param(&self) -> &T;
+    fn with_event_loop_param(self, event_loop_param : T) -> Self;
+
     // A default configuration for game.
-    fn game() -> Self { Self::___().with_wait_for_event(false) }
+    fn game() -> Self where T : Default, Self : Default { Self::___().with_wait_for_event(false) }
     // A default configuration for software.
-    fn software() -> Self { Self::___().with_wait_for_event(true) }
+    fn software() -> Self where T : Default, Self : Default { Self::___().with_wait_for_event(true) }
 }
 
-impl WindowRunParam
+impl<T> WindowRunParam<T> where T : 'static
 {
-    pub fn new() -> Self { ___() }
+    pub fn new() -> Self where T : Default { ___() }
 }
-impl IWindowRunParam for WindowRunParam
+impl<T> IWindowRunParam<T> for WindowRunParam<T> where T : 'static
 {
     fn wait_for_event(&self) -> bool { self.wait_for_event }
     fn with_wait_for_event(self, wait_for_event : bool) -> Self { Self { wait_for_event, ..self } }
 
     fn default_window(&self) -> Option<&WindowParam> { self.default_window.as_ref() }
     fn with_default_window(self, default_window : Option<WindowParam>) -> Self { Self { default_window, ..self } }
+
+    fn event_loop_param(&self) -> &T { &self.event_loop_param }
+    fn with_event_loop_param(self, event_loop_param : T) -> Self { Self { event_loop_param, ..self } }
 }
 
-pub trait WindowRun : WindowLoop
+pub trait WindowRun<T> : WindowLoop<T> where T: 'static
 {
-    fn run_with_param(&mut self, param : WindowRunParam) -> AppResult where Self: Sized
+    fn run_with_param(&mut self, param : WindowRunParam<T>) -> AppResult where Self: Sized
     {
-        let ev_loop = EventLoop::new().map_err(|e| <AppErrorEventLoop as Into<AppError>>::into(e))?;
-        ev_loop.set_control_flow(if param.wait_for_event { winit::event_loop::ControlFlow::Wait } else { winit::event_loop::ControlFlow::Poll });
+        let event_loop = EventLoop::<T>::with_user_event().build().map_err(|e| <AppErrorEventLoop as Into<AppError>>::into(e))?;
+        event_loop.set_control_flow(if param.wait_for_event { winit::event_loop::ControlFlow::Wait } else { winit::event_loop::ControlFlow::Poll });
+        let proxy = event_loop.create_proxy();
         let mut runner = WindowRunner
         {
             app : self,
             ctx: ___(),
+            _phantom: PhantomData,
         };
 
         runner.ctx.default_window = param.default_window;
-        ev_loop.run_app(&mut runner).map_err(|e| e.into())
+        event_loop.run_app(&mut runner).map_err(|e| e.into())
     }
 
-    fn run(&mut self) -> AppResult where Self: Sized { self.run_with_param(___()) }
+    fn run(&mut self) -> AppResult where Self: Sized, WindowRunParam<T> : Default { self.run_with_param(___()) }
 }
-impl<T> WindowRun for T where T: WindowLoop {}
+impl<S,T> WindowRun<T> for S where S: WindowLoop<T>, T: 'static {}
 
 
 
-struct WindowRunner<'a, A : ?Sized> where A : WindowLoop
+struct WindowRunner<'a, A : ?Sized, T> where A : WindowLoop<T>, T: 'static
 {
     app : &'a mut A,
     ctx : WindowContext,
+    _phantom : PhantomData<T>,
 }
 
-impl<'a,A : ?Sized> WindowRunner<'a,A> where A : WindowLoop
+impl<'a,A : ?Sized, T> WindowRunner<'a,A,T> where A : WindowLoop<T>, T: 'static
 {
-    fn handle_message(&mut self, message: impl Into<AppMessage>, active_event_loop: &ActiveEventLoop) -> bool
+    fn handle_message(&mut self, message: impl Into<EventMessage<T>>, event_loop: &ActiveEventLoop) -> bool
     {
-        let Self { app, ctx } = self;
-        let mut app_ctx = AppCtx { ctx, active_event_loop };
+        let Self { app, ctx, _phantom } = self;
+        let mut app_ctx = AppCtx { ctx, active_event_loop: event_loop };
         app.handle_message(message.into(), &mut app_ctx)
     }
 }
@@ -163,6 +174,7 @@ pub trait WinitConvert<Output>
     fn convert(self) -> Output;
 }
 
+pub use winit::event_loop::EventLoopProxy;
 
 impl<T> WinitConvert<Vec2> for winit::dpi::LogicalSize<T> where T : ToFloat<Output = float>
 {
@@ -219,12 +231,11 @@ impl WinitConvertWithDpi for winit::dpi::PhysicalPosition<f64>
 
 
 
-impl<'a, A> winit::application::ApplicationHandler for WindowRunner<'a, A> where A : WindowLoop
+impl<'a, A, T> winit::application::ApplicationHandler<T> for WindowRunner<'a, A, T> where A : WindowLoop<T>, T: 'static
 {
-
     fn window_event(
         &mut self,
-        active_event_loop: &ActiveEventLoop,
+        event_loop: &ActiveEventLoop,
         window_id: winit::window::WindowId,
         winit_event: winit::event::WindowEvent,
     ) {
@@ -233,7 +244,7 @@ impl<'a, A> winit::application::ApplicationHandler for WindowRunner<'a, A> where
         {
             Some(e) =>
             {
-                self.handle_message(e, active_event_loop);
+                self.handle_message(e, event_loop);
                 if let Event::Key(k) = e.event
                 {
                     if !k.is_repeat()
@@ -241,7 +252,7 @@ impl<'a, A> winit::application::ApplicationHandler for WindowRunner<'a, A> where
                         if let Some(mods) = KeyMods::from_keycode(k.key)
                         {
                             self.ctx.modifier.set(mods, k.action.is_press());
-                            self.handle_message(LocalizedEvent::new(window_id.into(), self.ctx.modifier.into(), DeviceID::OS), active_event_loop);
+                            self.handle_message(LocalizedEvent::new(window_id.into(), self.ctx.modifier.into(), DeviceID::OS), event_loop);
                         }
                     }
                 }
@@ -253,7 +264,7 @@ impl<'a, A> winit::application::ApplicationHandler for WindowRunner<'a, A> where
 
     fn device_event(
             &mut self,
-            active_event_loop: &winit::event_loop::ActiveEventLoop,
+            event_loop: &winit::event_loop::ActiveEventLoop,
             _device_id: winit::event::DeviceId,
             event: winit::event::DeviceEvent,
         )
@@ -265,31 +276,35 @@ impl<'a, A> winit::application::ApplicationHandler for WindowRunner<'a, A> where
             _ => return,
         };
 
-        self.handle_message(msg, active_event_loop);
+        self.handle_message(msg, event_loop);
     }
 
-    fn resumed(&mut self, active_event_loop: &ActiveEventLoop)
+    fn resumed(&mut self, event_loop: &ActiveEventLoop)
     {
         if let Some(w) = self.ctx.default_window.take()
         {
-            let Self { app : _, ctx } = self;
-            let mut app_ctx = AppCtx { ctx, active_event_loop };
+            let Self { app : _, ctx, _phantom } = self;
+            let mut app_ctx = AppCtx { ctx, active_event_loop: event_loop };
             app_ctx.new_window(w).expect("Failed to create the main window");
         }
-        self.handle_message(DeviceMessage::Resume, active_event_loop);
+        self.handle_message(DeviceMessage::Resume, event_loop);
     }
 
-    fn memory_warning(&mut self, active_event_loop: &winit::event_loop::ActiveEventLoop)
+    fn memory_warning(&mut self, event_loop: &winit::event_loop::ActiveEventLoop)
     {
-        self.handle_message(DeviceMessage::MemoryWarning, active_event_loop);
+        self.handle_message(DeviceMessage::MemoryWarning, event_loop);
     }
 
-    fn about_to_wait(&mut self, active_event_loop: &winit::event_loop::ActiveEventLoop) {
-        self.handle_message(DeviceMessage::Update, active_event_loop);
+    fn about_to_wait(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+        self.handle_message(DeviceMessage::Update, event_loop);
     }
 
-    fn exiting(&mut self, active_event_loop: &winit::event_loop::ActiveEventLoop) {
-        self.handle_message(DeviceMessage::Exit, active_event_loop);
+    fn exiting(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+        self.handle_message(DeviceMessage::Exit, event_loop);
+    }
+
+    fn user_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, event: T) {
+        self.handle_message(EventMessage::User(event), event_loop);
     }
 }
 
