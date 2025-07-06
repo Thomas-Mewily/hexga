@@ -17,6 +17,24 @@ impl Toggleable for bool
     }
 }
 
+
+pub trait BoolOnce
+{
+    fn once<R, F>(&mut self, f : F) -> Option<R> where F : FnOnce() -> R;
+}
+impl BoolOnce for bool
+{
+    fn once<R, F>(&mut self, f: F) -> Option<R> where F: FnOnce() -> R
+    {
+        if !*self
+        {
+            *self = true;
+            Some(f())
+        }else { None }
+    }
+}
+
+
 pub trait ToDebug
 {
     fn to_debug(&self) -> String;

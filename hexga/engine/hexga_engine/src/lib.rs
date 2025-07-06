@@ -19,24 +19,17 @@ pub mod prelude
     pub use hexga_engine_window::window::IWindowRunParam; // `game()` `software()` shortcut
 }
 
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct AppContext
 {
     window_context : WindowContext<WindowGraphicsData>,
-    graphics : Asset<Graphics, Option<EventLoopProxy<Graphics>>>,
+    proxy : Option<EventLoopProxy<GraphicsEvent>>,
+    graphics : Graphics,
 }
-
-impl Default for AppContext
-{
-    fn default() -> Self {
-        Self { window_context: ___(), graphics: Asset::Loadding(None) }
-    }
-}
-
 
 impl IAppCtx for AppContext { }
 
-pub trait IAppCtx
+pub trait IAppCtx : Debug
 {
 
 }
@@ -102,36 +95,32 @@ pub trait AppLoop
     fn exit(&mut self, ctx: &mut AppCtx) { let _ = ctx; }
 }
 
-impl<'a, T : ?Sized>  WindowLoop<Graphics, WindowGraphicsData> for AppRunner<'a, T> where T : AppLoop
+impl<'a, T : ?Sized> WindowLoop<GraphicsEvent, WindowGraphicsData> for AppRunner<'a, T> where T : AppLoop
 {
-    fn handle_message(&mut self, message: EventMessage<Graphics,WindowGraphicsData>, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool {
+    fn handle_message(&mut self, message: EventMessage<GraphicsEvent,WindowGraphicsData>, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool {
         let m = message.clone_with_user_message(());
         self.dispatch_message(message, ctx);
         self.data.handle_message(m.with_window_data_type(), &mut self.ctx)
     }
 
-    fn user_event(&mut self, graphic: Graphics, _ : &mut WindowCtx<WindowGraphicsData>)
+    fn user_event(&mut self, graphic: GraphicsEvent, _ : &mut WindowCtx<WindowGraphicsData>)
     {
-        self.ctx.graphics = Asset::Loaded(graphic);
+        self.ctx.graphics.handle_event(graphic);
     }
 
     fn resume(&mut self, ctx: &mut WindowCtx<WindowGraphicsData>)
     {
-        if let Asset::Loadding(proxy) = &mut self.ctx.graphics
+        ctx.resume();
+
+        if let Some(proxy) = &self.ctx.proxy
         {
-            ctx.resume();
-            if let Asset::Loaded(graphics) = &mut self.ctx.graphics
-            {
-                graphics.resume();
-            }
+            self.ctx.graphics.resume(ctx, proxy.clone());
         }
     }
 
-    fn pause(&mut self, ctx: &mut WindowCtx<WindowGraphicsData>) {
-        if let Asset::Loaded(graphics) = &mut self.ctx.graphics
-        {
-            graphics.pause();
-        }
+    fn pause(&mut self, ctx: &mut WindowCtx<WindowGraphicsData>)
+    {
+        self.ctx.graphics.pause();
         ctx.pause();
     }
 }
@@ -176,12 +165,12 @@ pub trait AppRun : AppLoop
     fn run_with_param<'a>(&'a mut self, param : AppRunParam) -> Result<(), ()>
     {
         let mut runner = AppRunner { ctx: ___(), data: self };
-        let r = <AppRunner<'a, Self> as WindowRun<Graphics, WindowGraphicsData>>::run_with_param_and_init_from_event_loop
+        let r = <AppRunner<'a, Self> as WindowRun<GraphicsEvent, WindowGraphicsData>>::run_with_param_and_init_from_event_loop
         (&mut runner,
             param.window_param,
             |s, event_loop|
             {
-                s.ctx.graphics = Asset::Loadding(Some(event_loop.create_proxy()));
+                s.ctx.proxy = Some(event_loop.create_proxy());
             }
         );
 

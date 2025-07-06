@@ -22,7 +22,7 @@ pub struct MyApp
 }
 
 struct GraphicsBuilder {
-    event_loop_proxy: Option<EventLoopProxy<Graphics>>,
+    event_loop_proxy: Option<EventLoopProxy<Surface>>,
 }
 
 enum MaybeGraphics {
