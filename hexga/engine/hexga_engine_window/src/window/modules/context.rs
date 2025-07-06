@@ -12,13 +12,13 @@ pub trait WindowLoop<UserEvent=(), WindowData=()>
     /// Handles a message from the application.
     ///
     /// This is the main entry for handling messages, and events, and it call `dispatch_message`
-    fn handle_message(&mut self, message: EventMessage<UserEvent>, ctx: &mut WindowCtx<WindowData>) -> bool
+    fn handle_message(&mut self, message: EventMessage<UserEvent,WindowData>, ctx: &mut WindowCtx<WindowData>) -> bool
     {
         self.dispatch_message(message, ctx)
     }
 
     /// This is also responsible for dispatching special events like the [AppLoop::update], [AppLoop::draw], [AppLoop::pause], [AppLoop::resume].
-    fn dispatch_message(&mut self, message: EventMessage<UserEvent>, ctx: &mut WindowCtx<WindowData>) -> bool
+    fn dispatch_message(&mut self, message: EventMessage<UserEvent,WindowData>, ctx: &mut WindowCtx<WindowData>) -> bool
     {
         match message
         {
@@ -47,7 +47,7 @@ pub trait WindowLoop<UserEvent=(), WindowData=()>
         true
     }
 
-    fn handle_localized_event(&mut self, event: LocalizedEvent, ctx: &mut WindowCtx<WindowData>) -> bool
+    fn handle_localized_event(&mut self, event: LocalizedEvent<WindowData>, ctx: &mut WindowCtx<WindowData>) -> bool
     {
         self.handle_event(event.event, ctx)
     }
@@ -64,7 +64,7 @@ pub trait WindowLoop<UserEvent=(), WindowData=()>
 
     fn update(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
     fn draw(&mut self, ctx: &mut WindowCtx<WindowData>) { let _ = ctx; }
-    fn draw_window(&mut self, window : WindowID, ctx: &mut WindowCtx<WindowData>) { let _ = window; self.draw(ctx); }
+    fn draw_window(&mut self, window : WindowID<WindowData>, ctx: &mut WindowCtx<WindowData>) { let _ = window; self.draw(ctx); }
 
     // Called when on exit
     fn exit(&mut self, ctx: &mut WindowCtx<WindowData>) { ctx.exit(); }
@@ -127,12 +127,7 @@ pub trait WindowRun<T,W> : WindowLoop<T,W> where T: 'static
         event_loop.set_control_flow(if param.wait_for_event { winit::event_loop::ControlFlow::Wait } else { winit::event_loop::ControlFlow::Poll });
         f(self, &mut event_loop);
 
-        let mut runner = WindowRunner
-        {
-            app : self,
-            ctx: ___(),
-            _phantom: PhantomData,
-        };
+        let mut runner = WindowRunner::new(self, ___());
 
         runner.ctx.default_window = param.default_window;
         runner.ctx.wait_for_event = param.wait_for_event;
@@ -164,7 +159,7 @@ impl<'a,A: ?Sized, T,W> WindowRunner<'a,A,T,W> where A : WindowLoop<T,W>, T: 'st
         Self { app, ctx, _phantom: PhantomData }
     }
 
-    fn handle_message(&mut self, message: impl Into<EventMessage<T>>, event_loop: &ActiveEventLoop) -> bool
+    fn handle_message(&mut self, message: impl Into<EventMessage<T,W>>, event_loop: &ActiveEventLoop) -> bool
     {
         let Self { app, ctx, _phantom } = self;
         let mut app_ctx = AppCtx { ctx, active_event_loop: event_loop };
@@ -177,21 +172,28 @@ pub type WindowCtx<'a, W=()> = dyn IWindowCtx<W> + 'a;
 pub trait IWindowCtx<W>
 {
     //fn run<A : AppLoop>(self, app : &mut A) -> AppResult;
-   fn new_window(&mut self, param : WindowParam<W>) -> AppResult<&mut Window<W>>;
-   fn window(&mut self, id : WindowID) -> Option<&Window<W>>;
-   fn window_data(&mut self, id : WindowID) -> Option<&W>;
-   fn window_data_mut(&mut self, id : WindowID) -> Option<&mut W>;
-   fn window_exist(&mut self, id : WindowID) -> bool { self.window(id).is_some() }
-   fn delete_window(&mut self, id : WindowID);
+    fn new_window(&mut self, param : WindowParam<W>) -> AppResult<&mut Window<W>>;
+    fn window(&mut self, id : WindowID<W>) -> Option<&Window<W>>;
+    fn window_data(&mut self, id : WindowID<W>) -> Option<&W>;
+    fn window_data_mut(&mut self, id : WindowID<W>) -> Option<&mut W>;
+    fn window_exist(&mut self, id : WindowID<W>) -> bool { self.window(id).is_some() }
+    fn delete_window(&mut self, id : WindowID<W>);
 
 
-   fn iter_windows_id<'a>(&'a mut self) -> Box<dyn Iterator<Item = WindowID> + 'a>; // Don't like this box dyn
-   fn default_window_id(&mut self) -> Option<WindowID>;
+    fn internaly_delete_windows_on_pause(&mut self) -> bool { true }
+    // Internaly delete all windows if the plaform requires it
+    fn pause(&mut self);
+    // Internaly create all windows if the plaform requires it
+    fn resume(&mut self);
 
-   fn exit(&mut self);
 
-   fn clipboard_get(&mut self) -> Option<String>;
-   fn clipboard_set(&mut self, paste : String) -> Result<(), ()>;
+    fn iter_windows_id<'a>(&'a mut self) -> Box<dyn Iterator<Item = WindowID<W>> + 'a>; // Don't like this box dyn
+    fn default_window_id(&mut self) -> WindowID<W>;
+
+    fn exit(&mut self);
+
+    fn clipboard_get(&mut self) -> Option<String>;
+    fn clipboard_set(&mut self, paste : String) -> Result<(), ()>;
 }
 
 pub trait WinitConvert<Output>
@@ -261,7 +263,7 @@ impl<'a, A, T, W> winit::application::ApplicationHandler<T> for WindowRunner<'a,
     fn window_event(
         &mut self,
         event_loop: &ActiveEventLoop,
-        window_id: winit::window::WindowId,
+        window_id: WinitWindowID,
         winit_event: winit::event::WindowEvent,
     ) {
 
@@ -277,7 +279,9 @@ impl<'a, A, T, W> winit::application::ApplicationHandler<T> for WindowRunner<'a,
                         if let Some(mods) = KeyMods::from_keycode(k.key)
                         {
                             self.ctx.modifier.set(mods, k.action.is_press());
-                            self.handle_message(LocalizedEvent::new(window_id.into(), self.ctx.modifier.into(), DeviceID::OS), event_loop);
+                            let id = self.ctx.winit_id_to_window_id(window_id);
+                            debug_assert!(id.is_not_null());
+                            self.handle_message(LocalizedEvent::<W>::new(id, self.ctx.modifier.into(), DeviceID::OS), event_loop);
                         }
                     }
                 }
@@ -356,54 +360,44 @@ impl<W> IWindowCtx<W> for AppCtx<'_, W>
 {
     fn exit(&mut self) { self.active_event_loop.exit(); }
 
-    fn iter_windows_id<'a>(&'a mut self) -> Box<dyn Iterator<Item = WindowID> + 'a> { Box::new(self.ctx.windows.keys().copied()) }
+    fn iter_windows_id<'a>(&'a mut self) -> Box<dyn Iterator<Item = WindowID<W>> + 'a> { Box::new(self.ctx.windows.ids()) }
 
     fn new_window(&mut self, param : WindowParam<W>) -> AppResult<&mut Window<W>>
     {
-        let cursor_visible = param.cursor_visible;
-        let cursor_grab = param.cursor_grab;
-
-        let window = self.active_event_loop
-            .create_window(param.clone_with_data(()).into())
-            .map_err(|_| AppError::Unknow)?;
-
-        let _ = window.set_cursor_grab(cursor_grab.into());
-        window.set_cursor_visible(cursor_visible);
-
-        let id = WindowID(window.id());
-        let win = Window
-        {
-            window : SharedWinitWindow::new(window),
-            childs: ___(),
-            id,
-            param,
-        };
-
-        self.ctx.windows.insert(id, win);
-        Ok(self.ctx.windows.get_mut(&id).unwrap())
+        let id = self.ctx.windows.insert(Window{ winit_window: None, param, id: ___(), winit_id: WinitWindowID::dummy() });
+        let window = &mut self.ctx.windows[id];
+        window.id = id;
+        let r = self.ctx.winit_id.insert(window.winit_id, id);
+        debug_assert_eq!(r, None);
+        window.resume(&mut self.active_event_loop).map(|_| window)
     }
 
-    fn delete_window(&mut self, id : WindowID) {
-        if let Some(parent) = self.ctx.windows.remove(&id)
+
+    fn delete_window(&mut self, id : WindowID<W>)
+    {
+        let Some(parent) = self.ctx.windows.remove(id) else { return; };
+
+        let winit_id = parent.winit_id;
+        self.ctx.winit_id.remove(&winit_id);
+
+        for child_id in parent.childs().iter().copied()
         {
-            for child_id in parent.childs.iter().copied()
+            // Remove the child from the parent
+            if let Some(child) = self.window_mut(child_id)
             {
-                // Remove the child from the parent
-                if let Some(child) = self.window_mut(child_id)
+                if child.param.close_when_parent_exit
                 {
-                    if child.param.close_when_parent_exit
-                    {
-                        self.delete_window(child_id);
-                    }
+                    self.delete_window(child_id);
                 }
             }
         }
     }
 
-    fn window(&mut self, id : WindowID) -> Option<&Window<W>> { self.ctx.window(id) }
+    fn window(&mut self, id : WindowID<W>) -> Option<&Window<W>> { self.ctx.window(id) }
 
-    fn window_data(&mut self, id : WindowID) -> Option<&W> { self.window(id).map(|w| w.data()) }
-    fn window_data_mut(&mut self, id : WindowID) -> Option<&mut W> { self.window_mut(id).map(|w| w.data_mut()) }
+
+    fn window_data(&mut self, id : WindowID<W>) -> Option<&W> { self.window(id).map(|w| w.data()) }
+    fn window_data_mut(&mut self, id : WindowID<W>) -> Option<&mut W> { self.window_mut(id).map(|w| w.data_mut()) }
 
     fn clipboard_get(&mut self) -> Option<String> {
         self.copy_paste.as_mut().and_then(|ctx| ctx.get_contents().ok())
@@ -419,12 +413,35 @@ impl<W> IWindowCtx<W> for AppCtx<'_, W>
         }
     }
 
-    fn default_window_id(&mut self) -> Option<WindowID> { self.ctx.default_window_id }
+    fn pause(&mut self)
+    {
+        if !self.internaly_delete_windows_on_pause() { return; }
+        for (_, window) in self.windows.iter_mut()
+        {
+            window.winit_window = None;
+        }
+        self.winit_id.clear();
+    }
+
+    fn resume(&mut self)
+    {
+        if !self.internaly_delete_windows_on_pause() { return; }
+        for (id, window) in self.ctx.windows.iter_mut()
+        {
+            debug_assert_eq!(id, window.id());
+            window.resume(&self.active_event_loop).unwrap();
+            self.ctx.winit_id.insert(window.winit_id, window.id);
+        }
+    }
+
+    fn default_window_id(&mut self) -> WindowID<W> { self.ctx.default_window_id }
 }
+
 
 pub struct WindowContext<W>
 {
-    windows  : HashMap<WindowID, Window<W>>,
+    windows   : GenVec<Window<W>>,
+    winit_id  : HashMap<WinitWindowID, WindowID<W>>,
 
     mouse    : Option<Vec2>,
     modifier : KeyModsFlags,
@@ -432,7 +449,8 @@ pub struct WindowContext<W>
     copy_paste : Option<ClipboardContext>,
 
     default_window : Option<WindowParam<W>>,
-    default_window_id : Option<WindowID>,
+    /// null if not set
+    default_window_id : WindowID<W>,
 
     // If true update will be called on every event, otherwise it will be called frequently
     wait_for_event : bool,
@@ -444,7 +462,7 @@ impl<W> std::fmt::Debug for WindowContext<W>
     {
         // copy_paste don't support debug
         f.debug_struct("WindowContext")
-            .field("windows", &self.windows)
+            .field("windows", &self.winit_id)
             .field("mouse", &self.mouse)
             .field("modifier", &self.modifier)
             .field("default_window", &self.default_window)
@@ -466,35 +484,41 @@ impl<W> WindowContext<W>
     {
         Self
         {
-            windows: ___(),
+            winit_id: ___(),
             mouse: ___(),
             modifier: ___(),
             copy_paste: ClipboardContext::new().ok(),
             default_window: ___(),
             wait_for_event: false,
-            default_window_id: None,
+            default_window_id: ___(),
+            windows: ___(),
         }
     }
 
-    fn window(&mut self, id : WindowID) -> Option<&Window<W>>
+    fn window(&mut self, id : WindowID<W>) -> Option<&Window<W>>
     {
-        self.windows.get(&id)
+        self.windows.get(id)
     }
 
-    fn window_mut(&mut self, id : WindowID) -> Option<&mut Window<W>>
+    fn window_mut(&mut self, id : WindowID<W>) -> Option<&mut Window<W>>
     {
-        self.windows.get_mut(&id)
+        self.windows.get_mut(id)
+    }
+
+    // Return null if not found
+    fn winit_id_to_window_id(&self, winit_id: WinitWindowID) -> WindowID<W>
+    {
+        self.winit_id.get(&winit_id).map(|id| self.windows.get(*id).map(|v| v.id())).flatten().unwrap_or_default()
     }
 }
 
 impl<W> WindowContext<W>
 {
-    fn convert_winit_event(&mut self, window_id: winit::window::WindowId, winit_event: winit::event::WindowEvent) -> Option<LocalizedEvent>
+    fn convert_winit_event(&mut self, window_id: WinitWindowID, winit_event: winit::event::WindowEvent) -> Option<LocalizedEvent<W>>
     {
-        let Self { windows, mouse, modifier, default_window: _, copy_paste: _, wait_for_event: _, default_window_id : _ } = self;
+        let window_id = self.winit_id_to_window_id(window_id);
 
-        let window_id = window_id.into();
-        let _dpi = windows.get(&window_id).map(|w| w.param().dpi).unwrap_or(1.);
+        let Self { winit_id: _windows, mouse, modifier, default_window: _, copy_paste: _, wait_for_event: _, default_window_id : _, windows : _ } = self;
 
         let event : Event = match winit_event
         {

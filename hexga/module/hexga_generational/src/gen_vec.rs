@@ -362,6 +362,8 @@ impl<T,Gen:IGeneration> GenVecIDOf<T,Gen>
     pub fn remove(self, gen_vec : &mut GenVecOf<T,Gen>) -> Option<T> { gen_vec.remove(self) }
     pub fn exist(self, gen_vec : &GenVecOf<T,Gen>) -> bool { self.get(gen_vec).is_some() }
 
+    pub fn from_other_id<T2>(other : GenVecIDOf<T2,Gen>) -> GenVecIDOf<T,Gen> { GenVecIDOf::new(other.index, other.generation) }
+
     pub const NULL : Self = GenVecIDOf { index: usize::MAX, generation: Gen::MIN, value: PhantomData };
 }
 impl<T,Gen:IGeneration> From<(usize,Gen)> for GenVecIDOf<T,Gen>

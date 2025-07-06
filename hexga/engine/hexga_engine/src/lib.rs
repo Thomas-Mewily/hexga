@@ -1,3 +1,4 @@
+#![allow(unused_imports, dead_code)]
 use hexga_engine_graphics::{prelude::*, WindowGraphicsData};
 use hexga_engine_window::{event::IDeviceMessage, prelude::*, window::{EventLoopProxy, WindowContext, WindowRunParam}};
 use hexga_core::prelude::*;//
@@ -48,8 +49,8 @@ struct AppRunner<'a, T : ?Sized> where T : AppLoop
 }
 
 pub type AppCtx<'a> = dyn IAppCtx + 'a;
-pub type AppMessageInternal = EventMessage<Graphics>;
-pub type AppMessage = EventMessage;
+pub type AppMessageInternal = EventMessage<Graphics, SurfaceID>;
+pub type AppMessage = EventMessage<(),()>;
 
 pub trait AppLoop
 {
@@ -103,11 +104,10 @@ pub trait AppLoop
 
 impl<'a, T : ?Sized>  WindowLoop<Graphics, WindowGraphicsData> for AppRunner<'a, T> where T : AppLoop
 {
-    fn handle_message(&mut self, message: AppMessageInternal, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool
-    {
+    fn handle_message(&mut self, message: EventMessage<Graphics,WindowGraphicsData>, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool {
         let m = message.clone_with_user_message(());
         self.dispatch_message(message, ctx);
-        self.data.handle_message(m, &mut self.ctx)
+        self.data.handle_message(m.with_window_data_type(), &mut self.ctx)
     }
 
     fn user_event(&mut self, graphic: Graphics, _ : &mut WindowCtx<WindowGraphicsData>)
@@ -117,15 +117,22 @@ impl<'a, T : ?Sized>  WindowLoop<Graphics, WindowGraphicsData> for AppRunner<'a,
 
     fn resume(&mut self, ctx: &mut WindowCtx<WindowGraphicsData>)
     {
-
         if let Asset::Loadding(proxy) = &mut self.ctx.graphics
         {
-            if let Some(proxy) = proxy.take()
+            ctx.resume();
+            if let Asset::Loaded(graphics) = &mut self.ctx.graphics
             {
-                todo!();
-                //ctx
+                graphics.resume();
             }
         }
+    }
+
+    fn pause(&mut self, ctx: &mut WindowCtx<WindowGraphicsData>) {
+        if let Asset::Loaded(graphics) = &mut self.ctx.graphics
+        {
+            graphics.pause();
+        }
+        ctx.pause();
     }
 }
 

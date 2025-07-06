@@ -2,17 +2,17 @@ use crate::*;
 pub use hexga_engine_events::modules::*;
 
 #[derive(Clone, PartialEq)]
-pub enum EventMessage<T=()>
+pub enum EventMessage<UserEvent,WindowData>
 {
-    LocalizedEvent(LocalizedEvent),
+    LocalizedEvent(LocalizedEvent<WindowData>),
     Device(DeviceMessage),
-    User(T),
+    User(UserEvent),
 }
 
-impl<T> EventMessage<T>
+impl<T,W> EventMessage<T,W>
 {
-    pub fn as_localized_event(&self) -> Option<&LocalizedEvent> { if let EventMessage::LocalizedEvent(event) = self { Some(event) } else { None } }
-    pub fn as_localized_event_mut(&mut self) -> Option<&mut LocalizedEvent> { if let EventMessage::LocalizedEvent(event) = self { Some(event) } else { None } }
+    pub fn as_localized_event(&self) -> Option<&LocalizedEvent<W>> { if let EventMessage::LocalizedEvent(event) = self { Some(event) } else { None } }
+    pub fn as_localized_event_mut(&mut self) -> Option<&mut LocalizedEvent<W>> { if let EventMessage::LocalizedEvent(event) = self { Some(event) } else { None } }
 
     pub fn as_device_message(&self) -> Option<&DeviceMessage> { if let EventMessage::Device(message) = self { Some(message) } else { None } }
     pub fn as_device_message_mut(&mut self) -> Option<&mut DeviceMessage> { if let EventMessage::Device(message) = self { Some(message) } else { None } }
@@ -20,15 +20,16 @@ impl<T> EventMessage<T>
     pub fn as_user(&self) -> Option<&T> { if let EventMessage::User(user) = self { Some(user) } else { None } }
     pub fn as_user_mut(&mut self) -> Option<&mut T> { if let EventMessage::User(user) = self { Some(user) } else { None } }
 
-    pub fn clone_with_user_message<T2>(&self, user: T2) -> EventMessage<T2>
+    pub fn clone_with_user_message<T2>(&self, user: T2) -> EventMessage<T2,W>
     {
-        match self {
+        match self
+        {
             EventMessage::LocalizedEvent(event) => EventMessage::LocalizedEvent(event.clone()),
             EventMessage::Device(message) => EventMessage::Device(*message),
             EventMessage::User(_) => EventMessage::User(user),
         }
     }
-    pub fn with_replaced_user_message<T2>(self, user: T2) -> EventMessage<T2>
+    pub fn with_replaced_user_message<T2>(self, user: T2) -> EventMessage<T2,W>
     {
         match self {
             EventMessage::LocalizedEvent(event) => EventMessage::LocalizedEvent(event),
@@ -36,13 +37,22 @@ impl<T> EventMessage<T>
             EventMessage::User(_) => EventMessage::User(user),
         }
     }
+    pub fn with_window_data_type<W2>(self) -> EventMessage<T,W2>
+    {
+        match self
+        {
+            EventMessage::LocalizedEvent(event) => EventMessage::LocalizedEvent(event.with_data_type()),
+            EventMessage::Device(message) => EventMessage::Device(message),
+            EventMessage::User(user) => EventMessage::User(user),
+        }
+    }
 }
 
 
-impl<T> From<LocalizedEvent> for EventMessage<T> { fn from(value: LocalizedEvent) -> Self { Self::LocalizedEvent(value) } }
-impl<T> From<DeviceMessage>  for EventMessage<T> { fn from(value: DeviceMessage)  -> Self { Self::Device(value) } }
+impl<T,W> From<LocalizedEvent<W>> for EventMessage<T,W> { fn from(value: LocalizedEvent<W>) -> Self { Self::LocalizedEvent(value) } }
+impl<T,W> From<DeviceMessage>  for EventMessage<T,W> { fn from(value: DeviceMessage)  -> Self { Self::Device(value) } }
 
-impl<T> IDeviceMessage for EventMessage<T>
+impl<T,W> IDeviceMessage for EventMessage<T,W>
 {
     fn is_added(&self) -> bool { self.as_device_message().map(|m| m.is_added()).unwrap_or_default() }
     fn is_removed(&self) -> bool { self.as_device_message().map(|m| m.is_removed()).unwrap_or_default() }

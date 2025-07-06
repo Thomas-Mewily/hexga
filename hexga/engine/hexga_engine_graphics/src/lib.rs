@@ -14,7 +14,7 @@ use hexga_engine_window::prelude::*;
 
 pub mod prelude
 {
-    pub use super::{Graphics, GraphicsParam, IGraphicsParam};
+    pub use super::{Graphics, GraphicsParam, IGraphicsParam, Surface, SurfaceID};
 }
 
 #[derive(Debug)]
@@ -28,10 +28,18 @@ pub struct Graphics
 pub struct Surface
 {
     pub(crate) adapter: wgpu::Adapter,
-    pub(crate) surface: wgpu::Surface<'static>,
+    pub(crate) surface: Option<wgpu::Surface<'static>>,
     pub(crate) surface_config: wgpu::SurfaceConfiguration,
     pub(crate) device: wgpu::Device,
     pub(crate) queue: wgpu::Queue,
+}
+
+impl Surface
+{
+    pub fn pause(&mut self)
+    {
+        self.surface = None;
+    }
 }
 
 pub type SurfaceID = GenVecID<Surface>;
@@ -76,7 +84,7 @@ impl Graphics
     pub async fn try_new_surface_with_param_async<W>(&mut self, window: &Window<WindowGraphicsData<W>>, _param : GraphicsParam) -> Result<SurfaceID,String>
     {
         let instance = wgpu::Instance::default();
-        let surface = instance.create_surface(window.winit_window().clone()).unwrap();
+        let surface = instance.create_surface(window.winit_window().unwrap().clone()).unwrap();
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions
                 {
@@ -111,7 +119,7 @@ impl Graphics
         let s = Surface
         {
             adapter,
-            surface,
+            surface : Some(surface),
             surface_config,
             device,
             queue,
@@ -132,5 +140,18 @@ impl Graphics
 
         //#[cfg(target_arch = "wasm32")]
         //return wasm_bindgen_futures::spawn_local(create_graphics(window, proxy));
+    }
+
+    pub fn pause(&mut self)
+    {
+        for (_, s) in self.surfaces.iter_mut()
+        {
+            s.pause();
+        }
+    }
+
+    pub fn resume(&mut self)
+    {
+
     }
 }

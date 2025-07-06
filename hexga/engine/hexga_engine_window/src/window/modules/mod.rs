@@ -4,27 +4,9 @@ use hexga_graphics::image::Image;
 use hexga_math::prelude::*;
 use crate::*;
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct WindowID(pub(crate) winit::window::WindowId);
+pub type WindowID<W> = GenVecID<Window<W>>;
+pub type WinitWindowID = winit::window::WindowId;
 
-impl std::fmt::Debug for WindowID
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        write!(f, "Window#{:?}", self.0)
-    }
-}
-
-impl From<winit::window::WindowId> for WindowID
-{
-    fn from(value: winit::window::WindowId) -> Self {
-        Self(value)
-    }
-}
-impl WindowID
-{
-    pub fn winit_window_id(&self) -> winit::window::WindowId { self.0 }
-}
 
 mod cursor;
 pub use cursor::*;
@@ -34,19 +16,20 @@ pub use context::*;
 
 
 #[cfg(target_arch = "wasm32")]
-pub type SharedWinitWindow = std::rc::Rc<winit::window::Window>;
+type SharedWinitWindow = std::rc::Rc<winit::window::Window>;
 
 #[cfg(not(target_arch = "wasm32"))]
-pub type SharedWinitWindow = std::sync::Arc<winit::window::Window>;
+type WinitWindowPtr = std::sync::Arc<winit::window::Window>;
 
 
 #[allow(dead_code)]
 pub struct Window<W>
 {
-    pub(crate) window : SharedWinitWindow,
-    pub(crate) param  : WindowParam<W>,
-    pub(crate) id     : WindowID,
-    pub(crate) childs : Vec<WindowID>,
+    // window (and surface) are destroyed when pausing/resumed
+    pub(crate) winit_window : Option<WinitWindowPtr>,
+    pub(crate) param    : WindowParam<W>,
+    pub(crate) id       : WindowID<W>,
+    pub(crate) winit_id : WinitWindowID,
 }
 
 impl<W> Debug for Window<W>
@@ -55,15 +38,15 @@ impl<W> Debug for Window<W>
         f.debug_struct("Window")
             .field("id", &self.id)
             .field("param", &self.param)
-            .field("childs", &self.childs)
             .finish()
     }
 }
 
-
 impl<W> Window<W>
 {
-    pub fn id(&self) -> WindowID { self.id }
+    pub fn id(&self) -> WindowID<W> { self.id }
+    pub fn winit_id(&self) -> WinitWindowID { self.winit_id }
+
     pub fn param(&self) -> &WindowParam<W> { &self.param }
 
     pub fn data(&self) -> &W { &self.param.data }
@@ -71,10 +54,42 @@ impl<W> Window<W>
 
     //pub fn size(&self) -> Point2 { self.physical_size() }
 
-    pub fn physical_size(&self) -> Point2 { self.window.inner_size().convert() }
+    pub fn physical_size(&self) -> Point2 { self.winit_window.as_ref().map(|w| w.inner_size().convert()).unwrap_or(one()) }
     pub fn logical_size(&self) -> Vec2 { self.physical_size().to_vec2() / self.param.dpi }
 
-    pub fn winit_window(&self) -> &SharedWinitWindow { &self.window }
+    pub fn winit_window(&self) -> Option<&WinitWindowPtr> { self.winit_window.as_ref() }
+
+    pub fn childs(&self) -> &[WindowID<W>] { &self.param.childs }
+    pub fn add_child(&mut self, child: WindowID<W>)
+    {
+        if !self.param.childs.contains(&child)
+        {
+            self.param.childs.push(child);
+        }
+    }
+    pub fn remove_child(&mut self, child: WindowID<W>)
+    {
+        if let Some(pos) = self.param.childs.iter().position(|c| *c == child)
+        {
+            self.param.childs.remove(pos);
+        }
+    }
+
+    pub(crate) fn resume(&mut self, active_event_loop : &ActiveEventLoop) -> Result<(), AppError>
+    {
+        let window = active_event_loop
+            .create_window(self.param.clone_with_data(()).into())
+            .map_err(|_| AppError::Unknow)?;
+
+        let _ = window.set_cursor_grab(self.param.cursor_grab.into());
+        window.set_cursor_visible(self.param.cursor_visible);
+
+        // Where to handle dpi?
+
+        self.winit_id = window.id();
+        self.winit_window = Some(WinitWindowPtr::new(window));
+        Ok(())
+    }
 }
 
 #[bitindex]
@@ -154,6 +169,8 @@ pub struct WindowParam<W>
     pub close_when_parent_exit : bool,
 
     pub data : W,
+
+    pub childs : Vec<WindowID<W>>,
 }
 
 
@@ -176,6 +193,7 @@ impl<W> Debug for WindowParam<W>
             .field("cursor_visible", &self.cursor_visible)
             .field("dpi", &self.dpi)
             .field("close_when_parent_exit", &self.close_when_parent_exit)
+            .field("childs", &self.childs)
             .finish()
     }
 }
@@ -233,6 +251,7 @@ impl<W> WindowParam<W>
             cursor_visible: true,
             close_when_parent_exit: true,
             data,
+            childs: ___(),
         }
     }
 
@@ -256,6 +275,7 @@ impl<W> WindowParam<W>
             cursor_visible: self.cursor_visible,
             close_when_parent_exit: self.close_when_parent_exit,
             data,
+            childs: self.childs.iter().map(|id| WindowID::from_other_id(*id)).collect(),
         }
     }
 
@@ -322,6 +342,10 @@ impl<W> WindowParam<W>
     }
     pub fn with_data(mut self, data: W) -> Self {
         self.data = data;
+        self
+    }
+    pub fn with_childs(mut self, childs: Vec<WindowID<W>>) -> Self {
+        self.childs = childs;
         self
     }
 }
