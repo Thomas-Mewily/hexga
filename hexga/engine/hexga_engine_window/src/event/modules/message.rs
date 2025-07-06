@@ -2,7 +2,7 @@ use crate::*;
 pub use hexga_engine_events::modules::*;
 
 #[derive(Clone, PartialEq)]
-pub enum EventMessage<T>
+pub enum EventMessage<T=()>
 {
     LocalizedEvent(LocalizedEvent),
     Device(DeviceMessage),

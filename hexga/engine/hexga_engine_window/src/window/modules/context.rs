@@ -5,7 +5,7 @@ use super::*;
 
 
 
-pub trait WindowLoop<T>
+pub trait WindowLoop<T=()>
 {
     /// Handles a message from the application. This is the main entry for handling messages, and events.
     ///
@@ -69,20 +69,19 @@ pub trait WindowLoop<T>
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct WindowRunParam<T /*= ()*/> where T: 'static
+pub struct WindowRunParam
 {
     pub default_window : Option<WindowParam>,
     // If true update will be called on every event, otherwise it will be called frequently
     pub wait_for_event : bool,
-    pub event_loop_param : T,
 }
 
-impl<T> Default for WindowRunParam<T> where T: 'static + Default
+impl Default for WindowRunParam
 {
-    fn default() -> Self { Self { default_window: Some(___()), wait_for_event: false, event_loop_param: ___() } }
+    fn default() -> Self { Self { default_window: Some(___()), wait_for_event: false } }
 }
 
-pub trait IWindowRunParam<T=()> : Sized
+pub trait IWindowRunParam : Sized
 {
     fn wait_for_event(&self) -> bool;
     fn with_wait_for_event(self, wait_for_event : bool) -> Self;
@@ -90,50 +89,45 @@ pub trait IWindowRunParam<T=()> : Sized
     fn default_window(&self) -> Option<&WindowParam>;
     fn with_default_window(self, default_window : Option<WindowParam>) -> Self;
 
-    fn event_loop_param(&self) -> &T;
-    fn with_event_loop_param(self, event_loop_param : T) -> Self;
-
     // A default configuration for game.
-    fn game() -> Self where T : Default, Self : Default { Self::___().with_wait_for_event(false) }
+    fn game() -> Self where Self: Default { Self::___().with_wait_for_event(false) }
     // A default configuration for software.
-    fn software() -> Self where T : Default, Self : Default { Self::___().with_wait_for_event(true) }
+    fn software() -> Self where Self: Default { Self::___().with_wait_for_event(true) }
 }
 
-impl<T> WindowRunParam<T> where T : 'static
+impl WindowRunParam
 {
-    pub fn new() -> Self where T : Default { ___() }
+    pub fn new() -> Self { ___() }
 }
-impl<T> IWindowRunParam<T> for WindowRunParam<T> where T : 'static
+impl IWindowRunParam for WindowRunParam
 {
     fn wait_for_event(&self) -> bool { self.wait_for_event }
     fn with_wait_for_event(self, wait_for_event : bool) -> Self { Self { wait_for_event, ..self } }
 
     fn default_window(&self) -> Option<&WindowParam> { self.default_window.as_ref() }
     fn with_default_window(self, default_window : Option<WindowParam>) -> Self { Self { default_window, ..self } }
-
-    fn event_loop_param(&self) -> &T { &self.event_loop_param }
-    fn with_event_loop_param(self, event_loop_param : T) -> Self { Self { event_loop_param, ..self } }
 }
 
 pub trait WindowRun<T> : WindowLoop<T> where T: 'static
 {
-    fn run_with_param(&mut self, param : WindowRunParam<T>) -> AppResult where Self: Sized
+    fn run_with_param(&mut self, param : WindowRunParam) -> AppResult where Self: Sized
     {
         let event_loop = EventLoop::<T>::with_user_event().build().map_err(|e| <AppErrorEventLoop as Into<AppError>>::into(e))?;
         event_loop.set_control_flow(if param.wait_for_event { winit::event_loop::ControlFlow::Wait } else { winit::event_loop::ControlFlow::Poll });
         let proxy = event_loop.create_proxy();
+
         let mut runner = WindowRunner
         {
             app : self,
             ctx: ___(),
-            _phantom: PhantomData,
+            proxy,
         };
 
         runner.ctx.default_window = param.default_window;
         event_loop.run_app(&mut runner).map_err(|e| e.into())
     }
 
-    fn run(&mut self) -> AppResult where Self: Sized, WindowRunParam<T> : Default { self.run_with_param(___()) }
+    fn run(&mut self) -> AppResult where Self: Sized { self.run_with_param(___()) }
 }
 impl<S,T> WindowRun<T> for S where S: WindowLoop<T>, T: 'static {}
 
@@ -143,14 +137,14 @@ struct WindowRunner<'a, A : ?Sized, T> where A : WindowLoop<T>, T: 'static
 {
     app : &'a mut A,
     ctx : WindowContext,
-    _phantom : PhantomData<T>,
+    proxy : EventLoopProxy<T>,
 }
 
 impl<'a,A : ?Sized, T> WindowRunner<'a,A,T> where A : WindowLoop<T>, T: 'static
 {
     fn handle_message(&mut self, message: impl Into<EventMessage<T>>, event_loop: &ActiveEventLoop) -> bool
     {
-        let Self { app, ctx, _phantom } = self;
+        let Self { app, ctx, proxy: _phantom } = self;
         let mut app_ctx = AppCtx { ctx, active_event_loop: event_loop };
         app.handle_message(message.into(), &mut app_ctx)
     }
@@ -283,7 +277,7 @@ impl<'a, A, T> winit::application::ApplicationHandler<T> for WindowRunner<'a, A,
     {
         if let Some(w) = self.ctx.default_window.take()
         {
-            let Self { app : _, ctx, _phantom } = self;
+            let Self { app : _, ctx, proxy: _phantom } = self;
             let mut app_ctx = AppCtx { ctx, active_event_loop: event_loop };
             app_ctx.new_window(w).expect("Failed to create the main window");
         }
