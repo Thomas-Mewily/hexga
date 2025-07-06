@@ -1,4 +1,6 @@
+#![allow(unused_imports)]
 use hexga_engine::{prelude::*, AppRunParam};
+use hexga_core::prelude::*;
 
 struct App;
 
@@ -25,5 +27,11 @@ impl AppLoop for App
 
 fn main()
 {
-    App.run_with_param(AppRunParam::game()).unwrap();
+    App.run_with_param(
+        AppRunParam::game().with_default_window(
+            Some
+            (
+                WindowParam::___().with_title("Hello world").with_buttons(WindowButtons::all())
+            )
+        )).unwrap();
 }

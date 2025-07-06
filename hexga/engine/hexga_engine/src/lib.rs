@@ -16,7 +16,10 @@ pub mod prelude
         AppRun,
     };
 
-    pub use hexga_engine_window::window::IWindowRunParam; // `game()` `software()` shortcut
+    pub use hexga_engine_window::window::{
+        IWindowRunParam, // `game()` `software()` shortcut
+        WindowParam,
+    };
 }
 
 #[derive(Default, Debug)]

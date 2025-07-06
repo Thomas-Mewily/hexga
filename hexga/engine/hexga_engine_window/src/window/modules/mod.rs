@@ -77,6 +77,10 @@ impl<W> Window<W>
 
     pub(crate) fn resume(&mut self, active_event_loop : &ActiveEventLoop) -> Result<(), AppError>
     {
+        if self.winit_window.is_some() {
+            return Ok(());
+        }
+
         let window = active_event_loop
             .create_window(self.param.clone_with_data(()).into())
             .map_err(|_| AppError::Unknow)?;
@@ -160,7 +164,7 @@ pub struct WindowParam<W>
     pub icon: Option<Icon>,
     pub active: bool,
 
-    pub cursor_icon         : CursorIcon,
+    pub cursor_icon    : CursorIcon,
     pub cursor_grab    : CursorGrab,
     pub cursor_visible : bool,
 

@@ -356,6 +356,7 @@ impl<'a, W> DerefMut for AppCtx<'a, W>
     }
 }
 
+
 impl<W> IWindowCtx<W> for AppCtx<'_, W>
 {
     fn exit(&mut self) { self.active_event_loop.exit(); }
