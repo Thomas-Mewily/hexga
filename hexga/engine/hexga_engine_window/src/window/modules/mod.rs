@@ -105,6 +105,24 @@ pub enum WindowButton
     Maximize,
 }
 
+impl Into<winit::window::WindowButtons> for WindowButtonFlags
+{
+    fn into(self) -> winit::window::WindowButtons
+    {
+        let mut buttons = winit::window::WindowButtons::empty();
+        if self.contains(WindowButton::Close) {
+            buttons |= winit::window::WindowButtons::CLOSE;
+        }
+        if self.contains(WindowButton::Minimize) {
+            buttons |= winit::window::WindowButtons::MINIMIZE;
+        }
+        if self.contains(WindowButton::Maximize) {
+            buttons |= winit::window::WindowButtons::MAXIMIZE;
+        }
+        buttons
+    }
+}
+
 /// A window level groups windows with respect to their z-position.
 ///
 /// The relative ordering between windows in different window levels is fixed.
@@ -223,6 +241,7 @@ impl<W> Into<winit::window::WindowAttributes> for WindowParam<W>
         });
         att.active = self.active;
         att.cursor = winit::window::Cursor::Icon(self.cursor_icon.into());
+        att.enabled_buttons = self.buttons.into();
         att
     }
 }
@@ -308,8 +327,8 @@ impl<W> WindowParam<W>
         self.transparent = transparent;
         self
     }
-    pub fn with_buttons(mut self, buttons: WindowButtonFlags) -> Self {
-        self.buttons = buttons;
+    pub fn with_buttons(mut self, buttons: impl Into<WindowButtonFlags>) -> Self {
+        self.buttons = buttons.into();
         self
     }
     pub fn with_level(mut self, level: WindowLevel) -> Self {

@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
 use hexga_engine::{prelude::*, AppRunParam};
+use hexga_engine::window;
 use hexga_core::prelude::*;
 
 struct App;
@@ -31,7 +32,16 @@ fn main()
         AppRunParam::game().with_default_window(
             Some
             (
-                WindowParam::___().with_title("Hello world").with_buttons(WindowButtons::all())
+                WindowParam::___().with_title("Hello world")
+                .with_buttons(window::WindowButton::Maximize | window::WindowButton::Close)
+                //.with_cursor_grab(window::CursorGrab::Confined)
+                .with_cursor_icon(window::CursorIcon::NotAllowed)
             )
         )).unwrap();
 }
+
+/*
+Todo : pouvoir mettre à jour les param sur une window déjà crée
+log/warnings à setup
+WASM
+*/
