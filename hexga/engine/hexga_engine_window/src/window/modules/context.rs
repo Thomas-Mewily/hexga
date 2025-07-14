@@ -156,14 +156,6 @@ pub trait WindowRun<T,W> : WindowLoop<T,W> where T: 'static
 }
 impl<S,T,W> WindowRun<T,W> for S where S: WindowLoop<T,W>, T: 'static {}
 
-
-struct WindowRunnerOwned<A, T, W> where A : WindowLoop<T,W>, T: 'static
-{
-    app : A,
-    ctx : WindowContext<W>,
-    _phantom : PhantomData<T>,
-}
-
 struct WindowRunner<'a, A : ?Sized, T, W> where A : WindowLoop<T,W>, T: 'static
 {
     app : &'a mut A,
