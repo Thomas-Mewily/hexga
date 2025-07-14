@@ -16,7 +16,7 @@ pub use context::*;
 
 
 #[cfg(target_arch = "wasm32")]
-pub type SharedWinitWindow = std::rc::Rc<winit::window::Window>;
+pub type WinitWindowPtr = std::rc::Rc<winit::window::Window>;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub type WinitWindowPtr = std::sync::Arc<winit::window::Window>;

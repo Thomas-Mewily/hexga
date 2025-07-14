@@ -16,6 +16,8 @@ default = [
     "serde", "hexga_io",
     "int_are_32_bits", "float_are_32_bits"
 ]
+webgl = ["wgpu/webgl"]
+
 
 int_are_8_bits    = ["hexga_math/int_are_8_bits", "hexga_graphics/int_are_8_bits", "hexga_engine_window/int_are_8_bits"]
 int_are_16_bits   = ["hexga_math/int_are_16_bits", "hexga_graphics/int_are_16_bits", "hexga_engine_window/int_are_16_bits"]
@@ -46,3 +48,6 @@ hexga_io_derive = { workspace = true, optional = true }
 
 pollster = { version = "0.4" }
 wgpu = { version = "25.0.0" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4.49"

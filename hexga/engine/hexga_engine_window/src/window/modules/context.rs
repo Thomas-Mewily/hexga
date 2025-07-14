@@ -131,7 +131,20 @@ pub trait WindowRun<T,W> : WindowLoop<T,W> where T: 'static
 
         runner.ctx.default_window = param.default_window;
         runner.ctx.wait_for_event = param.wait_for_event;
-        event_loop.run_app(&mut runner).map_err(|e| e.into())
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            return event_loop.run_app(&mut runner).map_err(|e| e.into())
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            use winit::platform::web::EventLoopExtWebSys;
+            wasm_bindgen_futures::spawn_local(async move {
+                event_loop.spawn_app(runner);
+            });
+            return Ok(());
+        }
     }
 
     fn run_with_param(&mut self, param : WindowRunParam<W>) -> AppResult where Self: Sized
@@ -144,6 +157,12 @@ pub trait WindowRun<T,W> : WindowLoop<T,W> where T: 'static
 impl<S,T,W> WindowRun<T,W> for S where S: WindowLoop<T,W>, T: 'static {}
 
 
+struct WindowRunnerOwned<A, T, W> where A : WindowLoop<T,W>, T: 'static
+{
+    app : A,
+    ctx : WindowContext<W>,
+    _phantom : PhantomData<T>,
+}
 
 struct WindowRunner<'a, A : ?Sized, T, W> where A : WindowLoop<T,W>, T: 'static
 {

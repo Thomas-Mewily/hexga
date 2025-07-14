@@ -14,8 +14,11 @@ categories = ["game-development", "rendering", "multimedia", "graphics"]
 [features]
 default = [
     "serde", "hexga_io",
-    "int_are_32_bits", "float_are_32_bits"
+    "int_are_32_bits", "float_are_32_bits",
+    "webgl",
 ]
+webgl = ["hexga_engine_graphics/webgl"]
+
 
 int_are_8_bits    = ["hexga/int_are_8_bits", "hexga_engine_graphics/int_are_8_bits", "hexga_engine_events/int_are_8_bits", "hexga_engine_window/int_are_8_bits", "hexga_graphics/int_are_8_bits"]
 int_are_16_bits   = ["hexga/int_are_16_bits", "hexga_engine_graphics/int_are_16_bits", "hexga_engine_events/int_are_16_bits", "hexga_engine_window/int_are_16_bits", "hexga_graphics/int_are_16_bits"]
@@ -43,3 +46,10 @@ hexga_graphics.workspace = true
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
 hexga_io_derive = { workspace = true, optional = true }
+
+env_logger = {version = "0.11.5"}
+log = { version = "0.4.22"}
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_error_panic_hook = "0.1.7"
+console_log = "1.0"

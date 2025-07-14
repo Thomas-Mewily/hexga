@@ -190,6 +190,20 @@ pub trait AppRun : AppLoop
 
     fn run_with_param<'a>(&'a mut self, param : AppRunParam) -> Result<(), ()>
     {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            // Allows the setting of the log level through RUST_LOG env var.
+            // It also allows wgpu logs to be seen.
+            env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("error")).init();
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            // Sets up panics to go to the console.error in browser environments
+            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+            console_log::init_with_level(log::Level::Error).expect("Couldn't initialize logger");
+        }
+
         let mut runner = AppRunner { ctx: ___(), data: self };
         let r = <AppRunner<'a, Self> as WindowRun<GraphicsEvent, WindowGraphicsData>>::run_with_param_and_init_from_event_loop
         (&mut runner,

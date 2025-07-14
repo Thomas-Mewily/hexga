@@ -44,3 +44,6 @@ hexga_io_derive = { workspace = true, optional = true }
 
 winit = "0.30.11"
 copypasta = "0.10.2"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4.49"
