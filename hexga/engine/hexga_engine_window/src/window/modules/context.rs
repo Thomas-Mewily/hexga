@@ -118,14 +118,14 @@ impl<W> IWindowRunParam<W> for WindowRunParam<W>
     fn with_default_window(self, default_window : Option<WindowParam<W>>) -> Self { Self { default_window, ..self } }
 }
 
-pub trait WindowRun<T,W> : WindowLoop<T,W> where T: 'static
+pub trait WindowRun<T,W> : WindowLoop<T,W> where T: 'static, W: 'static, Self : Sized + 'static
 {
     #[doc(hidden)]
-    fn run_with_param_and_init_from_event_loop<F>(&mut self, param : WindowRunParam<W>, f : F) -> AppResult where Self: Sized, F : FnOnce(&mut Self, &mut EventLoop<T>)
+    fn run_with_param_and_init_from_event_loop<F>(mut self, param : WindowRunParam<W>, f : F) -> AppResult where Self: Sized, F : FnOnce(&mut Self, &mut EventLoop<T>)
     {
         let mut event_loop = EventLoop::<T>::with_user_event().build().map_err(|e| <AppErrorEventLoop as Into<AppError>>::into(e))?;
         event_loop.set_control_flow(if param.wait_for_event { winit::event_loop::ControlFlow::Wait } else { winit::event_loop::ControlFlow::Poll });
-        f(self, &mut event_loop);
+        f(&mut self, &mut event_loop);
 
         let mut runner = WindowRunner::new(self, ___());
 
@@ -147,25 +147,25 @@ pub trait WindowRun<T,W> : WindowLoop<T,W> where T: 'static
         }
     }
 
-    fn run_with_param(&mut self, param : WindowRunParam<W>) -> AppResult where Self: Sized
+    fn run_with_param(self, param : WindowRunParam<W>) -> AppResult
     {
         self.run_with_param_and_init_from_event_loop(param, |_,_| {})
     }
 
-    fn run(&mut self) -> AppResult where Self: Sized, W: Default { self.run_with_param(___()) }
+    fn run(self) -> AppResult where W: Default { self.run_with_param(___()) }
 }
-impl<S,T,W> WindowRun<T,W> for S where S: WindowLoop<T,W>, T: 'static {}
+impl<S,T,W> WindowRun<T,W> for S where S: WindowLoop<T,W> + 'static, T: 'static, W: 'static {}
 
-struct WindowRunner<'a, A : ?Sized, T, W> where A : WindowLoop<T,W>, T: 'static
+struct WindowRunner<A,T,W> where A : WindowLoop<T,W> + 'static, T: 'static, W: 'static
 {
-    app : &'a mut A,
+    app : A,
     ctx : WindowContext<W>,
     _phantom : PhantomData<T>,
 }
 
-impl<'a,A: ?Sized, T,W> WindowRunner<'a,A,T,W> where A : WindowLoop<T,W>, T: 'static
+impl<A,T,W> WindowRunner<A,T,W> where A : WindowLoop<T,W> + 'static, T: 'static, W: 'static
 {
-    fn new(app : &'a mut A, ctx : WindowContext<W>) -> Self
+    fn new(app : A, ctx : WindowContext<W>) -> Self
     {
         Self { app, ctx, _phantom: PhantomData }
     }
@@ -269,7 +269,7 @@ impl WinitConvertWithDpi for winit::dpi::PhysicalPosition<f64>
 
 
 
-impl<'a, A, T, W> winit::application::ApplicationHandler<T> for WindowRunner<'a, A, T, W> where A : WindowLoop<T,W>, T: 'static
+impl<A, T, W> winit::application::ApplicationHandler<T> for WindowRunner<A, T, W> where A : WindowLoop<T,W>, T: 'static
 {
     fn window_event(
         &mut self,
@@ -507,7 +507,7 @@ impl<W> WindowContext<W>
         }
     }
 
-    fn window(&mut self, id : WindowID<W>) -> Option<&Window<W>>
+    pub fn window(&mut self, id : WindowID<W>) -> Option<&Window<W>>
     {
         self.windows.get(id)
     }

@@ -62,6 +62,14 @@ impl Graphics
         }
     }
 
+
+    pub fn draw_surface(&mut self, id : SurfaceID)
+    {
+        let Some(Ok(s)) = self.surfaces.get_mut(id) else { return; };
+        s.draw();
+    }
+
+
     pub fn draw_all_window(&mut self)
     {
         for s in self.surfaces.values_mut().filter_map(|v| v.as_mut().ok())
@@ -171,13 +179,22 @@ impl Surface
         self.queue.submit(Some(encoder.finish()));
         surface_texture.present();
     }
+
+    pub fn resize(&mut self, size: Point2)
+    {
+        self.config.width = size.x.max(1) as _;
+        self.config.height = size.y.max(1) as _;
+        self.surface.configure(&self.device, &self.config);
+    }
 }
 
+pub type WindowGraphicsID = hexga_engine_window::window::WindowID<WindowGraphicsData>;
+pub type LocalizedGrahicsEvent = hexga_engine_window::event::LocalizedEvent<WindowGraphicsData>;
 
 #[derive(Debug)]
 pub struct SurfaceCreated
 {
-    pub window  : WindowID<WindowGraphicsData>,
+    pub window  : WindowGraphicsID,
     pub surface : SurfaceResult,
 }
 
@@ -189,7 +206,7 @@ pub enum GraphicsEvent
 pub type SurfaceResult = Result<Surface, String>;
 impl SurfaceCreated
 {
-    pub(crate) fn new(window: WindowID<WindowGraphicsData>, surface : SurfaceResult) -> Self
+    pub(crate) fn new(window: WindowGraphicsID, surface : SurfaceResult) -> Self
     {
         Self
         {
@@ -209,7 +226,7 @@ pub struct WindowSurface<T=()>
 
 impl Graphics
 {
-    pub async fn new_surface_async_and_send_it(param : GraphicsParam, window_id : WindowID<WindowGraphicsData>, window : WinitWindowPtr, proxy: EventLoopProxy<GraphicsEvent>)
+    pub async fn new_surface_async_and_send_it(param : GraphicsParam, window_id : WindowGraphicsID, window : WinitWindowPtr, proxy: EventLoopProxy<GraphicsEvent>)
     {
         let _ = proxy.send_event(GraphicsEvent::SurfaceCreated(SurfaceCreated::new(window_id, Self::new_surface_async(param, window).await)));
     }
@@ -250,10 +267,7 @@ impl Graphics
         size.iter_mut().for_each(|v| { *v = (*v).max(1); });
         let surface_config = surface.get_default_config(&adapter, size.x as _, size.y as _).unwrap();
 
-        #[cfg(not(target_arch = "wasm32"))]
         surface.configure(&device, &surface_config);
-
-
 
         let pipeline =
         {

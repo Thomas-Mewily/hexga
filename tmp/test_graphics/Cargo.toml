@@ -26,6 +26,8 @@ float_are_size_bits = ["hexga_engine/float_are_size_bits"]
 
 serde           = ["hexga_engine/serde"]
 
+webgl = ["hexga_engine/webgl"]
+
 # serde_json      = ["hexga/serde_json"]
 # serde_ron       = ["hexga/serde_ron"]
 # serde_xml       = ["hexga/serde_xml"]

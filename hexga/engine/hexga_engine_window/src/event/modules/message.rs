@@ -20,6 +20,7 @@ impl<T,W> EventMessage<T,W>
     pub fn as_user(&self) -> Option<&T> { if let EventMessage::User(user) = self { Some(user) } else { None } }
     pub fn as_user_mut(&mut self) -> Option<&mut T> { if let EventMessage::User(user) = self { Some(user) } else { None } }
 
+    /*
     pub fn clone_with_user_message<T2>(&self, user: T2) -> EventMessage<T2,W>
     {
         match self
@@ -37,6 +38,9 @@ impl<T,W> EventMessage<T,W>
             EventMessage::User(_) => EventMessage::User(user),
         }
     }
+    */
+
+    /*
     pub fn with_window_data_type<W2>(self) -> EventMessage<T,W2>
     {
         match self
@@ -46,6 +50,7 @@ impl<T,W> EventMessage<T,W>
             EventMessage::User(user) => EventMessage::User(user),
         }
     }
+    */
 }
 
 

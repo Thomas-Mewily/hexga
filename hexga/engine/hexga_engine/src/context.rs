@@ -20,30 +20,50 @@ pub struct AppContext
 
 impl IAppCtx for AppContext
 {
-    fn draw(&mut self) {
-        self.graphics.draw_all_window();
+    fn draw_window(&mut self, id : WindowID)
+    {
+        let Some(w) = self.window_context.window(id) else { return; };
+        let d = *w.data();
+        self.draw_surface(d);
     }
+    fn draw_surface(&mut self, id : SurfaceID) { self.graphics.draw_surface(id); }
+    fn draw(&mut self) { self.graphics.draw_all_window(); }
 }
 
 pub trait IAppCtx : Debug
 {
+    fn draw_window(&mut self, id : WindowID);
+    fn draw_surface(&mut self, id : SurfaceID);
     fn draw(&mut self);
 }
 
 
-struct AppRunner<'a, T : ?Sized> where T : AppLoop
+struct AppRunner<T> where T : AppLoop
 {
     ctx  : AppContext,
-    data : &'a mut T,
+    data : T,
 }
 
 pub type AppCtx<'a> = dyn IAppCtx + 'a;
-pub type AppMessageInternal = EventMessage<Graphics, SurfaceID>;
-pub type AppMessage = EventMessage<(),()>;
+pub type AppMessage = hexga_engine_window::event::EventMessage<(), ()>;
+pub(crate) type AppMessageInternal = hexga_engine_window::event::EventMessage<GraphicsEvent, WindowGraphicsData>;
+
+pub type LocalizedEvent = hexga_engine_window::event::LocalizedEvent;
+pub(crate) type LocalizedEventInternal = hexga_engine_window::event::LocalizedEvent<WindowGraphicsData>;
+
+pub type EventMessage = hexga_engine_window::event::EventMessage<(),WindowGraphicsData>;
+pub(crate) type EventMessageInternal = hexga_engine_window::event::EventMessage<GraphicsEvent,WindowGraphicsData>;
+
+pub type WindowID = hexga_engine_window::window::WindowID<WindowGraphicsData>;
 
 pub trait AppLoop
 {
     fn handle_message(&mut self, message: AppMessage, ctx: &mut AppCtx) -> bool
+    {
+        self.dispatch_message(message, ctx)
+    }
+
+    fn dispatch_message(&mut self, message: AppMessage, ctx: &mut AppCtx) -> bool
     {
         match message
         {
@@ -51,7 +71,7 @@ pub trait AppLoop
             {
                 if let Event::Window(WindowEvent::Draw) = localized_event.event
                 {
-                    self.draw(ctx);
+                    self.draw_window(localized_event.window, ctx);
                 }
                 else
                 {
@@ -83,6 +103,8 @@ pub trait AppLoop
     }
 
     fn update(&mut self, ctx: &mut AppCtx) { let _ = ctx; }
+
+    fn draw_window(&mut self, id: WindowID, ctx: &mut AppCtx) { let _ = id; self.draw(ctx); }
     fn draw(&mut self, ctx: &mut AppCtx) { let _ = ctx; }
 
     fn resume(&mut self, ctx: &mut AppCtx) { let _ = ctx; }
@@ -91,12 +113,24 @@ pub trait AppLoop
     fn exit(&mut self, ctx: &mut AppCtx) { let _ = ctx; }
 }
 
-impl<'a, T : ?Sized> WindowLoop<GraphicsEvent, WindowGraphicsData> for AppRunner<'a, T> where T : AppLoop
+impl<T> WindowLoop<GraphicsEvent, WindowGraphicsData> for AppRunner<T> where T : AppLoop
 {
-    fn handle_message(&mut self, message: EventMessage<GraphicsEvent,WindowGraphicsData>, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool {
-        let m = message.clone_with_user_message(());
-        self.dispatch_message(message, ctx);
-        self.data.handle_message(m.with_window_data_type(), &mut self.ctx)
+    fn handle_message(&mut self, message: EventMessage, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool
+    {
+        let event = match &message
+        {
+            event::EventMessage::LocalizedEvent(localized_event) => Some(v.clone()),
+            event::EventMessage::Device(device_message) => { let _ = self.dispatch_message(event::EventMessage::Device(device_message.clone()), ctx); },
+            event::EventMessage::User(g) => {},
+        };
+
+        match &message
+        {
+            event::EventMessage::LocalizedEvent(localized_event) => { let _ = self.dispatch_message(event::EventMessage::LocalizedEvent(localized_event.clone()), ctx); },
+            event::EventMessage::Device(device_message) => { let _ = self.dispatch_message(event::EventMessage::Device(device_message.clone()), ctx); },
+            event::EventMessage::User(g) => {},
+        };
+        self.data.dispatch_message(message, &mut self.ctx)
     }
 
     fn user_event(&mut self, graphic: GraphicsEvent, ctx : &mut WindowCtx<WindowGraphicsData>)
@@ -114,15 +148,18 @@ impl<'a, T : ?Sized> WindowLoop<GraphicsEvent, WindowGraphicsData> for AppRunner
         }
     }
 
-    fn draw_window(&mut self, window_id : WindowID<WindowGraphicsData>, ctx: &mut WindowCtx<WindowGraphicsData>)
+    fn draw_window(&mut self, id : WindowID, ctx: &mut WindowCtx<WindowGraphicsData>)
     {
-        let Some(window) = ctx.window(window_id) else {
-            return;
-        };
-        self.ctx.graphics.draw_window(window);
+        let _ = ctx;
+        if let Some(window) = ctx.window(id)
+        {
+            //AAAAAAAAAAA
+            self.ctx.draw_surface(*window.data());
+        }
+        //self.ctx.draw_window(id);
     }
 
-    fn handle_localized_event(&mut self, event: LocalizedEvent<WindowGraphicsData>, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool {
+    fn handle_localized_event(&mut self, event: LocalizedEvent, ctx: &mut WindowCtx<WindowGraphicsData>) -> bool {
         let LocalizedEvent { window: window_id, event, device : _, .. } =  event;
         let Some(window) = ctx.window(window_id) else {
             return false;
@@ -184,11 +221,11 @@ impl IGraphicsParam for AppRunParam
 
 }
 
-pub trait AppRun : AppLoop
+pub trait AppRun : AppLoop + Sized + 'static
 {
-    fn run(&mut self) -> Result<(), ()> { self.run_with_param(___()) }
+    fn run(self) -> Result<(), ()> { self.run_with_param(___()) }
 
-    fn run_with_param<'a>(&'a mut self, param : AppRunParam) -> Result<(), ()>
+    fn run_with_param(self, param : AppRunParam) -> Result<(), ()>
     {
         #[cfg(not(target_arch = "wasm32"))]
         {
@@ -201,12 +238,12 @@ pub trait AppRun : AppLoop
         {
             // Sets up panics to go to the console.error in browser environments
             std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-            console_log::init_with_level(log::Level::Error).expect("Couldn't initialize logger");
+            console_log::init_with_level(log::Level::Error).expect("Can't initialize the logger");
         }
 
-        let mut runner = AppRunner { ctx: ___(), data: self };
-        let r = <AppRunner<'a, Self> as WindowRun<GraphicsEvent, WindowGraphicsData>>::run_with_param_and_init_from_event_loop
-        (&mut runner,
+        let runner = AppRunner { ctx: ___(), data: self };
+        let r = <AppRunner<Self> as WindowRun<GraphicsEvent, WindowGraphicsData>>::run_with_param_and_init_from_event_loop
+        (runner,
             param.window_param,
             |s, event_loop|
             {
@@ -223,4 +260,4 @@ pub trait AppRun : AppLoop
         }
     }
 }
-impl<T> AppRun for T where T : AppLoop { }
+impl<T> AppRun for T where T : AppLoop + Sized + 'static { }

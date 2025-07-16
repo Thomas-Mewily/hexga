@@ -4,7 +4,7 @@ use hexga_graphics::image::Image;
 use hexga_math::prelude::*;
 use crate::*;
 
-pub type WindowID<W> = GenVecID<Window<W>>;
+pub type WindowID<W=()> = GenVecID<Window<W>>;
 pub type WinitWindowID = winit::window::WindowId;
 
 
@@ -81,8 +81,17 @@ impl<W> Window<W>
             return Ok(());
         }
 
+        #[allow(unused_mut)]
+        let mut attr : winit::window::WindowAttributes = self.param.clone_with_data(()).into();
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            use winit::platform::web::WindowAttributesExtWebSys;
+            attr = attr.with_append(true);
+        }
+
         let window = active_event_loop
-            .create_window(self.param.clone_with_data(()).into())
+            .create_window(attr)
             .map_err(|_| AppError::Unknow)?;
 
         let _ = window.set_cursor_grab(self.param.cursor_grab.into());

@@ -7,7 +7,5 @@ pub mod modules;
 pub mod prelude
 {
     pub use hexga_engine_events::prelude::*;
-    pub use super::modules::LocalizedEvent;
-
-    pub use super::modules::{EventMessage,DeviceMessage};
+    pub use super::modules::{EventMessage,LocalizedEvent,DeviceMessage};
 }

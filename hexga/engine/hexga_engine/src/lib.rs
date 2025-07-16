@@ -1,7 +1,8 @@
 #![allow(unused_imports, dead_code)]
 use hexga_engine_graphics::{prelude::*, WindowGraphicsData};
-use hexga_engine_window::{event::IDeviceMessage, prelude::*, window::{EventLoopProxy, WindowContext, WindowRunParam}};
-use hexga_core::prelude::*;//
+use hexga_engine_window::{event::IDeviceMessage, window::{EventLoopProxy, WindowContext, WindowRunParam}};
+use hexga_core::prelude::*;
+use hexga_math::prelude::*;
 use std::fmt::Debug;
 
 /*
@@ -20,14 +21,17 @@ pub mod prelude
     };
 
     pub use super::window::prelude::*;
+    pub use super::event::prelude::*;
     pub use super::context::prelude::*;
 }
+use prelude::*;
 
 pub mod window
 {
     pub mod prelude
     {
         pub use hexga_engine_window::window::prelude::*;
+        pub use hexga_engine_graphics::WindowGraphicsID;
     }
 
     pub use modules::*;
@@ -35,7 +39,21 @@ pub mod window
     #[doc(hidden)]
     pub mod modules
     {
-        pub use hexga_engine_window::window::*;
+        pub use hexga_engine_window::window::
+        {
+            Window,
+            WindowLoop,
+            WindowCtx,
+            WindowRun,
+            IWindowRunParam,
+            WindowParam,
+            WindowButton,
+            WindowButtonFlags,
+            WindowLevel,
+
+            CursorIcon,
+            CursorGrab,
+        };
     }
 }
 

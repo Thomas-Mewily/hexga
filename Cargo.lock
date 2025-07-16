@@ -870,6 +870,7 @@ dependencies = [
  "hexga_graphics",
  "hexga_io",
  "hexga_io_derive",
+ "hexga_math",
  "log",
  "serde",
 ]
