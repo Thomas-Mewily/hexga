@@ -91,6 +91,13 @@ https://wbrbr.org/publications/LipschitzPruning/
 - Grid : divide IGrid in IGridVector (vector/slice impl) and IGrid. Maybe merge Grid and GridParam?
 Impl size_hint() and ExactSizeIterator for view and view mut
 
+trait ToAngle, ToTime : différent trait pour chaque unité (pour pouvoir les importer de manière séparer)
+90.s()
+45.min()
+
+ToTimeS
+ToTimeMin
+
 ## Other
 
 - GenHashMap ?
