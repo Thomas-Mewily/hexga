@@ -122,7 +122,45 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::{parse_macro_input, ItemEnum};
+use syn::{parse_macro_input, ItemEnum, Ident};
+
+#[cfg(feature = "serde")]
+fn emit_serde_code(repr_type : &Ident, struct_name : &Ident) -> (
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+) {
+    (
+        quote! { #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] },
+        quote! { #[cfg_attr(feature = "serde", derive(Serialize), serde(transparent))] },
+        quote! {
+            #[cfg(feature = "serde")]
+            impl<'de> ::serde::Deserialize<'de> for #struct_name {
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                where
+                D: ::serde::Deserializer<'de>,
+                {
+                    let bits = <#repr_type as serde::Deserialize>::deserialize(deserializer)?;
+                    Self::try_from_bits(bits).map_err(|invalid_bits| {
+                        <D::Error as ::serde::de::Error>::invalid_value(
+                            ::serde::de::Unexpected::Unsigned(invalid_bits as u64),
+                            &"a valid bitflag value",
+                        )
+                    })
+                }
+            }
+        },
+    )
+}
+
+#[cfg(not(feature = "serde"))]
+fn emit_serde_code(_ : &Ident, _ : &Ident) -> (
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+) {
+    (quote! {}, quote! {}, quote! {})
+}
 
 #[proc_macro_attribute]
 pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -196,36 +234,8 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let nb_variant = enum_variants.len();
 
-    #[allow(unused_assignments)]
-    #[allow(unused_mut)]
-    let (mut serde_serialize_deserialize, mut serde_serialize_transparent, mut serde_deserialiaze_flags) = (quote! {}, quote! {}, quote! {});
 
-    #[cfg(feature = "serde")]
-    {
-        (serde_serialize_deserialize, serde_serialize_transparent, serde_deserialiaze_flags) =
-        (
-            quote! { #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] },
-            quote! { #[cfg_attr(feature = "serde", derive(Serialize), serde(transparent))] },
-            quote!
-                {
-                    #[cfg(feature = "serde")]
-                    impl<'de> ::serde::Deserialize<'de> for #struct_name {
-                        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-                        where
-                        D: ::serde::Deserializer<'de>,
-                        {
-                            let bits = <#repr_type as serde::Deserialize>::deserialize(deserializer)?;
-                            Self::try_from_bits(bits).map_err(|invalid_bits| {
-                                <D::Error as ::serde::de::Error>::invalid_value(
-                                    ::serde::de::Unexpected::Unsigned(invalid_bits as u64),
-                                    &"a valid bitflag value",
-                                )
-                            })
-                        }
-                    }
-                }
-        );
-    }
+    let (serde_serialize_deserialize, serde_serialize_transparent, serde_deserialiaze_flags) = emit_serde_code(&repr_type, &struct_name);
 
 
     let output = quote! {
