@@ -196,9 +196,13 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let nb_variant = enum_variants.len();
 
-    let (serde_serialize_deserialize, serde_serialize_transparent, serde_deserialiaze_flags) =
-    if cfg!(feature = "serde")
+    #[allow(unused_assignments)]
+    #[allow(unused_mut)]
+    let (mut serde_serialize_deserialize, mut serde_serialize_transparent, mut serde_deserialiaze_flags) = (quote! {}, quote! {}, quote! {});
+
+    #[cfg(feature = "serde")]
     {
+        (serde_serialize_deserialize, serde_serialize_transparent, serde_deserialiaze_flags) =
         (
             quote! { #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] },
             quote! { #[cfg_attr(feature = "serde", derive(Serialize), serde(transparent))] },
@@ -220,11 +224,9 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         }
                     }
                 }
-        )
-    }else
-    {
-        (quote! {}, quote! {}, quote! {})
-    };
+        );
+    }
+
 
     let output = quote! {
 
