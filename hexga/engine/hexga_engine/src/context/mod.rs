@@ -1,5 +1,10 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{Ctx,App};
+}
+
 pub struct Ctx;
 impl Deref for Ctx
 {
@@ -28,7 +33,8 @@ pub(crate) fn replace_ctx(mut ctx : Option<Context>) -> Option<Context>
 #[derive(Debug, Default)]
 pub struct Context
 {
-    pub input : CtxInput,
+    pub input : InputManager,
+    pub clipboard : ClipboardManager,
 }
 impl Context
 {
@@ -63,6 +69,6 @@ pub(crate) use declare_context;
 
 pub trait App
 {
-    fn update(&mut self);
-    fn draw(&mut self);
+    fn update(&mut self) {}
+    fn draw(&mut self) {}
 }

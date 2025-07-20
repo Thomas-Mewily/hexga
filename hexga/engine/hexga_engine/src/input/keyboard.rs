@@ -4,10 +4,10 @@ use super::*;
 
 use prelude::*;
 
-mod prelude
+pub mod prelude
 {
     pub use hexga_engine_events::{KeyCode,KeyMods,KeyModsFlags,KeyCodeUnknow};
-    pub use super::{Keyboard,KeyState};
+    pub use super::{Keyboard,KeyState,IKeyboard};
 }
 
 #[derive(Debug, Default, Clone)]

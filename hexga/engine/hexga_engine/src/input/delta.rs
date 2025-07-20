@@ -1,5 +1,12 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{InputDelta,IInputDelta,IInputButton,InputButtonChange,
+        InputBool,InputInt,InputFloat,InputVec
+    };
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
 pub struct InputDelta<I,T> where I:Copy, T:Copy+Default
 {

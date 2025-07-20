@@ -47,7 +47,14 @@ WASM
 */
 */
 
+use hexga_engine::context::App;
 
+struct MyApp;
+
+impl App for MyApp
+{
+
+}
 
 fn main()
 {

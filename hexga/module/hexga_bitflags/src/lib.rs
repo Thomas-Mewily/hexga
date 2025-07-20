@@ -117,6 +117,8 @@
 //!
 //! - Also check [bitflags](https://crates.io/crates/bitflags) if you are looking for a popular crate for defining bitflags (without enum).
 
+// TODO fix the serde feature flags warnings...
+#![allow(unexpected_cfgs)]
 
 extern crate proc_macro;
 
@@ -124,6 +126,8 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{parse_macro_input, ItemEnum, Ident};
 
+
+#[allow(unexpected_cfgs)]
 #[cfg(feature = "serde")]
 fn emit_serde_code(repr_type : &Ident, struct_name : &Ident) -> (
     proc_macro2::TokenStream,
@@ -131,9 +135,17 @@ fn emit_serde_code(repr_type : &Ident, struct_name : &Ident) -> (
     proc_macro2::TokenStream,
 ) {
     (
-        quote! { #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] },
-        quote! { #[cfg_attr(feature = "serde", derive(Serialize), serde(transparent))] },
         quote! {
+            #[allow(unexpected_cfgs)]
+            #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+        },
+        quote! {
+            #[allow(unexpected_cfgs)]
+            #[cfg_attr(feature = "serde", derive(Serialize), serde(transparent))]
+        },
+        quote!
+        {
+            #[allow(unexpected_cfgs)]
             #[cfg(feature = "serde")]
             impl<'de> ::serde::Deserialize<'de> for #struct_name {
                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -153,6 +165,7 @@ fn emit_serde_code(repr_type : &Ident, struct_name : &Ident) -> (
     )
 }
 
+#[allow(unexpected_cfgs)]
 #[cfg(not(feature = "serde"))]
 fn emit_serde_code(_ : &Ident, _ : &Ident) -> (
     proc_macro2::TokenStream,
@@ -234,9 +247,7 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let nb_variant = enum_variants.len();
 
-
     let (serde_serialize_deserialize, serde_serialize_transparent, serde_deserialiaze_flags) = emit_serde_code(&repr_type, &struct_name);
-
 
     let output = quote! {
 

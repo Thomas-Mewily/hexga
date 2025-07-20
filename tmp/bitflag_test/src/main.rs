@@ -5,12 +5,12 @@ use hexga_bitflags::*;
 enum Color
 {
     Red,
-    Greene,
+    Green2,
     Blue = 5,
     Yellow, // = 6
     RedAndBlue = Color::Red | Self::Blue, // only defined in ColorFlags
     Purple, // 7
-    GreenAndYellowAndPurple = ((Color::Yellow | Self::Purple)) | Self::Greene, // only defined in ColorFlags
+    GreenAndYellowAndPurple = ((Color::Yellow | Self::Purple)) | Self::Green2, // only defined in ColorFlags
 }
 
 fn main()

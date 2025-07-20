@@ -861,6 +861,7 @@ version = "0.0.10-beta.16"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
+ "copypasta",
  "env_logger",
  "hexga",
  "hexga_core",
@@ -873,6 +874,7 @@ dependencies = [
  "hexga_math",
  "log",
  "serde",
+ "winit",
 ]
 
 [[package]]
