@@ -7,6 +7,7 @@ use prelude::*;
 mod prelude
 {
     pub use hexga_engine_events::{KeyCode,KeyMods,KeyModsFlags,KeyCodeUnknow};
+    pub use super::{Keyboard,KeyState};
 }
 
 #[derive(Debug, Default, Clone)]
@@ -18,12 +19,14 @@ pub struct Keyboard<T=Time> where T:Copy+Default
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct KeyState<T=Time> where T:Copy+Default
 {
-    pub keycode: KeyCode,
-    pub state  : InputBool<T>,
+    keycode: KeyCode,
+    value  : InputBool<T>,
 }
 impl<T> KeyState<T> where T:Copy+Default
 {
-    pub fn new(keycode: KeyCode, state: InputBool<T>) -> Self { Self { keycode, state }}
+    pub fn new(keycode: KeyCode, value: InputBool<T>) -> Self { Self { keycode, value }}
+    pub fn keycode(&self) -> KeyCode { self.keycode }
+    pub fn value(&self) -> InputBool<T> { self.value }
 }
 impl<T> Deref for KeyState<T> where T:Copy+Default
 {
@@ -38,11 +41,11 @@ impl<T> DerefMut for KeyState<T> where T:Copy+Default
 }
 impl<T> IInputDelta<bool,T> for KeyState<T> where T:Copy+Default
 {
-    fn cur(&self) -> bool { self.state.cur() }
-    fn old(&self) -> bool { self.state.old() }
+    fn cur(&self) -> bool { self.value.cur() }
+    fn old(&self) -> bool { self.value.old() }
 
-    fn last_time_changed(&self) -> T { self.state.last_time_changed() }
-    fn set(&mut self, cur : bool, time : T) { self.state.set(cur, time); }
+    fn last_time_changed(&self) -> T { self.value.last_time_changed() }
+    fn set(&mut self, cur : bool, time : T) { self.value.set(cur, time); }
 }
 
 pub trait IKeyboard<T> where T:Copy+Default

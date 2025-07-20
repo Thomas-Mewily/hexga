@@ -1,31 +1,31 @@
 use super::*;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
-pub struct InputState<I,T> where I:Copy, T:Copy+Default
+pub struct InputDelta<I,T> where I:Copy, T:Copy+Default
 {
     cur : I,
     old : I,
     time : T,
 }
-impl<I,T> Deref for InputState<I,T> where I:Copy, T:Copy+Default
+impl<I,T> Deref for InputDelta<I,T> where I:Copy, T:Copy+Default
 {
     type Target=I;
     fn deref(&self) -> &Self::Target { &self.cur }
 }
 
-impl<I,T> From<I> for InputState<I,T> where I:Copy, T:Copy+Default
+impl<I,T> From<I> for InputDelta<I,T> where I:Copy, T:Copy+Default
 {
     fn from(value: I) -> Self {
         Self::from_value(value)
     }
 }
 
-pub type InputVec<T=Time> = InputState<Vec2,T>;
-pub type InputBool<T=Time> = InputState<bool,T>;
-pub type InputInt<T=Time> = InputState<int,T>;
-pub type InputFloat<T=Time> = InputState<float,T>;
+pub type InputVec<T=Time> = InputDelta<Vec2,T>;
+pub type InputBool<T=Time> = InputDelta<bool,T>;
+pub type InputInt<T=Time> = InputDelta<int,T>;
+pub type InputFloat<T=Time> = InputDelta<float,T>;
 
-impl<I,T> InputState<I,T> where I:Copy, T:Copy+Default
+impl<I,T> InputDelta<I,T> where I:Copy, T:Copy+Default
 {
     pub fn from_time_and_value(time : T, value : I) -> Self { Self::new(value, value, time) }
     pub fn from_value(value : I) -> Self { Self::new(value, value, ___()) }
@@ -52,7 +52,7 @@ pub trait IInputDelta<I,T> where I:Copy, T:Copy+Default
     }
 }
 
-impl<I, T> IInputDelta<I,T> for InputState<I, T> where I:Copy, T:Copy+Default, I: PartialEq
+impl<I, T> IInputDelta<I,T> for InputDelta<I, T> where I:Copy, T:Copy+Default, I: PartialEq
 {
     fn cur(&self) -> I {
         self.cur
@@ -110,7 +110,7 @@ pub trait IInputButton
 }
 
 
-impl<T> IInputButton for InputState<bool, T> where T:Copy+Default
+impl<T> IInputButton for InputDelta<bool, T> where T:Copy+Default
 {
     fn is_press(&self) -> bool { self.cur }
     fn was_press(&self) -> bool { self.old }
