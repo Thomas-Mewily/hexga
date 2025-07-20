@@ -3,6 +3,7 @@
 
 use std::fmt::Debug;
 use hexga_core::prelude::*;
+use hexga_generational::prelude::GenVecID;
 use hexga_math::prelude::*;
 use hexga_bitflags::bitindex;
 
@@ -11,7 +12,6 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoSave, IoLoad, Save, Load};
-
 
 pub use modules::*;
 

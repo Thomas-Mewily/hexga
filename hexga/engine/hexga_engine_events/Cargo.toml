@@ -33,6 +33,7 @@ hexga_io = ["dep:hexga_io", "dep:hexga_io_derive", "serde", "hexga_math/hexga_io
 [dependencies]
 hexga_core.workspace = true
 hexga_math.workspace = true
+hexga_generational.workspace = true
 hexga_bitflags.workspace = true
 
 

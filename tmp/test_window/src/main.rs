@@ -3,6 +3,7 @@
 #![allow(unused_mut)]
 #![allow(unused_variables)]
 
+/*
 pub use hexga_engine_window::prelude::*;
 pub use hexga_math::prelude::*;
 pub use hexga_core::prelude::*;
@@ -56,4 +57,11 @@ fn main()
 
     let mut app = MyApp::___();
     app.run().unwrap();
+}
+    */
+
+
+fn main()
+{
+    println!("hello world")
 }

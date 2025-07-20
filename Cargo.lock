@@ -909,6 +909,7 @@ version = "0.0.10-beta.16"
 dependencies = [
  "hexga_bitflags",
  "hexga_core",
+ "hexga_generational",
  "hexga_io",
  "hexga_io_derive",
  "hexga_math",

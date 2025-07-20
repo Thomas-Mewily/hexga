@@ -1,12 +1,5 @@
 use crate::*;
 
-pub trait LoopEvent
-{
-    fn handle_event(&mut self, event : &Event) -> bool;
-}
-impl LoopEvent for () { fn handle_event(&mut self, _ : &Event) -> bool { true } }
-
-
 mod event;
 pub use event::*;
 

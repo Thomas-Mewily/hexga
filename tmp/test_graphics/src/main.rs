@@ -1,4 +1,6 @@
 #![allow(unused_imports)]
+
+/*
 use hexga_engine::{prelude::*, AppRunParam, window};
 use hexga_core::prelude::*;
 
@@ -43,3 +45,11 @@ Todo : pouvoir mettre à jour les param sur une window déjà crée
 log/warnings à setup
 WASM
 */
+*/
+
+
+
+fn main()
+{
+    println!("hello world")
+}
