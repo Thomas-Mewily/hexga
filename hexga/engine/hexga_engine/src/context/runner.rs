@@ -3,19 +3,6 @@ use winit::event_loop::{EventLoop, EventLoopProxy};
 use super::*;
 
 
-pub trait IUserEvent : 'static {}
-impl IUserEvent for () {}
-
-
-pub trait App<UserEvent=()> where UserEvent:IUserEvent
-{
-    fn pause(&mut self) {}
-    fn resume(&mut self) {}
-
-    fn update(&mut self) {}
-    fn draw(&mut self) {}
-}
-
 pub trait AppRun<UserEvent=()> : App<UserEvent> where UserEvent:IUserEvent
 {
     fn run(self) where Self:Sized
