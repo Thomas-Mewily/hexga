@@ -22,8 +22,10 @@ use context::*;
 pub mod clipboard;
 use clipboard::*;
 
+mod init;
+pub use init::*;
 
-mod prelude
+pub mod prelude
 {
     pub use super::input::prelude::*;
     pub use super::context::prelude::*;

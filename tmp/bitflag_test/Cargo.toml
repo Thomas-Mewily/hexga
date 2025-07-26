@@ -7,5 +7,8 @@ homepage.workspace = true
 repository.workspace = true
 edition.workspace = true
 
+[features]
+serde = []
+
 [dependencies]
 hexga_bitflags = { workspace = true, default-features = false }
