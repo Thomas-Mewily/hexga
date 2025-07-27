@@ -16,8 +16,9 @@ impl DerefMut for Ctx
 #[derive(Debug, Default)]
 pub struct Context
 {
-    pub input : InputManager,
+    pub input     : InputManager,
     pub clipboard : ClipboardManager,
+    pub window    : WindowManager,
 }
 impl Context
 {

@@ -9,7 +9,10 @@ pub use runner::*;
 mod app;
 pub use app::*;
 
+mod param;
+pub use param::*;
+
 pub mod prelude
 {
-    pub use super::{Ctx,App,AppRun};
+    pub use super::{Ctx,App,AppRun,AppParam};
 }

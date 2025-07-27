@@ -17,7 +17,7 @@ pub mod context;
 use context::*;
 
 pub mod window;
-use context::*;
+use window::*;
 
 pub mod clipboard;
 use clipboard::*;

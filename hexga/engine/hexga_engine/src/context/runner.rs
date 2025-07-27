@@ -5,16 +5,22 @@ use super::*;
 
 pub trait AppRun<UserEvent=()> : App<UserEvent> where UserEvent:IUserEvent
 {
-    fn run(self) where Self:Sized
+    fn run(self) where Self:Sized { self.run_with_param(___()); }
+    fn run_with_param(self, param : AppParam) where Self:Sized
     {
         let r = init_ctx(Some(___()));
         assert!(r.is_none(), "Context already created");
+
+        if let Some(window_param) = param.window
+        {
+            Windows.
+        }
 
         let event_loop = winit::event_loop::EventLoop::<UserEvent>::with_user_event().build().unwrap();
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let proxy = event_loop.create_proxy();
 
-        AppRunner::new(self, proxy).run(event_loop);
+        AppRunner::new(self, proxy).run_with_param(event_loop, param);
     }
 }
 impl<T,UserEvent> AppRun<UserEvent> for T where T:App<UserEvent>, UserEvent:IUserEvent {}
@@ -24,11 +30,14 @@ pub(crate) struct AppRunner<A,UserEvent=()> where A: App<UserEvent>, UserEvent:I
     app : A,
     proxy : EventLoopProxy<UserEvent>,
 }
+
+
 impl <A,UserEvent> AppRunner<A,UserEvent> where A:App<UserEvent>, UserEvent:IUserEvent
 {
     fn new(app : A, proxy : EventLoopProxy<UserEvent>) -> Self { Self { app, proxy }}
 
-    fn run(mut self, event_loop : EventLoop<UserEvent>)
+    fn run(self, event_loop : EventLoop<UserEvent>) { self.run_with_param(event_loop, ___()) }
+    fn run_with_param(mut self, event_loop : EventLoop<UserEvent>, _param : AppParam)
     {
         init_logger();
 

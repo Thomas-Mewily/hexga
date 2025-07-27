@@ -32,12 +32,10 @@ pub struct Window
 {
     // window (and surface) are destroyed when pausing/resumed
     pub(crate) winit_window : Option<WinitWindowPtr>,
+    pub(crate) winit_id : Option<WinitWindowID>,
     pub(crate) param    : WindowParam,
     pub(crate) id       : WindowID,
-    pub(crate) winit_id : WinitWindowID,
 }
-
-
 
 impl Debug for Window
 {
@@ -52,7 +50,7 @@ impl Debug for Window
 impl Window
 {
     pub fn id(&self) -> WindowID { self.id }
-    pub(crate) fn winit_id(&self) -> WinitWindowID { self.winit_id }
+    pub(crate) fn winit_id(&self) -> Option<WinitWindowID> { self.winit_id }
 
     pub fn param(&self) -> &WindowParam { &self.param }
 
