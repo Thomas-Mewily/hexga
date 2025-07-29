@@ -57,7 +57,7 @@ impl <T,Gen:IGeneration> Slot<T,Gen>
     pub fn value(&self) -> Option<&T> { self.value.get() }
     pub fn value_mut(&mut self) -> Option<&mut T> { self.value.get_mut() }
 
-    pub fn get_id(&self, idx : usize) -> GenVecIDOf<T,Gen> { GenVecIDOf::new(idx, self.generation) }
+    pub fn get_id(&self, idx : usize) -> GenVecIDOf<T,Gen> { GenVecIDOf::from_index_and_generation(idx, self.generation) }
 
     pub fn generation_increase(&mut self) -> bool { if self.can_generation_increase() { self.generation.increase(); true } else { false } }
     pub fn can_generation_increase(&self) -> bool { self.generation.can_increase() }
@@ -327,8 +327,8 @@ impl<'de, T, Gen:IGeneration> Deserialize<'de> for GenVecIDOf<T,Gen> where Gen :
     {
         match Option::deserialize(deserializer)?
         {
-            Some((index, generation)) => Ok(Self::new(index, generation)),
-            None => Ok(Self::new(usize::MAX, Gen::MIN)),
+            Some((index, generation)) => Ok(Self::from_index_and_generation(index, generation)),
+            None => Ok(Self::from_index_and_generation(usize::MAX, Gen::MIN)),
         }
     }
 }
@@ -348,7 +348,7 @@ impl<T,Gen:IGeneration> Debug for GenVecIDOf<T,Gen> { fn fmt(&self, f: &mut std:
 
 impl<T,Gen:IGeneration> GenVecIDOf<T,Gen>
 {
-    pub const fn new(index : usize, generation : Gen) -> Self { Self { index, generation, value: PhantomData }}
+    pub const fn from_index_and_generation(index : usize, generation : Gen) -> Self { Self { index, generation, value: PhantomData }}
 
     pub const fn index(self) -> usize { self.index }
     pub const fn generation(self) -> Gen { self.generation }
@@ -362,14 +362,17 @@ impl<T,Gen:IGeneration> GenVecIDOf<T,Gen>
     pub fn remove(self, gen_vec : &mut GenVecOf<T,Gen>) -> Option<T> { gen_vec.remove(self) }
     pub fn exist(self, gen_vec : &GenVecOf<T,Gen>) -> bool { self.get(gen_vec).is_some() }
 
-    pub fn from_other_id<T2>(other : GenVecIDOf<T2,Gen>) -> GenVecIDOf<T,Gen> { GenVecIDOf::new(other.index, other.generation) }
+    pub fn from_other_id<T2>(other : GenVecIDOf<T2,Gen>) -> GenVecIDOf<T,Gen> { GenVecIDOf::from_index_and_generation(other.index, other.generation) }
+
+    /// Set the value to `Self::NULL`
+    pub fn reset(&mut self) { *self = Self::NULL; }
 
     pub const NULL : Self = GenVecIDOf { index: usize::MAX, generation: Gen::MIN, value: PhantomData };
 }
 impl<T,Gen:IGeneration> From<(usize,Gen)> for GenVecIDOf<T,Gen>
 {
     fn from((index,generation): (usize,Gen)) -> Self {
-        Self::new(index, generation)
+        Self::from_index_and_generation(index, generation)
     }
 }
 impl<T,Gen:IGeneration> Into<(usize,Gen)> for GenVecIDOf<T,Gen>
@@ -463,14 +466,14 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
             let generation = Gen::MIN;
             self.slot.push(Slot { value: SlotValue::Used(value), generation });
-            return GenVecIDOf::new(index, generation);
+            return GenVecIDOf::from_index_and_generation(index, generation);
         }
 
         let SlotValue::Free(next_free_idx) = self.slot[self.head].value else { unreachable!(); };
         let head = self.head;
         self.head = next_free_idx;
         self.slot[head].value = SlotValue::Used(value);
-        return GenVecIDOf::new(head, self.slot[head].generation);
+        return GenVecIDOf::from_index_and_generation(head, self.slot[head].generation);
     }
 
     #[inline(always)]
@@ -664,7 +667,7 @@ impl<T, Gen: IGeneration> Iterator for IntoIter<T, Gen> {
             if let SlotValue::Used(value) = slot.value
             {
                 self.len_remaining -= 1;
-                return Some((GenVecIDOf::new(idx, slot.generation), value));
+                return Some((GenVecIDOf::from_index_and_generation(idx, slot.generation), value));
             }
         }
         None
@@ -701,7 +704,7 @@ impl<'a, T, Gen: IGeneration> Iterator for Iter<'a, T, Gen> {
         while let Some((idx, slot)) = self.iter.next() {
             if let Some(value) = slot.value() {
                 self.len_remaining -= 1;
-                return Some((GenVecIDOf::new(idx, slot.generation), value));
+                return Some((GenVecIDOf::from_index_and_generation(idx, slot.generation), value));
             }
         }
         None
@@ -742,7 +745,7 @@ impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen> {
             let generation = slot.generation();
             if let Some(value) = slot.value_mut() {
                 self.len_remaining -= 1;
-                return Some((GenVecIDOf::new(idx, generation), value));
+                return Some((GenVecIDOf::from_index_and_generation(idx, generation), value));
             }
         }
         None

@@ -2,6 +2,7 @@
 use std::ops::*;
 use hexga::prelude::*;
 use std::fmt::{Debug,Formatter,Result as DResult};
+use std::rc::Rc;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};

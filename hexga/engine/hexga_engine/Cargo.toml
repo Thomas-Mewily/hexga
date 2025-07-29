@@ -43,6 +43,7 @@ hexga_engine_events.workspace = true
 hexga_engine_window.workspace = true
 hexga_graphics.workspace = true
 hexga_math.workspace = true
+hexga_tools.workspace = true # for the asset
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
@@ -53,8 +54,11 @@ log = { version = "0.4.22"}
 
 winit = "0.30.11"
 copypasta = "0.10.2"
+pollster = {version ="0.4.0"}
+wgpu = { version = "25.0.0" }
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.7"
 console_log = "1.0"
+wasm-bindgen-futures = "0.4.49"

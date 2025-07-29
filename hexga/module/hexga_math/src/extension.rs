@@ -4,6 +4,18 @@ use crate::*;
 impl<S, T, const N : usize> ArrayLikeExtension<T,N> for S where S : ArrayLike<T,N> {}
 pub trait ArrayLikeExtension<T, const N : usize> : ArrayLike<T,N>
 {
+    /// Perform the min element component wise
+    fn min_with(self, other: Self::WithType<T>) -> <Self as hexga_array::ArrayLike<T, N>>::WithType<T> where T:Copy + Ord
+    {
+        self.map_with(other, |a,b| a.min(b))
+    }
+
+    /// Perform the max element component wise
+    fn max_with(self, other: Self::WithType<T>) -> <Self as hexga_array::ArrayLike<T, N>>::WithType<T> where T:Copy + Ord
+    {
+        self.map_with(other, |a,b| a.max(b))
+    }
+
     fn min_element(&self) -> &T where T: PartialOrd { self.array().iter().min_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty") }
     fn max_element(&self) -> &T where T: PartialOrd { self.array().iter().max_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty") }
 

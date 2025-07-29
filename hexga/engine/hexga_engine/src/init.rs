@@ -6,16 +6,27 @@ static mut CONTEXT : Option<Context> = None;
 pub(crate) fn ctx_mut() -> &'static mut Context { unsafe { CONTEXT.as_mut().expect("Ctx not initialized") } }
 #[allow(static_mut_refs)]
 pub(crate) fn ctx() -> &'static Context { unsafe { CONTEXT.as_ref().expect("Ctx not initialized") } }
+
 #[allow(static_mut_refs)]
-pub(crate) fn init_ctx(mut ctx : Option<Context>) -> Option<Context>
+pub(crate) fn ctx_mut_or_init() -> &'static mut Context { init_ctx_if_needed(); ctx_mut() }
+#[allow(static_mut_refs)]
+pub(crate) fn ctx_or_init() -> &'static Context { init_ctx_if_needed(); ctx() }
+
+#[allow(static_mut_refs)]
+pub(crate) fn init_ctx_if_needed()
 {
-    std::mem::swap(&mut ctx, unsafe { &mut CONTEXT });
-    ctx
+    unsafe
+    {
+        if CONTEXT.is_none()
+        {
+            CONTEXT = Some(Context::new());
+        }
+    }
 }
 
 static INIT_LOGGER: std::sync::Once = std::sync::Once::new();
 
-pub fn init_logger() {
+pub fn init_logger_if_needed() {
     INIT_LOGGER.call_once(|| {
         #[cfg(target_arch = "wasm32")]
         {

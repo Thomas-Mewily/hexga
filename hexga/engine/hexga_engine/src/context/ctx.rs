@@ -12,6 +12,11 @@ impl DerefMut for Ctx
     fn deref_mut(&mut self) -> &mut Self::Target { ctx_mut() }
 }
 
+#[derive(Debug, Default)]
+pub struct Graphics
+{
+    pub(crate) instance : wgpu::Instance,
+}
 
 #[derive(Debug, Default)]
 pub struct Context
@@ -19,6 +24,7 @@ pub struct Context
     pub input     : InputManager,
     pub clipboard : ClipboardManager,
     pub window    : WindowManager,
+    pub graphics  : Graphics,
 }
 impl Context
 {

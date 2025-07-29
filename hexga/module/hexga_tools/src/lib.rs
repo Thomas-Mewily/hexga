@@ -14,3 +14,4 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 pub mod prelude;
 
 pub mod non_empty_stack;
+pub mod asset;

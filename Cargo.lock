@@ -872,8 +872,12 @@ dependencies = [
  "hexga_io",
  "hexga_io_derive",
  "hexga_math",
+ "hexga_tools",
  "log",
+ "pollster",
  "serde",
+ "wasm-bindgen-futures",
+ "wgpu",
  "winit",
 ]
 
