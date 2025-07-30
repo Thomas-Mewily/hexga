@@ -115,7 +115,7 @@ pub struct WindowData
     pub(crate) graphics     : Asset<WindowGraphics>,
 
     pub(crate) param       : WindowParam,
-    pub(crate) param_dirty : bool,
+    pub(crate) dirty : bool,
 }
 
 impl Deref for WindowData
@@ -273,12 +273,12 @@ impl WindowData
 
     pub fn open(&mut self)
     {
-        todo!()
+        Windows.open_window();
     }
 
     pub fn close(&mut self)
     {
-        todo!()
+        Windows.new_window(param)
     }
 
     pub fn resize(&mut self, size: Point2)
@@ -287,7 +287,7 @@ impl WindowData
         match self.graphics.get_mut()
         {
             Some(g) => g.resize(size),
-            None => self.param_dirty = true,
+            None => self.dirty = true,
         }
         self.graphics.get_mut().map(|g| g.resize(size));
     }
@@ -298,14 +298,14 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => w.set_outer_position(winit::dpi::PhysicalPosition::new(pos.x, pos.y)),
-            None => self.param_dirty = true,
+            None => self.dirty = true,
         }
     }
 
     pub(crate) fn update_dirty(&mut self)
     {
-        if !self.param_dirty { return; }
-        self.param_dirty = false;
+        if !self.dirty { return; }
+        self.dirty = false;
 
         self.set_pos(self.position());
         self.resize(self.size());
@@ -325,7 +325,7 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_cursor(winit::window::Cursor::Icon(cursor_icon.into())); },
-            None => self.param_dirty = true,
+            None => self.dirty = true,
         }
     }
 
@@ -335,7 +335,7 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_cursor_grab(cursor_grab.into()); },
-            None => self.param_dirty = true,
+            None => self.dirty = true,
         }
     }
 
@@ -345,7 +345,7 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_cursor_visible(cursor_visible); },
-            None => self.param_dirty = true,
+            None => self.dirty = true,
         }
     }
 
@@ -355,7 +355,7 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_title(&self.param.title); },
-            None => self.param_dirty = true,
+            None => self.dirty = true,
         }
     }
 
@@ -365,7 +365,7 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_window_level(level.into()); },
-            None => self.param_dirty = true,
+            None => self.dirty = true,
         }
     }
 
@@ -455,7 +455,7 @@ pub struct WindowParam
 {
     /// Title of the window, defaults to an empty string.
     title: String,
-    id : WindowID,
+    pub(crate) id : WindowID,
 
     size : Point2,
     position : Point2,
@@ -468,7 +468,7 @@ pub struct WindowParam
     visible: bool,
 
     /// is the window open or close
-    open : bool,
+    pub(crate) open : bool,
 
     buttons : WindowButtonFlags,
     level : WindowLevel,

@@ -6,13 +6,14 @@ impl IUserEvent for () {}
 
 pub trait App<UserEvent=()> where UserEvent:IUserEvent
 {
-    fn pause(&mut self) {}
-    fn resume(&mut self) {}
-
-    fn handle_event(&mut self, event : AppEvent<UserEvent>) { let _ = event; }
-
     fn update(&mut self) {}
     fn draw(&mut self) {}
+    fn handle_event(&mut self, event : AppEvent<UserEvent>) { let _ = event; }
+
+    fn exit(&mut self) {}
+
+    fn pause(&mut self) {}
+    fn resume(&mut self) {}
 }
 
 #[derive(Debug)]

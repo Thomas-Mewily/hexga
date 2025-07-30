@@ -128,4 +128,13 @@ impl<A,UserEvent> winit::application::ApplicationHandler<AppInternalEvent<UserEv
             AppInternalEvent::WindowInternal(e) => Windows.handle_internal_event(e),
         }
     }
+
+    fn exiting(&mut self, _event_loop: &winit::event_loop::ActiveEventLoop)
+    {
+        {
+            // Just to make sure this drop() is call first, before the ctx
+            self.app.exit();
+        }
+        reset_ctx();
+    }
 }

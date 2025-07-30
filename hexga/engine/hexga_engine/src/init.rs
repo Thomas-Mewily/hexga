@@ -24,6 +24,11 @@ pub(crate) fn init_ctx_if_needed()
     }
 }
 
+pub(crate) fn reset_ctx()
+{
+    unsafe { CONTEXT = None };
+}
+
 static INIT_LOGGER: std::sync::Once = std::sync::Once::new();
 
 pub fn init_logger_if_needed() {
