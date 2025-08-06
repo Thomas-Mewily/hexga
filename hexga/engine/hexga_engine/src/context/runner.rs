@@ -89,7 +89,7 @@ impl<A,UserEvent> winit::application::ApplicationHandler<AppInternalEvent<UserEv
     )
     {
         let ctx = ctx_mut();
-        let id = ctx.window.winit_id_to_window_id(window_id);
+        let Some(id) = ctx.window.winit_id_to_window_id(window_id) else { return; };
 
         match event
         {
@@ -124,7 +124,11 @@ impl<A,UserEvent> winit::application::ApplicationHandler<AppInternalEvent<UserEv
         match event
         {
             AppInternalEvent::UserEvent(e) => self.app.handle_event(AppEvent::UserEvent(e)),
-            AppInternalEvent::Window(e) => Windows.handle_event(e),
+            AppInternalEvent::Window(e) =>
+            {
+                Windows.handle_event(e.clone());
+                self.app.handle_event(AppEvent::Window(e));
+            }
             AppInternalEvent::WindowInternal(e) => Windows.handle_internal_event(e),
         }
     }

@@ -21,6 +21,10 @@ pub(crate) fn init_ctx_if_needed()
         {
             CONTEXT = Some(Context::new());
         }
+        std::panic::set_hook(Box::new(|info| {
+            CONTEXT = None;
+            eprintln!("Panic occurred: {info}");
+        }));
     }
 }
 

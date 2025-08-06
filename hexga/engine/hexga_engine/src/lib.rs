@@ -28,6 +28,7 @@ pub use init::*;
 
 pub mod prelude
 {
+    pub use hexga_core::prelude::*;
     pub use super::input::prelude::*;
     pub use super::context::prelude::*;
     pub use super::window::prelude::*;

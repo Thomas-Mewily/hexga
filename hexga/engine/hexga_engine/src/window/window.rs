@@ -12,19 +12,6 @@ pub struct Window
     pub(crate) id : WindowID,
 }
 
-impl Default for Window
-{
-    fn default() -> Self { Self::new(WindowParam::default()) }
-}
-
-impl Clone for Window
-{
-    fn clone(&self) -> Self
-    {
-        Self::new(self.param().clone())
-    }
-}
-
 impl Deref for Window
 {
     type Target=WindowData;
@@ -49,7 +36,7 @@ impl Drop for Window
 
 impl Window
 {
-    pub fn new(param : WindowParam) -> Self
+    pub fn new(param : WindowParam) -> Option<Self>
     {
         Windows.new_window(param)
     }
@@ -172,24 +159,28 @@ impl WindowData
         }
     }
 }
+
+
+pub(crate) type WgpuSurface = wgpu::Surface<'static>;
+
 impl WindowData
 {
 
-    pub(crate) async fn request_surface<UserEvent>(instance : wgpu::Instance, window: WinitWindowPtr, id: WindowID, proxy : EventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    pub(crate) async fn request_surface<UserEvent>(instance : wgpu::Instance, surface : WgpuSurface, size : Point2, id: WindowID, proxy : EventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
     {
         let event = AppInternalEvent::WindowInternal(
             WindowInternalEvent
             {
                 id,
-                kind: WindowInternalEventKind::SurfaceCreated(Self::request_surface_result::<UserEvent>(instance, window).await),
+                kind: WindowInternalEventKind::SurfaceCreated(Self::request_surface_result::<UserEvent>(instance, surface, size).await),
             }
         );
         let _ = proxy.send_event(event);
     }
 
-    pub(crate) async fn request_surface_result<UserEvent>(instance : wgpu::Instance, window: WinitWindowPtr) -> WindowSurfaceResult where UserEvent: IUserEvent
+    pub(crate) async fn request_surface_result<UserEvent>(instance : wgpu::Instance, surface : WgpuSurface, size : Point2) -> WindowSurfaceResult where UserEvent: IUserEvent
     {
-        let surface = instance.create_surface(window.window.clone()).unwrap();
+        //let surface: wgpu::Surface<'_> = instance.create_surface(window.window.clone()).unwrap();
         let adapter = instance
         .request_adapter(&wgpu::RequestAdapterOptions {
             power_preference: wgpu::PowerPreference::default(), // Power preference for the device
@@ -214,11 +205,10 @@ impl WindowData
             .await
             .expect("Failed to get device");
 
-        let size = window.inner_size();
+        //let size = window.inner_size();
         // Make the dimensions at least size 1, otherwise wgpu would panic
-        let width = size.width.max(1);
-        let height = size.height.max(1);
-        let config = surface.get_default_config(&adapter, width, height).unwrap();
+        let size = size.max_with(one());
+        let config = surface.get_default_config(&adapter, size.x as _, size.y as _).unwrap();
 
         surface.configure(&device, &config);
         let pipeline = Self::create_pipeline(&device, config.format);
@@ -271,14 +261,10 @@ impl WindowData
         }
     }
 
-    pub fn open(&mut self)
+    pub(crate) fn set_dirty(&mut self)
     {
-        Windows.open_window();
-    }
-
-    pub fn close(&mut self)
-    {
-        Windows.new_window(param)
+        self.dirty = true;
+        Windows.any_dirty = true;
     }
 
     pub fn resize(&mut self, size: Point2)
@@ -287,9 +273,8 @@ impl WindowData
         match self.graphics.get_mut()
         {
             Some(g) => g.resize(size),
-            None => self.dirty = true,
+            None => self.set_dirty(),
         }
-        self.graphics.get_mut().map(|g| g.resize(size));
     }
 
     pub fn set_pos(&mut self, pos: Point2)
@@ -298,20 +283,107 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => w.set_outer_position(winit::dpi::PhysicalPosition::new(pos.x, pos.y)),
-            None => self.dirty = true,
+            None => self.set_dirty(),
         }
     }
 
-    pub(crate) fn update_dirty(&mut self)
+    pub fn set_open(&mut self, open: bool)
+    {
+        if self.param.open != open
+        {
+            self.param.open = open;
+
+            assert_ne!(self.winit_window.is_some(), open);
+            assert_ne!(self.winit_id.is_some(), open);
+
+            if open
+            {
+                self.set_dirty();
+            }
+            else
+            {
+                self.param.open = false;
+                self.winit_window = None;
+                Windows.lookup.remove(&self.winit_id.unwrap());
+                self.winit_id = None;
+                self.graphics = Asset::Pending(());
+            }
+        }
+    }
+    pub(crate) fn update_dirty<UserEvent>(&mut self, lookup: &mut WindowLookupId, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &EventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
     {
         if !self.dirty { return; }
         self.dirty = false;
+
+        if self.is_open() && self.winit_window.is_none()
+        {
+            // winit window creation
+            debug_assert!(self.winit_id().is_none());
+
+            let mut win_attr = WinitWindow::default_attributes();
+
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                win_attr = win_attr.with_title(self.param().title());
+            }
+
+            #[cfg(target_arch = "wasm32")]
+            {
+                use winit::platform::web::WindowAttributesExtWebSys;
+                win_attr = win_attr.with_append(true);
+            }
+
+            if !self.default_size_and_position
+            {
+                win_attr = win_attr.with_position(winit::dpi::PhysicalPosition::new(self.position.x, self.position.y));
+                win_attr = win_attr.with_inner_size(winit::dpi::PhysicalSize::new(self.size.x, self.size.y))
+            }
+
+            let winit_window = event_loop
+                    .create_window(win_attr)
+                    .expect("create window err.");
+
+            if self.default_size_and_position
+            {
+                self.param.position = winit_window.outer_position().map(|v| v.convert()).unwrap_or_zero();
+                let size = winit_window.outer_size();
+                self.param.size = point2(size.width as _, size.height as _)
+            }
+
+            let winit_window_ptr = WinitWindowPtr::new(winit_window);
+
+            let winit_id = winit_window_ptr.winit_window().id();
+            self.winit_id = Some(winit_id);
+            self.winit_window = Some(winit_window_ptr);
+            lookup.insert(winit_id, self.id());
+
+
+            // wgpu async surface creation
+            match &mut self.graphics
+            {
+                Asset::Pending(_) =>
+                {
+                    let winit_window = self.winit_window.as_ref().expect("winit_window should have been init just before").clone();
+                    self.graphics = Asset::Loading(());
+
+                    let instance = gfx.instance.clone();
+                    let surface: WgpuSurface = instance.create_surface(winit_window.window.clone()).unwrap();
+                    let size = self.size();
+
+                    crate::spawn_task(Self::request_surface(gfx.instance.clone(), surface, size, self.id(), proxy.clone()));
+                },
+                Asset::Loading(_) => {},
+                Asset::Loaded(_gfx) => {},
+                Asset::Error(_) => { panic!("Can't create the window gfx"); },
+            }
+        }
 
         self.set_pos(self.position());
         self.resize(self.size());
         self.set_cursor_icon(self.cursor_icon());
         self.set_cursor_grab(self.cursor_grab());
         self.set_cursor_visible(self.is_cursor_visible());
+        self.set_transparency_support(self.support_transparency());
 
         let title = self.title().to_owned();
         self.set_title(title); // I don't like this clone
@@ -325,7 +397,17 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_cursor(winit::window::Cursor::Icon(cursor_icon.into())); },
-            None => self.dirty = true,
+            None => self.set_dirty(),
+        }
+    }
+
+    pub fn set_transparency_support(&mut self, support_transparency: bool)
+    {
+        self.param.transparent = support_transparency;
+        match self.winit_window.as_mut()
+        {
+            Some(w) => { let _ = w.set_transparent(support_transparency); },
+            None => self.set_dirty(),
         }
     }
 
@@ -335,7 +417,7 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_cursor_grab(cursor_grab.into()); },
-            None => self.dirty = true,
+            None => self.set_dirty(),
         }
     }
 
@@ -345,7 +427,7 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_cursor_visible(cursor_visible); },
-            None => self.dirty = true,
+            None => self.set_dirty(),
         }
     }
 
@@ -355,7 +437,7 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_title(&self.param.title); },
-            None => self.dirty = true,
+            None => self.set_dirty(),
         }
     }
 
@@ -365,14 +447,14 @@ impl WindowData
         match self.winit_window.as_mut()
         {
             Some(w) => { let _ = w.set_window_level(level.into()); },
-            None => self.dirty = true,
+            None => self.set_dirty(),
         }
     }
 
 
     pub fn set_close_when_parent_exit(&mut self, close_when_parent_exit : bool)
     {
-        self.param.set_close_when_parent_exit(close_when_parent_exit);
+        self.param.close_when_parent_exit = close_when_parent_exit;
     }
     /*
     pub fn set_dpi(&mut self, dpi: float)
@@ -381,6 +463,9 @@ impl WindowData
         todo!("update the surface");
     }
     */
+
+    fn close(&mut self) { self.set_open(false); }
+    fn open(&mut self) { self.set_open(true); }
 }
 
 #[bitindex]
@@ -481,6 +566,7 @@ pub struct WindowParam
 
     dpi : float,
 
+    // TODO: remove it ?
     close_when_parent_exit : bool,
 
     childs : Vec<WindowID>,
@@ -568,74 +654,74 @@ impl WindowParam
     }
 
     pub fn title(&self) -> &str { &self.title }
-    pub fn set_title(&mut self, title : impl Into<String>) -> &mut Self { self.title = title.into(); self }
+    //pub fn set_title(&mut self, title : impl Into<String>) -> &mut Self { self.title = title.into(); self }
     pub fn with_title(mut self, title: impl Into<String>) -> Self { self.title = title.into(); self }
 
     pub fn size(&self) -> Point2 { self.size }
-    pub fn set_size(&mut self, size : Point2) -> &mut Self { self.size = size; self }
+    //pub fn set_size(&mut self, size : Point2) -> &mut Self { self.size = size; self }
     pub fn with_size(mut self, size: Point2) -> Self { self.size = size; self }
 
     pub fn position(&self) -> Point2 { self.position }
-    pub fn set_position(&mut self, position : Point2) -> &mut Self { self.position = position; self }
+    //pub fn set_position(&mut self, position : Point2) -> &mut Self { self.position = position; self }
     pub fn with_position(mut self, position: Point2) -> Self { self.position = position; self }
 
     pub fn have_default_size_and_position(&self) -> bool { self.default_size_and_position }
-    pub fn set_default_size_and_position(&mut self, default_size_and_position : bool) -> &mut Self { self.default_size_and_position = default_size_and_position; self }
+    //pub fn set_default_size_and_position(&mut self, default_size_and_position : bool) -> &mut Self { self.default_size_and_position = default_size_and_position; self }
     pub fn with_default_size_and_position(mut self, default_size_and_position : bool) -> Self { self.default_size_and_position = default_size_and_position; self }
 
     pub fn resizable(&self) -> bool { self.resizable }
-    pub fn set_resizable(&mut self, resizable: bool) -> &mut Self { self.resizable = resizable; self }
+    //pub fn set_resizable(&mut self, resizable: bool) -> &mut Self { self.resizable = resizable; self }
     pub fn with_resizable(mut self, resizable: bool) -> Self { self.resizable = resizable; self }
 
     pub fn buttons(&self) -> WindowButtonFlags { self.buttons }
-    pub fn set_buttons(&mut self, buttons: impl Into<WindowButtonFlags>) -> &mut Self { self.buttons = buttons.into(); self }
+    //pub fn set_buttons(&mut self, buttons: impl Into<WindowButtonFlags>) -> &mut Self { self.buttons = buttons.into(); self }
     pub fn with_buttons(mut self, buttons: impl Into<WindowButtonFlags>) -> Self { self.buttons = buttons.into(); self }
 
     pub fn level(&self) -> WindowLevel { self.level }
-    pub fn set_level(&mut self, level: WindowLevel) -> &mut Self { self.level = level; self }
+    //pub fn set_level(&mut self, level: WindowLevel) -> &mut Self { self.level = level; self }
     pub fn with_level(mut self, level: WindowLevel) -> Self { self.level = level; self }
 
     pub fn icon(&self) -> Option<&Icon> { self.icon.as_ref() }
     pub fn icon_mut(&mut self) -> Option<&mut Icon> { self.icon.as_mut() }
-    pub fn set_icon(&mut self, icon: Option<Icon>) -> &mut Self { self.icon = icon; self }
+    //pub fn set_icon(&mut self, icon: Option<Icon>) -> &mut Self { self.icon = icon; self }
     pub fn with_icon(mut self, icon: Option<Icon>) -> Self { self.icon = icon; self }
 
 
 
 
     pub fn cursor_icon(&self) -> CursorIcon { self.cursor }
-    pub fn set_cursor_icon(&mut self, cursor: CursorIcon) -> &mut Self { self.cursor = cursor; self }
+    //pub fn set_cursor_icon(&mut self, cursor: CursorIcon) -> &mut Self { self.cursor = cursor; self }
     pub fn with_cursor_icon(mut self, cursor: CursorIcon) -> Self { self.cursor = cursor; self }
 
     pub fn cursor_grab(&self) -> CursorGrab { self.cursor_grab }
-    pub fn set_cursor_grab(&mut self, cursor_grab: CursorGrab) -> &mut Self { self.cursor_grab = cursor_grab; self }
+    //pub fn set_cursor_grab(&mut self, cursor_grab: CursorGrab) -> &mut Self { self.cursor_grab = cursor_grab; self }
     pub fn with_cursor_grab(mut self, cursor_grab: CursorGrab) -> Self { self.cursor_grab = cursor_grab; self }
 
     pub fn is_cursor_visible(&self) -> bool { self.cursor_visible }
-    pub fn set_cursor_visible(&mut self, cursor_visible: bool) -> &mut Self { self.cursor_visible = cursor_visible; self }
+    //pub fn set_cursor_visible(&mut self, cursor_visible: bool) -> &mut Self { self.cursor_visible = cursor_visible; self }
     pub fn with_cursor_visible(mut self, cursor_visible: bool) -> Self { self.cursor_visible = cursor_visible; self }
 
     pub fn is_open(&self) -> bool { self.open }
-    pub fn set_open(&mut self, open: bool) -> &mut Self { self.open = open; self }
+    //pub fn set_open(&mut self, open: bool) -> &mut Self { self.open = open; self }
     pub fn with_open(mut self, open: bool) -> Self { self.open = open; self }
 
     pub fn is_close(&self) -> bool { !self.open }
-    pub fn set_close(&mut self, close: bool) -> &mut Self { self.open = !close; self }
+    //pub fn set_close(&mut self, close: bool) -> &mut Self { self.open = !close; self }
     pub fn with_close(mut self, close: bool) -> Self { self.open = !close; self }
 
     pub fn dpi(&self) -> float { self.dpi }
-    pub fn set_dpi(&mut self, dpi: float) -> &mut Self { self.dpi = dpi; self }
+    //pub fn set_dpi(&mut self, dpi: float) -> &mut Self { self.dpi = dpi; self }
     pub fn with_dpi(mut self, dpi: float) -> Self { self.dpi = dpi; self }
 
     /// Do the window support transparency
     pub fn support_transparency(&self) -> bool { self.transparent }
     /// Do the window support transparency
-    pub fn set_transparency_support(&mut self, transparent: bool) -> &mut Self { self.transparent = transparent; self }
+    //pub fn set_transparency_support(&mut self, transparent: bool) -> &mut Self { self.transparent = transparent; self }
     /// Do the window support transparency
     pub fn with_transparency_support(mut self, transparent: bool) -> Self { self.transparent = transparent; self }
 
     pub fn will_close_when_parent_exit(&self) -> bool { self.close_when_parent_exit }
-    pub fn set_close_when_parent_exit(&mut self, close_when_parent_exit: bool) -> &mut Self { self.close_when_parent_exit = close_when_parent_exit; self }
+    //pub fn set_close_when_parent_exit(&mut self, close_when_parent_exit: bool) -> &mut Self { self.close_when_parent_exit = close_when_parent_exit; self }
     pub fn with_close_when_parent_exit(mut self, close_when_parent_exit: bool) -> Self { self.close_when_parent_exit = close_when_parent_exit; self }
 
     pub fn child(&self) -> &[WindowID] { &self.childs }

@@ -2,8 +2,10 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{InputDelta,IInputDelta,IInputButton,InputButtonChange,
-        InputBool,InputInt,InputFloat,InputVec
+    pub use super::
+    {
+        InputDelta,IInputDelta,IInputButton,InputButtonChange,
+        InputBool,InputInt,InputFloat,InputVec,
     };
 }
 
@@ -82,65 +84,64 @@ impl<I, T> IInputDelta<I,T> for InputDelta<I, T> where I:Copy, T:Copy+Default, I
 
 pub trait IInputButton
 {
-    fn is_press(&self) -> bool;
-    fn was_press(&self) -> bool;
+    fn is_pressed(&self) -> bool;
+    fn was_pressed(&self) -> bool;
 
     /// `false` to `true`, `0` to `1`
-    fn is_pull_up(&self) -> bool { self.is_press() && (!self.was_press()) }
+    fn is_pull_up(&self) -> bool { self.is_pressed() && (!self.was_pressed()) }
     /// `true` to `false`, `1` to `0`
-    fn is_pull_down(&self) -> bool { self.was_press() && (!self.is_press()) }
+    fn is_pull_down(&self) -> bool { self.was_pressed() && (!self.is_pressed()) }
 
-    fn is_pull_changed(&self) -> bool { self.is_press() != self.was_press() }
-    fn is_pull_constant(&self) -> bool { self.is_press() == self.was_press() }
+    fn is_pull_changed(&self) -> bool { self.is_pressed() != self.was_pressed() }
+    fn is_pull_constant(&self) -> bool { self.is_pressed() == self.was_pressed() }
 
     fn is_toggle(&self) -> bool { self.is_pull_changed() }
 
-    fn is_release(&self) -> bool { !self.is_press() }
-    fn was_release(&self) -> bool { !self.was_press() }
+    fn is_released(&self) -> bool { !self.is_pressed() }
+    fn was_released(&self) -> bool { !self.was_pressed() }
 
-    fn is_just_press(&self) -> bool { self.is_pull_up() }
-    fn is_just_release(&self) -> bool { self.is_pull_down() }
+    fn is_just_pressed(&self) -> bool { self.is_pull_up() }
+    fn is_just_released(&self) -> bool { self.is_pull_down() }
 
-    fn is_hold(&self) -> bool { self.is_pull_constant() && self.is_press() }
+    fn is_hold(&self) -> bool { self.is_pull_constant() && self.is_pressed() }
 
     fn change(&self) -> InputButtonChange
     {
-        match (self.is_press(), self.was_press())
+        match (self.is_pressed(), self.was_pressed())
         {
-            (true, true) => InputButtonChange::Press,
-            (true, false) => InputButtonChange::JustPress,
-            (false, true) => InputButtonChange::JustRelease,
-            (false, false) => InputButtonChange::Release,
+            (true, true) => InputButtonChange::Pressed,
+            (true, false) => InputButtonChange::JustPressed,
+            (false, true) => InputButtonChange::JustReleased,
+            (false, false) => InputButtonChange::Released,
         }
     }
-
 }
 
 
 impl<T> IInputButton for InputDelta<bool, T> where T:Copy+Default
 {
-    fn is_press(&self) -> bool { self.cur }
-    fn was_press(&self) -> bool { self.old }
+    fn is_pressed(&self) -> bool { self.cur }
+    fn was_pressed(&self) -> bool { self.old }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum InputButtonChange
 {
-    Press,
-    Release,
+    Pressed,
+    Released,
     /// Can be use for toggle
-    JustPress,
+    JustPressed,
     /// Can be use for toggle
-    JustRelease,
+    JustReleased,
 }
 impl IInputButton for InputButtonChange
 {
-    fn is_press(&self) -> bool {
-        matches!(self, Self::Press | Self::JustPress)
+    fn is_pressed(&self) -> bool {
+        matches!(self, Self::Pressed | Self::JustPressed)
     }
 
-    fn was_press(&self) -> bool
+    fn was_pressed(&self) -> bool
     {
-        matches!(self, Self::Release | Self::JustRelease)
+        matches!(self, Self::Released | Self::JustReleased)
     }
 }

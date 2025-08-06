@@ -14,5 +14,5 @@ pub(crate) use convert::*;
 
 pub mod prelude
 {
-    pub use super::{WindowData,WindowID};
+    pub use super::{Window,WindowID,Windows,WindowParam};
 }

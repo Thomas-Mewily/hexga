@@ -5,7 +5,7 @@ declare_context!(Input, InputManager, input);
 #[derive(Debug, Clone, Default)]
 pub struct InputManager<T=Time> where T:Copy+Default
 {
-    keyboard : Keyboard<T>,
+    pub(crate) keyboard : Keyboard<T>,
     modifier : KeyModsFlags,
 }
 

@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait IUserEvent : 'static {}
+pub trait IUserEvent : 'static + Debug + Send {}
 impl IUserEvent for () {}
 
 
@@ -27,10 +27,19 @@ impl<U> From<WindowInternalEvent> for AppInternalEvent<U> where U: IUserEvent { 
 impl<U> From<WindowEvent> for AppInternalEvent<U> where U: IUserEvent { fn from(value: WindowEvent) -> Self { Self::Window(value) } }
 
 #[non_exhaustive]
-#[derive(Debug)]
 pub enum AppEvent<UserEvent=()> where UserEvent: IUserEvent
 {
     UserEvent(UserEvent),
     Window(WindowEvent)
+}
+impl<UserEvent> Debug for AppEvent<UserEvent> where UserEvent: IUserEvent
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> DResult {
+        match self
+        {
+            Self::UserEvent(v) => write!(f, "{:?}", v),
+            Self::Window(v) => write!(f, "{:?}", v),
+        }
+    }
 }
 impl<U> From<WindowEvent> for AppEvent<U> where U: IUserEvent { fn from(value: WindowEvent) -> Self { Self::Window(value) } }

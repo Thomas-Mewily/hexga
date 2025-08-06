@@ -12,10 +12,23 @@ impl DerefMut for Ctx
     fn deref_mut(&mut self) -> &mut Self::Target { ctx_mut() }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Graphics
 {
     pub(crate) instance : wgpu::Instance,
+}
+
+impl Default for Graphics
+{
+    fn default() -> Self {
+        Self
+        {
+            instance: wgpu::Instance::new(&wgpu::InstanceDescriptor
+            {
+                ..___()
+            })
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -55,4 +68,16 @@ macro_rules! declare_context {
     };
 }
 pub(crate) use declare_context;
-use winit::event_loop::{EventLoop, EventLoopProxy};
+
+
+pub fn spawn_task<F, T>(future: F)
+where
+    F: Future<Output = T> + Send + 'static,
+    T: Send + 'static
+{
+    #[cfg(target_arch = "wasm32")]
+    wasm_bindgen_futures::spawn_local(future);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    async_std::task::spawn(future);
+}

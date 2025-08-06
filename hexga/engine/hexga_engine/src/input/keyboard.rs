@@ -7,7 +7,7 @@ use prelude::*;
 pub mod prelude
 {
     pub use hexga_engine_events::{KeyCode,KeyMods,KeyModsFlags,KeyCodeUnknow};
-    pub use super::{Keyboard,KeyState,IKeyboard};
+    pub use super::{Keyboard,KeyState,IKeyboard,KeyCodeExtension};
 }
 
 #[derive(Debug, Default, Clone)]
@@ -54,10 +54,10 @@ pub trait IKeyboard<T> where T:Copy+Default
     fn keys(&self) -> impl Iterator<Item=KeyState<T>>;
 
     fn keys_with_change(&self, change : InputButtonChange) -> impl Iterator<Item=KeyState<T>> { self.keys().filter(move |k| self.key(**k).change() == change) }
-    fn keys_just_press(&self) -> impl Iterator<Item=KeyState<T>> { self.keys_with_change(InputButtonChange::JustPress) }
-    fn keys_just_release(&self) -> impl Iterator<Item=KeyState<T>> { self.keys_with_change(InputButtonChange::JustRelease) }
-    fn keys_press(&self) -> impl Iterator<Item=KeyState<T>> { self.keys_with_change(InputButtonChange::Press) }
-    fn keys_release(&self) -> impl Iterator<Item=KeyState<T>> { self.keys_with_change(InputButtonChange::Release) }
+    fn keys_just_pressed(&self) -> impl Iterator<Item=KeyState<T>> { self.keys_with_change(InputButtonChange::JustPressed) }
+    fn keys_just_released(&self) -> impl Iterator<Item=KeyState<T>> { self.keys_with_change(InputButtonChange::JustReleased) }
+    fn keys_press(&self) -> impl Iterator<Item=KeyState<T>> { self.keys_with_change(InputButtonChange::Pressed) }
+    fn keys_release(&self) -> impl Iterator<Item=KeyState<T>> { self.keys_with_change(InputButtonChange::Released) }
 }
 
 impl<T> IKeyboard<T> for Keyboard<T> where T:Copy+Default
@@ -67,4 +67,19 @@ impl<T> IKeyboard<T> for Keyboard<T> where T:Copy+Default
     fn keys(&self) -> impl Iterator<Item=KeyState<T>> {
         self.keys.iter().map(|(k,s)| KeyState::new(*k, *s))
     }
+}
+
+pub trait KeyCodeExtension
+{
+    fn state(self) -> InputBool;
+}
+impl KeyCodeExtension for KeyCode
+{
+    fn state(self) -> InputBool { Input.key(self) }
+}
+
+impl IInputButton for KeyCode
+{
+    fn is_pressed(&self) -> bool { self.state().is_pressed() }
+    fn was_pressed(&self) -> bool { self.state().was_pressed() }
 }

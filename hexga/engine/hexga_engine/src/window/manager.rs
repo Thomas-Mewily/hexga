@@ -4,16 +4,18 @@ use super::*;
 
 declare_context!(Windows, WindowManager, window);
 
+pub(crate) type WindowLookupId = HashMap<WinitWindowID, WindowID>;
+
 #[derive(Debug, Default)]
 pub struct WindowManager
 {
-    lookup  : HashMap<WinitWindowID, WindowID>,
-    windows : GenVec<WindowData>,
+    pub(crate) lookup  : WindowLookupId,
+    pub(crate) windows : GenVec<WindowData>,
 
     main_window : Option<Window>,
 
     actives_stack  : Vec<WindowID>,
-    any_dirty      : bool,
+    pub(crate) any_dirty      : bool,
 }
 
 impl WindowManager
@@ -23,14 +25,14 @@ impl WindowManager
     pub(crate) fn get(&self, id : WindowID) -> Option<&WindowData> { self.windows.get(id) }
     pub(crate) fn get_mut(&mut self, id : WindowID) -> Option<&mut WindowData> { self.windows.get_mut(id) }
 
-    pub(crate) fn winit_id_to_window_id(&mut self, id : WinitWindowID) -> WindowID
+    pub(crate) fn winit_id_to_window_id(&mut self, id : WinitWindowID) -> Option<WindowID>
     {
-        self.lookup.get(&id).copied().unwrap()
+        self.lookup.get(&id).copied()
     }
 
     pub(crate) fn init_main_window(&mut self, param : Option<WindowParam>)
     {
-        self.main_window = param.map(|p| self.new_window(p));
+        self.main_window = param.map(|p| self.new_window(p).expect("can't init main window"));
     }
 
     pub(crate) fn update_dirty<UserEvent>(&mut self, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &EventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
@@ -38,64 +40,9 @@ impl WindowManager
         if !self.any_dirty { return; }
         self.any_dirty = false;
 
-        for (id, window) in self.windows.iter_mut()
+        for window in self.windows.values_mut()
         {
-            if !window.dirty { continue; }
-            window.dirty = false;
-
-            if window.is_open()
-            {
-                // winit window creation
-                if window.winit_window.is_none()
-                {
-                    debug_assert!(window.winit_id().is_none());
-
-                    let mut win_attr = WinitWindow::default_attributes();
-
-                    #[cfg(not(target_arch = "wasm32"))]
-                    {
-                        win_attr = win_attr.with_title(window.param().title());
-                    }
-
-                    #[cfg(target_arch = "wasm32")]
-                    {
-                        use winit::platform::web::WindowAttributesExtWebSys;
-                        win_attr = win_attr.with_append(true);
-                    }
-
-                    let winit_window = WinitWindowPtr::new(
-                        event_loop
-                            .create_window(win_attr)
-                            .expect("create window err."),
-                    );
-
-                    let winit_id = winit_window.winit_window().id();
-                    window.winit_id = Some(winit_id);
-                    window.winit_window = Some(winit_window);
-                    self.lookup.insert(winit_id, window.id());
-                }
-
-                // wgpu async surface creation
-                match &mut window.graphics
-                {
-                    Asset::Pending(_) =>
-                    {
-                        let winit_window = window.winit_window.as_ref().expect("winit_window should have been init just before").clone();
-                        window.graphics = Asset::Loading(());
-
-                        #[cfg(target_arch = "wasm32")]
-                        wasm_bindgen_futures::spawn_local(WindowData::request_surface(gfx.instance.clone(), winit_window, id, proxy.clone()));
-
-                        #[cfg(not(target_arch = "wasm32"))]
-                        pollster::block_on(WindowData::request_surface(gfx.instance.clone(), winit_window, id, proxy.clone()));
-                    },
-                    Asset::Loading(_) => {},
-                    Asset::Loaded(_gfx) => {},
-                    Asset::Error(_) => { panic!("Can't create the window gfx"); },
-                }
-            }
-
-            window.update_dirty();
+            window.update_dirty(&mut self.lookup, gfx, event_loop, proxy);
             self.any_dirty |= window.dirty;
         }
     }
@@ -140,48 +87,29 @@ impl Drop for WindowManager
 /// Thread safety : can only be called from the main thread
 pub trait IWindowManager
 {
-    fn new_window(&mut self, param: WindowParam) -> Window;
-    fn close_window(&mut self, window: &mut Window);
-    fn open_window(&mut self, window: &mut Window);
+    fn new_window(&mut self, param: WindowParam) -> Option<Window>;
+    fn remove_window(&mut self, window : Window) -> WindowData;
 
     fn main_window(&self) -> Option<&Window>;
     fn main_window_mut(&mut self) -> Option<&mut Window>;
-    fn remove_window(&mut self, window : Window) -> WindowData;
 }
 
 impl IWindowManager for WindowManager
 {
-    fn new_window(&mut self, param: WindowParam) -> Window
+    fn new_window(&mut self, param: WindowParam) -> Option<Window>
     {
+        #[cfg(target_arch = "wasm32")]
+        if self.windows.len() >= 1 { return None; }
+        if self.windows.len() >= 32 { return None; }
+
         let data = WindowData { winit_window: None, winit_id: None, graphics: Asset::Pending(()), param, dirty: true };
         let id = self.windows.insert(data);
         self.windows[id].param.id = id;
         self.any_dirty = true;
-        unsafe { Window::from_id(id) }
-    }
 
-    fn close_window(&mut self, window : &mut Window)
-    {
-        if window.param.open != false
+        unsafe
         {
-            if let Some(winit_id) = window.winit_id()
-            {
-                self.lookup.remove(&winit_id);
-            }
-            window.graphics = Asset::Pending(());
-            //window.dirty = true;
-            window.param.open = false;
-            //self.any_dirty = true;
-        }
-    }
-
-    fn open_window(&mut self, window : &mut Window)
-    {
-        if window.param.open != true
-        {
-            window.param.open = true;
-            window.dirty = true;
-            self.any_dirty = true;
+            Some(Window::from_id(id))
         }
     }
 

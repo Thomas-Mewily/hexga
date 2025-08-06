@@ -15,6 +15,8 @@ enum Color
 
 fn main()
 {
+
+
     let mut flags = Color::Red | Color::Blue;
     assert_eq!(flags, ColorFlags::RedAndBlue);
     assert_eq!(flags, ColorFlags::Red | ColorFlags::Blue);

@@ -14,5 +14,5 @@ pub use param::*;
 
 pub mod prelude
 {
-    pub use super::{Ctx,App,AppRun,AppParam};
+    pub use super::{Ctx,App,AppRun,AppParam,AppEvent};
 }
