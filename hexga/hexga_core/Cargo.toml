@@ -6,5 +6,10 @@ license.workspace = true
 homepage.workspace = true
 repository.workspace = true
 edition.workspace = true
+readme = "README.md"
+
+keywords = []
+description = "Basic set of functionalities common to all hexga crate"
+categories = ["rust-patterns"]
 
 [dependencies]
