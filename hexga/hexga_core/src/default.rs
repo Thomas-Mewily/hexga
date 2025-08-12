@@ -12,6 +12,8 @@
 /// # Examples
 /// 
 /// ```
+/// use hexga_core::default::prelude::*;
+/// 
 /// let b : i32 = Default::default(); // Default Rust
 /// let a : i32 = ___(); // Now
 
@@ -20,7 +22,7 @@
 /// 
 /// Can also be used with function :
 /// 
-/// ```
+/// ```ignore
 /// let a = f(Default::default()); // Default Rust
 /// let b = f(___()); // Now
 /// assert_eq!(a, b);
@@ -28,7 +30,7 @@
 /// 
 /// Can also be used to initialize complex Rust struct when implementing the `Default` trait :
 /// 
-/// ```
+/// ```ignore
 /// impl Default for ComplexStruct {
 ///     fn default() -> Self { 
 ///     Self { a : ___(), b : ___(), c : ___(), vec : vec![0] }
@@ -40,7 +42,7 @@
 /// 
 /// And also to partially initialize a struct
 /// 
-/// ```
+/// ```ignore
 /// let a = BigStruct { x : 42, y : 64, ..Default::default() };
 /// let b = BigStruct { x : 42, y : 64, ..___() };
 /// assert_eq!(a, b);
@@ -56,7 +58,7 @@ pub trait DefaultIsTripleUnderscore : Default
     /// 
     /// Returns the "default value" for a type.
     /// 
-    /// ```
+    /// ```ignore
     /// type T = i32; // any type with default
     /// assert_eq!(T::default(), T::___());
     /// ```
