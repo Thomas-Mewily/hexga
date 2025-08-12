@@ -9,6 +9,7 @@ hexga_core
 hexga_io_derive
 hexga_io
 
+hexga_ansi_color
 hexga_bitflags
 
 // hexga_base // moved to hexga_core
@@ -18,19 +19,10 @@ hexga_generational
 
 hexga_math
 
-hexga_tools
+hexga_utils
 
 
 hexga_graphics
-hexga_ansi_color
 //hexga_undo_redo
 hexga
 
-hexga_engine_graphics
-hexga_engine_events
-hexga_engine_window
-
-hexga_engine_core
-hexga_engine_base
-
-hexga_engine

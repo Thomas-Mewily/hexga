@@ -1,0 +1,21 @@
+[package]
+name = "hexga_ansi_color"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+keywords = ["ansi", "color"]
+categories = ["command-line-interface"]
+description = "Ansi Color"
+
+[features]
+serde = ["dep:serde"]
+hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
+
+[dependencies]
+hexga_io = { workspace = true, optional = true }
+serde = { version = "1.0.0", features = ["derive"], optional = true }
+

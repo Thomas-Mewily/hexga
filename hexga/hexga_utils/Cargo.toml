@@ -1,0 +1,28 @@
+[package]
+name = "hexga_utils"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+readme = "README.md"
+
+keywords = []
+description = "miscellaneous stuff, when somethings will be too big it will be on a separate crate"
+categories = ["rust-patterns"]
+
+[features]
+
+default = [
+    "serde", "hexga_io",
+]
+
+serde   = ["dep:serde"]
+hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
+
+[dependencies]
+hexga_core.workspace = true
+
+hexga_io = { workspace = true, optional = true }
+serde = { version = "1.0.0", features = ["derive"], optional = true }

@@ -1,1 +1,0 @@
-//! Hexga Base was renamed/moved to [Hexga Core](https://crates.io/crates/hexga_core)
