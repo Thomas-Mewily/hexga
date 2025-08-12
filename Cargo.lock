@@ -203,6 +203,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_graph"
+version = "0.0.11-beta.1"
+
+[[package]]
 name = "hexga_graphics"
 version = "0.0.11-beta.1"
 dependencies = [
@@ -266,6 +270,10 @@ version = "0.0.11-beta.1"
 
 [[package]]
 name = "hexga_typedef"
+version = "0.0.11-beta.1"
+
+[[package]]
+name = "hexga_undo_redo"
 version = "0.0.11-beta.1"
 
 [[package]]
