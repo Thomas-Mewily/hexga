@@ -139,7 +139,7 @@ dependencies = [
 
 [[package]]
 name = "hello_world"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_core",
  "hexga_math",
@@ -147,7 +147,7 @@ dependencies = [
 
 [[package]]
 name = "hexga"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_ansi_color",
  "hexga_bitflags",
@@ -163,7 +163,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_ansi_color"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_io",
  "serde",
@@ -171,14 +171,14 @@ dependencies = [
 
 [[package]]
 name = "hexga_array"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_map_on",
 ]
 
 [[package]]
 name = "hexga_bitflags"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_io",
  "hexga_number",
@@ -190,11 +190,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_core"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_core",
  "hexga_io",
@@ -204,7 +204,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_graphics"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_core",
  "hexga_io",
@@ -215,7 +215,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_io"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "bincode",
  "hexga_core",
@@ -228,7 +228,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_io_derive"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -237,11 +237,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_map_on"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 
 [[package]]
 name = "hexga_math"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_array",
  "hexga_core",
@@ -255,18 +255,22 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_map_on",
 ]
 
 [[package]]
+name = "hexga_reflection"
+version = "0.0.11-beta.1"
+
+[[package]]
 name = "hexga_typedef"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 
 [[package]]
 name = "hexga_utils"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 dependencies = [
  "hexga_core",
  "hexga_io",
@@ -434,7 +438,7 @@ dependencies = [
 
 [[package]]
 name = "share_crate"
-version = "0.0.1-beta.1"
+version = "0.0.11-beta.1"
 
 [[package]]
 name = "simd-adler32"
