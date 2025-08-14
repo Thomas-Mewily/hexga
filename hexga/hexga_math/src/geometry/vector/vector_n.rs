@@ -11,6 +11,7 @@ use super::*;
 ///
 /// assert_eq!(vector3(true, false, true) & Vector3::ZERO, vector3(false, false, false));
 /// ```
+#[repr(C)]
 pub struct Vector<T, const N : usize>
 {
     // Not simd because we accept everythings.

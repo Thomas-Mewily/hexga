@@ -191,6 +191,7 @@ impl<T, Gen:IGeneration> Serialize for GenVecOf<T,Gen> where Slot<T, Gen> : Seri
 
 impl<T, Gen:IGeneration> GenVecOf<T,Gen>
 {
+    #[allow(dead_code)]
     pub(crate) fn new_and_check_invariant(slot : Vec<Slot<T, Gen>>, head : usize) -> Result<Self, String>
     {
         let len = slot.iter().filter(|s| s.have_value()).count();
