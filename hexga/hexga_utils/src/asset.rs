@@ -8,14 +8,14 @@ pub mod prelude
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
-pub enum Asset<T,L=(),E=()>
+pub enum Asset<T,E=(),L=()>
 {
     Loading(L),
     Loaded(T),
     Error(E),
 }
 
-impl<T,L,E> Asset<T,L,E>
+impl<T,E,L> Asset<T,E,L>
 {
     pub fn as_loading(&self) -> Option<&L> { if let Self::Loading(l) = self { Some(l) } else { None }}
     pub fn as_loading_mut(&mut self) -> Option<&mut L> { if let Self::Loading(l) = self { Some(l) } else { None }}

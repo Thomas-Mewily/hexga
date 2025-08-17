@@ -53,6 +53,7 @@ pub struct Context
 {
     pub input: ContextInput,
     pub pen: ContextPen,
+    pub windows: ContextWindows,
 }
 impl Context
 {
@@ -76,3 +77,26 @@ pub struct ContextInput
 {
 
 }
+
+
+
+macro_rules! declare_context_singleton {
+    ($struct_name:ident, $target_type:ty, $field:ident) =>
+    {
+        pub struct $struct_name;
+
+        impl std::ops::Deref for $struct_name {
+            type Target = $target_type;
+            fn deref(&self) -> &Self::Target {
+                &ctx().$field
+            }
+        }
+
+        impl std::ops::DerefMut for $struct_name {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                &mut ctx_mut().$field
+            }
+        }
+    };
+}
+pub(crate) use declare_context_singleton;
