@@ -13,8 +13,8 @@ use extern_alias::*;
 mod context;
 use context::*;
 
-pub mod window;
-use window::*;
+pub mod windows;
+use windows::*;
 
 pub mod app;
 use app::*;
@@ -26,4 +26,5 @@ pub mod prelude
 {
     pub use super::app::prelude::*;
     pub use super::context::prelude::*;
+    pub use super::windows::prelude::*;
 }
