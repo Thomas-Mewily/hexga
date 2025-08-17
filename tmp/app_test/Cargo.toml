@@ -1,0 +1,12 @@
+[package]
+name = "app_test"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[dependencies]
+hexga_core.workspace = true
+hexga_engine.workspace = true

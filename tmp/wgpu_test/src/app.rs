@@ -105,28 +105,62 @@ impl<A> CtxRunner<A> where A:App
 {
     fn draw(&mut self)
     {
+        /* 
         let ctx = ctx_mut();
         let Some(wgpu_ctx) = ctx.gfx.as_mut() else { return; };
-        assert!(ctx.encoder.is_none());
+        
+        assert!(ctx.pen.encoder.is_none());
+        assert!(ctx.pen.rpass.is_none());
 
         let surface_texture = wgpu_ctx
             .surface
             .get_current_texture()
             .expect("Failed to acquire next swap chain texture");
-        let _texture_view = surface_texture
+        let texture_view = surface_texture
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
-        let encoder = wgpu_ctx
+        let mut encoder = wgpu_ctx
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        ctx.encoder = Some(encoder);
+        
+        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &texture_view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
+                        store: wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
+            });
+
+        rpass.set_pipeline(&wgpu_ctx.render_pipeline);
+
+        rpass.set_vertex_buffer(0, wgpu_ctx.vertex_buffer.slice(..));
+            // 消费存放的 vertex_index_buffer
+            rpass.set_index_buffer(
+                wgpu_ctx.vertex_index_buffer.slice(..),
+                wgpu::IndexFormat::Uint16,
+            ); // 1.
+
+        rpass.draw_indexed(0..VERTEX_INDEX_LIST.len() as u32, 0, 0..1);
+        rpass.draw(0..VERTEX_LIST.len() as u32, 0..1);
+        
+        ctx.pen.encoder = Some(encoder);
+        ctx.pen.rpass = Some(rpass);
 
         self.app.draw();
 
         let ctx = ctx_mut();
 
-        wgpu_ctx.queue.submit(Some(ctx.encoder.take().unwrap().finish()));
+        wgpu_ctx.queue.submit(Some(ctx.pen.encoder.take().unwrap().finish()));
+        ctx.pen.rpass = None;
         surface_texture.present();
+        */
     }
 }

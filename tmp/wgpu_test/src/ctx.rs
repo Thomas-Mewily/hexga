@@ -6,7 +6,14 @@ pub struct Context
 {
     pub(crate) gfx : Option<WgpuCtx>,
     pub(crate) window : Option<Arc<Window>>,
+    pub(crate) pen : CtxPen,
+}
+
+#[derive(Default)]
+pub struct CtxPen
+{
     pub(crate) encoder : Option<CommandEncoder>,
+    pub(crate) rpass   : Option<wgpu::RenderPass<'static>>,
 }
 
 pub struct WgpuCtx 

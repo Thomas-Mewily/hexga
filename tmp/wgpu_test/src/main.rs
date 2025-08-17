@@ -21,7 +21,7 @@ impl App for ()
 {
     fn draw(&self) 
     {
-        /* 
+        /*
         let texture_view = surface_texture
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
@@ -53,6 +53,7 @@ impl App for ()
         // 顶点有原来的固定3个顶点，调整为根据 VERTEX_LIST 动态来计算
         rpass.draw(0..VERTEX_LIST.len() as u32, 0..1);
         */
+        
     }
 }
 

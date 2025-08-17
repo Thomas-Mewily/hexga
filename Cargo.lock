@@ -74,6 +74,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "app_test"
+version = "0.0.11-beta.3"
+dependencies = [
+ "hexga_core",
+ "hexga_engine",
+]
+
+[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -704,6 +712,17 @@ dependencies = [
 [[package]]
 name = "hexga_core"
 version = "0.0.11-beta.3"
+
+[[package]]
+name = "hexga_engine"
+version = "0.0.11-beta.3"
+dependencies = [
+ "hexga_core",
+ "hexga_io",
+ "hexga_io_derive",
+ "hexga_math",
+ "serde",
+]
 
 [[package]]
 name = "hexga_generational"
