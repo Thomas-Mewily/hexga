@@ -54,7 +54,30 @@ pub struct Context
     pub input: ContextInput,
     pub pen: ContextPen,
     pub windows: ContextWindows,
+    pub(crate) gfx: Graphics,
 }
+
+#[derive(Debug)]
+pub(crate) struct Graphics
+{
+    pub(crate) instance : WgpuInstance,
+}
+
+impl Default for Graphics
+{
+    fn default() -> Self {
+        Self
+        {
+            instance: wgpu::Instance::new(&wgpu::InstanceDescriptor
+            {
+                ..___()
+            })
+        }
+    }
+}
+
+
+
 impl Context
 {
     pub fn new() -> Self { ___() }
@@ -77,6 +100,8 @@ pub struct ContextInput
 {
 
 }
+
+
 
 
 

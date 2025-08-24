@@ -22,7 +22,7 @@ impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Id
 
 
 pub trait IGrid<T, Idx, const N : usize> :
-      IRectangle<Idx,N>
+      GetRectangle<Idx,N> + GetPosition<Idx,N>
 
     + Get<Vector<Idx,N>,Output=T>
     + Index<Vector<Idx,N>,Output=T>

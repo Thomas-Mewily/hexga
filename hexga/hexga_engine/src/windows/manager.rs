@@ -82,3 +82,18 @@ impl Drop for ContextWindows
         self.main_window = None;
     }
 }
+
+impl ContextWindows
+{
+    pub(crate) fn update<UserEvent>(&mut self, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    {
+        if !self.any_dirty { return; }
+        self.any_dirty = false;
+        
+        for window in self.windows.values_mut()
+        {
+            window.update_dirty(&mut self.lookup, gfx, event_loop, proxy);
+            self.any_dirty |= window.dirty;
+        }
+    }
+}

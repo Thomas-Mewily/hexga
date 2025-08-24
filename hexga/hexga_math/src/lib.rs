@@ -78,7 +78,7 @@ pub mod prelude
     pub use crate::rectangle::prelude::*;
     pub use crate::matrix::prelude::*;
 
-    pub use crate::{Position,RotationX,RotationY,RotationZ};
+    pub use crate::{GetPosition,SetPosition,RotationX,RotationY,RotationZ};
 
     pub use hexga_typedef::prelude::*;
 

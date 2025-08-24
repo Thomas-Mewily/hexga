@@ -17,9 +17,8 @@ pub trait AppRun<UserEvent> : App<UserEvent> where UserEvent: IUserEvent, Self: 
         let event_loop = winit::event_loop::EventLoop::<AppInternalEvent<UserEvent>>::with_user_event().build().unwrap();
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let proxy = event_loop.create_proxy();
-        //ctx.windows
-        //ctx.window.init_main_window(std::mem::take(&mut param.window));
 
+        AppRunner::new(self, proxy).run_with_param(event_loop, param);
     }
 }
 
@@ -54,6 +53,8 @@ impl <A,UserEvent> AppRunner<A,UserEvent> where A:App<UserEvent>, UserEvent:IUse
         }
     }
 
+    //fn run_with_param_and_ctx(...)
+
     fn send_event(&mut self, event: impl Into<AppInternalEvent<UserEvent>>)
     {
         let r = self.proxy.send_event(event.into());
@@ -67,5 +68,34 @@ impl <A,UserEvent> AppRunner<A,UserEvent> where A:App<UserEvent>, UserEvent:IUse
     {
         self.send_event(WindowInternalEvent::new(id, event.into()));
     }
+    fn send_state_event(&mut self, state : StateEvent){
+        self.send_event(state)
+    }
 }
 
+#[allow(unused_variables)]
+impl<A,UserEvent> WinitApp<AppInternalEvent<UserEvent>> for AppRunner<A,UserEvent> where A: App<UserEvent>, UserEvent:IUserEvent
+{
+    fn resumed(&mut self, event_loop: &WinitActiveEventLoop) {
+        self.send_state_event(StateEvent::Resumed);
+    }
+
+    fn suspended(&mut self, event_loop: &WinitActiveEventLoop) {
+        self.send_state_event(StateEvent::Paused);
+    }
+
+    fn about_to_wait(&mut self, event_loop: &WinitActiveEventLoop) 
+    {
+        Windows.update(&ctx().gfx, event_loop, &self.proxy);
+        self.app.update();
+    }
+
+    fn window_event(
+        &mut self,
+        event_loop: &WinitActiveEventLoop,
+        window_id: winit::window::WindowId,
+        event: winit::event::WindowEvent,
+    ) {
+        //todo!()
+    }
+}

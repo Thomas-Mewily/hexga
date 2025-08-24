@@ -33,12 +33,15 @@ impl<T, const N : usize> Vector<T,N>
 impl_generic_array_like_with_op!(Vector);
 
 
-impl<T, const N : usize> Position<T,N> for Vector<T, N> where Self : Copy, T : Copy
+impl<T, const N : usize> GetPosition<T,N> for Vector<T, N> where Self : Copy, T : Copy
 {
     fn pos(&self) -> Vector<T,N> {
         *self
     }
+}
 
+impl<T, const N : usize> SetPosition<T,N> for Vector<T, N> where Self : Copy, T : Copy
+{
     fn set_pos(&mut self, pos : Vector<T,N>) -> &mut Self {
         *self = pos;
         self

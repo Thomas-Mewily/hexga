@@ -3,7 +3,11 @@ The hexga engine have the following goal:
 - Multi media context 
   - Input: getting the external input (keyboard, mouse, controller...)
   - Pen: draw stuff on the screen (2D and 3D), 
+  - Camera where the camera is
   - Sound: play music, sound effect
+  - Rng random number generator
+  - Telemetry : Bench the performance of some part of the code
+  - Io ? open/save file (event based?)
 
 - Define the program main loop design
   - Event driven

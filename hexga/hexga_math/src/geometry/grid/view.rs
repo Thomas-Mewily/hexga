@@ -17,7 +17,7 @@ pub trait IGridViewNonOwned<G, T, Idx, const N : usize> :
 ///
 /// Can only shrink / be cropped.
 pub trait IGridView<G, T, Idx, const N : usize> :
-      IRectangle<Idx,N>
+      GetRectangle<Idx,N>
     + Get<Vector<Idx,N>,Output=T>
     + Index<Vector<Idx,N>,Output=T>
     where
@@ -226,7 +226,7 @@ impl<'a, G, T, Idx, const N : usize> Ord for GridView<'a, G, T, Idx, N>
 }
 
 
-impl<'a, G, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, G, T, Idx, N>
+impl<'a, G, T, Idx, const N : usize> GetPosition<Idx,N> for GridView<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
     Idx : Integer
@@ -234,6 +234,12 @@ impl<'a, G, T, Idx, const N : usize> IRectangle<Idx,N> for GridView<'a, G, T, Id
     /// The view is relative to itself, so the position is zero
     #[inline(always)]
     fn pos(&self) -> Vector<Idx,N> { zero() }
+}
+impl<'a, G, T, Idx, const N : usize> GetRectangle<Idx,N> for GridView<'a, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer
+{
     #[inline(always)]
     fn size(&self) -> Vector<Idx,N> { self.rect.size }
     #[inline(always)]

@@ -721,24 +721,29 @@ impl<T, const N : usize> RotationZ<T> for SquareMatrix<T,N>
     }
 }
 
-impl<T, const N : usize> Position<Vector<T,N>,N> for SquareMatrix<T,N> where T: Copy
+impl<T, const N : usize> GetPosition<Vector<T,N>,N> for SquareMatrix<T,N> where T: Copy
 {
     fn pos(&self) -> Vector<Vector<T,N>,N> {
         self.col()
     }
-
+}
+impl<T, const N : usize> SetPosition<Vector<T,N>,N> for SquareMatrix<T,N> where T: Copy
+{
     fn set_pos(&mut self, pos : Vector<Vector<T,N>,N>) -> &mut Self {
         *self = Self::from_col(pos);
         self
     }
 }
 
-impl<T, const N : usize> Position<T,N> for SquareMatrix<T,N> where T: Copy
+
+impl<T, const N : usize> GetPosition<T,N> for SquareMatrix<T,N> where T: Copy
 {
     fn pos(&self) -> Vector<T,N> {
         self.columns[N-1]
     }
-
+}
+impl<T, const N : usize> SetPosition<T,N> for SquareMatrix<T,N> where T: Copy
+{
     fn set_pos(&mut self, pos : Vector<T,N>) -> &mut Self {
         self.columns[N-1] = pos;
         self

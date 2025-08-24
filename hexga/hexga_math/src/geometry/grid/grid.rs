@@ -25,12 +25,15 @@ impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx
 }
 
 
-impl<T, Idx, const N : usize> IRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> GetPosition<Idx, N> for GridBase<T, Idx, N> where Idx : Integer
+{
+    #[inline(always)]
+    fn pos(&self) -> Vector<Idx,N> { zero() }
+}
+impl<T, Idx, const N : usize> GetRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx, N> { self.size }
-    #[inline(always)]
-    fn pos(&self) -> Vector<Idx,N> { zero() }
 
     fn iter_x(&self) -> Range<Idx> where Vector<Idx,N> : HaveX<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_x() }
     fn iter_y(&self) -> Range<Idx> where Vector<Idx,N> : HaveY<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_y() }

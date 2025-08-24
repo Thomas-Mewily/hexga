@@ -1,7 +1,6 @@
 use super::*;
 
 
-
 #[derive(Debug)]
 pub struct Window
 {
@@ -68,7 +67,100 @@ impl WindowData
     pub fn id(&self) -> WindowID { self.id }
     pub(crate) fn winit_id(&self) -> Option<WinitWindowID> { self.winit_id }
 }
+impl WindowData
+{
+    pub(crate) fn update_dirty<UserEvent>(&mut self, lookup: &mut WindowLookupID, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    {
+        if !self.dirty { return; }
+        self.dirty = false;
 
+        if self.winit_window.is_none()
+        {
+            // winit window creation
+            debug_assert!(self.winit_id().is_none());
+
+            let mut win_attr = WinitWindow::default_attributes();
+
+            // Get the monitor where the window will be created and its physical size
+            if let Some(monitor) = event_loop.primary_monitor() {
+                let size = monitor.size();
+                // size is of type winit::dpi::PhysicalSize<u32>
+                // You can use size.width and size.height as needed
+            }
+
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                win_attr = win_attr.with_title(self.param.title());
+            }
+
+            #[cfg(target_arch = "wasm32")]
+            {
+                use winit::platform::web::WindowAttributesExtWebSys;
+                win_attr = win_attr.with_append(true);
+            }
+
+            /* 
+            if !self.default_size_and_position
+            {
+                win_attr = win_attr.with_position(WinitPhysicalPosition::new(self.position.x, self.position.y));
+                win_attr = win_attr.with_inner_size(WinitPhysicalSize::new(self.size.x, self.size.y))
+            }
+
+            let winit_window = event_loop
+                    .create_window(win_attr)
+                    .expect("create window err.");
+
+            if self.default_size_and_position
+            {
+                self.param.position = winit_window.outer_position().map(|v| v.convert()).unwrap_or_zero();
+                let size = winit_window.outer_size();
+                self.param.size = point2(size.width as _, size.height as _)
+            }
+
+            let winit_window_ptr = WinitWindowPtr::new(winit_window);
+
+            let winit_id = winit_window_ptr.winit_window().id();
+            self.winit_id = Some(winit_id);
+            self.winit_window = Some(winit_window_ptr);
+            lookup.insert(winit_id, self.id());
+
+
+            // wgpu async surface creation
+            match &mut self.graphics
+            {
+                Asset::Pending(_) =>
+                {
+                    let winit_window = self.winit_window.as_ref().expect("winit_window should have been init just before").clone();
+                    self.graphics = Asset::Loading(());
+
+                    let instance = gfx.instance.clone();
+                    let surface: WgpuSurface = instance.create_surface(winit_window.window.clone()).unwrap();
+                    let size = self.size();
+
+                    crate::spawn_task(Self::request_surface(gfx.instance.clone(), surface, size, self.id(), proxy.clone()));
+                },
+                Asset::Loading(_) => {},
+                Asset::Loaded(_gfx) => {},
+                Asset::Error(_) => { panic!("Can't create the window gfx"); },
+            }
+            */
+        }
+
+        /* 
+        self.set_pos(self.position());
+        self.resize(self.size());
+        self.set_cursor_icon(self.cursor_icon());
+        self.set_cursor_grab(self.cursor_grab());
+        self.set_cursor_visible(self.is_cursor_visible());
+        self.set_transparency_support(self.support_transparency());
+
+        let title = self.title().to_owned();
+        self.set_title(title); // I don't like this clone
+
+        self.set_level(self.level);
+        */
+    }
+}
 
 
 #[derive(Clone, Debug)]
@@ -88,22 +180,31 @@ impl Deref for WinitWindowPtr
 }
 
 
-#[derive(PartialEq, Clone, Default, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct WindowParam
 {
     /// Title of the window, defaults to an empty string.
     title: String,
-    size : Option<Point2>,
-    position : Option<Point2>,
+    rectangle : UiRect2,
+}
+
+impl Default for WindowParam
+{
+    fn default() -> Self 
+    {
+        Self 
+        { 
+            title: "".to_owned(), 
+            rectangle: UiRect2::FULL_SCREEN.centered()
+        }
+    }
 }
 
 
-
-pub trait IWindowParam
+pub trait IWindowParam : SetPosition<UiNumber,2> + GetRectangle<UiNumber,2>
 {
+    fn title(&self) -> &str;
     fn with_title(self, title: impl Into<String>) -> Self;
-    fn with_size(self, size: impl Into<Option<Point2>>) -> Self;
-    fn with_position(self, position: impl Into<Option<Point2>>) -> Self;
 }
 
 impl WindowParam
@@ -113,9 +214,20 @@ impl WindowParam
 
 impl IWindowParam for WindowParam
 {
+    fn title(&self) -> &str { &self.title }
     fn with_title(mut self, title: impl Into<String>) -> Self { self.title = title.into(); self }
-    fn with_size(mut self, size: impl Into<Option<Point2>>) -> Self { self.size = size.into(); self }
-    fn with_position(mut self, position: impl Into<Option<Point2>>) -> Self { self.position = position.into(); self }
+}
+impl GetPosition<UiNumber,2> for WindowParam
+{
+    fn pos(&self) -> Vector<UiNumber,2> {
+        self.rectangle.pos
+    }
+}
+impl GetRectangle<UiNumber,2> for WindowParam
+{
+    fn size(&self) -> Vector<UiNumber,2> {
+        self.rectangle.size
+    }
 }
 
 

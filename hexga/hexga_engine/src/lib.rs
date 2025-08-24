@@ -22,9 +22,14 @@ use app::*;
 mod logger;
 use logger::*;
 
+mod ui;
+use ui::*;
+
+use prelude::*;
 pub mod prelude
 {
     pub use super::app::prelude::*;
     pub use super::context::prelude::*;
     pub use super::windows::prelude::*;
+    pub use super::ui::prelude::*;
 }

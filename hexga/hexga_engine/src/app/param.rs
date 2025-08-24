@@ -28,17 +28,14 @@ impl AppParam
     pub fn with_window(mut self, window : impl Into<Option<WindowParam>>) -> Self  { self.window = window.into(); self }
 }
 
+/* 
 impl IWindowParam for AppParam
 {
+    fn title(&self) -> &str {
+        self.window.as_ref().map(|w| w.title()).unwrap_or_default()
+    }
+
     fn with_title(self, title: impl Into<String>) -> Self {
         self.with_window_mut_or_create(|w| w.with_title(title))
     }
-
-    fn with_size(self, size: impl Into<Option<Point2>>) -> Self {
-        self.with_window_mut_or_create(|w| w.with_size(size))
-    }
-
-    fn with_position(self, position: impl Into<Option<Point2>>) -> Self {
-        self.with_window_mut_or_create(|w| w.with_position(position))
-    }
-}
+}*/

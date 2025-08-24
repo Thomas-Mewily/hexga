@@ -157,7 +157,7 @@ impl<C,Idx> IGrid<C,Idx,2> for ImageBase<C,Idx> where Idx : Integer
 }
 
 
-impl<T, Idx> IRectangle<Idx, 2> for ImageBase<T, Idx> where Idx : Integer
+impl<T, Idx> GetRectangle<Idx, 2> for ImageBase<T, Idx> where Idx : Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx, 2> { self.size }

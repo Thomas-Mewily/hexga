@@ -232,7 +232,7 @@ impl<T> RectangleBase<T>
 }
 
 /// Crop a selection to a sub selection, where the sub selection is contained in the selection.
-pub trait Crop<T, const N : usize> : IRectangle<T, N> + Sized where T: Number
+pub trait Crop<T, const N : usize> : GetRectangle<T, N> + Sized where T: Number
 {
     /// Crop the current rectangle to the given sub rectangle.
     ///
@@ -339,17 +339,34 @@ impl<T,const N : usize> Rectangle<T,N> where T: Number
     pub fn from_pos_to_pos(start_pos : Vector<T,N>, end_pos : Vector<T,N>) -> Self { Self::new(start_pos, (end_pos - start_pos).map_with(zero(), |a,b| a.max_partial(b))) }
 }
 
-impl<T, const N : usize> IRectangle<T, N> for Rectangle<T, N> where T: Number
+impl<T, const N : usize> GetPosition<T, N> for Rectangle<T, N> where T: Number
 {
     #[inline(always)]
-    fn pos (&self) -> Vector<T,N> { self.pos  }
+    fn pos(&self) -> Vector<T,N> { self.pos }
+}
+impl<T, const N : usize> SetPosition<T, N> for Rectangle<T, N> where T: Number
+{
+    #[inline(always)]
+    fn set_pos(&mut self, pos : Vector<T,N>) -> &mut Self {
+        self.pos = pos;
+        self
+    }
+}
+impl<T, const N : usize> GetRectangle<T, N> for Rectangle<T, N> where T: Number
+{
     #[inline(always)]
     fn size(&self) -> Vector<T,N> { self.size }
 }
 
-pub trait IRectangle<T, const N : usize> where T: Number
+pub trait SetRectangle<T, const N : usize> : GetRectangle<T,N> + SetPosition<T,N> where T: Number
 {
-    fn pos (&self) -> Vector<T,N>;
+    // fn set_size
+    // with_size ...
+}
+impl<S,T,const N:usize> SetRectangle<T,N> for S where S:GetRectangle<T,N> + SetPosition<T,N>, T: Number {}
+
+pub trait GetRectangle<T, const N : usize> : GetPosition<T,N> where T: Number
+{
     fn size(&self) -> Vector<T,N>;
 
     #[inline(always)] fn size_x(&self) -> T where Vector<T,N> : HaveX<T> { self.size().x() }
@@ -408,17 +425,6 @@ pub trait IRectangle<T, const N : usize> where T: Number
     #[inline(always)] fn is_outside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { !self.is_inside_w(w) }
 }
 
-
-impl<T, const N : usize> Position<T, N> for Rectangle<T,N> where T: Copy
-{
-    fn pos(&self) -> Vector<T,N> {
-        self.pos
-    }
-
-    fn set_pos(&mut self, pos : Vector<T,N>) -> &mut Self {
-        self.pos = pos; self
-    }
-}
 
 impl<T,const N : usize> Lerpable for Rectangle<T,N> where T: Number, Vector<T,N> : Lerpable
 {
