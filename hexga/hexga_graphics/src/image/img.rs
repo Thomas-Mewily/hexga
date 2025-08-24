@@ -157,12 +157,15 @@ impl<C,Idx> IGrid<C,Idx,2> for ImageBase<C,Idx> where Idx : Integer
 }
 
 
+impl<T, Idx> GetPosition<Idx, 2> for ImageBase<T, Idx> where Idx : Integer
+{
+    #[inline(always)]
+    fn pos(&self) -> Vector2<Idx> { zero() }
+}
 impl<T, Idx> GetRectangle<Idx, 2> for ImageBase<T, Idx> where Idx : Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx, 2> { self.size }
-    #[inline(always)]
-    fn pos(&self) -> Vector2<Idx> { zero() }
 
     fn iter_x(&self) -> Range<Idx> where Vector2<Idx> : HaveX<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_x() }
     fn iter_y(&self) -> Range<Idx> where Vector2<Idx> : HaveY<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_y() }
