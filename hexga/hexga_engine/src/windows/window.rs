@@ -201,7 +201,7 @@ impl Default for WindowParam
 }
 
 
-pub trait IWindowParam : SetPosition<UiNumber,2> + GetRectangle<UiNumber,2>
+pub trait IWindowParam : SetRectangle<UiNumber,2>
 {
     fn title(&self) -> &str;
     fn with_title(self, title: impl Into<String>) -> Self;
@@ -223,10 +223,24 @@ impl GetPosition<UiNumber,2> for WindowParam
         self.rectangle.pos
     }
 }
+impl SetPosition<UiNumber,2> for WindowParam
+{
+    fn set_pos(&mut self, pos : Vector<UiNumber,2>) -> &mut Self {
+        self.rectangle.pos = pos;
+        self
+    }
+}
 impl GetRectangle<UiNumber,2> for WindowParam
 {
     fn size(&self) -> Vector<UiNumber,2> {
         self.rectangle.size
+    }
+}
+impl SetRectangle<UiNumber,2> for WindowParam
+{
+    fn set_size(&mut self, size : Vector<UiNumber, 2>) -> &mut Self {
+        self.rectangle.size = size;
+        self
     }
 }
 

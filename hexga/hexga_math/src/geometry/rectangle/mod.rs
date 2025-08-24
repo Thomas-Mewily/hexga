@@ -138,19 +138,19 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
 
 }
 
-impl<T,const N : usize> Rectangle<T,N> where T: Copy
+impl<T,const N : usize> SetRectangle<T,N> for Rectangle<T,N> where T: Number
 {
-    pub fn set_size(&mut self, size : Vector<T, N>) -> &mut Self { self.size = size; self }
-    pub fn set_size_x(&mut self, x : T) -> &mut Self where Vector<T, N> : HaveX<T> { self.size.set_x(x); self }
-    pub fn set_size_y(&mut self, y : T) -> &mut Self where Vector<T, N> : HaveY<T> { self.size.set_y(y); self }
-    pub fn set_size_z(&mut self, z : T) -> &mut Self where Vector<T, N> : HaveZ<T> { self.size.set_z(z); self }
-    pub fn set_size_w(&mut self, w : T) -> &mut Self where Vector<T, N> : HaveW<T> { self.size.set_w(w); self }
+    fn set_size(&mut self, size : Vector<T, N>) -> &mut Self { self.size = size; self }
+    fn set_size_x(&mut self, x : T) -> &mut Self where Vector<T, N> : HaveX<T> { self.size.set_x(x); self }
+    fn set_size_y(&mut self, y : T) -> &mut Self where Vector<T, N> : HaveY<T> { self.size.set_y(y); self }
+    fn set_size_z(&mut self, z : T) -> &mut Self where Vector<T, N> : HaveZ<T> { self.size.set_z(z); self }
+    fn set_size_w(&mut self, w : T) -> &mut Self where Vector<T, N> : HaveW<T> { self.size.set_w(w); self }
 
-    pub fn with_size(mut self, size : Vector<T, N>) -> Self { self.size = size; self }
-    pub fn with_size_x(mut self, x : T) -> Self where Vector<T, N> : HaveX<T> { self.size.set_x(x); self }
-    pub fn with_size_y(mut self, y : T) -> Self where Vector<T, N> : HaveY<T> { self.size.set_y(y); self }
-    pub fn with_size_z(mut self, z : T) -> Self where Vector<T, N> : HaveZ<T> { self.size.set_z(z); self }
-    pub fn with_size_w(mut self, w : T) -> Self where Vector<T, N> : HaveW<T> { self.size.set_w(w); self }
+    fn with_size(mut self, size : Vector<T, N>) -> Self { self.size = size; self }
+    fn with_size_x(mut self, x : T) -> Self where Vector<T, N> : HaveX<T> { self.size.set_x(x); self }
+    fn with_size_y(mut self, y : T) -> Self where Vector<T, N> : HaveY<T> { self.size.set_y(y); self }
+    fn with_size_z(mut self, z : T) -> Self where Vector<T, N> : HaveZ<T> { self.size.set_z(z); self }
+    fn with_size_w(mut self, w : T) -> Self where Vector<T, N> : HaveW<T> { self.size.set_w(w); self }
 }
 
 impl<T,const N : usize> Rectangle<T,N> where T: Number
@@ -358,12 +358,6 @@ impl<T, const N : usize> GetRectangle<T, N> for Rectangle<T, N> where T: Number
     fn size(&self) -> Vector<T,N> { self.size }
 }
 
-pub trait SetRectangle<T, const N : usize> : GetRectangle<T,N> + SetPosition<T,N> where T: Number
-{
-    // fn set_size
-    // with_size ...
-}
-impl<S,T,const N:usize> SetRectangle<T,N> for S where S:GetRectangle<T,N> + SetPosition<T,N>, T: Number {}
 
 pub trait GetRectangle<T, const N : usize> : GetPosition<T,N> where T: Number
 {
@@ -423,6 +417,21 @@ pub trait GetRectangle<T, const N : usize> : GetPosition<T,N> where T: Number
     #[inline(always)] fn is_outside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { !self.is_inside_y(y) }
     #[inline(always)] fn is_outside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { !self.is_inside_z(z) }
     #[inline(always)] fn is_outside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { !self.is_inside_w(w) }
+}
+
+pub trait SetRectangle<T, const N : usize> : GetRectangle<T,N> + SetPosition<T,N> where T: Number
+{
+    fn set_size(&mut self, size : Vector<T, N>) -> &mut Self;
+    fn set_size_x(&mut self, x : T) -> &mut Self where Vector<T, N> : HaveX<T> { let mut p = self.pos(); p.set_x(x); self.set_pos(p); self }
+    fn set_size_y(&mut self, y : T) -> &mut Self where Vector<T, N> : HaveY<T> { let mut p = self.pos(); p.set_y(y); self.set_pos(p); self }
+    fn set_size_z(&mut self, z : T) -> &mut Self where Vector<T, N> : HaveZ<T> { let mut p = self.pos(); p.set_z(z); self.set_pos(p); self }
+    fn set_size_w(&mut self, w : T) -> &mut Self where Vector<T, N> : HaveW<T> { let mut p = self.pos(); p.set_w(w); self.set_pos(p); self }
+
+    fn with_size(mut self, size : Vector<T, N>) -> Self where Self : Sized { self.set_size(size); self }
+    fn with_size_x(mut self, x : T) -> Self where Vector<T, N> : HaveX<T>, Self : Sized { self.set_size_x(x); self }
+    fn with_size_y(mut self, y : T) -> Self where Vector<T, N> : HaveY<T>, Self : Sized { self.set_size_y(y); self }
+    fn with_size_z(mut self, z : T) -> Self where Vector<T, N> : HaveZ<T>, Self : Sized { self.set_size_z(z); self }
+    fn with_size_w(mut self, w : T) -> Self where Vector<T, N> : HaveW<T>, Self : Sized { self.set_size_w(w); self }
 }
 
 

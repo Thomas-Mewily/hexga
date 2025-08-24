@@ -76,15 +76,11 @@ map_on_operator_assign_arithmetic!
 );
 impl<T> Sum for UiNumberRelativeOf<T> where T: Number
 {
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Self::ZERO, Self::add)
-    }
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ZERO, Self::add) }
 }
 impl<T> Product for UiNumberRelativeOf<T> where T:Number
 {
-    fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Self::ONE, Self::mul)
-    }
+    fn product<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ONE, Self::mul) }
 }
 
 
@@ -120,6 +116,7 @@ impl<T> ToUiNumberRelative<T> for T where T:Number
 
 pub type UiNumber = UiNumberOf<int,float>;
 
+
 #[derive(Debug, Clone, Copy, PartialEq, Default, PartialOrd)]
 pub struct UiNumberOf<P,T> where P: Number, T: Number
 {
@@ -127,6 +124,7 @@ pub struct UiNumberOf<P,T> where P: Number, T: Number
     pub window : UiNumberRelativeOf<T>,
     pub screen : UiNumberRelativeOf<T>,
 }
+
 
 impl<P,T> Zero for UiNumberOf<P,T> where P: Number, T: Number { const ZERO : Self = Self { pixel : zero(), window : zero(), screen : zero() }; }
 impl<P,T> One for UiNumberOf<P,T> where P: Number,T:Number { const ONE : Self = Self { pixel : one(), window : one(), screen : one() }; }
@@ -185,6 +183,14 @@ map_on_operator_assign_arithmetic!
         }
     }
 );
+impl<P,T> Sum for UiNumberOf<P,T> where P: Number, T: Number
+{
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ZERO, Self::add) }
+}
+impl<P,T> Product for UiNumberOf<P,T> where P: Number, T:Number
+{
+    fn product<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ONE, Self::mul) }
+}
 
 pub type UiVectorOf<P,T,const N:usize> = Vector<UiNumberOf<P,T>,N>;
 pub type UiRectangleOf<P,T,const N:usize> = Rectangle<UiNumberOf<P,T>,N>;
