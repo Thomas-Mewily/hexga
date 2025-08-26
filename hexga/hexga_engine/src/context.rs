@@ -5,7 +5,7 @@ pub mod prelude
     
 }
 
-pub struct Ctx;
+pub(crate) struct Ctx;
 impl Deref for Ctx
 {
     type Target=Context;
@@ -49,11 +49,12 @@ pub(crate) fn reset_ctx()
 }
 
 #[derive(Debug, Default)]
-pub struct Context
+pub(crate) struct Context
 {
-    pub input: ContextInput,
-    pub pen: ContextPen,
-    pub windows: ContextWindows,
+    //pub(crate) input: ContextInput,
+    //pub(crate) pen: ContextPen,
+    pub(crate) camera: CameraManager,
+    pub(crate) windows: WindowManager,
     pub(crate) gfx: Graphics,
 }
 
@@ -80,29 +81,30 @@ impl Default for Graphics
 
 impl Context
 {
-    pub fn new() -> Self { ___() }
+    pub(crate) fn new() -> Self { ___() }
+
+    pub(crate) fn resumed(&mut self)
+    {
+
+    }
+
+    pub(crate) fn paused(&mut self)
+    {
+        
+    }
+
+    pub(crate) fn begin_update<UserEvent>(&mut self, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    {
+        self.windows.update(gfx, event_loop, proxy);
+        self.camera.update(event_loop);
+
+    }
+
+    pub(crate) fn end_update<UserEvent>(&mut self, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    {
+        let _  = (gfx, event_loop, proxy);
+    }
 }
-
-#[derive(Debug, Default)]
-pub struct ContextPen
-{
-
-}
-
-#[derive(Debug, Default)]
-pub struct ContextAudio
-{
-
-}
-
-#[derive(Debug, Default)]
-pub struct ContextInput
-{
-
-}
-
-
-
 
 
 macro_rules! declare_context_singleton {
@@ -125,3 +127,16 @@ macro_rules! declare_context_singleton {
     };
 }
 pub(crate) use declare_context_singleton;
+
+
+pub fn spawn_task<F, T>(future: F)
+where
+    F: Future<Output = T> + Send + 'static,
+    T: Send + 'static
+{
+    #[cfg(target_arch = "wasm32")]
+    wasm_bindgen_futures::spawn_local(future);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    async_std::task::spawn(future);
+}

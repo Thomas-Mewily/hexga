@@ -3,17 +3,18 @@ use super::*;
 
 /// The window manager
 #[derive(Debug, Default)]
-pub struct ContextWindows
+pub struct WindowManager
 {
     pub(crate) lookup  : WindowLookupID,
     pub(crate) windows : GenVec<WindowData>,
     pub(crate) any_dirty : bool,
 
     main_window : Option<Window>,
+    
 }
 
 
-impl ContextWindows
+impl WindowManager
 {
     pub fn new() -> Self { ___() }
 
@@ -41,7 +42,7 @@ pub trait IContextWindows
     fn main_window_mut(&mut self) -> Option<&mut Window>;
 }
 
-impl IContextWindows for ContextWindows
+impl IContextWindows for WindowManager
 {
     fn new_window(&mut self, param: WindowParam) -> Option<Window>
     {
@@ -49,7 +50,10 @@ impl IContextWindows for ContextWindows
         if self.windows.len() >= 1 { return None; }
         if self.windows.len() >= 32 { return None; }
 
-        let data = WindowData { winit_window: None, winit_id: None, graphics: WindowGraphicsAsset::Loading(WindowGraphicsLoadingState::Pending), param, dirty: true, id: ___() };
+        //param.rectangle.to_rectangle(window, screen)
+        todo!();
+
+        let data = WindowData { winit_window: None, winit_id: None, graphics: WindowGraphicsAsset::Loading(WindowGraphicsLoadingState::Pending), param, dirty: true, id: ___(), rectangle: todo!() };
         let id = self.windows.insert(data);
         self.windows[id].id = id;
         self.any_dirty = true;
@@ -76,14 +80,14 @@ impl IContextWindows for ContextWindows
         data
     }
 }
-impl Drop for ContextWindows
+impl Drop for WindowManager
 {
     fn drop(&mut self) {
         self.main_window = None;
     }
 }
 
-impl ContextWindows
+impl WindowManager
 {
     pub(crate) fn update<UserEvent>(&mut self, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
     {

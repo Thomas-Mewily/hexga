@@ -9,7 +9,7 @@ pub use window::*;
 pub(crate) type WindowLookupID = HashMap<WinitWindowID, WindowID>;
 pub type WindowID = GenVecID<WindowData>;
 
-declare_context_singleton!(Windows, ContextWindows, windows);
+declare_context_singleton!(Windows, WindowManager, windows);
 
 pub mod prelude
 {

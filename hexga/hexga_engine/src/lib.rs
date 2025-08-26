@@ -1,3 +1,8 @@
+// Tmp  silence some warning when I code on other hexga related stuff
+#![allow(unused_variables)]
+#![allow(unreachable_code)]
+#![allow(unused_assignments)]
+
 #![allow(unused_imports)]
 #![allow(dead_code)]
 use hexga_core::prelude::*;
@@ -25,6 +30,9 @@ use logger::*;
 mod ui;
 use ui::*;
 
+mod cam;
+use cam::*;
+
 use prelude::*;
 pub mod prelude
 {
@@ -32,4 +40,5 @@ pub mod prelude
     pub use super::context::prelude::*;
     pub use super::windows::prelude::*;
     pub use super::ui::prelude::*;
+    pub use super::cam::prelude::*;
 }

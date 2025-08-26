@@ -42,6 +42,7 @@ pub struct WindowData
     pub(crate) graphics    : WindowGraphicsAsset,
 
     pub(crate) dirty: bool,
+    pub(crate) rectangle : Rect2P,
     pub(crate) param: WindowParam,
     pub(crate) id : WindowID,
 }
@@ -67,8 +68,51 @@ impl WindowData
     pub fn id(&self) -> WindowID { self.id }
     pub(crate) fn winit_id(&self) -> Option<WinitWindowID> { self.winit_id }
 }
+impl GetPosition<int,2> for WindowData
+{
+    fn pos(&self) -> Point2 {
+        self.rectangle.pos
+    }
+}
+impl SetPosition<int,2> for WindowData
+{
+    fn set_pos(&mut self, pos : Point2) -> &mut Self 
+    {
+        if pos != self.rectangle.pos
+        {
+            self.rectangle.pos = pos;
+            self.set_dirty();
+        }
+        self
+    }
+}
+impl GetRectangle<int,2> for WindowData
+{
+    fn size(&self) -> Vector<int,2> {
+        self.rectangle.size
+    }
+}
+impl SetRectangle<int,2> for WindowData
+{
+    fn set_size(&mut self, size : Vector<int, 2>) -> &mut Self 
+    {
+        if size != self.rectangle.size
+        {
+            self.rectangle.size = size;
+            self.set_dirty();
+        }
+        self
+    }
+}
+
 impl WindowData
 {
+    pub(crate) fn set_dirty(&mut self)
+    {
+        self.dirty = true;
+        Windows.any_dirty = true;
+    }
+
     pub(crate) fn update_dirty<UserEvent>(&mut self, lookup: &mut WindowLookupID, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
     {
         if !self.dirty { return; }
@@ -81,13 +125,7 @@ impl WindowData
 
             let mut win_attr = WinitWindow::default_attributes();
 
-            // Get the monitor where the window will be created and its physical size
-            if let Some(monitor) = event_loop.primary_monitor() {
-                let size = monitor.size();
-                // size is of type winit::dpi::PhysicalSize<u32>
-                // You can use size.width and size.height as needed
-            }
-
+            
             #[cfg(not(target_arch = "wasm32"))]
             {
                 win_attr = win_attr.with_title(self.param.title());
@@ -99,23 +137,21 @@ impl WindowData
                 win_attr = win_attr.with_append(true);
             }
 
-            /* 
-            if !self.default_size_and_position
+            todo!();
+
+            if let Some(m)= event_loop.primary_monitor()
             {
-                win_attr = win_attr.with_position(WinitPhysicalPosition::new(self.position.x, self.position.y));
-                win_attr = win_attr.with_inner_size(WinitPhysicalSize::new(self.size.x, self.size.y))
+                // Todo : Store it somewhere in the context
+                let screen_size = m.size().convert_vec2();
+                let window_size = self.param.rectangle.to_rectangle(); //screen_size, screen_size);
+
+                win_attr = win_attr.with_position(WinitPhysicalPosition::new(window_size.pos.x as f64, window_size.pos.y as f64));
+                win_attr = win_attr.with_inner_size(WinitPhysicalSize::new(window_size.size.x as f64, window_size.size.y as f64));
             }
 
             let winit_window = event_loop
                     .create_window(win_attr)
                     .expect("create window err.");
-
-            if self.default_size_and_position
-            {
-                self.param.position = winit_window.outer_position().map(|v| v.convert()).unwrap_or_zero();
-                let size = winit_window.outer_size();
-                self.param.size = point2(size.width as _, size.height as _)
-            }
 
             let winit_window_ptr = WinitWindowPtr::new(winit_window);
 
@@ -128,22 +164,26 @@ impl WindowData
             // wgpu async surface creation
             match &mut self.graphics
             {
-                Asset::Pending(_) =>
+                Asset::Loading(l) => match l 
                 {
-                    let winit_window = self.winit_window.as_ref().expect("winit_window should have been init just before").clone();
-                    self.graphics = Asset::Loading(());
+                    WindowGraphicsLoadingState::Pending => 
+                    {
+                        *l = WindowGraphicsLoadingState::Loading;
+                        let winit_window = self.winit_window.as_ref().expect("winit_window should have been init just before").clone();
 
-                    let instance = gfx.instance.clone();
-                    let surface: WgpuSurface = instance.create_surface(winit_window.window.clone()).unwrap();
-                    let size = self.size();
+                        let instance = gfx.instance.clone();
+                        let surface: WgpuSurface = instance.create_surface(winit_window.window.clone()).unwrap();
+                        let size = self.size();
 
-                    crate::spawn_task(Self::request_surface(gfx.instance.clone(), surface, size, self.id(), proxy.clone()));
+                        crate::spawn_task(Self::request_surface(gfx.instance.clone(), surface, size, self.id(), proxy.clone()));
+
+                    },
+                    WindowGraphicsLoadingState::Loading => todo!(),
                 },
-                Asset::Loading(_) => {},
                 Asset::Loaded(_gfx) => {},
                 Asset::Error(_) => { panic!("Can't create the window gfx"); },
             }
-            */
+            
         }
 
         /* 
@@ -159,6 +199,87 @@ impl WindowData
 
         self.set_level(self.level);
         */
+    }
+}
+
+impl WindowData
+{
+    pub(crate) async fn request_surface<UserEvent>(instance : wgpu::Instance, surface : WgpuSurface, size : Point2, id: WindowID, proxy : WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    {
+        let event = AppInternalEvent::WindowInternal(
+            WindowInternalEvent
+            {
+                id,
+                kind: WindowInternalEventKind::SurfaceCreated(Self::request_surface_result::<UserEvent>(instance, surface, size).await),
+            }
+        );
+        let _ = proxy.send_event(event);
+    }
+
+    pub(crate) async fn request_surface_result<UserEvent>(instance : wgpu::Instance, surface : WgpuSurface, size : Point2) -> WindowSurfaceResult where UserEvent: IUserEvent
+    {
+        //let surface: wgpu::Surface<'_> = instance.create_surface(window.window.clone()).unwrap();
+        let adapter = instance
+        .request_adapter(&wgpu::RequestAdapterOptions {
+            power_preference: wgpu::PowerPreference::default(),
+            force_fallback_adapter: false,
+            compatible_surface: Some(&surface),
+        })
+        .await
+        .expect("Could not get an adapter (GPU).");
+
+
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    label: None,
+                    required_features: wgpu::Features::empty(),
+                    required_limits: wgpu::Limits::downlevel_webgl2_defaults()
+                        .using_resolution(adapter.limits()),
+                    memory_hints: wgpu::MemoryHints::Performance,
+                    trace: wgpu::Trace::Off,
+                }
+            )
+            .await
+            .expect("Failed to get device");
+
+        // Make the dimensions at least size 1, otherwise wgpu would panic
+        let size = size.max_with(one());
+        let config = surface.get_default_config(&adapter, size.x as _, size.y as _).unwrap();
+
+        surface.configure(&device, &config);
+        let pipeline = Self::create_pipeline(&device, config.format);
+
+        Ok(WindowGraphics{ adapter, surface, config, device, queue, pipeline })
+    }
+
+    pub(crate) fn create_pipeline(device: &wgpu::Device, swap_chain_format: wgpu::TextureFormat) -> wgpu::RenderPipeline {
+        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: None,
+            source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!("shader.wgsl"))),
+        });
+
+        device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: None,
+            layout: None,
+            vertex: wgpu::VertexState {
+                module: &shader,
+                entry_point: Some("vs_main"),
+                buffers: &[],
+                compilation_options: Default::default(),
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &shader,
+                entry_point: Some("fs_main"),
+                targets: &[Some(swap_chain_format.into())],
+                compilation_options: Default::default(),
+            }),
+            primitive: Default::default(),
+            depth_stencil: None,
+            multisample: Default::default(),
+            multiview: None,
+            cache: None,
+        })
     }
 }
 
@@ -185,7 +306,7 @@ pub struct WindowParam
 {
     /// Title of the window, defaults to an empty string.
     title: String,
-    rectangle : UiRect2,
+    pub(crate) rectangle : UiRect2,
 }
 
 impl Default for WindowParam

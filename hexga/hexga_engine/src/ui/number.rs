@@ -1,5 +1,14 @@
 use super::*;
 
+/* 
+pub trait FlattenCoef
+{
+    type Coef;
+    type Output;
+    fn flatten_coef(&self, coef : &Self::Coef) -> Self::Output;
+}
+*/
+
 pub type UiNumberRelative = UiNumberRelativeOf<float>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, PartialOrd)]
@@ -22,7 +31,7 @@ impl<T> UiNumberRelativeOf<T> where T:Number
 {
     const AXIS : Self = Self { min: T::ZERO, max: T::ZERO, axis: T::ONE };
 
-    fn for_window<P>(self) -> UiNumberOf<P,T> where P:Number+Default
+    fn for_window<P>(self) -> UiNumberOf<P,T> where P: Number + CastInto<T> + Default
     {
         UiNumberOf
         {
@@ -31,13 +40,18 @@ impl<T> UiNumberRelativeOf<T> where T:Number
         }
     }
 
-    fn for_screen<P>(self) -> UiNumberOf<P,T> where P:Number+Default
+    fn for_screen<P>(self) -> UiNumberOf<P,T> where P: Number + CastInto<T> + Default
     {
         UiNumberOf
         {
             screen : self,
             .. zero()
         }
+    }
+
+    fn to_number<const N:usize>(&self, vec : Vector<T,N>, axis : usize) -> T
+    {
+        self.min * *vec.min_element() + self.max * *vec.max_element() + self.axis * vec[axis]
     }
 }
 
@@ -111,29 +125,42 @@ impl<T> ToUiNumberRelative<T> for T where T:Number
         UiNumberRelativeOf{ axis: self, .. zero() }
     }
 }
-
+pub trait ToUiNumberRelativePixel<T> : Number + CastInto<T> where T:Number
+{
+    fn ui_pixel(self) -> UiNumberOf<Self,T>;
+}
+impl<P,T> ToUiNumberRelativePixel<T> for P where P:Number + CastInto<T>, T:Number
+{
+    fn ui_pixel(self) -> UiNumberOf<Self,T> {
+        UiNumberOf{ pixel: self, .. zero() }
+    }
+}
 
 
 pub type UiNumber = UiNumberOf<int,float>;
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, PartialOrd)]
-pub struct UiNumberOf<P,T> where P: Number, T: Number
+pub struct UiNumberOf<P,T> where P: Number + CastInto<T>, T: Number
 {
     pub pixel : P,
     pub window : UiNumberRelativeOf<T>,
     pub screen : UiNumberRelativeOf<T>,
 }
 
+impl<P,T> Zero for UiNumberOf<P,T> where P: Number + CastInto<T>, T: Number { const ZERO : Self = Self { pixel : zero(), window : zero(), screen : zero() }; }
+impl<P,T> One for UiNumberOf<P,T> where P: Number+ CastInto<T>,T:Number { const ONE : Self = Self { pixel : one(), window : one(), screen : one() }; }
+impl<P,T> MinusOne for UiNumberOf<P,T> where P: Number+ CastInto<T>+MinusOne,T:Number+MinusOne { const MINUS_ONE : Self = Self { pixel : minus_one(), window : minus_one(), screen : minus_one() }; }
+impl<P,T> Half for UiNumberOf<P,T> where P: Number+ CastInto<T>+Half,T:Number+Half { const HALF : Self = Self { pixel : half(), window : half(), screen : half() }; }
 
-impl<P,T> Zero for UiNumberOf<P,T> where P: Number, T: Number { const ZERO : Self = Self { pixel : zero(), window : zero(), screen : zero() }; }
-impl<P,T> One for UiNumberOf<P,T> where P: Number,T:Number { const ONE : Self = Self { pixel : one(), window : one(), screen : one() }; }
-impl<P,T> MinusOne for UiNumberOf<P,T> where P: Number+MinusOne,T:Number+MinusOne { const MINUS_ONE : Self = Self { pixel : minus_one(), window : minus_one(), screen : minus_one() }; }
-impl<P,T> Half for UiNumberOf<P,T> where P: Number+Half,T:Number+Half { const HALF : Self = Self { pixel : half(), window : half(), screen : half() }; }
-
-impl<P,T> UiNumberOf<P,T> where P: Number, T: Number
+impl<P,T> UiNumberOf<P,T> where P: Number + CastInto<T>, T: Number
 {
     fn new() -> Self where P: Default, T: Default { ___() }
+
+    fn to_number<const N:usize>(&self, window : Vector<T,N>, screen : Vector<T,N>, axis : usize) -> T where P: CastInto<T>
+    {
+        self.pixel.cast_into() + self.window.to_number(window, axis) + self.screen.to_number(screen, axis)
+    }
 }
 
 pub trait UiConstant
@@ -143,7 +170,7 @@ pub trait UiConstant
     const FULL_SCREEN : Self;
 }
 
-impl<P,T> UiConstant for UiNumberOf<P,T> where P: Number, T: Number
+impl<P,T> UiConstant for UiNumberOf<P,T> where P: Number + CastInto<T>, T: Number
 {
     const ONE_PIXEL : Self = Self { pixel: P::ONE, window: zero(), screen: zero() };
     const FULL_WINDOW : Self = Self { pixel: zero(), window: UiNumberRelativeOf::<T>::AXIS, screen: zero() };
@@ -153,7 +180,7 @@ impl<P,T> UiConstant for UiNumberOf<P,T> where P: Number, T: Number
 map_on_operator_binary_arithmetic!(
     (($trait_name: tt, $fn_name: tt)) => 
     {
-        impl<P,T> std::ops::$trait_name for UiNumberOf<P,T> where P: Number + std::ops::$trait_name, T: Number, UiNumberRelativeOf<T>: std::ops::$trait_name<UiNumberRelativeOf<T>,Output=UiNumberRelativeOf<T>>
+        impl<P,T> std::ops::$trait_name for UiNumberOf<P,T> where P: Number + CastInto<T> + std::ops::$trait_name, T: Number, UiNumberRelativeOf<T>: std::ops::$trait_name<UiNumberRelativeOf<T>,Output=UiNumberRelativeOf<T>>
         {
             type Output = Self;
             fn $fn_name(self, rhs : Self) -> Self::Output 
@@ -172,7 +199,7 @@ map_on_operator_assign_arithmetic!
 (
     (($trait_name: tt, $fn_name: tt)) => 
     {
-        impl<P,T> std::ops::$trait_name for UiNumberOf<P,T> where P: Number + std::ops::$trait_name, T: Number, UiNumberRelativeOf<T>: std::ops::$trait_name<UiNumberRelativeOf<T>>
+        impl<P,T> std::ops::$trait_name for UiNumberOf<P,T> where P: Number + CastInto<T> + std::ops::$trait_name, T: Number, UiNumberRelativeOf<T>: std::ops::$trait_name<UiNumberRelativeOf<T>>
         {
             fn $fn_name(&mut self, rhs : Self)
             {
@@ -183,17 +210,29 @@ map_on_operator_assign_arithmetic!
         }
     }
 );
-impl<P,T> Sum for UiNumberOf<P,T> where P: Number, T: Number
+impl<P,T> Sum for UiNumberOf<P,T> where P: Number + CastInto<T>, T: Number
 {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ZERO, Self::add) }
 }
-impl<P,T> Product for UiNumberOf<P,T> where P: Number, T:Number
+impl<P,T> Product for UiNumberOf<P,T> where P: Number + CastInto<T>, T: Number
 {
     fn product<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ONE, Self::mul) }
 }
 
 pub type UiVectorOf<P,T,const N:usize> = Vector<UiNumberOf<P,T>,N>;
 pub type UiRectangleOf<P,T,const N:usize> = Rectangle<UiNumberOf<P,T>,N>;
+
+pub trait UiVectorExtension<T,const N:usize>
+{
+    fn to_vector(&self, window : Vector<T,N>, screen : Vector<T,N>) -> Vector<T,N>;
+}
+impl<P,T,const N:usize> UiVectorExtension<T,N> for UiVectorOf<P,T,N> where P:Number + CastInto<T>, T:Number
+{
+    fn to_vector(&self, window : Vector<T,N>, screen : Vector<T,N>) -> Vector<T,N>
+    {
+        Vector::from_fn(|axis| self[axis].to_number(window, screen, axis))
+    }
+}
 
 pub type UiVector<const N:usize> = Vector<UiNumber,N>;
 pub type UiRectangle<const N:usize> = Rectangle<UiNumber,N>;
@@ -203,20 +242,20 @@ pub type UiRect2 = UiRectangle<2>;
 
 
 
-impl<P,T, const N:usize> UiConstant for [UiNumberOf<P,T>;N] where P:Number, T:Number
+impl<P,T, const N:usize> UiConstant for [UiNumberOf<P,T>;N] where P:Number + CastInto<T>, T:Number
 {
     const ONE_PIXEL   : Self = [UiNumberOf::ONE_PIXEL;  N];
     const FULL_WINDOW : Self = [UiNumberOf::FULL_WINDOW;N];
     const FULL_SCREEN : Self = [UiNumberOf::FULL_SCREEN;N];
 }
 
-impl<P,T, const N:usize> UiConstant for UiVectorOf<P,T,N> where P:Number, T:Number
+impl<P,T, const N:usize> UiConstant for UiVectorOf<P,T,N> where P:Number + CastInto<T>, T:Number
 {
     const ONE_PIXEL : Self  = Self::from_array(<[UiNumberOf<P,T>;N]>::ONE_PIXEL);
     const FULL_WINDOW : Self = Self::from_array(<[UiNumberOf<P,T>;N]>::FULL_WINDOW);
     const FULL_SCREEN : Self = Self::from_array(<[UiNumberOf<P,T>;N]>::FULL_SCREEN);
 }
-impl<P,T, const N:usize> UiConstant for UiRectangleOf<P,T,N> where P:Number, T:Number
+impl<P,T, const N:usize> UiConstant for UiRectangleOf<P,T,N> where P:Number + CastInto<T>, T:Number
 {
     const ONE_PIXEL : Self  = Self::new(UiVectorOf::ZERO, UiVectorOf::ONE_PIXEL);
     const FULL_WINDOW : Self = Self::new(UiVectorOf::ZERO, UiVectorOf::FULL_WINDOW);
@@ -224,19 +263,34 @@ impl<P,T, const N:usize> UiConstant for UiRectangleOf<P,T,N> where P:Number, T:N
 }
 
 
-pub trait UiRectangleExtension
+pub trait UiRectangleExtension<T,const N:usize>
 {
     fn centered(self) -> Self;
+    fn to_rectangle(&self) -> Rectangle<T,N>;
+    fn to_rectangle_with_coef(&self, window : Vector<T,N>, screen : Vector<T,N>) -> Rectangle<T,N>;
 }
-impl<P,T, const N:usize> UiRectangleExtension for UiRectangleOf<P,T,N> where P:Number, T:Number
+impl<P,T, const N:usize> UiRectangleExtension<T,N> for UiRectangleOf<P,T,N> where P:Number+ CastInto<T>, T:Number
 {
     fn centered(mut self) -> Self {
         self.pos = UiVectorOf::FULL_SCREEN - self.size * UiNumberOf::one() / UiNumberOf::two();
         self
     }
+
+    fn to_rectangle(&self) -> Rectangle<T,N>
+    {
+        todo!();
+        //self.to_rectangle_with_coef(Cam.screen_size_vec2(), Cam.screen_size_vec2())
+    }
+    
+    fn to_rectangle_with_coef(&self, window : Vector<T,N>, screen : Vector<T,N>) -> Rectangle<T,N> 
+    {
+        let pos = <Vector<UiNumberOf<P,T>,N> as UiVectorExtension<T,N>>::to_vector(&self.pos, window, screen);
+        let size = <Vector<UiNumberOf<P,T>,N> as UiVectorExtension<T,N>>::to_vector(&self.pos, window, screen);
+        Rectangle::new(pos, size)
+    }
 }
 
 pub mod prelude
 {
-    pub use super::{UiNumber,UiVec2,UiRect2,UiConstant,UiRectangleExtension};
+    pub use super::{UiNumber,UiVec2,UiRect2,UiConstant,UiRectangleExtension,UiVectorExtension,ToUiNumberRelative,ToUiNumberRelativePixel};
 }

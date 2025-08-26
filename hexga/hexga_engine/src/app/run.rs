@@ -77,16 +77,18 @@ impl <A,UserEvent> AppRunner<A,UserEvent> where A:App<UserEvent>, UserEvent:IUse
 impl<A,UserEvent> WinitApp<AppInternalEvent<UserEvent>> for AppRunner<A,UserEvent> where A: App<UserEvent>, UserEvent:IUserEvent
 {
     fn resumed(&mut self, event_loop: &WinitActiveEventLoop) {
+        Ctx.resumed();
         self.send_state_event(StateEvent::Resumed);
     }
 
     fn suspended(&mut self, event_loop: &WinitActiveEventLoop) {
+        Ctx.paused();
         self.send_state_event(StateEvent::Paused);
     }
 
     fn about_to_wait(&mut self, event_loop: &WinitActiveEventLoop) 
     {
-        Windows.update(&ctx().gfx, event_loop, &self.proxy);
+        Ctx.begin_update(&ctx().gfx, event_loop, &self.proxy);
         self.app.update();
     }
 

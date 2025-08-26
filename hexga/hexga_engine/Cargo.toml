@@ -49,6 +49,8 @@ log = { version = "0.4.22"}
 winit = "0.30.11"
 wgpu = { version = "25.0.0" }
 
+async-std = { version = "1.13.1" }
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.7"
 console_log = "1.0"

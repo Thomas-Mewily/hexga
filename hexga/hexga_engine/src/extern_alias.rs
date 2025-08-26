@@ -2,7 +2,7 @@ use crate::*;
 
 
 pub(crate) type WgpuInstance = wgpu::Instance;
-
+pub(crate) type WgpuSurface = wgpu::Surface<'static>;
 
 
 pub(crate) type WinitWindowID = winit::window::WindowId;
@@ -32,6 +32,19 @@ pub trait WinitConvert<Output>
 {
     fn convert(self) -> Output;
 }
+
+pub trait WinitConvertPoint2 : WinitConvert<Point2> + Sized
+{
+    fn convert_point2(self) -> Point2 { self.convert() }
+}
+impl<T> WinitConvertPoint2 for T where T: WinitConvert<Point2> {}
+
+pub trait WinitConvertVec2 : WinitConvert<Vec2> + Sized
+{
+    fn convert_vec2(self) -> Vec2 { self.convert() }
+}
+impl<T> WinitConvertVec2 for T where T: WinitConvert<Vec2> {}
+
 
 impl<T> WinitConvert<Vec2> for WinitLogicalSize<T> where T : ToFloat<Output = float>
 {
