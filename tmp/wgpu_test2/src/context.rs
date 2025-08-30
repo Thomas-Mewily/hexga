@@ -7,8 +7,13 @@ use std::thread::LocalKey;
 
 pub struct Context
 {
-    device: wgpu::Device,
-    queue: wgpu::Queue,
+    pub(crate) wgpu : WgpuContext,
+}
+
+pub(crate) struct WgpuContext
+{
+    pub(crate) device: wgpu::Device,
+    pub(crate) queue: wgpu::Queue,
 }
 
 
@@ -17,6 +22,16 @@ thread_local! {
 }
 
 pub struct Ctx;
+
+impl Deref for Ctx
+{
+    type Target=Context;
+    fn deref(&self) -> &Self::Target { self.as_ref() }
+}
+impl DerefMut for Ctx
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { self.as_mut() }
+}
 
 impl AsMut<Context> for Ctx
 {
