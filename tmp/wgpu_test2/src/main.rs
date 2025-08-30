@@ -10,7 +10,11 @@ use winit::{
     keyboard::{KeyCode, PhysicalKey},
     window::Window,
 };
-use wgpu::util::{BufferInitDescriptor, DeviceExt};
+use wgpu::
+{
+    Surface, Instance,
+    util::{BufferInitDescriptor, DeviceExt}
+};
 
 
 

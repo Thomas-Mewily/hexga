@@ -1,10 +1,11 @@
 use super::*;
 
-
-pub trait IUserEvent : 'static
+pub mod prelude
 {
-
+    pub use super::{SpawnFutur,IUserEvent,App,AppRun};
 }
+
+pub trait IUserEvent : 'static + Debug + Send {}
 impl IUserEvent for () {}
 
 pub trait App 
@@ -24,14 +25,19 @@ impl<A> AppRun for A where A:App
     fn run(self) -> Result<(), ()> 
     {
         Ctx::init();
+        let ctx = unsafe { Ctx::try_as_mut().ok_or_void() }?;
 
         let event_loop = EventLoop::with_user_event().build().ok_or_void()?;
-
         let proxy = event_loop.create_proxy();
 
-        let ctx = unsafe { Ctx::try_as_mut().ok_or_void() }?;
         event_loop.run_app(&mut AppRunner::new(self, ctx, proxy)).ok_or_void()
     }
+}
+
+pub(crate) enum AppInternalMessage<U> where U: IUserEvent
+{
+    Message(AppMessage<U>),
+    Wgpu(Result<ContextWgpu,String>),
 }
 
 pub enum AppMessage<U> where U: IUserEvent
@@ -39,8 +45,8 @@ pub enum AppMessage<U> where U: IUserEvent
     UserEvent(U)
 }
 
-pub type EvLoopProxy<U> = EventLoopProxy<AppMessage<U>>;
-pub type EvLoop<U> = EventLoop<AppMessage<U>> ;
+pub(crate) type EvLoopProxy<U> = EventLoopProxy<AppInternalMessage<U>>;
+pub(crate) type EvLoop<U> = EventLoop<AppMessage<U>> ;
 
 pub(crate) struct AppRunner<A> where A:App
 {
@@ -53,7 +59,7 @@ impl<A> AppRunner<A> where A:App
     pub fn new(app : A, ctx : &'static mut Context, proxy : EvLoopProxy<A::UserEvent>) -> Self { Self { app, ctx, proxy }}
 }
 
-impl<A> ApplicationHandler<AppMessage<A::UserEvent>> for AppRunner<A> where A:App
+impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> where A:App
 {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) 
     {
@@ -66,8 +72,19 @@ impl<A> ApplicationHandler<AppMessage<A::UserEvent>> for AppRunner<A> where A:Ap
                     .expect("create window err."),
             );
             self.ctx.winit = Some(window.clone());
-            // Todo: remove pollster
-            self.ctx.wgpu = Some(pollster::block_on(ContextWgpu::new(window)));
+            ContextWgpu::request(window, self.proxy.clone()).unwrap();
+        }
+    }
+
+    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: AppInternalMessage<A::UserEvent>) {
+        match event
+        {
+            AppInternalMessage::Message(app_message) => {},
+            AppInternalMessage::Wgpu(context_wgpu) => 
+            {
+                self.ctx.wgpu = Some(context_wgpu.unwrap());
+                self.ctx.winit.as_ref().map(|w| w.request_redraw());
+            },
         }
     }
 
@@ -97,5 +114,26 @@ impl<A> ApplicationHandler<AppMessage<A::UserEvent>> for AppRunner<A> where A:Ap
             }
             _ => (),
         }
+    }
+}
+
+
+pub trait SpawnFutur<T> where
+    Self: Future<Output = T> + Send + 'static,
+    T: Send + 'static
+{
+    fn spawn(self);
+}
+impl<F,T> SpawnFutur<T> for F where
+    F: Future<Output = T> + Send + 'static,
+    T: Send + 'static
+{
+    fn spawn(self)
+    {
+        #[cfg(target_arch = "wasm32")]
+        wasm_bindgen_futures::spawn_local(self);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        async_std::task::spawn(self);
     }
 }

@@ -13,7 +13,6 @@ pub struct Context
     pub(crate) wgpu : Option<ContextWgpu>,
 }
 
-
 thread_local! {
     pub(crate) static CONTEXT: RefCell<Option<Context>> = RefCell::new(None);
 }

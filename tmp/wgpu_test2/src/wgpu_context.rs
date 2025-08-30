@@ -12,11 +12,22 @@ pub(crate) struct ContextWgpu {
 
 impl ContextWgpu
 {
-    pub async fn new(window: Arc<Window>) -> Self { Self::try_new(window).await.unwrap() } 
-    pub async fn try_new(window: Arc<Window>) -> Result<Self, String> 
+    pub fn request<UserEvent>(window: Arc<Window>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) -> Result<(), String> where UserEvent: IUserEvent
     {
         let instance = wgpu::Instance::default();
         let surface = instance.create_surface(Arc::clone(&window)).ok_or_debug()?;
+
+        Self::request_async(instance, window, surface, proxy).spawn();
+
+        Ok(())
+    }
+    pub async fn request_async<UserEvent>(instance : Instance, window: Arc<Window>, surface : Surface<'static>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) where UserEvent: IUserEvent
+    {
+        let _ = proxy.send_event(AppInternalMessage::Wgpu(Self::new(instance, window, surface).await));
+    }
+
+    pub async fn new(instance : Instance, window: Arc<Window>, surface : Surface<'static>) -> Result<Self, String> 
+    {
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::default(),
