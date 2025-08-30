@@ -5,5 +5,5 @@ use number::*;
 
 pub mod prelude
 {
-    pub use super::number::prelude::*;
+    //pub use super::number::prelude::*;
 }

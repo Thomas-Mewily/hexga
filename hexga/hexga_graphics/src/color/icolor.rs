@@ -16,11 +16,11 @@ pub enum ColorKind
     RgbaF32,
     /// Pixel is 64-bit float RGB with an alpha channel. Casted to RGBAF32 if not supported
     RgbaF64,
-    /// Pixel is 32-bit float HSL with an alpha channel. Casted to RGBAByte if not supported
+    /// Pixel is 32-bit float HSL with an alpha channel. Casted to RGBAU8 if not supported
     HslaF32,
-    /// Pixel is 64-bit float HSL with an alpha channel. Casted to RGBAByte if not supported
+    /// Pixel is 64-bit float HSL with an alpha channel. Casted to RGBAU8 if not supported
     HslaF64,
-    // Casted to RGBAByte if not supported
+    // Casted to RGBAU8 if not supported
     Unknow,
 }
 

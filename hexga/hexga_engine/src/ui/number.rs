@@ -9,6 +9,7 @@ pub trait FlattenCoef
 }
 */
 
+/* 
 pub type UiNumberRelative = UiNumberRelativeOf<float>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, PartialOrd)]
@@ -266,9 +267,10 @@ impl<P,T, const N:usize> UiConstant for UiRectangleOf<P,T,N> where P:Number + Ca
 pub trait UiRectangleExtension<T,const N:usize>
 {
     fn centered(self) -> Self;
-    fn to_rectangle(&self) -> Rectangle<T,N>;
+    fn to_rectangle(&self) -> Rectangle<T,N> where T:ToFloat<Output = float>;
     fn to_rectangle_with_coef(&self, window : Vector<T,N>, screen : Vector<T,N>) -> Rectangle<T,N>;
 }
+
 impl<P,T, const N:usize> UiRectangleExtension<T,N> for UiRectangleOf<P,T,N> where P:Number+ CastInto<T>, T:Number
 {
     fn centered(mut self) -> Self {
@@ -276,10 +278,9 @@ impl<P,T, const N:usize> UiRectangleExtension<T,N> for UiRectangleOf<P,T,N> wher
         self
     }
 
-    fn to_rectangle(&self) -> Rectangle<T,N>
+    fn to_rectangle(&self) -> Rectangle<T,N> where T:ToFloat<Output = float>
     {
-        todo!();
-        //self.to_rectangle_with_coef(Cam.screen_size_vec2(), Cam.screen_size_vec2())
+        self.to_rectangle_with_coef(Cam.window_size(), Cam.screen_size_px())
     }
     
     fn to_rectangle_with_coef(&self, window : Vector<T,N>, screen : Vector<T,N>) -> Rectangle<T,N> 
@@ -294,3 +295,4 @@ pub mod prelude
 {
     pub use super::{UiNumber,UiVec2,UiRect2,UiConstant,UiRectangleExtension,UiVectorExtension,ToUiNumberRelative,ToUiNumberRelativePixel};
 }
+*/

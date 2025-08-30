@@ -23,7 +23,7 @@ pub type Vector4<T> = Vector<T, 4>;
 
 impl<T> Vector<T,4> // Hardcode N here otherwise rust-analyser will not like it
 {
-    pub const fn new(x : T, y : T, z : T, w : T) -> Self { Self { array: [x, y, z, w]  }}
+    pub const fn new(x : T, y : T, z : T, w : T) -> Self { Self::from_array([x,y,z,w]) }
 }
 
 pub trait SplatCoord4 : Sized + Copy { fn splat4(self) -> Vector4<Self> { Vector4::splat(self) }}

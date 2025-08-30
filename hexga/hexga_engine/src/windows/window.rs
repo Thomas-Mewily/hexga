@@ -46,6 +46,7 @@ pub struct WindowData
     pub(crate) param: WindowParam,
     pub(crate) id : WindowID,
 }
+
 impl Debug for WindowData
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -113,7 +114,7 @@ impl WindowData
         Windows.any_dirty = true;
     }
 
-    pub(crate) fn update_dirty<UserEvent>(&mut self, lookup: &mut WindowLookupID, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    pub(crate) fn update_dirty<UserEvent>(&mut self, lookup: &mut WindowLookupID, gfx : &Wgpu, event_loop: &WinitActiveEventLoop, proxy : &EventLoopProxy<UserEvent>) where UserEvent: IUserEvent
     {
         if !self.dirty { return; }
         self.dirty = false;
@@ -137,17 +138,9 @@ impl WindowData
                 win_attr = win_attr.with_append(true);
             }
 
-            todo!();
-
-            if let Some(m)= event_loop.primary_monitor()
-            {
-                // Todo : Store it somewhere in the context
-                let screen_size = m.size().convert_vec2();
-                let window_size = self.param.rectangle.to_rectangle(); //screen_size, screen_size);
-
-                win_attr = win_attr.with_position(WinitPhysicalPosition::new(window_size.pos.x as f64, window_size.pos.y as f64));
-                win_attr = win_attr.with_inner_size(WinitPhysicalSize::new(window_size.size.x as f64, window_size.size.y as f64));
-            }
+            let r = self.param.rectangle;
+            win_attr = win_attr.with_position(WinitPhysicalPosition::new(r.pos.x as f64, r.pos.y as f64));
+            win_attr = win_attr.with_inner_size(WinitPhysicalSize::new(r.size.x as f64, r.size.y as f64));
 
             let winit_window = event_loop
                     .create_window(win_attr)
@@ -204,7 +197,7 @@ impl WindowData
 
 impl WindowData
 {
-    pub(crate) async fn request_surface<UserEvent>(instance : wgpu::Instance, surface : WgpuSurface, size : Point2, id: WindowID, proxy : WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    pub(crate) async fn request_surface<UserEvent>(instance : wgpu::Instance, surface : WgpuSurface, size : Point2, id: WindowID, proxy : EventLoopProxy<UserEvent>) where UserEvent: IUserEvent
     {
         let event = AppInternalEvent::WindowInternal(
             WindowInternalEvent
@@ -305,8 +298,9 @@ impl Deref for WinitWindowPtr
 pub struct WindowParam
 {
     /// Title of the window, defaults to an empty string.
-    title: String,
-    pub(crate) rectangle : UiRect2,
+    pub(crate) title: String,
+    pub(crate) rectangle : Rect2P,
+    //pub(crate) rectangle : UiRect2,
 }
 
 impl Default for WindowParam
@@ -316,13 +310,13 @@ impl Default for WindowParam
         Self 
         { 
             title: "".to_owned(), 
-            rectangle: UiRect2::FULL_SCREEN.centered()
+            rectangle: point2(960,540).to_rect() //UiRect2::FULL_SCREEN.centered()
         }
     }
 }
 
 
-pub trait IWindowParam : SetRectangle<UiNumber,2>
+pub trait IWindowParam : SetRectangle<int,2>
 {
     fn title(&self) -> &str;
     fn with_title(self, title: impl Into<String>) -> Self;
@@ -338,28 +332,28 @@ impl IWindowParam for WindowParam
     fn title(&self) -> &str { &self.title }
     fn with_title(mut self, title: impl Into<String>) -> Self { self.title = title.into(); self }
 }
-impl GetPosition<UiNumber,2> for WindowParam
+impl GetPosition<int,2> for WindowParam
 {
-    fn pos(&self) -> Vector<UiNumber,2> {
+    fn pos(&self) -> Vector<int,2> {
         self.rectangle.pos
     }
 }
-impl SetPosition<UiNumber,2> for WindowParam
+impl SetPosition<int,2> for WindowParam
 {
-    fn set_pos(&mut self, pos : Vector<UiNumber,2>) -> &mut Self {
+    fn set_pos(&mut self, pos : Vector<int,2>) -> &mut Self {
         self.rectangle.pos = pos;
         self
     }
 }
-impl GetRectangle<UiNumber,2> for WindowParam
+impl GetRectangle<int,2> for WindowParam
 {
-    fn size(&self) -> Vector<UiNumber,2> {
+    fn size(&self) -> Vector<int,2> {
         self.rectangle.size
     }
 }
-impl SetRectangle<UiNumber,2> for WindowParam
+impl SetRectangle<int,2> for WindowParam
 {
-    fn set_size(&mut self, size : Vector<UiNumber, 2>) -> &mut Self {
+    fn set_size(&mut self, size : Vector<int, 2>) -> &mut Self {
         self.rectangle.size = size;
         self
     }

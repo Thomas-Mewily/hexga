@@ -1,5 +1,5 @@
 [package]
-name = "hexga_random_singleton"
+name = "hexga_telemetry"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -8,3 +8,4 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
+hexga_utils.workspace = true

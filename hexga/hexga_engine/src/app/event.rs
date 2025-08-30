@@ -25,12 +25,13 @@ pub enum AppEvent<UserEvent=()> where UserEvent: IUserEvent
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum StateEvent
 {
-    Paused, Resumed,
+    Paused, Resumed, Update, Draw,
 }
 
 impl<UserEvent> Debug for AppEvent<UserEvent> where UserEvent: IUserEvent
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult 
+    {
         match self
         {
             AppEvent::UserEvent(v) => write!(f, "{:?}", v),

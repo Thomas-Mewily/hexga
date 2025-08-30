@@ -15,17 +15,18 @@ use super::*;
 pub struct Vector<T, const N : usize>
 {
     // Not simd because we accept everythings.
-    pub array : [T; N]
+    pub array : [T; N],
+    pub(crate) no_destructuring : (),
 }
 
 impl<T, const N : usize> Default for Vector<T, N> where [T; N] : Default
 {
-    fn default() -> Self { Self { array: ___() } }
+    fn default() -> Self { Self { array: ___(), no_destructuring: () } }
 }
 
 impl<T, const N : usize> Vector<T,N>
 {
-    pub const fn from_array(array : [T; N]) -> Self { Self { array }}
+    pub const fn from_array(array : [T; N]) -> Self { Self { array, no_destructuring: () }}
     pub fn splat(val : T) -> Self where T: Clone { <Self as Array<T,N>>::splat(val) }
 }
 

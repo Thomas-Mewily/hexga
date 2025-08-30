@@ -37,38 +37,38 @@ pub mod prelude;
 mod iter;
 pub use iter::*;
 
-pub type Rectangle<T, const N : usize> = RectangleBase<Vector<T, N>>;
+pub type Rectangle<T, const N : usize> = RectangleOf<Vector<T, N>>;
 
 /// A `N` dimension rectangle
 ///
 #[repr(C)]
-pub struct RectangleBase<T>
+pub struct RectangleOf<T>
 {
     pub pos  : T,
     pub size : T,
 }
-impl_fixed_array_like_with_op!(RectangleBase, 2);
+impl_fixed_array_like_with_op!(RectangleOf, 2);
 
-impl<T> Default for RectangleBase<T> where T: Number
+impl<T> Default for RectangleOf<T> where T: Number
 {
     fn default() -> Self { Self::SIZED_ONE }
 }
 
-impl<T> RectangleBase<T> where T: Number
+impl<T> RectangleOf<T> where T: Number
 {
     pub const SIZED_ONE : Self = Self::new_sized(T::ONE);
 }
 
-impl<T> From<(T,T)> for RectangleBase<T>
+impl<T> From<(T,T)> for RectangleOf<T>
 {
     fn from(value: (T,T)) -> Self {
         Self::new(value.0, value.1)
     }
 }
 
-impl<T> From<RectangleBase<T>> for (T,T)
+impl<T> From<RectangleOf<T>> for (T,T)
 {
-    fn from(value: RectangleBase<T>) -> Self {
+    fn from(value: RectangleOf<T>) -> Self {
         (value.pos, value.size)
     }
 }
@@ -223,7 +223,7 @@ impl<T,const N : usize> Rectangle<T,N> where T: Number
     }
 }
 
-impl<T> RectangleBase<T>
+impl<T> RectangleOf<T>
 {
     /// assume the size is valid
     pub const fn new(pos: T, size: T) -> Self { Self { pos, size } }

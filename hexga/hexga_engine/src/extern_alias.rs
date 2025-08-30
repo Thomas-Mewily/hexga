@@ -13,6 +13,7 @@ pub(crate) type WinitEventLoopBuilder<T> = winit::event_loop::EventLoopBuilder<T
 pub(crate) type WinitEventLoopProxy<T> = winit::event_loop::EventLoopProxy<T>;
 pub(crate) type WinitActiveEventLoop = winit::event_loop::ActiveEventLoop;
 pub(crate) use winit::application::ApplicationHandler as WinitApp;
+pub(crate) type EventLoopProxy<U> = WinitEventLoopProxy<AppInternalEvent<U>>;
 
 pub(crate) type WinitPhysicalPosition<P> = winit::dpi::PhysicalPosition<P>;
 pub(crate) type WinitLogicalPosition<P> = winit::dpi::LogicalPosition<P>;

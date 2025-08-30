@@ -15,6 +15,7 @@ pub type ColorRgbaU16   = ColorRgbaOf<u16>;
 pub type ColorRgbaMask  = ColorRgbaBool;
 pub type ColorRgbaBool  = ColorRgbaOf<bool>;
 
+
 #[repr(C)]
 pub struct ColorRgbaOf<T>
 {
@@ -26,6 +27,7 @@ pub struct ColorRgbaOf<T>
     pub b : T,
     /// Alpha
     pub a : T,
+    no_destructuring : (),
 }
 impl_fixed_array_like_with_op!(ColorRgbaOf, 4);
 
@@ -33,7 +35,7 @@ impl_fixed_array_like_with_op!(ColorRgbaOf, 4);
 #[allow(dead_code)]
 impl<T> ColorRgbaOf<T>
 {
-    pub const fn new(red : T, green : T, blue : T, alpha : T) -> Self { Self { r:red, g:green, b:blue, a:alpha }}
+    pub const fn new(red : T, green : T, blue : T, alpha : T) -> Self { Self { r:red, g:green, b:blue, a:alpha, no_destructuring: () }}
 
     pub const fn rgba(red : T, green : T, blue : T, alpha : T) -> Self { Self::new(red, green, blue, alpha) }
     pub const fn rgb (red : T, green : T, blue : T) -> Self where T: RangeDefault { Self::rgba(red, green, blue, T::RANGE_MAX) }
@@ -121,16 +123,16 @@ impl<T> From<ColorRgbaOf<T>> for Vector3<T> { fn from(value: ColorRgbaOf<T>) -> 
 
 impl<T> Default for ColorRgbaOf<T> where T: Primitive
 {
-    fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX } }
+    fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX, no_destructuring: () } }
 }
 
 impl<T> IColor<T> for ColorRgbaOf<T> where T: Primitive
 {
     const TRANSPARENT : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
 
-    const BLACK : Self = Self { r: T::RANGE_MIN , g: T::RANGE_MIN , b: T::RANGE_MIN , a: T::RANGE_MAX };
-    const GREY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX };
-    const WHITE : Self = Self { r: T::RANGE_MAX , g: T::RANGE_MAX , b: T::RANGE_MAX , a: T::RANGE_MAX };
+    const BLACK : Self = Self { r: T::RANGE_MIN , g: T::RANGE_MIN , b: T::RANGE_MIN , a: T::RANGE_MAX, no_destructuring: () };
+    const GREY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX, no_destructuring: () };
+    const WHITE : Self = Self { r: T::RANGE_MAX , g: T::RANGE_MAX , b: T::RANGE_MAX , a: T::RANGE_MAX, no_destructuring: () };
 
     const RED    : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MIN);
     const GREEN  : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MIN);
@@ -263,3 +265,12 @@ map_on_constant!
         impl<T> $trait_name for ColorRgbaOf<T> where T: $trait_name + Copy { const $constant_name : Self = Self::splat_rgba(T::$constant_name); }
     }
 );
+
+pub const fn rgba<T>(red : T, green : T, blue : T, alpha : T) -> ColorRgbaOf<T>
+{
+    ColorRgbaOf::rgba(red, green, blue, alpha)
+}
+pub const fn rgb<T>(red : T, green : T, blue : T) -> ColorRgbaOf<T> where T: RangeDefault
+{
+    ColorRgbaOf::rgb(red, green, blue)
+}

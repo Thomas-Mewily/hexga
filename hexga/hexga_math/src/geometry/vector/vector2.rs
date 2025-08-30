@@ -21,7 +21,7 @@ pub type Vector2<T> = Vector<T, 2>;
 
 impl<T> Vector<T,2> // Hardcode N here otherwise rust-analyser will not like it
 {
-    pub const fn new(x : T, y : T) -> Self {Self { array: [x, y] }}
+    pub const fn new(x : T, y : T) -> Self { Self::from_array([x,y]) }
     pub fn with_z(self, z : T) -> Vector3<T> { let [x, y] = self.array; Vector3::new(x, y, z) }
 }
 

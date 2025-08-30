@@ -25,12 +25,12 @@ pub trait AppRun<UserEvent> : App<UserEvent> where UserEvent: IUserEvent, Self: 
 pub(crate) struct AppRunner<A,UserEvent=()> where A: App<UserEvent>, UserEvent:IUserEvent
 {
     app : A,
-    proxy : WinitEventLoopProxy<AppInternalEvent<UserEvent>>,
+    proxy : EventLoopProxy<UserEvent>,
 }
 
 impl <A,UserEvent> AppRunner<A,UserEvent> where A:App<UserEvent>, UserEvent:IUserEvent
 {
-    fn new(app : A, proxy : WinitEventLoopProxy<AppInternalEvent<UserEvent>>) -> Self { Self { app, proxy }}
+    fn new(app : A, proxy : EventLoopProxy<UserEvent>) -> Self { Self { app, proxy }}
 
     fn run(self, event_loop : WinitEventLoop<AppInternalEvent<UserEvent>>) { self.run_with_param(event_loop, ___()) }
     fn run_with_param(mut self, event_loop : WinitEventLoop<AppInternalEvent<UserEvent>>, _param : AppParam)
@@ -42,7 +42,7 @@ impl <A,UserEvent> AppRunner<A,UserEvent> where A:App<UserEvent>, UserEvent:IUse
             // Runs the app async via the browsers event loop
             use winit::platform::web::EventLoopExtWebSys;
             wasm_bindgen_futures::spawn_local(async move {
-                event_loop.spawn_app(app);
+                event_loop.spawn_app(self);
             });
         }
 
@@ -51,6 +51,8 @@ impl <A,UserEvent> AppRunner<A,UserEvent> where A:App<UserEvent>, UserEvent:IUse
             // Runs the app on the current thread.
             let _ = event_loop.run_app(&mut self);
         }
+
+        unreachable!()
     }
 
     //fn run_with_param_and_ctx(...)
@@ -88,8 +90,13 @@ impl<A,UserEvent> WinitApp<AppInternalEvent<UserEvent>> for AppRunner<A,UserEven
 
     fn about_to_wait(&mut self, event_loop: &WinitActiveEventLoop) 
     {
-        Ctx.begin_update(&ctx().gfx, event_loop, &self.proxy);
+        Ctx.begin_update(event_loop, &self.proxy);
         self.app.update();
+        Ctx.end_update(&event_loop, &self.proxy);
+
+        Ctx.begin_draw(event_loop, &self.proxy);
+        self.app.draw();
+        Ctx.end_draw(&event_loop, &self.proxy);
     }
 
     fn window_event(
@@ -97,7 +104,8 @@ impl<A,UserEvent> WinitApp<AppInternalEvent<UserEvent>> for AppRunner<A,UserEven
         event_loop: &WinitActiveEventLoop,
         window_id: winit::window::WindowId,
         event: winit::event::WindowEvent,
-    ) {
-        //todo!()
+    ) 
+    {
+
     }
 }

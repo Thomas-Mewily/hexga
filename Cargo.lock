@@ -991,6 +991,7 @@ dependencies = [
  "hexga_io",
  "hexga_map_on",
  "hexga_math",
+ "hexga_random",
  "hexga_utils",
  "serde",
 ]
@@ -1122,6 +1123,9 @@ dependencies = [
 [[package]]
 name = "hexga_random"
 version = "0.0.11-beta.3"
+dependencies = [
+ "hexga_random_core",
+]
 
 [[package]]
 name = "hexga_random_core"
@@ -1131,12 +1135,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "hexga_random_singleton"
+name = "hexga_reflection"
 version = "0.0.11-beta.3"
 
 [[package]]
-name = "hexga_reflection"
+name = "hexga_simulation"
 version = "0.0.11-beta.3"
+
+[[package]]
+name = "hexga_telemetry"
+version = "0.0.11-beta.3"
+dependencies = [
+ "hexga_utils",
+]
 
 [[package]]
 name = "hexga_typedef"
@@ -2030,6 +2041,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
 
 [[package]]
+name = "rng_test"
+version = "0.0.11-beta.3"
+dependencies = [
+ "hexga",
+]
+
+[[package]]
 name = "ron"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2807,6 +2825,14 @@ dependencies = [
  "pollster",
  "wgpu",
  "winit",
+]
+
+[[package]]
+name = "wgpu_test2"
+version = "0.0.11-beta.3"
+dependencies = [
+ "hexga",
+ "wgpu",
 ]
 
 [[package]]

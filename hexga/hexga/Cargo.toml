@@ -66,6 +66,7 @@ hexga_ansi_color.workspace = true
 hexga_utils.workspace = true
 hexga_map_on.workspace = true
 hexga_graphics.workspace = true
+hexga_random.workspace = true
 
 #hexga_undo_redo.workspace = true
 

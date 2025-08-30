@@ -15,6 +15,8 @@ pub mod modules
     pub use hexga_utils as tools;
     pub use hexga_map_on as map_on;
     pub use hexga_graphics as graphics;
+    pub use hexga_random as random;
+
     #[cfg(feature = "hexga_io")]
     pub use hexga_io as io;
     //pub use hexga_undo_redo as undo;

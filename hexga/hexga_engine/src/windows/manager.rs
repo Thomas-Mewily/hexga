@@ -10,7 +10,8 @@ pub struct WindowManager
     pub(crate) any_dirty : bool,
 
     main_window : Option<Window>,
-    
+
+    stack : Vec<WindowID>,
 }
 
 
@@ -30,6 +31,8 @@ impl WindowManager
     {
         self.main_window = param.map(|p| self.new_window(p).expect("can't init main window"));
     }
+
+    pub(crate) fn active(&self) -> Option<&WindowData> { self.stack.last().map(|id| self.get(*id)).flatten() }
 }
 
 
@@ -50,10 +53,9 @@ impl IContextWindows for WindowManager
         if self.windows.len() >= 1 { return None; }
         if self.windows.len() >= 32 { return None; }
 
-        //param.rectangle.to_rectangle(window, screen)
-        todo!();
+        let rectangle= param.rectangle; //.to_rectangle().to_int();
 
-        let data = WindowData { winit_window: None, winit_id: None, graphics: WindowGraphicsAsset::Loading(WindowGraphicsLoadingState::Pending), param, dirty: true, id: ___(), rectangle: todo!() };
+        let data = WindowData { winit_window: None, winit_id: None, graphics: WindowGraphicsAsset::Loading(WindowGraphicsLoadingState::Pending), param, dirty: true, id: ___(), rectangle };
         let id = self.windows.insert(data);
         self.windows[id].id = id;
         self.any_dirty = true;
@@ -89,7 +91,7 @@ impl Drop for WindowManager
 
 impl WindowManager
 {
-    pub(crate) fn update<UserEvent>(&mut self, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    pub(crate) fn update<UserEvent>(&mut self, gfx : &Wgpu, event_loop: &WinitActiveEventLoop, proxy : &EventLoopProxy<UserEvent>) where UserEvent: IUserEvent
     {
         if !self.any_dirty { return; }
         self.any_dirty = false;

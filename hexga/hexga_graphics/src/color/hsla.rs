@@ -17,13 +17,14 @@ pub struct ColorHslaOf<T>
     pub l : T,
     /// Alpha
     pub a : T,
+    no_destructuring : (),
 }
 impl_fixed_array_like_with_op!(ColorHslaOf, 4);
 
 
 impl<T> ColorHslaOf<T>
 {
-    #[inline(always)] pub const fn new(hue : T, saturation : T, lightness : T, alpha : T) -> Self  { Self { h: hue, s: saturation, l : lightness, a: alpha, }}
+    #[inline(always)] pub const fn new(hue : T, saturation : T, lightness : T, alpha : T) -> Self  { Self { h: hue, s: saturation, l : lightness, a: alpha, no_destructuring: () }}
     pub const fn new_hue(hue : T) -> Self where T: Float { Self::hsl(hue, T::ONE, T::HALF) }
     pub const fn gray(coef : T) -> Self where T: Float { Self::hsl(T::ZERO, T::ZERO, coef) }
 

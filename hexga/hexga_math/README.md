@@ -15,7 +15,7 @@ Check [the documentation](https://docs.rs/hexga_math/latest/hexga_math/) to find
 This crate define N dimensionnal math stuff (2d, 3d, 4d, ... nd) like vector/point of any type (float, int, uint, or even user defined):
 
 - [Vector](https://docs.rs/hexga_math/latest/hexga_math/vector/index.html) (fixed size array wrapper)
-- [Rectangle](https://docs.rs/hexga_math/latest/hexga_math/rectangle/struct.RectangleBase.html)
+- [Rectangle](https://docs.rs/hexga_math/latest/hexga_math/rectangle/struct.RectangleOf.html)
 - [Grid](https://docs.rs/hexga_math/latest/hexga_math/grid/index.html)
 - [Matrix](https://docs.rs/hexga_math/latest/hexga_math/matrix/index.html)
 

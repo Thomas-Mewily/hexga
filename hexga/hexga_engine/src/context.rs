@@ -55,16 +55,16 @@ pub(crate) struct Context
     //pub(crate) pen: ContextPen,
     pub(crate) camera: CameraManager,
     pub(crate) windows: WindowManager,
-    pub(crate) gfx: Graphics,
+    pub(crate) wgpu: Wgpu,
 }
 
 #[derive(Debug)]
-pub(crate) struct Graphics
+pub(crate) struct Wgpu
 {
     pub(crate) instance : WgpuInstance,
 }
 
-impl Default for Graphics
+impl Default for Wgpu
 {
     fn default() -> Self {
         Self
@@ -93,16 +93,26 @@ impl Context
         
     }
 
-    pub(crate) fn begin_update<UserEvent>(&mut self, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    pub(crate) fn begin_update<UserEvent>(&mut self, event_loop: &WinitActiveEventLoop, proxy : &EventLoopProxy<UserEvent>) where UserEvent: IUserEvent
     {
-        self.windows.update(gfx, event_loop, proxy);
+        self.windows.update(&self.wgpu, event_loop, proxy);
         self.camera.update(event_loop);
 
     }
 
-    pub(crate) fn end_update<UserEvent>(&mut self, gfx : &Graphics, event_loop: &WinitActiveEventLoop, proxy : &WinitEventLoopProxy<AppInternalEvent<UserEvent>>) where UserEvent: IUserEvent
+    pub(crate) fn end_update<UserEvent>(&mut self, event_loop: &WinitActiveEventLoop, proxy : &EventLoopProxy<UserEvent>) where UserEvent: IUserEvent
     {
-        let _  = (gfx, event_loop, proxy);
+        let _  = (event_loop, proxy);
+    }
+
+    pub(crate) fn begin_draw<UserEvent>(&mut self, event_loop: &WinitActiveEventLoop, proxy : &EventLoopProxy<UserEvent>) where UserEvent: IUserEvent
+    {
+
+    }
+
+    pub(crate) fn end_draw<UserEvent>(&mut self, event_loop: &WinitActiveEventLoop, proxy : &EventLoopProxy<UserEvent>) where UserEvent: IUserEvent
+    {
+
     }
 }
 
