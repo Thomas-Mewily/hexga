@@ -285,6 +285,36 @@ macro_rules! map_on_operator_assign
 }
 
 
+/// Macro for mapping over all standard [formatting traits](https://doc.rust-lang.org/std/fmt/index.html#formatting-traits):
+/// 
+/// - Display
+/// - Debug
+/// - Octal
+/// - LowerHex
+/// - UpperHex
+/// - Pointer
+/// - Binary
+/// - LowerExp
+/// - UpperExp
+#[macro_export]
+macro_rules! map_on_std_fmt {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!(
+            (
+                Display,
+                Debug,
+                Octal,
+                LowerHex,
+                UpperHex,
+                Pointer,
+                Binary,
+                LowerExp,
+                UpperExp
+            ),
+            $($macro_arms)*
+        );
+    };
+}
 
 
 

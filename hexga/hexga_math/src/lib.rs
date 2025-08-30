@@ -53,11 +53,13 @@ use hexga_typedef::prelude::*;
 use hexga_core::prelude::*;
 use hexga_array::prelude::*;
 use rayon::prelude::*;
+use std::fmt;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoSave, IoLoad, Save, Load};
+
 
 mod geometry;
 pub use geometry::*;

@@ -45,6 +45,10 @@ pub trait ArrayWithGenericSize<T, const N : usize>: Array<T,N>
         Self::WithSize::from_array(self.to_array_with_size_filled_with_value(value))
     }
 }
+impl<T, const N:usize> ArrayWithGenericSize<T,N> for [T;N]
+{
+    type WithSize<const M:usize> = [T;M];
+}
 
 /// An array with a generic type that can be changed
 /// 
@@ -99,6 +103,10 @@ pub trait ArrayWithGenericType<T, const N: usize>: Array<T,N>
     {
         self.map_with(other, |a,b| a.max(b))
     }
+}
+impl<T, const N:usize> ArrayWithGenericType<T,N> for [T;N]
+{
+    type WithType<T2> = [T2;N];
 }
 
 
