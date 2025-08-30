@@ -9,6 +9,7 @@ pub struct Texture
 
 impl Texture
 {
+    /* 
     pub fn from_image(img : &Image) -> Self
     {
         let dimensions = img.size();
@@ -70,4 +71,5 @@ impl Texture
             sampler,
         }
     }
+    */
 }

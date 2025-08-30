@@ -38,13 +38,18 @@ impl Once for bool
 /// Some of my lib will probably have proper error type instead of () (Look for `#proper_error` to know which error type are temporary) when I will have time to add them
 pub trait ResultExtension<T>
 {
+    fn ok_or<E>(self, err: E) -> Result<T,E>;
     fn ok_or_void(self) -> Result<T,()>;
 }
+
 impl<T,E> ResultExtension<T> for Result<T,E>
 {
     #[inline(always)]
+    fn ok_or<E2>(self, err: E2) -> Result<T,E2> { self.map_err(|_| err) }
+
+    #[inline(always)]
     fn ok_or_void(self) -> Result<T,()> {
-        self.map_err(|_| ())
+        self.ok_or(())
     }
 }
 impl<T> ResultExtension<T> for Option<T>
@@ -52,6 +57,10 @@ impl<T> ResultExtension<T> for Option<T>
     #[inline(always)]
     fn ok_or_void(self) -> Result<T,()> {
         self.ok_or(())
+    }
+    
+    fn ok_or<E>(self, err: E) -> Result<T,E> {
+        self.ok_or(err)
     }
 }
 
@@ -108,7 +117,20 @@ impl<I,T> IteratorExtension<T> for I where I : Iterator<Item = T>, T : PartialEq
 }
 */
 
+
+pub trait ResultDebugExtension<T>
+{
+    fn ok_or_debug(self) -> Result<T,String>;
+}
+impl<T,E> ResultDebugExtension<T> for Result<T,E> where E:ToDebug
+{
+    fn ok_or_debug(self) -> Result<T,String> {
+        self.map_err(|e| e.to_debug())
+    }
+}
+
+
 pub mod prelude
 {
-    pub use super::{Toggleable, Once, DebugExtension, ResultExtension};
+    pub use super::{Toggleable, Once, DebugExtension, ResultExtension, ResultDebugExtension};
 }
