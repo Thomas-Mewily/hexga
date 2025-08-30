@@ -10,6 +10,9 @@ impl IUserEvent for () {}
 pub trait App 
 {
     type UserEvent : IUserEvent;
+
+    fn update(&mut self) {}
+    fn draw(&mut self) {}
 }
 
 pub trait AppRun

@@ -42,6 +42,10 @@ pub struct MyApp
 impl App for MyApp
 {
     type UserEvent = ();
+
+    fn draw(&mut self) {
+        
+    }
 }
 
 fn main() 
