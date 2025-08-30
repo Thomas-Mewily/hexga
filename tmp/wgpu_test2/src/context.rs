@@ -56,7 +56,8 @@ impl Ctx
         }
         #[cfg(target_arch = "wasm32")]
         {
-            console_log::init_with_level(log::Level::Info).ok_or_void()?;
+            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+            console_log::init_with_level(log::Level::Info).expect("Couldn't initialize logger");
         }
 
         CONTEXT.replace(Some(Context::___()));

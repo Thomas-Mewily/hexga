@@ -30,7 +30,19 @@ impl<A> AppRun for A where A:App
         let event_loop = EventLoop::with_user_event().build().ok_or_void()?;
         let proxy = event_loop.create_proxy();
 
-        event_loop.run_app(&mut AppRunner::new(self, ctx, proxy)).ok_or_void()
+        #[allow(unused_mut)]
+        let mut runner = AppRunner::new(self, ctx, proxy);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            return event_loop.run_app(&mut runner).ok_or_void();
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            // Runs the app async via the browsers event loop
+            use winit::platform::web::EventLoopExtWebSys;
+            wasm_bindgen_futures::spawn_local(async move { event_loop.spawn_app(runner); });
+        }
     }
 }
 
