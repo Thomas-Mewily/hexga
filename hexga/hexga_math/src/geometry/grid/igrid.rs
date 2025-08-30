@@ -24,6 +24,7 @@ impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Id
 pub trait IGrid<T, Idx, const N : usize> :
       GetRectangle<Idx,N> + GetPosition<Idx,N>
 
+    + TryGet<Vector<Idx,N>,Output=T>
     + Get<Vector<Idx,N>,Output=T>
     + Index<Vector<Idx,N>,Output=T>
 
@@ -31,7 +32,9 @@ pub trait IGrid<T, Idx, const N : usize> :
     + for<'a> Get<Rectangle<Idx,N>,Output=GridView<'a,>
     + Index<Rectangle<Idx,N>,Output=T>
 */
-    + GetMut<Vector<Idx,N>,Output = T> + GetManyMut<Vector<Idx,N>,Output=T>
+    + TryGetMut<Vector<Idx,N>,Output = T>
+    + GetMut<Vector<Idx,N>,Output = T> 
+    + GetManyMut<Vector<Idx,N>,Output=T>
     + IndexMut<Vector<Idx,N>, Output = T>
 
     + Sized

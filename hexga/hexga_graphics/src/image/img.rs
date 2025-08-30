@@ -179,39 +179,70 @@ impl<T, Idx> GetRectangle<Idx, 2> for ImageBase<T, Idx> where Idx : Integer
 }
 
 
+impl<P, T, Idx> TryGet<P> for ImageBase<T, Idx>  where Idx : Integer, P : Into<Vector2<Idx>>
+{
+    type Error = IndexOutOfRange<Vector2<Idx>,Vector2<Idx>>;
+    #[inline(always)]
+    fn try_get(&self, pos : P) -> Result<&Self::Output, Self::Error> 
+    { 
+        let p = pos.into();
+        self.get(p).ok_or_else(|| IndexOutOfRange::new(p, self.size())) 
+    }
+}
 impl<P, T, Idx> Get<P> for ImageBase<T, Idx>  where Idx : Integer, P : Into<Vector2<Idx>>
 {
     type Output = T;
     #[inline(always)]
-    fn try_get(&self, pos : P) -> Result<&Self::Output, ()> { self.get(pos).ok_or_void() }
-    #[inline(always)]
     fn get(&self, pos : P) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) })) }
     #[inline(always)]
+    #[track_caller]
     unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.pixels().get_unchecked(idx) } }
 }
 
+
+impl<P, T, Idx> TryGetMut<P> for ImageBase<T, Idx> where Idx : Integer, P : Into<Vector2<Idx>>
+{
+    #[inline(always)]
+    fn try_get_mut(&mut self, pos : P) -> Result<&mut Self::Output, Self::Error> 
+    { 
+        let p = pos.into();
+        let size = self.size();
+        self.get_mut(p).ok_or_else(|| IndexOutOfRange::new(p, size)) 
+    }
+}
 impl<P, T, Idx> GetMut<P> for ImageBase<T, Idx> where Idx : Integer, P : Into<Vector2<Idx>>
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, pos : P) -> Result<&mut Self::Output, ()> { self.get_mut(pos).ok_or_void() }
-    #[inline(always)]
     fn get_mut(&mut self, pos : P) -> Option<&mut Self::Output> { self.position_to_index(pos).and_then(|i| Some(unsafe { self.pixels_mut().get_unchecked_mut(i) })) }
     #[inline(always)]
+    #[track_caller]
     unsafe fn get_unchecked_mut(&mut self, pos : P) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
 }
 
 impl<P, T, Idx> GetManyMut<P> for ImageBase<T, Idx> where Idx : Integer, P : Into<Vector2<Idx>>
 {
     #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ()> {
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
         if indices.any(|x| x.is_none())
         {
-            Err(())
+            Err(ManyMutError::IndexOutOfBounds)
         } else
         {
             self.pixels_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
+        }
+    }
+    
+    fn get_many_mut<const N: usize>(&mut self, indices: [P; N]) -> Option<[&mut Self::Output;N]> {
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        let indices = indices.map(|pos| self.position_to_index(pos));
+        if indices.any(|x| x.is_none())
+        {
+            None
+        } else
+        {
+            self.pixels_mut().get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }

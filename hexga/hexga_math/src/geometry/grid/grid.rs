@@ -46,24 +46,39 @@ impl<T, Idx, const N : usize> GetRectangle<Idx, N> for GridBase<T, Idx, N> where
     #[inline(always)] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
+impl<P, T, Idx, const N : usize> TryGet<P> for GridBase<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
+{
+    type Error=IndexOutOfRange<Vector<Idx,N>,Vector<Idx,N>>;
+
+    fn try_get(&self, index : P) -> Result<&Self::Output, Self::Error> {
+        let i = index.into();
+        self.get(i).ok_or_else(|| IndexOutOfRange::new(i, self.size()))
+    }
+}
 
 impl<P, T, Idx, const N : usize> Get<P> for GridBase<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
     #[inline(always)]
-    fn try_get(&self, pos : P) -> Result<&Self::Output, ()> { self.get(pos.into()).ok_or_void() }
-    #[inline(always)]
     fn get(&self, pos : P) -> Option<&Self::Output> { self.position_to_index(pos.into()).and_then(|idx| Some(unsafe { self.values().get_unchecked(idx)} ) ) }
     #[inline(always)]
+    #[track_caller]
     unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.values().get_unchecked(idx) } }
 }
 
+impl<P, T, Idx, const N : usize> TryGetMut<P> for GridBase<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
+{
+    fn try_get_mut(&mut self, index : P) -> Result<&mut Self::Output, Self::Error> {
+        let i = index.into();
+        let size = self.size();
+        self.get_mut(i).ok_or_else(|| IndexOutOfRange::new(i, size))
+    }
+}
 impl<P, T, Idx, const N : usize> GetMut<P> for GridBase<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, pos : P) -> Result<&mut Self::Output, ()> { self.get_mut(pos.into()).ok_or_void() }
-    #[inline(always)]
     fn get_mut(&mut self, pos : P) -> Option<&mut Self::Output> { self.position_to_index(pos.into()).and_then(|i| Some(unsafe { self.values_mut().get_unchecked_mut(i) })) }
+    #[track_caller]
     #[inline(always)]
     unsafe fn get_unchecked_mut(&mut self, pos : P) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.values_mut().get_unchecked_mut(idx)} }
 }
@@ -71,15 +86,27 @@ impl<P, T, Idx, const N : usize> GetMut<P> for GridBase<T, Idx,N> where Idx : In
 impl<P, T, Idx, const N : usize> GetManyMut<P> for GridBase<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ()> {
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos.into()));
         if indices.any(|x| x.is_none())
         {
-            Err(())
+            Err(ManyMutError::IndexOutOfBounds)
         } else
         {
             self.values_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
+        }
+    }
+    
+    fn get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Option<[&mut Self::Output;N2]> {
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        let indices = indices.map(|pos| self.position_to_index(pos.into()));
+        if indices.any(|x| x.is_none())
+        {
+            None
+        } else
+        {
+            self.values_mut().get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }

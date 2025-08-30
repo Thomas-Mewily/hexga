@@ -202,6 +202,18 @@ impl<'a, G, T, Idx, const N : usize> GetRectangle<Idx,N> for GridViewMut<'a, G, 
     fn rect(&self) -> Rectangle<Idx, N> { self.rect }
 }
 
+
+impl<'a, P, G, T, Idx, const N : usize> TryGet<P> for GridViewMut<'a, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer,
+    P : Into<Vector<Idx,N>>,
+{
+    type Error=<G as TryGet<Vector<Idx,N>>>::Error;
+
+    #[inline(always)]
+    fn try_get(&self, index : P) -> Result<&Self::Output, Self::Error> { self.grid.try_get(index.into() + self.rect.pos) }
+}
 impl<'a, P, G, T, Idx, const N : usize> Get<P> for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
@@ -210,8 +222,6 @@ impl<'a, P, G, T, Idx, const N : usize> Get<P> for GridViewMut<'a, G, T, Idx, N>
 {
     type Output = <G as Get<Vector<Idx,N>>>::Output;
 
-    #[inline(always)]
-    fn try_get(&self, index : P) -> Result<&Self::Output, ()> { self.grid.try_get(index.into() + self.rect.pos) }
     #[inline(always)]
     fn get(&self, index : P) -> Option<&Self::Output> { self.grid.get(index.into() + self.rect.pos) }
     #[inline(always)]
@@ -232,14 +242,22 @@ impl<'a, P, G, T, Idx, const N : usize> Index<P> for GridViewMut<'a, G, T, Idx, 
 }
 
 
-impl<'a, P, G, T, Idx, const N : usize> GetMut<P> for GridViewMut<'a, G, T, Idx, N>
+impl<'a, P, G, T, Idx, const N : usize> TryGetMut<P> for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
     P : Into<Vector<Idx,N>>,
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, index : P) -> Result<&mut Self::Output, ()> { self.grid.try_get_mut(index.into() + self.rect.pos) }
+    fn try_get_mut(&mut self, index : P) -> Result<&mut Self::Output, Self::Error> { self.grid.try_get_mut(index.into() + self.rect.pos) }
+}
+
+impl<'a, P, G, T, Idx, const N : usize> GetMut<P> for GridViewMut<'a, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer,
+    P : Into<Vector<Idx,N>>,
+{
     #[inline(always)]
     fn get_mut(&mut self, index : P) -> Option<&mut Self::Output> { self.grid.get_mut(index.into() + self.rect.pos) }
     #[inline(always)]
@@ -264,7 +282,7 @@ impl<'a, P, G, T, Idx, const N : usize> GetManyMut<P> for GridViewMut<'a, G, T, 
     Idx : Integer,
     P : Into<Vector<Idx,N>>,
 {
-    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ()> { self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)) }
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> { self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)) }
     #[inline(always)]
     fn get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Option<[&mut Self::Output;N2]> { self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)).ok() }
     #[inline(always)]

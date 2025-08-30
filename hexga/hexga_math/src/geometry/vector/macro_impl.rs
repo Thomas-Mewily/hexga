@@ -298,22 +298,30 @@ macro_rules! impl_fixed_array_like
         }
 
         
+        impl<T, Idx> ::hexga_core::collections::TryGet<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::TryGet<Idx>
+        {
+            type Error = <[T;$dim] as ::hexga_core::collections::TryGet<Idx>>::Error;
+
+            #[inline(always)]
+            fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { ::hexga_core::collections::TryGet::try_get(self.array(), index) }
+        }
         impl<T, Idx> ::hexga_core::collections::Get<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::Get<Idx>
         {
             type Output = <[T;$dim] as ::hexga_core::collections::Get<Idx>>::Output;
 
-            #[inline(always)]
-            fn try_get(&self, index: Idx) -> Result<&Self::Output, ()> { ::hexga_core::collections::Get::try_get(self.array(), index) }
             #[inline(always)]
             fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_core::collections::Get::get(self.array(), index) }
             #[inline(always)]
             #[track_caller]
             unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
         }
-        impl<T, Idx> ::hexga_core::collections::GetMut<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::GetMut<Idx>
+        impl<T, Idx> ::hexga_core::collections::TryGetMut<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::TryGetMut<Idx>
         {
             #[inline(always)]
-            fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, ()> { ::hexga_core::collections::GetMut::try_get_mut(self.array_mut(), index) }
+            fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { ::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
+        }
+        impl<T, Idx> ::hexga_core::collections::GetMut<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::GetMut<Idx>
+        {
             #[inline(always)]
             fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
             #[inline(always)]
@@ -324,7 +332,9 @@ macro_rules! impl_fixed_array_like
         impl<T, Idx> ::hexga_core::collections::GetManyMut<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::GetManyMut<Idx>
         {
             #[inline(always)]
-            fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ()> { ::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+            fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError> { ::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+            #[inline(always)]
+            fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { ::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
             #[inline(always)]
             #[track_caller]
             unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { ::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
@@ -525,23 +535,33 @@ macro_rules! impl_generic_array_like
             fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
         }
 
-        
+        impl<T, const N : usize, Idx> ::hexga_core::collections::TryGet<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::TryGet<Idx>
+        {
+            type Error = <[T;N] as ::hexga_core::collections::TryGet<Idx>>::Error;
+
+            #[inline(always)]
+            fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> 
+            { 
+                ::hexga_core::collections::TryGet::try_get(self.array(), index)
+            }
+        }
         impl<T, const N : usize, Idx> ::hexga_core::collections::Get<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::Get<Idx>
         {
             type Output = <[T;N] as ::hexga_core::collections::Get<Idx>>::Output;
 
-            #[inline(always)]
-            fn try_get(&self, index: Idx) -> Result<&Self::Output, ()> { ::hexga_core::collections::Get::try_get(self.array(), index) }
             #[inline(always)]
             fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_core::collections::Get::get(self.array(), index) }
             #[inline(always)]
             #[track_caller]
             unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
         }
-        impl<T, const N : usize, Idx> ::hexga_core::collections::GetMut<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::GetMut<Idx>
+        impl<T, const N : usize, Idx> ::hexga_core::collections::TryGetMut<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::TryGetMut<Idx>
         {
             #[inline(always)]
-            fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, ()> { ::hexga_core::collections::GetMut::try_get_mut(self.array_mut(), index) }
+            fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { ::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
+        }
+        impl<T, const N : usize, Idx> ::hexga_core::collections::GetMut<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::GetMut<Idx>
+        {
             #[inline(always)]
             fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
             #[inline(always)]
@@ -552,7 +572,10 @@ macro_rules! impl_generic_array_like
         impl<T, const N : usize, Idx> ::hexga_core::collections::GetManyMut<Idx> for $name<T,N> where [T;N] : ::hexga_core::collections::GetManyMut<Idx>
         {
             #[inline(always)]
-            fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ()> { ::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+            fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> { ::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+            #[inline(always)]
+            fn get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Option<[&mut Self::Output;N2]> { ::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
+            
             #[inline(always)]
             #[track_caller]
             unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { ::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }

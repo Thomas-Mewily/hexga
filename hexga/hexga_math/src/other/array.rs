@@ -1,9 +1,11 @@
-use std::iter::FusedIterator;
-
 use super::*;
+
+pub use hexga_array::prelude::*;
+
 
 pub mod prelude { pub use super::*; }
 
+/* 
 /// A vector, where each dimension can have a name (Interpretation)
 /// The `Interpretation` is just a plain old data, without any validation
 #[repr(C)]
@@ -14,15 +16,16 @@ pub struct NamedVector<T, Interpretation, const N : usize>
     pub(crate) no_destructuring : PhantomData<Interpretation>,
 }
 
+impl<T, I, const N : usize> Default for NamedVector<T,I,N> where I:Default
+{
+    fn default() -> Self { Self::from_value(___()) }
+}
+
 impl<T, I, const N : usize> Array<T,N> for NamedVector<T,I,N>
 {
-    fn array(&self) -> &[T; N] {
-        &self.array
-    }
+    fn array(&self) -> &[T; N] { &self.array }
 
-    fn array_mut(&mut self) -> &mut[T; N] {
-        &mut self.array
-    }
+    fn array_mut(&mut self) -> &mut[T; N] { &mut self.array }
 }
 
 impl<T, I, const N : usize, Idx> Index<Idx> for NamedVector<T,I,N> where [T;N]: Index<Idx>
@@ -38,9 +41,11 @@ impl<T, I, const N : usize, Idx> Get<Idx> for NamedVector<T,I,N> where [T;N]: Ge
 {
     type Output = <[T;N] as Get<Idx>>::Output;
 
-    fn try_get(&self, index : Idx) -> Result<&Self::Output, ()> {
-        self.array.try_get(index)
-    }
+    unsafe fn get_unchecked(&self, index : Idx) -> &Self::Output { unsafe { self.array.get_unchecked(index) } }
+    fn get(&self, index : Idx) -> Option<&Self::Output> { self.array.get(index) }
+    #[inline(always)]
+    #[track_caller]
+    fn try_get(&self, index : Idx) -> Result<&Self::Output, ()> { self.array.try_get(index) }
 }
 impl<T, I, const N : usize, Idx> GetMut<Idx> for NamedVector<T,I,N> where [T;N]: GetMut<Idx>
 {
@@ -166,11 +171,6 @@ impl<T, I, const N : usize> AsMut<[T;N]> for NamedVector<T,I,N>
     fn as_mut(&mut self) -> &mut [T;N] { &mut self.array }
 }
 
-impl<T, I, const N : usize> Default for NamedVector<T, I, N> where [T; N] : Default
-{
-    fn default() -> Self { Self { array: ___(), no_destructuring: PhantomData } }
-}
-
 map_on_std_fmt!(
     ($trait_name:ident) => 
     {
@@ -194,6 +194,33 @@ impl<T, I, const N : usize> Clone for NamedVector<T, I, N> where [T; N] : Clone
         Self { array: self.array.clone(), no_destructuring: PhantomData }
     }
 }
+
+impl<T, I, const N : usize> PartialEq for NamedVector<T, I, N> where [T; N] : PartialEq
+{
+    fn eq(&self, other: &Self) -> bool { self.array == other.array }
+}
+impl<T, I, const N : usize> Eq for NamedVector<T, I, N> where [T; N] : Eq {}
+
+impl<T, I, const N : usize> Hash for NamedVector<T, I, N> where [T; N] : Hash 
+{
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.array.hash(state);
+    }
+}
+
+impl<T, I, const N : usize> PartialOrd for NamedVector<T, I, N> where [T; N] : PartialOrd 
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.array.partial_cmp(&other.array)
+    }
+}
+impl<T, I, const N : usize> Ord for NamedVector<T, I, N> where [T; N] : Ord 
+{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.array.cmp(&other.array)
+    }
+}
+
 
 impl<T, I, const N : usize> ArrayWithGenericType<T,N> for NamedVector<T, I, N> where I: ArrayWithGenericType<T,N>
 {
@@ -224,8 +251,8 @@ impl<T, I, const N : usize> std::ops::Add<Self> for NamedVector<T,I,N>
 crate::map_on::map_on_operator_binary!(
     (($trait_name: tt, $fn_name: tt)) =>
     {
-        impl<T, I, const N : usize,O> std::ops::$trait_name<O> for NamedVector<T,I,N>
-            where T: std::ops::$trait_name<T>, I:ArrayWithGenericType<T,N>, O:Array<T,N>
+        impl<T, I, const N: usize> std::ops::$trait_name<Self> for NamedVector<T,I,N>
+            where T: std::ops::$trait_name<T>, I:ArrayWithGenericType<T,N>
         {
             type Output=NamedVector
             <
@@ -233,13 +260,15 @@ crate::map_on::map_on_operator_binary!(
                 <I as ArrayWithGenericType<T,N>>::WithType<<T as ::std::ops::$trait_name<T>>::Output>,
                 N
             >;
-            fn $fn_name(self, rhs: O) -> Self::Output { NamedVector::from_array(self.array.map_with(rhs.into(), T::$fn_name)) }
+            fn $fn_name(self, rhs: Self) -> Self::Output { self.array.map_with(rhs.array, T::$fn_name).into() }
         }
 
-        impl<T, I, const N : usize> std::ops::$trait_name<T> for NamedVector<T,I,N> where T: std::ops::$trait_name<T> + Copy
+        impl<T, I, const N: usize> std::ops::$trait_name<T> for NamedVector<T,I,N> where T: std::ops::$trait_name<T> + Copy
         {
             type Output=NamedVector<<T as ::std::ops::$trait_name<T>>::Output,I,N>;
             fn $fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$fn_name(rhs)).into() }
         }
     }
 );
+
+*/

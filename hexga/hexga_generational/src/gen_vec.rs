@@ -781,27 +781,159 @@ impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
 }
 impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { #[inline(always)] fn clear(&mut self) { self.clear(); } }
 
+//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum GenVecError<T,Gen:IGeneration>
+{
+    IndexOutOfRange(IndexOutOfRange),
+    WrongGeneration(GenVecWrongGeneration<T,Gen>),
+    /// The slot at this index is saturated
+    Saturated(usize),
+}
+impl<T,Gen:IGeneration> Eq for GenVecError<T,Gen> {}
+impl<T,Gen:IGeneration> PartialEq for GenVecError<T,Gen>
+{
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::IndexOutOfRange(l0), Self::IndexOutOfRange(r0)) => l0 == r0,
+            (Self::WrongGeneration(l0), Self::WrongGeneration(r0)) => l0 == r0,
+            _ => false,
+        }
+    }
+}
+
+impl<T,Gen:IGeneration> Hash for GenVecError<T,Gen> 
+{
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self
+        {
+            GenVecError::IndexOutOfRange(v) => v.hash(state),
+            GenVecError::WrongGeneration(v) => v.hash(state),
+            GenVecError::Saturated(v) => v.hash(state),
+        }
+    }
+}
+
+// error : the `Copy` impl for `hexga_core::collections::IndexOutOfRange` requires that `std::ops::Range<usize>: Copy`
+// impl<T,Gen:IGeneration> Copy for GenVecError<T,Gen> {}
+impl<T,Gen:IGeneration> Clone for GenVecError<T,Gen> 
+{
+    fn clone(&self) -> Self {
+        match self {
+            GenVecError::IndexOutOfRange(v) => Self::IndexOutOfRange(v.clone()),
+            GenVecError::WrongGeneration(v) => Self::WrongGeneration(v.clone()),
+            GenVecError::Saturated(v) => Self::Saturated(v.clone()),
+        }
+    }
+}
+
+impl<T,Gen:IGeneration> Debug for GenVecError<T,Gen> 
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GenVecError::IndexOutOfRange(arg0) => f.debug_tuple("IndexOutOfRange").field(arg0).finish(),
+            GenVecError::WrongGeneration(arg0) => f.debug_tuple("WrongGeneration").field(arg0).finish(),
+            GenVecError::Saturated(arg0) => f.debug_tuple("Saturated").field(arg0).finish(),
+        }
+    }
+}
+
+
+pub struct GenVecWrongGeneration<T,Gen:IGeneration>
+{
+    pub got : Gen,
+    pub expected : Gen,
+    phantom : PhantomData<T>,
+}
+impl<T,Gen:IGeneration> GenVecWrongGeneration<T,Gen>
+{
+    pub fn new(got : Gen, expected : Gen) -> Self { Self{ got, expected, phantom: PhantomData }}
+}
+impl<T,Gen:IGeneration> Eq for GenVecWrongGeneration<T,Gen> {}
+impl<T,Gen:IGeneration> PartialEq for GenVecWrongGeneration<T,Gen>
+{
+    fn eq(&self, other: &Self) -> bool { self.got == other.got && self.expected == other.expected }
+}
+
+impl<T,Gen:IGeneration> Hash for GenVecWrongGeneration<T,Gen> 
+{
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.got.hash(state);
+        self.expected.hash(state);
+    }
+}
+
+
+impl<T,Gen:IGeneration> Copy for GenVecWrongGeneration<T,Gen> {}
+impl<T,Gen:IGeneration> Clone for GenVecWrongGeneration<T,Gen> 
+{
+    fn clone(&self) -> Self {
+        Self { got: self.got.clone(), expected: self.expected.clone(), phantom: PhantomData }
+    }
+}
+
+impl<T,Gen:IGeneration> Debug for GenVecWrongGeneration<T,Gen> 
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GenVecWrongGeneration").field("got", &self.got).field("expected", &self.expected).field("phantom", &self.phantom).finish()
+    }
+}
+
+
+impl<T,Gen:IGeneration> TryGet<usize> for GenVecOf<T,Gen>
+{
+    type Error=IndexOutOfRange;
+    fn try_get(&self, index : usize) -> Result<&Self::Output, Self::Error> 
+    {
+        self.get_index(index).ok_or_else(|| IndexOutOfRange::new(index, 0..self.len()))
+    }
+}
 impl<T,Gen:IGeneration> Get<usize> for GenVecOf<T,Gen>
 {
     type Output = <Self as Index<usize>>::Output;
     #[inline(always)]
-    fn try_get(&self, idx : usize) -> Result<&Self::Output, ()> { self.get_index(idx).ok_or_void() }
-    #[inline(always)]
     fn get(&self, idx : usize) -> Option<&Self::Output> { self.get_index(idx) }
+}
+
+impl<T,Gen:IGeneration> TryGet<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    type Error=GenVecError<T,Gen>;
+    fn try_get(&self, id :  GenVecIDOf<T,Gen>) -> Result<&Self::Output, Self::Error> 
+    {
+        match self.get_slot_index(id.index)
+        {
+            Some(s) => match s.value()
+            {
+                Some(v) => Ok(v),
+                None => if s.is_generation_saturated()
+                {
+                    Err(GenVecError::Saturated(id.index))
+                }else
+                {
+                    Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(id.generation, s.generation())))
+                },
+            },
+            None => Err(GenVecError::IndexOutOfRange(IndexOutOfRange::new(id.index, 0..self.len()))),
+        }
+    }
 }
 impl<T,Gen:IGeneration> Get<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     type Output = <Self as Index<GenVecIDOf<T,Gen>>>::Output;
     #[inline(always)]
-    fn try_get(&self, idx : GenVecIDOf<T,Gen>) -> Result<&Self::Output, ()> { self.get(idx).ok_or_void() }
-    #[inline(always)]
     fn get(&self, idx : GenVecIDOf<T,Gen>) -> Option<&Self::Output> { self.get(idx) }
 }
 
+impl<T,Gen:IGeneration> TryGetMut<usize> for GenVecOf<T,Gen>
+{
+    fn try_get_mut(&mut self, index : usize) -> Result<&mut Self::Output, Self::Error> 
+    {
+        let len = self.len();
+        self.get_index_mut(index).ok_or_else(|| IndexOutOfRange::new(index, 0..len))
+    }
+}
 impl<T,Gen:IGeneration> GetMut<usize> for GenVecOf<T,Gen>
 {
-    #[inline(always)]
-    fn try_get_mut(&mut self, idx : usize) -> Result<&mut Self::Output, ()> { self.get_index_mut(idx).ok_or_void() }
     #[inline(always)]
     fn get_mut(&mut self, idx : usize) -> Option<&mut Self::Output> { self.get_index_mut(idx) }
 }
@@ -809,13 +941,24 @@ impl<T,Gen:IGeneration> GetMut<usize> for GenVecOf<T,Gen>
 impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
 {
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output;N], ()>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output;N], ManyMutError>
     {
+        // TODO: check the SlotMap crate for a better implementation of any overlapping indices
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         match self.slot.try_get_many_mut(indices).map(|slots| slots.map(|v| v.value_mut()))
         {
-            Ok(values) => if values.iter().any(|v| v.is_none()) { Err(()) } else { Ok(values.map(|v| v.unwrap())) },
-            Err(()) => Err(()),
+            Ok(values) => if values.iter().any(|v| v.is_none()) { Err(ManyMutError::IndexOutOfBounds) } else { Ok(values.map(|v| v.unwrap())) },
+            Err(e) => Err(e),
+        }
+    }
+    
+    fn get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Option<[&mut Self::Output;N]> {
+        // TODO: check the SlotMap crate for a better implementation of any overlapping indices
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        match self.slot.get_many_mut(indices).map(|slots| slots.map(|v| v.value_mut()))
+        {
+            Some(values) => if values.iter().any(|v| v.is_none()) { None } else { Some(values.map(|v| v.unwrap())) },
+            None => None,
         }
     }
 
@@ -826,10 +969,36 @@ impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
         unsafe { self.slot.get_many_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
     }
 }
+
+impl<T,Gen:IGeneration> TryGetMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    fn try_get_mut(&mut self, id :  GenVecIDOf<T,Gen>) -> Result<&mut Self::Output, Self::Error> 
+    {
+        let len = self.len();
+        match self.get_slot_index_mut(id.index)
+        {
+            Some(s) => 
+            {
+                let generation = s.generation();
+                let is_saturated = s.is_generation_saturated();
+                match s.value_mut()
+                {
+                    Some(v) => Ok(v),
+                    None => if is_saturated
+                    {
+                        Err(GenVecError::Saturated(id.index))
+                    }else
+                    {
+                        Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(id.generation, generation)))
+                    }
+                }
+            }
+            None => Err(GenVecError::IndexOutOfRange(IndexOutOfRange::new(id.index, 0..len))),
+        }
+    }
+}
 impl<T,Gen:IGeneration> GetMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
-    #[inline(always)]
-    fn try_get_mut(&mut self, idx : GenVecIDOf<T,Gen>) -> Result<&mut Self::Output, ()> { self.get_mut(idx).ok_or_void() }
     #[inline(always)]
     fn get_mut(&mut self, idx : GenVecIDOf<T,Gen>) -> Option<&mut Self::Output> { self.get_mut(idx) }
 }
@@ -837,7 +1006,7 @@ impl<T,Gen:IGeneration> GetMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
 impl<T,Gen:IGeneration> GetManyMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [GenVecIDOf<T,Gen>; N]) -> Result<[&mut Self::Output;N], ()>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [GenVecIDOf<T,Gen>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
     {
         // Todo: use O(N) complexity to check the overlaping
         // Check SlotMap imply that put tmp Free slot in the current indices to
@@ -846,8 +1015,23 @@ impl<T,Gen:IGeneration> GetManyMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
         match self.slot.try_get_many_mut(indices.map(|i| i.index))
         {
             Ok(values) => if values.iter().enumerate().any(|(idx,v)| !v.have_value() || v.generation() != indices[idx].generation)
-            { Err(()) } else { Ok(values.map(|v| v.value_mut().unwrap())) },
-            Err(_) => Err(()),
+            { Err(std::slice::GetDisjointMutError::OverlappingIndices) } else { Ok(values.map(|v| v.value_mut().unwrap())) },
+            Err(e) => Err(e),
+        }
+    }
+    
+    fn get_many_mut<const N: usize>(&mut self, indices: [GenVecIDOf<T,Gen>; N]) -> Option<[&mut Self::Output;N]>
+    {
+        // Todo: use O(N) complexity to check the overlaping
+        // Check SlotMap imply that put tmp Free slot in the current indices to
+
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        match self.slot.get_many_mut(indices.map(|i| i.index))
+        {
+            Some(values) => 
+                if values.iter().enumerate().any(|(idx,v)| !v.have_value() || v.generation() != indices[idx].generation) 
+                { None } else { Some(values.map(|v| v.value_mut().unwrap())) },
+            None => None,
         }
     }
 }
