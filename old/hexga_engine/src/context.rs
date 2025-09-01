@@ -139,10 +139,9 @@ macro_rules! declare_context_singleton {
 pub(crate) use declare_context_singleton;
 
 
-pub fn spawn_task<F, T>(future: F)
+pub fn spawn_task<F>(future: F)
 where
-    F: Future<Output = T> + Send + 'static,
-    T: Send + 'static
+    F: Future<Output = ()> + Send + 'static,
 {
     #[cfg(target_arch = "wasm32")]
     wasm_bindgen_futures::spawn_local(future);

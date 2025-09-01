@@ -33,7 +33,8 @@ impl <A,UserEvent> AppRunner<A,UserEvent> where A:App<UserEvent>, UserEvent:IUse
     fn new(app : A, proxy : EventLoopProxy<UserEvent>) -> Self { Self { app, proxy }}
 
     fn run(self, event_loop : WinitEventLoop<AppInternalEvent<UserEvent>>) { self.run_with_param(event_loop, ___()) }
-    fn run_with_param(mut self, event_loop : WinitEventLoop<AppInternalEvent<UserEvent>>, _param : AppParam)
+    
+    fn run_with_param(#[allow(unused_mut)] mut self, event_loop : WinitEventLoop<AppInternalEvent<UserEvent>>, _param : AppParam)
     {
         init_logger_if_needed();
 

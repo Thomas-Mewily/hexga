@@ -1,3 +1,4 @@
+/* 
 #![allow(unused_imports)]
 use hexga_core::prelude::*;
 use hexga_engine::prelude::*;
@@ -17,10 +18,10 @@ impl App for MyApp
 {
 
 }
-
+*/
 fn main() 
 {
     println!("Hello");
-    MyApp::new().run();
+    //MyApp::new().run();
     println!("Good bye");
 }
