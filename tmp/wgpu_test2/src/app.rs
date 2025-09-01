@@ -8,7 +8,7 @@ pub mod prelude
 pub trait IUserEvent : 'static + Debug + Send {}
 impl IUserEvent for () {}
 
-pub trait App 
+pub trait App : 'static
 {
     type UserEvent : IUserEvent;
 
@@ -39,9 +39,8 @@ impl<A> AppRun for A where A:App
         }
         #[cfg(target_arch = "wasm32")]
         {
-            // Runs the app async via the browsers event loop
-            use winit::platform::web::EventLoopExtWebSys;
-            wasm_bindgen_futures::spawn_local(async move { event_loop.spawn_app(runner); });
+            async move { let _ = event_loop.run_app(&mut runner); }.spawn();
+            Ok(())
         }
     }
 }
@@ -76,8 +75,15 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
     fn resumed(&mut self, event_loop: &ActiveEventLoop) 
     {
         if self.ctx.winit.is_none() {
-            let win_attr = Window::default_attributes().with_title("wgpu winit example");
-            // use Arc.
+            let mut win_attr = Window::default_attributes().with_title("wgpu winit example");
+            
+            #[cfg(target_arch = "wasm32")]
+            {
+                use winit::platform::web::WindowAttributesExtWebSys;
+                win_attr = win_attr.with_append(true);
+            }
+
+
             let window = Arc::new(
                 event_loop
                     .create_window(win_attr)
@@ -130,22 +136,40 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
 }
 
 
-pub trait SpawnFutur<T> where
-    Self: Future<Output = T> + Send + 'static,
-    T: Send + 'static
+// TODO: make an internal private trait, to be sure SpawnFutur can't be impl by external crate
+
+#[cfg(not(target_arch = "wasm32"))]
+/// Note : the trait bound vary if you are on wasm32 or not
+pub trait SpawnFutur where
+    Self: Future<Output = ()> + Send + 'static,
 {
     fn spawn(self);
 }
-impl<F,T> SpawnFutur<T> for F where
-    F: Future<Output = T> + Send + 'static,
-    T: Send + 'static
+
+#[cfg(not(target_arch = "wasm32"))]
+impl<F> SpawnFutur for F where
+    F: Future<Output = ()> + Send + 'static,
 {
     fn spawn(self)
     {
-        #[cfg(target_arch = "wasm32")]
-        wasm_bindgen_futures::spawn_local(self);
-
-        #[cfg(not(target_arch = "wasm32"))]
         async_std::task::spawn(self);
+    }
+}
+
+
+#[cfg(target_arch = "wasm32")]
+/// Note : the trait bound vary if you are on wasm32 or not
+pub trait SpawnFutur where
+    Self: Future<Output = ()> + 'static,
+{
+    fn spawn(self);
+}
+#[cfg(target_arch = "wasm32")]
+impl<F> SpawnFutur for F where
+    F: Future<Output = ()> + 'static,
+{
+    fn spawn(self)
+    {
+        wasm_bindgen_futures::spawn_local(self);
     }
 }

@@ -14,7 +14,10 @@ impl ContextWgpu
 {
     pub fn request<UserEvent>(window: Arc<Window>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) -> Result<(), String> where UserEvent: IUserEvent
     {
-        let instance = wgpu::Instance::default();
+        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::all(),
+            ..Default::default()
+        });
         let surface = instance.create_surface(Arc::clone(&window)).ok_or_debug()?;
 
         Self::request_async(instance, window, surface, proxy).spawn();

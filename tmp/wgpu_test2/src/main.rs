@@ -16,6 +16,9 @@ use wgpu::
     util::{BufferInitDescriptor, DeviceExt}
 };
 
+pub use log::{info, warn, error, debug};
+
+
 
 
 use hexga::prelude::*;
@@ -54,9 +57,23 @@ impl App for MyApp
 
 fn main() 
 {
-    println!("Hello, world!");
+
+    //println!("Hello, world!");
     MyApp::___().run().unwrap();
-    println!("Goodbye, world!");
+
+    //println!("Goodbye, world!");
 }
 
 // Based on learn-wgpu
+
+#[macro_export]
+macro_rules! dbg_here {
+    () => {
+        log::debug!(
+            "At {}:{} in {}",
+            file!(),
+            line!(),
+            std::module_path!()
+        )
+    };
+}

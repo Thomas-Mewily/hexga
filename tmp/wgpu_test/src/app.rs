@@ -60,7 +60,14 @@ impl<A> winit::application::ApplicationHandler for CtxRunner<A> where A:App
 {
     fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
         if self.window.is_none() {
-            let win_attr = Window::default_attributes().with_title("wgpu winit example");
+            let mut win_attr = Window::default_attributes().with_title("wgpu winit example");
+            
+            #[cfg(target_arch = "wasm32")]
+            {
+                use winit::platform::web::WindowAttributesExtWebSys;
+                win_attr = win_attr.with_append(true);
+            }
+            
             // use Arc.
             let window = Arc::new(
                 event_loop
