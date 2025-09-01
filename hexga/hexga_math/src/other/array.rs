@@ -96,6 +96,7 @@ impl<T, I, const N : usize> FromIterator<T> for NamedVector<T, I, N> where T:Def
 
 impl<T, I, const N : usize>  NamedVector<T, I, N>
 {
+    pub(crate) valid : () = const fn assert_valid_interpretation();
     #[track_caller]
     #[inline]
     pub(crate) const fn assert_valid_interpretation()

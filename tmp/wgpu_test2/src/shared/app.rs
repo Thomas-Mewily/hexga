@@ -74,7 +74,9 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
 {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) 
     {
-        if self.ctx.winit.is_none() {
+        if self.ctx.winit.is_none() 
+        {
+            #[allow(unused_mut)]
             let mut win_attr = Window::default_attributes().with_title("wgpu winit example");
             
             #[cfg(target_arch = "wasm32")]

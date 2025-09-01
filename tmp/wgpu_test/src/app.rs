@@ -60,6 +60,7 @@ impl<A> winit::application::ApplicationHandler for CtxRunner<A> where A:App
 {
     fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
         if self.window.is_none() {
+            #[allow(unused_mut)]
             let mut win_attr = Window::default_attributes().with_title("wgpu winit example");
             
             #[cfg(target_arch = "wasm32")]
