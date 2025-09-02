@@ -27,7 +27,7 @@ cargo watch  -i out -x "build --target wasm32-unknown-unknown --release --packag
 # -s : commande shell
 ```
 
-# Android
+# Android : DONT WORK
 
 ## Setup (once)
 
@@ -50,9 +50,9 @@ export NDK_HOME=$ANDROID_HOME/ndk/<version>
 (home is somethings like C:\Users\USERNAME\AppData\Local\)
 ```
 
-3) cargo-ndk
+3) cargo-apk
 
 ```
-cargo ndk -t arm64-v8a -o ./app/src/main/jniLibs build --release
-
+cd <crate path>
+cargo apk build --release
 ```

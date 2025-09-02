@@ -1,16 +1,16 @@
 [build]
 #target = "wasm32-unknown-unknown"
 #target = "wasm32-unknown-unknown"
-target = "x86_64-linux-android"
+#target = "x86_64-linux-android"
 
-[target.aarch64-linux-android]
-ar = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/aarch64-linux-android-ar"
-linker = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/aarch64-linux-android24-clang"
+# [target.aarch64-linux-android]
+# ar = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/aarch64-linux-android-ar"
+# linker = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/aarch64-linux-android24-clang"
 
-[target.armv7-linux-androideabi]
-ar = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/arm-linux-androideabi-ar"
-linker = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/armv7a-linux-androideabi24-clang"
+# [target.armv7-linux-androideabi]
+# ar = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/arm-linux-androideabi-ar"
+# linker = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/armv7a-linux-androideabi24-clang"
 
-[target.x86_64-linux-android]
-ar = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/x86_64-linux-android-ar"
-linker = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/x86_64-linux-android24-clang"
+# [target.x86_64-linux-android]
+# ar = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/x86_64-linux-android-ar"
+# linker = "C:/Users/TTD/AppData/Local/Android/toolchains/llvm/prebuilt/<host>/bin/x86_64-linux-android24-clang"
