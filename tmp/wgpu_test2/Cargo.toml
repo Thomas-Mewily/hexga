@@ -8,18 +8,5 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
+hexga_engine.workspace = true
 hexga.workspace = true
-
-wgpu = { version = "25.0.0" }
-winit = "0.30.11"
-env_logger = "0.10"
-bytemuck = "1.23.0"
-async-std = { version = "1.13.1" }
-log = { version = "0.4.22"}
-
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wgpu = { version = "25.0.0", features = ["webgl"] }
-console_error_panic_hook = "0.1"
-console_log = "1.0"
-wasm-bindgen-futures = "0.4.49"

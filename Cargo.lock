@@ -961,6 +961,22 @@ name = "hexga_core"
 version = "0.0.11-beta.3"
 
 [[package]]
+name = "hexga_engine"
+version = "0.0.11-beta.3"
+dependencies = [
+ "async-std",
+ "bytemuck",
+ "console_error_panic_hook",
+ "console_log",
+ "env_logger",
+ "hexga",
+ "log",
+ "wasm-bindgen-futures",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
 name = "hexga_generational"
 version = "0.0.11-beta.3"
 dependencies = [
@@ -2719,16 +2735,8 @@ dependencies = [
 name = "wgpu_test2"
 version = "0.0.11-beta.3"
 dependencies = [
- "async-std",
- "bytemuck",
- "console_error_panic_hook",
- "console_log",
- "env_logger",
  "hexga",
- "log",
- "wasm-bindgen-futures",
- "wgpu",
- "winit",
+ "hexga_engine",
 ]
 
 [[package]]

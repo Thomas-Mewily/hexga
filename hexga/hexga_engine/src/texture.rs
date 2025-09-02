@@ -1,5 +1,10 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::Texture;
+}
+
 pub struct Texture
 {
     pub(crate) texture: wgpu::Texture,
