@@ -38,9 +38,13 @@ use app::*;
 mod debug;
 pub use debug::*;
 
+pub mod gpu_type;
+use gpu_type::*;
+
 pub mod prelude
 {
     pub use super::app::prelude::*;
     pub use super::texture::prelude::*;
     pub use super::debug::prelude::*;
+    pub use super::gpu_type::prelude::*;
 }
