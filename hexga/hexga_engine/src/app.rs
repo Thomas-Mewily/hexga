@@ -48,7 +48,7 @@ impl<A> AppRun for A where A:App
 pub(crate) enum AppInternalMessage<U> where U: IUserEvent
 {
     Message(AppMessage<U>),
-    Wgpu(Result<ContextPen,String>),
+    Wgpu(Result<ContextWgpu,String>),
 }
 
 pub enum AppMessage<U> where U: IUserEvent
@@ -92,7 +92,7 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
                     .expect("create window err."),
             );
             self.ctx.winit = Some(window.clone());
-            ContextPen::request(window, self.proxy.clone()).unwrap();
+            ContextWgpu::request(window, self.proxy.clone()).unwrap();
         }
     }
 

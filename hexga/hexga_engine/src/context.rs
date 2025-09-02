@@ -10,7 +10,7 @@ pub type ContextWinit = Arc<Window>;
 pub struct Context
 {
     pub(crate) winit : Option<ContextWinit>,
-    pub(crate) wgpu : Option<ContextPen>,
+    pub(crate) wgpu : Option<ContextWgpu>,
 }
 
 thread_local! {
