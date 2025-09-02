@@ -135,6 +135,10 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
             _ => (),
         }
     }
+
+    fn exiting(&mut self, event_loop: &ActiveEventLoop) {
+        Ctx::exit();
+    }
 }
 
 

@@ -12,6 +12,13 @@ pub struct Context
     pub(crate) winit : Option<ContextWinit>,
     pub(crate) wgpu : Option<ContextWgpu>,
 }
+impl Drop for Context
+{
+    fn drop(&mut self) {
+        self.winit = None;
+        self.wgpu = None;
+    }
+}
 
 thread_local! {
     pub(crate) static CONTEXT: RefCell<Option<Context>> = RefCell::new(None);
@@ -60,9 +67,14 @@ impl Ctx
             console_log::init_with_level(log::Level::Debug).expect("Couldn't initialize logger");
         }
 
-        dbg_here!();
-
         CONTEXT.replace(Some(Context::___()));
+    }
+
+    pub fn exit()
+    {
+        CONTEXT.with(|ctx| {
+            *ctx.borrow_mut() = None;
+        });
     }
 }
 

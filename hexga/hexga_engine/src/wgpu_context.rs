@@ -1,14 +1,15 @@
 use super::*;
 
 pub(crate) struct ContextWgpu {
-    surface: wgpu::Surface<'static>,
     surface_config: wgpu::SurfaceConfiguration,
     adapter: wgpu::Adapter,
     device: wgpu::Device,
     queue: wgpu::Queue,
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
+    surface: wgpu::Surface<'static>,
 }
+
 
 impl ContextWgpu
 {
