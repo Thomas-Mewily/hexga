@@ -135,7 +135,8 @@ impl ContextWgpu
     }
 
     
-    pub fn draw(&mut self) {
+    pub fn draw(&mut self) 
+    {
         let surface_texture = self
             .surface
             .get_current_texture()

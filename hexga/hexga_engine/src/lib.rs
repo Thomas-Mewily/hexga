@@ -47,4 +47,5 @@ pub mod prelude
     pub use super::texture::prelude::*;
     pub use super::debug::prelude::*;
     pub use super::gpu_type::prelude::*;
+    pub use super::vertex::prelude::*;
 }

@@ -15,6 +15,11 @@ impl App for MyApp
 {
     type UserEvent = ();
 
+
+    fn update(&mut self) {
+        
+    }
+
     fn draw(&mut self) {
         
     }
