@@ -16,12 +16,16 @@ impl App for MyApp
     type UserEvent = ();
 
 
-    fn update(&mut self) {
+    fn update(&mut self) 
+    {
         
     }
 
-    fn draw(&mut self) {
+    fn draw(&mut self) 
+    {
         
+        //Angle::sample(20).map(|a| a.to_vec2_normalized()).
+        //let vertex = 
     }
 }
 

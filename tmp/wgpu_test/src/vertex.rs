@@ -9,17 +9,11 @@ unsafe impl bytemuck::Zeroable for Vertex {}
 unsafe impl bytemuck::Pod for Vertex {}
 
 pub const VERTEX_LIST: &[Vertex] = &[
-    // a
     Vertex { position: [0.0, 0.5, 0.0], tex_uv: [0.5, 1.0] },
-    // b
     Vertex { position: [-0.5, 0.3, 0.0], tex_uv: [0.0, 0.7] },
-    // c
     Vertex { position: [-0.5, -0.3, 0.0], tex_uv: [0.0, 0.3] },
-    // d
     Vertex { position: [0.0, -0.5, 0.0], tex_uv: [0.5, 0.0] },
-    // e
     Vertex { position: [0.5, -0.3, 0.0], tex_uv: [1.0, 0.3] },
-    // f
     Vertex { position: [0.5, 0.3, 0.0], tex_uv: [1.0, 0.7] },
 ];
 

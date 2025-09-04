@@ -21,13 +21,11 @@ fn vs_main(vertex_in: VertexInput) -> VertexOutput {
     return out;
 }
 
-// 方式1
 @fragment
 fn fs_main(fragment_in: FragmentInput) -> @location(0) vec4<f32> {
     return vec4<f32>(fragment_in.color, 1.0);
 }
 
-// 方式2:甚至直接访问对应location的数据
 //@fragment
 //fn fs_main(@location(0) color: vec3f) -> @location(0) vec4<f32> {
 //    return vec4<f32>(color, 1.0);

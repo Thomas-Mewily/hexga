@@ -1,13 +1,17 @@
 use super::*;
+use wgpu::util::DeviceExt;
 
 pub(crate) struct ContextWgpu {
+    surface: wgpu::Surface<'static>,
     surface_config: wgpu::SurfaceConfiguration,
     adapter: wgpu::Adapter,
     device: wgpu::Device,
     queue: wgpu::Queue,
     render_pipeline: wgpu::RenderPipeline,
+
     vertex_buffer: wgpu::Buffer,
-    surface: wgpu::Surface<'static>,
+    index_buffer: wgpu::Buffer,
+    nb_indice : VertexIndex,
 }
 
 
@@ -25,12 +29,12 @@ impl ContextWgpu
 
         Ok(())
     }
-    pub async fn request_async<UserEvent>(instance : Instance, window: Arc<Window>, surface : Surface<'static>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) where UserEvent: IUserEvent
+    pub async fn request_async<UserEvent>(instance : wgpu::Instance, window: Arc<Window>, surface : wgpu::Surface<'static>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) where UserEvent: IUserEvent
     {
         let _ = proxy.send_event(AppInternalMessage::Wgpu(Self::new(instance, window, surface).await));
     }
 
-    pub async fn new(instance : Instance, window: Arc<Window>, surface : Surface<'static>) -> Result<Self, String> 
+    pub async fn new(instance : wgpu::Instance, window: Arc<Window>, surface : wgpu::Surface<'static>) -> Result<Self, String> 
     {
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -68,12 +72,18 @@ impl ContextWgpu
 
         let render_pipeline = Self::create_pipeline(&device, surface_config.format);
 
-        let bytes: &[u8] = bytemuck::cast_slice(&VERTEX_LIST);
-        let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
+        let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
-            contents: bytes,
+            contents: bytemuck::cast_slice(&VERTEX_LIST),
             usage: wgpu::BufferUsages::VERTEX,
         });
+
+        let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: None,
+            contents: bytemuck::cast_slice(&VERTEX_INDICES),
+            usage: wgpu::BufferUsages::INDEX,
+        });
+        let nb_indice = VERTEX_INDICES.len() as _;
 
         Ok(
             Self 
@@ -85,6 +95,8 @@ impl ContextWgpu
                 queue,
                 render_pipeline,
                 vertex_buffer,
+                index_buffer,
+                nb_indice
             }
         )
     }
@@ -107,7 +119,7 @@ impl ContextWgpu
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
-                buffers: &[create_vertex_buffer_layout()],
+                buffers: &[Vertex::create_buffer_layout()],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -118,6 +130,7 @@ impl ContextWgpu
             }),
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
+                strip_index_format: None,
                 ..Default::default()
             },
             depth_stencil: None,
@@ -164,10 +177,10 @@ impl ContextWgpu
                 occlusion_query_set: None,
             });
             rpass.set_pipeline(&self.render_pipeline);
-            // 消费存放的 vertex_buffer
             rpass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-            // 顶点有原来的固定3个顶点，调整为根据 VERTEX_LIST 动态来计算
-            rpass.draw(0..VERTEX_LIST.len() as u32, 0..1);
+            rpass.set_index_buffer(self.index_buffer.slice(..), Vertex::WGPU_INDEX_FORMAT);
+            rpass.draw_indexed(0..(self.nb_indice as _), 0, 0..1);
+            //rpass.draw(0..VERTEX_LIST.len() as u32, 0..1);
         }
         self.queue.submit(Some(encoder.finish()));
         surface_texture.present();

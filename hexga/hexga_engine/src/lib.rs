@@ -3,6 +3,7 @@
 #![allow(unused_variables)]
 
 use std::{iter, sync::Arc};
+use std::marker::PhantomData;
 use winit::{
     application::ApplicationHandler,
     event::*,
@@ -10,42 +11,33 @@ use winit::{
     keyboard::{KeyCode, PhysicalKey},
     window::Window,
 };
-use wgpu::
-{
-    Surface, Instance,
-    util::{BufferInitDescriptor, DeviceExt}
-};
-
-
 use hexga::prelude::*;
 use std::ops::*;
 
-pub mod context;
-use context::*;
 
-mod wgpu_context;
-use wgpu_context::*;
 
-mod vertex;
-use vertex::*;
-
-pub mod texture;
-use texture::*;
+pub mod gpu;
+use gpu::*;
 
 pub mod app;
 use app::*;
 
+pub mod context;
+use context::*;
+
+
+
+pub mod log;
+pub use log::*;
+
 mod debug;
 pub use debug::*;
-
-pub mod gpu_type;
-use gpu_type::*;
 
 pub mod prelude
 {
     pub use super::app::prelude::*;
-    pub use super::texture::prelude::*;
-    pub use super::debug::prelude::*;
-    pub use super::gpu_type::prelude::*;
-    pub use super::vertex::prelude::*;
+    pub use super::context::prelude::*;
+    pub use super::log::prelude::*;
+    pub use super::gpu::prelude::*;
 }
+use prelude::*;

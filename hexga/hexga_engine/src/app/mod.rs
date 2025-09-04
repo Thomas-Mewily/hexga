@@ -25,7 +25,7 @@ impl<A> AppRun for A where A:App
     fn run(self) -> Result<(), ()> 
     {
         Ctx::init();
-        let ctx = unsafe { Ctx::try_as_mut().ok_or_void() }?;
+        let ctx = Ctx::try_as_mut().ok_or_void()?;
 
         let event_loop = EventLoop::with_user_event().build().ok_or_void()?;
         let proxy = event_loop.create_proxy();
@@ -48,7 +48,7 @@ impl<A> AppRun for A where A:App
 pub(crate) enum AppInternalMessage<U> where U: IUserEvent
 {
     Message(AppMessage<U>),
-    Wgpu(Result<ContextWgpu,String>),
+    ContextGpu(Result<ContextGpu,String>),
 }
 
 pub enum AppMessage<U> where U: IUserEvent
@@ -92,7 +92,7 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
                     .expect("create window err."),
             );
             self.ctx.winit = Some(window.clone());
-            ContextWgpu::request(window, self.proxy.clone()).unwrap();
+            ContextGpu::request(window, self.proxy.clone()).unwrap();
         }
     }
 
@@ -100,9 +100,9 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
         match event
         {
             AppInternalMessage::Message(app_message) => {},
-            AppInternalMessage::Wgpu(context_wgpu) => 
+            AppInternalMessage::ContextGpu(context_wgpu) => 
             {
-                self.ctx.wgpu = Some(context_wgpu.unwrap());
+                Gpu::replace(Some(context_wgpu.unwrap()));
                 self.ctx.winit.as_ref().map(|w| w.request_redraw());
             },
         }
@@ -115,29 +115,25 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
         event: WindowEvent,
     ) 
     {
+        if !Gpu::is_init() { return; }
+
         match event 
         {
             WindowEvent::CloseRequested =>  { event_loop.exit(); }
             WindowEvent::Resized(new_size) => {
-                if let (Some(wgpu_ctx), Some(window)) =
-                    (self.ctx.wgpu.as_mut(), self.ctx.winit.as_ref())
+                if let Some(window) = self.ctx.winit.as_ref()
                 {
-                    wgpu_ctx.resize([new_size.width as _, new_size.height as _].into());
+                    Gpu.resize([new_size.width as _, new_size.height as _].into());
                     window.request_redraw();
                 }
             }
-            WindowEvent::RedrawRequested => {
-                if let Some(wgpu_ctx) = self.ctx.wgpu.as_mut() 
-                {
-                    wgpu_ctx.draw();
-                }
-            }
+            WindowEvent::RedrawRequested => { Gpu.draw(); }
             _ => (),
         }
     }
 
     fn exiting(&mut self, event_loop: &ActiveEventLoop) {
-        Ctx::exit();
+        Ctx::destroy();
     }
 }
 
