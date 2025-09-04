@@ -1,7 +1,7 @@
 use super::*;
 
-mod singleton;
-pub use singleton::*;
+mod ctx;
+pub use ctx::*;
 
 pub type ContextWinit = Arc<Window>;
 

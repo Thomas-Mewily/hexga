@@ -10,40 +10,6 @@ thread_local! {
 
 pub struct Gpu;
 
-impl Singleton<ContextGpu> for Gpu
-{
-    fn try_as_ref() -> Option<&'static ContextGpu> {
-        CONTEXT_GPU.with(|ctx_cell| {
-            // Borrow the RefCell, get the Rc<ContextGpu> if present
-            if let Some(rc_ctx) = ctx_cell.borrow().as_ref() {
-                // Extend the lifetime to 'static (unsafe, but valid if CONTEXTGPU truly is static)
-                let ctx_ptr: *const ContextGpu = rc_ctx;
-                unsafe { Some(&*ctx_ptr) }
-            } else {
-                None
-            }
-        })
-    }
-
-    fn try_as_mut() -> Option<&'static mut ContextGpu> 
-    {
-        CONTEXT_GPU.with(|ctx_cell| {
-            // Borrow the RefCell, get the Rc<ContextGpu> if present
-            if let Some(rc_ctx) = ctx_cell.borrow_mut().as_mut() {
-                // Extend the lifetime to 'static (unsafe, but valid if CONTEXTGPU truly is static)
-                let ctx_ptr: *mut ContextGpu = rc_ctx;
-                unsafe { Some(&mut *ctx_ptr) }
-            } else {
-                None
-            }
-        })
-    }
-
-    fn replace(instance: Option<ContextGpu>) {
-        CONTEXT_GPU.replace(instance);
-    }
-}
-
 impl Deref for Gpu
 {
     type Target=ContextGpu;
@@ -64,5 +30,45 @@ impl AsRef<ContextGpu> for Gpu
 {
     fn as_ref(&self) -> &ContextGpu {
         Self::try_as_ref().expect("missing context gpu")
+    }
+}
+
+impl SingletonRef for Gpu
+{
+    type Target = ContextGpu;
+
+    fn try_as_ref() -> Option<&'static <Self as SingletonRef>::Target> {
+        CONTEXT_GPU.with(|ctx_cell| {
+            // Borrow the RefCell, get the Rc<ContextGpu> if present
+            if let Some(rc_ctx) = ctx_cell.borrow().as_ref() {
+                // Extend the lifetime to 'static (unsafe, but valid if CONTEXTGPU truly is static)
+                let ctx_ptr: *const ContextGpu = rc_ctx;
+                unsafe { Some(&*ctx_ptr) }
+            } else {
+                None
+            }
+        })
+    }
+}
+impl SingletonMut for Gpu
+{
+    fn try_as_mut() -> Option<&'static mut <Self as SingletonRef>::Target> {
+        CONTEXT_GPU.with(|ctx_cell| {
+            // Borrow the RefCell, get the Rc<ContextGpu> if present
+            if let Some(rc_ctx) = ctx_cell.borrow_mut().as_mut() {
+                // Extend the lifetime to 'static (unsafe, but valid if CONTEXTGPU truly is static)
+                let ctx_ptr: *mut ContextGpu = rc_ctx;
+                unsafe { Some(&mut *ctx_ptr) }
+            } else {
+                None
+            }
+        })
+    }
+}
+
+impl SingletonInit for Gpu
+{
+    fn replace(instance: Option<<Self as SingletonRef>::Target>) {
+        CONTEXT_GPU.replace(instance);
     }
 }

@@ -114,6 +114,7 @@ impl ContextGpu
         });
         //let nb_indice = VERTEX_INDICES.len() as _;
 
+        // FIXME: change capacity
         let vertices = GpuVec::<Vertex>::_with_capacity(&mut device, 100, GpuVecDesc::VERTEX);
         let indices = GpuVec::<VertexIndex>::_with_capacity(&mut device, 100, GpuVecDesc::INDEX);
 
@@ -343,3 +344,5 @@ pub mod prelude
     //pub use super::{ContextGpu,GpuVec,GpuVecDesc};
     //pub use super::*;
 }
+
+pub struct Pen;

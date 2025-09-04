@@ -12,9 +12,35 @@ thread_local! {
 
 pub struct Ctx;
 
-impl Singleton<Context> for Ctx
+
+impl Deref for Ctx
 {
-    fn try_as_ref() -> Option<&'static Context> {
+    type Target=Context;
+    fn deref(&self) -> &Self::Target { self.as_ref() }
+}
+impl DerefMut for Ctx
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { self.as_mut() }
+}
+
+impl AsMut<Context> for Ctx
+{
+    fn as_mut(&mut self) -> &mut Context {
+        Self::try_as_mut().expect("missing context")
+    }
+}
+impl AsRef<Context> for Ctx
+{
+    fn as_ref(&self) -> &Context {
+        Self::try_as_ref().expect("missing context")
+    }
+}
+
+impl SingletonRef for Ctx
+{
+    type Target = Context;
+
+    fn try_as_ref() -> Option<&'static <Self as SingletonRef>::Target> {
         CONTEXT.with(|ctx_cell| {
             // Borrow the RefCell, get the Rc<Context> if present
             if let Some(rc_ctx) = ctx_cell.borrow().as_ref() {
@@ -26,7 +52,10 @@ impl Singleton<Context> for Ctx
             }
         })
     }
+}
 
+impl SingletonMut for Ctx
+{
     fn try_as_mut() -> Option<&'static mut Context> {
         CONTEXT.with(|ctx_cell| {
             // Borrow the RefCell, get the Rc<Context> if present
@@ -39,8 +68,10 @@ impl Singleton<Context> for Ctx
             }
         })
     }
-
-    fn replace(instance: Option<Context>) {
+}
+impl SingletonInit for Ctx
+{
+    fn replace(instance: Option<<Self as SingletonRef>::Target>) {
         match instance
         {
             Some(ctx) => 
@@ -66,28 +97,5 @@ impl Singleton<Context> for Ctx
                 Gpu::destroy();
             },
         }
-    }
-}
-
-impl Deref for Ctx
-{
-    type Target=Context;
-    fn deref(&self) -> &Self::Target { self.as_ref() }
-}
-impl DerefMut for Ctx
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { self.as_mut() }
-}
-
-impl AsMut<Context> for Ctx
-{
-    fn as_mut(&mut self) -> &mut Context {
-        Self::try_as_mut().expect("missing context")
-    }
-}
-impl AsRef<Context> for Ctx
-{
-    fn as_ref(&self) -> &Context {
-        Self::try_as_ref().expect("missing context")
     }
 }
