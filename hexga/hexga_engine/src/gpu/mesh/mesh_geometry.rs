@@ -27,6 +27,11 @@ impl<T,const N:usize> MeshGeometryOf<T,N>
     pub const fn from_array(points: [T;N]) -> Self { Self { points }}
 }
 
+impl<T, const N:usize> From<[T;N]> for MeshGeometryOf<T,N>
+{
+    fn from(value: [T;N]) -> Self { Self::from_array(value) }
+}
+
 impl<T,const N:usize> IntoIterator for MeshGeometryOf<T,N>
 {
     type Item=<[T;N] as IntoIterator>::Item;

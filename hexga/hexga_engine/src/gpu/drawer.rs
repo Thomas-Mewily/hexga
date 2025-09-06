@@ -46,8 +46,7 @@ impl Drawer
         {
             self.draw_call.push(___());
         }
-        // Todo : Not opti, create a new buffer every frame.
-        // Tmp just to test
+        // Todo : Not opti, create a new vertex and index buffer every frame.
         self.draw_call.last_mut().unwrap().push(GpuDrawCall { mesh: self.immediate.build() });
     }
 
@@ -55,8 +54,8 @@ impl Drawer
 }
 impl IMeshBuilder for Drawer
 {
-    fn extends(&mut self, vertex: impl IntoIterator<Item = Vertex<3>>, index: impl IntoIterator<Item = VertexIndex>) {
-        self.immediate.extends(vertex, index);
+    fn geometry(&mut self, vertex: impl IntoIterator<Item = Vertex<3>>, index: impl IntoIterator<Item = VertexIndex>) {
+        self.immediate.geometry(vertex, index);
     }
 }
 

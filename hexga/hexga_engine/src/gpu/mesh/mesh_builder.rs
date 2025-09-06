@@ -8,11 +8,11 @@ pub mod prelude
 pub trait IMeshBuilder<const N:usize=3>
 {
     /// Index are relative to the vertex passed
-    fn extends(&mut self, vertex: impl IntoIterator<Item = Vertex<N>>, index: impl IntoIterator<Item = VertexIndex>);
+    fn geometry(&mut self, vertex: impl IntoIterator<Item = Vertex<N>>, index: impl IntoIterator<Item = VertexIndex>);
 
     fn triangle(&mut self, triangle: MeshTriangle<N>) 
     {
-        self.extends(triangle.points, [0,1,2]);
+        self.geometry(triangle.points, [0,1,2]);
     }
     fn triangles(&mut self, triangles: impl IntoIterator<Item = MeshTriangle<N>>)
     {
@@ -96,7 +96,7 @@ impl<const N:usize> Clearable for MeshBuilder<N>
 
 impl<const N:usize> IMeshBuilder<N> for MeshBuilder<N>
 {
-    fn extends(&mut self, vertex: impl IntoIterator<Item = Vertex<N>>, index: impl IntoIterator<Item = VertexIndex>)
+    fn geometry(&mut self, vertex: impl IntoIterator<Item = Vertex<N>>, index: impl IntoIterator<Item = VertexIndex>)
     {
         let vertices_prev_len = self.nb_vertices();
         self.vertices.extend(vertex);

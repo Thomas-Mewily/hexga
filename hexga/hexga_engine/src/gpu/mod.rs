@@ -33,11 +33,16 @@ pub use vertex::*;
 mod format;
 pub use format::*;
 
+mod camera;
+pub use camera::*;
+
 pub mod prelude
 {
     pub use super::typedef::prelude::*;
     pub use super::format::prelude::*;
     pub use super::context_gpu::prelude::*;
+
+    pub use super::camera::prelude::*;
 
     pub use super::mesh::prelude::*;
     pub use super::vertex::prelude::*;
