@@ -80,7 +80,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     /// assert!(negative.sqrt().is_nan());
     /// assert!(negative_zero.sqrt() == negative_zero);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn sqrt(self) -> Self;
 
     /// Computes the absolute value of `self`.
@@ -98,7 +98,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(f32::NAN.abs().is_nan());
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn fract(self) -> Self;
 
     /// Returns a number that represents the sign of `self`.
@@ -117,7 +117,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(f32::NAN.signum().is_nan());
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn signum(self) -> Self;
 
 
@@ -147,7 +147,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(f32::NAN.copysign(1.0).is_nan());
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn copysign(self, sign: Self) -> Self;
 
     /// Raises a number to a floating point power.
@@ -165,7 +165,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn pow(self, n: Self) -> Self;
 
     /// Returns `e^(self)`, (the exponential function).
@@ -187,7 +187,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn exp(self) -> Self;
 
         /// Returns `2^(self)`.
@@ -207,7 +207,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn exp2(self) -> Self;
 
     /// Returns the natural logarithm of the number.
@@ -229,10 +229,10 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn ln(self) -> Self;
 
-        /// Returns the logarithm of the number with respect to an arbitrary base.
+    /// Returns the logarithm of the number with respect to an arbitrary base.
     ///
     /// The result might not be correctly rounded owing to implementation details;
     /// `self.log2()` can produce more accurate results for base 2, and
@@ -253,7 +253,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn log(self, base: Self) -> Self;
 
     /// Returns the base 2 logarithm of the number.
@@ -273,7 +273,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn log2(self) -> Self;
 
     /// Returns the base 10 logarithm of the number.
@@ -293,7 +293,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn log10(self) -> Self;
 
     /// Computes the sine of a number (in radians).
@@ -312,7 +312,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn sin(self) -> Self;
 
     /// Computes the arcsine of a number. Return value is in radians in
@@ -336,7 +336,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn asin(self) -> Self;
 
     /// Hyperbolic sine function.
@@ -361,7 +361,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn sinh(self) -> Self;
     
     /// Computes the cosine of a number (in radians).
@@ -380,8 +380,25 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn cos(self) -> Self;
+
+
+    /// Computes the cotangent of a number (in radians).
+    ///
+    /// Defined as `1 / tan(x)` or equivalently `cos(x) / sin(x)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let x = std::f32::consts::FRAC_PI_4; // 45°
+    ///
+    /// let abs_difference = (x.cot() - 1.0).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn cot(self) -> Self { Self::ONE / self.tan() }
 
     /// Computes the arccosine of a number. Return value is in radians in
     /// the range [0, pi] or NaN if the number is outside the range
@@ -404,7 +421,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn acos(self) -> Self;
 
     /// Hyperbolic cosine function.
@@ -429,7 +446,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     /// // Same result
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn cosh(self) -> Self;
 
 
@@ -450,7 +467,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn tan(self) -> Self;
 
     /// Computes the arctangent of a number. Return value is in radians in the
@@ -473,7 +490,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn atan(self) -> Self;
 
     /// Hyperbolic tangent function.
@@ -498,7 +515,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     ///
     /// assert!(abs_difference <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn tanh(self) -> Self;
 
     /// Computes the four quadrant arctangent of `self` (`y`) and `other` (`x`) in radians.
@@ -534,7 +551,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive +
     /// assert!(abs_difference_1 <= f32::EPSILON);
     /// assert!(abs_difference_2 <= f32::EPSILON);
     /// ```
-    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[must_use]
     fn atan2(self, other : Self) -> Self;
 
     fn sin_cos(self) -> (Self, Self);

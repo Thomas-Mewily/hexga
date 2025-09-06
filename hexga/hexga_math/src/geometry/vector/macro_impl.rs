@@ -453,6 +453,14 @@ macro_rules! impl_fixed_array_like
 
         #[cfg(feature = "hexga_io")]
         impl<T> ::hexga_io::IoLoad for $name<T> where T: ::hexga_io::IoLoad {}
+
+        impl<T, T2> CastIntoComposite<T2> for $name<T> where T: CastIntoComposite<T2>
+        {
+            type Output=$name<T2>;
+            fn cast_into_composite(self) -> Self::Output {
+                Self::Output::from_array(<[T;$dim]>::from(self).cast_into_composite())
+            }
+        }
     };
 }
 
@@ -695,6 +703,14 @@ macro_rules! impl_generic_array_like
 
         #[cfg(feature = "hexga_io")]
         impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where T: ::hexga_io::IoLoad {}
+
+        impl<T, T2, const N:usize> CastIntoComposite<T2> for $name<T,N> where T: CastIntoComposite<T2>
+        {
+            type Output=$name<T2,N>;
+            fn cast_into_composite(self) -> Self::Output {
+                Self::Output::from_array(<[T;N]>::from(self).cast_into_composite())
+            }
+        }
     };
 }
 

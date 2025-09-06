@@ -155,7 +155,7 @@ pub trait CastFromComposite<T> { fn cast_from_composite(value : T) -> Self; }
 impl<Dest,T> CastFromComposite<Dest> for Dest::Output where Dest : CastIntoComposite<T> { fn cast_from_composite(value : Dest) -> Self { value.cast_into() } }
 */
 
-impl_composite_output_with_methods!(CastIntoComposite<CastToOut>, cast_into_composite);
+//impl_composite_output_with_methods!(CastIntoComposite<CastToOut>, cast_into_composite);
 
 /*
 new_number!(

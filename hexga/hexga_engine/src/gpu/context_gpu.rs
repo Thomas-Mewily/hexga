@@ -95,36 +95,18 @@ impl ContextGpu
             .await
             .map_err(|_| "Failed to create device".to_owned())?;
 
-        // 获取窗口内部物理像素尺寸（没有标题栏）
         let size = window.inner_size();
-        // 至少（w = 1, h = 1），否则Wgpu会panic
+        
         let width = size.width.max(1);
         let height = size.height.max(1);
-        // 获取一个默认配置
+
         let surface_config = surface.get_default_config(&adapter, width, height).unwrap();
-        // 完成首次配置
         surface.configure(&device, &surface_config);
 
         let render_pipeline = Self::create_pipeline(&device, surface_config.format);
 
-        let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: None,
-            contents: bytemuck::cast_slice(&VERTEX_LIST),
-            usage: wgpu::BufferUsages::VERTEX,
-        });
-
-        let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: None,
-            contents: bytemuck::cast_slice(&VERTEX_INDICES),
-            usage: wgpu::BufferUsages::INDEX,
-        });
-        //let nb_indice = VERTEX_INDICES.len() as _;
-
-        // FIXME: change capacity
-        //let vertices = GpuVec::<Vertex>::_with_capacity(&mut device, 100, GpuVecDesc::VERTEX);
-        //let indices = GpuVec::<VertexIndex>::_with_capacity(&mut device, 100, GpuVecDesc::INDEX);
-
-        Ok(
+        Ok
+        (
             Self 
             {
                 base: GpuBase { adapter, device, queue, render_pipeline },
@@ -144,13 +126,67 @@ impl ContextGpu
             label: None,
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!("shader.wgsl"))),
         });
+
+
+        let vertex_layout = GpuVertexBufferLayout {
+            array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &[
+                wgpu::VertexAttribute {
+                    offset: 0,
+                    shader_location: 0,
+                    format: GpuVector::<3>::GPU_VERTEX_FORMAT,
+                },
+                wgpu::VertexAttribute {
+                    offset: size_of::<GpuVec3>() as wgpu::BufferAddress,
+                    shader_location: 1,
+                    format: GpuColor::GPU_VERTEX_FORMAT,
+                },
+            ],
+        };
+
+        // Based on https://github.com/sotrh/learn-wgpu/blob/master/code/beginner/tutorial7-instancing/src/lib.rs
+        let mat4_layout = GpuVertexBufferLayout {
+            array_stride: std::mem::size_of::<GpuMat4>() as wgpu::BufferAddress,
+            // We need to switch from using a step mode of Vertex to Instance
+            // This means that our shaders will only change to use the next
+            // instance when the shader starts processing a new instance
+            step_mode: wgpu::VertexStepMode::Instance,
+            attributes: &[
+                wgpu::VertexAttribute {
+                    offset: (0 * std::mem::size_of::<GpuMat4>()) as wgpu::BufferAddress,
+                    // While our vertex shader only uses locations 0, and 1 now, in later tutorials we'll
+                    // be using 2, 3, and 4, for Vertex. We'll start at slot 5 not conflict with them later
+                    shader_location: 5,
+                    format: GpuVec4::GPU_VERTEX_FORMAT,
+                },
+                // A mat4 takes up 4 vertex slots as it is technically 4 vec4s. We need to define a slot
+                // for each vec4. We don't have to do this in code though.
+                wgpu::VertexAttribute {
+                    offset: (1 * std::mem::size_of::<GpuMat4>()) as wgpu::BufferAddress,
+                    shader_location: 6,
+                    format: GpuVec4::GPU_VERTEX_FORMAT,
+                },
+                wgpu::VertexAttribute {
+                    offset: (2 * std::mem::size_of::<GpuMat4>()) as wgpu::BufferAddress,
+                    shader_location: 7,
+                    format: GpuVec4::GPU_VERTEX_FORMAT,
+                },
+                wgpu::VertexAttribute {
+                    offset: (3 * std::mem::size_of::<GpuMat4>()) as wgpu::BufferAddress,
+                    shader_location: 8,
+                    format: GpuVec4::GPU_VERTEX_FORMAT,
+                },
+            ],
+        };
+
         device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: None,
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
-                buffers: &[Vertex::create_buffer_layout()],
+                buffers: &[vertex_layout, mat4_layout],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {

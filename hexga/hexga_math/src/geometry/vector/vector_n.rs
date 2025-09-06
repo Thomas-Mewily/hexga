@@ -228,7 +228,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
 
 
 
-impl<T, const N : usize> Vector<T,N> where Self : NumberArithmetic, T : Float
+impl<T, const N : usize> Vector<T,N> where T: Float
 {
     pub fn distance_to(self, target : Self) -> T { self.vector_to(target).length() }
 

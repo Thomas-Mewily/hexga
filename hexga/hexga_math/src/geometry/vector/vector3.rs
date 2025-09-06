@@ -88,3 +88,18 @@ impl<T> From<Vector2<T>> for Vector3<T> where T: Default { fn from(value: Vector
 impl<T> From<Vector4<T>> for Vector3<T> where T: Default { fn from(value: Vector4<T>) -> Self { value.with_size() } }
 
 pub type Vector3Iter<T> = VectorIter<Vector3<T>, 3>;
+
+
+// Based on the glam crate
+impl<T> Vector3<T> where T:NumberArithmetic
+{
+    /// Computes the cross product of `self` and `rhs`.
+    pub fn cross(self, rhs: Self) -> Self
+    {
+        Self::new(
+            self.y * rhs.z - rhs.y * self.z,
+             self.z * rhs.x - rhs.z * self.x,
+             self.x * rhs.y - rhs.x * self.y
+        )
+    }
+}

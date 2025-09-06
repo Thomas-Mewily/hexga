@@ -25,6 +25,13 @@ pub type GpuColor = GpuColorRgba;
 pub type GpuColorRgba = ColorRgbaOf<float>;
 pub type GpuColorHsla = hexga::graphics::color::ColorHslaOf<Gpufloat>;
 
+pub type GpuMatrix<const ROW : usize, const COL : usize> = Matrix<Gpufloat, ROW, COL>;
+pub type GpuSquareMatrix<const N : usize> = GpuMatrix<N, N>;
+pub type GpuMat1 = GpuSquareMatrix<1>;
+pub type GpuMat2 = GpuSquareMatrix<2>;
+pub type GpuMat3 = GpuSquareMatrix<3>;
+pub type GpuMat4 = GpuSquareMatrix<4>;
+
 pub mod prelude
 {
     pub use super::

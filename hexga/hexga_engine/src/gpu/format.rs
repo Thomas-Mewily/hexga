@@ -87,3 +87,7 @@ impl<T> IGpuVertexFormat for ColorHslaOf<T> where [T;4]: IGpuVertexFormat
     const GPU_VERTEX_FORMAT : GpuVertexFormat = <[T;4]>::GPU_VERTEX_FORMAT;
 }
 
+
+
+
+

@@ -50,7 +50,7 @@ pub trait ToTimeComposite
     fn hour(self) -> Self::Output;
     fn day (self) -> Self::Output;
 }
-impl_composite_output_with_methods!(ToTimeComposite, ms, s, mins, hour, day);
+//impl_composite_output_with_methods!(ToTimeComposite, ms, s, mins, hour, day);
 
 impl<T> ToTimeComposite for T where T: ToFloat<Output = float>
 {

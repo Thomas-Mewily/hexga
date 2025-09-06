@@ -42,7 +42,7 @@ pub trait ToAngleComposite
     fn radian(self) -> Self::Output;
     fn turn  (self) -> Self::Output;
 }
-impl_composite_output_with_methods!(ToAngleComposite, degree, radian, turn);
+//impl_composite_output_with_methods!(ToAngleComposite, degree, radian, turn);
 
 impl<T> ToAngleComposite for T where T: ToFloat<Output = float>
 {
@@ -137,18 +137,33 @@ impl<T:Float> AngleOf<T>
         if tmp < Self::HALF { tmp } else { tmp - Self::FULL }
     }
 
-    #[inline(always)] pub fn cos_sin(self) -> (T, T) { (self.cos(), self.sin()) }
-    #[inline(always)] pub fn sin_cos(self) -> (T, T) { (self.sin(), self.cos()) }
-    #[inline(always)] pub fn cos_cos(self) -> (T, T) { (self.cos(), self.cos()) }
-    #[inline(always)] pub fn sin_sin(self) -> (T, T) { (self.sin(), self.sin()) }
+    // TODO: make a Trigonometric trait for float and angle ?
 
+    /// `(cos(self), sin(self))`
+    #[inline(always)] pub fn cos_sin(self) -> (T, T) { let (s, c) = self.0.sin_cos(); (c, s) }
+    /// `(sin(self), cos(self))`
+    #[inline(always)] pub fn sin_cos(self) -> (T, T) { self.0.sin_cos() }
+    /// `(cos(self), cos(self))`
+    #[inline(always)] pub fn cos_cos(self) -> (T, T) { let c = self.cos(); (c, c) }
+    /// `(sin(self), sin(self))`
+    #[inline(always)] pub fn sin_sin(self) -> (T, T) { let s = self.sin(); (s, s) }
+
+    /// Cosine of the angle.
     #[inline(always)] pub fn cos(self) -> T { self.0.cos() }
+    /// Hyperbolic cosine.
     #[inline(always)] pub fn cosh(self) -> T { self.0.cosh() }
 
+    /// Sine of the angle.
     #[inline(always)] pub fn sin(self) -> T { self.0.sin() }
+    /// Hyperbolic sine.
     #[inline(always)] pub fn sinh(self) -> T { self.0.sinh() }
 
+    /// Cotangent (`1 / tan(self)`).
+    #[inline(always)] pub fn cot(self) -> T { self.0.cot() }
+
+    /// Tangent of the angle.
     #[inline(always)] pub fn tan(self) -> T { self.0.tan() }
+    /// Hyperbolic tangent.
     #[inline(always)] pub fn tanh(self) -> T { self.0.tanh() }
 
     /// Return a normalized (length = 1) vector with the same angle

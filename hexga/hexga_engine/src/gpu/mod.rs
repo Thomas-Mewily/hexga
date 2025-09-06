@@ -5,6 +5,7 @@ use super::*;
 use wgpu::util::DeviceExt;
 pub type GpuDevice = wgpu::Device;
 pub type GpuVecUsages = wgpu::BufferUsages;
+pub(crate) type GpuVertexBufferLayout<'a> = wgpu::VertexBufferLayout<'a>;
 
 pub mod typedef;
 use typedef::*;

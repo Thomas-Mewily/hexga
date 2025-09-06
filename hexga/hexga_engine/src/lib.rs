@@ -37,3 +37,8 @@ pub mod prelude
     pub use super::gpu::prelude::*;
     pub use super::utils::prelude::*;
 }
+
+/*
+Todo: put in the run config
+Is the camera 2D or 3D by default ?
+*/

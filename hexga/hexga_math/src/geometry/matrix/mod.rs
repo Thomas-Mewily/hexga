@@ -848,6 +848,44 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + One
 }
 
 
+// Impl based on the glam crate
+impl<T> Matrix4<T>
+{
+    /// Creates a left-handed view matrix using a camera position, an up direction, and a facing
+    /// direction.
+    ///
+    /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+    #[inline]
+    #[must_use]
+    pub fn look_to_lh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float {
+        Self::look_to_rh(position, -dir, up)
+    }
+
+    /// Creates a right-handed view matrix using a camera position, an up direction, and a facing
+    /// direction.
+    ///
+    /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+    #[inline]
+    #[must_use]
+    pub fn look_to_rh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float 
+    {
+        let f = dir.normalized();
+        let s = f.cross(up).normalized();
+        let u = s.cross(f);
+
+        Self::from_col(
+            vector4
+            (
+                vector4(s.x, u.x, -f.x, zero()), 
+                vector4(s.y, u.y, -f.y, zero()), 
+                vector4(s.z, u.z, -f.z, zero()), 
+                vector4(-position.dot(s), position.dot(u), position.dot(f), one())
+            )
+        )
+    }
+}
+
+
 #[cfg(test)]
 mod test_matrix
 {
