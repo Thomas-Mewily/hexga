@@ -22,7 +22,13 @@ impl App for MyApp
 
     fn draw(&mut self)
     {
-        
+        Pen.triangle(MeshTriangle::new
+            (
+                Vertex::new().with_position(vec3(0.,0.,0.)).with_color(GpuColor::RED),
+                Vertex::new().with_position(vec3(1.,0.,0.)).with_color(GpuColor::GREEN),
+                Vertex::new().with_position(vec3(0.5,1.,0.)).with_color(GpuColor::BLUE),
+            )
+        );
         // Todo : Pen singleton to draw vertex/index in immediate mode
         //Angle::sample(20).map(|a| a.to_vec2_normalized()).
         //let vertex = 

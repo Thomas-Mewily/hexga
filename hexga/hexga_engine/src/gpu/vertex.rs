@@ -10,6 +10,12 @@ pub struct Vertex<const N:usize=3>
     position: GpuVector<N>,
     color: GpuColor,
 }
+impl<const N:usize> Vertex<N>
+{
+    pub const fn new() -> Self { Self { position: GpuVector::ZERO, color: GpuColor::WHITE } }
+    pub const fn with_position(self, position: GpuVector<N>) -> Self { Self { position: position, ..self } }
+    pub const fn with_color(self, color: GpuColor) -> Self { Self { color: color, ..self } }
+}
 impl From<Vertex2> for Vertex3
 {
     fn from(value: Vertex2) -> Self {
@@ -87,12 +93,12 @@ impl Vertex<3>
                 wgpu::VertexAttribute {
                     offset: 0,
                     shader_location: 0,
-                    format: GpuVector::<3>::VERTEX_FORMAT,
+                    format: GpuVector::<3>::GPU_VERTEX_FORMAT,
                 },
                 wgpu::VertexAttribute {
                     offset: size_of::<GpuVec3>() as wgpu::BufferAddress,
                     shader_location: 1,
-                    format: GpuColor::VERTEX_FORMAT,
+                    format: GpuColor::GPU_VERTEX_FORMAT,
                 },
             ],
         }

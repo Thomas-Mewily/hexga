@@ -1,6 +1,13 @@
 use super::*;
 
 
+pub mod prelude
+{
+    //pub use super::{ContextGpu,GpuVec,GpuVecDesc};
+    //pub use super::*;
+}
+
+
 pub struct GpuSurface
 {
     surface: wgpu::Surface<'static>,
@@ -31,7 +38,7 @@ pub struct ContextGpu
 {
     pub(crate) base: GpuBase,
     pub(crate) surface: GpuSurface,
-    pub(crate) draw : Drawer,
+    pub(crate) draw: Drawer,
 }
 impl Deref for ContextGpu
 {
@@ -216,8 +223,70 @@ impl ContextGpu
 }
 
 
-pub mod prelude
+impl Scoped<Draw> for ContextGpu
 {
-    //pub use super::{ContextGpu,GpuVec,GpuVecDesc};
-    //pub use super::*;
+    fn begin(&mut self) {
+        self.draw.begin_draw();
+    }
+
+    fn end(&mut self) 
+    {
+        self.draw.end_draw();
+        self.send_data_to_gpu();
+    }
+}
+
+impl ContextGpu
+{
+    pub(crate) fn send_data_to_gpu(&mut self)
+    {
+        let surface_texture = self
+            .surface.surface
+            .get_current_texture()
+            .expect("Failed to acquire next swap chain texture");
+        let texture_view = surface_texture
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        {
+            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &texture_view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
+                        store: wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
+            });
+            rpass.set_pipeline(&self.render_pipeline);
+
+            for draw_calls in self.draw.draw_call.iter()
+            {
+                for draw_call in draw_calls.calls.iter()
+                {
+                    let Mesh { vertices, indices } = &draw_call.mesh;
+                    rpass.set_vertex_buffer(0, vertices.buffer.slice(..));
+                    rpass.set_index_buffer(indices.buffer.slice(..), VertexIndex::GPU_INDEX_FORMAT);
+                    rpass.draw_indexed(0..(indices.len as _), 0, 0..1);
+                }
+            }
+
+            //todo!()
+            //rpass.set_vertex_buffer(0, self.draw.vertices.buffer.slice(..));
+            //rpass.set_index_buffer(self.draw.indices.buffer.slice(..), Vertex::WGPU_INDEX_FORMAT);
+            //rpass.draw_indexed(0..(self.draw.indices.len as _), 0, 0..1);
+            //rpass.draw(0..VERTEX_LIST.len() as u32, 0..1);
+        }
+
+        
+        self.queue.submit(Some(encoder.finish()));
+        surface_texture.present();
+    }
 }

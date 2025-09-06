@@ -9,11 +9,16 @@ pub trait IMeshBuilder<const N:usize=3>
 {
     /// Index are relative to the vertex passed
     fn extends(&mut self, vertex: impl IntoIterator<Item = Vertex<N>>, index: impl IntoIterator<Item = VertexIndex>);
-    fn triangles(&mut self, triangle: impl IntoIterator<Item = MeshTriangle<N>>)
+
+    fn triangle(&mut self, triangle: MeshTriangle<N>) 
     {
-        for triangles in triangle.into_iter()
+        self.extends(triangle.points, [0,1,2]);
+    }
+    fn triangles(&mut self, triangles: impl IntoIterator<Item = MeshTriangle<N>>)
+    {
+        for triangle in triangles.into_iter()
         {
-            self.extends(triangles.points, [0,1,2]);
+            self.triangle(triangle)
         }
     }
 }
@@ -57,6 +62,7 @@ impl<const N:usize> MeshBuilder<N>
         }
         true
     }
+    pub fn is_empty(&self) -> bool { self.indices.is_empty() && self.vertices.is_empty() }
 
     pub fn nb_vertices(&self) -> usize { self.vertices.len() }
     pub fn vertices(&self) -> &[Vertex<N>] { &self.vertices }

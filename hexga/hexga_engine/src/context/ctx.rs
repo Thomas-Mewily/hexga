@@ -90,6 +90,7 @@ impl SingletonInit for Ctx
                     console_log::init_with_level(log::Level::Debug).expect("Couldn't initialize logger");
                 }
                 CONTEXT.replace(Some(ctx));
+                // The Gpu is initialized in a special async way... 
             },
             None => 
             {

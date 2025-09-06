@@ -5,7 +5,10 @@ pub mod prelude
     pub use super::{Mesh};
 }
 
-/// A mesh, stored on the gpu side
+/// A mesh, stored on the Gpu.
+/// 
+/// Can be cheaply [Cloned]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Mesh<const N:usize=3>
 {
     pub(crate) vertices: GpuVec<Vertex<N>>,

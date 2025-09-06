@@ -7,6 +7,7 @@ pub mod prelude
 }
 
 
+#[derive(Clone, Debug, PartialEq, Hash)]
 pub struct GpuVec<T> where T:Copy
 {
     pub(crate) buffer   : wgpu::Buffer,
@@ -25,8 +26,7 @@ impl<T> GpuVec<T> where T:Copy
 }
 
 
-
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct GpuVecDesc
 {
     pub usages: GpuVecUsages,

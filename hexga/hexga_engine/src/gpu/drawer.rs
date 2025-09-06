@@ -17,8 +17,10 @@ impl IDrawer for MeshBuilder
 
 impl Scoped<Draw> for Drawer
 {
-    fn begin(&mut self) {
+    fn begin(&mut self) 
+    {
         self.immediate.clear();
+        self.draw_call.clear();
     }
 
     fn end(&mut self) {
@@ -30,7 +32,7 @@ impl Scoped<Draw> for Drawer
 pub struct Drawer
 {
     pub(crate) immediate : MeshBuilder,
-    pub(crate) call : Vec<GpuDrawCall>
+    pub(crate) draw_call : Vec<GpuDrawCalls>
 }
 impl Drawer
 {
@@ -39,7 +41,14 @@ impl Drawer
     /// Transform the immediate [MeshBuilder] in a [GpuDrawCall]
     pub fn flush(&mut self)
     {
-        
+        if self.immediate.is_empty() { return; }
+        if self.draw_call.is_empty()
+        {
+            self.draw_call.push(___());
+        }
+        // Todo : Not opti, create a new buffer every frame.
+        // Tmp just to test
+        self.draw_call.last_mut().unwrap().push(GpuDrawCall { mesh: self.immediate.build() });
     }
 
     //pub(crate) begin_draw()
@@ -61,14 +70,20 @@ impl DerefMut for Drawer
     fn deref_mut(&mut self) -> &mut Self::Target { &mut self.immediate }
 }
 
-pub struct GpuDrawCall
+#[derive(Clone, Default)]
+pub struct GpuDrawCalls
 {
-    pass : Vec<GpuRenderPass>
+    pub(crate) calls: Vec<GpuDrawCall>
+}
+impl GpuDrawCalls
+{
+    pub fn push(&mut self, call: GpuDrawCall) { self.calls.push(call); }
 }
 
-pub struct GpuRenderPass
+#[derive(Clone)]
+pub struct GpuDrawCall
 {
-    verts: wgpu::Buffer
+    pub(crate) mesh: Mesh
 }
 
 

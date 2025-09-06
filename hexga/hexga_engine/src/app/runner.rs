@@ -19,8 +19,21 @@ impl<A> AppRun for A where A:App
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-            return event_loop.run_app(&mut runner).ok_or_void();
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                event_loop.run_app(&mut runner)
+            }));
+
+            Ctx::destroy();
+
+            if let Ok(Ok(_)) = result
+            {
+                Ok(())
+            }else
+            {
+                Err(())
+            }
         }
+
         #[cfg(target_arch = "wasm32")]
         {
             async move { let _ = event_loop.run_app(&mut runner); }.spawn();
@@ -44,16 +57,6 @@ impl<A> AppRunner<A> where A:App
     pub fn update(&mut self)
     {
         self.app.update();
-    }
-
-    pub fn draw(&mut self)
-    {
-        /* 
-        Gpu.draw.begin_draw();
-
-        Gpu.draw.end_draw();
-        */
-        //Gpu.draw_remove_me();
     }
 }
 
@@ -125,11 +128,33 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
         }
     }
 
+    fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
+        // FIXME: The draw() should not be here
+        Ctx.winit.as_mut().map(|window| window.request_redraw());
+    }
+
     fn exiting(&mut self, event_loop: &ActiveEventLoop) {
         Ctx::destroy();
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         self.update();
+        // FIXME: The draw() should not be here
+        //self.draw();
+    }
+}
+
+
+
+impl<A> AppRunner<A> where A:App
+{
+    pub fn draw(&mut self)
+    {
+        Gpu.begin_draw();
+
+        self.app.draw();
+
+        Gpu.end_draw();
+        //Gpu.draw_remove_me();
     }
 }
