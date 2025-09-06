@@ -3,10 +3,10 @@ use crate::*;
 
 pub mod prelude
 {
-    pub use super::{Zero, ZeroIter,UnwrapZero};
-    pub use super::{One, OneIter};
-    pub use super::{MinusOne,MinusOneIter};
-    pub use super::{Half};
+    pub use super::{Zero, zero, ZeroIter,UnwrapZero};
+    pub use super::{One, one, OneIter};
+    pub use super::{MinusOne,minus_one, MinusOneIter};
+    pub use super::{Half, half};
     pub use super::{NaNValue,MinValue,MaxValue};
 }
 

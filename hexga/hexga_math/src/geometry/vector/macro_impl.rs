@@ -79,6 +79,7 @@ macro_rules! impl_fixed_array_like_op
 
         // ================= Display =========
 
+        // TODO: use crate::map_on_std_fmt instead ?
         $crate::impl_fixed_array_like_display!($name, Display);
         $crate::impl_fixed_array_like_display!($name, Debug);
         $crate::impl_fixed_array_like_display!($name, Octal);
@@ -474,8 +475,9 @@ macro_rules! impl_fixed_array_like
         impl<T> Composite for $name<T>
         {
             type Inside=T;
-            fn transform<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
-                <Self as CompositeGeneric>::transform(self, f)
+            fn transform_intern<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
+            {
+                Self::from_array(<[T;$dim]>::from(self).transform_intern(f))
             }
         }
         impl<T> CompositeGeneric for $name<T>
@@ -766,8 +768,9 @@ macro_rules! impl_generic_array_like
         impl<T, const N : usize> Composite for $name<T,N>
         {
             type Inside=T;
-            fn transform<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
-                <Self as CompositeGeneric>::transform(self, f)
+            fn transform_intern<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
+            {
+                Self::from_array(<[T;N]>::from(self).transform_intern(f))
             }
         }
         impl<T, const N : usize> CompositeGeneric for $name<T,N>
