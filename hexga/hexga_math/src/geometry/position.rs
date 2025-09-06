@@ -1,5 +1,10 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{GetPosition,SetPosition};
+}
+
 pub trait GetPosition<T,const N : usize> where Vector<T,N> : Copy, T : Copy
 {
     fn pos(&self) -> Vector<T,N>;

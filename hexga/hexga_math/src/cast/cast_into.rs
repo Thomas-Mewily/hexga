@@ -1,5 +1,14 @@
 use crate::*;
 
+
+
+use super::*;
+
+pub mod prelude
+{
+    pub use super::{CastIntoComposite,CastInto,CastFrom};
+}
+
 // Similar to Trait From / Into, but those trait suppose no loss when converting, so it is impossible to cast a f32 to a i64 for exemple
 
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
@@ -54,6 +63,11 @@ pub trait CastIntoComposite<T>
     fn cast_into_composite(self) -> Self::Output;
 }
 
+impl<S,T,T2> CastIntoComposite<T2> for S where T:CastIntoComposite<T2>, S:CompositeGeneric<Inside = T>
+{
+    type Output=<Self as CompositeGeneric>::WithType<T::Output>;
+    fn cast_into_composite(self) -> Self::Output { self.transform(|v| v.cast_into_composite()) }
+}
 
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
 /// keyword: `4f32 as u64`, but generic friendly.
@@ -210,12 +224,15 @@ macro_rules! impl_cast_to_bool
         impl CastIntoComposite<$itself> for bool
         {
             type Output=$itself;
-            fn cast_into_composite(self) -> Self::Output { if self { <$itself>::ONE } else { <$itself>::ZERO } }
+            fn cast_into_composite(self) -> Self::Output { if self { 1 as Self::Output } else { 0 as Self::Output } }
         }
     };
 }
 map_on_number!(impl_cast_to_bool);
 impl CastIntoComposite<bool> for bool { type Output = bool; fn cast_into_composite(self) -> Self::Output { self } }
+
+
+
 
 /// fX
 pub trait CastIntoFloat            : CastInto<f32> + CastInto<f64> {}

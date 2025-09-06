@@ -1,6 +1,11 @@
 //! Contains some common prefix, such as `[Kilo]`, `[Milli]`, `[Tera]`
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{PrefixPeta,PrefixQuadrillion,PrefixTera,PrefixTrillion,PrefixGiga,PrefixBillion,PrefixMega,PrefixMillion,PrefixKilo,PrefixThousand,PrefixHecto,PrefixHundred,PrefixDeca,PrefixDecade,PrefixDeci,PrefixCenti,PrefixMilli,PrefixMicro,PrefixNano,PrefixPico,PrefixFemto};
+}
+
 /// 10^15 = 1_000_000_000_000_000
 pub trait PrefixPeta : Sized 
 { 
@@ -13,7 +18,6 @@ impl PrefixPeta for f64 { const PETA : Self = 1_000_000_000_000_000.; }
 impl PrefixPeta for f32 { const PETA : Self = 1_000_000_000_000_000.; }
 impl PrefixPeta for u64 { const PETA : Self = 1_000_000_000_000_000 ; }
 impl PrefixPeta for i64 { const PETA : Self = 1_000_000_000_000_000 ; }
-impl_composite_constant!(PrefixPeta, PETA);
 
 
 /// 10^15 = 1_000_000_000_000_000
@@ -28,7 +32,6 @@ impl PrefixQuadrillion for f64 { const QUADRILLION : Self = 1_000_000_000_000_00
 impl PrefixQuadrillion for f32 { const QUADRILLION : Self = 1_000_000_000_000_000.; }
 impl PrefixQuadrillion for u64 { const QUADRILLION : Self = 1_000_000_000_000_000 ; }
 impl PrefixQuadrillion for i64 { const QUADRILLION : Self = 1_000_000_000_000_000 ; }
-impl_composite_constant!(PrefixQuadrillion, QUADRILLION);
 
 
 
@@ -44,7 +47,6 @@ impl PrefixTera for f64 { const TERA : Self = 1_000_000_000_000.; }
 impl PrefixTera for f32 { const TERA : Self = 1_000_000_000_000.; }
 impl PrefixTera for u64 { const TERA : Self = 1_000_000_000_000 ; }
 impl PrefixTera for i64 { const TERA : Self = 1_000_000_000_000 ; }
-impl_composite_constant!(PrefixTera, TERA);
 
 
 /// 10^12 = 1_000_000_000_000
@@ -59,7 +61,6 @@ impl PrefixTrillion for f64 { const TRILLION : Self = 1_000_000_000_000.; }
 impl PrefixTrillion for f32 { const TRILLION : Self = 1_000_000_000_000.; }
 impl PrefixTrillion for u64 { const TRILLION : Self = 1_000_000_000_000 ; }
 impl PrefixTrillion for i64 { const TRILLION : Self = 1_000_000_000_000 ; }
-impl_composite_constant!(PrefixTrillion, TRILLION);
 
 
 
@@ -81,7 +82,6 @@ impl PrefixGiga for u64   { const GIGA : Self = 1_000_000_000 ; }
 impl PrefixGiga for i64   { const GIGA : Self = 1_000_000_000 ; }
 impl PrefixGiga for u32   { const GIGA : Self = 1_000_000_000 ; }
 impl PrefixGiga for i32   { const GIGA : Self = 1_000_000_000 ; }
-impl_composite_constant!(PrefixGiga, GIGA);
 
 
 /// 10^9 = 1_000_000_000
@@ -100,7 +100,6 @@ impl PrefixBillion for u64   { const BILLION : Self = 1_000_000_000 ; }
 impl PrefixBillion for i64   { const BILLION : Self = 1_000_000_000 ; }
 impl PrefixBillion for u32   { const BILLION : Self = 1_000_000_000 ; }
 impl PrefixBillion for i32   { const BILLION : Self = 1_000_000_000 ; }
-impl_composite_constant!(PrefixBillion, BILLION);
 
 
 
@@ -121,7 +120,6 @@ impl PrefixMega for u64   { const MEGA : Self = 1_000_000 ; }
 impl PrefixMega for i64   { const MEGA : Self = 1_000_000 ; }
 impl PrefixMega for u32   { const MEGA : Self = 1_000_000 ; }
 impl PrefixMega for i32   { const MEGA : Self = 1_000_000 ; }
-impl_composite_constant!(PrefixMega, MEGA);
 
 
 
@@ -141,7 +139,6 @@ impl PrefixMillion for u64   { const MILLION : Self = 1_000_000 ; }
 impl PrefixMillion for i64   { const MILLION : Self = 1_000_000 ; }
 impl PrefixMillion for u32   { const MILLION : Self = 1_000_000 ; }
 impl PrefixMillion for i32   { const MILLION : Self = 1_000_000 ; }
-impl_composite_constant!(PrefixMillion, MILLION);
 
 
 
@@ -163,7 +160,6 @@ impl PrefixKilo for u32   { const KILO : Self = 1_000 ; }
 impl PrefixKilo for i32   { const KILO : Self = 1_000 ; }
 impl PrefixKilo for u16   { const KILO : Self = 1_000 ; }
 impl PrefixKilo for i16   { const KILO : Self = 1_000 ; }
-impl_composite_constant!(PrefixKilo, KILO);
 
 
 /// 10^3 = 1_000
@@ -184,7 +180,6 @@ impl PrefixThousand for u32   { const THOUSAND : Self = 1_000 ; }
 impl PrefixThousand for i32   { const THOUSAND : Self = 1_000 ; }
 impl PrefixThousand for u16   { const THOUSAND : Self = 1_000 ; }
 impl PrefixThousand for i16   { const THOUSAND : Self = 1_000 ; }
-impl_composite_constant!(PrefixThousand, THOUSAND);
 
 
 
@@ -209,7 +204,6 @@ impl PrefixHecto for u16   { const HECTO : Self = 100 ; }
 impl PrefixHecto for i16   { const HECTO : Self = 100 ; }
 impl PrefixHecto for u8    { const HECTO : Self = 100 ; }
 impl PrefixHecto for i8    { const HECTO : Self = 100 ; }
-impl_composite_constant!(PrefixHecto, HECTO);
 
 
 
@@ -234,7 +228,6 @@ impl PrefixHundred for u16   { const HUNDRED : Self = 100 ; }
 impl PrefixHundred for i16   { const HUNDRED : Self = 100 ; }
 impl PrefixHundred for u8    { const HUNDRED : Self = 100 ; }
 impl PrefixHundred for i8    { const HUNDRED : Self = 100 ; }
-impl_composite_constant!(PrefixHundred, HUNDRED);
 
 
 
@@ -259,7 +252,6 @@ impl PrefixDeca for u16   { const DECA : Self = 10 ; }
 impl PrefixDeca for i16   { const DECA : Self = 10 ; }
 impl PrefixDeca for u8    { const DECA : Self = 10 ; }
 impl PrefixDeca for i8    { const DECA : Self = 10 ; }
-impl_composite_constant!(PrefixDeca, DECA);
 
 
 
@@ -285,7 +277,6 @@ impl PrefixDecade for u16   { const DECADE : Self = 10 ; }
 impl PrefixDecade for i16   { const DECADE : Self = 10 ; }
 impl PrefixDecade for u8    { const DECADE : Self = 10 ; }
 impl PrefixDecade for i8    { const DECADE : Self = 10 ; }
-impl_composite_constant!(PrefixDecade, DECADE);
 
 
 
@@ -299,7 +290,6 @@ pub trait PrefixDeci : Sized
 }
 impl PrefixDeci for f64   { const DECI : Self = 1. / 10.; }
 impl PrefixDeci for f32   { const DECI : Self = 1. / 10.; }
-impl_composite_constant!(PrefixDeci, DECI);
 
 
 
@@ -313,7 +303,6 @@ pub trait PrefixCenti : Sized
 }
 impl PrefixCenti for f64   { const CENTI : Self = 1. / 100.; }
 impl PrefixCenti for f32   { const CENTI : Self = 1. / 100.; }
-impl_composite_constant!(PrefixCenti, CENTI);
 
 
 
@@ -327,7 +316,6 @@ pub trait PrefixMilli : Sized
 }
 impl PrefixMilli for f64   { const MILLI : Self = 1. / 1_000.; }
 impl PrefixMilli for f32   { const MILLI : Self = 1. / 1_000.; }
-impl_composite_constant!(PrefixMilli, MILLI);
 
 
 /// 10^-6 = 1/1_000_000
@@ -340,7 +328,6 @@ pub trait PrefixMicro : Sized
 }
 impl PrefixMicro for f64   { const MICRO : Self = 1. / 1_000_000.; }
 impl PrefixMicro for f32   { const MICRO : Self = 1. / 1_000_000.; }
-impl_composite_constant!(PrefixMicro, MICRO);
 
 
 /// 10^-9 = 1/1_000_000_000
@@ -353,7 +340,6 @@ pub trait PrefixNano : Sized
 }
 impl PrefixNano for f64   { const NANO : Self = 1. / 1_000_000_000.; }
 impl PrefixNano for f32   { const NANO : Self = 1. / 1_000_000_000.; }
-impl_composite_constant!(PrefixNano, NANO);
 
 
 /// 10^-12 = 1/1_000_000_000_000
@@ -366,7 +352,6 @@ pub trait PrefixPico : Sized
 }
 impl PrefixPico for f64   { const PICO : Self = 1. / 1_000_000_000_000.; }
 impl PrefixPico for f32   { const PICO : Self = 1. / 1_000_000_000_000.; }
-impl_composite_constant!(PrefixPico, PICO);
 
 
 /// 10^-15 = 1/1_000_000_000_000_000
@@ -379,7 +364,6 @@ pub trait PrefixFemto : Sized
 }
 impl PrefixFemto for f64   { const FEMTO : Self = 1. / 1_000_000_000_000_000.; }
 impl PrefixFemto for f32   { const FEMTO : Self = 1. / 1_000_000_000_000_000.; }
-impl_composite_constant!(PrefixFemto, FEMTO);
 
 #[cfg(test)]
 mod prefix_test{

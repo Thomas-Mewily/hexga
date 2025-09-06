@@ -26,12 +26,13 @@ impl<T, const N : usize> Default for Vector<T, N> where T:Default
 
 impl<T, const N : usize> Vector<T,N>
 {
-    pub const fn from_array(array : [T; N]) -> Self { Self { array, no_destructuring: () }}
     pub fn splat(val : T) -> Self where T: Clone { <Self as Array<T,N>>::splat(val) }
 }
 
 
 impl_generic_array_like_with_op!(Vector);
+
+
 
 
 impl<T, const N : usize> GetPosition<T,N> for Vector<T, N> where Self : Copy, T : Copy

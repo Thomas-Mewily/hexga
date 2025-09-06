@@ -1,5 +1,7 @@
 use super::*;
 
+// TODO: make it generic with any float
+
 // todo : lerp and easing using Time + Dt
 // todo : lerp using itself (for independant coef)
 pub trait Lerpable : Sized
@@ -14,3 +16,7 @@ impl<T> Lerpable for T where T: Mul<float,Output=Self> + Add<Self,Output=Self> +
     fn lerp_unchecked(self, dest : Self, coef : float) -> Self { self * (1. - coef) + dest * coef  }
 }
 
+pub mod prelude
+{
+    pub use super::Lerpable;
+}

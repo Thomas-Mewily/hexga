@@ -10,8 +10,8 @@ pub type Generation = u32;
 pub type GenVec<T> = GenVecOf<T,Generation>;
 pub type GenVecID<T>  = GenVecIDOf<T,Generation>;
 
-pub trait IGeneration            : Eq + Hash + Ord + Increment + Decrease + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
-impl<T> IGeneration for T where T: Eq + Hash + Ord + Increment + Decrease + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
+pub trait IGeneration            : Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
+impl<T> IGeneration for T where T: Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
 
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

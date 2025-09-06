@@ -3,7 +3,10 @@ use super::*;
 pub use hexga_array::prelude::*;
 
 
-pub mod prelude { pub use super::*; }
+pub mod prelude 
+{ 
+    pub use super::*; 
+}
 
 /* 
 /// A vector, where each dimension can have a name (Interpretation)

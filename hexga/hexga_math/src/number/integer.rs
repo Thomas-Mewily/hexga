@@ -39,7 +39,11 @@ impl_signed!(i64, u64);
 impl_signed!(isize, usize);
 map_on_integer_unsigned!(impl_signed);
 map_on_float!(impl_signed);
-impl_composite_output_with_methods!(ToUnsigned, to_unsigned);
+impl<T> ToUnsigned for T where T:CompositeGeneric, T::Inside: ToUnsigned
+{
+    type Output=T::WithType<<T::Inside as ToUnsigned>::Output>;
+    fn to_unsigned(self) -> Self::Output { self.transform(|v| v.to_unsigned()) }
+}
 
 
 /// For type that have a signed equivalent
@@ -68,4 +72,8 @@ impl_unsigned!(u64, i64);
 impl_unsigned!(usize, isize);
 map_on_integer_signed!(impl_unsigned);
 map_on_float!(impl_unsigned);
-impl_composite_output_with_methods!(ToSigned, to_signed);
+impl<T> ToSigned for T where T:CompositeGeneric, T::Inside: ToSigned
+{
+    type Output=T::WithType<<T::Inside as ToSigned>::Output>;
+    fn to_signed(self) -> Self::Output { self.transform(|v| v.to_signed()) }
+}

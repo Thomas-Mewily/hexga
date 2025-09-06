@@ -1,5 +1,15 @@
 use crate::*;
 
+
+pub mod prelude
+{
+    pub use super::
+    {
+        ToFloat, ToF32, ToF64,
+        ToInt, ToI8, ToI16, ToI32, ToI64, ToISize,
+        ToUInt, ToU8, ToU16, ToU32, ToU64, ToUSize,
+    };
+}
 /*
 // Coef
 pub trait ToCoef

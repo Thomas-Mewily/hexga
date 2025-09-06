@@ -8,6 +8,7 @@ pub mod prelude
 }
 
 
+
 /* 
 /// An array where the type and the size are generic and can be changed
 pub trait ArrayGeneric<T, const N: usize>: ArrayWithGenericSize<T,N> + ArrayWithGenericType<T,N> 

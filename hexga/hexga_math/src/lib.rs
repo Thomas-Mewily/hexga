@@ -64,8 +64,8 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 mod geometry;
 pub use geometry::*;
 
-mod other;
-pub use other::*;
+mod utils;
+pub use utils::*;
 
 pub mod number;
 use number::prelude::*;
@@ -73,8 +73,17 @@ use number::prelude::*;
 pub mod range;
 use range::*;
 
+pub mod cast;
+use cast::*;
+
 pub mod prelude
 {
+    pub use super::geometry::prelude::*;
+    pub use super::utils::prelude::*;
+    pub use super::number::prelude::*;
+    pub use super::range::prelude::*;
+    pub use super::cast::prelude::*;
+    /* 
     pub use crate::vector::prelude::*;
     pub use crate::grid::prelude::*;
     pub use crate::rectangle::prelude::*;
@@ -91,5 +100,6 @@ pub mod prelude
     pub use crate::{time::{Time,ToTimeComposite},angle::{Angle,ToAngleComposite}};
 
     pub use hexga_array::*;
+    */
 }
 use prelude::*;

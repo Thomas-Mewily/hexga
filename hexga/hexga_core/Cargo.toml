@@ -13,3 +13,4 @@ description = "Basic set of functionalities common to all hexga crate"
 categories = ["rust-patterns"]
 
 [dependencies]
+hexga_map_on.workspace = true

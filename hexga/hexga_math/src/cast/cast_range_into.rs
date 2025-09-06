@@ -1,5 +1,13 @@
 use crate::*;
 
+
+
+pub mod prelude
+{
+    pub use super::{CastRangeInto, CastRangeIntoComposite, CastRangeFrom};
+}
+
+
 /// Remap the value [RangeDefault] to the default range of target type,
 /// in a generic friendly way.
 ///
@@ -44,6 +52,12 @@ pub trait CastRangeIntoComposite<T>
     type Output;
     /// Might lose some precision.
     fn cast_range_into_composite(self) -> Self::Output;
+}
+
+impl<S,T,T2> CastRangeIntoComposite<T2> for S where T:CastRangeIntoComposite<T2>, S:CompositeGeneric<Inside = T>
+{
+    type Output=<Self as CompositeGeneric>::WithType<T::Output>;
+    fn cast_range_into_composite(self) -> Self::Output { self.transform(|v| v.cast_range_into_composite()) }
 }
 
 /// Remap the value [RangeDefault] to the default range of target type,
@@ -129,9 +143,6 @@ impl<T,T2> CastRangeInto<T> for T2 where T2 : CastRangeIntoComposite<T,Output = 
 /// ```
 pub trait CastRangeFrom<T> { fn cast_range_from(value : T) -> Self; }
 impl<Src,Dest> CastRangeFrom<Dest> for Src where Dest : CastRangeInto<Src> { fn cast_range_from(value : Dest) -> Self { value.cast_range_into_composite() } }
-
-impl_composite_output_with_methods!(CastRangeIntoComposite<CastToRangeOut>, cast_range_into_composite);
-
 
 
 // Double recursive macro :)
@@ -255,6 +266,10 @@ impl CastRangeIntoComposite<bool> for bool
         self
     }
 }
+
+
+
+
 
 
 

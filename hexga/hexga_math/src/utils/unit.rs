@@ -1,6 +1,10 @@
+use super::*;
+
 use std::iter::FusedIterator;
 
-use super::*;
+pub mod prelude
+{
+}
 
 macro_rules! impl_new_unit_or_number
 {
@@ -327,8 +331,9 @@ impl<Wrapped,Precision,It> WrappedIterator<Wrapped,Precision,It> where It : Iter
 
 impl<Wrapped,Precision,It> Debug for WrappedIterator<Wrapped,Precision,It> where It : Iterator<Item = Precision>, Wrapped : WrappedType<Precision>, It : Debug
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("WrappedIterator").field("it", &self.it).field("phantom", &self.phantom).finish()
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result 
+    {
+        write!(f, "{:?}", &self.it)
     }
 }
 

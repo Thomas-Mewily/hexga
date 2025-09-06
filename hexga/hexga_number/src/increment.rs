@@ -1,5 +1,10 @@
 use crate::*;
 
+pub mod prelude
+{
+    pub use super::{Increment,Decrement};
+}
+
 /// The `+1` operation
 pub trait Increment : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Sized
 {
@@ -28,7 +33,7 @@ pub trait Increment : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Si
 impl<T> Increment for T where T: One + Add<T, Output=T> + AddAssign<Self> + Copy {}
 
 /// The `-1` operation
-pub trait Decrease : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized
+pub trait Decrement : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized
 {
     /// The decrement `x--` operator
     #[inline(always)] fn decrement(&mut self) { *self -= Self::ONE; }
@@ -52,4 +57,4 @@ pub trait Decrease : One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Siz
     /// True if not Self::MIN, except for wrapping type, they always have a predecessor because they wrap
     #[inline(always)] fn have_predecessor(self) -> bool where Self : OverflowBehavior + MinValue + PartialEq { self.can_decrement() }
 }
-impl<T> Decrease for T where T: One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized {}
+impl<T> Decrement for T where T: One + Sub<Self, Output=Self> + SubAssign<Self> + Copy + Sized {}

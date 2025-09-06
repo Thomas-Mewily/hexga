@@ -18,3 +18,13 @@ pub use unit::*;
 
 pub mod array;
 use array::*;
+
+pub mod prelude
+{
+    pub use super::lerp::prelude::*;
+    pub use super::time::prelude::*;
+    pub use super::prefix::prelude::*;
+    pub use super::map_on::prelude::*;
+    pub use super::unit::prelude::*;
+    pub use super::array::prelude::*;
+}

@@ -1,3 +1,53 @@
+pub mod prelude
+{
+    pub use super::{Composite,CompositeGeneric};
+}
+
+pub trait Composite
+{   
+    type Inside;
+    fn transform<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside;
+}
+// Can't auto impl Composte for every S that have GenericComposite, because can't express that Self::WithType<Self::Inside> = Self
+pub trait CompositeGeneric
+{
+    type WithType<T2> : CompositeGeneric<Inside = T2>;
+    type Inside;
+    fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2;
+}
+
+
+impl<T, const N:usize> Composite for [T;N]
+{
+    type Inside=T;
+    fn transform<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside { self.map(f) }
+}
+impl<T, const N:usize> CompositeGeneric for [T;N]
+{
+    type WithType<T2> = [T2;N];
+    type Inside = T;
+    fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 { self.map(f) }
+}
+
+
+impl<T> Composite for Vec<T>
+{
+    type Inside=T;
+    fn transform<F>(mut self, mut f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside { self.iter_mut().map(|v| *v = f(*v)); self }
+}
+impl<T> CompositeGeneric for Vec<T>
+{
+    type WithType<T2> = Vec<T2>;
+    type Inside = T;
+
+    fn transform<T2,F>(self, mut f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+        self.into_iter().map(|v| f(v)).collect()
+    }
+}
+
+
+
+/*
 macro_rules! impl_composite_types_and_methods_and_constants_for_external_type
 {
     ($trait_name:ident $( < $($generic_params:tt),* > )?,
@@ -170,4 +220,5 @@ macro_rules! impl_composite_with_methods {
     };
 }
 pub(crate) use impl_composite_with_methods;
+*/
 */

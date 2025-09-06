@@ -2,16 +2,9 @@ use crate::*;
 
 pub use hexga_number::*;
 
-pub mod prelude;
-
+// TODO: remove this
 mod composite;
 pub use composite::*;
-
-mod cast_to;
-pub use cast_to::*;
-
-mod cast_range_to;
-pub use cast_range_to::*;
 
 mod extension;
 pub use extension::*;
@@ -22,5 +15,15 @@ pub use floating::*;
 mod integer;
 pub use integer::*;
 
-mod cast_to_primitive;
-pub use cast_to_primitive::*;
+
+pub mod prelude
+{
+    pub use hexga_number::prelude::*;
+    pub use crate::number::composite::*;
+    pub use crate::number::cast_to::*;
+    pub use crate::number::cast_range_to::*;
+    pub use crate::number::extension::*;
+    pub use crate::number::floating::*;
+    pub use crate::number::integer::*;
+    pub use crate::number::cast_to_primitive::*;
+}

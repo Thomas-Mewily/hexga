@@ -1,5 +1,12 @@
 use crate::*;
 
+// TODO: move this module in math
+
+pub mod prelude
+{
+    pub use super::{Abs};
+}
+
 pub trait Abs
 {
     type Output;

@@ -1,5 +1,10 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{RotationX,RotationY,RotationZ};
+}
+
 pub trait RotationX<T>
 {
     fn rotate_x(&mut self, angle : AngleOf<T>) -> &mut Self;

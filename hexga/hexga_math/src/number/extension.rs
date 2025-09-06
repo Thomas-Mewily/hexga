@@ -1,5 +1,6 @@
 use crate::*;
 
+/* 
 map_on_constant!
 (
     (($trait_name: tt, $constant_name: tt)) =>
@@ -7,9 +8,20 @@ map_on_constant!
         impl_composite_constant_for_internal_type!($trait_name, $constant_name);
     }
 );
+*/
 
+// TODO: move the Abs trait here and impl it for CompositeGeneric
+/* 
 //impl_composite_output_with_methods_for_internal_type!(Abs,abs);
+impl<T> Abs for T where T:CompositeGeneric, T::Inside: Abs
+{
+    type Output;
 
+    fn abs(self) -> Self::Output {
+        todo!()
+    }
+}
+*/
 
 /// Define the `2` representation for the number
 pub trait Two : Sized

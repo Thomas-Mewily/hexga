@@ -20,3 +20,14 @@ pub(crate) use matrix::*;
 
 pub mod grid;
 pub(crate) use grid::*;
+
+pub mod prelude
+{
+    pub use super::vector::prelude::*;
+    pub use super::position::prelude::*;
+    pub use super::rotation::prelude::*;
+    pub use super::angle::prelude::*;
+    pub use super::rectangle::prelude::*;
+    pub use super::matrix::prelude::*;
+    pub use super::grid::prelude::*;
+}

@@ -174,7 +174,7 @@ macro_rules! impl_generic_array_like_op
                 {
                     fn $fn_name(&mut self, rhs: Self)
                     {
-                        let arr : [T; N] = rhs.into();
+                        let arr : [T;N] = rhs.into();
                         self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
                     }
                 }
@@ -241,6 +241,22 @@ macro_rules! impl_fixed_array_like
 {
     ($name: ident, $dim : expr) =>
     {
+        impl<T> $name<T>
+        {
+            #[doc(hidden)]
+            pub(crate) const IS_VALID: () = 
+            {
+                assert!(std::mem::size_of::<Self>() == std::mem::size_of::<[T;$dim]>());
+            };
+
+            pub const fn from_array(array : [T;$dim]) -> Self 
+            { 
+                let s = unsafe { std::ptr::read(&array as *const [T;$dim] as *const Self) };
+                std::mem::forget(array);
+                s
+            }
+        }
+
         impl<T> ::std::marker::Copy  for $name<T> where T: Copy {}
         impl<T> ::std::clone::Clone for $name<T> where T: Clone
         {
@@ -454,17 +470,43 @@ macro_rules! impl_fixed_array_like
         #[cfg(feature = "hexga_io")]
         impl<T> ::hexga_io::IoLoad for $name<T> where T: ::hexga_io::IoLoad {}
 
-        impl<T, T2> CastIntoComposite<T2> for $name<T> where T: CastIntoComposite<T2>
+
+        impl<T> Composite for $name<T>
         {
-            type Output=$name<T2>;
-            fn cast_into_composite(self) -> Self::Output {
-                Self::Output::from_array(<[T;$dim]>::from(self).cast_into_composite())
+            type Inside=T;
+            fn transform<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
+                <Self as CompositeGeneric>::transform(self, f)
+            }
+        }
+        impl<T> CompositeGeneric for $name<T>
+        {
+            type WithType<T2> = $name<T2>;
+            type Inside=T;
+
+            fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+                Self::WithType::from_array(<[T;$dim] as CompositeGeneric>::transform(self.into(), f))
             }
         }
     };
 }
 
-
+#[macro_export]
+macro_rules! impl_fixed_array_like_constant
+{
+    ($name: ident, $dim : expr) =>
+    {
+        $crate::map_on_constant!
+        (
+            (($trait_name: tt, $constant_name: tt)) =>
+            {
+                impl<T> $trait_name for $name<T> where T: $trait_name + Copy 
+                { 
+                    const $constant_name: Self = Self::from_array(<[T;$dim]>::$constant_name); 
+                }
+            }
+        );
+    }
+}
 
 #[macro_export]
 macro_rules! impl_fixed_array_like_with_op
@@ -473,6 +515,7 @@ macro_rules! impl_fixed_array_like_with_op
     {
         $crate::impl_fixed_array_like_op!($name, $dim);
         $crate::impl_fixed_array_like!($name, $dim);
+        $crate::impl_fixed_array_like_constant!($name, $dim);
     };
 }
 
@@ -483,6 +526,22 @@ macro_rules! impl_generic_array_like
 {
     ($name: ident) =>
     {
+        impl<T, const N : usize> $name<T,N>
+        {
+            #[doc(hidden)]
+            pub(crate) const IS_VALID: () = 
+            {
+                assert!(std::mem::size_of::<Self>() == std::mem::size_of::<[T;N]>());
+            };
+
+            pub const fn from_array(array : [T;N]) -> Self 
+            { 
+                let s = unsafe { std::ptr::read(&array as *const [T;N] as *const Self) };
+                std::mem::forget(array);
+                s
+            }
+        }
+
         impl<T, const N : usize> ::std::marker::Copy  for $name<T,N> where T: Copy  {}
         impl<T, const N : usize> ::std::clone::Clone for $name<T,N> where T: Clone
         {
@@ -511,16 +570,16 @@ macro_rules! impl_generic_array_like
 
         //impl<T, const N : usize> ::std::convert::From<T> for $name<T,N> where T: Copy { fn from(value: T) -> Self { Self::from([value; N]) } }
 
-        impl<T, const N : usize> ::std::convert::From<[T; N]> for $name<T,N> { fn from(value: [T; N]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
-        impl<T, const N : usize> ::std::convert::From<$name<T,N>> for [T; N] { fn from(value: $name<T,N>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
+        impl<T, const N : usize> ::std::convert::From<[T;N]> for $name<T,N> { fn from(value: [T;N]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
+        impl<T, const N : usize> ::std::convert::From<$name<T,N>> for [T;N] { fn from(value: $name<T,N>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
 
-        impl<T, const N : usize> ::std::convert::AsRef<[T; N]> for $name<T,N> { fn as_ref(&self) -> &[T; N] { unsafe { std::mem::transmute(self) } } }
-        impl<T, const N : usize> ::std::convert::AsMut<[T; N]> for $name<T,N> { fn as_mut(&mut self) -> &mut [T; N] { unsafe { std::mem::transmute(self) } } }
+        impl<T, const N : usize> ::std::convert::AsRef<[T;N]> for $name<T,N> { fn as_ref(&self) -> &[T;N] { unsafe { std::mem::transmute(self) } } }
+        impl<T, const N : usize> ::std::convert::AsMut<[T;N]> for $name<T,N> { fn as_mut(&mut self) -> &mut [T;N] { unsafe { std::mem::transmute(self) } } }
 
         impl<T, const N : usize> ::hexga_array::Array<T, N> for $name<T,N>
         {
-            fn array(&self) -> &[T; N] { unsafe { std::mem::transmute(self) } }
-            fn array_mut(&mut self) -> &mut[T; N] { unsafe { std::mem::transmute(self) } }
+            fn array(&self) -> &[T;N] { unsafe { std::mem::transmute(self) } }
+            fn array_mut(&mut self) -> &mut[T;N] { unsafe { std::mem::transmute(self) } }
         }
 
         impl<T, const N : usize> ::hexga_array::ArrayWithGenericType<T, N> for $name<T,N>
@@ -636,7 +695,7 @@ macro_rules! impl_generic_array_like
         {
             // Thank serde for not supporting the deserialization of variadic array...
             #[derive(Debug)]
-            struct Arr<T, const N: usize>(pub [T; N]);
+            struct Arr<T, const N: usize>(pub [T;N]);
 
             impl<'de, T, const N: usize> ::serde::Deserialize<'de> for $name<T,N> where T: ::serde::Deserialize<'de>
             {
@@ -688,7 +747,7 @@ macro_rules! impl_generic_array_like
                             }
 
                             // SAFETY: All elements are initialized
-                            let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T; N]) };
+                            let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T;N]) };
                             Ok(Arr(result))
                         }
                     }
@@ -704,14 +763,41 @@ macro_rules! impl_generic_array_like
         #[cfg(feature = "hexga_io")]
         impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where T: ::hexga_io::IoLoad {}
 
-        impl<T, T2, const N:usize> CastIntoComposite<T2> for $name<T,N> where T: CastIntoComposite<T2>
+        impl<T, const N : usize> Composite for $name<T,N>
         {
-            type Output=$name<T2,N>;
-            fn cast_into_composite(self) -> Self::Output {
-                Self::Output::from_array(<[T;N]>::from(self).cast_into_composite())
+            type Inside=T;
+            fn transform<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
+                <Self as CompositeGeneric>::transform(self, f)
+            }
+        }
+        impl<T, const N : usize> CompositeGeneric for $name<T,N>
+        {
+            type WithType<T2> = $name<T2,N>;
+            type Inside=T;
+
+            fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+                Self::WithType::from_array(<[T;N] as CompositeGeneric>::transform(self.into(), f))
             }
         }
     };
+}
+
+#[macro_export]
+macro_rules! impl_generic_array_like_constant
+{
+    ($name: ident) =>
+    {
+        $crate::map_on_constant!
+        (
+            (($trait_name: tt, $constant_name: tt)) =>
+            {
+                impl<T, const N:usize> $trait_name for $name<T,N> where T: $trait_name + Copy 
+                { 
+                    const $constant_name: Self = Self::from_array(<[T;N]>::$constant_name); 
+                }
+            }
+        );
+    }
 }
 
 #[macro_export]
@@ -721,5 +807,6 @@ macro_rules! impl_generic_array_like_with_op
     {
         $crate::impl_generic_array_like_op!($name);
         $crate::impl_generic_array_like!($name);
+        $crate::impl_generic_array_like_constant!($name);
     };
 }

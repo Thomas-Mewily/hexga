@@ -25,5 +25,9 @@ pub use reflection::*;
 
 pub mod prelude
 {
-    pub use super::*;
+    pub use super::constant::prelude::*;
+    pub use super::number::prelude::*;
+    pub use super::increment::prelude::*;
+    pub use super::ops::prelude::*;
+    pub use super::reflection::prelude::*;
 }

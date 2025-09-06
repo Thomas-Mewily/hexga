@@ -1,5 +1,10 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{Time,ToTimeComposite};
+}
+
 /*
 pub type DeltaTime = Rel<Time>;
 pub type FixedTime = Fix<Time>;

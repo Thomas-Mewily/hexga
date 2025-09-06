@@ -1,5 +1,15 @@
 use crate::*;
 
+
+pub mod prelude
+{
+    pub use super::{Zero, ZeroIter,UnwrapZero};
+    pub use super::{One, OneIter};
+    pub use super::{MinusOne,MinusOneIter};
+    pub use super::{Half};
+    pub use super::{NaNValue,MinValue,MaxValue};
+}
+
 /// Define the `0` representation : The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`
 pub trait Zero : Sized
 {
@@ -17,6 +27,12 @@ map_on_number!(($primitive_name: ty) => { impl Zero for $primitive_name { const 
 
 impl<T> Zero for Wrapping<T> where T: Zero  { const ZERO : Self = Wrapping(T::ZERO); }
 impl<T> Zero for Saturating<T> where T: Zero  { const ZERO : Self = Saturating(T::ZERO); }
+
+impl<T, const N : usize> Zero for [T;N] where T: Zero
+{
+    const ZERO : Self = [T::ZERO; N];
+}
+impl Zero for bool { const ZERO : Self = false; }
 
 
 pub trait ZeroIter
@@ -44,12 +60,6 @@ pub trait UnwrapZero
 }
 impl<T> UnwrapZero for Option<T> where T: Zero { type Output = T; fn unwrap_or_zero(self) -> Self::Output { self.unwrap_or(T::ZERO) }}
 impl<T,E> UnwrapZero for Result<T,E> where T: Zero { type Output = T; fn unwrap_or_zero(self) -> Self::Output { self.unwrap_or(T::ZERO) }}
-
-impl<T, const N : usize> Zero for [T;N] where T: Zero
-{
-    const ZERO : Self = [T::ZERO; N];
-}
-impl Zero for bool { const ZERO : Self = false; }
 
 
 

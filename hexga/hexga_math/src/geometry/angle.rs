@@ -12,7 +12,13 @@
 /// println!("Angle in radians: {}", a.radian());
 /// println!("Angle in degrees: {}", a.degree());
 /// ```
-use crate::*;
+use super::*;
+
+
+pub mod prelude
+{
+    pub use super::{Angle,ToAngleComposite};
+}
 
 new_unit!(
     /// 2D Angle, support degree, radian, turn...
