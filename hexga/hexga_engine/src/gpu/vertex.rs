@@ -1,16 +1,26 @@
 use super::*;
 
+pub type Vertex2 = Vertex<2>;
+pub type Vertex3 = Vertex<3>;
+
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Default, PartialEq)]
-pub struct Vertex {
-    position: GpuVec3,
+#[derive(Copy, Clone, Default, Debug, PartialEq, PartialOrd)]
+pub struct Vertex<const N:usize=3>
+{
+    position: GpuVector<N>,
     color: GpuColor,
+}
+impl From<Vertex2> for Vertex3
+{
+    fn from(value: Vertex2) -> Self {
+        Self { position: value.position.with_z(zero()), color: value.color }
+    }
 }
 
 
 
-unsafe impl bytemuck::Zeroable for Vertex {}
-unsafe impl bytemuck::Pod for Vertex {}
+unsafe impl<const N:usize> bytemuck::Zeroable for Vertex<N> {}
+unsafe impl<const N:usize> bytemuck::Pod for Vertex<N> {}
 
 
 
@@ -66,28 +76,8 @@ pub(crate) const VERTEX_INDICES: &[VertexIndex] = &[
 ];
 
 
-impl Vertex
+impl Vertex<3>
 {
-    pub(crate) const WGPU_FORMAT_X3 : wgpu::VertexFormat = 
-    {
-        match std::mem::size_of::<Gpufloat>()
-        {
-            4 => wgpu::VertexFormat::Float32x3,
-            8 => wgpu::VertexFormat::Float64x3,
-            _ => unreachable!()
-        }
-    };
-
-    pub(crate) const WGPU_FORMAT_X4 : wgpu::VertexFormat = 
-    {
-        match std::mem::size_of::<Gpufloat>()
-        {
-            4 => wgpu::VertexFormat::Float32x4,
-            8 => wgpu::VertexFormat::Float64x4,
-            _ => unreachable!()
-        }
-    };
-
     pub(crate) fn create_buffer_layout() -> wgpu::VertexBufferLayout<'static> 
     {
         wgpu::VertexBufferLayout {
@@ -97,59 +87,21 @@ impl Vertex
                 wgpu::VertexAttribute {
                     offset: 0,
                     shader_location: 0,
-                    format: Self::WGPU_FORMAT_X3,
+                    format: GpuVector::<3>::VERTEX_FORMAT,
                 },
                 wgpu::VertexAttribute {
                     offset: size_of::<GpuVec3>() as wgpu::BufferAddress,
                     shader_location: 1,
-                    format: Self::WGPU_FORMAT_X4,
+                    format: GpuColor::VERTEX_FORMAT,
                 },
             ],
         }
     }
-
-    pub(crate) const WGPU_INDEX_FORMAT : wgpu::IndexFormat = 
-    {
-        match std::mem::size_of::<VertexIndex>()
-        {
-            2 => wgpu::IndexFormat::Uint16,
-            4 => wgpu::IndexFormat::Uint32,
-            _ => unreachable!(),
-        }
-    };
 }
 
 pub type VertexIndex = u32;
 
-
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct Mesh
-{
-    vertices: Vec<Vertex>,
-    indices : Vec<VertexIndex>,
-}
-impl Mesh
-{
-    pub fn new() -> Self { ___() }
-    pub fn with_vertices_and_indices(vertices: Vec<Vertex>, indices: Vec<VertexIndex>) -> Self { Self { vertices, indices }}
-
-    pub fn vertices(&self) -> &[Vertex] { &self.vertices }
-    pub fn vertices_mut(&mut self) -> &mut [Vertex] { &mut self.vertices }
-
-    pub fn indices(&self) -> &[VertexIndex] { &self.indices }
-    pub fn indices_mut(&mut self) -> &mut [VertexIndex] { &mut self.indices }
-}
-
-impl Mesh
-{
-    pub fn draw(&self)
-    {
-        
-    }
-}
-
-
 pub mod prelude
 {
-    pub use super::{Vertex,Mesh};
+    pub use super::{Vertex,Vertex2,Vertex3,VertexIndex};
 }

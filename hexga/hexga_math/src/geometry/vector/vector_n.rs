@@ -19,9 +19,9 @@ pub struct Vector<T, const N : usize>
     pub(crate) no_destructuring : (),
 }
 
-impl<T, const N : usize> Default for Vector<T, N> where [T; N] : Default
+impl<T, const N : usize> Default for Vector<T, N> where T:Default
 {
-    fn default() -> Self { Self { array: ___(), no_destructuring: () } }
+    fn default() -> Self { Self { array: std::array::from_fn(|_| ___()), no_destructuring: () } }
 }
 
 impl<T, const N : usize> Vector<T,N>

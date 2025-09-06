@@ -15,15 +15,15 @@ impl App for MyApp
 {
     type UserEvent = ();
 
-
     fn update(&mut self) 
     {
         
     }
 
-    fn draw(&mut self) 
+    fn draw(&mut self)
     {
         
+        // Todo : Pen singleton to draw vertex/index in immediate mode
         //Angle::sample(20).map(|a| a.to_vec2_normalized()).
         //let vertex = 
     }

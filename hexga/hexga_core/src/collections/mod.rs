@@ -1,4 +1,4 @@
-pub mod prelude;
+use super::*;
 
 mod length;
 pub use length::*;
@@ -18,3 +18,10 @@ pub use sequence::*;
 mod collect_to;
 pub use collect_to::*;
 
+
+pub mod prelude
+{
+    pub use crate::collections::{Length,Clearable,Capacity,TryGet,Get,TryGetMut,GetMut,GetManyMut,ManyMutError};
+    pub use crate::collections::{IndexOutOfRange,MissingKey};
+    pub use crate::collections::collect_to::prelude::*;
+}

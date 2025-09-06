@@ -9,3 +9,8 @@ macro_rules! dbg_here {
         )
     };
 }
+
+pub mod prelude
+{
+    pub use crate::dbg_here;
+}

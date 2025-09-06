@@ -1,4 +1,9 @@
-use crate::*;
+use super::*;
+
+pub mod prelude
+{
+    pub use super::CollectExtension;
+}
 
 pub trait CollectExtension<T> : Sized + IntoIterator<Item = T>
 {

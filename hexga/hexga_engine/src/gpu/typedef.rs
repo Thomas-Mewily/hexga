@@ -22,7 +22,7 @@ pub type GpuRect3 = GpuRectangle<3>;
 pub type GpuRect4 = GpuRectangle<4>;
 
 pub type GpuColor = GpuColorRgba;
-pub type GpuColorRgba = ColorRgbaOf<Gpufloat>;
+pub type GpuColorRgba = ColorRgbaOf<float>;
 pub type GpuColorHsla = hexga::graphics::color::ColorHslaOf<Gpufloat>;
 
 pub mod prelude

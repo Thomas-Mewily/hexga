@@ -25,19 +25,15 @@ use app::*;
 pub mod context;
 use context::*;
 
+pub mod utils;
+use utils::*;
 
 
-pub mod log;
-pub use log::*;
-
-mod debug;
-pub use debug::*;
-
+use prelude::*;
 pub mod prelude
 {
     pub use super::app::prelude::*;
     pub use super::context::prelude::*;
-    pub use super::log::prelude::*;
     pub use super::gpu::prelude::*;
+    pub use super::utils::prelude::*;
 }
-use prelude::*;
