@@ -1,5 +1,12 @@
 use crate::*;
 
+
+pub mod prelude
+{
+    pub use super::{Sequence,TryPush,Push,TryPop,Pop};
+}
+
+
 /*
 pub trait Collection : Length /* + Capacity */ {}  // slice and str don't impl capacity
 impl<T : ?Sized> Collection for T where T: Length {}
@@ -22,15 +29,18 @@ impl Sequence for str {}
 impl Sequence for OsString {}
 impl Sequence for OsStr {}
 
+pub trait TryPush<T> : Push<T>
+{
+    type Error;
+    /// Push a value and return it's index.
+    fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error>;
+}
+
 pub trait Push<T>
 {
     type Output;
     /// Push a value and return it's index.
     fn push(&mut self, value : T) -> Self::Output;
-
-    type Error;
-    /// Push a value and return it's index.
-    fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error>;
 }
 /*
 pub trait Insert<T>
@@ -71,12 +81,16 @@ pub trait InsertSequence<T> : Push<T> + Extend<T>
     }
 }
 */
-pub trait Pop<T>
-{
-    fn pop(&mut self) -> Option<T> { self.try_pop().ok() }
 
+pub trait TryPop<T> : Pop<T>
+{
     type Error;
     fn try_pop(&mut self) -> Result<T, Self::Error>;
+}
+
+pub trait Pop<T>
+{
+    fn pop(&mut self) -> Option<T>;
 }
 /*
 pub trait RemoveSequence<T> : InsertSequence<T>
@@ -96,7 +110,9 @@ impl<T> Push<T> for Vec<T>
         self.push(value);
         l
     }
-
+}
+impl<T> TryPush<T> for Vec<T>
+{
     type Error = (); // #proper_error
     fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error> { Ok(Push::push(self, value)) }
 }
@@ -110,7 +126,9 @@ impl<T> Push<T> for VecDeque<T>
         self.push_back(value);
         l
     }
-
+}
+impl<T> TryPush<T> for VecDeque<T>
+{
     type Error = (); // #proper_error
     fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error> { Ok(Push::push(self, value)) }
 }
@@ -121,7 +139,9 @@ impl<T> Push<T> for LinkedList<T>
     fn push(&mut self, value : T) -> Self::Output {
         self.push_back(value);
     }
-
+}
+impl<T> TryPush<T> for LinkedList<T>
+{
     type Error = (); // #proper_error
     fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error> {
         self.push(value);
@@ -135,7 +155,9 @@ impl Push<char> for String
     fn push(&mut self, value : char) -> Self::Output {
         self.push(value);
     }
-
+}
+impl TryPush<char> for String
+{
     type Error = (); // #proper_error
     fn try_push(&mut self, value : char) -> Result<Self::Output, Self::Error> {
         self.push(value);
@@ -149,7 +171,9 @@ impl<'b> Push<&'b OsStr> for OsString
     fn push(&mut self, value : &'b OsStr) -> Self::Output {
         self.push(value);
     }
-
+}
+impl<'b> TryPush<&'b OsStr> for OsString
+{
     type Error = (); // #proper_error
     fn try_push(&mut self, value : &'b OsStr) -> Result<Self::Output, Self::Error> {
         self.push(value);
@@ -160,28 +184,34 @@ impl<'b> Push<&'b OsStr> for OsString
 
 
 
-impl<T> Pop<T> for Vec<T>
+impl<T> TryPop<T> for Vec<T>
 {
     type Error=(); // #proper_error
     fn try_pop(&mut self) -> Result<T, Self::Error> { self.pop().ok_or(()) }
 }
+impl<T> Pop<T> for Vec<T>
+{
+    fn pop(&mut self) -> Option<T> { self.pop() }
+}
 
+impl<T> TryPop<T> for VecDeque<T>
+{
+    type Error=(); // #proper_error
+    fn try_pop(&mut self) -> Result<T, Self::Error> { self.pop_back().ok_or(()) }
+}
 impl<T> Pop<T> for VecDeque<T>
 {
+    fn pop(&mut self) -> Option<T> { self.pop_back() }
+}
+
+impl<T> TryPop<T> for LinkedList<T>
+{
     type Error=(); // #proper_error
     fn try_pop(&mut self) -> Result<T, Self::Error> { self.pop_back().ok_or(()) }
 }
-
 impl<T> Pop<T> for LinkedList<T>
 {
-    type Error=(); // #proper_error
-    fn try_pop(&mut self) -> Result<T, Self::Error> { self.pop_back().ok_or(()) }
-}
-
-impl Pop<char> for String
-{
-    type Error=(); // #proper_error
-    fn try_pop(&mut self) -> Result<char, Self::Error> { self.pop().ok_or(()) }
+    fn pop(&mut self) -> Option<T> { self.pop_back() }
 }
 
 

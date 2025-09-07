@@ -12,7 +12,13 @@
 
 use std::ops::Range;
 
-use crate::*;
+use super::*;
+
+pub mod prelude
+{
+    pub use super::{TryGet,Get,TryGetMut,GetMut,GetManyMut,ManyMutError};
+    pub use super::{IndexOutOfRange,MissingKey};
+}
 
 /// The collection have a quick way to access each element, where the index is copyable
 pub trait Get<Idx> //where Idx : Borrow<Q> //: Index<Idx>

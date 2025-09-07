@@ -1,5 +1,10 @@
 use std::collections::*;
 
+pub mod prelude
+{
+    pub use super::Length;
+}
+
 pub trait Length 
 {
     // Returns the number of elements inside this collection, also referred as a 'length'.

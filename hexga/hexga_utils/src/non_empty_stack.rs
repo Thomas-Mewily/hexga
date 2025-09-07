@@ -20,6 +20,13 @@ pub struct NonEmptyStack<T>
 impl<T> Deref for NonEmptyStack<T> { type Target = T; fn deref(&self) -> &Self::Target { &self.last }}
 impl<T> DerefMut for NonEmptyStack<T> { fn deref_mut(&mut self) -> &mut Self::Target { &mut self.last }}
 
+/* 
+pub trait IStack<T> : Push<T> + Pop<T> + Length
+{
+    fn push
+}
+*/
+
 /// A stack that always have at least one element,
 /// where the last element can be frequently accessed
 #[allow(clippy::len_without_is_empty)]

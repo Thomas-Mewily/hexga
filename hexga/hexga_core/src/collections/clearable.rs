@@ -1,5 +1,10 @@
 use std::{collections::*, ffi::OsString, path::PathBuf};
 
+pub mod prelude
+{
+    pub use super::Clearable;
+}
+
 /// Clear the collection
 pub trait Clearable //: Length
 {

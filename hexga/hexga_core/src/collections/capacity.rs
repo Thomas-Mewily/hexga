@@ -1,5 +1,12 @@
 use std::collections::TryReserveError;
-use crate::*;
+use super::*;
+
+
+pub mod prelude
+{
+    pub use super::Capacity;
+}
+
 
 pub trait Capacity
 {

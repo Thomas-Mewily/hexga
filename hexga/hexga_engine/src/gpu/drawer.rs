@@ -52,6 +52,8 @@ impl ICamera for Drawer
     fn viewport(&self) -> Option<Rect2P> { self.camera.viewport() }
 }
 
+
+
 impl Drawer
 {
     pub fn new() -> Self { ___() }
