@@ -54,14 +54,6 @@ pub(crate) struct AppRunner<A> where A:App
 impl<A> AppRunner<A> where A:App
 {
     pub fn new(app : A, ctx : &'static mut Context, proxy : EvLoopProxy<A::UserEvent>) -> Self { Self { app, ctx, proxy, last_update: Time::now() }}
-
-    pub fn update(&mut self)
-    {
-        let time = Time::now();
-        let delta_time = time - self.last_update;
-        self.last_update = time;
-        self.app.update(delta_time);
-    }
 }
 
 impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> where A:App
@@ -152,13 +144,22 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
 
 impl<A> AppRunner<A> where A:App
 {
+    pub fn update(&mut self)
+    {
+        Ctx.scoped_update
+        (
+            || 
+            { 
+                let time = Time::now();
+                let delta_time = time - self.last_update;
+                self.last_update = time;
+                self.app.update(delta_time);
+            }
+        );
+    }
+
     pub fn draw(&mut self)
     {
-        Gpu.begin_draw();
-
-        self.app.draw();
-
-        Gpu.end_draw();
-        //Gpu.draw_remove_me();
+        Ctx.scoped_draw(|| { self.app.draw(); });
     }
 }

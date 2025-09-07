@@ -3,6 +3,11 @@
 
 ## To-do
 
+- move le trait Abs et l'implémenter dans Composite
+- 
+- limiter les fps
+
+- trait Getter<T> et Setter<T> ? (GetPosition, GetRectangle, GetMatrix...)
 
 - crée les crates:
 - pour gérer: les undo redo

@@ -24,6 +24,7 @@ impl App for MyApp
 
     fn draw(&mut self)
     {
+        info!("nb fps: {}", Perf.nb_fps());
         Cam.rot_z(self.time.s().degree() * 50.);
 
         Pen.triangle(MeshTriangle::new
