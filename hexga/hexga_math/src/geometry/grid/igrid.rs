@@ -37,12 +37,15 @@ pub trait IGrid<T, Idx, const N : usize> :
     + GetManyMut<Vector<Idx,N>,Output=T>
     + IndexMut<Vector<Idx,N>, Output = T>
 
+    + Composite<Inside=T>
+    + CompositeGeneric<Inside=T>
+
     + Sized
     where Idx : Integer
 {
     type WithType<U> : IGrid<U, Idx, N>;
 
-    // Those expose the implementation
+    // Those expose the implementation, put in another trait like IGridVector
     fn values(&self) -> &[T];
     fn values_mut(&mut self) -> &mut [T];
     fn into_values(self) -> Vec<T> { self.into_size_and_values().1 }
@@ -194,10 +197,10 @@ pub trait IGrid<T, Idx, const N : usize> :
             })
     }
 
-    fn map<Dest,F>(self, mut f : F) -> Self::WithType<Dest> where F : FnMut(T) -> Dest
+    fn map<Dest,F>(self, mut f : F) -> <Self as IGrid<T,Idx,N>>::WithType<Dest> where F : FnMut(T) -> Dest
     {
         let size = self.size();
-        unsafe { Self::WithType::from_vec_unchecked(size, self.into_values().into_iter().map(|v| f(v)).collect()) }
+        unsafe { <Self as IGrid<T,Idx,N>>::WithType::from_vec_unchecked(size, self.into_values().into_iter().map(|v| f(v)).collect()) }
     }
 }
 

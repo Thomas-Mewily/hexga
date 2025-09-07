@@ -94,12 +94,10 @@ impl<F> Camera3DOf<F> where F:Float
 
 impl<F> ICamera for Camera3DOf<F> where F:Float
 {
-    fn matrix(&self) -> Mat4 {
-        self.matrix().to_float()
-    }
+    fn matrix(&self) -> Mat4 { self.matrix().to_float() }
 
     fn have_depth(&self) -> bool {
-        todo!()
+        todo!()AA
     }
 
     fn viewport(&self) -> Option<Rect2P> {

@@ -6,7 +6,6 @@ use std::{ops::Index, slice::SliceIndex};
 use core::slice::GetDisjointMutIndex;
 use std::hash::{BuildHasher, Hash};
 use std::borrow::Borrow;
-use hexga_map_on::prelude::*;
 
 pub mod default;
 pub mod format;

@@ -49,13 +49,27 @@ pub trait ToAngleComposite
     fn turn  (self) -> Self::Output;
 }
 
-impl<T> ToAngleComposite for T where T: ToFloat<Output = float>
+map_on_number!(
+    ($name:ident) => 
+    {
+        impl ToAngleComposite for $name
+        {
+            type Output = Angle;
+            fn degree(self) -> Angle { Angle::from_degree(self.to_float()) }
+            fn radian(self) -> Angle { Angle::from_radian(self.to_float()) }
+            fn turn  (self) -> Angle { Angle::from_turn  (self.to_float()) }
+        }
+    }
+);
+
+impl<T> ToAngleComposite for T where T: CompositeGeneric, T::Inside : ToAngleComposite
 {
-    type Output = Angle;
-    fn degree(self) -> Angle { Angle::from_degree(self.to_float()) }
-    fn radian(self) -> Angle { Angle::from_radian(self.to_float()) }
-    fn turn  (self) -> Angle { Angle::from_turn  (self.to_float()) }
+    type Output = T::WithType<<T::Inside as ToAngleComposite>::Output>;
+    fn degree(self) -> Self::Output { self.transform(|v| v.degree()) }
+    fn radian(self) -> Self::Output { self.transform(|v| v.radian()) }
+    fn turn  (self) -> Self::Output { self.transform(|v| v.turn()) }
 }
+
 
 
 #[cfg(feature = "hexga_io")]

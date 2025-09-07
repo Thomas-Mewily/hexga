@@ -12,6 +12,23 @@ pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
     pub(crate) values : Vec<T>,
 }
 
+impl<T, Idx, const N : usize> Composite for GridBase<T, Idx, N> where Idx : Integer
+{
+    type Inside=T;
+    fn transform_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
+        self.values = self.values.transform_intern(f);
+        self
+    }
+}
+impl<T, Idx, const N : usize> CompositeGeneric for GridBase<T, Idx, N> where Idx : Integer
+{
+    type WithType<T2> = GridBase<T2, Idx, N>;
+    type Inside=T;
+
+    fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+        unsafe { Self::WithType::<T2>::from_vec_unchecked(self.size, self.values.transform(f)) }
+    }
+}
 
 impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
 {
@@ -141,49 +158,6 @@ impl<T, Idx, const N : usize> Crop<Idx,N> for GridBase<T, Idx, N>
     }
 }
 
-impl<T, Idx, const N : usize, Dest> CastIntoComposite<Dest> for GridBase<T, Idx, N>
-    where Idx : Integer, T : CastIntoComposite<Dest>
-{
-    type Output = GridBase<T::Output,Idx,N>;
-    fn cast_into_composite(self) -> Self::Output {
-        self.map(|v| v.cast_into_composite())
-    }
-}
-impl<T, Idx, const N : usize, Dest> CastRangeIntoComposite<Dest> for GridBase<T, Idx, N>
-    where Idx : Integer, T : CastRangeIntoComposite<Dest>
-{
-    type Output = GridBase<T::Output,Idx,N>;
-    fn cast_range_into_composite(self) -> Self::Output {
-        self.map(|v| v.cast_range_into_composite())
-    }
-}
-impl<T, Idx, const N : usize> ToUnsigned for GridBase<T, Idx, N>
-    where Idx : Integer, T : ToUnsigned
-{
-    type Output = GridBase<T::Output,Idx,N>;
-
-    fn to_unsigned(self) -> Self::Output {
-        self.map(|v| v.to_unsigned())
-    }
-}
-impl<T, Idx, const N : usize> ToSigned for GridBase<T, Idx, N>
-    where Idx : Integer, T : ToSigned
-{
-    type Output = GridBase<T::Output,Idx,N>;
-
-    fn to_signed(self) -> Self::Output {
-        self.map(|v| v.to_signed())
-    }
-}
-
-impl<T, Idx, const N : usize> Abs for GridBase<T, Idx, N>
-    where Idx : Integer, T : Abs
-{
-    type Output = GridBase<T::Output,Idx,N>;
-    fn abs(self) -> Self::Output {
-        self.map(|v| v.abs())
-    }
-}
 
 #[cfg(test)]
 mod grid_test

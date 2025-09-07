@@ -6,6 +6,8 @@ pub mod prelude
     pub use super::{PrefixPeta,PrefixQuadrillion,PrefixTera,PrefixTrillion,PrefixGiga,PrefixBillion,PrefixMega,PrefixMillion,PrefixKilo,PrefixThousand,PrefixHecto,PrefixHundred,PrefixDeca,PrefixDecade,PrefixDeci,PrefixCenti,PrefixMilli,PrefixMicro,PrefixNano,PrefixPico,PrefixFemto};
 }
 
+// TODO: split each of them in 2 trait. ConstPrefixPeta, PrefixPeta (same with constant number)
+
 /// 10^15 = 1_000_000_000_000_000
 pub trait PrefixPeta : Sized 
 { 
@@ -374,5 +376,7 @@ mod prefix_test{
     {
         assert_eq!(1.kilo(), 1000);
         assert_eq!([1,2].degree(), [1.degree(),2.degree()]);
+        assert_eq!([1,2].s(), [1.s(),2.s()]);
+        //assert_eq!([1,2].kilo(), [1.kilo(),2.kilo()]);
     }
 }

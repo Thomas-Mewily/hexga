@@ -57,15 +57,30 @@ pub trait ToTimeComposite
 }
 //impl_composite_output_with_methods!(ToTimeComposite, ms, s, mins, hour, day);
 
-impl<T> ToTimeComposite for T where T: ToFloat<Output = float>
-{
-    type Output = Time;
+map_on_number!(
+    ($name:ident) => 
+    {
+        impl ToTimeComposite for $name
+        {
+            type Output = Time;
 
-    fn ms  (self) -> Self::Output { Time::from_ms(self.to_float()) }
-    fn s   (self) -> Self::Output { Time::from_s(self.to_float()) }
-    fn mins(self) -> Self::Output { Time::from_mins(self.to_float()) }
-    fn hour(self) -> Self::Output { Time::from_hour(self.to_float()) }
-    fn day (self) -> Self::Output { Time::from_day(self.to_float()) }
+            fn ms  (self) -> Self::Output { Time::from_ms(self.to_float()) }
+            fn s   (self) -> Self::Output { Time::from_s(self.to_float()) }
+            fn mins(self) -> Self::Output { Time::from_mins(self.to_float()) }
+            fn hour(self) -> Self::Output { Time::from_hour(self.to_float()) }
+            fn day (self) -> Self::Output { Time::from_day(self.to_float()) }
+        }
+    }
+);
+
+impl<T> ToTimeComposite for T where T: CompositeGeneric, T::Inside : ToTimeComposite
+{
+    type Output = T::WithType<<T::Inside as ToTimeComposite>::Output>;
+    fn ms  (self) -> Self::Output { self.transform(|v| v.ms()) }
+    fn s   (self) -> Self::Output { self.transform(|v| v.s()) }
+    fn mins(self) -> Self::Output { self.transform(|v| v.mins()) }
+    fn hour(self) -> Self::Output { self.transform(|v| v.hour()) }
+    fn day (self) -> Self::Output { self.transform(|v| v.day()) }
 }
 
 impl<T:Float> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self) } }

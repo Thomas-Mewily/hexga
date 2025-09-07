@@ -16,6 +16,19 @@ pub trait CompositeGeneric
     fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2;
 }
 
+/* 
+// Zero, Prefix: Kilo Mega
+pub trait CompositeConstant
+{
+    pub const fn splat(T: Copy) -> Self;
+}
+*/
+
+
+
+
+
+
 
 impl<T, const N:usize> Composite for [T;N]
 {

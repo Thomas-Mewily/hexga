@@ -359,28 +359,20 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToCo
 }
 
 
-impl<C,Idx,Dest> CastIntoComposite<Dest> for ImageBase<C, Idx> where Idx : Integer, C : CastIntoComposite<Dest>
+impl<T, Idx> Composite for ImageBase<T, Idx> where Idx : Integer
 {
-    type Output=ImageBase<C::Output, Idx>;
-    fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
+    type Inside=T;
+    fn transform_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
+        self.pixels = self.pixels.transform_intern(f);
+        self
+    }
 }
-impl<C,Idx,Dest> CastRangeIntoComposite<Dest> for ImageBase<C, Idx> where Idx : Integer, C : CastRangeIntoComposite<Dest>
+impl<T, Idx> CompositeGeneric for ImageBase<T, Idx> where Idx : Integer
 {
-    type Output=ImageBase<C::Output, Idx>;
-    fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
-}
-impl<C,Idx> ToUnsigned for ImageBase<C, Idx> where Idx : Integer, C : ToUnsigned
-{
-    type Output=ImageBase<C::Output, Idx>;
-    fn to_unsigned(self) -> Self::Output { self.map(|v| v.to_unsigned()) }
-}
-impl<C,Idx> ToSigned for ImageBase<C, Idx> where Idx : Integer, C : ToSigned
-{
-    type Output=ImageBase<C::Output, Idx>;
-    fn to_signed(self) -> Self::Output { self.map(|v| v.to_signed()) }
-}
-impl<C,Idx> Abs for ImageBase<C, Idx> where Idx : Integer, C : Abs
-{
-    type Output=ImageBase<C::Output, Idx>;
-    fn abs(self) -> Self::Output { self.map(|v| v.abs()) }
+    type WithType<T2> = ImageBase<T2, Idx>;
+    type Inside=T;
+
+    fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+        unsafe { Self::WithType::<T2>::from_vec_unchecked(self.size, self.pixels.transform(f)) }
+    }
 }

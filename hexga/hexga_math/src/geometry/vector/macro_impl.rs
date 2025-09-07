@@ -532,6 +532,7 @@ macro_rules! impl_generic_array_like
         impl<T, const N : usize> $name<T,N>
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             pub(crate) const IS_VALID: () = 
             {
                 assert!(std::mem::size_of::<Self>() == std::mem::size_of::<[T;N]>());
