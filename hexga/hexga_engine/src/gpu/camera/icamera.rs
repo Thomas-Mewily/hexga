@@ -1,13 +1,12 @@
 use super::*;
 
 // Based on https://docs.rs/macroquad/latest/macroquad/camera/index.html
-pub trait ICamera
+pub trait ICamera<F=float> : GetMatrix<F,4,4> where F:Float
 {
-    fn matrix(&self) -> Mat4;
     fn have_depth(&self) -> bool;
     fn viewport(&self) -> Option<Rect2P>;
 
-    fn to_camera(&self) -> Camera { Camera { matrix: self.matrix(), depth: self.have_depth(), viewport: self.viewport() }}
+    fn to_camera(&self) -> CameraOf<F> { CameraOf { matrix: self.matrix(), depth: self.have_depth(), viewport: self.viewport() }}
 }
 
 pub type Camera3D = Camera3DOf<float>;
@@ -21,6 +20,13 @@ pub struct Camera3DOf<F> where F:Float
     pub perspective: CameraPerspectiveOf<F>,
     pub viewport : Option<Rect2P>
 }
+
+impl<F> GetMatrix<F,4,4> for Camera3DOf<F> where F: Float
+{ 
+    fn matrix(&self) -> Matrix<F,4,4> { self.matrix() } 
+}
+
+
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct CameraPerspectiveOf<F> where F:Float
@@ -62,6 +68,7 @@ impl<F> From<CameraPerspectiveOf<F>> for Matrix4<F> where F:Float
 }
 
 
+
 /* 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Projection 
@@ -93,9 +100,8 @@ impl<F> Camera3DOf<F> where F:Float
     );
 }
 
-impl<F> ICamera for Camera3DOf<F> where F:Float
+impl<F> ICamera<F> for Camera3DOf<F> where F:Float
 {
-    fn matrix(&self) -> Mat4 { self.matrix().to_float() }
     fn have_depth(&self) -> bool { true }
     fn viewport(&self) -> Option<Rect2P> { self.viewport }
 }
@@ -137,7 +143,14 @@ impl<F> RotationZ<F> for CameraOf<F> where F: Float
 {
     fn rotate_z(&mut self, angle : AngleOf<F>) -> &mut Self { self.matrix.rotate_z(angle); self }
 }
-
+impl<F> GetMatrix<F,4,4> for CameraOf<F> where F: Float
+{
+    fn matrix(&self) -> Matrix<F,4,4> { self.matrix }
+}
+impl<F> SetMatrix<F,4,4> for CameraOf<F> where F: Float
+{
+    fn set_matrix(&mut self, matrix : Matrix<F,4,4>) -> &mut Self { self.matrix = matrix; self }
+}
 
 impl<F> CameraOf<F> where F: Float
 {
@@ -154,9 +167,8 @@ impl<F> Default for CameraOf<F> where F: Float
 {
     fn default() -> Self { Self::CAMERA_3D }
 }
-impl<F> ICamera for CameraOf<F> where F: Float
+impl<F> ICamera<F> for CameraOf<F> where F: Float
 {
-    fn matrix(&self) -> Mat4 { self.matrix.to_float() }
     fn have_depth(&self) -> bool { self.depth }
     fn viewport(&self) -> Option<Rect2P> { self.viewport }
 }

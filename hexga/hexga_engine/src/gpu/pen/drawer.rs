@@ -45,9 +45,12 @@ pub struct Drawer
 
 impl ICamera for Drawer
 {
-    fn matrix(&self) -> Mat4 { self.camera.matrix() }
     fn have_depth(&self) -> bool { self.camera.have_depth() }
     fn viewport(&self) -> Option<Rect2P> { self.camera.viewport() }
+}
+impl GetMatrix<float,4,4> for Drawer
+{
+    fn matrix(&self) -> Matrix<float,4,4> { self.camera.matrix() }
 }
 
 

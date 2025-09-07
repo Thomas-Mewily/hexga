@@ -151,6 +151,22 @@ impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
     }
 }
 
+
+impl<T, const ROW : usize, const COL : usize> GetMatrix<T,ROW,COL> for Matrix<T,ROW,COL> where Self: Copy
+{
+    fn matrix(&self) -> Matrix<T,ROW,COL> {
+        *self
+    }
+}
+
+impl<T, const ROW : usize, const COL : usize> SetMatrix<T,ROW,COL> for Matrix<T,ROW,COL> where Self: Copy
+{
+    fn set_matrix(&mut self, matrix : Matrix<T,ROW,COL>) -> &mut Self {
+        *self = matrix; self
+    }
+}
+
+
 // 2D
 impl<T> SquareMatrix<T,2>
     where
