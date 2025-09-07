@@ -4,236 +4,187 @@ use crate::*;
 
 pub mod prelude
 {
-    pub use super::{CastRangeInto, CastRangeIntoComposite, CastRangeFrom};
+    pub use super::{CastRangeInto, CastRangeFrom};
 }
 
 
+
+
 /// Remap the value [RangeDefault] to the default range of target type,
-/// in a generic friendly way.
-///
+/// in a generic friendly way, and similar to the [From] trait.
+/// 
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
-///
-/// The [CastRangeIntoComposite] trait is the most generic way to use it.
+/// 
+/// One should always prefer implementing [CastRangeFrom] over [CastRangeInto] because implementing [CastRangeFrom] automatically provides one with an implementation of [CastRangeInto] thanks to the blanket implementation in the hexga_math library.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(u8::cast_range_from(1f32), 255u8);
 /// assert_eq!(u8::cast_range_from(0f32), 0u8);
-/// assert_eq!(u8::cast_range_from(0.5f32), 127u8);
-/// ```
-///
-/// Also support casting to another type with the same size :
-///
-/// ```rust
-/// use hexga_math::prelude::*;
-///
-/// assert_eq!(u8::cast_range_from(0i8), 0u8);
-/// assert_eq!(u8::cast_range_from(127i8), 254u8);
-///
-/// assert_eq!(i8::cast_range_from(0u8), 0i8);
-/// assert_eq!(i8::cast_range_from(255u8), 127i8);
-///
-/// assert_eq!(u8::cast_range_from(128u8), 128u8);
-///
-/// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
+/// 
+/// assert_eq!(u8::MAX.cast_range_into(), u16::MAX);
+/// assert_eq!(u8::MIN.cast_range_into(), u16::MIN);
 /// ```
 ///
 /// Also work with composite like [std::array], [Vector]...
 ///
-/// ```
+/// ```rust
 /// use hexga_math::prelude::*;
 ///
-/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
-/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
+/// let x = [0u8, 127u8, 255u8];
+/// let y : [u16; 3] = x.cast_range_into(),
+/// assert_eq!(y, [0u16, 32639u16, 65535u16]);
+///  
+/// 
+/// let a = vector3(0u8, 127u8, 255u8);
+/// let b : Vector3::<u16> = a.cast_into(),
+/// assert_eq!(b, vector3(0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX));
 /// ```
-pub trait CastRangeIntoComposite<T>
+pub trait CastRangeFrom<T> 
+{ 
+    fn cast_range_from(value : T) -> Self; 
+}
+impl<C1,C2> CastRangeFrom<C2> for C1 where C1: CompositeGeneric, C2: CompositeGeneric<WithType<C1::Inside> = Self>, C1::Inside : CastRangeFrom<C2::Inside>
 {
-    type Output;
-    /// Might lose some precision.
-    fn cast_range_into_composite(self) -> Self::Output;
+    fn cast_range_from(value : C2) -> Self 
+    {
+        value.map(|v| C1::Inside::cast_range_from(v))
+    }
 }
 
-impl<S,T,T2> CastRangeIntoComposite<T2> for S where T:CastRangeIntoComposite<T2>, S:CompositeGeneric<Inside = T>
+
+/// Remap the value [RangeDefault] to the default range of target type,
+/// in a generic friendly way, and similar to the [From] trait.
+/// 
+/// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
+/// 
+/// One should always prefer implementing [CastRangeFrom] over [CastRangeInto] because implementing [CastRangeFrom] automatically provides one with an implementation of [CastRangeInto] thanks to the blanket implementation in the hexga_math library.
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// assert_eq!(u8::cast_range_from(1f32), 255u8);
+/// assert_eq!(u8::cast_range_from(0f32), 0u8);
+/// 
+/// assert_eq!(u8::MAX.cast_range_into(), u16::MAX);
+/// assert_eq!(u8::MIN.cast_range_into(), u16::MIN);
+/// ```
+///
+/// Also work with composite like [std::array], [Vector]...
+///
+/// ```rust
+/// use hexga_math::prelude::*;
+///
+/// let x = [0u8, 127u8, 255u8];
+/// let y : [u16; 3] = x.cast_range_into(),
+/// assert_eq!(y, [0u16, 32639u16, 65535u16]);
+///  
+/// 
+/// let a = vector3(0u8, 127u8, 255u8);
+/// let b : Vector3::<u16> = a.cast_into(),
+/// assert_eq!(b, vector3(0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX));
+/// ```
+pub trait CastRangeInto<T> : Sized 
+{ 
+    fn cast_range_into(self) -> T; 
+}
+impl<S,T> CastRangeInto<T> for S where T:CastRangeFrom<S>
 {
-    type Output=<Self as CompositeGeneric>::WithType<T::Output>;
-    fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
+    fn cast_range_into(self) -> T {
+        T::cast_range_from(self)
+    }
 }
-
-/// Remap the value [RangeDefault] to the default range of target type,
-/// in a generic friendly way.
-///
-/// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
-///
-/// The [CastRangeIntoComposite] trait is the most generic way to use it.
-///
-/// ```rust
-/// use hexga_math::prelude::*;
-///
-/// assert_eq!(u8::cast_range_from(1f32), 255u8);
-/// assert_eq!(u8::cast_range_from(0f32), 0u8);
-/// assert_eq!(u8::cast_range_from(0.5f32), 127u8);
-/// ```
-///
-/// Also support casting to another type with the same size :
-///
-/// ```rust
-/// use hexga_math::prelude::*;
-///
-/// assert_eq!(u8::cast_range_from(0i8), 0u8);
-/// assert_eq!(u8::cast_range_from(127i8), 254u8);
-///
-/// assert_eq!(i8::cast_range_from(0u8), 0i8);
-/// assert_eq!(i8::cast_range_from(255u8), 127i8);
-///
-/// assert_eq!(u8::cast_range_from(128u8), 128u8);
-///
-/// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
-/// ```
-///
-/// Also work with composite like [std::array], [Vector]...
-///
-/// ```
-/// use hexga_math::prelude::*;
-///
-/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
-/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
-/// ```
-pub trait CastRangeInto<T> : CastRangeIntoComposite<T,Output = T> + Sized { fn cast_range_into(self) -> Self::Output { self.cast_range_into_composite() } }
-impl<T,T2> CastRangeInto<T> for T2 where T2 : CastRangeIntoComposite<T,Output = T> {}
-
-/// Remap the value [RangeDefault] to the default range of target type,
-/// in a generic friendly way.
-///
-/// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
-///
-/// The [CastRangeIntoComposite] trait is the most generic way to use it.
-///
-/// ```rust
-/// use hexga_math::prelude::*;
-///
-/// assert_eq!(u8::cast_range_from(1f32), 255u8);
-/// assert_eq!(u8::cast_range_from(0f32), 0u8);
-/// assert_eq!(u8::cast_range_from(0.5f32), 127u8);
-/// ```
-///
-/// Also support casting to another type with the same size :
-///
-/// ```rust
-/// use hexga_math::prelude::*;
-///
-/// assert_eq!(u8::cast_range_from(0i8), 0u8);
-/// assert_eq!(u8::cast_range_from(127i8), 254u8);
-///
-/// assert_eq!(i8::cast_range_from(0u8), 0i8);
-/// assert_eq!(i8::cast_range_from(255u8), 127i8);
-///
-/// assert_eq!(u8::cast_range_from(128u8), 128u8);
-///
-/// assert_eq!(<i8 as CastRangeInto<u8>>::cast_range_into(2i8), 4u8);
-/// ```
-///
-/// Also work with composite like [std::array], [Vector]...
-///
-/// ```
-/// use hexga_math::prelude::*;
-///
-/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, 32639u16, 65535u16]);
-/// assert_eq!(<[u8;3] as CastRangeIntoComposite<u16>>::cast_range_into_composite([0u8, 127u8, 255u8]), [0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX]);
-/// ```
-pub trait CastRangeFrom<T> { fn cast_range_from(value : T) -> Self; }
-impl<Src,Dest> CastRangeFrom<Dest> for Src where Dest : CastRangeInto<Src> { fn cast_range_from(value : Dest) -> Self { value.cast_range_into_composite() } }
 
 
 // Double recursive macro :)
 macro_rules! impl_cast_range_to_integer
 {
-    ($itself: ty, $other: ty) =>
+    ($src: ty, $dest: ty) =>
     {
-        impl CastRangeIntoComposite<$other> for $itself
+        impl CastRangeFrom<$src> for $dest
         {
-            type Output = $other;
             #[inline(always)]
-            fn cast_range_into_composite(self) -> Self::Output
+            fn cast_range_from(value: $src) -> $dest
             {
                 // The match can be inlined by the compiler since it is matching on compile time constant
-                match (Self::PRIMITIVE_NUMBER_TYPE, <$other>::PRIMITIVE_NUMBER_TYPE)
+                match (<$src>::PRIMITIVE_NUMBER_TYPE, <$dest>::PRIMITIVE_NUMBER_TYPE)
                 {
                     (NumberType::IntegerSigned, NumberType::IntegerSigned) =>
                     {
-                        if std::mem::size_of::<Self>() == std::mem::size_of::<$other>() { return self as $other; }
-                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>()
+                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>() { return value as $dest; }
+                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>()
                         {
                             // down cast
-                            return (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
+                            return (value * (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest
                         }else
                         {
                             // up cast
-                            ((self as $other) * (<$other>::RANGE / (Self::RANGE as $other)))
+                            ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     },
                     (NumberType::IntegerSigned, NumberType::IntegerUnsigned) =>
                     {
-                        if std::mem::size_of::<Self>() > std::mem::size_of::<$other>()
+                        if std::mem::size_of::<$src>() > std::mem::size_of::<$dest>()
                         {
                             // down cast
-                            (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
+                            (value * (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest
                         }else
                         {
                             // up cast or same size
-                            ((self as $other) * (<$other>::RANGE / (Self::RANGE as $other)))
+                            ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     },
-                    (NumberType::IntegerSigned, NumberType::Float) => ((self as $other - Self::RANGE_MIN as $other) / (Self::RANGE as $other)) ,
-                    (NumberType::IntegerSigned, NumberType::Bool) => if (self > Self::ZERO) { <$other>::RANGE_MAX } else { <$other>::RANGE_MIN },
+                    (NumberType::IntegerSigned, NumberType::Float) => ((value as $dest - <$src>::RANGE_MIN as $dest) / (<$src>::RANGE as $dest)) ,
+                    (NumberType::IntegerSigned, NumberType::Bool) => if (value > <$src>::ZERO) { <$dest>::RANGE_MAX } else { <$dest>::RANGE_MIN },
                     (NumberType::IntegerUnsigned, NumberType::IntegerSigned) =>
                     {
-                        if std::mem::size_of::<Self>() == std::mem::size_of::<$other>()
+                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>()
                         {
                             // same size, but different range
-                            return (self / (Self::RANGE / (<$other>::RANGE as $itself))) as $other
+                            return (value / (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest
                         }
-                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>()
+                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>()
                         {
                             // down cast
-                            (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
+                            (value * (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest
                         }else
                         {
                             // up cast
-                            ((self as $other) * (<$other>::RANGE / (Self::RANGE as $other)))
+                            ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     },
                     (NumberType::IntegerUnsigned, NumberType::IntegerUnsigned) =>
                     {
-                        if std::mem::size_of::<Self>() == std::mem::size_of::<$other>() { return self as $other; }
-                        if std::mem::size_of::<Self>() >= std::mem::size_of::<$other>()
+                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>() { return value as $dest; }
+                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>()
                         {
                             // down cast
-                            (self * (Self::RANGE / (<$other>::RANGE as $itself))) as $other
+                            (value * (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest
                         }else
                         {
                             // up cast
-                            ((self as $other) * (<$other>::RANGE / (Self::RANGE as $other)))
+                            ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     },
-                    (NumberType::IntegerUnsigned, NumberType::Float) => ((self as $other - Self::RANGE_MIN as $other) / (Self::RANGE as $other)),
-                    (NumberType::IntegerUnsigned, NumberType::Bool) => if (self > Self::ZERO) { <$other>::RANGE_MAX } else { <$other>::RANGE_MIN },
-                    (NumberType::Float, NumberType::IntegerSigned) => (self * (<$other>::RANGE as Self) + (<$other>::RANGE_MIN as Self)) as $other,
-                    (NumberType::Float, NumberType::IntegerUnsigned) => (self * (<$other>::RANGE as Self) + (<$other>::RANGE_MIN as Self)) as $other,
-                    (NumberType::Float, NumberType::Float) => (self * (<$other>::RANGE as Self) + (<$other>::RANGE_MIN as Self)) as $other,
-                    (NumberType::Float, NumberType::Bool) => if (self > Self::ZERO) { <$other>::RANGE_MAX } else { <$other>::RANGE_MIN },
-                    (NumberType::Bool, NumberType::IntegerSigned) => if self == Self::MIN { <$other>::RANGE_MIN } else { <$other>::RANGE_MAX },
-                    (NumberType::Bool, NumberType::IntegerUnsigned) => if self == Self::MIN { <$other>::RANGE_MIN } else { <$other>::RANGE_MAX },
-                    (NumberType::Bool, NumberType::Float) => if self == Self::MIN { <$other>::RANGE_MIN } else { <$other>::RANGE_MAX },
-                    (NumberType::Bool, NumberType::Bool) => if (self > Self::ZERO) { <$other>::RANGE_MAX } else { <$other>::RANGE_MIN },
+                    (NumberType::IntegerUnsigned, NumberType::Float) => ((value as $dest - <$src>::RANGE_MIN as $dest) / (<$src>::RANGE as $dest)),
+                    (NumberType::IntegerUnsigned, NumberType::Bool) => if (value > <$src>::ZERO) { <$dest>::RANGE_MAX } else { <$dest>::RANGE_MIN },
+                    (NumberType::Float, NumberType::IntegerSigned) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
+                    (NumberType::Float, NumberType::IntegerUnsigned) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
+                    (NumberType::Float, NumberType::Float) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
+                    (NumberType::Float, NumberType::Bool) => if (value > <$src>::ZERO) { <$dest>::RANGE_MAX } else { <$dest>::RANGE_MIN },
+                    (NumberType::Bool, NumberType::IntegerSigned) => if value == <$src>::MIN { <$dest>::RANGE_MIN } else { <$dest>::RANGE_MAX },
+                    (NumberType::Bool, NumberType::IntegerUnsigned) => if value == <$src>::MIN { <$dest>::RANGE_MIN } else { <$dest>::RANGE_MAX },
+                    (NumberType::Bool, NumberType::Float) => if value == <$src>::MIN { <$dest>::RANGE_MIN } else { <$dest>::RANGE_MAX },
+                    (NumberType::Bool, NumberType::Bool) => if (value > <$src>::ZERO) { <$dest>::RANGE_MAX } else { <$dest>::RANGE_MIN },
                 }
             }
         }
     };
 
-    ($other: ty) =>
+    ($dest: ty) =>
     {
-        map_on_number!(impl_cast_range_to_integer,$other);
+        map_on_number!(impl_cast_range_to_integer,$dest);
     };
 }
 map_on_number!(impl_cast_range_to_integer);
@@ -241,30 +192,25 @@ map_on_number!(impl_cast_range_to_integer);
 map_on_number!(
     ($type_name: tt) =>
     {
-        impl CastRangeIntoComposite<$type_name> for bool
+        impl CastRangeFrom<$type_name> for bool
         {
-            type Output = $type_name;
-            fn cast_range_into_composite(self) -> Self::Output
+            fn cast_range_from(value: $type_name) -> bool
             {
-                if self { <$type_name>::RANGE_MAX } else { <$type_name>::RANGE_MIN }
+                value >= $type_name::RANGE_HALF
             }
         }
-        impl CastRangeIntoComposite<bool> for $type_name
+        impl CastRangeFrom<bool> for $type_name
         {
-            type Output = bool;
-            fn cast_range_into_composite(self) -> Self::Output
+            fn cast_range_from(value: bool) -> $type_name
             {
-                self > Self::ZERO
+                if value { <$type_name>::RANGE_MAX } else { <$type_name>::RANGE_MIN }
             }
         }
     }
 );
-impl CastRangeIntoComposite<bool> for bool
+impl CastRangeFrom<bool> for bool
 {
-    type Output = bool;
-    fn cast_range_into_composite(self) -> Self::Output {
-        self
-    }
+    fn cast_range_from(value: bool) -> Self { value }
 }
 
 

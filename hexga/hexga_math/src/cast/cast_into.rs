@@ -9,8 +9,6 @@ pub mod prelude
     pub use super::{CastInto,CastFrom};
 }
 
-// TODO: fix the example
-
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) 
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
 /// 
@@ -21,35 +19,25 @@ pub mod prelude
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
-/// assert_eq!(i32::cast_from(255u8), 255i32);
+/// assert_eq!(i32::cast_from(255u8), 255);
 /// assert_eq!(i32::cast_from(12.3f32), 12);
+/// 
+/// assert_eq!(255u8.cast_into(), 255i32);
+/// assert_eq!(12.3f32.cast_into(), 12i32);
 /// ```
 ///
+/// Also work with composite type
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
-/// let float32 = 2.5f32;
-/// let float64 = 2.5f64;
-/// let float32_to_64 = f64::cast_from(float32);
-/// assert_eq!(float32_to_64, float32_to_64);
-///
-/// let float32_to_64 = <f32 as CastInto<f64>>::cast_into(float32);
-/// assert_eq!(float32_to_64, float32_to_64);
-///
-/// // The most generic way to do it
-/// let float32_to_64 = <f32 as CastIntoComposite<f64>>::cast_into_composite(float32);
-/// assert_eq!(float32_to_64, float32_to_64);
-/// ```
-///
-/// Only the [CastIntoComposite] will be working with composite :
-///
-/// ```rust
-/// use hexga_math::prelude::*;
-///
-/// let vec_f32 = Vector2::<f32>::new(0.5, 0.5);
-/// let vec_f64 = Vector2::<f64>::new(0.5, 0.5);
-/// let vec_f32_to_f64 = <Vector2::<f32> as CastIntoComposite<f64>>::cast_into_composite(vec_f32);
-/// assert_eq!(vec_f32_to_f64, vec_f64);
+/// let x = [1, 2i32];
+/// let y : [f32; 2] = x.cast_into(),
+/// assert_eq!(y, [1f32, 2f32]);
+///  
+/// 
+/// let a = point2(1, 2);
+/// let b : Vec2 = a.cast_into(),
+/// assert_eq!(b, vec2(1., 2.));
 /// ```
 pub trait CastFrom<T> 
 { 
@@ -63,6 +51,7 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: CompositeGeneric, C2: CompositeGeneric
     }
 }
 
+
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) 
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
 /// 
@@ -73,35 +62,26 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: CompositeGeneric, C2: CompositeGeneric
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
-/// assert_eq!(i32::cast_from(255u8), 255i32);
+/// assert_eq!(i32::cast_from(255u8), 255);
 /// assert_eq!(i32::cast_from(12.3f32), 12);
+/// 
+/// assert_eq!(255u8.cast_into(), 255i32);
+/// assert_eq!(12.3f32.cast_into(), 12i32);
 /// ```
 ///
+/// Also work with composite like [std::array], [Vector]...
+/// 
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
-/// let float32 = 2.5f32;
-/// let float64 = 2.5f64;
-/// let float32_to_64 = f64::cast_from(float32);
-/// assert_eq!(float32_to_64, float32_to_64);
-///
-/// let float32_to_64 = <f32 as CastInto<f64>>::cast_into(float32);
-/// assert_eq!(float32_to_64, float32_to_64);
-///
-/// // The most generic way to do it
-/// let float32_to_64 = <f32 as CastIntoComposite<f64>>::cast_into_composite(float32);
-/// assert_eq!(float32_to_64, float32_to_64);
-/// ```
-///
-/// Only the [CastIntoComposite] will be working with composite :
-///
-/// ```rust
-/// use hexga_math::prelude::*;
-///
-/// let vec_f32 = Vector2::<f32>::new(0.5, 0.5);
-/// let vec_f64 = Vector2::<f64>::new(0.5, 0.5);
-/// let vec_f32_to_f64 = <Vector2::<f32> as CastIntoComposite<f64>>::cast_into_composite(vec_f32);
-/// assert_eq!(vec_f32_to_f64, vec_f64);
+/// let x = [1, 2i32];
+/// let y : [f32; 2] = x.cast_into(),
+/// assert_eq!(y, [1f32, 2f32]);
+///  
+/// 
+/// let a = point2(1, 2);
+/// let b : Vec2 = a.cast_into(),
+/// assert_eq!(b, vec2(1., 2.));
 /// ```
 pub trait CastInto<T> : Sized 
 { 
