@@ -71,8 +71,8 @@ impl<T> HaveYAndMinusOne<T> for Vector2<T> where T: MinusOne + Zero { const MINU
 
 
 impl<T> From<Vector1<T>> for Vector2<T> where T: Default { fn from(value: Vector1<T>) -> Self { value.with_size() } }
-impl<T> From<Vector3<T>> for Vector2<T> where T: Default { fn from(value: Vector3<T>) -> Self { value.with_size() } }
-impl<T> From<Vector4<T>> for Vector2<T> where T: Default { fn from(value: Vector4<T>) -> Self { value.with_size() } }
+impl<T> From<Vector3<T>> for Vector2<T> { fn from(value: Vector3<T>) -> Self { let [x, y,..] = value.to_array(); Self::new(x, y) } }
+impl<T> From<Vector4<T>> for Vector2<T> { fn from(value: Vector4<T>) -> Self { let [x, y,..] = value.to_array(); Self::new(x, y) } }
 
 pub type Vector2Iter<T> = VectorIter<Vector2<T>, 2>;
 

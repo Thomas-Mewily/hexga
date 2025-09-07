@@ -17,7 +17,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{Angle,ToAngleComposite};
+    pub use super::{Angle,AngleOf,ToAngleComposite};
 }
 
 new_unit!(

@@ -291,6 +291,21 @@ impl<T, const N : usize> Half for SquareMatrix<T,N> where T: Half + Zero + Copy
     };
 }
 
+
+impl<T, const N : usize> SquareMatrix<T,N> where T: Copy
+{
+    /// Return the diagonal
+    pub fn diag(&self) -> Vector<T,N> { Vector::from_fn(|i| self[i][i]) }
+    /// Set the value on the diagonal
+    pub fn set_diag(&mut self, diag: Vector<T,N>)
+    { 
+        for i in 0..N
+        {
+            self[i][i] = diag[i];
+        }
+    }
+}
+
 map_on!(
     (
         (MinValue, MIN),
@@ -744,6 +759,7 @@ impl<T, const N : usize> RotationZ<T> for SquareMatrix<T,N>
     }
 }
 
+/* 
 impl<T, const N : usize> GetPosition<Vector<T,N>,N> for SquareMatrix<T,N> where T: Copy
 {
     fn pos(&self) -> Vector<Vector<T,N>,N> {
@@ -757,22 +773,69 @@ impl<T, const N : usize> SetPosition<Vector<T,N>,N> for SquareMatrix<T,N> where 
         self
     }
 }
+*/
 
-
-impl<T, const N : usize> GetPosition<T,N> for SquareMatrix<T,N> where T: Copy
+impl<T> GetPosition<T,2> for SquareMatrix<T,3> where T: Copy
 {
-    fn pos(&self) -> Vector<T,N> {
-        self.columns[N-1]
-    }
+    fn pos(&self) -> Vector<T,2> { self.columns[2].into() }
 }
-impl<T, const N : usize> SetPosition<T,N> for SquareMatrix<T,N> where T: Copy
+impl<T> SetPosition<T,2> for SquareMatrix<T,3> where T: Copy
 {
-    fn set_pos(&mut self, pos : Vector<T,N>) -> &mut Self {
-        self.columns[N-1] = pos;
+    fn set_pos(&mut self, pos : Vector<T,2>) -> &mut Self { self.columns[2] = pos.with_z(self[2][2]); self }
+}
+impl<T> GetPosition<T,3> for SquareMatrix<T,4> where T: Copy
+{
+    fn pos(&self) -> Vector<T,3> { self.columns[3].into() }
+}
+impl<T> SetPosition<T,3> for SquareMatrix<T,4> where T: Copy
+{
+    fn set_pos(&mut self, pos : Vector<T,3>) -> &mut Self { self.columns[3] = pos.with_w(self[3][3]); self }
+}
+
+impl<T> GetScale<T,2> for SquareMatrix<T,3> where T: Float
+{
+    fn scale(&self) -> Vector<T,2> { Vector::from_fn(|i| Vector::<T,2>::from(self[i]).length() ) }
+}
+impl<T> SetScale<T,2> for SquareMatrix<T,3> where T: Float
+{
+    fn set_scale(&mut self, scale : Vector<T,2>) -> &mut Self {
+        for i in 0..2 
+        {
+            let len = Vector::<T, 2>::from(self[i]).length();
+            if len.is_non_zero() 
+            {
+                let factor = scale[i] / len;
+                for j in 0..2 
+                {
+                    self[i][j] = self[i][j] * factor;
+                }
+            }
+        }
         self
     }
 }
-
+impl<T> GetScale<T,3> for SquareMatrix<T,4> where T: Float
+{
+    fn scale(&self) -> Vector<T,3> { Vector::from_fn(|i| Vector::<T,3>::from(self[i]).length() ) }
+}
+impl<T> SetScale<T,3> for SquareMatrix<T,4> where T: Float
+{
+    fn set_scale(&mut self, scale : Vector<T,3>) -> &mut Self {
+        for i in 0..3 
+        {
+            let len = Vector::<T, 3>::from(self[i]).length();
+            if len.is_non_zero() 
+            {
+                let factor = scale[i] / len;
+                for j in 0..3 
+                {
+                    self[i][j] = self[i][j] * factor;
+                }
+            }
+        }
+        self
+    }
+}
 
 /// the rotation code is mainly based on glam code
 impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + Zero, T : Float

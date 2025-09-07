@@ -41,11 +41,23 @@ impl<T, const N : usize> GetPosition<T,N> for Vector<T, N> where Self : Copy, T 
         *self
     }
 }
-
 impl<T, const N : usize> SetPosition<T,N> for Vector<T, N> where Self : Copy, T : Copy
 {
     fn set_pos(&mut self, pos : Vector<T,N>) -> &mut Self {
         *self = pos;
+        self
+    }
+}
+impl<T, const N : usize> GetScale<T,N> for Vector<T, N> where Self : Copy, T : Copy
+{
+    fn scale(&self) -> Vector<T,N> {
+        *self
+    }
+}
+impl<T, const N : usize> SetScale<T,N> for Vector<T, N> where Self : Copy, T : Copy
+{
+    fn set_scale(&mut self, scale : Vector<T,N>) -> &mut Self {
+        *self = scale;
         self
     }
 }

@@ -22,11 +22,7 @@ pub use mesh::*;
 mod vec;
 pub use vec::*;
 
-mod pen;
-pub use pen::*;
 
-mod drawer;
-pub use drawer::*;
 
 mod vertex;
 pub use vertex::*;
@@ -36,6 +32,9 @@ pub use format::*;
 
 mod camera;
 pub use camera::*;
+
+mod pen;
+pub use pen::*;
 
 pub mod prelude
 {
@@ -49,7 +48,7 @@ pub mod prelude
     pub use super::vertex::prelude::*;
 
     pub use super::vec::prelude::*;
+    pub use super::pen::prelude::*;
     
     pub use super::Gpu;
-    pub use super::Pen;
 }

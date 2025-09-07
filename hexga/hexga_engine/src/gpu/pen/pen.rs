@@ -1,5 +1,9 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::Pen;
+}
 
 pub struct Pen;
 

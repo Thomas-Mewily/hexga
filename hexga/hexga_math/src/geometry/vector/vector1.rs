@@ -52,8 +52,8 @@ impl<T> HaveX<T> for Vector1<T>
 impl<T> HaveXAndOne<T> for Vector1<T> where T: One + Zero { const X : Self = Vector1::new(T::ONE); }
 impl<T> HaveXAndMinusOne<T> for Vector1<T> where T: MinusOne + Zero { const MINUS_X : Self = Vector1::new(T::MINUS_ONE); }
 
-impl<T> From<Vector2<T>> for Vector1<T> where T: Default { fn from(value: Vector2<T>) -> Self { value.with_size() } }
-impl<T> From<Vector3<T>> for Vector1<T> where T: Default { fn from(value: Vector3<T>) -> Self { value.with_size() } }
-impl<T> From<Vector4<T>> for Vector1<T> where T: Default { fn from(value: Vector4<T>) -> Self { value.with_size() } }
+impl<T> From<Vector2<T>> for Vector1<T> { fn from(value: Vector2<T>) -> Self { let [x,..] = value.to_array(); Self::new(x) } }
+impl<T> From<Vector3<T>> for Vector1<T> { fn from(value: Vector3<T>) -> Self { let [x,..] = value.to_array(); Self::new(x) } }
+impl<T> From<Vector4<T>> for Vector1<T> { fn from(value: Vector4<T>) -> Self { let [x,..] = value.to_array(); Self::new(x) } }
 
 pub type Vector1Iter<T> = VectorIter<Vector1<T>, 1>;
