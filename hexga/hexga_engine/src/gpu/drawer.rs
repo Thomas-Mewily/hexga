@@ -28,12 +28,21 @@ impl Scoped<Draw> for Drawer
     }
 }
 
-#[derive(Default)]
+pub trait ISendableCamera : Futurable + ICamera {}
+impl<T> ISendableCamera for T where T: Futurable + ICamera {}
+
 pub struct Drawer
 {
-    pub(crate) camera   : NonEmptyStack<Camera>,
+    pub(crate) camera   : NonEmptyStack<Box<dyn ISendableCamera>>,
     pub(crate) immediate: MeshBuilder,
     pub(crate) draw_call: Vec<GpuDrawCalls>
+}
+
+impl Default for Drawer
+{
+    fn default() -> Self {
+        Self { camera: NonEmptyStack::new(Box::new(Camera::CAMERA_3D)), immediate: ___(), draw_call: ___() }
+    }
 }
 
 impl ICamera for Drawer
@@ -47,9 +56,9 @@ impl Drawer
 {
     pub fn new() -> Self { ___() }
 
-    pub fn camera(&self) -> &Camera { &self.camera }
+    pub fn camera(&self) -> &dyn ICamera { self.camera.as_ref() }
     
-    pub fn replace_camera(&mut self, cam: Camera) -> &mut Self { self.camera.replace(cam); self }
+    pub fn replace_camera<C>(&mut self, cam: C) -> &mut Self where C: ISendableCamera + 'static { self.camera.replace(Box::new(cam)); self }
 
     pub fn retrieve_current_mesh(&mut self) -> MeshBuilder
     {

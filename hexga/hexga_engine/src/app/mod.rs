@@ -23,5 +23,6 @@ pub trait App : 'static
 
 pub mod prelude
 {
-    pub use super::{SpawnFutur,IUserEvent,App,AppRun};
+    pub use super::futur::prelude::*;
+    pub use super::{IUserEvent,App,AppRun};
 }

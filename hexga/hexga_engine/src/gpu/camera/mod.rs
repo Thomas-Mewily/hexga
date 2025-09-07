@@ -74,8 +74,10 @@ impl<F> Camera3DOf<F> where F:Float
 {
     fn matrix(&self) -> Matrix4<F>
     {
+        // https://sotrh.github.io/learn-wgpu/beginner/tutorial6-uniforms/#a-perspective-camera
         let view: Matrix<F, 4, 4> = Matrix4::<F>::look_to_rh(self.position, self.target, self.up);
         let proj = Matrix4::<F>::from(self.perspective);
+        // TODO: get the screen size, Idk if the OPENGL_TO_WGPU_MATRIX is necessary
         return Self::OPENGL_TO_WGPU_MATRIX * view * proj;
     }
 
@@ -107,8 +109,8 @@ pub struct Camera
 }
 impl Camera
 {
-    pub const CAMERA_2D : Self = Self{ matrix: Mat4::IDENTITY, depth: false, viewport: None };
-    pub const CAMERA_3D : Self = Self{ matrix: Mat4::IDENTITY, depth: true, viewport: None };
+    pub const CAMERA_2D : Self = Self { matrix: Mat4::IDENTITY, depth: false, viewport: None };
+    pub const CAMERA_3D : Self = Self { matrix: Mat4::IDENTITY, depth: true, viewport: None };
 
     pub fn new() -> Self { Self::___() }
 

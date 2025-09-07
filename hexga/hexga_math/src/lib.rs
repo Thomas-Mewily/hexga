@@ -85,23 +85,5 @@ pub mod prelude
     pub use super::number::prelude::*;
     pub use super::range::prelude::*;
     pub use super::cast::prelude::*;
-    /* 
-    pub use crate::vector::prelude::*;
-    pub use crate::grid::prelude::*;
-    pub use crate::rectangle::prelude::*;
-    pub use crate::matrix::prelude::*;
-
-    pub use crate::{GetPosition,SetPosition,RotationX,RotationY,RotationZ};
-
-    pub use hexga_typedef::prelude::*;
-
-    pub use crate::number::prelude::*;
-
-    pub use crate::range::prelude::*;
-
-    pub use crate::{time::{Time,ToTimeComposite},angle::{Angle,ToAngleComposite}};
-
-    pub use hexga_array::*;
-    */
 }
 use prelude::*;
