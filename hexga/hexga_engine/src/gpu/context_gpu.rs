@@ -146,7 +146,7 @@ impl ContextGpu
         };
 
         // Based on https://github.com/sotrh/learn-wgpu/blob/master/code/beginner/tutorial7-instancing/src/lib.rs
-        let mat4_layout = GpuVertexBufferLayout {
+        let _mat4_layout = GpuVertexBufferLayout {
             array_stride: std::mem::size_of::<GpuMat4>() as wgpu::BufferAddress,
             // We need to switch from using a step mode of Vertex to Instance
             // This means that our shaders will only change to use the next
@@ -186,7 +186,7 @@ impl ContextGpu
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
-                buffers: &[vertex_layout, mat4_layout],
+                buffers: &[vertex_layout /* , mat4_layout*/],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
