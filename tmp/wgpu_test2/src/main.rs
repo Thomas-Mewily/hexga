@@ -8,7 +8,7 @@ use hexga::prelude::*;
 #[derive(Default)]
 pub struct MyApp
 {
-
+    time: Time,
 }
 
 impl App for MyApp
@@ -17,11 +17,13 @@ impl App for MyApp
 
     fn update(&mut self) 
     {
-        
+        self.time += 0.1.s();
     }
 
     fn draw(&mut self)
     {
+        Cam.rot_z((self.time.s() * 3.).degree());
+
         Pen.triangle(MeshTriangle::new
             (
                 Vertex::new().with_position(vec3(-1.,-0.5,0.)).with_color(GpuColor::RED),

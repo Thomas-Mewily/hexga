@@ -4,6 +4,11 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::thread::LocalKey;
 
+pub mod prelude
+{
+    pub use super::Gpu;
+}
+
 thread_local! {
     pub(crate) static CONTEXT_GPU: RefCell<Option<ContextGpu>> = RefCell::new(None);
 }

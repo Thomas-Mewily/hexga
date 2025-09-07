@@ -50,5 +50,5 @@ pub mod prelude
     pub use super::vec::prelude::*;
     pub use super::pen::prelude::*;
     
-    pub use super::Gpu;
+    pub use super::gpu::prelude::*;
 }
