@@ -21,6 +21,13 @@ pub struct Camera3DOf<F> where F:Float
     pub viewport : Option<Rect2P>
 }
 
+impl<F> Default for Camera3DOf<F> where F:Float
+{
+    fn default() -> Self {
+        Self { position: Vector3::ZERO.with_z(one()), target: zero(), up: Vector3::Y, perspective: ___(), viewport: None }
+    }
+}
+
 impl<F> GetMatrix<F,4,4> for Camera3DOf<F> where F: Float
 { 
     fn matrix(&self) -> Matrix<F,4,4> { self.matrix() } 
@@ -35,6 +42,14 @@ pub struct CameraPerspectiveOf<F> where F:Float
     pub fovy: AngleOf<F>,
     pub znear: F,
     pub zfar: F,
+}
+impl<F> Default for CameraPerspectiveOf<F> where F:Float
+{
+    fn default() -> Self 
+    {
+        Self { aspect: (16. / 9.).cast_into(), fovy: AngleOf::from_degree(F::cast_from(45.)), znear: F::cast_from(0.1), zfar: F::cast_from(100.0) };
+        todo!();
+    }
 }
 impl<F> From<CameraPerspectiveOf<F>> for Matrix4<F> where F:Float
 {
