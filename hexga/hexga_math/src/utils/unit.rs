@@ -17,12 +17,10 @@ macro_rules! impl_new_unit_or_number
             }
         }
 
-        impl<T,T2> CastIntoComposite<T2> for $name<T> where T: CastIntoComposite<T2>
+        impl<T,T2> CastFrom<$name<T2>> for $name<T> where T: CastFrom<T2>
         {
-            type Output=$name<T::Output>;
-
-            fn cast_into_composite(self) -> Self::Output {
-                $name(self.0.cast_into_composite())
+            fn cast_from(value: $name<T2>) -> Self {
+                $name(T::cast_from(value.0))
             }
         }
 

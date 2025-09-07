@@ -39,6 +39,16 @@ impl App for MyApp
 
 fn main() 
 {
+
+    let x : i32 = 4;
+    let y : f32 = x.cast_into();
+
+    let x = [1,2i32];
+    let y : [f32;2] = x.cast_into();
+
+    let x = vector2(1,2i32);
+    let y : Vec2 = x.cast_into();
+
     //println!("Hello, world!");
     MyApp::___().run().unwrap();
     //println!("Goodbye, world!");

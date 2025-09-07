@@ -140,8 +140,8 @@ pub trait IGrid<T, Idx, const N : usize> :
     /// Each component of the vector will be between `-1.0..=1.0`
     fn from_fn_ndc<P,F>(size : P, f : F) -> Self
     where
-    P : Into<Vector::<Idx,N>>,
-    Vector::<Idx,N> : CastIntoComposite<float,Output = Vector::<float,N>>,
+    P : Into<Vector::<Idx,N>>, 
+    float : CastFrom<Idx>,
     F : FnMut(Vector<float,N>) -> T{ Self::from_fn_ndc_with_precision(size, f) }
 
     /// Create a grid from a Normalized Device Coordinates.
@@ -150,16 +150,15 @@ pub trait IGrid<T, Idx, const N : usize> :
     fn from_fn_ndc_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
         where
         P : Into<Vector::<Idx,N>>,
-        Precision : Float,
-        Vector::<Idx,N> : CastIntoComposite<Precision,Output = Vector::<Precision,N>>,
+        Precision : Float + CastFrom<Idx>,
         F : FnMut(Vector<Precision,N>) -> T,
     {
         let size : Vector::<Idx,N> = size.into();
-        let size_float : Vector::<Precision,N> = size.cast_into_composite();
+        let size_float : Vector::<Precision,N> = size.cast_into();
 
         Self::from_fn(size, |p|
             {
-                let pos_float : Vector::<Precision,N> = p.cast_into_composite();
+                let pos_float : Vector::<Precision,N> = p.cast_into();
                 f(pos_float / size_float * Precision::TWO - Vector::<Precision,N>::ONE)
             })
     }
@@ -174,7 +173,7 @@ pub trait IGrid<T, Idx, const N : usize> :
     fn from_fn_normalized<P,F>(size : P, f : F) -> Self
     where
     P : Into<Vector::<Idx,N>>,
-    Vector::<Idx,N> : CastIntoComposite<float,Output = Vector::<float,N>>,
+    float : CastFrom<Idx>,
     F : FnMut(Vector<float,N>) -> T{ Self::from_fn_normalized_with_precision(size, f) }
 
     /// Create a grid from a Normalized Coordinates.
@@ -183,16 +182,15 @@ pub trait IGrid<T, Idx, const N : usize> :
     fn from_fn_normalized_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
         where
         P : Into<Vector::<Idx,N>>,
-        Precision : Float,
-        Vector::<Idx,N> : CastIntoComposite<Precision,Output = Vector::<Precision,N>>,
+        Precision : Float + CastFrom<Idx>,
         F : FnMut(Vector<Precision,N>) -> T,
     {
         let size : Vector::<Idx,N> = size.into();
-        let size_float : Vector::<Precision,N> = size.cast_into_composite();
+        let size_float : Vector::<Precision,N> = size.cast_into();
 
         Self::from_fn(size, |p|
             {
-                let pos_float : Vector::<Precision,N> = p.cast_into_composite();
+                let pos_float : Vector::<Precision,N> = p.cast_into();
                 f(pos_float / size_float)
             })
     }

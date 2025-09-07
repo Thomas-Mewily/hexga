@@ -13,38 +13,38 @@ impl<S, T, const N : usize> ArrayExtension<T,N> for S where S : Array<T,N> {}
 pub trait ArrayExtension<T, const N : usize> : Array<T,N>
 {
     /// Fill non existing component with the [Clone]d given value
-    fn to_point_with_size_filled_with_value<const M: usize>(self, value: int) -> Point<M> where T: ToInt<Output = int> { Point::from_array(self.to_array().map(|v| v.to_int()).to_array_with_size_filled_with_value(value)) }
+    fn to_point_with_size_filled_with_value<const M: usize>(self, value: int) -> Point<M> where T: ToInt { Point::from_array(self.to_array().map(|v| v.to_int()).to_array_with_size_filled_with_value(value)) }
     /// Fill non existing component with [Default]
-    fn to_point_with_size<const M: usize>(self) -> Point<M> where T: ToInt<Output = int> + Default { Point::from_array(self.to_array().map(|v| v.to_int()).to_array_with_size()) }
+    fn to_point_with_size<const M: usize>(self) -> Point<M> where T: ToInt + Default { Point::from_array(self.to_array().map(|v| v.to_int()).to_array_with_size()) }
     /// Cast the value to int and return a Point
-    fn to_point(self) -> Point<N> where T: ToInt<Output = int> { Point::from_array(self.to_array().map(|v| v.to_int())) }
+    fn to_point(self) -> Point<N> where T: ToInt { Point::from_array(self.to_array().map(|v| v.to_int())) }
 
     /// Fill non existing component with [Default]
-    fn to_point1(self) -> Point1 where T: ToInt<Output = int> + Default { self.to_point_with_size() }
+    fn to_point1(self) -> Point1 where T: ToInt + Default { self.to_point_with_size() }
     /// Fill non existing component with [Default]
-    fn to_point2(self) -> Point2 where T: ToInt<Output = int> + Default { self.to_point_with_size() }
+    fn to_point2(self) -> Point2 where T: ToInt + Default { self.to_point_with_size() }
     /// Fill non existing component with [Default]
-    fn to_point3(self) -> Point3 where T: ToInt<Output = int> + Default { self.to_point_with_size() }
+    fn to_point3(self) -> Point3 where T: ToInt + Default { self.to_point_with_size() }
     /// Fill non existing component with [Default]
-    fn to_point4(self) -> Point4 where T: ToInt<Output = int> + Default { self.to_point_with_size() }
+    fn to_point4(self) -> Point4 where T: ToInt + Default { self.to_point_with_size() }
 
 
     /// Fill non existing component with the [Clone]d given value
-    fn to_vector_with_size_filled_with_value<const M: usize>(self, value: float) -> Vector<float,M> where T: ToFloat<Output = float> { Vector::from_array(self.to_array().map(|v| v.to_float()).to_array_with_size_filled_with_value(value)) }
+    fn to_vector_with_size_filled_with_value<const M: usize>(self, value: float) -> Vector<float,M> where T: ToFloat { Vector::from_array(self.to_array().map(|v| v.to_float()).to_array_with_size_filled_with_value(value)) }
     /// Fill non existing component with [Default]
-    fn to_vector_with_size<const M: usize>(self) -> Vector<float,M> where T: ToFloat<Output = float> + Default { Vector::from_array(self.to_array().map(|v| v.to_float()).to_array_with_size()) }
+    fn to_vector_with_size<const M: usize>(self) -> Vector<float,M> where T: ToFloat + Default { Vector::from_array(self.to_array().map(|v| v.to_float()).to_array_with_size()) }
     /// Cast the value to float and return a Vector
-    fn to_vector(self) -> Vector<float,N> where T: ToFloat<Output = float> { Vector::from_array(self.to_array().map(|v| v.to_float())) }
+    fn to_vector(self) -> Vector<float,N> where T: ToFloat { Vector::from_array(self.to_array().map(|v| v.to_float())) }
 
 
     /// Fill non existing component with [Default]
-    fn to_vec1(self) -> Vec1 where T: ToFloat<Output = float> + Default { self.to_vector_with_size() }
+    fn to_vec1(self) -> Vec1 where T: ToFloat + Default { self.to_vector_with_size() }
     /// Fill non existing component with [Default]
-    fn to_vec2(self) -> Vec2 where T: ToFloat<Output = float> + Default { self.to_vector_with_size() }
+    fn to_vec2(self) -> Vec2 where T: ToFloat + Default { self.to_vector_with_size() }
     /// Fill non existing component with [Default]
-    fn to_vec3(self) -> Vec3 where T: ToFloat<Output = float> + Default { self.to_vector_with_size() }
+    fn to_vec3(self) -> Vec3 where T: ToFloat + Default { self.to_vector_with_size() }
     /// Fill non existing component with [Default]
-    fn to_vec4(self) -> Vec4 where T: ToFloat<Output = float> + Default { self.to_vector_with_size() }
+    fn to_vec4(self) -> Vec4 where T: ToFloat + Default { self.to_vector_with_size() }
 }
 
 /*

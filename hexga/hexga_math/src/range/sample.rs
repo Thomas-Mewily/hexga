@@ -47,7 +47,7 @@ impl<I,T> Iterator for RangeSample<I,T> where I : Number + CastInto<T>, T : Numb
         if self.idx >= self.end {
             None
         } else {
-            let val = self.offset + T::cast_from(self.idx) * self.step;
+            let val = self.offset + self.idx.cast_into() * self.step;
             self.idx.increment();
             Some(val)
         }
@@ -61,7 +61,7 @@ impl<I,T> DoubleEndedIterator for RangeSample<I,T> where I : Number + CastInto<T
             None
         } else {
             self.end.decrement();
-            Some(self.offset + T::cast_from(self.idx) * self.step)
+            Some(self.offset + self.idx.cast_into() * self.step)
         }
     }
 }
@@ -76,7 +76,7 @@ impl<I,T> RangeSampleExtension<I> for Range<T> where I : Number + CastInto<T>, T
     fn sample(self, nb_sample: I) -> Self::Output
     {
         let (start, end) = (self.start, self.end);
-        let step = if nb_sample.is_zero() { T::ZERO } else { (end - start) / T::cast_from(nb_sample) };
+        let step = if nb_sample.is_zero() { T::ZERO } else { (end - start) / nb_sample.cast_into() };
         RangeSample
         {
             idx: I::ZERO,
@@ -95,7 +95,7 @@ impl<I,T> RangeSampleExtension<I> for RangeInclusive<T> where I : Number + CastI
     fn sample(self, nb_sample: I) -> Self::Output
     {
         let (start, end) = self.into_inner();
-        let step = if nb_sample.is_zero() { T::ZERO } else { (end - start) / T::cast_from(nb_sample - I::ONE) };
+        let step = if nb_sample.is_zero() { T::ZERO } else { (end - start) / (nb_sample - I::ONE).cast_into() };
         RangeSample
         {
             idx: I::ZERO,

@@ -1,13 +1,13 @@
 use crate::*;
 
-pub trait Integer            : NumberInteger + Abs + Primitive + CastInteger {}
-impl<T> Integer for T where T: NumberInteger + Abs + Primitive + CastInteger {}
+pub trait Integer            : NumberInteger + Abs + Primitive + CastPrimitive {}
+impl<T> Integer for T where T: NumberInteger + Abs + Primitive + CastPrimitive {}
 
-pub trait IntegerUnsigned            : NumberIntegerUnsigned + Primitive + CastIntegerUnsigned {}
-impl<T> IntegerUnsigned for T where T: IntegerUnsigned + Primitive + CastIntegerUnsigned {}
+pub trait IntegerUnsigned            : Integer + NumberIntegerUnsigned {}
+impl<T> IntegerUnsigned for T where T: Integer + NumberIntegerUnsigned {}
 
-pub trait IntegerSigned            : NumberIntegerSigned + Primitive + CastIntegerSigned {}
-impl<T> IntegerSigned for T where T: IntegerSigned + Primitive + CastIntegerSigned {}
+pub trait IntegerSigned            : Integer + NumberIntegerSigned {}
+impl<T> IntegerSigned for T where T: Integer + NumberIntegerSigned {}
 
 /// iX uX fX bool
 pub trait Primitive : RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive + Default + PartialEq + PartialOrd + Copy + Debug {}

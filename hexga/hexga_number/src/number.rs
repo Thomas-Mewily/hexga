@@ -77,7 +77,7 @@ pub trait NumberPrimitiveNegative : NumberPrimitive + NumberNegative {}
 impl<T> NumberPrimitiveNegative for T where T: NumberPrimitive +  NumberNegative {}
 
 /// fX
-pub trait NumberFloat             : NumberPrimitiveNegative + Half + NaNValue {}
+pub trait NumberFloat             : NumberPrimitiveNegative + Half + NaNValue  {}
 impl<T> NumberFloat for T where T: NumberPrimitiveNegative + Half + NaNValue {}
 
 /// uX or iX
