@@ -57,7 +57,7 @@ pub trait CastRangeIntoComposite<T>
 impl<S,T,T2> CastRangeIntoComposite<T2> for S where T:CastRangeIntoComposite<T2>, S:CompositeGeneric<Inside = T>
 {
     type Output=<Self as CompositeGeneric>::WithType<T::Output>;
-    fn cast_range_into_composite(self) -> Self::Output { self.transform(|v| v.cast_range_into_composite()) }
+    fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
 }
 
 /// Remap the value [RangeDefault] to the default range of target type,

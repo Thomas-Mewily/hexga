@@ -257,6 +257,11 @@ macro_rules! impl_fixed_array_like
                 std::mem::forget(array);
                 s
             }
+
+            pub fn map<T2, F>(self, f: F) -> $name<T2> where F: FnMut(T) -> T2
+            {
+                <[T;$dim]>::from(self).map(f).into()
+            }
         }
 
         impl<T> ::std::marker::Copy  for $name<T> where T: Copy {}
@@ -476,9 +481,9 @@ macro_rules! impl_fixed_array_like
         impl<T> Composite for $name<T>
         {
             type Inside=T;
-            fn transform_intern<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
+            fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
             {
-                Self::from_array(<[T;$dim]>::from(self).transform_intern(f))
+                Self::from_array(<[T;$dim]>::from(self).map_intern(f))
             }
         }
         impl<T> CompositeGeneric for $name<T>
@@ -486,8 +491,8 @@ macro_rules! impl_fixed_array_like
             type WithType<T2> = $name<T2>;
             type Inside=T;
 
-            fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
-                Self::WithType::from_array(<[T;$dim] as CompositeGeneric>::transform(self.into(), f))
+            fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+                Self::WithType::from_array(<[T;$dim] as CompositeGeneric>::map(self.into(), f))
             }
         }
     };
@@ -543,6 +548,11 @@ macro_rules! impl_generic_array_like
                 let s = unsafe { std::ptr::read(&array as *const [T;N] as *const Self) };
                 std::mem::forget(array);
                 s
+            }
+
+            pub fn map<T2, F>(self, f: F) -> $name<T2,N> where F: FnMut(T) -> T2
+            {
+                <[T;N]>::from(self).map(f).into()
             }
         }
 
@@ -770,9 +780,9 @@ macro_rules! impl_generic_array_like
         impl<T, const N : usize> Composite for $name<T,N>
         {
             type Inside=T;
-            fn transform_intern<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
+            fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
             {
-                Self::from_array(<[T;N]>::from(self).transform_intern(f))
+                Self::from_array(<[T;N]>::from(self).map_intern(f))
             }
         }
         impl<T, const N : usize> CompositeGeneric for $name<T,N>
@@ -780,8 +790,8 @@ macro_rules! impl_generic_array_like
             type WithType<T2> = $name<T2,N>;
             type Inside=T;
 
-            fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
-                Self::WithType::from_array(<[T;N] as CompositeGeneric>::transform(self.into(), f))
+            fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+                Self::WithType::from_array(<[T;N] as CompositeGeneric>::map(self.into(), f))
             }
         }
     };

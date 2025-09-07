@@ -459,7 +459,7 @@ impl<T, const ROW : usize, const COL : usize> DivAssign<T> for Matrix<T,ROW,COL>
 impl<T, const ROW : usize, const COL : usize> Composite for Matrix<T,ROW,COL>
 {
     type Inside=T;
-    fn transform_intern<F>(self, mut f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
+    fn map_intern<F>(self, mut f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
     {
         let mut it = self.columns.into_iter();
         let cols = std::array::from_fn(|_| Vector::from_array(it.next().unwrap().to_array().map(&mut f)));
@@ -471,7 +471,7 @@ impl<T, const ROW : usize, const COL : usize> CompositeGeneric for Matrix<T,ROW,
     type WithType<T2> = Matrix<T2,ROW,COL>;
     type Inside=T;
 
-    fn transform<T2,F>(self, mut f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+    fn map<T2,F>(self, mut f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
         let mut it = self.columns.into_iter();
         let cols = std::array::from_fn(|_| Vector::from_array(it.next().unwrap().to_array().map(&mut f)));
         Self::WithType::<T2>::from_col(Vector::from_array(cols))

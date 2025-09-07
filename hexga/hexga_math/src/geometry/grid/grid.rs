@@ -15,8 +15,8 @@ pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
 impl<T, Idx, const N : usize> Composite for GridBase<T, Idx, N> where Idx : Integer
 {
     type Inside=T;
-    fn transform_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
-        self.values = self.values.transform_intern(f);
+    fn map_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
+        self.values = self.values.map_intern(f);
         self
     }
 }
@@ -25,8 +25,8 @@ impl<T, Idx, const N : usize> CompositeGeneric for GridBase<T, Idx, N> where Idx
     type WithType<T2> = GridBase<T2, Idx, N>;
     type Inside=T;
 
-    fn transform<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
-        unsafe { Self::WithType::<T2>::from_vec_unchecked(self.size, self.values.transform(f)) }
+    fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+        unsafe { Self::WithType::<T2>::from_vec_unchecked(self.size, self.values.map(f)) }
     }
 }
 

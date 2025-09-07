@@ -76,11 +76,11 @@ map_on_number!(
 impl<T> ToTimeComposite for T where T: CompositeGeneric, T::Inside : ToTimeComposite
 {
     type Output = T::WithType<<T::Inside as ToTimeComposite>::Output>;
-    fn ms  (self) -> Self::Output { self.transform(|v| v.ms()) }
-    fn s   (self) -> Self::Output { self.transform(|v| v.s()) }
-    fn mins(self) -> Self::Output { self.transform(|v| v.mins()) }
-    fn hour(self) -> Self::Output { self.transform(|v| v.hour()) }
-    fn day (self) -> Self::Output { self.transform(|v| v.day()) }
+    fn ms  (self) -> Self::Output { self.map(|v| v.ms()) }
+    fn s   (self) -> Self::Output { self.map(|v| v.s()) }
+    fn mins(self) -> Self::Output { self.map(|v| v.mins()) }
+    fn hour(self) -> Self::Output { self.map(|v| v.hour()) }
+    fn day (self) -> Self::Output { self.map(|v| v.day()) }
 }
 
 impl<T:Float> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self) } }

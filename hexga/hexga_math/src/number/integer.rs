@@ -42,7 +42,7 @@ map_on_float!(impl_signed);
 impl<T> ToUnsigned for T where T:CompositeGeneric, T::Inside: ToUnsigned
 {
     type Output=T::WithType<<T::Inside as ToUnsigned>::Output>;
-    fn to_unsigned(self) -> Self::Output { self.transform(|v| v.to_unsigned()) }
+    fn to_unsigned(self) -> Self::Output { self.map(|v| v.to_unsigned()) }
 }
 
 
@@ -75,5 +75,5 @@ map_on_float!(impl_unsigned);
 impl<T> ToSigned for T where T:CompositeGeneric, T::Inside: ToSigned
 {
     type Output=T::WithType<<T::Inside as ToSigned>::Output>;
-    fn to_signed(self) -> Self::Output { self.transform(|v| v.to_signed()) }
+    fn to_signed(self) -> Self::Output { self.map(|v| v.to_signed()) }
 }

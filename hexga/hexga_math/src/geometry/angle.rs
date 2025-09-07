@@ -65,9 +65,9 @@ map_on_number!(
 impl<T> ToAngleComposite for T where T: CompositeGeneric, T::Inside : ToAngleComposite
 {
     type Output = T::WithType<<T::Inside as ToAngleComposite>::Output>;
-    fn degree(self) -> Self::Output { self.transform(|v| v.degree()) }
-    fn radian(self) -> Self::Output { self.transform(|v| v.radian()) }
-    fn turn  (self) -> Self::Output { self.transform(|v| v.turn()) }
+    fn degree(self) -> Self::Output { self.map(|v| v.degree()) }
+    fn radian(self) -> Self::Output { self.map(|v| v.radian()) }
+    fn turn  (self) -> Self::Output { self.map(|v| v.turn()) }
 }
 
 

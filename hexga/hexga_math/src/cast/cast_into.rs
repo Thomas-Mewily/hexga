@@ -66,7 +66,7 @@ pub trait CastIntoComposite<T>
 impl<S,T,T2> CastIntoComposite<T2> for S where T:CastIntoComposite<T2>, S:CompositeGeneric<Inside = T>
 {
     type Output=<Self as CompositeGeneric>::WithType<T::Output>;
-    fn cast_into_composite(self) -> Self::Output { self.transform(|v| v.cast_into_composite()) }
+    fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
 }
 
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
