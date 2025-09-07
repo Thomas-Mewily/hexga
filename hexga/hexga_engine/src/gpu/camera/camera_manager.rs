@@ -46,7 +46,7 @@ impl CameraManager
         let m = self.matrix();
         //info!("pushed matrix");
         //info!("{}", m);
-        Gpu.base.queue.write_buffer(&Cam.camera_buffer, 0, m.as_u8_slice());
+        Gpu.queue.write_buffer(&Cam.camera_buffer, 0, m.as_u8_slice());
     }
 }
 impl GetMatrix<float,4,4> for CameraManager
