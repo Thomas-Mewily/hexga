@@ -23,7 +23,7 @@ pub struct ColorHslaOf<T>
     pub a : T,
     no_destructuring : (),
 }
-hexga_math::impl_fixed_array_like_with_op!(ColorHslaOf, 4);
+hexga_math::impl_fixed_array_with_op!(ColorHslaOf, 4);
 
 
 impl<T> ColorHslaOf<T>

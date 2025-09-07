@@ -47,7 +47,7 @@ pub struct RectangleOf<T>
     pub pos  : T,
     pub size : T,
 }
-impl_fixed_array_like_with_op!(RectangleOf, 2);
+impl_fixed_array_with_op!(RectangleOf, 2);
 
 impl<T> Default for RectangleOf<T> where T: Number
 {

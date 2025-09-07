@@ -18,9 +18,8 @@ pub struct Camera3DOf<F> where F:Float
     pub position: Vector3<F>,
     pub target: Vector3<F>,
     pub up: Vector3<F>,
-    pub perspective: CameraPerspectiveOf<F>
-
-    //pub projection: Projection,
+    pub perspective: CameraPerspectiveOf<F>,
+    pub viewport : Option<Rect2P>
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -95,14 +94,8 @@ impl<F> Camera3DOf<F> where F:Float
 impl<F> ICamera for Camera3DOf<F> where F:Float
 {
     fn matrix(&self) -> Mat4 { self.matrix().to_float() }
-
-    fn have_depth(&self) -> bool {
-        todo!()AA
-    }
-
-    fn viewport(&self) -> Option<Rect2P> {
-        todo!()
-    }
+    fn have_depth(&self) -> bool { true }
+    fn viewport(&self) -> Option<Rect2P> { self.viewport }
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]

@@ -35,7 +35,7 @@ pub struct ColorRgbaOf<T>
     pub a : T,
     no_destructuring : (),
 }
-hexga_math::impl_fixed_array_like_with_op!(ColorRgbaOf, 4);
+hexga_math::impl_fixed_array_with_op!(ColorRgbaOf, 4);
 
 
 #[allow(dead_code)]

@@ -1,6 +1,6 @@
 
 #[macro_export]
-macro_rules! impl_fixed_array_like_op
+macro_rules! impl_fixed_array_op
 {
     ($name: ident, $dim : expr) =>
     {
@@ -80,20 +80,20 @@ macro_rules! impl_fixed_array_like_op
         // ================= Display =========
 
         // TODO: use crate::map_on_std_fmt instead ?
-        $crate::impl_fixed_array_like_display!($name, Display);
-        $crate::impl_fixed_array_like_display!($name, Debug);
-        $crate::impl_fixed_array_like_display!($name, Octal);
-        $crate::impl_fixed_array_like_display!($name, Binary);
-        $crate::impl_fixed_array_like_display!($name, LowerHex);
-        $crate::impl_fixed_array_like_display!($name, UpperHex);
-        $crate::impl_fixed_array_like_display!($name, LowerExp);
-        $crate::impl_fixed_array_like_display!($name, UpperExp);
-        $crate::impl_fixed_array_like_display!($name, Pointer);
+        $crate::impl_fixed_array_display!($name, Display);
+        $crate::impl_fixed_array_display!($name, Debug);
+        $crate::impl_fixed_array_display!($name, Octal);
+        $crate::impl_fixed_array_display!($name, Binary);
+        $crate::impl_fixed_array_display!($name, LowerHex);
+        $crate::impl_fixed_array_display!($name, UpperHex);
+        $crate::impl_fixed_array_display!($name, LowerExp);
+        $crate::impl_fixed_array_display!($name, UpperExp);
+        $crate::impl_fixed_array_display!($name, Pointer);
     }
 }
 
 #[macro_export]
-macro_rules! impl_generic_array_like_display
+macro_rules! impl_generic_array_display
 {
     ($name: ident, $trait_name :ident) =>
     {
@@ -118,7 +118,7 @@ macro_rules! impl_generic_array_like_display
 }
 
 #[macro_export]
-macro_rules! impl_fixed_array_like_display
+macro_rules! impl_fixed_array_display
 {
     ($name: ident, $trait_name :ident) =>
     {
@@ -145,7 +145,7 @@ macro_rules! impl_fixed_array_like_display
 
 
 #[macro_export]
-macro_rules! impl_generic_array_like_op
+macro_rules! impl_generic_array_op
 {
     ($name: ident) =>
     {
@@ -225,20 +225,20 @@ macro_rules! impl_generic_array_like_op
 
         // ================= Display =========
 
-        $crate::impl_generic_array_like_display!($name, Display);
-        $crate::impl_generic_array_like_display!($name, Debug);
-        $crate::impl_generic_array_like_display!($name, Octal);
-        $crate::impl_generic_array_like_display!($name, Binary);
-        $crate::impl_generic_array_like_display!($name, LowerHex);
-        $crate::impl_generic_array_like_display!($name, UpperHex);
-        $crate::impl_generic_array_like_display!($name, LowerExp);
-        $crate::impl_generic_array_like_display!($name, UpperExp);
-        $crate::impl_generic_array_like_display!($name, Pointer);
+        $crate::impl_generic_array_display!($name, Display);
+        $crate::impl_generic_array_display!($name, Debug);
+        $crate::impl_generic_array_display!($name, Octal);
+        $crate::impl_generic_array_display!($name, Binary);
+        $crate::impl_generic_array_display!($name, LowerHex);
+        $crate::impl_generic_array_display!($name, UpperHex);
+        $crate::impl_generic_array_display!($name, LowerExp);
+        $crate::impl_generic_array_display!($name, UpperExp);
+        $crate::impl_generic_array_display!($name, Pointer);
     }
 }
 
 #[macro_export]
-macro_rules! impl_fixed_array_like
+macro_rules! impl_fixed_array
 {
     ($name: ident, $dim : expr) =>
     {
@@ -499,7 +499,7 @@ macro_rules! impl_fixed_array_like
 }
 
 #[macro_export]
-macro_rules! impl_fixed_array_like_constant
+macro_rules! impl_fixed_array_constant
 {
     ($name: ident, $dim : expr) =>
     {
@@ -517,20 +517,20 @@ macro_rules! impl_fixed_array_like_constant
 }
 
 #[macro_export]
-macro_rules! impl_fixed_array_like_with_op
+macro_rules! impl_fixed_array_with_op
 {
     ($name: ident, $dim : expr) =>
     {
-        $crate::impl_fixed_array_like_op!($name, $dim);
-        $crate::impl_fixed_array_like!($name, $dim);
-        $crate::impl_fixed_array_like_constant!($name, $dim);
+        $crate::impl_fixed_array_op!($name, $dim);
+        $crate::impl_fixed_array!($name, $dim);
+        $crate::impl_fixed_array_constant!($name, $dim);
     };
 }
 
 
 
 #[macro_export]
-macro_rules! impl_generic_array_like
+macro_rules! impl_generic_array
 {
     ($name: ident) =>
     {
@@ -798,7 +798,7 @@ macro_rules! impl_generic_array_like
 }
 
 #[macro_export]
-macro_rules! impl_generic_array_like_constant
+macro_rules! impl_generic_array_constant
 {
     ($name: ident) =>
     {
@@ -816,12 +816,12 @@ macro_rules! impl_generic_array_like_constant
 }
 
 #[macro_export]
-macro_rules! impl_generic_array_like_with_op
+macro_rules! impl_generic_array_with_op
 {
     ($name: ident) =>
     {
-        $crate::impl_generic_array_like_op!($name);
-        $crate::impl_generic_array_like!($name);
-        $crate::impl_generic_array_like_constant!($name);
+        $crate::impl_generic_array_op!($name);
+        $crate::impl_generic_array!($name);
+        $crate::impl_generic_array_constant!($name);
     };
 }

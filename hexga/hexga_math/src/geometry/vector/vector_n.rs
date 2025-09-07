@@ -30,7 +30,7 @@ impl<T, const N : usize> Vector<T,N>
 }
 
 
-impl_generic_array_like_with_op!(Vector);
+impl_generic_array_with_op!(Vector);
 
 
 
