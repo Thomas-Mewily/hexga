@@ -78,7 +78,13 @@ impl SingletonInit for Ctx
             {
                 #[cfg(not(target_arch = "wasm32"))]
                 {
-                    env_logger::init();
+                    use std::io::Write;
+
+                    env_logger::Builder::from_env(
+                        env_logger::Env::default().default_filter_or("info")
+                    ).format(|buf, record| {
+                        writeln!(buf, "{}", record.args())
+                    }).init();
                     std::panic::set_hook(Box::new(|info| {
                         Ctx::destroy();
                         eprintln!("panic occurred: {info}");

@@ -6,21 +6,48 @@ pub mod prelude
     pub use super::CameraManager;
 }
 
-#[derive(Default)]
 pub struct CameraManager
 {
-    cameras: NonEmptyStack<Camera>,
+    // pub(crate) default_camera: Camera,
+    pub(crate) cameras: NonEmptyStack<Camera>,
+    pub(crate) camera_buffer: wgpu::Buffer,
+    pub(crate) camera_bind_group: wgpu::BindGroup,
+}
+
+impl Scoped<Draw> for CameraManager
+{
+    fn begin(&mut self) 
+    {
+        assert_eq!(self.cameras.len(), 1, "Forget to pop a camera");
+        self.cameras.replace(Camera::CAMERA_3D);
+    }
+
+    fn end(&mut self) {
+        
+    }
+}
+
+
+impl CameraManager
+{
+    pub(crate) fn new(camera_buffer: wgpu::Buffer, camera_bind_group: wgpu::BindGroup) -> Self { Self { cameras: ___(), camera_buffer, camera_bind_group } }
 }
 
 impl CameraManager
 {
-    pub fn with_camera<C>(cam : &C) -> Self where C: ICamera { Self { cameras: NonEmptyStack::new(cam.to_camera()) } }
-    pub fn new() -> Self { ___() }
-}
-
-impl CameraManager
-{
-    pub fn replace<C>(&mut self, cam: &C) -> &mut Self where C: ICamera { self.cameras.replace(cam.to_camera()); self }
+    pub fn replace<C>(&mut self, cam: &C) -> &mut Self where C: ICamera 
+    { 
+        self.cameras.replace(cam.to_camera());
+        self.apply();
+        self 
+    }
+    pub fn apply(&mut self) 
+    {
+        let m = self.matrix();
+        //info!("pushed matrix");
+        //info!("{}", m);
+        Gpu.base.queue.write_buffer(&Cam.camera_buffer, 0, m.as_u8_slice());
+    }
 }
 
 impl ICamera for CameraManager
@@ -36,7 +63,7 @@ impl GetPosition<float,3> for CameraManager
 }
 impl SetPosition<float,3> for CameraManager
 {
-    fn set_pos(&mut self, pos : Vector<float,3>) -> &mut Self { self.cameras.set_pos(pos); self }
+    fn set_pos(&mut self, pos : Vector<float,3>) -> &mut Self { self.cameras.set_pos(pos); self.apply(); self }
 }
 impl GetScale<float,3> for CameraManager
 {
@@ -44,17 +71,17 @@ impl GetScale<float,3> for CameraManager
 }
 impl SetScale<float,3> for CameraManager
 {
-    fn set_scale(&mut self, scale : Vector<float,3>) -> &mut Self { self.cameras.set_scale(scale); self }
+    fn set_scale(&mut self, scale : Vector<float,3>) -> &mut Self { self.cameras.set_scale(scale); self.apply(); self }
 }
 impl RotationX<float> for CameraManager
 {
-    fn rotate_x(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_x(angle); self }
+    fn rotate_x(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_x(angle); self.apply(); self }
 }
 impl RotationY<float> for CameraManager
 {
-    fn rotate_y(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_y(angle); self }
+    fn rotate_y(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_y(angle); self.apply(); self }
 }
 impl RotationZ<float> for CameraManager
 {
-    fn rotate_z(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_z(angle); self }
+    fn rotate_z(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_z(angle); self.apply(); self }
 }

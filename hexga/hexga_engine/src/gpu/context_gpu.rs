@@ -103,48 +103,75 @@ impl ContextGpu
         let surface_config = surface.get_default_config(&adapter, width, height).unwrap();
         surface.configure(&device, &surface_config);
 
-        let render_pipeline = Self::create_pipeline(&device, surface_config.format);
+        let swap_chain_format = surface_config.format;
+        
+        let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Camera Buffer"),
+            contents: Mat4::IDENTITY.as_u8_slice(),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
 
-        Ok
-        (
-            Self 
-            {
-                base: GpuBase { adapter, device, queue, render_pipeline },
-                surface: GpuSurface{ surface, surface_config },
-                draw: ___(),
-            }
-        )
-    }
+        
+        let camera_bind_group_layout =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+            label: Some("camera_bind_group_layout"),
+        });
 
-    
-    fn create_pipeline(
-        device: &wgpu::Device,
-        swap_chain_format: wgpu::TextureFormat,
-    ) -> wgpu::RenderPipeline {
-        // Load the shaders from disk
+        let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &camera_bind_group_layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: camera_buffer.as_entire_binding(),
+            }],
+            label: Some("camera_bind_group"),
+        });
+
+
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: None,
+            label: Some("Shader"),
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!("shader.wgsl"))),
         });
 
 
-        let vertex_layout = GpuVertexBufferLayout {
-            array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    shader_location: 0,
-                    format: GpuVector::<3>::GPU_VERTEX_FORMAT,
-                },
-                wgpu::VertexAttribute {
-                    offset: size_of::<GpuVec3>() as wgpu::BufferAddress,
-                    shader_location: 1,
-                    format: GpuColor::GPU_VERTEX_FORMAT,
-                },
-            ],
+        let vertex_layout = 
+        {
+            GpuVertexBufferLayout {
+                array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
+                step_mode: wgpu::VertexStepMode::Vertex,
+                attributes: &[
+                    wgpu::VertexAttribute {
+                        offset: 0,
+                        shader_location: 0,
+                        format: GpuVec3::GPU_VERTEX_FORMAT,
+                    },
+                    wgpu::VertexAttribute {
+                        offset: size_of::<GpuVec3>() as wgpu::BufferAddress,
+                        shader_location: 1,
+                        format: GpuColor::GPU_VERTEX_FORMAT,
+                    },
+                ],
+            }
         };
 
+
+        let render_pipeline_layout =
+            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("Render Pipeline Layout"),
+                bind_group_layouts: &[&camera_bind_group_layout],
+                push_constant_ranges: &[],
+            });
+
+        /* 
         // Based on https://github.com/sotrh/learn-wgpu/blob/master/code/beginner/tutorial7-instancing/src/lib.rs
         let _mat4_layout = GpuVertexBufferLayout {
             array_stride: std::mem::size_of::<GpuMat4>() as wgpu::BufferAddress,
@@ -178,15 +205,15 @@ impl ContextGpu
                     format: GpuVec4::GPU_VERTEX_FORMAT,
                 },
             ],
-        };
+        };*/
 
-        device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
-            layout: None,
+        let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("Render Pipeline"),
+            layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
-                buffers: &[vertex_layout /* , mat4_layout*/],
+                buffers: &[vertex_layout ],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -198,63 +225,35 @@ impl ContextGpu
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
                 strip_index_format: None,
+                front_face: wgpu::FrontFace::Ccw,
+                cull_mode: None, //Some(wgpu::Face::Back),
+                polygon_mode: wgpu::PolygonMode::Fill,
                 ..Default::default()
             },
             depth_stencil: None,
             multisample: wgpu::MultisampleState::default(),
             multiview: None,
             cache: None,
-        })
+        });
+        
+        //let render_pipeline = Self::create_pipeline(&device, surface_config.format);
+
+        Ok
+        (
+            Self 
+            {
+                base: GpuBase { adapter, device, queue, render_pipeline },
+                surface: GpuSurface{ surface, surface_config },
+                draw: Drawer { camera: CameraManager::new(camera_buffer, camera_bind_group), immediate: ___(), draw_call: ___() },
+            }
+        )
     }
-
-
 }
 impl ContextGpu
 {
     pub fn resize(&mut self, size: Point2)
     {
         self.surface.resize(size);
-    }
-
-    pub(crate) fn draw_remove_me(&mut self)
-    {
-        /* 
-        let surface_texture = self
-            .surface.surface
-            .get_current_texture()
-            .expect("Failed to acquire next swap chain texture");
-        let texture_view = surface_texture
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
-        let mut encoder = self
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &texture_view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
-                        store: wgpu::StoreOp::Store,
-                    },
-                })],
-                depth_stencil_attachment: None,
-                timestamp_writes: None,
-                occlusion_query_set: None,
-            });
-            rpass.set_pipeline(&self.render_pipeline);
-            rpass.set_vertex_buffer(0, self.draw.vertices.buffer.slice(..));
-            rpass.set_index_buffer(self.draw.indices.buffer.slice(..), Vertex::WGPU_INDEX_FORMAT);
-            rpass.draw_indexed(0..(self.draw.indices.len as _), 0, 0..1);
-            //rpass.draw(0..VERTEX_LIST.len() as u32, 0..1);
-        }
-        self.queue.submit(Some(encoder.finish()));
-        surface_texture.present();
-        */
-
-        
     }
 }
 
@@ -302,6 +301,8 @@ impl ContextGpu
                 occlusion_query_set: None,
             });
             rpass.set_pipeline(&self.render_pipeline);
+
+            rpass.set_bind_group(0, &self.draw.camera.camera_bind_group, &[]);
 
             for draw_calls in self.draw.draw_call.iter()
             {

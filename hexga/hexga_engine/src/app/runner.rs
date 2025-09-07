@@ -48,15 +48,19 @@ pub(crate) struct AppRunner<A> where A:App
 {
     app : A,
     ctx : &'static mut Context,
+    last_update : Time,
     proxy : EvLoopProxy<A::UserEvent>,
 }
 impl<A> AppRunner<A> where A:App
 {
-    pub fn new(app : A, ctx : &'static mut Context, proxy : EvLoopProxy<A::UserEvent>) -> Self { Self { app, ctx, proxy }}
+    pub fn new(app : A, ctx : &'static mut Context, proxy : EvLoopProxy<A::UserEvent>) -> Self { Self { app, ctx, proxy, last_update: Time::now() }}
 
     pub fn update(&mut self)
     {
-        self.app.update();
+        let time = Time::now();
+        let delta_time = time - self.last_update;
+        self.last_update = time;
+        self.app.update(delta_time);
     }
 }
 

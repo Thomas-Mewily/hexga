@@ -842,10 +842,12 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + Zer
 {
     pub fn from_rotation_axis(axis: Vector3<T>, angle : AngleOf<T>) -> Self
     {
-        let (sin, cos) = T::sin_cos(angle.radian());
-        let axis_sin = axis.mul(sin);
-        let axis_sq = axis.mul(axis);
+        let (sin, cos) = angle.sin_cos();
+        let axis = axis.normalized();
+        let axis_sin = axis * sin;
+        let axis_sq = axis * axis;
         let omc = T::ONE - cos;
+        
         let xyomc = axis.x * axis.y * omc;
         let xzomc = axis.x * axis.z * omc;
         let yzomc = axis.y * axis.z * omc;
@@ -868,8 +870,8 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + Zer
 
     pub fn from_rotation_x(angle : AngleOf<T>) -> Self
     {
-        let (sina, cosa) = T::sin_cos(angle.radian());
-        let mut r = Self::ZERO;
+        let (sina, cosa) = angle.sin_cos();
+        let mut r = Self::IDENTITY;
 
         r[Self::Y_INDEX][Self::Y_INDEX] =  cosa;
         r[Self::Y_INDEX][Self::Z_INDEX] =  sina;
@@ -880,8 +882,8 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + Zer
 
     pub fn from_rotation_y(angle : AngleOf<T>) -> Self
     {
-        let (sina, cosa) = T::sin_cos(angle.radian());
-        let mut r = Self::ZERO;
+        let (sina, cosa) = angle.sin_cos();
+        let mut r = Self::IDENTITY;
 
         r[Self::X_INDEX][Self::X_INDEX] =  cosa;
         r[Self::X_INDEX][Self::Z_INDEX] = -sina;
@@ -895,8 +897,8 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveY<Vector<T,N>> + Zer
 {
     pub fn from_rotation_z(angle : AngleOf<T>) -> Self
     {
-        let (sina, cosa) = T::sin_cos(angle.radian());
-        let mut r = Self::ZERO;
+        let (sina, cosa) = angle.sin_cos();
+        let mut r = Self::IDENTITY;
 
         r[Self::X_INDEX][Self::X_INDEX] =  cosa;
         r[Self::X_INDEX][Self::Y_INDEX] =  sina;

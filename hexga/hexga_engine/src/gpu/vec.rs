@@ -49,6 +49,9 @@ impl GpuVecDesc
     pub const INDEX : Self = Self::new().with_usages(GpuVecUsages::INDEX);
 }
 
+
+
+
 impl<T> GpuVec<T> where T:Copy
 {
     pub(crate) fn new_full(buffer: wgpu::Buffer, capacity: usize, len: usize, desc: GpuVecDesc) -> Self
@@ -76,15 +79,9 @@ impl<T> GpuVec<T> where T:Copy
 
     pub(crate) fn _new(device: &mut wgpu::Device, value: &[T], desc: GpuVecDesc) -> Self
     {
-        let bytes: &[u8] = unsafe {
-            std::slice::from_raw_parts(
-                value.as_ptr() as *const u8,
-                value.len() * std::mem::size_of::<T>(),
-            )
-        };
         let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
-            contents: bytes,
+            contents: value.as_u8_slice(),
             usage: desc.usages,
         });
         let capacity = value.len();

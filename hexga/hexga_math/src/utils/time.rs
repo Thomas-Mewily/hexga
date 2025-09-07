@@ -2,7 +2,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{Time,ToTimeComposite};
+    pub use super::{Time,TimeOf,ToTimeComposite,DeltaTime,DeltaTimeOf};
 }
 
 /*

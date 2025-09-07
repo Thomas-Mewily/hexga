@@ -1,0 +1,1 @@
+Pen immediate mode: recycle the same wgpu buffer instead of creating a new one at each frame

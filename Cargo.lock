@@ -975,6 +975,7 @@ dependencies = [
  "hexga",
  "log",
  "wasm-bindgen-futures",
+ "web-time",
  "wgpu",
  "winit",
 ]

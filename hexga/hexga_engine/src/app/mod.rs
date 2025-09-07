@@ -17,7 +17,7 @@ pub trait App : 'static
 {
     type UserEvent : IUserEvent;
 
-    fn update(&mut self) {}
+    fn update(&mut self, dt: DeltaTime) {}
     fn draw(&mut self) {}
 }
 

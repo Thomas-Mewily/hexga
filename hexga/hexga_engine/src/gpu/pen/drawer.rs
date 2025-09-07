@@ -21,10 +21,13 @@ impl Scoped<Draw> for Drawer
     {
         self.immediate.clear();
         self.draw_call.clear();
+        self.camera.begin_draw();
     }
 
-    fn end(&mut self) {
+    fn end(&mut self) 
+    {
         self.flush();
+        self.camera.end_draw();
     }
 }
 
@@ -33,7 +36,6 @@ pub trait DynCamera : Futurable + ICamera + Debug {}
 impl<T> DynCamera for T where T: Futurable + ICamera + Debug  {}
 */
 
-#[derive(Default)]
 pub struct Drawer
 {
     pub(crate) camera   : CameraManager,
@@ -52,8 +54,6 @@ impl ICamera for Drawer
 
 impl Drawer
 {
-    pub fn new() -> Self { ___() }
-
     pub fn camera(&self) -> &CameraManager { &self.camera }
     pub fn camera_mut(&mut self) -> &mut CameraManager { &mut self.camera }
     

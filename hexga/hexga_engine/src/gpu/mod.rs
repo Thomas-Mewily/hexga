@@ -22,6 +22,9 @@ pub use mesh::*;
 mod vec;
 pub use vec::*;
 
+mod u8_slice;
+pub use u8_slice::*;
+
 
 
 mod vertex;
@@ -48,7 +51,8 @@ pub mod prelude
     pub use super::vertex::prelude::*;
 
     pub use super::vec::prelude::*;
+    pub use super::u8_slice::prelude::*;
+
     pub use super::pen::prelude::*;
-    
     pub use super::gpu::prelude::*;
 }

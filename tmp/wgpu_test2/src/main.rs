@@ -8,6 +8,7 @@ use hexga::prelude::*;
 #[derive(Default)]
 pub struct MyApp
 {
+    camera: Camera3D,
     time: Time,
 }
 
@@ -15,14 +16,14 @@ impl App for MyApp
 {
     type UserEvent = ();
 
-    fn update(&mut self) 
+    fn update(&mut self, dt: DeltaTime) 
     {
-        self.time += 0.1.s();
+        self.time += dt;
     }
 
     fn draw(&mut self)
     {
-        Cam.rot_z((self.time.s() * 3.).degree());
+        Cam.rot_z(self.time.s().degree() * 50.);
 
         Pen.triangle(MeshTriangle::new
             (
@@ -31,9 +32,6 @@ impl App for MyApp
                 Vertex::new().with_position(vec3(0.,1.,0.)).with_color(GpuColor::BLUE),
             )
         );
-        // Todo : Pen singleton to draw vertex/index in immediate mode
-        //Angle::sample(20).map(|a| a.to_vec2_normalized()).
-        //let vertex = 
     }
 }
 
