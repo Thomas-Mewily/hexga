@@ -49,7 +49,6 @@ use std::hash::*;
 use std::marker::PhantomData;
 use std::cmp::Ordering;
 use std::ops::{Range, RangeInclusive};
-use hexga_typedef::prelude::*;
 use hexga_core::prelude::*;
 use hexga_array::prelude::*;
 use rayon::prelude::*;
@@ -60,6 +59,8 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
+
+pub use hexga_typedef as typedef;
 
 mod geometry;
 pub use geometry::*;
@@ -78,6 +79,7 @@ use cast::*;
 
 pub mod prelude
 {
+    pub use super::typedef::prelude::*;
     pub use super::geometry::prelude::*;
     pub use super::utils::prelude::*;
     pub use super::number::prelude::*;

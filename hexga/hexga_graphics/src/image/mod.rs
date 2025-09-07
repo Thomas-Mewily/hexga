@@ -10,7 +10,10 @@ mod hexga_io;
 #[cfg(feature = "hexga_io")]
 pub use hexga_io::*;
 
-pub mod prelude;
-
 mod img;
 pub use img::*;
+
+pub mod prelude
+{
+    pub use super::img::prelude::*;
+}

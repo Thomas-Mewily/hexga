@@ -456,6 +456,18 @@ impl<T, const ROW : usize, const COL : usize> DivAssign<T> for Matrix<T,ROW,COL>
 }
 
 
+impl<T, const ROW : usize, const COL : usize> Composite for Matrix<T,ROW,COL>
+{
+    type Inside=T;
+    fn transform_intern<F>(self, mut f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
+        let mut it = self.columns.into_iter();
+        let col = std::array::from_fn(move |_| it.next().unwrap().transform_intern(f));
+        Self::from_col(Vector::from_array(col))
+    }
+}
+
+
+
 
 impl<T, const N: usize> SquareMatrix<T, N>
 where

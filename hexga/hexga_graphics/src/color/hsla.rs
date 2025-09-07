@@ -1,5 +1,9 @@
-use crate::*;
+use super::*;
 
+pub mod prelude
+{
+    pub use super::{ColorHsla,ColorHslaOf,hsla};
+}
 
 pub type ColorHsla      = ColorHslaFloat;
 pub type ColorHslaFloat = ColorHslaOf<float>;
@@ -19,7 +23,7 @@ pub struct ColorHslaOf<T>
     pub a : T,
     no_destructuring : (),
 }
-impl_fixed_array_like_with_op!(ColorHslaOf, 4);
+hexga_math::impl_fixed_array_like_with_op!(ColorHslaOf, 4);
 
 
 impl<T> ColorHslaOf<T>
@@ -226,32 +230,4 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
         };
 }
 
-
-
-impl<T,Dest> CastIntoComposite<Dest> for ColorHslaOf<T> where T : CastIntoComposite<Dest>
-{
-    type Output=ColorHslaOf<T::Output>;
-    fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
-}
-impl<T,Dest> CastRangeIntoComposite<Dest> for ColorHslaOf<T> where T : CastRangeIntoComposite<Dest>
-{
-    type Output=ColorHslaOf<T::Output>;
-    fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
-}
-impl<T> ToUnsigned for ColorHslaOf<T> where T : ToUnsigned
-{
-    type Output=ColorHslaOf<T::Output>;
-    fn to_unsigned(self) -> Self::Output { self.map(|v| v.to_unsigned()) }
-}
-impl<T> ToSigned for ColorHslaOf<T> where T : ToSigned
-{
-    type Output=ColorHslaOf<T::Output>;
-    fn to_signed(self) -> Self::Output { self.map(|v| v.to_signed()) }
-}
-map_on_constant!
-(
-    (($trait_name: tt, $constant_name: tt)) =>
-    {
-        impl<T> $trait_name for ColorHslaOf<T> where T: $trait_name + Copy { const $constant_name : Self = Self::splat_hsla(T::$constant_name); }
-    }
-);
+pub const fn hsla<T>(hue : T, saturation : T, lightness : T, alpha : T) -> ColorHslaOf<T> { ColorHslaOf::hsla(hue, saturation, lightness, alpha) }

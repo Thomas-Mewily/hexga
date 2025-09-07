@@ -1,11 +1,10 @@
 use super::*;
 
-pub use hexga_array::prelude::*;
-
+pub use prelude::*;
 
 pub mod prelude 
 { 
-    pub use super::*; 
+    pub use hexga_array::prelude::*;
 }
 
 /* 

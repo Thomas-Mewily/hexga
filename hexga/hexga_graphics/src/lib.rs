@@ -18,8 +18,6 @@ use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}};
 
 use hexga_core::prelude::*;
 use hexga_math::prelude::*;
-use hexga_math::grid::*;
-use hexga_math::impl_fixed_array_like_with_op;
 
 #[allow(unused_imports)]
 

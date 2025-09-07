@@ -30,4 +30,3 @@ pub type Mat2P = MatP<2>;
 pub type Mat3P = MatP<3>;
 /// 4x4 matrix
 pub type Mat4P = MatP<4>;
-

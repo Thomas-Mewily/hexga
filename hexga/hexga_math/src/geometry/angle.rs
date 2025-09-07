@@ -48,7 +48,6 @@ pub trait ToAngleComposite
     fn radian(self) -> Self::Output;
     fn turn  (self) -> Self::Output;
 }
-//impl_composite_output_with_methods!(ToAngleComposite, degree, radian, turn);
 
 impl<T> ToAngleComposite for T where T: ToFloat<Output = float>
 {

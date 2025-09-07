@@ -1,3 +1,5 @@
+use super::*;
+
 pub mod rgba;
 pub use rgba::*;
 
@@ -9,7 +11,7 @@ pub use icolor::*;
 
 pub mod prelude
 {
-    pub use super::rgba::{Color,ColorU8,ColorRgba,ColorRgbaOf,rgb,rgba};
-    pub use super::hsla::{ColorHsla,ColorHslaOf};
-    pub use super::icolor::{ToColorComposite,ToColor,IColor};
+    pub use super::rgba::prelude::*;
+    pub use super::hsla::prelude::*;
+    pub use super::icolor::prelude::*;
 }

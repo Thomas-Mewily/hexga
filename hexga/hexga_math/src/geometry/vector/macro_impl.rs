@@ -245,6 +245,7 @@ macro_rules! impl_fixed_array_like
         impl<T> $name<T>
         {
             #[doc(hidden)]
+            #[allow(dead_code)]
             pub(crate) const IS_VALID: () = 
             {
                 assert!(std::mem::size_of::<Self>() == std::mem::size_of::<[T;$dim]>());
@@ -497,7 +498,7 @@ macro_rules! impl_fixed_array_like_constant
 {
     ($name: ident, $dim : expr) =>
     {
-        $crate::map_on_constant!
+        $crate::map_on::map_on_constant!
         (
             (($trait_name: tt, $constant_name: tt)) =>
             {

@@ -2,7 +2,12 @@ use std::borrow::Cow;
 use std::mem;
 use std::slice;
 
-use crate::*;
+use super::*;
+
+pub mod prelude
+{
+    pub use super::{ToColorComposite,ToColor,IColor};
+}
 
 pub enum ColorKind
 {

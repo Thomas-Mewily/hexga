@@ -1,5 +1,11 @@
 use crate::*;
 
+pub mod prelude
+{
+    pub use super::{Color,ColorU8,ColorRgba,ColorRgbaOf,rgb,rgba};
+}
+
+
 pub type Color      = ColorRgba;
 pub type ColorU8    = ColorRgbaU8;
 pub type ColorU16   = ColorRgbaU16;
@@ -29,7 +35,7 @@ pub struct ColorRgbaOf<T>
     pub a : T,
     no_destructuring : (),
 }
-impl_fixed_array_like_with_op!(ColorRgbaOf, 4);
+hexga_math::impl_fixed_array_like_with_op!(ColorRgbaOf, 4);
 
 
 #[allow(dead_code)]
@@ -237,34 +243,6 @@ impl<T> ToColorComposite for ColorRgbaOf<T> where T: Primitive
     };
 }
 
-
-impl<T,Dest> CastIntoComposite<Dest> for ColorRgbaOf<T> where T : CastIntoComposite<Dest>
-{
-    type Output=ColorRgbaOf<T::Output>;
-    fn cast_into_composite(self) -> Self::Output { self.map(|v| v.cast_into_composite()) }
-}
-impl<T,Dest> CastRangeIntoComposite<Dest> for ColorRgbaOf<T> where T : CastRangeIntoComposite<Dest>
-{
-    type Output=ColorRgbaOf<T::Output>;
-    fn cast_range_into_composite(self) -> Self::Output { self.map(|v| v.cast_range_into_composite()) }
-}
-impl<T> ToUnsigned for ColorRgbaOf<T> where T : ToUnsigned
-{
-    type Output=ColorRgbaOf<T::Output>;
-    fn to_unsigned(self) -> Self::Output { self.map(|v| v.to_unsigned()) }
-}
-impl<T> ToSigned for ColorRgbaOf<T> where T : ToSigned
-{
-    type Output=ColorRgbaOf<T::Output>;
-    fn to_signed(self) -> Self::Output { self.map(|v| v.to_signed()) }
-}
-map_on_constant!
-(
-    (($trait_name: tt, $constant_name: tt)) =>
-    {
-        impl<T> $trait_name for ColorRgbaOf<T> where T: $trait_name + Copy { const $constant_name : Self = Self::splat_rgba(T::$constant_name); }
-    }
-);
 
 pub const fn rgba<T>(red : T, green : T, blue : T, alpha : T) -> ColorRgbaOf<T>
 {
