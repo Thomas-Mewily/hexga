@@ -12,6 +12,7 @@ pub struct MyApp
     time: Time,
 }
 
+
 impl App for MyApp
 {
     type UserEvent = ();

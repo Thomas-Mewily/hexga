@@ -31,11 +31,9 @@ impl<F> TimeNow for TimeOf<F> where F:Float + CastFrom<f64>
 }
 
 #[cfg(target_arch = "wasm32")]
-impl<F> TimeNow for TimeOf<F>
-where
-    F: Float + CastFrom<f64>,
+impl<F> TimeNow for TimeOf<F> where F: Float + CastFrom<f64>
 {
-    fn since_launch() -> Self {
+    fn now() -> Self {
         use web_time::Instant;
         use std::sync::Once;
 
