@@ -8,7 +8,7 @@ use hexga::prelude::*;
 #[derive(Default)]
 pub struct MyApp
 {
-    camera: Camera3D,
+    //camera: Camera3D,
     time: Time,
 }
 
