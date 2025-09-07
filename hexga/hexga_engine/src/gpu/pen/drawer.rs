@@ -52,7 +52,12 @@ impl GetMatrix<float,4,4> for Drawer
 {
     fn matrix(&self) -> Matrix<float,4,4> { self.camera.matrix() }
 }
-
+impl SetMatrix<float,4,4> for Drawer
+{
+    fn set_matrix(&mut self, matrix : Matrix<float,4,4>) -> &mut Self {
+        self.camera.set_matrix(matrix); self
+    }
+}
 
 
 impl Drawer

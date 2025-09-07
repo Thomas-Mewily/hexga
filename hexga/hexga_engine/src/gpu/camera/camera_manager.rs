@@ -55,6 +55,12 @@ impl GetMatrix<float,4,4> for CameraManager
         self.cameras.matrix()
     }
 }
+impl SetMatrix<float,4,4> for CameraManager
+{
+    fn set_matrix(&mut self, matrix : Matrix<float,4,4>) -> &mut Self {
+        self.cameras.set_matrix(matrix); self
+    }
+}
 
 impl ICamera for CameraManager
 {
