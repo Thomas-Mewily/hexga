@@ -32,7 +32,7 @@ assert_eq!(1.kilo(), 1000);
 
 ### Generic Casting trait
 The crate also provide generic traits for casting with the same behavior as the [as keyword](https://practice.course.rs/type-conversions/as.html) :
-- [CastInto](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastInto.html), [CastFrom](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastFrom.html) and [CastIntoComposite](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastIntoComposite.html),
+- [CastInto](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastInto.html), [CastFrom](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastFrom.html),
 
 ```rust
 use hexga_math::prelude::*;
@@ -48,7 +48,7 @@ assert_eq!(vec_f32_to_f64, vec_f64);
 
 ### Generic Remapping trait
 Similar traits for casting remapping the range of an primitive to another primitive range also exist :
-- [CastRangeInto](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastRangeInto.html), [CastRangeFrom](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastRangeFrom.html) and [CastRangeIntoComposite](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastRangeIntoComposite.html)
+- [CastRangeInto](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastRangeInto.html), [CastRangeFrom](https://docs.rs/hexga_math/latest/hexga_math/number/trait.CastRangeFrom.html)
 
 ```rust
 use hexga_math::prelude::*;

@@ -17,12 +17,12 @@
 //!
 //! ### Generic Casting trait
 //! The crate also provide generic traits for casting with the same behavior as the [as keyword](https://practice.course.rs/type-conversions/as.html) :
-//! - [CastInto], [CastFrom] and [CastIntoComposite],
+//! - [CastInto], [CastFrom],
 //!
 //! ### Generic Remapping trait
 //!
 //! Similar traits for casting remapping the range of an primitive to another primitive range also exist :
-//! - [CastRangeInto], [CastRangeFrom] and [CastRangeIntoComposite]
+//! - [CastRangeInto], [CastRangeFrom]
 //!
 //! ### Quick start with the prelude
 //!

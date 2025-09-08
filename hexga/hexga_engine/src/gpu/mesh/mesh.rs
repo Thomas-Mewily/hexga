@@ -7,7 +7,7 @@ pub mod prelude
 
 /// A mesh, stored on the Gpu.
 /// 
-/// Can be cheaply [Cloned]
+/// Can be cheaply [std::clone::Cloned]
 #[derive(Clone, PartialEq, Debug)]
 pub struct Mesh<const N:usize=3>
 {

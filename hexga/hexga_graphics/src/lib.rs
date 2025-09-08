@@ -1,13 +1,13 @@
 //!
 //! ### Useful type like
 //!
-//! - [ColorRGBA] with any precision (also handle the conversion between different primitive precision)
-//! - [ColorHSLA] of various precision
+//! - [ColorRgba] with any precision (also handle the conversion between different primitive precision)
+//! - [ColorHsla] of various precision
 //! ### More advanced type
 //!
 //! If you need more control about the precision, each type have another more generic base type :
 //!
-//! - [ColorRGBA] and [ColorHSLA] also use a [float] precision that can be changed using [ColorRGBAOf] and [ColorRGBAOf]
+//! - [ColorRgba] and [ColorHsla] also use a [float] precision that can be changed using [ColorRgbaOf] and [ColorRgbaOf]
 
 #![allow(unused_mut)]
 #![allow(unused_variables)]

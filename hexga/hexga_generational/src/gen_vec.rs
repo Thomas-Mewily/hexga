@@ -397,7 +397,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     pub fn shrink_to_fit(mut self) { self.slot.shrink_to_fit(); }
 
 
-    /// Clear the [GenVec] but don't invalidate all previous [GenID].
+    /// Clear the [GenVec] but don't invalidate all previous [GenVecID].
     pub fn clear(&mut self)
     {
         self.head = usize::MAX;
@@ -405,7 +405,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.slot.clear();
     }
 
-    /// Clear the [GenVec] and also invalidate all previous [GenID].
+    /// Clear the [GenVec] and also invalidate all previous [GenVecID].
     pub fn remove_all(&mut self)
     {
         for (idx, v) in self.slot.iter_mut().enumerate()
@@ -497,7 +497,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     #[inline(always)]
     pub fn get_mut(&mut self, id : GenVecIDOf<T,Gen>) -> Option<&mut T> { self.get_slot_mut(id).and_then(|v| v.value_mut()) }
 
-    /// Return a valid [GenID] to the current index or return null if the idx is outside the range
+    /// Return a valid [GenVecID] to the current index or return null if the idx is outside the range
     pub fn get_id(&self, idx : usize) -> GenVecIDOf<T, Gen>
     {
         self.get_slot_index(idx).map(|v| v.get_id(idx)).unwrap_or(GenVecIDOf::NULL)
@@ -1040,7 +1040,7 @@ impl<T,Gen:IGeneration> GetManyMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
 
 impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 {
-    /// Moves all the elements of `other` into `self`, leaving `other` empty by clearing it (don't invalidate all previous [GenID]).
+    /// Moves all the elements of `other` into `self`, leaving `other` empty by clearing it (don't invalidate all previous [GenVecID]).
     pub fn append(&mut self, other: &mut GenVecOf<T,Gen>) -> impl GenIDUpdater<T,Gen> + use<T,Gen> where T: GenIDUpdatable<T,Gen>
     {
         let capacity = other.len();

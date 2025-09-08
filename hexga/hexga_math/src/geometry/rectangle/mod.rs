@@ -28,7 +28,7 @@
 //! ## See Also
 //!
 //! - [`Vector`] for N-dimensional vector operations
-//! - [`IRectangle`] trait for rectangle-like abstractions
+//! - [`GetRectangle`] and [`SetRectangle`] trait for rectangle-like abstractions
 //! - [`Crop`] trait for cropping operations
 use super::*;
 

@@ -24,7 +24,10 @@ pub trait IterIndex<T, const N : usize>
     fn iter_index(&self) -> Self::IterIndex;
 }
 
-/// Iter over all idx from Vec::ZERO to the current vector
+/// Iterates over all N-dimensional indices in a rectangular region.
+/// 
+/// Yields every `Vector<Idx, N>` from `Vector::ZERO` up to `end`
+/// (exclusive).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
