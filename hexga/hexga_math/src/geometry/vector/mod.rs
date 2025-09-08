@@ -18,8 +18,8 @@ pub use vector3::*;
 mod vector4;
 pub use vector4::*;
 
-pub mod prelude;
-use prelude::*;
+pub mod typedef;
+use typedef::*;
 
 mod xyzw_related;
 pub use xyzw_related::*;
@@ -28,3 +28,8 @@ mod array_extension;
 pub use array_extension::*;
 
 mod macro_impl;
+
+pub mod prelude
+{
+    pub use super::typedef::*;
+}

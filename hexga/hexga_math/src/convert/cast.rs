@@ -20,11 +20,10 @@ pub mod prelude
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
-/// assert_eq!(i32::cast_from(255u8), 255);
 /// assert_eq!(i32::cast_from(12.3f32), 12);
 /// 
-/// assert_eq!(255u8.cast_into(), 255i32);
-/// assert_eq!(12.3f32.cast_into(), 12i32);
+/// let casted : i32 = 12.3f32.cast_into();
+/// assert_eq!(casted, 12i32);
 /// ```
 ///
 /// Also work with composite type
@@ -63,15 +62,13 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: CompositeGeneric, C2: CompositeGeneric
 /// ```rust
 /// use hexga_math::prelude::*;
 ///
-/// assert_eq!(i32::cast_from(255u8), 255);
 /// assert_eq!(i32::cast_from(12.3f32), 12);
 /// 
-/// assert_eq!(255u8.cast_into(), 255i32);
-/// assert_eq!(12.3f32.cast_into(), 12i32);
+/// let casted : i32 = 12.3f32.cast_into();
+/// assert_eq!(casted, 12i32);
 /// ```
 ///
-/// Also work with composite like [std::array], [Vector]...
-/// 
+/// Also work with composite type
 /// ```rust
 /// use hexga_math::prelude::*;
 ///

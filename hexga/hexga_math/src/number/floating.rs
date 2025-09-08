@@ -396,6 +396,8 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive + CastPrimitive +
     /// # Examples
     ///
     /// ```
+    /// use hexga_math::number::prelude::*;
+    /// 
     /// let x = std::f32::consts::FRAC_PI_4; // 45°
     ///
     /// let abs_difference = (x.cot() - 1.0).abs();

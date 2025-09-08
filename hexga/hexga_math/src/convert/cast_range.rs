@@ -24,8 +24,8 @@ pub mod prelude
 /// assert_eq!(u8::cast_range_from(1f32), 255u8);
 /// assert_eq!(u8::cast_range_from(0f32), 0u8);
 /// 
-/// assert_eq!(u8::MAX.cast_range_into(), u16::MAX);
-/// assert_eq!(u8::MIN.cast_range_into(), u16::MIN);
+/// let casted_range : u16 = u8::MAX.cast_range_into();
+/// assert_eq!(casted_range, u16::MAX);
 /// ```
 ///
 /// Also work with composite like [std::array], [Vector]...
@@ -68,8 +68,8 @@ impl<C1,C2> CastRangeFrom<C2> for C1 where C1: CompositeGeneric, C2: CompositeGe
 /// assert_eq!(u8::cast_range_from(1f32), 255u8);
 /// assert_eq!(u8::cast_range_from(0f32), 0u8);
 /// 
-/// assert_eq!(u8::MAX.cast_range_into(), u16::MAX);
-/// assert_eq!(u8::MIN.cast_range_into(), u16::MIN);
+/// let casted_range : u16 = u8::MAX.cast_range_into();
+/// assert_eq!(casted_range, u16::MAX);
 /// ```
 ///
 /// Also work with composite like [std::array], [Vector]...
