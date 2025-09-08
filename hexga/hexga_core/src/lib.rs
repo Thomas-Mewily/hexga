@@ -12,6 +12,7 @@ pub mod format;
 pub mod iter;
 pub mod utils;
 pub mod collections;
+//pub mod accessor;
 use prelude::*;
 
 pub mod prelude
@@ -21,4 +22,5 @@ pub mod prelude
     pub use crate::iter::prelude::*;
     pub use crate::utils::prelude::*;
     pub use crate::collections::prelude::*;
+    //pub use crate::accessor::prelude::*;
 }

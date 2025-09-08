@@ -3,6 +3,7 @@ use super::*;
 pub mod prelude
 {
     pub use super::Perf;
+    pub use super::ContextPerformance;
 }
 
 

@@ -14,3 +14,20 @@ pub trait SetMatrix<T,const ROW: usize, const COL: usize> : GetMatrix<T,ROW,COL>
 {
     fn set_matrix(&mut self, matrix : Matrix<T,ROW,COL>) -> &mut Self;
 }
+
+
+pub trait GetMatrixMulExtension<T,const ROW: usize, const COL: usize> : GetMatrix<T,ROW,COL> + SetMatrix<T,ROW,COL>
+{
+    fn matrix_mul<O>(&mut self, lhs : O) -> &mut Self where Matrix<T,ROW,COL>: Mul<O,Output = Matrix<T,ROW,COL>>
+    {
+        let m = self.matrix();
+        self.set_matrix(m * lhs)
+    }
+
+    fn matrix_left_mul<O>(&mut self, rhs : O) -> &mut Self where O: Mul<Matrix<T,ROW,COL>,Output = Matrix<T,ROW,COL>>
+    {
+        let m = self.matrix();
+        self.set_matrix(rhs * m)
+    }
+}
+impl<T,const ROW: usize, const COL: usize, S> GetMatrixMulExtension<T,ROW,COL> for S where S: GetMatrix<T,ROW,COL> + SetMatrix<T,ROW,COL> {}

@@ -14,27 +14,22 @@ use winit::{
 use hexga::prelude::*;
 use std::ops::*;
 
-
-
 pub mod gpu;
-use gpu::*;
-
 pub mod app;
-use app::*;
-
 pub mod context;
-use context::*;
-
+pub mod performance;
+pub mod input;
 pub mod utils;
-use utils::*;
-
 
 use prelude::*;
+
 pub mod prelude
 {
     pub use super::app::prelude::*;
     pub use super::context::prelude::*;
     pub use super::gpu::prelude::*;
+    pub use super::performance::prelude::*;
+    pub use super::input::prelude::*;
     pub use super::utils::prelude::*;
 }
 

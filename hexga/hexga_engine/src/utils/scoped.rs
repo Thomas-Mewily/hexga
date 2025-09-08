@@ -20,5 +20,5 @@ impl<T> ScopedUpdate for T where T: Scoped<Update>{}
 
 pub mod prelude
 {
-    pub use super::{Update,Draw};
+    pub use super::{Update,ScopedUpdate,Draw,ScopedDraw};
 }

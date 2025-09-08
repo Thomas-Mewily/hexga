@@ -4,6 +4,11 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::thread::LocalKey;
 
+pub mod prelude
+{
+    pub use super::Ctx;
+}
+
 thread_local! {
     pub(crate) static CONTEXT: RefCell<Option<Context>> = RefCell::new(None);
 }
@@ -51,9 +56,15 @@ impl SingletonInit for Ctx
 
                     env_logger::Builder::from_env(
                         env_logger::Env::default().default_filter_or("debug")
-                    ).format(|buf, record| {
+                    )
+                    .filter_module("wgpu_core", ::log::LevelFilter::Warn)
+                    .filter_module("wgpu_hal", ::log::LevelFilter::Warn)
+                    .filter_module("naga", ::log::LevelFilter::Warn)
+                    .format(|buf, record| {
                         writeln!(buf, "{}", record.args())
-                    }).init();
+                    })
+                    .init();
+
                     std::panic::set_hook(Box::new(|info| {
                         Ctx::destroy();
                         eprintln!("panic occurred: {info}");
@@ -61,9 +72,8 @@ impl SingletonInit for Ctx
                 }
                 #[cfg(target_arch = "wasm32")]
                 {
-                    use ::log::Level;
                     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-                    console_log::init_with_level(Level::Debug).expect("Couldn't initialize logger");
+                    console_log::init_with_level(::log::Level::Debug).expect("Couldn't initialize logger");
                 }
                 CONTEXT.replace(Some(ctx));
                 // The Gpu is initialized in a special async way... 

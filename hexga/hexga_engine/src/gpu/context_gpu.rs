@@ -5,6 +5,7 @@ pub mod prelude
 {
     //pub use super::{ContextGpu,GpuVec,GpuVecDesc};
     //pub use super::*;
+    pub(crate) use super::ContextGpu;
 }
 
 
@@ -55,6 +56,18 @@ impl ContextGpu
     {
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
+            flags: 
+            wgpu::InstanceFlags::empty()
+            /* 
+            if cfg!(debug_assertions) 
+            {
+                wgpu::InstanceFlags::VALIDATION
+            } else 
+            {
+                wgpu::InstanceFlags::empty()
+            }
+            */
+            ,
             ..Default::default()
         });
         let surface = instance.create_surface(Arc::clone(&window)).ok_or_debug()?;

@@ -3,6 +3,9 @@ use super::*;
 pub(crate) type EvLoopProxy<U> = EventLoopProxy<AppInternalMessage<U>>;
 pub(crate) type EvLoop<U> = EventLoop<AppMessage<U>> ;
 
+mod app;
+pub use app::*;
+
 mod message;
 pub use message::*;
 
@@ -13,16 +16,12 @@ mod runner;
 pub use runner::*;
 
 
-pub trait App : 'static
-{
-    type UserEvent : IUserEvent;
 
-    fn update(&mut self, dt: DeltaTime) {}
-    fn draw(&mut self) {}
-}
 
 pub mod prelude
 {
+    pub use super::app::prelude::*;
+    pub use super::message::prelude::*;
     pub use super::futur::prelude::*;
-    pub use super::{IUserEvent,App,AppRun};
+    pub use super::runner::prelude::*;
 }

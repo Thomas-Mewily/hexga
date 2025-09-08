@@ -1,6 +1,12 @@
 use super::*;
 
 
+pub mod prelude
+{
+    pub use super::AppMessage;
+    pub(crate) use super::{AppInternalMessage, IUserEvent};
+}
+
 pub(crate) enum AppInternalMessage<U> where U: IUserEvent
 {
     Message(AppMessage<U>),
@@ -14,4 +20,4 @@ pub enum AppMessage<U> where U: IUserEvent
 
 
 pub trait IUserEvent : 'static + Debug + Send {}
-impl IUserEvent for () {}
+impl<T> IUserEvent for T where T: 'static + Debug + Send {}

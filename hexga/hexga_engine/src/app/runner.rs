@@ -1,5 +1,11 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::AppRun;
+}
+
+
 pub trait AppRun
 {
     fn run(self) -> Result<(), ()>;
