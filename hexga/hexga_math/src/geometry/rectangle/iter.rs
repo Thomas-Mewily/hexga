@@ -1,5 +1,11 @@
 use crate::*;
 
+
+pub mod prelude
+{
+    pub use super::RectangleIter;
+}
+
 /// Iter over all idx inside a rectangle
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

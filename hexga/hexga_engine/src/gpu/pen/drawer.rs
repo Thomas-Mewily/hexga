@@ -1,19 +1,10 @@
 use super::*;
 
 
-/* 
-pub struct MeshBuilder
+pub mod prelude
 {
-    pub(crate) vertices: GpuVec<Vertex>,
-    pub(crate) indices: GpuVec<VertexIndex>,
+    pub(crate) use super::Drawer;
 }
-
-impl IDrawer for MeshBuilder
-{
-
-}
-*/
-
 
 impl Scoped<Draw> for Drawer
 {
@@ -119,7 +110,3 @@ pub struct GpuDrawCall
 }
 
 
-pub mod prelude
-{
-
-}

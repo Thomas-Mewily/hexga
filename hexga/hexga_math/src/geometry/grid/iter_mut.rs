@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub struct GridViewIterMut<'a, G, T, Idx, const N : usize> where G : IGrid<T,Idx,N>, Idx : Integer, T:'a
 {

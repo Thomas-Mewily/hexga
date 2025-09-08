@@ -11,33 +11,14 @@ pub mod typedef;
 use typedef::*;
 
 mod context_gpu;
-pub use context_gpu::*;
-
 mod gpu;
-pub use gpu::*;
-
 mod mesh;
-pub use mesh::*;
-
 mod vec;
-pub use vec::*;
-
 mod u8_slice;
-pub use u8_slice::*;
-
-
-
 mod vertex;
-pub use vertex::*;
-
 mod format;
-pub use format::*;
-
 mod camera;
-pub use camera::*;
-
 mod pen;
-pub use pen::*;
 
 pub mod prelude
 {

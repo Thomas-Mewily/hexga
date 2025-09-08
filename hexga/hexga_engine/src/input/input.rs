@@ -19,3 +19,8 @@ pub struct ContextInput
 {
 
 }
+
+impl ContextInput
+{
+    //pub(crate) fn handle_window_event(&mut self) 
+}

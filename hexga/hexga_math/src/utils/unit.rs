@@ -4,6 +4,7 @@ use std::iter::FusedIterator;
 
 pub mod prelude
 {
+    pub(crate) use super::{impl_new_unit_or_number,new_unit,new_number};
 }
 
 macro_rules! impl_new_unit_or_number

@@ -63,19 +63,10 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 pub use hexga_typedef as typedef;
 
 mod geometry;
-pub use geometry::*;
-
 mod utils;
-pub use utils::*;
-
 pub mod number;
-use number::prelude::*;
-
 pub mod range;
-use range::*;
-
-pub mod cast;
-use cast::*;
+pub mod convert;
 
 pub mod prelude
 {
@@ -84,6 +75,6 @@ pub mod prelude
     pub use super::utils::prelude::*;
     pub use super::number::prelude::*;
     pub use super::range::prelude::*;
-    pub use super::cast::prelude::*;
+    pub use super::convert::prelude::*;
 }
 use prelude::*;
