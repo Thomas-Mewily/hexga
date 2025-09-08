@@ -6,9 +6,11 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{ToColorComposite,ToColor,IColor};
+    pub use super::{IColor};
+    //pub use super::{ToColorComposite,ToColor,IColor};
 }
 
+/* 
 pub enum ColorKind
 {
     /// Pixel is 1-bit RGB with an alpha channel
@@ -28,11 +30,27 @@ pub enum ColorKind
     // Casted to RGBAU8 if not supported
     Unknow,
 }
+    */
 
-pub trait ToColorComposite
+/* 
+pub trait ToColorComposite : CompositeGeneric + Sized
 {
     const COLOR_INSIDE : ColorKind;
 
+    #[cfg(any(
+        feature = "float_are_32_bits",
+        all(feature = "float_are_size_bits", target_pointer_width = "32")
+    ))]
+    fn to_color(self) -> Self::WithType<Color> { self.cast_range_into() }
+    #[cfg(any(
+        feature = "float_are_64_bits",
+        all(feature = "float_are_size_bits", target_pointer_width = "64")
+    ))]
+    fn to_color(&self) -> Self::RgbaF64 { self.to_color_rgba_float() }
+
+    fn to_color_u8(&self) -> Self::RgbaU8 { self.to_rgba_u8() }
+
+    /* 
     #[cfg(any(
         feature = "float_are_32_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "32")
@@ -90,6 +108,7 @@ pub trait ToColorComposite
     fn to_hsla_f32(&self) -> Self::HslaF32;
     type HslaF64;
     fn to_hsla_f64(&self) -> Self::HslaF64;
+    */
 }
 
 impl<T, const N : usize> ToColorComposite for [T;N] where T: ToColorComposite
@@ -162,10 +181,30 @@ impl<T> ToColor for T where T: ToColorComposite
         RgbaBool = ColorRgbaBool,
     > + Copy {}
 
+pub trait ToRgbaF32 
+{
+    fn to_rgba_f32(self) -> ColorRgbaF32;
+}
+impl<T> ToRgbaF32 for T where ColorRgbaF32: CastFrom<T>
+{
+    fn to_rgba_f32(self) -> ColorRgbaF32 { self.cast_into() }
+}
+impl<T> ToRgbaF32 for ColorHslaOf<T> where T : Primitive, f32 : CastRangeFrom<T>
+{
+    fn to_rgba_f32(self) -> ColorRgbaF32 {
+        self.cast_into()
+    }
+}
+*/
+
+// ToColor : CastRange
+// Rgba => Any Color Type
+// Image Color => Any Image Color Type
+
 /// Constant color name are based on <https://colornames.org/>
 ///
 /// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#ff7f00`)
-pub trait IColor<T> : Sized + ToColor
+pub trait IColor<T> : Sized //+ ToColor
     where T: Primitive
 {
     const TRANSPARENT : Self;
@@ -263,6 +302,7 @@ pub trait IColor<T> : Sized + ToColor
         ColorRgbaU8::new(r, g, b, a).to_rgba_of()
     }
 
+    /* 
     /// Cast to color byte and format the color : `#RRGGBBAA`
     fn to_rgba_u8_hex_string(self) -> String
     {
@@ -275,4 +315,5 @@ pub trait IColor<T> : Sized + ToColor
             rgba.a,
         )
     }
+    */
 }

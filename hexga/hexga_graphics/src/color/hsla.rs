@@ -167,7 +167,8 @@ impl<T> IColor<T> for ColorHslaOf<T> where T: Float
         let b;
 
         if self.s == T::ZERO {  r = self.l; g = self.l; b = self.l; }
-        else {
+        else 
+        {
             fn hue_to_rgb<T>(p: T, q: T, mut t: T) -> T where T: Float {
                 if t < T::ZERO { t += T::ONE }
                 if t > T::ONE { t -= T::ONE }
@@ -187,8 +188,7 @@ impl<T> IColor<T> for ColorHslaOf<T> where T: Float
             g = hue_to_rgb(p, q, self.h);
             b = hue_to_rgb(p, q, self.h - T::ONE / T::THREE);
         }
-
-        ColorRgbaOf::from_array([r, g, b, self.a].map(|v| T2::cast_range_from(v)))
+        ColorRgbaOf::from_array([r, g, b, self.a].cast_range_into())
     }
 
     fn to_hsla_of<T2>(self) -> ColorHslaOf<T2> where T2 : Float + CastRangeFrom<T>
@@ -198,7 +198,7 @@ impl<T> IColor<T> for ColorHslaOf<T> where T: Float
 }
 
 
-
+/* 
 impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
 {
     type RgbaF32 = ColorRgbaOf<f32>;
@@ -223,11 +223,11 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
     fn to_hsla_f64(&self) -> Self::HslaF64 { self.to_hsla_of() }
 
     const COLOR_INSIDE : ColorKind = match std::mem::size_of::<T>()
-        {
-            4 => ColorKind::HslaF32,
-            8 => ColorKind::HslaF64,
-            _ => ColorKind::Unknow,
-        };
+    {
+        4 => ColorKind::HslaF32,
+        8 => ColorKind::HslaF64,
+        _ => ColorKind::Unknow,
+    };
 }
-
+*/
 pub const fn hsla<T>(hue : T, saturation : T, lightness : T, alpha : T) -> ColorHslaOf<T> { ColorHslaOf::hsla(hue, saturation, lightness, alpha) }

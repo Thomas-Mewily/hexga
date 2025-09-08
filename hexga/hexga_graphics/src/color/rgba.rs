@@ -206,6 +206,7 @@ impl<T> IColor<T> for ColorRgbaOf<T> where T: Primitive
     }
 }
 
+/* 
 impl<T> ToColorComposite for ColorRgbaOf<T> where T: Primitive
 {
     type RgbaF32 = ColorRgbaOf<f32>;
@@ -242,7 +243,7 @@ impl<T> ToColorComposite for ColorRgbaOf<T> where T: Primitive
         }
     };
 }
-
+*/
 
 pub const fn rgba<T>(red : T, green : T, blue : T, alpha : T) -> ColorRgbaOf<T>
 {

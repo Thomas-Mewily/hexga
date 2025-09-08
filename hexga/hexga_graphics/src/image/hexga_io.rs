@@ -64,6 +64,7 @@ impl<C,Idx> hexga_io::IoLoad for ImageBase<C,Idx>
 }
     */
 
+/* 
 #[cfg(feature = "hexga_io")]
 impl<C,Idx> IoSave for ImageBase<C,Idx>
     where
@@ -204,3 +205,4 @@ impl<C,Idx> IoSave for ImageBase<C,Idx>
         }
     }
 }
+*/

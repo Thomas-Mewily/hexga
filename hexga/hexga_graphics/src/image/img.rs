@@ -276,8 +276,7 @@ impl<T, Idx> Length for ImageBase<T, Idx>
 
 
 impl<T, Idx> Crop<Idx,2> for ImageBase<T, Idx>
-    where Idx : Integer,
-    T : ToColor
+    where Idx : Integer, T:Clone
 {
     fn crop(self, subrect : Rectangle2<Idx>) -> Option<Self> {
         self.view().crop(subrect).map(|v| v.to_image())
@@ -317,7 +316,7 @@ impl AntiAliasing
 }
 */
 
-
+/* 
 impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToColorComposite
 {
     type RgbaF32 = ImageBase<C::RgbaF32, Idx>;
@@ -357,7 +356,7 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToCo
 
     const COLOR_INSIDE : ColorKind = C::COLOR_INSIDE;
 }
-
+*/
 
 impl<T, Idx> Composite for ImageBase<T, Idx> where Idx : Integer
 {
