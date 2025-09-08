@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub mod prelude;
 use prelude::*;
@@ -993,7 +993,7 @@ impl<T> Matrix4<T>
 #[cfg(test)]
 mod test_matrix
 {
-    use crate::*;
+    use super::*;
 
     #[test]
     fn rotation_zero_on_z()

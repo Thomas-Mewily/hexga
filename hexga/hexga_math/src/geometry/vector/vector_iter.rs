@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 
 pub trait IterIndex<T, const N : usize>

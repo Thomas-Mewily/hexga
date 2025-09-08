@@ -369,7 +369,7 @@ impl PrefixFemto for f32   { const FEMTO : Self = 1. / 1_000_000_000_000_000.; }
 
 #[cfg(test)]
 mod prefix_test{
-    use crate::*;
+    use super::*;
 
     #[test]
     fn test_prefix() 

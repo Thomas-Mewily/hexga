@@ -1,5 +1,9 @@
-use crate::*;
-use std::iter::{FusedIterator,Map};
+use super::*;
+
+pub mod prelude
+{
+    pub use super::{RangeSampleExtension,RangeDefaultSampleExtension,RangeDefaultSampleInclusiveExtension,RangeSample};
+}
 
 pub trait RangeSampleExtension<I=usize>
 {

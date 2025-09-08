@@ -1,9 +1,9 @@
-use crate::*;
+use super::*;
 
 #[cfg(feature = "serde")]
-mod serde;
+mod serde_impl;
 #[cfg(feature = "serde")]
-pub use serde::*;
+pub use serde_impl::*;
 
 #[cfg(feature = "hexga_io")]
 mod hexga_io;

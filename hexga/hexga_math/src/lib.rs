@@ -60,21 +60,24 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
 
-pub use hexga_typedef as typedef;
-
 mod geometry;
+pub use geometry::*;
 mod utils;
+pub use utils::*;
+
+pub use hexga_typedef as typedef;
 pub mod number;
 pub mod range;
 pub mod convert;
 
+use prelude::*;
 pub mod prelude
 {
-    pub use super::typedef::prelude::*;
     pub use super::geometry::prelude::*;
     pub use super::utils::prelude::*;
+    
+    pub use super::typedef::prelude::*;
     pub use super::number::prelude::*;
     pub use super::range::prelude::*;
     pub use super::convert::prelude::*;
 }
-use prelude::*;

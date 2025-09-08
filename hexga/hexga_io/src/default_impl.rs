@@ -10,7 +10,7 @@ use std::ops::*;
 use std::rc::{Rc, Weak as RcWeak};
 use std::sync::{Arc, Mutex, RwLock, Weak as ArcWeak};
 
-use crate::*;
+use super::*;
 
 macro_rules! impl_io_save {
     (

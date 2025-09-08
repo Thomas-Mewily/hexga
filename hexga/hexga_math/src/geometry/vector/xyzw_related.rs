@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 const X_INDEX : usize = 0;
 const Y_INDEX : usize = 1;

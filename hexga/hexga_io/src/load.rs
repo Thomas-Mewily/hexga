@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub type IoLoadResult<T=()> = Result<T, IoError>;
 pub use std::io::Read as IoRead;

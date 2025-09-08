@@ -1,5 +1,9 @@
-use crate::*;
-use std::{hint::unreachable_unchecked, iter::{FusedIterator,Map}};
+use super::*;
+
+pub mod prelude
+{
+    pub use super::{RangeStepExtension,RangeStepIter,RangeDefaultStepExtension,RangeDefaultStepInclusiveExtension,RangeStep,RangeStepInclusive};
+}
 
 pub trait RangeStepExtension
 {
@@ -252,7 +256,7 @@ impl<T> RangeStepExtension for RangeToInclusive<T> where T: NumberPrimitive + Ra
 #[cfg(test)]
 mod range_test
 {
-    use crate::*;
+    use super::*;
 
     #[test]
     fn range()

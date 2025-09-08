@@ -1,6 +1,6 @@
 use std::io::BufRead;
 
-use crate::*;
+use super::*;
 
 
 #[cfg(feature = "serde_ron")]

@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}};
 
 // Todo : introduce a new type

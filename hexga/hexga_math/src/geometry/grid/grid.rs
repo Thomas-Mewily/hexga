@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 /// A N-dimensional grid
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Hash)]
@@ -162,12 +162,12 @@ impl<T, Idx, const N : usize> Crop<Idx,N> for GridBase<T, Idx, N>
 #[cfg(test)]
 mod grid_test
 {
-    use crate::prelude::*;
+    use super::*;
 
     #[test]
     fn index_order()
     {
-        use crate::*;
+        use super::*;
         //let x = Grid::<char>::new(point2(2, 4));
         let size = point2(2, 3);
 
@@ -213,7 +213,7 @@ mod grid_test
     #[test]
     fn out_of_range()
     {
-        use crate::*;
+        use super::*;
         let grid = Grid2::from_fn(point2(2, 3), |_| 42);
 
         assert_eq!(grid.get(point2(0, 0)), Some(&42));
@@ -230,7 +230,7 @@ mod grid_test
     #[test]
     fn slice_cmp()
     {
-        use crate::*;
+        use super::*;
 
         let size = point2(2, 3);
         let grid = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
@@ -256,7 +256,7 @@ mod grid_test
     #[test]
     fn subslice()
     {
-        use crate::*;
+        use super::*;
 
         let size = point2(2, 3);
 

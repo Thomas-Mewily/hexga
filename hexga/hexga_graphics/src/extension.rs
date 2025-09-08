@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 
 impl<S, T, const N : usize> ArrayLikeColorExtension<T,N> for S where S : Array<T,N> {}

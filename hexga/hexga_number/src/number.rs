@@ -1,7 +1,7 @@
 use std::fmt::{self, Debug, Display};
 use std::ops::*;
 use std::hash::Hash;
-use crate::*;
+use super::*;
 
 pub mod prelude
 {

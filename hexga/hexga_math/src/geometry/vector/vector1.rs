@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 /// 1 dimension : x
 #[repr(C)]

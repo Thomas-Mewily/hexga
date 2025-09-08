@@ -1,6 +1,6 @@
 use std::default;
 
-use crate::*;
+use super::*;
 
 
 pub type IoResult<T=()> = Result<T, IoErrorKind>;

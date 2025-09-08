@@ -1,10 +1,11 @@
-use crate::*;
+use super::*;
 
 
 
 pub mod prelude
 {
     pub use super::{CastRangeInto, CastRangeFrom};
+    pub(crate) use super::utils::*;
 }
 
 
@@ -215,200 +216,200 @@ impl CastRangeFrom<bool> for bool
 
 
 
-
-
-
-
-
-/// fX
-pub trait CastRangeIntoFloat            : CastRangeInto<f32> + CastRangeInto<f64> {}
-impl<T> CastRangeIntoFloat for T where T: CastRangeInto<f32> + CastRangeInto<f64> {}
-
-/// fX
-pub trait CastRangeFromFloat            : CastRangeFrom<f32> + CastRangeFrom<f64> {}
-impl<T> CastRangeFromFloat for T where T: CastRangeFrom<f32> + CastRangeFrom<f64> {}
-
-/// fX
-pub trait CastRangeFloat            : CastRangeIntoFloat + CastRangeFromFloat {}
-impl<T> CastRangeFloat for T where T: CastRangeIntoFloat + CastRangeFromFloat {}
-
-/// uX
-pub trait CastRangeIntoIntegerUnsigned :
-    CastRangeInto<u8 > +
-    CastRangeInto<u16> +
-    CastRangeInto<u32> +
-    CastRangeInto<u64> +
-    CastRangeInto<usize>
-{}
-impl<T> CastRangeIntoIntegerUnsigned for T where T:
-    CastRangeInto<u8 > +
-    CastRangeInto<u16> +
-    CastRangeInto<u32> +
-    CastRangeInto<u64> +
-    CastRangeInto<usize>
-{}
-
-/// uX
-pub trait CastRangeFromIntegerUnsigned :
-    CastRangeFrom<u8 > +
-    CastRangeFrom<u16> +
-    CastRangeFrom<u32> +
-    CastRangeFrom<u64> +
-    CastRangeFrom<usize>
-{}
-impl<T> CastRangeFromIntegerUnsigned for T where T:
-    CastRangeFrom<u8 > +
-    CastRangeFrom<u16> +
-    CastRangeFrom<u32> +
-    CastRangeFrom<u64> +
-    CastRangeFrom<usize>
-{}
-
-/// uX
-pub trait CastRangeIntegerUnsigned            : CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
-impl<T> CastRangeIntegerUnsigned for T where T: CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
-
-
-/// iX
-pub trait CastRangeIntoIntegerSigned :
-    CastRangeInto<i8 > +
-    CastRangeInto<i16> +
-    CastRangeInto<i32> +
-    CastRangeInto<i64> +
-    CastRangeInto<isize>
-{}
-impl<T> CastRangeIntoIntegerSigned for T where T:
-    CastRangeInto<i8 > +
-    CastRangeInto<i16> +
-    CastRangeInto<i32> +
-    CastRangeInto<i64> +
-    CastRangeInto<isize>
-{}
-
-/// iX
-pub trait CastRangeFromIntegerSigned :
-    CastRangeFrom<i8 > +
-    CastRangeFrom<i16> +
-    CastRangeFrom<i32> +
-    CastRangeFrom<i64> +
-    CastRangeFrom<isize>
-{}
-impl<T> CastRangeFromIntegerSigned for T where T:
-    CastRangeFrom<i8 > +
-    CastRangeFrom<i16> +
-    CastRangeFrom<i32> +
-    CastRangeFrom<i64> +
-    CastRangeFrom<isize>
-{}
-
-/// iX
-pub trait CastRangeIntegerSigned            : CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
-impl<T> CastRangeIntegerSigned for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
-
-
-/// iX uX
-pub trait CastRangeIntoInteger            : CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
-impl<T> CastRangeIntoInteger for T where T: CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
-
-/// iX uX
-pub trait CastRangeFromInteger            : CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
-impl<T> CastRangeFromInteger for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
-
-/// iX uX
-pub trait CastRangeInteger            : CastRangeIntoInteger + CastRangeFromInteger {}
-impl<T> CastRangeInteger for T where T: CastRangeIntoInteger + CastRangeFromInteger {}
-
-
-/// bool
-pub trait CastRangeIntoBool            : CastRangeInto<bool> {}
-impl<T> CastRangeIntoBool for T where T: CastRangeInto<bool> {}
-
-/// bool
-pub trait CastRangeFromBool            : CastRangeFrom<bool> {}
-impl<T> CastRangeFromBool for T where T: CastRangeFrom<bool> {}
-
-/// bool
-pub trait CastRangeBool            : CastRangeIntoBool + CastRangeFromBool {}
-impl<T> CastRangeBool for T where T: CastRangeIntoBool + CastRangeFromBool {}
-
-
-/// iX uX fX
-pub trait CastRangeIntoNumber            : CastRangeIntoInteger + CastRangeIntoFloat {}
-impl<T> CastRangeIntoNumber for T where T: CastRangeIntoInteger + CastRangeIntoFloat {}
-
-/// iX uX fX
-pub trait CastRangeFromNumber            : CastRangeFromInteger + CastRangeFromFloat {}
-impl<T> CastRangeFromNumber for T where T: CastRangeFromInteger + CastRangeFromFloat {}
-
-/// iX uX fX
-pub trait CastRangeNumber            : CastRangeInteger + CastRangeFloat {}
-impl<T> CastRangeNumber for T where T: CastRangeInteger + CastRangeFloat {}
-
-
-/// iX uX fX bool
-pub trait CastRangeIntoPrimitive            : CastRangeIntoNumber + CastRangeIntoBool {}
-impl<T> CastRangeIntoPrimitive for T where T: CastRangeIntoNumber + CastRangeIntoBool {}
-
-/// iX uX fX bool
-pub trait CastRangeFromPrimitive            : CastRangeFromNumber + CastRangeFromBool {}
-impl<T> CastRangeFromPrimitive for T where T: CastRangeFromNumber + CastRangeFromBool {}
-
-/// iX uX fX bool
-pub trait CastRangePrimitive            : CastRangeIntoPrimitive + CastRangeFromPrimitive {}
-impl<T> CastRangePrimitive for T where T: CastRangeIntoPrimitive + CastRangeFromPrimitive {}
-
-
-#[cfg(test)]
-mod cast_range_test
+pub mod utils
 {
     use super::*;
 
-    #[test]
-    fn identity()
+    /// fX
+    pub trait CastRangeIntoFloat            : CastRangeInto<f32> + CastRangeInto<f64> {}
+    impl<T> CastRangeIntoFloat for T where T: CastRangeInto<f32> + CastRangeInto<f64> {}
+
+    /// fX
+    pub trait CastRangeFromFloat            : CastRangeFrom<f32> + CastRangeFrom<f64> {}
+    impl<T> CastRangeFromFloat for T where T: CastRangeFrom<f32> + CastRangeFrom<f64> {}
+
+    /// fX
+    pub trait CastRangeFloat            : CastRangeIntoFloat + CastRangeFromFloat {}
+    impl<T> CastRangeFloat for T where T: CastRangeIntoFloat + CastRangeFromFloat {}
+
+    /// uX
+    pub trait CastRangeIntoIntegerUnsigned :
+        CastRangeInto<u8 > +
+        CastRangeInto<u16> +
+        CastRangeInto<u32> +
+        CastRangeInto<u64> +
+        CastRangeInto<usize>
+    {}
+    impl<T> CastRangeIntoIntegerUnsigned for T where T:
+        CastRangeInto<u8 > +
+        CastRangeInto<u16> +
+        CastRangeInto<u32> +
+        CastRangeInto<u64> +
+        CastRangeInto<usize>
+    {}
+
+    /// uX
+    pub trait CastRangeFromIntegerUnsigned :
+        CastRangeFrom<u8 > +
+        CastRangeFrom<u16> +
+        CastRangeFrom<u32> +
+        CastRangeFrom<u64> +
+        CastRangeFrom<usize>
+    {}
+    impl<T> CastRangeFromIntegerUnsigned for T where T:
+        CastRangeFrom<u8 > +
+        CastRangeFrom<u16> +
+        CastRangeFrom<u32> +
+        CastRangeFrom<u64> +
+        CastRangeFrom<usize>
+    {}
+
+    /// uX
+    pub trait CastRangeIntegerUnsigned            : CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
+    impl<T> CastRangeIntegerUnsigned for T where T: CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
+
+
+    /// iX
+    pub trait CastRangeIntoIntegerSigned :
+        CastRangeInto<i8 > +
+        CastRangeInto<i16> +
+        CastRangeInto<i32> +
+        CastRangeInto<i64> +
+        CastRangeInto<isize>
+    {}
+    impl<T> CastRangeIntoIntegerSigned for T where T:
+        CastRangeInto<i8 > +
+        CastRangeInto<i16> +
+        CastRangeInto<i32> +
+        CastRangeInto<i64> +
+        CastRangeInto<isize>
+    {}
+
+    /// iX
+    pub trait CastRangeFromIntegerSigned :
+        CastRangeFrom<i8 > +
+        CastRangeFrom<i16> +
+        CastRangeFrom<i32> +
+        CastRangeFrom<i64> +
+        CastRangeFrom<isize>
+    {}
+    impl<T> CastRangeFromIntegerSigned for T where T:
+        CastRangeFrom<i8 > +
+        CastRangeFrom<i16> +
+        CastRangeFrom<i32> +
+        CastRangeFrom<i64> +
+        CastRangeFrom<isize>
+    {}
+
+    /// iX
+    pub trait CastRangeIntegerSigned            : CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
+    impl<T> CastRangeIntegerSigned for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
+
+
+    /// iX uX
+    pub trait CastRangeIntoInteger            : CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
+    impl<T> CastRangeIntoInteger for T where T: CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
+
+    /// iX uX
+    pub trait CastRangeFromInteger            : CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
+    impl<T> CastRangeFromInteger for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
+
+    /// iX uX
+    pub trait CastRangeInteger            : CastRangeIntoInteger + CastRangeFromInteger {}
+    impl<T> CastRangeInteger for T where T: CastRangeIntoInteger + CastRangeFromInteger {}
+
+
+    /// bool
+    pub trait CastRangeIntoBool            : CastRangeInto<bool> {}
+    impl<T> CastRangeIntoBool for T where T: CastRangeInto<bool> {}
+
+    /// bool
+    pub trait CastRangeFromBool            : CastRangeFrom<bool> {}
+    impl<T> CastRangeFromBool for T where T: CastRangeFrom<bool> {}
+
+    /// bool
+    pub trait CastRangeBool            : CastRangeIntoBool + CastRangeFromBool {}
+    impl<T> CastRangeBool for T where T: CastRangeIntoBool + CastRangeFromBool {}
+
+
+    /// iX uX fX
+    pub trait CastRangeIntoNumber            : CastRangeIntoInteger + CastRangeIntoFloat {}
+    impl<T> CastRangeIntoNumber for T where T: CastRangeIntoInteger + CastRangeIntoFloat {}
+
+    /// iX uX fX
+    pub trait CastRangeFromNumber            : CastRangeFromInteger + CastRangeFromFloat {}
+    impl<T> CastRangeFromNumber for T where T: CastRangeFromInteger + CastRangeFromFloat {}
+
+    /// iX uX fX
+    pub trait CastRangeNumber            : CastRangeInteger + CastRangeFloat {}
+    impl<T> CastRangeNumber for T where T: CastRangeInteger + CastRangeFloat {}
+
+
+    /// iX uX fX bool
+    pub trait CastRangeIntoPrimitive            : CastRangeIntoNumber + CastRangeIntoBool {}
+    impl<T> CastRangeIntoPrimitive for T where T: CastRangeIntoNumber + CastRangeIntoBool {}
+
+    /// iX uX fX bool
+    pub trait CastRangeFromPrimitive            : CastRangeFromNumber + CastRangeFromBool {}
+    impl<T> CastRangeFromPrimitive for T where T: CastRangeFromNumber + CastRangeFromBool {}
+
+    /// iX uX fX bool
+    pub trait CastRangePrimitive            : CastRangeIntoPrimitive + CastRangeFromPrimitive {}
+    impl<T> CastRangePrimitive for T where T: CastRangeIntoPrimitive + CastRangeFromPrimitive {}
+
+
+    #[cfg(test)]
+    mod cast_range_test
     {
-        macro_rules! check_identity {
-            ($type_name : ident) => {
-                assert_eq!(<$type_name>::cast_range_from(<$type_name>::RANGE_MIN), <$type_name>::RANGE_MIN);
-                assert_eq!(<$type_name>::cast_range_from(<$type_name>::RANGE_MAX), <$type_name>::RANGE_MAX);
-            };
+        use super::*;
+
+        #[test]
+        fn identity()
+        {
+            macro_rules! check_identity {
+                ($type_name : ident) => {
+                    assert_eq!(<$type_name>::cast_range_from(<$type_name>::RANGE_MIN), <$type_name>::RANGE_MIN);
+                    assert_eq!(<$type_name>::cast_range_from(<$type_name>::RANGE_MAX), <$type_name>::RANGE_MAX);
+                };
+            }
+
+            map_on_number!(check_identity);
+            assert_eq!(bool::cast_range_from(false), false);
+            assert_eq!(bool::cast_range_from(true), true);
         }
 
-        map_on_number!(check_identity);
-        assert_eq!(bool::cast_range_from(false), false);
-        assert_eq!(bool::cast_range_from(true), true);
-    }
-
-    #[test]
-    fn some_range_test()
-    {
-        assert_eq!(u16::cast_range_from(0u8), 0u16);
-        assert_eq!(u16::cast_range_from(u8::RANGE_MAX), u16::RANGE_MAX);
-        assert_eq!(u16::cast_range_from(u8::RANGE_MAX / 2), u16::RANGE_MAX / 2 - (u8::RANGE_MAX as u16) / 2 - 1);
-    }
-
-    #[test]
-    fn bool_conv()
-    {
-        macro_rules! check_bool {
-            ($type_name : ident) => {
-                assert_eq!(<$type_name>::cast_range_from(false), <$type_name>::RANGE_MIN);
-                assert_eq!(<$type_name>::cast_range_from(true), <$type_name>::RANGE_MAX);
-            };
+        #[test]
+        fn some_range_test()
+        {
+            assert_eq!(u16::cast_range_from(0u8), 0u16);
+            assert_eq!(u16::cast_range_from(u8::RANGE_MAX), u16::RANGE_MAX);
+            assert_eq!(u16::cast_range_from(u8::RANGE_MAX / 2), u16::RANGE_MAX / 2 - (u8::RANGE_MAX as u16) / 2 - 1);
         }
 
-        map_on_number!(check_bool);
-    }
+        #[test]
+        fn bool_conv()
+        {
+            macro_rules! check_bool {
+                ($type_name : ident) => {
+                    assert_eq!(<$type_name>::cast_range_from(false), <$type_name>::RANGE_MIN);
+                    assert_eq!(<$type_name>::cast_range_from(true), <$type_name>::RANGE_MAX);
+                };
+            }
 
-    #[test]
-    fn float_conv()
-    {
-        macro_rules! check_float {
-            ($type_name : ident) => {
-                assert_eq!(<$type_name>::cast_range_from(f32::RANGE_MAX), <$type_name>::RANGE_MAX);
-                assert_eq!(<$type_name>::cast_range_from(f32::RANGE_MIN), <$type_name>::RANGE_MIN);
-            };
+            map_on_number!(check_bool);
         }
 
-        map_on_number!(check_float);
+        #[test]
+        fn float_conv()
+        {
+            macro_rules! check_float {
+                ($type_name : ident) => {
+                    assert_eq!(<$type_name>::cast_range_from(f32::RANGE_MAX), <$type_name>::RANGE_MAX);
+                    assert_eq!(<$type_name>::cast_range_from(f32::RANGE_MIN), <$type_name>::RANGE_MIN);
+                };
+            }
+
+            map_on_number!(check_float);
+        }
     }
 }

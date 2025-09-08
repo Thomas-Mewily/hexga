@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 pub type IoSaveResult<T=()> = Result<T, IoError>;
 pub use std::io::Write as IoWrite;

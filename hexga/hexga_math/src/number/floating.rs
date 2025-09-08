@@ -1,4 +1,9 @@
-use crate::*;
+use super::*;
+
+pub mod prelude
+{
+    pub use super::Float;
+}
 
 /// Generalized function and constant for floating point like `f32`, `f64`...
 /// 
