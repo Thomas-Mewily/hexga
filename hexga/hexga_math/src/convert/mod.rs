@@ -1,8 +1,11 @@
 use super::*;
 
-pub mod cast_range;
-pub mod cast_primitive;
-pub mod cast;
+mod cast_range;
+pub use cast_range::*;
+mod cast_primitive;
+pub use cast_primitive::*;
+mod cast;
+pub use cast::*;
 
 pub mod prelude
 {

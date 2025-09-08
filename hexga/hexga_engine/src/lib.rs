@@ -13,6 +13,15 @@ use winit::{
 };
 use hexga::prelude::*;
 use std::ops::*;
+use std::collections::HashMap;
+
+#[allow(unused_imports)]
+#[cfg(feature = "serde")]
+use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+
+#[allow(unused_imports)]
+#[cfg(feature = "hexga_io")]
+use hexga_io::{IoSave, IoLoad, Save, Load};
 
 pub mod gpu;
 pub mod app;

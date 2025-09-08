@@ -215,7 +215,7 @@ impl CastRangeFrom<bool> for bool
 }
 
 
-
+#[allow(dead_code)]
 pub mod utils
 {
     use super::*;

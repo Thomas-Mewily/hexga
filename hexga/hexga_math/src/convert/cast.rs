@@ -1,9 +1,6 @@
 use super::*;
 
 
-
-use super::*;
-
 pub mod prelude
 {
     pub use super::{CastInto,CastFrom};
@@ -131,6 +128,7 @@ map_on_number!(impl_cast_to_bool);
 impl CastFrom<bool> for bool { fn cast_from(value : bool) -> Self { value } }
 
 
+#[allow(dead_code)]
 pub mod utils
 {
     use super::*;
