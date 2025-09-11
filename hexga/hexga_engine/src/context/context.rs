@@ -5,7 +5,7 @@ pub mod prelude
     pub use super::Context;
 }
 
-pub type ContextWinit = Arc<Window>;
+pub type ContextWinit = Arc<WinitWindow>;
 
 #[derive(Default)]
 pub struct Context
@@ -14,6 +14,7 @@ pub struct Context
     pub(crate) perf : ContextPerformance,
     pub(crate) input : ContextInput,
 }
+
 
 impl Scoped<Update> for Context
 {

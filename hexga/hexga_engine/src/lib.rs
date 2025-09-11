@@ -4,13 +4,6 @@
 
 use std::{iter, sync::Arc};
 use std::marker::PhantomData;
-use winit::{
-    application::ApplicationHandler,
-    event::*,
-    event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy},
-    keyboard::{KeyCode, PhysicalKey},
-    window::Window,
-};
 use hexga::prelude::*;
 use std::ops::*;
 use std::collections::HashMap;

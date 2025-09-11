@@ -59,17 +59,17 @@ pub(crate) struct AppRunner<A> where A:App
 }
 impl<A> AppRunner<A> where A:App
 {
-    pub fn new(app : A, ctx : &'static mut Context, proxy : EvLoopProxy<A::UserEvent>) -> Self { Self { app, ctx, proxy, last_update: Time::now() }}
+    pub fn new(app : A, ctx : &'static mut Context, proxy : EvLoopProxy<A::UserEvent>) -> Self { Self { app, ctx, proxy, last_update: Time::since_launch() }}
 }
 
 impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> where A:App
 {
-    fn resumed(&mut self, event_loop: &ActiveEventLoop) 
+    fn resumed(&mut self, event_loop: &EventLoopActive) 
     {
         if self.ctx.winit.is_none() 
         {
             #[allow(unused_mut)]
-            let mut win_attr = Window::default_attributes().with_title("wgpu winit example");
+            let mut win_attr = WinitWindow::default_attributes().with_title("wgpu winit example");
             
             #[cfg(target_arch = "wasm32")]
             {
@@ -87,7 +87,7 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
         }
     }
 
-    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: AppInternalMessage<A::UserEvent>) {
+    fn user_event(&mut self, event_loop: &EventLoopActive, event: AppInternalMessage<A::UserEvent>) {
         match event
         {
             AppInternalMessage::Message(app_message) => {},
@@ -101,7 +101,7 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
 
     fn window_event(
         &mut self,
-        event_loop: &ActiveEventLoop,
+        event_loop: &EventLoopActive,
         window_id: winit::window::WindowId,
         event: WindowEvent,
     ) 
@@ -121,7 +121,7 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
             WindowEvent::RedrawRequested => self.draw(),
             WindowEvent::KeyboardInput { device_id, event, is_synthetic } => 
             {
-                if event.physical_key == winit::keyboard::PhysicalKey::Code(KeyCode::Escape)
+                if event.physical_key == winit::keyboard::PhysicalKey::Code(WinitKeyCode::Escape)
                 {
                     event_loop.exit();
                 }
@@ -130,16 +130,16 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
         }
     }
 
-    fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
+    fn new_events(&mut self, event_loop: &EventLoopActive, cause: StartCause) {
         // FIXME: The draw() should not be here
         Ctx.winit.as_mut().map(|window| window.request_redraw());
     }
 
-    fn exiting(&mut self, event_loop: &ActiveEventLoop) {
+    fn exiting(&mut self, event_loop: &EventLoopActive) {
         Ctx::destroy();
     }
 
-    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+    fn about_to_wait(&mut self, event_loop: &EventLoopActive) {
         self.update();
         // FIXME: The draw() should not be here
         //self.draw();
@@ -156,7 +156,7 @@ impl<A> AppRunner<A> where A:App
         (
             || 
             { 
-                let time = Time::now();
+                let time = Time::since_launch();
                 let delta_time = time - self.last_update;
                 self.last_update = time;
                 self.app.update(delta_time);

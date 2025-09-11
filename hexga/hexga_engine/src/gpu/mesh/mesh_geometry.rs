@@ -2,49 +2,58 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{MeshGeometry,MeshTriangle};
+    pub use super::
+    {
+        Geometry,GeometryTriangle,
+        GeometryVertex,TriangleVertex,
+        TriangleVertexIndex,
+    };
 }
 
-pub type MeshTriangle<const V:usize=3>=MeshGeometry<V, 3>;
-pub type MeshGeometry<const V:usize, const N:usize> = MeshGeometryOf<Vertex<V>,N>; 
+pub type TriangleVertex<const V:usize>=GeometryTriangle<Vertex<V>>;
+pub type GeometryVertex<const V:usize, const N:usize> = Geometry<Vertex<V>,N>; 
 
-impl<T> MeshGeometryOf<T,2>
+pub type GeometryTriangle<T> = Geometry<T,3>; 
+pub type TriangleVertexIndex=GeometryTriangle<VertexIndex>;
+
+impl<T> Geometry<T,2>
 {
     pub const fn new(a : T, b: T) -> Self { Self::from_array([a,b]) }
 }
-impl<T> MeshGeometryOf<T,3>
+impl<T> Geometry<T,3>
 {
     pub const fn new(a : T, b: T, c:T) -> Self { Self::from_array([a,b,c]) }
 }
 
+#[repr(C)]
 #[derive(Clone, Copy, PartialEq, Debug, PartialOrd)]
-pub struct MeshGeometryOf<T,const N:usize>
+pub struct Geometry<T,const N:usize>
 {
     pub points : [T;N]
 }
-impl<T,const N:usize> MeshGeometryOf<T,N>
+impl<T,const N:usize> Geometry<T,N>
 {
     pub const fn from_array(points: [T;N]) -> Self { Self { points }}
 }
 
-impl<T, const N:usize> From<[T;N]> for MeshGeometryOf<T,N>
+impl<T, const N:usize> From<[T;N]> for Geometry<T,N>
 {
     fn from(value: [T;N]) -> Self { Self::from_array(value) }
 }
 
-impl<T,const N:usize> IntoIterator for MeshGeometryOf<T,N>
+impl<T,const N:usize> IntoIterator for Geometry<T,N>
 {
     type Item=<[T;N] as IntoIterator>::Item;
     type IntoIter=<[T;N] as IntoIterator>::IntoIter;
     fn into_iter(self) -> Self::IntoIter { self.points.into_iter() }
 }
-impl<'a, T,const N:usize> IntoIterator for &'a MeshGeometryOf<T,N>
+impl<'a, T,const N:usize> IntoIterator for &'a Geometry<T,N>
 {
     type Item=<&'a [T;N] as IntoIterator>::Item;
     type IntoIter=<&'a [T;N] as IntoIterator>::IntoIter;
     fn into_iter(self) -> Self::IntoIter { (&self.points).into_iter() }
 }
-impl<'a, T,const N:usize> IntoIterator for &'a mut MeshGeometryOf<T,N>
+impl<'a, T,const N:usize> IntoIterator for &'a mut Geometry<T,N>
 {
     type Item=<&'a mut [T;N] as IntoIterator>::Item;
     type IntoIter=<&'a mut [T;N] as IntoIterator>::IntoIter;

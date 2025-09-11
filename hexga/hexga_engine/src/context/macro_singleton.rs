@@ -26,12 +26,6 @@ macro_rules! ctx_singleton {
             }
         }
 
-        impl AsRef<$target> for $wrapper {
-            fn as_ref(&self) -> &$target {
-                self.deref()
-            }
-        }
-
         impl SingletonMut for $wrapper {
             fn try_as_mut() -> Option<&'static mut <Self as SingletonRef>::Target> {
                 $try_as_mut
@@ -40,13 +34,7 @@ macro_rules! ctx_singleton {
 
         impl ::std::ops::DerefMut for $wrapper {
             fn deref_mut(&mut self) -> &mut Self::Target {
-                self.as_mut()
-            }
-        }
-
-        impl AsMut<$target> for $wrapper {
-            fn as_mut(&mut self) -> &mut $target {
-                Self::try_as_mut().expect(concat!(stringify!($wrapper), " not initialized (mut)"))
+                Self::try_as_mut().expect(concat!(stringify!($wrapper), " not initialized"))
             }
         }
     };

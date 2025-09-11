@@ -52,7 +52,7 @@ impl DerefMut for ContextGpu
 }
 impl ContextGpu
 {
-    pub(crate) fn request<UserEvent>(window: Arc<Window>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) -> Result<(), String> where UserEvent: IUserEvent
+    pub(crate) fn request<UserEvent>(window: Arc<WinitWindow>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) -> Result<(), String> where UserEvent: IUserEvent
     {
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
@@ -73,13 +73,13 @@ impl ContextGpu
 
         Ok(())
     }
-    pub(crate) async fn request_async<UserEvent>(instance : wgpu::Instance, window: Arc<Window>, surface : wgpu::Surface<'static>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) where UserEvent: IUserEvent
+    pub(crate) async fn request_async<UserEvent>(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>, proxy : EventLoopProxy<AppInternalMessage<UserEvent>>) where UserEvent: IUserEvent
     {
         let _ = proxy.send_event(AppInternalMessage::ContextGpu(Self::new(instance, window, surface).await));
     }
 
     
-    pub(crate) async fn new(instance : wgpu::Instance, window: Arc<Window>, surface : wgpu::Surface<'static>) -> Result<Self, String> 
+    pub(crate) async fn new(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>) -> Result<Self, String> 
     {
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {

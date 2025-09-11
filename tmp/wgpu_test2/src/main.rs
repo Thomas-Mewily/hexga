@@ -25,11 +25,12 @@ impl App for MyApp
     fn draw(&mut self)
     {
         info!("nb fps: {}", Perf.nb_fps());
-        
+
+        Ctx.
 
         Cam.rot_z(self.time.s().degree() * 50.);
 
-        Pen.triangle(MeshTriangle::new
+        Pen.triangle(TriangleVertex::new
             (
                 Vertex::new().with_position(vec3(-1.,-0.5,0.)).with_color(GpuColor::RED),
                 Vertex::new().with_position(vec3(1.,-0.5,0.)).with_color(GpuColor::GREEN),

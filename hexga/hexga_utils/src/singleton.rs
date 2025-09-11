@@ -8,7 +8,7 @@ pub mod prelude
 pub trait Singleton : SingletonRef + SingletonMut {}
 impl<T> Singleton for T where T: SingletonRef+SingletonMut {}
 
-pub trait SingletonRef: Deref<Target = <Self as SingletonRef>::Target> + AsRef<<Self as SingletonRef>::Target>
+pub trait SingletonRef: Deref<Target = <Self as SingletonRef>::Target>
 {
     type Target :'static;
 
@@ -17,7 +17,7 @@ pub trait SingletonRef: Deref<Target = <Self as SingletonRef>::Target> + AsRef<<
     fn is_init() -> bool { Self::try_as_ref().is_some() }
 }
 
-pub trait SingletonMut: SingletonRef + DerefMut + AsMut<<Self as SingletonRef>::Target>
+pub trait SingletonMut: SingletonRef + DerefMut
 {
     /// SAFETY: The lifetime is `'instantaneous`, not `static`, don't store it please
     fn try_as_mut() -> Option<&'static mut <Self as SingletonRef>::Target>;

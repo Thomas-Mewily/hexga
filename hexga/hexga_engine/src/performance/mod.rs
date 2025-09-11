@@ -55,7 +55,7 @@ pub struct TimeCounter
 impl Default for TimeCounter
 {
     fn default() -> Self {
-        Self { timer: Time::now(), counter: 0, last_counter: 0 }
+        Self { timer: Time::since_launch(), counter: 0, last_counter: 0 }
     }
 }
 impl TimeCounter
@@ -63,7 +63,7 @@ impl TimeCounter
     pub fn nb(&self) -> int { self.last_counter }
     pub fn increase(&mut self) 
     {
-        let now = Time::now();
+        let now = Time::since_launch();
         if now - self.timer >= 1.s()
         {
             self.timer = now;
