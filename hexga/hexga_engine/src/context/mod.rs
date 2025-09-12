@@ -16,26 +16,26 @@ pub struct Context
 
 
 
-impl Scoped<Update> for Context
+impl ScopedUpdate for Context
 {
-    fn begin(&mut self) 
+    fn begin_update(&mut self) 
     { 
         Perf.begin_update();
     }
-    fn end(&mut self) 
+    fn end_update(&mut self) 
     { 
         Perf.end_update();
     }
 }
 
-impl Scoped<Draw> for Context
+impl ScopedDraw for Context
 {
-    fn begin(&mut self) 
+    fn begin_draw(&mut self) 
     { 
         Gpu.begin_draw();
         Perf.begin_draw();
     }
-    fn end(&mut self) 
+    fn end_draw(&mut self) 
     { 
         Perf.end_draw();
         Gpu.end_draw();

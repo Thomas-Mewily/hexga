@@ -8,16 +8,16 @@ singleton!(
 );
 
 
-impl Scoped<Draw> for Drawer
+impl ScopedDraw for Drawer
 {
-    fn begin(&mut self) 
+    fn begin_draw(&mut self) 
     {
         self.immediate.clear();
         self.draw_call.clear();
         self.camera.begin_draw();
     }
 
-    fn end(&mut self) 
+    fn end_draw(&mut self) 
     {
         self.flush();
         self.camera.end_draw();

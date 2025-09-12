@@ -9,15 +9,15 @@ pub struct CameraManager
     pub(crate) camera_bind_group: wgpu::BindGroup,
 }
 
-impl Scoped<Draw> for CameraManager
+impl ScopedDraw for CameraManager
 {
-    fn begin(&mut self) 
+    fn begin_draw(&mut self) 
     {
         assert_eq!(self.cameras.len(), 1, "Forget to pop a camera");
         self.cameras.replace(Camera::CAMERA_3D);
     }
 
-    fn end(&mut self) {
+    fn end_draw(&mut self) {
         
     }
 }

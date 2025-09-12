@@ -1,7 +1,7 @@
 use super::*;
 
 
-pub trait Scoped<T=()>
+pub trait Scoped
 {
     fn begin(&mut self);
     fn scope<F>(&mut self, f : F) where F : FnOnce()

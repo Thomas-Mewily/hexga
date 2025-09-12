@@ -1,19 +1,17 @@
 use super::*;
 
-pub struct Draw;
-pub struct Update;
 
-pub trait ScopedDraw : Scoped<Draw>
+// Wrapper arround Scoped, but non public
+
+pub(crate) trait ScopedDraw
 {
-    fn begin_draw(&mut self) { self.begin(); }
-    fn end_draw(&mut self) { self.end(); }
-    fn scoped_draw<F>(&mut self, f: F) where F: FnOnce() { self.scope(f) }
+    fn begin_draw(&mut self);
+    fn end_draw(&mut self);
+    fn scoped_draw<F>(&mut self, f: F) where F: FnOnce() { self.begin_draw(); f(); self.end_draw(); }
 }
-impl<T> ScopedDraw for T where T: Scoped<Draw>{}
-pub trait ScopedUpdate : Scoped<Update>
+pub (crate) trait ScopedUpdate
 {
-    fn begin_update(&mut self) { self.begin(); }
-    fn end_update(&mut self) { self.end(); }
-    fn scoped_update<F>(&mut self, f: F) where F: FnOnce() { self.scope(f) }
+    fn begin_update(&mut self);
+    fn end_update(&mut self);
+    fn scoped_update<F>(&mut self, f: F) where F: FnOnce() { self.begin_update(); f(); self.end_update(); }
 }
-impl<T> ScopedUpdate for T where T: Scoped<Update>{}

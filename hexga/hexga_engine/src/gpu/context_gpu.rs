@@ -224,13 +224,13 @@ impl ContextGpu
 }
 
 
-impl Scoped<Draw> for ContextGpu
+impl ScopedDraw for ContextGpu
 {
-    fn begin(&mut self) {
+    fn begin_draw(&mut self) {
         self.draw.begin_draw();
     }
 
-    fn end(&mut self) 
+    fn end_draw(&mut self) 
     {
         self.draw.end_draw();
         self.send_data_to_gpu();

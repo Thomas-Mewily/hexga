@@ -2,8 +2,6 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-//use hexga_engine::prelude::*;
-
 use hexga_engine::prelude::*;
 
 #[derive(Default)]
@@ -26,7 +24,7 @@ impl App for MyApp
     fn draw(&mut self)
     {
         info!("nb fps: {}", Perf.fps());
-
+        
         Cam.rot_z(self.time.s().degree() * 50.);
 
         Pen.triangle(TriangleVertex::new
@@ -41,7 +39,6 @@ impl App for MyApp
 
 fn main() 
 {
-
     let x : i32 = 4;
     let y : f32 = x.cast_into();
 

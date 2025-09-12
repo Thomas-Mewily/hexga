@@ -24,16 +24,16 @@ impl ContextPerformance
     pub fn ups(&self) -> int { self.ups.nb() }
 }
 
-impl Scoped<Update> for ContextPerformance
+impl ScopedUpdate for ContextPerformance
 {
-    fn begin(&mut self) { self.ups.count(); }
-    fn end(&mut self) { }
+    fn begin_update(&mut self) { self.ups.count(); }
+    fn end_update(&mut self) { }
 }
 
-impl Scoped<Draw> for ContextPerformance
+impl ScopedDraw for ContextPerformance
 {
-    fn begin(&mut self) { self.fps.count(); }
-    fn end(&mut self) { }
+    fn begin_draw(&mut self) { self.fps.count(); }
+    fn end_draw(&mut self) { }
 }
 
 
