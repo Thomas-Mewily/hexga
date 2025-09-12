@@ -1,12 +1,6 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{Input,ContextInput};
-}
-
-
-ctx_singleton!(
+singleton!(
     Input,
     ContextInput,
     { Ctx::try_as_ref().map(|ctx| &ctx.input) },

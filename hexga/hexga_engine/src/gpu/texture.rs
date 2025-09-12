@@ -1,9 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::Texture;
-}
 
 pub struct Texture
 {

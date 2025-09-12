@@ -1,13 +1,6 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::Perf;
-    pub use super::ContextPerformance;
-}
-
-
-ctx_singleton!(
+singleton!(
     Perf,
     ContextPerformance,
     { Ctx::try_as_ref().map(|ctx| &ctx.perf) },
@@ -24,29 +17,29 @@ pub struct ContextPerformance
 
 impl ContextPerformance
 {
-    pub fn fps(&self) -> TimeCounter { self.fps }
-    pub fn nb_fps(&self) -> int { self.fps.nb() }
+    /// Return the previous number of frame per second
+    pub fn fps(&self) -> int { self.fps.nb() }
 
-    pub fn ups(&self) -> TimeCounter { self.ups }
-    pub fn nb_ups(&self) -> int { self.ups.nb() }
+    /// Return the previous update per second
+    pub fn ups(&self) -> int { self.ups.nb() }
 }
 
 impl Scoped<Update> for ContextPerformance
 {
-    fn begin(&mut self) { self.ups.increase(); }
+    fn begin(&mut self) { self.ups.count(); }
     fn end(&mut self) { }
 }
 
 impl Scoped<Draw> for ContextPerformance
 {
-    fn begin(&mut self) { self.fps.increase(); }
+    fn begin(&mut self) { self.fps.count(); }
     fn end(&mut self) { }
 }
 
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct TimeCounter
+pub(crate) struct TimeCounter
 {
     timer: Time,
     counter: int,
@@ -61,7 +54,7 @@ impl Default for TimeCounter
 impl TimeCounter
 {
     pub fn nb(&self) -> int { self.last_counter }
-    pub fn increase(&mut self) 
+    pub fn count(&mut self) 
     {
         let now = Time::since_launch();
         if now - self.timer >= 1.s()

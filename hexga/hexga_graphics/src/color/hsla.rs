@@ -1,10 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{ColorHsla,ColorHslaOf,hsla};
-}
-
 pub type ColorHsla      = ColorHslaFloat;
 pub type ColorHslaFloat = ColorHslaOf<float>;
 pub type ColorHslaF32   = ColorHslaOf<f32>;

@@ -1,7 +1,6 @@
 #![feature(get_disjoint_mut_helpers)]
 
 use std::collections::{LinkedList, VecDeque,HashMap,HashSet,BTreeMap,BTreeSet};
-use std::ffi::{OsStr, OsString};
 use std::{ops::Index, slice::SliceIndex};
 use core::slice::GetDisjointMutIndex;
 use std::hash::{BuildHasher, Hash};
@@ -13,14 +12,13 @@ pub mod iter;
 pub mod utils;
 pub mod collections;
 //pub mod accessor;
-use prelude::*;
 
+use prelude::*;
 pub mod prelude
 {
-    pub use crate::default::prelude::*;
-    pub use crate::format::prelude::*;
-    pub use crate::iter::prelude::*;
-    pub use crate::utils::prelude::*;
-    pub use crate::collections::prelude::*;
-    //pub use crate::accessor::prelude::*;
+    pub use super::default::*;
+    pub use super::format::*;
+    pub use super::iter::*;
+    pub use super::utils::*;
+    pub use super::collections::*;
 }

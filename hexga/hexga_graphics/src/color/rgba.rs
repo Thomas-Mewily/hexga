@@ -1,11 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{Color,ColorU8,ColorRgba,ColorRgbaOf,rgb,rgba};
-}
-
-
 pub type Color      = ColorRgba;
 pub type ColorU8    = ColorRgbaU8;
 pub type ColorU16   = ColorRgbaU16;

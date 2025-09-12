@@ -1,9 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{Integer,IntegerUnsigned,IntegerSigned,Primitive,ToUnsigned,ToSigned};
-}
 
 pub trait Integer            : NumberInteger + Abs + Primitive + CastPrimitive {}
 impl<T> Integer for T where T: NumberInteger + Abs + Primitive + CastPrimitive {}

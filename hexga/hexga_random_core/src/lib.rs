@@ -1,10 +1,10 @@
 #![feature(new_range_api)]
 
-use hexga_number::prelude::*;
+use hexga_number::*;
 
 pub mod prelude
 {
-    pub use super::{RandomSource, RandomSourceExtension, FromRandomSource, RandomInside}; 
+    pub use super::*;
 }
 
 /// Not approved for Cryptography use

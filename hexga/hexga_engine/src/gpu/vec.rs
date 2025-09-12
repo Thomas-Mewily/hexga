@@ -1,12 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::{GpuVec,GpuVecDesc,SliceToGpuVec,IteratorToGpuVec};
-}
-
-
 #[derive(Clone, Debug, PartialEq, Hash)]
 pub struct GpuVec<T> where T:Copy
 {

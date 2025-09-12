@@ -1,17 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::
-    {
-        ToFloat, ToF32, ToF64,
-        ToInt, ToI8, ToI16, ToI32, ToI64, ToISize,
-        ToUInt, ToU8, ToU16, ToU32, ToU64, ToUSize,
-    };
-}
-
-
 // Float
 pub trait ToFloat { fn to_float(self) -> float; }
 impl<T> ToFloat for T where T: CastInto<float> { fn to_float(self) -> float { self.cast_into() } }

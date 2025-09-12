@@ -1,9 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::RangeDefault;
-}
 
 /// For floating the range is : `[0., 1.]`. For integers the range is : `[0, MAX]`, even for signed
 pub trait RangeDefault : MinValue + MaxValue //+ CastTo + FromFloat + UnitArithmeticCanBePositive

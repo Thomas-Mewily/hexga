@@ -1,15 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::{Zero, zero, ZeroIter,UnwrapZero};
-    pub use super::{One, one, OneIter};
-    pub use super::{MinusOne,minus_one, MinusOneIter};
-    pub use super::{Half, half};
-    pub use super::{NaNValue,MinValue,MaxValue};
-}
-
 /// Define the `0` representation : The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`
 pub trait Zero : Sized
 {

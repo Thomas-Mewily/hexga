@@ -1,10 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{Increment,Decrement};
-}
-
 /// The `+1` operation
 pub trait Increment : One + Add<Self, Output=Self> + AddAssign<Self> + Copy + Sized
 {

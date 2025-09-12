@@ -102,8 +102,3 @@ pub use float_typedef::*;
 /// 
 /// Generally, a coef is between `[0.0, 1.0]`, but this is not an obligation
 pub type Coef = float;
-
-pub mod prelude
-{
-    pub use super::{int,uint,float,Coef};
-}

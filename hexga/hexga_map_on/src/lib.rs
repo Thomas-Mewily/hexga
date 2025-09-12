@@ -366,16 +366,5 @@ macro_rules! map_on_operator_unary
 
 pub mod prelude
 {
-    pub use super::
-    {
-        map_on,
-        map_on_integer_unsigned, map_on_integer_signed, map_on_integer, map_on_float,
-        map_on_number, map_on_number_and_bool,
-        map_on_operator_binary_arithmetic_unit, map_on_operator_binary_arithmetic,
-        map_on_operator_binary_bit, map_on_operator_binary,
-        map_on_operator_assign_arithmetic_unit, map_on_operator_assign_arithmetic,
-        map_on_operator_assign_bit, map_on_operator_assign,
-        map_on_std_fmt, 
-        map_on_operator_unary_bit, map_on_operator_unary_arithmetic_unit, map_on_operator_unary
-    };
+    pub use super::*;
 }

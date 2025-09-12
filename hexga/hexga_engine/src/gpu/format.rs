@@ -1,11 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::{GpuVertexFormat,GpuIndexFormat,IGpuIndexFormat,IGpuVertexFormat};
-}
-
 pub type GpuVertexFormat = wgpu::VertexFormat;
 pub type GpuIndexFormat = wgpu::IndexFormat;
 

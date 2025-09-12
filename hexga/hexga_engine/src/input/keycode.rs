@@ -1,9 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{KeyCode,KeyCodeNative};
-}
 
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

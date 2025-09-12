@@ -1,4 +1,4 @@
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 macro_rules! print_type {
     ($type_name:ty) => {

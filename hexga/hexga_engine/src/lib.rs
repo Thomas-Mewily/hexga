@@ -4,7 +4,6 @@
 
 use std::{iter, sync::Arc};
 use std::marker::PhantomData;
-use hexga::prelude::*;
 use std::ops::*;
 use std::collections::HashMap;
 
@@ -16,23 +15,26 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
-pub mod gpu;
+pub use hexga::*;
 pub mod app;
+pub mod gpu;
 pub mod context;
 pub mod performance;
 pub mod input;
 pub mod utils;
+pub mod log;
 
 use prelude::*;
-
 pub mod prelude
 {
-    pub use super::app::prelude::*;
-    pub use super::context::prelude::*;
-    pub use super::gpu::prelude::*;
-    pub use super::performance::prelude::*;
-    pub use super::input::prelude::*;
-    pub use super::utils::prelude::*;
+    pub use super::app::*;
+    pub use super::gpu::*;
+    pub use super::context::*;
+    pub use super::performance::*;
+    pub use super::input::*;
+    pub use super::utils::*;
+    pub use super::log::*;
+    pub use ::hexga::prelude::*;
 }
 
 /*

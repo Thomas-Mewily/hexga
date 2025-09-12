@@ -60,24 +60,36 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
 
-mod geometry;
-pub use geometry::*;
-mod utils;
-pub use utils::*;
-
-pub use hexga_typedef as typedef;
+pub mod array;
+pub mod angle;
+pub mod convert;
+pub mod grid;
+pub mod matrix;
 pub mod number;
 pub mod range;
-pub mod convert;
+pub mod rectangle;
+pub mod transform;
+pub mod utils;
+pub mod vector;
+pub use hexga_typedef as typedef;
+pub mod map_on;
+pub mod unit;
 
 use prelude::*;
 pub mod prelude
 {
-    pub use super::geometry::prelude::*;
-    pub use super::utils::prelude::*;
-    
-    pub use super::typedef::prelude::*;
-    pub use super::number::prelude::*;
-    pub use super::range::prelude::*;
-    pub use super::convert::prelude::*;
+    pub use crate::array::*;
+    pub use crate::angle::*;
+    pub use crate::grid::*;
+    pub use crate::matrix::*;
+    pub use crate::number::*;
+    pub use crate::range::*;
+    pub use crate::rectangle::*;
+    pub use crate::transform::*;
+    pub use crate::typedef::*;
+    pub use crate::utils::*;
+    pub use crate::vector::*;
+    pub use super::convert::*;
+    pub use super::map_on::*;
+    pub use super::unit::*;
 }

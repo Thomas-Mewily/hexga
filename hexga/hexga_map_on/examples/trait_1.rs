@@ -1,4 +1,4 @@
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 trait One
 {

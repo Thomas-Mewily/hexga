@@ -1,14 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    //pub use super::{ContextGpu,GpuVec,GpuVecDesc};
-    //pub use super::*;
-    pub(crate) use super::ContextGpu;
-}
-
-
 pub struct GpuSurface
 {
     surface: wgpu::Surface<'static>,

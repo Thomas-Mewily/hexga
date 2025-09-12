@@ -1,11 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::{Futurable,SpawnFutur};
-}
-
 // TODO: make an internal private trait, to be sure SpawnFutur can't be impl by external crate
 
 #[cfg(not(target_arch = "wasm32"))]

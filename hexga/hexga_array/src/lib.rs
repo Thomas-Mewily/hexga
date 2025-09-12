@@ -9,6 +9,5 @@ pub use extension::*;
 
 pub mod prelude
 {
-    pub use super::array::prelude::*;
-    pub use super::extension::prelude::*;
+    pub use super::*;
 }

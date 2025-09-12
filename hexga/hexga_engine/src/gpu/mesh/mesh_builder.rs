@@ -1,9 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{IMeshBuilder,MeshBuilder};
-}
 
 pub trait IMeshBuilder<const N:usize=3>
 {

@@ -12,8 +12,3 @@ impl<T> ToDebug for T where T: std::fmt::Debug
         format!("{:?}", self)
     }
 }
-
-pub mod prelude
-{
-    pub use super::{format,Formatter,Debug,Display,ToDebug,FmtResult};
-}

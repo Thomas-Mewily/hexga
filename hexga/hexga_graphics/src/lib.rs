@@ -29,17 +29,12 @@ use hexga_io::{IoSave, IoLoad, IoError, IoErrorKind, Save, Load};
 
 use std::ops::*;
 
-mod extension;
-use extension::*;
-
 pub mod image;
-use image::*;
-
 pub mod color;
-use color::*;
 
+use prelude::*;
 pub mod prelude
 {
-    pub use super::image::prelude::*;
-    pub use super::color::prelude::*;
+    pub use super::color::*;
+    pub use super::image::*;
 }

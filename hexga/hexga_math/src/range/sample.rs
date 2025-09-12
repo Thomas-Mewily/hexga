@@ -1,9 +1,6 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{RangeSampleExtension,RangeDefaultSampleExtension,RangeDefaultSampleInclusiveExtension,RangeSample};
-}
+
 
 pub trait RangeSampleExtension<I=usize>
 {

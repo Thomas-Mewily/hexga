@@ -1,10 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{Keyboard};
-}
-
 
 #[derive(Default, Clone, PartialEq, Debug)]
 pub struct Keyboard

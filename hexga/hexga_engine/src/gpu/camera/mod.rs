@@ -1,12 +1,10 @@
 use super::*;
 
 mod icamera;
-mod camera_manager;
-mod cam;
+pub use icamera::*;
 
-pub mod prelude
-{
-    pub use super::icamera::prelude::*;
-    pub use super::camera_manager::prelude::*;
-    pub use super::cam::prelude::*;
-}
+mod camera_manager;
+pub use camera_manager::*;
+
+mod cam;
+pub use cam::*;

@@ -1,12 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::AppMessage;
-    pub(crate) use super::{AppInternalMessage, IUserEvent};
-}
-
 pub(crate) enum AppInternalMessage<U> where U: IUserEvent
 {
     Message(AppMessage<U>),

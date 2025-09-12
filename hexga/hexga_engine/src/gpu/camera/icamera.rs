@@ -146,15 +146,15 @@ impl<F> SetScale<F,3> for CameraOf<F> where F: Float
 {
     fn set_scale(&mut self, scale : Vector<F,3>) -> &mut Self { self.matrix.set_scale(scale); self }
 }
-impl<F> RotationX<F> for CameraOf<F> where F: Float
+impl<F> RotateX<F> for CameraOf<F> where F: Float
 {
     fn rotate_x(&mut self, angle : AngleOf<F>) -> &mut Self { self.matrix.rotate_x(angle); self }
 }
-impl<F> RotationY<F> for CameraOf<F> where F: Float
+impl<F> RotateY<F> for CameraOf<F> where F: Float
 {
     fn rotate_y(&mut self, angle : AngleOf<F>) -> &mut Self { self.matrix.rotate_y(angle); self }
 }
-impl<F> RotationZ<F> for CameraOf<F> where F: Float
+impl<F> RotateZ<F> for CameraOf<F> where F: Float
 {
     fn rotate_z(&mut self, angle : AngleOf<F>) -> &mut Self { self.matrix.rotate_z(angle); self }
 }
@@ -186,9 +186,4 @@ impl<F> ICamera<F> for CameraOf<F> where F: Float
 {
     fn have_depth(&self) -> bool { self.depth }
     fn viewport(&self) -> Option<Rect2P> { self.viewport }
-}
-
-pub mod prelude
-{
-    pub use super::{Camera,CameraOf,ICamera,Camera3D,Camera3DOf,CameraPerspectiveOf};
 }

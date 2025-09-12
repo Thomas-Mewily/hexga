@@ -1,11 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::{Sequence,TryPush,Push,TryPop,Pop};
-}
-
 
 /*
 pub trait Collection : Length /* + Capacity */ {}  // slice and str don't impl capacity

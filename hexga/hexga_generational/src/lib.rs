@@ -5,7 +5,7 @@
 
 #![feature(get_disjoint_mut_helpers)]
 
-use hexga_number::prelude::*;
+use hexga_number::*;
 #[allow(unused_imports)]
 use hexga_core::prelude::*;
 
@@ -24,4 +24,11 @@ use gen_hash_map::*;
 pub mod gen_hash_map;
 */
 
-pub mod prelude;
+pub mod prelude
+{
+    pub use crate::gen_vec::
+    {
+        GenVec,GenVecID,CollectToGenVecExtension,
+        SlotVec,SlotID,
+    };
+}

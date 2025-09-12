@@ -1,9 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{Two,Three,OddOrEven,PositiveOrNegative,PartialOrdExtension,TakeHalf};
-}
 
 /* 
 map_on_constant!

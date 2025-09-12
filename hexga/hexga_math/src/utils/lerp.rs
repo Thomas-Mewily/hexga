@@ -15,8 +15,3 @@ impl<T> Lerpable for T where T: Mul<float,Output=Self> + Add<Self,Output=Self> +
 {
     fn lerp_unchecked(self, dest : Self, coef : float) -> Self { self * (1. - coef) + dest * coef  }
 }
-
-pub mod prelude
-{
-    pub use super::Lerpable;
-}

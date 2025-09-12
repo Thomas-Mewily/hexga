@@ -16,8 +16,10 @@ pub mod singleton;
 
 pub mod prelude
 {
-    pub use super::non_empty_stack::prelude::*;
-    pub use super::asset::prelude::*;
-    pub use super::scope::prelude::*;
-    pub use super::singleton::prelude::*;
+    pub use super::non_empty_stack::*;
+    pub use super::asset::*;
+    pub use super::scope::*;
+    pub use super::singleton::*;
 }
+
+

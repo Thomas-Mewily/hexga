@@ -29,8 +29,3 @@ impl From<Vertex2> for Vertex3
 
 
 pub type VertexIndex = u32;
-
-pub mod prelude
-{
-    pub use super::{Vertex,Vertex2,Vertex3,VertexIndex};
-}

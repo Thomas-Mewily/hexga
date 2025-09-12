@@ -12,10 +12,3 @@ pub use step::*;
 
 mod sample;
 pub use sample::*;
-
-pub mod prelude
-{
-    pub use super::default::prelude::*;
-    pub use super::step::prelude::*;
-    pub use super::sample::prelude::*;
-}

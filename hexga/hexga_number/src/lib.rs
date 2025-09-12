@@ -6,7 +6,7 @@ use std::ops::*;
 use std::iter::{Sum,Product};
 use std::num::{Saturating, Wrapping};
 
-pub use map_on::prelude::*;
+pub use map_on::*;
 
 mod constant;
 pub use constant::*;
@@ -25,9 +25,5 @@ pub use reflection::*;
 
 pub mod prelude
 {
-    pub use super::constant::prelude::*;
-    pub use super::number::prelude::*;
-    pub use super::increment::prelude::*;
-    pub use super::ops::prelude::*;
-    pub use super::reflection::prelude::*;
+    pub use super::*;
 }

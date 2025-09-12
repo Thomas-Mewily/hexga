@@ -2,13 +2,6 @@ use super::*;
 use std::array;
 
 
-pub mod prelude
-{
-    pub use super::{Array,ArrayWithGenericSize,ArrayWithGenericType,ArrayMin,ArrayMax};
-}
-
-
-
 /* 
 /// An array where the type and the size are generic and can be changed
 pub trait ArrayGeneric<T, const N: usize>: ArrayWithGenericSize<T,N> + ArrayWithGenericType<T,N> 

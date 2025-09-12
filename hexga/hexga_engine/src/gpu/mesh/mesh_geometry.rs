@@ -1,14 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::
-    {
-        Geometry,GeometryTriangle,
-        GeometryVertex,TriangleVertex,
-        TriangleVertexIndex,
-    };
-}
 
 pub type TriangleVertex<const V:usize>=GeometryTriangle<Vertex<V>>;
 pub type GeometryVertex<const V:usize, const N:usize> = Geometry<Vertex<V>,N>; 

@@ -3,10 +3,6 @@ use std::ops::*;
 use std::hash::Hash;
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{BitArithmetic,UnitArithmetic,NumberArithmetic,ArithmeticNegative,Number,NumberNegative,NumberPrimitive,NumberPrimitiveNegative,NumberFloat,NumberInteger,NumberIntegerUnsigned,NumberIntegerSigned,BitManip};
-}
 
 /// For every type that support bit based operation (and `&`, or `|`, xor `^`, not `!`, shift `<<` / `>>`...)
 pub trait BitArithmetic :

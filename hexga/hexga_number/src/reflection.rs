@@ -1,10 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{OverflowPolicy,OverflowBehavior,NumberType,PrimitiveType};
-}
-
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum OverflowPolicy { None, Wrapping, Saturating }

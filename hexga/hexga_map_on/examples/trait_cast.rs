@@ -1,4 +1,4 @@
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 // Similar to Trait From / Into, but those trait suppose no loss when converting, so it is impossible to cast a f32 to a i64 for exemple
 

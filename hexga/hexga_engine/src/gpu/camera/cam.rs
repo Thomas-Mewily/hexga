@@ -1,11 +1,6 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::Cam;
-}
-
-ctx_singleton!(
+singleton!(
     Cam,
     CameraManager,
     { Pen::try_as_ref().map(|pen| pen.camera()) },

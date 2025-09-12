@@ -1,10 +1,6 @@
 //! Contains some common prefix, such as `[Kilo]`, `[Milli]`, `[Tera]`
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{PrefixPeta,PrefixQuadrillion,PrefixTera,PrefixTrillion,PrefixGiga,PrefixBillion,PrefixMega,PrefixMillion,PrefixKilo,PrefixThousand,PrefixHecto,PrefixHundred,PrefixDeca,PrefixDecade,PrefixDeci,PrefixCenti,PrefixMilli,PrefixMicro,PrefixNano,PrefixPico,PrefixFemto};
-}
 
 // TODO: split each of them in 2 trait. ConstPrefixPeta, PrefixPeta (same with constant number)
 

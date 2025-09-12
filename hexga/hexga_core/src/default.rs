@@ -78,10 +78,3 @@ pub trait DefaultExtension : Default + PartialEq
     fn is_not_default(&self) -> bool { !self.is_default() }
 }
 impl<T> DefaultExtension for T where T: Default + PartialEq {}
-
-
-
-pub mod prelude
-{
-    pub use super::{___,DefaultIsTripleUnderscore,DefaultExtension};
-}

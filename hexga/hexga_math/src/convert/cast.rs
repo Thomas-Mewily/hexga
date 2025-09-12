@@ -1,11 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::{CastInto,CastFrom};
-    pub(crate) use super::utils::*;
-}
 
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) 
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
@@ -128,147 +123,141 @@ map_on_number!(impl_cast_to_bool);
 impl CastFrom<bool> for bool { fn cast_from(value : bool) -> Self { value } }
 
 
-#[allow(dead_code)]
-pub mod utils
-{
-    use super::*;
 
-    /// fX
-    pub trait CastIntoFloat            : CastInto<f32> + CastInto<f64> {}
-    impl<T> CastIntoFloat for T where T: CastInto<f32> + CastInto<f64> {}
+/// fX
+pub trait CastIntoFloat            : CastInto<f32> + CastInto<f64> {}
+impl<T> CastIntoFloat for T where T: CastInto<f32> + CastInto<f64> {}
 
-    /// fX
-    pub trait CastFromFloat            : CastFrom<f32> + CastFrom<f64> {}
-    impl<T> CastFromFloat for T where T: CastFrom<f32> + CastFrom<f64> {}
+/// fX
+pub trait CastFromFloat            : CastFrom<f32> + CastFrom<f64> {}
+impl<T> CastFromFloat for T where T: CastFrom<f32> + CastFrom<f64> {}
 
-    /// fX
-    pub trait CastFloat            : CastIntoFloat + CastFromFloat {}
-    impl<T> CastFloat for T where T: CastIntoFloat + CastFromFloat {}
+/// fX
+pub trait CastFloat            : CastIntoFloat + CastFromFloat {}
+impl<T> CastFloat for T where T: CastIntoFloat + CastFromFloat {}
 
 
-    /// uX
-    pub trait CastIntoIntegerUnsigned :
-        CastInto<u8 > +
-        CastInto<u16> +
-        CastInto<u32> +
-        CastInto<u64> +
-        CastInto<usize>
-    {}
-    impl<T> CastIntoIntegerUnsigned for T where T:
-        CastInto<u8 > +
-        CastInto<u16> +
-        CastInto<u32> +
-        CastInto<u64> +
-        CastInto<usize>
-    {}
+/// uX
+pub trait CastIntoIntegerUnsigned :
+    CastInto<u8 > +
+    CastInto<u16> +
+    CastInto<u32> +
+    CastInto<u64> +
+    CastInto<usize>
+{}
+impl<T> CastIntoIntegerUnsigned for T where T:
+    CastInto<u8 > +
+    CastInto<u16> +
+    CastInto<u32> +
+    CastInto<u64> +
+    CastInto<usize>
+{}
 
-    /// uX
-    pub trait CastFromIntegerUnsigned :
-        CastFrom<u8 > +
-        CastFrom<u16> +
-        CastFrom<u32> +
-        CastFrom<u64> +
-        CastFrom<usize>
-    {}
-    impl<T> CastFromIntegerUnsigned for T where T:
-        CastFrom<u8 > +
-        CastFrom<u16> +
-        CastFrom<u32> +
-        CastFrom<u64> +
-        CastFrom<usize>
-    {}
-
-
-    /// uX
-    pub trait CastIntegerUnsigned            : CastFromIntegerUnsigned + CastFromIntegerUnsigned {}
-    impl<T> CastIntegerUnsigned for T where T: CastFromIntegerUnsigned + CastFromIntegerUnsigned {}
+/// uX
+pub trait CastFromIntegerUnsigned :
+    CastFrom<u8 > +
+    CastFrom<u16> +
+    CastFrom<u32> +
+    CastFrom<u64> +
+    CastFrom<usize>
+{}
+impl<T> CastFromIntegerUnsigned for T where T:
+    CastFrom<u8 > +
+    CastFrom<u16> +
+    CastFrom<u32> +
+    CastFrom<u64> +
+    CastFrom<usize>
+{}
 
 
-    /// iX
-    pub trait CastIntoIntegerSigned :
-        CastInto<i8 > +
-        CastInto<i16> +
-        CastInto<i32> +
-        CastInto<i64> +
-        CastInto<isize>
-    {}
-    impl<T> CastIntoIntegerSigned for T where T:
-        CastInto<i8 > +
-        CastInto<i16> +
-        CastInto<i32> +
-        CastInto<i64> +
-        CastInto<isize>
-    {}
-
-    /// iX
-    pub trait CastFromIntegerSigned :
-        CastFrom<i8 > +
-        CastFrom<i16> +
-        CastFrom<i32> +
-        CastFrom<i64> +
-        CastFrom<isize>
-    {}
-    impl<T> CastFromIntegerSigned for T where T:
-        CastFrom<i8 > +
-        CastFrom<i16> +
-        CastFrom<i32> +
-        CastFrom<i64> +
-        CastFrom<isize>
-    {}
-
-    /// iX
-    pub trait CastIntegerSigned            : CastFromIntegerSigned + CastFromIntegerSigned {}
-    impl<T> CastIntegerSigned for T where T: CastFromIntegerSigned + CastFromIntegerSigned {}
-
-    /// iX uX
-    pub trait CastIntoInteger            : CastIntoIntegerSigned + CastIntoIntegerUnsigned {}
-    impl<T> CastIntoInteger for T where T: CastIntoIntegerSigned + CastIntoIntegerUnsigned {}
-
-    /// iX uX
-    pub trait CastFromInteger            : CastFromIntegerSigned + CastFromIntegerUnsigned {}
-    impl<T> CastFromInteger for T where T: CastFromIntegerSigned + CastFromIntegerUnsigned {}
-
-    /// iX uX
-    pub trait CastInteger            : CastIntoInteger + CastFromInteger {}
-    impl<T> CastInteger for T where T: CastIntoInteger + CastFromInteger {}
+/// uX
+pub trait CastIntegerUnsigned            : CastFromIntegerUnsigned + CastFromIntegerUnsigned {}
+impl<T> CastIntegerUnsigned for T where T: CastFromIntegerUnsigned + CastFromIntegerUnsigned {}
 
 
-    /// bool
-    pub trait CastIntoBool            : CastInto<bool> {}
-    impl<T> CastIntoBool for T where T: CastInto<bool> {}
+/// iX
+pub trait CastIntoIntegerSigned :
+    CastInto<i8 > +
+    CastInto<i16> +
+    CastInto<i32> +
+    CastInto<i64> +
+    CastInto<isize>
+{}
+impl<T> CastIntoIntegerSigned for T where T:
+    CastInto<i8 > +
+    CastInto<i16> +
+    CastInto<i32> +
+    CastInto<i64> +
+    CastInto<isize>
+{}
 
-    /// bool
-    pub trait CastFromBool             : CastFrom<bool> {}
-    impl<T> CastFromBool for T where T: CastFrom<bool> {}
+/// iX
+pub trait CastFromIntegerSigned :
+    CastFrom<i8 > +
+    CastFrom<i16> +
+    CastFrom<i32> +
+    CastFrom<i64> +
+    CastFrom<isize>
+{}
+impl<T> CastFromIntegerSigned for T where T:
+    CastFrom<i8 > +
+    CastFrom<i16> +
+    CastFrom<i32> +
+    CastFrom<i64> +
+    CastFrom<isize>
+{}
 
-    /// bool
-    pub trait CastBool            : CastIntoBool + CastFromBool {}
-    impl<T> CastBool for T where T: CastIntoBool + CastFromBool {}
+/// iX
+pub trait CastIntegerSigned            : CastFromIntegerSigned + CastFromIntegerSigned {}
+impl<T> CastIntegerSigned for T where T: CastFromIntegerSigned + CastFromIntegerSigned {}
+
+/// iX uX
+pub trait CastIntoInteger            : CastIntoIntegerSigned + CastIntoIntegerUnsigned {}
+impl<T> CastIntoInteger for T where T: CastIntoIntegerSigned + CastIntoIntegerUnsigned {}
+
+/// iX uX
+pub trait CastFromInteger            : CastFromIntegerSigned + CastFromIntegerUnsigned {}
+impl<T> CastFromInteger for T where T: CastFromIntegerSigned + CastFromIntegerUnsigned {}
+
+/// iX uX
+pub trait CastInteger            : CastIntoInteger + CastFromInteger {}
+impl<T> CastInteger for T where T: CastIntoInteger + CastFromInteger {}
 
 
-    /// iX uX fX
-    pub trait CastIntoNumber            : CastIntoInteger + CastIntoFloat {}
-    impl<T> CastIntoNumber for T where T: CastIntoInteger + CastIntoFloat {}
+/// bool
+pub trait CastIntoBool            : CastInto<bool> {}
+impl<T> CastIntoBool for T where T: CastInto<bool> {}
 
-    /// iX uX fX
-    pub trait CastFromNumber            : CastFromInteger + CastFromFloat {}
-    impl<T> CastFromNumber for T where T: CastFromInteger + CastFromFloat {}
+/// bool
+pub trait CastFromBool             : CastFrom<bool> {}
+impl<T> CastFromBool for T where T: CastFrom<bool> {}
 
-    /// iX uX fX
-    pub trait CastNumber            : CastInteger + CastFloat {}
-    impl<T> CastNumber for T where T: CastInteger + CastFloat {}
+/// bool
+pub trait CastBool            : CastIntoBool + CastFromBool {}
+impl<T> CastBool for T where T: CastIntoBool + CastFromBool {}
 
 
-    /// iX uX fX bool
-    pub trait CastIntoPrimitive            : CastIntoNumber + CastIntoBool {}
-    impl<T> CastIntoPrimitive for T where T: CastIntoNumber + CastIntoBool {}
+/// iX uX fX
+pub trait CastIntoNumber            : CastIntoInteger + CastIntoFloat {}
+impl<T> CastIntoNumber for T where T: CastIntoInteger + CastIntoFloat {}
 
-    /// iX uX fX bool
-    pub trait CastFromPrimitive            : CastFromNumber + CastFromBool {}
-    impl<T> CastFromPrimitive for T where T: CastFromNumber + CastFromBool {}
+/// iX uX fX
+pub trait CastFromNumber            : CastFromInteger + CastFromFloat {}
+impl<T> CastFromNumber for T where T: CastFromInteger + CastFromFloat {}
 
-    /// iX uX fX bool
-    pub trait CastPrimitive            : CastIntoPrimitive + CastFromPrimitive {}
-    impl<T> CastPrimitive for T where T: CastIntoPrimitive + CastFromPrimitive {}
+/// iX uX fX
+pub trait CastNumber            : CastInteger + CastFloat {}
+impl<T> CastNumber for T where T: CastInteger + CastFloat {}
 
-}
+
+/// iX uX fX bool
+pub trait CastIntoPrimitive            : CastIntoNumber + CastIntoBool {}
+impl<T> CastIntoPrimitive for T where T: CastIntoNumber + CastIntoBool {}
+
+/// iX uX fX bool
+pub trait CastFromPrimitive            : CastFromNumber + CastFromBool {}
+impl<T> CastFromPrimitive for T where T: CastFromNumber + CastFromBool {}
+
+/// iX uX fX bool
+pub trait CastPrimitive            : CastIntoPrimitive + CastFromPrimitive {}
+impl<T> CastPrimitive for T where T: CastIntoPrimitive + CastFromPrimitive {}

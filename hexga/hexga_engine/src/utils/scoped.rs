@@ -17,8 +17,3 @@ pub trait ScopedUpdate : Scoped<Update>
     fn scoped_update<F>(&mut self, f: F) where F: FnOnce() { self.scope(f) }
 }
 impl<T> ScopedUpdate for T where T: Scoped<Update>{}
-
-pub mod prelude
-{
-    pub use super::{Update,ScopedUpdate,Draw,ScopedDraw};
-}

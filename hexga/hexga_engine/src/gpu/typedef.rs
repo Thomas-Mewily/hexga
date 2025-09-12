@@ -31,15 +31,3 @@ pub type GpuMat1 = GpuSquareMatrix<1>;
 pub type GpuMat2 = GpuSquareMatrix<2>;
 pub type GpuMat3 = GpuSquareMatrix<3>;
 pub type GpuMat4 = GpuSquareMatrix<4>;
-
-pub mod prelude
-{
-    pub use super::
-    {
-        Gpufloat,
-        GpuVector,GpuVec1,GpuVec2,GpuVec3,GpuVec4,
-        gpu_vec1,gpu_vec2,gpu_vec3,gpu_vec4,
-        GpuRectangle,GpuRect1,GpuRect2,GpuRect3,GpuRect4,
-        GpuColor,GpuColorRgba,GpuColorHsla
-    };
-}

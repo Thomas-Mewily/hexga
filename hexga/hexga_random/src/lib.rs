@@ -1,16 +1,12 @@
 use std::{cell::RefCell, ops::{Deref, DerefMut}};
 
-use core::*;
-pub mod core
-{
-    pub use hexga_random_core::*;
-}
 
 pub mod prelude
 {
-    pub use super::{Rng};
-    pub use super::core::prelude::*;
+    pub use super::*;
 }
+
+pub use hexga_random_core::*;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Rng;

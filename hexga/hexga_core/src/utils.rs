@@ -128,9 +128,3 @@ impl<T,E> ResultDebugExtension<T> for Result<T,E> where E:ToDebug
         self.map_err(|e| e.to_debug())
     }
 }
-
-
-pub mod prelude
-{
-    pub use super::{Toggleable, Once, DebugExtension, ResultExtension, ResultDebugExtension};
-}

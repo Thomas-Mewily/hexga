@@ -119,24 +119,3 @@ impl<T> ExtensionArrayToTuple for [T; 8]
     fn to_tuple(self) -> Self::Tuple { let [a, b, c,d, e,f, g, h] = self; (a,b,c,d,e,f,g,h) }
     fn from_tuple(t : Self::Tuple) -> Self { [t.0, t.1, t.2,t.3, t.4, t.5, t.6, t.7] }
 }
-
-
-
-
-pub mod prelude
-{
-    pub use super::{ExtensionToArray,ExtensionFromArray,ExtensionAsArray,ExtensionAsArrayMut,ExtensionAsSlice,ExtensionAsMutSlice};
-    pub use super::
-    {
-        ExtensionToArray1,
-        ExtensionToArray2,
-        ExtensionToArray3,
-        ExtensionToArray4,
-        ExtensionToArray5,
-        ExtensionToArray6,
-        ExtensionToArray7,
-        ExtensionToArray8,
-    };
-
-    pub use super::ExtensionArrayToTuple;
-}

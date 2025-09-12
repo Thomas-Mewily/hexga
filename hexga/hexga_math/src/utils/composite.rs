@@ -1,7 +1,3 @@
-pub mod prelude
-{
-    pub use super::{Composite,CompositeGeneric};
-}
 
 pub trait Composite
 {   

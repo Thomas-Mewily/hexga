@@ -2,11 +2,6 @@ use std::collections::TryReserveError;
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::Capacity;
-}
-
 
 pub trait Capacity
 {

@@ -1,4 +1,4 @@
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 #[derive(Debug)]
 struct X(pub i32);

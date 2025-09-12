@@ -1,11 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::CameraManager;
-}
-
 pub struct CameraManager
 {
     // pub(crate) default_camera: Camera,
@@ -84,15 +79,15 @@ impl SetScale<float,3> for CameraManager
 {
     fn set_scale(&mut self, scale : Vector<float,3>) -> &mut Self { self.cameras.set_scale(scale); self.apply(); self }
 }
-impl RotationX<float> for CameraManager
+impl RotateX<float> for CameraManager
 {
     fn rotate_x(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_x(angle); self.apply(); self }
 }
-impl RotationY<float> for CameraManager
+impl RotateY<float> for CameraManager
 {
     fn rotate_y(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_y(angle); self.apply(); self }
 }
-impl RotationZ<float> for CameraManager
+impl RotateZ<float> for CameraManager
 {
     fn rotate_z(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_z(angle); self.apply(); self }
 }

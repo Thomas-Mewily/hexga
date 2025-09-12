@@ -2,8 +2,9 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+//use hexga_engine::prelude::*;
+
 use hexga_engine::prelude::*;
-use hexga::prelude::*;
 
 #[derive(Default)]
 pub struct MyApp
@@ -24,10 +25,8 @@ impl App for MyApp
 
     fn draw(&mut self)
     {
-        info!("nb fps: {}", Perf.nb_fps());
+        info!("nb fps: {}", Perf.fps());
 
-        
-    
         Cam.rot_z(self.time.s().degree() * 50.);
 
         Pen.triangle(TriangleVertex::new
@@ -50,6 +49,9 @@ fn main()
     let y : [f32;2] = x.cast_into();
 
     let x = vector2(1,2i32);
+
+    let i = 0;
+
     // let y : Vec2 = x.cast_into();
 
     //println!("Hello, world!");

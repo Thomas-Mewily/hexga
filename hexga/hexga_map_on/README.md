@@ -4,7 +4,7 @@ Define the `map_on!` macro that can be used to impl a lot of trait quickly using
 You can have a finer control about what you want to impl :
 
 ```rust
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 trait MinusOne
 {
@@ -30,7 +30,7 @@ map_on!
 Some variation of `map_on` exist for different use case :
 
 ```rust
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 trait Zero
 {
@@ -77,7 +77,7 @@ Available `map_on!` macro :
 You can also use the `map_on!` macro to call another macro :
 
 ```rust
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 trait One
 {
@@ -99,7 +99,7 @@ map_on_number!(impl_one);
 It is also possible to use nested `map_on!`*1 macro (only when using macro name, or in const context like implementing a trait) :
 
 ```rust
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 pub trait CastInto<T>
 {
@@ -138,7 +138,7 @@ fn main()
 Implementing a binary operator is also possible :
 
 ```rust
-use hexga_map_on::prelude::*;
+use hexga_map_on::*;
 
 #[derive(Debug)]
 struct X(pub i32);

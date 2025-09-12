@@ -1,10 +1,5 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{ImageBase,Image,ImageBaseError,ToImage};
-}
-
 pub type Image<C=ColorRgbaU8> = ImageBase<C,int>;
 
 pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;

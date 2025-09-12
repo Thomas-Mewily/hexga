@@ -1,3 +1,5 @@
+pub use std::iter::{Sum,Product};
+
 pub trait IterExtension<'a, Item>: where Self: 'a, &'a Self: IntoIterator<Item = Item>
 {
     fn iter(&'a self) -> <&'a Self as IntoIterator>::IntoIter {
@@ -13,9 +15,3 @@ pub trait IterMutExtension<'a, Item>: where Self: 'a, &'a mut Self: IntoIterator
     }
 }
 impl<'a,Item,T> IterMutExtension<'a,Item> for T where &'a mut T: IntoIterator<Item = Item> + 'a {}
-
-pub mod prelude
-{
-    pub use super::{IterExtension,IterMutExtension};
-    pub use std::iter::{Sum,Product};
-}

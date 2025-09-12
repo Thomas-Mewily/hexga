@@ -4,20 +4,16 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::thread::LocalKey;
 
-pub mod prelude
-{
-    pub use super::Ctx;
-}
 
 thread_local! {
-    pub(crate) static CONTEXT: RefCell<Option<Context>> = RefCell::new(None);
+    pub(crate) static CONTEXT_APP: RefCell<Option<Context>> = RefCell::new(None);
 }
 
-ctx_singleton!(
+singleton!(
     Ctx,
     Context,
     { 
-        CONTEXT.with(|ctx_cell| {
+        CONTEXT_APP.with(|ctx_cell| {
             // Borrow the RefCell, get the Rc<Context> if present
             if let Some(rc_ctx) = ctx_cell.borrow().as_ref() {
                 // Extend the lifetime to 'static (unsafe, but valid if CONTEXT truly is static)
@@ -29,7 +25,7 @@ ctx_singleton!(
         })
     },
     { 
-        CONTEXT.with(|ctx_cell| {
+        CONTEXT_APP.with(|ctx_cell| {
             // Borrow the RefCell, get the Rc<Context> if present
             if let Some(rc_ctx) = ctx_cell.borrow_mut().as_mut() {
                 // Extend the lifetime to 'static (unsafe, but valid if CONTEXT truly is static)
@@ -75,12 +71,12 @@ impl SingletonInit for Ctx
                     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
                     console_log::init_with_level(::log::Level::Debug).expect("Couldn't initialize logger");
                 }
-                CONTEXT.replace(Some(ctx));
+                CONTEXT_APP.replace(Some(ctx));
                 // The Gpu is initialized in a special async way... 
             },
             None => 
             {
-                CONTEXT.replace(None);
+                CONTEXT_APP.replace(None);
                 Gpu::destroy();
             },
         }

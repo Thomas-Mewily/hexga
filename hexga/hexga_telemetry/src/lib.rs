@@ -1,4 +1,4 @@
-use hexga_utils::scope::ScopedWith;
+use hexga_utils::prelude::*;
 
 
 pub struct Telemetry;

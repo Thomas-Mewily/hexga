@@ -1,12 +1,6 @@
 use super::*;
 
 
-pub mod prelude
-{
-    pub use super::AsU8Slice;
-}
-
-
 pub unsafe trait AsU8Slice
 {
     fn as_u8_slice(&self) -> &[u8];
