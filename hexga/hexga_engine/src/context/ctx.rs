@@ -13,67 +13,6 @@ thread_local! {
     pub(crate) static CONTEXT: RefCell<Option<Context>> = RefCell::new(None);
 }
 
-/* 
-pub(crate) fn ctx() -> &'static Context
-{
-    Ctx::
-}
-*/
-
-
-pub struct Ctx;
-
-impl SingletonRef for Ctx {
-    type Target = Context;
-    fn try_as_ref() -> Option<&'static<Self as SingletonRef>::Target>{
-        {
-            CONTEXT.with(|ctx_cell|{
-                if let Some(rc_ctx) = ctx_cell.borrow().as_ref(){
-                    let ctx_ptr: *const Context = rc_ctx;
-                    unsafe {
-                        Some(&*ctx_ptr)
-                    }
-                }else {
-                    None
-                }
-            })
-        }
-    }
-
-    }
-impl ::std::ops::Deref for Ctx {
-    type Target = Context;
-    fn deref(&self) ->  &Self::Target {
-        Self::try_as_ref().expect(concat!(stringify!(Ctx)," not initialized"))
-    }
-
-    }
-impl SingletonMut for Ctx {
-    fn try_as_mut() -> Option<&'static mut <Self as SingletonRef>::Target>{
-        {
-            CONTEXT.with(|ctx_cell|{
-                if let Some(rc_ctx) = ctx_cell.borrow_mut().as_mut(){
-                    let ctx_ptr: *mut Context = rc_ctx;
-                    unsafe {
-                        Some(&mut *ctx_ptr)
-                    }
-                }else {
-                    None
-                }
-            })
-        }
-    }
-
-    }
-impl ::std::ops::DerefMut for Ctx {
-    fn deref_mut(&mut self) ->  &mut Self::Target {
-        Self::try_as_mut().expect(concat!(stringify!(Ctx)," not initialized"))
-    }
-
-    }
-
-
-/* 
 ctx_singleton!(
     Ctx,
     Context,
@@ -102,7 +41,6 @@ ctx_singleton!(
         })
     }
 );
-*/
 
 
 impl SingletonInit for Ctx

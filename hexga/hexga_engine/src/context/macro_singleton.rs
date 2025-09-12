@@ -22,7 +22,7 @@ macro_rules! ctx_singleton {
             type Target = $target;
 
             fn deref(&self) -> &Self::Target {
-                Self::try_as_ref().expect(concat!(stringify!($wrapper), " not initialized"))
+                Self::try_as_ref().expect("Ctx not initialized")
             }
         }
 
@@ -34,7 +34,7 @@ macro_rules! ctx_singleton {
 
         impl ::std::ops::DerefMut for $wrapper {
             fn deref_mut(&mut self) -> &mut Self::Target {
-                Self::try_as_mut().expect(concat!(stringify!($wrapper), " not initialized"))
+                Self::try_as_mut().expect("Ctx not initialized")
             }
         }
     };

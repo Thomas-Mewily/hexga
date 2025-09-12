@@ -26,8 +26,8 @@ impl App for MyApp
     {
         info!("nb fps: {}", Perf.nb_fps());
 
-        Ctx.
-
+        
+    
         Cam.rot_z(self.time.s().degree() * 50.);
 
         Pen.triangle(TriangleVertex::new
@@ -50,7 +50,7 @@ fn main()
     let y : [f32;2] = x.cast_into();
 
     let x = vector2(1,2i32);
-    let y : Vec2 = x.cast_into();
+    // let y : Vec2 = x.cast_into();
 
     //println!("Hello, world!");
     MyApp::___().run().unwrap();
