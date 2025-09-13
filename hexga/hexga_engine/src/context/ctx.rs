@@ -1,43 +1,6 @@
 use super::*;
 
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::thread::LocalKey;
-
-
-thread_local! {
-    pub(crate) static CONTEXT_APP: RefCell<Option<Context>> = RefCell::new(None);
-}
-
-singleton!(
-    Ctx,
-    Context,
-    { 
-        CONTEXT_APP.with(|ctx_cell| {
-            // Borrow the RefCell, get the Rc<Context> if present
-            if let Some(rc_ctx) = ctx_cell.borrow().as_ref() {
-                // Extend the lifetime to 'static (unsafe, but valid if CONTEXT truly is static)
-                let ctx_ptr: *const Context = rc_ctx;
-                unsafe { Some(&*ctx_ptr) }
-            } else {
-                None
-            }
-        })
-    },
-    { 
-        CONTEXT_APP.with(|ctx_cell| {
-            // Borrow the RefCell, get the Rc<Context> if present
-            if let Some(rc_ctx) = ctx_cell.borrow_mut().as_mut() {
-                // Extend the lifetime to 'static (unsafe, but valid if CONTEXT truly is static)
-                let ctx_ptr: *mut Context = rc_ctx;
-                unsafe { Some(&mut *ctx_ptr) }
-            } else {
-                None
-            }
-        })
-    }
-);
-
+singleton_thread_local!(Ctx,Context,CONTEXT_APP);
 
 impl SingletonInit for Ctx
 {

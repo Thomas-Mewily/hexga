@@ -1,6 +1,6 @@
 use super::*;
 
-singleton!(
+singleton_access!(
     Perf,
     ContextPerformance,
     { Ctx::try_as_ref().map(|ctx| &ctx.perf) },

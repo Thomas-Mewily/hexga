@@ -1,64 +1,59 @@
-#![allow(dead_code)]
 #![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
-use hexga::prelude::*;
-use std::ops::*;
-use std::sync::Arc;
-use winit::window::Window;
+use std::ops::Deref;
 
+use hexga_engine::prelude::*;
 
-mod ctx;
-pub use ctx::*;
-
-mod app;
-pub use app::*;
-
-mod vertex;
-pub use vertex::*;
-
-
-impl App for ()
+#[derive(Default)]
+pub struct MyApp
 {
-    fn draw(&self) 
+    //camera: Camera3D,
+    time: Time,
+}
+
+
+impl App for MyApp
+{
+    type UserEvent = ();
+
+    fn update(&mut self, dt: DeltaTime) 
     {
-        /*
-        let texture_view = surface_texture
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
-        let encoder = Ctx.encoder.as_mut().unwrap();
-        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            label: None,
-            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                view: &texture_view,
-                resolve_target: None,
-                ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
-                    store: wgpu::StoreOp::Store,
-                },
-            })],
-            depth_stencil_attachment: None,
-            timestamp_writes: None,
-            occlusion_query_set: None,
-        });
-        rpass.set_pipeline(&self.render_pipeline);
-        // 消费存放的 vertex_buffer
-        rpass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-        // 消费存放的 vertex_index_buffer
-        rpass.set_index_buffer(
-            self.vertex_index_buffer.slice(..),
-            wgpu::IndexFormat::Uint16,
-        ); // 1.
-            // 调用draw_indexed，传入对应数量的顶点数量
-        rpass.draw_indexed(0..VERTEX_INDEX_LIST.len() as u32, 0, 0..1);
-        // 顶点有原来的固定3个顶点，调整为根据 VERTEX_LIST 动态来计算
-        rpass.draw(0..VERTEX_LIST.len() as u32, 0..1);
-        */
-        
+        self.time += dt;
+    }
+
+    fn draw(&mut self)
+    {
+        info!("nb fps: {}", Perf.fps());
+
+        Cam.rot_z(self.time.s().degree() * 50.);
+
+        Pen.triangle(TriangleVertex::new
+            (
+                Vertex::new().with_position(vec3(-1.,-0.5,0.)).with_color(GpuColor::RED),
+                Vertex::new().with_position(vec3(1.,-0.5,0.)).with_color(GpuColor::GREEN),
+                Vertex::new().with_position(vec3(0.,1.,0.)).with_color(GpuColor::BLUE),
+            )
+        );
     }
 }
 
 fn main() 
 {
-    println!("Hello, world!");
-    ().run();
+    let x : i32 = 4;
+    let y : f32 = x.cast_into();
+
+    let x = [1,2i32];
+    let y : [f32;2] = x.cast_into();
+
+    let x = vector2(1,2i32);
+
+    let i = 0;
+
+    // let y : Vec2 = x.cast_into();
+
+    //println!("Hello, world!");
+    MyApp::___().run().unwrap();
+    //println!("Goodbye, world!");
 }

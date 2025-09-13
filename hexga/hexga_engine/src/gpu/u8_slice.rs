@@ -1,7 +1,7 @@
 use super::*;
 
 
-pub unsafe trait AsU8Slice
+pub(crate) unsafe trait AsU8Slice
 {
     fn as_u8_slice(&self) -> &[u8];
     fn as_u8_slice_mut(&mut self) -> &mut [u8];

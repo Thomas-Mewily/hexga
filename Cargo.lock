@@ -83,13 +83,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "app_test"
-version = "0.0.11-beta.3"
-dependencies = [
- "hexga_core",
-]
-
-[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -587,6 +580,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8b14ccef22fc6f5a8f4d7d768562a182c04ce9a3b3157b91390b52ddfdf1a76"
 
 [[package]]
+name = "dummy"
+version = "0.0.11-beta.3"
+dependencies = [
+ "hexga_core",
+]
+
+[[package]]
 name = "either"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -900,14 +900,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
-name = "hello_world"
-version = "0.0.11-beta.3"
-dependencies = [
- "hexga_core",
- "hexga_math",
-]
-
-[[package]]
 name = "hermit-abi"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -932,6 +924,7 @@ dependencies = [
  "hexga_map_on",
  "hexga_math",
  "hexga_random",
+ "hexga_singleton",
  "hexga_utils",
  "serde",
 ]
@@ -1066,6 +1059,7 @@ name = "hexga_random"
 version = "0.0.11-beta.3"
 dependencies = [
  "hexga_random_core",
+ "hexga_singleton",
 ]
 
 [[package]]
@@ -1081,6 +1075,10 @@ version = "0.0.11-beta.3"
 
 [[package]]
 name = "hexga_simulation"
+version = "0.0.11-beta.3"
+
+[[package]]
+name = "hexga_singleton"
 version = "0.0.11-beta.3"
 
 [[package]]
@@ -1811,12 +1809,6 @@ dependencies = [
  "rustix 1.1.2",
  "windows-sys 0.60.2",
 ]
-
-[[package]]
-name = "pollster"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f3a9f18d041e6d0e102a0a46750538147e5e8992d3b4873aaafee2520b00ce3"
 
 [[package]]
 name = "portable-atomic"
@@ -2765,17 +2757,6 @@ dependencies = [
 
 [[package]]
 name = "wgpu_test"
-version = "0.0.11-beta.3"
-dependencies = [
- "bytemuck",
- "hexga",
- "pollster",
- "wgpu",
- "winit",
-]
-
-[[package]]
-name = "wgpu_test2"
 version = "0.0.11-beta.3"
 dependencies = [
  "hexga_engine",

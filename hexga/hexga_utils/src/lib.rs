@@ -12,14 +12,12 @@ use hexga_io::{Save, Load};
 pub mod non_empty_stack;
 pub mod asset;
 pub mod scope;
-pub mod singleton;
 
 pub mod prelude
 {
     pub use super::non_empty_stack::*;
     pub use super::asset::*;
     pub use super::scope::*;
-    pub use super::singleton::*;
 }
 
 

@@ -9,7 +9,7 @@ impl<A> AppRun for A where A:App
 {
     fn run(self) -> Result<(), ()> 
     {
-        Ctx::init();
+        Ctx::init_default();
         let ctx = Ctx::try_as_mut().ok_or_void()?;
 
         let event_loop = EventLoop::with_user_event().build().ok_or_void()?;

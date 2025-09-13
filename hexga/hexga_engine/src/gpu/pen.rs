@@ -1,6 +1,6 @@
 use super::*;
 
-singleton!(
+singleton_access!(
     Pen,
     Drawer,
     { Gpu::try_as_ref().map(|gpu| &gpu.draw) },

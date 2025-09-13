@@ -44,7 +44,7 @@ thread_local! {
     pub(crate) static CONTEXT_GPU: RefCell<Option<ContextGpu>> = RefCell::new(None);
 }
 
-singleton!(
+singleton_access!(
     Gpu,
     ContextGpu,
     { 

@@ -3,7 +3,7 @@ use hexga::{prelude::*,*};
 
 fn main() 
 {
-    Rng::init(hexga::random::RandomSourceDummy::___());
+    Rng::init(Box::new(hexga::random::RandomSourceDummy::___()));
     for _ in 0..100
     {
         //println!("{}", Rng.random::<bool>());

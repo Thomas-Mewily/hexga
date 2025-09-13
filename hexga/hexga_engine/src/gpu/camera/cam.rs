@@ -1,6 +1,6 @@
 use super::*;
 
-singleton!(
+singleton_access!(
     Cam,
     CameraManager,
     { Pen::try_as_ref().map(|pen| pen.camera()) },

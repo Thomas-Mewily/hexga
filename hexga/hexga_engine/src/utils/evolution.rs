@@ -9,6 +9,7 @@ pub struct EvolutionDelta<I,T> where I:Copy, T:Copy+Default
     time : T,
 }
 
+
 pub trait Evolution<I,T> where I:Copy, T:Copy+Default
 {
     /// The current state right now

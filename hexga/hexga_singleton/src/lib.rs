@@ -1,4 +1,9 @@
-use super::*;
+use std::ops::{Deref, DerefMut};
+
+pub mod prelude
+{
+    pub use super::*;
+}
 
 
 pub trait Singleton : SingletonRef + SingletonMut {}
@@ -24,16 +29,23 @@ pub trait SingletonMut: SingletonRef + DerefMut
 
 pub trait SingletonInit: SingletonRef + SingletonMut
 {
-    fn replace(instance: Option<<Self as SingletonRef>::Target>);
+    fn replace(value: Option<<Self as SingletonRef>::Target>);
 
-    /// Do nothings if it is already init
-    fn init() where <Self as SingletonRef>::Target: Default 
+    /// Replace the value if already init
+    fn init(value: <Self as SingletonRef>::Target)
+    {
+        Self::replace(Some(value));
+    }
+
+    /// Replace the value if already init
+    fn init_default() where <Self as SingletonRef>::Target: Default 
     {
         if Self::try_as_mut().is_none()
         {
-            Self::replace(Some(___())) 
+            Self::replace(Some(Default::default())) 
         } 
     }
+    
     fn destroy()
     {
         Self::replace(None) 
@@ -42,8 +54,42 @@ pub trait SingletonInit: SingletonRef + SingletonMut
 
 
 #[macro_export]
-macro_rules! singleton {
-    ($wrapper:ident, $target:ty, $try_as_ref:block, $try_as_mut:block) => {
+macro_rules! singleton_thread_local {
+    ($(#[$attr:meta])* $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+        thread_local! {
+            pub(crate) static $constant_static_name: std::cell::RefCell<Option<$target>> = std::cell::RefCell::new(None);
+        }
+
+        $crate::singleton_access!($(#[$attr])* $wrapper, $target,
+            {
+                $constant_static_name.with(|ctx_cell| {
+                    if let Some(rc_ctx) = ctx_cell.borrow().as_ref() {
+                        let ctx_ptr: *const $target = rc_ctx;
+                        unsafe { Some(&*ctx_ptr) }
+                    } else {
+                        None
+                    }
+                })
+            },
+            { 
+                $constant_static_name.with(|ctx_cell| {
+                    if let Some(rc_ctx) = ctx_cell.borrow_mut().as_mut() {
+                        let ctx_ptr: *mut $target = rc_ctx;
+                        unsafe { Some(&mut *ctx_ptr) }
+                    } else {
+                        None
+                    }
+                })
+            }
+        );
+    };
+}
+
+
+#[macro_export]
+macro_rules! singleton_access {
+    ($(#[$attr:meta])* $wrapper:ident, $target:ty, $try_as_ref:block, $try_as_mut:block) => {
+        $(#[$attr])*
         pub struct $wrapper;
 
         impl SingletonRef for $wrapper {
@@ -72,4 +118,3 @@ macro_rules! singleton {
         }
     };
 }
-pub use singleton;

@@ -1,6 +1,6 @@
 use super::*;
 
-singleton!(
+singleton_access!(
     Input,
     ContextInput,
     { Ctx::try_as_ref().map(|ctx| &ctx.input) },
@@ -21,15 +21,9 @@ impl ContextInput
 
 impl IKeyboard for ContextInput
 {
-    fn keys_mut(&mut self) -> impl Iterator<Item = &mut KeyState> {
-        self.keyboard.keys_mut()
-    }
+    fn keys(&mut self) -> impl Iterator<Item = &KeyState> { self.keyboard.keys() }
+    fn keys_mut(&mut self) -> impl Iterator<Item = &mut KeyState> { self.keyboard.keys_mut() }
 
-    fn key_mut(&mut self, code: KeyCode) -> &mut KeyState {
-        self.keyboard.key_mut(code)
-    }
-
-    fn key(&mut self, code: KeyCode) -> &KeyState {
-        self.keyboard.key(code)
-    }
+    fn key_mut(&mut self, code: KeyCode) -> &mut KeyState { self.keyboard.key_mut(code) }
+    fn key(&mut self, code: KeyCode) -> &KeyState { self.keyboard.key(code) }
 }

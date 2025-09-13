@@ -9,17 +9,18 @@ pub struct Keyboard
 
 pub trait IKeyboard
 {
-    //fn key(&self, code: KeyCode) -> KeyState;
-    //fn keys(&self) -> impl Iterator<Item = KeyState>;
-
     fn keys_mut(&mut self) -> impl Iterator<Item = &mut KeyState>;
+    fn keys(&mut self) -> impl Iterator<Item = &KeyState>;
+
     fn key_mut(&mut self, code: KeyCode) -> &mut KeyState;
     fn key(&mut self, code: KeyCode) -> &KeyState;
 }
 
 impl IKeyboard for Keyboard
 {
+    fn keys(&mut self) -> impl Iterator<Item = &KeyState> { self.keys.values() }
     fn keys_mut(&mut self) -> impl Iterator<Item = &mut KeyState> { self.keys.values_mut() }
+    
     fn key_mut(&mut self, code: KeyCode) -> &mut KeyState 
     {
         self.keys.entry(code).or_insert_with(|| KeyState::new(code, ___()))
@@ -36,7 +37,10 @@ impl Deref for KeyCode
 
     fn deref(&self) -> &Self::Target 
     {
-        Ctx.input.keyboard.keys.get(self).unwrap()
+        Input::as_mut().key(*self)
+        //Input.keyboard.key(self)
+        //Ctx::as_ref().
+        //Ctx.input.keyboard.keys.get(self).unwrap()
     }
 }
 impl DerefMut for KeyCode
@@ -63,7 +67,7 @@ impl Evolution<bool,Time> for KeyState
     fn set_at(&mut self, cur : bool, time : Time) { self.value.set_at(cur, time) }
 }
 
-pub type KeyValue = IdentityDirty<EvolutionDelta<bool,Time>>;
+pub type KeyValue = IdentityUsed<EvolutionDelta<bool,Time>>;
 
 impl KeyState
 {

@@ -1,5 +1,5 @@
 [package]
-name = "app_test"
+name = "hexga_singleton"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -8,5 +8,3 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
-hexga_core.workspace = true
-#hexga_engine.workspace = true

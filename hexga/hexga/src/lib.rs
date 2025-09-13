@@ -8,6 +8,7 @@ pub use hexga_utils as utils;
 pub use hexga_map_on as map_on;
 pub use hexga_graphics as graphics;
 pub use hexga_random as random;
+pub use hexga_singleton as singleton;
 
 #[cfg(feature = "hexga_io")]
 pub use hexga_io as io;
@@ -24,6 +25,7 @@ pub mod prelude
     pub use crate::utils::prelude::*;
     pub use crate::graphics::prelude::*;
     pub use crate::random::*;
+    pub use crate::singleton::prelude::*;
     //pub use crate::map_on::*;
 
     #[cfg(feature = "hexga_io")]

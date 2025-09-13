@@ -8,10 +8,4 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
-hexga.workspace = true
-
-
-winit = "0.30.11"
-wgpu = { version = "25.0.0" }
-pollster = { version = "0.4" }
-bytemuck = "1.23.0"
+hexga_engine.workspace = true

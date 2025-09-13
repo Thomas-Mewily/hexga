@@ -1,5 +1,4 @@
-use std::{cell::RefCell, ops::{Deref, DerefMut}};
-
+use hexga_singleton::*;
 
 pub mod prelude
 {
@@ -8,6 +7,7 @@ pub mod prelude
 
 pub use hexga_random_core::*;
 
+/*
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Rng;
 impl Deref for Rng
@@ -25,56 +25,31 @@ impl Rng
     pub fn get() -> Option<&'static <Self as Deref>::Target> { rng_ref() }
     pub fn get_mut() -> Option<&'static mut<Self as Deref>::Target> { rng_mut() }
 }
+*/
+
+//FIXME: Should deref on `&dyn RandomSource`, not `&Box<dyn RandomSource>`
+singleton_thread_local!(Rng,Box<dyn RandomSource>,CONTEXT_RNG);
+
 
 impl RandomSource for Rng
 {
-    fn next_u32(&mut self) -> u32 { self.deref_mut().next_u32() }
-    fn next_u64(&mut self) -> u64 { self.deref_mut().next_u64() }
+    fn next_u32(&mut self) -> u32 { self.as_mut().next_u32() }
+    fn next_u64(&mut self) -> u64 { self.as_mut().next_u64() }
 }
 
 
-thread_local! {
-    static RNG: RefCell<Option<Box<dyn RandomSource>>> = RefCell::new(None);
-}
-
-pub(crate) fn rng_ref() -> Option<&'static dyn RandomSource>
+impl SingletonInit for Rng
 {
-    // SAFETY: We are leaking the reference to the RandomSource, which is fine as long as RNG lives for the program's lifetime.
-    RNG.with(|rng| {
-        let rng_ref = rng.borrow();
-        let rs = rng_ref.as_ref()?;
-        // Leak the reference to get a 'static lifetime
-        Some(unsafe { &*(rs.as_ref() as *const dyn RandomSource) })
-    })
-}
-
-pub(crate) fn rng_mut() -> Option<&'static mut dyn RandomSource>
-{
-    // SAFETY: We are leaking the reference to the RandomSource, which is fine as long as RNG lives for the program's lifetime.
-    RNG.with(|rng| {
-        let mut rng_ref = rng.borrow_mut();
-        let rs = rng_ref.as_mut()?;
-        // Leak the reference to get a 'static lifetime
-        Some(unsafe { &mut *(rs.as_mut() as *mut dyn RandomSource) })
-    })
-}
-
-impl Rng
-{
-    pub fn init<R>(r: R)
-    where R: RandomSource + 'static
-    {
-        RNG.with(|rng| {
-            *rng.borrow_mut() = Some(Box::new(r));
-        });
+    fn replace(value: Option<<Self as hexga_singleton::SingletonRef>::Target>) {
+        CONTEXT_RNG.replace(value);
     }
 }
 
-
-
-
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct RandomSourceAllZero;
+
+
+
 
 impl RandomSource for RandomSourceAllZero
 {

@@ -9,3 +9,4 @@ edition.workspace = true
 
 [dependencies]
 hexga_random_core.workspace = true
+hexga_singleton.workspace = true
