@@ -1,18 +1,26 @@
-use super::*;
 
-
-pub trait GetProperty<T>
+/* 
+pub trait Getter<T>
 {
-    // I don't want to use the name get, too generic and overlap with the collection get() method
-    fn get_property(&self) -> T;
-}
-pub trait SetProperty<T>
-{
-    fn set_property(&mut self, value: T) -> &mut Self;
+    fn get(&self) -> T;
 }
 
-impl<T> GetProperty<T> for T where T:Copy { fn get_property(&self) -> T { *self } }
-impl<T> SetProperty<T> for T { fn set_property(&mut self, value: T) -> &mut Self { *self = value; self } }
+pub trait Setter<T>
+{
+    fn set(&mut self, val: T) -> &mut Self;
+}
 
-pub trait GetterAndSetter<T> : GetProperty<T> + SetProperty<T> {}
-impl<T,S> GetterAndSetter<T> for S where S: GetProperty<T> + SetProperty<T> {}
+// Based on (GGEZ Has trait)[https://docs.rs/ggez/latest/ggez/context/trait.Has.html] 
+pub trait Has<T>
+{
+    fn retrive(&self) -> &T;
+}
+impl<T> Has<T> for T  { fn retrive(&self) -> &T { self } }
+
+// Based on (GGEZ HasMut trait)[https://docs.rs/ggez/latest/ggez/context/trait.HasMut.html] 
+pub trait HasMut<T>
+{
+    fn retrive_mut(&mut self) -> &mut T;
+}
+impl<T> HasMut<T> for T  { fn retrive_mut(&mut self) -> &mut T { self } }
+*/

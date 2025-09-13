@@ -5,7 +5,7 @@
 use std::{iter, sync::Arc};
 use std::marker::PhantomData;
 use std::ops::*;
-use std::collections::HashMap;
+use std::collections::{HashMap,HashSet};
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]

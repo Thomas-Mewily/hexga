@@ -22,19 +22,8 @@ impl ContextInput
 
 impl IKeyboard for ContextInput
 {
-    fn keys(&self) -> impl Iterator<Item = KeyStateEvo> {
-        self.keyboard.keys
-    }
-
-    fn key(&self, code: KeyCode) -> KeyStateEvo {
-        todo!()
-    }
-
-    fn is_key_used(&mut self, code: KeyCode) -> bool {
-        todo!()
-    }
-
-    fn set_key_used(&mut self, code: KeyCode, used: bool) {
-        todo!()
-    }
+    fn keys(&self) -> impl Iterator<Item = KeyState> { self.keyboard.keys() }
+    fn key(&self, code: KeyCode) -> KeyState { self.keyboard.key(code) }
+    fn is_key_used(&mut self, code: KeyCode) -> bool { self.keyboard.is_key_used(code) }
+    fn set_key_used(&mut self, code: KeyCode, used: bool) { self.keyboard.set_key_used(code, used); }
 }

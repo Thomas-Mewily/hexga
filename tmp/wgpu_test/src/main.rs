@@ -27,6 +27,8 @@ impl App for MyApp
     {
         info!("nb fps: {}", Perf.fps());
 
+        
+
         Cam.rot_z(self.time.s().degree() * 50.);
 
         Pen.triangle(TriangleVertex::new

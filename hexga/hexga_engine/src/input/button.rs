@@ -37,29 +37,9 @@ pub enum ButtonStateEvolution
 }
 impl<T> IEvolution<ButtonState,T> for ButtonStateEvolution where T:Copy+Default
 {
-    fn value(&self) -> ButtonState {
-        matches!(self, Self::Pressed | Self::JustPressed).into()
-    }
-
-    fn old_value(&self) -> ButtonState {
-        matches!(self, Self::Pressed | Self::JustReleased).into()
-    }
-
-    fn last_time_changed(&self) -> T {
-        ___()
-    }
-
-    fn set_at(&mut self, cur : ButtonState, _time : T) where bool:PartialEq 
-    {
-        let old = <ButtonStateEvolution as evolution::IEvolution<button_state::ButtonState, T>>::old_value(self);
-        *self = match (old, cur)
-        {
-            (ButtonState::Released, ButtonState::Released) => ButtonStateEvolution::Released,
-            (ButtonState::Released, ButtonState::Pressed) => ButtonStateEvolution::JustPressed,
-            (ButtonState::Pressed, ButtonState::Released) => ButtonStateEvolution::JustReleased,
-            (ButtonState::Pressed, ButtonState::Pressed) => ButtonStateEvolution::Pressed,
-        };
-    }
+    fn value(&self) -> ButtonState { matches!(self, Self::Pressed | Self::JustPressed).into() }
+    fn old_value(&self) -> ButtonState { matches!(self, Self::Pressed | Self::JustReleased).into() }
+    fn last_time_change(&self) -> T { ___() }
 }
 
 
@@ -111,4 +91,24 @@ impl<S,T> EvolutionButtonState<T> for S where S:IEvolution<ButtonState,T>, T:Cop
 {
     fn is_pressed(&self) -> bool { self.value().is_pressed() }
     fn was_pressed(&self) -> bool { self.old_value().is_pressed() }
+}
+
+
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub enum ButtonRepeat
+{
+    #[default]
+    NotRepeated,
+    Repeated,
+}
+pub trait IButtonRepeat
+{
+    fn is_repeated(&self) -> bool;
+    fn is_not_repeated(&self) -> bool { !self.is_repeated() }
+}
+impl IButtonRepeat for ButtonRepeat
+{
+    fn is_repeated(&self) -> bool { matches!(self, ButtonRepeat::Repeated) }
+    fn is_not_repeated(&self) -> bool { matches!(self, ButtonRepeat::NotRepeated) }
 }
