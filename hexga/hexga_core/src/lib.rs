@@ -11,6 +11,7 @@ pub mod format;
 pub mod iter;
 pub mod utils;
 pub mod collections;
+pub mod has;
 //pub mod accessor;
 
 use prelude::*;
@@ -21,4 +22,5 @@ pub mod prelude
     pub use super::iter::*;
     pub use super::utils::*;
     pub use super::collections::*;
+    pub use super::has::*;
 }

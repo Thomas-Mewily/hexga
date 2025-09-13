@@ -116,10 +116,12 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
             WindowEvent::RedrawRequested => self.draw(),
             WindowEvent::KeyboardInput { device_id, event, is_synthetic } => 
             {
-                if event.physical_key == winit::keyboard::PhysicalKey::Code(WinitKeyCode::Escape)
+                let key = KeyCode::from(event.physical_key);
+                if key == KeyCode::Escape
                 {
                     event_loop.exit();
                 }
+                //Input.keyboard.key_mut(key).se
             }
             _ => (),
         }
@@ -154,13 +156,13 @@ impl<A> AppRunner<A> where A:App
                 let time = Time::since_launch();
                 let delta_time = time - self.last_update;
                 self.last_update = time;
-                self.app.update(delta_time);
+                self.app.handle_message(AppMessage::Update(delta_time));
             }
         );
     }
 
     pub fn draw(&mut self)
     {
-        Ctx.scoped_draw(|| { self.app.draw(); });
+        Ctx.scoped_draw(|| { self.app.handle_message(AppMessage::Draw); });
     }
 }

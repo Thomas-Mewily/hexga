@@ -8,8 +8,9 @@ impl<T,S> IIDentity<T> for S where S:  Deref<Target=T> + DerefMut{}
 pub type Identity<T> = T;
 */
 
+/*
 /// Act like a dirty flag. When deref_mut is applied, mark it dirty/consumed
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default, Hash)]
 pub struct IdentityUsed<T>
 {
     value: T,
@@ -48,3 +49,4 @@ impl<T> DerefMut for IdentityUsed<T>
         &mut self.value 
     }
 }
+*/

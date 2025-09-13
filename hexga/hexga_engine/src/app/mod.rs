@@ -33,6 +33,18 @@ pub trait App : 'static
 {
     type UserEvent : IUserEvent;
 
-    fn update(&mut self, dt: DeltaTime) {}
+    fn handle_message(&mut self, message: AppMessage<Self::UserEvent>) { self.dispatch_message(message); }
+    fn dispatch_message(&mut self, message: AppMessage<Self::UserEvent>)
+    {
+        match message
+        {
+            AppMessage::UserEvent(msg) => self.user_message(msg),
+            AppMessage::Update(dt) => self.update(dt),
+            AppMessage::Draw => self.draw(),
+        }
+    }
+
+    fn user_message(&mut self, msg: Self::UserEvent) { let _ = msg; }
+    fn update(&mut self, dt: DeltaTime) { let _ = dt; }
     fn draw(&mut self) {}
 }

@@ -44,6 +44,7 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: CompositeGeneric, C2: CompositeGeneric
 }
 
 
+
 /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) 
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
 /// 

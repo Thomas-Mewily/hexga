@@ -9,7 +9,9 @@ pub(crate) enum AppInternalMessage<U> where U: IUserEvent
 
 pub enum AppMessage<U> where U: IUserEvent
 {
-    UserEvent(U)
+    UserEvent(U),
+    Update(DeltaTime),
+    Draw,
 }
 
 

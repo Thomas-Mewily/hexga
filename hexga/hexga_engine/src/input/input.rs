@@ -19,11 +19,22 @@ impl ContextInput
     //pub(crate) fn handle_window_event(&mut self) 
 }
 
+
 impl IKeyboard for ContextInput
 {
-    fn keys(&mut self) -> impl Iterator<Item = &KeyState> { self.keyboard.keys() }
-    fn keys_mut(&mut self) -> impl Iterator<Item = &mut KeyState> { self.keyboard.keys_mut() }
+    fn keys(&self) -> impl Iterator<Item = KeyStateEvo> {
+        self.keyboard.keys
+    }
 
-    fn key_mut(&mut self, code: KeyCode) -> &mut KeyState { self.keyboard.key_mut(code) }
-    fn key(&mut self, code: KeyCode) -> &KeyState { self.keyboard.key(code) }
+    fn key(&self, code: KeyCode) -> KeyStateEvo {
+        todo!()
+    }
+
+    fn is_key_used(&mut self, code: KeyCode) -> bool {
+        todo!()
+    }
+
+    fn set_key_used(&mut self, code: KeyCode, used: bool) {
+        todo!()
+    }
 }

@@ -490,6 +490,16 @@ impl From<WinitKeyNativeCode> for KeyCode
     }
 }
 
+impl From<WinitKeyPhysical> for KeyCode
+{
+    fn from(value: WinitKeyPhysical) -> Self {
+        match value
+        {
+            winit::keyboard::PhysicalKey::Code(v) => v.into(),
+            winit::keyboard::PhysicalKey::Unidentified(v) => v.into(),
+        }
+    }
+}
 
 impl From<WinitKeyCode> for KeyCode
 {
