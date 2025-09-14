@@ -26,12 +26,34 @@ pub enum Binding
     None,
 }
 
-
 impl Binding
 {
+    pub fn alt() -> Self { Self::from(KeyCode::AltLeft).or(KeyCode::AltRight) }
+    pub fn shift() -> Self { Self::from(KeyCode::ShiftLeft).or(KeyCode::ShiftRight) }
+    pub fn control() -> Self { Self::from(KeyCode::ControlLeft).or(KeyCode::ControlRight) }
+    pub fn meta() -> Self { Self::from(KeyCode::SuperLeft).or(KeyCode::SuperRight) }
+}
+
+impl Binding
+{   
+    pub fn is_none(&self) -> bool
+    {
+        match self
+        {
+            Binding::Or(v) => v.is_empty(),
+            Binding::And(v) => v.is_empty(),
+            Binding::None => true,
+            _ => false
+        }
+    }
+
     pub fn and(self, other: impl Into<Binding>) -> Self
     {
         let other = other.into();
+
+        if self.is_none() { return other; }
+        if other.is_none() { return self; }
+
         fn flatten_and(binding: Binding, out: &mut Vec<Binding>) {
             if let Binding::And(inner) = binding {
                 for b in inner {
@@ -56,6 +78,10 @@ impl Binding
     pub fn or(self, other: impl Into<Binding>) -> Self
     {
         let other = other.into();
+
+        if self.is_none() { return other; }
+        if other.is_none() { return self; }
+
         fn flatten_or(binding: Binding, out: &mut Vec<Binding>) {
             if let Binding::Or(inner) = binding {
                 for b in inner {
@@ -88,14 +114,14 @@ impl Binding
     }
 }
 
-impl BitAnd for Binding
+impl<B> BitAnd<B> for Binding where B:Into<Self>
 {
     type Output=Self;
-    fn bitand(self, rhs: Self) -> Self::Output { self.and(rhs) }
+    fn bitand(self, rhs: B) -> Self::Output { self.and(rhs) }
 }
-impl BitAndAssign for Binding
+impl<B> BitAndAssign<B> for Binding where B:Into<Self>
 {
-    fn bitand_assign(&mut self, rhs: Self) 
+    fn bitand_assign(&mut self, rhs: B) 
     {
         let mut empty = Binding::None;
         std::mem::swap(&mut empty, self);
@@ -103,14 +129,14 @@ impl BitAndAssign for Binding
     }
 }
 
-impl BitOr for Binding
+impl<B> BitOr<B> for Binding where B:Into<Self>
 {
     type Output=Self;
-    fn bitor(self, rhs: Self) -> Self::Output { self.or(rhs) }
+    fn bitor(self, rhs: B) -> Self::Output { self.or(rhs) }
 }
-impl BitOrAssign for Binding
+impl<B> BitOrAssign<B> for Binding where B:Into<Self>
 {
-    fn bitor_assign(&mut self, rhs: Self) 
+    fn bitor_assign(&mut self, rhs: B) 
     {
         let mut empty = Binding::None;
         std::mem::swap(&mut empty, self);
