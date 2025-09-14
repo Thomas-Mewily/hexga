@@ -1,5 +1,6 @@
 use super::*;
 
+
 singleton_access!(
     Cam,
     CameraManager,

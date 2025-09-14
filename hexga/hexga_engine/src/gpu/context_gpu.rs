@@ -31,7 +31,7 @@ pub struct ContextGpu
 {
     pub(crate) base: GpuBase,
     pub(crate) surface: GpuSurface,
-    pub(crate) draw: Drawer,
+    pub(crate) draw: ContextPen,
 }
 impl Deref for ContextGpu
 {
@@ -210,7 +210,8 @@ impl ContextGpu
             {
                 base: GpuBase { adapter, device, queue, render_pipeline },
                 surface: GpuSurface{ surface, surface_config },
-                draw: Drawer { camera: CameraManager::new(camera_buffer, camera_bind_group), immediate: ___(), draw_call: ___() },
+                draw: ContextPen { camera: CameraManager::new(Camera::CAMERA_3D), immediate: ___(), draw_call: ___() },
+                //draw: Drawer { camera: CameraManager::new(camera_buffer, camera_bind_group), immediate: ___(), draw_call: ___() },
             }
         )
     }

@@ -7,6 +7,20 @@ pub trait ICamera<F=float> : GetMatrix<F,4,4> where F:Float
     fn viewport(&self) -> Option<Rect2P>;
 
     fn to_camera(&self) -> CameraOf<F> { CameraOf { matrix: self.matrix(), depth: self.have_depth(), viewport: self.viewport() }}
+
+    
+    fn push(&self) where Camera : CastFrom<CameraOf<F>>, Self:Sized
+    {
+        Cam.push_cam(self);
+    }
+    fn pop(&self) where Camera : CastFrom<CameraOf<F>>, Self:Sized
+    {
+        Cam.pop_cam();
+    }
+    fn scope<S>(&self, scope:S) where S: FnOnce(), Camera : CastFrom<CameraOf<F>>, Self:Sized
+    {
+        Cam.scope_cam(self, scope);
+    }
 }
 
 pub type Camera3D = Camera3DOf<float>;
@@ -123,12 +137,22 @@ impl<F> ICamera<F> for Camera3DOf<F> where F:Float
 pub type Camera = CameraOf<float>;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
-pub struct CameraOf<F> where F: Float
+pub struct CameraOf<F>
 {
     pub matrix  : Matrix4<F>,
     pub depth   : bool,
     pub viewport: Option<Rect2P>,
 }
+impl<T> CompositeGeneric for CameraOf<T>
+{
+    type WithType<T2> = CameraOf<T2>;
+    type Inside=T;
+
+    fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+        Self::WithType { matrix: self.matrix.map(f), depth: self.depth, viewport: self.viewport }
+    }
+}
+
 impl<F> GetPosition<F,3> for CameraOf<F> where F: Float
 {
     fn pos(&self) -> Vector<F,3>  { self.matrix.pos() }

@@ -2,13 +2,13 @@ use super::*;
 
 singleton_access!(
     Pen,
-    Drawer,
+    ContextPen,
     { Gpu::try_as_ref().map(|gpu| &gpu.draw) },
     { Gpu::try_as_mut().map(|gpu| &mut gpu.draw) }
 );
 
 
-impl ScopedDraw for Drawer
+impl ScopedDraw for ContextPen
 {
     fn begin_draw(&mut self) 
     {
@@ -29,23 +29,23 @@ pub trait DynCamera : Futurable + ICamera + Debug {}
 impl<T> DynCamera for T where T: Futurable + ICamera + Debug  {}
 */
 
-pub struct Drawer
+pub struct ContextPen
 {
     pub(crate) camera   : CameraManager,
     pub(crate) immediate: MeshBuilder,
     pub(crate) draw_call: Vec<GpuDrawCalls>
 }
 
-impl ICamera for Drawer
+impl ICamera for ContextPen
 {
     fn have_depth(&self) -> bool { self.camera.have_depth() }
     fn viewport(&self) -> Option<Rect2P> { self.camera.viewport() }
 }
-impl GetMatrix<float,4,4> for Drawer
+impl GetMatrix<float,4,4> for ContextPen
 {
     fn matrix(&self) -> Matrix<float,4,4> { self.camera.matrix() }
 }
-impl SetMatrix<float,4,4> for Drawer
+impl SetMatrix<float,4,4> for ContextPen
 {
     fn set_matrix(&mut self, matrix : Matrix<float,4,4>) -> &mut Self {
         self.camera.set_matrix(matrix); self
@@ -53,7 +53,7 @@ impl SetMatrix<float,4,4> for Drawer
 }
 
 
-impl Drawer
+impl ContextPen
 {
     pub fn camera(&self) -> &CameraManager { &self.camera }
     pub fn camera_mut(&mut self) -> &mut CameraManager { &mut self.camera }
@@ -78,19 +78,19 @@ impl Drawer
         self.draw_call.last_mut().unwrap().push(GpuDrawCall { mesh: self.immediate.build() });
     }
 }
-impl IMeshBuilder for Drawer
+impl IMeshBuilder for ContextPen
 {
     fn geometry(&mut self, vertex: impl IntoIterator<Item = Vertex<3>>, index: impl IntoIterator<Item = VertexIndex>) {
         self.immediate.geometry(vertex, index);
     }
 }
 
-impl Deref for Drawer
+impl Deref for ContextPen
 {
     type Target=MeshBuilder;
     fn deref(&self) -> &Self::Target { &self.immediate }
 }
-impl DerefMut for Drawer
+impl DerefMut for ContextPen
 {
     fn deref_mut(&mut self) -> &mut Self::Target { &mut self.immediate }
 }

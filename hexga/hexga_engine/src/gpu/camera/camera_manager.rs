@@ -1,3 +1,5 @@
+use std::thread::Scope;
+
 use super::*;
 
 
@@ -5,8 +7,9 @@ pub struct CameraManager
 {
     // pub(crate) default_camera: Camera,
     pub(crate) cameras: NonEmptyStack<Camera>,
-    pub(crate) camera_buffer: wgpu::Buffer,
-    pub(crate) camera_bind_group: wgpu::BindGroup,
+    pub(crate) default : Camera,
+    //pub(crate) camera_buffer: wgpu::Buffer,
+    //pub(crate) camera_bind_group: wgpu::BindGroup,
 }
 
 impl ScopedDraw for CameraManager
@@ -14,18 +17,18 @@ impl ScopedDraw for CameraManager
     fn begin_draw(&mut self) 
     {
         assert_eq!(self.cameras.len(), 1, "Forget to pop a camera");
-        self.cameras.replace(Camera::CAMERA_3D);
+        self.cameras.replace(self.default);
     }
 
     fn end_draw(&mut self) {
-        
+        assert_eq!(self.cameras.len(), 1, "Forget to pop a camera");
     }
 }
 
 
 impl CameraManager
 {
-    pub(crate) fn new(camera_buffer: wgpu::Buffer, camera_bind_group: wgpu::BindGroup) -> Self { Self { cameras: ___(), camera_buffer, camera_bind_group } }
+    pub(crate) fn new(default : Camera) -> Self { Self { cameras: NonEmptyStack::new(default), default } }
 }
 
 impl CameraManager
@@ -41,7 +44,7 @@ impl CameraManager
         let m = self.matrix();
         //info!("pushed matrix");
         //info!("{}", m);
-        Gpu.queue.write_buffer(&Cam.camera_buffer, 0, m.as_u8_slice());
+        //Gpu.queue.write_buffer(&Cam.camera_buffer, 0, m.as_u8_slice());
     }
 }
 impl GetMatrix<float,4,4> for CameraManager
@@ -54,6 +57,29 @@ impl SetMatrix<float,4,4> for CameraManager
 {
     fn set_matrix(&mut self, matrix : Matrix<float,4,4>) -> &mut Self {
         self.cameras.set_matrix(matrix); self
+    }
+}
+
+impl CameraManager
+{
+    pub fn push_cam<C,F>(&mut self, cam: &C) where F:Float, C:ICamera<F>, Camera: CastFrom<CameraOf<F>>
+    {
+        self.cameras.push(cam.to_camera().cast_into());
+        self.apply(); 
+    }
+
+    pub fn pop_cam(&mut self) -> Camera
+    {
+        let cam = self.cameras.pop().expect("Forget to push a camera");
+        self.apply();
+        cam
+    }
+
+    pub fn scope_cam<C,F,S>(&mut self, cam: &C, scope: S) -> Camera where F:Float, C:ICamera<F>, Camera: CastFrom<CameraOf<F>>, S:FnOnce()
+    {
+        self.push_cam(cam);
+        scope();
+        self.pop_cam()
     }
 }
 
