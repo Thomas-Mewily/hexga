@@ -6,6 +6,7 @@ pub trait IMeshBuilder<const N:usize=3>
     /// Index are relative to the vertex passed
     fn geometry(&mut self, vertex: impl IntoIterator<Item = Vertex<N>>, index: impl IntoIterator<Item = VertexIndex>);
 
+
     fn triangles_indexed(&mut self, vertex: impl IntoIterator<Item = Vertex<N>>, index: impl IntoIterator<Item = TriangleVertexIndex>)
     {
         self.geometry(vertex, index.into_iter().flatten())

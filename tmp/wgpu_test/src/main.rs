@@ -3,16 +3,17 @@
 #![allow(unused_variables)]
 
 use std::ops::Deref;
-
 use hexga_engine::prelude::*;
 
-pub struct DpadBinding
-{
-    up    : Binding,
-    down  : Binding,
-    left  : Binding,
-    right : Binding
+#[io]
+#[derive(Clone, PartialEq, Hash, Debug)]
+pub struct DpadBinding {
+    up: Binding,
+    down: Binding,
+    left: Binding,
+    right: Binding,
 }
+
 impl Default for DpadBinding
 {
     fn default() -> Self 
@@ -27,7 +28,6 @@ impl Default for DpadBinding
     }
 }
 
-#[derive(Default)]
 pub struct MyApp
 {
     dpad: DpadBinding,
@@ -35,6 +35,33 @@ pub struct MyApp
     time: Time,
 }
 
+impl Default for MyApp
+{
+    fn default() -> Self 
+    {
+        //let binding = DpadBinding::load_from_disk_or_create("./binding.ron", || ___()).unwrap();
+        let binding = ___();
+        Self 
+        {
+            dpad: binding, 
+            time: ___(),
+            camera: Camera3D
+            { 
+                position: (0.0, 1.0, 2.0).into(), 
+                target: (0.0, 0.0, 0.0).into(), 
+                up: Vec3::Y, 
+                perspective: CameraPerspective
+                {
+                    aspect: 16. / 9.,
+                    fovy: 45.degree(),
+                    znear: 0.1,
+                    zfar: 100.,
+                }, 
+                viewport: None 
+            },
+        }
+    }
+}
 
 impl App for MyApp
 {
@@ -42,7 +69,7 @@ impl App for MyApp
 
     fn update(&mut self, dt: DeltaTime) 
     {
-        let speed = 1.0;
+        let speed = 10.0 * dt.s();
         let (camera, binding) = (&mut self.camera, &self.dpad);
 
         let forward = camera.target - camera.position;
@@ -64,7 +91,8 @@ impl App for MyApp
         if binding.right.is_requested()
         {
             camera.position = camera.target - (forward + right * speed).normalized() * forward_mag;
-        }else
+        }
+        if binding.left.is_requested()
         {
             camera.position = camera.target - (forward - right * speed).normalized() * forward_mag;
         }
@@ -82,10 +110,14 @@ impl App for MyApp
     {
         //info!("nb fps: {}", Perf.fps());
 
-        //Cam.set_matrix(self.camera.matrix());
+        let a : Vec2 = tmp_surface_size().cast_into();
+        self.camera.perspective.aspect = a.x / a.y;
+        Pen.set_matrix(self.camera.matrix());
 
+        //Pen.rot_z(self.time.s().degree() * 50.);
         //Cam.rot_z(self.time.s().degree() * 50.);
 
+        /* 
         Pen.triangle(TriangleVertex::new
             (
                 Vertex::new().with_position(vec3(-1.,-0.5,0.)).with_color(GpuColor::RED),
@@ -93,6 +125,21 @@ impl App for MyApp
                 Vertex::new().with_position(vec3(0.,1.,0.)).with_color(GpuColor::BLUE),
             )
         );
+        */
+
+        Pen.geometry
+        (
+            [
+                Vertex::new().with_position([-0.0868241, 0.49240386, 0.0].into()).with_color(GpuColor::RED),
+                Vertex::new().with_position([-0.49513406, 0.06958647, 0.0].into()).with_color(GpuColor::GREEN),
+                Vertex::new().with_position([-0.21918549, -0.44939706, 0.0].into()).with_color(GpuColor::BLUE),
+                Vertex::new().with_position([0.35966998, -0.3473291, 0.0].into()).with_color(GpuColor::BLUE),
+                Vertex::new().with_position([0.44147372, 0.2347359, 0.0].into()).with_color(GpuColor::GREEN),
+            ],
+            [
+                0, 1, 4, 1, 2, 4, 2, 3, 4
+            ]
+        )
     }
 }
 

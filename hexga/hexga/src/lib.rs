@@ -12,6 +12,7 @@ pub use hexga_singleton as singleton;
 
 #[cfg(feature = "hexga_io")]
 pub use hexga_io as io;
+
 //pub use hexga_undo_redo as undo;
 
 
@@ -28,8 +29,21 @@ pub mod prelude
     pub use crate::singleton::prelude::*;
     //pub use crate::map_on::*;
 
+    /* 
+    #[allow(unused_imports)]
+    #[cfg(feature = "hexga_io")]
+    pub use hexga_io;*/
+    #[allow(unused_imports)]
     #[cfg(feature = "hexga_io")]
     pub use crate::io::prelude::*;
+
+    /* 
+    #[allow(unused_imports)]
+    #[cfg(feature = "serde")]
+    pub use serde;*/
+    #[allow(unused_imports)]
+    #[cfg(feature = "serde")]
+    pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
     #[allow(hidden_glob_reexports)]
     pub(crate) mod prelude{}

@@ -3,7 +3,7 @@ use super::*;
 mod disk;
 pub use disk::*;
 
-pub trait IoFs : Sized
+pub trait IoFsCore : Sized
 {
     /// If there was an error, try stop all the next operation to avoid useless serialization
     fn premature_abord(&self) -> bool;
@@ -27,7 +27,7 @@ pub trait IoFs : Sized
 }
 
 
-pub trait IoFsWrite : IoFs
+pub trait IoFsWrite : IoFsCore
 {
     fn save<T>(&mut self, path : &path, value : &T) -> IoResult where T: IoSave + ?Sized
     {
@@ -82,10 +82,28 @@ pub trait IoFsWrite : IoFs
     unsafe fn write_bytes_unchecked(&mut self, path : Path, data : &[u8]) -> IoSaveResult;
 }
 
-pub trait IoFsRead : IoFs
+pub trait IoFsRead : IoFsCore
 {
+    /// Loads a value of type `T` from the given `path`.
+    /// Automatically determines the file extension from the path and delegates to `load_with_extension`.
     fn load<T>(&mut self, path : &path) -> IoResult<T> where T: IoLoad + ?Sized { self.load_with_extension(path, path.extension_or_empty()) }
 
+    /// Loads a value of type `T` from the given `path`, or creates it and **save** it using `init` if it doesn't exist.
+    fn load_or_create<T,F>(&mut self, path : &path, init: F) -> IoResult<T> where T: IoLoad + IoSave + ?Sized, Self: IoFsWrite, F:FnOnce() -> T
+    {
+        match self.load(path)
+        {
+            Ok(v) => return Ok(v),
+            Err(_) => 
+            {
+                let val = init();
+                val.save_to(path, self).map_err(|e| e.kind)?;
+                Ok(val)
+            },
+        }
+    }
+
+    /// Loads a value of type `T` from the given `path` using a specified `extension`.
     fn load_with_extension<T>(&mut self, path : &path, extension : &extension) -> IoResult<T> where T: IoLoad + ?Sized
     {
         if self.premature_abord() && self.have_error() { return Err(IoErrorKind::FsPrematureAbord); }

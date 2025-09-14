@@ -985,20 +985,19 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + One
 // Impl based on the glam crate
 impl<T> Matrix4<T>
 {
-    /// Creates a left-handed view matrix using a camera position, an up direction, and a facing
-    /// direction.
+    /// Creates a right-handed view matrix.
     ///
-    /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+    /// View space: +X = right, +Y = up, +Z = back (camera looks toward -Z).
     #[inline]
     #[must_use]
-    pub fn look_to_lh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float {
-        Self::look_to_rh(position, -dir, up)
+    pub fn look_at_rh(position: Vector3<T>, center: Vector3<T>, up: Vector3<T>) -> Self where T: Float 
+    {
+        Self::look_to_rh(position, center - position, up)
     }
 
-    /// Creates a right-handed view matrix using a camera position, an up direction, and a facing
-    /// direction.
+    /// Creates a right-handed view matrix from a direction vector.
     ///
-    /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+    /// View space: +X = right, +Y = up, +Z = back (camera looks toward -Z).
     #[inline]
     #[must_use]
     pub fn look_to_rh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float 
@@ -1014,6 +1013,38 @@ impl<T> Matrix4<T>
                 vector4(s.y, u.y, -f.y, zero()), 
                 vector4(s.z, u.z, -f.z, zero()), 
                 vector4(-position.dot(s), position.dot(u), position.dot(f), one())
+            )
+        )
+    }
+
+
+    /// Creates a left-handed view matrix.
+    ///
+    /// View space: +X = right, +Y = up, +Z = forward (camera looks toward +Z).
+    #[inline]
+    #[must_use]
+    pub fn look_at_lh(position: Vector3<T>, center: Vector3<T>, up: Vector3<T>) -> Self where T: Float,
+    {
+        Self::look_to_lh(position, center - position, up)
+    }
+
+    /// Creates a left-handed view matrix from a direction vector.
+    ///
+    /// View space: +X = right, +Y = up, +Z = forward (camera looks toward +Z).
+    #[inline]
+    #[must_use]
+    pub fn look_to_lh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float,
+    {
+        let f = dir.normalized();
+        let s = up.cross(f).normalized();
+        let u = f.cross(s);
+
+        Self::from_col(
+            vector4(
+                vector4(s.x, u.x, f.x, zero()),
+                vector4(s.y, u.y, f.y, zero()),
+                vector4(s.z, u.z, f.z, zero()),
+                vector4(-position.dot(s), -position.dot(u), -position.dot(f), one()),
             )
         )
     }

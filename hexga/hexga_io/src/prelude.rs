@@ -8,8 +8,8 @@ pub use crate::
 
     fs::
     {
-        IoFs,IoFsWrite,IoFsRead,
-        IoFsDisk,SaveToDisk
+        IoFsCore,IoFsWrite,IoFsRead,
+        IoFsDisk,LoadToDisk,SaveToDisk
     }
 };
 

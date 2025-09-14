@@ -19,8 +19,7 @@ pub enum KeyCodeNative
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[io]
 pub enum KeyCode 
 {
     Unknow(KeyCodeNative),

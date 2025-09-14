@@ -8,9 +8,9 @@ on the web `rustup target add wasm32-unknown-unknown`
 ## Web with Wgpu
 
 ```shell
-cargo build --target wasm32-unknown-unknown --release --package=wgpu_test2
+cargo build --target wasm32-unknown-unknown --release --package=wgpu_test
 &&
-wasm-bindgen --target web --out-dir ./out ./target/wasm32-unknown-unknown/release/wgpu_test2.wasm
+wasm-bindgen --target web --out-dir ./out ./target/wasm32-unknown-unknown/release/wgpu_test.wasm
 ```
 
 ## To automatically recompile the wasm when a file change
@@ -19,7 +19,7 @@ wasm-bindgen --target web --out-dir ./out ./target/wasm32-unknown-unknown/releas
 cargo install cargo-watch --locked
 
 
-cargo watch  -i out -x "build --target wasm32-unknown-unknown --release --package wgpu_test2" -s "wasm-bindgen --target web --out-dir ./out ./target/wasm32-unknown-unknown/release/wgpu_test2.wasm"
+cargo watch  -i out -x "build --target wasm32-unknown-unknown --release --package wgpu_test" -s "wasm-bindgen --target web --out-dir ./out ./target/wasm32-unknown-unknown/release/wgpu_test.wasm"
 
 
 # -i : ignore le dossier out

@@ -1,6 +1,13 @@
 use super::*;
 
 
+#[deprecated]
+pub fn tmp_surface_size() -> Point2
+{
+    let s = &Gpu.surface.surface_config;
+    point2(s.width as _, s.height as _)
+}
+
 pub struct GpuSurface
 {
     surface: wgpu::Surface<'static>,
@@ -191,7 +198,7 @@ impl ContextGpu
                 topology: wgpu::PrimitiveTopology::TriangleList,
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: None, //Some(wgpu::Face::Back),
+                cull_mode: None, //Some(wgpu::Face::{Back,Back})
                 polygon_mode: wgpu::PolygonMode::Fill,
                 ..Default::default()
             },
@@ -276,6 +283,8 @@ impl ContextGpu
 
             for dc in self.pen.draw_calls.iter()
             {
+                self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.camera.matrix().as_u8_slice());
+
                 let (vertices_begin, vertices_len) = (dc.vertices_begin, dc.vertices_len);
                 let vertices_end = dc.vertices_begin+dc.vertices_len;
 
@@ -284,28 +293,8 @@ impl ContextGpu
 
                 rpass.set_vertex_buffer(0, vertices.wgpu_slice(vertices_begin..vertices_end));
                 rpass.set_index_buffer(indices.wgpu_slice(indices_begin..indices_end), VertexIndex::GPU_INDEX_FORMAT);
-                //rpass.draw_indexed(0..(indices.len as _), 0, 0..1);
                 rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
             }
-
-            /* 
-            for draw_calls in self.pen.draw_calls.iter()
-            {
-                for draw_call in draw_calls.calls.iter()
-                {
-                    let Mesh { vertices, indices } = &draw_call.mesh;
-                    rpass.set_vertex_buffer(0, vertices.buffer.slice(..));
-                    rpass.set_index_buffer(indices.buffer.slice(..), VertexIndex::GPU_INDEX_FORMAT);
-                    rpass.draw_indexed(0..(indices.len as _), 0, 0..1);
-                }
-            }
-            */
-
-            //todo!()
-            //rpass.set_vertex_buffer(0, self.draw.vertices.buffer.slice(..));
-            //rpass.set_index_buffer(self.draw.indices.buffer.slice(..), Vertex::WGPU_INDEX_FORMAT);
-            //rpass.draw_indexed(0..(self.draw.indices.len as _), 0, 0..1);
-            //rpass.draw(0..VERTEX_LIST.len() as u32, 0..1);
         }
 
         

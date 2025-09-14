@@ -86,10 +86,17 @@ pub trait IoLoad : for<'de> Deserialize<'de>
     /// Also include the markup language extension like `json` or `ron`
     fn can_open_extension(extension: &str) -> bool { Self::load_extensions().any(|ext| ext == extension) }
 
+
     fn load_from<Fs>(path : &path, fs : &mut Fs) -> IoLoadResult<Self> where Fs : IoFsRead
     {
         Self::load_from_with_extension(path, path.extension_or_empty(), fs)
     }
+    fn load_from_or_create<Fs,F>(path : &path, init: F, fs : &mut Fs) -> IoResult<Self> where Self: IoSave, Fs : IoFsRead + IoFsWrite, F:FnOnce() -> Self
+    {
+        fs.load_or_create(path, init)
+    }
+
+
     fn load_from_with_extension<Fs>(path : &path, extension: &extension, fs : &mut Fs) -> IoLoadResult<Self> where Fs : IoFsRead
     {
         fs.load_with_extension(path, extension).to_save_error(path)

@@ -15,6 +15,7 @@ impl From<KeyCode> for Binding
     }
 }
 
+#[io]
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
 pub enum Binding
 {
@@ -178,6 +179,7 @@ impl IBinding for Binding
 
 
 // TODO: Make trait Getter/Setter for Toggle, State, Repeat..
+#[io]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct KeyBinding
 {

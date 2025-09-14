@@ -35,19 +35,22 @@ pub struct Camera3DOf<F> where F:Float
     pub viewport : Option<Rect2P>
 }
 
+/* 
 impl<F> Default for Camera3DOf<F> where F:Float
 {
     fn default() -> Self {
         Self { position: Vector3::ZERO.with_z(one()), target: zero(), up: Vector3::Y, perspective: ___(), viewport: None }
     }
 }
-
+*/
 impl<F> GetMatrix<F,4,4> for Camera3DOf<F> where F: Float
 { 
     fn matrix(&self) -> Matrix<F,4,4> { self.matrix() } 
 }
 
 
+
+pub type CameraPerspective = CameraPerspectiveOf<float>;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct CameraPerspectiveOf<F> where F:Float
@@ -69,9 +72,9 @@ impl<F> From<CameraPerspectiveOf<F>> for Matrix4<F> where F:Float
     // Based on https://docs.rs/cgmath/latest/src/cgmath/projection.rs.html#108
     fn from(p: CameraPerspectiveOf<F>) -> Self 
     {
-        assert!(p.fovy > AngleOf::ZERO && p.fovy < AngleOf::HALF);
-        assert!(p.aspect != F::ZERO);
-        assert!(p.znear > F::ZERO && p.zfar > F::ZERO && p.zfar != p.znear);
+        debug_assert!(p.fovy > AngleOf::ZERO && p.fovy < AngleOf::HALF);
+        debug_assert!(p.aspect != F::ZERO);
+        debug_assert!(p.znear > F::ZERO && p.zfar > F::ZERO && p.zfar != p.znear);
 
         let two = F::TWO;
         let f = (p.fovy / two).cot();
@@ -88,8 +91,8 @@ impl<F> From<CameraPerspectiveOf<F>> for Matrix4<F> where F:Float
             (
             Vector4::new(m00, F::ZERO, F::ZERO, F::ZERO),
             Vector4::new(F::ZERO, m11, F::ZERO, F::ZERO),
-            Vector4::new(F::ZERO, F::ZERO, m22, m32),
-            Vector4::new(F::ZERO, F::ZERO, m23, F::ZERO)
+            Vector4::new(F::ZERO, F::ZERO, m22, m23),
+            Vector4::new(F::ZERO, F::ZERO, m32, F::ZERO)
             )
         )
     }
@@ -110,10 +113,9 @@ impl<F> Camera3DOf<F> where F:Float
     fn matrix(&self) -> Matrix4<F>
     {
         // https://sotrh.github.io/learn-wgpu/beginner/tutorial6-uniforms/#a-perspective-camera
-        let view: Matrix<F, 4, 4> = Matrix4::<F>::look_to_rh(self.position, self.target, self.up);
+        let view: Matrix<F, 4, 4> = Matrix4::<F>::look_at_rh(self.position, self.target, self.up);
         let proj = Matrix4::<F>::from(self.perspective);
-        // TODO: get the screen size, Idk if the OPENGL_TO_WGPU_MATRIX is necessary
-        return Self::OPENGL_TO_WGPU_MATRIX * view * proj;
+        return Self::OPENGL_TO_WGPU_MATRIX * proj * view;
     }
 
     pub(crate) const OPENGL_TO_WGPU_MATRIX : Matrix4<F> = Matrix4::from_col

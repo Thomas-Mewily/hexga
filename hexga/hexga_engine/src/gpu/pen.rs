@@ -91,7 +91,7 @@ impl GetMatrix for ContextPen
 impl SetMatrix for ContextPen
 {
     fn set_matrix(&mut self, matrix : Mat4) -> &mut Self {
-        self.cameras.set_matrix(matrix); self
+        self.cameras.set_matrix(matrix); self.apply_cam(); self
     }
 }
 

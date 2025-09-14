@@ -1,6 +1,6 @@
 use super::*;
 
-
+#[io]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
 pub enum ButtonToggle
 {
@@ -29,6 +29,7 @@ impl From<ButtonToggle> for bool
 }
 
 
+#[io]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
 pub enum ButtonState
 {
@@ -84,7 +85,7 @@ impl IEvolution<ButtonState> for ButtonStateEvolution
 
 
 
-
+#[io]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub enum ButtonRepeat
 {

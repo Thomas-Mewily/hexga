@@ -9,3 +9,5 @@ edition.workspace = true
 
 [dependencies]
 hexga_engine.workspace = true
+serde = { version = "1.0.0", features = ["derive"] }
+hexga_io = { workspace = true }
