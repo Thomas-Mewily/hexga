@@ -5,6 +5,7 @@
 use std::ops::Deref;
 use hexga_engine::prelude::*;
 
+
 pub struct MyApp
 {
     dpad: BindingDpad,
@@ -16,8 +17,8 @@ impl Default for MyApp
 {
     fn default() -> Self 
     {
-        //let binding = DpadBinding::load_from_disk_or_create("./binding.ron", || ___()).unwrap();
-        let binding = ___();
+        let binding = BindingDpad::load_from_disk_or_create("./binding.ron", || ___()).unwrap();
+        //let binding = ___();
         Self 
         {
             dpad: binding, 

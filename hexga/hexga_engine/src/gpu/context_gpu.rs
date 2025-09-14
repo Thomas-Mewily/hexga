@@ -210,7 +210,7 @@ impl ContextGpu
                 base: GpuBase { adapter, device, queue, render_pipeline },
                 surface: GpuSurface{ surface, surface_config },
                 binding: GpuBinding { camera_buffer, camera_bind_group },
-                pen: ContextPen::new(Camera::CAMERA_3D),
+                pen: ContextPen::new(DrawCallParam { camera: Camera::CAMERA_3D, ..___() }),
             }
         )
     }
@@ -278,6 +278,9 @@ impl ContextGpu
             for dc in self.pen.draw_calls.iter()
             {
                 self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.param.camera.matrix().as_u8_slice());
+
+                //rpass.set_viewport(dc.viewport.pos.x as _, dc.viewport.pos.y as _, dc.viewport.size.x as _, dc.viewport.size.y as _, dc.viewport_min_depth, dc.viewport_max_depth);
+                //rpass.set_scissor_rect(dc.clip.pos.x as _, dc.clip.pos.y as _, dc.clip.size.x as _, dc.clip.size.y as _);
 
                 let (vertices_begin, vertices_len) = (dc.vertices_begin, dc.vertices_len);
                 let vertices_end = dc.vertices_begin+dc.vertices_len;

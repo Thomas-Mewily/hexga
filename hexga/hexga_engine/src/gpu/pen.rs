@@ -17,8 +17,12 @@ impl ScopedDraw for ContextPen
 
         assert_eq!(self.params.len(), 1, "Forget to pop a camera");
 
-        let rectangle = param.window_size.to_rect();
-        self.params.replace(DrawCallParam { camera: self.default_cam, viewport: rectangle, clip: rectangle });
+        let mut draw_call = self.default_param;
+        let clip = param.window_size.to_rect();
+        let viewport = clip.cast_into();
+        draw_call.clip = clip;
+        draw_call.viewport = viewport;
+        self.params.replace(draw_call);
     }
 
     fn end_draw(&mut self) 
@@ -33,29 +37,37 @@ pub trait DynCamera : Futurable + ICamera + Debug {}
 impl<T> DynCamera for T where T: Futurable + ICamera + Debug  {}
 */
 
-#[derive(Clone, Copy, PartialEq, Debug, Default)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct DrawCallParam
 {
     pub camera  : Camera,
-    pub viewport: Rect2P,
+    pub viewport: Rect2,
+    pub viewport_min_depth: float,
+    pub viewport_max_depth: float,
     pub clip    : Rect2P,
+}
+impl Default for DrawCallParam
+{
+    fn default() -> Self {
+        Self { camera: ___(), viewport: ___(), viewport_min_depth: 0., viewport_max_depth: 1., clip: ___() }
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct ContextPen
 {
     pub(crate) params: NonEmptyStack<DrawCallParam>,
-    pub(crate) default_cam : Camera,
+    pub(crate) default_param : DrawCallParam,
 
     pub(crate) big_mesh  : MeshBuilder,
-    pub(crate) draw_calls: NonEmptyStack<GpuDrawCall>
+    pub(crate) draw_calls: NonEmptyStack<DrawCall>
 }
 
 impl ContextPen
 {
-    pub fn new(camera : Camera) -> Self 
+    pub fn new(param : DrawCallParam) -> Self 
     {
-        Self { params: NonEmptyStack::new(DrawCallParam{camera, ..___()}), default_cam: camera, big_mesh: ___(), draw_calls: ___() }
+        Self { params: NonEmptyStack::new(param), default_param: param, big_mesh: ___(), draw_calls: ___() }
     }
 }
 
@@ -169,7 +181,7 @@ impl GpuDrawCalls
 
 
 #[derive(Clone, Debug, Default)]
-pub struct GpuDrawCall
+pub struct DrawCall
 {
     pub(crate) vertices_begin: usize,
     pub(crate) vertices_len: usize,
@@ -180,7 +192,17 @@ pub struct GpuDrawCall
     pub(crate) param: DrawCallParam,
     // add texture here
 }
-impl GpuDrawCall
+impl Deref for DrawCall
+{
+    type Target=DrawCallParam;
+    fn deref(&self) -> &Self::Target { &self.param }
+}
+impl DerefMut for DrawCall
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.param }
+}
+
+impl DrawCall
 {
     pub fn is_geometry_empty(&self) -> bool 
     {
