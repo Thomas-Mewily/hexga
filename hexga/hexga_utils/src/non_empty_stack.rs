@@ -64,6 +64,19 @@ impl<T> NonEmptyStack<T>
         self.stack.clear();
     }
 
+    /// Clear the stack and keep passed value
+    pub fn clear_and_keep(&mut self, value: T)
+    {
+        self.last = value;
+        self.stack.clear();
+    }
+
+    /// Clear the stack and keep defaut value
+    pub fn clear(&mut self) where T:Default
+    {
+        self.clear_and_keep(___());
+    }
+
     /// Replace the last value
     pub fn replace(&mut self, mut value : T) -> T { std::mem::swap(&mut self.last, &mut value); value }
     pub fn push(&mut self, mut value : T) { std::mem::swap(&mut self.last, &mut value); self.stack.push(value); }

@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait GetPosition<T,const N : usize> where Vector<T,N> : Copy, T : Copy
+pub trait GetPosition<T=float,const N : usize=3> where Vector<T,N> : Copy, T : Copy
 {
     fn pos(&self) -> Vector<T,N>;
 
@@ -14,7 +14,7 @@ pub trait GetPosition<T,const N : usize> where Vector<T,N> : Copy, T : Copy
     fn w(&self) -> T where Vector<T,N> : HaveW<T> { *self.pos().get_or_panic(Vector::<T,N>::W_INDEX) }
 }
 
-pub trait SetPosition<T,const N : usize> : GetPosition<T,N> where Vector<T,N> : Copy, T : Copy
+pub trait SetPosition<T=float,const N : usize=3> : GetPosition<T,N> where Vector<T,N> : Copy, T : Copy
 {
     fn set_pos(&mut self, pos : Vector<T,N>) -> &mut Self;
 

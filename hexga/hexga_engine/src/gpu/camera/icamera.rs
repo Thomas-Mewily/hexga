@@ -8,7 +8,7 @@ pub trait ICamera<F=float> : GetMatrix<F,4,4> where F:Float
 
     fn to_camera(&self) -> CameraOf<F> { CameraOf { matrix: self.matrix(), depth: self.have_depth(), viewport: self.viewport() }}
 
-    
+    /* 
     fn push(&self) where Camera : CastFrom<CameraOf<F>>, Self:Sized
     {
         Cam.push_cam(self);
@@ -20,7 +20,7 @@ pub trait ICamera<F=float> : GetMatrix<F,4,4> where F:Float
     fn scope<S>(&self, scope:S) where S: FnOnce(), Camera : CastFrom<CameraOf<F>>, Self:Sized
     {
         Cam.scope_cam(self, scope);
-    }
+    }*/
 }
 
 pub type Camera3D = Camera3DOf<float>;

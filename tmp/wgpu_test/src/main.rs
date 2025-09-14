@@ -82,7 +82,7 @@ impl App for MyApp
     {
         //info!("nb fps: {}", Perf.fps());
 
-        Cam.set_matrix(self.camera.matrix());
+        //Cam.set_matrix(self.camera.matrix());
 
         //Cam.rot_z(self.time.s().degree() * 50.);
 

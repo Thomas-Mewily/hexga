@@ -1,3 +1,4 @@
+use std::ops::{Bound, RangeBounds};
 use super::*;
 
 
@@ -68,7 +69,7 @@ impl<T> GpuVec<T> where T:Copy
 
     pub fn with_capacity(capacity: usize, desc: GpuVecDesc) -> Self
     {
-        Self::_with_capacity(&mut Gpu.device, capacity, desc)
+        Self::_with_capacity(&mut Gpu.base.device, capacity, desc)
     }
 
     pub(crate) fn _new(device: &mut wgpu::Device, value: &[T], desc: GpuVecDesc) -> Self
@@ -85,7 +86,28 @@ impl<T> GpuVec<T> where T:Copy
 
     pub fn new(value: &[T], desc: GpuVecDesc) -> Self
     {
-        Self::_new(&mut Gpu.device, value, desc)
+        Self::_new(&mut Gpu.base.device, value, desc)
+    }
+
+    /// Returns a typed slice of the underlying `wgpu::Buffer`.
+    ///
+    /// The given range is expressed in element indices (`T`), not raw bytes.
+    pub(crate) fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> wgpu::BufferSlice<'_> 
+    {
+        type WgpuBufIdx = wgpu::BufferAddress;
+        let size = std::mem::size_of::<T>() as WgpuBufIdx;
+        let start = match bounds.start_bound() {
+            Bound::Included(&v) => v as WgpuBufIdx  * size,
+            Bound::Excluded(&v) => v as WgpuBufIdx * size + size,
+            Bound::Unbounded => 0,
+        };
+        let end = match bounds.end_bound() 
+        {
+            Bound::Included(&v) => v as WgpuBufIdx * size + size,
+            Bound::Excluded(&v) => v as WgpuBufIdx * size,
+            Bound::Unbounded => self.capacity as WgpuBufIdx * size,
+        };
+        self.buffer.slice(start..end)
     }
 }
 

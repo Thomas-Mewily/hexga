@@ -1,3 +1,5 @@
+use std::ops::RangeBounds;
+
 
 pub trait Composite
 {   
@@ -25,7 +27,6 @@ pub trait CompositeConstant
 
 
 
-
 impl<T, const N:usize> Composite for [T;N]
 {
     type Inside=T;
@@ -40,6 +41,7 @@ impl<T, const N:usize> CompositeGeneric for [T;N]
     type Inside = T;
     fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 { self.map(f) }
 }
+
 
 /* 
 ...

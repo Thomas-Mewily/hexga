@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait RotateX<T>
+pub trait RotateX<T=float>
 {
     fn rotate_x(&mut self, angle : AngleOf<T>) -> &mut Self;
     fn rot_x(&mut self,  angle : AngleOf<T>) -> &mut Self { self.rotate_x(angle) }
@@ -8,7 +8,7 @@ pub trait RotateX<T>
     fn rotated_x(mut self, angle : AngleOf<T>) -> Self where Self : Sized { self.rotate_x(angle); self }
 }
 
-pub trait RotateY<T>
+pub trait RotateY<T=float>
 {
     fn rotate_y(&mut self, angle : AngleOf<T>) -> &mut Self;
     fn rot_y(&mut self,  angle : AngleOf<T>) -> &mut Self { self.rotate_y(angle) }
@@ -16,7 +16,7 @@ pub trait RotateY<T>
     fn rotated_y(mut self, angle : AngleOf<T>) -> Self where Self : Sized { self.rotate_y(angle); self }
 }
 
-pub trait RotateZ<T>
+pub trait RotateZ<T=float>
 {
     fn rotate_z(&mut self, angle : AngleOf<T>) -> &mut Self;
     fn rot_z(&mut self,  angle : AngleOf<T>) -> &mut Self { self.rotate_z(angle) }

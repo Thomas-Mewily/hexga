@@ -15,7 +15,7 @@ impl GpuSurface
     {
         self.surface_config.width = size.x.max(1) as _;
         self.surface_config.height = size.y.max(1) as _;
-        self.surface.configure(&Gpu.device, &self.surface_config);
+        self.surface.configure(&Gpu.base.device, &self.surface_config);
     }
 }
 
@@ -31,17 +31,16 @@ pub struct ContextGpu
 {
     pub(crate) base: GpuBase,
     pub(crate) surface: GpuSurface,
-    pub(crate) draw: ContextPen,
+    pub(crate) binding: GpuBinding,
+    pub(crate) pen: ContextPen,
 }
-impl Deref for ContextGpu
+
+pub struct GpuBinding
 {
-    type Target=GpuBase;
-    fn deref(&self) -> &Self::Target { &self.base }
+    pub(crate) camera_buffer: wgpu::Buffer,
+    pub(crate) camera_bind_group: wgpu::BindGroup,
 }
-impl DerefMut for ContextGpu
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.base }
-}
+
 impl ContextGpu
 {
     pub(crate) fn request<UserEvent>(window: Arc<WinitWindow>, proxy : EventLoopProxy<AppInternalEvent<UserEvent>>) -> Result<(), String> where UserEvent: IUserEvent
@@ -210,8 +209,8 @@ impl ContextGpu
             {
                 base: GpuBase { adapter, device, queue, render_pipeline },
                 surface: GpuSurface{ surface, surface_config },
-                draw: ContextPen { camera: CameraManager::new(Camera::CAMERA_3D), immediate: ___(), draw_call: ___() },
-                //draw: Drawer { camera: CameraManager::new(camera_buffer, camera_bind_group), immediate: ___(), draw_call: ___() },
+                binding: GpuBinding { camera_buffer, camera_bind_group },
+                pen: ContextPen::new(Camera::CAMERA_3D),
             }
         )
     }
@@ -228,12 +227,12 @@ impl ContextGpu
 impl ScopedDraw for ContextGpu
 {
     fn begin_draw(&mut self) {
-        self.draw.begin_draw();
+        self.pen.begin_draw();
     }
 
     fn end_draw(&mut self) 
     {
-        self.draw.end_draw();
+        self.pen.end_draw();
         self.send_data_to_gpu();
     }
 }
@@ -250,7 +249,7 @@ impl ContextGpu
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
         let mut encoder = self
-            .device
+            .base.device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         {
             let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -267,11 +266,30 @@ impl ContextGpu
                 timestamp_writes: None,
                 occlusion_query_set: None,
             });
-            rpass.set_pipeline(&self.render_pipeline);
+            rpass.set_pipeline(&self.base.render_pipeline);
 
-            rpass.set_bind_group(0, &self.draw.camera.camera_bind_group, &[]);
+            rpass.set_bind_group(0, &self.binding.camera_bind_group, &[]);
 
-            for draw_calls in self.draw.draw_call.iter()
+            // Todo: avoid create a new buffer an each frame.
+            let mesh = self.pen.big_mesh.build();
+            let Mesh { vertices, indices } = &mesh;
+
+            for dc in self.pen.draw_calls.iter()
+            {
+                let (vertices_begin, vertices_len) = (dc.vertices_begin, dc.vertices_len);
+                let vertices_end = dc.vertices_begin+dc.vertices_len;
+
+                let (indices_begin, indices_len) = (dc.indices_begin, dc.indices_len);
+                let indices_end = dc.indices_begin+dc.indices_len;
+
+                rpass.set_vertex_buffer(0, vertices.wgpu_slice(vertices_begin..vertices_end));
+                rpass.set_index_buffer(indices.wgpu_slice(indices_begin..indices_end), VertexIndex::GPU_INDEX_FORMAT);
+                //rpass.draw_indexed(0..(indices.len as _), 0, 0..1);
+                rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
+            }
+
+            /* 
+            for draw_calls in self.pen.draw_calls.iter()
             {
                 for draw_call in draw_calls.calls.iter()
                 {
@@ -281,6 +299,7 @@ impl ContextGpu
                     rpass.draw_indexed(0..(indices.len as _), 0, 0..1);
                 }
             }
+            */
 
             //todo!()
             //rpass.set_vertex_buffer(0, self.draw.vertices.buffer.slice(..));
@@ -290,7 +309,7 @@ impl ContextGpu
         }
 
         
-        self.queue.submit(Some(encoder.finish()));
+        self.base.queue.submit(Some(encoder.finish()));
         surface_texture.present();
     }
 }

@@ -2,7 +2,7 @@ use std::thread::Scope;
 
 use super::*;
 
-
+/* 
 pub struct CameraManager
 {
     // pub(crate) default_camera: Camera,
@@ -117,3 +117,4 @@ impl RotateZ<float> for CameraManager
 {
     fn rotate_z(&mut self, angle : AngleOf<float>) -> &mut Self { self.cameras.rotate_z(angle); self.apply(); self }
 }
+    */
