@@ -117,6 +117,42 @@ impl<T,const N : usize> SetRectangle<T,N> for Rectangle<T,N> where T: Number
     fn with_size_w(mut self, w : T) -> Self where Vector<T, N> : HaveW<T> { self.size.set_w(w); self }
 }
 
+
+
+impl<T,const N : usize> Rectangle<T,N> where T: NumberPrimitive
+{
+    pub fn split_axis(&self, nb:T, axis: usize) -> impl Iterator<Item = Self>
+    {
+        let begin = self.pos[axis];
+        let end = begin + self.size[axis];
+        let step = self.size[axis] / nb;
+
+        let cuts = (begin..=end).step(step);
+
+        cuts
+            .clone()
+            .zip(cuts.skip(1))
+            .map(move |(x0, x1)| {
+                let mut r = self.clone();
+                r.pos[axis] = x0;
+                r.size[axis] = x1 - x0;
+                r
+            })
+    }
+
+    pub fn split_x(&self, nb:T) -> impl Iterator<Item = Self> where Vector<T,N>:HaveX<T>
+    { self.split_axis(nb, Vector::<T,N>::X_INDEX) }
+    pub fn split_y(&self, nb:T) -> impl Iterator<Item = Self> where Vector<T,N>:HaveY<T> 
+    { self.split_axis(nb, Vector::<T,N>::Y_INDEX) }
+    pub fn split_z(&self, nb:T) -> impl Iterator<Item = Self> where Vector<T,N>:HaveZ<T>
+    { self.split_axis(nb, Vector::<T,N>::Z_INDEX) }
+    pub fn split_w(&self, nb:T) -> impl Iterator<Item = Self> where Vector<T,N>:HaveW<T>
+    { self.split_axis(nb, Vector::<T,N>::W_INDEX) }
+
+    pub fn split_min(&self, nb:T) -> impl Iterator<Item = Self> { self.split_axis(nb, self.size.min_element_idx()) }
+    pub fn split_max(&self, nb:T) -> impl Iterator<Item = Self> { self.split_axis(nb, self.size.max_element_idx()) }
+}
+
 impl<T,const N : usize> Rectangle<T,N> where T: Number
 {
     /// Check if a point inside the rectangle.
@@ -470,6 +506,8 @@ impl<Idx,const N : usize> IterIndex<Idx,N> for Rectangle<Idx,N> where Idx : Inte
     type IterIndex = RectangleIter<Idx,N>;
     fn iter_index(&self) -> Self::IterIndex { RectangleIter::from_vec_iter(self.pos, self.size.iter_index()) }
 }
+
+
 
 
 #[cfg(test)]

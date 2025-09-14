@@ -48,9 +48,9 @@ pub trait EvolutionButtonState : IEvolution<ButtonState>
     fn was_up(&self) -> bool { !self.was_down() }
 
     /// Pull up, `false` to `true`, `0` to `1`, 
-    fn pressed(&self) -> bool { self.is_down() && (!self.was_down()) }
+    fn is_pressed(&self) -> bool { self.is_down() && (!self.was_down()) }
     /// Pull down, `true` to `false`, `1` to `0`
-    fn released(&self) -> bool { self.was_down() && (!self.is_down()) }
+    fn is_released(&self) -> bool { self.was_down() && (!self.is_down()) }
 
     fn is_toggled(&self) -> bool { self.is_down() != self.was_down() }
     fn is_constant(&self) -> bool { self.is_down() == self.was_down() }

@@ -105,7 +105,7 @@ impl<T> GpuVec<T> where T:Copy
         {
             Bound::Included(&v) => v as WgpuBufIdx * size + size,
             Bound::Excluded(&v) => v as WgpuBufIdx * size,
-            Bound::Unbounded => self.capacity as WgpuBufIdx * size,
+            Bound::Unbounded => self.len as WgpuBufIdx * size,
         };
         self.buffer.slice(start..end)
     }

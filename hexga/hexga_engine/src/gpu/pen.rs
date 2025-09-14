@@ -17,12 +17,13 @@ impl ScopedDraw for ContextPen
 
         assert_eq!(self.params.len(), 1, "Forget to pop a camera");
 
-        let mut draw_call = self.default_param;
-        let clip = param.window_size.to_rect();
-        let viewport = clip.cast_into();
-        draw_call.clip = clip;
-        draw_call.viewport = viewport;
-        self.params.replace(draw_call);
+        let dcall_param = &mut self.default_param;
+        let scissor = param.window_size.to_rect();
+        let viewport = scissor.cast_into();
+        dcall_param.scissor = scissor;
+        dcall_param.viewport = viewport;
+        self.params.replace(*dcall_param);
+        self.draw_calls.param = *dcall_param;
     }
 
     fn end_draw(&mut self) 
@@ -37,6 +38,7 @@ pub trait DynCamera : Futurable + ICamera + Debug {}
 impl<T> DynCamera for T where T: Futurable + ICamera + Debug  {}
 */
 
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct DrawCallParam
 {
@@ -44,12 +46,12 @@ pub struct DrawCallParam
     pub viewport: Rect2,
     pub viewport_min_depth: float,
     pub viewport_max_depth: float,
-    pub clip    : Rect2P,
+    pub scissor : Rect2P,
 }
 impl Default for DrawCallParam
 {
     fn default() -> Self {
-        Self { camera: ___(), viewport: ___(), viewport_min_depth: 0., viewport_max_depth: 1., clip: ___() }
+        Self { camera: ___(), viewport: ___(), viewport_min_depth: 0., viewport_max_depth: 1., scissor: ___() }
     }
 }
 
@@ -126,6 +128,33 @@ impl ContextPen
         self.draw_calls.vertices_len =  mesh.nb_vertex() - self.draw_calls.vertices_begin;
     }
 
+    pub fn param_map<F>(&mut self, f: F) where F: FnOnce(&mut DrawCallParam)
+    {
+        f(&mut self.params);
+        self.set_param(*self.params);
+    }
+
+    pub fn viewport(&self) -> Rect2 { self.params.viewport }
+    pub fn set_viewport(&mut self, viewport: Rect2) -> &mut Self
+    {
+        self.param_map(|p| p.viewport = viewport);
+        self
+    }
+    
+
+    pub fn push_param(&mut self)
+    {
+        self.params.push(self.draw_calls.param);
+    }
+
+    pub fn pop_param(&mut self)
+    {
+        let param = self.params.pop().expect("forget to push param");
+        self.set_param(param);
+    }
+
+    pub fn param(&self) -> DrawCallParam { *self.params }
+
     pub fn set_param(&mut self, param: DrawCallParam)
     {
         if self.draw_calls.param == param { return; }
@@ -146,7 +175,8 @@ impl ContextPen
 
     pub(crate) fn apply_cam(&mut self)
     {
-        self.set_param(DrawCallParam { camera: self.params.camera.to_camera(), ..self.draw_calls.last().param });
+        let c = self.camera();
+        self.param_map(|p| { p.camera = c;});
     }
 }
 impl IMeshBuilder for ContextPen

@@ -277,10 +277,24 @@ impl ContextGpu
 
             for dc in self.pen.draw_calls.iter()
             {
+                //dbg!(&dc);
                 self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.param.camera.matrix().as_u8_slice());
 
-                //rpass.set_viewport(dc.viewport.pos.x as _, dc.viewport.pos.y as _, dc.viewport.size.x as _, dc.viewport.size.y as _, dc.viewport_min_depth, dc.viewport_max_depth);
-                //rpass.set_scissor_rect(dc.clip.pos.x as _, dc.clip.pos.y as _, dc.clip.size.x as _, dc.clip.size.y as _);
+                let viewport = dc.viewport;
+                let (viewport_min_depth, viewport_max_depth) = (dc.viewport_min_depth, dc.viewport_max_depth);
+                let scissor = dc.scissor;
+
+                /* 
+                let viewport : Rect2P = viewport.cast_into();
+                let scissor : Rect2P = scissor.cast_into();
+                dbg!(viewport);
+
+                if viewport.width().is_zero() { continue; }
+                if scissor.width().is_zero() { continue; }
+                */
+
+                rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
+                //rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
 
                 let (vertices_begin, vertices_len) = (dc.vertices_begin, dc.vertices_len);
                 let vertices_end = dc.vertices_begin+dc.vertices_len;
@@ -290,7 +304,8 @@ impl ContextGpu
 
                 rpass.set_vertex_buffer(0, vertices.wgpu_slice(vertices_begin..vertices_end));
                 rpass.set_index_buffer(indices.wgpu_slice(indices_begin..indices_end), VertexIndex::GPU_INDEX_FORMAT);
-                rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
+                //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
+                rpass.draw_indexed(0 ..(indices_len as _), -(vertices_begin as i32), 0..1);
             }
         }
 

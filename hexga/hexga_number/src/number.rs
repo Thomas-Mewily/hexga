@@ -58,7 +58,7 @@ pub trait ArithmeticNegative             : Neg<Output = Self> {}
 impl<T> ArithmeticNegative for T where T: Neg<Output = Self> {}
 
 /// +, -, *, /, %, 0, 1, ==, >=, min val, max val
-pub trait Number             : NumberArithmetic + One + PartialEq + PartialOrd /*+ MinValue + MaxValue*/ + Debug {}
+pub trait Number            : NumberArithmetic + One + PartialEq + PartialOrd /*+ MinValue + MaxValue*/ + Debug {}
 impl<T> Number for T where T: NumberArithmetic + One + PartialEq + PartialOrd /*+ MinValue + MaxValue*/ + Debug {}
 
 pub trait NumberNegative             : Number + ArithmeticNegative + MinusOne {}

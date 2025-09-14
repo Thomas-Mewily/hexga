@@ -28,6 +28,11 @@ impl SingletonInit for Ctx
                         Ctx::destroy();
                         eprintln!("panic occurred: {info}");
                     }));
+
+
+                    let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        Ctx::destroy();
+                    }));
                 }
                 #[cfg(target_arch = "wasm32")]
                 {

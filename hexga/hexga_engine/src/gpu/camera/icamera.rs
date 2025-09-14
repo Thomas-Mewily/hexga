@@ -6,7 +6,7 @@ pub trait ICamera<F=float> : GetMatrix<F,4,4> where F:Float
     fn have_depth(&self) -> bool;
     //fn viewport(&self) -> Option<Rect2P>;
 
-    fn to_camera(&self) -> CameraOf<F> { CameraOf { matrix: self.matrix(), depth: self.have_depth() }}
+    fn camera(&self) -> CameraOf<F> { CameraOf { matrix: self.matrix(), depth: self.have_depth() }}
 
     /* 
     fn push(&self) where Camera : CastFrom<CameraOf<F>>, Self:Sized
@@ -60,13 +60,14 @@ pub struct CameraPerspectiveOf<F> where F:Float
     pub znear: F,
     pub zfar: F,
 }
+/* 
 impl<F> Default for CameraPerspectiveOf<F> where F:Float
 {
     fn default() -> Self 
     {
         Self { aspect: (16. / 9.).cast_into(), fovy: AngleOf::from_degree(F::cast_from(45.)), znear: F::cast_from(0.1), zfar: F::cast_from(100.0) }
     }
-}
+}*/
 impl<F> From<CameraPerspectiveOf<F>> for Matrix4<F> where F:Float
 {
     // Based on https://docs.rs/cgmath/latest/src/cgmath/projection.rs.html#108
@@ -142,8 +143,6 @@ pub struct CameraOf<F>
 {
     pub matrix : Matrix4<F>,
     pub depth : bool,
-    //pub viewport: Option<Rect2P>,
-    //pub clip    : Option<Rect2P>,
 }
 impl<T> CompositeGeneric for CameraOf<T>
 {

@@ -9,6 +9,7 @@ use hexga_engine::prelude::*;
 pub struct MyApp
 {
     dpad: BindingDpad,
+    nb_split: float,
     camera: Camera3D,
     time: Time,
 }
@@ -22,6 +23,7 @@ impl Default for MyApp
         Self 
         {
             dpad: binding, 
+            nb_split : 3.,
             time: ___(),
             camera: Camera3D
             { 
@@ -75,14 +77,51 @@ impl App for MyApp
             camera.position = camera.target - (forward - right * speed).normalized() * forward_mag;
         }
 
+
+
+
+
+
+
+        let nb_split_inc = 0.25;
+        if KeyCode::N.is_pressed() { self.nb_split += nb_split_inc; }
+        if KeyCode::B.is_pressed() { self.nb_split -= nb_split_inc; }
+
         self.time += dt;
     }
 
     fn draw(&mut self)
     {
-        let a : Vec2 = Ctx.window_size().to_vector();
-        self.camera.perspective.aspect = a.x / a.y;
-        Pen.set_matrix(self.camera.matrix());
+        //let a : Vec2 = Ctx.window_size().to_vector();
+        //dbg!(self.nb_split);
+
+        //for r in Pen.viewport().split_x(self.nb_split) //.split_max(2.)
+        for r in Pen.viewport().split_x(self.nb_split) //.split_max(2.)
+        {
+            //dbg!(r);
+            //r.move_x(1.);
+            Pen.set_viewport(r);
+            self.camera.perspective.aspect = r.size.x / r.size.y;
+            Pen.set_matrix(self.camera.matrix());
+
+            Pen.geometry
+            (
+                [
+                    Vertex::new().with_position([-0.0868241, 0.49240386, 0.0].into()).with_color(GpuColor::RED),
+                    Vertex::new().with_position([-0.49513406, 0.06958647, 0.0].into()).with_color(GpuColor::GREEN),
+                    Vertex::new().with_position([-0.21918549, -0.44939706, 0.0].into()).with_color(GpuColor::BLUE),
+                    Vertex::new().with_position([0.35966998, -0.3473291, 0.0].into()).with_color(GpuColor::BLUE),
+                    Vertex::new().with_position([0.44147372, 0.2347359, 0.0].into()).with_color(GpuColor::GREEN),
+                ],
+                [
+                    0, 1, 4, 1, 2, 4, 2, 3, 4
+                ]
+            )
+        }
+        //for i in Pen.viewport().spl
+
+        //Pen.set_param(param);
+
 
         //Pen.rot_z(self.time.s().degree() * 50.);
         //Cam.rot_z(self.time.s().degree() * 50.);
@@ -97,19 +136,9 @@ impl App for MyApp
         );
         */
 
-        Pen.geometry
-        (
-            [
-                Vertex::new().with_position([-0.0868241, 0.49240386, 0.0].into()).with_color(GpuColor::RED),
-                Vertex::new().with_position([-0.49513406, 0.06958647, 0.0].into()).with_color(GpuColor::GREEN),
-                Vertex::new().with_position([-0.21918549, -0.44939706, 0.0].into()).with_color(GpuColor::BLUE),
-                Vertex::new().with_position([0.35966998, -0.3473291, 0.0].into()).with_color(GpuColor::BLUE),
-                Vertex::new().with_position([0.44147372, 0.2347359, 0.0].into()).with_color(GpuColor::GREEN),
-            ],
-            [
-                0, 1, 4, 1, 2, 4, 2, 3, 4
-            ]
-        )
+        let x = 42;
+
+
     }
 }
 
