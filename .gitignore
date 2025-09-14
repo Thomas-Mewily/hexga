@@ -2,6 +2,6 @@
 /.vscode
 /.VSCodeCounter
 /.idea
-/.out
+/out
 .icarukTime.json
 share_crate/name_2_reserve.md
