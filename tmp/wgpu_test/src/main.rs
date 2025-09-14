@@ -5,32 +5,9 @@
 use std::ops::Deref;
 use hexga_engine::prelude::*;
 
-#[io]
-#[derive(Clone, PartialEq, Hash, Debug)]
-pub struct DpadBinding {
-    up: Binding,
-    down: Binding,
-    left: Binding,
-    right: Binding,
-}
-
-impl Default for DpadBinding
-{
-    fn default() -> Self 
-    {
-        Self 
-        { 
-            up: Binding::from(KeyCode::Up).or(KeyCode::W), 
-            down: Binding::from(KeyCode::Down).or(KeyCode::S), 
-            left: Binding::from(KeyCode::Left).or(KeyCode::A), 
-            right: Binding::from(KeyCode::Right).or(KeyCode::D) 
-        }
-    }
-}
-
 pub struct MyApp
 {
-    dpad: DpadBinding,
+    dpad: BindingDpad,
     camera: Camera3D,
     time: Time,
 }
@@ -97,20 +74,12 @@ impl App for MyApp
             camera.position = camera.target - (forward - right * speed).normalized() * forward_mag;
         }
 
-        //dbg!(Input.keyboard.keys().down().to_vec());
-        //let pressed = Input.keyboard.keys().pressed().to_vec();
-        //let released = Input.keyboard.keys().released().to_vec();
-
-        //if(pressed.is_not_empty()) { dbg!(pressed); }
-        //if(released.is_not_empty()) { dbg!(released); }
         self.time += dt;
     }
 
     fn draw(&mut self)
     {
-        //info!("nb fps: {}", Perf.fps());
-
-        let a : Vec2 = tmp_surface_size().cast_into();
+        let a : Vec2 = Ctx.window_size().to_vector();
         self.camera.perspective.aspect = a.x / a.y;
         Pen.set_matrix(self.camera.matrix());
 

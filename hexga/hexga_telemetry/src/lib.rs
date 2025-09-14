@@ -1,6 +1,7 @@
-use hexga_utils::prelude::*;
+//use hexga_utils::prelude::*;
 
 
+/* 
 pub struct Telemetry;
 
 impl ScopedWith<&'static str> for Telemetry
@@ -14,3 +15,4 @@ impl ScopedWith<&'static str> for Telemetry
         
     }
 }
+*/

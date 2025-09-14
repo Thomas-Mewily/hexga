@@ -45,7 +45,7 @@ thread_local! {
 }
 
 singleton_access!(
-    Gpu,
+    pub(crate) Gpu,
     ContextGpu,
     { 
         CONTEXT_GPU.with(|ctx_cell| {

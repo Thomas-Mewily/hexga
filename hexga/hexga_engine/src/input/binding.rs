@@ -242,3 +242,31 @@ impl IUsedFlag for KeyBinding
     fn set_used(&mut self, used: bool) -> &mut Self { Input.keyboard.key_manager_mut(self.repeat).set_key_used(self.code, used); self }
 }
 */
+
+
+
+
+
+#[io]
+#[derive(Clone, PartialEq, Hash, Debug)]
+pub struct BindingDpad 
+{
+    pub up: Binding,
+    pub down: Binding,
+    pub left: Binding,
+    pub right: Binding,
+}
+
+impl Default for BindingDpad
+{
+    fn default() -> Self 
+    {
+        Self 
+        { 
+            up: Binding::from(KeyCode::Up).or(KeyCode::W), 
+            down: Binding::from(KeyCode::Down).or(KeyCode::S), 
+            left: Binding::from(KeyCode::Left).or(KeyCode::A), 
+            right: Binding::from(KeyCode::Right).or(KeyCode::D) 
+        }
+    }
+}

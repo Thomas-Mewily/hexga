@@ -6,7 +6,7 @@ use super::*;
 pub type KeyEvolution = Evolution<ButtonState>;
 
 singleton_access!(
-    Keyboard,
+    pub Keyboard,
     ContextKeyboard,
     { Ctx::try_as_ref().map(|ctx| &ctx.input.keyboard) },
     { Ctx::try_as_mut().map(|ctx| &mut ctx.input.keyboard) }

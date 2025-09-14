@@ -1,13 +1,6 @@
 use super::*;
 
 
-#[deprecated]
-pub fn tmp_surface_size() -> Point2
-{
-    let s = &Gpu.surface.surface_config;
-    point2(s.width as _, s.height as _)
-}
-
 pub struct GpuSurface
 {
     surface: wgpu::Surface<'static>,
@@ -233,8 +226,9 @@ impl ContextGpu
 
 impl ScopedDraw for ContextGpu
 {
-    fn begin_draw(&mut self) {
-        self.pen.begin_draw();
+    fn begin_draw(&mut self, param: ScopedDrawParam) 
+    {
+        self.pen.begin_draw(param);
     }
 
     fn end_draw(&mut self) 
@@ -283,7 +277,7 @@ impl ContextGpu
 
             for dc in self.pen.draw_calls.iter()
             {
-                self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.camera.matrix().as_u8_slice());
+                self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.param.camera.matrix().as_u8_slice());
 
                 let (vertices_begin, vertices_len) = (dc.vertices_begin, dc.vertices_len);
                 let vertices_end = dc.vertices_begin+dc.vertices_len;

@@ -55,12 +55,12 @@ pub trait SingletonInit: SingletonRef + SingletonMut
 
 #[macro_export]
 macro_rules! singleton_thread_local {
-    ($(#[$attr:meta])* $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
         thread_local! {
             pub(crate) static $constant_static_name: std::cell::RefCell<Option<$target>> = std::cell::RefCell::new(None);
         }
 
-        $crate::singleton_access!($(#[$attr])* $wrapper, $target,
+        $crate::singleton_access!($(#[$attr])* $vis $wrapper, $target,
             {
                 $constant_static_name.with(|ctx_cell| {
                     if let Some(rc_ctx) = ctx_cell.borrow().as_ref() {
@@ -88,9 +88,12 @@ macro_rules! singleton_thread_local {
 
 #[macro_export]
 macro_rules! singleton_access {
-    ($(#[$attr:meta])* $wrapper:ident, $target:ty, $try_as_ref:block, $try_as_mut:block) => {
+    (
+        $(#[$attr:meta])* $vis:vis $wrapper:ident, 
+        $target:ty, $try_as_ref:block, $try_as_mut:block
+    ) => {
         $(#[$attr])*
-        pub struct $wrapper;
+        $vis struct $wrapper;
 
         impl SingletonRef for $wrapper {
             type Target = $target;
@@ -100,14 +103,12 @@ macro_rules! singleton_access {
             }
         }
 
-        impl ::std::ops::Deref for $wrapper 
-        {
+        impl ::std::ops::Deref for $wrapper {
             type Target = $target;
             fn deref(&self) -> &Self::Target { Self::as_ref() }
         }
 
-        impl SingletonMut for $wrapper 
-        {
+        impl SingletonMut for $wrapper {
             fn try_as_mut() -> Option<&'static mut <Self as SingletonRef>::Target> { $try_as_mut }
         }
 

@@ -4,9 +4,9 @@ use super::*;
 pub trait ICamera<F=float> : GetMatrix<F,4,4> where F:Float
 {
     fn have_depth(&self) -> bool;
-    fn viewport(&self) -> Option<Rect2P>;
+    //fn viewport(&self) -> Option<Rect2P>;
 
-    fn to_camera(&self) -> CameraOf<F> { CameraOf { matrix: self.matrix(), depth: self.have_depth(), viewport: self.viewport() }}
+    fn to_camera(&self) -> CameraOf<F> { CameraOf { matrix: self.matrix(), depth: self.have_depth() }}
 
     /* 
     fn push(&self) where Camera : CastFrom<CameraOf<F>>, Self:Sized
@@ -133,7 +133,6 @@ impl<F> Camera3DOf<F> where F:Float
 impl<F> ICamera<F> for Camera3DOf<F> where F:Float
 {
     fn have_depth(&self) -> bool { true }
-    fn viewport(&self) -> Option<Rect2P> { self.viewport }
 }
 
 pub type Camera = CameraOf<float>;
@@ -141,17 +140,19 @@ pub type Camera = CameraOf<float>;
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct CameraOf<F>
 {
-    pub matrix  : Matrix4<F>,
-    pub depth   : bool,
-    pub viewport: Option<Rect2P>,
+    pub matrix : Matrix4<F>,
+    pub depth : bool,
+    //pub viewport: Option<Rect2P>,
+    //pub clip    : Option<Rect2P>,
 }
 impl<T> CompositeGeneric for CameraOf<T>
 {
     type WithType<T2> = CameraOf<T2>;
     type Inside=T;
 
-    fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
-        Self::WithType { matrix: self.matrix.map(f), depth: self.depth, viewport: self.viewport }
+    fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 
+    {
+        Self::WithType { matrix: self.matrix.map(f), depth: self.depth }
     }
 }
 
@@ -194,14 +195,13 @@ impl<F> SetMatrix<F,4,4> for CameraOf<F> where F: Float
 
 impl<F> CameraOf<F> where F: Float
 {
-    pub const CAMERA_2D : Self = Self { matrix: Matrix4::IDENTITY, depth: false, viewport: None };
-    pub const CAMERA_3D : Self = Self { matrix: Matrix4::IDENTITY, depth: true, viewport: None };
+    pub const CAMERA_2D : Self = Self { matrix: Matrix4::IDENTITY, depth: false };
+    pub const CAMERA_3D : Self = Self { matrix: Matrix4::IDENTITY, depth: true };
 
     pub fn new() -> Self { Self::___() }
 
     pub fn with_matrix(self, matrix: Matrix4<F>) -> Self { Self { matrix, ..self }}
     pub fn with_depth(self, depth: bool) -> Self { Self { depth, ..self }}
-    pub fn with_viewport(self, viewport: Option<Rect2P>) -> Self { Self { viewport, ..self }}
 }
 impl<F> Default for CameraOf<F> where F: Float
 {
@@ -210,5 +210,4 @@ impl<F> Default for CameraOf<F> where F: Float
 impl<F> ICamera<F> for CameraOf<F> where F: Float
 {
     fn have_depth(&self) -> bool { self.depth }
-    fn viewport(&self) -> Option<Rect2P> { self.viewport }
 }

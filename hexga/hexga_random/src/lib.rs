@@ -28,7 +28,7 @@ impl Rng
 */
 
 //FIXME: Should deref on `&dyn RandomSource`, not `&Box<dyn RandomSource>`
-singleton_thread_local!(Rng,Box<dyn RandomSource>,CONTEXT_RNG);
+singleton_thread_local!(pub Rng,Box<dyn RandomSource>,CONTEXT_RNG);
 
 
 impl RandomSource for Rng

@@ -1,6 +1,6 @@
 use super::*;
 
-singleton_thread_local!(Ctx,Context,CONTEXT_APP);
+singleton_thread_local!(pub Ctx,Context,CONTEXT_APP);
 
 impl SingletonInit for Ctx
 {

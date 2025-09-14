@@ -8,11 +8,25 @@ pub(crate) type ContextWinit = Arc<WinitWindow>;
 #[derive(Default)]
 pub struct Context
 {
-    pub(crate) winit: Option<ContextWinit>,
-    pub(crate) perf : ContextPerformance,
+    pub(crate) window: Option<ContextWinit>,
+    pub(crate) perf  : ContextPerformance,
     pub(crate) input : ContextInput,
 }
 
+impl Context
+{
+    /// Return the size of the drawable region in the current window
+    /// 
+    /// Each axis of the returned vector is >= 1
+    pub fn window_size(&self) -> Point2
+    {
+        self.window.as_ref().map(|w| 
+            {
+                let size = w.inner_size();
+                point2(size.width as _, size.height as _).max(one())
+            }).unwrap_or(one())
+    }
+}
 
 impl ScopedSuspended for Context
 {
@@ -41,10 +55,10 @@ impl ScopedUpdate for Context
 
 impl ScopedDraw for Context
 {
-    fn begin_draw(&mut self) 
+    fn begin_draw(&mut self, param: ScopedDrawParam) 
     { 
-        Gpu.begin_draw();
-        Perf.begin_draw();
+        Gpu.begin_draw(param);
+        Perf.begin_draw(param);
     }
     fn end_draw(&mut self) 
     { 

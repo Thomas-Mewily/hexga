@@ -1,7 +1,7 @@
 use super::*;
 
 singleton_access!(
-    Input,
+    pub Input,
     ContextInput,
     { Ctx::try_as_ref().map(|ctx| &ctx.input) },
     { Ctx::try_as_mut().map(|ctx| &mut ctx.input) }
@@ -12,6 +12,11 @@ singleton_access!(
 pub struct ContextInput
 {
     pub(crate) keyboard: ContextKeyboard,
+}
+
+impl ContextInput
+{
+    pub fn keyboard(&mut self) -> &mut ContextKeyboard { &mut self.keyboard }
 }
 
 impl ScopedSuspended for ContextInput

@@ -1,7 +1,7 @@
 use super::*;
 
 singleton_access!(
-    Pen,
+    pub Pen,
     ContextPen,
     { Gpu::try_as_ref().map(|gpu| &gpu.pen) },
     { Gpu::try_as_mut().map(|gpu| &mut gpu.pen) }
@@ -10,19 +10,21 @@ singleton_access!(
 
 impl ScopedDraw for ContextPen
 {
-    fn begin_draw(&mut self) 
+    fn begin_draw(&mut self, param: ScopedDrawParam) 
     {
         self.big_mesh.clear();
         self.draw_calls.clear();
 
-        assert_eq!(self.cameras.len(), 1, "Forget to pop a camera");
-        self.cameras.replace(self.default_cam);
+        assert_eq!(self.params.len(), 1, "Forget to pop a camera");
+
+        let rectangle = param.window_size.to_rect();
+        self.params.replace(DrawCallParam { camera: self.default_cam, viewport: rectangle, clip: rectangle });
     }
 
     fn end_draw(&mut self) 
     {
         self.update_last_draw_call();
-        assert_eq!(self.cameras.len(), 1, "Forget to pop a camera");
+        assert_eq!(self.params.len(), 1, "Forget to pop a camera");
     }
 }
 
@@ -31,10 +33,18 @@ pub trait DynCamera : Futurable + ICamera + Debug {}
 impl<T> DynCamera for T where T: Futurable + ICamera + Debug  {}
 */
 
+#[derive(Clone, Copy, PartialEq, Debug, Default)]
+pub struct DrawCallParam
+{
+    pub camera  : Camera,
+    pub viewport: Rect2P,
+    pub clip    : Rect2P,
+}
+
 #[derive(Debug, Clone)]
 pub struct ContextPen
 {
-    pub(crate) cameras: NonEmptyStack<Camera>,
+    pub(crate) params: NonEmptyStack<DrawCallParam>,
     pub(crate) default_cam : Camera,
 
     pub(crate) big_mesh  : MeshBuilder,
@@ -43,55 +53,54 @@ pub struct ContextPen
 
 impl ContextPen
 {
-    pub fn new(default_cam : Camera) -> Self 
+    pub fn new(camera : Camera) -> Self 
     {
-        Self { cameras: NonEmptyStack::new(default_cam), default_cam, big_mesh: ___(), draw_calls: ___() }
+        Self { params: NonEmptyStack::new(DrawCallParam{camera, ..___()}), default_cam: camera, big_mesh: ___(), draw_calls: ___() }
     }
 }
 
 impl ICamera for ContextPen
 {
-    fn have_depth(&self) -> bool { self.cameras.have_depth() }
-    fn viewport(&self) -> Option<Rect2P> { self.cameras.viewport() }
+    fn have_depth(&self) -> bool { self.params.camera.have_depth() }
 }
 impl GetPosition for ContextPen
 {
-    fn pos(&self) -> Vec3 { self.cameras.pos() }
+    fn pos(&self) -> Vec3 { self.params.camera.pos() }
 }
 impl SetPosition for ContextPen
 {
-    fn set_pos(&mut self, pos : Vec3) -> &mut Self { self.cameras.set_pos(pos); self.apply_cam(); self }
+    fn set_pos(&mut self, pos : Vec3) -> &mut Self { self.params.camera.set_pos(pos); self.apply_cam(); self }
 }
 impl GetScale for ContextPen
 {
-    fn scale(&self) -> Vec3 { self.cameras.scale() }
+    fn scale(&self) -> Vec3 { self.params.camera.scale() }
 }
 impl SetScale for ContextPen
 {
-    fn set_scale(&mut self, scale : Vec3) -> &mut Self { self.cameras.set_scale(scale); self.apply_cam(); self }
+    fn set_scale(&mut self, scale : Vec3) -> &mut Self { self.params.camera.set_scale(scale); self.apply_cam(); self }
 }
 impl RotateX for ContextPen
 {
-    fn rotate_x(&mut self, angle : Angle) -> &mut Self { self.cameras.rotate_x(angle); self.apply_cam(); self }
+    fn rotate_x(&mut self, angle : Angle) -> &mut Self { self.params.camera.rotate_x(angle); self.apply_cam(); self }
 }
 impl RotateY for ContextPen
 {
-    fn rotate_y(&mut self, angle : Angle) -> &mut Self { self.cameras.rotate_y(angle); self.apply_cam(); self }
+    fn rotate_y(&mut self, angle : Angle) -> &mut Self { self.params.camera.rotate_y(angle); self.apply_cam(); self }
 }
 impl RotateZ for ContextPen
 {
-    fn rotate_z(&mut self, angle : Angle) -> &mut Self { self.cameras.rotate_z(angle); self.apply_cam(); self }
+    fn rotate_z(&mut self, angle : Angle) -> &mut Self { self.params.camera.rotate_z(angle); self.apply_cam(); self }
 }
 impl GetMatrix for ContextPen
 {
     fn matrix(&self) -> Mat4 {
-        self.cameras.matrix()
+        self.params.camera.matrix()
     }
 }
 impl SetMatrix for ContextPen
 {
     fn set_matrix(&mut self, matrix : Mat4) -> &mut Self {
-        self.cameras.set_matrix(matrix); self.apply_cam(); self
+        self.params.camera.set_matrix(matrix); self.apply_cam(); self
     }
 }
 
@@ -105,9 +114,9 @@ impl ContextPen
         self.draw_calls.vertices_len =  mesh.nb_vertex() - self.draw_calls.vertices_begin;
     }
 
-    pub(crate) fn new_draw_call_if_needed(&mut self, camera: Camera)
+    pub fn set_param(&mut self, param: DrawCallParam)
     {
-        if self.draw_calls.camera == camera { return; }
+        if self.draw_calls.param == param { return; }
 
         self.update_last_draw_call();
 
@@ -120,11 +129,12 @@ impl ContextPen
             draw_call.vertices_len = 0;
             self.draw_calls.push(draw_call);
         }
-        self.draw_calls.camera = camera;
+        self.draw_calls.param = param;
     }
+
     pub(crate) fn apply_cam(&mut self)
     {
-        self.new_draw_call_if_needed(self.cameras.to_camera());
+        self.set_param(DrawCallParam { camera: self.params.camera.to_camera(), ..self.draw_calls.last().param });
     }
 }
 impl IMeshBuilder for ContextPen
@@ -167,7 +177,7 @@ pub struct GpuDrawCall
     pub(crate) indices_begin: usize,
     pub(crate) indices_len: usize,
 
-    pub(crate) camera: Camera,
+    pub(crate) param: DrawCallParam,
     // add texture here
 }
 impl GpuDrawCall

@@ -61,7 +61,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent<A::UserEvent>> f
 {
     fn resumed(&mut self, event_loop: &EventLoopActive) 
     {
-        if self.ctx.winit.is_none() 
+        if self.ctx.window.is_none() 
         {
             #[allow(unused_mut)]
             let mut win_attr = WinitWindow::default_attributes().with_title("wgpu winit example");
@@ -77,7 +77,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent<A::UserEvent>> f
                     .create_window(win_attr)
                     .expect("create window err."),
             );
-            self.ctx.winit = Some(window.clone());
+            self.ctx.window = Some(window.clone());
             ContextGpu::request(window, self.proxy.clone()).unwrap();
             Ctx.resumed();
         }
@@ -90,7 +90,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent<A::UserEvent>> f
             AppInternalEvent::ContextGpu(context_wgpu) => 
             {
                 Gpu::replace(Some(context_wgpu.unwrap()));
-                self.ctx.winit.as_ref().map(|w| w.request_redraw());
+                self.ctx.window.as_ref().map(|w| w.request_redraw());
             },
         }
     }
@@ -109,7 +109,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent<A::UserEvent>> f
         {
             WinitWindowEvent::CloseRequested =>  { event_loop.exit(); }
             WinitWindowEvent::Resized(new_size) => {
-                if let Some(window) = self.ctx.winit.as_ref()
+                if let Some(window) = self.ctx.window.as_ref()
                 {
                     Gpu.resize([new_size.width as _, new_size.height as _].into());
                     window.request_redraw();
@@ -143,7 +143,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent<A::UserEvent>> f
 
     fn new_events(&mut self, event_loop: &EventLoopActive, cause: WinitStartCause) {
         // FIXME: The draw() should not be here
-        Ctx.winit.as_mut().map(|window| window.request_redraw());
+        Ctx.window.as_mut().map(|window| window.request_redraw());
     }
 
     fn exiting(&mut self, event_loop: &EventLoopActive) 
@@ -182,6 +182,12 @@ impl<A> AppRunner<A> where A:App
 
     pub fn draw(&mut self)
     {
-        Ctx.scoped_draw(|| { self.app.handle_event(AppEvent::Draw); });
+        Ctx.scoped_draw(
+            ScopedDrawParam{ window_size: Ctx.window_size() },
+            || 
+            { 
+                self.app.handle_event(AppEvent::Draw); 
+            }
+        );
     }
 }

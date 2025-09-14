@@ -1,7 +1,7 @@
 use super::*;
 
 singleton_access!(
-    Perf,
+    pub Perf,
     ContextPerformance,
     { Ctx::try_as_ref().map(|ctx| &ctx.perf) },
     { Ctx::try_as_mut().map(|ctx| &mut ctx.perf) }
@@ -32,7 +32,7 @@ impl ScopedUpdate for ContextPerformance
 
 impl ScopedDraw for ContextPerformance
 {
-    fn begin_draw(&mut self) { self.fps.count(); }
+    fn begin_draw(&mut self, param: ScopedDrawParam) { self.fps.count(); }
     fn end_draw(&mut self) { }
 }
 
