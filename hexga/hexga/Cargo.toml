@@ -35,8 +35,8 @@ hexga_io = ["dep:hexga_io", "serde",
   "hexga_generational/hexga_io",
   "hexga_math/hexga_io",
   "hexga_graphics/hexga_io",
-  #"hexga_bitflags/hexga_io",
-  #"hexga_ansi_color/hexga_io"
+  "hexga_bitflags/hexga_io",
+  "hexga_ansi_color/hexga_io"
 ]
 
 serde = ["dep:serde",

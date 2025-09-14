@@ -57,7 +57,7 @@ impl<A> AppRunner<A> where A:App
     pub fn new(app : A, ctx : &'static mut Context, proxy : EvLoopProxy<A::UserEvent>) -> Self { Self { app, ctx, proxy, last_update: Time::since_launch() }}
 }
 
-impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> where A:App
+impl<A> winit::application::ApplicationHandler<AppInternalEvent<A::UserEvent>> for AppRunner<A> where A:App
 {
     fn resumed(&mut self, event_loop: &EventLoopActive) 
     {
@@ -79,14 +79,15 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
             );
             self.ctx.winit = Some(window.clone());
             ContextGpu::request(window, self.proxy.clone()).unwrap();
+            Ctx.resumed();
         }
     }
 
-    fn user_event(&mut self, event_loop: &EventLoopActive, event: AppInternalMessage<A::UserEvent>) {
+    fn user_event(&mut self, event_loop: &EventLoopActive, event: AppInternalEvent<A::UserEvent>) {
         match event
         {
-            AppInternalMessage::Message(app_message) => {},
-            AppInternalMessage::ContextGpu(context_wgpu) => 
+            AppInternalEvent::Event(app_message) => {},
+            AppInternalEvent::ContextGpu(context_wgpu) => 
             {
                 Gpu::replace(Some(context_wgpu.unwrap()));
                 self.ctx.winit.as_ref().map(|w| w.request_redraw());
@@ -97,43 +98,61 @@ impl<A> ApplicationHandler<AppInternalMessage<A::UserEvent>> for AppRunner<A> wh
     fn window_event(
         &mut self,
         event_loop: &EventLoopActive,
-        window_id: winit::window::WindowId,
-        event: WindowEvent,
+        window_id: WinitWindowID,
+        event: WinitWindowEvent,
     ) 
     {
         if !Gpu::is_init() { return; }
 
+
         match event 
         {
-            WindowEvent::CloseRequested =>  { event_loop.exit(); }
-            WindowEvent::Resized(new_size) => {
+            WinitWindowEvent::CloseRequested =>  { event_loop.exit(); }
+            WinitWindowEvent::Resized(new_size) => {
                 if let Some(window) = self.ctx.winit.as_ref()
                 {
                     Gpu.resize([new_size.width as _, new_size.height as _].into());
                     window.request_redraw();
                 }
             }
-            WindowEvent::RedrawRequested => self.draw(),
-            WindowEvent::KeyboardInput { device_id, event, is_synthetic } => 
+            WinitWindowEvent::RedrawRequested => self.draw(),
+            WinitWindowEvent::KeyboardInput { device_id, event, is_synthetic } => 
             {
-                let key = KeyCode::from(event.physical_key);
-                if key == KeyCode::Escape
+                let code = KeyCode::from(event.physical_key);
+                let repeat = if event.repeat { ButtonRepeat::Repeated } else { ButtonRepeat::NotRepeated };
+                let state = if event.state.is_pressed() { ButtonState::Down } else { ButtonState::Up };
+                if code == KeyCode::Escape
                 {
                     event_loop.exit();
                 }
-                //Input.keyboard.handle_key(key, if event.state { ButtonRepeat::Repeated } else { ButtonRepeat::NotRepeated }, if event.repeat { ButtonRepeat::Repeated } else { ButtonRepeat::NotRepeated });
+
+                let char: Option<char> = match &event.logical_key {
+                    winit::keyboard::Key::Character(s) if s.chars().count() == 1 => s.chars().next(),
+                    _ => None,
+                };
+                let key = KeyEvent{ code, repeat, state, char };
+                
+                Input.keyboard.handle_key_event(key);
+                self.app.handle_event(AppEvent::Key(key));
+                
+                //self.app.handle_message()
             }
             _ => (),
         }
     }
 
-    fn new_events(&mut self, event_loop: &EventLoopActive, cause: StartCause) {
+    fn new_events(&mut self, event_loop: &EventLoopActive, cause: WinitStartCause) {
         // FIXME: The draw() should not be here
         Ctx.winit.as_mut().map(|window| window.request_redraw());
     }
 
-    fn exiting(&mut self, event_loop: &EventLoopActive) {
+    fn exiting(&mut self, event_loop: &EventLoopActive) 
+    {
         Ctx::destroy();
+    }
+
+    fn suspended(&mut self, event_loop: &EventLoopActive) {
+        Ctx.suspended();
     }
 
     fn about_to_wait(&mut self, event_loop: &EventLoopActive) {
@@ -156,13 +175,13 @@ impl<A> AppRunner<A> where A:App
                 let time = Time::since_launch();
                 let delta_time = time - self.last_update;
                 self.last_update = time;
-                self.app.handle_message(AppMessage::Update(delta_time));
+                self.app.handle_event(AppEvent::Update(delta_time));
             }
         );
     }
 
     pub fn draw(&mut self)
     {
-        Ctx.scoped_draw(|| { self.app.handle_message(AppMessage::Draw); });
+        Ctx.scoped_draw(|| { self.app.handle_event(AppEvent::Draw); });
     }
 }

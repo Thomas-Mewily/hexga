@@ -54,4 +54,3 @@ wgpu = { version = "25.0.0", features = ["webgl"] }
 console_error_panic_hook = "0.1"
 console_log = "1.0"
 wasm-bindgen-futures = "0.4.49"
-web-time = "1.1.0"

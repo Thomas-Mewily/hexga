@@ -1,88 +1,204 @@
+use std::mem;
+
 use super::*;
 
-#[derive(Default, Clone, PartialEq, Debug)]
-pub(crate) struct Keyboard
+
+pub type KeyEvolution = Evolution<ButtonState>;
+
+singleton_access!(
+    Keyboard,
+    ContextKeyboard,
+    { Ctx::try_as_ref().map(|ctx| &ctx.input.keyboard) },
+    { Ctx::try_as_mut().map(|ctx| &mut ctx.input.keyboard) }
+);
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct ContextKeyboard
 {
-    pub(crate) keys : HashMap<KeyCode, KeyStateEntry>,
+    pub(crate) key : KeyCodeManager,
+    pub(crate) key_repeated : KeyCodeManager,
 }
 
-impl Keyboard
+impl Default for ContextKeyboard
 {
-    pub fn handle_key(&mut self, code: KeyCode, state: ButtonState, repeat: ButtonRepeat)
-    {
-        let e = self.keys.entry(code).or_default();
-        e.key_state.state.update(state);
-        e.key_state.repeat = repeat;
+    fn default() -> Self {
+        Self 
+        { 
+            key: KeyCodeManager::new(ButtonRepeat::NotRepeated), 
+            key_repeated: KeyCodeManager::new(ButtonRepeat::Repeated) 
+        }
     }
 }
 
-#[derive(Clone, Copy, PartialEq, PartialOrd, Debug, Default)]
-pub(crate) struct KeyStateEntry
+impl ScopedSuspended for ContextKeyboard
 {
-    key_state : KeyState,
-    used  : bool,
+    fn suspended(&mut self) {
+        self.key.suspended();
+        self.key_repeated.suspended();
+    }
+
+    fn resumed(&mut self) {
+        self.key.resumed();
+        self.key_repeated.resumed();
+    }
 }
-impl IUsedFlag for KeyStateEntry
+
+impl ScopedUpdate for ContextKeyboard
 {
-    fn is_used(&self) -> bool { self.used }
-    fn set_used(&mut self, used: bool) -> &mut Self { self.used = true;  self }
+    fn begin_update(&mut self) 
+    { 
+        self.key.begin_update();
+        self.key_repeated.begin_update();
+    }
+    fn end_update(&mut self) 
+    { 
+        self.key_repeated.end_update();
+        self.key.end_update();
+    }
+}
+
+impl ContextKeyboard
+{
+    pub(crate) fn handle_key_event(&mut self, ev: KeyEvent)
+    {
+        self.key_manager_mut(ev.repeat).handle_event(ev.code, ev.state);
+    }
+
+    pub fn keys(&self) -> &KeyCodeManager { &self.key }
+    pub fn keys_mut(&mut self) -> &mut KeyCodeManager { &mut self.key }
+
+    pub fn keys_repeated(&self) -> &KeyCodeManager { &self.key_repeated }
+    pub fn keys_repeated_mut(&mut self) -> &mut KeyCodeManager { &mut self.key_repeated }
+
+    pub fn key_manager(&self, repeat: ButtonRepeat) -> &KeyCodeManager 
+    {
+        if repeat.is_repeated() { &self.key_repeated } else { &self.key }
+    }
+    pub fn key_manager_mut(&mut self, repeat: ButtonRepeat) -> &mut KeyCodeManager 
+    {
+        if repeat.is_repeated() { &mut self.key_repeated } else { &mut self.key }
+    }
 }
 
 
-pub trait IKeyboard
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct KeyCodeManager
 {
-    fn keys(&self) -> impl Iterator<Item = KeyState>;
-    fn key(&self, code: KeyCode) -> KeyState;
-    fn is_key_used(&mut self, code: KeyCode) -> bool;
-    fn set_key_used(&mut self, code: KeyCode, used: bool);
-}
-impl IKeyboard for Keyboard
-{
-    fn keys(&self) -> impl Iterator<Item = KeyState> { self.keys.values().map(|v| v.key_state) }
-    fn key(&self, code: KeyCode) -> KeyState { self.keys.get(&code).map(|v| v.key_state).unwrap_or_default() }
-    fn is_key_used(&mut self, code: KeyCode) -> bool { self.keys.get(&code).map(|k| k.is_used()).unwrap_or(false) }
-    fn set_key_used(&mut self, code: KeyCode, used: bool) { self.keys.get_mut(&code).map(|k| k.set_used(used)); }
+    pub(crate) repeat  : ButtonRepeat,
+    pub(crate) down    : HashSet<KeyCode>,
+    pub(crate) old_down: HashSet<KeyCode>,
+    pub(crate) pressed : HashSet<KeyCode>,
+    pub(crate) released: HashSet<KeyCode>,
 }
 
-
-#[derive(Clone, Copy, PartialEq, PartialOrd, Debug, Default)]
-pub struct KeyState
+impl KeyCodeManager
 {
-    pub state : Evolution<ButtonState>,
-    pub repeat: ButtonRepeat,
-}
-impl IButtonRepeat for KeyState
-{
-    fn is_repeated(&self) -> bool { self.repeat.is_repeated() }
-    fn is_not_repeated(&self) -> bool { self.repeat.is_not_repeated() }
-}
-impl IEvolution<ButtonState> for KeyState
-{
-    fn value(&self) -> ButtonState { self.state.value() }
-    fn old_value(&self) -> ButtonState { self.state.old_value() }
-    fn last_time_change(&self) -> Time { self.state.last_time_change() }
+    pub fn new(repeat  : ButtonRepeat) -> Self { Self { repeat, down: ___(), old_down: ___(), pressed: ___(), released: ___() }}
 }
 
+impl ScopedSuspended for KeyCodeManager
+{
+    fn suspended(&mut self) {
+        self.old_down.clear();
+        self.down.clear();
+        self.pressed.clear();
+        self.released.clear();
+    }
+
+    fn resumed(&mut self) {
+        self.old_down.clear();
+        self.down.clear();
+        self.pressed.clear();
+        self.released.clear();
+    }
+}
+
+impl ScopedUpdate for KeyCodeManager
+{
+    fn begin_update(&mut self) 
+    {
+
+    }
+
+    fn end_update(&mut self) 
+    {
+        match self.repeat
+        {
+            ButtonRepeat::NotRepeated => 
+            {
+                self.pressed.clear();
+                self.released.clear();
+                self.old_down.clone_from(&self.down);
+            },
+            ButtonRepeat::Repeated => 
+            {
+                std::mem::swap(&mut self.pressed, &mut self.released);
+                self.pressed.clear();
+                std::mem::swap(&mut self.old_down, &mut self.down);
+                self.down.clear();
+            },
+        }
+    }
+}
+
+impl KeyCodeManager
+{
+    pub(crate) fn handle_event(&mut self, code: KeyCode, pressed: ButtonState)
+    {
+        match pressed
+        {
+            ButtonState::Up => 
+            {
+                self.down.remove(&code);
+                self.released.insert(code);
+            },
+            ButtonState::Down =>
+            {
+                if !self.down.contains(&code)
+                {
+                    self.pressed.insert(code);
+                }
+                self.down.insert(code);
+            }
+        }
+    }
+
+    pub fn pressed(&self) -> impl Iterator<Item = KeyCode> { self.pressed.iter().copied() }
+    pub fn released(&self) -> impl Iterator<Item = KeyCode> { self.released.iter().copied() }
+    pub fn down(&self) -> impl Iterator<Item = KeyCode> { self.down.iter().copied() }
+
+    pub fn is_down(&self, code: KeyCode) -> bool { self.button_state(code).is_down() }
+    pub fn is_up(&self, code: KeyCode) -> bool { self.button_state(code).is_up() }
+
+    pub fn was_down(&self, code: KeyCode) -> bool { self.old_button_state(code).is_down() }
+    pub fn was_up(&self, code: KeyCode) -> bool { self.old_button_state(code).is_up() }
+
+    pub fn button_state(&self, code: KeyCode) -> ButtonState { self.down.contains(&code).into() }
+    pub fn old_button_state(&self, code: KeyCode) -> ButtonState { self.old_down.contains(&code).into() }
+
+    pub fn evolution(&self, code: KeyCode) -> KeyEvolution { KeyEvolution::new(self.button_state(code), self.old_button_state(code)) }
+}
 
 
 impl KeyCode
 {
-    pub fn state(self) -> KeyState { Input.key(self) }
-}
-impl IUsedFlag for KeyCode
-{
-    fn is_used(&self) -> bool { Input.is_key_used(*self) }
-    fn set_used(&mut self, used: bool) -> &mut Self { Input.set_key_used(*self, used); self }
+    pub fn evolution(&self) -> KeyEvolution
+    {
+        KeyBinding::from(*self).evolution()
+    }
 }
 impl IEvolution<ButtonState> for KeyCode
 {
-    fn value(&self) -> ButtonState { self.state().value() }
-    fn old_value(&self) -> ButtonState { self.state().old_value() }
-    fn last_time_change(&self) -> Time { self.state().last_time_change() }
+    fn value(&self) -> ButtonState { self.evolution().value() }
+    fn old_value(&self) -> ButtonState { self.evolution().old_value()  }
+    fn evolution(&self) -> Evolution<ButtonState> { self.evolution() }
 }
-impl IButtonRepeat for KeyCode
+
+/* 
+impl IUsedFlag for KeyCode
 {
-    fn is_repeated(&self) -> bool { self.state().is_repeated() }
+    fn is_used(&self) -> bool { KeyBinding::from(*self).is_used() }
+    fn set_used(&mut self, used: bool) -> &mut Self { KeyBinding::from(*self).set_used(used); self }
 }
-
-
+    */

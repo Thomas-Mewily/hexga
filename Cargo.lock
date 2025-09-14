@@ -977,7 +977,6 @@ dependencies = [
  "log",
  "serde",
  "wasm-bindgen-futures",
- "web-time",
  "wgpu",
  "winit",
 ]
@@ -1045,6 +1044,7 @@ dependencies = [
  "hexga_typedef",
  "rayon",
  "serde",
+ "web-time",
 ]
 
 [[package]]

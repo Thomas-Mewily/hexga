@@ -3,6 +3,12 @@ use super::*;
 
 // Wrapper arround Scoped, but non public
 
+
+pub(crate) trait ScopedSuspended
+{
+    fn suspended(&mut self);
+    fn resumed(&mut self);
+}
 pub(crate) trait ScopedDraw
 {
     fn begin_draw(&mut self);

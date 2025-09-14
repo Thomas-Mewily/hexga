@@ -61,16 +61,14 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 
 
 pub mod array;
-pub mod angle;
 pub mod convert;
-pub mod grid;
-pub mod matrix;
 pub mod number;
 pub mod range;
-pub mod rectangle;
-pub mod transform;
 pub mod utils;
-pub mod vector;
+mod geometry;
+use geometry::*;
+
+
 pub use hexga_typedef as typedef;
 pub mod map_on;
 pub mod unit;
@@ -78,17 +76,12 @@ pub mod unit;
 use prelude::*;
 pub mod prelude
 {
-    pub use crate::array::*;
-    pub use crate::angle::*;
-    pub use crate::grid::*;
-    pub use crate::matrix::*;
-    pub use crate::number::*;
-    pub use crate::range::*;
-    pub use crate::rectangle::*;
-    pub use crate::transform::*;
-    pub use crate::typedef::*;
-    pub use crate::utils::*;
-    pub use crate::vector::*;
+    pub use super::geometry::prelude::*;
+    pub use super::array::*;
+    pub use super::number::*;
+    pub use super::range::*;
+    pub use super::typedef::*;
+    pub use super::utils::*;
     pub use super::convert::*;
     pub use super::map_on::*;
     pub use super::unit::*;

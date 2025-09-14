@@ -1,13 +1,10 @@
 use super::*;
 
-use winit::{
-    application::ApplicationHandler,
-    event::*,
-};
+pub(crate) type WinitKeyEvent = winit::event::KeyEvent;
 
 
-pub(crate) type EvLoopProxy<U> = EventLoopProxy<AppInternalMessage<U>>;
-pub(crate) type EvLoop<U> = EventLoop<AppMessage<U>> ;
+pub(crate) type EvLoopProxy<U> = EventLoopProxy<AppInternalEvent<U>>;
+pub(crate) type EvLoop<U> = EventLoop<AppEvent<U>> ;
 
 pub(crate) type WinitWindow = winit::window::Window;
 pub(crate) type WinitKeyCode = winit::keyboard::KeyCode;
@@ -16,10 +13,13 @@ pub(crate) type WinitKeyNativeCode = winit::keyboard::NativeKeyCode;
 pub(crate) type EventLoopActive = winit::event_loop::ActiveEventLoop;
 pub(crate) type EventLoop<T> = winit::event_loop::EventLoop<T>;
 pub(crate) type EventLoopProxy<T> = winit::event_loop::EventLoopProxy<T>;
+pub(crate) type WinitWindowEvent = winit::event::WindowEvent;
+pub(crate) type WinitWindowID = winit::window::WindowId;
+pub(crate) type WinitStartCause = winit::event::StartCause;
 
 
-mod message;
-pub use message::*;
+mod event;
+pub use event::*;
 
 mod futur;
 pub use futur::*;
@@ -33,18 +33,22 @@ pub trait App : 'static
 {
     type UserEvent : IUserEvent;
 
-    fn handle_message(&mut self, message: AppMessage<Self::UserEvent>) { self.dispatch_message(message); }
-    fn dispatch_message(&mut self, message: AppMessage<Self::UserEvent>)
+    fn handle_event(&mut self, event: AppEvent<Self::UserEvent>) { self.dispatch_event(event); }
+    fn dispatch_event(&mut self, event: AppEvent<Self::UserEvent>)
     {
-        match message
+        match event
         {
-            AppMessage::UserEvent(msg) => self.user_message(msg),
-            AppMessage::Update(dt) => self.update(dt),
-            AppMessage::Draw => self.draw(),
+            AppEvent::User(msg) => self.event_user(msg),
+            AppEvent::Update(dt) => self.update(dt),
+            AppEvent::Draw => self.draw(),
+            AppEvent::Key(key_event) => self.event_key(key_event),
+            AppEvent::Unknow => {},
         }
     }
 
-    fn user_message(&mut self, msg: Self::UserEvent) { let _ = msg; }
+    fn event_key(&mut self, key_event:KeyEvent) { let _ = key_event; }
+    fn event_user(&mut self, msg: Self::UserEvent) { let _ = msg; }
+
     fn update(&mut self, dt: DeltaTime) { let _ = dt; }
     fn draw(&mut self) {}
 }

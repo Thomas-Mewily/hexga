@@ -11,19 +11,33 @@ singleton_access!(
 #[derive(Default, Clone, PartialEq, Debug)]
 pub struct ContextInput
 {
-    pub(crate) keyboard: Keyboard,
+    pub(crate) keyboard: ContextKeyboard,
+}
+
+impl ScopedSuspended for ContextInput
+{
+    fn suspended(&mut self) {
+        self.keyboard.suspended();
+    }
+
+    fn resumed(&mut self) {
+        self.keyboard.resumed();
+    }
+}
+
+impl ScopedUpdate for ContextInput
+{
+    fn begin_update(&mut self) 
+    { 
+        self.keyboard.begin_update();
+    }
+    fn end_update(&mut self) 
+    { 
+        self.keyboard.end_update();
+    }
 }
 
 impl ContextInput
 {
     //pub(crate) fn handle_window_event(&mut self) 
-}
-
-
-impl IKeyboard for ContextInput
-{
-    fn keys(&self) -> impl Iterator<Item = KeyState> { self.keyboard.keys() }
-    fn key(&self, code: KeyCode) -> KeyState { self.keyboard.key(code) }
-    fn is_key_used(&mut self, code: KeyCode) -> bool { self.keyboard.is_key_used(code) }
-    fn set_key_used(&mut self, code: KeyCode, used: bool) { self.keyboard.set_key_used(code, used); }
 }

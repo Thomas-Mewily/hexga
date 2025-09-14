@@ -14,16 +14,27 @@ pub struct Context
 }
 
 
+impl ScopedSuspended for Context
+{
+    fn suspended(&mut self) {
+        Input.suspended();
+    }
 
+    fn resumed(&mut self) {
+        Input.resumed();
+    }
+}
 
 impl ScopedUpdate for Context
 {
     fn begin_update(&mut self) 
     { 
         Perf.begin_update();
+        Input.begin_update();
     }
     fn end_update(&mut self) 
     { 
+        Input.end_update();
         Perf.end_update();
     }
 }

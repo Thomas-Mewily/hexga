@@ -9,6 +9,6 @@ pub use keyboard::*;
 mod keycode;
 pub use keycode::*;
 
-mod button;
-pub use button::*;
 
+mod binding;
+pub use binding::*;

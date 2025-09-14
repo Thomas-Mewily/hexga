@@ -2,14 +2,82 @@ use super::*;
 
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
-pub struct Evolution<I,T=Time> where I:Copy, T:Copy+Default
+pub struct Evolution<T> where T:Copy
 {
-    pub value      : I,
-    pub old_value  : I,
-    pub last_change: T,
+    pub value      : T,
+    pub old_value  : T,
+    //pub last_change: T,
 }
 
-impl<I,T> Evolution<I,T> where I:Copy, T:Copy+Default
+impl<V> Evolution<V>  where V:Copy
+{
+    pub fn new(value: V, old_value: V) -> Self { Self { value, old_value }}
+}
+
+impl<T> IEvolution<T> for Evolution<T> where T:Copy
+{
+    fn value(&self) -> T { self.value }
+    fn old_value(&self) -> T { self.old_value }
+}
+
+
+pub trait IEvolution<I> where I:Copy
+{
+    /// The current state right now
+    fn value(&self) -> I;
+    /// The state in the old frame
+    fn old_value(&self) -> I;
+
+    /// `value() - old_value()`
+    fn delta(&self) -> I::Output where I:Sub { self.value() - self.old_value() }
+
+    fn evolution(&self) -> Evolution<I> { Evolution::new(self.value(), self.old_value()) }
+
+    // fn last_time_change(&self) -> T;
+    // Delta time since the last change
+    // fn dt_since(&self, current_time: T) -> T where T:Sub<T,Output=T> { current_time - self.last_time_change() }
+}
+
+
+pub trait EvolutionButtonState : IEvolution<ButtonState>
+{
+    fn is_down(&self) -> bool;
+    fn was_down(&self) -> bool;
+
+    fn is_up(&self) -> bool { !self.is_down() }
+    fn was_up(&self) -> bool { !self.was_down() }
+
+    /// Pull up, `false` to `true`, `0` to `1`, 
+    fn pressed(&self) -> bool { self.is_down() && (!self.was_down()) }
+    /// Pull down, `true` to `false`, `1` to `0`
+    fn released(&self) -> bool { self.was_down() && (!self.is_down()) }
+
+    fn is_toggled(&self) -> bool { self.is_down() != self.was_down() }
+    fn is_constant(&self) -> bool { self.is_down() == self.was_down() }
+
+    fn is_hold(&self) -> bool { self.is_constant() && self.is_down() }
+
+    fn evolution(&self) -> ButtonStateEvolution
+    {
+        match (self.is_down(), self.was_down())
+        {
+            (true, true) => ButtonStateEvolution::Down,
+            (true, false) => ButtonStateEvolution::Pressed,
+            (false, true) => ButtonStateEvolution::Released,
+            (false, false) => ButtonStateEvolution::Up,
+        }
+    }
+}
+
+impl<T> EvolutionButtonState for T where T:IEvolution<ButtonState>
+{
+    fn is_down(&self) -> bool { self.value().is_down() }
+    fn was_down(&self) -> bool { self.old_value().is_down() }
+}
+
+
+/* 
+impl<I> Evolution<I> where I:Copy
 {
     /// Also reset the time if the value is different
     pub fn update_at(&mut self, value : I, time : T) where I:PartialEq
@@ -31,22 +99,6 @@ impl<I,T> Evolution<I,T> where I:Copy, T:Copy+Default+TimeNow
     }
 }
 
-pub trait IEvolution<I,T=Time> where I:Copy, T:Copy+Default
-{
-    /// The current state right now
-    fn value(&self) -> I;
-    /// The state in the old frame
-    fn old_value(&self) -> I;
-
-    /// `value() - old_value()`
-    fn value_delta(&self) -> I::Output where I:Sub { self.value() - self.old_value() }
-
-    fn last_time_change(&self) -> T;
-    /// Delta time since the last change
-    fn dt_since(&self, current_time: T) -> T where T:Sub<T,Output=T> { current_time - self.last_time_change() }
-
-}
-
 pub trait EvolutionTime<I,F> : IEvolution<I,TimeOf<F>> where I:Copy, F:Float, TimeOf<F>:TimeNow
 {
     fn dt(&self) -> DeltaTimeOf<F> { DeltaTimeOf::<F>::since_launch() - self.last_time_change() }
@@ -60,3 +112,4 @@ impl<I, T> IEvolution<I,T> for Evolution<I, T> where I:Copy, T:Copy+Default, I: 
     fn old_value(&self) -> I { self.old_value }
     fn last_time_change(&self) -> T { self.last_change }
 }
+*/

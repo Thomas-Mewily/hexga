@@ -47,8 +47,7 @@ impl<F> Default for CameraPerspectiveOf<F> where F:Float
 {
     fn default() -> Self 
     {
-        Self { aspect: (16. / 9.).cast_into(), fovy: AngleOf::from_degree(F::cast_from(45.)), znear: F::cast_from(0.1), zfar: F::cast_from(100.0) };
-        todo!();
+        Self { aspect: (16. / 9.).cast_into(), fovy: AngleOf::from_degree(F::cast_from(45.)), znear: F::cast_from(0.1), zfar: F::cast_from(100.0) }
     }
 }
 impl<F> From<CameraPerspectiveOf<F>> for Matrix4<F> where F:Float

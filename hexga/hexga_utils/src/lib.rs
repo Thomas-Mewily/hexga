@@ -14,6 +14,7 @@ pub mod asset;
 pub mod scope;
 pub mod used_flag;
 
+use prelude::*;
 pub mod prelude
 {
     pub use super::non_empty_stack::*;

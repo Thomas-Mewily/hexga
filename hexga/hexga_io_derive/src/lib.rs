@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, parse_quote, DeriveInput, GenericParam, Generics, Item, ItemStruct};
+use syn::{parse_macro_input, parse_quote, DeriveInput, GenericParam, Generics, Item};
 
 #[proc_macro_derive(Save)]
 pub fn derive_save(input: TokenStream) -> TokenStream {
@@ -59,22 +59,19 @@ fn add_load_trait_bounds(mut generics: Generics) -> Generics {
 pub fn io(_args: TokenStream, input: TokenStream) -> TokenStream {
     let item = parse_macro_input!(input as Item);
 
-    match item {
-        Item::Struct(ref s) => expand_io_struct(s),
+    let (ident, item_tokens) = match item {
+        Item::Struct(s) => (&s.ident.clone(), quote! { #s }),
+        Item::Enum(e) => (&e.ident.clone(), quote! { #e }),
         _ => {
-            syn::Error::new_spanned(item, "#[Io] can only be used on structs")
+            return syn::Error::new_spanned(item, "#[io] can only be used on structs or enums")
                 .to_compile_error()
-                .into()
+                .into();
         }
-    }
-}
-
-fn expand_io_struct(struct_item: &ItemStruct) -> TokenStream {
-    let ident = &struct_item.ident;
+    };
 
     let expanded = quote! {
         #[derive(::serde::Serialize, ::serde::Deserialize)]
-        #struct_item
+        #item_tokens
 
         impl ::hexga_io::IoSave for #ident
         where
