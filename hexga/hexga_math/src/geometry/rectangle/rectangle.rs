@@ -117,7 +117,13 @@ impl<T,const N : usize> SetRectangle<T,N> for Rectangle<T,N> where T: Number
     fn with_size_w(mut self, w : T) -> Self where Vector<T, N> : HaveW<T> { self.size.set_w(w); self }
 }
 
-
+/* 
+pub trait SplitOn<T>
+{
+    type Item;
+     fn split_axis(&self, nb:T, axis: usize)
+}
+*/
 
 impl<T,const N : usize> Rectangle<T,N> where T: NumberPrimitive
 {

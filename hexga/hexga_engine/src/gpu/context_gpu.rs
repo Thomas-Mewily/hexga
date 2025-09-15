@@ -294,7 +294,7 @@ impl ContextGpu
                 */
 
                 rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
-                //rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
+                rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
 
                 let (vertices_begin, vertices_len) = (dc.vertices_begin, dc.vertices_len);
                 let vertices_end = dc.vertices_begin+dc.vertices_len;
@@ -305,6 +305,7 @@ impl ContextGpu
                 rpass.set_vertex_buffer(0, vertices.wgpu_slice(vertices_begin..vertices_end));
                 rpass.set_index_buffer(indices.wgpu_slice(indices_begin..indices_end), VertexIndex::GPU_INDEX_FORMAT);
                 //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
+                // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
                 rpass.draw_indexed(0 ..(indices_len as _), -(vertices_begin as i32), 0..1);
             }
         }
