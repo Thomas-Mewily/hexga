@@ -1,4 +1,6 @@
 
+// Todo: Make a Constructor trait ?
+
 pub trait Getter<T>
 {
     fn get(&self) -> T;
