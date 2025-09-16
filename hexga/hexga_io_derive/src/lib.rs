@@ -70,17 +70,17 @@ pub fn io(_args: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     let expanded = quote! {
-        #[derive(serde::Serialize, serde::Deserialize)]
+        #[derive(::serde::Serialize, ::serde::Deserialize)]
         #item_tokens
 
-        impl hexga_io::IoSave for #ident
+        impl ::hexga_io::IoSave for #ident
         where
-            #ident: for<'de> serde::de::Deserialize<'de>
+            #ident: for<'de> ::serde::de::Deserialize<'de>
         {}
 
-        impl hexga_io::IoLoad for #ident
+        impl ::hexga_io::IoLoad for #ident
         where
-            #ident: serde::ser::Serialize
+            #ident: ::serde::ser::Serialize
         {}
     };
 
