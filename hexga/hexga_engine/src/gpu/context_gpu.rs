@@ -280,9 +280,19 @@ impl ContextGpu
                 //dbg!(&dc);
                 self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.param.camera.matrix().as_u8_slice());
 
-                let viewport = dc.viewport;
+                let mut viewport = dc.viewport;
                 let (viewport_min_depth, viewport_max_depth) = (dc.viewport_min_depth, dc.viewport_max_depth);
-                let scissor = dc.scissor;
+                let mut scissor = dc.scissor;
+
+                viewport = self.pen.max_viewport().intersect_or_empty(viewport);
+                scissor = self.pen.max_scissor().intersect_or_empty(scissor);
+
+                if viewport.size.is_empty() || scissor.size.is_empty() 
+                { 
+                    continue;
+                }
+                //dbg!(viewport);
+                //dbg!(scissor);
 
                 /* 
                 let viewport : Rect2P = viewport.cast_into();

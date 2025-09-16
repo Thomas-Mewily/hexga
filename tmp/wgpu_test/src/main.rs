@@ -95,8 +95,9 @@ impl App for MyApp
         //let a : Vec2 = Ctx.window_size().to_vector();
         //dbg!(self.nb_split);
 
+        
         //for r in Pen.viewport().split_x(self.nb_split) //.split_max(2.)
-        for r in Pen.viewport().split_x(self.nb_split) //.split_max(2.)
+        for r in Pen.viewport().split_x(((self.time.s().turn() / 16.).sin() * 8.)).take(16) //.split_max(2.)
         {
             //dbg!(r);
             //r.move_x(1.);

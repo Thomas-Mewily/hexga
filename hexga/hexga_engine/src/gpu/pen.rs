@@ -134,6 +134,8 @@ impl ContextPen
         self.set_param(*self.params);
     }
 
+    pub fn max_viewport(&self) -> Rect2 { self.default_param.viewport }
+    pub fn max_scissor(&self) -> Rect2P { self.default_param.scissor }
     pub fn viewport(&self) -> Rect2 { self.params.viewport }
     pub fn set_viewport(&mut self, viewport: Rect2) -> &mut Self
     {

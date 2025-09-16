@@ -109,6 +109,8 @@ impl<T,const N : usize> Vector<T,N>
     pub fn have_area(self) -> bool where T: Number { self.area().is_non_zero() }
     /// True is area_usize() > 0
     pub fn have_area_usize(self) -> bool where T: Integer { self.area_usize().is_non_zero() }
+    /// `!self.have_area()`
+    pub fn is_empty(self) -> bool where T: Number { self.area().is_zero() }
 
 
     // Index :
