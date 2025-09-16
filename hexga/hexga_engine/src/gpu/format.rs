@@ -1,18 +1,18 @@
 use super::*;
 
 
-pub type GpuVertexFormat = wgpu::VertexFormat;
-pub type GpuIndexFormat = wgpu::IndexFormat;
+pub(crate) type GpuVertexFormat = wgpu::VertexFormat;
+pub(crate) type GpuIndexFormat = wgpu::IndexFormat;
 
 
-pub trait IGpuIndexFormat
+pub(crate) trait IGpuIndexFormat
 {
     const GPU_INDEX_FORMAT : GpuIndexFormat;
 }
 impl IGpuIndexFormat for u16 { const GPU_INDEX_FORMAT : GpuIndexFormat = GpuIndexFormat::Uint16; }
 impl IGpuIndexFormat for u32 { const GPU_INDEX_FORMAT : GpuIndexFormat = GpuIndexFormat::Uint32; }
 
-pub trait IGpuVertexFormat
+pub(crate) trait IGpuVertexFormat
 {
     const GPU_VERTEX_FORMAT : GpuVertexFormat;
 }

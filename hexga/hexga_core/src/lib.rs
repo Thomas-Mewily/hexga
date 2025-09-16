@@ -22,4 +22,7 @@ pub mod prelude
     pub use super::utils::*;
     pub use super::collections::*;
     pub use super::accessor::*;
+
+
+    pub use std::collections::{HashMap,HashSet};
 }

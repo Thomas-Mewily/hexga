@@ -1,6 +1,5 @@
 use super::*;
 
-pub(crate) type WinitWindow = winit::window::Window;
 pub(crate) type WinitKeyCode = winit::keyboard::KeyCode;
 pub(crate) type WinitKeyPhysical = winit::keyboard::PhysicalKey;
 pub(crate) type WinitKeyNativeCode = winit::keyboard::NativeKeyCode;

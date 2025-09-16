@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 use hexga::prelude::*;
+use std::sync::Arc;
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
@@ -16,6 +17,7 @@ pub mod ctx;
 pub mod input;
 pub mod log;
 pub mod gpu;
+pub mod model;
 
 use prelude::*;
 pub mod prelude
@@ -26,4 +28,5 @@ pub mod prelude
     pub use super::input::*;
     pub use super::log::*;
     pub use super::gpu::*;
+    pub use super::model::*;
 }

@@ -1,5 +1,8 @@
 use super::*;
 
+pub(crate) type WinitWindowEvent = winit::event::WindowEvent;
+
+
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum AppEvent
 {
@@ -7,15 +10,18 @@ pub enum AppEvent
     Paused,
     Update,
     Draw,
-    Key(KeyEvent),
+    Exit,
+    Input(InputEvent),
 }
-
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct KeyEvent
+impl From<InputEvent> for AppEvent
 {
-    pub code  : KeyCode,
-    pub repeat: ButtonRepeat,
-    pub state : ButtonState,
-    pub char  : Option<char>,
+    fn from(input: InputEvent) -> Self {
+        Self::Input(input)
+    }
+}
+impl From<KeyEvent> for AppEvent
+{
+    fn from(key: KeyEvent) -> Self {
+        Self::Input(key.into())
+    }
 }

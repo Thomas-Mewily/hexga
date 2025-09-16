@@ -1,38 +1,30 @@
 use super::*;
 
 
+
 #[derive(Default)]
 pub struct AppParam
 {
-
+    title: String,
 }
 
-pub trait AppCtx
-{
-    type Param;
-    fn new(param: Self::Param) -> Self where Self: Sized;
-}
+
 
 #[derive(Debug)]
 pub struct Ctx
 {
-    pub(crate) proxy : EventLoopProxy
+    pub(crate) proxy : EventLoopProxy,
+    pub(crate) keyboard: Keyboard,
+    pub(crate) gpu: Option<Gpu>,
 }
-impl AppCtx for Ctx
-{
-    type Param=EventLoopProxy;
-    
-    fn new(proxy: Self::Param) -> Self where Self: Sized {
-        Self { proxy }
-    }
-}
+
+impl HasRef<Keyboard> for Ctx  { fn retrive(&self) -> &Keyboard { &self.keyboard } }
+impl HasMut<Keyboard> for Ctx  { fn retrive_mut(&mut self) -> &mut Keyboard { &mut self.keyboard } }
 
 impl Ctx 
 {
     pub(crate) fn new(proxy: EventLoopProxy) -> Self
     {
-        Self { proxy }
+        Self { proxy, keyboard: ___(), gpu: ___() }
     }
 }
-
-
