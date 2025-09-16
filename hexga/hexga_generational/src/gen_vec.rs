@@ -1,10 +1,16 @@
 use super::*;
-use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}};
 
+
+pub mod prelude
+{
+    pub use super::{GenVec,GenVecID, CollectToGenVecExtension};
+}
+
+/* 
 // Todo : introduce a new type
 pub type SlotVec<T> = GenVec<T>;
 pub type SlotID<T> = GenVecID<T>;
-
+*/
 pub type Generation = u32;
 
 pub type GenVec<T> = GenVecOf<T,Generation>;

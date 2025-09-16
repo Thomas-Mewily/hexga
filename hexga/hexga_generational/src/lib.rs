@@ -4,6 +4,7 @@
 //! and the SlotMap data structure <https://docs.rs/slotmap/latest/slotmap/>
 
 #![feature(get_disjoint_mut_helpers)]
+use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}};
 
 use hexga_number::*;
 #[allow(unused_imports)]
@@ -26,9 +27,5 @@ pub mod gen_hash_map;
 
 pub mod prelude
 {
-    pub use crate::gen_vec::
-    {
-        GenVec,GenVecID,CollectToGenVecExtension,
-        SlotVec,SlotID,
-    };
+    pub use crate::gen_vec::prelude::*;
 }

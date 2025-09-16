@@ -3,7 +3,7 @@
 #![allow(unused_variables)]
 
 use std::ops::Deref;
-use hexga_engine::prelude::*;
+use hexga_engine_old::prelude::*;
 
 
 pub struct MyApp
@@ -97,7 +97,7 @@ impl App for MyApp
 
         
         //for r in Pen.viewport().split_x(self.nb_split) //.split_max(2.)
-        for r in Pen.viewport().split_x(((self.time.s().turn() / 16.).sin() * 8.)).take(16) //.split_max(2.)
+        for r in Pen.viewport().split_x((self.time.s().turn() / 16.).sin() * 8.).take(16) //.split_max(2.)
         {
             //dbg!(r);
             //r.move_x(1.);

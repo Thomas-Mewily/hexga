@@ -1,9 +1,5 @@
 use super::*;
 
-pub(crate) type WinitWindow = winit::window::Window;
-pub(crate) type WinitKeyCode = winit::keyboard::KeyCode;
-pub(crate) type WinitKeyPhysical = winit::keyboard::PhysicalKey;
-pub(crate) type WinitKeyNativeCode = winit::keyboard::NativeKeyCode;
 
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -23,8 +19,7 @@ pub enum KeyCodeNative
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[io]
 pub enum KeyCode 
 {
     Unknow(KeyCodeNative),

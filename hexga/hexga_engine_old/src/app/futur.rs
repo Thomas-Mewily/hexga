@@ -1,6 +1,8 @@
 use super::*;
 
 
+// TODO: make an internal private trait, to be sure SpawnFutur can't be impl by external crate
+
 #[cfg(not(target_arch = "wasm32"))]
 /// Note : the trait bound vary if you are on wasm32 or not
 pub trait Futurable: Send + 'static {}
@@ -20,15 +22,22 @@ pub trait SpawnFutur where
     fn spawn(self);
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl<F> SpawnFutur for F where
     F: Future<Output = ()> + Futurable,
 {
     fn spawn(self)
     {
-        #[cfg(not(target_arch = "wasm32"))]
         async_std::task::spawn(self);
-        #[cfg(target_arch = "wasm32")]
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl<F> SpawnFutur for F where
+    F: Future<Output = ()> + Futurable,
+{
+    fn spawn(self)
+    {
         wasm_bindgen_futures::spawn_local(self);
-        panic!()
     }
 }

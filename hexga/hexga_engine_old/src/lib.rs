@@ -1,6 +1,11 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
-use hexga::prelude::*;
+#![allow(unused_variables)]
+
+use std::{iter, sync::Arc};
+use std::marker::PhantomData;
+use std::ops::*;
+use std::collections::{HashMap,HashSet};
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
@@ -12,18 +17,27 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 
 pub use hexga::*;
 pub mod app;
-pub mod ctx;
-pub mod input;
-pub mod log;
 pub mod gpu;
+pub mod context;
+pub mod performance;
+pub mod input;
+pub mod utils;
+pub mod log;
 
 use prelude::*;
 pub mod prelude
 {
-    pub use ::hexga::prelude::*;
     pub use super::app::*;
-    pub use super::ctx::*;
-    pub use super::input::*;
-    pub use super::log::*;
     pub use super::gpu::*;
+    pub use super::context::*;
+    pub use super::performance::*;
+    pub use super::input::*;
+    pub use super::utils::*;
+    pub use super::log::*;
+    pub use ::hexga::prelude::*;
 }
+
+/*
+Todo: put in the run config
+Is the camera 2D or 3D by default ?
+*/

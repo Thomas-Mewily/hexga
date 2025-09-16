@@ -1,5 +1,4 @@
 
-/* 
 pub trait Getter<T>
 {
     fn get(&self) -> T;
@@ -9,7 +8,6 @@ pub trait Setter<T>
 {
     fn set(&mut self, val: T) -> &mut Self;
 }
-*/
 
 // Based on (GGEZ Has trait)[https://docs.rs/ggez/latest/ggez/context/trait.Has.html] 
 pub trait Has<T>
