@@ -9,7 +9,7 @@ pub struct MyApp
 
 impl App for MyApp
 {
-
+    type CustomEvent=();
 }
 
 fn main() 

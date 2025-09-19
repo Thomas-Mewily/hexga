@@ -1,22 +1,38 @@
 use super::*;
 
 
+pub trait IAppEvent : 'static + Debug + Send {}
+impl<T> IAppEvent for T where T: 'static + Debug + Send {}
 
 pub trait App: 'static
 {
-    fn handle_event(&mut self, ev: AppEvent, ctx: &mut Ctx) { self.dispatch_event(ev, ctx); }
-    fn dispatch_event(&mut self, ev: AppEvent, ctx: &mut Ctx)
+    type CustomEvent : IAppEvent;
+    fn handle_event(&mut self, ev: AppEvent<Self::CustomEvent>, ctx: &mut Ctx) { self.dispatch_event(ev, ctx); }
+    fn dispatch_event(&mut self, ev: AppEvent<Self::CustomEvent>, ctx: &mut Ctx)
     {
         match ev
         {
-            AppEvent::Update => self.update(ctx),
-            AppEvent::Draw => self.draw(ctx),
-            AppEvent::Resumed => self.resumed(ctx),
-            AppEvent::Paused => self.paused(ctx),
-            AppEvent::Exit => self.exit(ctx),
+            AppEvent::Flow(f) => self.handle_flow(f, ctx),
             AppEvent::Input(i) => self.handle_input(i, ctx),
+            AppEvent::Custom(c) => self.handle_custom(c, ctx),
         }
     }
+
+    fn handle_flow(&mut self, flow: FlowEvent, ctx: &mut Ctx) { self.dispatch_flow(flow, ctx); }
+    fn dispatch_flow(&mut self, flow: FlowEvent, ctx: &mut Ctx)
+    {
+        match flow
+        {
+            FlowEvent::Resumed => self.resumed(ctx),
+            FlowEvent::Paused => self.paused(ctx),
+            FlowEvent::Update => self.update(ctx),
+            FlowEvent::Draw => self.draw(ctx),
+            FlowEvent::Exit => self.exit(ctx),
+        }
+    }
+
+
+    fn handle_custom(&mut self, custom: Self::CustomEvent, ctx: &mut Ctx) { let _ = (custom, ctx); }
 
     fn update(&mut self, ctx: &mut Ctx) { let _ = ctx; }
     fn draw(&mut self, ctx: &mut Ctx) { let _ = ctx; }

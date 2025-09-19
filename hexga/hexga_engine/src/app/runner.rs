@@ -55,24 +55,34 @@ impl<A> AppRunner<A> where A:App
     }
 
 
-    pub(crate) fn handle_event(&mut self, ev: AppEvent)
+    pub(crate) fn handle_event(&mut self, ev: AppEvent<A::CustomEvent>)
     {
         self.app.handle_event(ev, &mut self.ctx);
     }
 
     pub(crate) fn update(&mut self)
     {
-        self.handle_event(AppEvent::Update);
+        self.handle_event(AppEvent::Flow(FlowEvent::Update));
     }
 
     pub(crate) fn draw(&mut self)
     {
-        self.handle_event(AppEvent::Draw);
+        self.handle_event(AppEvent::Flow(FlowEvent::Draw));
     }
 
     pub(crate) fn exit(&mut self)
     {
-        self.handle_event(AppEvent::Exit);
+        self.handle_event(AppEvent::Flow(FlowEvent::Exit));
+    }
+
+    pub(crate) fn resumed(&mut self)
+    {
+        self.handle_event(AppEvent::Flow(FlowEvent::Resumed));
+    }
+    
+    pub(crate) fn paused(&mut self)
+    {
+        self.handle_event(AppEvent::Flow(FlowEvent::Paused));
     }
 }
 
@@ -81,11 +91,11 @@ impl<A> winit::application::ApplicationHandler<CtxEvent> for AppRunner<A> where 
 {
     fn resumed(&mut self, _event_loop: &EventLoopActive) 
     {
-        self.app.resumed(&mut self.ctx);
+        self.resumed();
     }
 
-    fn suspended(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
-        self.ctx
+    fn suspended(&mut self, _event_loop: &winit::event_loop::ActiveEventLoop) {
+        self.paused();
     }
 
     fn window_event(
