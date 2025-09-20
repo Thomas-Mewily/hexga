@@ -61,17 +61,19 @@ impl<A,E> AppRunner<A,E> where A:Application<E>, E:IEvent
         }
     }
 
-    fn flow(&mut self, flow: FlowMessage, el: &EventLoopActive) 
+    fn flow(&mut self, flow: FlowMessage, event_loop: &EventLoopActive) 
     {
-        ScopedMessage::<E>::scoped_flow(App::as_mut(),flow, |f| self.app.handle_message(AppMessage::Flow(f)), el);
+        App.scoped_flow(flow, |f| self.app.handle_message(AppMessage::Flow(f)), MessageCtx { event_loop, proxy: &self.proxy });
     }
 
-    fn event(&mut self, ev: impl Into<AppEvent<E>>, el: &EventLoopActive)
+    fn event(&mut self, ev: impl Into<AppEvent<E>>, event_loop: &EventLoopActive)
     {
+        let ctx = MessageCtx { event_loop, proxy: &self.proxy };
         match ev.into()
         {
-            AppEvent::Input(input) => ScopedMessage::<E>::scoped_input(App::as_mut(), input, |i| self.app.handle_message(AppMessage::Event(AppEvent::Input(i))), el),
-            AppEvent::Custom(custom) => ScopedMessage::<E>::scoped_custom(App::as_mut(), custom, |c| self.app.handle_message(AppMessage::Event(AppEvent::Custom(c))), el), 
+            AppEvent::Input(input) =>  App.scoped_input(input, |i| self.app.handle_message(AppMessage::Event(AppEvent::Input(i))), ctx),
+            AppEvent::Custom(custom) => App.scoped_custom(custom, |c| self.app.handle_message(AppMessage::Event(AppEvent::Custom(c))), ctx),
+            AppEvent::Window(window) => App.scoped_window(window, |w| self.app.handle_message(AppMessage::Event(AppEvent::Window(w))), ctx),
         }
     }
 }
@@ -106,13 +108,7 @@ impl<A,E> winit::application::ApplicationHandler<AppInternalEvent<E>> for AppRun
         match event 
         {
             WinitWindowEvent::CloseRequested =>  { el.exit(); }
-            WinitWindowEvent::Resized(new_size) => {
-                if let Some(window) = App.windows.as_ref()
-                {
-                    Gpu.resize([new_size.width as _, new_size.height as _].into());
-                    window.request_redraw();
-                }
-            }
+            WinitWindowEvent::Resized(new_size) => { self.event(WindowEvent::Resized([new_size.width as _, new_size.height as _].into()), el);}
             WinitWindowEvent::RedrawRequested => self.flow(FlowMessage::Draw, el),
             WinitWindowEvent::KeyboardInput { device_id: _, event, is_synthetic: _ } => 
             {
@@ -139,14 +135,15 @@ impl<A,E> winit::application::ApplicationHandler<AppInternalEvent<E>> for AppRun
     }
 
 
-    fn user_event(&mut self, el: &EventLoopActive, event: AppInternalEvent<E>) {
+    fn user_event(&mut self, el: &EventLoopActive, event: AppInternalEvent<E>) 
+    {
         match event
         {
-            AppInternalEvent::Event(event) => self.event(event, el),
+            AppInternalEvent::Custom(c) => self.event(AppEvent::Custom(c), el),
             AppInternalEvent::Gpu(gpu) =>
             {
                 Gpu::replace(Some(gpu.unwrap()));
-                App.windows.as_ref().map(|w| w.request_redraw());
+                App.windows.active.as_ref().map(|w| w.request_redraw());
             }
         }
     }

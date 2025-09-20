@@ -16,6 +16,7 @@ pub(crate) enum AppInternalEvent<E> where E:IEvent
 pub enum AppEvent<E=()> where E:IEvent
 {
     Input(InputEvent),
+    Window(WindowEvent),
     Custom(E)
 }
 
@@ -34,7 +35,12 @@ impl<E> From<KeyEvent> for AppEvent<E> where E:IEvent
         Self::Input(key.into())
     }
 }
-
+impl<E> From<WindowEvent> for AppEvent<E> where E:IEvent
+{
+    fn from(window: WindowEvent) -> Self {
+        Self::Window(window.into())
+    }
+}
 
 
 
@@ -68,5 +74,23 @@ impl<E> From<AppEvent<E>> for AppMessage<E> where E:IEvent
 {
     fn from(event: AppEvent<E>) -> Self {
         Self::Event(event)
+    }
+}
+impl<E> From<InputEvent> for AppMessage<E> where E:IEvent
+{
+    fn from(input: InputEvent) -> Self {
+        Self::Event(input.into())
+    }
+}
+impl<E> From<KeyEvent> for AppMessage<E> where E:IEvent
+{
+    fn from(key: KeyEvent) -> Self {
+        Self::Event(key.into())
+    }
+}
+impl<E> From<WindowEvent> for AppMessage<E> where E:IEvent
+{
+    fn from(window: WindowEvent) -> Self {
+        Self::Event(window.into())
     }
 }

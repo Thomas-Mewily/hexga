@@ -87,13 +87,24 @@ pub(crate) trait ScopedEvent
 
 pub(crate) struct MessageCtx<'a,E> where E:IEvent
 {
-    event_loop: &'a ActiveEventLoop,
-    proxy: &'a EventLoopProxy<E>
+    pub event_loop: &'a ActiveEventLoop,
+    pub proxy: &'a EventLoopProxy<E>
 }
+
+impl<'a,E> Clone for MessageCtx<'a, E> where E:IEvent
+{
+    fn clone(&self) -> Self 
+    {
+        Self { event_loop: self.event_loop, proxy: self.proxy }
+    }
+}
+impl<'a,E> Copy for MessageCtx<'a, E> where E:IEvent {}
 
 /// `begin_X()` are called before the application, `end_X()` are called after
 pub(crate) trait ScopedMessage<E> where E:IEvent
 {
+    
+
     /*
     fn scoped_event<F,R>(&mut self, ev: AppEvent<E>, f: F) -> R where F: FnOnce(AppEvent<E>) -> R
     {
@@ -106,108 +117,122 @@ pub(crate) trait ScopedMessage<E> where E:IEvent
     fn end_event(&mut self) { }
     */
 
-    fn scoped_custom<F,R>(&mut self, custom: E, f: F, el: &EventLoopActive) -> R where F: FnOnce(E) -> R
+    fn scoped_custom<F,R>(&mut self, custom: E, f: F, ctx: MessageCtx<'_,E>) -> R where F: FnOnce(E) -> R
     {
-        self.begin_custom(&custom, el);
+        self.begin_custom(&custom, ctx);
         let r = f(custom);
-        self.end_custom(el);
+        self.end_custom(ctx);
         r
     }
-    fn begin_custom(&mut self, custom: &E, el: &EventLoopActive) { let _  = (custom, el); }
-    fn end_custom(&mut self, el: &EventLoopActive) { let _ = el; }
+    fn begin_custom(&mut self, custom: &E, ctx: MessageCtx<'_,E>) { let _  = (custom, ctx); }
+    fn end_custom(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
 
 
-    fn scoped_input<F,R>(&mut self, input: InputEvent, f: F, el: &EventLoopActive) -> R where F: FnOnce(InputEvent) -> R
+
+
+    fn scoped_window<F,R>(&mut self, window: WindowEvent, f: F, ctx: MessageCtx<'_,E>) -> R where F: FnOnce(WindowEvent) -> R
     {
-        self.begin_input(&input, el);
-        let r = f(input);
-        self.end_input(el);
+        self.begin_window(&window, ctx);
+        let r = f(window);
+        self.end_window(ctx);
         r
     }
-    fn begin_input(&mut self, input: &InputEvent, el: &EventLoopActive) 
+    fn begin_window(&mut self, window: &WindowEvent, ctx: MessageCtx<'_,E>) { let _ = (window, ctx);}
+    fn end_window(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx;}
+
+
+    fn scoped_input<F,R>(&mut self, input: InputEvent, f: F, ctx: MessageCtx<'_,E>) -> R where F: FnOnce(InputEvent) -> R
+    {
+        self.begin_input(&input, ctx);
+        let r = f(input);
+        self.end_input(ctx);
+        r
+    }
+    fn begin_input(&mut self, input: &InputEvent, ctx: MessageCtx<'_,E>) 
     {
         match input
         {
-            InputEvent::Key(key) => self.begin_input_key(key, el),
+            InputEvent::Key(key) => self.begin_input_key(key, ctx),
         }
     }
-    fn end_input(&mut self, el: &EventLoopActive) { let _ = el;}
+    fn end_input(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
+    
 
-    fn begin_input_key(&mut self, input_key: &KeyEvent, el: &EventLoopActive) { let _ = (input_key, el); }
+    fn begin_input_key(&mut self, input_key: &KeyEvent, ctx: MessageCtx<'_,E>) { let _ = (input_key, ctx); }
 
 
 
-    fn scoped_flow<F,R>(&mut self, flow: FlowMessage, f: F, el: &EventLoopActive) -> R where F: FnOnce(FlowMessage) -> R
+    fn scoped_flow<F,R>(&mut self, flow: FlowMessage, f: F, ctx: MessageCtx<'_,E>) -> R where F: FnOnce(FlowMessage) -> R
     {
-        self.begin_flow(flow, el);
+        self.begin_flow(flow, ctx);
         let r = f(flow);
-        self.end_flow(flow, el);
+        self.end_flow(flow, ctx);
         r
     }
-    fn begin_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) { self.dispatch_begin_flow(flow, el) }
-    fn dispatch_begin_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) 
+    fn begin_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_,E>) { self.dispatch_begin_flow(flow, ctx) }
+    fn dispatch_begin_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_,E>) 
     {
         match flow
         {
-            FlowMessage::Resumed => self.begin_flow_resumed(el),
-            FlowMessage::Paused => self.begin_flow_paused(el),
-            FlowMessage::Update => self.begin_flow_update(el),
-            FlowMessage::Draw => self.begin_flow_draw(el),
+            FlowMessage::Resumed => self.begin_flow_resumed(ctx),
+            FlowMessage::Paused => self.begin_flow_paused(ctx),
+            FlowMessage::Update => self.begin_flow_update(ctx),
+            FlowMessage::Draw => self.begin_flow_draw(ctx),
         }
     }
-    fn end_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) { self.dispatch_end_flow(flow, el) }
-    fn dispatch_end_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) 
+    fn end_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_,E>) { self.dispatch_end_flow(flow, ctx) }
+    fn dispatch_end_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_,E>) 
     {
         match flow
         {
-            FlowMessage::Resumed => self.end_flow_resumed(el),
-            FlowMessage::Paused => self.end_flow_paused(el),
-            FlowMessage::Update => self.end_flow_update(el),
-            FlowMessage::Draw => self.end_flow_draw(el),
+            FlowMessage::Resumed => self.end_flow_resumed(ctx),
+            FlowMessage::Paused => self.end_flow_paused(ctx),
+            FlowMessage::Update => self.end_flow_update(ctx),
+            FlowMessage::Draw => self.end_flow_draw(ctx),
         }
     }
 
 
-    fn scoped_flow_paused<F,R>(&mut self, f: F, el: &EventLoopActive) -> R where F: FnOnce() -> R
+    fn scoped_flow_paused<F,R>(&mut self, f: F, ctx: MessageCtx<'_,E>) -> R where F: FnOnce() -> R
     {
-        self.begin_flow_paused(el);
+        self.begin_flow_paused(ctx);
         let r = f();
-        self.end_flow_paused(el);
+        self.end_flow_paused(ctx);
         r
     }
-    fn begin_flow_paused(&mut self, el: &EventLoopActive) { let _ = el; }
-    fn end_flow_paused(&mut self, el: &EventLoopActive) { let _ = el; }
+    fn begin_flow_paused(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
+    fn end_flow_paused(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
 
 
-    fn scoped_flow_resumed<F,R>(&mut self, f: F, el: &EventLoopActive) -> R where F: FnOnce() -> R
+    fn scoped_flow_resumed<F,R>(&mut self, f: F, ctx: MessageCtx<'_,E>) -> R where F: FnOnce() -> R
     {
-        self.begin_flow_resumed(el);
+        self.begin_flow_resumed(ctx);
         let r = f();
-        self.end_flow_resumed(el);
+        self.end_flow_resumed(ctx);
         r
     }
-    fn begin_flow_resumed(&mut self, el: &EventLoopActive) { let _ = el; }
-    fn end_flow_resumed(&mut self, el: &EventLoopActive) { let _ = el; }
+    fn begin_flow_resumed(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
+    fn end_flow_resumed(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
 
 
-    fn scoped_flow_update<F,R>(&mut self, f: F, el: &EventLoopActive) -> R where F: FnOnce() -> R
+    fn scoped_flow_update<F,R>(&mut self, f: F, ctx: MessageCtx<'_,E>) -> R where F: FnOnce() -> R
     {
-        self.begin_flow_update(el);
+        self.begin_flow_update(ctx);
         let r = f();
-        self.end_flow_update(el);
+        self.end_flow_update(ctx);
         r
     }
-    fn begin_flow_update(&mut self, el: &EventLoopActive) { let _ = el; }
-    fn end_flow_update(&mut self, el: &EventLoopActive) { let _ = el; }
+    fn begin_flow_update(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
+    fn end_flow_update(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
 
 
-    fn scoped_flow_draw<F,R>(&mut self, f: F, el: &EventLoopActive) -> R where F: FnOnce() -> R
+    fn scoped_flow_draw<F,R>(&mut self, f: F, ctx: MessageCtx<'_,E>) -> R where F: FnOnce() -> R
     {
-        self.begin_flow_draw(el);
+        self.begin_flow_draw(ctx);
         let r = f();
-        self.end_flow_draw(el);
+        self.end_flow_draw(ctx);
         r
     }
-    fn begin_flow_draw(&mut self, el: &EventLoopActive) { let _ = el; }
-    fn end_flow_draw(&mut self, el: &EventLoopActive) { let _ = el; }
+    fn begin_flow_draw(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
+    fn end_flow_draw(&mut self, ctx: MessageCtx<'_,E>) { let _ = ctx; }
 }

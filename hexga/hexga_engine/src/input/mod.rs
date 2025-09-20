@@ -8,3 +8,5 @@ mod event;
 pub use event::*;
 mod keyboard;
 pub use keyboard::*;
+mod input;
+pub use input::*;

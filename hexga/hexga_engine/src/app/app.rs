@@ -15,17 +15,6 @@ impl SingletonInit for App
                 {
                     use std::io::Write;
 
-                    env_logger::Builder::from_env(
-                        env_logger::Env::default().default_filter_or("debug")
-                    )
-                    .filter_module("wgpu_core", ::log::LevelFilter::Warn)
-                    .filter_module("wgpu_hal", ::log::LevelFilter::Warn)
-                    .filter_module("naga", ::log::LevelFilter::Warn)
-                    .format(|buf, record| {
-                        writeln!(buf, "{}", record.args())
-                    })
-                    .init();
-
                     std::panic::set_hook(Box::new(|info| {
                         App::destroy();
                         eprintln!("panic occurred: {info}");
@@ -47,7 +36,7 @@ impl SingletonInit for App
             None => 
             {
                 CONTEXT_APP.replace(None);
-                App::destroy();
+                Gpu::destroy();
             },
         }
     }

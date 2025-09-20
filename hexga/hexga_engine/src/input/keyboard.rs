@@ -1,13 +1,13 @@
 use super::*;
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Keyboard
+pub struct AppKeyboard
 {
     pub(crate) key : KeyCodeManager,
     pub(crate) key_repeated : KeyCodeManager,
 }
 
-impl Default for Keyboard
+impl Default for AppKeyboard
 {
     fn default() -> Self {
         Self 
@@ -18,25 +18,25 @@ impl Default for Keyboard
     }
 }
 
-impl<E> ScopedMessage<E> for Keyboard where E:IEvent
+impl<E> ScopedMessage<E> for AppKeyboard where E:IEvent
 {
-    fn begin_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) {
-        ScopedMessage::<E>::begin_flow(&mut self.key, flow,el);
-        ScopedMessage::<E>::begin_flow(&mut self.key_repeated, flow,el);
+    fn begin_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_, E>) {
+        ScopedMessage::<E>::begin_flow(&mut self.key, flow, ctx);
+        ScopedMessage::<E>::begin_flow(&mut self.key_repeated, flow, ctx);
     }
 
-    fn end_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) {
-        ScopedMessage::<E>::end_flow(&mut self.key, flow,el);
-        ScopedMessage::<E>::end_flow(&mut self.key_repeated, flow,el);
+    fn end_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_, E>) {
+        ScopedMessage::<E>::end_flow(&mut self.key, flow, ctx);
+        ScopedMessage::<E>::end_flow(&mut self.key_repeated, flow, ctx);
     }
 
-    fn begin_input(&mut self, input: &InputEvent, el: &EventLoopActive) {
-        ScopedMessage::<E>::begin_input(&mut self.key, input,el);
-        ScopedMessage::<E>::begin_input(&mut self.key_repeated, input,el);
+    fn begin_input(&mut self, input: &InputEvent, ctx: MessageCtx<'_, E>) {
+        ScopedMessage::<E>::begin_input(&mut self.key, input, ctx);
+        ScopedMessage::<E>::begin_input(&mut self.key_repeated, input, ctx);
     }
-    fn end_input(&mut self, el: &EventLoopActive) {
-        ScopedMessage::<E>::end_input(&mut self.key,el);
-        ScopedMessage::<E>::end_input(&mut self.key_repeated,el);
+    fn end_input(&mut self, ctx: MessageCtx<'_, E>) {
+        ScopedMessage::<E>::end_input(&mut self.key, ctx);
+        ScopedMessage::<E>::end_input(&mut self.key_repeated, ctx);
     }
 }
 
@@ -52,7 +52,7 @@ pub trait IKeyboard
     fn key_manager(&self, repeat: ButtonRepeat) -> &KeyCodeManager;
     fn key_manager_mut(&mut self, repeat: ButtonRepeat) -> &mut KeyCodeManager;
 }
-impl<T> IKeyboard for T where T: HasRef<Keyboard> + HasMut<Keyboard>
+impl<T> IKeyboard for T where T: HasRef<AppKeyboard> + HasMut<AppKeyboard>
 {
     fn key_manager(&self, repeat: ButtonRepeat) -> &KeyCodeManager 
     {
@@ -87,21 +87,21 @@ impl KeyCodeManager
 
 impl<E> ScopedMessage<E> for KeyCodeManager where E:IEvent
 {
-    fn begin_flow_paused(&mut self, _el: &EventLoopActive) {
+    fn begin_flow_paused(&mut self, _ctx: MessageCtx<'_, E>) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
         self.released.clear();
     }
 
-    fn begin_flow_resumed(&mut self, _el: &EventLoopActive) {
+    fn begin_flow_resumed(&mut self, _ctx: MessageCtx<'_, E>) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
         self.released.clear(); 
     }
 
-    fn end_flow_update(&mut self, _el: &EventLoopActive) {
+    fn end_flow_update(&mut self, _ctx: MessageCtx<'_, E>) {
         match self.repeat
         {
             ButtonRepeat::NotRepeated => 
@@ -120,7 +120,7 @@ impl<E> ScopedMessage<E> for KeyCodeManager where E:IEvent
         }
     }
 
-    fn begin_input_key(&mut self, key: &KeyEvent, _el: &EventLoopActive) 
+    fn begin_input_key(&mut self, key: &KeyEvent, _ctx: MessageCtx<'_, E>) 
     {
         let code = key.code;
         match key.state

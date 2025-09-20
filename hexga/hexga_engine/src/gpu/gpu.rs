@@ -1,10 +1,10 @@
 
 use super::*;
 
-pub(crate) type GpuEvent = Result<GpuContext,String>;
+pub(crate) type GpuEvent = Result<AppGpu,String>;
 
 
-singleton_thread_local!(pub Gpu,GpuContext,CONTEXT_GPU);
+singleton_thread_local!(pub Gpu,AppGpu,CONTEXT_GPU);
 
 impl SingletonInit for Gpu
 {
@@ -24,7 +24,7 @@ pub struct GpuBase
 
 
 #[derive(Debug)]
-pub struct GpuContext
+pub struct AppGpu
 {
     pub(crate) base: GpuBase,
     pub(crate) surface: Surface,
@@ -59,7 +59,7 @@ impl Surface
 }
 
 
-impl GpuContext
+impl AppGpu
 {
     pub fn resize(&mut self, size: Point2)
     {
@@ -69,9 +69,9 @@ impl GpuContext
 
 
 
-impl GpuContext
+impl AppGpu
 {
-    pub(crate) fn request(window: Arc<WinitWindow>, proxy : EventLoopProxy) -> Result<(), String>
+    pub(crate) fn request<E>(window: Arc<WinitWindow>, proxy : EventLoopProxy<E>) -> Result<(), String> where E:IEvent
     {
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
@@ -92,7 +92,7 @@ impl GpuContext
 
         Ok(())
     }
-    pub(crate) async fn request_async(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>, proxy: EventLoopProxy)
+    pub(crate) async fn request_async<E>(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>, proxy: EventLoopProxy<E>) where E:IEvent
     {
         let _ = proxy.send_event(AppInternalEvent::Gpu(Self::new(instance, window, surface).await));
     }

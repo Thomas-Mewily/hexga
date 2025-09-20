@@ -29,6 +29,5 @@ impl<F> SpawnFutur for F where
         async_std::task::spawn(self);
         #[cfg(target_arch = "wasm32")]
         wasm_bindgen_futures::spawn_local(self);
-        panic!()
     }
 }

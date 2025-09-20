@@ -12,59 +12,46 @@ pub struct AppParam
 #[derive(Debug)]
 pub struct AppContext
 {
-    pub(crate) windows: Option<WinitContext>,
-    pub(crate) gpu: Option<GpuContext>,
-
-    pub(crate) keyboard: Keyboard,
+    pub(crate) windows: AppWindows,
+    pub(crate) gpu: Option<AppGpu>,
+    pub(crate) input : AppInput,
     pub(crate) param: AppParam,
 }
 
 
 impl AppContext 
 {
-    pub(crate) fn new(param: AppParam) -> Self { Self { param, windows: ___(), keyboard: ___(), gpu: ___() } }
+    pub(crate) fn new(param: AppParam) -> Self { Self { param, windows: AppWindows::new(), input: ___(), gpu: ___() } }
 }
 
 
 impl<E> ScopedMessage<E> for AppContext where E:IEvent
 {
-    fn begin_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) {
-        ScopedMessage::<E>::begin_flow(&mut self.keyboard, flow, el);
-        ScopedMessage::<E>::dispatch_begin_flow(self, flow, el);
+    fn begin_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_,E>) {
+        self.windows.begin_flow(flow, ctx);
+        self.input.begin_flow(flow, ctx);
     }
 
-    fn begin_flow_resumed(&mut self, el: &EventLoopActive) {
-        if self.windows.is_none()
-        {
-            #[allow(unused_mut)]
-            let mut win_attr = WinitWindow::default_attributes().with_title("wgpu winit example");
-            
-            #[cfg(target_arch = "wasm32")]
-            {
-                use winit::platform::web::WindowAttributesExtWebSys;
-                win_attr = win_attr.with_append(true);
-            }
-
-            let window = Arc::new(
-                el
-                    .create_window(win_attr)
-                    .expect("create window err."),
-            );
-            self.window = Some(window.clone());
-            ContextGpu::request(window, self.proxy.clone()).unwrap();
-            Ctx.resumed();
-        }
+    fn end_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_,E>) {
+        self.windows.end_flow(flow, ctx);
+        self.input.end_flow(flow, ctx);
     }
 
-    fn end_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) {
-        ScopedMessage::<E>::end_flow(&mut self.keyboard, flow, el);
+    fn begin_input(&mut self, input: &InputEvent, ctx: MessageCtx<'_,E>) {
+        self.windows.begin_input(input, ctx);
+        self.input.begin_input(input, ctx);
     }
 
-    fn begin_input(&mut self, input: &InputEvent, el: &EventLoopActive) {
-        ScopedMessage::<E>::begin_input(&mut self.keyboard, input, el);
+    fn end_input(&mut self, ctx: MessageCtx<'_,E>) {
+        self.windows.end_input(ctx);
+        self.input.end_input(ctx);
     }
 
-    fn end_input(&mut self, el: &EventLoopActive) {
-        ScopedMessage::<E>::end_input(&mut self.keyboard, el);
+    fn begin_window(&mut self, window: &WindowEvent, ctx: MessageCtx<'_,E>) {
+        self.windows.begin_window(window, ctx);
+    }
+
+    fn end_window(&mut self, ctx: MessageCtx<'_,E>) {
+        self.windows.end_window(ctx);
     }
 }
