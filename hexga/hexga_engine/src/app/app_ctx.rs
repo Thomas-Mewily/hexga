@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::*;
 
 
@@ -9,8 +11,16 @@ pub struct AppParam
 }
 
 
+#[derive(Debug, Clone, Copy)]
+pub struct AppCtx<'a,E> where E:IEvent
+{
+    proxy: &'a EventLoopProxy<E>,
+    event_loop : &'a EventLoopActive,
+}
+
+
 #[derive(Debug)]
-pub struct AppContext
+pub struct AppCore
 {
     pub(crate) windows: AppWindows,
     pub(crate) gpu: Option<AppGpu>,
@@ -19,13 +29,13 @@ pub struct AppContext
 }
 
 
-impl AppContext 
+impl AppCore
 {
     pub(crate) fn new(param: AppParam) -> Self { Self { param, windows: AppWindows::new(), input: ___(), gpu: ___() } }
 }
 
 
-impl<E> ScopedMessage<E> for AppContext where E:IEvent
+impl<E> ScopedMessage<E> for AppCore where E:IEvent
 {
     fn begin_flow(&mut self, flow: FlowMessage, ctx: MessageCtx<'_,E>) {
         self.windows.begin_flow(flow, ctx);

@@ -104,7 +104,6 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent<A::UserEvent>> f
     {
         if !Gpu::is_init() { return; }
 
-
         match event 
         {
             WinitWindowEvent::CloseRequested =>  { event_loop.exit(); }

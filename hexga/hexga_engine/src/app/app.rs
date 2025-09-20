@@ -1,7 +1,7 @@
 use super::*;
 
 
-singleton_thread_local!(pub App,AppContext,CONTEXT_APP);
+singleton_thread_local!(pub App,AppCore,CONTEXT_APP);
 
 
 impl SingletonInit for App

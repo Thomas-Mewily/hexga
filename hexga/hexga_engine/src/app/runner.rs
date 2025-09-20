@@ -16,7 +16,7 @@ impl<A,E> AppRun<E> for A where A:Application<E>, E:IEvent
 
 
         assert!(App::is_not_init(), "Can't run two app at the same time, App is a singleton");
-        App::replace(Some(AppContext::new(param)));
+        App::replace(Some(AppCore::new(param)));
 
         let event_loop = EventLoop::with_user_event().build().ok_or_void()?;
         let proxy = event_loop.create_proxy();
