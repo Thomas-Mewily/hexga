@@ -20,23 +20,23 @@ impl Default for Keyboard
 
 impl<E> ScopedMessage<E> for Keyboard where E:IEvent
 {
-    fn begin_flow(&mut self, flow: FlowMessage) {
-        ScopedMessage::<E>::begin_flow(&mut self.key, flow);
-        ScopedMessage::<E>::begin_flow(&mut self.key_repeated, flow);
+    fn begin_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) {
+        ScopedMessage::<E>::begin_flow(&mut self.key, flow,el);
+        ScopedMessage::<E>::begin_flow(&mut self.key_repeated, flow,el);
     }
 
-    fn end_flow(&mut self, flow: FlowMessage) {
-        ScopedMessage::<E>::end_flow(&mut self.key, flow);
-        ScopedMessage::<E>::end_flow(&mut self.key_repeated, flow);
+    fn end_flow(&mut self, flow: FlowMessage, el: &EventLoopActive) {
+        ScopedMessage::<E>::end_flow(&mut self.key, flow,el);
+        ScopedMessage::<E>::end_flow(&mut self.key_repeated, flow,el);
     }
 
-    fn begin_input(&mut self, input: &InputEvent) {
-        ScopedMessage::<E>::begin_input(&mut self.key, input);
-        ScopedMessage::<E>::begin_input(&mut self.key_repeated, input);
+    fn begin_input(&mut self, input: &InputEvent, el: &EventLoopActive) {
+        ScopedMessage::<E>::begin_input(&mut self.key, input,el);
+        ScopedMessage::<E>::begin_input(&mut self.key_repeated, input,el);
     }
-    fn end_input(&mut self) {
-        ScopedMessage::<E>::end_input(&mut self.key);
-        ScopedMessage::<E>::end_input(&mut self.key_repeated);
+    fn end_input(&mut self, el: &EventLoopActive) {
+        ScopedMessage::<E>::end_input(&mut self.key,el);
+        ScopedMessage::<E>::end_input(&mut self.key_repeated,el);
     }
 }
 
@@ -87,21 +87,21 @@ impl KeyCodeManager
 
 impl<E> ScopedMessage<E> for KeyCodeManager where E:IEvent
 {
-    fn begin_flow_paused(&mut self) {
+    fn begin_flow_paused(&mut self, _el: &EventLoopActive) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
         self.released.clear();
     }
 
-    fn begin_flow_resumed(&mut self) {
+    fn begin_flow_resumed(&mut self, _el: &EventLoopActive) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
         self.released.clear(); 
     }
 
-    fn end_flow_update(&mut self) {
+    fn end_flow_update(&mut self, _el: &EventLoopActive) {
         match self.repeat
         {
             ButtonRepeat::NotRepeated => 
@@ -120,7 +120,7 @@ impl<E> ScopedMessage<E> for KeyCodeManager where E:IEvent
         }
     }
 
-    fn begin_input_key(&mut self, key: &KeyEvent) 
+    fn begin_input_key(&mut self, key: &KeyEvent, _el: &EventLoopActive) 
     {
         let code = key.code;
         match key.state

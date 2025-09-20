@@ -5,9 +5,9 @@ pub(crate) type WinitWindowEvent = winit::event::WindowEvent;
 pub(crate) enum AppInternalEvent<E> where E:IEvent
 {
     Gpu(GpuEvent),
-    Event(AppEvent<E>),
+    Custom(E),
 }
-impl<E> From<AppEvent<E>> for AppInternalEvent<E> where E:IEvent{ fn from(value: AppEvent<E>) -> Self { Self::Event(value) } }
+//impl<E> From<AppEvent<E>> for AppInternalEvent<E> where E:IEvent{ fn from(value: AppEvent<E>) -> Self { Self::Event(value) } }
 
 
 
