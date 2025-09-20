@@ -17,32 +17,35 @@ impl Default for Keyboard
         }
     }
 }
-impl ScopedSuspended for Keyboard
-{
-    fn suspended(&mut self) {
-        self.key.suspended();
-        self.key_repeated.suspended();
-    }
 
-    fn resumed(&mut self) {
-        self.key.resumed();
-        self.key_repeated.resumed();
-    }
-}
-
-impl ScopedUpdate for Keyboard
+impl<E> ScopedEvent<E> for Keyboard where E:IEvent
 {
+    /* 
     fn begin_update(&mut self) 
-    { 
-        self.key.begin_update();
-        self.key_repeated.begin_update();
+    {
+        ScopedEvent::<E>::begin_update(&mut self.key);
+        ScopedEvent::<E>::begin_update(&mut self.key_repeated);
     }
-    fn end_update(&mut self) 
-    { 
-        self.key_repeated.end_update();
-        self.key.end_update();
+
+    fn end_update(&mut self) {
+        ScopedEvent::<E>::begin_update(&mut self.key.end_update();
+        ScopedEvent::<E>::begin_update(&mut self.key_repeated.end_update();
     }
+
+    fn begin_paused(&mut self) {
+        ScopedEvent::<E>::begin_update(&mut self.key.begin_paused();
+    }
+    fn begin_resumed(&mut self) {
+        ScopedEvent::<E>::begin_update(&mut self.key.begin_resumed();
+    }
+
+    fn begin_input_key(&mut self, key: &KeyEvent) {
+        ScopedEvent::<E>::begin_update(&mut self.key.begin_input_key(key);
+        ScopedEvent::<E>::begin_update(&mut self.key_repeated.begin_input_key(key);
+    }
+    */
 }
+
 
 pub trait IKeyboard
 {
@@ -69,13 +72,6 @@ impl<T> IKeyboard for T where T: HasRef<Keyboard> + HasMut<Keyboard>
         if repeat.is_repeated() { &mut s.key_repeated } else { &mut s.key }
     }
 }
-impl Keyboard
-{
-    pub(crate) fn handle_key(&mut self, ev: KeyEvent)
-    {
-        self.key_manager_mut(ev.repeat).handle_event(ev.code, ev.state);
-    }
-}
 
 
 #[derive(Clone, PartialEq, Debug)]
@@ -92,32 +88,23 @@ impl KeyCodeManager
 {
     pub fn new(repeat : ButtonRepeat) -> Self { Self { repeat, down: ___(), old_down: ___(), pressed: ___(), released: ___() }}
 }
-impl ScopedSuspended for KeyCodeManager
+impl<E> ScopedEvent<E> for KeyCodeManager where E:IEvent
 {
-    fn suspended(&mut self) {
+    fn begin_paused(&mut self) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
         self.released.clear();
     }
 
-    fn resumed(&mut self) {
+    fn begin_resumed(&mut self) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
-        self.released.clear();
-    }
-}
-
-impl ScopedUpdate for KeyCodeManager
-{
-    fn begin_update(&mut self) 
-    {
-
+        self.released.clear(); 
     }
 
-    fn end_update(&mut self) 
-    {
+    fn end_update(&mut self) {
         match self.repeat
         {
             ButtonRepeat::NotRepeated => 
@@ -135,13 +122,11 @@ impl ScopedUpdate for KeyCodeManager
             },
         }
     }
-}
 
-impl KeyCodeManager
-{
-    pub(crate) fn handle_event(&mut self, code: KeyCode, pressed: ButtonState)
+    fn begin_input_key(&mut self, key: &KeyEvent) 
     {
-        match pressed
+        let code = key.code;
+        match key.state
         {
             ButtonState::Up => 
             {

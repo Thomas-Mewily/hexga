@@ -2,17 +2,32 @@ use super::*;
 
 pub(crate) type WinitWindowEvent = winit::event::WindowEvent;
 
+pub(crate) enum AppInternalEvent<E> where E:IEvent
+{
+    Gpu(GpuEvent),
+    Event(AppEvent<E>),
+}
+impl<E> From<AppEvent<E>> for AppInternalEvent<E> where E:IEvent{ fn from(value: AppEvent<E>) -> Self { Self::Event(value) } }
+
+/* 
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub enum AppMessage<E> where E:IEvent
+{
+    //Flow(FlowMessage),
+    Event(AppEvent<E>),
+}
+*/
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub enum AppEvent<C> where C:IAppEvent
+pub enum AppEvent<E> where E:IEvent
 {
-    Flow(FlowEvent),
     Input(InputEvent),
-    Custom(C)
+    Custom(E)
 }
 
+/* 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
-pub enum FlowEvent
+pub enum FlowMessage
 {
     Resumed,
     Paused,
@@ -21,19 +36,19 @@ pub enum FlowEvent
     Exit,
 }
 
-impl<C> From<FlowEvent> for AppEvent<C> where C:IAppEvent
+impl<E> From<FlowMessage> for AppEvent<E> where E:IEvent
 {
-    fn from(flow: FlowEvent) -> Self {
+    fn from(flow: FlowMessage) -> Self {
         Self::Flow(flow)
     }
-}
-impl<C> From<InputEvent> for AppEvent<C> where C:IAppEvent
+}*/
+impl<E> From<InputEvent> for AppEvent<E> where E:IEvent
 {
     fn from(input: InputEvent) -> Self {
         Self::Input(input)
     }
 }
-impl<C> From<KeyEvent> for AppEvent<C> where C:IAppEvent
+impl<E> From<KeyEvent> for AppEvent<E> where E:IEvent
 {
     fn from(key: KeyEvent) -> Self {
         Self::Input(key.into())

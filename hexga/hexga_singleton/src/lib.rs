@@ -18,6 +18,7 @@ pub trait SingletonRef: Deref<Target = <Self as SingletonRef>::Target>
     fn as_ref() -> &'static <Self as SingletonRef>::Target { Self::try_as_ref().unwrap() }
 
     fn is_init() -> bool { Self::try_as_ref().is_some() }
+    fn is_not_init() -> bool { !Self::is_init() }
 }
 
 pub trait SingletonMut: SingletonRef + DerefMut

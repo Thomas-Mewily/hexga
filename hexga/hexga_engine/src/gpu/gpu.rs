@@ -1,6 +1,18 @@
 
 use super::*;
 
+pub(crate) type GpuEvent = Result<GpuContext,String>;
+
+
+singleton_thread_local!(pub Gpu,GpuContext,CONTEXT_GPU);
+
+impl SingletonInit for Gpu
+{
+    fn replace(value: Option<<Self as SingletonRef>::Target>) { CONTEXT_GPU.replace(value); }
+}
+
+
+
 #[derive(Debug)]
 pub struct GpuBase
 {
@@ -9,8 +21,10 @@ pub struct GpuBase
     pub(crate) queue: wgpu::Queue,
 }
 
+
+
 #[derive(Debug)]
-pub struct Gpu
+pub struct GpuContext
 {
     pub(crate) base: GpuBase,
     pub(crate) surface: Surface,
@@ -23,37 +37,39 @@ pub struct Gpu
 
 
 #[derive(Debug)]
-pub struct Surface
+pub(crate) struct Surface
 {
     pub(crate) surface: wgpu::Surface<'static>,
     pub(crate) surface_config: wgpu::SurfaceConfiguration, 
 }
-pub trait ISurface
+impl Surface
 {
-    fn resize(&mut self, size: Point2, gpu: impl HasRef<GpuBase>);
-    fn size(&self) -> Point2;
-}
-impl<T> ISurface for T where T: Has<Surface>
-{
-    fn resize(&mut self, size: Point2, gpu: impl HasRef<GpuBase>) 
+    fn resize(&mut self, size: Point2) 
     {
-        let s = self.retrive_mut();
         let size = size.max(one());
-        s.surface_config.width = size.x as _;
-        s.surface_config.height = size.y as _;
-        s.surface.configure(&gpu.retrive().device, &s.surface_config);
+        self.surface_config.width = size.x as _;
+        self.surface_config.height = size.y as _;
+        self.surface.configure(&Gpu.base.device, &self.surface_config);
     }
 
     fn size(&self) -> Point2 
     {
-        let s = &self.retrive().surface_config;
-        point2(s.width as _, s.height as _)
+        point2(self.surface_config.width as _, self.surface_config.height as _)
+    }
+}
+
+
+impl GpuContext
+{
+    pub fn resize(&mut self, size: Point2)
+    {
+        self.surface.resize(size);
     }
 }
 
 
 
-impl Gpu
+impl GpuContext
 {
     pub(crate) fn request(window: Arc<WinitWindow>, proxy : EventLoopProxy) -> Result<(), String>
     {
@@ -78,13 +94,13 @@ impl Gpu
     }
     pub(crate) async fn request_async(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>, proxy: EventLoopProxy)
     {
-        let _ = proxy.send_event(CtxEvent::Gpu(Self::new(instance, window, surface).await));
+        let _ = proxy.send_event(AppInternalEvent::Gpu(Self::new(instance, window, surface).await));
     }
 
 
 
     
-    pub(crate) async fn new(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>) -> Result<Self, String> 
+    pub(crate) async fn new(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>) -> GpuEvent
     {
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {

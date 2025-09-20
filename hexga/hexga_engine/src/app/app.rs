@@ -1,50 +1,54 @@
 use super::*;
 
 
-pub trait IAppEvent : 'static + Debug + Send {}
-impl<T> IAppEvent for T where T: 'static + Debug + Send {}
+singleton_thread_local!(pub App,AppContext,CONTEXT_APP);
 
-pub trait App: 'static
+
+impl SingletonInit for App
 {
-    type CustomEvent : IAppEvent;
-    fn handle_event(&mut self, ev: AppEvent<Self::CustomEvent>, ctx: &mut Ctx) { self.dispatch_event(ev, ctx); }
-    fn dispatch_event(&mut self, ev: AppEvent<Self::CustomEvent>, ctx: &mut Ctx)
-    {
-        match ev
+    fn replace(instance: Option<<Self as SingletonRef>::Target>) {
+        match instance
         {
-            AppEvent::Flow(f) => self.handle_flow(f, ctx),
-            AppEvent::Input(i) => self.handle_input(i, ctx),
-            AppEvent::Custom(c) => self.handle_custom(c, ctx),
+            Some(ctx) => 
+            {
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    use std::io::Write;
+
+                    env_logger::Builder::from_env(
+                        env_logger::Env::default().default_filter_or("debug")
+                    )
+                    .filter_module("wgpu_core", ::log::LevelFilter::Warn)
+                    .filter_module("wgpu_hal", ::log::LevelFilter::Warn)
+                    .filter_module("naga", ::log::LevelFilter::Warn)
+                    .format(|buf, record| {
+                        writeln!(buf, "{}", record.args())
+                    })
+                    .init();
+
+                    std::panic::set_hook(Box::new(|info| {
+                        App::destroy();
+                        eprintln!("panic occurred: {info}");
+                    }));
+
+
+                    let _res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        App::destroy();
+                    }));
+                }
+                #[cfg(target_arch = "wasm32")]
+                {
+                    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+                    console_log::init_with_level(::log::Level::Debug).expect("Couldn't initialize logger");
+                }
+                CONTEXT_APP.replace(Some(ctx));
+                // The Gpu is initialized in a special async way... 
+            },
+            None => 
+            {
+                CONTEXT_APP.replace(None);
+                App::destroy();
+            },
         }
     }
-
-    fn handle_flow(&mut self, flow: FlowEvent, ctx: &mut Ctx) { self.dispatch_flow(flow, ctx); }
-    fn dispatch_flow(&mut self, flow: FlowEvent, ctx: &mut Ctx)
-    {
-        match flow
-        {
-            FlowEvent::Resumed => self.resumed(ctx),
-            FlowEvent::Paused => self.paused(ctx),
-            FlowEvent::Update => self.update(ctx),
-            FlowEvent::Draw => self.draw(ctx),
-            FlowEvent::Exit => self.exit(ctx),
-        }
-    }
-
-
-    fn handle_custom(&mut self, custom: Self::CustomEvent, ctx: &mut Ctx) { let _ = (custom, ctx); }
-
-    fn update(&mut self, ctx: &mut Ctx) { let _ = ctx; }
-    fn draw(&mut self, ctx: &mut Ctx) { let _ = ctx; }
-
-
-    fn paused(&mut self, ctx: &mut Ctx) { let _ = ctx; }
-    fn resumed(&mut self, ctx: &mut Ctx) { let _ = ctx; }
-
-
-    fn handle_input(&mut self, input: InputEvent, ctx: &mut Ctx) { let _ = (ctx, input); }
-    fn exit(&mut self, ctx: &mut Ctx) { let _ = ctx; }
-
 }
-
-

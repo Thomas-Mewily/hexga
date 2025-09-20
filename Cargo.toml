@@ -37,3 +37,4 @@ hexga_simulation       = { path = "./hexga/hexga_simulation",          version =
 hexga_singleton        = { path = "./hexga/hexga_singleton",           version = "0.0.11-beta.3", default-features = false }
 hexga_engine_old       = { path = "./hexga/hexga_engine_old",          version = "0.0.11-beta.3", default-features = true }
 hexga_engine           = { path = "./hexga/hexga_engine",              version = "0.0.11-beta.3", default-features = true }
+hexga_engine_gpu       = { path = "./hexga/hexga_engine_gpu",          version = "0.0.11-beta.3", default-features = true }

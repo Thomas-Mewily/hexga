@@ -13,20 +13,20 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 
 pub use hexga::*;
 pub mod app;
-pub mod ctx;
 pub mod input;
 pub mod log;
 pub mod gpu;
 pub mod model;
+pub mod window;
 
 use prelude::*;
 pub mod prelude
 {
     pub use ::hexga::prelude::*;
     pub use super::app::*;
-    pub use super::ctx::*;
     pub use super::input::*;
     pub use super::log::*;
     pub use super::gpu::*;
     pub use super::model::*;
+    pub use super::window::*;
 }

@@ -7,9 +7,9 @@ pub struct MyApp
 }
 
 
-impl App for MyApp
+impl Application for MyApp
 {
-    type CustomEvent=();
+
 }
 
 fn main() 
