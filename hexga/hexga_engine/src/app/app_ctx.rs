@@ -25,15 +25,44 @@ impl AppContext
     pub(crate) fn new(param: AppParam) -> Self { Self { param, windows: ___(), keyboard: ___(), gpu: ___() } }
 }
 
-impl AppContext
+
+impl ScopedMessage for AppContext
 {
-    fn scoped_flow<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R { self.begin_scoped(); let r = f(); self.end_scoped(); r }
+    fn begin_resumed(&mut self) {
+        
+    }
+    fn end_resumed(&mut self) {
+        
+    }
 
-    fn scoped_paused<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R { self.begin_scoped(); let r = f(); self.end_scoped(); r }
 
-    fn scoped_update<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R { self.begin_scoped(); let r = f(); self.end_scoped(); r }
+    fn begin_paused(&mut self) {
+        
+    }
+    fn end_paused(&mut self) {
+        
+    }
 
-    fn scoped_draw<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R { self.begin_scoped(); let r = f(); self.end_scoped(); r }
+    fn begin_update(&mut self) {
+        
+    }
+    fn end_update(&mut self) {
+        
+    }
 
-    fn scoped_input<F,R>(&mut self, input: InputEvent, f: F) -> R where F: FnOnce(InputEvent) -> R { self.begin_scoped(); let r = f(input); self.end_scoped(); r }
+
+    fn begin_draw(&mut self) {
+        
+    }
+    fn end_draw(&mut self) {
+        
+    }
+
+
+    fn begin_event(&mut self, ev: &AppEvent) {
+        
+    }
+    fn end_event(&mut self) {
+        
+    }
 }

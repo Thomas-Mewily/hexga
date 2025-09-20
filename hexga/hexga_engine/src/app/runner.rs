@@ -48,25 +48,17 @@ pub(crate) struct AppRunner<A,E> where A:Application<E>, E:IEvent
 impl<A,E> AppRunner<A,E> where A:Application<E>, E:IEvent
 {
     pub const fn new(app: A, proxy: EventLoopProxy<E> ) -> Self { Self { app, proxy } }
-
-    /* 
-    pub(crate) fn handle_event(&mut self, ev: impl Into<AppEvent<E>>)
-    {
-        App.scoped_event(ev.into(), |ev| self.app.handle_event(ev));
-    }
-    */
 }
 impl<A,E> winit::application::ApplicationHandler<AppInternalEvent<E>> for AppRunner<A,E> where A:Application<E>, E:IEvent
 {
     fn resumed(&mut self, _event_loop: &EventLoopActive) 
     {
-        App.scoped_resumed(|ev| self.app.handle_event(ev));
-        //self.handle_event(FlowMessage::Resumed);
+        App.scoped_resumed(|| self.app.resumed());
     }
 
     fn suspended(&mut self, _event_loop: &EventLoopActive) 
     {
-        self.handle_event(FlowMessage::Paused);
+        App.scoped_paused(|| self.app.paused());
     }
 
     fn window_event
@@ -89,7 +81,7 @@ impl<A,E> winit::application::ApplicationHandler<AppInternalEvent<E>> for AppRun
                     window.request_redraw();
                 }
             }
-            WinitWindowEvent::RedrawRequested => self.handle_event(FlowMessage::Draw),
+            WinitWindowEvent::RedrawRequested => App.scoped_draw(|| self.app.draw()),
             WinitWindowEvent::KeyboardInput { device_id: _, event, is_synthetic: _ } => 
             {
                 let code = KeyCode::from(event.physical_key);
@@ -107,7 +99,8 @@ impl<A,E> winit::application::ApplicationHandler<AppInternalEvent<E>> for AppRun
                     _ => None,
                 };
                 let key = KeyEvent{ code, repeat, state, char };
-                self.handle_event(key);
+
+                App.scoped_event(key.into(), |ev| self.app.handle_event(ev))
             }
             _ => (),
         }

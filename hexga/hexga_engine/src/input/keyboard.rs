@@ -18,32 +18,36 @@ impl Default for Keyboard
     }
 }
 
-impl<E> ScopedEvent<E> for Keyboard where E:IEvent
+impl ScopedMessage for Keyboard
 {
-    /* 
     fn begin_update(&mut self) 
     {
-        ScopedEvent::<E>::begin_update(&mut self.key);
-        ScopedEvent::<E>::begin_update(&mut self.key_repeated);
+        self.key.begin_update();
+        self.key_repeated.begin_update();
     }
 
     fn end_update(&mut self) {
-        ScopedEvent::<E>::begin_update(&mut self.key.end_update();
-        ScopedEvent::<E>::begin_update(&mut self.key_repeated.end_update();
+        self.key.end_update();
+        self.key_repeated.end_update();
     }
 
     fn begin_paused(&mut self) {
-        ScopedEvent::<E>::begin_update(&mut self.key.begin_paused();
+        self.key.begin_paused();
+        self.key_repeated.begin_paused();
     }
     fn begin_resumed(&mut self) {
-        ScopedEvent::<E>::begin_update(&mut self.key.begin_resumed();
+        self.key.begin_resumed();
+        self.key_repeated.begin_resumed();
     }
 
-    fn begin_input_key(&mut self, key: &KeyEvent) {
-        ScopedEvent::<E>::begin_update(&mut self.key.begin_input_key(key);
-        ScopedEvent::<E>::begin_update(&mut self.key_repeated.begin_input_key(key);
+    fn begin_input(&mut self, input: &InputEvent) {
+        self.key.begin_input(input);
+        self.key_repeated.begin_input(input);
     }
-    */
+    fn end_input(&mut self) {
+        self.key.end_input();
+        self.key_repeated.end_input();
+    }
 }
 
 
@@ -88,7 +92,10 @@ impl KeyCodeManager
 {
     pub fn new(repeat : ButtonRepeat) -> Self { Self { repeat, down: ___(), old_down: ___(), pressed: ___(), released: ___() }}
 }
-impl<E> ScopedEvent<E> for KeyCodeManager where E:IEvent
+
+
+
+impl ScopedMessage for KeyCodeManager
 {
     fn begin_paused(&mut self) {
         self.old_down.clear();
