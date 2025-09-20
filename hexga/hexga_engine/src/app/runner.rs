@@ -49,16 +49,48 @@ impl<A,E> AppRunner<A,E> where A:Application<E>, E:IEvent
 {
     pub const fn new(app: A, proxy: EventLoopProxy<E> ) -> Self { Self { app, proxy } }
 }
+
+impl<A,E> AppRunner<A,E> where A:Application<E>, E:IEvent
+{
+    fn message(&mut self, msg: AppMessage<E>)
+    {
+        match msg
+        {
+            AppMessage::Flow(flow) => self.flow(flow),
+            AppMessage::Event(ev) => self.event(ev),
+        }
+    }
+
+    fn flow(&mut self, flow: FlowMessage) 
+    {
+        ScopedMessage::<E>::scoped_flow(App::as_mut(),flow, |f| self.app.handle_message(AppMessage::Flow(f)));
+    }
+
+    fn event(&mut self, ev: AppEvent<E>)
+    {
+        match ev
+        {
+            AppEvent::Input(input) => ScopedMessage::<E>::scoped_input(App::as_mut(), input, |i| self.app.handle_message(AppMessage::Event(AppEvent::Input(i)))),
+            AppEvent::Custom(custom) => ScopedMessage::<E>::scoped_custom(App::as_mut(), custom, |c| self.app.handle_message(AppMessage::Event(AppEvent::Custom(c)))), 
+        }
+    }
+}
+
 impl<A,E> winit::application::ApplicationHandler<AppInternalEvent<E>> for AppRunner<A,E> where A:Application<E>, E:IEvent
 {
     fn resumed(&mut self, _event_loop: &EventLoopActive) 
     {
-        App.scoped_resumed(|| self.app.resumed());
+        self.flow(FlowMessage::Resumed);
     }
 
     fn suspended(&mut self, _event_loop: &EventLoopActive) 
     {
-        App.scoped_paused(|| self.app.paused());
+        self.flow(FlowMessage::Paused);
+    }
+
+    fn about_to_wait(&mut self, _event_loop: &EventLoopActive) 
+    {
+        self.flow(FlowMessage::Update);
     }
 
     fn window_event
@@ -81,7 +113,7 @@ impl<A,E> winit::application::ApplicationHandler<AppInternalEvent<E>> for AppRun
                     window.request_redraw();
                 }
             }
-            WinitWindowEvent::RedrawRequested => App.scoped_draw(|| self.app.draw()),
+            WinitWindowEvent::RedrawRequested => self.flow(FlowMessage::Draw),
             WinitWindowEvent::KeyboardInput { device_id: _, event, is_synthetic: _ } => 
             {
                 let code = KeyCode::from(event.physical_key);
@@ -100,9 +132,22 @@ impl<A,E> winit::application::ApplicationHandler<AppInternalEvent<E>> for AppRun
                 };
                 let key = KeyEvent{ code, repeat, state, char };
 
-                App.scoped_event(key.into(), |ev| self.app.handle_event(ev))
+                ScopedMessage::<E>::scoped_input(App::as_mut(), key.into(), |ev| self.app.handle_event(AppEvent::Input(ev)));
             }
             _ => (),
+        }
+    }
+
+
+    fn user_event(&mut self, _event_loop: &EventLoopActive, event: AppInternalEvent<E>) {
+        match event
+        {
+            AppInternalEvent::Event(event) => self.event(event),
+            AppInternalEvent::Gpu(gpu) =>
+            {
+                Gpu::replace(Some(gpu.unwrap()));
+                App.windows.as_ref().map(|w| w.request_redraw());
+            }
         }
     }
 }

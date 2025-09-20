@@ -26,43 +26,21 @@ impl AppContext
 }
 
 
-impl ScopedMessage for AppContext
+impl<E> ScopedMessage<E> for AppContext where E:IEvent
 {
-    fn begin_resumed(&mut self) {
-        
-    }
-    fn end_resumed(&mut self) {
-        
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        ScopedMessage::<E>::begin_flow(&mut self.keyboard, flow);
     }
 
-
-    fn begin_paused(&mut self) {
-        
-    }
-    fn end_paused(&mut self) {
-        
+    fn end_flow(&mut self, flow: FlowMessage) {
+        ScopedMessage::<E>::end_flow(&mut self.keyboard, flow);
     }
 
-    fn begin_update(&mut self) {
-        
-    }
-    fn end_update(&mut self) {
-        
+    fn begin_input(&mut self, input: &InputEvent) {
+        ScopedMessage::<E>::begin_input(&mut self.keyboard, input);
     }
 
-
-    fn begin_draw(&mut self) {
-        
-    }
-    fn end_draw(&mut self) {
-        
-    }
-
-
-    fn begin_event(&mut self, ev: &AppEvent) {
-        
-    }
-    fn end_event(&mut self) {
-        
+    fn end_input(&mut self) {
+        ScopedMessage::<E>::end_input(&mut self.keyboard);
     }
 }

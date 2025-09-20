@@ -18,35 +18,25 @@ impl Default for Keyboard
     }
 }
 
-impl ScopedMessage for Keyboard
+impl<E> ScopedMessage<E> for Keyboard where E:IEvent
 {
-    fn begin_update(&mut self) 
-    {
-        self.key.begin_update();
-        self.key_repeated.begin_update();
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        ScopedMessage::<E>::begin_flow(&mut self.key, flow);
+        ScopedMessage::<E>::begin_flow(&mut self.key_repeated, flow);
     }
 
-    fn end_update(&mut self) {
-        self.key.end_update();
-        self.key_repeated.end_update();
-    }
-
-    fn begin_paused(&mut self) {
-        self.key.begin_paused();
-        self.key_repeated.begin_paused();
-    }
-    fn begin_resumed(&mut self) {
-        self.key.begin_resumed();
-        self.key_repeated.begin_resumed();
+    fn end_flow(&mut self, flow: FlowMessage) {
+        ScopedMessage::<E>::end_flow(&mut self.key, flow);
+        ScopedMessage::<E>::end_flow(&mut self.key_repeated, flow);
     }
 
     fn begin_input(&mut self, input: &InputEvent) {
-        self.key.begin_input(input);
-        self.key_repeated.begin_input(input);
+        ScopedMessage::<E>::begin_input(&mut self.key, input);
+        ScopedMessage::<E>::begin_input(&mut self.key_repeated, input);
     }
     fn end_input(&mut self) {
-        self.key.end_input();
-        self.key_repeated.end_input();
+        ScopedMessage::<E>::end_input(&mut self.key);
+        ScopedMessage::<E>::end_input(&mut self.key_repeated);
     }
 }
 
@@ -95,23 +85,23 @@ impl KeyCodeManager
 
 
 
-impl ScopedMessage for KeyCodeManager
+impl<E> ScopedMessage<E> for KeyCodeManager where E:IEvent
 {
-    fn begin_paused(&mut self) {
+    fn begin_flow_paused(&mut self) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
         self.released.clear();
     }
 
-    fn begin_resumed(&mut self) {
+    fn begin_flow_resumed(&mut self) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
         self.released.clear(); 
     }
 
-    fn end_update(&mut self) {
+    fn end_flow_update(&mut self) {
         match self.repeat
         {
             ButtonRepeat::NotRepeated => 

@@ -84,18 +84,29 @@ pub(crate) trait ScopedEvent
 */
 
 /// `begin_X()` are called before the application, `end_X()` are called after
-pub(crate) trait ScopedMessage
+pub(crate) trait ScopedMessage<E> where E:IEvent
 {
-    fn scoped_event<F,R>(&mut self, ev: AppEvent, f: F) -> R where F: FnOnce(AppEvent) -> R
+    /*
+    fn scoped_event<F,R>(&mut self, ev: AppEvent<E>, f: F) -> R where F: FnOnce(AppEvent<E>) -> R
     {
         self.begin_event(&ev);
         let r = f(ev);
         self.end_event();
         r
     }
-    fn begin_event(&mut self, ev: &AppEvent) { let _ = ev;}
+    fn begin_event(&mut self, ev: &AppEvent<E>) { let _ = ev;}
     fn end_event(&mut self) { }
+    */
 
+    fn scoped_custom<F,R>(&mut self, custom: E, f: F) -> R where F: FnOnce(E) -> R
+    {
+        self.begin_custom(&custom);
+        let r = f(custom);
+        self.end_custom();
+        r
+    }
+    fn begin_custom(&mut self, custom: &E) { let _  = custom; }
+    fn end_custom(&mut self) { }
 
 
     fn scoped_input<F,R>(&mut self, input: InputEvent, f: F) -> R where F: FnOnce(InputEvent) -> R
@@ -105,8 +116,16 @@ pub(crate) trait ScopedMessage
         self.end_input();
         r
     }
-    fn begin_input(&mut self, input: &InputEvent) { let _ = input;}
+    fn begin_input(&mut self, input: &InputEvent) 
+    {
+        match input
+        {
+            InputEvent::Key(key) => self.begin_input_key(key),
+        }
+    }
     fn end_input(&mut self) { }
+
+    fn begin_input_key(&mut self, input_key: &KeyEvent) { let _ = input_key; }
 
 
 
@@ -121,64 +140,64 @@ pub(crate) trait ScopedMessage
     {
         match flow
         {
-            FlowMessage::Resumed => self.begin_resumed(),
-            FlowMessage::Paused => self.begin_paused(),
-            FlowMessage::Update => self.begin_update(),
-            FlowMessage::Draw => self.begin_draw(),
+            FlowMessage::Resumed => self.begin_flow_resumed(),
+            FlowMessage::Paused => self.begin_flow_paused(),
+            FlowMessage::Update => self.begin_flow_update(),
+            FlowMessage::Draw => self.begin_flow_draw(),
         }
     }
     fn end_flow(&mut self, flow: FlowMessage) 
     {
         match flow
         {
-            FlowMessage::Resumed => self.end_resumed(),
-            FlowMessage::Paused => self.end_paused(),
-            FlowMessage::Update => self.end_update(),
-            FlowMessage::Draw => self.end_draw(),
+            FlowMessage::Resumed => self.end_flow_resumed(),
+            FlowMessage::Paused => self.end_flow_paused(),
+            FlowMessage::Update => self.end_flow_update(),
+            FlowMessage::Draw => self.end_flow_draw(),
         }
     }
 
 
-    fn scoped_paused<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
+    fn scoped_flow_paused<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
     {
-        self.begin_paused();
+        self.begin_flow_paused();
         let r = f();
-        self.end_paused();
+        self.end_flow_paused();
         r
     }
-    fn begin_paused(&mut self) {}
-    fn end_paused(&mut self) {}
+    fn begin_flow_paused(&mut self) {}
+    fn end_flow_paused(&mut self) {}
 
 
-    fn scoped_resumed<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
+    fn scoped_flow_resumed<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
     {
-        self.begin_resumed();
+        self.begin_flow_resumed();
         let r = f();
-        self.end_resumed();
+        self.end_flow_resumed();
         r
     }
-    fn begin_resumed(&mut self) {}
-    fn end_resumed(&mut self) {}
+    fn begin_flow_resumed(&mut self) {}
+    fn end_flow_resumed(&mut self) {}
 
 
-    fn scoped_update<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
+    fn scoped_flow_update<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
     {
-        self.begin_update();
+        self.begin_flow_update();
         let r = f();
-        self.end_update();
+        self.end_flow_update();
         r
     }
-    fn begin_update(&mut self) {}
-    fn end_update(&mut self) {}
+    fn begin_flow_update(&mut self) {}
+    fn end_flow_update(&mut self) {}
 
 
-    fn scoped_draw<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
+    fn scoped_flow_draw<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
     {
-        self.begin_draw();
+        self.begin_flow_draw();
         let r = f();
-        self.end_draw();
+        self.end_flow_draw();
         r
     }
-    fn begin_draw(&mut self) {}
-    fn end_draw(&mut self) {}
+    fn begin_flow_draw(&mut self) {}
+    fn end_flow_draw(&mut self) {}
 }

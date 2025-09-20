@@ -42,7 +42,7 @@ impl<E> From<KeyEvent> for AppEvent<E> where E:IEvent
 
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
-pub(crate) enum FlowMessage
+pub enum FlowMessage
 {
     Resumed,
     Paused,
