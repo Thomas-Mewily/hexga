@@ -1,17 +1,17 @@
 #![no_std]
 
 /// A powerful macro to impl other macros for the given types.
-/// 
+///
 /// Can be used to impl trait to a lot of type using macro, where generic can't.
 ///
 /// ```rust
 /// use hexga_map_on::map_on;
-/// 
+///
 /// trait Zero
 /// {
 ///     const ZERO : Self;
 /// }
-/// 
+///
 /// macro_rules! impl_zero {
 ///     ($type_name:ty) => {
 ///         impl Zero for $type_name
@@ -20,23 +20,23 @@
 ///         }
 ///     };
 /// }
-/// 
+///
 /// map_on!
 /// (
 ///     (
 ///         i8, i16, i32, i64, isize,
 ///         u8, u16, u32, u64, usize,
 ///         f32, f64
-///     ), 
+///     ),
 ///     impl_zero
 /// );
-/// 
+///
 /// // ^^ this call impl Zero for all the given type
-/// 
+///
 /// assert_eq!(i32::ZERO  , 0);
 /// assert_eq!(usize::ZERO, 0);
 /// assert_eq!(f32::ZERO  , 0.);
-/// ``` 
+/// ```
 #[macro_export]
 macro_rules! map_on {
     // Base case: single type
@@ -122,7 +122,7 @@ macro_rules! map_on_integer_signed {
 
 /// (`u8`, `u16`, `u32`, `u64`, `usize`) + (`i8`, `i16`, `i32`, `i64`, `isize`)
 #[macro_export]
-macro_rules! map_on_integer 
+macro_rules! map_on_integer
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on_integer_unsigned!($($macro_arms)*);
@@ -132,7 +132,7 @@ macro_rules! map_on_integer
 
 /// `f32`, `f64`
 #[macro_export]
-macro_rules! map_on_float 
+macro_rules! map_on_float
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on!((f32, f64), $($macro_arms)*);
@@ -141,7 +141,7 @@ macro_rules! map_on_float
 
 /// (`u8`, `u16`, `u32`, `u64`, `usize`) + (`i8`, `i16`, `i32`, `i64`, `isize`) + (`f32`, `f64`)
 #[macro_export]
-macro_rules! map_on_number 
+macro_rules! map_on_number
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on_integer!($($macro_arms)*);
@@ -151,7 +151,7 @@ macro_rules! map_on_number
 
 /// (`u8`, `u16`, `u32`, `u64`, `usize`) + (`i8`, `i16`, `i32`, `i64`, `isize`) + (`f32`, `f64`) + (`bool`)
 #[macro_export]
-macro_rules! map_on_number_and_bool 
+macro_rules! map_on_number_and_bool
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on_number!($($macro_arms)*);
@@ -169,7 +169,7 @@ macro_rules! map_on_operator_binary_arithmetic_unit {
             (
                 (Add, add),
                 (Sub, sub)
-            ), 
+            ),
             $($macro_arms)*
         );
     };
@@ -187,7 +187,7 @@ macro_rules! map_on_operator_binary_arithmetic {
                 (Mul, mul),
                 (Div, div),
                 (Rem, rem)
-            ), 
+            ),
             $($macro_arms)*
         );
     };
@@ -204,7 +204,7 @@ macro_rules! map_on_operator_binary_bit {
                 (BitAnd, bitand),
                 (Shl, shl),
                 (Shr, shr)
-            ), 
+            ),
             $($macro_arms)*
         );
     };
@@ -212,7 +212,7 @@ macro_rules! map_on_operator_binary_bit {
 
 /// (`Add`, `Sub`) + (`Mul`, `Div`, `Rem`) + (`BitOr`, `BitAnd`, `Shl`, `Shr`)
 #[macro_export]
-macro_rules! map_on_operator_binary 
+macro_rules! map_on_operator_binary
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on_operator_binary_arithmetic!($($macro_arms)*);
@@ -233,7 +233,7 @@ macro_rules! map_on_operator_assign_arithmetic_unit {
             (
                 (AddAssign, add_assign),
                 (SubAssign, sub_assign)
-            ), 
+            ),
             $($macro_arms)*
         );
     };
@@ -251,7 +251,7 @@ macro_rules! map_on_operator_assign_arithmetic {
                 (MulAssign, mul_assign),
                 (DivAssign, div_assign),
                 (RemAssign, rem_assign)
-            ), 
+            ),
             $($macro_arms)*
         );
     };
@@ -268,7 +268,7 @@ macro_rules! map_on_operator_assign_bit {
                 (BitAndAssign, bitand_assign),
                 (ShlAssign, shl_assign),
                 (ShrAssign, shr_assign)
-            ), 
+            ),
             $($macro_arms)*
         );
     };
@@ -276,7 +276,7 @@ macro_rules! map_on_operator_assign_bit {
 
 /// (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`) + (`BitOrAssign`, `BitAndAssign`, `ShlAssign`, `ShrAssign`)
 #[macro_export]
-macro_rules! map_on_operator_assign 
+macro_rules! map_on_operator_assign
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on_operator_assign_arithmetic!($($macro_arms)*);
@@ -284,11 +284,9 @@ macro_rules! map_on_operator_assign
     };
 }
 
-
-/// Macro for mapping over all standard [formatting traits](https://doc.rust-lang.org/std/fmt/index.html#formatting-traits):
-/// 
+/// Macro for mapping over all standard [formatting traits](https://doc.rust-lang.org/std/fmt/index.html#formatting-traits) except [std::fmt::Debug]:
+///
 /// - Display
-/// - Debug
 /// - Octal
 /// - LowerHex
 /// - UpperHex
@@ -297,12 +295,11 @@ macro_rules! map_on_operator_assign
 /// - LowerExp
 /// - UpperExp
 #[macro_export]
-macro_rules! map_on_std_fmt {
+macro_rules! map_on_std_fmt_without_debug {
     ($($macro_arms:tt)*) => {
         $crate::map_on!(
             (
                 Display,
-                Debug,
                 Octal,
                 LowerHex,
                 UpperHex,
@@ -316,6 +313,26 @@ macro_rules! map_on_std_fmt {
     };
 }
 
+/// Macro for mapping over all standard [formatting traits](https://doc.rust-lang.org/std/fmt/index.html#formatting-traits):
+///
+/// - Display
+/// - Debug
+/// - Octal
+/// - LowerHex
+/// - UpperHex
+/// - Pointer
+/// - Binary
+/// - LowerExp
+/// - UpperExp
+#[macro_export]
+macro_rules! map_on_std_fmt {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on_std_fmt_without_debug!($($macro_arms)*);
+        $crate::map_on!((Debug), $($macro_arms)*
+        );
+    };
+}
+
 
 
 
@@ -323,14 +340,14 @@ macro_rules! map_on_std_fmt {
 
 /// `Not`
 #[macro_export]
-macro_rules! map_on_operator_unary_bit 
+macro_rules! map_on_operator_unary_bit
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on!
         (
             (
                 (Not, not)
-            ), 
+            ),
             $($macro_arms)*
         );
     };
@@ -338,7 +355,7 @@ macro_rules! map_on_operator_unary_bit
 
 /// `Neg`, `Abs`
 #[macro_export]
-macro_rules! map_on_operator_unary_arithmetic_unit 
+macro_rules! map_on_operator_unary_arithmetic_unit
 {
     ($($macro_arms:tt)*) => {
         $crate::map_on!
@@ -346,7 +363,7 @@ macro_rules! map_on_operator_unary_arithmetic_unit
             (
                 (Neg, neg),
                 (Abs, abs)
-            ), 
+            ),
             $($macro_arms)*
         );
     };

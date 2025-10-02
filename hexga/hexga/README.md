@@ -1,7 +1,7 @@
 🚧 **Warning: Experimental Crate!** 🚧
 
-This crate is currently in **beta** and **experimental**.  
-It is subject to **breaking changes** in future releases.  
+This crate is currently in **beta** and **experimental**.
+It is subject to **breaking changes** in future releases.
 Use it at your own risk, and keep in mind that the API may change in future versions.
 
 ## HexGa
@@ -30,7 +30,7 @@ The name was inspired by Excalibur, the sword.
 
 - `hexga_math` : https://crates.io/crates/hexga_math
 - `hexga_generational` : https://crates.io/crates/hexga_generational
-- `hexga_undo_redo` : https://crates.io/crates/hexga_undo_redo
+- ~~`hexga_undo_redo` : https://crates.io/crates/hexga_undo_redo~~
 - `hexga_bitflags` : https://crates.io/crates/hexga_bitflags
 - `hexga_array` : https://crates.io/crates/hexga_array
 - `hexga_number` : https://crates.io/crates/hexga_number

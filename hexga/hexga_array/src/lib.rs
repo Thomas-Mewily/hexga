@@ -1,5 +1,4 @@
 use std::ops::{Index, IndexMut};
-use std::cmp::Ordering;
 
 mod array;
 pub use array::*;

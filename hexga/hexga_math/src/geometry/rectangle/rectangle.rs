@@ -11,7 +11,7 @@ pub struct RectangleOf<T>
     pub pos  : T,
     pub size : T,
 }
-impl_fixed_array_with_op!(RectangleOf, 2);
+impl_fixed_array!(RectangleOf, 2);
 
 impl<T> Default for RectangleOf<T> where T: Number
 {
@@ -62,7 +62,7 @@ impl<T,const N : usize> Rectangle<T,N> where Vector<T,N> : Number, T : Number
     pub fn new_centered(pos_middle : Vector<T,N>, size : Vector<T,N>) -> Self { Self::new(pos_middle-size/ (Vector::<T,N>::two()), size) }
     pub fn new_with_center(bottom_left : Vector<T,N>, size : Vector<T,N>, center_coef : Vector<T,N>) -> Self { Self::new(bottom_left - center_coef * size, size) }
 
-    pub fn get_coef(&self, coef : Vector<T,N>) -> Vector<T,N> where Vector<T,N> : UnitArithmetic { self.pos + self.size * coef }
+    pub fn get_coef(&self, coef : Vector<T,N>) -> Vector<T,N> where Vector<T,N> : Arithmetic { self.pos + self.size * coef }
 
     /// The center of the coordinate, whatever the dimension
     pub fn middle      (&self) -> Vector<T,N> { self.pos + self.size.take_half() }
@@ -118,6 +118,7 @@ impl<T,const N : usize> SetRectangle<T,N> for Rectangle<T,N> where T: Number
 }
 
 /* 
+// Todo: make it a trait. Should work for grid view
 pub trait SplitOn<T>
 {
     type Item;
@@ -125,7 +126,7 @@ pub trait SplitOn<T>
 }
 */
 
-impl<T,const N : usize> Rectangle<T,N> where T: NumberPrimitive
+impl<T,const N : usize> Rectangle<T,N> where T: Primitive
 {
     pub fn split_axis(&self, nb:T, axis: usize) -> impl Iterator<Item = Self>
     {
@@ -188,34 +189,33 @@ impl<T,const N : usize> Rectangle<T,N> where T: Number
     /// ```
     pub fn is_inside(&self, point : Vector<T, N>) -> bool
     {
-        self.min().all_with(&point, |axis, other_axis| other_axis >= axis) &&
-        self.max().all_with(&point, |axis, other_axis| other_axis <  axis)
+        self.bounds_min().all_with(&point, |axis, other_axis| other_axis >= axis) &&
+        self.bounds_max().all_with(&point, |axis, other_axis| other_axis <  axis)
     }
 
     /// Check if a point inside the rectangle.
     /// Don't work for indexing
     pub fn is_inside_inclusif(&self, point : Vector<T, N>) -> bool
     {
-        self.min().all_with(&point, |axis, other_axis| other_axis >= axis) &&
-        self.max().all_with(&point, |axis, other_axis| other_axis <= axis)
+        self.bounds_min().all_with(&point, |axis, other_axis| other_axis >= axis) &&
+        self.bounds_max().all_with(&point, |axis, other_axis| other_axis <= axis)
     }
 
-    pub fn is_rect_inside(&self, rect : Rectangle<T, N>) -> bool
+    pub fn is_rect_inside(&self, rect: Rectangle<T, N>) -> bool
     {
-        self.is_inside(rect.min()) && self.is_inside_inclusif(rect.max())
+        self.is_inside(rect.bounds_min()) && self.is_inside_inclusif(rect.bounds_max())
     }
 
     pub fn is_empty(&self) -> bool { self.size.is_zero() }
 
-    pub fn clamp_vector(&self, vector : Vector<T, N>) -> Vector<T, N>
-    { vector.max(self.min()).min(self.max()) }
+    pub fn clamp_vector(&self, vector : Vector<T, N>) -> Vector<T, N> where Vector<T, N>: Clamp { vector.clamp(self.bounds_min(), self.bounds_max())}
 
-    pub fn intersect_or_empty(self, other : Self) -> Self
+    pub fn intersect_or_empty(self, other : Self) -> Self where Vector<T, N>: Max + Min
     {
-        Self::from_pos_to_pos(self.min().max(other.pos), self.max().min(other.max()))
+        Self::from_pos_to_pos(self.bounds_min().max(other.pos), self.bounds_max().min(other.bounds_max()))
     }
     /// None if any rectangle is empty
-    pub fn intersect(self, other : Self) -> Option<Self>
+    pub fn intersect(self, other : Self) -> Option<Self> where Vector<T, N>: Max + Min
     {
         let intersect = self.intersect_or_empty(other);
         if intersect.size.is_zero()
@@ -274,7 +274,7 @@ pub trait Crop<T, const N : usize> : GetRectangle<T, N> + Sized where T: Number
         let mut subrect = self.rect();
 
         let removed_size = margin_start + margin_end;
-        if removed_size.any_with(subrect.size(), |a,b| a > b) { return None; }
+        if removed_size.any_with(&subrect.size(), |a,b| a > b) { return None; }
 
         subrect.pos  += margin_start;
         subrect.size -= removed_size;
@@ -401,23 +401,23 @@ pub trait GetRectangle<T, const N : usize> : GetPosition<T,N> where T: Number
 
     /// same as `.begin()`
     #[inline(always)]
-    fn min(&self) -> Vector<T,N> { self.begin() }
+    fn bounds_min(&self) -> Vector<T,N> { self.begin() }
     /// same as `.end()`
     #[inline(always)]
-    fn max(&self) -> Vector<T,N> { self.end() }
+    fn bounds_max(&self) -> Vector<T,N> { self.end() }
 
     #[inline(always)]
     fn rect(&self) -> Rectangle<T, N> { Rectangle::new(self.begin(), self.size()) }
 
-    fn iter_x(&self) -> Range<T> where Vector<T,N> : HaveX<T>, Range<T> : IntoIterator { self.min().x()..self.max().x() }
-    fn iter_y(&self) -> Range<T> where Vector<T,N> : HaveY<T>, Range<T> : IntoIterator { self.min().y()..self.max().y() }
-    fn iter_z(&self) -> Range<T> where Vector<T,N> : HaveZ<T>, Range<T> : IntoIterator { self.min().z()..self.max().z() }
-    fn iter_w(&self) -> Range<T> where Vector<T,N> : HaveW<T>, Range<T> : IntoIterator { self.min().w()..self.max().w() }
+    fn iter_x(&self) -> Range<T> where Vector<T,N> : HaveX<T>, Range<T> : IntoIterator { self.bounds_min().x()..self.bounds_max().x() }
+    fn iter_y(&self) -> Range<T> where Vector<T,N> : HaveY<T>, Range<T> : IntoIterator { self.bounds_min().y()..self.bounds_max().y() }
+    fn iter_z(&self) -> Range<T> where Vector<T,N> : HaveZ<T>, Range<T> : IntoIterator { self.bounds_min().z()..self.bounds_max().z() }
+    fn iter_w(&self) -> Range<T> where Vector<T,N> : HaveW<T>, Range<T> : IntoIterator { self.bounds_min().w()..self.bounds_max().w() }
 
-    #[inline(always)] fn is_inside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { x >= self.min().x() && x < self.max().x() }
-    #[inline(always)] fn is_inside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { y >= self.min().y() && y < self.max().y() }
-    #[inline(always)] fn is_inside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { z >= self.min().z() && z < self.max().z() }
-    #[inline(always)] fn is_inside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { w >= self.min().w() && w < self.max().w() }
+    #[inline(always)] fn is_inside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { x >= self.bounds_min().x() && x < self.bounds_max().x() }
+    #[inline(always)] fn is_inside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { y >= self.bounds_min().y() && y < self.bounds_max().y() }
+    #[inline(always)] fn is_inside_z(&self, z : T) -> bool where Vector<T,N> : HaveZ<T> { z >= self.bounds_min().z() && z < self.bounds_max().z() }
+    #[inline(always)] fn is_inside_w(&self, w : T) -> bool where Vector<T,N> : HaveW<T> { w >= self.bounds_min().w() && w < self.bounds_max().w() }
 
     #[inline(always)] fn is_outside_x(&self, x : T) -> bool where Vector<T,N> : HaveX<T> { !self.is_inside_x(x) }
     #[inline(always)] fn is_outside_y(&self, y : T) -> bool where Vector<T,N> : HaveY<T> { !self.is_inside_y(y) }
@@ -438,12 +438,6 @@ pub trait SetRectangle<T, const N : usize> : GetRectangle<T,N> + SetPosition<T,N
     fn with_size_y(mut self, y : T) -> Self where Vector<T, N> : HaveY<T>, Self : Sized { self.set_size_y(y); self }
     fn with_size_z(mut self, z : T) -> Self where Vector<T, N> : HaveZ<T>, Self : Sized { self.set_size_z(z); self }
     fn with_size_w(mut self, w : T) -> Self where Vector<T, N> : HaveW<T>, Self : Sized { self.set_size_w(w); self }
-}
-
-
-impl<T,const N : usize> Lerpable for Rectangle<T,N> where T: Number, Vector<T,N> : Lerpable
-{
-    fn lerp_unchecked(self, dest : Self, coef : float) -> Self { Self::new(self.pos.lerp(dest.pos, coef), self.size.lerp(dest.size, coef)) }
 }
 
 

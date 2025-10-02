@@ -55,12 +55,6 @@ macro_rules! impl_fixed_array_op
             fn neg(self) -> Self::Output { self.map(|v| v.neg()) }
         }
 
-        impl<T> $crate::number::Abs for $name<T> where T: $crate::number::Abs
-        {
-            type Output = $name<T::Output>;
-            fn abs(self) -> Self::Output { self.map(|v| v.abs()) }
-        }
-
         // ================= Iter =========
 
         impl<T> ::std::iter::Sum for $name<T> where Self : Zero + ::std::ops::Add<Self,Output = Self>
@@ -76,69 +70,68 @@ macro_rules! impl_fixed_array_op
                 iter.fold(Self::ONE, Self::mul)
             }
         }
-
-        // ================= Display =========
-
-        // TODO: use crate::map_on_std_fmt instead ?
-        $crate::impl_fixed_array_display!($name, Display);
-        $crate::impl_fixed_array_display!($name, Debug);
-        $crate::impl_fixed_array_display!($name, Octal);
-        $crate::impl_fixed_array_display!($name, Binary);
-        $crate::impl_fixed_array_display!($name, LowerHex);
-        $crate::impl_fixed_array_display!($name, UpperHex);
-        $crate::impl_fixed_array_display!($name, LowerExp);
-        $crate::impl_fixed_array_display!($name, UpperExp);
-        $crate::impl_fixed_array_display!($name, Pointer);
     }
 }
+
+
 
 #[macro_export]
 macro_rules! impl_generic_array_display
 {
-    ($name: ident, $trait_name :ident) =>
+    ($name: ident) =>
     {
-        impl<T, const N : usize> std::fmt::$trait_name  for $name<T,N> where T: std::fmt::$trait_name
-        {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+        map_on_std_fmt!(
+            ($trait_name :ident) =>
             {
-                write!(f, "(")?;
-                let mut it = self.array().iter().peekable();
-                while let Some(v) = it.next()
+                impl<T, const N : usize> std::fmt::$trait_name  for $name<T,N> where T: std::fmt::$trait_name
                 {
-                    v.fmt(f)?;
-                    if it.peek().is_some()
+                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
                     {
-                        write!(f, ", ")?;
+                        write!(f, "(")?;
+                        let mut it = self.array().iter().peekable();
+                        while let Some(v) = it.next()
+                        {
+                            v.fmt(f)?;
+                            if it.peek().is_some()
+                            {
+                                write!(f, ", ")?;
+                            }
+                        }
+                        write!(f, ")")
                     }
                 }
-                write!(f, ")")
             }
-        }
+        );
     }
 }
 
 #[macro_export]
 macro_rules! impl_fixed_array_display
 {
-    ($name: ident, $trait_name :ident) =>
+    ($name: ident) =>
     {
-        impl<T> std::fmt::$trait_name  for $name<T> where T: std::fmt::$trait_name
-        {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+        map_on_std_fmt!(
+            ($trait_name :ident) =>
             {
-                write!(f, "(")?;
-                let mut it = self.array().iter().peekable();
-                while let Some(v) = it.next()
+                impl<T> std::fmt::$trait_name for $name<T> where T: std::fmt::$trait_name
                 {
-                    v.fmt(f)?;
-                    if it.peek().is_some()
+                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
                     {
-                        write!(f, ", ")?;
+                        write!(f, "(")?;
+                        let mut it = self.array().iter().peekable();
+                        while let Some(v) = it.next()
+                        {
+                            v.fmt(f)?;
+                            if it.peek().is_some()
+                            {
+                                write!(f, ", ")?;
+                            }
+                        }
+                        write!(f, ")")
                     }
                 }
-                write!(f, ")")
             }
-        }
+        );
     }
 }
 
@@ -149,7 +142,6 @@ macro_rules! impl_generic_array_op
 {
     ($name: ident) =>
     {
-        use hexga_array::*;
         $crate::map_on::map_on_operator_binary!(
             (($trait_name: tt, $fn_name: tt)) =>
             {
@@ -201,44 +193,26 @@ macro_rules! impl_generic_array_op
             fn neg(self) -> Self::Output { self.map(|v| v.neg()) }
         }
 
-        impl<T, const N : usize> ::hexga_number::Abs for $name<T,N> where T: ::hexga_number::Abs
-        {
-            type Output = $name<T::Output,N>;
-            fn abs(self) -> Self::Output { self.map(|v| v.abs()) }
-        }
-
         // ================= Iter =========
 
-        impl<T, const N : usize> ::std::iter::Sum for $name<T,N> where Self : ::hexga_number::Zero + ::std::ops::Add<Self,Output = Self>
+        impl<T, const N : usize> ::std::iter::Sum for $name<T,N> where Self : $crate::number::Zero + ::std::ops::Add<Self,Output = Self>
         {
             fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-                iter.fold(<Self as ::hexga_number::Zero>::ZERO, <Self as ::std::ops::Add<Self>>::add)
+                iter.fold(<Self as $crate::number::Zero>::ZERO, <Self as ::std::ops::Add<Self>>::add)
             }
         }
 
-        impl<T, const N : usize> ::std::iter::Product for $name<T,N> where Self : ::hexga_number::One + ::std::ops::Mul<Self,Output = Self>
+        impl<T, const N : usize> ::std::iter::Product for $name<T,N> where Self : $crate::number::One + ::std::ops::Mul<Self,Output = Self>
         {
             fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-                iter.fold(<Self as ::hexga_number::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
+                iter.fold(<Self as $crate::number::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
             }
         }
-
-        // ================= Display =========
-
-        $crate::impl_generic_array_display!($name, Display);
-        $crate::impl_generic_array_display!($name, Debug);
-        $crate::impl_generic_array_display!($name, Octal);
-        $crate::impl_generic_array_display!($name, Binary);
-        $crate::impl_generic_array_display!($name, LowerHex);
-        $crate::impl_generic_array_display!($name, UpperHex);
-        $crate::impl_generic_array_display!($name, LowerExp);
-        $crate::impl_generic_array_display!($name, UpperExp);
-        $crate::impl_generic_array_display!($name, Pointer);
     }
 }
 
 #[macro_export]
-macro_rules! impl_fixed_array
+macro_rules! impl_fixed_array_core
 {
     ($name: ident, $dim : expr) =>
     {
@@ -246,22 +220,31 @@ macro_rules! impl_fixed_array
         {
             #[doc(hidden)]
             #[allow(dead_code)]
-            pub(crate) const IS_VALID: () = 
+            pub(crate) const IS_VALID: () =
             {
                 assert!(std::mem::size_of::<Self>() == std::mem::size_of::<[T;$dim]>());
             };
 
-            pub const fn from_array(array : [T;$dim]) -> Self 
-            { 
+            pub const fn from_array(array : [T;$dim]) -> Self
+            {
+                let _ = Self::IS_VALID;
                 let s = unsafe { std::ptr::read(&array as *const [T;$dim] as *const Self) };
                 std::mem::forget(array);
                 s
             }
 
-            pub fn map<T2, F>(self, f: F) -> $name<T2> where F: FnMut(T) -> T2
+            pub const fn to_array(self) -> [T;$dim]
             {
-                <[T;$dim]>::from(self).map(f).into()
+                let _ = Self::IS_VALID;
+                let s = unsafe { std::ptr::read(&self as *const Self as *const [T;$dim]) };
+                std::mem::forget(self);
+                s
             }
+
+            pub const fn array(&self) -> &[T; $dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
+            pub const fn array_mut(&mut self) -> &mut[T; $dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
+
+            impl_number_basic_trait!();
         }
 
         impl<T> ::std::marker::Copy  for $name<T> where T: Copy {}
@@ -292,19 +275,19 @@ macro_rules! impl_fixed_array
 
         //impl<T> ::std::convert::From<T> for $name<T> where T: Copy { fn from(value: T) -> Self { Self::from([value; $dim]) } }
 
-        impl<T> ::std::convert::From<[T; $dim]> for $name<T> { fn from(value: [T; $dim]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
-        impl<T> ::std::convert::From<$name<T>> for [T; $dim] { fn from(value: $name<T>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
+        impl<T> ::std::convert::From<[T; $dim]> for $name<T> { fn from(value: [T; $dim]) -> Self { Self::from_array(value) } }
+        impl<T> ::std::convert::From<$name<T>> for [T; $dim] { fn from(value: $name<T>) -> Self { value.to_array() } }
 
-        impl<T> ::std::convert::AsRef<[T; $dim]> for $name<T> { fn as_ref(&self) -> &[T; $dim] { unsafe { std::mem::transmute(self) } } }
-        impl<T> ::std::convert::AsMut<[T; $dim]> for $name<T> { fn as_mut(&mut self) -> &mut [T; $dim] { unsafe { std::mem::transmute(self) } } }
+        impl<T> ::std::convert::AsRef<[T; $dim]> for $name<T> { fn as_ref(&self) -> &[T; $dim] { self.array() } }
+        impl<T> ::std::convert::AsMut<[T; $dim]> for $name<T> { fn as_mut(&mut self) -> &mut [T; $dim] { self.array_mut() } }
 
         impl<T> $crate::array::Array<T, $dim> for $name<T>
         {
-            fn array(&self) -> &[T; $dim] { unsafe { std::mem::transmute(self) } }
-            fn array_mut(&mut self) -> &mut[T; $dim] { unsafe { std::mem::transmute(self) } }
+            fn array(&self) -> &[T; $dim] { self.array() }
+            fn array_mut(&mut self) -> &mut[T; $dim] { self.array_mut() }
         }
 
-        impl<T> $crate::array::ArrayWithGenericType<T, $dim> for $name<T>
+        impl<T> $crate::array::ArrayWithType<T, $dim> for $name<T>
         {
             type WithType<T2>=$name<T2>;
         }
@@ -320,7 +303,7 @@ macro_rules! impl_fixed_array
             fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
         }
 
-        
+
         impl<T, Idx> ::hexga_core::collections::TryGet<Idx> for $name<T> where [T;$dim] : ::hexga_core::collections::TryGet<Idx>
         {
             type Error = <[T;$dim] as ::hexga_core::collections::TryGet<Idx>>::Error;
@@ -362,7 +345,7 @@ macro_rules! impl_fixed_array
             #[track_caller]
             unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { ::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
         }
-        
+
 
         impl<T> ::std::iter::IntoIterator for $name<T> where [T;$dim] : ::std::iter::IntoIterator
         {
@@ -478,21 +461,27 @@ macro_rules! impl_fixed_array
         impl<T> ::hexga_io::IoLoad for $name<T> where T: ::hexga_io::IoLoad {}
 
 
-        impl<T> Composite for $name<T>
+        impl<T> $crate::Map for $name<T>
         {
-            type Inside=T;
-            fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
+            type Item=T;
+            fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
             {
                 Self::from_array(<[T;$dim]>::from(self).map_intern(f))
             }
+            fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
+            {
+                Self::from_array(<[T;$dim]>::from(self).map_with_intern(other.into(), f))
+            }
         }
-        impl<T> CompositeGeneric for $name<T>
+        impl<T> $crate::MapGeneric for $name<T>
         {
             type WithType<T2> = $name<T2>;
-            type Inside=T;
-
-            fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
-                Self::WithType::from_array(<[T;$dim] as CompositeGeneric>::map(self.into(), f))
+            fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
+                Self::WithType::from_array(<[T;$dim] as MapGeneric>::map(self.into(), f))
+            }
+            fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
+            {
+                Self::WithType::from_array(<[T;$dim]>::from(self).map_with(other.into(), f))
             }
         }
     };
@@ -507,9 +496,9 @@ macro_rules! impl_fixed_array_constant
         (
             (($trait_name: tt, $constant_name: tt)) =>
             {
-                impl<T> $trait_name for $name<T> where T: $trait_name + Copy 
-                { 
-                    const $constant_name: Self = Self::from_array(<[T;$dim]>::$constant_name); 
+                impl<T> $trait_name for $name<T> where T: $trait_name + Copy
+                {
+                    const $constant_name: Self = Self::from_array(<[T;$dim]>::$constant_name);
                 }
             }
         );
@@ -517,20 +506,21 @@ macro_rules! impl_fixed_array_constant
 }
 
 #[macro_export]
-macro_rules! impl_fixed_array_with_op
+macro_rules! impl_fixed_array
 {
     ($name: ident, $dim : expr) =>
     {
+        $crate::impl_fixed_array_core!($name, $dim);
         $crate::impl_fixed_array_op!($name, $dim);
-        $crate::impl_fixed_array!($name, $dim);
         $crate::impl_fixed_array_constant!($name, $dim);
+        $crate::impl_fixed_array_display!($name);
     };
 }
 
 
 
 #[macro_export]
-macro_rules! impl_generic_array
+macro_rules! impl_generic_array_core
 {
     ($name: ident) =>
     {
@@ -538,22 +528,31 @@ macro_rules! impl_generic_array
         {
             #[doc(hidden)]
             #[allow(dead_code)]
-            pub(crate) const IS_VALID: () = 
+            pub(crate) const IS_VALID: () =
             {
                 assert!(std::mem::size_of::<Self>() == std::mem::size_of::<[T;N]>());
             };
 
-            pub const fn from_array(array : [T;N]) -> Self 
-            { 
+            pub const fn from_array(array : [T;N]) -> Self
+            {
+                let _ = Self::IS_VALID;
                 let s = unsafe { std::ptr::read(&array as *const [T;N] as *const Self) };
                 std::mem::forget(array);
                 s
             }
 
-            pub fn map<T2, F>(self, f: F) -> $name<T2,N> where F: FnMut(T) -> T2
+            pub const fn to_array(self) -> [T;N]
             {
-                <[T;N]>::from(self).map(f).into()
+                let _ = Self::IS_VALID;
+                let s = unsafe { std::ptr::read(&self as *const Self as *const [T;N]) };
+                std::mem::forget(self);
+                s
             }
+
+            pub const fn array(&self) -> &[T; N] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
+            pub const fn array_mut(&mut self) -> &mut[T; N] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
+
+            impl_number_basic_trait!();
         }
 
         impl<T, const N : usize> ::std::marker::Copy  for $name<T,N> where T: Copy  {}
@@ -584,24 +583,24 @@ macro_rules! impl_generic_array
 
         //impl<T, const N : usize> ::std::convert::From<T> for $name<T,N> where T: Copy { fn from(value: T) -> Self { Self::from([value; N]) } }
 
-        impl<T, const N : usize> ::std::convert::From<[T;N]> for $name<T,N> { fn from(value: [T;N]) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
-        impl<T, const N : usize> ::std::convert::From<$name<T,N>> for [T;N] { fn from(value: $name<T,N>) -> Self { unsafe { std::mem::transmute_copy(&value) } } }
+        impl<T, const N : usize> ::std::convert::From<[T;N]> for $name<T,N> { fn from(value: [T;N]) -> Self { Self::from_array(value) } }
+        impl<T, const N : usize> ::std::convert::From<$name<T,N>> for [T;N] { fn from(value: $name<T,N>) -> Self { value.to_array() } }
 
-        impl<T, const N : usize> ::std::convert::AsRef<[T;N]> for $name<T,N> { fn as_ref(&self) -> &[T;N] { unsafe { std::mem::transmute(self) } } }
-        impl<T, const N : usize> ::std::convert::AsMut<[T;N]> for $name<T,N> { fn as_mut(&mut self) -> &mut [T;N] { unsafe { std::mem::transmute(self) } } }
+        impl<T, const N : usize> ::std::convert::AsRef<[T;N]> for $name<T,N> { fn as_ref(&self) -> &[T;N] { self.array() } }
+        impl<T, const N : usize> ::std::convert::AsMut<[T;N]> for $name<T,N> { fn as_mut(&mut self) -> &mut [T;N] { self.array_mut() } }
 
-        impl<T, const N : usize> ::hexga_array::Array<T, N> for $name<T,N>
+        impl<T, const N : usize> $crate::array::Array<T, N> for $name<T,N>
         {
-            fn array(&self) -> &[T;N] { unsafe { std::mem::transmute(self) } }
-            fn array_mut(&mut self) -> &mut[T;N] { unsafe { std::mem::transmute(self) } }
+            fn array(&self) -> &[T;N] { self.array() }
+            fn array_mut(&mut self) -> &mut[T;N] { self.array_mut() }
         }
 
-        impl<T, const N : usize> ::hexga_array::ArrayWithGenericType<T, N> for $name<T,N>
+        impl<T, const N : usize> $crate::array::ArrayWithType<T, N> for $name<T,N>
         {
             type WithType<T2>=$name<T2,N>;
         }
 
-        impl<T, const N : usize> ::hexga_array::ArrayWithGenericSize<T, N> for $name<T,N>
+        impl<T, const N : usize> $crate::array::ArrayWithSize<T, N> for $name<T,N>
         {
             type WithSize<const M:usize>=$name<T,M>;
         }
@@ -621,8 +620,8 @@ macro_rules! impl_generic_array
             type Error = <[T;N] as ::hexga_core::collections::TryGet<Idx>>::Error;
 
             #[inline(always)]
-            fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> 
-            { 
+            fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
+            {
                 ::hexga_core::collections::TryGet::try_get(self.array(), index)
             }
         }
@@ -656,12 +655,12 @@ macro_rules! impl_generic_array
             fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> { ::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
             #[inline(always)]
             fn get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Option<[&mut Self::Output;N2]> { ::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
-            
+
             #[inline(always)]
             #[track_caller]
             unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { ::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
         }
-        
+
 
         impl<T, const N : usize> ::std::iter::IntoIterator for $name<T,N> where [T;N] : ::std::iter::IntoIterator
         {
@@ -679,7 +678,7 @@ macro_rules! impl_generic_array
             type Item = <&'a [T;N] as ::std::iter::IntoIterator>::Item;
             type IntoIter = <&'a [T;N] as ::std::iter::IntoIterator>::IntoIter;
 
-            fn into_iter(self) -> Self::IntoIter 
+            fn into_iter(self) -> Self::IntoIter
             {
                 let array : &[T;N] = self.as_ref();
                 array.into_iter()
@@ -777,21 +776,27 @@ macro_rules! impl_generic_array
         #[cfg(feature = "hexga_io")]
         impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where T: ::hexga_io::IoLoad {}
 
-        impl<T, const N : usize> Composite for $name<T,N>
+        impl<T, const N : usize> $crate::Map for $name<T,N>
         {
-            type Inside=T;
-            fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
+            type Item=T;
+            fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
             {
                 Self::from_array(<[T;N]>::from(self).map_intern(f))
             }
+            fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
+            {
+                Self::from_array(<[T;N]>::from(self).map_with_intern(other.into(), f))
+            }
         }
-        impl<T, const N : usize> CompositeGeneric for $name<T,N>
+        impl<T, const N : usize> $crate::MapGeneric for $name<T,N>
         {
             type WithType<T2> = $name<T2,N>;
-            type Inside=T;
-
-            fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
-                Self::WithType::from_array(<[T;N] as CompositeGeneric>::map(self.into(), f))
+            fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
+                Self::WithType::from_array(<[T;N] as MapGeneric>::map(self.into(), f))
+            }
+            fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
+            {
+                Self::WithType::from_array(<[T;N]>::from(self).map_with(other.into(), f))
             }
         }
     };
@@ -806,9 +811,9 @@ macro_rules! impl_generic_array_constant
         (
             (($trait_name: tt, $constant_name: tt)) =>
             {
-                impl<T, const N:usize> $trait_name for $name<T,N> where T: $trait_name + Copy 
-                { 
-                    const $constant_name: Self = Self::from_array(<[T;N]>::$constant_name); 
+                impl<T, const N:usize> $trait_name for $name<T,N> where T: $trait_name + Copy
+                {
+                    const $constant_name: Self = Self::from_array(<[T;N]>::$constant_name);
                 }
             }
         );
@@ -816,12 +821,13 @@ macro_rules! impl_generic_array_constant
 }
 
 #[macro_export]
-macro_rules! impl_generic_array_with_op
+macro_rules! impl_generic_array
 {
     ($name: ident) =>
     {
+        $crate::impl_generic_array_core!($name);
         $crate::impl_generic_array_op!($name);
-        $crate::impl_generic_array!($name);
         $crate::impl_generic_array_constant!($name);
+        $crate::impl_generic_array_display!($name);
     };
 }

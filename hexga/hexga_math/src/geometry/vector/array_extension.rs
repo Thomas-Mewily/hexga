@@ -1,14 +1,16 @@
 use super::*;
 
-impl<S, T, const N : usize> ArrayGenericWithSizeExtension<T,N> for S where S : ArrayWithGenericSize<T,N> {}
-pub trait ArrayGenericWithSizeExtension<T, const N : usize> : ArrayWithGenericSize<T,N>
+impl<S, T, const N : usize> ToDimension<T,N> for S where S : ArrayWithSize<T,N> {}
+pub trait ToDimension<T, const N : usize> : ArrayWithSize<T,N>
 {
-    fn to_1d(self) -> Self::WithSize<1> where T: Default { self.with_size::<1>() }
-    fn to_2d(self) -> Self::WithSize<2> where T: Default { self.with_size::<2>() }
-    fn to_3d(self) -> Self::WithSize<3> where T: Default { self.with_size::<3>() }
-    fn to_4d(self) -> Self::WithSize<4> where T: Default { self.with_size::<4>() }
+    fn to_1d(self) -> Self::WithSize<1> where T: Default { self.resize::<1>() }
+    fn to_2d(self) -> Self::WithSize<2> where T: Default { self.resize::<2>() }
+    fn to_3d(self) -> Self::WithSize<3> where T: Default { self.resize::<3>() }
+    fn to_4d(self) -> Self::WithSize<4> where T: Default { self.resize::<4>() }
 }
 
+// TODO: fix it
+/* 
 impl<S, T, const N : usize> ArrayExtension<T,N> for S where S : Array<T,N> {}
 pub trait ArrayExtension<T, const N : usize> : Array<T,N>
 {
@@ -46,6 +48,7 @@ pub trait ArrayExtension<T, const N : usize> : Array<T,N>
     /// Fill non existing component with [Default]
     fn to_vec4(self) -> Vec4 where T: ToFloat + Default { self.to_vector_with_size() }
 }
+*/
 
 /*
 pub trait ArrayExtension1D<T> : Array<T,1>

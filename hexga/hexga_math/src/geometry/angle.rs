@@ -45,7 +45,7 @@ pub trait ToAngleComposite
 }
 
 map_on_number!(
-    ($name:ident) => 
+    ($name:ident) =>
     {
         impl ToAngleComposite for $name
         {
@@ -57,12 +57,12 @@ map_on_number!(
     }
 );
 
-impl<T> ToAngleComposite for T where T: CompositeGeneric, T::Inside : ToAngleComposite
+impl<T> ToAngleComposite for T where T: MapGeneric, T::Item : ToAngleComposite
 {
-    type Output = T::WithType<<T::Inside as ToAngleComposite>::Output>;
-    fn degree(self) -> Self::Output { self.map(|v| v.degree()) }
-    fn radian(self) -> Self::Output { self.map(|v| v.radian()) }
-    fn turn  (self) -> Self::Output { self.map(|v| v.turn()) }
+    type Output = T::WithType<<T::Item as ToAngleComposite>::Output>;
+    fn degree(self) -> Self::Output { self.map(ToAngleComposite::degree) }
+    fn radian(self) -> Self::Output { self.map(ToAngleComposite::radian) }
+    fn turn  (self) -> Self::Output { self.map(ToAngleComposite::turn  ) }
 }
 
 

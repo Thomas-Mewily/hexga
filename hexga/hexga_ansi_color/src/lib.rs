@@ -17,12 +17,6 @@ use std::fmt::{Debug, Display};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[allow(unused_imports)]
-#[cfg(feature = "hexga_io")]
-use hexga_io::{IoSave, IoLoad, Save, Load};
-
-
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum AnsiColorKind
@@ -38,7 +32,6 @@ pub enum AnsiColorKind
     Grey,
 }
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum AnsiColorLayer 
@@ -47,7 +40,6 @@ pub enum AnsiColorLayer
     Background,
 }
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct AnsiColor

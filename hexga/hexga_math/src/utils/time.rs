@@ -1,6 +1,5 @@
 use super::*;
 
-
 /*
 pub type DeltaTime = Rel<Time>;
 pub type FixedTime = Fix<Time>;
@@ -51,17 +50,16 @@ pub trait ToTimeComposite
     fn hour(self) -> Self::Output;
     fn day (self) -> Self::Output;
 }
-//impl_composite_output_with_methods!(ToTimeComposite, ms, s, mins, hour, day);
 
 map_on_number!(
-    ($name:ident) => 
+    ($name:ident) =>
     {
         impl ToTimeComposite for $name
         {
             type Output = Time;
-
             fn ms  (self) -> Self::Output { Time::from_ms(self.to_float()) }
             fn s   (self) -> Self::Output { Time::from_s(self.to_float()) }
+            /// With an `s` to avoid the confusion with the min function...
             fn mins(self) -> Self::Output { Time::from_mins(self.to_float()) }
             fn hour(self) -> Self::Output { Time::from_hour(self.to_float()) }
             fn day (self) -> Self::Output { Time::from_day(self.to_float()) }
@@ -69,14 +67,15 @@ map_on_number!(
     }
 );
 
-impl<T> ToTimeComposite for T where T: CompositeGeneric, T::Inside : ToTimeComposite
+impl<T> ToTimeComposite for T where T: MapGeneric, T::Item : ToTimeComposite
 {
-    type Output = T::WithType<<T::Inside as ToTimeComposite>::Output>;
-    fn ms  (self) -> Self::Output { self.map(|v| v.ms()) }
-    fn s   (self) -> Self::Output { self.map(|v| v.s()) }
-    fn mins(self) -> Self::Output { self.map(|v| v.mins()) }
-    fn hour(self) -> Self::Output { self.map(|v| v.hour()) }
-    fn day (self) -> Self::Output { self.map(|v| v.day()) }
+    type Output = T::WithType<<T::Item as ToTimeComposite>::Output>;
+
+    fn ms  (self) -> Self::Output { self.map(ToTimeComposite::ms  ) }
+    fn s   (self) -> Self::Output { self.map(ToTimeComposite::s   ) }
+    fn mins(self) -> Self::Output { self.map(ToTimeComposite::mins) }
+    fn hour(self) -> Self::Output { self.map(ToTimeComposite::hour) }
+    fn day (self) -> Self::Output { self.map(ToTimeComposite::day ) }
 }
 
 impl<T:Float> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self) } }
@@ -115,14 +114,14 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1000.ms(), 1.s());
     /// ```
-    pub fn from_ms (ms : T) -> Self  { Self::from_s(ms / T::THOUSAND) }
+    pub fn from_ms (ms : T) -> Self  { Self::from_s(ms / 1000.cast_into()) }
 
     /// milliseconds
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1.s().ms(), 1000.);
     /// ```
-    pub fn ms(self) -> T { self.0 * T::THOUSAND }
+    pub fn ms(self) -> T { self.0 * 1000.cast_into() }
 
 
     /// whole milliseconds
@@ -381,11 +380,7 @@ impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
 }
 
 
-
-
-
-
-pub trait TimeNow : UnitArithmetic
+pub trait TimeNow : Additive
 {
     /// Provides access to a notion of "current time" relative to some starting point.
     ///
@@ -399,7 +394,7 @@ pub trait TimeNow : UnitArithmetic
 
 impl<F> TimeNow for TimeOf<F> where F:Float + CastFrom<f64>
 {
-    fn since_launch() -> Self 
+    fn since_launch() -> Self
     {
         #[cfg(not(target_arch = "wasm32"))]
         {

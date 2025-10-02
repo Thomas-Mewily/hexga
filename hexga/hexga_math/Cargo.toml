@@ -1,6 +1,5 @@
 [package]
 name = "hexga_math"
-
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -9,16 +8,16 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
-keywords = ["math", "vector", "matrix", "rectangle"]
-description = "Math related crate that support multi dimensionnal vector, matrix, rectangle..."
+keywords = ["math", "number", "casting"]
+description = "Math related crate that define number and casting, and support array programming..."
 categories = ["mathematics", "data-structures", "algorithms", "rust-patterns"]
-
 
 [features]
 default = [
     "serde", "hexga_io",
     "int_are_32_bits", "float_are_32_bits"
 ]
+
 
 int_are_8_bits    = ["hexga_typedef/int_are_8_bits"]
 int_are_16_bits   = ["hexga_typedef/int_are_16_bits"]
@@ -33,7 +32,6 @@ float_are_size_bits = ["hexga_typedef/float_are_size_bits"]
 serde = ["dep:serde"]
 hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
 
-
 [dependencies]
 hexga_core.workspace = true
 hexga_number.workspace = true
@@ -43,6 +41,7 @@ hexga_map_on.workspace = true
 
 rayon = "1.10.0"
 
+# serialization
 hexga_io = { workspace = true, optional = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 

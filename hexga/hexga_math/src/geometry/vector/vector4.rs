@@ -96,8 +96,20 @@ impl<T> HaveW<T> for Vector4<T>
 impl<T> HaveWAndOne<T> for Vector4<T> where T: One + Zero { const W : Self = Vector4::new(T::ZERO, T::ZERO, T::ZERO, T::ONE); }
 impl<T> HaveWAndMinusOne<T> for Vector4<T> where T: MinusOne + Zero { const MINUS_W : Self = Vector4::new(T::ZERO, T::ZERO, T::ZERO, T::MINUS_ONE); }
 
-impl<T> From<Vector1<T>> for Vector4<T> where T: Default { fn from(value: Vector1<T>) -> Self { value.with_size() } }
-impl<T> From<Vector2<T>> for Vector4<T> where T: Default { fn from(value: Vector2<T>) -> Self { value.with_size() } }
-impl<T> From<Vector3<T>> for Vector4<T> where T: Default { fn from(value: Vector3<T>) -> Self { value.with_size() } }
+impl<T> From<Vector1<T>> for Vector4<T> where T: Default { fn from(value: Vector1<T>) -> Self { value.resize() } }
+impl<T> From<Vector2<T>> for Vector4<T> where T: Default { fn from(value: Vector2<T>) -> Self { value.resize() } }
+impl<T> From<Vector3<T>> for Vector4<T> where T: Default { fn from(value: Vector3<T>) -> Self { value.resize() } }
 
 pub type Vector4Iter<T> = VectorIter<Vector4<T>, 4>;
+
+pub(crate) mod prelude
+{
+    pub use super::
+    {
+        SplatCoord4,
+        Vector4,vector4,
+        Vec4,vec4,
+        Bool4,bool4,
+        Point4,point4,
+    };
+}

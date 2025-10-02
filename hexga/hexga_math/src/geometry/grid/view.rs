@@ -127,18 +127,6 @@ impl<'c, G, T, Idx, const N : usize> IGridView<G, T, Idx, N> for GridView<'c, G,
     { unsafe { GridView::from_rect_unchecked(self.grid, rect) } }
 }
 
-impl<'a, G, T, Idx, const N : usize> Debug for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    T : Debug
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
-        f.debug_struct("GridView").field("grid", &self.iter().map(|(_,v)| v).to_vec()).field("rect", &self.rect).finish()
-    }
-}
-
 
 impl<'a, G, T, Idx, const N : usize> Copy for GridView<'a, G, T, Idx, N>
     where

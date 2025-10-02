@@ -37,8 +37,8 @@ pub trait IGrid<T, Idx, const N : usize> :
     + GetManyMut<Vector<Idx,N>,Output=T>
     + IndexMut<Vector<Idx,N>, Output = T>
 
-    + Composite<Inside=T>
-    + CompositeGeneric<Inside=T>
+    + Map<Item=T>
+    + MapGeneric<Item=T>
 
     + Sized
     where Idx : Integer

@@ -35,11 +35,11 @@ pub trait CastFrom<T>
 { 
     fn cast_from(value : T) -> Self; 
 }
-impl<C1,C2> CastFrom<C2> for C1 where C1: CompositeGeneric, C2: CompositeGeneric<WithType<C1::Inside> = Self>, C1::Inside : CastFrom<C2::Inside>
+impl<C1,C2> CastFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithType<C1::Item> = Self>, C1::Item : CastFrom<C2::Item>
 {
     fn cast_from(value : C2) -> Self 
     {
-        value.map(|v| C1::Inside::cast_from(v))
+        value.map(|v| C1::Item::cast_from(v))
     }
 }
 
@@ -104,160 +104,163 @@ macro_rules! impl_cast_to
 map_on_number!(impl_cast_to);
 
 
-macro_rules! impl_cast_to_bool
-{
+map_on_integer!(
     ($itself: ty) =>
     {
         impl CastFrom<bool> for $itself
         {
-            fn cast_from(value: bool) -> $itself  { if value { 1 as $itself } else { 0 as $itself } }
+            fn cast_from(value: bool) -> $itself  { if value { 1 } else { 0 } }
         }
 
         impl CastFrom<$itself> for bool
         {
-            fn cast_from(value: $itself) -> bool { value != (0 as $itself) }
+            fn cast_from(value: $itself) -> bool { value != (0) }
         }
     };
-}
-map_on_number!(impl_cast_to_bool);
+);
+map_on_float!(
+    ($itself: ty) =>
+    {
+        impl CastFrom<bool> for $itself
+        {
+            fn cast_from(value: bool) -> $itself  { if value { 1. } else { 0. } }
+        }
+
+        impl CastFrom<$itself> for bool
+        {
+            fn cast_from(value: $itself) -> bool { value as $itself >= 0.5 }
+        }
+    };
+);
 impl CastFrom<bool> for bool { fn cast_from(value : bool) -> Self { value } }
 
 
 
-/// fX
-pub trait CastIntoFloat            : CastInto<f32> + CastInto<f64> {}
-impl<T> CastIntoFloat for T where T: CastInto<f32> + CastInto<f64> {}
+trait_marker!(
+    /// fX
+    CastIntoFloat: CastInto<f32> + ToF32<Output = f32> + CastInto<f64> + ToF64<Output = f64>
+);
 
-/// fX
-pub trait CastFromFloat            : CastFrom<f32> + CastFrom<f64> {}
-impl<T> CastFromFloat for T where T: CastFrom<f32> + CastFrom<f64> {}
+trait_marker!(
+    /// fX
+    CastFromFloat: CastFrom<f32> + CastFrom<f64>
+);
 
-/// fX
-pub trait CastFloat            : CastIntoFloat + CastFromFloat {}
-impl<T> CastFloat for T where T: CastIntoFloat + CastFromFloat {}
+trait_marker!(
+    /// fX
+    CastFloat: CastIntoFloat + CastFromFloat
+);
 
-
+trait_marker!(
 /// uX
-pub trait CastIntoIntegerUnsigned :
-    CastInto<u8 > +
-    CastInto<u16> +
-    CastInto<u32> +
-    CastInto<u64> +
-    CastInto<usize>
-{}
-impl<T> CastIntoIntegerUnsigned for T where T:
-    CastInto<u8 > +
-    CastInto<u16> +
-    CastInto<u32> +
-    CastInto<u64> +
-    CastInto<usize>
-{}
+CastIntoIntegerUnsigned:
+    CastInto<u8 > + ToU8<Output = u8> +
+    CastInto<u16> + ToU16<Output = u16> +
+    CastInto<u32> + ToU32<Output = u32> +
+    CastInto<u64> + ToU64<Output = u64> +
+    CastInto<usize> + ToUSize<Output = usize> +
+);
 
+trait_marker!(
 /// uX
-pub trait CastFromIntegerUnsigned :
+CastFromIntegerUnsigned:
     CastFrom<u8 > +
     CastFrom<u16> +
     CastFrom<u32> +
     CastFrom<u64> +
     CastFrom<usize>
-{}
-impl<T> CastFromIntegerUnsigned for T where T:
-    CastFrom<u8 > +
-    CastFrom<u16> +
-    CastFrom<u32> +
-    CastFrom<u64> +
-    CastFrom<usize>
-{}
+);
 
 
+trait_marker!(
 /// uX
-pub trait CastIntegerUnsigned            : CastFromIntegerUnsigned + CastFromIntegerUnsigned {}
-impl<T> CastIntegerUnsigned for T where T: CastFromIntegerUnsigned + CastFromIntegerUnsigned {}
+CastIntegerUnsigned: CastFromIntegerUnsigned + CastFromIntegerUnsigned
+);
 
-
+trait_marker!(
 /// iX
-pub trait CastIntoIntegerSigned :
-    CastInto<i8 > +
-    CastInto<i16> +
-    CastInto<i32> +
-    CastInto<i64> +
-    CastInto<isize>
-{}
-impl<T> CastIntoIntegerSigned for T where T:
-    CastInto<i8 > +
-    CastInto<i16> +
-    CastInto<i32> +
-    CastInto<i64> +
-    CastInto<isize>
-{}
+CastIntoIntegerSigned:
+    CastInto<i8 > + ToI8<Output = i8> +
+    CastInto<i16> + ToI16<Output = i16> +
+    CastInto<i32> + ToI32<Output = i32> +
+    CastInto<i64> + ToI64<Output = i64> +
+    CastInto<isize> + ToISize<Output = isize>
+);
 
+
+trait_marker!(
 /// iX
-pub trait CastFromIntegerSigned :
+CastFromIntegerSigned:
     CastFrom<i8 > +
     CastFrom<i16> +
     CastFrom<i32> +
     CastFrom<i64> +
     CastFrom<isize>
-{}
-impl<T> CastFromIntegerSigned for T where T:
-    CastFrom<i8 > +
-    CastFrom<i16> +
-    CastFrom<i32> +
-    CastFrom<i64> +
-    CastFrom<isize>
-{}
+);
 
+
+trait_marker!(
 /// iX
-pub trait CastIntegerSigned            : CastFromIntegerSigned + CastFromIntegerSigned {}
-impl<T> CastIntegerSigned for T where T: CastFromIntegerSigned + CastFromIntegerSigned {}
+CastIntegerSigned: CastFromIntegerSigned + CastFromIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX
-pub trait CastIntoInteger            : CastIntoIntegerSigned + CastIntoIntegerUnsigned {}
-impl<T> CastIntoInteger for T where T: CastIntoIntegerSigned + CastIntoIntegerUnsigned {}
+CastIntoInteger: CastIntoIntegerSigned + CastIntoIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX
-pub trait CastFromInteger            : CastFromIntegerSigned + CastFromIntegerUnsigned {}
-impl<T> CastFromInteger for T where T: CastFromIntegerSigned + CastFromIntegerUnsigned {}
+CastFromInteger: CastFromIntegerSigned + CastFromIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX
-pub trait CastInteger            : CastIntoInteger + CastFromInteger {}
-impl<T> CastInteger for T where T: CastIntoInteger + CastFromInteger {}
+CastInteger: CastIntoInteger + CastFromInteger
+);
 
 
+trait_marker!(
 /// bool
-pub trait CastIntoBool            : CastInto<bool> {}
-impl<T> CastIntoBool for T where T: CastInto<bool> {}
+CastIntoBool: CastInto<bool> + ToBool<Output = bool>
+);
 
+trait_marker!(
 /// bool
-pub trait CastFromBool             : CastFrom<bool> {}
-impl<T> CastFromBool for T where T: CastFrom<bool> {}
+CastFromBool: CastFrom<bool>
+);
 
+trait_marker!(
 /// bool
-pub trait CastBool            : CastIntoBool + CastFromBool {}
-impl<T> CastBool for T where T: CastIntoBool + CastFromBool {}
+CastBool: CastIntoBool + CastFromBool
+);
 
-
+trait_marker!(
 /// iX uX fX
-pub trait CastIntoNumber            : CastIntoInteger + CastIntoFloat {}
-impl<T> CastIntoNumber for T where T: CastIntoInteger + CastIntoFloat {}
+CastIntoNumber: CastIntoInteger + CastIntoFloat
+);
 
+trait_marker!(
 /// iX uX fX
-pub trait CastFromNumber            : CastFromInteger + CastFromFloat {}
-impl<T> CastFromNumber for T where T: CastFromInteger + CastFromFloat {}
+CastFromNumber: CastFromInteger + CastFromFloat
+);
 
+trait_marker!(
 /// iX uX fX
-pub trait CastNumber            : CastInteger + CastFloat {}
-impl<T> CastNumber for T where T: CastInteger + CastFloat {}
+CastNumber: CastInteger + CastFloat
+);
 
-
+trait_marker!(
 /// iX uX fX bool
-pub trait CastIntoPrimitive            : CastIntoNumber + CastIntoBool {}
-impl<T> CastIntoPrimitive for T where T: CastIntoNumber + CastIntoBool {}
+CastIntoPrimitive: CastIntoNumber + CastIntoBool
+);
 
+trait_marker!(
 /// iX uX fX bool
-pub trait CastFromPrimitive            : CastFromNumber + CastFromBool {}
-impl<T> CastFromPrimitive for T where T: CastFromNumber + CastFromBool {}
+CastFromPrimitive: CastFromNumber + CastFromBool
+);
 
+trait_marker!(
 /// iX uX fX bool
-pub trait CastPrimitive            : CastIntoPrimitive + CastFromPrimitive {}
-impl<T> CastPrimitive for T where T: CastIntoPrimitive + CastFromPrimitive {}
+CastPrimitive: CastIntoPrimitive + CastFromPrimitive
+);

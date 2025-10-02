@@ -12,6 +12,8 @@ pub mod iter;
 pub mod utils;
 pub mod collections;
 pub mod accessor;
+pub mod traits;
+
 
 use prelude::*;
 pub mod prelude
@@ -22,6 +24,7 @@ pub mod prelude
     pub use super::utils::*;
     pub use super::collections::*;
     pub use super::accessor::*;
+    pub use super::traits::prelude::*;
 
 
     pub use std::collections::{HashMap,HashSet};

@@ -1,7 +1,7 @@
 use super::*;
 
 /// A N-dimensional grid
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Grid"))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
@@ -12,22 +12,117 @@ pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
     pub(crate) values : Vec<T>,
 }
 
-impl<T, Idx, const N : usize> Composite for GridBase<T, Idx, N> where Idx : Integer
+macro_rules! impl_grid_fmt_method {
+    ($trait_name :ident) => {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+        {
+            const SEP :&'static str = " ";
+            let size = self.size();
+
+            let strings = self.iter()
+                .map(|(_, v)| {
+                    let mut s = String::new();
+                    let mut tmp_f = std::fmt::Formatter::new(&mut s, ___());
+                    std::fmt::$trait_name::fmt(v, &mut tmp_f)?;
+                    Ok(s)
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
+            match N
+            {
+                2 =>
+                {
+                    let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
+                    let g = unsafe { GridBase::from_vec_unchecked(size, strings) };
+
+                    for y in (0..size[1].to_usize()).rev()
+                    {
+                        for x in 0..size[0].to_usize()
+                        {
+                            let mut idx = Vector::<Idx,N>::ZERO;
+                            idx[0] = Idx::cast_from(x);
+                            idx[1] = Idx::cast_from(y);
+                            write!(f, "{:>width$}", g[idx], width = width)?;
+                            f.write_str(SEP)?;
+                        }
+                        writeln!(f)?;
+                    }
+                }
+                _ =>
+                {
+                    for v in &strings
+                    {
+                        write!(f, "{}", v)?;
+                        f.write_str(SEP)?;
+                    }
+                }
+            }
+            writeln!(f, "size: {:?}", size)
+        }
+    };
+}
+
+map_on_std_fmt!(
+    ($trait_name :ident) =>
+    {
+        impl<T, Idx, const N : usize> std::fmt::$trait_name for GridBase<T, Idx, N> where Idx : Integer, T: std::fmt::$trait_name + std::fmt::Debug
+        {
+            impl_grid_fmt_method!($trait_name);
+        }
+
+        impl<'a, G, T, Idx, const N : usize> std::fmt::$trait_name for GridView<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, T: std::fmt::$trait_name + std::fmt::Debug
+        {
+            impl_grid_fmt_method!($trait_name);
+        }
+
+        impl<'a, G, T, Idx, const N : usize> std::fmt::$trait_name for GridViewMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, T: std::fmt::$trait_name + std::fmt::Debug
+        {
+            impl_grid_fmt_method!($trait_name);
+        }
+    }
+);
+
+impl<T, Idx, const N : usize> Map for GridBase<T, Idx, N> where Idx : Integer
 {
-    type Inside=T;
-    fn map_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside {
+    type Item=T;
+    fn map_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item {
         self.values = self.values.map_intern(f);
         self
     }
-}
-impl<T, Idx, const N : usize> CompositeGeneric for GridBase<T, Idx, N> where Idx : Integer
-{
-    type WithType<T2> = GridBase<T2, Idx, N>;
-    type Inside=T;
-
-    fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
-        unsafe { Self::WithType::<T2>::from_vec_unchecked(self.size, self.values.map(f)) }
+    fn map_with_intern<F>(mut self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
+        if self.size == other.size
+        {
+            self.values = self.values.map_with_intern(other.values, f);
+            self
+        }else
+        {
+            panic!("grid must have the same size");
+        }
     }
+}
+impl<T, Idx, const N : usize> MapGeneric for GridBase<T, Idx, N> where Idx : Integer
+{
+    type WithType<R> = GridBase<R, Idx, N>;
+
+    fn map<R,F>(self, f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R {
+        unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map(f)) }
+    }
+    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
+    {
+        if self.size == other.size
+        {
+            unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map_with(other.values, f)) }
+        }
+        else
+        {
+            panic!("grid must have the same size");
+        }
+    }
+}
+
+impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : Integer
+{
+    impl_number_basic_trait!();
 }
 
 impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
@@ -114,7 +209,7 @@ impl<P, T, Idx, const N : usize> GetManyMut<P> for GridBase<T, Idx,N> where Idx 
             self.values_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
-    
+
     fn get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Option<[&mut Self::Output;N2]> {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos.into()));

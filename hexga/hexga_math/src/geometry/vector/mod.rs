@@ -1,10 +1,10 @@
 use super::*;
 
+mod array_extension;
+pub use array_extension::*;
+
 mod vector_n;
 pub use vector_n::*;
-
-mod vector_iter;
-pub use vector_iter::*;
 
 mod vector1;
 pub use vector1::*;
@@ -18,13 +18,33 @@ pub use vector3::*;
 mod vector4;
 pub use vector4::*;
 
+mod macro_impl;
+pub use macro_impl::*;
+
+mod vector_iter;
+pub use vector_iter::*;
+
+mod xyzw;
+pub use xyzw::*;
+
 mod typedef;
 pub use typedef::*;
 
-mod xyzw_related;
-pub use xyzw_related::*;
 
-mod array_extension;
-pub use array_extension::*;
-
-mod macro_impl;
+pub mod prelude
+{
+    pub use super::
+    {
+        array_extension::*,
+        xyzw::*,
+        macro_impl::*,
+        typedef::*,
+        vector_n::prelude::*,
+        vector1::prelude::*,
+        vector2::prelude::*,
+        vector3::prelude::*,
+        vector4::prelude::*,
+        vector_iter::IterIndex,
+    };
+    
+}

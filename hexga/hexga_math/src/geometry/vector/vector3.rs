@@ -83,15 +83,15 @@ impl<T> HaveZ<T> for Vector3<T>
 impl<T> HaveZAndOne<T> for Vector3<T> where T: One + Zero { const Z : Self = Vector3::new(T::ZERO, T::ZERO, T::ONE); }
 impl<T> HaveZAndMinusOne<T> for Vector3<T> where T: MinusOne + Zero { const MINUS_Z : Self = Vector3::new(T::ZERO, T::ZERO, T::MINUS_ONE); }
 
-impl<T> From<Vector1<T>> for Vector3<T> where T: Default { fn from(value: Vector1<T>) -> Self { value.with_size() } }
-impl<T> From<Vector2<T>> for Vector3<T> where T: Default { fn from(value: Vector2<T>) -> Self { value.with_size() } }
+impl<T> From<Vector1<T>> for Vector3<T> where T: Default { fn from(value: Vector1<T>) -> Self { value.resize() } }
+impl<T> From<Vector2<T>> for Vector3<T> where T: Default { fn from(value: Vector2<T>) -> Self { value.resize() } }
 impl<T> From<Vector4<T>> for Vector3<T> { fn from(value: Vector4<T>) -> Self { let [x, y, z, ..] = value.to_array(); Self::new(x, y, z) } }
 
 pub type Vector3Iter<T> = VectorIter<Vector3<T>, 3>;
 
 
 // Based on the glam crate
-impl<T> Vector3<T> where T:NumberArithmetic
+impl<T> Vector3<T> where T:Numeric
 {
     /// Computes the cross product of `self` and `rhs`.
     pub fn cross(self, rhs: Self) -> Self
@@ -102,4 +102,17 @@ impl<T> Vector3<T> where T:NumberArithmetic
              self.x * rhs.y - rhs.x * self.y
         )
     }
+}
+
+
+pub(crate) mod prelude
+{
+    pub use super::
+    {
+        SplatCoord3,
+        Vector3,vector3,
+        Vec3,vec3,
+        Bool3,bool3,
+        Point3,point3,
+    };
 }

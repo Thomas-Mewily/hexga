@@ -57,3 +57,15 @@ impl<T> From<Vector3<T>> for Vector1<T> { fn from(value: Vector3<T>) -> Self { l
 impl<T> From<Vector4<T>> for Vector1<T> { fn from(value: Vector4<T>) -> Self { let [x,..] = value.to_array(); Self::new(x) } }
 
 pub type Vector1Iter<T> = VectorIter<Vector1<T>, 1>;
+
+pub(crate) mod prelude
+{
+    pub use super::
+    {
+        SplatCoord1,
+        Vector1,vector1,
+        Vec1,vec1,
+        Bool1,bool1,
+        Point1,point1,
+    };
+}

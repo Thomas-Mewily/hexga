@@ -2,7 +2,7 @@ use super::*;
 
 
 
-/// Remap the value [RangeDefault] to the default range of target type,
+/// Remap the value [RangeDefault] to the [RangeDefault] of the target type,
 /// in a generic friendly way, and similar to the [From] trait.
 /// 
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
@@ -37,16 +37,16 @@ pub trait CastRangeFrom<T>
 { 
     fn cast_range_from(value : T) -> Self; 
 }
-impl<C1,C2> CastRangeFrom<C2> for C1 where C1: CompositeGeneric, C2: CompositeGeneric<WithType<C1::Inside> = Self>, C1::Inside : CastRangeFrom<C2::Inside>
+impl<C1,C2> CastRangeFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithType<C1::Item> = Self>, C1::Item : CastRangeFrom<C2::Item>
 {
     fn cast_range_from(value : C2) -> Self 
     {
-        value.map(|v| C1::Inside::cast_range_from(v))
+        value.map(|v| C1::Item::cast_range_from(v))
     }
 }
 
 
-/// Remap the value [RangeDefault] to the default range of target type,
+/// Remap the value [RangeDefault] to the [RangeDefault] of the target type,
 /// in a generic friendly way, and similar to the [From] trait.
 /// 
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
@@ -207,144 +207,131 @@ impl CastRangeFrom<bool> for bool
 
 
 
-
+trait_marker!(
 /// fX
-pub trait CastRangeIntoFloat            : CastRangeInto<f32> + CastRangeInto<f64> {}
-impl<T> CastRangeIntoFloat for T where T: CastRangeInto<f32> + CastRangeInto<f64> {}
+CastRangeIntoFloat: CastRangeInto<f32> + CastRangeInto<f64>
+);
 
+trait_marker!(
 /// fX
-pub trait CastRangeFromFloat            : CastRangeFrom<f32> + CastRangeFrom<f64> {}
-impl<T> CastRangeFromFloat for T where T: CastRangeFrom<f32> + CastRangeFrom<f64> {}
+CastRangeFromFloat: CastRangeFrom<f32> + CastRangeFrom<f64>
+);
 
+trait_marker!(
 /// fX
-pub trait CastRangeFloat            : CastRangeIntoFloat + CastRangeFromFloat {}
-impl<T> CastRangeFloat for T where T: CastRangeIntoFloat + CastRangeFromFloat {}
+CastRangeFloat: CastRangeIntoFloat + CastRangeFromFloat
+);
 
+trait_marker!(
 /// uX
-pub trait CastRangeIntoIntegerUnsigned :
+CastRangeIntoIntegerUnsigned:
     CastRangeInto<u8 > +
     CastRangeInto<u16> +
     CastRangeInto<u32> +
     CastRangeInto<u64> +
     CastRangeInto<usize>
-{}
-impl<T> CastRangeIntoIntegerUnsigned for T where T:
-    CastRangeInto<u8 > +
-    CastRangeInto<u16> +
-    CastRangeInto<u32> +
-    CastRangeInto<u64> +
-    CastRangeInto<usize>
-{}
+);
 
+trait_marker!(
 /// uX
-pub trait CastRangeFromIntegerUnsigned :
+CastRangeFromIntegerUnsigned:
     CastRangeFrom<u8 > +
     CastRangeFrom<u16> +
     CastRangeFrom<u32> +
     CastRangeFrom<u64> +
     CastRangeFrom<usize>
-{}
-impl<T> CastRangeFromIntegerUnsigned for T where T:
-    CastRangeFrom<u8 > +
-    CastRangeFrom<u16> +
-    CastRangeFrom<u32> +
-    CastRangeFrom<u64> +
-    CastRangeFrom<usize>
-{}
+);
 
+trait_marker!(
 /// uX
-pub trait CastRangeIntegerUnsigned            : CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
-impl<T> CastRangeIntegerUnsigned for T where T: CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned {}
+CastRangeIntegerUnsigned: CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned
+);
 
-
+trait_marker!(
 /// iX
-pub trait CastRangeIntoIntegerSigned :
+CastRangeIntoIntegerSigned:
     CastRangeInto<i8 > +
     CastRangeInto<i16> +
     CastRangeInto<i32> +
     CastRangeInto<i64> +
     CastRangeInto<isize>
-{}
-impl<T> CastRangeIntoIntegerSigned for T where T:
-    CastRangeInto<i8 > +
-    CastRangeInto<i16> +
-    CastRangeInto<i32> +
-    CastRangeInto<i64> +
-    CastRangeInto<isize>
-{}
+);
 
+trait_marker!(
 /// iX
-pub trait CastRangeFromIntegerSigned :
+CastRangeFromIntegerSigned :
     CastRangeFrom<i8 > +
     CastRangeFrom<i16> +
     CastRangeFrom<i32> +
     CastRangeFrom<i64> +
     CastRangeFrom<isize>
-{}
-impl<T> CastRangeFromIntegerSigned for T where T:
-    CastRangeFrom<i8 > +
-    CastRangeFrom<i16> +
-    CastRangeFrom<i32> +
-    CastRangeFrom<i64> +
-    CastRangeFrom<isize>
-{}
+);
 
+
+trait_marker!(
 /// iX
-pub trait CastRangeIntegerSigned            : CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
-impl<T> CastRangeIntegerSigned for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerSigned {}
+CastRangeIntegerSigned: CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned
+);
 
-
+trait_marker!(
 /// iX uX
-pub trait CastRangeIntoInteger            : CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
-impl<T> CastRangeIntoInteger for T where T: CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned {}
+CastRangeIntoInteger: CastRangeIntoIntegerSigned + CastRangeIntoIntegerUnsigned + CastRangeFromIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX
-pub trait CastRangeFromInteger            : CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
-impl<T> CastRangeFromInteger for T where T: CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned {}
+CastRangeFromInteger: CastRangeFromIntegerSigned + CastRangeFromIntegerUnsigned + CastRangeFromIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX
-pub trait CastRangeInteger            : CastRangeIntoInteger + CastRangeFromInteger {}
-impl<T> CastRangeInteger for T where T: CastRangeIntoInteger + CastRangeFromInteger {}
+CastRangeInteger: CastRangeIntoInteger + CastRangeFromInteger+ CastRangeFromIntegerUnsigned
+);
 
-
+trait_marker!(
 /// bool
-pub trait CastRangeIntoBool            : CastRangeInto<bool> {}
-impl<T> CastRangeIntoBool for T where T: CastRangeInto<bool> {}
+CastRangeIntoBool: CastRangeInto<bool> + CastRangeFromIntegerUnsigned
+);
 
+trait_marker!(
 /// bool
-pub trait CastRangeFromBool            : CastRangeFrom<bool> {}
-impl<T> CastRangeFromBool for T where T: CastRangeFrom<bool> {}
+CastRangeFromBool: CastRangeFrom<bool> + CastRangeFromIntegerUnsigned
+);
 
+trait_marker!(
 /// bool
-pub trait CastRangeBool            : CastRangeIntoBool + CastRangeFromBool {}
-impl<T> CastRangeBool for T where T: CastRangeIntoBool + CastRangeFromBool {}
+CastRangeBool: CastRangeIntoBool + CastRangeFromBool + CastRangeFromIntegerUnsigned
+);
 
-
+trait_marker!(
 /// iX uX fX
-pub trait CastRangeIntoNumber            : CastRangeIntoInteger + CastRangeIntoFloat {}
-impl<T> CastRangeIntoNumber for T where T: CastRangeIntoInteger + CastRangeIntoFloat {}
+CastRangeIntoNumber: CastRangeIntoInteger + CastRangeIntoFloat + CastRangeFromIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX fX
-pub trait CastRangeFromNumber            : CastRangeFromInteger + CastRangeFromFloat {}
-impl<T> CastRangeFromNumber for T where T: CastRangeFromInteger + CastRangeFromFloat {}
+CastRangeFromNumber: CastRangeFromInteger + CastRangeFromFloat+ CastRangeFromIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX fX
-pub trait CastRangeNumber            : CastRangeInteger + CastRangeFloat {}
-impl<T> CastRangeNumber for T where T: CastRangeInteger + CastRangeFloat {}
+CastRangeNumber: CastRangeInteger + CastRangeFloat + CastRangeFromIntegerUnsigned
+);
 
-
+trait_marker!(
 /// iX uX fX bool
-pub trait CastRangeIntoPrimitive            : CastRangeIntoNumber + CastRangeIntoBool {}
-impl<T> CastRangeIntoPrimitive for T where T: CastRangeIntoNumber + CastRangeIntoBool {}
+CastRangeIntoPrimitive: CastRangeIntoNumber + CastRangeIntoBool + CastRangeFromIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX fX bool
-pub trait CastRangeFromPrimitive            : CastRangeFromNumber + CastRangeFromBool {}
-impl<T> CastRangeFromPrimitive for T where T: CastRangeFromNumber + CastRangeFromBool {}
+CastRangeFromPrimitive: CastRangeFromNumber + CastRangeFromBool + CastRangeFromIntegerUnsigned
+);
 
+trait_marker!(
 /// iX uX fX bool
-pub trait CastRangePrimitive            : CastRangeIntoPrimitive + CastRangeFromPrimitive {}
-impl<T> CastRangePrimitive for T where T: CastRangeIntoPrimitive + CastRangeFromPrimitive {}
-
+CastRangePrimitive: CastRangeIntoPrimitive + CastRangeFromPrimitive + CastRangeFromIntegerUnsigned
+);
 
 #[cfg(test)]
 mod cast_range_test

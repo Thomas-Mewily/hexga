@@ -1,5 +1,11 @@
 use super::*;
 
+
+pub mod prelude
+{
+    pub use super::Vector;
+}
+
 /// A wrapper for an array that applies binary operators component-wise.
 ///
 /// Also supports scalar operation (e.g., `Vector<T,N> op T`).
@@ -15,22 +21,19 @@ use super::*;
 pub struct Vector<T, const N : usize>
 {
     // Not simd because we accept everythings.
-    pub array : [T; N],
-    pub(crate) no_destructuring : (),
+    pub(crate) array : [T; N],
 }
+
+impl_generic_array!(Vector);
 
 impl<T, const N : usize> Default for Vector<T, N> where T:Default
 {
-    fn default() -> Self { Self { array: std::array::from_fn(|_| ___()), no_destructuring: () } }
-}
-
-impl<T, const N : usize> Vector<T,N>
-{
-    pub fn splat(val : T) -> Self where T: Clone { <Self as Array<T,N>>::splat(val) }
+    fn default() -> Self { Self::from_fn(|_| ___()) }
 }
 
 
-impl_generic_array_with_op!(Vector);
+
+
 
 
 
@@ -61,6 +64,11 @@ impl<T, const N : usize> SetScale<T,N> for Vector<T, N> where Self : Copy, T : C
         self
     }
 }
+
+
+
+
+
 
 
 impl<T,const N : usize> Vector<T,N>
@@ -102,6 +110,7 @@ impl<T,const N : usize> Vector<T,N>
     }
 
     /// Multiply each component
+    /// 
     /// The result can be negative
     pub unsafe fn area_signed(self) -> T where T: Number { self.into_iter().product() }
 
@@ -131,15 +140,15 @@ impl<T,const N : usize> Vector<T,N>
     /// use hexga_math::prelude::*;
     /// assert_eq!(point2(3,4).sum_axis(), 7);
     /// ```
-    pub fn sum_axis(self) -> T where T: NumberArithmetic { self.into_iter().sum() }
+    pub fn sum_axis(self) -> T where T: Numeric { self.into_iter().sum() }
 
     /// [Manhattan distance](https://fr.wikipedia.org/wiki/Distance_de_Manhattan)
-    pub fn length_manhattan(self) -> T where T: NumberArithmetic, Self : Abs<Output=Self> + Copy { self.abs().sum_axis() }
-    pub fn length_squared(self) -> T where T: NumberArithmetic { self.into_iter().map(|v| v * v).sum() }
+    pub fn length_manhattan(self) -> T where T: Numeric, Self : Abs<Output=Self> + Copy { self.abs().sum_axis() }
+    pub fn length_squared(self) -> T where T: Numeric { self.into_iter().map(|v| v * v).sum() }
     pub fn have_length(self) -> bool where T: Zero + PartialEq { self.into_iter().any(|c| c.is_non_zero()) }
 
     /// The dot product : `x1 * x2 + y1 * y2 + z1 * z2 + ...`
-    pub fn dot(self, other : Self) -> T where T: NumberArithmetic
+    pub fn dot(self, other : Self) -> T where T: Numeric
     {
         self.array.into_iter().zip(other.array.into_iter()).fold(T::ZERO, |acc,(a, b)| acc + a * b)
     }
@@ -153,6 +162,7 @@ impl<T,const N : usize> Vector<T,N>
         Rectangle::new_sized(self)
     }
 }
+
 
 
 
@@ -240,6 +250,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
 
     pub fn to_grid<F,U>(self, f : F) -> GridBase<U,Idx,N> where F : FnMut(Self) -> U { GridBase::from_fn(self, f) }
 }
+
 
 
 

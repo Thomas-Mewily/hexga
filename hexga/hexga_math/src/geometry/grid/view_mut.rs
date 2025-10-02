@@ -101,18 +101,6 @@ impl<'c, G, T, Idx, const N : usize> IGridViewMut<G,T,Idx,N> for GridViewMut<'c,
 }
 
 
-impl<'a, G, T, Idx, const N : usize> Debug for GridViewMut<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    T : Debug
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
-        f.debug_struct("GridViewMut").field("grid", &self.iter().map(|(_,v)| v).to_vec()).field("rect", &self.rect).finish()
-    }
-}
-
 impl<'a, G, T, Idx, const N : usize> PartialEq for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,

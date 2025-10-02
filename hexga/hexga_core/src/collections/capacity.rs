@@ -13,10 +13,10 @@ pub trait Capacity
     fn with_capacity(capacity: usize) -> Self where Self : Sized, Self::Param : Default { Self::with_capacity_and_param(capacity, ___()) }
 
     fn reserve(&mut self, additional: usize);
-    fn reserve_exact(&mut self, additional: usize); // { self.reserve(additional); }
+    fn reserve_exact(&mut self, additional: usize);
 
     fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError>;
-    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError>; // { self.try_reserve(additional) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError>;
 }
 
 impl<K, V> Capacity for HashMap<K, V, std::hash::RandomState>
@@ -170,32 +170,6 @@ impl<T> Capacity for Vec<T>
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
 }
 
-// Discutable
-/* 
-impl<'a, T> Capacity for &'a [T]
-{
-    type Param = &'a Vec<T>;
-    #[inline(always)]
-    fn capacity(&self) -> usize { self.len() }
-
-    #[inline(always)]
-    fn with_capacity_and_param(_: usize, inside : Self::Param) -> Self { inside }
-
-    #[inline(always)]
-    fn reserve(&mut self, _: usize) {}
-    #[inline(always)]
-    fn reserve_exact(&mut self, _: usize) {}
-
-    #[inline(always)]
-    fn try_reserve(&mut self, _: usize) -> Result<(), TryReserveError> { Ok(()) }
-    #[inline(always)]
-    fn try_reserve_exact(&mut self, _: usize) -> Result<(), TryReserveError> { Ok(()) }
-}
-impl<'a, T> Capacity for &'a mut [T]
-impl<'a, T> Capacity for &'a str
-impl<'a, T> Capacity for &'a mut str
-...
-*/
 
 impl Capacity for String
 {

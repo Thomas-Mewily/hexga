@@ -40,3 +40,12 @@ pub use iter::*;
 
 mod rectangle;
 pub use rectangle::*;
+
+pub mod prelude
+{
+    pub use super::
+    {
+        typedef::*,
+        rectangle::{Rectangle,Crop,GetRectangle,SetRectangle},
+    };
+}

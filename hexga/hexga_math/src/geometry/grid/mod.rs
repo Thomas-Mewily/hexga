@@ -26,3 +26,13 @@ pub use view_mut::*;
 
 mod iter_mut;
 pub use iter_mut::*;
+
+pub mod prelude
+{
+    pub use super::
+    {
+        typedef::*,
+        grid::{GridBase},
+        igrid::{IGrid,ToGrid,GridBaseError},
+    };
+}

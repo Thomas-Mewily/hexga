@@ -3,8 +3,7 @@
 
 ## To-do
 
-- move le trait Abs et l'implémenter dans Composite
-- 
+
 - limiter les fps
 
 - trait Getter<T> et Setter<T> ? (GetPosition, GetRectangle, GetMatrix...)
@@ -12,6 +11,9 @@
 - crée les crates:
 - pour gérer: les undo redo
 - les graphes de manière générique (Vector, GenVec, HashSet) en utilisant Get, GetMut...
+
+
+- HexgaIo : rewrite it in an async way
 
 - HexgaIo : default extension for saving if not specified + guess extension when loading
 - Parse extra extension as argument a give them during serialization. Ex: `mygrid.save("mygrid.flat.ron")` => `flat` is an argument ?

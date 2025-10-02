@@ -11,14 +11,8 @@ pub use map_on::*;
 mod constant;
 pub use constant::*;
 
-mod number;
-pub use number::*;
-
 mod increment;
 pub use increment::*;
-
-mod ops;
-pub use ops::*;
 
 mod reflection;
 pub use reflection::*;

@@ -2,11 +2,10 @@ use super::*;
 
 
 /// Generalized function and constant for floating point like `f32`, `f64`...
-/// 
+///
 /// The func impl and documentation are copied from the Rust std because those are the same function, generalized in this trait
-pub trait Float : NumberFloat + Abs<Output=Self> + Primitive + CastPrimitive +
-    PrefixDecade + PrefixHundred + PrefixThousand + PrefixMillion + PrefixBillion + PrefixQuadrillion
-{ 
+pub trait Float : PrimitiveSigned + CastPrimitive
+{
     /// 2.
     const TWO : Self;
     /// 3.
@@ -17,8 +16,8 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive + CastPrimitive +
     const SIXTY : Self;
     /// 24.
     const TWENTY_FOUR : Self;
-    
-    
+
+
     /// Archimedes' constant (π)
     const PI : Self;
 
@@ -364,7 +363,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive + CastPrimitive +
     /// ```
     #[must_use]
     fn sinh(self) -> Self;
-    
+
     /// Computes the cosine of a number (in radians).
     ///
     /// # Unspecified precision
@@ -393,7 +392,7 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive + CastPrimitive +
     ///
     /// ```
     /// use hexga_math::number::prelude::*;
-    /// 
+    ///
     /// let x = std::f32::consts::FRAC_PI_4; // 45°
     ///
     /// let abs_difference = (x.cot() - 1.0).abs();
@@ -562,23 +561,23 @@ pub trait Float : NumberFloat + Abs<Output=Self> + Primitive + CastPrimitive +
     /// between [0., 1.]
     fn normalize(self) -> Self where Self : One { self.min_partial(Self::ONE).max_partial(Self::ZERO) }
 
-    fn floor(self) -> Self; 
-    fn round(self) -> Self; 
+    fn floor(self) -> Self;
+    fn round(self) -> Self;
     fn ceil (self) -> Self;
 
     fn trunc(self) -> Self;
 
-    fn total_cmp(&self, other : &Self) -> Ordering;
+    fn total_cmp(&self, other : &Self) -> ::std::cmp::Ordering;
 
     fn round_toward_zero(self) -> Self where Self : PositiveOrNegative { if self.is_positive_or_zero() { self.floor() } else { self.ceil() }}
     fn round_away_from_zero(self) -> Self where Self : PositiveOrNegative { if self.is_positive_or_zero() { self.ceil() } else { self.floor() }}
 }
 
 macro_rules! impl_floating_number {
-    ($primitive_name: ident) => 
-    { 
-        impl Float for $primitive_name 
-        { 
+    ($primitive_name: ident) =>
+    {
+        impl Float for $primitive_name
+        {
             #[inline(always)] fn floor(self) -> Self { Self::floor(self) }
             #[inline(always)] fn ceil (self) -> Self { Self::ceil(self) }
             #[inline(always)] fn round(self) -> Self { Self::round(self) }
@@ -622,36 +621,36 @@ macro_rules! impl_floating_number {
             fn cos (self) -> Self { self.cos () }
             fn acos(self) -> Self { self.acos() }
             fn cosh(self) -> Self { self.cosh() }
-        
+
             fn sin (self) -> Self { self.sin () }
             fn asin(self) -> Self { self.asin() }
             fn sinh(self) -> Self { self.sinh() }
-        
+
             fn tan (self) -> Self { self.tan () }
             fn atan(self) -> Self { self.atan() }
             fn tanh(self) -> Self { self.tanh() }
-        
+
             fn atan2(self, other : Self) -> Self { self.atan2(other) }
 
             fn sin_cos(self) -> (Self, Self) { self.sin_cos() }
 
-            
+
             fn fract   (self) -> Self { self.fract() }
             fn signum  (self) -> Self {self.signum() }
             fn copysign(self, sign: Self) -> Self { self.copysign(sign) }
-            
+
             fn pow(self, n: Self) -> Self { self.powf(n) }
-            
+
             fn exp(self) -> Self { self.exp() }
             fn exp2(self) -> Self { self.exp2() }
-            
+
             fn ln(self) -> Self { self.ln() }
             fn log(self, base: Self) -> Self { self.log(base) }
-            
+
             fn log2(self) -> Self { self.log2() }
             fn log10(self) -> Self { self.log10() }
 
-            fn total_cmp(&self, other : &Self) -> Ordering { self.total_cmp(other) }
+            fn total_cmp(&self, other : &Self) -> ::std::cmp::Ordering { self.total_cmp(other) }
         }
     };
 }

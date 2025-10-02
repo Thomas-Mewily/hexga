@@ -1,3 +1,41 @@
+//! Define some Singleton traits and macro.
+//!
+//! ```
+//! use hexga_singleton::prelude::*;
+//!
+//! pub struct CurrentUser
+//! {
+//!     pub name : String,
+//! }
+//!
+//! singleton_thread_local!(pub User, CurrentUser, CURRENT_USER);
+//!
+//! // Custom logic to init / deinit the singleton
+//! impl SingletonInit for User
+//! {
+//!     fn replace(value: Option<<Self as SingletonRef>::Target>) {
+//!         CURRENT_USER.replace(value);
+//!     }
+//! }
+//!
+//!
+//! fn main()
+//! {
+//!     assert!(User::is_not_init());
+//!
+//!     // init
+//!     User::replace(Some( CurrentUser { name: "Foo".to_owned() }));
+//!     assert!(User::is_init());
+//!
+//!     // Singleton access
+//!     let _the_name = &User.name;
+//!
+//!     // de init
+//!     User::replace(None);
+//!     assert!(User::is_not_init());
+//! }
+//! ```
+
 use std::ops::{Deref, DerefMut};
 
 pub mod prelude
@@ -39,17 +77,17 @@ pub trait SingletonInit: SingletonRef + SingletonMut
     }
 
     /// Replace the value if already init
-    fn init_default() where <Self as SingletonRef>::Target: Default 
+    fn init_default() where <Self as SingletonRef>::Target: Default
     {
         if Self::try_as_mut().is_none()
         {
-            Self::replace(Some(Default::default())) 
-        } 
+            Self::replace(Some(Default::default()))
+        }
     }
-    
+
     fn destroy()
     {
-        Self::replace(None) 
+        Self::replace(None)
     }
 }
 
@@ -72,7 +110,7 @@ macro_rules! singleton_thread_local {
                     }
                 })
             },
-            { 
+            {
                 $constant_static_name.with(|ctx_cell| {
                     if let Some(rc_ctx) = ctx_cell.borrow_mut().as_mut() {
                         let ctx_ptr: *mut $target = rc_ctx;
@@ -90,7 +128,7 @@ macro_rules! singleton_thread_local {
 #[macro_export]
 macro_rules! singleton_access {
     (
-        $(#[$attr:meta])* $vis:vis $wrapper:ident, 
+        $(#[$attr:meta])* $vis:vis $wrapper:ident,
         $target:ty, $try_as_ref:block, $try_as_mut:block
     ) => {
         $(#[$attr])*

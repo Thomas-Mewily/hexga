@@ -1,14 +1,20 @@
 //! # A Math library that contains
 //!
-//! ### N Dimension stuff
+//! ### N Dimension stuff and Array Programming
 //!
-//! This crate define N dimensionnal math stuff (2d, 3d, 4d, ... nd) like vector/point of any type (float, int, uint, or even user defined) :
+//! This crate define N dimensional math stuff (2d, 3d, 4d, ... nd) like vector/point of any type (float, int, uint, or even user defined) :
 //!
 //! - [Vector] (fixed size array wrapper)
 //! - [Rectangle]
 //! - [Grid]
 //! - [Matrix]
 //!
+//! The *same* common functions such as [min], [max], [mix],
+//! [abs], and [clamp] work for
+//! - primitive values(`u32`, `i32`, `f32`, `bool`, ...)
+//! - and on composite types (`Array`, `Vector`, `Color`, `Rectangle`, `Matrix`, `Grid`, ...) that implement the [`Map`] / [`MapGeneric`] traits.
+//!
+//! Any external type implementing these traits automatically gains support for these common functions.
 //!
 //! ### Useful type like
 //!
@@ -42,47 +48,48 @@
 //!
 //! - [Grid] type uses a [Point] for the indexing precision, but that can be changed by using with the [GridBase] type.
 //! - [Angle] and [Time] use a [float] precision that can be changed using [AngleOf] and [TimeOf]
-#![allow(unused_imports)]
 
+#![allow(unused_imports)]
+#![feature(formatting_options)] // For grid view, to display aligned value they need to be fomatted in a temporary formatter
+
+use hexga_core::prelude::*;
 use std::ops::*;
-use std::hash::*;
+use std::hash::{Hash, Hasher};
+use std::{fmt, num::{Saturating, Wrapping}};
 use std::marker::PhantomData;
 use std::cmp::Ordering;
-use std::ops::{Range, RangeInclusive};
-use hexga_core::prelude::*;
-use hexga_array::prelude::*;
 use rayon::prelude::*;
-use std::fmt;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
 
-pub mod array;
+pub use hexga_typedef as typedef;
+pub mod utils;
 pub mod convert;
+pub mod map_on;
 pub mod number;
 pub mod range;
-pub mod utils;
-mod geometry;
-use geometry::*;
-
-
-pub use hexga_typedef as typedef;
-pub mod map_on;
+pub mod array;
 pub mod unit;
+mod geometry;
+pub use geometry::*;
+
 
 use prelude::*;
 pub mod prelude
 {
-    pub use super::geometry::prelude::*;
-    pub use super::array::*;
-    pub use super::number::*;
-    pub use super::range::*;
     pub use super::typedef::*;
     pub use super::utils::*;
     pub use super::convert::*;
     pub use super::map_on::*;
+    pub use super::number::*;
+    pub use super::range::*;
+    pub use super::array::*;
     pub use super::unit::*;
+    pub use super::geometry::prelude::*;
 }
+

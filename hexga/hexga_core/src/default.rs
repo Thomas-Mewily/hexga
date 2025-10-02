@@ -12,7 +12,7 @@
 /// # Examples
 /// 
 /// ```
-/// use hexga_core::default::prelude::*;
+/// use hexga_core::prelude::*;
 /// 
 /// let b : i32 = Default::default(); // Default Rust
 /// let a : i32 = ___(); // Now

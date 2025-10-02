@@ -70,10 +70,20 @@ impl<T> HaveYAndOne<T> for Vector2<T> where T: One + Zero { const Y : Self = Vec
 impl<T> HaveYAndMinusOne<T> for Vector2<T> where T: MinusOne + Zero { const MINUS_Y : Self = Vector2::new(T::ZERO, T::MINUS_ONE); }
 
 
-impl<T> From<Vector1<T>> for Vector2<T> where T: Default { fn from(value: Vector1<T>) -> Self { value.with_size() } }
+impl<T> From<Vector1<T>> for Vector2<T> where T: Default { fn from(value: Vector1<T>) -> Self { value.resize() } }
 impl<T> From<Vector3<T>> for Vector2<T> { fn from(value: Vector3<T>) -> Self { let [x, y,..] = value.to_array(); Self::new(x, y) } }
 impl<T> From<Vector4<T>> for Vector2<T> { fn from(value: Vector4<T>) -> Self { let [x, y,..] = value.to_array(); Self::new(x, y) } }
 
 pub type Vector2Iter<T> = VectorIter<Vector2<T>, 2>;
 
-//impl_fixed_vector!(Vector2, N);
+pub(crate) mod prelude
+{
+    pub use super::
+    {
+        SplatCoord2,
+        Vector2,vector2,
+        Vec2,vec2,
+        Bool2,bool2,
+        Point2,point2,
+    };
+}

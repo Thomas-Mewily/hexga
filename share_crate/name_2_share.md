@@ -3,8 +3,8 @@
 hexga_map_on
 
 hexga_number
-
 hexga_core
+hexga_singleton
 
 hexga_io_derive
 hexga_io
@@ -18,11 +18,10 @@ hexga_typedef
 hexga_generational
 
 hexga_math
-
 hexga_utils
 
 
-hexga_graphics
+//hexga_graphics
 //hexga_undo_redo
 hexga
 

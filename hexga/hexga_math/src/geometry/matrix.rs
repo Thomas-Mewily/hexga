@@ -39,13 +39,15 @@ pub type SquareMatrix<T, const N : usize> = Matrix<T, N, N>;
 /// ROW rows, COL columns.
 ///
 /// Can be indexed `matrix[row][col]`
+///
+/// The [(0,0)] index is in the top left corner
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct Matrix<T, const ROW : usize, const COL : usize>
 {
-    pub columns : Vector<Vector<T, ROW>,COL>,
+    columns : Vector<Vector<T, ROW>,COL>,
 }
 
 
@@ -64,12 +66,29 @@ impl<T, const ROW : usize, const COL : usize>  Matrix<T, ROW, COL>
 {
     fn _fmt(&self, f: &mut Formatter<'_>, d : impl Fn(&T, &mut Formatter<'_>) -> FmtResult) -> FmtResult
     {
+        const SEP :&'static str = " ";
+
+        let mut strings: Vec<String> = Vec::with_capacity(ROW * COL);
+
+        let mut width = 0;
+
         for c in 0..COL
         {
             for r in 0..ROW
             {
-                d(&self[c][r], f)?;
-                write!(f, " ")?;
+                strings.push(___());
+                let mut tmp_f = std::fmt::Formatter::new(strings.last_mut().unwrap(), ___());
+                d(&self[c][r], &mut tmp_f)?;
+                width = max(width, strings.last().unwrap().len());
+            }
+        }
+
+        for c in 0..COL
+        {
+            for r in 0..ROW
+            {
+                let idx = r * COL + c;
+                write!(f, "{:>width$}{}", strings[idx], SEP, width = width)?;
             }
             writeln!(f)?;
         }
@@ -344,7 +363,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where T: Copy
     pub fn diag(&self) -> Vector<T,N> { Vector::from_fn(|i| self[i][i]) }
     /// Set the value on the diagonal
     pub fn set_diag(&mut self, diag: Vector<T,N>)
-    { 
+    {
         for i in 0..N
         {
             self[i][i] = diag[i];
@@ -443,7 +462,7 @@ impl<T, const COL : usize> Product for SquareMatrix<T,COL> where Self : One + Mu
 /// ```
 impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,COL,COL2>> for Matrix<T,ROW,COL>
     where
-    T : NumberArithmetic,
+    T : Numeric,
 {
     type Output = Matrix<T, ROW, COL2>;
 
@@ -458,7 +477,7 @@ impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,C
 
 impl<T, const ROW : usize, const COL : usize> Mul<Vector<T,COL>> for Matrix<T,ROW,COL>
     where
-    T : NumberArithmetic,
+    T : Numeric,
     //Matrix<T,ROW,COL> : Mul<Matrix<T,ROW,1>>,
     Self : Mul<Matrix<T,COL,1>, Output = Matrix<T,ROW,1>>,
     Vector<T,COL> : From<Matrix::<T,ROW,1>>
@@ -517,25 +536,33 @@ impl<T, const ROW : usize, const COL : usize> DivAssign<T> for Matrix<T,ROW,COL>
 }
 
 
-impl<T, const ROW : usize, const COL : usize> Composite for Matrix<T,ROW,COL>
+impl<T, const ROW : usize, const COL : usize> Map for Matrix<T,ROW,COL>
 {
-    type Inside=T;
-    fn map_intern<F>(self, mut f: F) -> Self where F: FnMut(Self::Inside) -> Self::Inside 
+    type Item=T;
+    fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
     {
-        let mut it = self.columns.into_iter();
-        let cols = std::array::from_fn(|_| Vector::from_array(it.next().unwrap().to_array().map(&mut f)));
-        Self::from_col(Vector::from_array(cols))
+        self.map(f)
+    }
+
+    fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
+        self.map_with(other, f)
     }
 }
-impl<T, const ROW : usize, const COL : usize> CompositeGeneric for Matrix<T,ROW,COL>
+impl<T, const ROW : usize, const COL : usize> MapGeneric for Matrix<T,ROW,COL>
 {
-    type WithType<T2> = Matrix<T2,ROW,COL>;
-    type Inside=T;
+    type WithType<R> = Matrix<R,ROW,COL>;
 
-    fn map<T2,F>(self, mut f: F) -> Self::WithType<T2> where F: FnMut(Self::Inside) -> T2 {
+    fn map<R,F>(self, mut f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R {
         let mut it = self.columns.into_iter();
-        let cols = std::array::from_fn(|_| Vector::from_array(it.next().unwrap().to_array().map(&mut f)));
-        Self::WithType::<T2>::from_col(Vector::from_array(cols))
+        let cols = std::array::from_fn(|_| MapGeneric::map(it.next().unwrap(), &mut f));
+        Self::WithType::<R>::from_col(Vector::from_array(cols))
+    }
+
+    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, mut f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R {
+        let mut it1 = self.columns.into_iter();
+        let mut it2 = other.columns.into_iter();
+        let cols = std::array::from_fn(|_| MapGeneric::map_with(it1.next().unwrap(), it2.next().unwrap(), &mut f));
+        Self::WithType::<R>::from_col(Vector::from_array(cols))
     }
 }
 
@@ -615,7 +642,7 @@ where
 
 // There is no generic way to compute the determinant of a matrix, because it required calculaing the submatrix, but at the moment const generic operation are not possible
 // I also don't want any heap allocation when computing the determinant
-impl<T> SquareMatrix<T, 0> where T: NumberArithmetic + One,
+impl<T> SquareMatrix<T, 0> where T: Numeric + One,
 {
     pub fn det(&self) -> T
     {
@@ -623,7 +650,7 @@ impl<T> SquareMatrix<T, 0> where T: NumberArithmetic + One,
     }
 }
 
-impl<T> SquareMatrix<T, 1> where T: NumberArithmetic + One,
+impl<T> SquareMatrix<T, 1> where T: Numeric + One,
 {
     pub fn det(&self) -> T
     {
@@ -631,7 +658,7 @@ impl<T> SquareMatrix<T, 1> where T: NumberArithmetic + One,
     }
 }
 
-impl<T> SquareMatrix<T, 2> where T: NumberArithmetic + One,
+impl<T> SquareMatrix<T, 2> where T: Numeric + One,
 {
     pub fn det(&self) -> T
     {
@@ -639,7 +666,7 @@ impl<T> SquareMatrix<T, 2> where T: NumberArithmetic + One,
     }
 }
 
-impl<T> SquareMatrix<T, 3> where T: NumberArithmetic + One,
+impl<T> SquareMatrix<T, 3> where T: Numeric + One,
 {
     pub fn det(&self) -> T
     {
@@ -649,7 +676,7 @@ impl<T> SquareMatrix<T, 3> where T: NumberArithmetic + One,
     }
 }
 
-impl<T> SquareMatrix<T, 4> where T: NumberArithmetic + One,
+impl<T> SquareMatrix<T, 4> where T: Numeric + One,
 {
     pub fn det(&self) -> T
     {
@@ -805,7 +832,7 @@ impl<T, const N : usize> RotateZ<T> for SquareMatrix<T,N>
     }
 }
 
-/* 
+/*
 impl<T, const N : usize> GetPosition<Vector<T,N>,N> for SquareMatrix<T,N> where T: Copy
 {
     fn pos(&self) -> Vector<Vector<T,N>,N> {
@@ -845,13 +872,13 @@ impl<T> GetScale<T,2> for SquareMatrix<T,3> where T: Float
 impl<T> SetScale<T,2> for SquareMatrix<T,3> where T: Float
 {
     fn set_scale(&mut self, scale : Vector<T,2>) -> &mut Self {
-        for i in 0..2 
+        for i in 0..2
         {
             let len = Vector::<T, 2>::from(self[i]).length();
-            if len.is_non_zero() 
+            if len.is_non_zero()
             {
                 let factor = scale[i] / len;
-                for j in 0..2 
+                for j in 0..2
                 {
                     self[i][j] = self[i][j] * factor;
                 }
@@ -867,13 +894,13 @@ impl<T> GetScale<T,3> for SquareMatrix<T,4> where T: Float
 impl<T> SetScale<T,3> for SquareMatrix<T,4> where T: Float
 {
     fn set_scale(&mut self, scale : Vector<T,3>) -> &mut Self {
-        for i in 0..3 
+        for i in 0..3
         {
             let len = Vector::<T, 3>::from(self[i]).length();
-            if len.is_non_zero() 
+            if len.is_non_zero()
             {
                 let factor = scale[i] / len;
-                for j in 0..3 
+                for j in 0..3
                 {
                     self[i][j] = self[i][j] * factor;
                 }
@@ -893,7 +920,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + Zer
         let axis_sin = axis * sin;
         let axis_sq = axis * axis;
         let omc = T::ONE - cos;
-        
+
         let xyomc = axis.x * axis.y * omc;
         let xzomc = axis.x * axis.z * omc;
         let yzomc = axis.y * axis.z * omc;
@@ -990,7 +1017,7 @@ impl<T> Matrix4<T>
     /// View space: +X = right, +Y = up, +Z = back (camera looks toward -Z).
     #[inline]
     #[must_use]
-    pub fn look_at_rh(position: Vector3<T>, center: Vector3<T>, up: Vector3<T>) -> Self where T: Float 
+    pub fn look_at_rh(position: Vector3<T>, center: Vector3<T>, up: Vector3<T>) -> Self where T: Float
     {
         Self::look_to_rh(position, center - position, up)
     }
@@ -1000,7 +1027,7 @@ impl<T> Matrix4<T>
     /// View space: +X = right, +Y = up, +Z = back (camera looks toward -Z).
     #[inline]
     #[must_use]
-    pub fn look_to_rh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float 
+    pub fn look_to_rh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float
     {
         let f = dir.normalized();
         let s = f.cross(up).normalized();
@@ -1009,9 +1036,9 @@ impl<T> Matrix4<T>
         Self::from_col(
             vector4
             (
-                vector4(s.x, u.x, -f.x, zero()), 
-                vector4(s.y, u.y, -f.y, zero()), 
-                vector4(s.z, u.z, -f.z, zero()), 
+                vector4(s.x, u.x, -f.x, zero()),
+                vector4(s.y, u.y, -f.y, zero()),
+                vector4(s.z, u.z, -f.z, zero()),
                 vector4(-position.dot(s), position.dot(u), position.dot(f), one())
             )
         )

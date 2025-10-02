@@ -1,29 +1,6 @@
 use super::*;
 
 
-/* 
-map_on_constant!
-(
-    (($trait_name: tt, $constant_name: tt)) =>
-    {
-        impl_composite_constant_for_internal_type!($trait_name, $constant_name);
-    }
-);
-*/
-
-// TODO: move the Abs trait here and impl it for CompositeGeneric
-/* 
-//impl_composite_output_with_methods_for_internal_type!(Abs,abs);
-impl<T> Abs for T where T:CompositeGeneric, T::Inside: Abs
-{
-    type Output;
-
-    fn abs(self) -> Self::Output {
-        todo!()
-    }
-}
-*/
-
 /// Define the `2` representation for the number
 pub trait Two : Sized
 {
@@ -36,10 +13,11 @@ pub trait Two : Sized
     #[inline(always)] fn is_two(&self) -> bool where Self : PartialEq<Self> { self == &Self::two() }
     #[inline(always)] fn is_non_two(&self) -> bool where Self : PartialEq<Self> { !self.is_two() }
 }
-impl<T> Two for T where T: One + Add<T,Output = T>
+impl<T> Two for T where T: NumericIdentity
 {
     #[inline(always)] fn two() -> Self { Self::ONE + Self::ONE }
 }
+
 
 /// Define the `3` representation for the number
 pub trait Three : Sized
@@ -58,15 +36,17 @@ impl<T> Three for T where T: One + Add<T,Output = T>
     #[inline(always)] fn three() -> Self { Self::ONE + Self::ONE + Self::ONE }
 }
 
+
 pub trait OddOrEven : Sized
 {
     fn is_even(&self) -> bool;
     #[inline(always)] fn is_odd (&self) -> bool { !self.is_even() }
 }
-impl<T> OddOrEven for T where T: NumberInteger
+impl<T> OddOrEven for T where T: Integer
 {
     fn is_even(&self) -> bool { (*self % Self::two()).is_zero() }
 }
+
 
 pub trait PositiveOrNegative : Zero + PartialOrd<Self> + Sized
 {
@@ -108,13 +88,24 @@ pub trait PositiveOrNegative : Zero + PartialOrd<Self> + Sized
 }
 impl<T : Zero + PartialOrd<T> + Sized> PositiveOrNegative for T {}
 
-
+pub trait TakeHalf : Sized
+{
+    /// Half the current value
+    fn take_half(self) -> Self;
+}
+impl<T> TakeHalf for T where T: NumericIdentity
+{
+    fn take_half(self) -> Self { self / Self::two() }
+}
 
 pub trait PartialOrdExtension : PartialOrd
 {
+    /// Using [PartialOrd] operator, not component wise
     #[inline(always)] fn max_partial(self, other: Self) -> Self where Self: Sized { if self >= other { self } else { other } }
+    /// Using [PartialOrd] operator, not component wise
     #[inline(always)] fn min_partial(self, other: Self) -> Self where Self: Sized { if self <= other { self } else { other } }
 
+    /// Using [PartialOrd] operator, not component wise
     #[inline(always)] fn clamp_partial(self, min: Self, max: Self) -> Self where Self: Sized
     {
         // copied from rust std
@@ -124,16 +115,4 @@ pub trait PartialOrdExtension : PartialOrd
         else               { self }
     }
 }
-impl<T : PartialOrd> PartialOrdExtension for T{}
-
-
-
-pub trait TakeHalf : Sized
-{
-    /// Half the current value
-    fn take_half(self) -> Self;
-}
-impl<T> TakeHalf for T where T:  Number
-{
-    fn take_half(self) -> Self { self / Self::two() }
-}
+impl<T : PartialOrd> PartialOrdExtension for T {}

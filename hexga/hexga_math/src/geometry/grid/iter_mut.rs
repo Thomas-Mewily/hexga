@@ -9,7 +9,7 @@ pub struct GridViewIterMut<'a, G, T, Idx, const N : usize> where G : IGrid<T,Idx
 
 impl<'a, G, T, Idx, const N : usize> GridViewIterMut<'a, G, T, Idx, N> where G : IGrid<T,Idx,N>, Idx : Integer, T:'a
 {
-    pub fn new(grid : &'a mut G) -> Self 
+    pub fn new(grid : &'a mut G) -> Self
     {
         let rect = grid.rect().iter_index();
         Self {
@@ -29,7 +29,7 @@ impl<'a, G, T, Idx, const N : usize> GridViewIterMut<'a, G, T, Idx, N> where G :
         }
     }
 
-    pub unsafe fn from_rect_unchecked(grid : &'a mut G, rect : Rectangle<Idx,N>) -> Self 
+    pub unsafe fn from_rect_unchecked(grid : &'a mut G, rect : Rectangle<Idx,N>) -> Self
     {
         Self {
             grid,
@@ -38,7 +38,7 @@ impl<'a, G, T, Idx, const N : usize> GridViewIterMut<'a, G, T, Idx, N> where G :
         }
     }
 
-    pub fn from_rect_intersect(grid : &'a mut G, rect : Rectangle<Idx,N>) -> Self 
+    pub fn from_rect_intersect(grid : &'a mut G, rect : Rectangle<Idx,N>) -> Self
     {
         let rect = grid.rect().intersect_or_empty(rect).iter_index();
         Self {
@@ -54,7 +54,7 @@ impl<'a, G, T, Idx, const N : usize> Iterator for GridViewIterMut<'a, G, T, Idx,
 {
     type Item = (Vector<Idx,N>, &'a mut T);
 
-    fn next(&mut self) -> Option<Self::Item> 
+    fn next(&mut self) -> Option<Self::Item>
     {
         let idx = self.rect.next()?;
         // # Safety
@@ -68,3 +68,42 @@ impl<'a, G, T, Idx, const N : usize> Iterator for GridViewIterMut<'a, G, T, Idx,
 }
 impl<'a, G, T, Idx, const N : usize> std::iter::FusedIterator for GridViewIterMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, RectangleIter<Idx,N> : std::iter::FusedIterator {}
 impl<'a, G, T, Idx, const N : usize> std::iter::ExactSizeIterator for GridViewIterMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, RectangleIter<Idx,N> : std::iter::ExactSizeIterator {}
+
+impl<'a, G, T, Idx, const N : usize> Map for GridViewMut<'a, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer,
+    T: Clone,
+{
+    type Item=T;
+
+    fn map_intern<F>(mut self, mut f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
+    {
+        self.iter_mut().for_each(|(_,v)|
+        {
+            unsafe
+            {
+                // Temporary moving the reference
+                let old = std::ptr::read(v);
+                let new = f(old);
+                std::ptr::write(v, new);
+            }
+        });
+        self
+    }
+
+    fn map_with_intern<F>(mut self, mut other: Self, mut f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
+        assert_eq!(self.size(), other.size(), "size mush be identical");
+        self.iter_mut().zip(other.iter_mut()).for_each(|((_, a),(_, b))|
+        {
+            unsafe
+            {
+                // Temporary moving the reference
+                let old = std::ptr::read(a);
+                let new = f(old, b.clone());
+                std::ptr::write(a, new);
+            }
+        });
+        self
+    }
+}

@@ -12,12 +12,12 @@ pub trait RangeStepExtension
 
 
 // Todo : Remove once the Step trait will be stabilized
-pub trait RangeStepIter : NumberPrimitive
+pub trait RangeStepIter : Primitive
 {
     // Using Range, last value is excluded
     fn iter(max_excluded : Self) -> RangeStep<Self> { RangeStep { idx: Self::ZERO, end: max_excluded, step: Self::ONE } }
 }
-impl<T> RangeStepIter for T where T: NumberPrimitive {}
+impl<T> RangeStepIter for T where T: Primitive {}
 
 pub trait RangeDefaultStepExtension : RangeDefault where Range<Self> : RangeStepExtension
 {
@@ -43,7 +43,7 @@ impl<T> RangeDefaultStepInclusiveExtension for T where T: RangeDefault, RangeInc
 #[derive(Clone, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-pub struct RangeStep<T> where T: NumberPrimitive
+pub struct RangeStep<T> where T: Primitive
 {
     pub idx  : T,
     pub end  : T,
@@ -51,7 +51,7 @@ pub struct RangeStep<T> where T: NumberPrimitive
 }
 
 
-impl<T> Iterator for RangeStep<T> where T: NumberPrimitive
+impl<T> Iterator for RangeStep<T> where T: Primitive
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -72,7 +72,7 @@ impl<T> Iterator for RangeStep<T> where T: NumberPrimitive
         }
     }
 }
-impl<T> DoubleEndedIterator for RangeStep<T> where T: NumberPrimitive
+impl<T> DoubleEndedIterator for RangeStep<T> where T: Primitive
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.end >= self.idx
@@ -108,10 +108,10 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T: NumberPrimitive
         }
     }
 }
-impl<T> FusedIterator for RangeStep<T> where T: NumberPrimitive  {}
+impl<T> FusedIterator for RangeStep<T> where T: Primitive  {}
 
 
-impl<T> RangeStepExtension for Range<T> where T: NumberPrimitive
+impl<T> RangeStepExtension for Range<T> where T: Primitive
 {
     type Output = RangeStep<T>;
     type Item = T;
@@ -120,7 +120,7 @@ impl<T> RangeStepExtension for Range<T> where T: NumberPrimitive
         RangeStep { idx: self.start, end: self.end - step, step }
     }
 }
-impl<T> RangeStepExtension for RangeTo<T> where T: NumberPrimitive + RangeDefault
+impl<T> RangeStepExtension for RangeTo<T> where T: Primitive + RangeDefault
 {
     type Output = RangeStep<T>;
     type Item = T;
@@ -136,14 +136,14 @@ impl<T> RangeStepExtension for RangeTo<T> where T: NumberPrimitive + RangeDefaul
 #[derive(Clone, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-pub struct RangeStepInclusive<T> where T: NumberPrimitive
+pub struct RangeStepInclusive<T> where T: Primitive
 {
     pub idx  : T,
     pub end  : T,
     pub step : T,
 }
 
-impl<T> Iterator for RangeStepInclusive<T> where T: NumberPrimitive
+impl<T> Iterator for RangeStepInclusive<T> where T: Primitive
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -180,7 +180,7 @@ impl<T> Iterator for RangeStepInclusive<T> where T: NumberPrimitive
         }
     }
 }
-impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T: NumberPrimitive
+impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T: Primitive
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.end >= self.idx
@@ -216,10 +216,10 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T: NumberPrimitive
         }
     }
 }
-impl<T> FusedIterator for RangeStepInclusive<T> where T: NumberPrimitive  {}
+impl<T> FusedIterator for RangeStepInclusive<T> where T: Primitive  {}
 
 
-impl<T> RangeStepExtension for RangeFrom<T> where T: NumberPrimitive + RangeDefault
+impl<T> RangeStepExtension for RangeFrom<T> where T: Primitive + RangeDefault
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
@@ -228,7 +228,7 @@ impl<T> RangeStepExtension for RangeFrom<T> where T: NumberPrimitive + RangeDefa
         (self.start..=T::RANGE_MAX).step(step)
     }
 }
-impl<T> RangeStepExtension for RangeInclusive<T> where T: NumberPrimitive
+impl<T> RangeStepExtension for RangeInclusive<T> where T: Primitive
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
@@ -238,7 +238,7 @@ impl<T> RangeStepExtension for RangeInclusive<T> where T: NumberPrimitive
         RangeStepInclusive { idx: start, end, step }
     }
 }
-impl<T> RangeStepExtension for RangeToInclusive<T> where T: NumberPrimitive + RangeDefault
+impl<T> RangeStepExtension for RangeToInclusive<T> where T: Primitive + RangeDefault
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
@@ -317,7 +317,7 @@ mod range_test
     #[test]
     fn range_rev_float_2()
     {
-        let values = (0.0..1.0).step(0.3).rev().to_vec();
+        let values = (0.0..1.0f32).step(0.3).rev().to_vec();
         assert_eq!(values.len(), 4);
         assert!((values[0] - 0.7).abs() <= 0.00001);
         assert_eq!(values.last().copied().unwrap(), 0.);
