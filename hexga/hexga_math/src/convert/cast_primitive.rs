@@ -10,7 +10,7 @@ macro_rules! impl_cast_to {
         {
             type Output;
 
-            /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) 
+            /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
             /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
             ///
             /// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
@@ -20,7 +20,7 @@ macro_rules! impl_cast_to {
             fn $fn_map_range_name(self) -> Self::Output;
         }
 
-        map_on_number_and_bool! { 
+        map_on_number_and_bool! {
             ($type_name:tt) => {
             impl $trait_name for $type_name {
                 type Output = $output_type;
@@ -35,7 +35,7 @@ macro_rules! impl_cast_to {
 
         impl<S> $trait_name for S
         where
-            S: MapGeneric + CastInto<S::WithType<<S::Item as $trait_name>::Output>>,
+            S: $crate::map::MapGeneric + CastInto<S::WithType<<S::Item as $trait_name>::Output>>,
             S::Item: $trait_name,
         {
             type Output = S::WithType<<S::Item as $trait_name>::Output>;

@@ -1,7 +1,17 @@
 use super::*;
 
-mod map;
-pub use map::*;
+pub mod map;
+use map::*;
 
-mod time;
-pub use time::*;
+pub mod time;
+use time::*;
+
+
+pub(crate) mod prelude
+{
+    pub use super::
+    {
+        map::*,
+        time::*,
+    };
+}

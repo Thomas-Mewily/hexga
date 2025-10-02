@@ -4,7 +4,7 @@ use super::*;
 /// Generalized function and constant for floating point like `f32`, `f64`...
 ///
 /// The func impl and documentation are copied from the Rust std because those are the same function, generalized in this trait
-pub trait Float : PrimitiveSigned + CastPrimitive
+pub trait Float : PrimitiveSigned + CastPrimitive + Half + NaNValue
 {
     /// 2.
     const TWO : Self;

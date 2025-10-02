@@ -244,7 +244,7 @@ macro_rules! impl_fixed_array_core
             pub const fn array(&self) -> &[T; $dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
             pub const fn array_mut(&mut self) -> &mut[T; $dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
 
-            impl_number_basic_trait!();
+            $crate::impl_number_basic_trait!();
         }
 
         impl<T> ::std::marker::Copy  for $name<T> where T: Copy {}
@@ -461,7 +461,7 @@ macro_rules! impl_fixed_array_core
         impl<T> ::hexga_io::IoLoad for $name<T> where T: ::hexga_io::IoLoad {}
 
 
-        impl<T> $crate::Map for $name<T>
+        impl<T> $crate::map::Map for $name<T>
         {
             type Item=T;
             fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
@@ -473,7 +473,7 @@ macro_rules! impl_fixed_array_core
                 Self::from_array(<[T;$dim]>::from(self).map_with_intern(other.into(), f))
             }
         }
-        impl<T> $crate::MapGeneric for $name<T>
+        impl<T> $crate::map::MapGeneric for $name<T>
         {
             type WithType<T2> = $name<T2>;
             fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {

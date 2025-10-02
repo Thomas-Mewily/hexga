@@ -68,7 +68,8 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 
 
 pub use hexga_typedef as typedef;
-pub mod utils;
+mod utils;
+pub use utils::*;
 pub mod convert;
 pub mod map_on;
 pub mod number;
@@ -83,7 +84,7 @@ use prelude::*;
 pub mod prelude
 {
     pub use super::typedef::*;
-    pub use super::utils::*;
+    pub use super::utils::prelude::*;
     pub use super::convert::*;
     pub use super::map_on::*;
     pub use super::number::*;

@@ -93,7 +93,7 @@ impl<'a, G, T, Idx, const N : usize> Map for GridViewMut<'a, G, T, Idx, N>
     }
 
     fn map_with_intern<F>(mut self, mut other: Self, mut f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
-        assert_eq!(self.size(), other.size(), "size mush be identical");
+        assert_eq!(self.size(), other.size(), "size mismatch");
         self.iter_mut().zip(other.iter_mut()).for_each(|((_, a),(_, b))|
         {
             unsafe
