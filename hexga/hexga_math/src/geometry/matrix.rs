@@ -1090,7 +1090,287 @@ mod test_matrix
     #[test]
     fn rotation_zero_on_z()
     {
-        let m = Mat2::from_col_array([[1.,2.], [3.,4.]]);
+        let m = Mat2::from_row_array([[1.,2.], [3.,4.]]);
         assert_eq!(m.rotated_z(0.degree()), m);
+    }
+
+    #[test]
+    fn multiplication_2x2_basic()
+    {
+        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
+        let b = Mat2P::from_row_array([[5, 6], [7, 8]]);
+        let expected = Mat2P::from_row_array([[19, 22], [43, 50]]);
+
+        assert_eq!(a * b, expected);
+    }
+
+    #[test]
+    fn multiplication_2x2_identity()
+    {
+        let a = Mat2P::from_row_array([[2, 3], [4, 5]]);
+        let identity = Mat2P::IDENTITY;
+
+        assert_eq!(a * identity, a);
+        assert_eq!(identity * a, a);
+    }
+
+    #[test]
+    fn multiplication_2x2_zero()
+    {
+        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
+        let zero = Mat2P::ZERO;
+
+        assert_eq!(a * zero, zero);
+        assert_eq!(zero * a, zero);
+    }
+
+    #[test]
+    fn multiplication_2x2_float()
+    {
+        let a = Mat2::from_row_array([[1.5, 2.5], [3.5, 4.5]]);
+        let b = Mat2::from_row_array([[0.5, 1.5], [2.5, 3.5]]);
+        let expected = Mat2::from_row_array([[7.0, 11.0], [13.0, 21.0]]);
+
+        assert_eq!(a * b, expected);
+    }
+
+    #[test]
+    fn multiplication_2x2_negative()
+    {
+        let a = Mat2P::from_row_array([[-1, -2], [-3, -4]]);
+        let b = Mat2P::from_row_array([[1, 2], [-3, -4]]);
+        let expected = Mat2P::from_row_array([[5, 6], [9, 10]]);
+        assert_eq!(a * b, expected);
+    }
+
+    #[test]
+    fn multiplication_2x2_rotation()
+    {
+        let rot90 = Mat2::from_row_array([[0.0, 1.0], [-1.0, 0.0]]);
+        let rot180 = Mat2::from_row_array([[-1.0, 0.0], [0.0, -1.0]]);
+        assert_eq!(rot90 * rot90, rot180);
+    }
+
+    #[test]
+    fn multiplication_3x3_basic()
+    {
+        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let b = Mat3P::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
+        let expected = Mat3P::from_row_array([[30, 24, 18], [84, 69, 54], [138, 114, 90]]);
+        assert_eq!(a * b, expected);
+    }
+
+    #[test]
+    fn multiplication_3x3_identity()
+    {
+        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let identity = Mat3P::IDENTITY;
+
+        assert_eq!(a * identity, a);
+        assert_eq!(identity * a, a);
+    }
+
+    #[test]
+    fn multiplication_3x3_zero()
+    {
+        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let zero = Mat3P::ZERO;
+
+        assert_eq!(a * zero, zero);
+        assert_eq!(zero * a, zero);
+    }
+
+    #[test]
+    fn multiplication_3x3_rotation()
+    {
+        let rot90 = Mat3::from_row_array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]);
+        let rot180 = Mat3::from_row_array([[-1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]]);
+
+        // 90° rotation twice should equal 180° rotation
+        assert_eq!(rot90 * rot90, rot180);
+    }
+
+    #[test]
+    fn multiplication_4x4_basic()
+    {
+        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4P::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
+        let expected = Mat4P::from_row_array([[80, 70, 60, 50], [240, 214, 188, 162], [400, 358, 316, 274], [560, 502, 444, 386]]);
+
+        assert_eq!(a * b, expected);
+    }
+
+    #[test]
+    fn multiplication_4x4_identity()
+    {
+        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let identity = Mat4P::IDENTITY;
+
+        assert_eq!(a * identity, a);
+        assert_eq!(identity * a, a);
+    }
+
+    #[test]
+    fn multiplication_4x4_zero()
+    {
+        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let zero = Mat4P::ZERO;
+
+        assert_eq!(a * zero, zero);
+        assert_eq!(zero * a, zero);
+    }
+
+
+    #[test]
+    fn multiplication_4x4_translation()
+    {
+        let translate1 = Mat4::from_translation(vec3(1.0, 2.0, 3.0).into());
+        let translate2 = Mat4::from_translation(vec3(4.0, 5.0, 6.0).into());
+        let expected = Mat4::from_translation(vec3(5.0, 7.0, 9.0).into());
+
+        assert_eq!(translate1 * translate2, expected);
+    }
+
+    #[test]
+    fn multiplication_4x4_scale()
+    {
+        let scale1 = Mat4::from_scale(vec3(2.0, 3.0, 4.0).into());
+        let scale2 = Mat4::from_scale(vec3(0.5, 0.25, 0.125).into());
+        let expected = Mat4::from_scale(vec3(1.0, 0.75, 0.5).into());
+
+        assert_eq!(scale1 * scale2, expected);
+    }
+
+    #[test]
+    fn multiplication_associativity_2x2()
+    {
+        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
+        let b = Mat2P::from_row_array([[5, 6], [7, 8]]);
+        let c = Mat2P::from_row_array([[9, 10], [11, 12]]);
+
+        assert_eq!((a * b) * c, a * (b * c));
+    }
+
+    #[test]
+    fn multiplication_associativity_3x3()
+    {
+        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let b = Mat3P::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
+        let c = Mat3P::from_row_array([[1, 0, 1], [0, 1, 0], [1, 0, 1]]);
+
+        assert_eq!((a * b) * c, a * (b * c));
+    }
+
+    #[test]
+    fn multiplication_associativity_4x4()
+    {
+        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4P::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
+        let c = Mat4P::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
+
+        assert_eq!((a * b) * c, a * (b * c));
+    }
+
+    #[test]
+    fn multiplication_distributivity_2x2()
+    {
+        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
+        let b = Mat2P::from_row_array([[5, 6], [7, 8]]);
+        let c = Mat2P::from_row_array([[9, 10], [11, 12]]);
+
+        assert_eq!(a * (b + c), a * b + a * c);
+    }
+
+    #[test]
+    fn multiplication_distributivity_3x3()
+    {
+        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let b = Mat3P::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
+        let c = Mat3P::from_row_array([[1, 0, 1], [0, 1, 0], [1, 0, 1]]);
+
+        assert_eq!(a * (b + c), a * b + a * c);
+    }
+
+    #[test]
+    fn multiplication_distributivity_4x4()
+    {
+        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4P::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
+        let c = Mat4P::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
+
+        assert_eq!(a * (b + c), a * b + a * c);
+    }
+
+    #[test]
+    fn multiplication_large_numbers_2x2()
+    {
+        let a = Mat2P::from_row_array([[1000, 2000], [3000, 4000]]);
+        let b = Mat2P::from_row_array([[5000, 6000], [7000, 8000]]);
+        let expected = Mat2P::from_row_array([[19000000, 22000000], [43000000, 50000000]]);
+
+        assert_eq!(a * b, expected);
+    }
+
+
+    #[test]
+    fn multiplication_non_commutative_2x2()
+    {
+        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
+        let b = Mat2P::from_row_array([[2, 1], [4, 3]]);
+
+        assert_ne!(a * b, b * a);
+    }
+
+    #[test]
+    fn multiplication_non_commutative_3x3()
+    {
+        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let b = Mat3P::from_row_array([[2, 1, 0], [5, 4, 3], [8, 7, 6]]);
+
+        assert_ne!(a * b, b * a);
+    }
+
+    #[test]
+    fn multiplication_non_commutative_4x4()
+    {
+        // Test non-commutativity for 4x4 matrices
+        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4P::from_row_array([[2, 1, 0, 0], [6, 5, 4, 3], [10, 9, 8, 7], [14, 13, 12, 11]]);
+
+        assert_ne!(a * b, b * a);
+    }
+
+
+    #[test]
+    fn multiplication_symmetric_2x2()
+    {
+        // Test multiplication with symmetric matrices
+        let a = Mat2P::from_row_array([[1, 2], [2, 3]]);
+        let b = Mat2P::from_row_array([[4, 5], [5, 6]]);
+
+        // (A * B)^T = B^T * A^T = B * A (since both are symmetric)
+        assert_eq!((a * b).transpose(), b * a);
+    }
+
+    #[test]
+    fn multiplication_symmetric_3x3()
+    {
+        // Test multiplication with 3x3 symmetric matrices
+        let a = Mat3P::from_row_array([[1, 2, 3], [2, 4, 5], [3, 5, 6]]);
+        let b = Mat3P::from_row_array([[2, 1, 0], [1, 3, 2], [0, 2, 4]]);
+
+        // (A * B)^T = B^T * A^T = B * A (since both are symmetric)
+        assert_eq!((a * b).transpose(), b * a);
+    }
+
+    #[test]
+    fn multiplication_symmetric_4x4()
+    {
+        // Test multiplication with 4x4 symmetric matrices
+        let a = Mat4P::from_row_array([[1, 2, 3, 4], [2, 5, 6, 7], [3, 6, 8, 9], [4, 7, 9, 10]]);
+        let b = Mat4P::from_row_array([[2, 1, 0, 0], [1, 3, 2, 0], [0, 2, 4, 3], [0, 0, 3, 5]]);
+
+        // (A * B)^T = B^T * A^T = B * A (since both are symmetric)
+        assert_eq!((a * b).transpose(), b * a);
     }
 }
