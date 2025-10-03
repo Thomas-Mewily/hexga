@@ -7,10 +7,9 @@ use super::*;
 impl<C,Idx> IoSave for ImageBase<C,Idx>
     where
     Idx : Integer + Serialize,
-    C : IColor + Serialize,
-    Self: ToColor<C::Component>,
-    //u8: CastRangeFrom<C::Component>,
-    //u16: CastRangeFrom<C::Component>,
+    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>> + Serialize,
+    u8: CastRangeFrom<C::Component>,
+    u16: CastRangeFrom<C::Component>,
 {
     fn save_own_extensions() -> impl Iterator<Item = &'static str> {
         [

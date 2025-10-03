@@ -53,9 +53,9 @@ let v = vec2(0., 1.);
 fn main()
 {
     //let i = Image::from_fn_coef((4, 4), |v| hsl(v.x, v.y, 1.).to_rgba_of::<float>());
-    let i = Image::from_fn_coef((4, 4), |v| rgb(v.x, v.y, 1.0).to_u8_range());
+    let i = Image::from_fn_coef((32, 32), |v| rgb(v.x, v.y, 0.0).to_u8_range());
 
-    i.save_to_disk("./test");
+    let _ = i.save_to_disk("./test");
 
     dbg!(i);
 }

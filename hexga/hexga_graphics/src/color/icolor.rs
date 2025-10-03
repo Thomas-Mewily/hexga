@@ -7,14 +7,12 @@ use super::*;
 
 pub trait ToColor<P> : Sized where P: Primitive
 {
-
     type ToRgba<R> : ToColor<R> where R: Primitive;
     fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<P>;
 
 
     type ToHsla<R> : ToColor<R> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P>;
-
 
 
     fn to_hsla(self) -> Self::ToHsla<float> where float: CastRangeFrom<P> { self.to_hsla_of() }
