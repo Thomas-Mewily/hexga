@@ -4,7 +4,7 @@
 #![allow(unused_mut)]
 
 
-use hexga::prelude::*;
+use hexga::{graphics::image::ImageBase, prelude::*};
 
 fn dbg_mix<S,F>(src: S, dest:S, coef:F) where S:Mix<F> + Copy + Debug, F:Float
 {
@@ -53,11 +53,11 @@ let v = vec2(0., 1.);
 fn main()
 {
     //let i = Image::from_fn_coef((4, 4), |v| hsl(v.x, v.y, 1.).to_rgba_of::<float>());
-    let i = Image::from_fn_coef((3, 3), |v| rgb(v.x, v.y, 0.0).to_u8_range());
+    let i = ImageBase::<ColorU16>::from_fn_coef((1024, 1024), |v| rgb(v.x, v.y, 0.0).to_u16_range());
     let original_pixels = i.pixels().to_owned();
 
     i.save_to_disk("./test").unwrap();
-    let i = Image::load_from_disk("./test.png").unwrap();
+    let i = ImageBase::<ColorU16>::load_from_disk("./test.png").unwrap();
     let open_pixels = i.pixels().to_owned();
 
     assert_eq!(original_pixels, open_pixels);

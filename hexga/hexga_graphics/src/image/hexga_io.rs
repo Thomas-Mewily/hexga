@@ -13,24 +13,27 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
     fn load_own_extensions() -> impl Iterator<Item = &'static str> {
         [
             "png",
-            //"jpeg", "jpg",
-            //"gif",
+            "jpeg", "jpg",
+            "bmp",
+            "gif",
+            "webp",
         ].iter().copied()
     }
 
     fn load_from_bytes_with_own_extension_pathless(data : &[u8], extension : &extension) -> IoResult<Self>
     {
-        use ::image::{DynamicImage, ImageFormat};
+        use ::image::{DynamicImage, GenericImageView, ImageFormat};
 
         let format = match extension.to_lowercase().as_str() {
             "png" => ImageFormat::Png,
-            /*
             "jpg" | "jpeg" => ImageFormat::Jpeg,
-            "gif" => ImageFormat::Gif,
             "bmp" => ImageFormat::Bmp,
+            "gif" => ImageFormat::Gif,
+            "webp" => ImageFormat::WebP,
+            /*
             "ico" => ImageFormat::Ico,
             "tiff" => ImageFormat::Tiff,
-            "webp" => ImageFormat::WebP,*/
+            */
             other => Err(IoErrorKind::UnsupportedExtension { name: "Image".to_owned(), got: extension.to_owned(), expected: Self::load_extensions().map(|s| s.to_owned()).collect() })?,
         };
 
@@ -42,13 +45,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
             Err(e) => Err(IoErrorKind::Encoding(e.to_debug()))?,
         };
 
-        let rgba8 = match img
-        {
-            DynamicImage::ImageRgba8(rgba8) => rgba8,
-            x => x.to_rgba8(),
-        };
-
-        let (width, height) : (u32, u32) = rgba8.dimensions();
+        let (width, height) : (u32, u32) = img.dimensions();
         let w = Idx::cast_from(width);
         let h = Idx::cast_from(height);
         let casted_width = w.to_u32();
@@ -57,9 +54,81 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
         {
             return Err(IoErrorKind::Encoding("Image is too big".to_owned()));
         }
-        let bytes: Vec<u8> = rgba8.into_raw();
 
-        if bytes.len() % 4 != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
+        match C::Component::PRIMITIVE_TYPE
+        {
+            NumberType::IntegerSigned => {},
+            NumberType::IntegerUnsigned =>
+            {
+                if std::mem::size_of::<C::Component>() * 8 >= 16
+                {
+                    let bytes = match img
+                    {
+                        DynamicImage::ImageRgba16(rgba) => rgba,
+                        x => x.to_rgba16(),
+                    }.into_raw();
+                    let multiple = 4 * std::mem::size_of::<u16>(); // 4 components (rbga)
+                    if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
+                    {
+                        return Err(IoErrorKind::Encoding("Invalid bytes len".to_owned()));
+                    }
+
+                    let rgba_vec: Vec<RgbaU16> = bytes
+                        .chunks_exact(4)
+                        .map(|chunk| RgbaU16 {
+                            r: chunk[0],
+                            g: chunk[1],
+                            b: chunk[2],
+                            a: chunk[3],
+                        })
+                        .collect();
+
+                    let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_u16(v)).collect();
+                    let size = vector2(w, h);
+
+                    return Ok(Self::from_vec(size, pixels).unwrap());
+                }
+            },
+            NumberType::Float =>
+            {
+                let bytes = match img
+                    {
+                        DynamicImage::ImageRgba32F(rgba) => rgba,
+                        x => x.to_rgba32f(),
+                    }.into_raw();
+
+                    let multiple = 4 * std::mem::size_of::<float>(); // 4 components (rbga)
+                    if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
+                    {
+                        return Err(IoErrorKind::Encoding("Invalid bytes len".to_owned()));
+                    }
+
+                    let rgba_vec: Vec<RgbaF32> = bytes
+                        .chunks_exact(4)
+                        .map(|chunk| RgbaF32 {
+                            r: chunk[0],
+                            g: chunk[1],
+                            b: chunk[2],
+                            a: chunk[3],
+                        })
+                        .collect();
+
+                    let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_f32(v)).collect();
+                    let size = vector2(w, h);
+
+                    return Ok(Self::from_vec(size, pixels).unwrap());
+            },
+            NumberType::Bool => {},
+        }
+
+        // fallback on u8
+        let bytes = match img
+        {
+            DynamicImage::ImageRgba8(rgba8) => rgba8,
+            x => x.to_rgba8(),
+        }.into_raw();
+        let multiple = 4 * std::mem::size_of::<u8>(); // 4 components (rbga)
+        if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
         {
             return Err(IoErrorKind::Encoding("Invalid bytes len".to_owned()));
         }
@@ -77,7 +146,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
         let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_u8(v)).collect();
         let size = vector2(w, h);
 
-        Ok(unsafe { Self::from_vec_unchecked(size, pixels) })
+        Ok(Self::from_vec(size, pixels).unwrap())
     }
 }
 

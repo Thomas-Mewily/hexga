@@ -4,6 +4,8 @@ pub type Rgba      = RgbaFloat;
 pub type RgbaFloat = RgbaOf<float>;
 pub type RgbaU8    = RgbaOf<u8>;
 pub type RgbaU16   = RgbaOf<u16>;
+pub type RgbaF32   = RgbaOf<f32>;
+pub type RgbaF64   = RgbaOf<f64>;
 
 #[repr(C)]
 pub struct RgbaOf<T>
@@ -199,9 +201,11 @@ impl<T> IColor for RgbaOf<T> where T: Primitive
         self.to_hsla_of()
     }
 
-    fn from_rgba_u8(rgba: RgbaU8) -> Self {
-        rgba.to_rgba_of()
-    }
+    fn from_rgba_u8(rgba: RgbaU8) -> Self { rgba.to_rgba_of() }
+    fn from_rgba_u16(rgba: RgbaU16) -> Self { rgba.to_rgba_of() }
+    fn from_rgba_f32(rgba: RgbaOf<f32>) -> Self { rgba.to_rgba_of() }
+    fn from_rgba_f64(rgba: RgbaOf<f64>) -> Self { rgba.to_rgba_of() }
+    fn from_rgba_float(rgba: RgbaFloat) -> Self { rgba.to_rgba_of() }
 }
 
 /*

@@ -2,6 +2,8 @@ use super::*;
 
 pub type Hsla      = HslaFloat;
 pub type HslaFloat = HslaOf<float>;
+pub type HslaF32 = HslaOf<f32>;
+pub type HslaF64 = HslaOf<f64>;
 
 #[repr(C)]
 pub struct HslaOf<T>
@@ -199,6 +201,10 @@ impl<T> IColor for HslaOf<T> where T: Float
     }
 
     fn from_rgba_u8(rgba: RgbaU8) -> Self { rgba.to_hsla_of() }
+    fn from_rgba_u16(rgba: RgbaU16) -> Self { rgba.to_hsla_of() }
+    fn from_rgba_f32(rgba: RgbaOf<f32>) -> Self { rgba.to_hsla_of() }
+    fn from_rgba_f64(rgba: RgbaOf<f64>) -> Self { rgba.to_hsla_of() }
+    fn from_rgba_float(rgba: RgbaFloat) -> Self { rgba.to_hsla_of() }
 }
 
 

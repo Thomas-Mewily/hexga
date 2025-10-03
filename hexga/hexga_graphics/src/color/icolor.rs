@@ -333,6 +333,10 @@ pub trait IColor : Sized + ToColor<Self::Component> //+ ToColor<Self::Component>
     fn to_hsla_of<R>(self) -> HslaOf<R> where R : Float + CastRangeFrom<Self::Component>;
 
     fn from_rgba_u8(rgba: RgbaU8) -> Self;
+    fn from_rgba_u16(rgba: RgbaU16) -> Self;
+    fn from_rgba_f32(rgba: RgbaOf<f32>) -> Self;
+    fn from_rgba_f64(rgba: RgbaOf<f64>) -> Self;
+    fn from_rgba_float(rgba: RgbaFloat) -> Self;
 
     /*
     /// Cast to color byte and format the color : `#RRGGBBAA`
