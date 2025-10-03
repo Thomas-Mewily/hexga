@@ -42,7 +42,7 @@ pub trait IoSave : Serialize
 
 
 
-    // The path is usefull the save composite file (ex: saving a gif but every frame is in a subfolder relative to the path)
+    // The path is useful the save composite file (ex: saving a gif but every frame is in a subfolder relative to the path)
     fn save_to_with_own_extension<W, Fs>(&self, path : &path, extension : &extension, w : W, fs : &mut Fs) -> IoSaveResult
         where W : IoWrite, Fs : IoFsWrite
     { self.save_to_with_own_extension_pathless(extension, w, fs).to_save_error(path) }

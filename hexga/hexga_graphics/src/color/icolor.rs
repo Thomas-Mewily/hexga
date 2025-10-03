@@ -192,16 +192,25 @@ impl<T> ToRgbaF32 for ColorHslaOf<T> where T : Primitive, f32 : CastRangeFrom<T>
 }
 */
 
+
 // ToColor : CastRange
 // Rgba => Any Color Type
 // Image Color => Any Image Color Type
 
+/*
+pub trait ToRgbaComposite
+{
+    type Output<R>;
+    fn to_rgba<T:Primitive>(&self) -> Self::Output<T>;
+}
+*/
+
 /// Constant color name are based on <https://colornames.org/>
 ///
 /// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#FF7F00`)
-pub trait IColor<T> : Sized //+ ToColor
-    where T: Primitive
+pub trait IColor : Sized //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<Self::Component>>
 {
+    type Component : Primitive;
     const TRANSPARENT : Self;
 
     /// #000000
@@ -279,35 +288,35 @@ pub trait IColor<T> : Sized //+ ToColor
     const GLACE : Self; // hard to find an official name for this one with the website
 
 
-    fn to_rgba_of<T2>(self) -> RgbaOf<T2> where T2 : Primitive + CastRangeFrom<T>;
-    fn to_hsla_of<T2>(self) -> HslaOf<T2> where T2 : Float + CastRangeFrom<T>;
+    fn to_rgba_of<T2>(self) -> RgbaOf<T2> where T2 : Primitive + CastRangeFrom<Self::Component>;
+    fn to_hsla_of<T2>(self) -> HslaOf<T2> where T2 : Float + CastRangeFrom<Self::Component>;
 
-    fn rgb_from_hex(rgb: u32) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    fn rgb_from_hex(rgb: u32) -> RgbaOf<Self::Component> where Self::Component: CastRangeFrom<u8>
     {
         let [r,g,b,_] = rgb.to_be_bytes();
         Self::rgb_from_u8(r,g,b)
     }
-    fn rgba_from_hex(rgba: u32) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    fn rgba_from_hex(rgba: u32) -> RgbaOf<Self::Component> where Self::Component: CastRangeFrom<u8>
     {
         let [r,g,b,a] = rgba.to_be_bytes();
         Self::rgba_from_u8(r,g,b,a)
     }
-    fn rgba_from_array(rgba : [u8;4]) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    fn rgba_from_array(rgba : [u8;4]) -> RgbaOf<Self::Component> where Self::Component: CastRangeFrom<u8>
     {
         let [r,g,b,a] = rgba;
         Self::rgba_from_u8(r,g,b,a)
     }
-    fn rgb_from_array(rgba : [u8;3]) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    fn rgb_from_array(rgba : [u8;3]) -> RgbaOf<Self::Component> where Self::Component: CastRangeFrom<u8>
     {
         let [r,g,b] = rgba;
         Self::rgb_from_u8(r,g,b)
     }
 
-    fn rgba_from_u8(r : u8, g : u8, b : u8, a : u8) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    fn rgba_from_u8(r : u8, g : u8, b : u8, a : u8) -> RgbaOf<Self::Component> where Self::Component: CastRangeFrom<u8>
     {
         RgbaU8::rgba(r, g, b, a).to_rgba_of()
     }
-    fn rgb_from_u8(r : u8, g : u8, b : u8) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    fn rgb_from_u8(r : u8, g : u8, b : u8) -> RgbaOf<Self::Component> where Self::Component: CastRangeFrom<u8>
     {
         RgbaU8::rgb(r, g, b).to_rgba_of()
     }

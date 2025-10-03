@@ -1,96 +1,37 @@
+#[cfg(feature = "hexga_io")]
+use ::hexga_io::{IoResult, IoSaveResult, extension, path};
+
 use super::*;
 
-
-/*
-#[cfg(feature = "hexga_io")]
-impl<C,Idx> hexga_io::IoLoad for ImageBase<C,Idx>
-    where
-    Idx : Integer + for<'de> Deserialize<'de>,
-    C : ToColor + for<'de> Deserialize<'de>
-{
-    fn load_own_extensions() -> impl Iterator<Item = &'static str> {
-        [
-            "png",
-            //"jpeg", "jpg",
-            "gif",
-        ].iter().copied()
-    }
-
-    fn load_from_bytes_with_own_extension_pathless(data : &[u8], extension : &hexga_io::extension) -> hexga_io::IoResult<Self>
-    {
-        match extension
-        {
-            "png" =>
-            {
-                match C::COLOR_INSIDE
-                {
-                    ColorKind::RGBAByte =>
-                    {
-                        ::image::ImageEncoder::write_image(
-                            ::image::codecs::png::PngEncoder::new(buffered_write),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba8,
-                        ).expect("Failed to write PNG Rgba8 image");
-                    },
-                    ColorKind::RGBAU16 =>
-                    {
-                        ::image::ImageEncoder::write_image(
-                            ::image::codecs::png::PngEncoder::new(buffered_write),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba16,
-                        ).expect("Failed to write PNG Rgba16 mage");
-                    },
-                    _ => todo!(),
-                }
-            }
-            _ => Err(___())
-        }
-        todo!()
-    }
-}
-    */
-
-/* 
 #[cfg(feature = "hexga_io")]
 impl<C,Idx> IoSave for ImageBase<C,Idx>
     where
     Idx : Integer + Serialize,
-    C : ToColor + Serialize
+    C : IColor + Serialize
 {
     fn save_own_extensions() -> impl Iterator<Item = &'static str> {
         [
             "png",
             //"jpeg", "jpg",
-            "gif",
+            //"gif",
         ].iter().copied()
     }
 
-    fn save_to_with_own_extension_pathless<W, Fs>(&self, extension : &hexga_io::extension, w : W, fs : &mut Fs) -> hexga_io::IoResult
-            where W : Write, Fs : hexga_io::prelude::IoFsWrite
+    fn save_to_with_own_extension_pathless<W, Fs>(&self, extension: &extension, w: W, fs: &mut Fs) -> IoResult
+            where W : Write, Fs : ::hexga_io::prelude::IoFsWrite
     {
         match extension
         {
             "png" =>
             {
-                match C::COLOR_INSIDE
+                match C::Component::PRIMITIVE_NUMBER_TYPE
                 {
-                    ColorKind::RgbaU8 =>
+                    NumberType::IntegerSigned => todo!(),
+                    NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
                     {
-                        ::image::ImageEncoder::write_image(
+                        8 =>
+                        {
+                            ::image::ImageEncoder::write_image(
                             ::image::codecs::png::PngEncoder::new(w),
                             unsafe {
                                 std::slice::from_raw_parts(
@@ -101,11 +42,11 @@ impl<C,Idx> IoSave for ImageBase<C,Idx>
                             self.width().to_usize() as _,
                             self.height().to_usize() as _,
                             ::image::ExtendedColorType::Rgba8,
-                        ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba8 image : {}", e.to_string())))
-                    },
-                    ColorKind::RgbaU16 =>
-                    {
-                        ::image::ImageEncoder::write_image(
+                            ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba8 image : {}", e.to_string())))
+                        }
+                        16 =>
+                        {
+                            ::image::ImageEncoder::write_image(
                             ::image::codecs::png::PngEncoder::new(w),
                             unsafe {
                                 std::slice::from_raw_parts(
@@ -116,11 +57,15 @@ impl<C,Idx> IoSave for ImageBase<C,Idx>
                             self.width().to_usize() as _,
                             self.height().to_usize() as _,
                             ::image::ExtendedColorType::Rgba16,
-                        ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba16 image : {}", e.to_string())))
-                    },
-                    ColorKind::RgbaF32 => self.to_rgba_u16().save_to_with_own_extension_pathless(extension, w, fs),
-                    ColorKind::RgbaF64 => self.to_rgba_u16().save_to_with_own_extension_pathless(extension, w, fs),
-                    _ => self.to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs),
+                            ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba16 image : {}", e.to_string())))
+                        }
+                        _ =>
+                        {
+                            self.to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs)
+                        }
+                    }
+                    NumberType::Float => self.to_rgba_u16().save_to_with_own_extension_pathless(extension, w, fs),
+                    NumberType::Bool => self.to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs),
                 }
             },
             /*
@@ -178,6 +123,7 @@ impl<C,Idx> IoSave for ImageBase<C,Idx>
                 }
             },
             */
+            /*
             "gif" =>
             {
                 match C::COLOR_INSIDE
@@ -201,8 +147,8 @@ impl<C,Idx> IoSave for ImageBase<C,Idx>
                     _ => self.to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs),
                 }
             }
-            _ => Err(___())
+            */
+            _ => Err(IoErrorKind::UnsupportedExtension { name: "Image".to_owned(), got: extension.to_owned(), expected: Self::save_extensions().map(|s| s.to_owned()).collect() })
         }
     }
 }
-*/

@@ -8,5 +8,4 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
-hexga_math.workspace = true
-hexga_core.workspace = true
+hexga.workspace = true

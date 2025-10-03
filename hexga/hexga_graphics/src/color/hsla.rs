@@ -124,8 +124,10 @@ impl<C:Float> Default for HslaOf<C>
     fn default() -> Self { Self::hsla(zero(), zero(), one(), one()) }
 }
 
-impl<T> IColor<T> for HslaOf<T> where T: Float
+impl<T> IColor for HslaOf<T> where T: Float
 {
+    type Component = T;
+
     const TRANSPARENT : Self = Self::hsla(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
 
     const BLACK : Self = Self::hsl(T::ZERO,T::ZERO,T::ZERO);
@@ -229,3 +231,12 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
 ///
 /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
 pub const fn hsla<T>(hue : T, saturation : T, lightness : T, alpha : T) -> HslaOf<T> { HslaOf::hsla(hue, saturation, lightness, alpha) }
+
+/// Alpha is at max
+///
+/// H : Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
+///
+/// S : Grayscale : `0`, `1`: pure color.
+///
+/// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
+pub const fn hsl<T>(hue : T, saturation : T, lightness : T) -> HslaOf<T> where T: Float { HslaOf::hsl(hue, saturation, lightness) }

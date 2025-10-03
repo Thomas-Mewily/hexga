@@ -115,8 +115,10 @@ impl<T> Default for RgbaOf<T> where T: Primitive
     fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX } }
 }
 
-impl<T> IColor<T> for RgbaOf<T> where T: Primitive
+impl<T> IColor for RgbaOf<T> where T: Primitive
 {
+    type Component = T;
+
     const TRANSPARENT : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
 
     const BLACK : Self = Self { r: T::RANGE_MIN , g: T::RANGE_MIN , b: T::RANGE_MIN , a: T::RANGE_MAX };

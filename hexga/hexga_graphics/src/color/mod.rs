@@ -6,9 +6,9 @@ pub mod prelude
     pub use super::
     {
         Color,ColorU8,
-        rgba::{Rgba,RgbaU8,RgbaFloat,RgbaOf},
-        hsla::{Hsla,HslaFloat,HslaOf},
-        icolor::{IColor,ColorArrayExtension},
+        rgba::{Rgba, RgbaU8, RgbaFloat, RgbaOf, rgba, rgb},
+        hsla::{Hsla, HslaFloat, HslaOf, hsla, hsl},
+        icolor::{IColor, ColorArrayExtension},
     };
 }
 

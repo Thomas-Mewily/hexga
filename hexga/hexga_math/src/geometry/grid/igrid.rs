@@ -167,19 +167,19 @@ pub trait IGrid<T, Idx, const N : usize> :
 
 
 
-    /// Create a grid from a Normalized Coordinates.
+    /// Create a grid from a coefficients.
     ///
-    /// Each component of the vector will be between `0..=1.0`
-    fn from_fn_normalized<P,F>(size : P, f : F) -> Self
+    /// Each component of the vector will be between `0..1.0`
+    fn from_fn_coef<P,F>(size : P, f : F) -> Self
     where
     P : Into<Vector::<Idx,N>>,
     float : CastFrom<Idx>,
-    F : FnMut(Vector<float,N>) -> T{ Self::from_fn_normalized_with_precision(size, f) }
+    F : FnMut(Vector<float,N>) -> T{ Self::from_fn_coef_with_precision(size, f) }
 
-    /// Create a grid from a Normalized Coordinates.
+    /// Create a grid from a coefficients.
     ///
-    /// Each component of the vector will be between `0..=1.0`
-    fn from_fn_normalized_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
+    /// Each component of the vector will be between `0..1.0`
+    fn from_fn_coef_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
         where
         P : Into<Vector::<Idx,N>>,
         Precision : Float + CastFrom<Idx>,
