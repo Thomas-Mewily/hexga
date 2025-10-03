@@ -1,8 +1,5 @@
 use super::*;
 
-pub type Color      = Rgba;
-pub type ColorU8    = RgbaU8;
-
 pub type Rgba      = RgbaFloat;
 pub type RgbaFloat = RgbaOf<float>;
 pub type RgbaU8    = RgbaOf<u8>;
@@ -150,7 +147,7 @@ impl<T> IColor<T> for RgbaOf<T> where T: Primitive
         self.to_array4().map(|v| T2::cast_range_from(v)).to_rgba()
     }
 
-    fn to_hsla_of<T2>(self) -> ColorHslaOf<T2> where T2 : Float + CastRangeFrom<T> {
+    fn to_hsla_of<T2>(self) -> HslaOf<T2> where T2 : Float + CastRangeFrom<T> {
 
         // Thank to MacroQuad, the following code was copied and edited the code from the MacroQuad crate
         let [r, g, b, a] = self.to_array4().map(|v| T2::cast_range_from(v));
@@ -164,7 +161,7 @@ impl<T> IColor<T> for RgbaOf<T> where T: Primitive
 
         // Saturation
         let delta = max - min;
-        if delta.is_zero() { return ColorHslaOf::new(T2::ZERO, T2::ZERO, l, a); }
+        if delta.is_zero() { return HslaOf::new(T2::ZERO, T2::ZERO, l, a); }
 
         // it's not gray
         let s = if l < T2::HALF
@@ -188,7 +185,7 @@ impl<T> IColor<T> for RgbaOf<T> where T: Primitive
         // Fix wraparounds
         if h < T2::ZERO { h += T2::ONE; } else if h > T2::ONE { h -= T2::ONE; }
 
-        ColorHslaOf::new(h, s, l, a)
+        HslaOf::new(h, s, l, a)
     }
 }
 

@@ -1,5 +1,9 @@
 use super::*;
 
+pub type Color      = Rgba;
+pub type ColorU8    = RgbaU8;
+
+
 pub mod rgba;
 pub use rgba::*;
 

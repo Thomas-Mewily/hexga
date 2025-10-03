@@ -280,11 +280,16 @@ pub trait IColor<T> : Sized //+ ToColor
 
 
     fn to_rgba_of<T2>(self) -> RgbaOf<T2> where T2 : Primitive + CastRangeFrom<T>;
-    fn to_hsla_of<T2>(self) -> ColorHslaOf<T2> where T2 : Float + CastRangeFrom<T>;
+    fn to_hsla_of<T2>(self) -> HslaOf<T2> where T2 : Float + CastRangeFrom<T>;
 
-    fn rgba_from_hex(hex: u32) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    fn rgb_from_hex(rgb: u32) -> RgbaOf<T> where T: CastRangeFrom<u8>
     {
-        let [r,g,b,a] = hex.to_be_bytes();
+        let [r,g,b,_] = rgb.to_be_bytes();
+        Self::rgb_from_u8(r,g,b)
+    }
+    fn rgba_from_hex(rgba: u32) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    {
+        let [r,g,b,a] = rgba.to_be_bytes();
         Self::rgba_from_u8(r,g,b,a)
     }
     fn rgba_from_array(rgba : [u8;4]) -> RgbaOf<T> where T: CastRangeFrom<u8>
@@ -292,9 +297,19 @@ pub trait IColor<T> : Sized //+ ToColor
         let [r,g,b,a] = rgba;
         Self::rgba_from_u8(r,g,b,a)
     }
+    fn rgb_from_array(rgba : [u8;3]) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    {
+        let [r,g,b] = rgba;
+        Self::rgb_from_u8(r,g,b)
+    }
+
     fn rgba_from_u8(r : u8, g : u8, b : u8, a : u8) -> RgbaOf<T> where T: CastRangeFrom<u8>
     {
-        RgbaU8::new(r, g, b, a).to_rgba_of()
+        RgbaU8::rgba(r, g, b, a).to_rgba_of()
+    }
+    fn rgb_from_u8(r : u8, g : u8, b : u8) -> RgbaOf<T> where T: CastRangeFrom<u8>
+    {
+        RgbaU8::rgb(r, g, b).to_rgba_of()
     }
 
     /*
@@ -318,5 +333,5 @@ impl<S, T, const N : usize> ColorArrayExtension<T,N> for S where S : Array<T,N> 
 pub trait ColorArrayExtension<T, const N : usize> : Array<T,N>
 {
     fn to_rgba(self) -> RgbaOf<T> where T: Default { RgbaOf::from_array(self.to_array_resized()) }
-    fn to_hlsa(self) -> ColorHslaOf<T> where T: Default { ColorHslaOf::from_array(self.to_array_resized()) }
+    fn to_hlsa(self) -> HslaOf<T> where T: Default { HslaOf::from_array(self.to_array_resized()) }
 }

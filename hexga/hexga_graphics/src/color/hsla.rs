@@ -1,12 +1,10 @@
 use super::*;
 
-pub type ColorHsla      = ColorHslaFloat;
-pub type ColorHslaFloat = ColorHslaOf<float>;
-pub type ColorHslaF32   = ColorHslaOf<f32>;
-pub type ColorHslaF64   = ColorHslaOf<f64>;
+pub type Hsla      = HslaFloat;
+pub type HslaFloat = HslaOf<float>;
 
 #[repr(C)]
-pub struct ColorHslaOf<T>
+pub struct HslaOf<T>
 {
     /// Hue. Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
     pub h : T,
@@ -16,14 +14,13 @@ pub struct ColorHslaOf<T>
     pub l : T,
     /// Alpha
     pub a : T,
-    no_destructuring : (),
 }
-hexga_math::impl_fixed_array!(ColorHslaOf, 4);
+hexga_math::impl_fixed_array!(HslaOf, 4);
 
 
-impl<T> ColorHslaOf<T>
+impl<T> HslaOf<T>
 {
-    #[inline(always)] pub const fn new(hue : T, saturation : T, lightness : T, alpha : T) -> Self  { Self { h: hue, s: saturation, l : lightness, a: alpha, no_destructuring: () }}
+    #[inline(always)] pub const fn new(hue : T, saturation : T, lightness : T, alpha : T) -> Self  { Self { h: hue, s: saturation, l : lightness, a: alpha }}
     pub const fn new_hue(hue : T) -> Self where T: Float { Self::hsl(hue, T::ONE, T::HALF) }
     pub const fn gray(coef : T) -> Self where T: Float { Self::hsl(T::ZERO, T::ZERO, coef) }
 
@@ -107,27 +104,27 @@ impl<T> ColorHslaOf<T>
     pub fn replace_a(mut self, a : T) -> T { self.replace_or_panic(Self::A_INDEX, a) }
 }
 
-impl<T> From<(T,T,T,T,)> for ColorHslaOf<T> { fn from(value: (T,T,T,T,)) -> Self { ColorHslaOf::hsla(value.0, value.1, value.2, value.3) }}
-impl<T> From<ColorHslaOf<T>> for (T,T,T,T,) { fn from(value: ColorHslaOf<T>) -> Self { (value.h, value.s, value.l, value.a) }}
+impl<T> From<(T,T,T,T,)> for HslaOf<T> { fn from(value: (T,T,T,T,)) -> Self { HslaOf::hsla(value.0, value.1, value.2, value.3) }}
+impl<T> From<HslaOf<T>> for (T,T,T,T,) { fn from(value: HslaOf<T>) -> Self { (value.h, value.s, value.l, value.a) }}
 
-impl<T> From<(T,T,T,)> for ColorHslaOf<T> where T: Float { fn from(value: (T,T,T,)) -> Self { ColorHslaOf::hsl(value.0, value.1, value.2) }}
-impl<T> From<ColorHslaOf<T>> for (T,T,T,) { fn from(value: ColorHslaOf<T>) -> Self { (value.h, value.s, value.l) }}
+impl<T> From<(T,T,T,)> for HslaOf<T> where T: Float { fn from(value: (T,T,T,)) -> Self { HslaOf::hsl(value.0, value.1, value.2) }}
+impl<T> From<HslaOf<T>> for (T,T,T,) { fn from(value: HslaOf<T>) -> Self { (value.h, value.s, value.l) }}
 
-impl<T> From<[T; 3]> for ColorHslaOf<T> where T: Float { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorHslaOf::hsl(r,g,b) }}
-impl<T> From<ColorHslaOf<T>> for [T; 3] { fn from(value: ColorHslaOf<T>) -> Self { [value.h, value.s, value.l] }}
+impl<T> From<[T; 3]> for HslaOf<T> where T: Float { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; HslaOf::hsl(r,g,b) }}
+impl<T> From<HslaOf<T>> for [T; 3] { fn from(value: HslaOf<T>) -> Self { [value.h, value.s, value.l] }}
 
-impl<T> From<Vector4<T>> for ColorHslaOf<T> { fn from(value: Vector4<T>) -> Self { let [h,s,l,a] = value.to_array(); ColorHslaOf::hsla(h,s,l,a) }}
-impl<T> From<ColorHslaOf<T>> for Vector4<T> { fn from(value: ColorHslaOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
+impl<T> From<Vector4<T>> for HslaOf<T> { fn from(value: Vector4<T>) -> Self { let [h,s,l,a] = value.to_array(); HslaOf::hsla(h,s,l,a) }}
+impl<T> From<HslaOf<T>> for Vector4<T> { fn from(value: HslaOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
 
-impl<T> From<Vector3<T>> for ColorHslaOf<T> where T: Float { fn from(value: Vector3<T>) -> Self { let [h,s,l] = value.to_array(); ColorHslaOf::hsl(h,s,l) }}
-impl<T> From<ColorHslaOf<T>> for Vector3<T> { fn from(value: ColorHslaOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
+impl<T> From<Vector3<T>> for HslaOf<T> where T: Float { fn from(value: Vector3<T>) -> Self { let [h,s,l] = value.to_array(); HslaOf::hsl(h,s,l) }}
+impl<T> From<HslaOf<T>> for Vector3<T> { fn from(value: HslaOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
-impl<C:Float> Default for ColorHslaOf<C>
+impl<C:Float> Default for HslaOf<C>
 {
     fn default() -> Self { Self::hsla(zero(), zero(), one(), one()) }
 }
 
-impl<T> IColor<T> for ColorHslaOf<T> where T: Float
+impl<T> IColor<T> for HslaOf<T> where T: Float
 {
     const TRANSPARENT : Self = Self::hsla(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
 
@@ -186,9 +183,9 @@ impl<T> IColor<T> for ColorHslaOf<T> where T: Float
         RgbaOf::from_array([r, g, b, self.a].cast_range_into())
     }
 
-    fn to_hsla_of<T2>(self) -> ColorHslaOf<T2> where T2 : Float + CastRangeFrom<T>
+    fn to_hsla_of<T2>(self) -> HslaOf<T2> where T2 : Float + CastRangeFrom<T>
     {
-        ColorHslaOf::from_array(self.to_array4().map(|v| T2::cast_range_from(v)))
+        HslaOf::from_array(self.to_array4().map(|v| T2::cast_range_from(v)))
     }
 }
 
@@ -225,4 +222,4 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
     };
 }
 */
-pub const fn hsla<T>(hue : T, saturation : T, lightness : T, alpha : T) -> ColorHslaOf<T> { ColorHslaOf::hsla(hue, saturation, lightness, alpha) }
+pub const fn hsla<T>(hue : T, saturation : T, lightness : T, alpha : T) -> HslaOf<T> { HslaOf::hsla(hue, saturation, lightness, alpha) }
