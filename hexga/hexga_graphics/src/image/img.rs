@@ -1,5 +1,14 @@
 use super::*;
 
+
+pub(crate) mod prelude
+{
+    pub use super::
+    {
+        Image,ToImage,
+    };
+}
+
 pub type Image<C=RgbaU8> = ImageBase<C,int>;
 
 pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;

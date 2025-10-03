@@ -222,4 +222,10 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
     };
 }
 */
+
+/// H : Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
+///
+/// S : Grayscale : `0`, `1`: pure color.
+///
+/// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
 pub const fn hsla<T>(hue : T, saturation : T, lightness : T, alpha : T) -> HslaOf<T> { HslaOf::hsla(hue, saturation, lightness, alpha) }

@@ -37,6 +37,6 @@ pub mod color;
 use prelude::*;
 pub mod prelude
 {
-    pub use super::color::*;
-    pub use super::image::*;
+    pub use super::color::prelude::*;
+    pub use super::image::prelude::*;
 }

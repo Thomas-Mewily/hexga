@@ -232,6 +232,7 @@ pub const fn rgba<T>(red : T, green : T, blue : T, alpha : T) -> RgbaOf<T>
 {
     RgbaOf::rgba(red, green, blue, alpha)
 }
+/// Alpha is at max
 pub const fn rgb<T>(red : T, green : T, blue : T) -> RgbaOf<T> where T: RangeDefault
 {
     RgbaOf::rgb(red, green, blue)
