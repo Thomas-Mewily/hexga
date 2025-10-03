@@ -124,6 +124,44 @@ impl<C:Float> Default for HslaOf<C>
     fn default() -> Self { Self::hsla(zero(), zero(), one(), one()) }
 }
 
+impl<T> HslaOf<T> where T: Float
+{
+    pub fn to_rgba_of<R>(self) -> RgbaOf<R> where R : Primitive, R : CastRangeFrom<T>
+    {
+        // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
+        let r;
+        let g;
+        let b;
+
+        if self.s == T::ZERO {  r = self.l; g = self.l; b = self.l; }
+        else
+        {
+            fn hue_to_rgb<T>(p: T, q: T, mut t: T) -> T where T: Float {
+                if t < T::ZERO { t += T::ONE }
+                if t > T::ONE { t -= T::ONE }
+                if t < T::ONE / T::SIX { return p + (q - p) * T::SIX * t; }
+                if t < T::ONE / T::TWO { return q; }
+                if t < T::TWO / T::THREE { return p + (q - p) * (T::TWO / T::THREE - t) * T::SIX; }
+                p
+            }
+
+            let q = if self.l < T::HALF {
+                self.l * (T::ONE + self.s)
+            } else {
+                self.l + self.s - self.l * self.s
+            };
+            let p = T::TWO * self.l - q;
+            r = hue_to_rgb(p, q, self.h + T::ONE / T::THREE);
+            g = hue_to_rgb(p, q, self.h);
+            b = hue_to_rgb(p, q, self.h - T::ONE / T::THREE);
+        }
+        RgbaOf::from_array([r, g, b, self.a].cast_range_into())
+    }
+
+    pub fn to_hsla_of<R>(self) -> HslaOf<R> where R : Float + CastRangeFrom<T> { self.cast_range_into() }
+}
+
+
 impl<T> IColor for HslaOf<T> where T: Float
 {
     type Component = T;
@@ -151,6 +189,14 @@ impl<T> IColor for HslaOf<T> where T: Float
     const CANARY : Self = Self::hsl(T::COLOR_60_DIV_360, T::ONE, T::COLOR_270_DIV_360);
     const PINK   : Self = Self::hsl(T::COLOR_300_DIV_360, T::ONE, T::COLOR_270_DIV_360);
     const GLACE  : Self = Self::hsl(T::COLOR_180_DIV_360, T::ONE, T::COLOR_270_DIV_360);
+
+    fn to_rgba_of<R>(self) -> RgbaOf<R> where R : Primitive + CastRangeFrom<Self::Component> {
+        self.to_rgba_of()
+    }
+
+    fn to_hsla_of<R>(self) -> HslaOf<R> where R : Float + CastRangeFrom<Self::Component> {
+        self.to_hsla_of()
+    }
 }
 
 

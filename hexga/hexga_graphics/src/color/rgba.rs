@@ -115,6 +115,53 @@ impl<T> Default for RgbaOf<T> where T: Primitive
     fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX } }
 }
 
+impl<T> RgbaOf<T> where T: Primitive
+{
+    pub fn to_rgba_of<R>(self) -> RgbaOf<R> where R : Primitive + CastRangeFrom<T> { self.cast_range_into() }
+
+    pub fn to_hsla_of<R>(self) -> HslaOf<R> where R : Float + CastRangeFrom<T> {
+
+        // Thank to MacroQuad, the following code was copied and edited the code from the MacroQuad crate
+        let [r, g, b, a] = self.to_array4().map(|v| R::cast_range_from(v));
+        let f = [r, g, b];
+
+        let max = *f.max_element();
+        let min = *f.min_element();
+
+        // Luminosity is the average of the max and min rgb color intensities.
+        let l= (max + min) / R::TWO;
+
+        // Saturation
+        let delta = max - min;
+        if delta.is_zero() { return HslaOf::new(R::ZERO, R::ZERO, l, a); }
+
+        // it's not gray
+        let s = if l < R::HALF
+        {
+            delta / (max + min)
+        } else {
+            delta / (R::TWO - max - min)
+        };
+
+        // Hue
+        let r2 = (((max - r) / R::SIX) + (delta / R::TWO)) / delta;
+        let g2 = (((max - g) / R::SIX) + (delta / R::TWO)) / delta;
+        let b2 = (((max - b) / R::SIX) + (delta / R::TWO)) / delta;
+
+        let mut h = match max {
+            x if x == r => b2 - g2,
+            x if x == g => (R::ONE / R::THREE) + r2 - b2,
+            _ => (R::TWO / R::THREE) + g2 - r2,
+        };
+
+        // Fix wraparounds
+        if h < R::ZERO { h += R::ONE; } else if h > R::ONE { h -= R::ONE; }
+
+        HslaOf::new(h, s, l, a)
+    }
+}
+
+
 impl<T> IColor for RgbaOf<T> where T: Primitive
 {
     type Component = T;
@@ -142,6 +189,14 @@ impl<T> IColor for RgbaOf<T> where T: Primitive
     const CANARY : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_HALF);
     const PINK   : Self = Self::rgb(T::RANGE_MAX, T::RANGE_HALF, T::RANGE_MAX);
     const GLACE  : Self = Self::rgb(T::RANGE_HALF, T::RANGE_MAX, T::RANGE_MAX);
+
+    fn to_rgba_of<R>(self) -> RgbaOf<R> where R : Primitive + CastRangeFrom<Self::Component> {
+        self.to_rgba_of()
+    }
+
+    fn to_hsla_of<R>(self) -> HslaOf<R> where R : Float + CastRangeFrom<Self::Component> {
+        self.to_hsla_of()
+    }
 }
 
 /*

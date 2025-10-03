@@ -65,17 +65,17 @@ macro_rules! impl_grid_fmt_method {
 map_on_std_fmt!(
     ($trait_name :ident) =>
     {
-        impl<T, Idx, const N : usize> std::fmt::$trait_name for GridBase<T, Idx, N> where Idx : Integer, T: std::fmt::$trait_name + std::fmt::Debug
+        impl<T, Idx, const N : usize> std::fmt::$trait_name for GridBase<T, Idx, N> where Idx : Integer, T: std::fmt::$trait_name
         {
             impl_grid_fmt_method!($trait_name);
         }
 
-        impl<'a, G, T, Idx, const N : usize> std::fmt::$trait_name for GridView<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, T: std::fmt::$trait_name + std::fmt::Debug
+        impl<'a, G, T, Idx, const N : usize> std::fmt::$trait_name for GridView<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, T: std::fmt::$trait_name
         {
             impl_grid_fmt_method!($trait_name);
         }
 
-        impl<'a, G, T, Idx, const N : usize> std::fmt::$trait_name for GridViewMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, T: std::fmt::$trait_name + std::fmt::Debug
+        impl<'a, G, T, Idx, const N : usize> std::fmt::$trait_name for GridViewMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, T: std::fmt::$trait_name
         {
             impl_grid_fmt_method!($trait_name);
         }

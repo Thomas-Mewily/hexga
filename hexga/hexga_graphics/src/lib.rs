@@ -32,6 +32,7 @@ use hexga_io::{IoSave, IoLoad, IoError, IoErrorKind, Save, Load};
 use std::ops::*;
 
 pub mod image;
+use image::*;
 pub mod color;
 
 use prelude::*;

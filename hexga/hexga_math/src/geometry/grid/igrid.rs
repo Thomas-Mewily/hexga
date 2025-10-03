@@ -195,11 +195,13 @@ pub trait IGrid<T, Idx, const N : usize> :
             })
     }
 
+    /*
     fn map<Dest,F>(self, mut f : F) -> <Self as IGrid<T,Idx,N>>::WithType<Dest> where F : FnMut(T) -> Dest
     {
         let size = self.size();
         unsafe { <Self as IGrid<T,Idx,N>>::WithType::from_vec_unchecked(size, self.into_values().into_iter().map(|v| f(v)).collect()) }
     }
+    */
 }
 
 
