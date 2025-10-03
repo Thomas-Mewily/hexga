@@ -55,6 +55,8 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
             return Err(IoErrorKind::Encoding("Image is too big".to_owned()));
         }
 
+        let error_invalid_size = || IoErrorKind::Encoding("Invalid bytes len".to_owned());
+
         match C::Component::PRIMITIVE_TYPE
         {
             NumberType::IntegerSigned => {},
@@ -70,7 +72,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
                     let multiple = 4 * std::mem::size_of::<u16>(); // 4 components (rbga)
                     if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
                     {
-                        return Err(IoErrorKind::Encoding("Invalid bytes len".to_owned()));
+                        return Err(error_invalid_size());
                     }
 
                     let rgba_vec: Vec<RgbaU16> = bytes
@@ -86,7 +88,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
                     let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_u16(v)).collect();
                     let size = vector2(w, h);
 
-                    return Ok(Self::from_vec(size, pixels).unwrap());
+                    return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
                 }
             },
             NumberType::Float =>
@@ -100,7 +102,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
                     let multiple = 4 * std::mem::size_of::<float>(); // 4 components (rbga)
                     if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
                     {
-                        return Err(IoErrorKind::Encoding("Invalid bytes len".to_owned()));
+                        return Err(error_invalid_size());
                     }
 
                     let rgba_vec: Vec<RgbaF32> = bytes
@@ -116,7 +118,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
                     let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_f32(v)).collect();
                     let size = vector2(w, h);
 
-                    return Ok(Self::from_vec(size, pixels).unwrap());
+                    return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
             },
             NumberType::Bool => {},
         }
@@ -130,7 +132,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
         let multiple = 4 * std::mem::size_of::<u8>(); // 4 components (rbga)
         if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
         {
-            return Err(IoErrorKind::Encoding("Invalid bytes len".to_owned()));
+            return Err(error_invalid_size());
         }
 
         let rgba_vec: Vec<RgbaU8> = bytes
@@ -146,7 +148,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
         let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_u8(v)).collect();
         let size = vector2(w, h);
 
-        Ok(Self::from_vec(size, pixels).unwrap())
+        Self::from_vec(size, pixels).ok_or_else(error_invalid_size)
     }
 }
 
@@ -229,56 +231,7 @@ impl<C,Idx> IoSave for ImageBaseOf<C,Idx>
             /*
             "jpeg" | "jpg" =>
             {
-                match C::COLOR_INSIDE
-                {
-                    ColorKind::RGBAByte =>
-                    {
-                        ::image::ImageEncoder::write_image(
-                            ::image::codecs::jpeg::JpegEncoder::new(w),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba8,
-                        ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .jpeg rgba8 image : {}", e.to_string())))
-                    },
-                    ColorKind::RGBAU16 =>
-                    {
-                        ::image::ImageEncoder::write_image(
-                            ::image::codecs::jpeg::JpegEncoder::new(w),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba16,
-                        ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .jpeg rgba16 image : {}", e.to_string())))
-                    },
-                    ColorKind::RGBAF32 =>
-                    {
-                        ::image::ImageEncoder::write_image(
-                            ::image::codecs::jpeg::JpegEncoder::new(w),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba32F,
-                        ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .jpeg rgba32F image : {}", e.to_string())))
-                    },
-                    ColorKind::RGBAF64 => self.transform(|p| p.to_color_rgba_f32()).save_to_with_own_extension_pathless(extension, w, fs),
-                    _ => self.transform(|p| p.to_color_rgba_byte()).save_to_with_own_extension_pathless(extension, w, fs),
-                }
+                // Todo: Jpeg don't support alpha
             },
             */
             /*
