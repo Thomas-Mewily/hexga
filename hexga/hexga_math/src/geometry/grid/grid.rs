@@ -82,41 +82,36 @@ map_on_std_fmt!(
     }
 );
 
-impl<T, Idx, const N : usize> Map for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> MapIntern for GridBase<T, Idx, N> where Idx : Integer
 {
     type Item=T;
     fn map_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item {
         self.values = self.values.map_intern(f);
         self
     }
+}
+impl<T, Idx, const N : usize> MapWithIntern for GridBase<T, Idx, N> where Idx : Integer
+{
     fn map_with_intern<F>(mut self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
-        if self.size == other.size
-        {
-            self.values = self.values.map_with_intern(other.values, f);
-            self
-        }else
-        {
-            panic!("grid must have the same size");
-        }
+        assert_eq!(self.size(), other.size(), "size mismatch");
+        self.values = self.values.map_with_intern(other.values, f);
+        self
     }
 }
-impl<T, Idx, const N : usize> MapGeneric for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> Map for GridBase<T, Idx, N> where Idx : Integer
 {
     type WithType<R> = GridBase<R, Idx, N>;
 
     fn map<R,F>(self, f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map(f)) }
     }
+}
+impl<T, Idx, const N : usize> MapWith for GridBase<T, Idx, N> where Idx : Integer
+{
     fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
     {
-        if self.size == other.size
-        {
-            unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map_with(other.values, f)) }
-        }
-        else
-        {
-            panic!("grid must have the same size");
-        }
+        assert_eq!(self.size(), other.size(), "size mismatch");
+        unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map_with(other.values, f)) }
     }
 }
 

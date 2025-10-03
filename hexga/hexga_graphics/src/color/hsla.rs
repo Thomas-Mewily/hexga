@@ -154,7 +154,7 @@ impl<T> IColor<T> for ColorHslaOf<T> where T: Float
     const GLACE  : Self = Self::hsl(T::COLOR_180_DIV_360, T::ONE, T::COLOR_270_DIV_360);
 
 
-    fn to_rgba_of<T2>(self) -> ColorRgbaOf<T2> where T2 : Primitive, T2 : CastRangeFrom<T>
+    fn to_rgba_of<T2>(self) -> RgbaOf<T2> where T2 : Primitive, T2 : CastRangeFrom<T>
     {
         // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
         let r;
@@ -183,7 +183,7 @@ impl<T> IColor<T> for ColorHslaOf<T> where T: Float
             g = hue_to_rgb(p, q, self.h);
             b = hue_to_rgb(p, q, self.h - T::ONE / T::THREE);
         }
-        ColorRgbaOf::from_array([r, g, b, self.a].cast_range_into())
+        RgbaOf::from_array([r, g, b, self.a].cast_range_into())
     }
 
     fn to_hsla_of<T2>(self) -> ColorHslaOf<T2> where T2 : Float + CastRangeFrom<T>

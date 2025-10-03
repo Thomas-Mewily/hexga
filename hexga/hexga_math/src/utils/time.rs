@@ -67,7 +67,7 @@ map_on_number!(
     }
 );
 
-impl<T> ToTimeComposite for T where T: MapGeneric, T::Item : ToTimeComposite
+impl<T> ToTimeComposite for T where T: Map, T::Item : ToTimeComposite
 {
     type Output = T::WithType<<T::Item as ToTimeComposite>::Output>;
 

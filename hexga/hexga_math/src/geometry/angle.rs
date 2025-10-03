@@ -57,7 +57,7 @@ map_on_number!(
     }
 );
 
-impl<T> ToAngleComposite for T where T: MapGeneric, T::Item : ToAngleComposite
+impl<T> ToAngleComposite for T where T: Map, T::Item : ToAngleComposite
 {
     type Output = T::WithType<<T::Item as ToAngleComposite>::Output>;
     fn degree(self) -> Self::Output { self.map(ToAngleComposite::degree) }

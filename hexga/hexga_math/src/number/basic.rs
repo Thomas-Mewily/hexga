@@ -1,5 +1,7 @@
 use super::*;
 
+// Most function are suffixed with `_componentwise` like min, max, clamp, because there are already defiend in [std::cmp::Ord] and I don't want to fully qualify them...
+
 
 /// Max function in a component way
 pub trait Max
@@ -7,12 +9,12 @@ pub trait Max
     /// Max function in a component way
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn max(self, other: Self) -> Self;
+    fn max_componentwise(self, other: Self) -> Self;
 }
 /// Max function in a component way
 ///
 /// Can cause a panic for grid if the size mismatch
-pub fn max<S>(a: S, b:S) -> S where S:Max  { a.max(b) }
+pub fn max<S>(a: S, b:S) -> S where S:Max  { a.max_componentwise(b) }
 
 
 map_on_integer!(
@@ -20,7 +22,7 @@ map_on_integer!(
     {
         impl Max for $type_name
         {
-            fn max(self, other: Self) -> Self { Ord::max(self, other) }
+            fn max_componentwise(self, other: Self) -> Self { Ord::max(self, other) }
         }
     }
 );
@@ -29,18 +31,18 @@ map_on_float!(
     {
         impl Max for $type_name
         {
-            fn max(self, other: Self) -> Self { Self::max(self, other) }
+            fn max_componentwise(self, other: Self) -> Self { Self::max(self, other) }
         }
     }
 );
 impl Max for bool
 {
-    fn max(self, other: Self) -> Self { self | other }
+    fn max_componentwise(self, other: Self) -> Self { self | other }
 }
 
-impl<S> Max for S where S:Map, S::Item : Max
+impl<S> Max for S where S:MapWithIntern, S::Item : Max
 {
-    fn max(self, other: Self) -> Self { self.map_with_intern(other, Max::max) }
+    fn max_componentwise(self, other: Self) -> Self { self.map_with_intern(other, Max::max_componentwise) }
 }
 
 
@@ -51,19 +53,19 @@ pub trait Min
     /// Min function in a component way
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn min(self, other: Self) -> Self;
+    fn min_componentwise(self, other: Self) -> Self;
 }
 /// Min function in a component way
 ///
 /// Can cause a panic for grid if the size mismatch
-pub fn min<S>(a: S, b:S) -> S where S:Min  { a.min(b) }
+pub fn min<S>(a: S, b:S) -> S where S:Min  { a.min_componentwise(b) }
 
 map_on_integer!(
     ($type_name: tt) =>
     {
         impl Min for $type_name
         {
-            fn min(self, other: Self) -> Self { Ord::min(self, other) }
+            fn min_componentwise(self, other: Self) -> Self { Ord::min(self, other) }
         }
     }
 );
@@ -72,18 +74,18 @@ map_on_float!(
     {
         impl Min for $type_name
         {
-            fn min(self, other: Self) -> Self { Self::min(self, other) }
+            fn min_componentwise(self, other: Self) -> Self { Self::min(self, other) }
         }
     }
 );
 impl Min for bool
 {
-    fn min(self, other: Self) -> Self { self & other }
+    fn min_componentwise(self, other: Self) -> Self { self & other }
 }
 
-impl<S> Min for S where S:Map, S::Item : Min
+impl<S> Min for S where S:MapWithIntern, S::Item : Min
 {
-    fn min(self, other: Self) -> Self { self.map_with_intern(other, Min::min) }
+    fn min_componentwise(self, other: Self) -> Self { self.map_with_intern(other, Min::min_componentwise) }
 }
 
 
@@ -96,21 +98,21 @@ pub trait Clamp
     /// Clamps self between min_val and max_val (inclusive)
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn clamp(self, min_val: Self, max_val: Self) -> Self;
+    fn clamp_componentwise(self, min_val: Self, max_val: Self) -> Self;
 }
     /// Clamp function in a component way
     ///
     /// Clamps self between min_val and max_val (inclusive)
     ///
     /// Can cause a panic for grid if the size mismatch
-pub fn clamp<S>(value: S, min_val: S, max_val: S) -> S where S:Clamp  { value.clamp(min_val, max_val) }
+pub fn clamp<S>(value: S, min_val: S, max_val: S) -> S where S:Clamp  { value.clamp_componentwise(min_val, max_val) }
 
 impl<T> Clamp for T
 where
     T: Min + Max,
 {
-    fn clamp(self, min_val: Self, max_val: Self) -> Self {
-        self.max(min_val).min(max_val)
+    fn clamp_componentwise(self, min_val: Self, max_val: Self) -> Self {
+        self.max_componentwise(min_val).min_componentwise(max_val)
     }
 }
 
@@ -169,7 +171,7 @@ map_on_number_and_bool!(
         }
     }
 );
-impl<S,F> Mix<F> for S where S:Map, S::Item : Mix<F>, F:Float
+impl<S,F> Mix<F> for S where S:MapWithIntern, S::Item : Mix<F>, F:Float
 {
     fn mix_unchecked(self, dest: Self, coef: F) -> Self
     {
@@ -279,7 +281,7 @@ impl Abs for Wrapping<bool>
     #[inline(always)]
     fn abs(self) -> Self { self }
 }
-impl<S> Abs for S where S:MapGeneric, S::Item : Abs
+impl<S> Abs for S where S:Map, S::Item : Abs
 {
     type Output = S::WithType<<S::Item as Abs>::Output>;
     fn abs(self) -> Self::Output {
@@ -312,12 +314,12 @@ macro_rules! impl_number_basic_trait
         /// Max function in a component way
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn max(self, other: Self) -> Self where Self: $crate::number::Max { $crate::number::Max::max(self, other) }
+        pub fn max(self, other: Self) -> Self where Self: $crate::number::Max { $crate::number::Max::max_componentwise(self, other) }
 
         /// Min function in a component way
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn min(self, other: Self) -> Self where Self: $crate::number::Min { $crate::number::Min::min(self, other) }
+        pub fn min(self, other: Self) -> Self where Self: $crate::number::Min { $crate::number::Min::min_componentwise(self, other) }
 
         /// Absolute value in a component way.
         ///
@@ -353,7 +355,7 @@ macro_rules! impl_number_basic_trait
         /// Clamps self between min_val and max_val (inclusive)
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn clamp(self, min_val: Self, max_val: Self) -> Self where Self: $crate::number::Clamp { $crate::number::Clamp::clamp(self, min_val, max_val) }
+        pub fn clamp(self, min_val: Self, max_val: Self) -> Self where Self: $crate::number::Clamp { $crate::number::Clamp::clamp_componentwise(self, min_val, max_val) }
     };
 }
 

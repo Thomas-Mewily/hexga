@@ -1,23 +1,14 @@
 use super::*;
 
-pub type Color      = ColorRgba;
-pub type ColorU8    = ColorRgbaU8;
-pub type ColorU16   = ColorRgbaU16;
-pub type ColorBool  = ColorRgbaBool;
-pub type ColorMask  = ColorRgbaMask;
+pub type Color      = Rgba;
+pub type ColorU8    = RgbaU8;
 
-pub type ColorRgba      = ColorRgbaOf<float>;
-pub type ColorRgbaFloat = ColorRgbaOf<float>;
-pub type ColorRgbaF32   = ColorRgbaOf<f32>;
-pub type ColorRgbaF64   = ColorRgbaOf<f64>;
-pub type ColorRgbaU8    = ColorRgbaOf<u8>;
-pub type ColorRgbaU16   = ColorRgbaOf<u16>;
-pub type ColorRgbaMask  = ColorRgbaBool;
-pub type ColorRgbaBool  = ColorRgbaOf<bool>;
-
+pub type Rgba      = RgbaFloat;
+pub type RgbaFloat = RgbaOf<float>;
+pub type RgbaU8    = RgbaOf<u8>;
 
 #[repr(C)]
-pub struct ColorRgbaOf<T>
+pub struct RgbaOf<T>
 {
     /// Red
     pub r : T,
@@ -27,18 +18,19 @@ pub struct ColorRgbaOf<T>
     pub b : T,
     /// Alpha
     pub a : T,
-    no_destructuring : (),
 }
-hexga_math::impl_fixed_array!(ColorRgbaOf, 4);
+hexga_math::impl_fixed_array!(RgbaOf, 4);
 
 
 #[allow(dead_code)]
-impl<T> ColorRgbaOf<T>
+impl<T> RgbaOf<T>
 {
-    pub const fn new(red : T, green : T, blue : T, alpha : T) -> Self { Self { r:red, g:green, b:blue, a:alpha, no_destructuring: () }}
+    pub const fn new(red : T, green : T, blue : T, alpha : T) -> Self { Self { r:red, g:green, b:blue, a:alpha }}
 
     pub const fn rgba(red : T, green : T, blue : T, alpha : T) -> Self { Self::new(red, green, blue, alpha) }
+    /// Alpha is at max
     pub const fn rgb (red : T, green : T, blue : T) -> Self where T: RangeDefault { Self::rgba(red, green, blue, T::RANGE_MAX) }
+    /// Alpha is at max
     pub const fn gray(rgb : T) -> Self where T: RangeDefault + Copy { Self::rgb(rgb, rgb, rgb) }
 
     pub const fn splat_rgba(rgba : T) -> Self where T: Copy { Self::new(rgba, rgba, rgba, rgba) }
@@ -106,33 +98,33 @@ impl<T> ColorRgbaOf<T>
     pub fn replace_a(mut self, a : T) -> T { self.replace_or_panic(Self::A_INDEX, a) }
 }
 
-impl<T> From<(T,T,T,T,)> for ColorRgbaOf<T> { fn from(value: (T,T,T,T,)) -> Self { ColorRgbaOf::rgba(value.0, value.1, value.2, value.3) }}
-impl<T> From<ColorRgbaOf<T>> for (T,T,T,T,) { fn from(value: ColorRgbaOf<T>) -> Self { (value.r, value.g, value.b, value.a) }}
+impl<T> From<(T,T,T,T,)> for RgbaOf<T> { fn from(value: (T,T,T,T,)) -> Self { RgbaOf::rgba(value.0, value.1, value.2, value.3) }}
+impl<T> From<RgbaOf<T>> for (T,T,T,T,) { fn from(value: RgbaOf<T>) -> Self { (value.r, value.g, value.b, value.a) }}
 
-impl<T> From<(T,T,T,)> for ColorRgbaOf<T> where T: RangeDefault { fn from(value: (T,T,T,)) -> Self { ColorRgbaOf::rgb(value.0, value.1, value.2) }}
-impl<T> From<ColorRgbaOf<T>> for (T,T,T,) { fn from(value: ColorRgbaOf<T>) -> Self { (value.r, value.g, value.b) }}
+impl<T> From<(T,T,T,)> for RgbaOf<T> where T: RangeDefault { fn from(value: (T,T,T,)) -> Self { RgbaOf::rgb(value.0, value.1, value.2) }}
+impl<T> From<RgbaOf<T>> for (T,T,T,) { fn from(value: RgbaOf<T>) -> Self { (value.r, value.g, value.b) }}
 
-impl<T> From<[T; 3]> for ColorRgbaOf<T> where T: RangeDefault { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; ColorRgbaOf::rgb(r,g,b) }}
-impl<T> From<ColorRgbaOf<T>> for [T; 3] { fn from(value: ColorRgbaOf<T>) -> Self { [value.r, value.g, value.b] }}
+impl<T> From<[T; 3]> for RgbaOf<T> where T: RangeDefault { fn from(value: [T; 3]) -> Self { let [r,g,b] = value; RgbaOf::rgb(r,g,b) }}
+impl<T> From<RgbaOf<T>> for [T; 3] { fn from(value: RgbaOf<T>) -> Self { [value.r, value.g, value.b] }}
 
-impl<T> From<Vector4<T>> for ColorRgbaOf<T> { fn from(value: Vector4<T>) -> Self { let [r,g,b,a] = value.to_array(); ColorRgbaOf::rgba(r,g,b,a) }}
-impl<T> From<ColorRgbaOf<T>> for Vector4<T> { fn from(value: ColorRgbaOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
+impl<T> From<Vector4<T>> for RgbaOf<T> { fn from(value: Vector4<T>) -> Self { let [r,g,b,a] = value.to_array(); RgbaOf::rgba(r,g,b,a) }}
+impl<T> From<RgbaOf<T>> for Vector4<T> { fn from(value: RgbaOf<T>) -> Self { let [x,y,z,w] = value.into(); vector4(x,y,z,w) }}
 
-impl<T> From<Vector3<T>> for ColorRgbaOf<T> where T: RangeDefault { fn from(value: Vector3<T>) -> Self { let [r,g,b] = value.to_array(); ColorRgbaOf::rgb(r,g,b) }}
-impl<T> From<ColorRgbaOf<T>> for Vector3<T> { fn from(value: ColorRgbaOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
+impl<T> From<Vector3<T>> for RgbaOf<T> where T: RangeDefault { fn from(value: Vector3<T>) -> Self { let [r,g,b] = value.to_array(); RgbaOf::rgb(r,g,b) }}
+impl<T> From<RgbaOf<T>> for Vector3<T> { fn from(value: RgbaOf<T>) -> Self { let [x,y,z,_] = value.into(); vector3(x,y,z) }}
 
-impl<T> Default for ColorRgbaOf<T> where T: Primitive
+impl<T> Default for RgbaOf<T> where T: Primitive
 {
-    fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX, no_destructuring: () } }
+    fn default() -> Self { Self { r: T::RANGE_MAX, g: T::RANGE_MAX, b: T::RANGE_MAX, a: T::RANGE_MAX } }
 }
 
-impl<T> IColor<T> for ColorRgbaOf<T> where T: Primitive
+impl<T> IColor<T> for RgbaOf<T> where T: Primitive
 {
     const TRANSPARENT : Self = Self::rgba(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX, T::RANGE_MAX);
 
-    const BLACK : Self = Self { r: T::RANGE_MIN , g: T::RANGE_MIN , b: T::RANGE_MIN , a: T::RANGE_MAX, no_destructuring: () };
-    const GREY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX, no_destructuring: () };
-    const WHITE : Self = Self { r: T::RANGE_MAX , g: T::RANGE_MAX , b: T::RANGE_MAX , a: T::RANGE_MAX, no_destructuring: () };
+    const BLACK : Self = Self { r: T::RANGE_MIN , g: T::RANGE_MIN , b: T::RANGE_MIN , a: T::RANGE_MAX };
+    const GREY  : Self = Self { r: T::RANGE_HALF, g: T::RANGE_HALF, b: T::RANGE_HALF, a: T::RANGE_MAX };
+    const WHITE : Self = Self { r: T::RANGE_MAX , g: T::RANGE_MAX , b: T::RANGE_MAX , a: T::RANGE_MAX };
 
     const RED    : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MIN, T::RANGE_MIN);
     const GREEN  : Self = Self::rgb(T::RANGE_MIN, T::RANGE_MAX, T::RANGE_MIN);
@@ -153,7 +145,7 @@ impl<T> IColor<T> for ColorRgbaOf<T> where T: Primitive
     const GLACE  : Self = Self::rgb(T::RANGE_HALF, T::RANGE_MAX, T::RANGE_MAX);
 
 
-    fn to_rgba_of<T2>(self) -> ColorRgbaOf<T2> where T2 : Primitive + CastRangeFrom<T>
+    fn to_rgba_of<T2>(self) -> RgbaOf<T2> where T2 : Primitive + CastRangeFrom<T>
     {
         self.to_array4().map(|v| T2::cast_range_from(v)).to_rgba()
     }
@@ -239,11 +231,11 @@ impl<T> ToColorComposite for ColorRgbaOf<T> where T: Primitive
 }
 */
 
-pub const fn rgba<T>(red : T, green : T, blue : T, alpha : T) -> ColorRgbaOf<T>
+pub const fn rgba<T>(red : T, green : T, blue : T, alpha : T) -> RgbaOf<T>
 {
-    ColorRgbaOf::rgba(red, green, blue, alpha)
+    RgbaOf::rgba(red, green, blue, alpha)
 }
-pub const fn rgb<T>(red : T, green : T, blue : T) -> ColorRgbaOf<T> where T: RangeDefault
+pub const fn rgb<T>(red : T, green : T, blue : T) -> RgbaOf<T> where T: RangeDefault
 {
-    ColorRgbaOf::rgb(red, green, blue)
+    RgbaOf::rgb(red, green, blue)
 }

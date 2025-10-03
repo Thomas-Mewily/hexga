@@ -33,12 +33,12 @@ pub trait IGrid<T, Idx, const N : usize> :
     + Index<Rectangle<Idx,N>,Output=T>
 */
     + TryGetMut<Vector<Idx,N>,Output = T>
-    + GetMut<Vector<Idx,N>,Output = T> 
+    + GetMut<Vector<Idx,N>,Output = T>
     + GetManyMut<Vector<Idx,N>,Output=T>
     + IndexMut<Vector<Idx,N>, Output = T>
 
+    + MapIntern<Item=T>
     + Map<Item=T>
-    + MapGeneric<Item=T>
 
     + Sized
     where Idx : Integer
@@ -140,7 +140,7 @@ pub trait IGrid<T, Idx, const N : usize> :
     /// Each component of the vector will be between `-1.0..=1.0`
     fn from_fn_ndc<P,F>(size : P, f : F) -> Self
     where
-    P : Into<Vector::<Idx,N>>, 
+    P : Into<Vector::<Idx,N>>,
     float : CastFrom<Idx>,
     F : FnMut(Vector<float,N>) -> T{ Self::from_fn_ndc_with_precision(size, f) }
 

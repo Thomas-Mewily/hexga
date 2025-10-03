@@ -1,6 +1,6 @@
 use super::*;
 
-pub type Image<C=ColorRgbaU8> = ImageBase<C,int>;
+pub type Image<C=RgbaU8> = ImageBase<C,int>;
 
 pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;
 
@@ -353,28 +353,32 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx : Integer, C : ToCo
 }
 */
 
-impl<T, Idx> Map for ImageBase<T, Idx> where Idx : Integer
+impl<T, Idx> MapIntern for ImageBase<T, Idx> where Idx : Integer
 {
     type Item=T;
     fn map_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item {
         self.pixels = self.pixels.map_intern(f);
         self
     }
-
+}
+impl<T, Idx> MapWithIntern for ImageBase<T, Idx> where Idx : Integer
+{
     fn map_with_intern<F>(mut self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
         assert_eq!(self.size(), other.size(), "size mismatch");
         self.pixels = self.pixels.map_with_intern(other.pixels, f);
         self
     }
 }
-impl<T, Idx> MapGeneric for ImageBase<T, Idx> where Idx : Integer
+impl<T, Idx> Map for ImageBase<T, Idx> where Idx : Integer
 {
     type WithType<R> = ImageBase<R, Idx>;
 
     fn map<R,F>(self, f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.pixels.map(f)) }
     }
-
+}
+impl<T, Idx> MapWith for ImageBase<T, Idx> where Idx : Integer
+{
     fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R {
         assert_eq!(self.size(), other.size(), "size mismatch");
         unsafe { ImageBase::from_vec_unchecked(self.size(), self.pixels.map_with(other.pixels, f)) }

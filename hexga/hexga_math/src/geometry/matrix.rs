@@ -47,7 +47,7 @@ pub type SquareMatrix<T, const N : usize> = Matrix<T, N, N>;
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct Matrix<T, const ROW : usize, const COL : usize>
 {
-    columns : Vector<Vector<T, ROW>,COL>,
+    pub columns : Vector<Vector<T, ROW>,COL>,
 }
 
 
@@ -536,7 +536,7 @@ impl<T, const ROW : usize, const COL : usize> DivAssign<T> for Matrix<T,ROW,COL>
 }
 
 
-impl<T, const ROW : usize, const COL : usize> Map for Matrix<T,ROW,COL>
+impl<T, const ROW : usize, const COL : usize> MapIntern for Matrix<T,ROW,COL>
 {
     type Item=T;
     fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
@@ -544,28 +544,32 @@ impl<T, const ROW : usize, const COL : usize> Map for Matrix<T,ROW,COL>
         self.map(f)
     }
 
+}
+impl<T, const ROW : usize, const COL : usize> MapWithIntern for Matrix<T,ROW,COL>
+{
     fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
         self.map_with(other, f)
     }
 }
-impl<T, const ROW : usize, const COL : usize> MapGeneric for Matrix<T,ROW,COL>
+impl<T, const ROW : usize, const COL : usize> Map for Matrix<T,ROW,COL>
 {
     type WithType<R> = Matrix<R,ROW,COL>;
 
     fn map<R,F>(self, mut f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R {
         let mut it = self.columns.into_iter();
-        let cols = std::array::from_fn(|_| MapGeneric::map(it.next().unwrap(), &mut f));
-        Self::WithType::<R>::from_col(Vector::from_array(cols))
-    }
-
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, mut f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R {
-        let mut it1 = self.columns.into_iter();
-        let mut it2 = other.columns.into_iter();
-        let cols = std::array::from_fn(|_| MapGeneric::map_with(it1.next().unwrap(), it2.next().unwrap(), &mut f));
+        let cols = std::array::from_fn(|_| Map::map(it.next().unwrap(), &mut f));
         Self::WithType::<R>::from_col(Vector::from_array(cols))
     }
 }
-
+impl<T, const ROW : usize, const COL : usize> MapWith for Matrix<T,ROW,COL>
+{
+    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, mut f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R {
+        let mut it1 = self.columns.into_iter();
+        let mut it2 = other.columns.into_iter();
+        let cols = std::array::from_fn(|_| MapWith::map_with(it1.next().unwrap(), it2.next().unwrap(), &mut f));
+        Self::WithType::<R>::from_col(Vector::from_array(cols))
+    }
+}
 
 
 impl<T, const N: usize> SquareMatrix<T, N>

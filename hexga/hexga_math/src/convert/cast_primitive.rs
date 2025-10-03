@@ -35,7 +35,7 @@ macro_rules! impl_cast_to {
 
         impl<S> $trait_name for S
         where
-            S: $crate::map::MapGeneric + CastInto<S::WithType<<S::Item as $trait_name>::Output>>,
+            S: $crate::map::Map + CastInto<S::WithType<<S::Item as $trait_name>::Output>>,
             S::Item: $trait_name,
         {
             type Output = S::WithType<<S::Item as $trait_name>::Output>;

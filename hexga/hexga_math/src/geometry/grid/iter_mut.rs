@@ -69,11 +69,10 @@ impl<'a, G, T, Idx, const N : usize> Iterator for GridViewIterMut<'a, G, T, Idx,
 impl<'a, G, T, Idx, const N : usize> std::iter::FusedIterator for GridViewIterMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, RectangleIter<Idx,N> : std::iter::FusedIterator {}
 impl<'a, G, T, Idx, const N : usize> std::iter::ExactSizeIterator for GridViewIterMut<'a, G, T, Idx, N> where G : IGrid<T, Idx, N>, Idx : Integer, RectangleIter<Idx,N> : std::iter::ExactSizeIterator {}
 
-impl<'a, G, T, Idx, const N : usize> Map for GridViewMut<'a, G, T, Idx, N>
+impl<'a, G, T, Idx, const N : usize> MapIntern for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
-    T: Clone,
 {
     type Item=T;
 
@@ -91,7 +90,15 @@ impl<'a, G, T, Idx, const N : usize> Map for GridViewMut<'a, G, T, Idx, N>
         });
         self
     }
+}
 
+
+impl<'a, G, T, Idx, const N : usize> MapWithIntern for GridViewMut<'a, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer,
+    T: Clone,
+{
     fn map_with_intern<F>(mut self, mut other: Self, mut f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
         assert_eq!(self.size(), other.size(), "size mismatch");
         self.iter_mut().zip(other.iter_mut()).for_each(|((_, a),(_, b))|

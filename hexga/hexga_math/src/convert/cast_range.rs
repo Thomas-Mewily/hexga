@@ -4,9 +4,9 @@ use super::*;
 
 /// Remap the value [RangeDefault] to the [RangeDefault] of the target type,
 /// in a generic friendly way, and similar to the [From] trait.
-/// 
+///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
-/// 
+///
 /// One should always prefer implementing [CastRangeFrom] over [CastRangeInto] because implementing [CastRangeFrom] automatically provides one with an implementation of [CastRangeInto] thanks to the blanket implementation in the hexga_math library.
 ///
 /// ```rust
@@ -14,7 +14,7 @@ use super::*;
 ///
 /// assert_eq!(u8::cast_range_from(1f32), 255u8);
 /// assert_eq!(u8::cast_range_from(0f32), 0u8);
-/// 
+///
 /// let casted_range : u16 = u8::MAX.cast_range_into();
 /// assert_eq!(casted_range, u16::MAX);
 /// ```
@@ -27,19 +27,19 @@ use super::*;
 /// let x = [0u8, 127u8, 255u8];
 /// let y : [u16; 3] = x.cast_range_into(),
 /// assert_eq!(y, [0u16, 32639u16, 65535u16]);
-///  
-/// 
+///
+///
 /// let a = vector3(0u8, 127u8, 255u8);
 /// let b : Vector3::<u16> = a.cast_into(),
 /// assert_eq!(b, vector3(0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX));
 /// ```
-pub trait CastRangeFrom<T> 
-{ 
-    fn cast_range_from(value : T) -> Self; 
-}
-impl<C1,C2> CastRangeFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithType<C1::Item> = Self>, C1::Item : CastRangeFrom<C2::Item>
+pub trait CastRangeFrom<T>
 {
-    fn cast_range_from(value : C2) -> Self 
+    fn cast_range_from(value : T) -> Self;
+}
+impl<C1,C2> CastRangeFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> = Self>, C1::Item : CastRangeFrom<C2::Item>
+{
+    fn cast_range_from(value : C2) -> Self
     {
         value.map(|v| C1::Item::cast_range_from(v))
     }
@@ -48,9 +48,9 @@ impl<C1,C2> CastRangeFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithTy
 
 /// Remap the value [RangeDefault] to the [RangeDefault] of the target type,
 /// in a generic friendly way, and similar to the [From] trait.
-/// 
+///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
-/// 
+///
 /// One should always prefer implementing [CastRangeFrom] over [CastRangeInto] because implementing [CastRangeFrom] automatically provides one with an implementation of [CastRangeInto] thanks to the blanket implementation in the hexga_math library.
 ///
 /// ```rust
@@ -58,7 +58,7 @@ impl<C1,C2> CastRangeFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithTy
 ///
 /// assert_eq!(u8::cast_range_from(1f32), 255u8);
 /// assert_eq!(u8::cast_range_from(0f32), 0u8);
-/// 
+///
 /// let casted_range : u16 = u8::MAX.cast_range_into();
 /// assert_eq!(casted_range, u16::MAX);
 /// ```
@@ -71,15 +71,15 @@ impl<C1,C2> CastRangeFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithTy
 /// let x = [0u8, 127u8, 255u8];
 /// let y : [u16; 3] = x.cast_range_into(),
 /// assert_eq!(y, [0u16, 32639u16, 65535u16]);
-///  
-/// 
+///
+///
 /// let a = vector3(0u8, 127u8, 255u8);
 /// let b : Vector3::<u16> = a.cast_into(),
 /// assert_eq!(b, vector3(0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX));
 /// ```
-pub trait CastRangeInto<T> : Sized 
-{ 
-    fn cast_range_into(self) -> T; 
+pub trait CastRangeInto<T> : Sized
+{
+    fn cast_range_into(self) -> T;
 }
 impl<S,T> CastRangeInto<T> for S where T:CastRangeFrom<S>
 {

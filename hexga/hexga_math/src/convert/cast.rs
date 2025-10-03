@@ -2,9 +2,9 @@ use super::*;
 
 
 
-/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) 
+/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
-/// 
+///
 /// One should always prefer implementing [CastFrom] over [CastInto] because implementing [CastFrom] automatically provides one with an implementation of [CastInto] thanks to the blanket implementation in the hexga_math library.
 ///
 /// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
@@ -13,7 +13,7 @@ use super::*;
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(i32::cast_from(12.3f32), 12);
-/// 
+///
 /// let casted : i32 = 12.3f32.cast_into();
 /// assert_eq!(casted, 12i32);
 /// ```
@@ -25,28 +25,28 @@ use super::*;
 /// let x = [1, 2i32];
 /// let y : [f32; 2] = x.cast_into(),
 /// assert_eq!(y, [1f32, 2f32]);
-///  
-/// 
+///
+///
 /// let a = point2(1, 2);
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
-pub trait CastFrom<T> 
-{ 
-    fn cast_from(value : T) -> Self; 
-}
-impl<C1,C2> CastFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithType<C1::Item> = Self>, C1::Item : CastFrom<C2::Item>
+pub trait CastFrom<T>
 {
-    fn cast_from(value : C2) -> Self 
+    fn cast_from(value : T) -> Self;
+}
+impl<C1,C2> CastFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> = Self>, C1::Item : CastFrom<C2::Item>
+{
+    fn cast_from(value : C2) -> Self
     {
         value.map(|v| C1::Item::cast_from(v))
     }
 }
 
 
-/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html) 
+/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
-/// 
+///
 /// One should always prefer implementing [CastFrom] over [CastInto] because implementing [CastFrom] automatically provides one with an implementation of [CastInto] thanks to the blanket implementation in the hexga_math library.
 ///
 /// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
@@ -55,7 +55,7 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithType<C1
 /// use hexga_math::prelude::*;
 ///
 /// assert_eq!(i32::cast_from(12.3f32), 12);
-/// 
+///
 /// let casted : i32 = 12.3f32.cast_into();
 /// assert_eq!(casted, 12i32);
 /// ```
@@ -67,15 +67,15 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: MapGeneric, C2: MapGeneric<WithType<C1
 /// let x = [1, 2i32];
 /// let y : [f32; 2] = x.cast_into(),
 /// assert_eq!(y, [1f32, 2f32]);
-///  
-/// 
+///
+///
 /// let a = point2(1, 2);
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
-pub trait CastInto<T> : Sized 
-{ 
-    fn cast_into(self) -> T; 
+pub trait CastInto<T> : Sized
+{
+    fn cast_into(self) -> T;
 }
 impl<S,T> CastInto<T> for S where T:CastFrom<S>
 {

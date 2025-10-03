@@ -461,24 +461,30 @@ macro_rules! impl_fixed_array_core
         impl<T> ::hexga_io::IoLoad for $name<T> where T: ::hexga_io::IoLoad {}
 
 
-        impl<T> $crate::map::Map for $name<T>
+        impl<T> $crate::map::MapIntern for $name<T>
         {
             type Item=T;
             fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
             {
                 Self::from_array(<[T;$dim]>::from(self).map_intern(f))
             }
+        }
+        impl<T> $crate::map::MapWithIntern for $name<T>
+        {
             fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
             {
                 Self::from_array(<[T;$dim]>::from(self).map_with_intern(other.into(), f))
             }
         }
-        impl<T> $crate::map::MapGeneric for $name<T>
+        impl<T> $crate::map::Map for $name<T>
         {
             type WithType<T2> = $name<T2>;
             fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
-                Self::WithType::from_array(<[T;$dim] as MapGeneric>::map(self.into(), f))
+                Self::WithType::from_array(<[T;$dim] as Map>::map(self.into(), f))
             }
+        }
+        impl<T> $crate::map::MapWith for $name<T>
+        {
             fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
             {
                 Self::WithType::from_array(<[T;$dim]>::from(self).map_with(other.into(), f))
@@ -776,24 +782,30 @@ macro_rules! impl_generic_array_core
         #[cfg(feature = "hexga_io")]
         impl<T, const N : usize> ::hexga_io::IoLoad for $name<T,N> where T: ::hexga_io::IoLoad {}
 
-        impl<T, const N : usize> $crate::Map for $name<T,N>
+        impl<T, const N : usize> $crate::map::MapIntern for $name<T,N>
         {
             type Item=T;
             fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
             {
                 Self::from_array(<[T;N]>::from(self).map_intern(f))
             }
+        }
+        impl<T, const N : usize> $crate::map::MapWithIntern for $name<T,N>
+        {
             fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
             {
                 Self::from_array(<[T;N]>::from(self).map_with_intern(other.into(), f))
             }
         }
-        impl<T, const N : usize> $crate::MapGeneric for $name<T,N>
+        impl<T, const N : usize> $crate::map::Map for $name<T,N>
         {
             type WithType<T2> = $name<T2,N>;
             fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
-                Self::WithType::from_array(<[T;N] as MapGeneric>::map(self.into(), f))
+                Self::WithType::from_array(<[T;N] as Map>::map(self.into(), f))
             }
+        }
+        impl<T, const N : usize> $crate::map::MapWith for $name<T,N>
+        {
             fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
             {
                 Self::WithType::from_array(<[T;N]>::from(self).map_with(other.into(), f))
