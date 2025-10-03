@@ -223,7 +223,7 @@ pub trait ToColor<T> where T: Primitive
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<T>;
 }
 
-impl<C,T> ToColor<T> for C where C:Map, C::Item: ToColor<T> + Primitive
+impl<C,T> ToColor<T> for C where C:Map, C::Item: ToColor<T>, T: Primitive
 {
     type ToRgba<R> = C::WithType<<C::Item as ToColor<T>>::ToRgba<R>> where R: Primitive;
     fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<T> {
