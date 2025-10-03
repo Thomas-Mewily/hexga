@@ -3,6 +3,7 @@ use super::*;
 pub type Rgba      = RgbaFloat;
 pub type RgbaFloat = RgbaOf<float>;
 pub type RgbaU8    = RgbaOf<u8>;
+pub type RgbaU16   = RgbaOf<u16>;
 
 #[repr(C)]
 pub struct RgbaOf<T>

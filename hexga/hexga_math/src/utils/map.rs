@@ -6,6 +6,20 @@ use std::ops::RangeBounds;
 // Todo: Make 2 trait ? Map, MapWith ? Output type ?
 // + impl it for reference &Self ? (like iterator)
 
+/*
+pub trait Mappable
+{
+    type Item;
+}
+
+pub trait MapRefIntern : Mappable
+{
+    type Item;
+    /// Apply `f` to each item, producing a new container of the same type.
+    fn map_intern<F>(&self, f: F) -> Self where F: FnMut(&Self::Item) -> Self::Item;
+}
+*/
+
 /// Similar to [Iterator::map], but for container-like types that keep their shape.
 pub trait MapIntern
 {
@@ -13,6 +27,7 @@ pub trait MapIntern
     /// Apply `f` to each item, producing a new container of the same type.
     fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item;
 }
+
 
 /// Elementwise mapping of two containers of the same type.
 pub trait MapWithIntern : MapIntern

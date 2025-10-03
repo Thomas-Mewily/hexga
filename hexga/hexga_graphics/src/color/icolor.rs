@@ -7,15 +7,35 @@ use super::*;
 
 
 
-pub trait ToColor<P> where P: Primitive
+pub trait ToColor<P> : Sized where P: Primitive
 {
+
     type ToRgba<R> : ToColor<R> where R: Primitive;
     fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<P>;
 
-    //fn to_color(self) -> Self::ToRgba<float> where R: Primitive + CastRangeFrom<P> { self.to_rgba_of() }
 
     type ToHsla<R> : ToColor<R> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P>;
+
+
+
+
+    fn to_hsla(self) -> Self::ToHsla<float> where float: CastRangeFrom<P> { self.to_hsla_of() }
+    fn to_hsla_f32(self) -> Self::ToHsla<f32> where f32: CastRangeFrom<P> { self.to_hsla_of() }
+    fn to_hsla_f64(self) -> Self::ToHsla<f64> where f64: CastRangeFrom<P> { self.to_hsla_of() }
+
+    fn to_rgba(self) -> Self::ToRgba<float> where float: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_rgba_f32(self) -> Self::ToRgba<f32> where f32: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_rgba_f64(self) -> Self::ToRgba<f64> where f64: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_rgba_u8(self) -> Self::ToRgba<u8> where u8: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_rgba_u16(self) -> Self::ToRgba<u16> where u16: CastRangeFrom<P> { self.to_rgba_of() }
+
+    fn to_color(self) -> Self::ToRgba<float> where float: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_color_float(self) -> Self::ToRgba<float> where float: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_color_f32(self) -> Self::ToRgba<f32> where f32: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_color_f64(self) -> Self::ToRgba<f64> where f64: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_color_u8(self) -> Self::ToRgba<u8> where u8: CastRangeFrom<P> { self.to_rgba_of() }
+    fn to_color_u16(self) -> Self::ToRgba<u16> where u16: CastRangeFrom<P> { self.to_rgba_of() }
 }
 
 
@@ -62,13 +82,13 @@ impl<P, T, Idx, const N : usize> ToColor<P> for GridBase<T, Idx, N> where Idx : 
     type ToHsla<R>  = GridBase<T::ToHsla<R>,Idx,N> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P> { self.map(ToColor::to_hsla_of) }
 }
-impl<P, T, Idx> ToColor<P> for ImageBase<T, Idx> where Idx : Integer, T: ToColor<P>, P: Primitive
+impl<T, C, Idx> ToColor<T> for ImageBase<C, Idx> where Idx : Integer, C: ToColor<T>, T: Primitive
 {
-    type ToRgba<R> = ImageBase<T::ToRgba<R>,Idx> where R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<P> { self.map(ToColor::to_rgba_of) }
+    type ToRgba<R> = ImageBase<C::ToRgba<R>,Idx> where R: Primitive;
+    fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<T> { self.map(ToColor::to_rgba_of) }
 
-    type ToHsla<R>  = ImageBase<T::ToHsla<R>,Idx> where R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P> { self.map(ToColor::to_hsla_of) }
+    type ToHsla<R>  = ImageBase<C::ToHsla<R>,Idx> where R: Float;
+    fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<T> { self.map(ToColor::to_hsla_of) }
 }
 impl<'a, P, T, Idx, const N : usize> ToColor<P> for GridView<'a, GridBase<T,Idx,N>, T, Idx, N> where Idx : Integer, T: ToColor<P> + Copy, P: Primitive
 {
@@ -204,7 +224,7 @@ impl<T> ToColor<T> for HslaOf<T> where T: Float
 /// Constant color name are based on <https://colornames.org/>
 ///
 /// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#FF7F00`)
-pub trait IColor : Sized //+ ToColor<Self::Component> //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<Self::Component>>
+pub trait IColor : Sized + ToColor<Self::Component> //+ ToColor<Self::Component> //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<Self::Component>>
 {
     type Component : Primitive;
     const TRANSPARENT : Self;
@@ -333,8 +353,8 @@ pub trait IColor : Sized //+ ToColor<Self::Component> //+ ToRgbaComposite<Output
 }
 
 
-impl<S, T, const N : usize> ColorArrayExtension<T,N> for S where S : Array<T,N> {}
-pub trait ColorArrayExtension<T, const N : usize> : Array<T,N>
+impl<S, T, const N : usize> ArrayToColor<T,N> for S where S : Array<T,N> {}
+pub trait ArrayToColor<T, const N : usize> : Array<T,N>
 {
     fn to_rgba(self) -> RgbaOf<T> where T: Default { RgbaOf::from_array(self.to_array_resized()) }
     fn to_hlsa(self) -> HslaOf<T> where T: Default { HslaOf::from_array(self.to_array_resized()) }

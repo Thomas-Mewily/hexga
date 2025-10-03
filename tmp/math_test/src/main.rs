@@ -4,7 +4,7 @@
 #![allow(unused_mut)]
 
 
-use hexga::{graphics::color::hsla, prelude::*};
+use hexga::prelude::*;
 
 fn dbg_mix<S,F>(src: S, dest:S, coef:F) where S:Mix<F> + Copy + Debug, F:Float
 {
@@ -54,6 +54,8 @@ fn main()
 {
     //let i = Image::from_fn_coef((4, 4), |v| hsl(v.x, v.y, 1.).to_rgba_of::<float>());
     let i = Image::from_fn_coef((4, 4), |v| rgb(v.x, v.y, 1.0).to_u8_range());
+
+    i.save_to_disk("./test");
 
     dbg!(i);
 }

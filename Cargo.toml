@@ -26,4 +26,4 @@ hexga_generational     = { path = "./hexga/hexga_generational",        version =
 hexga_math             = { path = "./hexga/hexga_math",                version = "0.0.11-beta.4", default-features = false }
 hexga_utils            = { path = "./hexga/hexga_utils",               version = "0.0.11-beta.4", default-features = false }
 hexga_graphics         = { path = "./hexga/hexga_graphics",            version = "0.0.11-beta.4", default-features = false }
-hexga                  = { path = "./hexga/hexga",                     version = "0.0.11-beta.4", default-features = false }
+hexga                  = { path = "./hexga/hexga",                     version = "0.0.11-beta.4", default-features = true }

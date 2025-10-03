@@ -7,7 +7,10 @@ use super::*;
 impl<C,Idx> IoSave for ImageBase<C,Idx>
     where
     Idx : Integer + Serialize,
-    C : IColor + Serialize
+    C : IColor + Serialize,
+    Self: ToColor<C::Component>,
+    //u8: CastRangeFrom<C::Component>,
+    //u16: CastRangeFrom<C::Component>,
 {
     fn save_own_extensions() -> impl Iterator<Item = &'static str> {
         [
@@ -61,11 +64,11 @@ impl<C,Idx> IoSave for ImageBase<C,Idx>
                         }
                         _ =>
                         {
-                            self.to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs)
+                            self.clone().to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs)
                         }
                     }
-                    NumberType::Float => self.to_rgba_u16().save_to_with_own_extension_pathless(extension, w, fs),
-                    NumberType::Bool => self.to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs),
+                    NumberType::Float => self.clone().to_rgba_u16().save_to_with_own_extension_pathless(extension, w, fs),
+                    NumberType::Bool => self.clone().to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs),
                 }
             },
             /*
