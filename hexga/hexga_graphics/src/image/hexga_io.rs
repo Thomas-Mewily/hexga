@@ -59,7 +59,7 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
 
         match C::Component::PRIMITIVE_TYPE
         {
-            NumberType::IntegerSigned => {},
+            NumberType::IntegerSigned => {}, // Todo: handle >= 16 bits signed to use u16 precision ?
             NumberType::IntegerUnsigned =>
             {
                 if std::mem::size_of::<C::Component>() * 8 >= 16
