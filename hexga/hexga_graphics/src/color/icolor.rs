@@ -5,8 +5,6 @@ use std::slice;
 
 use super::*;
 
-
-
 pub trait ToColor<P> : Sized where P: Primitive
 {
 
@@ -16,7 +14,6 @@ pub trait ToColor<P> : Sized where P: Primitive
 
     type ToHsla<R> : ToColor<R> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P>;
-
 
 
 
@@ -106,7 +103,6 @@ impl<'a, P, T, Idx, const N : usize> ToColor<P> for GridViewMut<'a, GridBase<T,I
     type ToHsla<R>  = GridBase<T::ToHsla<R>,Idx,N> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P> { self.transform(|v| v.to_hsla_of()) }
 }
-
 
 
 /*
