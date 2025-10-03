@@ -77,12 +77,12 @@ impl<P, T, Idx, const N : usize> ToColor<P> for GridBase<T, Idx, N> where Idx : 
     type ToHsla<R>  = GridBase<T::ToHsla<R>,Idx,N> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P> { self.map(ToColor::to_hsla_of) }
 }
-impl<T, C, Idx> ToColor<T> for ImageBase<C, Idx> where Idx : Integer, C: ToColor<T>, T: Primitive
+impl<T, C, Idx> ToColor<T> for ImageBaseOf<C, Idx> where Idx : Integer, C: ToColor<T>, T: Primitive
 {
-    type ToRgba<R> = ImageBase<C::ToRgba<R>,Idx> where R: Primitive;
+    type ToRgba<R> = ImageBaseOf<C::ToRgba<R>,Idx> where R: Primitive;
     fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<T> { self.map(ToColor::to_rgba_of) }
 
-    type ToHsla<R>  = ImageBase<C::ToHsla<R>,Idx> where R: Float;
+    type ToHsla<R>  = ImageBaseOf<C::ToHsla<R>,Idx> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<T> { self.map(ToColor::to_hsla_of) }
 }
 impl<'a, P, T, Idx, const N : usize> ToColor<P> for GridView<'a, GridBase<T,Idx,N>, T, Idx, N> where Idx : Integer, T: ToColor<P> + Copy, P: Primitive
@@ -297,6 +297,7 @@ pub trait IColor : Sized + ToColor<Self::Component> //+ ToColor<Self::Component>
     /// #7FFFFF
     const GLACE : Self; // hard to find an official name for this one with the website
 
+    /*
     fn rgb_from_hex(rgb: u32) -> RgbaOf<Self::Component> where Self::Component: CastRangeFrom<u8>
     {
         let [r,g,b,_] = rgb.to_be_bytes();
@@ -326,9 +327,12 @@ pub trait IColor : Sized + ToColor<Self::Component> //+ ToColor<Self::Component>
     {
         RgbaU8::rgb(r, g, b).to_rgba_of()
     }
+    */
 
     fn to_rgba_of<R>(self) -> RgbaOf<R> where R : Primitive + CastRangeFrom<Self::Component>;
     fn to_hsla_of<R>(self) -> HslaOf<R> where R : Float + CastRangeFrom<Self::Component>;
+
+    fn from_rgba_u8(rgba: RgbaU8) -> Self;
 
     /*
     /// Cast to color byte and format the color : `#RRGGBBAA`

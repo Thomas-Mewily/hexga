@@ -198,6 +198,10 @@ impl<T> IColor for RgbaOf<T> where T: Primitive
     fn to_hsla_of<R>(self) -> HslaOf<R> where R : Float + CastRangeFrom<Self::Component> {
         self.to_hsla_of()
     }
+
+    fn from_rgba_u8(rgba: RgbaU8) -> Self {
+        rgba.to_rgba_of()
+    }
 }
 
 /*

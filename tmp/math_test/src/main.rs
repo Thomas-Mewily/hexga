@@ -53,9 +53,14 @@ let v = vec2(0., 1.);
 fn main()
 {
     //let i = Image::from_fn_coef((4, 4), |v| hsl(v.x, v.y, 1.).to_rgba_of::<float>());
-    let i = Image::from_fn_coef((32, 32), |v| rgb(v.x, v.y, 0.0).to_u8_range());
+    let i = Image::from_fn_coef((3, 3), |v| rgb(v.x, v.y, 0.0).to_u8_range());
+    let original_pixels = i.pixels().to_owned();
 
-    let _ = i.save_to_disk("./test");
+    i.save_to_disk("./test").unwrap();
+    let i = Image::load_from_disk("./test.png").unwrap();
+    let open_pixels = i.pixels().to_owned();
+
+    assert_eq!(original_pixels, open_pixels);
 
     dbg!(i);
 }

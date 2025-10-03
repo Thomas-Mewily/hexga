@@ -57,7 +57,7 @@ where
 }
 
 
-impl<'de, T, Idx> Deserialize<'de> for ImageBase<T, Idx>
+impl<'de, T, Idx> Deserialize<'de> for ImageBaseOf<T, Idx>
     where
         Idx: Integer + Deserialize<'de>,
         T: Deserialize<'de>,
@@ -75,7 +75,7 @@ impl<'de, T, Idx> Deserialize<'de> for ImageBase<T, Idx>
             Idx: Integer + Deserialize<'de>,
             T: Deserialize<'de>,
         {
-            type Value = ImageBase<T,Idx>;
+            type Value = ImageBaseOf<T,Idx>;
 
             fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
                 formatter.write_str("An Image with an `size` and `pixels`")
@@ -124,7 +124,7 @@ impl<'de, T, Idx> Deserialize<'de> for ImageBase<T, Idx>
                 let size = size.ok_or_else(|| serde::de::Error::missing_field("size"))?;
                 let pixels = pixels.ok_or_else(|| serde::de::Error::missing_field("pixels"))?;
 
-                match ImageBase::try_from_vec(size, pixels)
+                match ImageBaseOf::try_from_vec(size, pixels)
                 {
                     Ok(g) => Ok(g),
                     Err(e) => Err(serde::de::Error::custom(e.to_debug()))

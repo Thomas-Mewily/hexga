@@ -32,7 +32,6 @@ pub mod prelude
     pub use super::
     {
         typedef::*,
-        grid::{GridBase},
         igrid::{IGrid,ToGrid,GridBaseError},
     };
 }
