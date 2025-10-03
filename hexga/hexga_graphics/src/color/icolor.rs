@@ -198,7 +198,7 @@ impl<T> ToRgbaF32 for ColorHslaOf<T> where T : Primitive, f32 : CastRangeFrom<T>
 
 /// Constant color name are based on <https://colornames.org/>
 ///
-/// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#ff7f00`)
+/// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#FF7F00`)
 pub trait IColor<T> : Sized //+ ToColor
     where T: Primitive
 {
