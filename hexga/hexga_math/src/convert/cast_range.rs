@@ -100,7 +100,7 @@ macro_rules! impl_cast_range_to_integer
             fn cast_range_from(value: $src) -> $dest
             {
                 // The match can be inlined by the compiler since it is matching on compile time constant
-                match (<$src>::PRIMITIVE_NUMBER_TYPE, <$dest>::PRIMITIVE_NUMBER_TYPE)
+                match (<$src>::PRIMITIVE_TYPE, <$dest>::PRIMITIVE_TYPE)
                 {
                     (NumberType::IntegerSigned, NumberType::IntegerSigned) =>
                     {

@@ -24,7 +24,7 @@ impl<C,Idx> IoSave for ImageBase<C,Idx>
         {
             "png" =>
             {
-                match C::Component::PRIMITIVE_NUMBER_TYPE
+                match C::Component::PRIMITIVE_TYPE
                 {
                     NumberType::IntegerSigned => todo!(),
                     NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8

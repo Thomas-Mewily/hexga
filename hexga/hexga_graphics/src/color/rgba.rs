@@ -142,53 +142,6 @@ impl<T> IColor for RgbaOf<T> where T: Primitive
     const CANARY : Self = Self::rgb(T::RANGE_MAX, T::RANGE_MAX, T::RANGE_HALF);
     const PINK   : Self = Self::rgb(T::RANGE_MAX, T::RANGE_HALF, T::RANGE_MAX);
     const GLACE  : Self = Self::rgb(T::RANGE_HALF, T::RANGE_MAX, T::RANGE_MAX);
-
-
-    fn to_rgba_of<T2>(self) -> RgbaOf<T2> where T2 : Primitive + CastRangeFrom<T>
-    {
-        self.to_array4().map(|v| T2::cast_range_from(v)).to_rgba()
-    }
-
-    fn to_hsla_of<T2>(self) -> HslaOf<T2> where T2 : Float + CastRangeFrom<T> {
-
-        // Thank to MacroQuad, the following code was copied and edited the code from the MacroQuad crate
-        let [r, g, b, a] = self.to_array4().map(|v| T2::cast_range_from(v));
-        let f = [r, g, b];
-
-        let max = *f.max_element();
-        let min = *f.min_element();
-
-        // Luminosity is the average of the max and min rgb color intensities.
-        let l= (max + min) / T2::TWO;
-
-        // Saturation
-        let delta = max - min;
-        if delta.is_zero() { return HslaOf::new(T2::ZERO, T2::ZERO, l, a); }
-
-        // it's not gray
-        let s = if l < T2::HALF
-        {
-            delta / (max + min)
-        } else {
-            delta / (T2::TWO - max - min)
-        };
-
-        // Hue
-        let r2 = (((max - r) / T2::SIX) + (delta / T2::TWO)) / delta;
-        let g2 = (((max - g) / T2::SIX) + (delta / T2::TWO)) / delta;
-        let b2 = (((max - b) / T2::SIX) + (delta / T2::TWO)) / delta;
-
-        let mut h = match max {
-            x if x == r => b2 - g2,
-            x if x == g => (T2::ONE / T2::THREE) + r2 - b2,
-            _ => (T2::TWO / T2::THREE) + g2 - r2,
-        };
-
-        // Fix wraparounds
-        if h < T2::ZERO { h += T2::ONE; } else if h > T2::ONE { h -= T2::ONE; }
-
-        HslaOf::new(h, s, l, a)
-    }
 }
 
 /*
@@ -217,7 +170,7 @@ impl<T> ToColorComposite for ColorRgbaOf<T> where T: Primitive
 
     const COLOR_INSIDE : ColorKind =
     {
-        match (T::PRIMITIVE_NUMBER_TYPE, std::mem::size_of::<T>())
+        match (T::PRIMITIVE_TYPE, std::mem::size_of::<T>())
         {
             (NumberType::Bool,  1) => ColorKind::RgbaBool,
             (NumberType::Float, 4) => ColorKind::RgbaF32,

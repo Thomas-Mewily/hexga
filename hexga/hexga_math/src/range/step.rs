@@ -60,7 +60,7 @@ impl<T> Iterator for RangeStep<T> where T: Primitive
             let val = self.idx;
             self.idx += self.step;
 
-            match T::PRIMITIVE_NUMBER_TYPE
+            match T::PRIMITIVE_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 NumberType::Float => if self.idx == val { None } else { Some(val) },
@@ -80,7 +80,7 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T: Primitive
             let val = self.end;
             self.end -= self.step;
 
-            match T::PRIMITIVE_NUMBER_TYPE
+            match T::PRIMITIVE_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
@@ -89,7 +89,7 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T: Primitive
             }
         } else
         {
-            match T::PRIMITIVE_NUMBER_TYPE
+            match T::PRIMITIVE_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => None,
                 // Reached the limit of floating-point precision
@@ -152,7 +152,7 @@ impl<T> Iterator for RangeStepInclusive<T> where T: Primitive
             let val = self.idx;
             self.idx += self.step;
 
-            match T::PRIMITIVE_NUMBER_TYPE
+            match T::PRIMITIVE_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
@@ -161,7 +161,7 @@ impl<T> Iterator for RangeStepInclusive<T> where T: Primitive
             }
         } else
         {
-            match T::PRIMITIVE_NUMBER_TYPE
+            match T::PRIMITIVE_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => None,
                 // Reached the limit of floating-point precision
@@ -188,7 +188,7 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T: Primitive
             let val = self.end;
             self.end -= self.step;
 
-            match T::PRIMITIVE_NUMBER_TYPE
+            match T::PRIMITIVE_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
@@ -197,7 +197,7 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T: Primitive
             }
         } else
         {
-            match T::PRIMITIVE_NUMBER_TYPE
+            match T::PRIMITIVE_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => None,
                 // Reached the limit of floating-point precision

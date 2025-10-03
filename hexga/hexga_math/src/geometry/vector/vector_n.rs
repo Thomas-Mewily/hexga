@@ -85,7 +85,7 @@ impl<T,const N : usize> Vector<T,N>
     /// If any component is negative, return 0
     pub fn area_usize(self) -> usize where T: Integer
     {
-        if T::PRIMITIVE_NUMBER_TYPE.is_integer_unsigned()
+        if T::PRIMITIVE_TYPE.is_integer_unsigned()
         {
             self.iter().map(|v| v.to_usize()).product()
         }else
@@ -102,7 +102,7 @@ impl<T,const N : usize> Vector<T,N>
         let mut area = 1usize;
         for v in self.iter()
         {
-            if T::PRIMITIVE_NUMBER_TYPE.is_integer_signed() && v < &T::ZERO { return None; }
+            if T::PRIMITIVE_TYPE.is_integer_signed() && v < &T::ZERO { return None; }
             let dim : usize = v.to_usize();
             area = area.checked_mul(dim)?;
         }
@@ -110,7 +110,7 @@ impl<T,const N : usize> Vector<T,N>
     }
 
     /// Multiply each component
-    /// 
+    ///
     /// The result can be negative
     pub unsafe fn area_signed(self) -> T where T: Number { self.into_iter().product() }
 

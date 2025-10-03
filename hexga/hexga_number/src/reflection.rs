@@ -45,14 +45,14 @@ impl NumberType
 
 pub trait PrimitiveType
 {
-    const PRIMITIVE_NUMBER_TYPE : NumberType;
+    const PRIMITIVE_TYPE : NumberType;
 }
 map_on_integer_unsigned!(
     ($typename:ident) =>
     {
         impl PrimitiveType for $typename
         {
-            const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::IntegerUnsigned;
+            const PRIMITIVE_TYPE : NumberType = NumberType::IntegerUnsigned;
         }
     }
 );
@@ -61,7 +61,7 @@ map_on_integer_signed!(
     {
         impl PrimitiveType for $typename
         {
-            const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::IntegerSigned;
+            const PRIMITIVE_TYPE : NumberType = NumberType::IntegerSigned;
         }
     }
 );
@@ -70,11 +70,11 @@ map_on_float!(
     {
         impl PrimitiveType for $typename
         {
-            const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::Float;
+            const PRIMITIVE_TYPE : NumberType = NumberType::Float;
         }
     }
 );
 impl PrimitiveType for bool
 {
-    const PRIMITIVE_NUMBER_TYPE : NumberType = NumberType::Bool;
+    const PRIMITIVE_TYPE : NumberType = NumberType::Bool;
 }

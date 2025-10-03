@@ -27,11 +27,21 @@ pub enum ColorKind
 }
     */
 
+pub trait ToRgbaFloatComposite
+{
+    type RgbaFloat;
+    fn to_rgba_float() -> Self::RgbaFloat;
+
+    type RgbaF32;
+    fn to_rgba_f32() -> Self::RgbaF32;
+
+    type RgbaF64;
+    fn to_rgba_f64() -> Self::RgbaF64;
+}
+
 /*
 pub trait ToColorComposite : CompositeGeneric + Sized
 {
-    const COLOR_INSIDE : ColorKind;
-
     #[cfg(any(
         feature = "float_are_32_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "32")
@@ -45,7 +55,6 @@ pub trait ToColorComposite : CompositeGeneric + Sized
 
     fn to_color_u8(&self) -> Self::RgbaU8 { self.to_rgba_u8() }
 
-    /*
     #[cfg(any(
         feature = "float_are_32_bits",
         all(feature = "float_are_size_bits", target_pointer_width = "32")
@@ -103,7 +112,6 @@ pub trait ToColorComposite : CompositeGeneric + Sized
     fn to_hsla_f32(&self) -> Self::HslaF32;
     type HslaF64;
     fn to_hsla_f64(&self) -> Self::HslaF64;
-    */
 }
 
 impl<T, const N : usize> ToColorComposite for [T;N] where T: ToColorComposite
@@ -205,10 +213,119 @@ pub trait ToRgbaComposite
 }
 */
 
+
+pub trait ToColor<T> where T: Primitive
+{
+    type ToRgba<R> : ToColor<R> where R: Primitive;
+    fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<T>;
+
+    type ToHsla<R> : ToColor<R> where R: Float;
+    fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<T>;
+}
+
+impl<C,T> ToColor<T> for C where C:Map, C::Item: ToColor<T> + Primitive
+{
+    type ToRgba<R> = C::WithType<<C::Item as ToColor<T>>::ToRgba<R>> where R: Primitive;
+    fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<T> {
+        self.map(ToColor::to_rgba_of)
+    }
+
+    type ToHsla<R> = C::WithType<<C::Item as ToColor<T>>::ToHsla<R>> where R: Primitive;
+    fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<T> {
+        self.map(ToColor::to_hsla_of)
+    }
+}
+
+impl<T> ToColor<T> for RgbaOf<T> where T: Primitive
+{
+    type ToRgba<R> = RgbaOf<R> where R: Primitive ;
+
+    fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<T> { self.cast_range_into() }
+
+    type ToHsla<R> = HslaOf<R> where R: Float;
+    fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<T> {
+        // Thank to MacroQuad, the following code was copied and edited the code from the MacroQuad crate
+        let [r, g, b, a] = self.to_array4().map(|v| R::cast_range_from(v));
+        let f = [r, g, b];
+
+        let max = *f.max_element();
+        let min = *f.min_element();
+
+        // Luminosity is the average of the max and min rgb color intensities.
+        let l= (max + min) / R::TWO;
+
+        // Saturation
+        let delta = max - min;
+        if delta.is_zero() { return HslaOf::new(R::ZERO, R::ZERO, l, a); }
+
+        // it's not gray
+        let s = if l < R::HALF
+        {
+            delta / (max + min)
+        } else {
+            delta / (R::TWO - max - min)
+        };
+
+        // Hue
+        let r2 = (((max - r) / R::SIX) + (delta / R::TWO)) / delta;
+        let g2 = (((max - g) / R::SIX) + (delta / R::TWO)) / delta;
+        let b2 = (((max - b) / R::SIX) + (delta / R::TWO)) / delta;
+
+        let mut h = match max {
+            x if x == r => b2 - g2,
+            x if x == g => (R::ONE / R::THREE) + r2 - b2,
+            _ => (R::TWO / R::THREE) + g2 - r2,
+        };
+
+        // Fix wraparounds
+        if h < R::ZERO { h += R::ONE; } else if h > R::ONE { h -= R::ONE; }
+
+        HslaOf::new(h, s, l, a)
+    }
+}
+
+impl<T> ToColor<T> for HslaOf<T> where T: Float
+{
+    type ToRgba<R> = RgbaOf<R> where R: Primitive ;
+    fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<T> {
+        // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
+        let r;
+        let g;
+        let b;
+
+        if self.s == T::ZERO {  r = self.l; g = self.l; b = self.l; }
+        else
+        {
+            fn hue_to_rgb<T>(p: T, q: T, mut t: T) -> T where T: Float {
+                if t < T::ZERO { t += T::ONE }
+                if t > T::ONE { t -= T::ONE }
+                if t < T::ONE / T::SIX { return p + (q - p) * T::SIX * t; }
+                if t < T::ONE / T::TWO { return q; }
+                if t < T::TWO / T::THREE { return p + (q - p) * (T::TWO / T::THREE - t) * T::SIX; }
+                p
+            }
+
+            let q = if self.l < T::HALF {
+                self.l * (T::ONE + self.s)
+            } else {
+                self.l + self.s - self.l * self.s
+            };
+            let p = T::TWO * self.l - q;
+            r = hue_to_rgb(p, q, self.h + T::ONE / T::THREE);
+            g = hue_to_rgb(p, q, self.h);
+            b = hue_to_rgb(p, q, self.h - T::ONE / T::THREE);
+        }
+        RgbaOf::from_array([r, g, b, self.a].cast_range_into())
+    }
+
+    type ToHsla<R> = HslaOf<R> where R: Float;
+    fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<T> { self.cast_range_into() }
+}
+
 /// Constant color name are based on <https://colornames.org/>
 ///
 /// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#FF7F00`)
-pub trait IColor : Sized //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<Self::Component>>
+pub trait IColor : Sized + ToColor<Self::Component> //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<Self::Component>>
 {
     type Component : Primitive;
     const TRANSPARENT : Self;
@@ -225,11 +342,11 @@ pub trait IColor : Sized //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<
     /// use hexga_graphics::prelude::*;
     /// use hexga_math::prelude::*;
     ///
-    /// pub trait IPreferGray<T>
+    /// pub trait IPreferGray
     /// {
     ///    const GRAY : Self;
     /// }
-    /// impl<T, Kolor> IPreferGray<T> for Kolor where Kolor : IColor<T>, T : Primitive
+    /// impl<C> IPreferGray for C where C: IColor
     /// {
     ///    const GRAY : Self = Self::GREY;
     /// }
@@ -286,10 +403,6 @@ pub trait IColor : Sized //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<
     const PINK : Self; // hard to find an official name for this one with the website
     /// #7FFFFF
     const GLACE : Self; // hard to find an official name for this one with the website
-
-
-    fn to_rgba_of<T2>(self) -> RgbaOf<T2> where T2 : Primitive + CastRangeFrom<Self::Component>;
-    fn to_hsla_of<T2>(self) -> HslaOf<T2> where T2 : Float + CastRangeFrom<Self::Component>;
 
     fn rgb_from_hex(rgb: u32) -> RgbaOf<Self::Component> where Self::Component: CastRangeFrom<u8>
     {
