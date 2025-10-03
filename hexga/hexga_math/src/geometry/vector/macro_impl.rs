@@ -241,7 +241,9 @@ macro_rules! impl_fixed_array_core
                 s
             }
 
+            #[inline(always)]
             pub const fn array(&self) -> &[T; $dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
+            #[inline(always)]
             pub const fn array_mut(&mut self) -> &mut[T; $dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
 
             $crate::impl_number_basic_trait!();
@@ -283,7 +285,9 @@ macro_rules! impl_fixed_array_core
 
         impl<T> $crate::array::Array<T, $dim> for $name<T>
         {
+            #[inline(always)]
             fn array(&self) -> &[T; $dim] { self.array() }
+            #[inline(always)]
             fn array_mut(&mut self) -> &mut[T; $dim] { self.array_mut() }
         }
 
@@ -296,10 +300,12 @@ macro_rules! impl_fixed_array_core
         impl<T, Idx> ::std::ops::Index<Idx> for $name<T> where [T;$dim] : ::std::ops::Index<Idx>
         {
             type Output=<[T;$dim] as ::std::ops::Index<Idx>>::Output;
+            #[inline(always)]
             fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
         }
         impl<T, Idx> ::std::ops::IndexMut<Idx> for $name<T> where [T;$dim] : ::std::ops::IndexMut<Idx>
         {
+            #[inline(always)]
             fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
         }
 
@@ -555,7 +561,9 @@ macro_rules! impl_generic_array_core
                 s
             }
 
+            #[inline(always)]
             pub const fn array(&self) -> &[T; N] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
+            #[inline(always)]
             pub const fn array_mut(&mut self) -> &mut[T; N] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
 
             impl_number_basic_trait!();
@@ -597,7 +605,9 @@ macro_rules! impl_generic_array_core
 
         impl<T, const N : usize> $crate::array::Array<T, N> for $name<T,N>
         {
+            #[inline(always)]
             fn array(&self) -> &[T;N] { self.array() }
+            #[inline(always)]
             fn array_mut(&mut self) -> &mut[T;N] { self.array_mut() }
         }
 
@@ -614,10 +624,12 @@ macro_rules! impl_generic_array_core
         impl<T, const N : usize, Idx> ::std::ops::Index<Idx> for $name<T,N> where [T;N] : ::std::ops::Index<Idx>
         {
             type Output=<[T;N] as ::std::ops::Index<Idx>>::Output;
+            #[inline(always)]
             fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
         }
         impl<T, const N : usize, Idx> ::std::ops::IndexMut<Idx> for $name<T,N> where [T;N] : ::std::ops::IndexMut<Idx>
         {
+            #[inline(always)]
             fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
         }
 

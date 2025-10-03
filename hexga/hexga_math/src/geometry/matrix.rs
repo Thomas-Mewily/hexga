@@ -468,9 +468,69 @@ impl<T, const ROW : usize, const COL : usize, const COL2 : usize> Mul<Matrix<T,C
 
     fn mul(self, rhs: Matrix<T,COL,COL2>) -> Self::Output
     {
-        // Todo : match on ROW / COL, COL2
-        // and specialize it for 1x1, 2x2, 3x3 and 4x4 matrix
-        Matrix::from_col(Vector::from_fn(|c| Vector::from_fn(|r| (0..COL).map(|k| self[k][r] * rhs[c][k]).sum())))
+        // I'm not sure if the unrolling is necessary
+
+        match (ROW, COL, COL2) {
+            // 2x2 case (manual unroll)
+            (2, 2, 2) => {
+                let mut r = Self::Output::ZERO;
+
+                r[0][0] = self[0][0]*rhs[0][0] + self[1][0]*rhs[0][1];
+                r[0][1] = self[0][1]*rhs[0][0] + self[1][1]*rhs[0][1];
+
+                r[1][0] = self[0][0]*rhs[1][0] + self[1][0]*rhs[1][1];
+                r[1][1] = self[0][1]*rhs[1][0] + self[1][1]*rhs[1][1];
+
+                r
+            }
+
+            // 3x3 case (manual unroll)
+            (3, 3, 3) => {
+                let mut r = Self::Output::ZERO;
+
+                r[0][0] = self[0][0]*rhs[0][0] + self[1][0]*rhs[0][1] + self[2][0]*rhs[0][2];
+                r[0][1] = self[0][1]*rhs[0][0] + self[1][1]*rhs[0][1] + self[2][1]*rhs[0][2];
+                r[0][2] = self[0][2]*rhs[0][0] + self[1][2]*rhs[0][1] + self[2][2]*rhs[0][2];
+
+                r[1][0] = self[0][0]*rhs[1][0] + self[1][0]*rhs[1][1] + self[2][0]*rhs[1][2];
+                r[1][1] = self[0][1]*rhs[1][0] + self[1][1]*rhs[1][1] + self[2][1]*rhs[1][2];
+                r[1][2] = self[0][2]*rhs[1][0] + self[1][2]*rhs[1][1] + self[2][2]*rhs[1][2];
+
+                r[2][0] = self[0][0]*rhs[2][0] + self[1][0]*rhs[2][1] + self[2][0]*rhs[2][2];
+                r[2][1] = self[0][1]*rhs[2][0] + self[1][1]*rhs[2][1] + self[2][1]*rhs[2][2];
+                r[2][2] = self[0][2]*rhs[2][0] + self[1][2]*rhs[2][1] + self[2][2]*rhs[2][2];
+
+                r
+            }
+
+            // 4x4 case (manual unroll)
+            (4, 4, 4) => {
+                let mut r = Self::Output::ZERO;
+
+                r[0][0] = self[0][0]*rhs[0][0] + self[1][0]*rhs[0][1] + self[2][0]*rhs[0][2] + self[3][0]*rhs[0][3];
+                r[0][1] = self[0][1]*rhs[0][0] + self[1][1]*rhs[0][1] + self[2][1]*rhs[0][2] + self[3][1]*rhs[0][3];
+                r[0][2] = self[0][2]*rhs[0][0] + self[1][2]*rhs[0][1] + self[2][2]*rhs[0][2] + self[3][2]*rhs[0][3];
+                r[0][3] = self[0][3]*rhs[0][0] + self[1][3]*rhs[0][1] + self[2][3]*rhs[0][2] + self[3][3]*rhs[0][3];
+
+                r[1][0] = self[0][0]*rhs[1][0] + self[1][0]*rhs[1][1] + self[2][0]*rhs[1][2] + self[3][0]*rhs[1][3];
+                r[1][1] = self[0][1]*rhs[1][0] + self[1][1]*rhs[1][1] + self[2][1]*rhs[1][2] + self[3][1]*rhs[1][3];
+                r[1][2] = self[0][2]*rhs[1][0] + self[1][2]*rhs[1][1] + self[2][2]*rhs[1][2] + self[3][2]*rhs[1][3];
+                r[1][3] = self[0][3]*rhs[1][0] + self[1][3]*rhs[1][1] + self[2][3]*rhs[1][2] + self[3][3]*rhs[1][3];
+
+                r[2][0] = self[0][0]*rhs[2][0] + self[1][0]*rhs[2][1] + self[2][0]*rhs[2][2] + self[3][0]*rhs[2][3];
+                r[2][1] = self[0][1]*rhs[2][0] + self[1][1]*rhs[2][1] + self[2][1]*rhs[2][2] + self[3][1]*rhs[2][3];
+                r[2][2] = self[0][2]*rhs[2][0] + self[1][2]*rhs[2][1] + self[2][2]*rhs[2][2] + self[3][2]*rhs[2][3];
+                r[2][3] = self[0][3]*rhs[2][0] + self[1][3]*rhs[2][1] + self[2][3]*rhs[2][2] + self[3][3]*rhs[2][3];
+
+                r[3][0] = self[0][0]*rhs[3][0] + self[1][0]*rhs[3][1] + self[2][0]*rhs[3][2] + self[3][0]*rhs[3][3];
+                r[3][1] = self[0][1]*rhs[3][0] + self[1][1]*rhs[3][1] + self[2][1]*rhs[3][2] + self[3][1]*rhs[3][3];
+                r[3][2] = self[0][2]*rhs[3][0] + self[1][2]*rhs[3][1] + self[2][2]*rhs[3][2] + self[3][2]*rhs[3][3];
+                r[3][3] = self[0][3]*rhs[3][0] + self[1][3]*rhs[3][1] + self[2][3]*rhs[3][2] + self[3][3]*rhs[3][3];
+
+                r
+            }
+            _ => Matrix::from_col(Vector::from_fn(|c| Vector::from_fn(|r| (0..COL).map(|k| self[k][r] * rhs[c][k]).sum()))),
+        }
     }
 }
 
