@@ -175,7 +175,16 @@ impl<C,Idx> IoSave for ImageBaseOf<C,Idx>
             {
                 match C::Component::PRIMITIVE_TYPE
                 {
-                    NumberType::IntegerSigned => todo!(),
+                    NumberType::IntegerSigned =>
+                    {
+                        if std::mem::size_of::<C::Component>() * 8 <= 8
+                        {
+                            self.clone().to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs)
+                        }else
+                        {
+                            self.clone().to_rgba_u16().save_to_with_own_extension_pathless(extension, w, fs)
+                        }
+                    },
                     NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
                     {
                         8 =>
