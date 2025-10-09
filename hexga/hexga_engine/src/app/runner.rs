@@ -1,0 +1,150 @@
+use super::*;
+
+
+
+
+pub trait AppRun : Sized
+{
+    fn run(self) -> Result<(), ()> { self.run_with_param(___()) }
+    fn run_with_param(self, param: AppParam) -> Result<(), ()>;
+}
+
+
+/// Run the application and init the App
+pub(crate) struct AppRunner<A> where A:Application
+{
+    app: A,
+    proxy : EventLoopProxy,
+}
+impl<A> AppRunner<A> where A:Application
+{
+    pub const fn new(app: A, proxy: EventLoopProxy) -> Self { Self { app, proxy } }
+}
+
+
+impl<A> AppRun for A where A:Application
+{
+    fn run_with_param(self, param: AppParam) -> Result<(), ()>
+    {
+        log::init_logger();
+
+
+        assert!(App::is_not_init(), "Can't run two app at the same time, App is a singleton");
+        App::replace(Some(AppCore::new(param)));
+
+        let event_loop = EventLoop::with_user_event().build().ok_or_void()?;
+        let proxy = event_loop.create_proxy();
+
+        #[allow(unused_mut)]
+        let mut runner = AppRunner::new(self, proxy);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let r = event_loop.run_app(&mut runner);
+            r.ok_or_void()
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            async move { let _ = event_loop.run_app(&mut runner); }.spawn();
+            Ok(())
+        }
+    }
+}
+
+impl<A> Application for AppRunner<A> where A:Application
+{
+    fn resumed(&mut self)
+    {
+        self.app.resumed();
+    }
+
+    fn paused(&mut self)
+    {
+        self.app.paused();
+    }
+
+    fn event(&mut self, ev: AppEvent)
+    {
+        match ev
+        {
+            AppEvent::Input(input) => todo!(),
+            AppEvent::Window(window) => match window
+            {
+                WindowEvent::Resize(vector) => todo!(),
+                WindowEvent::Move(vector) => todo!(),
+                WindowEvent::Open => todo!(),
+                WindowEvent::Close => todo!(),
+                WindowEvent::Destroy => todo!(),
+            },
+            AppEvent::Custom(icustom) => todo!(),
+        }
+        self.app.event(ev);
+    }
+
+    fn draw(&mut self)
+    {
+        self.app.draw();
+    }
+
+    fn update(&mut self)
+    {
+        self.app.update();
+    }
+}
+
+impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A> where A:Application
+{
+    fn resumed(&mut self, active: &EventLoopActive)
+    {
+        App.window.begin_resumed(active);
+        Application::resumed(self);
+    }
+
+    fn suspended(&mut self, active: &EventLoopActive) {
+        Application::paused(self);
+    }
+
+    fn window_event(
+        &mut self,
+        event_loop: &EventLoopActive,
+        window_id: WinitWindowID,
+        event: winit::event::WindowEvent,
+    ) {
+        match event
+        {
+            WinitWindowEvent::Resized(physical_size) => Application::event(self, WindowEvent::Resize(physical_size.convert()).into()),
+            winit::event::WindowEvent::CloseRequested => Application::event(self, WindowEvent::Close.into()),
+            winit::event::WindowEvent::Destroyed => Application::event(self, WindowEvent::Destroy.into()),
+            WinitWindowEvent::KeyboardInput { device_id: _, event, is_synthetic: _ } =>
+            {
+                let code = KeyCode::from(event.physical_key);
+                let repeat = if event.repeat { ButtonRepeat::Repeated } else { ButtonRepeat::NotRepeated };
+                let state = if event.state.is_pressed() { ButtonState::Down } else { ButtonState::Up };
+
+                if code == KeyCode::Escape // TODO make it debug/cfg/option<Binding> to force exit
+                {
+                    event_loop.exit();
+                }
+                let char: Option<char> = match &event.logical_key {
+                    winit::keyboard::Key::Character(s) if s.chars().count() == 1 => s.chars().next(),
+                    _ => None,
+                };
+                let key = KeyEvent{ code, repeat, state, char };
+                Application::event(self, AppEvent::Input(InputEvent::Key(key)))
+            }
+            /*
+            // TODO: interesting event to handle:
+            winit::event::WindowEvent::DroppedFile(path_buf) => todo!(),
+            winit::event::WindowEvent::HoveredFile(path_buf) => todo!(),
+            winit::event::WindowEvent::HoveredFileCancelled => todo!(),
+            winit::event::WindowEvent::Focused(_) => todo!(),
+            winit::event::WindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer } => todo!(),
+            winit::event::WindowEvent::ThemeChanged(theme) => todo!(),
+            winit::event::WindowEvent::Occluded(_) => todo!()
+            */
+            winit::event::WindowEvent::RedrawRequested => Application::draw(self),
+            _ => (),
+        }
+    }
+}

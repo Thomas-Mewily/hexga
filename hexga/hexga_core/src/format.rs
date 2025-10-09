@@ -62,7 +62,7 @@ impl<'a, T> FmtOptional<'a, T>
 
 
 hexga_map_on::map_on_std_fmt!(
-    ($trait_name:ident) => 
+    ($trait_name:ident) =>
     {
         impl<'a, T> std::fmt::$trait_name for FmtOptional<'a, T> where T: std::fmt::$trait_name
         {
@@ -70,7 +70,7 @@ hexga_map_on::map_on_std_fmt!(
             {
                 match self.value
                 {
-                    Some(v) => 
+                    Some(v) =>
                     {
                         v.fmt(f)?;
                         f.write_str(self.separator)
@@ -79,10 +79,10 @@ hexga_map_on::map_on_std_fmt!(
                 }
             }
         }
-    } 
+    }
 );
 
-
+/*
 pub trait FmtOptionalDefault : Sized
 {
     /// Formats the value with a space separator after it only if it is not the default.
@@ -92,3 +92,4 @@ pub trait FmtOptionalDefault : Sized
     }
 }
 impl<T> FmtOptionalDefault for T where T: Sized {}
+*/

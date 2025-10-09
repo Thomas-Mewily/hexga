@@ -1,0 +1,76 @@
+use super::*;
+
+#[derive(Debug)]
+pub struct AppCore
+{
+    /*
+    pub(crate) gpu: Option<AppGpu>,
+    pub(crate) input : AppInput,
+    */
+    pub(crate) window: AppWindow,
+    pub(crate) param: AppParam,
+}
+impl AppCore
+{
+    pub(crate) fn new(param: AppParam) -> Self { Self { param, window: AppWindow::new() } }
+}
+
+/*
+impl AppScoped for AppCore
+{
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        self.window.begin_flow(flow);
+    }
+
+    fn end_flow(&mut self, flow: FlowMessage) {
+        self.window.end_flow(flow);
+    }
+}
+*/
+
+singleton_thread_local!(pub App,AppCore,CONTEXT_APP);
+
+impl SingletonInit for App
+{
+    fn replace(instance: Option<<Self as SingletonRef>::Target>) {
+        match instance
+        {
+            Some(ctx) =>
+            {
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    use std::io::Write;
+
+                    std::panic::set_hook(Box::new(|info| {
+                        App::destroy();
+                        eprintln!("panic occurred: {info}");
+                    }));
+
+
+                    let _res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        App::destroy();
+                    }));
+                }
+                #[cfg(target_arch = "wasm32")]
+                {
+                    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+                    console_log::init_with_level(::log::Level::Debug).expect("Couldn't initialize logger");
+                }
+                CONTEXT_APP.replace(Some(ctx));
+                // The Gpu is initialized in a special async way...
+            },
+            None =>
+            {
+                CONTEXT_APP.replace(None);
+                //Gpu::destroy();
+            },
+        }
+    }
+}
+
+
+#[derive(Default, Debug, Clone)]
+pub struct AppParam
+{
+    pub title: String,
+}
