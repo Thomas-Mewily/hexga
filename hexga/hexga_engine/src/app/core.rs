@@ -8,21 +8,24 @@ pub struct AppCore
     */
     pub(crate) input : AppInput,
     pub(crate) window: AppWindow,
+    pub(crate) perf : AppPerf,
     pub(crate) param: AppParam,
 }
 impl AppCore
 {
-    pub(crate) fn new(param: AppParam) -> Self { Self { param, input: AppInput::new(), window: AppWindow::new() } }
+    pub(crate) fn new(param: AppParam) -> Self { Self { param, input: AppInput::new(), window: AppWindow::new(), perf: AppPerf::new() } }
 }
 
 impl ScopedFlow for AppCore
 {
     fn begin_flow(&mut self, flow: FlowMessage) {
+        self.perf.begin_flow(flow);
         self.input.begin_flow(flow);
     }
 
     fn end_flow(&mut self, flow: FlowMessage) {
         self.input.end_flow(flow);
+        self.perf.end_flow(flow);
     }
 }
 

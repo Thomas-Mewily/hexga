@@ -11,6 +11,7 @@ pub mod app;
 pub mod input;
 pub mod log;
 pub mod window;
+pub mod perf;
 pub mod utils;
 pub use hexga::*;
 
@@ -22,6 +23,7 @@ pub mod prelude
         app::prelude::*,
         input::prelude::*,
         log::prelude::*,
+        perf::*,
         window::*,
         utils::*,
     };
