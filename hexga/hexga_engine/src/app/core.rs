@@ -6,6 +6,7 @@ pub struct AppCore
     /*
     pub(crate) gpu: Option<AppGpu>,
     */
+    pub(crate) clipboard : AppClipboard,
     pub(crate) input : AppInput,
     pub(crate) window: AppWindow,
     pub(crate) perf : AppPerf,
@@ -13,7 +14,34 @@ pub struct AppCore
 }
 impl AppCore
 {
-    pub(crate) fn new(param: AppParam) -> Self { Self { param, input: AppInput::new(), window: AppWindow::new(), perf: AppPerf::new() } }
+    pub fn clipboard(&self) -> &AppClipboard { &self.clipboard }
+    pub fn clipboard_mut(&mut self) -> &mut AppClipboard { &mut self.clipboard }
+
+    pub fn input(&self) -> &AppInput { &self.input }
+    pub fn input_mut(&mut self) -> &mut AppInput { &mut self.input }
+
+    pub fn window(&self) -> &AppWindow { &self.window }
+    pub fn window_mut(&mut self) -> &mut AppWindow { &mut self.window }
+
+    pub fn perf(&self) -> &AppPerf { &self.perf }
+    pub fn perf_mut(&mut self) -> &mut AppPerf { &mut self.perf }
+
+    pub fn param(&self) -> &AppParam { &self.param }
+    //pub fn param_mut(&mut self) -> &mut AppParam { &mut self.param }
+}
+impl AppCore
+{
+    pub(crate) fn new(param: AppParam) -> Self
+    {
+        Self
+        {
+            param,
+            input: AppInput::new(),
+            window: AppWindow::new(),
+            clipboard: AppClipboard::new(),
+            perf: AppPerf::new()
+        }
+    }
 }
 
 impl ScopedFlow for AppCore

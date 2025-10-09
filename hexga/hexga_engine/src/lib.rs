@@ -13,6 +13,7 @@ pub mod log;
 pub mod window;
 pub mod perf;
 pub mod utils;
+pub mod clipboard;
 pub use hexga::*;
 
 use prelude::*;
@@ -25,6 +26,7 @@ pub mod prelude
         log::prelude::*,
         perf::*,
         window::*,
+        clipboard::*,
         utils::*,
     };
     pub use hexga::prelude::*;
