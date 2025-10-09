@@ -2,7 +2,7 @@ use super::*;
 
 
 /// Dirty flag trait
-pub trait IUsedFlag
+pub trait UsedFlag
 {
     fn is_used(&self) -> bool;
     fn set_used(&mut self, used: bool) -> &mut Self;
@@ -35,7 +35,7 @@ impl<T> DerefMut for Used<T>
 {
     fn deref_mut(&mut self) -> &mut Self::Target { self.use_it(); &mut self.value }
 }
-impl<T> IUsedFlag for Used<T>
+impl<T> UsedFlag for Used<T>
 {
     fn is_used(&self) -> bool { self.used }
     fn set_used(&mut self, used: bool) -> &mut Self { self.used = used; self }
