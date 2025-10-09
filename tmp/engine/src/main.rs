@@ -10,6 +10,7 @@ impl Application for MyApp
 {
     fn update(&mut self)
     {
+        //dbg!(Perf.ups());
         //if Keyboard.keys().is_down(code)
         //dbg!(KeyCode::Space.is_down());
         //dbg!(Keyboard.keys_repeated().is_down(KeyCode::Space));

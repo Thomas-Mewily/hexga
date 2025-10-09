@@ -33,6 +33,7 @@ impl<A> AppRun for A where A:Application
         App::replace(Some(AppCore::new(param)));
 
         let event_loop = EventLoop::with_user_event().build().ok_or_void()?;
+        event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let proxy = event_loop.create_proxy();
 
         #[allow(unused_mut)]
