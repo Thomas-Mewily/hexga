@@ -141,11 +141,15 @@ impl KeyCodeManager
     pub fn released(&self) -> impl Iterator<Item = KeyCode> { self.released.iter().copied() }
     pub fn down(&self) -> impl Iterator<Item = KeyCode> { self.down.iter().copied() }
 
+
     pub fn is_down(&self, code: KeyCode) -> bool { self.button_state(code).is_down() }
     pub fn is_up(&self, code: KeyCode) -> bool { self.button_state(code).is_up() }
 
     pub fn was_down(&self, code: KeyCode) -> bool { self.old_button_state(code).is_down() }
     pub fn was_up(&self, code: KeyCode) -> bool { self.old_button_state(code).is_up() }
+
+    pub fn is_pressed(&self, code: KeyCode) -> bool { self.evolution(code).is_pressed() }
+    pub fn is_released(&self, code: KeyCode) -> bool { self.evolution(code).is_released() }
 
     pub fn button_state(&self, code: KeyCode) -> ButtonState { self.down.contains(&code).into() }
     pub fn old_button_state(&self, code: KeyCode) -> ButtonState { self.old_down.contains(&code).into() }

@@ -10,6 +10,8 @@ mod keyboard;
 pub use keyboard::*;
 mod binding;
 pub use binding::*;
+mod shortcuts;
+pub use shortcuts::*;
 
 pub mod prelude
 {
