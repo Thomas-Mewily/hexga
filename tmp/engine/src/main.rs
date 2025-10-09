@@ -10,8 +10,6 @@ impl Application for MyApp
 {
     fn update(&mut self)
     {
-
-
         //if Keyboard.keys().is_down(code)
         //if KeyCode::A
     }

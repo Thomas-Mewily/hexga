@@ -8,6 +8,8 @@ mod input;
 pub use input::*;
 mod keyboard;
 pub use keyboard::*;
+mod binding;
+pub use binding::*;
 
 pub mod prelude
 {

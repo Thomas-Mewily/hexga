@@ -3,8 +3,6 @@ use std::mem;
 use super::*;
 
 
-//pub type KeyEvolution = Evolution<ButtonState>;
-
 singleton_access!(
     pub Keyboard,
     AppKeyboard,
@@ -32,24 +30,14 @@ impl Default for AppKeyboard
 
 impl ScopedFlow for AppKeyboard
 {
-    fn begin_flow_paused(&mut self)
-    {
-        self.key.suspended();
-        self.key_repeated.suspended();
-    }
-    fn begin_flow_resumed(&mut self) {
-        self.key.resumed();
-        self.key_repeated.resumed();
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        self.key.begin_flow(flow);
+        self.key_repeated.begin_flow(flow);
     }
 
-    fn begin_flow_update(&mut self)
-    {
-        self.key.begin_update();
-        self.key_repeated.begin_update();
-    }
-    fn end_flow_update(&mut self) {
-        self.key_repeated.end_update();
-        self.key.end_update();
+    fn end_flow(&mut self, flow: FlowMessage) {
+        self.key.end_flow(flow);
+        self.key_repeated.end_flow(flow);
     }
 }
 
@@ -89,33 +77,22 @@ pub struct KeyCodeManager
     pub(crate) released: HashSet<KeyCode>,
 }
 
-impl KeyCodeManager
+impl ScopedFlow for KeyCodeManager
 {
-    pub fn new(repeat  : ButtonRepeat) -> Self { Self { repeat, down: ___(), old_down: ___(), pressed: ___(), released: ___() }}
-
-    pub(crate) fn suspended(&mut self)
-    {
+    fn begin_flow_paused(&mut self) {
+        self.old_down.clear();
+        self.down.clear();
+        self.pressed.clear();
+        self.released.clear();
+    }
+    fn begin_flow_resumed(&mut self) {
         self.old_down.clear();
         self.down.clear();
         self.pressed.clear();
         self.released.clear();
     }
 
-    pub(crate) fn resumed(&mut self)
-    {
-        self.old_down.clear();
-        self.down.clear();
-        self.pressed.clear();
-        self.released.clear();
-    }
-
-    pub(crate) fn begin_update(&mut self)
-    {
-
-    }
-
-    pub(crate) fn end_update(&mut self)
-    {
+    fn end_flow_update(&mut self) {
         match self.repeat
         {
             ButtonRepeat::NotRepeated =>
@@ -133,6 +110,12 @@ impl KeyCodeManager
             },
         }
     }
+
+}
+
+impl KeyCodeManager
+{
+    pub fn new(repeat : ButtonRepeat) -> Self { Self { repeat, down: ___(), old_down: ___(), pressed: ___(), released: ___() }}
 
     pub(crate) fn handle_event(&mut self, code: KeyCode, pressed: ButtonState)
     {
@@ -167,7 +150,7 @@ impl KeyCodeManager
     pub fn button_state(&self, code: KeyCode) -> ButtonState { self.down.contains(&code).into() }
     pub fn old_button_state(&self, code: KeyCode) -> ButtonState { self.old_down.contains(&code).into() }
 
-    pub fn evolution(&self, code: KeyCode) -> Evolution<ButtonState> { Evolution::new(self.button_state(code), self.old_button_state(code)) }
+    pub fn evolution(&self, code: KeyCode) -> ButtonEvolution { Evolution::new(self.button_state(code), self.old_button_state(code)) }
 }
 
 
@@ -175,7 +158,7 @@ impl Evolvable<ButtonState> for KeyCode
 {
     fn value(&self) -> ButtonState { Keyboard.keys().button_state(*self) }
     fn old_value(&self) -> ButtonState { Keyboard.keys().old_button_state(*self)  }
-    fn evolution(&self) -> Evolution<ButtonState> { Keyboard.keys().evolution(*self) }
+    fn evolution(&self) -> ButtonEvolution { Keyboard.keys().evolution(*self) }
 }
 /*
 impl KeyCode

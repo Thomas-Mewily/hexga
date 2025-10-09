@@ -1,5 +1,7 @@
 use super::*;
 
+pub type ButtonEvolution = Evolution<ButtonState>;
+
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
 pub struct Evolution<T> where T:Copy
