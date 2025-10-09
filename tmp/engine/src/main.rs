@@ -11,7 +11,8 @@ impl Application for MyApp
     fn update(&mut self)
     {
         //if Keyboard.keys().is_down(code)
-        //if KeyCode::A
+        //dbg!(KeyCode::Space.is_down());
+        //dbg!(Keyboard.keys_repeated().is_down(KeyCode::Space));
     }
 }
 
