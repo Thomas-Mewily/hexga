@@ -12,12 +12,17 @@ impl AppWindow
 
     pub(crate) fn as_ref(&self) -> Option<&WinitWindow> { self.active.as_ref().map(|w| w.as_ref()) }
 
-    pub(crate) fn resize(&mut self, size: Point2, active: &EventLoopActive)
+    pub(crate) fn resize(&mut self, size: Point2)
     {
         if let Some(active) = &mut self.active
         {
             active.request_redraw();
         }
+    }
+
+    pub(crate) fn destroy(&mut self)
+    {
+        self.active = None;
     }
 
     pub(crate) fn begin_resumed(&mut self, active: &EventLoopActive)

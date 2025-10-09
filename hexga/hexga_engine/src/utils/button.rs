@@ -92,3 +92,32 @@ impl From<ButtonRepeat> for bool
 {
     fn from(value: ButtonRepeat) -> Self { value.is_repeated() }
 }
+
+
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub enum ButtonStateEvo
+{
+    Down,
+    Up,
+    /// Can be use for toggle
+    Pressed,
+    /// Can be use for toggle
+    Released,
+}
+impl From<ButtonState> for ButtonStateEvo
+{
+    fn from(value: ButtonState) -> Self
+    {
+        match value
+        {
+            ButtonState::Down => Self::Down,
+            ButtonState::Up => Self::Up,
+        }
+    }
+}
+impl Evolvable<ButtonState> for ButtonStateEvo
+{
+    fn value(&self) -> ButtonState { matches!(self, Self::Down | Self::Pressed).into() }
+    fn old_value(&self) -> ButtonState { matches!(self, Self::Down | Self::Released).into() }
+}

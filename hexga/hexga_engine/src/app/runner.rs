@@ -52,44 +52,53 @@ impl<A> AppRun for A where A:Application
     }
 }
 
+
 impl<A> Application for AppRunner<A> where A:Application
 {
     fn resumed(&mut self)
     {
-        self.app.resumed();
+        App.scoped_flow(FlowMessage::Resumed, |_| self.app.resumed());
     }
 
     fn paused(&mut self)
     {
-        self.app.paused();
-    }
-
-    fn event(&mut self, ev: AppEvent)
-    {
-        match ev
-        {
-            AppEvent::Input(input) => todo!(),
-            AppEvent::Window(window) => match window
-            {
-                WindowEvent::Resize(vector) => todo!(),
-                WindowEvent::Move(vector) => todo!(),
-                WindowEvent::Open => todo!(),
-                WindowEvent::Close => todo!(),
-                WindowEvent::Destroy => todo!(),
-            },
-            AppEvent::Custom(icustom) => todo!(),
-        }
-        self.app.event(ev);
+        App.scoped_flow(FlowMessage::Paused, |_| self.app.paused());
     }
 
     fn draw(&mut self)
     {
-        self.app.draw();
+        App.scoped_flow(FlowMessage::Draw, |_| self.app.draw());
     }
 
     fn update(&mut self)
     {
-        self.app.update();
+        App.scoped_flow(FlowMessage::Update, |_| self.app.update());
+    }
+
+    fn event(&mut self, ev: AppEvent)
+    {
+        match &ev
+        {
+            AppEvent::Input(input) =>
+            {
+                match input
+                {
+                    InputEvent::Key(k) =>
+                    {
+                        App.input.keyboard.key_event(*k);
+                    },
+                }
+            },
+            AppEvent::Window(window) => match window
+            {
+                WindowEvent::Resize(size) => App.window.resize(*size),
+                WindowEvent::Destroy => App.window.destroy(),
+                WindowEvent::Draw => self.draw(),
+                _ => {},
+            },
+            _ => {}
+        }
+        self.app.event(ev);
     }
 }
 
@@ -103,6 +112,10 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
 
     fn suspended(&mut self, active: &EventLoopActive) {
         Application::paused(self);
+    }
+
+    fn about_to_wait(&mut self, active: &EventLoopActive) {
+        Application::update(self);
     }
 
     fn window_event(
@@ -143,7 +156,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
             winit::event::WindowEvent::ThemeChanged(theme) => todo!(),
             winit::event::WindowEvent::Occluded(_) => todo!()
             */
-            winit::event::WindowEvent::RedrawRequested => Application::draw(self),
+            winit::event::WindowEvent::RedrawRequested => Application::event(self, WindowEvent::Draw.into()),
             _ => (),
         }
     }

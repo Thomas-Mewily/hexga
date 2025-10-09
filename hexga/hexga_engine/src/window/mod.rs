@@ -20,4 +20,5 @@ pub enum WindowEvent
     Open,
     Close,
     Destroy,
+    Draw,
 }

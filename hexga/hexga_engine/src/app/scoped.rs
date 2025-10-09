@@ -1,9 +1,9 @@
 use super::*;
 
-/*
 /// `begin_X()` are called before the application, `end_X()` are called after
-pub(crate) trait AppScoped
+pub(crate) trait ScopedFlow
 {
+    /*
     fn scoped_custom<F,R>(&mut self, custom: CustomEvent, f: F) -> R where F: FnOnce(CustomEvent) -> R
     {
         self.begin_custom(&custom);
@@ -13,7 +13,7 @@ pub(crate) trait AppScoped
     }
     fn begin_custom(&mut self, custom: &CustomEvent) { let _  = custom; }
     fn end_custom(&mut self) {}
-
+    */
 
     fn scoped_flow<F,R>(&mut self, flow: FlowMessage, f: F) -> R where F: FnOnce(FlowMessage) -> R
     {
@@ -89,4 +89,3 @@ pub(crate) trait AppScoped
     fn begin_flow_draw(&mut self) { }
     fn end_flow_draw(&mut self) { }
 }
-    */

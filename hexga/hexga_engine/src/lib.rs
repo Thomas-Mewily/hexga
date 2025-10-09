@@ -5,12 +5,13 @@
 use std::any::Any;
 use std::fmt::Debug;
 use std::sync::Arc;
-
+use std::ops::*;
 
 pub mod app;
 pub mod input;
 pub mod log;
 pub mod window;
+pub mod utils;
 pub use hexga::*;
 
 use prelude::*;
@@ -22,6 +23,7 @@ pub mod prelude
         input::prelude::*,
         log::prelude::*,
         window::*,
+        utils::*,
     };
     pub use hexga::prelude::*;
 }

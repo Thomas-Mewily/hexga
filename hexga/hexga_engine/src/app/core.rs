@@ -5,28 +5,26 @@ pub struct AppCore
 {
     /*
     pub(crate) gpu: Option<AppGpu>,
-    pub(crate) input : AppInput,
     */
+    pub(crate) input : AppInput,
     pub(crate) window: AppWindow,
     pub(crate) param: AppParam,
 }
 impl AppCore
 {
-    pub(crate) fn new(param: AppParam) -> Self { Self { param, window: AppWindow::new() } }
+    pub(crate) fn new(param: AppParam) -> Self { Self { param, input: AppInput::new(), window: AppWindow::new() } }
 }
 
-/*
-impl AppScoped for AppCore
+impl ScopedFlow for AppCore
 {
     fn begin_flow(&mut self, flow: FlowMessage) {
-        self.window.begin_flow(flow);
+        self.input.begin_flow(flow);
     }
 
     fn end_flow(&mut self, flow: FlowMessage) {
-        self.window.end_flow(flow);
+        self.input.end_flow(flow);
     }
 }
-*/
 
 singleton_thread_local!(pub App,AppCore,CONTEXT_APP);
 
