@@ -92,7 +92,7 @@ impl<A> Application for AppRunner<A> where A:Application
             },
             AppEvent::Window(window) => match window
             {
-                WindowEvent::Resize(size) => App.window.resize(*size),
+                WindowEvent::Resize(size) => {},
                 WindowEvent::Destroy => App.window.destroy(),
                 WindowEvent::Draw => self.draw(),
                 _ => {},
@@ -107,7 +107,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
 {
     fn resumed(&mut self, active: &EventLoopActive)
     {
-        App.window.begin_resumed(active);
+        App.window.begin_resumed_with_active_loop(active);
         Application::resumed(self);
     }
 

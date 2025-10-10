@@ -1,5 +1,13 @@
 use super::*;
 
+singleton_access!(
+    pub Window,
+    AppWindow,
+    { App::try_as_ref().map(|ctx| &ctx.window) },
+    { App::try_as_mut().map(|ctx| &mut ctx.window) }
+);
+
+
 #[derive(Debug)]
 pub struct AppWindow
 {
@@ -12,20 +20,12 @@ impl AppWindow
 
     pub(crate) fn as_ref(&self) -> Option<&WinitWindow> { self.active.as_ref().map(|w| w.as_ref()) }
 
-    pub(crate) fn resize(&mut self, size: Point2)
-    {
-        if let Some(active) = &mut self.active
-        {
-            active.request_redraw();
-        }
-    }
-
     pub(crate) fn destroy(&mut self)
     {
         self.active = None;
     }
 
-    pub(crate) fn begin_resumed(&mut self, active: &EventLoopActive)
+    pub(crate) fn begin_resumed_with_active_loop(&mut self, active: &EventLoopActive)
     {
         if self.active.is_none()
         {
@@ -46,5 +46,34 @@ impl AppWindow
             self.active = Some(window.clone());
             //AppGpu::request(window, ctx.proxy.clone()).unwrap();
         }
+    }
+}
+
+impl AppWindow
+{
+    pub fn resize(&mut self, size: Point2)
+    {
+        if let Some(active) = &mut self.active
+        {
+            let _ = active.request_inner_size(winit::dpi::PhysicalSize::new(size.x.max(1) as u32, size.y.max(1) as u32));
+            active.request_redraw();
+        }
+    }
+
+    pub fn size(&self) -> Point2
+    {
+        self.active.as_ref().map(|w| w.inner_size().convert()).unwrap_or(one())
+    }
+
+    pub fn set_position(&mut self, pos: Point2)
+    {
+        if let Some(active) = &mut self.active
+        {
+            let _ = active.set_outer_position(winit::dpi::PhysicalPosition::new(pos.x, pos.y));
+        }
+    }
+    pub fn position(&self) -> Point2
+    {
+        self.active.as_ref().and_then(|w| w.outer_position().ok()).map(|p| p.convert()).unwrap_or(zero())
     }
 }

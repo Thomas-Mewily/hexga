@@ -13,6 +13,8 @@ impl Application for MyApp
         if KeyCode::Space.is_pressed()
         {
             dbg!(Clipboard.get());
+            Window.resize(point2(64, 128));
+            Window.set_position(point2(256, 100));
         }
     }
 }
