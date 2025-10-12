@@ -14,11 +14,15 @@ pub trait AppRun : Sized
 pub(crate) struct AppRunner<A> where A:Application
 {
     app: A,
-    proxy : EventLoopProxy,
 }
 impl<A> AppRunner<A> where A:Application
 {
-    pub const fn new(app: A, proxy: EventLoopProxy) -> Self { Self { app, proxy } }
+    pub const fn new(app: A) -> Self { Self { app } }
+
+    pub(crate) fn ready_to_run(&self) -> bool
+    {
+        Gpu::is_init()
+    }
 }
 
 
@@ -30,14 +34,15 @@ impl<A> AppRun for A where A:Application
 
 
         assert!(App::is_not_init(), "Can't run two app at the same time, App is a singleton");
-        App::replace(Some(AppCore::new(param)));
 
         let event_loop = EventLoop::with_user_event().build().ok_or_void()?;
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let proxy = event_loop.create_proxy();
 
+        App::replace(Some(AppCore::new(param, proxy)));
+
         #[allow(unused_mut)]
-        let mut runner = AppRunner::new(self, proxy);
+        let mut runner = AppRunner::new(self);
 
         #[cfg(not(target_arch = "wasm32"))]
         {
@@ -68,6 +73,7 @@ impl<A> Application for AppRunner<A> where A:Application
 
     fn draw(&mut self)
     {
+        if !self.ready_to_run() { return; }
         App.scoped_flow(FlowMessage::Draw, |_| self.app.draw());
     }
 
@@ -92,7 +98,11 @@ impl<A> Application for AppRunner<A> where A:Application
             },
             AppEvent::Window(window) => match window
             {
-                WindowEvent::Resize(size) => {},
+                WindowEvent::Resize(size) =>
+                {
+                    Gpu.resize(*size);
+                    Window.request_draw();
+                },
                 WindowEvent::Destroy => App.window.destroy(),
                 WindowEvent::Draw => self.draw(),
                 _ => {},
@@ -125,6 +135,8 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
         window_id: WinitWindowID,
         event: winit::event::WindowEvent,
     ) {
+        if !self.ready_to_run() { return; }
+
         match event
         {
             WinitWindowEvent::Resized(physical_size) => Application::event(self, WindowEvent::Resize(physical_size.convert()).into()),
@@ -159,6 +171,17 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
             */
             winit::event::WindowEvent::RedrawRequested => Application::event(self, WindowEvent::Draw.into()),
             _ => (),
+        }
+    }
+
+    fn user_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, event: AppInternalEvent) {
+        match event
+        {
+            AppInternalEvent::Gpu(gpu) =>
+            {
+                App.gpu = Some(gpu.unwrap());
+                App.window.request_draw();
+            },
         }
     }
 }

@@ -5,7 +5,12 @@ impl<T> ICustomEvent for T where T: 'static + Debug + Send + Any {}
 
 pub type CustomEvent = Box<dyn ICustomEvent>;
 
-pub(crate) type AppInternalEvent = AppEvent;
+
+pub(crate) enum AppInternalEvent
+{
+    Gpu(GpuEvent),
+    //Custom(CustomEvent),
+}
 
 
 #[derive(Debug)]

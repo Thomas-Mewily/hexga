@@ -12,9 +12,11 @@ impl Application for MyApp
     {
         if KeyCode::Space.is_pressed()
         {
+
+            //Window.set_x(960/2);
             dbg!(Clipboard.get());
-            Window.resize(point2(64, 128));
-            Window.set_position(point2(256, 100));
+            //Window.set_size(point2(64, 128));
+            //Window.set_pos(point2(256, 100));
         }
     }
 }

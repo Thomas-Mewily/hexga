@@ -30,7 +30,7 @@ impl AppWindow
         if self.active.is_none()
         {
             #[allow(unused_mut)]
-            let mut win_attr = WinitWindow::default_attributes().with_title("wgpu winit example");
+            let mut win_attr = WinitWindow::default_attributes().with_title(App.param.title.to_owned());
 
             #[cfg(target_arch = "wasm32")]
             {
@@ -46,6 +46,11 @@ impl AppWindow
             self.active = Some(window.clone());
             //AppGpu::request(window, ctx.proxy.clone()).unwrap();
         }
+    }
+
+    pub fn request_draw(&mut self)
+    {
+        self.active.as_ref().map(|w| w.request_redraw());
     }
 }
 
@@ -81,7 +86,7 @@ impl SetRectangle<int,2> for AppWindow
         if let Some(active) = &mut self.active
         {
             let _ = active.request_inner_size(winit::dpi::PhysicalSize::new(size.x.max(1) as u32, size.y.max(1) as u32));
-            active.request_redraw();
+            self.request_draw();
         }
         self
     }
