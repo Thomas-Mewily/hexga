@@ -1,139 +1,297 @@
 use super::*;
 
+pub type GpuDevice = wgpu::Device;
+pub(crate) type GpuEvent = Result<AppPen,String>;
 
 singleton_access!(
     pub Pen,
-    GpuPen,
-    { Gpu::try_as_ref().map(|gpu| &gpu.pen) },
-    { Gpu::try_as_mut().map(|gpu| &mut gpu.pen) }
+    AppPen,
+    { App::try_as_ref().map(|ctx| ctx.pen.as_ref()).flatten() },
+    { App::try_as_mut().map(|ctx| ctx.pen.as_mut()).flatten() }
 );
 
+
 #[derive(Debug)]
-pub struct GpuPen
+pub struct GpuBase
 {
-    pub(crate) params: NonEmptyStack<DrawParam>,
-    pub(crate) default_param : DrawParam,
-
-    pub(crate) big_mesh  : MeshBuilder,
-    pub(crate) draw_calls: NonEmptyStack<DrawCall>,
+    pub(crate) adapter: wgpu::Adapter,
+    pub(crate) device: wgpu::Device,
+    pub(crate) queue: wgpu::Queue,
+    pub(crate) render_pipeline: wgpu::RenderPipeline,
 }
 
-impl GpuPen
+#[derive(Debug)]
+pub struct AppPen
 {
-    pub fn new(param : DrawParam) -> Self
-    {
-        Self { params: NonEmptyStack::new(param), default_param: param, big_mesh: ___(), draw_calls: ___() }
+    pub(crate) base: GpuBase,
+    pub(crate) surface: GpuSurface,
+
+    pub(crate) binding: GpuBinding,
+    pub(crate) render: GpuRender,
+}
+
+impl Deref for AppPen
+{
+    type Target = GpuRender;
+    fn deref(&self) -> &Self::Target { &self.render }
+}
+impl DerefMut for AppPen
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.render }
+}
+
+impl ScopedFlow for AppPen
+{
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        self.render.begin_flow(flow);
+    }
+
+    fn end_flow(&mut self, flow: FlowMessage) {
+        self.render.end_flow(flow);
     }
 }
 
 
-impl ScopedFlow for GpuPen
+
+#[derive(Debug)]
+
+pub struct GpuBinding
 {
-    fn begin_flow_draw(&mut self)
-    {
-        /*
-        self.big_mesh.clear();
-        self.draw_calls.clear();
+    pub(crate) camera_buffer: wgpu::Buffer,
+    pub(crate) camera_bind_group: wgpu::BindGroup,
+}
 
-        assert_eq!(self.params.len(), 1, "Forget to pop a camera");
-
-        let dcall_param = &mut self.default_param;
-        let scissor = param.window_size.to_rect();
-        let viewport = scissor.cast_into();
-        dcall_param.scissor = scissor;
-        dcall_param.viewport = viewport;
-        self.params.replace(*dcall_param);
-        self.draw_calls.param = *dcall_param;
-        */
+impl ScopedFlow for Option<AppPen>
+{
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        self.as_mut().map(|gpu| gpu.begin_flow(flow));
+        self.dispatch_begin_flow(flow);
     }
 
-    fn end_flow_draw(&mut self)
-    {
-        /*
-        self.update_last_draw_call();
-        assert_eq!(self.params.len(), 1, "Forget to pop a camera");
-        */
+    fn end_flow(&mut self, flow: FlowMessage) {
+        self.as_mut().map(|gpu| gpu.end_flow(flow));
+        self.dispatch_end_flow(flow);
     }
-}
 
-
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub struct DrawParam
-{
-    pub camera  : Camera,
-    pub viewport: Rect2,
-    pub viewport_min_depth: float,
-    pub viewport_max_depth: float,
-    pub scissor : Rect2P,
-}
-impl Default for DrawParam
-{
-    fn default() -> Self {
-        Self { camera: ___(), viewport: ___(), viewport_min_depth: 0., viewport_max_depth: 1., scissor: ___() }
-    }
-}
-
-
-#[derive(Clone, Debug)]
-pub enum DrawGeometry
-{
-    ImmediateMode(DrawGeometryImmediate),
-}
-impl Default for DrawGeometry
-{
-    fn default() -> Self {
-        Self::ImmediateMode(___())
-    }
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct DrawGeometryImmediate
-{
-    pub(crate) vertices_begin: usize,
-    pub(crate) vertices_len: usize,
-
-    pub(crate) indices_begin: usize,
-    pub(crate) indices_len: usize,
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct DrawCall
-{
-    pub(crate) geometry: DrawGeometry,
-    pub(crate) param: DrawParam,
-    // add texture here
-}
-impl Deref for DrawCall
-{
-    type Target=DrawParam;
-    fn deref(&self) -> &Self::Target { &self.param }
-}
-impl DerefMut for DrawCall
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.param }
-}
-
-impl DrawCall
-{
-    pub fn is_geometry_empty(&self) -> bool
-    {
-        self.geometry.is_empty()
-    }
-}
-impl DrawGeometry
-{
-    pub fn is_empty(&self) -> bool
-    {
-        match self
+    fn begin_flow_resumed(&mut self) {
+        if self.is_some()
         {
-            DrawGeometry::ImmediateMode(immediate) => immediate.is_empty(),
+            if let Some(w) = App.window.active.as_ref()
+            {
+                AppPen::request(w.clone(), App.proxy.clone()).unwrap();
+            }
         }
     }
 }
-impl DrawGeometryImmediate
+
+#[derive(Debug)]
+pub(crate) struct GpuSurface
 {
-    pub fn is_empty(&self) -> bool
+    pub(crate) surface: wgpu::Surface<'static>,
+    pub(crate) surface_config: wgpu::SurfaceConfiguration,
+}
+
+impl GpuSurface
+{
+    fn resize(&mut self, size: Vec2i)
     {
-        self.vertices_len == 0 || self.indices_len == 0
+        let size = size.max(one());
+        self.surface_config.width = size.x as _;
+        self.surface_config.height = size.y as _;
+        self.surface.configure(&Pen.base.device, &self.surface_config);
     }
+
+    fn size(&self) -> Vec2i
+    {
+        vec2i(self.surface_config.width as _, self.surface_config.height as _)
+    }
+}
+
+impl AppPen
+{
+    pub(crate) fn resize(&mut self, size: Vec2i)
+    {
+        self.surface.resize(size);
+    }
+}
+
+
+impl AppPen
+{
+    pub(crate) fn request(window: Arc<WinitWindow>, proxy : EventLoopProxy) -> Result<(), String>
+    {
+        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::all(),
+            flags:
+            //if cfg!(debug_assertions)
+            {
+                wgpu::InstanceFlags::VALIDATION
+            }
+            /*
+            else
+            {
+                wgpu::InstanceFlags::empty()
+            }*/
+            ,
+            ..Default::default()
+        });
+        let surface = instance.create_surface(Arc::clone(&window)).ok_or_debug()?;
+
+        Self::request_async(instance, window, surface, proxy).spawn();
+
+        Ok(())
+    }
+    pub(crate) async fn request_async(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>, proxy: EventLoopProxy)
+    {
+        let _ = proxy.send_event(AppInternalEvent::Gpu(Self::new(instance, window, surface).await));
+    }
+
+
+
+
+    pub(crate) async fn new(instance : wgpu::Instance, window: Arc<WinitWindow>, surface : wgpu::Surface<'static>) -> GpuEvent
+    {
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::default(),
+                force_fallback_adapter: false,
+                // Request an adapter which can render to our surface
+                compatible_surface: Some(&surface),
+            })
+            .await
+            .map_err(|_| "Failed to find an appropriate adapter".to_owned())?;
+
+        // Create the logical device and command queue
+        let (device, queue) = adapter
+            .request_device(&wgpu::DeviceDescriptor {
+                label: None,
+                required_features: wgpu::Features::empty(),
+                // Make sure we use the texture resolution limits from the adapter, so we can support images the size of the swapchain.
+                required_limits: wgpu::Limits::downlevel_webgl2_defaults()
+                    .using_resolution(adapter.limits()),
+                memory_hints: wgpu::MemoryHints::Performance,
+                trace: wgpu::Trace::Off,
+            })
+            .await
+            .map_err(|_| "Failed to create device".to_owned())?;
+
+        let size = window.inner_size();
+
+        let width = size.width.max(1);
+        let height = size.height.max(1);
+
+        let surface_config = surface.get_default_config(&adapter, width, height).unwrap();
+        surface.configure(&device, &surface_config);
+
+        let swap_chain_format = surface_config.format;
+
+        let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Camera Buffer"),
+            contents: Mat4::IDENTITY.as_u8_slice(),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+
+        let camera_bind_group_layout =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+            label: Some("camera_bind_group_layout"),
+        });
+
+        let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &camera_bind_group_layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: camera_buffer.as_entire_binding(),
+            }],
+            label: Some("camera_bind_group"),
+        });
+
+
+        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some("Shader"),
+            source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!("shader.wgsl"))),
+        });
+
+
+        let vertex_layout =
+        {
+            GpuVertexBufferLayout {
+                array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
+                step_mode: wgpu::VertexStepMode::Vertex,
+                attributes: &[
+                    wgpu::VertexAttribute {
+                        offset: 0,
+                        shader_location: 0,
+                        format: GpuVec3::GPU_VERTEX_FORMAT,
+                    },
+                    wgpu::VertexAttribute {
+                        offset: size_of::<GpuVec3>() as wgpu::BufferAddress,
+                        shader_location: 1,
+                        format: GpuColor::GPU_VERTEX_FORMAT,
+                    },
+                ],
+            }
+        };
+
+
+        let render_pipeline_layout =
+            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("Render Pipeline Layout"),
+                bind_group_layouts: &[&camera_bind_group_layout],
+                push_constant_ranges: &[],
+            });
+
+        let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("Render Pipeline"),
+            layout: Some(&render_pipeline_layout),
+            vertex: wgpu::VertexState {
+                module: &shader,
+                entry_point: Some("vs_main"),
+                buffers: &[vertex_layout ],
+                compilation_options: Default::default(),
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &shader,
+                entry_point: Some("fs_main"),
+                compilation_options: Default::default(),
+                targets: &[Some(swap_chain_format.into())],
+            }),
+            primitive: wgpu::PrimitiveState {
+                topology: wgpu::PrimitiveTopology::TriangleList,
+                strip_index_format: None,
+                front_face: wgpu::FrontFace::Ccw,
+                cull_mode: None, //Some(wgpu::Face::{Back,Back})
+                polygon_mode: wgpu::PolygonMode::Fill,
+                ..Default::default()
+            },
+            depth_stencil: None,
+            multisample: wgpu::MultisampleState::default(),
+            multiview: None,
+            cache: None,
+        });
+
+        //let render_pipeline = Self::create_pipeline(&device, surface_config.format);
+
+        Ok
+        (
+            Self
+            {
+                base: GpuBase { adapter, device, queue, render_pipeline },
+                surface: GpuSurface { surface, surface_config },
+                binding: GpuBinding { camera_buffer, camera_bind_group },
+                render: GpuRender::new(DrawParam { camera: Camera::CAMERA_3D, ..___() }),
+            }
+        )
+    }
+
 }

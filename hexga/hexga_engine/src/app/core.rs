@@ -6,13 +6,13 @@ pub struct AppCore
     /*
     pub(crate) gpu: Option<AppGpu>,
     */
-    pub(crate) clipboard : AppClipboard,
-    pub(crate) gpu : Option<AppGpu>,
-    pub(crate) input : AppInput,
-    pub(crate) window: AppWindow,
-    pub(crate) perf : AppPerf,
-    pub(crate) param: AppParam,
-    pub(crate) proxy : EventLoopProxy,
+    pub(crate) clipboard:   AppClipboard,
+    pub(crate) pen:         Option<AppPen>,
+    pub(crate) input:       AppInput,
+    pub(crate) window:      AppWindow,
+    pub(crate) perf:        AppPerf,
+    pub(crate) param:       AppParam,
+    pub(crate) proxy:       EventLoopProxy,
 }
 impl AppCore
 {
@@ -35,7 +35,7 @@ impl AppCore
             window: AppWindow::new(),
             clipboard: AppClipboard::new(),
             perf: AppPerf::new(),
-            gpu: None,
+            pen: None,
             proxy,
         }
     }
@@ -46,13 +46,13 @@ impl ScopedFlow for AppCore
     fn begin_flow(&mut self, flow: FlowMessage) {
         self.perf.begin_flow(flow);
         self.input.begin_flow(flow);
-        self.gpu.begin_flow(flow);
+        self.pen.begin_flow(flow);
     }
 
     fn end_flow(&mut self, flow: FlowMessage) {
         self.input.end_flow(flow);
         self.perf.end_flow(flow);
-        self.gpu.end_flow(flow);
+        self.pen.end_flow(flow);
     }
 }
 

@@ -71,7 +71,7 @@ impl<T> GpuVec<T> where T:Copy
 
     pub fn with_capacity(capacity: usize, desc: GpuVecDesc) -> Self
     {
-        Self::_with_capacity(&mut Gpu.base.device, capacity, desc)
+        Self::_with_capacity(&mut Pen.base.device, capacity, desc)
     }
 
     pub(crate) fn _new(device: &mut wgpu::Device, value: &[T], desc: GpuVecDesc) -> Self
@@ -88,7 +88,7 @@ impl<T> GpuVec<T> where T:Copy
 
     pub fn new(value: &[T], desc: GpuVecDesc) -> Self
     {
-        Self::_new(&mut Gpu.base.device, value, desc)
+        Self::_new(&mut Pen.base.device, value, desc)
     }
 
     /// Returns a typed slice of the underlying `wgpu::Buffer`.

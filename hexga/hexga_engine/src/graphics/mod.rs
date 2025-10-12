@@ -4,8 +4,8 @@ use wgpu::util::DeviceExt;
 pub(crate) type GpuVertexBufferLayout<'a> = wgpu::VertexBufferLayout<'a>;
 
 
-mod gpu;
-pub use gpu::*;
+mod pen;
+pub use pen::*;
 
 mod as_u8_slice;
 pub use as_u8_slice::*;
@@ -19,8 +19,8 @@ pub use typedef::*;
 mod format;
 pub use format::*;
 
-mod pen;
-pub use pen::*;
+mod render;
+pub use render::*;
 
 mod camera;
 pub use camera::*;

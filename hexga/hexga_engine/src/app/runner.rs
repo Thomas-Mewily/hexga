@@ -21,7 +21,7 @@ impl<A> AppRunner<A> where A:Application
 
     pub(crate) fn ready_to_run(&self) -> bool
     {
-        Gpu::is_init()
+        Pen::is_init()
     }
 }
 
@@ -100,7 +100,7 @@ impl<A> Application for AppRunner<A> where A:Application
             {
                 WindowEvent::Resize(size) =>
                 {
-                    Gpu.resize(*size);
+                    Pen.resize(*size);
                     Window.request_draw();
                 },
                 WindowEvent::Destroy => App.window.destroy(),
@@ -179,7 +179,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
         {
             AppInternalEvent::Gpu(gpu) =>
             {
-                App.gpu = Some(gpu.unwrap());
+                App.pen = Some(gpu.unwrap());
                 App.window.request_draw();
             },
         }
