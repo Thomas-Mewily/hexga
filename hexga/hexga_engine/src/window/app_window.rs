@@ -49,31 +49,40 @@ impl AppWindow
     }
 }
 
-impl AppWindow
+impl GetPosition<int,2> for AppWindow
 {
-    pub fn resize(&mut self, size: Point2)
+    fn pos(&self) -> Point2
+    {
+        self.active.as_ref().and_then(|w| w.outer_position().ok()).map(|p| p.convert()).unwrap_or(zero())
+    }
+}
+impl SetPosition<int,2> for AppWindow
+{
+    fn set_pos(&mut self, pos: Point2) -> &mut Self
+    {
+        if let Some(active) = &mut self.active
+        {
+            let _ = active.set_outer_position(winit::dpi::PhysicalPosition::new(pos.x, pos.y));
+        }
+        self
+    }
+}
+impl GetRectangle<int,2> for AppWindow
+{
+    fn size(&self) -> Vector<int,2>
+    {
+        self.active.as_ref().map(|w| w.inner_size().convert()).unwrap_or(one())
+    }
+}
+impl SetRectangle<int,2> for AppWindow
+{
+    fn set_size(&mut self, size: Vector<int,2>) -> &mut Self
     {
         if let Some(active) = &mut self.active
         {
             let _ = active.request_inner_size(winit::dpi::PhysicalSize::new(size.x.max(1) as u32, size.y.max(1) as u32));
             active.request_redraw();
         }
-    }
-
-    pub fn size(&self) -> Point2
-    {
-        self.active.as_ref().map(|w| w.inner_size().convert()).unwrap_or(one())
-    }
-
-    pub fn set_position(&mut self, pos: Point2)
-    {
-        if let Some(active) = &mut self.active
-        {
-            let _ = active.set_outer_position(winit::dpi::PhysicalPosition::new(pos.x, pos.y));
-        }
-    }
-    pub fn position(&self) -> Point2
-    {
-        self.active.as_ref().and_then(|w| w.outer_position().ok()).map(|p| p.convert()).unwrap_or(zero())
+        self
     }
 }
