@@ -1,8 +1,8 @@
 use super::*;
 
 
-pub type TriangleVertex<const V:usize>=GeometryTriangle<Vertex<V>>;
-pub type GeometryVertex<const V:usize, const N:usize> = Geometry<Vertex<V>,N>;
+pub type TriangleVertex<const V:usize>=GeometryTriangle<VertexOf<V>>;
+pub type GeometryVertex<const V:usize, const N:usize> = Geometry<VertexOf<V>,N>;
 
 pub type GeometryTriangle<T> = Geometry<T,3>;
 pub type TriangleVertexIndex=GeometryTriangle<VertexIndex>;

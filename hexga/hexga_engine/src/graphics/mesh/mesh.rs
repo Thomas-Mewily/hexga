@@ -7,24 +7,24 @@ use super::*;
 #[derive(Clone, PartialEq, Debug)]
 pub struct Mesh<const N:usize=3>
 {
-    pub(crate) vertices: GpuVec<Vertex<N>>,
+    pub(crate) vertices: GpuVec<VertexOf<N>>,
     pub(crate) indices: GpuVec<VertexIndex>,
 }
 impl<const N:usize> Mesh<N>
 {
-    pub(crate) fn from_gpu_vec(vertices: GpuVec<Vertex<N>>, indices: GpuVec<VertexIndex>) -> Self
+    pub(crate) fn from_gpu_vec(vertices: GpuVec<VertexOf<N>>, indices: GpuVec<VertexIndex>) -> Self
     {
         Self { vertices, indices }
     }
 
-    pub fn new(vertices : &[Vertex<N>], indices : &[VertexIndex]) -> Self
+    pub fn new(vertices : &[VertexOf<N>], indices : &[VertexIndex]) -> Self
     {
         let indices = indices.to_gpu_vec(GpuVecDesc::INDEX);
         let vertices = vertices.to_gpu_vec(GpuVecDesc::VERTEX);
         Self { vertices, indices }
     }
 
-    pub fn from_iterator(vertices: impl IntoIterator<Item = Vertex<N>>, indices: impl IntoIterator<Item = VertexIndex>) -> Self
+    pub fn from_iterator(vertices: impl IntoIterator<Item = VertexOf<N>>, indices: impl IntoIterator<Item = VertexIndex>) -> Self
     {
         Self::new(&vertices.into_iter().to_vec(), &indices.into_iter().to_vec())
     }
