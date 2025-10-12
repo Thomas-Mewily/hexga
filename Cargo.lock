@@ -1111,6 +1111,7 @@ dependencies = [
  "hexga_map_on",
  "hexga_math",
  "hexga_singleton",
+ "hexga_utils",
  "serde",
 ]
 

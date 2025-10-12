@@ -1,6 +1,6 @@
 use super::*;
 
-
+pub type GpuDevice = wgpu::Device;
 pub(crate) type GpuEvent = Result<AppGpu,String>;
 
 singleton_access!(
@@ -279,8 +279,7 @@ impl AppGpu
                 base: GpuBase { adapter, device, queue, render_pipeline },
                 surface: GpuSurface { surface, surface_config },
                 binding: GpuBinding { camera_buffer, camera_bind_group },
-                pen: GpuPen::new(),
-                //pen: GpuPen::new(DrawCallParam { camera: Camera::CAMERA_3D, ..___() }),
+                pen: GpuPen::new(DrawParam { camera: Camera::CAMERA_3D, ..___() }),
             }
         )
     }

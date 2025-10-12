@@ -1,4 +1,5 @@
 use super::*;
+
 use wgpu::util::DeviceExt;
 pub(crate) type GpuVertexBufferLayout<'a> = wgpu::VertexBufferLayout<'a>;
 
@@ -23,3 +24,9 @@ pub use pen::*;
 
 mod camera;
 pub use camera::*;
+
+mod mesh;
+pub use mesh::*;
+
+mod vec;
+pub use vec::*;
