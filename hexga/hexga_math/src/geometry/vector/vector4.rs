@@ -34,15 +34,15 @@ impl<T> From<Vector4<T>> for (T,T,T,T,) { fn from(value: Vector4<T>) -> Self { l
 
 pub const fn vector4<T>(x : T, y : T, z : T, w : T) -> Vector4<T> { Vector4::new(x, y, z, w) }
 
-pub type Bool4 = Vector4<bool>;
-pub const fn bool4(x : bool, y : bool, z : bool, w : bool) -> Bool4 { Bool4::new(x, y, z, w) }
+pub type Vec4b = Vector4<bool>;
+pub const fn vec4b(x : bool, y : bool, z : bool, w : bool) -> Vec4b { Vec4b::new(x, y, z, w) }
 
 pub type Vec4 = Vector4<float>;
 pub const fn vec4(x : float, y : float, z : float, w : float) -> Vec4 { Vec4::new(x, y, z, w) }
 pub type Coef4 = Vec4;
 
-pub type Point4 = Vector4<int>;
-pub const fn point4(x : int, y : int, z : int, w : int) -> Point4 { Point4::new(x, y, z, w) }
+pub type Vec4i = Vector4<int>;
+pub const fn vec4i(x : int, y : int, z : int, w : int) -> Vec4i { Vec4i::new(x, y, z, w) }
 
 impl<T> HaveX<T> for Vector4<T>
 {
@@ -109,7 +109,7 @@ pub(crate) mod prelude
         SplatCoord4,
         Vector4,vector4,
         Vec4,vec4,
-        Bool4,bool4,
-        Point4,point4,
+        Vec4b,vec4b,
+        Vec4i,vec4i,
     };
 }

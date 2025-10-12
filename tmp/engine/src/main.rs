@@ -15,8 +15,8 @@ impl Application for MyApp
 
             //Window.set_x(960/2);
             dbg!(Clipboard.get());
-            //Window.set_size(point2(64, 128));
-            //Window.set_pos(point2(256, 100));
+            //Window.set_size(vec2i(64, 128));
+            //Window.set_pos(vec2i(256, 100));
         }
     }
 }

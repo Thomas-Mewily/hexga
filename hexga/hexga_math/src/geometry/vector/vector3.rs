@@ -34,15 +34,15 @@ impl<T> From<Vector3<T>> for (T,T,T,) { fn from(value: Vector3<T>) -> Self { let
 
 pub const fn vector3<T>(x : T, y : T, z : T) -> Vector3<T> { Vector3::new(x, y, z) }
 
-pub type Bool3 = Vector3<bool>;
-pub const fn bool3(x : bool, y : bool, z : bool) -> Bool3 { Bool3::new(x, y, z) }
+pub type Vec3b = Vector3<bool>;
+pub const fn vec3b(x : bool, y : bool, z : bool) -> Vec3b { Vec3b::new(x, y, z) }
 
 pub type Vec3 = Vector3<float>;
 pub const fn vec3(x : float, y : float, z : float) -> Vec3 { Vec3::new(x, y, z) }
 pub type Coef3 = Vec3;
 
-pub type Point3 = Vector3<int>;
-pub const fn point3(x : int, y : int, z : int) -> Point3 { Point3::new(x, y, z) }
+pub type Vec3i = Vector3<int>;
+pub const fn vec3i(x : int, y : int, z : int) -> Vec3i { Vec3i::new(x, y, z) }
 
 impl<T> HaveX<T> for Vector3<T>
 {
@@ -112,7 +112,7 @@ pub(crate) mod prelude
         SplatCoord3,
         Vector3,vector3,
         Vec3,vec3,
-        Bool3,bool3,
-        Point3,point3,
+        Vec3b,vec3b,
+        Vec3i,vec3i,
     };
 }

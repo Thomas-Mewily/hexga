@@ -169,22 +169,22 @@ impl<T,const N : usize> Rectangle<T,N> where T: Number
     /// use hexga_math::prelude::*;
     ///
     /// // inside :
-    /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(1, 1)));
-    /// assert!(rect2p(0, 0, 2, 2).is_inside(point2(0, 0)));
+    /// assert!(rect2p(0, 0, 2, 2).is_inside(vec2i(1, 1)));
+    /// assert!(rect2p(0, 0, 2, 2).is_inside(vec2i(0, 0)));
     ///
     ///
     /// // not inside :
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(2, 0)));
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(0, 2)));
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(2, 2)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i(2, 0)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i(0, 2)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i(2, 2)));
     ///
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 3,   3)));
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(-1,  -1)));
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(-1,  -1)));
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 1,  10)));
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 1, -10)));
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2(-10,  1)));
-    /// assert!(!rect2p(0, 0, 2, 2).is_inside(point2( 10,  1)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i( 3,   3)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i(-1,  -1)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i(-1,  -1)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i( 1,  10)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i( 1, -10)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i(-10,  1)));
+    /// assert!(!rect2p(0, 0, 2, 2).is_inside(vec2i( 10,  1)));
     ///
     /// ```
     pub fn is_inside(&self, point : Vector<T, N>) -> bool
@@ -550,7 +550,7 @@ mod rect_test
     fn crop_normal()
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop_margin_intersect(point2(1, 1), point2(2, 2));
+        let cropped = rect.crop_margin_intersect(vec2i(1, 1), vec2i(2, 2));
         assert_eq!(cropped, rect2p(1, 1, 7, 7));
     }
 
@@ -558,7 +558,7 @@ mod rect_test
     fn crop_to_much()
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop_margin_intersect(point2(0, 0), point2(20, 20));
+        let cropped = rect.crop_margin_intersect(vec2i(0, 0), vec2i(20, 20));
         assert_eq!(cropped, zero());
     }
 
@@ -566,7 +566,7 @@ mod rect_test
     fn crop_to_much_2()
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop_margin_intersect(point2(20, 20), point2(0, 0));
+        let cropped = rect.crop_margin_intersect(vec2i(20, 20), vec2i(0, 0));
         assert_eq!(cropped, rect2p(20, 20, 0, 0));
     }
 
@@ -574,7 +574,7 @@ mod rect_test
     fn crop_to_much_3()
     {
         let rect = rect2p(0, 0, 10, 10);
-        let cropped = rect.crop_margin_intersect(point2(20, 20), point2(20, 20));
+        let cropped = rect.crop_margin_intersect(vec2i(20, 20), vec2i(20, 20));
         assert_eq!(cropped, rect2p(20, 20, 0, 0));
     }
 

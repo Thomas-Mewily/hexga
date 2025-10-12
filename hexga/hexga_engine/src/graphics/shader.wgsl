@@ -17,7 +17,7 @@ struct VertexOutput {
 
 
 @vertex
-fn vs_main(model: VertexInput) -> VertexOutput 
+fn vs_main(model: VertexInput) -> VertexOutput
 {
     var out: VertexOutput;
     out.pos = camera.view_proj * vec4<f32>(model.position, 1.0);

@@ -9,14 +9,14 @@ pub trait IterIndex<T, const N : usize>
     ///
     /// The last value is always excluded.
     ///
-    /// Work on Point, Rect and Grid ([Point1], [Point2], [Point3], [Point4], [Rect1], [Rect2], [Rect3], [Rect4]) for ex.
+    /// Work on Point, Rect and Grid ([Vec1i], [Vec2i], [Vec3i], [Vec4i], [Rect1], [Rect2], [Rect3], [Rect4]) for ex.
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
     ///
-    /// let expected_points = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)].map(|(x,y)| point2(x, y));
+    /// let expected_points = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)].map(|(x,y)| vec2i(x, y));
     ///
-    /// for (i, expected) in point2(2, 3).iter_index().zip(expected_points.iter())
+    /// for (i, expected) in vec2i(2, 3).iter_index().zip(expected_points.iter())
     /// {
     ///     assert_eq!(&i, expected);
     /// }
@@ -25,7 +25,7 @@ pub trait IterIndex<T, const N : usize>
 }
 
 /// Iterates over all N-dimensional indices in a rectangular region.
-/// 
+///
 /// Yields every `Vector<Idx, N>` from `Vector::ZERO` up to `end`
 /// (exclusive).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

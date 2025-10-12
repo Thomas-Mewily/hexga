@@ -17,24 +17,54 @@ pub struct GpuBase
     pub(crate) adapter: wgpu::Adapter,
     pub(crate) device: wgpu::Device,
     pub(crate) queue: wgpu::Queue,
+    pub(crate) render_pipeline: wgpu::RenderPipeline,
 }
 
 #[derive(Debug)]
 pub struct AppGpu
 {
     pub(crate) base: GpuBase,
-    pub(crate) surface: Surface,
+    pub(crate) surface: GpuSurface,
 
-    pub(crate) render_pipeline: wgpu::RenderPipeline,
+    pub(crate) binding: GpuBinding,
+    pub(crate) pen: GpuPen,
+}
 
+impl ScopedFlow for AppGpu
+{
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        self.pen.begin_flow(flow);
+    }
+
+    fn end_flow(&mut self, flow: FlowMessage) {
+        self.pen.end_flow(flow);
+    }
+}
+
+
+
+#[derive(Debug)]
+
+pub struct GpuBinding
+{
     pub(crate) camera_buffer: wgpu::Buffer,
     pub(crate) camera_bind_group: wgpu::BindGroup,
 }
 
 impl ScopedFlow for Option<AppGpu>
 {
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        self.as_mut().map(|gpu| gpu.begin_flow(flow));
+        self.dispatch_begin_flow(flow);
+    }
+
+    fn end_flow(&mut self, flow: FlowMessage) {
+        self.as_mut().map(|gpu| gpu.end_flow(flow));
+        self.dispatch_end_flow(flow);
+    }
+
     fn begin_flow_resumed(&mut self) {
-        if self.is_none()
+        if self.is_some()
         {
             if let Some(w) = App.window.active.as_ref()
             {
@@ -45,15 +75,15 @@ impl ScopedFlow for Option<AppGpu>
 }
 
 #[derive(Debug)]
-pub(crate) struct Surface
+pub(crate) struct GpuSurface
 {
     pub(crate) surface: wgpu::Surface<'static>,
     pub(crate) surface_config: wgpu::SurfaceConfiguration,
 }
 
-impl Surface
+impl GpuSurface
 {
-    fn resize(&mut self, size: Point2)
+    fn resize(&mut self, size: Vec2i)
     {
         let size = size.max(one());
         self.surface_config.width = size.x as _;
@@ -61,15 +91,15 @@ impl Surface
         self.surface.configure(&Gpu.base.device, &self.surface_config);
     }
 
-    fn size(&self) -> Point2
+    fn size(&self) -> Vec2i
     {
-        point2(self.surface_config.width as _, self.surface_config.height as _)
+        vec2i(self.surface_config.width as _, self.surface_config.height as _)
     }
 }
 
 impl AppGpu
 {
-    pub(crate) fn resize(&mut self, size: Point2)
+    pub(crate) fn resize(&mut self, size: Vec2i)
     {
         self.surface.resize(size);
     }
@@ -83,13 +113,15 @@ impl AppGpu
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
             flags:
-            if cfg!(debug_assertions)
+            //if cfg!(debug_assertions)
             {
                 wgpu::InstanceFlags::VALIDATION
-            } else
+            }
+            /*
+            else
             {
                 wgpu::InstanceFlags::empty()
-            }
+            }*/
             ,
             ..Default::default()
         });
@@ -240,15 +272,17 @@ impl AppGpu
 
         //let render_pipeline = Self::create_pipeline(&device, surface_config.format);
 
-        let s = Self
-        {
-            base: GpuBase { adapter, device, queue },
-            surface: Surface { surface, surface_config },
-            render_pipeline,
-            camera_buffer,
-            camera_bind_group,
-        };
-        Ok(s)
+        Ok
+        (
+            Self
+            {
+                base: GpuBase { adapter, device, queue, render_pipeline },
+                surface: GpuSurface { surface, surface_config },
+                binding: GpuBinding { camera_buffer, camera_bind_group },
+                pen: GpuPen::new(),
+                //pen: GpuPen::new(DrawCallParam { camera: Camera::CAMERA_3D, ..___() }),
+            }
+        )
     }
 
 }

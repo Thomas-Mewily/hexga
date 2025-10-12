@@ -29,15 +29,15 @@ impl<T> From<Vector1<T>> for (T,) { fn from(value: Vector1<T>) -> Self { let [x]
 
 pub const fn vector1<T>(x : T) -> Vector1<T> { Vector1::new(x) }
 
-pub type Bool1 = Vector1<bool>;
-pub const fn bool1(x : bool) -> Bool1 { Bool1::new(x) }
+pub type Vec1b = Vector1<bool>;
+pub const fn vec1b(x : bool) -> Vec1b { Vec1b::new(x) }
 
 pub type Vec1 = Vector1<float>;
 pub const fn vec1(x : float) -> Vec1 { Vec1::new(x) }
 pub type Coef1 = Vec1;
 
-pub type Point1 = Vector1<int>;
-pub const fn point1(x : int) -> Point1 { Point1::new(x) }
+pub type Vec1i = Vector1<int>;
+pub const fn vec1i(x : int) -> Vec1i { Vec1i::new(x) }
 
 impl<T> HaveX<T> for Vector1<T>
 {
@@ -65,7 +65,7 @@ pub(crate) mod prelude
         SplatCoord1,
         Vector1,vector1,
         Vec1,vec1,
-        Bool1,bool1,
-        Point1,point1,
+        Vec1b,vec1b,
+        Vec1i,vec1i,
     };
 }

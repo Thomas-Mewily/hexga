@@ -140,9 +140,9 @@ impl<T, const ROW : usize> From<Matrix<T,ROW,1>> for Vector<T, ROW> where Vector
 impl<T, const ROW : usize, const COL : usize> Matrix<T,ROW,COL>
 {
     /// Create a matrix from a `fn((columns,row))`
-    pub fn from_fn<F>(mut column_then_row : F) -> Self where F : FnMut(Point2) -> T
+    pub fn from_fn<F>(mut column_then_row : F) -> Self where F : FnMut(Vec2i) -> T
     {
-        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| column_then_row(point2(column as _,row as _)))))
+        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| column_then_row(vec2i(column as _,row as _)))))
     }
 
     pub fn from_col_fn<F>(mut column_then_row : F) -> Self where F : FnMut(usize, usize) -> T
@@ -447,9 +447,9 @@ impl<T, const COL : usize> Product for SquareMatrix<T,COL> where Self : One + Mu
 /// ```
 /// use hexga_math::prelude::*;
 ///
-/// let m1  = Mat2P::from_col((point2(7, 6), point2(5, 3)).into());
-/// let m2  = Mat2P::from_col((point2(2, 5), point2(1, 1)).into());
-/// let m3  = Mat2P::from_col((point2(39, 27), point2(12, 9)).into());
+/// let m1  = Mat2P::from_col((vec2i(7, 6), vec2i(5, 3)).into());
+/// let m2  = Mat2P::from_col((vec2i(2, 5), vec2i(1, 1)).into());
+/// let m3  = Mat2P::from_col((vec2i(39, 27), vec2i(12, 9)).into());
 ///
 /// assert_eq!(m1 * m2, m3);
 ///

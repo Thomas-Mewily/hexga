@@ -15,8 +15,8 @@ pub use convert::*;
 #[derive(Debug, Clone, PartialEq)]
 pub enum WindowEvent
 {
-    Resize(Point2),
-    Move(Point2),
+    Resize(Vec2i),
+    Move(Vec2i),
     Open,
     Close,
     Destroy,

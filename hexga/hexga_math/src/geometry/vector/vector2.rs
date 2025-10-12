@@ -33,15 +33,15 @@ impl<T> From<Vector2<T>> for (T,T,) { fn from(value: Vector2<T>) -> Self { let [
 
 pub const fn vector2<T>(x : T, y : T) -> Vector2<T> { Vector2::new(x, y) }
 
-pub type Bool2 = Vector2<bool>;
-pub const fn bool2(x : bool, y : bool) -> Bool2 { Bool2::new(x, y) }
+pub type Vec2b = Vector2<bool>;
+pub const fn vec2b(x : bool, y : bool) -> Vec2b { Vec2b::new(x, y) }
 
 pub type Vec2 = Vector2<float>;
 pub const fn vec2(x : float, y : float) -> Vec2 { Vec2::new(x, y) }
 pub type Coef2 = Vec2;
 
-pub type Point2 = Vector2<int>;
-pub const fn point2(x : int, y : int) -> Point2 { Point2::new(x, y) }
+pub type Vec2i = Vector2<int>;
+pub const fn vec2i(x : int, y : int) -> Vec2i { Vec2i::new(x, y) }
 
 impl<T> HaveX<T> for Vector2<T>
 {
@@ -83,7 +83,7 @@ pub(crate) mod prelude
         SplatCoord2,
         Vector2,vector2,
         Vec2,vec2,
-        Bool2,bool2,
-        Point2,point2,
+        Vec2b,vec2b,
+        Vec2i,vec2i,
     };
 }
