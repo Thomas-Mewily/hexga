@@ -12,6 +12,7 @@ pub mod iter;
 pub mod utils;
 pub mod collections;
 pub mod accessor;
+pub mod builder;
 pub mod traits;
 
 
@@ -24,6 +25,7 @@ pub mod prelude
     pub use super::utils::*;
     pub use super::collections::*;
     pub use super::accessor::*;
+    pub use super::builder::*;
     pub use super::traits::prelude::*;
 
 

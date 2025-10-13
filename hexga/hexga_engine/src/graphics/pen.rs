@@ -28,6 +28,8 @@ pub struct AppPen
 
     pub(crate) binding: GpuBinding,
     pub(crate) render: GpuRender,
+
+    pub(crate) immediate_mesh: Option<Mesh>,
     pub(crate) background_color : Option<Color>,
 }
 
@@ -106,8 +108,16 @@ impl AppPen
             if !self.render.big_mesh.is_empty()
             {
                 // Todo: avoid create a new buffer at each frame.
-                let mesh = self.render.big_mesh.build();
-                let Mesh { vertices, indices } = &mesh;
+
+                match self.immediate_mesh.as_mut()
+                {
+                    Some(m) => self.render.big_mesh.build_in(m),
+                    None =>
+                    {
+                        self.immediate_mesh = Some(self.render.big_mesh.build());
+                    },
+                };
+                let Mesh { vertices, indices } = self.immediate_mesh.as_ref().expect("missing immediate mesh");
 
                 for dc in self.render.draw_calls.iter()
                 {
@@ -409,6 +419,7 @@ impl AppPen
                 binding: GpuBinding { camera_buffer, camera_bind_group },
                 render: GpuRender::new(DrawParam { camera: Camera::CAMERA_3D, ..___() }),
                 background_color: Some(Color::BLACK),
+                immediate_mesh: None,
             }
         )
     }

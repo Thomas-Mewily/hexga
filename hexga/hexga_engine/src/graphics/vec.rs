@@ -113,6 +113,48 @@ impl<T> GpuVec<T> where T:Copy
     }
 }
 
+
+impl<T> GpuVec<T> where T:Copy
+{
+    fn update_part(&mut self, offset: usize, data: &[T])
+    {
+        let required = offset + data.len();
+        if required > self.capacity {
+
+            let new_capacity = required.next_power_of_two();
+            let mut new_buffer = Pen.base.device.create_buffer(&wgpu::BufferDescriptor {
+                label: None,
+                usage: self.desc.usages,
+                size: (new_capacity * std::mem::size_of::<T>()) as _,
+                mapped_at_creation: false,
+            });
+
+            if self.len > 0 {
+                let mut encoder = Pen.base.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+                encoder.copy_buffer_to_buffer(
+                    &self.buffer,
+                    0,
+                    &new_buffer,
+                    0,
+                    (self.len * std::mem::size_of::<T>()) as wgpu::BufferAddress,
+                );
+                Pen.base.queue.submit(Some(encoder.finish()));
+            }
+
+            self.buffer = new_buffer;
+            self.capacity = new_capacity;
+        }
+        assert!(offset + data.len() <= self.capacity);
+        Pen.base.queue.write_buffer(&self.buffer, offset as _, data.as_u8_slice());
+    }
+
+    pub fn replace(&mut self, data: &[T])
+    {
+        self.update_part(0, data);
+        self.len = data.len();
+    }
+}
+
 pub trait SliceToGpuVec<T> where T:Copy
 {
     fn to_gpu_vec(self, desc: GpuVecDesc) -> GpuVec<T>;

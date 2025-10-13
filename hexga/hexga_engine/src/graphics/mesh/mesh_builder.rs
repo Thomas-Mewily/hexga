@@ -96,13 +96,24 @@ impl<const N:usize> MeshBuilder<N>
 
     pub fn to_vertices_and_indices(self) -> (Vec<VertexOf<N>>, Vec<VertexIndex>) { (self.vertices, self.indices) }
     pub fn to_vertices_and_triangles_indices(self) -> (Vec<VertexOf<N>>, Vec<TriangleVertexIndex>) { (self.vertices, self.indices.chunks_exact(3).map(|c| TriangleVertexIndex::new(c[0], c[1], c[2])).collect()) }
+}
 
-    pub fn build(&self) -> Mesh<N>
+impl<const N:usize> Builder for MeshBuilder<N>
+{
+    type Output= Mesh<N>;
+    fn build(&self) -> Self::Output
     {
-        debug_assert!(self.is_valid());
+        assert!(self.is_valid());
         Mesh::new(&self.vertices, &self.indices)
     }
+
+    fn build_in(&self, dest: &mut Self::Output) {
+        dest.indices.replace(&self.indices);
+        dest.vertices.replace(&self.vertices);
+    }
 }
+
+
 impl<const N:usize> Clearable for MeshBuilder<N>
 {
     fn clear(&mut self) {
