@@ -2,7 +2,7 @@ use std::thread::Scope;
 
 use super::*;
 
-/* 
+/*
 pub struct CameraManager
 {
     // pub(crate) default_camera: Camera,
@@ -14,7 +14,7 @@ pub struct CameraManager
 
 impl ScopedDraw for CameraManager
 {
-    fn begin_draw(&mut self) 
+    fn begin_draw(&mut self)
     {
         assert_eq!(self.cameras.len(), 1, "Forget to pop a camera");
         self.cameras.replace(self.default);
@@ -33,13 +33,13 @@ impl CameraManager
 
 impl CameraManager
 {
-    pub fn replace<C>(&mut self, cam: &C) -> &mut Self where C: ICamera 
-    { 
+    pub fn replace<C>(&mut self, cam: &C) -> &mut Self where C: ICamera
+    {
         self.cameras.replace(cam.to_camera());
         self.apply();
-        self 
+        self
     }
-    pub fn apply(&mut self) 
+    pub fn apply(&mut self)
     {
         let m = self.matrix();
         //info!("pushed matrix");
@@ -65,7 +65,7 @@ impl CameraManager
     pub fn push_cam<C,F>(&mut self, cam: &C) where F:Float, C:ICamera<F>, Camera: CastFrom<CameraOf<F>>
     {
         self.cameras.push(cam.to_camera().cast_into());
-        self.apply(); 
+        self.apply();
     }
 
     pub fn pop_cam(&mut self) -> Camera
@@ -86,7 +86,7 @@ impl CameraManager
 impl ICamera for CameraManager
 {
     fn have_depth(&self) -> bool { self.cameras.have_depth() }
-    fn viewport(&self) -> Option<Rect2P> { self.cameras.viewport() }
+    fn viewport(&self) -> Option<Rect2i> { self.cameras.viewport() }
 }
 
 impl GetPosition<float,3> for CameraManager

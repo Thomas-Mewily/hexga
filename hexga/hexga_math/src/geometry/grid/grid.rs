@@ -363,7 +363,7 @@ mod grid_test
         assert_ne!(grid1.view(), grid2.view());
         assert_ne!(grid1.view_mut(), grid2.view_mut());
 
-        let rect = rect2p(0, 0, 1, size.y);
+        let rect = rect2i(0, 0, 1, size.y);
         assert_eq!(grid1.view().crop_intersect(rect), grid2.view().crop_intersect(rect));
         assert_eq!(grid1.view_mut().crop_intersect(rect), grid2.view_mut().crop_intersect(rect));
         assert_eq!(grid1.view_mut().subview(rect), grid2.view_mut().subview(rect));

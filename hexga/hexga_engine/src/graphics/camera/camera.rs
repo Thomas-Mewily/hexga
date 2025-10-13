@@ -4,7 +4,7 @@ use super::*;
 pub trait ICamera<F=float> : GetMatrix<F,4,4> where F:Float
 {
     fn have_depth(&self) -> bool;
-    //fn viewport(&self) -> Option<Rect2P>;
+    //fn viewport(&self) -> Option<Rect2i>;
 
     fn camera(&self) -> CameraOf<F> { CameraOf { matrix: self.matrix(), depth: self.have_depth() }}
 
@@ -32,7 +32,7 @@ pub struct Camera3DOf<F> where F:Float
     pub target: Vector3<F>,
     pub up: Vector3<F>,
     pub perspective: CameraPerspectiveOf<F>,
-    pub viewport : Option<Rect2P>
+    pub viewport : Option<Rect2i>
 }
 
 /*

@@ -19,33 +19,102 @@ impl GpuRender
     }
 }
 
+impl GpuRender
+{
+        pub(crate) fn update_last_draw_call(&mut self)
+    {
+        let mesh = &mut self.big_mesh;
+
+        let immediate_mode = match &mut self.draw_calls.last_mut().geometry
+        {
+            DrawGeometry::Immediate(immediate) =>
+            {
+                immediate.indices_len =  mesh.nb_index() - immediate.indices_begin;
+                immediate.vertices_len =  mesh.nb_vertex() - immediate.vertices_begin;
+            }
+        };
+    }
+
+
+    pub fn max_viewport(&self) -> Rect2 { self.default_param.viewport }
+    pub fn max_scissor(&self) -> Rect2i { self.default_param.scissor }
+    pub fn viewport(&self) -> Rect2 { self.params.viewport }
+    pub fn set_viewport(&mut self, viewport: Rect2) -> &mut Self
+    {
+        self.param_map(|p| p.viewport = viewport);
+        self
+    }
+
+
+    pub fn push_param(&mut self)
+    {
+        self.params.push(self.draw_calls.param);
+    }
+    pub fn pop_param(&mut self)
+    {
+        let param = self.params.pop().expect("forget to push param");
+        self.set_param(param);
+    }
+    pub fn param_map<F>(&mut self, f: F) where F: FnOnce(&mut DrawParam)
+    {
+        f(&mut self.params);
+        self.set_param(*self.params);
+    }
+    pub fn param(&self) -> DrawParam { *self.params }
+
+    pub fn set_param(&mut self, param: DrawParam)
+    {
+        if self.draw_calls.param == param { return; }
+
+        self.update_last_draw_call();
+
+        if !self.draw_calls.is_geometry_empty()
+        {
+            let mut draw_call = self.draw_calls.last().clone();
+            self.draw_calls.geometry = DrawGeometry::Immediate(DrawGeometryImmediate
+                {
+                    vertices_begin: self.big_mesh.nb_index(),
+                    vertices_len: 0,
+                    indices_begin: self.big_mesh.nb_vertex(),
+                    indices_len: 0
+                }
+            );
+            self.draw_calls.push(draw_call);
+        }
+        self.draw_calls.param = param;
+    }
+}
+impl IMeshBuilder for GpuRender
+{
+    fn geometry(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) {
+
+        self.big_mesh.geometry(vertex, index);
+    }
+}
+
 
 impl ScopedFlow for GpuRender
 {
     fn begin_flow_draw(&mut self)
     {
-        /*
         self.big_mesh.clear();
         self.draw_calls.clear();
 
         assert_eq!(self.params.len(), 1, "Forget to pop a camera");
 
         let dcall_param = &mut self.default_param;
-        let scissor = param.window_size.to_rect();
+        let scissor = Window.rect();
         let viewport = scissor.cast_into();
         dcall_param.scissor = scissor;
         dcall_param.viewport = viewport;
         self.params.replace(*dcall_param);
         self.draw_calls.param = *dcall_param;
-        */
     }
 
     fn end_flow_draw(&mut self)
     {
-        /*
         self.update_last_draw_call();
         assert_eq!(self.params.len(), 1, "Forget to pop a camera");
-        */
     }
 }
 
@@ -57,7 +126,7 @@ pub struct DrawParam
     pub viewport: Rect2,
     pub viewport_min_depth: float,
     pub viewport_max_depth: float,
-    pub scissor : Rect2P,
+    pub scissor : Rect2i,
 }
 impl Default for DrawParam
 {
@@ -70,12 +139,12 @@ impl Default for DrawParam
 #[derive(Clone, Debug)]
 pub enum DrawGeometry
 {
-    ImmediateMode(DrawGeometryImmediate),
+    Immediate(DrawGeometryImmediate),
 }
 impl Default for DrawGeometry
 {
     fn default() -> Self {
-        Self::ImmediateMode(___())
+        Self::Immediate(___())
     }
 }
 
@@ -119,7 +188,7 @@ impl DrawGeometry
     {
         match self
         {
-            DrawGeometry::ImmediateMode(immediate) => immediate.is_empty(),
+            DrawGeometry::Immediate(immediate) => immediate.is_empty(),
         }
     }
 }

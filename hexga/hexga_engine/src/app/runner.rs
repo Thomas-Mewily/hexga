@@ -19,9 +19,14 @@ impl<A> AppRunner<A> where A:Application
 {
     pub const fn new(app: A) -> Self { Self { app } }
 
-    pub(crate) fn ready_to_run(&self) -> bool
+    pub(crate) fn is_ready_to_run(&self) -> bool
     {
         Pen::is_init()
+    }
+    #[inline(always)]
+    pub(crate) fn is_not_ready_to_run(&self) -> bool
+    {
+        !self.is_ready_to_run()
     }
 }
 
@@ -73,7 +78,7 @@ impl<A> Application for AppRunner<A> where A:Application
 
     fn draw(&mut self)
     {
-        if !self.ready_to_run() { return; }
+        if self.is_not_ready_to_run() { return; }
         App.scoped_flow(FlowMessage::Draw, |_| self.app.draw());
     }
 
@@ -100,7 +105,10 @@ impl<A> Application for AppRunner<A> where A:Application
             {
                 WindowEvent::Resize(size) =>
                 {
-                    Pen.resize(*size);
+                    if Pen::is_init()
+                    {
+                        Pen.resize(*size);
+                    }
                     Window.request_draw();
                 },
                 WindowEvent::Destroy => App.window.destroy(),
@@ -129,18 +137,24 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
         Application::update(self);
     }
 
+    fn exiting(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+        App::destroy();
+    }
+
     fn window_event(
         &mut self,
         event_loop: &EventLoopActive,
         window_id: WinitWindowID,
         event: winit::event::WindowEvent,
     ) {
-        if !self.ready_to_run() { return; }
-
         match event
         {
             WinitWindowEvent::Resized(physical_size) => Application::event(self, WindowEvent::Resize(physical_size.convert()).into()),
-            winit::event::WindowEvent::CloseRequested => Application::event(self, WindowEvent::Close.into()),
+            winit::event::WindowEvent::CloseRequested =>
+            {
+                Application::event(self, WindowEvent::Close.into());
+                event_loop.exit();
+            },
             winit::event::WindowEvent::Destroyed => Application::event(self, WindowEvent::Destroy.into()),
             WinitWindowEvent::KeyboardInput { device_id: _, event, is_synthetic: _ } =>
             {

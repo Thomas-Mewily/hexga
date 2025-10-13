@@ -18,11 +18,11 @@
 //! ```rust
 //! use hexga_math::prelude::*;
 //!
-//! let rect = rect2p(0, 0, 10, 10);
+//! let rect = rect2i(0, 0, 10, 10);
 //! assert!(rect.is_inside(vec2i(5, 5)));
 //!
 //! let cropped = rect.crop_margin_intersect(vec2i(2, 2), vec2i(2, 2));
-//! assert_eq!(cropped, rect2p(2, 2, 6, 6));
+//! assert_eq!(cropped, rect2i(2, 2, 6, 6));
 //! ```
 //!
 //! ## See Also

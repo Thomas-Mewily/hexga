@@ -44,13 +44,116 @@ impl ScopedFlow for AppPen
 {
     fn begin_flow(&mut self, flow: FlowMessage) {
         self.render.begin_flow(flow);
+        self.dispatch_begin_flow(flow);
     }
 
     fn end_flow(&mut self, flow: FlowMessage) {
         self.render.end_flow(flow);
+        self.dispatch_end_flow(flow);
+    }
+
+    fn end_flow_draw(&mut self)
+    {
+        self.send_data_to_gpu();
     }
 }
 
+impl AppPen
+{
+    pub(crate) fn send_data_to_gpu(&mut self)
+    {
+        let surface_texture = self
+            .surface.surface
+            .get_current_texture()
+            .expect("Failed to acquire next swap chain texture");
+        let texture_view = surface_texture
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let mut encoder = self
+            .base.device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        {
+            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &texture_view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
+                        store: wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
+            });
+            rpass.set_pipeline(&self.base.render_pipeline);
+
+            rpass.set_bind_group(0, &self.binding.camera_bind_group, &[]);
+
+            // Todo: avoid create a new buffer at each frame.
+            let mesh = self.render.big_mesh.build();
+            let Mesh { vertices, indices } = &mesh;
+
+            for dc in self.render.draw_calls.iter()
+            {
+                //dbg!(&dc);
+
+                let mut viewport = dc.viewport;
+                let (viewport_min_depth, viewport_max_depth) = (dc.viewport_min_depth, dc.viewport_max_depth);
+                let mut scissor = dc.scissor;
+
+                viewport = self.render.max_viewport().intersect_or_empty(viewport);
+                scissor = self.render.max_scissor().intersect_or_empty(scissor);
+
+                if viewport.size.is_empty() || scissor.size.is_empty()
+                {
+                    continue;
+                }
+
+                self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.param.camera.matrix().as_u8_slice());
+
+                //dbg!(viewport);
+                //dbg!(scissor);
+
+                /*
+                let viewport : Rect2i = viewport.cast_into();
+                let scissor : Rect2i = scissor.cast_into();
+                dbg!(viewport);
+
+                if viewport.width().is_zero() { continue; }
+                if scissor.width().is_zero() { continue; }
+                */
+
+                rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
+                rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
+
+                match &dc.geometry
+                {
+                    DrawGeometry::Immediate(im) =>
+                    {
+                        if im.is_empty() { continue; }
+                        let (vertices_begin, vertices_len) = (im.vertices_begin, im.vertices_len);
+                        let vertices_end = im.vertices_begin+im.vertices_len;
+
+                        let (indices_begin, indices_len) = (im.indices_begin, im.indices_len);
+                        let indices_end = im.indices_begin+im.indices_len;
+
+                        rpass.set_vertex_buffer(0, vertices.wgpu_slice(vertices_begin..vertices_end));
+                        rpass.set_index_buffer(indices.wgpu_slice(indices_begin..indices_end), VertexIndex::GPU_INDEX_FORMAT);
+                        //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
+                        // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
+                        rpass.draw_indexed(0 ..(indices_len as _), -(vertices_begin as i32), 0..1);
+                    },
+                }
+            }
+        }
+
+
+        self.base.queue.submit(Some(encoder.finish()));
+        surface_texture.present();
+    }
+}
 
 
 #[derive(Debug)]
@@ -74,7 +177,7 @@ impl ScopedFlow for Option<AppPen>
     }
 
     fn begin_flow_resumed(&mut self) {
-        if self.is_some()
+        if self.is_none()
         {
             if let Some(w) = App.window.active.as_ref()
             {
@@ -120,19 +223,15 @@ impl AppPen
 {
     pub(crate) fn request(window: Arc<WinitWindow>, proxy : EventLoopProxy) -> Result<(), String>
     {
+        let mut flags = wgpu::InstanceFlags::empty();
+        if cfg!(debug_assertions)
+        {
+            flags |= wgpu::InstanceFlags::VALIDATION;
+        }
+
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
-            flags:
-            //if cfg!(debug_assertions)
-            {
-                wgpu::InstanceFlags::VALIDATION
-            }
-            /*
-            else
-            {
-                wgpu::InstanceFlags::empty()
-            }*/
-            ,
+            flags,
             ..Default::default()
         });
         let surface = instance.create_surface(Arc::clone(&window)).ok_or_debug()?;
@@ -187,7 +286,7 @@ impl AppPen
 
         let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Camera Buffer"),
-            contents: Mat4::IDENTITY.as_u8_slice(),
+            contents: GpuMat4::IDENTITY.as_u8_slice(),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
