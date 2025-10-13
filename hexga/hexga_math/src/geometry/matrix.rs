@@ -11,24 +11,25 @@ pub type Matrix3<T> = SquareMatrix<T,3>;
 pub type Matrix4<T> = SquareMatrix<T,4>;
 
 pub type Mat<const ROW : usize, const COL : usize> = Matrix<float,ROW,COL>;
-/// 1x1 matrix
+/// 1x1 matrix of float
 pub type Mat1 = Mat<1,1>;
-/// 2x2 matrix
+/// 2x2 matrix of float
 pub type Mat2 = Mat<2,2>;
-/// 3x3 matrix
+/// 3x3 matrix of float
 pub type Mat3 = Mat<3,3>;
-/// 4x4 matrix
+/// 4x4 matrix of float
 pub type Mat4 = Mat<4,4>;
 
-pub type MatP<const COL : usize> = SquareMatrix<int,COL>;
-/// 1x1 matrix
-pub type Mat1P = MatP<1>;
-/// 2x2 matrix
-pub type Mat2P = MatP<2>;
-/// 3x3 matrix
-pub type Mat3P = MatP<3>;
-/// 4x4 matrix
-pub type Mat4P = MatP<4>;
+/// matrix of integer
+pub type Mati<const COL : usize> = SquareMatrix<int,COL>;
+/// 1x1 matrix of integer
+pub type Mat1i = Mati<1>;
+/// 2x2 matrix of integer
+pub type Mat2i = Mati<2>;
+/// 3x3 matrix of integer
+pub type Mat3i = Mati<3>;
+/// 4x4 matrix of integer
+pub type Mat4i = Mati<4>;
 
 
 
@@ -447,9 +448,9 @@ impl<T, const COL : usize> Product for SquareMatrix<T,COL> where Self : One + Mu
 /// ```
 /// use hexga_math::prelude::*;
 ///
-/// let m1  = Mat2P::from_col((vec2i(7, 6), vec2i(5, 3)).into());
-/// let m2  = Mat2P::from_col((vec2i(2, 5), vec2i(1, 1)).into());
-/// let m3  = Mat2P::from_col((vec2i(39, 27), vec2i(12, 9)).into());
+/// let m1  = Mat2i::from_col((vec2i(7, 6), vec2i(5, 3)).into());
+/// let m2  = Mat2i::from_col((vec2i(2, 5), vec2i(1, 1)).into());
+/// let m3  = Mat2i::from_col((vec2i(39, 27), vec2i(12, 9)).into());
 ///
 /// assert_eq!(m1 * m2, m3);
 ///
@@ -1157,9 +1158,9 @@ mod test_matrix
     #[test]
     fn multiplication_2x2_basic()
     {
-        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
-        let b = Mat2P::from_row_array([[5, 6], [7, 8]]);
-        let expected = Mat2P::from_row_array([[19, 22], [43, 50]]);
+        let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
+        let b = Mat2i::from_row_array([[5, 6], [7, 8]]);
+        let expected = Mat2i::from_row_array([[19, 22], [43, 50]]);
 
         assert_eq!(a * b, expected);
     }
@@ -1167,8 +1168,8 @@ mod test_matrix
     #[test]
     fn multiplication_2x2_identity()
     {
-        let a = Mat2P::from_row_array([[2, 3], [4, 5]]);
-        let identity = Mat2P::IDENTITY;
+        let a = Mat2i::from_row_array([[2, 3], [4, 5]]);
+        let identity = Mat2i::IDENTITY;
 
         assert_eq!(a * identity, a);
         assert_eq!(identity * a, a);
@@ -1177,8 +1178,8 @@ mod test_matrix
     #[test]
     fn multiplication_2x2_zero()
     {
-        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
-        let zero = Mat2P::ZERO;
+        let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
+        let zero = Mat2i::ZERO;
 
         assert_eq!(a * zero, zero);
         assert_eq!(zero * a, zero);
@@ -1197,9 +1198,9 @@ mod test_matrix
     #[test]
     fn multiplication_2x2_negative()
     {
-        let a = Mat2P::from_row_array([[-1, -2], [-3, -4]]);
-        let b = Mat2P::from_row_array([[1, 2], [-3, -4]]);
-        let expected = Mat2P::from_row_array([[5, 6], [9, 10]]);
+        let a = Mat2i::from_row_array([[-1, -2], [-3, -4]]);
+        let b = Mat2i::from_row_array([[1, 2], [-3, -4]]);
+        let expected = Mat2i::from_row_array([[5, 6], [9, 10]]);
         assert_eq!(a * b, expected);
     }
 
@@ -1214,17 +1215,17 @@ mod test_matrix
     #[test]
     fn multiplication_3x3_basic()
     {
-        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        let b = Mat3P::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
-        let expected = Mat3P::from_row_array([[30, 24, 18], [84, 69, 54], [138, 114, 90]]);
+        let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let b = Mat3i::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
+        let expected = Mat3i::from_row_array([[30, 24, 18], [84, 69, 54], [138, 114, 90]]);
         assert_eq!(a * b, expected);
     }
 
     #[test]
     fn multiplication_3x3_identity()
     {
-        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        let identity = Mat3P::IDENTITY;
+        let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let identity = Mat3i::IDENTITY;
 
         assert_eq!(a * identity, a);
         assert_eq!(identity * a, a);
@@ -1233,8 +1234,8 @@ mod test_matrix
     #[test]
     fn multiplication_3x3_zero()
     {
-        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        let zero = Mat3P::ZERO;
+        let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let zero = Mat3i::ZERO;
 
         assert_eq!(a * zero, zero);
         assert_eq!(zero * a, zero);
@@ -1253,9 +1254,9 @@ mod test_matrix
     #[test]
     fn multiplication_4x4_basic()
     {
-        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
-        let b = Mat4P::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
-        let expected = Mat4P::from_row_array([[80, 70, 60, 50], [240, 214, 188, 162], [400, 358, 316, 274], [560, 502, 444, 386]]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
+        let expected = Mat4i::from_row_array([[80, 70, 60, 50], [240, 214, 188, 162], [400, 358, 316, 274], [560, 502, 444, 386]]);
 
         assert_eq!(a * b, expected);
     }
@@ -1263,8 +1264,8 @@ mod test_matrix
     #[test]
     fn multiplication_4x4_identity()
     {
-        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
-        let identity = Mat4P::IDENTITY;
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let identity = Mat4i::IDENTITY;
 
         assert_eq!(a * identity, a);
         assert_eq!(identity * a, a);
@@ -1273,8 +1274,8 @@ mod test_matrix
     #[test]
     fn multiplication_4x4_zero()
     {
-        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
-        let zero = Mat4P::ZERO;
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let zero = Mat4i::ZERO;
 
         assert_eq!(a * zero, zero);
         assert_eq!(zero * a, zero);
@@ -1304,9 +1305,9 @@ mod test_matrix
     #[test]
     fn multiplication_associativity_2x2()
     {
-        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
-        let b = Mat2P::from_row_array([[5, 6], [7, 8]]);
-        let c = Mat2P::from_row_array([[9, 10], [11, 12]]);
+        let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
+        let b = Mat2i::from_row_array([[5, 6], [7, 8]]);
+        let c = Mat2i::from_row_array([[9, 10], [11, 12]]);
 
         assert_eq!((a * b) * c, a * (b * c));
     }
@@ -1314,9 +1315,9 @@ mod test_matrix
     #[test]
     fn multiplication_associativity_3x3()
     {
-        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        let b = Mat3P::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
-        let c = Mat3P::from_row_array([[1, 0, 1], [0, 1, 0], [1, 0, 1]]);
+        let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let b = Mat3i::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
+        let c = Mat3i::from_row_array([[1, 0, 1], [0, 1, 0], [1, 0, 1]]);
 
         assert_eq!((a * b) * c, a * (b * c));
     }
@@ -1324,9 +1325,9 @@ mod test_matrix
     #[test]
     fn multiplication_associativity_4x4()
     {
-        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
-        let b = Mat4P::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
-        let c = Mat4P::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
+        let c = Mat4i::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
 
         assert_eq!((a * b) * c, a * (b * c));
     }
@@ -1334,9 +1335,9 @@ mod test_matrix
     #[test]
     fn multiplication_distributivity_2x2()
     {
-        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
-        let b = Mat2P::from_row_array([[5, 6], [7, 8]]);
-        let c = Mat2P::from_row_array([[9, 10], [11, 12]]);
+        let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
+        let b = Mat2i::from_row_array([[5, 6], [7, 8]]);
+        let c = Mat2i::from_row_array([[9, 10], [11, 12]]);
 
         assert_eq!(a * (b + c), a * b + a * c);
     }
@@ -1344,9 +1345,9 @@ mod test_matrix
     #[test]
     fn multiplication_distributivity_3x3()
     {
-        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        let b = Mat3P::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
-        let c = Mat3P::from_row_array([[1, 0, 1], [0, 1, 0], [1, 0, 1]]);
+        let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let b = Mat3i::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
+        let c = Mat3i::from_row_array([[1, 0, 1], [0, 1, 0], [1, 0, 1]]);
 
         assert_eq!(a * (b + c), a * b + a * c);
     }
@@ -1354,9 +1355,9 @@ mod test_matrix
     #[test]
     fn multiplication_distributivity_4x4()
     {
-        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
-        let b = Mat4P::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
-        let c = Mat4P::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
+        let c = Mat4i::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
 
         assert_eq!(a * (b + c), a * b + a * c);
     }
@@ -1364,9 +1365,9 @@ mod test_matrix
     #[test]
     fn multiplication_large_numbers_2x2()
     {
-        let a = Mat2P::from_row_array([[1000, 2000], [3000, 4000]]);
-        let b = Mat2P::from_row_array([[5000, 6000], [7000, 8000]]);
-        let expected = Mat2P::from_row_array([[19000000, 22000000], [43000000, 50000000]]);
+        let a = Mat2i::from_row_array([[1000, 2000], [3000, 4000]]);
+        let b = Mat2i::from_row_array([[5000, 6000], [7000, 8000]]);
+        let expected = Mat2i::from_row_array([[19000000, 22000000], [43000000, 50000000]]);
 
         assert_eq!(a * b, expected);
     }
@@ -1375,8 +1376,8 @@ mod test_matrix
     #[test]
     fn multiplication_non_commutative_2x2()
     {
-        let a = Mat2P::from_row_array([[1, 2], [3, 4]]);
-        let b = Mat2P::from_row_array([[2, 1], [4, 3]]);
+        let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
+        let b = Mat2i::from_row_array([[2, 1], [4, 3]]);
 
         assert_ne!(a * b, b * a);
     }
@@ -1384,8 +1385,8 @@ mod test_matrix
     #[test]
     fn multiplication_non_commutative_3x3()
     {
-        let a = Mat3P::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-        let b = Mat3P::from_row_array([[2, 1, 0], [5, 4, 3], [8, 7, 6]]);
+        let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+        let b = Mat3i::from_row_array([[2, 1, 0], [5, 4, 3], [8, 7, 6]]);
 
         assert_ne!(a * b, b * a);
     }
@@ -1394,8 +1395,8 @@ mod test_matrix
     fn multiplication_non_commutative_4x4()
     {
         // Test non-commutativity for 4x4 matrices
-        let a = Mat4P::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
-        let b = Mat4P::from_row_array([[2, 1, 0, 0], [6, 5, 4, 3], [10, 9, 8, 7], [14, 13, 12, 11]]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4i::from_row_array([[2, 1, 0, 0], [6, 5, 4, 3], [10, 9, 8, 7], [14, 13, 12, 11]]);
 
         assert_ne!(a * b, b * a);
     }
@@ -1405,8 +1406,8 @@ mod test_matrix
     fn multiplication_symmetric_2x2()
     {
         // Test multiplication with symmetric matrices
-        let a = Mat2P::from_row_array([[1, 2], [2, 3]]);
-        let b = Mat2P::from_row_array([[4, 5], [5, 6]]);
+        let a = Mat2i::from_row_array([[1, 2], [2, 3]]);
+        let b = Mat2i::from_row_array([[4, 5], [5, 6]]);
 
         // (A * B)^T = B^T * A^T = B * A (since both are symmetric)
         assert_eq!((a * b).transpose(), b * a);
@@ -1416,8 +1417,8 @@ mod test_matrix
     fn multiplication_symmetric_3x3()
     {
         // Test multiplication with 3x3 symmetric matrices
-        let a = Mat3P::from_row_array([[1, 2, 3], [2, 4, 5], [3, 5, 6]]);
-        let b = Mat3P::from_row_array([[2, 1, 0], [1, 3, 2], [0, 2, 4]]);
+        let a = Mat3i::from_row_array([[1, 2, 3], [2, 4, 5], [3, 5, 6]]);
+        let b = Mat3i::from_row_array([[2, 1, 0], [1, 3, 2], [0, 2, 4]]);
 
         // (A * B)^T = B^T * A^T = B * A (since both are symmetric)
         assert_eq!((a * b).transpose(), b * a);
@@ -1427,8 +1428,8 @@ mod test_matrix
     fn multiplication_symmetric_4x4()
     {
         // Test multiplication with 4x4 symmetric matrices
-        let a = Mat4P::from_row_array([[1, 2, 3, 4], [2, 5, 6, 7], [3, 6, 8, 9], [4, 7, 9, 10]]);
-        let b = Mat4P::from_row_array([[2, 1, 0, 0], [1, 3, 2, 0], [0, 2, 4, 3], [0, 0, 3, 5]]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [2, 5, 6, 7], [3, 6, 8, 9], [4, 7, 9, 10]]);
+        let b = Mat4i::from_row_array([[2, 1, 0, 0], [1, 3, 2, 0], [0, 2, 4, 3], [0, 0, 3, 5]]);
 
         // (A * B)^T = B^T * A^T = B * A (since both are symmetric)
         assert_eq!((a * b).transpose(), b * a);

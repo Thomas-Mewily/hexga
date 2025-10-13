@@ -91,64 +91,65 @@ impl AppPen
 
             rpass.set_bind_group(0, &self.binding.camera_bind_group, &[]);
 
-            /*
-            // Todo: avoid create a new buffer at each frame.
-            let mesh = self.render.big_mesh.build();
-            let Mesh { vertices, indices } = &mesh;
-
-            for dc in self.render.draw_calls.iter()
+            if !self.render.big_mesh.is_empty()
             {
-                //dbg!(&dc);
+                // Todo: avoid create a new buffer at each frame.
+                let mesh = self.render.big_mesh.build();
+                let Mesh { vertices, indices } = &mesh;
 
-                let mut viewport = dc.viewport;
-                let (viewport_min_depth, viewport_max_depth) = (dc.viewport_min_depth, dc.viewport_max_depth);
-                let mut scissor = dc.scissor;
-
-                viewport = self.render.max_viewport().intersect_or_empty(viewport);
-                scissor = self.render.max_scissor().intersect_or_empty(scissor);
-
-                if viewport.size.is_empty() || scissor.size.is_empty()
+                for dc in self.render.draw_calls.iter()
                 {
-                    continue;
-                }
+                    //dbg!(&dc);
 
-                self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.param.camera.matrix().as_u8_slice());
+                    let mut viewport = dc.viewport;
+                    let (viewport_min_depth, viewport_max_depth) = (dc.viewport_min_depth, dc.viewport_max_depth);
+                    let mut scissor = dc.scissor;
 
-                //dbg!(viewport);
-                //dbg!(scissor);
+                    viewport = self.render.max_viewport().intersect_or_empty(viewport);
+                    scissor = self.render.max_scissor().intersect_or_empty(scissor);
 
-                /*
-                let viewport : Rect2i = viewport.cast_into();
-                let scissor : Rect2i = scissor.cast_into();
-                dbg!(viewport);
-
-                if viewport.width().is_zero() { continue; }
-                if scissor.width().is_zero() { continue; }
-                */
-
-                rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
-                rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
-
-                match &dc.geometry
-                {
-                    DrawGeometry::Immediate(im) =>
+                    if viewport.size.is_empty() || scissor.size.is_empty()
                     {
-                        if im.is_empty() { continue; }
-                        let (vertices_begin, vertices_len) = (im.vertices_begin, im.vertices_len);
-                        let vertices_end = im.vertices_begin+im.vertices_len;
+                        continue;
+                    }
 
-                        let (indices_begin, indices_len) = (im.indices_begin, im.indices_len);
-                        let indices_end = im.indices_begin+im.indices_len;
+                    self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.param.camera.matrix().as_u8_slice());
 
-                        rpass.set_vertex_buffer(0, vertices.wgpu_slice(vertices_begin..vertices_end));
-                        rpass.set_index_buffer(indices.wgpu_slice(indices_begin..indices_end), VertexIndex::GPU_INDEX_FORMAT);
-                        //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
-                        // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
-                        rpass.draw_indexed(0 ..(indices_len as _), -(vertices_begin as i32), 0..1);
-                    },
+                    //dbg!(viewport);
+                    //dbg!(scissor);
+
+                    /*
+                    let viewport : Rect2i = viewport.cast_into();
+                    let scissor : Rect2i = scissor.cast_into();
+                    dbg!(viewport);
+
+                    if viewport.width().is_zero() { continue; }
+                    if scissor.width().is_zero() { continue; }
+                    */
+
+                    rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
+                    rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
+
+                    match &dc.geometry
+                    {
+                        DrawGeometry::Immediate(im) =>
+                        {
+                            if im.is_empty() { continue; }
+                            let (vertices_begin, vertices_len) = (im.vertices_begin, im.vertices_len);
+                            let vertices_end = im.vertices_begin+im.vertices_len;
+
+                            let (indices_begin, indices_len) = (im.indices_begin, im.indices_len);
+                            let indices_end = im.indices_begin+im.indices_len;
+
+                            rpass.set_vertex_buffer(0, vertices.wgpu_slice(vertices_begin..vertices_end));
+                            rpass.set_index_buffer(indices.wgpu_slice(indices_begin..indices_end), VertexIndex::GPU_INDEX_FORMAT);
+                            //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
+                            // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
+                            rpass.draw_indexed(0 ..(indices_len as _), -(vertices_begin as i32), 0..1);
+                        },
+                    }
                 }
             }
-            */
         }
 
 
