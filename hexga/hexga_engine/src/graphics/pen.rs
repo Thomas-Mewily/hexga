@@ -137,9 +137,6 @@ impl AppPen
 
                     self.base.queue.write_buffer(&self.binding.camera_buffer, 0, dc.param.camera.matrix().as_u8_slice());
 
-                    //dbg!(viewport);
-                    //dbg!(scissor);
-
                     /*
                     let viewport : Rect2i = viewport.cast_into();
                     let scissor : Rect2i = scissor.cast_into();

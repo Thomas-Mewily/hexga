@@ -11,8 +11,8 @@ pub type Vertex = Vertex3;
 #[derive(Copy, Clone, Default, Debug, PartialEq, PartialOrd)]
 pub struct VertexOf<const N:usize=3>
 {
-    position: GpuVector<N>,
-    color: GpuColor,
+    pub position: GpuVector<N>,
+    pub color: GpuColor,
 }
 impl<const N:usize> VertexOf<N>
 {

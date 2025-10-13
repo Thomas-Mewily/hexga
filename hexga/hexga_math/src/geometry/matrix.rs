@@ -65,6 +65,7 @@ impl<T, const ROW : usize, const COL : usize>  Matrix<T, ROW, COL>
 {
     fn _fmt(&self, f: &mut Formatter<'_>, d : impl Fn(&T, &mut Formatter<'_>) -> FmtResult) -> FmtResult
     {
+        writeln!(f)?;
         const SEP :&'static str = " ";
 
         let mut strings: Vec<String> = Vec::with_capacity(ROW * COL);

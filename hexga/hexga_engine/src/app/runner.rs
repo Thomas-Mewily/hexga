@@ -142,8 +142,13 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
         Application::update(self, dt);
     }
 
-    fn exiting(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+    fn exiting(&mut self, event_loop: &EventLoopActive) {
         App::destroy();
+    }
+
+    fn new_events(&mut self, event_loop: &EventLoopActive, cause: winit::event::StartCause) {
+        // FIXME: The draw() should not be here, or limit it to a fixed fps
+        App.window.request_draw();
     }
 
     fn window_event(
@@ -193,7 +198,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
         }
     }
 
-    fn user_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, event: AppInternalEvent) {
+    fn user_event(&mut self, event_loop: &EventLoopActive, event: AppInternalEvent) {
         match event
         {
             AppInternalEvent::Gpu(gpu) =>

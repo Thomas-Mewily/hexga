@@ -21,7 +21,7 @@ impl GpuRender
 
 impl GpuRender
 {
-        pub(crate) fn update_last_draw_call(&mut self)
+    pub(crate) fn update_last_draw_call(&mut self)
     {
         let mesh = &mut self.big_mesh;
 
@@ -71,11 +71,11 @@ impl GpuRender
         if !self.draw_calls.is_geometry_empty()
         {
             let mut draw_call = self.draw_calls.last().clone();
-            self.draw_calls.geometry = DrawGeometry::Immediate(DrawGeometryImmediate
+            draw_call.geometry = DrawGeometry::Immediate(DrawGeometryImmediate
                 {
-                    vertices_begin: self.big_mesh.nb_index(),
+                    vertices_begin: self.big_mesh.nb_vertex(),
                     vertices_len: 0,
-                    indices_begin: self.big_mesh.nb_vertex(),
+                    indices_begin: self.big_mesh.nb_index(),
                     indices_len: 0
                 }
             );
