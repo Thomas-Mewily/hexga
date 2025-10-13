@@ -68,9 +68,8 @@ impl Application for MyApp
             ]
         )*/
 
-        for r in Pen.viewport().split_x(2.)//(self.time.s().turn() / 16.).sin() * 8.).take(16) //.split_max(2.)
+        for r in Pen.viewport().split_x(self.nb_split)
         {
-            dbg!(r);
             Pen.set_viewport(r);
             self.camera.perspective.aspect = r.size.x / r.size.y;
             Pen.set_matrix(self.camera.matrix());
