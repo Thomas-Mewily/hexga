@@ -32,18 +32,19 @@ pub struct GpuVecDesc
 impl Default for GpuVecDesc
 {
     fn default() -> Self {
-        Self { usages: GpuVecUsages::empty(), name: None }
+        Self::new()
     }
 }
 impl GpuVecDesc
 {
-    pub const fn new() -> Self { Self { usages: GpuVecUsages::empty(), name: None }}
+    pub const fn new() -> Self { Self { usages: GpuVecUsages::COPY_DST.union(GpuVecUsages::COPY_SRC), name: None }}
 
+    pub const fn add_usage(mut self, usage : GpuVecUsages) -> Self { self.usages = self.usages.union(usage); self }
     pub const fn with_usages(mut self, usages : GpuVecUsages) -> Self { self.usages = usages; self }
     pub const fn with_label(mut self, label : Option<&'static str>) -> Self { self.name = label; self }
 
-    pub const VERTEX : Self = Self::new().with_usages(GpuVecUsages::VERTEX);
-    pub const INDEX : Self = Self::new().with_usages(GpuVecUsages::INDEX);
+    pub const VERTEX : Self = Self::new().add_usage(GpuVecUsages::VERTEX);
+    pub const INDEX : Self = Self::new().add_usage(GpuVecUsages::INDEX);
 }
 
 
