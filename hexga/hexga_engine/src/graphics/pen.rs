@@ -91,6 +91,7 @@ impl AppPen
 
             rpass.set_bind_group(0, &self.binding.camera_bind_group, &[]);
 
+            /*
             // Todo: avoid create a new buffer at each frame.
             let mesh = self.render.big_mesh.build();
             let Mesh { vertices, indices } = &mesh;
@@ -147,6 +148,7 @@ impl AppPen
                     },
                 }
             }
+            */
         }
 
 
