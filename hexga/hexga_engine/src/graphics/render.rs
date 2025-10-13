@@ -83,6 +83,12 @@ impl GpuRender
         }
         self.draw_calls.param = param;
     }
+
+    pub(crate) fn apply_cam(&mut self)
+    {
+        let c = self.camera();
+        self.param_map(|p| { p.camera = c;});
+    }
 }
 impl IMeshBuilder for GpuRender
 {
@@ -92,6 +98,50 @@ impl IMeshBuilder for GpuRender
     }
 }
 
+impl ICamera for GpuRender
+{
+    fn have_depth(&self) -> bool { self.params.camera.have_depth() }
+}
+impl GetPosition for GpuRender
+{
+    fn pos(&self) -> Vec3 { self.params.camera.pos() }
+}
+impl SetPosition for GpuRender
+{
+    fn set_pos(&mut self, pos : Vec3) -> &mut Self { self.params.camera.set_pos(pos); self.apply_cam(); self }
+}
+impl GetScale for GpuRender
+{
+    fn scale(&self) -> Vec3 { self.params.camera.scale() }
+}
+impl SetScale for GpuRender
+{
+    fn set_scale(&mut self, scale : Vec3) -> &mut Self { self.params.camera.set_scale(scale); self.apply_cam(); self }
+}
+impl RotateX for GpuRender
+{
+    fn rotate_x(&mut self, angle : Angle) -> &mut Self { self.params.camera.rotate_x(angle); self.apply_cam(); self }
+}
+impl RotateY for GpuRender
+{
+    fn rotate_y(&mut self, angle : Angle) -> &mut Self { self.params.camera.rotate_y(angle); self.apply_cam(); self }
+}
+impl RotateZ for GpuRender
+{
+    fn rotate_z(&mut self, angle : Angle) -> &mut Self { self.params.camera.rotate_z(angle); self.apply_cam(); self }
+}
+impl GetMatrix for GpuRender
+{
+    fn matrix(&self) -> Mat4 {
+        self.params.camera.matrix()
+    }
+}
+impl SetMatrix for GpuRender
+{
+    fn set_matrix(&mut self, matrix : Mat4) -> &mut Self {
+        self.params.camera.set_matrix(matrix); self.apply_cam(); self
+    }
+}
 
 impl ScopedFlow for GpuRender
 {
