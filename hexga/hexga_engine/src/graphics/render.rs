@@ -103,7 +103,7 @@ impl ScopedFlow for GpuRender
         assert_eq!(self.params.len(), 1, "Forget to pop a camera");
 
         let dcall_param = &mut self.default_param;
-        let scissor = Window.rect();
+        let scissor = Window.size().to_rect();
         let viewport = scissor.cast_into();
         dcall_param.scissor = scissor;
         dcall_param.viewport = viewport;

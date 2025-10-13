@@ -53,7 +53,7 @@ pub enum FlowMessage
 {
     Resumed,
     Paused,
-    Update,
+    Update(DeltaTime),
     Draw,
     //Exit,
 }

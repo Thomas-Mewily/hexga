@@ -16,6 +16,6 @@ pub trait Application: 'static + Sized
     fn resumed(&mut self) {}
     fn paused(&mut self) {}
 
-    fn update(&mut self) { }
+    fn update(&mut self, dt: DeltaTime) { }
     fn draw(&mut self) { }
 }

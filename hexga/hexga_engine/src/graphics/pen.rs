@@ -28,6 +28,7 @@ pub struct AppPen
 
     pub(crate) binding: GpuBinding,
     pub(crate) render: GpuRender,
+    pub(crate) background_color : Option<Color>,
 }
 
 impl Deref for AppPen
@@ -60,6 +61,17 @@ impl ScopedFlow for AppPen
 
 impl AppPen
 {
+    pub fn background_color(&self) -> Option<Color>
+    {
+        self.background_color
+    }
+
+    pub fn set_background_color(&mut self, color: Option<Color>)
+    {
+        self.background_color = color;
+    }
+
+
     pub(crate) fn send_data_to_gpu(&mut self)
     {
         let surface_texture = self
@@ -79,7 +91,7 @@ impl AppPen
                     view: &texture_view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
+                        load: wgpu::LoadOp::Clear(self.background_color().unwrap_or_default().convert()),
                         store: wgpu::StoreOp::Store,
                     },
                 })],
@@ -232,8 +244,12 @@ impl AppPen
             flags |= wgpu::InstanceFlags::VALIDATION;
         }
 
+        let mut backends = wgpu::Backends::empty();
+        backends |= wgpu::Backends::GL;
+
+
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
-            backends: wgpu::Backends::all(),
+            backends,
             flags,
             ..Default::default()
         });
@@ -392,6 +408,7 @@ impl AppPen
                 surface: GpuSurface { surface, surface_config },
                 binding: GpuBinding { camera_buffer, camera_bind_group },
                 render: GpuRender::new(DrawParam { camera: Camera::CAMERA_3D, ..___() }),
+                background_color: Some(Color::BLACK),
             }
         )
     }

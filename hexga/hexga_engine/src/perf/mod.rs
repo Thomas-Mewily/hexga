@@ -28,8 +28,8 @@ impl AppPerf
 
 impl ScopedFlow for AppPerf
 {
-    fn begin_flow_update(&mut self) { self.ups.count(); }
-    fn end_flow_update(&mut self) { }
+    fn begin_flow_update(&mut self, dt: DeltaTime) { self.ups.count(); }
+    fn end_flow_update(&mut self, dt: DeltaTime) { }
     fn begin_flow_draw(&mut self) { self.fps.count(); }
     fn end_flow_draw(&mut self) { }
 }

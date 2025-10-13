@@ -29,7 +29,7 @@ pub(crate) trait ScopedFlow
         {
             FlowMessage::Resumed => self.begin_flow_resumed(),
             FlowMessage::Paused => self.begin_flow_paused(),
-            FlowMessage::Update => self.begin_flow_update(),
+            FlowMessage::Update(dt) => self.begin_flow_update(dt),
             FlowMessage::Draw => self.begin_flow_draw(),
         }
     }
@@ -40,7 +40,7 @@ pub(crate) trait ScopedFlow
         {
             FlowMessage::Resumed => self.end_flow_resumed(),
             FlowMessage::Paused => self.end_flow_paused(),
-            FlowMessage::Update => self.end_flow_update(),
+            FlowMessage::Update(dt) => self.end_flow_update(dt),
             FlowMessage::Draw => self.end_flow_draw(),
         }
     }
@@ -68,15 +68,15 @@ pub(crate) trait ScopedFlow
     fn end_flow_resumed(&mut self) { }
 
 
-    fn scoped_flow_update<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
+    fn scoped_flow_update<F,R>(&mut self, dt: DeltaTime, f: F) -> R where F: FnOnce() -> R
     {
-        self.begin_flow_update();
+        self.begin_flow_update(dt);
         let r = f();
-        self.end_flow_update();
+        self.end_flow_update(dt);
         r
     }
-    fn begin_flow_update(&mut self) { }
-    fn end_flow_update(&mut self) { }
+    fn begin_flow_update(&mut self, dt: DeltaTime) { }
+    fn end_flow_update(&mut self, dt: DeltaTime) { }
 
 
     fn scoped_flow_draw<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R

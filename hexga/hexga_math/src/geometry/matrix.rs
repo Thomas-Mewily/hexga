@@ -20,16 +20,14 @@ pub type Mat3 = Mat<3,3>;
 /// 4x4 matrix of float
 pub type Mat4 = Mat<4,4>;
 
-/// matrix of integer
-pub type Mati<const COL : usize> = SquareMatrix<int,COL>;
 /// 1x1 matrix of integer
-pub type Mat1i = Mati<1>;
+pub type Mat1i = SquareMatrix<int,1>;
 /// 2x2 matrix of integer
-pub type Mat2i = Mati<2>;
+pub type Mat2i = SquareMatrix<int,2>;
 /// 3x3 matrix of integer
-pub type Mat3i = Mati<3>;
+pub type Mat3i = SquareMatrix<int,3>;
 /// 4x4 matrix of integer
-pub type Mat4i = Mati<4>;
+pub type Mat4i = SquareMatrix<int,4>;
 
 
 

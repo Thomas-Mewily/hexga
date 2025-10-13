@@ -92,7 +92,7 @@ impl ScopedFlow for KeyCodeManager
         self.released.clear();
     }
 
-    fn end_flow_update(&mut self) {
+    fn end_flow_update(&mut self, dt: DeltaTime) {
         match self.repeat
         {
             ButtonRepeat::NotRepeated =>

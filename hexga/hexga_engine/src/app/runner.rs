@@ -14,10 +14,11 @@ pub trait AppRun : Sized
 pub(crate) struct AppRunner<A> where A:Application
 {
     app: A,
+    last_update : Time,
 }
 impl<A> AppRunner<A> where A:Application
 {
-    pub const fn new(app: A) -> Self { Self { app } }
+    pub fn new(app: A) -> Self { Self { app, last_update: Time::since_launch() } }
 
     pub(crate) fn is_ready_to_run(&self) -> bool
     {
@@ -82,9 +83,9 @@ impl<A> Application for AppRunner<A> where A:Application
         App.scoped_flow(FlowMessage::Draw, |_| self.app.draw());
     }
 
-    fn update(&mut self)
+    fn update(&mut self, dt: DeltaTime)
     {
-        App.scoped_flow(FlowMessage::Update, |_| self.app.update());
+        App.scoped_flow(FlowMessage::Update(dt), |_| self.app.update(dt));
     }
 
     fn event(&mut self, ev: AppEvent)
@@ -133,8 +134,12 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
         Application::paused(self);
     }
 
-    fn about_to_wait(&mut self, active: &EventLoopActive) {
-        Application::update(self);
+    fn about_to_wait(&mut self, active: &EventLoopActive)
+    {
+        let time = Time::since_launch();
+        let dt = time - self.last_update;
+        self.last_update = time;
+        Application::update(self, dt);
     }
 
     fn exiting(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
