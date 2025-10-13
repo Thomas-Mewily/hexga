@@ -253,6 +253,9 @@ impl AppPen
 
         let mut backends = wgpu::Backends::empty();
         backends |= wgpu::Backends::GL;
+        backends |= wgpu::Backends::METAL;
+        backends |= wgpu::Backends::DX12;
+        backends |= wgpu::Backends::BROWSER_WEBGPU;
 
 
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {

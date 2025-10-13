@@ -130,7 +130,10 @@ impl<T> GpuVec<T> where T:Copy
                 mapped_at_creation: false,
             });
 
-            if self.len > 0 {
+            if self.len > 0
+            {
+                assert!(self.desc.usages.contains(GpuVecUsages::COPY_DST));
+                assert!(self.desc.usages.contains(GpuVecUsages::COPY_SRC));
                 let mut encoder = Pen.base.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
                 encoder.copy_buffer_to_buffer(
                     &self.buffer,
