@@ -12,7 +12,10 @@ pub use capacity::*;
 mod clearable;
 pub use clearable::*;
 
-/* 
+mod remove;
+pub use remove::*;
+
+/*
 mod sequence;
 pub use sequence::*;
 */

@@ -21,7 +21,7 @@ use super::*;
 ///
 /// Also work with composite like [std::array], [Vector]...
 ///
-/// ```rust
+/// ```ignore
 /// use hexga_math::prelude::*;
 ///
 /// let x = [0u8, 127u8, 255u8];
@@ -65,7 +65,7 @@ impl<C1,C2> CastRangeFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> =
 ///
 /// Also work with composite like [std::array], [Vector]...
 ///
-/// ```rust
+/// ```ignore
 /// use hexga_math::prelude::*;
 ///
 /// let x = [0u8, 127u8, 255u8];

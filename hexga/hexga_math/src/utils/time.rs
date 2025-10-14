@@ -119,7 +119,7 @@ impl<T:Float> TimeOf<T>
     /// milliseconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1.s().ms(), 1000.);
+    /// debug_assert_eq!(1f32.s().ms(), 1000.);
     /// ```
     pub fn ms(self) -> T { self.0 * 1000.cast_into() }
 
@@ -127,27 +127,27 @@ impl<T:Float> TimeOf<T>
     /// whole milliseconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5.ms().whole_ms(), 0);
-    /// debug_assert_eq!(1.0.ms().whole_ms(), 1);
-    /// debug_assert_eq!(1.5.ms().whole_ms(), 1);
-    /// debug_assert_eq!(1.9.ms().whole_ms(), 1);
-    /// debug_assert_eq!(2.0.ms().whole_ms(), 2);
+    /// debug_assert_eq!(0.5f32.ms().whole_ms(), 0);
+    /// debug_assert_eq!(1.0f32.ms().whole_ms(), 1);
+    /// debug_assert_eq!(1.5f32.ms().whole_ms(), 1);
+    /// debug_assert_eq!(1.9f32.ms().whole_ms(), 1);
+    /// debug_assert_eq!(2.0f32.ms().whole_ms(), 2);
     ///
-    /// debug_assert_eq!(-0.5.ms().whole_ms(),  0);
-    /// debug_assert_eq!(-2.0.ms().whole_ms(), -2);
-    /// debug_assert_eq!(-1.9.ms().whole_ms(), -1);
+    /// debug_assert_eq!(-0.5f32.ms().whole_ms(),  0);
+    /// debug_assert_eq!(-2.0f32.ms().whole_ms(), -2);
+    /// debug_assert_eq!(-1.9f32.ms().whole_ms(), -1);
     /// ```
     pub fn whole_ms(self) -> i32 { self.ms().round_toward_zero().to_i32() }
 
     /// Can be used to display milliseconds in a timer
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5.ms().timer_ms(), 10);
+    /// debug_assert_eq!(10.5f32.ms().timer_ms(), 10);
     ///
-    /// debug_assert_eq!(999.ms().timer_ms(), 999);
-    /// debug_assert_eq!(1000.ms().timer_ms(), 0);
-    /// debug_assert_eq!(1001.ms().timer_ms(), 1);
-    /// debug_assert_eq!(2005.ms().timer_ms(), 5);
+    /// debug_assert_eq!(999f32.ms().timer_ms(), 999);
+    /// debug_assert_eq!(1000f32.ms().timer_ms(), 0);
+    /// debug_assert_eq!(1001f32.ms().timer_ms(), 1);
+    /// debug_assert_eq!(2005f32.ms().timer_ms(), 5);
     /// ```
     pub fn timer_ms(self) -> i32 { self.ms().abs().floor().to_i32() % 1000 }
 
@@ -161,18 +161,18 @@ impl<T:Float> TimeOf<T>
     /// total seconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1.mins().s(), 60.);
+    /// debug_assert_eq!(1f32.mins().s(), 60.);
     /// ```
     pub fn s(self) -> T { self.0 }
 
     /// whole seconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5.s().whole_s(), 0);
-    /// debug_assert_eq!(1.0.s().whole_s(), 1);
-    /// debug_assert_eq!(1.5.s().whole_s(), 1);
-    /// debug_assert_eq!(1.9.s().whole_s(), 1);
-    /// debug_assert_eq!(2.0.s().whole_s(), 2);
+    /// debug_assert_eq!(0.5f32.s().whole_s(), 0);
+    /// debug_assert_eq!(1.0f32.s().whole_s(), 1);
+    /// debug_assert_eq!(1.5f32.s().whole_s(), 1);
+    /// debug_assert_eq!(1.9f32.s().whole_s(), 1);
+    /// debug_assert_eq!(2.0f32.s().whole_s(), 2);
     /// ```
     pub fn whole_s(self) -> i32 { self.s().round_toward_zero().to_i32() }
 
@@ -180,12 +180,12 @@ impl<T:Float> TimeOf<T>
     ///
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5.s().timer_s(), 10);
+    /// debug_assert_eq!(10.5f32.s().timer_s(), 10);
     ///
-    /// debug_assert_eq!(59.s().timer_s(), 59);
-    /// debug_assert_eq!(60.s().timer_s(), 0);
-    /// debug_assert_eq!(61.s().timer_s(), 1);
-    /// debug_assert_eq!(125.s().timer_s(), 5);
+    /// debug_assert_eq!(59f32.s().timer_s(), 59);
+    /// debug_assert_eq!(60f32.s().timer_s(), 0);
+    /// debug_assert_eq!(61f32.s().timer_s(), 1);
+    /// debug_assert_eq!(125f32.s().timer_s(), 5);
     /// ```
     pub fn timer_s(self) -> i32 { self.s().abs().floor().to_i32() % 60 }
 
@@ -199,22 +199,22 @@ impl<T:Float> TimeOf<T>
     /// minutes
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1.hour().mins(), 60.);
+    /// debug_assert_eq!(1f32.hour().mins(), 60.);
     /// ```
     pub fn mins(self) -> T { self.0 / T::SIXTY }
 
     /// whole minutes
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5.mins().whole_mins(), 0);
-    /// debug_assert_eq!(1.0.mins().whole_mins(), 1);
-    /// debug_assert_eq!(1.5.mins().whole_mins(), 1);
-    /// debug_assert_eq!(1.9.mins().whole_mins(), 1);
-    /// debug_assert_eq!(2.0.mins().whole_mins(), 2);
+    /// debug_assert_eq!(0.5f32.mins().whole_mins(), 0);
+    /// debug_assert_eq!(1.0f32.mins().whole_mins(), 1);
+    /// debug_assert_eq!(1.5f32.mins().whole_mins(), 1);
+    /// debug_assert_eq!(1.9f32.mins().whole_mins(), 1);
+    /// debug_assert_eq!(2.0f32.mins().whole_mins(), 2);
     ///
-    /// debug_assert_eq!(-0.5.mins().whole_mins(),  0);
-    /// debug_assert_eq!(-2.0.mins().whole_mins(), -2);
-    /// debug_assert_eq!(-1.9.mins().whole_mins(), -1);
+    /// debug_assert_eq!(-0.5f32.mins().whole_mins(),  0);
+    /// debug_assert_eq!(-2.0f32.mins().whole_mins(), -2);
+    /// debug_assert_eq!(-1.9f32.mins().whole_mins(), -1);
     /// ```
     pub fn whole_mins(self) -> i32 { self.mins().round_toward_zero().to_i32() }
 
@@ -222,40 +222,40 @@ impl<T:Float> TimeOf<T>
     /// Can be used to display mins in a timer
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5.mins().timer_mins(), 10);
+    /// debug_assert_eq!(10.5f32.mins().timer_mins(), 10);
     ///
-    /// debug_assert_eq!(59.mins().timer_mins(), 59);
-    /// debug_assert_eq!(60.mins().timer_mins(), 0);
-    /// debug_assert_eq!(61.mins().timer_mins(), 1);
-    /// debug_assert_eq!(125.mins().timer_mins(), 5);
+    /// debug_assert_eq!(59f32.mins().timer_mins(), 59);
+    /// debug_assert_eq!(60f32.mins().timer_mins(), 0);
+    /// debug_assert_eq!(61f32.mins().timer_mins(), 1);
+    /// debug_assert_eq!(125f32.mins().timer_mins(), 5);
     /// ```
     pub fn timer_mins(self) -> i32 { self.mins().abs().floor().to_i32() % 60 }
 
     /// hours
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(24.hour(), 1.day());
+    /// debug_assert_eq!(24f32.hour(), 1.day());
     /// ```
     pub fn from_hour(hours : T) -> Self { Self::from_s(hours * (T::SIXTY * T::SIXTY)) }
     /// hours
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1.day().hour(), 24.);
+    /// debug_assert_eq!(1f32.day().hour(), 24.);
     /// ```
     pub fn hour(self) -> T { self.0 / (T::SIXTY * T::SIXTY) }
 
 
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5.hour().whole_hour(), 0);
-    /// debug_assert_eq!(1.0.hour().whole_hour(), 1);
-    /// debug_assert_eq!(1.5.hour().whole_hour(), 1);
-    /// debug_assert_eq!(1.9.hour().whole_hour(), 1);
-    /// debug_assert_eq!(2.0.hour().whole_hour(), 2);
+    /// debug_assert_eq!(0.5f32.hour().whole_hour(), 0);
+    /// debug_assert_eq!(1.0f32.hour().whole_hour(), 1);
+    /// debug_assert_eq!(1.5f32.hour().whole_hour(), 1);
+    /// debug_assert_eq!(1.9f32.hour().whole_hour(), 1);
+    /// debug_assert_eq!(2.0f32.hour().whole_hour(), 2);
     ///
-    /// debug_assert_eq!(-0.5.hour().whole_hour(),  0);
-    /// debug_assert_eq!(-2.0.hour().whole_hour(), -2);
-    /// debug_assert_eq!(-1.9.hour().whole_hour(), -1);
+    /// debug_assert_eq!(-0.5f32.hour().whole_hour(),  0);
+    /// debug_assert_eq!(-2.0f32.hour().whole_hour(), -2);
+    /// debug_assert_eq!(-1.9f32.hour().whole_hour(), -1);
     /// ```
     pub fn whole_hour(self) -> i32 { self.hour().round_toward_zero().to_i32() }
 
@@ -263,39 +263,39 @@ impl<T:Float> TimeOf<T>
     /// Can be used to display hours in a timer
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5.hour().timer_hour(), 10);
+    /// debug_assert_eq!(10.5f32.hour().timer_hour(), 10);
     ///
-    /// debug_assert_eq!(23.hour().timer_hour(), 23);
-    /// debug_assert_eq!(24.hour().timer_hour(), 0);
-    /// debug_assert_eq!(25.hour().timer_hour(), 1);
-    /// debug_assert_eq!((48+5).hour().timer_hour(), 5);
+    /// debug_assert_eq!(23f32.hour().timer_hour(), 23);
+    /// debug_assert_eq!(24f32.hour().timer_hour(), 0);
+    /// debug_assert_eq!(25f32.hour().timer_hour(), 1);
+    /// debug_assert_eq!((48f32+5.).hour().timer_hour(), 5);
     /// ```
     pub fn timer_hour(self) -> i32 { self.hour().abs().floor().to_i32() % 24 }
 
     /// days
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1.day(), (3600*24).s());
+    /// debug_assert_eq!(1f32.day(), (3600*24).s());
     /// ```
     pub fn from_day(day : T) -> Self { Self::from_s(day * (T::SIXTY * T::SIXTY * T::TWENTY_FOUR)) }
     /// days
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(24.hour().day(), 1.);
+    /// debug_assert_eq!(24f32.hour().day(), 1.);
     /// ```
     pub fn day(self) -> T { self.0 / (T::SIXTY * T::SIXTY * T::TWENTY_FOUR) }
     /// Whole days
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5.day().whole_day(), 0);
-    /// debug_assert_eq!(1.0.day().whole_day(), 1);
-    /// debug_assert_eq!(1.5.day().whole_day(), 1);
-    /// debug_assert_eq!(1.9.day().whole_day(), 1);
-    /// debug_assert_eq!(2.0.day().whole_day(), 2);
+    /// debug_assert_eq!(0.5f32.day().whole_day(), 0);
+    /// debug_assert_eq!(1.0f32.day().whole_day(), 1);
+    /// debug_assert_eq!(1.5f32.day().whole_day(), 1);
+    /// debug_assert_eq!(1.9f32.day().whole_day(), 1);
+    /// debug_assert_eq!(2.0f32.day().whole_day(), 2);
     ///
-    /// debug_assert_eq!(-0.5.day().whole_day(),  0);
-    /// debug_assert_eq!(-2.0.day().whole_day(), -2);
-    /// debug_assert_eq!(-1.9.day().whole_day(), -1);
+    /// debug_assert_eq!(-0.5f32.day().whole_day(),  0);
+    /// debug_assert_eq!(-2.0f32.day().whole_day(), -2);
+    /// debug_assert_eq!(-1.9f32.day().whole_day(), -1);
     /// ```
     pub fn whole_day(self) -> i32 { self.day().round_toward_zero().to_i32() }
 
@@ -303,12 +303,12 @@ impl<T:Float> TimeOf<T>
     /// Can be used to display days in a timer
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5.day().timer_day(), 10);
+    /// debug_assert_eq!(10.5f32.day().timer_day(), 10);
     ///
-    /// debug_assert_eq!(364.day().timer_day(), 364);
-    /// debug_assert_eq!(365.day().timer_day(), 365);
-    /// debug_assert_eq!(366.day().timer_day(), 366);
-    /// debug_assert_eq!(900.day().timer_day(), 900);
+    /// debug_assert_eq!(364f32.day().timer_day(), 364);
+    /// debug_assert_eq!(365f32.day().timer_day(), 365);
+    /// debug_assert_eq!(366f32.day().timer_day(), 366);
+    /// debug_assert_eq!(900f32.day().timer_day(), 900);
     /// ```
     pub fn timer_day(self) -> i32 { self.day().abs().floor().to_i32() }
 }

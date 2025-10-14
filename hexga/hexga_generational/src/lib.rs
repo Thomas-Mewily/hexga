@@ -2,7 +2,7 @@
 //!
 //! A crate mainly inspired by RustConf 2018 - Closing Keynote - Using Rust For Game Development by Catherine West : <https://youtu.be/aKLntZcp27M>
 //! and the SlotMap data structure <https://docs.rs/slotmap/latest/slotmap/>
-
+#![allow(unused_imports)]
 #![feature(get_disjoint_mut_helpers)]
 use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}};
 
@@ -19,13 +19,15 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 use hexga_io::{IoSave, IoLoad, Save, Load};
 
 pub mod gen_vec;
+pub mod gen_id;
+pub mod table;
 
-/*
-use gen_hash_map::*;
-pub mod gen_hash_map;
-*/
-
+pub(crate) use prelude::*;
 pub mod prelude
 {
-    pub use crate::gen_vec::prelude::*;
+    pub use super::{
+        gen_id::prelude::*,
+        gen_vec::prelude::*,
+        table::prelude::*,
+    };
 }

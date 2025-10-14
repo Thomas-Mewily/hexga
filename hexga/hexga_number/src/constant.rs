@@ -30,7 +30,7 @@ pub trait ZeroIter
 {
     fn all_zero(&self) -> bool;
     fn all_non_zero(&self) -> bool;
-    
+
     fn any_zero(&self) -> bool;
     fn any_non_zero(&self) -> bool;
 }
@@ -89,7 +89,7 @@ pub trait OneIter
 }
 impl<T,Z> OneIter for T where for<'a> &'a T: IntoIterator<Item = &'a Z>, Z: One + PartialEq
 {
-    fn all_one(&self) -> bool 
+    fn all_one(&self) -> bool
     {
         self.into_iter().all(|v| v.is_one())
     }
@@ -128,7 +128,7 @@ pub trait MinusOneIter
 }
 impl<T,Z> MinusOneIter for T where for<'a> &'a T: IntoIterator<Item = &'a Z>, Z: MinusOne + PartialEq
 {
-    fn all_minusone(&self) -> bool 
+    fn all_minusone(&self) -> bool
     {
         self.into_iter().all(|v| v.is_minus_one())
     }
@@ -203,7 +203,7 @@ pub trait MaxValue : Sized
 {
     const MAX : Self;
     #[inline(always)] fn is_max_value(&self) -> bool where Self : PartialEq { self == &Self::MAX }
-    #[inline(always)] fn is_non_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
+    #[inline(always)] fn is_not_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
 }
 map_on_number!(($primitive_name: ty) => { impl MaxValue for $primitive_name { const MAX : Self = Self::MAX; } });
 impl MaxValue for bool { const MAX : Self = true; }

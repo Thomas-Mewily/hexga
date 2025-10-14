@@ -1,13 +1,13 @@
 //! Generalisation over collection, such as `get`, `get_mut`, `get_many_mut`, `swap`, `replace`, `set`...
-//! 
+//!
 //! Each trait follow this convention when adding a new function `foo`  :
 //!
 //! `fn try_get_foo(...) -> Result<O,E>`
-//! 
+//!
 //! `fn foo(...) -> Option<O>` (or `bool` instead of `Option<()>` when `try_get_foo` return a `Result<(), E>`)
-//! 
+//!
 //! `fn foo_or_panic(...) -> O`
-//! 
+//!
 //! `unsafe fn foo_unchecked(...) -> O`
 
 use std::ops::Range;
@@ -62,21 +62,21 @@ pub trait GetMut<Idx> : Get<Idx>
 
 
     /// Replace the value and return the old one.
-    /// 
-    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)): 
+    ///
+    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)):
     /// Replacing a value twice (first with a new value, then with the previously returned value) leaves the collection unchanged.
     #[inline(always)]
     fn replace(&mut self, index : Idx, value : Self::Output) -> Option<Self::Output> where Self::Output : Sized { self.get_mut(index).map(|dest| std::mem::replace(dest, value)) }
     /// Replace the value and return the old one.
-    /// 
-    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)): 
+    ///
+    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)):
     /// Replacing a value twice (first with a new value, then with the previously returned value) leaves the collection unchanged.
     #[inline(always)]
     #[track_caller]
     fn replace_or_panic(&mut self, index : Idx, value : Self::Output) -> Self::Output where Self::Output : Sized { self.replace(index, value).expect("invalid index") }
     /// Replace the value and return the old one.
-    /// 
-    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)): 
+    ///
+    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)):
     /// Replacing a value twice (first with a new value, then with the previously returned value) leaves the collection unchanged.
     #[inline(always)]
     #[track_caller]
@@ -102,12 +102,12 @@ pub trait TryGetMut<Idx> : TryGet<Idx>
     fn try_get_mut(&mut self, index : Idx) -> Result<&mut Self::Output, Self::Error>;
 
     /// Replace the value and return the old one.
-    /// 
-    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)): 
+    ///
+    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)):
     /// Replacing a value twice (first with a new value, then with the previously returned value) leaves the collection unchanged.
     #[inline(always)]
     fn try_replace(&mut self, index : Idx, value : Self::Output) -> Result<Self::Output, Self::Error> where Self::Output : Sized { self.try_get_mut(index).map(|dest| std::mem::replace(dest, value)) }
-    
+
     /// Set the value and drop the previous one.
     #[inline(always)]
     fn try_set(&mut self, index : Idx, value : Self::Output) -> Result<(), Self::Error> where Self::Output : Sized { self.try_replace(index, value).map(|_| ()) }
@@ -120,7 +120,7 @@ pub trait GetManyMut<Idx> : GetMut<Idx>
     /// Returns multiples mutables references to the values.
     /// All values that can be accessed with the indices must be disjoint.
     #[doc(alias = "get_disjoint_mut")]
-    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]>;
+    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { self.try_get_many_mut(indices).ok() }
 
     fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError>;
 
@@ -130,8 +130,8 @@ pub trait GetManyMut<Idx> : GetMut<Idx>
     #[track_caller]
     #[doc(alias = "get_disjoint_mut_or_panic")]
     fn get_many_mut_or_panic<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { self.get_many_mut(indices).expect("invalid index") }
-    
-    
+
+
     /// Returns multiples mutables references to the values.
     /// All values that can be accessed with the indices must be disjoint.
     #[inline(always)]
@@ -140,24 +140,24 @@ pub trait GetManyMut<Idx> : GetMut<Idx>
     unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { self.get_many_mut(indices).expect("invalid index") }
 
     /// Swaps the values at two mutable locations, without deinitializing either one.
-    /// 
+    ///
     /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa
-    /// 
+    ///
     /// Do nothings if some value  overlap or don't exist.
     #[inline(always)]
     fn swap(&mut self, a : Idx, b : Idx) -> bool where Self::Output : Sized { self.get_many_mut([a, b]).map(|[a,b]| std::mem::swap(a, b)).is_some() }
     /// Swaps the values at two mutable locations, without deinitializing either one.
     ///
     /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa
-    /// 
+    ///
     /// Panics if any value overlap or don't exist
     #[inline(always)]
     #[track_caller]
     fn swap_or_panic(&mut self, a : Idx, b : Idx) where Self::Output : Sized { assert!(self.swap(a, b), "invalid index") }
     /// Swaps the values at two mutable locations, without deinitializing either one.
-    /// 
+    ///
     /// Swap is symmetric : `foo.try_swap(a, b)` is equivalent to `foo.try_swap(b, a)` and vis versa
-    /// 
+    ///
     /// Do nothings if some value  overlap or don't exist.
     #[inline(always)]
     #[track_caller]
@@ -225,7 +225,7 @@ impl<Idx,T> GetManyMut<Idx> for [T] where Idx : SliceIndex<[T]> + GetDisjointMut
     #[inline(always)]
     #[track_caller]
     unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N]  { unsafe { self.get_disjoint_unchecked_mut(indices) } }
-    
+
 
 }
 
@@ -270,7 +270,7 @@ impl<Idx,T,const N : usize> GetManyMut<Idx> for [T;N] where [T] : GetManyMut<Idx
     #[inline(always)]
     #[track_caller]
     unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { GetManyMut::get_many_unchecked_mut(self.as_mut_slice(), indices) } }
-    
+
 
 }
 
@@ -307,7 +307,7 @@ impl<Idx,T> GetManyMut<Idx> for Vec<T> where [T] : GetManyMut<Idx>
     #[track_caller]
     #[inline(always)]
     unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { GetManyMut::get_many_unchecked_mut(self.as_mut_slice(), indices) } }
-    
+
     #[inline(always)]
     fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError> { GetManyMut::try_get_many_mut(self.as_mut_slice(), indices) }
     #[inline(always)]
@@ -342,12 +342,12 @@ impl<T> GetManyMut<usize> for VecDeque<T>
 {
     #[track_caller]
     #[inline(always)]
-    unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices : [usize; N]) -> [&mut Self::Output;N] 
+    unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices : [usize; N]) -> [&mut Self::Output;N]
     {
-        unsafe 
-        { 
+        unsafe
+        {
             // Can probably be improved using `self.as_mut_slices()`
-            self.make_contiguous().get_disjoint_unchecked_mut(indices) 
+            self.make_contiguous().get_disjoint_unchecked_mut(indices)
         }
     }
     #[inline(always)]
@@ -360,7 +360,7 @@ impl<T> GetManyMut<usize> for VecDeque<T>
 impl<Idx> TryGet<Idx> for str where Idx : SliceIndex<str> + Clone
 {
     type Error = IndexOutOfRange<Idx,Range<usize>>;
-    fn try_get(&self, index : Idx) -> Result<&Self::Output, Self::Error> 
+    fn try_get(&self, index : Idx) -> Result<&Self::Output, Self::Error>
     {
         self.get(index.clone()).ok_or(IndexOutOfRange{ index, range: 0..self.len() })
     }
@@ -380,7 +380,7 @@ impl<Idx> Get<Idx> for str where Idx : SliceIndex<str>
 impl<Idx> TryGet<Idx> for String where Idx : SliceIndex<str> + Clone
 {
     type Error = IndexOutOfRange<Idx,Range<usize>>;
-    fn try_get(&self, index : Idx) -> Result<&Self::Output, Self::Error> 
+    fn try_get(&self, index : Idx) -> Result<&Self::Output, Self::Error>
     {
         self.get(index.clone()).ok_or(IndexOutOfRange{ index, range: 0..self.len() })
     }
@@ -400,7 +400,7 @@ impl<Idx> Get<Idx> for String where Idx : SliceIndex<str>
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct MissingKey<K>
 {
-    pub key : K, 
+    pub key : K,
 }
 impl<K> MissingKey<K>
 {
@@ -427,8 +427,8 @@ impl<K,V,S,Q> Get<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash 
 impl<K,V,S,Q> TryGetMut<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq + Clone, K: Eq + Hash, S: BuildHasher
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, key: &Q) -> Result<&mut Self::Output, Self::Error> where K : Borrow<Q> { 
-        self.get_mut(key).ok_or_else(|| MissingKey::new(key.clone())) 
+    fn try_get_mut(&mut self, key: &Q) -> Result<&mut Self::Output, Self::Error> where K : Borrow<Q> {
+        self.get_mut(key).ok_or_else(|| MissingKey::new(key.clone()))
     }
 }
 impl<K,V,S,Q> GetMut<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
@@ -440,7 +440,7 @@ impl<K,V,S,Q> GetMut<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Ha
 impl<K,V,S,Q> GetManyMut<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized + Hash + Eq, K: Eq + Hash, S: BuildHasher
 {
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Result<[&mut Self::Output;N], ManyMutError> 
+    fn try_get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Result<[&mut Self::Output;N], ManyMutError>
     {
         // I wanted to check this is the get_many_mut fail, but the borrow checker is complaining for no reason about self being already borrowed.
         for k in keys
@@ -455,17 +455,17 @@ impl<K,V,S,Q> GetManyMut<&Q> for HashMap<K,V,S> where K : Borrow<Q>, Q : ?Sized 
 
         Err(ManyMutError::OverlappingIndices)
     }
-    
-    fn get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Option<[&mut Self::Output;N]> 
+
+    fn get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Option<[&mut Self::Output;N]>
     {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         // [Option<T>, N] to Option<[T;N]> (same for result)
         let r = self.get_disjoint_mut(keys);
-        
-        if r.iter().any(|x| x.is_none()) 
+
+        if r.iter().any(|x| x.is_none())
         {
             None
-        } else 
+        } else
         {
             Some(r.map(|x| x.unwrap()))
         }

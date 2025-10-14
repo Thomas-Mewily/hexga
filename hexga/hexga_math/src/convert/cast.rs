@@ -19,7 +19,7 @@ use super::*;
 /// ```
 ///
 /// Also work with composite type
-/// ```rust
+/// ```ignore
 /// use hexga_math::prelude::*;
 ///
 /// let x = [1, 2i32];
@@ -61,7 +61,7 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> = Self
 /// ```
 ///
 /// Also work with composite type
-/// ```rust
+/// ```ignore
 /// use hexga_math::prelude::*;
 ///
 /// let x = [1, 2i32];

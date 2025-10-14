@@ -1,0 +1,20 @@
+[package]
+name = "io_test"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+
+[features]
+default = ["serde", "hexga_io"]
+
+serde = ["dep:serde"]
+hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
+
+[dependencies]
+serde = { version = "1.0.0", features = ["derive", "rc"], optional = true }
+hexga_io = { workspace = true, optional = true }
+hexga_generational.workspace = true

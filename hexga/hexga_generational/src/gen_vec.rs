@@ -3,40 +3,32 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{GenVec,GenVecID, CollectToGenVecExtension};
+    pub use super::{GenVec, CollectToGenVecExtension};
 }
 
-/* 
-// Todo : introduce a new type
-pub type SlotVec<T> = GenVec<T>;
-pub type SlotID<T> = GenVecID<T>;
-*/
-pub type Generation = u32;
 
 pub type GenVec<T> = GenVecOf<T,Generation>;
-pub type GenVecID<T>  = GenVecIDOf<T,Generation>;
 
-pub trait IGeneration            : Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
-impl<T> IGeneration for T where T: Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
 
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum SlotValue<T>
+pub enum EntryValue<T>
 {
     Used(T),
     // Next free
     Free(usize),
 }
-impl<T> SlotValue<T>
+impl<T> EntryValue<T>
 {
     pub fn get(&self) -> Option<&T> { if let Self::Used(v) = self { Some(v) } else { None }}
     pub fn get_mut(&mut self) -> Option<&mut T> { if let Self::Used(v) = self { Some(v) } else { None }}
 
+    /// Panic is the entry is free
     pub fn take_and_free(&mut self, free_index: usize) -> T {
-        match std::mem::replace(self, SlotValue::Free(free_index)) {
-            SlotValue::Used(value) => value,
-            SlotValue::Free(_) => panic!("Slot was already free"),
+        match std::mem::replace(self, EntryValue::Free(free_index)) {
+            EntryValue::Used(value) => value,
+            EntryValue::Free(_) => panic!("Entry was already free"),
         }
     }
 
@@ -47,15 +39,15 @@ impl<T> SlotValue<T>
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Slot<T,Gen:IGeneration=Generation>
+pub struct Entry<T,Gen:IGeneration=Generation>
 {
-    value      : SlotValue<T>,
+    pub(crate) value: EntryValue<T>,
     #[cfg_attr(feature = "serde", serde(rename = "gen"))]
     generation : Gen,
 }
-impl <T,Gen:IGeneration> Slot<T,Gen>
+impl <T,Gen:IGeneration> Entry<T,Gen>
 {
-    pub fn new(value : SlotValue<T>, generation : Gen) -> Self { Self { value, generation }}
+    pub fn new(value : EntryValue<T>, generation : Gen) -> Self { Self { value, generation }}
     pub fn generation(&self) -> Gen { self.generation }
 
     pub fn have_value(&self) -> bool { self.value().is_some() }
@@ -63,7 +55,7 @@ impl <T,Gen:IGeneration> Slot<T,Gen>
     pub fn value(&self) -> Option<&T> { self.value.get() }
     pub fn value_mut(&mut self) -> Option<&mut T> { self.value.get_mut() }
 
-    pub fn get_id(&self, idx : usize) -> GenVecIDOf<T,Gen> { GenVecIDOf::from_index_and_generation(idx, self.generation) }
+    pub fn get_id(&self, index: usize) -> GenIDOf<T,Gen> { GenIDOf::from_index_and_generation(index, self.generation) }
 
     pub fn increment_generation(&mut self) -> bool { if self.can_increment_generation() { self.generation.increment(); true } else { false } }
     pub fn can_increment_generation(&self) -> bool { self.generation.can_increment() }
@@ -78,9 +70,9 @@ impl <T,Gen:IGeneration> Slot<T,Gen>
 #[derive(Debug, Clone, Eq)]
 pub struct GenVecOf<T,Gen:IGeneration=Generation>
 {
-    slot  : Vec<Slot<T,Gen>>,
-    head  : usize,
-    len   : usize,
+    pub(crate) values: Vec<Entry<T,Gen>>,
+    head: usize,
+    len: usize,
 }
 
 impl<T, Gen:IGeneration> Hash for GenVecOf<T,Gen> where T: Hash
@@ -91,7 +83,7 @@ impl<T, Gen:IGeneration> Hash for GenVecOf<T,Gen> where T: Hash
 
         if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
         {
-            self.slot.hash(state);
+            self.values.hash(state);
             self.head.hash(state);
         }else
         {
@@ -110,15 +102,15 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
     {
         if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
         {
-            self.len == other.len && self.slot == other.slot && self.head == other.head
+            self.len == other.len && self.values == other.values && self.head == other.head
         }else
         {
             /*
                 We can't know if the gen vec is new or if the gen vec just wrapped arround.
 
                 Those two are equal: (Assuming Gen::MIN value is 0)
-                A: GenVecOf { slot: [Slot { value: Free(18446744073709551615), generation: 0 }], head: 0, len: 0 }
-                B: GenVecOf { slot: [], head: 18446744073709551615, len: 0 }
+                A: GenVecOf { entry: [Entry { value: Free(18446744073709551615), generation: 0 }], head: 0, len: 0 }
+                B: GenVecOf { entry: [], head: 18446744073709551615, len: 0 }
 
                 Both can represent unused wrapped gen vec.
 
@@ -132,46 +124,46 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
 
                 But these 2 are different, because that generation was already used.
 
-                X: GenVecOf { slot: [Slot { value: Free(18446744073709551615), generation: 1 }], head: 0, len: 0 }
-                Y: GenVecOf { slot: [], head: 18446744073709551615, len: 0 }
+                X: GenVecOf { entry: [Entry { value: Free(18446744073709551615), generation: 1 }], head: 0, len: 0 }
+                Y: GenVecOf { entry: [], head: 18446744073709551615, len: 0 }
             */
 
             if self.len != other.len { return false; }
-            if self.head == other.head { return self.slot == other.slot; }
+            if self.head == other.head { return self.values == other.values; }
             if !(self.head.is_max_value() ^ other.head.is_max_value()) { return false; }
 
             if self.head.is_max_value()
             {
-                if self.slot.len() + 1 != other.slot.len() { return false; }
+                if self.values.len() + 1 != other.values.len() { return false; }
                 let mid = other.head;
                 debug_assert!(!mid.is_max_value());
 
-                let slot = other.get_slot_index(mid).unwrap();
-                let SlotValue::Free(f) = slot.value else { return false; };
-                if !f.is_max_value() || !slot.generation().is_min_value() { return false; }
+                let entry = other.get_entry_from_index(mid).unwrap();
+                let EntryValue::Free(f) = entry.value else { return false; };
+                if !f.is_max_value() || !entry.generation().is_min_value() { return false; }
 
-                let self_left = &self.slot[0..mid];
-                let self_right = &self.slot[mid..];
+                let self_left = &self.values[0..mid];
+                let self_right = &self.values[mid..];
 
-                let other_left = &other.slot[0..mid];
-                let other_right = &other.slot[mid+1..];
+                let other_left = &other.values[0..mid];
+                let other_right = &other.values[mid+1..];
 
                 self_left == other_left && self_right == other_right
             }else if other.head.is_max_value()
             {
-                if other.slot.len() + 1 != self.slot.len() { return false; }
+                if other.values.len() + 1 != self.values.len() { return false; }
                 let mid = self.head;
                 debug_assert!(!mid.is_max_value());
 
-                let slot = self.get_slot_index(mid).unwrap();
-                let SlotValue::Free(f) = slot.value else { return false; };
-                if !f.is_max_value() || !slot.generation().is_min_value() { return false; }
+                let entry = self.get_entry_from_index(mid).unwrap();
+                let EntryValue::Free(f) = entry.value else { return false; };
+                if !f.is_max_value() || !entry.generation().is_min_value() { return false; }
 
-                let other_left = &other.slot[0..mid];
-                let other_right = &other.slot[mid..];
+                let other_left = &other.values[0..mid];
+                let other_right = &other.values[mid..];
 
-                let self_left = &self.slot[0..mid];
-                let self_right = &self.slot[mid+1..];
+                let self_left = &self.values[0..mid];
+                let self_right = &self.values[mid+1..];
 
                 other_left == self_left && other_right == self_right
             }else
@@ -183,13 +175,18 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
 }
 
 #[cfg(feature = "serde")]
-impl<T, Gen:IGeneration> Serialize for GenVecOf<T,Gen> where Slot<T, Gen> : Serialize {
+impl<T, Gen:IGeneration> Serialize for GenVecOf<T,Gen> where T:Serialize, Gen: Serialize
+{
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     {
-        let mut state = serializer.serialize_struct("GenVec", 2)?;
-        state.serialize_field("slot", &self.slot)?;
-        // need to be in the same order on all machine for determinist
-        state.serialize_field("free", &self.head)?;
+
+        let mut state = serializer.serialize_struct("GenVec", 1 + self.head.is_not_max_value() as usize)?;
+        state.serialize_field("values", &self.values)?;
+        if self.head.is_not_max_value()
+        {
+            // need to be in the same order on all machine for determinist
+            state.serialize_field("free", &Some(self.head))?;
+        }
         state.end()
     }
 }
@@ -198,11 +195,11 @@ impl<T, Gen:IGeneration> Serialize for GenVecOf<T,Gen> where Slot<T, Gen> : Seri
 impl<T, Gen:IGeneration> GenVecOf<T,Gen>
 {
     #[allow(dead_code)]
-    pub(crate) fn new_and_check_invariant(slot : Vec<Slot<T, Gen>>, head : usize) -> Result<Self, String>
+    pub(crate) fn from_entries_and_head(values: Vec<Entry<T, Gen>>, head: usize) -> Result<Self, String>
     {
-        let len = slot.iter().filter(|s| s.have_value()).count();
+        let len = values.iter().filter(|s| s.have_value()).count();
 
-        if slot.len() == usize::MAX
+        if values.len() == usize::MAX
         {
             return Err("GenVec : the last usize value is used for null in a GenVec and cannot be used".to_owned());
         }
@@ -212,14 +209,14 @@ impl<T, Gen:IGeneration> GenVecOf<T,Gen>
 
         while nb_use != 0
         {
-            let Some(next_slot) = slot.get(cur_head) else { return Err(format!("GenVec : slot {:?} is out of range", cur_head)); };
-            let SlotValue::Free(f) = next_slot.value else { return Err(format!("GenVec : slot {:?} was not free", cur_head)); };
+            let Some(next_entry) = values.get(cur_head) else { return Err(format!("GenVec : entry {:?} is out of range", cur_head)); };
+            let EntryValue::Free(f) = next_entry.value else { return Err(format!("GenVec : entry {:?} was not free", cur_head)); };
             if f == usize::MAX { return Err(format!("GenVec : invalid free head {:?} at {:?}", f, cur_head));}
             cur_head = f;
             nb_use -= 1;
         }
 
-        Ok(Self{ slot, head, len})
+        Ok(Self{ values, head, len})
     }
 }
 
@@ -228,7 +225,7 @@ impl<T, Gen:IGeneration> GenVecOf<T,Gen>
 impl<'de,T, Gen> Deserialize<'de> for GenVecOf<T, Gen>
 where
     Gen: IGeneration + Deserialize<'de>,
-    Slot<T, Gen>: Deserialize<'de>,
+    Entry<T, Gen>: Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -244,7 +241,7 @@ where
         impl<'de, T, Gen> Visitor<'de> for GenVecVisitor<T, Gen>
         where
             Gen: IGeneration + Deserialize<'de>,
-            Slot<T, Gen>: Deserialize<'de>,
+            Entry<T, Gen>: Deserialize<'de>,
         {
             type Value = GenVecOf<T, Gen>;
 
@@ -256,16 +253,16 @@ where
             where
                 A: MapAccess<'de>,
             {
-                let mut values : Option<Vec<Slot<T, Gen>>> = None;
-                let mut free_index : Option<usize> = None;
+                let mut values : Option<Vec<Entry<T, Gen>>> = None;
+                let mut free_index: Option<Option<usize>> = None;
 
                 while let Some(key) = map.next_key::<&'de str>()?
                 {
                     match key
                     {
-                        "slot" => {
+                        "values" => {
                             if values.is_some() {
-                                return Err(de::Error::duplicate_field("slot"));
+                                return Err(de::Error::duplicate_field("values"));
                             }
                             values = Some(map.next_value()?);
                         }
@@ -278,19 +275,19 @@ where
                         _ => {
                             return Err(de::Error::unknown_field(
                                 &key,
-                                &["slot", "free"],
+                                &["values", "free"],
                             ));
                         }
                     }
                 }
 
-                let slot = values.ok_or_else(|| de::Error::missing_field("slot"))?;
-                let free = free_index.ok_or_else(|| de::Error::missing_field("free"))?;
-                GenVecOf::<T,Gen>::new_and_check_invariant(slot, free).map_err(|e| de::Error::custom(e))
+                let entry = values.ok_or_else(|| de::Error::missing_field("values"))?;
+                let free = free_index.flatten().unwrap_or(usize::MAX);
+                GenVecOf::<T,Gen>::from_entries_and_head(entry, free).map_err(|e| de::Error::custom(e))
             }
         }
 
-        const FIELDS: &[&str] = &["slot", "free"];
+        const FIELDS: &[&str] = &["values", "free"];
         deserializer.deserialize_struct(
             "GenVec",
             FIELDS,
@@ -301,93 +298,6 @@ where
     }
 }
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-pub struct GenVecIDOf<T,Gen:IGeneration>
-{
-    index      : usize,
-    generation : Gen,
-    value      : PhantomData<T>,
-}
-
-impl<T,Gen:IGeneration> Default for GenVecIDOf<T,Gen>
-{
-    fn default() -> Self { Self::NULL }
-}
-
-#[cfg(feature = "serde")]
-impl<T, Gen:IGeneration> Serialize for GenVecIDOf<T,Gen> where Gen : Serialize {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
-    {
-        if self.index.is_max_value()
-        {
-            Some((self.index, self.generation))
-        }else
-        {
-            None
-        }.serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, T, Gen:IGeneration> Deserialize<'de> for GenVecIDOf<T,Gen> where Gen : Deserialize<'de> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de>,
-    {
-        match Option::deserialize(deserializer)?
-        {
-            Some((index, generation)) => Ok(Self::from_index_and_generation(index, generation)),
-            None => Ok(Self::from_index_and_generation(usize::MAX, Gen::MIN)),
-        }
-    }
-}
-
-impl<T,Gen:IGeneration> Clone for GenVecIDOf<T,Gen>{ fn clone(&self) -> Self { Self { index: self.index.clone(), generation: self.generation.clone(), value: PhantomData } } }
-impl<T,Gen:IGeneration> Copy for GenVecIDOf<T,Gen> {}
-
-impl<T,Gen:IGeneration> PartialEq for GenVecIDOf<T,Gen> { fn eq(&self, other: &Self) -> bool { self.index == other.index && self.generation == other.generation } }
-impl<T,Gen:IGeneration> Eq for GenVecIDOf<T,Gen> {}
-
-impl<T,Gen:IGeneration> Hash for GenVecIDOf<T,Gen> { fn hash<H: Hasher>(&self, state: &mut H) { self.index.hash(state); self.generation.hash(state); } }
-
-impl<T,Gen:IGeneration> Ord for GenVecIDOf<T,Gen> { fn cmp(&self, other: &Self) -> std::cmp::Ordering { (self.index, self.generation).cmp(&(other.index, other.generation)) } }
-impl<T,Gen:IGeneration> PartialOrd for GenVecIDOf<T,Gen> { fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { Some(self.cmp(&other)) } }
-
-impl<T,Gen:IGeneration> Debug for GenVecIDOf<T,Gen> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}#{:?}", self.index, self.generation) } }
-
-impl<T,Gen:IGeneration> GenVecIDOf<T,Gen>
-{
-    pub const fn from_index_and_generation(index : usize, generation : Gen) -> Self { Self { index, generation, value: PhantomData }}
-
-    pub const fn index(self) -> usize { self.index }
-    pub const fn generation(self) -> Gen { self.generation }
-
-    pub fn is_null(self) -> bool { self == Self::NULL }
-    pub fn is_not_null(self) -> bool { self != Self::NULL }
-
-    pub fn get(self, gen_vec : &GenVecOf<T,Gen>) -> Option<&T> { gen_vec.get(self) }
-    pub fn get_mut(self, gen_vec : &mut GenVecOf<T,Gen>) -> Option<&mut T> { gen_vec.get_mut(self) }
-
-    pub fn remove(self, gen_vec : &mut GenVecOf<T,Gen>) -> Option<T> { gen_vec.remove(self) }
-    pub fn exist(self, gen_vec : &GenVecOf<T,Gen>) -> bool { self.get(gen_vec).is_some() }
-
-    pub fn from_other_id<T2>(other : GenVecIDOf<T2,Gen>) -> GenVecIDOf<T,Gen> { GenVecIDOf::from_index_and_generation(other.index, other.generation) }
-
-    /// Set the value to `Self::NULL`
-    pub fn reset(&mut self) { *self = Self::NULL; }
-
-    pub const NULL : Self = GenVecIDOf { index: usize::MAX, generation: Gen::MIN, value: PhantomData };
-}
-impl<T,Gen:IGeneration> From<(usize,Gen)> for GenVecIDOf<T,Gen>
-{
-    fn from((index,generation): (usize,Gen)) -> Self {
-        Self::from_index_and_generation(index, generation)
-    }
-}
-impl<T,Gen:IGeneration> Into<(usize,Gen)> for GenVecIDOf<T,Gen>
-{
-    fn into(self) -> (usize,Gen) {
-        (self.index, self.generation)
-    }
-}
 
 impl<T,Gen:IGeneration> Default for GenVecOf<T,Gen>
 {
@@ -396,262 +306,274 @@ impl<T,Gen:IGeneration> Default for GenVecOf<T,Gen>
 
 impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 {
-    pub const fn new() -> Self { Self { slot: Vec::new(), head : usize::MAX, len : 0 }}
-    pub fn with_capacity(capacity : usize) -> Self { Self { slot: Vec::with_capacity(capacity), head : usize::MAX, len : 0 }}
+    pub const fn new() -> Self { Self { values: Vec::new(), head : usize::MAX, len : 0 }}
+    pub fn with_capacity(capacity : usize) -> Self { Self { values: Vec::with_capacity(capacity), head : usize::MAX, len : 0 }}
 
-    pub fn capacity(&self) -> usize { self.slot.capacity() }
-    pub fn shrink_to_fit(mut self) { self.slot.shrink_to_fit(); }
+    pub fn capacity(&self) -> usize { self.values.capacity() }
+    pub fn shrink_to_fit(mut self) { self.values.shrink_to_fit(); }
 
 
-    /// Clear the [GenVec] but don't invalidate all previous [GenVecID].
+    /// Clears the [GenVec], removing all elements and resetting all [GenID] values.
+    ///
+    /// After calling this method, any previous [`GenID`] is no longer valid (not enforced) and
+    /// **must** not be used, as doing so may lead to undefined behavior.
     pub fn clear(&mut self)
     {
         self.head = usize::MAX;
         self.len = 0;
-        self.slot.clear();
+        self.values.clear();
     }
 
-    /// Clear the [GenVec] and also invalidate all previous [GenVecID].
+    /// Removes all elements from the [GenVec] and invalidates all existing [GenID] (enforced).
     pub fn remove_all(&mut self)
     {
-        for (idx, v) in self.slot.iter_mut().enumerate()
+        for (index, v) in self.values.iter_mut().enumerate()
         {
             if v.have_value()
             {
                 if v.increment_generation()
                 {
-                    v.value = SlotValue::Free(self.head);
-                    self.head = idx;
+                    v.value = EntryValue::Free(self.head);
+                    self.head = index;
                 }else
                 {
-                    v.value = SlotValue::Free(usize::MAX);
+                    v.value = EntryValue::Free(usize::MAX);
                 }
             }
         }
         self.len = 0;
     }
 
-    pub fn rollback_insert(&mut self, id : GenVecIDOf<T,Gen>) -> Result<T,()>
+    pub fn rollback_insert(&mut self, id: GenIDOf<T,Gen>) -> Result<T,()>
     {
-        let idx = id.index;
+        let index = id.index();
         let head = self.head;
 
-        let slot_len = self.slot.len();
+        let entry_len = self.values.len();
 
-        let Some(slot) = self.get_slot_index_mut(idx) else { return Err(()); };
-        if slot.value.is_free() { return Err(()); }
+        let Some(entry) = self.get_entry_mut_from_index(index) else { return Err(()); };
+        if entry.value.is_free() { return Err(()); }
 
         if head.is_max_value()
         {
-            if idx + 1 != slot_len { return Err(()); }
+            if index + 1 != entry_len { return Err(()); }
         }
 
-        let can_not_decrease = !slot.can_decrement_generation();
-        let val = slot.value.take_and_free(head);
+        let can_not_decrease = !entry.can_decrement_generation();
+        let val = entry.value.take_and_free(head);
         self.len -= 1;
 
         if head.is_max_value() && can_not_decrease
         {
-            self.slot.pop().ok_or(())?;
+            self.values.pop().ok_or(())?;
         }else
         {
-            self.head = idx;
+            self.head = index;
         }
 
         Ok(val)
     }
-    pub fn insert(&mut self, value : T) ->  GenVecIDOf<T,Gen>
+    pub fn insert(&mut self, value: T) ->  GenIDOf<T,Gen>
     {
         self.len += 1;
 
         if self.head == usize::MAX
         {
-            let index = self.slot.len();
+            let index = self.values.len();
 
             // The last index is used for the null() key
             assert!(index != usize::MAX, "How you didn't run out of memory before ?");
 
             let generation = Gen::MIN;
-            self.slot.push(Slot { value: SlotValue::Used(value), generation });
-            return GenVecIDOf::from_index_and_generation(index, generation);
+            self.values.push(Entry { value: EntryValue::Used(value), generation });
+            return GenIDOf::from_index_and_generation(index, generation);
         }
 
-        let SlotValue::Free(next_free_idx) = self.slot[self.head].value else { unreachable!(); };
+        let EntryValue::Free(next_free_index) = self.values[self.head].value else { unreachable!(); };
         let head = self.head;
-        self.head = next_free_idx;
-        self.slot[head].value = SlotValue::Used(value);
-        return GenVecIDOf::from_index_and_generation(head, self.slot[head].generation);
+        self.head = next_free_index;
+        self.values[head].value = EntryValue::Used(value);
+        return GenIDOf::from_index_and_generation(head, self.values[head].generation);
     }
 
     #[inline(always)]
-    pub fn get_slot_index(&self, idx : usize) -> Option<&Slot<T,Gen>> { self.slot.get(idx) }
+    pub fn get_entry_from_index(&self, index: usize) -> Option<&Entry<T,Gen>> { self.values.get(index) }
     #[inline(always)]
-    pub(crate) fn get_slot_index_mut(&mut self, idx : usize) -> Option<&mut Slot<T,Gen>> { self.slot.get_mut(idx) }
+    pub(crate) fn get_entry_mut_from_index(&mut self, index: usize) -> Option<&mut Entry<T,Gen>> { self.values.get_mut(index) }
 
     #[inline(always)]
-    pub fn get_index(&self, idx : usize) -> Option<&T> { self.get_slot_index(idx).and_then(|s| s.value()) }
+    pub fn get_from_index(&self, index: usize) -> Option<&T> { self.get_entry_from_index(index).and_then(|s| s.value()) }
     #[inline(always)]
-    pub fn get_index_mut(&mut self, idx : usize) -> Option<&mut T> { self.get_slot_index_mut(idx).and_then(|s| s.value_mut()) }
+    pub fn get_mut_from_index(&mut self, index: usize) -> Option<&mut T> { self.get_entry_mut_from_index(index).and_then(|s| s.value_mut()) }
 
     #[inline(always)]
-    pub fn get_slot(&self, id : GenVecIDOf<T,Gen>) -> Option<&Slot<T,Gen>> { self.get_slot_index(id.index).filter(|v| v.generation() == id.generation()) }
+    pub fn get_entry(&self, id: GenIDOf<T,Gen>) -> Option<&Entry<T,Gen>> { self.get_entry_from_index(id.index()).filter(|v| v.generation() == id.generation()) }
     #[inline(always)]
-    pub(crate) fn get_slot_mut(&mut self, id : GenVecIDOf<T,Gen>) -> Option<&mut Slot<T,Gen>> { self.get_slot_index_mut(id.index).filter(|v| v.generation() == id.generation()) }
+    pub(crate) fn get_entry_mut(&mut self, id: GenIDOf<T,Gen>) -> Option<&mut Entry<T,Gen>> { self.get_entry_mut_from_index(id.index()).filter(|v| v.generation() == id.generation()) }
 
     #[inline(always)]
-    pub fn get(&self, id : GenVecIDOf<T,Gen>) -> Option<&T> { self.get_slot(id).and_then(|v| v.value()) }
+    pub fn get(&self, id: GenIDOf<T,Gen>) -> Option<&T> { self.get_entry(id).and_then(|v| v.value()) }
     #[inline(always)]
-    pub fn get_mut(&mut self, id : GenVecIDOf<T,Gen>) -> Option<&mut T> { self.get_slot_mut(id).and_then(|v| v.value_mut()) }
+    pub fn get_mut(&mut self, id: GenIDOf<T,Gen>) -> Option<&mut T> { self.get_entry_mut(id).and_then(|v| v.value_mut()) }
 
-    /// Return a valid [GenVecID] to the current index or return null if the idx is outside the range
-    pub fn get_id(&self, idx : usize) -> GenVecIDOf<T, Gen>
+    /// Return a valid [GenID] to the current index or return [GenIDOf::NULL] if the index is outside the range
+    pub fn index_to_id(&self, index: usize) -> GenIDOf<T, Gen>
     {
-        self.get_slot_index(idx).map(|v| v.get_id(idx)).unwrap_or(GenVecIDOf::NULL)
+        self.get_entry_from_index(index).map(|v| v.get_id(index)).unwrap_or(GenIDOf::NULL)
     }
 
     /// The operation that once done just after an [Self::remove_index], put this data structure in the same state as before
-    pub fn rollback_remove_index(&mut self, idx : usize, value : T) -> Result<(), ()>
+    pub fn rollback_remove_index(&mut self, index: usize, value: T) -> Result<(), ()>
     {
         let mut head = self.head;
-        let slot = self.get_slot_index_mut(idx).ok_or(())?;
-        let SlotValue::Free(f) = slot.value else { return Err(()); };
+        let entry = self.get_entry_mut_from_index(index).ok_or(())?;
+        let EntryValue::Free(f) = entry.value else { return Err(()); };
         let free = f;
 
-        if f.is_non_max_value()
+        if f.is_not_max_value()
         {
-            if head != idx { return Err(()); }
+            if head != index { return Err(()); }
             head = free;
-            if !slot.decrement_generation() { return Err(()); }
+            if !entry.decrement_generation() { return Err(()); }
         }else
         {
-            // Slot don't have a next free slot
-            if head == idx
+            // Entry don't have a next free entry
+            if head == index
             {
                 head = usize::MAX;
-                if !slot.decrement_generation() { return Err(()); }
-            }else if !slot.is_generation_saturated()
+                if !entry.decrement_generation() { return Err(()); }
+            }else if !entry.is_generation_saturated()
             {
                 return Err(());
             }
         }
 
-        slot.value = SlotValue::Used(value);
+        entry.value = EntryValue::Used(value);
 
         self.head = head;
         self.len += 1;
 
         Ok(())
     }
-    pub fn remove_index(&mut self, idx : usize) -> Option<T>
+
+    pub fn remove_from_index(&mut self, index: usize) -> Option<T>
     {
         let head = self.head;
 
-        let Some(slot) = self.get_slot_index_mut(idx) else { return None; };
-        if slot.value.is_free() { return None; }
+        let Some(entry) = self.get_entry_mut_from_index(index) else { return None; };
+        if entry.value.is_free() { return None; }
 
-        let val = slot.value.take_and_free(head);
+        let val = entry.value.take_and_free(head);
 
-        if slot.increment_generation()
+        if entry.increment_generation()
         {
-            self.head = idx;
+            self.head = index;
         }else
         {
-            slot.value = SlotValue::Free(usize::MAX);
+            entry.value = EntryValue::Free(usize::MAX);
         }
         self.len -= 1;
 
         Some(val)
     }
 
-    pub fn rollback_remove(&mut self, id : GenVecIDOf<T,Gen>, value : T) -> Result<(), ()>
+    pub fn rollback_remove(&mut self, id: GenIDOf<T,Gen>, value: T) -> Result<(), ()>
     {
         // Todo : missing some check to see if the last operation removal was done with id
-        self.rollback_remove_index(id.index, value)
+        self.rollback_remove_index(id.index(), value)
     }
-    pub fn remove(&mut self, id : GenVecIDOf<T,Gen>) -> Option<T>
+
+    pub fn remove(&mut self, id: GenIDOf<T,Gen>) -> Option<T>
     {
         if self.get(id).is_none() { return None; }
-        self.remove_index(id.index)
+        self.remove_from_index(id.index())
     }
 
-    /*
-    pub(crate) fn iter_slot(&self) -> impl Iterator<Item = &Slot<T,Gen>> { self.slot.iter() }
-    pub(crate) fn iter_slot_mut(&mut self) -> impl Iterator<Item = &mut Slot<T,Gen>> { self.slot.iter_mut() }
+    pub fn entries(&self) -> impl Iterator<Item = &Entry<T,Gen>> { self.values.iter() }
 
-    pub(crate) fn iter_slot_with_value(&self) -> impl Iterator<Item = &Slot<T,Gen>> { self.iter_slot().filter(|e| e.have_value()) }
-    pub(crate) fn iter_slot_with_value_mut(&mut self) -> impl Iterator<Item = &mut Slot<T,Gen>> { self.iter_slot_mut().filter(|e| e.have_value()) }
-    */
+    pub const fn len(&self) -> usize { self.len }
 
     pub fn iter(&self) -> Iter<'_, T, Gen> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_, T, Gen> { self.into_iter() }
 
-    pub fn ids(&self) -> impl Iterator<Item = GenVecIDOf<T,Gen>> { self.into_iter().map(|(id, _val)| id) }
+    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<T,Gen>> { self.into_iter().map(|(id, _val)| id) }
+
     pub fn values(&self) -> impl Iterator<Item = &T> { self.iter().map(|(_,val)| val) }
     pub fn values_mut(&mut self) -> impl Iterator<Item = &mut T> { self.iter_mut().map(|(_,val)| val) }
 
-    pub fn into_ids(self) -> impl Iterator<Item = GenVecIDOf<T,Gen>> { self.into_iter().map(|(id, _val)| id) }
+    pub fn into_ids(self) -> impl Iterator<Item = GenIDOf<T,Gen>> { self.into_iter().map(|(id, _val)| id) }
     pub fn into_values(self) -> impl Iterator<Item = T> { self.into_iter().map(|(_id, val)| val) }
 
-    /// The correct way to iterate over all slot index.
-    /// Use this instead of `0..gen_vec.len()`.
-    pub fn iter_index(&self) -> impl Iterator<Item = usize> + use<T, Gen> { 0..self.slot.len() }
+    /// Iter over all entry index, including the free/unused one.
+    ///
+    /// The correct way to iterate over all entry index.
+    ///
+    /// Use this instead of `0..genvec.len()`.
+    pub fn iter_index(&self) -> impl Iterator<Item = usize> + use<T, Gen> { 0..self.values.len() }
 
-
-    pub fn retain<F>(&mut self, mut f: F) where F: FnMut(&T) -> bool
+    /// Retains only the elements specified by the predicate.
+    ///
+    /// In other words, remove all pairs `(id, v)` for which `f(id, &v)` returns `false`. The elements are visited in unsorted (and unspecified) order.
+    pub fn retain<F>(&mut self, mut f: F) where F: FnMut(GenIDOf<T,Gen>, &T) -> bool
     {
-        self.retain_mut(|elem| f(elem));
+        self.retain_mut(|id,elem| f(id,elem));
     }
 
-    pub fn retain_mut<F>(&mut self, mut f: F) where F: FnMut(&mut T) -> bool
+        /// Retains only the elements specified by the predicate.
+    ///
+    /// In other words, remove all pairs `(id, v)` for which `f(id, &mut v)` returns `false`. The elements are visited in unsorted (and unspecified) order.
+    pub fn retain_mut<F>(&mut self, mut f: F) where F: FnMut(GenIDOf<T,Gen>, &mut T) -> bool
     {
-        for idx in self.iter_index()
+        for index in self.iter_index()
         {
-            let Some(v) = self.get_index_mut(idx) else { continue; };
-            if !f(v)
+            let entry = self.get_entry_mut_from_index(index).unwrap();
+            let id = entry.get_id(index);
+            let Some(v) = entry.value_mut() else { continue; };
+            if !f(id, v)
             {
-                self.remove_index(idx);
+                self.remove_from_index(index);
             }
         }
     }
 }
 
-impl<T, Gen:IGeneration> Index<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T, Gen:IGeneration> Index<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     type Output=T;
-    fn index(&self, index: GenVecIDOf<T,Gen>) -> &Self::Output { self.get_or_panic(index) }
+    fn index(&self, index: GenIDOf<T,Gen>) -> &Self::Output { self.get_or_panic(index) }
 }
-impl<T, Gen:IGeneration> IndexMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T, Gen:IGeneration> IndexMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
-    fn index_mut(&mut self, index: GenVecIDOf<T,Gen>) -> &mut Self::Output { self.get_mut_or_panic(index) }
+    fn index_mut(&mut self, index: GenIDOf<T,Gen>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
 impl<T, Gen:IGeneration> Index<usize> for GenVecOf<T,Gen>
 {
     type Output=T;
-    fn index(&self, index: usize) -> &Self::Output { self.get_index(index).unwrap() }
+    fn index(&self, index: usize) -> &Self::Output { self.get_from_index(index).unwrap() }
 }
 impl<T, Gen:IGeneration> IndexMut<usize> for GenVecOf<T,Gen>
 {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_index_mut(index).unwrap() }
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_mut_from_index(index).unwrap() }
 }
 
 impl<T, Gen:IGeneration> FromIterator<T> for GenVecOf<T, Gen>
 {
     fn from_iter<K: IntoIterator<Item = T>>(iter: K) -> Self {
-        let slots : Vec<Slot<T,Gen>> = iter.into_iter().map(|v| Slot::new(SlotValue::Used(v), Gen::MIN)).collect();
-        let len = slots.len();
-        Self{ slot: slots, head: usize::MAX, len }
+        let values : Vec<Entry<T,Gen>> = iter.into_iter().map(|v| Entry::new(EntryValue::Used(v), Gen::MIN)).collect();
+        let len = values.len();
+        Self{ values, head: usize::MAX, len }
     }
 }
 
 impl<T, Gen: IGeneration> IntoIterator for GenVecOf<T, Gen> {
-    type Item = (GenVecIDOf<T, Gen>, T);
+    type Item = (GenIDOf<T, Gen>, T);
     type IntoIter = IntoIter<T, Gen>;
 
     fn into_iter(self) -> Self::IntoIter {
         IntoIter
         {
-            iter: self.slot.into_iter().enumerate(),
+            iter: self.values.into_iter().enumerate(),
             len_remaining: self.len,
         }
     }
@@ -660,21 +582,21 @@ impl<T, Gen: IGeneration> IntoIterator for GenVecOf<T, Gen> {
 #[derive(Clone, Debug)]
 pub struct IntoIter<T, Gen: IGeneration>
 {
-    iter: std::iter::Enumerate<std::vec::IntoIter<Slot<T, Gen>>>,
+    iter: std::iter::Enumerate<std::vec::IntoIter<Entry<T, Gen>>>,
     len_remaining : usize,
 }
 
 impl<T, Gen: IGeneration> Iterator for IntoIter<T, Gen> {
-    type Item = (GenVecIDOf<T, Gen>, T);
+    type Item = (GenIDOf<T, Gen>, T);
 
     fn next(&mut self) -> Option<Self::Item>
     {
-        while let Some((idx, slot)) = self.iter.next()
+        while let Some((index, entry)) = self.iter.next()
         {
-            if let SlotValue::Used(value) = slot.value
+            if let EntryValue::Used(value) = entry.value
             {
                 self.len_remaining -= 1;
-                return Some((GenVecIDOf::from_index_and_generation(idx, slot.generation), value));
+                return Some((GenIDOf::from_index_and_generation(index, entry.generation), value));
             }
         }
         None
@@ -686,12 +608,12 @@ impl<T, Gen: IGeneration> FusedIterator for IntoIter<T, Gen> {}
 impl<T, Gen: IGeneration> ExactSizeIterator for IntoIter<T, Gen> { fn len(&self) -> usize { self.len_remaining } }
 
 impl<'a, T, Gen: IGeneration> IntoIterator for &'a GenVecOf<T, Gen> {
-    type Item = (GenVecIDOf<T, Gen>, &'a T);
+    type Item = (GenIDOf<T, Gen>, &'a T);
     type IntoIter = Iter<'a, T, Gen>;
 
     fn into_iter(self) -> Self::IntoIter {
         Iter {
-            iter: self.slot.iter().enumerate(),
+            iter: self.values.iter().enumerate(),
             len_remaining : self.len,
         }
     }
@@ -700,18 +622,18 @@ impl<'a, T, Gen: IGeneration> IntoIterator for &'a GenVecOf<T, Gen> {
 #[derive(Clone, Debug)]
 pub struct Iter<'a, T, Gen: IGeneration>
 {
-    iter: std::iter::Enumerate<std::slice::Iter<'a, Slot<T, Gen>>>,
+    iter: std::iter::Enumerate<std::slice::Iter<'a, Entry<T, Gen>>>,
     len_remaining : usize,
 }
 
 impl<'a, T, Gen: IGeneration> Iterator for Iter<'a, T, Gen> {
-    type Item = (GenVecIDOf<T, Gen>, &'a T);
+    type Item = (GenIDOf<T, Gen>, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some((idx, slot)) = self.iter.next() {
-            if let Some(value) = slot.value() {
+        while let Some((index, entry)) = self.iter.next() {
+            if let Some(value) = entry.value() {
                 self.len_remaining -= 1;
-                return Some((GenVecIDOf::from_index_and_generation(idx, slot.generation), value));
+                return Some((GenIDOf::from_index_and_generation(index, entry.generation), value));
             }
         }
         None
@@ -726,12 +648,12 @@ impl<'a, T, Gen: IGeneration> ExactSizeIterator for Iter<'a, T, Gen> { fn len(&s
 
 impl<'a, T, Gen: IGeneration> IntoIterator for &'a mut GenVecOf<T, Gen>
 {
-    type Item = (GenVecIDOf<T, Gen>, &'a mut T);
+    type Item = (GenIDOf<T, Gen>, &'a mut T);
     type IntoIter = IterMut<'a, T, Gen>;
 
     fn into_iter(self) -> Self::IntoIter {
         IterMut {
-            iter: self.slot.iter_mut().enumerate(),
+            iter: self.values.iter_mut().enumerate(),
             len_remaining : self.len,
         }
     }
@@ -740,19 +662,19 @@ impl<'a, T, Gen: IGeneration> IntoIterator for &'a mut GenVecOf<T, Gen>
 #[derive(Debug)]
 pub struct IterMut<'a, T, Gen: IGeneration>
 {
-    iter: std::iter::Enumerate<std::slice::IterMut<'a, Slot<T, Gen>>>,
+    iter: std::iter::Enumerate<std::slice::IterMut<'a, Entry<T, Gen>>>,
     len_remaining : usize,
 }
 
 impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen> {
-    type Item = (GenVecIDOf<T, Gen>, &'a mut T);
+    type Item = (GenIDOf<T, Gen>, &'a mut T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some((idx, slot)) = self.iter.next() {
-            let generation = slot.generation();
-            if let Some(value) = slot.value_mut() {
+        while let Some((index, entry)) = self.iter.next() {
+            let generation = entry.generation();
+            if let Some(value) = entry.value_mut() {
                 self.len_remaining -= 1;
-                return Some((GenVecIDOf::from_index_and_generation(idx, generation), value));
+                return Some((GenIDOf::from_index_and_generation(index, generation), value));
             }
         }
         None
@@ -764,28 +686,28 @@ impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
 impl<'a, T, Gen: IGeneration> ExactSizeIterator for IterMut<'a, T, Gen> { fn len(&self) -> usize { self.len_remaining } }
 
 
-impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen> { #[inline(always)] fn len(&self) -> usize { self.len } }
+impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen> { #[inline(always)] fn len(&self) -> usize { self.len() } }
+impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { #[inline(always)] fn clear(&mut self) { self.clear(); } }
 impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
 {
     type Param=();
 
     #[inline(always)]
-    fn capacity(&self) -> usize { self.slot.capacity() }
+    fn capacity(&self) -> usize { self.values.capacity() }
 
     #[inline(always)]
     fn with_capacity_and_param(capacity: usize, _ : Self::Param) -> Self { Self::with_capacity(capacity) }
 
     #[inline(always)]
-    fn reserve(&mut self, additional: usize) { self.slot.reserve(additional); }
+    fn reserve(&mut self, additional: usize) { self.values.reserve(additional); }
     #[inline(always)]
-    fn reserve_exact(&mut self, additional: usize) { self.slot.reserve_exact(additional); }
+    fn reserve_exact(&mut self, additional: usize) { self.values.reserve_exact(additional); }
 
     #[inline(always)]
-    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.slot.try_reserve(additional) }
+    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.values.try_reserve(additional) }
     #[inline(always)]
-    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.slot.try_reserve_exact(additional) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.values.try_reserve_exact(additional) }
 }
-impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { #[inline(always)] fn clear(&mut self) { self.clear(); } }
 
 //#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 //#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -793,7 +715,7 @@ pub enum GenVecError<T,Gen:IGeneration>
 {
     IndexOutOfRange(IndexOutOfRange),
     WrongGeneration(GenVecWrongGeneration<T,Gen>),
-    /// The slot at this index is saturated
+    /// The entry at this index is saturated
     Saturated(usize),
 }
 impl<T,Gen:IGeneration> Eq for GenVecError<T,Gen> {}
@@ -808,7 +730,7 @@ impl<T,Gen:IGeneration> PartialEq for GenVecError<T,Gen>
     }
 }
 
-impl<T,Gen:IGeneration> Hash for GenVecError<T,Gen> 
+impl<T,Gen:IGeneration> Hash for GenVecError<T,Gen>
 {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self
@@ -822,7 +744,7 @@ impl<T,Gen:IGeneration> Hash for GenVecError<T,Gen>
 
 // error : the `Copy` impl for `hexga_core::collections::IndexOutOfRange` requires that `std::ops::Range<usize>: Copy`
 // impl<T,Gen:IGeneration> Copy for GenVecError<T,Gen> {}
-impl<T,Gen:IGeneration> Clone for GenVecError<T,Gen> 
+impl<T,Gen:IGeneration> Clone for GenVecError<T,Gen>
 {
     fn clone(&self) -> Self {
         match self {
@@ -833,7 +755,7 @@ impl<T,Gen:IGeneration> Clone for GenVecError<T,Gen>
     }
 }
 
-impl<T,Gen:IGeneration> Debug for GenVecError<T,Gen> 
+impl<T,Gen:IGeneration> Debug for GenVecError<T,Gen>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -861,7 +783,7 @@ impl<T,Gen:IGeneration> PartialEq for GenVecWrongGeneration<T,Gen>
     fn eq(&self, other: &Self) -> bool { self.got == other.got && self.expected == other.expected }
 }
 
-impl<T,Gen:IGeneration> Hash for GenVecWrongGeneration<T,Gen> 
+impl<T,Gen:IGeneration> Hash for GenVecWrongGeneration<T,Gen>
 {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.got.hash(state);
@@ -871,14 +793,14 @@ impl<T,Gen:IGeneration> Hash for GenVecWrongGeneration<T,Gen>
 
 
 impl<T,Gen:IGeneration> Copy for GenVecWrongGeneration<T,Gen> {}
-impl<T,Gen:IGeneration> Clone for GenVecWrongGeneration<T,Gen> 
+impl<T,Gen:IGeneration> Clone for GenVecWrongGeneration<T,Gen>
 {
     fn clone(&self) -> Self {
         Self { got: self.got.clone(), expected: self.expected.clone(), phantom: PhantomData }
     }
 }
 
-impl<T,Gen:IGeneration> Debug for GenVecWrongGeneration<T,Gen> 
+impl<T,Gen:IGeneration> Debug for GenVecWrongGeneration<T,Gen>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("GenVecWrongGeneration").field("got", &self.got).field("expected", &self.expected).field("phantom", &self.phantom).finish()
@@ -889,59 +811,59 @@ impl<T,Gen:IGeneration> Debug for GenVecWrongGeneration<T,Gen>
 impl<T,Gen:IGeneration> TryGet<usize> for GenVecOf<T,Gen>
 {
     type Error=IndexOutOfRange;
-    fn try_get(&self, index : usize) -> Result<&Self::Output, Self::Error> 
+    fn try_get(&self, index: usize) -> Result<&Self::Output, Self::Error>
     {
-        self.get_index(index).ok_or_else(|| IndexOutOfRange::new(index, 0..self.len()))
+        self.get_from_index(index).ok_or_else(|| IndexOutOfRange::new(index, 0..self.len()))
     }
 }
 impl<T,Gen:IGeneration> Get<usize> for GenVecOf<T,Gen>
 {
     type Output = <Self as Index<usize>>::Output;
     #[inline(always)]
-    fn get(&self, idx : usize) -> Option<&Self::Output> { self.get_index(idx) }
+    fn get(&self, index: usize) -> Option<&Self::Output> { self.get_from_index(index) }
 }
 
-impl<T,Gen:IGeneration> TryGet<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> TryGet<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     type Error=GenVecError<T,Gen>;
-    fn try_get(&self, id :  GenVecIDOf<T,Gen>) -> Result<&Self::Output, Self::Error> 
+    fn try_get(&self, id :  GenIDOf<T,Gen>) -> Result<&Self::Output, Self::Error>
     {
-        match self.get_slot_index(id.index)
+        match self.get_entry_from_index(id.index())
         {
             Some(s) => match s.value()
             {
                 Some(v) => Ok(v),
                 None => if s.is_generation_saturated()
                 {
-                    Err(GenVecError::Saturated(id.index))
+                    Err(GenVecError::Saturated(id.index()))
                 }else
                 {
-                    Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(id.generation, s.generation())))
+                    Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(id.generation(), s.generation())))
                 },
             },
-            None => Err(GenVecError::IndexOutOfRange(IndexOutOfRange::new(id.index, 0..self.len()))),
+            None => Err(GenVecError::IndexOutOfRange(IndexOutOfRange::new(id.index(), 0..self.len()))),
         }
     }
 }
-impl<T,Gen:IGeneration> Get<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> Get<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
-    type Output = <Self as Index<GenVecIDOf<T,Gen>>>::Output;
+    type Output = <Self as Index<GenIDOf<T,Gen>>>::Output;
     #[inline(always)]
-    fn get(&self, idx : GenVecIDOf<T,Gen>) -> Option<&Self::Output> { self.get(idx) }
+    fn get(&self, index: GenIDOf<T,Gen>) -> Option<&Self::Output> { self.get(index) }
 }
 
 impl<T,Gen:IGeneration> TryGetMut<usize> for GenVecOf<T,Gen>
 {
-    fn try_get_mut(&mut self, index : usize) -> Result<&mut Self::Output, Self::Error> 
+    fn try_get_mut(&mut self, index: usize) -> Result<&mut Self::Output, Self::Error>
     {
         let len = self.len();
-        self.get_index_mut(index).ok_or_else(|| IndexOutOfRange::new(index, 0..len))
+        self.get_mut_from_index(index).ok_or_else(|| IndexOutOfRange::new(index, 0..len))
     }
 }
 impl<T,Gen:IGeneration> GetMut<usize> for GenVecOf<T,Gen>
 {
     #[inline(always)]
-    fn get_mut(&mut self, idx : usize) -> Option<&mut Self::Output> { self.get_index_mut(idx) }
+    fn get_mut(&mut self, index: usize) -> Option<&mut Self::Output> { self.get_mut_from_index(index) }
 }
 
 impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
@@ -951,17 +873,17 @@ impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
     {
         // TODO: check the SlotMap crate for a better implementation of any overlapping indices
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.slot.try_get_many_mut(indices).map(|slots| slots.map(|v| v.value_mut()))
+        match self.values.try_get_many_mut(indices).map(|entries| entries.map(|v| v.value_mut()))
         {
             Ok(values) => if values.iter().any(|v| v.is_none()) { Err(ManyMutError::IndexOutOfBounds) } else { Ok(values.map(|v| v.unwrap())) },
             Err(e) => Err(e),
         }
     }
-    
+
     fn get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Option<[&mut Self::Output;N]> {
         // TODO: check the SlotMap crate for a better implementation of any overlapping indices
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.slot.get_many_mut(indices).map(|slots| slots.map(|v| v.value_mut()))
+        match self.values.get_many_mut(indices).map(|entries| entries.map(|v| v.value_mut()))
         {
             Some(values) => if values.iter().any(|v| v.is_none()) { None } else { Some(values.map(|v| v.unwrap())) },
             None => None,
@@ -972,18 +894,18 @@ impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
     #[track_caller]
     unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Output;N] {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        unsafe { self.slot.get_many_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
+        unsafe { self.values.get_many_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
     }
 }
 
-impl<T,Gen:IGeneration> TryGetMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> TryGetMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
-    fn try_get_mut(&mut self, id :  GenVecIDOf<T,Gen>) -> Result<&mut Self::Output, Self::Error> 
+    fn try_get_mut(&mut self, id :  GenIDOf<T,Gen>) -> Result<&mut Self::Output, Self::Error>
     {
         let len = self.len();
-        match self.get_slot_index_mut(id.index)
+        match self.get_entry_mut_from_index(id.index())
         {
-            Some(s) => 
+            Some(s) =>
             {
                 let generation = s.generation();
                 let is_saturated = s.is_generation_saturated();
@@ -992,70 +914,84 @@ impl<T,Gen:IGeneration> TryGetMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
                     Some(v) => Ok(v),
                     None => if is_saturated
                     {
-                        Err(GenVecError::Saturated(id.index))
+                        Err(GenVecError::Saturated(id.index()))
                     }else
                     {
-                        Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(id.generation, generation)))
+                        Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(id.generation(), generation)))
                     }
                 }
             }
-            None => Err(GenVecError::IndexOutOfRange(IndexOutOfRange::new(id.index, 0..len))),
+            None => Err(GenVecError::IndexOutOfRange(IndexOutOfRange::new(id.index(), 0..len))),
         }
     }
 }
-impl<T,Gen:IGeneration> GetMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> GetMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     #[inline(always)]
-    fn get_mut(&mut self, idx : GenVecIDOf<T,Gen>) -> Option<&mut Self::Output> { self.get_mut(idx) }
+    fn get_mut(&mut self, index: GenIDOf<T,Gen>) -> Option<&mut Self::Output> { self.get_mut(index) }
 }
 
-impl<T,Gen:IGeneration> GetManyMut<GenVecIDOf<T,Gen>> for GenVecOf<T,Gen>
+impl<T,Gen:IGeneration> GetManyMut<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
 {
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [GenVecIDOf<T,Gen>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [GenIDOf<T,Gen>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
     {
         // Todo: use O(N) complexity to check the overlaping
-        // Check SlotMap imply that put tmp Free slot in the current indices to
+        // Check SlotMap imply that put tmp Free slot/entry in the current indices to
 
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.slot.try_get_many_mut(indices.map(|i| i.index))
+        match self.values.try_get_many_mut(indices.map(|id| id.index()))
         {
-            Ok(values) => if values.iter().enumerate().any(|(idx,v)| !v.have_value() || v.generation() != indices[idx].generation)
+            Ok(values) => if values.iter().enumerate().any(|(index,v)| !v.have_value() || v.generation() != indices[index].generation())
             { Err(std::slice::GetDisjointMutError::OverlappingIndices) } else { Ok(values.map(|v| v.value_mut().unwrap())) },
             Err(e) => Err(e),
         }
     }
-    
-    fn get_many_mut<const N: usize>(&mut self, indices: [GenVecIDOf<T,Gen>; N]) -> Option<[&mut Self::Output;N]>
+
+    fn get_many_mut<const N: usize>(&mut self, indices: [GenIDOf<T,Gen>; N]) -> Option<[&mut Self::Output;N]>
     {
         // Todo: use O(N) complexity to check the overlaping
-        // Check SlotMap imply that put tmp Free slot in the current indices to
+        // Check SlotMap imply that put tmp Free slot/entry in the current indices to
 
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.slot.get_many_mut(indices.map(|i| i.index))
+        match self.values.get_many_mut(indices.map(|id| id.index()))
         {
-            Some(values) => 
-                if values.iter().enumerate().any(|(idx,v)| !v.have_value() || v.generation() != indices[idx].generation) 
+            Some(values) =>
+                if values.iter().enumerate().any(|(index,v)| !v.have_value() || v.generation() != indices[index].generation())
                 { None } else { Some(values.map(|v| v.value_mut().unwrap())) },
             None => None,
         }
     }
 }
+impl<T,Gen:IGeneration> Remove<usize> for GenVecOf<T,Gen>
+{
+    type Output=T;
+    fn remove(&mut self, index: usize) -> Option<Self::Output> {
+        self.remove_from_index(index)
+    }
+}
 
+impl<T,Gen:IGeneration> Remove<GenIDOf<T,Gen>> for GenVecOf<T,Gen>
+{
+    type Output=T;
+    fn remove(&mut self, index: GenIDOf<T,Gen>) -> Option<Self::Output> {
+        self.remove(index)
+    }
+}
 
 
 impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 {
-    /// Moves all the elements of `other` into `self`, leaving `other` empty by clearing it (don't invalidate all previous [GenVecID]).
+    /// Moves all the elements of `other` into `self`, leaving `other` empty by clearing it (don't invalidate all previous [GenID]).
     pub fn append(&mut self, other: &mut GenVecOf<T,Gen>) -> impl GenIDUpdater<T,Gen> + use<T,Gen> where T: GenIDUpdatable<T,Gen>
     {
         let capacity = other.len();
         let mut h = HashMap::with_capacity(capacity);
 
-        for (idx, slot) in other.slot.iter_mut().enumerate().filter(|(_,s)| s.have_value())
+        for (index, entry) in other.values.iter_mut().enumerate().filter(|(_,s)| s.have_value())
         {
-            let val = slot.value.take_and_free(usize::MAX);
-            let old_id = slot.get_id(idx);
+            let val = entry.value.take_and_free(usize::MAX);
+            let old_id = entry.get_id(index);
             let new_id = self.insert(val);
             h.insert(old_id, new_id);
         }
@@ -1082,13 +1018,13 @@ impl<A,Gen:IGeneration> Extend<A> for GenVecOf<A,Gen>
 
 pub trait GenIDUpdater<T,Gen:IGeneration>
 {
-    fn update(&self, dest : &mut GenVecIDOf<T,Gen>);
+    fn update(&self, dest : &mut GenIDOf<T,Gen>);
 }
-impl<T,Gen:IGeneration> GenIDUpdater<T,Gen> for HashMap<GenVecIDOf<T,Gen>,GenVecIDOf<T,Gen>>
+impl<T,Gen:IGeneration> GenIDUpdater<T,Gen> for HashMap<GenIDOf<T,Gen>,GenIDOf<T,Gen>>
 {
-    fn update(&self, dest : &mut GenVecIDOf<T,Gen>) {
+    fn update(&self, dest : &mut GenIDOf<T,Gen>) {
         debug_assert!(dest.is_null() || self.get(&dest).is_some());
-        *dest = self.get(&dest).copied().unwrap_or(GenVecIDOf::NULL);
+        *dest = self.get(&dest).copied().unwrap_or(GenIDOf::NULL);
     }
 }
 
@@ -1097,16 +1033,16 @@ pub trait GenIDUpdatable<T=Self,Gen:IGeneration=Generation> : Sized
 {
     fn update_id<U : GenIDUpdater<T,Gen>>(&mut self, updater : &U);
 }
-impl<T,Gen:IGeneration> GenIDUpdatable<T,Gen> for GenVecIDOf<T,Gen>
+impl<T,Gen:IGeneration> GenIDUpdatable<T,Gen> for GenIDOf<T,Gen>
 {
     fn update_id<U : GenIDUpdater<T,Gen>>(&mut self, updater : &U) {
         updater.update(self);
     }
 }
 
-impl<A,Gen:IGeneration> Extend<(GenVecIDOf<A,Gen>, A)> for GenVecOf<A,Gen> where A : GenIDUpdatable<A,Gen>
+impl<A,Gen:IGeneration> Extend<(GenIDOf<A,Gen>, A)> for GenVecOf<A,Gen> where A : GenIDUpdatable<A,Gen>
 {
-    fn extend<T: IntoIterator<Item = (GenVecIDOf<A,Gen>, A)>>(&mut self, iter: T)
+    fn extend<T: IntoIterator<Item = (GenIDOf<A,Gen>, A)>>(&mut self, iter: T)
     {
         let it = iter.into_iter();
         let mut h = HashMap::with_capacity(it.size_hint().0);
@@ -1157,7 +1093,7 @@ mod tests
     #[derive(Debug, Clone, Copy)]
     struct Cell
     {
-        next : GenVecID<Cell>,
+        next : GenID<Cell>,
         value : i32,
     }
 
@@ -1172,11 +1108,11 @@ mod tests
     fn extend_complexe_struct()
     {
         let mut src = GenVec::new();
-        let first = src.insert(Cell{ next: GenVecID::NULL, value: 1 });
+        let first = src.insert(Cell{ next: GenID::NULL, value: 1 });
         src.insert(Cell{ next: first, value: 2 });
 
         let mut dest = GenVec::new();
-        let first = dest.insert(Cell{ next: GenVecID::NULL, value: 3 });
+        let first = dest.insert(Cell{ next: GenID::NULL, value: 3 });
         dest.insert(Cell{ next: first, value: 4 });
 
         src.extend(dest.into_iter());
@@ -1190,11 +1126,11 @@ mod tests
     fn append_complexe_struct()
     {
         let mut src = GenVec::new();
-        let first = src.insert(Cell{ next: GenVecID::NULL, value: 1 });
+        let first = src.insert(Cell{ next: GenID::NULL, value: 1 });
         src.insert(Cell{ next: first, value: 2 });
 
         let mut dest = GenVec::new();
-        let mut first = dest.insert(Cell{ next: GenVecID::NULL, value: 3 });
+        let mut first = dest.insert(Cell{ next: GenID::NULL, value: 3 });
         let mut second = dest.insert(Cell{ next: first, value: 4 });
 
         let updater = src.append(&mut dest);
@@ -1204,7 +1140,7 @@ mod tests
         first.update_id(&updater);
         second.update_id(&updater);
 
-        assert_eq!(src[first].next, GenVecID::NULL);
+        assert_eq!(src[first].next, GenID::NULL);
         assert_eq!(src[first].value, 3);
         assert_eq!(src[second].next, first);
         assert_eq!(src[second].value, 4);
@@ -1294,9 +1230,9 @@ mod tests
         let x = GenVec::from_iter([10,20,30]);
         assert_eq!(x.len(), 3);
 
-        assert_eq!(x[x.get_id(0)], 10);
-        assert_eq!(x[x.get_id(1)], 20);
-        assert_eq!(x[x.get_id(2)], 30);
+        assert_eq!(x[x.index_to_id(0)], 10);
+        assert_eq!(x[x.index_to_id(1)], 20);
+        assert_eq!(x[x.index_to_id(2)], 30);
 
         assert_eq!(x.into_values().collect::<Vec<_>>(), vec![10, 20, 30]);
     }
@@ -1432,104 +1368,104 @@ mod tests
     #[test]
     fn rollback_remove_empty()
     {
-        let mut gen_vec = GenVec::new();
-        // dbg!(&gen_vec);
+        let mut genvec = GenVec::new();
+        // dbg!(&genvec);
 
-        let id = gen_vec.insert(42);
+        let id = genvec.insert(42);
 
-        let old_gen = gen_vec.clone();
+        let old_gen = genvec.clone();
 
-        // dbg!(&gen_vec);
-        let removed = gen_vec.remove_index(id.index).unwrap();
-        // dbg!(&gen_vec);
-        gen_vec.rollback_remove_index(id.index, removed).unwrap();
-        // dbg!(&gen_vec);
+        // dbg!(&genvec);
+        let removed = genvec.remove_from_index(id.index()).unwrap();
+        // dbg!(&genvec);
+        genvec.rollback_remove_index(id.index(), removed).unwrap();
+        // dbg!(&genvec);
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_remove_wrapping_empty()
     {
-        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
-        let id = gen_vec.insert(42);
+        let mut genvec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let id = genvec.insert(42);
 
-        let old_gen = gen_vec.clone();
+        let old_gen = genvec.clone();
 
-        let removed = gen_vec.remove_index(id.index).unwrap();
-        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+        let removed = genvec.remove_from_index(id.index()).unwrap();
+        genvec.rollback_remove_index(id.index(), removed).unwrap();
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_remove_wrapping()
     {
-        let mut gen_vec = wrapping_about_to_wrap();
-        let id = gen_vec.insert(42);
+        let mut genvec = wrapping_about_to_wrap();
+        let id = genvec.insert(42);
 
-        let old_gen = gen_vec.clone();
+        let old_gen = genvec.clone();
 
-        let removed = gen_vec.remove_index(id.index).unwrap();
-        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+        let removed = genvec.remove_from_index(id.index()).unwrap();
+        genvec.rollback_remove_index(id.index(), removed).unwrap();
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_remove_wrapping_2()
     {
-        let mut gen_vec = wrapping_about_to_wrap();
-        gen_vec.insert(50);
+        let mut genvec = wrapping_about_to_wrap();
+        genvec.insert(50);
 
-        let id = gen_vec.insert(42);
+        let id = genvec.insert(42);
 
-        let old_gen = gen_vec.clone();
+        let old_gen = genvec.clone();
 
-        let removed = gen_vec.remove_index(id.index).unwrap();
-        gen_vec.rollback_remove_index(id.index, removed).unwrap();
+        let removed = genvec.remove_from_index(id.index()).unwrap();
+        genvec.rollback_remove_index(id.index(), removed).unwrap();
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_remove_non_wrapping()
     {
-        let mut gen_vec = non_wrapping_about_to_wrap();
-        // dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-        // dbg!(&gen_vec);
+        let mut genvec = non_wrapping_about_to_wrap();
+        // dbg!(&genvec);
+        let id = genvec.insert(42);
+        // dbg!(&genvec);
 
-        let old_gen = gen_vec.clone();
+        let old_gen = genvec.clone();
 
-        let removed = gen_vec.remove_index(id.index).unwrap();
-        // dbg!(&gen_vec);
+        let removed = genvec.remove_from_index(id.index()).unwrap();
+        // dbg!(&genvec);
 
-        gen_vec.rollback_remove_index(id.index, removed).unwrap();
-        // dbg!(&gen_vec);
+        genvec.rollback_remove_index(id.index(), removed).unwrap();
+        // dbg!(&genvec);
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_remove_non_wrapping_2()
     {
-        let mut gen_vec = non_wrapping_about_to_wrap();
-        gen_vec.insert(50);
+        let mut genvec = non_wrapping_about_to_wrap();
+        genvec.insert(50);
 
-        // dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-        // dbg!(&gen_vec);
+        // dbg!(&genvec);
+        let id = genvec.insert(42);
+        // dbg!(&genvec);
 
-        let old_gen = gen_vec.clone();
+        let old_gen = genvec.clone();
 
-        let removed = gen_vec.remove_index(id.index).unwrap();
-        // dbg!(&gen_vec);
+        let removed = genvec.remove_from_index(id.index()).unwrap();
+        // dbg!(&genvec);
 
-        gen_vec.rollback_remove_index(id.index, removed).unwrap();
-        // dbg!(&gen_vec);
+        genvec.rollback_remove_index(id.index(), removed).unwrap();
+        // dbg!(&genvec);
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
 
@@ -1538,15 +1474,15 @@ mod tests
     #[test]
     fn rollback_insert_empty()
     {
-        let mut gen_vec = GenVec::new();
-        let old_gen = gen_vec.clone();
+        let mut genvec = GenVec::new();
+        let old_gen = genvec.clone();
 
-        // dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-        // dbg!(&gen_vec);
-        gen_vec.rollback_insert(id).unwrap();
+        // dbg!(&genvec);
+        let id = genvec.insert(42);
+        // dbg!(&genvec);
+        genvec.rollback_insert(id).unwrap();
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
 
@@ -1555,16 +1491,16 @@ mod tests
     {
         // We can't know if the gen vec is new or if the gen vec just wrapped
 
-        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
-        let old_gen = gen_vec.clone();
+        let mut genvec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let old_gen = genvec.clone();
 
-         dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-         dbg!(&gen_vec);
-        gen_vec.rollback_insert(id).unwrap();
-         dbg!(&gen_vec);
+         dbg!(&genvec);
+        let id = genvec.insert(42);
+         dbg!(&genvec);
+        genvec.rollback_insert(id).unwrap();
+         dbg!(&genvec);
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
@@ -1572,103 +1508,103 @@ mod tests
     {
         // We can't know if the gen vec is new or if the gen vec just wrapped
 
-        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
-        let _id = gen_vec.insert(45);
+        let mut genvec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let _id = genvec.insert(45);
 
-        let old_gen = gen_vec.clone();
+        let old_gen = genvec.clone();
 
-         dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-         dbg!(&gen_vec);
-        gen_vec.rollback_insert(id).unwrap();
-         dbg!(&gen_vec);
+         dbg!(&genvec);
+        let id = genvec.insert(42);
+         dbg!(&genvec);
+        genvec.rollback_insert(id).unwrap();
+         dbg!(&genvec);
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_insert_wrapping_dif()
     {
-        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
-        let id = gen_vec.insert(45);
-        gen_vec.remove(id);
-        assert_ne!(gen_vec, GenVecOf::<i32,Wrapping<Generation>>::new());
+        let mut genvec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let id = genvec.insert(45);
+        genvec.remove(id);
+        assert_ne!(genvec, GenVecOf::<i32,Wrapping<Generation>>::new());
     }
 
     #[test]
     fn rollback_insert_wrapping_4()
     {
-        let mut gen_vec = GenVecOf::<i32,Wrapping<Generation>>::new();
-        let _ = gen_vec.insert(45);
+        let mut genvec = GenVecOf::<i32,Wrapping<Generation>>::new();
+        let _ = genvec.insert(45);
 
-         //dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-         //dbg!(&gen_vec);
-        gen_vec.rollback_insert(id).unwrap();
-         //dbg!(&gen_vec);
+        //dbg!(&genvec);
+        let id = genvec.insert(42);
+        //dbg!(&genvec);
+        genvec.rollback_insert(id).unwrap();
+        //dbg!(&genvec);
 
          let mut old_gen = GenVecOf::new();
          old_gen.insert(50);
 
-        assert_ne!(gen_vec, old_gen);
+        assert_ne!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_insert_wrapping()
     {
-        let mut gen_vec = wrapping_about_to_wrap();
-        let old_gen = gen_vec.clone();
+        let mut genvec = wrapping_about_to_wrap();
+        let old_gen = genvec.clone();
 
-        // dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-        // dbg!(&gen_vec);
-        gen_vec.rollback_insert(id).unwrap();
-        // dbg!(&gen_vec);
+        // dbg!(&genvec);
+        let id = genvec.insert(42);
+        // dbg!(&genvec);
+        genvec.rollback_insert(id).unwrap();
+        // dbg!(&genvec);
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
 
     #[test]
     fn rollback_insert_wrapping_2()
     {
-        let mut gen_vec = wrapping_about_to_wrap();
-        let old_gen = gen_vec.clone();
+        let mut genvec = wrapping_about_to_wrap();
+        let old_gen = genvec.clone();
 
-        // dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-        // dbg!(&gen_vec);
-        gen_vec.rollback_insert(id).unwrap();
+        // dbg!(&genvec);
+        let id = genvec.insert(42);
+        // dbg!(&genvec);
+        genvec.rollback_insert(id).unwrap();
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_insert_non_wrapping()
     {
-        let mut gen_vec = non_wrapping_about_to_wrap();
-        let old_gen = gen_vec.clone();
+        let mut genvec = non_wrapping_about_to_wrap();
+        let old_gen = genvec.clone();
 
-        // dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-        // dbg!(&gen_vec);
-        gen_vec.rollback_insert(id).unwrap();
+        // dbg!(&genvec);
+        let id = genvec.insert(42);
+        // dbg!(&genvec);
+        genvec.rollback_insert(id).unwrap();
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
     #[test]
     fn rollback_insert_non_wrapping_2()
     {
-        let mut gen_vec = non_wrapping_about_to_wrap();
-        let old_gen = gen_vec.clone();
+        let mut genvec = non_wrapping_about_to_wrap();
+        let old_gen = genvec.clone();
 
-        // dbg!(&gen_vec);
-        let id = gen_vec.insert(42);
-        // dbg!(&gen_vec);
-        gen_vec.rollback_insert(id).unwrap();
+        // dbg!(&genvec);
+        let id = genvec.insert(42);
+        // dbg!(&genvec);
+        genvec.rollback_insert(id).unwrap();
 
-        assert_eq!(gen_vec, old_gen);
+        assert_eq!(genvec, old_gen);
     }
 
 
@@ -1677,7 +1613,7 @@ mod tests
         let mut g = GenVec::from_iter([1,2,3,4,5,6,7,8]);
         assert_eq!(g.len(), 8);
 
-        g.retain(|x| x % 2  == 0);
+        g.retain(|_id,x| x % 2  == 0);
         assert_eq!(g.len(), 4);
 
         assert!(g.into_values().eq([2,4,6,8]));

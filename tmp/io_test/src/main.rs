@@ -1,0 +1,144 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+
+use std::fmt::Debug;
+use std::fs;
+use std::path::Path;
+use std::{any::Any, sync::Arc};
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
+
+#[cfg(feature = "hexga_io")]
+use hexga_io::{IoLoad, IoSave, Load, Save};
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[derive(Debug)]
+pub struct Asset {
+    pub name: String,
+    pub kind: AssetKind,
+}
+
+impl Asset
+{
+    pub fn from_disk(path: &str) -> Option<Self> {
+        let path = Path::new(path);
+        let name = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("")
+            .to_string();
+
+        if path.is_dir() {
+            let mut childs = Vec::new();
+            if let Ok(entries) = fs::read_dir(path) {
+                for entry in entries.flatten() {
+                    let entry_path = entry.path();
+                    if let Some(asset) = Asset::from_disk(entry_path.to_str().unwrap_or("")) {
+                        childs.push(asset);
+                    }
+                }
+            }
+            Some(Asset {
+                name,
+                kind: AssetKind::Folder(Folder { childs }),
+            })
+        } else if path.is_file() {
+            match fs::read(path) {
+                Ok(bytes) => Some(Asset {
+                    name,
+                    kind: AssetKind::File(File {
+                        bytes: Arc::new(bytes),
+                    }),
+                }),
+                Err(_) => None,
+            }
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+pub enum AssetKind {
+    Folder(Folder),
+    File(File),
+}
+impl Debug for AssetKind
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Folder(v) => v.fmt(f),
+            Self::File(v) => v.fmt(f),
+        }
+    }
+}
+
+impl AssetKind {
+    pub fn is_folder(&self) -> bool {
+        matches!(self, Self::Folder(_))
+    }
+    pub fn is_file(&self) -> bool {
+        matches!(self, Self::File(_))
+    }
+
+    pub fn as_folder(&self) -> Option<&Folder> {
+        if let Self::Folder(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
+    pub fn as_folder_mut(&mut self) -> Option<&mut Folder> {
+        if let Self::Folder(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_file(&self) -> Option<&File> {
+        if let Self::File(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
+    pub fn as_file_mut(&mut self) -> Option<&mut File> {
+        if let Self::File(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+pub struct File {
+    pub bytes: Arc<Vec<u8>>,
+    //pub data: Arc<Box<dyn Any>>,
+}
+impl Debug for File {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("...")
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[derive(Debug)]
+pub struct Folder {
+    pub childs: Vec<Asset>,
+}
+
+fn main() {
+    let a = Asset::from_disk("./tmp/io_test/asset").unwrap();
+
+    dbg!(&a);
+    println!("Hello, world!");
+}
