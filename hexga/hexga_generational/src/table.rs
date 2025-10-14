@@ -8,8 +8,6 @@ pub mod prelude
     pub use super::{Table,TableOf,TableID,TableIDOf};
 }
 
-// partial eq + prelude + typedef with string
-
 
 pub type TableOf<K,V> = TableBaseOf<K,V,Generation>;
 pub type Table<V> = TableOf<String,V>;
@@ -17,24 +15,8 @@ pub type Table<V> = TableOf<String,V>;
 pub type TableIDOf<K,V> = TableIDBaseOf<K,V,Generation>;
 pub type TableID<V> = TableIDBaseOf<String,V,Generation>;
 
-/// A data structure similar to [HashMap], for managing items using persistant keys
-///
-/// Can be indexed using the Key, or by using an [TableIDOf<K,V,Gen>] (faster)
-///
-/// Item and ID can be different on multiple computer, but the keys remain stable.
-/// Equality is based on the keys, not on the value using [PartialEq] or the ID.
-///
-/// ex: 2 players each playing on their computer can play the same video game,
-/// but one of them can use a texture pack and have different visual than the other players,
-/// even if the texture key are the same.
-///
-///
-/// Each Entry:
-///
-/// - have value `V`,
-/// - can have N number of keys (one (the main key), or multiple (the main keys then backward compatibility keys)),
-/// - have an [TableIDOf<K,V,Gen>] for fast access.
-#[derive(Clone, Debug)]
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Entry<K,V,Gen:IGeneration=Generation>
 {
     keys: Vec<K>,
@@ -166,14 +148,28 @@ impl<K,V,Gen:IGeneration> Into<(Vec<K>, V)> for Entry<K,V,Gen>
 
 pub type TableIDBaseOf<K,V,Gen> = GenIDOf<Entry<K,V,Gen>,Gen>;
 
-/// Keys => GenVecID => Value
+/// A data structure similar to [HashMap], for managing items using persistant keys
 ///
-/// N Keys => 1 Value
+/// Can be indexed using the Key, or by using an [TableIDOf<K,V,Gen>] (faster).
+///
+/// Each Entry:
+///
+/// - have value `V`,
+/// - can have N number of keys (one (the main key), or multiple (the main keys then backward compatibility keys)),
+/// - have an [TableIDOf<K,V,Gen>] for fast access.
 #[derive(Clone, Debug)]
 pub struct TableBaseOf<K,V,Gen:IGeneration=Generation>
 {
     values: GenVecOf<Entry<K,V,Gen>,Gen>,
     search: HashMap<K,TableIDBaseOf<K,V,Gen>>,
+}
+
+impl<K, V, Gen: IGeneration> Eq for TableBaseOf<K,V,Gen> where Entry<K,V,Gen>: Eq {}
+impl<K, V, Gen: IGeneration> PartialEq for TableBaseOf<K,V,Gen> where Entry<K,V,Gen>: PartialEq
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.values == other.values
+    }
 }
 
 #[cfg(feature = "serde")]
