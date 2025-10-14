@@ -3,7 +3,7 @@ use super::*;
 pub mod prelude
 {
     pub use super::{GenID};
-    pub(crate) use super::{Generation,IGeneration,GenIDOf};
+    pub(crate) use super::{Generation,IGeneration,GenIDOf,CollectionWithGenVecID};
 }
 
 pub trait IGeneration            : Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}

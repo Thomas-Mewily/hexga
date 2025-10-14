@@ -5,10 +5,17 @@ use crate::gen_vec::*;
 
 pub mod prelude
 {
-
+    pub use super::{Table,TableOf,TableID,TableIDOf};
 }
 
 // partial eq + prelude + typedef with string
+
+
+pub type TableOf<K,V> = TableBaseOf<K,V,Generation>;
+pub type Table<V> = TableOf<String,V>;
+
+pub type TableIDOf<K,V> = TableIDBaseOf<K,V,Generation>;
+pub type TableID<V> = TableIDBaseOf<String,V,Generation>;
 
 /// A data structure similar to [HashMap], for managing items using persistant keys
 ///
@@ -31,7 +38,7 @@ pub mod prelude
 pub struct Entry<K,V,Gen:IGeneration=Generation>
 {
     keys: Vec<K>,
-    id: TableIDOf<K,V,Gen>,
+    id: TableIDBaseOf<K,V,Gen>,
     value: V,
     phantom: PhantomData<Gen>,
 }
@@ -102,7 +109,7 @@ where
         Ok(crate::table::Entry {
             keys: entry.keys,
             value: entry.value,
-            id: TableIDOf::NULL,
+            id: TableIDBaseOf::NULL,
             phantom: PhantomData,
         })
     }
@@ -114,7 +121,7 @@ impl<K,V,Gen:IGeneration> Entry<K,V,Gen>
     pub(crate) const fn new(keys : Vec<K>, value : V) -> Self
     {
         assert!(keys.len() >= 1);
-        Self { value, keys, phantom: PhantomData, id: TableIDOf::NULL }
+        Self { value, keys, phantom: PhantomData, id: TableIDBaseOf::NULL }
     }
 
     pub fn value(&self) -> &V { &self.value }
@@ -127,7 +134,7 @@ impl<K,V,Gen:IGeneration> Entry<K,V,Gen>
     pub fn keys(&self) -> &[K] { self.keys.as_slice() }
     pub const fn nb_keys(&self) -> usize { self.keys.len() }
 
-    pub const fn id(&self) -> TableIDOf<K,V,Gen> { self.id }
+    pub const fn id(&self) -> TableIDBaseOf<K,V,Gen> { self.id }
 
     pub fn main_key(&self) -> &K { self.keys.first().unwrap() }
 
@@ -157,20 +164,20 @@ impl<K,V,Gen:IGeneration> Into<(Vec<K>, V)> for Entry<K,V,Gen>
     }
 }
 
-pub type TableIDOf<K,V,Gen> = GenIDOf<Entry<K,V,Gen>,Gen>;
+pub type TableIDBaseOf<K,V,Gen> = GenIDOf<Entry<K,V,Gen>,Gen>;
 
 /// Keys => GenVecID => Value
 ///
 /// N Keys => 1 Value
 #[derive(Clone, Debug)]
-pub struct TableOf<K,V,Gen:IGeneration=Generation>
+pub struct TableBaseOf<K,V,Gen:IGeneration=Generation>
 {
     values: GenVecOf<Entry<K,V,Gen>,Gen>,
-    search: HashMap<K,TableIDOf<K,V,Gen>>,
+    search: HashMap<K,TableIDBaseOf<K,V,Gen>>,
 }
 
 #[cfg(feature = "serde")]
-impl<K, V, Gen> Serialize for TableOf<K, V, Gen>
+impl<K, V, Gen> Serialize for TableBaseOf<K, V, Gen>
 where
     K: Serialize,
     V: Serialize,
@@ -185,7 +192,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<'de, K, V, Gen> Deserialize<'de> for TableOf<K, V, Gen>
+impl<'de, K, V, Gen> Deserialize<'de> for TableBaseOf<K, V, Gen>
 where
     K: Deserialize<'de> + Eq + Hash + Clone,
     V: Deserialize<'de>,
@@ -209,18 +216,18 @@ where
             }
         }
 
-        Ok(TableOf { values, search })
+        Ok(TableBaseOf { values, search })
     }
 }
 
-impl<K,V,Gen:IGeneration> Default for TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> Default for TableBaseOf<K,V,Gen>
 {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<K,V,Gen:IGeneration> TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> TableBaseOf<K,V,Gen>
 {
     pub fn new() -> Self
     {
@@ -228,13 +235,13 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen>
     }
     pub fn with_capacity(capacity : usize) -> Self { Self { values: GenVecOf::with_capacity(capacity), search: HashMap::new() } }
 
-    pub fn get_entry(&self, id: TableIDOf<K,V,Gen>) -> Option<&Entry<K,V,Gen>> { self.values.get(id) }
-    pub fn get(&self, id: TableIDOf<K,V,Gen>) -> Option<&V> { self.get_entry(id).map(|e| &e.value) }
+    pub fn get_entry(&self, id: TableIDBaseOf<K,V,Gen>) -> Option<&Entry<K,V,Gen>> { self.values.get(id) }
+    pub fn get(&self, id: TableIDBaseOf<K,V,Gen>) -> Option<&V> { self.get_entry(id).map(|e| &e.value) }
 
-    pub fn contains(&self, id: TableIDOf<K,V,Gen>) -> bool { self.values.get(id).is_some() }
+    pub fn contains(&self, id: TableIDBaseOf<K,V,Gen>) -> bool { self.values.get(id).is_some() }
 
     pub fn entries(&self) -> impl Iterator<Item = &Entry<K,V,Gen>> { self.values.iter().map(|(_idx,val)| val) }
-    pub fn ids(&self) -> impl Iterator<Item = TableIDOf<K,V,Gen>> { self.values.ids() }
+    pub fn ids(&self) -> impl Iterator<Item = TableIDBaseOf<K,V,Gen>> { self.values.ids() }
 
     pub fn values(&self) -> impl Iterator<Item = &V> { self.values.values().map(|e| e.value()) }
     pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> { self.values.values_mut().map(|e| e.value_mut()) }
@@ -266,8 +273,8 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen>
     pub fn iter(&self) -> Iter<'_,K,V,Gen> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_,K,V,Gen> { self.into_iter() }
 
-    pub(crate) fn get_entry_mut(&mut self, id: TableIDOf<K,V,Gen>) -> Option<&mut Entry<K,V,Gen>> { self.values.get_mut(id) }
-    pub fn get_mut(&mut self, id: TableIDOf<K,V,Gen>) -> Option<&mut V> { self.get_entry_mut(id).map(|e| &mut e.value) }
+    pub(crate) fn get_entry_mut(&mut self, id: TableIDBaseOf<K,V,Gen>) -> Option<&mut Entry<K,V,Gen>> { self.values.get_mut(id) }
+    pub fn get_mut(&mut self, id: TableIDBaseOf<K,V,Gen>) -> Option<&mut V> { self.get_entry_mut(id).map(|e| &mut e.value) }
 
     pub fn values_genvec(&self) -> &GenVecOf<Entry<K,V,Gen>,Gen>
     {
@@ -275,9 +282,9 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen>
     }
 }
 
-impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash
+impl<K,V,Gen:IGeneration> TableBaseOf<K,V,Gen> where K : Eq + Hash
 {
-    pub fn key_to_id<Q : ?Sized>(&self, key : &Q) -> Option<TableIDOf<K,V,Gen>> where K : Borrow<Q>, Q : Eq + Hash { self.search.get(key).copied() }
+    pub fn key_to_id<Q : ?Sized>(&self, key : &Q) -> Option<TableIDBaseOf<K,V,Gen>> where K : Borrow<Q>, Q : Eq + Hash { self.search.get(key).copied() }
 
     pub fn contains_any_keys(&self, keys : &[K]) -> bool
     {
@@ -305,7 +312,7 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash
         self.get_entry_mut_from_key(key).map(|e| &mut e.value)
     }
 
-    pub fn remove_entry(&mut self, id: TableIDOf<K,V,Gen>) -> Option<Entry<K,V,Gen>>
+    pub fn remove_entry(&mut self, id: TableIDBaseOf<K,V,Gen>) -> Option<Entry<K,V,Gen>>
     {
         let v = self.values.remove(id)?;
         for id in v.keys.iter()
@@ -321,7 +328,7 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash
     }
 
 
-    pub fn remove(&mut self, id: TableIDOf<K,V,Gen>) -> Option<V>
+    pub fn remove(&mut self, id: TableIDBaseOf<K,V,Gen>) -> Option<V>
     {
         self.remove_entry(id).map(|e| e.value)
     }
@@ -407,21 +414,21 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash
             });
     }
 }
-impl<K,V,Gen:IGeneration> TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> TableBaseOf<K,V,Gen>
 {
-    pub(crate) fn _insert_lambda(&mut self, value: V) -> TableIDOf<K,V, Gen>
+    pub(crate) fn _insert_lambda(&mut self, value: V) -> TableIDBaseOf<K,V, Gen>
     {
         self.values.insert(Entry::new(___(), value))
     }
 }
-impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash + Clone
+impl<K,V,Gen:IGeneration> TableBaseOf<K,V,Gen> where K : Eq + Hash + Clone
 {
-    pub fn insert(&mut self, key: K, value: V) -> Option<TableIDOf<K,V,Gen>>
+    pub fn insert(&mut self, key: K, value: V) -> Option<TableIDBaseOf<K,V,Gen>>
     {
         self.insert_with_keys(vec![key], value)
     }
     /// Return [None] if main_key_follow_by_backward_keys is empty
-    pub fn insert_with_keys<Keys>(&mut self, main_key_follow_by_backward_keys : Keys, value: V) -> Option<TableIDOf<K,V,Gen>> where Keys: IntoIterator<Item = K>
+    pub fn insert_with_keys<Keys>(&mut self, main_key_follow_by_backward_keys : Keys, value: V) -> Option<TableIDBaseOf<K,V,Gen>> where Keys: IntoIterator<Item = K>
     {
         let keys = main_key_follow_by_backward_keys.to_vec();
         if keys.is_empty() { return None; } // Missing main keys
@@ -436,7 +443,7 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash + Clone
     }
 
     /// Don't check if the key are already present
-    pub(crate) fn _force_add_keys(&mut self, main_key_follow_by_backward_keys : Vec<K>, id : TableIDOf<K,V,Gen>)
+    pub(crate) fn _force_add_keys(&mut self, main_key_follow_by_backward_keys : Vec<K>, id : TableIDBaseOf<K,V,Gen>)
     {
         for key in main_key_follow_by_backward_keys.into_iter()
         {
@@ -449,7 +456,7 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash + Clone
     }
 
     /// If any key is a duplicate / already used, return an error
-    pub fn add_keys(&mut self, source_id: TableIDOf<K,V,Gen>, keys: Vec<K>) -> Result<(), Vec<K>>
+    pub fn add_keys(&mut self, source_id: TableIDBaseOf<K,V,Gen>, keys: Vec<K>) -> Result<(), Vec<K>>
     {
         for key in keys.iter()
         {
@@ -477,7 +484,7 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash + Clone
         }
     }
 
-    pub fn add_key(&mut self, source_id: TableIDOf<K,V,Gen>, key: K) -> Result<(), K>
+    pub fn add_key(&mut self, source_id: TableIDBaseOf<K,V,Gen>, key: K) -> Result<(), K>
     {
         if self.contains_key(&key) { return Err(key); }
 
@@ -498,60 +505,60 @@ impl<K,V,Gen:IGeneration> TableOf<K,V,Gen> where K : Eq + Hash + Clone
     }
 }
 
-impl<K,V,Gen:IGeneration> Index<TableIDOf<K,V,Gen>> for TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> Index<TableIDBaseOf<K,V,Gen>> for TableBaseOf<K,V,Gen>
 {
     type Output=V;
-    fn index(&self, id: TableIDOf<K,V,Gen>) -> &Self::Output {
+    fn index(&self, id: TableIDBaseOf<K,V,Gen>) -> &Self::Output {
         self.get(id).unwrap()
     }
 }
-impl<K,V,Gen:IGeneration> IndexMut<TableIDOf<K,V,Gen>> for TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> IndexMut<TableIDBaseOf<K,V,Gen>> for TableBaseOf<K,V,Gen>
 {
-    fn index_mut(&mut self, id: TableIDOf<K,V,Gen>) -> &mut Self::Output {
+    fn index_mut(&mut self, id: TableIDBaseOf<K,V,Gen>) -> &mut Self::Output {
         self.get_mut(id).unwrap()
     }
 }
-impl<K,V,Gen:IGeneration> Get<TableIDOf<K,V,Gen>> for TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> Get<TableIDBaseOf<K,V,Gen>> for TableBaseOf<K,V,Gen>
 {
     type Output = V;
-    fn get(&self, index : TableIDOf<K,V,Gen>) -> Option<&Self::Output> {
+    fn get(&self, index : TableIDBaseOf<K,V,Gen>) -> Option<&Self::Output> {
         self.get(index)
     }
 }
-impl<K,V,Gen:IGeneration> GetMut<TableIDOf<K,V,Gen>> for TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> GetMut<TableIDBaseOf<K,V,Gen>> for TableBaseOf<K,V,Gen>
 {
-    fn get_mut(&mut self, index: TableIDOf<K,V,Gen>) -> Option<&mut Self::Output> {
+    fn get_mut(&mut self, index: TableIDBaseOf<K,V,Gen>) -> Option<&mut Self::Output> {
         self.get_mut(index)
     }
 }
-impl<K,V,Gen:IGeneration> GetManyMut<TableIDOf<K,V,Gen>> for TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> GetManyMut<TableIDBaseOf<K,V,Gen>> for TableBaseOf<K,V,Gen>
 {
-    fn get_many_mut<const N: usize>(&mut self, indices: [TableIDOf<K,V,Gen>; N]) -> Option<[&mut Self::Output;N]>
+    fn get_many_mut<const N: usize>(&mut self, indices: [TableIDBaseOf<K,V,Gen>; N]) -> Option<[&mut Self::Output;N]>
     {
         self.values.get_many_mut(indices).map(|entries| entries.map(|e| &mut e.value))
     }
 
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [TableIDOf<K,V,Gen>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [TableIDBaseOf<K,V,Gen>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
     {
         self.values.try_get_many_mut(indices).map(|entries| entries.map(|e| &mut e.value))
     }
 }
 
-impl<K,V,Gen:IGeneration> Remove<TableIDOf<K,V,Gen>> for TableOf<K,V,Gen> where K : Eq + Hash
+impl<K,V,Gen:IGeneration> Remove<TableIDBaseOf<K,V,Gen>> for TableBaseOf<K,V,Gen> where K : Eq + Hash
 {
     type Output=V;
-    fn remove(&mut self, id: TableIDOf<K,V,Gen>) -> Option<Self::Output> {
+    fn remove(&mut self, id: TableIDBaseOf<K,V,Gen>) -> Option<Self::Output> {
         self.remove(id)
     }
 }
 
 
-impl<K,V,Gen:IGeneration> Length for TableOf<K,V,Gen> { #[inline(always)] fn len(&self) -> usize { self.len() } }
-impl<K,V,Gen:IGeneration> Clearable for TableOf<K,V,Gen> { #[inline(always)] fn clear(&mut self) { self.clear() } }
+impl<K,V,Gen:IGeneration> Length for TableBaseOf<K,V,Gen> { #[inline(always)] fn len(&self) -> usize { self.len() } }
+impl<K,V,Gen:IGeneration> Clearable for TableBaseOf<K,V,Gen> { #[inline(always)] fn clear(&mut self) { self.clear() } }
 
 
 
-impl<K,V,Gen:IGeneration> IntoIterator for TableOf<K,V,Gen>
+impl<K,V,Gen:IGeneration> IntoIterator for TableBaseOf<K,V,Gen>
 {
     type Item=(Vec<K>, V);
     type IntoIter=IntoIter<K,V,Gen>;
@@ -588,12 +595,12 @@ impl<K,V, Gen: IGeneration> ExactSizeIterator for IntoIter<K,V, Gen> { fn len(&s
 pub struct EntryID<'a,K,V,Gen:IGeneration>
 {
     pub key : &'a [K],
-    pub id  : TableIDOf<K,V,Gen>,
+    pub id  : TableIDBaseOf<K,V,Gen>,
 }
 
 
 
-impl<'a,K,V,Gen:IGeneration> IntoIterator for &'a TableOf<K,V,Gen>
+impl<'a,K,V,Gen:IGeneration> IntoIterator for &'a TableBaseOf<K,V,Gen>
 {
     type Item=(EntryID<'a,K,V,Gen>, &'a V);
     type IntoIter=Iter<'a,K,V,Gen>;
@@ -624,7 +631,7 @@ impl<'a,K,V, Gen: IGeneration> FusedIterator for Iter<'a,K,V, Gen> {}
 impl<'a,K,V, Gen: IGeneration> ExactSizeIterator for Iter<'a,K,V, Gen> { fn len(&self) -> usize { self.iter.len() } }
 
 
-impl<'a,K,V,Gen:IGeneration> IntoIterator for &'a mut TableOf<K,V,Gen>
+impl<'a,K,V,Gen:IGeneration> IntoIterator for &'a mut TableBaseOf<K,V,Gen>
 {
     type Item=(EntryID<'a,K,V,Gen>, &'a mut V);
     type IntoIter=IterMut<'a,K,V,Gen>;
