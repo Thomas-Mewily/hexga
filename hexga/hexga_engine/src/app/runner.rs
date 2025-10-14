@@ -38,6 +38,15 @@ impl<A> AppRun for A where A:Application
     {
         log::init_logger();
 
+        {
+            // Make sure the App is destroyed, even on panic
+            let default_panic = std::panic::take_hook();
+            std::panic::set_hook(Box::new(move |info| {
+                App::destroy();
+                default_panic(info);
+            }));
+        }
+
 
         assert!(App::is_not_init(), "Can't run two app at the same time, App is a singleton");
 

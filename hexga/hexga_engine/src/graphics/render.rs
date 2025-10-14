@@ -15,7 +15,7 @@ impl GpuRender
 {
     pub fn new(param : DrawParam) -> Self
     {
-        Self { params: NonEmptyStack::new(param), default_param: param, big_mesh: ___(), draw_calls: ___() }
+        Self { params: NonEmptyStack::new(param.clone()), default_param: param, big_mesh: ___(), draw_calls: ___() }
     }
 }
 
@@ -46,11 +46,17 @@ impl GpuRender
     }
 
 
-    pub fn push_param(&mut self)
+    pub fn texture_replace(&mut self, texture: Option<Texture>) -> &mut Self
     {
-        self.params.push(self.draw_calls.param);
+        self.param_map(|p| p.texture = texture.clone());
+        self
     }
-    pub fn pop_param(&mut self)
+
+    pub fn param_push(&mut self)
+    {
+        self.params.push(self.draw_calls.param.clone());
+    }
+    pub fn param_pop(&mut self)
     {
         let param = self.params.pop().expect("forget to push param");
         self.set_param(param);
@@ -58,9 +64,9 @@ impl GpuRender
     pub fn param_map<F>(&mut self, f: F) where F: FnOnce(&mut DrawParam)
     {
         f(&mut self.params);
-        self.set_param(*self.params);
+        self.set_param(self.param());
     }
-    pub fn param(&self) -> DrawParam { *self.params }
+    pub fn param(&self) -> DrawParam { self.params.last().clone() }
 
     pub fn set_param(&mut self, param: DrawParam)
     {
@@ -157,8 +163,8 @@ impl ScopedFlow for GpuRender
         let viewport = scissor.cast_into();
         dcall_param.scissor = scissor;
         dcall_param.viewport = viewport;
-        self.params.replace(*dcall_param);
-        self.draw_calls.param = *dcall_param;
+        self.params.replace(dcall_param.clone());
+        self.draw_calls.param = dcall_param.clone();
     }
 
     fn end_flow_draw(&mut self)
@@ -169,7 +175,7 @@ impl ScopedFlow for GpuRender
 }
 
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct DrawParam
 {
     pub camera  : Camera,
@@ -177,11 +183,12 @@ pub struct DrawParam
     pub viewport_min_depth: float,
     pub viewport_max_depth: float,
     pub scissor : Rect2i,
+    pub texture: Option<Texture>,
 }
 impl Default for DrawParam
 {
     fn default() -> Self {
-        Self { camera: ___(), viewport: ___(), viewport_min_depth: 0., viewport_max_depth: 1., scissor: ___() }
+        Self { camera: ___(), viewport: ___(), viewport_min_depth: 0., viewport_max_depth: 1., scissor: ___(), texture: None }
     }
 }
 
@@ -213,7 +220,6 @@ pub struct DrawCall
 {
     pub(crate) geometry: DrawGeometry,
     pub(crate) param: DrawParam,
-    pub(crate) texture: Option<Texture>,
 }
 impl Deref for DrawCall
 {

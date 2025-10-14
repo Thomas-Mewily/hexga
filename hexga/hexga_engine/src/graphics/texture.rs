@@ -2,7 +2,7 @@ use hexga::graphics::image::ImageBaseOf;
 
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub struct Texture
 {
     pub(crate) shared : Arc<GpuTexture>
@@ -15,7 +15,7 @@ impl<T> From<T> for Texture where GpuTexture: From<T>
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Hash)]
 pub struct GpuTexture
 {
     #[allow(unused)]
@@ -75,18 +75,15 @@ impl<Idx> From<&ImageBaseOf<RgbaU8,Idx>> for GpuTexture where Idx: Integer
             ..Default::default()
         });
 
-        todo!();
-
-        /*
         let bind_group = Pen.base.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &Pen.binding.texture_bind_group,
             entries: &[
                 wgpu::BindGroupEntry {
-                    binding: 1,
+                    binding: 0,
                     resource: wgpu::BindingResource::TextureView(&view),
                 },
                 wgpu::BindGroupEntry {
-                    binding: 2,
+                    binding: 1,
                     resource: wgpu::BindingResource::Sampler(&sampler),
                 },
             ],
@@ -101,7 +98,6 @@ impl<Idx> From<&ImageBaseOf<RgbaU8,Idx>> for GpuTexture where Idx: Integer
             sampler,
             bind_group
         }
-        */
     }
 }
 

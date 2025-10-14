@@ -54,14 +54,12 @@ impl Application for MyApp
 
     fn draw(&mut self) {
 
-        /*
         if self.texture.is_none()
         {
-            let b= include_bytes!("test.png");
-            let img = Image::load_from_bytes(b, ".png").unwrap();
+            let b2= include_bytes!("test.png");
+            let img = Image::load_from_bytes(b2, ".png").unwrap();
             self.texture = Some(Texture::from(img));
         }
-        */
         /*
         Pen.geometry
         (
@@ -83,17 +81,18 @@ impl Application for MyApp
             self.camera.perspective.aspect = r.size.x / r.size.y;
             Pen.set_matrix(self.camera.matrix());
 
+            Pen.texture_replace(self.texture.clone());
+
             Pen.geometry
             (
                 [
-                    Vertex::new().with_position([-0.0868241, 0.49240386, 0.0].into()).with_color(GpuColor::RED),
-                    Vertex::new().with_position([-0.49513406, 0.06958647, 0.0].into()).with_color(GpuColor::GREEN),
-                    Vertex::new().with_position([-0.21918549, -0.44939706, 0.0].into()).with_color(GpuColor::BLUE),
-                    Vertex::new().with_position([0.35966998, -0.3473291, 0.0].into()).with_color(GpuColor::BLUE),
-                    Vertex::new().with_position([0.44147372, 0.2347359, 0.0].into()).with_color(GpuColor::GREEN),
+                    Vertex::new().with_position([-0.4, -0.4, 0.0].into()).with_color(GpuColor::RED).with_uv([0.0, 0.0].into()),
+                    Vertex::new().with_position([0.4, -0.4, 0.0].into()).with_color(GpuColor::GREEN).with_uv([1.0, 0.0].into()),
+                    Vertex::new().with_position([0.4, 0.4, 0.0].into()).with_color(GpuColor::BLUE).with_uv([1.0, 1.0].into()),
+                    Vertex::new().with_position([-0.4, 0.4, 0.0].into()).with_color(GpuColor::YELLOW).with_uv([0.0, 1.0].into())
                 ],
                 [
-                    0, 1, 4, 1, 2, 4, 2, 3, 4
+                    0, 1, 2, 0, 2, 3
                 ]
             );
         }
