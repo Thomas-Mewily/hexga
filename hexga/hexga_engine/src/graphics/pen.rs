@@ -31,6 +31,7 @@ pub struct AppPen
 
     pub(crate) immediate_mesh: Option<Mesh>,
     pub(crate) background_color : Option<Color>,
+    pub(crate) white_pixel: Option<Texture>,
 }
 
 impl Deref for AppPen
@@ -76,6 +77,13 @@ impl AppPen
 
     pub(crate) fn send_data_to_gpu(&mut self)
     {
+        /*
+        if self.white_pixel.is_none()
+        {
+            self.white_pixel = Some(Texture::from(Image::one_by_one(IColor::WHITE)));
+        }
+        */
+
         let surface_texture = self
             .surface.surface
             .get_current_texture()
@@ -149,6 +157,9 @@ impl AppPen
                     rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
                     rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
 
+                    //let texture = dc.texture.as_ref().unwrap_or(self.white_pixel.as_ref().unwrap());
+                    //rpass.set_bind_group(0, &texture.shared.bind_group, &[]);
+
                     match &dc.geometry
                     {
                         DrawGeometry::Immediate(im) =>
@@ -184,6 +195,7 @@ pub struct GpuBinding
 {
     pub(crate) camera_buffer: wgpu::Buffer,
     pub(crate) camera_bind_group: wgpu::BindGroup,
+    //pub(crate) texture_bind_group: wgpu::BindGroupLayout,
 }
 
 impl ScopedFlow for Option<AppPen>
@@ -351,6 +363,7 @@ impl AppPen
         });
 
 
+
         let vertex_layout =
         {
             GpuVertexBufferLayout {
@@ -365,17 +378,46 @@ impl AppPen
                     wgpu::VertexAttribute {
                         offset: size_of::<GpuVec3>() as wgpu::BufferAddress,
                         shader_location: 1,
+                        format: UV::GPU_VERTEX_FORMAT,
+                    },
+                    wgpu::VertexAttribute {
+                        offset: (size_of::<GpuVec3>() + size_of::<UV>()) as wgpu::BufferAddress,
+                        shader_location: 2,
                         format: GpuColor::GPU_VERTEX_FORMAT,
                     },
                 ],
             }
         };
 
+        /*
+        let texture_bind_group =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Texture {
+                            multisampled: false,
+                            view_dimension: wgpu::TextureViewDimension::D2,
+                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        },
+                        count: None,
+                    },
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 2,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                        count: None,
+                    },
+                ],
+                label: Some("texture_bind_group_layout"),
+            });
+        */
 
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
-                bind_group_layouts: &[&camera_bind_group_layout],
+                bind_group_layouts: &[&camera_bind_group_layout, /*&texture_bind_group*/],
                 push_constant_ranges: &[],
             });
 
@@ -420,6 +462,7 @@ impl AppPen
                 render: GpuRender::new(DrawParam { camera: Camera::CAMERA_3D, ..___() }),
                 background_color: Some(Color::BLACK),
                 immediate_mesh: None,
+                white_pixel: None,
             }
         )
     }

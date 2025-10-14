@@ -10,6 +10,7 @@ struct MyApp
     nb_split: float,
     camera: Camera3D,
     time: Time,
+    texture : Option<Texture>,
 }
 
 impl Application for MyApp
@@ -53,6 +54,14 @@ impl Application for MyApp
 
     fn draw(&mut self) {
 
+        /*
+        if self.texture.is_none()
+        {
+            let b= include_bytes!("test.png");
+            let img = Image::load_from_bytes(b, ".png").unwrap();
+            self.texture = Some(Texture::from(img));
+        }
+        */
         /*
         Pen.geometry
         (
@@ -109,7 +118,7 @@ fn main()
             },
             viewport: None
         };
-    let _ = MyApp{ nb_split: 3., camera, time: zero(), dpad: ___() }.run();
+    let _ = MyApp { nb_split: 3., camera, time: zero(), dpad: ___(), texture: None }.run();
 
     println!("Goodbye");
 }

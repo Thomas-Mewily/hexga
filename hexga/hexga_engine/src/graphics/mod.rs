@@ -30,3 +30,6 @@ pub use mesh::*;
 
 mod vec;
 pub use vec::*;
+
+mod texture;
+pub use texture::*;

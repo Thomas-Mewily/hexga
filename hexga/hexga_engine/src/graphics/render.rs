@@ -213,7 +213,7 @@ pub struct DrawCall
 {
     pub(crate) geometry: DrawGeometry,
     pub(crate) param: DrawParam,
-    // add texture here
+    pub(crate) texture: Option<Texture>,
 }
 impl Deref for DrawCall
 {
