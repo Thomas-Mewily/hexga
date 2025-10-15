@@ -56,14 +56,14 @@ impl AppWindow
 
 impl GetPosition<int,2> for AppWindow
 {
-    fn pos(&self) -> Vec2i
+    fn pos(&self) -> Point2
     {
         self.active.as_ref().and_then(|w| w.outer_position().ok()).map(|p| p.convert()).unwrap_or(zero())
     }
 }
 impl SetPosition<int,2> for AppWindow
 {
-    fn set_pos(&mut self, pos: Vec2i) -> &mut Self
+    fn set_pos(&mut self, pos: Point2) -> &mut Self
     {
         if let Some(active) = &mut self.active
         {

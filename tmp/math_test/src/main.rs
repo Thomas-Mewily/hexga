@@ -18,7 +18,7 @@ fn x()
     let v = vec2(0., 1.);
 
 
-    let size = vec2i(20, 40);
+    let size = point2(20, 40);
     let mut g = size.to_grid(|v| -2);
     let mut g2 = size.to_grid(|v| v.sum_axis());
     let m = g.max(g2);

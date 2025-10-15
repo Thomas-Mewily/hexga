@@ -138,7 +138,7 @@ impl<T,const N : usize> Vector<T,N>
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
-    /// assert_eq!(vec2i(3,4).sum_axis(), 7);
+    /// assert_eq!(point2(3,4).sum_axis(), 7);
     /// ```
     pub fn sum_axis(self) -> T where T: Numeric { self.into_iter().sum() }
 
@@ -180,10 +180,10 @@ impl<Idx, const N : usize> Vector<Idx, N>
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
-    /// assert_eq!(unsafe{ vec2i(0,0).to_index_unchecked(vec2i(10, 20)) }, 0);
-    /// assert_eq!(unsafe{ vec2i(3,0).to_index_unchecked(vec2i(10, 20)) }, 3);
-    /// assert_eq!(unsafe{ vec2i(3,1).to_index_unchecked(vec2i(10, 20)) }, 3+1*10);
-    /// assert_eq!(unsafe{ vec2i(3,5).to_index_unchecked(vec2i(10, 20)) }, 3+5*10);
+    /// assert_eq!(unsafe{ point2(0,0).to_index_unchecked(point2(10, 20)) }, 0);
+    /// assert_eq!(unsafe{ point2(3,0).to_index_unchecked(point2(10, 20)) }, 3);
+    /// assert_eq!(unsafe{ point2(3,1).to_index_unchecked(point2(10, 20)) }, 3+1*10);
+    /// assert_eq!(unsafe{ point2(3,5).to_index_unchecked(point2(10, 20)) }, 3+5*10);
     /// ```
     pub unsafe fn to_index_unchecked(self, size : Self) -> usize
     {
@@ -220,11 +220,11 @@ impl<Idx, const N : usize> Vector<Idx, N>
     /// use hexga_math::prelude::*;
     /// unsafe
     /// {
-    ///     let size = vec2i(10, 20);
-    ///     for point in [vec2i(0,0), vec2i(3,0), vec2i(3,1), vec2i(0,5)]
+    ///     let size = point2(10, 20);
+    ///     for point in [point2(0,0), point2(3,0), point2(3,1), point2(0,5)]
     ///     {
     ///         let index = point.to_index_unchecked(size);
-    ///         let point_back = Vec2i::from_index_unchecked(index, size);
+    ///         let point_back = Point2::from_index_unchecked(index, size);
     ///         assert_eq!(point, point_back);
     ///     }
     /// }

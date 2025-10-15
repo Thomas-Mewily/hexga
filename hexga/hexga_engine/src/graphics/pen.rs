@@ -228,7 +228,7 @@ pub(crate) struct GpuSurface
 
 impl GpuSurface
 {
-    fn resize(&mut self, size: Vec2i)
+    fn resize(&mut self, size: Point2)
     {
         let size = size.max(one());
         self.surface_config.width = size.x as _;
@@ -236,15 +236,15 @@ impl GpuSurface
         self.surface.configure(&Pen.base.device, &self.surface_config);
     }
 
-    fn size(&self) -> Vec2i
+    fn size(&self) -> Point2
     {
-        vec2i(self.surface_config.width as _, self.surface_config.height as _)
+        point2(self.surface_config.width as _, self.surface_config.height as _)
     }
 }
 
 impl AppPen
 {
-    pub(crate) fn resize(&mut self, size: Vec2i)
+    pub(crate) fn resize(&mut self, size: Point2)
     {
         self.surface.resize(size);
     }

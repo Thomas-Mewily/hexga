@@ -27,7 +27,7 @@ use super::*;
 /// assert_eq!(y, [1f32, 2f32]);
 ///
 ///
-/// let a = vec2i(1, 2);
+/// let a = point2(1, 2);
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
@@ -69,7 +69,7 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> = Self
 /// assert_eq!(y, [1f32, 2f32]);
 ///
 ///
-/// let a = vec2i(1, 2);
+/// let a = point2(1, 2);
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
