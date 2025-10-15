@@ -54,9 +54,11 @@ where
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Entry", 2)?;
-        state.serialize_field("keys", &self.keys)?;
-        state.serialize_field("value", &self.value)?;
+        use serde::ser::SerializeTuple;
+
+        let mut state = serializer.serialize_tuple(2)?;
+        state.serialize_element(&self.keys)?;
+        state.serialize_element(&self.value)?;
         state.end()
     }
 }
@@ -72,22 +74,16 @@ where
     where
         D: Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        struct Helper<K, V> {
-            keys: Vec<K>,
-            value: V,
-        }
-
-        let entry = Helper::deserialize(deserializer)?;
+        let (keys,value) = <(Vec<K>, V)>::deserialize(deserializer)?;
 
         let mut seen = std::collections::HashSet::new();
-        if entry.keys.iter().any(|k| !seen.insert(k)) {
+        if keys.iter().any(|k| !seen.insert(k)) {
             return Err(serde::de::Error::custom("duplicate keys found in Entry"));
         }
 
         Ok(crate::gen_multi_map::Entry {
-            keys: entry.keys,
-            value: entry.value,
+            keys: keys,
+            value: value,
             id: GenMultiMapIDOf::NULL,
             phantom: PhantomData,
         })
@@ -424,7 +420,9 @@ impl<K,V,Gen:IGeneration> GenMultiMapOf<K,V,Gen> where K : Eq + Hash + Clone
         }
 
         let id= self.values.insert(Entry::new(keys, value));
-        for key in self.values[id].keys()
+        let entry = &mut self.values[id];
+        entry.id = id;
+        for key in entry.keys()
         {
             let old_key = self.search.insert(key.clone(), id);
             assert!(old_key.is_none());
@@ -574,7 +572,7 @@ impl<K,V,Gen: IGeneration> Iterator for IntoIter<K, V, Gen>
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(slot) = self.iter.next()
         {
-            if let EntryValue::Used(value) = slot.value
+            if let EntryValue::Some(value) = slot.value
             {
                 self.len_remaining -= 1;
                 return Some(value.into_keys_and_value());

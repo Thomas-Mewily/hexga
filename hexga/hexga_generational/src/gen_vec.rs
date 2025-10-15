@@ -11,29 +11,100 @@ pub type GenVec<T> = GenVecOf<T,Generation>;
 
 
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum EntryValue<T>
 {
-    Used(T),
-    // Next free
+    Some(T),
+    /// Next free entry
     Free(usize),
 }
+
+
+#[cfg(feature = "serde")]
+impl<T> serde::Serialize for EntryValue<T>
+where
+    T: serde::Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            EntryValue::Some(value) => serializer.serialize_newtype_variant("EntryValue", 0, "Some", value),
+            EntryValue::Free(idx) => {
+                let opt = if idx.is_max_value() { None } else { Some(*idx) };
+                serializer.serialize_newtype_variant("EntryValue", 1, "Next", &opt)
+            }
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::Deserialize<'de> for EntryValue<T>
+where
+    T: serde::Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(serde::Deserialize)]
+        #[serde(field_identifier)]
+        enum Field { Some, Next }
+
+        struct EntryValueVisitor<T> {
+            marker: std::marker::PhantomData<T>,
+        }
+
+        impl<'de, T> serde::de::Visitor<'de> for EntryValueVisitor<T>
+        where
+            T: serde::Deserialize<'de>,
+        {
+            type Value = EntryValue<T>;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("enum EntryValue")
+            }
+
+            fn visit_enum<A>(self, data: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::EnumAccess<'de>,
+            {
+                use serde::de::VariantAccess;
+
+                match data.variant()? {
+                    (Field::Some, v) => Ok(EntryValue::Some(v.newtype_variant()?)),
+                    (Field::Next, v) => {
+                        let opt: Option<usize> = v.newtype_variant()?;
+                        Ok(EntryValue::Free(opt.unwrap_or(usize::MAX)))
+                    }
+                }
+            }
+        }
+
+        deserializer.deserialize_enum(
+            "EntryValue",
+            &["Some", "Next"],
+            EntryValueVisitor { marker: std::marker::PhantomData },
+        )
+    }
+}
+
 impl<T> EntryValue<T>
 {
-    pub fn get(&self) -> Option<&T> { if let Self::Used(v) = self { Some(v) } else { None }}
-    pub fn get_mut(&mut self) -> Option<&mut T> { if let Self::Used(v) = self { Some(v) } else { None }}
+    pub fn get(&self) -> Option<&T> { if let Self::Some(v) = self { Some(v) } else { None }}
+    pub fn get_mut(&mut self) -> Option<&mut T> { if let Self::Some(v) = self { Some(v) } else { None }}
 
     /// Panic is the entry is free
-    pub fn take_and_free(&mut self, free_index: usize) -> T {
-        match std::mem::replace(self, EntryValue::Free(free_index)) {
-            EntryValue::Used(value) => value,
+    pub fn take_and_free(&mut self, free_head: usize) -> T {
+        match std::mem::replace(self, EntryValue::Free(free_head)) {
+            EntryValue::Some(value) => value,
             EntryValue::Free(_) => panic!("Entry was already free"),
         }
     }
 
     pub fn is_free(&self) -> bool { matches!(self, Self::Free(_))}
-    pub fn is_used(&self) -> bool { matches!(self, Self::Used(_))}
+    pub fn is_used(&self) -> bool { matches!(self, Self::Some(_))}
 }
 
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
@@ -45,6 +116,7 @@ pub struct Entry<T,Gen:IGeneration=Generation>
     #[cfg_attr(feature = "serde", serde(rename = "gen"))]
     generation : Gen,
 }
+
 impl <T,Gen:IGeneration> Entry<T,Gen>
 {
     pub fn new(value : EntryValue<T>, generation : Gen) -> Self { Self { value, generation }}
@@ -71,7 +143,7 @@ impl <T,Gen:IGeneration> Entry<T,Gen>
 pub struct GenVecOf<T,Gen:IGeneration=Generation>
 {
     pub(crate) values: Vec<Entry<T,Gen>>,
-    head: usize,
+    free: usize,
     len: usize,
 }
 
@@ -84,7 +156,7 @@ impl<T, Gen:IGeneration> Hash for GenVecOf<T,Gen> where T: Hash
         if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
         {
             self.values.hash(state);
-            self.head.hash(state);
+            self.free.hash(state);
         }else
         {
             for (id, value) in self.iter()
@@ -102,15 +174,15 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
     {
         if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
         {
-            self.len == other.len && self.values == other.values && self.head == other.head
+            self.len == other.len && self.values == other.values && self.free == other.free
         }else
         {
             /*
                 We can't know if the gen vec is new or if the gen vec just wrapped arround.
 
                 Those two are equal: (Assuming Gen::MIN value is 0)
-                A: GenVecOf { entry: [Entry { value: Free(18446744073709551615), generation: 0 }], head: 0, len: 0 }
-                B: GenVecOf { entry: [], head: 18446744073709551615, len: 0 }
+                A: GenVecOf { entry: [Entry { value: Next(18446744073709551615), generation: 0 }], free: 0, len: 0 }
+                B: GenVecOf { entry: [], free: 18446744073709551615, len: 0 }
 
                 Both can represent unused wrapped gen vec.
 
@@ -124,18 +196,18 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
 
                 But these 2 are different, because that generation was already used.
 
-                X: GenVecOf { entry: [Entry { value: Free(18446744073709551615), generation: 1 }], head: 0, len: 0 }
-                Y: GenVecOf { entry: [], head: 18446744073709551615, len: 0 }
+                X: GenVecOf { entry: [Entry { value: Next(18446744073709551615), generation: 1 }], free: 0, len: 0 }
+                Y: GenVecOf { entry: [], free: 18446744073709551615, len: 0 }
             */
 
             if self.len != other.len { return false; }
-            if self.head == other.head { return self.values == other.values; }
-            if !(self.head.is_max_value() ^ other.head.is_max_value()) { return false; }
+            if self.free == other.free { return self.values == other.values; }
+            if !(self.free.is_max_value() ^ other.free.is_max_value()) { return false; }
 
-            if self.head.is_max_value()
+            if self.free.is_max_value()
             {
                 if self.values.len() + 1 != other.values.len() { return false; }
-                let mid = other.head;
+                let mid = other.free;
                 debug_assert!(!mid.is_max_value());
 
                 let entry = other.get_entry_from_index(mid).unwrap();
@@ -149,10 +221,10 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
                 let other_right = &other.values[mid+1..];
 
                 self_left == other_left && self_right == other_right
-            }else if other.head.is_max_value()
+            }else if other.free.is_max_value()
             {
                 if other.values.len() + 1 != self.values.len() { return false; }
-                let mid = self.head;
+                let mid = self.free;
                 debug_assert!(!mid.is_max_value());
 
                 let entry = self.get_entry_from_index(mid).unwrap();
@@ -179,15 +251,17 @@ impl<T, Gen:IGeneration> Serialize for GenVecOf<T,Gen> where T:Serialize, Gen: S
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     {
-
-        let mut state = serializer.serialize_struct("GenVec", 1 + self.head.is_not_max_value() as usize)?;
-        state.serialize_field("values", &self.values)?;
-        if self.head.is_not_max_value()
+        if self.free.is_max_value()
         {
+            self.values.serialize(serializer)
+        }else
+        {
+            let mut state = serializer.serialize_struct("GenVec", 2)?;
+            state.serialize_field("values", &self.values)?;
             // need to be in the same order on all machine for determinist
-            state.serialize_field("free", &Some(self.head))?;
+            state.serialize_field("next", &Some(self.free))?;
+            state.end()
         }
-        state.end()
     }
 }
 
@@ -195,7 +269,7 @@ impl<T, Gen:IGeneration> Serialize for GenVecOf<T,Gen> where T:Serialize, Gen: S
 impl<T, Gen:IGeneration> GenVecOf<T,Gen>
 {
     #[allow(dead_code)]
-    pub(crate) fn from_entries_and_head(values: Vec<Entry<T, Gen>>, head: usize) -> Result<Self, String>
+    pub(crate) fn from_entries_and_free(values: Vec<Entry<T, Gen>>, free: usize) -> Result<Self, String>
     {
         let len = values.iter().filter(|s| s.have_value()).count();
 
@@ -205,18 +279,18 @@ impl<T, Gen:IGeneration> GenVecOf<T,Gen>
         }
 
         let mut nb_use = len;
-        let mut cur_head = head;
+        let mut cur_free = free;
 
         while nb_use != 0
         {
-            let Some(next_entry) = values.get(cur_head) else { return Err(format!("GenVec : entry {:?} is out of range", cur_head)); };
-            let EntryValue::Free(f) = next_entry.value else { return Err(format!("GenVec : entry {:?} was not free", cur_head)); };
-            if f == usize::MAX { return Err(format!("GenVec : invalid free head {:?} at {:?}", f, cur_head));}
-            cur_head = f;
+            let Some(next_entry) = values.get(cur_free) else { return Err(format!("GenVec : entry {:?} is out of range", cur_free)); };
+            let EntryValue::Free(f) = next_entry.value else { return Err(format!("GenVec : entry {:?} was not free", cur_free)); };
+            if f == usize::MAX { return Err(format!("GenVec : invalid free head {:?} at {:?}", f, cur_free));}
+            cur_free = f;
             nb_use -= 1;
         }
 
-        Ok(Self{ values, head, len})
+        Ok(Self{ values, free, len})
     }
 }
 
@@ -249,12 +323,24 @@ where
                 formatter.write_str("a struct representing GenVec")
             }
 
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+                where
+                    A: serde::de::SeqAccess<'de>,
+            {
+                let mut values = Vec::new();
+                while let Some(entry) = seq.next_element::<Entry<T, Gen>>()? {
+                    values.push(entry);
+                }
+                let free = usize::MAX;
+                GenVecOf::<T, Gen>::from_entries_and_free(values, free).map_err(de::Error::custom)
+            }
+
             fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
             where
                 A: MapAccess<'de>,
             {
                 let mut values : Option<Vec<Entry<T, Gen>>> = None;
-                let mut free_index: Option<Option<usize>> = None;
+                let mut next_free_index: Option<Option<usize>> = None;
 
                 while let Some(key) = map.next_key::<&'de str>()?
                 {
@@ -266,28 +352,28 @@ where
                             }
                             values = Some(map.next_value()?);
                         }
-                        "free" => {
-                            if free_index.is_some() {
-                                return Err(de::Error::duplicate_field("free"));
+                        "next" => {
+                            if next_free_index.is_some() {
+                                return Err(de::Error::duplicate_field("next"));
                             }
-                            free_index = Some(map.next_value()?);
+                            next_free_index = Some(map.next_value()?);
                         }
                         _ => {
                             return Err(de::Error::unknown_field(
                                 &key,
-                                &["values", "free"],
+                                &["values", "next"],
                             ));
                         }
                     }
                 }
 
                 let entry = values.ok_or_else(|| de::Error::missing_field("values"))?;
-                let free = free_index.flatten().unwrap_or(usize::MAX);
-                GenVecOf::<T,Gen>::from_entries_and_head(entry, free).map_err(|e| de::Error::custom(e))
+                let free = next_free_index.flatten().unwrap_or(usize::MAX);
+                GenVecOf::<T,Gen>::from_entries_and_free(entry, free).map_err(de::Error::custom)
             }
         }
 
-        const FIELDS: &[&str] = &["values", "free"];
+        const FIELDS: &[&str] = &["values", "next"];
         deserializer.deserialize_struct(
             "GenVec",
             FIELDS,
@@ -306,8 +392,8 @@ impl<T,Gen:IGeneration> Default for GenVecOf<T,Gen>
 
 impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 {
-    pub const fn new() -> Self { Self { values: Vec::new(), head : usize::MAX, len : 0 }}
-    pub fn with_capacity(capacity : usize) -> Self { Self { values: Vec::with_capacity(capacity), head : usize::MAX, len : 0 }}
+    pub const fn new() -> Self { Self { values: Vec::new(), free : usize::MAX, len : 0 }}
+    pub fn with_capacity(capacity : usize) -> Self { Self { values: Vec::with_capacity(capacity), free : usize::MAX, len : 0 }}
 
     pub fn capacity(&self) -> usize { self.values.capacity() }
     pub fn shrink_to_fit(mut self) { self.values.shrink_to_fit(); }
@@ -319,7 +405,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     /// **must** not be used, as doing so may lead to undefined behavior.
     pub fn clear(&mut self)
     {
-        self.head = usize::MAX;
+        self.free = usize::MAX;
         self.len = 0;
         self.values.clear();
     }
@@ -333,8 +419,8 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
             {
                 if v.increment_generation()
                 {
-                    v.value = EntryValue::Free(self.head);
-                    self.head = index;
+                    v.value = EntryValue::Free(self.free);
+                    self.free = index;
                 }else
                 {
                     v.value = EntryValue::Free(usize::MAX);
@@ -347,28 +433,28 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     pub fn rollback_insert(&mut self, id: GenIDOf<T,Gen>) -> Result<T,()>
     {
         let index = id.index();
-        let head = self.head;
+        let free = self.free;
 
         let entry_len = self.values.len();
 
         let Some(entry) = self.get_entry_mut_from_index(index) else { return Err(()); };
         if entry.value.is_free() { return Err(()); }
 
-        if head.is_max_value()
+        if free.is_max_value()
         {
             if index + 1 != entry_len { return Err(()); }
         }
 
         let can_not_decrease = !entry.can_decrement_generation();
-        let val = entry.value.take_and_free(head);
+        let val = entry.value.take_and_free(free);
         self.len -= 1;
 
-        if head.is_max_value() && can_not_decrease
+        if free.is_max_value() && can_not_decrease
         {
             self.values.pop().ok_or(())?;
         }else
         {
-            self.head = index;
+            self.free = index;
         }
 
         Ok(val)
@@ -377,7 +463,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     {
         self.len += 1;
 
-        if self.head == usize::MAX
+        if self.free == usize::MAX
         {
             let index = self.values.len();
 
@@ -385,15 +471,15 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
             assert!(index != usize::MAX, "How you didn't run out of memory before ?");
 
             let generation = Gen::MIN;
-            self.values.push(Entry { value: EntryValue::Used(value), generation });
+            self.values.push(Entry { value: EntryValue::Some(value), generation });
             return GenIDOf::from_index_and_generation(index, generation);
         }
 
-        let EntryValue::Free(next_free_index) = self.values[self.head].value else { unreachable!(); };
-        let head = self.head;
-        self.head = next_free_index;
-        self.values[head].value = EntryValue::Used(value);
-        return GenIDOf::from_index_and_generation(head, self.values[head].generation);
+        let EntryValue::Free(next_free_index) = self.values[self.free].value else { unreachable!(); };
+        let free = self.free;
+        self.free = next_free_index;
+        self.values[free].value = EntryValue::Some(value);
+        return GenIDOf::from_index_and_generation(free, self.values[free].generation);
     }
 
     #[inline(always)]
@@ -425,7 +511,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     /// The operation that once done just after an [`Self::remove_from_index`], put this data structure in the same state as before
     pub fn rollback_remove_index(&mut self, index: usize, value: T) -> Result<(), ()>
     {
-        let mut head = self.head;
+        let mut head = self.free;
         let entry = self.get_entry_mut_from_index(index).ok_or(())?;
         let EntryValue::Free(f) = entry.value else { return Err(()); };
         let free = f;
@@ -448,9 +534,9 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
             }
         }
 
-        entry.value = EntryValue::Used(value);
+        entry.value = EntryValue::Some(value);
 
-        self.head = head;
+        self.free = head;
         self.len += 1;
 
         Ok(())
@@ -458,7 +544,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
     pub fn remove_from_index(&mut self, index: usize) -> Option<T>
     {
-        let head = self.head;
+        let head = self.free;
 
         let Some(entry) = self.get_entry_mut_from_index(index) else { return None; };
         if entry.value.is_free() { return None; }
@@ -467,7 +553,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
         if entry.increment_generation()
         {
-            self.head = index;
+            self.free = index;
         }else
         {
             entry.value = EntryValue::Free(usize::MAX);
@@ -560,9 +646,9 @@ impl<T, Gen:IGeneration> IndexMut<usize> for GenVecOf<T,Gen>
 impl<T, Gen:IGeneration> FromIterator<T> for GenVecOf<T, Gen>
 {
     fn from_iter<K: IntoIterator<Item = T>>(iter: K) -> Self {
-        let values : Vec<Entry<T,Gen>> = iter.into_iter().map(|v| Entry::new(EntryValue::Used(v), Gen::MIN)).collect();
+        let values : Vec<Entry<T,Gen>> = iter.into_iter().map(|v| Entry::new(EntryValue::Some(v), Gen::MIN)).collect();
         let len = values.len();
-        Self{ values, head: usize::MAX, len }
+        Self{ values, free: usize::MAX, len }
     }
 }
 
@@ -593,7 +679,7 @@ impl<T, Gen: IGeneration> Iterator for IntoIter<T, Gen> {
     {
         while let Some((index, entry)) = self.iter.next()
         {
-            if let EntryValue::Used(value) = entry.value
+            if let EntryValue::Some(value) = entry.value
             {
                 self.len_remaining -= 1;
                 return Some((GenIDOf::from_index_and_generation(index, entry.generation), value));
