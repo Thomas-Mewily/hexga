@@ -1146,7 +1146,9 @@ dependencies = [
 name = "hexga_core"
 version = "0.0.11-beta.4"
 dependencies = [
+ "hexga_io",
  "hexga_map_on",
+ "serde",
 ]
 
 [[package]]
@@ -1193,7 +1195,6 @@ name = "hexga_io"
 version = "0.0.11-beta.4"
 dependencies = [
  "bincode",
- "hexga_core",
  "hexga_io_derive",
  "quick-xml",
  "ron",

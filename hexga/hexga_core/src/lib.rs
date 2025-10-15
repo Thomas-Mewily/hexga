@@ -6,6 +6,14 @@ use core::slice::GetDisjointMutIndex;
 use std::hash::{BuildHasher, Hash};
 use std::borrow::Borrow;
 
+#[allow(unused_imports)]
+#[cfg(feature = "serde")]
+use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+
+#[allow(unused_imports)]
+#[cfg(feature = "hexga_io")]
+use hexga_io::{IoSave, IoLoad, Save, Load};
+
 pub mod default;
 pub mod format;
 pub mod iter;

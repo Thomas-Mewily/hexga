@@ -29,7 +29,7 @@ serde_quick_bin  = ["dep:bincode"]
 [dependencies]
 serde = { version = "1.0.0" }
 hexga_io_derive = { workspace = true, optional = true }
-hexga_core.workspace = true
+#hexga_core.workspace = true
 
 # markup language :
 ron = { version = "0.10.1", optional = true }

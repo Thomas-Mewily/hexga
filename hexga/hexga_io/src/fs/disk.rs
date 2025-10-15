@@ -46,7 +46,7 @@ pub trait LoadToDisk : IoLoad
         let mut fs_disk = IoFsDisk::new();
         let s = Self::load_from_or_create(path, init, &mut fs_disk);
         fs_disk.commit()?;
-        s        
+        s
     }
 }
 impl<T> LoadToDisk for T where T: IoLoad + ?Sized {}
@@ -120,7 +120,7 @@ impl IoFsDisk
 
 impl IoFsCore for IoFsDisk
 {
-    fn have_error(&self) -> bool { self.err.is_not_empty() }
+    fn have_error(&self) -> bool { self.err.len() != 0 }
 
     fn premature_abord(&self) -> bool {
         self.premature_abord

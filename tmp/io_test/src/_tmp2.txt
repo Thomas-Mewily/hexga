@@ -17,14 +17,41 @@ use hexga_io::{IoLoad, IoSave, Load, Save};
 
 
 
+
+
+
+pub struct Fs
+{
+    name: String,
+    kind: FsKind,
+}
+
+pub enum FsKind
+{
+    File(FsFile),
+    Folder(FsFolder),
+}
+
+pub struct FsFile
+{
+    content: Vec<u8>,
+}
+
+pub struct FsFolder
+{
+    childs: Vec<Fs>,
+}
+
+fn t()
+{
+    let a = PathElement::from_disk("./tmp/io_test/asset").unwrap();
+
+    dbg!(&a);
+}
+
 fn main()
 {
-    let mut table = Table::new();
-    table.insert_with_keys(["42".to_owned(), "quarente deux".to_owned()], 42);
-    let _3 = table.insert("3".to_owned(), 3).unwrap();
-    table.add_key(_3, "|||".to_owned()).unwrap();
-
-    dbg!(table);
+    let table
 
     println!("Hello, world!");
 }

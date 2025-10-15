@@ -173,8 +173,8 @@ pub trait GetManyMut<Idx> : GetMut<Idx>
 
 
 // TODO: impl it. Split the core crate : hexga_core : hexga_core_syntax, hexga_core_collection
-//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct IndexOutOfRange<Idx=usize, R=std::ops::Range<Idx>>
 {
@@ -395,8 +395,8 @@ impl<Idx> Get<Idx> for String where Idx : SliceIndex<str>
     unsafe fn get_unchecked(&self, idx : Idx) -> &Self::Output { unsafe { self.as_str().get_unchecked(idx) } }
 }
 
-//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct MissingKey<K>
 {

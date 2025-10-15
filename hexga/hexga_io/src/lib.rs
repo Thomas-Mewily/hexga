@@ -3,7 +3,6 @@
 pub(crate) use std::io::{Read, BufReader, Write, BufWriter};
 
 pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
-pub(crate) use hexga_core::prelude::*;
 
 pub mod fs;
 use fs::*;

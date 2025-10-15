@@ -73,12 +73,12 @@ where
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct Entry<K, V> {
+        struct Helper<K, V> {
             keys: Vec<K>,
             value: V,
         }
 
-        let entry = Entry::deserialize(deserializer)?;
+        let entry = Helper::deserialize(deserializer)?;
 
         let mut seen = std::collections::HashSet::new();
         if entry.keys.iter().any(|k| !seen.insert(k)) {
@@ -226,7 +226,7 @@ impl<K,V,Gen:IGeneration> GenMultiMapOf<K,V,Gen>
     {
         Self { values: GenVecOf::new(), search: HashMap::new() }
     }
-    pub fn with_capacity(capacity : usize) -> Self { Self { values: GenVecOf::with_capacity(capacity), search: HashMap::new() } }
+    pub fn with_capacity(capacity : usize) -> Self { Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_capacity(capacity) } }
 
     pub fn get_entry(&self, id: GenMultiMapIDOf<K,V,Gen>) -> Option<&Entry<K,V,Gen>> { self.values.get(id) }
     pub fn get(&self, id: GenMultiMapIDOf<K,V,Gen>) -> Option<&V> { self.get_entry(id).map(|e| &e.value) }
@@ -407,13 +407,6 @@ impl<K,V,Gen:IGeneration> GenMultiMapOf<K,V,Gen> where K : Eq + Hash
             });
     }
 }
-impl<K,V,Gen:IGeneration> GenMultiMapOf<K,V,Gen>
-{
-    pub(crate) fn _insert_lambda(&mut self, value: V) -> GenMultiMapIDOf<K,V, Gen>
-    {
-        self.values.insert(Entry::new(___(), value))
-    }
-}
 impl<K,V,Gen:IGeneration> GenMultiMapOf<K,V,Gen> where K : Eq + Hash + Clone
 {
     pub fn insert(&mut self, key: K, value: V) -> Option<GenMultiMapIDOf<K,V,Gen>>
@@ -430,22 +423,13 @@ impl<K,V,Gen:IGeneration> GenMultiMapOf<K,V,Gen> where K : Eq + Hash + Clone
             if self.contains_key(key) { return None; }
         }
 
-        let id = self._insert_lambda(value);
-        self._force_add_keys(keys, id);
-        Some(id)
-    }
-
-    /// Don't check if the key are already present
-    pub(crate) fn _force_add_keys(&mut self, main_key_follow_by_backward_keys : Vec<K>, id : GenMultiMapIDOf<K,V,Gen>)
-    {
-        for key in main_key_follow_by_backward_keys.into_iter()
+        let id= self.values.insert(Entry::new(keys, value));
+        for key in self.values[id].keys()
         {
             let old_key = self.search.insert(key.clone(), id);
             assert!(old_key.is_none());
-            let keys = &mut self.values[id].keys;
-            debug_assert!(keys.iter().position(|e| e == &key).is_none());
-            keys.push(key);
         }
+        Some(id)
     }
 
     /// If any key is a duplicate / already used, return an error
@@ -549,6 +533,26 @@ impl<K,V,Gen:IGeneration> Remove<GenMultiMapIDOf<K,V,Gen>> for GenMultiMapOf<K,V
 impl<K,V,Gen:IGeneration> Length for GenMultiMapOf<K,V,Gen> { #[inline(always)] fn len(&self) -> usize { self.len() } }
 impl<K,V,Gen:IGeneration> Clearable for GenMultiMapOf<K,V,Gen> { #[inline(always)] fn clear(&mut self) { self.clear() } }
 
+impl<K,V,Gen:IGeneration> Capacity for GenMultiMapOf<K,V,Gen>
+{
+    type Param=();
+
+    #[inline(always)]
+    fn capacity(&self) -> usize { self.values.capacity() }
+
+    #[inline(always)]
+    fn with_capacity_and_param(capacity: usize, _ : Self::Param) -> Self { Self::with_capacity(capacity) }
+
+    #[inline(always)]
+    fn reserve(&mut self, additional: usize) { self.values.reserve(additional); }
+    #[inline(always)]
+    fn reserve_exact(&mut self, additional: usize) { self.values.reserve_exact(additional); }
+
+    #[inline(always)]
+    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.values.try_reserve(additional) }
+    #[inline(always)]
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.values.try_reserve_exact(additional) }
+}
 
 
 impl<K,V,Gen:IGeneration> IntoIterator for GenMultiMapOf<K,V,Gen>

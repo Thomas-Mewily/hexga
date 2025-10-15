@@ -709,8 +709,8 @@ impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.values.try_reserve_exact(additional) }
 }
 
-//#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-//#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum GenVecError<T,Gen:IGeneration>
 {
     IndexOutOfRange(IndexOutOfRange),
@@ -766,13 +766,50 @@ impl<T,Gen:IGeneration> Debug for GenVecError<T,Gen>
     }
 }
 
-
+#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GenVecWrongGeneration<T,Gen:IGeneration>
 {
     pub got : Gen,
     pub expected : Gen,
     phantom : PhantomData<T>,
 }
+
+
+#[cfg(feature = "serde")]
+impl<T, Gen: IGeneration> Serialize for GenVecWrongGeneration<T, Gen>
+where
+    Gen: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut state = serializer.serialize_struct("GenVecWrongGeneration", 2)?;
+        state.serialize_field("got", &self.got)?;
+        state.serialize_field("expected", &self.expected)?;
+        state.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T, Gen: IGeneration> Deserialize<'de> for GenVecWrongGeneration<T, Gen>
+where
+    Gen: Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(serde::Deserialize)]
+        struct Helper<Gen> {
+            got: Gen,
+            expected: Gen,
+        }
+        let helper = Helper::deserialize(deserializer)?;
+        Ok(GenVecWrongGeneration::new(helper.got, helper.expected))
+    }
+}
+
 impl<T,Gen:IGeneration> GenVecWrongGeneration<T,Gen>
 {
     pub fn new(got : Gen, expected : Gen) -> Self { Self{ got, expected, phantom: PhantomData }}
