@@ -7,6 +7,7 @@ use std::fmt::Debug;
 use std::fs;
 use std::path::Path;
 use std::{any::Any, sync::Arc};
+use hexga_generational::prelude::*;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
@@ -17,12 +18,13 @@ use hexga_io::{IoLoad, IoSave, Load, Save};
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug)]
-pub struct Asset {
+pub struct PathElement
+{
     pub name: String,
     pub kind: AssetKind,
 }
 
-impl Asset
+impl PathElement
 {
     pub fn from_disk(path: &str) -> Option<Self> {
         let path = Path::new(path);
@@ -37,18 +39,18 @@ impl Asset
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries.flatten() {
                     let entry_path = entry.path();
-                    if let Some(asset) = Asset::from_disk(entry_path.to_str().unwrap_or("")) {
+                    if let Some(asset) = PathElement::from_disk(entry_path.to_str().unwrap_or("")) {
                         childs.push(asset);
                     }
                 }
             }
-            Some(Asset {
+            Some(PathElement {
                 name,
                 kind: AssetKind::Folder(Folder { childs }),
             })
         } else if path.is_file() {
             match fs::read(path) {
-                Ok(bytes) => Some(Asset {
+                Ok(bytes) => Some(PathElement {
                     name,
                     kind: AssetKind::File(File {
                         bytes: Arc::new(bytes),
@@ -64,7 +66,8 @@ impl Asset
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-pub enum AssetKind {
+pub enum AssetKind
+{
     Folder(Folder),
     File(File),
 }
@@ -133,12 +136,21 @@ impl Debug for File {
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug)]
 pub struct Folder {
-    pub childs: Vec<Asset>,
+    pub childs: Vec<PathElement>,
 }
 
-fn main() {
-    let a = Asset::from_disk("./tmp/io_test/asset").unwrap();
+
+
+fn t()
+{
+    let a = PathElement::from_disk("./tmp/io_test/asset").unwrap();
 
     dbg!(&a);
+}
+
+fn main()
+{
+    let table
+
     println!("Hello, world!");
 }

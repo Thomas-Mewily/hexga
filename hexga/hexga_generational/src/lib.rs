@@ -20,6 +20,7 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 
 pub mod gen_vec;
 pub mod gen_id;
+pub mod gen_multi_map;
 pub mod table;
 
 pub(crate) use prelude::*;
@@ -28,6 +29,7 @@ pub mod prelude
     pub use super::{
         gen_id::prelude::*,
         gen_vec::prelude::*,
+        gen_multi_map::prelude::*,
         table::prelude::*,
     };
 }
