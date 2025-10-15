@@ -14,7 +14,7 @@ categories = ["graphics"]
 
 [features]
 default = [
-    "serde", "hexga_io",
+    "serde", "hexga_io", "hexga_io_rc",
     "int_are_32_bits", "float_are_32_bits"
 ]
 
@@ -28,8 +28,18 @@ float_are_32_bits   = ["hexga_math/float_are_32_bits"]
 float_are_64_bits   = ["hexga_math/float_are_64_bits"]
 float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga_math/serde"]
-hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
+serde = ["dep:serde",
+    "hexga_core/serde",
+    "hexga_math/serde"
+]
+hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde",
+    "hexga_core/hexga_io",
+    "hexga_math/hexga_io"
+]
+hexga_io_rc = ["hexga_io", "hexga_io/rc", "serde", "serde/rc",
+    "hexga_core/hexga_io_rc",
+    "hexga_math/hexga_io_rc"
+]
 
 
 [dependencies]

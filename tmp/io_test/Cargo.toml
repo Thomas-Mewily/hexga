@@ -9,12 +9,15 @@ edition.workspace = true
 
 
 [features]
-default = ["serde", "hexga_io"]
+default = ["serde", "hexga_io", "hexga_io_rc"]
 
 serde = ["dep:serde"]
 hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
+hexga_io_rc = ["hexga_io", "hexga_io/rc", "serde", "serde/rc"]
 
 [dependencies]
-serde = { version = "1.0.0", features = ["derive", "rc"], optional = true }
+hexga.workspace = true
+#hexga_generational.workspace = true
+
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 hexga_io = { workspace = true, optional = true }
-hexga_generational.workspace = true

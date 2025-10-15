@@ -7,7 +7,7 @@ use std::fmt::Debug;
 use std::fs;
 use std::path::Path;
 use std::{any::Any, sync::Arc};
-use hexga_generational::prelude::*;
+use hexga::prelude::*;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
@@ -25,6 +25,7 @@ fn main()
     table.add_key(_3, "|||".to_owned()).unwrap();
 
     dbg!(table);
+
 
     println!("Hello, world!");
 }
