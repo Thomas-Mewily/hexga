@@ -1,6 +1,6 @@
 //! # A Math library that contains
 //!
-//! ### N Dimension stuff and Array Programming
+//! ## N Dimension stuff and Array Programming
 //!
 //! This crate define N dimensional math stuff (2d, 3d, 4d, ... nd) like vector/point of any type (float, int, uint, or even user defined) :
 //!
@@ -12,25 +12,25 @@
 //! The *same* common functions such as [`min`], [`max`], [`mix`],
 //! [`abs`], and [`clamp`] work for
 //! - primitive values(`u32`, `i32`, `f32`, `bool`, ...)
-//! - and on composite types (`Array`, `Vector`, `Color`, `Rectangle`, `Matrix`, `Grid`, ...) that implement the [`Map`] / [`MapGeneric`] traits.
+//! - and on composite types (`Array`, `Vector`, `Color`, `Rectangle`, `Matrix`, `Grid`, ...) that implement the [`Map`] / [`MapWith`] / [`MapIntern`] / [`MapInternWith`] traits.
 //!
 //! Any external type implementing these traits automatically gains support for these common functions.
 //!
-//! ### Useful type like
+//! ## Useful type like
 //!
 //! - [`Angle`]
 //! - [`Time`],
 //!
-//! ### Generic Casting trait
+//! ## Generic Casting trait
 //! The crate also provide generic traits for casting with the same behavior as the [as keyword](https://practice.course.rs/type-conversions/as.html) :
 //! - [`CastInto`], [`CastFrom`],
 //!
-//! ### Generic Remapping trait
+//! ## Generic Remapping trait
 //!
 //! Similar traits for casting remapping the range of an primitive to another primitive range also exist :
 //! - [`CastRangeInto`], [`CastRangeFrom`]
 //!
-//! ### Quick start with the prelude
+//! ## Quick start with the prelude
 //!
 //! There are some quick typedef in the prelude :
 //!
@@ -42,11 +42,11 @@
 //! - [`Mat2`], [`Mat3`], [`Mat4`] for Matrix of [`float`], and [`Mat2i`], [`Mat3i`], [`Mat4i`] use [`int`],
 //! - [`Grid2`], [`Grid3`], [`Grid3`]  can only be indexed by `VecXi` by default.
 //!
-//! ### More advanced type
+//! ## More advanced type
 //!
 //! If you need more control about the precision, each type have another more generic base type :
 //!
-//! - [`Grid`] type uses a `VecXi` for the indexing precision, but that can be changed by using with the [`GridBase`] type.
+//! - [`Grid`] type uses a `VecXi` for the indexing precision, but that can be changed by using with the [`hexga_math::grid::GridBase`] type.
 //! - [`Angle`] and [`Time`] use a [`float`] precision that can be changed using [`AngleOf`] and [`TimeOf`]
 
 #![allow(unused_imports)]

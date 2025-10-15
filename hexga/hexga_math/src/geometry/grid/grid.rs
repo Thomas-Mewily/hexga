@@ -90,7 +90,7 @@ impl<T, Idx, const N : usize> MapIntern for GridBase<T, Idx, N> where Idx : Inte
         self
     }
 }
-impl<T, Idx, const N : usize> MapWithIntern for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> MapInternWith for GridBase<T, Idx, N> where Idx : Integer
 {
     fn map_with_intern<F>(mut self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
         assert_eq!(self.size(), other.size(), "size mismatch");

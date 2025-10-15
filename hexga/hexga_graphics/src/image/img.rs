@@ -372,7 +372,7 @@ impl<T, Idx> MapIntern for ImageBaseOf<T, Idx> where Idx : Integer
         self
     }
 }
-impl<T, Idx> MapWithIntern for ImageBaseOf<T, Idx> where Idx : Integer
+impl<T, Idx> MapInternWith for ImageBaseOf<T, Idx> where Idx : Integer
 {
     fn map_with_intern<F>(mut self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
         assert_eq!(self.size(), other.size(), "size mismatch");

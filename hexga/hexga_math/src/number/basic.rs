@@ -40,7 +40,7 @@ impl Max for bool
     fn max_elementwise(self, other: Self) -> Self { self | other }
 }
 
-impl<S> Max for S where S:MapWithIntern, S::Item : Max
+impl<S> Max for S where S:MapInternWith, S::Item : Max
 {
     fn max_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Max::max_elementwise) }
 }
@@ -83,7 +83,7 @@ impl Min for bool
     fn min_elementwise(self, other: Self) -> Self { self & other }
 }
 
-impl<S> Min for S where S:MapWithIntern, S::Item : Min
+impl<S> Min for S where S:MapInternWith, S::Item : Min
 {
     fn min_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Min::min_elementwise) }
 }
@@ -171,7 +171,7 @@ map_on_number_and_bool!(
         }
     }
 );
-impl<S,F> Mix<F> for S where S:MapWithIntern, S::Item : Mix<F>, F:Float
+impl<S,F> Mix<F> for S where S:MapInternWith, S::Item : Mix<F>, F:Float
 {
     fn mix_unchecked(self, dest: Self, coef: F) -> Self
     {

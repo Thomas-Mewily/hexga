@@ -93,7 +93,7 @@ impl<'a, G, T, Idx, const N : usize> MapIntern for GridViewMut<'a, G, T, Idx, N>
 }
 
 
-impl<'a, G, T, Idx, const N : usize> MapWithIntern for GridViewMut<'a, G, T, Idx, N>
+impl<'a, G, T, Idx, const N : usize> MapInternWith for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
     Idx : Integer,

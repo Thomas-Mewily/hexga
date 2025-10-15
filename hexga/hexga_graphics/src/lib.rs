@@ -1,13 +1,18 @@
+//! ## Definitions
 //!
-//! ### Useful type like
+//! - [`Rgba`] and [`Hsla`] using [`float`] precision.
+//! - [`Image`] for storing and loading images.
+//!   (Similar to `hexga_math::grid`, but supports additional formats when saving.)
 //!
-//! - [`ColorRgba`] with any precision (also handle the conversion between different primitive precision)
-//! - [`ColorHsla`] of various precision
-//! ### More advanced type
+//! ### Advanced Types
 //!
-//! If you need more control about the precision, each type have another more generic base type :
+//! For finer control over precision, each color type also provides a more generic base form:
 //!
-//! - [`ColorRgba`] and [`ColorHsla`] also use a [`float`] precision that can be changed using [`ColorRgbaOf`] and [`ColorRgbaOf`]
+//! - [`Rgba`] and [`Hsla`] are type aliases for [`RgbaOf<float>`] and [`HslaOf<float>`], respectively.
+//!
+//! Likewise, image types are built on a generic base:
+//!
+//! - [`Image`] is an alias for [`ImageBase<RgbaU8>`] or [`ImageBaseOf<RgbaU8, int>`].
 
 #![allow(unused_mut)]
 #![allow(unused_variables)]

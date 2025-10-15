@@ -475,7 +475,7 @@ macro_rules! impl_fixed_array_core
                 Self::from_array(<[T;$dim]>::from(self).map_intern(f))
             }
         }
-        impl<T> $crate::map::MapWithIntern for $name<T>
+        impl<T> $crate::map::MapInternWith for $name<T>
         {
             fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
             {
@@ -802,7 +802,7 @@ macro_rules! impl_generic_array_core
                 Self::from_array(<[T;N]>::from(self).map_intern(f))
             }
         }
-        impl<T, const N : usize> $crate::map::MapWithIntern for $name<T,N>
+        impl<T, const N : usize> $crate::map::MapInternWith for $name<T,N>
         {
             fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
             {

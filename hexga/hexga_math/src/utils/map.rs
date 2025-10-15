@@ -30,7 +30,7 @@ pub trait MapIntern
 
 
 /// Elementwise mapping of two containers of the same type.
-pub trait MapWithIntern : MapIntern
+pub trait MapInternWith : MapIntern
 {
     /// Combine `self` and `other` elementwise with `f`.
     fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item;
@@ -46,7 +46,7 @@ pub trait Map : MapIntern
     fn map<R,F>(self, f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R;
 }
 /// Elementwise mapping of two containers with possibly different item types.
-pub trait MapWith : Map + MapWithIntern
+pub trait MapWith : Map + MapInternWith
 {
     /// Combine `self` and `other` elementwise with `f`, producing a new container
     /// of the mapped values.
@@ -63,9 +63,8 @@ impl<T, const N:usize> MapIntern for [T;N]
         self.map(f)
     }
 }
-impl<T, const N:usize> MapWithIntern for [T;N]
+impl<T, const N:usize> MapInternWith for [T;N]
 {
-
     #[inline(always)]
     fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
         self.map_with(other, f)
@@ -96,7 +95,7 @@ impl<T> MapIntern for Vec<T>
         self.map(f)
     }
 }
-impl<T> MapWithIntern for Vec<T>
+impl<T> MapInternWith for Vec<T>
 {
     fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
     {
