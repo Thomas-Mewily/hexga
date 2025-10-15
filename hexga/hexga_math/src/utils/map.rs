@@ -20,7 +20,7 @@ pub trait MapRefIntern : Mappable
 }
 */
 
-/// Similar to [Iterator::map], but for container-like types that keep their shape.
+/// Similar to [`Iterator::map`], but for container-like types that keep their shape.
 pub trait MapIntern
 {
     type Item;
@@ -38,7 +38,7 @@ pub trait MapWithIntern : MapIntern
 
 
 
-/// Similar to [Iterator::map]. Contrary to [MapIntern], it allows changing the item type.
+/// Similar to [`Iterator::map`]. Contrary to [`MapIntern`], it allows changing the item type.
 pub trait Map : MapIntern
 {
     type WithType<R> : Map<Item = R>;

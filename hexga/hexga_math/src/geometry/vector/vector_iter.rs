@@ -5,11 +5,11 @@ pub trait IterIndex<T, const N : usize>
 {
     type IterIndex : Iterator<Item=Vector<T,N>>;
 
-    /// Iter over all point in self.
+    /// Iter over all `VecXi` in self.
     ///
     /// The last value is always excluded.
     ///
-    /// Work on Point, Rect and Grid ([Vec1i], [Vec2i], [Vec3i], [Vec4i], [Rect1], [Rect2], [Rect3], [Rect4]) for ex.
+    /// Work on `VecXi`, Rect and Grid ([`Vec1i`], [`Vec2i`], [`Vec3i`], [`Vec4i`], [`Rect1`], [`Rect2`], [`Rect3`], [`Rect4`]) for ex.
     ///
     /// ```rust
     /// use hexga_math::prelude::*;

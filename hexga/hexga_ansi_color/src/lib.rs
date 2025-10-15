@@ -1,16 +1,16 @@
 //! A minimal package for printing some Ansi Color
-//! 
-//! Provides optional support for [Serde](https://docs.rs/serde/latest/serde/) (serialization / deserialization) when the "serde" feature is enabled.
-//! 
+//!
+//! Provides optional support for [`Serde`](https://docs.rs/serde/latest/serde/) (serialization / deserialization) when the "serde" feature is enabled.
+//!
 //! ```rust
 //! use hexga_ansi_color::*;
-//! 
+//!
 //! println!("{}I'm green{}", AnsiColor::GREEN, AnsiColor::RESET);
 //! println!("{}I'm red{}", AnsiColor::new_foreground(AnsiColorKind::Red), AnsiColor::RESET);
 //! println!("{}White on magenta background{}", AnsiColor::new(AnsiColorKind::Magenta, AnsiColorLayer::Background), AnsiColor::RESET);
 //! ```
-//! 
-//! Based on previous crate [minimal_ansi_color](https://crates.io/crates/minimal_ansi_color), but integrated to hexga.
+//!
+//! Based on previous crate [`minimal_ansi_color`](https://crates.io/crates/minimal_ansi_color), but integrated to hexga.
 
 use std::fmt::{Debug, Display};
 
@@ -41,7 +41,7 @@ pub enum AnsiColorKind
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
-pub enum AnsiColorLayer 
+pub enum AnsiColorLayer
 {
     Foreground,
     Background,
@@ -69,7 +69,7 @@ impl AnsiColor
     pub const CYAN              : AnsiColorStr = "\x1b[36m";
     pub const WHITE             : AnsiColorStr = "\x1b[37m";
     pub const GREY              : AnsiColorStr = "\x1b[90m";
-    
+
     // Same but suffixed by FOREGROUND
     pub const BLACK_FOREGROUND  : AnsiColorStr = "\x1b[30m";
     pub const RED_FOREGROUND    : AnsiColorStr = "\x1b[31m";
@@ -90,7 +90,7 @@ impl AnsiColor
     pub const CYAN_BACKGROUND   : AnsiColorStr = "\x1b[46m";
     pub const WHITE_BACKGROUND  : AnsiColorStr = "\x1b[47m";
     pub const GREY_BACKGROUND   : AnsiColorStr = "\x1b[100m";
-    
+
     pub const BLACK_ON_WHITE : AnsiColorStr   = "\x1b[30m\x1b[47m";
     pub const RESET: AnsiColorStr = "\x1b[37m\x1b[40m";
 
@@ -109,11 +109,11 @@ impl AnsiColor
     /// Get the ansi color code
     pub fn get_str(&self) -> AnsiColorStr
     {
-        match self.layer 
+        match self.layer
         {
-            AnsiColorLayer::Foreground => 
+            AnsiColorLayer::Foreground =>
             {
-                match self.color 
+                match self.color
                 {
                     AnsiColorKind::Black   => Self::BLACK_FOREGROUND,
                     AnsiColorKind::Red     => Self::RED_FOREGROUND,
@@ -126,9 +126,9 @@ impl AnsiColor
                     AnsiColorKind::Grey    => Self::GREY_FOREGROUND,
                 }
             }
-            AnsiColorLayer::Background => 
+            AnsiColorLayer::Background =>
             {
-                match self.color 
+                match self.color
                 {
                     AnsiColorKind::Black   => Self::BLACK_BACKGROUND,
                     AnsiColorKind::Red     => Self::RED_BACKGROUND,
@@ -152,8 +152,8 @@ impl From<AnsiColor> for AnsiColorStr
 
 impl Display for AnsiColor
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
-    { 
-        f.write_str(self.get_str()) 
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+        f.write_str(self.get_str())
     }
 }

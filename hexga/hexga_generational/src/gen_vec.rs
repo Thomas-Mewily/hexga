@@ -313,7 +313,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     pub fn shrink_to_fit(mut self) { self.values.shrink_to_fit(); }
 
 
-    /// Clears the [GenVec], removing all elements and resetting all [GenID] values.
+    /// Clears the [`GenVec`], removing all elements and resetting all [`GenID`] values.
     ///
     /// After calling this method, any previous [`GenID`] is no longer valid (not enforced) and
     /// **must** not be used, as doing so may lead to undefined behavior.
@@ -324,7 +324,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         self.values.clear();
     }
 
-    /// Removes all elements from the [GenVec] and invalidates all existing [GenID] (enforced).
+    /// Removes all elements from the [`GenVec`] and invalidates all existing [`GenID`] (enforced).
     pub fn remove_all(&mut self)
     {
         for (index, v) in self.values.iter_mut().enumerate()
@@ -416,13 +416,13 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     #[inline(always)]
     pub fn get_mut(&mut self, id: GenIDOf<T,Gen>) -> Option<&mut T> { self.get_entry_mut(id).and_then(|v| v.value_mut()) }
 
-    /// Return a valid [GenID] to the current index or return [GenIDOf::NULL] if the index is outside the range
+    /// Return a valid [`GenID`] to the current index or return [`GenIDOf::NULL`] if the index is outside the range
     pub fn index_to_id(&self, index: usize) -> GenIDOf<T, Gen>
     {
         self.get_entry_from_index(index).map(|v| v.get_id(index)).unwrap_or(GenIDOf::NULL)
     }
 
-    /// The operation that once done just after an [Self::remove_index], put this data structure in the same state as before
+    /// The operation that once done just after an [`Self::remove_from_index`], put this data structure in the same state as before
     pub fn rollback_remove_index(&mut self, index: usize, value: T) -> Result<(), ()>
     {
         let mut head = self.head;

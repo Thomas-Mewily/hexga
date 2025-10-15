@@ -10,7 +10,7 @@ pub trait UsedFlag
     fn unuse_it(&mut self) -> &mut Self { self.set_used(false) }
 }
 
-/// Mark value as dirty when mutated (using [DerefMut])
+/// Mark value as dirty when mutated (using [`DerefMut`])
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
 pub struct Used<T>
 {

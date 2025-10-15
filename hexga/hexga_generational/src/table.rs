@@ -148,15 +148,15 @@ impl<K,V,Gen:IGeneration> Into<(Vec<K>, V)> for Entry<K,V,Gen>
 
 pub type TableIDBaseOf<K,V,Gen> = GenIDOf<Entry<K,V,Gen>,Gen>;
 
-/// A data structure similar to [HashMap], for managing items using persistant keys
+/// A data structure similar to [`HashMap`], for managing items using persistant keys
 ///
-/// Can be indexed using the Key, or by using an [TableIDOf<K,V,Gen>] (faster).
+/// Can be indexed using the Key, or by using an [`TableIDOf<K,V,Gen>`] (faster).
 ///
 /// Each Entry:
 ///
 /// - have value `V`,
 /// - can have N number of keys (one (the main key), or multiple (the main keys then backward compatibility keys)),
-/// - have an [TableIDOf<K,V,Gen>] for fast access.
+/// - have an [`TableIDOf<K,V,Gen>`] for fast access.
 #[derive(Clone, Debug)]
 pub struct TableBaseOf<K,V,Gen:IGeneration=Generation>
 {
@@ -248,7 +248,7 @@ impl<K,V,Gen:IGeneration> TableBaseOf<K,V,Gen>
     /// Number of entries
     pub const fn len(&self) -> usize { self.values.len() }
 
-    /// Clears the [Table], removing all elements and resetting all [GenID] values.
+    /// Clears the [`Table`], removing all elements and resetting all [`GenID`] values.
     ///
     /// After calling this method, any previous [`GenID`] is no longer valid (not enforced) and
     /// **must** not be used, as doing so may lead to undefined behavior.
@@ -259,7 +259,7 @@ impl<K,V,Gen:IGeneration> TableBaseOf<K,V,Gen>
     }
 
 
-    /// Removes all elements from the [Table] and invalidates all existing [GenID] (enforced).
+    /// Removes all elements from the [`Table`] and invalidates all existing [`GenID`] (enforced).
     pub fn remove_all(&mut self)
     {
         self.values.remove_all();
@@ -365,7 +365,7 @@ impl<K,V,Gen:IGeneration> TableBaseOf<K,V,Gen> where K : Eq + Hash
 
     /// Retains only the elements specified by the predicate.
     ///
-    /// In other words, remove all [Entry] for which `f(&Entry)` returns `false`. The elements are visited in unsorted (and unspecified) order.
+    /// In other words, remove all [`Entry`] for which `f(&Entry)` returns `false`. The elements are visited in unsorted (and unspecified) order.
     pub fn retain<F>(&mut self, mut f: F) where F: FnMut(&Entry<K,V,Gen>) -> bool
     {
         let Self { values, search } = self;

@@ -11,7 +11,7 @@ pub trait RangeSampleExtension<I=usize>
 
 pub trait RangeDefaultSampleExtension<I=usize> : RangeDefault where Range<Self> : RangeSampleExtension<I>
 {
-    /// Sample using the [RangeDefault] : `Self::RANGE_MIN..Self::MAX`
+    /// Sample using the [`RangeDefault`] : `Self::RANGE_MIN..Self::MAX`
     fn sample(nb_sample: I) -> <Range::<Self> as RangeSampleExtension<I>>::Output;
 }
 impl<I,T> RangeDefaultSampleExtension<I> for T where T: RangeDefault, Range<T> : RangeSampleExtension<I>
@@ -20,7 +20,7 @@ impl<I,T> RangeDefaultSampleExtension<I> for T where T: RangeDefault, Range<T> :
 }
 pub trait RangeDefaultSampleInclusiveExtension<I=usize> : RangeDefault where RangeInclusive<Self> : RangeSampleExtension<I>
 {
-    /// Sample using the [RangeDefault] : `Self::RANGE_MIN..=Self::MAX`
+    /// Sample using the [`RangeDefault`] : `Self::RANGE_MIN..=Self::MAX`
     fn sample_inclusive(nb_sample: I) -> <RangeInclusive::<Self> as RangeSampleExtension<I>>::Output;
 }
 impl<I,T> RangeDefaultSampleInclusiveExtension<I> for T where T: RangeDefault, RangeInclusive<T> : RangeSampleExtension<I>

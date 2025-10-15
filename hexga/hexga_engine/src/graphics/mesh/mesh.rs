@@ -3,7 +3,7 @@ use super::*;
 
 /// A mesh, stored on the Gpu.
 ///
-/// Can be cheaply [std::clone::Cloned]
+/// Can be cheaply [`Clone`]d
 #[derive(Clone, PartialEq, Debug)]
 pub struct Mesh<const N:usize=3>
 {

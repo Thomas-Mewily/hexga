@@ -2,12 +2,12 @@ use super::*;
 
 
 
-/// Remap the value [RangeDefault] to the [RangeDefault] of the target type,
-/// in a generic friendly way, and similar to the [From] trait.
+/// Remap the value [`RangeDefault`] to the [`RangeDefault`] of the target type,
+/// in a generic friendly way, and similar to the [`From`] trait.
 ///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
 ///
-/// One should always prefer implementing [CastRangeFrom] over [CastRangeInto] because implementing [CastRangeFrom] automatically provides one with an implementation of [CastRangeInto] thanks to the blanket implementation in the hexga_math library.
+/// One should always prefer implementing [`CastRangeFrom`] over [`CastRangeInto`] because implementing [`CastRangeFrom`] automatically provides one with an implementation of [`CastRangeInto`] thanks to the blanket implementation in the hexga_math library.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
@@ -19,7 +19,7 @@ use super::*;
 /// assert_eq!(casted_range, u16::MAX);
 /// ```
 ///
-/// Also work with composite like [std::array], [Vector]...
+/// Also work with composite like [`std::array`], [`Vector`]...
 ///
 /// ```ignore
 /// use hexga_math::prelude::*;
@@ -46,12 +46,12 @@ impl<C1,C2> CastRangeFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> =
 }
 
 
-/// Remap the value [RangeDefault] to the [RangeDefault] of the target type,
-/// in a generic friendly way, and similar to the [From] trait.
+/// Remap the value [`RangeDefault`] to the [`RangeDefault`] of the target type,
+/// in a generic friendly way, and similar to the [`From`] trait.
 ///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
 ///
-/// One should always prefer implementing [CastRangeFrom] over [CastRangeInto] because implementing [CastRangeFrom] automatically provides one with an implementation of [CastRangeInto] thanks to the blanket implementation in the hexga_math library.
+/// One should always prefer implementing [`CastRangeFrom`] over [`CastRangeInto`] because implementing [`CastRangeFrom`] automatically provides one with an implementation of [`CastRangeInto`] thanks to the blanket implementation in the hexga_math library.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
@@ -63,7 +63,7 @@ impl<C1,C2> CastRangeFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> =
 /// assert_eq!(casted_range, u16::MAX);
 /// ```
 ///
-/// Also work with composite like [std::array], [Vector]...
+/// Also work with composite like [`std::array`], [`Vector`]...
 ///
 /// ```ignore
 /// use hexga_math::prelude::*;

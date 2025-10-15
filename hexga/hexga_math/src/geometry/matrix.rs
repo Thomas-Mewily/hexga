@@ -306,7 +306,7 @@ impl<T, const ROW : usize, const COL : usize> Zero for Matrix<T,ROW,COL> where V
 
 impl<T, const N : usize> SquareMatrix<T,N> where T: One + Zero + Copy
 {
-    /// Same as [One]
+    /// Same as [`One`]
     pub const IDENTITY : Self = Self::ONE;
 }
 
@@ -1047,7 +1047,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveY<Vector<T,N>> + Zer
 
 impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + One, T : Copy + Zero + One
 {
-    /// Put an [One] for the last component
+    /// Put an [`One`] for the last component
     pub fn from_scale(scale : Vector<T,N>) -> Self
     {
         //let scale = scale.to_vector_filled(T::ONE);
@@ -1059,7 +1059,7 @@ impl<T, const N : usize> SquareMatrix<T,N> where Self : HaveZ<Vector<T,N>> + One
         }
         r
     }
-    /// Put an [Zero] for the last component
+    /// Put an [`Zero`] for the last component
     pub fn from_translation(translation: Vector<T,N>) -> Self where T: Zero + AddAssign<T>
     {
         //let translation = translation.to_vector_filled(T::ZERO);

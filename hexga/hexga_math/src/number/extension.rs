@@ -100,12 +100,12 @@ impl<T> TakeHalf for T where T: NumericIdentity
 
 pub trait PartialOrdExtension : PartialOrd
 {
-    /// Using [PartialOrd] operator, not component wise
+    /// Using [`PartialOrd`] operator, not component wise
     #[inline(always)] fn max_partial(self, other: Self) -> Self where Self: Sized { if self >= other { self } else { other } }
-    /// Using [PartialOrd] operator, not component wise
+    /// Using [`PartialOrd`] operator, not component wise
     #[inline(always)] fn min_partial(self, other: Self) -> Self where Self: Sized { if self <= other { self } else { other } }
 
-    /// Using [PartialOrd] operator, not component wise
+    /// Using [`PartialOrd`] operator, not component wise
     #[inline(always)] fn clamp_partial(self, min: Self, max: Self) -> Self where Self: Sized
     {
         // copied from rust std

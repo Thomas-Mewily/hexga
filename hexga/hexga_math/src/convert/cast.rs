@@ -2,12 +2,12 @@ use super::*;
 
 
 
-/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
+/// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
 ///
-/// One should always prefer implementing [CastFrom] over [CastInto] because implementing [CastFrom] automatically provides one with an implementation of [CastInto] thanks to the blanket implementation in the hexga_math library.
+/// One should always prefer implementing [`CastFrom`] over [`CastInto`] because implementing [`CastFrom`] automatically provides one with an implementation of [`CastInto`] thanks to the blanket implementation in the hexga_math library.
 ///
-/// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
+/// Like the [`as`](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;
@@ -44,12 +44,12 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> = Self
 }
 
 
-/// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
+/// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
 ///
-/// One should always prefer implementing [CastFrom] over [CastInto] because implementing [CastFrom] automatically provides one with an implementation of [CastInto] thanks to the blanket implementation in the hexga_math library.
+/// One should always prefer implementing [`CastFrom`] over [`CastInto`] because implementing [`CastFrom`] automatically provides one with an implementation of [`CastInto`] thanks to the blanket implementation in the hexga_math library.
 ///
-/// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
+/// Like the [`as`](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
 ///
 /// ```rust
 /// use hexga_math::prelude::*;

@@ -63,20 +63,20 @@ pub trait GetMut<Idx> : Get<Idx>
 
     /// Replace the value and return the old one.
     ///
-    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)):
+    /// This operation is an [`involution`](https://en.wikipedia.org/wiki/Involution_(mathematics)):
     /// Replacing a value twice (first with a new value, then with the previously returned value) leaves the collection unchanged.
     #[inline(always)]
     fn replace(&mut self, index : Idx, value : Self::Output) -> Option<Self::Output> where Self::Output : Sized { self.get_mut(index).map(|dest| std::mem::replace(dest, value)) }
     /// Replace the value and return the old one.
     ///
-    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)):
+    /// This operation is an [`involution`](https://en.wikipedia.org/wiki/Involution_(mathematics)):
     /// Replacing a value twice (first with a new value, then with the previously returned value) leaves the collection unchanged.
     #[inline(always)]
     #[track_caller]
     fn replace_or_panic(&mut self, index : Idx, value : Self::Output) -> Self::Output where Self::Output : Sized { self.replace(index, value).expect("invalid index") }
     /// Replace the value and return the old one.
     ///
-    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)):
+    /// This operation is an [`involution`](https://en.wikipedia.org/wiki/Involution_(mathematics)):
     /// Replacing a value twice (first with a new value, then with the previously returned value) leaves the collection unchanged.
     #[inline(always)]
     #[track_caller]
@@ -103,7 +103,7 @@ pub trait TryGetMut<Idx> : TryGet<Idx>
 
     /// Replace the value and return the old one.
     ///
-    /// This operation is an [involution](https://en.wikipedia.org/wiki/Involution_(mathematics)):
+    /// This operation is an [`involution`](https://en.wikipedia.org/wiki/Involution_(mathematics)):
     /// Replacing a value twice (first with a new value, then with the previously returned value) leaves the collection unchanged.
     #[inline(always)]
     fn try_replace(&mut self, index : Idx, value : Self::Output) -> Result<Self::Output, Self::Error> where Self::Output : Sized { self.try_get_mut(index).map(|dest| std::mem::replace(dest, value)) }

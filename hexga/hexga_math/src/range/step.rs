@@ -21,7 +21,7 @@ impl<T> RangeStepIter for T where T: Primitive {}
 
 pub trait RangeDefaultStepExtension : RangeDefault where Range<Self> : RangeStepExtension
 {
-    /// Step using the [RangeDefault] : `Self::RANGE_MIN..Self::MAX`
+    /// Step using the [`RangeDefault`] : `Self::RANGE_MIN..Self::MAX`
     fn step(self, step: <Range::<Self> as RangeStepExtension>::Item) -> <Range::<Self> as RangeStepExtension>::Output;
 }
 impl<T> RangeDefaultStepExtension for T where T: RangeDefault, Range<T> : RangeStepExtension
@@ -30,7 +30,7 @@ impl<T> RangeDefaultStepExtension for T where T: RangeDefault, Range<T> : RangeS
 }
 pub trait RangeDefaultStepInclusiveExtension : RangeDefault where RangeInclusive<Self> : RangeStepExtension
 {
-    /// Step using the [RangeDefault] : `Self::RANGE_MIN..=Self::MAX`
+    /// Step using the [`RangeDefault`] : `Self::RANGE_MIN..=Self::MAX`
     fn step_inclusive(self, step: <RangeInclusive::<Self> as RangeStepExtension>::Item) -> <RangeInclusive::<Self> as RangeStepExtension>::Output;
 }
 impl<T> RangeDefaultStepInclusiveExtension for T where T: RangeDefault, RangeInclusive<T> : RangeStepExtension
@@ -38,7 +38,7 @@ impl<T> RangeDefaultStepInclusiveExtension for T where T: RangeDefault, RangeInc
     fn step_inclusive(self, step: <RangeInclusive::<Self> as RangeStepExtension>::Item) -> <RangeInclusive::<Self> as RangeStepExtension>::Output { (Self::RANGE_MIN..=Self::RANGE_MAX).step(step) }
 }
 
-// Not [Copy] because Range<T> don't impl Copy because iterator are used by reference most of the time
+// Not [`Copy`] because Range<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -131,7 +131,7 @@ impl<T> RangeStepExtension for RangeTo<T> where T: Primitive + RangeDefault
 }
 
 
-// Not [Copy] because RangeInclusive<T> don't impl Copy because iterator are used by reference most of the time
+// Not [`Copy`] because RangeInclusive<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

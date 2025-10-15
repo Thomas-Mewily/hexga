@@ -6,7 +6,7 @@
 //!
 //! # Hexga BitFlags
 //!
-//! A bitflags crate, mainly inspired by [enumflags2](https://crates.io/crates/enumflags2).
+//! A bitflags crate, mainly inspired by [`enumflags2`](https://crates.io/crates/enumflags2).
 //!
 //!
 //! Provide a `#[bitindex]` attribute macro that can be applied to **enum** `X` to automatically generate a corresponding **bitflags struct** `XFlags` and implement various bitwise operations, conversions, and utility methods for working with sets of enum variants as bitflags.
@@ -112,10 +112,10 @@
 //!
 //! This crate was mainly inspired by
 //!
-//! - [enumflags2](https://crates.io/crates/enumflags2) while also wanting a way to defined all the constant and constant combination inside the flags structure.
+//! - [`enumflags2`](https://crates.io/crates/enumflags2) while also wanting a way to defined all the constant and constant combination inside the flags structure.
 //!
 //!
-//! - Also check [bitflags](https://crates.io/crates/bitflags) if you are looking for a popular crate for defining bitflags (without enum).
+//! - Also check [`bitflags`](https://crates.io/crates/bitflags) if you are looking for a popular crate for defining bitflags (without enum).
 
 // TODO fix the serde feature flags warnings...
 #![allow(unexpected_cfgs)]
@@ -484,7 +484,7 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
             pub fn iter(self) -> Self { self }
 
 
-            // Similar fn to [enumflags2](https://docs.rs/enumflags2/0.7.12/src/enumflags2/lib.rs.html#843-845) :
+            // Similar fn to [`enumflags2`](https://docs.rs/enumflags2/0.7.12/src/enumflags2/lib.rs.html#843-845) :
 
             #[must_use]
             #[inline(always)]

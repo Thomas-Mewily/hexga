@@ -32,12 +32,13 @@ pub trait IoLoad : for<'de> Deserialize<'de>
 {
     // Main function to override :
 
+    // Todo : deduce extension and load_default_extension
 
     /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
     ///
     /// Don't include the markup language extension like `json` or `ron`
     ///
-    /// The first value also determines the default extension in [IoLoad::load_default_extension].
+    /// The first value also determines the default extension in [`IoLoad::load_default_extension`].
     fn load_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
 
     fn load_from_bytes_with_own_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self>

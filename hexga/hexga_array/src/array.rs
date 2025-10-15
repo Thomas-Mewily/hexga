@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 
 
 /// An array that is indexable, without any information if the type and the size are generic.
-/// Check [ArrayWithType] and [ArrayWithSize] for editable generic type.
+/// Check [`ArrayWithType`] and [ArrayWithSize] for editable generic type.
 pub trait Array<T, const N : usize>:
     From <[T; N]> +
     Into <[T; N]> +
@@ -17,14 +17,14 @@ pub trait Array<T, const N : usize>:
     fn array(&self) -> &[T; N];
     fn array_mut(&mut self) -> &mut[T; N];
 
-    /// Fill non existing component with [Default]
+    /// Fill non existing component with [`Default`]
     fn to_array_resized<const M:usize>(self) -> [T; M] where T: Default
     {
         let mut it = <Self as Into<[T;N]>>::into(self).into_iter();
         <[T; M]>::from_fn(|_| it.next().unwrap_or_default())
     }
 
-    /// Fill non existing component with the [Clone]d given value
+    /// Fill non existing component with the [`Clone`]d given value
     fn to_array_resized_with_value<const M:usize>(self, fill : T) -> [T; M] where T: Clone
     {
         let mut it = <Self as Into<[T;N]>>::into(self).into_iter();
@@ -44,14 +44,14 @@ pub trait ArrayWithSize<T, const N : usize>: Array<T,N>
 {
     type WithSize<const M:usize> : ArrayWithSize<T, M>;
 
-    /// Resize the array to the given size, filling non existing component with [Default]
-    /// Fill non existing component with [Default]
+    /// Resize the array to the given size, filling non existing component with [`Default`]
+    /// Fill non existing component with [`Default`]
     fn resize<const M:usize>(self) -> Self::WithSize<M> where T: Default
     {
         Self::WithSize::from_array(self.to_array_resized())
     }
 
-    /// Fill non existing component with the [Clone]d given value
+    /// Fill non existing component with the [`Clone`]d given value
     fn resize_with_value<const M:usize>(self, value: T) -> Self::WithSize<M> where T: Clone
     {
         Self::WithSize::from_array(self.to_array_resized_with_value(value))

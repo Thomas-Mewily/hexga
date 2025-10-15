@@ -4,19 +4,19 @@ use super::*;
 /// and for generic containers that implement `MapGeneric`.
 macro_rules! impl_cast_to {
     ($trait_name:ident, $fn_map_name:ident, $fn_map_range_name:ident, $output_type:ty) => {
-        /// Helper trait based on [CastInto] and [CastRangeInto]
-        /// Also work on composite like [std::array], [Vector]...
+        /// Helper trait based on [`CastInto`] and [`CastRangeInto`]
+        /// Also work on composite like [`std::array`], [`Vector`]...
         pub trait $trait_name : CastInto<Self::Output>
         {
             type Output;
 
-            /// Same semantics as the [as](https://practice.course.rs/type-conversions/as.html)
-            /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
+            /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)
+            /// keyword: `4f32 as u64`, and the [`From`] trait, but generic friendly.
             ///
-            /// Like the [as](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
+            /// Like the [`as`](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
             fn $fn_map_name(self) -> Self::Output;
-            /// Remap the value [RangeDefault] to the [RangeDefault] of the target type,
-            /// in a generic friendly way, and similar to the [From] trait.
+            /// Remap the value [`RangeDefault`] to the [`RangeDefault`] of the target type,
+            /// in a generic friendly way, and similar to the [`From`] trait.
             fn $fn_map_range_name(self) -> Self::Output;
         }
 

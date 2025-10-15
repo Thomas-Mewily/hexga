@@ -54,16 +54,16 @@ pub trait IGrid<T, Idx, const N : usize> :
 
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
-    /// If you override this, you probably also want to override [IGrid::index_to_position_unchecked] and [IGrid::external_position_to_position_unchecked]
+    /// If you override this, you probably also want to override [`IGrid::index_to_position_unchecked`] and [`IGrid::external_position_to_position_unchecked`]
     unsafe fn position_to_index_unchecked<P>(&self, pos : P) -> usize where P: Into<Vector<Idx,N>> { unsafe { Vector::<Idx,N>::to_index_unchecked(pos.into(), self.size()) } }
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
-    /// If you override this, you probably also want to override [IGrid::position_to_index_unchecked] and [IGrid::external_position_to_position_unchecked]
+    /// If you override this, you probably also want to override [`IGrid::position_to_index_unchecked`] and [`IGrid::external_position_to_position_unchecked`]
     unsafe fn index_to_position_unchecked(&self, index : usize) -> Vector<Idx,N> { unsafe { Vector::<Idx,N>::from_index_unchecked(index, self.size()) } }
     #[allow(unused_variables)]
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
-    /// If you override this, you probably also want to override [IGrid::position_to_index_unchecked] and [IGrid::index_to_position_unchecked]
+    /// If you override this, you probably also want to override [`IGrid::position_to_index_unchecked`] and [`IGrid::index_to_position_unchecked`]
     unsafe fn external_position_to_position_unchecked<P>(pos : P, size : P) -> P where P: Into<Vector<Idx,N>> + From<Vector<Idx,N>> { pos }
 
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
@@ -130,10 +130,10 @@ pub trait IGrid<T, Idx, const N : usize> :
         unsafe { Self::from_vec_unchecked(size, values) }
     }
 
-    /// Create a new grid and fill it with the [Default] value
+    /// Create a new grid and fill it with the [`Default`] value
     fn new(size : Vector::<Idx,N>) -> Self where T: Default { Self::try_from_vec(size, (0..size.area_usize()).map(|_| ___()).collect()).unwrap() }
 
-    /// Create a new grid and fill it by [Clone] the value
+    /// Create a new grid and fill it by [`Clone`]ing the value
     fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T: Clone { Self::try_from_vec(size, vec![value; size.area_usize()]).unwrap() }
 
 

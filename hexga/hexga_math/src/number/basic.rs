@@ -308,7 +308,7 @@ macro_rules! impl_number_basic_trait
 {
     () => {
 
-        // NOTE: Most of these function clash with at least 2 traits (ex: max() is defined in the [std::cmp::Ord] (non component wise) and also in [crate::number::Max] (component wise)
+        // NOTE: Most of these function clash with at least 2 traits (ex: max() is defined in the [`std::cmp::Ord`] (non component wise) and also in [`crate::number::Max`] (component wise)
         // Redefining them here and redirecting them to the correct trait avoid the need to fully qualify the method with the trait in order to call it
 
         /// Max function in a component way

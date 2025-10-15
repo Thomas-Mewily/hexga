@@ -1,7 +1,7 @@
 use super::*;
 
 /*
-/// Just for [GridView] and [GridViewMut] that don't own the underlying grid
+/// Just for [`GridView`] and [`GridViewMut`] that don't own the underlying grid
 pub trait IGridViewNonOwned<G, T, Idx, const N : usize> :
       IRectangle<Idx,N>
     + Get<Vector<Idx,N>,Output=T>
