@@ -111,5 +111,3 @@ ToTimeS
 ToTimeMin
 
 ## Other
-
-- GenHashMap ?

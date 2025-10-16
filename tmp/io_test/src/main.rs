@@ -90,8 +90,8 @@ fn main()
 
     test_serialize_deserialize(&g);
 
-    let multimap = [(["1".to_owned(), "one".to_owned()], 1), (["2".to_owned(), "deux".to_owned()], 2)].to_multimap();
-    test_serialize_deserialize(&multimap);
+    let multihashmap = [(["1".to_owned(), "one".to_owned()], 1), (["2".to_owned(), "deux".to_owned()], 2)].to_multihashmap();
+    test_serialize_deserialize(&multihashmap);
 
 
 
