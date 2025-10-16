@@ -20,7 +20,7 @@ impl<'de, T, Idx, const N : usize> Deserialize<'de> for GridOf<T, Idx, N>
         #[derive(Deserialize)]
         pub struct Grid<T, Idx, const N : usize> where Idx : Integer
         {
-            // Todo : Can use the size value is json/ron to pre allocate the right among of values in the vector
+            // TODO : Can use the `size` value in json/ron to pre allocate the right among of values in the vector
             // The size is will be deserialized first before the values,
             // then we can give a hint to serde about the size of the vector to alloc when deserializing
             size   : Vector<Idx,N>,

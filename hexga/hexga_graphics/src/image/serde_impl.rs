@@ -20,7 +20,7 @@ impl<'de, T, Idx> Deserialize<'de> for ImageBaseOf<T, Idx>
         #[derive(Deserialize)]
         pub struct Image<C,Idx> where Idx : Integer
         {
-            // Todo : Can use the size value is json/ron to pre allocate the right among of values in the vector
+            // TODO : Can use the `size` value in json/ron to pre allocate the right among of values in the vector
             // The size is will be deserialized first before the values,
             // then we can give a hint to serde about the size of the vector to alloc when deserializing
             size   : Vector2<Idx>,
