@@ -18,6 +18,7 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 #![allow(unused_imports)]
+#![feature(formatting_options)] // For image, to display aligned value they need to be fomatted in a temporary formatter
 
 use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}};
 
