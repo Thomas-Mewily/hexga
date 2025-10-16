@@ -7,6 +7,9 @@ pub(crate) use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Vis
 pub mod fs;
 use fs::*;
 
+
+// Todo: add the ostcard format: https://docs.rs/postcard/latest/postcard/
+
 #[cfg(feature = "derive")]
 pub use hexga_io_derive::*;
 

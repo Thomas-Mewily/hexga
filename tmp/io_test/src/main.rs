@@ -61,7 +61,7 @@ fn test_serialize_deserialize<T>(value: &T) where T: IoLoad + IoSave + PartialEq
     // Not a self describing format
     let from_format = T::from_quick_bin_buf(&format).unwrap();
     println!("=>  ron: {}", from_format.to_ron().unwrap());
-    println!("=>  bin: {format:?}");
+    println!("=>  bin: {:?}", from_format.to_quick_bin());
     println!("ron2value: {from_format:?}");
     assert_eq!(*value, from_format);
     println!();
@@ -71,29 +71,13 @@ fn test_serialize_deserialize<T>(value: &T) where T: IoLoad + IoSave + PartialEq
     println!();
 }
 
+
 fn main()
 {
-    test_serialize_deserialize(&((0..1).map(|i| i.to_string())).to_genvec());
-
-    test_serialize_deserialize(&42);
-    test_serialize_deserialize(&12.34);
-    test_serialize_deserialize(&'x');
-    test_serialize_deserialize(&"abc".to_owned());
-    test_serialize_deserialize(&vec![1,2,3,4]);
-    test_serialize_deserialize(&((0..5).map(|i| (i.to_string(), i)).to_hashmap()));
-    test_serialize_deserialize(&((0..5).map(|i| i.to_string())).to_hashset());
-
-    let mut g = (0..3).map(|i| i.to_string()).to_genvec();
-    g.remove_from_index(0);
-    g.remove_from_index(1);
-    test_serialize_deserialize(&g);
-
-    test_serialize_deserialize(&g);
-
-    let multihashmap = [(["1".to_owned(), "one".to_owned()], 1), (["2".to_owned(), "deux".to_owned()], 2)].to_multihashmap();
-    test_serialize_deserialize(&multihashmap);
-
-
-
-    //Todo check grid, image and put it in some test
+    test_serialize_deserialize(&point2(10, 20)); // Todo serialize using tuple
+    test_serialize_deserialize(&45.degree());
+    /*
+    test_serialize_deserialize(&45.s());
+    */
+    //Todo check grid, image and put it in some test to check it
 }

@@ -15,6 +15,8 @@ pub use hexga_io as io;
 
 //pub use hexga_undo_redo as undo;
 
+#[cfg(test)]
+mod test;
 
 pub mod prelude
 {

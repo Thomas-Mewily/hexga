@@ -387,10 +387,23 @@ macro_rules! impl_fixed_array_core
         }
 
         #[cfg(feature = "serde")]
-        impl<T> ::serde::Serialize for $name<T> where T: ::serde::Serialize
+        impl<T> ::serde::Serialize for $name<T>
+        where
+            T: ::serde::Serialize,
         {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: ::serde::Serializer,
-            { self.as_array().serialize(serializer) }
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: ::serde::Serializer,
+            {
+                use ::serde::ser::SerializeTuple;
+
+                let arr = self.as_array();
+                let mut tup = serializer.serialize_tuple($dim)?;
+                for item in arr {
+                    tup.serialize_element(item)?;
+                }
+                tup.end()
+            }
         }
 
         #[cfg(feature = "serde")]
@@ -715,10 +728,23 @@ macro_rules! impl_generic_array_core
         }
 
         #[cfg(feature = "serde")]
-        impl<T, const N : usize> ::serde::Serialize for $name<T,N> where T: ::serde::Serialize
+        impl<T, const N: usize> ::serde::Serialize for $name<T, N>
+        where
+            T: ::serde::Serialize,
         {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: ::serde::Serializer,
-            { self.as_array().serialize(serializer) }
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: ::serde::Serializer,
+            {
+                use ::serde::ser::SerializeTuple;
+
+                let arr = self.as_array();
+                let mut tup = serializer.serialize_tuple(N)?;
+                for item in arr {
+                    tup.serialize_element(item)?;
+                }
+                tup.end()
+            }
         }
 
         #[cfg(feature = "serde")]
