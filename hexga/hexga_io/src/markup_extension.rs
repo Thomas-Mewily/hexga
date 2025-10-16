@@ -6,7 +6,7 @@ use super::*;
 #[cfg(feature = "serde_ron")]
 pub trait MarkupExtensionToRon : Serialize
 {
-    fn to_ron (&self) -> IoResult<String> { ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default()).map_err(|e| IoErrorKind::serialize::<Self>(Io::RON_EXTENSION, format!("{:?}", e))) }
+    fn to_ron(&self) -> IoResult<String> { ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default()).map_err(|e| IoErrorKind::serialize::<Self>(Io::RON_EXTENSION, format!("{:?}", e))) }
 }
 #[cfg(feature = "serde_ron")]
 impl<T> MarkupExtensionToRon for T where T: Serialize {}
@@ -49,7 +49,7 @@ impl<T> MarkupExtensionFromJson for T where T: for<'de> Deserialize<'de> {}
 #[cfg(feature = "serde_xml")]
 pub trait MarkupExtensionToXml : Serialize
 {
-    fn to_xml (&self) -> IoResult<String> { quick_xml::se::to_string(&self).map_err(|e| IoErrorKind::serialize::<Self>(Io::XML_EXTENSION, format!("{:?}", e))) }
+    fn to_xml(&self) -> IoResult<String> { quick_xml::se::to_string(&self).map_err(|e| IoErrorKind::serialize::<Self>(Io::XML_EXTENSION, format!("{:?}", e))) }
 }
 #[cfg(feature = "serde_xml")]
 impl<T> MarkupExtensionToXml for T where T: Serialize {}
