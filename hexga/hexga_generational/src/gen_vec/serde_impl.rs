@@ -12,8 +12,8 @@ where
         S: serde::Serializer,
     {
         match self {
-            EntryValue::Some(value) => serializer.serialize_newtype_variant("EntryValue", 0, "Some", value),
-            EntryValue::Free(idx) => {
+            EntryValue::Occupied(value) => serializer.serialize_newtype_variant("EntryValue", 0, "Used", value),
+            EntryValue::Vacant(idx) => {
                 let opt = if idx.is_max_value() { None } else { Some(*idx) };
                 serializer.serialize_newtype_variant("EntryValue", 1, "Next", &opt)
             }
@@ -31,7 +31,7 @@ where
     {
         #[derive(serde::Deserialize)]
         #[serde(field_identifier)]
-        enum Field { Some, Next }
+        enum Field { Used, Next }
 
         struct EntryValueVisitor<T> {
             marker: std::marker::PhantomData<T>,
@@ -54,10 +54,10 @@ where
                 use serde::de::VariantAccess;
 
                 match data.variant()? {
-                    (Field::Some, v) => Ok(EntryValue::Some(v.newtype_variant()?)),
+                    (Field::Used, v) => Ok(EntryValue::Occupied(v.newtype_variant()?)),
                     (Field::Next, v) => {
                         let opt: Option<usize> = v.newtype_variant()?;
-                        Ok(EntryValue::Free(opt.unwrap_or(usize::MAX)))
+                        Ok(EntryValue::Vacant(opt.unwrap_or(usize::MAX)))
                     }
                 }
             }
@@ -65,7 +65,7 @@ where
 
         deserializer.deserialize_enum(
             "EntryValue",
-            &["Some", "Next"],
+            &["Used", "Next"],
             EntryValueVisitor { marker: std::marker::PhantomData },
         )
     }

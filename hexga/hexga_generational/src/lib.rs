@@ -5,6 +5,7 @@
 #![allow(unused_imports)]
 #![feature(get_disjoint_mut_helpers)]
 use std::{collections::HashMap, fmt::Debug, hash::{Hash, Hasher}, iter::FusedIterator, marker::PhantomData, ops::{Index, IndexMut}};
+use std::{borrow::Borrow, hash::{BuildHasher, RandomState}};
 
 use hexga_number::*;
 #[allow(unused_imports)]
@@ -20,7 +21,7 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 
 pub mod gen_vec;
 pub mod gen_id;
-pub mod gen_multi_map;
+pub mod multi_map;
 pub mod table;
 
 pub(crate) use prelude::*;
@@ -29,7 +30,7 @@ pub mod prelude
     pub use super::{
         gen_id::prelude::*,
         gen_vec::prelude::*,
-        gen_multi_map::prelude::*,
+        multi_map::prelude::*,
         table::prelude::*,
     };
 }

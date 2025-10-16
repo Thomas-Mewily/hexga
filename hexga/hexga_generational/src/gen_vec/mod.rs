@@ -3,7 +3,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{GenVec, CollectToGenVecExtension};
+    pub use super::{GenVec, CollectToGenVec};
 }
 
 #[cfg(feature = "serde")]
@@ -19,27 +19,27 @@ pub type GenVec<T> = GenVecOf<T,Generation>;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum EntryValue<T>
 {
-    Some(T),
+    Occupied(T),
     /// Next free entry
-    Free(usize),
+    Vacant(usize),
 }
 
 
 impl<T> EntryValue<T>
 {
-    pub fn get(&self) -> Option<&T> { if let Self::Some(v) = self { Some(v) } else { None }}
-    pub fn get_mut(&mut self) -> Option<&mut T> { if let Self::Some(v) = self { Some(v) } else { None }}
+    pub fn get(&self) -> Option<&T> { if let Self::Occupied(v) = self { Some(v) } else { None }}
+    pub fn get_mut(&mut self) -> Option<&mut T> { if let Self::Occupied(v) = self { Some(v) } else { None }}
 
     /// Panic is the entry is free
-    pub fn take_and_free(&mut self, free_head: usize) -> T {
-        match std::mem::replace(self, EntryValue::Free(free_head)) {
-            EntryValue::Some(value) => value,
-            EntryValue::Free(_) => panic!("Entry was already free"),
+    pub(crate) fn take_and_set_vacant(&mut self, free_head: usize) -> T {
+        match std::mem::replace(self, EntryValue::Vacant(free_head)) {
+            EntryValue::Occupied(value) => value,
+            EntryValue::Vacant(_) => panic!("Entry was already free"),
         }
     }
 
-    pub fn is_free(&self) -> bool { matches!(self, Self::Free(_))}
-    pub fn is_used(&self) -> bool { matches!(self, Self::Some(_))}
+    pub fn is_vacant(&self) -> bool { matches!(self, Self::Vacant(_))}
+    pub fn is_occupied(&self) -> bool { matches!(self, Self::Occupied(_))}
 }
 
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
@@ -146,7 +146,7 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
                 debug_assert!(!mid.is_max_value());
 
                 let entry = other.get_entry_from_index(mid).unwrap();
-                let EntryValue::Free(f) = entry.value else { return false; };
+                let EntryValue::Vacant(f) = entry.value else { return false; };
                 if !f.is_max_value() || !entry.generation().is_min_value() { return false; }
 
                 let self_left = &self.values[0..mid];
@@ -163,7 +163,7 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
                 debug_assert!(!mid.is_max_value());
 
                 let entry = self.get_entry_from_index(mid).unwrap();
-                let EntryValue::Free(f) = entry.value else { return false; };
+                let EntryValue::Vacant(f) = entry.value else { return false; };
                 if !f.is_max_value() || !entry.generation().is_min_value() { return false; }
 
                 let other_left = &other.values[0..mid];
@@ -203,7 +203,7 @@ impl<T, Gen:IGeneration> GenVecOf<T,Gen>
             loop
             {
                 let Some(next_entry) = values.get(cur_free) else { return Err(format!("GenVec : entry {:?} is out of range", cur_free)); };
-                let EntryValue::Free(f) = next_entry.value else { return Err(format!("GenVec : entry {:?} was not free", cur_free)); };
+                let EntryValue::Vacant(f) = next_entry.value else { return Err(format!("GenVec : entry {:?} was not free", cur_free)); };
 
                 // This is super important to check if there is no cycle in the free list.
                 // Any invalid EntryValue::Free(index) can lead to crash
@@ -273,11 +273,11 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
             {
                 if v.increment_generation()
                 {
-                    v.value = EntryValue::Free(self.free);
+                    v.value = EntryValue::Vacant(self.free);
                     self.free = index;
                 }else
                 {
-                    v.value = EntryValue::Free(usize::MAX);
+                    v.value = EntryValue::Vacant(usize::MAX);
                 }
             }
         }
@@ -292,7 +292,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         let entry_len = self.values.len();
 
         let Some(entry) = self.get_entry_mut_from_index(index) else { return Err(()); };
-        if entry.value.is_free() { return Err(()); }
+        if entry.value.is_vacant() { return Err(()); }
 
         if free.is_max_value()
         {
@@ -300,7 +300,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         }
 
         let can_not_decrease = !entry.can_decrement_generation();
-        let val = entry.value.take_and_free(free);
+        let val = entry.value.take_and_set_vacant(free);
         self.len -= 1;
 
         if free.is_max_value() && can_not_decrease
@@ -325,14 +325,14 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
             assert!(index != usize::MAX, "How you didn't run out of memory before ?");
 
             let generation = Gen::MIN;
-            self.values.push(Entry { value: EntryValue::Some(value), generation });
+            self.values.push(Entry { value: EntryValue::Occupied(value), generation });
             return GenIDOf::from_index_and_generation(index, generation);
         }
 
-        let EntryValue::Free(next_free_index) = self.values[self.free].value else { unreachable!(); };
+        let EntryValue::Vacant(next_free_index) = self.values[self.free].value else { unreachable!(); };
         let free = self.free;
         self.free = next_free_index;
-        self.values[free].value = EntryValue::Some(value);
+        self.values[free].value = EntryValue::Occupied(value);
         return GenIDOf::from_index_and_generation(free, self.values[free].generation);
     }
 
@@ -367,7 +367,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
     {
         let mut head = self.free;
         let entry = self.get_entry_mut_from_index(index).ok_or(())?;
-        let EntryValue::Free(f) = entry.value else { return Err(()); };
+        let EntryValue::Vacant(f) = entry.value else { return Err(()); };
         let free = f;
 
         if f.is_not_max_value()
@@ -388,7 +388,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
             }
         }
 
-        entry.value = EntryValue::Some(value);
+        entry.value = EntryValue::Occupied(value);
 
         self.free = head;
         self.len += 1;
@@ -401,16 +401,16 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         let head = self.free;
 
         let Some(entry) = self.get_entry_mut_from_index(index) else { return None; };
-        if entry.value.is_free() { return None; }
+        if entry.value.is_vacant() { return None; }
 
-        let val = entry.value.take_and_free(head);
+        let val = entry.value.take_and_set_vacant(head);
 
         if entry.increment_generation()
         {
             self.free = index;
         }else
         {
-            entry.value = EntryValue::Free(usize::MAX);
+            entry.value = EntryValue::Vacant(usize::MAX);
         }
         self.len -= 1;
 
@@ -499,8 +499,8 @@ impl<T, Gen:IGeneration> IndexMut<usize> for GenVecOf<T,Gen>
 
 impl<T, Gen:IGeneration> FromIterator<T> for GenVecOf<T, Gen>
 {
-    fn from_iter<K: IntoIterator<Item = T>>(iter: K) -> Self {
-        let values : Vec<Entry<T,Gen>> = iter.into_iter().map(|v| Entry::new(EntryValue::Some(v), Gen::MIN)).collect();
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let values : Vec<Entry<T,Gen>> = iter.into_iter().map(|v| Entry::new(EntryValue::Occupied(v), Gen::MIN)).collect();
         let len = values.len();
         Self{ values, free: usize::MAX, len }
     }
@@ -533,7 +533,7 @@ impl<T, Gen: IGeneration> Iterator for IntoIter<T, Gen> {
     {
         while let Some((index, entry)) = self.iter.next()
         {
-            if let EntryValue::Some(value) = entry.value
+            if let EntryValue::Occupied(value) = entry.value
             {
                 self.len_remaining -= 1;
                 return Some((GenIDOf::from_index_and_generation(index, entry.generation), value));
@@ -934,7 +934,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
         for (index, entry) in other.values.iter_mut().enumerate().filter(|(_,s)| s.have_value())
         {
-            let val = entry.value.take_and_free(usize::MAX);
+            let val = entry.value.take_and_set_vacant(usize::MAX);
             let old_id = entry.get_id(index);
             let new_id = self.insert(val);
             h.insert(old_id, new_id);
@@ -1004,14 +1004,14 @@ impl<A,Gen:IGeneration> Extend<(GenIDOf<A,Gen>, A)> for GenVecOf<A,Gen> where A 
     }
 }
 
-pub trait CollectToGenVecExtension<T,Gen:IGeneration=Generation> : Sized + IntoIterator<Item = T>
+pub trait CollectToGenVec<T> : Sized + IntoIterator<Item = T>
 {
-    fn to_genvec(self) -> GenVecOf<T,Generation>
+    fn to_genvec(self) -> GenVecOf<T>
     {
         GenVecOf::from_iter(self)
     }
 }
-impl<I,T1> CollectToGenVecExtension<T1> for I where I : IntoIterator<Item = T1> {}
+impl<I,T1> CollectToGenVec<T1> for I where I : IntoIterator<Item = T1> {}
 
 /*
 pub trait CollectToGenVecWithIDExtension<T,Gen:IGeneration=Generation> : Sized + IntoIterator<Item = (GenIDOf<T,Gen>, T)>

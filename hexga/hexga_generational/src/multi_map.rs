@@ -1,23 +1,21 @@
-use std::{borrow::Borrow, hash::{BuildHasher, RandomState}};
-
 use super::*;
 use crate::gen_vec::*;
 
 pub mod prelude
 {
-    pub use super::{GenMultiMap,GenMultiMapID};
+    pub use super::{MultiMap,MultiMapID,CollectToMultiMap};
 }
 
 
-pub type GenMultiMap<K,V> = GenMultiMapOf<K,V,Generation>;
-pub type GenMultiMapID<K,V> = GenMultiMapIDOf<K,V,Generation,RandomState>;
+pub type MultiMap<K,V> = MultiMapOf<K,V,Generation>;
+pub type MultiMapID<K,V> = MultiMapIDOf<K,V,Generation,RandomState>;
 
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Entry<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     keys: Vec<K>,
-    id: GenMultiMapIDOf<K,V,Gen,S>,
+    id: MultiMapIDOf<K,V,Gen,S>,
     value: V,
     phantom: PhantomData<S>,
 }
@@ -85,10 +83,10 @@ where
             return Err(serde::de::Error::custom("duplicate keys found in Entry"));
         }
 
-        Ok(crate::gen_multi_map::Entry {
+        Ok(crate::multi_map::Entry {
             keys: keys,
             value: value,
-            id: GenMultiMapIDOf::NULL,
+            id: MultiMapIDOf::NULL,
             phantom: PhantomData,
         })
     }
@@ -100,7 +98,7 @@ impl<K,V,Gen,S> Entry<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
     pub(crate) const fn new(keys : Vec<K>, value : V) -> Self
     {
         assert!(keys.len() >= 1);
-        Self { value, keys, phantom: PhantomData, id: GenMultiMapIDOf::NULL }
+        Self { value, keys, phantom: PhantomData, id: MultiMapIDOf::NULL }
     }
 
     pub fn value(&self) -> &V { &self.value }
@@ -113,7 +111,7 @@ impl<K,V,Gen,S> Entry<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
     pub fn keys(&self) -> &[K] { self.keys.as_slice() }
     pub const fn nb_keys(&self) -> usize { self.keys.len() }
 
-    pub const fn id(&self) -> GenMultiMapIDOf<K,V,Gen,S> { self.id }
+    pub const fn id(&self) -> MultiMapIDOf<K,V,Gen,S> { self.id }
 
     pub fn main_key(&self) -> &K { self.keys.first().unwrap() }
 
@@ -143,7 +141,7 @@ impl<K,V,Gen,S> Into<(Vec<K>, V)> for Entry<K,V,Gen,S> where Gen: IGeneration, S
     }
 }
 
-pub type GenMultiMapIDOf<K,V,Gen,S=RandomState> = GenIDOf<Entry<K,V,Gen,S>,Gen>;
+pub type MultiMapIDOf<K,V,Gen,S=RandomState> = GenIDOf<Entry<K,V,Gen,S>,Gen>;
 
 /// A data structure similar to [`HashMap`], for managing items using persistant keys
 ///
@@ -155,14 +153,14 @@ pub type GenMultiMapIDOf<K,V,Gen,S=RandomState> = GenIDOf<Entry<K,V,Gen,S>,Gen>;
 /// - can have N number of keys (one (the main key), or multiple (the main keys then backward compatibility keys)),
 /// - have an [`TableIDOf<K,V,Gen>`] for fast access.
 #[derive(Clone, Debug)]
-pub struct GenMultiMapOf<K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
+pub struct MultiMapOf<K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
 {
     values: GenVecOf<Entry<K,V,Gen,S>,Gen>,
-    search: HashMap<K,GenMultiMapIDOf<K,V,Gen,S>,S>,
+    search: HashMap<K,MultiMapIDOf<K,V,Gen,S>,S>,
 }
 
-impl<K, V, Gen, S> Eq for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, Entry<K,V,Gen,S>: Eq {}
-impl<K, V, Gen, S> PartialEq for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, Entry<K,V,Gen,S>: PartialEq
+impl<K, V, Gen, S> Eq for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, Entry<K,V,Gen,S>: Eq {}
+impl<K, V, Gen, S> PartialEq for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, Entry<K,V,Gen,S>: PartialEq
 {
     fn eq(&self, other: &Self) -> bool {
         self.values == other.values
@@ -170,7 +168,7 @@ impl<K, V, Gen, S> PartialEq for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration
 }
 
 #[cfg(feature = "serde")]
-impl<K, V, Gen, St> Serialize for GenMultiMapOf<K, V, Gen, St>
+impl<K, V, Gen, St> Serialize for MultiMapOf<K, V, Gen, St>
 where
     K: Serialize,
     V: Serialize,
@@ -186,7 +184,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<'de, K, V, Gen, S> Deserialize<'de> for GenMultiMapOf<K, V, Gen, S>
+impl<'de, K, V, Gen, S> Deserialize<'de> for MultiMapOf<K, V, Gen, S>
 where
     K: Deserialize<'de> + Eq + Hash + Clone,
     V: Deserialize<'de>,
@@ -212,22 +210,22 @@ where
             }
         }
 
-        Ok(GenMultiMapOf { values, search })
+        Ok(MultiMapOf { values, search })
     }
 }
 
-impl<K,V,Gen,S> Default for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S: BuildHasher + Default
+impl<K,V,Gen,S> Default for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S: BuildHasher + Default
 {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<K,V,Gen> GenMultiMapOf<K,V,Gen,RandomState> where Gen: IGeneration
+impl<K,V,Gen> MultiMapOf<K,V,Gen,RandomState> where Gen: IGeneration
 {
     pub fn with_capacity(capacity : usize) -> Self { Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_capacity(capacity) } }
 }
-impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<K,V,Gen,S> MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     pub fn new() -> Self where S: Default
     {
@@ -239,13 +237,13 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
         Self { values: GenVecOf::new(), search: HashMap::with_hasher(hash_builder) }
     }
 
-    pub fn get_entry(&self, id: GenMultiMapIDOf<K,V,Gen,S>) -> Option<&Entry<K,V,Gen,S>> { self.values.get(id) }
-    pub fn get(&self, id: GenMultiMapIDOf<K,V,Gen,S>) -> Option<&V> { self.get_entry(id).map(|e| &e.value) }
+    pub fn get_entry(&self, id: MultiMapIDOf<K,V,Gen,S>) -> Option<&Entry<K,V,Gen,S>> { self.values.get(id) }
+    pub fn get(&self, id: MultiMapIDOf<K,V,Gen,S>) -> Option<&V> { self.get_entry(id).map(|e| &e.value) }
 
-    pub fn contains(&self, id: GenMultiMapIDOf<K,V,Gen,S>) -> bool { self.values.get(id).is_some() }
+    pub fn contains(&self, id: MultiMapIDOf<K,V,Gen,S>) -> bool { self.values.get(id).is_some() }
 
     pub fn entries(&self) -> impl Iterator<Item = &Entry<K,V,Gen,S>> { self.values.iter().map(|(_idx,val)| val) }
-    pub fn ids(&self) -> impl Iterator<Item = GenMultiMapIDOf<K,V,Gen,S>> { self.values.ids() }
+    pub fn ids(&self) -> impl Iterator<Item = MultiMapIDOf<K,V,Gen,S>> { self.values.ids() }
 
     pub fn values(&self) -> impl Iterator<Item = &V> { self.values.values().map(|e| e.value()) }
     pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> { self.values.values_mut().map(|e| e.value_mut()) }
@@ -277,8 +275,8 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
     pub fn iter(&self) -> Iter<'_,K,V,Gen,S> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_,K,V,Gen,S> { self.into_iter() }
 
-    pub(crate) fn get_entry_mut(&mut self, id: GenMultiMapIDOf<K,V,Gen,S>) -> Option<&mut Entry<K,V,Gen,S>> { self.values.get_mut(id) }
-    pub fn get_mut(&mut self, id: GenMultiMapIDOf<K,V,Gen,S>) -> Option<&mut V> { self.get_entry_mut(id).map(|e| &mut e.value) }
+    pub(crate) fn get_entry_mut(&mut self, id: MultiMapIDOf<K,V,Gen,S>) -> Option<&mut Entry<K,V,Gen,S>> { self.values.get_mut(id) }
+    pub fn get_mut(&mut self, id: MultiMapIDOf<K,V,Gen,S>) -> Option<&mut V> { self.get_entry_mut(id).map(|e| &mut e.value) }
 
     pub fn values_genvec(&self) -> &GenVecOf<Entry<K,V,Gen,S>,Gen>
     {
@@ -286,9 +284,9 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
     }
 }
 
-impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K : Eq + Hash
+impl<K,V,Gen,S> MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K : Eq + Hash
 {
-    pub fn key_to_id<Q : ?Sized>(&self, key : &Q) -> Option<GenMultiMapIDOf<K,V,Gen,S>> where K : Borrow<Q>, Q : Eq + Hash { self.search.get(key).copied() }
+    pub fn key_to_id<Q : ?Sized>(&self, key : &Q) -> Option<MultiMapIDOf<K,V,Gen,S>> where K : Borrow<Q>, Q : Eq + Hash { self.search.get(key).copied() }
 
     pub fn contains_any_keys(&self, keys : &[K]) -> bool
     {
@@ -316,7 +314,7 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, 
         self.get_entry_mut_from_key(key).map(|e| &mut e.value)
     }
 
-    pub fn remove_entry(&mut self, id: GenMultiMapIDOf<K,V,Gen,S>) -> Option<Entry<K,V,Gen,S>>
+    pub fn remove_entry(&mut self, id: MultiMapIDOf<K,V,Gen,S>) -> Option<Entry<K,V,Gen,S>>
     {
         let v = self.values.remove(id)?;
         for id in v.keys.iter()
@@ -332,7 +330,7 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, 
     }
 
 
-    pub fn remove(&mut self, id: GenMultiMapIDOf<K,V,Gen,S>) -> Option<V>
+    pub fn remove(&mut self, id: MultiMapIDOf<K,V,Gen,S>) -> Option<V>
     {
         self.remove_entry(id).map(|e| e.value)
     }
@@ -418,14 +416,14 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, 
             });
     }
 }
-impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K: Eq + Hash + Clone
+impl<K,V,Gen,S> MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K: Eq + Hash + Clone
 {
-    pub fn insert(&mut self, key: K, value: V) -> Option<GenMultiMapIDOf<K,V,Gen,S>>
+    pub fn insert(&mut self, key: K, value: V) -> Option<MultiMapIDOf<K,V,Gen,S>>
     {
         self.insert_with_keys(vec![key], value)
     }
     /// Return [None] if main_key_follow_by_backward_keys is empty
-    pub fn insert_with_keys<Keys>(&mut self, main_key_follow_by_backward_keys : Keys, value: V) -> Option<GenMultiMapIDOf<K,V,Gen,S>> where Keys: IntoIterator<Item = K>
+    pub fn insert_with_keys<Keys>(&mut self, main_key_follow_by_backward_keys : Keys, value: V) -> Option<MultiMapIDOf<K,V,Gen,S>> where Keys: IntoIterator<Item = K>
     {
         let keys = main_key_follow_by_backward_keys.to_vec();
         if keys.is_empty() { return None; } // Missing main keys
@@ -446,7 +444,7 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, 
     }
 
     /// If any key is a duplicate / already used, return an error
-    pub fn add_keys(&mut self, source_id: GenMultiMapIDOf<K,V,Gen,S>, keys: Vec<K>) -> Result<(), Vec<K>>
+    pub fn add_keys(&mut self, source_id: MultiMapIDOf<K,V,Gen,S>, keys: Vec<K>) -> Result<(), Vec<K>>
     {
         for key in keys.iter()
         {
@@ -474,7 +472,7 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, 
         }
     }
 
-    pub fn add_key(&mut self, source_id: GenMultiMapIDOf<K,V,Gen,S>, key: K) -> Result<(), K>
+    pub fn add_key(&mut self, source_id: MultiMapIDOf<K,V,Gen,S>, key: K) -> Result<(), K>
     {
         if self.contains_key(&key) { return Err(key); }
 
@@ -495,66 +493,66 @@ impl<K,V,Gen,S> GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, 
     }
 }
 
-impl<K,V,Gen,S> Index<GenMultiMapIDOf<K,V,Gen,S>> for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<K,V,Gen,S> Index<MultiMapIDOf<K,V,Gen,S>> for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     type Output=V;
-    fn index(&self, id: GenMultiMapIDOf<K,V,Gen,S>) -> &Self::Output {
+    fn index(&self, id: MultiMapIDOf<K,V,Gen,S>) -> &Self::Output {
         self.get(id).unwrap()
     }
 }
-impl<K,V,Gen,S> IndexMut<GenMultiMapIDOf<K,V,Gen,S>> for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<K,V,Gen,S> IndexMut<MultiMapIDOf<K,V,Gen,S>> for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
-    fn index_mut(&mut self, id: GenMultiMapIDOf<K,V,Gen,S>) -> &mut Self::Output {
+    fn index_mut(&mut self, id: MultiMapIDOf<K,V,Gen,S>) -> &mut Self::Output {
         self.get_mut(id).unwrap()
     }
 }
-impl<K,V,Gen,S> Get<GenMultiMapIDOf<K,V,Gen,S>> for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<K,V,Gen,S> Get<MultiMapIDOf<K,V,Gen,S>> for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     type Output = V;
-    fn get(&self, index : GenMultiMapIDOf<K,V,Gen,S>) -> Option<&Self::Output> {
+    fn get(&self, index : MultiMapIDOf<K,V,Gen,S>) -> Option<&Self::Output> {
         self.get(index)
     }
 }
-impl<K,V,Gen,S> GetMut<GenMultiMapIDOf<K,V,Gen,S>> for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<K,V,Gen,S> GetMut<MultiMapIDOf<K,V,Gen,S>> for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
-    fn get_mut(&mut self, index: GenMultiMapIDOf<K,V,Gen,S>) -> Option<&mut Self::Output> {
+    fn get_mut(&mut self, index: MultiMapIDOf<K,V,Gen,S>) -> Option<&mut Self::Output> {
         self.get_mut(index)
     }
 }
-impl<K,V,Gen,S> GetManyMut<GenMultiMapIDOf<K,V,Gen,S>> for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<K,V,Gen,S> GetManyMut<MultiMapIDOf<K,V,Gen,S>> for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
-    fn get_many_mut<const N: usize>(&mut self, indices: [GenMultiMapIDOf<K,V,Gen,S>; N]) -> Option<[&mut Self::Output;N]>
+    fn get_many_mut<const N: usize>(&mut self, indices: [MultiMapIDOf<K,V,Gen,S>; N]) -> Option<[&mut Self::Output;N]>
     {
         self.values.get_many_mut(indices).map(|entries| entries.map(|e| &mut e.value))
     }
 
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [GenMultiMapIDOf<K,V,Gen,S>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [MultiMapIDOf<K,V,Gen,S>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
     {
         self.values.try_get_many_mut(indices).map(|entries| entries.map(|e| &mut e.value))
     }
 }
 
-impl<K,V,Gen,S> Remove<GenMultiMapIDOf<K,V,Gen,S>> for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K: Eq + Hash
+impl<K,V,Gen,S> Remove<MultiMapIDOf<K,V,Gen,S>> for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K: Eq + Hash
 {
     type Output=V;
-    fn remove(&mut self, id: GenMultiMapIDOf<K,V,Gen,S>) -> Option<Self::Output> {
+    fn remove(&mut self, id: MultiMapIDOf<K,V,Gen,S>) -> Option<Self::Output> {
         self.remove(id)
     }
 }
 
 
-impl<K,V,Gen,S> Length for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { #[inline(always)] fn len(&self) -> usize { self.len() } }
-impl<K,V,Gen,S> Clearable for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { #[inline(always)] fn clear(&mut self) { self.clear() } }
+impl<K,V,Gen,S> Length for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { #[inline(always)] fn len(&self) -> usize { self.len() } }
+impl<K,V,Gen,S> Clearable for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { #[inline(always)] fn clear(&mut self) { self.clear() } }
 
-impl<K,V,Gen,S> Capacity for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<K,V,Gen,S> Capacity for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
-    type Param=();
+    type Param=S;
 
     #[inline(always)]
     fn capacity(&self) -> usize { self.values.capacity() }
 
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, _ : Self::Param) -> Self { Self::with_capacity(capacity) }
+    fn with_capacity_and_param(capacity: usize, hasher : Self::Param) -> Self { let mut s = Self::with_hasher(hasher); s.values.reserve(capacity); s }
 
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.values.reserve(additional); }
@@ -567,8 +565,22 @@ impl<K,V,Gen,S> Capacity for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.values.try_reserve_exact(additional) }
 }
 
+impl<Keys,K,V,Gen,S> FromIterator<(Keys,V)> for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher + Default, Keys: IntoIterator<Item = K>, K: Eq + Hash + Clone
+{
+    fn from_iter<I: IntoIterator<Item = (Keys,V)>>(iter: I) -> Self
+    {
+        let it = iter.into_iter();
+        let (min_size,max_size) = it.size_hint();
+        let mut s = Self::with_capacity(max_size.unwrap_or(min_size));
+        for (keys, v) in it
+        {
+            let _ = s.insert_with_keys(keys, v);
+        }
+        s
+    }
+}
 
-impl<K,V,Gen,S> IntoIterator for GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<K,V,Gen,S> IntoIterator for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     type Item=(Vec<K>, V);
     type IntoIter=IntoIter<K,V,Gen,S>;
@@ -587,7 +599,7 @@ impl<K,V,Gen,S> Iterator for IntoIter<K,V,Gen,S> where Gen: IGeneration, S:Build
     fn next(&mut self) -> Option<Self::Item> {
         while let Some(slot) = self.iter.next()
         {
-            if let EntryValue::Some(value) = slot.value
+            if let EntryValue::Occupied(value) = slot.value
             {
                 self.len_remaining -= 1;
                 return Some(value.into_keys_and_value());
@@ -605,12 +617,12 @@ impl<K,V,Gen,S> ExactSizeIterator for IntoIter<K,V,Gen,S> where Gen: IGeneration
 pub struct EntryID<'a,K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     pub key : &'a [K],
-    pub id  : GenMultiMapIDOf<K,V,Gen,S>,
+    pub id  : MultiMapIDOf<K,V,Gen,S>,
 }
 
 
 
-impl<'a,K,V,Gen,S> IntoIterator for &'a GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<'a,K,V,Gen,S> IntoIterator for &'a MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     type Item=(EntryID<'a,K,V,Gen,S>, &'a V);
     type IntoIter=Iter<'a,K,V,Gen,S>;
@@ -641,7 +653,7 @@ impl<'a,K,V,Gen,S> FusedIterator for Iter<'a,K,V,Gen,S> where Gen: IGeneration, 
 impl<'a,K,V,Gen,S> ExactSizeIterator for Iter<'a,K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { fn len(&self) -> usize { self.iter.len() } }
 
 
-impl<'a,K,V,Gen,S> IntoIterator for &'a mut GenMultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+impl<'a,K,V,Gen,S> IntoIterator for &'a mut MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     type Item=(EntryID<'a,K,V,Gen,S>, &'a mut V);
     type IntoIter=IterMut<'a,K,V,Gen,S>;
@@ -670,3 +682,13 @@ impl<'a,K,V,Gen,S> Iterator for IterMut<'a,K, V, Gen, S> where Gen: IGeneration,
 }
 impl<'a,K,V,Gen,S> FusedIterator for IterMut<'a,K,V,Gen,S> where Gen: IGeneration, S:BuildHasher {}
 impl<'a,K,V,Gen,S> ExactSizeIterator for IterMut<'a,K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { fn len(&self) -> usize { self.iter.len() } }
+
+
+pub trait CollectToMultiMap<Keys,K,V> : Sized + IntoIterator<Item = (Keys,V)> where Keys: IntoIterator<Item = K>, K: Eq + Hash + Clone
+{
+    fn to_multimap(self) -> MultiMapOf<K,V>
+    {
+        MultiMapOf::from_iter(self)
+    }
+}
+impl<Keys,K,V,I> CollectToMultiMap<Keys,K,V> for I where I : IntoIterator<Item = (Keys,V)>, Keys: IntoIterator<Item = K>, K: Eq + Hash + Clone {}

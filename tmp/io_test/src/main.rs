@@ -52,17 +52,17 @@ fn t()
 
 fn test_serialize_deserialize<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
 {
-    println!("  value: {value:?}");
+    println!("   value: {value:?}");
     let format = value.to_quick_bin().unwrap();
-    println!("  ron: {}", value.to_ron().unwrap());
-    println!("  bin: {format:?}");
+    println!("   ron: {}", value.to_ron().unwrap());
+    println!("   bin: {format:?}");
     println!();
 
     // Not a self describing format
     let from_format = T::from_quick_bin_buf(&format).unwrap();
-    println!("=> ron: {}", from_format.to_ron().unwrap());
-    println!("=> bin: {format:?}");
-    println!("=> value: {from_format:?}");
+    println!("=>  ron: {}", from_format.to_ron().unwrap());
+    println!("=>  bin: {format:?}");
+    println!("ron2value: {from_format:?}");
     assert_eq!(*value, from_format);
     println!();
     println!();
@@ -88,5 +88,9 @@ fn main()
     g.remove_from_index(1);
     test_serialize_deserialize(&g);
 
-    // Todo check grid, image and put it in some test
+    dbg!([(["1".to_owned(), "one".to_owned()], 1)].to_multimap());
+
+
+
+    //Todo check grid, image and put it in some test
 }
