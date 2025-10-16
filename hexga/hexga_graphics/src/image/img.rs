@@ -5,15 +5,14 @@ pub(crate) mod prelude
 {
     pub use super::
     {
-        Image,ToImage,
+        Image,ImageOf,ToImage,
     };
 }
 
-pub type Image = ImageBase<RgbaU8>;
+pub type Image = ImageOf;
+pub type ImageOf<C=ColorU8> = ImageBaseOf<C>;
 
-pub type ImageBase<C> = ImageBaseOf<C,int>;
-
-pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;
+pub type ImageError<Idx> = GridBaseError<Idx,2>;
 
 /// Image have a different type than Grid because:
 ///
@@ -21,10 +20,8 @@ pub type ImageBaseError<Idx> = GridBaseError<Idx,2>;
 /// - The layout of the pixels match the saving format, saving an image don't create a temporary vector
 #[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Image"))]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ImageBaseOf<C,Idx> where Idx : Integer
+pub struct ImageBaseOf<C=ColorU8,Idx=int> where Idx : Integer
 {
-    // The size is will be deserialized first before the pixels,
-    // then we can give a hint to serde about the size of the vector to alloc when deserializing
     size   : Vector2<Idx>,
     pixels : Vec<C>,
 }
@@ -53,13 +50,13 @@ pub trait ToImage
     type Output;
     fn to_image(self) -> Self::Output;
 }
-impl<C,Idx> From<GridBase<C,Idx,2>> for ImageBaseOf<C, Idx> where Idx : Integer
+impl<C,Idx> From<GridOf<C,Idx,2>> for ImageBaseOf<C, Idx> where Idx : Integer
 {
-    fn from(value: GridBase<C,Idx,2>) -> Self { value.to_image() }
+    fn from(value: GridOf<C,Idx,2>) -> Self { value.to_image() }
 }
-impl<'a,C,Idx> From<GridView<'a,GridBase<C,Idx,2>,C,Idx,2>> for ImageBaseOf<C, Idx> where Idx : Integer, C : Clone
+impl<'a,C,Idx> From<GridView<'a,GridOf<C,Idx,2>,C,Idx,2>> for ImageBaseOf<C, Idx> where Idx : Integer, C : Clone
 {
-    fn from(value: GridView<'a,GridBase<C,Idx,2>,C,Idx,2>) -> Self { value.to_image() }
+    fn from(value: GridView<'a,GridOf<C,Idx,2>,C,Idx,2>) -> Self { value.to_image() }
 }
 
 impl<C,Idx> ToImage for ImageBaseOf<C,Idx> where Idx : Integer
@@ -71,7 +68,7 @@ impl<C,Idx> ToImage for ImageBaseOf<C,Idx> where Idx : Integer
 }
 
 
-impl<C,Idx> ToImage for GridBase<C,Idx,2> where Idx : Integer
+impl<C,Idx> ToImage for GridOf<C,Idx,2> where Idx : Integer
 {
     type Output = ImageBaseOf<C, Idx>;
     fn to_image(mut self) -> Self::Output
@@ -90,7 +87,7 @@ impl<C,Idx> ToImage for GridBase<C,Idx,2> where Idx : Integer
 }
 impl<C,Idx> ToGrid<C,Idx,2> for ImageBaseOf<C, Idx> where Idx : Integer
 {
-    type Output = GridBase<C, Idx,2>;
+    type Output = GridOf<C, Idx,2>;
     fn to_grid(mut self) -> Self::Output {
         let (w,h) = self.size().into();
         for x in Idx::iter(w)
@@ -101,12 +98,12 @@ impl<C,Idx> ToGrid<C,Idx,2> for ImageBaseOf<C, Idx> where Idx : Integer
             }
         }
         let (size, values) = self.into_size_and_values();
-        unsafe { GridBase::from_vec_unchecked(size, values) }
+        unsafe { GridOf::from_vec_unchecked(size, values) }
     }
 }
 
 
-impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where Idx : Integer, C : Clone
+impl<'a,C,Idx> ToImage for GridView<'a,GridOf<C,Idx,2>,C,Idx,2> where Idx : Integer, C : Clone
 {
     type Output = ImageBaseOf<C, Idx>;
     fn to_image(self) -> Self::Output
@@ -117,7 +114,7 @@ impl<'a,C,Idx> ToImage for GridView<'a,GridBase<C,Idx,2>,C,Idx,2> where Idx : In
         )
     }
 }
-impl<'a,C,Idx> ToImage for GridViewMut<'a,GridBase<C,Idx,2>,C,Idx,2> where Idx : Integer, C : Clone
+impl<'a,C,Idx> ToImage for GridViewMut<'a,GridOf<C,Idx,2>,C,Idx,2> where Idx : Integer, C : Clone
 {
     type Output = ImageBaseOf<C, Idx>;
     fn to_image(self) -> Self::Output { self.view().to_image() }

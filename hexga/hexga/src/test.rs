@@ -149,6 +149,7 @@ fn serialize_fixed_size_vector()
     serde_test(&HslaF32::ROSE);
     serde_test(&HslaF64::ROSE);
 
+
     serde_test(&Rect1::SIZED_ONE);
     serde_test(&Rect2::SIZED_ONE);
     serde_test(&Rect3::SIZED_ONE);
@@ -167,3 +168,10 @@ fn serialize_unit()
     serde_test(&60.s());
 }
 
+
+#[test]
+fn serialize_grid()
+{
+    serde_test(&Grid2::from_fn(point([3, 4]), |x| x.sum_axis()));
+    serde_test(&Image::from_fn(point([3, 4]), |x| RgbaU8::rgb(x.x as _, x.y as _ , 0)));
+}

@@ -4,18 +4,18 @@ use super::*;
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Grid"))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
-pub struct GridBase<T, Idx, const N : usize> where Idx : Integer
+pub struct GridOf<T, Idx, const N : usize> where Idx : Integer
 {
-    // The size is will be deserialized first before the values,
-    // then we can give a hint to serde about the size of the vector to alloc when deserializing
-    pub(crate) size   : Vector<Idx,N>,
-    pub(crate) values : Vec<T>,
+    pub(crate) size  : Vector<Idx,N>,
+    pub(crate) values: Vec<T>,
 }
 
 macro_rules! impl_grid_fmt_method {
     ($trait_name :ident) => {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
         {
+            writeln!(f)?;
+
             const SEP :&'static str = " ";
             let size = self.size();
 
@@ -33,7 +33,7 @@ macro_rules! impl_grid_fmt_method {
                 2 =>
                 {
                     let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
-                    let g = unsafe { GridBase::from_vec_unchecked(size, strings) };
+                    let g = unsafe { GridOf::from_vec_unchecked(size, strings) };
 
                     for y in (0..size[1].to_usize()).rev()
                     {
@@ -65,7 +65,7 @@ macro_rules! impl_grid_fmt_method {
 map_on_std_fmt!(
     ($trait_name :ident) =>
     {
-        impl<T, Idx, const N : usize> std::fmt::$trait_name for GridBase<T, Idx, N> where Idx : Integer, T: std::fmt::$trait_name
+        impl<T, Idx, const N : usize> std::fmt::$trait_name for GridOf<T, Idx, N> where Idx : Integer, T: std::fmt::$trait_name
         {
             impl_grid_fmt_method!($trait_name);
         }
@@ -82,7 +82,7 @@ map_on_std_fmt!(
     }
 );
 
-impl<T, Idx, const N : usize> MapIntern for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> MapIntern for GridOf<T, Idx, N> where Idx : Integer
 {
     type Item=T;
     fn map_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item {
@@ -90,7 +90,7 @@ impl<T, Idx, const N : usize> MapIntern for GridBase<T, Idx, N> where Idx : Inte
         self
     }
 }
-impl<T, Idx, const N : usize> MapInternWith for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> MapInternWith for GridOf<T, Idx, N> where Idx : Integer
 {
     fn map_with_intern<F>(mut self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
         assert_eq!(self.size(), other.size(), "size mismatch");
@@ -98,15 +98,15 @@ impl<T, Idx, const N : usize> MapInternWith for GridBase<T, Idx, N> where Idx : 
         self
     }
 }
-impl<T, Idx, const N : usize> Map for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> Map for GridOf<T, Idx, N> where Idx : Integer
 {
-    type WithType<R> = GridBase<R, Idx, N>;
+    type WithType<R> = GridOf<R, Idx, N>;
 
     fn map<R,F>(self, f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map(f)) }
     }
 }
-impl<T, Idx, const N : usize> MapWith for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> MapWith for GridOf<T, Idx, N> where Idx : Integer
 {
     fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
     {
@@ -115,14 +115,14 @@ impl<T, Idx, const N : usize> MapWith for GridBase<T, Idx, N> where Idx : Intege
     }
 }
 
-impl<T, Idx, const N : usize> GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> GridOf<T, Idx, N> where Idx : Integer
 {
     impl_number_basic_trait!();
 }
 
-impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridOf<T, Idx, N> where Idx : Integer
 {
-    type WithType<U> = GridBase<U, Idx, N>;
+    type WithType<U> = GridOf<U, Idx, N>;
 
     fn values(&self) -> &[T] { &self.values }
     fn values_mut(&mut self) -> &mut [T] { &mut self.values }
@@ -132,12 +132,12 @@ impl<T, Idx, const N : usize> IGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx
 }
 
 
-impl<T, Idx, const N : usize> GetPosition<Idx, N> for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> GetPosition<Idx, N> for GridOf<T, Idx, N> where Idx : Integer
 {
     #[inline(always)]
     fn pos(&self) -> Vector<Idx,N> { zero() }
 }
-impl<T, Idx, const N : usize> GetRectangle<Idx, N> for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> GetRectangle<Idx, N> for GridOf<T, Idx, N> where Idx : Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx, N> { self.size }
@@ -153,7 +153,7 @@ impl<T, Idx, const N : usize> GetRectangle<Idx, N> for GridBase<T, Idx, N> where
     #[inline(always)] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
-impl<P, T, Idx, const N : usize> TryGet<P> for GridBase<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
+impl<P, T, Idx, const N : usize> TryGet<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
 {
     type Error=IndexOutOfRange<Vector<Idx,N>,Vector<Idx,N>>;
 
@@ -163,7 +163,7 @@ impl<P, T, Idx, const N : usize> TryGet<P> for GridBase<T, Idx,N> where Idx : In
     }
 }
 
-impl<P, T, Idx, const N : usize> Get<P> for GridBase<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
+impl<P, T, Idx, const N : usize> Get<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
     #[inline(always)]
@@ -173,7 +173,7 @@ impl<P, T, Idx, const N : usize> Get<P> for GridBase<T, Idx,N> where Idx : Integ
     unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.values().get_unchecked(idx) } }
 }
 
-impl<P, T, Idx, const N : usize> TryGetMut<P> for GridBase<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
+impl<P, T, Idx, const N : usize> TryGetMut<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
 {
     fn try_get_mut(&mut self, index : P) -> Result<&mut Self::Output, Self::Error> {
         let i = index.into();
@@ -181,7 +181,7 @@ impl<P, T, Idx, const N : usize> TryGetMut<P> for GridBase<T, Idx,N> where Idx :
         self.get_mut(i).ok_or_else(|| IndexOutOfRange::new(i, size))
     }
 }
-impl<P, T, Idx, const N : usize> GetMut<P> for GridBase<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
+impl<P, T, Idx, const N : usize> GetMut<P> for GridOf<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     #[inline(always)]
     fn get_mut(&mut self, pos : P) -> Option<&mut Self::Output> { self.position_to_index(pos.into()).and_then(|i| Some(unsafe { self.values_mut().get_unchecked_mut(i) })) }
@@ -190,7 +190,7 @@ impl<P, T, Idx, const N : usize> GetMut<P> for GridBase<T, Idx,N> where Idx : In
     unsafe fn get_unchecked_mut(&mut self, pos : P) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.values_mut().get_unchecked_mut(idx)} }
 }
 
-impl<P, T, Idx, const N : usize> GetManyMut<P> for GridBase<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
+impl<P, T, Idx, const N : usize> GetManyMut<P> for GridOf<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     #[inline(always)]
     fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> {
@@ -219,19 +219,19 @@ impl<P, T, Idx, const N : usize> GetManyMut<P> for GridBase<T, Idx,N> where Idx 
 }
 
 
-impl<P, T, Idx, const N : usize> Index<P> for GridBase<T, Idx, N> where Idx : Integer, P: Into<Vector<Idx,N>>
+impl<P, T, Idx, const N : usize> Index<P> for GridOf<T, Idx, N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     type Output=T;
     #[inline(always)]
     fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
 }
-impl<P, T, Idx, const N : usize> IndexMut<P> for GridBase<T, Idx, N> where Idx : Integer, P: Into<Vector<Idx,N>>
+impl<P, T, Idx, const N : usize> IndexMut<P> for GridOf<T, Idx, N> where Idx : Integer, P: Into<Vector<Idx,N>>
 {
     #[inline(always)]
     fn index_mut(&mut self, index: P) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N>
+impl<T, Idx, const N : usize> Length for GridOf<T, Idx, N>
     where Idx : Integer
 {
     #[inline(always)]
@@ -239,7 +239,7 @@ impl<T, Idx, const N : usize> Length for GridBase<T, Idx, N>
 }
 
 
-impl<T, Idx, const N : usize> Crop<Idx,N> for GridBase<T, Idx, N>
+impl<T, Idx, const N : usize> Crop<Idx,N> for GridOf<T, Idx, N>
     where Idx : Integer,
     T : Clone
 {

@@ -74,9 +74,10 @@ fn test_serialize_deserialize<T>(value: &T) where T: IoLoad + IoSave + PartialEq
 
 fn main()
 {
-    test_serialize_deserialize(&point2(10, 20)); // Todo serialize using tuple
-    test_serialize_deserialize(&45.degree());
-    test_serialize_deserialize(&45.s());
+    //test_serialize_deserialize(&Vec::<u8>::new());
+    test_serialize_deserialize(&Grid2::from_fn(point([3, 4]), |x| x.sum_axis()));
+    test_serialize_deserialize(&Image::from_fn(point([3, 4]), |x| RgbaU8::rgb(x.x as _, x.y as _ , 0)));
+
 
     /*
     */

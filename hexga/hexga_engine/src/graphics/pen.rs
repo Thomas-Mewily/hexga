@@ -79,7 +79,7 @@ impl AppPen
     {
         if self.white_pixel.is_none()
         {
-            self.white_pixel = Some(Texture::from(Image::one_by_one(IColor::WHITE)));
+            self.white_pixel = Some(Texture::from(Image::one_by_one(ColorU8::WHITE)));
         }
 
         let surface_texture = self

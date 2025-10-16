@@ -69,12 +69,12 @@ impl<T,P> ToColor<P> for Vec<T> where P: Primitive, T: ToColor<P>
     type ToHsla<R>  = Vec<T::ToHsla<R>> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P> { self.map(ToColor::to_hsla_of) }
 }
-impl<P, T, Idx, const N : usize> ToColor<P> for GridBase<T, Idx, N> where Idx : Integer, T: ToColor<P>, P: Primitive
+impl<P, T, Idx, const N : usize> ToColor<P> for GridOf<T, Idx, N> where Idx : Integer, T: ToColor<P>, P: Primitive
 {
-    type ToRgba<R> = GridBase<T::ToRgba<R>,Idx,N> where R: Primitive;
+    type ToRgba<R> = GridOf<T::ToRgba<R>,Idx,N> where R: Primitive;
     fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<P> { self.map(ToColor::to_rgba_of) }
 
-    type ToHsla<R>  = GridBase<T::ToHsla<R>,Idx,N> where R: Float;
+    type ToHsla<R>  = GridOf<T::ToHsla<R>,Idx,N> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P> { self.map(ToColor::to_hsla_of) }
 }
 impl<T, C, Idx> ToColor<T> for ImageBaseOf<C, Idx> where Idx : Integer, C: ToColor<T>, T: Primitive
@@ -85,20 +85,20 @@ impl<T, C, Idx> ToColor<T> for ImageBaseOf<C, Idx> where Idx : Integer, C: ToCol
     type ToHsla<R>  = ImageBaseOf<C::ToHsla<R>,Idx> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<T> { self.map(ToColor::to_hsla_of) }
 }
-impl<'a, P, T, Idx, const N : usize> ToColor<P> for GridView<'a, GridBase<T,Idx,N>, T, Idx, N> where Idx : Integer, T: ToColor<P> + Copy, P: Primitive
+impl<'a, P, T, Idx, const N : usize> ToColor<P> for GridView<'a, GridOf<T,Idx,N>, T, Idx, N> where Idx : Integer, T: ToColor<P> + Copy, P: Primitive
 {
-    type ToRgba<R> = GridBase<T::ToRgba<R>,Idx,N> where R: Primitive;
+    type ToRgba<R> = GridOf<T::ToRgba<R>,Idx,N> where R: Primitive;
     fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<P> { self.transform(|v| v.to_rgba_of()) }
 
-    type ToHsla<R>  = GridBase<T::ToHsla<R>,Idx,N> where R: Float;
+    type ToHsla<R>  = GridOf<T::ToHsla<R>,Idx,N> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P> { self.transform(|v| v.to_hsla_of()) }
 }
-impl<'a, P, T, Idx, const N : usize> ToColor<P> for GridViewMut<'a, GridBase<T,Idx,N>, T, Idx, N> where Idx : Integer, T: ToColor<P> + Copy, P: Primitive
+impl<'a, P, T, Idx, const N : usize> ToColor<P> for GridViewMut<'a, GridOf<T,Idx,N>, T, Idx, N> where Idx : Integer, T: ToColor<P> + Copy, P: Primitive
 {
-    type ToRgba<R> = GridBase<T::ToRgba<R>,Idx,N> where R: Primitive;
+    type ToRgba<R> = GridOf<T::ToRgba<R>,Idx,N> where R: Primitive;
     fn to_rgba_of<R>(self) -> Self::ToRgba<R> where R: Primitive + CastRangeFrom<P> { self.transform(|v| v.to_rgba_of()) }
 
-    type ToHsla<R>  = GridBase<T::ToHsla<R>,Idx,N> where R: Float;
+    type ToHsla<R>  = GridOf<T::ToHsla<R>,Idx,N> where R: Float;
     fn to_hsla_of<R>(self) -> Self::ToHsla<R> where R: Float + CastRangeFrom<P> { self.transform(|v| v.to_hsla_of()) }
 }
 

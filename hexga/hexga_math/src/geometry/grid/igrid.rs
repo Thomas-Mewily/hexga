@@ -19,6 +19,12 @@ impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Id
         }
     }
 }
+impl<Idx, const N : usize> Display  for GridBaseError<Idx, N> where Idx : Debug, Idx : Integer
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
 
 
 pub trait IGrid<T, Idx, const N : usize> :
@@ -75,8 +81,8 @@ pub trait IGrid<T, Idx, const N : usize> :
 
 
 
-    fn from_vec<P>(size : P, value : Vec<T>) -> Option<Self> where P: Into<Vector<Idx,N>> { Self::try_from_vec(size, value).ok() }
-    fn try_from_vec<P>(size : P, value : Vec<T>) -> Result<Self, GridBaseError<Idx,N>> where P: Into<Vector<Idx,N>>
+    fn from_vec<P>(size : P, values : Vec<T>) -> Option<Self> where P: Into<Vector<Idx,N>> { Self::try_from_vec(size, values).ok() }
+    fn try_from_vec<P>(size : P, values : Vec<T>) -> Result<Self, GridBaseError<Idx,N>> where P: Into<Vector<Idx,N>>
     {
         let size = size.into();
         if *size.min_element() < Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
@@ -86,8 +92,8 @@ pub trait IGrid<T, Idx, const N : usize> :
             Some(v) => v,
             None => return Err(GridBaseError::ToBig(size)),
         };
-        if area_size != value.len() { return Err(GridBaseError::WrongDimension(size, area_size)); }
-        Ok(unsafe { Self::from_vec_unchecked(size, value) })
+        if area_size != values.len() { return Err(GridBaseError::WrongDimension(size, area_size)); }
+        Ok(unsafe { Self::from_vec_unchecked(size, values) })
     }
 
     unsafe fn from_vec_unchecked<P>(size : P, value : Vec<T>) -> Self where P: Into<Vector<Idx,N>>;
@@ -239,26 +245,26 @@ pub trait ToGrid<T, Idx, const N : usize> where Idx : Integer
     fn to_grid(self) -> Self::Output;
 }
 
-impl<T, Idx, const N : usize> ToGrid<T, Idx, N> for GridBase<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> ToGrid<T, Idx, N> for GridOf<T, Idx, N> where Idx : Integer
 {
     type Output=Self;
     fn to_grid(self) -> Self::Output { self }
 }
 
-impl<'a, T, Idx, const N : usize> ToGrid<T, Idx, N> for GridView<'a,GridBase<T, Idx, N>, T, Idx, N> where Idx : Integer, T : Clone
+impl<'a, T, Idx, const N : usize> ToGrid<T, Idx, N> for GridView<'a,GridOf<T, Idx, N>, T, Idx, N> where Idx : Integer, T : Clone
 {
-    type Output=GridBase<T, Idx, N>;
+    type Output=GridOf<T, Idx, N>;
     fn to_grid(self) -> Self::Output
     {
-        GridBase::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
+        GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
     }
 }
 
-impl<'a, T, Idx, const N : usize> ToGrid<T, Idx, N> for GridViewMut<'a,GridBase<T, Idx, N>, T, Idx, N> where Idx : Integer, T : Clone
+impl<'a, T, Idx, const N : usize> ToGrid<T, Idx, N> for GridViewMut<'a,GridOf<T, Idx, N>, T, Idx, N> where Idx : Integer, T : Clone
 {
-    type Output=GridBase<T, Idx, N>;
+    type Output=GridOf<T, Idx, N>;
     fn to_grid(self) -> Self::Output
     {
-        GridBase::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
+        GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
     }
 }

@@ -3,7 +3,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::Vector;
+    pub use super::{Vector,vector,point};
 }
 
 /// A wrapper for an array that applies binary operators component-wise.
@@ -31,7 +31,14 @@ impl<T, const N : usize> Default for Vector<T, N> where T:Default
     fn default() -> Self { Self::from_fn(|_| ___()) }
 }
 
-
+pub const fn vector<T,const N:usize>(values: [T;N]) -> Vector<T,N>
+{
+    Vector::from_array(values)
+}
+pub const fn point<const N:usize>(values: [int;N]) -> Point<N>
+{
+    Point::from_array(values)
+}
 
 
 
@@ -248,7 +255,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
         Self::from_array(result)
     }
 
-    pub fn to_grid<F,U>(self, f : F) -> GridBase<U,Idx,N> where F : FnMut(Self) -> U { GridBase::from_fn(self, f) }
+    pub fn to_grid<F,U>(self, f : F) -> GridOf<U,Idx,N> where F : FnMut(Self) -> U { GridOf::from_fn(self, f) }
 }
 
 

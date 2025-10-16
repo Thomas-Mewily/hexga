@@ -5,5 +5,5 @@ pub type Grid2<T> = Grid<T, 2>;
 pub type Grid3<T> = Grid<T, 3>;
 pub type Grid4<T> = Grid<T, 4>;
 
-pub type Grid<T, const N : usize> = GridBase<T,int,N>;
+pub type Grid<T, const N : usize> = GridOf<T,int,N>;
 pub type GridError<const N : usize> = super::GridBaseError<int,N>;
