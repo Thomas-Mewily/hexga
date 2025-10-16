@@ -19,16 +19,17 @@ pub trait Capacity
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError>;
 }
 
-impl<K, V> Capacity for HashMap<K, V, std::hash::RandomState>
+impl<K, V, S> Capacity for HashMap<K, V, S>
 where
     K: Eq + Hash,
+    S: BuildHasher,
 {
     type Param = ();
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
     #[inline(always)]
     fn with_capacity_and_param(capacity: usize, _ : Self::Param) -> Self { Self::with_capacity(capacity) }
-    
+
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -62,9 +63,10 @@ where
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
 }
 
-impl<T> Capacity for std::collections::HashSet<T, std::hash::RandomState>
+impl<T,S> Capacity for std::collections::HashSet<T, S>
 where
     T: Eq + Hash,
+    S: BuildHasher
 {
     type Param = ();
     #[inline(always)]
@@ -124,7 +126,7 @@ impl Capacity for std::ffi::OsString
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
 }
 
-/* 
+/*
 impl<R: std::io::Read> Capacity for std::io::BufReader<R> {}
 impl<W: std::io::Write> Capacity for std::io::BufWriter<W> {}
 impl<W: std::io::Write> Capacity for std::io::LineWriter<W> {}

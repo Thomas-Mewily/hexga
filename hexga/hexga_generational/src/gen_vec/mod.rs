@@ -6,6 +6,11 @@ pub mod prelude
     pub use super::{GenVec, CollectToGenVecExtension};
 }
 
+#[cfg(feature = "serde")]
+mod serde_impl;
+#[cfg(feature = "serde")]
+use serde_impl::*;
+
 
 pub type GenVec<T> = GenVecOf<T,Generation>;
 
@@ -19,76 +24,6 @@ pub enum EntryValue<T>
     Free(usize),
 }
 
-
-#[cfg(feature = "serde")]
-impl<T> serde::Serialize for EntryValue<T>
-where
-    T: serde::Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            EntryValue::Some(value) => serializer.serialize_newtype_variant("EntryValue", 0, "Some", value),
-            EntryValue::Free(idx) => {
-                let opt = if idx.is_max_value() { None } else { Some(*idx) };
-                serializer.serialize_newtype_variant("EntryValue", 1, "Next", &opt)
-            }
-        }
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, T> serde::Deserialize<'de> for EntryValue<T>
-where
-    T: serde::Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        #[derive(serde::Deserialize)]
-        #[serde(field_identifier)]
-        enum Field { Some, Next }
-
-        struct EntryValueVisitor<T> {
-            marker: std::marker::PhantomData<T>,
-        }
-
-        impl<'de, T> serde::de::Visitor<'de> for EntryValueVisitor<T>
-        where
-            T: serde::Deserialize<'de>,
-        {
-            type Value = EntryValue<T>;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("enum EntryValue")
-            }
-
-            fn visit_enum<A>(self, data: A) -> Result<Self::Value, A::Error>
-            where
-                A: serde::de::EnumAccess<'de>,
-            {
-                use serde::de::VariantAccess;
-
-                match data.variant()? {
-                    (Field::Some, v) => Ok(EntryValue::Some(v.newtype_variant()?)),
-                    (Field::Next, v) => {
-                        let opt: Option<usize> = v.newtype_variant()?;
-                        Ok(EntryValue::Free(opt.unwrap_or(usize::MAX)))
-                    }
-                }
-            }
-        }
-
-        deserializer.deserialize_enum(
-            "EntryValue",
-            &["Some", "Next"],
-            EntryValueVisitor { marker: std::marker::PhantomData },
-        )
-    }
-}
 
 impl<T> EntryValue<T>
 {
@@ -246,25 +181,6 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
     }
 }
 
-#[cfg(feature = "serde")]
-impl<T, Gen:IGeneration> Serialize for GenVecOf<T,Gen> where T:Serialize, Gen: Serialize
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
-    {
-        if self.free.is_max_value()
-        {
-            self.values.serialize(serializer)
-        }else
-        {
-            let mut state = serializer.serialize_struct("GenVec", 2)?;
-            state.serialize_field("values", &self.values)?;
-            // need to be in the same order on all machine for determinist
-            state.serialize_field("next", &Some(self.free))?;
-            state.end()
-        }
-    }
-}
-
 
 impl<T, Gen:IGeneration> GenVecOf<T,Gen>
 {
@@ -278,111 +194,49 @@ impl<T, Gen:IGeneration> GenVecOf<T,Gen>
             return Err("GenVec : the last usize value is used for null in a GenVec and cannot be used".to_owned());
         }
 
-        let mut nb_use = len;
+        let nb_use = len;
+        let mut nb_free = values.len() - nb_use;
         let mut cur_free = free;
 
-        while nb_use != 0
+        if nb_free != 0
         {
-            let Some(next_entry) = values.get(cur_free) else { return Err(format!("GenVec : entry {:?} is out of range", cur_free)); };
-            let EntryValue::Free(f) = next_entry.value else { return Err(format!("GenVec : entry {:?} was not free", cur_free)); };
-            if f == usize::MAX { return Err(format!("GenVec : invalid free head {:?} at {:?}", f, cur_free));}
-            cur_free = f;
-            nb_use -= 1;
+            loop
+            {
+                let Some(next_entry) = values.get(cur_free) else { return Err(format!("GenVec : entry {:?} is out of range", cur_free)); };
+                let EntryValue::Free(f) = next_entry.value else { return Err(format!("GenVec : entry {:?} was not free", cur_free)); };
+
+                // This is super important to check if there is no cycle in the free list.
+                // Any invalid EntryValue::Free(index) can lead to crash
+
+                if f == usize::MAX
+                {
+                    if nb_free == 1 // last free index, should point to nothings/usize::MAX
+                    {
+                        break;
+                    }
+                    // not the last free index, should point to the next one
+                    return Err(format!("GenVec : invalid free head {:?} at {:?}", f, cur_free));
+                }
+                cur_free = f;
+                nb_free -= 1;
+
+                if nb_free == 0
+                {
+                    return Err(format!("GenVec : last value at index {cur_free} should point to nothings and not {f}"));
+                }
+            }
+        }else
+        {
+            if free.is_not_max_value()
+            {
+                return Err(format!("GenVec : invalid next {free} in a fully used genvec")); // should be max value
+            }
         }
 
         Ok(Self{ values, free, len})
     }
 }
 
-
-#[cfg(feature = "serde")]
-impl<'de,T, Gen> Deserialize<'de> for GenVecOf<T, Gen>
-where
-    Gen: IGeneration + Deserialize<'de>,
-    Entry<T, Gen>: Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        use serde::de::{self, MapAccess, Visitor};
-        use std::fmt;
-
-        struct GenVecVisitor<T, Gen> {
-            marker: std::marker::PhantomData<(T, Gen)>,
-        }
-
-        impl<'de, T, Gen> Visitor<'de> for GenVecVisitor<T, Gen>
-        where
-            Gen: IGeneration + Deserialize<'de>,
-            Entry<T, Gen>: Deserialize<'de>,
-        {
-            type Value = GenVecOf<T, Gen>;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a struct representing GenVec")
-            }
-
-            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-                where
-                    A: serde::de::SeqAccess<'de>,
-            {
-                let mut values = Vec::new();
-                while let Some(entry) = seq.next_element::<Entry<T, Gen>>()? {
-                    values.push(entry);
-                }
-                let free = usize::MAX;
-                GenVecOf::<T, Gen>::from_entries_and_free(values, free).map_err(de::Error::custom)
-            }
-
-            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-            where
-                A: MapAccess<'de>,
-            {
-                let mut values : Option<Vec<Entry<T, Gen>>> = None;
-                let mut next_free_index: Option<Option<usize>> = None;
-
-                while let Some(key) = map.next_key::<&'de str>()?
-                {
-                    match key
-                    {
-                        "values" => {
-                            if values.is_some() {
-                                return Err(de::Error::duplicate_field("values"));
-                            }
-                            values = Some(map.next_value()?);
-                        }
-                        "next" => {
-                            if next_free_index.is_some() {
-                                return Err(de::Error::duplicate_field("next"));
-                            }
-                            next_free_index = Some(map.next_value()?);
-                        }
-                        _ => {
-                            return Err(de::Error::unknown_field(
-                                &key,
-                                &["values", "next"],
-                            ));
-                        }
-                    }
-                }
-
-                let entry = values.ok_or_else(|| de::Error::missing_field("values"))?;
-                let free = next_free_index.flatten().unwrap_or(usize::MAX);
-                GenVecOf::<T,Gen>::from_entries_and_free(entry, free).map_err(de::Error::custom)
-            }
-        }
-
-        const FIELDS: &[&str] = &["values", "next"];
-        deserializer.deserialize_struct(
-            "GenVec",
-            FIELDS,
-            GenVecVisitor {
-                marker: std::marker::PhantomData,
-            },
-        )
-    }
-}
 
 
 impl<T,Gen:IGeneration> Default for GenVecOf<T,Gen>
@@ -852,49 +706,16 @@ impl<T,Gen:IGeneration> Debug for GenVecError<T,Gen>
     }
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GenVecWrongGeneration<T,Gen:IGeneration>
 {
     pub got : Gen,
     pub expected : Gen,
+    #[cfg_attr(feature = "serde", serde(skip))]
     phantom : PhantomData<T>,
 }
 
-
-#[cfg(feature = "serde")]
-impl<T, Gen: IGeneration> Serialize for GenVecWrongGeneration<T, Gen>
-where
-    Gen: Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut state = serializer.serialize_struct("GenVecWrongGeneration", 2)?;
-        state.serialize_field("got", &self.got)?;
-        state.serialize_field("expected", &self.expected)?;
-        state.end()
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, T, Gen: IGeneration> Deserialize<'de> for GenVecWrongGeneration<T, Gen>
-where
-    Gen: Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        #[derive(serde::Deserialize)]
-        struct Helper<Gen> {
-            got: Gen,
-            expected: Gen,
-        }
-        let helper = Helper::deserialize(deserializer)?;
-        Ok(GenVecWrongGeneration::new(helper.got, helper.expected))
-    }
-}
 
 impl<T,Gen:IGeneration> GenVecWrongGeneration<T,Gen>
 {
