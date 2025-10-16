@@ -88,7 +88,10 @@ fn main()
     g.remove_from_index(1);
     test_serialize_deserialize(&g);
 
-    dbg!([(["1".to_owned(), "one".to_owned()], 1)].to_multimap());
+    test_serialize_deserialize(&g);
+
+    let multimap = [(["1".to_owned(), "one".to_owned()], 1), (["2".to_owned(), "deux".to_owned()], 2)].to_multimap();
+    test_serialize_deserialize(&multimap);
 
 
 

@@ -24,11 +24,11 @@ where
     K: Eq + Hash,
     S: BuildHasher,
 {
-    type Param = ();
+    type Param = S;
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, _ : Self::Param) -> Self { Self::with_capacity(capacity) }
+    fn with_capacity_and_param(capacity: usize, hasher : Self::Param) -> Self { Self::with_capacity_and_hasher(capacity, hasher) }
 
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }

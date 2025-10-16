@@ -11,13 +11,36 @@ pub type MultiMap<K,V> = MultiMapOf<K,V,Generation>;
 pub type MultiMapID<K,V> = MultiMapIDOf<K,V,Generation,RandomState>;
 
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone)]
 pub struct Entry<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     keys: Vec<K>,
     id: MultiMapIDOf<K,V,Gen,S>,
     value: V,
     phantom: PhantomData<S>,
+}
+
+impl<K, V, Gen, S> Debug for Entry<K,V,Gen,S> where Gen: IGeneration + Debug, K: Debug, V: Debug, S:BuildHasher
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Entry").field("keys", &self.keys).field("id", &self.id).field("value", &self.value).finish()
+    }
+}
+
+impl<K, V, Gen, S> PartialEq for Entry<K,V,Gen,S> where Gen: IGeneration, K: PartialEq, V: PartialEq, S: BuildHasher
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.keys == other.keys && self.id == other.id && self.value == other.value
+    }
+}
+impl<K, V, Gen, S> Eq for Entry<K,V,Gen,S> where Gen: IGeneration, K: Eq, V: Eq, S: BuildHasher {}
+impl<K, V, Gen, S> Hash for Entry<K,V,Gen,S> where Gen: IGeneration, K: Hash, V: Hash, S: BuildHasher
+{
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.keys.hash(state);
+        self.id.hash(state);
+        self.value.hash(state);
+    }
 }
 
 #[cfg(feature = "hexga_io")]
@@ -167,13 +190,35 @@ impl<K, V, Gen, S> PartialEq for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S
     }
 }
 
+#[cfg(feature = "hexga_io")]
+impl<K, V, Gen, S> IoSave for MultiMapOf<K, V, Gen,S>
+    where
+        K: Serialize,
+        V: Serialize,
+        Gen: IGeneration + Serialize,
+        S: BuildHasher
+{
+
+}
+
+#[cfg(feature = "hexga_io")]
+impl<K, V, Gen, S> IoLoad for MultiMapOf<K, V, Gen, S>
+    where
+        K: for<'de> Deserialize<'de> + Eq + Hash + Clone,
+        V: for<'de> Deserialize<'de>,
+        Gen: IGeneration + for<'de> Deserialize<'de>,
+        S: BuildHasher + Default
+{
+
+}
+
 #[cfg(feature = "serde")]
 impl<K, V, Gen, St> Serialize for MultiMapOf<K, V, Gen, St>
 where
     K: Serialize,
     V: Serialize,
     Gen: IGeneration + Serialize,
-    St :BuildHasher,
+    St : BuildHasher,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -189,7 +234,7 @@ where
     K: Deserialize<'de> + Eq + Hash + Clone,
     V: Deserialize<'de>,
     Gen: IGeneration + Deserialize<'de>,
-    S: BuildHasher,
+    S: BuildHasher + Default,
     GenVecOf::<Entry<K, V, Gen, S>, Gen> : Deserialize<'de>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -232,9 +277,13 @@ impl<K,V,Gen,S> MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
         Self::with_hasher(___())
     }
 
-    pub fn with_hasher(hash_builder: S) -> Self
+    pub fn with_hasher(hasher: S) -> Self
     {
-        Self { values: GenVecOf::new(), search: HashMap::with_hasher(hash_builder) }
+        Self { values: GenVecOf::new(), search: HashMap::with_hasher(hasher) }
+    }
+    pub fn with_capacity_and_hasher(capacity: usize, hasher: S) -> Self
+    {
+        Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_hasher(hasher) }
     }
 
     pub fn get_entry(&self, id: MultiMapIDOf<K,V,Gen,S>) -> Option<&Entry<K,V,Gen,S>> { self.values.get(id) }
@@ -552,7 +601,7 @@ impl<K,V,Gen,S> Capacity for MultiMapOf<K,V,Gen,S> where Gen: IGeneration, S:Bui
     fn capacity(&self) -> usize { self.values.capacity() }
 
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, hasher : Self::Param) -> Self { let mut s = Self::with_hasher(hasher); s.values.reserve(capacity); s }
+    fn with_capacity_and_param(capacity: usize, hasher : Self::Param) -> Self { Self::with_capacity_and_hasher(capacity, hasher) }
 
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.values.reserve(additional); }
