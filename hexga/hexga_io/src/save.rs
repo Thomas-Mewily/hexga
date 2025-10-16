@@ -40,8 +40,6 @@ pub trait IoSave : Serialize
     /// Don't include the markup language extension like `json` or `ron`
     fn save_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
 
-
-
     // The path is useful the save composite file (ex: saving a gif but every frame is in a subfolder relative to the path)
     fn save_to_with_own_extension<W, Fs>(&self, path : &path, extension : &extension, w : W, fs : &mut Fs) -> IoSaveResult
         where W : IoWrite, Fs : IoFsWrite
@@ -52,8 +50,6 @@ pub trait IoSave : Serialize
     {
         Err(IoErrorKind::Unimplemented)
     }
-
-
 
 
     // impl details :

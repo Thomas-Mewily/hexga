@@ -33,7 +33,7 @@ impl<T> SaveToDisk for T where T: IoSave + ?Sized {}
 
 pub trait LoadToDisk : IoLoad
 {
-    fn load_from_disk(path : &path) -> IoLoadResult<Self>
+    fn load_from_disk(path: &path) -> IoLoadResult<Self>
     {
         let mut fs_disk = IoFsDisk::new();
         let s = Self::load_from(path, &mut fs_disk)?;

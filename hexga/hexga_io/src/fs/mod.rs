@@ -3,7 +3,7 @@ use super::*;
 mod disk;
 pub use disk::*;
 
-pub trait IoFsCore : Sized
+pub trait IoFsCore: Sized
 {
     /// If there was an error, try stop all the next operation to avoid useless serialization
     fn premature_abord(&self) -> bool;
@@ -11,12 +11,12 @@ pub trait IoFsCore : Sized
     fn commit(self) -> IoResult;
 
     fn have_error(&self) -> bool { false }
-    fn add_error(&mut self, err : IoError);
+    fn add_error(&mut self, err: IoError);
 
-    fn add_read_error (&mut self, path : impl Into<Path>, kind : IoErrorKind) { self.add_error(IoError::read (path, kind)); }
-    fn add_write_error(&mut self, path : impl Into<Path>, kind : IoErrorKind) { self.add_error(IoError::write(path, kind)); }
+    fn add_read_error (&mut self, path: impl Into<Path>, kind: IoErrorKind) { self.add_error(IoError::read (path, kind)); }
+    fn add_write_error(&mut self, path: impl Into<Path>, kind: IoErrorKind) { self.add_error(IoError::write(path, kind)); }
 
-    fn absolute_path(&self, path : &path) -> Option<Path>
+    fn absolute_path(&self, path: &path) -> Option<Path>
     {
         match std::path::absolute(path)
         {
@@ -27,13 +27,13 @@ pub trait IoFsCore : Sized
 }
 
 
-pub trait IoFsWrite : IoFsCore
+pub trait IoFsWrite: IoFsCore
 {
-    fn save<T>(&mut self, path : &path, value : &T) -> IoResult where T: IoSave + ?Sized
+    fn save<T>(&mut self, path: &path, value: &T) -> IoResult where T: IoSave + ?Sized
     {
         self.save_with_extension(path, path.extension_or_empty(), value)
     }
-    fn save_with_extension<T>(&mut self, path : &path, mut extension: &extension, value : &T) -> IoResult where T: IoSave + ?Sized
+    fn save_with_extension<T>(&mut self, path: &path, mut extension: &extension, value: &T) -> IoResult where T: IoSave + ?Sized
     {
         if self.premature_abord() && self.have_error() { return Err(IoErrorKind::FsPrematureAbord); }
 
@@ -76,25 +76,25 @@ pub trait IoFsWrite : IoFsCore
     }
 
     #[allow(unused_variables)]
-    fn have_permission_to_write(&self, path : &path) -> IoResult { Ok(()) }
+    fn have_permission_to_write(&self, path: &path) -> IoResult { Ok(()) }
 
     /// The permission was not checked when calling this function
-    unsafe fn write_bytes_unchecked(&mut self, path : Path, data : &[u8]) -> IoSaveResult;
+    unsafe fn write_bytes_unchecked(&mut self, path: Path, data: &[u8]) -> IoSaveResult;
 }
 
-pub trait IoFsRead : IoFsCore
+pub trait IoFsRead: IoFsCore
 {
     /// Loads a value of type `T` from the given `path`.
     /// Automatically determines the file extension from the path and delegates to `load_with_extension`.
-    fn load<T>(&mut self, path : &path) -> IoResult<T> where T: IoLoad + ?Sized { self.load_with_extension(path, path.extension_or_empty()) }
+    fn load<T>(&mut self, path: &path) -> IoResult<T> where T: IoLoad + ?Sized { self.load_with_extension(path, path.extension_or_empty()) }
 
     /// Loads a value of type `T` from the given `path`, or creates it and **save** it using `init` if it doesn't exist.
-    fn load_or_create<T,F>(&mut self, path : &path, init: F) -> IoResult<T> where T: IoLoad + IoSave + ?Sized, Self: IoFsWrite, F:FnOnce() -> T
+    fn load_or_create<T,F>(&mut self, path: &path, init: F) -> IoResult<T> where T: IoLoad + IoSave + ?Sized, Self: IoFsWrite, F:FnOnce() -> T
     {
         match self.load(path)
         {
             Ok(v) => return Ok(v),
-            Err(_) => 
+            Err(_) =>
             {
                 let val = init();
                 val.save_to(path, self).map_err(|e| e.kind)?;
@@ -104,7 +104,7 @@ pub trait IoFsRead : IoFsCore
     }
 
     /// Loads a value of type `T` from the given `path` using a specified `extension`.
-    fn load_with_extension<T>(&mut self, path : &path, extension : &extension) -> IoResult<T> where T: IoLoad + ?Sized
+    fn load_with_extension<T>(&mut self, path: &path, extension: &extension) -> IoResult<T> where T: IoLoad + ?Sized
     {
         if self.premature_abord() && self.have_error() { return Err(IoErrorKind::FsPrematureAbord); }
 
@@ -135,8 +135,8 @@ pub trait IoFsRead : IoFsCore
     }
 
     #[allow(unused_variables)]
-    fn have_permission_to_read(&self, path : &path) -> IoResult { Ok(()) }
+    fn have_permission_to_read(&self, path: &path) -> IoResult { Ok(()) }
 
     /// The permission was not checked when calling this function
-    unsafe fn read_bytes_unchecked(&mut self, path : Path) -> IoResult<Vec<u8>>;
+    unsafe fn read_bytes_unchecked(&mut self, path: Path) -> IoResult<Vec<u8>>;
 }

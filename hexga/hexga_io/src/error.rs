@@ -14,6 +14,7 @@ pub enum IoErrorKind
     #[default]
     Unknow,
     FsPrematureAbord,
+    Forbidden,
     Unimplemented,
     Internal(Reason, IoErrorInternalKind),
     FromNotBaseOn,

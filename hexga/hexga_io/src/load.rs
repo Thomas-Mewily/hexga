@@ -37,9 +37,10 @@ pub trait IoLoad : for<'de> Deserialize<'de>
     /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
     ///
     /// Don't include the markup language extension like `json` or `ron`
-    ///
-    /// The first value also determines the default extension in [`IoLoad::load_default_extension`].
     fn load_own_extensions() -> impl Iterator<Item = &'static str> { std::iter::empty() }
+
+    // The default extension for this file. If none, markup language extension are prefered
+    // fn load_default_extensions() -> Option<&'static str> { None }
 
     fn load_from_bytes_with_own_extension(data : &[u8], path : &path, extension : &extension) -> IoLoadResult<Self>
     {
@@ -90,7 +91,26 @@ pub trait IoLoad : for<'de> Deserialize<'de>
 
     fn load_from<Fs>(path : &path, fs : &mut Fs) -> IoLoadResult<Self> where Fs : IoFsRead
     {
-        Self::load_from_with_extension(path, path.extension_or_empty(), fs)
+        let path_extension = path.extension_or_empty();
+        match Self::load_from_with_extension(path, path_extension, fs)
+        {
+            Ok(o) => return Ok(o),
+            Err(err) =>
+            {
+                for extension in Self::load_extensions()
+                {
+                    if extension == path_extension { continue; }
+
+                    let path_corrected = path.with_extension(extension);
+                    match Self::load_from_with_extension(&path_corrected, extension, fs)
+                    {
+                        Ok(o) => return Ok(o),
+                        Err(_) => {},
+                    }
+                }
+                Err(err)
+            },
+        }
     }
     fn load_from_or_create<Fs,F>(path : &path, init: F, fs : &mut Fs) -> IoResult<Self> where Self: IoSave, Fs : IoFsRead + IoFsWrite, F:FnOnce() -> Self
     {

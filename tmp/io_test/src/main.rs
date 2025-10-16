@@ -10,76 +10,50 @@ use std::path::Path;
 use std::{any::Any, sync::Arc};
 use hexga::prelude::*;
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-struct Foo
-{
-    name:String,
-    age:int,
-}
-
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 #[cfg(feature = "hexga_io")]
 use hexga_io::{IoLoad, IoSave, Load, Save};
 
-fn t()
+
+pub struct Fs
 {
-        let mut table = Table::new();
-    table.insert_with_keys(["42".to_owned(), "quarente deux".to_owned()], 42);
-    let _3 = table.insert("3".to_owned(), 3).unwrap();
-    table.add_key(_3, "|||".to_owned()).unwrap();
-
-    dbg!(&table);
-
-    println!();
-    println!();
-    println!();
-    println!("ron: ");
-    println!("{}", table.to_ron().unwrap());
-
-    println!();
-    println!("ron back:");
-    let table_back : Table<i32> = Table::from_json(&table.to_json().unwrap()).unwrap();
-    println!("{}", table_back.to_ron().unwrap());
-
-
-    assert_eq!(table.to_ron(), table_back.to_ron());
-
-
-    println!("Hello, world!");
+    name: String,
+    kind: FsKind,
 }
 
-fn test_serialize_deserialize<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
+pub enum FsKind
 {
-    println!("   value: {value:?}");
-    let format = value.to_quick_bin().unwrap();
-    println!("   ron: {}", value.to_ron().unwrap());
-    println!("   bin: {format:?}");
-    println!();
+    File(FsFile),
+    Folder(FsFolder),
+}
 
-    // Not a self describing format
-    let from_format = T::from_quick_bin_buf(&format).unwrap();
-    println!("=>  ron: {}", from_format.to_ron().unwrap());
-    println!("=>  bin: {:?}", from_format.to_quick_bin());
-    println!("ron2value: {from_format:?}");
-    assert_eq!(*value, from_format);
-    println!();
-    println!();
-    println!();
-    println!();
-    println!();
+pub struct FsFile
+{
+    content: Vec<u8>,
+}
+
+pub struct FsFolder
+{
+    childs: Vec<Fs>,
 }
 
 
 fn main()
 {
-    //test_serialize_deserialize(&Vec::<u8>::new());
-    test_serialize_deserialize(&Grid2::from_fn(point([3, 4]), |x| x.sum_axis()));
-    test_serialize_deserialize(&Image::from_fn(point([3, 4]), |x| RgbaU8::rgb(x.x as _, x.y as _ , 0)));
+    let img = Image::from_fn(point([3, 4]), |x| RgbaU8::rgb(x.x as _, x.y as _ , 0));
+    println!("{img}");
 
+    let path = "./tmp/io_test/myimg";
+    img.save_to_disk(path).unwrap();
 
-    /*
-    */
-    //Todo check grid, image and put it in some test to check it
+    let img = Image::load_from_disk(path).unwrap();
+    println!("{img}");
+
+    //42.save_to_disk(path)
+
+    //img.save_to_disk()
+
+    println!("hello world");
 }
