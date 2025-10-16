@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
-fn test_serialize_deserialize<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
+
+fn test_serialize_deserialize_quick_bin<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
 {
     //println!("   value: {value:?}");
     let format = value.to_quick_bin().unwrap();
@@ -21,134 +22,148 @@ fn test_serialize_deserialize<T>(value: &T) where T: IoLoad + IoSave + PartialEq
     //println!();
 }
 
+fn test_serialize_deserialize_ron<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
+{
+    let format = value.to_ron().unwrap();
+    let from_format = T::from_ron(&format).unwrap();
+    assert_eq!(*value, from_format);
+}
+
+fn serde_test<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
+{
+    test_serialize_deserialize_quick_bin(value);
+    test_serialize_deserialize_ron(value);
+}
+
 #[test]
 fn serialize_integer()
 {
-    test_serialize_deserialize(&42);
-    test_serialize_deserialize(&128usize); // always serialized / deserialized as u64
-    test_serialize_deserialize(&-96isize); // always serialized / deserialized as i64
+    serde_test(&42);
+    serde_test(&128usize); // always serialized / deserialized as u64
+    serde_test(&-96isize); // always serialized / deserialized as i64
 }
 
 #[test]
 fn serialize_char()
 {
-    test_serialize_deserialize(&'x');
-    test_serialize_deserialize(&'\0');
-    test_serialize_deserialize(&'\n');
+    for c in "x\0\r\n .<>{}[]()".chars()
+    {
+        serde_test(&c);
+    }
 }
 
 #[test]
 fn serialize_string()
 {
-    test_serialize_deserialize(&"hello world!".to_owned());
-    test_serialize_deserialize(&"".to_owned());
-    test_serialize_deserialize(&"abc".to_owned());
+    serde_test(&"hello world!".to_owned());
+    serde_test(&"".to_owned());
+    serde_test(&"abc".to_owned());
 
     for sep in ",;.:/\0\r\n".chars()
     {
-        test_serialize_deserialize(&sep.to_string());
-        test_serialize_deserialize(&format!("abc{sep}"));
-        test_serialize_deserialize(&format!("abc{sep}"));
-        test_serialize_deserialize(&format!("abc{sep}{sep}"));
-        test_serialize_deserialize(&format!("{sep}{sep}abc"));
-        test_serialize_deserialize(&format!("{sep}abc{sep}{sep}"));
+        serde_test(&sep.to_string());
+        serde_test(&format!("abc{sep}"));
+        serde_test(&format!("abc{sep}"));
+        serde_test(&format!("abc{sep}{sep}"));
+        serde_test(&format!("{sep}{sep}abc"));
+        serde_test(&format!("{sep}abc{sep}{sep}"));
     }
 
     let all_ascii: String = (0u8..=127).map(|b| b as char).collect();
-    test_serialize_deserialize(&all_ascii);
+    serde_test(&all_ascii);
 
     for (open, close) in [('{', '}'), ('[', ']'), ('<', '>'), ('(', ')')]
     {
-        test_serialize_deserialize(&open.to_string());
-        test_serialize_deserialize(&close.to_string());
+        serde_test(&open.to_string());
+        serde_test(&close.to_string());
 
-        test_serialize_deserialize(&format!("{open}{close}"));
-        test_serialize_deserialize(&format!("{open}{close}{close}"));
-        test_serialize_deserialize(&format!("{close}{open}"));
-        test_serialize_deserialize(&format!("{close}{close}{open}"));
-        test_serialize_deserialize(&format!("{open}{open}"));
-        test_serialize_deserialize(&format!("{close}{close}"));
+        serde_test(&format!("{open}{close}"));
+        serde_test(&format!("{open}{close}{close}"));
+        serde_test(&format!("{close}{open}"));
+        serde_test(&format!("{close}{close}{open}"));
+        serde_test(&format!("{open}{open}"));
+        serde_test(&format!("{close}{close}"));
 
-        test_serialize_deserialize(&format!("{open}abc{close}"));
-        test_serialize_deserialize(&format!("{close}abc{open}"));
+        serde_test(&format!("{open}abc{close}"));
+        serde_test(&format!("{close}abc{open}"));
 
-        test_serialize_deserialize(&format!("{open}{all_ascii}{close}"));
-        test_serialize_deserialize(&format!("{close}{all_ascii}{open}"));
+        serde_test(&format!("{open}{all_ascii}{close}"));
+        serde_test(&format!("{close}{all_ascii}{open}"));
     }
 }
 
 #[test]
 fn serialize_vec()
 {
-    test_serialize_deserialize(&Vec::<u8>::new());
-    test_serialize_deserialize(&vec![1,4,3,2]);
+    serde_test(&Vec::<u8>::new());
+    serde_test(&vec![1,4,3,2]);
 }
 
 #[test]
 fn serialize_hashmap()
 {
-    test_serialize_deserialize(&((0..5).map(|i| (i.to_string(), i)).to_hashmap()));
+    serde_test(&((0..5).map(|i| (i.to_string(), i)).to_hashmap()));
 }
 
 #[test]
 fn serialize_hashset()
 {
-    test_serialize_deserialize(&((0..5).map(|i| i.to_string())).to_hashset());
+    serde_test(&((0..5).map(|i| i.to_string())).to_hashset());
 }
 
 #[test]
 fn serialize_genvec()
 {
-    test_serialize_deserialize(&((0..1).map(|i| i.to_string())).to_genvec());
+    serde_test(&((0..1).map(|i| i.to_string())).to_genvec());
     let mut g = (0..3).map(|i| i.to_string()).to_genvec();
     g.remove_from_index(0);
     g.remove_from_index(1);
-    test_serialize_deserialize(&g);
+    serde_test(&g);
 }
 
 #[test]
 fn serialize_multihashmap()
 {
     let multihashmap = [(["1".to_owned(), "one".to_owned()], 1), (["2".to_owned(), "deux".to_owned()], 2)].to_multihashmap();
-    test_serialize_deserialize(&multihashmap);
+    serde_test(&multihashmap);
 }
 
 #[test]
 fn serialize_fixed_size_vector()
 {
-    test_serialize_deserialize(&point1(0));
-    test_serialize_deserialize(&point2(10, 20));
-    test_serialize_deserialize(&point3(10, 20, -30));
-    test_serialize_deserialize(&point4(10, 20, -30, -40));
+    serde_test(&point1(0));
+    serde_test(&point2(10, 20));
+    serde_test(&point3(10, 20, -30));
+    serde_test(&point4(10, 20, -30, -40));
 
-    test_serialize_deserialize(&vec2(10.5, 20.25));
-    test_serialize_deserialize(&vec1(-8.));
-    test_serialize_deserialize(&vec3(10.5, 20.25, -5.75));
-    test_serialize_deserialize(&vec4(10.5, 20.25, 5.75, -4.5));
+    serde_test(&vec2(10.5, 20.25));
+    serde_test(&vec1(-8.));
+    serde_test(&vec3(10.5, 20.25, -5.75));
+    serde_test(&vec4(10.5, 20.25, 5.75, -4.5));
 
-    test_serialize_deserialize(&Color::ROSE);
-    test_serialize_deserialize(&RgbaF32::ROSE);
-    test_serialize_deserialize(&RgbaF64::ROSE);
-    test_serialize_deserialize(&RgbaU8::ROSE);
-    test_serialize_deserialize(&RgbaU16::ROSE);
-    test_serialize_deserialize(&HslaF32::ROSE);
-    test_serialize_deserialize(&HslaF64::ROSE);
+    serde_test(&Color::ROSE);
+    serde_test(&RgbaF32::ROSE);
+    serde_test(&RgbaF64::ROSE);
+    serde_test(&RgbaU8::ROSE);
+    serde_test(&RgbaU16::ROSE);
+    serde_test(&HslaF32::ROSE);
+    serde_test(&HslaF64::ROSE);
 
-    test_serialize_deserialize(&Rect1::SIZED_ONE);
-    test_serialize_deserialize(&Rect2::SIZED_ONE);
-    test_serialize_deserialize(&Rect3::SIZED_ONE);
-    test_serialize_deserialize(&Rect4::SIZED_ONE);
+    serde_test(&Rect1::SIZED_ONE);
+    serde_test(&Rect2::SIZED_ONE);
+    serde_test(&Rect3::SIZED_ONE);
+    serde_test(&Rect4::SIZED_ONE);
 
-    test_serialize_deserialize(&rect2i(0, 3, 2, 2));
+    serde_test(&rect2i(0, 3, 2, 2));
 }
 
 #[test]
 fn serialize_unit()
 {
-    test_serialize_deserialize(&0.degree());
-    test_serialize_deserialize(&45.degree());
+    serde_test(&0.degree());
+    serde_test(&45.degree());
 
-    test_serialize_deserialize(&0.s());
-    test_serialize_deserialize(&60.s());
+    serde_test(&0.s());
+    serde_test(&60.s());
 }
 

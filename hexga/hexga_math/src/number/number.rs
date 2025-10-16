@@ -121,6 +121,3 @@ impl<T> BitManip for Saturating<T> where T: BitManip
     fn count_bit_zeros(self) -> u32 { self.0.count_bit_zeros() }
     fn count_bit_ones(self) -> u32 { self.0.count_bit_ones() }
 }
-
-
-

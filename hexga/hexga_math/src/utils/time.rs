@@ -343,6 +343,10 @@ impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
     where
         D: Deserializer<'de>,
     {
+        Ok(Self::from_s(T::deserialize(deserializer)?))
+        // Can't use it because of non descriptive serializer like bincode or postcard
+
+        /*
         #[cfg_attr(feature = "serde", derive(Deserialize), serde(untagged))]
         enum TimeInput<T> where T: Float
         {
@@ -376,6 +380,7 @@ impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
             }
             Err(_) =>  Err(serde::de::Error::custom("Expected a Time in second ex: `3`. Available combinable unit: `s`, `ms`, `min`, `h` or `d`. ex: `(min:1,s:30)`.")),
         }
+        */
     }
 }
 

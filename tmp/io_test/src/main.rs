@@ -76,8 +76,9 @@ fn main()
 {
     test_serialize_deserialize(&point2(10, 20)); // Todo serialize using tuple
     test_serialize_deserialize(&45.degree());
-    /*
     test_serialize_deserialize(&45.s());
+
+    /*
     */
     //Todo check grid, image and put it in some test to check it
 }

@@ -86,6 +86,9 @@ impl<'de, T> Deserialize<'de> for AngleOf<T> where T: Float + Deserialize<'de>
     where
         D: Deserializer<'de>,
     {
+        Ok(Self::from_degree(T::deserialize(deserializer)?))
+        // Can't use it because of non descriptive serializer like bincode or postcard
+        /*
         #[cfg_attr(feature = "serde", derive(Deserialize), serde(untagged))]
         enum AngleInput<T> where T: Float
         {
@@ -117,6 +120,7 @@ impl<'de, T> Deserialize<'de> for AngleOf<T> where T: Float + Deserialize<'de>
             }
             Err(_) => Err(serde::de::Error::custom("Expected an Angle in degree, ex `90`. Available unit: `deg`, `rad` or `turn`. ex: `(deg:45)`.")),
         }
+        */
     }
 }
 
