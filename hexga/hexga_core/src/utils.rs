@@ -36,13 +36,13 @@ impl Once for bool
 /// Useful to silence/convert to void some Err.
 ///
 /// Some of my lib will probably have proper error type instead of () (Look for `#proper_error` to know which error type are temporary) when I will have time to add them
-pub trait ResultExtension<T>
+pub trait OkOr<T,E>
 {
-    fn ok_or<E>(self, err: E) -> Result<T,E>;
+    fn ok_or<E2>(self, err: E2) -> Result<T,E2>;
     fn ok_or_void(self) -> Result<T,()>;
 }
 
-impl<T,E> ResultExtension<T> for Result<T,E>
+impl<T,E> OkOr<T,E> for Result<T,E>
 {
     #[inline(always)]
     fn ok_or<E2>(self, err: E2) -> Result<T,E2> { self.map_err(|_| err) }
@@ -52,18 +52,35 @@ impl<T,E> ResultExtension<T> for Result<T,E>
         self.ok_or(())
     }
 }
-impl<T> ResultExtension<T> for Option<T>
+impl<T> OkOr<T,()> for Option<T>
 {
     #[inline(always)]
     fn ok_or_void(self) -> Result<T,()> {
         self.ok_or(())
     }
-    
+
     fn ok_or<E>(self, err: E) -> Result<T,E> {
         self.ok_or(err)
     }
 }
 
+
+pub trait ResultInto<T,E> : OkOr<T,E>
+{
+    fn into_ok<O>(self) -> Result<O,E> where T: Into<O>;
+    fn into_err<E2>(self) -> Result<T,E2> where E: Into<E2>;
+}
+
+impl<T,E> ResultInto<T,E> for Result<T,E>
+{
+    fn into_ok<O>(self) -> Result<O,E> where T: Into<O> {
+        self.map(Into::into)
+    }
+
+    fn into_err<E2>(self) -> Result<T,E2> where E: Into<E2> {
+        self.map_err(Into::into)
+    }
+}
 
 /*
 // Eq is imply by Ord, but I prefer to make sure this is visible
