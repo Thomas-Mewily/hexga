@@ -14,7 +14,7 @@ use hexga::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 #[cfg(feature = "hexga_io")]
-use hexga_io::{IoLoad, IoSave, Load, Save};
+use hexga_io::{IoLoad, Save, Load, Save};
 
 
 pub struct Fs

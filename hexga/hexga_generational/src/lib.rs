@@ -17,7 +17,7 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 
 #[allow(unused_imports)]
 #[cfg(feature = "hexga_io")]
-use hexga_io::{IoSave, IoLoad, Save, Load};
+use hexga_io::{Save, IoLoad, Save, Load};
 
 pub mod gen_vec;
 pub mod gen_id;

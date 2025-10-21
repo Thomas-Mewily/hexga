@@ -50,7 +50,7 @@ pub trait FileSystem
     /// Keep the extension
     fn rename(&mut self, path: &path, name: &str) -> IoResult
     {
-        let new_path = path.path_replace_name(name);
+        let new_path = path.with_file_name(name);
         self.change_path(path, &new_path)
     }
 }

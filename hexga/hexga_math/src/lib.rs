@@ -64,7 +64,7 @@ use rayon::prelude::*;
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
 #[cfg(feature = "hexga_io")]
-use hexga_io::{IoSave, IoLoad, Save, Load};
+use hexga_io::{Save, IoLoad, Save, Load};
 
 
 pub use hexga_typedef as typedef;

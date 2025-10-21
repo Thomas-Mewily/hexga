@@ -137,12 +137,12 @@ pub trait PathExtension
     /// ```
     /// use your_crate::StrPathExtension;
     ///
-    /// assert_eq!("foo/bar.txt".path_rename("baz"), "baz.txt");
-    /// assert_eq!("foo/.hidden".path_rename("config"), "config");
-    /// assert_eq!("foo/archive.tar.gz".path_rename("new.gz"), "new.tar.gz"); // the name is "archive.tar"
-    /// assert_eq!("file".path_rename("newfile"), "newfile");
+    /// assert_eq!("foo/bar.txt".with_file_name("baz"), "baz.txt");
+    /// assert_eq!("foo/.hidden".with_file_name("config"), "config");
+    /// assert_eq!("foo/archive.tar.gz".with_file_name("new.gz"), "new.tar.gz"); // the name is "archive.tar"
+    /// assert_eq!("file".with_file_name("newfile"), "newfile");
     /// ```
-    fn path_replace_name(&self, name: &str) -> Path;
+    fn with_file_name(&self, name: &str) -> Path;
 
 
 
@@ -251,7 +251,7 @@ impl PathExtension for &str
     }
 
 
-    fn path_replace_name(&self, name: &str) -> Path {
+    fn with_file_name(&self, name: &str) -> Path {
         let extension = self.extension_or_empty();
         let parent_name = self.path_parent();
         parent_name.path_concat(&name.with_extension(extension))
@@ -263,40 +263,4 @@ impl PathExtension for &str
             .and_then(|p| p.to_str())
             .unwrap_or("")
     }
-
-    //fn is_markup_extension(&self) -> bool { Io::ALL_MARKUP_LANGAGE_EXTENSION.contains(self) }
-    /*
-    fn file_name_and_extension(&self) -> &str {
-        let path = std::path::Path::new(self);
-        match path.file_name() {
-            Some(file) => file.to_str().unwrap_or(self),
-            None => self,
-        }
-    }
-
-    fn with_file_name_and_extension(&self, file_name_and_extension : &str) -> String {
-        let p = std::path::Path::new(self).with_file_name(file_name_and_extension);
-        p.into_os_string().into_string().unwrap_or(String::new())
-    }
-
-
-    /// Without extension
-    fn file_name(&self) -> &str
-    {
-        let path = std::path::Path::new(self);
-        match path.file_stem() {
-            Some(stem) => stem.to_str().unwrap_or(self),
-            None => self,
-        }
-    }
-
-    /// Without extension
-    fn with_file_name(&self, file_name_without_extension : &str) -> String
-    {
-        match self.extension()
-        {
-            Some(ex) => self.with_file_name_and_extension(&file_name_without_extension.with_extension(ex)),
-            None => self.with_file_name_and_extension(file_name_without_extension),
-        }
-    }*/
 }
