@@ -69,5 +69,15 @@ fn img()
 
 fn main()
 {
-
+    let i = Image::from_fn_coef((1024, 1024),
+        |v|
+        if (v - 0.5.splat2()).length() <= 0.5
+        {
+            ColorU8::WHITE
+        }
+        else
+        {
+            ColorU8::BLACK
+        }
+    ).save_to_disk("./image_test.png").unwrap();
 }

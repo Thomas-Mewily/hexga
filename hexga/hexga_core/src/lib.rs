@@ -22,6 +22,7 @@ pub mod collections;
 pub mod accessor;
 pub mod builder;
 pub mod traits;
+pub mod asynchrone;
 
 
 use prelude::*;
@@ -35,6 +36,7 @@ pub mod prelude
     pub use super::accessor::*;
     pub use super::builder::*;
     pub use super::traits::prelude::*;
+    pub use super::asynchrone::*;
 
 
     pub use std::collections::{HashMap,HashSet};

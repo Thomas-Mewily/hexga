@@ -7,5 +7,11 @@ use hexga_core::prelude::*;
 
 use std::future::Future;
 
-pub mod fs;
-use fs::*;
+mod file_system;
+pub use file_system::*;
+
+mod result;
+pub use result::*;
+
+mod path_extension;
+pub use path_extension::*;

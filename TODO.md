@@ -59,6 +59,11 @@ Grid from matrice ?
 - Word<T,Pri,N> : monde multi agent où chaque agent a peut être un rectangle englobant (utilise RectangleTree)
 
 
+- KeyValue trait in core collection
+- Generic Abstract Collection : struct Collection<C>. impl<C,T> Get<T> for Collection<C> where C: Get...
+
+
+
 - VecX : move_relative to the current vector direction
 vec2(1,0) => forward to the current dir
 vec2(-1,0) => backward...

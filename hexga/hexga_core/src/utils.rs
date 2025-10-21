@@ -67,17 +67,17 @@ impl<T> OkOr<T,()> for Option<T>
 
 pub trait ResultInto<T,E> : OkOr<T,E>
 {
-    fn into_ok<O>(self) -> Result<O,E> where T: Into<O>;
-    fn into_err<E2>(self) -> Result<T,E2> where E: Into<E2>;
+    fn ok_into<O>(self) -> Result<O,E> where T: Into<O>;
+    fn err_into<E2>(self) -> Result<T,E2> where E: Into<E2>;
 }
 
 impl<T,E> ResultInto<T,E> for Result<T,E>
 {
-    fn into_ok<O>(self) -> Result<O,E> where T: Into<O> {
+    fn ok_into<O>(self) -> Result<O,E> where T: Into<O> {
         self.map(Into::into)
     }
 
-    fn into_err<E2>(self) -> Result<T,E2> where E: Into<E2> {
+    fn err_into<E2>(self) -> Result<T,E2> where E: Into<E2> {
         self.map_err(Into::into)
     }
 }
