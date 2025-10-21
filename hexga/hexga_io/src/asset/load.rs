@@ -22,8 +22,7 @@ pub trait LoadExtension: Load
     fn load_from_bytes<'a>(bytes: &'a [u8], extension: &extension) -> IoResult<Self>
     {
         let mut file_fs = FsFile::lambda_with_data(Cow::Borrowed(bytes));
-        let mut fs = Fs::new(&mut file_fs);
-        Self::load_from_with_custom_extension("", extension, &mut fs)
+        Self::load_from_with_custom_extension("", extension, &mut file_fs)
     }
 
     /// Load the value, and if it fail, init it and save it then return it. Saving the value may silenly fail, and no error are returned

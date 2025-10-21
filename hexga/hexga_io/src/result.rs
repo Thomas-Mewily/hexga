@@ -41,7 +41,9 @@ impl IoError
     // pub(crate) fn missing_load_extension<T>() -> Self where T: Load + ?Sized { Self::unsupported_load_extension::<T>("") }
 
 
-    pub(crate) fn markup_serializer<T: ?Sized>  (ext : &extension, err : impl std::fmt::Debug) -> Self { IoError::Markup{ mode:IoMode::Write, typename: std::any::type_name::<T>().to_owned(), extension: ext.to_owned(), reason: format!("{:?}", err) } }
+    #[allow(dead_code)] // why compiler ? They are used
+    pub(crate) fn markup_serializer  <T: ?Sized>(ext : &extension, err : impl std::fmt::Debug) -> Self { IoError::Markup{ mode:IoMode::Write, typename: std::any::type_name::<T>().to_owned(), extension: ext.to_owned(), reason: format!("{:?}", err) } }
+    #[allow(dead_code)] // why compiler ? They are used
     pub(crate) fn markup_deserializer<T: ?Sized>(ext : &extension, err : impl std::fmt::Debug) -> Self { IoError::Markup{ mode:IoMode::Read, typename: std::any::type_name::<T>().to_owned(), extension: ext.to_owned(), reason: format!("{:?}", err) } }
 
 

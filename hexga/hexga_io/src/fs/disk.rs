@@ -75,8 +75,7 @@ pub trait SaveToDisk : Save
     fn save_to_disk(&self, path : &path) -> IoResult
     {
         let mut disk = FsDisk;
-        let mut fs = Fs::new(&mut disk);
-        self.save_to(path, &mut fs)
+        self.save_to(path, &mut disk)
         // commit the fs here ?
     }
 }
@@ -86,7 +85,7 @@ pub trait LoadFromDisk : Load
 {
     fn load_from_disk(path: &path) -> IoResult<Self>
     {
-        Self::load_from(path, &mut Fs::new(&mut FsDisk))
+        Self::load_from(path, &mut FsDisk)
     }
 }
 impl<T> LoadFromDisk for T where T: Load + ?Sized {}

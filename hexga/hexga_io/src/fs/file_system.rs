@@ -1,5 +1,6 @@
 use super::*;
 
+/*
 //pub type Fs = dyn FileSystem;
 pub struct Fs<'a>
 {
@@ -55,7 +56,7 @@ impl<'a> FsRead for Fs<'a>
         self.fs.read_str(path)
     }
 }
-
+*/
 
 
 
