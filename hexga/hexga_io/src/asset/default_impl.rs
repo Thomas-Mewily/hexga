@@ -77,7 +77,7 @@ impl Save for str
         ].iter().copied()
     }
 
-    fn save_to_with_custom_extension(&self, path: &path, _extension: &extension, fs: &mut Fs) -> IoResult {
+    fn save_to_with_custom_extension<Fs>(&self, path: &path, _extension: &extension, fs: &mut Fs) -> IoResult where Fs: FsWrite {
         fs.write_str(path, self)
     }
 }
@@ -89,7 +89,7 @@ impl Save for String
     fn save_default_extension() -> Option<&'static str> {
         str::save_default_extension()
     }
-    fn save_to_with_custom_extension(&self, path: &path, extension: &extension, fs: &mut Fs) -> IoResult {
+    fn save_to_with_custom_extension<Fs>(&self, path: &path, extension: &extension, fs: &mut Fs) -> IoResult where Fs: FsWrite {
         self.as_str().save_to_with_custom_extension(path, extension, fs)
     }
 }
@@ -98,7 +98,7 @@ impl Load for String
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
         Self::save_custom_extensions()
     }
-    fn load_from_with_custom_extension(path: &path, _extension: &extension, fs: &mut Fs) -> IoResult<Self> {
+    fn load_from_with_custom_extension<Fs>(path: &path, _extension: &extension, fs: &mut Fs) -> IoResult<Self> where Fs: FsRead {
         fs.read_str(path)
     }
 }

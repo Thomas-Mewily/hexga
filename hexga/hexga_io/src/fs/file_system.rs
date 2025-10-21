@@ -3,13 +3,13 @@ use super::*;
 //pub type Fs = dyn FileSystem;
 pub struct Fs<'a>
 {
-    fs : &'a mut dyn FileSystem,
+    fs : &'a mut dyn FsWrite,
 }
 impl<'a> Fs<'a>
 {
-    pub fn new(fs : &'a mut dyn FileSystem) -> Self { Self { fs }}
+    pub fn new(fs : &'a mut dyn FsWrite) -> Self { Self { fs }}
 }
-impl<'a> FileSystem for Fs<'a>
+impl<'a> FsWrite for Fs<'a>
 {
     fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
         self.fs.write_bytes(path, bytes)
@@ -28,7 +28,7 @@ impl<'a> FileSystem for Fs<'a>
         self.fs.move_to(path, new_path)
     }
 }
-impl<'a> FileSystemRead for Fs<'a>
+impl<'a> FsRead for Fs<'a>
 {
     fn read_bytes<'b>(&'b mut self, path: &path) -> IoResult<Cow<'b, [u8]>> {
         self.fs.read_bytes(path)
@@ -59,7 +59,7 @@ impl<'a> FileSystemRead for Fs<'a>
 
 
 
-pub trait FileSystem : FileSystemRead
+pub trait FsWrite : FsRead
 {
     /// Override the file content if already exist.
     /// If the file don't exist, create it.
@@ -89,7 +89,7 @@ pub trait FileSystem : FileSystemRead
 }
 
 
-pub trait FileSystemRead
+pub trait FsRead
 {
     /// Reads the content of a file into memory.
     fn read_bytes<'a>(&'a mut self, path: &path) -> IoResult<Cow<'a, [u8]>>;

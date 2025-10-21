@@ -5,7 +5,7 @@ type StdPath = std::path::Path;
 pub struct FsDisk;
 
 
-impl FileSystem for FsDisk
+impl FsWrite for FsDisk
 {
     fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
         let std_path = StdPath::new(path);
@@ -37,7 +37,7 @@ impl FileSystem for FsDisk
 }
 
 
-impl FileSystemRead for FsDisk
+impl FsRead for FsDisk
 {
     fn read_bytes<'a>(&'a mut self, path: &path) ->  IoResult<Cow<'a, [u8]>>
     {

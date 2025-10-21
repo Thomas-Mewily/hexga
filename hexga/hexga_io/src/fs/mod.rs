@@ -16,7 +16,7 @@ pub mod prelude
 {
     pub use super::
     {
-        file_system::{Fs,FileSystem,FileSystemRead},
+        file_system::{Fs,FsWrite,FsRead},
         disk::{SaveToDisk,LoadFromDisk},
     };
 }

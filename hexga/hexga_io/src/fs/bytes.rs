@@ -26,7 +26,7 @@ impl<'a> FsFile<'a>
     }
 }
 
-impl<'a> FileSystem for FsFile<'a>
+impl<'a> FsWrite for FsFile<'a>
 {
     fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult
     {
@@ -66,7 +66,7 @@ impl<'a> FileSystem for FsFile<'a>
 }
 
 
-impl<'a> FileSystemRead for FsFile<'a>
+impl<'a> FsRead for FsFile<'a>
 {
     fn read_bytes<'b>(&'b mut self, path: &path) -> IoResult<Cow<'b, [u8]>> {
         self.path_match(path)?;

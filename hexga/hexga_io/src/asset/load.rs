@@ -8,7 +8,7 @@ pub trait Load: for<'de> Deserialize<'de>
     /// Don't include the markup language extension like `json` or `ron`
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
 
-    fn load_from_with_custom_extension(path: &path, extension: &extension, fs: &mut Fs) -> IoResult<Self> { Err(IoError::Unimplemented) }
+    fn load_from_with_custom_extension<Fs>(path: &path, extension: &extension, fs: &mut Fs) -> IoResult<Self> where Fs: FsRead { Err(IoError::Unimplemented) }
 
     /// When saving, if the extension is missing
     fn load_default_extension() -> Option<&'static str> { Self::load_custom_extensions().next() }
@@ -27,7 +27,7 @@ pub trait LoadExtension: Load
     }
 
     /// Load the value, and if it fail, init it and save it then return it. Saving the value may silenly fail, and no error are returned
-    fn load_from_or_create<'a, F>(path: &path, init: F, fs: &mut Fs) -> Self where F:FnOnce() -> Self, Self: Save
+    fn load_from_or_create<'a, F, Fs>(path: &path, init: F, fs: &mut Fs) -> Self where F:FnOnce() -> Self, Self: Save, Fs: FsWrite
     {
         match Self::load_from(path, fs)
         {
@@ -41,7 +41,7 @@ pub trait LoadExtension: Load
         }
     }
 
-    fn load_from(path: &path, fs: &mut Fs) -> IoResult<Self>
+    fn load_from<Fs>(path: &path, fs: &mut Fs) -> IoResult<Self> where Fs: FsRead
     {
         let original_extension = path.extension_or_empty();
         let mut extension = original_extension;
@@ -90,7 +90,8 @@ impl<T> Load for T where T: LoadFrom + for<'de> Deserialize<'de>
     fn load_default_extension() -> Option<&'static str> {
         T::Base::load_default_extension()
     }
-    fn load_from_with_custom_extension(path: &path, extension: &extension, fs: &mut Fs) -> IoResult<Self> {
+    fn load_from_with_custom_extension<Fs>(path: &path, extension: &extension, fs: &mut Fs) -> IoResult<Self> where Fs: FsRead
+    {
         match T::Base::load_from_with_custom_extension(path, extension, fs)
         {
             Ok(base) => Self::load_from_base(base),
