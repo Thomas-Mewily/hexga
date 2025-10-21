@@ -20,28 +20,32 @@ pub enum IoError
 {
     #[default]
     Unknow,
+    Unimplemented,
     NotFound,
     Std(std::io::ErrorKind),
     Utf8Error { valid_up_to : usize, error_len : Option<usize>},
     Markup { mode: IoMode, typename: String, extension: Extension, reason: String},
     UnsupportedExtension { mode: IoMode, typename : String, got : Extension, expected : Vec<Extension> },
-    MissingBase { mode: IoMode, typename_source : String, typename_dest : String }
+    MissingBase { mode: IoMode, typename_source : String, typename_dest : String },
+    Encoding { reason: String }
 }
 
 impl IoError
 {
-    pub(crate) fn missing_save_extension<T>() -> Self where T: Save + ?Sized { Self::unsupported_save_extension::<T>("") }
-    pub(crate) fn missing_load_extension<T>() -> Self where T: Load + ?Sized { Self::unsupported_load_extension::<T>("") }
+    pub fn encoding(reason: String) -> Self { Self::Encoding { reason }}
 
-    pub(crate) fn unsupported_save_extension<T: ?Sized>(ext: &extension) -> Self where T: Save { Self::UnsupportedExtension { mode:IoMode::Write, typename: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::save_extensions().map(|v| v.to_owned()).collect() }}
-    pub(crate) fn unsupported_load_extension<T: ?Sized>(ext: &extension) -> Self where T: Load { Self::UnsupportedExtension { mode:IoMode::Read, typename: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
+    pub fn unsupported_save_extension<T: ?Sized>(ext: &extension) -> Self where T: Save { Self::UnsupportedExtension { mode:IoMode::Write, typename: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::save_extensions().map(|v| v.to_owned()).collect() }}
+    pub fn unsupported_load_extension<T: ?Sized>(ext: &extension) -> Self where T: Load { Self::UnsupportedExtension { mode:IoMode::Read, typename: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::load_extensions().map(|v| v.to_owned()).collect() }}
+
+    // pub(crate) fn missing_save_extension<T>() -> Self where T: Save + ?Sized { Self::unsupported_save_extension::<T>("") }
+    // pub(crate) fn missing_load_extension<T>() -> Self where T: Load + ?Sized { Self::unsupported_load_extension::<T>("") }
+
 
     pub(crate) fn markup_serializer<T: ?Sized>  (ext : &extension, err : impl std::fmt::Debug) -> Self { IoError::Markup{ mode:IoMode::Write, typename: std::any::type_name::<T>().to_owned(), extension: ext.to_owned(), reason: format!("{:?}", err) } }
     pub(crate) fn markup_deserializer<T: ?Sized>(ext : &extension, err : impl std::fmt::Debug) -> Self { IoError::Markup{ mode:IoMode::Read, typename: std::any::type_name::<T>().to_owned(), extension: ext.to_owned(), reason: format!("{:?}", err) } }
 
 
     pub(crate) fn save_missing_base<Src: ?Sized, Dest: ?Sized>() -> Self { Self::MissingBase { mode:IoMode::Write, typename_source: std::any::type_name::<Src>().to_owned(), typename_dest: std::any::type_name::<Dest>().to_owned() }}
-    pub(crate) fn load_missing_base<Src: ?Sized, Dest: ?Sized>() -> Self { Self::MissingBase { mode:IoMode::Read, typename_source: std::any::type_name::<Src>().to_owned(), typename_dest: std::any::type_name::<Dest>().to_owned() }}
 }
 
 impl From<FromUtf8Error> for IoError

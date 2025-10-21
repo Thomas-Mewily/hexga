@@ -10,17 +10,17 @@ pub fn derive_save(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let expanded = quote! {
-        impl #impl_generics ::hexga_io::IoSave for #ident #ty_generics #where_clause {}
+        impl #impl_generics ::hexga_io::asset::Save for #ident #ty_generics #where_clause {}
     };
 
     expanded.into()
 }
 
-// Adds `T: ::hexga_io::IoLoad` for each generic type parameter `T`
+// Adds `T: ::hexga_io::asset::Load` for each generic type parameter `T`
 fn add_save_trait_bounds(mut generics: Generics) -> Generics {
     for param in generics.params.iter_mut() {
         if let GenericParam::Type(ty) = param {
-            ty.bounds.push(parse_quote!(::hexga_io::IoSave));
+            ty.bounds.push(parse_quote!(::hexga_io::asset::Save));
         }
     }
     generics
@@ -37,17 +37,17 @@ pub fn derive_load(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let expanded = quote! {
-        impl #impl_generics ::hexga_io::IoLoad for #ident #ty_generics #where_clause {}
+        impl #impl_generics ::hexga_io::asset::Load for #ident #ty_generics #where_clause {}
     };
 
     expanded.into()
 }
 
-// Adds `T: ::hexga_io::IoLoad` for each generic type parameter `T`
+// Adds `T: ::hexga_io::asset::Load` for each generic type parameter `T`
 fn add_load_trait_bounds(mut generics: Generics) -> Generics {
     for param in generics.params.iter_mut() {
         if let GenericParam::Type(ty) = param {
-            ty.bounds.push(parse_quote!(::hexga_io::IoLoad));
+            ty.bounds.push(parse_quote!(::hexga_io::asset::Load));
         }
     }
     generics
@@ -73,12 +73,12 @@ pub fn io(_args: TokenStream, input: TokenStream) -> TokenStream {
         #[derive(::serde::Serialize, ::serde::Deserialize)]
         #item_tokens
 
-        impl ::hexga_io::IoSave for #ident
+        impl ::hexga_io::asset::Save for #ident
         where
             #ident: for<'de> ::serde::de::Deserialize<'de>
         {}
 
-        impl ::hexga_io::IoLoad for #ident
+        impl ::hexga_io::asset::Load for #ident
         where
             #ident: ::serde::ser::Serialize
         {}

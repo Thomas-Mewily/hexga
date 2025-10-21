@@ -7,7 +7,7 @@ use hexga_core::prelude::*;
 use serde::{Serialize, Serializer, Deserialize, Deserializer, ser::SerializeSeq};
 
 #[cfg(feature = "hexga_io")]
-use hexga_io::{Save, Load};
+use hexga_io::prelude::*;
 
 pub mod non_empty_stack;
 pub mod asset;

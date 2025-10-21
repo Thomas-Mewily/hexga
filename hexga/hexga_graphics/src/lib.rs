@@ -33,7 +33,7 @@ use hexga_math::prelude::*;
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
 #[cfg(feature = "hexga_io")]
-use hexga_io::{Save, IoLoad, IoError, IoErrorKind, Save, Load};
+use hexga_io::prelude::*;
 
 use std::ops::*;
 

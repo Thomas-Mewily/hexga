@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 
 #[allow(unused_imports)]
 #[cfg(feature = "hexga_io")]
-use hexga_io::{Save, IoLoad, Save, Load};
+use hexga_io::prelude::*;
 
 
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]

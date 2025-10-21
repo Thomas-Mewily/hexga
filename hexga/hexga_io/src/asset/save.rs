@@ -9,7 +9,7 @@ pub trait Save: Serialize
     /// Don't include the markup language extension like `json` or `ron`
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
 
-    fn save_to_with_custom_extension(&self, path: &path, extension: &extension, fs: &mut Fs) -> IoResult;
+    fn save_to_with_custom_extension(&self, path: &path, extension: &extension, fs: &mut Fs) -> IoResult { Err(IoError::Unimplemented) }
 
     /// When saving, if the extension is missing
     fn save_default_extension() -> Option<&'static str> { Self::save_custom_extensions().next() }

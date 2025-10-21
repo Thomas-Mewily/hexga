@@ -8,18 +8,40 @@ pub trait Load: for<'de> Deserialize<'de>
     /// Don't include the markup language extension like `json` or `ron`
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
 
-    fn load_from_with_custom_extension(path: &path, extension: &extension, fs: &mut Fs) -> IoResult<Self>;
+    fn load_from_with_custom_extension(path: &path, extension: &extension, fs: &mut Fs) -> IoResult<Self> { Err(IoError::Unimplemented) }
 
     /// When saving, if the extension is missing
     fn load_default_extension() -> Option<&'static str> { Self::load_custom_extensions().next() }
 }
 
-pub trait LoadExtension : Load
+pub trait LoadExtension: Load
 {
     /// Also include the markup language extension like `json` or `ron`
     fn load_extensions() -> impl Iterator<Item = &'static extension> { Self::load_custom_extensions().chain(Extensions::MARKUP.iter().copied()) }
 
-    fn load_from(path : &path, fs : &mut Fs) -> IoResult<Self>
+    fn load_from_bytes<'a>(bytes: &'a [u8], extension: &extension) -> IoResult<Self>
+    {
+        let mut file_fs = FsFile::lambda_with_data(Cow::Borrowed(bytes));
+        let mut fs = Fs::new(&mut file_fs);
+        Self::load_from_with_custom_extension("", extension, &mut fs)
+    }
+
+    /// Load the value, and if it fail, init it and save it then return it. Saving the value may silenly fail, and no error are returned
+    fn load_from_or_create<'a, F>(path: &path, init: F, fs: &mut Fs) -> Self where F:FnOnce() -> Self, Self: Save
+    {
+        match Self::load_from(path, fs)
+        {
+            Ok(v) => return v,
+            Err(_) =>
+            {
+                let val = init();
+                let _ = val.save_to(path, fs);
+                val
+            },
+        }
+    }
+
+    fn load_from(path: &path, fs: &mut Fs) -> IoResult<Self>
     {
         let original_extension = path.extension_or_empty();
         let mut extension = original_extension;
@@ -55,7 +77,7 @@ impl<S: ?Sized> LoadExtension for S where S: Load {}
 
 
 
-pub trait LoadFrom : Sized
+pub trait LoadFrom: Sized
 {
     type Base: Load;
     fn load_from_base(base: Self::Base) -> IoResult<Self>;

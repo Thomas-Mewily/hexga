@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 
-fn test_serialize_deserialize_quick_bin<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
+fn test_serialize_deserialize_quick_bin<T>(value: &T) where T: Load + Save + PartialEq + Debug
 {
     //println!("   value: {value:?}");
     let format = value.to_quick_bin().unwrap();
@@ -22,14 +22,14 @@ fn test_serialize_deserialize_quick_bin<T>(value: &T) where T: IoLoad + IoSave +
     //println!();
 }
 
-fn test_serialize_deserialize_ron<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
+fn test_serialize_deserialize_ron<T>(value: &T) where T: Load + Save + PartialEq + Debug
 {
     let format = value.to_ron().unwrap();
     let from_format = T::from_ron(&format).unwrap();
     assert_eq!(*value, from_format);
 }
 
-fn serde_test<T>(value: &T) where T: IoLoad + IoSave + PartialEq + Debug
+fn serde_test<T>(value: &T) where T: Load + Save + PartialEq + Debug
 {
     test_serialize_deserialize_quick_bin(value);
     test_serialize_deserialize_ron(value);

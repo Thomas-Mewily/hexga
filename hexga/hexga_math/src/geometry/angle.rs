@@ -68,9 +68,9 @@ impl<T> ToAngleComposite for T where T: Map, T::Item : ToAngleComposite
 
 
 #[cfg(feature = "hexga_io")]
-impl<T> IoLoad for AngleOf<T> where T: Float + for<'de> Deserialize<'de> {}
+impl<T> Load for AngleOf<T> where T: Float + for<'de> Deserialize<'de> {}
 #[cfg(feature = "hexga_io")]
-impl<T> IoSave for AngleOf<T> where T: Float + Serialize {}
+impl<T> Save for AngleOf<T> where T: Float + Serialize {}
 
 #[cfg(feature = "serde")]
 impl<T> Serialize for AngleOf<T> where T: Float + Serialize

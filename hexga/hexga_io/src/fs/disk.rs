@@ -2,10 +2,10 @@ use super::*;
 
 type StdPath = std::path::Path;
 
-pub struct DiskFs;
+pub struct FsDisk;
 
 
-impl FileSystem for DiskFs
+impl FileSystem for FsDisk
 {
     fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
         let std_path = StdPath::new(path);
@@ -37,7 +37,7 @@ impl FileSystem for DiskFs
 }
 
 
-impl FileSystemRead for DiskFs
+impl FileSystemRead for FsDisk
 {
     fn read_bytes<'a>(&'a mut self, path: &path) ->  IoResult<Cow<'a, [u8]>>
     {
@@ -68,3 +68,25 @@ impl FileSystemRead for DiskFs
         Err(IoError::NotFound)
     }
 }
+
+
+pub trait SaveToDisk : Save
+{
+    fn save_to_disk(&self, path : &path) -> IoResult
+    {
+        let mut disk = FsDisk;
+        let mut fs = Fs::new(&mut disk);
+        self.save_to(path, &mut fs)
+        // commit the fs here ?
+    }
+}
+impl<T> SaveToDisk for T where T: Save + ?Sized {}
+
+pub trait LoadFromDisk : Load
+{
+    fn load_from_disk(path: &path) -> IoResult<Self>
+    {
+        Self::load_from(path, &mut Fs::new(&mut FsDisk))
+    }
+}
+impl<T> LoadFromDisk for T where T: Load + ?Sized {}

@@ -1,16 +1,16 @@
 #[cfg(feature = "hexga_io")]
-use ::hexga_io::{IoResult, IoSaveResult, extension, path};
+use hexga_io::prelude::*;
 
 use super::*;
 
 
 #[cfg(feature = "hexga_io")]
-impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
+impl<C,Idx> Load for ImageBaseOf<C,Idx>
     where
     Idx : Integer + for<'a> Deserialize<'a>,
     C : IColor + for<'a> Deserialize<'a>,
 {
-    fn load_own_extensions() -> impl Iterator<Item = &'static str> {
+    fn load_custom_extensions() -> impl Iterator<Item = &'static str> {
         [
             "png",
             "jpeg", "jpg",
@@ -20,8 +20,9 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
         ].iter().copied()
     }
 
-    fn load_from_bytes_with_own_extension_pathless(data : &[u8], extension : &extension) -> IoResult<Self>
-    {
+    fn load_from_with_custom_extension(path: &path, extension: &extension, fs: &mut Fs) -> IoResult<Self> {
+        let data = fs.read_bytes(path)?;
+
         use ::image::{DynamicImage, GenericImageView, ImageFormat};
 
         let format = match extension.to_lowercase().as_str() {
@@ -34,15 +35,15 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
             "ico" => ImageFormat::Ico,
             "tiff" => ImageFormat::Tiff,
             */
-            other => Err(IoErrorKind::UnsupportedExtension { name: "Image".to_owned(), got: extension.to_owned(), expected: Self::load_extensions().map(|s| s.to_owned()).collect() })?,
+            other =>  Err(IoError::UnsupportedExtension { mode: IoMode::Read, typename: "Image".to_owned(), got: extension.to_owned(), expected: Self::load_extensions().map(|s| s.to_owned()).collect() })?,
         };
 
-        let img = ::image::load_from_memory_with_format(data, format);
+        let img = ::image::load_from_memory_with_format(&*data, format);
 
         let img: DynamicImage = match img
         {
             Ok(v) => v,
-            Err(e) => Err(IoErrorKind::Encoding(e.to_debug()))?,
+            Err(e) => Err(IoError::encoding(e.to_debug()))?,
         };
 
         let (width, height) : (u32, u32) = img.dimensions();
@@ -52,10 +53,10 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
         let casted_height = h.to_u32();
         if casted_width != width || height != casted_height
         {
-            return Err(IoErrorKind::Encoding("Image is too big".to_owned()));
+            return Err(IoError::encoding("Image is too big".to_owned()));
         }
 
-        let error_invalid_size = || IoErrorKind::Encoding("Invalid bytes len".to_owned());
+        let error_invalid_size = || IoError::encoding("Invalid bytes len".to_owned());
 
         match C::Component::PRIMITIVE_TYPE
         {
@@ -153,14 +154,14 @@ impl<C,Idx> IoLoad for ImageBaseOf<C,Idx>
 }
 
 #[cfg(feature = "hexga_io")]
-impl<C,Idx> IoSave for ImageBaseOf<C,Idx>
+impl<C,Idx> Save for ImageBaseOf<C,Idx>
     where
     Idx : Integer + Serialize,
     C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>> + Serialize,
     u8: CastRangeFrom<C::Component>,
     u16: CastRangeFrom<C::Component>,
 {
-    fn save_own_extensions() -> impl Iterator<Item = &'static str> {
+    fn save_custom_extensions() -> impl Iterator<Item = &'static str> {
         [
             "png",
             //"jpeg", "jpg",
@@ -168,9 +169,9 @@ impl<C,Idx> IoSave for ImageBaseOf<C,Idx>
         ].iter().copied()
     }
 
-    fn save_to_with_own_extension_pathless<W, Fs>(&self, extension: &extension, w: W, fs: &mut Fs) -> IoResult
-            where W : Write, Fs : ::hexga_io::prelude::IoFsWrite
+    fn save_to_with_custom_extension(&self, path: &path, extension: &extension, fs: &mut Fs) -> IoResult
     {
+        const DEFAULT_WRITER_CAPACITY : usize = 8182;
         match extension
         {
             "png" =>
@@ -181,16 +182,17 @@ impl<C,Idx> IoSave for ImageBaseOf<C,Idx>
                     {
                         if std::mem::size_of::<C::Component>() * 8 <= 8
                         {
-                            self.clone().to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs)
+                            self.clone().to_rgba_u8().save_to_with_custom_extension(path, extension, fs)
                         }else
                         {
-                            self.clone().to_rgba_u16().save_to_with_own_extension_pathless(extension, w, fs)
+                            self.clone().to_rgba_u16().save_to_with_custom_extension(path, extension, fs)
                         }
                     },
                     NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
                     {
                         8 =>
                         {
+                            let w = Vec::with_capacity(DEFAULT_WRITER_CAPACITY);
                             ::image::ImageEncoder::write_image(
                             ::image::codecs::png::PngEncoder::new(w),
                             unsafe {
@@ -202,10 +204,11 @@ impl<C,Idx> IoSave for ImageBaseOf<C,Idx>
                             self.width().to_usize() as _,
                             self.height().to_usize() as _,
                             ::image::ExtendedColorType::Rgba8,
-                            ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba8 image : {}", e.to_string())))
+                            ).map_err(|e| IoError::encoding(format!("Failed to save .png rgba8 image : {}", e.to_string())))
                         }
                         16 =>
                         {
+                            let w = Vec::with_capacity(DEFAULT_WRITER_CAPACITY);
                             ::image::ImageEncoder::write_image(
                             ::image::codecs::png::PngEncoder::new(w),
                             unsafe {
@@ -217,15 +220,15 @@ impl<C,Idx> IoSave for ImageBaseOf<C,Idx>
                             self.width().to_usize() as _,
                             self.height().to_usize() as _,
                             ::image::ExtendedColorType::Rgba16,
-                            ).map_err(|e| IoErrorKind::Encoding(format!("Failed to save .png rgba16 image : {}", e.to_string())))
+                            ).map_err(|e| IoError::encoding(format!("Failed to save .png rgba16 image : {}", e.to_string())))
                         }
                         _ =>
                         {
-                            self.clone().to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs)
+                            self.clone().to_rgba_u8().save_to_with_custom_extension(path, extension, fs)
                         }
                     }
-                    NumberType::Float => self.clone().to_rgba_u16().save_to_with_own_extension_pathless(extension, w, fs),
-                    NumberType::Bool => self.clone().to_rgba_u8().save_to_with_own_extension_pathless(extension, w, fs),
+                    NumberType::Float => self.clone().to_rgba_u16().save_to_with_custom_extension(path, extension, fs),
+                    NumberType::Bool => self.clone().to_rgba_u8().save_to_with_custom_extension(path, extension, fs),
                 }
             },
             /*
@@ -259,7 +262,7 @@ impl<C,Idx> IoSave for ImageBaseOf<C,Idx>
                 }
             }
             */
-            _ => Err(IoErrorKind::UnsupportedExtension { name: "Image".to_owned(), got: extension.to_owned(), expected: Self::save_extensions().map(|s| s.to_owned()).collect() })
+            _ => Err(IoError::UnsupportedExtension { mode: IoMode::Write, typename: "Image".to_owned(), got: extension.to_owned(), expected: Self::save_extensions().map(|s| s.to_owned()).collect() })
         }
     }
 }

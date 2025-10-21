@@ -1,6 +1,63 @@
 use super::*;
 
-pub type Fs = dyn FileSystem;
+//pub type Fs = dyn FileSystem;
+pub struct Fs<'a>
+{
+    fs : &'a mut dyn FileSystem,
+}
+impl<'a> Fs<'a>
+{
+    pub fn new(fs : &'a mut dyn FileSystem) -> Self { Self { fs }}
+}
+impl<'a> FileSystem for Fs<'a>
+{
+    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
+        self.fs.write_bytes(path, bytes)
+    }
+    fn write_str(&mut self, path: &path, text: &str) -> IoResult {
+        self.fs.write_str(path, text)
+    }
+    fn rename(&mut self, path: &path, name: &str) -> IoResult {
+        self.fs.rename(path, name)
+    }
+    fn delete(&mut self, path: &path) -> IoResult {
+        self.fs.delete(path)
+    }
+
+    fn move_to(&mut self, path: &path, new_path: &path) -> IoResult {
+        self.fs.move_to(path, new_path)
+    }
+}
+impl<'a> FileSystemRead for Fs<'a>
+{
+    fn read_bytes<'b>(&'b mut self, path: &path) -> IoResult<Cow<'b, [u8]>> {
+        self.fs.read_bytes(path)
+    }
+    fn entries_names(&mut self, path: &path) -> Vec<String> {
+        self.fs.entries_names(path)
+    }
+    fn node_kind(&mut self, path: &path) -> IoResult<FsNodeKind> {
+        self.fs.node_kind(path)
+    }
+    fn entries(&mut self, path: &path) -> Vec<String> {
+        self.fs.entries(path)
+    }
+    fn exists(&mut self, path: &path) -> IoResult<bool> {
+        self.fs.exists(path)
+    }
+    fn is_directory(&mut self, path: &path) -> bool {
+        self.fs.is_directory(path)
+    }
+    fn is_file(&mut self, path: &path) -> bool {
+        self.fs.is_file(path)
+    }
+    fn read_str(&mut self, path: &path) -> IoResult<String> {
+        self.fs.read_str(path)
+    }
+}
+
+
+
 
 pub trait FileSystem : FileSystemRead
 {

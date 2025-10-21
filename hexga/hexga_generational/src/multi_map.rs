@@ -44,7 +44,7 @@ impl<K, V, Gen, S> Hash for Entry<K,V,Gen,S> where Gen: IGeneration, K: Hash, V:
 }
 
 #[cfg(feature = "hexga_io")]
-impl<K, V, Gen, S> IoSave for Entry<K, V, Gen,S>
+impl<K, V, Gen, S> Save for Entry<K, V, Gen,S>
     where
         K: Serialize,
         V: Serialize,
@@ -55,7 +55,7 @@ impl<K, V, Gen, S> IoSave for Entry<K, V, Gen,S>
 }
 
 #[cfg(feature = "hexga_io")]
-impl<K, V, Gen, S> IoLoad for Entry<K, V, Gen, S>
+impl<K, V, Gen, S> Load for Entry<K, V, Gen, S>
     where
         K: for<'de> Deserialize<'de> + Hash + Eq,
         V: for<'de> Deserialize<'de>,
@@ -191,7 +191,7 @@ impl<K, V, Gen, S> PartialEq for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneratio
 }
 
 #[cfg(feature = "hexga_io")]
-impl<K, V, Gen, S> IoSave for MultiHashMapOf<K, V, Gen,S>
+impl<K, V, Gen, S> Save for MultiHashMapOf<K, V, Gen,S>
     where
         K: Serialize,
         V: Serialize,
@@ -202,7 +202,7 @@ impl<K, V, Gen, S> IoSave for MultiHashMapOf<K, V, Gen,S>
 }
 
 #[cfg(feature = "hexga_io")]
-impl<K, V, Gen, S> IoLoad for MultiHashMapOf<K, V, Gen, S>
+impl<K, V, Gen, S> Load for MultiHashMapOf<K, V, Gen, S>
     where
         K: for<'de> Deserialize<'de> + Eq + Hash + Clone,
         V: for<'de> Deserialize<'de>,

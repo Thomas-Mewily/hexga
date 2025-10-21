@@ -12,7 +12,8 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 
 #[allow(unused_imports)]
 #[cfg(feature = "hexga_io")]
-use hexga_io::{Save, IoLoad, Save, Load};
+use hexga_io::prelude::*;
+
 
 pub mod default;
 pub mod format;

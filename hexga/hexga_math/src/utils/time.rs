@@ -323,9 +323,9 @@ impl<T: Float> RangeDefault for TimeOf<T> where T: RangeDefault
 }
 
 #[cfg(feature = "hexga_io")]
-impl<T> IoLoad for TimeOf<T> where T: Float + for<'de> Deserialize<'de> {}
+impl<T> Load for TimeOf<T> where T: Float + for<'de> Deserialize<'de> {}
 #[cfg(feature = "hexga_io")]
-impl<T> IoSave for TimeOf<T> where T: Float + Serialize {}
+impl<T> Save for TimeOf<T> where T: Float + Serialize {}
 
 
 #[cfg(feature = "serde")]

@@ -48,5 +48,5 @@ pub mod prelude
     pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
     #[allow(hidden_glob_reexports)]
-    pub(crate) mod prelude{}
+    pub(crate) mod prelude {}
 }
