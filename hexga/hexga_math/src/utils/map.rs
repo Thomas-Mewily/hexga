@@ -82,7 +82,7 @@ impl<T, const N:usize> MapWith for [T;N]
     fn map_with<R, Item2, F>(self, other : Self::WithType<Item2>, mut f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R {
         let mut t1 = self.into_iter();
         let mut t2 = other.into_iter();
-        std::array::from_fn(|_| f(t1.next().unwrap(), t2.next().unwrap()))
+        std::array::from_fn(|_| f(unsafe { t1.next().unwrap_unchecked() }, unsafe { t2.next().unwrap_unchecked() }))
     }
 }
 

@@ -626,7 +626,7 @@ impl<T, const ROW : usize, const COL : usize> MapWith for Matrix<T,ROW,COL>
     fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, mut f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R {
         let mut it1 = self.columns.into_iter();
         let mut it2 = other.columns.into_iter();
-        let cols = std::array::from_fn(|_| MapWith::map_with(it1.next().unwrap(), it2.next().unwrap(), &mut f));
+        let cols = std::array::from_fn(|_| MapWith::map_with(unsafe { it1.next().unwrap_unchecked() }, unsafe { it2.next().unwrap_unchecked() }, &mut f));
         Self::WithType::<R>::from_col(Vector::from_array(cols))
     }
 }
