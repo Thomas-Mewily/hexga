@@ -49,8 +49,7 @@ position is a matrix ? for each component x/y/z: `positionFixed positionRelative
 
 Grid from matrice ?
 
-- Math : Ray (rayon)
-
+- Math : Ray (rayon), Line, Segment ? Circle...
 
 - Hexga math : easing / tweening fn
 
