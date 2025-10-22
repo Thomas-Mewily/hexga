@@ -35,10 +35,6 @@ impl<F,S> SerdeAssetSerializer<F,S>
 {
     pub fn new(path: Path, fs: F, serializer: S) -> Self { Self { path, fs, serializer }}
 }
-impl<F> SerdeAssetSerializer<F,ron::Serializer<String>>
-{
-    pub fn ron(path: Path, fs: F) -> Self { Self { path, fs, serializer: ron::Serializer::new(String::new(), None).unwrap() }}
-}
 
 impl<'a,F,S> SerializeSeq for SerdeAssetSerializer<F,S>
     where
@@ -50,11 +46,15 @@ impl<'a,F,S> SerializeSeq for SerdeAssetSerializer<F,S>
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-            todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.serialize_element(value).map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.end().map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 }
 
@@ -68,11 +68,15 @@ impl<'a,F,S> SerializeTuple for SerdeAssetSerializer<F,S>
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.serialize_element(value).map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.end().map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 }
 
@@ -87,11 +91,15 @@ impl<'a,F,S> SerializeTupleStruct for SerdeAssetSerializer<F,S>
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.serialize_field(value).map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.end().map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 }
 
@@ -105,11 +113,15 @@ impl<'a,F,S> SerializeTupleVariant for SerdeAssetSerializer<F,S>
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.serialize_field(value).map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.end().map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 }
 
@@ -123,17 +135,23 @@ impl<'a,F,S> SerializeMap for SerdeAssetSerializer<F,S>
     fn serialize_key<T>(&mut self, key: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.serialize_key(key).map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.serialize_value(value).map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.end().map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 }
 
@@ -147,11 +165,15 @@ impl<'a,F,S> SerializeStruct for SerdeAssetSerializer<F,S>
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.serialize_field(key, value).map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.end().map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 }
 
@@ -165,11 +187,15 @@ impl<'a,F,S> SerializeStructVariant for SerdeAssetSerializer<F,S>
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.serialize_field(key, value).map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        let SerdeAssetSerializer { path, fs, serializer } = self;
+        let _ok = serializer.end().map_err(|e| AssetError{ path: path.clone(), kind: IoError::from_display(e), ..___() })?;
+        Ok(())
     }
 }
 
@@ -425,8 +451,12 @@ fn t()
     //dbg!(r);
     println!("{s}");
 
-    let mut meta_ron = SerdeAssetSerializer::ron("./tmp/io_serde/test".to_owned(), FsDisk);
-    my_struct.serialize(meta_ron);
+    s.clear();
+    let mut ron = ron::ser::Serializer::new(&mut s, None).unwrap();
+    let mut meta_ron = SerdeAssetSerializer::new("./tmp/io_serde/test".to_owned(), FsDisk, &mut ron);
+
+    my_struct.serialize(meta_ron).unwrap();
+
     // let mut f = SerdeAssetSerializer::ron(FsDisk);
     // let r = my_struct.serialize(&mut f);
     // dbg!(&r);
