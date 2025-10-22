@@ -1563,7 +1563,7 @@ dependencies = [
 name = "io_serde"
 version = "0.0.11-beta.4"
 dependencies = [
- "hexga_generational",
+ "hexga",
  "ron 0.11.0",
  "serde",
 ]

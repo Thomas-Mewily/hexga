@@ -12,11 +12,15 @@ pub use bytes::*;
 mod node;
 pub use node::*;
 
+mod result;
+pub use result::*;
+
 pub mod prelude
 {
     pub use super::
     {
         file_system::{FsWrite,FsRead},
         disk::{SaveToDisk,LoadFromDisk},
+        result::*
     };
 }

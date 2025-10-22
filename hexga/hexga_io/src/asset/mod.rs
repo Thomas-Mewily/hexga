@@ -6,6 +6,9 @@ pub use save::*;
 mod load;
 pub use load::*;
 
+mod result;
+pub use result::*;
+
 mod default_impl;
 pub use default_impl::*;
 

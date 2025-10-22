@@ -3,32 +3,35 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 
-use hexga_generational::prelude::*;
+use std::ops::{Deref, DerefMut};
+
+use hexga::{io::{asset::AssetError, fs::{Fs, FsDisk}}, prelude::*};
 
 use serde::ser::{SerializeMap, SerializeSeq, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant};
 pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
-
-struct VirtualFsSerializer//<'a>
+struct SerdeAsset<F>
 {
-    //output: Fs,
+    fs: F,
+    prefered_extension: Extension,
 }
-
-/*
-impl VirtualFsSerializer {
-    fn new() -> Self {
-        Self { output: String::new() }
-    }
-
-    fn into_string(self) -> String {
-        self.output
+impl<F> Deref for SerdeAsset<F>
+{
+    type Target=F;
+    fn deref(&self) -> &Self::Target {
+        &self.fs
     }
 }
-    */
+impl<F> DerefMut for SerdeAsset<F>
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.fs
+    }
+}
 
-impl<'a> SerializeSeq for &'a mut VirtualFsSerializer {
+impl<'a,F> SerializeSeq for &'a mut SerdeAsset<F> {
     type Ok = ();
-    type Error = std::fmt::Error;
+    type Error = AssetError;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
@@ -41,9 +44,9 @@ impl<'a> SerializeSeq for &'a mut VirtualFsSerializer {
     }
 }
 
-impl<'a> SerializeTuple for &'a mut VirtualFsSerializer {
+impl<'a,F> SerializeTuple for &'a mut SerdeAsset<F> {
     type Ok = ();
-    type Error = std::fmt::Error;
+    type Error = AssetError;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
@@ -57,9 +60,9 @@ impl<'a> SerializeTuple for &'a mut VirtualFsSerializer {
 }
 
 
-impl<'a> SerializeTupleStruct for &'a mut VirtualFsSerializer {
+impl<'a,F> SerializeTupleStruct for &'a mut SerdeAsset<F> {
     type Ok = ();
-    type Error = std::fmt::Error;
+    type Error = AssetError;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
@@ -72,9 +75,9 @@ impl<'a> SerializeTupleStruct for &'a mut VirtualFsSerializer {
     }
 }
 
-impl<'a> SerializeTupleVariant for &'a mut VirtualFsSerializer {
+impl<'a,F> SerializeTupleVariant for &'a mut SerdeAsset<F> {
     type Ok = ();
-    type Error = std::fmt::Error;
+    type Error = AssetError;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
@@ -87,9 +90,9 @@ impl<'a> SerializeTupleVariant for &'a mut VirtualFsSerializer {
     }
 }
 
-impl<'a> SerializeMap for &'a mut VirtualFsSerializer {
+impl<'a,F> SerializeMap for &'a mut SerdeAsset<F> {
     type Ok = ();
-    type Error = std::fmt::Error;
+    type Error = AssetError;
 
     fn serialize_key<T>(&mut self, key: &T) -> Result<(), Self::Error>
     where
@@ -108,9 +111,9 @@ impl<'a> SerializeMap for &'a mut VirtualFsSerializer {
     }
 }
 
-impl<'a> SerializeStruct for &'a mut VirtualFsSerializer {
+impl<'a,F> SerializeStruct for &'a mut SerdeAsset<F> {
     type Ok = ();
-    type Error = std::fmt::Error;
+    type Error = AssetError;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
@@ -123,9 +126,9 @@ impl<'a> SerializeStruct for &'a mut VirtualFsSerializer {
     }
 }
 
-impl<'a> SerializeStructVariant for &'a mut VirtualFsSerializer {
+impl<'a,F> SerializeStructVariant for &'a mut SerdeAsset<F> {
     type Ok = ();
-    type Error = std::fmt::Error;
+    type Error = AssetError;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
@@ -137,12 +140,14 @@ impl<'a> SerializeStructVariant for &'a mut VirtualFsSerializer {
         todo!()
     }
 }
+
+
 
 
 // A simple example for our format: key=value;key=value
-impl<'a> Serializer for &'a mut VirtualFsSerializer {
+impl<'a,F> Serializer for &'a mut SerdeAsset<F> {
     type Ok = ();
-    type Error = std::fmt::Error;
+    type Error = AssetError;
 
     type SerializeSeq = Self;
     type SerializeTuple = Self;
@@ -316,19 +321,20 @@ struct Person
 }
 
 
-// fn t()
-// {
-//     let my_struct = Person {
-//         name: "Alice".into(),
-//         age: 30,
-//     };
+fn t()
+{
+    let my_struct = Person {
+        name: "Alice".into(),
+        age: 30,
+    };
 
-//     let mut serializer = VirtualFsSerializer::new();
-//     my_struct.serialize(&mut serializer).unwrap();
-//     println!("Serialized: {}", serializer.into_string());
-// }
+    let mut f = SerdeAsset { fs: FsDisk, prefered_extension: "ron".to_owned() };
+    let r = my_struct.serialize(&mut f);
+    dbg!(&r);
+}
 
 fn main()
 {
+    t();
     println!("hello world");
 }

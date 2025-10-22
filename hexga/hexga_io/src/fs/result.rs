@@ -1,5 +1,3 @@
-use std::{str::Utf8Error, string::FromUtf8Error};
-
 use super::*;
 
 
@@ -22,6 +20,7 @@ pub enum IoError
     Unknow,
     Unimplemented,
     NotFound,
+    Custom(String),
     Std(std::io::ErrorKind),
     Utf8Error { valid_up_to : usize, error_len : Option<usize>},
     Markup { mode: IoMode, typename: String, extension: Extension, reason: String},
@@ -77,5 +76,33 @@ impl From<std::io::ErrorKind> for IoError
 {
     fn from(kind: std::io::ErrorKind) -> Self {
         Self::Std(kind)
+    }
+}
+
+
+// TODO: impl it
+impl Display for IoError
+{
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Ok(())
+    }
+}
+
+impl std::error::Error for IoError
+{
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)>
+    {
+        None
+    }
+    fn provide<'a>(&'a self, _: &mut std::error::Request<'a>) {}
+}
+
+
+
+impl serde::ser::Error for IoError
+{
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display
+    {
+        Self::Custom(msg.to_string())
     }
 }

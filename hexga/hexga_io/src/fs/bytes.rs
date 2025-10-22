@@ -18,7 +18,7 @@ impl<'a> FsFile<'a>
 {
     pub const fn new(path: Option<Path>) -> Self { Self::with_data(path, Cow::Owned(Vec::new())) }
     pub const fn with_data(path: Option<Path>, data: Cow<'a, [u8]>) -> Self { Self { data, path }}
-    pub const fn lambda_with_data(data: Cow<'a, [u8]>) -> Self { Self::with_data(Some(String::new()), data) }
+    pub const fn lambda_with_data(data: Cow<'a, [u8]>) -> Self { Self::with_data(Some(Path::new()), data) }
 
     fn path_match(&self, path: &path) -> IoResult
     {
