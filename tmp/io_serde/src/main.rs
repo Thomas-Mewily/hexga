@@ -9,11 +9,12 @@ use serde::ser::{SerializeMap, SerializeSeq, SerializeStructVariant, SerializeTu
 pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
 
-struct VirtualFsSerializer
+struct VirtualFsSerializer//<'a>
 {
-    output: String,
+    //output: Fs,
 }
 
+/*
 impl VirtualFsSerializer {
     fn new() -> Self {
         Self { output: String::new() }
@@ -23,6 +24,7 @@ impl VirtualFsSerializer {
         self.output
     }
 }
+    */
 
 impl<'a> SerializeSeq for &'a mut VirtualFsSerializer {
     type Ok = ();
@@ -314,17 +316,17 @@ struct Person
 }
 
 
-fn t()
-{
-    let my_struct = Person {
-        name: "Alice".into(),
-        age: 30,
-    };
+// fn t()
+// {
+//     let my_struct = Person {
+//         name: "Alice".into(),
+//         age: 30,
+//     };
 
-    let mut serializer = VirtualFsSerializer::new();
-    my_struct.serialize(&mut serializer).unwrap();
-    println!("Serialized: {}", serializer.into_string());
-}
+//     let mut serializer = VirtualFsSerializer::new();
+//     my_struct.serialize(&mut serializer).unwrap();
+//     println!("Serialized: {}", serializer.into_string());
+// }
 
 fn main()
 {
