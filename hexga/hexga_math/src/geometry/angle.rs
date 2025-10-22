@@ -76,8 +76,28 @@ impl<T> Save for AngleOf<T> where T: Float + Serialize {}
 impl<T> Serialize for AngleOf<T> where T: Float + Serialize
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
-    { self.degree().serialize(serializer) }
+    {
+        self.degree().serialize(serializer)
+        // if serializer.is_human_readable()
+        // {
+        //     return
+        // }else
+        // {
+
+        // }
+    }
 }
+
+/*
+#[cfg(feature = "serde")]
+#[cfg_attr(feature = "serde", derive(Deserialize), serde(untagged))]
+enum AngleInput<T> where T: Float
+{
+    Degree (T),
+    Prefix { deg: Option<T>, rad: Option<T>, turn: Option<T> },
+    // Postfix (String) // To support "90°", "90deg" "3.14rad" ?
+}
+*/
 
 #[cfg(feature = "serde")]
 impl<'de, T> Deserialize<'de> for AngleOf<T> where T: Float + Deserialize<'de>
@@ -87,15 +107,14 @@ impl<'de, T> Deserialize<'de> for AngleOf<T> where T: Float + Deserialize<'de>
         D: Deserializer<'de>,
     {
         Ok(Self::from_degree(T::deserialize(deserializer)?))
-        // Can't use it because of non descriptive serializer like bincode or postcard
+
         /*
-        #[cfg_attr(feature = "serde", derive(Deserialize), serde(untagged))]
-        enum AngleInput<T> where T: Float
+        if !deserializer.is_human_readable()
         {
-            Degree (T),
-            Prefix { deg: Option<T>, rad: Option<T>, turn: Option<T> },
-            // Postfix (String) // To support "90°", "90deg" "3.14rad" ?
+            return Ok(Self::from_degree(T::deserialize(deserializer)?));
         }
+
+        //deserializer.deserialize_any(visitor)
 
         match AngleInput::deserialize(deserializer)
         {

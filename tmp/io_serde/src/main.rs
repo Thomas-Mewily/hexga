@@ -201,6 +201,28 @@ impl<'a,F,S> SerializeStructVariant for SerdeAssetSerializer<F,S>
 
 
 
+fn get_str<T,S>(val:&T,s:S) where S: Serializer
+{
+
+}
+
+trait StringSerializer
+{
+    type Error;
+    fn serialize_to_string<T: Serialize>(self, value: &T) -> Result<String, Self::Error>;
+}
+
+
+impl StringSerializer for &mut ron::Serializer<String>
+{
+    type Error=IoError;
+    fn serialize_to_string<T: Serialize>(self, value: &T) -> Result<String, Self::Error>
+    {
+        value.serialize(self).map_err(|e| IoError::from_display(e))?;
+        todo!()
+    }
+}
+
 
 // A simple example for our format: key=value;key=value
 impl<'a,F,S> Serializer for SerdeAssetSerializer<F,S>

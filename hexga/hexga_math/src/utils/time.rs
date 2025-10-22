@@ -343,6 +343,7 @@ impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
     where
         D: Deserializer<'de>,
     {
+        //if deserializer.is_human_readeable
         Ok(Self::from_s(T::deserialize(deserializer)?))
         // Can't use it because of non descriptive serializer like bincode or postcard
 
