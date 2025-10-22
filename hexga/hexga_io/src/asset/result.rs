@@ -14,11 +14,24 @@ pub struct AssetError
 // TODO: impl it
 impl Display for AssetError
 {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Ok(())
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+        writeln!(f, "Asset error at '{}': {}", self.path, self.kind)?;
+
+        fn fmt_children(children: &[AssetError], f: &mut std::fmt::Formatter<'_>, indent: usize) -> std::fmt::Result {
+            let indent_str = "  ".repeat(indent);
+            for child in children {
+                writeln!(f, "{}- {}: {}", indent_str, child.path, child.kind)?;
+                fmt_children(&child.childs, f, indent + 1)?;
+            }
+            Ok(())
+        }
+
+        fmt_children(&self.childs, f, 1)
     }
 }
 
+// TODO: impl it
 impl std::error::Error for AssetError
 {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)>

@@ -6,6 +6,17 @@ pub type IoResult<T=()> = Result<T,IoError>;
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum IoMode{Read,Write}
 
+impl Display for IoMode
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self
+        {
+            IoMode::Read => f.write_str("Read"),
+            IoMode::Write => f.write_str("Write"),
+        }
+    }
+}
+
 impl IoMode
 {
     pub const fn is_read(self) -> bool { matches!(self, Self::Read) }
@@ -31,6 +42,9 @@ pub enum IoError
 
 impl IoError
 {
+    // rename it, or set it private
+    pub fn from_display<T>(val: T) -> Self where T: Display { Self::Custom(val.to_string()) }
+
     pub fn encoding(reason: String) -> Self { Self::Encoding { reason }}
 
     pub fn unsupported_save_extension<T: ?Sized>(ext: &extension) -> Self where T: Save { Self::UnsupportedExtension { mode:IoMode::Write, typename: std::any::type_name::<T>().to_owned(), got: ext.to_owned(), expected: T::save_extensions().map(|v| v.to_owned()).collect() }}
@@ -83,11 +97,56 @@ impl From<std::io::ErrorKind> for IoError
 // TODO: impl it
 impl Display for IoError
 {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Ok(())
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self
+        {
+            IoError::Unknow => f.write_str("unknow"),
+            IoError::Unimplemented => f.write_str("unimplemented"),
+            IoError::NotFound  => f.write_str("not found"),
+            IoError::Custom(reason) => write!(f, "custom: {reason}"),
+            IoError::Std(kind) => write!(f, "std: {kind}"),
+            IoError::Utf8Error { valid_up_to, error_len }  =>
+            {
+                // Copied from std Utf8Error
+                if let Some(error_len) = error_len {
+                    write!(
+                        f,
+                        "invalid utf-8 sequence of {} bytes from index {}",
+                        error_len, valid_up_to
+                    )
+                } else {
+                    write!(f, "incomplete utf-8 byte sequence from index {}", valid_up_to)
+                }
+            },
+            IoError::Markup { mode, typename, extension, reason } => {
+                write!(
+                    f,
+                    "markup error in mode '{}' for type '{}' (extension '{}'): {}",
+                    mode, typename, extension, reason
+                )
+            },
+            IoError::UnsupportedExtension { mode, typename, got, expected } =>
+            {
+                write!(
+                    f,
+                    "unsupported extension in mode '{}' for type '{}': got '{}', expected one of {:?}",
+                    mode, typename, got, expected
+                )
+            },
+            IoError::MissingBase { mode, typename_source, typename_dest } =>
+            {
+                write!(
+                    f,
+                    "missing base type in mode '{}': cannot convert from '{}' to '{}'",
+                    mode, typename_source, typename_dest
+                )
+            },
+            IoError::Encoding { reason } => write!(f, "encoding error: {}", reason),
+        }
     }
 }
 
+// Todo: impl it
 impl std::error::Error for IoError
 {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)>
