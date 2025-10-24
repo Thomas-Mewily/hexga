@@ -28,52 +28,50 @@ pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, s
 
 // }
 
-struct JsonFileSerializer<'a, F>
+struct FileSerializer<'a, F, S>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer,
 {
     fs: &'a mut F,
     path: String,
-    serializer : NonEmptyStack<JsonSerializer>,
+    serializer : NonEmptyStack<S>,//serde_json::Serializer<String>,
 }
 
-type JsonSerializer = serde_json::Serializer<Vec<u8>>;
-
-impl<'a, F> JsonFileSerializer<'a,F>
+impl<'a, F, S> FileSerializer<'a,F,S>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer,
 {
-    pub fn new(fs: &'a mut F, path: String) -> Self
+    pub fn new(fs: &'a mut F, path: String, serializer : S) -> Self
     {
-        Self { fs, path, serializer: NonEmptyStack::new(JsonSerializer::new(___())) }
+        Self { fs, path, serializer: NonEmptyStack::new(serializer) }
     }
 
     #[inline]
-    pub(crate) fn _serialize_primitive<'x,T>(&'x mut self, val: &T) -> Result<<&mut Self as Serializer>::Ok, <&mut Self as Serializer>::Error>
-        where
-        T: Serialize,
-        'x: 'a
+    pub(crate) fn _serialize_primitive<T>(&mut self, val: &T) -> Result<<&mut Self as Serializer>::Ok, <&mut Self as Serializer>::Error> where T: Serialize
     {
-        val.serialize(self.serializer.last_mut()).map_err(|_| AssetError::___())
+        val.serialize(self.serializer.last_mut())
     }
 }
 
 
-struct Compound<'a, F, C>
+struct Compound<'a, F, S, C>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer,
 {
-    fs: &'a mut JsonFileSerializer<'a, F>,
+    fs: &'a mut FileSerializer<'a, F, S>,
     compound : C,
-    path_add : Path,
 }
 
 // impl Drop for FileSerializer
 
 
-impl<'a, F, C> SerializeSeq for Compound<'a, F, C>
+impl<'a, F, S, C> SerializeSeq for Compound<'a, F, S, C>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeSeq = C>,
     C: SerializeSeq,
 {
     type Ok=();
@@ -99,9 +97,10 @@ impl<'a, F, C> SerializeSeq for Compound<'a, F, C>
     }
 }
 
-impl<'a, F, C> SerializeTuple for Compound<'a, F, C>
+impl<'a, F, S, C> SerializeTuple for Compound<'a, F, S, C>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeTuple = C>,
     C: SerializeTuple,
 {
     type Ok=();
@@ -127,9 +126,10 @@ impl<'a, F, C> SerializeTuple for Compound<'a, F, C>
     }
 }
 
-impl<'a, F, C> SerializeTupleStruct for Compound<'a, F, C>
+impl<'a, F, S, C> SerializeTupleStruct for Compound<'a, F, S, C>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeTupleStruct = C>,
     C: SerializeTupleStruct,
 {
     type Ok=();
@@ -155,9 +155,10 @@ impl<'a, F, C> SerializeTupleStruct for Compound<'a, F, C>
     }
 }
 
-impl<'a, F, C> SerializeTupleVariant for Compound<'a, F, C>
+impl<'a, F, S, C> SerializeTupleVariant for Compound<'a, F, S, C>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeTupleVariant = C>,
     C: SerializeTupleVariant,
 {
     type Ok=();
@@ -183,9 +184,10 @@ impl<'a, F, C> SerializeTupleVariant for Compound<'a, F, C>
     }
 }
 
-impl<'a, F, C> SerializeMap for Compound<'a, F, C>
+impl<'a, F, S, C> SerializeMap for Compound<'a, F, S, C>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeMap = C>,
     C: SerializeMap,
 {
     type Ok=();
@@ -212,9 +214,10 @@ impl<'a, F, C> SerializeMap for Compound<'a, F, C>
     }
 }
 
-impl<'a, F, C> SerializeStruct for Compound<'a, F, C>
+impl<'a, F, S, C> SerializeStruct for Compound<'a, F, S, C>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeStruct = C>,
     C: SerializeStruct,
 {
     type Ok=();
@@ -240,9 +243,10 @@ impl<'a, F, C> SerializeStruct for Compound<'a, F, C>
     }
 }
 
-impl<'a, F, C> SerializeStructVariant for Compound<'a, F, C>
+impl<'a, F, S, C> SerializeStructVariant for Compound<'a, F, S, C>
     where
     F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeStructVariant = C>,
     C: SerializeStructVariant,
 {
     type Ok=();
@@ -268,21 +272,21 @@ impl<'a, F, C> SerializeStructVariant for Compound<'a, F, C>
     }
 }
 
-impl<'x, 'a, F> Serializer for &'x mut JsonFileSerializer<'a, F>
+impl<'x, 'a, F, S> Serializer for &'x mut FileSerializer<'a, F, S>
 where
     F: FsWrite,
-    'x: 'a
+    &'x mut S: Serializer,
 {
     type Ok=();
     type Error=AssetError;
 
-    type SerializeSeq=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeSeq>;
-    type SerializeTuple=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeTuple>;
-    type SerializeTupleStruct=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeTupleStruct>;
-    type SerializeTupleVariant=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeTupleVariant>;
-    type SerializeMap=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeMap>;
-    type SerializeStruct=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeStruct>;
-    type SerializeStructVariant=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeStructVariant>;
+    type SerializeSeq=Compound<'x,F,S,<&'x mut S as Serializer>::SerializeSeq>;
+    type SerializeTuple=Compound<'x,F,S,<&'x mut S as Serializer>::SerializeTuple>;
+    type SerializeTupleStruct=Compound<'x,F,S,<&'x mut S as Serializer>::SerializeTupleStruct>;
+    type SerializeTupleVariant=Compound<'x,F,S,<&'x mut S as Serializer>::SerializeTupleVariant>;
+    type SerializeMap=Compound<'x,F,S,<&'x mut S as Serializer>::SerializeMap>;
+    type SerializeStruct=Compound<'x,F,S,<&'x mut S as Serializer>::SerializeStruct>;
+    type SerializeStructVariant=Compound<'x,F,S,<&'x mut S as Serializer>::SerializeStructVariant>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         self._serialize_primitive(&v)
@@ -423,10 +427,8 @@ where
         self,
         name: &'static str,
         len: usize,
-    ) -> Result<Self::SerializeStruct, Self::Error>
-    {
-        let compound = self.serializer.last_mut().serialize_struct(name, len).map_err(|_| ___())?;
-        Ok(Compound{ fs: self, compound, path_add: name.to_owned() })
+    ) -> Result<Self::SerializeStruct, Self::Error> {
+        todo!()
     }
 
     fn serialize_struct_variant(
@@ -452,7 +454,7 @@ fn test_serialize<T>(val: &T) where T: Serialize
 {
     let mut fs = FsDisk;
     let mut serializer = serde_json::Serializer::new(Vec::<u8>::new());
-    let f = JsonFileSerializer::new(&mut fs, "./tmp/io_serde/test".to_owned());
+    let f = FileSerializer::new(&mut fs, "./tmp/io_serde/test".to_owned(), &mut serializer);
 
     val.serialize(&mut serializer).unwrap();
 }
