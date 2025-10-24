@@ -3,7 +3,7 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 
-use std::{any::{Any, TypeId}, env::var, io::BufWriter, ops::{Deref, DerefMut}};
+use std::{any::{Any, TypeId}, io::BufWriter, ops::{Deref, DerefMut}};
 
 use hexga::{io::{asset::AssetError, fs::{Fs, FsDisk}}, prelude::*};
 
@@ -11,349 +11,265 @@ use ron::ser::PrettyConfig;
 use serde::ser::{SerializeMap, SerializeSeq, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant};
 pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
-struct FileSerializerFs<F>
+
+struct FileSerializer<'a, F, S>
+    where
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer
 {
-    path: Path,
-    fs: F,
-    field_name: Option<&'static str>,
+    fs: &'a mut F,
+    path: String,
+    serializer : NonEmptyStack<S>,//serde_json::Serializer<String>,
 }
 
-struct FileSerializer<F,S>
-    // where F: FsWrite,
-    // for<'a> &'a mut S: Serializer,
-    // S: MarkupSerializer
+impl<'a, F, S> FileSerializer<'a,F,S>
+    where
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer
 {
-    fs: FileSerializerFs<F>,
-    serializer: S,
-}
+    pub fn new(fs: &'a mut F, path: String, serializer : S) -> Self
+    {
+        Self { fs, path, serializer: NonEmptyStack::new(serializer) }
+    }
 
-type JsonSerializer = serde_json::Serializer<Vec<u8>>;
-
-pub trait MarkupSerializer : Sized
-{
-    fn to_markup(self) -> Result<String, ()>;
-}
-impl MarkupSerializer for JsonSerializer
-{
-    fn to_markup(self) -> Result<String, ()> {
-        let bytes = self.into_inner();
-        String::from_utf8(bytes).map_err(|_| ())
+    #[inline]
+    pub(crate) fn _serialize_primitive<T>(&mut self, val: &T) -> Result<<Self as Serializer>::Ok, <Self as Serializer>::Error> where T: Serialize
+    {
+        todo!()
     }
 }
 
-
-// pub trait SerializerProvider
-// {
-//     type
-// }
-
-// pub trait GenerateSerialize
-// {
-//     type Serializer :
-//     fn generate_serializer(self) ->
-// }
-
-// pub trait MarkupSerializer : Sized
-// {
-//     type Error: serde::ser::Error;
-//     type Serializer<'a> : Serializer<Error = Self::Error> where Self: 'a;
-
-//     fn serializer<'a>(&'a self) -> Self::Serializer<'a>;
-
-//     fn to_markup_in<T>(self, value: &T, markup: String) -> Result<String, Self::Error> where T:Serialize;
-//     fn to_markup<T>(self, value: &T) -> Result<String, Self::Error> where T:Serialize
-//     {
-//         self.to_markup_in(value, String::with_capacity(4096) )
-//     }
-// }
-
-// struct RonSerializer;
-
-
-// impl MarkupSerializer
-// {
-//     pub(crate) fn _serialize_val<T>(self, value: &T) where T: Serialize
-//     {
-
-//     }
-// }
-
-// impl MarkupSerializer for RonSerializer
-// {
-//     type Error = ron::error::Error;
-
-//     fn to_markup_in<T>(self, value: &T, mut markup: String) -> Result<String, Self::Error>
-//         where T:Serialize
-//     {
-//         let mut serializer = ron::ser::Serializer::new(&mut markup, None)?;
-//         value.serialize(&mut serializer)?;
-//         Ok(markup)
-//     }
-
-//     type Serializer<'a> = ron::ser::Serializer<&'a mut String>  where Self: 'a;
-
-//     fn serializer<'a>(&'a self) -> Self::Serializer<'a> {
-//         todo!()
-//     }
-// }
-// impl MarkupSerializer for JsonSerializer
-// {
-//     type Error = serde_json::Error;
-
-//     fn to_markup_in<T>(self, value: &T, mut markup: String) -> Result<String, Self::Error>
-//         where T:Serialize
-//     {
-//         let mut bytes= Vec::with_capacity(2048);
-//         let mut serializer = serde_json::ser::Serializer::new(&mut bytes);
-//         value.serialize(&mut serializer)?;
-//         markup.push_str(&String::from_utf8(bytes).unwrap());
-//         Ok(markup)
-//     }
-// }
-
-
-impl<F,S> FileSerializer<F,S>
+struct Compound<'a, F, S, C>
+    where
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer
 {
-    pub fn new(fs: F, serializer: S) -> Self { Self::with_path(String::new(), fs, serializer) }
-    pub fn with_path(path: Path, fs: F, serializer: S) -> Self { Self { fs: FileSerializerFs { path, fs, field_name: None }, serializer }}
+    fs: &'a mut FileSerializer<'a, F, S>,
+    compound : C,
 }
 
+// impl Drop for FileSerializer
 
-impl<'a,F,S> SerializeSeq for FileSerializer<F,S>
+
+impl<'a, F, S, C> SerializeSeq for Compound<'a, F, S, C>
     where
-    S: SerializeSeq// + MarkupSerializer
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeSeq = C>,
+    C: SerializeSeq
 {
-    type Ok = ();
-    type Error = AssetError;
+    type Ok=();
+    type Error=AssetError;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
+        where
+            T: ?Sized + Serialize
+    {
+        match self.compound.serialize_element(value)
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        match self.compound.end()
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
+    }
+}
+
+impl<'a, F, S, C> SerializeTuple for Compound<'a, F, S, C>
+    where
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeTuple = C>,
+    C: SerializeTuple
+{
+    type Ok=();
+    type Error=AssetError;
+
+    fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
+        where
+            T: ?Sized + Serialize
+    {
+        match self.compound.serialize_element(value)
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        match self.compound.end()
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
+    }
+}
+
+impl<'a, F, S, C> SerializeTupleStruct for Compound<'a, F, S, C>
+    where
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeTupleStruct = C>,
+    C: SerializeTupleStruct
+{
+    type Ok=();
+    type Error=AssetError;
+
+    fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
+        where
+        T: ?Sized + Serialize
+    {
+        match self.compound.serialize_field(value)
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        match self.compound.end()
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
+    }
+}
+
+impl<'a, F, S, C> SerializeTupleVariant for Compound<'a, F, S, C>
+    where
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeTupleVariant = C>,
+    C: SerializeTupleVariant
+{
+    type Ok=();
+    type Error=AssetError;
+
+    fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize
-        {
-        let FileSerializer { fs, serializer } = self;
-        //serializer.to_markup_in(&v, fs.buf).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        let _ok = serializer.serialize_element(value).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
-    }
-
-    fn end(self) -> Result<Self::Ok, Self::Error>
     {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.end().map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
-    }
-}
-
-impl<'a,F,S> SerializeTuple for FileSerializer<F,S>
-    where
-    S: SerializeTuple// + MarkupSerializer
-{
-    type Ok = ();
-    type Error = AssetError;
-
-    fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
-    where
-        T: ?Sized + Serialize {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.serialize_element(value).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
+        match self.compound.serialize_field(value)
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.end().map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
+        match self.compound.end()
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
     }
 }
 
-
-impl<'a,F,S> SerializeTupleStruct for FileSerializer<F,S>
+impl<'a, F, S, C> SerializeMap for Compound<'a, F, S, C>
     where
-    S: SerializeTupleStruct// + MarkupSerializer
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeMap = C>,
+    C: SerializeMap
 {
-    type Ok = ();
-    type Error = AssetError;
-
-    fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
-    where
-        T: ?Sized + Serialize {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.serialize_field(value).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
-    }
-
-    fn end(self) -> Result<Self::Ok, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.end().map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
-    }
-}
-
-impl<'a,F,S> SerializeTupleVariant for FileSerializer<F,S>
-    where
-    S: SerializeTupleVariant// + MarkupSerializer
-{
-    type Ok = ();
-    type Error = AssetError;
-
-    fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
-    where
-        T: ?Sized + Serialize {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.serialize_field(value).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
-    }
-
-    fn end(self) -> Result<Self::Ok, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.end().map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
-    }
-}
-
-impl<'a,F,S> SerializeMap for FileSerializer<F,S>
-    where
-    S: SerializeMap// + MarkupSerializer
-{
-    type Ok = ();
-    type Error = AssetError;
+    type Ok=();
+    type Error=AssetError;
 
     fn serialize_key<T>(&mut self, key: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.serialize_key(key).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
+        self.compound.serialize_key(key).map_err(|_| ___())
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.serialize_value(value).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
+        self.compound.serialize_value(value).map_err(|_| ___())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.end().map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
+        match self.compound.end()
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
     }
 }
 
-impl<'a,F,S> SerializeStruct for FileSerializer<F,S>
+impl<'a, F, S, C> SerializeStruct for Compound<'a, F, S, C>
     where
-    S: SerializeStruct// + MarkupSerializer
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer<SerializeStruct = C>,
+    C: SerializeStruct
 {
-    type Ok = ();
-    type Error = AssetError;
+    type Ok=();
+    type Error=AssetError;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: ?Sized + Serialize {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.serialize_field(key, value).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
-    }
-
-    fn end(self) -> Result<Self::Ok, Self::Error>
+        T: ?Sized + Serialize
     {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.end().map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
-    }
-}
-
-impl<'a,F,S> SerializeStructVariant for FileSerializer<F,S>
-    where
-    S: SerializeStructVariant// + MarkupSerializer
-{
-    type Ok = ();
-    type Error = AssetError;
-
-    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
-    where
-        T: ?Sized + Serialize {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.serialize_field(key, value).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
+        match self.compound.serialize_field(key, value)
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let _ok = serializer.end().map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(())
+        match self.compound.end()
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
     }
 }
 
-
-/*
-fn get_str<T,S>(val:&T,s:S) where S: Serializer
-{
-
-}
-
-trait StringSerializer
-{
-    type Error;
-    fn serialize_to_string<T: Serialize>(self, value: &T) -> Result<String, Self::Error>;
-}
-
-fn serializable_string<S,T>(serializer: S, buf: &mut String, value: &T) -> Result<(),S::Error> where S: Serializer, T:Serialize
-{
-
-}*/
-
-
-
-/*
-impl StringSerializer for &mut ron::Serializer<String>
-{
-    type Error=IoError;
-    fn serialize_to_string<T: Serialize>(self, string value: &T) -> Result<String, Self::Error>
-    {
-        value.serialize(self).map_err(|e| IoError::from_display(e))?;
-        todo!()
-    }
-}
-*/
-
-impl<F,S> FileSerializer<F,S> where
-    F: FsWrite,
-    S: Serializer
-{
-    pub(crate) fn _ron_serialiser(buf: &mut String) -> ron::Serializer<&mut String>
-    {
-        ron::Serializer::new(buf, None).unwrap()
-    }
-
-
-    pub(crate) fn _serialize_primitive<T>(mut self, val: &T) -> Result<<Self as Serializer>::Ok, <Self as Serializer>::Error>
-        where T:Serialize
-    {
-        let mut s = JsonSerializer::new(___());
-        val.serialize(&mut s).map_err(|e| AssetError{ path: self.fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        //let json = s.to_markup().map_err(|e| AssetError{ path: self.fs.path.clone(), ..___() })?;
-        self.fs.fs.write_bytes(&self.fs.path, &s.into_inner()).map_err(|kind| AssetError{ path: self.fs.path.clone(), kind, ..___() })
-    }
-}
-
-// A simple example for our format: key=value;key=value
-impl<F,S> Serializer for FileSerializer<F,S>
+impl<'a, F, S, C> SerializeStructVariant for Compound<'a, F, S, C>
     where
     F: FsWrite,
-    S: Serializer// + MarkupSerializer
+    for<'s> &'s mut S: Serializer<SerializeStructVariant = C>,
+    C: SerializeStructVariant
 {
-    type Ok = ();
-    type Error = AssetError;
+    type Ok=();
+    type Error=AssetError;
 
-    type SerializeSeq = FileSerializer<F,S::SerializeSeq>;
-    type SerializeTuple = FileSerializer<F,S::SerializeTuple>;
-    type SerializeTupleStruct = FileSerializer<F,S::SerializeTupleStruct>;
-    type SerializeTupleVariant = FileSerializer<F,S::SerializeTupleVariant>;
-    type SerializeMap = FileSerializer<F,S::SerializeMap>;
-    type SerializeStruct = FileSerializer<F,S::SerializeStruct>;
-    type SerializeStructVariant = FileSerializer<F,S::SerializeStructVariant>;
+    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize
+    {
+        match self.compound.serialize_field(key, value)
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        match self.compound.end()
+        {
+            Ok(v) => Ok(()),
+            Err(e) => Err(___()),
+        }
+    }
+}
+
+impl<'a, 'f, F, S> Serializer for &'a mut FileSerializer<'f, F, S>
+where
+    F: FsWrite,
+    for<'s> &'s mut S: Serializer
+{
+    type Ok=();
+    type Error=AssetError;
+
+    type SerializeSeq=Compound<'a,F,S,<&'a mut S as Serializer>::SerializeSeq>;
+    type SerializeTuple=Compound<'a,F,S,<&'a mut S as Serializer>::SerializeTuple>;
+    type SerializeTupleStruct=Compound<'a,F,S,<&'a mut S as Serializer>::SerializeTupleStruct>;
+    type SerializeTupleVariant=Compound<'a,F,S,<&'a mut S as Serializer>::SerializeTupleVariant>;
+    type SerializeMap=Compound<'a,F,S,<&'a mut S as Serializer>::SerializeMap>;
+    type SerializeStruct=Compound<'a,F,S,<&'a mut S as Serializer>::SerializeStruct>;
+    type SerializeStructVariant=Compound<'a,F,S,<&'a mut S as Serializer>::SerializeStructVariant>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         self._serialize_primitive(&v)
@@ -413,22 +329,20 @@ impl<F,S> Serializer for FileSerializer<F,S>
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
         todo!()
-        //self._serialize_primitive(&None)
     }
 
-    fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
+    fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
         T: ?Sized + Serialize {
-        self._serialize_primitive(&v)
+        self._serialize_primitive(&Some(value))
     }
 
-    fn serialize_unit(self) -> Result<Self::Ok, Self::Error>
-    {
-        self._serialize_primitive(&())
+    fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
+        todo!()
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        self._serialize_primitive(&())
+        todo!()
     }
 
     fn serialize_unit_variant(
@@ -463,15 +377,11 @@ impl<F,S> Serializer for FileSerializer<F,S>
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let serializer = serializer.serialize_seq(len).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(FileSerializer{fs, serializer})
+        todo!()
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let serializer = serializer.serialize_tuple(len).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(FileSerializer{fs, serializer})
+        todo!()
     }
 
     fn serialize_tuple_struct(
@@ -479,9 +389,7 @@ impl<F,S> Serializer for FileSerializer<F,S>
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let serializer = serializer.serialize_tuple_struct(name, len).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(FileSerializer{fs, serializer})
+        todo!()
     }
 
     fn serialize_tuple_variant(
@@ -491,26 +399,19 @@ impl<F,S> Serializer for FileSerializer<F,S>
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let serializer = serializer.serialize_tuple_variant(name, variant_index, variant, len).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(FileSerializer{fs, serializer})
+        todo!()
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let serializer = serializer.serialize_map(len).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(FileSerializer{fs, serializer})
+        todo!()
     }
 
     fn serialize_struct(
         self,
         name: &'static str,
         len: usize,
-    ) -> Result<Self::SerializeStruct, Self::Error>
-    {
-        let Self { fs, serializer } = self;
-        let serializer = serializer.serialize_struct(name, len).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(FileSerializer{fs, serializer})
+    ) -> Result<Self::SerializeStruct, Self::Error> {
+        todo!()
     }
 
     fn serialize_struct_variant(
@@ -520,11 +421,10 @@ impl<F,S> Serializer for FileSerializer<F,S>
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let FileSerializer { fs, serializer } = self;
-        let serializer = serializer.serialize_struct_variant(name, variant_index, variant, len).map_err(|e| AssetError{ path: fs.path.clone(), kind: IoError::from_display(e), ..___() })?;
-        Ok(FileSerializer{fs, serializer})
+        todo!()
     }
 }
+
 
 #[derive(Serialize, Deserialize)]
 struct Person
@@ -533,61 +433,30 @@ struct Person
     name: String,
 }
 
-
-fn t()
+fn test_serialize<T>(val: &T) where T: Serialize
 {
-    // let my_struct = Person {
-    //     name: "Alice".into(),
-    //     age: 30,
-    // };
+    let mut fs = FsDisk;
+    let mut serializer = serde_json::Serializer::new(Vec::<u8>::new());
+    let f = FileSerializer::new(&mut fs, "./tmp/io_serde/test".to_owned(), &mut serializer);
 
-    // let mut s = String::new();
-    // // let mut ron = ron::ser::Serializer::new(&mut s, None).unwrap();
-    // // my_struct.serialize(&mut ron).unwrap();
-
-    // // //dbg!(r);
-    // // println!("{s}");
-
-    // s.clear();
-
-
-    // let mut ron = ron::ser::Serializer::new(&mut s, None).unwrap();
-    // let mut meta_ron = FileSerializer::with_path("./tmp/io_serde/test".to_owned(), FsDisk, &mut ron);
-
-    // true.serialize(meta_ron).unwrap();
-    // //my_struct.serialize(meta_ron).unwrap();
-    // println!("{s}");
-
-
-    // let mut buf = String::new();
-    // let mut ron_serializer = ron::ser::Serializer::new(&mut buf, None).unwrap();
-    // true.serialize(&mut ron_serializer).unwrap();
-    // println!("{buf}")
-
-    // let mut f = SerdeAssetSerializer::ron(FsDisk);
-    // let r = my_struct.serialize(&mut f);
-    // dbg!(&r);
+    val.serialize(&mut serializer).unwrap();
 }
-
-fn test_serialize(val: impl Serialize)
-{
-    let mut buf = String::new();
-    let mut ron_serializer = ron::ser::Serializer::new(&mut buf, None).unwrap();
-    let file_serializer = FileSerializer::with_path("./tmp/io_serde/test".to_owned(), FsDisk, &mut ron_serializer);
-    val.serialize(file_serializer).unwrap();
-}
-
 
 fn main()
 {
+
+    //let c : serde_json::ser::Compound<'static,String,serde_json::ser::CompactFormatter> = serde_json::ser::Compound::
     //test_serialize(true);
     //test_serialize("ok");
 
-    let my_struct = Person {
+    let alice = Person {
         name: "Alice".into(),
         age: 30,
     };
-    test_serialize(my_struct);
+
+    println!("{}", alice.to_ron().unwrap());
+    test_serialize(&alice);
+
 
     println!("hello world");
 }
