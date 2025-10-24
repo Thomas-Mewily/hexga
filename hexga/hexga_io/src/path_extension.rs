@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use super::*;
 
 pub type Path = String;
@@ -7,6 +9,9 @@ pub type path = str;
 pub type Extension = String;
 #[allow(non_camel_case_types)]
 pub type extension = str;
+
+
+// Todo: use std::path::Path instead
 
 pub trait PathExtension
 {
@@ -37,7 +42,7 @@ pub trait PathExtension
     /// assert_eq!("foo/archive.tar.gz".extension(), Some("gz"));
     /// assert_eq!("foo/bar".extension(), None);
     /// ```
-    fn extension(&self) -> Option<&extension>;
+    fn extension<'a>(&'a self) -> Option<&'a extension>;
 
     /// Returns true if the path has a file extension.
     ///
@@ -79,7 +84,7 @@ pub trait PathExtension
     /// assert_eq!("foo/bar.txt".with_extension(""), "foo/bar");
     /// assert_eq!("foo/bar".with_extension("md"), "foo/bar.md");
     /// ```
-    fn with_extension(&self, extension : &extension) -> Path;
+    fn with_extension(self, extension : &extension) -> Path;
 
 
     /// Returns the full file name (including all extensions) of the path.
@@ -142,7 +147,7 @@ pub trait PathExtension
     /// assert_eq!("foo/archive.tar.gz".with_file_name("new.gz"), "new.tar.gz"); // the name is "archive.tar"
     /// assert_eq!("file".with_file_name("newfile"), "newfile");
     /// ```
-    fn with_file_name(&self, name: &str) -> Path;
+    fn with_file_name(self, name: &str) -> Path;
 
 
 
@@ -183,7 +188,7 @@ pub trait PathExtension
     /// assert_eq!("".path_concat("file.txt"), "file.txt");
     /// assert_eq!("foo/bar".path_concat(""), "foo/bar/");
     /// ```
-    fn path_concat(&self, right: &path) -> Path;
+    fn path_concat(self, right: &path) -> Path;
 }
 
 
@@ -198,7 +203,7 @@ impl PathExtension for &str
         }
     }
 
-    fn with_extension(&self, extension : &extension) -> Path {
+    fn with_extension(self, extension : &extension) -> Path {
         let p = std::path::Path::new(self).with_extension(extension);
         p.into_os_string().into_string().unwrap_or(Path::new())
     }
@@ -215,7 +220,7 @@ impl PathExtension for &str
         self.replace('\\', "/").split('/').map(|v| v.to_owned()).collect()
     }
 
-    fn path_concat(&self, right: &path) -> Path {
+    fn path_concat(self, right: &path) -> Path {
         let mut left = self.replace('\\', "/");
         let mut right = right.replace('\\', "/");
 
@@ -251,7 +256,7 @@ impl PathExtension for &str
     }
 
 
-    fn with_file_name(&self, name: &str) -> Path {
+    fn with_file_name(self, name: &str) -> Path {
         let extension = self.extension_or_empty();
         let parent_name = self.path_parent();
         parent_name.path_concat(&name.with_extension(extension))
@@ -264,3 +269,4 @@ impl PathExtension for &str
             .unwrap_or("")
     }
 }
+

@@ -33,8 +33,13 @@ struct JsonFileSerializer<'a, F>
     F: FsWrite,
 {
     fs: &'a mut F,
-    path: String,
-    serializer : NonEmptyStack<JsonSerializer>,
+    stack : Vec<SerializeAt>,
+}
+
+pub struct SerializeAt
+{
+    serializer: JsonSerializer,
+    path: Path,
 }
 
 type JsonSerializer = serde_json::Serializer<Vec<u8>>;
@@ -45,30 +50,72 @@ impl<'a, F> JsonFileSerializer<'a,F>
 {
     pub fn new(fs: &'a mut F, path: String) -> Self
     {
-        Self { fs, path, serializer: NonEmptyStack::new(JsonSerializer::new(___())) }
+        Self { fs, stack: vec![SerializeAt{ serializer: JsonSerializer::new(___()), path }] }
+    }
+
+    pub(crate) fn new_and_serialize<T>(fs: &'a mut F, path: String, val: &T) -> Result<(), AssetError>
+        where T:Serialize
+    {
+        let mut s: JsonFileSerializer<'a, F> = Self::new(fs, path);
+        {
+            let s_mut = &mut s;
+            val.serialize(s_mut)?;
+        }
+        s.save()
+
+        // let mut s = Self::new(fs, path);
+        // {
+        //     let s_mut = &mut s;
+        //     val.serialize(s_mut)?;
+        // }
+        // s.save()
     }
 
     #[inline]
-    pub(crate) fn _serialize_primitive<'x,T>(&'x mut self, val: &T) -> Result<<&mut Self as Serializer>::Ok, <&mut Self as Serializer>::Error>
+    pub(crate) fn _serialize_primitive<T>(&mut self, val: &T) -> Result<(), AssetError>
         where
         T: Serialize,
-        'x: 'a
     {
-        val.serialize(self.serializer.last_mut()).map_err(|_| AssetError::___())
+        val.serialize(&mut self.stack.last_mut().unwrap().serializer).map_err(|_| AssetError::___())
+    }
+
+    pub(crate) fn new_serializer(&mut self, name: &path)
+    {
+        let path = self.stack.last_mut().unwrap().path.as_str().path_concat(name);
+        self.stack.push(SerializeAt { serializer: JsonSerializer::new(___()), path });
+    }
+
+    pub fn save(&mut self) -> Result<(), AssetError>
+    {
+        while let Some(SerializeAt { serializer, path }) = self.stack.pop()
+        {
+            let bytes = serializer.into_inner();
+            self.fs.write_bytes(&path, &bytes).map_err(|_| ___())?;
+        }
+        Ok(())
     }
 }
+
+// impl<'a, F> Drop for JsonFileSerializer<'a,F>
+//     where
+//     F: FsWrite
+// {
+//     fn drop(&mut self) {
+//         self.save().unwrap(); // FIXME: Should return a result
+//     }
+// }
+
+
 
 
 struct Compound<'a, F, C>
     where
     F: FsWrite,
 {
-    fs: &'a mut JsonFileSerializer<'a, F>,
+    fs: &'a mut F,
     compound : C,
-    path_add : Path,
 }
 
-// impl Drop for FileSerializer
 
 
 impl<'a, F, C> SerializeSeq for Compound<'a, F, C>
@@ -425,8 +472,10 @@ where
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error>
     {
-        let compound = self.serializer.last_mut().serialize_struct(name, len).map_err(|_| ___())?;
-        Ok(Compound{ fs: self, compound, path_add: name.to_owned() })
+        self.new_serializer(name);
+        let SerializeAt { serializer, path } = self.stack.last_mut().unwrap();
+        let compound = serializer.serialize_struct(name, len).map_err(|_| ___())?;
+        Ok(Compound { fs: self.fs, compound })
     }
 
     fn serialize_struct_variant(
@@ -451,10 +500,7 @@ struct Person
 fn test_serialize<T>(val: &T) where T: Serialize
 {
     let mut fs = FsDisk;
-    let mut serializer = serde_json::Serializer::new(Vec::<u8>::new());
-    let f = JsonFileSerializer::new(&mut fs, "./tmp/io_serde/test".to_owned());
-
-    val.serialize(&mut serializer).unwrap();
+    JsonFileSerializer::new_and_serialize(&mut fs, "./tmp/io_serde/test".to_owned(), val).unwrap();
 }
 
 fn test_it()
@@ -467,9 +513,10 @@ fn test_it()
         name: "Alice".into(),
         age: 30,
     };
+    //test_serialize(&alice);
+    test_serialize(&64);
 
-    println!("{}", alice.to_ron().unwrap());
-    test_serialize(&alice);
+    //println!("{}", alice.to_ron().unwrap());
 }
 
 fn main()
