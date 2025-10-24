@@ -33,6 +33,7 @@ struct JsonFileSerializer<'a, F>
     F: FsWrite,
 {
     fs: &'a mut F,
+    path: Path,
     stack : Vec<SerializeAt>,
 }
 
@@ -50,25 +51,16 @@ impl<'a, F> JsonFileSerializer<'a,F>
 {
     pub fn new(fs: &'a mut F, path: String) -> Self
     {
-        Self { fs, stack: vec![SerializeAt{ serializer: JsonSerializer::new(___()), path }] }
+        Self { fs, path, stack: Vec::new() }
     }
 
     pub(crate) fn new_and_serialize<T>(fs: &'a mut F, path: String, val: &T) -> Result<(), AssetError>
-        where T:Serialize
+    where
+        T: Serialize,
     {
-        let mut s: JsonFileSerializer<'a, F> = Self::new(fs, path);
-        {
-            let s_mut = &mut s;
-            val.serialize(s_mut)?;
-        }
+        let mut s = Self::new(fs, path);
+        val.serialize(&mut s)?;
         s.save()
-
-        // let mut s = Self::new(fs, path);
-        // {
-        //     let s_mut = &mut s;
-        //     val.serialize(s_mut)?;
-        // }
-        // s.save()
     }
 
     #[inline]
@@ -76,21 +68,22 @@ impl<'a, F> JsonFileSerializer<'a,F>
         where
         T: Serialize,
     {
+        self.new_serializer(self.path.clone());
         val.serialize(&mut self.stack.last_mut().unwrap().serializer).map_err(|_| AssetError::___())
     }
 
-    pub(crate) fn new_serializer(&mut self, name: &path)
+    pub(crate) fn new_serializer(&mut self, path: Path)
     {
-        let path = self.stack.last_mut().unwrap().path.as_str().path_concat(name);
         self.stack.push(SerializeAt { serializer: JsonSerializer::new(___()), path });
     }
 
     pub fn save(&mut self) -> Result<(), AssetError>
     {
+
         while let Some(SerializeAt { serializer, path }) = self.stack.pop()
         {
             let bytes = serializer.into_inner();
-            self.fs.write_bytes(&path, &bytes).map_err(|_| ___())?;
+            self.fs.write_bytes(&path, &bytes).map_err(|kind| AssetError { path, kind, ..___() })?;
         }
         Ok(())
     }
@@ -278,7 +271,8 @@ impl<'a, F, C> SerializeStruct for Compound<'a, F, C>
         }
     }
 
-    fn end(self) -> Result<Self::Ok, Self::Error> {
+    fn end(self) -> Result<Self::Ok, Self::Error>
+    {
         match self.compound.end()
         {
             Ok(v) => Ok(()),
@@ -318,7 +312,7 @@ impl<'a, F, C> SerializeStructVariant for Compound<'a, F, C>
 impl<'x, 'a, F> Serializer for &'x mut JsonFileSerializer<'a, F>
 where
     F: FsWrite,
-    'x: 'a
+    'a: 'x
 {
     type Ok=();
     type Error=AssetError;
@@ -472,7 +466,8 @@ where
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error>
     {
-        self.new_serializer(name);
+        let path = self.path.as_str().path_concat(name);
+        self.new_serializer(path);
         let SerializeAt { serializer, path } = self.stack.last_mut().unwrap();
         let compound = serializer.serialize_struct(name, len).map_err(|_| ___())?;
         Ok(Compound { fs: self.fs, compound })
@@ -513,8 +508,10 @@ fn test_it()
         name: "Alice".into(),
         age: 30,
     };
-    //test_serialize(&alice);
-    test_serialize(&64);
+
+
+    test_serialize(&alice);
+    //test_serialize(&line!());
 
     //println!("{}", alice.to_ron().unwrap());
 }
