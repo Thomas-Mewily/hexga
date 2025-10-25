@@ -37,11 +37,9 @@ pub trait FsRead
     fn is_directory(&mut self, path: &path) -> bool { self.node_kind(path).map(|e| e.is_directory()).unwrap_or(false) }
 
     /// Lists subpaths (files/folders) under a directory.
-    fn entries(&mut self, path: &path) -> Vec<String>
+    fn entries(&mut self, path: &path) -> Vec<Path>
     {
-        let mut s = self.entries_names(path);
-        s.iter_mut().for_each(|name| *name = path.path_concat(name));
-        s
+        self.entries_names(path).into_iter().map(|name| path / name).collect()
     }
 }
 
@@ -82,7 +80,7 @@ pub trait FsWrite : FsRead
     /// Keep the extension
     fn rename(&mut self, path: &path, name: &str) -> IoResult
     {
-        let new_path = path.with_file_name(name);
+        let new_path = path.with_name(name);
         self.move_to(path, &new_path)
     }
 }
@@ -140,7 +138,7 @@ impl<'a> FsRead for Fs<'a>
     fn node_kind(&mut self, path: &path) -> IoResult<FsNodeKind> {
         self.fs.node_kind(path)
     }
-    fn entries(&mut self, path: &path) -> Vec<String> {
+    fn entries(&mut self, path: &path) -> Vec<Path> {
         self.fs.entries(path)
     }
     fn exists(&mut self, path: &path) -> IoResult<bool> {

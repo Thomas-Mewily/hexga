@@ -10,7 +10,6 @@ impl FsWrite for FsDisk
     fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
         let std_path = StdPath::new(path);
 
-        todo!();
         // Ensure the parent directory exists
         if let Some(parent) = std_path.parent()
         {

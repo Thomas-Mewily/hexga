@@ -18,7 +18,7 @@ impl<'a> FsFile<'a>
 {
     pub const fn new(path: Option<Path>) -> Self { Self::with_data(path, Cow::Owned(Vec::new())) }
     pub const fn with_data(path: Option<Path>, data: Cow<'a, [u8]>) -> Self { Self { data, path }}
-    pub const fn lambda_with_data(data: Cow<'a, [u8]>) -> Self { Self::with_data(Some(Path::new()), data) }
+    pub const fn lambda_with_data(data: Cow<'a, [u8]>) -> Self { Self::with_data(Some(Path::empty()), data) }
 
     fn path_match(&self, path: &path) -> IoResult
     {
@@ -78,7 +78,7 @@ impl<'a> FsRead for FsFile<'a>
     {
         if self.path_match(path).is_ok()
         {
-            vec![self.path.as_ref().unwrap().to_owned()]
+            vec![self.path.as_ref().unwrap().to_owned().into()]
         }else
         {
             Vec::new()

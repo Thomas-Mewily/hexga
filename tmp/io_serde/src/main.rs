@@ -49,12 +49,12 @@ impl<'a, F> JsonFileSerializer<'a,F>
     where
     F: FsWrite,
 {
-    pub fn new(fs: &'a mut F, path: String) -> Self
+    pub fn new(fs: &'a mut F, path: Path) -> Self
     {
         Self { fs, path, stack: Vec::new() }
     }
 
-    pub(crate) fn new_and_serialize<T>(fs: &'a mut F, path: String, val: &T) -> Result<(), AssetError>
+    pub(crate) fn new_and_serialize<T>(fs: &'a mut F, path: Path, val: &T) -> Result<(), AssetError>
     where
         T: Serialize,
     {
@@ -466,7 +466,7 @@ where
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error>
     {
-        let path = self.path.as_str().path_concat(name);
+        let path = &self.path / name;
         self.new_serializer(path);
         let SerializeAt { serializer, path } = self.stack.last_mut().unwrap();
         let compound = serializer.serialize_struct(name, len).map_err(|_| ___())?;
@@ -495,7 +495,7 @@ struct Person
 fn test_serialize<T>(val: &T) where T: Serialize
 {
     let mut fs = FsDisk;
-    JsonFileSerializer::new_and_serialize(&mut fs, "./tmp/io_serde/test".to_owned(), val).unwrap();
+    JsonFileSerializer::new_and_serialize(&mut fs, "./tmp/io_serde/test".into(), val).unwrap();
 }
 
 fn test_it()
