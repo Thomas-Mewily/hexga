@@ -58,7 +58,7 @@ impl<S> FsReadExtension for S where S : FsRead {}
 
 pub trait FsWrite : FsRead
 {
-    /// Override the file content if already exist.
+    /// Override/delete the file content if already exist.
     /// If the file don't exist, create it.
     fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult;
 

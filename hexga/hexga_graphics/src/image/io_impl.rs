@@ -20,8 +20,8 @@ impl<C,Idx> Load for ImageBaseOf<C,Idx>
         ].iter().copied()
     }
 
-    fn load_from_with_custom_extension<Fs>(path: &path, extension: &extension, fs: &mut Fs) -> IoResult<Self> where Fs: FsRead {
-        let data = fs.read_bytes(path)?;
+    fn load_from_with_custom_extension<Fs,P>(path: P, extension: &extension, fs: &mut Fs) -> IoResult<Self> where Fs: FsRead, P: AsRefPath {
+        let data = fs.read_bytes(path.as_ref())?;
 
         use ::image::{DynamicImage, GenericImageView, ImageFormat};
 
@@ -169,7 +169,7 @@ impl<C,Idx> Save for ImageBaseOf<C,Idx>
         ].iter().copied()
     }
 
-    fn save_to_with_custom_extension<Fs>(&self, path: &path, extension: &extension, fs: &mut Fs) -> IoResult where Fs: FsWrite
+    fn save_to_with_custom_extension<Fs,P>(&self, path: P, extension: &extension, fs: &mut Fs) -> IoResult where Fs: FsWrite,P: AsRefPath
     {
         const DEFAULT_WRITER_CAPACITY : usize = 8182;
         match extension

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use super::*;
 
 type StdPath = std::path::Path;
@@ -10,11 +12,30 @@ impl FsWrite for FsDisk
     fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
         let std_path = StdPath::new(path);
 
-        // Ensure the parent directory exists
         if let Some(parent) = std_path.parent()
         {
-            std::fs::create_dir_all(parent).map_err(|e| IoError::from(e))?;
+            let mut current = PathBuf::new();
+
+            for component in parent.components() {
+                current.push(component);
+
+                if current.exists() && current.is_file() {
+                    // Remove a file to make way for a directory
+                    std::fs::remove_file(&current)?;
+                }
+
+                // Create directory if missing
+                if !current.exists() {
+                    std::fs::create_dir(&current)?;
+                }
+            }
         }
+
+        if std_path.exists() && std_path.is_dir()
+        {
+            std::fs::remove_dir_all(std_path)?;
+        }
+
         std::fs::write(std_path, bytes).map_err(Into::into)
     }
 
@@ -72,7 +93,7 @@ impl FsRead for FsDisk
 
 pub trait SaveToDisk : Save
 {
-    fn save_to_disk(&self, path : &path) -> IoResult
+    fn save_to_disk<P>(&self, path: P) -> IoResult where P: AsRefPath
     {
         let mut disk = FsDisk;
         self.save_to(path, &mut disk)
@@ -83,7 +104,7 @@ impl<T> SaveToDisk for T where T: Save + ?Sized {}
 
 pub trait LoadFromDisk : Load
 {
-    fn load_from_disk(path: &path) -> IoResult<Self>
+    fn load_from_disk<P>(path: P) -> IoResult<Self> where P: AsRefPath
     {
         Self::load_from(path, &mut FsDisk)
     }

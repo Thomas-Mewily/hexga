@@ -235,6 +235,19 @@ pub struct path
 {
     path: str
 }
+impl std::fmt::Debug for path
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", &self.path)
+    }
+}
+impl std::fmt::Display for path
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", &self.path)
+    }
+}
+
 impl<'a> PartialEq<&'a path> for path
 {
     #[inline(always)]
@@ -693,6 +706,24 @@ impl AsRef<str> for path
         &self.path
     }
 }
+impl AsRef<path> for path
+{
+    fn as_ref(&self) -> &path {
+        self
+    }
+}
+impl AsRef<path> for str
+{
+    fn as_ref(&self) -> &path {
+        self.path()
+    }
+}
+impl AsRef<path> for String
+{
+    fn as_ref(&self) -> &path {
+        self.path()
+    }
+}
 impl AsMut<str> for path
 {
     fn as_mut(&mut self) -> &mut str {
@@ -779,3 +810,6 @@ impl<'a> ToPathSlice for &'a mut str
         self.into()
     }
 }
+
+pub trait AsRefPath : AsRef<path> {}
+impl<T> AsRefPath for T where T: AsRef<path> {}

@@ -9,7 +9,7 @@ pub trait Save: Serialize
     /// Don't include the markup language extension like `json` or `ron`
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
 
-    fn save_to_with_custom_extension<Fs>(&self, path: &path, extension: &extension, fs: &mut Fs) -> IoResult where Fs: FsWrite { Err(IoError::Unimplemented) }
+    fn save_to_with_custom_extension<Fs,P>(&self, path: P, extension: &extension, fs: &mut Fs) -> IoResult where Fs: FsWrite, P: AsRefPath { Err(IoError::Unimplemented) }
 
     /// When saving, if the extension is missing
     fn save_default_extension() -> Option<&'static str> { Self::save_custom_extensions().next() }
@@ -21,14 +21,15 @@ pub trait SaveExtension
     /// Also include the markup language extension like `json` or `ron`
     fn save_extensions() -> impl Iterator<Item = &'static extension>;
 
-    fn save_to<Fs>(&self, path: &path, fs: &mut Fs) -> IoResult where Fs: FsWrite;
+    fn save_to<Fs, P>(&self, path: P, fs: &mut Fs) -> IoResult where Fs: FsWrite, P: AsRefPath;
 }
 impl<S: ?Sized> SaveExtension for S where S: Save
 {
     fn save_extensions() -> impl Iterator<Item = &'static extension> { Self::save_custom_extensions().chain(Extensions::MARKUP.iter().copied()) }
 
-    fn save_to<Fs>(&self, path: &path, fs: &mut Fs) -> IoResult where Fs: FsWrite
+    fn save_to<Fs, P>(&self, path: P, fs: &mut Fs) -> IoResult where Fs: FsWrite, P: AsRefPath
     {
+        let path = path.as_ref();
         let original_extension = path.extension_or_empty();
         let mut extension = original_extension;
 
@@ -75,7 +76,7 @@ impl<T> Save for T where T: SaveInto + Serialize
     fn save_default_extension() -> Option<&'static str> {
         T::Base::save_default_extension()
     }
-    fn save_to_with_custom_extension<Fs>(&self, path: &path, extension: &extension, fs: &mut Fs) -> IoResult where Fs: FsWrite
+    fn save_to_with_custom_extension<Fs,P>(&self, path: P, extension: &extension, fs: &mut Fs) -> IoResult where Fs: FsWrite, P: AsRefPath
     {
         if let Some(v) = self.save_base_ref()
         {
