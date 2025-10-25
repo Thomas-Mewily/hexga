@@ -138,7 +138,7 @@ impl Path
         self.inner.clear();
     }
 
-    pub fn join(&mut self, right: &path)
+    pub fn push(&mut self, right: &path)
     {
         if right.is_empty() { return; }
         if self.is_empty()
@@ -173,14 +173,14 @@ impl<T> Div<T> for Path where T: AsRef<str>
 {
     type Output=Path;
     fn div(mut self, rhs: T) -> Self::Output {
-        self.join(&Path::new(rhs.as_ref().to_owned()));
+        self.push(&Path::new(rhs.as_ref().to_owned()));
         self
     }
 }
 impl<T> DivAssign<T> for Path where T: AsRef<str>
 {
     fn div_assign(&mut self, rhs: T) {
-        self.join(&Path::new(rhs.as_ref().to_owned()));
+        self.push(&Path::new(rhs.as_ref().to_owned()));
     }
 }
 impl<'a,T> Div<T> for &'a path where T: AsRef<str>
@@ -575,9 +575,7 @@ impl path
         }
     }
 
-
-
-    pub fn join(&self, right: &Self) -> Path
+    pub fn push(&self, right: &Self) -> Path
     {
         self.to_owned() / right
     }
