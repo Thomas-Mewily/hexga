@@ -231,7 +231,7 @@ impl Serializer for IdentifierSerializer
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        Err(IdentifierSerializerError)
+        Ok(v.to_string())
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {

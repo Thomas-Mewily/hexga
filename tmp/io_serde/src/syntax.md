@@ -19,14 +19,14 @@ identifier : (['a'-'z']|['A'-'Z']|'_'|' ')*;
 
 
 
-## SerializeSeq, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant, SerializeStructVariant, and Serializer for primitive (int, uint, char, bool...)
+## SerializeSeq, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant, SerializeStructVariant, and Serializer for primitive (iX, uX, fX, char, bool...)
 
 Serialize them in the markup language.
 There is no multi file support.
 
 ## SerializeMap and SerializeStruct
 
-Structure field and map entry (where the map Key is a String) can be saved into multiple file, or in a regular markup language, or even both.
+Structure field and map entry (where the map Key is a `String` or a `char`) can be saved into multiple file, or in a regular markup language, or even both.
 
 They will be refered as (key, value):
 - SerializeStruct => (field_name, field_value)
