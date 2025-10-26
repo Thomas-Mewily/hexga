@@ -40,11 +40,24 @@ struct Person
 fn test_serialize<T>(val: &T) where T: Serialize
 {
     let mut fs = FsDisk;
-    match JsonFileSerializer::new_and_serialize(&mut fs, "./tmp/io_serde/test".into(), val, Default::default())
+    match JsonFileSerializer::serialize_and_save(&mut fs, "./tmp/io_serde/test".into(), val, MultiFileSerializerParam { mf_map: false, mf_struct: true })
     {
         Ok(_) => {}
         Err(e) => eprintln!("{}", e),
     }
+}
+
+#[derive(Serialize, Deserialize)]
+struct Foo
+{
+    bar: Bar,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Bar
+{
+    x: i32,
+    _mod: i32,
 }
 
 fn test_it()
@@ -65,7 +78,10 @@ fn test_it()
     map.insert("three", 3);
     map.insert("? invalid file name", 4);
     map.insert("? invalid 2", 5);
-    test_serialize(&map);
+    //test_serialize(&map);
+
+    test_serialize(&Foo{ bar: Bar { x: 42, _mod: 99 } });
+
 
     //test_serialize(&alice);
     //test_serialize(&vec![1,2,3]);

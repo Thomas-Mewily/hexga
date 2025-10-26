@@ -133,6 +133,12 @@ impl Path
         }
     }
 
+    pub fn set_extension(&mut self, extension: &extension) -> &mut Self
+    {
+        *self = self.with_extension(extension);
+        self
+    }
+
     pub fn clear(&mut self)
     {
         self.inner.clear();
