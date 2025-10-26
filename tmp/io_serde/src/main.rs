@@ -40,7 +40,11 @@ struct Person
 fn test_serialize<T>(val: &T) where T: Serialize
 {
     let mut fs = FsDisk;
-    JsonFileSerializer::new_and_serialize(&mut fs, "./tmp/io_serde/test".into(), val).unwrap();
+    match JsonFileSerializer::new_and_serialize(&mut fs, "./tmp/io_serde/test".into(), val)
+    {
+        Ok(_) => {}
+        Err(e) => eprintln!("{}", e),
+    }
 }
 
 fn test_it()
@@ -58,9 +62,7 @@ fn test_it()
     map.insert("one", 1);
     map.insert("two", 2);
     map.insert("three", 3);
-    JsonFileSerializer::new_and_serialize(&mut FsDisk, "./tmp/io_serde/test".into(), &map).unwrap();
-
-
+    map.insert("? invalid file name", 4);
     test_serialize(&map);
 
     //test_serialize(&alice);
