@@ -1,5 +1,14 @@
 use super::*;
 
+
+/// Can't contains any reserved Keyword
+pub(crate) enum Key
+{
+    String(String),
+    Char(char),
+}
+
+
 pub(crate) struct IdentifierSerializer;
 pub struct IdentifierSerializerError;
 
@@ -28,7 +37,7 @@ impl serde::ser::Error for IdentifierSerializerError
 
 impl SerializeSeq for IdentifierSerializer
 {
-    type Ok=String;
+    type Ok=Key;
     type Error=IdentifierSerializerError;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
@@ -44,7 +53,7 @@ impl SerializeSeq for IdentifierSerializer
 
 impl SerializeTuple for IdentifierSerializer
 {
-    type Ok=String;
+    type Ok=Key;
     type Error=IdentifierSerializerError;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
@@ -60,7 +69,7 @@ impl SerializeTuple for IdentifierSerializer
 
 impl SerializeTupleStruct for IdentifierSerializer
 {
-    type Ok=String;
+    type Ok=Key;
     type Error=IdentifierSerializerError;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
@@ -76,7 +85,7 @@ impl SerializeTupleStruct for IdentifierSerializer
 
 impl SerializeTupleVariant for IdentifierSerializer
 {
-    type Ok=String;
+    type Ok=Key;
     type Error=IdentifierSerializerError;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
@@ -92,7 +101,7 @@ impl SerializeTupleVariant for IdentifierSerializer
 
 impl SerializeMap for IdentifierSerializer
 {
-    type Ok=String;
+    type Ok=Key;
     type Error=IdentifierSerializerError;
 
     fn serialize_key<T>(&mut self, key: &T) -> Result<(), Self::Error>
@@ -114,7 +123,7 @@ impl SerializeMap for IdentifierSerializer
 
 impl SerializeStruct for IdentifierSerializer
 {
-    type Ok=String;
+    type Ok=Key;
     type Error=IdentifierSerializerError;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
@@ -130,7 +139,7 @@ impl SerializeStruct for IdentifierSerializer
 
 impl SerializeStructVariant for IdentifierSerializer
 {
-    type Ok=String;
+    type Ok=Key;
     type Error=IdentifierSerializerError;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
@@ -144,9 +153,11 @@ impl SerializeStructVariant for IdentifierSerializer
     }
 }
 
+
+
 impl Serializer for IdentifierSerializer
 {
-    type Ok=String;
+    type Ok=Key;
     type Error=IdentifierSerializerError;
 
     type SerializeSeq=IdentifierSerializer;
@@ -202,11 +213,18 @@ impl Serializer for IdentifierSerializer
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        Ok(v.to_string())
+        Ok(Key::Char(v))
     }
 
-    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        Ok(v.to_owned())
+    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error>
+    {
+        if v == keyword::MOD
+        {
+            Err(IdentifierSerializerError)
+        }else
+        {
+            Ok(Key::String(v.to_owned()))
+        }
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {

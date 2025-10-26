@@ -1,10 +1,21 @@
 use super::*;
 
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MultiFileSerializerParam
 {
-    pub develop_map: bool,
-    pub develop_structure: bool,
+    /// Will map be expended into multiple file
+    pub mf_map: bool,
+    /// Will struct be expended into multiple file
+    pub mf_struct: bool,
+}
+
+impl Default for MultiFileSerializerParam
+{
+    fn default() -> Self
+    {
+        Self { mf_map: true, mf_struct: false }
+    }
 }
 
 pub struct JsonFileSerializer<'a, F>
@@ -15,6 +26,7 @@ pub struct JsonFileSerializer<'a, F>
     should_save: bool,
     path: Path,
     serializer: JsonSerializer,
+    param: MultiFileSerializerParam,
     //stack : Vec<SerializeAt>,
 }
 
@@ -30,16 +42,18 @@ impl<'a, F> JsonFileSerializer<'a,F>
     where
     F: FsWrite,
 {
-    pub fn new(fs: &'a mut F, path: Path) -> Self
+    pub fn new(fs: &'a mut F, path: Path, param: MultiFileSerializerParam) -> Self
     {
-        Self { fs, path, serializer: Self::new_serializer(), should_save: true }
+        // TODO: delete it
+        //fs.delete(path)
+        Self { fs, path, serializer: Self::new_serializer(), should_save: true, param }
     }
 
-    pub fn new_and_serialize<T>(fs: &'a mut F, path: Path, val: &T) -> Result<(), AssetError>
+    pub fn new_and_serialize<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> Result<(), AssetError>
     where
         T: Serialize,
     {
-        let mut s = Self::new(fs, path);
+        let mut s = Self::new(fs, path, param);
         val.serialize(&mut s)?;
         s.save()
     }
@@ -51,16 +65,26 @@ impl<'a, F> JsonFileSerializer<'a,F>
         JsonSerializer::new(___())
     }
 
-    fn save(&mut self) -> Result<(), AssetError>
+    fn save(mut self) -> Result<(), AssetError>
     {
         if !self.should_save { return Ok(()); }
 
         let mut serializer = Self::new_serializer();
         std::mem::swap(&mut serializer, &mut self.serializer);
         let bytes = serializer.into_inner();
+
+
+        if self.fs.is_directory(&self.path)
+        {
+            self.path /= MOD;
+            // TODO: optimize
+            self.path = self.path.with_extension("json");
+        }
         self.fs.write_bytes(&self.path, &bytes).map_err(|kind| AssetError { path: self.path.to_owned(), kind, ..___() })
     }
+
 }
+
 
 // impl<'a, F> Drop for JsonFileSerializer<'a,F>
 //     where
@@ -80,9 +104,10 @@ pub struct Compound<'a, F, C>
 {
     fs: &'a mut F,
     path: &'a Path,
+    param: &'a MultiFileSerializerParam,
     parent_should_save: &'a mut bool,
     compound : C,
-    name: Option<String>,
+    key: Option<Key>,
 }
 
 
@@ -101,16 +126,16 @@ impl<'a, F, C> SerializeSeq for Compound<'a, F, C>
     {
         match self.compound.serialize_element(value)
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self.compound.end()
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 }
@@ -129,16 +154,16 @@ impl<'a, F, C> SerializeTuple for Compound<'a, F, C>
     {
         match self.compound.serialize_element(value)
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self.compound.end()
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 }
@@ -157,16 +182,16 @@ impl<'a, F, C> SerializeTupleStruct for Compound<'a, F, C>
     {
         match self.compound.serialize_field(value)
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self.compound.end()
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 }
@@ -185,16 +210,16 @@ impl<'a, F, C> SerializeTupleVariant for Compound<'a, F, C>
     {
         match self.compound.serialize_field(value)
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self.compound.end()
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 }
@@ -213,21 +238,45 @@ impl<'a, F, C> SerializeMap for Compound<'a, F, C>
     {
         match key.serialize(IdentifierSerializer)
         {
-            Ok(identifier) => { self.name = Some(identifier); Ok(()) },
-            Err(v) => self.compound.serialize_key(key).map_err(|_| ___()),
+            Ok(k) if self.param.mf_map => { self.key = Some(k); Ok(()) }
+            _ => self.compound.serialize_key(key).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: ?Sized + Serialize {
-        match self.name.take()
+        T: ?Sized + Serialize
+    {
+        match self.key.take()
         {
-            Some(identifier) => JsonFileSerializer::new_and_serialize(self.fs, (self.path / identifier).with_extension("json"), &value),
+            Some(key) =>
+            {
+                let mut path = self.path.clone();
+                match &key
+                {
+                    Key::String(v) => path /= v,
+                    Key::Char(v) => path /= v.to_string(), // TODO: opti
+                }
+
+                match JsonFileSerializer::new_and_serialize(self.fs, path.with_extension("json"), &value, self.param.clone())
+                {
+                    Ok(o) => return Ok(o),
+                    Err(e) =>
+                    {
+                        *self.parent_should_save = true;
+                        match key
+                        {
+                            Key::String(s) => self.compound.serialize_key(&s).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string())))?,
+                            Key::Char(c) => self.compound.serialize_key(&c).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string())))?,
+                        }
+                        self.compound.serialize_value(value).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string())))
+                    },
+                }
+            },
             None =>
             {
                 *self.parent_should_save = true;
-                self.compound.serialize_value(value).map_err(|_| ___())
+                self.compound.serialize_value(value).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string())))
             }
         }
     }
@@ -235,8 +284,8 @@ impl<'a, F, C> SerializeMap for Compound<'a, F, C>
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self.compound.end()
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 }
@@ -255,8 +304,8 @@ impl<'a, F, C> SerializeStruct for Compound<'a, F, C>
     {
         match self.compound.serialize_field(key, value)
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 
@@ -264,8 +313,8 @@ impl<'a, F, C> SerializeStruct for Compound<'a, F, C>
     {
         match self.compound.end()
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 }
@@ -284,16 +333,16 @@ impl<'a, F, C> SerializeStructVariant for Compound<'a, F, C>
     {
         match self.compound.serialize_field(key, value)
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self.compound.end()
         {
-            Ok(v) => Ok(()),
-            Err(e) => Err(___()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
         }
     }
 }
@@ -421,12 +470,12 @@ where
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         let compound = self.serializer.serialize_seq(len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
-        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, compound, name: None })
+        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
         let compound = self.serializer.serialize_tuple(len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
-        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, compound, name: None })
+        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
     fn serialize_tuple_struct(
@@ -435,7 +484,7 @@ where
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
         let compound = self.serializer.serialize_tuple_struct(name, len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
-        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, compound, name: None })
+        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
     fn serialize_tuple_variant(
@@ -446,13 +495,13 @@ where
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
         let compound = self.serializer.serialize_tuple_variant(name, variant_index, variant, len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
-        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, compound, name: None })
+        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         let compound = self.serializer.serialize_map(len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
         self.should_save = false;
-        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, compound, name: None })
+        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
     fn serialize_struct(
@@ -462,7 +511,7 @@ where
     ) -> Result<Self::SerializeStruct, Self::Error>
     {
         let compound = self.serializer.serialize_struct(name, len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
-        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, compound, name: None })
+        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
     fn serialize_struct_variant(
@@ -473,6 +522,6 @@ where
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         let compound = self.serializer.serialize_struct_variant(name, variant_index, variant, len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
-        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, compound, name: None })
+        Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 }

@@ -11,7 +11,7 @@ The extension should be added at the end of the regular extension:
 # Keyword
 
 
-module: `mod`;
+module: `_mod`;
 identifier : (['a'-'z']|['A'-'Z']|'_'|' ')*;
 
 `data`, `credit`, `readme`
@@ -55,7 +55,7 @@ File Represenation:
 
 ```
 - myMap
-  |- mod.json      // {"thee": 3}
+  |- _mod.json     // {"thee": 3}
   |- one.json      // 1
   |- two.json      // 2
 ```

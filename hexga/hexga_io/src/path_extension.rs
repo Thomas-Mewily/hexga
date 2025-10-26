@@ -155,6 +155,7 @@ impl Path
     }
 }
 
+
 impl<'a,T> Div<T> for &'a mut Path where T: AsRef<str>
 {
     type Output=Path;
@@ -183,6 +184,8 @@ impl<T> DivAssign<T> for Path where T: AsRef<str>
         self.push(&Path::new(rhs.as_ref().to_owned()));
     }
 }
+
+
 impl<'a,T> Div<T> for &'a path where T: AsRef<str>
 {
     type Output=Path;
