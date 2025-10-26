@@ -1,7 +1,7 @@
 use super::*;
 
-struct IdentifierSerializer;
-struct IdentifierSerializerError;
+pub(crate) struct IdentifierSerializer;
+pub struct IdentifierSerializerError;
 
 impl std::fmt::Debug for IdentifierSerializerError
 {

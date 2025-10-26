@@ -4,7 +4,9 @@
 #![allow(unused_mut)]
 
 mod multi_file;
-pub use multi_file::ser::*;
+use std::collections::HashMap;
+
+pub use multi_file::ser2::*;
 
 use hexga::io::fs::FsDisk;
 
@@ -56,6 +58,9 @@ fn test_it()
     map.insert("one", 1);
     map.insert("two", 2);
     map.insert("three", 3);
+    JsonFileSerializer::new_and_serialize(&mut FsDisk, "./tmp/io_serde/test".into(), &map).unwrap();
+
+
     test_serialize(&map);
 
     //test_serialize(&alice);

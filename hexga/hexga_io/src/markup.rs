@@ -44,11 +44,10 @@ impl<T> FromJson for T where T: for<'de> Deserialize<'de> {}
 
 
 
-/*
 #[cfg(feature = "serde_xml")]
 pub trait ToXml : Serialize
 {
-    fn to_xml(&self) -> IoResult<String> { quick_xml::se::to_string(&self).map_err(|e| IoError::markup_serializer::<Self>(Extensions::XML, format!("{:?}", e))) }
+    fn to_xml(&self) -> IoResult<String> { serde_xml_rs::ser::to_string(&self).map_err(|e| IoError::markup_serializer::<Self>(Extensions::XML, format!("{:?}", e))) }
 }
 #[cfg(feature = "serde_xml")]
 impl<T> ToXml for T where T: Serialize {}
@@ -57,12 +56,11 @@ impl<T> ToXml for T where T: Serialize {}
 pub trait FromXml : for<'de> Deserialize<'de>
 {
     fn from_xml_buf(buf : &[u8]) -> IoResult<Self> { Self::from_xml_with_reader(BufReader::new(buf))  }
-    fn from_xml_with_reader<R : BufRead>(reader : R) -> IoResult<Self> { quick_xml::de::from_reader(reader).map_err(|e| IoError::markup_deserializer::<Self>(Extensions::XML, format!("{:?}", e))) }
-    fn from_xml    (xml : &str) -> IoResult<Self> { quick_xml::de::from_str(xml).map_err(|e| IoError::markup_deserializer::<Self>(Extensions::XML, format!("{:?}", e))) }
+    fn from_xml_with_reader<R : BufRead>(reader : R) -> IoResult<Self> { serde_xml_rs::de::from_reader(reader).map_err(|e| IoError::markup_deserializer::<Self>(Extensions::XML, format!("{:?}", e))) }
+    fn from_xml    (xml : &str) -> IoResult<Self> { serde_xml_rs::de::from_str(xml).map_err(|e| IoError::markup_deserializer::<Self>(Extensions::XML, format!("{:?}", e))) }
 }
 #[cfg(feature = "serde_xml")]
 impl<T> FromXml for T where T: for<'de> Deserialize<'de> {}
-*/
 
 
 

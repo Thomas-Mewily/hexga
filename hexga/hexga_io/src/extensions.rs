@@ -12,8 +12,8 @@ impl Extensions
         Self::RON,
         #[cfg(feature = "serde_json")]
         Self::JSON,
-        //#[cfg(feature = "serde_xml")]
-        //Self::XML,
+        #[cfg(feature = "serde_xml")]
+        Self::XML,
 
         /* Not one of them
         #[cfg(feature = "serde_quick_bin")]
@@ -25,8 +25,8 @@ impl Extensions
     pub const JSON : &'static str = "json";
     #[cfg(feature = "serde_ron")]
     pub const RON  : &'static str = "ron";
-    // #[cfg(feature = "serde_xml")]
-    // pub const XML  : &'static str = "xml";
+    #[cfg(feature = "serde_xml")]
+    pub const XML  : &'static str = "xml";
 
 
     #[cfg(feature = "serde_quick_bin")]

@@ -10,6 +10,11 @@ pub struct AssetError
     pub childs: Vec<AssetError>
 }
 
+impl AssetError
+{
+    pub fn new<P>(path: P, kind: IoError) -> Self where P: AsRefPath { Self { path: path.as_ref().to_owned(), kind, childs: vec![] }}
+}
+
 
 // TODO: impl it
 impl Display for AssetError

@@ -51,6 +51,9 @@ impl<S: ?Sized> SaveExtension for S where S: Save
             #[cfg(feature = "serde_json")]
             Extensions::JSON => return fs.write_str(path, &self.to_json()?),
 
+            #[cfg(feature = "serde_xml")]
+            Extensions::XML => return fs.write_str(path, &self.to_xml()?),
+
             #[cfg(feature = "serde_quick_bin")]
             Extensions::QUICK_BIN => return fs.write_bytes(path, &self.to_quick_bin()?),
 

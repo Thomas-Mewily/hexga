@@ -66,6 +66,9 @@ pub trait LoadExtension: Load
             #[cfg(feature = "serde_json")]
             Extensions::JSON => return Self::from_json(&fs.read_str(path)?),
 
+            #[cfg(feature = "serde_xml")]
+            Extensions::XML => return Self::from_xml(&fs.read_str(path)?),
+
             #[cfg(feature = "serde_quick_bin")]
             Extensions::QUICK_BIN => return Self::from_quick_bin_buf(&fs.read_bytes(path)?),
 

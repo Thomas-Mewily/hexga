@@ -10,9 +10,11 @@ The extension should be added at the end of the regular extension:
 
 # Keyword
 
+
 module: `mod`;
 identifier : (['a'-'z']|['A'-'Z']|'_'|' ')*;
 
+`data`, `credit`, `readme`
 
 # What would be multi file
 

@@ -23,7 +23,7 @@ derive = ["dep:hexga_io_derive"]
 
 serde_ron   = ["dep:ron"]
 serde_json  = ["dep:serde_json"]
-serde_xml   = ["dep:quick-xml"]
+serde_xml   = ["dep:serde-xml-rs"]
 serde_quick_bin  = ["dep:bincode"]
 
 [dependencies]
@@ -34,7 +34,6 @@ hexga_core.workspace = true
 # markup language :
 ron = { version = "0.10.1", optional = true }
 serde_json = { version = "1.0.133", optional = true }
+serde-xml-rs = { version = "0.8.1", optional = true }
 
-# todo: change it, quick-xml lack a lot of feature (enum serilization) and panic instead of returning an Error...
-quick-xml = { version = "0.37.1", features = ["serialize"], optional = true }
 bincode = { version = "1.3.3", optional = true }
