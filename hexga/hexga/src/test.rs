@@ -3,23 +3,40 @@ use crate::prelude::*;
 
 fn test_serialize_deserialize_quick_bin<T>(value: &T) where T: Load + Save + PartialEq + Debug
 {
-    //println!("   value: {value:?}");
-    let format = value.to_quick_bin().unwrap();
-    //println!("   ron: {}", value.to_ron().unwrap());
-    //println!("   bin: {format:?}");
-    //println!();
+    // quick bin
+    {
+        //println!("   value: {value:?}");
+        let format = value.to_quick_bin().unwrap();
+        //println!("   ron: {}", value.to_ron().unwrap());
+        //println!("   bin: {format:?}");
+        //println!();
 
-    // Not a self describing format
-    let from_format = T::from_quick_bin_buf(&format).unwrap();
-    //println!("=>  ron: {}", from_format.to_ron().unwrap());
-    //println!("=>  bin: {:?}", from_format.to_quick_bin());
-    //println!("ron2value: {from_format:?}");
-    assert_eq!(*value, from_format);
-    //println!();
-    //println!();
-    //println!();
-    //println!();
-    //println!();
+        // Not a self describing format
+        let from_format = T::from_quick_bin_buf(&format).unwrap();
+        //println!("=>  ron: {}", from_format.to_ron().unwrap());
+        //println!("=>  bin: {:?}", from_format.to_quick_bin());
+        //println!("ron2value: {from_format:?}");
+        assert_eq!(*value, from_format);
+        //println!();
+        //println!();
+        //println!();
+        //println!();
+        //println!();
+    }
+
+    // ron
+    {
+        let format = value.to_ron().unwrap();
+        let from_format = T::from_ron(&format).unwrap();
+        assert_eq!(*value, from_format);
+    }
+
+    // json
+    {
+        let format = value.to_json().unwrap();
+        let from_format = T::from_json(&format).unwrap();
+        assert_eq!(*value, from_format);
+    }
 }
 
 fn test_serialize_deserialize_ron<T>(value: &T) where T: Load + Save + PartialEq + Debug
