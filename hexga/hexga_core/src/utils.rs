@@ -1,6 +1,10 @@
 //! Stuff inside this module need to move somewhere else...
 use crate::prelude::*;
 
+
+// Waiting for the never type `!` to be stabilized
+pub enum Never{}
+
 pub trait Toggleable
 {
     fn toggle(&mut self);
