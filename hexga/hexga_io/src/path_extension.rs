@@ -133,10 +133,46 @@ impl Path
         }
     }
 
+    /// Replace the current extension by the given `extension`.
+    ///
+    /// This method replaces the file extension of the path with the provided one.
+    /// If the path has no extension, the new one is simply appended.
+    ///
+    /// A leading dot (`.`) in the provided extension is ignored automatically.
+    ///
+    /// To remove the extension entirely, you can pass an empty string (`""`),
+    /// but the the method [`Self::remove_extension`] is more appropriate.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use hexga_io::Path;
+    ///
+    /// assert_eq!(Path::new("foo/bar.txt").set_extension("md").as_str(), "foo/bar.md");
+    ///
+    /// // Leading dot is optional
+    /// assert_eq!(Path::new("foo/bar.txt").set_extension(".md").as_str(), "foo/bar.md");
+    ///
+    /// // Remove the extension entirely
+    /// assert_eq!(Path::new("foo/bar.txt").set_extension("").as_str(), "foo/bar");
+    ///
+    /// // Add a new extension if none existed
+    /// assert_eq!(Path::new("foo/bar").set_extension("md").as_str(), "foo/bar.md");
+    ///
+    /// // Handle compound extensions
+    /// assert_eq!(Path::new("foo/archive").set_extension("tar.gz").as_str(), "foo/archive.tar.gz");
+    /// assert_eq!(Path::new("foo/archive").set_extension(".tar.gz").as_str(), "foo/archive.tar.gz");
+    /// ```
     pub fn set_extension(&mut self, extension: &extension) -> &mut Self
     {
+        // Todo: opti it
         *self = self.with_extension(extension);
         self
+    }
+
+    pub fn remove_extension(&mut self) -> &mut Self
+    {
+        self.set_extension("")
     }
 
     pub fn clear(&mut self)

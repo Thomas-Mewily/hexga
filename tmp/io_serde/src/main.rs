@@ -10,22 +10,7 @@ pub use multi_file::ser2::*;
 
 use hexga::io::fs::FsDisk;
 
-// pub trait MetaStringSerializer
-// {
-//     fn into_markup(self) -> String;
-// }
-// impl MetaStringSerializer for serde_json::ser::Serializer<String>
-// {
-//     fn into_markup(self) -> String
-//     {
-//         let inner = self.into_inner();
-//     }
-// }
 
-// pub trait MetaSerializerGenerator
-// {
-
-// }
 
 
 
@@ -40,7 +25,7 @@ struct Person
 fn test_serialize<T>(val: &T) where T: Serialize
 {
     let mut fs = FsDisk;
-    match JsonFileSerializer::serialize_and_save(&mut fs, "./tmp/io_serde/test".into(), val, MultiFileSerializerParam { mf_map: false, mf_struct: true })
+    match JsonFileSerializer::serialize_and_save(&mut fs, "./tmp/io_serde/test".into(), val, MultiFileSerializerParam { mf_map: false, mf_struct: true, ..Default::default() })
     {
         Ok(_) => {}
         Err(e) => eprintln!("{}", e),

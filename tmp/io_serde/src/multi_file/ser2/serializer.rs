@@ -1,26 +1,38 @@
+use std::borrow::Cow;
+
 use super::*;
 
 
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize)]
 pub struct MultiFileSerializerParam
 {
     /// Will map be expended into multiple file
     pub mf_map: bool,
     /// Will struct be expended into multiple file
     pub mf_struct: bool,
+
+    #[serde(borrow)]
+    pub indent: Cow<'static, str>,
+    #[serde(borrow)]
+    pub separator: Cow<'static, str>,
+
+    pub capacity : usize,
 }
 impl MultiFileSerializerParam
 {
     pub fn with_multi_file_map(self, mf_map: bool) -> Self { Self { mf_map, ..self }}
     pub fn with_multi_file_struct(self, mf_struct: bool) -> Self { Self { mf_struct, ..self }}
+    pub fn with_indent(self, indent: Cow<'static, str>) -> Self { Self { indent, ..self }}
+    pub fn with_separator(self, separator: Cow<'static, str>) -> Self { Self { separator, ..self }}
+    pub fn with_capacity(self, capacity: usize) -> Self { Self { capacity, ..self }}
 }
-
 impl Default for MultiFileSerializerParam
 {
     fn default() -> Self
     {
-        Self { mf_map: true, mf_struct: false }
+        Self { mf_map: true, mf_struct: false, indent: "   ".into(), separator: " ".into(), capacity: 1024 }
     }
 }
 

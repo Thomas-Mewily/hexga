@@ -218,7 +218,7 @@ impl Serializer for IdentifierSerializer
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error>
     {
-        if v == keyword::MOD
+        if v == keyword::MOD || v == keyword::PARAM
         {
             Err(IdentifierSerializerError)
         }else

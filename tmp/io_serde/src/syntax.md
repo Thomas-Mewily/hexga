@@ -12,6 +12,7 @@ The extension should be added at the end of the regular extension:
 
 
 module: `_mod`;
+param: `_param`
 identifier : (['a'-'z']|['A'-'Z']|'_'|' ')*;
 
 `data`, `credit`, `readme`
