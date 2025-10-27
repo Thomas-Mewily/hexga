@@ -13,6 +13,8 @@ pub type Generation = u32;
 pub type GenID<T>  = GenIDOf<T,Generation>;
 
 
+/// TODO: Make it untyped ? Remove the T generic type
+
 #[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GenIDOf<T,Gen:IGeneration>
 {

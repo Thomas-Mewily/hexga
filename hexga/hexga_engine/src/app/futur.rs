@@ -1,6 +1,11 @@
 use super::*;
 
 
+// TODO: replace Futurable by Async
+// trait Async : Send + Sync + 'static {}
+
+
+
 #[cfg(not(target_arch = "wasm32"))]
 /// Note : the trait bound vary if you are on wasm32 or not
 pub trait Futurable: Send + 'static {}
