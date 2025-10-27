@@ -13,26 +13,20 @@ description = "io file abstraction based on serde to allow loading/saving/conver
 categories = ["filesystem", "encoding"]
 
 [features]
-default = ["serde_json", "serde_ron", "serde_xml", "serde_quick_bin",
-    "rc", "derive"
-]
+default = ["serde_json", "serde_xml", "serde_quick_bin"]
 
-rc  = ["serde/rc"]
-
-derive = ["dep:hexga_io_derive"]
-
-serde_ron   = ["dep:ron"]
+# ron is the default way to deserialize
+# serde_ron   = ["dep:ron"]
 serde_json  = ["dep:serde_json"]
 serde_xml   = ["dep:serde-xml-rs"]
 serde_quick_bin  = ["dep:bincode"]
 
 [dependencies]
 serde = { version = "1.0.0" }
-hexga_io_derive = { workspace = true, optional = true }
 #hexga_core.workspace = true
 
 # markup language :
-ron = { version = "0.10.1", optional = true }
+ron = { version = "0.11.0" }
 serde_json = { version = "1.0.133", optional = true }
 serde-xml-rs = { version = "0.8.1", optional = true }
 bincode = { version = "1.3.3", optional = true }

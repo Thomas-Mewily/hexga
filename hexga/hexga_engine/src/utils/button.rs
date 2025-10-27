@@ -2,7 +2,6 @@ use super::*;
 
 
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
 pub enum ButtonToggle
@@ -34,7 +33,6 @@ impl From<ButtonToggle> for bool
 }
 
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
 pub enum ButtonState
@@ -65,7 +63,6 @@ impl From<ButtonState> for bool
     fn from(value: ButtonState) -> Self { value.is_down() }
 }
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub enum ButtonRepeat

@@ -473,13 +473,6 @@ macro_rules! impl_fixed_array_core
             }
         };
 
-        #[cfg(feature = "hexga_io")]
-        impl<T> ::hexga_io::asset::Save for $name<T> where T: ::hexga_io::asset::Save {}
-
-        #[cfg(feature = "hexga_io")]
-        impl<T> ::hexga_io::asset::Load for $name<T> where T: ::hexga_io::asset::Load {}
-
-
         impl<T> $crate::map::MapIntern for $name<T>
         {
             type Item=T;
@@ -813,12 +806,6 @@ macro_rules! impl_generic_array_core
                 }
             }
         };
-
-        #[cfg(feature = "hexga_io")]
-        impl<T, const N : usize> ::hexga_io::asset::Save for $name<T,N> where T: ::hexga_io::asset::Save {}
-
-        #[cfg(feature = "hexga_io")]
-        impl<T, const N : usize> ::hexga_io::asset::Load for $name<T,N> where T: ::hexga_io::asset::Load {}
 
         impl<T, const N : usize> $crate::map::MapIntern for $name<T,N>
         {

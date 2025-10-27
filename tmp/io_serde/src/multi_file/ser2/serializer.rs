@@ -14,9 +14,9 @@ pub struct MultiFileSerializerParam
     pub mf_struct: bool,
 
     #[serde(borrow)]
-    pub indent: Cow<'static, str>,
+    pub indent: &'static str,
     #[serde(borrow)]
-    pub separator: Cow<'static, str>,
+    pub separator: &'static str,
 
     pub capacity : usize,
 }
@@ -24,8 +24,8 @@ impl MultiFileSerializerParam
 {
     pub fn with_multi_file_map(self, mf_map: bool) -> Self { Self { mf_map, ..self }}
     pub fn with_multi_file_struct(self, mf_struct: bool) -> Self { Self { mf_struct, ..self }}
-    pub fn with_indent(self, indent: Cow<'static, str>) -> Self { Self { indent, ..self }}
-    pub fn with_separator(self, separator: Cow<'static, str>) -> Self { Self { separator, ..self }}
+    pub fn with_indent(self, indent: &'static str) -> Self { Self { indent, ..self }}
+    pub fn with_separator(self, separator: &'static str) -> Self { Self { separator, ..self }}
     pub fn with_capacity(self, capacity: usize) -> Self { Self { capacity, ..self }}
 }
 impl Default for MultiFileSerializerParam
@@ -46,6 +46,11 @@ pub struct JsonFileSerializer<'a, F>
     serializer: JsonSerializer,
     param: MultiFileSerializerParam,
     //stack : Vec<SerializeAt>,
+}
+
+pub enum MarkupSerializer
+{
+    Json(JsonSerializer),
 }
 
 // pub struct SerializeAt

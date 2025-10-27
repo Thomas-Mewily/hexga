@@ -3,7 +3,6 @@ use super::*;
 
 /// A stack that ALWAY have one element.
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct NonEmptyStack<T>
 {
     /// will be readed frequently
@@ -16,7 +15,7 @@ pub struct NonEmptyStack<T>
 impl<T> Deref for NonEmptyStack<T> { type Target = T; fn deref(&self) -> &Self::Target { &self.last }}
 impl<T> DerefMut for NonEmptyStack<T> { fn deref_mut(&mut self) -> &mut Self::Target { &mut self.last }}
 
-/* 
+/*
 pub trait IStack<T> : Push<T> + Pop<T> + Length
 {
     fn push
@@ -279,7 +278,7 @@ impl<T: Serialize> Serialize for NonEmptyStack<T> {
     {
         // Total length = elements in stack + last
         let mut seq = serializer.serialize_seq(Some(self.len()))?;
-        
+
         for item in &self.stack {
             seq.serialize_element(item)?;
         }

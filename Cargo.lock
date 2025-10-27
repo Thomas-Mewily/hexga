@@ -232,26 +232,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b75356056920673b02621b35afd0f7dda9306d03c79a30f5c56c44cf256e3de"
 
 [[package]]
-name = "async-trait"
-version = "0.1.89"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "async_again"
-version = "0.0.11-beta.4"
-dependencies = [
- "async-trait",
- "hexga_io_async",
- "serde",
-]
-
-[[package]]
 name = "async_test"
 version = "0.0.11-beta.4"
 dependencies = [
@@ -1215,33 +1195,10 @@ name = "hexga_io"
 version = "0.0.11-beta.4"
 dependencies = [
  "bincode",
- "hexga_io_derive",
- "ron 0.10.1",
+ "ron",
  "serde",
  "serde-xml-rs",
  "serde_json",
-]
-
-[[package]]
-name = "hexga_io_async"
-version = "0.0.11-beta.4"
-dependencies = [
- "bincode",
- "hexga_core",
- "hexga_io_derive",
- "ron 0.10.1",
- "serde",
- "serde-xml-rs",
- "serde_json",
-]
-
-[[package]]
-name = "hexga_io_derive"
-version = "0.0.11-beta.4"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -1564,7 +1521,7 @@ name = "io_serde"
 version = "0.0.11-beta.4"
 dependencies = [
  "hexga",
- "ron 0.11.0",
+ "ron",
  "serde",
  "serde_json",
 ]
@@ -2685,19 +2642,6 @@ dependencies = [
  "libc",
  "untrusted",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "ron"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "beceb6f7bf81c73e73aeef6dd1356d9a1b2b4909e1f0fc3e59b034f9572d7b7f"
-dependencies = [
- "base64",
- "bitflags 2.9.4",
- "serde",
- "serde_derive",
- "unicode-ident",
 ]
 
 [[package]]

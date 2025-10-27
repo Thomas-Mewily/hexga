@@ -5,11 +5,6 @@ mod serde_impl;
 #[cfg(feature = "serde")]
 pub use serde_impl::*;
 
-#[cfg(feature = "hexga_io")]
-mod io_impl;
-#[cfg(feature = "hexga_io")]
-pub use io_impl::*;
-
 mod img;
 pub use img::*;
 

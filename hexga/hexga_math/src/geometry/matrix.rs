@@ -43,7 +43,6 @@ pub type SquareMatrix<T, const N : usize> = Matrix<T, N, N>;
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct Matrix<T, const ROW : usize, const COL : usize>
 {
     pub columns : Vector<Vector<T, ROW>,COL>,

@@ -16,7 +16,6 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::
 use hexga_io::{IoLoad, IoSave, Load, Save};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug)]
 pub struct PathElement
 {
@@ -65,7 +64,6 @@ impl PathElement
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub enum AssetKind
 {
     Folder(Folder),
@@ -121,7 +119,6 @@ impl AssetKind {
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct File {
     pub bytes: Arc<Vec<u8>>,
     //pub data: Arc<Box<dyn Any>>,
@@ -133,7 +130,6 @@ impl Debug for File {
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug)]
 pub struct Folder {
     pub childs: Vec<PathElement>,

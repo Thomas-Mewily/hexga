@@ -15,7 +15,6 @@ use serde_impl::*;
 pub type GenVec<T> = GenVecOf<T,Generation>;
 
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum EntryValue<T>
 {
@@ -42,7 +41,6 @@ impl<T> EntryValue<T>
     pub fn is_occupied(&self) -> bool { matches!(self, Self::Occupied(_))}
 }
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Entry<T,Gen:IGeneration=Generation>
@@ -73,7 +71,6 @@ impl <T,Gen:IGeneration> Entry<T,Gen>
     pub fn is_generation_saturated(&self) -> bool { !self.can_increment_generation() }
 }
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Debug, Clone, Eq)]
 pub struct GenVecOf<T,Gen:IGeneration=Generation>
 {
@@ -649,7 +646,6 @@ impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.values.try_reserve_exact(additional) }
 }
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum GenVecError<T,Gen:IGeneration>
 {
@@ -707,7 +703,6 @@ impl<T,Gen:IGeneration> Debug for GenVecError<T,Gen>
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GenVecWrongGeneration<T,Gen:IGeneration>
 {
     pub got : Gen,

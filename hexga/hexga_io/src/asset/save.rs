@@ -45,7 +45,6 @@ impl<S: ?Sized> SaveExtension for S where S: Save
 
         match extension
         {
-            #[cfg(feature = "serde_ron")]
             Extensions::RON => return fs.write_str(path, &self.to_ron()?),
 
             #[cfg(feature = "serde_json")]

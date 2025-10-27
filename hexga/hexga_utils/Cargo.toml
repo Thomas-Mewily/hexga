@@ -19,7 +19,7 @@ default = [
 ]
 
 serde   = ["dep:serde"]
-hexga_io = ["dep:hexga_io", "hexga_io/derive", "serde"]
+hexga_io = ["dep:hexga_io", "serde"]
 
 [dependencies]
 hexga_core.workspace = true

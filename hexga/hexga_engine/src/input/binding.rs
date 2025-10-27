@@ -15,7 +15,7 @@ impl From<KeyCode> for Binding
     }
 }
 
-#[io]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
 pub enum Binding
 {
@@ -179,7 +179,7 @@ impl Bindable for Binding
 
 
 // TODO: Make trait Getter/Setter for Toggle, State, Repeat..
-#[io]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct KeyBinding
 {
@@ -248,7 +248,7 @@ impl IUsedFlag for KeyBinding
 
 
 
-#[io]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub struct BindingDpad
 {

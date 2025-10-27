@@ -46,9 +46,27 @@ pub trait FsRead
 
 pub trait FsReadExtension : FsRead + Sized
 {
-    fn load<T>(&mut self, path: &path) -> IoResult<T> where T: Load
+    fn load<T,P>(&mut self, path: P) -> IoResult<T> where T: for<'de> Deserialize<'de>, P: AsRefPath
     {
-        T::load_from(path, self)
+        let path = path.as_ref();
+        let original_extension = path.extension_or_empty();
+        let extension = original_extension;
+
+        match extension
+        {
+            Extensions::RON => return T::from_ron(&self.read_str(path)?),
+
+            #[cfg(feature = "serde_json")]
+            Extensions::JSON => return T::from_json(&self.read_str(path)?),
+
+            #[cfg(feature = "serde_xml")]
+            Extensions::XML => return T::from_xml(&self.read_str(path)?),
+
+            #[cfg(feature = "serde_quick_bin")]
+            Extensions::QUICK_BIN => return T::from_quick_bin_buf(&self.read_bytes(path)?),
+
+            _ => return T::from_ron(&self.read_str(path)?),
+        }
     }
 }
 impl<S> FsReadExtension for S where S : FsRead {}
@@ -87,9 +105,28 @@ pub trait FsWrite : FsRead
 
 pub trait FsWriteExtension : FsWrite + Sized
 {
-    fn save<T : ?Sized>(&mut self, path: &path, value: &T) -> IoResult where T: Save
+    fn save<T : ?Sized, P>(&mut self, path: P, value: &T) -> IoResult where T: Serialize, P: AsRefPath
     {
-        value.save_to(path, self)
+        let path = path.as_ref();
+        let original_extension = path.extension_or_empty();
+        let extension = original_extension;
+
+
+        match extension
+        {
+            Extensions::RON => return self.write_str(path, &value.to_ron()?),
+
+            #[cfg(feature = "serde_json")]
+            Extensions::JSON => return self.write_str(path, &value.to_json()?),
+
+            #[cfg(feature = "serde_xml")]
+            Extensions::XML => return self.write_str(path, &value.to_xml()?),
+
+            #[cfg(feature = "serde_quick_bin")]
+            Extensions::QUICK_BIN => return self.write_bytes(path, &value.to_quick_bin()?),
+
+            _ => return self.write_str(path, &value.to_ron()?),
+        }
     }
 }
 impl<S> FsWriteExtension for S where S : FsWrite {}
@@ -100,57 +137,57 @@ impl<S> FsWriteExtension for S where S : FsWrite {}
 
 
 
-//pub type Fs = dyn FileSystem;
-pub struct Fs<'a>
-{
-    fs : &'a mut dyn FsWrite,
-}
-impl<'a> Fs<'a>
-{
-    pub fn new(fs : &'a mut dyn FsWrite) -> Self { Self { fs }}
-}
-impl<'a> FsWrite for Fs<'a>
-{
-    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
-        self.fs.write_bytes(path, bytes)
-    }
-    fn write_str(&mut self, path: &path, text: &str) -> IoResult {
-        self.fs.write_str(path, text)
-    }
-    fn rename(&mut self, path: &path, name: &str) -> IoResult {
-        self.fs.rename(path, name)
-    }
-    fn delete(&mut self, path: &path) -> IoResult {
-        self.fs.delete(path)
-    }
-    fn move_to(&mut self, path: &path, new_path: &path) -> IoResult {
-        self.fs.move_to(path, new_path)
-    }
-}
-impl<'a> FsRead for Fs<'a>
-{
-    fn read_bytes<'b>(&'b mut self, path: &path) -> IoResult<Cow<'b, [u8]>> {
-        self.fs.read_bytes(path)
-    }
-    fn entries_names(&mut self, path: &path) -> Vec<String> {
-        self.fs.entries_names(path)
-    }
-    fn node_kind(&mut self, path: &path) -> IoResult<FsNodeKind> {
-        self.fs.node_kind(path)
-    }
-    fn entries(&mut self, path: &path) -> Vec<Path> {
-        self.fs.entries(path)
-    }
-    fn exists(&mut self, path: &path) -> IoResult<bool> {
-        self.fs.exists(path)
-    }
-    fn is_directory(&mut self, path: &path) -> bool {
-        self.fs.is_directory(path)
-    }
-    fn is_file(&mut self, path: &path) -> bool {
-        self.fs.is_file(path)
-    }
-    fn read_str(&mut self, path: &path) -> IoResult<String> {
-        self.fs.read_str(path)
-    }
-}
+// //pub type Fs = dyn FileSystem;
+// pub struct Fs<'a>
+// {
+//     fs : &'a mut dyn FsWrite,
+// }
+// impl<'a> Fs<'a>
+// {
+//     pub fn new(fs : &'a mut dyn FsWrite) -> Self { Self { fs }}
+// }
+// impl<'a> FsWrite for Fs<'a>
+// {
+//     fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
+//         self.fs.write_bytes(path, bytes)
+//     }
+//     fn write_str(&mut self, path: &path, text: &str) -> IoResult {
+//         self.fs.write_str(path, text)
+//     }
+//     fn rename(&mut self, path: &path, name: &str) -> IoResult {
+//         self.fs.rename(path, name)
+//     }
+//     fn delete(&mut self, path: &path) -> IoResult {
+//         self.fs.delete(path)
+//     }
+//     fn move_to(&mut self, path: &path, new_path: &path) -> IoResult {
+//         self.fs.move_to(path, new_path)
+//     }
+// }
+// impl<'a> FsRead for Fs<'a>
+// {
+//     fn read_bytes<'b>(&'b mut self, path: &path) -> IoResult<Cow<'b, [u8]>> {
+//         self.fs.read_bytes(path)
+//     }
+//     fn entries_names(&mut self, path: &path) -> Vec<String> {
+//         self.fs.entries_names(path)
+//     }
+//     fn node_kind(&mut self, path: &path) -> IoResult<FsNodeKind> {
+//         self.fs.node_kind(path)
+//     }
+//     fn entries(&mut self, path: &path) -> Vec<Path> {
+//         self.fs.entries(path)
+//     }
+//     fn exists(&mut self, path: &path) -> IoResult<bool> {
+//         self.fs.exists(path)
+//     }
+//     fn is_directory(&mut self, path: &path) -> bool {
+//         self.fs.is_directory(path)
+//     }
+//     fn is_file(&mut self, path: &path) -> bool {
+//         self.fs.is_file(path)
+//     }
+//     fn read_str(&mut self, path: &path) -> IoResult<String> {
+//         self.fs.read_str(path)
+//     }
+// }

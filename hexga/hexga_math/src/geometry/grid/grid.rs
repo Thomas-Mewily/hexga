@@ -3,7 +3,6 @@ use super::*;
 /// A N-dimensional grid
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Grid"))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct GridOf<T, Idx, const N : usize> where Idx : Integer
 {
     pub(crate) size  : Vector<Idx,N>,

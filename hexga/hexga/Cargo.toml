@@ -15,8 +15,8 @@ categories = ["rust-patterns"]
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde", "hexga_io", "hexga_io_derive", "hexga_io_rc",
-            "serde_json", "serde_ron", "serde_xml", "serde_quick_bin"
+            "serde", "hexga_io",
+            "serde_json", "serde_xml", "serde_quick_bin"
           ]
 
 int_are_8_bits    = ["hexga_math/int_are_8_bits", "hexga_graphics/int_are_8_bits"]
@@ -29,7 +29,6 @@ float_are_32_bits   = ["hexga_math/float_are_32_bits", "hexga_graphics/float_are
 float_are_64_bits   = ["hexga_math/float_are_64_bits", "hexga_graphics/float_are_64_bits"]
 float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_graphics/float_are_size_bits"]
 
-hexga_io_derive = ["hexga_io/derive", "hexga_io"]
 
 hexga_io = ["dep:hexga_io", "serde",
   "hexga_generational/hexga_io",
@@ -39,14 +38,6 @@ hexga_io = ["dep:hexga_io", "serde",
   "hexga_ansi_color/hexga_io"
 ]
 
-hexga_io_rc = ["hexga_io", "serde/rc",
-  "hexga_generational/hexga_io_rc",
-  "hexga_math/hexga_io_rc",
-  "hexga_graphics/hexga_io_rc",
-  "hexga_bitflags/hexga_io_rc",
-  "hexga_ansi_color/hexga_io_rc"
-]
-
 serde = ["dep:serde",
   "hexga_generational/serde",
   "hexga_math/serde",
@@ -54,7 +45,7 @@ serde = ["dep:serde",
   "hexga_ansi_color/serde",
   "hexga_graphics/serde",
 ]
-serde_ron   = ["hexga_io/serde_ron"]
+
 serde_json  = ["hexga_io/serde_json"]
 serde_xml   = ["hexga_io/serde_xml"]
 serde_quick_bin  = ["hexga_io/serde_quick_bin"]

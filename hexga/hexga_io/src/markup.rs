@@ -2,22 +2,18 @@ use super::*;
 
 pub use std::io::{Read,BufRead};
 
-#[cfg(feature = "serde_ron")]
 pub trait ToRon : Serialize
 {
     fn to_ron(&self) -> IoResult<String> { ron::ser::to_string_pretty(&self, ron::ser::PrettyConfig::default()).map_err(|e| IoError::markup_serializer::<Self>(Extensions::RON, format!("{:?}", e))) }
 }
-#[cfg(feature = "serde_ron")]
 impl<T> ToRon for T where T: Serialize {}
 
-#[cfg(feature = "serde_ron")]
 pub trait FromRon : for<'de> Deserialize<'de>
 {
     fn from_ron_buf(buf : &[u8]) -> IoResult<Self> { Self::from_ron_with_reader(BufReader::new(buf))  }
     fn from_ron_with_reader<R : Read>(reader : R) -> IoResult<Self> { ron::de::from_reader(reader).map_err(|e| IoError::markup_deserializer::<Self>(Extensions::RON, format!("{:?}", e)))  }
     fn from_ron    (ron : &str) -> IoResult<Self> { ron::de::from_str(ron).map_err(|e| IoError::markup_deserializer::<Self>(Extensions::RON, format!("{:?}", e))) }
 }
-#[cfg(feature = "serde_ron")]
 impl<T> FromRon for T where T: for<'de> Deserialize<'de> {}
 
 

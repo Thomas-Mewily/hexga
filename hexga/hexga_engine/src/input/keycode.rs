@@ -4,10 +4,9 @@ pub(crate) type WinitKeyCode = winit::keyboard::KeyCode;
 pub(crate) type WinitKeyPhysical = winit::keyboard::PhysicalKey;
 pub(crate) type WinitKeyNativeCode = winit::keyboard::NativeKeyCode;
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum KeyCodeNative 
+pub enum KeyCodeNative
 {
     Unidentified,
     /// An Android "scancode".
@@ -22,9 +21,8 @@ pub enum KeyCodeNative
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum KeyCode 
+pub enum KeyCode
 {
     Unknow(KeyCodeNative),
     /// <kbd>`</kbd> on a US keyboard. This is also called a backtick or grave.
@@ -474,7 +472,7 @@ pub enum KeyCode
 
 impl From<WinitKeyNativeCode> for KeyCodeNative
 {
-    fn from(value: WinitKeyNativeCode) -> Self 
+    fn from(value: WinitKeyNativeCode) -> Self
     {
         match value
         {

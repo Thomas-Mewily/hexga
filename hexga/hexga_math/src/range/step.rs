@@ -42,7 +42,6 @@ impl<T> RangeDefaultStepInclusiveExtension for T where T: RangeDefault, RangeInc
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct RangeStep<T> where T: Primitive
 {
     pub idx  : T,
@@ -135,7 +134,6 @@ impl<T> RangeStepExtension for RangeTo<T> where T: Primitive + RangeDefault
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct RangeStepInclusive<T> where T: Primitive
 {
     pub idx  : T,

@@ -18,13 +18,14 @@ pub type ImageError<Idx> = GridBaseError<Idx,2>;
 ///
 /// - An image can be saved with more extension than a grid (png, gif...)
 /// - The layout of the pixels match the saving format, saving an image don't create a temporary vector
-#[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Image"))]
+//#[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Image"))]
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ImageBaseOf<C=ColorU8,Idx=int> where Idx: Integer
 {
     size  : Vector2<Idx>,
     pixels: Vec<C>,
 }
+
 
 
 macro_rules! impl_img_fmt_method {
@@ -442,3 +443,6 @@ impl<T, Idx> MapWith for ImageBaseOf<T, Idx> where Idx: Integer
         unsafe { ImageBaseOf::from_vec_unchecked(self.size(), self.pixels.map_with(other.pixels, f)) }
     }
 }
+
+
+

@@ -322,12 +322,6 @@ impl<T: Float> RangeDefault for TimeOf<T> where T: RangeDefault
     const RANGE      : Self = Self(T::RANGE);
 }
 
-#[cfg(feature = "hexga_io")]
-impl<T> Load for TimeOf<T> where T: Float + for<'de> Deserialize<'de> {}
-#[cfg(feature = "hexga_io")]
-impl<T> Save for TimeOf<T> where T: Float + Serialize {}
-
-
 #[cfg(feature = "serde")]
 impl<T> Serialize for TimeOf<T> where T: Float + Serialize
 {

@@ -43,27 +43,6 @@ impl<K, V, Gen, S> Hash for Entry<K,V,Gen,S> where Gen: IGeneration, K: Hash, V:
     }
 }
 
-#[cfg(feature = "hexga_io")]
-impl<K, V, Gen, S> Save for Entry<K, V, Gen,S>
-    where
-        K: Serialize,
-        V: Serialize,
-        Gen: IGeneration,
-        S: BuildHasher
-{
-
-}
-
-#[cfg(feature = "hexga_io")]
-impl<K, V, Gen, S> Load for Entry<K, V, Gen, S>
-    where
-        K: for<'de> Deserialize<'de> + Hash + Eq,
-        V: for<'de> Deserialize<'de>,
-        Gen: IGeneration + for<'de> Deserialize<'de>,
-        S: BuildHasher
-{
-
-}
 
 
 #[cfg(feature = "serde")]
@@ -188,28 +167,6 @@ impl<K, V, Gen, S> PartialEq for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneratio
     fn eq(&self, other: &Self) -> bool {
         self.values == other.values
     }
-}
-
-#[cfg(feature = "hexga_io")]
-impl<K, V, Gen, S> Save for MultiHashMapOf<K, V, Gen,S>
-    where
-        K: Serialize,
-        V: Serialize,
-        Gen: IGeneration + Serialize,
-        S: BuildHasher
-{
-
-}
-
-#[cfg(feature = "hexga_io")]
-impl<K, V, Gen, S> Load for MultiHashMapOf<K, V, Gen, S>
-    where
-        K: for<'de> Deserialize<'de> + Eq + Hash + Clone,
-        V: for<'de> Deserialize<'de>,
-        Gen: IGeneration + for<'de> Deserialize<'de>,
-        S: BuildHasher + Default
-{
-
 }
 
 #[cfg(feature = "serde")]

@@ -13,11 +13,10 @@ description = "Basic set of functionalities common to all hexga crate"
 categories = ["rust-patterns"]
 
 [features]
-default = ["serde", "hexga_io", "hexga_io_rc"]
+default = ["serde", "hexga_io"]
 
 serde = ["dep:serde"]
-hexga_io = ["serde", "dep:hexga_io", "hexga_io/derive"]
-hexga_io_rc = ["hexga_io", "hexga_io/rc", "serde", "serde/rc"]
+hexga_io = ["serde", "dep:hexga_io"]
 
 [dependencies]
 hexga_map_on.workspace = true

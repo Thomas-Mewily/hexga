@@ -4,7 +4,6 @@ use super::*;
 /// Iter over all idx inside a rectangle
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 pub struct RectangleIter<Idx, const N : usize> where Idx : Integer
 {
     offset : Vector<Idx,N>,

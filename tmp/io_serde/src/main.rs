@@ -5,6 +5,7 @@
 
 mod multi_file;
 use std::collections::HashMap;
+use hexga::prelude::*;
 
 pub use multi_file::ser2::*;
 
@@ -42,7 +43,8 @@ struct Foo
 struct Bar
 {
     x: i32,
-    _mod: i32,
+    __mod: i32,
+    image: Image,
 }
 
 fn test_it()
@@ -60,12 +62,14 @@ fn test_it()
     map.insert("one", 1);
     map.insert("two", 2);
     map.insert("_mod", 42);
+    map.insert("__mod", 42);
     map.insert("three", 3);
     map.insert("? invalid file name", 4);
     map.insert("? invalid 2", 5);
     //test_serialize(&map);
 
-    test_serialize(&Foo{ bar: Bar { x: 42, _mod: 99 } });
+    test_serialize(&Foo{ bar: Bar { x: 42, __mod: 99, image: Image::from_fn((4,4), |p| ColorU8::RED) } });
+
 
 
     //test_serialize(&alice);

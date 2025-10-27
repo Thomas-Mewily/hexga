@@ -8,5 +8,4 @@ use hexga_io::{IoSave, IoLoad, Save, Load};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 ```

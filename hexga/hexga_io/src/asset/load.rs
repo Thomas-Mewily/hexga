@@ -1,18 +1,18 @@
 use super::*;
 
-#[allow(unused_variables)]
-pub trait Load: for<'de> Deserialize<'de>
-{
-    /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
-    ///
-    /// Don't include the markup language extension like `json` or `ron`
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
+// #[allow(unused_variables)]
+// pub trait Load: for<'de> Deserialize<'de>
+// {
+//     /// Dedicated file extension to load the value. ex `png`, `jpeg` for image
+//     ///
+//     /// Don't include the markup language extension like `json` or `ron`
+//     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
 
-    fn load_from_with_custom_extension<Fs,P>(path: P, extension: &extension, fs: &mut Fs) -> IoResult<Self> where Fs: FsRead, P: AsRefPath { Err(IoError::Unimplemented) }
+//     // fn load_from_with_custom_extension<Fs,P>(path: P, extension: &extension, fs: &mut Fs) -> IoResult<Self> where Fs: FsRead, P: AsRefPath { Err(IoError::Unimplemented) }
 
-    /// When saving, if the extension is missing
-    fn load_default_extension() -> Option<&'static str> { Self::load_custom_extensions().next() }
-}
+//     /// When saving, if the extension is missing
+//     fn load_default_extension() -> Option<&'static str> { Self::load_custom_extensions().next() }
+// }
 
 pub trait LoadExtension: Load
 {
@@ -60,7 +60,6 @@ pub trait LoadExtension: Load
 
         match extension
         {
-            #[cfg(feature = "serde_ron")]
             Extensions::RON => return Self::from_ron(&fs.read_str(path)?),
 
             #[cfg(feature = "serde_json")]

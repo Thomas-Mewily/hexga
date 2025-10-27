@@ -30,7 +30,6 @@ impl<I,T> RangeDefaultSampleInclusiveExtension<I> for T where T: RangeDefault, R
 
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[derive(Clone, Debug)]
 pub struct RangeSample<I,T> where I : Number + CastInto<T>, T : Number
 {

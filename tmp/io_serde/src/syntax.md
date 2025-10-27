@@ -10,12 +10,16 @@ The extension should be added at the end of the regular extension:
 
 # Keyword
 
+name that start by a double underscore are reserved.
 
-module: `_mod`;
-param: `_param`
+Currently in use:
+
+module: `__mod`
 identifier : (['a'-'z']|['A'-'Z']|'_'|' ')*;
 
-`data`, `credit`, `readme`
+
+ `__param` `__data`, `__credit`, `__readme`
+
 
 # What would be multi file
 

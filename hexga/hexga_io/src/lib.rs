@@ -11,23 +11,15 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 pub mod fs;
 use fs::*;
 
-pub mod asset;
-use asset::*;
-
 pub mod markup;
 use markup::*;
 
-mod extensions;
-pub use extensions::*;
-
-mod path_extension;
-pub use path_extension::*;
-
+mod utils;
+pub use utils::*;
 
 pub mod prelude
 {
-    pub use super::path_extension::*;
     pub use super::fs::prelude::*;
     pub use super::markup::*;
-    pub use super::asset::prelude::*;
+    pub use super::utils::prelude::*;
 }

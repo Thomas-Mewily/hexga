@@ -1,7 +1,6 @@
 use super::*;
 
 
-#[cfg_attr(feature = "hexga_io", derive(Save, Load))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
 pub enum Asset<T,E=(),L=()>

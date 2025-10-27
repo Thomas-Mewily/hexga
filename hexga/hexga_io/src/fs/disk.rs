@@ -91,22 +91,21 @@ impl FsRead for FsDisk
 }
 
 
-pub trait SaveToDisk : Save
+pub trait SaveToDisk : Serialize
 {
     fn save_to_disk<P>(&self, path: P) -> IoResult where P: AsRefPath
     {
         let mut disk = FsDisk;
-        self.save_to(path, &mut disk)
-        // commit the fs here ?
+        disk.save(path.as_ref(), self)
     }
 }
-impl<T> SaveToDisk for T where T: Save + ?Sized {}
+impl<T> SaveToDisk for T where T: Serialize + ?Sized {}
 
-pub trait LoadFromDisk : Load
+pub trait LoadFromDisk : for<'de> Deserialize<'de>
 {
     fn load_from_disk<P>(path: P) -> IoResult<Self> where P: AsRefPath
     {
-        Self::load_from(path, &mut FsDisk)
+        (&mut FsDisk).load(path.as_ref())
     }
 }
-impl<T> LoadFromDisk for T where T: Load + ?Sized {}
+impl<T> LoadFromDisk for T where T: for<'de> Deserialize<'de> {}
