@@ -84,6 +84,10 @@ fn main()
 {
     test_it();
 
+    let img = Image::load_from_disk("./tmp/io_serde/smiley").unwrap();
+    dbg!(&img);
+    println!("{}", img.to_url("png").unwrap());
+
 
     println!("hello world");
 }

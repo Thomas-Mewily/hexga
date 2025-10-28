@@ -91,25 +91,3 @@ impl FsRead for FsDisk
     }
 }
 
-#[cfg(feature = "serde")]
-pub trait SaveToDisk : Serialize
-{
-    fn save_to_disk<P>(&self, path: P) -> FileResult where P: AsRefPath
-    {
-        let mut disk = FsDisk;
-        disk.save(path.as_ref(), self)
-    }
-}
-#[cfg(feature = "serde")]
-impl<T> SaveToDisk for T where T: Serialize + ?Sized {}
-
-#[cfg(feature = "serde")]
-pub trait LoadFromDisk : for<'de> Deserialize<'de>
-{
-    fn load_from_disk<P>(path: P) -> FileResult<Self> where P: AsRefPath
-    {
-        (&mut FsDisk).load(path.as_ref())
-    }
-}
-#[cfg(feature = "serde")]
-impl<T> LoadFromDisk for T where T: for<'de> Deserialize<'de> {}

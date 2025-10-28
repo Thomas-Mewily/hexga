@@ -15,6 +15,16 @@ pub use node::*;
 mod result;
 pub use result::*;
 
+#[cfg(feature = "serde")]
+mod save;
+#[cfg(feature = "serde")]
+pub use save::*;
+
+#[cfg(feature = "serde")]
+mod load;
+#[cfg(feature = "serde")]
+pub use load::*;
+
 pub mod prelude
 {
     pub use super::
@@ -24,5 +34,5 @@ pub mod prelude
     };
 
     #[cfg(feature = "serde")]
-    pub use super::disk::{SaveToDisk,LoadFromDisk};
+    pub use super::{load::*,save::*};
 }

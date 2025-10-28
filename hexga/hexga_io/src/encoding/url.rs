@@ -258,8 +258,7 @@ pub trait FromUrl: Decode
     fn from_url_bin(url: &[u8]) -> EncodeResult<Self> where Self: Sized
     {
         let url = BinUrl::try_from(url)?;
-        let bytes = Vec::<u8>::from_base64(url.data)?;
-        Self::decode(&bytes, url.extension)
+        Self::decode(&url.data, url.extension)
     }
 }
 impl<T> FromUrl for T where T: Decode {}

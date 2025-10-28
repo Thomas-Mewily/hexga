@@ -1,13 +1,6 @@
 use super::*;
 
 
-
-
-
-
-
-
-
 pub trait FsRead
 {
     /// Reads the content of a file into memory as raw bytes.
@@ -34,6 +27,25 @@ pub trait FsRead
     fn is_file(&mut self, path: &path) -> bool { self.node_kind(path).map(|e| e.is_file()).unwrap_or(false) }
     /// Checks whether a path is a directory.
     fn is_directory(&mut self, path: &path) -> bool { self.node_kind(path).map(|e| e.is_directory()).unwrap_or(false) }
+
+    /// Attempts to automatically correct the file extension of a given path.
+    ///
+    /// This function looks up all known entries that match the given `path`
+    /// regardless of extension, using [`FsRead::entries_with_any_extension`].
+    ///
+    /// - If **exactly one** matching entry is found, that path is returned.
+    /// - If **zero or multiple** matches are found, the original `path` is returned unchanged to avoid ambiguity
+    fn auto_correct_extension(&mut self, path: &path) -> Path
+    {
+        let auto_corrected = self.entries_with_any_extension(path);
+        if auto_corrected.len() == 1
+        {
+            auto_corrected.into_iter().next().unwrap()
+        }else
+        {
+            path.to_owned()
+        }
+    }
 
 
     /// Lists the full names (filenames or folder name) of all entries under a directory.
@@ -77,24 +89,27 @@ pub trait FsReadExtension : FsRead + Sized
 {
     fn load<T,P>(&mut self, path: P) -> FileResult<T> where T: for<'de> Deserialize<'de>, P: AsRefPath
     {
-        let path = path.as_ref();
-        let original_extension = path.extension_or_empty();
-        let extension = original_extension;
+        let mut path = path.as_ref().to_owned();
+        if self.exists(&path).is_err()
+        {
+            path = self.auto_correct_extension(&path);
+        }
+        let extension = path.extension_or_empty();
 
         match extension
         {
-            Extensions::RON => return T::from_ron(&self.read_str(path)?).map_err(|e| e.into()),
+            Extensions::RON => return T::from_ron(&self.read_str(&path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_json")]
-            Extensions::JSON => return T::from_json(&self.read_str(path)?).map_err(|e| e.into()),
+            Extensions::JSON => return T::from_json(&self.read_str(&path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_xml")]
-            Extensions::XML => return T::from_xml(&self.read_str(path)?).map_err(|e| e.into()),
+            Extensions::XML => return T::from_xml(&self.read_str(&path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_quick_bin")]
-            Extensions::QUICK_BIN => return T::from_quick_bin_buf(&self.read_bytes(path)?).map_err(|e| e.into()),
+            Extensions::QUICK_BIN => return T::from_quick_bin_buf(&self.read_bytes(&path)?).map_err(|e| e.into()),
 
-            _ => return T::from_ron(&self.read_str(path)?).map_err(|e| e.into()),
+            _ => return T::from_ron(&self.read_str(&path)?).map_err(|e| e.into()),
         }
     }
 }
