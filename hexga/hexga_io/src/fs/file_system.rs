@@ -57,7 +57,7 @@ pub trait FsRead
     fn entries_fullname_with_any_extension(&mut self, path: &path) -> Vec<String>
     {
         let name = path.name();
-        self.entries_fullname(path).into_iter().filter(|fullname| path::from_str(&fullname).name() == name).collect()
+        self.entries_fullname(path.parent_or_empty()).into_iter().filter(|fullname| path::from_str(&fullname).name() == name).collect()
     }
 
     /// Lists all path (filenames or folder) under a directory
@@ -66,7 +66,8 @@ pub trait FsRead
     /// Returns an empty vector if the directory does not exist or is empty.
     fn entries_with_any_extension(&mut self, path: &path) -> Vec<Path>
     {
-        self.entries_fullname_with_any_extension(path).into_iter().map(|name| path / name).collect()
+        let parent_path = path.parent_or_empty();
+        self.entries_fullname_with_any_extension(path).into_iter().map(|name| parent_path / name).collect()
     }
 }
 
@@ -119,7 +120,7 @@ pub trait FsWrite : FsRead
     /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
     fn write_raw_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult;
 
-    /// Writes raw bytes to a file, while also deleting any ambigious existing files with the same name.
+    /// Writes raw bytes to a file, while also deleting any ambigious existing files with the same name in the same folder.
     ///
     /// - If the file already exists, its content is **overwritten**.
     /// - If the file does not exist, it and any missing parent directories are **created**.

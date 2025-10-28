@@ -69,8 +69,6 @@ impl<'a, F> JsonFileSerializer<'a,F>
 {
     fn new(fs: &'a mut F, path: Path, param: MultiFileSerializerParam) -> Self
     {
-        // TODO: delete it
-        //fs.delete(path)
         Self { fs, path, serializer: Self::new_serializer(), should_save: true, param }
     }
 
@@ -85,11 +83,15 @@ impl<'a, F> JsonFileSerializer<'a,F>
     where
         T: Serialize,
     {
-        if is_root
+        if fs.is_file(&path)
         {
-            fs.delete(&path.with_extension("json")).map_err(|e| IoError::new(&path, e))?;
-            fs.delete(&path).map_err(|e| IoError::new(&path, e))?;
+            fs.delete_with_any_extension(&path).map_err(|e| IoError::new(&path, e))?;
         }
+        // if is_root
+        // {
+        //     fs.delete(&path.with_extension("json")).map_err(|e| IoError::new(&path, e))?;
+        //     fs.delete(&path).map_err(|e| IoError::new(&path, e))?;
+        // }
         let mut s = Self::new(fs, path, param);
         val.serialize(&mut s)?;
         s.save()
