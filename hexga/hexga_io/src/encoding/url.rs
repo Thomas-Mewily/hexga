@@ -1,4 +1,4 @@
-use std::ops::{Deref, DerefMut};
+use std::{f32::consts::E, ops::{Deref, DerefMut}};
 
 use super::*;
 
@@ -160,6 +160,57 @@ pub trait MediaType
         format!("{media}/{extension}")
     }
 }
+
+
+impl MediaType for String
+{
+    fn media_type() -> &'static str { "text" }
+}
+impl Encode for String
+{
+    fn encode_extensions() -> impl Iterator<Item = &'static extension> {
+        ["txt", "md", "cvs"].into_iter()
+    }
+
+    fn encode_in<W>(&self, writer : &mut W, extension: &extension) -> EncodeResult where W: Write {
+        self.as_str().encode_in(writer, extension)
+    }
+}
+impl Decode for String
+{
+    fn decode_extensions() -> impl Iterator<Item = &'static extension> {
+        Self::encode_extensions()
+    }
+
+    fn decode(bytes: &[u8], _extension: &extension) -> EncodeResult<Self> where Self: Sized {
+
+        match std::str::from_utf8(bytes)
+        {
+            Ok(s) => Ok(s.to_owned()),
+            Err(e) => Err(e.into()),
+        }
+    }
+}
+impl<'a> MediaType for &'a str
+{
+    fn media_type() -> &'static str { String::media_type() }
+}
+impl<'a> Encode for &'a str
+{
+    fn encode_extensions() -> impl Iterator<Item = &'static extension> {
+        String::encode_extensions()
+    }
+
+    fn encode_in<W>(&self, writer : &mut W, _extension: &extension) -> EncodeResult where W: Write {
+        match writer.write(self.as_bytes())
+        {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e.into()),
+        }
+    }
+}
+
+
 
 pub trait ToUrl: MediaType + Encode
 {

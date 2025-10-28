@@ -4,13 +4,13 @@ use super::*;
 pub trait Decode
 {
     fn decode_extensions() -> impl Iterator<Item = &'static extension>;
-    fn decode_from_reader<R>(reader : &mut R, format: &extension) -> EncodeResult<Self> where R: Read, Self: Sized
+    fn decode_from_reader<R>(reader : &mut R, extension: &extension) -> EncodeResult<Self> where R: Read, Self: Sized
     {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).map_err(|e| EncodeError::from(e))?;
-        Self::decode(&bytes, format)
+        Self::decode(&bytes, extension)
     }
-    fn decode(bytes: &[u8], format: &extension) -> EncodeResult<Self> where Self: Sized;
+    fn decode(bytes: &[u8], extension: &extension) -> EncodeResult<Self> where Self: Sized;
     fn decode_prefered_extension() -> Option<&'static extension> { Self::decode_extensions().next() }
 }
 
