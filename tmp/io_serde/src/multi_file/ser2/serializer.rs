@@ -465,7 +465,9 @@ where
         self.serializer.serialize_char(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
-    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
+    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error>
+    {
+
         self.serializer.serialize_str(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 

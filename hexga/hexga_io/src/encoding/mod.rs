@@ -23,6 +23,6 @@ pub mod prelude
         result::*,
         encode::*,
         decode::*,
-        url::*,
+        url::prelude::*,
     };
 }

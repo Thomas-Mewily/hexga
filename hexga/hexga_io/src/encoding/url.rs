@@ -1,4 +1,154 @@
+use std::ops::{Deref, DerefMut};
+
 use super::*;
+
+pub mod prelude
+{
+    pub use super::{FromUrl,ToUrl};
+}
+
+
+/// Represents a the metadata portion of an url (Data URL, RFC 2397),
+/// without including the payload/data.
+///
+/// Example Data URL:
+/// ```text
+/// data:image/png;base64,
+/// ```
+///
+/// # Usage
+///
+/// ```rust
+/// use hexga_io::encoding::*;
+///
+/// let url = UrlMeta::try_from("data:image/png;base64,").unwrap();
+/// assert_eq!(url.scheme, "data");
+/// assert_eq!(url.media_type, "image");
+/// assert_eq!(url.extension, "png");
+/// assert_eq!(url.encoding, Some("base64"));
+/// ```
+#[derive(Debug, PartialEq, Eq)]
+pub struct UrlMeta<'a>
+{
+    /// The URL scheme keyword, e.g., "data"
+    pub scheme: &'a str,
+
+    /// The media type, e.g., "image"
+    pub media_type: &'a str,
+
+    /// The file extension/subtype, e.g., "png"
+    pub extension: &'a str,
+
+    /// Base64 marker if present, usually "base64"
+    pub encoding: Option<&'a str>,
+}
+impl<'a> TryFrom<&'a str> for UrlMeta<'a>
+{
+    type Error=EncodeError;
+
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        let value = value.trim();
+
+        let (scheme, rest) = value
+            .split_once(':')
+            .ok_or_else(|| EncodeError::custom("URL must have a scheme"))?;
+
+        let meta = rest.split(',').next().unwrap_or(rest);
+
+        let (media_type_and_ext, encoding) = match meta.split_once(';') {
+            Some((m, e)) => (m, Some(e)),
+            None => (meta, None),
+        };
+
+        let (media_type, extension) = media_type_and_ext
+            .split_once('/')
+            .ok_or_else(|| EncodeError::custom("Invalid media type in URL"))?;
+
+        Ok(UrlMeta {
+            scheme,
+            media_type,
+            extension,
+            encoding,
+        })
+    }
+}
+
+/// Represents a parsed data url (Data URL, RFC 2397).
+///
+///
+/// Example Data URL: (single red pixel)
+/// ```text
+/// data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AP8AAP8FAAH/+lyI0QAAAABJRU5ErkJggg==
+/// ```
+#[derive(Debug, PartialEq, Eq)]
+pub struct Url<'a>
+{
+    pub meta: UrlMeta<'a>,
+    pub data: &'a str,
+}
+impl<'a> Deref for Url<'a>{ type Target=UrlMeta<'a>; fn deref(&self) -> &Self::Target { &self.meta } }
+impl<'a> TryFrom<&'a str> for Url<'a>
+{
+    type Error = EncodeError;
+
+    fn try_from(value: &'a str) -> Result<Self, Self::Error>
+    {
+        let (meta_str, data) = value
+            .split_once(',')
+            .ok_or_else(|| EncodeError::custom("Missing ',' separator in URL"))?;
+
+        let meta = UrlMeta::try_from(meta_str)?;
+        if meta.scheme != "data" { return Err(EncodeError::custom("Invalid URL scheme: expected 'data'")); }
+
+        Ok(Url {
+            meta,
+            data,
+        })
+    }
+}
+
+
+/// Represents a parsed bin_data url (similar to a Data URL, RFC 2397, but the data is in binary).
+///
+/// This struct stores references to the different components of a URL-like string
+/// without allocating new memory. It can be used for both Base64-encoded data URLs
+/// and custom binary URLs with a similar structure.
+///
+/// Example binary URL (custom format):
+/// ```text
+/// bin_data:image/png;base64,<raw bytes>
+/// ```
+#[derive(Debug, PartialEq, Eq)]
+pub struct BinUrl<'a>
+{
+    pub meta: UrlMeta<'a>,
+    pub data: &'a [u8],
+}
+impl<'a> Deref for BinUrl<'a>{ type Target=UrlMeta<'a>; fn deref(&self) -> &Self::Target { &self.meta } }
+impl<'a> TryFrom<&'a [u8]> for BinUrl<'a>
+{
+    type Error = EncodeError;
+
+    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+        let comma_pos = value
+            .iter()
+            .position(|&b| b == b',')
+            .ok_or_else(|| EncodeError::custom("Missing ',' separator in URL"))?;
+
+        let meta_bytes = &value[..comma_pos];
+        let data = &value[comma_pos + 1..]; // raw payload
+
+        let meta_str = std::str::from_utf8(meta_bytes)
+            .map_err(|_| EncodeError::custom("Invalid UTF-8 in metadata"))?;
+
+        let meta = UrlMeta::try_from(meta_str)?;
+        if meta.scheme != "bin_data" { return Err(EncodeError::custom("Invalid URL scheme: expected 'bin_data'")); }
+
+        Ok(BinUrl { meta, data })
+    }
+}
+
+
 
 pub trait MediaType
 {
@@ -51,54 +201,15 @@ pub trait FromUrl: Decode
 {
     fn from_url(url: &str) -> EncodeResult<Self> where Self: Sized
     {
-        let url = url.trim();
-        let prefix = "data:";
-        if !url.starts_with(prefix) {
-            return Err(EncodeError::custom("Data URL must start with 'data:'"));
-        }
-
-        let rest = &url[prefix.len()..];
-        let (meta, b64data) = rest
-            .split_once(',')
-            .ok_or_else(|| EncodeError::custom("Missing ',' separator in Data URL"))?;
-
-        let (media_type_and_extension, base64_marker) = meta.split_once(';').unwrap_or((meta, ""));
-        if base64_marker != "base64" {
-            return Err(EncodeError::custom("Only base64-encoded Data URLs are supported"));
-        }
-
-        let bytes = Vec::<u8>::from_base64(b64data)?;
-
-        let (_media_type, extension) = media_type_and_extension
-            .split_once('/')
-            .ok_or_else(|| EncodeError::custom("Invalid media type in Data URL"))?;
-
-        Self::decode(&bytes, extension)
+        let url = Url::try_from(url)?;
+        let bytes = Vec::<u8>::from_base64(url.data)?;
+        Self::decode(&bytes, url.extension)
     }
     fn from_url_bin(url: &[u8]) -> EncodeResult<Self> where Self: Sized
     {
-        let prefix = b"bin_data:";
-        if !url.starts_with(prefix) {
-            return Err(EncodeError::custom(
-                "Binary Data URL must start with 'bin_data:'",
-            ));
-        }
-
-        let comma_pos = url
-            .iter()
-            .position(|&b| b == b',')
-            .ok_or_else(|| EncodeError::custom("Missing ',' separator in binary Data URL"))?;
-
-        let media_type_and_extension = std::str::from_utf8(&url[prefix.len()..comma_pos])
-            .map_err(|_| EncodeError::custom("Invalid UTF-8 in binary URL header"))?;
-
-        let (_media_type, extension) = media_type_and_extension
-            .split_once('/')
-            .ok_or_else(|| EncodeError::custom("Invalid media type in binary URL header"))?;
-
-        let data = &url[comma_pos + 1..];
-
-        Self::decode(data, extension)
+        let url = BinUrl::try_from(url)?;
+        let bytes = Vec::<u8>::from_base64(url.data)?;
+        Self::decode(&bytes, url.extension)
     }
 }
 impl<T> FromUrl for T where T: Decode {}

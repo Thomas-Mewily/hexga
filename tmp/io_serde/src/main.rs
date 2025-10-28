@@ -68,7 +68,7 @@ fn test_it()
     map.insert("? invalid 2", 5);
     //test_serialize(&map);
 
-    test_serialize(&Foo{ bar: Bar { x: 42, __mod: 99, image: Image::from_fn((4,4), |p| ColorU8::RED) } });
+    test_serialize(&Foo{ bar: Bar { x: 42, __mod: 99, image: Image::from_fn((1,1), |p| ColorU8::RED) } });
 
 
 
