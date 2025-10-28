@@ -187,12 +187,11 @@ pub trait ToUrl: MediaType + Encode
     /// Similar to [`Encode::to_url`], except the `<base64_encoded_data>` is in binary
     fn to_url_bin(&self, extension: &extension) -> EncodeResult<Vec<u8>>
     {
-        let bytes = self.encode(extension)?;
         let media = Self::media_type();
         let mut data = Vec::with_capacity(1024);
         write!(&mut data, "bin_data:{media}/{extension};base64,").map_err(|e| EncodeError::from(e))?;
         self.encode_in(&mut data, extension)?;
-        Ok(bytes)
+        Ok(data)
     }
 }
 impl<T> ToUrl for T where T: MediaType + Encode{}

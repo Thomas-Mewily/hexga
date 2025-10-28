@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use hexga::io::encoding::{BinUrl, FromBase64, Url};
+
 use super::*;
 
 
@@ -72,14 +74,14 @@ impl<'a, F> JsonFileSerializer<'a,F>
         Self { fs, path, serializer: Self::new_serializer(), should_save: true, param }
     }
 
-    pub(crate) fn serialize_at_path<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> Result<(), IoError>
+    pub(crate) fn serialize_at_path<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> IoResult
     where
         T: Serialize,
     {
         Self::_serialize_at_path(fs, path, val, param, false)
     }
 
-    fn _serialize_at_path<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam, is_root: bool) -> Result<(), IoError>
+    fn _serialize_at_path<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam, is_root: bool) -> IoResult
     where
         T: Serialize,
     {
@@ -93,13 +95,17 @@ impl<'a, F> JsonFileSerializer<'a,F>
         s.save()
     }
 
-    pub fn serialize_and_save<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> Result<(), IoError>
+    pub fn serialize_and_save<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> IoResult
     where
         T: Serialize,
     {
         Self::_serialize_at_path(fs, path, val, param, true)
     }
 
+    fn write_bytes(&mut self, path: &path, bytes: &[u8]) -> IoResult
+    {
+        self.fs.write_bytes(path, bytes).map_err(|kind| IoError::new(path, kind))
+    }
 
 
     fn new_serializer() -> JsonSerializer
@@ -107,7 +113,7 @@ impl<'a, F> JsonFileSerializer<'a,F>
         JsonSerializer::new(___())
     }
 
-    fn save(mut self) -> Result<(), IoError>
+    fn save(mut self) -> IoResult
     {
         if !self.should_save { return Ok(()); }
 
@@ -467,12 +473,29 @@ where
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error>
     {
-
-        self.serializer.serialize_str(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
+        match Url::try_from(v)
+        {
+            Ok(url) if url.encoding == Some("base64") =>
+            {
+                let bytes = Vec::<u8>::from_base64(url.data).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
+                self.should_save = false;
+                self.write_bytes(&self.path.with_extension(url.extension), &bytes)
+            },
+            _ => self.serializer.serialize_str(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string()))),
+        }
     }
 
-    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_bytes(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
+    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error>
+    {
+        match BinUrl::try_from(v)
+        {
+            Ok(url) if url.encoding == Some("base64") =>
+            {
+                self.should_save = false;
+                self.write_bytes(&self.path.with_extension(url.extension), &url.data)
+            },
+            _ => self.serializer.serialize_bytes(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
+        }
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
@@ -580,5 +603,9 @@ where
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         let compound = self.serializer.serialize_struct_variant(name, variant_index, variant, len).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
         Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
+    }
+
+    fn is_human_readable(&self) -> bool {
+        false
     }
 }

@@ -10,10 +10,10 @@ use super::*;
 
 pub trait FsRead
 {
-    /// Reads the content of a file into memory.
+    /// Reads the content of a file into memory as raw bytes.
     fn read_bytes<'a>(&'a mut self, path: &path) -> FileResult<Cow<'a, [u8]>>;
 
-    /// Reads the content of a file into memory.
+    /// Reads the content of a file into memory as a UTF-8 string.
     fn read_str(&mut self, path: &path) -> FileResult<String>
     {
         let bytes_cow: Cow<[u8]> = self.read_bytes(path)?;
@@ -25,21 +25,48 @@ pub trait FsRead
     }
 
 
-
-    /// Lists subpaths (files/folders) name under a directory. Empty if don't exist
-    fn entries_names(&mut self, path: &path) -> Vec<String>;
-
+    /// Returns the kind of a filesystem node (file, directory).
     fn node_kind(&mut self, path: &path) -> FileResult<FsNodeKind>;
 
-    /// Checks whether a path exists in this filesystem.
+    /// Checks whether a path exists in the filesystem.
     fn exists(&mut self, path: &path) -> FileResult<bool> { self.node_kind(path).map(|_| true) }
+    /// Checks whether a path is a file.
     fn is_file(&mut self, path: &path) -> bool { self.node_kind(path).map(|e| e.is_file()).unwrap_or(false) }
+    /// Checks whether a path is a directory.
     fn is_directory(&mut self, path: &path) -> bool { self.node_kind(path).map(|e| e.is_directory()).unwrap_or(false) }
 
-    /// Lists subpaths (files/folders) under a directory.
+
+    /// Lists the full names (filenames or folder name) of all entries under a directory.
+    ///
+    /// Returns an empty vector if the directory does not exist or is empty.
+    fn entries_fullname(&mut self, path: &path) -> Vec<String>;
+
+
+    /// Lists all path (filenames or folder) under a directory.
+    ///
+    /// Returns an empty vector if the directory does not exist or is empty.
     fn entries(&mut self, path: &path) -> Vec<Path>
     {
-        self.entries_names(path).into_iter().map(|name| path / name).collect()
+        self.entries_fullname(path).into_iter().map(|name| path / name).collect()
+    }
+
+    /// Lists the full names (filenames or folder name) of all entries under a directory
+    /// with the same name, ignoring the extension.
+    ///
+    /// Returns an empty vector if the directory does not exist or is empty.
+    fn entries_fullname_with_any_extension(&mut self, path: &path) -> Vec<String>
+    {
+        let name = path.name();
+        self.entries_fullname(path).into_iter().filter(|fullname| path::from_str(&fullname).name() == name).collect()
+    }
+
+    /// Lists all path (filenames or folder) under a directory
+    /// with the same name, ignoring the extension.
+    ///
+    /// Returns an empty vector if the directory does not exist or is empty.
+    fn entries_with_any_extension(&mut self, path: &path) -> Vec<Path>
+    {
+        self.entries_fullname_with_any_extension(path).into_iter().map(|name| path / name).collect()
     }
 }
 
@@ -78,26 +105,69 @@ impl<S> FsReadExtension for S where S : FsRead {}
 
 pub trait FsWrite : FsRead
 {
-    /// Override/delete the file content if already exist.
-    /// If the file don't exist, create it.
-    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult;
+    /// Creates a new directory at the specified path.
+    ///
+    /// - If the directory already exists, this is a **no-op**.
+    /// - If any parent directories in the path do not exist, they are **created automatically**.
+    /// - If the path or any parent path exists as a file, delete it and replace it by a directory.
+    fn create_directory(&mut self, path: &path) ->  FileResult;
 
-    /// Override the file content if already exist.
-    /// If the file don't exist, create it.
+    /// Writes raw bytes to a file.
+    ///
+    /// - If the file already exists, its content is **overwritten**.
+    /// - If the file does not exist, it and any missing parent directories are **created**.
+    /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
+    fn write_raw_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult;
+
+    /// Writes raw bytes to a file, while also deleting any ambigious existing files with the same name.
+    ///
+    /// - If the file already exists, its content is **overwritten**.
+    /// - If the file does not exist, it and any missing parent directories are **created**.
+    /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
+    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult
+    {
+        self.delete_with_any_extension(path)?;
+        self.write_raw_bytes(path, bytes)
+    }
+
+    /// Writes a UTF-8 string to a file.
+    ///
+    /// - If the file already exists, its content is **overwritten**.
+    /// - If the file does not exist, it and any missing parent directories are **created**.
+    /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
     fn write_str(&mut self, path: &path, text: &str) -> FileResult
     {
-        self.write_bytes(path, text.as_bytes())
+        self.write_raw_bytes(path, text.as_bytes())
     }
 
 
-    /// Delete the files/folder recursively under a directory.
+    /// Deletes a file or a directory recursively.
+    ///
+    /// - If the path is a directory, all its contents are also deleted.
+    /// - If the path does not exist, return Ok(()).
     fn delete(&mut self, path: &path) -> FileResult;
 
-    /// Move the file/directory. If it is a folder, also move all the content
+    /// Deletes all files and directories recursively with the same name, ignoring the extension.
+    ///
+    /// - If the path does not exist, return Ok(()).
+    fn delete_with_any_extension(&mut self, path: &path) -> FileResult
+    {
+        for entry in self.entries_with_any_extension(path) {
+            self.delete(&entry)?;
+        }
+        Ok(())
+    }
+
+    /// Moves a file or directory to a new location.
+    ///
+    /// - If the path is a directory, all its contents are moved.
+    /// - If the target path already exists, delete it.
     fn move_to(&mut self, path: &path, new_path: &path) -> FileResult;
 
-    /// Rename the directory / file name with another name.
-    /// Keep the extension
+    /// Renames a file or directory, keeping its extension.
+    ///
+    /// - Only the base name of the file or directory is changed.
+    /// - The new path is constructed using the same parent directory and the new name.
     fn rename(&mut self, path: &path, name: &str) -> FileResult
     {
         let new_path = path.with_name(name);
@@ -126,7 +196,7 @@ pub trait FsWriteExtension : FsWrite + Sized
             Extensions::XML => return self.write_str(path, &value.to_xml()?),
 
             #[cfg(feature = "serde_quick_bin")]
-            Extensions::QUICK_BIN => return self.write_bytes(path, &value.to_quick_bin()?),
+            Extensions::QUICK_BIN => return self.write_raw_bytes(path, &value.to_quick_bin()?),
 
             _ => return self.write_str(path, &value.to_ron()?),
         }
