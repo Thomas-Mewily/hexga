@@ -27,6 +27,9 @@ impl Extensions
     pub const XML  : &'static str = "xml";
 
 
+    /// No garantee about the encoding of this one, can be changed at any time.
+    ///
+    /// Use it for short duration like data transfer.
     #[cfg(feature = "serde_quick_bin")]
     pub const QUICK_BIN  : &'static str = "bin";
 }

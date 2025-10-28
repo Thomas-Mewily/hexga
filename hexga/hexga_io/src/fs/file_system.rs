@@ -11,10 +11,10 @@ use super::*;
 pub trait FsRead
 {
     /// Reads the content of a file into memory.
-    fn read_bytes<'a>(&'a mut self, path: &path) -> IoResult<Cow<'a, [u8]>>;
+    fn read_bytes<'a>(&'a mut self, path: &path) -> FileResult<Cow<'a, [u8]>>;
 
     /// Reads the content of a file into memory.
-    fn read_str(&mut self, path: &path) -> IoResult<String>
+    fn read_str(&mut self, path: &path) -> FileResult<String>
     {
         let bytes_cow: Cow<[u8]> = self.read_bytes(path)?;
 
@@ -29,10 +29,10 @@ pub trait FsRead
     /// Lists subpaths (files/folders) name under a directory. Empty if don't exist
     fn entries_names(&mut self, path: &path) -> Vec<String>;
 
-    fn node_kind(&mut self, path: &path) -> IoResult<FsNodeKind>;
+    fn node_kind(&mut self, path: &path) -> FileResult<FsNodeKind>;
 
     /// Checks whether a path exists in this filesystem.
-    fn exists(&mut self, path: &path) -> IoResult<bool> { self.node_kind(path).map(|_| true) }
+    fn exists(&mut self, path: &path) -> FileResult<bool> { self.node_kind(path).map(|_| true) }
     fn is_file(&mut self, path: &path) -> bool { self.node_kind(path).map(|e| e.is_file()).unwrap_or(false) }
     fn is_directory(&mut self, path: &path) -> bool { self.node_kind(path).map(|e| e.is_directory()).unwrap_or(false) }
 
@@ -44,9 +44,10 @@ pub trait FsRead
 }
 
 
+#[cfg(feature = "serde")]
 pub trait FsReadExtension : FsRead + Sized
 {
-    fn load<T,P>(&mut self, path: P) -> IoResult<T> where T: for<'de> Deserialize<'de>, P: AsRefPath
+    fn load<T,P>(&mut self, path: P) -> FileResult<T> where T: for<'de> Deserialize<'de>, P: AsRefPath
     {
         let path = path.as_ref();
         let original_extension = path.extension_or_empty();
@@ -54,21 +55,22 @@ pub trait FsReadExtension : FsRead + Sized
 
         match extension
         {
-            Extensions::RON => return T::from_ron(&self.read_str(path)?),
+            Extensions::RON => return T::from_ron(&self.read_str(path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_json")]
-            Extensions::JSON => return T::from_json(&self.read_str(path)?),
+            Extensions::JSON => return T::from_json(&self.read_str(path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_xml")]
-            Extensions::XML => return T::from_xml(&self.read_str(path)?),
+            Extensions::XML => return T::from_xml(&self.read_str(path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_quick_bin")]
-            Extensions::QUICK_BIN => return T::from_quick_bin_buf(&self.read_bytes(path)?),
+            Extensions::QUICK_BIN => return T::from_quick_bin_buf(&self.read_bytes(path)?).map_err(|e| e.into()),
 
-            _ => return T::from_ron(&self.read_str(path)?),
+            _ => return T::from_ron(&self.read_str(path)?).map_err(|e| e.into()),
         }
     }
 }
+#[cfg(feature = "serde")]
 impl<S> FsReadExtension for S where S : FsRead {}
 
 
@@ -78,34 +80,35 @@ pub trait FsWrite : FsRead
 {
     /// Override/delete the file content if already exist.
     /// If the file don't exist, create it.
-    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult;
+    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult;
 
     /// Override the file content if already exist.
     /// If the file don't exist, create it.
-    fn write_str(&mut self, path: &path, text: &str) -> IoResult
+    fn write_str(&mut self, path: &path, text: &str) -> FileResult
     {
         self.write_bytes(path, text.as_bytes())
     }
 
 
     /// Delete the files/folder recursively under a directory.
-    fn delete(&mut self, path: &path) -> IoResult;
+    fn delete(&mut self, path: &path) -> FileResult;
 
     /// Move the file/directory. If it is a folder, also move all the content
-    fn move_to(&mut self, path: &path, new_path: &path) -> IoResult;
+    fn move_to(&mut self, path: &path, new_path: &path) -> FileResult;
 
     /// Rename the directory / file name with another name.
     /// Keep the extension
-    fn rename(&mut self, path: &path, name: &str) -> IoResult
+    fn rename(&mut self, path: &path, name: &str) -> FileResult
     {
         let new_path = path.with_name(name);
         self.move_to(path, &new_path)
     }
 }
 
+#[cfg(feature = "serde")]
 pub trait FsWriteExtension : FsWrite + Sized
 {
-    fn save<T : ?Sized, P>(&mut self, path: P, value: &T) -> IoResult where T: Serialize, P: AsRefPath
+    fn save<T : ?Sized, P>(&mut self, path: P, value: &T) -> FileResult where T: Serialize, P: AsRefPath
     {
         let path = path.as_ref();
         let original_extension = path.extension_or_empty();
@@ -129,6 +132,7 @@ pub trait FsWriteExtension : FsWrite + Sized
         }
     }
 }
+#[cfg(feature = "serde")]
 impl<S> FsWriteExtension for S where S : FsWrite {}
 
 

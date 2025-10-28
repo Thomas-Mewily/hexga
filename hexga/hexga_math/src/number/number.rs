@@ -69,7 +69,7 @@ trait_marker!(
 trait_marker!(
     // uX, iX, fX
     Primitive:
-        NumericIdentity + PartialOrd + RangeDefault + CastPrimitive + PrimitiveType + CastRangePrimitive + Default + CastPrimitive
+        NumericIdentity + PartialOrd + RangeDefault + PrimitiveType + CastPrimitive + CastRangePrimitive + Default
 );
 
 trait_marker!(

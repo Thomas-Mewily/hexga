@@ -30,9 +30,10 @@ float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
 serde = ["dep:serde", "hexga_io",
     "hexga_core/serde",
-    "hexga_math/serde"
+    "hexga_math/serde",
+    "hexga_io/serde"
 ]
-hexga_io = ["dep:hexga_io", "serde",
+hexga_io = ["dep:hexga_io",
     "hexga_core/hexga_io",
     "hexga_math/hexga_io"
 ]

@@ -1,3 +1,6 @@
+use hexga_io::encoding::MediaType;
+use ::image::{DynamicImage, GenericImageView, ImageFormat};
+
 use super::*;
 
 
@@ -445,4 +448,236 @@ impl<T, Idx> MapWith for ImageBaseOf<T, Idx> where Idx: Integer
 }
 
 
+
+
+impl <C,Idx> Encode for ImageBaseOf<C,Idx>
+    where
+    Idx : Integer,
+    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>>,
+    u8: CastRangeFrom<C::Component>,
+    u16: CastRangeFrom<C::Component>
+{
+    fn encode_extensions() -> impl Iterator<Item = &'static extension> {
+        [ "png" ].into_iter()
+    }
+
+    fn encode_in<W>(&self, writer: &mut W, extension: &extension) -> EncodeResult where W: Write {
+        match extension
+        {
+            "png" => {
+                match C::Component::PRIMITIVE_TYPE
+                {
+                    NumberType::IntegerSigned =>
+                    {
+                        if std::mem::size_of::<C::Component>() * 8 <= 8
+                        {
+                            self.clone().to_rgba_u8().encode_in(writer, extension)
+                        }else
+                        {
+                            self.clone().to_rgba_u16().encode_in(writer, extension)
+                        }
+                    },
+                    NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
+                    {
+                        8 =>
+                        {
+                            ::image::ImageEncoder::write_image(
+                            ::image::codecs::png::PngEncoder::new(writer),
+                            unsafe {
+                                std::slice::from_raw_parts(
+                                    self.pixels().as_ptr() as *const u8,
+                                    self.pixels().len() * std::mem::size_of::<C>(),
+                                )
+                            },
+                            self.width().to_usize() as _,
+                            self.height().to_usize() as _,
+                            ::image::ExtendedColorType::Rgba8,
+                            ).map_err(|e| EncodeError::custom(format!("Failed to encode .png rgba8 image : {}", e)))
+                        }
+                        16 =>
+                        {
+                            ::image::ImageEncoder::write_image(
+                            ::image::codecs::png::PngEncoder::new(writer),
+                            unsafe {
+                                std::slice::from_raw_parts(
+                                    self.pixels().as_ptr() as *const u8,
+                                    self.pixels().len() * std::mem::size_of::<C>(),
+                                )
+                            },
+                            self.width().to_usize() as _,
+                            self.height().to_usize() as _,
+                            ::image::ExtendedColorType::Rgba16,
+                            ).map_err(|e| EncodeError::custom(format!("Failed to encode .png rgba16 image : {}", e)))
+                        }
+                        _ =>
+                        {
+                            self.clone().to_rgba_u8().encode_in(writer, extension)
+                        }
+                    }
+                    NumberType::Float => self.clone().to_rgba_u16().encode_in(writer, extension),
+                    NumberType::Bool => self.clone().to_rgba_u8().encode_in(writer, extension),
+                }
+            }
+            _ => Err(EncodeError::encode_unsupported_extension_with_name::<Self>(extension, "Image")),
+        }
+    }
+
+}
+
+impl <C,Idx> MediaType for ImageBaseOf<C,Idx>
+    where
+    Idx : Integer,
+    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>>,
+    u8: CastRangeFrom<C::Component>,
+    u16: CastRangeFrom<C::Component>
+{
+    fn media_type() -> &'static str { "image" }
+}
+
+impl <C,Idx> Decode for ImageBaseOf<C,Idx>
+    where
+    Idx : Integer,
+    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>>,
+    u8: CastRangeFrom<C::Component>,
+    u16: CastRangeFrom<C::Component>
+{
+    fn decode_extensions() -> impl Iterator<Item = &'static extension> {
+        [
+            "png",
+            "jpg", "jpeg",
+            "bmp",
+            "gif",
+            "webp",
+            "ico",
+            "tiff"
+        ].into_iter()
+    }
+
+    fn decode(bytes: &[u8], extension: &extension) -> EncodeResult<Self> where Self: Sized
+    {
+        let format = match extension
+        {
+            "png" => ImageFormat::Png,
+            "jpg" | "jpeg" => ImageFormat::Jpeg,
+            "bmp" => ImageFormat::Bmp,
+            "gif" => ImageFormat::Gif,
+            "webp" => ImageFormat::WebP,
+            "ico" => ImageFormat::Ico,
+            "tiff" => ImageFormat::Tiff,
+            other =>  Err(EncodeError::decode_unsupported_extension_with_name::<Self>(extension, "Image"))?,
+        };
+
+        let img = ::image::load_from_memory_with_format(&bytes, format);
+        let img = match img
+        {
+            Ok(dyn_img) => dyn_img,
+            Err(e) => Err(EncodeError::from_display(e))?,
+        };
+
+        let (width, height) : (u32, u32) = img.dimensions();
+        let w = Idx::cast_from(width);
+        let h = Idx::cast_from(height);
+        let casted_width = w.to_u32();
+        let casted_height = h.to_u32();
+        if casted_width != width || height != casted_height
+        {
+            return Err(EncodeError::custom(format!("Image is too big: {}", vector2(width, height))));
+        }
+
+        let error_invalid_size = || EncodeError::custom("Invalid bytes len");
+
+        match C::Component::PRIMITIVE_TYPE
+        {
+            NumberType::IntegerSigned => {}, // Todo: handle >= 16 bits signed to use u16 precision ?
+            NumberType::IntegerUnsigned =>
+            {
+                if std::mem::size_of::<C::Component>() * 8 >= 16
+                {
+                    let bytes = match img
+                    {
+                        DynamicImage::ImageRgba16(rgba) => rgba,
+                        x => x.to_rgba16(),
+                    }.into_raw();
+                    let multiple = 4 * std::mem::size_of::<u16>(); // 4 components (rbga)
+                    if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
+                    {
+                        return Err(error_invalid_size());
+                    }
+
+                    let rgba_vec: Vec<RgbaU16> = bytes
+                        .chunks_exact(4)
+                        .map(|chunk| RgbaU16 {
+                            r: chunk[0],
+                            g: chunk[1],
+                            b: chunk[2],
+                            a: chunk[3],
+                        })
+                        .collect();
+
+                    let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_u16(v)).collect();
+                    let size = vector2(w, h);
+
+                    return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
+                }
+            },
+            NumberType::Float =>
+            {
+                let bytes = match img
+                    {
+                        DynamicImage::ImageRgba32F(rgba) => rgba,
+                        x => x.to_rgba32f(),
+                    }.into_raw();
+
+                    let multiple = 4 * std::mem::size_of::<float>(); // 4 components (rbga)
+                    if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
+                    {
+                        return Err(error_invalid_size());
+                    }
+
+                    let rgba_vec: Vec<RgbaF32> = bytes
+                        .chunks_exact(4)
+                        .map(|chunk| RgbaF32 {
+                            r: chunk[0],
+                            g: chunk[1],
+                            b: chunk[2],
+                            a: chunk[3],
+                        })
+                        .collect();
+
+                    let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_f32(v)).collect();
+                    let size = vector2(w, h);
+
+                    return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
+            },
+            NumberType::Bool => {},
+        }
+
+        // fallback on u8
+        let bytes = match img
+        {
+            DynamicImage::ImageRgba8(rgba8) => rgba8,
+            x => x.to_rgba8(),
+        }.into_raw();
+        let multiple = 4 * std::mem::size_of::<u8>(); // 4 components (rbga)
+        if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
+        {
+            return Err(error_invalid_size());
+        }
+
+        let rgba_vec: Vec<RgbaU8> = bytes
+            .chunks_exact(4)
+            .map(|chunk| RgbaU8 {
+                r: chunk[0],
+                g: chunk[1],
+                b: chunk[2],
+                a: chunk[3],
+            })
+            .collect();
+
+        let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_u8(v)).collect();
+        let size = vector2(w, h);
+
+        Self::from_vec(size, pixels).ok_or_else(error_invalid_size)
+    }
+}
 

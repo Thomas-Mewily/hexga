@@ -72,28 +72,28 @@ impl<'a, F> JsonFileSerializer<'a,F>
         Self { fs, path, serializer: Self::new_serializer(), should_save: true, param }
     }
 
-    pub(crate) fn serialize_at_path<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> Result<(), AssetError>
+    pub(crate) fn serialize_at_path<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> Result<(), IoError>
     where
         T: Serialize,
     {
         Self::_serialize_at_path(fs, path, val, param, false)
     }
 
-    fn _serialize_at_path<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam, is_root: bool) -> Result<(), AssetError>
+    fn _serialize_at_path<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam, is_root: bool) -> Result<(), IoError>
     where
         T: Serialize,
     {
         if is_root
         {
-            fs.delete(&path.with_extension("json")).map_err(|e| AssetError::new(&path, e))?;
-            fs.delete(&path).map_err(|e| AssetError::new(&path, e))?;
+            fs.delete(&path.with_extension("json")).map_err(|e| IoError::new(&path, e))?;
+            fs.delete(&path).map_err(|e| IoError::new(&path, e))?;
         }
         let mut s = Self::new(fs, path, param);
         val.serialize(&mut s)?;
         s.save()
     }
 
-    pub fn serialize_and_save<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> Result<(), AssetError>
+    pub fn serialize_and_save<T>(fs: &'a mut F, path: Path, val: &T, param: MultiFileSerializerParam) -> Result<(), IoError>
     where
         T: Serialize,
     {
@@ -107,7 +107,7 @@ impl<'a, F> JsonFileSerializer<'a,F>
         JsonSerializer::new(___())
     }
 
-    fn save(mut self) -> Result<(), AssetError>
+    fn save(mut self) -> Result<(), IoError>
     {
         if !self.should_save { return Ok(()); }
 
@@ -121,7 +121,7 @@ impl<'a, F> JsonFileSerializer<'a,F>
             self.path /= MOD;
         }
         self.path.set_extension("json");
-        self.fs.write_bytes(&self.path, &bytes).map_err(|kind| AssetError::new(self.path, kind))
+        self.fs.write_bytes(&self.path, &bytes).map_err(|kind| IoError::new(self.path, kind))
     }
 
 }
@@ -159,7 +159,7 @@ impl<'a, F, C> SerializeSeq for Compound<'a, F, C>
     C: SerializeSeq,
 {
     type Ok=();
-    type Error=AssetError;
+    type Error=IoError;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
         where
@@ -168,7 +168,7 @@ impl<'a, F, C> SerializeSeq for Compound<'a, F, C>
         match self.compound.serialize_element(value)
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 
@@ -176,7 +176,7 @@ impl<'a, F, C> SerializeSeq for Compound<'a, F, C>
         match self.compound.end()
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 }
@@ -187,7 +187,7 @@ impl<'a, F, C> SerializeTuple for Compound<'a, F, C>
     C: SerializeTuple,
 {
     type Ok=();
-    type Error=AssetError;
+    type Error=IoError;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
         where
@@ -196,7 +196,7 @@ impl<'a, F, C> SerializeTuple for Compound<'a, F, C>
         match self.compound.serialize_element(value)
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 
@@ -204,7 +204,7 @@ impl<'a, F, C> SerializeTuple for Compound<'a, F, C>
         match self.compound.end()
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 }
@@ -215,7 +215,7 @@ impl<'a, F, C> SerializeTupleStruct for Compound<'a, F, C>
     C: SerializeTupleStruct,
 {
     type Ok=();
-    type Error=AssetError;
+    type Error=IoError;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
         where
@@ -224,7 +224,7 @@ impl<'a, F, C> SerializeTupleStruct for Compound<'a, F, C>
         match self.compound.serialize_field(value)
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 
@@ -232,7 +232,7 @@ impl<'a, F, C> SerializeTupleStruct for Compound<'a, F, C>
         match self.compound.end()
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 }
@@ -243,7 +243,7 @@ impl<'a, F, C> SerializeTupleVariant for Compound<'a, F, C>
     C: SerializeTupleVariant,
 {
     type Ok=();
-    type Error=AssetError;
+    type Error=IoError;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
@@ -252,7 +252,7 @@ impl<'a, F, C> SerializeTupleVariant for Compound<'a, F, C>
         match self.compound.serialize_field(value)
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 
@@ -260,7 +260,7 @@ impl<'a, F, C> SerializeTupleVariant for Compound<'a, F, C>
         match self.compound.end()
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 }
@@ -271,7 +271,7 @@ impl<'a, F, C> SerializeMap for Compound<'a, F, C>
     C: SerializeMap,
 {
     type Ok=();
-    type Error=AssetError;
+    type Error=IoError;
 
     fn serialize_key<T>(&mut self, key: &T) -> Result<(), Self::Error>
     where
@@ -280,7 +280,7 @@ impl<'a, F, C> SerializeMap for Compound<'a, F, C>
         match key.serialize(IdentifierSerializer)
         {
             Ok(k) if self.param.mf_map => { self.key = Some(k); Ok(()) }
-            _ => self.compound.serialize_key(key).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            _ => self.compound.serialize_key(key).map_err(|e| IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 
@@ -307,8 +307,8 @@ impl<'a, F, C> SerializeMap for Compound<'a, F, C>
                         *self.parent_should_save = true;
                         match key
                         {
-                            Key::String(s) => self.compound.serialize_key(&s).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string())))?,
-                            Key::Char(c) => self.compound.serialize_key(&c).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string())))?,
+                            Key::String(s) => self.compound.serialize_key(&s).map_err(|e| IoError::new(self.path, FileError::Custom(e.to_string())))?,
+                            Key::Char(c) => self.compound.serialize_key(&c).map_err(|e| IoError::new(self.path, FileError::Custom(e.to_string())))?,
                         }
                     },
                 }
@@ -316,14 +316,14 @@ impl<'a, F, C> SerializeMap for Compound<'a, F, C>
             None => {}
         }
         *self.parent_should_save = true;
-        self.compound.serialize_value(value).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string())))
+        self.compound.serialize_value(value).map_err(|e| IoError::new(self.path, FileError::Custom(e.to_string())))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self.compound.end()
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 }
@@ -334,7 +334,7 @@ impl<'a, F, C> SerializeStruct for Compound<'a, F, C>
     C: SerializeStruct,
 {
     type Ok=();
-    type Error=AssetError;
+    type Error=IoError;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
@@ -360,7 +360,7 @@ impl<'a, F, C> SerializeStruct for Compound<'a, F, C>
             _ => {}
         }
         *self.parent_should_save = true;
-        self.compound.serialize_field(key, value).map_err(|e| AssetError::new(self.path, IoError::Custom(e.to_string())))
+        self.compound.serialize_field(key, value).map_err(|e| IoError::new(self.path, FileError::Custom(e.to_string())))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error>
@@ -368,7 +368,7 @@ impl<'a, F, C> SerializeStruct for Compound<'a, F, C>
         match self.compound.end()
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 }
@@ -379,7 +379,7 @@ impl<'a, F, C> SerializeStructVariant for Compound<'a, F, C>
     C: SerializeStructVariant,
 {
     type Ok=();
-    type Error=AssetError;
+    type Error=IoError;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
@@ -388,7 +388,7 @@ impl<'a, F, C> SerializeStructVariant for Compound<'a, F, C>
         match self.compound.serialize_field(key, value)
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 
@@ -396,7 +396,7 @@ impl<'a, F, C> SerializeStructVariant for Compound<'a, F, C>
         match self.compound.end()
         {
             Ok(_) => Ok(()),
-            Err(e) => Err(AssetError::new(self.path, IoError::Custom(e.to_string()))),
+            Err(e) => Err(IoError::new(self.path, FileError::Custom(e.to_string()))),
         }
     }
 }
@@ -407,7 +407,7 @@ where
     'a: 'x
 {
     type Ok=();
-    type Error=AssetError;
+    type Error=IoError;
 
     type SerializeSeq=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeSeq>;
     type SerializeTuple=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeTuple>;
@@ -418,77 +418,77 @@ where
     type SerializeStructVariant=Compound<'x,F,<&'x mut JsonSerializer as Serializer>::SerializeStructVariant>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_bool(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_bool(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_i8(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_i8(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_i16(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_i16(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_i32(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_i32(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_i64(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_i64(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_u8(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_u8(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_u16(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_u16(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_u32(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_u32(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_u64(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_u64(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_f32(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_f32(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_f64(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_f64(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_char(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_char(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_str(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_str(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_bytes(v).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_bytes(v).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_none().map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_none().map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
         T: ?Sized + Serialize {
-        self.serializer.serialize_some(value).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_some(value).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_unit().map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_unit().map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_unit_struct(name).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_unit_struct(name).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_unit_variant(
@@ -497,7 +497,7 @@ where
         variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        self.serializer.serialize_unit_variant(name, variant_index, variant).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_unit_variant(name, variant_index, variant).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_newtype_struct<T>(
@@ -507,7 +507,7 @@ where
     ) -> Result<Self::Ok, Self::Error>
     where
         T: ?Sized + Serialize {
-        self.serializer.serialize_newtype_struct(name, value).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_newtype_struct(name, value).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_newtype_variant<T>(
@@ -519,16 +519,16 @@ where
     ) -> Result<Self::Ok, Self::Error>
     where
         T: ?Sized + Serialize {
-        self.serializer.serialize_newtype_variant(name, variant_index, variant, value).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))
+        self.serializer.serialize_newtype_variant(name, variant_index, variant, value).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        let compound = self.serializer.serialize_seq(len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
+        let compound = self.serializer.serialize_seq(len).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
         Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        let compound = self.serializer.serialize_tuple(len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
+        let compound = self.serializer.serialize_tuple(len).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
         Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
@@ -537,7 +537,7 @@ where
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
-        let compound = self.serializer.serialize_tuple_struct(name, len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
+        let compound = self.serializer.serialize_tuple_struct(name, len).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
         Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
@@ -548,12 +548,12 @@ where
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        let compound = self.serializer.serialize_tuple_variant(name, variant_index, variant, len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
+        let compound = self.serializer.serialize_tuple_variant(name, variant_index, variant, len).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
         Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        let compound = self.serializer.serialize_map(len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
+        let compound = self.serializer.serialize_map(len).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
         self.should_save = false;
         Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
@@ -564,7 +564,7 @@ where
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error>
     {
-        let compound = self.serializer.serialize_struct(name, len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
+        let compound = self.serializer.serialize_struct(name, len).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
         self.should_save = false;
         Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
@@ -576,7 +576,7 @@ where
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let compound = self.serializer.serialize_struct_variant(name, variant_index, variant, len).map_err(|e| AssetError::new(&self.path, IoError::Custom(e.to_string())))?;
+        let compound = self.serializer.serialize_struct_variant(name, variant_index, variant, len).map_err(|e| IoError::new(&self.path, FileError::Custom(e.to_string())))?;
         Ok(Compound { fs: self.fs, path: &self.path, parent_should_save: &mut self.should_save, param: &self.param, compound, key: None })
     }
 }

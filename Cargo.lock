@@ -1194,6 +1194,7 @@ dependencies = [
 name = "hexga_io"
 version = "0.0.11-beta.4"
 dependencies = [
+ "base64",
  "bincode",
  "ron",
  "serde",

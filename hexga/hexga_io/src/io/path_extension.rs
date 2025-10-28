@@ -7,103 +7,55 @@ pub type Extension = String;
 pub type extension = str;
 
 #[repr(transparent)]
-#[derive(Deserialize, Serialize)]
-#[serde(transparent)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", serde(transparent))]
 #[derive(Default, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Path
 {
     inner: String
 }
-impl<'a> From<&'a mut str> for Path
-{
-    fn from(value: &'a mut str) -> Self {
-        Self::from(value.to_owned())
-    }
-}
-impl<'a> From<&'a str> for Path
-{
-    fn from(value: &'a str) -> Self {
-        Self::from(value.to_owned())
-    }
-}
-impl<'a> From<&'a mut path> for Path
-{
-    fn from(value: &'a mut path) -> Self {
-        value.to_owned()
-    }
-}
-impl<'a> From<&'a path> for Path
-{
-    fn from(value: &'a path) -> Self {
-        value.to_owned()
-    }
-}
-impl From<String> for Path
-{
-    fn from(value: String) -> Self {
-        Self::new(value)
-    }
-}
-impl From<Path> for String
-{
-    fn from(value: Path) -> Self {
-        value.inner
-    }
-}
+impl<'a> Into<Path> for &'a Path { fn into(self) -> Path { self.clone() } }
+impl<'a> Into<Path> for &'a mut Path { fn into(self) -> Path { self.clone() } }
+impl<'a> From<&'a mut str> for Path { fn from(value: &'a mut str) -> Self { Self::from(value.to_owned()) } }
+impl<'a> From<&'a str> for Path { fn from(value: &'a str) -> Self { Self::from(value.to_owned()) } }
+impl<'a> From<&'a mut path> for Path { fn from(value: &'a mut path) -> Self { value.to_owned() } }
+impl<'a> From<&'a path> for Path { fn from(value: &'a path) -> Self { value.to_owned() } }
+impl From<String> for Path { fn from(value: String) -> Self { Self::new(value) } }
+impl From<Path> for String { fn from(value: Path) -> Self { value.inner } }
 impl<'a> PartialEq<&'a path> for Path
 {
     #[inline(always)]
-    fn eq(&self, other: &&'a path) -> bool {
-        (&&*self).eq(&other)
-    }
+    fn eq(&self, other: &&'a path) -> bool { (&&*self).eq(&other) }
     #[inline(always)]
-    fn ne(&self, other: &&'a path) -> bool {
-        (&&*self).ne(&other)
-    }
+    fn ne(&self, other: &&'a path) -> bool { (&&*self).ne(&other) }
 }
 impl PartialEq<path> for Path
 {
     #[inline(always)]
-    fn eq(&self, other: &path) -> bool {
-        (&&*self).eq(&other)
-    }
+    fn eq(&self, other: &path) -> bool { (&&*self).eq(&other) }
     #[inline(always)]
-    fn ne(&self, other: &path) -> bool {
-        (&&*self).ne(&other)
-    }
+    fn ne(&self, other: &path) -> bool { (&&*self).ne(&other) }
 }
 impl<'a> PartialEq<&'a str> for Path
 {
     #[inline(always)]
-    fn eq(&self, other: &&'a str) -> bool {
-        (&&*self).eq(&other)
-    }
+    fn eq(&self, other: &&'a str) -> bool { (&&*self).eq(&other) }
     #[inline(always)]
-    fn ne(&self, other: &&'a str) -> bool {
-        (&&*self).ne(&other)
-    }
+    fn ne(&self, other: &&'a str) -> bool { (&&*self).ne(&other) }
 }
 impl PartialEq<str> for Path
 {
     #[inline(always)]
-    fn eq(&self, other: &str) -> bool {
-        (&&*self).eq(&other)
-    }
+    fn eq(&self, other: &str) -> bool { (&&*self).eq(&other) }
     #[inline(always)]
-    fn ne(&self, other: &str) -> bool {
-        (&&*self).ne(&other)
-    }
+    fn ne(&self, other: &str) -> bool { (&&*self).ne(&other) }
 }
 impl PartialEq<String> for Path
 {
     #[inline(always)]
-    fn eq(&self, other: &String) -> bool {
-        self.inner.eq(other)
-    }
+    fn eq(&self, other: &String) -> bool { self.inner.eq(other) }
     #[inline(always)]
-    fn ne(&self, other: &String) -> bool {
-        self.inner.ne(other)
-    }
+    fn ne(&self, other: &String) -> bool { self.inner.ne(other) }
 }
 
 
@@ -275,6 +227,8 @@ impl DerefMut for Path {
 /// '\' are replaced by '/'
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(feature = "serde", serde(transparent))]
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct path
 {

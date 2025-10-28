@@ -9,7 +9,7 @@ pub struct FsDisk;
 
 impl FsWrite for FsDisk
 {
-    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  IoResult {
+    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult {
         let std_path = StdPath::new(path);
 
         if let Some(parent) = std_path.parent()
@@ -39,7 +39,7 @@ impl FsWrite for FsDisk
         std::fs::write(std_path, bytes).map_err(Into::into)
     }
 
-    fn delete(&mut self, path: &path) -> IoResult {
+    fn delete(&mut self, path: &path) -> FileResult {
         let std_path = StdPath::new(path);
         if std_path.is_dir() {
             std::fs::remove_dir_all(std_path).map_err(Into::into)
@@ -50,7 +50,7 @@ impl FsWrite for FsDisk
         }
     }
 
-    fn move_to(&mut self, path: &path, new_path: &path) -> IoResult {
+    fn move_to(&mut self, path: &path, new_path: &path) -> FileResult {
         let src = StdPath::new(path);
         let dst = StdPath::new(new_path);
         std::fs::rename(src, dst).map_err(Into::into)
@@ -60,7 +60,7 @@ impl FsWrite for FsDisk
 
 impl FsRead for FsDisk
 {
-    fn read_bytes<'a>(&'a mut self, path: &path) ->  IoResult<Cow<'a, [u8]>>
+    fn read_bytes<'a>(&'a mut self, path: &path) ->  FileResult<Cow<'a, [u8]>>
     {
         let std_path = StdPath::new(path);
         std::fs::read(std_path).map(Cow::Owned).map_err(Into::into)
@@ -82,30 +82,33 @@ impl FsRead for FsDisk
         names
     }
 
-    fn node_kind(&mut self, path: &path) -> IoResult<FsNodeKind> {
+    fn node_kind(&mut self, path: &path) -> FileResult<FsNodeKind> {
         let std_path = StdPath::new(path);
         if std_path.is_dir() { return Ok(FsNodeKind::Directoy) }
         if std_path.is_file() { return Ok(FsNodeKind::File) }
-        Err(IoError::NotFound)
+        Err(FileError::NotFound)
     }
 }
 
-
+#[cfg(feature = "serde")]
 pub trait SaveToDisk : Serialize
 {
-    fn save_to_disk<P>(&self, path: P) -> IoResult where P: AsRefPath
+    fn save_to_disk<P>(&self, path: P) -> FileResult where P: AsRefPath
     {
         let mut disk = FsDisk;
         disk.save(path.as_ref(), self)
     }
 }
+#[cfg(feature = "serde")]
 impl<T> SaveToDisk for T where T: Serialize + ?Sized {}
 
+#[cfg(feature = "serde")]
 pub trait LoadFromDisk : for<'de> Deserialize<'de>
 {
-    fn load_from_disk<P>(path: P) -> IoResult<Self> where P: AsRefPath
+    fn load_from_disk<P>(path: P) -> FileResult<Self> where P: AsRefPath
     {
         (&mut FsDisk).load(path.as_ref())
     }
 }
+#[cfg(feature = "serde")]
 impl<T> LoadFromDisk for T where T: for<'de> Deserialize<'de> {}

@@ -20,8 +20,7 @@
 #![allow(unused_imports)]
 #![feature(formatting_options)] // For image, to display aligned value they need to be fomatted in a temporary formatter
 
-use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}};
-
+use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}, marker::PhantomData};
 
 use hexga_core::prelude::*;
 use hexga_math::grid::*;
