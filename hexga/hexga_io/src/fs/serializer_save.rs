@@ -3,6 +3,20 @@ use serde::ser::{SerializeMap, SerializeSeq, SerializeStructVariant, SerializeTu
 use super::*;
 
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize)]
+pub enum ExtensionParam
+{
+    WithExtension(String),
+    GuessIt{replace_it:bool}
+}
+impl Default for ExtensionParam
+{
+    fn default() -> Self {
+        Self::GuessIt { replace_it: true }
+    }
+}
+
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(Serialize, Deserialize)]
@@ -16,20 +30,26 @@ pub struct SaveParam
     /// Will struct be expended into multiple file (if multi_file is true)
     pub multi_file_struct: bool,
 
+    pub extension_param: ExtensionParam,
+
     // #[serde(borrow)]
     // pub indent: &'static str,
     // #[serde(borrow)]
     // pub separator: &'static str,
     // pub capacity : usize,
 }
+
 impl Default for SaveParam
 {
     fn default() -> Self {
-        Self { multi_file: true, multi_file_map: true, multi_file_struct: false }
+        Self { multi_file: true, multi_file_map: true, multi_file_struct: false, extension_param: ExtensionParam::default() }
     }
 }
 impl SaveParam
 {
+    pub fn with_extension_param(self, extension_param: ExtensionParam) -> Self { Self { extension_param, ..self }}
+    pub fn with_extension(self, extension : impl Into<Extension>) -> Self { Self { extension_param: ExtensionParam::WithExtension(extension.into()), ..self}}
+    pub fn with_guess_extension(self, replace_it: bool) -> Self { Self { extension_param: ExtensionParam::GuessIt{ replace_it }, ..self}}
     pub fn with_multi_file(self, multi_file: bool) -> Self { Self { multi_file, ..self }}
     pub fn with_multi_file_map(self, multi_file_map: bool) -> Self { Self { multi_file_map, ..self }}
     pub fn with_multi_file_struct(self, multi_file_struct: bool) -> Self { Self { multi_file_struct, ..self }}
@@ -43,6 +63,7 @@ pub(crate) struct SerializerSaveTxtOrBinOrMarkup<'a, F>
     pub(crate) fs: &'a mut F,
     pub(crate) should_save: bool,
     pub(crate) path: Path,
+    pub(crate) deduced_extension: Option<Extension>,
     pub(crate) serializer: Option<SerializerMarkup>,
     pub(crate) default_capacity: usize,
     pub(crate) param: SaveParam,
@@ -62,7 +83,7 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
 
     pub(crate) fn new_full(fs: &'a mut F, path: Path, param: SaveParam, serializer: SerializerMarkup, default_capacity: usize) -> Self
     {
-        Self { fs, should_save: true, path, serializer: Some(serializer), default_capacity, param }
+        Self { fs, should_save: true, path, serializer: Some(serializer), default_capacity, param, deduced_extension: None }
     }
 }
 
@@ -159,6 +180,7 @@ impl<'a, F, Ron,Json,Xml> SerializeTuple for SerializerSaveCompound<'a,F,Ron,Jso
                 Err(e) => Err(IoError::new(self.path, FileError::from_display(e))),
             }
         )
+        self.fs
     }
 }
 impl<'a, F, Ron,Json,Xml> SerializeSeq for SerializerSaveCompound<'a,F,Ron,Json,Xml>
@@ -377,7 +399,22 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
 {
     pub(crate) fn write_fs(&mut self, bytes: &[u8]) -> IoResult
     {
-        self.fs.write_bytes(&self.path, bytes).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))
+        let path = match &self.param.extension_param
+        {
+            ExtensionParam::WithExtension(ext) => self.path.with_extension(&ext),
+            ExtensionParam::GuessIt { replace_it } => if *replace_it
+            {
+                match &self.deduced_extension
+                {
+                    Some(ext) => self.path.with_extension(&ext),
+                    None => return Err(IoError::new(self.path.clone(), EncodeError::custom("Unable to guess the file extension"))),
+                }
+            }else
+            {
+                self.path.clone()
+            }
+        };
+        self.fs.write_bytes(&path, bytes).map_err(|e| IoError::new(path.clone(), FileError::from(e)))
     }
 
     pub(crate) fn save(&mut self) -> IoResult
@@ -387,7 +424,8 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
     }
 }
 
-macro_rules! serialize_value {
+macro_rules! serialize_value
+{
     ($self:ident, $method:ident $(, $arg:expr)* $(,)?) => {{
         dispatch_serializer!(&mut $self, s =>
             match s.$method($($arg),*) {
@@ -483,8 +521,7 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
         <&'s mut SerializerJson as Serializer>::SerializeStructVariant,
         <&'s mut SerializerXml as Serializer>::SerializeStructVariant>;
 
-    fn serialize_bool(self, value: bool) -> Result<Self::Ok, Self::Error>
-    {
+    fn serialize_bool(self, value: bool) -> Result<Self::Ok, Self::Error> {
         serialize_value!(self, serialize_bool, value)
     }
 
@@ -530,7 +567,7 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
 
     fn serialize_char(self, c: char) -> Result<Self::Ok, Self::Error>
     {
-        // txt
+        self.deduced_extension = Some("txt".into());
         let mut buf = [0u8; 8]; // 4 is enought, I put 8 to be sure
         let bytes = c.encode_utf8(&mut buf).as_bytes();
         self.write_fs(bytes)
@@ -538,7 +575,7 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
 
     fn serialize_str(self, txt: &str) -> Result<Self::Ok, Self::Error>
     {
-        // txt
+        self.deduced_extension = Some("txt".into());
         self.write_fs(txt.as_bytes())
     }
 

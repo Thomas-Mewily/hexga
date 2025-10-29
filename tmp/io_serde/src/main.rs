@@ -26,7 +26,7 @@ struct Person
 fn test_serialize<T>(val: &T) where T: Serialize
 {
     let mut fs = FsDisk;
-    match JsonFileSerializer::serialize_and_save(&mut fs, "./tmp/io_serde/test".into(), val, MultiFileSerializerParam { mf_map: false, mf_struct: true, ..Default::default() })
+    match JsonFileSerializer::serialize_and_save(&mut fs, "./tmp/io_serde/test2".into(), val, MultiFileSerializerParam { mf_map: false, mf_struct: true, ..Default::default() })
     {
         Ok(_) => {}
         Err(e) => eprintln!("{}", e),
@@ -66,10 +66,11 @@ fn test_it()
     map.insert("three", 3);
     map.insert("? invalid file name", 4);
     map.insert("? invalid 2", 5);
-    map.save_to_disk("./tmp/io_serde/mymap").unwrap();
+    //map.save_to_disk("./tmp/io_serde/mymap").unwrap();
     //test_serialize(&map);
 
-    test_serialize(&Foo{ bar: Bar { x: 42, __mod: 99, image: Image::from_fn((1,1), |p| ColorU8::RED) } });
+    map.save_to_disk("./tmp/io_serde/test2").unwrap()
+    //test_serialize(&Foo{ bar: Bar { x: 42, __mod: 99, image: Image::from_fn((1,1), |p| ColorU8::RED) } });
 
 
 
@@ -85,10 +86,10 @@ fn main()
 {
     test_it();
 
-    let img = Image::load_from_disk("./tmp/io_serde/smiley").unwrap();
-    img.save_to_disk("./tmp/io_serde/smiley3").unwrap();
-    dbg!(&img);
-    println!("{}", img.to_url("png").unwrap());
+    // let img = Image::load_from_disk("./tmp/io_serde/smiley").unwrap();
+    // img.save_to_disk("./tmp/io_serde/smiley3").unwrap();
+    // dbg!(&img);
+    // println!("{}", img.to_url("png").unwrap());
 
 
     println!("hello world");
