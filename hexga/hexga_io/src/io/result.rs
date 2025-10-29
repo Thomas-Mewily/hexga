@@ -68,6 +68,12 @@ impl serde::ser::Error for IoError
 {
     fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self { kind: FileError::Custom(msg.to_string()), ..Default::default() } }
 }
+#[cfg(feature = "serde")]
+impl serde::de::Error for IoError
+{
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self { kind: FileError::Custom(msg.to_string()), ..Default::default() } }
+}
+
 
 
 

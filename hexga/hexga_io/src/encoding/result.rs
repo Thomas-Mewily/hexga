@@ -57,28 +57,28 @@ impl EncodeError
     }
 
 
-    pub fn encode_unsupported_extension_with_name<T:Encode>(got: impl Into<Extension>, _name: impl Into<String>) -> Self
+    pub fn save_unsupported_extension_with_name<T:Save + ?Sized>(got: impl Into<Extension>, _name: impl Into<String>) -> Self
     {
         Self::UnsupportedExtension
         {
             //name: name.into(),
             got: got.into(),
-            expected: T::encode_extensions().map(|ext| ext.to_owned()).collect()
+            expected: T::save_extensions().map(|ext| ext.to_owned()).collect()
         }
     }
-    pub fn encode_unsupported_extension<T:Encode>(got: impl Into<Extension>) -> Self { Self::encode_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>()) }
+    pub fn save_unsupported_extension<T:Save + ?Sized>(got: impl Into<Extension>) -> Self { Self::save_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>()) }
 
 
-    pub fn decode_unsupported_extension_with_name<T:Decode>(got: impl Into<Extension>, _name: impl Into<String>) -> Self
+    pub fn load_unsupported_extension_with_name<T:Load + ?Sized>(got: impl Into<Extension>, _name: impl Into<String>) -> Self
     {
         Self::UnsupportedExtension
         {
             //name: name.into(),
             got: got.into(),
-            expected: T::decode_extensions().map(|ext| ext.to_owned()).collect()
+            expected: T::load_extensions().map(|ext| ext.to_owned()).collect()
         }
     }
-    pub fn decode_unsupported_extension<T:Decode>(got: impl Into<Extension>) -> Self { Self::decode_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>()) }
+    pub fn load_unsupported_extension<T:Load + ?Sized>(got: impl Into<Extension>) -> Self { Self::load_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>()) }
 
 
     pub fn markup<T: ?Sized>(extension: impl Into<String>, reason: impl Display) -> Self
@@ -103,6 +103,11 @@ impl std::error::Error for EncodeError
 }
 #[cfg(feature = "serde")]
 impl serde::ser::Error for EncodeError
+{
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::Custom { reason: msg.to_string() } }
+}
+#[cfg(feature = "serde")]
+impl serde::de::Error for EncodeError
 {
     fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::Custom { reason: msg.to_string() } }
 }

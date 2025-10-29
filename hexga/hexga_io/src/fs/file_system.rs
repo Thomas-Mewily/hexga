@@ -85,16 +85,34 @@ pub trait FsRead
 
 
 #[cfg(feature = "serde")]
+/// Extension trait for [`FsRead`] that provides methods to **load values from the file system**,
+/// independently of the actual file extension.
 pub trait FsReadExtension : FsRead + Sized
 {
+    /// Load a value from a file, automatically detecting the extension.
+    ///
+    /// If the file does not exist, attempts to auto-correct the extension.
     fn load<T,P>(&mut self, path: P) -> FileResult<T> where T: for<'de> Deserialize<'de>, P: AsRefPath
+    {
+        let path = path.as_ref();
+        if self.exists(&path).is_err()
+        {
+            let path = self.auto_correct_extension(&path);
+            return self.load_with_extension(&path, path.extension_or_empty());
+        }
+        self.load_with_extension(&path, path.extension_or_empty())
+    }
+
+    /// Load a value from a file using a specified extension, ignoring the file's actual extension.
+    ///
+    /// If the file does not exist, attempts to auto-correct the extension.
+    fn load_with_extension<T,P>(&mut self, path: P, extension: &extension) -> FileResult<T> where T: for<'de> Deserialize<'de>, P: AsRefPath
     {
         let mut path = path.as_ref().to_owned();
         if self.exists(&path).is_err()
         {
             path = self.auto_correct_extension(&path);
         }
-        let extension = path.extension_or_empty();
 
         match extension
         {
@@ -109,7 +127,12 @@ pub trait FsReadExtension : FsRead + Sized
             #[cfg(feature = "serde_quick_bin")]
             Extensions::QUICK_BIN => return T::from_quick_bin_buf(&self.read_bytes(&path)?).map_err(|e| e.into()),
 
-            _ => return T::from_ron(&self.read_str(&path)?).map_err(|e| e.into()),
+            _ =>
+            {
+                let bytes = self.read_bytes(&path)?;
+                let load_deserializer = LoadDeserializer { bytes: bytes.into_owned() };
+                T::deserialize(load_deserializer).map_err(|e| e.into())
+            }
         }
     }
 }
@@ -194,27 +217,38 @@ pub trait FsWrite : FsRead
 #[cfg(feature = "serde")]
 pub trait FsWriteExtension : FsWrite + Sized
 {
-    fn save<T : ?Sized, P>(&mut self, path: P, value: &T) -> FileResult where T: Serialize, P: AsRefPath
+    fn save<T : ?Sized, P>(&mut self, value: &T, path: P) -> FileResult where T: Serialize, P: AsRefPath
+    {
+        self.save_with_extension(value, path, "__guess")
+    }
+    fn save_with_extension<T : ?Sized, P>(&mut self, value: &T, path: P, extension: &extension) -> FileResult where T: Serialize, P: AsRefPath
     {
         let path = path.as_ref();
-        let original_extension = path.extension_or_empty();
-        let extension = original_extension;
-
 
         match extension
         {
-            Extensions::RON => return self.write_str(path, &value.to_ron()?),
+            Extensions::RON => return self.write_str(&path, &value.to_ron()?),
 
             #[cfg(feature = "serde_json")]
-            Extensions::JSON => return self.write_str(path, &value.to_json()?),
+            Extensions::JSON => return self.write_str(&path, &value.to_json()?),
 
             #[cfg(feature = "serde_xml")]
-            Extensions::XML => return self.write_str(path, &value.to_xml()?),
+            Extensions::XML => return self.write_str(&path, &value.to_xml()?),
 
             #[cfg(feature = "serde_quick_bin")]
-            Extensions::QUICK_BIN => return self.write_raw_bytes(path, &value.to_quick_bin()?),
+            Extensions::QUICK_BIN => return self.write_raw_bytes(&path, &value.to_quick_bin()?),
 
-            _ => return self.write_str(path, &value.to_ron()?),
+            _ =>
+            {
+                let SaveUrl { bytes, extension: save_extension } = value.serialize(SaveSerializer).map_err(|e| FileError::from(e))?;
+                if extension == "__guess"
+                {
+                    self.write_bytes(&path.with_extension(&save_extension), &bytes)
+                }else
+                {
+                    self.write_bytes(path, &bytes)
+                }
+            },
         }
     }
 }

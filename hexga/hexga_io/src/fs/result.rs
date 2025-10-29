@@ -47,3 +47,8 @@ impl serde::ser::Error for FileError
 {
     fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::Custom(msg.to_string()) }
 }
+#[cfg(feature = "serde")]
+impl serde::de::Error for FileError
+{
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::Custom(msg.to_string()) }
+}

@@ -3,11 +3,11 @@ use super::*;
 mod result;
 pub use result::*;
 
-mod encode;
-pub use encode::*;
+mod save;
+pub use save::*;
 
-mod decode;
-pub use decode::*;
+mod load;
+pub use load::*;
 
 mod base64;
 pub use base64::*;
@@ -21,8 +21,8 @@ pub mod prelude
     pub use super::
     {
         result::*,
-        encode::*,
-        decode::*,
+        save::*,
+        load::*,
         url::prelude::*,
     };
 }

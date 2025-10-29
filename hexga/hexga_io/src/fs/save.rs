@@ -1,13 +1,13 @@
 use super::*;
 
-pub trait Save : Serialize
+pub trait SaveToFs : Serialize
 {
     fn save<P, Fs>(&self, path: P, fs: &mut Fs) -> FileResult where P: AsRefPath, Fs: FsWrite
     {
-        fs.save(path, self)
+        fs.save(self, path)
     }
 }
-impl<T> Save for T where T: Serialize + ?Sized {}
+impl<T> SaveToFs for T where T: Serialize + ?Sized {}
 
 pub trait SaveToDisk : Serialize
 {
@@ -17,3 +17,4 @@ pub trait SaveToDisk : Serialize
     }
 }
 impl<T> SaveToDisk for T where T: Serialize + ?Sized {}
+
