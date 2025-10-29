@@ -22,6 +22,12 @@ impl From<FromUtf8Error> for FileError { fn from(value: FromUtf8Error) -> Self {
 impl From<Utf8Error> for FileError { fn from(value: Utf8Error) -> Self { FileError::Encoding(value.into()) } }
 impl From<Base64Error> for FileError { fn from(value: Base64Error) -> Self { FileError::Encoding(value.into()) } }
 
+impl FileError
+{
+    pub fn custom(reason: impl Into<String>) -> Self { Self::Custom(reason.into()) }
+    pub fn from_display(reason: impl Display) -> Self { Self::custom(reason.to_string())}
+}
+
 impl Display for FileError
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

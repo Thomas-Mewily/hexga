@@ -13,16 +13,9 @@ description = "io file abstraction based on serde to allow loading/saving/conver
 categories = ["filesystem", "encoding"]
 
 [features]
-default = ["serde", "serde_ron", "serde_json", "serde_xml", "serde_quick_bin"]
+default = ["serde"]
 
-serde = ["dep:serde"]
-
-# ron is the default way to deserialize
-serde_ron        = ["serde", "dep:ron"]
-serde_json       = ["serde", "dep:serde_json"]
-serde_xml        = ["serde", "dep:serde-xml-rs"]
-serde_quick_bin  = ["serde", "dep:bincode"]
-
+serde = ["dep:serde", "dep:ron", "dep:serde_json", "dep:serde-xml-rs", "dep:bincode"]
 
 [dependencies]
 serde = { version = "1.0.0", optional = true }

@@ -116,16 +116,12 @@ pub trait FsReadExtension : FsRead + Sized
 
         match extension
         {
-            #[cfg(feature = "serde_ron")]
             Extensions::RON => T::from_ron(&self.read_str(&path)?).map_err(|e| e.into()),
 
-            #[cfg(feature = "serde_json")]
             Extensions::JSON => T::from_json(&self.read_str(&path)?).map_err(|e| e.into()),
 
-            #[cfg(feature = "serde_xml")]
             Extensions::XML => T::from_xml(&self.read_str(&path)?).map_err(|e| e.into()),
 
-            #[cfg(feature = "serde_quick_bin")]
             Extensions::QUICK_BIN => T::from_quick_bin_buf(&self.read_bytes(&path)?).map_err(|e| e.into()),
 
             Extensions::TXT => T::deserialize(DeserializerTxt{ txt: self.read_str(&path)? }).map_err(|e| e.into()),
@@ -162,6 +158,7 @@ pub trait FsWrite : FsRead
     fn write_raw_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult;
 
     /// Writes raw bytes to a file, while also deleting any ambigious existing files with the same name in the same folder.
+    /// Check [`FsWrite::write_raw_bytes`] to not delete any ambigious existing files.
     ///
     /// - If the file already exists, its content is **overwritten**.
     /// - If the file does not exist, it and any missing parent directories are **created**.
@@ -172,12 +169,23 @@ pub trait FsWrite : FsRead
         self.write_raw_bytes(path, bytes)
     }
 
-    /// Writes a UTF-8 string to a file.
+    /// Writes a UTF-8 string to a file, while also deleting any ambigious existing files with the same name in the same folder.
+    /// Check [`FsWrite::write_raw_str`] to not delete any ambigious existing files.
     ///
     /// - If the file already exists, its content is **overwritten**.
     /// - If the file does not exist, it and any missing parent directories are **created**.
     /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
     fn write_str(&mut self, path: &path, text: &str) -> FileResult
+    {
+        self.write_bytes(path, text.as_bytes())
+    }
+
+    /// Writes a UTF-8 string to a file.
+    ///
+    /// - If the file already exists, its content is **overwritten**.
+    /// - If the file does not exist, it and any missing parent directories are **created**.
+    /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
+    fn write_raw_str(&mut self, path: &path, text: &str) -> FileResult
     {
         self.write_raw_bytes(path, text.as_bytes())
     }
@@ -224,40 +232,68 @@ pub(crate) const GUESS_EXTENSION : &'static str = "guess_it";
 #[cfg(feature = "serde")]
 pub trait FsWriteExtension : FsWrite + Sized
 {
-    fn save<T, P>(&mut self, value: &T, path: P) -> FileResult where T: Serialize + ?Sized, P: AsRefPath
+    fn save<T, P>(&mut self, value: &T, path: P) -> IoResult where T: Serialize + ?Sized, P: AsRefPath
     {
-        self.save_with_extension(value, path, GUESS_EXTENSION)
+        let path = path.as_ref();
+        self.save_with_extension(value, path, path.extension().unwrap_or(GUESS_EXTENSION))
     }
-    fn save_with_extension<T, P>(&mut self, value: &T, path: P, extension: &extension) -> FileResult where T: Serialize + ?Sized, P: AsRefPath
+
+    fn save_with_extension<T, P>(&mut self, value: &T, path: P, extension: &extension) -> IoResult where T: Serialize + ?Sized, P: AsRefPath
+    {
+        self.save_with_extension_and_param(value, path, extension, SaveParam::default())
+    }
+
+    fn save_with_extension_and_param<T, P>(&mut self, value: &T, path: P, extension: &extension, param: SaveParam) -> IoResult where T: Serialize + ?Sized, P: AsRefPath
     {
         let path = path.as_ref();
 
         match extension
         {
-            #[cfg(feature = "serde_ron")]
-            Extensions::RON => self.write_str(&path, &value.to_ron()?),
+            Extensions::RON =>
+            {
+                let markup = value.to_ron().map_err(|e| IoError::new(path, e))?;
+                self.write_str(&path, &markup).map_err(|e| IoError::new(path, e))
+            },
 
-            #[cfg(feature = "serde_json")]
-            Extensions::JSON => self.write_str(&path, &value.to_json()?),
+            Extensions::JSON =>
+            {
+                let markup = value.to_json().map_err(|e| IoError::new(path, e))?;
+                self.write_str(&path, &markup).map_err(|e| IoError::new(path, e))
+            }
 
-            #[cfg(feature = "serde_xml")]
-            Extensions::XML => self.write_str(&path, &value.to_xml()?),
+            Extensions::XML =>
+            {
+                let markup = value.to_xml().map_err(|e| IoError::new(path, e))?;
+                self.write_str(&path, &markup).map_err(|e| IoError::new(path, e))
+            }
 
-            #[cfg(feature = "serde_quick_bin")]
-            Extensions::QUICK_BIN => self.write_raw_bytes(&path, &value.to_quick_bin()?),
+            Extensions::QUICK_BIN =>
+            {
+                let bin = value.to_quick_bin().map_err(|e| IoError::new(path, e))?;
+                self.write_bytes(&path, &bin).map_err(|e| IoError::new(path, e))
+            }
 
-            Extensions::TXT => self.write_str(&path, &value.serialize(SerializerTxt).map_err(|e| FileError::from(e))?),
+            Extensions::TXT =>
+            {
+                let txt = value.serialize(SerializerTxt).map_err(|e| IoError::new(path, e))?;
+                self.write_str(&path, &txt).map_err(|e| IoError::new(path, e))
+            }
 
             _ =>
             {
-                let SaveTxtOrBinUrl { bytes, extension: save_extension } = value.serialize(SerializerSave).map_err(|e| FileError::from(e))?;
-                if extension == GUESS_EXTENSION
-                {
-                    self.write_bytes(&path.with_extension(&save_extension), &bytes)
-                }else
-                {
-                    self.write_bytes(path, &bytes)
-                }
+                let mut ser = SerializerSaveTxtOrBinOrMarkup::new(self, path.to_owned()).with_param(param);
+                value.serialize(&mut ser)?;
+                ser.save()
+
+                //todo
+                // let SaveTxtOrBinUrlOrMarkup { bytes, extension: save_extension } = value.serialize(SerializerSaveTxtOrBinOrMarkup{ extension }).map_err(|e| FileError::from(e))?;
+                // if extension == GUESS_EXTENSION
+                // {
+                //     self.write_bytes(&path.with_extension(&save_extension), &bytes)
+                // }else
+                // {
+                //     self.write_bytes(path, &bytes)
+                // }
             },
         }
     }

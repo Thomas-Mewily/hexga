@@ -66,6 +66,7 @@ fn test_it()
     map.insert("three", 3);
     map.insert("? invalid file name", 4);
     map.insert("? invalid 2", 5);
+    map.save_to_disk("./tmp/io_serde/mymap").unwrap();
     //test_serialize(&map);
 
     test_serialize(&Foo{ bar: Bar { x: 42, __mod: 99, image: Image::from_fn((1,1), |p| ColorU8::RED) } });

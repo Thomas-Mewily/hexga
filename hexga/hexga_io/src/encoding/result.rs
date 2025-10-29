@@ -13,7 +13,7 @@ pub enum EncodeError
     Markup { extension: String, reason: String },
     Utf8Error { valid_up_to : usize, error_len : Option<usize>},
     UnsupportedExtension { got : Extension, expected : Vec<Extension> },
-    Custom { reason: String },
+    Custom(String),
     Base64(Base64Error),
     Std(std::io::ErrorKind),
 }
@@ -40,7 +40,7 @@ impl Display for EncodeError
                 }
             },
             EncodeError::UnsupportedExtension { got, expected } => write!(f, "unsupported extension {got}, expected one of {expected:?}"),
-            EncodeError::Custom { reason } => write!(f, "custom: {}", reason),
+            EncodeError::Custom(reason) => write!(f, "custom: {}", reason),
             EncodeError::Unknow => write!(f, "unknow"),
             EncodeError::Base64(base64) => write!(f, "base64: {}", base64),
             EncodeError::Std(std) => write!(f, "std: {}", std)
@@ -91,7 +91,7 @@ impl EncodeError
         }
     }
 
-    pub fn custom(reason: impl Into<String>) -> Self { Self::Custom { reason: reason.into() } }
+    pub fn custom(reason: impl Into<String>) -> Self { Self::Custom(reason.into()) }
     pub fn from_display(reason: impl Display) -> Self { Self::custom(reason.to_string())}
 }
 
@@ -104,12 +104,12 @@ impl std::error::Error for EncodeError
 #[cfg(feature = "serde")]
 impl serde::ser::Error for EncodeError
 {
-    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::Custom { reason: msg.to_string() } }
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::custom(msg.to_string()) }
 }
 #[cfg(feature = "serde")]
 impl serde::de::Error for EncodeError
 {
-    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::Custom { reason: msg.to_string() } }
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::custom(msg.to_string()) }
 }
 
 
