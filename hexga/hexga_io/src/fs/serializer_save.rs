@@ -176,11 +176,11 @@ impl<'a, F, Ron,Json,Xml> SerializeTuple for SerializerSaveCompound<'a,F,Ron,Jso
         dispatch_compound_serializer!(self, s =>
             match s.end()
             {
-                Ok(_) => Ok(()),
-                Err(e) => Err(IoError::new(self.path, FileError::from_display(e))),
+                Ok(_) => {},
+                Err(e) => Err(IoError::new(self.path, FileError::from_display(e)))?,
             }
         )
-        self.fs
+        self.fs.write_bytes(&self.path, bytes)
     }
 }
 impl<'a, F, Ron,Json,Xml> SerializeSeq for SerializerSaveCompound<'a,F,Ron,Json,Xml>
@@ -394,6 +394,7 @@ impl MarkupSerializer for SerializerXml
 //     pub(crate) extension: String,
 // }
 
+
 impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
     where F: FsWrite
 {
@@ -422,6 +423,11 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
         let markup = dispatch_serializer!(self, s => s.extract()).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))?;
         self.write_fs(markup.as_bytes())
     }
+}
+
+pub(crate) trait ExtractMarkup
+{
+    fn extract(&mut self) -> String;
 }
 
 macro_rules! serialize_value
