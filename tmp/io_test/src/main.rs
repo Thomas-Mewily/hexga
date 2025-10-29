@@ -54,7 +54,6 @@ fn main()
 
     //42.save_to_disk(path)
 
-    //img.save_to_disk()
 
     println!("hello world");
 }
