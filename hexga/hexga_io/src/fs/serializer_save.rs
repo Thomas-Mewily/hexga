@@ -43,7 +43,7 @@ pub(crate) struct SerializerSaveTxtOrBinOrMarkup<'a, F>
     pub(crate) fs: &'a mut F,
     pub(crate) should_save: bool,
     pub(crate) path: Path,
-    pub(crate) serializer: SerializerMarkup,
+    pub(crate) serializer: Option<SerializerMarkup>,
     pub(crate) default_capacity: usize,
     pub(crate) param: SaveParam,
 }
@@ -62,7 +62,7 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
 
     pub(crate) fn new_full(fs: &'a mut F, path: Path, param: SaveParam, serializer: SerializerMarkup, default_capacity: usize) -> Self
     {
-        Self { fs, should_save: true, path, serializer, default_capacity, param }
+        Self { fs, should_save: true, path, serializer: Some(serializer), default_capacity, param }
     }
 }
 
@@ -81,7 +81,7 @@ pub(crate) struct SerializerSaveCompound<'a, F, Ron,Json,Xml>
     path: &'a Path,
     param: &'a SaveParam,
     parent_should_save: &'a mut bool,
-    serializer : SerializerMarkupOf<Ron,Json,Xml>,
+    compound : SerializerMarkupOf<Ron,Json,Xml>,
     key: Option<Key>,
 }
 
@@ -97,7 +97,7 @@ pub(crate) enum SerializerMarkupOf<Ron,Json,Xml>
 macro_rules! dispatch_serializer {
     // mutable borrow
     (&mut $self:expr, $s:pat  => $body:expr) => {
-        match &mut $self.serializer {
+        match $self.serializer.as_mut().unwrap() {
             SerializerMarkupOf::Ron($s) => $body,
             SerializerMarkupOf::Json($s) => $body,
             SerializerMarkupOf::Xml($s) => $body,
@@ -106,7 +106,27 @@ macro_rules! dispatch_serializer {
 
     // by value (move)
     ($self:expr, $s:pat  => $body:expr) => {
-        match $self.serializer {
+        match std::mem::replace(&mut $self.serializer, None).unwrap() {
+            SerializerMarkupOf::Ron($s) => $body,
+            SerializerMarkupOf::Json($s) => $body,
+            SerializerMarkupOf::Xml($s) => $body,
+        }
+    };
+}
+
+macro_rules! dispatch_compound_serializer {
+    // mutable borrow
+    (&mut $self:expr, $s:pat  => $body:expr) => {
+        match &mut $self.compound {
+            SerializerMarkupOf::Ron($s) => $body,
+            SerializerMarkupOf::Json($s) => $body,
+            SerializerMarkupOf::Xml($s) => $body,
+        }
+    };
+
+    // by value (move)
+    ($self:expr, $s:pat  => $body:expr) => {
+        match $self.compound {
             SerializerMarkupOf::Ron($s) => $body,
             SerializerMarkupOf::Json($s) => $body,
             SerializerMarkupOf::Xml($s) => $body,
@@ -128,11 +148,11 @@ impl<'a, F, Ron,Json,Xml> SerializeTuple for SerializerSaveCompound<'a,F,Ron,Jso
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        dispatch_serializer!(&mut self, s => s.serialize_element(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
+        dispatch_compound_serializer!(&mut self, s => s.serialize_element(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        dispatch_serializer!(self, s =>
+        dispatch_compound_serializer!(self, s =>
             match s.end()
             {
                 Ok(_) => Ok(()),
@@ -154,11 +174,11 @@ impl<'a, F, Ron,Json,Xml> SerializeSeq for SerializerSaveCompound<'a,F,Ron,Json,
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        dispatch_serializer!(&mut self, s => s.serialize_element(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
+        dispatch_compound_serializer!(&mut self, s => s.serialize_element(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        dispatch_serializer!(self, s =>
+        dispatch_compound_serializer!(self, s =>
             match s.end()
             {
                 Ok(_) => Ok(()),
@@ -180,11 +200,11 @@ impl<'a, F, Ron,Json,Xml> SerializeTupleStruct for SerializerSaveCompound<'a,F,R
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        dispatch_serializer!(&mut self, s => s.serialize_field(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
+        dispatch_compound_serializer!(&mut self, s => s.serialize_field(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        dispatch_serializer!(self, s =>
+        dispatch_compound_serializer!(self, s =>
             match s.end()
             {
                 Ok(_) => Ok(()),
@@ -206,11 +226,11 @@ impl<'a, F, Ron,Json,Xml> SerializeTupleVariant for SerializerSaveCompound<'a,F,
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        dispatch_serializer!(&mut self, s => s.serialize_field(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
+        dispatch_compound_serializer!(&mut self, s => s.serialize_field(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        dispatch_serializer!(self, s =>
+        dispatch_compound_serializer!(self, s =>
             match s.end()
             {
                 Ok(_) => Ok(()),
@@ -232,17 +252,17 @@ impl<'a, F, Ron,Json,Xml> SerializeMap for SerializerSaveCompound<'a,F,Ron,Json,
     fn serialize_key<T>(&mut self, key: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        dispatch_serializer!(&mut self, s => s.serialize_key(key).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
+        dispatch_compound_serializer!(&mut self, s => s.serialize_key(key).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ?Sized + Serialize {
-        dispatch_serializer!(&mut self, s => s.serialize_value(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
+        dispatch_compound_serializer!(&mut self, s => s.serialize_value(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        dispatch_serializer!(self, s =>
+        dispatch_compound_serializer!(self, s =>
             match s.end()
             {
                 Ok(_) => Ok(()),
@@ -264,11 +284,11 @@ impl<'a, F, Ron,Json,Xml> SerializeStruct for SerializerSaveCompound<'a,F,Ron,Js
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
         where
         T: ?Sized + Serialize {
-        dispatch_serializer!(&mut self, s => s.serialize_field(key, value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
+        dispatch_compound_serializer!(&mut self, s => s.serialize_field(key, value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        dispatch_serializer!(self, s =>
+        dispatch_compound_serializer!(self, s =>
             match s.end()
             {
                 Ok(_) => Ok(()),
@@ -290,11 +310,11 @@ impl<'a, F, Ron,Json,Xml> SerializeStructVariant for SerializerSaveCompound<'a,F
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
         where
         T: ?Sized + Serialize {
-        dispatch_serializer!(&mut self, s => s.serialize_field(key, value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
+        dispatch_compound_serializer!(&mut self, s => s.serialize_field(key, value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        dispatch_serializer!(self, s =>
+        dispatch_compound_serializer!(self, s =>
             match s.end()
             {
                 Ok(_) => Ok(()),
@@ -355,33 +375,34 @@ impl MarkupSerializer for SerializerXml
 impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
     where F: FsWrite
 {
-    pub(crate) fn save(self) -> IoResult
+    pub(crate) fn write_fs(&mut self, bytes: &[u8]) -> IoResult
+    {
+        self.fs.write_bytes(&self.path, bytes).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))
+    }
+
+    pub(crate) fn save(&mut self) -> IoResult
     {
         let markup = dispatch_serializer!(self, s => s.extract()).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))?;
-        Ok(())
+        self.write_fs(markup.as_bytes())
     }
 }
 
 macro_rules! serialize_value {
-    // With optional arguments (0 or more)
     ($self:ident, $method:ident $(, $arg:expr)* $(,)?) => {{
         dispatch_serializer!(&mut $self, s =>
             match s.$method($($arg),*) {
-                Ok(_) => Ok(()),
-                Err(e) => Err(IoError::new($self.path.clone(), FileError::from_display(e)))
+                Ok(_) => {},
+                Err(e) => Err(IoError::new($self.path.clone(), FileError::from_display(e)))?,
             }
-        )
-        //$self.save()
+        );
+        $self.save()
     }};
 }
 
 
 macro_rules! dispatch_compound {
-    // $self: the struct containing `serializer`
-    // $method: the method to call on the inner serializer
-    // $($arg:expr),* : zero or more arguments to pass to the method
     ($self:expr, $method:ident $(, $arg:expr)*) => {{
-        match &mut $self.serializer {
+        match $self.serializer.as_mut().unwrap() {
             SerializerMarkupOf::Ron(ser) => {
                 let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
                 Ok(SerializerSaveCompound {
@@ -389,7 +410,7 @@ macro_rules! dispatch_compound {
                     path: &$self.path,
                     param: &$self.param,
                     parent_should_save: &mut $self.should_save,
-                    serializer: SerializerMarkupOf::Ron(seq),
+                    compound: SerializerMarkupOf::Ron(seq),
                     key: None,
                 })
             },
@@ -400,7 +421,7 @@ macro_rules! dispatch_compound {
                     path: &$self.path,
                     param: &$self.param,
                     parent_should_save: &mut $self.should_save,
-                    serializer: SerializerMarkupOf::Json(seq),
+                    compound: SerializerMarkupOf::Json(seq),
                     key: None,
                 })
             },
@@ -411,7 +432,7 @@ macro_rules! dispatch_compound {
                     path: &$self.path,
                     param: &$self.param,
                     parent_should_save: &mut $self.should_save,
-                    serializer: SerializerMarkupOf::Xml(seq),
+                    compound: SerializerMarkupOf::Xml(seq),
                     key: None,
                 })
             },
@@ -512,20 +533,20 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
         // txt
         let mut buf = [0u8; 8]; // 4 is enought, I put 8 to be sure
         let bytes = c.encode_utf8(&mut buf).as_bytes();
-        self.fs.write_bytes(&self.path, bytes).map_err(|e| IoError::new(self.path.clone(), FileError::from_display(e)))
+        self.write_fs(bytes)
     }
 
     fn serialize_str(self, txt: &str) -> Result<Self::Ok, Self::Error>
     {
         // txt
-        self.fs.write_str(&self.path, txt).map_err(|e| IoError::new(self.path.clone(), FileError::from_display(e)))
+        self.write_fs(txt.as_bytes())
     }
 
     fn serialize_bytes(self, bytes: &[u8]) -> Result<Self::Ok, Self::Error>
     {
         let url = BinUrlData::try_from(bytes).map_err(|e| IoError::new(self.path.clone(), EncodeError::from(e)))?;
         let bytes = url.data.to_owned();
-        self.fs.write_bytes(&self.path, &bytes).map_err(|e| IoError::new(self.path.clone(), FileError::from_display(e)))
+        self.write_fs(&bytes)
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
