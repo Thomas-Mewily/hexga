@@ -1,17 +1,17 @@
 use super::*;
 
-pub(crate) struct LoadDeserializer
+pub(crate) struct DeserializerTxt
 {
-    pub(crate) bytes: Vec<u8>
+    pub(crate) txt: String
 }
-impl<'de> Deserializer<'de> for LoadDeserializer
+impl<'de> Deserializer<'de> for DeserializerTxt
 {
     type Error=EncodeError;
 
-    fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        Err(Default::default())
+        self.deserialize_string(visitor)
     }
 
     fn deserialize_bool<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
@@ -86,28 +86,28 @@ impl<'de> Deserializer<'de> for LoadDeserializer
         Err(Default::default())
     }
 
-    fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de> {
+        visitor.visit_str(&self.txt)
+    }
+
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de> {
+        visitor.visit_string(self.txt)
+    }
+
+    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
         Err(Default::default())
     }
 
-    fn deserialize_string<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
         Err(Default::default())
-    }
-
-    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: Visitor<'de> {
-        visitor.visit_bytes(&self.bytes)
-    }
-
-    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: Visitor<'de> {
-        visitor.visit_byte_buf(self.bytes)
     }
 
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
@@ -199,10 +199,11 @@ impl<'de> Deserializer<'de> for LoadDeserializer
         Err(Default::default())
     }
 
-    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+
+    fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        visitor.visit_byte_buf(self.bytes)
+        Err(Default::default())
     }
 
     fn is_human_readable(&self) -> bool {

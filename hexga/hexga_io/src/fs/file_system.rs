@@ -116,21 +116,24 @@ pub trait FsReadExtension : FsRead + Sized
 
         match extension
         {
-            Extensions::RON => return T::from_ron(&self.read_str(&path)?).map_err(|e| e.into()),
+            #[cfg(feature = "serde_ron")]
+            Extensions::RON => T::from_ron(&self.read_str(&path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_json")]
-            Extensions::JSON => return T::from_json(&self.read_str(&path)?).map_err(|e| e.into()),
+            Extensions::JSON => T::from_json(&self.read_str(&path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_xml")]
-            Extensions::XML => return T::from_xml(&self.read_str(&path)?).map_err(|e| e.into()),
+            Extensions::XML => T::from_xml(&self.read_str(&path)?).map_err(|e| e.into()),
 
             #[cfg(feature = "serde_quick_bin")]
-            Extensions::QUICK_BIN => return T::from_quick_bin_buf(&self.read_bytes(&path)?).map_err(|e| e.into()),
+            Extensions::QUICK_BIN => T::from_quick_bin_buf(&self.read_bytes(&path)?).map_err(|e| e.into()),
+
+            Extensions::TXT => T::deserialize(DeserializerTxt{ txt: self.read_str(&path)? }).map_err(|e| e.into()),
 
             _ =>
             {
                 let bytes = self.read_bytes(&path)?;
-                let load_deserializer = LoadDeserializer { bytes: bytes.into_owned() };
+                let load_deserializer = DeserializerTxtOrBinary { bytes: bytes.into_owned() };
                 T::deserialize(load_deserializer).map_err(|e| e.into())
             }
         }
@@ -215,33 +218,40 @@ pub trait FsWrite : FsRead
 }
 
 #[cfg(feature = "serde")]
+pub(crate) const GUESS_EXTENSION : &'static str = "guess_it";
+
+
+#[cfg(feature = "serde")]
 pub trait FsWriteExtension : FsWrite + Sized
 {
-    fn save<T : ?Sized, P>(&mut self, value: &T, path: P) -> FileResult where T: Serialize, P: AsRefPath
+    fn save<T, P>(&mut self, value: &T, path: P) -> FileResult where T: Serialize + ?Sized, P: AsRefPath
     {
-        self.save_with_extension(value, path, "__guess")
+        self.save_with_extension(value, path, GUESS_EXTENSION)
     }
-    fn save_with_extension<T : ?Sized, P>(&mut self, value: &T, path: P, extension: &extension) -> FileResult where T: Serialize, P: AsRefPath
+    fn save_with_extension<T, P>(&mut self, value: &T, path: P, extension: &extension) -> FileResult where T: Serialize + ?Sized, P: AsRefPath
     {
         let path = path.as_ref();
 
         match extension
         {
-            Extensions::RON => return self.write_str(&path, &value.to_ron()?),
+            #[cfg(feature = "serde_ron")]
+            Extensions::RON => self.write_str(&path, &value.to_ron()?),
 
             #[cfg(feature = "serde_json")]
-            Extensions::JSON => return self.write_str(&path, &value.to_json()?),
+            Extensions::JSON => self.write_str(&path, &value.to_json()?),
 
             #[cfg(feature = "serde_xml")]
-            Extensions::XML => return self.write_str(&path, &value.to_xml()?),
+            Extensions::XML => self.write_str(&path, &value.to_xml()?),
 
             #[cfg(feature = "serde_quick_bin")]
-            Extensions::QUICK_BIN => return self.write_raw_bytes(&path, &value.to_quick_bin()?),
+            Extensions::QUICK_BIN => self.write_raw_bytes(&path, &value.to_quick_bin()?),
+
+            Extensions::TXT => self.write_str(&path, &value.serialize(SerializerTxt).map_err(|e| FileError::from(e))?),
 
             _ =>
             {
-                let SaveUrl { bytes, extension: save_extension } = value.serialize(SaveSerializer).map_err(|e| FileError::from(e))?;
-                if extension == "__guess"
+                let SaveTxtOrBinUrl { bytes, extension: save_extension } = value.serialize(SerializerSave).map_err(|e| FileError::from(e))?;
+                if extension == GUESS_EXTENSION
                 {
                     self.write_bytes(&path.with_extension(&save_extension), &bytes)
                 }else

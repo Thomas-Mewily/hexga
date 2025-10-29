@@ -4,16 +4,16 @@ use super::*;
 
 
 
-pub(crate) struct SaveSerializer;
+pub(crate) struct SerializerSave;
 
-pub(crate) struct SaveUrl
+pub(crate) struct SaveTxtOrBinUrl
 {
     pub(crate) bytes: Vec<u8>,
     pub(crate) extension: String,
 }
 
-impl SerializeSeq for SaveSerializer{
-    type Ok=SaveUrl;
+impl SerializeSeq for SerializerSave{
+    type Ok=SaveTxtOrBinUrl;
     type Error=EncodeError;
 
     fn serialize_element<T>(&mut self, _: &T) -> Result<(), Self::Error>
@@ -26,8 +26,8 @@ impl SerializeSeq for SaveSerializer{
         Err(Default::default())
     }
 }
-impl SerializeTuple for SaveSerializer{
-    type Ok=SaveUrl;
+impl SerializeTuple for SerializerSave{
+    type Ok=SaveTxtOrBinUrl;
     type Error=EncodeError;
 
     fn serialize_element<T>(&mut self, _: &T) -> Result<(), Self::Error>
@@ -40,8 +40,8 @@ impl SerializeTuple for SaveSerializer{
         Err(Default::default())
     }
 }
-impl SerializeTupleStruct for SaveSerializer{
-    type Ok=SaveUrl;
+impl SerializeTupleStruct for SerializerSave{
+    type Ok=SaveTxtOrBinUrl;
     type Error=EncodeError;
 
     fn serialize_field<T>(&mut self, _: &T) -> Result<(), Self::Error>
@@ -54,8 +54,8 @@ impl SerializeTupleStruct for SaveSerializer{
         Err(Default::default())
     }
 }
-impl SerializeTupleVariant for SaveSerializer{
-    type Ok=SaveUrl;
+impl SerializeTupleVariant for SerializerSave{
+    type Ok=SaveTxtOrBinUrl;
     type Error=EncodeError;
 
     fn serialize_field<T>(&mut self, _value: &T) -> Result<(), Self::Error>
@@ -68,8 +68,8 @@ impl SerializeTupleVariant for SaveSerializer{
         Err(Default::default())
     }
 }
-impl SerializeMap for SaveSerializer{
-    type Ok=SaveUrl;
+impl SerializeMap for SerializerSave{
+    type Ok=SaveTxtOrBinUrl;
     type Error=EncodeError;
 
     fn serialize_key<T>(&mut self, _key: &T) -> Result<(), Self::Error>
@@ -88,8 +88,8 @@ impl SerializeMap for SaveSerializer{
         Err(Default::default())
     }
 }
-impl SerializeStruct for SaveSerializer{
-    type Ok=SaveUrl;
+impl SerializeStruct for SerializerSave{
+    type Ok=SaveTxtOrBinUrl;
     type Error=EncodeError;
 
     fn serialize_field<T>(&mut self, _key: &'static str, _value: &T) -> Result<(), Self::Error>
@@ -102,8 +102,8 @@ impl SerializeStruct for SaveSerializer{
         Err(Default::default())
     }
 }
-impl SerializeStructVariant for SaveSerializer{
-    type Ok=SaveUrl;
+impl SerializeStructVariant for SerializerSave{
+    type Ok=SaveTxtOrBinUrl;
     type Error=EncodeError;
 
     fn serialize_field<T>(&mut self, _key: &'static str, _value: &T) -> Result<(), Self::Error>
@@ -118,18 +118,18 @@ impl SerializeStructVariant for SaveSerializer{
 }
 
 
-impl Serializer for SaveSerializer
+impl Serializer for SerializerSave
 {
-    type Ok=SaveUrl;
+    type Ok=SaveTxtOrBinUrl;
     type Error=EncodeError;
 
-    type SerializeSeq=SaveSerializer;
-    type SerializeTuple=SaveSerializer;
-    type SerializeTupleStruct=SaveSerializer;
-    type SerializeTupleVariant=SaveSerializer;
-    type SerializeMap=SaveSerializer;
-    type SerializeStruct=SaveSerializer;
-    type SerializeStructVariant=SaveSerializer;
+    type SerializeSeq=SerializerSave;
+    type SerializeTuple=SerializerSave;
+    type SerializeTupleStruct=SerializerSave;
+    type SerializeTupleVariant=SerializerSave;
+    type SerializeMap=SerializerSave;
+    type SerializeStruct=SerializerSave;
+    type SerializeStructVariant=SerializerSave;
 
     fn serialize_bool(self, _: bool) -> Result<Self::Ok, Self::Error> {
         Err(Default::default())
@@ -175,20 +175,20 @@ impl Serializer for SaveSerializer
         Err(Default::default())
     }
 
-    fn serialize_char(self, _: char) -> Result<Self::Ok, Self::Error> {
-        Err(Default::default())
+    fn serialize_char(self, c: char) -> Result<Self::Ok, Self::Error> {
+        Ok(SaveTxtOrBinUrl { bytes: c.to_string().into_bytes().into_iter().collect(), extension: "txt".to_owned() })
     }
 
-    fn serialize_str(self, _: &str) -> Result<Self::Ok, Self::Error> {
-        Err(Default::default())
+    fn serialize_str(self, txt: &str) -> Result<Self::Ok, Self::Error> {
+        Ok(SaveTxtOrBinUrl { bytes: txt.as_bytes().to_owned(), extension: "txt".to_owned() })
     }
 
     fn serialize_bytes(self, bytes: &[u8]) -> Result<Self::Ok, Self::Error>
     {
-        let url = BinUrl::try_from(bytes)?;
+        let url = BinUrlData::try_from(bytes)?;
         let extension = url.extension.to_owned();
         let bytes = url.data.to_owned();
-        Ok(SaveUrl { bytes, extension })
+        Ok(SaveTxtOrBinUrl { bytes, extension })
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
@@ -292,3 +292,7 @@ impl Serializer for SaveSerializer
         false
     }
 }
+
+
+
+

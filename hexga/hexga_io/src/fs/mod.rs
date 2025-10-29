@@ -12,10 +12,14 @@ mod load;
 pub use load::*;
 
 #[cfg(feature = "serde")]
-mod load_deserializer;
+mod deserializer_load;
 #[cfg(feature = "serde")]
-pub use load_deserializer::*;
+pub use deserializer_load::*;
 
+#[cfg(feature = "serde")]
+mod deserializer_txt;
+#[cfg(feature = "serde")]
+pub use deserializer_txt::*;
 
 #[cfg(feature = "serde")]
 mod save;
@@ -23,9 +27,15 @@ mod save;
 pub use save::*;
 
 #[cfg(feature = "serde")]
-mod save_serializer;
+mod serializer_save;
 #[cfg(feature = "serde")]
-pub use save_serializer::*;
+pub use serializer_save::*;
+
+#[cfg(feature = "serde")]
+mod serializer_txt;
+#[cfg(feature = "serde")]
+pub use serializer_txt::*;
+
 
 
 // mod single_file;

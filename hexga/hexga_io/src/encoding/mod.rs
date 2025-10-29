@@ -12,8 +12,8 @@ pub use load::*;
 mod base64;
 pub use base64::*;
 
-mod url;
-pub use url::*;
+mod url_data;
+pub use url_data::*;
 
 
 pub mod prelude
@@ -23,6 +23,6 @@ pub mod prelude
         result::*,
         save::*,
         load::*,
-        url::prelude::*,
+        url_data::prelude::*,
     };
 }

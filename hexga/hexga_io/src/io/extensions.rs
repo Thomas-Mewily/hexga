@@ -8,17 +8,24 @@ impl Extensions
     /// Used for loading and saving
     pub const MARKUP: &'static [&'static str] =
     &[
+        #[cfg(feature = "serde_ron")]
         Self::RON,
+
         #[cfg(feature = "serde_json")]
         Self::JSON,
+
         #[cfg(feature = "serde_xml")]
         Self::XML,
+
+        Self::TXT,
 
         /* Not one of them
         #[cfg(feature = "serde_quick_bin")]
         Self::QUICK_BIN,
         */
     ];
+
+    pub const TXT: &'static str = "txt";
 
     pub const RON  : &'static str = "ron";
     #[cfg(feature = "serde_json")]

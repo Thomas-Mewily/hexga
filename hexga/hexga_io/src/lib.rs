@@ -7,6 +7,7 @@ use std::io::{Read, BufReader, Write, BufWriter};
 use std::borrow::Cow;
 use std::{fmt::Display, str::Utf8Error, string::FromUtf8Error};
 use std::{ops::{Deref, DerefMut}};
+use std::any::Any;
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};

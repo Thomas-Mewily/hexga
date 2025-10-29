@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use hexga::io::encoding::{BinUrl, FromBase64, Url};
+use hexga::io::encoding::{BinUrlData, FromBase64, UrlData};
 
 use super::*;
 
@@ -475,7 +475,7 @@ where
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error>
     {
-        match Url::try_from(v)
+        match UrlData::try_from(v)
         {
             Ok(url) if url.encoding == Some("base64") =>
             {
@@ -489,7 +489,7 @@ where
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error>
     {
-        match BinUrl::try_from(v)
+        match BinUrlData::try_from(v)
         {
             Ok(url) if url.encoding == Some("base64") =>
             {

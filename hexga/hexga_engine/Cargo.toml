@@ -11,7 +11,7 @@ edition.workspace = true
 default = [
             "int_are_32_bits", "float_are_32_bits",
             "serde", "hexga_io",
-            "serde_json", "serde_xml", "serde_quick_bin"
+            "serde_ron", "serde_json", "serde_xml", "serde_quick_bin"
           ]
 
 
@@ -30,6 +30,7 @@ hexga_io = ["dep:hexga_io", "hexga/hexga_io", "serde"]
 
 serde = ["dep:serde", "hexga/serde"]
 
+serde_ron  = ["hexga/serde_ron"]
 serde_json  = ["hexga/serde_json"]
 serde_xml   = ["hexga/serde_xml"]
 serde_quick_bin  = ["hexga/serde_quick_bin"]
