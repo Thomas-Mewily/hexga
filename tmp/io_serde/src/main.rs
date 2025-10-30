@@ -75,10 +75,11 @@ fn test_it()
     map.insert("one", "un");
     map.insert("two", "deux");
     map.insert("__mod", "__mod2");
-    map.save_to_disk("./tmp/io_serde/test2.json").unwrap()
+    map.save_to_disk("./tmp/io_serde/test2.json").unwrap();
 
 
-    //let mapback = HashMap::<String,String>::load
+    let mapback = HashMap::<String,String>::load_from_disk("./tmp/io_serde/test2.json").unwrap();
+    dbg!(mapback);
 
     //test_serialize(&alice);
     //test_serialize(&vec![1,2,3]);

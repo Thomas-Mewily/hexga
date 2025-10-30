@@ -8,10 +8,15 @@ use std::borrow::Cow;
 use std::{fmt::Display, str::Utf8Error, string::FromUtf8Error};
 use std::{ops::{Deref, DerefMut}};
 use std::any::Any;
+use std::fmt::Formatter;
+
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
-
+use serde::
+{
+    Serialize, Serializer, Deserialize, Deserializer, de::Visitor,
+    ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant}
+};
 
 pub mod fs;
 use fs::*;
