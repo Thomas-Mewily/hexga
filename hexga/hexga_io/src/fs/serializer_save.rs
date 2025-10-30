@@ -1,3 +1,5 @@
+use std::fmt::Formatter;
+
 use serde::ser::{SerializeMap, SerializeSeq, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant};
 
 use super::*;
@@ -30,6 +32,9 @@ pub struct SaveParam
     /// Will struct be expended into multiple file (if multi_file is true)
     pub multi_file_struct: bool,
 
+    /// Do char and string will be saved in a .txt file ?
+    pub text_to_txt: bool,
+
     pub extension_param: ExtensionParam,
 
     // #[serde(borrow)]
@@ -42,7 +47,7 @@ pub struct SaveParam
 impl Default for SaveParam
 {
     fn default() -> Self {
-        Self { multi_file: true, multi_file_map: true, multi_file_struct: false, extension_param: ExtensionParam::default() }
+        Self { multi_file: true, multi_file_map: true, multi_file_struct: false, extension_param: ExtensionParam::default(), text_to_txt: true }
     }
 }
 impl SaveParam
@@ -64,8 +69,7 @@ pub(crate) struct SerializerSaveTxtOrBinOrMarkup<'a, F>
     pub(crate) should_save: bool,
     pub(crate) path: Path,
     pub(crate) deduced_extension: Option<Extension>,
-    pub(crate) serializer: Option<SerializerMarkup>,
-    pub(crate) default_capacity: usize,
+    pub(crate) serializer: SerializerMarkup,
     pub(crate) param: SaveParam,
 }
 
@@ -73,25 +77,34 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
     where
     F: FsWrite,
 {
-    pub(crate) fn new(fs: &'a mut F, path: Path) -> Self
+    pub(crate) fn new(fs: &'a mut F, path: Path, param: SaveParam) -> Self
     {
         let capacity = 1024;
-        Self::new_full(fs, path, SaveParam::default(), SerializerMarkup::Ron(SerializerRon::new_serializer(capacity)), capacity)
+
+        let extension = match &param.extension_param
+        {
+            ExtensionParam::WithExtension(ext) => ext,
+            ExtensionParam::GuessIt { replace_it:_ } => path.extension_or_empty(),
+        };
+
+        let ser = match extension
+        {
+            Io::RON => SerializerMarkup::Ron(SerializerRon::new_serializer(capacity)),
+            Io::JSON => SerializerMarkup::Json(SerializerJson::new_serializer(capacity)),
+            Io::XML => SerializerMarkup::Xml(SerializerXml::new_serializer(capacity)),
+            _ => SerializerMarkup::Ron(SerializerRon::new_serializer(capacity)),
+        };
+
+        Self::new_full(fs, path, param, ser)
     }
 
-    pub(crate) fn with_param(self, param: SaveParam) -> Self { Self { param, ..self} }
-
-    pub(crate) fn new_full(fs: &'a mut F, path: Path, param: SaveParam, serializer: SerializerMarkup, default_capacity: usize) -> Self
+    pub(crate) fn new_full(fs: &'a mut F, path: Path, param: SaveParam, serializer: SerializerMarkup) -> Self
     {
-        Self { fs, should_save: true, path, serializer: Some(serializer), default_capacity, param, deduced_extension: None }
+        Self { fs, should_save: true, path, serializer: serializer, param, deduced_extension: None }
     }
 }
 
-pub(crate) enum Key
-{
-    String(String),
-    Char(char),
-}
+
 
 #[doc(hidden)]
 pub(crate) struct SerializerSaveCompound<'a, F, Ron,Json,Xml>
@@ -118,7 +131,7 @@ pub(crate) enum SerializerMarkupOf<Ron,Json,Xml>
 macro_rules! dispatch_serializer {
     // mutable borrow
     (&mut $self:expr, $s:pat  => $body:expr) => {
-        match $self.serializer.as_mut().unwrap() {
+        match &mut $self.serializer {
             SerializerMarkupOf::Ron($s) => $body,
             SerializerMarkupOf::Json($s) => $body,
             SerializerMarkupOf::Xml($s) => $body,
@@ -127,7 +140,7 @@ macro_rules! dispatch_serializer {
 
     // by value (move)
     ($self:expr, $s:pat  => $body:expr) => {
-        match std::mem::replace(&mut $self.serializer, None).unwrap() {
+        match $self.serializer {
             SerializerMarkupOf::Ron($s) => $body,
             SerializerMarkupOf::Json($s) => $body,
             SerializerMarkupOf::Xml($s) => $body,
@@ -176,11 +189,10 @@ impl<'a, F, Ron,Json,Xml> SerializeTuple for SerializerSaveCompound<'a,F,Ron,Jso
         dispatch_compound_serializer!(self, s =>
             match s.end()
             {
-                Ok(_) => {},
-                Err(e) => Err(IoError::new(self.path, FileError::from_display(e)))?,
+                Ok(_) => Ok(()),
+                Err(e) => Err(IoError::new(self.path, FileError::from_display(e))),
             }
         )
-        self.fs.write_bytes(&self.path, bytes)
     }
 }
 impl<'a, F, Ron,Json,Xml> SerializeSeq for SerializerSaveCompound<'a,F,Ron,Json,Xml>
@@ -273,13 +285,41 @@ impl<'a, F, Ron,Json,Xml> SerializeMap for SerializerSaveCompound<'a,F,Ron,Json,
 
     fn serialize_key<T>(&mut self, key: &T) -> Result<(), Self::Error>
     where
-        T: ?Sized + Serialize {
+        T: ?Sized + Serialize
+    {
+        if self.param.multi_file && self.param.multi_file_map
+        {
+            if let Ok(key) = key.serialize(IdentifierSerializer)
+            {
+                self.key = Some(key);
+                return Ok(());
+            }
+        }
         dispatch_compound_serializer!(&mut self, s => s.serialize_key(key).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: ?Sized + Serialize {
+        T: ?Sized + Serialize
+    {
+        if let Some(k) = self.key.take()
+        {
+            let path = (self.path.without_extension() / k.clone().to_string()).with_extension(self.path.extension_or_empty());
+            match Io.save_with_param(&value, self.fs, path, self.param.clone())
+            {
+                Ok(o) => return Ok(o),
+                Err(_) =>
+                {
+                    *self.parent_should_save = true;
+                    match k
+                    {
+                        Key::String(k) => dispatch_compound_serializer!(&mut self, s => s.serialize_key(&k).map_err(|e| IoError::new(self.path, FileError::from_display(e)))?),
+                        Key::Char(k) => dispatch_compound_serializer!(&mut self, s => s.serialize_key(&k).map_err(|e| IoError::new(self.path, FileError::from_display(e)))?),
+                    }
+                },
+            }
+        }
+        *self.parent_should_save = true;
         dispatch_compound_serializer!(&mut self, s => s.serialize_value(value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
@@ -305,7 +345,21 @@ impl<'a, F, Ron,Json,Xml> SerializeStruct for SerializerSaveCompound<'a,F,Ron,Js
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
         where
-        T: ?Sized + Serialize {
+        T: ?Sized + Serialize
+    {
+        if self.param.multi_file && self.param.multi_file_struct
+        {
+            if let Ok(k) = key.serialize(IdentifierSerializer)
+            {
+                let path = (self.path.without_extension() / k.to_string()).with_extension(self.path.extension_or_empty());
+                match Io.save_with_param(value, self.fs, path, self.param.clone())
+                {
+                    Ok(o) => return Ok(o),
+                    Err(_) => {},
+                }
+            }
+        }
+        *self.parent_should_save = true;
         dispatch_compound_serializer!(&mut self, s => s.serialize_field(key, value).map_err(|e| IoError::new(self.path, FileError::from_display(e))))
     }
 
@@ -352,33 +406,42 @@ pub(crate) type SerializerXml = serde_xml_rs::ser::Serializer<Vec<u8>>;
 
 pub(crate) trait MarkupSerializer
 {
+    const EXTENSION : &'static str;
+
     fn new_serializer(capacity: usize) -> Self;
     fn extract(self) -> EncodeResult<String>;
 }
 impl MarkupSerializer for SerializerRon
 {
+    const EXTENSION : &'static str = Io::RON;
+
     fn new_serializer(capacity: usize) -> Self
     {
         SerializerRon::new(String::with_capacity(capacity), Some(Default::default())).unwrap()
     }
     fn extract(self) -> EncodeResult<String>
     {
-        todo!("into inner when it will be impl 4 ron")
+        todo!("into_inner() when it will be impl 4 ron")
     }
 }
 impl MarkupSerializer for SerializerJson
 {
+    const EXTENSION : &'static str = Io::JSON;
+
     fn new_serializer(capacity: usize) -> Self
     {
         SerializerJson::new(Vec::with_capacity(capacity))
     }
 
-    fn extract(self) -> EncodeResult<String> {
-        todo!()
+    fn extract(self) -> EncodeResult<String>
+    {
+        String::try_from(self.into_inner()).map_err(|e| e.into())
     }
 }
 impl MarkupSerializer for SerializerXml
 {
+    const EXTENSION : &'static str = Io::XML;
+
     fn new_serializer(capacity: usize) -> Self
     {
         SerializerXml::new_from_writer(Vec::with_capacity(capacity))
@@ -394,59 +457,86 @@ impl MarkupSerializer for SerializerXml
 //     pub(crate) extension: String,
 // }
 
+pub fn final_path(path: &path, param: &SaveParam, deduced_extension: Option<&str>) -> IoResult<Path>
+{
+    match &param.extension_param
+    {
+        ExtensionParam::WithExtension(ext) => Ok(path.with_extension(&ext)),
+        ExtensionParam::GuessIt { replace_it } => if *replace_it
+        {
+
+            match &deduced_extension
+            {
+                Some(ext) => Ok(path.with_extension(&ext)),
+                None =>
+                {
+                    if path.extension().is_some()
+                    {
+                        Ok(path.to_owned())
+                    }
+                    else
+                    {
+                        Err(IoError::new(path, EncodeError::custom("Unable to guess the file extension")))
+                    }
+                }
+            }
+        }else
+        {
+            Ok(path.to_owned())
+        }
+    }
+}
+
 
 impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
     where F: FsWrite
 {
     pub(crate) fn write_fs(&mut self, bytes: &[u8]) -> IoResult
     {
-        let path = match &self.param.extension_param
-        {
-            ExtensionParam::WithExtension(ext) => self.path.with_extension(&ext),
-            ExtensionParam::GuessIt { replace_it } => if *replace_it
-            {
-                match &self.deduced_extension
-                {
-                    Some(ext) => self.path.with_extension(&ext),
-                    None => return Err(IoError::new(self.path.clone(), EncodeError::custom("Unable to guess the file extension"))),
-                }
-            }else
-            {
-                self.path.clone()
-            }
-        };
+        let path = final_path(&self.path, &self.param, self.deduced_extension.as_deref())?;
         self.fs.write_bytes(&path, bytes).map_err(|e| IoError::new(path.clone(), FileError::from(e)))
     }
 
-    pub(crate) fn save(&mut self) -> IoResult
+    pub(crate) fn save(self) -> IoResult
     {
+        if !self.should_save { return Ok(()); }
+
+        let extension = match self.serializer
+        {
+            SerializerMarkupOf::Ron(_) => SerializerRon::EXTENSION,
+            SerializerMarkupOf::Json(_) => SerializerJson::EXTENSION,
+            SerializerMarkupOf::Xml(_) => SerializerXml::EXTENSION,
+        };
+
         let markup = dispatch_serializer!(self, s => s.extract()).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))?;
-        self.write_fs(markup.as_bytes())
+        let mut path = final_path(&self.path, &self.param, self.deduced_extension.as_deref())?;
+
+        let path_dir = path.without_extension();
+        if self.fs.is_directory(&path_dir)
+        {
+            path = (path_dir / keyword::MOD).with_extension(extension);
+        }
+        self.fs.write_bytes(&path, markup.as_bytes()).map_err(|e| IoError::new(self.path, e))
     }
 }
 
-pub(crate) trait ExtractMarkup
-{
-    fn extract(&mut self) -> String;
-}
 
 macro_rules! serialize_value
 {
     ($self:ident, $method:ident $(, $arg:expr)* $(,)?) => {{
         dispatch_serializer!(&mut $self, s =>
             match s.$method($($arg),*) {
-                Ok(_) => {},
-                Err(e) => Err(IoError::new($self.path.clone(), FileError::from_display(e)))?,
+                Ok(_) => Ok(()),
+                Err(e) => Err(IoError::new($self.path.clone(), FileError::from_display(e))),
             }
-        );
-        $self.save()
+        )
     }};
 }
 
 
 macro_rules! dispatch_compound {
     ($self:expr, $method:ident $(, $arg:expr)*) => {{
-        match $self.serializer.as_mut().unwrap() {
+        match &mut $self.serializer {
             SerializerMarkupOf::Ron(ser) => {
                 let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
                 Ok(SerializerSaveCompound {
@@ -573,15 +663,25 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
 
     fn serialize_char(self, c: char) -> Result<Self::Ok, Self::Error>
     {
+        if !self.param.multi_file || !self.param.text_to_txt
+        {
+            return serialize_value!(self, serialize_char, c);
+        }
         self.deduced_extension = Some("txt".into());
         let mut buf = [0u8; 8]; // 4 is enought, I put 8 to be sure
         let bytes = c.encode_utf8(&mut buf).as_bytes();
+        self.should_save = false;
         self.write_fs(bytes)
     }
 
     fn serialize_str(self, txt: &str) -> Result<Self::Ok, Self::Error>
     {
+        if !self.param.multi_file || !self.param.text_to_txt
+        {
+            return serialize_value!(self, serialize_str, txt);
+        }
         self.deduced_extension = Some("txt".into());
+        self.should_save = false;
         self.write_fs(txt.as_bytes())
     }
 
@@ -669,6 +769,7 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+        self.should_save = !(self.param.multi_file && self.param.multi_file_map);
         dispatch_compound!(self, serialize_map, len)
     }
 
@@ -676,7 +777,9 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
         self,
         name: &'static str,
         len: usize,
-    ) -> Result<Self::SerializeStruct, Self::Error> {
+    ) -> Result<Self::SerializeStruct, Self::Error>
+    {
+        self.should_save = !(self.param.multi_file && self.param.multi_file_struct);
         dispatch_compound!(self, serialize_struct, name, len)
     }
 
@@ -697,4 +800,341 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
 
 
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum Key
+{
+    String(String),
+    Char(char),
+}
+impl Key
+{
+    fn to_string(self) -> String
+    {
+        match self
+        {
+            Key::String(s) => s,
+            Key::Char(c) => c.to_string(),
+        }
+    }
+}
 
+
+pub(crate) struct IdentifierSerializer;
+pub struct IdentifierSerializerError;
+
+impl std::fmt::Debug for IdentifierSerializerError
+{
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
+        Ok(())
+    }
+}
+impl std::fmt::Display for IdentifierSerializerError
+{
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
+        Ok(())
+    }
+}
+impl std::error::Error for IdentifierSerializerError
+{
+
+}
+impl serde::ser::Error for IdentifierSerializerError
+{
+    fn custom<T>(_msg:T) -> Self where T:Display {
+        IdentifierSerializerError
+    }
+}
+
+impl SerializeSeq for IdentifierSerializer
+{
+    type Ok=Key;
+    type Error=IdentifierSerializerError;
+
+    fn serialize_element<T>(&mut self, _: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+}
+
+impl SerializeTuple for IdentifierSerializer
+{
+    type Ok=Key;
+    type Error=IdentifierSerializerError;
+
+    fn serialize_element<T>(&mut self, _: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+}
+
+impl SerializeTupleStruct for IdentifierSerializer
+{
+    type Ok=Key;
+    type Error=IdentifierSerializerError;
+
+    fn serialize_field<T>(&mut self, _: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+}
+
+impl SerializeTupleVariant for IdentifierSerializer
+{
+    type Ok=Key;
+    type Error=IdentifierSerializerError;
+
+    fn serialize_field<T>(&mut self, _: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+}
+
+impl SerializeMap for IdentifierSerializer
+{
+    type Ok=Key;
+    type Error=IdentifierSerializerError;
+
+    fn serialize_key<T>(&mut self, _: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_value<T>(&mut self, _: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+}
+
+impl SerializeStruct for IdentifierSerializer
+{
+    type Ok=Key;
+    type Error=IdentifierSerializerError;
+
+    fn serialize_field<T>(&mut self, _: &'static str, _: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+}
+
+impl SerializeStructVariant for IdentifierSerializer
+{
+    type Ok=Key;
+    type Error=IdentifierSerializerError;
+
+    fn serialize_field<T>(&mut self, _: &'static str, _: &T) -> Result<(), Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+}
+
+
+
+impl Serializer for IdentifierSerializer
+{
+    type Ok=Key;
+    type Error=IdentifierSerializerError;
+
+    type SerializeSeq=IdentifierSerializer;
+    type SerializeTuple=IdentifierSerializer;
+    type SerializeTupleStruct=IdentifierSerializer;
+    type SerializeTupleVariant=IdentifierSerializer;
+    type SerializeMap=IdentifierSerializer;
+    type SerializeStruct=IdentifierSerializer;
+    type SerializeStructVariant=IdentifierSerializer;
+
+    fn serialize_bool(self, _: bool) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_i8(self, _: i8) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_i16(self, _: i16) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_i32(self, _: i32) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_i64(self, _: i64) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_u8(self, _: u8) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_u16(self, _: u16) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_u32(self, _: u32) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_u64(self, _: u64) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_f32(self, _: f32) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_f64(self, _: f64) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
+        Ok(Key::Char(v))
+    }
+
+    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error>
+    {
+        if v == keyword::MOD || v == keyword::PARAM
+        {
+            Err(IdentifierSerializerError)
+        }else
+        {
+            Ok(Key::String(v.to_owned()))
+        }
+    }
+
+    fn serialize_bytes(self, _: &[u8]) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_some<T>(self, _: &T) -> Result<Self::Ok, Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_unit_struct(self, _: &'static str) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_unit_variant(
+        self,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+    ) -> Result<Self::Ok, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_newtype_struct<T>(
+        self,
+        _name: &'static str,
+        _value: &T,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_newtype_variant<T>(
+        self,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _value: &T,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: ?Sized + Serialize {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_tuple_struct(
+        self,
+        _name: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeTupleStruct, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_tuple_variant(
+        self,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeTupleVariant, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_struct(
+        self,
+        _name: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeStruct, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+
+    fn serialize_struct_variant(
+        self,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
+    ) -> Result<Self::SerializeStructVariant, Self::Error> {
+        Err(IdentifierSerializerError)
+    }
+}

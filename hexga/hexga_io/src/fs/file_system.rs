@@ -116,15 +116,15 @@ pub trait FsReadExtension : FsRead + Sized
 
         match extension
         {
-            Extensions::RON => T::from_ron(&self.read_str(&path)?).map_err(|e| e.into()),
+            Io::RON => T::from_ron(&self.read_str(&path)?).map_err(|e| e.into()),
 
-            Extensions::JSON => T::from_json(&self.read_str(&path)?).map_err(|e| e.into()),
+            Io::JSON => T::from_json(&self.read_str(&path)?).map_err(|e| e.into()),
 
-            Extensions::XML => T::from_xml(&self.read_str(&path)?).map_err(|e| e.into()),
+            Io::XML => T::from_xml(&self.read_str(&path)?).map_err(|e| e.into()),
 
-            Extensions::QUICK_BIN => T::from_quick_bin_buf(&self.read_bytes(&path)?).map_err(|e| e.into()),
+            Io::QUICK_BIN => T::from_quick_bin_buf(&self.read_bytes(&path)?).map_err(|e| e.into()),
 
-            Extensions::TXT => T::deserialize(DeserializerTxt{ txt: self.read_str(&path)? }).map_err(|e| e.into()),
+            Io::TXT => T::deserialize(DeserializerTxt{ txt: self.read_str(&path)? }).map_err(|e| e.into()),
 
             _ =>
             {
@@ -238,9 +238,9 @@ pub trait FsWriteExtension : FsWrite + Sized
 
     fn save_with_param<T, P>(&mut self, value: &T, path: P, param: SaveParam) -> IoResult where T: Serialize + ?Sized, P: AsRefPath
     {
-        let path = path.as_ref();
-        let mut ser = SerializerSaveTxtOrBinOrMarkup::new(self, path.to_owned()).with_param(param);
-        value.serialize(&mut ser)
+        Io.save_with_param(value, self, path, param)
+
+
         // if let Some(ext) = extension
         // {
         //     if !param.multi_file
