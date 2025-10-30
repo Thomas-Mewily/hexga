@@ -78,7 +78,7 @@ fn test_it()
     map.save_to_disk("./tmp/io_serde/test2.json").unwrap()
 
 
-    //let mapback = HashMap::load
+    //let mapback = HashMap::<String,String>::load
 
     //test_serialize(&alice);
     //test_serialize(&vec![1,2,3]);

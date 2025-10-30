@@ -2,7 +2,6 @@ use super::*;
 
 
 
-#[cfg(feature = "serde")]
 pub trait LoadFromFs: Load + for<'de> Deserialize<'de>
 {
     fn load<P,Fs>(path: P, fs: &mut Fs) -> FileResult<Self> where P: AsRefPath, Fs: FsWrite
@@ -10,7 +9,6 @@ pub trait LoadFromFs: Load + for<'de> Deserialize<'de>
         fs.load(path)
     }
 }
-#[cfg(feature = "serde")]
 impl<T> LoadFromFs for T where T: Load + for<'de> Deserialize<'de> {}
 
 

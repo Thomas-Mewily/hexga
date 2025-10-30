@@ -305,7 +305,7 @@ impl<'a, F, Ron,Json,Xml> SerializeMap for SerializerSaveCompound<'a,F,Ron,Json,
         if let Some(k) = self.key.take()
         {
             let path = (self.path.without_extension() / k.clone().to_string()).with_extension(self.path.extension_or_empty());
-            match Io.save_with_param(&value, self.fs, path, self.param.clone())
+            match self.fs.save_with_param(&value, path, self.param.clone())
             {
                 Ok(o) => return Ok(o),
                 Err(_) =>
@@ -352,7 +352,7 @@ impl<'a, F, Ron,Json,Xml> SerializeStruct for SerializerSaveCompound<'a,F,Ron,Js
             if let Ok(k) = key.serialize(IdentifierSerializer)
             {
                 let path = (self.path.without_extension() / k.to_string()).with_extension(self.path.extension_or_empty());
-                match Io.save_with_param(value, self.fs, path, self.param.clone())
+                match self.fs.save_with_param(value, path, self.param.clone())
                 {
                     Ok(o) => return Ok(o),
                     Err(_) => {},
@@ -464,7 +464,6 @@ pub fn final_path(path: &path, param: &SaveParam, deduced_extension: Option<&str
         ExtensionParam::WithExtension(ext) => Ok(path.with_extension(&ext)),
         ExtensionParam::GuessIt { replace_it } => if *replace_it
         {
-
             match &deduced_extension
             {
                 Some(ext) => Ok(path.with_extension(&ext)),
@@ -663,7 +662,7 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
 
     fn serialize_char(self, c: char) -> Result<Self::Ok, Self::Error>
     {
-        if !self.param.multi_file || !self.param.text_to_txt
+        if !self.param.text_to_txt
         {
             return serialize_value!(self, serialize_char, c);
         }
@@ -676,7 +675,7 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
 
     fn serialize_str(self, txt: &str) -> Result<Self::Ok, Self::Error>
     {
-        if !self.param.multi_file || !self.param.text_to_txt
+        if !self.param.text_to_txt
         {
             return serialize_value!(self, serialize_str, txt);
         }

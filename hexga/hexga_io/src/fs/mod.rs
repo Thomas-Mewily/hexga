@@ -32,11 +32,6 @@ mod serializer_save;
 pub use serializer_save::*;
 
 #[cfg(feature = "serde")]
-mod serializer_txt;
-#[cfg(feature = "serde")]
-pub use serializer_txt::*;
-
-#[cfg(feature = "serde")]
 mod keyword;
 #[cfg(feature = "serde")]
 pub use keyword::*;

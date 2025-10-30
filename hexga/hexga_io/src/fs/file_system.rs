@@ -238,8 +238,10 @@ pub trait FsWriteExtension : FsWrite + Sized
 
     fn save_with_param<T, P>(&mut self, value: &T, path: P, param: SaveParam) -> IoResult where T: Serialize + ?Sized, P: AsRefPath
     {
-        Io.save_with_param(value, self, path, param)
-
+        let path = path.as_ref();
+        let mut ser = SerializerSaveTxtOrBinOrMarkup::new(self, path.to_owned(), param);
+        value.serialize(&mut ser)?;
+        ser.save()
 
         // if let Some(ext) = extension
         // {
