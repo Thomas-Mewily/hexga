@@ -5,7 +5,7 @@
 
 mod multi_file;
 use std::collections::HashMap;
-use hexga::prelude::*;
+use hexga::{io::fs::SaveParam, prelude::*};
 
 pub use multi_file::ser2::*;
 
@@ -26,7 +26,7 @@ struct Person
 fn test_serialize<T>(val: &T) where T: Serialize
 {
     let mut fs = FsDisk;
-    match JsonFileSerializer::serialize_and_save(&mut fs, "./tmp/io_serde/test2".into(), val, MultiFileSerializerParam { mf_map: false, mf_struct: true, ..Default::default() })
+    match JsonFileSerializer::serialize_and_save(&mut fs, "./tmp/io_serde/foo2".into(), val, MultiFileSerializerParam { mf_map: false, mf_struct: true, ..Default::default() })
     {
         Ok(_) => {}
         Err(e) => eprintln!("{}", e),
@@ -69,17 +69,38 @@ fn test_it()
     // //map.save_to_disk("./tmp/io_serde/mymap").unwrap();
     // //test_serialize(&map);
     // map.save_to_disk("./tmp/io_serde/test2.json").unwrap()
-    //test_serialize(&Foo{ bar: Bar { x: 42, __mod: 99, image: Image::from_fn((1,1), |p| ColorU8::RED) } });
+    //test_serialize(&Foo{ bar: Bar { x: 42, __mod: 99, image: Image::from_fn((256,256), |(x,y)| ColorU8::rgb(x as u8, y as u8, 255)) } });
 
-    let mut map = HashMap::new();
-    map.insert("one", "un");
-    map.insert("two", "deux");
-    map.insert("__mod", "__mod2");
-    map.save_to_disk("./tmp/io_serde/test2.json").unwrap();
+    let foo = Foo
+    {
+        bar: Bar
+        {
+            x: 42,
+            __mod: 99,
+            image: Image::from_fn((256,256), |(x,y)| ColorU8::rgb(x as u8, y as u8, 255))
+        }
+    };
+
+    test_serialize(&foo);
 
 
-    let mapback = HashMap::<String,String>::load_from_disk("./tmp/io_serde/test2.json").unwrap();
-    dbg!(mapback);
+    // foo.save_to_disk("./tmp/io_serde/bar.json").unwrap();
+    // FsDisk.save_with_param(&foo, "./tmp/io_serde/bar2.json", SaveParam::___().with_multi_file(true).with_multi_file_struct(true)).unwrap();
+
+    // let mut map = HashMap::new();
+    // map.insert("one", "un");
+    // map.insert("two", "deux");
+    // map.insert("okidoki", "yo");
+    // map.insert("?!", "!");
+    // map.insert("?!2", "!");
+    // map.insert("__mod", "!");
+    // map.save_to_disk("./tmp/io_serde/test2").unwrap();
+
+    //FsDisk.save_with_param(&map, "./tmp/io_serde/test2.json", SaveParam{ multi_file: todo!(), multi_file_map: todo!(), multi_file_struct: todo!(), text_to_txt: todo!(), extension_param: todo!() })
+
+
+    // let mapback = HashMap::<String,String>::load_from_disk("./tmp/io_serde/test2.json").unwrap();
+    // dbg!(mapback);
 
     //test_serialize(&alice);
     //test_serialize(&vec![1,2,3]);
@@ -91,13 +112,17 @@ fn test_it()
 
 fn main()
 {
-    test_it();
+    // test_it();
 
     // let img = Image::load_from_disk("./tmp/io_serde/smiley").unwrap();
     // img.save_to_disk("./tmp/io_serde/smiley3").unwrap();
     // dbg!(&img);
     // println!("{}", img.to_url("png").unwrap());
 
+    let img = Image::from_fn((256,256), |(x,y)| ColorU8::rgb(x as u8, y as u8, 255));
+    img.save_to_disk("./tmp/io_serde/smiley5").unwrap();
+    let img_loaded = Image::load_from_disk("./tmp/io_serde/smiley5").unwrap();
+    assert_eq!(img, img_loaded);
 
     println!("hello world");
 }

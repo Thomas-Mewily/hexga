@@ -2,7 +2,7 @@ use super::*;
 
 pub trait SaveToFs : Serialize
 {
-    fn save<P, Fs>(&self, path: P, fs: &mut Fs) -> IoResult where P: AsRefPath, Fs: FsWrite
+    fn save_to_fs<P, Fs>(&self, path: P, fs: &mut Fs) -> IoResult where P: AsRefPath, Fs: FsWrite
     {
         fs.save(self, path)
     }
@@ -13,7 +13,7 @@ pub trait SaveToDisk : Serialize
 {
     fn save_to_disk<P>(&self, path: P) -> IoResult where P: AsRefPath
     {
-        self.save(path, &mut FsDisk)
+        self.save_to_fs(path, &mut FsDisk)
     }
 }
 impl<T> SaveToDisk for T where T: Serialize + ?Sized {}

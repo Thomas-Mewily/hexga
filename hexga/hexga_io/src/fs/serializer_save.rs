@@ -30,6 +30,8 @@ pub struct SaveParam
 
     /// Do char and string will be saved in a .txt file ?
     pub text_to_txt: bool,
+    /// Do &[u8] will be saved in a .bin file ?
+    pub bytes_to_bin: bool,
 
     pub extension_param: ExtensionParam,
 
@@ -43,7 +45,7 @@ pub struct SaveParam
 impl Default for SaveParam
 {
     fn default() -> Self {
-        Self { multi_file: true, multi_file_map: true, multi_file_struct: false, extension_param: ExtensionParam::default(), text_to_txt: true }
+        Self { multi_file: true, multi_file_map: true, multi_file_struct: false, extension_param: ExtensionParam::default(), text_to_txt: true, bytes_to_bin: true }
     }
 }
 impl SaveParam
@@ -54,6 +56,8 @@ impl SaveParam
     pub fn with_multi_file(self, multi_file: bool) -> Self { Self { multi_file, ..self }}
     pub fn with_multi_file_map(self, multi_file_map: bool) -> Self { Self { multi_file_map, ..self }}
     pub fn with_multi_file_struct(self, multi_file_struct: bool) -> Self { Self { multi_file_struct, ..self }}
+    pub fn with_text_to_txt(self, text_to_txt: bool) -> Self { Self { text_to_txt, ..self }}
+    pub fn with_bytes_to_bin(self, bytes_to_bin: bool) -> Self { Self { bytes_to_bin, ..self }}
 }
 
 
@@ -64,7 +68,6 @@ pub(crate) struct SerializerSaveTxtOrBinOrMarkup<'a, F>
     pub(crate) fs: &'a mut F,
     pub(crate) should_save: bool,
     pub(crate) path: Path,
-    pub(crate) deduced_extension: Option<Extension>,
     pub(crate) serializer: SerializerMarkup,
     pub(crate) param: SaveParam,
 }
@@ -96,7 +99,7 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
 
     pub(crate) fn new_full(fs: &'a mut F, path: Path, param: SaveParam, serializer: SerializerMarkup) -> Self
     {
-        Self { fs, should_save: true, path, serializer: serializer, param, deduced_extension: None }
+        Self { fs, should_save: true, path, serializer: serializer, param }
     }
 }
 
@@ -486,9 +489,10 @@ pub fn final_path(path: &path, param: &SaveParam, deduced_extension: Option<&str
 impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
     where F: FsWrite
 {
-    pub(crate) fn write_fs(&mut self, bytes: &[u8]) -> IoResult
+    pub(crate) fn write_fs(&mut self, bytes: &[u8], deduced_extension: Option<&str>) -> IoResult
     {
-        let path = final_path(&self.path, &self.param, self.deduced_extension.as_deref())?;
+        self.should_save = false;
+        let path = final_path(&self.path, &self.param, deduced_extension)?;
         self.fs.write_bytes(&path, bytes).map_err(|e| IoError::new(path.clone(), FileError::from(e)))
     }
 
@@ -504,7 +508,7 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
         };
 
         let markup = dispatch_serializer!(self, s => s.extract()).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))?;
-        let mut path = final_path(&self.path, &self.param, self.deduced_extension.as_deref())?;
+        let mut path = final_path(&self.path, &self.param, None)?;
 
         let path_dir = path.without_extension();
         if self.fs.is_directory(&path_dir)
@@ -662,11 +666,9 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
         {
             return serialize_value!(self, serialize_char, c);
         }
-        self.deduced_extension = Some("txt".into());
         let mut buf = [0u8; 8]; // 4 is enought, I put 8 to be sure
         let bytes = c.encode_utf8(&mut buf).as_bytes();
-        self.should_save = false;
-        self.write_fs(bytes)
+        self.write_fs(bytes, Some("txt"))
     }
 
     fn serialize_str(self, txt: &str) -> Result<Self::Ok, Self::Error>
@@ -675,16 +677,19 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
         {
             return serialize_value!(self, serialize_str, txt);
         }
-        self.deduced_extension = Some("txt".into());
-        self.should_save = false;
-        self.write_fs(txt.as_bytes())
+        self.write_fs(txt.as_bytes(), Some("txt"))
+
     }
 
     fn serialize_bytes(self, bytes: &[u8]) -> Result<Self::Ok, Self::Error>
     {
-        let url = BinUrlData::try_from(bytes).map_err(|e| IoError::new(self.path.clone(), EncodeError::from(e)))?;
-        let bytes = url.data.to_owned();
-        self.write_fs(&bytes)
+        self.should_save = false;
+        if let Ok(url) = BinUrlData::try_from(bytes)
+        {
+            let bytes = url.data.to_owned();
+            return self.write_fs(&bytes, Some(url.extension));
+        }
+        self.write_fs(bytes, Some("bin"))
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
@@ -1133,3 +1138,8 @@ impl Serializer for IdentifierSerializer
         Err(IdentifierSerializerError)
     }
 }
+
+
+// IDEA: don't hardcode the format ?
+// use https://crates.io/crates/erased-serde to have &dyn Serializer
+// but right now it is impossible to have &dyn Deserializer, so don't do it

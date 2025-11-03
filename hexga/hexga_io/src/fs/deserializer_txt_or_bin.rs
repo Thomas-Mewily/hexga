@@ -1,26 +1,12 @@
-// use super::*;
+use super::*;
 
-// pub(crate) struct DeserializerLoad<'a,F>
-//     where
-//         F: FsRead,
+// pub(crate) struct DeserializerTxtOrBinary
 // {
-//     pub(crate) fs: &'a mut F,
-//     pub(crate) path: Path,
+//     pub(crate) bytes: Vec<u8>
 // }
-// impl<'s, 'a, F> DeserializerLoad<'a,F>
-//     where
-//     F: FsRead,
+// impl<'de> Deserializer<'de> for DeserializerTxtOrBinary
 // {
-//     pub(crate) fn new(fs: &'a mut F, path: Path) -> Self
-//     {
-//         Self { fs, path }
-//     }
-// }
-// impl<'de, 's, 'a, F> Deserializer<'de> for &'s mut DeserializerLoad<'a,F>
-//     where
-//         F: FsRead,
-// {
-//     type Error=IoError;
+//     type Error=EncodeError;
 
 //     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
 //     where
@@ -31,8 +17,7 @@
 //     fn deserialize_bool<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
 //     where
 //         V: Visitor<'de> {
-//         let data = self.fs.read_bytes(&self.path).map_err(|e| IoError::new(self.path, e))?;
-
+//         Err(Default::default())
 //     }
 
 //     fn deserialize_i8<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
