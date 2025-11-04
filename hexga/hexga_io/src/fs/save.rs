@@ -62,7 +62,7 @@ pub trait FsSave : FsWrite + Sized
             }
         }
 
-        let mut ser = SerializerSaveTxtOrBinOrMarkup::new(self, path.to_owned(), param);
+        let mut ser = SerializerSave::new(self, path.to_owned(), param);
         value.serialize(&mut ser)?;
         ser.save()
     }

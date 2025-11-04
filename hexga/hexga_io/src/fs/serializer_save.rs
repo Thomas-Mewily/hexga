@@ -75,7 +75,7 @@ impl SaveParam
 }
 
 
-pub(crate) struct SerializerSaveTxtOrBinOrMarkup<'a, F>
+pub(crate) struct SerializerSave<'a, F>
     where
     F: FsWrite,
 {
@@ -86,7 +86,7 @@ pub(crate) struct SerializerSaveTxtOrBinOrMarkup<'a, F>
     pub(crate) param: SaveParam,
 }
 
-impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
+impl<'a, F> SerializerSave<'a, F>
     where
     F: FsWrite,
 {
@@ -456,7 +456,7 @@ impl MarkupSerializer for SerializerJson
 //     pub(crate) extension: String,
 // }
 
-impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
+impl<'a, F> SerializerSave<'a, F>
     where F: FsWrite
 {
     fn final_path(path: &path, param: &SaveParam, deduced_extension: Option<&str>) -> IoResult<Path>
@@ -573,7 +573,7 @@ macro_rules! dispatch_compound {
     }};
 }
 
-impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
+impl<'s, 'a, F> Serializer for &'s mut SerializerSave<'a, F>
     where F: FsWrite,
     'a: 's
 {
