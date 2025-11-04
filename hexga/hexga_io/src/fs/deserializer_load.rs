@@ -74,10 +74,14 @@ impl<'de, Fs> DeserializerLoad<'de,Fs>
         }
         if txt
         {
-            let bytes = bytes.into_owned();
-            let txt = String::from_utf8(bytes).map_err(|e| IoError::new(self.path.clone(), e))?;
-            let t = T::deserialize(DeserializerTxt{ txt  }).map_err(|e| IoError::new(self.path.clone(), e))?;
-            return Ok(t);
+            let bytes = bytes.as_ref().to_owned();
+            if let Ok(txt) = String::from_utf8(bytes)
+            {
+                if let Ok(t) = T::deserialize(DeserializerTxt{ txt  })
+                {
+                    return Ok(t);
+                }
+            }
         }
         for m in MarkupLanguage::ALL
         {
@@ -89,35 +93,50 @@ impl<'de, Fs> DeserializerLoad<'de,Fs>
         }
         Err(IoError::new(self.path.clone(), EncodeError::custom("Can't guess markup extension")))
     }
-
-    pub(crate) fn dispatch<'x,T,F,E>(&'x mut self, f: F) -> IoResult<T>
-        where
-        F: FnOnce(&mut DeserializerRon<'de>) -> Result<T,E>,
-        E: serde::de::Error,
-        'x: 'de
-    {
-        let markup = self.markup_or_default();
-        let bytes = self.bytes.as_ref().ok_or_else(|| IoError::new(self.path.clone(), FileError::NotFound))?;
-
-        match markup
-        {
-            MarkupLanguage::Ron =>
-            {
-                let mut ron = DeserializerRon::from_bytes(bytes.as_ref())
-                    .map_err(|e| IoError::new(self.path.clone(), EncodeError::Markup { extension: "ron".to_owned(), reason: e.to_string() }))?;
-                f(&mut ron).map_err(|e| IoError::new(self.path.clone(), EncodeError::Markup { extension: "ron".to_owned(), reason: e.to_string() }))
-            },
-            // MarkupLanguage::Json =>
-            // {
-            //     let slice = serde_json::de::SliceRead::new(bytes);
-            //     let mut json = DeserializerJson::new(slice);
-            //     f(&mut json).map_err(|e| IoError::new(self.path.clone(), EncodeError::Markup { extension: "json".to_owned(), reason: e.to_string() }))
-            // },
-            // MarkupLanguage::Xml => todo!(),
-            _ => todo!(),
-        }
-    }
 }
+
+macro_rules! dispatch {
+    ($self:expr, $r:ident => $body:expr) => {{
+        let markup = $self.markup_or_default();
+        let bytes = $self
+            .bytes
+            .as_ref()
+            .ok_or_else(|| IoError::new($self.path.clone(), FileError::NotFound))?;
+
+        match markup {
+            MarkupLanguage::Ron => {
+                let mut $r = DeserializerRon::from_bytes(bytes.as_ref())
+                    .map_err(|e| IoError::new(
+                        $self.path.clone(),
+                        EncodeError::Markup {
+                            extension: "ron".to_owned(),
+                            reason: e.to_string(),
+                        },
+                    ))?;
+                $body.map_err(|e| IoError::new(
+                    $self.path.clone(),
+                    EncodeError::Markup {
+                        extension: "ron".to_owned(),
+                        reason: e.to_string(),
+                    },
+                ))
+            }
+            MarkupLanguage::Json => {
+                let slice = serde_json::de::SliceRead::new(bytes);
+                let mut $r = DeserializerJson::new(slice);
+                $body.map_err(|e| IoError::new(
+                    $self.path.clone(),
+                    EncodeError::Markup {
+                        extension: "json".to_owned(),
+                        reason: e.to_string(),
+                    },
+                ))
+            }
+            MarkupLanguage::Xml => todo!(),
+        }
+    }};
+}
+
 
 impl<'de, 'x, Fs> Deserializer<'de> for &'x mut DeserializerLoad<'de,Fs>
     where
@@ -225,23 +244,21 @@ impl<'de, 'x, Fs> Deserializer<'de> for &'x mut DeserializerLoad<'de,Fs>
     where
         V: Visitor<'de>
     {
-        let bytes = self.fs.read_bytes(&self.path).map_err(|e| IoError::new(self.path.clone(), e))?;
-        visitor.visit_bytes(bytes.as_ref())
+        visitor.visit_bytes(self.read_bytes()?.as_ref())
     }
 
     fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>
     {
-        let bytes = self.fs.read_bytes(&self.path).map_err(|e| IoError::new(self.path.clone(), e))?;
-        visitor.visit_byte_buf(bytes.into_owned())
+        visitor.visit_byte_buf(self.read_bytes()?.into_owned())
     }
 
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>
     {
-        self.dispatch(|r| r.deserialize_option(visitor))
+        dispatch!(self, r => r.deserialize_option(visitor))
     }
 
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -274,13 +291,13 @@ impl<'de, 'x, Fs> Deserializer<'de> for &'x mut DeserializerLoad<'de,Fs>
     where
         V: Visitor<'de>
     {
-        self.dispatch(|r| r.deserialize_seq(visitor))
+        dispatch!(self, r => r.deserialize_seq(visitor))
     }
 
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        self.dispatch(|r| r.deserialize_tuple(len, visitor))
+        dispatch!(self, r => r.deserialize_tuple(len, visitor))
     }
 
     fn deserialize_tuple_struct<V>(
@@ -292,13 +309,13 @@ impl<'de, 'x, Fs> Deserializer<'de> for &'x mut DeserializerLoad<'de,Fs>
     where
         V: Visitor<'de>
     {
-        self.dispatch(|r| r.deserialize_tuple_struct(name, len, visitor))
+        dispatch!(self, r => r.deserialize_tuple_struct(name, len, visitor))
     }
 
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        self.dispatch(|r| r.deserialize_map(visitor))
+        dispatch!(self, r => r.deserialize_map(visitor))
     }
 
     fn deserialize_struct<V>(
@@ -309,7 +326,7 @@ impl<'de, 'x, Fs> Deserializer<'de> for &'x mut DeserializerLoad<'de,Fs>
     ) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        self.dispatch(|r| r.deserialize_struct(name, fields, visitor))
+        dispatch!(self, r => r.deserialize_struct(name, fields, visitor))
     }
 
     fn deserialize_enum<V>(
@@ -320,13 +337,13 @@ impl<'de, 'x, Fs> Deserializer<'de> for &'x mut DeserializerLoad<'de,Fs>
     ) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        self.dispatch(|r| r.deserialize_enum(name, variants, visitor))
+        dispatch!(self, r => r.deserialize_enum(name, variants, visitor))
     }
 
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        self.dispatch(|r| r.deserialize_identifier(visitor))
+        dispatch!(self, r => r.deserialize_identifier(visitor))
     }
 
     fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
