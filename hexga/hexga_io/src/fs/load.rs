@@ -57,41 +57,34 @@ pub trait FsLoad : FsRead + Sized
         {
             Io::RON =>
             {
-                let markup = self.read_str(&path).map_err(|e| IoError::new(&path, e))?;
+                let markup = self.read_string(&path).map_err(|e| IoError::new(&path, e))?;
                 T::from_ron(&markup).map_err(|e| IoError::new(&path, e))
             }
 
             Io::JSON =>
             {
-                let markup = self.read_str(&path).map_err(|e| IoError::new(&path, e))?;
+                let markup = self.read_string(&path).map_err(|e| IoError::new(&path, e))?;
                 T::from_json(&markup).map_err(|e| IoError::new(&path, e))
             }
 
             Io::XML =>
             {
-                let markup = self.read_str(&path).map_err(|e| IoError::new(&path, e))?;
+                let markup = self.read_string(&path).map_err(|e| IoError::new(&path, e))?;
                 T::from_xml(&markup).map_err(|e| IoError::new(&path, e))
             }
 
             Io::TXT =>
             {
-                let txt = self.read_str(&path).map_err(|e| IoError::new(&path, e))?;
+                let txt = self.read_string(&path).map_err(|e| IoError::new(&path, e))?;
                 T::deserialize(DeserializerTxt{ txt }).map_err(|e| IoError::new(&path, e))
             }
 
+            // TODO: handle Io::BIN (raw bytes)
+
             _ =>
             {
-                todo!();
-
-                // let mut de = DeserializerLoad::new(self, path.to_owned());
-                // T::deserialize(&mut de)
-
-
-                //todo!()
-                //let mut de =
-                // let bytes = self.read_bytes(&path)?;
-                // let load_deserializer = DeserializerTxtOrBinary { bytes: bytes.into_owned() };
-                // T::deserialize(load_deserializer).map_err(|e| e.into())
+                let mut de = DeserializerLoad::new(self, path.to_owned());
+                T::deserialize(&mut de)
             }
         }
     }

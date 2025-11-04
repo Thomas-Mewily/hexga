@@ -48,5 +48,5 @@ pub mod prelude
     };
 
     #[cfg(feature = "serde")]
-    pub use super::markup::*;
+    pub use super::markup::prelude::*;
 }

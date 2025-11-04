@@ -31,5 +31,5 @@ impl Io
     /// No garantee about the encoding of this one, can be changed at any time.
     ///
     /// Use it for short duration like data transfer.
-    pub const QUICK_BIN  : &'static str = "bin";
+    pub const BIN  : &'static str = "bin";
 }

@@ -7,7 +7,7 @@ pub trait FsRead
     fn read_bytes<'a>(&'a mut self, path: &path) -> FileResult<Cow<'a, [u8]>>;
 
     /// Reads the content of a file into memory as a UTF-8 string.
-    fn read_str(&mut self, path: &path) -> FileResult<String>
+    fn read_string(&mut self, path: &path) -> FileResult<String>
     {
         let bytes_cow: Cow<[u8]> = self.read_bytes(path)?;
 

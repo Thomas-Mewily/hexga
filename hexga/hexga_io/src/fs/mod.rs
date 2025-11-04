@@ -11,10 +11,10 @@ mod load;
 #[cfg(feature = "serde")]
 pub use load::*;
 
-// #[cfg(feature = "serde")]
-// mod deserializer_load;
-// #[cfg(feature = "serde")]
-// pub use deserializer_load::*;
+#[cfg(feature = "serde")]
+mod deserializer_load;
+#[cfg(feature = "serde")]
+pub use deserializer_load::*;
 
 #[cfg(feature = "serde")]
 mod deserializer_txt;

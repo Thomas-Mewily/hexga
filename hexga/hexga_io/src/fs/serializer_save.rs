@@ -20,8 +20,11 @@ impl Default for ExtensionParam
 #[derive(Serialize, Deserialize)]
 pub struct SaveParam
 {
+
     /// Will use multi file
     pub multi_file: bool,
+
+    // TODO: change the bool for an enum { Yes, No, Same } (Same = if there is a file save it in a file)
 
     /// Will map be expended into multiple file (if multi_file is true)
     pub multi_file_map: bool,
@@ -35,6 +38,8 @@ pub struct SaveParam
 
     pub extension_param: ExtensionParam,
 
+    pub markup: MarkupLanguage,
+
     // #[serde(borrow)]
     // pub indent: &'static str,
     // #[serde(borrow)]
@@ -45,7 +50,16 @@ pub struct SaveParam
 impl Default for SaveParam
 {
     fn default() -> Self {
-        Self { multi_file: true, multi_file_map: true, multi_file_struct: false, extension_param: ExtensionParam::default(), text_to_txt: true, bytes_to_bin: true }
+        Self
+        {
+            multi_file: true,
+            multi_file_map: true,
+            multi_file_struct: false,
+            extension_param: ExtensionParam::default(),
+            text_to_txt: true,
+            bytes_to_bin: true,
+            markup: MarkupLanguage::default()
+        }
     }
 }
 impl SaveParam
@@ -76,7 +90,7 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
     where
     F: FsWrite,
 {
-    pub(crate) fn new(fs: &'a mut F, path: Path, param: SaveParam) -> Self
+    pub(crate) fn new(fs: &'a mut F, path: Path, mut param: SaveParam) -> Self
     {
         let capacity = 1024;
 
@@ -86,12 +100,16 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
             ExtensionParam::GuessIt { replace_it:_ } => path.extension_or_empty(),
         };
 
-        let ser = match extension
+        if let Ok(markup) = MarkupLanguage::try_from(extension)
         {
-            Io::RON => SerializerMarkup::Ron(SerializerRon::new_serializer(capacity)),
-            Io::JSON => SerializerMarkup::Json(SerializerJson::new_serializer(capacity)),
-            Io::XML => SerializerMarkup::Xml(SerializerXml::new_serializer(capacity)),
-            _ => SerializerMarkup::Ron(SerializerRon::new_serializer(capacity)),
+            param.markup = markup;
+        }
+
+        let ser = match param.markup
+        {
+            MarkupLanguage::Ron => SerializerMarkup::Ron(SerializerRon::new_serializer(capacity)),
+            MarkupLanguage::Json => SerializerMarkup::Json(SerializerJson::new_serializer(capacity)),
+            MarkupLanguage::Xml => SerializerMarkup::Xml(SerializerXml::new_serializer(capacity)),
         };
 
         Self::new_full(fs, path, param, ser)
@@ -114,35 +132,32 @@ pub(crate) struct SerializerSaveCompound<'a, F, Ron,Json,Xml>
     path: &'a Path,
     param: &'a SaveParam,
     parent_should_save: &'a mut bool,
-    compound : SerializerMarkupOf<Ron,Json,Xml>,
+    compound : MarkupOf<Ron,Json,Xml>,
     key: Option<Key>,
 }
 
-pub(crate) type SerializerMarkup = SerializerMarkupOf<SerializerRon,SerializerJson,SerializerXml>;
+pub(crate) type SerializerMarkup = MarkupOf<SerializerRon,SerializerJson,SerializerXml>;
+pub(crate) type SerializerRon = ron::ser::Serializer<String>;
+pub(crate) type SerializerJson = serde_json::Serializer<Vec<u8>>;
+pub(crate) type SerializerXml = serde_xml_rs::ser::Serializer<Vec<u8>>;
 
-pub(crate) enum SerializerMarkupOf<Ron,Json,Xml>
-{
-    Ron(Ron),
-    Json(Json),
-    Xml(Xml),
-}
 
 macro_rules! dispatch_serializer {
     // mutable borrow
     (&mut $self:expr, $s:pat  => $body:expr) => {
         match &mut $self.serializer {
-            SerializerMarkupOf::Ron($s) => $body,
-            SerializerMarkupOf::Json($s) => $body,
-            SerializerMarkupOf::Xml($s) => $body,
+            MarkupOf::Ron($s) => $body,
+            MarkupOf::Json($s) => $body,
+            MarkupOf::Xml($s) => $body,
         }
     };
 
     // by value (move)
     ($self:expr, $s:pat  => $body:expr) => {
         match $self.serializer {
-            SerializerMarkupOf::Ron($s) => $body,
-            SerializerMarkupOf::Json($s) => $body,
-            SerializerMarkupOf::Xml($s) => $body,
+            MarkupOf::Ron($s) => $body,
+            MarkupOf::Json($s) => $body,
+            MarkupOf::Xml($s) => $body,
         }
     };
 }
@@ -151,18 +166,18 @@ macro_rules! dispatch_compound_serializer {
     // mutable borrow
     (&mut $self:expr, $s:pat  => $body:expr) => {
         match &mut $self.compound {
-            SerializerMarkupOf::Ron($s) => $body,
-            SerializerMarkupOf::Json($s) => $body,
-            SerializerMarkupOf::Xml($s) => $body,
+            MarkupOf::Ron($s) => $body,
+            MarkupOf::Json($s) => $body,
+            MarkupOf::Xml($s) => $body,
         }
     };
 
     // by value (move)
     ($self:expr, $s:pat  => $body:expr) => {
         match $self.compound {
-            SerializerMarkupOf::Ron($s) => $body,
-            SerializerMarkupOf::Json($s) => $body,
-            SerializerMarkupOf::Xml($s) => $body,
+            MarkupOf::Ron($s) => $body,
+            MarkupOf::Json($s) => $body,
+            MarkupOf::Xml($s) => $body,
         }
     };
 }
@@ -399,10 +414,6 @@ impl<'a, F, Ron,Json,Xml> SerializeStructVariant for SerializerSaveCompound<'a,F
     }
 }
 
-pub(crate) type SerializerRon = ron::ser::Serializer<String>;
-pub(crate) type SerializerJson = serde_json::Serializer<Vec<u8>>;
-pub(crate) type SerializerXml = serde_xml_rs::ser::Serializer<Vec<u8>>;
-
 pub(crate) trait MarkupSerializer
 {
     const EXTENSION : &'static str;
@@ -456,43 +467,43 @@ impl MarkupSerializer for SerializerXml
 //     pub(crate) extension: String,
 // }
 
-pub fn final_path(path: &path, param: &SaveParam, deduced_extension: Option<&str>) -> IoResult<Path>
-{
-    match &param.extension_param
-    {
-        ExtensionParam::WithExtension(ext) => Ok(path.with_extension(&ext)),
-        ExtensionParam::GuessIt { replace_it } => if *replace_it
-        {
-            match &deduced_extension
-            {
-                Some(ext) => Ok(path.with_extension(&ext)),
-                None =>
-                {
-                    if path.extension().is_some()
-                    {
-                        Ok(path.to_owned())
-                    }
-                    else
-                    {
-                        Err(IoError::new(path, EncodeError::custom("Unable to guess the file extension")))
-                    }
-                }
-            }
-        }else
-        {
-            Ok(path.to_owned())
-        }
-    }
-}
-
-
 impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
     where F: FsWrite
 {
+    fn final_path(path: &path, param: &SaveParam, deduced_extension: Option<&str>) -> IoResult<Path>
+    {
+        match &param.extension_param
+        {
+            ExtensionParam::WithExtension(ext) => Ok(path.with_extension(&ext)),
+            ExtensionParam::GuessIt { replace_it } => if *replace_it
+            {
+                match &deduced_extension
+                {
+                    Some(ext) => Ok(path.with_extension(&ext)),
+                    None =>
+                    {
+                        if path.extension().is_some()
+                        {
+                            Ok(path.to_owned())
+                        }
+                        else
+                        {
+                            Err(IoError::new(path, EncodeError::custom("Unable to guess the file extension")))
+                        }
+                    }
+                }
+            }else
+            {
+                Ok(path.to_owned())
+            }
+        }
+    }
+
     pub(crate) fn write_fs(&mut self, bytes: &[u8], deduced_extension: Option<&str>) -> IoResult
     {
         self.should_save = false;
-        let path = final_path(&self.path, &self.param, deduced_extension)?;
+
+        let path = Self::final_path(&self.path, &self.param, deduced_extension)?;
         self.fs.write_bytes(&path, bytes).map_err(|e| IoError::new(path.clone(), FileError::from(e)))
     }
 
@@ -502,13 +513,13 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
 
         let extension = match self.serializer
         {
-            SerializerMarkupOf::Ron(_) => SerializerRon::EXTENSION,
-            SerializerMarkupOf::Json(_) => SerializerJson::EXTENSION,
-            SerializerMarkupOf::Xml(_) => SerializerXml::EXTENSION,
+            MarkupOf::Ron(_) => SerializerRon::EXTENSION,
+            MarkupOf::Json(_) => SerializerJson::EXTENSION,
+            MarkupOf::Xml(_) => SerializerXml::EXTENSION,
         };
 
         let markup = dispatch_serializer!(self, s => s.extract()).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))?;
-        let mut path = final_path(&self.path, &self.param, None)?;
+        let mut path = Self::final_path(&self.path, &self.param, None)?;
 
         let path_dir = path.without_extension();
         if self.fs.is_directory(&path_dir)
@@ -536,36 +547,36 @@ macro_rules! serialize_value
 macro_rules! dispatch_compound {
     ($self:expr, $method:ident $(, $arg:expr)*) => {{
         match &mut $self.serializer {
-            SerializerMarkupOf::Ron(ser) => {
+            MarkupOf::Ron(ser) => {
                 let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
                 Ok(SerializerSaveCompound {
                     fs: &mut $self.fs,
                     path: &$self.path,
                     param: &$self.param,
                     parent_should_save: &mut $self.should_save,
-                    compound: SerializerMarkupOf::Ron(seq),
+                    compound: MarkupOf::Ron(seq),
                     key: None,
                 })
             },
-            SerializerMarkupOf::Json(ser) => {
+            MarkupOf::Json(ser) => {
                 let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
                 Ok(SerializerSaveCompound {
                     fs: &mut $self.fs,
                     path: &$self.path,
                     param: &$self.param,
                     parent_should_save: &mut $self.should_save,
-                    compound: SerializerMarkupOf::Json(seq),
+                    compound: MarkupOf::Json(seq),
                     key: None,
                 })
             },
-            SerializerMarkupOf::Xml(ser) => {
+            MarkupOf::Xml(ser) => {
                 let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
                 Ok(SerializerSaveCompound {
                     fs: &mut $self.fs,
                     path: &$self.path,
                     param: &$self.param,
                     parent_should_save: &mut $self.should_save,
-                    compound: SerializerMarkupOf::Xml(seq),
+                    compound: MarkupOf::Xml(seq),
                     key: None,
                 })
             },
