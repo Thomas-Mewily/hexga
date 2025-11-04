@@ -67,19 +67,17 @@ pub trait FsLoad : FsRead + Sized
                 T::from_json(&markup).map_err(|e| IoError::new(&path, e))
             }
 
-            Io::XML =>
-            {
-                let markup = self.read_string(&path).map_err(|e| IoError::new(&path, e))?;
-                T::from_xml(&markup).map_err(|e| IoError::new(&path, e))
-            }
+            // Io::XML =>
+            // {
+            //     let markup = self.read_string(&path).map_err(|e| IoError::new(&path, e))?;
+            //     T::from_xml(&markup).map_err(|e| IoError::new(&path, e))
+            // }
 
             Io::TXT =>
             {
                 let txt = self.read_string(&path).map_err(|e| IoError::new(&path, e))?;
-                T::deserialize(DeserializerTxt{ txt }).map_err(|e| IoError::new(&path, e))
+                T::deserialize(DeserializerTxt{ txt: &txt }).map_err(|e| IoError::new(&path, e))
             }
-
-            // TODO: handle Io::BIN (raw bytes)
 
             _ =>
             {

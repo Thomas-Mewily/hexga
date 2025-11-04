@@ -1,10 +1,10 @@
 use super::*;
 
-pub(crate) struct DeserializerTxt
+pub(crate) struct DeserializerTxt<'a>
 {
-    pub(crate) txt: String
+    pub(crate) txt: &'a str
 }
-impl<'de> Deserializer<'de> for DeserializerTxt
+impl<'a, 'de> Deserializer<'de> for DeserializerTxt<'a>
 {
     type Error=EncodeError;
 
@@ -80,22 +80,32 @@ impl<'de> Deserializer<'de> for DeserializerTxt
         Err(Default::default())
     }
 
-    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: Visitor<'de> {
-        Err(Default::default())
+        V: Visitor<'de>
+        {
+        let mut chars = self.txt.chars();
+        if let Some(c) = chars.next() {
+            if chars.next().is_none() {
+                visitor.visit_char(c)
+            } else {
+                Err(EncodeError::custom("expected exactly one character"))
+            }
+        } else {
+            Err(EncodeError::custom("expected exactly one character, got empty string"))
+        }
     }
 
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        visitor.visit_str(&self.txt)
+        visitor.visit_str(self.txt)
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de> {
-        visitor.visit_string(self.txt)
+        visitor.visit_string(self.txt.to_owned())
     }
 
     fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value, Self::Error>

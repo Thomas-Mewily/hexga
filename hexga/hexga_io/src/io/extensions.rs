@@ -12,7 +12,7 @@ impl Io
 
         Self::JSON,
 
-        Self::XML,
+        // Self::XML,
 
         Self::TXT,
 
@@ -25,7 +25,7 @@ impl Io
 
     pub const RON  : &'static str = "ron";
     pub const JSON : &'static str = "json";
-    pub const XML  : &'static str = "xml";
+    // pub const XML  : &'static str = "xml";
 
 
     /// No garantee about the encoding of this one, can be changed at any time.

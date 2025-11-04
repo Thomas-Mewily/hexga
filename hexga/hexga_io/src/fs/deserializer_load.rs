@@ -23,8 +23,6 @@ pub(crate) struct DeserializerLoad<'de,Fs>
 // }
 pub(crate) type DeserializerRon<'de> = ron::Deserializer<'de>;
 pub(crate) type DeserializerJson<'de> = serde_json::de::Deserializer<serde_json::de::SliceRead<'de>>;
-pub(crate) type DeserializerXml = serde_xml_rs::de::Deserializer<Vec<u8>>;
-
 
 impl<'de, Fs> DeserializerLoad<'de,Fs>
     where
@@ -74,8 +72,7 @@ impl<'de, Fs> DeserializerLoad<'de,Fs>
         }
         if txt
         {
-            let bytes = bytes.as_ref().to_owned();
-            if let Ok(txt) = String::from_utf8(bytes)
+            if let Ok(txt) = str::from_utf8(&bytes)
             {
                 if let Ok(t) = T::deserialize(DeserializerTxt{ txt  })
                 {
@@ -132,7 +129,7 @@ macro_rules! dispatch {
                     },
                 ))
             }
-            MarkupLanguage::Xml => todo!(),
+            // MarkupLanguage::Xml => todo!(),
         }
     }};
 }

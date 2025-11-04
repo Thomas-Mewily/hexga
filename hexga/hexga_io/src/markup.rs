@@ -9,18 +9,18 @@ pub mod prelude
     {
         ToRon,FromRon,
         ToJson,FromJson,
-        ToXml,FromXml,
+        //ToXml,FromXml,
         ToQuickBin,FromQuickBin
     };
 
     pub(crate) use super::MarkupOf;
 }
 
-pub(crate) enum MarkupOf<Ron,Json,Xml>
+pub(crate) enum MarkupOf<Ron,Json>
 {
     Ron(Ron),
     Json(Json),
-    Xml(Xml),
+    // Xml(Xml),
 }
 
 
@@ -112,14 +112,16 @@ pub(crate) enum MarkupOf<Ron,Json,Xml>
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum MarkupLanguage
 {
-    #[default]
+    // TODO: change it to default when ron Serializer::into_inner method will be added https://github.com/ron-rs/ron/pull/588
+    //#[default]
     Ron,
+    #[default]
     Json,
-    Xml,
+    // Xml,
 }
 impl MarkupLanguage
 {
-    pub const ALL: &'static [Self] = &[Self::Ron, Self::Json, Self::Xml];
+    pub const ALL: &'static [Self] = &[Self::Ron, Self::Json, /*Self::Xml*/];
 
     pub fn extension(self) -> &'static str
     {
@@ -127,7 +129,7 @@ impl MarkupLanguage
         {
             MarkupLanguage::Ron => Io::RON,
             MarkupLanguage::Json => Io::JSON,
-            MarkupLanguage::Xml => Io::XML,
+            // MarkupLanguage::Xml => Io::XML,
         }
     }
 
@@ -138,7 +140,7 @@ impl MarkupLanguage
         {
             MarkupLanguage::Ron => value.to_ron(),
             MarkupLanguage::Json => value.to_json(),
-            MarkupLanguage::Xml => value.to_xml(),
+            // MarkupLanguage::Xml => value.to_xml(),
         }
     }
 
@@ -149,7 +151,7 @@ impl MarkupLanguage
         {
             MarkupLanguage::Ron => T::from_ron(markup),
             MarkupLanguage::Json => T::from_json(markup),
-            MarkupLanguage::Xml => T::from_xml(markup),
+            // MarkupLanguage::Xml => T::from_xml(markup),
         }
     }
 
@@ -161,7 +163,7 @@ impl MarkupLanguage
         {
             MarkupLanguage::Ron => T::from_ron_buf(buf),
             MarkupLanguage::Json => T::from_json_buf(buf),
-            MarkupLanguage::Xml => T::from_xml_buf(buf),
+            // MarkupLanguage::Xml => T::from_xml_buf(buf),
         }
     }
 
@@ -188,7 +190,7 @@ impl<'a> TryFrom<&'a str> for MarkupLanguage
         {
             Io::RON => Ok(Self::Ron),
             Io::JSON => Ok(Self::Json),
-            Io::XML => Ok(Self::Xml),
+            // Io::XML => Ok(Self::Xml),
             _ => Err(())
         }
     }
@@ -228,19 +230,19 @@ impl<T> FromJson for T where T: for<'de> Deserialize<'de> {}
 
 
 
-pub trait ToXml : Serialize
-{
-    fn to_xml(&self) -> EncodeResult<String> { serde_xml_rs::ser::to_string(&self).map_err(|e| EncodeError::markup::<Self>(Io::XML, e)) }
-}
-impl<T> ToXml for T where T: Serialize {}
+// pub trait ToXml : Serialize
+// {
+//     fn to_xml(&self) -> EncodeResult<String> { serde_xml_rs::ser::to_string(&self).map_err(|e| EncodeError::markup::<Self>(Io::XML, e)) }
+// }
+// impl<T> ToXml for T where T: Serialize {}
 
-pub trait FromXml : for<'de> Deserialize<'de>
-{
-    fn from_xml_buf(buf : &[u8]) -> EncodeResult<Self> { Self::from_xml_with_reader(BufReader::new(buf))  }
-    fn from_xml_with_reader<R : BufRead>(reader : R) -> EncodeResult<Self> { serde_xml_rs::de::from_reader(reader).map_err(|e| EncodeError::markup::<Self>(Io::XML, e)) }
-    fn from_xml    (xml : &str) -> EncodeResult<Self> { serde_xml_rs::de::from_str(xml).map_err(|e| EncodeError::markup::<Self>(Io::XML, e)) }
-}
-impl<T> FromXml for T where T: for<'de> Deserialize<'de> {}
+// pub trait FromXml : for<'de> Deserialize<'de>
+// {
+//     fn from_xml_buf(buf : &[u8]) -> EncodeResult<Self> { Self::from_xml_with_reader(BufReader::new(buf))  }
+//     fn from_xml_with_reader<R : BufRead>(reader : R) -> EncodeResult<Self> { serde_xml_rs::de::from_reader(reader).map_err(|e| EncodeError::markup::<Self>(Io::XML, e)) }
+//     fn from_xml    (xml : &str) -> EncodeResult<Self> { serde_xml_rs::de::from_str(xml).map_err(|e| EncodeError::markup::<Self>(Io::XML, e)) }
+// }
+// impl<T> FromXml for T where T: for<'de> Deserialize<'de> {}
 
 
 

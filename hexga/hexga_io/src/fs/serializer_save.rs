@@ -109,7 +109,7 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
         {
             MarkupLanguage::Ron => SerializerMarkup::Ron(SerializerRon::new_serializer(capacity)),
             MarkupLanguage::Json => SerializerMarkup::Json(SerializerJson::new_serializer(capacity)),
-            MarkupLanguage::Xml => SerializerMarkup::Xml(SerializerXml::new_serializer(capacity)),
+            // MarkupLanguage::Xml => SerializerMarkup::Xml(SerializerXml::new_serializer(capacity)),
         };
 
         Self::new_full(fs, path, param, ser)
@@ -124,7 +124,7 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
 
 
 #[doc(hidden)]
-pub(crate) struct SerializerSaveCompound<'a, F, Ron,Json,Xml>
+pub(crate) struct SerializerSaveCompound<'a, F, Ron,Json>
     where
     F: FsWrite,
 {
@@ -132,14 +132,14 @@ pub(crate) struct SerializerSaveCompound<'a, F, Ron,Json,Xml>
     path: &'a Path,
     param: &'a SaveParam,
     parent_should_save: &'a mut bool,
-    compound : MarkupOf<Ron,Json,Xml>,
+    compound : MarkupOf<Ron,Json>,
     key: Option<Key>,
 }
 
-pub(crate) type SerializerMarkup = MarkupOf<SerializerRon,SerializerJson,SerializerXml>;
+pub(crate) type SerializerMarkup = MarkupOf<SerializerRon,SerializerJson>;
 pub(crate) type SerializerRon = ron::ser::Serializer<String>;
 pub(crate) type SerializerJson = serde_json::Serializer<Vec<u8>>;
-pub(crate) type SerializerXml = serde_xml_rs::ser::Serializer<Vec<u8>>;
+// pub(crate) type SerializerXml = serde_xml_rs::ser::Serializer<Vec<u8>>;
 
 
 macro_rules! dispatch_serializer {
@@ -148,7 +148,6 @@ macro_rules! dispatch_serializer {
         match &mut $self.serializer {
             MarkupOf::Ron($s) => $body,
             MarkupOf::Json($s) => $body,
-            MarkupOf::Xml($s) => $body,
         }
     };
 
@@ -157,7 +156,6 @@ macro_rules! dispatch_serializer {
         match $self.serializer {
             MarkupOf::Ron($s) => $body,
             MarkupOf::Json($s) => $body,
-            MarkupOf::Xml($s) => $body,
         }
     };
 }
@@ -168,7 +166,6 @@ macro_rules! dispatch_compound_serializer {
         match &mut $self.compound {
             MarkupOf::Ron($s) => $body,
             MarkupOf::Json($s) => $body,
-            MarkupOf::Xml($s) => $body,
         }
     };
 
@@ -177,18 +174,16 @@ macro_rules! dispatch_compound_serializer {
         match $self.compound {
             MarkupOf::Ron($s) => $body,
             MarkupOf::Json($s) => $body,
-            MarkupOf::Xml($s) => $body,
         }
     };
 }
 
 
-impl<'a, F, Ron,Json,Xml> SerializeTuple for SerializerSaveCompound<'a,F,Ron,Json,Xml>
+impl<'a, F, Ron,Json> SerializeTuple for SerializerSaveCompound<'a,F,Ron,Json>
     where
     F: FsWrite,
     Ron: SerializeTuple,
     Json: SerializeTuple,
-    Xml: SerializeTuple,
 {
     type Ok=();
     type Error=IoError;
@@ -209,12 +204,11 @@ impl<'a, F, Ron,Json,Xml> SerializeTuple for SerializerSaveCompound<'a,F,Ron,Jso
         )
     }
 }
-impl<'a, F, Ron,Json,Xml> SerializeSeq for SerializerSaveCompound<'a,F,Ron,Json,Xml>
+impl<'a, F, Ron,Json> SerializeSeq for SerializerSaveCompound<'a,F,Ron,Json>
     where
     F: FsWrite,
     Ron: SerializeSeq,
     Json: SerializeSeq,
-    Xml: SerializeSeq,
 {
     type Ok=();
     type Error=IoError;
@@ -235,12 +229,11 @@ impl<'a, F, Ron,Json,Xml> SerializeSeq for SerializerSaveCompound<'a,F,Ron,Json,
         )
     }
 }
-impl<'a, F, Ron,Json,Xml> SerializeTupleStruct for SerializerSaveCompound<'a,F,Ron,Json,Xml>
+impl<'a, F, Ron,Json> SerializeTupleStruct for SerializerSaveCompound<'a,F,Ron,Json>
     where
     F: FsWrite,
     Ron: SerializeTupleStruct,
     Json: SerializeTupleStruct,
-    Xml: SerializeTupleStruct,
 {
     type Ok=();
     type Error=IoError;
@@ -261,12 +254,11 @@ impl<'a, F, Ron,Json,Xml> SerializeTupleStruct for SerializerSaveCompound<'a,F,R
         )
     }
 }
-impl<'a, F, Ron,Json,Xml> SerializeTupleVariant for SerializerSaveCompound<'a,F,Ron,Json,Xml>
+impl<'a, F, Ron,Json> SerializeTupleVariant for SerializerSaveCompound<'a,F,Ron,Json>
     where
     F: FsWrite,
     Ron: SerializeTupleVariant,
     Json: SerializeTupleVariant,
-    Xml: SerializeTupleVariant,
 {
     type Ok=();
     type Error=IoError;
@@ -287,12 +279,11 @@ impl<'a, F, Ron,Json,Xml> SerializeTupleVariant for SerializerSaveCompound<'a,F,
         )
     }
 }
-impl<'a, F, Ron,Json,Xml> SerializeMap for SerializerSaveCompound<'a,F,Ron,Json,Xml>
+impl<'a, F, Ron,Json> SerializeMap for SerializerSaveCompound<'a,F,Ron,Json>
     where
     F: FsWrite,
     Ron: SerializeMap,
     Json: SerializeMap,
-    Xml: SerializeMap,
 {
     type Ok=();
     type Error=IoError;
@@ -347,12 +338,11 @@ impl<'a, F, Ron,Json,Xml> SerializeMap for SerializerSaveCompound<'a,F,Ron,Json,
         )
     }
 }
-impl<'a, F, Ron,Json,Xml> SerializeStruct for SerializerSaveCompound<'a,F,Ron,Json,Xml>
+impl<'a, F, Ron,Json> SerializeStruct for SerializerSaveCompound<'a,F,Ron,Json>
     where
     F: FsWrite,
     Ron: SerializeStruct,
     Json: SerializeStruct,
-    Xml: SerializeStruct,
 {
     type Ok=();
     type Error=IoError;
@@ -387,12 +377,11 @@ impl<'a, F, Ron,Json,Xml> SerializeStruct for SerializerSaveCompound<'a,F,Ron,Js
         )
     }
 }
-impl<'a, F, Ron,Json,Xml> SerializeStructVariant for SerializerSaveCompound<'a,F,Ron,Json,Xml>
+impl<'a, F, Ron,Json> SerializeStructVariant for SerializerSaveCompound<'a,F,Ron,Json>
     where
     F: FsWrite,
     Ron: SerializeStruct,
     Json: SerializeStruct,
-    Xml: SerializeStruct,
 {
     type Ok=();
     type Error=IoError;
@@ -448,18 +437,18 @@ impl MarkupSerializer for SerializerJson
         String::try_from(self.into_inner()).map_err(|e| e.into())
     }
 }
-impl MarkupSerializer for SerializerXml
-{
-    const EXTENSION : &'static str = Io::XML;
+// impl MarkupSerializer for SerializerXml
+// {
+//     const EXTENSION : &'static str = Io::XML;
 
-    fn new_serializer(capacity: usize) -> Self
-    {
-        SerializerXml::new_from_writer(Vec::with_capacity(capacity))
-    }
-    fn extract(self) -> EncodeResult<String> {
-        Err(EncodeError::custom("xml not supported"))
-    }
-}
+//     fn new_serializer(capacity: usize) -> Self
+//     {
+//         SerializerXml::new_from_writer(Vec::with_capacity(capacity))
+//     }
+//     fn extract(self) -> EncodeResult<String> {
+//         Err(EncodeError::custom("xml not supported"))
+//     }
+// }
 
 // pub(crate) struct SaveTxtOrBinUrlOrMarkup
 // {
@@ -515,7 +504,7 @@ impl<'a, F> SerializerSaveTxtOrBinOrMarkup<'a, F>
         {
             MarkupOf::Ron(_) => SerializerRon::EXTENSION,
             MarkupOf::Json(_) => SerializerJson::EXTENSION,
-            MarkupOf::Xml(_) => SerializerXml::EXTENSION,
+            // MarkupOf::Xml(_) => SerializerXml::EXTENSION,
         };
 
         let markup = dispatch_serializer!(self, s => s.extract()).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))?;
@@ -569,17 +558,17 @@ macro_rules! dispatch_compound {
                     key: None,
                 })
             },
-            MarkupOf::Xml(ser) => {
-                let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
-                Ok(SerializerSaveCompound {
-                    fs: &mut $self.fs,
-                    path: &$self.path,
-                    param: &$self.param,
-                    parent_should_save: &mut $self.should_save,
-                    compound: MarkupOf::Xml(seq),
-                    key: None,
-                })
-            },
+            // MarkupOf::Xml(ser) => {
+            //     let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
+            //     Ok(SerializerSaveCompound {
+            //         fs: &mut $self.fs,
+            //         path: &$self.path,
+            //         param: &$self.param,
+            //         parent_should_save: &mut $self.should_save,
+            //         compound: MarkupOf::Xml(seq),
+            //         key: None,
+            //     })
+            // },
         }
     }};
 }
@@ -594,38 +583,45 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSaveTxtOrBinOrMarkup<'a, F>
     type SerializeSeq=SerializerSaveCompound<'s,F,
         <&'s mut SerializerRon as Serializer>::SerializeSeq,
         <&'s mut SerializerJson as Serializer>::SerializeSeq,
-        <&'s mut SerializerXml as Serializer>::SerializeSeq>;
+        // <&'s mut SerializerXml as Serializer>::SerializeSeq
+        >;
 
     type SerializeTuple=SerializerSaveCompound<'s,F,
         <&'s mut SerializerRon as Serializer>::SerializeTuple,
         <&'s mut SerializerJson as Serializer>::SerializeTuple,
-        <&'s mut SerializerXml as Serializer>::SerializeTuple>;
+        // <&'s mut SerializerXml as Serializer>::SerializeTuple
+        >;
 
     type SerializeTupleStruct=SerializerSaveCompound<'s,F,
         <&'s mut SerializerRon as Serializer>::SerializeTupleStruct,
         <&'s mut SerializerJson as Serializer>::SerializeTupleStruct,
-        <&'s mut SerializerXml as Serializer>::SerializeTupleStruct>;
+        // <&'s mut SerializerXml as Serializer>::SerializeTupleStruct
+        >;
 
     type SerializeTupleVariant=SerializerSaveCompound<'s,F,
         <&'s mut SerializerRon as Serializer>::SerializeTupleVariant,
         <&'s mut SerializerJson as Serializer>::SerializeTupleVariant,
-        <&'s mut SerializerXml as Serializer>::SerializeTupleVariant>;
+        // <&'s mut SerializerXml as Serializer>::SerializeTupleVariant
+        >;
 
     type SerializeMap=SerializerSaveCompound<'s,F,
         <&'s mut SerializerRon as Serializer>::SerializeMap,
         <&'s mut SerializerJson as Serializer>::SerializeMap,
-        <&'s mut SerializerXml as Serializer>::SerializeMap>;
+        // <&'s mut SerializerXml as Serializer>::SerializeMap
+        >;
 
 
     type SerializeStruct=SerializerSaveCompound<'s,F,
         <&'s mut SerializerRon as Serializer>::SerializeStruct,
         <&'s mut SerializerJson as Serializer>::SerializeStruct,
-        <&'s mut SerializerXml as Serializer>::SerializeStruct>;
+        // <&'s mut SerializerXml as Serializer>::SerializeStruct
+        >;
 
     type SerializeStructVariant=SerializerSaveCompound<'s,F,
         <&'s mut SerializerRon as Serializer>::SerializeStructVariant,
         <&'s mut SerializerJson as Serializer>::SerializeStructVariant,
-        <&'s mut SerializerXml as Serializer>::SerializeStructVariant>;
+        // <&'s mut SerializerXml as Serializer>::SerializeStructVariant
+        >;
 
     fn serialize_bool(self, value: bool) -> Result<Self::Ok, Self::Error> {
         serialize_value!(self, serialize_bool, value)

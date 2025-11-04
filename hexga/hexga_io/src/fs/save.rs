@@ -45,11 +45,11 @@ pub trait FsSave : FsWrite + Sized
                     let markup = value.to_json().map_err(|e| IoError::new(path, e))?;
                     return self.write_str(&path, &markup).map_err(|e| IoError::new(path, e));
                 },
-                Io::XML =>
-                {
-                    let markup = value.to_xml().map_err(|e| IoError::new(path, e))?;
-                    return self.write_str(&path, &markup).map_err(|e| IoError::new(path, e));
-                },
+                // Io::XML =>
+                // {
+                //     let markup = value.to_xml().map_err(|e| IoError::new(path, e))?;
+                //     return self.write_str(&path, &markup).map_err(|e| IoError::new(path, e));
+                // },
                 Io::TXT =>
                 {
                     let txt = value.serialize(SerializerTxt).map_err(|e| IoError::new(path, e))?;
