@@ -10,10 +10,6 @@ use std::borrow::Borrow;
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
-#[allow(unused_imports)]
-#[cfg(feature = "hexga_io")]
-use hexga_io::prelude::*;
-
 
 pub mod default;
 pub mod format;

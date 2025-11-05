@@ -13,10 +13,6 @@ use hexga::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
-#[cfg(feature = "hexga_io")]
-use hexga_io::prelude::*;
-
-
 pub struct Fs
 {
     name: String,

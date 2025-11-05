@@ -14,7 +14,7 @@ categories = ["mathematics", "data-structures", "algorithms", "rust-patterns"]
 
 [features]
 default = [
-    "serde", "hexga_io",
+    "serde",
     "int_are_32_bits", "float_are_32_bits"
 ]
 
@@ -32,9 +32,6 @@ float_are_size_bits = ["hexga_typedef/float_are_size_bits"]
 serde = ["dep:serde",
     "hexga_core/serde"
 ]
-hexga_io = ["dep:hexga_io", "serde",
-    "hexga_core/hexga_io"
-]
 
 
 [dependencies]
@@ -47,7 +44,6 @@ hexga_map_on.workspace = true
 rayon = "1.10.0"
 
 # serialization
-hexga_io = { workspace = true, optional = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

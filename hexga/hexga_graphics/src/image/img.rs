@@ -1,4 +1,4 @@
-use hexga_io::encoding::MediaType;
+use hexga_encoding::MediaType;
 use ::image::{DynamicImage, GenericImageView, ImageFormat};
 
 use super::*;

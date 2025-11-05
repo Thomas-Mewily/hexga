@@ -6,7 +6,7 @@ hexga_number
 hexga_core
 hexga_singleton
 
-hexga_io
+hexga_file_system
 
 hexga_ansi_color
 hexga_bitflags

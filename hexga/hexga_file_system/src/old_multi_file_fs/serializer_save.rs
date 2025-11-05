@@ -15,21 +15,37 @@ impl Default for ExtensionParam
     }
 }
 
+#[derive(Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, Hash)]
+pub enum MultiFile
+{
+    Yes,
+    #[default]
+    No,
+    /// Mimic the file system. If a folder exist, use it
+    Mimic,
+}
+impl MultiFile
+{
+    pub const fn is_yes(self) -> bool { matches!(self, MultiFile::Yes) }
+    pub const fn is_no(self) -> bool { matches!(self, MultiFile::No) }
+    pub const fn is_mimic(self) -> bool { matches!(self, MultiFile::Mimic) }
+}
+
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(Serialize, Deserialize)]
 pub struct SaveParam
 {
-
     /// Will use multi file
     pub multi_file: bool,
 
     // TODO: change the bool for an enum { Yes, No, Same } (Same = if there is a file save it in a file)
 
     /// Will map be expended into multiple file (if multi_file is true)
-    pub multi_file_map: bool,
+    pub multi_file_map: MultiFile,
     /// Will struct be expended into multiple file (if multi_file is true)
-    pub multi_file_struct: bool,
+    pub multi_file_struct: MultiFile,
 
     /// Do char and string will be saved in a .txt file ?
     pub text_to_txt: bool,
@@ -52,9 +68,9 @@ impl Default for SaveParam
     fn default() -> Self {
         Self
         {
-            multi_file: true,
-            multi_file_map: true,
-            multi_file_struct: false,
+            multi_file: false,
+            multi_file_map: MultiFile::Yes,
+            multi_file_struct: MultiFile::No,
             extension_param: ExtensionParam::default(),
             text_to_txt: true,
             bytes_to_bin: true,
@@ -68,8 +84,8 @@ impl SaveParam
     pub fn with_extension(self, extension : impl Into<Extension>) -> Self { Self { extension_param: ExtensionParam::WithExtension(extension.into()), ..self}}
     pub fn with_guess_extension(self, replace_it: bool) -> Self { Self { extension_param: ExtensionParam::GuessIt{ replace_it }, ..self}}
     pub fn with_multi_file(self, multi_file: bool) -> Self { Self { multi_file, ..self }}
-    pub fn with_multi_file_map(self, multi_file_map: bool) -> Self { Self { multi_file_map, ..self }}
-    pub fn with_multi_file_struct(self, multi_file_struct: bool) -> Self { Self { multi_file_struct, ..self }}
+    pub fn with_multi_file_map(self, multi_file_map: MultiFile) -> Self { Self { multi_file_map, ..self }}
+    pub fn with_multi_file_struct(self, multi_file_struct: MultiFile) -> Self { Self { multi_file_struct, ..self }}
     pub fn with_text_to_txt(self, text_to_txt: bool) -> Self { Self { text_to_txt, ..self }}
     pub fn with_bytes_to_bin(self, bytes_to_bin: bool) -> Self { Self { bytes_to_bin, ..self }}
 }
@@ -132,13 +148,11 @@ pub(crate) struct SerializerSaveCompound<'a, F, Ron,Json>
     path: &'a Path,
     param: &'a SaveParam,
     parent_should_save: &'a mut bool,
-    compound : MarkupOf<Ron,Json>,
+    compound : Markup<Ron,Json>,
     key: Option<Key>,
 }
 
-pub(crate) type SerializerMarkup = MarkupOf<SerializerRon,SerializerJson>;
-pub(crate) type SerializerRon = ron::ser::Serializer<String>;
-pub(crate) type SerializerJson = serde_json::Serializer<Vec<u8>>;
+pub(crate) type SerializerMarkup = Markup<SerializerRon,SerializerJson>;
 // pub(crate) type SerializerXml = serde_xml_rs::ser::Serializer<Vec<u8>>;
 
 
@@ -146,16 +160,16 @@ macro_rules! dispatch_serializer {
     // mutable borrow
     (&mut $self:expr, $s:pat  => $body:expr) => {
         match &mut $self.serializer {
-            MarkupOf::Ron($s) => $body,
-            MarkupOf::Json($s) => $body,
+            Markup::Ron($s) => $body,
+            Markup::Json($s) => $body,
         }
     };
 
     // by value (move)
     ($self:expr, $s:pat  => $body:expr) => {
         match $self.serializer {
-            MarkupOf::Ron($s) => $body,
-            MarkupOf::Json($s) => $body,
+            Markup::Ron($s) => $body,
+            Markup::Json($s) => $body,
         }
     };
 }
@@ -164,16 +178,16 @@ macro_rules! dispatch_compound_serializer {
     // mutable borrow
     (&mut $self:expr, $s:pat  => $body:expr) => {
         match &mut $self.compound {
-            MarkupOf::Ron($s) => $body,
-            MarkupOf::Json($s) => $body,
+            Markup::Ron($s) => $body,
+            Markup::Json($s) => $body,
         }
     };
 
     // by value (move)
     ($self:expr, $s:pat  => $body:expr) => {
         match $self.compound {
-            MarkupOf::Ron($s) => $body,
-            MarkupOf::Json($s) => $body,
+            Markup::Ron($s) => $body,
+            Markup::Json($s) => $body,
         }
     };
 }
@@ -292,7 +306,8 @@ impl<'a, F, Ron,Json> SerializeMap for SerializerSaveCompound<'a,F,Ron,Json>
     where
         T: ?Sized + Serialize
     {
-        if self.param.multi_file && self.param.multi_file_map
+        // TODO: handle MultiFile::Mimic in self.param.multi_file_map
+        if self.param.multi_file && self.param.multi_file_map.is_yes()
         {
             if let Ok(key) = key.serialize(IdentifierSerializer)
             {
@@ -351,7 +366,8 @@ impl<'a, F, Ron,Json> SerializeStruct for SerializerSaveCompound<'a,F,Ron,Json>
         where
         T: ?Sized + Serialize
     {
-        if self.param.multi_file && self.param.multi_file_struct
+        // TODO: handle MultiFile::Mimic in self.param.multi_file_map
+        if self.param.multi_file && self.param.multi_file_struct.is_yes()
         {
             if let Ok(k) = key.serialize(IdentifierSerializer)
             {
@@ -403,13 +419,7 @@ impl<'a, F, Ron,Json> SerializeStructVariant for SerializerSaveCompound<'a,F,Ron
     }
 }
 
-pub(crate) trait MarkupSerializer
-{
-    const EXTENSION : &'static str;
 
-    fn new_serializer(capacity: usize) -> Self;
-    fn extract(self) -> EncodeResult<String>;
-}
 impl MarkupSerializer for SerializerRon
 {
     const EXTENSION : &'static str = Io::RON;
@@ -502,9 +512,9 @@ impl<'a, F> SerializerSave<'a, F>
 
         let extension = match self.serializer
         {
-            MarkupOf::Ron(_) => SerializerRon::EXTENSION,
-            MarkupOf::Json(_) => SerializerJson::EXTENSION,
-            // MarkupOf::Xml(_) => SerializerXml::EXTENSION,
+            Markup::Ron(_) => SerializerRon::EXTENSION,
+            Markup::Json(_) => SerializerJson::EXTENSION,
+            // Markup::Xml(_) => SerializerXml::EXTENSION,
         };
 
         let markup = dispatch_serializer!(self, s => s.extract()).map_err(|e| IoError::new(self.path.clone(), FileError::from(e)))?;
@@ -536,36 +546,36 @@ macro_rules! serialize_value
 macro_rules! dispatch_compound {
     ($self:expr, $method:ident $(, $arg:expr)*) => {{
         match &mut $self.serializer {
-            MarkupOf::Ron(ser) => {
+            Markup::Ron(ser) => {
                 let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
                 Ok(SerializerSaveCompound {
                     fs: &mut $self.fs,
                     path: &$self.path,
                     param: &$self.param,
                     parent_should_save: &mut $self.should_save,
-                    compound: MarkupOf::Ron(seq),
+                    compound: Markup::Ron(seq),
                     key: None,
                 })
             },
-            MarkupOf::Json(ser) => {
+            Markup::Json(ser) => {
                 let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
                 Ok(SerializerSaveCompound {
                     fs: &mut $self.fs,
                     path: &$self.path,
                     param: &$self.param,
                     parent_should_save: &mut $self.should_save,
-                    compound: MarkupOf::Json(seq),
+                    compound: Markup::Json(seq),
                     key: None,
                 })
             },
-            // MarkupOf::Xml(ser) => {
+            // Markup::Xml(ser) => {
             //     let seq = ser.$method($($arg),*).map_err(|e| IoError::new($self.path.clone(), FileError::from_display(e)))?;
             //     Ok(SerializerSaveCompound {
             //         fs: &mut $self.fs,
             //         path: &$self.path,
             //         param: &$self.param,
             //         parent_should_save: &mut $self.should_save,
-            //         compound: MarkupOf::Xml(seq),
+            //         compound: Markup::Xml(seq),
             //         key: None,
             //     })
             // },
@@ -685,7 +695,6 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSave<'a, F>
             return serialize_value!(self, serialize_str, txt);
         }
         self.write_fs(txt.as_bytes(), Some("txt"))
-
     }
 
     fn serialize_bytes(self, bytes: &[u8]) -> Result<Self::Ok, Self::Error>
@@ -695,6 +704,10 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSave<'a, F>
         {
             let bytes = url.data.to_owned();
             return self.write_fs(&bytes, Some(url.extension));
+        }
+        if !self.param.bytes_to_bin
+        {
+            return serialize_value!(self, serialize_bytes, bytes);
         }
         self.write_fs(bytes, Some("bin"))
     }
@@ -775,8 +788,10 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSave<'a, F>
         dispatch_compound!(self, serialize_tuple_variant, name, variant_index, variant, len)
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        self.should_save = !(self.param.multi_file && self.param.multi_file_map);
+    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error>
+    {
+        // TODO: handle MultiFile::Mimic in self.param.multi_file_map
+        self.should_save = !(self.param.multi_file && self.param.multi_file_map.is_yes());
         dispatch_compound!(self, serialize_map, len)
     }
 
@@ -786,7 +801,8 @@ impl<'s, 'a, F> Serializer for &'s mut SerializerSave<'a, F>
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error>
     {
-        self.should_save = !(self.param.multi_file && self.param.multi_file_struct);
+        // TODO: handle MultiFile::Mimic in self.param.multi_file_map
+        self.should_save = !(self.param.multi_file && self.param.multi_file_struct.is_yes());
         dispatch_compound!(self, serialize_struct, name, len)
     }
 

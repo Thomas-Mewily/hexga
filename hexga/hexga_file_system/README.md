@@ -18,7 +18,7 @@ Non Goal :
 - Async Loading (use some kind handle that will load it later instead, loading composite file async in a non blocking way is hard...)
 
 ```rust
-use hexga_io::prelude::*;
+use hexga_file_system::prelude::*;
 
 "Hello file !".save_to_disk("./myfile.txt").unwrap();
 
@@ -30,7 +30,7 @@ assert_eq!("Hello file !", read);
 
 ```rust
 
-// #[io] derive (serde::Serdialize, serde::Deserialize) and (hexga_io::Load, hexga_io::Save)
+// #[io] derive (serde::Serdialize, serde::Deserialize) and (hexga_file_system::Load, hexga_file_system::Save)
 #[io]
 #[derive(PartialEq, Debug)]
 struct Person

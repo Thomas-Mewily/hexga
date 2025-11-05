@@ -13,13 +13,10 @@ description = "GenVec, ideal for MAS (Multi-Agent System), where each agent can 
 categories = ["rust-patterns", "data-structures"]
 
 [features]
-default = ["serde", "hexga_io"]
+default = ["serde"]
 
 serde = ["dep:serde",
     "hexga_core/serde"
-]
-hexga_io = ["serde", "dep:hexga_io",
-    "hexga_core/hexga_io"
 ]
 
 
@@ -28,7 +25,6 @@ hexga_core.workspace = true
 hexga_number.workspace = true
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
-hexga_io = { workspace = true, optional = true }
 
 #typed_index = "0.2.1"
 

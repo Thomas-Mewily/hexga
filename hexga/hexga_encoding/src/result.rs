@@ -111,37 +111,3 @@ impl serde::de::Error for EncodeError
 {
     fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::custom(msg.to_string()) }
 }
-
-
-
-// pub trait BinaryVecMagicFileExtension
-// {
-//     fn push_magic_file_extension(&mut self, extension: &extension);
-//     fn extract_magic_file_extension_and_data(&self) -> Result<(&str, &[u8]), ()>;
-// }
-// impl BinaryVecMagicFileExtension for Vec<u8>
-// {
-//     fn push_magic_file_extension(&mut self, extension: &extension) {
-//         self.extend_from_slice(PREFIX);
-//         self.extend_from_slice(extension.as_bytes());
-//         self.extend_from_slice(b";");
-//     }
-
-//     fn extract_magic_file_extension_and_data(&self) -> Result<(&str, &[u8]), ()> {
-//         if !self.starts_with(PREFIX)
-//         {
-//             return Err(());
-//         }
-
-//         let rest = &self[PREFIX.len()..];
-//         let sep_pos = rest.iter().position(|&b| b == b';').ok_or(())?;
-
-//         // Split into (extension, data)
-//         let (ext_bytes, data) = rest.split_at(sep_pos);
-//         let ext = std::str::from_utf8(ext_bytes).map_err(|_| ())?;
-
-//         // Skip the ';' separator before the data
-//         let data = &data[1..];
-//         Ok((ext, data))
-//     }
-// }

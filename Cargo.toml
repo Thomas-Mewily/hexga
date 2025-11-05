@@ -18,7 +18,9 @@ hexga_typedef          = { path = "./hexga/hexga_typedef",             version =
 hexga_number           = { path = "./hexga/hexga_number",              version = "0.0.11-beta.4", default-features = false }
 hexga_array            = { path = "./hexga/hexga_array",               version = "0.0.11-beta.4", default-features = false }
 hexga_singleton        = { path = "./hexga/hexga_singleton",           version = "0.0.11-beta.4", default-features = false }
-hexga_io               = { path = "./hexga/hexga_io",                  version = "0.0.11-beta.4", default-features = false }
+hexga_encoding         = { path = "./hexga/hexga_encoding",            version = "0.0.11-beta.4", default-features = false }
+hexga_serde            = { path = "./hexga/hexga_serde",               version = "0.0.11-beta.4", default-features = false }
+hexga_file_system      = { path = "./hexga/hexga_file_system",         version = "0.0.11-beta.4", default-features = false }
 hexga_bitflags         = { path = "./hexga/hexga_bitflags",            version = "0.0.11-beta.4", default-features = false }
 hexga_core             = { path = "./hexga/hexga_core",                version = "0.0.11-beta.4", default-features = true  }
 hexga_generational     = { path = "./hexga/hexga_generational",        version = "0.0.11-beta.4", default-features = false }

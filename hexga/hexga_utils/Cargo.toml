@@ -14,15 +14,10 @@ categories = ["rust-patterns"]
 
 [features]
 
-default = [
-    "serde", "hexga_io",
-]
-
+default = ["serde"]
 serde   = ["dep:serde"]
-hexga_io = ["dep:hexga_io", "serde"]
 
 [dependencies]
 hexga_core.workspace = true
 
-hexga_io = { workspace = true, optional = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }

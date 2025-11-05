@@ -13,9 +13,7 @@ description = "Ansi Color"
 
 [features]
 serde = ["dep:serde"]
-hexga_io = ["dep:hexga_io", "serde"]
 
 [dependencies]
-hexga_io = { workspace = true, optional = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 

@@ -1,10 +1,16 @@
+use std::ops::Deref;
+
 use super::*;
+
+#[cfg(feature = "serde")]
+mod serde_impl;
+pub use serde_impl::*;
 
 pub mod prelude
 {
-    pub use super::{FromUrl,ToUrl};
+    pub use super::{FromUrl,ToUrl,MediaType};
     #[cfg(feature = "serde")]
-    pub use super::{UrlSerializer,UrlDeserializer};
+    pub use super::serde_impl::{UrlSerializer,UrlDeserializer};
 }
 
 
@@ -19,7 +25,7 @@ pub mod prelude
 /// # Usage
 ///
 /// ```rust
-/// use hexga_io::encoding::*;
+/// use hexga_file_system::encoding::*;
 ///
 /// let url = UrlMeta::try_from("data:image/png;base64,").unwrap();
 /// assert_eq!(url.scheme, "data");
@@ -312,52 +318,3 @@ impl<T> FromUrl for T where T: Load {}
 
 
 
-
-#[cfg(feature = "serde")]
-pub trait UrlDeserializer<'de> : Deserializer<'de>
-{
-    fn deserialize_with_encoding<T>(self) -> Result<T, Self::Error>
-        where T: FromUrl
-    {
-        if self.is_human_readable()
-        {
-            let url = self.deserialize_byte_buf(StringVisitor)?;
-            return T::from_url(&url).map_err(serde::de::Error::custom);
-        }
-        let url = self.deserialize_byte_buf(BytesVisitor)?;
-        return T::from_bin_url_or_bytes(&url, "").map_err(serde::de::Error::custom);
-    }
-}
-#[cfg(feature = "serde")]
-impl<'de, F> UrlDeserializer<'de> for F where F: Deserializer<'de> {}
-
-
-
-#[cfg(feature = "serde")]
-pub trait UrlSerializer : Serializer
-{
-    fn serialize_with_encoding<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
-        where T: ToUrl
-    {
-        self.serialize_with_encoding_and_extension(value, T::save_prefered_extension().unwrap_or_default())
-    }
-
-    fn serialize_with_encoding_and_extension<T>(self, value: &T, extension: &extension) -> Result<Self::Ok, Self::Error>
-        where T: ToUrl
-    {
-        use serde::ser::Error;
-
-        if self.is_human_readable()
-        {
-            let url = value.to_url(extension).map_err(Self::Error::custom)?;
-            self.serialize_str(&url)
-        }
-        else
-        {
-            let url = value.to_url_bin(extension).map_err(Self::Error::custom)?;
-            self.serialize_bytes(&url)
-        }
-    }
-}
-#[cfg(feature = "serde")]
-impl<F> UrlSerializer for F where F: Serializer {}

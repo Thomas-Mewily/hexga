@@ -19,13 +19,11 @@ proc-macro = true
 default = []
 
 serde = ["dep:serde"]
-hexga_io = ["dep:hexga_io", "serde"]
 
 [dependencies]
 hexga_number.workspace = true
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
-hexga_io = { workspace = true, optional = true }
 
 syn = { version = "2.0", features = ["full", "extra-traits"] }
 quote = "1.0"

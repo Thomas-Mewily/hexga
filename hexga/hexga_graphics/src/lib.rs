@@ -25,14 +25,12 @@ use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}, marker::Pha
 use hexga_core::prelude::*;
 use hexga_math::grid::*;
 use hexga_math::prelude::*;
+use hexga_encoding::prelude::*;
 
 #[allow(unused_imports)]
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
-
-#[cfg(feature = "hexga_io")]
-use hexga_io::prelude::*;
 
 use std::ops::*;
 

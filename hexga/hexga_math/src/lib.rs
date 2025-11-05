@@ -63,9 +63,6 @@ use rayon::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
-#[cfg(feature = "hexga_io")]
-use hexga_io::prelude::*;
-
 
 pub use hexga_typedef as typedef;
 mod utils;

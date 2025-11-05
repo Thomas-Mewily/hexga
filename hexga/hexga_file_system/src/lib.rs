@@ -6,9 +6,10 @@ use std::default;
 use std::io::{Read, BufReader, Write, BufWriter};
 use std::borrow::Cow;
 use std::{fmt::Display, str::Utf8Error, string::FromUtf8Error};
-use std::{ops::{Deref, DerefMut}};
+use std::{ops::*};
 use std::any::Any;
 use std::fmt::Formatter;
+use std::{borrow::{Borrow, BorrowMut}, ffi::OsStr, iter::FusedIterator};
 
 
 #[cfg(feature = "serde")]
@@ -17,26 +18,16 @@ use serde::
     Serialize, Serializer, Deserialize, Deserializer, de::Visitor,
     ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant}
 };
+#[cfg(feature = "serde")]
+use hexga_serde::{prelude::*,de::*,ser::*};
+
+use hexga_encoding::{prelude::*,Base64Error};
 
 pub mod fs;
 use fs::*;
 
-#[cfg(feature = "serde")]
-pub mod markup;
-#[cfg(feature = "serde")]
-use markup::*;
-
 pub mod io;
 use io::*;
-
-pub mod encoding;
-use encoding::*;
-
-#[cfg(feature = "serde")]
-pub(crate) mod serde_impl;
-#[cfg(feature = "serde")]
-pub(crate) use serde_impl::*;
-
 
 pub mod prelude
 {
@@ -44,9 +35,5 @@ pub mod prelude
     {
         fs::prelude::*,
         io::prelude::*,
-        encoding::prelude::*,
     };
-
-    #[cfg(feature = "serde")]
-    pub use super::markup::prelude::*;
 }

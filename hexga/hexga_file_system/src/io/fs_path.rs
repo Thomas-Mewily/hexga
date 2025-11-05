@@ -1,10 +1,5 @@
-use std::{borrow::{Borrow, BorrowMut}, ffi::OsStr, iter::FusedIterator, ops::{Deref, DerefMut, Div, DivAssign}};
-
 use super::*;
 
-pub type Extension = String;
-#[allow(non_camel_case_types)]
-pub type extension = str;
 
 #[repr(transparent)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -98,7 +93,7 @@ impl Path
     /// # Examples
     ///
     /// ```rust
-    /// use hexga_io::Path;
+    /// use hexga_file_system::Path;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").set_extension("md").as_str(), "foo/bar.md");
     ///
@@ -322,7 +317,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").extension(), Some("txt"));
     /// assert_eq!(Path::new("foo/archive.tar.gz").extension(), Some("gz"));
@@ -335,7 +330,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").have_extension(), true);
     /// assert_eq!(Path::new("foo/archive.tar.gz").have_extension(), true);
@@ -352,7 +347,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").without_extension().as_str(), "foo/bar");
     /// assert_eq!(Path::new("foo/archive.tar.gz").without_extension().as_str(), "foo/archive");
@@ -385,7 +380,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").extension(), Some("txt"));
     /// assert_eq!(Path::new("foo/archive.tar.gz").extension(), Some("tar.gz"));
@@ -412,7 +407,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").extensions().collect(), vec!["txt"]);
     /// assert_eq!(Path::new("foo/archive.tar.gz").extension().collect(), vec!["tar", "gz"]);
@@ -452,7 +447,7 @@ impl path
     /// # Examples
     ///
     /// ```rust
-    /// use hexga_io::Path;
+    /// use hexga_file_system::Path;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").with_extension("md").as_str(), "foo/bar.md");
     ///
@@ -483,7 +478,7 @@ impl path
     /// # Examples
     ///
     /// ```rust
-    /// use hexga_io::Path;
+    /// use hexga_file_system::Path;
     ///
     /// assert_eq!(
     ///     Path::new("foo/bar.txt").with_extensions(["tar", "gz"]).as_str(),
@@ -516,7 +511,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!(Path::new("foo/bar/baz.txt").iter().collect(), vec!["foo", "bar", "baz.txt"]);
     /// assert_eq!(Path::new("foo\\bar\\baz.txt").iter().collect(), vec!["foo", "bar", "baz.txt"]);
@@ -543,7 +538,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// let path = Path::new("foo/bar/baz.txt");
     /// assert_eq!(path.parent().map(|p| p.as_str()), Some("foo/bar"));
@@ -594,7 +589,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").name(), "bar");
     /// assert_eq!(Path::new("foo/.hidden").name(), ".hidden");
@@ -615,7 +610,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!("foo/bar.txt".with_name("baz"), "foo/baz.txt");
     /// assert_eq!("foo/.hidden".with_name("config"), "foo/config");
@@ -654,7 +649,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_io::*;
+    /// use hexga_file_system::*;
     ///
     /// assert_eq!("foo/bar.txt".path_fullname(), "bar.txt");
     /// assert_eq!("foo/.hidden".path_fullname(), ".hidden");

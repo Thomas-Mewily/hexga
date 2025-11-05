@@ -9,14 +9,17 @@ pub use hexga_map_on as map_on;
 pub use hexga_graphics as graphics;
 //pub use hexga_random as random;
 pub use hexga_singleton as singleton;
-
-#[cfg(feature = "hexga_io")]
-pub use hexga_io as io;
+pub use hexga_encoding as encoding;
 
 //pub use hexga_undo_redo as undo;
 
-#[cfg(test)]
-mod test;
+#[cfg(feature = "serde")]
+pub use hexga_file_system as fs;
+#[cfg(feature = "serde")]
+pub use hexga_serde as io;
+
+#[cfg(all(test, feature = "serde"))]
+mod serde_test;
 
 pub mod prelude
 {
@@ -29,15 +32,16 @@ pub mod prelude
     pub use crate::graphics::prelude::*;
     //pub use crate::random::*;
     pub use crate::singleton::prelude::*;
+    pub use crate::encoding::prelude::*;
     //pub use crate::map_on::*;
 
     /*
     #[allow(unused_imports)]
-    #[cfg(feature = "hexga_io")]
-    pub use hexga_io;*/
-    #[allow(unused_imports)]
-    #[cfg(feature = "hexga_io")]
-    pub use crate::io::prelude::*;
+    #[cfg(feature = "hexga_file_system")]
+    pub use hexga_file_system;*/
+    // #[allow(unused_imports)]
+    // #[cfg(feature = "hexga_file_system")]
+    // pub use crate::io::prelude::*;
 
     /*
     #[allow(unused_imports)]
@@ -45,7 +49,12 @@ pub mod prelude
     pub use serde;*/
     #[allow(unused_imports)]
     #[cfg(feature = "serde")]
-    pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+    pub use super::
+    {
+        serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct},
+        io::prelude::*,
+        fs::prelude::*,
+    };
 
     #[allow(hidden_glob_reexports)]
     pub(crate) mod prelude {}

@@ -10,7 +10,7 @@ edition.workspace = true
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde", "hexga_io",
+            "serde"
           ]
 
 
@@ -25,14 +25,11 @@ float_are_32_bits   = ["hexga/float_are_32_bits"]
 float_are_64_bits   = ["hexga/float_are_64_bits"]
 float_are_size_bits = ["hexga/float_are_size_bits"]
 
-hexga_io = ["dep:hexga_io", "hexga/hexga_io", "serde"]
-
 serde = ["dep:serde", "hexga/serde"]
 
 [dependencies]
 hexga.workspace = true
 serde = { version = "1.0.0", features = ["derive"], optional = true }
-hexga_io = { workspace = true, optional = true }
 winit = "0.30.11"
 async-std = { version = "1.13.1" }
 copypasta = "0.10.2"

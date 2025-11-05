@@ -17,10 +17,6 @@ use std::fmt::{Debug, Display};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[allow(unused_imports)]
-#[cfg(feature = "hexga_io")]
-use hexga_io::prelude::*;
-
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]

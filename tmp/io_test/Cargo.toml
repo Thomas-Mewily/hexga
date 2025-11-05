@@ -9,13 +9,10 @@ edition.workspace = true
 
 
 [features]
-default = ["serde", "hexga_io"]
+default = ["serde"]
 
 serde = ["dep:serde",
     "hexga/serde"
-]
-hexga_io = ["dep:hexga_io", "serde",
-    "hexga/hexga_io"
 ]
 
 
@@ -23,4 +20,3 @@ hexga_io = ["dep:hexga_io", "serde",
 hexga.workspace = true
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
-hexga_io = { workspace = true, optional = true }

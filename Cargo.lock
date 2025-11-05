@@ -1105,11 +1105,13 @@ dependencies = [
  "hexga_ansi_color",
  "hexga_bitflags",
  "hexga_core",
+ "hexga_encoding",
+ "hexga_file_system",
  "hexga_generational",
  "hexga_graphics",
- "hexga_io",
  "hexga_map_on",
  "hexga_math",
+ "hexga_serde",
  "hexga_singleton",
  "hexga_utils",
  "serde",
@@ -1119,7 +1121,6 @@ dependencies = [
 name = "hexga_ansi_color"
 version = "0.0.11-beta.4"
 dependencies = [
- "hexga_io",
  "serde",
 ]
 
@@ -1134,7 +1135,6 @@ dependencies = [
 name = "hexga_bitflags"
 version = "0.0.11-beta.4"
 dependencies = [
- "hexga_io",
  "hexga_number",
  "proc-macro2",
  "quote",
@@ -1146,8 +1146,15 @@ dependencies = [
 name = "hexga_core"
 version = "0.0.11-beta.4"
 dependencies = [
- "hexga_io",
  "hexga_map_on",
+ "serde",
+]
+
+[[package]]
+name = "hexga_encoding"
+version = "0.0.11-beta.4"
+dependencies = [
+ "base64",
  "serde",
 ]
 
@@ -1161,7 +1168,6 @@ dependencies = [
  "copypasta",
  "env_logger",
  "hexga",
- "hexga_io",
  "log",
  "serde",
  "wasm-bindgen-futures",
@@ -1170,11 +1176,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_file_system"
+version = "0.0.11-beta.4"
+dependencies = [
+ "base64",
+ "hexga_encoding",
+ "hexga_serde",
+ "serde",
+]
+
+[[package]]
 name = "hexga_generational"
 version = "0.0.11-beta.4"
 dependencies = [
  "hexga_core",
- "hexga_io",
  "hexga_number",
  "serde",
 ]
@@ -1184,21 +1199,10 @@ name = "hexga_graphics"
 version = "0.0.11-beta.4"
 dependencies = [
  "hexga_core",
- "hexga_io",
+ "hexga_encoding",
  "hexga_math",
  "image",
  "serde",
-]
-
-[[package]]
-name = "hexga_io"
-version = "0.0.11-beta.4"
-dependencies = [
- "base64",
- "bincode",
- "ron",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -1211,7 +1215,6 @@ version = "0.0.11-beta.4"
 dependencies = [
  "hexga_array",
  "hexga_core",
- "hexga_io",
  "hexga_map_on",
  "hexga_number",
  "hexga_typedef",
@@ -1228,6 +1231,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_serde"
+version = "0.0.11-beta.4"
+dependencies = [
+ "bincode",
+ "hexga_encoding",
+ "ron",
+ "serde",
+ "serde-xml-rs",
+ "serde_json",
+]
+
+[[package]]
 name = "hexga_singleton"
 version = "0.0.11-beta.4"
 
@@ -1240,7 +1255,6 @@ name = "hexga_utils"
 version = "0.0.11-beta.4"
 dependencies = [
  "hexga_core",
- "hexga_io",
  "serde",
 ]
 
@@ -1531,7 +1545,6 @@ name = "io_test"
 version = "0.0.11-beta.4"
 dependencies = [
  "hexga",
- "hexga_io",
  "serde",
 ]
 
@@ -2833,6 +2846,18 @@ dependencies = [
  "js-sys",
  "serde",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "serde-xml-rs"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53630160a98edebde0123eb4dfd0fce6adff091b2305db3154a9e920206eb510"
+dependencies = [
+ "log",
+ "serde",
+ "thiserror 1.0.69",
+ "xml-rs",
 ]
 
 [[package]]

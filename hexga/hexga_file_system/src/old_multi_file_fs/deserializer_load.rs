@@ -1,3 +1,5 @@
+use serde::de::SeqAccess;
+
 use super::*;
 
 
@@ -21,8 +23,6 @@ pub(crate) struct DeserializerLoad<'de,Fs>
 //     Json(DeserializerJson),
 //     Xml(DeserializerXml),
 // }
-pub(crate) type DeserializerRon<'de> = ron::Deserializer<'de>;
-pub(crate) type DeserializerJson<'de> = serde_json::de::Deserializer<serde_json::de::SliceRead<'de>>;
 
 impl<'de, Fs> DeserializerLoad<'de,Fs>
     where
@@ -354,3 +354,39 @@ impl<'de, 'x, Fs> Deserializer<'de> for &'x mut DeserializerLoad<'de,Fs>
         false
     }
 }
+
+
+// pub struct DeserializeCompound<'de, Fs, S>
+//     where S:SeqAccess<'de>
+// {
+//     fs: &'de mut Fs,
+//     module_path: Option<String>,
+//     subpath: Vec<String>,
+//     // path: &'de path,
+//     seq: Option<S>,
+// }
+// impl<'de,Fs,S> SeqAccess<'de> for DeserializeCompound<'de, Fs, S>
+//     where S:SeqAccess<'de>
+// {
+//     type Error=IoError;
+
+//     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
+//     where
+//         T: serde::de::DeserializeSeed<'de>
+//     {
+//         match self.seq.as_mut()
+//         {
+//             Some(seq) => match seq.next_element_seed(seed)
+//             {
+//                 Ok(val) => match val
+//                 {
+//                     Some(v) => return Ok(Some(v)),
+//                     None => { self.seq = None; },
+//                 },
+//                 Err(e) => return Err(IoError::new(self.path.to_owned(), EncodeError::from_display(e))),
+//             }
+//             _ => {},
+//         }
+
+//     }
+// }
