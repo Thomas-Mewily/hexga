@@ -17,7 +17,7 @@ pub trait LoadFromDisk : LoadFromFs
 {
     fn load_from_disk<P>(path: P) -> IoResult<Self> where P: AsRefPath
     {
-        Self::load_from_fs(path, &mut FsDisk)
+        Self::load_from_fs(path, &mut FsDiskNotAutoCorrected)
     }
 }
 impl<T> LoadFromDisk for T where T: LoadFromFs {}
@@ -81,7 +81,9 @@ pub trait FsLoad : FsRead + Sized
 
             _ =>
             {
+
                 todo!()
+                // let bytes = self.read_bytes(path)
                 // let mut de = DeserializerLoad::new(self, path.to_owned());
                 // T::deserialize(&mut de)
             }

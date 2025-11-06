@@ -33,6 +33,8 @@ ex : minecraft : `/setblock 10 20 30 grass`
 contextual action ? : `/setblock ~10 ~5 8 grass` <- relative position to the caller ?
 position is a matrix ? for each component x/y/z: `positionFixed positionRelative`
 
+serializer/deserializer: set a recursion limit
+
 - Io System / Cache / Mediator
 
 - transition fn inside an empty struct to make it extensible (trait pattern) : `struct Transition;`

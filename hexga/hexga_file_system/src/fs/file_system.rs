@@ -93,27 +93,37 @@ pub trait FsWrite : FsRead
     /// - If the path or any parent path exists as a file, delete it and replace it by a directory.
     fn create_directory(&mut self, path: &path) ->  FileResult;
 
-    /// Writes raw bytes to a file.
+    /// Writes bytes to a file.
     ///
     /// - If the file already exists, its content is **overwritten**.
     /// - If the file does not exist, it and any missing parent directories are **created**.
     /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
-    fn write_raw_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult;
+    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult;
 
-    /// Writes raw bytes to a file, while also deleting any ambigious existing files with the same name in the same folder.
-    /// Check [`FsWrite::write_raw_bytes`] to not delete any ambigious existing files.
-    ///
-    /// - If the file already exists, its content is **overwritten**.
-    /// - If the file does not exist, it and any missing parent directories are **created**.
-    /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
-    fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult
-    {
-        self.delete_with_any_extension(path)?;
-        self.write_raw_bytes(path, bytes)
-    }
+    // /// Writes raw bytes to a file, while also deleting any ambigious existing files with the same name in the same folder.
+    // /// Check [`FsWrite::write_raw_bytes`] to not delete any ambigious existing files.
+    // ///
+    // /// - If the file already exists, its content is **overwritten**.
+    // /// - If the file does not exist, it and any missing parent directories are **created**.
+    // /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
+    // fn write_bytes(&mut self, path: &path, bytes: &[u8]) ->  FileResult
+    // {
+    //     self.delete_with_any_extension(path)?;
+    //     self.write_raw_bytes(path, bytes)
+    // }
 
-    /// Writes a UTF-8 string to a file, while also deleting any ambigious existing files with the same name in the same folder.
-    /// Check [`FsWrite::write_raw_str`] to not delete any ambigious existing files.
+    // /// Writes a UTF-8 string to a file, while also deleting any ambigious existing files with the same name in the same folder.
+    // /// Check [`FsWrite::write_raw_str`] to not delete any ambigious existing files.
+    // ///
+    // /// - If the file already exists, its content is **overwritten**.
+    // /// - If the file does not exist, it and any missing parent directories are **created**.
+    // /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
+    // fn write_str(&mut self, path: &path, text: &str) -> FileResult
+    // {
+    //     self.write_bytes(path, text.as_bytes())
+    // }
+
+    /// Writes a UTF-8 string to a file.
     ///
     /// - If the file already exists, its content is **overwritten**.
     /// - If the file does not exist, it and any missing parent directories are **created**.
@@ -123,16 +133,6 @@ pub trait FsWrite : FsRead
         self.write_bytes(path, text.as_bytes())
     }
 
-    /// Writes a UTF-8 string to a file.
-    ///
-    /// - If the file already exists, its content is **overwritten**.
-    /// - If the file does not exist, it and any missing parent directories are **created**.
-    /// - If the path exists as a directory, the directory is **deleted** and replaced by the file.
-    fn write_raw_str(&mut self, path: &path, text: &str) -> FileResult
-    {
-        self.write_raw_bytes(path, text.as_bytes())
-    }
-
 
     /// Deletes a file or a directory recursively.
     ///
@@ -140,16 +140,16 @@ pub trait FsWrite : FsRead
     /// - If the path does not exist, return Ok(()).
     fn delete(&mut self, path: &path) -> FileResult;
 
-    /// Deletes all files and directories recursively with the same name, ignoring the extension.
-    ///
-    /// - If the path does not exist, return Ok(()).
-    fn delete_with_any_extension(&mut self, path: &path) -> FileResult
-    {
-        for entry in self.entries_with_any_extension(path) {
-            self.delete(&entry)?;
-        }
-        Ok(())
-    }
+    // /// Deletes all files and directories recursively with the same name, ignoring the extension.
+    // ///
+    // /// - If the path does not exist, return Ok(()).
+    // fn delete_with_any_extension(&mut self, path: &path) -> FileResult
+    // {
+    //     for entry in self.entries_with_any_extension(path) {
+    //         self.delete(&entry)?;
+    //     }
+    //     Ok(())
+    // }
 
     /// Moves a file or directory to a new location.
     ///

@@ -13,7 +13,7 @@ pub trait SaveToDisk : Serialize
 {
     fn save_to_disk<P>(&self, path: P) -> IoResult where P: AsRefPath
     {
-        self.save_to_fs(path, &mut FsDisk)
+        self.save_to_fs(path, &mut FsDiskNotAutoCorrected)
     }
 }
 impl<T> SaveToDisk for T where T: Serialize + ?Sized {}
@@ -47,21 +47,19 @@ pub trait FsSave : FsWrite + Sized
                 let txt = value.serialize(SerializerTxt).map_err(|e| IoError::new(path, e))?;
                 self.write_str(&path, &txt).map_err(|e| IoError::new(path, e))
             }
-
-            // TODO: handle Io::BIN (raw bytes)
-
             _ =>
             {
 
-                let mut bytes = Vec::with_capacity(1024);
-                let mut serializer = SerializerSave::new(SerializerRon::new_serializer(bytes));
-                let data = value.serialize(&mut serializer).map_err(|e| IoError::new(path, e))?;
-                todo!()
+                let mut bytes = Vec::<u8>::with_capacity(1024);
+                let mut ron = SerializerRon::new_serializer(&mut bytes);
+                let serializer = SerializerSave::new(&mut ron);
+                match value.serialize(serializer).map_err(|e| IoError::new(path, e))?
+                {
+                    SaveOutput::Format(data) => self.write_bytes(&path.with_extension(&data.extension), &data.bytes).map_err(|e| IoError::new(path, e)),
+                    SaveOutput::Markup => self.write_bytes(path, &bytes).map_err(|e| IoError::new(path, e)),
+                }
             }
         }
-        // let mut ser = SerializerSave::new(self, path.to_owned());
-        // value.serialize(&mut ser)?;
-        // ser.save()
     }
 }
 impl<S> FsSave for S where S : FsWrite {}

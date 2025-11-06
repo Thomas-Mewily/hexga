@@ -14,9 +14,9 @@ pub use hexga_encoding as encoding;
 //pub use hexga_undo_redo as undo;
 
 #[cfg(feature = "serde")]
-pub use hexga_file_system as fs;
+pub use hexga_file_system::*;
 #[cfg(feature = "serde")]
-pub use hexga_serde as io;
+pub use hexga_serde::*;
 
 #[cfg(all(test, feature = "serde"))]
 mod serde_test;
@@ -49,11 +49,12 @@ pub mod prelude
     pub use serde;*/
     #[allow(unused_imports)]
     #[cfg(feature = "serde")]
-    pub use super::
+    pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+    #[cfg(feature = "serde")]
+    pub use
     {
-        serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct},
-        io::prelude::*,
-        fs::prelude::*,
+        hexga_file_system::prelude::*,
+        hexga_serde::prelude::*
     };
 
     #[allow(hidden_glob_reexports)]

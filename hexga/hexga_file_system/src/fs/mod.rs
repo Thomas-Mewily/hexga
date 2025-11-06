@@ -6,6 +6,9 @@ pub use file_system::*;
 mod disk;
 pub use disk::*;
 
+mod auto_correct;
+pub use auto_correct::*;
+
 
 mod node;
 pub use node::*;
@@ -14,9 +17,9 @@ mod result;
 pub use result::*;
 
 #[cfg(feature = "serde")]
-pub mod serde_impl;
+mod serde_impl;
 #[cfg(feature = "serde")]
-use serde_impl::*;
+pub use serde_impl::*;
 
 
 pub mod prelude
@@ -28,5 +31,5 @@ pub mod prelude
     };
 
     #[cfg(feature = "serde")]
-    use super::serde_impl::prelude::*;
+    pub use super::serde_impl::prelude::*;
 }

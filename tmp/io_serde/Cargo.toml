@@ -11,4 +11,4 @@ edition.workspace = true
 serde = { version = "1.0.0", features = ["derive"] }
 ron = { version = "0.11.0" }
 serde_json = { version = "1.0.133" }
-hexga.workspace = true
+hexga = { workspace = true, features = ["serde"] }

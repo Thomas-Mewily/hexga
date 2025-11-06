@@ -305,6 +305,12 @@ impl path
         // We have &mut self.inner, so it's safe to produce a &mut path
         unsafe { &mut *(s as *mut str as *mut path) }
     }
+
+    #[inline(always)]
+    pub fn auto_correct_extension<Fs>(&self, fs: &mut Fs) -> Path where Fs: FsRead
+    {
+        fs.auto_correct_extension(self)
+    }
 }
 impl path
 {
