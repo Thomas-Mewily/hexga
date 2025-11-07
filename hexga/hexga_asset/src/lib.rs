@@ -26,6 +26,9 @@ pub use asset::*;
 mod asset_manager;
 pub use asset_manager::*;
 
+mod load;
+pub use load::*;
+
 pub mod prelude
 {
     pub use super::{Asset,Assets,AssetsUntyped};

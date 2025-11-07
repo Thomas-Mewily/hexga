@@ -90,7 +90,7 @@ impl<T> AssetManager<T>
     ///
     /// Returns a handle to the resulting asset.
     pub fn update_or_create_with_error<P>(&mut self, path: P, error: IoError) -> Asset<T>
-        where P: AsRefPath, T: Load
+        where P: AsRefPath
     {
         let path = path.as_ref();
         match self.assets.get_mut_from_key(path.as_str())
@@ -109,7 +109,7 @@ impl<T> AssetManager<T>
     ///
     /// Returns a handle to the resulting asset.
     pub fn update_or_create_with_value<P>(&mut self, path: P, value: T) -> Asset<T>
-        where P: AsRefPath, T: Load
+        where P: AsRefPath
     {
         let path = path.as_ref();
         match self.assets.get_mut_from_key(path.as_str())

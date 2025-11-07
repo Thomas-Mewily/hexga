@@ -1,6 +1,9 @@
 use super::*;
 
 
+// Idea: add an Autosave flag (when dropped) ?
+
+
 #[derive(Debug)]
 pub struct AssetData<T:Async>
 {
@@ -95,7 +98,12 @@ impl<T> AssetData<T> where T: Async
         unsafe { self.manager_ptr.as_mut() }
     }
 
-    pub fn path(&self) -> &path
+    pub fn path(&self) -> Option<&path>
+    {
+        let path = self.path_or_empty();
+        if path.is_empty() { None } else { Some(path) }
+    }
+    pub fn path_or_empty(&self) -> &path
     {
         path::from_str(self.asset_manager().assets.get_entry(self.id).unwrap().main_key())
     }
@@ -108,10 +116,12 @@ impl<T> AssetData<T> where T: Async
     pub fn save(&mut self) -> IoResult
         where T: Save
     {
+        // Todo: save it in a temporary file ?
+        let Some(path) = self.path() else { return Err(IoError::new(self.path_or_empty(), FileError::custom("Asset didn't have a path"))); };
         match self.try_value()
         {
-            Some(val) => val.save_to_disk(self.path()),
-            None => Err(IoError::new(self.path(), EncodeError::custom("The value wasn't loaded")).when_writing()),
+            Some(val) => val.save_to_disk(self.path_or_empty()),
+            None => Err(IoError::new(self.path_or_empty(), EncodeError::custom("The value wasn't loaded")).when_writing()),
         }
     }
 
@@ -135,7 +145,8 @@ impl<T> AssetData<T> where T: Async
     pub fn load_without_update(&self) -> IoResult<T>
         where T: Load
     {
-        T::load_from_disk(self.path())
+        let Some(path) = self.path() else { return Err(IoError::new(self.path_or_empty(), FileError::custom("Asset didn't have a path"))); };
+        T::load_from_disk(self.path_or_empty())
     }
 
     /// This method is expensive to call since it will compare the deserialized version of the file with the current value
@@ -179,8 +190,6 @@ impl<T> AssetState<T> where T:Async
 
 
 
-
-
 pub struct Asset<T>
     where T: Async
 {
@@ -206,18 +215,20 @@ impl<T> Hash for Asset<T> where T: Async
 }
 impl<T> Asset<T> where T: Async
 {
-    pub fn load(path: &path) -> Self
-        where T: Load
+    pub fn load<P>(path: P) -> Self
+        where T: Load, P: AsRefPath
     {
         AssetsUntyped.manager_mut::<T>().get_or_load(path)
     }
-    pub fn new(path: &path, value: T) -> Self
+    pub fn load_from_value<P>(path: P, value: T) -> Self
+        where P: AsRefPath
     {
-        AssetsUntyped.manager_mut::<T>().get_or_init_with_state(path, |path| AssetState::Loaded(value))
+        AssetsUntyped.manager_mut::<T>().update_or_create_with_value(path, value)
     }
-    pub fn with_error(path: &path, error: IoError) -> Self
+    pub fn load_from_error<P>(path: P, error: IoError) -> Self
+        where P: AsRefPath
     {
-        AssetsUntyped.manager_mut::<T>().get_or_init_with_state(path, |path| AssetState::Error(error))
+        AssetsUntyped.manager_mut::<T>().update_or_create_with_error(path, error)
     }
 
     pub fn from_asset_data(asset: &AssetData<T>) -> Self

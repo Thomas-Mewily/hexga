@@ -3,7 +3,7 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 
-use hexga::prelude::*;
+use hexga_asset::prelude::*;
 
 fn main()
 {

@@ -69,12 +69,12 @@ impl std::error::Error for IoError{}
 #[cfg(feature = "serde")]
 impl serde::ser::Error for IoError
 {
-    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self { kind: FileError::Custom(msg.to_string()), ..Default::default() } }
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self { kind: FileError::custom(msg.to_string()), ..Default::default() } }
 }
 #[cfg(feature = "serde")]
 impl serde::de::Error for IoError
 {
-    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self { kind: FileError::Custom(msg.to_string()), ..Default::default() } }
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self { kind: FileError::custom(msg.to_string()), ..Default::default() } }
 }
 
 
@@ -92,12 +92,12 @@ pub enum FileError
     DownloadFailed,
     Unimplemented,
     NotFound,
-    Custom(String),
+    Custom(Reason),
     Std(std::io::ErrorKind),
     Encoding(EncodeError)
 }
 impl From<EncodeError> for FileError { fn from(value: EncodeError) -> Self { Self::Encoding(value) } }
-impl From<String> for FileError { fn from(custom: String) -> Self { Self::Custom(custom) } }
+impl From<String> for FileError { fn from(custom: String) -> Self { Self::Custom(custom.into()) } }
 
 impl From<FromUtf8Error> for FileError { fn from(value: FromUtf8Error) -> Self { value.utf8_error().into() } }
 impl From<Utf8Error> for FileError { fn from(value: Utf8Error) -> Self { FileError::Encoding(value.into()) } }
@@ -108,7 +108,7 @@ impl From<std::fmt::Error> for FileError { fn from(value: std::fmt::Error) -> Se
 
 impl FileError
 {
-    pub fn custom(reason: impl Into<String>) -> Self { Self::Custom(reason.into()) }
+    pub fn custom(reason: impl Into<Reason>) -> Self { Self::Custom(reason.into()) }
     pub fn from_display(reason: impl Display) -> Self { Self::custom(reason.to_string())}
 }
 
@@ -139,10 +139,10 @@ impl std::error::Error for FileError { }
 #[cfg(feature = "serde")]
 impl serde::ser::Error for FileError
 {
-    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::Custom(msg.to_string()) }
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::custom(msg.to_string()) }
 }
 #[cfg(feature = "serde")]
 impl serde::de::Error for FileError
 {
-    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::Custom(msg.to_string()) }
+    fn custom<T>(msg:T) -> Self where T:std::fmt::Display { Self::custom(msg.to_string()) }
 }
