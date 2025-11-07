@@ -1,7 +1,7 @@
 🚧 **Warning: Experimental Crate!** 🚧
 
-This crate is currently in **beta** and **experimental**.  
-It is subject to **breaking changes** in future releases.  
+This crate is currently in **beta** and **experimental**.
+It is subject to **breaking changes** in future releases.
 Use it at your own risk, and keep in mind that the API may change in future versions.
 
 ## HexGa Generational
@@ -17,7 +17,7 @@ Provides a stable `GenID` for each inserted element.
 
 A `GenID` is just a pair of integer `(index : usize, generation : Gen)`, where you choose the precision of the Generation.
 
-By default `GenVen<T>` and `GenId<T>` use `u32` bits generation, but you can change it by using the full type `GenVecOf<T,Gen>`, `GenIdOf<T,Gen>`.
+By default `GenVen<T>` and `GenId<T>` use `u32` bits generation, but you can change it by using the full type `GenVecOf<T,Gen>`, `GenIDOf<Gen>`.
 
 Contrary to [slotmap](https://crates.io/crates/slotmap),
 once the generation reach the max value, the slot of a `GenVen<T>` will be saturated and not reused by default.
@@ -63,7 +63,7 @@ This is great for stuff like simulation, video game, ECS...
 
 ## Inspiration
 
-This crate was mainly inspired by 
+This crate was mainly inspired by
 - RustConf 2018 - Closing Keynote - Using Rust For Game Development by Catherine West <https://youtu.be/aKLntZcp27M>
 - The SlotMap data structure <https://crates.io/crates/slotmap>. If you're looking for a more widely used and established crate in the Rust ecosystem, you may want to check it out as well.
 

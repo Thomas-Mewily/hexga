@@ -6,6 +6,9 @@ pub use length::*;
 mod get;
 pub use get::*;
 
+mod index;
+pub use index::*;
+
 mod capacity;
 pub use capacity::*;
 

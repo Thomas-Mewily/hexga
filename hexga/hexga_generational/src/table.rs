@@ -9,8 +9,8 @@ pub mod prelude
 pub type Table<V> = TableOf<V>;
 pub type TableOf<V,Gen=Generation,S=RandomState> = MultiHashMapOf<String,V,Gen,S>;
 
-pub type TableID<V> = TableIDOf<V,Generation>;
-pub type TableIDOf<V,Gen=Generation,S=RandomState> = multi_map::MultiHashMapIDOf<String,V,Gen,S>;
+pub type TableID = TableIDOf;
+pub type TableIDOf<Gen=Generation> = multi_map::MultiHashMapIDOf<Gen>;
 
 pub trait CollectToTable<Keys,V> : CollectToMultiHashMap<Keys, String, V> where Keys: IntoIterator<Item = String>
 {
