@@ -1,11 +1,3 @@
-
-
-## HexGa Singleton
-
-Define some Singleton traits and macro.
-
-
-```rust
 use hexga_singleton::prelude::*;
 
 pub struct CurrentUser
@@ -13,13 +5,13 @@ pub struct CurrentUser
     pub name : String,
 }
 
-singleton_thread_local!(pub User, CurrentUser, CURRENT_USER);
+singleton_declare_thread_local!(pub User, CurrentUser, GLOBAL_USER);
 
 // Custom logic to init / deinit the singleton
 impl SingletonInit for User
 {
     fn replace(value: Option<<Self as SingletonRef>::Target>) -> SingletonResult {
-        CURRENT_USER.replace(value);
+        GLOBAL_USER.replace(value);
         Ok(())
     }
 }
@@ -34,10 +26,9 @@ fn main()
     assert!(User::is_init());
 
     // Singleton access
-    let name = &User.name;
+    let _name = &User.name;
 
     // de init
     User::replace(None).unwrap();
     assert!(User::is_not_init());
 }
-```

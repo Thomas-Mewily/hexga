@@ -42,8 +42,27 @@ impl<A> AppRun for A where A:Application
             // Make sure the App is destroyed, even on panic
             let default_panic = std::panic::take_hook();
             std::panic::set_hook(Box::new(move |info| {
-                App::destroy();
+                let _ = App::destroy();
                 default_panic(info);
+            }));
+
+            #[cfg(target_arch = "wasm32")]
+            {
+                std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+            }
+
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                use std::io::Write;
+
+                std::panic::set_hook(Box::new(|info| {
+                    let _ = App::destroy();
+                    eprintln!("panic occurred: {info}");
+                }));
+            }
+
+            let _res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let _ = App::destroy();
             }));
         }
 
@@ -54,7 +73,7 @@ impl<A> AppRun for A where A:Application
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let proxy = event_loop.create_proxy();
 
-        App::replace(Some(AppCore::new(param, proxy)));
+        App::replace(Some(AppCore::new(param, proxy))).unwrap();
 
         #[allow(unused_mut)]
         let mut runner = AppRunner::new(self);
@@ -152,7 +171,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
     }
 
     fn exiting(&mut self, event_loop: &EventLoopActive) {
-        App::destroy();
+        let _ = App::destroy();
     }
 
     fn new_events(&mut self, event_loop: &EventLoopActive, cause: winit::event::StartCause) {

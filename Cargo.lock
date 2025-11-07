@@ -119,6 +119,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "asset_test"
+version = "0.0.11-beta.43"
+dependencies = [
+ "hexga",
+ "serde",
+]
+
+[[package]]
 name = "async-channel"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1103,6 +1111,7 @@ name = "hexga"
 version = "0.0.11-beta.43"
 dependencies = [
  "hexga_ansi_color",
+ "hexga_asset",
  "hexga_bitflags",
  "hexga_core",
  "hexga_encoding",
@@ -1133,6 +1142,14 @@ dependencies = [
 [[package]]
 name = "hexga_asset"
 version = "0.0.11-beta.43"
+dependencies = [
+ "hexga_core",
+ "hexga_encoding",
+ "hexga_generational",
+ "hexga_io",
+ "hexga_singleton",
+ "serde",
+]
 
 [[package]]
 name = "hexga_bitflags"
@@ -1547,14 +1564,6 @@ dependencies = [
  "ron",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "io_test"
-version = "0.0.11-beta.43"
-dependencies = [
- "hexga",
- "serde",
 ]
 
 [[package]]

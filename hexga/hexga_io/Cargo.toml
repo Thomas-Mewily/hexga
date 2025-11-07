@@ -13,9 +13,11 @@ description = "io file abstraction based on serde to allow loading/saving/conver
 categories = ["filesystem", "encoding"]
 
 [features]
-default = ["serde"]
+default = ["serde", "serde_rc"]
 
 serde = ["dep:serde", "hexga_encoding/serde"]
+
+serde_rc = ["serde/rc", "hexga_encoding/rc"]
 
 [dependencies]
 hexga_encoding.workspace = true

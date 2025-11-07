@@ -1,14 +1,44 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+#![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+use std::{any::{Any, TypeId}, collections::HashMap, marker::PhantomData, pin::Pin};
+
+use hexga_core::prelude::*;
+use hexga_generational::prelude::*;
+
+pub struct AssetManager
+{
+    managers: HashMap<TypeId, Pin<Box<dyn Any>>>
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub struct AssetData<T:Async>
+{
+    state: AssetState<T>,
+}
+pub enum AssetState<T:Async>
+{
+    Loading(DynFuture<T>),
+    Loaded(T),
+    Error,
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+
+pub struct AssetManagerOf<T>
+{
+    assets : Table<Asset<T>>,
+    default_value: T,
+    error_value: T,
+}
+
+pub struct Asset<T>
+{
+    id : TableID,
+    phantom: PhantomData<T>,
+}
+
+pub struct AssetUntyped
+{
+    type_id: std::any::TypeId,
+    id: TableID,
 }

@@ -6,5 +6,31 @@ license.workspace = true
 homepage.workspace = true
 repository.workspace = true
 edition.workspace = true
+readme = "README.md"
+
+description = ""
+keywords = ["encoding", "asset", "content", "hot-reload"]
+categories = ["encoding", "filesystem", "data-structures"]
+
+[features]
+default = ["serde", "serde_rc"]
+
+serde = ["dep:serde",
+    "hexga_core/serde",
+    "hexga_encoding/serde",
+    "hexga_generational/serde",
+    "hexga_io/serde",
+]
+
+serde_rc = ["serde/rc", "hexga_encoding/rc", "hexga_io/serde_rc"]
+
 
 [dependencies]
+hexga_singleton.workspace = true
+hexga_core.workspace = true
+hexga_encoding.workspace = true
+hexga_generational.workspace = true
+hexga_io.workspace = true
+
+serde = { version = "1.0.0", optional = true }
+

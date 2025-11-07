@@ -13,4 +13,4 @@ pub trait SaveToDisk : Save
         Io.save_bytes(&path.with_extension(&extension), &bytes)
     }
 }
-impl<T> SaveToDisk for T where T: Save{}
+impl<T> SaveToDisk for T where T: Save {}

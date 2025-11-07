@@ -39,9 +39,10 @@ serde = ["dep:serde",
   "hexga_graphics/serde",
   "hexga_io/serde",
   "hexga_encoding/serde",
+  "hexga_asset/serde",
 ]
 
-serde_rc = ["serde/rc", "hexga_encoding/rc"]
+serde_rc = ["serde/rc", "hexga_encoding/rc", "hexga_io/serde_rc", "hexga_asset/serde_rc"]
 
 
 [dependencies]
@@ -55,7 +56,8 @@ hexga_utils.workspace = true
 hexga_map_on.workspace = true
 hexga_graphics.workspace = true
 hexga_encoding.workspace = true
-hexga_io = { workspace = true, optional = true }
+hexga_io.workspace = true
+hexga_asset.workspace = true
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 
