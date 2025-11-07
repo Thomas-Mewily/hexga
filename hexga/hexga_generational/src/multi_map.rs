@@ -99,7 +99,7 @@ where
 
 impl<K,V,Gen,S> Entry<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
-    pub(crate) const fn new(keys : Vec<K>, value : V) -> Self
+    pub(crate) const fn new(keys: Vec<K>, value: V) -> Self
     {
         assert!(keys.len() >= 1);
         Self { value, keys, phantom: PhantomData, id: MultiHashMapIDOf::NULL }
@@ -177,7 +177,7 @@ where
     K: Serialize,
     V: Serialize,
     Gen: IGeneration + Serialize,
-    St : BuildHasher,
+    St: BuildHasher,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -194,7 +194,7 @@ where
     V: Deserialize<'de>,
     Gen: IGeneration + Deserialize<'de>,
     S: BuildHasher + Default,
-    GenVecOf::<Entry<K, V, Gen, S>, Gen> : Deserialize<'de>
+    GenVecOf::<Entry<K, V, Gen, S>, Gen>: Deserialize<'de>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -227,101 +227,127 @@ impl<K,V,Gen,S> Default for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:
 
 impl<K,V,Gen> MultiHashMapOf<K,V,Gen,RandomState> where Gen: IGeneration
 {
-    pub fn with_capacity(capacity : usize) -> Self { Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_capacity(capacity) } }
+    /// Constructs a new, empty [`MultiHashMap`] with at least the specified capacity.
+    pub fn with_capacity(capacity: usize) -> Self { Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_capacity(capacity) } }
 }
 impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
+    /// Creates a new empty [`MultiHashMap`] with the default hasher.
     pub fn new() -> Self where S: Default
     {
         Self::with_hasher(___())
     }
 
+    /// Creates a new empty [`MultiHashMap`] with a custom hasher.
     pub fn with_hasher(hasher: S) -> Self
     {
         Self { values: GenVecOf::new(), search: HashMap::with_hasher(hasher) }
     }
+
+    /// Creates a new `MultiHashMapOf` with at least the specified capacity and a custom hasher.
     pub fn with_capacity_and_hasher(capacity: usize, hasher: S) -> Self
     {
         Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_hasher(hasher) }
     }
 
+    /// Returns a reference to the entry associated with the given ID, or `None` if it does not exist.
     pub fn get_entry(&self, id: MultiHashMapIDOf<Gen>) -> Option<&Entry<K,V,Gen,S>> { self.values.get(id) }
+    /// Returns a reference to the value associated with the given ID, or `None` if it does not exist.
     pub fn get(&self, id: MultiHashMapIDOf<Gen>) -> Option<&V> { self.get_entry(id).map(|e| &e.value) }
 
+    /// Returns `true` if the [`MultiHashMap`] contains an entry for the specified ID.
     pub fn contains(&self, id: MultiHashMapIDOf<Gen>) -> bool { self.values.get(id).is_some() }
 
+    /// Returns an iterator over all entries in the [`MultiHashMap`].
     pub fn entries(&self) -> impl Iterator<Item = &Entry<K,V,Gen,S>> { self.values.iter().map(|(_idx,val)| val) }
+    /// Returns an iterator over all entry IDs in the [`MultiHashMap`].
     pub fn ids(&self) -> impl Iterator<Item = MultiHashMapIDOf<Gen>> { self.values.ids() }
 
+    /// Returns an iterator over references to all values in the [`MultiHashMap`].
     pub fn values(&self) -> impl Iterator<Item = &V> { self.values.values().map(|e| e.value()) }
+    /// Returns an iterator over mutable references to all values in the [`MultiHashMap`].
     pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> { self.values.values_mut().map(|e| e.value_mut()) }
 
+    /// Consumes the [`MultiHashMap`] and returns an iterator over its entries.
     pub fn into_entries(self) -> impl Iterator<Item = Entry<K,V,Gen,S>> { self.values.into_values() }
+    /// Consumes the [`MultiHashMap`] and returns an iterator over its values.
     pub fn into_values(self) -> impl Iterator<Item = V> { self.into_entries().map(|e| e.value) }
 
-    /// Number of entries
+    /// Returns the number of entries in the [`MultiHashMap`].
     pub const fn len(&self) -> usize { self.values.len() }
 
-    /// Clears the [`Table`], removing all elements and resetting all [`GenID`] values.
-    ///
-    /// After calling this method, any previous [`GenID`] is no longer valid (not enforced) and
-    /// **must** not be used, as doing so may lead to undefined behavior.
+
+    /// Removes all entries from the [`MultiHashMap`] and resetting all [`GenID`]. After calling this method, previously obtained [`GenID`] **must** not be used, as doing so may lead to undefined behavior.
     pub fn clear(&mut self)
     {
         self.values.clear();
         self.search.clear();
     }
 
-
-    /// Removes all elements from the [`Table`] and invalidates all existing [`GenID`] (enforced).
+    /// Removes all entries and invalidates all [`GenID`]..
     pub fn remove_all(&mut self)
     {
         self.values.remove_all();
         self.search.clear();
     }
 
+    /// Returns an iterator over all entries.
     pub fn iter(&self) -> Iter<'_,K,V,Gen,S> { self.into_iter() }
+    /// Returns a mutable iterator over all entries.
     pub fn iter_mut(&mut self) -> IterMut<'_,K,V,Gen,S> { self.into_iter() }
 
+    /// Returns a mutable reference to the entry corresponding to the given [`GenID`], or `None` if it does not exist.
     pub(crate) fn get_entry_mut(&mut self, id: MultiHashMapIDOf<Gen>) -> Option<&mut Entry<K,V,Gen,S>> { self.values.get_mut(id) }
+
+    /// Returns a mutable reference to the value corresponding to the given [`GenID`], or `None` if it does not exist.
     pub fn get_mut(&mut self, id: MultiHashMapIDOf<Gen>) -> Option<&mut V> { self.get_entry_mut(id).map(|e| &mut e.value) }
 
-    pub fn values_genvec(&self) -> &GenVecOf<Entry<K,V,Gen,S>,Gen>
+    /// Returns a reference to the inner `GenVec` storing the entries.
+    pub fn inner_genvec(&self) -> &GenVecOf<Entry<K,V,Gen,S>,Gen>
     {
         &self.values
     }
 }
 
-impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K : Eq + Hash
+impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K: Eq + Hash
 {
-    pub fn key_to_id<Q : ?Sized>(&self, key : &Q) -> Option<MultiHashMapIDOf<Gen>> where K : Borrow<Q>, Q : Eq + Hash { self.search.get(key).copied() }
+    /// Returns the [`GenID`] associated with the given key, or `None` if the key is not present.
+    pub fn key_to_id<Q: ?Sized>(&self, key: &Q) -> Option<MultiHashMapIDOf<Gen>> where K: Borrow<Q>, Q: Eq + Hash { self.search.get(key).copied() }
 
-    pub fn contains_any_keys(&self, keys : &[K]) -> bool
+    /// Returns `true` if any of the specified keys exist in the [`MultiHashMap`].
+    pub fn contains_any_keys(&self, keys: &[K]) -> bool
     {
         keys.iter().any(|k| self.contains_key(k))
     }
-    pub fn contains_key<Q : ?Sized>(&self, key : &Q) -> bool where K : Borrow<Q>, Q : Eq + Hash { self.get_entry_from_key(key).is_some() }
+    /// Returns `true` if the [`MultiHashMap`] contains an entry for the given key.
+    pub fn contains_key<Q: ?Sized>(&self, key: &Q) -> bool where K: Borrow<Q>, Q: Eq + Hash { self.get_entry_from_key(key).is_some() }
 
-    pub fn get_entry_from_key<Q : ?Sized>(&self, key : &Q) -> Option<&Entry<K,V,Gen,S>> where K : Borrow<Q>, Q : Eq + Hash
+    /// Returns a reference to the entry associated with the given key, or `None` if it does not exist.
+    pub fn get_entry_from_key<Q: ?Sized>(&self, key: &Q) -> Option<&Entry<K,V,Gen,S>> where K: Borrow<Q>, Q: Eq + Hash
     {
         let idx = self.key_to_id(key)?;
         self.get_entry(idx)
     }
-    pub fn get_from_key<Q : ?Sized>(&self, key: &Q) -> Option<&V> where K : Borrow<Q>, Q : Eq + Hash
+    /// Returns a reference to the value associated with the given key, or `None` if it does not exist.
+    pub fn get_from_key<Q: ?Sized>(&self, key: &Q) -> Option<&V> where K: Borrow<Q>, Q: Eq + Hash
     {
         self.get_entry_from_key(key).map(|e| &e.value)
     }
 
-    pub(crate) fn get_entry_mut_from_key<Q : ?Sized>(&mut self, key : &Q) -> Option<&mut Entry<K,V,Gen,S>> where K : Borrow<Q>, Q : Eq + Hash
+    /// Returns a mutable reference to the entry associated with the given key, or `None` if it does not exist.
+    pub(crate) fn get_entry_mut_from_key<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut Entry<K,V,Gen,S>> where K: Borrow<Q>, Q: Eq + Hash
     {
         let idx = self.key_to_id(key)?;
         self.get_entry_mut(idx)
     }
-    pub fn get_mut_from_key<Q : ?Sized>(&mut self, key: &Q) -> Option<&mut V> where K : Borrow<Q>, Q : Eq + Hash
+
+    /// Returns a mutable reference to the value associated with the given key, or `None` if it does not exist.
+    pub fn get_mut_from_key<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V> where K: Borrow<Q>, Q: Eq + Hash
     {
         self.get_entry_mut_from_key(key).map(|e| &mut e.value)
     }
 
+    /// Removes the entry associated with the given [`GenID`] and returns it, or `None` if it does not exist.
     pub fn remove_entry(&mut self, id: MultiHashMapIDOf<Gen>) -> Option<Entry<K,V,Gen,S>>
     {
         let v = self.values.remove(id)?;
@@ -331,27 +357,29 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher,
         }
         Some(v)
     }
-    pub fn remove_entry_from_key<Q : ?Sized>(&mut self, key : &Q) -> Option<Entry<K,V,Gen,S>> where K : Borrow<Q> , Q : Eq + Hash
+
+    /// Removes the entry associated with the given key and returns it, or `None` if it does not exist.
+    pub fn remove_entry_from_key<Q: ?Sized>(&mut self, key: &Q) -> Option<Entry<K,V,Gen,S>> where K: Borrow<Q> , Q: Eq + Hash
     {
         let idx = self.key_to_id(key)?;
         self.remove_entry(idx)
     }
 
-
+    /// Removes the value associated with the given [`GenID`] and returns it, or `None` if it does not exist.
     pub fn remove(&mut self, id: MultiHashMapIDOf<Gen>) -> Option<V>
     {
         self.remove_entry(id).map(|e| e.value)
     }
 
-    // Remove the entry will the following keys
-    pub fn remove_from_key<Q : ?Sized>(&mut self, key: &Q) -> Option<V> where K : Borrow<Q> , Q : Eq + Hash
+    /// Removes the value associated with the given key and returns it, or `None` if it does not exist.
+    pub fn remove_from_key<Q: ?Sized>(&mut self, key: &Q) -> Option<V> where K: Borrow<Q> , Q: Eq + Hash
     {
         let idx = self.key_to_id(key)?;
         self.remove(idx)
     }
 
-    /// Return the entry if it have no keys remaning
-    pub fn remove_entry_key<Q : ?Sized>(&mut self, key: &Q) -> Option<Entry<K,V,Gen,S>> where K : Borrow<Q> , Q : Eq + Hash
+    /// Removes the key from the entry, and remove the entry if it has no remaining keys, or `None` otherwise.
+    pub fn remove_entry_key<Q: ?Sized>(&mut self, key: &Q) -> Option<Entry<K,V,Gen,S>> where K: Borrow<Q> , Q: Eq + Hash
     {
         let id = self.key_to_id(key)?;
         let entry = self.get_entry_mut(id)?;
@@ -373,8 +401,8 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher,
         }
     }
 
-    /// Return the value if it have no keys remaning
-    pub fn remove_key<Q : ?Sized>(&mut self, key: &Q) -> Option<V> where K : Borrow<Q> , Q : Eq + Hash
+    /// Removes the value
+    pub fn remove_key<Q: ?Sized>(&mut self, key: &Q) -> Option<V> where K: Borrow<Q> , Q: Eq + Hash
     {
         self.remove_entry_key(key).map(|e| e.value)
     }
@@ -428,12 +456,18 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher,
 }
 impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K: Eq + Hash + Clone
 {
+    /// Inserts a value with the specified key. Returns the entry [`GenID`] if the insertion succeeds.
     pub fn insert(&mut self, key: K, value: V) -> Option<MultiHashMapIDOf<Gen>>
     {
         self.insert_with_keys(vec![key], value)
     }
-    /// Return [None] if main_key_follow_by_backward_keys is empty
-    pub fn insert_with_keys<Keys>(&mut self, main_key_follow_by_backward_keys : Keys, value: V) -> Option<MultiHashMapIDOf<Gen>> where Keys: IntoIterator<Item = K>
+
+    /// Inserts a value with the specified keys.
+    /// Returns the entry [`GenID`] if the insertion succeeds.
+    ///
+    /// Duplicate keys within the input Keys iterator are ignored.
+    /// Returns `None` if any key already exists in the [`MultiHashMap`] or if the list of keys is empty.
+    pub fn insert_with_keys<Keys>(&mut self, main_key_follow_by_backward_keys: Keys, value: V) -> Option<MultiHashMapIDOf<Gen>> where Keys: IntoIterator<Item = K>
     {
         let keys = main_key_follow_by_backward_keys.to_vec();
         if keys.is_empty() { return None; } // Missing main keys
@@ -445,35 +479,45 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher,
         let id= self.values.insert(Entry::new(keys, value));
         let entry = &mut self.values[id];
         entry.id = id;
-        for key in entry.keys()
-        {
-            let old_key = self.search.insert(key.clone(), id);
-            assert!(old_key.is_none());
-        }
+
+        entry.keys.retain(|key| {
+            let old = self.search.insert(key.clone(), id);
+            old.is_none() // Remove duplicate key inside the input main_key_follow_by_backward_keys
+        });
         Some(id)
     }
 
-    /// If any key is a duplicate / already used, return an error
+    /// Adds multiple keys to an existing entry.
+    ///
+    /// Returns an error if any key already exists for a different entry.
+    /// Duplicate keys within the input Keys iterator are ignored.
     pub fn add_keys(&mut self, source_id: MultiHashMapIDOf<Gen>, keys: Vec<K>) -> Result<(), Vec<K>>
     {
+        if !source_id.exist(self) { return Err(keys); };
+
         for key in keys.iter()
         {
-            if self.contains_key(key) { return Err(keys); }
+            let target_id = self.key_to_id(key);
+            if target_id.is_some() && target_id != Some(source_id) { return Err(keys); }
         }
-
-        let Some(e) = self.get_entry_mut(source_id) else { return Err(keys); };
-
-        e.keys.extend_from_slice(&keys);
 
         for key in keys.into_iter()
         {
-            let old = self.search.insert(key, source_id);
-            assert!(old.is_none());
+            let old = self.search.insert(key.clone(), source_id);
+            if old.is_none()
+            {
+                let entry = self.get_entry_mut(source_id).unwrap();
+                entry.keys.push(key);
+            }else
+            {
+                debug_assert!(self.get_entry(source_id).unwrap().keys().contains(&key))
+            }
         }
         Ok(())
     }
-    /// If any key is a duplicate / already used, return an error
-    pub fn add_keys_from_key<Q : ?Sized>(&mut self, source_key: &Q, keys: Vec<K>) -> Result<(), Vec<K>> where K : Borrow<Q> , Q : Eq + Hash
+
+    /// Adds multiple keys to an entry identified by a key. Returns an error if any key already exists.
+    pub fn add_keys_from_key<Q: ?Sized>(&mut self, source_key: &Q, keys: Vec<K>) -> Result<(), Vec<K>> where K: Borrow<Q> , Q: Eq + Hash
     {
         match self.key_to_id(source_key)
         {
@@ -482,6 +526,7 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher,
         }
     }
 
+    /// Adds a single key to an existing entry. Returns an error if the key already exists.
     pub fn add_key(&mut self, source_id: MultiHashMapIDOf<Gen>, key: K) -> Result<(), K>
     {
         if self.contains_key(&key) { return Err(key); }
@@ -493,7 +538,9 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher,
 
         Ok(())
     }
-    pub fn add_key_from_key<Q : ?Sized>(&mut self, source_key: &Q, key: K) -> Result<(), K> where K : Borrow<Q> , Q : Eq + Hash
+
+    /// Adds a single key to an entry identified by a key. Returns an error if the key already exists.
+    pub fn add_key_from_key<Q: ?Sized>(&mut self, source_key: &Q, key: K) -> Result<(), K> where K: Borrow<Q> , Q: Eq + Hash
     {
         match self.key_to_id(source_key)
         {
@@ -519,12 +566,12 @@ impl<K,V,Gen,S> IndexMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> wh
 impl<K,V,Gen,S> Get<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     type Output = V;
-    fn get(&self, index : MultiHashMapIDOf<Gen>) -> Option<&Self::Output> {
+    fn get(&self, index: MultiHashMapIDOf<Gen>) -> Option<&Self::Output> {
         self.get(index)
     }
 }
 // harcoded for string to avoid conflicting implementations of trait
-impl<V,Gen,S,Q> Get<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q : Eq + Hash
+impl<V,Gen,S,Q> Get<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q: Eq + Hash
 {
     type Output = V;
     fn get(&self, key: &Q) -> Option<&Self::Output> {
@@ -538,7 +585,7 @@ impl<K,V,Gen,S> GetMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> wher
     }
 }
 // harcoded for string to avoid conflicting implementations of trait
-impl<V,Gen,S,Q> GetMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q : Eq + Hash
+impl<V,Gen,S,Q> GetMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q: Eq + Hash
 {
     fn get_mut(&mut self, key: &Q) -> Option<&mut Self::Output> {
         self.get_mut_from_key(key)
@@ -556,7 +603,7 @@ impl<K,V,Gen,S> GetManyMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> 
     }
 }
 // harcoded for string to avoid conflicting implementations of trait
-impl<V,Gen,S,Q> GetManyMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q : Eq + Hash
+impl<V,Gen,S,Q> GetManyMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q: Eq + Hash
 {
     fn get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Option<[&mut Self::Output;N]>
     {
@@ -583,7 +630,7 @@ impl<K,V,Gen,S> Remove<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> wher
     }
 }
 // harcoded for string to avoid conflicting implementations of trait
-impl<V,Gen,S,Q> Remove<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q : Eq + Hash
+impl<V,Gen,S,Q> Remove<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q: Eq + Hash
 {
     type Output=V;
     fn remove(&mut self, key: &Q) -> Option<Self::Output> {
@@ -603,7 +650,7 @@ impl<K,V,Gen,S> Capacity for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S
     fn capacity(&self) -> usize { self.values.capacity() }
 
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, hasher : Self::Param) -> Self { Self::with_capacity_and_hasher(capacity, hasher) }
+    fn with_capacity_and_param(capacity: usize, hasher: Self::Param) -> Self { Self::with_capacity_and_hasher(capacity, hasher) }
 
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.values.reserve(additional); }
@@ -642,7 +689,7 @@ impl<K,V,Gen,S> IntoIterator for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneratio
 pub struct IntoIter<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     iter: std::vec::IntoIter<crate::gen_vec::Entry<Entry<K,V,Gen,S>, Gen>>,
-    len_remaining : usize,
+    len_remaining: usize,
 }
 impl<K,V,Gen,S> Iterator for IntoIter<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
@@ -667,8 +714,8 @@ impl<K,V,Gen,S> ExactSizeIterator for IntoIter<K,V,Gen,S> where Gen: IGeneration
 
 pub struct EntryID<'a,K,Gen> where Gen: IGeneration
 {
-    pub key : &'a [K],
-    pub id  : MultiHashMapIDOf<Gen>,
+    pub key: &'a [K],
+    pub id : MultiHashMapIDOf<Gen>,
 }
 
 
@@ -735,11 +782,11 @@ impl<'a,K,V,Gen,S> FusedIterator for IterMut<'a,K,V,Gen,S> where Gen: IGeneratio
 impl<'a,K,V,Gen,S> ExactSizeIterator for IterMut<'a,K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { fn len(&self) -> usize { self.iter.len() } }
 
 
-pub trait CollectToMultiHashMap<Keys,K,V> : Sized + IntoIterator<Item = (Keys,V)> where Keys: IntoIterator<Item = K>, K: Eq + Hash + Clone
+pub trait CollectToMultiHashMap<Keys,K,V>: Sized + IntoIterator<Item = (Keys,V)> where Keys: IntoIterator<Item = K>, K: Eq + Hash + Clone
 {
     fn to_multihashmap(self) -> MultiHashMapOf<K,V>
     {
         MultiHashMapOf::from_iter(self)
     }
 }
-impl<Keys,K,V,I> CollectToMultiHashMap<Keys,K,V> for I where I : IntoIterator<Item = (Keys,V)>, Keys: IntoIterator<Item = K>, K: Eq + Hash + Clone {}
+impl<Keys,K,V,I> CollectToMultiHashMap<Keys,K,V> for I where I: IntoIterator<Item = (Keys,V)>, Keys: IntoIterator<Item = K>, K: Eq + Hash + Clone {}
