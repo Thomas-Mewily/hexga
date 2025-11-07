@@ -10,4 +10,4 @@ readme = "README.md"
 
 keywords = []
 description = "deprecated, use [Hexga Encoding Derive](https://crates.io/crates/hexga_encoding_derive/) instead"
-categories = [""]
+categories = []
