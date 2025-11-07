@@ -1,15 +1,15 @@
 pub use std::iter::{Sum,Product};
 
-pub trait Iter<'a, Item>: where Self: 'a, &'a Self: IntoIterator<Item = Item>
+pub trait IterExtension<'a, Item>: where Self: 'a, &'a Self: IntoIterator<Item = Item>
 {
     fn iter(&'a self) -> <&'a Self as IntoIterator>::IntoIter {
         self.into_iter()
     }
 
     #[inline(always)]
-    fn any<P>(&'a self, p: P) -> bool where P: FnMut(Item) -> bool { self.iter().any(p) } 
+    fn any<P>(&'a self, p: P) -> bool where P: FnMut(Item) -> bool { self.iter().any(p) }
     #[inline(always)]
-    fn all<P>(&'a self, p: P) -> bool where P: FnMut(Item) -> bool { self.iter().all(p) } 
+    fn all<P>(&'a self, p: P) -> bool where P: FnMut(Item) -> bool { self.iter().all(p) }
     #[inline(always)]
     fn for_each<F>(&'a self, f: F) where F: FnMut(Item) { self.iter().for_each(f); }
 
@@ -29,9 +29,9 @@ pub trait Iter<'a, Item>: where Self: 'a, &'a Self: IntoIterator<Item = Item>
         it_a.zip(it_b).all(|v| p(v.0, v.1))
     }
 }
-impl<'a,Item,T> Iter<'a,Item> for T where &'a T: IntoIterator<Item = Item> + 'a {}
+impl<'a,Item,T> IterExtension<'a,Item> for T where &'a T: IntoIterator<Item = Item> + 'a {}
 
-pub trait IterMut<'a, Item>: where Self: 'a + Iter<'a, Item>, &'a Self: IntoIterator<Item = Item>, &'a mut Self: IntoIterator<Item = Item>
+pub trait IterMutExtension<'a, Item>: where Self: 'a + IterExtension<'a, Item>, &'a Self: IntoIterator<Item = Item>, &'a mut Self: IntoIterator<Item = Item>
 {
     fn iter_mut(&'a mut self) -> <&'a mut Self as IntoIterator>::IntoIter {
         self.into_iter()
@@ -39,6 +39,6 @@ pub trait IterMut<'a, Item>: where Self: 'a + Iter<'a, Item>, &'a Self: IntoIter
 
     fn for_each_mut<F>(&'a mut self, f: F) where F: FnMut(Item) { self.iter_mut().for_each(f); }
 }
-impl<'a,Item,T> IterMut<'a,Item> for T where &'a mut T: IntoIterator<Item = Item> + 'a, &'a Self: IntoIterator<Item = Item> {}
+impl<'a,Item,T> IterMutExtension<'a,Item> for T where &'a mut T: IntoIterator<Item = Item> + 'a, &'a Self: IntoIterator<Item = Item> {}
 
 

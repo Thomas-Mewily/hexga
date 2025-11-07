@@ -7,7 +7,7 @@ pub type Reason = Cow<'static,str>;
 
 // const PREFIX: &[u8] = b"custom_extension;";
 
-#[derive(Default, Clone, PartialEq, Eq, Debug)]
+#[derive(Default, Clone, PartialEq, Eq)]
 pub enum EncodeError
 {
     #[default]
@@ -55,7 +55,12 @@ impl Display for EncodeError
         }
     }
 }
-
+impl std::fmt::Debug for EncodeError
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 
 impl EncodeError
 {

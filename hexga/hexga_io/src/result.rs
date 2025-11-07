@@ -25,7 +25,7 @@ impl IoMode
     pub const fn is_write(self) -> bool { matches!(self, Self::Write) }
 }
 
-#[derive(Default, Clone, PartialEq, Eq, Debug)]
+#[derive(Default, Clone, PartialEq, Eq)]
 pub struct IoError
 {
     pub path: Path,
@@ -57,6 +57,13 @@ impl Display for IoError
         write!(f, ": {}", self.kind)
     }
 }
+impl std::fmt::Debug for IoError
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 impl std::error::Error for IoError{}
 
 #[cfg(feature = "serde")]
@@ -76,7 +83,7 @@ impl serde::de::Error for IoError
 pub type FileResult<T=()> = Result<T,FileError>;
 
 
-#[derive(Default, Clone, PartialEq, Eq, Debug)]
+#[derive(Default, Clone, PartialEq, Eq)]
 pub enum FileError
 {
     #[default]
@@ -119,6 +126,12 @@ impl Display for FileError
             FileError::Std(kind) => write!(f, "std: {kind}"),
             FileError::Encoding(encode_error) => write!(f, "encoding: {encode_error}"),
         }
+    }
+}
+impl std::fmt::Debug for FileError
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 

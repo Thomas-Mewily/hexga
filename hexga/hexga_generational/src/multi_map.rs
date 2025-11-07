@@ -1,3 +1,5 @@
+use hexga_core::iter::IterExtension;
+
 use super::*;
 use crate::gen_vec::*;
 
@@ -340,6 +342,8 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher,
     {
         self.remove_entry(id).map(|e| e.value)
     }
+
+    // Remove the entry will the following keys
     pub fn remove_from_key<Q : ?Sized>(&mut self, key: &Q) -> Option<V> where K : Borrow<Q> , Q : Eq + Hash
     {
         let idx = self.key_to_id(key)?;
@@ -519,10 +523,25 @@ impl<K,V,Gen,S> Get<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> where G
         self.get(index)
     }
 }
+// harcoded for string to avoid conflicting implementations of trait
+impl<V,Gen,S,Q> Get<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q : Eq + Hash
+{
+    type Output = V;
+    fn get(&self, key: &Q) -> Option<&Self::Output> {
+        self.get_from_key(key)
+    }
+}
 impl<K,V,Gen,S> GetMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     fn get_mut(&mut self, index: MultiHashMapIDOf<Gen>) -> Option<&mut Self::Output> {
         self.get_mut(index)
+    }
+}
+// harcoded for string to avoid conflicting implementations of trait
+impl<V,Gen,S,Q> GetMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q : Eq + Hash
+{
+    fn get_mut(&mut self, key: &Q) -> Option<&mut Self::Output> {
+        self.get_mut_from_key(key)
     }
 }
 impl<K,V,Gen,S> GetManyMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
@@ -531,18 +550,44 @@ impl<K,V,Gen,S> GetManyMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> 
     {
         self.values.get_many_mut(indices).map(|entries| entries.map(|e| &mut e.value))
     }
-
     fn try_get_many_mut<const N: usize>(&mut self, indices: [MultiHashMapIDOf<Gen>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
     {
         self.values.try_get_many_mut(indices).map(|entries| entries.map(|e| &mut e.value))
     }
 }
-
+// harcoded for string to avoid conflicting implementations of trait
+impl<V,Gen,S,Q> GetManyMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q : Eq + Hash
+{
+    fn get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Option<[&mut Self::Output;N]>
+    {
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        let keys = keys.map(|key| self.key_to_id(key));
+        if keys.any(|k| k.is_none()) { return None; }
+        let indices = keys.map(|k| k.unwrap());
+        self.get_many_mut(indices)
+    }
+    fn try_get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Result<[&mut Self::Output;N], ManyMutError>
+    {
+        // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
+        let keys = keys.map(|key| self.key_to_id(key));
+        if keys.any(|k| k.is_none()) { return Err(ManyMutError::IndexOutOfBounds); }
+        let indices = keys.map(|k| k.unwrap());
+        self.try_get_many_mut(indices)
+    }
+}
 impl<K,V,Gen,S> Remove<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher, K: Eq + Hash
 {
     type Output=V;
     fn remove(&mut self, id: MultiHashMapIDOf<Gen>) -> Option<Self::Output> {
         self.remove(id)
+    }
+}
+// harcoded for string to avoid conflicting implementations of trait
+impl<V,Gen,S,Q> Remove<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q : Eq + Hash
+{
+    type Output=V;
+    fn remove(&mut self, key: &Q) -> Option<Self::Output> {
+        self.remove_from_key(key)
     }
 }
 
