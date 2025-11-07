@@ -6,6 +6,11 @@ license.workspace = true
 homepage.workspace = true
 repository.workspace = true
 edition.workspace = true
+readme = "README.md"
+
+description = "A multimedia game and software engine for handling graphics, audio, and input."
+keywords = ["game", "engine", "multimedia", "graphics", "software"]
+categories = ["game-development", "graphics", "audio", "games"]
 
 [features]
 default = [
