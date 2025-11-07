@@ -57,7 +57,13 @@ pub trait SingletonRef: Deref<Target = <Self as SingletonRef>::Target>
     fn try_as_ref() -> Option<&'static <Self as SingletonRef>::Target>;
     #[inline(always)]
     #[track_caller]
-    fn as_ref() -> &'static <Self as SingletonRef>::Target { Self::try_as_ref().unwrap() }
+    fn as_ref() -> &'static <Self as SingletonRef>::Target
+    {
+        match Self::try_as_ref()  {
+            Some(v) => v,
+            None => panic!("Forget to init the {} singleton", std::any::type_name::<Self>()),
+        }
+    }
 
     fn is_init() -> bool { Self::try_as_ref().is_some() }
     fn is_not_init() -> bool { !Self::is_init() }
@@ -69,7 +75,13 @@ pub trait SingletonMut: SingletonRef + DerefMut
     fn try_as_mut() -> Option<&'static mut <Self as SingletonRef>::Target>;
     #[inline(always)]
     #[track_caller]
-    fn as_mut() -> &'static mut <Self as SingletonRef>::Target { Self::try_as_mut().unwrap() }
+    fn as_mut() -> &'static mut <Self as SingletonRef>::Target
+    {
+        match Self::try_as_mut()  {
+            Some(v) => v,
+            None => panic!("Forget to init the {} singleton", std::any::type_name::<Self>()),
+        }
+    }
 }
 
 pub trait SingletonInit: SingletonRef + SingletonMut
@@ -105,10 +117,10 @@ pub trait SingletonInit: SingletonRef + SingletonMut
 
 #[macro_export]
 macro_rules! singleton_thread_local {
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident $(, $init:expr)? ) => {
 
         $crate::singleton_declare_thread_local!(
-            $(#[$attr])* $vis $wrapper, $target, $constant_static_name
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name $(, $init)?
         );
 
         impl $crate::SingletonInit for $wrapper {
@@ -218,7 +230,7 @@ macro_rules! singleton_declare_multi_thread_access {
         );
     };
 
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
         $crate::singleton_declare_multi_thread_access!(
             $(#[$attr])* $vis $wrapper, $target, $constant_static_name, option_expr, ::core::option::Option::Some($init)
         );
@@ -296,10 +308,10 @@ macro_rules! singleton_declare_multi_thread {
 
 #[macro_export]
 macro_rules! singleton_multi_thread {
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident $(, $init:expr)?) => {
 
         $crate::singleton_declare_multi_thread!(
-            $(#[$attr])* $vis $wrapper, $target, $constant_static_name
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name $(, $init)?
         );
 
         impl $crate::SingletonInit for $wrapper {
@@ -330,7 +342,7 @@ macro_rules! singleton_declare_multi_thread_poison_resistant_access {
         );
     };
 
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
         $crate::singleton_declare_multi_thread_poison_resistant_access!(
             $(#[$attr])* $vis $wrapper, $target, $constant_static_name, option_expr, ::core::option::Option::Some($init)
         );
@@ -424,10 +436,10 @@ macro_rules! singleton_declare_multi_thread_poison_resistant {
 
 #[macro_export]
 macro_rules! singleton_multi_thread_poison_resistant {
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident $(, $init:expr)?) => {
 
         $crate::singleton_declare_multi_thread!(
-            $(#[$attr])* $vis $wrapper, $target, $constant_static_name
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name $(, $init)?
         );
 
         impl $crate::SingletonInit for $wrapper {

@@ -61,7 +61,7 @@ impl<T> DerefMut for Assets<T> where T:Async
     }
 }
 
-singleton_declare_multi_thread!(pub AssetsUntyped, AssetManagerUntyped, ASSETS);
+singleton_declare_multi_thread!(pub AssetsUntyped, AssetManagerUntyped, ASSETS, Default::default());
 
 
 impl SingletonInit for AssetsUntyped
@@ -198,7 +198,6 @@ impl<T> AssetData<T> where T: Async
             Some(v) => v,
             None =>
             {
-
                 panic!(
                     "Attempted immutable access to AssetData<{}> but the value is not loaded and the AssetManager don't have any fallback value. Call `update_or_create_manager_with_values()` to configure the AssetManager.",
                     std::any::type_name::<T>()
@@ -467,6 +466,14 @@ impl<T> AssetManager<T>
     }
 
     pub fn iter(&self) -> Iter<'_,T> { (&self).into_iter() }
+
+
+    pub fn loading_value(&self) -> Option<&T> { self.loading_value.as_ref() }
+    pub fn error_value(&self) -> Option<&T> { self.error_value.as_ref() }
+
+    pub fn set_loading_and_error_value(&mut self, loading_value: T, error_value: T) -> &mut Self { self.set_loading_value(loading_value).set_error_value(error_value) }
+    pub fn set_loading_value(&mut self, value: T) -> &mut Self { self.loading_value = Some(value); self }
+    pub fn set_error_value(&mut self, value: T) -> &mut Self { self.error_value = Some(value); self }
 }
 
 #[derive(Clone)]
