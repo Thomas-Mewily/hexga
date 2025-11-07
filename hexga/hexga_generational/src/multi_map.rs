@@ -727,11 +727,18 @@ impl<'a,K,V,Gen,S> IntoIterator for &'a MultiHashMapOf<K,V,Gen,S> where Gen: IGe
     fn into_iter(self) -> Self::IntoIter { Iter { iter: self.values.iter() } }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Iter<'a,K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     iter: gen_vec::Iter<'a,Entry<K,V,Gen,S>,Gen>,
 }
+impl<'a,K,V,Gen,S> Clone for Iter<'a,K, V, Gen, S> where Gen: IGeneration + Clone, S:BuildHasher + Clone
+{
+    fn clone(&self) -> Self {
+        Self { iter: self.iter.clone() }
+    }
+}
+
 impl<'a,K,V,Gen,S> Iterator for Iter<'a,K, V, Gen, S> where Gen: IGeneration, S:BuildHasher
 {
     type Item = (EntryID<'a,K,Gen>, &'a V);

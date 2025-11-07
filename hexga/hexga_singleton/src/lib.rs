@@ -55,6 +55,8 @@ pub trait SingletonRef: Deref<Target = <Self as SingletonRef>::Target>
 
     /// SAFETY: The lifetime is `'instantaneous`, not `static`, don't store it please
     fn try_as_ref() -> Option<&'static <Self as SingletonRef>::Target>;
+    #[inline(always)]
+    #[track_caller]
     fn as_ref() -> &'static <Self as SingletonRef>::Target { Self::try_as_ref().unwrap() }
 
     fn is_init() -> bool { Self::try_as_ref().is_some() }
@@ -65,6 +67,8 @@ pub trait SingletonMut: SingletonRef + DerefMut
 {
     /// SAFETY: The lifetime is `'instantaneous`, not `static`, don't store it please
     fn try_as_mut() -> Option<&'static mut <Self as SingletonRef>::Target>;
+    #[inline(always)]
+    #[track_caller]
     fn as_mut() -> &'static mut <Self as SingletonRef>::Target { Self::try_as_mut().unwrap() }
 }
 
@@ -97,6 +101,8 @@ pub trait SingletonInit: SingletonRef + SingletonMut
 }
 
 
+
+
 #[macro_export]
 macro_rules! singleton_thread_local {
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
@@ -116,6 +122,61 @@ macro_rules! singleton_thread_local {
     };
 }
 
+#[macro_export]
+macro_rules! singleton_declare_thread_local_access {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+        $crate::singleton_declare_thread_local_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, ::core::option::Option::None
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
+        $crate::singleton_access!($(#[$attr])* $vis $wrapper, $target,
+            {
+                $constant_static_name.with(|ctx_cell| {
+                    let borrowed = ctx_cell.borrow();
+                    if let ::core::option::Option::Some(rc_ctx) = borrowed.as_ref() {
+                        let ctx_ptr: *const $target = rc_ctx;
+                        // SAFETY: lifetime is 'instantaneous, not 'static
+                        unsafe { ::core::option::Option::Some(&*ctx_ptr) }
+                    } else {
+                        drop(borrowed); // release borrow before initializing
+                        // lazy initialize
+                        let mut borrowed_mut = ctx_cell.borrow_mut();
+                        if borrowed_mut.is_none() {
+                            *borrowed_mut = $init;
+                        }
+                        if let ::core::option::Option::Some(rc_ctx) = borrowed_mut.as_ref() {
+                            let ctx_ptr: *const $target = rc_ctx;
+                            unsafe { ::core::option::Option::Some(&*ctx_ptr) }
+                        } else {
+                            ::core::option::Option::None
+                        }
+                    }
+                })
+            },
+            {
+                $constant_static_name.with(|ctx_cell| {
+                    let mut borrowed_mut = ctx_cell.borrow_mut();
+                    if let ::core::option::Option::Some(rc_ctx) = borrowed_mut.as_mut() {
+                        let ctx_ptr: *mut $target = rc_ctx;
+                        // SAFETY: lifetime is 'instantaneous, not 'static
+                        unsafe { ::core::option::Option::Some(&mut *ctx_ptr) }
+                    } else {
+                        // lazy initialize
+                        *borrowed_mut = $init;
+                        if let ::core::option::Option::Some(rc_ctx) = borrowed_mut.as_mut() {
+                            let ctx_ptr: *mut $target = rc_ctx;
+                            unsafe { ::core::option::Option::Some(&mut *ctx_ptr) }
+                        } else {
+                            ::core::option::Option::None
+                        }
+                    }
+                })
+            }
+        );
+    };
+}
 
 #[macro_export]
 macro_rules! singleton_declare_thread_local {
@@ -124,43 +185,41 @@ macro_rules! singleton_declare_thread_local {
             pub(crate) static $constant_static_name: std::cell::RefCell<Option<$target>> = std::cell::RefCell::new(::core::option::Option::None);
         }
 
-        $crate::singleton_access!($(#[$attr])* $vis $wrapper, $target,
-            {
-                $constant_static_name.with(|ctx_cell| {
-                    if let ::core::option::Option::Some(rc_ctx) = ctx_cell.borrow().as_ref() {
-                        let ctx_ptr: *const $target = rc_ctx;
-                        unsafe { ::core::option::Option::Some(&*ctx_ptr) }
-                    } else {
-                        ::core::option::Option::None
-                    }
-                })
-            },
-            {
-                $constant_static_name.with(|ctx_cell| {
-                    if let ::core::option::Option::Some(rc_ctx) = ctx_cell.borrow_mut().as_mut() {
-                        let ctx_ptr: *mut $target = rc_ctx;
-                        unsafe { ::core::option::Option::Some(&mut *ctx_ptr) }
-                    } else {
-                        ::core::option::Option::None
-                    }
-                })
-            }
+        $crate::singleton_declare_thread_local_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
+        thread_local! {
+            pub(crate) static $constant_static_name: std::cell::RefCell<Option<$target>> = std::cell::RefCell::new(::core::option::Option::None);
+        }
+
+        $crate::singleton_declare_thread_local_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, $init
         );
     };
 }
 
 
 
-#[macro_export]
-macro_rules! singleton_declare_multi_thread {
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
-        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
 
+#[macro_export]
+macro_rules! singleton_declare_multi_thread_access {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+        $crate::singleton_declare_multi_thread_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, ::core::option::Option::None
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
         $crate::singleton_access!(
             $(#[$attr])* $vis $wrapper, $target,
             {
                 let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(::core::option::Option::None));
+                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(
+                        $init
+                    ));
 
                 match cell.lock() {
                     ::core::result::Result::Ok(guard) => {
@@ -179,7 +238,9 @@ macro_rules! singleton_declare_multi_thread {
             },
             {
                 let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(::core::option::Option::None));
+                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(
+                        $init
+                    ));
 
                 match cell.lock() {
                     ::core::result::Result::Ok(mut guard) => {
@@ -196,6 +257,27 @@ macro_rules! singleton_declare_multi_thread {
                     }
                 }
             }
+        );
+    };
+}
+
+
+
+#[macro_export]
+macro_rules! singleton_declare_multi_thread {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
+
+        $crate::singleton_declare_multi_thread_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
+        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
+
+        $crate::singleton_declare_multi_thread_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, $init
         );
     };
 }
@@ -229,15 +311,22 @@ macro_rules! singleton_multi_thread {
 
 
 #[macro_export]
-macro_rules! singleton_declare_multi_thread_poison_resistant {
+macro_rules! singleton_declare_multi_thread_poison_resistant_access {
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
-        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
+        $crate::singleton_declare_multi_thread_poison_resistant_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, ::core::option::Option::None
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
 
         $crate::singleton_access!(
             $(#[$attr])* $vis $wrapper, $target,
             {
                 let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(::core::option::Option::None));
+                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(
+                        $init
+                    ));
 
                 match cell.lock() {
                     ::core::result::Result::Ok(guard) => {
@@ -264,7 +353,9 @@ macro_rules! singleton_declare_multi_thread_poison_resistant {
             },
             {
                 let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(::core::option::Option::None));
+                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(
+                        $init
+                    ));
 
                 match cell.lock() {
                     ::core::result::Result::Ok(mut guard) => {
@@ -289,6 +380,26 @@ macro_rules! singleton_declare_multi_thread_poison_resistant {
                     }
                 }
             }
+        );
+    };
+}
+
+
+#[macro_export]
+macro_rules! singleton_declare_multi_thread_poison_resistant {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
+
+        $crate::singleton_declare_multi_thread_poison_resistant_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
+        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
+
+        $crate::singleton_declare_multi_thread_poison_resistant_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, $init
         );
     };
 }

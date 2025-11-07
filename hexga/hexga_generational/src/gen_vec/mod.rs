@@ -517,7 +517,7 @@ impl<T, Gen: IGeneration> IntoIterator for GenVecOf<T, Gen> {
 }
 
 #[derive(Clone, Debug)]
-pub struct IntoIter<T, Gen: IGeneration>
+pub struct IntoIter<T, Gen: IGeneration=Generation>
 {
     iter: std::iter::Enumerate<std::vec::IntoIter<Entry<T, Gen>>>,
     len_remaining: usize,
@@ -556,12 +556,19 @@ impl<'a, T, Gen: IGeneration> IntoIterator for &'a GenVecOf<T, Gen> {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct Iter<'a, T, Gen: IGeneration>
+#[derive(Debug)]
+pub struct Iter<'a, T, Gen: IGeneration=Generation>
 {
     iter: std::iter::Enumerate<std::slice::Iter<'a, Entry<T, Gen>>>,
     len_remaining: usize,
 }
+impl<'a, T, Gen: IGeneration> Clone for Iter<'a, T, Gen>
+{
+    fn clone(&self) -> Self {
+        Self { iter: self.iter.clone(), len_remaining: self.len_remaining.clone() }
+    }
+}
+
 
 impl<'a, T, Gen: IGeneration> Iterator for Iter<'a, T, Gen> {
     type Item = (GenIDOf<Gen>, &'a T);
@@ -597,7 +604,7 @@ impl<'a, T, Gen: IGeneration> IntoIterator for &'a mut GenVecOf<T, Gen>
 }
 
 #[derive(Debug)]
-pub struct IterMut<'a, T, Gen: IGeneration>
+pub struct IterMut<'a, T, Gen: IGeneration=Generation>
 {
     iter: std::iter::Enumerate<std::slice::IterMut<'a, Entry<T, Gen>>>,
     len_remaining: usize,

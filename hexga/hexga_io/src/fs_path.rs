@@ -289,6 +289,8 @@ impl PartialEq<String> for path
 
 impl path
 {
+    pub const fn empty() -> &'static Self { Self::from_str("") }
+
     pub const fn as_str(&self) -> &str { &self.path }
 
     #[inline(always)]

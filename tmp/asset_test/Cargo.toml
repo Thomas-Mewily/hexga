@@ -17,5 +17,5 @@ serde = ["dep:serde",
 
 
 [dependencies]
-hexga.workspace = true
+hexga = { workspace = true, default-features = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }

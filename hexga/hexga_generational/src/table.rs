@@ -12,6 +12,11 @@ pub type TableOf<V,Gen=Generation,S=RandomState> = MultiHashMapOf<String,V,Gen,S
 pub type TableID = TableIDOf;
 pub type TableIDOf<Gen=Generation> = multi_map::MultiHashMapIDOf<Gen>;
 
+pub type Iter<'a,V,Gen=Generation,S=RandomState> = multi_map::Iter<'a,String,V,Gen,S>;
+pub type IterMut<'a,V,Gen=Generation,S=RandomState> = multi_map::IterMut<'a,String,V,Gen,S>;
+pub type IntoIter<V,Gen=Generation,S=RandomState> = multi_map::IntoIter<String,V,Gen,S>;
+
+
 pub trait CollectToTable<Keys,V> : CollectToMultiHashMap<Keys, String, V> where Keys: IntoIterator<Item = String>
 {
     fn to_table(self) -> Table<V>

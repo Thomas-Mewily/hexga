@@ -1,7 +1,10 @@
-use std::pin::Pin;
+use std::{any::Any, pin::Pin};
 
 pub trait Async : Send + Sync + 'static {}
 impl<T> Async for T where T: Send + Sync + 'static {}
+
+pub trait AsyncAny : Any + Async {}
+impl<T> AsyncAny for T where T: Any + Async + ?Sized {}
 
 pub struct DynFuture<T>
 {
