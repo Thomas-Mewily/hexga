@@ -126,11 +126,17 @@ macro_rules! singleton_thread_local {
 macro_rules! singleton_declare_thread_local_access {
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
         $crate::singleton_declare_thread_local_access!(
-            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, ::core::option::Option::None
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, option_expr, ::core::option::Option::None
         );
     };
 
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
+        $crate::singleton_declare_thread_local_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, option_expr, ::core::option::Option::Some($init)
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, option_expr, $init:expr) => {
         $crate::singleton_access!($(#[$attr])* $vis $wrapper, $target,
             {
                 $constant_static_name.with(|ctx_cell| {
@@ -208,11 +214,17 @@ macro_rules! singleton_declare_thread_local {
 macro_rules! singleton_declare_multi_thread_access {
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
         $crate::singleton_declare_multi_thread_access!(
-            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, ::core::option::Option::None
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, option_expr, ::core::option::Option::None
         );
     };
 
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+        $crate::singleton_declare_multi_thread_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, option_expr, ::core::option::Option::Some($init)
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, option_expr, $init:expr) => {
         $crate::singleton_access!(
             $(#[$attr])* $vis $wrapper, $target,
             {
@@ -314,11 +326,17 @@ macro_rules! singleton_multi_thread {
 macro_rules! singleton_declare_multi_thread_poison_resistant_access {
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
         $crate::singleton_declare_multi_thread_poison_resistant_access!(
-            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, ::core::option::Option::None
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, option_expr, ::core::option::Option::None
         );
     };
 
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
+        $crate::singleton_declare_multi_thread_poison_resistant_access!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, option_expr, ::core::option::Option::Some($init)
+        );
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, option_expr, $init:expr) => {
 
         $crate::singleton_access!(
             $(#[$attr])* $vis $wrapper, $target,
