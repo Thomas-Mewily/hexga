@@ -1131,6 +1131,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_asset"
+version = "0.0.11-beta.4"
+
+[[package]]
 name = "hexga_bitflags"
 version = "0.0.11-beta.4"
 dependencies = [

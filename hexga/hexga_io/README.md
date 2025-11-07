@@ -6,16 +6,13 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## HexGa Io
 
-Io file abstraction based on serde to allow loading/saving and converting bytes.
+Io file abstraction based on [Hexga Encoding](https://crates.io/crates/hexga_encoding) `Load` and `Save` to allow loading/saving a value to a file.
 
-Is support custom user define extension and convertion, and it also support common markup extension (json, ron, xml...).
+It support custom user define extension and convertion, and it's also support common markup extension (json, ron, xml...).
 
 Goal :
 - Simple to use
-- Allow to save composite file
 
-Non Goal :
-- Async Loading (use some kind handle that will load it later instead, loading composite file async in a non blocking way is hard...)
 
 ```rust
 use hexga_io::prelude::*;
@@ -27,10 +24,8 @@ assert_eq!("Hello file !", read);
 ```
 
 
-
 ```rust
-
-// #[io] derive (serde::Serdialize, serde::Deserialize) and (hexga_io::Load, hexga_io::Save)
+// #[io] derive (serde::Serialize, serde::Deserialize) and (hexga_encoding::Load, hexga_encoding::Save)
 #[io]
 #[derive(PartialEq, Debug)]
 struct Person
@@ -39,13 +34,10 @@ struct Person
     name : String,
 }
 
-let mut fs = IoFsDisk::new();
 
-    let person = Person { age: 42, name: "Life".to_owned() };
-    person.save_to("./person.json", &mut fs).unwrap();
-    person.save_to("./person.ron" , &mut fs).unwrap();
-
-fs.commit().unwrap();
+let person = Person { age: 42, name: "Foo".to_owned() };
+person.save_to_disk("./person.json").unwrap();
+person.save_to_disk("./person.ron" ).unwrap();
 
 assert_eq!(Person::load_from_disk("./person.ron"), Ok(person));
 ```

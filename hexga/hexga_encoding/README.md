@@ -6,7 +6,8 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## HexGa Encoding
 
-**hexga_encoding** provides a unified framework for loading, saving, and encoding data across multiple formats and media types.
+**hexga_encoding** provides a unified way to load, save, and encode a value across multiple formats and media types.
+
 It includes support for [Data URLs (RFC 2397)](https://datatracker.ietf.org/doc/html/rfc2397), binary URLs, MIME-based media typing, and optional Serde integration.
 
 Also export common Serde serializers and deserializers in a unified way (json, ron, ...) in the `serde` flag is present.

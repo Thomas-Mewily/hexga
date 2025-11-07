@@ -1,3 +1,8 @@
+//! Io file abstraction based on [Hexga Encoding](https://crates.io/crates/hexga_encoding)
+//! `Load` and `Save` to allow loading/saving a value to a file.
+//!
+//! It support custom user define extension and convertion,
+//! and it's also support common markup extension (json, ron, xml...).
 #![allow(unused_imports)]
 
 use std::fmt::Display;
