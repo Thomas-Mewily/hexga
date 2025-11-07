@@ -29,13 +29,13 @@ float_are_64_bits   = ["hexga_math/float_are_64_bits", "hexga_graphics/float_are
 float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_graphics/float_are_size_bits"]
 
 
-serde = ["dep:serde", "dep:hexga_serde",
+serde = ["dep:serde",
   "hexga_generational/serde",
   "hexga_math/serde",
   "hexga_bitflags/serde",
   "hexga_ansi_color/serde",
   "hexga_graphics/serde",
-  "hexga_file_system/serde",
+  "hexga_io/serde",
   "hexga_encoding/serde",
 ]
 
@@ -51,8 +51,7 @@ hexga_utils.workspace = true
 hexga_map_on.workspace = true
 hexga_graphics.workspace = true
 hexga_encoding.workspace = true
-hexga_file_system = { workspace = true, optional = true }
-hexga_serde = { workspace = true, optional = true }
+hexga_io = { workspace = true, optional = true }
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 

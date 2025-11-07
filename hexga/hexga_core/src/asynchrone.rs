@@ -1,5 +1,7 @@
 use std::pin::Pin;
 
+pub trait Async : Send + Sync + 'static {}
+impl<T> Async for T where T: Send + Sync + 'static {}
 
 pub struct DynFuture<T>
 {

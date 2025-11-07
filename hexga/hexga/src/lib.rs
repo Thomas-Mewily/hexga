@@ -14,9 +14,7 @@ pub use hexga_encoding as encoding;
 //pub use hexga_undo_redo as undo;
 
 #[cfg(feature = "serde")]
-pub use hexga_file_system::*;
-#[cfg(feature = "serde")]
-pub use hexga_serde::*;
+pub use hexga_io::*;
 
 #[cfg(all(test, feature = "serde"))]
 mod serde_test;
@@ -37,10 +35,10 @@ pub mod prelude
 
     /*
     #[allow(unused_imports)]
-    #[cfg(feature = "hexga_file_system")]
-    pub use hexga_file_system;*/
+    #[cfg(feature = "hexga_io")]
+    pub use hexga_io;*/
     // #[allow(unused_imports)]
-    // #[cfg(feature = "hexga_file_system")]
+    // #[cfg(feature = "hexga_io")]
     // pub use crate::io::prelude::*;
 
     /*
@@ -53,8 +51,7 @@ pub mod prelude
     #[cfg(feature = "serde")]
     pub use
     {
-        hexga_file_system::prelude::*,
-        hexga_serde::prelude::*
+        hexga_io::prelude::*,
     };
 
     #[allow(hidden_glob_reexports)]

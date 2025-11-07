@@ -22,7 +22,7 @@
 
 use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}, marker::PhantomData};
 
-use hexga_core::prelude::*;
+use hexga_core::{prelude::*,cfg::*};
 use hexga_math::grid::*;
 use hexga_math::prelude::*;
 use hexga_encoding::prelude::*;

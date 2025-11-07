@@ -450,18 +450,18 @@ impl<T, Idx> MapWith for ImageBaseOf<T, Idx> where Idx: Integer
 
 
 
-impl <C,Idx> Save for ImageBaseOf<C,Idx>
+impl <C,Idx> SaveCustomExtension for ImageBaseOf<C,Idx>
     where
-    Idx : Integer,
-    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>>,
+    Idx : Integer + CfgSerialize,
+    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>> + CfgSerialize,
     u8: CastRangeFrom<C::Component>,
     u16: CastRangeFrom<C::Component>
 {
-    fn save_extensions() -> impl Iterator<Item = &'static extension> {
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
         [ "png" ].into_iter()
     }
 
-    fn save_in<W>(&self, writer: &mut W, extension: &extension) -> EncodeResult where W: Write {
+    fn save_to_writer_with_custom_extension<W>(&self, writer: W, extension: &extension) -> EncodeResult where W: Write {
         match extension
         {
             "png" => {
@@ -471,10 +471,10 @@ impl <C,Idx> Save for ImageBaseOf<C,Idx>
                     {
                         if std::mem::size_of::<C::Component>() * 8 <= 8
                         {
-                            self.clone().to_rgba_u8().save_in(writer, extension)
+                            self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension)
                         }else
                         {
-                            self.clone().to_rgba_u16().save_in(writer, extension)
+                            self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension)
                         }
                     },
                     NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
@@ -511,14 +511,14 @@ impl <C,Idx> Save for ImageBaseOf<C,Idx>
                         }
                         _ =>
                         {
-                            self.clone().to_rgba_u8().save_in(writer, extension)
+                            self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension)
                         }
                     }
-                    NumberType::Float => self.clone().to_rgba_u16().save_in(writer, extension),
-                    NumberType::Bool => self.clone().to_rgba_u8().save_in(writer, extension),
+                    NumberType::Float => self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension),
+                    NumberType::Bool => self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension),
                 }
             }
-            _ => Err(EncodeError::save_unsupported_extension_with_name::<Self>(extension, "Image")),
+            _ => Err(EncodeError::save_unsupported_extension_with_name::<Self>(extension.to_owned(), "Image")),
         }
     }
 
@@ -534,14 +534,14 @@ impl <C,Idx> MediaType for ImageBaseOf<C,Idx>
     fn media_type() -> &'static str { "image" }
 }
 
-impl <C,Idx> Load for ImageBaseOf<C,Idx>
+impl <C,Idx> LoadCustomExtension for ImageBaseOf<C,Idx>
     where
     Idx : Integer,
     C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>>,
     u8: CastRangeFrom<C::Component>,
     u16: CastRangeFrom<C::Component>
 {
-    fn load_extensions() -> impl Iterator<Item = &'static extension> {
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
         [
             "png",
             "jpg", "jpeg",
@@ -553,7 +553,7 @@ impl <C,Idx> Load for ImageBaseOf<C,Idx>
         ].into_iter()
     }
 
-    fn load_from_bytes(bytes: &[u8], extension: &extension) -> EncodeResult<Self> where Self: Sized
+    fn load_from_reader_with_custom_extension<R>(mut reader: R, extension: &extension) -> EncodeResult<Self> where Self: Sized, R: std::io::Read
     {
         // let format = match extension
         // {
@@ -567,12 +567,15 @@ impl <C,Idx> Load for ImageBaseOf<C,Idx>
         //     other =>  Err(EncodeError::decode_unsupported_extension_with_name::<Self>(extension, "Image"))?,
         // };
 
+        let mut bytes = Vec::with_capacity(262144); // 0.25 Mo
+        reader.read_to_end(&mut bytes)?;
+
         let img = ::image::load_from_memory(&bytes);
         // let img = ::image::load_from_memory_with_format(&bytes, format);
         let img = match img
         {
             Ok(dyn_img) => dyn_img,
-            Err(e) => Err(EncodeError::load_unsupported_extension_with_name::<Self>(extension, "Image"))?, //Err(EncodeError::from_display(e))?,
+            Err(e) => Err(EncodeError::load_unsupported_extension_with_name::<Self>(extension.to_owned(), "Image"))?,
         };
 
         let (width, height) : (u32, u32) = img.dimensions();

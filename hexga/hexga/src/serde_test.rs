@@ -1,11 +1,12 @@
+use hexga_encoding::markup::*;
 use crate::prelude::*;
 
 
-fn test_serialize_deserialize_quick_bin<T>(value: &T) where T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug
+fn test_serialize_deserialize_tmp_bin<T>(value: &T) where T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug
 {
     // Not a self describing format
-    let format = value.to_quick_bin().unwrap();
-    let from_format = T::from_quick_bin_buf(&format).unwrap();
+    let format = value.to_tmp_bin().unwrap();
+    let from_format = T::from_tmp_bin_bytes(&format).unwrap();
     assert_eq!(*value, from_format);
 }
 
@@ -25,7 +26,7 @@ fn test_serialize_deserialize_json<T>(value: &T) where T: Serialize + for<'de> D
 
 fn serde_test<T>(value: &T) where T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug
 {
-    test_serialize_deserialize_quick_bin(value);
+    test_serialize_deserialize_tmp_bin(value);
     test_serialize_deserialize_ron(value);
     test_serialize_deserialize_json(value);
 }

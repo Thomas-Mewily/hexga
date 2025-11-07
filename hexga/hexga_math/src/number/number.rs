@@ -21,6 +21,7 @@ Additive:
     Add<Self,Output = Self> + AddAssign<Self> + Sum +
     Sub<Self,Output = Self> + SubAssign<Self> +
     Zero
+    //CfgSerde
 );
 
 trait_marker!(

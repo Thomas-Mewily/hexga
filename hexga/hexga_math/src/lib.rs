@@ -53,6 +53,7 @@
 #![feature(formatting_options)] // For grid view, to display aligned value they need to be fomatted in a temporary formatter
 
 use hexga_core::prelude::*;
+use hexga_core::cfg::*;
 use std::ops::*;
 use std::hash::{Hash, Hasher};
 use std::{fmt, num::{Saturating, Wrapping}};

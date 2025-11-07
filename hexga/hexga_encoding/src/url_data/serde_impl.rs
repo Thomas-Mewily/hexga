@@ -15,8 +15,7 @@ pub trait UrlDeserializer<'de> : Deserializer<'de>
         return T::from_bin_url_or_bytes(&url, "").map_err(serde::de::Error::custom);
     }
 }
-
-impl<'de, F> UrlDeserializer<'de> for F where F: Deserializer<'de> {}
+impl<'de, F> UrlDeserializer<'de> for F where F: Deserializer<'de> + ?Sized {}
 
 
 
@@ -47,7 +46,7 @@ pub trait UrlSerializer : Serializer
     }
 }
 
-impl<F> UrlSerializer for F where F: Serializer {}
+impl<F> UrlSerializer for F where F: Serializer + ?Sized {}
 
 pub(crate) struct BytesVisitor;
 
@@ -60,14 +59,14 @@ impl<'de> Visitor<'de> for BytesVisitor {
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
     where
-        E: Error,
+        E: serde::de::Error,
     {
         Ok(v.to_vec())
     }
 
     fn visit_byte_buf<E>(self, v: Vec<u8>) -> Result<Self::Value, E>
     where
-        E: Error,
+        E: serde::de::Error,
     {
         Ok(v)
     }
@@ -84,14 +83,14 @@ impl<'de> Visitor<'de> for StringVisitor {
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
-        E: Error,
+        E: serde::de::Error,
     {
         Ok(v.to_string())
     }
 
     fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
     where
-        E: Error,
+        E: serde::de::Error,
     {
         Ok(v)
     }

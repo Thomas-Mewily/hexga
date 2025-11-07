@@ -20,7 +20,7 @@ pub mod accessor;
 pub mod builder;
 pub mod traits;
 pub mod asynchrone;
-
+pub mod cfg;
 
 use prelude::*;
 pub mod prelude

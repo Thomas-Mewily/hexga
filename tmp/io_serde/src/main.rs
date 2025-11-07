@@ -9,14 +9,14 @@ use hexga::prelude::*;
 
 fn main()
 {
-        // let mut map = HashMap::new();
-    // map.insert("one", "un");
-    // map.insert("two", "deux");
-    // map.insert("okidoki", "yo");
-    // map.insert("?!", "!");
-    // map.insert("?!2", "!");
-    // map.insert("__mod", "!");
-    // map.save_to_disk("./tmp/io_serde/test2").unwrap();
+    let mut map = HashMap::new();
+    map.insert("one", "un");
+    map.insert("two", "deux");
+    map.insert("okidoki", "yo");
+    map.insert("?!", "!");
+    map.insert("?!2", "!");
+    map.insert("__mod", "!");
+    map.save_to_disk("./tmp/io_serde/test2").unwrap();
 
     // test_it();
 

@@ -38,14 +38,14 @@ pub struct FsFolder
 
 fn main()
 {
-    let img = Image::from_fn_coef((4,4), |p| RgbaFloat::rgb(p.x, p.y, 0.).to_u8_range());
-    dbg!(&img);
+    // let img = Image::from_fn_coef((4,4), |p| RgbaFloat::rgb(p.x, p.y, 0.).to_u8_range());
+    // dbg!(&img);
 
-    let path = "./tmp/io_test/myimg".path();
-    img.save_to_disk(path).unwrap();
+    // let path = "./tmp/io_test/myimg".path();
+    // img.save_to_disk(path).unwrap();
 
-    let img = Image::load_from_disk(path).unwrap();
-    dbg!(&img);
+    // let img = Image::load_from_disk(path).unwrap();
+    // dbg!(&img);
 
 
     //42.save_to_disk(path)

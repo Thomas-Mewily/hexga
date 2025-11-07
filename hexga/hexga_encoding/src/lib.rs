@@ -1,21 +1,22 @@
-#![feature(error_generic_member_access)] // std::error::Error for IoError
-
-use std::io::{Read,Write};
-use std::{fmt::Display, str::Utf8Error, string::FromUtf8Error};
-
+#[allow(unused_imports)]
+use std::io::{Read,Write,BufReader};
+use std::{fmt::{Display,Formatter}, str::Utf8Error, string::FromUtf8Error};
+use std::borrow::Cow;
+use hexga_core::cfg::*;
+use hexga_core::utils::*;
 
 #[cfg(feature = "serde")]
 use serde::
 {
-    Serializer, Deserializer,
-    de::{Error, Visitor}
+    Serialize, Serializer, Deserialize, Deserializer,
+    de::Visitor,
+    ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant}
 };
 
-pub type Extension = String;
-#[allow(non_camel_case_types)]
-pub type extension = str;
+mod fs_extension;
+pub use fs_extension::*;
 
-
+mod default_impl;
 
 mod result;
 pub use result::*;
@@ -29,6 +30,11 @@ pub use load::*;
 mod base64;
 pub use base64::*;
 
+#[cfg(feature = "serde")]
+mod serde_impl;
+#[cfg(feature = "serde")]
+pub use serde_impl::*;
+
 mod url_data;
 pub use url_data::*;
 
@@ -36,10 +42,10 @@ pub mod prelude
 {
     pub use super::
     {
-        Extension,extension,
+        fs_extension::prelude::*,
         result::*,
-        save::*,
-        load::*,
+        save::prelude::*,
+        load::prelude::*,
         url_data::prelude::*,
     };
 }

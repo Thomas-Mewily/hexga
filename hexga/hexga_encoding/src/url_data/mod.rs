@@ -25,7 +25,7 @@ pub mod prelude
 /// # Usage
 ///
 /// ```rust
-/// use hexga_file_system::encoding::*;
+/// use hexga_io::encoding::*;
 ///
 /// let url = UrlMeta::try_from("data:image/png;base64,").unwrap();
 /// assert_eq!(url.scheme, "data");
@@ -187,53 +187,14 @@ impl MediaType for String
 {
     fn media_type() -> &'static str { "text" }
 }
-impl Save for String
-{
-    fn save_extensions() -> impl Iterator<Item = &'static extension> {
-        ["txt", "md", "cvs"].into_iter()
-    }
-
-    fn save_in<W>(&self, writer : &mut W, extension: &extension) -> EncodeResult where W: Write {
-        self.as_str().save_in(writer, extension)
-    }
-}
-impl Load for String
-{
-    fn load_extensions() -> impl Iterator<Item = &'static extension> {
-        Self::save_extensions()
-    }
-
-    fn load_from_bytes(bytes: &[u8], _extension: &extension) -> EncodeResult<Self> where Self: Sized {
-
-        match std::str::from_utf8(bytes)
-        {
-            Ok(s) => Ok(s.to_owned()),
-            Err(e) => Err(e.into()),
-        }
-    }
-}
 impl<'a> MediaType for &'a str
 {
     fn media_type() -> &'static str { String::media_type() }
 }
-impl<'a> Save for &'a str
-{
-    fn save_extensions() -> impl Iterator<Item = &'static extension> {
-        String::save_extensions()
-    }
-
-    fn save_in<W>(&self, writer : &mut W, _extension: &extension) -> EncodeResult where W: Write {
-        match writer.write(self.as_bytes())
-        {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e.into()),
-        }
-    }
-}
 
 
 
-pub trait ToUrl: MediaType + Save
+pub trait ToUrl: MediaType + SaveCustomExtension
 {
     /// Converts the encoded image into a Data URL (RFC 2397).
     ///
@@ -248,7 +209,7 @@ pub trait ToUrl: MediaType + Save
     /// Returns an error if the image cannot be encoded for the given extension.
     fn to_url(&self, extension: &extension) -> EncodeResult<String>
     {
-        let bytes = self.save(extension)?;
+        let (bytes, _deduced_extension) = self.save_to_bytes(extension)?;
         let media = Self::media_type();
         let url = bytes.to_base64_in(format!("data:{media}/{extension};base64,"));
         Ok(url)
@@ -262,17 +223,17 @@ pub trait ToUrl: MediaType + Save
         let media = Self::media_type();
         let mut data = Vec::with_capacity(1024);
         write!(&mut data, "bin_data:{media}/{extension};base64,").map_err(|e| EncodeError::from(e))?;
-        self.save_in(&mut data, extension)?;
+        let (data, _deduced_extension) = self.save_to_bytes_in(data, extension)?;
         Ok(data)
     }
 }
-impl<T> ToUrl for T where T: MediaType + Save{}
+impl<T> ToUrl for T where T: MediaType + SaveCustomExtension{}
 
 /// Trait for types that can be **loaded from URL-like data** or raw bytes.
 ///
 /// This trait extends [`Load`] and provides methods to create an the value
 /// from either a **Data URL (RFC 2397)**, a **binary URL**, or raw bytes.
-pub trait FromUrl: Load
+pub trait FromUrl: LoadCustomExtension
 {
     /// Loads an instance from a standard **Data URL (RFC 2397)** string.
     ///
@@ -285,7 +246,7 @@ pub trait FromUrl: Load
     {
         let url = UrlData::try_from(url)?;
         let bytes = Vec::<u8>::from_base64(url.data)?;
-        Self::load_from_bytes(&bytes, url.extension)
+        Self::load_from_bytes_with_custom_extension(&bytes, url.extension)
     }
 
     /// Loads an instance from a **binary URL** (custom `bin_data:` scheme).
@@ -298,7 +259,7 @@ pub trait FromUrl: Load
     fn from_bin_url(url: &[u8]) -> EncodeResult<Self> where Self: Sized
     {
         let url = BinUrlData::try_from(url)?;
-        Self::load_from_bytes(&url.data, url.extension)
+        Self::load_from_bytes_with_custom_extension(&url.data, url.extension)
     }
 
     /// Loads an instance from a **binary URL** (custom `bin_data:` scheme), falling back to raw bytes if parsing fails.
@@ -310,11 +271,11 @@ pub trait FromUrl: Load
         match Self::from_bin_url(bytes)
         {
             Ok(o) => Ok(o),
-            Err(_) => Self::load_from_bytes(bytes, extension)
+            Err(_) => Self::load_from_bytes_with_custom_extension(bytes, extension)
         }
     }
 }
-impl<T> FromUrl for T where T: Load {}
+impl<T> FromUrl for T where T: LoadCustomExtension {}
 
 
 

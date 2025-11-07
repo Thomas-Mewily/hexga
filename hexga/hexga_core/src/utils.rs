@@ -118,3 +118,29 @@ impl<T,E> ResultDebugExtension<T> for Result<T,E> where E:ToDebug
         self.map_err(|e| e.to_debug())
     }
 }
+
+
+
+pub trait ToFmtWriter : std::io::Write + Sized
+{
+    fn to_fmt_writer(self) -> IoWriteAdapter<Self>;
+}
+impl<T> ToFmtWriter for T where T: std::io::Write
+{
+    fn to_fmt_writer(self) -> IoWriteAdapter<Self> {
+        IoWriteAdapter{ writer: self }
+    }
+}
+
+
+#[doc(hidden)]
+pub struct IoWriteAdapter<W: std::io::Write>
+{
+    pub writer: W
+}
+impl<W: std::io::Write> std::fmt::Write for IoWriteAdapter<W>
+{
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        self.writer.write_all(s.as_bytes()).map_err(|_| std::fmt::Error)
+    }
+}
