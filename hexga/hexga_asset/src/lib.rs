@@ -199,8 +199,9 @@ impl<T> AssetData<T> where T: Async
             None =>
             {
                 panic!(
-                    "Attempted immutable access to AssetData<{}> but the value is not loaded and the AssetManager don't have any fallback value. Call `update_or_create_manager_with_values()` to configure the AssetManager.",
-                    std::any::type_name::<T>()
+                    "AssetData<{}> was not loaded and the AssetManager don't have any fallback value. Call `Assets::<{}>::new().set_loading_and_error_value(<loading_value>, <error_value>)` to set them.",
+                    std::any::type_name::<T>(),
+                    std::any::type_name::<T>(),
                 )
             },
         }
