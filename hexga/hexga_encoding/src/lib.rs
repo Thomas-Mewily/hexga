@@ -30,6 +30,9 @@ pub use load::*;
 mod base64;
 pub use base64::*;
 
+#[cfg(feature = "derive")]
+pub use hexga_encoding_derive::*;
+
 #[cfg(feature = "serde")]
 mod serde_impl;
 #[cfg(feature = "serde")]
@@ -48,4 +51,13 @@ pub mod prelude
         load::prelude::*,
         url_data::prelude::*,
     };
+
+    #[cfg(feature = "derive")]
+    pub use hexga_encoding_derive::{Load,Save,io};
+}
+
+pub mod cfg
+{
+    pub use hexga_core::cfg::CfgSerialize;
+    pub use hexga_core::cfg::CfgDeserialize;
 }

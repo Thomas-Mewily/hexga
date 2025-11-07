@@ -54,6 +54,8 @@ pub trait FromXml: for<'de> Deserialize<'de>
 impl<T> FromXml for T where T: for<'de> Deserialize<'de> {}
 
 
+/// TODO: replace bincode by [postcard](https://docs.rs/postcard/latest/postcard/) ?
+
 /// Intended for short-term storage of data in a binary format, such as during data transfer.
 ///
 /// Not suitable for long-term storage, as the implementation or encoding may change at any time.

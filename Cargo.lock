@@ -1156,10 +1156,20 @@ dependencies = [
  "base64",
  "bincode",
  "hexga_core",
+ "hexga_encoding_derive",
  "ron",
  "serde",
  "serde-xml-rs",
  "serde_json",
+]
+
+[[package]]
+name = "hexga_encoding_derive"
+version = "0.0.11-beta.4"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
