@@ -9,7 +9,7 @@ edition.workspace = true
 readme = "README.md"
 
 description = "Encoding and I/O abstraction for loading, saving, and converting data with custom extensions and media types, with optional Serde integration."
-keywords = ["encoding", "io", "serde", "data-url", "mime", "load", "save"]
+keywords = ["encoding", "serde", "data-url", "load", "save"]
 categories = ["encoding", "filesystem", "data-structures"]
 
 [features]

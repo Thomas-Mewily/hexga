@@ -6,8 +6,8 @@ hexga_number
 hexga_core
 hexga_singleton
 
-hexga_encoding
 hexga_encoding_derive
+hexga_encoding
 hexga_io
 
 hexga_ansi_color
@@ -22,7 +22,8 @@ hexga_math
 hexga_utils
 
 
-//hexga_graphics
+hexga_graphics
+hexga_engine
 //hexga_undo_redo
 hexga
 
