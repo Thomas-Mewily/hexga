@@ -10,7 +10,7 @@ edition.workspace = true
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde"
+            "serde", "serde_rc"
           ]
 
 
@@ -26,6 +26,7 @@ float_are_64_bits   = ["hexga/float_are_64_bits"]
 float_are_size_bits = ["hexga/float_are_size_bits"]
 
 serde = ["dep:serde", "hexga/serde"]
+serde_rc = ["serde/rc", "hexga/serde_rc"]
 
 [dependencies]
 hexga.workspace = true

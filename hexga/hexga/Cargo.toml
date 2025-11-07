@@ -15,7 +15,7 @@ categories = ["rust-patterns"]
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde"
+            "serde", "serde_rc"
           ]
 
 int_are_8_bits    = ["hexga_math/int_are_8_bits", "hexga_graphics/int_are_8_bits"]
@@ -38,6 +38,8 @@ serde = ["dep:serde",
   "hexga_io/serde",
   "hexga_encoding/serde",
 ]
+
+serde_rc = ["serde/rc", "hexga_encoding/rc"]
 
 
 [dependencies]

@@ -13,11 +13,12 @@ description = "Basic set of functionalities common to all hexga crate"
 categories = ["rust-patterns"]
 
 [features]
-default = ["serde"]
+default = ["serde", "serde_rc"]
 
 serde = ["dep:serde"]
+serde_rc = ["serde/rc"]
+
 
 [dependencies]
 hexga_map_on.workspace = true
-
 serde = { version = "1.0.0", features = ["derive"], optional = true }
