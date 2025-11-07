@@ -60,7 +60,7 @@ impl Display for IoError
 impl std::fmt::Debug for IoError
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{}", self)
     }
 }
 
@@ -131,7 +131,7 @@ impl Display for FileError
 impl std::fmt::Debug for FileError
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{}", self)
     }
 }
 

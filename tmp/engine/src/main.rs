@@ -57,8 +57,8 @@ impl Application for MyApp
         if self.texture.is_none()
         {
             let b2= include_bytes!("test.png");
-            //let img = Image::load_from_bytes(b2, ".png").unwrap();
-            //self.texture = Some(Texture::from(img));
+            let img = Image::load_from_bytes(b2, "png").unwrap();
+            self.texture = Some(Texture::from(img));
         }
         /*
         Pen.geometry
