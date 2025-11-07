@@ -1,0 +1,13 @@
+[package]
+name = "hexga_io_derive"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+keywords = []
+description = "deprecated, use [Hexga Encoding Derive](https://crates.io/crates/hexga_encoding_derive/) instead"
+categories = [""]

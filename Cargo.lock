@@ -1223,6 +1223,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_io_derive"
+version = "0.0.11-beta.42"
+
+[[package]]
 name = "hexga_map_on"
 version = "0.0.11-beta.42"
 

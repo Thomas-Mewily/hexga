@@ -8,6 +8,9 @@ hexga_singleton
 
 hexga_encoding_derive
 hexga_encoding
+
+// deprecated
+hexga_io_derive
 hexga_io
 
 hexga_ansi_color
@@ -23,7 +26,7 @@ hexga_utils
 
 
 hexga_graphics
+hexga
 hexga_engine
 //hexga_undo_redo
-hexga
 
