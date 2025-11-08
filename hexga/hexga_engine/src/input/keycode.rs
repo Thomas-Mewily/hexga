@@ -352,23 +352,23 @@ pub enum KeyCode
     Abort,
     Resume,
     Suspend,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Again,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Copy,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Cut,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Find,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Open,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Paste,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Props,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Select,
-    /// Found on Sun’s USB keyboard.
+    /// Found on Sun's USB keyboard.
     Undo,
     /// Use for dedicated <kbd>ひらがな</kbd> key found on some Japanese word processing keyboards.
     Hiragana,

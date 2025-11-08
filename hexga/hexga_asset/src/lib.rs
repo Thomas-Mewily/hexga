@@ -14,9 +14,6 @@ use hexga_encoding::prelude::*;
 use hexga_io::prelude::*;
 use hexga_singleton::prelude::*;
 
-mod assets;
-pub use assets::*;
-
 mod untyped_assets;
 pub use untyped_assets::*;
 
@@ -29,7 +26,13 @@ pub use asset_manager::*;
 mod load;
 pub use load::*;
 
+mod hot_reload;
+pub use hot_reload::*;
+
+mod asset_save;
+pub use asset_save::*;
+
 pub mod prelude
 {
-    pub use super::{Asset,Assets,AssetsUntyped};
+    pub use super::{Asset,AssetsUntyped,HotReload,AssetSave};
 }

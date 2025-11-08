@@ -7,12 +7,15 @@ pub type Reason = Cow<'static,str>;
 
 // const PREFIX: &[u8] = b"custom_extension;";
 
+#[non_exhaustive]
 #[derive(Default, Clone, PartialEq, Eq)]
 pub enum EncodeError
 {
     #[default]
     Unknow,
     Fmt,
+    NotPersistant,
+    NotLoaded,
     Unimplemented,
     Markup { extension: CowExtensionStatic, reason: Reason },
     Utf8Error { valid_up_to : usize, error_len : Option<usize>},
@@ -52,6 +55,8 @@ impl Display for EncodeError
             EncodeError::Std(std) => write!(f, "std: {}", std),
             EncodeError::Fmt => write!(f, "formating"),
             EncodeError::Unimplemented => write!(f, "unimplemented"),
+            EncodeError::NotPersistant => write!(f, "not persistant"),
+            EncodeError::NotLoaded => write!(f, "not loaded"),
         }
     }
 }

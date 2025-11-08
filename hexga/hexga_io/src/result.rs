@@ -82,7 +82,7 @@ impl serde::de::Error for IoError
 
 pub type FileResult<T=()> = Result<T,FileError>;
 
-
+#[non_exhaustive]
 #[derive(Default, Clone, PartialEq, Eq)]
 pub enum FileError
 {

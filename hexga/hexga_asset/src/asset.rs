@@ -4,6 +4,28 @@ use super::*;
 // Idea: add an Autosave flag (when dropped) ?
 
 
+/// Where the asset will be saved.
+///
+/// Persistant by default
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Default)]
+pub enum AssetPersistance
+{
+    /// Saved to the disk.
+    #[default]
+    Persistent,
+    /// Saved to the ram.
+    Memory,
+}
+impl AssetPersistance
+{
+    pub const fn is_memory(&self) -> bool { matches!(self, Self::Memory) }
+    pub const fn is_not_memory(&self) -> bool { !self.is_memory() }
+
+    pub const fn is_persistant(&self) -> bool { matches!(self, Self::Persistent) }
+    pub const fn is_not_persistant(&self) -> bool { !self.is_persistant() }
+}
+
+
 #[derive(Debug)]
 pub struct AssetData<T:Async>
 {
@@ -11,6 +33,7 @@ pub struct AssetData<T:Async>
     pub(crate) manager_ptr : NonNull<AssetManager<T>>,
     pub(crate) id : TableID,
     pub(crate) count: usize,
+    pub(crate) persistance: AssetPersistance,
 }
 unsafe impl<T: Async> Send for AssetData<T> {}
 unsafe impl<T: Async> Sync for AssetData<T> {}
@@ -48,6 +71,14 @@ impl<T> AssetData<T> where T: Async
         if let AssetState::Loaded(val) = &self.state { Some(val) } else { None }
     }
 
+    /// Returns the asset's current value.
+    ///
+    /// - `Loaded` : returns the loaded value.
+    /// - `Loading` : returns the manager's loading value if set.
+    /// - `Error` : returns the manager's error value if set.
+    ///
+    ///  Panic if no value is available for the current state.
+    ///  To set the default and error value, use `Asset::<AssetType>::manager_mut().set_loading_and_error_value(<loading_value>, <error_value>)` to set them
     #[inline(always)]
     #[track_caller]
     pub fn value(&self) -> &T
@@ -58,13 +89,20 @@ impl<T> AssetData<T> where T: Async
             None =>
             {
                 panic!(
-                    "AssetData<{}> was not loaded and the AssetManager don't have any fallback value. Call `Assets::<{}>::new().set_loading_and_error_value(<loading_value>, <error_value>)` to set them.",
+                    "AssetData<{}> was not loaded and the AssetManager don't have any fallback value. Call `Asset::<{}>::manager_mut().set_loading_and_error_value(<loading_value>, <error_value>)` to set them.",
                     std::any::type_name::<T>(),
                     std::any::type_name::<T>(),
                 )
             },
         }
     }
+    /// Returns the asset's current value, if any.
+    ///
+    /// - `Loaded` : returns the loaded value.
+    /// - `Loading` : returns the manager's loading value if set.
+    /// - `Error` : returns the manager's error value if set.
+    ///
+    /// Returns `None` if no value is available for the current state.
     pub fn try_value(&self) -> Option<&T>
     {
         match &self.state
@@ -85,7 +123,6 @@ impl<T> AssetData<T> where T: Async
         }
     }
 
-    /// Returns a shared reference to the manager
     pub(crate) fn asset_manager(&self) -> &AssetManager<T> {
         // SAFETY: manager_ptr points to a valid AssetManagerOf<T>
         // and the lifetime of self guarantees it lives as long as the manager
@@ -98,37 +135,49 @@ impl<T> AssetData<T> where T: Async
         unsafe { self.manager_ptr.as_mut() }
     }
 
-    pub fn path(&self) -> Option<&path>
-    {
-        let path = self.path_or_empty();
-        if path.is_empty() { None } else { Some(path) }
-    }
-    pub fn path_or_empty(&self) -> &path
-    {
-        path::from_str(self.asset_manager().assets.get_entry(self.id).unwrap().main_key())
-    }
+    pub fn path(&self) -> &path { self.asset_manager().assets.get_entry(self.id).unwrap().main_key() }
 
-    pub fn keys(&self) -> &[String]
-    {
-        self.asset_manager().assets.get_entry(self.id).unwrap().keys()
-    }
+    pub const fn persistance(&self) -> AssetPersistance { self.persistance }
+    pub const fn set_persistance(&mut self, persistance: AssetPersistance) -> &mut Self { self.persistance = persistance; self }
+    pub const fn with_persistance(mut self, persistance: AssetPersistance) -> Self { self.persistance = persistance; self }
 
+    pub const fn is_memory(&self) -> bool { self.persistance().is_memory() }
+    pub const fn is_not_memory(&self) -> bool { self.persistance().is_not_memory() }
+
+    pub const fn is_persistant(&self) -> bool { self.persistance().is_persistant() }
+    pub const fn is_not_persistant(&self) -> bool { self.persistance().is_not_persistant() }
+
+    // pub fn ids(&self) -> &[AssetID]
+    // {
+    //     self.asset_manager().assets.get_entry(self.id).unwrap().keys()
+    // }
+
+    /// Save the asset if it is persistance
     pub fn save(&mut self) -> IoResult
         where T: Save
     {
-        // Todo: save it in a temporary file ?
-        let Some(path) = self.path() else { return Err(IoError::new(self.path_or_empty(), FileError::custom("Asset didn't have a path"))); };
+        let path = self.path();
+        if self.is_not_persistant()
+        {
+            return Err(IoError::new(path, EncodeError::NotPersistant).when_writing());
+        }
         match self.try_value()
         {
-            Some(val) => val.save_to_disk(self.path_or_empty()),
-            None => Err(IoError::new(self.path_or_empty(), EncodeError::custom("The value wasn't loaded")).when_writing()),
+            Some(val) => val.save_to_disk(path),
+            None => Err(IoError::new(path, EncodeError::NotLoaded).when_writing()),
         }
     }
 
-    /// Hot reload the value, and return the old one if it was loaded
+    /// Hot reload the value, and return the old one if it was loaded.
+    ///
+    /// If the asset is not persistant, return Ok().
     pub fn hot_reload(&mut self) -> IoResult<Option<T>>
         where T: Load
     {
+        if self.is_not_persistant()
+        {
+            return Ok(None);
+        }
         let value = self.load_without_update()?;
         match &mut self.state
         {
@@ -141,15 +190,23 @@ impl<T> AssetData<T> where T: Async
         }
     }
 
-    /// Load the value from the file and return it, without updating the asset
+    /// Load the value from the file and return it, without updating the asset.
+    ///
+    /// If the asset is not persistant, return an error.
     pub fn load_without_update(&self) -> IoResult<T>
         where T: Load
     {
-        let Some(path) = self.path() else { return Err(IoError::new(self.path_or_empty(), FileError::custom("Asset didn't have a path"))); };
-        T::load_from_disk(self.path_or_empty())
+        let path = self.path();
+        if self.is_not_persistant()
+        {
+            return Err(IoError::new(path, EncodeError::NotPersistant));
+        }
+        T::load_from_disk(path)
     }
 
     /// This method is expensive to call since it will compare the deserialized version of the file with the current value
+    ///
+    /// If the asset is not persistant, return true.
     pub fn have_modification_from_io(&self) -> bool
         where T: Load + PartialEq
     {
@@ -215,26 +272,22 @@ impl<T> Hash for Asset<T> where T: Async
 }
 impl<T> Asset<T> where T: Async
 {
+    pub fn manager() -> &'static AssetManager<T> { AssetsUntyped::as_mut().manager() }
+    pub fn manager_mut() -> &'static mut AssetManager<T> { AssetsUntyped::as_mut().manager_mut() }
+
     pub fn load<P>(path: P) -> Self
-        where T: Load, P: AsRefPath
+        where T: Load, P: Into<Path>
     {
         AssetsUntyped.manager_mut::<T>().get_or_load(path)
     }
 
-    pub fn with_path<P>(&mut self, path: Path) -> &mut Self where P: AsRefPath
-    {
-        // Change the path, and change the key
-        todo!();
-        self
-
-    }
-    pub fn load_from_value<P>(path: P, value: T) -> Self
-        where P: AsRefPath
+    pub fn update_or_create_with_value<P>(path: P, value: T) -> Self
+        where P: Into<Path>
     {
         AssetsUntyped.manager_mut::<T>().update_or_create_with_value(path, value)
     }
-    pub fn load_from_error<P>(path: P, error: IoError) -> Self
-        where P: AsRefPath
+    pub fn update_or_create_with_error<P>(path: P, error: IoError) -> Self
+        where P: Into<Path>
     {
         AssetsUntyped.manager_mut::<T>().update_or_create_with_error(path, error)
     }
@@ -246,6 +299,7 @@ impl<T> Asset<T> where T: Async
         s
     }
 }
+
 impl<T> Drop for Asset<T>
     where T:Async
 {

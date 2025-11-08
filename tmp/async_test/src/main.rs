@@ -103,7 +103,7 @@ impl<T: 'static> DerefMut for Asset<T> {
 // Example main demonstrating how to use all of this
 // -----------------------------------------------------------------------------
 fn main() {
-    // Create an "asset" that’s still loading
+    // Create an "asset" that's still loading
     let mut asset = UrlTitle::load("https://example.com".into());
 
     // Create a dummy waker and context for polling

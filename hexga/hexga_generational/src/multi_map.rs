@@ -686,7 +686,7 @@ impl<K,V,Gen,S> IntoIterator for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneratio
 }
 
 #[derive(Clone, Debug)]
-pub struct IntoIter<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+pub struct IntoIter<K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
 {
     iter: std::vec::IntoIter<crate::gen_vec::Entry<Entry<K,V,Gen,S>, Gen>>,
     len_remaining: usize,
@@ -728,7 +728,7 @@ impl<'a,K,V,Gen,S> IntoIterator for &'a MultiHashMapOf<K,V,Gen,S> where Gen: IGe
 }
 
 #[derive(Debug)]
-pub struct Iter<'a,K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+pub struct Iter<'a,K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
 {
     iter: gen_vec::Iter<'a,Entry<K,V,Gen,S>,Gen>,
 }
@@ -766,7 +766,7 @@ impl<'a,K,V,Gen,S> IntoIterator for &'a mut MultiHashMapOf<K,V,Gen,S> where Gen:
 }
 
 #[derive(Debug)]
-pub struct IterMut<'a,K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+pub struct IterMut<'a,K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
 {
     iter: gen_vec::IterMut<'a,Entry<K,V,Gen,S>,Gen>,
 }

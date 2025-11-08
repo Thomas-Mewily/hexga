@@ -38,7 +38,7 @@ impl AssetManagerUntyped
         self.update_or_create_manager_with_values::<T>(None, None)
     }
 
-    /// or updates the existing manager’s default and error values.
+    /// or updates the existing manager's default and error values.
     ///
     /// - If `loading_value` is `Some`, updates the manager's `loading_value`.
     /// - If `error_value` is `Some`, updates the manager's `error_value`.

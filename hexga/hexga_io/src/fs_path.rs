@@ -9,41 +9,25 @@ pub struct Path
 {
     inner: String
 }
-impl<'a> Into<Path> for &'a Path { fn into(self) -> Path { self.clone() } }
-impl<'a> Into<Path> for &'a mut Path { fn into(self) -> Path { self.clone() } }
-impl<'a> From<&'a mut str> for Path { fn from(value: &'a mut str) -> Self { Self::from(value.to_owned()) } }
-impl<'a> From<&'a str> for Path { fn from(value: &'a str) -> Self { Self::from(value.to_owned()) } }
-impl<'a> From<&'a mut path> for Path { fn from(value: &'a mut path) -> Self { value.to_owned() } }
-impl<'a> From<&'a path> for Path { fn from(value: &'a path) -> Self { value.to_owned() } }
+impl Into<Path> for &Path { fn into(self) -> Path { self.clone() } }
+impl From<&str> for Path { fn from(value: &str) -> Self { Self::from(value.to_owned()) } }
+impl From<&path> for Path { fn from(value: &path) -> Self { value.to_owned() } }
 impl From<String> for Path { fn from(value: String) -> Self { Self::new(value) } }
 impl From<Path> for String { fn from(value: Path) -> Self { value.inner } }
-impl<'a> PartialEq<&'a path> for Path
-{
-    #[inline(always)]
-    fn eq(&self, other: &&'a path) -> bool { (&&*self).eq(&other) }
-    #[inline(always)]
-    fn ne(&self, other: &&'a path) -> bool { (&&*self).ne(&other) }
-}
+impl From<&path> for String { fn from(value: &path) -> Self { value.as_str().into() } }
 impl PartialEq<path> for Path
 {
     #[inline(always)]
-    fn eq(&self, other: &path) -> bool { (&&*self).eq(&other) }
+    fn eq(&self, other: &path) -> bool { (**self).eq(other) }
     #[inline(always)]
-    fn ne(&self, other: &path) -> bool { (&&*self).ne(&other) }
-}
-impl<'a> PartialEq<&'a str> for Path
-{
-    #[inline(always)]
-    fn eq(&self, other: &&'a str) -> bool { (&&*self).eq(&other) }
-    #[inline(always)]
-    fn ne(&self, other: &&'a str) -> bool { (&&*self).ne(&other) }
+    fn ne(&self, other: &path) -> bool { (**self).ne(other) }
 }
 impl PartialEq<str> for Path
 {
     #[inline(always)]
-    fn eq(&self, other: &str) -> bool { (&&*self).eq(&other) }
+    fn eq(&self, other: &str) -> bool { self.as_str().eq(other) }
     #[inline(always)]
-    fn ne(&self, other: &str) -> bool { (&&*self).ne(&other) }
+    fn ne(&self, other: &str) -> bool { self.as_str().ne(other) }
 }
 impl PartialEq<String> for Path
 {
@@ -145,14 +129,7 @@ impl Path
 }
 
 
-impl<'a,T> Div<T> for &'a mut Path where T: AsRef<str>
-{
-    type Output=Path;
-    fn div(self, rhs: T) -> Self::Output {
-        self.to_owned() / rhs
-    }
-}
-impl<'a,T> Div<T> for &'a Path where T: AsRef<str>
+impl<T> Div<T> for &Path where T: AsRef<str>
 {
     type Output=Path;
     fn div(self, rhs: T) -> Self::Output {
@@ -175,20 +152,14 @@ impl<T> DivAssign<T> for Path where T: AsRef<str>
 }
 
 
-impl<'a,T> Div<T> for &'a path where T: AsRef<str>
+impl<T> Div<T> for &path where T: AsRef<str>
 {
     type Output=Path;
     fn div(self, rhs: T) -> Self::Output {
         self.to_owned() / rhs
     }
 }
-impl<'a,T> Div<T> for &'a mut path where T: AsRef<str>
-{
-    type Output=Path;
-    fn div(self, rhs: T) -> Self::Output {
-        self.to_owned() / rhs
-    }
-}
+
 
 impl std::fmt::Debug for Path
 {
@@ -241,49 +212,26 @@ impl std::fmt::Display for path
         write!(f, "{}", &self.path)
     }
 }
-
-impl<'a> PartialEq<&'a path> for path
-{
-    #[inline(always)]
-    fn eq(&self, other: &&'a path) -> bool {
-        (&&*self).eq(&other)
-    }
-    #[inline(always)]
-    fn ne(&self, other: &&'a path) -> bool {
-        (&&*self).ne(&other)
-    }
-}
-impl<'a> PartialEq<&'a str> for path
-{
-    #[inline(always)]
-    fn eq(&self, other: &&'a str) -> bool {
-        (&&*self).eq(&other)
-    }
-    #[inline(always)]
-    fn ne(&self, other: &&'a str) -> bool {
-        (&&*self).ne(&other)
-    }
-}
 impl PartialEq<str> for path
 {
     #[inline(always)]
     fn eq(&self, other: &str) -> bool {
-        (&&*self).eq(&other)
+        self.as_str().eq(other)
     }
     #[inline(always)]
     fn ne(&self, other: &str) -> bool {
-        (&&*self).ne(&other)
+        self.as_str().ne(other)
     }
 }
 impl PartialEq<String> for path
 {
     #[inline(always)]
     fn eq(&self, other: &String) -> bool {
-        self.path.eq(&*other)
+        self.path.eq(other)
     }
     #[inline(always)]
     fn ne(&self, other: &String) -> bool {
-        self.path.ne(&*other)
+        self.path.ne(other)
     }
 }
 

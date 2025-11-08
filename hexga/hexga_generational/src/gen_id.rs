@@ -9,6 +9,7 @@ pub mod prelude
 pub trait IGeneration            : Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
 impl<T> IGeneration for T where T: Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
 
+// Todo: Make a flag for the generation
 pub type Generation = u32;
 pub type GenID  = GenIDOf<Generation>;
 
