@@ -220,6 +220,14 @@ impl<T> Asset<T> where T: Async
     {
         AssetsUntyped.manager_mut::<T>().get_or_load(path)
     }
+
+    pub fn with_path<P>(&mut self, path: Path) -> &mut Self where P: AsRefPath
+    {
+        // Change the path, and change the key
+        todo!();
+        self
+
+    }
     pub fn load_from_value<P>(path: P, value: T) -> Self
         where P: AsRefPath
     {
