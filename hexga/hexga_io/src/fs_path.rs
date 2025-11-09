@@ -294,9 +294,9 @@ impl path
     /// ```
     /// use hexga_io::prelude::*;
     ///
-    /// assert_eq!(Path::new("foo/bar.txt").extension(), Some("txt"));
-    /// assert_eq!(Path::new("foo/archive.tar.gz").extension(), Some("gz"));
-    /// assert_eq!(Path::new("foo/bar").extension(), None);
+    /// assert_eq!(Path::new("foo/bar.txt").extension_or_empty(), "txt");
+    /// assert_eq!(Path::new("foo/archive.tar.gz").extension_or_empty(), "tar.gz");
+    /// assert_eq!(Path::new("foo/bar").extension_or_empty(), "");
     /// ```
     pub fn extension_or_empty(&self) -> &extension { self.extension().unwrap_or("")}
 
@@ -327,7 +327,7 @@ impl path
     /// assert_eq!(Path::new("foo/bar.txt").without_extension().as_str(), "foo/bar");
     /// assert_eq!(Path::new("foo/archive.tar.gz").without_extension().as_str(), "foo/archive");
     /// assert_eq!(Path::new("foo/bar").without_extension().as_str(), "foo/bar");
-    /// assert_eq!(Path::new("foo/.tmp").without_extension().as_str(), "foo/.tmp");
+    /// assert_eq!(Path::new("foo/.hidden").without_extension().as_str(), "foo/.hidden");
     /// ```
     pub fn without_extension(&self) -> &path
     {
@@ -645,11 +645,11 @@ impl path
     /// ```
     /// use hexga_io::prelude::*;
     ///
-    /// assert_eq!(Path::new("foo/bar.txt").with_name("baz"), "foo/baz.txt");
-    /// assert_eq!(Path::new("foo/.hidden").with_name("config"), "foo/config");
-    /// assert_eq!(Path::new("foo/.hidden.txt").with_name("config"), "foo/config.txt");
-    /// assert_eq!(Path::new("foo/archive.tar.gz").with_name("new"), "foo/new.tar.gz");
-    /// assert_eq!(Path::new("file").with_name("newfile"), "newfile");
+    /// assert_eq!(Path::new("foo/bar.txt").with_name("baz").as_str(), "foo/baz.txt");
+    /// assert_eq!(Path::new("foo/.hidden").with_name("config").as_str(), "foo/config");
+    /// assert_eq!(Path::new("foo/.hidden.txt").with_name("config").as_str(), "foo/config.txt");
+    /// assert_eq!(Path::new("foo/archive.tar.gz").with_name("new").as_str(), "foo/new.tar.gz");
+    /// assert_eq!(Path::new("file").with_name("newfile").as_str(), "newfile");
     /// ```
     pub fn with_name(&self, name: &str) -> Path
     {
@@ -684,11 +684,11 @@ impl path
     /// ```
     /// use hexga_io::prelude::*;
     ///
-    /// assert_eq!("foo/bar.txt".path_fullname(), "bar.txt");
-    /// assert_eq!("foo/.hidden".path_fullname(), ".hidden");
-    /// assert_eq!("foo/archive.tar.gz".path_fullname(), "archive.tar.gz");
-    /// assert_eq!("foo/bar/".path_fullname(), "");
-    /// assert_eq!("file".path_fullname(), "file");
+    /// assert_eq!(Path::new("foo/bar.txt").fullname(), "bar.txt");
+    /// assert_eq!(Path::new("foo/.hidden").fullname(), ".hidden");
+    /// assert_eq!(Path::new("foo/archive.tar.gz").fullname(), "archive.tar.gz");
+    /// assert_eq!(Path::new("foo/bar/").fullname(), "");
+    /// assert_eq!(Path::new("file").fullname(), "file");
     /// ```
     pub fn fullname(&self) -> &str
     {

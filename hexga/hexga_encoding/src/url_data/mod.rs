@@ -25,9 +25,9 @@ pub mod prelude
 /// # Usage
 ///
 /// ```rust
-/// use hexga_io::encoding::*;
+/// use hexga_encoding::*;
 ///
-/// let url = UrlMeta::try_from("data:image/png;base64,").unwrap();
+/// let url = UrlDataMeta::try_from("data:image/png;base64,").unwrap();
 /// assert_eq!(url.scheme, "data");
 /// assert_eq!(url.media_type, "image");
 /// assert_eq!(url.extension, "png");
