@@ -450,7 +450,7 @@ impl<T, Idx> MapWith for ImageBaseOf<T, Idx> where Idx: Integer
 
 
 
-impl <C,Idx> SaveCustomExtension for ImageBaseOf<C,Idx>
+impl <C,Idx> SaveExtension for ImageBaseOf<C,Idx>
     where
     Idx : Integer + CfgSerialize,
     C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>> + CfgSerialize,
@@ -534,7 +534,7 @@ impl <C,Idx> MediaType for ImageBaseOf<C,Idx>
     fn media_type() -> &'static str { "image" }
 }
 
-impl <C,Idx> LoadCustomExtension for ImageBaseOf<C,Idx>
+impl <C,Idx> LoadExtension for ImageBaseOf<C,Idx>
     where
     Idx : Integer,
     C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>>,

@@ -10,17 +10,17 @@ pub fn derive_save(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let expanded = quote! {
-        impl #impl_generics ::hexga_encoding::SaveCustomExtension for #ident #ty_generics #where_clause {}
+        impl #impl_generics ::hexga_encoding::SaveExtension for #ident #ty_generics #where_clause {}
     };
 
     expanded.into()
 }
 
-// Adds `T: ::hexga_encoding::SaveCustomExtension` for each generic type parameter `T`
+// Adds `T: ::hexga_encoding::SaveExtension` for each generic type parameter `T`
 fn add_save_trait_bounds(mut generics: Generics) -> Generics {
     for param in generics.params.iter_mut() {
         if let GenericParam::Type(ty) = param {
-            ty.bounds.push(parse_quote!(::hexga_encoding::SaveCustomExtension));
+            ty.bounds.push(parse_quote!(::hexga_encoding::SaveExtension));
         }
     }
     generics
@@ -37,17 +37,17 @@ pub fn derive_load(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let expanded = quote! {
-        impl #impl_generics ::hexga_encoding::LoadCustomExtension for #ident #ty_generics #where_clause {}
+        impl #impl_generics ::hexga_encoding::LoadExtension for #ident #ty_generics #where_clause {}
     };
 
     expanded.into()
 }
 
-// Adds `T: ::hexga_encoding::LoadCustomExtension` for each generic type parameter `T`
+// Adds `T: ::hexga_encoding::LoadExtension` for each generic type parameter `T`
 fn add_load_trait_bounds(mut generics: Generics) -> Generics {
     for param in generics.params.iter_mut() {
         if let GenericParam::Type(ty) = param {
-            ty.bounds.push(parse_quote!(::hexga_encoding::LoadCustomExtension));
+            ty.bounds.push(parse_quote!(::hexga_encoding::LoadExtension));
         }
     }
     generics
@@ -73,12 +73,12 @@ pub fn io(_args: TokenStream, input: TokenStream) -> TokenStream {
         #[derive(::serde::Serialize, ::serde::Deserialize)]
         #item_tokens
 
-        impl ::hexga_encoding::SaveCustomExtension for #ident
+        impl ::hexga_encoding::SaveExtension for #ident
         where
             #ident: ::hexga_encoding::cfg::CfgSerialize
         {}
 
-        impl ::hexga_encoding::LoadCustomExtension for #ident
+        impl ::hexga_encoding::LoadExtension for #ident
         {}
     };
 

@@ -194,7 +194,7 @@ impl<'a> MediaType for &'a str
 
 
 
-pub trait ToUrl: MediaType + SaveCustomExtension
+pub trait ToUrl: MediaType + SaveExtension
 {
     /// Converts the encoded image into a Data URL (RFC 2397).
     ///
@@ -227,13 +227,13 @@ pub trait ToUrl: MediaType + SaveCustomExtension
         Ok(data)
     }
 }
-impl<T> ToUrl for T where T: MediaType + SaveCustomExtension{}
+impl<T> ToUrl for T where T: MediaType + SaveExtension{}
 
 /// Trait for types that can be **loaded from URL-like data** or raw bytes.
 ///
 /// This trait extends [`Load`] and provides methods to create an the value
 /// from either a **Data URL (RFC 2397)**, a **binary URL**, or raw bytes.
-pub trait FromUrl: LoadCustomExtension
+pub trait FromUrl: LoadExtension
 {
     /// Loads an instance from a standard **Data URL (RFC 2397)** string.
     ///
@@ -275,7 +275,7 @@ pub trait FromUrl: LoadCustomExtension
         }
     }
 }
-impl<T> FromUrl for T where T: LoadCustomExtension {}
+impl<T> FromUrl for T where T: LoadExtension {}
 
 
 

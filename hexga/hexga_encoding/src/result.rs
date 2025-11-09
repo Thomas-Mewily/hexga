@@ -75,7 +75,7 @@ impl EncodeError
     }
 
 
-    pub fn save_unsupported_extension_with_name<T:SaveCustomExtension + ?Sized>(got: impl Into<CowExtensionStatic>, _name: impl Into<String>) -> Self
+    pub fn save_unsupported_extension_with_name<T:SaveExtension + ?Sized>(got: impl Into<CowExtensionStatic>, _name: impl Into<String>) -> Self
     {
         Self::UnsupportedExtension
         {
@@ -84,10 +84,10 @@ impl EncodeError
             expected: T::save_extensions().map(|ext| ext.into()).collect()
         }
     }
-    pub fn save_unsupported_extension<T:SaveCustomExtension + ?Sized>(got: impl Into<CowExtensionStatic>) -> Self { Self::save_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>()) }
+    pub fn save_unsupported_extension<T:SaveExtension + ?Sized>(got: impl Into<CowExtensionStatic>) -> Self { Self::save_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>()) }
 
 
-    pub fn load_unsupported_extension_with_name<T:LoadCustomExtension + ?Sized>(got: impl Into<CowExtensionStatic>, _name: impl Into<String>) -> Self
+    pub fn load_unsupported_extension_with_name<T:LoadExtension + ?Sized>(got: impl Into<CowExtensionStatic>, _name: impl Into<String>) -> Self
     {
         Self::UnsupportedExtension
         {
@@ -96,7 +96,7 @@ impl EncodeError
             expected: T::load_custom_extensions().map(|ext| ext.into()).collect()
         }
     }
-    pub fn load_unsupported_extension<T:LoadCustomExtension + ?Sized>(got: impl Into<CowExtensionStatic>) -> Self { Self::load_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>()) }
+    pub fn load_unsupported_extension<T:LoadExtension + ?Sized>(got: impl Into<CowExtensionStatic>) -> Self { Self::load_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>()) }
 
 
     pub fn markup<T: ?Sized>(extension: impl Into<CowExtensionStatic>, reason: impl Display) -> Self

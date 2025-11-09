@@ -3,10 +3,10 @@ use super::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{LoadCustomExtension, Load, LoadFrom};
+    pub use super::{LoadExtension, Load, LoadFrom};
 }
 
-pub trait LoadCustomExtension
+pub trait LoadExtension
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: &extension) -> EncodeResult<Self> where Self: Sized, R: Read
@@ -16,18 +16,18 @@ pub trait LoadCustomExtension
     }
 }
 
-pub trait LoadCustomExtensionBytes : LoadCustomExtension
+pub trait LoadExtensionBytes : LoadExtension
 {
     fn load_from_bytes_with_custom_extension(bytes: &[u8], extension: &extension) -> EncodeResult<Self> where Self: Sized
     {
         Self::load_from_reader_with_custom_extension(bytes, extension)
     }
 }
-impl<T> LoadCustomExtensionBytes for T where T: LoadCustomExtension {}
+impl<T> LoadExtensionBytes for T where T: LoadExtension {}
 
 
 
-pub trait Load : LoadCustomExtension + for<'de> CfgDeserialize<'de>
+pub trait Load : LoadExtension + for<'de> CfgDeserialize<'de>
 {
     fn load_extensions() -> impl Iterator<Item = &'static extension>
     {
@@ -64,14 +64,14 @@ pub trait Load : LoadCustomExtension + for<'de> CfgDeserialize<'de>
         Err(EncodeError::load_unsupported_extension::<Self>(extension))
     }
 }
-impl<T> Load for T where T: LoadCustomExtension + for<'de> CfgDeserialize<'de> + ?Sized {}
+impl<T> Load for T where T: LoadExtension + for<'de> CfgDeserialize<'de> + ?Sized {}
 
 
 pub trait LoadFrom : From<Self::Source>
 {
-    type Source: LoadCustomExtension + Into<Self>;
+    type Source: LoadExtension + Into<Self>;
 }
-impl<S> LoadCustomExtension for S where S: LoadFrom
+impl<S> LoadExtension for S where S: LoadFrom
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
         S::Source::load_custom_extensions()

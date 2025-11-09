@@ -3,10 +3,10 @@ use super::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{SaveCustomExtension, Save, SaveAs};
+    pub use super::{SaveExtension, Save, SaveAs};
 }
 
-pub trait SaveCustomExtension : CfgSerialize
+pub trait SaveExtension : CfgSerialize
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn save_to_writer_with_custom_extension<W>(&self, writer: W, extension: &extension) -> EncodeResult where W: Write
@@ -16,7 +16,7 @@ pub trait SaveCustomExtension : CfgSerialize
     }
 }
 
-pub trait SaveCustomExtensionBytes : SaveCustomExtension
+pub trait SaveExtensionBytes : SaveExtension
 {
     fn save_to_bytes_with_custom_extension(&self, extension: &extension) -> EncodeResult<Vec<u8>>
     {
@@ -28,12 +28,12 @@ pub trait SaveCustomExtensionBytes : SaveCustomExtension
         Ok(bytes)
     }
 }
-impl<T> SaveCustomExtensionBytes for T where T: SaveCustomExtension {}
+impl<T> SaveExtensionBytes for T where T: SaveExtension {}
 
 
 const DEFAULT_WRITER_CAPACITY : usize = 1024;
 
-pub trait Save : SaveCustomExtension
+pub trait Save : SaveExtension
 {
     fn save_extensions() -> impl Iterator<Item = &'static extension>
     {
@@ -79,14 +79,14 @@ pub trait Save : SaveCustomExtension
         Err(EncodeError::save_unsupported_extension::<Self>(extension))
     }
 }
-impl<T> Save for T where T:SaveCustomExtension + ?Sized {}
+impl<T> Save for T where T:SaveExtension + ?Sized {}
 
 
 pub trait SaveAs
 {
-    type Output: SaveCustomExtension + for<'a> From<&'a Self>;
+    type Output: SaveExtension + for<'a> From<&'a Self>;
 }
-impl<S> SaveCustomExtension for S where S: SaveAs + CfgSerialize
+impl<S> SaveExtension for S where S: SaveAs + CfgSerialize
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
         S::Output::save_custom_extensions()

@@ -19,11 +19,11 @@ macro_rules! impl_load_and_save {
         ),* $(,)?
     ) => {
         $(
-            impl$(<$( $generic: Save ),+>)? SaveCustomExtension for $name$(<$( $generic ),+>)?
+            impl$(<$( $generic: Save ),+>)? SaveExtension for $name$(<$( $generic ),+>)?
             {
             }
 
-            impl$(<$( $generic: Load ),+>)? LoadCustomExtension for $name$(<$( $generic ),+>)?
+            impl$(<$( $generic: Load ),+>)? LoadExtension for $name$(<$( $generic ),+>)?
             {
             }
         )*
@@ -48,25 +48,25 @@ impl_load_and_save!(
 );
 
 
-impl<K,V,S> SaveCustomExtension for HashMap<K,V,S> where K: SaveCustomExtension + Eq + Hash, V: SaveCustomExtension, S: BuildHasher + Default {}
-impl<K,V,S> LoadCustomExtension for HashMap<K,V,S> where K: LoadCustomExtension + Eq + Hash, V: LoadCustomExtension, S: BuildHasher + Default {}
+impl<K,V,S> SaveExtension for HashMap<K,V,S> where K: SaveExtension + Eq + Hash, V: SaveExtension, S: BuildHasher + Default {}
+impl<K,V,S> LoadExtension for HashMap<K,V,S> where K: LoadExtension + Eq + Hash, V: LoadExtension, S: BuildHasher + Default {}
 
-impl<K,  S> SaveCustomExtension for HashSet<K,  S> where K: SaveCustomExtension + Eq + Hash, S: BuildHasher + Default {}
-impl<K,  S> LoadCustomExtension for HashSet<K,  S> where K: LoadCustomExtension + Eq + Hash, S: BuildHasher + Default {}
+impl<K,  S> SaveExtension for HashSet<K,  S> where K: SaveExtension + Eq + Hash, S: BuildHasher + Default {}
+impl<K,  S> LoadExtension for HashSet<K,  S> where K: LoadExtension + Eq + Hash, S: BuildHasher + Default {}
 
-impl<K,V> SaveCustomExtension for BTreeMap<K,V> where K: SaveCustomExtension + Ord, V: SaveCustomExtension {}
-impl<K,V> LoadCustomExtension for BTreeMap<K,V> where K: LoadCustomExtension + Ord, V: LoadCustomExtension {}
+impl<K,V> SaveExtension for BTreeMap<K,V> where K: SaveExtension + Ord, V: SaveExtension {}
+impl<K,V> LoadExtension for BTreeMap<K,V> where K: LoadExtension + Ord, V: LoadExtension {}
 
-impl<K> SaveCustomExtension for BTreeSet<K> where K: SaveCustomExtension + Ord  {}
-impl<K> LoadCustomExtension for BTreeSet<K> where K: LoadCustomExtension + Ord  {}
+impl<K> SaveExtension for BTreeSet<K> where K: SaveExtension + Ord  {}
+impl<K> LoadExtension for BTreeSet<K> where K: LoadExtension + Ord  {}
 
-impl<T> SaveCustomExtension for BinaryHeap<T> where T: SaveCustomExtension + Ord  {}
-impl<T> LoadCustomExtension for BinaryHeap<T> where T: LoadCustomExtension + Ord  {}
+impl<T> SaveExtension for BinaryHeap<T> where T: SaveExtension + Ord  {}
+impl<T> LoadExtension for BinaryHeap<T> where T: LoadExtension + Ord  {}
 
 
-impl<T> SaveCustomExtension for &[T] where T: SaveCustomExtension {}
+impl<T> SaveExtension for &[T] where T: SaveExtension {}
 
-impl SaveCustomExtension for String
+impl SaveExtension for String
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
         ["txt", "md", "cvs"].into_iter()
@@ -76,7 +76,7 @@ impl SaveCustomExtension for String
         self.as_str().save_to_writer_with_custom_extension(writer, extension)
     }
 }
-impl LoadCustomExtension for String
+impl LoadExtension for String
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
         Self::save_custom_extensions()
@@ -93,7 +93,7 @@ impl LoadCustomExtension for String
         }
     }
 }
-impl<'a> SaveCustomExtension for &'a str
+impl<'a> SaveExtension for &'a str
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
         String::save_custom_extensions()
@@ -113,8 +113,8 @@ impl_load_and_save!(
     Arc<T>, ArcWeak<T>,
 );
 
-impl<T> SaveCustomExtension for Cell<T> where T: SaveCustomExtension + Copy {}
-impl<T> LoadCustomExtension for Cell<T> where T: LoadCustomExtension + Copy {}
+impl<T> SaveExtension for Cell<T> where T: SaveExtension + Copy {}
+impl<T> LoadExtension for Cell<T> where T: LoadExtension + Copy {}
 
 // https://docs.rs/serde/latest/serde/trait.Serialize.html#impl-Serialize-for-str
 impl_load_and_save!(
@@ -136,14 +136,14 @@ impl_load_and_save!(
     Mutex<T>, RwLock<T>,
 );
 
-impl<T: SaveCustomExtension> SaveCustomExtension for Saturating<T> {
+impl<T: SaveExtension> SaveExtension for Saturating<T> {
 }
 
-impl<T: LoadCustomExtension> LoadCustomExtension for Saturating<T> where for<'de> Saturating<T>: serde::Deserialize<'de> {
+impl<T: LoadExtension> LoadExtension for Saturating<T> where for<'de> Saturating<T>: serde::Deserialize<'de> {
 }
 
-impl<T, const N: usize> SaveCustomExtension for [T; N] where [T; N]: Serialize {}
-impl<T, const N: usize> LoadCustomExtension for [T; N] where Self: for<'de> Deserialize<'de> {}
+impl<T, const N: usize> SaveExtension for [T; N] where [T; N]: Serialize {}
+impl<T, const N: usize> LoadExtension for [T; N] where Self: for<'de> Deserialize<'de> {}
 
 
 #[cfg_attr(docsrs, doc(fake_variadic))]
@@ -151,8 +151,8 @@ impl<T, const N: usize> LoadCustomExtension for [T; N] where Self: for<'de> Dese
     docsrs,
     doc = "This trait is implemented for tuples up to 16 items long."
 )]
-impl<T> SaveCustomExtension for (T,) where T: SaveCustomExtension {}
-impl<T> LoadCustomExtension for (T,) where T: LoadCustomExtension {}
+impl<T> SaveExtension for (T,) where T: SaveExtension {}
+impl<T> LoadExtension for (T,) where T: LoadExtension {}
 
 macro_rules! tuple_impls {
     // Each line provides a count and a list of index-type pairs
@@ -162,10 +162,10 @@ macro_rules! tuple_impls {
         )*
     ) => {
         $(
-            impl<$( $typ: SaveCustomExtension ),+> SaveCustomExtension for ( $( $typ ),+ ) {
+            impl<$( $typ: SaveExtension ),+> SaveExtension for ( $( $typ ),+ ) {
                         }
 
-            impl<$( $typ: LoadCustomExtension ),+> LoadCustomExtension for ( $( $typ ),+ ) {
+            impl<$( $typ: LoadExtension ),+> LoadExtension for ( $( $typ ),+ ) {
                         }
         )*
     };
