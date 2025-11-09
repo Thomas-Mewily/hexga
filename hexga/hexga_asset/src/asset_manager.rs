@@ -28,7 +28,12 @@ impl<T> AssetManager<T>
     pub(crate) fn get_or_init_with_state<P,F>(&mut self, path: P, create_state: F) -> Asset<T>
         where F: FnOnce(&path) -> AssetState<T>, P: Into<Path>
     {
-        let path = path.into();
+        // The extension should not be part of the path/id
+        let mut path = path.into();
+        if path.have_extension()
+        {
+            path = path.without_extension().into();
+        }
         if let Some(asset) = self.assets.get_from_key(&path)
         {
             return Asset::from_asset_data(asset);
@@ -40,7 +45,7 @@ impl<T> AssetManager<T>
             manager_ptr: unsafe { NonNull::new_unchecked(self as *mut Self) },
             id: TableID::NULL,
             count: 0,
-            persistance: AssetPersistance::default(),
+            persistance: AssetPersistance::Persistent,
         };
         let id = self.assets.insert(path, data).unwrap();
         self.assets[id].id = id;

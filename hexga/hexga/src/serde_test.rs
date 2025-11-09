@@ -169,5 +169,11 @@ fn serialize_unit()
 fn serialize_grid()
 {
     serde_test(&Grid2::from_fn(point([3, 4]), |x| x.sum_axis()));
+}
+
+
+#[test]
+fn serialize_image()
+{
     serde_test(&Image::from_fn(point([3, 4]), |x| RgbaU8::rgb(x.x as _, x.y as _ , 0)));
 }

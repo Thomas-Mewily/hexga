@@ -8,7 +8,7 @@ pub trait UrlDeserializer<'de> : Deserializer<'de>
     {
         if self.is_human_readable()
         {
-            let url = self.deserialize_byte_buf(StringVisitor)?;
+            let url = self.deserialize_string(StringVisitor)?;
             return T::from_url(&url).map_err(serde::de::Error::custom);
         }
         let url = self.deserialize_byte_buf(BytesVisitor)?;

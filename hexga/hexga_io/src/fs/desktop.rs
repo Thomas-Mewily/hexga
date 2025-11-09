@@ -15,6 +15,24 @@ pub(crate) fn load_bytes_async<F>(path: &path, on_loaded: F)
 
 pub(crate) fn save_bytes(path: &path, bytes: &[u8]) -> IoResult
 {
+    if let Some(parent) = path.parent()
+    {
+        for prefixes in parent.iter_prefixes()
+        {
+            let std_path = std::path::Path::new(prefixes);
+
+            if std_path.exists() {
+                if std_path.is_file() {
+                    // Remove any file that blocks the directory
+                    std::fs::remove_file(std_path).map_err(|e| IoError::new(prefixes, e).when_writing())?;
+                    std::fs::create_dir(std_path).map_err(|e| IoError::new(prefixes, e).when_writing())?;
+                }
+                // else: already a directory, nothing to do
+            } else {
+                std::fs::create_dir(std_path).map_err(|e| IoError::new(prefixes, e).when_writing())?;
+            }
+        }
+    }
     std::fs::write(StdPath::new(path), bytes).map_err(|e| IoError::new(path, e).when_writing())
 }
 

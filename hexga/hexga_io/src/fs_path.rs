@@ -77,7 +77,7 @@ impl Path
     /// # Examples
     ///
     /// ```rust
-    /// use hexga_file_system::Path;
+    /// use hexga_io::Path;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").set_extension("md").as_str(), "foo/bar.md");
     ///
@@ -234,6 +234,31 @@ impl PartialEq<String> for path
         self.path.ne(other)
     }
 }
+impl PartialEq<Path> for path
+{
+    #[inline(always)]
+    fn eq(&self, other: &Path) -> bool {
+        self.path.eq(&other.inner)
+    }
+    #[inline(always)]
+    fn ne(&self, other: &Path) -> bool {
+        self.path.ne(&other.inner)
+    }
+}
+
+
+impl AsRef<std::path::Path> for path
+{
+    fn as_ref(&self) -> &std::path::Path {
+        std::path::Path::new(self.as_str())
+    }
+}
+impl AsRef<std::path::Path> for Path
+{
+    fn as_ref(&self) -> &std::path::Path {
+        std::path::Path::new(self.as_str())
+    }
+}
 
 impl path
 {
@@ -267,7 +292,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").extension(), Some("txt"));
     /// assert_eq!(Path::new("foo/archive.tar.gz").extension(), Some("gz"));
@@ -280,7 +305,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").have_extension(), true);
     /// assert_eq!(Path::new("foo/archive.tar.gz").have_extension(), true);
@@ -297,11 +322,12 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").without_extension().as_str(), "foo/bar");
     /// assert_eq!(Path::new("foo/archive.tar.gz").without_extension().as_str(), "foo/archive");
     /// assert_eq!(Path::new("foo/bar").without_extension().as_str(), "foo/bar");
+    /// assert_eq!(Path::new("foo/.tmp").without_extension().as_str(), "foo/.tmp");
     /// ```
     pub fn without_extension(&self) -> &path
     {
@@ -312,25 +338,26 @@ impl path
         let start = s.rfind('/').map(|i| i + 1).unwrap_or(0);
         let base = &s[start..end];
 
+        // Skip leading dot (hidden file)
         let search_start = if base.starts_with('.') { start + 1 } else { start };
         let base = &s[search_start..end];
 
-        if let Some(dot_pos) = base.rfind('.')
-        {
+        if let Some(dot_pos) = base.find('.') {
             let cut = search_start + dot_pos;
             return Self::from_str(&s[..cut]);
         }
+
         self
     }
 
-    /// Returns the most file extensions of the path, if they exists.
+    /// Returns the full extension of the path, if it exists.
     ///
     /// The returned string slice does **not** include the first dot `.`.
     ///
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").extension(), Some("txt"));
     /// assert_eq!(Path::new("foo/archive.tar.gz").extension(), Some("tar.gz"));
@@ -357,15 +384,18 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
+    /// use hexga_encoding::prelude::*;
     ///
-    /// assert_eq!(Path::new("foo/bar.txt").extensions().collect(), vec!["txt"]);
-    /// assert_eq!(Path::new("foo/archive.tar.gz").extension().collect(), vec!["tar", "gz"]);
-    /// assert_eq!(Path::new("foo/bar").extensions().collect(), vec![]);
-    /// assert_eq!(Path::new("foo/.bar").extensions().collect(), vec![]);
-    /// assert_eq!(Path::new("foo/.bar.txt").extensions().collect(), vec!["txt"]);
-    /// assert_eq!(Path::new("foo/.bar.txt").extensions().collect(), vec!["txt"]);
-    /// assert_eq!(Path::new("foo.buz/bar").extensions().collect(), vec![]);
+    /// let empty = Vec::<Extension>::new();
+    ///
+    /// assert_eq!(Path::new("foo/bar.txt").extensions().collect::<Vec<_>>(), vec!["txt"]);
+    /// assert_eq!(Path::new("foo/archive.tar.gz").extensions().collect::<Vec<_>>(), vec!["tar", "gz"]);
+    /// assert_eq!(Path::new("foo/bar").extensions().collect::<Vec<_>>(), empty);
+    /// assert_eq!(Path::new("foo/.bar").extensions().collect::<Vec<_>>(), empty);
+    /// assert_eq!(Path::new("foo/.bar.txt").extensions().collect::<Vec<_>>(), vec!["txt"]);
+    /// assert_eq!(Path::new("foo/.bar.txt").extensions().collect::<Vec<_>>(), vec!["txt"]);
+    /// assert_eq!(Path::new("foo.buz/bar").extensions().collect::<Vec<_>>(), empty);
     /// ```
     pub fn extensions(&self) -> impl Iterator<Item = &extension> + DoubleEndedIterator + FusedIterator
     {
@@ -397,7 +427,7 @@ impl path
     /// # Examples
     ///
     /// ```rust
-    /// use hexga_file_system::Path;
+    /// use hexga_io::prelude::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").with_extension("md").as_str(), "foo/bar.md");
     ///
@@ -428,7 +458,7 @@ impl path
     /// # Examples
     ///
     /// ```rust
-    /// use hexga_file_system::Path;
+    /// use hexga_io::prelude::*;
     ///
     /// assert_eq!(
     ///     Path::new("foo/bar.txt").with_extensions(["tar", "gz"]).as_str(),
@@ -450,6 +480,7 @@ impl path
         let mut path = self.without_extension().to_owned();
         for extension in extensions.into_iter()
         {
+            if extension.is_empty() { continue; }
             path.inner.push('.');
             path.inner.push_str(extension);
         }
@@ -461,17 +492,69 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
-    /// assert_eq!(Path::new("foo/bar/baz.txt").iter().collect(), vec!["foo", "bar", "baz.txt"]);
-    /// assert_eq!(Path::new("foo\\bar\\baz.txt").iter().collect(), vec!["foo", "bar", "baz.txt"]);
-    /// assert_eq!(Path::new("file.txt").iter().collect(), vec!["file.txt"]);
-    /// assert_eq!(Path::new("").iter().collect(), Vec::<String>::new());
-    /// assert_eq!(Path::new("/foo/bar/").iter().collect(), vec!["", "foo", "bar", ""]);
+    /// assert_eq!(Path::new("foo/bar/baz.txt").iter().collect::<Vec<_>>(), vec!["foo", "bar", "baz.txt"]);
+    /// assert_eq!(Path::new("foo\\bar\\baz.txt").iter().collect::<Vec<_>>(), vec!["foo\\bar\\baz.txt"]);
+    /// assert_eq!(Path::new("file.txt").iter().collect::<Vec<_>>(), vec!["file.txt"]);
+    /// assert_eq!(Path::new("").iter().collect::<Vec<_>>(), Vec::<&path>::new());
+    /// assert_eq!(Path::new("/foo/bar/").iter().collect::<Vec<_>>(), vec!["", "foo", "bar", ""]);
     /// ```
     pub fn iter(&self) -> impl Iterator<Item = &path> + DoubleEndedIterator + FusedIterator
     {
-        self.as_str().split('/').map(|v| Self::from_str(v))
+        std::iter::once(self.as_str())
+            .filter(|s| !s.is_empty()) // skip empty path
+            .flat_map(|s| s.split('/').map(|v| Self::from_str(v)))
+    }
+
+    /// Iterates over all incremental path prefixes separated by `/`.
+    ///
+    /// Each yielded item represents a cumulative subpath from the start up to
+    /// that point in the path.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexga_io::prelude::*;
+    /// use hexga_encoding::prelude::*;
+    ///
+    /// assert_eq!(
+    ///     Path::new("foo/bar/baz.txt").iter_prefixes().collect::<Vec<_>>(),
+    ///     vec!["foo", "foo/bar", "foo/bar/baz.txt"]
+    /// );
+    ///
+    /// assert_eq!(
+    ///     Path::new("foo/bar/").iter_prefixes().collect::<Vec<_>>(),
+    ///     vec!["foo", "foo/bar", "foo/bar/"]
+    /// );
+    ///
+    /// assert_eq!(
+    ///     Path::new("file.txt").iter_prefixes().collect::<Vec<_>>(),
+    ///     vec!["file.txt"]
+    /// );
+    ///
+    /// assert_eq!(
+    ///     Path::new("").iter_prefixes().collect::<Vec<_>>(),
+    ///     Vec::<&extension>::new()
+    /// );
+    /// ```
+    ///
+    /// This differs from [`Path::iter()`](Self::iter), which yields only individual
+    /// path components (e.g., `"foo"`, `"bar"`, `"baz.txt"`), while this method
+    /// yields cumulative subpaths (e.g., `"foo"`, `"foo/bar"`, `"foo/bar/baz.txt"`).
+    pub fn iter_prefixes(&self) -> impl Iterator<Item = &path> + DoubleEndedIterator + FusedIterator
+    {
+        let s = self.as_str();
+
+        // Empty iterator for empty path
+        std::iter::once(s)
+            .filter(|s| !s.is_empty())
+            .flat_map(|s| {
+                let slash_indices = s.match_indices('/').map(|(i, _)| i);
+                slash_indices
+                    .map(move |i| Self::from_str(&s[..i]))
+                    .chain(std::iter::once(Self::from_str(s)))
+            })
     }
 
     /// Returns the parent directory of this path using [`Self::parent`], or an empty path if none exists.
@@ -488,7 +571,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
     /// let path = Path::new("foo/bar/baz.txt");
     /// assert_eq!(path.parent().map(|p| p.as_str()), Some("foo/bar"));
@@ -539,7 +622,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
     /// assert_eq!(Path::new("foo/bar.txt").name(), "bar");
     /// assert_eq!(Path::new("foo/.hidden").name(), ".hidden");
@@ -560,13 +643,13 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
-    /// assert_eq!("foo/bar.txt".with_name("baz"), "foo/baz.txt");
-    /// assert_eq!("foo/.hidden".with_name("config"), "foo/config");
-    /// assert_eq!("foo/.hidden.txt".with_name("config"), "foo/config.txt");
-    /// assert_eq!("foo/archive.tar.gz".with_name("new"), "foo/new.tar.gz");
-    /// assert_eq!("file".with_name("newfile"), "newfile");
+    /// assert_eq!(Path::new("foo/bar.txt").with_name("baz"), "foo/baz.txt");
+    /// assert_eq!(Path::new("foo/.hidden").with_name("config"), "foo/config");
+    /// assert_eq!(Path::new("foo/.hidden.txt").with_name("config"), "foo/config.txt");
+    /// assert_eq!(Path::new("foo/archive.tar.gz").with_name("new"), "foo/new.tar.gz");
+    /// assert_eq!(Path::new("file").with_name("newfile"), "newfile");
     /// ```
     pub fn with_name(&self, name: &str) -> Path
     {
@@ -599,7 +682,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use hexga_file_system::*;
+    /// use hexga_io::prelude::*;
     ///
     /// assert_eq!("foo/bar.txt".path_fullname(), "bar.txt");
     /// assert_eq!("foo/.hidden".path_fullname(), ".hidden");
