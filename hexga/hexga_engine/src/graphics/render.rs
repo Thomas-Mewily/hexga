@@ -46,9 +46,9 @@ impl GpuRender
     }
 
 
-    pub fn texture_replace(&mut self, texture: Option<Texture>) -> &mut Self
+    pub fn texture_replace(&mut self, texture: Option<impl AsRef<Texture>>) -> &mut Self
     {
-        self.param_map(|p| p.texture = texture.clone());
+        self.param_map(|p| p.texture = texture.map(|v| v.as_ref().clone()));
         self
     }
 

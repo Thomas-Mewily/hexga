@@ -3,7 +3,7 @@ use super::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{LoadCustomExtension, Load};
+    pub use super::{LoadCustomExtension, Load, LoadFrom};
 }
 
 pub trait LoadCustomExtension
@@ -24,6 +24,7 @@ pub trait LoadCustomExtensionBytes : LoadCustomExtension
     }
 }
 impl<T> LoadCustomExtensionBytes for T where T: LoadCustomExtension {}
+
 
 
 pub trait Load : LoadCustomExtension + for<'de> CfgDeserialize<'de>
@@ -64,3 +65,18 @@ pub trait Load : LoadCustomExtension + for<'de> CfgDeserialize<'de>
     }
 }
 impl<T> Load for T where T: LoadCustomExtension + for<'de> CfgDeserialize<'de> + ?Sized {}
+
+
+pub trait LoadFrom : From<Self::Source>
+{
+    type Source: LoadCustomExtension + Into<Self>;
+}
+impl<S> LoadCustomExtension for S where S: LoadFrom
+{
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        S::Source::load_custom_extensions()
+    }
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: &extension) -> EncodeResult<Self> where Self: Sized, R: Read {
+        S::Source::load_from_reader_with_custom_extension(reader, extension).map(|v| v.into())
+    }
+}

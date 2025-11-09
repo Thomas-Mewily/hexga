@@ -3,7 +3,7 @@ use super::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{SaveCustomExtension, Save};
+    pub use super::{SaveCustomExtension, Save, SaveAs};
 }
 
 pub trait SaveCustomExtension : CfgSerialize
@@ -80,3 +80,18 @@ pub trait Save : SaveCustomExtension
     }
 }
 impl<T> Save for T where T:SaveCustomExtension + ?Sized {}
+
+
+pub trait SaveAs
+{
+    type Output: SaveCustomExtension + for<'a> From<&'a Self>;
+}
+impl<S> SaveCustomExtension for S where S: SaveAs + CfgSerialize
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        S::Output::save_custom_extensions()
+    }
+    fn save_to_writer_with_custom_extension<W>(&self, writer: W, extension: &extension) -> EncodeResult where W: Write {
+        S::Output::save_to_writer_with_custom_extension(&self.into(), writer, extension)
+    }
+}

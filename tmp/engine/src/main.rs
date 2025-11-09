@@ -4,13 +4,15 @@
 #![allow(unused_mut)]
 use hexga_engine::prelude::*;
 
+type Texture2DTmp = Asset<Texture>;
+
 struct MyApp
 {
     dpad: BindingDpad,
     nb_split: float,
     camera: Camera3D,
     time: Time,
-    texture : Option<Texture>,
+    texture : Texture2DTmp,
 }
 
 impl Application for MyApp
@@ -54,12 +56,12 @@ impl Application for MyApp
 
     fn draw(&mut self) {
 
-        if self.texture.is_none()
-        {
-            let b2= include_bytes!("test.png");
-            let img = Image::load_from_bytes(b2, "png").unwrap();
-            self.texture = Some(Texture::from(img));
-        }
+        // if self.texture.is_none()
+        // {
+        //     let b2= include_bytes!("test.png");
+        //     let img = Image::load_from_bytes(b2, "png").unwrap();
+        //     self.texture = Some(Texture::from(img));
+        // }
         /*
         Pen.geometry
         (
@@ -81,7 +83,7 @@ impl Application for MyApp
             self.camera.perspective.aspect = r.size.x / r.size.y;
             Pen.set_matrix(self.camera.matrix());
 
-            Pen.texture_replace(self.texture.clone());
+            Pen.texture_replace(Some(&self.texture));
 
             Pen.geometry
             (
@@ -117,7 +119,7 @@ fn main()
             },
             viewport: None
         };
-    let _ = MyApp { nb_split: 3., camera, time: zero(), dpad: ___(), texture: None }.run();
+    let _ = MyApp { nb_split: 3., camera, time: zero(), dpad: ___(), texture: Texture2DTmp::load("./tmp/engine/src/test") }.run();
 
     println!("Goodbye");
 }

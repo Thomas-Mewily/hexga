@@ -253,23 +253,11 @@ pub struct Asset<T>
     id : TableID,
     manager_ptr : NonNull<AssetManager<T>>
 }
-impl<T> Clone for Asset<T> where T: Async
-{
-    fn clone(&self) -> Self {
-        Self::from_asset_data(self)
-    }
-}
-impl<T> PartialEq for Asset<T> where T: Async
-{
-    fn eq(&self, other: &Self) -> bool { self.id == other.id }
-}
+impl<T> AsRef<T> for Asset<T> where T: Async { fn as_ref(&self) -> &T { self.value() } }
+impl<T> Clone for Asset<T> where T: Async { fn clone(&self) -> Self { Self::from_asset_data(self) } }
+impl<T> PartialEq for Asset<T> where T: Async { fn eq(&self, other: &Self) -> bool { self.id == other.id } }
 impl<T> Eq for Asset<T> where T: Async {}
-impl<T> Hash for Asset<T> where T: Async
-{
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.id.hash(state);
-    }
-}
+impl<T> Hash for Asset<T> where T: Async { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.id.hash(state); } }
 impl<T> Asset<T> where T: Async
 {
     pub fn manager() -> &'static AssetManager<T> { AssetsUntyped::as_mut().manager() }

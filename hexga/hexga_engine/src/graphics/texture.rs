@@ -14,7 +14,6 @@ impl<T> From<T> for Texture where GpuTexture: From<T>
     }
 }
 
-
 #[derive(Debug, PartialEq, Hash)]
 pub struct GpuTexture
 {
@@ -23,6 +22,29 @@ pub struct GpuTexture
     pub(crate) view: wgpu::TextureView,
     pub(crate) sampler: wgpu::Sampler,
     pub(crate) bind_group : wgpu::BindGroup
+}
+
+impl Load for GpuTexture
+{
+
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for GpuTexture
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de> {
+        Ok(Image::deserialize(deserializer)?.into())
+    }
+}
+
+
+impl<Idx> From<ImageBaseOf<RgbaU8,Idx>> for GpuTexture where Idx: Integer
+{
+    fn from(value: ImageBaseOf<RgbaU8,Idx>) -> Self {
+        Self::from(&value)
+    }
 }
 
 impl<Idx> From<&ImageBaseOf<RgbaU8,Idx>> for GpuTexture where Idx: Integer

@@ -23,9 +23,6 @@ pub use asset::*;
 mod asset_manager;
 pub use asset_manager::*;
 
-mod load;
-pub use load::*;
-
 mod hot_reload;
 pub use hot_reload::*;
 
