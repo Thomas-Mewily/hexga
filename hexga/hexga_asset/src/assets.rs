@@ -4,7 +4,7 @@ use super::*;
 singleton_declare_multi_thread!(pub Assets, AssetsManagerUntyped, ASSETS, Default::default());
 
 
-impl SingletonInit for Assets
+impl SingletonReplace for Assets
 {
     fn replace(value: Option<<Self as SingletonRef>::Target>) -> SingletonResult {
         let cell: &::std::sync::RwLock<Option<AssetsManagerUntyped>> =

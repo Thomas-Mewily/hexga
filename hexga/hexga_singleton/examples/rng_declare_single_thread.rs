@@ -8,7 +8,7 @@ pub struct CurrentUser
 singleton_declare_thread_local!(pub User, CurrentUser, GLOBAL_USER);
 
 // Custom logic to init / deinit the singleton
-impl SingletonInit for User
+impl SingletonReplace for User
 {
     fn replace(value: Option<<Self as SingletonRef>::Target>) -> SingletonResult {
         GLOBAL_USER.replace(value);

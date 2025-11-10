@@ -6,7 +6,7 @@ pub struct CurrentUser {
 
 singleton_declare_multi_thread!(pub User, CurrentUser, GLOBAL_USER);
 
-impl SingletonInit for User {
+impl SingletonReplace for User {
     fn replace(value: Option<<Self as SingletonRef>::Target>) -> SingletonResult {
         let cell = GLOBAL_USER.get_or_init(|| ::std::sync::RwLock::new(None));
         match cell.write() {

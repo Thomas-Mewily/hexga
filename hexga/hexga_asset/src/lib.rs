@@ -23,8 +23,8 @@ mod serde_impl;
 #[cfg(feature = "serde")]
 pub use serde_impl::*;
 
-mod untyped_assets;
-pub use untyped_assets::*;
+mod assets;
+pub use assets::*;
 
 mod asset;
 pub use asset::*;

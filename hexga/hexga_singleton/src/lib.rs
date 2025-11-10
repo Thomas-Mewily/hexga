@@ -11,7 +11,7 @@
 //! singleton_thread_local!(pub User, CurrentUser, CURRENT_USER);
 //!
 //! // Custom logic to init / deinit the singleton
-//! impl SingletonInit for User
+//! impl SingletonReplace for User
 //! {
 //!     fn replace(value: Option<<Self as SingletonRef>::Target>) -> SingletonResult {
 //!         CURRENT_USER.replace(value);
@@ -84,7 +84,7 @@ pub trait SingletonMut: SingletonRef + DerefMut
     }
 }
 
-pub trait SingletonInit: SingletonRef + SingletonMut
+pub trait SingletonReplace: SingletonRef + SingletonMut
 {
     fn replace(value: Option<<Self as SingletonRef>::Target>) -> SingletonResult;
 
@@ -117,13 +117,26 @@ pub trait SingletonInit: SingletonRef + SingletonMut
 
 #[macro_export]
 macro_rules! singleton_thread_local {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr, init_once) => {
+
+        $crate::singleton_declare_thread_local!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, $init
+        );
+
+        impl $crate::SingletonReplace for $wrapper {
+            fn replace(value: ::core::option::Option<<Self as $crate::SingletonRef>::Target>) -> $crate::SingletonResult {
+                return Err(());
+            }
+        }
+    };
+
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident $(, $init:expr)? ) => {
 
         $crate::singleton_declare_thread_local!(
             $(#[$attr])* $vis $wrapper, $target, $constant_static_name $(, $init)?
         );
 
-        impl $crate::SingletonInit for $wrapper {
+        impl $crate::SingletonReplace for $wrapper {
             fn replace(value: ::core::option::Option<<Self as $crate::SingletonRef>::Target>) -> $crate::SingletonResult {
                 $constant_static_name.with(|cell| {
                     *cell.borrow_mut() = value;
@@ -300,13 +313,26 @@ macro_rules! singleton_declare_multi_thread {
 
 #[macro_export]
 macro_rules! singleton_multi_thread {
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident $(, $init:expr)?) => {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr, init_once) => {
+
+        $crate::singleton_declare_multi_thread!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, $init
+        );
+
+        impl $crate::SingletonReplace for $wrapper {
+            fn replace(value: ::core::option::Option<<Self as $crate::SingletonRef>::Target>) -> $crate::SingletonResult {
+                return Err(());
+            }
+        }
+    };
+
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident $(, $init:expr)? $(, init_once)?) => {
 
         $crate::singleton_declare_multi_thread!(
             $(#[$attr])* $vis $wrapper, $target, $constant_static_name $(, $init)?
         );
 
-        impl $crate::SingletonInit for $wrapper {
+        impl $crate::SingletonReplace for $wrapper {
             fn replace(value: ::core::option::Option<<Self as $crate::SingletonRef>::Target>) -> $crate::SingletonResult {
                 let cell: &'static ::std::sync::RwLock<::core::option::Option<$target>> =
                     $constant_static_name.get_or_init(|| ::std::sync::RwLock::new(::core::option::Option::None));
@@ -428,13 +454,26 @@ macro_rules! singleton_declare_multi_thread_poison_resistant {
 
 #[macro_export]
 macro_rules! singleton_multi_thread_poison_resistant {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr, init_once) => {
+
+        $crate::singleton_declare_multi_thread_poison_resistant!(
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, $init
+        );
+
+        impl $crate::SingletonReplace for $wrapper {
+            fn replace(value: ::core::option::Option<<Self as $crate::SingletonRef>::Target>) -> $crate::SingletonResult {
+                return Err(());
+            }
+        }
+    };
+
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident $(, $init:expr)?) => {
 
-        $crate::singleton_declare_multi_thread!(
+        $crate::singleton_declare_multi_thread_poison_resistant!(
             $(#[$attr])* $vis $wrapper, $target, $constant_static_name $(, $init)?
         );
 
-        impl $crate::SingletonInit for $wrapper {
+        impl $crate::SingletonReplace for $wrapper {
             fn replace(value: ::core::option::Option<<Self as $crate::SingletonRef>::Target>) -> $crate::SingletonResult {
                 let cell: &'static ::std::sync::RwLock<::core::option::Option<$target>> =
                     $constant_static_name.get_or_init(|| ::std::sync::RwLock::new(::core::option::Option::None));
