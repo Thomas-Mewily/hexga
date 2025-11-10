@@ -23,7 +23,14 @@ impl AppCore
 
     pub fn param(&self) -> &AppParam { &self.param }
     //pub fn param_mut(&mut self) -> &mut AppParam { &mut self.param }
+
+
+    pub fn exit(&mut self)
+    {
+        let _ = self.proxy.send_event(AppInternalEvent::Exit);
+    }
 }
+
 impl AppCore
 {
     pub(crate) fn new(param: AppParam, proxy : EventLoopProxy) -> Self

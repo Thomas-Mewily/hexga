@@ -36,38 +36,36 @@ impl<A> AppRun for A where A:Application
 {
     fn run_with_param(self, param: AppParam) -> Result<(), ()>
     {
+        assert!(App::is_not_init(), "Can't run two app at the same time, App is a singleton");
+
         log::init_logger();
 
+        // init panic
         {
-            // Make sure the App is destroyed, even on panic
-            let default_panic = std::panic::take_hook();
+            let default_hook = std::panic::take_hook();
+
             std::panic::set_hook(Box::new(move |info| {
-                let _ = App::destroy();
-                default_panic(info);
-            }));
 
-            #[cfg(target_arch = "wasm32")]
-            {
-                std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-            }
+                if App::is_init()
+                {
+                    App.exit();
+                }
+                //let _ = App::destroy();
 
-            #[cfg(not(target_arch = "wasm32"))]
-            {
-                use std::io::Write;
-
-                std::panic::set_hook(Box::new(|info| {
-                    let _ = App::destroy();
+                #[cfg(not(target_arch = "wasm32"))]
+                {
                     eprintln!("panic occurred: {info}");
-                }));
-            }
+                }
 
-            let _res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                let _ = App::destroy();
+                #[cfg(target_arch = "wasm32")]
+                {
+                    // Use the console_error_panic_hook for WASM
+                    console_error_panic_hook::hook(info);
+                }
+
+                default_hook(info);
             }));
         }
-
-
-        assert!(App::is_not_init(), "Can't run two app at the same time, App is a singleton");
 
         let event_loop = EventLoop::with_user_event().build().ok_or_void()?;
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
@@ -78,11 +76,26 @@ impl<A> AppRun for A where A:Application
         #[allow(unused_mut)]
         let mut runner = AppRunner::new(self);
 
+        // Wrap the entire run in catch_unwind
         #[cfg(not(target_arch = "wasm32"))]
         {
-            let r = event_loop.run_app(&mut runner);
-            r.ok_or_void()
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let _ = event_loop.run_app(&mut runner);
+            }));
+
+            if result.is_err() {
+                // Panic occurred, clean up App
+                let _ = App::destroy();
+            }
+
+            result.ok_or_void()
         }
+
+        // #[cfg(not(target_arch = "wasm32"))]
+        // {
+        //     let r = event_loop.run_app(&mut runner);
+        //     r.ok_or_void()
+        // }
 
         #[cfg(target_arch = "wasm32")]
         {
@@ -234,6 +247,11 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
                 App.pen = Some(gpu.unwrap());
                 App.window.request_draw();
             },
+            AppInternalEvent::Exit =>
+            {
+                event_loop.exit();
+                let _ = App::destroy();
+            }
         }
     }
 }

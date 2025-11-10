@@ -1,16 +1,16 @@
 use super::*;
 
 
-singleton_declare_multi_thread!(pub AssetsUntyped, AssetManagerUntyped, ASSETS, Default::default());
+singleton_declare_multi_thread!(pub Assets, AssetsManagerUntyped, ASSETS, Default::default());
 
 
-impl SingletonInit for AssetsUntyped
+impl SingletonInit for Assets
 {
     fn replace(value: Option<<Self as SingletonRef>::Target>) -> SingletonResult {
-        let cell: &::std::sync::Mutex<Option<AssetManagerUntyped>> =
-            ASSETS.get_or_init(|| ::std::sync::Mutex::new(None));
+        let cell: &::std::sync::RwLock<Option<AssetsManagerUntyped>> =
+            ASSETS.get_or_init(|| ::std::sync::RwLock::new(None));
 
-        let mut guard = cell.lock().map_err(|_| ())?;
+        let mut guard = cell.write().map_err(|_| ())?;
         if guard.is_some() {
             return Err(()); // The Asset can't be initialized twice
         }
@@ -20,11 +20,11 @@ impl SingletonInit for AssetsUntyped
 }
 
 #[derive(Default)]
-pub struct AssetManagerUntyped
+pub struct AssetsManagerUntyped
 {
     managers: HashMap<TypeId, Pin<Box<dyn AsyncAny>>>
 }
-impl AssetManagerUntyped
+impl AssetsManagerUntyped
 {
     /// Creates a new type-specific asset manager if it does not exist using the [`Default`] value of T for loading and error value.
     pub fn update_or_create_manager<T>(&mut self) -> &mut AssetManager<T> where T: Async + Default

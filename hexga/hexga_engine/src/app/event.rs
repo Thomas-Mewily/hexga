@@ -8,6 +8,7 @@ pub type CustomEvent = Box<dyn ICustomEvent>;
 
 pub(crate) enum AppInternalEvent
 {
+    Exit,
     Gpu(GpuEvent),
     //Custom(CustomEvent),
 }

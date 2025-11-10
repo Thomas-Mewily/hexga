@@ -14,6 +14,15 @@ use hexga_encoding::prelude::*;
 use hexga_io::prelude::*;
 use hexga_singleton::prelude::*;
 
+
+#[cfg(feature = "serde")]
+pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+
+#[cfg(feature = "serde")]
+mod serde_impl;
+#[cfg(feature = "serde")]
+pub use serde_impl::*;
+
 mod untyped_assets;
 pub use untyped_assets::*;
 
@@ -31,5 +40,5 @@ pub use asset_save::*;
 
 pub mod prelude
 {
-    pub use super::{Asset,AssetsUntyped,HotReload,AssetSave};
+    pub use super::{Asset,Assets,HotReload,AssetSave};
 }

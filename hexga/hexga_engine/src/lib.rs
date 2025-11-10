@@ -31,7 +31,7 @@ pub mod prelude
         window::*,
         clipboard::*,
         utils::*,
-        graphics::*,
+        graphics::prelude::*,
     };
     pub use hexga::prelude::*;
 }

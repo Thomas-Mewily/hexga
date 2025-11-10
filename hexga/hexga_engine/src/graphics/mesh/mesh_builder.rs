@@ -1,7 +1,7 @@
 use super::*;
 
 
-pub trait IMeshBuilder<const N:usize=3>
+pub trait BuilderMesh<const N:usize=3>
 {
     /// Index are relative to the vertex passed
     fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>);
@@ -123,7 +123,7 @@ impl<const N:usize> Clearable for MeshBuilder<N>
 }
 
 
-impl<const N:usize> IMeshBuilder<N> for MeshBuilder<N>
+impl<const N:usize> BuilderMesh<N> for MeshBuilder<N>
 {
     fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>)
     {

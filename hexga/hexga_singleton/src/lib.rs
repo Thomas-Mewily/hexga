@@ -240,12 +240,12 @@ macro_rules! singleton_declare_multi_thread_access {
         $crate::singleton_access!(
             $(#[$attr])* $vis $wrapper, $target,
             {
-                let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(
+                let cell: &'static ::std::sync::RwLock<::core::option::Option<$target>> =
+                    $constant_static_name.get_or_init(|| ::std::sync::RwLock::new(
                         $init
                     ));
 
-                match cell.lock() {
+                match cell.read() {
                     ::core::result::Result::Ok(guard) => {
                         if let ::core::option::Option::Some(ctx) = guard.as_ref() {
                             let ctx_ptr: *const $target = ctx;
@@ -261,12 +261,12 @@ macro_rules! singleton_declare_multi_thread_access {
                 }
             },
             {
-                let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(
+                let cell: &'static ::std::sync::RwLock<::core::option::Option<$target>> =
+                    $constant_static_name.get_or_init(|| ::std::sync::RwLock::new(
                         $init
                     ));
 
-                match cell.lock() {
+                match cell.write() {
                     ::core::result::Result::Ok(mut guard) => {
                         if let ::core::option::Option::Some(ctx) = guard.as_mut() {
                             let ctx_ptr: *mut $target = ctx;
@@ -289,19 +289,11 @@ macro_rules! singleton_declare_multi_thread_access {
 
 #[macro_export]
 macro_rules! singleton_declare_multi_thread {
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
-        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident $(, $init:expr)?) => {
+        static $constant_static_name: ::std::sync::OnceLock<::std::sync::RwLock<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
 
         $crate::singleton_declare_multi_thread_access!(
-            $(#[$attr])* $vis $wrapper, $target, $constant_static_name
-        );
-    };
-
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
-        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
-
-        $crate::singleton_declare_multi_thread_access!(
-            $(#[$attr])* $vis $wrapper, $target, $constant_static_name, $init
+            $(#[$attr])* $vis $wrapper, $target, $constant_static_name $(, $init)?
         );
     };
 }
@@ -316,10 +308,10 @@ macro_rules! singleton_multi_thread {
 
         impl $crate::SingletonInit for $wrapper {
             fn replace(value: ::core::option::Option<<Self as $crate::SingletonRef>::Target>) -> $crate::SingletonResult {
-                let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(::core::option::Option::None));
+                let cell: &'static ::std::sync::RwLock<::core::option::Option<$target>> =
+                    $constant_static_name.get_or_init(|| ::std::sync::RwLock::new(::core::option::Option::None));
 
-                match cell.lock() {
+                match cell.write() {
                     ::core::result::Result::Ok(mut guard) => {
                         *guard = value;
                         ::core::result::Result::Ok(())
@@ -353,12 +345,12 @@ macro_rules! singleton_declare_multi_thread_poison_resistant_access {
         $crate::singleton_access!(
             $(#[$attr])* $vis $wrapper, $target,
             {
-                let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(
+                let cell: &'static ::std::sync::RwLock<::core::option::Option<$target>> =
+                    $constant_static_name.get_or_init(|| ::std::sync::RwLock::new(
                         $init
                     ));
 
-                match cell.lock() {
+                match cell.read() {
                     ::core::result::Result::Ok(guard) => {
                         if let ::core::option::Option::Some(ctx) = guard.as_ref() {
                             let ctx_ptr: *const $target = ctx;
@@ -382,12 +374,12 @@ macro_rules! singleton_declare_multi_thread_poison_resistant_access {
                 }
             },
             {
-                let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(
+                let cell: &'static ::std::sync::RwLock<::core::option::Option<$target>> =
+                    $constant_static_name.get_or_init(|| ::std::sync::RwLock::new(
                         $init
                     ));
 
-                match cell.lock() {
+                match cell.write() {
                     ::core::result::Result::Ok(mut guard) => {
                         if let ::core::option::Option::Some(ctx) = guard.as_mut() {
                             let ctx_ptr: *mut $target = ctx;
@@ -418,7 +410,7 @@ macro_rules! singleton_declare_multi_thread_poison_resistant_access {
 #[macro_export]
 macro_rules! singleton_declare_multi_thread_poison_resistant {
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident) => {
-        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
+        static $constant_static_name: ::std::sync::OnceLock<::std::sync::RwLock<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
 
         $crate::singleton_declare_multi_thread_poison_resistant_access!(
             $(#[$attr])* $vis $wrapper, $target, $constant_static_name
@@ -426,7 +418,7 @@ macro_rules! singleton_declare_multi_thread_poison_resistant {
     };
 
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $target:ty, $constant_static_name:ident, $init:expr) => {
-        static $constant_static_name: ::std::sync::OnceLock<::std::sync::Mutex<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
+        static $constant_static_name: ::std::sync::OnceLock<::std::sync::RwLock<::core::option::Option<$target>>> = ::std::sync::OnceLock::new();
 
         $crate::singleton_declare_multi_thread_poison_resistant_access!(
             $(#[$attr])* $vis $wrapper, $target, $constant_static_name, $init
@@ -444,10 +436,10 @@ macro_rules! singleton_multi_thread_poison_resistant {
 
         impl $crate::SingletonInit for $wrapper {
             fn replace(value: ::core::option::Option<<Self as $crate::SingletonRef>::Target>) -> $crate::SingletonResult {
-                let cell: &'static ::std::sync::Mutex<::core::option::Option<$target>> =
-                    $constant_static_name.get_or_init(|| ::std::sync::Mutex::new(::core::option::Option::None));
+                let cell: &'static ::std::sync::RwLock<::core::option::Option<$target>> =
+                    $constant_static_name.get_or_init(|| ::std::sync::RwLock::new(::core::option::Option::None));
 
-                match cell.lock() {
+                match cell.write() {
                     ::core::result::Result::Ok(mut guard) => {
                         *guard = value;
                         ::core::result::Result::Ok(())

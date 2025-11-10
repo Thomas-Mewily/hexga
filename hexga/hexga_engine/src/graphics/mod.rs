@@ -33,3 +33,17 @@ pub use vec::*;
 
 mod texture;
 pub use texture::*;
+
+
+pub mod prelude
+{
+    pub use super::{
+        texture::{Texture,TextureAsset},
+        typedef::*,
+        model::prelude::*,
+        camera::*,
+        Pen,
+        mesh::BuilderMesh,
+    };
+    pub(crate) use super::*;
+}

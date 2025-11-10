@@ -253,6 +253,10 @@ pub struct Asset<T>
     id : TableID,
     manager_ptr : NonNull<AssetManager<T>>
 }
+
+
+
+
 impl<T> AsRef<T> for Asset<T> where T: Async { fn as_ref(&self) -> &T { self.value() } }
 impl<T> Clone for Asset<T> where T: Async { fn clone(&self) -> Self { Self::from_asset_data(self) } }
 impl<T> PartialEq for Asset<T> where T: Async { fn eq(&self, other: &Self) -> bool { self.id == other.id } }
@@ -260,24 +264,24 @@ impl<T> Eq for Asset<T> where T: Async {}
 impl<T> Hash for Asset<T> where T: Async { fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.id.hash(state); } }
 impl<T> Asset<T> where T: Async
 {
-    pub fn manager() -> &'static AssetManager<T> { AssetsUntyped::as_mut().manager() }
-    pub fn manager_mut() -> &'static mut AssetManager<T> { AssetsUntyped::as_mut().manager_mut() }
+    pub fn manager() -> &'static AssetManager<T> { Assets::as_mut().manager() }
+    pub fn manager_mut() -> &'static mut AssetManager<T> { Assets::as_mut().manager_mut() }
 
     pub fn load<P>(path: P) -> Self
         where T: Load, P: Into<Path>
     {
-        AssetsUntyped.manager_mut::<T>().get_or_load(path)
+        Assets.manager_mut::<T>().get_or_load(path)
     }
 
     pub fn update_or_create_with_value<P>(path: P, value: T) -> Self
         where P: Into<Path>
     {
-        AssetsUntyped.manager_mut::<T>().update_or_create_with_value(path, value)
+        Assets.manager_mut::<T>().update_or_create_with_value(path, value)
     }
     pub fn update_or_create_with_error<P>(path: P, error: IoError) -> Self
         where P: Into<Path>
     {
-        AssetsUntyped.manager_mut::<T>().update_or_create_with_error(path, error)
+        Assets.manager_mut::<T>().update_or_create_with_error(path, error)
     }
 
     pub fn from_asset_data(asset: &AssetData<T>) -> Self

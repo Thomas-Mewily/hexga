@@ -494,13 +494,13 @@ impl path
     /// ```
     /// use hexga_io::prelude::*;
     ///
-    /// assert_eq!(Path::new("foo/bar/baz.txt").iter().collect::<Vec<_>>(), vec!["foo", "bar", "baz.txt"]);
-    /// assert_eq!(Path::new("foo\\bar\\baz.txt").iter().collect::<Vec<_>>(), vec!["foo\\bar\\baz.txt"]);
-    /// assert_eq!(Path::new("file.txt").iter().collect::<Vec<_>>(), vec!["file.txt"]);
-    /// assert_eq!(Path::new("").iter().collect::<Vec<_>>(), Vec::<&path>::new());
-    /// assert_eq!(Path::new("/foo/bar/").iter().collect::<Vec<_>>(), vec!["", "foo", "bar", ""]);
+    /// assert_eq!(Path::new("foo/bar/baz.txt").components().collect::<Vec<_>>(), vec!["foo", "bar", "baz.txt"]);
+    /// assert_eq!(Path::new("foo\\bar\\baz.txt").components().collect::<Vec<_>>(), vec!["foo\\bar\\baz.txt"]);
+    /// assert_eq!(Path::new("file.txt").components().collect::<Vec<_>>(), vec!["file.txt"]);
+    /// assert_eq!(Path::new("").components().collect::<Vec<_>>(), Vec::<&path>::new());
+    /// assert_eq!(Path::new("/foo/bar/").components().collect::<Vec<_>>(), vec!["", "foo", "bar", ""]);
     /// ```
-    pub fn iter(&self) -> impl Iterator<Item = &path> + DoubleEndedIterator + FusedIterator
+    pub fn components(&self) -> impl Iterator<Item = &path> + DoubleEndedIterator + FusedIterator
     {
         std::iter::once(self.as_str())
             .filter(|s| !s.is_empty()) // skip empty path

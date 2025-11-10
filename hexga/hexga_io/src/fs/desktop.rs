@@ -1,9 +1,30 @@
+use std::path::PathBuf;
+
 use super::*;
 
 
+
+fn validate_absolute_path(p: &path) -> IoResult<PathBuf> {
+    let normalized = p.as_str().replace('\\', "/");
+
+    let mut abs_path = PathBuf::new();
+
+    for comp in normalized.split('/') {
+        if comp.is_empty() {
+            continue; // ignore redundant slashes
+        }
+        if comp == ".." {
+            return Err(IoError::new(p, FileError::custom("File path should be absolute")));
+        }
+        abs_path.push(comp);
+    }
+
+    Ok(abs_path)
+}
+
 pub(crate) fn load_bytes(path: &path) -> IoResult<Vec<u8>>
 {
-    std::fs::read(StdPath::new(path)).map_err(|e| IoError::new(path, e).when_reading())
+    std::fs::read(validate_absolute_path(path)?).map_err(|e| IoError::new(path, e).when_reading())
 }
 
 pub(crate) fn load_bytes_async<F>(path: &path, on_loaded: F)
@@ -15,6 +36,8 @@ pub(crate) fn load_bytes_async<F>(path: &path, on_loaded: F)
 
 pub(crate) fn save_bytes(path: &path, bytes: &[u8]) -> IoResult
 {
+    validate_absolute_path(path)?;
+
     if let Some(parent) = path.parent()
     {
         for prefixes in parent.iter_prefixes()

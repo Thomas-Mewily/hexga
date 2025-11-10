@@ -8,8 +8,8 @@ singleton_declare_multi_thread!(pub User, CurrentUser, GLOBAL_USER);
 
 impl SingletonInit for User {
     fn replace(value: Option<<Self as SingletonRef>::Target>) -> SingletonResult {
-        let cell = GLOBAL_USER.get_or_init(|| ::std::sync::Mutex::new(None));
-        match cell.lock() {
+        let cell = GLOBAL_USER.get_or_init(|| ::std::sync::RwLock::new(None));
+        match cell.write() {
             Ok(mut guard) => { *guard = value; Ok(()) },
             Err(_poisoned) => Err(()),
         }

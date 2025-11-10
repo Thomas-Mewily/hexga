@@ -96,7 +96,7 @@ impl GpuRender
         self.param_map(|p| { p.camera = c;});
     }
 }
-impl IMeshBuilder for GpuRender
+impl BuilderMesh for GpuRender
 {
     fn geometry(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) {
 
