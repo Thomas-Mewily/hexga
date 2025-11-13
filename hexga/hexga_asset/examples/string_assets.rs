@@ -3,6 +3,7 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 
+/*
 use hexga_asset::prelude::*;
 use hexga_io::ToPathSlice;
 
@@ -28,3 +29,4 @@ fn main()
         println!("{:?} : {}", assets.path(), assets.value());
     }
 }
+*/

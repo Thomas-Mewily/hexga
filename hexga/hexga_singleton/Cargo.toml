@@ -13,3 +13,4 @@ description = "Singleton traits and macro"
 categories = ["rust-patterns"]
 
 [dependencies]
+hexga_core.workspace = true

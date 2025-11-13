@@ -6,7 +6,7 @@ pub(crate) type GpuEvent = Result<AppPen,String>;
 singleton_access!(
     pub Pen,
     AppPen,
-    { App::try_as_ref().map(|ctx| ctx.pen.as_ref()).flatten() },
+    { App::try_ref().map(|ctx| ctx.pen.as_ref()).flatten() },
     { App::try_as_mut().map(|ctx| ctx.pen.as_mut()).flatten() }
 );
 

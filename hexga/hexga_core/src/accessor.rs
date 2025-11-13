@@ -19,14 +19,14 @@ pub trait Setter<T>
 pub trait GetterSetter<T> : Getter<T> + Setter<T>{}
 impl<S,T> GetterSetter<T> for S where S:Getter<T> +Setter<T>{}
 
-// Based on (GGEZ Has trait)[https://docs.rs/ggez/latest/ggez/context/trait.Has.html]
+// Based on [GGEZ Has trait](https://docs.rs/ggez/latest/ggez/context/trait.Has.html)
 pub trait HasRef<T>
 {
     fn retrive(&self) -> &T;
 }
 impl<T> HasRef<T> for T  { fn retrive(&self) -> &T { self } }
 
-// Based on (GGEZ HasMut trait)[https://docs.rs/ggez/latest/ggez/context/trait.HasMut.html]
+// Based on [GGEZ HasMut trait](https://docs.rs/ggez/latest/ggez/context/trait.HasMut.html)
 pub trait HasMut<T>
 {
     fn retrive_mut(&mut self) -> &mut T;

@@ -6,7 +6,7 @@ use super::*;
 singleton_access!(
     pub Keyboard,
     AppKeyboard,
-    { App::try_as_ref().map(|ctx| &ctx.input.keyboard) },
+    { App::try_ref().map(|ctx| &ctx.input.keyboard) },
     { App::try_as_mut().map(|ctx| &mut ctx.input.keyboard) }
 );
 

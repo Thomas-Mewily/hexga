@@ -14,7 +14,7 @@ impl<T> CfgSerialize for T where T: Serialize + ?Sized {}
 #[cfg(not(feature = "serde"))]
 pub trait CfgDeserialize<'de> {}
 #[cfg(not(feature = "serde"))]
-impl<T> CfgDeserialize<'de> for T {}
+impl<'de,T> CfgDeserialize<'de> for T {}
 
 #[cfg(feature = "serde")]
 pub trait CfgDeserialize<'de>: Deserialize<'de> {}

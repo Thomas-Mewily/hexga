@@ -5,7 +5,7 @@ use super::*;
 singleton_access!(
     pub Clipboard,
     AppClipboard,
-    { App::try_as_ref().map(|ctx| &ctx.clipboard) },
+    { App::try_ref().map(|ctx| &ctx.clipboard) },
     { App::try_as_mut().map(|ctx| &mut ctx.clipboard) }
 );
 

@@ -7,6 +7,7 @@ pub type SerializerRon<'se> = ron::ser::Serializer<VecWrite<'se>>;
 pub type SerializerJson<'se> = serde_json::Serializer<&'se mut Vec<u8>>;
 pub type SerializerXml<'se> = serde_xml_rs::Serializer<&'se mut Vec<u8>>;
 
+
 // pub type SerializerAny<'se> = Markup<SerializerRon<'se>,SerializerJson<'se>>;
 // pub enum SerializerAny<'se>
 // {

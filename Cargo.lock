@@ -1271,6 +1271,9 @@ dependencies = [
 [[package]]
 name = "hexga_singleton"
 version = "0.0.11-beta.43"
+dependencies = [
+ "hexga_core",
+]
 
 [[package]]
 name = "hexga_typedef"

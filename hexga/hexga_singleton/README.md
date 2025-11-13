@@ -2,7 +2,9 @@
 
 ## HexGa Singleton
 
-Define some Singleton traits and macro.
+Define Single and Multi threaded Singleton.
+
+Inspired by [RusPiRo Singleton crate](https://github.com/RusPiRo/ruspiro-singleton)
 
 
 ```rust

@@ -6,7 +6,7 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 # Hexga Asset
 
-A crossplatform way to load asset, and hot reload them
+A crossplatform way to load asset, and hot reload them.
 
 
 ## Main Hexga crate
