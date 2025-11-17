@@ -4,7 +4,7 @@ use super::*;
 pub trait LoadFromDisk : Load
 {
     fn load_from_disk<P>(path: P) -> IoResult<Self>
-        where P: AsRefPath
+        where P: AsRef<Path>
     {
         let path = path.as_ref();
         let extension = path.extension_or_empty();

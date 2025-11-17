@@ -173,7 +173,7 @@ impl<'a> TryFrom<&'a [u8]> for BinUrlData<'a>
 
 pub trait MediaType
 {
-    /// [Media types (MIME types)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types)
+    /// [Media types (MIME types)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types/Common_types)
     fn media_type() -> &'static str;
     fn mime_type(extension: &extension) -> String
     {

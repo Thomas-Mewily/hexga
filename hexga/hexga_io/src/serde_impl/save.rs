@@ -4,7 +4,7 @@ use super::*;
 pub trait SaveToDisk : Save
 {
     fn save_to_disk<P>(&self, path: P) -> IoResult
-        where P: AsRefPath
+        where P: AsRef<Path>
     {
         let path = path.as_ref();
         let (bytes, extension) = self.save_to_bytes(path.extension_or_empty())

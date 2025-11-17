@@ -835,6 +835,3 @@ impl<'a> ToPathSlice for &'a mut str
         self.into()
     }
 }
-
-pub trait AsRefPath : AsRef<path> {}
-impl<T> AsRefPath for T where T: AsRef<path> {}
