@@ -31,6 +31,8 @@ impl From<std::io::Error> for EncodeError { fn from(value: std::io::Error) -> Se
 impl From<std::io::ErrorKind> for EncodeError { fn from(kind: std::io::ErrorKind) -> Self { Self::Std(kind) } }
 impl From<std::fmt::Error> for EncodeError { fn from(_value: std::fmt::Error) -> Self { Self::Fmt } }
 
+impl From<String> for EncodeError { fn from(custom: String) -> Self { Self::Custom(custom.into()) } }
+impl From<&'static str> for EncodeError { fn from(custom: &'static str) -> Self { Self::Custom(custom.into()) } }
 
 impl Display for EncodeError
 {

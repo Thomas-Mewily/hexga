@@ -10,7 +10,7 @@ pub trait SaveToDisk : Save
         let (bytes, extension) = self.save_to_bytes(path.extension_or_empty())
             .map_err(|e| IoError::new(path, e).when_writing())?;
 
-        Io.save_bytes(&path.with_extension(&extension), &bytes)
+        Io.save_bytes(&path.with_extension(extension.as_ref()), &bytes)
     }
 }
 impl<T> SaveToDisk for T where T: Save {}

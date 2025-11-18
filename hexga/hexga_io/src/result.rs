@@ -28,13 +28,13 @@ impl IoMode
 #[derive(Default, Clone, PartialEq, Eq)]
 pub struct IoError
 {
-    pub path: Path,
+    pub path: PathBuf,
     pub mode: Option<IoMode>,
     pub kind: FileError,
 }
 impl IoError
 {
-    pub fn new(path: impl Into<Path>, kind: impl Into<FileError>) -> Self
+    pub fn new(path: impl Into<PathBuf>, kind: impl Into<FileError>) -> Self
     {
         Self { path: path.into(), kind: kind.into(), mode: None }
     }
@@ -45,7 +45,7 @@ impl IoError
 impl Display for IoError
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "IO error at {} ", self.path)?;
+        write!(f, "IO error at {:?} ", self.path)?;
         if let Some(mode) = self.mode
         {
             match mode
@@ -98,6 +98,7 @@ pub enum FileError
 }
 impl From<EncodeError> for FileError { fn from(value: EncodeError) -> Self { Self::Encoding(value) } }
 impl From<String> for FileError { fn from(custom: String) -> Self { Self::Custom(custom.into()) } }
+impl From<&'static str> for FileError { fn from(custom: &'static str) -> Self { Self::Custom(custom.into()) } }
 
 impl From<FromUtf8Error> for FileError { fn from(value: FromUtf8Error) -> Self { value.utf8_error().into() } }
 impl From<Utf8Error> for FileError { fn from(value: Utf8Error) -> Self { FileError::Encoding(value.into()) } }

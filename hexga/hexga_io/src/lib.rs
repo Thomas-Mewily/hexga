@@ -9,7 +9,6 @@ use std::fmt::Display;
 use std::{str::Utf8Error, string::FromUtf8Error};
 use std::{borrow::{Cow, Borrow, BorrowMut}, ffi::OsStr, iter::FusedIterator, ops::*};
 use hexga_encoding::{Base64Error, EncodeError, BinUrlData, prelude::*};
-type StdPath = std::path::Path;
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
@@ -24,10 +23,13 @@ mod serde_impl;
 #[cfg(feature = "serde")]
 pub use serde_impl::*;
 
-mod fs_path;
-pub use fs_path::*;
+//mod fs_path;
+//pub use fs_path::*;
 
-//pub use std::path::{Path,PathBuf};
+mod path_extension;
+pub use path_extension::*;
+
+pub use std::path::{Path,PathBuf};
 
 mod io;
 pub use io::*;
@@ -43,7 +45,8 @@ pub mod prelude
     pub use super::{
         io::*,
         result::*,
-        fs_path::*,
+        PathExtension,
+        //fs_path::*,
     };
 
     #[cfg(feature = "serde")]
@@ -51,3 +54,5 @@ pub mod prelude
         serde_impl::*
     };
 }
+
+

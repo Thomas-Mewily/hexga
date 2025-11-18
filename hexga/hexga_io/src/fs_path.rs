@@ -5,31 +5,31 @@ use super::*;
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[cfg_attr(feature = "serde", serde(transparent))]
 #[derive(Default, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Path
+pub struct PathBuf
 {
     inner: String
 }
-impl Into<Path> for &Path { fn into(self) -> Path { self.clone() } }
-impl From<&str> for Path { fn from(value: &str) -> Self { Self::from(value.to_owned()) } }
-impl From<&path> for Path { fn from(value: &path) -> Self { value.to_owned() } }
-impl From<String> for Path { fn from(value: String) -> Self { Self::new(value) } }
-impl From<Path> for String { fn from(value: Path) -> Self { value.inner } }
-impl From<&path> for String { fn from(value: &path) -> Self { value.as_str().into() } }
-impl PartialEq<path> for Path
+impl Into<PathBuf> for &PathBuf { fn into(self) -> PathBuf { self.clone() } }
+impl From<&str> for PathBuf { fn from(value: &str) -> Self { Self::from(value.to_owned()) } }
+impl From<&Path> for PathBuf { fn from(value: &Path) -> Self { value.to_owned() } }
+impl From<String> for PathBuf { fn from(value: String) -> Self { Self::new(value) } }
+impl From<PathBuf> for String { fn from(value: PathBuf) -> Self { value.inner } }
+impl From<&Path> for String { fn from(value: &Path) -> Self { value.as_str().into() } }
+impl PartialEq<Path> for PathBuf
 {
     #[inline(always)]
-    fn eq(&self, other: &path) -> bool { (**self).eq(other) }
+    fn eq(&self, other: &Path) -> bool { (**self).eq(other) }
     #[inline(always)]
-    fn ne(&self, other: &path) -> bool { (**self).ne(other) }
+    fn ne(&self, other: &Path) -> bool { (**self).ne(other) }
 }
-impl PartialEq<str> for Path
+impl PartialEq<str> for PathBuf
 {
     #[inline(always)]
     fn eq(&self, other: &str) -> bool { self.as_str().eq(other) }
     #[inline(always)]
     fn ne(&self, other: &str) -> bool { self.as_str().ne(other) }
 }
-impl PartialEq<String> for Path
+impl PartialEq<String> for PathBuf
 {
     #[inline(always)]
     fn eq(&self, other: &String) -> bool { self.inner.eq(other) }
@@ -38,7 +38,7 @@ impl PartialEq<String> for Path
 }
 
 
-impl Path
+impl PathBuf
 {
     pub const fn empty() -> Self { Self{ inner: String::new() }}
 
@@ -111,7 +111,7 @@ impl Path
         self.inner.clear();
     }
 
-    pub fn push(&mut self, right: &path)
+    pub fn push(&mut self, right: &Path)
     {
         if right.is_empty() { return; }
         if self.is_empty()
@@ -129,63 +129,63 @@ impl Path
 }
 
 
-impl<T> Div<T> for &Path where T: AsRef<str>
+impl<T> Div<T> for &PathBuf where T: AsRef<str>
 {
-    type Output=Path;
+    type Output=PathBuf;
     fn div(self, rhs: T) -> Self::Output {
         self.to_owned() / rhs
     }
 }
-impl<T> Div<T> for Path where T: AsRef<str>
+impl<T> Div<T> for PathBuf where T: AsRef<str>
 {
-    type Output=Path;
+    type Output=PathBuf;
     fn div(mut self, rhs: T) -> Self::Output {
-        self.push(&Path::new(rhs.as_ref().to_owned()));
+        self.push(&PathBuf::new(rhs.as_ref().to_owned()));
         self
     }
 }
-impl<T> DivAssign<T> for Path where T: AsRef<str>
+impl<T> DivAssign<T> for PathBuf where T: AsRef<str>
 {
     fn div_assign(&mut self, rhs: T) {
-        self.push(&Path::new(rhs.as_ref().to_owned()));
+        self.push(&PathBuf::new(rhs.as_ref().to_owned()));
     }
 }
 
 
-impl<T> Div<T> for &path where T: AsRef<str>
+impl<T> Div<T> for &Path where T: AsRef<str>
 {
-    type Output=Path;
+    type Output=PathBuf;
     fn div(self, rhs: T) -> Self::Output {
         self.to_owned() / rhs
     }
 }
 
 
-impl std::fmt::Debug for Path
+impl std::fmt::Debug for PathBuf
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.inner)
     }
 }
-impl std::fmt::Display for Path
+impl std::fmt::Display for PathBuf
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.inner)
     }
 }
 
-impl Deref for Path
+impl Deref for PathBuf
 {
-    type Target=path;
+    type Target=Path;
     #[inline(always)]
     fn deref(&self) -> &Self::Target {
-        path::from_str(&self.inner)
+        Path::from_str(&self.inner)
     }
 }
-impl DerefMut for Path {
+impl DerefMut for PathBuf {
     #[inline(always)]
     fn deref_mut(&mut self) -> &mut Self::Target {
-        path::from_str_mut(&mut self.inner)
+        Path::from_str_mut(&mut self.inner)
     }
 }
 
@@ -196,23 +196,23 @@ impl DerefMut for Path {
 #[cfg_attr(feature = "serde", derive(Serialize))]
 #[cfg_attr(feature = "serde", serde(transparent))]
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct path
+pub struct Path
 {
     path: str
 }
-impl std::fmt::Debug for path
+impl std::fmt::Debug for Path
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", &self.path)
     }
 }
-impl std::fmt::Display for path
+impl std::fmt::Display for Path
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", &self.path)
     }
 }
-impl PartialEq<str> for path
+impl PartialEq<str> for Path
 {
     #[inline(always)]
     fn eq(&self, other: &str) -> bool {
@@ -223,7 +223,7 @@ impl PartialEq<str> for path
         self.as_str().ne(other)
     }
 }
-impl PartialEq<String> for path
+impl PartialEq<String> for Path
 {
     #[inline(always)]
     fn eq(&self, other: &String) -> bool {
@@ -234,33 +234,33 @@ impl PartialEq<String> for path
         self.path.ne(other)
     }
 }
-impl PartialEq<Path> for path
+impl PartialEq<PathBuf> for Path
 {
     #[inline(always)]
-    fn eq(&self, other: &Path) -> bool {
+    fn eq(&self, other: &PathBuf) -> bool {
         self.path.eq(&other.inner)
     }
     #[inline(always)]
-    fn ne(&self, other: &Path) -> bool {
+    fn ne(&self, other: &PathBuf) -> bool {
         self.path.ne(&other.inner)
     }
 }
 
 
-impl AsRef<std::path::Path> for path
-{
-    fn as_ref(&self) -> &std::path::Path {
-        std::path::Path::new(self.as_str())
-    }
-}
 impl AsRef<std::path::Path> for Path
 {
     fn as_ref(&self) -> &std::path::Path {
         std::path::Path::new(self.as_str())
     }
 }
+impl AsRef<std::path::Path> for PathBuf
+{
+    fn as_ref(&self) -> &std::path::Path {
+        std::path::Path::new(self.as_str())
+    }
+}
 
-impl path
+impl Path
 {
     pub const fn empty() -> &'static Self { Self::from_str("") }
 
@@ -270,7 +270,7 @@ impl path
     pub const fn from_str(s: &str) -> &Self
     {
         // SAFETY: `path` is a `repr(transparent)`-like view over String's bytes
-        unsafe { &*(s as *const str as *const path) }
+        unsafe { &*(s as *const str as *const Path) }
     }
 
     #[inline(always)]
@@ -278,10 +278,10 @@ impl path
     {
         // SAFETY: path is a transparent wrapper around str
         // We have &mut self.inner, so it's safe to produce a &mut path
-        unsafe { &mut *(s as *mut str as *mut path) }
+        unsafe { &mut *(s as *mut str as *mut Path) }
     }
 }
-impl path
+impl Path
 {
     pub fn is_empty(&self) -> bool { self.as_str().is_empty() }
 
@@ -329,7 +329,7 @@ impl path
     /// assert_eq!(Path::new("foo/bar").without_extension().as_str(), "foo/bar");
     /// assert_eq!(Path::new("foo/.hidden").without_extension().as_str(), "foo/.hidden");
     /// ```
-    pub fn without_extension(&self) -> &path
+    pub fn without_extension(&self) -> &Path
     {
         let s = self.as_str();
 
@@ -444,7 +444,7 @@ impl path
     /// assert_eq!(Path::new("foo/archive").with_extension("tar.gz").as_str(), "foo/archive.tar.gz");
     /// assert_eq!(Path::new("foo/archive").with_extension(".tar.gz").as_str(), "foo/archive.tar.gz");
     /// ```
-    pub fn with_extension(&self, extension: &extension) -> Path
+    pub fn with_extension(&self, extension: &extension) -> PathBuf
     {
         self.with_extensions([extension.strip_prefix('.').unwrap_or(extension)])
     }
@@ -475,7 +475,7 @@ impl path
     ///     "foo/bar"
     /// );
     /// ```
-    pub fn with_extensions<'a, E>(&'a self, extensions: E) -> Path where E: IntoIterator<Item = &'a extension>
+    pub fn with_extensions<'a, E>(&'a self, extensions: E) -> PathBuf where E: IntoIterator<Item = &'a extension>
     {
         let mut path = self.without_extension().to_owned();
         for extension in extensions.into_iter()
@@ -500,7 +500,7 @@ impl path
     /// assert_eq!(Path::new("").components().collect::<Vec<_>>(), Vec::<&path>::new());
     /// assert_eq!(Path::new("/foo/bar/").components().collect::<Vec<_>>(), vec!["", "foo", "bar", ""]);
     /// ```
-    pub fn components(&self) -> impl Iterator<Item = &path> + DoubleEndedIterator + FusedIterator
+    pub fn components(&self) -> impl Iterator<Item = &Path> + DoubleEndedIterator + FusedIterator
     {
         std::iter::once(self.as_str())
             .filter(|s| !s.is_empty()) // skip empty path
@@ -542,7 +542,7 @@ impl path
     /// This differs from [`Path::iter()`](Self::iter), which yields only individual
     /// path components (e.g., `"foo"`, `"bar"`, `"baz.txt"`), while this method
     /// yields cumulative subpaths (e.g., `"foo"`, `"foo/bar"`, `"foo/bar/baz.txt"`).
-    pub fn iter_prefixes(&self) -> impl Iterator<Item = &path> + DoubleEndedIterator + FusedIterator
+    pub fn iter_prefixes(&self) -> impl Iterator<Item = &Path> + DoubleEndedIterator + FusedIterator
     {
         let s = self.as_str();
 
@@ -558,9 +558,9 @@ impl path
     }
 
     /// Returns the parent directory of this path using [`Self::parent`], or an empty path if none exists.
-    pub fn parent_or_empty(&self) -> &path
+    pub fn parent_or_empty(&self) -> &Path
     {
-        self.parent().unwrap_or( path::from_str(""))
+        self.parent().unwrap_or( Path::from_str(""))
     }
 
     /// Returns the parent directory of this path, if it exists.
@@ -590,19 +590,19 @@ impl path
     /// let path = Path::new("/");
     /// assert_eq!(path.parent(), None);
     /// ```
-    pub fn parent(&self) -> Option<&path> {
+    pub fn parent(&self) -> Option<&Path> {
 
         let s = self.as_str();
 
         match s.rfind('/') {
             Some(pos) if pos > 0 => {
-                Some(path::from_str(&s[..pos]))
+                Some(Path::from_str(&s[..pos]))
             }
             Some(_) | None => None,
         }
     }
 
-    pub fn push(&self, right: &Self) -> Path
+    pub fn push(&self, right: &Self) -> PathBuf
     {
         self.to_owned() / right
     }
@@ -651,7 +651,7 @@ impl path
     /// assert_eq!(Path::new("foo/archive.tar.gz").with_name("new").as_str(), "foo/new.tar.gz");
     /// assert_eq!(Path::new("file").with_name("newfile").as_str(), "newfile");
     /// ```
-    pub fn with_name(&self, name: &str) -> Path
+    pub fn with_name(&self, name: &str) -> PathBuf
     {
         let s = self.as_str();
 
@@ -672,7 +672,7 @@ impl path
         result.push_str(parent);
         result.push_str(name);
         result.push_str(ext);
-        Path::new(result)
+        PathBuf::new(result)
     }
 
     /// Returns the full file name (including all extensions) of the path.
@@ -695,75 +695,75 @@ impl path
         self.as_str().rsplit('/').next().unwrap_or(&self.path)
     }
 }
-impl<'a> From<&'a str> for &'a path
+impl<'a> From<&'a str> for &'a Path
 {
     fn from(value: &'a str) -> Self
     {
-        path::from_str(value)
+        Path::from_str(value)
     }
 }
-impl<'a> From<&'a mut str> for &'a mut path
+impl<'a> From<&'a mut str> for &'a mut Path
 {
     fn from(value: &'a mut str) -> Self
     {
-        path::from_str_mut(value)
+        Path::from_str_mut(value)
     }
 }
-impl<'a> From<&'a path> for &'a str
+impl<'a> From<&'a Path> for &'a str
 {
-    fn from(value: &'a path) -> Self
+    fn from(value: &'a Path) -> Self
     {
         &value.path
     }
 }
-impl<'a> From<&'a mut path> for &'a mut str
+impl<'a> From<&'a mut Path> for &'a mut str
 {
-    fn from(value: &'a mut path) -> Self
+    fn from(value: &'a mut Path) -> Self
     {
         &mut value.path
     }
 }
 
 
-impl AsRef<str> for path
+impl AsRef<str> for Path
 {
     fn as_ref(&self) -> &str {
         &self.path
     }
 }
-impl AsRef<path> for path
+impl AsRef<Path> for Path
 {
-    fn as_ref(&self) -> &path {
+    fn as_ref(&self) -> &Path {
         self
     }
 }
-impl AsRef<path> for str
+impl AsRef<Path> for str
 {
-    fn as_ref(&self) -> &path {
+    fn as_ref(&self) -> &Path {
         self.path()
     }
 }
-impl AsRef<path> for String
+impl AsRef<Path> for String
 {
-    fn as_ref(&self) -> &path {
+    fn as_ref(&self) -> &Path {
         self.path()
     }
 }
-impl AsMut<str> for path
+impl AsMut<str> for Path
 {
     fn as_mut(&mut self) -> &mut str {
         &mut self.path
     }
 }
-impl ToOwned for path
+impl ToOwned for Path
 {
-    type Owned=Path;
+    type Owned=PathBuf;
 
     fn to_owned(&self) -> Self::Owned {
-        Path::new(self.path.to_owned())
+        PathBuf::new(self.path.to_owned())
     }
 }
-impl AsRef<OsStr> for path
+impl AsRef<OsStr> for Path
 {
     fn as_ref(&self) -> &OsStr {
         self.path.as_ref()
@@ -772,43 +772,43 @@ impl AsRef<OsStr> for path
 
 
 
-impl Borrow<path> for Path
+impl Borrow<Path> for PathBuf
 {
-    fn borrow(&self) -> &path {
+    fn borrow(&self) -> &Path {
         self.deref()
     }
 }
-impl BorrowMut<path> for Path
+impl BorrowMut<Path> for PathBuf
 {
-    fn borrow_mut(&mut self) -> &mut path {
+    fn borrow_mut(&mut self) -> &mut Path {
         self.deref_mut()
     }
 }
-impl AsRef<path> for Path
+impl AsRef<Path> for PathBuf
 {
-    fn as_ref(&self) -> &path {
+    fn as_ref(&self) -> &Path {
         self.deref()
     }
 }
-impl AsMut<path> for Path
+impl AsMut<Path> for PathBuf
 {
-    fn as_mut(&mut self) -> &mut path {
+    fn as_mut(&mut self) -> &mut Path {
         self.deref_mut()
     }
 }
-impl AsRef<str> for Path
+impl AsRef<str> for PathBuf
 {
     fn as_ref(&self) -> &str {
         &self.inner
     }
 }
-impl AsMut<str> for Path
+impl AsMut<str> for PathBuf
 {
     fn as_mut(&mut self) -> &mut str {
         &mut self.inner
     }
 }
-impl AsRef<OsStr> for Path
+impl AsRef<OsStr> for PathBuf
 {
     fn as_ref(&self) -> &OsStr {
         self.inner.as_ref()
@@ -823,14 +823,14 @@ pub trait ToPathSlice
 }
 impl<'a> ToPathSlice for &'a str
 {
-    type Output=&'a path;
+    type Output=&'a Path;
     fn path(self) -> Self::Output {
         self.into()
     }
 }
 impl<'a> ToPathSlice for &'a mut str
 {
-    type Output=&'a mut path;
+    type Output=&'a mut Path;
     fn path(self) -> Self::Output {
         self.into()
     }
