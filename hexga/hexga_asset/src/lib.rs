@@ -18,6 +18,11 @@ use hexga_encoding::prelude::*;
 use hexga_io::prelude::*;
 use hexga_singleton::{Singleton, prelude::*};
 
+pub mod prelude
+{
+    pub use super::{Asset};
+}
+
 #[cfg(feature = "serde")]
 pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
@@ -33,31 +38,102 @@ impl AssetsManagerUntyped
 {
     pub fn manager<T>(&self) -> AssetManager<T> where T: Async
     {
-        let type_id = TypeId::of::<AssetManager<T>>();
+        let type_id = TypeId::of::<T>();
         {
             let assets_read = self.assets.read().unwrap();
             if let Some(any_manager) = assets_read.get(&type_id)
             {
-                let manager = any_manager.downcast_ref::<AssetManager<T>>().unwrap();
-                return manager.clone();
+                let asset_manager = any_manager.downcast_ref::<AssetManager<T>>().unwrap();
+                return asset_manager.clone();
             }
         }
 
         let mut assets_write = self.assets.write().unwrap();
         let manager = AssetManager::<T>{ inner: Arc::new(RwLock::new(AssetManagerInner::new())) };
-        assets_write.insert(type_id, manager.inner.clone());
+        assets_write.insert(type_id, Arc::new(manager.clone()));
         manager
     }
 }
 
+pub(crate) type AssetManagerArcRwLock<T> = Arc<RwLock<AssetManagerInner<T>>>;
 pub struct AssetManager<T> where T: Async
 {
-    inner: Arc<RwLock<AssetManagerInner<T>>>,
+    inner: AssetManagerArcRwLock<T>,
 }
 impl<T> Clone for AssetManager<T> where T: Async
 {
     fn clone(&self) -> Self {
         Self { inner: self.inner.clone() }
+    }
+}
+// IDEA : make a feature flag for non async loading ?
+impl<T> AssetManager<T> where T: Async
+{
+    pub(crate) fn load<P>(&self, path: P) -> Asset<T> where P: AsRef<Path>, T: Load
+    {
+        let pathbuf = path.as_ref().to_owned();
+        Self::load_or_create(&self, path, || AssetInit::with_state(AssetState::Error(IoError::new(pathbuf, FileError::NotFound))))
+    }
+
+    pub(crate) fn load_or_create<P, F, O>(&self, path: P, init: F) -> Asset<T>
+    where
+        P: AsRef<Path>,
+        F: FnOnce() -> O + 'static,
+        O: Into<AssetInit<T>>,
+        T: Load
+    {
+        let mut need_to_be_loaded = false;
+        let asset = self.get_or_generate::<&Path,_,_,_>(AssetPersistance::Persistant(path.as_ref()),|| { need_to_be_loaded = true; AssetInit::with_state(AssetState::Loading) });
+
+        if need_to_be_loaded || asset.state().is_error()
+        {
+            let path = path.as_ref().to_owned();
+
+            Io.load_bytes_async(path.clone(), |result: Result<Vec<u8>, IoError>|
+                {
+                    let extension = path.extension_or_empty();
+                    match result
+                    {
+                        Ok(bytes) => {
+                            let load_result = T::load_from_bytes(&bytes, extension).map_err(|e| IoError::new(path.clone(), e).when_reading());
+                            Asset::<T>::update_or_create(path, AssetInit::with_state(load_result.into()));
+                        },
+                        Err(err) =>
+                        {
+                            Self::_load_or_create_try_extensions_async( 0, path.clone(), init);
+                        },
+                    }
+                }
+            );
+        }
+        asset
+    }
+
+    pub(crate) fn _load_or_create_try_extensions_async<F, O>(extension_index: usize, path: PathBuf, init: F)
+    where
+        T: Load,
+        F: FnOnce() -> O + 'static,
+        O: Into<AssetInit<T>>,
+    {
+        let Some(extension) = T::load_extensions().nth(extension_index) else
+        {
+            Asset::<T>::update_or_create(&path, init().into());
+            return;
+        };
+        let next_path = path.with_extension(extension);
+
+        Io.load_bytes_async(next_path, move |result| {
+            match result
+            {
+                Ok(bytes) => {
+                    let load_result = T::load_from_bytes(&bytes, extension).map_err(|e| IoError::new(path.clone(), e).when_reading());
+                    Asset::<T>::update_or_create(path, AssetInit::with_state(load_result.into()));
+                },
+                Err(_) => {
+                    Self::_load_or_create_try_extensions_async(extension_index+1, path, init);
+                },
+            }
+        });
     }
 }
 impl<T> AssetManager<T> where T: Async
@@ -67,56 +143,6 @@ impl<T> AssetManager<T> where T: Async
 
     pub fn loading_value(&self) -> AssetWeak<T> { self.inner.read().unwrap().loading.clone() }
     pub fn set_loading_value(&self, value: AssetWeak<T>) -> &Self { self.inner.write().unwrap().loading = value; self }
-
-
-    pub(crate) fn load<P>(&self, path: P) -> Asset<T> where P: AsRef<Path>, T: Load
-    {
-        let mut need_to_be_loaded = false;
-        let asset = self.get_or_generate::<P,_,_,_>(AssetPersistance::Persistant(path),|| { need_to_be_loaded = true; AssetInit::with_state(AssetState::Loading) });
-
-        if need_to_be_loaded || asset.state().is_error()
-        {
-            let path = path.as_ref().to_owned();
-            Io.load_bytes_async(path, |result|
-                {
-                    T::load_from_disk(path)
-                    match result
-                    {
-                        Ok(bytes) => T::load_from_bytes(bytes, extension),
-                        Err(err) => todo!(),
-                    }
-
-                    Asset::<T>::update_or_create(path, AssetInit::with_state(result.into()));
-                }
-            );
-        }
-        asset
-    }
-
-    pub(crate) fn load_or_create<P,F,O>(&self, path: P, init: F) -> Asset<T>
-        where
-        P: AsRef<Path>,
-        F: FnOnce() -> O,
-        O: Into<AssetInit<T>>
-    {
-        let mut need_to_be_loaded = false;
-        let asset = self.get_or_generate::<P,_,_,_>(AssetPersistance::Persistant(path),|| { need_to_be_loaded = true; AssetInit::with_state(AssetState::Loading) });
-
-        if need_to_be_loaded || asset.state().is_error()
-        {
-            let path = path.as_ref().to_owned();
-            Io.load_bytes_async(path, |result|
-                {
-                    match result
-                    {
-                        Ok(value) => Asset::<T>::update_or_create(path, AssetInit::new(value)),
-                        Err(err) => Asset::<T>::update_or_create(path, init().into()),
-                    }
-                }
-            );
-        }
-        asset
-    }
 
 
     pub(crate) fn update_or_create<P,Persis,I>(&self, persistance: Persis, value: I) -> Asset<T>
@@ -267,6 +293,19 @@ impl<T> Asset<T> where T: Async
     pub(crate) fn _new(state: AssetState<T>, persistance: AssetPersistance) -> Self
     {
         Self { inner: Arc::new(RwLock::new(AssetData { state, persistance })) }
+    }
+
+    pub fn ptr_eq(&self, other: &Asset<T>) -> bool
+    {
+        Arc::ptr_eq(&self.inner, &other.inner)
+    }
+    pub fn strong_count(&self) -> usize
+    {
+        Arc::strong_count(&self.inner)
+    }
+    pub fn weak_count(&self) -> usize
+    {
+        Arc::weak_count(&self.inner)
     }
 
     /// Returns a reference to the asset value only if it is in a loaded state.
@@ -434,22 +473,23 @@ impl<T> Asset<T> where T: Async
     /// ```ignore
     /// let texture = manager.load("textures/character");
     /// ```
-    pub fn load<P>(&self, path: P) -> Asset<T> where P: AsRef<Path> { Self::manager().load(path) }
+    pub fn load<P>(path: P) -> Asset<T> where P: AsRef<Path>, T: Load { Self::manager().load(path) }
 
 
     /// Loads an asset or creates it if it doesn't exist.
     ///
     /// Attempts to load the asset from the specified path. If the asset doesn't exist
     /// or fails to load, creates a new asset using the provided initialization function.
-    pub fn load_or_create<P,F,O>(&self, path: P, init: F) -> Asset<T>
+    pub fn load_or_create<P,F,O>(path: P, init: F) -> Asset<T>
             where
             P: AsRef<Path>,
-            F: FnOnce() -> O,
-            O: Into<AssetInit<T>>
+            F: FnOnce() -> O + 'static,
+            O: Into<AssetInit<T>>,
+            T: Load
     {
         Self::manager().load_or_create(path, init)
     }
-    pub fn update_or_create<P,Persis,I>(&self, persistance: Persis, value: I) -> Asset<T>
+    pub fn update_or_create<P,Persis,I>(persistance: Persis, value: I) -> Asset<T>
         where
         P: AsRef<Path>,
         Persis: Into<AssetPersistance<P>>,
@@ -458,7 +498,7 @@ impl<T> Asset<T> where T: Async
         Self::manager().update_or_create(persistance, value)
     }
 
-    pub fn get_or_generate<P,Persis,F,O>(&self, persistance: Persis, init: F) -> Asset<T>
+    pub fn get_or_generate<P,Persis,F,O>(persistance: Persis, init: F) -> Asset<T>
         where
         P: AsRef<Path>,
         Persis: Into<AssetPersistance<P>>,
@@ -496,15 +536,30 @@ impl<T> AssetWeak<T> where T: Async
             None => None,
         }
     }
+
+    pub fn ptr_eq(&self, other: &AssetWeak<T>) -> bool
+    {
+        Weak::ptr_eq(&self.inner, &other.inner)
+    }
+    pub fn strong_count(&self) -> usize
+    {
+        Weak::strong_count(&self.inner)
+    }
+    pub fn weak_count(&self) -> usize
+    {
+        Weak::weak_count(&self.inner)
+    }
 }
 
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) struct AssetData<T> where T: Async
 {
     state: AssetState<T>,
     persistance: AssetPersistance,
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum AssetPersistance<P=PathBuf>
 {
     Persistant(P),
@@ -517,6 +572,7 @@ impl<P> From<P> for AssetPersistance<P>
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum AssetState<T> where T: Async
 {
     Loading,
@@ -583,6 +639,7 @@ pub enum AssetLifetime
 }
 
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct AssetInit<T> where T: Async
 {
     pub state : AssetState<T>,
