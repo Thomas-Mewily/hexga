@@ -397,5 +397,4 @@ impl<T> AssetState<T> where T: Async
             _ => None,
         }
     }
-
 }

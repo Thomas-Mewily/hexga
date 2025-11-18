@@ -32,6 +32,7 @@ struct Asset<T>
 }
 ```
 - ✅ multi threaded
+- ✅ can live editing asset without having to clone them
 - ❌ locking when reading, can't impl deref
 - 🟡 (mixed) locked when writing (should be ok)
 
@@ -69,11 +70,11 @@ struct AssetData<T>
 }
 ```
 - ✅ multi threaded
-- ✅ deref
+- ✅❌ deref ? Reference can be dangling if deref call are made
 - ✅ no "locking" when reading, but need to compare the generation
 - ✅ fast way to write/swap
 
-- How to update the cache from a &self ? It is safe ?
+- How to update the cache from a &self ? It is safe ? No
 -> There will be a lock in the singleton. Make sure 2 thread don't replace the same cache at the same time.
 
 
@@ -91,7 +92,10 @@ Return a reference to the cache
 
 
 
-1) Asset are immuable, and hot reload produce a new asset
+Other idea:
+
+
+- Asset are immuable, and hot reload produce a new asset
 
 ```rust
 impl<T> Asset<T>
@@ -100,12 +104,6 @@ impl<T> Asset<T>
 }
 ```
 -❌ hard to "factorize" the same asset when hot reloading
+-❌ Can't load an asset in a async way (goodbye wasm file loading)
 
-
-
-
-
-
-Other idea:
-
-writing/hot reloading an asset can only be done it the main thread, but reading it can be done in multiple thread
+- writing/hot reloading an asset can only be done it the main thread, but reading it can be done in multiple thread ?

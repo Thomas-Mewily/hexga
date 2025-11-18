@@ -5,23 +5,23 @@ pub struct Io;
 
 impl Io
 {
-    pub fn load_bytes(self, path: &Path) -> IoResult<Vec<u8>>
+    pub fn load_bytes<P>(self, path: P) -> IoResult<Vec<u8>> where P: AsRef<Path>
     {
-        fs::load_bytes(path)
+        fs::load_bytes(path.as_ref())
     }
 
-    pub fn load_string(self, path: &Path) -> IoResult<String>
+    pub fn load_string<P>(self, path: P) -> IoResult<String> where P: AsRef<Path>
     {
-        let bytes = fs::load_bytes(path)?;
-        String::from_utf8(bytes).map_err(|e| IoError::new(path, e))
+        let bytes = fs::load_bytes(path.as_ref())?;
+        String::from_utf8(bytes).map_err(|e| IoError::new(path.as_ref(), e))
     }
 
-    pub fn save_bytes(self, path: &Path, bytes: &[u8]) -> IoResult
+    pub fn save_bytes<P>(self, path: P, bytes: &[u8]) -> IoResult where P: AsRef<Path>
     {
-        fs::save_bytes(path, bytes)
+        fs::save_bytes(path.as_ref(), bytes)
     }
 
-    pub fn save_str(self, path: &Path, str: &str) -> IoResult
+    pub fn save_str<P>(self, path: P, str: &str) -> IoResult where P: AsRef<Path>
     {
         self.save_bytes(path, str.as_bytes())
     }
@@ -29,15 +29,19 @@ impl Io
 
 
 
-    pub fn load_bytes_async<F>(self, path: &Path, on_loaded: F)
-        where F: FnOnce(IoResult<Vec<u8>>) + 'static
+    pub fn load_bytes_async<P,F>(self, path: P, on_loaded: F)
+        where
+        P: AsRef<Path>,
+        F: FnOnce(IoResult<Vec<u8>>) + 'static
     {
-        fs::load_bytes_async(path, on_loaded)
+        fs::load_bytes_async(path.as_ref(), on_loaded)
     }
 
-    pub fn save_bytes_async<F>(self, path: &Path, bytes: Vec<u8>, on_saved: F)
-        where F: FnOnce(IoResult) + 'static
+    pub fn save_bytes_async<P,F>(self, path: P, bytes: Vec<u8>, on_saved: F)
+        where
+        P: AsRef<Path>,
+        F: FnOnce(IoResult) + 'static
     {
-        fs::save_bytes_async(path, bytes, on_saved)
+        fs::save_bytes_async(path.as_ref(), bytes, on_saved)
     }
 }
