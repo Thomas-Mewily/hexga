@@ -1,3 +1,5 @@
+use hexga_core::cell::SingleThread;
+
 use super::*;
 
 pub type SingletonSingleThread<T> = Singleton<SingleThread<LazyCell<T>>>;
@@ -7,7 +9,7 @@ pub type SingletonMultiThread<T> = Singleton<RwLock<LazyLock<T>>>;
 
 pub struct Singleton<T>
 {
-    inner: UnsafeCell<T>,
+    inner: T,
 }
 impl<T> From<T> for Singleton<T>
 {
@@ -17,48 +19,46 @@ impl<T> From<T> for Singleton<T>
 }
 impl<T> Debug for Singleton<T> where T: Debug
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Singleton({:?})", unsafe { self.inner.as_ref_unchecked() })
-    }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "Singleton({:?})", self.inner) }
 }
 impl<T> Deref for Singleton<T> where T: Deref
 {
     type Target=T::Target;
     #[inline(always)]
     #[track_caller]
-    fn deref(&self) -> &Self::Target {
-        unsafe { self.inner.as_ref_unchecked().deref() }
-    }
+    fn deref(&self) -> &Self::Target { self.inner.deref() }
 }
 impl<T> DerefMut for Singleton<T> where T: DerefMut
 {
     #[inline(always)]
     #[track_caller]
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { self.inner.as_mut_unchecked().deref_mut() }
-    }
+    fn deref_mut(&mut self) -> &mut Self::Target { self.inner.deref_mut() }
 }
+impl<'a,T> ReadGuard for &'a Singleton<T> where &'a T: ReadGuard
+{
+    type Target = <&'a T as ReadGuard>::Target;
+    type ReadGuard = <&'a T as ReadGuard>::ReadGuard;
+    fn read(self) -> Self::ReadGuard { self.inner.read() }
+}
+impl<'a,T> TryReadGuard for &'a Singleton<T> where &'a T: TryReadGuard
+{
+    type Error = <&'a T as TryReadGuard>::Error;
+    fn try_read(self) -> Result<Self::ReadGuard, Self::Error> { self.inner.try_read() }
+}
+impl<'a,T> WriteGuard for &'a Singleton<T> where &'a T: WriteGuard
+{
+    type WriteGuard = <&'a T as WriteGuard>::WriteGuard;
+    fn write(self) -> Self::WriteGuard { self.inner.write() }
+}
+impl<'a,T> TryWriteGuard for &'a Singleton<T> where &'a T: TryWriteGuard
+{
+    type Error = <&'a T as TryWriteGuard>::Error;
+    fn try_write(self) -> Result<Self::WriteGuard, Self::Error> { self.inner.try_write() }
+}
+
 impl<T> Singleton<T>
 {
-    pub const fn from_inner(value: T) -> Self { Self { inner: UnsafeCell::new(value) } }
-
-    pub fn try_instance(&self) -> Result<<&T as TryBorrow>::Borrow, <&T as TryBorrow>::Error> where for<'a> &'a T: TryBorrow
-    {
-        unsafe { self.inner.as_ref_unchecked().try_borrow() }
-    }
-    pub fn instance(&self) -> <&T as TryBorrow>::Borrow where for<'a> &'a T: TryBorrow
-    {
-        unsafe { self.inner.as_ref_unchecked().borrow() }
-    }
-
-    pub fn try_instance_mut(&self) -> Result<<&T as TryBorrowMut>::Borrow, <&T as TryBorrowMut>::Error> where for<'a> &'a T: TryBorrowMut
-    {
-        unsafe { self.inner.as_mut_unchecked().try_borrow_mut() }
-    }
-    pub fn instance_mut(&self) -> <&T as TryBorrowMut>::Borrow where for<'a> &'a T: TryBorrowMut
-    {
-        unsafe { self.inner.as_mut_unchecked().borrow_mut() }
-    }
+    pub const fn from_inner(inner: T) -> Self { Self { inner } }
 }
 
 unsafe impl<T> Sync for Singleton<T> where T: Sync {}

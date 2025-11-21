@@ -6,6 +6,7 @@ impl<T> Async for T where T: Send + Sync + 'static {}
 
 pub type AnyAsync = dyn Any + Send + Sync + 'static;
 
+/*
 pub struct DynFuture<T>
 {
     inner: Pin<Box<dyn Future<Output = T> + Send>>
@@ -26,3 +27,4 @@ impl<T> Future for DynFuture<T> {
         self.get_mut().inner.as_mut().poll(cx)
     }
 }
+*/

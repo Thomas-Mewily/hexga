@@ -1,4 +1,5 @@
 #![feature(get_disjoint_mut_helpers)]
+#![feature(unsafe_cell_access)]
 
 use std::collections::{LinkedList, VecDeque,HashMap,HashSet,BTreeMap,BTreeSet};
 use std::{ops::Index, slice::SliceIndex};
@@ -16,13 +17,14 @@ pub mod format;
 pub mod iter;
 pub mod utils;
 pub mod collections;
-pub mod accessor;
+//pub mod accessor;
 pub mod builder;
 pub mod traits;
 pub mod asynchrone;
-pub mod borrow;
+pub mod guard;
 pub mod wrapper;
 pub mod cfg;
+pub mod cell;
 
 use prelude::*;
 pub mod prelude
@@ -32,13 +34,11 @@ pub mod prelude
     pub use super::iter::*;
     pub use super::utils::*;
     pub use super::collections::*;
-    pub use super::accessor::*;
+    //pub use super::accessor::*;
     pub use super::builder::*;
     pub use super::traits::prelude::*;
     pub use super::asynchrone::*;
-    pub use super::borrow::*;
+    pub use super::guard::*;
     pub use super::wrapper::*;
-
-
     pub use std::collections::{HashMap,HashSet};
 }

@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_mut)]
+/*
 use hexga_engine::prelude::*;
 
 //
@@ -124,3 +125,6 @@ fn main()
 
     println!("Goodbye");
 }
+*/
+
+fn main() {}

@@ -8,7 +8,7 @@ static USER : SingletonMultiThread<CurrentUser> = SingletonMultiThread::new(|| C
 
 fn main() {
 
-    assert_eq!(USER.instance().name, "Foo");
-    USER.instance_mut().name = "Bar".to_owned();
-    assert_eq!(USER.instance().name, "Bar");
+    assert_eq!(USER.read().name, "Foo");
+    USER.write().name = "Bar".to_owned();
+    assert_eq!(USER.write().name, "Bar");
 }
