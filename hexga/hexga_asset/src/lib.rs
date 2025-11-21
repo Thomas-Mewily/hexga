@@ -24,6 +24,9 @@ pub use asset::*;
 mod asset_manager;
 pub use asset_manager::*;
 
+mod bytes;
+pub use bytes::*;
+
 #[cfg(feature = "serde")]
 pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 

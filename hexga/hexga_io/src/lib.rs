@@ -3,12 +3,10 @@
 //!
 //! It support custom user define extension and convertion,
 //! and it's also support common markup extension (json, ron, xml...).
-#![allow(unused_imports)]
-
 use std::fmt::Display;
 use std::{str::Utf8Error, string::FromUtf8Error};
-use std::{borrow::{Cow, Borrow, BorrowMut}, ffi::OsStr, iter::FusedIterator, ops::*};
-use hexga_encoding::{Base64Error, EncodeError, BinUrlData, prelude::*};
+use std:: ops::*;
+use hexga_encoding::{Base64Error, EncodeError, prelude::*};
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]

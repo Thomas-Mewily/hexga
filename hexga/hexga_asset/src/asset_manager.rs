@@ -8,7 +8,7 @@ pub(crate) static Assets : LazyLock<AssetsManagerUntyped> = LazyLock::new(|| Ass
 #[derive(Default)]
 pub(crate) struct AssetsManagerUntyped
 {
-    //bytes: RwLock<HashMap<PathBuf,Vec<u8>>>,
+    //bytes:  RwLock<HashMap<PathBuf,Vec<u8>>>,
     assets: RwLock<HashMap<TypeId, Arc<AnyAsync>>>,
 }
 impl AssetsManagerUntyped

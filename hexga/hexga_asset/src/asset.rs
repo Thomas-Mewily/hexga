@@ -419,3 +419,11 @@ impl<T> From<T> for AssetInit<T> where T: Async
         Self::new(value)
     }
 }
+
+/*
+pub struct PathData<T,P=PathBuf>
+{
+    pub path: P,
+    pub data: T,
+}
+*/
