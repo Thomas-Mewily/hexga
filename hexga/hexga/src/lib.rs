@@ -16,8 +16,8 @@ pub use hexga_encoding as encoding;
 #[cfg(feature = "serde")]
 pub use hexga_io::*;
 
-#[cfg(feature = "hexga_asset")]
-pub use hexga_asset as asset;
+//#[cfg(feature = "hexga_asset")]
+//pub use hexga_asset as asset;
 
 #[cfg(all(test, feature = "serde"))]
 mod serde_test;
@@ -57,8 +57,8 @@ pub mod prelude
         hexga_io::prelude::*,
     };
 
-    #[cfg(feature = "hexga_asset")]
-    pub use hexga_asset::prelude::*;
+    //#[cfg(feature = "hexga_asset")]
+    //pub use hexga_asset::prelude::*;
 
     #[allow(hidden_glob_reexports)]
     pub(crate) mod prelude {}

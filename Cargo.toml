@@ -22,6 +22,7 @@ hexga_encoding_derive  = { path = "./hexga/hexga_encoding_derive",     version =
 hexga_encoding         = { path = "./hexga/hexga_encoding",            version = "0.0.11-beta.43", default-features = false }
 hexga_io               = { path = "./hexga/hexga_io",                  version = "0.0.11-beta.43", default-features = false }
 hexga_asset            = { path = "./hexga/hexga_asset",               version = "0.0.11-beta.43", default-features = false }
+hexga_asset2           = { path = "./hexga/hexga_asset2",              version = "0.0.11-beta.43", default-features = false }
 hexga_bitflags         = { path = "./hexga/hexga_bitflags",            version = "0.0.11-beta.43", default-features = false }
 hexga_core             = { path = "./hexga/hexga_core",                version = "0.0.11-beta.43", default-features = false }
 hexga_generational     = { path = "./hexga/hexga_generational",        version = "0.0.11-beta.43", default-features = false }
