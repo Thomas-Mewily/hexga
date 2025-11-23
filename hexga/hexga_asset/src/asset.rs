@@ -419,6 +419,12 @@ impl<T> From<T> for AssetInit<T> where T: Async
         Self::new(value)
     }
 }
+impl<T> From<AssetState<T>> for AssetInit<T> where T: Async
+{
+    fn from(value: AssetState<T>) -> Self {
+        Self::with_state(value)
+    }
+}
 
 /*
 pub struct PathData<T,P=PathBuf>

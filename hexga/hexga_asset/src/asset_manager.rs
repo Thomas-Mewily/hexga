@@ -48,10 +48,34 @@ impl<T> AssetManager<T> where T: Async
 {
     pub(crate) fn load<P>(&self, path: P) -> Asset<T> where P: AsRef<Path>, T: Load
     {
-        let pathbuf = path.as_ref().to_owned();
-        Self::load_or_create(&self, path, || AssetInit::with_state(AssetState::Error(IoError::new(pathbuf, FileError::NotFound))))
+        self.load_or_create(&path, ||
+            {
+                match T::load(&path)
+                {
+                    Ok(value) => AssetState::Loaded(value),
+                    Err(err) => AssetState::Error(err),
+                }
+            })
     }
 
+    pub(crate) fn load_or_create<P, F, O>(&self, path: P, init: F) -> Asset<T>
+        where
+        P: AsRef<Path>,
+        F: FnOnce() -> O,
+        O: Into<AssetInit<T>>,
+        T: Load
+    {
+        let mut need_to_be_loaded = false;
+        let asset = self.get_or_generate::<&Path,_,_,_>(AssetPersistance::Persistant(path.as_ref()),|| { need_to_be_loaded = true; AssetInit::with_state(AssetState::Loading) });
+
+        if need_to_be_loaded || asset.state().is_error()
+        {
+            self.update_or_create::<P,_,_>(AssetPersistance::Persistant(path), init());
+        }
+        asset
+    }
+
+    /*
     pub(crate) fn load_or_create<P, F, O>(&self, path: P, init: F) -> Asset<T>
     where
         P: AsRef<Path>,
@@ -112,6 +136,7 @@ impl<T> AssetManager<T> where T: Async
             }
         });
     }
+    */
 }
 impl<T> AssetManager<T> where T: Async
 {
@@ -210,8 +235,8 @@ impl<T> AssetStorage<T> where T: Async
     {
         match self
         {
-            AssetStorage::Persistant(asset) => AssetLifetime::Persistant,
-            AssetStorage::ReferenceCounted(asset_weak) => AssetLifetime::ReferenceCounted,
+            AssetStorage::Persistant(_asset) => AssetLifetime::Persistant,
+            AssetStorage::ReferenceCounted(_asset_weak) => AssetLifetime::ReferenceCounted,
         }
     }
 }

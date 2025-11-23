@@ -1,5 +1,16 @@
 use super::*;
 
+pub(crate) fn load_bytes(path: &path) -> IoResult<Vec<u8>>
+{
+    Err(IoError::new(path, FileError::NotSupported).when_reading())
+}
+
+pub(crate) fn save_bytes(path: &path, bytes: &[u8]) -> IoResult
+{
+    Err(IoError::new(path, FileError::NotSupported).when_writing())
+}
+
+/*
 use std::{cell::RefCell, collections::HashMap, ffi::CString};
 
 
@@ -7,6 +18,8 @@ pub(crate) fn load_bytes(path: &path) -> IoResult<Vec<u8>>
 {
     Err(IoError::new(path, FileError::NotSupported).when_reading())
 }
+
+
 
 
 thread_local! {
@@ -63,3 +76,4 @@ pub(crate) fn save_bytes_async<F>(path: &path, bytes: Vec<u8>, on_saved: F)
 {
     on_saved(Err(IoError::new(path, FileError::NotSupported).when_writing()))
 }
+*/

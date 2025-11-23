@@ -1,8 +1,5 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
-#![allow(unused_variables)]
-#![allow(unused_mut)]
-
 #![feature(mapped_lock_guards)]
 // #![feature(clone_to_uninit)]
 

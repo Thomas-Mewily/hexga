@@ -89,11 +89,7 @@ impl Io
         Io.save_bytes(&path.with_extension(extension.as_ref()), &bytes)
     }
 
-
-
-
-
-
+    /*
     pub fn load_bytes_async<P,F>(self, path: P, on_loaded: F)
         where
         P: AsRef<Path>,
@@ -109,4 +105,5 @@ impl Io
     {
         fs::save_bytes_async(path.as_ref(), bytes, on_saved)
     }
+    */
 }
