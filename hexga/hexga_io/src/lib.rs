@@ -16,10 +16,6 @@ use serde::
     ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant}
 };
 
-#[cfg(feature = "serde")]
-mod serde_impl;
-#[cfg(feature = "serde")]
-pub use serde_impl::*;
 
 //mod fs_path;
 //pub use fs_path::*;
@@ -36,21 +32,34 @@ mod result;
 pub use result::*;
 
 mod fs;
-pub(crate) use fs::*;
+//pub(crate) use fs::*;
 
 pub mod prelude
 {
     pub use super::{
         io::*,
-        result::*,
+        //result::*,
         PathExtension,
+        IoResult,IoError,FileError,
+        IoLoad,IoSave
         //fs_path::*,
-    };
-
-    #[cfg(feature = "serde")]
-    pub use super::{
-        serde_impl::*
     };
 }
 
 
+pub trait IoLoad : Load
+{
+    fn load<P>(path: P) -> IoResult<Self> where P: AsRef<Path>
+    {
+        Io.load(path)
+    }
+}
+impl<T> IoLoad for T where T: Load {}
+pub trait IoSave : Save
+{
+    fn save<P>(&self, path: P) -> IoResult where P: AsRef<Path>
+    {
+        Io.save(path, self)
+    }
+}
+impl<T> IoSave for T where T: Save + ?Sized {}

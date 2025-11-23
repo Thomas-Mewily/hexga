@@ -1,13 +1,23 @@
+use std::{borrow::Cow, collections::HashMap, sync::{LazyLock, RwLock}};
+
 use super::*;
 
 pub struct Io;
 
+static BYTES_CACHE: LazyLock<RwLock<HashMap<PathBuf, Cow<'static, [u8]>>>> = LazyLock::new(|| Default::default());
 
 impl Io
 {
-    pub fn load_bytes<P>(self, path: P) -> IoResult<Vec<u8>> where P: AsRef<Path>
+    pub fn load_bytes<P>(self, path: P) -> IoResult<Cow<'static, [u8]>> where P: AsRef<Path>
     {
-        fs::load_bytes(path.as_ref())
+        let path = path.as_ref();
+        let cache = BYTES_CACHE.read().unwrap();
+
+        match cache.get(path)
+        {
+            Some(value) => Ok(value.clone()),
+            None => fs::load_bytes(path).map(|v| v.into()),
+        }
     }
 
     pub fn load<P,T>(self, path: P) -> IoResult<T> where P: AsRef<Path>, T: Load
@@ -50,7 +60,19 @@ impl Io
 
     pub fn save_bytes<P>(self, path: P, bytes: &[u8]) -> IoResult where P: AsRef<Path>
     {
+        let path = path.as_ref();
+        let cache = BYTES_CACHE.read().unwrap();
+        if cache.contains_key(path)
+        {
+            drop(cache);
+            self.set_file_cache(path, bytes.to_owned());
+        }
         fs::save_bytes(path.as_ref(), bytes)
+    }
+
+    pub fn set_file_cache<P,B>(self, path: P, bytes: B) where P: AsRef<Path>, B: Into<Cow<'static,[u8]>>
+    {
+        BYTES_CACHE.write().unwrap().insert(path.as_ref().to_owned(), bytes.into());
     }
 
     pub fn save_str<P>(self, path: P, str: &str) -> IoResult where P: AsRef<Path>

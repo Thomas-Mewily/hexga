@@ -22,7 +22,6 @@ name = "asset_test"
 version = "0.0.11-beta.43"
 dependencies = [
  "hexga",
- "hexga_asset2",
  "serde",
 ]
 
@@ -456,10 +455,6 @@ dependencies = [
  "hexga_singleton",
  "serde",
 ]
-
-[[package]]
-name = "hexga_asset2"
-version = "0.0.11-beta.43"
 
 [[package]]
 name = "hexga_bitflags"

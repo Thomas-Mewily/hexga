@@ -4,6 +4,7 @@ use super::*;
 
 #[cfg(feature = "serde")]
 mod serde_impl;
+#[cfg(feature = "serde")]
 pub use serde_impl::*;
 
 pub mod prelude

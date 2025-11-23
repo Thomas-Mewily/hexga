@@ -24,6 +24,8 @@ pub mod asynchrone;
 pub mod guard;
 pub mod wrapper;
 pub mod cfg;
+pub mod rc;
+pub mod sync;
 pub mod cell;
 
 use prelude::*;

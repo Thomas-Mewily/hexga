@@ -58,8 +58,8 @@ fn img()
     let i = ImageOf::<ColorU16>::from_fn_coef((1024, 10), |v| rgb(v.x, v.y, 0.0).to_u16_range());
     let original_pixels = i.pixels().to_owned();
 
-    i.save_to_disk("./test").unwrap();
-    let i = ImageOf::<ColorU16>::load_from_disk("./test.png").unwrap();
+    i.save("./test").unwrap();
+    let i = ImageOf::<ColorU16>::load("./test.png").unwrap();
     let open_pixels = i.pixels().to_owned();
 
     assert_eq!(original_pixels, open_pixels);
@@ -79,5 +79,5 @@ fn main()
         {
             ColorU8::BLACK
         }
-    ).save_to_disk("./image_test.png").unwrap();
+    ).save("./image_test.png").unwrap();
 }
