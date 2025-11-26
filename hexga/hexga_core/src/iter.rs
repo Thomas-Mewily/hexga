@@ -40,5 +40,3 @@ pub trait IterMutExtension<'a, Item>: where Self: 'a + IterExtension<'a, Item>, 
     fn for_each_mut<F>(&'a mut self, f: F) where F: FnMut(Item) { self.iter_mut().for_each(f); }
 }
 impl<'a,Item,T> IterMutExtension<'a,Item> for T where &'a mut T: IntoIterator<Item = Item> + 'a, &'a Self: IntoIterator<Item = Item> {}
-
-

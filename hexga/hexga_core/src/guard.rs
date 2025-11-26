@@ -4,95 +4,136 @@ use super::*;
 pub trait ReadGuard : Sized
 {
     type Target;
-    type ReadGuard : Deref<Target = Self::Target>;
+    type ReadGuard<'a> : Deref<Target = Self::Target> where Self: 'a;
     /// Can panic on exceptional behavior (ex poisoned mutex)
-    fn read(self) -> Self::ReadGuard;
+    fn read<'a>(&'a self) -> Self::ReadGuard<'a>;
 }
 pub trait TryReadGuard : ReadGuard
 {
-    type Error: Debug;
-    fn try_read(self) -> Result<Self::ReadGuard, Self::Error>;
+    type Error<'a>: Debug where Self: 'a;
+    fn try_read<'a>(&'a self) -> Result<Self::ReadGuard<'a>, Self::Error<'a>>;
 }
 
 pub trait WriteGuard : ReadGuard
 {
-    type WriteGuard : DerefMut<Target = Self::Target>;
+    type WriteGuard<'a> : DerefMut<Target = Self::Target> where Self: 'a;
     /// Can panic on exceptional behavior (ex poisoned mutex)
-    fn write(self) -> Self::WriteGuard;
+    fn write<'a>(&'a self) -> Self::WriteGuard<'a>;
 }
 pub trait TryWriteGuard : WriteGuard
 {
-    type Error: Debug;
-    fn try_write(self) -> Result<Self::WriteGuard, Self::Error>;
+    type Error<'a>: Debug where Self: 'a;
+    fn try_write<'a>(&'a self) -> Result<Self::WriteGuard<'a>, Self::Error<'a>>;
 }
 
-impl<'a,T> ReadGuard for &'a std::cell::RefCell<T>
+
+
+
+pub struct ReferenceReadGuard<'a,T>
+{
+    pub value: &'a T,
+}
+impl<'a,T> ReferenceReadGuard<'a,T>
+{
+    pub const fn new(value: &'a T) -> Self { Self { value }}
+}
+impl<'a,T> Deref for ReferenceReadGuard<'a, T>
 {
     type Target=T;
-    type ReadGuard=std::cell::Ref<'a,T>;
-    fn read(self) -> Self::ReadGuard { self.borrow() }
+    fn deref(&self) -> &Self::Target { self.value }
 }
-impl<'a,T> TryReadGuard for &'a std::cell::RefCell<T>
+
+pub struct ReferenceWriteGuard<'a,T>
 {
-    type Error = std::cell::BorrowError;
-    fn try_read(self) -> Result<Self::ReadGuard, Self::Error> { self.try_borrow() }
+    pub value: &'a mut T,
 }
-impl<'a,T> WriteGuard for &'a std::cell::RefCell<T>
+impl<'a,T> ReferenceWriteGuard<'a,T>
 {
-    type WriteGuard = std::cell::RefMut<'a,T>;
-    fn write(self) -> Self::WriteGuard { self.borrow_mut() }
+    pub const fn new(value: &'a mut T) -> Self { Self { value }}
 }
-impl<'a,T> TryWriteGuard for &'a std::cell::RefCell<T>
+impl<'a,T> Deref for ReferenceWriteGuard<'a, T>
 {
-    type Error = std::cell::BorrowMutError;
-    fn try_write(self) -> Result<Self::WriteGuard, Self::Error> { self.try_borrow_mut() }
+    type Target=T;
+    fn deref(&self) -> &Self::Target { self.value }
+}
+impl<'a,T> DerefMut for ReferenceWriteGuard<'a, T>
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { self.value }
 }
 
 
 
-impl<'a,T> ReadGuard for &'a std::sync::Mutex<T>
+
+
+
+
+impl<T> ReadGuard for std::cell::RefCell<T>
+{
+    type Target=T;
+    type ReadGuard<'a> = std::cell::Ref<'a,T> where Self: 'a;
+    fn read<'a>(&'a self) -> Self::ReadGuard<'a> { self.borrow() }
+}
+impl<T> TryReadGuard for std::cell::RefCell<T>
+{
+    type Error<'a> = std::cell::BorrowError where Self: 'a;
+    fn try_read<'a>(&'a self) -> Result<Self::ReadGuard<'a>, Self::Error<'a>> { self.try_borrow() }
+}
+impl<T> WriteGuard for std::cell::RefCell<T>
+{
+    type WriteGuard<'a> = std::cell::RefMut<'a,T> where Self: 'a;
+    fn write<'a>(&'a self) -> Self::WriteGuard<'a> { self.borrow_mut() }
+}
+impl<T> TryWriteGuard for std::cell::RefCell<T>
+{
+    type Error<'a> = std::cell::BorrowMutError where Self: 'a;
+    fn try_write<'a>(&'a self) -> Result<Self::WriteGuard<'a>, Self::Error<'a>> { self.try_borrow_mut() }
+}
+
+
+
+impl<T> ReadGuard for std::sync::Mutex<T>
 {
     type Target = T;
-    type ReadGuard = std::sync::MutexGuard<'a,T>;
-    fn read(self) -> Self::ReadGuard { self.lock().expect("poisoned") }
+    type ReadGuard<'a> = std::sync::MutexGuard<'a,T> where Self: 'a;
+    fn read<'a>(&'a self) -> Self::ReadGuard<'a> { self.lock().expect("poisoned") }
 }
-impl<'a,T> TryReadGuard for &'a std::sync::Mutex<T>
+impl<T> TryReadGuard for std::sync::Mutex<T>
 {
-    type Error = std::sync::PoisonError<std::sync::MutexGuard<'a,T>>;
-    fn try_read(self) -> Result<Self::ReadGuard, Self::Error> { self.lock() }
+    type Error<'a> = std::sync::PoisonError<std::sync::MutexGuard<'a,T>> where Self: 'a;
+    fn try_read<'a>(&'a self) -> Result<Self::ReadGuard<'a>, Self::Error<'a>> { self.lock() }
 }
-impl<'a,T> WriteGuard for &'a std::sync::Mutex<T>
+impl<T> WriteGuard for std::sync::Mutex<T>
 {
-    type WriteGuard=std::sync::MutexGuard<'a,T>;
-    fn write(self) -> Self::WriteGuard { self.lock().expect("poisoned") }
+    type WriteGuard<'a>=std::sync::MutexGuard<'a,T> where Self: 'a;
+    fn write<'a>(&'a self) -> Self::WriteGuard<'a> { self.lock().expect("poisoned") }
 }
-impl<'a,T> TryWriteGuard for &'a std::sync::Mutex<T>
+impl<T> TryWriteGuard for std::sync::Mutex<T>
 {
-    type Error = std::sync::PoisonError<std::sync::MutexGuard<'a,T>>;
-    fn try_write(self) -> Result<Self::WriteGuard, Self::Error> { self.lock() }
+    type Error<'a> = std::sync::PoisonError<std::sync::MutexGuard<'a,T>> where Self: 'a;
+    fn try_write<'a>(&'a self) -> Result<Self::WriteGuard<'a>, Self::Error<'a>> { self.lock() }
 }
 
 
-impl<'a,T> ReadGuard for &'a std::sync::RwLock<T>
+impl<T> ReadGuard for std::sync::RwLock<T>
 {
     type Target = T;
-    type ReadGuard = std::sync::RwLockReadGuard<'a,T>;
-    fn read(self) -> Self::ReadGuard { self.read().expect("poisoned") }
+    type ReadGuard<'a> = std::sync::RwLockReadGuard<'a,T> where Self: 'a;
+    fn read<'a>(&'a self) -> Self::ReadGuard<'a> { self.read().expect("poisoned") }
 }
-impl<'a,T> TryReadGuard for &'a std::sync::RwLock<T>
+impl<T> TryReadGuard for std::sync::RwLock<T>
 {
-    type Error = std::sync::PoisonError<std::sync::RwLockReadGuard<'a,T>>;
-    fn try_read(self) -> Result<Self::ReadGuard, Self::Error> { self.read() }
+    type Error<'a> = std::sync::PoisonError<std::sync::RwLockReadGuard<'a,T>> where Self: 'a;
+    fn try_read<'a>(&'a self) -> Result<Self::ReadGuard<'a>, Self::Error<'a>> { self.read() }
 }
-impl<'a,T> WriteGuard for &'a std::sync::RwLock<T>
+impl<T> WriteGuard for std::sync::RwLock<T>
 {
-    type WriteGuard=std::sync::RwLockWriteGuard<'a,T>;
-    fn write(self) -> Self::WriteGuard { self.write().expect("poisoned") }
+    type WriteGuard<'a> = std::sync::RwLockWriteGuard<'a,T> where Self: 'a;
+    fn write<'a>(&'a self) -> Self::WriteGuard<'a> { self.write().expect("poisoned") }
 }
-impl<'a,T> TryWriteGuard for &'a std::sync::RwLock<T>
+impl<T> TryWriteGuard for std::sync::RwLock<T>
 {
-    type Error = std::sync::PoisonError<std::sync::RwLockWriteGuard<'a,T>>;
-    fn try_write(self) -> Result<Self::WriteGuard, Self::Error> { self.write() }
+    type Error<'a> = std::sync::PoisonError<std::sync::RwLockWriteGuard<'a,T>> where Self: 'a;
+    fn try_write<'a>(&'a self) -> Result<Self::WriteGuard<'a>, Self::Error<'a>> { self.write() }
 }
 
 // TODO: impl it for SyncUnsafeCell<T> and all the std::sync::nonpoison::... type once they are stabilized

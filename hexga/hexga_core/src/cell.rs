@@ -35,36 +35,6 @@ impl<T> SingleThread<T>
 }
 
 
-pub struct ReferenceGuard<T>
-{
-    value: T,
-}
-impl<T> Default for ReferenceGuard<T> where T: Default
-{
-    fn default() -> Self {
-        Self { value: Default::default() }
-    }
-}
-impl<T> ReferenceGuard<T>
-{
-    pub const fn new(value: T) -> Self { Self { value }}
-    pub fn into_value(this: Self) -> T { this.value }
-}
-impl<'a,T> Deref for ReferenceGuard<&'a T>
-{
-    type Target=T;
-    fn deref(&self) -> &Self::Target { &self.value }
-}
-impl<'a,T> Deref for ReferenceGuard<&'a mut T>
-{
-    type Target=T;
-    fn deref(&self) -> &Self::Target { &self.value }
-}
-impl<'a, T> DerefMut for ReferenceGuard<&'a mut T>
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.value }
-}
-
 
 pub struct DifferentThreadError;
 impl Debug for DifferentThreadError
@@ -74,38 +44,38 @@ impl Debug for DifferentThreadError
     }
 }
 
-impl<'a,T> ReadGuard for &'a SingleThread<T>
+impl<T> ReadGuard for SingleThread<T>
 {
     type Target=T;
-    type ReadGuard = ReferenceGuard<&'a T>;
+    type ReadGuard<'a> = ReferenceReadGuard<'a,T> where Self: 'a;
 
-    fn read(self) -> Self::ReadGuard {
+    fn read<'a>(&'a self) -> Self::ReadGuard<'a> {
         self.asset_same_thread();
-        ReferenceGuard::new(unsafe { self.value.as_ref_unchecked() })
+        ReferenceReadGuard::new(unsafe { self.value.as_ref_unchecked() })
     }
 }
-impl<'a,T> TryReadGuard for &'a SingleThread<T>
+impl<T> TryReadGuard for SingleThread<T>
 {
-    type Error = DifferentThreadError;
-    fn try_read(self) -> Result<Self::ReadGuard, Self::Error> {
+    type Error<'a> = DifferentThreadError where Self: 'a;
+    fn try_read<'a>(&'a self) -> Result<Self::ReadGuard<'a>, Self::Error<'a>> {
         self.same_thread()?;
-        Ok(ReferenceGuard::new(unsafe { self.value.as_ref_unchecked() }))
+        Ok(ReferenceReadGuard::new(unsafe { self.value.as_ref_unchecked() }))
     }
 }
-impl<'a,T> WriteGuard for &'a SingleThread<T>
+impl<T> WriteGuard for SingleThread<T>
 {
-    type WriteGuard = ReferenceGuard<&'a mut T>;
-    fn write(self) -> Self::WriteGuard {
+    type WriteGuard<'a> = ReferenceWriteGuard<'a, T> where Self: 'a;
+    fn write<'a>(&'a self) -> Self::WriteGuard<'a> {
         self.asset_same_thread();
-        ReferenceGuard::new(unsafe { self.value.as_mut_unchecked() })
+        ReferenceWriteGuard::new(unsafe { self.value.as_mut_unchecked() })
     }
 }
-impl<'a,T> TryWriteGuard for &'a SingleThread<T>
+impl<T> TryWriteGuard for SingleThread<T>
 {
-    type Error = DifferentThreadError;
-    fn try_write(self) -> Result<Self::WriteGuard, Self::Error> {
+    type Error<'a> = DifferentThreadError where Self: 'a;
+    fn try_write<'a>(&'a self) -> Result<Self::WriteGuard<'a>, Self::Error<'a>> {
         self.same_thread()?;
-        Ok(ReferenceGuard::new(unsafe { self.value.as_mut_unchecked() }))
+        Ok(ReferenceWriteGuard::new(unsafe { self.value.as_mut_unchecked() }))
     }
 }
 impl<T> Deref for SingleThread<T>
