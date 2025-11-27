@@ -71,6 +71,7 @@ macro_rules! singleton_single_thread {
     };
 }
 
+/*
 #[macro_export]
 macro_rules! singleton_single_thread_access {
     ($(#[$attr:meta])* $vis:vis $wrapper:ident, $inner:ty, $try_read:block, $try_write:block) => {
@@ -113,7 +114,7 @@ macro_rules! singleton_single_thread_access {
         }
     };
 }
-
+*/
 
 #[macro_export]
 macro_rules! singleton_multi_thread {
@@ -164,6 +165,83 @@ $(#[$attr])*
         }
     };
 }
+
+#[macro_export]
+macro_rules! singleton_single_thread_project {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $inner:ty, $parent:ident, $field:ident) => {
+
+        $(#[$attr])*
+        $vis struct $wrapper;
+
+        impl $crate::SingletonRead for $wrapper {
+            type Error = <$crate::cell::SingleThread<$inner> as $crate::guard::TryReadGuard>::Error<'static>;
+            type Target = $inner;
+            type ReadGuard = $crate::guard::ReferenceReadGuard<'static, $inner>;
+
+            fn try_read() -> Result<Self::ReadGuard, Self::Error> {
+                let reference = $parent::try_read().map(|v| &v.value.$field)?;
+                Ok($crate::guard::ReferenceReadGuard::new(reference))
+            }
+        }
+
+        impl $crate::SingletonWrite for $wrapper {
+            type Error = <$crate::cell::SingleThread<$inner> as $crate::guard::TryWriteGuard>::Error<'static>;
+            type WriteGuard = $crate::guard::ReferenceWriteGuard<'static, $inner>;
+
+            fn try_write() -> Result<Self::WriteGuard, <Self as $crate::SingletonWrite>::Error> {
+                let reference_mut = $parent::try_write().map(|v| &mut v.value.$field)?;
+                Ok($crate::guard::ReferenceWriteGuard::new(reference_mut))
+            }
+        }
+
+        impl std::ops::Deref for $wrapper {
+            type Target = $inner;
+            fn deref(&self) -> &Self::Target {
+                <$wrapper as $crate::SingletonRead>::read().value
+            }
+        }
+
+        impl std::ops::DerefMut for $wrapper {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                <$wrapper as $crate::SingletonWrite>::write().value
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! singleton_multi_thread_project {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $inner:ty, $parent:ident, $field:ident) => {
+
+        $(#[$attr])*
+        $vis struct $wrapper;
+
+        impl $crate::SingletonRead for $wrapper {
+            type Error =
+                <$crate::SingletonMultiThread<$inner> as $crate::guard::TryReadGuard>::Error<'static>;
+            type Target = $inner;
+            type ReadGuard = $crate::features::MappedRwLockReadGuard<'static, $inner>;
+
+            fn try_read() -> Result<Self::ReadGuard, Self::Error> {
+                let guard = $parent::try_read()?;
+                Ok($crate::features::rw_read_guard_map(guard, |v| &v.value.$field))
+            }
+        }
+
+        impl $crate::SingletonWrite for $wrapper {
+            type Error =
+                <$crate::SingletonMultiThread<$inner> as $crate::guard::TryWriteGuard>::Error<'static>;
+            type WriteGuard = $crate::features::MappedRwLockWriteGuard<'static, $inner>;
+
+            fn try_write() -> Result<Self::WriteGuard, <Self as $crate::SingletonWrite>::Error> {
+                let guard = $parent::try_write()?;
+                Ok($crate::features::rw_write_guard_map(guard, |v| &mut v.value.$field))
+            }
+        }
+    };
+}
+
+
 
 /*
 TODO: how to not expose the mapped guard

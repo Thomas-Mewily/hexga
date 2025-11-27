@@ -8,9 +8,19 @@ pub(crate) static Assets : LazyLock<AssetsManagerUntyped> = LazyLock::new(|| Ass
 #[derive(Default)]
 pub(crate) struct AssetsManagerUntyped
 {
-    //bytes:  RwLock<HashMap<PathBuf,Vec<u8>>>,
+    //path_resolver: PathResolver,
     assets: RwLock<HashMap<TypeId, Arc<AnyAsync>>>,
 }
+
+/*
+pub struct PathResolver
+{
+    target: PathBuf,
+    name: HashMap<PathBuf, PathResolver>,
+}
+*/
+
+
 impl AssetsManagerUntyped
 {
     pub fn manager<T>(&self) -> AssetManager<T> where T: Async
@@ -68,7 +78,12 @@ impl<T> AssetManager<T> where T: Async
         let mut need_to_be_loaded = false;
         let asset = self.get_or_generate::<&Path,_,_,_>(AssetPersistance::Persistant(path.as_ref()),|| { need_to_be_loaded = true; AssetInit::with_state(AssetState::Loading) });
 
-        if need_to_be_loaded || asset.state().is_error()
+        let need_to_be_loaded = need_to_be_loaded || match asset.state().deref()
+        {
+            AssetState::Error(io_error) => !io_error.kind.is_encoding(),
+            _ => false,
+        };
+        if need_to_be_loaded
         {
             self.update_or_create::<P,_,_>(AssetPersistance::Persistant(path), init());
         }
@@ -140,13 +155,6 @@ impl<T> AssetManager<T> where T: Async
 }
 impl<T> AssetManager<T> where T: Async
 {
-    pub fn error_value(&self) -> AssetWeak<T> { self.inner.read().unwrap().error.clone() }
-    pub fn set_error_value(&self, value: AssetWeak<T>) -> &Self { self.inner.write().unwrap().error = value; self }
-
-    pub fn loading_value(&self) -> AssetWeak<T> { self.inner.read().unwrap().loading.clone() }
-    pub fn set_loading_value(&self, value: AssetWeak<T>) -> &Self { self.inner.write().unwrap().loading = value; self }
-
-
     pub(crate) fn update_or_create<P,Persis,I>(&self, persistance: Persis, value: I) -> Asset<T>
         where
         P: AsRef<Path>,
@@ -206,8 +214,23 @@ impl<T> AssetManager<T> where T: Async
         w.values.insert(path.to_owned(), storage);
         asset
     }
+
+
+    pub fn all(&self) -> Vec<Asset<T>>
+    {
+        self.inner.read().unwrap().values.values().filter_map(|v| v.upgrade()).collect()
+    }
+    pub fn iter(&self) -> AssetIter<T> { AssetIter { inner: self.all().into_iter() } }
+
+    pub fn error_value(&self) -> AssetWeak<T> { self.inner.read().unwrap().error.clone() }
+    pub fn set_error_value(&self, value: AssetWeak<T>) -> &Self { self.inner.write().unwrap().error = value; self }
+
+    pub fn loading_value(&self) -> AssetWeak<T> { self.inner.read().unwrap().loading.clone() }
+    pub fn set_loading_value(&self, value: AssetWeak<T>) -> &Self { self.inner.write().unwrap().loading = value; self }
+
 }
 
+#[derive(Debug)]
 pub(crate) struct AssetManagerInner<T> where T: Async
 {
     pub(crate) values: HashMap<PathBuf, AssetStorage<T>>,
@@ -224,10 +247,20 @@ impl<T> AssetManagerInner<T> where T: Async
 
 
 
+#[derive(Debug)]
 pub enum AssetStorage<T> where T: Async
 {
     Persistant(Asset<T>),
     ReferenceCounted(AssetWeak<T>),
+}
+impl<T> Clone for AssetStorage<T> where T: Async
+{
+    fn clone(&self) -> Self {
+        match self {
+            Self::Persistant(arg0) => Self::Persistant(arg0.clone()),
+            Self::ReferenceCounted(arg0) => Self::ReferenceCounted(arg0.clone()),
+        }
+    }
 }
 impl<T> AssetStorage<T> where T: Async
 {
@@ -237,6 +270,24 @@ impl<T> AssetStorage<T> where T: Async
         {
             AssetStorage::Persistant(_asset) => AssetLifetime::Persistant,
             AssetStorage::ReferenceCounted(_asset_weak) => AssetLifetime::ReferenceCounted,
+        }
+    }
+
+    pub fn upgrade(&self) -> Option<Asset<T>>
+    {
+        match self
+        {
+            AssetStorage::Persistant(asset) => Some(asset.clone()),
+            AssetStorage::ReferenceCounted(asset_weak) => asset_weak.upgrade(),
+        }
+    }
+
+    pub fn downgrade(&self) -> AssetWeak<T>
+    {
+        match self
+        {
+            AssetStorage::Persistant(asset) => asset.downgrade(),
+            AssetStorage::ReferenceCounted(asset_weak) => asset_weak.clone(),
         }
     }
 }
@@ -250,5 +301,27 @@ impl<T> From<AssetWeak<T>> for AssetStorage<T> where T: Async
 {
     fn from(value: AssetWeak<T>) -> Self {
         Self::ReferenceCounted(value)
+    }
+}
+
+
+impl<'a,T> IntoIterator for &'a AssetManager<T> where T: Async
+{
+    type Item=Asset<T>;
+    type IntoIter=AssetIter<T>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+pub struct AssetIter<T> where T: Async
+{
+    inner: std::vec::IntoIter<Asset<T>>,
+}
+impl<T: Async> Iterator for AssetIter<T>
+{
+    type Item = Asset<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
     }
 }

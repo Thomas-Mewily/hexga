@@ -111,6 +111,8 @@ impl FileError
 {
     pub fn custom(reason: impl Into<Reason>) -> Self { Self::Custom(reason.into()) }
     pub fn from_display(reason: impl Display) -> Self { Self::custom(reason.to_string())}
+
+    pub fn is_encoding(&self) -> bool { matches!(self, Self::Encoding(_))}
 }
 
 impl Display for FileError

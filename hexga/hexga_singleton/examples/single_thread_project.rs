@@ -1,4 +1,4 @@
-use hexga_singleton::{singleton_single_thread, singleton_single_thread_access};
+use hexga_singleton::{singleton_single_thread, singleton_single_thread_project};
 
 pub struct CurrentUser
 {
@@ -16,10 +16,7 @@ singleton_single_thread!(
     || CurrentUser { name: "Foo".to_owned(), city: City { name: "Paris".to_owned() } }
 );
 
-singleton_single_thread_access!(pub UserCity, City,
-    {User::try_read().map(|v| &v.value.city) },
-    {User::try_write().map(|v| &mut v.value.city)}
-);
+singleton_single_thread_project!(pub UserCity, City, User, city);
 
 fn main() {
     assert_eq!(User.name, "Foo");

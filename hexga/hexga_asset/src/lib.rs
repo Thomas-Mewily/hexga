@@ -3,6 +3,24 @@
 #![feature(mapped_lock_guards)]
 // #![feature(clone_to_uninit)]
 
+/*
+TODO: redo it ?
+
+trait for:
+hot_reload()
+save()
+
++1 better path/id separation:
+
+1 path => 1 ID
+1 ID => N paths
+
+asset correct path/remove extension
+
+special type of asset that are load/unloaded automatically when not used for X second
+
+*/
+
 
 // use std::clone::CloneToUninit;
 use std::{
@@ -23,6 +41,9 @@ pub use asset_manager::*;
 
 mod bytes;
 pub use bytes::*;
+
+mod hot_reload;
+pub use hot_reload::*;
 
 #[cfg(feature = "serde")]
 pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
