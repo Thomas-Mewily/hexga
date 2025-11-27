@@ -27,40 +27,103 @@ pub trait TryWriteGuard : WriteGuard
 }
 
 
+pub trait MapReadGuard<'a, T> where T: ?Sized
+{
+    type Mapped<U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U>
+        where F: FnOnce(&T) -> &U;
+}
+pub trait MapWriteGuard<'a, T> where T: ?Sized
+{
+    type Mapped<U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U>
+        where F: FnOnce(&mut T) -> &mut U;
+}
+
+pub fn map<'a, G, T, U, F>(guard: G, f: F) -> G::Mapped<U>
+    where
+        F: FnOnce(&T) -> &U,
+        T: ?Sized,
+        G: MapReadGuard<'a,T>
+{
+    G::map(guard, f)
+}
+
+pub fn map_mut<'a, G, T, U, F>(guard: G, f: F) -> G::Mapped<U>
+    where
+        F: FnOnce(&mut T) -> &mut U,
+        T: ?Sized,
+        G: MapWriteGuard<'a,T>
+{
+    G::map(guard, f)
+}
 
 
-pub struct ReferenceReadGuard<'a,T>
+// implementations:
+
+pub struct ReferenceReadGuard<'a,T> where T: ?Sized
 {
-    pub value: &'a T,
+    #[doc(hidden)]
+    pub inner_reference: &'a T,
 }
-impl<'a,T> ReferenceReadGuard<'a,T>
+impl<'a,T> ReferenceReadGuard<'a,T> where T: ?Sized
 {
-    pub const fn new(value: &'a T) -> Self { Self { value }}
+    pub const fn new(value: &'a T) -> Self { Self { inner_reference: value } }
+
+    #[inline]
+    pub fn map<U, F>(orig: Self, f: F) -> ReferenceReadGuard<'a, U>
+    where
+        F: FnOnce(&T) -> &U,
+        U: ?Sized
+    {
+        ReferenceReadGuard::new(f(orig.inner_reference))
+    }
 }
-impl<'a,T> Deref for ReferenceReadGuard<'a, T>
+impl<'a,T> Deref for ReferenceReadGuard<'a, T> where T: ?Sized
 {
     type Target=T;
-    fn deref(&self) -> &Self::Target { self.value }
+    fn deref(&self) -> &Self::Target { self.inner_reference }
+}
+impl<'a,T> From<&'a T> for ReferenceReadGuard<'a,T> where T: ?Sized
+{
+    fn from(value: &'a T) -> Self {
+        Self::new(value)
+    }
 }
 
-pub struct ReferenceWriteGuard<'a,T>
+pub struct ReferenceWriteGuard<'a,T> where T: ?Sized
 {
-    pub value: &'a mut T,
+    #[doc(hidden)]
+    pub inner_reference: &'a mut T,
 }
-impl<'a,T> ReferenceWriteGuard<'a,T>
+impl<'a,T> ReferenceWriteGuard<'a,T> where T: ?Sized
 {
-    pub const fn new(value: &'a mut T) -> Self { Self { value }}
+    pub const fn new(value: &'a mut T) -> Self { Self { inner_reference: value } }
+
+    #[inline]
+    pub fn map<U, F>(orig: Self, f: F) -> ReferenceWriteGuard<'a, U>
+    where
+        F: FnOnce(&mut T) -> &mut U,
+        U: ?Sized
+    {
+        ReferenceWriteGuard::new(f(orig.inner_reference))
+    }
 }
-impl<'a,T> Deref for ReferenceWriteGuard<'a, T>
+impl<'a,T> Deref for ReferenceWriteGuard<'a, T> where T: ?Sized
 {
     type Target=T;
-    fn deref(&self) -> &Self::Target { self.value }
+    fn deref(&self) -> &Self::Target { self.inner_reference }
 }
-impl<'a,T> DerefMut for ReferenceWriteGuard<'a, T>
+impl<'a,T> DerefMut for ReferenceWriteGuard<'a, T> where T: ?Sized
 {
-    fn deref_mut(&mut self) -> &mut Self::Target { self.value }
+    fn deref_mut(&mut self) -> &mut Self::Target { self.inner_reference }
 }
-
+impl<'a,T> From<&'a mut T> for ReferenceWriteGuard<'a,T> where T: ?Sized
+{
+    fn from(value: &'a mut T) -> Self {
+        Self::new(value)
+    }
+}
 
 
 
@@ -137,3 +200,56 @@ impl<T> TryWriteGuard for std::sync::RwLock<T>
 }
 
 // TODO: impl it for SyncUnsafeCell<T> and all the std::sync::nonpoison::... type once they are stabilized
+
+impl<'a, T> MapReadGuard<'a, T> for std::cell::Ref<'a, T> {
+    type Mapped<U> = std::cell::Ref<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&T) -> &U { std::cell::Ref::map(self, f) }
+}
+
+impl<'a, T> MapWriteGuard<'a, T> for std::cell::RefMut<'a, T> {
+    type Mapped<U> = std::cell::RefMut<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&mut T) -> &mut U, { std::cell::RefMut::map(self, f) }
+}
+
+impl<'a, T> MapReadGuard<'a, T> for ReferenceReadGuard<'a, T> {
+    type Mapped<U> = ReferenceReadGuard<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&T) -> &U { ReferenceReadGuard::map(self, f) }
+}
+
+impl<'a, T> MapWriteGuard<'a, T> for ReferenceWriteGuard<'a, T> {
+    type Mapped<U> = ReferenceWriteGuard<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&mut T) -> &mut U, { ReferenceWriteGuard::map(self, f) }
+}
+
+
+
+
+impl<'a, T> MapReadGuard<'a, T> for std::sync::RwLockReadGuard<'a, T> {
+    type Mapped<U> = std::sync::MappedRwLockReadGuard<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&T) -> &U { std::sync::RwLockReadGuard::map(self, f) }
+}
+
+impl<'a, T> MapWriteGuard<'a, T> for std::sync::RwLockWriteGuard<'a, T> {
+    type Mapped<U> = std::sync::MappedRwLockWriteGuard<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&mut T) -> &mut U, { std::sync::RwLockWriteGuard::map(self, f) }
+}
+impl<'a, T> MapReadGuard<'a, T> for std::sync::MappedRwLockReadGuard<'a, T> {
+    type Mapped<U> = std::sync::MappedRwLockReadGuard<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&T) -> &U { std::sync::MappedRwLockReadGuard::map(self, f) }
+}
+
+impl<'a, T> MapWriteGuard<'a, T> for std::sync::MappedRwLockWriteGuard<'a, T> {
+    type Mapped<U> = std::sync::MappedRwLockWriteGuard<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&mut T) -> &mut U, { std::sync::MappedRwLockWriteGuard::map(self, f) }
+}
+
+impl<'a, T> MapWriteGuard<'a, T> for std::sync::MutexGuard<'a, T> {
+    type Mapped<U> = std::sync::MappedMutexGuard<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&mut T) -> &mut U { std::sync::MutexGuard::map(self, f) }
+}
+impl<'a, T> MapWriteGuard<'a, T> for std::sync::MappedMutexGuard<'a, T> {
+    type Mapped<U> = std::sync::MappedMutexGuard<'a, U> where U: 'a;
+    fn map<U, F>(self, f: F) -> Self::Mapped<U> where F: FnOnce(&mut T) -> &mut U { std::sync::MappedMutexGuard::map(self, f) }
+}
+
+

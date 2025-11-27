@@ -23,7 +23,7 @@ pub mod prelude
     {
         SingletonSingleThread,SingletonMultiThread,SingletonRead,SingletonWrite,
         singleton_single_thread,singleton_single_thread_project,
-        singleton_multi_thread,//singleton_multi_thread_access,
+        singleton_multi_thread,singleton_multi_thread_project,
     };
     pub use super::guard::*;
 }

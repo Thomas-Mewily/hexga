@@ -361,19 +361,17 @@ impl<T> Asset<T> where T: Async
     {
         Self::manager().load_or_create(path, init)
     }
-    pub fn update_or_create<P,Persis,I>(persistance: Persis, value: I) -> Asset<T>
+    pub fn update_or_create<'a,P,I>(persistance: P, value: I) -> Asset<T>
         where
-        P: AsRef<Path>,
-        Persis: Into<AssetPersistance<P>>,
+        P: Into<AssetPersistance<&'a Path>>,
         I: Into<AssetInit<T>>
     {
         Self::manager().update_or_create(persistance, value)
     }
 
-    pub fn get_or_generate<P,Persis,F,O>(persistance: Persis, init: F) -> Asset<T>
+    pub fn get_or_generate<'a,P,F,O>(persistance: P, init: F) -> Asset<T>
         where
-        P: AsRef<Path>,
-        Persis: Into<AssetPersistance<P>>,
+        P: Into<AssetPersistance<&'a Path>>,
         F: FnOnce() -> O,
         O: Into<AssetInit<T>>
     {
@@ -509,10 +507,16 @@ impl AssetPersistance
     pub const fn is_persistant(&self) -> bool { matches!(self, Self::Persistant(_)) }
     pub const fn is_not_persistant(&self) -> bool { !self.is_persistant() }
 }
-impl<P> From<P> for AssetPersistance<P>
+impl<P> From<P> for AssetPersistance<PathBuf> where P: Into<PathBuf>
 {
     fn from(value: P) -> Self {
-        Self::Persistant(value)
+        Self::Persistant(value.into())
+    }
+}
+impl<'a,P> From<&'a P> for AssetPersistance<&'a Path> where P: AsRef<Path>
+{
+    fn from(value: &'a P) -> Self {
+        Self::Persistant(value.as_ref())
     }
 }
 

@@ -76,7 +76,7 @@ impl<T> AssetManager<T> where T: Async
         T: Load
     {
         let mut need_to_be_loaded = false;
-        let asset = self.get_or_generate::<&Path,_,_,_>(AssetPersistance::Persistant(path.as_ref()),|| { need_to_be_loaded = true; AssetInit::with_state(AssetState::Loading) });
+        let asset = self.get_or_generate(&path,|| { need_to_be_loaded = true; AssetInit::with_state(AssetState::Loading) });
 
         let need_to_be_loaded = need_to_be_loaded || match asset.state().deref()
         {
@@ -85,7 +85,7 @@ impl<T> AssetManager<T> where T: Async
         };
         if need_to_be_loaded
         {
-            self.update_or_create::<P,_,_>(AssetPersistance::Persistant(path), init());
+            self.update_or_create(&path, init());
         }
         asset
     }
@@ -155,10 +155,9 @@ impl<T> AssetManager<T> where T: Async
 }
 impl<T> AssetManager<T> where T: Async
 {
-    pub(crate) fn update_or_create<P,Persis,I>(&self, persistance: Persis, value: I) -> Asset<T>
+    pub(crate) fn update_or_create<'a,P,I>(&self, persistance: P, value: I) -> Asset<T>
         where
-        P: AsRef<Path>,
-        Persis: Into<AssetPersistance<P>>,
+        P: Into<AssetPersistance<&'a Path>>,
         I: Into<AssetInit<T>>
     {
         let init  = value.into();
@@ -167,10 +166,9 @@ impl<T> AssetManager<T> where T: Async
         v
     }
 
-    pub(crate) fn get_or_generate<P,Persis,F,O>(&self, persistance: Persis, init: F) -> Asset<T>
+    pub(crate) fn get_or_generate<'a,P,F,O>(&self, persistance: P, init: F) -> Asset<T>
         where
-        P: AsRef<Path>,
-        Persis: Into<AssetPersistance<P>>,
+        P: Into<AssetPersistance<&'a Path>>,
         F: FnOnce() -> O,
         O: Into<AssetInit<T>>
     {
@@ -182,7 +180,7 @@ impl<T> AssetManager<T> where T: Async
                 let AssetInit { state, lifetime: _ } = init().into();
                 return Asset::_new(state, AssetPersistance::Generated);
             }
-            AssetPersistance::Persistant(path) => path.as_ref(),
+            AssetPersistance::Persistant(path) => *path,
         };
 
         let r = self.inner.read().unwrap();

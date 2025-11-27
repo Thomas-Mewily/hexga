@@ -1,0 +1,54 @@
+[package]
+name = "hexga_engine"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+description = "A multimedia game and software engine for handling graphics, audio, and input."
+keywords = ["game", "engine", "multimedia", "graphics", "software"]
+categories = ["game-engines", "game-development", "graphics", "games"]
+
+[features]
+default = [
+            "int_are_32_bits", "float_are_32_bits",
+            "serde", "serde_rc", "hexga_encoding_derive"
+          ]
+
+
+
+int_are_8_bits    = ["hexga/int_are_8_bits"]
+int_are_16_bits   = ["hexga/int_are_16_bits"]
+int_are_32_bits   = ["hexga/int_are_32_bits"]
+int_are_64_bits   = ["hexga/int_are_64_bits"]
+int_are_size_bits = ["hexga/int_are_size_bits"]
+
+float_are_32_bits   = ["hexga/float_are_32_bits"]
+float_are_64_bits   = ["hexga/float_are_64_bits"]
+float_are_size_bits = ["hexga/float_are_size_bits"]
+
+serde = ["dep:serde", "hexga/serde"]
+serde_rc = ["serde/rc", "hexga/serde_rc"]
+
+hexga_encoding_derive = ["hexga/hexga_encoding_derive"]
+
+[dependencies]
+hexga.workspace = true
+serde = { version = "1.0.0", features = ["derive"], optional = true }
+winit = "0.30.11"
+async-std = { version = "1.13.1" }
+copypasta = "0.10.2"
+log = { version = "0.4.22"}
+env_logger = "0.10"
+wgpu = { version = "25.0.0" }
+
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_log = "1.0"
+console_error_panic_hook = "0.1"
+wasm-bindgen-futures = "0.4.49"
+wgpu = { version = "25.0.0", features = ["webgl"] }
+

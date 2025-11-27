@@ -84,7 +84,7 @@ impl<T> Deref for SingleThread<T>
     #[inline(always)]
     #[track_caller]
     fn deref(&self) -> &Self::Target {
-        self.read().value
+        self.read().inner_reference
     }
 }
 impl<T> DerefMut for SingleThread<T>
@@ -92,6 +92,6 @@ impl<T> DerefMut for SingleThread<T>
     #[inline(always)]
     #[track_caller]
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.write().value
+        self.write().inner_reference
     }
 }

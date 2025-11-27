@@ -1,24 +1,22 @@
-use std::{fmt::Debug, ops::{Deref, DerefMut}};
+use std::ops::{Deref, DerefMut};
 
 pub trait SingletonRead
 {
-    type Error:  Debug;
     type Target;
     type ReadGuard : Deref<Target=Self::Target>;
 
-    fn try_read() -> Result<Self::ReadGuard,Self::Error>;
+    fn try_read() -> Option<Self::ReadGuard>;
     #[inline(always)]
     #[track_caller]
     fn read() -> Self::ReadGuard { Self::try_read().expect("not init") }
 
-    fn is_init() -> bool { Self::try_read().is_ok() }
+    fn is_init() -> bool { Self::try_read().is_some() }
     fn is_not_init() -> bool { !Self::is_init() }
 }
 pub trait SingletonWrite: SingletonRead
 {
-    type Error:  Debug;
     type WriteGuard : DerefMut<Target=Self::Target>;
-    fn try_write() -> Result<Self::WriteGuard, <Self as SingletonWrite>::Error>;
+    fn try_write() -> Option<Self::WriteGuard>;
     #[inline(always)]
     #[track_caller]
     fn write() -> Self::WriteGuard { Self::try_write().expect("not init") }
@@ -34,38 +32,36 @@ macro_rules! singleton_single_thread {
         $vis struct $wrapper;
 
         impl $crate::SingletonRead for $wrapper {
-            type Error = <$crate::cell::SingleThread<$inner> as $crate::guard::TryReadGuard>::Error<'static>;
             type Target = $inner;
             type ReadGuard = <$crate::cell::SingleThread<$inner> as $crate::guard::ReadGuard>::ReadGuard<'static>;
 
-            fn try_read() -> Result<Self::ReadGuard, Self::Error>
+            fn try_read() -> Option<Self::ReadGuard>
             {
                 <$crate::SingletonSingleThread<$inner> as $crate::guard::TryReadGuard>::try_read(&$static_name)
-                    .map(|v| $crate::guard::ReferenceReadGuard::new(&**v.value))
+                    .map(|g| $crate::guard::map(g, |lazy_cell| ::std::cell::LazyCell::force(lazy_cell))).ok()
             }
         }
 
         impl $crate::SingletonWrite for $wrapper {
-            type Error = <$crate::cell::SingleThread<$inner> as $crate::guard::TryWriteGuard>::Error<'static>;
             type WriteGuard = <$crate::cell::SingleThread<$inner> as $crate::guard::WriteGuard>::WriteGuard<'static>;
 
-            fn try_write() -> Result<Self::WriteGuard, <Self as $crate::SingletonWrite>::Error>
+            fn try_write() -> Option<Self::WriteGuard>
             {
                 <$crate::SingletonSingleThread<$inner> as $crate::guard::TryWriteGuard>::try_write(&$static_name)
-                    .map(|v| $crate::guard::ReferenceWriteGuard::new(&mut **v.value))
+                    .map(|g| $crate::guard::map_mut(g, |lazy_cell| $crate::features::lazy_cell_force_mut(lazy_cell))).ok()
             }
         }
 
         impl std::ops::Deref for $wrapper {
             type Target = $inner;
             fn deref(&self) -> &Self::Target {
-                <$wrapper as $crate::SingletonRead>::read().value
+                <$wrapper as $crate::SingletonRead>::read().inner_reference
             }
         }
 
         impl std::ops::DerefMut for $wrapper {
             fn deref_mut(&mut self) -> &mut Self::Target {
-                <$wrapper as $crate::SingletonWrite>::write().value
+                <$wrapper as $crate::SingletonWrite>::write().inner_reference
             }
         }
     };
@@ -126,41 +122,24 @@ $(#[$attr])*
         $vis struct $wrapper;
 
         impl $crate::SingletonRead for $wrapper {
-            type Error =
-                <$crate::SingletonMultiThread<$inner> as $crate::guard::TryReadGuard>::Error<'static>;
-
             type Target = $inner;
+            type ReadGuard = $crate::features::MappedRwLockReadGuard<'static, $inner>;
 
-            type ReadGuard =
-                $crate::features::MappedRwLockReadGuard<'static, $inner>;
-
-            fn try_read() -> Result<Self::ReadGuard, Self::Error> {
-                let g =
-                    <$crate::SingletonMultiThread<$inner> as $crate::guard::TryReadGuard>
-                        ::try_read(&$static_name)?;
-
-                Ok($crate::features::rw_read_guard_map(g, |l| ::std::sync::LazyLock::force(l)))
+            fn try_read() -> Option<Self::ReadGuard>
+            {
+                <$crate::SingletonMultiThread<$inner> as $crate::guard::TryReadGuard>::try_read(&$static_name)
+                    .map(|g| $crate::guard::map(g, |l| ::std::sync::LazyLock::force(l))).ok()
             }
         }
 
-        impl $crate::SingletonWrite for $wrapper {
-            type Error =
-                <$crate::SingletonMultiThread<$inner> as $crate::guard::TryWriteGuard>::Error<'static>;
+        impl $crate::SingletonWrite for $wrapper
+        {
+            type WriteGuard = $crate::features::MappedRwLockWriteGuard<'static, $inner>;
 
-            type WriteGuard =
-                $crate::features::MappedRwLockWriteGuard<'static, $inner>;
-
-            fn try_write()
-                -> Result<Self::WriteGuard, <Self as $crate::SingletonWrite>::Error>
+            fn try_write() -> Option<Self::WriteGuard>
             {
-                let g =
-                    <$crate::SingletonMultiThread<$inner> as $crate::guard::TryWriteGuard>
-                        ::try_write(&$static_name)?;
-
-                Ok($crate::features::rw_write_guard_map(
-                    g,
-                    |l| $crate::features::lazy_lock_force_mut(l),
-                ))
+                <$crate::SingletonMultiThread<$inner> as $crate::guard::TryWriteGuard>::try_write(&$static_name)
+                    .map(|g| $crate::guard::map_mut(g, |lazy_lock| $crate::features::lazy_lock_force_mut(lazy_lock))).ok()
             }
         }
     };
@@ -174,36 +153,33 @@ macro_rules! singleton_single_thread_project {
         $vis struct $wrapper;
 
         impl $crate::SingletonRead for $wrapper {
-            type Error = <$crate::cell::SingleThread<$inner> as $crate::guard::TryReadGuard>::Error<'static>;
             type Target = $inner;
             type ReadGuard = $crate::guard::ReferenceReadGuard<'static, $inner>;
 
-            fn try_read() -> Result<Self::ReadGuard, Self::Error> {
-                let reference = $parent::try_read().map(|v| &v.value.$field)?;
-                Ok($crate::guard::ReferenceReadGuard::new(reference))
+            fn try_read() -> Option<Self::ReadGuard>
+            {
+                Some($crate::guard::ReferenceReadGuard::new($parent::try_read().map(|v| &v.inner_reference.$field)?))
             }
         }
 
         impl $crate::SingletonWrite for $wrapper {
-            type Error = <$crate::cell::SingleThread<$inner> as $crate::guard::TryWriteGuard>::Error<'static>;
             type WriteGuard = $crate::guard::ReferenceWriteGuard<'static, $inner>;
 
-            fn try_write() -> Result<Self::WriteGuard, <Self as $crate::SingletonWrite>::Error> {
-                let reference_mut = $parent::try_write().map(|v| &mut v.value.$field)?;
-                Ok($crate::guard::ReferenceWriteGuard::new(reference_mut))
+            fn try_write() -> Option<Self::WriteGuard> {
+                Some($crate::guard::ReferenceWriteGuard::new($parent::try_write().map(|v| &mut v.inner_reference.$field)?))
             }
         }
 
         impl std::ops::Deref for $wrapper {
             type Target = $inner;
             fn deref(&self) -> &Self::Target {
-                <$wrapper as $crate::SingletonRead>::read().value
+                <$wrapper as $crate::SingletonRead>::read().inner_reference
             }
         }
 
         impl std::ops::DerefMut for $wrapper {
             fn deref_mut(&mut self) -> &mut Self::Target {
-                <$wrapper as $crate::SingletonWrite>::write().value
+                <$wrapper as $crate::SingletonWrite>::write().inner_reference
             }
         }
     };
@@ -217,25 +193,21 @@ macro_rules! singleton_multi_thread_project {
         $vis struct $wrapper;
 
         impl $crate::SingletonRead for $wrapper {
-            type Error =
-                <$crate::SingletonMultiThread<$inner> as $crate::guard::TryReadGuard>::Error<'static>;
             type Target = $inner;
             type ReadGuard = $crate::features::MappedRwLockReadGuard<'static, $inner>;
 
-            fn try_read() -> Result<Self::ReadGuard, Self::Error> {
+            fn try_read() -> Option<Self::ReadGuard> {
                 let guard = $parent::try_read()?;
-                Ok($crate::features::rw_read_guard_map(guard, |v| &v.value.$field))
+                Some($crate::guard::map(guard, |v| &v.$field))
             }
         }
 
         impl $crate::SingletonWrite for $wrapper {
-            type Error =
-                <$crate::SingletonMultiThread<$inner> as $crate::guard::TryWriteGuard>::Error<'static>;
             type WriteGuard = $crate::features::MappedRwLockWriteGuard<'static, $inner>;
 
-            fn try_write() -> Result<Self::WriteGuard, <Self as $crate::SingletonWrite>::Error> {
+            fn try_write() -> Option<Self::WriteGuard> {
                 let guard = $parent::try_write()?;
-                Ok($crate::features::rw_write_guard_map(guard, |v| &mut v.value.$field))
+                Ok($crate::guard::map_mut(guard, |v| &mut v.$field))
             }
         }
     };
@@ -294,28 +266,16 @@ pub mod features
     #[must_use]
     #[inline(always)]
     pub fn lazy_lock_force_mut<T,F>(this: &mut std::sync::LazyLock<T, F>) -> &mut T
-        where F: FnOnce()->T
+        where F: FnOnce() -> T
     {
         std::sync::LazyLock::force_mut(this)
     }
 
     #[must_use]
     #[inline(always)]
-    pub fn rw_read_guard_map<'rwlock,T, U, F>(orig: std::sync::RwLockReadGuard<'rwlock,T>, f: F) -> std::sync::MappedRwLockReadGuard<'rwlock, U>
-    where
-        F: FnOnce(&T) -> &U,
-        U: ?Sized
+    pub fn lazy_cell_force_mut<T,F>(this: &mut std::cell::LazyCell<T, F>) -> &mut T
+        where F: FnOnce() -> T
     {
-        std::sync::RwLockReadGuard::map(orig, f)
-    }
-
-    #[must_use]
-    #[inline(always)]
-    pub fn rw_write_guard_map<'rwlock,T, U, F>(orig: std::sync::RwLockWriteGuard<'rwlock,T>, f: F) -> std::sync::MappedRwLockWriteGuard<'rwlock, U>
-    where
-        F: FnOnce(&mut T) -> &mut U,
-        U: ?Sized
-    {
-        std::sync::RwLockWriteGuard::map(orig, f)
+        std::cell::LazyCell::force_mut(this)
     }
 }
