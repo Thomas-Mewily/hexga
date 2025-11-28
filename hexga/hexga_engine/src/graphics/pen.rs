@@ -157,20 +157,22 @@ impl AppPen
                     rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
                     rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
 
+                    let texture_index = 1;
+                    let offset = &[];
                     match &dc.texture
                     {
                         DrawTexture::None =>
                         {
-                            rpass.set_bind_group(1, &self.white_pixel.as_ref().unwrap().shared.bind_group, &[])
+                            rpass.set_bind_group(texture_index, &self.white_pixel.as_ref().unwrap().shared.bind_group, offset)
                         },
                         DrawTexture::Texture(texture) =>
                         {
-                            rpass.set_bind_group(1, &texture.shared.bind_group, &[])
+                            rpass.set_bind_group(texture_index, &texture.shared.bind_group, offset)
                         },
                         DrawTexture::Asset(asset) => match asset.get_or_placeholder()
                         {
-                            Some(texture) => rpass.set_bind_group(1, &texture.shared.bind_group, &[]),
-                            None => rpass.set_bind_group(1, &self.white_pixel.as_ref().unwrap().shared.bind_group, &[]),
+                            Some(texture) => rpass.set_bind_group(1, &texture.shared.bind_group, offset),
+                            None => rpass.set_bind_group(texture_index, &self.white_pixel.as_ref().unwrap().shared.bind_group, offset),
                         },
                     };
                     //let texture = dc.texture.as_ref().unwrap_or(self.white_pixel.as_ref().unwrap());
