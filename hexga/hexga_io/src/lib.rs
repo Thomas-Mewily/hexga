@@ -46,7 +46,7 @@ pub mod prelude
 }
 
 
-pub trait IoLoad : Load
+pub trait IoLoad : Load + Sized
 {
     fn load<P>(path: P) -> IoResult<Self> where P: AsRef<Path>
     {

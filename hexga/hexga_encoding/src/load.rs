@@ -61,7 +61,7 @@ pub trait Load : LoadExtension + for<'de> CfgDeserialize<'de>
         }
 
         #[allow(unreachable_code)]
-        Err(EncodeError::load_unsupported_extension::<Self>(extension))
+        Err(EncodeError::load_unsupported_extension::<Self>(extension.to_owned()))
     }
 }
 impl<T> Load for T where T: LoadExtension + for<'de> CfgDeserialize<'de> + ?Sized {}

@@ -10,6 +10,12 @@ pub struct Texture
 {
     pub(crate) shared : Arc<GpuTexture>
 }
+impl Into<Texture> for &Texture
+{
+    fn into(self) -> Texture {
+        self.clone()
+    }
+}
 
 #[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for Texture

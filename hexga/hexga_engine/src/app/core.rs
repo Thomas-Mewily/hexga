@@ -6,6 +6,8 @@ pub struct AppCore
     /*
     pub(crate) gpu: Option<AppGpu>,
     */
+    pub(crate) already_init: bool,
+
     pub(crate) clipboard: AppClipboard,
     pub(crate) pen:       Option<AppPen>,
     pub(crate) input:     AppInput,
@@ -27,15 +29,17 @@ impl AppCore
 
     pub fn exit(&mut self)
     {
-        let _ = self.send_event(AppInternalEvent::Exit);
+        //let _ = self.send_event(AppInternalEvent::Exit);
+        self.window.destroy();
+        self.proxy = None;
     }
 
-    pub fn send_event(&mut self, event: AppInternalEvent)
+    pub(crate) fn send_event(&mut self, event: AppInternalEvent)
     {
         let _ = self.try_send_event(event);
     }
 
-    pub fn try_send_event(&mut self, event: AppInternalEvent) -> Result<(), ()>
+    pub(crate) fn try_send_event(&mut self, event: AppInternalEvent) -> Result<(), ()>
     {
         match &self.proxy
         {
@@ -58,18 +62,16 @@ impl AppCore
             perf: AppPerf::new(),
             pen: None,
             proxy: None,
+            already_init: false,
         }
     }
 
     pub(crate) fn init(&mut self, param: AppParam, proxy: EventLoopProxy)
     {
+        assert_eq!(self.already_init, false);
         self.param = param;
         self.proxy = Some(proxy);
-    }
-
-    pub fn destroy(&mut self)
-    {
-        todo!()
+        self.already_init = true;
     }
 }
 
@@ -124,8 +126,15 @@ impl App
 }
     */
 
+#[non_exhaustive]
 #[derive(Default, Debug, Clone)]
 pub struct AppParam
 {
     pub title: String,
+}
+
+impl AppParam
+{
+    pub fn new() -> Self { ___() }
+    pub fn with_title(self, title: impl Into<String>) -> Self { Self { title: title.into(), ..self } }
 }

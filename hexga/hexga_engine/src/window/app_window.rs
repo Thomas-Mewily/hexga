@@ -1,3 +1,5 @@
+use winit::platform::windows::WindowAttributesExtWindows;
+
 use super::*;
 
 singleton_single_thread_project!(pub Window, AppWindow, App, window );
@@ -24,7 +26,8 @@ impl AppWindow
         if self.active.is_none()
         {
             #[allow(unused_mut)]
-            let mut win_attr = WinitWindow::default_attributes().with_title(App.param.title.to_owned());
+            let mut win_attr = WinitWindow::default_attributes()
+                .with_title(App.param.title.to_owned());
 
             #[cfg(target_arch = "wasm32")]
             {

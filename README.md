@@ -4,14 +4,9 @@ Theses crates are currently in **beta** and **experimental**.
 They are subject to **breaking changes** in future releases.
 Use them at your own risk, and keep in mind that the API may change in future versions.
 
-## Toolings & Nightly
+## Design
 
-HexGa currently use nightly to have access to:
-
-- `get_disjoint_mut_helpers` : [GetDisjointMutIndex trait from the slice::get_disjoint_mut()](https://doc.rust-lang.org/std/primitive.slice.html#method.get_disjoint_mut)
-- `formatting_options`: Enables formatting each grid element individually ahead of time, so that proper padding can be applied. This ensures values are consistently aligned when displayed in a grid view.
-
-HexGa is **heavily trait-based**. For the best development experience, use the **latest version of Rust Analyzer** (the preview version on VS Code for example), which currently features the new trait solver. This makes autocompletion much faster.
+HexGa is **heavily trait-based**.
 
 ## HexGa
 

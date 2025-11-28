@@ -76,7 +76,7 @@ pub trait Save : SaveExtension
         }
 
         #[allow(unreachable_code)]
-        Err(EncodeError::save_unsupported_extension::<Self>(extension))
+        Err(EncodeError::save_unsupported_extension::<Self>(extension.to_owned()))
     }
 }
 impl<T> Save for T where T:SaveExtension + ?Sized {}

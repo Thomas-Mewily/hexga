@@ -181,11 +181,11 @@ impl<T> AssetManager<T> where T: Async
                 return Asset::_new(state, AssetPersistance::Generated);
             }
             AssetPersistance::Persistant(path) => *path,
-        };
+        }.with_extension("");
 
         let r = self.inner.read().unwrap();
 
-        if let Some(storage) = r.values.get(path)
+        if let Some(storage) = r.values.get(&path)
         {
             match storage
             {
@@ -209,7 +209,7 @@ impl<T> AssetManager<T> where T: Async
             AssetLifetime::ReferenceCounted => asset.clone().into(),
             AssetLifetime::Persistant => Asset::downgrade(&asset).into(),
         };
-        w.values.insert(path.to_owned(), storage);
+        w.values.insert(path, storage);
         asset
     }
 

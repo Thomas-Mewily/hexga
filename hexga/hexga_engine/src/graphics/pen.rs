@@ -1,9 +1,16 @@
+use hexga::singleton::singleton_single_thread_access;
+
 use super::*;
 
 pub type GpuDevice = wgpu::Device;
 pub(crate) type GpuEvent = Result<AppPen,String>;
 
-singleton_single_thread_project!(pub Pen,AppPen,App,pen);
+singleton_single_thread_access!(
+    pub Pen,
+    AppPen,
+    { App::try_read().map(|v|v.inner_reference.pen.as_ref()).flatten().map(|v| v.into()) },
+    { App::try_write().map(|v|v.inner_reference.pen.as_mut()).flatten().map(|v| v.into()) }
+);
 
 
 #[derive(Debug)]
@@ -150,8 +157,24 @@ impl AppPen
                     rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
                     rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
 
-                    let texture = dc.texture.as_ref().unwrap_or(self.white_pixel.as_ref().unwrap());
-                    rpass.set_bind_group(1, &texture.shared.bind_group, &[]);
+                    match &dc.texture
+                    {
+                        DrawTexture::None =>
+                        {
+                            rpass.set_bind_group(1, &self.white_pixel.as_ref().unwrap().shared.bind_group, &[])
+                        },
+                        DrawTexture::Texture(texture) =>
+                        {
+                            rpass.set_bind_group(1, &texture.shared.bind_group, &[])
+                        },
+                        DrawTexture::Asset(asset) => match asset.get_or_placeholder()
+                        {
+                            Some(texture) => rpass.set_bind_group(1, &texture.shared.bind_group, &[]),
+                            None => rpass.set_bind_group(1, &self.white_pixel.as_ref().unwrap().shared.bind_group, &[]),
+                        },
+                    };
+                    //let texture = dc.texture.as_ref().unwrap_or(self.white_pixel.as_ref().unwrap());
+                    //rpass.set_bind_group(1, bindgroup, &[]);
 
                     match &dc.geometry
                     {
@@ -259,10 +282,10 @@ impl AppPen
         let mut backends = wgpu::Backends::empty();
         backends |= wgpu::Backends::GL;
         backends |= wgpu::Backends::METAL;
-        backends |= wgpu::Backends::DX12;
+        //backends |= wgpu::Backends::DX12; // Seem to Allocate at least 250 MB of RAM
         backends |= wgpu::Backends::BROWSER_WEBGPU;
         // Todo: make a flag for it
-        //backends |= wgpu::Backends::VULKAN;
+        // backends |= wgpu::Backends::VULKAN; // Why it is slow as hell to start
 
 
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
@@ -296,15 +319,19 @@ impl AppPen
             .await
             .map_err(|_| "Failed to find an appropriate adapter".to_owned())?;
 
+        //rintln!();
+        //println!("{:?}", adapter.get_info());
+        //println!();
+
+        let required_limits = wgpu::Limits::default();
+
         // Create the logical device and command queue
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor {
                 label: None,
                 required_features: wgpu::Features::empty(),
-                // Make sure we use the texture resolution limits from the adapter, so we can support images the size of the swapchain.
-                required_limits: wgpu::Limits::downlevel_webgl2_defaults()
-                    .using_resolution(adapter.limits()),
-                memory_hints: wgpu::MemoryHints::Performance,
+                required_limits,
+                memory_hints: wgpu::MemoryHints::MemoryUsage,
                 trace: wgpu::Trace::Off,
             })
             .await

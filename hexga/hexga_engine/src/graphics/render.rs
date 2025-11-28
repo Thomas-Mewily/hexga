@@ -46,9 +46,10 @@ impl GpuRender
     }
 
 
-    pub fn texture_replace(&mut self, texture: Option<impl AsRef<Texture>>) -> &mut Self
+    pub fn texture_replace<D>(&mut self, texture: D) -> &mut Self
+        where D: Into<DrawTexture>
     {
-        self.param_map(|p| p.texture = texture.map(|v| v.as_ref().clone()));
+        self.param_map(|p| p.texture = texture.into());
         self
     }
 
@@ -183,15 +184,68 @@ pub struct DrawParam
     pub viewport_min_depth: float,
     pub viewport_max_depth: float,
     pub scissor : Rect2i,
-    pub texture: Option<Texture>,
+    pub texture: DrawTexture,
 }
 impl Default for DrawParam
 {
     fn default() -> Self {
-        Self { camera: ___(), viewport: ___(), viewport_min_depth: 0., viewport_max_depth: 1., scissor: ___(), texture: None }
+        Self { camera: ___(), viewport: ___(), viewport_min_depth: 0., viewport_max_depth: 1., scissor: ___(), texture: ___() }
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum DrawTexture
+{
+    None,
+    Texture(Texture),
+    Asset(Asset<Texture>),
+}
+impl Default for DrawTexture
+{
+    fn default() -> Self {
+        Self::None
+    }
+}
+impl From<()> for DrawTexture
+{
+    fn from(value: ()) -> Self {
+        Self::None
+    }
+}
+impl From<Texture> for DrawTexture
+{
+    fn from(value: Texture) -> Self {
+        Self::Texture(value)
+    }
+}
+impl From<&Texture> for DrawTexture
+{
+    fn from(value: &Texture) -> Self {
+        Self::Texture(value.clone())
+    }
+}
+impl<T> From<Option<T>> for DrawTexture where T: Into<Texture>
+{
+    fn from(value: Option<T>) -> Self {
+        match value
+        {
+            Some(value) => Self::Texture(value.into()),
+            None => Self::None,
+        }
+    }
+}
+impl From<Asset<Texture>> for DrawTexture
+{
+    fn from(value: Asset<Texture>) -> Self {
+        Self::Asset(value)
+    }
+}
+impl From<&Asset<Texture>> for DrawTexture
+{
+    fn from(value: &Asset<Texture>) -> Self {
+        Self::Asset(value.clone())
+    }
+}
 
 #[derive(Clone, Debug)]
 pub enum DrawGeometry

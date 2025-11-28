@@ -4,16 +4,13 @@
 #![allow(unused_mut)]
 use hexga_engine::prelude::*;
 
-//
-type Texture2DTmp = Asset<Texture>;
-
 struct MyApp
 {
     dpad: BindingDpad,
     nb_split: float,
     camera: Camera3D,
     time: Time,
-    texture : Texture2DTmp,
+    texture : Asset<Texture>,
 }
 
 impl Application for MyApp
@@ -84,7 +81,13 @@ impl Application for MyApp
             self.camera.perspective.aspect = r.size.x / r.size.y;
             Pen.set_matrix(self.camera.matrix());
 
-            Pen.texture_replace(Some(&self.texture));
+            //Pen.texture_replace(Some(&self.texture));
+            //let texture = self.texture.get_or_placeholder().unwrap();
+            //let t2 = &*texture;
+            //Pen.texture_replace(Some(t2));
+            //dbg!(&self.texture);
+            Pen.texture_replace(&self.texture);
+            //Pen.texture_replace(None::<Texture>);
 
             Pen.geometry
             (
@@ -120,7 +123,8 @@ fn main()
             },
             viewport: None
         };
-    let _ = MyApp { nb_split: 3., camera, time: zero(), dpad: ___(), texture: Texture2DTmp::load("./tmp/engine/src/test") }.run();
+    let _ = MyApp { nb_split: 3., camera, time: zero(), dpad: ___(), texture: Asset::load("./tmp/engine/src/test") }
+        .run_with_param(AppParam::new().with_title("Hello World Hexga"));
 
     println!("Goodbye");
 }

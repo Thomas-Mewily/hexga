@@ -7,7 +7,9 @@ use std::marker::PhantomData;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::num::*;
 use std::ops::*;
+#[allow(unused_imports)]
 use std::rc::{Rc, Weak as RcWeak};
+#[allow(unused_imports)]
 use std::sync::{Arc, Mutex, RwLock, Weak as ArcWeak};
 
 use super::*;
@@ -139,11 +141,11 @@ impl_load_and_save!(
 impl<T: SaveExtension> SaveExtension for Saturating<T> {
 }
 
-impl<T: LoadExtension> LoadExtension for Saturating<T> where for<'de> Saturating<T>: serde::Deserialize<'de> {
+impl<T: LoadExtension> LoadExtension for Saturating<T> where for<'de> Saturating<T>: CfgDeserialize<'de> {
 }
 
-impl<T, const N: usize> SaveExtension for [T; N] where [T; N]: Serialize {}
-impl<T, const N: usize> LoadExtension for [T; N] where Self: for<'de> Deserialize<'de> {}
+impl<T, const N: usize> SaveExtension for [T; N] where [T; N]: CfgSerialize {}
+impl<T, const N: usize> LoadExtension for [T; N] where Self: for<'de> CfgDeserialize<'de> {}
 
 
 #[cfg_attr(docsrs, doc(fake_variadic))]

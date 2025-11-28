@@ -1,3 +1,5 @@
+use hexga::asset::HotReload;
+
 use super::*;
 
 
@@ -36,7 +38,8 @@ impl<A> AppRun for A where A:Application
 {
     fn run_with_param(self, param: AppParam) -> Result<(), ()>
     {
-        assert!(App::is_not_init(), "Can't run two app at the same time, App is a singleton");
+        // "Can't run two app at the same time"
+        if App.already_init { return Err(()); }
 
         log::init_logger();
 
@@ -46,16 +49,14 @@ impl<A> AppRun for A where A:Application
 
             std::panic::set_hook(Box::new(move |info| {
 
-                if App::is_init()
-                {
-                    App.exit();
-                }
-                //let _ = App::destroy();
+                /*
+                App.exit();
 
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     eprintln!("panic occurred: {info}");
                 }
+                */
 
                 #[cfg(target_arch = "wasm32")]
                 {
@@ -81,15 +82,14 @@ impl<A> AppRun for A where A:Application
         {
             let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 let _ = event_loop.run_app(&mut runner);
+                //App.exit();
             }));
 
-            if result.is_err() {
-                // Panic occurred, clean up App
-                let _ = App.destroy();
-            }
+            App.exit();
 
             result.ok_or_void()
         }
+
 
         // #[cfg(not(target_arch = "wasm32"))]
         // {
@@ -184,7 +184,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
     }
 
     fn exiting(&mut self, event_loop: &EventLoopActive) {
-        let _ = App.destroy();
+        let _ = App.exit();
     }
 
     fn new_events(&mut self, event_loop: &EventLoopActive, cause: winit::event::StartCause) {
@@ -245,12 +245,13 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
             AppInternalEvent::Gpu(gpu) =>
             {
                 App.pen = Some(gpu.unwrap());
+                let _ = Asset::<Texture>::manager().hot_reload();
                 App.window.request_draw();
             },
             AppInternalEvent::Exit =>
             {
                 event_loop.exit();
-                let _ = App.destroy();
+                let _ = App.exit();
             }
         }
     }

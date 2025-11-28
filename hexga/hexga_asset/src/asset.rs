@@ -31,6 +31,13 @@ pub struct Asset<T> where T: Async
 {
     pub(crate) inner: Arc<RwLock<AssetData<T>>>,
 }
+impl<T> PartialEq for Asset<T> where T: Async
+{
+    fn eq(&self, other: &Self) -> bool
+    {
+        self.ptr_eq(other)
+    }
+}
 impl<T> Clone for Asset<T> where T: Async
 {
     fn clone(&self) -> Self {
@@ -367,6 +374,11 @@ impl<T> Asset<T> where T: Async
         I: Into<AssetInit<T>>
     {
         Self::manager().update_or_create(persistance, value)
+    }
+
+    pub fn error() -> Asset<T>
+    {
+        Self::update_or_create(AssetPersistance::Generated, AssetState::Error(IoError::new("", FileError::custom("don't mind me, I'm always an error"))))
     }
 
     pub fn get_or_generate<'a,P,F,O>(persistance: P, init: F) -> Asset<T>

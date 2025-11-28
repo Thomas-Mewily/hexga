@@ -146,8 +146,8 @@ $(#[$attr])*
 }
 
 #[macro_export]
-macro_rules! singleton_single_thread_project {
-    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $inner:ty, $parent:ident, $field:ident) => {
+macro_rules! singleton_single_thread_access {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $inner:ty, $try_read:block, $try_write:block) => {
 
         $(#[$attr])*
         $vis struct $wrapper;
@@ -155,19 +155,12 @@ macro_rules! singleton_single_thread_project {
         impl $crate::SingletonRead for $wrapper {
             type Target = $inner;
             type ReadGuard = $crate::guard::ReferenceReadGuard<'static, $inner>;
-
-            fn try_read() -> Option<Self::ReadGuard>
-            {
-                Some($crate::guard::ReferenceReadGuard::new($parent::try_read().map(|v| &v.inner_reference.$field)?))
-            }
+            fn try_read() -> Option<Self::ReadGuard> { $try_read }
         }
 
         impl $crate::SingletonWrite for $wrapper {
             type WriteGuard = $crate::guard::ReferenceWriteGuard<'static, $inner>;
-
-            fn try_write() -> Option<Self::WriteGuard> {
-                Some($crate::guard::ReferenceWriteGuard::new($parent::try_write().map(|v| &mut v.inner_reference.$field)?))
-            }
+            fn try_write() -> Option<Self::WriteGuard> { $try_write }
         }
 
         impl std::ops::Deref for $wrapper {
@@ -184,6 +177,37 @@ macro_rules! singleton_single_thread_project {
         }
     };
 }
+
+
+#[macro_export]
+macro_rules! singleton_single_thread_project {
+    ($(#[$attr:meta])* $vis:vis $wrapper:ident, $inner:ty, $parent:ident, $field:ident) => {
+        $crate::singleton_single_thread_access!(
+            $(#[$attr])*
+            $vis $wrapper,
+            $inner,
+
+            {
+                {
+                    let parent = $parent::try_read()?;
+                    Some($crate::guard::ReferenceReadGuard::new(
+                        &parent.inner_reference.$field
+                    ))
+                }
+            },
+
+            {
+                {
+                    let parent = $parent::try_write()?;
+                    Some($crate::guard::ReferenceWriteGuard::new(
+                        &mut parent.inner_reference.$field
+                    ))
+                }
+            }
+        );
+    };
+}
+
 
 #[macro_export]
 macro_rules! singleton_multi_thread_project {
@@ -207,7 +231,7 @@ macro_rules! singleton_multi_thread_project {
 
             fn try_write() -> Option<Self::WriteGuard> {
                 let guard = $parent::try_write()?;
-                Ok($crate::guard::map_mut(guard, |v| &mut v.$field))
+                Some($crate::guard::map_mut(guard, |v| &mut v.$field))
             }
         }
     };
