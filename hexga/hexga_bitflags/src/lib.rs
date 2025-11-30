@@ -457,9 +457,9 @@ pub fn bitindex(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #[inline(always)]
             pub const fn bits(self) -> #repr_type { self._bits_do_not_use_it }
 
-            pub unsafe fn from_bits_unchecked(bits: #repr_type) -> Self { Self { _bits_do_not_use_it: bits} }
+            pub const unsafe fn from_bits_unchecked(bits: #repr_type) -> Self { Self { _bits_do_not_use_it: bits} }
             /// Clear the illegal bit with the mask Self::ALL
-            pub fn from_bits(bits: #repr_type) -> Self { unsafe { Self::from_bits_unchecked(bits & Self::ALL._bits_do_not_use_it) } }
+            pub const fn from_bits(bits: #repr_type) -> Self { unsafe { Self::from_bits_unchecked(bits & Self::ALL._bits_do_not_use_it) } }
 
             /// Try to create the flags from the bits, or return the illegal bit
             pub fn try_from_bits(bits: #repr_type) -> Result<Self, #repr_type>
