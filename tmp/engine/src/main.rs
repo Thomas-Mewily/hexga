@@ -1,9 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused)]
 use hexga_engine::prelude::*;
+use hexga_engine::mem::Zeroable;
 
 #[repr(C)]
-#[derive(Foo)]
+#[derive(Zeroable, Debug)]
 struct Bar
 {
     x: i32,
@@ -13,5 +14,6 @@ struct Bar
 
 fn main()
 {
-    Bar::foo();
+    let b = Bar::zeroed();
+    dbg!(b);
 }

@@ -10,7 +10,10 @@ edition.workspace = true
 [features]
 default = ["derive"]
 
-derive = ["hexga_core_mem_derive"]
+derive = ["hexga_core_mem_derive", "extern_crate_std"]
+extern_crate_alloc = []
+extern_crate_std = ["extern_crate_alloc"]  # std requires alloc
 
 [dependencies]
 hexga_core_mem_derive = { workspace = true, optional = true }
+hexga_map_on.workspace = true

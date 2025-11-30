@@ -147,47 +147,17 @@ impl<T: LoadExtension> LoadExtension for Saturating<T> where for<'de> Saturating
 impl<T, const N: usize> SaveExtension for [T; N] where [T; N]: CfgSerialize {}
 impl<T, const N: usize> LoadExtension for [T; N] where Self: for<'de> CfgDeserialize<'de> {}
 
-
-#[cfg_attr(docsrs, doc(fake_variadic))]
-#[cfg_attr(
-    docsrs,
-    doc = "This trait is implemented for tuples up to 16 items long."
-)]
-impl<T> SaveExtension for (T,) where T: SaveExtension {}
-impl<T> LoadExtension for (T,) where T: LoadExtension {}
-
-macro_rules! tuple_impls {
-    // Each line provides a count and a list of index-type pairs
+map_on_tuple!(
     (
         $(
             $len:literal => ( $( $idx:tt $typ:ident )+ )
         )*
     ) => {
         $(
-            impl<$( $typ: SaveExtension ),+> SaveExtension for ( $( $typ ),+ ) {
-                        }
-
-            impl<$( $typ: LoadExtension ),+> LoadExtension for ( $( $typ ),+ ) {
-                        }
+            #[cfg_attr(docsrs, doc(fake_variadic))]
+            impl<$( $typ: SaveExtension ),+> SaveExtension for ( $( $typ ),+ ,) { }
+            #[cfg_attr(docsrs, doc(fake_variadic))]
+            impl<$( $typ: LoadExtension ),+> LoadExtension for ( $( $typ ),+ ,) { }
         )*
     };
-}
-
-
-tuple_impls! {
-    2 => (0 T0 1 T1)
-    3 => (0 T0 1 T1 2 T2)
-    4 => (0 T0 1 T1 2 T2 3 T3)
-    5 => (0 T0 1 T1 2 T2 3 T3 4 T4)
-    6 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5)
-    7 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6)
-    8 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7)
-    9 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8)
-    10 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9)
-    11 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10)
-    12 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11)
-    13 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 12 T12)
-    14 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 12 T12 13 T13)
-    15 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 12 T12 13 T13 14 T14)
-    16 => (0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 12 T12 13 T13 14 T14 15 T15)
-}
+);

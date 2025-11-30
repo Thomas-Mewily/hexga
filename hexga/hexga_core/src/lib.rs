@@ -29,6 +29,7 @@ pub mod traits;
 pub mod utils;
 pub mod wrapper;
 pub use hexga_core_mem as mem;
+pub use hexga_map_on as map_on;
 
 use prelude::*;
 pub mod prelude
@@ -47,4 +48,5 @@ pub mod prelude
     pub use super::utils::*;
     pub use super::wrapper::*;
     pub use super::mem::prelude::*;
+    pub use super::map_on::prelude::*;
 }

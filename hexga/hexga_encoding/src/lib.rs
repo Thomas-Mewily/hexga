@@ -1,9 +1,9 @@
-#[allow(unused_imports)]
 use std::io::{Read,Write,BufReader};
 use std::{fmt::{Display,Formatter}, str::Utf8Error, string::FromUtf8Error};
 use std::borrow::Cow;
 use hexga_core::cfg::*;
 use hexga_core::utils::*;
+use hexga_core::map_on::prelude::*;
 
 #[cfg(feature = "serde")]
 use serde::

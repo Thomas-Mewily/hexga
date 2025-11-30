@@ -1,5 +1,4 @@
-pub use hexga_core as core;
-
+pub use hexga_core::*;
 pub use hexga_generational as generational;
 pub use hexga_math as math;
 pub use hexga_bitflags as bitflags;
@@ -14,7 +13,7 @@ pub use hexga_encoding as encoding;
 //pub use hexga_undo_redo as undo;
 
 #[cfg(feature = "serde")]
-pub use hexga_io::*;
+pub use hexga_io as io;
 
 #[cfg(feature = "hexga_asset")]
 pub use hexga_asset as asset;
@@ -34,7 +33,7 @@ pub mod prelude
     //pub use crate::random::*;
     pub use crate::singleton::prelude::*;
     pub use crate::encoding::prelude::*;
-    //pub use crate::map_on::*;
+    //pub use crate::map_on::prelude::*;
 
     /*
     #[allow(unused_imports)]
@@ -63,3 +62,7 @@ pub mod prelude
     #[allow(hidden_glob_reexports)]
     pub(crate) mod prelude {}
 }
+
+// Reexport the trait with the corretc path for proc macro
+#[doc(hidden)]
+pub use hexga_core::mem as hexga_core_mem;

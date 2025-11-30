@@ -24,6 +24,11 @@ pub struct Vector<T, const N : usize>
     pub(crate) array : [T; N],
 }
 
+unsafe impl<T, const N : usize> Zeroable for Vector<T, N> where T: Zeroable
+{
+
+}
+
 impl_generic_array!(Vector);
 
 impl<T, const N : usize> Default for Vector<T, N> where T:Default
