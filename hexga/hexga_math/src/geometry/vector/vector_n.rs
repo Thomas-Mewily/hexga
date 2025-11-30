@@ -24,7 +24,7 @@ pub struct Vector<T, const N : usize>
     pub(crate) array : [T; N],
 }
 
-unsafe impl<T, const N : usize> Zeroable for Vector<T, N> where T: Zeroable
+unsafe impl<T, const N : usize> BitsZero for Vector<T, N> where T: BitsZero
 {
 
 }

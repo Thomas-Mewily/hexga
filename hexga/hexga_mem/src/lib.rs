@@ -6,11 +6,11 @@
 use hexga_map_on::prelude::*;
 use core::{marker::{PhantomData, PhantomPinned}, num::*};
 
-mod zeroable;
-pub use zeroable::*;
+mod bits_zero;
+pub use bits_zero::*;
 
-mod zeroable_in_option;
-pub use zeroable_in_option::*;
+mod bits_zero_in_option;
+pub use bits_zero_in_option::*;
 
 
 #[cfg(feature = "extern_crate_alloc")]
@@ -21,9 +21,9 @@ extern crate std;
 
 pub mod prelude
 {
-    pub use super::{Zeroable,Zeroed};
+    pub use super::{BitsZero,Zeroed};
 
     #[cfg(feature = "derive")]
-    pub use hexga_core_mem_derive::Zeroable;
+    pub use hexga_mem_derive::Zeroable;
 }
 

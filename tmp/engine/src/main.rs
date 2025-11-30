@@ -1,10 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused)]
 use hexga_engine::prelude::*;
-use hexga_engine::mem::Zeroable;
 
 #[repr(C)]
-#[derive(Zeroable, Debug)]
+#[derive(BitsZero, Debug)]
 struct Bar
 {
     x: i32,

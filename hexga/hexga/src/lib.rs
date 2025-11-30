@@ -65,4 +65,4 @@ pub mod prelude
 
 // Reexport the trait with the corretc path for proc macro
 #[doc(hidden)]
-pub use hexga_core::mem as hexga_core_mem;
+pub use hexga_core::mem as hexga_mem;

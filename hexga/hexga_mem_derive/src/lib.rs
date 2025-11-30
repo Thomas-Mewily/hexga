@@ -23,13 +23,13 @@ pub fn derive_zeroable(input: TokenStream) -> TokenStream {
         for param in generics.params.iter() {
             if let syn::GenericParam::Type(ty_param) = param {
                 let ident = &ty_param.ident;
-                wc.predicates.push(parse_quote! { #ident: Zeroable });
+                wc.predicates.push(parse_quote! { #ident: ::hexga_mem::BitsZero });
             }
         }
     }
 
     let expanded = quote! {
-        unsafe impl #impl_generics Zeroable for #name #ty_generics
+        unsafe impl #impl_generics ::hexga_mem::BitsZero for #name #ty_generics
         #where_clause
         {
         }

@@ -28,7 +28,7 @@ pub mod sync;
 pub mod traits;
 pub mod utils;
 pub mod wrapper;
-pub use hexga_core_mem as mem;
+pub use hexga_mem as mem;
 pub use hexga_map_on as map_on;
 
 use prelude::*;
