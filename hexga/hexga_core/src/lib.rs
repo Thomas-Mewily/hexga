@@ -28,7 +28,7 @@ pub mod sync;
 pub mod traits;
 pub mod utils;
 pub mod wrapper;
-pub mod mem;
+pub use hexga_core_mem as mem;
 
 use prelude::*;
 pub mod prelude
@@ -46,5 +46,5 @@ pub mod prelude
     pub use super::traits::prelude::*;
     pub use super::utils::*;
     pub use super::wrapper::*;
-    pub use super::mem::*;
+    pub use super::mem::prelude::*;
 }

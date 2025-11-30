@@ -1,0 +1,16 @@
+[package]
+name = "hexga_core_mem"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[features]
+default = ["derive"]
+
+derive = ["hexga_core_mem_derive"]
+
+[dependencies]
+hexga_core_mem_derive = { workspace = true, optional = true }

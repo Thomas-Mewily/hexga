@@ -1,16 +1,11 @@
 [package]
-name = "hexga_encoding_derive"
+name = "hexga_core_mem_derive"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 repository.workspace = true
 edition.workspace = true
-readme = "README.md"
-
-keywords = []
-description = "hexga_encoding derive macro"
-categories = ["encoding"]
 
 [lib]
 proc-macro = true
