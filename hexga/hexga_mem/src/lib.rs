@@ -24,6 +24,6 @@ pub mod prelude
     pub use super::{BitsZero,Zeroed};
 
     #[cfg(feature = "derive")]
-    pub use hexga_mem_derive::Zeroable;
+    pub use hexga_mem_derive::BitsZero;
 }
 

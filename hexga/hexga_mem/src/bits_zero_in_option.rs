@@ -3,13 +3,13 @@ use super::*;
 // Note(Mewily) Indeed, it is super neat !
 unsafe impl<T: BitsZeroInOption> BitsZero for Option<T> {}
 
-/// Trait for types which are [Zeroable](Zeroable) when wrapped in
+/// Trait for types which are [BitsZero](BitsZero) when wrapped in
 /// [Option](core::option::Option).
 ///
 /// ## Safety
 ///
 /// * `Option<YourType>` must uphold the same invariants as
-///   [Zeroable](Zeroable).
+///   [BitsZero](BitsZero).
 pub unsafe trait BitsZeroInOption: Sized {}
 
 unsafe impl BitsZeroInOption for NonZeroI8 {}

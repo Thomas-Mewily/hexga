@@ -2,8 +2,8 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput, parse_quote};
 use quote::quote;
 
-#[proc_macro_derive(Zeroable)]
-pub fn derive_zeroable(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(BitsZero)]
+pub fn derive_bits_zero(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     let name = input.ident;

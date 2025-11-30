@@ -26,7 +26,7 @@ unsafe impl<T: BitsZero> BitsZero for core::num::Saturating<T> {}
 // Note: we can't implement this for all `T: ?Sized` types because it would
 // create NULL pointers for vtables.
 // Maybe one day this could be changed to be implemented for
-// `T: ?Sized where <T as core::ptr::Pointee>::Metadata: Zeroable`.
+// `T: ?Sized where <T as core::ptr::Pointee>::Metadata: BitsZero`.
 unsafe impl<T> BitsZero for *mut T {}
 unsafe impl<T> BitsZero for *const T {}
 unsafe impl<T> BitsZero for *mut [T] {}
