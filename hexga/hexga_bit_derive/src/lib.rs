@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput, parse_quote};
 use quote::quote;
 
-#[proc_macro_derive(BitsZero)]
+#[proc_macro_derive(BitZero)]
 pub fn derive_bits_zero(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
@@ -23,13 +23,13 @@ pub fn derive_bits_zero(input: TokenStream) -> TokenStream {
         for param in generics.params.iter() {
             if let syn::GenericParam::Type(ty_param) = param {
                 let ident = &ty_param.ident;
-                wc.predicates.push(parse_quote! { #ident: ::hexga_mem::BitsZero });
+                wc.predicates.push(parse_quote! { #ident: ::hexga_bit::BitZero });
             }
         }
     }
 
     let expanded = quote! {
-        unsafe impl #impl_generics ::hexga_mem::BitsZero for #name #ty_generics
+        unsafe impl #impl_generics ::hexga_bit::BitZero for #name #ty_generics
         #where_clause
         {
         }

@@ -9,4 +9,4 @@ edition.workspace = true
 
 [dependencies]
 hexga_engine.workspace = true
-hexga_mem.workspace = true
+hexga_bit.workspace = true

@@ -9,6 +9,7 @@ macro_rules! map_on_integer_unsigned {
 }
 
 
+
 /// `i8`, `i16`, `i32`, `i64`, `isize`
 #[macro_export]
 macro_rules! map_on_integer_signed {

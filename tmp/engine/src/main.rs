@@ -3,7 +3,7 @@
 use hexga_engine::prelude::*;
 
 #[repr(C)]
-#[derive(BitsZero, Debug)]
+#[derive(BitZero, Debug)]
 struct Bar
 {
     x: i32,

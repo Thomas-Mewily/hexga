@@ -697,8 +697,8 @@ dependencies = [
 name = "engine"
 version = "0.0.11-beta.43"
 dependencies = [
+ "hexga_bit",
  "hexga_engine",
- "hexga_mem",
 ]
 
 [[package]]
@@ -1178,6 +1178,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_bit"
+version = "0.0.11-beta.43"
+dependencies = [
+ "hexga_bit_derive",
+ "hexga_map_on",
+]
+
+[[package]]
+name = "hexga_bit_derive"
+version = "0.0.11-beta.43"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "hexga_bitflags"
 version = "0.0.11-beta.43"
 dependencies = [
@@ -1192,8 +1209,8 @@ dependencies = [
 name = "hexga_core"
 version = "0.0.11-beta.43"
 dependencies = [
+ "hexga_bit",
  "hexga_map_on",
- "hexga_mem",
  "serde",
 ]
 
@@ -1296,23 +1313,6 @@ dependencies = [
  "rayon",
  "serde",
  "web-time",
-]
-
-[[package]]
-name = "hexga_mem"
-version = "0.0.11-beta.43"
-dependencies = [
- "hexga_map_on",
- "hexga_mem_derive",
-]
-
-[[package]]
-name = "hexga_mem_derive"
-version = "0.0.11-beta.43"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

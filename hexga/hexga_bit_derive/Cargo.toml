@@ -1,5 +1,5 @@
 [package]
-name = "hexga_mem_derive"
+name = "hexga_bit_derive"
 version.workspace = true
 authors.workspace = true
 license.workspace = true

@@ -1,5 +1,5 @@
 [package]
-name = "hexga_mem"
+name = "hexga_bit"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -10,10 +10,10 @@ edition.workspace = true
 [features]
 default = ["derive"]
 
-derive = ["hexga_mem_derive", "extern_crate_std"]
+derive = ["hexga_bit_derive", "extern_crate_std"]
 extern_crate_alloc = []
 extern_crate_std = ["extern_crate_alloc"]  # std requires alloc
 
 [dependencies]
-hexga_mem_derive = { workspace = true, optional = true }
+hexga_bit_derive = { workspace = true, optional = true }
 hexga_map_on.workspace = true

@@ -45,10 +45,12 @@ impl BufferCommon for UntypedBuffer
     fn wgpu_bytes_capacity(&self) -> BufferAddress { self.buffer.wgpu_bytes_len() }
     fn as_wgpu_buffer(&self) -> &wgpu::Buffer { self.buffer.as_wgpu_buffer() }
 }
-impl<T> BufferReadWith<T> for UntypedBuffer
+impl<T> BufferRead<T> for UntypedBuffer
 {
-    fn read_in_with(&self, vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult {
-        todo!()
+    fn read_in(&self, vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult {
+        AAAAAAAAAAA
+        //self.buffer.read_in(vec, executor);
+        //self
     }
 }
 
@@ -110,35 +112,20 @@ impl GpuUntypedBuffer
 
 const DEFAULT_BUFFER_READ_CAPACITY : usize = 8 * 512;
 
-/*
-pub trait BufferRead<'a,T> : HasGpuExecutor<'a> + BufferReadWith<T>
-{
-    fn read(&'a self) -> GpuResult<Vec<T>>
-    {
-        self.read_with(self.executor())
-    }
-    fn read_in(&'a self, vec: &mut Vec<T>) -> GpuResult
-    {
-        self.read_in_with(vec, self.executor())
-    }
-}
-impl<'a,T,S> BufferRead<'a,T> for S where S: HasGpuExecutor<'a> + BufferReadWith<T> {}
-*/
-
-pub trait BufferReadWith<T> : BufferCommon
+pub trait BufferRead<T> : BufferCommon
 {
     fn wgpu_len(&self) -> BufferAddress { self.wgpu_bytes_len() / std::mem::size_of::<T>() as u64 }
     fn wgpu_capacity(&self) -> BufferAddress { self.wgpu_bytes_capacity() / std::mem::size_of::<T>() as u64 }
     fn len(&self) -> BufferAddress { self.wgpu_len() as _ }
     fn capacity(&self) -> BufferAddress { self.wgpu_capacity() as _ }
 
-    fn read_with(&self, executor: ExecutorRef<'_>) -> GpuResult<Vec<T>>
+    fn read(&self, executor: ExecutorRef<'_>) -> GpuResult<Vec<T>>
     {
         let mut v = Vec::with_capacity(DEFAULT_BUFFER_READ_CAPACITY);
-        self.read_in_with(&mut v, executor)?;
+        self.read_in(&mut v, executor)?;
         Ok(v)
     }
-    fn read_in_with(&self, vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult;
+    fn read_in(&self, vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult;
 }
 
 fn create_staging_and_copy<'a>(src: &wgpu::Buffer, executor: ExecutorRef<'a>) -> wgpu::Buffer {
@@ -159,13 +146,23 @@ fn create_staging_and_copy<'a>(src: &wgpu::Buffer, executor: ExecutorRef<'a>) ->
 
     staging
 }
-impl BufferReadWith<u8> for wgpu::Buffer
+
+fn cast_u8_slice_to_t_slice<T: Copy>(bytes: &[u8]) -> &[T] {
+    let ptr = bytes.as_ptr() as *const T;
+    let len = bytes.len() / std::mem::size_of::<T>();
+    unsafe { std::slice::from_raw_parts(ptr, len) }
+}
+
+
+// Todo: better check about bit pattern with T (bytemuck or extend the hexga_bit with bytemuck like trait)
+impl<T> BufferRead<T> for wgpu::Buffer
+    where T: 'static + Copy + BitZero
 {
-    fn read_in_with(&self, mut vec: &mut Vec<u8>, executor: ExecutorRef<'_>) -> GpuResult
+    fn read_in(&self, mut vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult
     {
         let size = self.size() as usize;
         if vec.len() < size {
-            vec.resize(size, 0);
+            vec.resize(size / std::mem::size_of::<T>(), T::zeroed());
         }
 
         let executor = executor.executor();
@@ -187,7 +184,8 @@ impl BufferReadWith<u8> for wgpu::Buffer
         match status.lock().unwrap().take().unwrap() {
             Ok(()) => {
                 let data = slice.get_mapped_range();
-                vec.copy_from_slice(&data);
+                let typed = cast_u8_slice_to_t_slice::<T>(&data);
+                vec.copy_from_slice(typed);
                 drop(data);
                 staging.unmap();
                 Ok(())
