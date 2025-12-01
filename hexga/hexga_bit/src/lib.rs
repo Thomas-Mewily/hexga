@@ -43,7 +43,10 @@ extern crate std;
 
 pub mod prelude
 {
-    pub use super::{BitZero,BitZeroed};
+    pub use super::
+    {
+        BitZero,BitZeroed,Pod,BitAllUsed,BitAnyPattern,BitResult,BitError,FromBit
+    };
 
     #[cfg(feature = "derive")]
     pub use hexga_bit_derive::BitZero;

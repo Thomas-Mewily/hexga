@@ -110,8 +110,6 @@ impl GpuUntypedBuffer
     }
 }
 
-const DEFAULT_BUFFER_READ_CAPACITY : usize = 8 * 512;
-
 pub trait BufferRead<T> : BufferCommon
 {
     fn wgpu_len(&self) -> BufferAddress { self.wgpu_bytes_len() / std::mem::size_of::<T>() as u64 }
@@ -121,7 +119,7 @@ pub trait BufferRead<T> : BufferCommon
 
     fn read(&self, executor: ExecutorRef<'_>) -> GpuResult<Vec<T>>
     {
-        let mut v = Vec::with_capacity(DEFAULT_BUFFER_READ_CAPACITY);
+        let mut v = Vec::new();
         self.read_in(&mut v, executor)?;
         Ok(v)
     }
@@ -156,7 +154,7 @@ fn cast_u8_slice_to_t_slice<T: Copy>(bytes: &[u8]) -> &[T] {
 
 // Todo: better check about bit pattern with T (bytemuck or extend the hexga_bit with bytemuck like trait)
 impl<T> BufferRead<T> for wgpu::Buffer
-    where T: 'static + Copy + BitZero
+    where T: 'static + BitAll
 {
     fn read_in(&self, mut vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult
     {
