@@ -1,3 +1,5 @@
+use hexga_graphics::ConfiguredSurface;
+
 use super::*;
 
 pub trait AsyncDebug : Async + Debug {}
@@ -39,6 +41,6 @@ pub enum FlowMessage
 pub(crate) enum AppInternalEvent
 {
     Exit,
-    Gpu(GpuResult<AppGraphics>),
+    Gpu(GpuMessage),
     //Custom(CustomEvent),
 }

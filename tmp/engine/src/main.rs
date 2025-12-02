@@ -24,7 +24,7 @@ impl Application for MyApp
 
 fn main()
 {
-    App::run(|| MyApp{});
+    MyApp::run(|| MyApp{});
     //let b = Bar::zeroed();
     //dbg!(b);
 }

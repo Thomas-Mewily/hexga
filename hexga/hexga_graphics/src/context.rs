@@ -34,25 +34,7 @@ impl Gpu
 
     pub async fn default(param: GpuParam<'_,'_>) -> GpuResult<WgpuGpu>
     {
-        let mut flags = wgpu::InstanceFlags::empty();
-        if cfg!(debug_assertions)
-        {
-            flags |= wgpu::InstanceFlags::VALIDATION;
-        }
-
-        let mut backends = wgpu::Backends::empty();
-        backends |= wgpu::Backends::GL;
-        backends |= wgpu::Backends::METAL;
-        //backends |= wgpu::Backends::DX12; // Seem to Allocate at least 250 MB of RAM
-        backends |= wgpu::Backends::BROWSER_WEBGPU;
-        // Todo: make a flag for it
-        // backends |= wgpu::Backends::VULKAN; // Why it is slow as hell to start
-
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
-            backends,
-            flags,
-            ..Default::default()
-        });
+        let instance = Instance::default().wgpu;
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {

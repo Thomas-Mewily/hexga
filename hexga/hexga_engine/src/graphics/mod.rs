@@ -7,20 +7,16 @@ pub mod prelude
 {
     pub use super::Pen;
     pub use hexga_graphics::prelude::*;
-    pub(crate) use super::{AppGraphics,wgpu};
+    pub(crate) use super::{AppGraphics,wgpu,GpuMessage};
 }
 
-singleton_single_thread_access!(
-    pub Pen,
-    AppGraphics,
-    { App::try_read().map(|v|v.inner_reference.graphics.as_ref()).flatten().map(|v| v.into()) },
-    { App::try_write().map(|v|v.inner_reference.graphics.as_mut()).flatten().map(|v| v.into()) }
-);
+singleton_single_thread_project!(pub Pen, AppGraphics, App, graphics);
 
 #[derive(Debug)]
 pub struct AppGraphics
 {
-    pub(crate) surface: ConfiguredSurface<'static>,
+    /// Destroyed on suspend and recreated on resume
+    pub(crate) surface: Option<ConfiguredSurface<'static>>,
 
     /*
     pub(crate) binding: GpuBinding,
@@ -34,9 +30,32 @@ pub struct AppGraphics
 
 impl AppGraphics
 {
+    pub(crate) fn new() -> Self
+    {
+        Self
+        {
+            surface: None
+        }
+    }
     pub(crate) fn resize(&mut self, size: Point2)
     {
-        self.surface.resize(size);
+        self.surface_mut().resize(size);
+    }
+
+    pub(crate) fn surface_mut(&mut self) -> &mut ConfiguredSurface<'static>
+    {
+        self.surface.as_mut().expect("surface was not init")
+    }
+
+    pub(crate) fn gpu_event(&mut self, msg: GpuMessage)
+    {
+        match msg
+        {
+            GpuMessage::InitSurface(surface) =>
+            {
+                self.surface = Some(surface.expect("failed to create the surface"));
+            },
+        }
     }
 }
 
@@ -58,9 +77,7 @@ impl ScopedFlow for Option<AppGraphics>
         {
             if let Some(w) = App.window.active.as_ref()
             {
-
-                todo!();
-                //AppGraphics::request(w.clone(), App.proxy.as_ref().unwrap().clone()).unwrap();
+                AppGraphics::init_surface(w.clone(), App.proxy().clone());
             }
         }
     }
@@ -84,4 +101,19 @@ impl ScopedFlow for AppGraphics
         //todo!();
         //self.send_data_to_gpu();
     }
+}
+
+
+impl AppGraphics
+{
+    pub(crate) fn init_surface(window: Arc<WinitWindow>, proxy : EventLoopProxy)
+    {
+
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum GpuMessage
+{
+    InitSurface(GpuResult<ConfiguredSurface<'static>>)
 }

@@ -3,13 +3,8 @@ use super::*;
 #[derive(Debug)]
 pub struct AppCore
 {
-    /*
-    pub(crate) gpu: Option<AppGpu>,
-    */
-    pub(crate) already_init: bool,
-
     pub(crate) clipboard: AppClipboard,
-    pub(crate) graphics:  Option<AppGraphics>,
+    pub(crate) graphics:  AppGraphics,
     pub(crate) input:     AppInput,
     pub(crate) window:    AppWindow,
     pub(crate) perf:      AppPerf,
@@ -22,15 +17,17 @@ impl AppCore
     pub fn input(&mut self) -> &mut AppInput { &mut self.input }
     pub fn window(&mut self) -> &mut AppWindow { &mut self.window }
     pub fn perf(&mut self) -> &mut AppPerf { &mut self.perf }
-    pub fn graphics(&mut self) -> &mut AppGraphics { self.graphics.as_mut().expect("graphics is not init") }
+    pub fn graphics(&mut self) -> &mut AppGraphics { &mut self.graphics }
+
+    pub(crate) fn proxy(&self) -> &EventLoopProxy { self.proxy.as_ref().expect("proxy is not init") }
 
     pub fn param(&self) -> &AppParam { &self.param }
     //pub fn param_mut(&mut self) -> &mut AppParam { &mut self.param }
-
-
+}
+impl AppCore
+{
     pub fn exit(&mut self)
     {
-        //let _ = self.send_event(AppInternalEvent::Exit);
         self.window.destroy();
         self.proxy = None;
     }
@@ -61,18 +58,16 @@ impl AppCore
             window: AppWindow::new(),
             clipboard: AppClipboard::new(),
             perf: AppPerf::new(),
-            graphics: None,
+            graphics: AppGraphics::new(),
             proxy: None,
-            already_init: false,
         }
     }
 
     pub(crate) fn init(&mut self, param: AppParam, proxy: EventLoopProxy)
     {
-        assert_eq!(self.already_init, false);
         self.param = param;
         self.proxy = Some(proxy);
-        self.already_init = true;
+        AppGraphics::init_gpu();
     }
 }
 

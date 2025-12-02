@@ -1,12 +1,13 @@
-pub use log::{info, warn, error, debug};
+use super::*;
+
+pub use ::log::{info, warn, error, debug};
 
 pub mod prelude
 {
     pub use super::{info, warn, error, debug};
 }
 
-pub(crate) fn init_logger()
-{
+static LOGGER_INIT: LazyLock<()> = LazyLock::new(|| {
     #[cfg(not(target_arch = "wasm32"))]
     {
         use std::io::Write;
@@ -26,4 +27,9 @@ pub(crate) fn init_logger()
     {
         console_log::init_with_level(::log::Level::Debug).expect("Couldn't initialize logger");
     }
+});
+
+pub fn init()
+{
+    LazyLock::force(&LOGGER_INIT);
 }

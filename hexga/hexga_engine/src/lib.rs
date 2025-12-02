@@ -3,7 +3,7 @@
 
 use std::any::Any;
 use std::fmt::Debug;
-use std::sync::Arc;
+use std::sync::{Arc,LazyLock};
 use std::ops::*;
 use std::marker::PhantomData;
 use hexga::singleton::prelude::*;

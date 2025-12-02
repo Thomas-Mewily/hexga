@@ -27,6 +27,9 @@ pub use buffer::*;
 mod gpu;
 pub use gpu::*;
 
+mod instance;
+pub use instance::*;
+
 mod surface;
 pub use surface::*;
 
