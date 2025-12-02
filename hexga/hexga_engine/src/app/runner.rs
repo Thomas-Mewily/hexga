@@ -1,24 +1,48 @@
-use hexga::asset::HotReload;
-
 use super::*;
 
+pub trait AppInit<A> : Fn() -> A + Async where A: AppMessageHandler {}
+impl<S,A> AppInit<A> for S where S: Fn() -> A + Async, A: AppMessageHandler {}
+
+pub trait AppMessageHandler: MessageHandler<AppMessage> + 'static {}
+impl<S> AppMessageHandler for S where S: MessageHandler<AppMessage> + 'static {}
 
 pub trait AppRun : Sized
 {
-    fn run(self) -> Result<(), ()> { self.run_with_param(___()) }
-    fn run_with_param(self, param: AppParam) -> Result<(), ()>;
+    /// The app will be created when the graphics context will be available.
+    /// This way, loading texture inside the function will work as normal.
+    fn run<F,A>(init_app: F) -> AppResult
+        where
+        F: AppInit<A>,
+        A: AppMessageHandler
+    {
+        Self::run_with_param(init_app, ___())
+    }
+    /// The app will be created when the graphics context will be available.
+    /// This way, loading texture inside the function will work as normal.
+    fn run_with_param<F,A>(init_app: F, param: AppParam) -> AppResult
+        where
+        F: AppInit<A>,
+        A: AppMessageHandler;
 }
-
 
 /// Run the application and init the App
-pub(crate) struct AppRunner<A> where A:Application
+pub(crate) struct AppRunner<A,F>
+    where
+    F: AppInit<A>,
+    A: AppMessageHandler
 {
-    app: A,
+    init: F,
+    // Some = all the context (graphic and more) are ready to be used
+    app: Option<A>,
+    is_running: bool,
     last_update : Time,
 }
-impl<A> AppRunner<A> where A:Application
+impl<A,F> AppRunner<A,F>
+    where
+    F: AppInit<A>,
+    A: AppMessageHandler
 {
-    pub fn new(app: A) -> Self { Self { app, last_update: Time::since_launch() } }
+    pub fn new(init: F) -> Self { Self { init, app: None, last_update: Time::since_launch(), is_running: false } }
 
     pub(crate) fn is_ready_to_run(&self) -> bool
     {
@@ -31,8 +55,73 @@ impl<A> AppRunner<A> where A:Application
     }
 }
 
+impl AppRun for App
+{
+    fn run_with_param<F,A>(init_app: F, param: AppParam) -> AppResult
+        where
+        F: AppInit<A>,
+        A: AppMessageHandler
+    {
+        // "Can't run two app at the same time"
+        if App.already_init { return Err(AppError::AlreadyInit); }
 
-impl<A> AppRun for A where A:Application
+        log::init_logger();
+
+        // init panic
+        {
+            let default_hook = std::panic::take_hook();
+
+            std::panic::set_hook(Box::new(move |info| {
+
+                /*
+                App.exit();
+
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    eprintln!("panic occurred: {info}");
+                }
+                */
+
+                #[cfg(target_arch = "wasm32")]
+                {
+                    // Use the console_error_panic_hook for WASM
+                    console_error_panic_hook::hook(info);
+                }
+
+                default_hook(info);
+            }));
+        }
+
+        let event_loop = EventLoop::with_user_event().build()?;
+        event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
+        let proxy = event_loop.create_proxy();
+
+        App.init(param, proxy);
+
+        #[allow(unused_mut)]
+        let mut runner = AppRunner::new(init_app);
+
+        // Wrap the entire run in catch_unwind
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let _ = event_loop.run_app(&mut runner);
+                //App.exit();
+            }));
+
+            App.exit();
+            return result.map_err(|e| AppError::Panics(e));
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            async move { let _ = event_loop.run_app(&mut runner); }.spawn();
+            return Ok(())
+        }
+    }
+}
+/*
+impl<A> AppRun for A where A: EventHandler<AppMessage>
 {
     fn run_with_param(self, param: AppParam) -> Result<(), ()>
     {
@@ -102,29 +191,50 @@ impl<A> AppRun for A where A:Application
         }
     }
 }
+*/
 
-
-impl<A> Application for AppRunner<A> where A:Application
+impl<A,F> Application for AppRunner<A,F>
+    where
+    F: AppInit<A>,
+    A: AppMessageHandler + 'static
 {
     fn resumed(&mut self)
     {
-        App.scoped_flow(FlowMessage::Resumed, |_| self.app.resumed());
+        self.is_running = true;
+
+        match self.app.as_mut()
+        {
+            Some(app) => App.scoped_flow(FlowMessage::Resumed, app),
+            None => App.scoped_flow_action(FlowMessage::Resumed, |_|{}),
+        }
     }
 
     fn paused(&mut self)
     {
-        App.scoped_flow(FlowMessage::Paused, |_| self.app.paused());
+        self.is_running = false;
+        match self.app.as_mut()
+        {
+            Some(app) => App.scoped_flow(FlowMessage::Paused, app),
+            None => App.scoped_flow_action(FlowMessage::Paused, |_|{}),
+        }
     }
 
     fn draw(&mut self)
     {
-        if self.is_not_ready_to_run() { return; }
-        App.scoped_flow(FlowMessage::Draw, |_| self.app.draw());
+        match self.app.as_mut()
+        {
+            Some(app) => App.scoped_flow(FlowMessage::Draw, app),
+            None => App.scoped_flow_action(FlowMessage::Draw, |_|{}),
+        }
     }
 
     fn update(&mut self, dt: DeltaTime)
     {
-        App.scoped_flow(FlowMessage::Update(dt), |_| self.app.update(dt));
+        match self.app.as_mut()
+        {
+            Some(app) => App.scoped_flow(FlowMessage::Update(dt), app),
+            None => App.scoped_flow_action(FlowMessage::Update(dt), |_|{}),
+        }
     }
 
     fn event(&mut self, ev: AppEvent)
@@ -157,11 +267,17 @@ impl<A> Application for AppRunner<A> where A:Application
             },
             _ => {}
         }
-        self.app.event(ev);
+        if let Some(app) = self.app.as_mut()
+        {
+            app.message(ev.into());
+        }
     }
 }
 
-impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A> where A:Application
+impl<A,F> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A,F>
+    where
+    F: AppInit<A>,
+    A: AppMessageHandler
 {
     fn resumed(&mut self, active: &EventLoopActive)
     {
@@ -243,7 +359,7 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
             AppInternalEvent::Gpu(gpu) =>
             {
                 App.graphics = Some(gpu.unwrap());
-                let _ = Asset::<Texture>::manager().hot_reload();
+                //let _ = Asset::<Texture>::manager().hot_reload();
                 App.window.request_draw();
             },
             AppInternalEvent::Exit =>

@@ -1,16 +1,31 @@
 use super::*;
 
 
-/*
 // EventHandler<E> is a super trait for Application
-pub trait EventHandler<E>
+pub trait MessageHandler<E>
 {
-    fn event(&mut self, event: E);
+    fn message(&mut self, message: E);
     //fn update(&mut self);
 }
-*/
 
-pub trait Application: 'static + Sized
+impl<S> MessageHandler<AppMessage> for S where S:Application
+{
+    fn message(&mut self, message: AppMessage) {
+        match message
+        {
+            AppMessage::Event(event) => todo!(),
+            AppMessage::Flow(flow) => match flow
+            {
+                FlowMessage::Resumed => Application::resumed(self),
+                FlowMessage::Paused => Application::paused(self),
+                FlowMessage::Update(dt) => Application::update(self, dt),
+                FlowMessage::Draw => Application::draw(self),
+            },
+        }
+    }
+}
+
+pub trait Application: MessageHandler<AppMessage>
 {
     fn event(&mut self, ev: AppEvent) { let _ = ev; }
 

@@ -22,6 +22,7 @@ impl AppCore
     pub fn input(&mut self) -> &mut AppInput { &mut self.input }
     pub fn window(&mut self) -> &mut AppWindow { &mut self.window }
     pub fn perf(&mut self) -> &mut AppPerf { &mut self.perf }
+    pub fn graphics(&mut self) -> &mut AppGraphics { self.graphics.as_mut().expect("graphics is not init") }
 
     pub fn param(&self) -> &AppParam { &self.param }
     //pub fn param_mut(&mut self) -> &mut AppParam { &mut self.param }

@@ -28,6 +28,7 @@ pub mod sync;
 pub mod traits;
 pub mod utils;
 pub mod wrapper;
+pub mod result;
 pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
@@ -47,6 +48,7 @@ pub mod prelude
     pub use super::traits::prelude::*;
     pub use super::utils::*;
     pub use super::wrapper::*;
+    pub use super::result::*;
     pub use super::bit::prelude::*;
     pub use super::map_on::prelude::*;
 }

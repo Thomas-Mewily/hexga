@@ -16,6 +16,7 @@ categories = ["rust-patterns"]
 
 default = ["serde"]
 serde   = ["dep:serde"]
+serde_rc = ["serde/rc"]
 
 [dependencies]
 hexga_core.workspace = true

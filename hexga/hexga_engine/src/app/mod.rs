@@ -18,14 +18,20 @@ pub use runner::*;
 mod scoped;
 pub use scoped::*;
 
+mod result;
+pub use result::*;
 
 pub mod prelude
 {
-    pub use super::application::Application;
-    pub use super::event::AppEvent;
-    pub use super::futur::SpawnFutur;
-    pub use super::runner::AppRun;
-    pub use super::app_core::{App,AppParam};
+    pub use super::
+    {
+        application::Application,
+        event::AppEvent,
+        futur::SpawnFutur,
+        runner::AppRun,
+        app_core::{App,AppParam},
+        result::*,
+    };
 
     pub(crate) use super::scoped::*;
     pub(crate) use super::{FlowMessage,AppInternalEvent};

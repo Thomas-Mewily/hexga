@@ -25,7 +25,7 @@ hexga_math
 hexga_utils
 
 
-hexga_graphics
+hexga_image
 hexga
 hexga_engine
 //hexga_undo_redo

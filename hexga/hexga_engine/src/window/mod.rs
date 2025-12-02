@@ -25,5 +25,5 @@ pub enum WindowEvent
 pub mod prelude
 {
     pub use super::{Window,WindowEvent};
-    pub(crate) use super::AppWindow;
+    pub(crate) use super::*;
 }

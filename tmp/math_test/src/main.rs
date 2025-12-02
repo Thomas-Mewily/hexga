@@ -4,7 +4,7 @@
 #![allow(unused_mut)]
 
 
-use hexga::{graphics::image::Image, prelude::*};
+use hexga::prelude::*;
 
 fn dbg_mix<S,F>(src: S, dest:S, coef:F) where S:Mix<F> + Copy + Debug, F:Float
 {

@@ -15,6 +15,87 @@ pub(crate) trait ScopedFlow
     fn end_custom(&mut self) {}
     */
 
+    fn scoped_flow<A>(&mut self, flow: FlowMessage, app: &mut A) where A: MessageHandler<AppMessage>
+    {
+        self.scoped_flow_action(flow, |flow| app.message(AppMessage::Flow(flow)))
+    }
+
+
+    fn scoped_flow_action<F,R>(&mut self, flow: FlowMessage, f: F) -> R where F: FnOnce(FlowMessage) -> R
+    {
+        self.begin_flow(flow);
+        let r = f(flow);
+        self.end_flow(flow);
+        r
+    }
+    fn begin_flow(&mut self, flow: FlowMessage) { self.dispatch_begin_flow(flow) }
+    fn dispatch_begin_flow(&mut self, flow: FlowMessage)
+    {
+        match flow
+        {
+            FlowMessage::Resumed => self.begin_flow_resumed(),
+            FlowMessage::Paused => self.begin_flow_paused(),
+            FlowMessage::Update(dt) => self.begin_flow_update(dt),
+            FlowMessage::Draw => self.begin_flow_draw(),
+        }
+    }
+    fn end_flow(&mut self, flow: FlowMessage) { self.dispatch_end_flow(flow) }
+    fn dispatch_end_flow(&mut self, flow: FlowMessage)
+    {
+        match flow
+        {
+            FlowMessage::Resumed => self.end_flow_resumed(),
+            FlowMessage::Paused => self.end_flow_paused(),
+            FlowMessage::Update(dt) => self.end_flow_update(dt),
+            FlowMessage::Draw => self.end_flow_draw(),
+        }
+    }
+
+
+    fn scoped_flow_paused_action<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
+    {
+        self.begin_flow_paused();
+        let r = f();
+        self.end_flow_paused();
+        r
+    }
+    fn begin_flow_paused(&mut self) { }
+    fn end_flow_paused(&mut self) { }
+
+
+    fn scoped_flow_resumed_action<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
+    {
+        self.begin_flow_resumed();
+        let r = f();
+        self.end_flow_resumed();
+        r
+    }
+    fn begin_flow_resumed(&mut self) { }
+    fn end_flow_resumed(&mut self) { }
+
+
+    fn scoped_flow_update_action<F,R>(&mut self, dt: DeltaTime, f: F) -> R where F: FnOnce() -> R
+    {
+        self.begin_flow_update(dt);
+        let r = f();
+        self.end_flow_update(dt);
+        r
+    }
+    fn begin_flow_update(&mut self, dt: DeltaTime) { }
+    fn end_flow_update(&mut self, dt: DeltaTime) { }
+
+
+    fn scoped_flow_draw_action<F,R>(&mut self, f: F) -> R where F: FnOnce() -> R
+    {
+        self.begin_flow_draw();
+        let r = f();
+        self.end_flow_draw();
+        r
+    }
+    fn begin_flow_draw(&mut self) { }
+    fn end_flow_draw(&mut self) { }
+
+    /*
     fn scoped_flow<F,R>(&mut self, flow: FlowMessage, f: F) -> R where F: FnOnce(FlowMessage) -> R
     {
         self.begin_flow(flow);
@@ -88,4 +169,5 @@ pub(crate) trait ScopedFlow
     }
     fn begin_flow_draw(&mut self) { }
     fn end_flow_draw(&mut self) { }
+    */
 }

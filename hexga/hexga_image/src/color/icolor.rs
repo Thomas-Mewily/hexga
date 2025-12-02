@@ -232,7 +232,7 @@ pub trait IColor : Sized + ToColor<Self::Component> //+ ToColor<Self::Component>
     /// If you preferer the name `Gray`, just do :
     ///
     /// ```
-    /// use hexga_graphics::prelude::*;
+    /// use hexga_image::prelude::*;
     /// use hexga_math::prelude::*;
     ///
     /// pub trait IPreferGray

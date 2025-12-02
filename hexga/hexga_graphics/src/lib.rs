@@ -1,46 +1,39 @@
-//! ## Definitions
-//!
-//! - [`Rgba`] and [`Hsla`] using [`float`] precision.
-//! - [`Image`] for storing and loading images.
-//!   (Similar to `hexga_math::grid`, but supports additional formats when saving.)
-//!
-//! ### Advanced Types
-//!
-//! For finer control over precision, each color type also provides a more generic base form:
-//!
-//! - [`Rgba`] and [`Hsla`] are type aliases for [`RgbaOf<float>`] and [`HslaOf<float>`], respectively.
-//!
-//! Likewise, image types are built on a generic base:
-//!
-//! - [`Image`] is an alias for [`ImageBase<RgbaU8>`] or [`ImageBaseOf<RgbaU8, int>`].
+#![feature(once_cell_try_insert)]
 
-#![allow(unused_mut)]
-#![allow(unused_variables)]
-#![allow(dead_code)]
-#![allow(unused_imports)]
-#![feature(formatting_options)] // For image, to display aligned value they need to be fomatted in a temporary formatter
+#![allow(unused)]
+use std::fmt::Debug;
+use std::marker::PhantomData;
+use hexga::prelude::*;
+use std::sync::{Arc, Mutex};
+use hexga::bit;
+use wgpu::util::DeviceExt;
+use std::sync::OnceLock;
 
-use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}, marker::PhantomData};
 
-use hexga_core::{prelude::*,cfg::*};
-use hexga_math::grid::*;
-use hexga_math::prelude::*;
-use hexga_encoding::prelude::*;
+pub use wgpu;
 
-#[allow(unused_imports)]
+mod context;
+pub use context::*;
 
-#[cfg(feature = "serde")]
-use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+mod common_wrapper;
+pub use common_wrapper::*;
 
-use std::ops::*;
+mod result;
+pub use result::*;
 
-pub mod image;
-use image::*;
-pub mod color;
+mod buffer;
+pub use buffer::*;
 
-use prelude::*;
+mod gpu;
+pub use gpu::*;
+
+mod surface;
+pub use surface::*;
+
+mod gpu_vec;
+pub use gpu_vec::*;
+
 pub mod prelude
 {
-    pub use super::color::prelude::*;
-    pub use super::image::prelude::*;
+    pub use super::{Gpu,GpuResult,GpuError};
 }

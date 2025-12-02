@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 use std::io::{Read,Write,BufReader};
 use std::{fmt::{Display,Formatter}, str::Utf8Error, string::FromUtf8Error};
 use std::borrow::Cow;

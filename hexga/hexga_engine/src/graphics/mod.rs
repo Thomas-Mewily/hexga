@@ -1,8 +1,13 @@
 use super::*;
 
+pub use wgpu;
+pub use hexga_graphics::*;
+
 pub mod prelude
 {
-    pub(crate) use super::*;
+    pub use super::Pen;
+    pub use hexga_graphics::prelude::*;
+    pub(crate) use super::{AppGraphics,wgpu};
 }
 
 singleton_single_thread_access!(
@@ -15,15 +20,26 @@ singleton_single_thread_access!(
 #[derive(Debug)]
 pub struct AppGraphics
 {
-    pub(crate) surface: Surf,
+    pub(crate) surface: ConfiguredSurface<'static>,
 
+    /*
     pub(crate) binding: GpuBinding,
     pub(crate) render: GpuRender,
 
     pub(crate) immediate_mesh: Option<Mesh>,
     pub(crate) background_color : Option<Color>,
     pub(crate) white_pixel: Option<Texture>,
+    */
 }
+
+impl AppGraphics
+{
+    pub(crate) fn resize(&mut self, size: Point2)
+    {
+        self.surface.resize(size);
+    }
+}
+
 
 impl ScopedFlow for Option<AppGraphics>
 {
@@ -42,8 +58,30 @@ impl ScopedFlow for Option<AppGraphics>
         {
             if let Some(w) = App.window.active.as_ref()
             {
-                AppPen::request(w.clone(), App.proxy.as_ref().unwrap().clone()).unwrap();
+
+                todo!();
+                //AppGraphics::request(w.clone(), App.proxy.as_ref().unwrap().clone()).unwrap();
             }
         }
+    }
+}
+impl ScopedFlow for AppGraphics
+{
+    /*
+    fn begin_flow(&mut self, flow: FlowMessage) {
+        self.render.begin_flow(flow);
+        self.dispatch_begin_flow(flow);
+    }
+
+    fn end_flow(&mut self, flow: FlowMessage) {
+        self.render.end_flow(flow);
+        self.dispatch_end_flow(flow);
+    }
+    */
+
+    fn end_flow_draw(&mut self)
+    {
+        //todo!();
+        //self.send_data_to_gpu();
     }
 }

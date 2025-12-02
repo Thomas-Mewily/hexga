@@ -1142,7 +1142,7 @@ dependencies = [
  "hexga_core",
  "hexga_encoding",
  "hexga_generational",
- "hexga_graphics",
+ "hexga_image",
  "hexga_io",
  "hexga_map_on",
  "hexga_math",
@@ -1247,20 +1247,11 @@ dependencies = [
  "copypasta",
  "env_logger",
  "hexga",
+ "hexga_graphics",
  "log",
  "serde",
  "wasm-bindgen-futures",
  "winit",
-]
-
-[[package]]
-name = "hexga_engine_graphics"
-version = "0.0.11-beta.43"
-dependencies = [
- "hexga",
- "log",
- "serde",
- "wgpu",
 ]
 
 [[package]]
@@ -1274,6 +1265,16 @@ dependencies = [
 
 [[package]]
 name = "hexga_graphics"
+version = "0.0.11-beta.43"
+dependencies = [
+ "hexga",
+ "log",
+ "serde",
+ "wgpu",
+]
+
+[[package]]
+name = "hexga_image"
 version = "0.0.11-beta.43"
 dependencies = [
  "hexga_core",

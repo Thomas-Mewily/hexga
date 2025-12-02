@@ -2,6 +2,7 @@
 #![allow(unused)]
 use hexga_engine::prelude::*;
 
+/*
 #[repr(C)]
 #[derive(BitZero, Debug)]
 struct Bar
@@ -9,10 +10,21 @@ struct Bar
     x: i32,
     y: i32,
 }
+*/
 
+struct MyApp
+{
+
+}
+
+impl Application for MyApp
+{
+
+}
 
 fn main()
 {
-    let b = Bar::zeroed();
-    dbg!(b);
+    App::run(|| MyApp{});
+    //let b = Bar::zeroed();
+    //dbg!(b);
 }

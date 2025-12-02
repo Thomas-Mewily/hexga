@@ -1,7 +1,7 @@
 use super::*;
 
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum InputEvent
 {
     Key(KeyEvent),

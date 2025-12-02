@@ -8,37 +8,39 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
-keywords = ["graphics"]
-description = "A crate to handle graphics stuff like loading / saving image"
-categories = ["graphics"]
+description = ""
+keywords = ["multimedia", "graphics"]
+categories = ["game-development", "graphics"]
 
 [features]
 default = [
-    "serde",
-    "int_are_32_bits", "float_are_32_bits"
-]
+            "int_are_32_bits", "float_are_32_bits",
+            "serde", "serde_rc", "hexga_encoding_derive"
+          ]
 
-int_are_8_bits    = ["hexga_math/int_are_8_bits"]
-int_are_16_bits   = ["hexga_math/int_are_16_bits"]
-int_are_32_bits   = ["hexga_math/int_are_32_bits"]
-int_are_64_bits   = ["hexga_math/int_are_64_bits"]
-int_are_size_bits = ["hexga_math/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga_math/float_are_32_bits"]
-float_are_64_bits   = ["hexga_math/float_are_64_bits"]
-float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
-serde = ["dep:serde",
-    "hexga_core/serde",
-    "hexga_math/serde",
-    "hexga_encoding/serde",
-]
+int_are_8_bits    = ["hexga/int_are_8_bits"]
+int_are_16_bits   = ["hexga/int_are_16_bits"]
+int_are_32_bits   = ["hexga/int_are_32_bits"]
+int_are_64_bits   = ["hexga/int_are_64_bits"]
+int_are_size_bits = ["hexga/int_are_size_bits"]
 
+float_are_32_bits   = ["hexga/float_are_32_bits"]
+float_are_64_bits   = ["hexga/float_are_64_bits"]
+float_are_size_bits = ["hexga/float_are_size_bits"]
+
+serde = ["dep:serde", "hexga/serde"]
+serde_rc = ["serde/rc", "hexga/serde_rc"]
+
+hexga_encoding_derive = ["hexga/hexga_encoding_derive"]
 
 [dependencies]
-hexga_core.workspace = true
-hexga_math.workspace = true
-hexga_encoding.workspace = true
-
+hexga.workspace = true
 serde = { version = "1.0.0", features = ["derive"], optional = true }
-image = { version = "0.25.4", default-features = false, features = ["png", "gif", "jpeg"] }
+log = { version = "0.4.22"}
+wgpu = { version = "25.0.1" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wgpu = { version = "25.0.1", features = ["webgl"] }
+

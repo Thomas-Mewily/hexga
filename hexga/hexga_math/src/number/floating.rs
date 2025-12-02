@@ -190,7 +190,7 @@ pub trait Float : PrimitiveSigned + CastPrimitive + Half + NaNValue
     #[must_use]
     fn exp(self) -> Self;
 
-        /// Returns `2^(self)`.
+    /// Returns `2^(self)`.
     ///
     /// # Unspecified precision
     ///
