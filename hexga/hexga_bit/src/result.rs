@@ -22,7 +22,7 @@ pub enum BitError {
     /// exact.
     AlignmentMismatch,
 
-    /// When casting to a [`FromBit`] type, it is possible that the
+    /// When casting to a [`BitPattern`] type, it is possible that the
     /// original data contains an invalid bit pattern. If so, the cast will
     /// fail and this error will be returned. Will never happen on casts
     /// between [`Pod`] types.

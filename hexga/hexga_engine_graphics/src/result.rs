@@ -4,9 +4,11 @@ pub type GpuResult<T=()> = Result<T,GpuError>;
 #[derive(Debug, Clone)]
 pub enum GpuError
 {
+    GpuAlreadyInit,
     Adapter(wgpu::RequestAdapterError),
     Device(wgpu::RequestDeviceError),
     BufferRead(wgpu::BufferAsyncError),
+    Unknow,
 }
 impl From<wgpu::RequestAdapterError> for GpuError
 {
@@ -19,4 +21,8 @@ impl From<wgpu::RequestDeviceError> for GpuError
 impl From<wgpu::BufferAsyncError> for GpuError
 {
     fn from(value: wgpu::BufferAsyncError) -> Self { GpuError::BufferRead(value) }
+}
+impl From<()> for GpuError
+{
+    fn from(value: ()) -> Self { GpuError::Unknow }
 }

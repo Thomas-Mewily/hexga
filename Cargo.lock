@@ -1250,7 +1250,6 @@ dependencies = [
  "log",
  "serde",
  "wasm-bindgen-futures",
- "wgpu",
  "winit",
 ]
 

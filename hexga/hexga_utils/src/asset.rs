@@ -1,6 +1,6 @@
 use super::*;
 
-
+/*
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
 pub enum Asset<T,E=(),L=()>
@@ -26,4 +26,4 @@ impl<T,E,L> Asset<T,E,L>
 
     pub fn get(&self) -> Option<&T> { self.as_loaded() }
     pub fn get_mut(&mut self) -> Option<&mut T> { self.as_loaded_mut() }
-}
+}*/

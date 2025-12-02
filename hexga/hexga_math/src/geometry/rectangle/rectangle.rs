@@ -365,6 +365,11 @@ impl<T, const N : usize> GetRectangle<T, N> for Rectangle<T, N> where T: Number
 }
 
 
+// TODO: divide GetRectangle into 2 traits
+// GetSize
+// GetRectangle: GetPosition + GetSize
+//  same for SetRectangle into
+
 pub trait GetRectangle<T, const N : usize> : GetPosition<T,N> where T: Number
 {
     fn size(&self) -> Vector<T,N>;

@@ -1,20 +1,18 @@
-use wgpu::util::DeviceExt;
-
 use super::*;
 
 pub type BufferAddress = wgpu::BufferAddress;
 
-pub trait BufferCommon
+pub trait GpuByteBuffer
 {
     fn bytes_len(&self) -> usize { self.wgpu_bytes_len() as _ }
-    fn bytes_capacity(&self) -> usize { self.wgpu_bytes_capacity() as _ }
-
-    fn wgpu_bytes_capacity(&self) -> BufferAddress;
     fn wgpu_bytes_len(&self) -> BufferAddress;
+
+    fn bytes_capacity(&self) -> usize { self.wgpu_bytes_capacity() as _ }
+    fn wgpu_bytes_capacity(&self) -> BufferAddress;
 
     fn as_wgpu_buffer(&self) -> &wgpu::Buffer;
 }
-impl BufferCommon for wgpu::Buffer
+impl GpuByteBuffer for wgpu::Buffer
 {
     fn wgpu_bytes_len(&self) -> BufferAddress { self.size() }
     fn as_wgpu_buffer(&self) -> &wgpu::Buffer { self }
@@ -27,6 +25,8 @@ pub struct UntypedBuffer
 {
     buffer: wgpu::Buffer,
 }
+impl Handle for UntypedBuffer {}
+
 impl From<wgpu::Buffer> for UntypedBuffer
 {
     fn from(buffer: wgpu::Buffer) -> Self {
@@ -39,133 +39,67 @@ impl From<UntypedBuffer> for wgpu::Buffer
         value.buffer
     }
 }
-impl BufferCommon for UntypedBuffer
+impl GpuByteBuffer for UntypedBuffer
 {
     fn wgpu_bytes_len(&self) -> BufferAddress { self.buffer.wgpu_bytes_len() }
     fn wgpu_bytes_capacity(&self) -> BufferAddress { self.buffer.wgpu_bytes_len() }
     fn as_wgpu_buffer(&self) -> &wgpu::Buffer { self.buffer.as_wgpu_buffer() }
 }
-impl<T> BufferRead<T> for UntypedBuffer
+impl<T> GpuBufferRead<T> for UntypedBuffer  where wgpu::Buffer: GpuBufferRead<T>
 {
-    fn read_in(&self, vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult {
-        AAAAAAAAAAA
-        //self.buffer.read_in(vec, executor);
-        //self
+    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult {
+        self.buffer.read_in(vec)
     }
 }
 
 
 
-
-#[derive(Clone, Debug)]
-pub struct GpuUntypedBuffer
-{
-    pub buffer: UntypedBuffer,
-    pub executor: Executor,
-}
-impl<'a> Has<'a,ExecutorRef<'a>> for GpuUntypedBuffer
-{
-    fn retrieve(&'a self) -> ExecutorRef<'a> {
-        self.executor.as_ref()
-    }
-}
-impl BufferCommon for GpuUntypedBuffer
-{
-    fn wgpu_bytes_len(&self) -> BufferAddress { self.buffer.wgpu_bytes_len() }
-    fn as_wgpu_buffer(&self) -> &wgpu::Buffer { self.buffer.as_wgpu_buffer() }
-    fn wgpu_bytes_capacity(&self) -> BufferAddress { self.buffer.wgpu_bytes_capacity() }
-}
-impl GpuUntypedBuffer
-{
-    pub fn with_size(size: usize, usage: BufferUsageFlags, executor: Executor) -> Self {
-        let buffer = executor.device.create_buffer(&wgpu::BufferDescriptor
-            {
-            label: None,
-            size : size as _,
-            usage: usage.into(),
-            mapped_at_creation: false,
-        });
-
-        Self
-        {
-            buffer: buffer.into(),
-            executor,
-        }
-    }
-
-    pub fn new(contents: &[u8], usage: BufferUsageFlags, executor: Executor) -> Self {
-        let buffer = executor.device.create_buffer_init(&wgpu::util::BufferInitDescriptor
-            {
-                label: None,
-                contents,
-                usage: usage.into(),
-            }
-        );
-
-        Self
-        {
-            buffer: buffer.into(),
-            executor,
-        }
-    }
-}
-
-pub trait BufferRead<T> : BufferCommon
+pub trait GpuBufferRead<T> : GpuByteBuffer
 {
     fn wgpu_len(&self) -> BufferAddress { self.wgpu_bytes_len() / std::mem::size_of::<T>() as u64 }
     fn wgpu_capacity(&self) -> BufferAddress { self.wgpu_bytes_capacity() / std::mem::size_of::<T>() as u64 }
+
     fn len(&self) -> BufferAddress { self.wgpu_len() as _ }
     fn capacity(&self) -> BufferAddress { self.wgpu_capacity() as _ }
 
-    fn read(&self, executor: ExecutorRef<'_>) -> GpuResult<Vec<T>>
+    fn read(&self) -> GpuResult<Vec<T>>
     {
         let mut v = Vec::new();
-        self.read_in(&mut v, executor)?;
+        self.read_in(&mut v)?;
         Ok(v)
     }
-    fn read_in(&self, vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult;
+    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult;
 }
 
-fn create_staging_and_copy<'a>(src: &wgpu::Buffer, executor: ExecutorRef<'a>) -> wgpu::Buffer {
+fn create_staging_and_copy<'a>(src: &wgpu::Buffer) -> wgpu::Buffer {
     let size = src.size();
 
-    let staging = executor.device.create_buffer(&wgpu::BufferDescriptor {
+    let staging = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
         label: Some("staging buffer"),
         size,
         usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
         mapped_at_creation: false,
     });
 
-    let mut encoder = executor
-        .device
-        .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+    let mut encoder = Gpu.device().create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
     encoder.copy_buffer_to_buffer(src, 0, &staging, 0, size);
-    executor.queue.submit(Some(encoder.finish()));
+    Gpu.queue().submit(Some(encoder.finish()));
 
     staging
 }
 
-fn cast_u8_slice_to_t_slice<T: Copy>(bytes: &[u8]) -> &[T] {
-    let ptr = bytes.as_ptr() as *const T;
-    let len = bytes.len() / std::mem::size_of::<T>();
-    unsafe { std::slice::from_raw_parts(ptr, len) }
-}
 
-
-// Todo: better check about bit pattern with T (bytemuck or extend the hexga_bit with bytemuck like trait)
-impl<T> BufferRead<T> for wgpu::Buffer
-    where T: 'static + BitAll
+impl<T> GpuBufferRead<T> for wgpu::Buffer
+    where T: BitZero + BitPattern
 {
-    fn read_in(&self, mut vec: &mut Vec<T>, executor: ExecutorRef<'_>) -> GpuResult
+    fn read_in(&self, mut vec: &mut Vec<T>) -> GpuResult
     {
         let size = self.size() as usize;
         if vec.len() < size {
             vec.resize(size / std::mem::size_of::<T>(), T::zeroed());
         }
 
-        let executor = executor.executor();
-
-        let staging = create_staging_and_copy(self, executor.executor());
+        let staging = create_staging_and_copy(self);
         let slice = staging.slice(..);
 
         let status = std::sync::Arc::new(std::sync::Mutex::new(None));
@@ -176,13 +110,13 @@ impl<T> BufferRead<T> for wgpu::Buffer
         });
 
         while status.lock().unwrap().is_none() {
-            executor.device.poll(wgpu::PollType::Wait);
+            Gpu.device().poll(wgpu::PollType::Wait);
         }
 
         match status.lock().unwrap().take().unwrap() {
             Ok(()) => {
                 let data = slice.get_mapped_range();
-                let typed = cast_u8_slice_to_t_slice::<T>(&data);
+                let typed = bit::cast_slice(&data);
                 vec.copy_from_slice(typed);
                 drop(data);
                 staging.unmap();

@@ -16,8 +16,8 @@ pub use bit_zero::*;
 mod bit_zero_in_option;
 pub use bit_zero_in_option::*;
 
-mod from_bits;
-pub use from_bits::*;
+mod bit_pattern;
+pub use bit_pattern::*;
 
 mod pod;
 pub use pod::*;
@@ -45,7 +45,7 @@ pub mod prelude
 {
     pub use super::
     {
-        BitZero,BitZeroed,Pod,BitAllUsed,BitAnyPattern,BitResult,BitError,FromBit
+        BitZero,BitZeroed,Pod,BitAllUsed,BitAnyPattern,BitResult,BitError,BitPattern
     };
 
     #[cfg(feature = "derive")]

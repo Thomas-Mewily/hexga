@@ -5,7 +5,7 @@ pub struct Context
 {
     pub adapter : wgpu::Adapter,
     pub instance: wgpu::Instance,
-    pub executor: Executor,
+    pub executor: WgpuGpu,
 }
 impl Debug for Context
 {

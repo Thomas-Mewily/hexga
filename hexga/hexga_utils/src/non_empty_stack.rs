@@ -1,6 +1,11 @@
 use super::*;
 
 
+pub mod prelude
+{
+    pub use super::NonEmptyStack;
+}
+
 /// A stack that ALWAY have one element.
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct NonEmptyStack<T>

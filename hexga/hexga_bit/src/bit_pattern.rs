@@ -2,7 +2,7 @@ use super::*;
 
 
 /// [bytemuck::CheckedBitPattern](https://docs.rs/bytemuck/latest/bytemuck/trait.CheckedBitPattern.html) trait equivalent.
-pub trait FromBit: Copy
+pub trait BitPattern: Copy
 {
     type Bits: BitAnyPattern;
 
@@ -16,7 +16,7 @@ pub trait FromBit: Copy
     fn is_bit_pattern_valid(bits: &Self::Bits) -> bool;
 }
 
-impl<T: BitAnyPattern> FromBit for T {
+impl<T: BitAnyPattern> BitPattern for T {
     type Bits = T;
 
     #[inline(always)]
@@ -29,7 +29,7 @@ impl<T: BitAnyPattern> FromBit for T {
     }
 }
 
-impl FromBit for char
+impl BitPattern for char
 {
     type Bits = u32;
 
@@ -43,7 +43,7 @@ impl FromBit for char
     }
 }
 
-impl FromBit for bool
+impl BitPattern for bool
 {
     type Bits = u8;
 
@@ -69,7 +69,7 @@ impl FromBit for bool
 macro_rules! impl_checked_for_nonzero {
     ($($nonzero:ty: $primitive:ty),* $(,)?) => {
         $(
-            impl FromBit for $nonzero {
+            impl BitPattern for $nonzero {
                 type Bits = $primitive;
 
                 #[inline]
@@ -148,12 +148,12 @@ pub unsafe fn try_from_bytes_unchecked<T>(bytes: &[u8]) -> BitResult<&T>
 /// * If the slice's length isn’t exactly the size of the new type
 /// * If the slice contains an invalid bit pattern for `T`
 #[inline]
-pub fn try_from_bytes<T: FromBit>(bytes: &[u8]) -> BitResult<&T>
+pub fn try_from_bytes<T: BitPattern>(bytes: &[u8]) -> BitResult<&T>
 {
     let pod = unsafe { try_from_bytes_unchecked(bytes) }?;
-    if <T as FromBit>::is_bit_pattern_valid(pod)
+    if <T as BitPattern>::is_bit_pattern_valid(pod)
     {
-        Ok(unsafe { &*(pod as *const <T as FromBit>::Bits as *const T) })
+        Ok(unsafe { &*(pod as *const <T as BitPattern>::Bits as *const T) })
     }else
     {
         Err(BitError::InvalidBitPattern)
@@ -167,7 +167,7 @@ pub fn try_from_bytes<T: FromBit>(bytes: &[u8]) -> BitResult<&T>
 /// This is [`try_from_bytes`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn from_bytes<T: FromBit>(bytes: &[u8]) -> &T
+pub fn from_bytes<T: BitPattern>(bytes: &[u8]) -> &T
 {
     try_from_bytes(bytes).expect("invalid bits pattern")
 }
@@ -202,12 +202,12 @@ pub unsafe fn try_from_bytes_mut_unchecked<T>(bytes: &mut [u8]) -> BitResult<&mu
 /// * If the slice's length isn’t exactly the size of the new type
 /// * If the slice contains an invalid bit pattern for `T`
 #[inline]
-pub fn try_from_bytes_mut<T: FromBit>(bytes: &mut [u8]) -> BitResult<&mut T>
+pub fn try_from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> BitResult<&mut T>
 {
     let pod = unsafe { try_from_bytes_mut_unchecked(bytes) }?;
-    if <T as FromBit>::is_bit_pattern_valid(pod)
+    if <T as BitPattern>::is_bit_pattern_valid(pod)
     {
-        Ok(unsafe { &mut *(pod as *mut <T as FromBit>::Bits as *mut T) })
+        Ok(unsafe { &mut *(pod as *mut <T as BitPattern>::Bits as *mut T) })
     }else
     {
         Err(BitError::InvalidBitPattern)
@@ -221,7 +221,7 @@ pub fn try_from_bytes_mut<T: FromBit>(bytes: &mut [u8]) -> BitResult<&mut T>
 /// This is [`try_from_bytes`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn from_bytes_mut<T: FromBit>(bytes: &mut [u8]) -> &mut T
+pub fn from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> &mut T
 {
     try_from_bytes_mut(bytes).expect("invalid bits pattern")
 }
@@ -277,11 +277,11 @@ pub unsafe fn try_cast_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -> Bit
 /// * If any element of the converted slice would contain an invalid bit pattern
 ///   for `B` this fails.
 #[inline]
-pub fn try_cast_slice<Src: BitAllUsed, Dst: FromBit>(a: &[Src]) -> BitResult<&[Dst]>
+pub fn try_cast_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> BitResult<&[Dst]>
 {
     let pod = unsafe { crate::try_cast_slice_unchecked(a) }?;
 
-    if pod.iter().all(|pod| <Dst as FromBit>::is_bit_pattern_valid(pod)) {
+    if pod.iter().all(|pod| <Dst as BitPattern>::is_bit_pattern_valid(pod)) {
         Ok(unsafe {
             core::slice::from_raw_parts(pod.as_ptr() as *const Dst, pod.len())
         })
@@ -297,7 +297,7 @@ pub fn try_cast_slice<Src: BitAllUsed, Dst: FromBit>(a: &[Src]) -> BitResult<&[D
 /// This is [`try_cast_slice`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn cast_slice<Src: BitAllUsed, Dst: FromBit>(a: &[Src]) -> &[Dst] {
+pub fn cast_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> &[Dst] {
     try_cast_slice(a).expect("invalid bits pattern")
 }
 
@@ -308,7 +308,7 @@ pub fn cast_slice<Src: BitAllUsed, Dst: FromBit>(a: &[Src]) -> &[Dst] {
 /// This is [`try_cast_slice_mut`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn cast_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + FromBit>(a: &mut [A]) -> &mut [B] {
+pub fn cast_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + BitPattern>(a: &mut [A]) -> &mut [B] {
     try_cast_slice_mut(a).expect("invalid bits pattern")
 }
 
@@ -318,11 +318,11 @@ pub fn cast_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + FromBit>(a:
 ///
 /// As [`try_cast_slice`], but `&mut`.
 #[inline]
-pub fn try_cast_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: FromBit + BitAllUsed>(a: &mut [Src]) -> BitResult<&mut [Dst]>
+pub fn try_cast_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern + BitAllUsed>(a: &mut [Src]) -> BitResult<&mut [Dst]>
 {
     let pod = unsafe { crate::try_cast_slice_mut_unchecked(a) }?;
 
-    if pod.iter().all(|pod| <Dst as FromBit>::is_bit_pattern_valid(pod)) {
+    if pod.iter().all(|pod| <Dst as BitPattern>::is_bit_pattern_valid(pod)) {
         Ok(unsafe {
             core::slice::from_raw_parts_mut(pod.as_mut_ptr() as *mut Dst, pod.len())
         })
