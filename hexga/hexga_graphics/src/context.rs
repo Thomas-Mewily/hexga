@@ -22,17 +22,21 @@ impl Gpu
     }
     pub fn context() -> &'static WgpuGpu
     {
-        Self::context_or_init(|| panic!("gpu context was not init"))
+        Self::try_context().expect("gpu was not init")
+    }
+    pub fn try_context() -> Option<&'static WgpuGpu>
+    {
+        GPU_CTX.get()
     }
 
-    pub async fn default_init(param: GpuParam<'_,'_>) -> GpuResult
+    pub async fn default_init(param: GpuInitParam<'_,'_>) -> GpuResult
     {
         let gpu = Self::default(param).await?;
         Gpu::try_init(gpu)?;
         Ok(())
     }
 
-    pub async fn default(param: GpuParam<'_,'_>) -> GpuResult<WgpuGpu>
+    pub async fn default(param: GpuInitParam<'_,'_>) -> GpuResult<WgpuGpu>
     {
         let instance = Instance::default().wgpu;
 
@@ -41,7 +45,7 @@ impl Gpu
                 power_preference: wgpu::PowerPreference::default(),
                 force_fallback_adapter: false,
                 // Request an adapter which can render to our surface
-                compatible_surface: param.default_surface.as_ref().map(|s| s.surface),
+                compatible_surface: param.compatible_surface,
             })
             .await?;
 
@@ -57,12 +61,14 @@ impl Gpu
             })
             .await?;
 
-        if let Some(surface) = param.default_surface
+        /*
+        if let Some(surface) = param.compatible_surface
         {
             let size = max(surface.size, one());
             let surface_config = surface.surface.get_default_config(Gpu.adapter(), size.x as _, size.y as _).ok_or(())?;
             surface.surface.configure(Gpu.device(), &surface_config);
         }
+        */
 
         let gpu = WgpuGpu
         {
@@ -78,15 +84,11 @@ impl Gpu
 
 
 #[derive(Default)]
-pub struct GpuParam<'a,'b>
+pub struct GpuInitParam<'a,'b>
 {
-    pub default_surface: Option<GpuParamDefaultSurface<'a,'b>>
+    pub compatible_surface: Option<&'a wgpu::Surface<'b>>
 }
-pub struct GpuParamDefaultSurface<'a,'b>
-{
-    pub surface: &'a wgpu::Surface<'b>,
-    pub size: Point2,
-}
+
 
 impl Gpu
 {

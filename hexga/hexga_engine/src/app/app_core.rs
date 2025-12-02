@@ -3,13 +3,17 @@ use super::*;
 #[derive(Debug)]
 pub struct AppCore
 {
+    pub(crate) already_init:  bool,
+
     pub(crate) clipboard: AppClipboard,
-    pub(crate) graphics:  AppGraphics,
+    /// Created once the Gpu is initialized
+    pub(crate) graphics:  Option<AppGraphics>,
     pub(crate) input:     AppInput,
     pub(crate) window:    AppWindow,
     pub(crate) perf:      AppPerf,
-    pub(crate) param:     AppParam,
     pub(crate) proxy:     Option<EventLoopProxy>,
+
+    pub(crate) param:     AppParam,
 }
 impl AppCore
 {
@@ -17,7 +21,7 @@ impl AppCore
     pub fn input(&mut self) -> &mut AppInput { &mut self.input }
     pub fn window(&mut self) -> &mut AppWindow { &mut self.window }
     pub fn perf(&mut self) -> &mut AppPerf { &mut self.perf }
-    pub fn graphics(&mut self) -> &mut AppGraphics { &mut self.graphics }
+    pub fn graphics(&mut self) -> &mut AppGraphics { self.graphics.as_mut().expect("graphics is not init") }
 
     pub(crate) fn proxy(&self) -> &EventLoopProxy { self.proxy.as_ref().expect("proxy is not init") }
 
@@ -58,16 +62,18 @@ impl AppCore
             window: AppWindow::new(),
             clipboard: AppClipboard::new(),
             perf: AppPerf::new(),
-            graphics: AppGraphics::new(),
+            already_init: false,
+            graphics: None,
             proxy: None,
         }
     }
 
     pub(crate) fn init(&mut self, param: AppParam, proxy: EventLoopProxy)
     {
+        assert!(!self.already_init, "app is already init");
         self.param = param;
         self.proxy = Some(proxy);
-        AppGraphics::init_gpu();
+        self.already_init = true;
     }
 }
 

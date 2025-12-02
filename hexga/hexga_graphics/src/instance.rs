@@ -13,6 +13,10 @@ impl<'a> From<Instance> for wgpu::Instance
 {
     fn from(surface: Instance) -> Self { surface.wgpu }
 }
+impl Instance
+{
+    pub fn new() -> Self { ___() }
+}
 
 impl Default for Instance
 {

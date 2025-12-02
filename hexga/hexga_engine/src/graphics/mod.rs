@@ -10,7 +10,12 @@ pub mod prelude
     pub(crate) use super::{AppGraphics,wgpu,GpuMessage};
 }
 
-singleton_single_thread_project!(pub Pen, AppGraphics, App, graphics);
+singleton_single_thread_access!(
+    pub Pen,
+    AppGraphics,
+    { App::try_read().map(|v|v.inner_reference.graphics.as_ref()).flatten().map(|v| v.into()) },
+    { App::try_write().map(|v|v.inner_reference.graphics.as_mut()).flatten().map(|v| v.into()) }
+);
 
 #[derive(Debug)]
 pub struct AppGraphics
@@ -47,6 +52,7 @@ impl AppGraphics
         self.surface.as_mut().expect("surface was not init")
     }
 
+    /*
     pub(crate) fn gpu_event(&mut self, msg: GpuMessage)
     {
         match msg
@@ -54,6 +60,42 @@ impl AppGraphics
             GpuMessage::InitSurface(surface) =>
             {
                 self.surface = Some(surface.expect("failed to create the surface"));
+            },
+        }
+    }
+    */
+
+    pub(crate) async fn init_gpu(window: Arc<WinitWindow>) -> GpuResult
+    {
+        todo!();
+        //let ctx = Gpu::default(GpuInitParam { compatible_surface: Some(&window) }).await?;
+        //Gpu::try_init(ctx)?;
+        Ok(())
+    }
+
+    pub(crate) fn init(window: Arc<WinitWindow>, proxy: EventLoopProxy)
+    {
+        if App.graphics.is_some() { return; }
+
+        match Gpu::try_context()
+        {
+            Some(ctx) =>
+            {
+
+            },
+            None =>
+            {
+                /*
+                (async ||
+                {
+                    proxy.send_event(AppInternalEvent::Gpu(GpuMessage::InitGpu(Self::init_gpu(window).await)))
+                }).spawn();
+            */
+            todo!();
+                //let d = Gpu::default(GpuParam { compatible_surface: Some(&window) });
+                //let instance = Instance::new();
+
+                //Gpu::default(GpuParam { default_surface: () })
             },
         }
     }
@@ -115,5 +157,6 @@ impl AppGraphics
 #[derive(Debug)]
 pub(crate) enum GpuMessage
 {
+    InitGpu(GpuResult<AppGraphics>),
     InitSurface(GpuResult<ConfiguredSurface<'static>>)
 }

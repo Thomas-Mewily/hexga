@@ -301,8 +301,8 @@ impl<A,F> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner
         {
             AppInternalEvent::Gpu(gpu) =>
             {
-                App.graphics.gpu_event(gpu);
-                //let _ = Asset::<Texture>::manager().hot_reload();
+                todo!();
+                //App.graphics.gpu_event(gpu);
                 App.window.request_draw();
             },
             AppInternalEvent::Exit =>

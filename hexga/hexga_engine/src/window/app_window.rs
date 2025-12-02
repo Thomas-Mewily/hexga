@@ -41,6 +41,8 @@ impl AppWindow
                     .expect("create window err."),
             );
             self.active = Some(window.clone());
+
+            AppGraphics::init(window, proxy);
             //AppGpu::request(window, ctx.proxy.clone()).unwrap();
         }
     }
