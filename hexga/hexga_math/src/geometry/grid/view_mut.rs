@@ -177,15 +177,13 @@ impl<'a, G, T, Idx, const N : usize> GetPosition<Idx,N> for GridViewMut<'a, G, T
     #[inline(always)]
     fn pos(&self) -> Vector<Idx,N> { zero() }
 }
-impl<'a, G, T, Idx, const N : usize> GetRectangle<Idx,N> for GridViewMut<'a, G, T, Idx, N>
+impl<'a, G, T, Idx, const N : usize> GetSize<Idx,N> for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
     Idx : Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx,N> { self.rect.size }
-    #[inline(always)]
-    fn rect(&self) -> Rectangle<Idx, N> { self.rect }
 }
 
 

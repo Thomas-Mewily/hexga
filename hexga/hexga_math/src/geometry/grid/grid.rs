@@ -136,20 +136,10 @@ impl<T, Idx, const N : usize> GetPosition<Idx, N> for GridOf<T, Idx, N> where Id
     #[inline(always)]
     fn pos(&self) -> Vector<Idx,N> { zero() }
 }
-impl<T, Idx, const N : usize> GetRectangle<Idx, N> for GridOf<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N : usize> GetSize<Idx, N> for GridOf<T, Idx, N> where Idx : Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx, N> { self.size }
-
-    fn iter_x(&self) -> Range<Idx> where Vector<Idx,N> : HaveX<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_x() }
-    fn iter_y(&self) -> Range<Idx> where Vector<Idx,N> : HaveY<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_y() }
-    fn iter_z(&self) -> Range<Idx> where Vector<Idx,N> : HaveZ<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_z() }
-    fn iter_w(&self) -> Range<Idx> where Vector<Idx,N> : HaveW<Idx>, Range<Idx> : IntoIterator { Idx::ZERO..self.size_w() }
-
-    #[inline(always)] fn is_inside_x(&self, x : Idx) -> bool where Vector<Idx,N> : HaveX<Idx> { x >= Idx::ZERO && x < self.size_x() }
-    #[inline(always)] fn is_inside_y(&self, y : Idx) -> bool where Vector<Idx,N> : HaveY<Idx> { y >= Idx::ZERO && y < self.size_y() }
-    #[inline(always)] fn is_inside_z(&self, z : Idx) -> bool where Vector<Idx,N> : HaveZ<Idx> { z >= Idx::ZERO && z < self.size_z() }
-    #[inline(always)] fn is_inside_w(&self, w : Idx) -> bool where Vector<Idx,N> : HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
 
 impl<P, T, Idx, const N : usize> TryGet<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>

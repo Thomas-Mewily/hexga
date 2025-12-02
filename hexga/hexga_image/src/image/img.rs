@@ -224,21 +224,19 @@ impl<T, Idx> GetPosition<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
     #[inline(always)]
     fn pos(&self) -> Vector2<Idx> { zero() }
 }
-impl<T, Idx> GetRectangle<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
+impl<T, Idx> GetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx, 2> { self.size }
-
-    fn iter_x(&self) -> Range<Idx> where Vector2<Idx>: HaveX<Idx>, Range<Idx>: IntoIterator { Idx::ZERO..self.size_x() }
-    fn iter_y(&self) -> Range<Idx> where Vector2<Idx>: HaveY<Idx>, Range<Idx>: IntoIterator { Idx::ZERO..self.size_y() }
-    fn iter_z(&self) -> Range<Idx> where Vector2<Idx>: HaveZ<Idx>, Range<Idx>: IntoIterator { Idx::ZERO..self.size_z() }
-    fn iter_w(&self) -> Range<Idx> where Vector2<Idx>: HaveW<Idx>, Range<Idx>: IntoIterator { Idx::ZERO..self.size_w() }
-
-    #[inline(always)] fn is_inside_x(&self, x: Idx) -> bool where Vector2<Idx>: HaveX<Idx> { x >= Idx::ZERO && x < self.size_x() }
-    #[inline(always)] fn is_inside_y(&self, y: Idx) -> bool where Vector2<Idx>: HaveY<Idx> { y >= Idx::ZERO && y < self.size_y() }
-    #[inline(always)] fn is_inside_z(&self, z: Idx) -> bool where Vector2<Idx>: HaveZ<Idx> { z >= Idx::ZERO && z < self.size_z() }
-    #[inline(always)] fn is_inside_w(&self, w: Idx) -> bool where Vector2<Idx>: HaveW<Idx> { w >= Idx::ZERO && w < self.size_w() }
 }
+/*
+impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
+{
+    fn set_size(&mut self, size: Vector<Idx, 2>) -> &mut Self {
+
+    }
+}
+*/
 
 
 impl<P, T, Idx> TryGet<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>

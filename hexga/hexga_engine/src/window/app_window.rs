@@ -42,7 +42,8 @@ impl AppWindow
             );
             self.active = Some(window.clone());
 
-            AppGraphics::init(window, proxy);
+            todo!("Make a mecanism/trait for app and gpu to run some code after the async init");
+            //AppGraphics::init(window, proxy);
             //AppGpu::request(window, ctx.proxy.clone()).unwrap();
         }
     }
@@ -71,14 +72,14 @@ impl SetPosition<int,2> for AppWindow
         self
     }
 }
-impl GetRectangle<int,2> for AppWindow
+impl GetSize<int,2> for AppWindow
 {
     fn size(&self) -> Vector<int,2>
     {
         self.active.as_ref().map(|w| w.inner_size().convert()).unwrap_or(one())
     }
 }
-impl SetRectangle<int,2> for AppWindow
+impl SetSize<int,2> for AppWindow
 {
     fn set_size(&mut self, size: Vector<int,2>) -> &mut Self
     {

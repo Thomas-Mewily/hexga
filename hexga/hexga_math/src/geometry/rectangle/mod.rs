@@ -46,6 +46,6 @@ pub mod prelude
     pub use super::
     {
         typedef::*,
-        rectangle::{Rectangle,Crop,GetRectangle,SetRectangle},
+        rectangle::{Rectangle,Crop,GetRectangle,SetRectangle,GetSize,SetSize},
     };
 }
