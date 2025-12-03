@@ -1189,6 +1189,7 @@ dependencies = [
 name = "hexga_bit_derive"
 version = "0.0.11-beta.43"
 dependencies = [
+ "hexga_bit",
  "proc-macro2",
  "quote",
  "syn",

@@ -10,7 +10,8 @@ use quote::quote;
 use syn::{DeriveInput, Result, parse_macro_input};
 
 #[allow(unused_imports)]
-use crate::traits::{
+use crate::traits::
+{
     BitAllUsed, BitAnyPattern, BitZero, Contiguous, Derivable, BitPattern, Pod, TransparentWrapper,
     hexga_bit_crate_name,
 };
@@ -31,16 +32,16 @@ use crate::traits::{
 /// ## Examples
 ///
 /// ```rust
-/// # use std::marker::PhantomData;
-/// # use bytemuck_derive::{Pod, Zeroable};
-/// #[derive(Copy, Clone, Pod, Zeroable)]
+/// use std::marker::PhantomData;
+/// use hexga_bit_derive::{Pod, BitZero};
+/// #[derive(Copy, Clone, Pod, BitZero)]
 /// #[repr(C)]
 /// struct Test {
 ///   a: u16,
 ///   b: u16,
 /// }
 ///
-/// #[derive(Copy, Clone, Pod, Zeroable)]
+/// #[derive(Copy, Clone, Pod, BitZero)]
 /// #[repr(transparent)]
 /// struct Generic<A, B> {
 ///   a: A,
@@ -51,12 +52,12 @@ use crate::traits::{
 /// If the struct is generic, it must be `#[repr(transparent)]` also.
 ///
 /// ```compile_fail
-/// # use bytemuck::{Pod, Zeroable};
-/// # use std::marker::PhantomData;
-/// #[derive(Copy, Clone, Pod, Zeroable)]
+/// use hexga_bit::{Pod, BitZero};
+/// use std::marker::PhantomData;
+/// #[derive(Copy, Clone, Pod, BitZero)]
 /// #[repr(C)] // must be `#[repr(transparent)]`
 /// struct Generic<A> {
-///   a: A,
+///     a: A,
 /// }
 /// ```
 ///
@@ -64,32 +65,32 @@ use crate::traits::{
 /// when all of its generics are `Pod`, not just its fields.
 ///
 /// ```
-/// # use bytemuck::{Pod, Zeroable};
-/// # use std::marker::PhantomData;
-/// #[derive(Copy, Clone, Pod, Zeroable)]
+/// use hexga_bit::{Pod, BitZero};
+/// use std::marker::PhantomData;
+/// #[derive(Copy, Clone, Pod, BitZero)]
 /// #[repr(transparent)]
 /// struct Generic<A, B> {
-///   a: A,
-///   b: PhantomData<B>,
+///     a: A,
+///     b: PhantomData<B>,
 /// }
 ///
-/// let _: u32 = bytemuck::cast(Generic { a: 4u32, b: PhantomData::<u32> });
+/// let _: u32 = hexga_bit::transmute(Generic { a: 4u32, b: PhantomData::<u32> });
 /// ```
 ///
 /// ```compile_fail
-/// # use bytemuck::{Pod, Zeroable};
-/// # use std::marker::PhantomData;
-/// # #[derive(Copy, Clone, Pod, Zeroable)]
-/// # #[repr(transparent)]
-/// # struct Generic<A, B> {
-/// #   a: A,
-/// #   b: PhantomData<B>,
-/// # }
+/// use hexga_bit::{Pod, BitZero};
+/// use std::marker::PhantomData;
+/// #[derive(Copy, Clone, Pod, BitZero)]
+/// #[repr(transparent)]
+/// struct Generic<A, B> {
+///     a: A,
+///     b: PhantomData<B>,
+/// }
 /// struct NotPod;
 ///
-/// let _: u32 = bytemuck::cast(Generic { a: 4u32, b: PhantomData::<NotPod> });
+/// let _: u32 = hexga_bit::transmute(Generic { a: 4u32, b: PhantomData::<NotPod> });
 /// ```
-#[proc_macro_derive(Pod, attributes(bytemuck))]
+#[proc_macro_derive(Pod, attributes(hexga_bit))]
 pub fn derive_pod(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let expanded = derive_marker_trait::<Pod>(parse_macro_input!(input as DeriveInput));
 
@@ -104,7 +105,7 @@ pub fn derive_pod(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// The following constraints need to be satisfied for the macro to succeed
 ///
 /// - All fields in the struct must to implement `BitPattern`
-#[proc_macro_derive(BitPattern, attributes(bytemuck))]
+#[proc_macro_derive(BitPattern, attributes(hexga_bit))]
 pub fn derive_from_bit(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let expanded = derive_marker_trait::<BitPattern>(parse_macro_input!(input as DeriveInput));
 
@@ -119,10 +120,9 @@ pub fn derive_from_bit(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 /// The following constraints need to be satisfied for the macro to succeed
 ///
 /// - All fields in the struct must to implement `BitAnyPattern`
-#[proc_macro_derive(BitAnyPattern, attributes(bytemuck))]
+#[proc_macro_derive(BitAnyPattern, attributes(hexga_bit))]
 pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let expanded = derive_marker_trait::<BitAnyPattern>(parse_macro_input!(input as DeriveInput));
-
     proc_macro::TokenStream::from(expanded)
 }
 
@@ -154,8 +154,8 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 /// #[derive(Copy, Clone, BitZero)]
 /// #[repr(C)]
 /// struct Test {
-///   a: u16,
-///   b: u16,
+///     a: u16,
+///     b: u16,
 /// }
 /// ```
 /// ```rust
@@ -163,16 +163,16 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 /// #[derive(Copy, Clone, BitZero)]
 /// #[repr(i32)]
 /// enum Values {
-///   A = 0,
-///   B = 1,
-///   C = 2,
+///     A = 0,
+///     B = 1,
+///     C = 2,
 /// }
 /// #[derive(Clone, BitZero)]
 /// #[repr(C)]
 /// enum Implicit {
-///   A(bool, u8, char),
-///   B(String),
-///   C(std::num::NonZeroU8),
+///     A(bool, u8, char),
+///     B(String),
+///     C(std::num::NonZeroU8),
 /// }
 /// ```
 ///
@@ -188,36 +188,36 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 /// ## Examples
 ///
 /// ```rust
-/// # use hexga_bit::BitZero;
-/// # use std::marker::PhantomData;
+/// use hexga_bit::{BitZero,BitZeroed};
+/// use std::marker::PhantomData;
 /// #[derive(Clone, BitZero)]
 /// #[bitzero(bound = "")]
 /// struct AlwaysBitZero<T> {
-///   a: PhantomData<T>,
+///     a: PhantomData<T>,
 /// }
 ///
 /// AlwaysBitZero::<std::num::NonZeroU8>::zeroed();
 /// ```
 /// ```rust
-/// # use hexga_bit::{BitZero};
+/// use hexga_bit::{BitZero,BitZeroed};
 /// #[derive(Copy, Clone, BitZero)]
 /// #[repr(u8)]
 /// #[bitzero(bound = "")]
 /// enum MyOption<T> {
-///   None,
-///   Some(T),
+///     None,
+///     Some(T),
 /// }
 ///
 /// assert!(matches!(MyOption::<std::num::NonZeroU8>::zeroed(), MyOption::None));
 /// ```
 ///
 /// ```rust,compile_fail
-/// # use hexga_bit::BitZero;
-/// # use std::marker::PhantomData;
+/// use hexga_bit::{BitZero,BitZeroed};
+/// use std::marker::PhantomData;
 /// #[derive(Clone, BitZero)]
 /// #[bitzero(bound = "T: Copy")]
 /// struct BitZeroWhenTIsCopy<T> {
-///   a: PhantomData<T>,
+///     a: PhantomData<T>,
 /// }
 ///
 /// BitZeroWhenTIsCopy::<String>::zeroed();
@@ -227,25 +227,25 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 /// is enforced using the mentioned "perfect derive" semantics.
 ///
 /// ```rust
-/// # use hexga_bit::BitZero;
+/// use hexga_bit::{BitZero,BitZeroed};
 /// #[derive(Clone, BitZero)]
 /// #[bitzero(bound = "")]
-/// struct BitZeroWhenTIsBitZero<T> {
-///   a: T,
+/// struct ZeroableWhenTIsZeroable<T> {
+///     a: T,
 /// }
-/// BitZeroWhenTIsBitZero::<u32>::zeroed();
+/// ZeroableWhenTIsZeroable::<u32>::zeroed();
 /// ```
 ///
 /// ```rust,compile_fail
-/// # use hexga_bit::BitZero;
-/// # #[derive(Clone, BitZero)]
-/// # #[bitzero(bound = "")]
-/// # struct BitZeroWhenTIsBitZero<T> {
-/// #   a: T,
-/// # }
-/// BitZeroWhenTIsBitZero::<String>::zeroed();
+/// use hexga_bit::{BitZero,BitZeroed};
+/// #[derive(Clone, BitZero)]
+/// #[bitzero(bound = "")]
+/// struct ZeroableWhenTIsZeroable<T> {
+///       a: T,
+/// }
+/// ZeroableWhenTIsZeroable::<String>::zeroed();
 /// ```
-#[proc_macro_derive(BitZero, attributes(hexga_bit, bitZero))]
+#[proc_macro_derive(BitZero, attributes(hexga_bit, bitzero))]
 pub fn derive_bitzero(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let expanded = derive_marker_trait::<BitZero>(parse_macro_input!(input as DeriveInput));
 
@@ -305,12 +305,12 @@ fn find_and_parse_helper_attributes<P: syn::parse::Parser + Copy>(
         format!("{name} attribute must be `{name}({key} = \"{example_value}\")`",);
     let values_to_check = attributes.iter().filter_map(|attr| match &attr.meta {
         // If a `Path` matches our `name`, return an error, else ignore it.
-        // e.g. `#[zeroable]`
+        // e.g. `#[bitZero]`
         syn::Meta::Path(path) => path
             .is_ident(name)
             .then(|| Err(syn::Error::new_spanned(path, &invalid_format_msg))),
         // If a `NameValue` matches our `name`, return an error, else ignore it.
-        // e.g. `#[zeroable = "hello"]`
+        // e.g. `#[bitZero = "hello"]`
         syn::Meta::NameValue(namevalue) => namevalue.path.is_ident(name).then(|| {
             Err(syn::Error::new_spanned(
                 &namevalue.path,

@@ -116,7 +116,7 @@ impl<T> GpuBufferRead<T> for wgpu::Buffer
         match status.lock().unwrap().take().unwrap() {
             Ok(()) => {
                 let data = slice.get_mapped_range();
-                let typed = bit::cast_slice(&data);
+                let typed = bit::transmute_slice(&data);
                 vec.copy_from_slice(typed);
                 drop(data);
                 staging.unmap();

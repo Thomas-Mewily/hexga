@@ -49,6 +49,6 @@ pub mod prelude
     };
 
     #[cfg(feature = "derive")]
-    pub use hexga_bit_derive::BitZero;
+    pub use hexga_bit_derive::{BitZero,Pod,BitAllUsed,BitPattern,BitAnyPattern};
 }
 

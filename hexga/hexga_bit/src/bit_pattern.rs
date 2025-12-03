@@ -242,7 +242,7 @@ pub fn from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> &mut T
 ///   accounting for the size change (eg: 3 `u16` values is 1.5 `u32` values, so
 ///   that's a failure).
 #[inline]
-pub unsafe fn try_cast_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -> BitResult<&[Dst]>
+pub unsafe fn try_transmute_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -> BitResult<&[Dst]>
 {
     let input_bytes = core::mem::size_of_val::<[Src]>(src);
 
@@ -277,9 +277,9 @@ pub unsafe fn try_cast_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -> Bit
 /// * If any element of the converted slice would contain an invalid bit pattern
 ///   for `B` this fails.
 #[inline]
-pub fn try_cast_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> BitResult<&[Dst]>
+pub fn try_transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> BitResult<&[Dst]>
 {
-    let pod = unsafe { crate::try_cast_slice_unchecked(a) }?;
+    let pod = unsafe { crate::try_transmute_slice_unchecked(a) }?;
 
     if pod.iter().all(|pod| <Dst as BitPattern>::is_bit_pattern_valid(pod)) {
         Ok(unsafe {
@@ -290,37 +290,36 @@ pub fn try_cast_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> BitResult<
     }
 }
 
-/// Cast `&[Src]` into `&[Dst]`.
+/// Transmute `&[Src]` into `&[Dst]`.
 ///
 /// ## Panics
 ///
-/// This is [`try_cast_slice`] but will panic on error.
+/// This is [`try_transmute_slice`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn cast_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> &[Dst] {
-    try_cast_slice(a).expect("invalid bits pattern")
+pub fn transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> &[Dst] {
+    try_transmute_slice(a).expect("invalid bits pattern")
 }
 
-/// Cast `&mut [Src]` into `&mut [Dst]`.
+/// Transmute `&mut [Src]` into `&mut [Dst]`.
 ///
 /// ## Panics
 ///
-/// This is [`try_cast_slice_mut`] but will panic on error.
+/// This is [`try_transmute_slice_mut`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn cast_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + BitPattern>(a: &mut [A]) -> &mut [B] {
-    try_cast_slice_mut(a).expect("invalid bits pattern")
+pub fn transmute_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + BitPattern>(a: &mut [A]) -> &mut [B] {
+    try_transmute_slice_mut(a).expect("invalid bits pattern")
 }
 
 
-/// Try to convert `&mut [Src]` into `&mut [Dst]` (possibly with a change in
-/// length).
+/// Try to convert `&mut [Src]` into `&mut [Dst]` (possibly with a change in length).
 ///
-/// As [`try_cast_slice`], but `&mut`.
+/// As [`try_transmute_slice`], but `&mut`.
 #[inline]
-pub fn try_cast_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern + BitAllUsed>(a: &mut [Src]) -> BitResult<&mut [Dst]>
+pub fn try_transmute_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern + BitAllUsed>(a: &mut [Src]) -> BitResult<&mut [Dst]>
 {
-    let pod = unsafe { crate::try_cast_slice_mut_unchecked(a) }?;
+    let pod = unsafe { crate::try_transmute_slice_mut_unchecked(a) }?;
 
     if pod.iter().all(|pod| <Dst as BitPattern>::is_bit_pattern_valid(pod)) {
         Ok(unsafe {
@@ -334,9 +333,9 @@ pub fn try_cast_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern + Bit
 
 /// Try to convert `&mut [Src]` into `&mut [Dst]` (possibly with a change in length).
 ///
-/// As [`try_cast_slice`], but `&mut`.
+/// As [`try_transmute_slice`], but `&mut`.
 #[inline]
-pub unsafe fn try_cast_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut [Src]) -> BitResult<&mut [Dst]>
+pub unsafe fn try_transmute_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut [Src]) -> BitResult<&mut [Dst]>
 {
     let input_bytes = core::mem::size_of_val::<[Src]>(src);
 
@@ -353,4 +352,46 @@ pub unsafe fn try_cast_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut [Src]
     } else {
         Err(BitError::OutputSliceWouldHaveSlop)
     }
+}
+
+
+/// Transmute `Src` into `Dst`
+#[inline]
+#[track_caller]
+pub unsafe fn try_transmute_unchecked<Src: Copy, Dst: Copy>(src: Src) -> BitResult<Dst>
+{
+    if size_of::<Src>() == size_of::<Dst>()
+    {
+        unsafe { Ok(core::mem::transmute_copy(&::core::mem::ManuallyDrop::new(src))) }
+    }
+    else
+    {
+        Err(BitError::SizeMismatch)
+    }
+}
+
+/// Transmute `Src` into `Dst`
+#[inline]
+#[track_caller]
+pub fn try_transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> BitResult<Dst>
+{
+    let pod = unsafe { try_transmute_unchecked(src)? };
+
+    match <Dst as BitPattern>::from_bits(pod)
+    {
+        Some(val) => Ok(val),
+        None => Err(BitError::InvalidBitPattern),
+    }
+}
+
+/// Transmute `Src` into `Dst`
+///
+/// ## Panics
+///
+/// * This is like [`try_transmute`](try_transmute), but will panic on a size mismatch.
+#[inline]
+#[track_caller]
+pub fn transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> Dst
+{
+    try_transmute(src).expect("invalid transmute")
 }

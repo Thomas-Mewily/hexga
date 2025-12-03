@@ -134,18 +134,6 @@ impl<T> Asset<T> where T: Async
     ///
     /// Unlike [`Self::get_or_placeholder`], this method never
     /// returns placeholder values for loading and error states.
-    ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let asset = manager.load("texture.png");
-    ///
-    /// if let Some(texture) = asset.get() {
-    ///     draw_texture(&texture);
-    /// } else {
-    ///     loading_cursor();
-    /// }
-    /// ```
     pub fn get(&self) -> Option<AssetReadGuard<'_,T>>
     {
         let guard = self.inner.read().unwrap();
@@ -346,12 +334,6 @@ impl<T> Asset<T> where T: Async
     /// to reload.
     ///
     /// If the asset is already successfully loaded, returns the existing asset instance.
-    ///
-    /// # Examples
-    ///
-    /// ```ignore
-    /// let texture = manager.load("textures/character");
-    /// ```
     pub fn load<P>(path: P) -> Asset<T> where P: AsRef<Path>, T: Load { Self::manager().load(path) }
 
 
