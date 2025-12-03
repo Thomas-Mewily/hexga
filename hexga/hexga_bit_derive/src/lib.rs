@@ -66,6 +66,7 @@ use crate::traits::
 ///
 /// ```
 /// use hexga_bit::{Pod, BitZero};
+/// use hexga_bit_derive::{Pod, BitZero};
 /// use std::marker::PhantomData;
 /// #[derive(Copy, Clone, Pod, BitZero)]
 /// #[repr(transparent)]
@@ -189,6 +190,7 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 ///
 /// ```rust
 /// use hexga_bit::{BitZero,BitZeroed};
+/// use hexga_bit_derive::BitZero;
 /// use std::marker::PhantomData;
 /// #[derive(Clone, BitZero)]
 /// #[bitzero(bound = "")]
@@ -200,6 +202,7 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 /// ```
 /// ```rust
 /// use hexga_bit::{BitZero,BitZeroed};
+/// use hexga_bit_derive::BitZero;
 /// #[derive(Copy, Clone, BitZero)]
 /// #[repr(u8)]
 /// #[bitzero(bound = "")]
@@ -228,6 +231,7 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 ///
 /// ```rust
 /// use hexga_bit::{BitZero,BitZeroed};
+/// use hexga_bit_derive::BitZero;
 /// #[derive(Clone, BitZero)]
 /// #[bitzero(bound = "")]
 /// struct ZeroableWhenTIsZeroable<T> {
