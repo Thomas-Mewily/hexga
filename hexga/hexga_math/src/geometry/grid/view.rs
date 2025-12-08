@@ -18,7 +18,7 @@ pub trait IGridViewNonOwned<G, T, Idx, const N : usize> :
 /// Can only shrink / be cropped.
 pub trait IGridView<G, T, Idx, const N : usize> :
       GetRectangle<Idx,N>
-    + Get<Vector<Idx,N>,Output=T>
+    + Get<Vector<Idx,N>,Output=T> + TryGet<Vector<Idx,N>,Output=T>
     + Index<Vector<Idx,N>,Output=T>
     where
     G : IGrid<T, Idx, N>,

@@ -3,7 +3,7 @@ use super::*;
 
 pub trait IGridViewMut<G, T, Idx, const N : usize> :
       IGridView<G,T,Idx,N>
-    + GetMut<Vector<Idx,N>,Output = T> + GetManyMut<Vector<Idx,N>,Output=T>
+    + GetMut<Vector<Idx,N>,Output = T> + TryGetMut<Vector<Idx,N>,Output=T> + GetManyMut<Vector<Idx,N>,Output=T>
     + IndexMut<Vector<Idx,N>, Output = T>
     where
     G : IGrid<T, Idx, N>,
