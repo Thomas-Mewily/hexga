@@ -32,9 +32,10 @@ struct AlwaysBitZero<T> {
 
 fn main()
 {
-    MyApp::run(|| MyApp{});
+    AppRunner::run(|| MyApp{});
+    //MyApp::run(|| MyApp{});
     //assert!(matches!(MyOption::<std::num::NonZeroU8>::zeroed(), MyOption::None));
-    AlwaysBitZero::<std::num::NonZeroU8>::zeroed();
+    //AlwaysBitZero::<std::num::NonZeroU8>::zeroed();
 
     //let b = Bar::zeroed();
     //dbg!(b);

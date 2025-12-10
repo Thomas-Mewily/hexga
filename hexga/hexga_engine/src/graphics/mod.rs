@@ -35,53 +35,54 @@ pub struct AppGraphics
 
 impl AppGraphics
 {
-    pub(crate) fn new() -> Self
+    pub(crate) fn new(size: Point2, output: GpuInitOutput) -> Self
     {
+        let surface = ConfiguredSurface::from_surface(output.surface.expect("failed to init the surface"), size);
         Self
         {
-            surface: None
+            surface: Some(surface)
         }
     }
     pub(crate) fn resize(&mut self, size: Point2)
     {
         self.surface_mut().resize(size);
     }
-
     pub(crate) fn surface_mut(&mut self) -> &mut ConfiguredSurface<'static>
     {
         self.surface.as_mut().expect("surface was not init")
     }
 
-    /*
-    pub(crate) fn gpu_event(&mut self, msg: GpuMessage)
+    pub(crate) async fn init_gpu(window: Arc<WinitWindow>, mut param: GpuParam) -> GpuResult<Self>
     {
-        match msg
+        let size: Point2 = window.inner_size().convert();
+        let size = size.max(one());
+
+        if param.compatible_surface.is_none()
         {
-            GpuMessage::InitSurface(surface) =>
-            {
-                self.surface = Some(surface.expect("failed to create the surface"));
-            },
+            param.compatible_surface = Some(window.into());
         }
-    }
-    */
 
-    pub(crate) async fn init_gpu(window: Arc<WinitWindow>) -> GpuResult
+        let output = Gpu::new(param).await?;
+        Ok(Self::new(size, output))
+    }
+
+    pub(crate) async fn async_init_gpu(window: Arc<WinitWindow>, param: GpuParam, proxy: EventLoopProxy)
     {
-        todo!();
-        //let ctx = Gpu::default(GpuInitParam { compatible_surface: Some(&window) }).await?;
-        //Gpu::try_init(ctx)?;
-        Ok(())
+        let _ = proxy.send_event(AppInternalEvent::Gpu(Self::init_gpu(window, param).await));
     }
 
-    pub(crate) fn init(window: Arc<WinitWindow>, proxy: EventLoopProxy)
+    pub(crate) fn init(window: Arc<WinitWindow>, param: GpuParam, proxy: EventLoopProxy)
     {
         if App.graphics.is_some() { return; }
 
+        Self::async_init_gpu(window, param, proxy).spawn();
+
+        /*
         match Gpu::try_context()
         {
             Some(ctx) =>
             {
-
+                todo!()
             },
             None =>
             {
@@ -91,14 +92,15 @@ impl AppGraphics
                     proxy.send_event(AppInternalEvent::Gpu(GpuMessage::InitGpu(Self::init_gpu(window).await)))
                 }).spawn();
             */
-            todo!();
+                todo!();
                 //let d = Gpu::default(GpuParam { compatible_surface: Some(&window) });
                 //let instance = Instance::new();
 
                 //Gpu::default(GpuParam { default_surface: () })
             },
-        }
+        }*/
     }
+
 }
 
 
@@ -154,9 +156,12 @@ impl AppGraphics
     }
 }
 
+
+pub(crate) type GpuMessage = GpuResult<AppGraphics>;
+/*
 #[derive(Debug)]
 pub(crate) enum GpuMessage
 {
     InitGpu(GpuResult<AppGraphics>),
-    InitSurface(GpuResult<ConfiguredSurface<'static>>)
-}
+    //InitSurface(GpuResult<ConfiguredSurface<'static>>)
+}*/

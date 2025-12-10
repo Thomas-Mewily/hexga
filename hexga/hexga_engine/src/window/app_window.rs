@@ -1,5 +1,4 @@
 use winit::platform::windows::WindowAttributesExtWindows;
-
 use super::*;
 
 singleton_single_thread_project!(pub Window, AppWindow, App, window );
@@ -29,6 +28,8 @@ impl AppWindow
             let mut win_attr = WinitWindow::default_attributes()
                 .with_title(App.param.title.to_owned());
 
+            let gpu_param = App.param.gpu.take();
+
             #[cfg(target_arch = "wasm32")]
             {
                 use winit::platform::web::WindowAttributesExtWebSys;
@@ -42,7 +43,11 @@ impl AppWindow
             );
             self.active = Some(window.clone());
 
-            todo!("Make a mecanism/trait for app and gpu to run some code after the async init");
+            if !Gpu::is_init()
+            {
+                AppGraphics::init(window, gpu_param.unwrap_or_default(), App.proxy().clone())
+            }
+            //todo!("Make a mecanism/trait for app and gpu to run some code after the async init");
             //AppGraphics::init(window, proxy);
             //AppGpu::request(window, ctx.proxy.clone()).unwrap();
         }

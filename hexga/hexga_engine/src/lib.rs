@@ -6,8 +6,8 @@ use std::fmt::Debug;
 use std::sync::{Arc,LazyLock};
 use std::ops::*;
 use std::marker::PhantomData;
-use hexga::singleton::prelude::*;
 use hexga::prelude::*;
+use hexga_graphics::GpuParam;
 
 
 pub use hexga::*;

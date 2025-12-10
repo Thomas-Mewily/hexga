@@ -15,10 +15,9 @@ categories = ["game-development", "graphics"]
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde", "serde_rc", "hexga_encoding_derive"
+            "serde", "serde_rc", "hexga_encoding_derive",
+            "webgpu"
           ]
-
-
 
 int_are_8_bits    = ["hexga/int_are_8_bits"]
 int_are_16_bits   = ["hexga/int_are_16_bits"]
@@ -34,6 +33,8 @@ serde = ["dep:serde", "hexga/serde"]
 serde_rc = ["serde/rc", "hexga/serde_rc"]
 
 hexga_encoding_derive = ["hexga/hexga_encoding_derive"]
+
+webgpu = ["wgpu/webgpu"]
 
 [dependencies]
 hexga.workspace = true

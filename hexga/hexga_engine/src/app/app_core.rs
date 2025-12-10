@@ -1,3 +1,5 @@
+use hexga_graphics::GpuParam;
+
 use super::*;
 
 #[derive(Debug)]
@@ -129,14 +131,16 @@ impl App
     */
 
 #[non_exhaustive]
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug)]
 pub struct AppParam
 {
     pub title: String,
+    pub gpu: Option<GpuParam>,
 }
 
 impl AppParam
 {
     pub fn new() -> Self { ___() }
     pub fn with_title(self, title: impl Into<String>) -> Self { Self { title: title.into(), ..self } }
+    pub fn with_gpu(self, gpu: impl Into<Option<GpuParam>>) -> Self { Self { gpu: gpu.into(), ..self } }
 }

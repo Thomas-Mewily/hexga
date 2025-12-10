@@ -8,6 +8,7 @@ pub enum GpuError
     Adapter(wgpu::RequestAdapterError),
     Device(wgpu::RequestDeviceError),
     BufferRead(wgpu::BufferAsyncError),
+    Surface(wgpu::CreateSurfaceError),
     Unknow,
 }
 impl From<wgpu::RequestAdapterError> for GpuError
@@ -21,6 +22,10 @@ impl From<wgpu::RequestDeviceError> for GpuError
 impl From<wgpu::BufferAsyncError> for GpuError
 {
     fn from(value: wgpu::BufferAsyncError) -> Self { GpuError::BufferRead(value) }
+}
+impl From<wgpu::CreateSurfaceError> for GpuError
+{
+    fn from(value: wgpu::CreateSurfaceError) -> Self { GpuError::Surface(value) }
 }
 impl From<()> for GpuError
 {

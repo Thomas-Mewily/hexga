@@ -8,24 +8,22 @@ use std::sync::{Arc, Mutex};
 use hexga::bit;
 use wgpu::util::DeviceExt;
 use std::sync::OnceLock;
+use std::ops::{Deref,DerefMut};
 
 
 pub use wgpu;
 
-mod context;
-pub use context::*;
+mod gpu;
+pub use gpu::*;
 
-mod common_wrapper;
-pub use common_wrapper::*;
+mod vertex;
+pub use vertex::*;
 
 mod result;
 pub use result::*;
 
 mod buffer;
 pub use buffer::*;
-
-mod gpu;
-pub use gpu::*;
 
 mod instance;
 pub use instance::*;

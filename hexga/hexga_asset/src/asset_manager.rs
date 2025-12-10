@@ -23,7 +23,7 @@ pub struct PathResolver
 
 impl AssetsManagerUntyped
 {
-    pub fn manager<T>(&self) -> AssetManager<T> where T: Async
+    pub fn manager<T>(&self) -> AssetManager<T> where T: Async + Sync
     {
         let type_id = TypeId::of::<T>();
         {

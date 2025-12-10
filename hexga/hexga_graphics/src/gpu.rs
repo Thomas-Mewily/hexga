@@ -1,126 +1,232 @@
 use super::*;
 
-#[derive(Clone)]
-pub struct Context
+static GPU_CTX: OnceLock<GpuWgpu> = OnceLock::new();
+
+pub struct Gpu;
+
+impl Deref for Gpu
 {
-    pub adapter : wgpu::Adapter,
-    pub instance: wgpu::Instance,
-    pub executor: WgpuGpu,
+    type Target=GpuWgpu;
+    fn deref(&self) -> &Self::Target {
+        GPU_CTX.get().expect("gpu not init")
+    }
 }
-impl Debug for Context
+impl Gpu
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Context").field("adapter", &self.adapter).field("instance", &self.instance).field("executor", &self.executor).finish()
+    pub fn is_init() -> bool { GPU_CTX.get().is_some() }
+}
+
+
+impl<F> AsyncRunner<F> for Gpu
+    where F: AsyncFnOnce(GpuInitOutput)
+{
+    type Output=GpuResult;
+    type Param=GpuParam;
+    async fn run_with_param(f: F, param: Self::Param) -> Self::Output {
+        let output = Self::new(param).await?;
+        f(output);
+        Ok(())
+    }
+}
+
+impl Gpu
+{
+    pub async fn new(param: GpuParam) -> GpuResult<GpuInitOutput>
+    {
+        if Gpu::is_init() { return Err(GpuError::GpuAlreadyInit) }
+        Self::from_init(GpuInit::new(param).await?).await
+    }
+    pub async fn from_init(gpu: GpuInit) -> GpuResult<GpuInitOutput>
+    {
+        let GpuInit{ gpu, output } = gpu;
+        match GPU_CTX.try_insert(gpu)
+        {
+            Ok(_) => Ok(output),
+            Err(_) => Err(GpuError::GpuAlreadyInit),
+        }
     }
 }
 
 
-
-
-/*
-impl Context
+#[derive(Default)]
+pub struct GpuParam
 {
-    pub async fn with_instance_and_surface(instance: Instance, surface: Option<&wgpu::Surface<'_>>) -> GpuResult<Self>
+    pub instance: InstanceDescriptor,
+    pub power_preference: PowerPreference,
+    pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
+}
+impl Debug for GpuParam
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GpuParam").field("instance", &self.instance).field("power_preference", &self.power_preference).field("compatible_surface", &self.compatible_surface.is_some()).finish()
+    }
+}
+
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum PowerPreference {
+    #[default]
+    /// Power usage is not considered when choosing an adapter.
+    None = 0,
+    /// Adapter that uses the least possible power. This is often an integrated GPU.
+    LowPower = 1,
+    /// Adapter that has the highest performance. This is often a discrete GPU.
+    HighPerformance = 2,
+}
+impl Into<wgpu::PowerPreference> for PowerPreference
+{
+    fn into(self) -> wgpu::PowerPreference {
+        match self
+        {
+            PowerPreference::None => wgpu::PowerPreference::None,
+            PowerPreference::LowPower => wgpu::PowerPreference::LowPower,
+            PowerPreference::HighPerformance => wgpu::PowerPreference::HighPerformance,
+        }
+    }
+}
+
+
+#[derive(Debug)]
+pub struct GpuInit
+{
+    gpu: GpuWgpu,
+    output: GpuInitOutput,
+}
+impl GpuInit
+{
+    async fn new(param: GpuParam) -> GpuResult<Self>
     {
-        let adapter = instance.instance.request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::default(),
-                compatible_surface: surface,
+        let instance = Instance::new(param.instance).wgpu;
+
+        let surface = match param.compatible_surface
+        {
+            Some(s) => Some(instance.create_surface(s)?),
+            None => None,
+        };
+
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: param.power_preference.into(),
                 force_fallback_adapter: false,
-            }).await?;
-        let (device, queue) = adapter
-            .request_device(&wgpu::DeviceDescriptor
-                {
-                    required_limits: if cfg!(target_arch = "wasm32") {
-                        wgpu::Limits::downlevel_webgl2_defaults()
-                    } else {
-                        wgpu::Limits::default()
-                    },
-                    ..Default::default()
-                })
+                // Request an adapter which can render to our surface
+                compatible_surface: surface.as_ref(),
+            })
             .await?;
 
-        Ok(
-            Self
+        let (device, queue) = adapter
+            .request_device(&wgpu::DeviceDescriptor {
+                label: None,
+                required_features: wgpu::Features::empty(),
+                // WebGL doesn't support all of wgpu's features, so if
+                // we're building for the web we'll have to disable some.
+                required_limits: if cfg!(target_arch = "wasm32") {
+                    wgpu::Limits::downlevel_webgl2_defaults()
+                } else {
+                    wgpu::Limits::default()
+                },
+                memory_hints: Default::default(),
+                trace: wgpu::Trace::Off,
+            })
+            .await?;
+
+        Ok(GpuInit
             {
-                adapter,
-                instance,
-                device,
-                queue,
+                gpu:  GpuWgpu { wgpu: Wgpu { instance, adapter, device, queue } },
+                output: GpuInitOutput { surface: surface.map(|wgpu| wgpu.into()) }
             }
         )
     }
-    pub async fn with_surface(surface: Option<&wgpu::Surface<'_>>) -> GpuResult<Self>
-    {
-        Self::with_instance_and_surface(Instance::new(instance_desc), surface).await
-    }
-    pub async fn new() -> GpuResult<Self> {
-        Self::with_surface(None).await
+}
+#[derive(Debug)]
+pub struct GpuInitOutput
+{
+    pub surface: Option<Surface<'static>>,
+}
+
+#[bitindex]
+#[repr(u8)]
+pub enum Backend
+{
+    // No operation
+    Noop,
+    /// Supported on Windows, Linux/Android, and macOS/iOS via Vulkan Portability (with the Vulkan feature enabled)
+    Vulkan,
+
+    /// Supported on Linux/Android, the web through webassembly via WebGL, and Windows and
+    /// macOS/iOS via ANGLE
+    Gl,
+    /// Supported on macOS and iOS.
+    Metal,
+    /// Supported on Windows 10 and later
+    Dx12,
+
+    /// Supported when targeting the web through WebAssembly with the `webgpu` feature enabled.
+    BrowserWebgpu,
+
+    /// All the apis that wgpu offers first tier of support for.
+    Primary = Self::Vulkan | Self::Metal | Self::Dx12 | Self::BrowserWebgpu,
+    /// All the apis that wgpu offers second tier of support for. These may
+    /// be unsupported/still experimental.
+    Secondary = Self::Gl,
+    Debug = Self::Gl,
+}
+
+impl From<Backend> for wgpu::Backends
+{
+    fn from(value: Backend) -> Self {
+        use wgpu::Backends as B;
+        match value
+        {
+            Backend::Noop => B::NOOP,
+            Backend::Vulkan => B::VULKAN,
+            Backend::Gl => B::GL,
+            Backend::Metal => B::METAL,
+            Backend::Dx12 => B::DX12,
+            Backend::BrowserWebgpu => B::BROWSER_WEBGPU,
+        }
     }
 }
-*/
-/*
-pub struct Instance
+impl From<BackendFlags> for wgpu::Backends
+{
+    fn from(backends: BackendFlags) -> Self {
+        let mut flags = wgpu::Backends::empty();
+        for backend in backends
+        {
+            flags |= backend.into();
+        }
+        flags
+    }
+}
+
+impl Default for BackendFlags
+{
+    fn default() -> Self
+    {
+        if cfg!(debug_assertions)
+        {
+            BackendFlags::Debug
+        }else
+        {
+            BackendFlags::Primary | BackendFlags::Secondary
+        }
+    }
+}
+
+
+
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct GpuWgpu
+{
+    pub wgpu: Wgpu,
+}
+
+#[derive(Debug, Clone)]
+pub struct Wgpu
 {
     pub instance: wgpu::Instance,
+    pub adapter: wgpu::Adapter,
+    pub device: wgpu::Device,
+    pub queue: wgpu::Queue,
 }
-impl Instance
-{
-    pub fn new() -> Instance
-    {
-        Self::default()
-    }
-}
-impl From<wgpu::Instance> for Instance
-{
-    fn from(instance: wgpu::Instance) -> Self {
-        Self { instance }
-    }
-}
-impl From<Instance> for wgpu::Instance
-{
-    fn from(value: Instance) -> Self {
-        value.instance
-    }
-}
-impl Default for Instance
-{
-    fn default() -> Self {
-        #[cfg(not(target_arch = "wasm32"))]
-        let mut backends = wgpu::Backends::GL | wgpu::Backends::METAL | wgpu::Backends::DX12 | wgpu::Backends::BROWSER_WEBGPU;
-
-        // Vulkan is super slow to start (~30s to create a window)
-        #[cfg(all(not(target_arch = "wasm32"), not(debug_assertions)))]
-        {
-            backends |= wgpu::Backends::VULKAN;
-        }
-
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
-            backends,
-            ..Default::default()
-        });
-
-        Self { instance }
-    }
-}
-
-
-
-
-
-pub struct Pipeline
-{
-
-}
-
-pub struct GpuTexture
-{
-    inner: wgpu::Texture,
-}
-
-pub struct Texture
-{
-    pub(crate) view: GpuTexture,
-    pub(crate) sampler: wgpu::Sampler,
-    pub(crate) bind_group : wgpu::BindGroup
-}
-*/

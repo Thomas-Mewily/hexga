@@ -15,35 +15,48 @@ impl<'a> From<Instance> for wgpu::Instance
 }
 impl Instance
 {
-    pub fn new() -> Self { ___() }
+    pub fn new(desc: InstanceDescriptor) -> Self
+    {
+        Self
+        {
+            wgpu:
+            wgpu::Instance::new(&wgpu::InstanceDescriptor
+                {
+                    backends: desc.backends.into(),
+                    flags: desc.wgpu.flags,
+                    backend_options: desc.wgpu.backend_options,
+                }
+            )
+        }
+    }
+}
+
+#[non_exhaustive]
+#[derive(Default, Debug)]
+pub struct InstanceDescriptor
+{
+    pub backends : BackendFlags,
+    pub wgpu: WgpuInstanceDescriptor,
+}
+#[non_exhaustive]
+#[derive(Debug)]
+pub struct WgpuInstanceDescriptor
+{
+    /// Flags to tune the behavior of the instance.
+    pub flags: wgpu::InstanceFlags,
+    /// Options the control the behavior of various backends.
+    pub backend_options:  wgpu::BackendOptions,
+}
+impl Default for WgpuInstanceDescriptor
+{
+    fn default() -> Self {
+        Self { flags: Default::default(), backend_options: Default::default() }
+    }
 }
 
 impl Default for Instance
 {
     fn default() -> Self {
-        let mut flags = wgpu::InstanceFlags::empty();
-        if cfg!(debug_assertions)
-        {
-            flags |= wgpu::InstanceFlags::VALIDATION;
-        }
-
-        // Todo: make a flag for it ?
-        let mut backends = wgpu::Backends::empty();
-        backends |= wgpu::Backends::GL;
-        backends |= wgpu::Backends::METAL;
-        //backends |= wgpu::Backends::DX12; // Seem to Allocate at least 250 MB of RAM
-        backends |= wgpu::Backends::BROWSER_WEBGPU;
-        if cfg!(debug_assertions)
-        {
-            // Why it is slow as hell to start
-            backends |= wgpu::Backends::VULKAN;
-        }
-
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
-            backends,
-            flags,
-            ..Default::default()
-        });
-        Self { wgpu: instance }
+        Self::new(___())
     }
 }

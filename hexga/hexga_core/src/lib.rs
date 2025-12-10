@@ -27,6 +27,7 @@ pub mod rc;
 pub mod sync;
 pub mod traits;
 pub mod utils;
+pub mod run;
 pub mod wrapper;
 pub mod result;
 pub use hexga_bit as bit;
@@ -46,6 +47,7 @@ pub mod prelude
     pub use super::handle::*;
     pub use super::iter::*;
     pub use super::traits::prelude::*;
+    pub use super::run::*;
     pub use super::utils::*;
     pub use super::wrapper::*;
     pub use super::result::*;

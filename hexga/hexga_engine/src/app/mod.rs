@@ -28,7 +28,7 @@ pub mod prelude
         application::Application,
         event::AppEvent,
         futur::SpawnFutur,
-        runner::AppRun,
+        runner::AppRunner,
         app_core::{App,AppParam},
         result::*,
     };
