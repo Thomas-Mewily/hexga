@@ -52,53 +52,35 @@ impl AppGraphics
         self.surface.as_mut().expect("surface was not init")
     }
 
-    pub(crate) async fn init_gpu(window: Arc<WinitWindow>, mut param: GpuParam) -> GpuResult<Self>
+    pub(crate) async fn init_gpu(instance: graphics::Instance, surface: Option<graphics::Surface<'static>>, surface_size: Point2, mut param: GpuParam) -> GpuResult<Self>
     {
-        let size: Point2 = window.inner_size().convert();
-        let size = size.max(one());
+        let gpu_init = GpuInit::from_instance_and_surface(instance, surface, param).await?;
+        let output = Gpu::from_init(gpu_init).await?;
+        Ok(Self::new(surface_size, output))
+    }
+
+    pub(crate) async fn async_init_gpu(instance: graphics::Instance, surface: Option<graphics::Surface<'static>>, surface_size: Point2, param: GpuParam, proxy: EventLoopProxy)
+    {
+        let _ = proxy.send_event(AppInternalEvent::Gpu(Self::init_gpu(instance, surface, surface_size, param).await));
+    }
+
+    pub(crate) fn init(window: Arc<WinitWindow>, mut param: GpuParam, proxy: EventLoopProxy) -> GpuResult
+    {
+        if App.graphics.is_some() { return Err(GpuError::GpuAlreadyInit); }
+
+        let surface_size: Point2 = window.inner_size().convert();
+        let surface_size = surface_size.max(one());
 
         if param.compatible_surface.is_none()
         {
             param.compatible_surface = Some(window.into());
         }
 
-        let output = Gpu::new(param).await?;
-        Ok(Self::new(size, output))
-    }
+        let instance = graphics::Instance::new(&param.instance);
+        let surface = Some(instance.wgpu.create_surface(param.compatible_surface.take().expect("missing surface"))?.into());
 
-    pub(crate) async fn async_init_gpu(window: Arc<WinitWindow>, param: GpuParam, proxy: EventLoopProxy)
-    {
-        let _ = proxy.send_event(AppInternalEvent::Gpu(Self::init_gpu(window, param).await));
-    }
-
-    pub(crate) fn init(window: Arc<WinitWindow>, param: GpuParam, proxy: EventLoopProxy)
-    {
-        if App.graphics.is_some() { return; }
-
-        Self::async_init_gpu(window, param, proxy).spawn();
-
-        /*
-        match Gpu::try_context()
-        {
-            Some(ctx) =>
-            {
-                todo!()
-            },
-            None =>
-            {
-                /*
-                (async ||
-                {
-                    proxy.send_event(AppInternalEvent::Gpu(GpuMessage::InitGpu(Self::init_gpu(window).await)))
-                }).spawn();
-            */
-                todo!();
-                //let d = Gpu::default(GpuParam { compatible_surface: Some(&window) });
-                //let instance = Instance::new();
-
-                //Gpu::default(GpuParam { default_surface: () })
-            },
-        }*/
+        Self::async_init_gpu(instance, surface, surface_size, param, proxy).spawn();
+        Ok(())
     }
 
 }

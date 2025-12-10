@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Instance
 {
     pub wgpu: wgpu::Instance,
@@ -15,7 +15,7 @@ impl<'a> From<Instance> for wgpu::Instance
 }
 impl Instance
 {
-    pub fn new(desc: InstanceDescriptor) -> Self
+    pub fn new(desc: &InstanceDescriptor) -> Self
     {
         Self
         {
@@ -24,7 +24,7 @@ impl Instance
                 {
                     backends: desc.backends.into(),
                     flags: desc.wgpu.flags,
-                    backend_options: desc.wgpu.backend_options,
+                    backend_options: desc.wgpu.backend_options.clone(),
                 }
             )
         }
@@ -57,6 +57,6 @@ impl Default for WgpuInstanceDescriptor
 impl Default for Instance
 {
     fn default() -> Self {
-        Self::new(___())
+        Self::new(&___())
     }
 }

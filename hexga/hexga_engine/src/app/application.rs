@@ -13,7 +13,7 @@ impl<S> MessageHandler<AppMessage> for S where S:Application
     fn message(&mut self, message: AppMessage) {
         match message
         {
-            AppMessage::Event(event) => todo!(),
+            AppMessage::Event(event) => self.event(event),
             AppMessage::Flow(flow) => match flow
             {
                 FlowMessage::Resumed => Application::resumed(self),

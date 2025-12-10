@@ -45,7 +45,7 @@ impl AppWindow
 
             if !Gpu::is_init()
             {
-                AppGraphics::init(window, gpu_param.unwrap_or_default(), App.proxy().clone())
+                AppGraphics::init(window, gpu_param.unwrap_or_default(), App.proxy().clone()).expect("failed to init the graphics")
             }
             //todo!("Make a mecanism/trait for app and gpu to run some code after the async init");
             //AppGraphics::init(window, proxy);

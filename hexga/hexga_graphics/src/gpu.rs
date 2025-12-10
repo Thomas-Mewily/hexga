@@ -52,6 +52,8 @@ impl Gpu
 pub struct GpuParam
 {
     pub instance: InstanceDescriptor,
+    pub wgpu_instance: WgpuInstanceDescriptor,
+
     pub power_preference: PowerPreference,
     pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
 }
@@ -95,22 +97,14 @@ pub struct GpuInit
 }
 impl GpuInit
 {
-    async fn new(param: GpuParam) -> GpuResult<Self>
+    pub async fn from_instance_and_surface(instance: Instance, surface: Option<Surface<'static>>, param: GpuParam) -> GpuResult<Self>
     {
-        let instance = Instance::new(param.instance).wgpu;
-
-        let surface = match param.compatible_surface
-        {
-            Some(s) => Some(instance.create_surface(s)?),
-            None => None,
-        };
-
-        let adapter = instance
+        let adapter = instance.wgpu
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: param.power_preference.into(),
                 force_fallback_adapter: false,
                 // Request an adapter which can render to our surface
-                compatible_surface: surface.as_ref(),
+                compatible_surface: surface.as_ref().map(|s| &s.wgpu),
             })
             .await?;
 
@@ -136,6 +130,17 @@ impl GpuInit
                 output: GpuInitOutput { surface: surface.map(|wgpu| wgpu.into()) }
             }
         )
+    }
+    pub async fn new(mut param: GpuParam) -> GpuResult<Self>
+    {
+        let instance = Instance::new(&param.instance);
+
+        let surface = match param.compatible_surface.take()
+        {
+            Some(s) => Some(instance.wgpu.create_surface(s)?),
+            None => None,
+        };
+        Self::from_instance_and_surface(instance, surface.map(|v| v.into()), param).await
     }
 }
 #[derive(Debug)]
@@ -225,8 +230,15 @@ pub struct GpuWgpu
 #[derive(Debug, Clone)]
 pub struct Wgpu
 {
-    pub instance: wgpu::Instance,
+    pub instance: Instance,
     pub adapter: wgpu::Adapter,
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
+}
+impl Wgpu
+{
+    pub fn wgpu_instance(&self) -> &wgpu::Instance { &self.instance.wgpu }
+    pub fn wgpu_adapter(&self) -> &wgpu::Adapter { &self.adapter }
+    pub fn wgpu_device(&self) -> &wgpu::Device { &self.device }
+    pub fn wgpu_queue(&self) -> &wgpu::Queue { &self.queue }
 }
