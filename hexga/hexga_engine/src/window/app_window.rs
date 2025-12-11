@@ -57,8 +57,7 @@ impl AppWindow
         if self.window.is_some() { return false; }
 
         #[allow(unused_mut)]
-        let mut win_attr = WinitWindow::default_attributes()
-            .with_title(App.param.title.to_owned());
+        let mut win_attr = App.param.window.clone();
 
         #[cfg(target_arch = "wasm32")]
         {
@@ -66,10 +65,9 @@ impl AppWindow
             win_attr = win_attr.with_append(true);
         }
 
-        let window = Arc::new(
-            active
-                .create_window(win_attr)
-                .expect("create window err."),
+        let window = Arc::new(active
+            .create_window(win_attr)
+            .expect("create window err."),
         );
         self.window = Some(Window::from_winit(window));
         true
@@ -223,14 +221,197 @@ impl GetSize<int,2> for Window
         size.max(one())
     }
 }
+
+pub(crate) fn to_winit_size(size: Point2) -> winit::dpi::PhysicalSize<i32>
+{
+    winit::dpi::PhysicalSize::new(size.x as i32, size.y as i32)
+}
+pub(crate) fn to_winit_pos(size: Point2) -> winit::dpi::PhysicalPosition<i32>
+{
+    winit::dpi::PhysicalPosition::new(size.x as i32, size.y as i32)
+}
+
 impl SetSize<int,2> for Window
 {
     fn set_size(&mut self, size: Vector<int,2>) -> &mut Self
     {
         let size = size.max(one());
-        let _ = self.window.request_inner_size(winit::dpi::PhysicalSize::new(size.x as i32, size.y as i32));
+        let _ = self.window.request_inner_size(to_winit_size(size));
 
         self.configure_surface();
         self
+    }
+}
+
+
+
+#[non_exhaustive]
+#[derive(Debug)]
+pub struct WindowParam
+{
+    pub title: String,
+    pub size: Option<Point2>,
+    pub position: Option<Point2>,
+    pub level : WindowLevel,
+    pub resizable: bool,
+    pub buttons: WindowButtonFlags,
+    pub maximized: bool,
+    pub visible: bool,
+    pub transparent: bool,
+    pub blur: bool,
+    pub decorations: bool,
+    pub content_protected: bool,
+    pub active: bool,
+}
+impl Default for WindowParam
+{
+    fn default() -> Self {
+        Self
+        {
+            title: "hexga application".to_owned(),
+            size: None,
+            position: None,
+            level: ___(),
+            resizable: true,
+            buttons: ___(),
+            maximized: false,
+            visible: true,
+            transparent: false,
+            blur: false,
+            decorations: true,
+            content_protected: false,
+            active: true
+        }
+    }
+}
+
+impl From<WindowParam> for winit::window::WindowAttributes
+{
+    fn from(value: WindowParam) -> Self
+    {
+        let WindowParam
+        {
+            title,
+            size,
+            position,
+            level,
+            resizable,
+            buttons,
+            maximized,
+            visible,
+            transparent,
+            blur,
+            decorations,
+            content_protected,
+            active,
+        } = value;
+
+        let mut attr = winit::window::Window::default_attributes();
+
+        attr.inner_size = size.map(|v| to_winit_size(v).into());
+        attr.min_inner_size = None;
+        attr.max_inner_size = None;
+        attr.position = position.map(|v| to_winit_pos(v).into());
+        attr.resizable = resizable;
+        attr.enabled_buttons = buttons.into();
+        attr.title = title;
+        attr.maximized = maximized;
+        attr.visible = visible;
+        attr.transparent = transparent;
+        attr.blur = blur;
+        attr.decorations = decorations;
+        attr.content_protected = content_protected;
+        attr.window_level = level.into();
+        attr.active = active;
+        attr.cursor = ___();
+        attr.fullscreen = None;
+
+        attr
+    }
+}
+impl WindowBuilder for WindowParam
+{
+    fn with_title(self, title: impl Into<String>) -> Self {  Self { title: title.into(), ..self } }
+    fn with_size(self, size: impl Into<Option<Point2>>) -> Self {  Self { size: size.into(), ..self } }
+}
+
+pub trait WindowBuilder
+{
+    fn with_title(self, title: impl Into<String>) -> Self;
+    fn with_size(self, size: impl Into<Option<Point2>>) -> Self;
+}
+
+
+/// A window level groups windows with respect to their z-position.
+///
+/// The relative ordering between windows in different window levels is fixed.
+/// The z-order of a window within the same window level may change dynamically on user interaction.
+///
+/// ## Platform-specific
+///
+/// - **iOS / Android / Web / Wayland:** Unsupported.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+pub enum WindowLevel {
+    /// The window will always be below normal windows.
+    ///
+    /// This is useful for a widget-based app.
+    AlwaysOnBottom,
+
+    /// The default.
+    #[default]
+    Normal,
+
+    /// The window will always be on top of normal windows.
+    AlwaysOnTop,
+}
+impl From<WindowLevel> for winit::window::WindowLevel
+{
+    fn from(value: WindowLevel) -> Self {
+        use winit::window::WindowLevel as W;
+        match value
+        {
+            WindowLevel::AlwaysOnBottom => W::AlwaysOnBottom,
+            WindowLevel::Normal => W::Normal,
+            WindowLevel::AlwaysOnTop => W::AlwaysOnTop,
+        }
+    }
+}
+
+#[bitindex]
+#[repr(u8)]
+pub enum WindowButton
+{
+    Close = 0,
+    Minimize = 1,
+    Maximize = 2,
+    All = Self::Close | Self::Minimize | Self::Maximize,
+}
+impl Default for WindowButtonFlags
+{
+    fn default() -> Self {
+        Self::ALL
+    }
+}
+impl From<WindowButton> for winit::window::WindowButtons
+{
+    fn from(value: WindowButton) -> Self {
+        use winit::window::WindowButtons as B;
+        match value
+        {
+            WindowButton::Close => B::CLOSE,
+            WindowButton::Minimize => B::MINIMIZE,
+            WindowButton::Maximize => B::MAXIMIZE,
+        }
+    }
+}
+impl From<WindowButtonFlags> for winit::window::WindowButtons
+{
+    fn from(value: WindowButtonFlags) -> Self {
+        let mut flags = winit::window::WindowButtons::empty();
+        for button in value
+        {
+            flags |= button.into();
+        }
+        flags
     }
 }

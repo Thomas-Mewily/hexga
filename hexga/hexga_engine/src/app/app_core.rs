@@ -15,7 +15,7 @@ pub struct AppCore
     pub(crate) perf:      AppPerf,
     pub(crate) proxy:     Option<EventLoopProxy>,
 
-    pub(crate) param:     AppParam,
+    pub(crate) param:     AppParamInternal,
 }
 impl AppCore
 {
@@ -27,7 +27,7 @@ impl AppCore
 
     pub(crate) fn proxy(&self) -> &EventLoopProxy { self.proxy.as_ref().expect("proxy is not init") }
 
-    pub(crate) fn param(&self) -> &AppParam { &self.param }
+    pub(crate) fn param(&self) -> &AppParamInternal { &self.param }
     //pub fn param_mut(&mut self) -> &mut AppParam { &mut self.param }
 }
 impl AppCore
@@ -71,7 +71,7 @@ impl AppCore
         }
     }
 
-    pub(crate) fn init(&mut self, param: AppParam, proxy: EventLoopProxy)
+    pub(crate) fn init(&mut self, param: AppParamInternal, proxy: EventLoopProxy)
     {
         assert!(!self.already_init, "app is already init");
         self.param = param;
@@ -132,17 +132,3 @@ impl App
 }
     */
 
-#[non_exhaustive]
-#[derive(Default, Debug)]
-pub struct AppParam
-{
-    pub title: String,
-    pub gpu: Option<GpuParam>,
-}
-
-impl AppParam
-{
-    pub fn new() -> Self { ___() }
-    pub fn with_title(self, title: impl Into<String>) -> Self { Self { title: title.into(), ..self } }
-    pub fn with_gpu(self, gpu: impl Into<Option<GpuParam>>) -> Self { Self { gpu: gpu.into(), ..self } }
-}

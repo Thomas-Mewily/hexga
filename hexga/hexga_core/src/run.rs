@@ -1,24 +1,22 @@
 
 /// Run some code after some complexe initialization
-pub trait Runner<F>
+pub trait Runner<F,P>
 {
     type Output;
-    type Param;
-    fn run(f: F) -> Self::Output where Self::Param: Default
+    fn run(f: F) -> Self::Output where P: Default
     {
         Self::run_with_param(f, Default::default())
     }
-    fn run_with_param(f: F, param: Self::Param) -> Self::Output;
+    fn run_with_param(f: F, param: P) -> Self::Output;
 }
 
 #[allow(async_fn_in_trait)]
-pub trait AsyncRunner<F>
+pub trait AsyncRunner<F,P>
 {
     type Output;
-    type Param;
-    async fn run(f: F) -> Self::Output where Self::Param: Default
+    async fn run(f: F) -> Self::Output where P: Default
     {
         Self::run_with_param(f, Default::default()).await
     }
-    async fn run_with_param(f: F, param: Self::Param) -> Self::Output;
+    async fn run_with_param(f: F, param: P) -> Self::Output;
 }

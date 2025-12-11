@@ -18,6 +18,9 @@ pub use runner::*;
 mod result;
 pub use result::*;
 
+mod param;
+pub use param::*;
+
 pub mod prelude
 {
     pub use super::
@@ -25,7 +28,8 @@ pub mod prelude
         application::Application,
         event::AppEvent,
         spawn::AsyncSpawn,
-        app_core::{App,AppParam},
+        param::AppParam,
+        app_core::{App},
         result::*,
     };
 

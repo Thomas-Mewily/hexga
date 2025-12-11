@@ -17,12 +17,11 @@ impl Gpu
 }
 
 
-impl<F> AsyncRunner<F> for Gpu
+impl<F> AsyncRunner<F,GpuParam> for Gpu
     where F: AsyncFnOnce(GpuInitOutput)
 {
     type Output=GpuResult;
-    type Param=GpuParam;
-    async fn run_with_param(f: F, param: Self::Param) -> Self::Output {
+    async fn run_with_param(f: F, param: GpuParam) -> Self::Output {
         let output = Self::new(param).await?;
         f(output);
         Ok(())

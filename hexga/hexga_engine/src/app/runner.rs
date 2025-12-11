@@ -41,15 +41,15 @@ impl<A,F> AppRunner<A,F>
     }
 }
 
-impl<A,F> Runner<F> for AppRunner<A,F>
+impl<A,F,P> Runner<F,P> for AppRunner<A,F>
     where
     A: AppMessageHandler,
-    F: AppInit<A>
+    F: AppInit<A>,
+    P: Into<AppParamInternal>
 {
     type Output=AppResult;
-    type Param=AppParam;
 
-    fn run_with_param(init_app: F, param: Self::Param) -> Self::Output  {
+    fn run_with_param(init_app: F, param: P) -> Self::Output  {
         // Can't run two app at the same time
         if App.already_init { return Err(AppError::AlreadyInit); }
 
@@ -82,7 +82,7 @@ impl<A,F> Runner<F> for AppRunner<A,F>
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let proxy = event_loop.create_proxy();
 
-        App.init(param, proxy);
+        App.init(param.into(), proxy);
 
         #[allow(unused_mut)]
         let mut runner = AppRunner::new(init_app);
