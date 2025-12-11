@@ -27,14 +27,14 @@ impl AppCore
 
     pub(crate) fn proxy(&self) -> &EventLoopProxy { self.proxy.as_ref().expect("proxy is not init") }
 
-    pub fn param(&self) -> &AppParam { &self.param }
+    pub(crate) fn param(&self) -> &AppParam { &self.param }
     //pub fn param_mut(&mut self) -> &mut AppParam { &mut self.param }
 }
 impl AppCore
 {
     pub fn exit(&mut self)
     {
-        self.window.destroy();
+        self.window.window = None;
         self.graphics = None;
         self.proxy = None;
     }
@@ -80,6 +80,7 @@ impl AppCore
     }
 }
 
+/*
 impl ScopedFlow for AppCore
 {
     fn begin_flow(&mut self, flow: FlowMessage) {
@@ -94,7 +95,7 @@ impl ScopedFlow for AppCore
         self.graphics.end_flow(flow);
     }
 }
-
+*/
 singleton_single_thread!(pub App,AppCore,CONTEXT_APP,|| AppCore::new());
 
 /*

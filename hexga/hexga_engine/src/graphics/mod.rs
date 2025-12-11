@@ -20,8 +20,6 @@ singleton_single_thread_access!(
 #[derive(Debug)]
 pub struct AppGraphics
 {
-    /// Destroyed on suspend and recreated on resume
-    pub(crate) surface: Option<ConfiguredSurface<'static>>,
 
     /*
     pub(crate) binding: GpuBinding,
@@ -49,16 +47,8 @@ impl AppGraphics
     {
         Self
         {
-            surface: None
+
         }
-    }
-    pub(crate) fn resize(&mut self, size: Point2)
-    {
-        self.surface_mut().resize(size);
-    }
-    pub(crate) fn surface_mut(&mut self) -> &mut ConfiguredSurface<'static>
-    {
-        self.surface.as_mut().expect("surface was not init")
     }
 
     pub(crate) async fn init_gpu(instance: graphics::Instance, surface: Option<graphics::Surface<'static>>, window: Arc<WinitWindow>, mut param: GpuParam) -> GpuResult<Self>
@@ -96,6 +86,7 @@ impl AppGraphics
 }
 
 
+/*
 impl ScopedFlow for Option<AppGraphics>
 {
     fn begin_flow(&mut self, flow: FlowMessage) {
@@ -119,6 +110,8 @@ impl ScopedFlow for Option<AppGraphics>
         }
     }*/
 }
+*/
+/*
 impl ScopedFlow for AppGraphics
 {
     /*
@@ -135,7 +128,7 @@ impl ScopedFlow for AppGraphics
 
 
     fn begin_flow_resumed(&mut self) {
-        self.init_surface(Window.active.as_ref().unwrap().clone());
+        self.init_surface(WindowState.active.as_ref().unwrap().clone());
     }
     fn end_flow_paused(&mut self) {
         self.surface = None;
@@ -147,18 +140,7 @@ impl ScopedFlow for AppGraphics
         //self.send_data_to_gpu();
     }
 }
-
-
-impl AppGraphics
-{
-    pub(crate) fn init_surface(&mut self, window: Arc<WinitWindow>)
-    {
-        let surface_size: Point2 = window.inner_size().convert();
-        let surface_size = surface_size.max(one());
-        let surface = Gpu.wgpu.wgpu_instance().create_surface(window).expect("failed to create the window");
-        self.surface = Some(ConfiguredSurface::from_surface(surface.into(), surface_size));
-    }
-}
+*/
 
 
 pub(crate) type GpuMessage = GpuResult<AppGraphics>;

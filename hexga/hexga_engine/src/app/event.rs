@@ -19,6 +19,15 @@ impl From<InputEvent> for AppEvent { fn from(input: InputEvent) -> Self { Self::
 impl From<KeyEvent> for AppEvent { fn from(key: KeyEvent) -> Self { Self::Input(key.into()) } }
 impl From<WindowEvent> for AppEvent { fn from(window: WindowEvent) -> Self { Self::Window(window.into()) } }
 
+/*
+#[derive(Debug, Clone)]
+pub struct LibAppMessage<'a>
+{
+    pub event_loop: &'a EventLoopActive,
+    pub message: AppMessage,
+}
+*/
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AppMessage
 {
@@ -32,7 +41,7 @@ impl From<FlowMessage> for AppMessage { fn from(value: FlowMessage) -> Self { Ap
 pub enum FlowMessage
 {
     Resumed,
-    Paused,
+    Suspended,
     Update(DeltaTime),
     Draw,
     //Exit,
@@ -40,7 +49,6 @@ pub enum FlowMessage
 
 pub(crate) enum AppInternalEvent
 {
-    Exit,
     Gpu(GpuMessage),
     //Custom(CustomEvent),
 }

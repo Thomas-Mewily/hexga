@@ -26,6 +26,7 @@ impl AppPerf
     pub fn ups(&self) -> int { self.ups.nb() }
 }
 
+/*
 impl ScopedFlow for AppPerf
 {
     fn begin_flow_update(&mut self, dt: DeltaTime) { self.ups.count(); }
@@ -33,6 +34,7 @@ impl ScopedFlow for AppPerf
     fn begin_flow_draw(&mut self) { self.fps.count(); }
     fn end_flow_draw(&mut self) { }
 }
+*/
 
 
 

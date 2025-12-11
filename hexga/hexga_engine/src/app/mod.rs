@@ -9,14 +9,11 @@ pub use application::*;
 mod app_core;
 pub use app_core::*;
 
-mod futur;
-pub use futur::*;
+mod spawn;
+pub use spawn::*;
 
 mod runner;
 pub use runner::*;
-
-mod scoped;
-pub use scoped::*;
 
 mod result;
 pub use result::*;
@@ -27,13 +24,11 @@ pub mod prelude
     {
         application::Application,
         event::AppEvent,
-        futur::SpawnFutur,
-        runner::AppRunner,
+        spawn::AsyncSpawn,
         app_core::{App,AppParam},
         result::*,
     };
 
-    pub(crate) use super::scoped::*;
     pub(crate) use super::{FlowMessage,AppInternalEvent};
 
     pub(crate) type EventLoopActive = winit::event_loop::ActiveEventLoop;

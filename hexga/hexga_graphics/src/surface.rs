@@ -37,16 +37,24 @@ impl<'a> ConfiguredSurface<'a>
         Self{ wgpu: WgpuConfiguredSurface { surface, configuration } }
     }
 
-    pub fn resize(&mut self, size: Point2)
+    fn size(&self) -> Point2
     {
+        point2(self.wgpu.configuration.width as _, self.wgpu.configuration.height as _)
+    }
+}
+impl<'a> SetSize<int, 2> for ConfiguredSurface<'a>
+{
+    fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self {
         let size = size.max(one());
         self.wgpu.configuration.width = size.x as _;
         self.wgpu.configuration.height = size.y as _;
         self.wgpu.surface.wgpu.configure(&Gpu.wgpu.device, &self.wgpu.configuration);
+        self
     }
-
-    fn size(&self) -> Point2
-    {
+}
+impl<'a> GetSize<int, 2> for ConfiguredSurface<'a>
+{
+    fn size(&self) -> Vector<int,2> {
         point2(self.wgpu.configuration.width as _, self.wgpu.configuration.height as _)
     }
 }

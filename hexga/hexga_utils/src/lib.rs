@@ -14,6 +14,7 @@ pub mod dirty_flag;
 pub mod button;
 pub mod evolution;
 pub mod lazy;
+pub mod message;
 
 use prelude::*;
 pub mod prelude
@@ -25,6 +26,7 @@ pub mod prelude
     pub use super::button::prelude::*;
     pub use super::evolution::prelude::*;
     pub use super::lazy::prelude::*;
+    pub use super::message::prelude::*;
 }
 
 

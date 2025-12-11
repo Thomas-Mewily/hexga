@@ -29,6 +29,7 @@ impl Default for AppKeyboard
     }
 }
 
+/*
 impl ScopedFlow for AppKeyboard
 {
     fn begin_flow(&mut self, flow: FlowMessage) {
@@ -41,7 +42,7 @@ impl ScopedFlow for AppKeyboard
         self.key_repeated.end_flow(flow);
     }
 }
-
+*/
 impl AppKeyboard
 {
     pub(crate) fn key_event(&mut self, ev: KeyEvent)
@@ -78,6 +79,7 @@ pub struct KeyCodeManager
     pub(crate) released: HashSet<KeyCode>,
 }
 
+/*
 impl ScopedFlow for KeyCodeManager
 {
     fn begin_flow_paused(&mut self) {
@@ -113,7 +115,7 @@ impl ScopedFlow for KeyCodeManager
     }
 
 }
-
+*/
 impl KeyCodeManager
 {
     pub fn new(repeat : ButtonRepeat) -> Self { Self { repeat, down: ___(), old_down: ___(), pressed: ___(), released: ___() }}

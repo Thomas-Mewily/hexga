@@ -32,14 +32,14 @@ impl Instance
 }
 
 #[non_exhaustive]
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct InstanceDescriptor
 {
     pub backends : BackendFlags,
     pub wgpu: WgpuInstanceDescriptor,
 }
 #[non_exhaustive]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WgpuInstanceDescriptor
 {
     /// Flags to tune the behavior of the instance.

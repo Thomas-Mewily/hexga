@@ -16,6 +16,7 @@ impl AppInput
     pub fn keyboard(&mut self) -> &mut AppKeyboard { &mut self.keyboard }
 }
 
+/*
 impl ScopedFlow for AppInput
 {
     fn begin_flow(&mut self, flow: FlowMessage) {
@@ -26,3 +27,4 @@ impl ScopedFlow for AppInput
         self.keyboard.end_flow(flow);
     }
 }
+*/

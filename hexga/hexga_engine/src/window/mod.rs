@@ -1,9 +1,5 @@
 pub use super::*;
 
-pub(crate) type WinitWindow = winit::window::Window;
-pub(crate) type WinitWindowID = winit::window::WindowId;
-pub(crate) type WinitWindowShared = Arc<WinitWindow>;
-
 mod app_window;
 pub use app_window::*;
 
@@ -24,6 +20,6 @@ pub enum WindowEvent
 
 pub mod prelude
 {
-    pub use super::{Window,WindowEvent};
+    pub use super::{WindowEvent,WindowExtension};
     pub(crate) use super::*;
 }

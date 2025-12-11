@@ -7,7 +7,8 @@ use std::sync::{Arc,LazyLock};
 use std::ops::*;
 use std::marker::PhantomData;
 use hexga::prelude::*;
-use hexga_graphics::GpuParam;
+use hexga_graphics::{GpuParam,ConfiguredSurface};
+use std::rc::Rc;
 
 
 pub use hexga::*;
@@ -18,6 +19,8 @@ pub mod perf;
 pub mod window;
 pub mod clipboard;
 pub mod graphics;
+mod free_function;
+pub use free_function::*;
 
 use prelude::*;
 pub mod prelude
