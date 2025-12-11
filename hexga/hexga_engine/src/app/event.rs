@@ -1,5 +1,3 @@
-use hexga_graphics::ConfiguredSurface;
-
 use super::*;
 
 pub trait AsyncDebug : Async + Debug {}

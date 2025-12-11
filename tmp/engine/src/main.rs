@@ -32,7 +32,7 @@ struct AlwaysBitZero<T> {
 
 fn main()
 {
-    hexga_engine::run(|| MyApp{});
+    hexga_engine::run_with_param(|| MyApp{}, AppParam::new().with_title("hello world"));
     //MyApp::run(|| MyApp{});
     //assert!(matches!(MyOption::<std::num::NonZeroU8>::zeroed(), MyOption::None));
     //AlwaysBitZero::<std::num::NonZeroU8>::zeroed();

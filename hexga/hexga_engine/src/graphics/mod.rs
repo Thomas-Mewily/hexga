@@ -1,13 +1,12 @@
 use super::*;
 
-pub use wgpu;
 pub use hexga_graphics::*;
 
 pub mod prelude
 {
     pub use super::Pen;
     pub use hexga_graphics::prelude::*;
-    pub(crate) use super::{AppGraphics,wgpu,GpuMessage};
+    pub(crate) use super::{AppGraphics,wgpu,GpuMessage,Surface,ConfiguredSurface};
 }
 
 singleton_single_thread_access!(

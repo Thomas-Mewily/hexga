@@ -26,6 +26,20 @@ pub trait Setter<T>
 {
     fn set(&mut self, val: T) -> &mut Self;
 }
+impl<T> Setter<T> for T
+{
+    fn set(&mut self, val: T) -> &mut Self {
+        *self = val;
+        self
+    }
+}
+*/
+
+/*
+pub trait With<T>
+{
+    fn with(self, value: T);
+}
 */
 
 

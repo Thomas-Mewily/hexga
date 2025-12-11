@@ -161,7 +161,7 @@ impl Window
     {
         Self { window, surface: None }
     }
-    pub(crate) fn set_surface(&mut self, surface: hexga_graphics::Surface<'static>)
+    pub(crate) fn set_surface(&mut self, surface: Surface<'static>)
     {
         let surface = ConfiguredSurface::from_surface(surface, self.size());
         self.surface = Some(surface);
@@ -243,6 +243,92 @@ impl SetSize<int,2> for Window
     }
 }
 
+pub trait WindowParamBuilder: Sized
+{
+    fn with_title(self, title: impl Into<String>) -> Self;
+    fn with_size(self, size: impl Into<Option<Point2>>) -> Self;
+    fn with_position(self, position: impl Into<Option<Point2>>) -> Self;
+    fn with_level(self, level: WindowLevel) -> Self;
+
+    fn with_resizable(self, resizable: bool) -> Self;
+    fn with_buttons(self, buttons: WindowButtonFlags) -> Self;
+    fn with_maximized(self, maximized: bool) -> Self;
+
+    fn with_visible(self, visible: bool) -> Self;
+    fn with_transparent(self, transparent: bool) -> Self;
+    fn with_blur(self, blur: bool) -> Self;
+
+    fn with_decorations(self, decorations: bool) -> Self;
+    fn with_content_protected(self, protected: bool) -> Self;
+
+    fn with_active(self, active: bool) -> Self;
+}
+impl<T> WindowParamBuilder for T where T: HasMut<WindowParam> {
+    fn with_title(mut self, title: impl Into<String>) -> Self {
+        self.retrive_mut().title = title.into();
+        self
+    }
+
+    fn with_size(mut self, size: impl Into<Option<Point2>>) -> Self {
+        self.retrive_mut().size = size.into();
+        self
+    }
+
+    fn with_position(mut self, position: impl Into<Option<Point2>>) -> Self {
+        self.retrive_mut().position = position.into();
+        self
+    }
+
+    fn with_level(mut self, level: WindowLevel) -> Self {
+        self.retrive_mut().level = level;
+        self
+    }
+
+    fn with_resizable(mut self, resizable: bool) -> Self {
+        self.retrive_mut().resizable = resizable;
+        self
+    }
+
+    fn with_buttons(mut self, buttons: WindowButtonFlags) -> Self {
+        self.retrive_mut().buttons = buttons;
+        self
+    }
+
+    fn with_maximized(mut self, maximized: bool) -> Self {
+        self.retrive_mut().maximized = maximized;
+        self
+    }
+
+    fn with_visible(mut self, visible: bool) -> Self {
+        self.retrive_mut().visible = visible;
+        self
+    }
+
+    fn with_transparent(mut self, transparent: bool) -> Self {
+        self.retrive_mut().transparent = transparent;
+        self
+    }
+
+    fn with_blur(mut self, blur: bool) -> Self {
+        self.retrive_mut().blur = blur;
+        self
+    }
+
+    fn with_decorations(mut self, decorations: bool) -> Self {
+        self.retrive_mut().decorations = decorations;
+        self
+    }
+
+    fn with_content_protected(mut self, protected: bool) -> Self {
+        self.retrive_mut().content_protected = protected;
+        self
+    }
+
+    fn with_active(mut self, active: bool) -> Self {
+        self.retrive_mut().active = active;
+        self
+    }
+}
 
 
 #[non_exhaustive]
@@ -329,17 +415,8 @@ impl From<WindowParam> for winit::window::WindowAttributes
         attr
     }
 }
-impl WindowBuilder for WindowParam
-{
-    fn with_title(self, title: impl Into<String>) -> Self {  Self { title: title.into(), ..self } }
-    fn with_size(self, size: impl Into<Option<Point2>>) -> Self {  Self { size: size.into(), ..self } }
-}
 
-pub trait WindowBuilder
-{
-    fn with_title(self, title: impl Into<String>) -> Self;
-    fn with_size(self, size: impl Into<Option<Point2>>) -> Self;
-}
+
 
 
 /// A window level groups windows with respect to their z-position.
@@ -411,6 +488,19 @@ impl From<WindowButtonFlags> for winit::window::WindowButtons
         for button in value
         {
             flags |= button.into();
+        }
+        flags
+    }
+}
+impl From<winit::window::WindowButtons> for WindowButtonFlags
+{
+    fn from(value: winit::window::WindowButtons) -> Self {
+        let mut flags = WindowButtonFlags::EMPTY;
+        for button in value
+        {
+            if button == winit::window::WindowButtons::CLOSE { flags |= WindowButton::Close; }
+            if button == winit::window::WindowButtons::MINIMIZE { flags |= WindowButton::Minimize; }
+            if button == winit::window::WindowButtons::MAXIMIZE { flags |= WindowButton::Maximize; }
         }
         flags
     }

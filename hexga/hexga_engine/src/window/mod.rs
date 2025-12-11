@@ -20,6 +20,6 @@ pub enum WindowEvent
 
 pub mod prelude
 {
-    pub use super::{WindowEvent,WindowExtension,WindowBuilder};
+    pub use super::{WindowEvent,WindowExtension,WindowParamBuilder};
     pub(crate) use super::*;
 }

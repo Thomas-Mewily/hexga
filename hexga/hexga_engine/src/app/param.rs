@@ -1,4 +1,3 @@
-use hexga_graphics::GpuParam;
 use super::*;
 
 pub type AppParam = AppParamOf;
@@ -19,10 +18,11 @@ impl From<AppParam> for AppParamInternal
     }
 }
 
-impl WindowBuilder for AppParam
+impl HasMut<WindowParam> for AppParam
 {
-    fn with_title(self, title: impl Into<String>) -> Self { Self { window: self.window.with_title(title), ..self } }
-    fn with_size(self, size: impl Into<Option<Point2>>) -> Self { Self { window: self.window.with_size(size), ..self } }
+    fn retrive_mut(&mut self) -> &mut WindowParam {
+        &mut self.window
+    }
 }
 
 impl AppParam

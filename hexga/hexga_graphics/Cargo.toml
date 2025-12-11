@@ -19,29 +19,25 @@ default = [
             "webgpu"
           ]
 
-int_are_8_bits    = ["hexga/int_are_8_bits"]
-int_are_16_bits   = ["hexga/int_are_16_bits"]
-int_are_32_bits   = ["hexga/int_are_32_bits"]
-int_are_64_bits   = ["hexga/int_are_64_bits"]
-int_are_size_bits = ["hexga/int_are_size_bits"]
+int_are_8_bits    = ["hexga/int_are_8_bits", "hexga_wgpu/int_are_8_bits"]
+int_are_16_bits   = ["hexga/int_are_16_bits", "hexga_wgpu/int_are_16_bits"]
+int_are_32_bits   = ["hexga/int_are_32_bits", "hexga_wgpu/int_are_32_bits"]
+int_are_64_bits   = ["hexga/int_are_64_bits", "hexga_wgpu/int_are_64_bits"]
+int_are_size_bits = ["hexga/int_are_size_bits", "hexga_wgpu/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga/float_are_32_bits"]
-float_are_64_bits   = ["hexga/float_are_64_bits"]
-float_are_size_bits = ["hexga/float_are_size_bits"]
+float_are_32_bits   = ["hexga/float_are_32_bits", "hexga_wgpu/float_are_32_bits"]
+float_are_64_bits   = ["hexga/float_are_64_bits", "hexga_wgpu/float_are_64_bits"]
+float_are_size_bits = ["hexga/float_are_size_bits", "hexga_wgpu/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga/serde"]
-serde_rc = ["serde/rc", "hexga/serde_rc"]
+serde = ["dep:serde", "hexga/serde", "hexga_wgpu/serde"]
+serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_wgpu/serde_rc"]
 
-hexga_encoding_derive = ["hexga/hexga_encoding_derive"]
+hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_wgpu/hexga_encoding_derive"]
 
-webgpu = ["wgpu/webgpu"]
+webgpu = ["hexga_wgpu/webgpu"]
 
 [dependencies]
 hexga.workspace = true
+hexga_wgpu.workspace = true
 serde = { version = "1.0.0", features = ["derive"], optional = true }
-log = { version = "0.4.22"}
-wgpu = { version = "25.0.1" }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wgpu = { version = "25.0.1", features = ["webgl"] }
 

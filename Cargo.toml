@@ -31,5 +31,6 @@ hexga_math             = { path = "./hexga/hexga_math",                 version 
 hexga_utils            = { path = "./hexga/hexga_utils",                version = "0.0.11-beta.43", default-features = false }
 hexga_image            = { path = "./hexga/hexga_image",                version = "0.0.11-beta.43", default-features = false }
 hexga                  = { path = "./hexga/hexga",                      version = "0.0.11-beta.43", default-features = false }
+hexga_wgpu             = { path = "./hexga/hexga_wgpu",                 version = "0.0.11-beta.43", default-features = true  }
 hexga_graphics         = { path = "./hexga/hexga_graphics",             version = "0.0.11-beta.43", default-features = true  }
 hexga_engine           = { path = "./hexga/hexga_engine",               version = "0.0.11-beta.43", default-features = true  }

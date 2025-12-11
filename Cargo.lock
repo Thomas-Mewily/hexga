@@ -1257,9 +1257,8 @@ name = "hexga_graphics"
 version = "0.0.11-beta.43"
 dependencies = [
  "hexga",
- "log",
+ "hexga_wgpu",
  "serde",
- "wgpu",
 ]
 
 [[package]]
@@ -1328,6 +1327,15 @@ version = "0.0.11-beta.43"
 dependencies = [
  "hexga_core",
  "serde",
+]
+
+[[package]]
+name = "hexga_wgpu"
+version = "0.0.11-beta.43"
+dependencies = [
+ "hexga",
+ "serde",
+ "wgpu",
 ]
 
 [[package]]

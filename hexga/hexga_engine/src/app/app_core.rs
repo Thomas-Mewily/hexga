@@ -1,5 +1,3 @@
-use hexga_graphics::GpuParam;
-
 use super::*;
 
 #[derive(Debug)]
