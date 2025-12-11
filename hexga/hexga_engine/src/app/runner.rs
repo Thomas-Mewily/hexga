@@ -361,7 +361,9 @@ impl<A,F> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner
         {
             AppInternalEvent::Gpu(gpu) =>
             {
-                App.graphics = Some(gpu.expect("failed to init the gpu"));
+                let mut graphics = gpu.expect("failed to init the gpu");
+                graphics.init_surface(Window.active.as_ref().expect("window was not init").clone());
+                App.graphics = Some(graphics);
                 App.window.request_draw();
             },
             AppInternalEvent::Exit =>

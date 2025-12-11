@@ -35,12 +35,21 @@ pub struct AppGraphics
 
 impl AppGraphics
 {
+    /*
     pub(crate) fn new(size: Point2, output: GpuInitOutput) -> Self
     {
         let surface = ConfiguredSurface::from_surface(output.surface.expect("failed to init the surface"), size);
         Self
         {
             surface: Some(surface)
+        }
+    }*/
+
+    pub(crate) fn new() -> Self
+    {
+        Self
+        {
+            surface: None
         }
     }
     pub(crate) fn resize(&mut self, size: Point2)
@@ -52,16 +61,17 @@ impl AppGraphics
         self.surface.as_mut().expect("surface was not init")
     }
 
-    pub(crate) async fn init_gpu(instance: graphics::Instance, surface: Option<graphics::Surface<'static>>, surface_size: Point2, mut param: GpuParam) -> GpuResult<Self>
+    pub(crate) async fn init_gpu(instance: graphics::Instance, surface: Option<graphics::Surface<'static>>, window: Arc<WinitWindow>, mut param: GpuParam) -> GpuResult<Self>
     {
         let gpu_init = GpuInit::from_instance_and_surface(instance, surface, param).await?;
         let output = Gpu::from_init(gpu_init).await?;
-        Ok(Self::new(surface_size, output))
+
+        Ok(Self::new())
     }
 
-    pub(crate) async fn async_init_gpu(instance: graphics::Instance, surface: Option<graphics::Surface<'static>>, surface_size: Point2, param: GpuParam, proxy: EventLoopProxy)
+    pub(crate) async fn async_init_gpu(instance: graphics::Instance, surface: Option<graphics::Surface<'static>>, window: Arc<WinitWindow>, param: GpuParam, proxy: EventLoopProxy)
     {
-        let _ = proxy.send_event(AppInternalEvent::Gpu(Self::init_gpu(instance, surface, surface_size, param).await));
+        let _ = proxy.send_event(AppInternalEvent::Gpu(Self::init_gpu(instance, surface, window, param).await));
     }
 
     pub(crate) fn init(window: Arc<WinitWindow>, mut param: GpuParam, proxy: EventLoopProxy) -> GpuResult
@@ -73,13 +83,13 @@ impl AppGraphics
 
         if param.compatible_surface.is_none()
         {
-            param.compatible_surface = Some(window.into());
+            param.compatible_surface = Some(window.clone().into());
         }
 
         let instance = graphics::Instance::new(&param.instance);
         let surface = Some(instance.wgpu.create_surface(param.compatible_surface.take().expect("missing surface"))?.into());
 
-        Self::async_init_gpu(instance, surface, surface_size, param, proxy).spawn();
+        Self::async_init_gpu(instance, surface, window, param, proxy).spawn();
         Ok(())
     }
 
@@ -98,6 +108,7 @@ impl ScopedFlow for Option<AppGraphics>
         self.dispatch_end_flow(flow);
     }
 
+    /*
     fn begin_flow_resumed(&mut self) {
         if self.is_none()
         {
@@ -106,7 +117,7 @@ impl ScopedFlow for Option<AppGraphics>
                 AppGraphics::init_surface(w.clone(), App.proxy().clone());
             }
         }
-    }
+    }*/
 }
 impl ScopedFlow for AppGraphics
 {
@@ -122,6 +133,14 @@ impl ScopedFlow for AppGraphics
     }
     */
 
+
+    fn begin_flow_resumed(&mut self) {
+        self.init_surface(Window.active.as_ref().unwrap().clone());
+    }
+    fn end_flow_paused(&mut self) {
+        self.surface = None;
+    }
+
     fn end_flow_draw(&mut self)
     {
         //todo!();
@@ -132,9 +151,12 @@ impl ScopedFlow for AppGraphics
 
 impl AppGraphics
 {
-    pub(crate) fn init_surface(window: Arc<WinitWindow>, proxy : EventLoopProxy)
+    pub(crate) fn init_surface(&mut self, window: Arc<WinitWindow>)
     {
-
+        let surface_size: Point2 = window.inner_size().convert();
+        let surface_size = surface_size.max(one());
+        let surface = Gpu.wgpu.wgpu_instance().create_surface(window).expect("failed to create the window");
+        self.surface = Some(ConfiguredSurface::from_surface(surface.into(), surface_size));
     }
 }
 

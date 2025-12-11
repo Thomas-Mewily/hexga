@@ -35,6 +35,7 @@ impl AppCore
     pub fn exit(&mut self)
     {
         self.window.destroy();
+        self.graphics = None;
         self.proxy = None;
     }
 
