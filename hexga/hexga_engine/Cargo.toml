@@ -20,24 +20,24 @@ default = [
 
 
 
-int_are_8_bits    = ["hexga/int_are_8_bits", "hexga_graphics/int_are_8_bits"]
-int_are_16_bits   = ["hexga/int_are_16_bits", "hexga_graphics/int_are_16_bits"]
-int_are_32_bits   = ["hexga/int_are_32_bits", "hexga_graphics/int_are_32_bits"]
-int_are_64_bits   = ["hexga/int_are_64_bits", "hexga_graphics/int_are_64_bits"]
-int_are_size_bits = ["hexga/int_are_size_bits", "hexga_graphics/int_are_size_bits"]
+int_are_8_bits    = ["hexga/int_are_8_bits", "hexga_wgpu_graphics/int_are_8_bits"]
+int_are_16_bits   = ["hexga/int_are_16_bits", "hexga_wgpu_graphics/int_are_16_bits"]
+int_are_32_bits   = ["hexga/int_are_32_bits", "hexga_wgpu_graphics/int_are_32_bits"]
+int_are_64_bits   = ["hexga/int_are_64_bits", "hexga_wgpu_graphics/int_are_64_bits"]
+int_are_size_bits = ["hexga/int_are_size_bits", "hexga_wgpu_graphics/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga/float_are_32_bits", "hexga_graphics/float_are_32_bits"]
-float_are_64_bits   = ["hexga/float_are_64_bits", "hexga_graphics/float_are_64_bits"]
-float_are_size_bits = ["hexga/float_are_size_bits", "hexga_graphics/float_are_size_bits"]
+float_are_32_bits   = ["hexga/float_are_32_bits", "hexga_wgpu_graphics/float_are_32_bits"]
+float_are_64_bits   = ["hexga/float_are_64_bits", "hexga_wgpu_graphics/float_are_64_bits"]
+float_are_size_bits = ["hexga/float_are_size_bits", "hexga_wgpu_graphics/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga/serde", "hexga_graphics/serde"]
-serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_graphics/serde_rc"]
+serde = ["dep:serde", "hexga/serde", "hexga_wgpu_graphics/serde"]
+serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_wgpu_graphics/serde_rc"]
 
-hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_graphics/hexga_encoding_derive"]
+hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_wgpu_graphics/hexga_encoding_derive"]
 
 [dependencies]
 hexga.workspace = true
-hexga_graphics.workspace = true
+hexga_wgpu_graphics.workspace = true
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 winit = "0.30.11"
 smol = "2.0.2"

@@ -1235,7 +1235,7 @@ dependencies = [
  "copypasta",
  "env_logger",
  "hexga",
- "hexga_graphics",
+ "hexga_wgpu_graphics",
  "log",
  "serde",
  "smol",
@@ -1257,7 +1257,6 @@ name = "hexga_graphics"
 version = "0.0.11-beta.43"
 dependencies = [
  "hexga",
- "hexga_wgpu",
  "serde",
 ]
 
@@ -1336,6 +1335,16 @@ dependencies = [
  "hexga",
  "serde",
  "wgpu",
+]
+
+[[package]]
+name = "hexga_wgpu_graphics"
+version = "0.0.11-beta.43"
+dependencies = [
+ "hexga",
+ "hexga_graphics",
+ "hexga_wgpu",
+ "serde",
 ]
 
 [[package]]

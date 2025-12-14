@@ -21,9 +21,25 @@ pub use hexga_asset as asset;
 #[cfg(all(test, feature = "serde"))]
 mod serde_test;
 
+pub mod core_prelude{}
+
+
+
 pub mod prelude
 {
     pub use hexga_core::prelude::*;
+    pub use super::hexga_prelude::*;
+
+    #[allow(hidden_glob_reexports)]
+    pub(crate) mod prelude {}
+}
+
+#[doc(hidden)]
+/// Hexga specific prelude without the core.
+///
+/// You are probably looking for the `prelude` module.
+pub mod hexga_prelude
+{
 
     pub use crate::generational::prelude::*;
     pub use crate::math::prelude::*;

@@ -7,7 +7,7 @@ use std::sync::{Arc,LazyLock};
 use std::ops::*;
 use std::marker::PhantomData;
 use hexga::prelude::*;
-use hexga_graphics::{GpuParam,ConfiguredSurface};
+use hexga_wgpu_graphics::{GpuParam,ConfiguredSurface};
 use std::rc::Rc;
 
 

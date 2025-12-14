@@ -1,12 +1,14 @@
 #![allow(dead_code)]
 #![allow(unused)]
 use hexga::prelude::*;
-pub(crate) type GpuVertexBufferLayout<'a> = wgpu::VertexBufferLayout<'a>;
 
-pub use hexga_wgpu::*;
-mod format;
+mod immediate_render;
+pub use immediate_render::*;
+
+mod camera;
+pub use camera::*;
 
 pub mod prelude
 {
-    pub use hexga_wgpu::prelude::*;
+
 }

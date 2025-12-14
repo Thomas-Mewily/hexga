@@ -30,11 +30,21 @@ pub mod utils;
 pub mod run;
 pub mod wrapper;
 pub mod result;
+pub mod convert;
 pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
 use prelude::*;
 pub mod prelude
+{
+    pub use super::{hexga_prelude::*,std_prelude::*};
+}
+
+#[doc(hidden)]
+/// Hexga specific prelude without the std.
+///
+/// You are probably looking for the `prelude` module.
+pub mod hexga_prelude
 {
     pub use std::collections::{HashMap,HashSet,BTreeMap,BTreeSet,VecDeque};
     pub use super::accessor::*;
@@ -51,6 +61,21 @@ pub mod prelude
     pub use super::utils::*;
     pub use super::wrapper::*;
     pub use super::result::*;
+    pub use super::convert::*;
     pub use super::bit::prelude::*;
     pub use super::map_on::prelude::*;
+}
+
+#[doc(hidden)]
+/// Std specific prelude.
+///
+/// You are probably looking for the `prelude` module.
+pub mod std_prelude
+{
+    // todo: use derive_more for Deref, DerefMut ? https://crates.io/crates/derive_more
+    pub use std::
+    {
+        convert::{AsRef,AsMut},
+        ops::{Deref,DerefMut}
+    };
 }
