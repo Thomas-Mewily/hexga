@@ -19,7 +19,9 @@ pub type GenVec<T> = GenVecOf<T,Generation>;
 pub enum EntryValue<T>
 {
     Occupied(T),
-    /// Next free entry
+    /// Next free entry.
+    ///
+    /// All Vacant entries form a linked list
     Vacant(usize),
 }
 
@@ -310,6 +312,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
         Ok(val)
     }
+
     pub fn insert(&mut self, value: T) ->  GenIDOf<Gen>
     {
         self.len += 1;
@@ -631,7 +634,7 @@ impl<'a, T, Gen: IGeneration> ExactSizeIterator for IterMut<'a, T, Gen> { fn len
 
 
 impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen> { #[inline(always)] fn len(&self) -> usize { self.len() } }
-impl<T,Gen:IGeneration> Clearable for GenVecOf<T,Gen> { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<T,Gen:IGeneration> Clear for GenVecOf<T,Gen> { #[inline(always)] fn clear(&mut self) { self.clear(); } }
 impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
 {
     type Param=();
@@ -924,6 +927,9 @@ impl<T,Gen:IGeneration> Remove<GenIDOf<Gen>> for GenVecOf<T,Gen>
         self.remove(index)
     }
 }
+
+impl<T,Gen:IGeneration> CollectionStableKey for GenVecOf<T,Gen> {}
+
 
 
 impl<T,Gen:IGeneration> GenVecOf<T,Gen>

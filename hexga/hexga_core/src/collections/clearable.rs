@@ -1,21 +1,21 @@
-use std::{collections::*, ffi::OsString, path::PathBuf};
+use super::*;
 
 /// Clear the collection
-pub trait Clearable
+pub trait Clear
 {
     fn clear(&mut self);
 }
 
-impl<T>         Clearable for Vec<T>            { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl<T>         Clearable for VecDeque<T>       { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl<T, S>      Clearable for HashSet<T, S>     { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl<T>         Clearable for BinaryHeap<T>     { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl<T>         Clearable for BTreeSet<T>       { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl<T>         Clearable for LinkedList<T>     { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl<K, V, S>   Clearable for HashMap<K, V, S>  { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl<K, V>      Clearable for BTreeMap<K, V>    { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl            Clearable for String            { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl            Clearable for OsString          { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl            Clearable for PathBuf           { #[inline(always)] fn clear(&mut self) { self.clear(); } }
-impl<T>         Clearable for Option<T>         { #[inline(always)] fn clear(&mut self) { *self = None; } }
+impl<T>         Clear for Vec<T>            { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<T>         Clear for VecDeque<T>       { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<T, S>      Clear for HashSet<T, S>     { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<T>         Clear for BinaryHeap<T>     { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<T>         Clear for BTreeSet<T>       { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<T>         Clear for LinkedList<T>     { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<K, V, S>   Clear for HashMap<K, V, S>  { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<K, V>      Clear for BTreeMap<K, V>    { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl            Clear for String            { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl            Clear for OsString          { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl            Clear for PathBuf           { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<T>         Clear for Option<T>         { #[inline(always)] fn clear(&mut self) { *self = None; } }
 

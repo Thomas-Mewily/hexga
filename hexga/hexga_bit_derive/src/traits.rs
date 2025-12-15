@@ -637,7 +637,7 @@ impl Derivable for Contiguous {
                 #[allow(clippy::missing_docs_in_private_items)]
                 const MAX_VALUE: #integer_ty = #max_lit;
 
-                #[inline]
+                #[inline(always)]
                 fn from_integer(value: Self::Int) -> Option<Self> {
                   #[allow(clippy::manual_range_contains)]
                   if Self::MIN_VALUE <= value && value <= Self::MAX_VALUE {
@@ -647,7 +647,7 @@ impl Derivable for Contiguous {
                   }
                 }
 
-                #[inline]
+                #[inline(always)]
                 fn into_integer(self) -> Self::Int {
                     self as #integer_ty
                 }
@@ -748,7 +748,7 @@ fn generate_checked_bit_pattern_struct(
         quote! {
             type Bits = #bits_ty;
 
-            #[inline]
+            #[inline(always)]
             #[allow(clippy::double_comparisons, unused)]
             fn is_valid_bit_pattern(bits: &#bits_ty) -> bool {
                 #(<#field_ty as #crate_name::BitPattern>::is_valid_bit_pattern(&{ bits.#field_name }) && )* true
@@ -823,7 +823,7 @@ fn generate_checked_bit_pattern_enum_without_fields(
         quote! {
             type Bits = #integer;
 
-            #[inline]
+            #[inline(always)]
             #[allow(clippy::double_comparisons)]
             fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
                 #check
@@ -964,7 +964,7 @@ fn generate_checked_bit_pattern_enum_with_fields(
                 quote! {
                   type Bits = #bits_ty_ident;
 
-                  #[inline]
+                  #[inline(always)]
                   #[allow(clippy::double_comparisons)]
                   fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
                     match bits.tag {
@@ -996,7 +996,7 @@ fn generate_checked_bit_pattern_enum_with_fields(
                 quote! {
                   type Bits = <#bits_ty as #crate_name::BitPattern>::Bits;
 
-                  #[inline]
+                  #[inline(always)]
                   #[allow(clippy::double_comparisons)]
                   fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
                     <#bits_ty as #crate_name::BitPattern>::is_valid_bit_pattern(bits)
@@ -1098,7 +1098,7 @@ fn generate_checked_bit_pattern_enum_with_fields(
                 quote! {
                   type Bits = #bits_ty_ident;
 
-                  #[inline]
+                  #[inline(always)]
                   #[allow(clippy::double_comparisons)]
                   fn is_valid_bit_pattern(bits: &Self::Bits) -> bool {
                     match unsafe { bits.__tag } {

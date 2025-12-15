@@ -640,7 +640,7 @@ impl<V,Gen,S,Q> Remove<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGenera
 
 
 impl<K,V,Gen,S> Length for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { #[inline(always)] fn len(&self) -> usize { self.len() } }
-impl<K,V,Gen,S> Clearable for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { #[inline(always)] fn clear(&mut self) { self.clear() } }
+impl<K,V,Gen,S> Clear for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher { #[inline(always)] fn clear(&mut self) { self.clear() } }
 
 impl<K,V,Gen,S> Capacity for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {

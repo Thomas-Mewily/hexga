@@ -1,7 +1,7 @@
-use std::collections::*;
+use super::*;
 
 
-pub trait Length 
+pub trait Length
 {
     // Returns the number of elements inside this collection, also referred as a 'length'.
     fn len(&self) -> usize;

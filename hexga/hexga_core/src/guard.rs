@@ -70,7 +70,7 @@ impl<'a,T> ReferenceReadGuard<'a,T> where T: ?Sized
 {
     pub const fn new(value: &'a T) -> Self { Self { inner_reference: value } }
 
-    #[inline]
+    #[inline(always)]
     pub fn map<U, F>(orig: Self, f: F) -> ReferenceReadGuard<'a, U>
     where
         F: FnOnce(&T) -> &U,
@@ -100,7 +100,7 @@ impl<'a,T> ReferenceWriteGuard<'a,T> where T: ?Sized
 {
     pub const fn new(value: &'a mut T) -> Self { Self { inner_reference: value } }
 
-    #[inline]
+    #[inline(always)]
     pub fn map<U, F>(orig: Self, f: F) -> ReferenceWriteGuard<'a, U>
     where
         F: FnOnce(&mut T) -> &mut U,

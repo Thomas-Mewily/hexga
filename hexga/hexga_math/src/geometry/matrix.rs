@@ -1078,7 +1078,7 @@ impl<T> Matrix4<T>
     /// Creates a right-handed view matrix.
     ///
     /// View space: +X = right, +Y = up, +Z = back (camera looks toward -Z).
-    #[inline]
+    #[inline(always)]
     #[must_use]
     pub fn look_at_rh(position: Vector3<T>, center: Vector3<T>, up: Vector3<T>) -> Self where T: Float
     {
@@ -1088,7 +1088,7 @@ impl<T> Matrix4<T>
     /// Creates a right-handed view matrix from a direction vector.
     ///
     /// View space: +X = right, +Y = up, +Z = back (camera looks toward -Z).
-    #[inline]
+    #[inline(always)]
     #[must_use]
     pub fn look_to_rh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float
     {
@@ -1111,7 +1111,7 @@ impl<T> Matrix4<T>
     /// Creates a left-handed view matrix.
     ///
     /// View space: +X = right, +Y = up, +Z = forward (camera looks toward +Z).
-    #[inline]
+    #[inline(always)]
     #[must_use]
     pub fn look_at_lh(position: Vector3<T>, center: Vector3<T>, up: Vector3<T>) -> Self where T: Float,
     {
@@ -1121,7 +1121,7 @@ impl<T> Matrix4<T>
     /// Creates a left-handed view matrix from a direction vector.
     ///
     /// View space: +X = right, +Y = up, +Z = forward (camera looks toward +Z).
-    #[inline]
+    #[inline(always)]
     #[must_use]
     pub fn look_to_lh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self where T: Float,
     {

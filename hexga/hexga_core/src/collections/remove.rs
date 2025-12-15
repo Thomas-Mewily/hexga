@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait Remove<Idx>
+pub trait Remove<Idx:?Sized>
 {
     type Output;
     fn remove(&mut self, index: Idx) -> Option<Self::Output>;

@@ -33,11 +33,11 @@ impl BitPattern for char
 {
     type Bits = u32;
 
-    #[inline]
+    #[inline(always)]
     fn from_bits(bits: Self::Bits) -> Option<Self> {
         core::char::from_u32(bits)
     }
-    #[inline]
+    #[inline(always)]
     fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
         Self::from_bits(*bits).is_some()
     }
@@ -47,7 +47,7 @@ impl BitPattern for bool
 {
     type Bits = u8;
 
-    #[inline]
+    #[inline(always)]
     fn from_bits(bits: Self::Bits) -> Option<Self> {
         match bits
         {
@@ -72,7 +72,7 @@ macro_rules! impl_checked_for_nonzero {
             impl BitPattern for $nonzero {
                 type Bits = $primitive;
 
-                #[inline]
+                #[inline(always)]
                 fn from_bits(bits: Self::Bits) -> Option<Self> {
                     <$nonzero>::new(bits)
                 }
@@ -127,7 +127,7 @@ pub(crate) fn is_aligned_to(ptr: *const (), align: usize) -> bool {
 /// * If the slice's length isn’t exactly the size of the new type
 ///
 /// Don't check if the bit pattern is valid.
-#[inline]
+#[inline(always)]
 pub unsafe fn try_from_bytes_unchecked<T>(bytes: &[u8]) -> BitResult<&T>
 {
     if bytes.len() != size_of::<T>()
@@ -147,7 +147,7 @@ pub unsafe fn try_from_bytes_unchecked<T>(bytes: &[u8]) -> BitResult<&T>
 /// * If the slice isn't aligned for the new type
 /// * If the slice's length isn’t exactly the size of the new type
 /// * If the slice contains an invalid bit pattern for `T`
-#[inline]
+#[inline(always)]
 pub fn try_from_bytes<T: BitPattern>(bytes: &[u8]) -> BitResult<&T>
 {
     let pod = unsafe { try_from_bytes_unchecked(bytes) }?;
@@ -181,7 +181,7 @@ pub fn from_bytes<T: BitPattern>(bytes: &[u8]) -> &T
 /// * If the slice's length isn’t exactly the size of the new type
 ///
 /// Don't check if the bit pattern is valid.
-#[inline]
+#[inline(always)]
 pub unsafe fn try_from_bytes_mut_unchecked<T>(bytes: &mut [u8]) -> BitResult<&mut T>
 {
     if bytes.len() != size_of::<T>()
@@ -201,7 +201,7 @@ pub unsafe fn try_from_bytes_mut_unchecked<T>(bytes: &mut [u8]) -> BitResult<&mu
 /// * If the slice isn't aligned for the new type
 /// * If the slice's length isn’t exactly the size of the new type
 /// * If the slice contains an invalid bit pattern for `T`
-#[inline]
+#[inline(always)]
 pub fn try_from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> BitResult<&mut T>
 {
     let pod = unsafe { try_from_bytes_mut_unchecked(bytes) }?;
@@ -241,7 +241,7 @@ pub fn from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> &mut T
 ///   type, and the output slice wouldn't be a whole number of elements when
 ///   accounting for the size change (eg: 3 `u16` values is 1.5 `u32` values, so
 ///   that's a failure).
-#[inline]
+#[inline(always)]
 pub unsafe fn try_transmute_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -> BitResult<&[Dst]>
 {
     let input_bytes = core::mem::size_of_val::<[Src]>(src);
@@ -276,7 +276,7 @@ pub unsafe fn try_transmute_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -
 ///   that's a failure).
 /// * If any element of the converted slice would contain an invalid bit pattern
 ///   for `B` this fails.
-#[inline]
+#[inline(always)]
 pub fn try_transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> BitResult<&[Dst]>
 {
     let pod = unsafe { crate::try_transmute_slice_unchecked(a) }?;
@@ -316,7 +316,7 @@ pub fn transmute_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + BitPat
 /// Try to convert `&mut [Src]` into `&mut [Dst]` (possibly with a change in length).
 ///
 /// As [`try_transmute_slice`], but `&mut`.
-#[inline]
+#[inline(always)]
 pub fn try_transmute_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern + BitAllUsed>(a: &mut [Src]) -> BitResult<&mut [Dst]>
 {
     let pod = unsafe { crate::try_transmute_slice_mut_unchecked(a) }?;
@@ -334,7 +334,7 @@ pub fn try_transmute_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern 
 /// Try to convert `&mut [Src]` into `&mut [Dst]` (possibly with a change in length).
 ///
 /// As [`try_transmute_slice`], but `&mut`.
-#[inline]
+#[inline(always)]
 pub unsafe fn try_transmute_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut [Src]) -> BitResult<&mut [Dst]>
 {
     let input_bytes = core::mem::size_of_val::<[Src]>(src);
@@ -356,7 +356,7 @@ pub unsafe fn try_transmute_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut 
 
 
 /// Transmute `Src` into `Dst`
-#[inline]
+#[inline(always)]
 #[track_caller]
 pub unsafe fn try_transmute_unchecked<Src: Copy, Dst: Copy>(src: Src) -> BitResult<Dst>
 {
@@ -371,7 +371,7 @@ pub unsafe fn try_transmute_unchecked<Src: Copy, Dst: Copy>(src: Src) -> BitResu
 }
 
 /// Transmute `Src` into `Dst`
-#[inline]
+#[inline(always)]
 #[track_caller]
 pub fn try_transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> BitResult<Dst>
 {
@@ -389,7 +389,7 @@ pub fn try_transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> BitResult<Ds
 /// ## Panics
 ///
 /// * This is like [`try_transmute`](try_transmute), but will panic on a size mismatch.
-#[inline]
+#[inline(always)]
 #[track_caller]
 pub fn transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> Dst
 {

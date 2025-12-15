@@ -10,7 +10,6 @@
 //!
 //! `unsafe fn foo_unchecked(...) -> O`
 
-use std::ops::Range;
 use super::*;
 
 
