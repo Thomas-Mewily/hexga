@@ -1,47 +1,59 @@
 use super::*;
 
-pub type GpuVecUsages = wgpu::BufferUsages;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct GpuVecDesc
-{
-    pub usages: GpuVecUsages,
-    pub name: Option<&'static str>
-}
-impl Default for GpuVecDesc
-{
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl GpuVecDesc
-{
-    pub const fn new() -> Self { Self { usages: GpuVecUsages::COPY_DST.union(GpuVecUsages::COPY_SRC), name: None }}
-
-    pub const fn add_usage(mut self, usage : GpuVecUsages) -> Self { self.usages = self.usages.union(usage); self }
-    pub const fn with_usages(mut self, usages : GpuVecUsages) -> Self { self.usages = usages; self }
-    pub const fn with_label(mut self, label : Option<&'static str>) -> Self { self.name = label; self }
-
-    pub const VERTEX : Self = Self::new().add_usage(GpuVecUsages::VERTEX);
-    pub const INDEX : Self = Self::new().add_usage(GpuVecUsages::INDEX);
-}
 
 
 #[derive(Clone, Debug, PartialEq, Hash)]
-pub struct GpuVec<T> where T:Copy
+pub struct GpuVec<T>
 {
-    pub(crate) buffer   : wgpu::Buffer,
-    pub(crate) capacity : usize,
-    pub(crate) len      : usize,
-    pub(crate) desc     : GpuVecDesc,
-    phantom : PhantomData<T>,
+    pub(crate) buffer : GpuBuffer<T>,
+    pub(crate) len    : usize,
+}
+impl<T> Clear for GpuVec<T>
+{
+    fn clear(&mut self) {
+        self.len = 0;
+    }
 }
 
-impl<T> GpuVec<T> where T:Copy
+
+
+pub trait ToGpuVec<T> where T:BitAllUsed
 {
-    pub fn name(&self) -> Option<&'static str> { self.desc.name }
-    pub fn clear(&mut self)
+    fn to_gpu_vec(self, desc: GpuBufferDesc) -> GpuVec<T>;
+}
+impl<T> ToGpuVec<T> for &[T] where T:BitAllUsed
+{
+    fn to_gpu_vec(self, desc: GpuBufferDesc) -> GpuVec<T> {
+        GpuVec::new(self, desc)
+    }
+}
+
+impl<T> GpuBufferNew<T> for GpuVec<T> where GpuBuffer<T>: GpuBufferNew<T>
+{
+    fn new(value: &[T], desc: GpuBufferDesc) -> Self {
+        let len = value.len();
+        Self { buffer: GpuBuffer::new(value, desc), len }
+    }
+
+    fn with_capacity(capacity: usize, desc: GpuBufferDesc) -> Self {
+        Self { buffer: GpuBuffer::with_capacity(capacity, desc), len: capacity }
+    }
+}
+impl<T> GpuByteBuffer for GpuVec<T> where GpuBuffer<T>: GpuByteBuffer
+{
+    fn wgpu_bytes_len(&self) -> GpuBufferAddress { (self.len * std::mem::size_of::<T>()) as GpuBufferAddress }
+    fn wgpu_bytes_capacity(&self) -> GpuBufferAddress { self.buffer.wgpu_bytes_capacity() }
+    fn untyped_slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuUntypedSlice<'_> { self.buffer.untyped_slice(bounds) }
+}
+
+impl<T> GpuBufferRead<T> for GpuVec<T> where wgpu::Buffer: GpuBufferRead<T>
+{
+    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult where T: BitZero + BitPattern
     {
-        self.len = 0;
+        self.buffer.read_in(vec)
+    }
+
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_,T> {
+        self.buffer.slice(bounds)
     }
 }

@@ -1,14 +1,16 @@
 use super::*;
 
-pub struct ImmediateRenderBuilder
+pub struct ImmediateRenderBuilder<P>
 {
-
+    pub draw_call : NonEmptyStack<DrawCall<P>>,
+    pub params: NonEmptyStack<P>,
+    //pub big_mesh
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct ImmediateRender<T>
+pub struct ImmediateRender<P>
 {
-    draw_call: Vec<DrawCall<T>>
+    pub draw_call: Vec<DrawCall<P>>
 }
 
 #[derive(Clone, Debug)]
@@ -34,20 +36,21 @@ impl Default for DrawGeometry
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct DrawCall<T>
+pub struct DrawCall<P>
 {
-    geometry: DrawGeometry,
-    param: DrawParam<T>,
+    pub geometry: DrawGeometry,
+    pub param: P,
 }
-impl<T> Deref for DrawCall<T>
+impl<P> Deref for DrawCall<P>
 {
-    type Target=DrawParam<T>;
+    type Target=P;
     fn deref(&self) -> &Self::Target { &self.param }
 }
-impl<T> DerefMut for DrawCall<T>
+impl<P> DerefMut for DrawCall<P>
 {
     fn deref_mut(&mut self) -> &mut Self::Target { &mut self.param }
 }
+
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct DrawParam<T>

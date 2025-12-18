@@ -19,7 +19,7 @@ singleton_single_thread_access!(
 #[derive(Debug)]
 pub struct AppGraphics
 {
-
+    pub(craste) immediate: ImmediateRender,
     /*
     pub(crate) binding: GpuBinding,
     pub(crate) render: GpuRender,

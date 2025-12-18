@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 use hexga::bit;
 use wgpu::util::DeviceExt;
 use std::sync::OnceLock;
-use std::ops::{Deref,DerefMut};
+use std::ops::{Deref,DerefMut,Bound, RangeBounds};
 
 
 pub use wgpu;
@@ -36,5 +36,8 @@ pub use gpu_vec::*;
 
 pub mod prelude
 {
-    pub use super::{Gpu,GpuResult,GpuError};
+    pub use super::{
+        Gpu,GpuResult,GpuError,
+        ToGpuBuffer,ToGpuVec,
+    };
 }

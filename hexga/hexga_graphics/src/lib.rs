@@ -2,13 +2,37 @@
 #![allow(unused)]
 use hexga::prelude::*;
 
-mod immediate_render;
-pub use immediate_render::*;
+#[cfg(feature = "wgpu")]
+pub use hexga_wgpu::wgpu;
+#[cfg(feature = "wgpu")]
+pub(crate) use hexga_wgpu::{prelude::*,GpuVec};
+#[cfg(feature = "wgpu")]
+pub(crate) type GpuVertexBufferLayout<'a> = wgpu::VertexBufferLayout<'a>;
 
-mod camera;
-pub use camera::*;
+
+pub mod render;
+pub(crate) use render::*;
+
+pub mod camera;
+pub(crate) use camera::*;
+
+pub mod mesh;
+pub(crate) use mesh::*;
+
+pub mod vertex;
+pub(crate) use vertex::*;
+
+pub mod typedef;
+pub(crate) use typedef::*;
+
+#[cfg(feature = "wgpu")]
+pub mod format;
+#[cfg(feature = "wgpu")]
+pub(crate) use format::*;
 
 pub mod prelude
 {
-
+    pub use super::typedef::*;
+    #[cfg(feature = "wgpu")]
+    pub use hexga_wgpu::prelude::*;
 }

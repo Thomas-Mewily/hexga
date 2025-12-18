@@ -1,78 +1,96 @@
 use super::*;
 
-pub type BufferAddress = wgpu::BufferAddress;
+pub type GpuBufferAddress = wgpu::BufferAddress;
+// Todo: impl the range operator ?
 
+pub trait GpuBufferNew<T>
+{
+    fn new(value: &[T], desc: GpuBufferDesc) -> Self;
+    fn with_capacity(capacity: usize, desc: GpuBufferDesc) -> Self;
+}
 pub trait GpuByteBuffer
 {
     fn bytes_len(&self) -> usize { self.wgpu_bytes_len() as _ }
-    fn wgpu_bytes_len(&self) -> BufferAddress;
+    fn wgpu_bytes_len(&self) -> GpuBufferAddress;
 
     fn bytes_capacity(&self) -> usize { self.wgpu_bytes_capacity() as _ }
-    fn wgpu_bytes_capacity(&self) -> BufferAddress;
+    fn wgpu_bytes_capacity(&self) -> GpuBufferAddress;
 
-    fn as_wgpu_buffer(&self) -> &wgpu::Buffer;
+    fn untyped_slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuUntypedSlice<'_>;
 }
-impl GpuByteBuffer for wgpu::Buffer
-{
-    fn wgpu_bytes_len(&self) -> BufferAddress { self.size() }
-    fn as_wgpu_buffer(&self) -> &wgpu::Buffer { self }
-    fn wgpu_bytes_capacity(&self) -> BufferAddress { self.size() }
-}
-
-
-#[derive(Clone, Debug)]
-pub struct UntypedBuffer
-{
-    buffer: wgpu::Buffer,
-}
-impl Handle for UntypedBuffer {}
-
-impl From<wgpu::Buffer> for UntypedBuffer
-{
-    fn from(buffer: wgpu::Buffer) -> Self {
-        Self { buffer }
-    }
-}
-impl From<UntypedBuffer> for wgpu::Buffer
-{
-    fn from(value: UntypedBuffer) -> Self {
-        value.buffer
-    }
-}
-impl GpuByteBuffer for UntypedBuffer
-{
-    fn wgpu_bytes_len(&self) -> BufferAddress { self.buffer.wgpu_bytes_len() }
-    fn wgpu_bytes_capacity(&self) -> BufferAddress { self.buffer.wgpu_bytes_len() }
-    fn as_wgpu_buffer(&self) -> &wgpu::Buffer { self.buffer.as_wgpu_buffer() }
-}
-impl<T> GpuBufferRead<T> for UntypedBuffer  where wgpu::Buffer: GpuBufferRead<T>
-{
-    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult {
-        self.buffer.read_in(vec)
-    }
-}
-
 
 
 pub trait GpuBufferRead<T> : GpuByteBuffer
 {
-    fn wgpu_len(&self) -> BufferAddress { self.wgpu_bytes_len() / std::mem::size_of::<T>() as u64 }
-    fn wgpu_capacity(&self) -> BufferAddress { self.wgpu_bytes_capacity() / std::mem::size_of::<T>() as u64 }
+    fn wgpu_len(&self) -> GpuBufferAddress { self.wgpu_bytes_len() / std::mem::size_of::<T>() as GpuBufferAddress }
+    fn wgpu_capacity(&self) -> GpuBufferAddress { self.wgpu_bytes_capacity() / std::mem::size_of::<T>() as GpuBufferAddress }
 
-    fn len(&self) -> BufferAddress { self.wgpu_len() as _ }
-    fn capacity(&self) -> BufferAddress { self.wgpu_capacity() as _ }
+    fn len(&self) -> usize { self.wgpu_len() as _ }
+    fn capacity(&self) -> usize { self.wgpu_capacity() as _ }
 
-    fn read(&self) -> GpuResult<Vec<T>>
+    fn read(&self) -> GpuResult<Vec<T>> where T: BitZero + BitPattern
     {
         let mut v = Vec::new();
         self.read_in(&mut v)?;
         Ok(v)
     }
-    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult;
+    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult where T: BitZero + BitPattern;
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_,T>;
+}
+pub trait GpuBufferWrite<T> : GpuByteBuffer
+{
+
 }
 
-fn create_staging_and_copy<'a>(src: &wgpu::Buffer) -> wgpu::Buffer {
-    let size = src.size();
+
+
+
+impl<T> GpuBufferNew<T> for wgpu::Buffer
+    where T: BitAllUsed
+{
+    fn new(value: &[T], desc: GpuBufferDesc) -> Self {
+        Gpu.wgpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: None,
+            contents: bit::transmute_slice(value),
+            usage: desc.usages,
+        })
+    }
+
+    fn with_capacity(capacity: usize, desc: GpuBufferDesc) -> Self {
+        Gpu.wgpu.device.create_buffer(&wgpu::BufferDescriptor {
+            label: None,
+            usage: desc.usages,
+            size: (capacity * std::mem::size_of::<T>()) as _,
+            mapped_at_creation: false,
+        })
+    }
+}
+impl GpuByteBuffer for wgpu::Buffer
+{
+    fn wgpu_bytes_len(&self) -> GpuBufferAddress { self.size() }
+    fn wgpu_bytes_capacity(&self) -> GpuBufferAddress { self.size() }
+
+    fn untyped_slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuUntypedSlice<'_> {
+
+        let bytes_len = self.wgpu_bytes_len();
+        let start = match bounds.start_bound() {
+            Bound::Included(&v) => v as GpuBufferAddress,
+            Bound::Excluded(&v) => (v + 1) as GpuBufferAddress,
+            Bound::Unbounded => 0,
+        }.min(bytes_len);
+
+        let end = match bounds.end_bound() {
+            Bound::Included(&v) => (v + 1) as GpuBufferAddress,
+            Bound::Excluded(&v) => v as GpuBufferAddress,
+            Bound::Unbounded => self.bytes_len() as GpuBufferAddress,
+        }.max(bytes_len);
+
+        self.slice(start..end).into()
+    }
+}
+
+fn create_staging_and_copy_slice(slice: &wgpu::BufferSlice) -> wgpu::Buffer {
+    let size = slice.size().get();
 
     let staging = Gpu.wgpu.device.create_buffer(&wgpu::BufferDescriptor {
         label: Some("staging buffer"),
@@ -81,25 +99,62 @@ fn create_staging_and_copy<'a>(src: &wgpu::Buffer) -> wgpu::Buffer {
         mapped_at_creation: false,
     });
 
-    let mut encoder = Gpu.wgpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-    encoder.copy_buffer_to_buffer(src, 0, &staging, 0, size);
-    Gpu.wgpu.queue.submit(Some(encoder.finish()));
+    let mut encoder =
+        Gpu.wgpu.device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
+    encoder.copy_buffer_to_buffer(
+        slice.buffer(),
+        slice.offset(),
+        &staging,
+        0,
+        size,
+    );
+
+    Gpu.wgpu.queue.submit(Some(encoder.finish()));
     staging
 }
 
-
-impl<T> GpuBufferRead<T> for wgpu::Buffer
-    where T: BitZero + BitPattern
+impl<'a> GpuByteBuffer for wgpu::BufferSlice<'a>
 {
-    fn read_in(&self, mut vec: &mut Vec<T>) -> GpuResult
+    fn wgpu_bytes_len(&self) -> GpuBufferAddress {
+        self.size().get()
+    }
+
+    fn wgpu_bytes_capacity(&self) -> GpuBufferAddress {
+        self.size().get()
+    }
+
+    fn untyped_slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuUntypedSlice<'_> {
+        let bytes_len = self.wgpu_bytes_len();
+        let start = match bounds.start_bound() {
+            Bound::Included(&v) => v as GpuBufferAddress,
+            Bound::Excluded(&v) => (v + 1) as GpuBufferAddress,
+            Bound::Unbounded => 0,
+        }.min(bytes_len);
+
+        let end = match bounds.end_bound() {
+            Bound::Included(&v) => (v + 1) as GpuBufferAddress,
+            Bound::Excluded(&v) => v as GpuBufferAddress,
+            Bound::Unbounded => self.bytes_len() as GpuBufferAddress,
+        }.max(bytes_len);
+
+        self.slice(start..end).into()
+    }
+}
+impl<'a,T> GpuBufferRead<T> for wgpu::BufferSlice<'a>
+{
+    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult
+        where T: BitZero + BitPattern
     {
-        let size = self.size() as usize;
-        if vec.len() < size {
-            vec.resize(size / std::mem::size_of::<T>(), T::zeroed());
+        let byte_len = self.size().get() as GpuBufferAddress as usize;
+        let elem_count = byte_len / std::mem::size_of::<T>();
+
+        if vec.len() < elem_count {
+            vec.resize(elem_count, T::zeroed());
         }
 
-        let staging = create_staging_and_copy(self);
+        let staging = create_staging_and_copy_slice(self);
         let slice = staging.slice(..);
 
         let status = std::sync::Arc::new(std::sync::Mutex::new(None));
@@ -117,7 +172,7 @@ impl<T> GpuBufferRead<T> for wgpu::Buffer
             Ok(()) => {
                 let data = slice.get_mapped_range();
                 let typed = bit::transmute_slice(&data);
-                vec.copy_from_slice(typed);
+                vec[..typed.len()].copy_from_slice(typed);
                 drop(data);
                 staging.unmap();
                 Ok(())
@@ -125,7 +180,221 @@ impl<T> GpuBufferRead<T> for wgpu::Buffer
             Err(e) => Err(e.into()),
         }
     }
+
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_,T> {
+        GpuSlice::from_wgpu_slice(self.slice(get_range::<S,T>(bounds, self.bytes_len())))
+    }
 }
+
+fn get_range<S: RangeBounds<usize>,T>(bounds: S, bytes_len: usize) -> std::ops::Range<u64>
+{
+    let elem_size = std::mem::size_of::<T>()
+        .max(1); // To handle Zero Sized Type
+    let bytes_len = (bytes_len / elem_size * elem_size) as GpuBufferAddress;
+    let size = std::mem::size_of::<T>() as GpuBufferAddress;
+
+    let start = match bounds.start_bound() {
+        Bound::Included(&v) => v as GpuBufferAddress * size,
+        Bound::Excluded(&v) => (v + 1) as GpuBufferAddress * size,
+        Bound::Unbounded => 0,
+    }.min(bytes_len);
+
+    let end = match bounds.end_bound() {
+        Bound::Included(&v) => (v + 1) as GpuBufferAddress * size,
+        Bound::Excluded(&v) => v as GpuBufferAddress * size,
+        Bound::Unbounded => bytes_len,
+    }.max(bytes_len);
+
+    start..end
+}
+
+
+impl<T> GpuBufferRead<T> for wgpu::Buffer
+{
+    fn read_in(&self, mut vec: &mut Vec<T>) -> GpuResult
+        where T: BitZero + BitPattern
+    {
+        self.slice(..).read_in(vec)
+    }
+
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_,T> {
+        GpuSlice::from_wgpu_slice(self.slice(get_range::<S,T>(bounds, self.bytes_len())))
+    }
+}
+
+#[repr(transparent)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct GpuSlice<'a,T>
+{
+    slice : wgpu::BufferSlice<'a>,
+    phantom: PhantomData<T>
+}
+impl<'a,T> GpuSlice<'a,T>
+{
+    // The caller check if it is valid
+    pub(crate) const fn from_wgpu_slice(slice : wgpu::BufferSlice<'a>) -> Self { Self { slice, phantom: PhantomData }}
+}
+
+// TODO: impl TryFrom... same for the rest of the code in this file
+impl<'a,T> From<wgpu::BufferSlice<'a>> for GpuSlice<'a,T>
+    where T: BitAnyPattern
+{
+    fn from(slice: wgpu::BufferSlice<'a>) -> Self {
+        assert_eq!(slice.bytes_len() % std::mem::size_of::<T>(), 0, "wrong size");
+        Self { slice, phantom: PhantomData }
+    }
+}
+impl<'a,T> From<GpuSlice<'a,T>> for wgpu::BufferSlice<'a>
+{
+    fn from(value: GpuSlice<'a,T>) -> Self {
+        value.slice
+    }
+}
+
+#[repr(transparent)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct GpuUntypedSlice<'a>
+{
+    slice : wgpu::BufferSlice<'a>
+}
+impl<'a> From<wgpu::BufferSlice<'a>> for GpuUntypedSlice<'a>
+{
+    fn from(slice: wgpu::BufferSlice<'a>) -> Self {
+        Self { slice }
+    }
+}
+impl<'a> From<GpuUntypedSlice<'a>> for wgpu::BufferSlice<'a>
+{
+    fn from(value: GpuUntypedSlice<'a>) -> Self {
+        value.slice
+    }
+}
+impl<'a> GpuByteBuffer for GpuUntypedSlice<'a>
+{
+    fn wgpu_bytes_len(&self) -> GpuBufferAddress {
+        self.slice.size().get()
+    }
+    fn wgpu_bytes_capacity(&self) -> GpuBufferAddress {
+        self.slice.size().get()
+    }
+
+    fn untyped_slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuUntypedSlice<'_> {
+        self.slice.untyped_slice(bounds)
+    }
+}
+
+#[repr(transparent)]
+#[derive(Clone, Debug, PartialEq, Hash)]
+pub struct GpuUntypedBuffer
+{
+    pub(crate) wgpu: wgpu::Buffer,
+    private_constructor: (),
+}
+impl Handle for GpuUntypedBuffer {}
+
+
+impl<T> GpuBufferNew<T> for GpuUntypedBuffer where T: BitAllUsed
+{
+    fn new(value: &[T], desc: GpuBufferDesc) -> Self {
+        Self { wgpu: wgpu::Buffer::new(value, desc), private_constructor: () }
+    }
+
+    fn with_capacity(capacity: usize, desc: GpuBufferDesc) -> Self {
+        Self { wgpu: <wgpu::Buffer as GpuBufferNew<T>>::with_capacity(capacity, desc), private_constructor: () }
+    }
+}
+
+impl From<wgpu::Buffer> for GpuUntypedBuffer
+{
+    fn from(buffer: wgpu::Buffer) -> Self {
+        Self { wgpu: buffer, private_constructor: () }
+    }
+}
+impl From<GpuUntypedBuffer> for wgpu::Buffer
+{
+    fn from(value: GpuUntypedBuffer) -> Self {
+        value.wgpu
+    }
+}
+impl GpuByteBuffer for GpuUntypedBuffer
+{
+    fn wgpu_bytes_len(&self) -> GpuBufferAddress { self.wgpu.wgpu_bytes_len() }
+    fn wgpu_bytes_capacity(&self) -> GpuBufferAddress { self.wgpu.wgpu_bytes_len() }
+    fn untyped_slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuUntypedSlice<'_> { self.wgpu.untyped_slice(bounds) }
+}
+impl<T> GpuBufferRead<T> for GpuUntypedBuffer where wgpu::Buffer: GpuBufferRead<T>
+{
+    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult where T: BitZero + BitPattern { self.wgpu.read_in(vec) }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_,T> { GpuBufferRead::<T>::slice(&self.wgpu, bounds) }
+}
+
+
+
+
+
+#[repr(transparent)]
+#[derive(Clone, Debug, PartialEq, Hash)]
+pub struct GpuBuffer<T>
+{
+    pub(crate) wgpu: wgpu::Buffer,
+    phantom: PhantomData<T>,
+}
+impl<T> Handle for GpuBuffer<T> where T: BitAllUsed {}
+
+
+impl<T> GpuBufferNew<T> for GpuBuffer<T> where T: BitAllUsed
+{
+    fn new(value: &[T], desc: GpuBufferDesc) -> Self {
+        Self { wgpu: wgpu::Buffer::new(value, desc), phantom: PhantomData }
+    }
+
+    fn with_capacity(capacity: usize, desc: GpuBufferDesc) -> Self {
+        Self { wgpu: <wgpu::Buffer as GpuBufferNew<T>>::with_capacity(capacity, desc), phantom: PhantomData }
+    }
+}
+
+impl<T> From<wgpu::Buffer> for GpuBuffer<T>
+    where T: BitAnyPattern
+{
+    fn from(buffer: wgpu::Buffer) -> Self {
+        assert_eq!(buffer.bytes_len() % std::mem::size_of::<T>(), 0, "wrong gpu buffer size");
+        Self { wgpu: buffer, phantom: PhantomData }
+    }
+}
+impl<T> From<GpuUntypedBuffer> for GpuBuffer<T>
+    where T: BitAnyPattern
+{
+    fn from(buffer: GpuUntypedBuffer) -> Self {
+        Self::from(buffer.wgpu)
+    }
+}
+impl<T> From<GpuBuffer<T>> for wgpu::Buffer
+{
+    fn from(value: GpuBuffer<T>) -> Self {
+        value.wgpu
+    }
+}
+impl<T> From<GpuBuffer<T>> for GpuUntypedBuffer
+{
+    fn from(value: GpuBuffer<T>) -> Self {
+        GpuUntypedBuffer::from(value.wgpu)
+    }
+}
+
+impl<T> GpuByteBuffer for GpuBuffer<T>
+{
+    fn wgpu_bytes_len(&self) -> GpuBufferAddress { self.wgpu.wgpu_bytes_len() }
+    fn wgpu_bytes_capacity(&self) -> GpuBufferAddress { self.wgpu.wgpu_bytes_len() }
+    fn untyped_slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuUntypedSlice<'_> { self.wgpu.untyped_slice(bounds) }
+}
+impl<T> GpuBufferRead<T> for GpuBuffer<T> where wgpu::Buffer: GpuBufferRead<T>
+{
+    fn read_in(&self, vec: &mut Vec<T>) -> GpuResult where T: BitZero + BitPattern { self.wgpu.read_in(vec) }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_,T> { GpuBufferRead::<T>::slice(&self.wgpu, bounds) }
+}
+
+
+
 
 
 
@@ -195,5 +464,42 @@ impl From<BufferUsageFlags> for wgpu::BufferUsages
     fn from(value: BufferUsageFlags) -> Self
     {
         Self::from_bits(value.bits()).expect("")
+    }
+}
+
+pub type GpuBufferUsages = wgpu::BufferUsages;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct GpuBufferDesc
+{
+    pub usages: GpuBufferUsages,
+    pub name: Option<&'static str>
+}
+impl Default for GpuBufferDesc
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl GpuBufferDesc
+{
+    pub const fn new() -> Self { Self { usages: GpuBufferUsages::COPY_DST.union(GpuBufferUsages::COPY_SRC), name: None }}
+
+    pub const fn add_usage(mut self, usage : GpuBufferUsages) -> Self { self.usages = self.usages.union(usage); self }
+    pub const fn with_usages(mut self, usages : GpuBufferUsages) -> Self { self.usages = usages; self }
+    pub const fn with_label(mut self, label : Option<&'static str>) -> Self { self.name = label; self }
+
+    pub const VERTEX : Self = Self::new().add_usage(GpuBufferUsages::VERTEX);
+    pub const INDEX : Self = Self::new().add_usage(GpuBufferUsages::INDEX);
+}
+
+pub trait ToGpuBuffer<T> where T:BitAllUsed
+{
+    fn to_gpu_buffer(self, desc: GpuBufferDesc) -> GpuBuffer<T>;
+}
+impl<T> ToGpuBuffer<T> for &[T] where T:BitAllUsed
+{
+    fn to_gpu_buffer(self, desc: GpuBufferDesc) -> GpuBuffer<T> {
+        GpuBuffer::new(self, desc)
     }
 }
