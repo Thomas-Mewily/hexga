@@ -39,5 +39,6 @@ pub mod prelude
     pub use super::{
         Gpu,GpuResult,GpuError,
         ToGpuBuffer,ToGpuVec,
+        GpuBufferByte,GpuBufferNew,GpuBufferRead,GpuBufferAsWgpuSlice,GpuAsUntypedSlice
     };
 }

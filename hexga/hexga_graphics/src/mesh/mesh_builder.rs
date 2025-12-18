@@ -108,8 +108,8 @@ impl<const N:usize> Builder for MeshBuilder<N>
     }
 
     fn build_in(&self, dest: &mut Self::Output) {
-        dest.indices.replace(&self.indices);
-        dest.vertices.replace(&self.vertices);
+        dest.indices.update(&self.indices);
+        dest.vertices.update(&self.vertices);
     }
 }
 

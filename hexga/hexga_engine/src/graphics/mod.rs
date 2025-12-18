@@ -1,12 +1,12 @@
 use super::*;
 
-pub use hexga_wgpu_graphics::*;
+pub use hexga_graphics::*;
 
 pub mod prelude
 {
     pub use super::Pen;
-    pub use hexga_wgpu_graphics::prelude::*;
-    pub(crate) use super::{AppGraphics,wgpu,GpuMessage,Surface,ConfiguredSurface};
+    pub use hexga_graphics::prelude::*;
+    pub(crate) use super::{AppGraphics,wgpu,GpuMessage};
 }
 
 singleton_single_thread_access!(
@@ -19,7 +19,7 @@ singleton_single_thread_access!(
 #[derive(Debug)]
 pub struct AppGraphics
 {
-    pub(craste) immediate: ImmediateRender,
+    pub(crate) immediate: ImmediateRender,
     /*
     pub(crate) binding: GpuBinding,
     pub(crate) render: GpuRender,
