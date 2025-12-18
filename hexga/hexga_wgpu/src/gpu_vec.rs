@@ -39,13 +39,14 @@ impl<T> GpuBufferNew<T> for GpuVec<T> where GpuBuffer<T>: GpuBufferNew<T>
         Self { buffer: GpuBuffer::with_capacity(capacity, desc), len: capacity }
     }
 }
-impl<T> GpuByteBuffer for GpuVec<T> where GpuBuffer<T>: GpuByteBuffer
+impl<T> GpuBufferByte for GpuVec<T> where GpuBuffer<T>: GpuBufferByte
 {
     fn wgpu_bytes_len(&self) -> GpuBufferAddress { (self.len * std::mem::size_of::<T>()) as GpuBufferAddress }
-    fn wgpu_bytes_capacity(&self) -> GpuBufferAddress { self.buffer.wgpu_bytes_capacity() }
+}
+impl<T> GpuAsUntypedSlice for GpuVec<T> where GpuBuffer<T>: GpuBufferByte
+{
     fn untyped_slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuUntypedSlice<'_> { self.buffer.untyped_slice(bounds) }
 }
-
 impl<T> GpuBufferRead<T> for GpuVec<T> where wgpu::Buffer: GpuBufferRead<T>
 {
     fn read_in(&self, vec: &mut Vec<T>) -> GpuResult where T: BitZero + BitPattern
