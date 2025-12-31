@@ -1,10 +1,10 @@
 use super::*;
 
-pub struct ImmediateRenderBuilder<P>
+pub struct ImmediateRenderBuilder<P=DrawParam>
 {
-    pub draw_call : NonEmptyStack<DrawCall<P>>,
+    pub draw_call: NonEmptyStack<DrawCall<P>>,
     pub params: NonEmptyStack<P>,
-    //pub big_mesh
+    pub big_mesh: MeshBuilder,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -36,7 +36,7 @@ impl Default for DrawGeometry
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct DrawCall<P>
+pub struct DrawCall<P=DrawParam>
 {
     pub geometry: DrawGeometry,
     pub param: P,
@@ -51,9 +51,8 @@ impl<P> DerefMut for DrawCall<P>
     fn deref_mut(&mut self) -> &mut Self::Target { &mut self.param }
 }
 
-
 #[derive(Clone, PartialEq, Debug)]
-pub struct DrawParam<T>
+pub struct DrawParam<T=()>
 {
     pub camera  : Camera,
     pub viewport: Rect2,

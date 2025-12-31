@@ -1,19 +1,19 @@
 use super::*;
 
 #[derive(Debug, Clone)]
-pub struct Instance
+pub struct GpuInstance
 {
     pub wgpu: wgpu::Instance,
 }
-impl<'a> From<wgpu::Instance> for Instance
+impl<'a> From<wgpu::Instance> for GpuInstance
 {
     fn from(surface: wgpu::Instance) -> Self { Self { wgpu: surface } }
 }
-impl<'a> From<Instance> for wgpu::Instance
+impl<'a> From<GpuInstance> for wgpu::Instance
 {
-    fn from(surface: Instance) -> Self { surface.wgpu }
+    fn from(surface: GpuInstance) -> Self { surface.wgpu }
 }
-impl Instance
+impl GpuInstance
 {
     pub fn new(desc: &InstanceDescriptor) -> Self
     {
@@ -54,7 +54,7 @@ impl Default for WgpuInstanceDescriptor
     }
 }
 
-impl Default for Instance
+impl Default for GpuInstance
 {
     fn default() -> Self {
         Self::new(&___())

@@ -51,6 +51,7 @@ pub trait GpuBufferRead<T> : GpuBufferByte
     fn read_in(&self, vec: &mut Vec<T>) -> GpuResult where T: BitZero + BitPattern;
 
     fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_,T>;
+
     fn update(&mut self, values: &[T]) where T: BitAllUsed { self.try_update(values).expect("failed to update the gpu buffer") }
     fn try_update(&mut self, values: &[T]) -> Result<(),()> where T: BitAllUsed
     {

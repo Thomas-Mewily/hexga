@@ -1,12 +1,13 @@
 use super::*;
 
-static GPU_CTX: OnceLock<GpuWgpu> = OnceLock::new();
+static GPU_CTX: OnceLock<GpuContext> = OnceLock::new();
+
 
 pub struct Gpu;
 
 impl Deref for Gpu
 {
-    type Target=GpuWgpu;
+    type Target=GpuContext;
     fn deref(&self) -> &Self::Target {
         GPU_CTX.get().expect("gpu not init")
     }
@@ -14,6 +15,7 @@ impl Deref for Gpu
 impl Gpu
 {
     pub fn is_init() -> bool { GPU_CTX.get().is_some() }
+    pub fn is_not_init() -> bool { !Self::is_init() }
 }
 
 
@@ -91,12 +93,12 @@ impl Into<wgpu::PowerPreference> for PowerPreference
 #[derive(Debug)]
 pub struct GpuInit
 {
-    gpu: GpuWgpu,
+    gpu: GpuContext,
     output: GpuInitOutput,
 }
 impl GpuInit
 {
-    pub async fn from_instance_and_surface(instance: Instance, surface: Option<Surface<'static>>, param: GpuParam) -> GpuResult<Self>
+    pub async fn from_instance_and_surface(instance: GpuInstance, surface: Option<GpuSurface<'static>>, param: GpuParam) -> GpuResult<Self>
     {
         let adapter = instance.wgpu
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -125,14 +127,14 @@ impl GpuInit
 
         Ok(GpuInit
             {
-                gpu:  GpuWgpu { wgpu: Wgpu { instance, adapter, device, queue } },
+                gpu:  GpuContext { wgpu: WgpuContext { instance, adapter, device, queue } },
                 output: GpuInitOutput { surface: surface.map(|wgpu| wgpu.into()) }
             }
         )
     }
     pub async fn new(mut param: GpuParam) -> GpuResult<Self>
     {
-        let instance = Instance::new(&param.instance);
+        let instance = GpuInstance::new(&param.instance);
 
         let surface = match param.compatible_surface.take()
         {
@@ -145,7 +147,7 @@ impl GpuInit
 #[derive(Debug)]
 pub struct GpuInitOutput
 {
-    pub surface: Option<Surface<'static>>,
+    pub surface: Option<GpuSurface<'static>>,
 }
 
 #[bitindex]
@@ -221,20 +223,20 @@ impl Default for BackendFlags
 
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-pub struct GpuWgpu
+pub struct GpuContext
 {
-    pub wgpu: Wgpu,
+    pub wgpu: WgpuContext,
 }
 
 #[derive(Debug, Clone)]
-pub struct Wgpu
+pub struct WgpuContext
 {
-    pub instance: Instance,
+    pub instance: GpuInstance,
     pub adapter: wgpu::Adapter,
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
 }
-impl Wgpu
+impl WgpuContext
 {
     pub fn wgpu_instance(&self) -> &wgpu::Instance { &self.instance.wgpu }
     pub fn wgpu_adapter(&self) -> &wgpu::Adapter { &self.adapter }

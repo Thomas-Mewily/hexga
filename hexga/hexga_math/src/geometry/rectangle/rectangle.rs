@@ -12,6 +12,8 @@ pub struct RectangleOf<T>
     pub size: T,
 }
 impl_fixed_array!(RectangleOf, 2);
+unsafe impl<T> BitAllUsed for RectangleOf<T> where T:BitAllUsed {}
+
 
 impl<T> Default for RectangleOf<T> where T: Number
 {
@@ -229,6 +231,7 @@ impl<T> RectangleOf<T>
     /// assume the size is valid
     pub const fn new_sized(size: T) -> Self where T: Zero { Self::new(zero(), size) }
 }
+
 
 /// Crop a selection to a sub selection, where the sub selection is contained in the selection.
 pub trait Crop<T, const N: usize>: GetRectangle<T, N> + Sized where T: Number

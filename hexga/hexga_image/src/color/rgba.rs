@@ -20,7 +20,7 @@ pub struct RgbaOf<T>
     pub a : T,
 }
 hexga_math::impl_fixed_array!(RgbaOf, 4);
-
+unsafe impl<T> BitAllUsed for RgbaOf<T> where T:BitAllUsed {}
 
 #[allow(dead_code)]
 impl<T> RgbaOf<T>

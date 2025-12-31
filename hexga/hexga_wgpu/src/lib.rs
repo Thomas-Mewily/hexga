@@ -13,8 +13,8 @@ use std::ops::{Deref,DerefMut,Bound, RangeBounds};
 
 pub use wgpu;
 
-mod gpu;
-pub use gpu::*;
+mod gpu_context;
+pub use gpu_context::*;
 
 mod vertex;
 pub use vertex::*;
@@ -22,17 +22,26 @@ pub use vertex::*;
 mod result;
 pub use result::*;
 
-mod buffer;
-pub use buffer::*;
+mod gpu_buffer;
+pub use gpu_buffer::*;
 
-mod instance;
-pub use instance::*;
+mod gpu_instance;
+pub use gpu_instance::*;
 
-mod surface;
-pub use surface::*;
+mod gpu_surface;
+pub use gpu_surface::*;
 
 mod gpu_vec;
 pub use gpu_vec::*;
+
+mod gpu_texture;
+pub use gpu_texture::*;
+
+mod gpu_sampler;
+pub use gpu_sampler::*;
+
+mod gpu_bindgroup;
+pub use gpu_bindgroup::*;
 
 pub mod prelude
 {

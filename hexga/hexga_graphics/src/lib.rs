@@ -35,6 +35,11 @@ pub mod format;
 #[cfg(feature = "wgpu")]
 pub(crate) use format::*;
 
+#[cfg(feature = "wgpu")]
+pub mod gfx;
+#[cfg(feature = "wgpu")]
+pub(crate) use gfx::*;
+
 pub mod prelude
 {
     pub use super::typedef::*;

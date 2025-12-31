@@ -153,7 +153,7 @@ pub struct Window
 {
     pub(crate) window : WinitWindowShared,
     /// Destroyed on suspend and recreated on resume
-    pub(crate) surface: Option<ConfiguredSurface<'static>>,
+    pub(crate) surface: Option<GpuConfiguredSurface<'static>>,
 }
 impl Window
 {
@@ -161,9 +161,9 @@ impl Window
     {
         Self { window, surface: None }
     }
-    pub(crate) fn set_surface(&mut self, surface: Surface<'static>)
+    pub(crate) fn set_surface(&mut self, surface: GpuSurface<'static>)
     {
-        let surface = ConfiguredSurface::from_surface(surface, self.size());
+        let surface = GpuConfiguredSurface::from_surface(surface, self.size());
         self.surface = Some(surface);
     }
     pub(crate) fn drop_surface(&mut self)
@@ -178,7 +178,7 @@ impl Window
 
         let size = self.size();
         let surface = Gpu.wgpu.wgpu_instance().create_surface(self.window.clone()).expect("failed to create the window");
-        self.surface = Some(ConfiguredSurface::from_surface(surface.into(), size));
+        self.surface = Some(GpuConfiguredSurface::from_surface(surface.into(), size));
     }
 }
 impl WindowExtension for Window

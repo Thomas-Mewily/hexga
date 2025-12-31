@@ -3,8 +3,8 @@ use crate::prelude::*;
 
 
 // Waiting for the never type `!` to be stabilized
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Never{}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Never {}
 
 pub trait Toggleable
 {

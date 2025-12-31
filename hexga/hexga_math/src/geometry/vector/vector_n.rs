@@ -23,6 +23,8 @@ pub struct Vector<T, const N : usize>
     // Not simd because we accept everythings.
     pub(crate) array : [T; N],
 }
+unsafe impl<T,const N : usize> BitAllUsed for Vector<T,N> where T:BitAllUsed {}
+
 
 unsafe impl<T, const N : usize> BitZero for Vector<T, N> where T: BitZero
 {
