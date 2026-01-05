@@ -7,7 +7,6 @@ pub use hexga_utils as utils;
 pub use hexga_map_on as map_on;
 pub use hexga_image::{color,image};
 //pub use hexga_random as random;
-pub use hexga_singleton as singleton;
 pub use hexga_encoding as encoding;
 
 //pub use hexga_undo_redo as undo;

@@ -52,7 +52,6 @@ hexga_asset = ["dep:hexga_asset"]
 hexga_core.workspace = true
 hexga_math.workspace = true
 hexga_generational.workspace = true
-hexga_singleton.workspace = true
 hexga_bitflags.workspace = true
 hexga_ansi_color.workspace = true
 hexga_utils.workspace = true

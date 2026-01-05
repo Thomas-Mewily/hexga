@@ -65,7 +65,7 @@ impl AppGraphics
 
     pub(crate) fn init(window: Arc<WinitWindow>, mut param: GpuParam, proxy: EventLoopProxy) -> GpuResult
     {
-        if App.graphics.is_some() { return Err(GpuError::GpuAlreadyInit); }
+        if APP.graphics.is_some() { return Err(GpuError::GpuAlreadyInit); }
 
         let surface_size: Point2 = window.inner_size().convert();
         let surface_size = surface_size.max(one());

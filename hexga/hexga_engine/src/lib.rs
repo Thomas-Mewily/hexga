@@ -18,6 +18,7 @@ pub mod input;
 pub mod perf;
 pub mod window;
 pub mod clipboard;
+pub mod internal;
 pub mod graphics;
 mod free_function;
 pub use free_function::*;

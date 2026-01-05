@@ -29,10 +29,10 @@ pub mod prelude
         event::AppEvent,
         spawn::AsyncSpawn,
         param::AppParam,
-        app_core::{App},
         result::*,
     };
 
+    pub(crate) use super::app_core::{APP};
     pub(crate) use super::{FlowMessage,AppInternalEvent};
 
     pub(crate) type EventLoopActive = winit::event_loop::ActiveEventLoop;

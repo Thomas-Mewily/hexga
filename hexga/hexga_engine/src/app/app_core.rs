@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Debug)]
-pub struct AppCore
+pub(crate) struct AppCore
 {
     pub(crate) already_init:  bool,
 
@@ -15,6 +15,9 @@ pub struct AppCore
 
     pub(crate) param:     AppParamInternal,
 }
+
+pub(crate) static APP : SingletonSingleThread<AppCore> = SingletonSingleThread::new(|| AppCore::new());
+
 impl AppCore
 {
     pub fn clipboard(&mut self) -> &mut AppClipboard { &mut self.clipboard }
@@ -24,7 +27,6 @@ impl AppCore
     pub fn graphics(&mut self) -> &mut AppGraphics { self.graphics.as_mut().expect("graphics is not init") }
 
     pub(crate) fn proxy(&self) -> &EventLoopProxy { self.proxy.as_ref().expect("proxy is not init") }
-
     pub(crate) fn param(&self) -> &AppParamInternal { &self.param }
     //pub fn param_mut(&mut self) -> &mut AppParam { &mut self.param }
 }
@@ -94,7 +96,9 @@ impl ScopedFlow for AppCore
     }
 }
 */
-singleton_single_thread!(pub App,AppCore,CONTEXT_APP,|| AppCore::new());
+
+
+//singleton_single_thread!(pub App,AppCore,CONTEXT_APP,|| AppCore::new());
 
 /*
 pub struct App;

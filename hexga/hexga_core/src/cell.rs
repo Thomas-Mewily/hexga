@@ -1,5 +1,5 @@
 use super::*;
-use std::{ops::{Deref,DerefMut}, thread::ThreadId, cell::UnsafeCell};
+use std::{cell::{BorrowError, BorrowMutError, Ref, RefCell, RefMut}, thread::ThreadId};
 
 /// A value that can be read and written by only one thread.
 ///
@@ -8,19 +8,19 @@ use std::{ops::{Deref,DerefMut}, thread::ThreadId, cell::UnsafeCell};
 ///
 /// Even though `SingleThread<T>` implements [`Sync`] and [`Send`], it can only be accessed
 /// by the first thread that uses it. Any attempt to access it from a different thread will fail.
-pub struct SingleThread<T>
+pub struct SingleThreadCell<T>
 {
-    value: UnsafeCell<T>,
+    value: RefCell<T>,
     id: std::sync::OnceLock<ThreadId>,
 }
-unsafe impl<T> Sync for SingleThread<T> {}
-unsafe impl<T> Send for SingleThread<T> {}
+unsafe impl<T> Sync for SingleThreadCell<T> {}
+unsafe impl<T> Send for SingleThreadCell<T> {}
 
-impl<T> SingleThread<T>
+impl<T> SingleThreadCell<T>
 {
     pub const fn new(value: T) -> Self
     {
-        Self { value: UnsafeCell::new(value), id: std::sync::OnceLock::new() }
+        Self { value: RefCell::new(value), id: std::sync::OnceLock::new() }
     }
     #[inline(always)]
     pub(crate) fn same_thread(&self) -> Result<(),DifferentThreadError>
@@ -36,7 +36,9 @@ impl<T> SingleThread<T>
 
 
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DifferentThreadError;
+
 impl Debug for DifferentThreadError
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -44,54 +46,67 @@ impl Debug for DifferentThreadError
     }
 }
 
-impl<T> ReadGuard for SingleThread<T>
+#[derive(Debug)]
+pub enum SingleThreadError
 {
-    type Target=T;
-    type ReadGuard<'a> = ReferenceReadGuard<'a,T> where Self: 'a;
+    DifferentThread(DifferentThreadError),
+    Borrow(BorrowError),
+}
+impl From<DifferentThreadError> for SingleThreadError
+{
+    fn from(value: DifferentThreadError) -> Self { Self::DifferentThread(value) }
+}
+impl From<BorrowError> for SingleThreadError
+{
+    fn from(value: BorrowError) -> Self { Self::Borrow(value) }
+}
+
+
+impl<T> ReadGuard<T> for SingleThreadCell<T>
+{
+    type ReadGuard<'a> = Ref<'a,T> where Self: 'a;
 
     fn read<'a>(&'a self) -> Self::ReadGuard<'a> {
         self.asset_same_thread();
-        ReferenceReadGuard::new(unsafe { self.value.as_ref_unchecked() })
+        self.value.borrow()
     }
 }
-impl<T> TryReadGuard for SingleThread<T>
+impl<T> TryReadGuard<T> for SingleThreadCell<T>
 {
-    type Error<'a> = DifferentThreadError where Self: 'a;
+    type Error<'a> = SingleThreadError where Self: 'a;
     fn try_read<'a>(&'a self) -> Result<Self::ReadGuard<'a>, Self::Error<'a>> {
         self.same_thread()?;
-        Ok(ReferenceReadGuard::new(unsafe { self.value.as_ref_unchecked() }))
+        Ok(self.value.try_borrow()?)
     }
 }
-impl<T> WriteGuard for SingleThread<T>
+
+#[derive(Debug)]
+pub enum SingleThreadMutError
 {
-    type WriteGuard<'a> = ReferenceWriteGuard<'a, T> where Self: 'a;
+    DifferentThread(DifferentThreadError),
+    BorrowMut(BorrowMutError),
+}
+impl From<DifferentThreadError> for SingleThreadMutError
+{
+    fn from(value: DifferentThreadError) -> Self { Self::DifferentThread(value) }
+}
+impl From<BorrowMutError> for SingleThreadMutError
+{
+    fn from(value: BorrowMutError) -> Self { Self::BorrowMut(value) }
+}
+impl<T> WriteGuard<T> for SingleThreadCell<T>
+{
+    type WriteGuard<'a> = RefMut<'a, T> where Self: 'a;
     fn write<'a>(&'a self) -> Self::WriteGuard<'a> {
         self.asset_same_thread();
-        ReferenceWriteGuard::new(unsafe { self.value.as_mut_unchecked() })
+        self.value.borrow_mut()
     }
 }
-impl<T> TryWriteGuard for SingleThread<T>
+impl<T> TryWriteGuard<T> for SingleThreadCell<T>
 {
-    type Error<'a> = DifferentThreadError where Self: 'a;
+    type Error<'a> = SingleThreadMutError where Self: 'a;
     fn try_write<'a>(&'a self) -> Result<Self::WriteGuard<'a>, Self::Error<'a>> {
         self.same_thread()?;
-        Ok(ReferenceWriteGuard::new(unsafe { self.value.as_mut_unchecked() }))
-    }
-}
-impl<T> Deref for SingleThread<T>
-{
-    type Target=T;
-    #[inline(always)]
-    #[track_caller]
-    fn deref(&self) -> &Self::Target {
-        self.read().inner_reference
-    }
-}
-impl<T> DerefMut for SingleThread<T>
-{
-    #[inline(always)]
-    #[track_caller]
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.write().inner_reference
+        Ok(self.value.try_borrow_mut()?)
     }
 }

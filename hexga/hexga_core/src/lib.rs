@@ -25,12 +25,13 @@ pub mod handle;
 pub mod iter;
 pub mod rc;
 pub mod sync;
-pub mod traits;
+pub mod macros;
 pub mod utils;
 pub mod run;
 pub mod wrapper;
 pub mod result;
 pub mod convert;
+pub mod singleton;
 pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
@@ -47,23 +48,29 @@ pub mod prelude
 pub mod hexga_prelude
 {
     pub use std::collections::{HashMap,HashSet,BTreeMap,BTreeSet,VecDeque};
-    pub use super::accessor::*;
-    pub use super::asynchrone::*;
-    pub use super::builder::*;
-    pub use super::collections::*;
-    pub use super::default::*;
-    pub use super::format::*;
-    pub use super::guard::*;
-    pub use super::handle::*;
-    pub use super::iter::*;
-    pub use super::traits::prelude::*;
-    pub use super::run::*;
-    pub use super::utils::*;
-    pub use super::wrapper::*;
-    pub use super::result::*;
-    pub use super::convert::*;
-    pub use super::bit::prelude::*;
-    pub use super::map_on::prelude::*;
+
+    #[allow(unused_imports)]
+    pub use super::{
+        accessor::*,
+        asynchrone::*,
+        builder::*,
+        collections::*,
+        default::*,
+        format::*,
+        guard::*,
+        handle::*,
+        iter::*,
+        macros::prelude::*,
+        run::*,
+        utils::*,
+        wrapper::*,
+        result::*,
+        convert::*,
+        singleton::prelude::*,
+        bit::prelude::*,
+        map_on::prelude::*,
+    };
+
 }
 
 #[doc(hidden)]

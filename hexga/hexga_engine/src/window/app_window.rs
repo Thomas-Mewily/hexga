@@ -57,7 +57,7 @@ impl AppWindow
         if self.window.is_some() { return false; }
 
         #[allow(unused_mut)]
-        let mut win_attr = App.param.window.clone();
+        let mut win_attr = APP.param.window.clone();
 
         #[cfg(target_arch = "wasm32")]
         {
@@ -173,7 +173,7 @@ impl Window
 
     pub(crate) fn init_surface_if_needed(&mut self)
     {
-        if App.graphics.is_none() { return; }
+        if APP.graphics.is_none() { return; }
         if self.surface.is_some() { return; }
 
         let size = self.size();

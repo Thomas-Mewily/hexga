@@ -1134,7 +1134,6 @@ dependencies = [
  "hexga_io",
  "hexga_map_on",
  "hexga_math",
- "hexga_singleton",
  "hexga_utils",
  "serde",
 ]
@@ -1161,7 +1160,6 @@ dependencies = [
  "hexga_encoding",
  "hexga_generational",
  "hexga_io",
- "hexga_singleton",
  "serde",
 ]
 
@@ -1308,13 +1306,6 @@ name = "hexga_number"
 version = "0.0.11-beta.43"
 dependencies = [
  "hexga_map_on",
-]
-
-[[package]]
-name = "hexga_singleton"
-version = "0.0.11-beta.43"
-dependencies = [
- "hexga_core",
 ]
 
 [[package]]

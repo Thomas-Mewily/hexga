@@ -26,7 +26,6 @@ serde_rc = ["serde/rc", "hexga_encoding/rc", "hexga_io/serde_rc"]
 
 
 [dependencies]
-hexga_singleton.workspace = true
 hexga_core.workspace = true
 hexga_encoding.workspace = true
 hexga_generational.workspace = true
