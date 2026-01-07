@@ -148,7 +148,7 @@ pub struct GpuInitOutput
     pub surface: Option<GpuSurface<'static>>,
 }
 
-#[bitindex]
+#[bit_index]
 #[repr(u8)]
 pub enum Backend
 {

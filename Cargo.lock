@@ -1795,6 +1795,8 @@ name = "math_test"
 version = "0.0.11-beta.43"
 dependencies = [
  "hexga",
+ "hexga_core",
+ "serde",
 ]
 
 [[package]]

@@ -211,6 +211,199 @@ macro_rules! impl_generic_array_op
     }
 }
 
+/// Serialize and deserialize the structure like a tuple
+#[macro_export]
+macro_rules! impl_fixed_array_serde_tuple
+{
+    ($name: ident, $dim : expr) =>
+    {
+        #[cfg(feature = "serde")]
+        impl<T> ::serde::Serialize for $name<T>
+        where
+            T: ::serde::Serialize,
+        {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: ::serde::Serializer,
+            {
+                use ::serde::ser::SerializeTuple;
+
+                let arr = self.as_array();
+                let mut tup = serializer.serialize_tuple($dim)?;
+                for item in arr {
+                    tup.serialize_element(item)?;
+                }
+                tup.end()
+            }
+        }
+
+        #[cfg(feature = "serde")]
+        const _ : () =
+        {
+            // Thank serde for not supporting the deserialization of variadic array...
+            #[derive(Debug)]
+            struct Arr<T>(pub [T; $dim]);
+
+            impl<'de, T> ::serde::Deserialize<'de> for $name<T> where T: ::serde::Deserialize<'de>
+            {
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                where
+                    D: ::serde::Deserializer<'de>,
+                {
+                    struct ArrVisitor<T>(::std::marker::PhantomData<T>);
+
+                    impl<'de, T> ::serde::de::Visitor<'de> for ArrVisitor<T>
+                    where
+                        T: ::serde::Deserialize<'de>,
+                    {
+                        type Value = Arr<T>;
+
+                        fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                            write!(formatter, "an {}", std::any::type_name::<$name<T>>())
+                        }
+
+                        fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+                        where
+                            A: ::serde::de::SeqAccess<'de>,
+                        {
+                            // SAFETY: We'll ensure every element is initialized or properly dropped
+                            let mut data: [::std::mem::MaybeUninit<T>; $dim] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+                            for i in 0..$dim {
+                                match seq.next_element()? {
+                                    Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
+                                    None => {
+                                        if ::core::mem::needs_drop::<T>() {
+                                            // Drop any already initialized elements before returning
+                                            for j in 0..i {
+                                                unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
+                                            }
+                                        }
+                                        return Err(::serde::de::Error::invalid_length(i, &self));
+                                    }
+                                }
+                            }
+
+                            // Ensure no extra elements
+                            if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
+                                if ::core::mem::needs_drop::<T>() {
+                                    for i in 0..$dim {
+                                        unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
+                                    }
+                                }
+                                return Err(::serde::de::Error::invalid_length($dim + 1, &self));
+                            }
+
+                            // SAFETY: All elements are initialized
+                            let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T; $dim]) };
+                            Ok(Arr(result))
+                        }
+                    }
+
+                    deserializer.deserialize_tuple($dim, ArrVisitor::<T>(::std::marker::PhantomData)).map(|arr| $name::<T>::from(arr.0))
+                }
+            }
+        };
+    }
+}
+
+/// Serialize and deserialize the structure with each field name
+#[macro_export]
+macro_rules! impl_fixed_array_serde
+{
+    ($name: ident, $dim : expr) =>
+    {
+        TODO
+        /*
+        #[cfg(feature = "serde")]
+        impl<T> ::serde::Serialize for $name<T>
+        where
+            T: ::serde::Serialize,
+        {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: ::serde::Serializer,
+            {
+                use ::serde::ser::SerializeTuple;
+
+                let arr = self.as_array();
+                let mut tup = serializer.serialize_tuple($dim)?;
+                for item in arr {
+                    tup.serialize_element(item)?;
+                }
+                tup.end()
+            }
+        }
+
+        #[cfg(feature = "serde")]
+        const _ : () =
+        {
+            // Thank serde for not supporting the deserialization of variadic array...
+            #[derive(Debug)]
+            struct Arr<T>(pub [T; $dim]);
+
+            impl<'de, T> ::serde::Deserialize<'de> for $name<T> where T: ::serde::Deserialize<'de>
+            {
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                where
+                    D: ::serde::Deserializer<'de>,
+                {
+                    struct ArrVisitor<T>(::std::marker::PhantomData<T>);
+
+                    impl<'de, T> ::serde::de::Visitor<'de> for ArrVisitor<T>
+                    where
+                        T: ::serde::Deserialize<'de>,
+                    {
+                        type Value = Arr<T>;
+
+                        fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                            write!(formatter, "an {}", std::any::type_name::<$name<T>>())
+                        }
+
+                        fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+                        where
+                            A: ::serde::de::SeqAccess<'de>,
+                        {
+                            // SAFETY: We'll ensure every element is initialized or properly dropped
+                            let mut data: [::std::mem::MaybeUninit<T>; $dim] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+                            for i in 0..$dim {
+                                match seq.next_element()? {
+                                    Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
+                                    None => {
+                                        if ::core::mem::needs_drop::<T>() {
+                                            // Drop any already initialized elements before returning
+                                            for j in 0..i {
+                                                unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
+                                            }
+                                        }
+                                        return Err(::serde::de::Error::invalid_length(i, &self));
+                                    }
+                                }
+                            }
+
+                            // Ensure no extra elements
+                            if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
+                                if ::core::mem::needs_drop::<T>() {
+                                    for i in 0..$dim {
+                                        unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
+                                    }
+                                }
+                                return Err(::serde::de::Error::invalid_length($dim + 1, &self));
+                            }
+
+                            // SAFETY: All elements are initialized
+                            let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T; $dim]) };
+                            Ok(Arr(result))
+                        }
+                    }
+
+                    deserializer.deserialize_tuple($dim, ArrVisitor::<T>(::std::marker::PhantomData)).map(|arr| $name::<T>::from(arr.0))
+                }
+            }
+        };
+        */
+    }
+}
+
 #[macro_export]
 macro_rules! impl_fixed_array_core
 {
@@ -386,93 +579,6 @@ macro_rules! impl_fixed_array_core
             }
         }
 
-        #[cfg(feature = "serde")]
-        impl<T> ::serde::Serialize for $name<T>
-        where
-            T: ::serde::Serialize,
-        {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where
-                S: ::serde::Serializer,
-            {
-                use ::serde::ser::SerializeTuple;
-
-                let arr = self.as_array();
-                let mut tup = serializer.serialize_tuple($dim)?;
-                for item in arr {
-                    tup.serialize_element(item)?;
-                }
-                tup.end()
-            }
-        }
-
-        #[cfg(feature = "serde")]
-        const _ : () =
-        {
-            // Thank serde for not supporting the deserialization of variadic array...
-            #[derive(Debug)]
-            struct Arr<T>(pub [T; $dim]);
-
-            impl<'de, T> ::serde::Deserialize<'de> for $name<T> where T: ::serde::Deserialize<'de>
-            {
-                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-                where
-                    D: ::serde::Deserializer<'de>,
-                {
-                    struct ArrVisitor<T>(::std::marker::PhantomData<T>);
-
-                    impl<'de, T> ::serde::de::Visitor<'de> for ArrVisitor<T>
-                    where
-                        T: ::serde::Deserialize<'de>,
-                    {
-                        type Value = Arr<T>;
-
-                        fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                            write!(formatter, "an {}", std::any::type_name::<$name<T>>())
-                        }
-
-                        fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-                        where
-                            A: ::serde::de::SeqAccess<'de>,
-                        {
-                            // SAFETY: We'll ensure every element is initialized or properly dropped
-                            let mut data: [::std::mem::MaybeUninit<T>; $dim] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
-                            for i in 0..$dim {
-                                match seq.next_element()? {
-                                    Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
-                                    None => {
-                                        if ::core::mem::needs_drop::<T>() {
-                                            // Drop any already initialized elements before returning
-                                            for j in 0..i {
-                                                unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
-                                            }
-                                        }
-                                        return Err(::serde::de::Error::invalid_length(i, &self));
-                                    }
-                                }
-                            }
-
-                            // Ensure no extra elements
-                            if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
-                                if ::core::mem::needs_drop::<T>() {
-                                    for i in 0..$dim {
-                                        unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
-                                    }
-                                }
-                                return Err(::serde::de::Error::invalid_length($dim + 1, &self));
-                            }
-
-                            // SAFETY: All elements are initialized
-                            let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T; $dim]) };
-                            Ok(Arr(result))
-                        }
-                    }
-
-                    deserializer.deserialize_tuple($dim, ArrVisitor::<T>(::std::marker::PhantomData)).map(|arr| $name::<T>::from(arr.0))
-                }
-            }
-        };
-
         impl<T> $crate::map::MapIntern for $name<T>
         {
             type Item=T;
@@ -529,6 +635,7 @@ macro_rules! impl_fixed_array
     ($name: ident, $dim : expr) =>
     {
         $crate::impl_fixed_array_core!($name, $dim);
+        $crate::impl_fixed_array_serde_tuple!($name, $dim);
         $crate::impl_fixed_array_op!($name, $dim);
         $crate::impl_fixed_array_constant!($name, $dim);
         $crate::impl_fixed_array_display!($name);
@@ -868,3 +975,23 @@ macro_rules! impl_generic_array
         $crate::impl_generic_array_display!($name);
     };
 }
+
+
+
+/*
+
+# fixed_array
+
+size is fixed
+ex: Color<T> {r:T,g:T,b:T,a:T}
+
+ex:
+#[non_exhaustive] // every field name need to be saved
+Damage<T> {physic:T,magic:T,melee:T}
+
+
+# generic_array
+
+size is generic
+ex: Vector<T,N>
+*/

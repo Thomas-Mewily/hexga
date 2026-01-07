@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused)]
-use hexga_engine::prelude::*;
+use hexga_engine::{encoding::markup::ToJson, math::impl_fixed_array, prelude::*};
 
 /*
 #[repr(C)]
@@ -35,6 +35,8 @@ struct AlwaysBitZero<T> {
 
 fn main()
 {
+    //let json = Damage::<float>::ZERO.json
+
     hexga_engine::run_with_param(|| MyApp{}, AppParam::new().with_title("hello world"));
     //MyApp::run(|| MyApp{});
     //assert!(matches!(MyOption::<std::num::NonZeroU8>::zeroed(), MyOption::None));

@@ -2,7 +2,7 @@
 mod tests {
     use hexga_bitflags::*;
 
-    #[bitindex]
+    #[bit_index]
     #[repr(u8)]
     pub enum Color
     {

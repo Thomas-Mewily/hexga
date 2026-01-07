@@ -42,7 +42,7 @@ pub mod hexga_prelude
 
     pub use crate::generational::prelude::*;
     pub use crate::math::prelude::*;
-    pub use crate::bitflags::bitindex;
+    pub use crate::bitflags::bit_index;
     pub use crate::utils::prelude::*;
     pub use hexga_image::prelude::*;
     //pub use crate::random::*;

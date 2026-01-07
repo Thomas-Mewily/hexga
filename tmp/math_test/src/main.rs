@@ -67,7 +67,7 @@ fn img()
     dbg!(i);
 }
 
-fn main()
+fn img_test()
 {
     let i = Image::from_fn_coef((1024, 1024),
         |v|
@@ -80,4 +80,21 @@ fn main()
             ColorU8::BLACK
         }
     ).save("./image_test.png").unwrap();
+}
+
+use std::ops::*;
+
+pub struct DamageOf<T>
+{
+    physic: T,
+    magic: T,
+    melee: T,
+}
+hexga::math::impl_fixed_array!(DamageOf,3);
+
+pub type Damage = DamageOf<float>;
+
+fn main()
+{
+    dbg!(&Damage::ZERO);
 }

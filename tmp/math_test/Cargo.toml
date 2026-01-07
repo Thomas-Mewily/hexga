@@ -8,4 +8,17 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
-hexga.workspace = true
+hexga = { workspace = true, default-features = true }
+hexga_core = { workspace = true, default-features = true }
+serde = { version = "1.0.0", features = ["derive"] }
+
+
+[features]
+default = [
+            "int_are_32_bits", "float_are_32_bits",
+            "serde"
+          ]
+
+int_are_32_bits = []
+float_are_32_bits = []
+serde = []

@@ -590,7 +590,7 @@ impl<T> GpuBufferRead<T> for GpuBuffer<T> where wgpu::Buffer: GpuBufferRead<T>
 ///
 /// Corresponds to [WebGPU `GPUBufferUsageFlags`](
 /// https://gpuweb.github.io/gpuweb/#typedefdef-gpubufferusageflags).
-#[bitindex]
+#[bit_index]
 #[repr(u32)]
 pub enum BufferUsage
 {

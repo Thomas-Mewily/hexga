@@ -455,7 +455,7 @@ impl From<WindowLevel> for winit::window::WindowLevel
     }
 }
 
-#[bitindex]
+#[bit_index]
 #[repr(u8)]
 pub enum WindowButton
 {
