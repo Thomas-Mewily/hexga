@@ -11,7 +11,7 @@ edition.workspace = true
 hexga = { workspace = true, default-features = true }
 hexga_core = { workspace = true, default-features = true }
 serde = { version = "1.0.0", features = ["derive"] }
-
+hexga_math = { workspace = true, default-features = true }
 
 [features]
 default = [

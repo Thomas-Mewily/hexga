@@ -21,6 +21,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     });
 
+
     let dim = match (&input.fields, const_generic) {
         (Fields::Named(fields), None) => {
             let len = fields.named.len();
@@ -61,6 +62,51 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             )
             .to_compile_error()
             .into();
+        }
+    };
+
+
+    let is_array_struct = input.generics.params.iter().any(|p| matches!(p, syn::GenericParam::Const(_)));
+    let array_impl = if is_array_struct {
+        quote! {
+            impl<T, const N: usize> ::hexga_math::array::ArrayWithType<T, N> for #name<T, N>
+            {
+                type WithType<T2> = #name<T2, N>;
+            }
+            impl<T, const N : usize> ::hexga_math::array::ArrayWithSize<T, N> for #name<T,N>
+            {
+                type WithSize<const M:usize>=#name<T,M>;
+            }
+
+            impl<T, const N : usize, Idx> ::std::ops::Index<Idx> for #name<T,N> where [T;N] : ::std::ops::Index<Idx>
+            {
+                type Output=<[T;N] as ::std::ops::Index<Idx>>::Output;
+                #[inline(always)]
+                fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
+            }
+            impl<T, const N : usize, Idx> ::std::ops::IndexMut<Idx> for #name<T,N> where [T;N] : ::std::ops::IndexMut<Idx>
+            {
+                #[inline(always)]
+                fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
+            }
+        }
+    } else {
+        quote! {
+            impl<T> ::hexga_math::array::ArrayWithType<T, #dim> for #name<T>
+            {
+                type WithType<T2> = #name<T2>;
+            }
+            impl<T, Idx> ::std::ops::Index<Idx> for #name<T> where [T;#dim] : ::std::ops::Index<Idx>
+            {
+                type Output=<[T;#dim] as ::std::ops::Index<Idx>>::Output;
+                #[inline(always)]
+                fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
+            }
+            impl<T, Idx> ::std::ops::IndexMut<Idx> for #name<T> where [T;#dim] : ::std::ops::IndexMut<Idx>
+            {
+                #[inline(always)]
+                fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
+            }
         }
     };
 
@@ -129,7 +175,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             pub const fn array_mut(&mut self) -> &mut[T; #dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
 
             // Todo:
-            //$crate::impl_number_basic_trait!();
+            //#crate::impl_number_basic_trait!();
         }
 
         impl #impl_generics ::std::convert::From<[T; #dim]> for #name #ty_generics { fn from(value: [T; #dim]) -> Self { Self::from_array(value) } }
@@ -164,6 +210,16 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
         {
             fn hash<H>(&self, state: &mut H) where H: ::std::hash::Hasher { self.as_ref().hash(state); }
         }
+
+        impl #impl_generics ::hexga_math::array::Array<T, #dim> for #name #ty_generics
+        {
+            #[inline(always)]
+            fn array(&self) -> &[T; #dim] { self.array() }
+            #[inline(always)]
+            fn array_mut(&mut self) -> &mut[T; #dim] { self.array_mut() }
+        }
+
+        #array_impl
     };
 
     expanded.into()

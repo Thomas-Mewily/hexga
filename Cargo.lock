@@ -1808,6 +1808,7 @@ version = "0.0.11-beta.43"
 dependencies = [
  "hexga",
  "hexga_core",
+ "hexga_math",
  "serde",
 ]
 
