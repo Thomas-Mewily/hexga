@@ -1,4 +1,4 @@
-//! Define what will be the default `int`, `uint` and `float` (and `Coef` = `float`) typedef.
+//! Define what will be the default `int`, `uint` and `float` (and `coef` = `float`) typedef.
 
 
 mod check;
@@ -101,4 +101,5 @@ pub use float_typedef::*;
 /// Same as float, but just to mark the different use case.
 ///
 /// Generally, a coef is between `[0.0, 1.0]`, but this is not an obligation
-pub type Coef = float;
+#[allow(non_camel_case_types)]
+pub type coef = float;

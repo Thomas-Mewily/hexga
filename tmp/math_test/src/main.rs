@@ -109,6 +109,7 @@ pub struct DamageArray<T, const N:usize>
 }
 
 
+
 fn main()
 {
     dbg!(&DamageArray::<float,2>::ZERO);

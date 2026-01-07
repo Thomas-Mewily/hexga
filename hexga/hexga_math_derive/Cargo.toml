@@ -16,8 +16,6 @@ categories = ["rust-patterns"]
 proc-macro = true
 
 [dependencies]
-hexga_number.workspace = true
-
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 
 syn = { version = "2.0", features = ["full", "extra-traits"] }

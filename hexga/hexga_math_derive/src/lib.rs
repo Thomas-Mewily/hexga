@@ -364,11 +364,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             );
 
-
             #[cfg(feature = "serde")]
             impl<T, const N: usize> ::serde::Serialize for #name<T, N>
-            where
-                T: ::serde::Serialize,
+                where T: ::serde::Serialize,
             {
                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                 where
@@ -392,7 +390,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 #[derive(Debug)]
                 struct Arr<T, const N: usize>(pub [T;N]);
 
-                impl<'de, T, const N: usize> ::serde::Deserialize<'de> for #name<T,N> where T: ::serde::Deserialize<'de>
+                impl<'de, T, const N: usize> ::serde::Deserialize<'de> for #name<T,N>
+                    where T: ::serde::Deserialize<'de>
                 {
                     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                     where
@@ -452,7 +451,30 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             };
 
+            /*
+            #[cfg(feature = "serde")]
+            impl<T, const N: usize> ::serde::Serialize for #crate_ident::coefficient::Coef<#name<T, N>>
+                where #name<T, N>: ::serde::Serialize,
+            {
+                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                where
+                    S: ::serde::Serializer,
+                {
+                    self.value.serialize(serializer)
+                }
+            }
 
+			#[cfg(feature = "serde")]
+            impl<'de, T, const N: usize> ::serde::Deserialize<'de> for #crate_ident::coefficient::Coef<#name<T, N>>
+                where #name<T, N>: ::serde::Deserialize<'de>
+            {
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                where
+                    D: ::serde::Deserializer<'de>,
+                {
+                    Ok(Self::new(#name::<T, N>::deserialize(deserializer)?))
+                }
+            }*/
         }
     } else {
 

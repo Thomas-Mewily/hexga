@@ -18,6 +18,9 @@ use transform::*;
 pub mod angle;
 use angle::*;
 
+pub mod coefficient;
+use coefficient::*;
+
 
 pub(crate) mod prelude
 {
@@ -29,5 +32,6 @@ pub(crate) mod prelude
         transform::*,
         angle::*,
         grid::prelude::*,
+        coefficient::Coef,
     };
 }

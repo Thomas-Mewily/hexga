@@ -18,11 +18,6 @@ pub use vector3::*;
 mod vector4;
 pub use vector4::*;
 
-/*
-mod macro_impl;
-pub use macro_impl::*;
-*/
-
 mod vector_iter;
 pub use vector_iter::*;
 
@@ -39,7 +34,6 @@ pub mod prelude
     {
         array_extension::*,
         xyzw::*,
-        //macro_impl::*,
         typedef::*,
         vector_n::prelude::*,
         vector1::prelude::*,
@@ -48,5 +42,4 @@ pub mod prelude
         vector4::prelude::*,
         vector_iter::IterIndex,
     };
-
 }

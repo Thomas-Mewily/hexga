@@ -8,5 +8,6 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
-hexga_engine.workspace = true
-hexga_bit.workspace = true
+hexga_engine = { workspace = true, default-features = true }
+hexga_bit = { workspace = true, default-features = true }
+hexga_math = { workspace = true, default-features = true }
