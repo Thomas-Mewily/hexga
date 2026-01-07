@@ -99,6 +99,14 @@ pub struct DamageOf2<T>
 {
     physic: T,
     magic: T,
+}
+
+#[math_vec]
+#[non_exhaustive]
+pub struct DamageOf3<T>
+{
+    physic: T,
+    magic: T,
     melee: T,
 }
 

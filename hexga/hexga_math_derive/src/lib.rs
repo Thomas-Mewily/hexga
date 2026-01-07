@@ -250,13 +250,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             impl<T, const N : usize> ::std::ops::Not for #name<T,N> where T: ::std::ops::Not
             {
                 type Output = #name<T::Output,N>;
-                fn not(self) -> Self::Output { self.map(|v| v.not()) }
+                fn not(self) -> Self::Output { self.map(::std::ops::Not::not) }
             }
 
             impl<T, const N : usize> ::std::ops::Neg for #name<T,N> where T: ::std::ops::Neg
             {
                 type Output = #name<T::Output,N>;
-                fn neg(self) -> Self::Output { self.map(|v| v.neg()) }
+                fn neg(self) -> Self::Output { self.map(::std::ops::Neg::neg) }
             }
 
             // ================= Iter =========
@@ -495,10 +495,87 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         }else
         {
-            // serialize field by field
-            quote!
-            {
+            let fields = match &input.fields {
+                syn::Fields::Named(f) => &f.named,
+                _ => {
+                    return syn::Error::new_spanned(
+                        &input,
+                        "math_vec only supports structs with named fields",
+                    )
+                    .to_compile_error()
+                    .into();
+                }
+            };
 
+            // serialize field by field
+            let field_idents: Vec<_> = fields.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+            let field_names: Vec<_> = field_idents.iter().map(|f| f.to_string()).collect();
+            let num_fields = field_idents.len();
+
+            quote! {
+                #[cfg(feature = "serde")]
+                impl<'de, T> ::serde::Serialize for #name<T>
+                where
+                    T: ::serde::Serialize
+                {
+                    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                    where
+                        S: ::serde::Serializer
+                    {
+                        let mut state = serializer.serialize_struct(stringify!(#name), #num_fields)?;
+                        #(state.serialize_field(stringify!(#field_idents), &self.#field_idents)?;)*
+                        state.end()
+                    }
+                }
+
+                #[cfg(feature = "serde")]
+                impl<'de, T> ::serde::Deserialize<'de> for #name<T>
+                where
+                    T: ::serde::Deserialize<'de> + ::hexga_math::number::Zero
+                {
+                    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                    where
+                        D: ::serde::Deserializer<'de>
+                    {
+                        #[derive(::serde::Deserialize)]
+                        #[allow(non_camel_case_types)]
+                        enum Field { #(#field_idents),* }
+
+                        struct Visitor<T> {
+                            marker: ::std::marker::PhantomData<T>,
+                        }
+
+                        impl<'de, T> ::serde::de::Visitor<'de> for Visitor<T>
+                        where
+                            T: ::serde::Deserialize<'de> + ::hexga_math::number::Zero
+                        {
+                            type Value = #name<T>;
+
+                            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                                write!(formatter, "struct {}", stringify!(#name))
+                            }
+
+                            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+                            where
+                                A: ::serde::de::MapAccess<'de>,
+                            {
+                                // initialize all fields to Zero
+                                #(let mut #field_idents: T = ::hexga_math::number::Zero::ZERO;)*
+
+                                while let Some(key) = map.next_key()? {
+                                    match key {
+                                        #(Field::#field_idents => #field_idents = map.next_value()?,)*
+                                    }
+                                }
+
+                                Ok(#name { #(#field_idents),* })
+                            }
+                        }
+
+                        const FIELDS: &'static [&'static str] = &[#(#field_names),*];
+                        deserializer.deserialize_struct(stringify!(#name), FIELDS, Visitor { marker: ::std::marker::PhantomData })
+                    }
+                }
             }
         };
 
@@ -668,13 +745,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             impl<T> ::std::ops::Not for #name<T> where T: ::std::ops::Not
             {
                 type Output = #name<T::Output>;
-                fn not(self) -> Self::Output { self.map(|v| v.not()) }
+                fn not(self) -> Self::Output { self.map(::std::ops::Not::not) }
             }
 
             impl<T> ::std::ops::Neg for #name<T> where T: ::std::ops::Neg
             {
                 type Output = #name<T::Output>;
-                fn neg(self) -> Self::Output { self.map(|v| v.neg()) }
+                fn neg(self) -> Self::Output { self.map(::std::ops::Neg::neg) }
             }
 
             // ================= Iter =========
@@ -845,8 +922,3 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     expanded.into()
 }
-
-/*
-impl serde
-abs
-*/
