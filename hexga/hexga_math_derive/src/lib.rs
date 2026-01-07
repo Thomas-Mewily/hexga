@@ -270,6 +270,17 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     iter.fold(<Self as ::hexga_math::number::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
                 }
             }
+
+            ::hexga_math::number::map_on_constant!
+            (
+                (($trait_name: tt, $constant_name: tt)) =>
+                {
+                    impl<T, const N:usize> ::hexga_math::number::$trait_name for #name<T,N> where T: ::hexga_math::number::$trait_name + ::std::marker::Copy
+                    {
+                        const $constant_name: Self = Self::from_array(<[T;N]>::$constant_name);
+                    }
+                }
+            );
         }
     } else {
         quote! {
@@ -462,6 +473,17 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     iter.fold(<Self as ::hexga_math::number::One>::ONE, Self::mul)
                 }
             }
+
+            ::hexga_math::number::map_on_constant!
+            (
+                (($trait_name: tt, $constant_name: tt)) =>
+                {
+                    impl<T> ::hexga_math::number::$trait_name for #name<T> where T: ::hexga_math::number::$trait_name + ::std::marker::Copy
+                    {
+                        const $constant_name: Self = Self::from_array(<[T;#dim]>::$constant_name);
+                    }
+                }
+            );
         }
     };
 
