@@ -203,6 +203,73 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     Self::WithType::from_array(<[T;N]>::from(self).map_with(other.into(), f))
                 }
             }
+
+            ::hexga_math::map_on::map_on_operator_binary!(
+                (($trait_name: tt, $fn_name: tt)) =>
+                {
+                    impl<T, const N : usize> std::ops::$trait_name<Self> for #name<T,N>
+                        where T: std::ops::$trait_name<T>
+                    {
+                        type Output=#name<<T as ::std::ops::$trait_name<T>>::Output,N>;
+                        fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
+                    }
+
+                    impl<T, const N : usize> std::ops::$trait_name<T> for #name<T,N> where T: std::ops::$trait_name<T> + Copy
+                    {
+                        type Output=#name<<T as ::std::ops::$trait_name<T>>::Output,N>;
+                        fn $fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$fn_name(rhs)).into() }
+                    }
+                }
+            );
+
+            ::hexga_math::map_on::map_on_operator_assign!(
+                (($trait_name: tt, $fn_name: tt)) =>
+                {
+                    impl<T, const N : usize> ::std::ops::$trait_name<Self> for #name<T,N> where T: ::std::ops::$trait_name
+                    {
+                        fn $fn_name(&mut self, rhs: Self)
+                        {
+                            let arr : [T;N] = rhs.into();
+                            self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
+                        }
+                    }
+
+                    impl<T, const N : usize> ::std::ops::$trait_name<&Self> for #name<T,N> where T: ::std::ops::$trait_name + Copy
+                    {
+                        fn $fn_name(&mut self, rhs: &Self) { ::std::ops::$trait_name::$fn_name(self,*rhs) }
+                    }
+                }
+            );
+
+            // ================= Unary =========
+
+            impl<T, const N : usize> ::std::ops::Not for #name<T,N> where T: ::std::ops::Not
+            {
+                type Output = #name<T::Output,N>;
+                fn not(self) -> Self::Output { self.map(|v| v.not()) }
+            }
+
+            impl<T, const N : usize> ::std::ops::Neg for #name<T,N> where T: ::std::ops::Neg
+            {
+                type Output = #name<T::Output,N>;
+                fn neg(self) -> Self::Output { self.map(|v| v.neg()) }
+            }
+
+            // ================= Iter =========
+
+            impl<T, const N : usize> ::std::iter::Sum for #name<T,N> where Self : ::hexga_math::number::Zero + ::std::ops::Add<Self,Output = Self>
+            {
+                fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+                    iter.fold(<Self as ::hexga_math::number::Zero>::ZERO, <Self as ::std::ops::Add<Self>>::add)
+                }
+            }
+
+            impl<T, const N : usize> ::std::iter::Product for #name<T,N> where Self : ::hexga_math::number::One + ::std::ops::Mul<Self,Output = Self>
+            {
+                fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
+                    iter.fold(<Self as ::hexga_math::number::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
+                }
+            }
         }
     } else {
         quote! {
@@ -328,6 +395,73 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     Self::WithType::from_array(<[T;#dim]>::from(self).map_with(other.into(), f))
                 }
             }
+
+            ::hexga_math::map_on::map_on_operator_binary!(
+                (($trait_name: tt, $fn_name: tt)) =>
+                {
+                    impl<T> ::std::ops::$trait_name<Self> for #name<T>
+                        where T: $trait_name<T>
+                    {
+                        type Output=#name<<T as ::std::ops::$trait_name<T>>::Output>;
+                        fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
+                    }
+
+                    impl<T> ::std::ops::$trait_name<T> for #name<T> where T: $trait_name<T> + Copy
+                    {
+                        type Output=#name<<T as ::std::ops::$trait_name<T>>::Output>;
+                        fn $fn_name(self, rhs: T) -> Self::Output { <[T;#dim]>::from(self).map(|v| v.$fn_name(rhs)).into() }
+                    }
+                }
+            );
+
+            ::hexga_math::map_on::map_on_operator_assign!(
+                (($trait_name: tt, $fn_name: tt)) =>
+                {
+                    impl<T> ::std::ops::$trait_name<Self> for #name<T> where T: $trait_name
+                    {
+                        fn $fn_name(&mut self, rhs: Self)
+                        {
+                            let arr : [T; #dim] = rhs.into();
+                            self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
+                        }
+                    }
+
+                    impl<T> ::std::ops::$trait_name<&Self> for #name<T> where T: $trait_name + Copy
+                    {
+                        fn $fn_name(&mut self, rhs: &Self) { $trait_name::$fn_name(self,*rhs) }
+                    }
+                }
+            );
+
+            // ================= Unary =========
+
+            impl<T> ::std::ops::Not for #name<T> where T: ::std::ops::Not
+            {
+                type Output = #name<T::Output>;
+                fn not(self) -> Self::Output { self.map(|v| v.not()) }
+            }
+
+            impl<T> ::std::ops::Neg for #name<T> where T: ::std::ops::Neg
+            {
+                type Output = #name<T::Output>;
+                fn neg(self) -> Self::Output { self.map(|v| v.neg()) }
+            }
+
+            // ================= Iter =========
+
+            impl<T> ::std::iter::Sum for #name<T> where Self : ::hexga_math::number::Zero + ::std::ops::Add<Self,Output = Self>
+            {
+                fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+                    iter.fold(<Self as ::hexga_math::number::Zero>::ZERO, Self::add)
+                }
+            }
+
+            impl<T> ::std::iter::Product for #name<T> where Self : ::hexga_math::number::One + ::std::ops:: Mul<Self,Output = Self>
+            {
+                fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
+                    iter.fold(<Self as ::hexga_math::number::One>::ONE, Self::mul)
+                }
+            }
         }
     };
 
@@ -445,3 +579,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     expanded.into()
 }
+
+/*
+impl serde
+abs
+*/
