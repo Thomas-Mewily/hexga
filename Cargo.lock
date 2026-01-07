@@ -1294,11 +1294,23 @@ dependencies = [
  "hexga_array",
  "hexga_core",
  "hexga_map_on",
+ "hexga_math_derive",
  "hexga_number",
  "hexga_typedef",
  "rayon",
  "serde",
  "web-time",
+]
+
+[[package]]
+name = "hexga_math_derive"
+version = "0.0.11-beta.43"
+dependencies = [
+ "hexga_number",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn",
 ]
 
 [[package]]

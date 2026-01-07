@@ -94,6 +94,21 @@ hexga::math::impl_fixed_array!(DamageOf,3);
 
 pub type Damage = DamageOf<float>;
 
+#[math_vec]
+pub struct DamageOf2<T>
+{
+    physic: T,
+    magic: T,
+    melee: T,
+}
+
+#[math_vec]
+pub struct DamageArray<T, const N:usize>
+{
+    boum:[T;N],
+}
+
+
 fn main()
 {
     dbg!(&Damage::ZERO);

@@ -74,6 +74,7 @@ pub mod number;
 pub mod range;
 pub mod array;
 pub mod unit;
+pub mod derive;
 mod geometry;
 pub use geometry::*;
 
@@ -89,6 +90,7 @@ pub mod prelude
     pub use super::range::*;
     pub use super::array::*;
     pub use super::unit::*;
+    pub use super::derive::prelude::*;
     pub use super::geometry::prelude::*;
 }
 

@@ -33,13 +33,13 @@ serde = ["dep:serde",
     "hexga_core/serde"
 ]
 
-
 [dependencies]
 hexga_core.workspace = true
 hexga_number.workspace = true
 hexga_array.workspace = true
 hexga_typedef.workspace = true
 hexga_map_on.workspace = true
+hexga_math_derive.workspace = true
 
 rayon = "1.10.0"
 
