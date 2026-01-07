@@ -65,16 +65,28 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
 
-    let mut where_clause = where_clause.cloned();
-    let clone_where_clause = where_clause.get_or_insert_with(|| WhereClause {
+    let mut where_clause_cloned = where_clause.cloned();
+    let clone_where_clause = where_clause_cloned.get_or_insert_with(|| WhereClause {
         where_token: Default::default(),
         predicates: Default::default(),
     });
-
     for param in input.generics.type_params() {
         let ident = &param.ident;
         clone_where_clause.predicates.push(syn::parse_quote! {
             #ident: ::std::clone::Clone
+        });
+    }
+
+
+    let mut where_clause_cloned = where_clause.cloned();
+    let copy_where_clause = where_clause_cloned.get_or_insert_with(|| WhereClause {
+        where_token: Default::default(),
+        predicates: Default::default(),
+    });
+    for param in input.generics.type_params() {
+        let ident = &param.ident;
+        copy_where_clause.predicates.push(syn::parse_quote! {
+            #ident: ::std::marker::Copy
         });
     }
 
@@ -117,10 +129,11 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             //$crate::impl_number_basic_trait!();
         }
 
-        impl #impl_generics ::std::clone::Clone for #name #ty_generics #where_clause
+        impl #impl_generics ::std::clone::Clone for #name #ty_generics #clone_where_clause
         {
-            fn clone(&self) -> Self { self.array().clone().into() }
+            fn clone(&self) -> Self { todo!() }
         }
+        impl #impl_generics ::std::marker::Copy for #name #ty_generics #copy_where_clause {}
     };
 
     expanded.into()
