@@ -93,9 +93,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let expanded = quote! {
         #input
 
-        impl #impl_generics #name #ty_generics #clone_where_clause {
+        impl #impl_generics #name #ty_generics {
             pub const LEN: usize = #dim;
-
 
             #[doc(hidden)]
             #[allow(dead_code)]
@@ -129,9 +128,16 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             //$crate::impl_number_basic_trait!();
         }
 
+        impl #impl_generics ::std::convert::From<[T; #dim]> for #name #ty_generics { fn from(value: [T; #dim]) -> Self { Self::from_array(value) } }
+        impl #impl_generics ::std::convert::From<#name #ty_generics> for [T; #dim] { fn from(value: #name #ty_generics) -> Self { value.to_array() } }
+
+        impl #impl_generics ::std::convert::AsRef<[T; #dim]> for #name #ty_generics { fn as_ref(&self) -> &[T; #dim] { self.array() } }
+        impl #impl_generics ::std::convert::AsMut<[T; #dim]> for #name #ty_generics { fn as_mut(&mut self) -> &mut [T; #dim] { self.array_mut() } }
+
+
         impl #impl_generics ::std::clone::Clone for #name #ty_generics #clone_where_clause
         {
-            fn clone(&self) -> Self { todo!() }
+            fn clone(&self) -> Self { self.array().clone().into() }
         }
         impl #impl_generics ::std::marker::Copy for #name #ty_generics #copy_where_clause {}
     };
