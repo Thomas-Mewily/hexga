@@ -89,6 +89,120 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 #[inline(always)]
                 fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
             }
+
+
+            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::Get<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::Get<Idx>
+            {
+                type Output = <[T;N] as ::hexga_math::hexga_core::collections::Get<Idx>>::Output;
+
+                #[inline(always)]
+                fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_math::hexga_core::collections::Get::get(self.array(), index) }
+                #[inline(always)]
+                #[track_caller]
+                unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_math::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
+            }
+            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::TryGet<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::TryGet<Idx>
+            {
+                type Error = <[T;N] as ::hexga_math::hexga_core::collections::TryGet<Idx>>::Error;
+
+                #[inline(always)]
+                fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
+                {
+                    ::hexga_math::hexga_core::collections::TryGet::try_get(self.array(), index)
+                }
+            }
+            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::GetMut<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::GetMut<Idx>
+            {
+                #[inline(always)]
+                fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_math::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
+                #[inline(always)]
+                #[track_caller]
+                unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { ::hexga_math::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
+            }
+            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::TryGetMut<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::TryGetMut<Idx>
+            {
+                #[inline(always)]
+                fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { ::hexga_math::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
+            }
+
+
+            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::GetManyMut<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::GetManyMut<Idx>
+            {
+                #[inline(always)]
+                fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> { ::hexga_math::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+                #[inline(always)]
+                fn get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Option<[&mut Self::Output;N2]> { ::hexga_math::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
+
+                #[inline(always)]
+                #[track_caller]
+                unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { ::hexga_math::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
+            }
+
+
+            impl<T, const N : usize> ::std::iter::IntoIterator for #name<T,N> where [T;N] : ::std::iter::IntoIterator
+            {
+                type Item = <[T;N] as ::std::iter::IntoIterator>::Item;
+                type IntoIter = <[T;N] as ::std::iter::IntoIterator>::IntoIter;
+
+                fn into_iter(self) -> Self::IntoIter
+                {
+                    <[T;N]>::from(self).into_iter()
+                }
+            }
+
+            impl<'a, T, const N : usize> ::std::iter::IntoIterator for &'a #name<T,N> where &'a [T;N] : ::std::iter::IntoIterator
+            {
+                type Item = <&'a [T;N] as ::std::iter::IntoIterator>::Item;
+                type IntoIter = <&'a [T;N] as ::std::iter::IntoIterator>::IntoIter;
+
+                fn into_iter(self) -> Self::IntoIter
+                {
+                    let array : &[T;N] = self.as_ref();
+                    array.into_iter()
+                }
+            }
+
+            impl<'a, T, const N : usize> ::std::iter::IntoIterator for &'a mut #name<T,N> where &'a mut [T;N] : ::std::iter::IntoIterator
+            {
+                type Item = <&'a mut [T;N] as IntoIterator>::Item;
+                type IntoIter = <&'a mut [T;N] as IntoIterator>::IntoIter;
+
+                fn into_iter(self) -> Self::IntoIter {
+                    let array : &mut [T;N] = self.as_mut();
+                    array.into_iter()
+                }
+            }
+
+
+            impl<T, const N : usize> ::hexga_math::map::MapIntern for #name<T,N>
+            {
+                type Item=T;
+                fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
+                {
+                    Self::from_array(<[T;N]>::from(self).map_intern(f))
+                }
+            }
+            impl<T, const N : usize> ::hexga_math::map::MapInternWith for #name<T,N>
+            {
+                fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
+                {
+                    Self::from_array(<[T;N]>::from(self).map_with_intern(other.into(), f))
+                }
+            }
+            impl<T, const N : usize> ::hexga_math::map::Map for #name<T,N>
+            {
+                type WithType<T2> = #name<T2,N>;
+                fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
+                    Self::WithType::from_array(<[T;N] as Map>::map(self.into(), f))
+                }
+            }
+            impl<T, const N : usize> ::hexga_math::map::MapWith for #name<T,N>
+            {
+                fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
+                {
+                    Self::WithType::from_array(<[T;N]>::from(self).map_with(other.into(), f))
+                }
+            }
         }
     } else {
         quote! {

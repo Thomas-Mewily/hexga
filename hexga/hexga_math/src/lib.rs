@@ -78,6 +78,9 @@ pub mod derive;
 mod geometry;
 pub use geometry::*;
 
+#[doc(hidden)]
+pub use hexga_core;
+
 
 use prelude::*;
 pub mod prelude
