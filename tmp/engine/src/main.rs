@@ -19,11 +19,14 @@ struct MyApp
 
 impl Application for MyApp
 {
-
+    fn event(&mut self, ev: AppEvent) {
+        dbg!(ev);
+    }
 }
 
 use hexga_bit::{BitZero,BitZeroed};
 use std::marker::PhantomData;
+
 #[derive(Clone, BitZero)]
 #[bitzero(bound = "")]
 struct AlwaysBitZero<T> {
