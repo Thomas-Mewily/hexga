@@ -12,6 +12,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) =
         input.generics.split_for_impl();
 
+    let has_non_exhaustive = input.attrs.iter().any(|a| {
+        a.path().is_ident("non_exhaustive")
+    });
+
     // Detect const generic
     let const_generic = input.generics.params.iter().find_map(|p| {
         if let GenericParam::Const(c) = p {
@@ -271,7 +275,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-            ::hexga_math::number::map_on_constant!
+            ::hexga_math::map_on::map_on_constant!
             (
                 (($trait_name: tt, $constant_name: tt)) =>
                 {
@@ -281,8 +285,223 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
                 }
             );
+
+            ::hexga_math::map_on::map_on_std_fmt!(
+                ($trait_name :ident) =>
+                {
+                    impl<T, const N : usize> std::fmt::$trait_name  for #name<T,N> where T: std::fmt::$trait_name
+                    {
+                        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+                        {
+                            write!(f, "(")?;
+                            let mut it = self.array().iter().peekable();
+                            while let Some(v) = it.next()
+                            {
+                                v.fmt(f)?;
+                                if it.peek().is_some()
+                                {
+                                    write!(f, ", ")?;
+                                }
+                            }
+                            write!(f, ")")
+                        }
+                    }
+                }
+            );
+
+
+            #[cfg(feature = "serde")]
+            impl<T, const N: usize> ::serde::Serialize for #name<T, N>
+            where
+                T: ::serde::Serialize,
+            {
+                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                where
+                    S: ::serde::Serializer,
+                {
+                    use ::serde::ser::SerializeTuple;
+
+                    let arr = self.as_array();
+                    let mut tup = serializer.serialize_tuple(N)?;
+                    for item in arr {
+                        tup.serialize_element(item)?;
+                    }
+                    tup.end()
+                }
+            }
+
+            #[cfg(feature = "serde")]
+            const _ : () =
+            {
+                // Thank serde for not supporting the deserialization of variadic array...
+                #[derive(Debug)]
+                struct Arr<T, const N: usize>(pub [T;N]);
+
+                impl<'de, T, const N: usize> ::serde::Deserialize<'de> for #name<T,N> where T: ::serde::Deserialize<'de>
+                {
+                    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                    where
+                        D: ::serde::Deserializer<'de>,
+                    {
+                        struct ArrVisitor<T, const N: usize>(::std::marker::PhantomData<T>);
+
+                        impl<'de, T, const N: usize> ::serde::de::Visitor<'de> for ArrVisitor<T, N>
+                        where
+                            T: ::serde::Deserialize<'de>,
+                        {
+                            type Value = Arr<T, N>;
+
+                            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                                write!(formatter, "an {} of length {}", std::any::type_name::<#name<T,N>>(), N)
+                            }
+
+                            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+                            where
+                                A: ::serde::de::SeqAccess<'de>,
+                            {
+                                // SAFETY: We'll ensure every element is initialized or properly dropped
+                                let mut data: [::std::mem::MaybeUninit<T>; N] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+                                for i in 0..N {
+                                    match seq.next_element()? {
+                                        Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
+                                        None => {
+                                            if ::core::mem::needs_drop::<T>() {
+                                                // Drop any already initialized elements before returning
+                                                for j in 0..i {
+                                                    unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
+                                                }
+                                            }
+                                            return Err(::serde::de::Error::invalid_length(i, &self));
+                                        }
+                                    }
+                                }
+
+                                // Ensure no extra elements
+                                if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
+                                    if ::core::mem::needs_drop::<T>() {
+                                        for i in 0..N {
+                                            unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
+                                        }
+                                    }
+                                    return Err(::serde::de::Error::invalid_length(N + 1, &self));
+                                }
+
+                                // SAFETY: All elements are initialized
+                                let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T;N]) };
+                                Ok(Arr(result))
+                            }
+                        }
+
+                        deserializer.deserialize_tuple(N, ArrVisitor::<T, N>(::std::marker::PhantomData)).map(|arr| #name::<T, N>::from(arr.0))
+                    }
+                }
+            };
+
+
         }
     } else {
+
+        let serde_impl = if !has_non_exhaustive
+        {
+            // serialize like a tuple
+            quote!
+            {
+                #[cfg(feature = "serde")]
+                impl<T> ::serde::Serialize for #name<T>
+                where
+                    T: ::serde::Serialize,
+                {
+                    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                    where
+                        S: ::serde::Serializer,
+                    {
+                        use ::serde::ser::SerializeTuple;
+
+                        let arr = self.as_array();
+                        let mut tup = serializer.serialize_tuple(#dim)?;
+                        for item in arr {
+                            tup.serialize_element(item)?;
+                        }
+                        tup.end()
+                    }
+                }
+
+                #[cfg(feature = "serde")]
+                const _ : () =
+                {
+                    // Thank serde for not supporting the deserialization of variadic array...
+                    #[derive(Debug)]
+                    struct Arr<T>(pub [T; #dim]);
+
+                    impl<'de, T> ::serde::Deserialize<'de> for #name<T> where T: ::serde::Deserialize<'de>
+                    {
+                        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                        where
+                            D: ::serde::Deserializer<'de>,
+                        {
+                            struct ArrVisitor<T>(::std::marker::PhantomData<T>);
+
+                            impl<'de, T> ::serde::de::Visitor<'de> for ArrVisitor<T>
+                            where
+                                T: ::serde::Deserialize<'de>,
+                            {
+                                type Value = Arr<T>;
+
+                                fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                                    write!(formatter, "an {}", std::any::type_name::<#name<T>>())
+                                }
+
+                                fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+                                where
+                                    A: ::serde::de::SeqAccess<'de>,
+                                {
+                                    // SAFETY: We'll ensure every element is initialized or properly dropped
+                                    let mut data: [::std::mem::MaybeUninit<T>; #dim] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+                                    for i in 0..#dim {
+                                        match seq.next_element()? {
+                                            Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
+                                            None => {
+                                                if ::core::mem::needs_drop::<T>() {
+                                                    // Drop any already initialized elements before returning
+                                                    for j in 0..i {
+                                                        unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
+                                                    }
+                                                }
+                                                return Err(::serde::de::Error::invalid_length(i, &self));
+                                            }
+                                        }
+                                    }
+
+                                    // Ensure no extra elements
+                                    if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
+                                        if ::core::mem::needs_drop::<T>() {
+                                            for i in 0..#dim {
+                                                unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
+                                            }
+                                        }
+                                        return Err(::serde::de::Error::invalid_length(#dim + 1, &self));
+                                    }
+
+                                    // SAFETY: All elements are initialized
+                                    let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T; #dim]) };
+                                    Ok(Arr(result))
+                                }
+                            }
+
+                            deserializer.deserialize_tuple(#dim, ArrVisitor::<T>(::std::marker::PhantomData)).map(|arr| #name::<T>::from(arr.0))
+                        }
+                    }
+                };
+            }
+        }else
+        {
+            // serialize field by field
+            quote!
+            {
+
+            }
+        };
+
         quote! {
             impl<T> ::hexga_math::array::ArrayWithType<T, #dim> for #name<T>
             {
@@ -474,7 +693,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-            ::hexga_math::number::map_on_constant!
+            ::hexga_math::map_on::map_on_constant!
             (
                 (($trait_name: tt, $constant_name: tt)) =>
                 {
@@ -484,6 +703,31 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
                 }
             );
+
+            ::hexga_math::map_on::map_on_std_fmt!(
+                ($trait_name :ident) =>
+                {
+                    impl<T> std::fmt::$trait_name for #name<T> where T: std::fmt::$trait_name
+                    {
+                        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+                        {
+                            write!(f, "(")?;
+                            let mut it = self.array().iter().peekable();
+                            while let Some(v) = it.next()
+                            {
+                                v.fmt(f)?;
+                                if it.peek().is_some()
+                                {
+                                    write!(f, ", ")?;
+                                }
+                            }
+                            write!(f, ")")
+                        }
+                    }
+                }
+            );
+
+            #serde_impl
         }
     };
 
