@@ -64,31 +64,35 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     };
 
-
-    let mut where_clause_cloned = where_clause.cloned();
-    let clone_where_clause = where_clause_cloned.get_or_insert_with(|| WhereClause {
-        where_token: Default::default(),
-        predicates: Default::default(),
-    });
-    for param in input.generics.type_params() {
-        let ident = &param.ident;
-        clone_where_clause.predicates.push(syn::parse_quote! {
-            #ident: ::std::clone::Clone
+    fn where_with_bounds(
+        base: Option<&syn::WhereClause>,
+        generics: &syn::Generics,
+        bound: syn::Path,
+    ) -> syn::WhereClause {
+        let mut wc = base.cloned().unwrap_or_else(|| syn::WhereClause {
+            where_token: Default::default(),
+            predicates: Default::default(),
         });
+
+        wc.predicates.extend::<Vec<syn::WherePredicate>>(
+            generics.type_params().map(|p| {
+                let ident = &p.ident;
+                syn::parse_quote!(#ident: #bound)
+            }).collect()
+        );
+
+        wc
     }
 
+    let clone_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::clone::Clone));
+    let copy_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::marker::Copy));
+    let partial_eq_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::PartialEq));
+    let eq_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::Eq));
+    let partial_ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::PartialOrd));
+    let ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::Ord));
+    let hash_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::hash::Hash));
 
-    let mut where_clause_cloned = where_clause.cloned();
-    let copy_where_clause = where_clause_cloned.get_or_insert_with(|| WhereClause {
-        where_token: Default::default(),
-        predicates: Default::default(),
-    });
-    for param in input.generics.type_params() {
-        let ident = &param.ident;
-        copy_where_clause.predicates.push(syn::parse_quote! {
-            #ident: ::std::marker::Copy
-        });
-    }
+
 
     let expanded = quote! {
         #input
@@ -140,6 +144,26 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             fn clone(&self) -> Self { self.array().clone().into() }
         }
         impl #impl_generics ::std::marker::Copy for #name #ty_generics #copy_where_clause {}
+
+        impl #impl_generics ::std::cmp::PartialEq for #name #ty_generics #partial_eq_where_clause
+        {
+            fn eq(&self, rhs : &Self) -> bool { self.array() == rhs.array() }
+        }
+        impl #impl_generics ::std::cmp::Eq for #name #ty_generics #eq_where_clause {}
+
+        impl #impl_generics ::std::cmp::PartialOrd for #name #ty_generics #partial_ord_where_clause
+        {
+            fn partial_cmp(&self, rhs : &Self) -> ::std::option::Option<::std::cmp::Ordering> { ::std::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
+        }
+        impl #impl_generics ::std::cmp::Ord for #name #ty_generics #ord_where_clause
+        {
+            fn cmp(&self, rhs : &Self) -> ::std::cmp::Ordering { ::std::cmp::Ord::cmp(self.array(), rhs.array()) }
+        }
+
+        impl #impl_generics ::std::hash::Hash for #name #ty_generics #hash_where_clause
+        {
+            fn hash<H>(&self, state: &mut H) where H: ::std::hash::Hasher { self.as_ref().hash(state); }
+        }
     };
 
     expanded.into()
