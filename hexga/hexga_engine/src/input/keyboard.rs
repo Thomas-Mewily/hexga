@@ -1,15 +1,7 @@
-use std::mem;
-
 use super::*;
 
-/*
-singleton_access!(
-    pub Keyboard,
-    AppKeyboard,
-    { App::try_ref().map(|ctx| &ctx.input.keyboard) },
-    { App::try_as_mut().map(|ctx| &mut ctx.input.keyboard) }
-);
-*/
+pub fn keyboard() -> impl DerefMut<Target=AppKeyboard> { APP.get_mut().guard_map_mut(|a| a.input().keyboard()) }
+
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct AppKeyboard
@@ -163,9 +155,9 @@ impl KeyCodeManager
 
 impl Evolution<ButtonState> for KeyCode
 {
-    fn value(&self) -> ButtonState { Input.keyboard().keys().button_state(*self) }
-    fn old_value(&self) -> ButtonState { Input.keyboard().keys().old_button_state(*self)  }
-    fn evolution(&self) -> ButtonEvolution { Input.keyboard().keys().evolution(*self) }
+    fn value(&self) -> ButtonState { keyboard().keys().button_state(*self) }
+    fn old_value(&self) -> ButtonState { keyboard().keys().old_button_state(*self)  }
+    fn evolution(&self) -> ButtonEvolution { keyboard().keys().evolution(*self) }
 }
 /*
 impl KeyCode

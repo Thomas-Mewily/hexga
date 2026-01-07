@@ -43,3 +43,6 @@ impl<T> Dirty for DirtyFlag<T>
     fn is_dirty(&self) -> bool { self.used }
     fn set_dirty(&mut self, used: bool) -> &mut Self { self.used = used; self }
 }
+
+
+// Todo: DirtyHash, DirtyCounter...

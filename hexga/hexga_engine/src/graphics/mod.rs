@@ -8,13 +8,16 @@ pub mod prelude
     pub use hexga_graphics::prelude::*;
     pub(crate) use super::{AppGraphics,wgpu,GpuMessage};
 }
-
+/*
 singleton_single_thread_access!(
     pub Pen,
     AppGraphics,
     { App::try_read().map(|v|v.inner_reference.graphics.as_ref()).flatten().map(|v| v.into()) },
     { App::try_write().map(|v|v.inner_reference.graphics.as_mut()).flatten().map(|v| v.into()) }
 );
+*/
+
+pub struct Pen;
 
 #[derive(Debug)]
 pub struct AppGraphics
@@ -65,7 +68,7 @@ impl AppGraphics
 
     pub(crate) fn init(window: Arc<WinitWindow>, mut param: GpuParam, proxy: EventLoopProxy) -> GpuResult
     {
-        if APP.graphics.is_some() { return Err(GpuError::GpuAlreadyInit); }
+        //if app().graphics.is_some() { return Err(GpuError::GpuAlreadyInit); }
 
         let surface_size: Point2 = window.inner_size().convert();
         let surface_size = surface_size.max(one());

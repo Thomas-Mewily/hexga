@@ -2,7 +2,6 @@ use super::*;
 
 static GPU_CTX: OnceLock<GpuContext> = OnceLock::new();
 
-
 pub struct Gpu;
 
 impl Deref for Gpu
@@ -17,7 +16,6 @@ impl Gpu
     pub fn is_init() -> bool { GPU_CTX.get().is_some() }
     pub fn is_not_init() -> bool { !Self::is_init() }
 }
-
 
 impl<F> AsyncRunner<F,GpuParam> for Gpu
     where F: AsyncFnOnce(GpuInitOutput)
@@ -243,3 +241,11 @@ impl WgpuContext
     pub fn wgpu_device(&self) -> &wgpu::Device { &self.device }
     pub fn wgpu_queue(&self) -> &wgpu::Queue { &self.queue }
 }
+
+pub fn instance() -> impl Deref<Target=GpuInstance> { &Gpu.wgpu.instance }
+
+pub fn wgpu_instance() -> impl Deref<Target=wgpu::Instance> { &Gpu.wgpu.instance.wgpu }
+pub fn wgpu_adapter() -> impl Deref<Target=wgpu::Adapter> { &Gpu.wgpu.adapter }
+pub fn wgpu_device() -> impl Deref<Target=wgpu::Device> { &Gpu.wgpu.device }
+pub fn wgpu_queue() -> impl Deref<Target=wgpu::Queue> { &Gpu.wgpu.queue }
+

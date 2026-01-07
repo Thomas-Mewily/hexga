@@ -1,12 +1,12 @@
 use super::*;
 
-singleton_single_thread_project!(pub Perf, AppPerf, App, perf);
-
 pub mod prelude
 {
-    pub use super::Perf;
-    pub(crate) use super::AppPerf;
+    pub(crate) use super::*;
+    pub use super::perf;
 }
+
+pub fn perf() -> impl DerefMut<Target=AppPerf> { APP.get_mut().guard_map_mut(|a| a.perf()) }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct AppPerf

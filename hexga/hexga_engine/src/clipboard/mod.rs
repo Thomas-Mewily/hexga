@@ -1,13 +1,30 @@
 use copypasta::ClipboardProvider;
 use super::*;
 
-singleton_single_thread_project!(pub Clipboard, AppClipboard, App, clipboard);
-
 pub mod prelude
 {
     pub use super::{Clipboard,Clipboardable};
     pub(crate) use super::*;
 }
+
+pub trait Clipboardable
+{
+    fn get(&mut self) -> Option<String>;
+    fn set(&mut self, paste : String) -> Result<(), ()>;
+}
+
+pub struct Clipboard;
+impl Clipboardable for Clipboard
+{
+    fn get(&mut self) -> Option<String> {
+        app().clipboard.get()
+    }
+
+    fn set(&mut self, paste : String) -> Result<(), ()> {
+        app().clipboard.set(paste)
+    }
+}
+
 
 pub struct AppClipboard
 {
@@ -52,8 +69,3 @@ impl Clipboardable for AppClipboard
     }
 }
 
-pub trait Clipboardable
-{
-    fn get(&mut self) -> Option<String>;
-    fn set(&mut self, paste : String) -> Result<(), ()>;
-}

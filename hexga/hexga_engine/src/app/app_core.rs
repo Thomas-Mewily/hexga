@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Debug)]
-pub(crate) struct AppCore
+pub struct AppCore
 {
     pub(crate) already_init:  bool,
 
@@ -16,7 +16,13 @@ pub(crate) struct AppCore
     pub(crate) param:     AppParamInternal,
 }
 
-pub(crate) static APP : SingletonSingleThread<AppCore> = SingletonSingleThread::new(|| AppCore::new());
+pub(crate) static APP : Singleton<AppCore> = Singleton::new(AppCore::new);
+
+#[inline(always)]
+pub fn try_app() -> Option<impl DerefMut<Target=AppCore>> { APP.inner().try_lock().ok().map(|l| l.guard_map_mut(DerefMut::deref_mut)) }
+#[inline(always)]
+#[track_caller]
+pub fn app() -> impl DerefMut<Target=AppCore> { try_app().expect("app already locked") }
 
 impl AppCore
 {
@@ -75,6 +81,7 @@ impl AppCore
     {
         assert!(!self.already_init, "app is already init");
         self.param = param;
+        self.window.param = self.param.window.clone();
         self.proxy = Some(proxy);
         self.already_init = true;
     }

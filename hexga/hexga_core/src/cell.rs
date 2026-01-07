@@ -62,19 +62,19 @@ impl From<BorrowError> for SingleThreadError
 }
 
 
-impl<T> ReadGuard<T> for SingleThreadCell<T>
+impl<T> Guarded<T> for SingleThreadCell<T>
 {
-    type ReadGuard<'a> = Ref<'a,T> where Self: 'a;
+    type Guard<'a> = Ref<'a,T> where Self: 'a;
 
-    fn read<'a>(&'a self) -> Self::ReadGuard<'a> {
+    fn get<'a>(&'a self) -> Self::Guard<'a> {
         self.asset_same_thread();
         self.value.borrow()
     }
 }
-impl<T> TryReadGuard<T> for SingleThreadCell<T>
+impl<T> TryGuarded<T> for SingleThreadCell<T>
 {
     type Error<'a> = SingleThreadError where Self: 'a;
-    fn try_read<'a>(&'a self) -> Result<Self::ReadGuard<'a>, Self::Error<'a>> {
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
         self.same_thread()?;
         Ok(self.value.try_borrow()?)
     }
@@ -94,18 +94,18 @@ impl From<BorrowMutError> for SingleThreadMutError
 {
     fn from(value: BorrowMutError) -> Self { Self::BorrowMut(value) }
 }
-impl<T> WriteGuard<T> for SingleThreadCell<T>
+impl<T> GuardedMut<T> for SingleThreadCell<T>
 {
-    type WriteGuard<'a> = RefMut<'a, T> where Self: 'a;
-    fn write<'a>(&'a self) -> Self::WriteGuard<'a> {
+    type GuardMut<'a> = RefMut<'a, T> where Self: 'a;
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
         self.asset_same_thread();
         self.value.borrow_mut()
     }
 }
-impl<T> TryWriteGuard<T> for SingleThreadCell<T>
+impl<T> TryGuardedMut<T> for SingleThreadCell<T>
 {
     type Error<'a> = SingleThreadMutError where Self: 'a;
-    fn try_write<'a>(&'a self) -> Result<Self::WriteGuard<'a>, Self::Error<'a>> {
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
         self.same_thread()?;
         Ok(self.value.try_borrow_mut()?)
     }

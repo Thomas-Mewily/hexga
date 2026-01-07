@@ -19,11 +19,12 @@ pub trait WindowExtension :
 #[derive(Debug)]
 pub struct AppWindow
 {
+    pub(crate) param: winit::window::WindowAttributes,
     pub(crate) window : Option<Window>,
 }
 impl AppWindow
 {
-    pub(crate) fn new() -> Self { Self { window: None }}
+    pub(crate) fn new() -> Self { Self { window: None, param: winit::window::WindowAttributes::default() }}
 
     pub(crate) fn set_window(&mut self, window : Option<Window>)
     {
@@ -52,12 +53,12 @@ impl AppWindow
         }
     }
 
-    pub(crate) fn init_window_if_needed(&mut self, active: &EventLoopActive) -> bool
+    pub(crate) fn init_if_needed(&mut self, active: &EventLoopActive) -> bool
     {
         if self.window.is_some() { return false; }
 
         #[allow(unused_mut)]
-        let mut win_attr = APP.param.window.clone();
+        let mut win_attr = self.param.clone();
 
         #[cfg(target_arch = "wasm32")]
         {
@@ -173,7 +174,7 @@ impl Window
 
     pub(crate) fn init_surface_if_needed(&mut self)
     {
-        if APP.graphics.is_none() { return; }
+        if Gpu::is_not_init() { return; }
         if self.surface.is_some() { return; }
 
         let size = self.size();

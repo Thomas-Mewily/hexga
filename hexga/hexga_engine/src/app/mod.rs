@@ -29,6 +29,7 @@ pub mod prelude
         event::AppEvent,
         spawn::AsyncSpawn,
         param::AppParam,
+        app_core::app,
         result::*,
     };
 

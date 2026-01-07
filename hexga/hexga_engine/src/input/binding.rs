@@ -206,7 +206,7 @@ impl KeyBinding
 {
     pub(crate) fn evolution(&self) -> ButtonEvolution
     {
-        Input.keyboard().key_manager_mut(self.repeat).evolution(self.code)
+        app().input().keyboard().key_manager_mut(self.repeat).evolution(self.code)
     }
 }
 impl Bindable for KeyBinding

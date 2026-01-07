@@ -27,7 +27,7 @@ impl<A,F> AppRunner<A,F>
     #[inline(always)]
     pub(crate) fn is_ready_to_run(&self) -> bool
     {
-        APP.graphics.is_some() //Pen::is_init()
+        app().graphics.is_some()
     }
     #[inline(always)]
     pub(crate) fn is_not_ready_to_run(&self) -> bool
@@ -51,7 +51,8 @@ impl<A,F,P> Runner<F,P> for AppRunner<A,F>
 
     fn run_with_param(init_app: F, param: P) -> Self::Output  {
         // Can't run two app at the same time
-        if APP.already_init { return Err(AppError::AlreadyInit); }
+        let mut app = app();
+        if app.already_init { return Err(AppError::AlreadyInit); }
 
         log::init();
 
@@ -82,7 +83,8 @@ impl<A,F,P> Runner<F,P> for AppRunner<A,F>
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
         let proxy = event_loop.create_proxy();
 
-        APP.init(param.into(), proxy);
+        app.init(param.into(), proxy);
+        drop(app);
 
         #[allow(unused_mut)]
         let mut runner = AppRunner::new(init_app);
@@ -115,7 +117,7 @@ impl<A,F> AppRunner<A,F>
     pub(crate) fn exit(&mut self)
     {
         self.event(AppEvent::Window(WindowEvent::Destroy));
-        APP.exit();
+        app().exit();
     }
 
     pub(crate) fn app_event(&mut self, ev: AppEvent)
@@ -143,7 +145,7 @@ impl<A,F> Application for AppRunner<A,F>
                 {
                     InputEvent::Key(k) =>
                     {
-                        APP.input.keyboard.key_event(*k);
+                        app().input().keyboard().key_event(*k);
                         self.app_event(ev);
                     },
                 }
@@ -152,12 +154,12 @@ impl<A,F> Application for AppRunner<A,F>
             {
                 WindowEvent::Resize(size) =>
                 {
-                    APP.window().configure_surface();
+                    app().window().configure_surface();
                     self.app_event(ev);
                 }
                 WindowEvent::Move(pos) =>
                 {
-                    APP.window().set_pos(*pos);
+                    app().window().set_pos(*pos);
                     self.app_event(ev);
                 }
                 WindowEvent::Open => self.app_event(ev),
@@ -165,11 +167,11 @@ impl<A,F> Application for AppRunner<A,F>
                 WindowEvent::Destroy =>
                 {
                     self.app_event(ev);
-                    APP.window().destroy();
+                    app().window().destroy();
                 },
                 WindowEvent::Draw =>
                 {
-                    APP.window().request_draw();
+                    app().window().request_draw();
                     self.app_event(ev);
                 },
             },
@@ -186,16 +188,21 @@ impl<A,F> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner
 {
     fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop)
     {
-        if APP.window.init_window_if_needed(event_loop)
+        let mut app = app();
+        if app.window().init_if_needed(event_loop)
         {
-            AppGraphics::init(APP.window().main_window().window.clone(), APP.param.gpu.take().unwrap_or_default(), APP.proxy().clone()).expect("failed to init the gpu");
+            if app.graphics.is_none()
+            {
+                AppGraphics::init(app.window().main_window().window.clone(), app.param.gpu.take().unwrap_or_default(), app.proxy().clone()).expect("failed to init the gpu");
+            }
+            drop(app);
             self.event(AppEvent::Window(WindowEvent::Open));
         }
         self.app_mut().map(|a| a.message(AppMessage::Flow(FlowMessage::Resumed)));
     }
 
     fn suspended(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
-        match APP.window.try_main_window_mut()
+        match app().window().try_main_window_mut()
         {
             Some(w) => w.surface = None,
             None => {},
@@ -256,16 +263,17 @@ impl<A,F> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner
 
     fn new_events(&mut self, event_loop: &EventLoopActive, cause: winit::event::StartCause) {
         // FIXME: The draw() should not be here, or limit it to a fixed fps
-        APP.window.request_draw();
+        app().window.request_draw();
     }
 
     fn user_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, event: AppInternalEvent) {
+        let mut app = app();
         match event
         {
             AppInternalEvent::Gpu(app_graphics) =>
             {
-                APP.graphics = Some(app_graphics.expect("failed to init the gpu"));
-                APP.window.init_surface_if_needed();
+                app.graphics = Some(app_graphics.expect("failed to init the gpu"));
+                app.window.init_surface_if_needed();
             },
         }
     }
