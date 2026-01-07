@@ -84,15 +84,7 @@ fn img_test()
 
 use std::ops::*;
 
-pub struct DamageOf<T>
-{
-    physic: T,
-    magic: T,
-    melee: T,
-}
-hexga::math::impl_fixed_array!(DamageOf,3);
 
-pub type Damage = DamageOf<float>;
 
 #[math_vec]
 pub struct DamageOf2<T>
@@ -119,5 +111,7 @@ pub struct DamageArray<T, const N:usize>
 
 fn main()
 {
-    dbg!(&Damage::ZERO);
+    dbg!(&DamageArray::<float,2>::ZERO);
+    dbg!(&DamageOf2::<i32>::ZERO);
+    dbg!(&DamageOf3::<u8>::ZERO);
 }

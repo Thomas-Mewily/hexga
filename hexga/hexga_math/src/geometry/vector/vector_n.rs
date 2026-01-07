@@ -17,16 +17,15 @@ pub mod prelude
 ///
 /// assert_eq!(vector3(true, false, true) & Vector3::ZERO, vector3(false, false, false));
 /// ```
+use hexga_math_derive::math_vec;
+
+#[math_vec]
 #[repr(C)]
 pub struct Vector<T, const N : usize>
 {
     // Not simd because we accept everythings.
     pub(crate) array : [T; N],
 }
-impl_generic_array!(Vector);
-
-unsafe impl<T,const N : usize> BitAllUsed for Vector<T,N> where T:BitAllUsed {}
-unsafe impl<T, const N : usize> BitZero for Vector<T, N> where T: BitZero {}
 
 impl<T, const N : usize> Default for Vector<T, N> where T:Default
 {

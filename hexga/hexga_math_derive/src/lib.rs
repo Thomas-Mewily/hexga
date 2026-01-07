@@ -1,13 +1,57 @@
-use proc_macro::TokenStream;
+use proc_macro::{TokenStream};
+use proc_macro_crate::{FoundCrate, crate_name};
 use quote::quote;
-use syn::{parse_macro_input, ItemStruct, Fields, GenericParam, Type};
-use syn::{WhereClause, WherePredicate};
+use syn::{parse_macro_input, ItemStruct, Fields, GenericParam, Type, Ident};
 
+/// Derive macro for fixed-size math vectors and structs.
+///
+/// Supports two kinds of structs:
+///
+/// 1. **Array-backed structs**:
+///    - Wrapper around an array `[T; N]`.
+///    - Implements `serde::Serialize` / `Deserialize` as a tuple/sequence.
+///
+///      ```rust
+///      #[math_vec]
+///      pub struct Vector<T, const N: usize> { array: [T; N] }
+///
+///      let v = Vector { array: [1, 2, 3] };
+///      // Serialized as tuple: [1, 2, 3]
+///      ```
+///
+/// 2. **Structure-based structs**:
+///    - Each element has a name (e.g., `r, g, b, a` or `physic, magic, melee`).
+///    - Implements `serde::Serialize` / `Deserialize` as a struct with named fields.
+///    - Missing fields are allowed only if `#[non_exhaustive]` is used; they are automatically initialized with `Zero` (`<T as Zero>::ZERO`).
+///    - Examples:
+///
+///      ```rust
+///      #[math_vec]
+///      pub struct Color<T> { r: T, g: T, b: T, a: T }
+///      // Serialized as struct: { "r": 255, "g": 127, "b": 0, "a": 255 }
+///
+///      #[math_vec]
+///      #[non_exhaustive]
+///      pub struct Damage<T> { physic: T, magic: T, melee: T }
+///      // Serialized as struct: { "physic": 10, "magic": 5, "melee": 0 }
+///      // Missing fields during deserialization get Zero
+///      ```
 #[proc_macro_attribute]
 pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemStruct);
 
     let name = &input.ident;
+
+    let hexga_math_crate = crate_name("hexga_math")
+        .unwrap_or_else(|_| FoundCrate::Name("hexga_math".to_string()));
+
+    let crate_name_str = match hexga_math_crate {
+        FoundCrate::Itself => "crate",
+        FoundCrate::Name(ref name) => name,
+    };
+
+    let crate_ident = Ident::new(crate_name_str, proc_macro2::Span::call_site());
+
 
     let (impl_generics, ty_generics, where_clause) =
         input.generics.split_for_impl();
@@ -73,11 +117,11 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let is_array_struct = input.generics.params.iter().any(|p| matches!(p, syn::GenericParam::Const(_)));
     let array_impl = if is_array_struct {
         quote! {
-            impl<T, const N: usize> ::hexga_math::array::ArrayWithType<T, N> for #name<T, N>
+            impl<T, const N: usize> #crate_ident::array::ArrayWithType<T, N> for #name<T, N>
             {
                 type WithType<T2> = #name<T2, N>;
             }
-            impl<T, const N : usize> ::hexga_math::array::ArrayWithSize<T, N> for #name<T,N>
+            impl<T, const N : usize> #crate_ident::array::ArrayWithSize<T, N> for #name<T,N>
             {
                 type WithSize<const M:usize>=#name<T,M>;
             }
@@ -95,51 +139,51 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             }
 
 
-            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::Get<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::Get<Idx>
+            impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #name<T,N> where [T;N] : #crate_ident::hexga_core::collections::Get<Idx>
             {
-                type Output = <[T;N] as ::hexga_math::hexga_core::collections::Get<Idx>>::Output;
+                type Output = <[T;N] as #crate_ident::hexga_core::collections::Get<Idx>>::Output;
 
                 #[inline(always)]
-                fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_math::hexga_core::collections::Get::get(self.array(), index) }
+                fn get(&self, index: Idx) -> Option<&Self::Output> { #crate_ident::hexga_core::collections::Get::get(self.array(), index) }
                 #[inline(always)]
                 #[track_caller]
-                unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_math::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
+                unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { #crate_ident::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
             }
-            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::TryGet<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::TryGet<Idx>
+            impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::TryGet<Idx> for #name<T,N> where [T;N] : #crate_ident::hexga_core::collections::TryGet<Idx>
             {
-                type Error = <[T;N] as ::hexga_math::hexga_core::collections::TryGet<Idx>>::Error;
+                type Error = <[T;N] as #crate_ident::hexga_core::collections::TryGet<Idx>>::Error;
 
                 #[inline(always)]
                 fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
                 {
-                    ::hexga_math::hexga_core::collections::TryGet::try_get(self.array(), index)
+                    #crate_ident::hexga_core::collections::TryGet::try_get(self.array(), index)
                 }
             }
-            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::GetMut<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::GetMut<Idx>
+            impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::GetMut<Idx> for #name<T,N> where [T;N] : #crate_ident::hexga_core::collections::GetMut<Idx>
             {
                 #[inline(always)]
-                fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_math::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
+                fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { #crate_ident::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
                 #[inline(always)]
                 #[track_caller]
-                unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { ::hexga_math::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
+                unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { #crate_ident::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
             }
-            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::TryGetMut<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::TryGetMut<Idx>
+            impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::TryGetMut<Idx> for #name<T,N> where [T;N] : #crate_ident::hexga_core::collections::TryGetMut<Idx>
             {
                 #[inline(always)]
-                fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { ::hexga_math::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
+                fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { #crate_ident::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
             }
 
 
-            impl<T, const N : usize, Idx> ::hexga_math::hexga_core::collections::GetManyMut<Idx> for #name<T,N> where [T;N] : ::hexga_math::hexga_core::collections::GetManyMut<Idx>
+            impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::GetManyMut<Idx> for #name<T,N> where [T;N] : #crate_ident::hexga_core::collections::GetManyMut<Idx>
             {
                 #[inline(always)]
-                fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> { ::hexga_math::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+                fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> { #crate_ident::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
                 #[inline(always)]
-                fn get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Option<[&mut Self::Output;N2]> { ::hexga_math::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
+                fn get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Option<[&mut Self::Output;N2]> { #crate_ident::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
 
                 #[inline(always)]
                 #[track_caller]
-                unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { ::hexga_math::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
+                unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { #crate_ident::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
             }
 
 
@@ -178,7 +222,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             }
 
 
-            impl<T, const N : usize> ::hexga_math::map::MapIntern for #name<T,N>
+            impl<T, const N : usize> #crate_ident::map::MapIntern for #name<T,N>
             {
                 type Item=T;
                 fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
@@ -186,21 +230,21 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     Self::from_array(<[T;N]>::from(self).map_intern(f))
                 }
             }
-            impl<T, const N : usize> ::hexga_math::map::MapInternWith for #name<T,N>
+            impl<T, const N : usize> #crate_ident::map::MapInternWith for #name<T,N>
             {
                 fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
                 {
                     Self::from_array(<[T;N]>::from(self).map_with_intern(other.into(), f))
                 }
             }
-            impl<T, const N : usize> ::hexga_math::map::Map for #name<T,N>
+            impl<T, const N : usize> #crate_ident::map::Map for #name<T,N>
             {
                 type WithType<T2> = #name<T2,N>;
                 fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
                     Self::WithType::from_array(<[T;N] as Map>::map(self.into(), f))
                 }
             }
-            impl<T, const N : usize> ::hexga_math::map::MapWith for #name<T,N>
+            impl<T, const N : usize> #crate_ident::map::MapWith for #name<T,N>
             {
                 fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
                 {
@@ -208,7 +252,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-            ::hexga_math::map_on::map_on_operator_binary!(
+            #crate_ident::map_on::map_on_operator_binary!(
                 (($trait_name: tt, $fn_name: tt)) =>
                 {
                     impl<T, const N : usize> std::ops::$trait_name<Self> for #name<T,N>
@@ -226,7 +270,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             );
 
-            ::hexga_math::map_on::map_on_operator_assign!(
+            #crate_ident::map_on::map_on_operator_assign!(
                 (($trait_name: tt, $fn_name: tt)) =>
                 {
                     impl<T, const N : usize> ::std::ops::$trait_name<Self> for #name<T,N> where T: ::std::ops::$trait_name
@@ -261,32 +305,43 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             // ================= Iter =========
 
-            impl<T, const N : usize> ::std::iter::Sum for #name<T,N> where Self : ::hexga_math::number::Zero + ::std::ops::Add<Self,Output = Self>
+            impl<T, const N : usize> ::std::iter::Sum for #name<T,N> where Self : #crate_ident::number::Zero + ::std::ops::Add<Self,Output = Self>
             {
                 fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-                    iter.fold(<Self as ::hexga_math::number::Zero>::ZERO, <Self as ::std::ops::Add<Self>>::add)
+                    iter.fold(<Self as #crate_ident::number::Zero>::ZERO, <Self as ::std::ops::Add<Self>>::add)
                 }
             }
 
-            impl<T, const N : usize> ::std::iter::Product for #name<T,N> where Self : ::hexga_math::number::One + ::std::ops::Mul<Self,Output = Self>
+            impl<T, const N : usize> ::std::iter::Product for #name<T,N> where Self : #crate_ident::number::One + ::std::ops::Mul<Self,Output = Self>
             {
                 fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-                    iter.fold(<Self as ::hexga_math::number::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
+                    iter.fold(<Self as #crate_ident::number::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
                 }
             }
 
-            ::hexga_math::map_on::map_on_constant!
+            unsafe impl<T, const N : usize> #crate_ident::hexga_core::bit::BitAllUsed for #name<T,N> where T:BitAllUsed {}
+            unsafe impl<T, const N : usize> #crate_ident::hexga_core::bit::BitZero for #name<T,N> where T: BitZero {}
+            impl<T, const N : usize> #crate_ident::hexga_core::bit::BitPattern for #name<T,N> where T: BitPattern, [T::Bits;N] : BitAnyPattern
+            {
+                type Bits = [T::Bits;N];
+
+                fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
+                    bits.iter().all(|b| T::is_bit_pattern_valid(b))
+                }
+            }
+
+            #crate_ident::map_on::map_on_constant!
             (
                 (($trait_name: tt, $constant_name: tt)) =>
                 {
-                    impl<T, const N:usize> ::hexga_math::number::$trait_name for #name<T,N> where T: ::hexga_math::number::$trait_name + ::std::marker::Copy
+                    impl<T, const N:usize> #crate_ident::number::$trait_name for #name<T,N> where T: #crate_ident::number::$trait_name + ::std::marker::Copy
                     {
                         const $constant_name: Self = Self::from_array(<[T;N]>::$constant_name);
                     }
                 }
             );
 
-            ::hexga_math::map_on::map_on_std_fmt!(
+            #crate_ident::map_on::map_on_std_fmt!(
                 ($trait_name :ident) =>
                 {
                     impl<T, const N : usize> std::fmt::$trait_name  for #name<T,N> where T: std::fmt::$trait_name
@@ -531,7 +586,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 #[cfg(feature = "serde")]
                 impl<'de, T> ::serde::Deserialize<'de> for #name<T>
                 where
-                    T: ::serde::Deserialize<'de> + ::hexga_math::number::Zero
+                    T: ::serde::Deserialize<'de> + #crate_ident::number::Zero
                 {
                     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                     where
@@ -547,7 +602,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
                         impl<'de, T> ::serde::de::Visitor<'de> for Visitor<T>
                         where
-                            T: ::serde::Deserialize<'de> + ::hexga_math::number::Zero
+                            T: ::serde::Deserialize<'de> + #crate_ident::number::Zero
                         {
                             type Value = #name<T>;
 
@@ -560,7 +615,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 A: ::serde::de::MapAccess<'de>,
                             {
                                 // initialize all fields to Zero
-                                #(let mut #field_idents: T = ::hexga_math::number::Zero::ZERO;)*
+                                #(let mut #field_idents: T = #crate_ident::number::Zero::ZERO;)*
 
                                 while let Some(key) = map.next_key()? {
                                     match key {
@@ -580,7 +635,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
         };
 
         quote! {
-            impl<T> ::hexga_math::array::ArrayWithType<T, #dim> for #name<T>
+            impl<T> #crate_ident::array::ArrayWithType<T, #dim> for #name<T>
             {
                 type WithType<T2> = #name<T2>;
             }
@@ -596,47 +651,47 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
             }
 
-            impl<T, Idx> ::hexga_math::hexga_core::collections::Get<Idx> for #name<T> where [T;#dim] : ::hexga_math::hexga_core::collections::Get<Idx>
+            impl<T, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #name<T> where [T;#dim] : #crate_ident::hexga_core::collections::Get<Idx>
             {
-                type Output = <[T;#dim] as ::hexga_math::hexga_core::collections::Get<Idx>>::Output;
+                type Output = <[T;#dim] as #crate_ident::hexga_core::collections::Get<Idx>>::Output;
 
                 #[inline(always)]
-                fn get(&self, index: Idx) -> Option<&Self::Output> { ::hexga_math::hexga_core::collections::Get::get(self.array(), index) }
+                fn get(&self, index: Idx) -> Option<&Self::Output> { #crate_ident::hexga_core::collections::Get::get(self.array(), index) }
                 #[inline(always)]
                 #[track_caller]
-                unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { ::hexga_math::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
+                unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { #crate_ident::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
             }
-            impl<T, Idx> ::hexga_math::hexga_core::collections::TryGet<Idx> for #name<T> where [T;#dim] : ::hexga_math::hexga_core::collections::TryGet<Idx>
+            impl<T, Idx> #crate_ident::hexga_core::collections::TryGet<Idx> for #name<T> where [T;#dim] : #crate_ident::hexga_core::collections::TryGet<Idx>
             {
-                type Error = <[T;#dim] as ::hexga_math::hexga_core::collections::TryGet<Idx>>::Error;
+                type Error = <[T;#dim] as #crate_ident::hexga_core::collections::TryGet<Idx>>::Error;
 
                 #[inline(always)]
-                fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { ::hexga_math::hexga_core::collections::TryGet::try_get(self.array(), index) }
+                fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { #crate_ident::hexga_core::collections::TryGet::try_get(self.array(), index) }
             }
-            impl<T, Idx> ::hexga_math::hexga_core::collections::GetMut<Idx> for #name<T> where [T;#dim] : ::hexga_math::hexga_core::collections::GetMut<Idx>
+            impl<T, Idx> #crate_ident::hexga_core::collections::GetMut<Idx> for #name<T> where [T;#dim] : #crate_ident::hexga_core::collections::GetMut<Idx>
             {
                 #[inline(always)]
-                fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { ::hexga_math::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
+                fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { #crate_ident::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
                 #[inline(always)]
                 #[track_caller]
-                unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { ::hexga_math::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
+                unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { #crate_ident::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
             }
-            impl<T, Idx> ::hexga_math::hexga_core::collections::TryGetMut<Idx> for #name<T> where [T;#dim] : ::hexga_math::hexga_core::collections::TryGetMut<Idx>
+            impl<T, Idx> #crate_ident::hexga_core::collections::TryGetMut<Idx> for #name<T> where [T;#dim] : #crate_ident::hexga_core::collections::TryGetMut<Idx>
             {
                 #[inline(always)]
-                fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { ::hexga_math::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
+                fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { #crate_ident::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
             }
 
 
-            impl<T, Idx> ::hexga_math::hexga_core::collections::GetManyMut<Idx> for #name<T> where [T;#dim] : ::hexga_math::hexga_core::collections::GetManyMut<Idx>
+            impl<T, Idx> #crate_ident::hexga_core::collections::GetManyMut<Idx> for #name<T> where [T;#dim] : #crate_ident::hexga_core::collections::GetManyMut<Idx>
             {
                 #[inline(always)]
-                fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError> { ::hexga_math::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+                fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError> { #crate_ident::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
                 #[inline(always)]
-                fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { ::hexga_math::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
+                fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { #crate_ident::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
                 #[inline(always)]
                 #[track_caller]
-                unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { ::hexga_math::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
+                unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { #crate_ident::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
             }
 
 
@@ -673,7 +728,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-            impl<T> ::hexga_math::map::MapIntern for #name<T>
+            impl<T> #crate_ident::map::MapIntern for #name<T>
             {
                 type Item=T;
                 fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
@@ -681,21 +736,21 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     Self::from_array(<[T;#dim]>::from(self).map_intern(f))
                 }
             }
-            impl<T> ::hexga_math::map::MapInternWith for #name<T>
+            impl<T> #crate_ident::map::MapInternWith for #name<T>
             {
                 fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
                 {
                     Self::from_array(<[T;#dim]>::from(self).map_with_intern(other.into(), f))
                 }
             }
-            impl<T> ::hexga_math::map::Map for #name<T>
+            impl<T> #crate_ident::map::Map for #name<T>
             {
                 type WithType<T2> = #name<T2>;
                 fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
                     Self::WithType::from_array(<[T;#dim] as Map>::map(self.into(), f))
                 }
             }
-            impl<T> ::hexga_math::map::MapWith for #name<T>
+            impl<T> #crate_ident::map::MapWith for #name<T>
             {
                 fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
                 {
@@ -703,7 +758,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-            ::hexga_math::map_on::map_on_operator_binary!(
+            #crate_ident::map_on::map_on_operator_binary!(
                 (($trait_name: tt, $fn_name: tt)) =>
                 {
                     impl<T> ::std::ops::$trait_name<Self> for #name<T>
@@ -721,7 +776,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             );
 
-            ::hexga_math::map_on::map_on_operator_assign!(
+            #crate_ident::map_on::map_on_operator_assign!(
                 (($trait_name: tt, $fn_name: tt)) =>
                 {
                     impl<T> ::std::ops::$trait_name<Self> for #name<T> where T: $trait_name
@@ -756,32 +811,43 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             // ================= Iter =========
 
-            impl<T> ::std::iter::Sum for #name<T> where Self : ::hexga_math::number::Zero + ::std::ops::Add<Self,Output = Self>
+            impl<T> ::std::iter::Sum for #name<T> where Self : #crate_ident::number::Zero + ::std::ops::Add<Self,Output = Self>
             {
                 fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-                    iter.fold(<Self as ::hexga_math::number::Zero>::ZERO, Self::add)
+                    iter.fold(<Self as #crate_ident::number::Zero>::ZERO, Self::add)
                 }
             }
 
-            impl<T> ::std::iter::Product for #name<T> where Self : ::hexga_math::number::One + ::std::ops:: Mul<Self,Output = Self>
+            impl<T> ::std::iter::Product for #name<T> where Self : #crate_ident::number::One + ::std::ops:: Mul<Self,Output = Self>
             {
                 fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-                    iter.fold(<Self as ::hexga_math::number::One>::ONE, Self::mul)
+                    iter.fold(<Self as #crate_ident::number::One>::ONE, Self::mul)
                 }
             }
 
-            ::hexga_math::map_on::map_on_constant!
+            unsafe impl<T> #crate_ident::hexga_core::bit::BitAllUsed for #name<T> where T:BitAllUsed {}
+            unsafe impl<T> #crate_ident::hexga_core::bit::BitZero for #name<T> where T: BitZero {}
+            impl<T> #crate_ident::hexga_core::bit::BitPattern for #name<T> where T: BitPattern, [T::Bits;#dim] : BitAnyPattern
+            {
+                type Bits = [T::Bits;#dim];
+
+                fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
+                    bits.iter().all(|b| T::is_bit_pattern_valid(b))
+                }
+            }
+
+            #crate_ident::map_on::map_on_constant!
             (
                 (($trait_name: tt, $constant_name: tt)) =>
                 {
-                    impl<T> ::hexga_math::number::$trait_name for #name<T> where T: ::hexga_math::number::$trait_name + ::std::marker::Copy
+                    impl<T> #crate_ident::number::$trait_name for #name<T> where T: #crate_ident::number::$trait_name + ::std::marker::Copy
                     {
                         const $constant_name: Self = Self::from_array(<[T;#dim]>::$constant_name);
                     }
                 }
             );
 
-            ::hexga_math::map_on::map_on_std_fmt!(
+            #crate_ident::map_on::map_on_std_fmt!(
                 ($trait_name :ident) =>
                 {
                     impl<T> std::fmt::$trait_name for #name<T> where T: std::fmt::$trait_name
@@ -872,8 +938,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #[inline(always)]
             pub const fn array_mut(&mut self) -> &mut[T; #dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
 
-            // Todo:
-            //#crate::impl_number_basic_trait!();
+            #crate_ident::impl_number_basic_trait!();
         }
 
         impl #impl_generics ::std::convert::From<[T; #dim]> for #name #ty_generics { fn from(value: [T; #dim]) -> Self { Self::from_array(value) } }
@@ -909,7 +974,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             fn hash<H>(&self, state: &mut H) where H: ::std::hash::Hasher { self.as_ref().hash(state); }
         }
 
-        impl #impl_generics ::hexga_math::array::Array<T, #dim> for #name #ty_generics
+        impl #impl_generics #crate_ident::array::Array<T, #dim> for #name #ty_generics
         {
             #[inline(always)]
             fn array(&self) -> &[T; #dim] { self.array() }

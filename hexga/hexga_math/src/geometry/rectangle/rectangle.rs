@@ -5,14 +5,13 @@ pub type Rectangle<T, const N: usize> = RectangleOf<Vector<T, N>>;
 
 /// A `N` dimension rectangle
 ///
+#[math_vec]
 #[repr(C)]
 pub struct RectangleOf<T>
 {
     pub pos : T,
     pub size: T,
 }
-impl_fixed_array!(RectangleOf, 2);
-unsafe impl<T> BitAllUsed for RectangleOf<T> where T:BitAllUsed {}
 
 
 impl<T> Default for RectangleOf<T> where T: Number
@@ -207,7 +206,7 @@ impl<T,const N: usize> Rectangle<T,N> where T: Number
 
     pub fn intersect_or_empty(self, other: Self) -> Self where Vector<T, N>: Max + Min
     {
-        Self::from_pos_to_pos(self.bounds_min().max(other.pos), self.bounds_max().min(other.bounds_max()))
+        Self::from_pos_to_pos(self.bounds_min().max(other.bounds_min()), self.bounds_max().min(other.bounds_max()))
     }
     /// None if any rectangle is empty
     pub fn intersect(self, other: Self) -> Option<Self> where Vector<T, N>: Max + Min

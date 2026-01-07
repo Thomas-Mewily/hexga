@@ -5,6 +5,7 @@ pub type HslaFloat = HslaOf<float>;
 pub type HslaF32 = HslaOf<f32>;
 pub type HslaF64 = HslaOf<f64>;
 
+#[math_vec]
 #[repr(C)]
 pub struct HslaOf<T>
 {
@@ -17,7 +18,6 @@ pub struct HslaOf<T>
     /// Alpha
     pub a : T,
 }
-hexga_math::impl_fixed_array!(HslaOf, 4);
 
 
 impl<T> HslaOf<T>

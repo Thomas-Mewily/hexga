@@ -7,6 +7,7 @@ pub type RgbaU16   = RgbaOf<u16>;
 pub type RgbaF32   = RgbaOf<f32>;
 pub type RgbaF64   = RgbaOf<f64>;
 
+#[math_vec]
 #[repr(C)]
 pub struct RgbaOf<T>
 {
@@ -19,8 +20,6 @@ pub struct RgbaOf<T>
     /// Alpha
     pub a : T,
 }
-hexga_math::impl_fixed_array!(RgbaOf, 4);
-unsafe impl<T> BitAllUsed for RgbaOf<T> where T:BitAllUsed {}
 
 #[allow(dead_code)]
 impl<T> RgbaOf<T>
