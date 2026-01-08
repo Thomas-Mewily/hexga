@@ -874,8 +874,11 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
                         // serialize field by field
                         let field_idents: Vec<_> = fields.iter().map(|f| f.ident.as_ref().unwrap()).collect();
-                        let field_names: Vec<_> = field_idents.iter().map(|f| f.to_string()).collect();
+                        //let field_names: Vec<_> = field_idents.iter().map(|f| f.to_string()).collect();
                         let num_fields = field_idents.len();
+
+                        let name_str = name.to_string();
+                        let name_coef_str = name_coef.to_string();
 
                         quote! {
                             #[cfg(feature = "serde")]
@@ -896,51 +899,36 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             #[cfg(feature = "serde")]
                             impl<'de, T> ::serde::Deserialize<'de> for #name<T>
                             where
-                                T: ::serde::Deserialize<'de> + #crate_ident::number::Zero
+                                T: ::serde::Deserialize<'de> + #crate_ident::number::Zero,
                             {
                                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                 where
-                                    D: ::serde::Deserializer<'de>
+                                    D: ::serde::Deserializer<'de>,
                                 {
+                                    fn __zero<T: #crate_ident::number::Zero>() -> T {
+                                        T::ZERO
+                                    }
+
                                     #[derive(::serde::Deserialize)]
                                     #[allow(non_camel_case_types)]
-                                    enum Field { #(#field_idents),* }
+                                    #[serde(rename = #name_str)]
 
-                                    struct Visitor<T> {
-                                        marker: ::std::marker::PhantomData<T>,
-                                    }
-
-                                    impl<'de, T> ::serde::de::Visitor<'de> for Visitor<T>
+                                    struct __Temp<T>
                                     where
-                                        T: ::serde::Deserialize<'de> + #crate_ident::number::Zero
+                                        T: #crate_ident::number::Zero,
                                     {
-                                        type Value = #name<T>;
-
-                                        fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                                            write!(formatter, "struct {}", stringify!(#name))
-                                        }
-
-                                        fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-                                        where
-                                            A: ::serde::de::MapAccess<'de>,
-                                        {
-                                            // initialize all fields to Zero
-                                            #(let mut #field_idents: T = #crate_ident::number::Zero::ZERO;)*
-
-                                            while let Some(key) = map.next_key()? {
-                                                match key {
-                                                    #(Field::#field_idents => #field_idents = map.next_value()?,)*
-                                                }
-                                            }
-
-                                            Ok(#name { #(#field_idents),* })
-                                        }
+                                        #( #[serde(default = "__zero")] #field_idents: T, )*
                                     }
 
-                                    const FIELDS: &'static [&'static str] = &[#(#field_names),*];
-                                    deserializer.deserialize_struct(stringify!(#name), FIELDS, Visitor { marker: ::std::marker::PhantomData })
+                                    // Use super::#name to construct the original type
+                                    let temp = __Temp::<T>::deserialize(deserializer)?;
+                                    Ok(#name {
+                                        #(#field_idents: temp.#field_idents),*
+                                    })
                                 }
                             }
+
+
 
                             #[cfg(feature = "serde")]
                             impl<'de, T> ::serde::Serialize for #name_coef<T>
@@ -960,51 +948,34 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             #[cfg(feature = "serde")]
                             impl<'de, T> ::serde::Deserialize<'de> for #name_coef<T>
                             where
-                                T: ::serde::Deserialize<'de> + #crate_ident::number::One
+                                T: ::serde::Deserialize<'de> + #crate_ident::number::One,
                             {
                                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                 where
-                                    D: ::serde::Deserializer<'de>
+                                    D: ::serde::Deserializer<'de>,
                                 {
+                                    fn __one<T: #crate_ident::number::One>() -> T {
+                                        T::ONE
+                                    }
+
                                     #[derive(::serde::Deserialize)]
                                     #[allow(non_camel_case_types)]
-                                    enum Field { #(#field_idents),* }
-
-                                    struct Visitor<T> {
-                                        marker: ::std::marker::PhantomData<T>,
-                                    }
-
-                                    impl<'de, T> ::serde::de::Visitor<'de> for Visitor<T>
+                                    #[serde(rename = #name_coef_str)]
+                                    struct __Temp<T>
                                     where
-                                        T: ::serde::Deserialize<'de> + #crate_ident::number::One
+                                        T: #crate_ident::number::One,
                                     {
-                                        type Value = #name_coef<T>;
-
-                                        fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                                            write!(formatter, "struct {}", stringify!(#name_coef))
-                                        }
-
-                                        fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-                                        where
-                                            A: ::serde::de::MapAccess<'de>,
-                                        {
-                                            // initialize all fields to One
-                                            #(let mut #field_idents: T = #crate_ident::number::One::ONE;)*
-
-                                            while let Some(key) = map.next_key()? {
-                                                match key {
-                                                    #(Field::#field_idents => #field_idents = map.next_value()?,)*
-                                                }
-                                            }
-
-                                            Ok(#name_coef::new(#name{ #(#field_idents),* }))
-                                        }
+                                        #( #[serde(default = "__one")] #field_idents: T, )*
                                     }
 
-                                    const FIELDS: &'static [&'static str] = &[#(#field_names),*];
-                                    deserializer.deserialize_struct(stringify!(#name_coef), FIELDS, Visitor { marker: ::std::marker::PhantomData })
+                                    // Use super::#name to construct the original type
+                                    let temp = __Temp::<T>::deserialize(deserializer)?;
+                                    Ok(#name_coef::new(#name{
+                                        #(#field_idents: temp.#field_idents),*
+                                    }))
                                 }
                             }
+
                         }
                     }
                 }
@@ -1184,3 +1155,6 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     expanded.into()
 }
+
+// Todo: add some method to iter with the field name,
+// or some method to only iter in non default field (non zero or non one for coef) : iter() -> impl Iterator<Item=(&'static str,T)>

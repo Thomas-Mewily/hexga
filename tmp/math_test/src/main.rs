@@ -130,7 +130,6 @@ fn main()
     (
     physic: 10,
     magic: 20,
-    melee: 30,
 )").unwrap());
     println!("{}", DamageOf3Coef::<u8>::from_ron(&DamageOf3Coef::<u8>::default().to_ron().unwrap()).unwrap());
 
