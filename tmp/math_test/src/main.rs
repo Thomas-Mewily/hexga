@@ -132,5 +132,7 @@ fn main()
     println!("{}", Damage::<u8>::ONE.to_ron().unwrap());
     println!("{}", Damage::<u8>::from_ron("(physic:1,magic:1,melee:1)").unwrap());
     println!("{}", Damage::<u8>::from_ron("(physic:1,melee:1)").unwrap());
-    println!("{}", DamageWithDefault::<u8, ConstantMax<u8>>::from_ron("(physic:1,melee:1)").unwrap().into_value());
+    println!("{}", <Damage::<u8> as WithDefault<u8,ConstantMax<u8>>>::WithDefault::from_ron("(physic:1,melee:1)").unwrap().into_value());
+
+    //println!("{}", DamageWithDefault::<u8, ConstantMax<u8>>::from_ron("(physic:1,melee:1)").unwrap().into_value());
 }
