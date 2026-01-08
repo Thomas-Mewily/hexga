@@ -118,9 +118,19 @@ pub struct Damage<T>
 }
 
 
+pub trait WithDefault<P> : Serialize + for<'de> Deserialize<'de>
+    where P: hexga_math::number::Constant<Self::Item>
+{
+    type Item;
+    type Output : Serialize + for<'de> Deserialize<'de> + Default;
+}
+
 
 fn main()
 {
     let x = Damage::<i32>::ONE * Damage::<i32>::MINUS_ONE;
-    println!("{}", x.to_json().unwrap());
+    println!("{}", Damage::<u8>::ONE.to_ron().unwrap());
+    println!("{}", Damage::<u8>::from_ron("(physic:1,magic:1,melee:1)").unwrap());
+    println!("{}", Damage::<u8>::from_ron("(physic:1,melee:1)").unwrap());
+    println!("{}", DamageWithDefault::<u8, ConstantMax<u8>>::from_ron("(physic:1,melee:1)").unwrap().into_value());
 }

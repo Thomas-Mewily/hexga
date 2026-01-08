@@ -1,5 +1,22 @@
 use super::*;
 
+#[cfg(feature = "serde")]
+pub trait WithDefault<P> : Serialize + for<'de> Deserialize<'de>
+    where P: Constant<Self::Item>
+{
+    type Item;
+    type WithDefault : Serialize + for<'de> Deserialize<'de> + Default;
+}
+
+#[cfg(not(feature = "serde"))]
+pub trait WithDefault<P> : where P: Constant<Self::Item>
+{
+    type Item;
+    type WithDefault : Default;
+}
+
+
+/*
 /// Can be used to define default value,
 /// and different deserializalzion based on a constant for non_exhaustive/missing field.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -65,3 +82,4 @@ map_on_number_and_bool_and_char!(
         }
     }
 );
+*/
