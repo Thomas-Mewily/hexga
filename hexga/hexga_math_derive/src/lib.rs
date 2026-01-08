@@ -1154,7 +1154,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             phantom: ::core::marker::PhantomData<Policy>,
         }
 
-        /*
+
         impl #impl_generics_with_policy ::std::default::Default for #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::number::Constant<#generic_type_ident>
         {
@@ -1162,7 +1162,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 Self::new(#name :: #ty_generics :: from_array(::std::array::from_fn(|_| <Policy as #crate_ident::number::Constant<#generic_type_ident>>::CONSTANT)))
             }
         }
-        */
+
 
         impl #impl_generics_with_policy ::std::convert::From<#name #ty_generics> for #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::number::Constant<#generic_type_ident>
