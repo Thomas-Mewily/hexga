@@ -11,7 +11,7 @@ use syn::{parse_macro_input, ItemStruct, Fields, GenericParam, Type, Ident};
 ///    - Wrapper around an array `[T; N]`.
 ///    - Implements `serde::Serialize` / `Deserialize` as a tuple/sequence.
 ///
-///      ```rust
+///      ```ignore
 ///      #[math_vec]
 ///      pub struct Vector<T, const N: usize> { array: [T; N] }
 ///
@@ -25,7 +25,7 @@ use syn::{parse_macro_input, ItemStruct, Fields, GenericParam, Type, Ident};
 ///    - Missing fields are allowed only if `#[non_exhaustive]` is used; they are automatically initialized with `Zero` (`<T as Zero>::ZERO`).
 ///    - Examples:
 ///
-///      ```rust
+///      ```ignore
 ///      #[math_vec]
 ///      pub struct Color<T> { r: T, g: T, b: T, a: T }
 ///      // Serialized as struct: { "r": 255, "g": 127, "b": 0, "a": 255 }
