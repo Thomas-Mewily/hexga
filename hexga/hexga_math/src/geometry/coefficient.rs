@@ -26,22 +26,22 @@ impl<T> Default for Coef<T> where T: One
 map_on_number_and_bool! {
     ($type_name:tt) => {
         #[cfg(feature = "serde")]
-        impl ::serde::Serialize for Coef<$type_name>
+        impl $crate::serde::Serialize for Coef<$type_name>
         {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
-                S: ::serde::Serializer,
+                S: $crate::serde::Serializer,
             {
                 self.value.serialize(serializer)
             }
         }
 
         #[cfg(feature = "serde")]
-        impl<'de> ::serde::Deserialize<'de> for Coef<$type_name>
+        impl<'de> $crate::serde::Deserialize<'de> for Coef<$type_name>
         {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
-                D: ::serde::Deserializer<'de>,
+                D: $crate::serde::Deserializer<'de>,
             {
                 Ok(Self::new($type_name::deserialize(deserializer)?))
             }

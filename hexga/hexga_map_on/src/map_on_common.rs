@@ -57,6 +57,16 @@ macro_rules! map_on_number_and_bool
     };
 }
 
+/// (`u8`, `u16`, `u32`, `u64`, `usize`) + (`i8`, `i16`, `i32`, `i64`, `isize`) + (`f32`, `f64`) + (`bool`) + (`char`)
+#[macro_export]
+macro_rules! map_on_number_and_bool_and_char
+{
+    ($($macro_arms:tt)*) => {
+        $crate::map_on_number!($($macro_arms)*);
+        $crate::map_on!((bool, char), $($macro_arms)*);
+    };
+}
+
 
 /// `Add`, `Sub`
 #[macro_export]

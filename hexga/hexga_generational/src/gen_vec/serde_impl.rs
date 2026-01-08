@@ -14,7 +14,7 @@ where
         match self {
             EntryValue::Occupied(value) => serializer.serialize_newtype_variant("EntryValue", 0, "Used", value),
             EntryValue::Vacant(idx) => {
-                let opt = if idx.is_max_value() { None } else { Some(*idx) };
+                let opt = if idx.is_max() { None } else { Some(*idx) };
                 serializer.serialize_newtype_variant("EntryValue", 1, "Next", &opt)
             }
         }
@@ -86,7 +86,7 @@ impl<T, Gen:IGeneration> Serialize for GenVecOf<T,Gen> where T:Serialize, Gen: S
         /*
         // Can't use it, because some deserializer that don't have a self-describing format (like bincode) can't deserialize_any().
         // The layout must be fixed
-        if self.free.is_max_value()
+        if self.free.is_max()
         {
             self.values.serialize(serializer)
         }else

@@ -136,17 +136,17 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
 
             if self.len != other.len { return false; }
             if self.free == other.free { return self.values == other.values; }
-            if !(self.free.is_max_value() ^ other.free.is_max_value()) { return false; }
+            if !(self.free.is_max() ^ other.free.is_max()) { return false; }
 
-            if self.free.is_max_value()
+            if self.free.is_max()
             {
                 if self.values.len() + 1 != other.values.len() { return false; }
                 let mid = other.free;
-                debug_assert!(!mid.is_max_value());
+                debug_assert!(!mid.is_max());
 
                 let entry = other.get_entry_from_index(mid).unwrap();
                 let EntryValue::Vacant(f) = entry.value else { return false; };
-                if !f.is_max_value() || !entry.generation().is_min_value() { return false; }
+                if !f.is_max() || !entry.generation().is_min() { return false; }
 
                 let self_left = &self.values[0..mid];
                 let self_right = &self.values[mid..];
@@ -155,15 +155,15 @@ impl<T, Gen:IGeneration> PartialEq for GenVecOf<T,Gen> where T: PartialEq
                 let other_right = &other.values[mid+1..];
 
                 self_left == other_left && self_right == other_right
-            }else if other.free.is_max_value()
+            }else if other.free.is_max()
             {
                 if other.values.len() + 1 != self.values.len() { return false; }
                 let mid = self.free;
-                debug_assert!(!mid.is_max_value());
+                debug_assert!(!mid.is_max());
 
                 let entry = self.get_entry_from_index(mid).unwrap();
                 let EntryValue::Vacant(f) = entry.value else { return false; };
-                if !f.is_max_value() || !entry.generation().is_min_value() { return false; }
+                if !f.is_max() || !entry.generation().is_min() { return false; }
 
                 let other_left = &other.values[0..mid];
                 let other_right = &other.values[mid..];
@@ -226,7 +226,7 @@ impl<T, Gen:IGeneration> GenVecOf<T,Gen>
             }
         }else
         {
-            if free.is_not_max_value()
+            if free.is_not_max()
             {
                 return Err(format!("GenVec: invalid next {free} in a fully used genvec")); // should be max value
             }
@@ -293,7 +293,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         let Some(entry) = self.get_entry_mut_from_index(index) else { return Err(()); };
         if entry.value.is_vacant() { return Err(()); }
 
-        if free.is_max_value()
+        if free.is_max()
         {
             if index + 1 != entry_len { return Err(()); }
         }
@@ -302,7 +302,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         let val = entry.value.take_and_set_vacant(free);
         self.len -= 1;
 
-        if free.is_max_value() && can_not_decrease
+        if free.is_max() && can_not_decrease
         {
             self.values.pop().ok_or(())?;
         }else
@@ -370,7 +370,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         let EntryValue::Vacant(f) = entry.value else { return Err(()); };
         let free = f;
 
-        if f.is_not_max_value()
+        if f.is_not_max()
         {
             if head != index { return Err(()); }
             head = free;

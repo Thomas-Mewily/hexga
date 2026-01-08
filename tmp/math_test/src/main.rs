@@ -117,6 +117,8 @@ pub struct Damage<T>
     melee: T,
 }
 
+
+
 fn main()
 {
     let x = Damage::<i32>::ONE * Damage::<i32>::MINUS_ONE;

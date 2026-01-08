@@ -21,7 +21,6 @@ use angle::*;
 pub mod coefficient;
 use coefficient::*;
 
-
 pub(crate) mod prelude
 {
     pub use super::

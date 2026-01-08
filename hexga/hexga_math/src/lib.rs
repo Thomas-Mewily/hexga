@@ -64,7 +64,6 @@ use rayon::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
-
 pub use hexga_typedef as typedef;
 mod utils;
 pub use utils::*;
@@ -78,8 +77,14 @@ pub mod derive;
 mod geometry;
 pub use geometry::*;
 
+// For macro
 #[doc(hidden)]
 pub use hexga_core;
+
+// For macro
+#[cfg(feature = "serde")]
+#[doc(hidden)]
+pub use serde;
 
 
 use prelude::*;

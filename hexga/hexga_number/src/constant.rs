@@ -1,4 +1,40 @@
+use std::marker::PhantomData;
+
 use super::*;
+
+/// Constant Policy Value
+pub trait Constant<T>
+{
+    const CONSTANT: T;
+}
+
+pub struct ConstantZero<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantZero<T> where T: Zero { const CONSTANT: T = T::ZERO; }
+
+pub struct ConstantOne<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantOne<T> where T: One { const CONSTANT: T = T::ONE; }
+
+pub struct ConstantMinusOne<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantMinusOne<T> where T: MinusOne { const CONSTANT: T = T::MINUS_ONE; }
+
+pub struct ConstantHalf<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantHalf<T> where T: Half { const CONSTANT: T = T::HALF; }
+
+pub struct ConstantNaN<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantNaN<T> where T: NaNValue { const CONSTANT: T = T::NAN; }
+
+pub struct ConstantMin<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantMin<T> where T: MinValue { const CONSTANT: T = T::MIN; }
+
+pub struct ConstantMax<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantMax<T> where T: MaxValue { const CONSTANT: T = T::MAX; }
+
+pub struct ConstantInfinity<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantInfinity<T> where T: Infinity { const CONSTANT: T = T::INFINITY; }
+
+pub struct ConstantMinusInfinity<T>{phantom:PhantomData<T>}
+impl<T> Constant<T> for ConstantMinusInfinity<T> where T: MinusInfinity { const CONSTANT: T = T::MINUS_INFINITY; }
+
 
 
 /// Define the `0` representation : The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`
@@ -185,13 +221,14 @@ impl<T, const N : usize> NaNValue for [T;N] where T: NaNValue
 pub trait MinValue : Sized
 {
     const MIN : Self;
-    #[inline(always)] fn is_min_value(&self) -> bool where Self : PartialEq { self == &Self::MIN }
-    #[inline(always)] fn is_not_min_value(&self) -> bool where Self : PartialEq { !self.is_min_value() }
+    #[inline(always)] fn is_min(&self) -> bool where Self : PartialEq { self == &Self::MIN }
+    #[inline(always)] fn is_not_min(&self) -> bool where Self : PartialEq { !self.is_min() }
 }
 
 
 map_on_number!(($primitive_name: ty) => { impl MinValue for $primitive_name { const MIN : Self = Self::MIN; }});
 impl MinValue for bool { const MIN : Self = false; }
+impl MinValue for char { const MIN : Self = Self::MIN; }
 impl<T> MinValue for Wrapping<T> where T: MinValue  { const MIN : Self = Wrapping(T::MIN); }
 impl<T> MinValue for Saturating<T> where T: MinValue  { const MIN : Self = Saturating(T::MIN); }
 
@@ -203,17 +240,50 @@ impl<T, const N : usize> MinValue for [T;N] where T: MinValue
 pub trait MaxValue : Sized
 {
     const MAX : Self;
-    #[inline(always)] fn is_max_value(&self) -> bool where Self : PartialEq { self == &Self::MAX }
-    #[inline(always)] fn is_not_max_value(&self) -> bool where Self : PartialEq { !self.is_max_value() }
+    #[inline(always)] fn is_max(&self) -> bool where Self : PartialEq { self == &Self::MAX }
+    #[inline(always)] fn is_not_max(&self) -> bool where Self : PartialEq { !self.is_max() }
 }
 map_on_number!(($primitive_name: ty) => { impl MaxValue for $primitive_name { const MAX : Self = Self::MAX; } });
 impl MaxValue for bool { const MAX : Self = true; }
+impl MaxValue for char { const MAX : Self = Self::MAX; }
 impl<T> MaxValue for Wrapping<T> where T: MaxValue  { const MAX : Self = Wrapping(T::MAX); }
 impl<T> MaxValue for Saturating<T> where T: MaxValue  { const MAX : Self = Saturating(T::MAX); }
+
 
 impl<T, const N : usize> MaxValue for [T;N] where T: MaxValue
 {
     const MAX : Self = [T::MAX; N];
+}
+
+pub trait Infinity : Sized
+{
+    const INFINITY : Self;
+    #[inline(always)] fn is_infinity(&self) -> bool where Self : PartialEq { self == &Self::INFINITY }
+    #[inline(always)] fn is_not_infinity(&self) -> bool where Self : PartialEq { !self.is_infinity() }
+}
+map_on_float!(($primitive_name: ty) => { impl Infinity for $primitive_name { const INFINITY : Self = Self::INFINITY; } });
+impl<T> Infinity for Wrapping<T> where T: Infinity  { const INFINITY : Self = Wrapping(T::INFINITY); }
+impl<T> Infinity for Saturating<T> where T: Infinity  { const INFINITY : Self = Saturating(T::INFINITY); }
+
+impl<T, const N : usize> Infinity for [T;N] where T: Infinity
+{
+    const INFINITY : Self = [T::INFINITY; N];
+}
+
+
+pub trait MinusInfinity : Sized
+{
+    const MINUS_INFINITY : Self;
+    #[inline(always)] fn is_minus_infinity(&self) -> bool where Self : PartialEq { self == &Self::MINUS_INFINITY }
+    #[inline(always)] fn is_not_minus_infinity(&self) -> bool where Self : PartialEq { !self.is_minus_infinity() }
+}
+map_on_float!(($primitive_name: ty) => { impl MinusInfinity for $primitive_name { const MINUS_INFINITY : Self = Self::NEG_INFINITY; } });
+impl<T> MinusInfinity for Wrapping<T> where T: MinusInfinity  { const MINUS_INFINITY : Self = Wrapping(T::MINUS_INFINITY); }
+impl<T> MinusInfinity for Saturating<T> where T: MinusInfinity  { const MINUS_INFINITY : Self = Saturating(T::MINUS_INFINITY); }
+
+impl<T, const N : usize> MinusInfinity for [T;N] where T: MinusInfinity
+{
+    const MINUS_INFINITY : Self = [T::MINUS_INFINITY; N];
 }
 
 
@@ -228,7 +298,9 @@ macro_rules! map_on_constant_unit {
                 (Zero, ZERO),
                 (NaNValue, NAN),
                 (MinValue, MIN),
-                (MaxValue, MAX)
+                (MaxValue, MAX),
+                (Infinity, INFINITY),
+                (MinusInfinity, MINUS_INFINITY)
             ),
             $($macro_arms)*
         );
@@ -247,7 +319,30 @@ macro_rules! map_on_constant {
                 (Half, HALF),
                 (NaNValue, NAN),
                 (MinValue, MIN),
-                (MaxValue, MAX)
+                (MaxValue, MAX),
+                (Infinity, INFINITY),
+                (MinusInfinity, MINUS_INFINITY)
+            ),
+            $($macro_arms)*
+        );
+    };
+}
+
+#[macro_export]
+macro_rules! map_on_constant_policy {
+    ($($macro_arms:tt)*) => {
+        $crate::map_on!
+        (
+            (
+                ConstantZero,
+                ConstantOne,
+                ConstantMinusOne,
+                ConstantHalf,
+                ConstantNaN,
+                ConstantMin,
+                ConstantMax,
+                ConstantInfinity,
+                ConstantMinusInfinity
             ),
             $($macro_arms)*
         );

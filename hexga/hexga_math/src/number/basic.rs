@@ -236,7 +236,7 @@ map_on_integer_signed!(
             type Output = Self;
             // TODO: replace it by Wrapping<$primitive_name>::abs once stabilized
             #[inline(always)]
-            fn abs(self) -> Self { if self.is_max_value() { Self(<$primitive_name>::MIN) } else { Self(<$primitive_name>::abs(self.0)) } }
+            fn abs(self) -> Self { if self.is_max() { Self(<$primitive_name>::MIN) } else { Self(<$primitive_name>::abs(self.0)) } }
         }
     }
 );

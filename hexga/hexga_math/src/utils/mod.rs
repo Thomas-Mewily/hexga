@@ -6,6 +6,8 @@ use map::*;
 pub mod time;
 use time::*;
 
+mod with_default;
+use with_default::*;
 
 pub(crate) mod prelude
 {
@@ -13,5 +15,6 @@ pub(crate) mod prelude
     {
         map::*,
         time::*,
+        with_default::*,
     };
 }

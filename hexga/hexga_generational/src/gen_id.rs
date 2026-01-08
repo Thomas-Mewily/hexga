@@ -31,7 +31,7 @@ impl<Gen:IGeneration> Default for GenIDOf<Gen>
 impl<Gen:IGeneration> Serialize for GenIDOf<Gen> where Gen : Serialize {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     {
-        if self.index.is_max_value()
+        if self.index.is_max()
         {
             None
         }else
