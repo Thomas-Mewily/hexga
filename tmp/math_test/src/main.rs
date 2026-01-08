@@ -93,14 +93,7 @@ pub struct DamageOf2<T>
     magic: T,
 }
 
-#[math_vec]
-#[non_exhaustive]
-pub struct DamageOf3<T>
-{
-    physic: T,
-    magic: T,
-    melee: T,
-}
+
 
 #[math_vec]
 pub struct DamageArray<T, const N:usize>
@@ -115,23 +108,17 @@ struct Foo
     age:i32,
 }
 
+#[math_vec]
+#[non_exhaustive]
+pub struct Damage<T>
+{
+    physic: T,
+    magic: T,
+    melee: T,
+}
+
 fn main()
 {
-    dbg!(&DamageArray::<float,2>::ZERO);
-    dbg!(&DamageOf2::<i32>::ZERO);
-    dbg!(&DamageOf3::<u8>::ZERO);
-    dbg!(&DamageOf3Coef::<u8>::default());
-
-    println!("{:?}", Foo{ bar: 42, age: 50 }.to_ron().unwrap());
-    println!("{:?}", Foo::from_ron(&Foo{ bar: 42, age: 50 }.to_ron().unwrap()).unwrap());
-
-    println!("{}", DamageOf3Coef::<u8>::default().to_ron().unwrap());
-    println!("{}", DamageOf3Coef::<u8>::from_ron(r"
-    (
-    physic: 10,
-    magic: 20,
-)").unwrap());
-    println!("{}", DamageOf3Coef::<u8>::from_ron(&DamageOf3Coef::<u8>::default().to_ron().unwrap()).unwrap());
-
-
+    let x = Damage::<i32>::ONE * Damage::<i32>::MINUS_ONE;
+    println!("{}", x.to_json().unwrap());
 }

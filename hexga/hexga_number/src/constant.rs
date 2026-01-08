@@ -112,7 +112,8 @@ pub trait MinusOne : Sized
 }
 pub const fn minus_one<T : MinusOne>() -> T { T::MINUS_ONE }
 
-map_on_number!(($primitive_name: ty) => { impl MinusOne for $primitive_name { const MINUS_ONE : Self = 1 as Self; } });
+map_on_integer_signed!(($primitive_name: ty) => { impl MinusOne for $primitive_name { const MINUS_ONE : Self = -1 as Self; } });
+map_on_float!(($primitive_name: ty) => { impl MinusOne for $primitive_name { const MINUS_ONE : Self = -1 as Self; } });
 impl<T> MinusOne for Wrapping<T> where T: MinusOne  { const MINUS_ONE : Self = Wrapping(T::MINUS_ONE); }
 impl<T> MinusOne for Saturating<T> where T: MinusOne  { const MINUS_ONE : Self = Saturating(T::MINUS_ONE); }
 
