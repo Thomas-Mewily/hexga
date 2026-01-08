@@ -114,20 +114,20 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
 
-    let name_coef_str = format!("{}Coef", &input.ident);
-    let name_coef = Ident::new(&name_coef_str, name.span());
+    //let name_coef_str = format!("{}Coef", &input.ident);
+    //let name_coef = Ident::new(&name_coef_str, name.span());
 
 
     let is_array_struct = input.generics.params.iter().any(|p| matches!(p, syn::GenericParam::Const(_)));
 
-    let names = [&name, &name_coef];
+    let names = [&name]; //, &name_coef];
 
-    let [array_impl, array_impl_coef, specific_impl] =
+    let [array_impl, specific_impl] =
     if is_array_struct
     {
         std::array::from_fn(|idx|
             {
-                if idx <= 1
+                if idx <= 0
                 {
                     let current_name = names[idx];
 
@@ -383,14 +383,14 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 {
                     quote! {
                         #[cfg(feature = "serde")]
-                        impl<T, const N: usize> ::serde::Serialize for #name<T, N>
-                            where T: ::serde::Serialize,
+                        impl<T, const N: usize> #crate_ident::serde::Serialize for #name<T, N>
+                            where T: #crate_ident::serde::Serialize,
                         {
                             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                             where
-                                S: ::serde::Serializer,
+                                S: #crate_ident::serde::Serializer,
                             {
-                                use ::serde::ser::SerializeTuple;
+                                use #crate_ident::serde::ser::SerializeTuple;
 
                                 let arr = self.as_array();
                                 let mut tup = serializer.serialize_tuple(N)?;
@@ -408,18 +408,18 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             #[derive(Debug)]
                             struct Arr<T, const N: usize>(pub [T;N]);
 
-                            impl<'de, T, const N: usize> ::serde::Deserialize<'de> for #name<T,N>
-                                where T: ::serde::Deserialize<'de>
+                            impl<'de, T, const N: usize> #crate_ident::serde::Deserialize<'de> for #name<T,N>
+                                where T: #crate_ident::serde::Deserialize<'de>
                             {
                                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                 where
-                                    D: ::serde::Deserializer<'de>,
+                                    D: #crate_ident::serde::Deserializer<'de>,
                                 {
                                     struct ArrVisitor<T, const N: usize>(::std::marker::PhantomData<T>);
 
-                                    impl<'de, T, const N: usize> ::serde::de::Visitor<'de> for ArrVisitor<T, N>
+                                    impl<'de, T, const N: usize> #crate_ident::serde::de::Visitor<'de> for ArrVisitor<T, N>
                                     where
-                                        T: ::serde::Deserialize<'de>,
+                                        T: #crate_ident::serde::Deserialize<'de>,
                                     {
                                         type Value = Arr<T, N>;
 
@@ -429,7 +429,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
                                         fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
                                         where
-                                            A: ::serde::de::SeqAccess<'de>,
+                                            A: #crate_ident::serde::de::SeqAccess<'de>,
                                         {
                                             // SAFETY: We'll ensure every element is initialized or properly dropped
                                             let mut data: [::std::mem::MaybeUninit<T>; N] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
@@ -470,28 +470,61 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         };
 
                         #[cfg(feature = "serde")]
-                        impl<T, const N: usize> ::serde::Serialize for #name_coef<T, N>
-                            where #name<T, N>: ::serde::Serialize,
+                        impl<T, Policy, const N: usize> #crate_ident::serde::Serialize for #crate_ident::default::WithDefault<#name<T, N>, Policy>
+                            where
+                            #name<T, N>: #crate_ident::serde::Serialize,
+                            Policy: #crate_ident::number::Constant<#name<T, N>>,
                         {
                             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                             where
-                                S: ::serde::Serializer,
+                                S: #crate_ident::serde::Serializer,
+                            {
+                                <#name<T, N> as #crate_ident::serde::Serialize>::serialize(&self.value, serializer)
+                            }
+                        }
+
+                        #[cfg(feature = "serde")]
+                        const _ : () =
+                        {
+                            impl<'de, T, Policy, const N: usize> #crate_ident::serde::Deserialize<'de> for #crate_ident::default::WithDefault<#name<T, N>, Policy>
+                                where
+                                #name<T, N> : #crate_ident::serde::Deserialize<'de>,
+                                Policy: #crate_ident::number::Constant<#name<T, N>>,
+                            {
+                                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                                where
+                                    D: #crate_ident::serde::Deserializer<'de>,
+                                {
+                                    Ok(Self::new(<#name<T, N> as #crate_ident::serde::Deserialize<'de>>::deserialize(deserializer)?))
+                                }
+                            }
+                        };
+
+                        /*
+                        #[cfg(feature = "serde")]
+                        impl<T, const N: usize> #crate_ident::serde::Serialize for #name_coef<T, N>
+                            where #name<T, N>: #crate_ident::serde::Serialize,
+                        {
+                            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                            where
+                                S: #crate_ident::serde::Serializer,
                             {
                                 self.value.serialize(serializer)
                             }
                         }
 
                         #[cfg(feature = "serde")]
-                        impl<'de, T, const N: usize> ::serde::Deserialize<'de> for #name_coef<T, N>
-                            where #name<T, N>: ::serde::Deserialize<'de>
+                        impl<'de, T, const N: usize> #crate_ident::serde::Deserialize<'de> for #name_coef<T, N>
+                            where #name<T, N>: #crate_ident::serde::Deserialize<'de>
                         {
                             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                             where
-                                D: ::serde::Deserializer<'de>,
+                                D: #crate_ident::serde::Deserializer<'de>,
                             {
                                 Ok(Self::new(#name::<T, N>::deserialize(deserializer)?))
                             }
                         }
+                        */
                     }
                 }
             }
@@ -500,7 +533,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
         std::array::from_fn(|idx|
             {
-                if idx <= 1
+                if idx <= 0
                 {
                     let current_name = names[idx];
 
@@ -748,15 +781,15 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         quote!
                         {
                             #[cfg(feature = "serde")]
-                            impl<T> ::serde::Serialize for #name<T>
+                            impl<T> #crate_ident::serde::Serialize for #name<T>
                             where
-                                T: ::serde::Serialize,
+                                T: #crate_ident::serde::Serialize,
                             {
                                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                                 where
-                                    S: ::serde::Serializer,
+                                    S: #crate_ident::serde::Serializer,
                                 {
-                                    use ::serde::ser::SerializeTuple;
+                                    use #crate_ident::serde::ser::SerializeTuple;
 
                                     let arr = self.as_array();
                                     let mut tup = serializer.serialize_tuple(#dim)?;
@@ -774,17 +807,17 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 #[derive(Debug)]
                                 struct Arr<T>(pub [T; #dim]);
 
-                                impl<'de, T> ::serde::Deserialize<'de> for #name<T> where T: ::serde::Deserialize<'de>
+                                impl<'de, T> #crate_ident::serde::Deserialize<'de> for #name<T> where T: #crate_ident::serde::Deserialize<'de>
                                 {
                                     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                     where
-                                        D: ::serde::Deserializer<'de>,
+                                        D: #crate_ident::serde::Deserializer<'de>,
                                     {
                                         struct ArrVisitor<T>(::std::marker::PhantomData<T>);
 
-                                        impl<'de, T> ::serde::de::Visitor<'de> for ArrVisitor<T>
+                                        impl<'de, T> #crate_ident::serde::de::Visitor<'de> for ArrVisitor<T>
                                         where
-                                            T: ::serde::Deserialize<'de>,
+                                            T: #crate_ident::serde::Deserialize<'de>,
                                         {
                                             type Value = Arr<T>;
 
@@ -794,7 +827,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
                                             fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
                                             where
-                                                A: ::serde::de::SeqAccess<'de>,
+                                                A: #crate_ident::serde::de::SeqAccess<'de>,
                                             {
                                                 // SAFETY: We'll ensure every element is initialized or properly dropped
                                                 let mut data: [::std::mem::MaybeUninit<T>; #dim] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
@@ -835,26 +868,30 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             };
 
                             #[cfg(feature = "serde")]
-                            impl<T> ::serde::Serialize for #name_coef<T>
-                                where #name<T>: ::serde::Serialize,
+                            impl<T, Policy> #crate_ident::serde::Serialize for #crate_ident::default::WithDefault<#name<T>, Policy>
+                                where
+                                #name<T>: #crate_ident::serde::Serialize,
+                                Policy: #crate_ident::number::Constant<#name<T>>,
                             {
                                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                                 where
-                                    S: ::serde::Serializer,
+                                    S: #crate_ident::serde::Serializer,
                                 {
-                                    self.value.serialize(serializer)
+                                    <#name<T> as #crate_ident::serde::Serialize>::serialize(&self.value, serializer)
                                 }
                             }
 
                             #[cfg(feature = "serde")]
-                            impl<'de, T> ::serde::Deserialize<'de> for #name_coef<T>
-                                where #name<T>: ::serde::Deserialize<'de>
+                            impl<'de, T, Policy> #crate_ident::serde::Deserialize<'de> for #crate_ident::default::WithDefault<#name<T>, Policy>
+                                where
+                                #name<T>: #crate_ident::serde::Deserialize<'de>,
+                                Policy: #crate_ident::number::Constant<#name<T>>,
                             {
                                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                 where
-                                    D: ::serde::Deserializer<'de>,
+                                    D: #crate_ident::serde::Deserializer<'de>,
                                 {
-                                    Ok(Self::new(#name::<T>::deserialize(deserializer)?))
+                                    Ok(Self::new(<#name::<T> as #crate_ident::serde::Deserialize<'de>>::deserialize(deserializer)?))
                                 }
                             }
                         }
@@ -878,17 +915,17 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         let num_fields = field_idents.len();
 
                         let name_str = name.to_string();
-                        let name_coef_str = name_coef.to_string();
+                        //let name_coef_str = name_coef.to_string();
 
                         quote! {
                             #[cfg(feature = "serde")]
-                            impl<'de, T> ::serde::Serialize for #name<T>
+                            impl<'de, T> #crate_ident::serde::Serialize for #name<T>
                             where
-                                T: ::serde::Serialize
+                                T: #crate_ident::serde::Serialize
                             {
                                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                                 where
-                                    S: ::serde::Serializer
+                                    S: #crate_ident::serde::Serializer
                                 {
                                     let mut state = serializer.serialize_struct(stringify!(#name), #num_fields)?;
                                     #(state.serialize_field(stringify!(#field_idents), &self.#field_idents)?;)*
@@ -897,17 +934,58 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             }
 
                             #[cfg(feature = "serde")]
-                            impl<'de, T> ::serde::Deserialize<'de> for #name<T>
+                            impl<'de, T> #crate_ident::serde::Deserialize<'de> for #name<T>
                             where
-                                T: ::serde::Deserialize<'de> + #crate_ident::number::Zero,
+                                T: #crate_ident::serde::Deserialize<'de> + ::std::default::Default,
                             {
                                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                 where
-                                    D: ::serde::Deserializer<'de>,
+                                    D: #crate_ident::serde::Deserializer<'de>,
                                 {
-                                    fn __zero<T: #crate_ident::number::Zero>() -> T {
-                                        T::ZERO
+
+                                    #[derive(::serde::Deserialize)]
+                                    #[allow(non_camel_case_types)]
+                                    #[serde(rename = #name_str)]
+
+                                    struct __Temp<T>
+                                    where
+                                        T: ::std::default::Default,
+                                    {
+                                        #( #[serde(default = || ::std::default::Default::default())] #field_idents: T, )*
                                     }
+
+                                    // Use super::#name to construct the original type
+                                    let temp = <__Temp::<T> as #crate_ident::serde::Deserialize<'de>>::deserialize(deserializer)?;
+                                    Ok(#name {
+                                        #(#field_idents: temp.#field_idents),*
+                                    })
+                                }
+                            }
+
+                            #[cfg(feature = "serde")]
+                            impl<T, Policy> #crate_ident::serde::Serialize for #crate_ident::default::WithDefault<#name<T>, Policy>
+                                where
+                                #name<T>: #crate_ident::serde::Serialize,
+                                Policy: #crate_ident::number::Constant<#name<T>>,
+                            {
+                                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                                where
+                                    S: #crate_ident::serde::Serializer,
+                                {
+                                    <#name<T> as #crate_ident::serde::Serialize>::serialize(&self.value, serializer)
+                                }
+                            }
+
+                            #[cfg(feature = "serde")]
+                            impl<'de, T, Policy> #crate_ident::serde::Deserialize<'de> for #crate_ident::default::WithDefault<#name<T>, Policy>
+                            where
+                                T: #crate_ident::serde::Deserialize<'de>,
+                                Policy: #crate_ident::number::Constant<#name<T>>,
+                            {
+                                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                                where
+                                    D: #crate_ident::serde::Deserializer<'de>,
+                                {
 
                                     #[derive(::serde::Deserialize)]
                                     #[allow(non_camel_case_types)]
@@ -917,27 +995,45 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                     where
                                         T: #crate_ident::number::Zero,
                                     {
-                                        #( #[serde(default = "__zero")] #field_idents: T, )*
+                                        #(
+                                            #[serde(default_value = <Policy as #crate_ident::number::Constant<#name<T>>>::CONSTANT)]
+                                            #field_idents: T,
+                                        )*
                                     }
 
                                     // Use super::#name to construct the original type
                                     let temp = __Temp::<T>::deserialize(deserializer)?;
-                                    Ok(#name {
+                                    Ok(Self::new(#name {
                                         #(#field_idents: temp.#field_idents),*
-                                    })
+                                    }))
+                                }
+                            }
+
+                            /*
+                            #[cfg(feature = "serde")]
+                            impl<'de, T, Policy> #crate_ident::serde::Deserialize<'de> for #crate_ident::default::WithDefault<#name<T>, Policy>
+                                where
+                                #name<T>: #crate_ident::serde::Deserialize<'de>,
+                                Policy: #crate_ident::number::Constant<#name<T>>,
+                            {
+                                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                                where
+                                    D: #crate_ident::serde::Deserializer<'de>,
+                                {
+                                    Ok(Self::new(<#name::<T> as #crate_ident::serde::Deserialize<'de>>::deserialize(deserializer)?))
                                 }
                             }
 
 
-
+                            /*
                             #[cfg(feature = "serde")]
-                            impl<'de, T> ::serde::Serialize for #name_coef<T>
+                            impl<'de, T> #crate_ident::serde::Serialize for #name_coef<T>
                             where
-                                T: ::serde::Serialize
+                                T: #crate_ident::serde::Serialize
                             {
                                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                                 where
-                                    S: ::serde::Serializer
+                                    S: #crate_ident::serde::Serializer
                                 {
                                     let mut state = serializer.serialize_struct(stringify!(#name_coef), #num_fields)?;
                                     #(state.serialize_field(stringify!(#field_idents), &self.value.#field_idents)?;)*
@@ -946,13 +1042,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             }
 
                             #[cfg(feature = "serde")]
-                            impl<'de, T> ::serde::Deserialize<'de> for #name_coef<T>
+                            impl<'de, T> #crate_ident::serde::Deserialize<'de> for #name_coef<T>
                             where
-                                T: ::serde::Deserialize<'de> + #crate_ident::number::One,
+                                T: #crate_ident::serde::Deserialize<'de> + #crate_ident::number::One,
                             {
                                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                 where
-                                    D: ::serde::Deserializer<'de>,
+                                    D: #crate_ident::serde::Deserializer<'de>,
                                 {
                                     fn __one<T: #crate_ident::number::One>() -> T {
                                         T::ONE
@@ -975,7 +1071,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                     }))
                                 }
                             }
-
+                            */
+                            */
                         }
                     }
                 }
@@ -1011,7 +1108,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::Ord));
     let hash_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::hash::Hash));
 
-    let [basic_impl, coef_impl] = std::array::from_fn(|idx|
+    let [basic_impl] = std::array::from_fn(|idx|
         {
             let current_name = names[idx];
             quote! {
@@ -1100,6 +1197,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     {
         #input
 
+        /*
         impl #impl_generics ::std::convert::From<#name_coef #ty_generics> for #name #ty_generics
         {
             #[inline(always)]
@@ -1124,6 +1222,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #[inline(always)]
             pub const fn new(value: #name #ty_generics) -> Self { Self { value } }
         }
+        */
 
         /*
         Each type define what is the Default;
@@ -1137,18 +1236,18 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             fn default() -> Self { <Self as #crate_ident::number::Zero>::ZERO }
         }
         */
+        /*
 
         impl #impl_generics ::std::default::Default for #name_coef #ty_generics
             where Self: #crate_ident::number::One
         {
             fn default() -> Self { <Self as #crate_ident::number::One>::ONE }
         }
+        */
 
         #basic_impl
-        #coef_impl
 
         #array_impl
-        #array_impl_coef
         #specific_impl
     };
 
