@@ -53,6 +53,9 @@ pub mod prelude
         url_data::prelude::*,
     };
 
+    #[cfg(feature = "serde")]
+    pub use super::serde_impl::prelude::*;
+
     #[cfg(feature = "derive")]
     pub use hexga_encoding_derive::{Load,Save,io};
 }

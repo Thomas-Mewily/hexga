@@ -943,14 +943,17 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             }
 
                             #[cfg(feature = "serde")]
-                            impl<T> ::serde::Serialize for #name_coef<T>
-                                where #name<T>: ::serde::Serialize,
+                            impl<'de, T> ::serde::Serialize for #name_coef<T>
+                            where
+                                T: ::serde::Serialize
                             {
                                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                                 where
-                                    S: ::serde::Serializer,
+                                    S: ::serde::Serializer
                                 {
-                                    self.value.serialize(serializer)
+                                    let mut state = serializer.serialize_struct(stringify!(#name_coef), #num_fields)?;
+                                    #(state.serialize_field(stringify!(#field_idents), &self.value.#field_idents)?;)*
+                                    state.end()
                                 }
                             }
 
@@ -978,7 +981,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                         type Value = #name_coef<T>;
 
                                         fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                                            write!(formatter, "struct {}", stringify!(#name))
+                                            write!(formatter, "struct {}", stringify!(#name_coef))
                                         }
 
                                         fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
@@ -999,7 +1002,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                     }
 
                                     const FIELDS: &'static [&'static str] = &[#(#field_names),*];
-                                    deserializer.deserialize_struct(stringify!(#name), FIELDS, Visitor { marker: ::std::marker::PhantomData })
+                                    deserializer.deserialize_struct(stringify!(#name_coef), FIELDS, Visitor { marker: ::std::marker::PhantomData })
                                 }
                             }
                         }
@@ -1150,6 +1153,20 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #[inline(always)]
             pub const fn new(value: #name #ty_generics) -> Self { Self { value } }
         }
+
+        /*
+        Each type define what is the Default;
+        Zero for Vector
+        Unit Rectangle for Rectangle,
+        White for Color
+
+        impl #impl_generics ::std::default::Default for #name #ty_generics
+            where Self: #crate_ident::number::Zero
+        {
+            fn default() -> Self { <Self as #crate_ident::number::Zero>::ZERO }
+        }
+        */
+
         impl #impl_generics ::std::default::Default for #name_coef #ty_generics
             where Self: #crate_ident::number::One
         {

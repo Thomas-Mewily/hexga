@@ -108,11 +108,31 @@ pub struct DamageArray<T, const N:usize>
     boum:[T;N],
 }
 
-
+#[derive(Serialize, Deserialize, Debug)]
+struct Foo
+{
+    bar:i32,
+    age:i32,
+}
 
 fn main()
 {
     dbg!(&DamageArray::<float,2>::ZERO);
     dbg!(&DamageOf2::<i32>::ZERO);
     dbg!(&DamageOf3::<u8>::ZERO);
+    dbg!(&DamageOf3Coef::<u8>::default());
+
+    println!("{:?}", Foo{ bar: 42, age: 50 }.to_ron().unwrap());
+    println!("{:?}", Foo::from_ron(&Foo{ bar: 42, age: 50 }.to_ron().unwrap()).unwrap());
+
+    println!("{}", DamageOf3Coef::<u8>::default().to_ron().unwrap());
+    println!("{}", DamageOf3Coef::<u8>::from_ron(r"
+    (
+    physic: 10,
+    magic: 20,
+    melee: 30,
+)").unwrap());
+    println!("{}", DamageOf3Coef::<u8>::from_ron(&DamageOf3Coef::<u8>::default().to_ron().unwrap()).unwrap());
+
+
 }
