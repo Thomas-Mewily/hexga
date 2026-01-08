@@ -65,24 +65,3 @@ map_on_number_and_bool_and_char!(
         }
     }
 );
-
-/*
-map_on_number_and_bool!(
-    ($type_name: tt) =>
-    {
-        map_on_constant_policy!(
-            ($policy: tt) =>
-            {
-                impl ::std::default::Default for WithDefault<$type_name, $policy <$type_name>>
-                    where $policy <$type_name>: $crate::number::Constant<$type_name>
-                {
-                    fn default() -> Self
-                    {
-                        Self::new($policy :: <$type_name>::CONSTANT)
-                    }
-                }
-            }
-        );
-    }
-);
-*/

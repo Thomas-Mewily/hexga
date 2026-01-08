@@ -113,6 +113,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     };
 
+    let name_with_default_str = format!("{}WithDefault", &input.ident);
+    let name_with_default = Ident::new(&name_with_default_str, name.span());
+
 
     //let name_coef_str = format!("{}Coef", &input.ident);
     //let name_coef = Ident::new(&name_coef_str, name.span());
@@ -469,6 +472,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             }
                         };
 
+                        /*
                         #[cfg(feature = "serde")]
                         impl<T, Policy, const N: usize> #crate_ident::serde::Serialize for #crate_ident::default::WithDefault<#name<T, N>, Policy>
                             where
@@ -499,6 +503,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 }
                             }
                         };
+                        */
 
                         /*
                         #[cfg(feature = "serde")]
@@ -867,6 +872,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 }
                             };
 
+                            /*
                             #[cfg(feature = "serde")]
                             impl<T, Policy> #crate_ident::serde::Serialize for #crate_ident::default::WithDefault<#name<T>, Policy>
                                 where
@@ -894,6 +900,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                     Ok(Self::new(<#name::<T> as #crate_ident::serde::Deserialize<'de>>::deserialize(deserializer)?))
                                 }
                             }
+                            */
                         }
                     }else
                     {
@@ -951,7 +958,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                     where
                                         T: ::std::default::Default,
                                     {
-                                        #( #[serde(default = || ::std::default::Default::default())] #field_idents: T, )*
+                                        #( #[serde(default = "::std::default::Default::default")] #field_idents: T, )*
                                     }
 
                                     // Use super::#name to construct the original type
@@ -962,6 +969,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 }
                             }
 
+                            /*
                             #[cfg(feature = "serde")]
                             impl<T, Policy> #crate_ident::serde::Serialize for #crate_ident::default::WithDefault<#name<T>, Policy>
                                 where
@@ -1008,6 +1016,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                     }))
                                 }
                             }
+                            */
 
                             /*
                             #[cfg(feature = "serde")]
@@ -1192,63 +1201,64 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     );
 
+    let mut generics_with_policy = input.generics.clone();
+    generics_with_policy
+        .params
+        .push(syn::parse_quote!(Policy));
+
+    generics_with_policy
+        .make_where_clause()
+        .predicates
+        .push(syn::parse_quote!(
+            Policy: #crate_ident::number::Constant<#name #ty_generics>
+        ));
+
+    let (impl_generics_with_policy, ty_generics_with_policy, where_clause_with_policy) =
+        generics_with_policy.split_for_impl();
+
+
 
     let expanded = quote!
     {
         #input
-
-        /*
-        impl #impl_generics ::std::convert::From<#name_coef #ty_generics> for #name #ty_generics
-        {
-            #[inline(always)]
-            fn from(coef: #name_coef #ty_generics) -> Self { coef.value }
-        }
-
-        /// Default value is One.
-        ///
-        /// Same for missing value during deserialization (useful with `#[non_exhaustive]`).
-        pub struct #name_coef #impl_generics
-        {
-            pub value: #name #ty_generics ,
-        }
-
-        impl #impl_generics ::std::convert::From<#name #ty_generics> for #name_coef #ty_generics
-        {
-            #[inline(always)]
-            fn from(value: #name #ty_generics) -> Self { Self::new(value) }
-        }
-        impl #impl_generics #name_coef #ty_generics
-        {
-            #[inline(always)]
-            pub const fn new(value: #name #ty_generics) -> Self { Self { value } }
-        }
-        */
-
-        /*
-        Each type define what is the Default;
-        Zero for Vector
-        Unit Rectangle for Rectangle,
-        White for Color
-
-        impl #impl_generics ::std::default::Default for #name #ty_generics
-            where Self: #crate_ident::number::Zero
-        {
-            fn default() -> Self { <Self as #crate_ident::number::Zero>::ZERO }
-        }
-        */
-        /*
-
-        impl #impl_generics ::std::default::Default for #name_coef #ty_generics
-            where Self: #crate_ident::number::One
-        {
-            fn default() -> Self { <Self as #crate_ident::number::One>::ONE }
-        }
-        */
-
         #basic_impl
 
         #array_impl
         #specific_impl
+
+        /// Used to define default value,
+        /// and different deserialization based on a constant for non_exhaustive/missing field.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub struct #name_with_default #impl_generics_with_policy
+            where Policy: #crate_ident::number::Constant<T>
+        {
+            pub value: #name #ty_generics,
+            phantom: ::core::marker::PhantomData<Policy>,
+        }
+        /*
+        impl<T,Policy> ::std::convert::From<T> for #name_with_default<T,Policy>
+            where Policy: #crate_ident::number::Constant<T>
+        {
+            fn from(value: T) -> Self {
+                Self::new(value)
+            }
+        }
+
+        impl<T,Policy> #name_with_default<T,Policy>
+            where Policy: #crate_ident::number::Constant<T>
+        {
+            pub const fn new(value: T) -> Self { Self { value, phantom: PhantomData }}
+            pub fn into_value(self) -> T { self.value }
+        }
+
+        impl<T,Policy> Default for #name_with_default<T,Policy>
+            where Policy: #crate_ident::number::Constant<T>
+        {
+            fn default() -> Self {
+                Self::new(Policy::CONSTANT)
+            }
+        }
+        */
     };
 
 
