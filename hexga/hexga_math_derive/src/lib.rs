@@ -114,6 +114,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
 
+    let name_coef_str = format!("{}Coef", &input.ident);
+    let name_coef = Ident::new(&name_coef_str, name.span());
+
+
     let is_array_struct = input.generics.params.iter().any(|p| matches!(p, syn::GenericParam::Const(_)));
     let array_impl = if is_array_struct {
         quote! {
@@ -330,6 +334,18 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
+
+            unsafe impl<T, const N : usize> #crate_ident::hexga_core::bit::BitAllUsed for #name_coef<T,N> where T:BitAllUsed {}
+            unsafe impl<T, const N : usize> #crate_ident::hexga_core::bit::BitZero for #name_coef<T,N> where T: BitZero {}
+            impl<T, const N : usize> #crate_ident::hexga_core::bit::BitPattern for #name_coef<T,N> where T: BitPattern, [T::Bits;N] : BitAnyPattern
+            {
+                type Bits = [T::Bits;N];
+
+                fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
+                    bits.iter().all(|b| T::is_bit_pattern_valid(b))
+                }
+            }
+
             #crate_ident::map_on::map_on_constant!
             (
                 (($trait_name: tt, $constant_name: tt)) =>
@@ -451,9 +467,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             };
 
-            /*
             #[cfg(feature = "serde")]
-            impl<T, const N: usize> ::serde::Serialize for #crate_ident::coefficient::Coef<#name<T, N>>
+            impl<T, const N: usize> ::serde::Serialize for #name_coef<T, N>
                 where #name<T, N>: ::serde::Serialize,
             {
                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -465,7 +480,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             }
 
 			#[cfg(feature = "serde")]
-            impl<'de, T, const N: usize> ::serde::Deserialize<'de> for #crate_ident::coefficient::Coef<#name<T, N>>
+            impl<'de, T, const N: usize> ::serde::Deserialize<'de> for #name_coef<T, N>
                 where #name<T, N>: ::serde::Deserialize<'de>
             {
                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -474,7 +489,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 {
                     Ok(Self::new(#name::<T, N>::deserialize(deserializer)?))
                 }
-            }*/
+            }
         }
     } else {
 
@@ -569,6 +584,30 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         }
                     }
                 };
+
+                #[cfg(feature = "serde")]
+                impl<T> ::serde::Serialize for #name_coef<T>
+                    where #name<T>: ::serde::Serialize,
+                {
+                    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                    where
+                        S: ::serde::Serializer,
+                    {
+                        self.value.serialize(serializer)
+                    }
+                }
+
+                #[cfg(feature = "serde")]
+                impl<'de, T> ::serde::Deserialize<'de> for #name_coef<T>
+                    where #name<T>: ::serde::Deserialize<'de>
+                {
+                    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                    where
+                        D: ::serde::Deserializer<'de>,
+                    {
+                        Ok(Self::new(#name::<T>::deserialize(deserializer)?))
+                    }
+                }
             }
         }else
         {
@@ -646,6 +685,67 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 }
 
                                 Ok(#name { #(#field_idents),* })
+                            }
+                        }
+
+                        const FIELDS: &'static [&'static str] = &[#(#field_names),*];
+                        deserializer.deserialize_struct(stringify!(#name), FIELDS, Visitor { marker: ::std::marker::PhantomData })
+                    }
+                }
+
+                #[cfg(feature = "serde")]
+                impl<T> ::serde::Serialize for #name_coef<T>
+                    where #name<T>: ::serde::Serialize,
+                {
+                    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                    where
+                        S: ::serde::Serializer,
+                    {
+                        self.value.serialize(serializer)
+                    }
+                }
+
+                #[cfg(feature = "serde")]
+                impl<'de, T> ::serde::Deserialize<'de> for #name_coef<T>
+                where
+                    T: ::serde::Deserialize<'de> + #crate_ident::number::One
+                {
+                    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                    where
+                        D: ::serde::Deserializer<'de>
+                    {
+                        #[derive(::serde::Deserialize)]
+                        #[allow(non_camel_case_types)]
+                        enum Field { #(#field_idents),* }
+
+                        struct Visitor<T> {
+                            marker: ::std::marker::PhantomData<T>,
+                        }
+
+                        impl<'de, T> ::serde::de::Visitor<'de> for Visitor<T>
+                        where
+                            T: ::serde::Deserialize<'de> + #crate_ident::number::One
+                        {
+                            type Value = #name_coef<T>;
+
+                            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                                write!(formatter, "struct {}", stringify!(#name))
+                            }
+
+                            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+                            where
+                                A: ::serde::de::MapAccess<'de>,
+                            {
+                                // initialize all fields to One
+                                #(let mut #field_idents: T = #crate_ident::number::One::ONE;)*
+
+                                while let Some(key) = map.next_key()? {
+                                    match key {
+                                        #(Field::#field_idents => #field_idents = map.next_value()?,)*
+                                    }
+                                }
+
+                                Ok(#name_coef::new(#name{ #(#field_idents),* }))
                             }
                         }
 
@@ -858,6 +958,17 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
+
+            unsafe impl<T> #crate_ident::hexga_core::bit::BitAllUsed for #name_coef<T> where T:BitAllUsed {}
+            unsafe impl<T> #crate_ident::hexga_core::bit::BitZero for #name_coef<T> where T: BitZero {}
+            impl<T> #crate_ident::hexga_core::bit::BitPattern for #name_coef<T> where T: BitPattern, [T::Bits;#dim] : BitAnyPattern
+            {
+                type Bits = [T::Bits;#dim];
+                fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
+                    bits.iter().all(|b| T::is_bit_pattern_valid(b))
+                }
+            }
+
             #crate_ident::map_on::map_on_constant!
             (
                 (($trait_name: tt, $constant_name: tt)) =>
@@ -865,6 +976,11 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     impl<T> #crate_ident::number::$trait_name for #name<T> where T: #crate_ident::number::$trait_name + ::std::marker::Copy
                     {
                         const $constant_name: Self = Self::from_array(<[T;#dim]>::$constant_name);
+                    }
+
+                    impl<T> #crate_ident::number::$trait_name for #name_coef<T> where T: #crate_ident::number::$trait_name + ::std::marker::Copy
+                    {
+                        const $constant_name: Self = Self::new(<#name<T> as #crate_ident::number::$trait_name>::$constant_name);
                     }
                 }
             );
@@ -928,6 +1044,30 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         #input
+
+        /// Default value is One.
+        ///
+        /// Same for missing value during deserialization (useful with `#[non_exhaustive]`).
+        #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub struct #name_coef #impl_generics
+        {
+            pub value: #name #ty_generics ,
+        }
+        impl #impl_generics ::std::convert::From<#name #ty_generics> for #name_coef #ty_generics
+        {
+            #[inline(always)]
+            fn from(value: #name #ty_generics) -> Self { Self::new(value) }
+        }
+        impl #impl_generics #name_coef #ty_generics
+        {
+            #[inline(always)]
+            pub const fn new(value: #name #ty_generics) -> Self { Self { value } }
+        }
+        impl #impl_generics ::std::default::Default for #name_coef #ty_generics
+            where Self: #crate_ident::number::One
+        {
+            fn default() -> Self { <Self as #crate_ident::number::One>::ONE }
+        }
 
         impl #impl_generics #name #ty_generics {
             pub const LEN: usize = #dim;
