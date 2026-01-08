@@ -493,9 +493,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         };
 
 
-                        /*
                         #[cfg(feature = "serde")]
-                        impl<T, Policy, const N: usize> #crate_ident::serde::Serialize for #name_with_default #impl_generics_with_policy
+                        impl<T, Policy, const N: usize> #crate_ident::serde::Serialize for #name_with_default #ty_generics_with_policy
                             where
                             #name<T, N>: #crate_ident::serde::Serialize,
                             Policy: #crate_ident::number::Constant<T>,
@@ -511,7 +510,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         #[cfg(feature = "serde")]
                         const _ : () =
                         {
-                            impl<'de, T, Policy, const N: usize> #crate_ident::serde::Deserialize<'de> for #name_with_default #impl_generics_with_policy
+                            impl<'de, T, Policy, const N: usize> #crate_ident::serde::Deserialize<'de> for #name_with_default #ty_generics_with_policy
                                 where
                                 #name<T, N> : #crate_ident::serde::Deserialize<'de>,
                                 Policy: #crate_ident::number::Constant<T>,
@@ -524,33 +523,6 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 }
                             }
                         };
-                        */
-
-                        /*
-                        #[cfg(feature = "serde")]
-                        impl<T, const N: usize> #crate_ident::serde::Serialize for #name_coef<T, N>
-                            where #name<T, N>: #crate_ident::serde::Serialize,
-                        {
-                            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-                            where
-                                S: #crate_ident::serde::Serializer,
-                            {
-                                self.value.serialize(serializer)
-                            }
-                        }
-
-                        #[cfg(feature = "serde")]
-                        impl<'de, T, const N: usize> #crate_ident::serde::Deserialize<'de> for #name_coef<T, N>
-                            where #name<T, N>: #crate_ident::serde::Deserialize<'de>
-                        {
-                            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-                            where
-                                D: #crate_ident::serde::Deserializer<'de>,
-                            {
-                                Ok(Self::new(#name::<T, N>::deserialize(deserializer)?))
-                            }
-                        }
-                        */
                     }
                 }
             }
@@ -893,9 +865,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 }
                             };
 
-                            /*
                             #[cfg(feature = "serde")]
-                            impl<T, Policy> #crate_ident::serde::Serialize for #crate_ident::default::WithDefault<#name<T>, Policy>
+                            impl<T, Policy> #crate_ident::serde::Serialize for #name_with_default #ty_generics_with_policy
                                 where
                                 #name<T>: #crate_ident::serde::Serialize,
                                 Policy: #crate_ident::number::Constant<T>,
@@ -909,19 +880,21 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             }
 
                             #[cfg(feature = "serde")]
-                            impl<'de, T, Policy> #crate_ident::serde::Deserialize<'de> for #crate_ident::default::WithDefault<#name<T>, Policy>
-                                where
-                                #name<T>: #crate_ident::serde::Deserialize<'de>,
-                                Policy: #crate_ident::number::Constant<T>,
+                            const _ : () =
                             {
-                                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-                                where
-                                    D: #crate_ident::serde::Deserializer<'de>,
+                                impl<'de, T, Policy> #crate_ident::serde::Deserialize<'de> for #name_with_default #ty_generics_with_policy
+                                    where
+                                    #name<T> : #crate_ident::serde::Deserialize<'de>,
+                                    Policy: #crate_ident::number::Constant<T>,
                                 {
-                                    Ok(Self::new(<#name::<T> as #crate_ident::serde::Deserialize<'de>>::deserialize(deserializer)?))
+                                    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                                    where
+                                        D: #crate_ident::serde::Deserializer<'de>,
+                                    {
+                                        Ok(Self::new(<#name<T> as #crate_ident::serde::Deserialize<'de>>::deserialize(deserializer)?))
+                                    }
                                 }
-                            }
-                            */
+                            };
                         }
                     }else
                     {
@@ -970,7 +943,6 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 where
                                     D: #crate_ident::serde::Deserializer<'de>,
                                 {
-
                                     #[derive(::serde::Deserialize)]
                                     #[allow(non_camel_case_types)]
                                     #[serde(rename = #name_str)]
@@ -990,6 +962,60 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 }
                             }
 
+                            #[cfg(feature = "serde")]
+                            impl<T, Policy> #crate_ident::serde::Serialize for #name_with_default #ty_generics_with_policy
+                                where
+                                T: #crate_ident::serde::Serialize,
+                                Policy: #crate_ident::number::Constant<T>,
+                            {
+                                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                                where
+                                    S: #crate_ident::serde::Serializer,
+                                {
+                                    <#name<T> as #crate_ident::serde::Serialize>::serialize(&self.value, serializer)
+                                }
+                            }
+
+                            #[cfg(feature = "serde")]
+                            const _ : () =
+                            {
+                                impl<'de, T, Policy> #crate_ident::serde::Deserialize<'de> for #name_with_default #ty_generics_with_policy
+                                    where
+                                    T : #crate_ident::serde::Deserialize<'de>,
+                                    Policy: #crate_ident::number::Constant<T>,
+                                {
+                                    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                                    where
+                                        D: #crate_ident::serde::Deserializer<'de>,
+                                    {
+                                        fn __default_val<T, Policy>() -> T
+                                        where
+                                            Policy: #crate_ident::number::Constant<T>,
+                                        {
+                                            <Policy as #crate_ident::number::Constant<T>>::CONSTANT
+                                        }
+
+                                        #[derive(::serde::Deserialize)]
+                                        #[allow(non_camel_case_types)]
+                                        #[serde(rename = #name_str)]
+                                        struct __Temp<T, Policy>
+                                        where
+                                            Policy: #crate_ident::number::Constant<T>,
+                                        {
+                                            #( #[serde(default = "__default_val::<T, Policy>")] #field_idents: T, )*
+
+                                            #[serde(skip)]
+                                            __phantom_policy : std::marker::PhantomData<Policy>,
+                                        }
+
+                                        // Use super::#name to construct the original type
+                                        let temp = <__Temp::<T, Policy> as #crate_ident::serde::Deserialize<'de>>::deserialize(deserializer)?;
+                                        Ok(Self::new(#name {
+                                            #(#field_idents: temp.#field_idents),*
+                                        }))
+                                    }
+                                }
+                            };
                             /*
                             #[cfg(feature = "serde")]
                             impl<T, Policy> #crate_ident::serde::Serialize for #crate_ident::default::WithDefault<#name<T>, Policy>
