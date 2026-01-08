@@ -1154,6 +1154,16 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             phantom: ::core::marker::PhantomData<Policy>,
         }
 
+        /*
+        impl #impl_generics_with_policy ::std::default::Default for #name_with_default #ty_generics_with_policy
+            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+        {
+            fn default() -> Self {
+                Self::new(#name :: #ty_generics :: from_array(::std::array::from_fn(|_| <Policy as #crate_ident::number::Constant<#generic_type_ident>>::CONSTANT)))
+            }
+        }
+        */
+
         impl #impl_generics_with_policy ::std::convert::From<#name #ty_generics> for #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::number::Constant<#generic_type_ident>
         {
@@ -1177,20 +1187,19 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
         }
 
         #[cfg(feature = "serde")]
-        impl #impl_generics_with_policy #crate_ident::default::WithDefault<Policy> for #name #ty_generics
+        impl #impl_generics_with_policy #crate_ident::default::WithDefault<#generic_type_ident, Policy> for #name #ty_generics
             where
             Self : #crate_ident::serde::Serialize + for<'de> #crate_ident::serde::Deserialize<'de>,
-            Policy: #crate_ident::number::Constant<Self::Item>
+            #generic_type_ident: #crate_ident::serde::Serialize + for<'de> #crate_ident::serde::Deserialize<'de>,
+            Policy: #crate_ident::number::Constant<#generic_type_ident>
         {
-            type Item = #generic_type_ident;
             type WithDefault = #name_with_default #ty_generics_with_policy;
         }
 
         #[cfg(not(feature = "serde"))]
-        impl #impl_generics_with_policy #crate_ident::default::WithDefault<Policy> for #name #ty_generics
-            where Policy: #crate_ident::number::Constant<Self::Item>
+        impl #impl_generics_with_policy #crate_ident::default::WithDefault<#generic_type_ident, Policy> for #name #ty_generics
+            where Policy: #crate_ident::number::Constant<#generic_type_ident>
         {
-            type Item = #generic_type_ident;
             type WithDefault = #name_with_default #ty_generics_with_policy;
         }
         /*

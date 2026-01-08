@@ -1,18 +1,18 @@
 use super::*;
 
 #[cfg(feature = "serde")]
-pub trait WithDefault<P> : Serialize + for<'de> Deserialize<'de>
-    where P: Constant<Self::Item>
+pub trait WithDefault<T,P> : Serialize + for<'de> Deserialize<'de>
+    where P: Constant<T>
 {
-    type Item;
-    type WithDefault : Serialize + for<'de> Deserialize<'de> + Default;
+    type WithDefault : Serialize + for<'de> Deserialize<'de>;
 }
+//    type WithDefault : Serialize + for<'de> Deserialize<'de> + Default + From<Self> + Into<Self>;
+
 
 #[cfg(not(feature = "serde"))]
-pub trait WithDefault<P> : where P: Constant<Self::Item>
+pub trait WithDefault<T,P> : where P: Constant<T>
 {
-    type Item;
-    type WithDefault : Default;
+    type WithDefault;
 }
 
 

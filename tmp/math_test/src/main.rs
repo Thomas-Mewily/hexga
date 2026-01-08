@@ -117,14 +117,14 @@ pub struct Damage<T>
     melee: T,
 }
 
-
+/*
 pub trait WithDefault<P> : Serialize + for<'de> Deserialize<'de>
     where P: hexga_math::number::Constant<Self::Item>
 {
     type Item;
     type Output : Serialize + for<'de> Deserialize<'de> + Default;
 }
-
+*/
 
 fn main()
 {
