@@ -1186,22 +1186,16 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             pub fn into_value(self) -> #name #ty_generics { self.value }
         }
 
-        #[cfg(feature = "serde")]
         impl #impl_generics_with_policy #crate_ident::default::WithDefault<#generic_type_ident, Policy> for #name #ty_generics
             where
-            Self : #crate_ident::serde::Serialize + for<'de> #crate_ident::serde::Deserialize<'de>,
-            #generic_type_ident: #crate_ident::serde::Serialize + for<'de> #crate_ident::serde::Deserialize<'de>,
+            Self : #crate_ident::hexga_core::cfg::CfgSerialize + for<'de> #crate_ident::hexga_core::cfg::CfgDeserialize<'de>,
+            #generic_type_ident: #crate_ident::hexga_core::cfg::CfgSerialize + for<'de> #crate_ident::hexga_core::cfg::CfgDeserialize<'de>,
             Policy: #crate_ident::number::Constant<#generic_type_ident>
         {
             type WithDefault = #name_with_default #ty_generics_with_policy;
         }
 
-        #[cfg(not(feature = "serde"))]
-        impl #impl_generics_with_policy #crate_ident::default::WithDefault<#generic_type_ident, Policy> for #name #ty_generics
-            where Policy: #crate_ident::number::Constant<#generic_type_ident>
-        {
-            type WithDefault = #name_with_default #ty_generics_with_policy;
-        }
+
         /*
         impl<T,Policy> Default for #name_with_default<T,Policy>
             where Policy: #crate_ident::number::Constant<T>

@@ -1,20 +1,12 @@
 use super::*;
 
 #[cfg(feature = "serde")]
-pub trait WithDefault<T,P> : Serialize + for<'de> Deserialize<'de>
+pub trait WithDefault<T,P> : CfgSerialize + for<'de> CfgDeserialize<'de>
     where P: Constant<T>
 {
-    type WithDefault : Serialize + for<'de> Deserialize<'de>;
+    type WithDefault : Serialize + for<'de> Deserialize<'de> + From<Self> + Into<Self>;
 }
 //    type WithDefault : Serialize + for<'de> Deserialize<'de> + Default + From<Self> + Into<Self>;
-
-
-#[cfg(not(feature = "serde"))]
-pub trait WithDefault<T,P> : where P: Constant<T>
-{
-    type WithDefault;
-}
-
 
 /*
 /// Can be used to define default value,
