@@ -3,6 +3,11 @@
 hexga_map_on
 
 hexga_number
+
+hexga_bit_derive
+hexga_bit
+
+
 hexga_core
 
 // deprecated
