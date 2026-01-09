@@ -8,6 +8,10 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
+description = "A bytemuck wrapper for hexga. A crate for manipulating bytes"
+keywords = ["transmute", "bytes", "casting"]
+categories = ["encoding", "no-std"]
+
 [features]
 default = ["derive"]
 

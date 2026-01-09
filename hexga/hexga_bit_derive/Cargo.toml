@@ -8,6 +8,10 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
+description = "Derive macro for hexga_bit"
+keywords = []
+categories = []
+
 [lib]
 proc-macro = true
 
