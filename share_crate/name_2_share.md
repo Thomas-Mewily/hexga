@@ -34,6 +34,9 @@ hexga_utils
 
 
 hexga_image
+
+hexga_asset
+
 hexga
 hexga_wgpu
 hexga_graphics
