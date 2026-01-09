@@ -4,7 +4,7 @@ use super::*;
 pub trait WithDefault<T,P> : CfgSerialize + for<'de> CfgDeserialize<'de>
     where P: Constant<T>
 {
-    type WithDefault : CfgSerialize + for<'de> CfgDeserialize<'de> + From<Self> + Into<Self> + Default;
+    type WithDefault : CfgSerialize + for<'de> CfgDeserialize<'de> + From<Self> + Into<Self> + Default + AsRef<Self> + AsMut<Self>;
 }
 //    type WithDefault : Serialize + for<'de> Deserialize<'de> + Default + From<Self> + Into<Self>;
 

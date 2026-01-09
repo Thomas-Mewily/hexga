@@ -1179,6 +1179,22 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         }
 
+        impl #impl_generics_with_policy ::std::convert::AsRef<#name #ty_generics> for #name_with_default #ty_generics_with_policy
+            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+        {
+            fn as_ref(&self) -> &#name #ty_generics {
+                &self.value
+            }
+        }
+
+        impl #impl_generics_with_policy ::std::convert::AsMut<#name #ty_generics> for #name_with_default #ty_generics_with_policy
+            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+        {
+            fn as_mut(&mut self) -> &mut #name #ty_generics {
+                &mut self.value
+            }
+        }
+
         impl #impl_generics_with_policy #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::number::Constant<#generic_type_ident>
         {
