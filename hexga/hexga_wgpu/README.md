@@ -6,7 +6,8 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## HexGa Wgpu
 
-A wrapper to make wgpu accessible from a singleton
+A wrapper to make wgpu accessible from a singleton.
+Definitely not usable right now.
 
 ## Main Hexga crate
 

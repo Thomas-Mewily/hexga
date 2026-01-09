@@ -4,6 +4,8 @@ hexga_map_on
 
 hexga_number
 hexga_core
+
+// deprecated
 hexga_singleton
 
 hexga_encoding_derive
@@ -21,12 +23,14 @@ hexga_array
 hexga_typedef
 hexga_generational
 
+hexga_math_derive
 hexga_math
 hexga_utils
 
 
 hexga_image
 hexga
+hexga_wgpu
 hexga_engine
 //hexga_undo_redo
 

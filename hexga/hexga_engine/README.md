@@ -7,7 +7,7 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 ## HexGa Engine
 
 The multi media hexga engine for making game and application.
-
+Definitely not usable right now.
 It's still very experimental/not finished, expect significant (breaking) changes.
 
 ## Main Hexga crate

@@ -82,7 +82,7 @@ fn img_test()
     ).save("./image_test.png").unwrap();
 }
 
-use std::ops::*;
+use std::{num::Saturating, ops::*};
 
 
 
@@ -129,6 +129,10 @@ pub trait WithDefault<P> : Serialize + for<'de> Deserialize<'de>
 fn main()
 {
     let x = Damage::<i32>::ONE * Damage::<i32>::MINUS_ONE;
+
+    let j = Damage::<Saturating<u8>>::splat(Saturating(140)) + Damage::<Saturating<u8>>::splat(Saturating(170));
+    println!("{}", j);
+
     println!("{}", Damage::<u8>::ONE.to_ron().unwrap());
     println!("{}", Damage::<u8>::from_ron("(physic:1,magic:1,melee:1)").unwrap());
     println!("{}", Damage::<u8>::from_ron("(physic:1,melee:1)").unwrap());
