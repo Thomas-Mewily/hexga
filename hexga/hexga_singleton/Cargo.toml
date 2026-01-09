@@ -9,7 +9,7 @@ edition.workspace = true
 readme = "README.md"
 
 keywords = []
-description = ""
+description = "merged inside the hexga_core crate. This crate is deprecated."
 categories = []
 
 [dependencies]

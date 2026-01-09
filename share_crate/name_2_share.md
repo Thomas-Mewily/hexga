@@ -36,6 +36,7 @@ hexga_utils
 hexga_image
 hexga
 hexga_wgpu
+hexga_graphics
 hexga_engine
 //hexga_undo_redo
 

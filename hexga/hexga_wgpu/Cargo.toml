@@ -8,7 +8,7 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
-description = ""
+description = "wgpu wrapped for hexga"
 keywords = ["multimedia", "graphics"]
 categories = ["game-development", "graphics"]
 

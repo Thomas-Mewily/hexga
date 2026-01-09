@@ -8,7 +8,7 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
-description = ""
+description = "The default graphic renderer of hexga_engine."
 keywords = ["multimedia", "graphics"]
 categories = ["game-development", "graphics"]
 
