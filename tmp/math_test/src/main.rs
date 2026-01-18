@@ -110,25 +110,57 @@ struct Foo
 
 #[math_vec]
 #[non_exhaustive]
-pub struct Damage<T>
+pub struct DamageOf<T>
 {
     physic: T,
     magic: T,
     melee: T,
 }
+type Damage = DamageOf<i32>;
 
-/*
-pub trait WithDefault<P> : Serialize + for<'de> Deserialize<'de>
-    where P: hexga_math::number::Constant<Self::Item>
+
+#[derive(Serialize, Deserialize)]
+pub enum DamageVersion
 {
-    type Item;
-    type Output : Serialize + for<'de> Deserialize<'de> + Default;
+    Version(Damage),
+    Version2(Damage),
+    //
 }
-*/
 
-fn main()
+struct Linear<T>
 {
+    origin: T,
+    coef: T,
+}
+
+
+fn x2()
+{
+    // A + Bx
+
+    dbg!(Vector3::new(true, false, true) & Vector3::new(true, true, false));
+    let x = Vector3::new(true, false, true);
+    let f = &x.x;
+
+    println!("{}", DamageOf::<u8>::ONE.to_ron().unwrap());
+    println!("{}", DamageOf::<u8>::from_ron("(melee:18,physic:42)").unwrap());
+    println!("{}", <DamageOf::<u8> as WithDefault<u8,ConstantOne<u8>>>::WithDefault::from_ron("(physic:1,melee:1)").unwrap().into_value());
+
+    //println!("{}", DamageVersion::Version2(DamageOf::MAX).to_ron().unwrap());
+
+
+    //dbg!()
+    //println!("{}", <Damage::<u8> as WithDefault<u8,ConstantMax<u8>>>::WithDefault::from_ron("(physic:1,melee:1)").unwrap().into_value());
+
+
+
+    //println!("{}", DamageOf::<u8>::from_ron("(1, 1, 1)").unwrap());
+
+    //println!("{}", DamageOf::<u8>::from_ron("(physic:1,magic:1,melee:1)").unwrap());
+
+    /*
     let x = Damage::<i32>::ONE * Damage::<i32>::MINUS_ONE;
+
 
     let j = Damage::<Saturating<u8>>::splat(Saturating(140)) + Damage::<Saturating<u8>>::splat(Saturating(170));
     println!("{}", j);
@@ -137,6 +169,32 @@ fn main()
     println!("{}", Damage::<u8>::from_ron("(physic:1,magic:1,melee:1)").unwrap());
     println!("{}", Damage::<u8>::from_ron("(physic:1,melee:1)").unwrap());
     println!("{}", <Damage::<u8> as WithDefault<u8,ConstantMax<u8>>>::WithDefault::from_ron("(physic:1,melee:1)").unwrap().into_value());
-
+    */
     //println!("{}", DamageWithDefault::<u8, ConstantMax<u8>>::from_ron("(physic:1,melee:1)").unwrap().into_value());
+}
+
+#[bit_index]
+#[repr(u8)]
+pub enum Color
+{
+    Red,
+    Green,
+    Blue = 5,
+    Yellow, // = 6
+    RedAndBlue = Color::Red | Self::Blue,
+    Purple, // 7
+    GreenAndYellowAndPurple = ((Color::Yellow | Self::Purple)) | Self::Green,
+}
+
+fn main()
+{
+    let color = Color::Red | Color::Green;
+    dbg!(&color);
+
+    for c in color
+    {
+        dbg!(c);
+    }
+
+    println!("hello world");
 }
