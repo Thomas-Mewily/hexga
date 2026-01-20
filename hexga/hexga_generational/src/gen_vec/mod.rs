@@ -363,6 +363,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
     #[inline(always)]
     pub fn get_entry_from_index(&self, index: usize) -> Option<&Entry<T,Gen>> { self.values.get(index) }
+    // Do not expose, having a &mut Entry<T,Gen> allow to mutate the Occupied/Vacant state of the entry, breaking invariant
     #[inline(always)]
     pub(crate) fn get_entry_mut_from_index(&mut self, index: usize) -> Option<&mut Entry<T,Gen>> { self.values.get_mut(index) }
 
@@ -373,6 +374,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
     #[inline(always)]
     pub fn get_entry(&self, id: GenIDOf<Gen>) -> Option<&Entry<T,Gen>> { self.get_entry_from_index(id.index()).filter(|v| v.generation() == id.generation()) }
+    // Do not expose, having a &mut Entry<T,Gen> allow to mutate the Occupied/Vacant state of the entry, breaking invariant
     #[inline(always)]
     pub(crate) fn get_entry_mut(&mut self, id: GenIDOf<Gen>) -> Option<&mut Entry<T,Gen>> { self.get_entry_mut_from_index(id.index()).filter(|v| v.generation() == id.generation()) }
 
