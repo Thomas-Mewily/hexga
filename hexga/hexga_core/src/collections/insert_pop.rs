@@ -53,7 +53,7 @@ impl<Q,K> CollectionMap<Q,K> for BTreeSet<K>
     K: Borrow<Q>, Q: ?Sized
 {}
 
-/// Doing operation on other entry (remove them, edit them) will not invalidate the current entry.
+/// Doing operation on an entry (remove them, edit them) will not invalidate the others entries.
 ///
 /// Implementation include `HashMap`, `BTreeMap`, `HashSet`, `BTreeSet`, `GenVec`...
 pub trait CollectionStableKey {}

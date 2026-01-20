@@ -63,3 +63,7 @@ impl                    Length for String           { fn len(&self) -> usize { s
 impl                    Length for str              { fn len(&self) -> usize { self.len() } }
 impl                    Length for OsStr            { fn len(&self) -> usize { self.len() } }
 impl<T, const N: usize> Length for [T; N]           { fn len(&self) -> usize { N } }
+
+impl<T: ?Sized> Length for &T where T: Length { fn len(&self) -> usize { (*self).len() } }
+impl<T: ?Sized> Length for &mut T where T: Length { fn len(&self) -> usize { (**self).len() } }
+

@@ -32,7 +32,7 @@ impl<T> EntryValue<T>
     pub fn get_mut(&mut self) -> Option<&mut T> { if let Self::Occupied(v) = self { Some(v) } else { None }}
 
     /// Panic is the entry is free
-    pub(crate) fn take_and_set_vacant(&mut self, free_head: usize) -> T {
+    pub(crate) fn take_and_set_vacant_unchecked(&mut self, free_head: usize) -> T {
         match std::mem::replace(self, EntryValue::Vacant(free_head)) {
             EntryValue::Occupied(value) => value,
             EntryValue::Vacant(_) => panic!("Entry was already free"),
@@ -52,7 +52,20 @@ pub struct Entry<T,Gen:IGeneration=Generation>
     generation: Gen,
 }
 
-impl <T,Gen:IGeneration> Entry<T,Gen>
+impl<T,Gen:IGeneration> From<(EntryValue<T>, Gen)> for Entry<T,Gen>
+{
+    fn from((value, generation): (EntryValue<T>, Gen)) -> Self {
+        Self::new(value, generation)
+    }
+}
+impl<T,Gen:IGeneration> From<Entry<T,Gen>> for (EntryValue<T>, Gen)
+{
+    fn from(entry: Entry<T,Gen>) -> Self {
+        (entry.value, entry.generation)
+    }
+}
+
+impl<T,Gen:IGeneration> Entry<T,Gen>
 {
     pub fn new(value: EntryValue<T>, generation: Gen) -> Self { Self { value, generation }}
     pub fn generation(&self) -> Gen { self.generation }
@@ -82,6 +95,7 @@ pub struct GenVecOf<T,Gen:IGeneration=Generation>
     free: usize,
     len: usize,
 }
+
 
 impl<T, Gen:IGeneration> Hash for GenVecOf<T,Gen> where T: Hash
 {
@@ -301,7 +315,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         }
 
         let can_not_decrease = !entry.can_decrement_generation();
-        let val = entry.value.take_and_set_vacant(free);
+        let val = entry.value.take_and_set_vacant_unchecked(free);
         self.len -= 1;
 
         if free.is_max() && can_not_decrease
@@ -414,7 +428,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         let Some(entry) = self.get_entry_mut_from_index(index) else { return None; };
         if entry.value.is_vacant() { return None; }
 
-        let val = entry.value.take_and_set_vacant(head);
+        let val = entry.value.take_and_set_vacant_unchecked(head);
 
         if entry.increment_generation()
         {
@@ -953,7 +967,7 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
 
         for (index, entry) in other.values.iter_mut().enumerate().filter(|(_,s)| s.have_value())
         {
-            let val = entry.value.take_and_set_vacant(usize::MAX);
+            let val = entry.value.take_and_set_vacant_unchecked(usize::MAX);
             let old_id = entry.get_id(index);
             let new_id = self.insert(val);
             h.insert(old_id, new_id);
@@ -990,7 +1004,13 @@ impl<T,Gen:IGeneration> GenIDUpdater<T,Gen> for HashMap<GenIDOf<Gen>,GenIDOf<Gen
         *dest = self.get(&dest).copied().unwrap_or(GenIDOf::NULL);
     }
 }
-
+impl<T,Gen:IGeneration> GenIDUpdater<T,Gen> for GenVecOf<GenIDOf<Gen>,Gen>
+{
+    fn update(&self, dest: &mut GenIDOf<Gen>) {
+        debug_assert!(dest.is_null() || self.get(*dest).is_some());
+        *dest = self.get(*dest).copied().unwrap_or(GenIDOf::NULL);
+    }
+}
 
 pub trait GenIDUpdatable<T=Self,Gen:IGeneration=Generation>: Sized
 {
@@ -1007,6 +1027,18 @@ impl<A,Gen:IGeneration> Extend<(GenIDOf<Gen>, A)> for GenVecOf<A,Gen> where A: G
 {
     fn extend<T: IntoIterator<Item = (GenIDOf<Gen>, A)>>(&mut self, iter: T)
     {
+        /*
+        let mut it = iter.into_iter();
+        let mut updater = GenVec::with_capacity(it.size_hint().0);
+
+        for (old_id, val) in it
+        {
+            // Not technically possible to insert_at a given position with the current api (then manually change the generation)
+            let new_id = self.insert(val);
+            //h.insert(old_id, new_id);
+        }
+        */
+
         let it = iter.into_iter();
         let mut h = HashMap::with_capacity(it.size_hint().0);
 
@@ -1583,3 +1615,6 @@ mod tests
     }
 
 }
+
+// Note: it is useless to have view_mut type (for iterating over slot) because this will break the invariant
+// Todo: be able to change the generation of a slot ?
