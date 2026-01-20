@@ -43,12 +43,16 @@ impl<S,T> ToTime<T> for S where S : ToTimeComposite<Output = TimeOf<T>>, T : Cas
 pub trait ToTimeComposite
 {
     type Output;
-    fn ms  (self) -> Self::Output;
-    fn s   (self) -> Self::Output;
-    /// With an `s` to avoid the confusion with the min function...
-    fn mins(self) -> Self::Output;
-    fn hour(self) -> Self::Output;
-    fn day (self) -> Self::Output;
+    /// Creates a new Time from the specified number of whole milliseconds.
+    fn millis(self) -> Self::Output;
+    /// Creates a new Time from the specified number of whole seconds.
+    fn secs  (self) -> Self::Output;
+    /// Creates a new Time from the specified number of whole minutes.
+    fn mins  (self) -> Self::Output;
+    /// Creates a new Time from the specified number of whole hours.
+    fn hours (self) -> Self::Output;
+    /// Creates a new Time from the specified number of whole days.
+    fn days  (self) -> Self::Output;
 }
 
 map_on_number!(
@@ -57,12 +61,11 @@ map_on_number!(
         impl ToTimeComposite for $name
         {
             type Output = Time;
-            fn ms  (self) -> Self::Output { Time::from_ms(self.to_float()) }
-            fn s   (self) -> Self::Output { Time::from_s(self.to_float()) }
-            /// With an `s` to avoid the confusion with the min function...
-            fn mins(self) -> Self::Output { Time::from_mins(self.to_float()) }
-            fn hour(self) -> Self::Output { Time::from_hour(self.to_float()) }
-            fn day (self) -> Self::Output { Time::from_day(self.to_float()) }
+            fn millis(self) -> Self::Output { Time::from_millis(self.to_float()) }
+            fn secs  (self) -> Self::Output { Time::from_secs  (self.to_float()) }
+            fn mins  (self) -> Self::Output { Time::from_mins  (self.to_float()) }
+            fn hours (self) -> Self::Output { Time::from_hours (self.to_float()) }
+            fn days  (self) -> Self::Output { Time::from_days  (self.to_float()) }
         }
     }
 );
@@ -71,11 +74,11 @@ impl<T> ToTimeComposite for T where T: Map, T::Item : ToTimeComposite
 {
     type Output = T::WithType<<T::Item as ToTimeComposite>::Output>;
 
-    fn ms  (self) -> Self::Output { self.map(ToTimeComposite::ms  ) }
-    fn s   (self) -> Self::Output { self.map(ToTimeComposite::s   ) }
-    fn mins(self) -> Self::Output { self.map(ToTimeComposite::mins) }
-    fn hour(self) -> Self::Output { self.map(ToTimeComposite::hour) }
-    fn day (self) -> Self::Output { self.map(ToTimeComposite::day ) }
+    fn millis(self) -> Self::Output { self.map(ToTimeComposite::millis) }
+    fn secs  (self) -> Self::Output { self.map(ToTimeComposite::secs  ) }
+    fn mins  (self) -> Self::Output { self.map(ToTimeComposite::mins  ) }
+    fn hours (self) -> Self::Output { self.map(ToTimeComposite::hours ) }
+    fn days  (self) -> Self::Output { self.map(ToTimeComposite::days  ) }
 }
 
 impl<T:Float> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self) } }
@@ -98,11 +101,11 @@ impl<T:Float> Display for TimeOf<T>
 
         if self.is_strictly_negative() { write!(f, "-")?; }
 
-        Self::display_non_zero_unit(f, self.timer_day(), "d")?;
-        Self::display_non_zero_unit(f, self.timer_hour(), "h")?;
+        Self::display_non_zero_unit(f, self.timer_days(), "d")?;
+        Self::display_non_zero_unit(f, self.timer_hours(), "h")?;
         Self::display_non_zero_unit(f, self.timer_mins(), "min")?;
-        Self::display_non_zero_unit(f, self.timer_s(), "s")?;
-        Self::display_non_zero_unit(f, self.timer_ms(), "ms")?;
+        Self::display_non_zero_unit(f, self.timer_secs(), "s")?;
+        Self::display_non_zero_unit(f, self.timer_millis(), "ms")?;
         Ok(())
     }
 }
@@ -112,94 +115,94 @@ impl<T:Float> TimeOf<T>
     /// milliseconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1000.ms(), 1.s());
+    /// debug_assert_eq!(1000.millis(), 1.secs());
     /// ```
-    pub fn from_ms (ms : T) -> Self  { Self::from_s(ms / 1000.cast_into()) }
+    pub fn from_millis (ms : T) -> Self  { Self::from_secs(ms / 1000.cast_into()) }
 
     /// milliseconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1f32.s().ms(), 1000.);
+    /// debug_assert_eq!(1f32.secs().millis(), 1000.);
     /// ```
-    pub fn ms(self) -> T { self.0 * 1000.cast_into() }
+    pub fn millis(self) -> T { self.0 * 1000.cast_into() }
 
 
     /// whole milliseconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5f32.ms().whole_ms(), 0);
-    /// debug_assert_eq!(1.0f32.ms().whole_ms(), 1);
-    /// debug_assert_eq!(1.5f32.ms().whole_ms(), 1);
-    /// debug_assert_eq!(1.9f32.ms().whole_ms(), 1);
-    /// debug_assert_eq!(2.0f32.ms().whole_ms(), 2);
+    /// debug_assert_eq!(0.5f32.millis().whole_millis(), 0);
+    /// debug_assert_eq!(1.0f32.millis().whole_millis(), 1);
+    /// debug_assert_eq!(1.5f32.millis().whole_millis(), 1);
+    /// debug_assert_eq!(1.9f32.millis().whole_millis(), 1);
+    /// debug_assert_eq!(2.0f32.millis().whole_millis(), 2);
     ///
-    /// debug_assert_eq!(-0.5f32.ms().whole_ms(),  0);
-    /// debug_assert_eq!(-2.0f32.ms().whole_ms(), -2);
-    /// debug_assert_eq!(-1.9f32.ms().whole_ms(), -1);
+    /// debug_assert_eq!(-0.5f32.millis().whole_millis(),  0);
+    /// debug_assert_eq!(-2.0f32.millis().whole_millis(), -2);
+    /// debug_assert_eq!(-1.9f32.millis().whole_millis(), -1);
     /// ```
-    pub fn whole_ms(self) -> i32 { self.ms().round_toward_zero().to_i32() }
+    pub fn whole_millis(self) -> i32 { self.millis().round_toward_zero().to_i32() }
 
     /// Can be used to display milliseconds in a timer
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5f32.ms().timer_ms(), 10);
+    /// debug_assert_eq!(10.5f32.millis().timer_millis(), 10);
     ///
-    /// debug_assert_eq!(999f32.ms().timer_ms(), 999);
-    /// debug_assert_eq!(1000f32.ms().timer_ms(), 0);
-    /// debug_assert_eq!(1001f32.ms().timer_ms(), 1);
-    /// debug_assert_eq!(2005f32.ms().timer_ms(), 5);
+    /// debug_assert_eq!(999f32.millis().timer_millis(), 999);
+    /// debug_assert_eq!(1000f32.millis().timer_millis(), 0);
+    /// debug_assert_eq!(1001f32.millis().timer_millis(), 1);
+    /// debug_assert_eq!(2005f32.millis().timer_millis(), 5);
     /// ```
-    pub fn timer_ms(self) -> i32 { self.ms().abs().floor().to_i32() % 1000 }
+    pub fn timer_millis(self) -> i32 { self.millis().abs().floor().to_i32() % 1000 }
 
     /// seconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(60.s(), 1.mins());
+    /// debug_assert_eq!(60.secs(), 1.mins());
     /// ```
-    pub const fn from_s(second : T) -> Self { Self(second) }
+    pub const fn from_secs(second : T) -> Self { Self(second) }
 
     /// total seconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1f32.mins().s(), 60.);
+    /// debug_assert_eq!(1f32.mins().secs(), 60.);
     /// ```
-    pub fn s(self) -> T { self.0 }
+    pub fn secs(self) -> T { self.0 }
 
     /// whole seconds
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5f32.s().whole_s(), 0);
-    /// debug_assert_eq!(1.0f32.s().whole_s(), 1);
-    /// debug_assert_eq!(1.5f32.s().whole_s(), 1);
-    /// debug_assert_eq!(1.9f32.s().whole_s(), 1);
-    /// debug_assert_eq!(2.0f32.s().whole_s(), 2);
+    /// debug_assert_eq!(0.5f32.secs().whole_secs(), 0);
+    /// debug_assert_eq!(1.0f32.secs().whole_secs(), 1);
+    /// debug_assert_eq!(1.5f32.secs().whole_secs(), 1);
+    /// debug_assert_eq!(1.9f32.secs().whole_secs(), 1);
+    /// debug_assert_eq!(2.0f32.secs().whole_secs(), 2);
     /// ```
-    pub fn whole_s(self) -> i32 { self.s().round_toward_zero().to_i32() }
+    pub fn whole_secs(self) -> i32 { self.secs().round_toward_zero().to_i32() }
 
     /// Can be used to display seconds in a timer
     ///
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5f32.s().timer_s(), 10);
+    /// debug_assert_eq!(10.5f32.secs().timer_secs(), 10);
     ///
-    /// debug_assert_eq!(59f32.s().timer_s(), 59);
-    /// debug_assert_eq!(60f32.s().timer_s(), 0);
-    /// debug_assert_eq!(61f32.s().timer_s(), 1);
-    /// debug_assert_eq!(125f32.s().timer_s(), 5);
+    /// debug_assert_eq!(59f32.secs().timer_secs(), 59);
+    /// debug_assert_eq!(60f32.secs().timer_secs(), 0);
+    /// debug_assert_eq!(61f32.secs().timer_secs(), 1);
+    /// debug_assert_eq!(125f32.secs().timer_secs(), 5);
     /// ```
-    pub fn timer_s(self) -> i32 { self.s().abs().floor().to_i32() % 60 }
+    pub fn timer_secs(self) -> i32 { self.secs().abs().floor().to_i32() % 60 }
 
     /// minutes
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(60.mins(), 1.hour());
+    /// debug_assert_eq!(60.mins(), 1.hours());
     /// ```
-    pub fn from_mins(min : T) -> Self { Self::from_s(min * T::SIXTY) }
+    pub fn from_mins(min : T) -> Self { Self::from_secs(min * T::SIXTY) }
 
     /// minutes
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1f32.hour().mins(), 60.);
+    /// debug_assert_eq!(1f32.hours().mins(), 60.);
     /// ```
     pub fn mins(self) -> T { self.0 / T::SIXTY }
 
@@ -234,83 +237,83 @@ impl<T:Float> TimeOf<T>
     /// hours
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(24f32.hour(), 1.day());
+    /// debug_assert_eq!(24f32.hours(), 1.days());
     /// ```
-    pub fn from_hour(hours : T) -> Self { Self::from_s(hours * (T::SIXTY * T::SIXTY)) }
+    pub fn from_hours(hours : T) -> Self { Self::from_secs(hours * (T::SIXTY * T::SIXTY)) }
     /// hours
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1f32.day().hour(), 24.);
+    /// debug_assert_eq!(1f32.days().hours(), 24.);
     /// ```
-    pub fn hour(self) -> T { self.0 / (T::SIXTY * T::SIXTY) }
+    pub fn hours(self) -> T { self.0 / (T::SIXTY * T::SIXTY) }
 
 
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5f32.hour().whole_hour(), 0);
-    /// debug_assert_eq!(1.0f32.hour().whole_hour(), 1);
-    /// debug_assert_eq!(1.5f32.hour().whole_hour(), 1);
-    /// debug_assert_eq!(1.9f32.hour().whole_hour(), 1);
-    /// debug_assert_eq!(2.0f32.hour().whole_hour(), 2);
+    /// debug_assert_eq!(0.5f32.hours().whole_hours(), 0);
+    /// debug_assert_eq!(1.0f32.hours().whole_hours(), 1);
+    /// debug_assert_eq!(1.5f32.hours().whole_hours(), 1);
+    /// debug_assert_eq!(1.9f32.hours().whole_hours(), 1);
+    /// debug_assert_eq!(2.0f32.hours().whole_hours(), 2);
     ///
-    /// debug_assert_eq!(-0.5f32.hour().whole_hour(),  0);
-    /// debug_assert_eq!(-2.0f32.hour().whole_hour(), -2);
-    /// debug_assert_eq!(-1.9f32.hour().whole_hour(), -1);
+    /// debug_assert_eq!(-0.5f32.hours().whole_hours(),  0);
+    /// debug_assert_eq!(-2.0f32.hours().whole_hours(), -2);
+    /// debug_assert_eq!(-1.9f32.hours().whole_hours(), -1);
     /// ```
-    pub fn whole_hour(self) -> i32 { self.hour().round_toward_zero().to_i32() }
+    pub fn whole_hours(self) -> i32 { self.hours().round_toward_zero().to_i32() }
 
 
     /// Can be used to display hours in a timer
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5f32.hour().timer_hour(), 10);
+    /// debug_assert_eq!(10.5f32.hours().timer_hours(), 10);
     ///
-    /// debug_assert_eq!(23f32.hour().timer_hour(), 23);
-    /// debug_assert_eq!(24f32.hour().timer_hour(), 0);
-    /// debug_assert_eq!(25f32.hour().timer_hour(), 1);
-    /// debug_assert_eq!((48f32+5.).hour().timer_hour(), 5);
+    /// debug_assert_eq!(23f32.hours().timer_hours(), 23);
+    /// debug_assert_eq!(24f32.hours().timer_hours(), 0);
+    /// debug_assert_eq!(25f32.hours().timer_hours(), 1);
+    /// debug_assert_eq!((48f32+5.).hours().timer_hours(), 5);
     /// ```
-    pub fn timer_hour(self) -> i32 { self.hour().abs().floor().to_i32() % 24 }
+    pub fn timer_hours(self) -> i32 { self.hours().abs().floor().to_i32() % 24 }
 
     /// days
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(1f32.day(), (3600*24).s());
+    /// debug_assert_eq!(1f32.days(), (3600*24).secs());
     /// ```
-    pub fn from_day(day : T) -> Self { Self::from_s(day * (T::SIXTY * T::SIXTY * T::TWENTY_FOUR)) }
+    pub fn from_days(day : T) -> Self { Self::from_secs(day * (T::SIXTY * T::SIXTY * T::TWENTY_FOUR)) }
     /// days
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(24f32.hour().day(), 1.);
+    /// debug_assert_eq!(24f32.hours().days(), 1.);
     /// ```
-    pub fn day(self) -> T { self.0 / (T::SIXTY * T::SIXTY * T::TWENTY_FOUR) }
+    pub fn days(self) -> T { self.0 / (T::SIXTY * T::SIXTY * T::TWENTY_FOUR) }
     /// Whole days
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(0.5f32.day().whole_day(), 0);
-    /// debug_assert_eq!(1.0f32.day().whole_day(), 1);
-    /// debug_assert_eq!(1.5f32.day().whole_day(), 1);
-    /// debug_assert_eq!(1.9f32.day().whole_day(), 1);
-    /// debug_assert_eq!(2.0f32.day().whole_day(), 2);
+    /// debug_assert_eq!(0.5f32.days().whole_days(), 0);
+    /// debug_assert_eq!(1.0f32.days().whole_days(), 1);
+    /// debug_assert_eq!(1.5f32.days().whole_days(), 1);
+    /// debug_assert_eq!(1.9f32.days().whole_days(), 1);
+    /// debug_assert_eq!(2.0f32.days().whole_days(), 2);
     ///
-    /// debug_assert_eq!(-0.5f32.day().whole_day(),  0);
-    /// debug_assert_eq!(-2.0f32.day().whole_day(), -2);
-    /// debug_assert_eq!(-1.9f32.day().whole_day(), -1);
+    /// debug_assert_eq!(-0.5f32.days().whole_days(),  0);
+    /// debug_assert_eq!(-2.0f32.days().whole_days(), -2);
+    /// debug_assert_eq!(-1.9f32.days().whole_days(), -1);
     /// ```
-    pub fn whole_day(self) -> i32 { self.day().round_toward_zero().to_i32() }
+    pub fn whole_days(self) -> i32 { self.days().round_toward_zero().to_i32() }
 
 
     /// Can be used to display days in a timer
     /// ```
     /// use hexga_math::prelude::*;
-    /// debug_assert_eq!(10.5f32.day().timer_day(), 10);
+    /// debug_assert_eq!(10.5f32.days().timer_days(), 10);
     ///
-    /// debug_assert_eq!(364f32.day().timer_day(), 364);
-    /// debug_assert_eq!(365f32.day().timer_day(), 365);
-    /// debug_assert_eq!(366f32.day().timer_day(), 366);
-    /// debug_assert_eq!(900f32.day().timer_day(), 900);
+    /// debug_assert_eq!(364f32.days().timer_days(), 364);
+    /// debug_assert_eq!(365f32.days().timer_days(), 365);
+    /// debug_assert_eq!(366f32.days().timer_days(), 366);
+    /// debug_assert_eq!(900f32.days().timer_days(), 900);
     /// ```
-    pub fn timer_day(self) -> i32 { self.day().abs().floor().to_i32() }
+    pub fn timer_days(self) -> i32 { self.days().abs().floor().to_i32() }
 }
 
 
@@ -326,7 +329,7 @@ impl<T: Float> RangeDefault for TimeOf<T> where T: RangeDefault
 impl<T> Serialize for TimeOf<T> where T: Float + Serialize
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
-    { self.s().serialize(serializer) }
+    { self.secs().serialize(serializer) }
 }
 
 
@@ -338,7 +341,7 @@ impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
         D: Deserializer<'de>,
     {
         //if deserializer.is_human_readeable
-        Ok(Self::from_s(T::deserialize(deserializer)?))
+        Ok(Self::from_secs(T::deserialize(deserializer)?))
         // Can't use it because of non descriptive serializer like bincode or postcard
 
         /*
@@ -354,7 +357,7 @@ impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
         {
             Ok(v) => match v
             {
-                TimeInput::Second(s) => Ok(Self::from_s(s)),
+                TimeInput::Second(s) => Ok(Self::from_secs(s)),
                 TimeInput::Prefix { ms, s, min, h, d } =>
                 {
                     if ms.is_none() && s.is_none() && min.is_none() && h.is_none() && d.is_none()
@@ -364,11 +367,11 @@ impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
                     {
                         Ok
                         (
-                            Self::from_ms(ms.unwrap_or_zero()) +
-                            Self::from_s(s.unwrap_or_zero()) +
+                            Self::from_millis(ms.unwrap_or_zero()) +
+                            Self::from_secs(s.unwrap_or_zero()) +
                             Self::from_mins(min.unwrap_or_zero()) +
-                            Self::from_hour(h.unwrap_or_zero()) +
-                            Self::from_day(d.unwrap_or_zero())
+                            Self::from_hours(h.unwrap_or_zero()) +
+                            Self::from_days(d.unwrap_or_zero())
                         )
                     }
                 }
@@ -408,7 +411,7 @@ impl<F> TimeNow for TimeOf<F> where F:Float + CastFrom<f64>
                 }
             });
             let elapsed = unsafe { Instant::now() - START_TIME.unwrap() };
-            return TimeOf::from_s(F::cast_from(elapsed.as_secs_f64()));
+            return TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()));
         }
         #[cfg(target_arch = "wasm32")]
         {
@@ -423,7 +426,7 @@ impl<F> TimeNow for TimeOf<F> where F:Float + CastFrom<f64>
             });
 
             let elapsed = unsafe { Instant::now() - START_TIME.unwrap() };
-            return TimeOf::from_s(F::cast_from(elapsed.as_secs_f64()));
+            return TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()));
         }
     }
 }

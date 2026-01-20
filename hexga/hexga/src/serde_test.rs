@@ -160,8 +160,8 @@ fn serialize_unit()
     serde_test(&0.degree());
     serde_test(&45.degree());
 
-    serde_test(&0.s());
-    serde_test(&60.s());
+    serde_test(&0.secs());
+    serde_test(&60.secs());
 }
 
 

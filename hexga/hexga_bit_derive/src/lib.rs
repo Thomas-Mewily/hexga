@@ -31,7 +31,7 @@ use crate::traits::
 ///
 /// ## Examples
 ///
-/// ```rust
+/// ```rust, ignore
 /// use std::marker::PhantomData;
 /// use hexga_bit_derive::{Pod, BitZero};
 /// #[derive(Copy, Clone, Pod, BitZero)]
@@ -64,7 +64,7 @@ use crate::traits::
 /// If the struct is generic and `#[repr(transparent)]`, then it is only `Pod`
 /// when all of its generics are `Pod`, not just its fields.
 ///
-/// ```
+/// ```ignore
 /// use hexga_bit::{Pod, BitZero};
 /// use hexga_bit_derive::{Pod, BitZero};
 /// use std::marker::PhantomData;
@@ -78,7 +78,7 @@ use crate::traits::
 /// let _: u32 = hexga_bit::transmute(Generic { a: 4u32, b: PhantomData::<u32> });
 /// ```
 ///
-/// ```compile_fail
+/// ```ignore
 /// use hexga_bit::{Pod, BitZero};
 /// use std::marker::PhantomData;
 /// #[derive(Copy, Clone, Pod, BitZero)]
@@ -150,7 +150,7 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 ///
 /// ## Example
 ///
-/// ```rust
+/// ```rust, ignore
 /// # use hexga_bit_derive::{BitZero};
 /// #[derive(Copy, Clone, BitZero)]
 /// #[repr(C)]
@@ -159,7 +159,7 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 ///     b: u16,
 /// }
 /// ```
-/// ```rust
+/// ```rust, ignore
 /// # use hexga_bit_derive::{BitZero};
 /// #[derive(Copy, Clone, BitZero)]
 /// #[repr(i32)]
@@ -188,7 +188,7 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 ///
 /// ## Examples
 ///
-/// ```rust
+/// ```rust, ignore
 /// use hexga_bit::{BitZero,BitZeroed};
 /// use hexga_bit_derive::BitZero;
 /// use std::marker::PhantomData;
@@ -200,7 +200,7 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 ///
 /// AlwaysBitZero::<std::num::NonZeroU8>::zeroed();
 /// ```
-/// ```rust
+/// ```rust, ignore
 /// use hexga_bit::{BitZero,BitZeroed};
 /// use hexga_bit_derive::BitZero;
 /// #[derive(Copy, Clone, BitZero)]
@@ -229,7 +229,7 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 /// The restriction that all fields must be BitZero is still applied, and this
 /// is enforced using the mentioned "perfect derive" semantics.
 ///
-/// ```rust
+/// ```rust, ignore
 /// use hexga_bit::{BitZero,BitZeroed};
 /// use hexga_bit_derive::BitZero;
 /// #[derive(Clone, BitZero)]

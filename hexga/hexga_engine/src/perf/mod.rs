@@ -57,7 +57,7 @@ impl TimeCounter
     pub fn count(&mut self)
     {
         let now = Time::since_launch();
-        if now - self.timer >= 1.s()
+        if now - self.timer >= 1.secs()
         {
             self.timer = now;
             self.last_counter = self.counter;

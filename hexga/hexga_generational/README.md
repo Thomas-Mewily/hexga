@@ -4,6 +4,13 @@ This crate is currently in **beta** and **experimental**.
 It is subject to **breaking changes** in future releases.
 Use it at your own risk, and keep in mind that the API may change in future versions.
 
+## Inspiration
+
+This crate was mainly inspired by
+- RustConf 2018 - Closing Keynote - Using Rust For Game Development by Catherine West <https://youtu.be/aKLntZcp27M>
+- The SlotMap data structure <https://crates.io/crates/slotmap>. If you're looking for a more widely used and established crate in the Rust ecosystem, you may want to check it out as well.
+
+
 ## HexGa Generational
 
 Provide, `GenVec`, a generational index-based vector for and efficient element storage and retrieval, ideal for MAS (Multi-Agent System), where each agent can be removed at any time and has references to other agents.
@@ -20,7 +27,7 @@ A `GenID` is just a pair of integer `(index : usize, generation : Gen)`, where y
 By default `GenVen<T>` and `GenId<T>` use `u32` bits generation, but you can change it by using the full type `GenVecOf<T,Gen>`, `GenIDOf<Gen>`.
 
 Contrary to [slotmap](https://crates.io/crates/slotmap),
-once the generation reach the max value, the slot of a `GenVen<T>` will be saturated and not reused by default.
+once the generation reach the max value, the slot of a `GenVen<T>` will be saturated and can't be reused by default.
 (Read the `#Choose your policy !` for more information!)
 
 
@@ -60,12 +67,6 @@ Inside this crate, `GenVec` is a type alias for `type GenVec<T> = GenVecOf<T,u32
 GenVec are ideal for MAS (Multi-Agent System), where each agent can be removed at any time and has references to other agents.
 
 This is great for stuff like simulation, video game, ECS...
-
-## Inspiration
-
-This crate was mainly inspired by
-- RustConf 2018 - Closing Keynote - Using Rust For Game Development by Catherine West <https://youtu.be/aKLntZcp27M>
-- The SlotMap data structure <https://crates.io/crates/slotmap>. If you're looking for a more widely used and established crate in the Rust ecosystem, you may want to check it out as well.
 
 ## Main Hexga crate
 
