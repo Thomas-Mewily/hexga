@@ -21,7 +21,7 @@ pub enum EntryValue<T>
     Occupied(T),
     /// Next free entry.
     ///
-    /// All Vacant entries form a linked list
+    /// All Vacant entries form a linked list, where the last one point to usize::MAX.
     Vacant(usize),
 }
 
@@ -313,7 +313,8 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
         Ok(val)
     }
 
-    pub fn insert(&mut self, value: T) ->  GenIDOf<Gen>
+    pub fn insert_cyclic<F>(&mut self, init: F) -> GenIDOf<Gen>
+        where F: FnOnce(GenIDOf<Gen>) -> T
     {
         self.len += 1;
 
@@ -322,18 +323,26 @@ impl<T,Gen:IGeneration> GenVecOf<T,Gen>
             let index = self.values.len();
 
             // The last index is used for the null() key
-            assert!(index != usize::MAX, "How you didn't run out of memory before ?");
+            assert!(index != usize::MAX, "How you didn't run out of memory before ?"); // ZST ?
 
             let generation = Gen::MIN;
-            self.values.push(Entry { value: EntryValue::Occupied(value), generation });
-            return GenIDOf::from_index_and_generation(index, generation);
+            let id = GenIDOf::from_index_and_generation(index, generation);
+            self.values.push(Entry { value: EntryValue::Occupied(init(id)), generation });
+            return id;
         }
 
         let EntryValue::Vacant(next_free_index) = self.values[self.free].value else { unreachable!(); };
         let free = self.free;
         self.free = next_free_index;
-        self.values[free].value = EntryValue::Occupied(value);
-        return GenIDOf::from_index_and_generation(free, self.values[free].generation);
+        let id = GenIDOf::from_index_and_generation(free, self.values[free].generation);
+        self.values[free].value = EntryValue::Occupied(init(id));
+        return id;
+    }
+
+    #[inline(always)]
+    pub fn insert(&mut self, value: T) ->  GenIDOf<Gen>
+    {
+        self.insert_cyclic(|_| value)
     }
 
     #[inline(always)]
