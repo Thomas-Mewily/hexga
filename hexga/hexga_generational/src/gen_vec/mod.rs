@@ -77,6 +77,8 @@ impl <T,Gen:IGeneration> Entry<T,Gen>
 pub struct GenVecOf<T,Gen:IGeneration=Generation>
 {
     pub(crate) values: Vec<Entry<T,Gen>>,
+    /// The first index of the slot that is None.
+    /// usize::MAX if all slot are used
     free: usize,
     len: usize,
 }
@@ -95,7 +97,7 @@ impl<T, Gen:IGeneration> Hash for GenVecOf<T,Gen> where T: Hash
         {
             for (id, value) in self.iter()
             {
-                id.hash(state);
+                id.generation().hash(state);
                 value.hash(state);
             }
         }

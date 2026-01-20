@@ -116,4 +116,6 @@ trait ToAngle, ToTime : différent trait pour chaque unité (pour pouvoir les im
 ToTimeS
 ToTimeMin
 
+Time: get a TimerStruct{millis:T,secs:T,mins:T,hours:T,days:T,} // ...
+
 ## Other
