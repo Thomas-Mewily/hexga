@@ -10,6 +10,6 @@ pub mod prelude
 {
     pub use super::
     {
-        bijection::*,
+        bijection::{Bijection,WithBijection},
     };
 }

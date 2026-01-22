@@ -1,5 +1,14 @@
 use super::*;
 
+pub trait WithBijection<Idx> : Sized
+{
+    fn with_bijection<B>(self, bijection: B) -> Bijection<Self,B>
+    {
+        Bijection::from_values_and_bijection(self, bijection)
+    }
+}
+impl<T,Idx> WithBijection<Idx> for T where T: Get<Idx> {}
+
 /// A View Type with bijection
 ///
 /// Can be used for N-dimensional grid. Can have a finite or infinite size
@@ -113,7 +122,7 @@ pub enum BijectionError<Bijection,Container>
 impl<Idx, C, B> TryGet<Idx> for Bijection<C, B>
     where B: TryBijectionFn, C: TryGet<B::Target>, Idx: Into<B::Source>
 {
-    type Error=BijectionError<B::SrcToTargetError,C::Error>;
+    type Error=BijectionError<B::SourceToTargetError,C::Error>;
     fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> {
         let target_idx = self.bijection.try_to_target(index.into())
             .map_err(|b| BijectionError::Bijection(b))?;

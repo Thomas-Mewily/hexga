@@ -1,13 +1,5 @@
 use super::*;
 
-/// UB if the functions in this trait are not bijection
-pub unsafe trait TryBijectionFn: BijectionFn
-{
-    type SrcToTargetError;
-    fn try_to_target(&self, src: Self::Source) -> Result<Self::Target, Self::SrcToTargetError>;
-    type TargetToSrcError;
-    fn try_to_source(&self, target: Self::Target) -> Result<Self::Source, Self::TargetToSrcError>;
-}
 
 /// UB if the functions in this trait are not bijection
 pub unsafe trait BijectionFn
@@ -20,10 +12,19 @@ pub unsafe trait BijectionFn
 
     #[inline(always)]
     #[track_caller]
-    fn to_target_unchecked(&self, src: Self::Source) -> Self::Target { self.to_target(src).unwrap() }
+    fn to_target_unchecked(&self, src: Self::Source) -> Self::Target { self.to_target(src).expect("bijection fail") }
     #[inline(always)]
     #[track_caller]
-    fn to_source_unchecked(&self, target: Self::Target) -> Self::Source { self.to_source(target).unwrap() }
+    fn to_source_unchecked(&self, target: Self::Target) -> Self::Source { self.to_source(target).expect("bijection fail") }
+}
+
+/// UB if the functions in this trait are not bijection
+pub unsafe trait TryBijectionFn: BijectionFn
+{
+    type SourceToTargetError;
+    fn try_to_target(&self, src: Self::Source) -> Result<Self::Target, Self::SourceToTargetError>;
+    type TargetToSrcError;
+    fn try_to_source(&self, target: Self::Target) -> Result<Self::Source, Self::TargetToSrcError>;
 }
 
 pub struct BijectionIdentity<T> { phantom: PhantomData<T> }
@@ -49,6 +50,16 @@ unsafe impl<T> BijectionFn for BijectionIdentity<T>
     #[inline(always)]
     fn to_source_unchecked(&self, target: Self::Target) -> Self::Source { target }
 }
+unsafe impl<T> TryBijectionFn for BijectionIdentity<T>
+{
+    type SourceToTargetError=Never;
+    #[inline(always)]
+    fn try_to_target(&self, src: Self::Source) -> Result<Self::Target, Self::SourceToTargetError> { Ok(src) }
+    type TargetToSrcError=Never;
+    #[inline(always)]
+    fn try_to_source(&self, target: Self::Target) -> Result<Self::Source, Self::TargetToSrcError> { Ok(target) }
+}
+
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
 pub struct BijectionInverse<B> { pub bijection: B }
@@ -65,6 +76,15 @@ unsafe impl<B> BijectionFn for BijectionInverse<B> where B: BijectionFn
     fn to_target_unchecked(&self, src: Self::Source) -> Self::Target { self.bijection.to_source_unchecked(src) }
     #[inline(always)]
     fn to_source_unchecked(&self, target: Self::Target) -> Self::Source { self.bijection.to_target_unchecked(target) }
+}
+unsafe impl<B> TryBijectionFn for BijectionInverse<B> where B: TryBijectionFn
+{
+    type SourceToTargetError=B::TargetToSrcError;
+    #[inline(always)]
+    fn try_to_target(&self, src: Self::Source) -> Result<Self::Target, Self::SourceToTargetError> { self.bijection.try_to_source(src) }
+    type TargetToSrcError=B::SourceToTargetError;
+    #[inline(always)]
+    fn try_to_source(&self, target: Self::Target) -> Result<Self::Source, Self::TargetToSrcError> { self.bijection.try_to_target(target) }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
@@ -89,6 +109,25 @@ unsafe impl<B1,B2> BijectionFn for BijectionMap<B1,B2>
     fn to_target_unchecked(&self, src: Self::Source) -> Self::Target { self.target.to_target_unchecked(self.source.to_target_unchecked(src)) }
     #[inline(always)]
     fn to_source_unchecked(&self, target: Self::Target) -> Self::Source { self.source.to_source_unchecked(self.target.to_source_unchecked(target)) }
+}
+unsafe impl<B1,B2> TryBijectionFn for BijectionMap<B1,B2>
+    where
+    B1: TryBijectionFn,
+    B2: BijectionFn<Source=B1::Target> + TryBijectionFn
+{
+    type SourceToTargetError=BijectionError<B1::SourceToTargetError,B2::SourceToTargetError>;
+
+    fn try_to_target(&self, src: Self::Source) -> Result<Self::Target, Self::SourceToTargetError> {
+        let idx = self.source.try_to_target(src).map_err(|e| BijectionError::Bijection(e))?;
+        self.target.try_to_target(idx).map_err(|e| BijectionError::Container(e))
+    }
+
+    type TargetToSrcError=BijectionError<B1::TargetToSrcError,B2::TargetToSrcError>;
+
+    fn try_to_source(&self, target: Self::Target) -> Result<Self::Source, Self::TargetToSrcError> {
+        let idx = self.target.try_to_source(target).map_err(|e| BijectionError::Container(e))?;
+        self.source.try_to_source(idx).map_err(|e| BijectionError::Bijection(e))
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
@@ -115,7 +154,22 @@ unsafe impl<Idx> BijectionFn for BijectionRev<Idx> where Idx: Copy + Sub<Idx,Out
     #[inline(always)]
     fn to_source_unchecked(&self, target: Self::Target) -> Self::Source { self.to_target_unchecked(target) }
 }
+unsafe impl<Idx> TryBijectionFn for BijectionRev<Idx> where Idx: Copy + Sub<Idx,Output=Idx> + One
+{
+    type SourceToTargetError=Never;
 
+    #[inline(always)]
+    fn try_to_target(&self, src: Self::Source) -> Result<Self::Target, Self::SourceToTargetError> {
+        Ok(self.to_target_unchecked(src))
+    }
+
+    type TargetToSrcError=Never;
+
+    #[inline(always)]
+    fn try_to_source(&self, target: Self::Target) -> Result<Self::Source, Self::TargetToSrcError> {
+        Ok(self.to_source_unchecked(target))
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
 pub struct BijectionVectorToUsize<Idx,const N:usize>
@@ -153,9 +207,9 @@ unsafe impl<Idx, const N: usize> BijectionFn for BijectionVectorToUsize<Idx,N>
 unsafe impl<Idx, const N: usize> TryBijectionFn for BijectionVectorToUsize<Idx,N>
     where Idx: Integer
 {
-    type SrcToTargetError=IndexOutOfRange<Vector<Idx,N>>;
+    type SourceToTargetError=IndexOutOfRange<Vector<Idx,N>>;
     #[inline(always)]
-    fn try_to_target(&self, src: Self::Source) -> Result<Self::Target, Self::SrcToTargetError> {
+    fn try_to_target(&self, src: Self::Source) -> Result<Self::Target, Self::SourceToTargetError> {
         self.to_target(src).ok_or(IndexOutOfRange::new(src, zero()..self.size))
     }
     type TargetToSrcError=IndexOutOfRange;
