@@ -5,6 +5,7 @@
 
 
 use hexga::prelude::*;
+use hexga_math::bijection::*;
 
 fn dbg_mix<S,F>(src: S, dest:S, coef:F) where S:Mix<F> + Copy + Debug, F:Float
 {
@@ -186,7 +187,7 @@ pub enum Color
     GreenAndYellowAndPurple = ((Color::Yellow | Self::Purple)) | Self::Green,
 }
 
-fn main()
+fn color()
 {
     let color = Color::Red | Color::Green;
     dbg!(&color);
@@ -197,4 +198,15 @@ fn main()
     }
 
     println!("hello world");
+}
+
+
+fn main()
+{
+    let v = vec![1,2,3,4];
+    let s: &[i32] = &*v;
+
+    dbg!(&s.get(0));
+    dbg!(&Bijection::from_values_and_bijection(s, BijectionRev::from(s)).get(0usize));
+
 }

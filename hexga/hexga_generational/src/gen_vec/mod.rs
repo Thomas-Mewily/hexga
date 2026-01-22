@@ -714,7 +714,7 @@ impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum GenVecError<T,Gen:IGeneration>
 {
-    IndexOutOfRange(IndexOutOfRange),
+    IndexOutOfRange(IndexOutOfBounds),
     WrongGeneration(GenVecWrongGeneration<T,Gen>),
     /// The entry at this index is saturated
     Saturated(usize),
@@ -814,10 +814,10 @@ impl<T,Gen:IGeneration> Debug for GenVecWrongGeneration<T,Gen>
 
 impl<T,Gen:IGeneration> TryGet<usize> for GenVecOf<T,Gen>
 {
-    type Error=IndexOutOfRange;
+    type Error=IndexOutOfBounds;
     fn try_get(&self, index: usize) -> Result<&Self::Output, Self::Error>
     {
-        self.get_from_index(index).ok_or_else(|| IndexOutOfRange::new(index, 0..self.len()))
+        self.get_from_index(index).ok_or_else(|| IndexOutOfBounds::new(index, 0..self.len()))
     }
 }
 impl<T,Gen:IGeneration> Get<usize> for GenVecOf<T,Gen>
@@ -845,7 +845,7 @@ impl<T,Gen:IGeneration> TryGet<GenIDOf<Gen>> for GenVecOf<T,Gen>
                     Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(id.generation(), s.generation())))
                 },
             },
-            None => Err(GenVecError::IndexOutOfRange(IndexOutOfRange::new(id.index(), 0..self.len()))),
+            None => Err(GenVecError::IndexOutOfRange(IndexOutOfBounds::new(id.index(), 0..self.len()))),
         }
     }
 }
@@ -861,7 +861,7 @@ impl<T,Gen:IGeneration> TryGetMut<usize> for GenVecOf<T,Gen>
     fn try_get_mut(&mut self, index: usize) -> Result<&mut Self::Output, Self::Error>
     {
         let len = self.len();
-        self.get_mut_from_index(index).ok_or_else(|| IndexOutOfRange::new(index, 0..len))
+        self.get_mut_from_index(index).ok_or_else(|| IndexOutOfBounds::new(index, 0..len))
     }
 }
 impl<T,Gen:IGeneration> GetMut<usize> for GenVecOf<T,Gen>
@@ -930,7 +930,7 @@ impl<T,Gen:IGeneration> TryGetMut<GenIDOf<Gen>> for GenVecOf<T,Gen>
                     }
                 }
             }
-            None => Err(GenVecError::IndexOutOfRange(IndexOutOfRange::new(id.index(), 0..len))),
+            None => Err(GenVecError::IndexOutOfRange(IndexOutOfBounds::new(id.index(), 0..len))),
         }
     }
 }

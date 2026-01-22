@@ -144,11 +144,11 @@ impl<T, Idx, const N : usize> GetSize<Idx, N> for GridOf<T, Idx, N> where Idx : 
 
 impl<P, T, Idx, const N : usize> TryGet<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
 {
-    type Error=IndexOutOfRange<Vector<Idx,N>,Vector<Idx,N>>;
+    type Error=IndexOutOfBounds<Vector<Idx,N>,Vector<Idx,N>>;
 
     fn try_get(&self, index : P) -> Result<&Self::Output, Self::Error> {
         let i = index.into();
-        self.get(i).ok_or_else(|| IndexOutOfRange::new(i, self.size()))
+        self.get(i).ok_or_else(|| IndexOutOfBounds::new(i, self.size()))
     }
 }
 
@@ -167,7 +167,7 @@ impl<P, T, Idx, const N : usize> TryGetMut<P> for GridOf<T, Idx,N> where Idx : I
     fn try_get_mut(&mut self, index : P) -> Result<&mut Self::Output, Self::Error> {
         let i = index.into();
         let size = self.size();
-        self.get_mut(i).ok_or_else(|| IndexOutOfRange::new(i, size))
+        self.get_mut(i).ok_or_else(|| IndexOutOfBounds::new(i, size))
     }
 }
 impl<P, T, Idx, const N : usize> GetMut<P> for GridOf<T, Idx,N> where Idx : Integer, P: Into<Vector<Idx,N>>

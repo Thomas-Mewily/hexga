@@ -45,6 +45,22 @@ pub trait Map : MapIntern
     /// Apply `f` to each item, returning a container of the mapped values.
     fn map<R,F>(self, f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R;
 }
+
+/*
+// Update it with try_map once stabilized ?
+// https://doc.rust-lang.org/std/primitive.array.html#method.try_map
+//
+/// `TryMap` allows the mapping function to return a fallible result.
+pub trait TryMap: Map + Sized {
+    /// Apply `f` to each item. If any `Try` fails, propagate the failure.
+    #[inline(always)]
+    fn try_map<O,E,F>(self, f: F) -> Result<Self::WithType<O>,E> where F: FnMut(Self::Item) -> Result<O,E>
+    {
+        let f = self.map(f);
+    }
+}
+*/
+
 /// Elementwise mapping of two containers with possibly different item types.
 pub trait MapWith : Map + MapInternWith
 {

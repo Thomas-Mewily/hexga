@@ -168,28 +168,34 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
 
 
 
-
-
-
-// TODO: impl it. Split the core crate: hexga_core: hexga_core_syntax, hexga_core_collection
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub struct IndexOutOfRange<Idx=usize, R=std::ops::Range<Idx>>
+pub struct IndexInvalid<Idx=usize>
 {
     pub index: Idx,
-    pub range: R,
 }
-impl<Idx, R> IndexOutOfRange<Idx, R>
+impl<Idx> IndexInvalid<Idx>
 {
-    pub fn new(index: Idx, range: R) -> Self { Self { index, range }}
+    pub fn new(index: Idx) -> Self { Self { index }}
 }
 
-impl<Idx,T> TryGet<Idx> for [T] where Idx: SliceIndex<[T]> + Clone
+
+pub type IndexOutOfRange<Idx=usize, B=std::ops::Range<Idx>> = IndexOutOfBounds<Idx,B>;
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
+pub struct IndexOutOfBounds<Idx=usize, B=std::ops::Range<Idx>>
 {
-    type Error = IndexOutOfRange<Idx,Range<usize>>;
-    #[inline(always)]
-    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { self.get(index.clone()).ok_or(IndexOutOfRange{ index, range: 0..self.len() }) }
+    pub index: Idx,
+    pub bound: B,
 }
+impl<Idx, B> IndexOutOfBounds<Idx, B>
+{
+    pub fn new(index: Idx, bound: B) -> Self { Self { index, bound }}
+}
+
+
 impl<Idx,T> Get<Idx> for [T] where Idx: SliceIndex<[T]>
 {
     type Output = <Self as Index<Idx>>::Output;
@@ -199,18 +205,69 @@ impl<Idx,T> Get<Idx> for [T] where Idx: SliceIndex<[T]>
     #[track_caller]
     unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { self.get_unchecked(index) } }
 }
-
-impl<Idx,T> TryGetMut<Idx> for [T] where Idx: SliceIndex<[T]> + Clone
+impl<Idx,T> Get<Idx> for &[T] where Idx: SliceIndex<[T]>
 {
+    type Output = <[T] as Index<Idx>>::Output;
     #[inline(always)]
-    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { let len = self.len(); self.get_mut(index.clone()).ok_or(IndexOutOfRange{ index, range: 0..len }) }
+    fn get(&self, index: Idx) -> Option<&Self::Output> { (*self).get(index) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { (*self).get_unchecked(index) } }
 }
+impl<Idx,T> Get<Idx> for &mut [T] where Idx: SliceIndex<[T]>
+{
+    type Output = <[T] as Index<Idx>>::Output;
+    #[inline(always)]
+    fn get(&self, index: Idx) -> Option<&Self::Output> { (**self).get(index) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { (**self).get_unchecked(index) } }
+}
+impl<Idx,T> TryGet<Idx> for [T] where Idx: SliceIndex<[T]> + Clone
+{
+    type Error = IndexOutOfBounds<Idx,Range<usize>>;
+    #[inline(always)]
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { self.get(index.clone()).ok_or(IndexOutOfBounds{ index, bound: 0..self.len() }) }
+}
+impl<Idx,T> TryGet<Idx> for &[T] where Idx: SliceIndex<[T]> + Clone
+{
+    type Error = IndexOutOfBounds<Idx,Range<usize>>;
+    #[inline(always)]
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { (*self).try_get(index) }
+}
+impl<Idx,T> TryGet<Idx> for &mut [T] where Idx: SliceIndex<[T]> + Clone
+{
+    type Error = IndexOutOfBounds<Idx,Range<usize>>;
+    #[inline(always)]
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { (**self).try_get(index) }
+}
+
+
 impl<Idx,T> GetMut<Idx> for [T] where Idx: SliceIndex<[T]>
 {
     #[inline(always)]
     fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { self.get_mut(index) }
     #[inline(always)]
+    #[track_caller]
     unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { self.get_unchecked_mut(index) } }
+}
+impl<Idx,T> GetMut<Idx> for &mut [T] where Idx: SliceIndex<[T]>
+{
+    #[inline(always)]
+    fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { (*self).get_mut(index) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { (*self).get_unchecked_mut(index) } }
+}
+impl<Idx,T> TryGetMut<Idx> for [T] where Idx: SliceIndex<[T]> + Clone
+{
+    #[inline(always)]
+    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { let len = self.len(); self.get_mut(index.clone()).ok_or(IndexOutOfBounds{ index, bound: 0..len }) }
+}
+impl<Idx,T> TryGetMut<Idx> for &mut [T] where Idx: SliceIndex<[T]> + Clone
+{
+    #[inline(always)]
+    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { (**self).try_get_mut(index) }
 }
 impl<Idx,T> GetManyMut<Idx> for [T] where Idx: SliceIndex<[T]> + GetDisjointMutIndex
 {
@@ -223,8 +280,18 @@ impl<Idx,T> GetManyMut<Idx> for [T] where Idx: SliceIndex<[T]> + GetDisjointMutI
     #[inline(always)]
     #[track_caller]
     unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N]  { unsafe { self.get_disjoint_unchecked_mut(indices) } }
+}
+impl<Idx,T> GetManyMut<Idx> for &mut [T] where Idx: SliceIndex<[T]> + GetDisjointMutIndex
+{
+    #[inline(always)]
+    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { (*self).get_many_mut(indices) }
 
+    #[inline(always)]
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError> { (*self).try_get_many_mut(indices) }
 
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { (*self).get_many_unchecked_mut(indices) } }
 }
 
 impl<Idx,T,const N: usize> TryGet<Idx> for [T;N] where [T]: TryGet<Idx>
@@ -315,9 +382,9 @@ impl<Idx,T> GetManyMut<Idx> for Vec<T> where [T]: GetManyMut<Idx>
 
 impl<T> TryGet<usize> for VecDeque<T>
 {
-    type Error = IndexOutOfRange<usize, std::ops::Range<usize>>;
+    type Error = IndexOutOfBounds<usize, std::ops::Range<usize>>;
     #[inline(always)]
-    fn try_get(&self, index: usize) -> Result<&Self::Output, Self::Error>{ self.get(index).ok_or(IndexOutOfRange{ index, range: 0..self.len() }) }
+    fn try_get(&self, index: usize) -> Result<&Self::Output, Self::Error>{ self.get(index).ok_or(IndexOutOfBounds{ index, bound: 0..self.len() }) }
 }
 impl<T> Get<usize> for VecDeque<T>
 {
@@ -328,7 +395,7 @@ impl<T> Get<usize> for VecDeque<T>
 impl<T> TryGetMut<usize> for VecDeque<T>
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, index: usize) -> Result<&mut Self::Output, Self::Error>{ let len = self.len(); self.get_mut(index).ok_or(IndexOutOfRange{ index, range: 0..len }) }
+    fn try_get_mut(&mut self, index: usize) -> Result<&mut Self::Output, Self::Error>{ let len = self.len(); self.get_mut(index).ok_or(IndexOutOfBounds{ index, bound: 0..len }) }
 }
 impl<T> GetMut<usize> for VecDeque<T>
 {
@@ -357,10 +424,10 @@ impl<T> GetManyMut<usize> for VecDeque<T>
 
 impl<Idx> TryGet<Idx> for str where Idx: SliceIndex<str> + Clone
 {
-    type Error = IndexOutOfRange<Idx,Range<usize>>;
+    type Error = IndexOutOfBounds<Idx,Range<usize>>;
     fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
     {
-        self.get(index.clone()).ok_or(IndexOutOfRange{ index, range: 0..self.len() })
+        self.get(index.clone()).ok_or(IndexOutOfBounds{ index, bound: 0..self.len() })
     }
 }
 
@@ -377,10 +444,10 @@ impl<Idx> Get<Idx> for str where Idx: SliceIndex<str>
 // FIXME: I'm not sure how to delegate it to `str` like delegating the TryGet for `Vec<T>` into the TryGet of `[T]`
 impl<Idx> TryGet<Idx> for String where Idx: SliceIndex<str> + Clone
 {
-    type Error = IndexOutOfRange<Idx,Range<usize>>;
+    type Error = IndexOutOfBounds<Idx,Range<usize>>;
     fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
     {
-        self.get(index.clone()).ok_or(IndexOutOfRange{ index, range: 0..self.len() })
+        self.get(index.clone()).ok_or(IndexOutOfBounds{ index, bound: 0..self.len() })
     }
 }
 impl<Idx> Get<Idx> for String where Idx: SliceIndex<str>

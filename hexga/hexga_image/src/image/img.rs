@@ -241,12 +241,12 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 
 impl<P, T, Idx> TryGet<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>
 {
-    type Error = IndexOutOfRange<Vector2<Idx>,Vector2<Idx>>;
+    type Error = IndexOutOfBounds<Vector2<Idx>,Vector2<Idx>>;
     #[inline(always)]
     fn try_get(&self, pos: P) -> Result<&Self::Output, Self::Error>
     {
         let p = pos.into();
-        self.get(p).ok_or_else(|| IndexOutOfRange::new(p, self.size()))
+        self.get(p).ok_or_else(|| IndexOutOfBounds::new(p, self.size()))
     }
 }
 impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>
@@ -267,7 +267,7 @@ impl<P, T, Idx> TryGetMut<P> for ImageBaseOf<T, Idx> where Idx: Integer, P: Into
     {
         let p = pos.into();
         let size = self.size();
-        self.get_mut(p).ok_or_else(|| IndexOutOfRange::new(p, size))
+        self.get_mut(p).ok_or_else(|| IndexOutOfBounds::new(p, size))
     }
 }
 impl<P, T, Idx> GetMut<P> for ImageBaseOf<T, Idx> where Idx: Integer, P: Into<Vector2<Idx>>

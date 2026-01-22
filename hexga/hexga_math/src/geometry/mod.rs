@@ -12,8 +12,8 @@ use rectangle::*;
 pub mod grid;
 use grid::*;
 
-pub mod grid2;
-use grid2::*;
+pub mod bijection;
+use bijection::*;
 
 pub mod transform;
 use transform::*;
