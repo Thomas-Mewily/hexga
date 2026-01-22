@@ -1,48 +1,53 @@
 use super::*;
 
-/// A N-dimensional grid
+/// A N-dimensional grid. Can have a finite or infinite size
 #[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Grid"))]
 pub struct Grid2Of<T, Idx, C, B, const N : usize>
-    where Idx : Integer, B: PositionBijection<Idx,N>, C: DerefMut<Target=[T]>
+    where Idx : Integer, B: PositionBijection<Idx,N>, C: GetManyMut<Idx,Output = T>,
 {
-    pub(crate) size  : Vector<Idx,N>,
     pub(crate) values: C,
-    pub(crate) bijection: PhantomData<B>,
+    pub(crate) bijection: B,
+    pub(crate) phantom: PhantomData<(T,Idx)>,
 }
 
 impl<T, Idx, C, B, const N : usize> Hash for Grid2Of<T, Idx, C, B, N>
-    where Idx : Integer, B: PositionBijection<Idx,N>, T: Hash
+    where Idx : Integer, B: PositionBijection<Idx,N>, C: GetManyMut<Idx,Output = T>,
+    C: Hash, B: Hash
 {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.size.hash(state);
         self.values.hash(state);
+        self.bijection.hash(state);
     }
 }
 
 impl<T, Idx, C, B, const N : usize> Clone for Grid2Of<T, Idx, C, B, N>
-    where Idx : Integer, B: PositionBijection<Idx,N>, T: Clone
+    where Idx : Integer, B: PositionBijection<Idx,N>, C: GetManyMut<Idx,Output = T>,
+    C: Clone, B: Clone
 {
     fn clone(&self) -> Self {
-        Self { size: self.size.clone(), values: self.values.clone(), bijection: PhantomData }
+        Self { values: self.values.clone(), bijection: self.bijection.clone(), phantom: PhantomData }
     }
 }
 
 impl<T, Idx, C, B, const N : usize> PartialEq for Grid2Of<T, Idx, C, B, N>
-    where Idx : Integer, B: PositionBijection<Idx,N>, T: PartialEq
+    where Idx : Integer, B: PositionBijection<Idx,N>, C: GetManyMut<Idx,Output = T>,
+    C: PartialEq, B: PartialEq
 {
     fn eq(&self, other: &Self) -> bool {
-        self.size == other.size && self.values == other.values
+        self.values == other.values && self.bijection == other.bijection
     }
 }
 impl<T, Idx, C, B, const N : usize> Eq for Grid2Of<T, Idx, C, B, N>
-    where Idx : Integer, B: PositionBijection<Idx,N>, T: Eq
+    where Idx : Integer, B: PositionBijection<Idx,N>, C: GetManyMut<Idx,Output = T>,
+    C: Eq, B: Eq
 {}
 
 impl<T, Idx, C, B, const N : usize> PartialOrd for Grid2Of<T, Idx, C, B, N>
-    where Idx : Integer, B: PositionBijection<Idx,N>, T: PartialOrd
+    where Idx : Integer, B: PositionBijection<Idx,N>, C: GetManyMut<Idx,Output = T>,
+    C: PartialOrd, B: PartialOrd
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        match self.size.partial_cmp(&other.size) {
+        match self.bijection.partial_cmp(&other.bijection) {
             Some(core::cmp::Ordering::Equal) => {}
             ord => return ord,
         }
@@ -50,10 +55,11 @@ impl<T, Idx, C, B, const N : usize> PartialOrd for Grid2Of<T, Idx, C, B, N>
     }
 }
 impl<T, Idx, C, B, const N : usize> Ord for Grid2Of<T, Idx, C, B, N>
-    where Idx : Integer, B: PositionBijection<Idx,N>, T: Ord
+    where Idx : Integer, B: PositionBijection<Idx,N>, C: GetManyMut<Idx,Output = T>,
+    C: Ord, B: Ord
 {
     fn cmp(&self, other: &Self) -> Ordering {
-        match self.size.cmp(&other.size) {
+        match self.bijection.cmp(&other.bijection) {
             Ordering::Equal => self.values.cmp(&other.values),
             ord => ord,
         }
@@ -232,27 +238,50 @@ impl<T, Idx, C, B, const N : usize> View for Grid2Of<T, Idx, C, B, N>
     }
 }
 
+
 pub trait PositionBijection<Idx, const N: usize> where Idx: Integer
 {
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
-    fn position_to_index<P>(pos: P, size: Vector<Idx,N>) -> Option<usize> where P: Into<Vector<Idx,N>>;
+    fn position_to_index<P>(&self, pos: P) -> Option<usize> where P: Into<Vector<Idx,N>>;
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
-    fn index_to_position(index : usize, size: Vector<Idx,N>) -> Option<Vector<Idx,N>>;
+    fn index_to_position(&self, index : usize) -> Option<Vector<Idx,N>>;
 
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
     /// If you override this, you probably also want to override [`IGrid::index_to_position_unchecked`] and [`IGrid::external_position_to_position_unchecked`]
     #[inline(always)]
     #[track_caller]
-    unsafe fn position_to_index_unchecked<P>(pos : P, size: Vector<Idx,N>) -> usize where P: Into<Vector<Idx,N>> { Self::position_to_index(pos, size).unwrap() }
+    unsafe fn position_to_index_unchecked<P>(&self, pos : P) -> usize where P: Into<Vector<Idx,N>> { Self::position_to_index(pos).unwrap() }
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
     /// If you override this, you probably also want to override [`IGrid::position_to_index_unchecked`] and [`IGrid::external_position_to_position_unchecked`]
     #[inline(always)]
     #[track_caller]
-    unsafe fn index_to_position_unchecked(index : usize, size: Vector<Idx,N>) -> Vector<Idx,N> { Self::index_to_position(index, size).unwrap() }
+    unsafe fn index_to_position_unchecked(&self, index : usize) -> Vector<Idx,N> { Self::index_to_position(index).unwrap() }
 }
-pub struct DefaultPositionBijection;
+
+impl<Idx, const N: usize> PositionBijection<Idx, N> for Vector<Idx,N> where Idx: Integer
+{
+    fn position_to_index<P>(&self, pos: P) -> Option<usize> where P: Into<Vector<Idx,N>> {
+        Self::
+    }
+
+    fn index_to_position(&self, index : usize) -> Option<Vector<Idx,N>> {
+        todo!()
+    }
+}
+
+/*
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub struct PositionBijectionSize<Idx, const N: usize> where Idx: Integer
+{
+    pub size: Vector<Idx, N>
+}
+impl<Idx, const N: usize>  PositionBijection<Idx,N> where Idx: Integer
+{
+
+}
+*/
 
 #[cfg(test)]
 mod grid_test
@@ -266,7 +295,7 @@ mod grid_test
         //let x = Grid::<char>::new(point2(2, 4));
         let size = point2(2, 3);
 
-        let grid = Grid2::from_fn(size, |p| p.x + 10 * p.y);
+        let grid = Grid2Of::from_fn(size, |p| p.x + 10 * p.y);
 
         /*
         dbg!(&grid);
@@ -309,7 +338,7 @@ mod grid_test
     fn out_of_range()
     {
         use super::*;
-        let grid = Grid2::from_fn(point2(2, 3), |_| 42);
+        let grid = Grid2Of::from_fn(point2(2, 3), |_| 42);
 
         assert_eq!(grid.get(point2(0, 0)), Some(&42));
         assert_eq!(grid.get(point2(-1, 0)), None);
@@ -328,7 +357,7 @@ mod grid_test
         use super::*;
 
         let size = point2(2, 3);
-        let grid = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
+        let grid = Grid2Of::from_fn(size, |p|  p.x + 10 * p.y);
 
         assert_eq!(grid.size(), grid.view().size());
 
@@ -337,13 +366,13 @@ mod grid_test
         assert_eq!(grid, subgrid);
 
         let smaller_size = point2(1, 2);
-        let smaller_grid = Grid2::from_fn(smaller_size, |p|  p.x + 10 * p.y);
+        let smaller_grid = Grid2Of::from_fn(smaller_size, |p|  p.x + 10 * p.y);
         let smaller_grid_from_bigger_grid = grid.view().subgrid(smaller_size.to_rect());
         assert_eq!(smaller_grid, smaller_grid_from_bigger_grid);
 
         let top_right_grid_size = point2(1, 2);
         let offset = Vector2::ONE;
-        let top_right_grid = Grid2::from_fn(smaller_size, |p|  { let p = p + offset; p.x + 10 * p.y });
+        let top_right_grid = Grid2Of::from_fn(smaller_size, |p|  { let p = p + offset; p.x + 10 * p.y });
 
         assert_eq!(top_right_grid, grid.subgrid(top_right_grid_size.to_rect().moved_by(offset)));
     }
@@ -355,8 +384,8 @@ mod grid_test
 
         let size = point2(2, 3);
 
-        let mut grid1 = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
-        let mut grid2 = Grid2::from_fn(size, |p|  p.x + 10 * p.y);
+        let mut grid1 = Grid2Of::from_fn(size, |p|  p.x + 10 * p.y);
+        let mut grid2 = Grid2Of::from_fn(size, |p|  p.x + 10 * p.y);
 
         assert_eq!(grid1, grid2);
         assert_eq!(grid1.view(), grid2.view());
