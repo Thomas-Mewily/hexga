@@ -6,7 +6,7 @@ pub mod prelude
     pub use super::NonEmptyStack;
 }
 
-/// A stack that ALWAY have one element.
+/// A stack that ALWAYS have one element.
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct NonEmptyStack<T>
 {
@@ -20,12 +20,14 @@ pub struct NonEmptyStack<T>
 impl<T> Deref for NonEmptyStack<T> { type Target = T; fn deref(&self) -> &Self::Target { &self.last }}
 impl<T> DerefMut for NonEmptyStack<T> { fn deref_mut(&mut self) -> &mut Self::Target { &mut self.last }}
 
-/*
-pub trait IStack<T> : Push<T> + Pop<T> + Length
+
+impl<T> TryFrom<Vec<T>> for NonEmptyStack<T>
 {
-    fn push
+    type Error=();
+    fn try_from(value: Vec<T>) -> std::result::Result<Self, Self::Error> {
+        Self::from_vec(value).ok_or(())
+    }
 }
-*/
 
 /// A stack that always have at least one element,
 /// where the last element can be frequently accessed
@@ -84,6 +86,7 @@ impl<T> NonEmptyStack<T>
     /// Replace the last value
     pub fn replace(&mut self, mut value : T) -> T { std::mem::swap(&mut self.last, &mut value); value }
     pub fn push(&mut self, mut value : T) { std::mem::swap(&mut self.last, &mut value); self.stack.push(value); }
+
     /// Clone the last element and push it
     pub fn duplicate(&mut self) -> &mut Self where T: Clone { self.stack.push(self.last.clone()); self }
     pub fn pop(&mut self) -> Option<T> { self.stack.pop().and_then(|mut v| { std::mem::swap(&mut v, &mut self.last); Some(v) }) }
@@ -223,32 +226,101 @@ impl<'a, T> IntoIterator for &'a mut NonEmptyStack<T> {
     }
 }
 
-
-impl<T> Index<usize> for NonEmptyStack<T>
+impl<T> Get<usize> for NonEmptyStack<T>
 {
-    type Output=T;
-
-    fn index(&self, index: usize) -> &Self::Output
-    {
-        if index + 1 == self.len()
+    type Output =T;
+    #[inline(always)]
+    fn get(&self, index : usize) -> Option<&Self::Output> {
+        if index  == self.len() - 1
+        {
+            Some(&self.last)
+        }else
+        {
+            self.stack.get(index)
+        }
+    }
+    #[inline(always)]
+    unsafe fn get_unchecked(&self, index : usize) -> &Self::Output {
+        if index == self.len() - 1
         {
             &self.last
         }else
         {
-            &self.stack[index]
+            unsafe { self.stack.get_unchecked(index) }
+        }
+    }
+}
+impl<T> Index<usize> for NonEmptyStack<T>
+{
+    type Output=T;
+
+    #[inline(always)]
+    #[track_caller]
+    fn index(&self, index: usize) -> &Self::Output
+    {
+        self.get(index).unwrap()
+    }
+}
+impl<T> GetMut<usize> for NonEmptyStack<T>
+{
+    #[inline(always)]
+    fn get_mut(&mut self, index : usize) -> Option<&mut Self::Output> {
+        if index == self.len() - 1
+        {
+            Some(&mut self.last)
+        }else
+        {
+            self.stack.get_mut(index)
+        }
+    }
+    #[inline(always)]
+    unsafe fn get_unchecked_mut(&mut self, index : usize) -> &mut Self::Output {
+        if index == self.len() - 1
+        {
+            &mut self.last
+        }else
+        {
+            unsafe { self.stack.get_unchecked_mut(index) }
         }
     }
 }
 impl<T> IndexMut<usize> for NonEmptyStack<T>
 {
+    #[inline(always)]
+    #[track_caller]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        if index + 1 == self.len()
-        {
-            &mut self.last
-        }else
-        {
-            &mut self.stack[index]
+        self.get_mut(index).unwrap()
+    }
+}
+impl<T> GetManyMut<usize> for NonEmptyStack<T>
+{
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output;N], ManyMutError>
+    {
+        let len = self.len();
+        if indices.iter().any(|&i| i >= len) {
+            return Err(ManyMutError::IndexOutOfBounds);
         }
+
+        for i in 0..N {
+            for j in i + 1..N {
+                if indices[i] == indices[j] {
+                    return Err(ManyMutError::OverlappingIndices);
+                }
+            }
+        }
+
+
+        let mut ptrs: [*mut T; N] = std::array::from_fn(|_| std::ptr::null_mut());
+        for (k, &i) in indices.iter().enumerate() {
+            ptrs[k] = if i == len - 1 {
+                &mut self.last as *mut T
+            } else {
+                self.stack.as_mut_ptr().wrapping_add(i)
+            };
+        }
+
+        // SAFETY: indices are in-bounds and unique
+        Ok(ptrs.map(|p| unsafe { &mut *p }))
     }
 }
 
