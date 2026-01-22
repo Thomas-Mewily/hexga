@@ -4,7 +4,7 @@
 #![allow(unused_mut)]
 
 
-use hexga::prelude::*;
+use hexga::{generational::gen_id::GenIDOf, prelude::*};
 use hexga_math::bijection::*;
 
 fn dbg_mix<S,F>(src: S, dest:S, coef:F) where S:Mix<F> + Copy + Debug, F:Float
@@ -201,15 +201,21 @@ fn color()
 }
 
 
+pub type Grid2<C, Idx, const N: usize> = Bijection<C,BijectionPointToUsize<Idx,N>>;
+
 fn main()
 {
-    let v = vec![1,2,3,4];
+    let v = vec![1,2,3,4,5,6];
     let s: &[i32] = &*v;
+
 
     dbg!(&s.get(0));
     dbg!(&Bijection::from_values_and_bijection(s, BijectionRev::from(s)).get(0usize));
     dbg!(s.bijection_rev());
 
+    let g = Grid2::from_values_and_bijection(s, BijectionPointToUsize::new(point2(2, 3)));
+    dbg!(&g.get(point2(0, 1)));
+    dbg!(s.view().bijection_rev());
 
     // grid type ?
 }

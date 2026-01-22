@@ -30,6 +30,12 @@ pub trait TryPush<T> : Push<T>
     /// Push a value and return it's index.
     fn try_push(&mut self, value : T) -> Result<Self::Output, Self::Error>;
 }
+/*
+pub trait PushStronglyType<T>
+{
+    pub push_strongly_typed(&mut self, value : T) -> IndexOf<T,Self::Output>;
+}
+*/
 
 pub trait Push<T>
 {

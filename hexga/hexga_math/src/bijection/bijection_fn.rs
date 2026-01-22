@@ -176,13 +176,17 @@ unsafe impl<Idx> TryBijectionFn for BijectionRev<Idx> where Idx: Copy + Sub<Idx,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
-pub struct BijectionVectorToUsize<Idx,const N:usize>
+pub struct BijectionPointToUsize<Idx,const N:usize>
     where Idx: Integer
 {
     pub size: Vector<Idx,N>
 }
+impl<Idx, const N: usize> BijectionPointToUsize<Idx,N> where Idx: Integer
+{
+    pub fn new(size: Vector<Idx,N>) -> Self { Self { size }}
+}
 
-unsafe impl<Idx, const N: usize> BijectionFn for BijectionVectorToUsize<Idx,N>
+unsafe impl<Idx, const N: usize> BijectionFn for BijectionPointToUsize<Idx,N>
     where Idx: Integer
 {
     type Source=Vector<Idx,N>;
@@ -208,7 +212,7 @@ unsafe impl<Idx, const N: usize> BijectionFn for BijectionVectorToUsize<Idx,N>
         (dest < self.size.area_usize()).then(|| self.to_source_unchecked(dest))
     }
 }
-unsafe impl<Idx, const N: usize> TryBijectionFn for BijectionVectorToUsize<Idx,N>
+unsafe impl<Idx, const N: usize> TryBijectionFn for BijectionPointToUsize<Idx,N>
     where Idx: Integer
 {
     type SourceToTargetError=IndexOutOfRange<Vector<Idx,N>>;
@@ -223,12 +227,12 @@ unsafe impl<Idx, const N: usize> TryBijectionFn for BijectionVectorToUsize<Idx,N
     }
 }
 
-impl<Idx, const N: usize> GetPosition<Idx, N> for BijectionVectorToUsize<Idx,N> where Idx: Integer
+impl<Idx, const N: usize> GetPosition<Idx, N> for BijectionPointToUsize<Idx,N> where Idx: Integer
 {
     #[inline(always)]
     fn pos(&self) -> Vector<Idx,N> { zero() }
 }
-impl<Idx, const N: usize> GetSize<Idx, N> for BijectionVectorToUsize<Idx,N> where Idx: Integer
+impl<Idx, const N: usize> GetSize<Idx, N> for BijectionPointToUsize<Idx,N> where Idx: Integer
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx,N> { self.size }

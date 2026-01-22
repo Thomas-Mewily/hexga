@@ -74,7 +74,7 @@ impl<Gen:IGeneration> GenIDOf<Gen>
 
     pub const NULL : Self = GenIDOf { index: usize::MAX, generation: Gen::MIN };
 }
-impl<Gen:IGeneration> IndexExtension for GenIDOf<Gen> {}
+impl<Gen:IGeneration,C> IndexExtension<C> for GenIDOf<Gen> {}
 
 impl<Gen:IGeneration> From<(usize,Gen)> for GenIDOf<Gen>
 {

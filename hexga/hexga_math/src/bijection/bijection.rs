@@ -26,6 +26,21 @@ pub struct Bijection<C, B>
     pub(crate) values: C,
     pub(crate) bijection: B,
 }
+impl<C, B> View for Bijection<C, B> where C: View, B: Copy
+{
+    type View<'v> = Bijection<C::View<'v>, B> where Self: 'v;
+    fn view<'s>(&'s self) -> Self::View<'s> {
+        Bijection::from_values_and_bijection(self.values.view(), self.bijection)
+    }
+}
+impl<C, B> ViewMut for Bijection<C, B> where C: ViewMut, B: Copy
+{
+    type ViewMut<'v> = Bijection<C::ViewMut<'v>, B> where Self: 'v;
+    fn view_mut<'s,'v>(&'s mut self) -> Self::ViewMut<'v> where 's: 'v {
+        Bijection::from_values_and_bijection(self.values.view_mut(), self.bijection)
+    }
+}
+
 impl<C, B> Bijection<C, B>
 {
     pub fn from_values_and_bijection(values: C, bijection: B) -> Self

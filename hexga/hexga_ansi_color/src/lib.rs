@@ -32,13 +32,30 @@ pub enum AnsiColorKind
     White,
     Grey,
 }
+impl AnsiColorKind
+{
+    pub const ALL : &'static [Self] =
+    {
+        pub use AnsiColorKind::*;
+        &[Black, Red, Green, Yellow, Blue, Magenta, Cyan, White, Grey]
+    };
+}
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AnsiColorLayer
 {
+    #[default]
     Foreground,
     Background,
+}
+impl AnsiColorLayer
+{
+    pub const ALL : &'static [Self] =
+    {
+        pub use AnsiColorLayer::*;
+        &[Foreground, Background]
+    };
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -47,6 +64,12 @@ pub struct AnsiColor
 {
     pub color : AnsiColorKind,
     pub layer : AnsiColorLayer,
+}
+impl From<AnsiColorKind> for AnsiColor {
+    fn from(color: AnsiColorKind) -> Self { Self { color, layer: AnsiColorLayer::default() } }
+}
+impl From<(AnsiColorKind,AnsiColorLayer)> for AnsiColor {
+    fn from((color, layer): (AnsiColorKind,AnsiColorLayer)) -> Self { Self { color, layer } }
 }
 
 pub type AnsiColorStr = &'static str;
@@ -100,7 +123,7 @@ impl AnsiColor
     pub fn with_layer(mut self, layer : AnsiColorLayer) -> Self  { self.set_layer(layer); self }
 
     /// Get the ansi color code
-    pub fn get_str(&self) -> AnsiColorStr
+    pub fn str(&self) -> AnsiColorStr
     {
         match self.layer
         {
@@ -140,13 +163,13 @@ impl AnsiColor
 
 impl From<AnsiColor> for AnsiColorStr
 {
-    fn from(value: AnsiColor) -> Self { value.get_str() }
+    fn from(value: AnsiColor) -> Self { value.str() }
 }
 
 impl Display for AnsiColor
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
-        f.write_str(self.get_str())
+        f.write_str(self.str())
     }
 }

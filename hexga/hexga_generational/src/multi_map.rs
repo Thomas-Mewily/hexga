@@ -493,7 +493,7 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher,
     /// Duplicate keys within the input Keys iterator are ignored.
     pub fn add_keys(&mut self, source_id: MultiHashMapIDOf<Gen>, keys: Vec<K>) -> Result<(), Vec<K>>
     {
-        if !source_id.exist(self) { return Err(keys); };
+        if !source_id.is_valid(self) { return Err(keys); };
 
         for key in keys.iter()
         {
