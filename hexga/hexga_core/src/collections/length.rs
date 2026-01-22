@@ -1,7 +1,7 @@
 use super::*;
 
 
-pub trait Length
+pub trait Length : Collection
 {
     // Returns the number of elements inside this collection, also referred as a 'length'.
     fn len(&self) -> usize;
@@ -52,18 +52,26 @@ use std::ffi::OsStr;
 
 impl<T>                 Length for Vec<T>           { fn len(&self) -> usize { self.len() } }
 impl<T>                 Length for VecDeque<T>      { fn len(&self) -> usize { self.len() } }
+impl<T, const N: usize> Length for [T; N]           { fn len(&self) -> usize { N } }
+impl<T>                 Length for [T]              { fn len(&self) -> usize { self.len() } }
+impl<T>                 Length for &[T]             { fn len(&self) -> usize { (*self).len() } }
+impl<T>                 Length for &mut[T]          { fn len(&self) -> usize { (**self).len() } }
+
+impl                    Length for String           { fn len(&self) -> usize { self.len() } }
+impl                    Length for str              { fn len(&self) -> usize { self.len() } }
+impl                    Length for &str             { fn len(&self) -> usize { (*self).len() } }
+impl                    Length for &mut str         { fn len(&self) -> usize { (**self).len() } }
+impl                    Length for OsStr            { fn len(&self) -> usize { self.len() } }
+
+impl<T>                 Length for LinkedList<T>    { fn len(&self) -> usize { self.len() } }
+
+impl<K, V, S>           Length for HashMap<K, V, S> { fn len(&self) -> usize { self.len() } }
+impl<K, V>              Length for BTreeMap<K, V>   { fn len(&self) -> usize { self.len() } }
 impl<T,S>               Length for HashSet<T,S>     { fn len(&self) -> usize { self.len() } }
 impl<T>                 Length for BinaryHeap<T>    { fn len(&self) -> usize { self.len() } }
 impl<T>                 Length for BTreeSet<T>      { fn len(&self) -> usize { self.len() } }
-impl<T>                 Length for LinkedList<T>    { fn len(&self) -> usize { self.len() } }
-impl<K, V, S>           Length for HashMap<K, V, S> { fn len(&self) -> usize { self.len() } }
-impl<K, V>              Length for BTreeMap<K, V>   { fn len(&self) -> usize { self.len() } }
-impl<T>                 Length for [T]              { fn len(&self) -> usize { self.len() } }
-impl                    Length for String           { fn len(&self) -> usize { self.len() } }
-impl                    Length for str              { fn len(&self) -> usize { self.len() } }
-impl                    Length for OsStr            { fn len(&self) -> usize { self.len() } }
-impl<T, const N: usize> Length for [T; N]           { fn len(&self) -> usize { N } }
 
-impl<T: ?Sized> Length for &T where T: Length { fn len(&self) -> usize { (*self).len() } }
-impl<T: ?Sized> Length for &mut T where T: Length { fn len(&self) -> usize { (**self).len() } }
+
+//impl<T: ?Sized> Length for &T where T: Length { fn len(&self) -> usize { (*self).len() } }
+//impl<T: ?Sized> Length for &mut T where T: Length { fn len(&self) -> usize { (**self).len() } }
 

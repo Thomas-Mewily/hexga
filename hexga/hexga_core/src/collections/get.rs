@@ -14,7 +14,7 @@ use super::*;
 
 
 /// The collection have a quick way to access each element, where the index is copyable
-pub trait Get<Idx> //where Idx: Borrow<Q> //: Index<Idx>
+pub trait Get<Idx> : Collection//where Idx: Borrow<Q> //: Index<Idx>
 {
     type Output: ?Sized;
 
@@ -196,6 +196,7 @@ impl<Idx, B> IndexOutOfBounds<Idx, B>
 }
 
 
+
 impl<Idx,T> Get<Idx> for [T] where Idx: SliceIndex<[T]>
 {
     type Output = <Self as Index<Idx>>::Output;
@@ -339,7 +340,6 @@ impl<Idx,T,const N: usize> GetManyMut<Idx> for [T;N] where [T]: GetManyMut<Idx>
 
 }
 
-
 impl<Idx,T> TryGet<Idx> for Vec<T> where [T]: TryGet<Idx>
 {
     type Error = <[T] as TryGet<Idx>>::Error;
@@ -379,7 +379,6 @@ impl<Idx,T> GetManyMut<Idx> for Vec<T> where [T]: GetManyMut<Idx>
     fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { GetManyMut::get_many_mut(self.as_mut_slice(), indices) }
 }
 
-
 impl<T> TryGet<usize> for VecDeque<T>
 {
     type Error = IndexOutOfBounds<usize, std::ops::Range<usize>>;
@@ -403,6 +402,7 @@ impl<T> GetMut<usize> for VecDeque<T>
     fn get_mut(&mut self, index: usize) -> Option<&mut Self::Output> { self.get_mut(index) }
 }
 
+
 impl<T> GetManyMut<usize> for VecDeque<T>
 {
     #[track_caller]
@@ -422,15 +422,6 @@ impl<T> GetManyMut<usize> for VecDeque<T>
 }
 
 
-impl<Idx> TryGet<Idx> for str where Idx: SliceIndex<str> + Clone
-{
-    type Error = IndexOutOfBounds<Idx,Range<usize>>;
-    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
-    {
-        self.get(index.clone()).ok_or(IndexOutOfBounds{ index, bound: 0..self.len() })
-    }
-}
-
 impl<Idx> Get<Idx> for str where Idx: SliceIndex<str>
 {
     type Output = <Self as Index<Idx>>::Output;
@@ -440,15 +431,50 @@ impl<Idx> Get<Idx> for str where Idx: SliceIndex<str>
     #[track_caller]
     unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { self.get_unchecked(index) } }
 }
-
-// FIXME: I'm not sure how to delegate it to `str` like delegating the TryGet for `Vec<T>` into the TryGet of `[T]`
-impl<Idx> TryGet<Idx> for String where Idx: SliceIndex<str> + Clone
+impl<Idx> TryGet<Idx> for str where Idx: SliceIndex<str> + Clone
 {
     type Error = IndexOutOfBounds<Idx,Range<usize>>;
     fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
     {
         self.get(index.clone()).ok_or(IndexOutOfBounds{ index, bound: 0..self.len() })
     }
+}
+
+impl<Idx> Get<Idx> for &str where Idx: SliceIndex<str>
+{
+    type Output = <str as Index<Idx>>::Output;
+    #[inline(always)]
+    fn get(&self, index: Idx) -> Option<&Self::Output> { (*self).get(index) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { (*self).get_unchecked(index) } }
+}
+impl<Idx> TryGet<Idx> for &str where Idx: SliceIndex<str> + Clone
+{
+    type Error = IndexOutOfBounds<Idx,Range<usize>>;
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { (*self).try_get(index) }
+}
+
+impl<Idx> Get<Idx> for &mut str where Idx: SliceIndex<str>
+{
+    type Output = <str as Index<Idx>>::Output;
+    #[inline(always)]
+    fn get(&self, index: Idx) -> Option<&Self::Output> { (**self).get(index) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { (**self).get_unchecked(index) } }
+}
+impl<Idx> TryGet<Idx> for &mut str where Idx: SliceIndex<str> + Clone
+{
+    type Error = IndexOutOfBounds<Idx,Range<usize>>;
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { (**self).try_get(index) }
+}
+
+// FIXME: I'm not sure how to delegate it to `str` like delegating the TryGet for `Vec<T>` into the TryGet of `[T]`
+impl<Idx> TryGet<Idx> for String where Idx: SliceIndex<str> + Clone
+{
+    type Error = IndexOutOfBounds<Idx,Range<usize>>;
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { self.as_str().try_get(index) }
 }
 impl<Idx> Get<Idx> for String where Idx: SliceIndex<str>
 {
@@ -561,7 +587,6 @@ impl<K,V,Q> GetMut<&Q> for BTreeMap<K,V> where K: Borrow<Q>, Q: ?Sized + Ord, K:
     #[inline(always)]
     fn get_mut(&mut self, k: &Q) -> Option<&mut Self::Output> where K: Borrow<Q> { self.get_mut(k) }
 }
-
 
 impl<K,S,Q> TryGet<&Q> for HashSet<K,S> where K: Borrow<Q>, Q: ?Sized + Hash + Eq + Clone, K: Eq + Hash, S: BuildHasher
 {

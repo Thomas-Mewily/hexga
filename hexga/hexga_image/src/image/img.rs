@@ -239,6 +239,17 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 */
 
 
+
+impl<T, Idx> Collection for ImageBaseOf<T, Idx>  where Idx: Integer {}
+impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>
+{
+    type Output = T;
+    #[inline(always)]
+    fn get(&self, pos: P) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) })) }
+    #[inline(always)]
+    #[track_caller]
+    unsafe fn get_unchecked(&self, pos: P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.pixels().get_unchecked(idx) } }
+}
 impl<P, T, Idx> TryGet<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>
 {
     type Error = IndexOutOfBounds<Vector2<Idx>,Vector2<Idx>>;
@@ -249,16 +260,6 @@ impl<P, T, Idx> TryGet<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<V
         self.get(p).ok_or_else(|| IndexOutOfBounds::new(p, self.size()))
     }
 }
-impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>
-{
-    type Output = T;
-    #[inline(always)]
-    fn get(&self, pos: P) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) })) }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked(&self, pos: P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.pixels().get_unchecked(idx) } }
-}
-
 
 impl<P, T, Idx> TryGetMut<P> for ImageBaseOf<T, Idx> where Idx: Integer, P: Into<Vector2<Idx>>
 {

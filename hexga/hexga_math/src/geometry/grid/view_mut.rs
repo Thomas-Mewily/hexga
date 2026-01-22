@@ -187,17 +187,11 @@ impl<'a, G, T, Idx, const N : usize> GetSize<Idx,N> for GridViewMut<'a, G, T, Id
 }
 
 
-impl<'a, P, G, T, Idx, const N : usize> TryGet<P> for GridViewMut<'a, G, T, Idx, N>
+impl<'a, G, T, Idx, const N : usize> Collection for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
     Idx : Integer,
-    P : Into<Vector<Idx,N>>,
-{
-    type Error=<G as TryGet<Vector<Idx,N>>>::Error;
-
-    #[inline(always)]
-    fn try_get(&self, index : P) -> Result<&Self::Output, Self::Error> { self.grid.try_get(index.into() + self.rect.pos) }
-}
+{}
 impl<'a, P, G, T, Idx, const N : usize> Get<P> for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,
@@ -211,6 +205,17 @@ impl<'a, P, G, T, Idx, const N : usize> Get<P> for GridViewMut<'a, G, T, Idx, N>
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked(&self, index : P) -> &Self::Output { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
+}
+impl<'a, P, G, T, Idx, const N : usize> TryGet<P> for GridViewMut<'a, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer,
+    P : Into<Vector<Idx,N>>,
+{
+    type Error=<G as TryGet<Vector<Idx,N>>>::Error;
+
+    #[inline(always)]
+    fn try_get(&self, index : P) -> Result<&Self::Output, Self::Error> { self.grid.try_get(index.into() + self.rect.pos) }
 }
 
 impl<'a, P, G, T, Idx, const N : usize> Index<P> for GridViewMut<'a, G, T, Idx, N>

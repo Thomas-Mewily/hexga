@@ -3,6 +3,7 @@ use std::{collections::*, ffi::{OsStr, OsString}, path::PathBuf};
 use std::ops::Range;
 
 
+
 mod length;
 pub use length::*;
 
@@ -21,8 +22,13 @@ pub use clearable::*;
 mod remove;
 pub use remove::*;
 
+/*
 mod insert_pop;
 pub use insert_pop::*;
+*/
+
+mod collection;
+pub use collection::*;
 
 /*
 mod sequence;

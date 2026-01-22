@@ -688,6 +688,7 @@ impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
 impl<'a, T, Gen: IGeneration> ExactSizeIterator for IterMut<'a, T, Gen> { fn len(&self) -> usize { self.len_remaining } }
 
 
+impl<T,Gen:IGeneration> Collection for GenVecOf<T,Gen> {}
 impl<T,Gen:IGeneration> Length for GenVecOf<T,Gen> { #[inline(always)] fn len(&self) -> usize { self.len() } }
 impl<T,Gen:IGeneration> Clear for GenVecOf<T,Gen> { #[inline(always)] fn clear(&mut self) { self.clear(); } }
 impl<T,Gen:IGeneration> Capacity for GenVecOf<T,Gen>

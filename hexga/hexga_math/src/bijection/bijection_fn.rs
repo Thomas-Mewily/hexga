@@ -141,6 +141,10 @@ impl<T> From<T> for BijectionRev<usize> where T: Length
         Self { len: value.len() }
     }
 }
+impl<Idx> BijectionRev<Idx>
+{
+    pub fn new(len: Idx) -> Self { Self { len }}
+}
 unsafe impl<Idx> BijectionFn for BijectionRev<Idx> where Idx: Copy + Sub<Idx,Output=Idx> + One
 {
     type Source=Idx;

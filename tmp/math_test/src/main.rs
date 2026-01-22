@@ -208,5 +208,8 @@ fn main()
 
     dbg!(&s.get(0));
     dbg!(&Bijection::from_values_and_bijection(s, BijectionRev::from(s)).get(0usize));
+    dbg!(s.bijection_rev());
 
+
+    // grid type ?
 }

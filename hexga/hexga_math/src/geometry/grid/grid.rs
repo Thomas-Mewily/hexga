@@ -142,16 +142,9 @@ impl<T, Idx, const N : usize> GetSize<Idx, N> for GridOf<T, Idx, N> where Idx : 
     fn size(&self) -> Vector<Idx, N> { self.size }
 }
 
-impl<P, T, Idx, const N : usize> TryGet<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
-{
-    type Error=IndexOutOfBounds<Vector<Idx,N>,Vector<Idx,N>>;
 
-    fn try_get(&self, index : P) -> Result<&Self::Output, Self::Error> {
-        let i = index.into();
-        self.get(i).ok_or_else(|| IndexOutOfBounds::new(i, self.size()))
-    }
-}
 
+impl<T, Idx, const N : usize> Collection for GridOf<T, Idx,N> where Idx : Integer {}
 impl<P, T, Idx, const N : usize> Get<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;
@@ -160,6 +153,15 @@ impl<P, T, Idx, const N : usize> Get<P> for GridOf<T, Idx,N> where Idx : Integer
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked(&self, pos : P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.values().get_unchecked(idx) } }
+}
+impl<P, T, Idx, const N : usize> TryGet<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
+{
+    type Error=IndexOutOfBounds<Vector<Idx,N>,Vector<Idx,N>>;
+
+    fn try_get(&self, index : P) -> Result<&Self::Output, Self::Error> {
+        let i = index.into();
+        self.get(i).ok_or_else(|| IndexOutOfBounds::new(i, self.size()))
+    }
 }
 
 impl<P, T, Idx, const N : usize> TryGetMut<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>

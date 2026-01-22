@@ -176,7 +176,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
                         }
 
-
+                        impl<T, const N : usize> #crate_ident::hexga_core::collections::Collection for #current_name<T,N> {}
+                        impl<T, const N : usize> #crate_ident::hexga_core::collections::Length for #current_name<T,N> { fn len(&self) -> usize { N }}
                         impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::Get<Idx>
                         {
                             type Output = <[T;N] as #crate_ident::hexga_core::collections::Get<Idx>>::Output;
@@ -552,6 +553,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
                         }
 
+                        impl<T> #crate_ident::hexga_core::collections::Collection for #current_name<T> {}
+                        impl<T> #crate_ident::hexga_core::collections::Length for #current_name<T> { fn len(&self) -> usize { #dim }}
                         impl<T, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::Get<Idx>
                         {
                             type Output = <[T;#dim] as #crate_ident::hexga_core::collections::Get<Idx>>::Output;

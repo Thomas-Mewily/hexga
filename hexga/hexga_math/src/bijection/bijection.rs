@@ -1,13 +1,19 @@
 use super::*;
 
-pub trait WithBijection<Idx> : Sized
+pub trait WithBijection : Sized + Collection
 {
     fn with_bijection<B>(self, bijection: B) -> Bijection<Self,B>
     {
         Bijection::from_values_and_bijection(self, bijection)
     }
 }
-impl<T,Idx> WithBijection<Idx> for T where T: Get<Idx> {}
+impl<T> WithBijection for T where T: Sized + Collection {}
+
+pub trait WithBijectionExtension : WithBijection
+{
+    fn bijection_rev(self) -> Bijection<Self,BijectionRev> where Self: Length { let len = self.len(); self.with_bijection(BijectionRev::new(len)) }
+}
+impl<T> WithBijectionExtension for T where T: WithBijection {}
 
 /// A View Type with bijection
 ///
@@ -32,6 +38,8 @@ impl<C, B> Bijection<C, B>
         (values, bijection)
     }
 }
+
+
 
 impl<C, B> MapIntern for Bijection<C, B> where C: MapIntern
 {
@@ -87,6 +95,8 @@ impl<C, B> GetSize<Idx, N> for ContainerBijection<C, B>
 }
 */
 
+impl<C, B> Collection for Bijection<C, B>
+    where C: Collection {}
 impl<Idx, C, B> Get<Idx> for Bijection<C, B>
     where B: BijectionFn, C: Get<B::Target>, Idx: Into<B::Source>
 {
@@ -176,6 +186,15 @@ impl<C, B> Length for Bijection<C, B> where C: Length
     #[inline(always)]
     fn len(&self) -> usize { self.values.len() }
 }
+
+/*
+impl<C, B> IntoIterator for Bijection<C, B> where C: IntoIterator
+{
+    type Item=C::Item;
+    type IntoIter=C::IntoIter;
+    fn into_iter(self) -> Self::IntoIter { self.values.into_iter() }
+}
+*/
 
 /*
 impl<C, B> Crop<Idx,N> for ContainerBijection<C, B>

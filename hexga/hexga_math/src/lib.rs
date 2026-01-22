@@ -62,6 +62,7 @@ use std::{fmt, num::{Saturating, Wrapping}};
 use std::marker::PhantomData;
 use std::cmp::Ordering;
 use rayon::prelude::*;
+use std::iter::{FusedIterator,ExactSizeIterator};
 
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};

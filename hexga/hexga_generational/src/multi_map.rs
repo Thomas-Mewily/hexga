@@ -563,6 +563,7 @@ impl<K,V,Gen,S> IndexMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> wh
         self.get_mut(id).unwrap()
     }
 }
+impl<K,V,Gen,S> Collection for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher {}
 impl<K,V,Gen,S> Get<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
     type Output = V;
