@@ -96,6 +96,34 @@ pub struct GenVecOf<T,Gen:IGeneration=Generation>
     len: usize,
 }
 
+/*
+pub trait IGenVec
+{
+
+}
+pub trait IGenVecView<'a,T,Gen:IGeneration>
+{
+    fn view(&self) -> GenVecViewOf<'a,T,Gen>;
+}
+pub trait IGenVecViewMut<'a,T,Gen:IGeneration=Generation>
+{
+    fn view_mut(&mut self) -> GenVecViewOf<'a,T,Gen>;
+}
+
+#[repr(transparent)]
+#[derive(Debug, Clone, Eq)]
+pub struct GenVecViewOf<'a,T,Gen:IGeneration=Generation>
+{
+    pub(crate) values: &'a GenVecOf<Entry<T,Gen>>,
+}
+#[repr(transparent)]
+#[derive(Debug, Clone, Eq)]
+pub struct GenVecViewMutOf<'a,T,Gen:IGeneration=Generation>
+{
+    pub(crate) values: &'a mut GenVecOf<Entry<T,Gen>>,
+}
+*/
+
 
 impl<T, Gen:IGeneration> Hash for GenVecOf<T,Gen> where T: Hash
 {
@@ -848,6 +876,11 @@ impl<T,Gen:IGeneration> GetManyMut<usize> for GenVecOf<T,Gen>
     fn try_get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output;N], ManyMutError>
     {
         // TODO: check the SlotMap crate for a better implementation of any overlapping indices
+        // It is possible to it in O(n) be moving the value of the slot when iterating (thus, making the slot invalid),
+        // then move back the value to the original slot
+        //
+        // But because N is generally small, I keep it this way
+        //
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         match self.values.try_get_many_mut(indices).map(|entries| entries.map(|v| v.value_mut()))
         {
