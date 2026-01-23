@@ -193,6 +193,49 @@ impl<Idx, const N : usize> Vector<Idx, N>
     /// assert_eq!(unsafe{ point2(3,1).to_index_unchecked(point2(10, 20)) }, 3+1*10);
     /// assert_eq!(unsafe{ point2(3,5).to_index_unchecked(point2(10, 20)) }, 3+5*10);
     /// ```
+    pub unsafe fn to_index_unchecked(self, size: Self) -> usize
+    {
+        debug_assert!(size.all(|v| *v >= Idx::ZERO));
+        // I'm not sure if the manual unrolling is necessary
+        match N
+        {
+            1 => { self[0].to_usize() }
+            2 =>
+            {
+                let x = self[0].to_usize();
+                let y = self[1].to_usize();
+                let width = size[0].to_usize();
+                x + y * width
+            }
+            3 =>
+            {
+                let x = self[0].to_usize();
+                let y = self[1].to_usize();
+                let z = self[2].to_usize();
+                let width = size[0].to_usize();
+                let height = size[1].to_usize();
+                x + y * width + z * width * height
+            }
+            _ =>
+            {
+                let mut index_1d: usize = 0;
+                let mut area_cumulative: usize = 1;
+
+                for i in 0..N
+                {
+                    let current_axis_len = size[i].to_usize();
+                    let current_value = self[i].to_usize();
+
+                    index_1d += current_value * area_cumulative;
+                    area_cumulative *= current_axis_len;
+                }
+                index_1d
+            }
+        }
+    }
+
+    /*
+    // No unrolling:
     pub unsafe fn to_index_unchecked(self, size : Self) -> usize
     {
         debug_assert!(size.all(|v| *v >= Idx::ZERO));
@@ -212,6 +255,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
         }
         index_1d
     }
+    */
 
     #[inline(always)]
     pub fn from_index(index : usize, size : Self) -> Option<Self>
@@ -238,6 +282,58 @@ impl<Idx, const N : usize> Vector<Idx, N>
     /// }
     /// ```
     #[inline(always)]
+    pub unsafe fn from_index_unchecked(index: usize, size: Self) -> Self {
+        debug_assert!(size.all(|v| *v >= Idx::ONE));
+
+        let mut arr = [Idx::ZERO; N];
+        match N
+        {
+            1 => arr[0] = Idx::cast_from(index),
+            2 =>
+            {
+                let width = size[0].to_usize();
+                let y = index / width;
+                let x = index - y * width;
+                arr[0] = Idx::cast_from(x);
+                arr[1] = Idx::cast_from(y);
+            }
+            3 => {
+                let width = size[0].to_usize();
+                let height = size[1].to_usize();
+                let xy = width * height;
+
+                let z = index / xy;
+                let rem = index - z * xy;
+
+                let y = rem / width;
+                let x = rem - y * width;
+
+                arr[0] = Idx::cast_from(x);
+                arr[1] = Idx::cast_from(y);
+                arr[2] = Idx::cast_from(z);
+            }
+            _ => {
+                // No modulo
+                let mut remaining = index;
+                let mut strides = [1usize; N];
+                for i in 1..N {
+                    strides[i] = strides[i - 1] * size[i - 1].to_usize();
+                }
+
+                for i in (0..N).rev() {
+                    let stride = strides[i];
+                    let coord = remaining / stride;
+                    arr[i] = Idx::cast_from(coord);
+                    remaining -= coord * stride;
+                }
+            }
+        }
+        Self::from_array(arr)
+    }
+
+    /*
+    // Same version with the modulo
+    #[inline(always)]
     pub unsafe fn from_index_unchecked(index : usize, size : Self) -> Self
     {
         debug_assert!(size.all(|v| *v >= Idx::ZERO));
@@ -255,6 +351,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
         }
         Self::from_array(result)
     }
+    */
 
     pub fn to_grid<F,U>(self, f : F) -> GridOf<U,Idx,N> where F : FnMut(Self) -> U { GridOf::from_fn(self, f) }
 }
