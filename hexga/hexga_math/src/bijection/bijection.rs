@@ -15,6 +15,13 @@ pub trait WithBijectionExtension : WithBijection
 }
 impl<T> WithBijectionExtension for T where T: WithBijection {}
 
+/*
+pub trait BijectionOwner<Idx,T>:
+    IntoIterator<Item =(Idx,T)>
+{
+
+}
+*/
 
 
 /// A View Type with bijection
@@ -209,6 +216,147 @@ impl<C, B> Length for Bijection<C, B> where C: Length
     #[inline(always)]
     fn len(&self) -> usize { self.values.len() }
 }
+
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct IntoIter<I, B> {
+    it: I,
+    bijection: B,
+    idx: usize,
+}
+
+impl<C, B> IntoIterator for Bijection<C, B>
+where
+    C: IntoIterator,
+    B: BijectionFn<Target = usize>,
+{
+    type Item = (B::Source, C::Item);
+    type IntoIter = IntoIter<C::IntoIter, B>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter {
+            it: self.values.into_iter(),
+            bijection: self.bijection_fn,
+            idx: 0,
+        }
+    }
+}
+
+impl<I, B> Iterator for IntoIter<I, B>
+where
+    I: Iterator,
+    B: BijectionFn<Target = usize>,
+{
+    type Item = (B::Source, I::Item);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let value = self.it.next()?;
+        debug_assert!(self.bijection.to_source(self.idx).is_some());
+        let src = self.bijection.to_source_unchecked(self.idx);
+        self.idx += 1;
+        Some((src, value))
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.it.size_hint()
+    }
+}
+impl<I, B> FusedIterator for IntoIter<I, B> where I: FusedIterator, B: BijectionFn<Target = usize> {}
+impl<I, B> ExactSizeIterator for IntoIter<I, B> where I: ExactSizeIterator, B: BijectionFn<Target = usize> {}
+
+impl<I, B> DoubleEndedIterator for IntoIter<I, B>
+where
+    I: DoubleEndedIterator + ExactSizeIterator,
+    B: BijectionFn<Target = usize>,
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        let value = self.it.next_back()?;
+        let target_idx = self.idx + self.it.len();
+        debug_assert!(self.bijection.to_source(target_idx).is_some());
+        let src = unsafe { self.bijection.to_source_unchecked(target_idx) };
+        Some((src, value))
+    }
+}
+
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Iter<'a, I, B>
+{
+    it: I,
+    bijection: &'a B,
+    idx: usize,
+}
+
+impl<'a, C, B> IntoIterator for &'a Bijection<C, B>
+where
+    &'a C: IntoIterator,
+    B: BijectionFn<Target = usize>,
+{
+    type Item = (B::Source, <&'a C as IntoIterator>::Item);
+    type IntoIter = Iter<'a, <&'a C as IntoIterator>::IntoIter, B>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Iter
+        {
+            it: (&self.values).into_iter(),
+            bijection: &self.bijection_fn,
+            idx: 0,
+        }
+    }
+}
+
+impl<'a, C, B> IntoIterator for &'a mut Bijection<C, B>
+where
+    &'a mut C: IntoIterator,
+    B: BijectionFn<Target = usize>,
+{
+    type Item = (B::Source, <&'a mut C as IntoIterator>::Item);
+    type IntoIter = Iter<'a, <&'a mut C as IntoIterator>::IntoIter, B>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Iter
+        {
+            it: (&self.values).into_iter(),
+            bijection: &self.bijection_fn,
+            idx: 0,
+        }
+    }
+}
+
+impl<'a, I, B> Iterator for Iter<'a, I, B>
+where
+    I: Iterator,
+    B: BijectionFn<Target = usize>,
+{
+    type Item = (B::Source, I::Item);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let value = self.it.next()?;
+        debug_assert!(self.bijection.to_source(self.idx).is_some());
+        let src = unsafe { self.bijection.to_source_unchecked(self.idx) };
+        self.idx += 1;
+        Some((src, value))
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.it.size_hint()
+    }
+}
+impl<'a, I, B> FusedIterator for Iter<'a, I, B> where I: FusedIterator, B: BijectionFn<Target = usize> {}
+impl<'a, I, B> ExactSizeIterator for Iter<'a, I, B> where I: ExactSizeIterator, B: BijectionFn<Target = usize> {}
+
+impl<'a, I, B> DoubleEndedIterator for Iter<'a, I, B>
+where
+    I: DoubleEndedIterator + ExactSizeIterator,
+    B: BijectionFn<Target = usize>,
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        let value = self.it.next_back()?;
+        let target_idx = self.idx + self.it.len();
+        debug_assert!(self.bijection.to_source(target_idx).is_some());
+        let src = unsafe { self.bijection.to_source_unchecked(target_idx) };
+        Some((src, value))
+    }
+}
+
 
 /*
 impl<C, B> IntoIterator for Bijection<C, B> where C: IntoIterator
