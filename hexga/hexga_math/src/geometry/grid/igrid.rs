@@ -97,7 +97,7 @@ pub trait IGrid<T, Idx, const N : usize> :
 
     unsafe fn from_vec_unchecked<P>(size : P, value : Vec<T>) -> Self where P: Into<Vector<Idx,N>>;
 
-    fn one_by_one(value : T) -> Self
+    fn sized_one(value : T) -> Self
     {
         Self::from_vec(Vector::<Idx,N>::ONE, vec![value]).unwrap()
     }
