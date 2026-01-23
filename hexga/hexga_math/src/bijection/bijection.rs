@@ -17,12 +17,23 @@ pub trait WithBijectionExtension : WithBijection
 impl<T> WithBijectionExtension for T where T: WithBijection {}
 
 /*
-pub trait BijectionOwner<Idx,T>:
+// Put common stuff to grid/griw view/bijection here
+pub trait TODOBijectionBase<C,Idx,T>:
+    View +
     IntoIterator<Item =(Idx,T)>
 {
+    // Those expose the implementation, put in another trait like IGridVector
+    fn values(&self) -> &C;
+    fn values_mut(&mut self) -> &mut C;
 
+    fn subview<'a, 'b>(&'a self, rect : RectangleOf<Idx>) -> Option<Self::View<>
+    {
+
+    }
+    fn subview_intersect...
 }
-*/
+    */
+//pub trait TODOBijectionBaseMut<C,Idx,T>:
 
 
 /// A View Type with bijection
@@ -46,7 +57,7 @@ impl<C, B> View for Bijection<C, B> where C: View, B: Copy
 impl<C, B> ViewMut for Bijection<C, B> where C: ViewMut, B: Copy
 {
     type ViewMut<'v> = Bijection<C::ViewMut<'v>, B> where Self: 'v;
-    fn view_mut<'s,'v>(&'s mut self) -> Self::ViewMut<'v> where 's: 'v {
+    fn view_mut<'s>(&'s mut self) -> Self::ViewMut<'s> {
         Bijection::from_values_and_bijection(self.values.view_mut(), self.bijection_fn)
     }
 }
