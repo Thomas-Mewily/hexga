@@ -203,7 +203,7 @@ fn color()
 
 pub type Grid2<C, Idx, const N: usize> = Bijection<C,BijectionPointToUsize<Idx,N>>;
 
-fn main()
+fn bi()
 {
     let v = vec![1,2,3,4,5,6];
     let s: &[i32] = &*v;
@@ -218,4 +218,17 @@ fn main()
     dbg!(s.view().bijection_rev());
 
     // grid type ?
+}
+
+
+fn main()
+{
+    let vector : Vec<_> = (0..4).map(|v| v + 20).collect();
+    let slice = &*vector;
+
+    let it = slice.bijection_identity().into_iter().collect::<Vec<_>>();
+    dbg!(it);
+
+    let it = slice.bijection_rev().into_iter().collect::<Vec<_>>();
+    dbg!(it);
 }

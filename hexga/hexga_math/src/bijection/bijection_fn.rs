@@ -28,6 +28,7 @@ pub unsafe trait TryBijectionFn: BijectionFn
 }
 
 pub struct BijectionIdentity<T> { phantom: PhantomData<T> }
+impl<T> Default for BijectionIdentity<T> { fn default() -> Self { Self::new() }}
 impl<T> Clone for BijectionIdentity<T> { fn clone(&self) -> Self { Self { phantom: PhantomData } } }
 impl<T> Copy for BijectionIdentity<T> {}
 impl<T> PartialEq for BijectionIdentity<T> { fn eq(&self, _: &Self) -> bool { true } }
@@ -36,6 +37,11 @@ impl<T> Hash for BijectionIdentity<T> { fn hash<H: Hasher>(&self, _: &mut H) { }
 impl<T> PartialOrd for BijectionIdentity<T> { fn partial_cmp(&self, _: &Self) -> Option<Ordering> { Some(Ordering::Equal) } }
 impl<T> Ord for BijectionIdentity<T> { fn cmp(&self, _: &Self) -> Ordering { Ordering::Equal } }
 impl<T> Debug for BijectionIdentity<T>  { fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { f.write_str("Identity") } }
+
+impl<T> BijectionIdentity<T>
+{
+    pub const fn new() -> Self { Self { phantom: PhantomData }}
+}
 
 unsafe impl<T> BijectionFn for BijectionIdentity<T>
 {
