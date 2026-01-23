@@ -15,6 +15,8 @@ pub trait WithBijectionExtension : WithBijection
 }
 impl<T> WithBijectionExtension for T where T: WithBijection {}
 
+
+
 /// A View Type with bijection
 ///
 /// Can be used for N-dimensional grid. Can have a finite or infinite size
