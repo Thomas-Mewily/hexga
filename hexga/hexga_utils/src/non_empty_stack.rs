@@ -227,6 +227,7 @@ impl<'a, T> IntoIterator for &'a mut NonEmptyStack<T> {
 }
 
 impl<T> Collection for NonEmptyStack<T> {}
+impl<T> CollectionBijective for NonEmptyStack<T> {}
 impl<T> Get<usize> for NonEmptyStack<T>
 {
     type Output =T;
@@ -235,7 +236,8 @@ impl<T> Get<usize> for NonEmptyStack<T>
         if index  == self.len() - 1
         {
             Some(&self.last)
-        }else
+        }
+        else
         {
             self.stack.get(index)
         }

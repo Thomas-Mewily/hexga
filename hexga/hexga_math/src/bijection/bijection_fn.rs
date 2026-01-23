@@ -2,6 +2,8 @@ use super::*;
 
 
 /// UB if the functions in this trait are not bijection
+///
+/// Fn(source) -> target
 pub unsafe trait BijectionFn
 {
     type Source;
@@ -189,7 +191,7 @@ pub struct BijectionPointToUsize<Idx,const N:usize>
 }
 impl<Idx, const N: usize> BijectionPointToUsize<Idx,N> where Idx: Integer
 {
-    pub fn new(size: Vector<Idx,N>) -> Self { Self { size }}
+    pub const fn new(size: Vector<Idx,N>) -> Self { Self { size }}
 }
 
 unsafe impl<Idx, const N: usize> BijectionFn for BijectionPointToUsize<Idx,N>

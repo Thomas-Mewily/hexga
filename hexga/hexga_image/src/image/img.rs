@@ -241,6 +241,7 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 
 
 impl<T, Idx> Collection for ImageBaseOf<T, Idx>  where Idx: Integer {}
+impl<T, Idx> CollectionBijective for ImageBaseOf<T, Idx>  where Idx: Integer {}
 impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>
 {
     type Output = T;

@@ -223,12 +223,19 @@ fn bi()
 
 fn main()
 {
-    let vector : Vec<_> = (0..4).map(|v| v + 20).collect();
-    let slice = &*vector;
+    let slice: &[char] = &['a','b','c','d','e','f'];
+
+    assert_eq!(slice.bijection_identity().get(0usize), Some(&'a'));
+    assert_eq!(slice.bijection_rev().get(0usize), Some(&'f'));
 
     let it = slice.bijection_identity().into_iter().collect::<Vec<_>>();
-    dbg!(it);
+    println!("{:?}", it);
 
     let it = slice.bijection_rev().into_iter().collect::<Vec<_>>();
-    dbg!(it);
+    println!("{:?}", it);
+
+    let grid_3x2 = slice.with_bijection(BijectionPointToUsize::new(point2(3, 2)));
+    assert_eq!(grid_3x2.get(point2(0,1)), Some(&'d'));
+    let it = grid_3x2.into_iter().collect::<Vec<_>>();
+    println!("{:?}", it);
 }

@@ -192,6 +192,11 @@ impl<'a, G, T, Idx, const N : usize> Collection for GridViewMut<'a, G, T, Idx, N
     G : IGrid<T, Idx, N>,
     Idx : Integer,
 {}
+impl<'a, G, T, Idx, const N : usize> CollectionBijective for GridViewMut<'a, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer,
+{}
 impl<'a, P, G, T, Idx, const N : usize> Get<P> for GridViewMut<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,

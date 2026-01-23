@@ -41,3 +41,26 @@ impl<K,V,S> CollectionStableKey for HashMap<K,V,S> {}
 impl<K,V> CollectionStableKey for BTreeMap<K,V> {}
 impl<K,S> CollectionStableKey for HashSet<K,S> {}
 impl<K> CollectionStableKey for BTreeSet<K> {}
+
+
+// todo: impl for grid, image
+/// The mapping of index <=> values is a bijection
+pub trait CollectionBijective : Collection {}
+
+impl<T,const N: usize> CollectionBijective for [T;N] {}
+impl<T> CollectionBijective for Vec<T> {}
+impl<T> CollectionBijective for VecDeque<T> {}
+impl<T> CollectionBijective for [T] {}
+impl<T> CollectionBijective for &[T] {}
+impl<T> CollectionBijective for &mut [T] {}
+
+impl<K,V,S> CollectionBijective for HashMap<K,V,S> {}
+impl<K,V> CollectionBijective for BTreeMap<K,V> {}
+impl<K,S> CollectionBijective for HashSet<K,S> {}
+impl<K> CollectionBijective for BTreeSet<K> {}
+
+impl CollectionBijective for str {}
+impl CollectionBijective for &str {}
+impl CollectionBijective for &mut str {}
+impl CollectionBijective for String {}
+impl CollectionBijective for OsStr {}

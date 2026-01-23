@@ -239,6 +239,12 @@ impl<'a, G, T, Idx, const N : usize> Collection for GridView<'a, G, T, Idx, N>
     G : IGrid<T, Idx, N>,
     Idx : Integer,
 {}
+impl<'a, G, T, Idx, const N : usize> CollectionBijective for GridView<'a, G, T, Idx, N>
+    where
+    G : IGrid<T, Idx, N>,
+    Idx : Integer,
+{}
+
 impl<'a, P, G, T, Idx, const N : usize> Get<P> for GridView<'a, G, T, Idx, N>
     where
     G : IGrid<T, Idx, N>,

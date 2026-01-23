@@ -145,6 +145,7 @@ impl<T, Idx, const N : usize> GetSize<Idx, N> for GridOf<T, Idx, N> where Idx : 
 
 
 impl<T, Idx, const N : usize> Collection for GridOf<T, Idx,N> where Idx : Integer {}
+impl<T, Idx, const N : usize> CollectionBijective for GridOf<T, Idx,N> where Idx : Integer {}
 impl<P, T, Idx, const N : usize> Get<P> for GridOf<T, Idx,N> where Idx : Integer, P : Into<Vector<Idx,N>>
 {
     type Output = <Self as Index<Vector<Idx,N>>>::Output;

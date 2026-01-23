@@ -17,6 +17,7 @@ pub trait WithBijectionExtension : WithBijection
 impl<T> WithBijectionExtension for T where T: WithBijection {}
 
 /*
+TODO
 // Put common stuff to grid/griw view/bijection here
 pub trait TODOBijectionBase<C,Idx,T>:
     View +
@@ -32,7 +33,7 @@ pub trait TODOBijectionBase<C,Idx,T>:
     }
     fn subview_intersect...
 }
-    */
+*/
 //pub trait TODOBijectionBaseMut<C,Idx,T>:
 
 
@@ -42,7 +43,7 @@ pub trait TODOBijectionBase<C,Idx,T>:
 #[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Bijection<C, B>
-    //where C: GetManyMut<B::Target>, B: Bijection,
+    //where C: Get<B::Target>, B: Bijection,
 {
     pub(crate) values: C,
     pub(crate) bijection_fn: B,
@@ -74,8 +75,10 @@ impl<C, B> Bijection<C, B>
         (values, bijection)
     }
 
-    pub fn values(&self) -> &C { &self.values }
-    pub fn values_mut(&mut self) -> &mut C { &mut self.values }
+    pub fn values_view<'v>(&'v self) -> C::View<'v> where C: View { self.values.view() }
+    pub fn values_view_mut<'v>(&'v mut self) -> C::ViewMut<'v> where C: ViewMut { self.values.view_mut() }
+    //pub fn values(&self) -> &C { &self.values }
+    //pub fn values_mut(&mut self) -> &mut C { &mut self.values }
 
     pub fn bijection_fn(&self) -> &B { &self.bijection_fn }
     pub fn bijection_fn_mut(&mut self) -> &mut B { &mut self.bijection_fn }
@@ -137,8 +140,10 @@ impl<C, B> GetSize<Idx, N> for ContainerBijection<C, B>
 }
 */
 
-impl<C, B> Collection for Bijection<C, B>
-    where C: Collection {}
+impl<C, B> Collection for Bijection<C, B> where C: Collection {}
+impl<C, B> CollectionBijective for Bijection<C, B> where C: CollectionBijective {}
+
+
 impl<Idx, C, B> Get<Idx> for Bijection<C, B>
     where B: BijectionFn, C: Get<B::Target>, Idx: Into<B::Source>
 {
