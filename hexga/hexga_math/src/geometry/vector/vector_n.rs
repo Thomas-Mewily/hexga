@@ -134,7 +134,7 @@ impl<T,const N : usize> Vector<T,N>
     #[inline(always)]
     pub fn is_inside(self, size : Self) -> bool where T: Number
     {
-        self.all_with(&size, |a, m| *a >= T::ZERO && a < m)
+        self.all_with(size, |a, m| a >= T::ZERO && a < m)
     }
     #[inline(always)]
     pub fn is_outside(self, size : Self) -> bool where T: Number { !self.is_inside(size) }
@@ -195,7 +195,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
     /// ```
     pub unsafe fn to_index_unchecked(self, size: Self) -> usize
     {
-        debug_assert!(size.all(|v| *v >= Idx::ZERO));
+        debug_assert!(size.all(|v| v >= Idx::ZERO));
         // I'm not sure if the manual unrolling is necessary
         match N
         {
@@ -283,7 +283,7 @@ impl<Idx, const N : usize> Vector<Idx, N>
     /// ```
     #[inline(always)]
     pub unsafe fn from_index_unchecked(index: usize, size: Self) -> Self {
-        debug_assert!(size.all(|v| *v >= Idx::ONE));
+        debug_assert!(size.all(|v| v >= Idx::ONE));
 
         let mut arr = [Idx::ZERO; N];
         match N
