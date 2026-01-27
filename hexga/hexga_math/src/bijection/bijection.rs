@@ -16,22 +16,25 @@ pub trait WithBijectionExtension : WithBijection
 }
 impl<T> WithBijectionExtension for T where T: WithBijection {}
 
+
 /*
-TODO
+//TODO
 // Put common stuff to grid/griw view/bijection here
-pub trait TODOBijectionBase<C,Idx,T>:
+pub trait BijectionView<C,Idx,T>:
     View +
     IntoIterator<Item =(Idx,T)>
 {
     // Those expose the implementation, put in another trait like IGridVector
-    fn values(&self) -> &C;
-    fn values_mut(&mut self) -> &mut C;
+    //fn values(&self) -> &C;
+    //fn values_mut(&mut self) -> &mut C;
 
-    fn subview<'a, 'b>(&'a self, rect : RectangleOf<Idx>) -> Option<Self::View<>
+    fn subview<'s, const N:usize>(&'s self, rect : rectangle::RectangleOf<Idx>) -> Option<Self::View<'s>>
+        where Self: GetRectangle<Idx,N>, Idx: Number
     {
-
+        let r = self.rect();
+        r.cro
     }
-    fn subview_intersect...
+    //fn subview_intersect...
 }
 */
 //pub trait TODOBijectionBaseMut<C,Idx,T>:
@@ -40,7 +43,7 @@ pub trait TODOBijectionBase<C,Idx,T>:
 /// A View Type with bijection
 ///
 /// Can be used for N-dimensional grid. Can have a finite or infinite size
-#[cfg_attr(feature = "serde", derive(Serialize))]
+//#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Bijection<C, B>
     //where C: Get<B::Target>, B: Bijection,
@@ -327,7 +330,7 @@ impl<'a, C, B> Bijection<C, B>
         }
     }
 }
-/*
+
 // Overflow evaluating the requirement...
 impl<'a, C, B> IntoIterator for &'a Bijection<C, B>
 where
@@ -346,7 +349,7 @@ where
         }
     }
 }
-*/
+
 
 impl<'a, I, B> Iterator for Iter<'a, I, B>
 where

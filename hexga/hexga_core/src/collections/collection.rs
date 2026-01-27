@@ -44,7 +44,7 @@ impl<K> CollectionStableKey for BTreeSet<K> {}
 
 
 // todo: impl for grid, image
-/// The mapping of index <=> values is a bijection
+/// The mapping of `key <=> value` is a bijection: each key point to a unique value, each value is uniquely pointed by a key.
 pub trait CollectionBijective : Collection {}
 
 impl<T,const N: usize> CollectionBijective for [T;N] {}

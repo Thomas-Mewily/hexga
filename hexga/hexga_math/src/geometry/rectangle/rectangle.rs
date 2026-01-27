@@ -183,16 +183,16 @@ impl<T,const N: usize> Rectangle<T,N> where T: Number
     /// ```
     pub fn is_inside(&self, point: Vector<T, N>) -> bool
     {
-        self.bounds_min().all_with(&point, |axis, other_axis| other_axis >= axis) &&
-        self.bounds_max().all_with(&point, |axis, other_axis| other_axis <  axis)
+        self.bounds_min().all_with(point, |axis, other_axis| other_axis >= axis) &&
+        self.bounds_max().all_with(point, |axis, other_axis| other_axis <  axis)
     }
 
     /// Check if a point inside the rectangle.
     /// Don't work for indexing
     pub fn is_inside_inclusif(&self, point: Vector<T, N>) -> bool
     {
-        self.bounds_min().all_with(&point, |axis, other_axis| other_axis >= axis) &&
-        self.bounds_max().all_with(&point, |axis, other_axis| other_axis <= axis)
+        self.bounds_min().all_with(point, |axis, other_axis| other_axis >= axis) &&
+        self.bounds_max().all_with(point, |axis, other_axis| other_axis <= axis)
     }
 
     pub fn is_rect_inside(&self, rect: Rectangle<T, N>) -> bool
@@ -264,12 +264,12 @@ pub trait Crop<T, const N: usize>: GetRectangle<T, N> + Sized where T: Number
 
     fn crop_margin(self, margin_start: Vector<T,N>, margin_end: Vector<T,N>) -> Option<Self>
     {
-        if margin_start.any(|a| a < &zero()) || margin_end.any(|a| a < &zero()) { return None; }
+        if margin_start.any(|a| a < zero()) || margin_end.any(|a| a < zero()) { return None; }
 
         let mut subrect = self.rect();
 
         let removed_size = margin_start + margin_end;
-        if removed_size.any_with(&subrect.size(), |a,b| a > b) { return None; }
+        if removed_size.any_with(subrect.size(), |a,b| a > b) { return None; }
 
         subrect.pos  += margin_start;
         subrect.size -= removed_size;
