@@ -73,7 +73,7 @@ where
 
 
 
-impl<T, C, Gen> Serialize for GenSlice<T,C,Gen>
+impl<T, C, Gen> Serialize for GenSlice<T,Gen,C>
     where
     C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration,
     C: Serialize, T: Serialize, Gen: Serialize
@@ -106,7 +106,7 @@ impl<T, C, Gen> Serialize for GenSlice<T,C,Gen>
 
 
 
-impl<'de, T, C, Gen> Deserialize<'de> for GenSlice<T,C,Gen>
+impl<'de, T, C, Gen> Deserialize<'de> for GenSlice<T,Gen,C>
     where
     C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration,
     C: Deserialize<'de>, T: Deserialize<'de>, Gen: IGeneration + Deserialize<'de>
@@ -116,7 +116,7 @@ impl<'de, T, C, Gen> Deserialize<'de> for GenSlice<T,C,Gen>
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        pub struct GenVec<T,C,Gen>
+        pub struct GenVec<T,Gen,C>
             where C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration,
         {
             values: C,
@@ -124,6 +124,6 @@ impl<'de, T, C, Gen> Deserialize<'de> for GenSlice<T,C,Gen>
         }
 
         let GenVec{ values, next } = GenVec::deserialize(deserializer)?;
-        GenSlice::<T,C,Gen>::try_from_raw_parts(values, next.unwrap_or(usize::MAX)).map_err(serde::de::Error::custom)
+        GenSlice::<T,Gen,C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX)).map_err(serde::de::Error::custom)
     }
 }
