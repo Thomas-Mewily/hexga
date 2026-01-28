@@ -6,8 +6,8 @@ pub mod prelude
     pub(crate) use super::{Generation,IGeneration,GenIDOf,CollectionWithGenVecID};
 }
 
-pub trait IGeneration            : Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
-impl<T> IGeneration for T where T: Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy {}
+pub trait IGeneration            : Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy + 'static {}
+impl<T> IGeneration for T where T: Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy + 'static {}
 
 // Todo: Make a flag for the generation
 pub type Generation = u32;

@@ -1,5 +1,5 @@
 use super::*;
-use std::{collections::*, ffi::{OsStr, OsString}, path::PathBuf};
+use std::{collections::*, ffi::{OsStr, OsString}, path::{PathBuf,Path}};
 use std::ops::Range;
 
 
@@ -21,6 +21,12 @@ pub use clearable::*;
 
 mod remove;
 pub use remove::*;
+
+mod push;
+pub use push::*;
+
+mod pop;
+pub use pop::*;
 
 /*
 mod insert_pop;

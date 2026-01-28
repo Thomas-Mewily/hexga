@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use super::*;
 
 /// Contains element
@@ -20,6 +22,9 @@ impl Collection for &str {}
 impl Collection for &mut str {}
 impl Collection for String {}
 impl Collection for OsStr {}
+impl Collection for std::ffi::OsString {}
+impl Collection for Path {}
+impl Collection for PathBuf {}
 
 impl<K,V,S> Collection for HashMap<K,V,S> {}
 impl<K,V> Collection for BTreeMap<K,V> {}

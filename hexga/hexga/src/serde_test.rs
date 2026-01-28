@@ -117,12 +117,14 @@ fn serialize_genvec()
     serde_test(&g);
 }
 
+/*
 #[test]
 fn serialize_multihashmap()
 {
     let multihashmap = [(["1".to_owned(), "one".to_owned()], 1), (["2".to_owned(), "deux".to_owned()], 2)].to_multihashmap();
     serde_test(&multihashmap);
 }
+*/
 
 #[test]
 fn serialize_fixed_size_vector()

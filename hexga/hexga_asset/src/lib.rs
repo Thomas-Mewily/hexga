@@ -28,7 +28,7 @@ use std::{
 };
 
 use hexga_core::prelude::*;
-use hexga_generational::{gen_vec, multi_map::{self, EntryID}, prelude::*, table};
+use hexga_generational::{gen_vec, /*multi_map::{self, EntryID},*/ prelude::*, /*table*/};
 use hexga_encoding::prelude::*;
 use hexga_io::prelude::*;
 
