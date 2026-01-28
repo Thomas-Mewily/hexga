@@ -90,6 +90,7 @@ impl<T,Gen> Entry<T,Gen> where Gen:IGeneration
 #[derive(Debug, Clone, Eq)]
 pub struct GenSlice<T,C,Gen=Generation>
     where C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration
+    //where C: for<'a> View<View<'a> = &'a [Entry<T,Gen>]>, Gen:IGeneration
 {
     pub(crate) values: C,
     /// The first index of the slot that is None.
