@@ -99,33 +99,6 @@ pub struct GenSlice<T,C,Gen=Generation>
     len: usize,
 }
 
-/*
-pub trait IGenVec
-{
-
-}
-pub trait IGenVecView<'a,T,Gen:IGeneration>
-{
-    fn view(&self) -> GenVecViewOf<'a,T,Gen>;
-}
-pub trait IGenVecViewMut<'a,T,Gen:IGeneration=Generation>
-{
-    fn view_mut(&mut self) -> GenVecViewOf<'a,T,Gen>;
-}
-
-#[repr(transparent)]
-#[derive(Debug, Clone, Eq)]
-pub struct GenVecViewOf<'a,T,Gen:IGeneration=Generation>
-{
-    pub(crate) values: &'a GenVecOf<Entry<T,Gen>>,
-}
-#[repr(transparent)]
-#[derive(Debug, Clone, Eq)]
-pub struct GenVecViewMutOf<'a,T,Gen:IGeneration=Generation>
-{
-    pub(crate) values: &'a mut GenVecOf<Entry<T,Gen>>,
-}
-*/
 
 
 impl<T, C, Gen> Hash for GenSlice<T,C,Gen>
@@ -499,7 +472,7 @@ impl<T,C,Gen> GenSlice<T,C,Gen>
     pub fn rollback_remove(&mut self, id: GenIDOf<Gen>, value: T) -> Result<(), ()>
         where C: DerefMut
     {
-        // Todo: missing some check to see if the last operation removal was done with id
+        // TODO: missing some check to see if the last operation removal was done with id
         self.rollback_remove_index(id.index(), value)
     }
 
@@ -746,7 +719,7 @@ impl<T,C,Gen> CollectionBijective for GenSlice<T,C,Gen> where C: Deref<Target = 
 impl<T,C,Gen> Length for GenSlice<T,C,Gen> where C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration { #[inline(always)] fn len(&self) -> usize { self.len() } }
 impl<T,C,Gen> Clear for GenSlice<T,C,Gen> where C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration, C: Clear { #[inline(always)] fn clear(&mut self) { self.clear(); } }
 
-// TODO: impl the trait Push and Pop
+// TODO: impl the trait Push, Pop, View, ViewMut
 
 impl<T,C,Gen> Shrink for GenSlice<T,C,Gen> where C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration, C: Shrink
 {
