@@ -215,7 +215,7 @@ fn bi()
 
     let g = Grid2::from_values_and_bijection(s, BijectionPointToUsize::new(point2(2, 3)));
     dbg!(&g.get(point2(0, 1)));
-    dbg!(s.view().bijection_rev());
+    dbg!(s.as_view().bijection_rev());
 
     // grid type ?
 }

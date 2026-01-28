@@ -54,15 +54,15 @@ pub struct Bijection<C, B>
 impl<C, B> View for Bijection<C, B> where C: View, B: Copy
 {
     type View<'v> = Bijection<C::View<'v>, B> where Self: 'v;
-    fn view<'s>(&'s self) -> Self::View<'s> {
-        Bijection::from_values_and_bijection(self.values.view(), self.bijection_fn)
+    fn as_view<'s>(&'s self) -> Self::View<'s> {
+        Bijection::from_values_and_bijection(self.values.as_view(), self.bijection_fn)
     }
 }
 impl<C, B> ViewMut for Bijection<C, B> where C: ViewMut, B: Copy
 {
     type ViewMut<'v> = Bijection<C::ViewMut<'v>, B> where Self: 'v;
-    fn view_mut<'s>(&'s mut self) -> Self::ViewMut<'s> {
-        Bijection::from_values_and_bijection(self.values.view_mut(), self.bijection_fn)
+    fn as_mut_view<'s>(&'s mut self) -> Self::ViewMut<'s> {
+        Bijection::from_values_and_bijection(self.values.as_mut_view(), self.bijection_fn)
     }
 }
 
@@ -78,8 +78,8 @@ impl<C, B> Bijection<C, B>
         (values, bijection)
     }
 
-    pub fn values_view<'v>(&'v self) -> C::View<'v> where C: View { self.values.view() }
-    pub fn values_view_mut<'v>(&'v mut self) -> C::ViewMut<'v> where C: ViewMut { self.values.view_mut() }
+    pub fn values_view<'v>(&'v self) -> C::View<'v> where C: View { self.values.as_view() }
+    pub fn values_view_mut<'v>(&'v mut self) -> C::ViewMut<'v> where C: ViewMut { self.values.as_mut_view() }
     //pub fn values(&self) -> &C { &self.values }
     //pub fn values_mut(&mut self) -> &mut C { &mut self.values }
 

@@ -20,32 +20,32 @@
 pub trait View
 {
     type View<'v>: View where Self: 'v;
-    fn view<'s>(&'s self) -> Self::View<'s>;
+    fn as_view<'s>(&'s self) -> Self::View<'s>;
 }
 
 
 impl<T> View for [T]
 {
     type View<'v> = &'v [T] where Self: 'v;
-    fn view<'s>(&'s self) -> Self::View<'s> { self }
+    fn as_view<'s>(&'s self) -> Self::View<'s> { self }
 }
 impl<'b,T> View for &'b[T]
 {
     type View<'v> = &'v [T] where Self: 'v;
-    fn view<'s>(&'s self) -> Self::View<'s> { self }
+    fn as_view<'s>(&'s self) -> Self::View<'s> { self }
 }
 impl<'b,T> View for &'b mut[T]
 {
     type View<'v> = &'v [T] where Self: 'v;
-    fn view<'s>(&'s self) -> Self::View<'s> { self }
+    fn as_view<'s>(&'s self) -> Self::View<'s> { self }
 }
 impl<T> View for Vec<T>
 {
     type View<'v> = &'v [T] where Self: 'v;
-    fn view<'s>(&'s self) -> Self::View<'s> { self }
+    fn as_view<'s>(&'s self) -> Self::View<'s> { self }
 }
 impl<T,const N:usize> View for [T;N]
 {
     type View<'v> = &'v [T] where Self: 'v;
-    fn view<'s>(&'s self) -> Self::View<'s> { self }
+    fn as_view<'s>(&'s self) -> Self::View<'s> { self }
 }
