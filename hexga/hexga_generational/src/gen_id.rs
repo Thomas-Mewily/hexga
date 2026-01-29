@@ -16,7 +16,7 @@ pub type GenID  = GenIDOf<Generation>;
 
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
-pub struct GenIDOf<Gen:IGeneration>
+pub struct GenIDOf<Gen:IGeneration=Generation>
 {
     index      : usize,
     generation : Gen,
@@ -56,10 +56,16 @@ impl<Gen:IGeneration> Debug for GenIDOf<Gen>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
-        f.debug_tuple("")
-            .field(&self.index)
-            .field(&GenerationDebug(self.generation))
-            .finish()
+        if self.is_null()
+        {
+            write!(f, "NULL")
+        }else
+        {
+            f.debug_tuple("")
+                .field(&self.index)
+                .field(&GenerationDebug(self.generation))
+                .finish()
+        }
     }
 }
 

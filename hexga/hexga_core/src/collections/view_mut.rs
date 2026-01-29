@@ -42,3 +42,9 @@ impl<'s,T,const N:usize> ViewMut<'s> for [T;N] where Self: 's
     type ViewMut<'v> = &'v mut [T] where Self: 'v;
     fn as_mut_view(&'s mut self) -> Self::ViewMut<'s> { self }
 }
+
+impl<'s,T> ViewMut<'s> for &mut T where Self: 's, T: ViewMut<'s> + View<'s>
+{
+    type ViewMut<'v> = T::ViewMut<'v> where Self: 'v;
+    fn as_mut_view(&'s mut self) -> Self::ViewMut<'s> { (*self).as_mut_view() }
+}

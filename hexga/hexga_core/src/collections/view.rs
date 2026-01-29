@@ -34,7 +34,7 @@ impl<'s,'b,T> View<'s> for &'b[T] where Self: 's
     type View<'v> = &'v [T] where Self: 'v;
     fn as_view(&'s self) -> Self::View<'s> { self }
 }
-impl<'s,'b,T> View<'s> for &'b mut[T] where Self: 's
+impl<'s,'b,T> View<'s> for &'b mut [T] where Self: 's
 {
     type View<'v> = &'v [T] where Self: 'v;
     fn as_view(&'s self) -> Self::View<'s> { self }
@@ -48,4 +48,17 @@ impl<'s,T,const N:usize> View<'s> for [T;N] where Self: 's
 {
     type View<'v> = &'v [T] where Self: 'v;
     fn as_view(&'s self) -> Self::View<'s> { self }
+}
+
+
+
+impl<'s,T> View<'s> for &T where Self: 's, T: View<'s>
+{
+    type View<'v> = T::View<'v> where Self: 'v;
+    fn as_view(&'s self) -> Self::View<'s> { (*self).as_view() }
+}
+impl<'s,T> View<'s> for &mut T where Self: 's, T: View<'s>
+{
+    type View<'v> = T::View<'v> where Self: 'v;
+    fn as_view(&'s self) -> Self::View<'s> { (**self).as_view() }
 }

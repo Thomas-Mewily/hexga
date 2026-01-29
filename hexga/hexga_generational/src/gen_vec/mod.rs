@@ -140,6 +140,12 @@ impl<T, C, Gen> Clone for GenVecOf<T,Gen,C>
         Self { values: self.values.clone(), free: self.free.clone(), len: self.len.clone(), phantom: self.phantom.clone() }
     }
 }
+impl<T, C, Gen> Copy for GenVecOf<T,Gen,C>
+    where
+    C: for<'a> View<'a,View<'a> = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+    C: Copy
+{
+}
 impl<T, C, Gen> Eq for GenVecOf<T,Gen,C>
     where
     C: for<'a> View<'a,View<'a> = &'a [Entry<T,Gen>]>, Gen:IGeneration,
@@ -609,6 +615,17 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
             }
         }
     }
+
+    pub fn to_owned(&self) -> GenVecOf<T, Gen, C::Owned> where C: ToOwned
+    {
+        GenVecOf
+        {
+            values: self.values.to_owned(),
+            free: self.free,
+            len: self.len,
+            phantom: PhantomData,
+        }
+    }
 }
 
 impl<T, C, Gen> Index<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
@@ -856,6 +873,29 @@ impl<T,Gen,C> Push<T> for GenVecOf<T,Gen,C>
     type Output=GenIDOf<Gen>;
     fn push(&mut self, item: T) -> Self::Output {
         self.insert(item)
+    }
+}
+
+impl<'s, T, Gen, C> From<&'s GenVecOf<T, Gen, C>> for GenVecOf<T, Gen, &'s [Entry<T, Gen>]>
+    where
+    C: View<'s, View<'s> = &'s [Entry<T, Gen>]>,
+    Gen: IGeneration,
+    T:'s
+{
+    fn from(value: &'s GenVecOf<T, Gen, C>) -> Self {
+        value.as_view()
+    }
+}
+
+impl<'s, T, Gen, C> From<&'s mut GenVecOf<T, Gen, C>> for GenVecOf<T, Gen, &'s mut [Entry<T, Gen>]>
+    where
+    C: View<'s, View<'s> = &'s [Entry<T, Gen>]>,
+    C: ViewMut<'s, ViewMut<'s> = &'s mut [Entry<T, Gen>]>,
+    Gen: IGeneration,
+    T:'s
+{
+    fn from(value: &'s mut GenVecOf<T, Gen, C>) -> Self {
+        value.as_mut_view()
     }
 }
 
