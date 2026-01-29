@@ -3,7 +3,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{GenVec, CollectToGenVec};
+    pub use super::{GenVec, GenView, GenViewMut, CollectToGenVec};
 }
 
 #[cfg(feature = "serde")]
@@ -13,6 +13,8 @@ use serde_impl::*;
 
 
 pub type GenVec<T> = GenVecOf<T,Generation,Vec<Entry<T,Generation>>>;
+pub type GenView<'a,T> = GenVecOf<T,Generation,&'a [Entry<T,Generation>]>;
+pub type GenViewMut<'a,T> = GenVecOf<T,Generation,&'a mut [Entry<T,Generation>]>;
 
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -58,12 +60,16 @@ where
     Gen: IGeneration + std::fmt::Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self.value {
-            EntryValue::Occupied(v) => { write!(f, "{:?}#{:?}", v, self.generation) }
-            EntryValue::Vacant(_) => { write!(f, "_#{:?}", self.generation) }
-        }
+        let mut tuple = f.debug_tuple("");
+        match self.value() {
+            Some(value) => tuple.field(value),
+            None => tuple.field(&"_"),
+        };
+        tuple.field(&gen_id::GenerationDebug(self.generation)).finish()
     }
 }
+
+
 
 
 impl<T,Gen> From<(EntryValue<T>, Gen)> for Entry<T,Gen> where Gen:IGeneration

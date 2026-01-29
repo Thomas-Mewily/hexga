@@ -4,7 +4,7 @@
 #![allow(unused_mut)]
 
 
-use hexga::{generational::gen_id::GenIDOf, prelude::*};
+use hexga::{generational::{gen_id::{GenIDOf, Generation}, gen_vec::GenVecOf}, prelude::*};
 use hexga_math::bijection::*;
 
 fn dbg_mix<S,F>(src: S, dest:S, coef:F) where S:Mix<F> + Copy + Debug, F:Float
@@ -242,8 +242,19 @@ fn grid_bijection()
 
 fn gen_vec_view()
 {
-    let gen_vec = [1,2,3].to_genvec();
+    /*
+    //let gen_vec : GenVecOf<i32, Generation, Vec<hexga::generational::gen_vec::Entry<i32, Generation>>> = [1i32,2,3].to_genvec();
+    let gen_vec : GenVec<i32> = [1i32,2,3].to_genvec();
     println!("{:?}", gen_vec);
+    gen_vec.get_entry_from_index(0);
+    gen_vec.*/
+
+    let mut gen_vec = [1i32,2,3].to_genvec();
+    let view = gen_vec.as_view();
+    let view_mut = gen_vec.as_mut_view();
+    println!("{:?}", gen_vec);
+    gen_vec.get_entry_from_index(0);
+
 }
 
 fn main()

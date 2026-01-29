@@ -3,7 +3,7 @@ use super::*;
 pub mod prelude
 {
     pub use super::{GenID};
-    pub(crate) use super::{Generation,IGeneration,GenIDOf,CollectionWithGenVecID};
+    pub(crate) use super::{Generation,IGeneration,GenIDOf};
 }
 
 pub trait IGeneration            : Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Copy + 'static {}
@@ -52,11 +52,28 @@ impl<'de, Gen:IGeneration> Deserialize<'de> for GenIDOf<Gen> where Gen : Deseria
         }
     }
 }
-impl<Gen:IGeneration> Debug for GenIDOf<Gen> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}#{:?}", self.index, self.generation) } }
+impl<Gen:IGeneration> Debug for GenIDOf<Gen>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+        f.debug_tuple("")
+            .field(&self.index)
+            .field(&GenerationDebug(self.generation))
+            .finish()
+    }
+}
+
+pub(crate) struct GenerationDebug<T>(pub(crate) T);
+impl<T> Debug for GenerationDebug<T> where T: Debug
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "#{:?}", self.0)
+    }
+}
 
 // Todo: add GetManyMut ?
-pub trait CollectionWithGenVecID<T,Gen:IGeneration> : Get<GenIDOf<Gen>,Output=T> + GetMut<GenIDOf<Gen>,Output=T> + Remove<GenIDOf<Gen>,Output = T> {}
-impl<T,Gen:IGeneration,S> CollectionWithGenVecID<T,Gen> for S where S: Get<GenIDOf<Gen>,Output=T> + GetMut<GenIDOf<Gen>,Output=T> + Remove<GenIDOf<Gen>,Output = T> {}
+//pub trait CollectionWithGenVecID<T,Gen:IGeneration> : Get<GenIDOf<Gen>,Output=T> + GetMut<GenIDOf<Gen>,Output=T> + Remove<GenIDOf<Gen>,Output = T> {}
+//impl<T,Gen:IGeneration,S> CollectionWithGenVecID<T,Gen> for S where S: Get<GenIDOf<Gen>,Output=T> + GetMut<GenIDOf<Gen>,Output=T> + Remove<GenIDOf<Gen>,Output = T> {}
 
 impl<Gen:IGeneration> GenIDOf<Gen>
 {
