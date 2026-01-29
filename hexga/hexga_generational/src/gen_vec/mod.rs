@@ -338,7 +338,8 @@ impl<T,Gen,C> Default for GenVecOf<T,Gen,C>
 
 impl<T,Gen,C> GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     pub fn new() -> Self where C: Default { Self { values: C::default(), free: usize::MAX, len: 0, phantom: PhantomData }}
     /*
@@ -453,7 +454,10 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
     }
 
     #[inline(always)]
-    pub fn get_entry_from_index(&self, index: usize) -> Option<&Entry<T,Gen>> { self.values.as_view().get(index) }
+    pub fn get_entry_from_index<'s>(&'s self, index: usize) -> Option<&Entry<T,Gen>>
+    where
+        C: View<'s, View = &'s [Entry<T, Gen>]>,
+        { self.values.as_view().get(index) }
     // Do not expose, having a &mut Entry<T,Gen> allow to mutate the Occupied/Vacant state of the entry, breaking invariant
     #[inline(always)]
     pub(crate) fn get_entry_mut_from_index(&mut self, index: usize) -> Option<&mut Entry<T,Gen>>
