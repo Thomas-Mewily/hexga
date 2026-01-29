@@ -19,46 +19,46 @@
 /// ```
 pub trait View<'s> where Self: 's
 {
-    type View<'v>: View<'v> where Self: 'v;
-    fn as_view(&'s self) -> Self::View<'s>;
+    type View: View<'s>;
+    fn as_view(&'s self) -> Self::View;
 }
 
 
 impl<'s,T> View<'s> for [T] where Self: 's
 {
-    type View<'v> = &'v [T] where Self: 'v;
-    fn as_view(&'s self) -> Self::View<'s> { self }
+    type View = &'s [T];
+    fn as_view(&'s self) -> Self::View { self }
 }
 impl<'s,'b,T> View<'s> for &'b[T] where Self: 's
 {
-    type View<'v> = &'v [T] where Self: 'v;
-    fn as_view(&'s self) -> Self::View<'s> { self }
+    type View = &'s [T];
+    fn as_view(&'s self) -> Self::View { self }
 }
 impl<'s,'b,T> View<'s> for &'b mut [T] where Self: 's
 {
-    type View<'v> = &'v [T] where Self: 'v;
-    fn as_view(&'s self) -> Self::View<'s> { self }
+    type View = &'s [T];
+    fn as_view(&'s self) -> Self::View { self }
 }
 impl<'s,T> View<'s> for Vec<T> where Self: 's
 {
-    type View<'v> = &'v [T] where Self: 'v;
-    fn as_view(&'s self) -> Self::View<'s> { self }
+    type View = &'s [T];
+    fn as_view(&'s self) -> Self::View { self }
 }
 impl<'s,T,const N:usize> View<'s> for [T;N] where Self: 's
 {
-    type View<'v> = &'v [T] where Self: 'v;
-    fn as_view(&'s self) -> Self::View<'s> { self }
+    type View = &'s [T];
+    fn as_view(&'s self) -> Self::View { self }
 }
 
 
 
 impl<'s,T> View<'s> for &T where Self: 's, T: View<'s>
 {
-    type View<'v> = T::View<'v> where Self: 'v;
-    fn as_view(&'s self) -> Self::View<'s> { (*self).as_view() }
+    type View = T::View;
+    fn as_view(&'s self) -> Self::View { (*self).as_view() }
 }
 impl<'s,T> View<'s> for &mut T where Self: 's, T: View<'s>
 {
-    type View<'v> = T::View<'v> where Self: 'v;
-    fn as_view(&'s self) -> Self::View<'s> { (**self).as_view() }
+    type View = T::View;
+    fn as_view(&'s self) -> Self::View { (**self).as_view() }
 }

@@ -17,34 +17,34 @@ use super::*;
 /// ```
 pub trait ViewMut<'s> : View<'s> where Self: 's
 {
-    type ViewMut<'v>: ViewMut<'v> where Self: 'v;
-    fn as_mut_view(&'s mut self) -> Self::ViewMut<'s>;
+    type ViewMut: ViewMut<'s>;
+    fn as_mut_view(&'s mut self) -> Self::ViewMut;
 }
 
 
 impl<'s,T> ViewMut<'s> for [T] where Self: 's
 {
-    type ViewMut<'v> = &'v mut [T] where Self: 'v;
-    fn as_mut_view(&'s mut self) -> Self::ViewMut<'s> { self }
+    type ViewMut = &'s mut [T];
+    fn as_mut_view(&'s mut self) -> Self::ViewMut { self }
 }
 impl<'s,'b,T> ViewMut<'s> for &'b mut [T] where Self: 's
 {
-    type ViewMut<'v> = &'v mut [T] where Self: 'v;
-    fn as_mut_view(&'s mut self) -> Self::ViewMut<'s> { self }
+    type ViewMut = &'s mut [T];
+    fn as_mut_view(&'s mut self) -> Self::ViewMut { self }
 }
 impl<'s,T> ViewMut<'s> for Vec<T> where Self: 's
 {
-    type ViewMut<'v> = &'v mut [T] where Self: 'v;
-    fn as_mut_view(&'s mut self) -> Self::ViewMut<'s> { self }
+    type ViewMut = &'s mut [T];
+    fn as_mut_view(&'s mut self) -> Self::ViewMut { self }
 }
 impl<'s,T,const N:usize> ViewMut<'s> for [T;N] where Self: 's
 {
-    type ViewMut<'v> = &'v mut [T] where Self: 'v;
-    fn as_mut_view(&'s mut self) -> Self::ViewMut<'s> { self }
+    type ViewMut = &'s mut [T];
+    fn as_mut_view(&'s mut self) -> Self::ViewMut { self }
 }
 
 impl<'s,T> ViewMut<'s> for &mut T where Self: 's, T: ViewMut<'s> + View<'s>
 {
-    type ViewMut<'v> = T::ViewMut<'v> where Self: 'v;
-    fn as_mut_view(&'s mut self) -> Self::ViewMut<'s> { (*self).as_mut_view() }
+    type ViewMut = T::ViewMut;
+    fn as_mut_view(&'s mut self) -> Self::ViewMut { (*self).as_mut_view() }
 }
