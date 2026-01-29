@@ -17,7 +17,7 @@
 /// let view = arr.view(); // returns &[i32]
 /// assert_eq!(view[2], 30);
 /// ```
-pub trait View<'s> where Self: 's
+pub trait View<'s>
 {
     type View: View<'s>;
     fn as_view(&'s self) -> Self::View;
@@ -29,12 +29,12 @@ impl<'s,T> View<'s> for [T] where Self: 's
     type View = &'s [T];
     fn as_view(&'s self) -> Self::View { self }
 }
-impl<'s,T> View<'s> for &'s[T] where Self: 's
+impl<'s,T> View<'s> for &'s[T]
 {
     type View = &'s [T];
     fn as_view(&'s self) -> Self::View { self }
 }
-impl<'s,T> View<'s> for &'s mut [T] where Self: 's
+impl<'s,T> View<'s> for &'s mut [T]
 {
     type View = &'s [T];
     fn as_view(&'s self) -> Self::View { self }
@@ -52,12 +52,12 @@ impl<'s,T,const N:usize> View<'s> for [T;N] where Self: 's
 
 
 
-impl<'s,T> View<'s> for &T where Self: 's, T: View<'s>
+impl<'s,T> View<'s> for &T where T: View<'s>
 {
     type View = T::View;
     fn as_view(&'s self) -> Self::View { (*self).as_view() }
 }
-impl<'s,T> View<'s> for &mut T where Self: 's, T: View<'s>
+impl<'s,T> View<'s> for &mut T where T: View<'s>
 {
     type View = T::View;
     fn as_view(&'s self) -> Self::View { (**self).as_view() }

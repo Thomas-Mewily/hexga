@@ -15,7 +15,7 @@ use super::*;
 /// view[0] += 10;
 /// assert_eq!(vec[0], 11);
 /// ```
-pub trait ViewMut<'s> : View<'s> where Self: 's
+pub trait ViewMut<'s> : View<'s>
 {
     type ViewMut: ViewMut<'s>;
     fn as_mut_view(&'s mut self) -> Self::ViewMut;
@@ -27,7 +27,7 @@ impl<'s,T> ViewMut<'s> for [T] where Self: 's
     type ViewMut = &'s mut [T];
     fn as_mut_view(&'s mut self) -> Self::ViewMut { self }
 }
-impl<'s,T> ViewMut<'s> for &'s mut [T] where Self: 's
+impl<'s,T> ViewMut<'s> for &'s mut [T]
 {
     type ViewMut = &'s mut [T];
     fn as_mut_view(&'s mut self) -> Self::ViewMut { self }
@@ -43,7 +43,7 @@ impl<'s,T,const N:usize> ViewMut<'s> for [T;N] where Self: 's
     fn as_mut_view(&'s mut self) -> Self::ViewMut { self }
 }
 
-impl<'s,T> ViewMut<'s> for &mut T where Self: 's, T: ViewMut<'s> + View<'s>
+impl<'s,T> ViewMut<'s> for &mut T where T: ViewMut<'s> + View<'s>
 {
     type ViewMut = T::ViewMut;
     fn as_mut_view(&'s mut self) -> Self::ViewMut { (*self).as_mut_view() }
