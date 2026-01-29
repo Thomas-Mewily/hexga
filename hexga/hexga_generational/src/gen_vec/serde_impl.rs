@@ -73,9 +73,9 @@ where
 
 
 
-impl<T, C, Gen> Serialize for GenSlice<T,Gen,C>
+impl<T, C, Gen> Serialize for GenVecOf<T,Gen,C>
     where
-    C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration,
+    C: for<'a> View<'a,View<'a> = &'a [Entry<T,Gen>]>, Gen:IGeneration,
     C: Serialize, T: Serialize, Gen: Serialize
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
@@ -106,9 +106,9 @@ impl<T, C, Gen> Serialize for GenSlice<T,Gen,C>
 
 
 
-impl<'de, T, C, Gen> Deserialize<'de> for GenSlice<T,Gen,C>
+impl<'de, T, C, Gen> Deserialize<'de> for GenVecOf<T,Gen,C>
     where
-    C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration,
+    C: for<'a> View<'a,View<'a> = &'a [Entry<T,Gen>]>, Gen:IGeneration,
     C: Deserialize<'de>, T: Deserialize<'de>, Gen: IGeneration + Deserialize<'de>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -117,13 +117,14 @@ impl<'de, T, C, Gen> Deserialize<'de> for GenSlice<T,Gen,C>
     {
         #[derive(Deserialize)]
         pub struct GenVec<T,Gen,C>
-            where C: Deref<Target = [Entry<T,Gen>]>, Gen:IGeneration,
+            where
+            C: for<'a> View<'a,View<'a> = &'a [Entry<T,Gen>]>, Gen:IGeneration,
         {
             values: C,
             next: Option<usize>,
         }
 
         let GenVec{ values, next } = GenVec::deserialize(deserializer)?;
-        GenSlice::<T,Gen,C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX)).map_err(serde::de::Error::custom)
+        GenVecOf::<T,Gen,C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX)).map_err(serde::de::Error::custom)
     }
 }

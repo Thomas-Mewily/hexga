@@ -51,17 +51,17 @@ pub struct Bijection<C, B>
     pub(crate) values: C,
     pub(crate) bijection_fn: B,
 }
-impl<C, B> View for Bijection<C, B> where C: View, B: Copy
+impl<'s, C, B> View<'s> for Bijection<C, B> where C: View<'s>, B: Copy + 's
 {
     type View<'v> = Bijection<C::View<'v>, B> where Self: 'v;
-    fn as_view<'s>(&'s self) -> Self::View<'s> {
+    fn as_view(&'s self) -> Self::View<'s> {
         Bijection::from_values_and_bijection(self.values.as_view(), self.bijection_fn)
     }
 }
-impl<C, B> ViewMut for Bijection<C, B> where C: ViewMut, B: Copy
+impl<'s, C, B> ViewMut<'s> for Bijection<C, B> where C: ViewMut<'s>, B: Copy + 's
 {
     type ViewMut<'v> = Bijection<C::ViewMut<'v>, B> where Self: 'v;
-    fn as_mut_view<'s>(&'s mut self) -> Self::ViewMut<'s> {
+    fn as_mut_view(&'s mut self) -> Self::ViewMut<'s> {
         Bijection::from_values_and_bijection(self.values.as_mut_view(), self.bijection_fn)
     }
 }
@@ -78,8 +78,8 @@ impl<C, B> Bijection<C, B>
         (values, bijection)
     }
 
-    pub fn values_view<'v>(&'v self) -> C::View<'v> where C: View { self.values.as_view() }
-    pub fn values_view_mut<'v>(&'v mut self) -> C::ViewMut<'v> where C: ViewMut { self.values.as_mut_view() }
+    pub fn values_view<'v>(&'v self) -> C::View<'v> where C: View<'v> { self.values.as_view() }
+    pub fn values_view_mut<'v>(&'v mut self) -> C::ViewMut<'v> where C: ViewMut<'v> { self.values.as_mut_view() }
     //pub fn values(&self) -> &C { &self.values }
     //pub fn values_mut(&mut self) -> &mut C { &mut self.values }
 

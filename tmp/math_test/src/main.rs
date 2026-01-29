@@ -221,7 +221,7 @@ fn bi()
 }
 
 
-fn main()
+fn grid_bijection()
 {
     let slice: &[char] = &['a','b','c','d','e','f'];
 
@@ -238,4 +238,15 @@ fn main()
     assert_eq!(grid_3x2.get(point2(0,1)), Some(&'d'));
     let it = grid_3x2.into_iter().collect::<Vec<_>>();
     println!("{:?}", it);
+}
+
+fn gen_vec_view()
+{
+    let gen_vec = [1,2,3].to_genvec();
+    println!("{:?}", gen_vec);
+}
+
+fn main()
+{
+    gen_vec_view()
 }
