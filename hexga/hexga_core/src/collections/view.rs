@@ -29,12 +29,12 @@ impl<'s,T> View<'s> for [T] where Self: 's
     type View = &'s [T];
     fn as_view(&'s self) -> Self::View { self }
 }
-impl<'s,'b,T> View<'s> for &'b[T] where Self: 's
+impl<'s,T> View<'s> for &'s[T] where Self: 's
 {
     type View = &'s [T];
     fn as_view(&'s self) -> Self::View { self }
 }
-impl<'s,'b,T> View<'s> for &'b mut [T] where Self: 's
+impl<'s,T> View<'s> for &'s mut [T] where Self: 's
 {
     type View = &'s [T];
     fn as_view(&'s self) -> Self::View { self }

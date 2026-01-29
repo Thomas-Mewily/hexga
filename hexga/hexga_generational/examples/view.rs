@@ -10,7 +10,6 @@ pub struct Entity
 fn increase_hp<'a>(mut entities: GenViewMut<'a,Entity>)
 {
     let v = entities.get_entry_from_index(0);
-
 }
 
 
