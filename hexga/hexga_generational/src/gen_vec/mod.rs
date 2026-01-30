@@ -1014,7 +1014,7 @@ impl<T,Gen,C> Truncate for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen
 }
 
 
-impl<T,Gen,C> Capacity for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Capacity
+impl<T,Gen,C> Reserve for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Reserve
 {
     type Param=();
 

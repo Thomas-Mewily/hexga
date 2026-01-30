@@ -1126,6 +1126,7 @@ name = "hexga"
 version = "0.0.11-beta.47"
 dependencies = [
  "hexga_ansi_color",
+ "hexga_array_vec",
  "hexga_asset",
  "hexga_bitflags",
  "hexga_core",
@@ -1151,6 +1152,14 @@ name = "hexga_array"
 version = "0.0.11-beta.47"
 dependencies = [
  "hexga_map_on",
+]
+
+[[package]]
+name = "hexga_array_vec"
+version = "0.0.11-beta.47"
+dependencies = [
+ "hexga_core",
+ "serde",
 ]
 
 [[package]]

@@ -334,7 +334,7 @@ impl<T> Length for NonEmptyStack<T>
     fn is_not_empty(&self) -> bool { true }
 }
 
-impl<T> Capacity for NonEmptyStack<T>
+impl<T> Reserve for NonEmptyStack<T>
 {
     type Param=T;
 

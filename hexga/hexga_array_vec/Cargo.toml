@@ -1,0 +1,24 @@
+[package]
+name = "hexga_array_vec"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+readme = "README.md"
+
+keywords = []
+description = "miscellaneous stuff, when somethings will be too big it will be on a separate crate"
+categories = ["rust-patterns"]
+
+[features]
+
+default = ["serde"]
+serde   = ["dep:serde"]
+serde_rc = ["serde/rc"]
+
+[dependencies]
+hexga_core.workspace = true
+
+serde = { version = "1.0.0", features = ["derive"], optional = true }

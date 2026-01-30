@@ -1,16 +1,20 @@
 use super::*;
 
-
-
 pub trait Capacity : Collection
 {
-    type Param;
     fn capacity(&self) -> usize;
+}
 
+pub trait NewReserve : Capacity
+{
+    type Param;
     fn with_capacity_and_param(capacity: usize, param : Self::Param) -> Self;
     #[inline(always)]
     fn with_capacity(capacity: usize) -> Self where Self : Sized, Self::Param : Default { Self::with_capacity_and_param(capacity, ___()) }
+}
 
+pub trait Reserve : Capacity
+{
     fn reserve(&mut self, additional: usize);
     fn reserve_exact(&mut self, additional: usize);
 
@@ -46,12 +50,23 @@ where
     K: Eq + Hash,
     S: BuildHasher,
 {
-    type Param = S;
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
+}
+impl<K, V, S> NewReserve for HashMap<K, V, S>
+where
+    K: Eq + Hash,
+    S: BuildHasher,
+{
+    type Param = S;
     #[inline(always)]
     fn with_capacity_and_param(capacity: usize, hasher : Self::Param) -> Self { Self::with_capacity_and_hasher(capacity, hasher) }
-
+}
+impl<K, V, S> Reserve for HashMap<K, V, S>
+where
+    K: Eq + Hash,
+    S: BuildHasher,
+{
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -72,7 +87,7 @@ where
 }
 
 
-impl<T> Capacity for std::collections::BinaryHeap<T>
+impl<T> Reserve for std::collections::BinaryHeap<T>
 where
     T: Ord,
 {
@@ -101,7 +116,7 @@ where
     fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
 }
 
-impl<T,S> Capacity for std::collections::HashSet<T, S>
+impl<T,S> Reserve for std::collections::HashSet<T, S>
 where
     T: Eq + Hash,
     S: BuildHasher
@@ -132,7 +147,7 @@ where
     fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
 }
 
-impl<T> Capacity for std::collections::VecDeque<T>
+impl<T> Reserve for std::collections::VecDeque<T>
 {
     type Param = ();
     #[inline(always)]
@@ -162,7 +177,7 @@ impl<T> Truncate for std::collections::VecDeque<T>
 }
 
 
-impl Capacity for std::ffi::OsString
+impl Reserve for std::ffi::OsString
 {
     type Param = ();
     #[inline(always)]
@@ -200,7 +215,7 @@ impl<W: std::io::Write> Capacity for std::io::BufWriter<W> {}
 impl<W: std::io::Write> Capacity for std::io::LineWriter<W> {}
 */
 
-impl Capacity for std::path::PathBuf
+impl Reserve for std::path::PathBuf
 {
     type Param = ();
     #[inline(always)]
@@ -226,7 +241,7 @@ impl Shrink for std::path::PathBuf
 }
 
 
-impl<T> Capacity for Vec<T>
+impl<T> Reserve for Vec<T>
 {
     type Param = ();
     #[inline(always)]
@@ -256,7 +271,7 @@ impl<T> Truncate for Vec<T>
 }
 
 
-impl Capacity for String
+impl Reserve for String
 {
     type Param = ();
     #[inline(always)]
