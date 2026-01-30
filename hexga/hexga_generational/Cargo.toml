@@ -13,18 +13,26 @@ description = "GenVec, ideal for MAS (Multi-Agent System), where each agent can 
 categories = ["rust-patterns", "data-structures"]
 
 [features]
-default = ["serde"]
+default = ["serde", "hexga_array_vec"]
 
 serde = ["dep:serde",
-    "hexga_core/serde"
+    "hexga_core/serde",
+    "hexga_array_vec/serde",
 ]
 
+serde_rc = ["serde/rc",
+  "hexga_core/serde_rc", "hexga_array_vec/serde_rc"]
+
+hexga_array_vec = ["dep:hexga_array_vec"]
 
 [dependencies]
 hexga_core.workspace = true
 hexga_number.workspace = true
+hexga_array_vec = { workspace = true, optional = true }
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 
+[dev-dependencies]
+hexga_array_vec.workspace = true
 #typed_index = "0.2.1"
 

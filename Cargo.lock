@@ -1254,6 +1254,7 @@ dependencies = [
 name = "hexga_generational"
 version = "0.0.11-beta.47"
 dependencies = [
+ "hexga_array_vec",
  "hexga_core",
  "hexga_number",
  "serde",

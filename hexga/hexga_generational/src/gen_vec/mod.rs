@@ -14,6 +14,10 @@ pub type GenVec<T> = GenVecOf<T, Generation, Vec<Entry<T, Generation>>>;
 pub type GenView<'a, T> = GenVecOf<T, Generation, &'a [Entry<T, Generation>]>;
 pub type GenViewMut<'a, T> = GenVecOf<T, Generation, &'a mut [Entry<T, Generation>]>;
 
+#[cfg(feature = "serde")]
+pub type GenArrayVec<T, const N: usize> = GenVecOf<T, Generation, hexga_array_vec::ArrayVec<Entry<T, Generation>,N>>;
+
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum EntryValue<T>
 {
@@ -905,6 +909,57 @@ where
                 self.remove_from_index(index);
             }
         }
+    }
+}
+
+
+impl<T, C, Gen> TryFromIterator<T> for GenVecOf<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: IGeneration,
+    C: TryFromIterator<Entry<T, Gen>>,
+    // TODO: remove these bound when try_collect() will be stabilized
+    C: TryPush<Entry<T, Gen>> + WithCapacity,
+    <C as WithCapacity>::Param : Default
+{
+    type Error = CapacityFullError<(C,<C as TryPush<Entry<T, Gen>>>::Error)>; //<C as TryFromIter<Entry<T, Gen>>>::Error;
+
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
+    {
+        let it = iter.into_iter();
+        let mut values = C::with_capacity(it.size_hint().1.unwrap_or(0));
+
+        let mut len = 0;
+        for v in it
+        {
+            len += 1;
+            match values.try_push(Entry::new(EntryValue::Occupied(v), Gen::MIN))
+            {
+                Ok(_) => {},
+                Err(err) => { return Err(CapacityFullError::new((values, err))); },
+            }
+        }
+
+        Ok(Self {
+            values,
+            free: usize::MAX,
+            len,
+            phantom: PhantomData,
+        })
+        /*
+        let values: C = iter
+            .into_iter()
+            .map(|v| Entry::new(EntryValue::Occupied(v), Gen::MIN))
+            .try_collect()?;
+
+        let len = values.as_ref().len();
+        Ok(Self {
+            values,
+            free: usize::MAX,
+            len,
+            phantom: PhantomData,
+        })
+        */
     }
 }
 

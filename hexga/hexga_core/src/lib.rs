@@ -47,7 +47,8 @@ pub mod prelude
 /// You are probably looking for the `prelude` module.
 pub mod hexga_prelude
 {
-    pub use std::collections::{HashMap,HashSet,BTreeMap,BTreeSet,VecDeque};
+    pub use std::collections::{HashMap,HashSet,BTreeMap,BTreeSet,VecDeque,BinaryHeap};
+    pub(crate) use std::collections::{LinkedList};
 
     #[rustfmt::skip]
     #[allow(unused_imports)]

@@ -1,4 +1,148 @@
 pub use std::iter::{Product, Sum};
+use super::*;
+
+
+pub trait TryFromIterator<T> : Sized
+{
+    type Error: Debug;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>;
+}
+impl<T> TryFromIterator<T> for Vec<T> {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl<T> TryFromIterator<T> for VecDeque<T> {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl<T> TryFromIterator<T> for LinkedList<T> {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl<T: Ord> TryFromIterator<T> for BinaryHeap<T> {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl<T: Eq + Hash, S: BuildHasher + Default> TryFromIterator<T> for HashSet<T, S> {
+    type Error = Never; // HashSet::from_iter never fails
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl<T: Ord> TryFromIterator<T> for BTreeSet<T> {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl<K: Eq + Hash, V, S: BuildHasher + Default> TryFromIterator<(K, V)> for HashMap<K, V, S> {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = (K, V)>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl<K: Ord, V> TryFromIterator<(K, V)> for BTreeMap<K, V> {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = (K, V)>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl TryFromIterator<char> for String {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = char>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+impl<'a> TryFromIterator<&'a str> for String {
+    type Error = Never;
+    fn try_from_iter<It: IntoIterator<Item = &'a str>>(iter: It) -> Result<Self, Self::Error> {
+        Ok(Self::from_iter(iter))
+    }
+}
+
+
+
+
+
+#[repr(transparent)]
+#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
+pub struct CapacityFullError<T = ()>
+{
+    element: T,
+}
+
+impl<T> From<T> for CapacityFullError<T>
+{
+    fn from(value: T) -> Self { Self::new(value) }
+}
+
+impl<T> CapacityFullError<T>
+{
+    /// Create a new `CapacityError` from `element`.
+    pub const fn new(element: T) -> CapacityFullError<T> { CapacityFullError { element: element } }
+
+    /// Extract the overflowing element
+    pub fn element(self) -> T { self.element }
+
+    /// Convert into a `CapacityError` that does not carry an element.
+    pub fn simplify(self) -> CapacityFullError { CapacityFullError { element: () } }
+}
+
+const CAPERROR: &'static str = "capacity full";
+
+#[cfg(feature = "std")]
+/// Requires `features="std"`.
+impl<T: Any> Error for CapacityFullError<T> {}
+
+impl<T> Display for CapacityFullError<T>
+{
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result { write!(f, "{}", CAPERROR) }
+}
+
+impl<T> Debug for CapacityFullError<T>
+{
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result
+    {
+        write!(f, "{}: {}", "CapacityError", CAPERROR)
+    }
+}
+
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct WrongLenError<T> {
+    pub remaining: T,
+}
+impl<T> Debug for WrongLenError<T>
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "wrong len")
+    }
+}
+
+impl<T, const N: usize> TryFromIterator<T> for [T; N] {
+    type Error = WrongLenError<Vec<T>>;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+        let vec: Vec<T> = iter.into_iter().collect();
+        vec.try_into().map_err(|remaining| WrongLenError { remaining })
+    }
+}
 
 pub trait IterExtension<'a, Item>
 where

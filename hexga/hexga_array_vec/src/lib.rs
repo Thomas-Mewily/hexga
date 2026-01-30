@@ -9,11 +9,6 @@ use std::ops::{Bound, Deref, DerefMut, Index, IndexMut, RangeBounds};
 use std::slice::SliceIndex;
 use std::{ptr, slice};
 
-#[cfg(feature = "std")]
-use std::any::Any;
-#[cfg(feature = "std")]
-use std::error::Error;
-
 pub mod prelude
 {
     pub use super::ArrayVec;
@@ -973,6 +968,7 @@ where
     }
 }
 
+/// Panics if the iterator contains more elements than capacity
 impl<T, const CAP: usize> FromIterator<T> for ArrayVec<T, CAP>
 {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self
@@ -980,12 +976,25 @@ impl<T, const CAP: usize> FromIterator<T> for ArrayVec<T, CAP>
         let mut vec = ArrayVec::new();
         for item in iter
         {
-            if vec.try_push(item).is_err()
-            {
-                panic!("iterator contains more elements than capacity");
-            }
+            vec.try_push(item).expect("iterator contains more elements than capacity");
         }
         vec
+    }
+}
+impl<T, const CAP: usize> TryFromIterator<T> for ArrayVec<T, CAP>
+{
+    type Error=CapacityFullError<(Self,T)>;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+        let mut vec = ArrayVec::new();
+        for item in iter
+        {
+            match vec.try_push(item)
+            {
+                Ok(_) => {},
+                Err(e) => return Err(CapacityFullError::new((vec, e.element()))),
+            }
+        }
+        Ok(vec)
     }
 }
 
@@ -1166,48 +1175,6 @@ impl<'a, T: 'a, const CAP: usize> Drop for Drain<'a, T, CAP>
     }
 }
 
-#[repr(transparent)]
-#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
-pub struct CapacityFullError<T = ()>
-{
-    element: T,
-}
-
-impl<T> From<T> for CapacityFullError<T>
-{
-    fn from(value: T) -> Self { Self::new(value) }
-}
-
-impl<T> CapacityFullError<T>
-{
-    /// Create a new `CapacityError` from `element`.
-    pub const fn new(element: T) -> CapacityFullError<T> { CapacityFullError { element: element } }
-
-    /// Extract the overflowing element
-    pub fn element(self) -> T { self.element }
-
-    /// Convert into a `CapacityError` that does not carry an element.
-    pub fn simplify(self) -> CapacityFullError { CapacityFullError { element: () } }
-}
-
-const CAPERROR: &'static str = "capacity full";
-
-#[cfg(feature = "std")]
-/// Requires `features="std"`.
-impl<T: Any> Error for CapacityFullError<T> {}
-
-impl<T> fmt::Display for CapacityFullError<T>
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", CAPERROR) }
-}
-
-impl<T> fmt::Debug for CapacityFullError<T>
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-    {
-        write!(f, "{}: {}", "CapacityError", CAPERROR)
-    }
-}
 
 impl<T, const CAP: usize> Collection for ArrayVec<T, CAP> {}
 impl<T, const CAP: usize> CollectionBijective for ArrayVec<T, CAP> {}
@@ -1307,6 +1274,14 @@ impl<T, const CAP: usize> Length for ArrayVec<T, CAP>
 impl<T, const CAP: usize> Capacity for ArrayVec<T, CAP>
 {
     fn capacity(&self) -> usize { self.capacity() }
+}
+// Discutable...
+impl<T, const CAP: usize> WithCapacity for ArrayVec<T, CAP>
+{
+    type Param=();
+    fn with_capacity_and_param(_capacity: usize, _param: Self::Param) -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(feature = "serde")]
