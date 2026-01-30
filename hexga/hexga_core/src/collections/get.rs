@@ -74,7 +74,7 @@ pub trait GetMut<Idx>: Get<Idx>
         Self::Output: Sized,
     {
         self.get_mut(index)
-            .map(|dest| std::mem::replace(dest, value))
+            .map(|dest| core::mem::replace(dest, value))
     }
     /// Replace the value and return the old one.
     ///
@@ -98,7 +98,7 @@ pub trait GetMut<Idx>: Get<Idx>
     where
         Self::Output: Sized,
     {
-        std::mem::replace(unsafe { self.get_unchecked_mut(index) }, value)
+        core::mem::replace(unsafe { self.get_unchecked_mut(index) }, value)
     }
 
     /// Set the value and drop the previous one.
@@ -147,7 +147,7 @@ pub trait TryGetMut<Idx>: TryGet<Idx>
         Self::Output: Sized,
     {
         self.try_get_mut(index)
-            .map(|dest| std::mem::replace(dest, value))
+            .map(|dest| core::mem::replace(dest, value))
     }
 
     /// Set the value and drop the previous one.
@@ -160,7 +160,7 @@ pub trait TryGetMut<Idx>: TryGet<Idx>
     }
 }
 
-pub type ManyMutError = std::slice::GetDisjointMutError;
+pub type ManyMutError = core::slice::GetDisjointMutError;
 
 pub trait GetManyMut<Idx>: GetMut<Idx>
 {
@@ -213,7 +213,7 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
         Self::Output: Sized,
     {
         self.get_many_mut([a, b])
-            .map(|[a, b]| std::mem::swap(a, b))
+            .map(|[a, b]| core::mem::swap(a, b))
             .is_some()
     }
     /// Swaps the values at two mutable locations, without deinitializing either one.
@@ -241,7 +241,7 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
         Self::Output: Sized,
     {
         let [a, b] = unsafe { self.get_many_unchecked_mut([a, b]) };
-        std::mem::swap(a, b);
+        core::mem::swap(a, b);
     }
 }
 
@@ -257,11 +257,11 @@ impl<Idx> IndexInvalid<Idx>
     pub fn new(index: Idx) -> Self { Self { index } }
 }
 
-pub type IndexOutOfRange<Idx = usize, B = std::ops::Range<Idx>> = IndexOutOfBounds<Idx, B>;
+pub type IndexOutOfRange<Idx = usize, B = core::ops::Range<Idx>> = IndexOutOfBounds<Idx, B>;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub struct IndexOutOfBounds<Idx = usize, B = std::ops::Range<Idx>>
+pub struct IndexOutOfBounds<Idx = usize, B = core::ops::Range<Idx>>
 {
     pub index: Idx,
     pub bound: B,
@@ -623,7 +623,7 @@ where
 
 impl<T> TryGet<usize> for VecDeque<T>
 {
-    type Error = IndexOutOfBounds<usize, std::ops::Range<usize>>;
+    type Error = IndexOutOfBounds<usize, Range<usize>>;
     #[inline(always)]
     fn try_get(&self, index: usize) -> Result<&Self::Output, Self::Error>
     {
@@ -798,6 +798,7 @@ impl<K> MissingKey<K>
     pub fn new(key: K) -> Self { Self { key } }
 }
 
+#[cfg(feature = "std")]
 impl<K, V, S, Q> TryGet<&Q> for HashMap<K, V, S>
 where
     K: Borrow<Q>,
@@ -813,6 +814,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<K, V, S, Q> Get<&Q> for HashMap<K, V, S>
 where
     K: Borrow<Q>,
@@ -825,6 +827,7 @@ where
     fn get(&self, k: &Q) -> Option<&Self::Output> { self.get(k) }
 }
 
+#[cfg(feature = "std")]
 impl<K, V, S, Q> TryGetMut<&Q> for HashMap<K, V, S>
 where
     K: Borrow<Q>,
@@ -841,6 +844,7 @@ where
             .ok_or_else(|| MissingKey::new(key.clone()))
     }
 }
+#[cfg(feature = "std")]
 impl<K, V, S, Q> GetMut<&Q> for HashMap<K, V, S>
 where
     K: Borrow<Q>,
@@ -857,6 +861,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<K, V, S, Q> GetManyMut<&Q> for HashMap<K, V, S>
 where
     K: Borrow<Q>,
@@ -960,6 +965,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<K, S, Q> TryGet<&Q> for HashSet<K, S>
 where
     K: Borrow<Q>,
@@ -974,6 +980,7 @@ where
             .ok_or_else(|| MissingKey::new(index.clone()))
     }
 }
+#[cfg(feature = "std")]
 impl<K, S, Q> Get<&Q> for HashSet<K, S>
 where
     K: Borrow<Q>,

@@ -28,6 +28,7 @@ impl<T> Remove<usize> for VecDeque<T>
     fn remove(&mut self, index: usize) -> Option<Self::Output> { self.remove(index) }
 }
 
+#[cfg(feature = "std")]
 impl<K, V, S, Q> Remove<&Q> for HashMap<K, V, S>
 where
     K: Borrow<Q>,
@@ -48,6 +49,7 @@ where
     fn remove(&mut self, index: &Q) -> Option<Self::Output> { self.remove(index) }
 }
 
+#[cfg(feature = "std")]
 impl<K, S, Q> Remove<&Q> for HashSet<K, S>
 where
     K: Borrow<Q>,

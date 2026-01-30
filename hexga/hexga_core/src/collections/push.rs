@@ -127,17 +127,20 @@ impl TryPush<char> for String
     fn try_push(&mut self, value: char) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
 
+#[cfg(feature = "std")]
 impl<'b> Push<&'b OsStr> for OsString
 {
     type Output = ();
     fn push(&mut self, value: &'b OsStr) -> Self::Output { self.push(value); }
 }
+#[cfg(feature = "std")]
 impl<'b> TryPush<&'b OsStr> for OsString
 {
     type Error = (); // #proper_error
     fn try_push(&mut self, value: &'b OsStr) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
 
+#[cfg(feature = "std")]
 impl<P> Push<P> for PathBuf
 where
     P: AsRef<Path>,
@@ -145,6 +148,7 @@ where
     type Output = ();
     fn push(&mut self, value: P) -> Self::Output { self.push(value); }
 }
+#[cfg(feature = "std")]
 impl<P> TryPush<P> for PathBuf where P: AsRef<Path>
 {
     type Error = (); // #proper_error

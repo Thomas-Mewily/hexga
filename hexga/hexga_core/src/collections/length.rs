@@ -43,7 +43,7 @@ pub trait Length: Collection
     fn is_not_empty(&self) -> bool { !self.is_empty() }
 }
 
-use std::ffi::OsStr;
+
 
 impl<T> Length for Vec<T>
 {
@@ -86,6 +86,7 @@ impl Length for &mut str
 {
     fn len(&self) -> usize { (**self).len() }
 }
+#[cfg(feature = "std")]
 impl Length for OsStr
 {
     fn len(&self) -> usize { self.len() }
@@ -96,6 +97,7 @@ impl<T> Length for LinkedList<T>
     fn len(&self) -> usize { self.len() }
 }
 
+#[cfg(feature = "std")]
 impl<K, V, S> Length for HashMap<K, V, S>
 {
     fn len(&self) -> usize { self.len() }
@@ -104,6 +106,7 @@ impl<K, V> Length for BTreeMap<K, V>
 {
     fn len(&self) -> usize { self.len() }
 }
+#[cfg(feature = "std")]
 impl<T, S> Length for HashSet<T, S>
 {
     fn len(&self) -> usize { self.len() }

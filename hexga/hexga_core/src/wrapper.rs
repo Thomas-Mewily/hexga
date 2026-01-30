@@ -9,9 +9,9 @@ use std::{
     sync::{Mutex, RwLock},
 };
 #[cfg(not(feature = "std"))]
-use alloc::{
-    boxed::Box,
-    cell::RefCell,
+use ::{
+    alloc::{boxed::Box},
+    core::cell::RefCell,
 };
 
 pub trait Wrapper

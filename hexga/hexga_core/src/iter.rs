@@ -40,6 +40,7 @@ impl<T: Ord> TryFromIterator<T> for BinaryHeap<T> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<T: Eq + Hash, S: BuildHasher + Default> TryFromIterator<T> for HashSet<T, S> {
     type Error = Never; // HashSet::from_iter never fails
     fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
@@ -54,6 +55,7 @@ impl<T: Ord> TryFromIterator<T> for BTreeSet<T> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<K: Eq + Hash, V, S: BuildHasher + Default> TryFromIterator<(K, V)> for HashMap<K, V, S> {
     type Error = Never;
     fn try_from_iter<It: IntoIterator<Item = (K, V)>>(iter: It) -> Result<Self, Self::Error> {
@@ -116,14 +118,14 @@ const CAPERROR: &'static str = "capacity full";
 /// Requires `features="std"`.
 impl<T: Any> Error for CapacityFullError<T> {}
 
-impl<T> Display for CapacityFullError<T>
+impl<T> core::fmt::Display for CapacityFullError<T>
 {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result { write!(f, "{}", CAPERROR) }
+    fn fmt(&self, f: &mut Formatter) -> core::fmt::Result { write!(f, "{}", CAPERROR) }
 }
 
-impl<T> Debug for CapacityFullError<T>
+impl<T> core::fmt::Debug for CapacityFullError<T>
 {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result
+    fn fmt(&self, f: &mut Formatter) -> core::fmt::Result
     {
         write!(f, "{}: {}", "CapacityError", CAPERROR)
     }
@@ -136,7 +138,7 @@ pub struct WrongLenError<T> {
 }
 impl<T> Debug for WrongLenError<T>
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "wrong len")
     }
 }

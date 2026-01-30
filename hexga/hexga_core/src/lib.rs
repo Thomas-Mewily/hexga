@@ -6,6 +6,8 @@
 
 #[cfg(not(feature = "std"))]
 extern crate alloc;
+#[cfg(not(feature = "std"))]
+use alloc::collections::TryReserveError;
 
 use core::{borrow::Borrow, hash::Hash, ops::Index, slice::SliceIndex};
 use core::slice::GetDisjointMutIndex;

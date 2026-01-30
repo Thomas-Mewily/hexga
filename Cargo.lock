@@ -1975,6 +1975,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "no_std_test"
+version = "0.0.11-beta.47"
+dependencies = [
+ "hexga_core",
+]
+
+[[package]]
 name = "num-traits"
 version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -47,7 +47,7 @@
 /// let b = BigStruct { x : 42, y : 64, ..___() };
 /// assert_eq!(a, b);
 /// ```
-pub fn ___<T: Default>() -> T { std::default::Default::default() }
+pub fn ___<T: Default>() -> T { core::default::Default::default() }
 
 /// Uniform syntax : `MyStruct::___()` instead of `MyStruct::default()`
 pub trait DefaultIsTripleUnderscore: Default

@@ -1,10 +1,12 @@
 use super::*;
-use std::ops::Range;
+#[cfg(feature = "std")]
 use std::{
     collections::*,
     ffi::{OsStr, OsString},
     path::{Path, PathBuf},
 };
+
+use core::ops::Range;
 
 mod length;
 pub use length::*;

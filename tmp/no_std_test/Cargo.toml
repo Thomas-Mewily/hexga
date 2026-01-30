@@ -1,0 +1,19 @@
+[package]
+name = "no_std_test"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[dependencies]
+hexga_core = { workspace = true, default-features = true }
+
+[features]
+default = [
+            "int_are_32_bits", "float_are_32_bits",
+          ]
+
+int_are_32_bits = []
+float_are_32_bits = []

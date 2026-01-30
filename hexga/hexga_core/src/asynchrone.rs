@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-use std::{any::Any, pin::Pin};
+use core::{any::Any, pin::Pin};
 
 pub trait Async: Send + Sync + 'static {}
 impl<T> Async for T where T: Send + Sync + 'static {}

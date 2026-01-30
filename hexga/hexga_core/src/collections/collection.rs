@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 use std::path::Path;
 
 use super::*;
@@ -19,13 +20,19 @@ impl Collection for str {}
 impl Collection for &str {}
 impl Collection for &mut str {}
 impl Collection for String {}
+#[cfg(feature = "std")]
 impl Collection for OsStr {}
-impl Collection for std::ffi::OsString {}
+#[cfg(feature = "std")]
+impl Collection for OsString {}
+#[cfg(feature = "std")]
 impl Collection for Path {}
+#[cfg(feature = "std")]
 impl Collection for PathBuf {}
 
+#[cfg(feature = "std")]
 impl<K, V, S> Collection for HashMap<K, V, S> {}
 impl<K, V> Collection for BTreeMap<K, V> {}
+#[cfg(feature = "std")]
 impl<K, V> Collection for HashSet<K, V> {}
 impl<K> Collection for BTreeSet<K> {}
 
@@ -37,8 +44,10 @@ impl<T> Collection for BinaryHeap<T> {}
 /// Implementation include `HashMap`, `BTreeMap`, `HashSet`, `BTreeSet`, `GenVec`...
 pub trait CollectionStableKey: Collection {}
 
+#[cfg(feature = "std")]
 impl<K, V, S> CollectionStableKey for HashMap<K, V, S> {}
 impl<K, V> CollectionStableKey for BTreeMap<K, V> {}
+#[cfg(feature = "std")]
 impl<K, S> CollectionStableKey for HashSet<K, S> {}
 impl<K> CollectionStableKey for BTreeSet<K> {}
 
@@ -53,8 +62,10 @@ impl<T> CollectionBijective for [T] {}
 impl<T> CollectionBijective for &[T] {}
 impl<T> CollectionBijective for &mut [T] {}
 
+#[cfg(feature = "std")]
 impl<K, V, S> CollectionBijective for HashMap<K, V, S> {}
 impl<K, V> CollectionBijective for BTreeMap<K, V> {}
+#[cfg(feature = "std")]
 impl<K, S> CollectionBijective for HashSet<K, S> {}
 impl<K> CollectionBijective for BTreeSet<K> {}
 
@@ -62,4 +73,5 @@ impl CollectionBijective for str {}
 impl CollectionBijective for &str {}
 impl CollectionBijective for &mut str {}
 impl CollectionBijective for String {}
+#[cfg(feature = "std")]
 impl CollectionBijective for OsStr {}

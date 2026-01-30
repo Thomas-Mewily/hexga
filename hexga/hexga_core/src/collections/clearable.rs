@@ -16,6 +16,7 @@ impl<T> Clear for VecDeque<T>
     #[inline(always)]
     fn clear(&mut self) { self.clear(); }
 }
+#[cfg(feature = "std")]
 impl<T, S> Clear for HashSet<T, S>
 {
     #[inline(always)]
@@ -36,6 +37,7 @@ impl<T> Clear for LinkedList<T>
     #[inline(always)]
     fn clear(&mut self) { self.clear(); }
 }
+#[cfg(feature = "std")]
 impl<K, V, S> Clear for HashMap<K, V, S>
 {
     #[inline(always)]
@@ -51,11 +53,13 @@ impl Clear for String
     #[inline(always)]
     fn clear(&mut self) { self.clear(); }
 }
+#[cfg(feature = "std")]
 impl Clear for OsString
 {
     #[inline(always)]
     fn clear(&mut self) { self.clear(); }
 }
+#[cfg(feature = "std")]
 impl Clear for PathBuf
 {
     #[inline(always)]
