@@ -1222,6 +1222,7 @@ impl<Idx, T, const CAP: usize> GetMut<Idx> for ArrayVec<T, CAP> where [T]: GetMu
     }
 }
 
+
 impl<Idx, T, const CAP: usize> GetManyMut<Idx> for ArrayVec<T, CAP>
 where
     [T]: GetManyMut<Idx>,
@@ -1344,3 +1345,8 @@ impl<T, const CAP: usize> AsMut<[T]> for ArrayVec<T, CAP> {
         self.as_mut_slice()
     }
 }
+
+
+unsafe impl<T, const CAP: usize> BitZero for ArrayVec<T, CAP>
+    where T: BitZero
+{}

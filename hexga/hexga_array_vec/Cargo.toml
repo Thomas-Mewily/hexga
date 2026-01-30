@@ -8,15 +8,17 @@ repository.workspace = true
 license.workspace = true
 readme = "README.md"
 
-keywords = []
-description = "miscellaneous stuff, when somethings will be too big it will be on a separate crate"
-categories = ["rust-patterns"]
+description = "A vector with fixed capacity, backed by an array based on arrayvec"
+keywords = ["stack", "vector", "array", "data-structure"]
+categories = ["data-structures", "no-std"]
 
 [features]
 
-default = ["serde"]
+default = ["serde", "std"]
 serde   = ["dep:serde"]
 serde_rc = ["serde/rc"]
+
+std = []
 
 [dependencies]
 hexga_core.workspace = true
