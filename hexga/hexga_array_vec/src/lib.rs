@@ -1221,3 +1221,70 @@ impl<T, const CAP: usize> Capacity for ArrayVec<T, CAP>
 {
     fn capacity(&self) -> usize { self.capacity() }
 }
+
+
+#[cfg(feature = "serde")]
+impl<T, const CAP: usize> serde::Serialize for ArrayVec<T, CAP>
+where
+    T: serde::Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(Some(self.len()))?;
+        for element in self.iter() {
+            seq.serialize_element(element)?;
+        }
+        seq.end()
+    }
+}
+
+
+
+#[cfg(feature = "serde")]
+impl<'de, T, const CAP: usize> serde::Deserialize<'de> for ArrayVec<T, CAP>
+where
+    T: serde::Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        // Use a visitor that collects into ArrayVec directly
+        struct ArrayVecVisitor<T, const CAP: usize>(std::marker::PhantomData<T>);
+
+        impl<'de, T, const CAP: usize> serde::de::Visitor<'de> for ArrayVecVisitor<T, CAP>
+        where
+            T: serde::Deserialize<'de>,
+        {
+            type Value = ArrayVec<T, CAP>;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(formatter, "a sequence with at most {} elements", CAP)
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut array_vec = ArrayVec::new();
+
+                while let Some(element) = seq.next_element()? {
+                    if array_vec.try_push(element).is_err() {
+                        return Err(serde::de::Error::invalid_length(
+                            CAP + 1,
+                            &format!("at most {} elements", CAP).as_str(),
+                        ));
+                    }
+                }
+
+                Ok(array_vec)
+            }
+        }
+
+        deserializer.deserialize_seq(ArrayVecVisitor(std::marker::PhantomData))
+    }
+}
