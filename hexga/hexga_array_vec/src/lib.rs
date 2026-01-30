@@ -7,6 +7,7 @@ use std::ops::{Bound, Deref, DerefMut, Index, IndexMut, RangeBounds};
 use std::fmt;
 use std::iter::{FromIterator, IntoIterator};
 use std::slice::SliceIndex;
+use hexga_core::prelude::*;
 
 #[cfg(feature="std")]
 use std::any::Any;
@@ -38,7 +39,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 4>::new();
     /// assert!(vec.is_empty());
@@ -56,7 +57,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let vec = ArrayVec::<i32, 3>::new();
     /// assert_eq!(vec.capacity(), 3);
@@ -68,7 +69,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// Returns the capacity left in the `ArrayVec`.
     ///
     /// ```
-    /// use arrayvec::ArrayVec;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut array = ArrayVec::from([1, 2, 3]);
     /// array.pop();
@@ -86,7 +87,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// effect.
     ///
     /// ```
-    /// use arrayvec::ArrayVec;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut array = ArrayVec::from([1, 2, 3, 4, 5]);
     /// array.truncate(3);
@@ -110,7 +111,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 4>::new();
     /// assert_eq!(vec.len(), 0);
@@ -127,7 +128,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 4>::new();
     /// assert!(vec.is_empty());
@@ -141,7 +142,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 2>::new();
     /// assert!(!vec.is_full());
@@ -162,7 +163,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -186,7 +187,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 2>::new();
     /// assert!(vec.try_push(1).is_ok());
@@ -222,7 +223,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -248,7 +249,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -256,11 +257,11 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// assert_eq!(vec.get(0), Some(&1));
     /// assert_eq!(vec.get(2), None);
     /// ```
-    pub fn get<I>(&self, index: I) -> Option<&I::Output>
+    pub fn get<Idx>(&self, index: Idx) -> Option<&<Self as Get<Idx>>::Output>
     where
-        I: SliceIndex<[T]>,
+        Self: Get<Idx>,
     {
-        self.as_slice().get(index)
+        Get::get(self, index)
     }
 
     /// Returns a mutable reference to the element at the given index, or `None` if out of bounds.
@@ -268,7 +269,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -277,11 +278,11 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// }
     /// assert_eq!(vec[0], 42);
     /// ```
-    pub fn get_mut<I>(&mut self, index: I) -> Option<&mut I::Output>
+    pub fn get_mut<Idx>(&mut self, index: Idx) -> Option<&mut <Self as Get<Idx>>::Output>
     where
-        I: SliceIndex<[T]>,
+        Self: GetMut<Idx>,
     {
-        self.as_mut_slice().get_mut(index)
+        GetMut::get_mut(self, index)
     }
 
     /// Remove all elements in the vector.
@@ -289,7 +290,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -372,13 +373,13 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// Shift up all elements after `index`.
     ///
     /// It is an error if the index is greater than the length or if the
-    /// arrayvec is full.
+    /// ArrayVec is full.
     ///
     /// ***Panics*** if the array is full or the `index` is out of bounds. See
     /// `try_insert` for fallible version.
     ///
     /// ```
-    /// use arrayvec::ArrayVec;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut array = ArrayVec::<_, 2>::new();
     ///
@@ -402,7 +403,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 4>::new();
     /// vec.push(1);
@@ -448,7 +449,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -470,7 +471,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -500,7 +501,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 5>::new();
     /// vec.push(1);
@@ -580,7 +581,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// Return `Some(` *element* `)` if the index is in bounds, else `None`.
     ///
     /// ```
-    /// use arrayvec::ArrayVec;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut array = ArrayVec::from([1, 2, 3]);
     ///
@@ -607,7 +608,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// ***Panics*** if the `index` is out of bounds.
     ///
     /// ```
-    /// use arrayvec::ArrayVec;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut array = ArrayVec::from([1, 2, 3]);
     ///
@@ -631,7 +632,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// elements.
     ///
     /// ```
-    /// use arrayvec::ArrayVec;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut array = ArrayVec::from([1, 2, 3, 4]);
     /// array.retain(|x| *x & 1 != 0 );
@@ -714,7 +715,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// Copy all elements from the slice and append to the `ArrayVec`.
     ///
     /// ```
-    /// use arrayvec::ArrayVec;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec: ArrayVec<usize, 10> = ArrayVec::new();
     /// vec.push(1);
@@ -812,7 +813,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -831,7 +832,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
     /// # Examples
     ///
     /// ```
-    /// use hexga_utils::array_vec::prelude::*;
+    /// use hexga_array_vec::ArrayVec;
     ///
     /// let mut vec = ArrayVec::<i32, 3>::new();
     /// vec.push(1);
@@ -865,22 +866,22 @@ impl<'a, T, const CAP: usize> IntoIterator for &'a mut ArrayVec<T, CAP> {
     }
 }
 
-impl<T, I, const CAP: usize> Index<I> for ArrayVec<T, CAP>
+impl<T, Idx, const CAP: usize> Index<Idx> for ArrayVec<T, CAP>
 where
-    I: SliceIndex<[T]>,
+    Idx: SliceIndex<[T]>,
 {
-    type Output = I::Output;
+    type Output = Idx::Output;
 
-    fn index(&self, index: I) -> &Self::Output {
+    fn index(&self, index: Idx) -> &Self::Output {
         self.as_slice().index(index)
     }
 }
 
-impl<T, I, const CAP: usize> IndexMut<I> for ArrayVec<T, CAP>
+impl<T, Idx, const CAP: usize> IndexMut<Idx> for ArrayVec<T, CAP>
 where
-    I: SliceIndex<[T]>,
+    Idx: SliceIndex<[T]>,
 {
-    fn index_mut(&mut self, index: I) -> &mut Self::Output {
+    fn index_mut(&mut self, index: Idx) -> &mut Self::Output {
         self.as_mut_slice().index_mut(index)
     }
 }
@@ -1137,4 +1138,86 @@ impl<T> fmt::Debug for CapacityFullError<T> {
 }
 
 
-// impl Get<T>, TryGet<T>, GetMut<T>, TryGetMut<T>, GetManyMut<T>, Len, Collection, CollectionBijective
+impl<T, const CAP: usize> Collection for ArrayVec<T, CAP> {}
+impl<T, const CAP: usize> CollectionBijective for ArrayVec<T, CAP> {}
+
+impl<Idx, T, const CAP: usize> Get<Idx> for ArrayVec<T, CAP> where [T]: Get<Idx>,
+{
+    type Output = <[T] as Get<Idx>>::Output;
+
+    #[inline(always)]
+    fn get(&self, index: Idx) -> Option<&Self::Output> {
+        Get::get(self.as_slice(), index)
+    }
+
+    #[track_caller]
+    #[inline(always)]
+    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output {
+        unsafe { Get::get_unchecked(self.as_slice(), index) }
+    }
+}
+impl<Idx, T, const CAP: usize> TryGet<Idx> for ArrayVec<T, CAP> where [T]: TryGet<Idx>,
+{
+    type Error = <[T] as TryGet<Idx>>::Error;
+
+    #[inline(always)]
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> {
+        TryGet::try_get(self.as_slice(), index)
+    }
+}
+
+impl<Idx, T, const CAP: usize> TryGetMut<Idx> for ArrayVec<T, CAP> where [T]: TryGetMut<Idx>,
+{
+    #[inline(always)]
+    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> {
+        TryGetMut::try_get_mut(self.as_mut_slice(), index)
+    }
+}
+
+impl<Idx, T, const CAP: usize> GetMut<Idx> for ArrayVec<T, CAP> where [T]: GetMut<Idx>,
+{
+    #[inline(always)]
+    fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> {
+        GetMut::get_mut(self.as_mut_slice(), index)
+    }
+
+    #[inline(always)]
+    unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output {
+        unsafe { GetMut::get_unchecked_mut(self.as_mut_slice(), index) }
+    }
+}
+
+impl<Idx, T, const CAP: usize> GetManyMut<Idx> for ArrayVec<T, CAP>
+where
+    [T]: GetManyMut<Idx>,
+{
+    #[track_caller]
+    #[inline(always)]
+    unsafe fn get_many_unchecked_mut<const N: usize>(
+        &mut self,
+        indices: [Idx; N]
+    ) -> [&mut Self::Output; N] {
+        unsafe { GetManyMut::get_many_unchecked_mut(self.as_mut_slice(), indices) }
+    }
+
+    #[inline(always)]
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output; N], ManyMutError> {
+        GetManyMut::try_get_many_mut(self.as_mut_slice(), indices)
+    }
+
+    #[inline(always)]
+    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output; N]>
+    {
+        GetManyMut::get_many_mut(self.as_mut_slice(), indices)
+    }
+}
+
+
+impl<T, const CAP: usize> Length for ArrayVec<T, CAP>
+{
+    fn len(&self) -> usize { self.len() }
+}
+impl<T, const CAP: usize> Capacity for ArrayVec<T, CAP>
+{
+    fn capacity(&self) -> usize { self.capacity() }
+}

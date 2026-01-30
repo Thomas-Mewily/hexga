@@ -333,15 +333,17 @@ impl<T> Length for NonEmptyStack<T>
     fn is_empty(&self) -> bool { false }
     fn is_not_empty(&self) -> bool { true }
 }
-
-impl<T> Reserve for NonEmptyStack<T>
+impl<T> Capacity for NonEmptyStack<T>
+{
+    fn capacity(&self) -> usize { self.stack.capacity() + 1 }
+}
+impl<T> FromCapacity for NonEmptyStack<T>
 {
     type Param=T;
-
-    fn capacity(&self) -> usize { self.stack.capacity() + 1 }
-
     fn with_capacity_and_param(capacity: usize, value : Self::Param) -> Self { Self::with_capacity(value, capacity) }
-
+}
+impl<T> Reserve for NonEmptyStack<T>
+{
     fn reserve(&mut self, additional: usize) { self.stack.reserve(additional.saturating_sub(1)); }
     fn reserve_exact(&mut self, additional: usize) { self.stack.reserve_exact(additional.saturating_sub(1)); }
 

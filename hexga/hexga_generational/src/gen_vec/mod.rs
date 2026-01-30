@@ -1013,17 +1013,20 @@ impl<T,Gen,C> Truncate for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen
     fn truncate(&mut self, len: usize) { self.values.truncate(len); }
 }
 
-
-impl<T,Gen,C> Reserve for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Reserve
+impl<T,Gen,C> Capacity for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Reserve
+{
+    #[inline(always)]
+    fn capacity(&self) -> usize { self.values.capacity() }
+}
+impl<T,Gen,C> FromCapacity for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Reserve
 {
     type Param=();
 
     #[inline(always)]
-    fn capacity(&self) -> usize { self.values.capacity() }
-
-    #[inline(always)]
     fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
-
+}
+impl<T,Gen,C> Reserve for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Reserve
+{
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.values.reserve(additional); }
     #[inline(always)]
