@@ -37,7 +37,7 @@ pub fn publish_crate(name: &'static str)
     println!();
     println!();
 
-    std::thread::sleep(Duration::from_millis(200));
+    std::thread::sleep(Duration::from_millis(500));
 }
 
 pub fn create_crate(name: &'static str)
