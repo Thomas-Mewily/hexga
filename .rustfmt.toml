@@ -1,0 +1,5 @@
+# Allow short functions on single line
+fn_single_line = true
+
+# Or be more specific:
+control_brace_style = "AlwaysSameLineWherePossible"

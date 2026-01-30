@@ -39,7 +39,6 @@ pub trait Get<Idx> : Collection//where Idx: Borrow<Q> //: Index<Idx>
 
 pub trait TryGet<Idx>: Get<Idx>
 {
-    // TODO: Should the Error have a lifetime parameter of self ? Then the caller call error.to_owned() to store it ?
     type Error;
     /// Returns a reference to the value.
     fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>;
