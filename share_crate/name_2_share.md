@@ -10,6 +10,8 @@ hexga_bit
 
 hexga_core
 
+hexga_array_vec
+
 // deprecated
 hexga_singleton
 

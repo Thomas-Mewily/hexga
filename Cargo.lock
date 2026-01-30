@@ -120,7 +120,7 @@ dependencies = [
 
 [[package]]
 name = "asset_test"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga",
  "serde",
@@ -247,7 +247,7 @@ checksum = "8b75356056920673b02621b35afd0f7dda9306d03c79a30f5c56c44cf256e3de"
 
 [[package]]
 name = "async_test"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "reqwest",
  "tokio",
@@ -701,7 +701,7 @@ dependencies = [
 
 [[package]]
 name = "engine"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_bit",
  "hexga_engine",
@@ -1123,7 +1123,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hexga"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_ansi_color",
  "hexga_array_vec",
@@ -1142,21 +1142,21 @@ dependencies = [
 
 [[package]]
 name = "hexga_ansi_color"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "hexga_array"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_map_on",
 ]
 
 [[package]]
 name = "hexga_array_vec"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_core",
  "serde",
@@ -1164,7 +1164,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_asset"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_core",
  "hexga_encoding",
@@ -1175,7 +1175,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_bit"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_bit_derive",
  "hexga_map_on",
@@ -1183,7 +1183,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_bit_derive"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1192,7 +1192,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_bitflags"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_number",
  "proc-macro2",
@@ -1203,7 +1203,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_core"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_bit",
  "hexga_map_on",
@@ -1212,7 +1212,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_encoding"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "base64",
  "bincode",
@@ -1226,7 +1226,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_encoding_derive"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1235,7 +1235,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_engine"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
@@ -1252,7 +1252,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_array_vec",
  "hexga_core",
@@ -1262,7 +1262,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_graphics"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga",
  "hexga_wgpu",
@@ -1271,7 +1271,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_image"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_core",
  "hexga_encoding",
@@ -1282,7 +1282,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_io"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "base64",
  "hexga_encoding",
@@ -1291,15 +1291,15 @@ dependencies = [
 
 [[package]]
 name = "hexga_io_derive"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 
 [[package]]
 name = "hexga_map_on"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 
 [[package]]
 name = "hexga_math"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_array",
  "hexga_core",
@@ -1314,7 +1314,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_math_derive"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -1325,22 +1325,22 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_map_on",
 ]
 
 [[package]]
 name = "hexga_singleton"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 
 [[package]]
 name = "hexga_utils"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_core",
  "serde",
@@ -1348,7 +1348,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_wgpu"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga",
  "serde",
@@ -1629,7 +1629,7 @@ dependencies = [
 
 [[package]]
 name = "io_serde"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga",
  "ron",
@@ -1818,7 +1818,7 @@ dependencies = [
 
 [[package]]
 name = "math_test"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga",
  "hexga_core",
@@ -1976,7 +1976,7 @@ dependencies = [
 
 [[package]]
 name = "no_std_test"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "hexga_core",
 ]
@@ -2994,7 +2994,7 @@ dependencies = [
 
 [[package]]
 name = "share_crate"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 
 [[package]]
 name = "shlex"
@@ -3268,7 +3268,7 @@ dependencies = [
 
 [[package]]
 name = "test_storage"
-version = "0.0.11-beta.47"
+version = "0.0.11-beta.48"
 dependencies = [
  "js-sys",
  "serde",
