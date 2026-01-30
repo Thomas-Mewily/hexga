@@ -6,7 +6,7 @@ pub mod prelude
     pub use super::NonEmptyStack;
 }
 
-/// A stack that ALWAYS have one element.
+/// A stack that ALWAYS have at least one element.
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct NonEmptyStack<T>
 {
