@@ -106,9 +106,10 @@ impl<T,Gen> Entry<T,Gen> where Gen:IGeneration
     pub fn is_generation_saturated(&self) -> bool { !self.can_increment_generation() }
 }
 
+#[derive(Clone, Copy)]
 pub struct GenVecOf<T,Gen=Generation,C=Vec<Entry<T,Gen>>>
     where
-    //C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
     pub(crate) values: C,
@@ -116,14 +117,13 @@ pub struct GenVecOf<T,Gen=Generation,C=Vec<Entry<T,Gen>>>
     /// usize::MAX if all slot are used
     free: usize,
     len: usize,
-    phantom: PhantomData<(T,Gen)>,
+    phantom: PhantomData<(T,Gen)>
 }
 
 impl<T, C, Gen> Debug for GenVecOf<T, Gen, C>
 where
-    C: for<'a> View<'a, View = &'a [Entry<T, Gen>]>,
-    Gen: IGeneration,
-    T: Debug,
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: IGeneration, T: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_list()
@@ -131,31 +131,19 @@ where
             .finish()
     }
 }
-impl<T, C, Gen> Clone for GenVecOf<T,Gen,C>
-    where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
-    C: Clone
-{
-    fn clone(&self) -> Self {
-        Self { values: self.values.clone(), free: self.free.clone(), len: self.len.clone(), phantom: self.phantom.clone() }
-    }
-}
-impl<T, C, Gen> Copy for GenVecOf<T,Gen,C>
-    where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
-    C: Copy
-{
-}
+
 impl<T, C, Gen> Eq for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
     T: PartialEq
 {
 }
 
 impl<T, C, Gen> Hash for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
     T: Hash
 {
     fn hash<H: Hasher>(&self, state: &mut H)
@@ -164,7 +152,7 @@ impl<T, C, Gen> Hash for GenVecOf<T,Gen,C>
 
         if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
         {
-            self.values.as_view().hash(state);
+            self.values.as_ref().hash(state);
             self.free.hash(state);
         }else
         {
@@ -179,15 +167,15 @@ impl<T, C, Gen> Hash for GenVecOf<T,Gen,C>
 
 impl<T, C, C2, Gen> PartialEq<GenVecOf<T,Gen,C2>> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C2: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]>,
+    C2: AsRef<[Entry<T,Gen>]>,
     Gen:IGeneration,
     T: PartialEq
 {
     fn eq(&self, other: &GenVecOf<T,Gen,C2>) -> bool
     {
-        let view = self.values.as_view();
-        let other_view = self.values.as_view();
+        let view = self.values.as_ref();
+        let other_view = self.values.as_ref();
 
         if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
         {
@@ -218,7 +206,7 @@ impl<T, C, C2, Gen> PartialEq<GenVecOf<T,Gen,C2>> for GenVecOf<T,Gen,C>
             */
 
             if self.len != other.len { return false; }
-            if self.free == other.free { return view == other_view; }
+            if self.free == other.free { return *view == *other_view; }
             if !(self.free.is_max() ^ other.free.is_max()) { return false; }
 
             if self.free.is_max()
@@ -266,11 +254,14 @@ impl<T, C, C2, Gen> PartialEq<GenVecOf<T,Gen,C2>> for GenVecOf<T,Gen,C>
 
 impl<T, C, Gen> GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     pub fn try_from_raw_parts(values: C, free: usize) -> Result<Self, String>
+        where
+        C: AsRef<[Entry<T, Gen>]>,
     {
-        let view = values.as_view();
+        let view = values.as_ref();
         let len = view.iter().filter(|s| s.have_value()).count();
 
         if view.len() == usize::MAX
@@ -317,7 +308,6 @@ impl<T, C, Gen> GenVecOf<T,Gen,C>
             }
         }
 
-
         Ok(unsafe { Self::from_raw_parts_unchecked(values, free, len) })
     }
 
@@ -331,17 +321,22 @@ impl<T, C, Gen> GenVecOf<T,Gen,C>
 
 impl<T,Gen,C> Default for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration, C: Default
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
+    C: Default
 {
     fn default() -> Self { Self::new() }
 }
 
 impl<T,Gen,C> GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]>,
     Gen:IGeneration,
 {
-    pub fn new() -> Self where C: Default { Self { values: C::default(), free: usize::MAX, len: 0, phantom: PhantomData }}
+    pub fn new() -> Self where C: Default
+    {
+        Self { values: ___(), free: usize::MAX, len: 0, phantom: PhantomData }
+    }
     /*
     pub fn with_capacity(capacity: usize) -> Self { Self { values: Vec::with_capacity(capacity), free: usize::MAX, len: 0 }}
 
@@ -359,11 +354,92 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
         self.len = 0;
         self.values.clear();
     }
+}
+
+impl<T,Gen,C> GenVecOf<T,Gen,C>
+    where
+    C:AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
+{
+    #[inline(always)]
+    pub fn as_ref<'a>(&'a self) -> GenVecOf<T,Gen,&'a[Entry<T,Gen>]>
+    { self.into() }
+
+    #[inline(always)]
+    pub fn get_entry_from_index(&self, index: usize) -> Option<&Entry<T,Gen>>
+    { self.values.as_ref().get(index) }
+
+
+    #[inline(always)]
+    pub fn get_from_index(&self, index: usize) -> Option<&T> { self.get_entry_from_index(index).and_then(|s| s.value()) }
+
+    #[inline(always)]
+    pub fn get_entry(&self, id: GenIDOf<Gen>) -> Option<&Entry<T,Gen>>
+    { self.get_entry_from_index(id.index()).filter(|v| v.generation() == id.generation()) }
+
+
+    #[inline(always)]
+    pub fn get(&self, id: GenIDOf<Gen>) -> Option<&T>
+    { self.get_entry(id).and_then(|v| v.value()) }
+
+
+    /// Return a valid [`GenID`] to the current index or return [`GenIDOf::NULL`] if the index is outside the range
+    pub fn index_to_id(&self, index: usize) -> GenIDOf<Gen>
+    { self.get_entry_from_index(index).map(|v| v.get_id(index)).unwrap_or(GenIDOf::NULL) }
+
+    pub fn entries(&self) -> impl Iterator<Item = &Entry<T,Gen>> + DoubleEndedIterator + FusedIterator { self.values.as_ref().iter() }
+
+    pub const fn len(&self) -> usize { self.len }
+
+    pub fn iter(&self) -> Iter<'_, T, Gen> { self.into_iter() }
+
+    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<Gen>> { self.into_iter().map(|(id, _val)| id) }
+
+    pub fn values(&self) -> impl Iterator<Item = &T> { self.iter().map(|(_,val)| val) }
+
+    pub fn into_ids(self) -> impl Iterator<Item = GenIDOf<Gen>> where C: IntoIterator<Item=Entry<T,Gen>>
+    {
+        self.into_iter().map(|(id, _val)| id)
+    }
+    pub fn into_values(self) -> impl Iterator<Item = T> where C: IntoIterator<Item=Entry<T,Gen>>
+    {
+        self.into_iter().map(|(_id, val)| val)
+    }
+
+    /// Iter over all entry index, including the free/unused one.
+    ///
+    /// The correct way to iterate over all entry index.
+    ///
+    /// Use this instead of `0..genvec.len()` (wrong).
+    pub fn iter_index(&self) -> impl Iterator<Item = usize> + 'static { 0..self.values.as_ref().len() }
+
+
+    pub fn to_owned(&self) -> GenVecOf<T, Gen, C::Owned>
+        where C: ToOwned, C::Owned : AsRef<[Entry<T,Gen>]>,
+    {
+        GenVecOf
+        {
+            values: self.values.to_owned(),
+            free: self.free,
+            len: self.len,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<T,Gen,C> GenVecOf<T,Gen,C>
+    where
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
+    Gen:IGeneration,
+{
+    #[inline(always)]
+    pub fn as_mut<'a>(&'a mut self) -> GenVecOf<T,Gen,&'a mut[Entry<T,Gen>]>
+    { self.into() }
 
     /// Removes all elements from the [`GenVec`] and invalidates all existing [`GenID`] (enforced).
-    pub fn remove_all(&mut self) where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
+    pub fn remove_all(&mut self)
     {
-        for (index, v) in self.values.as_mut_view().iter_mut().enumerate()
+        for (index, v) in self.values.as_mut().iter_mut().enumerate()
         {
             if v.have_value()
             {
@@ -380,15 +456,15 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
         self.len = 0;
     }
 
+
     pub fn rollback_insert(&mut self, id: GenIDOf<Gen>) -> Result<T,()>
         where
-        C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
-        C: Pop<Entry<T,Gen>>
+        C: Pop<Entry<T,Gen>>,
     {
         let index = id.index();
         let free = self.free;
 
-        let entry_len = self.values.as_view().len();
+        let entry_len = self.values.as_ref().len();
 
         let Some(entry) = self.get_entry_mut_from_index(index) else { return Err(()); };
         if entry.value.is_vacant() { return Err(()); }
@@ -416,14 +492,13 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
     pub fn insert_cyclic<F>(&mut self, init: F) -> GenIDOf<Gen>
         where
         F: FnOnce(GenIDOf<Gen>) -> T,
-        C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
         C: Push<Entry<T,Gen>>
     {
         self.len += 1;
 
         if self.free == usize::MAX
         {
-            let index = self.values.as_view().len();
+            let index = self.values.as_ref().len();
 
             // The last index is used for the null() key
             assert!(index != usize::MAX, "How you didn't run out of memory before ?"); // ZST ?
@@ -434,7 +509,7 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
             return id;
         }
 
-        let values = self.values.as_mut_view();
+        let values = self.values.as_mut();
 
         let EntryValue::Vacant(next_free_index) = values[self.free].value else { unreachable!(); };
         let free = self.free;
@@ -447,55 +522,32 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
     #[inline(always)]
     pub fn insert(&mut self, value: T) ->  GenIDOf<Gen>
         where
-        C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
         C: Push<Entry<T,Gen>>
     {
         self.insert_cyclic(|_| value)
     }
 
-    #[inline(always)]
-    pub fn get_entry_from_index<'s>(&'s self, index: usize) -> Option<&Entry<T,Gen>>
-    where
-        C: View<'s, View = &'s [Entry<T, Gen>]>,
-        { self.values.as_view().get(index) }
     // Do not expose, having a &mut Entry<T,Gen> allow to mutate the Occupied/Vacant state of the entry, breaking invariant
     #[inline(always)]
     pub(crate) fn get_entry_mut_from_index(&mut self, index: usize) -> Option<&mut Entry<T,Gen>>
-        where
-        C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
-    { self.values.as_mut_view().get_mut(index) }
+    { self.values.as_mut().get_mut(index) }
 
-    #[inline(always)]
-    pub fn get_from_index(&self, index: usize) -> Option<&T> { self.get_entry_from_index(index).and_then(|s| s.value()) }
     #[inline(always)]
     pub fn get_mut_from_index(&mut self, index: usize) -> Option<&mut T>
-        where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
     { self.get_entry_mut_from_index(index).and_then(|s| s.value_mut()) }
 
-    #[inline(always)]
-    pub fn get_entry(&self, id: GenIDOf<Gen>) -> Option<&Entry<T,Gen>>
-    { self.get_entry_from_index(id.index()).filter(|v| v.generation() == id.generation()) }
     // Do not expose, having a &mut Entry<T,Gen> allow to mutate the Occupied/Vacant state of the entry, breaking invariant
     #[inline(always)]
     pub(crate) fn get_entry_mut(&mut self, id: GenIDOf<Gen>) -> Option<&mut Entry<T,Gen>>
-        where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
     { self.get_entry_mut_from_index(id.index()).filter(|v| v.generation() == id.generation()) }
 
     #[inline(always)]
-    pub fn get(&self, id: GenIDOf<Gen>) -> Option<&T>
-    { self.get_entry(id).and_then(|v| v.value()) }
-    #[inline(always)]
     pub fn get_mut(&mut self, id: GenIDOf<Gen>) -> Option<&mut T>
-        where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
     { self.get_entry_mut(id).and_then(|v| v.value_mut()) }
 
-    /// Return a valid [`GenID`] to the current index or return [`GenIDOf::NULL`] if the index is outside the range
-    pub fn index_to_id(&self, index: usize) -> GenIDOf<Gen>
-    { self.get_entry_from_index(index).map(|v| v.get_id(index)).unwrap_or(GenIDOf::NULL) }
 
     /// The operation that once done just after an [`Self::remove_from_index`], put this data structure in the same state as before
     pub fn rollback_remove_index(&mut self, index: usize, value: T) -> Result<(), ()>
-        where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
     {
         let mut head = self.free;
         let entry = self.get_entry_mut_from_index(index).ok_or(())?;
@@ -529,7 +581,6 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
     }
 
     pub fn remove_from_index(&mut self, index: usize) -> Option<T>
-        where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
     {
         let head = self.free;
 
@@ -551,51 +602,26 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
     }
 
     pub fn rollback_remove(&mut self, id: GenIDOf<Gen>, value: T) -> Result<(), ()>
-        where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
     {
         // TODO: missing some check to see if the last operation removal was done with id
         self.rollback_remove_index(id.index(), value)
     }
 
     pub fn remove(&mut self, id: GenIDOf<Gen>) -> Option<T>
-        where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
     {
         if self.get(id).is_none() { return None; }
         self.remove_from_index(id.index())
     }
 
-    pub fn entries(&self) -> impl Iterator<Item = &Entry<T,Gen>> + DoubleEndedIterator + FusedIterator { self.values.as_view().iter() }
 
-    pub const fn len(&self) -> usize { self.len }
+    pub fn iter_mut(&mut self) -> IterMut<'_, T, Gen> { self.into_iter() }
+    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut T> { self.iter_mut().map(|(_,val)| val) }
 
-    pub fn iter(&self) -> Iter<'_, T, Gen> { self.into_iter() }
-    pub fn iter_mut(&mut self) -> IterMut<'_, T, Gen> where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]> { self.into_iter() }
-
-    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<Gen>> { self.into_iter().map(|(id, _val)| id) }
-
-    pub fn values(&self) -> impl Iterator<Item = &T> { self.iter().map(|(_,val)| val) }
-    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut T> where C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]> { self.iter_mut().map(|(_,val)| val) }
-
-    pub fn into_ids(self) -> impl Iterator<Item = GenIDOf<Gen>> where C: IntoIterator<Item=Entry<T,Gen>>
-    {
-        self.into_iter().map(|(id, _val)| id)
-    }
-    pub fn into_values(self) -> impl Iterator<Item = T> where C: IntoIterator<Item=Entry<T,Gen>>
-    {
-        self.into_iter().map(|(_id, val)| val)
-    }
-
-    /// Iter over all entry index, including the free/unused one.
-    ///
-    /// The correct way to iterate over all entry index.
-    ///
-    /// Use this instead of `0..genvec.len()` (wrong).
-    pub fn iter_index(&self) -> impl Iterator<Item = usize> + 'static { 0..self.values.as_view().len() }
 
     /// Retains only the elements specified by the predicate.
     ///
     /// In other words, remove all pairs `(id, v)` for which `f(id, &v)` returns `false`. The elements are visited in unsorted (and unspecified) order.
-    pub fn retain<F>(&mut self, mut f: F) where F: FnMut(GenIDOf<Gen>, &T) -> bool, C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
+    pub fn retain<F>(&mut self, mut f: F) where F: FnMut(GenIDOf<Gen>, &T) -> bool
     {
         self.retain_mut(|id,elem| f(id,elem));
     }
@@ -606,7 +632,6 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
     pub fn retain_mut<F>(&mut self, mut f: F)
         where
         F: FnMut(GenIDOf<Gen>, &mut T) -> bool,
-        C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>
     {
         for index in self.iter_index()
         {
@@ -620,64 +645,58 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
         }
     }
 
-    pub fn to_owned(&self) -> GenVecOf<T, Gen, C::Owned> where C: ToOwned
-    {
-        GenVecOf
-        {
-            values: self.values.to_owned(),
-            free: self.free,
-            len: self.len,
-            phantom: PhantomData,
-        }
-    }
 }
 
 impl<T, C, Gen> Index<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
-    where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration
+    where
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     type Output=T;
     fn index(&self, index: GenIDOf<Gen>) -> &Self::Output { self.get_or_panic(index) }
 }
 impl<T, C, Gen> IndexMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>, Gen:IGeneration
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     fn index_mut(&mut self, index: GenIDOf<Gen>) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
 impl<T, C, Gen> Index<usize> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     type Output=T;
     fn index(&self, index: usize) -> &Self::Output { self.get_from_index(index).unwrap() }
 }
 impl<T, C, Gen> IndexMut<usize> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>, Gen:IGeneration
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_mut_from_index(index).unwrap() }
 }
 
 impl<T, C, Gen> FromIterator<T> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]>,
     Gen:IGeneration,
     C: FromIterator<Entry<T,Gen>>
 {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         let values : C = iter.into_iter().map(|v| Entry::new(EntryValue::Occupied(v), Gen::MIN)).collect();
-        let len = values.as_view().len();
+        let len = values.as_ref().len();
         Self { values, free: usize::MAX, len, phantom: PhantomData }
     }
 }
 
 impl<T, C, Gen> IntoIterator for GenVecOf<T,Gen,C>
-    where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
+    where
+    C: AsRef<[Entry<T,Gen>]>,
+    C: IntoIterator<Item = Entry<T,Gen>>,
     Gen:IGeneration,
-    C: IntoIterator<Item = Entry<T,Gen>>
 {
     type Item = (GenIDOf<Gen>, T);
     type IntoIter = IntoIter<T, <C as IntoIterator>::IntoIter, Gen>;
@@ -742,18 +761,18 @@ impl<T, I, Gen> FusedIterator for IntoIter<T, I, Gen> where I: Iterator<Item = E
 impl<T, I, Gen> ExactSizeIterator for IntoIter<T, I, Gen> where I: Iterator<Item = Entry<T,Gen>>, Gen:IGeneration { fn len(&self) -> usize { self.len_remaining } }
 
 
-impl<'b, T, C, Gen> IntoIterator for &'b GenVecOf<T,Gen,C>
+impl<'s, T, C, Gen> IntoIterator for &'s GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    Gen:IGeneration
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
-    type Item = (GenIDOf<Gen>, &'b T);
-    type IntoIter = Iter<'b, T, Gen>;
+    type Item = (GenIDOf<Gen>, &'s T);
+    type IntoIter = Iter<'s, T, Gen>;
 
     fn into_iter(self) -> Self::IntoIter {
         Iter
         {
-            iter: self.values.as_view().iter().enumerate(),
+            iter: self.values.as_ref().iter().enumerate(),
             len_remaining: self.len,
         }
     }
@@ -804,19 +823,18 @@ impl<'a, T, Gen: IGeneration> ExactSizeIterator for Iter<'a, T, Gen> { fn len(&s
 
 
 
-impl<'a, T, C, Gen> IntoIterator for &'a mut GenVecOf<T,Gen,C>
+impl<'s, T, C, Gen> IntoIterator for &'s mut GenVecOf<T,Gen,C>
     where
-    C: for<'b> View<'b,View = &'b [Entry<T,Gen>]>,
-    C: for<'b> ViewMut<'b,ViewMut = &'b mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
-    type Item = (GenIDOf<Gen>, &'a mut T);
-    type IntoIter = IterMut<'a, T, Gen>;
+    type Item = (GenIDOf<Gen>, &'s mut T);
+    type IntoIter = IterMut<'s, T, Gen>;
 
     fn into_iter(self) -> Self::IntoIter {
         IterMut
         {
-            iter: self.values.as_mut_view().iter_mut().enumerate(),
+            iter: self.values.as_mut().iter_mut().enumerate(),
             len_remaining: self.len,
         }
     }
@@ -863,15 +881,14 @@ impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
 impl<'a, T, Gen: IGeneration> ExactSizeIterator for IterMut<'a, T, Gen> { fn len(&self) -> usize { self.len_remaining } }
 
 
-impl<T,Gen,C> Collection for GenVecOf<T,Gen,C> where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration {}
-impl<T,Gen,C> CollectionBijective for GenVecOf<T,Gen,C> where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration {}
-impl<T,Gen,C> Length for GenVecOf<T,Gen,C> where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration { #[inline(always)] fn len(&self) -> usize { self.len() } }
-impl<T,Gen,C> Clear for GenVecOf<T,Gen,C> where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration, C: Clear { #[inline(always)] fn clear(&mut self) { self.clear(); } }
+impl<T,Gen,C> Collection for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration {}
+impl<T,Gen,C> CollectionBijective for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration {}
+impl<T,Gen,C> Length for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration { #[inline(always)] fn len(&self) -> usize { self.len() } }
+impl<T,Gen,C> Clear for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Clear { #[inline(always)] fn clear(&mut self) { self.clear(); } }
 
 impl<T,Gen,C> Push<T> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration, C: Push<Entry<T,Gen>>
 {
     type Output=GenIDOf<Gen>;
@@ -882,30 +899,30 @@ impl<T,Gen,C> Push<T> for GenVecOf<T,Gen,C>
 
 impl<'s, T, Gen, C> From<&'s GenVecOf<T, Gen, C>> for GenVecOf<T, Gen, &'s [Entry<T, Gen>]>
     where
-    C: View<'s, View = &'s [Entry<T, Gen>]>,
+    C: AsRef<[Entry<T,Gen>]>,
     Gen: IGeneration,
     T:'s
 {
     fn from(value: &'s GenVecOf<T, Gen, C>) -> Self {
-        value.as_view()
+        Self { values: value.values.as_ref(), free: value.free, len: value.len, phantom: PhantomData }
     }
 }
 
 impl<'s, T, Gen, C> From<&'s mut GenVecOf<T, Gen, C>> for GenVecOf<T, Gen, &'s mut [Entry<T, Gen>]>
     where
-    C: View<'s, View = &'s [Entry<T, Gen>]>,
-    C: ViewMut<'s, ViewMut = &'s mut [Entry<T, Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen: IGeneration,
     T:'s
 {
     fn from(value: &'s mut GenVecOf<T, Gen, C>) -> Self {
-        value.as_mut_view()
+        Self { values: value.values.as_mut(), free: value.free, len: value.len, phantom: PhantomData }
     }
 }
 
+/*
 impl<'s, T, Gen, C> View<'s> for GenVecOf<T, Gen, C>
 where
-    C: View<'s, View = &'s [Entry<T, Gen>]>,
+    C: AsRef<[Entry<T,Gen>]>,
     Gen: IGeneration,
     T:'s
 {
@@ -913,7 +930,7 @@ where
 
     fn as_view(&'s self) -> Self::View {
         GenVecOf {
-            values: self.values.as_view(),
+            values: self.values,
             free: self.free,
             len: self.len,
             phantom: PhantomData,
@@ -923,36 +940,36 @@ where
 
 impl<'s, T, Gen, C> ViewMut<'s> for GenVecOf<T, Gen, C>
 where
-    C: View<'s, View = &'s [Entry<T, Gen>]>,
+    C: AsRef<[Entry<T,Gen>]>,
     C: ViewMut<'s, ViewMut = &'s mut [Entry<T, Gen>]>,
     Gen: IGeneration,
     T:'s
 {
     type ViewMut = GenVecOf<T, Gen, &'s mut [Entry<T, Gen>]>;
 
-    fn as_mut_view(&'s mut self) -> Self::ViewMut {
+    fn as_mut(&'s mut self) -> Self::ViewMut {
         GenVecOf {
-            values: self.values.as_mut_view(),
+            values: self.values.as_mut(),
             free: self.free,
             len: self.len,
             phantom: PhantomData,
         }
     }
 }
+*/
 
-
-impl<T,Gen,C> Shrink for GenVecOf<T,Gen,C> where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration, C: Shrink
+impl<T,Gen,C> Shrink for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Shrink
 {
     fn shrink_to_fit(&mut self) { self.values.shrink_to_fit(); }
     fn shrink_to(&mut self, min_capacity: usize) { self.values.shrink_to(min_capacity); }
 }
-impl<T,Gen,C> Truncate for GenVecOf<T,Gen,C> where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration, C: Truncate
+impl<T,Gen,C> Truncate for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Truncate
 {
     fn truncate(&mut self, len: usize) { self.values.truncate(len); }
 }
 
 
-impl<T,Gen,C> Capacity for GenVecOf<T,Gen,C> where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration, C: Capacity
+impl<T,Gen,C> Capacity for GenVecOf<T,Gen,C> where C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration, C: Capacity
 {
     type Param=();
 
@@ -1077,14 +1094,18 @@ impl<T,Gen> Debug for GenVecWrongGeneration<T,Gen> where Gen:IGeneration
 
 
 impl<T,Gen,C> Get<usize> for GenVecOf<T,Gen,C>
-    where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration
+    where
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     type Output = <Self as Index<usize>>::Output;
     #[inline(always)]
     fn get(&self, index: usize) -> Option<&Self::Output> { self.get_from_index(index) }
 }
 impl<T,Gen,C> TryGet<usize> for GenVecOf<T,Gen,C>
-    where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration
+    where
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     type Error=IndexOutOfBounds;
     fn try_get(&self, index: usize) -> Result<&Self::Output, Self::Error>
@@ -1094,14 +1115,18 @@ impl<T,Gen,C> TryGet<usize> for GenVecOf<T,Gen,C>
 }
 
 impl<T,Gen,C> Get<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
-    where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration
+    where
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     type Output = <Self as Index<GenIDOf<Gen>>>::Output;
     #[inline(always)]
     fn get(&self, index: GenIDOf<Gen>) -> Option<&Self::Output> { self.get(index) }
 }
 impl<T,Gen,C> TryGet<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
-    where C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration
+    where
+    C: AsRef<[Entry<T,Gen>]>,
+    Gen:IGeneration,
 {
     type Error=GenVecError<T,Gen>;
     fn try_get(&self, id:  GenIDOf<Gen>) -> Result<&Self::Output, Self::Error>
@@ -1127,8 +1152,7 @@ impl<T,Gen,C> TryGet<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
 
 impl<T,Gen,C> GetMut<usize> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
     #[inline(always)]
@@ -1136,8 +1160,7 @@ impl<T,Gen,C> GetMut<usize> for GenVecOf<T,Gen,C>
 }
 impl<T,Gen,C> TryGetMut<usize> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
     fn try_get_mut(&mut self, index: usize) -> Result<&mut Self::Output, Self::Error>
@@ -1150,8 +1173,7 @@ impl<T,Gen,C> TryGetMut<usize> for GenVecOf<T,Gen,C>
 
 impl<T,Gen,C> GetManyMut<usize> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
     #[inline(always)]
@@ -1164,7 +1186,7 @@ impl<T,Gen,C> GetManyMut<usize> for GenVecOf<T,Gen,C>
         // But because N is generally small, I keep it this way
         //
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.values.as_mut_view().try_get_many_mut(indices).map(|entries| entries.map(|v| v.value_mut()))
+        match self.values.as_mut().try_get_many_mut(indices).map(|entries| entries.map(|v| v.value_mut()))
         {
             Ok(values) => if values.iter().any(|v| v.is_none()) { Err(ManyMutError::IndexOutOfBounds) } else { Ok(values.map(|v| v.unwrap())) },
             Err(e) => Err(e),
@@ -1174,7 +1196,7 @@ impl<T,Gen,C> GetManyMut<usize> for GenVecOf<T,Gen,C>
     fn get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Option<[&mut Self::Output;N]> {
         // TODO: check the SlotMap crate for a better implementation of any overlapping indices
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.values.as_mut_view().get_many_mut(indices).map(|entries| entries.map(|v| v.value_mut()))
+        match self.values.as_mut().get_many_mut(indices).map(|entries| entries.map(|v| v.value_mut()))
         {
             Some(values) => if values.iter().any(|v| v.is_none()) { None } else { Some(values.map(|v| v.unwrap())) },
             None => None,
@@ -1185,15 +1207,14 @@ impl<T,Gen,C> GetManyMut<usize> for GenVecOf<T,Gen,C>
     #[track_caller]
     unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Output;N] {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        unsafe { self.values.as_mut_view().get_many_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
+        unsafe { self.values.as_mut().get_many_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
     }
 }
 
 
 impl<T,Gen,C> GetMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
     #[inline(always)]
@@ -1201,8 +1222,7 @@ impl<T,Gen,C> GetMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
 }
 impl<T,Gen,C> TryGetMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
     fn try_get_mut(&mut self, id:  GenIDOf<Gen>) -> Result<&mut Self::Output, Self::Error>
@@ -1233,8 +1253,7 @@ impl<T,Gen,C> TryGetMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
 
 impl<T,Gen,C> GetManyMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
     #[inline(always)]
@@ -1244,7 +1263,7 @@ impl<T,Gen,C> GetManyMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
         // Check SlotMap imply that put tmp Free slot/entry in the current indices to
 
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.values.as_mut_view().try_get_many_mut(indices.map(|id| id.index()))
+        match self.values.as_mut().try_get_many_mut(indices.map(|id| id.index()))
         {
             Ok(values) => if values.iter().enumerate().any(|(index,v)| !v.have_value() || v.generation() != indices[index].generation())
             { Err(std::slice::GetDisjointMutError::OverlappingIndices) } else { Ok(values.map(|v| v.value_mut().unwrap())) },
@@ -1258,7 +1277,7 @@ impl<T,Gen,C> GetManyMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
         // Check SlotMap imply that put tmp Free slot/entry in the current indices to
 
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
-        match self.values.as_mut_view().get_many_mut(indices.map(|id| id.index()))
+        match self.values.as_mut().get_many_mut(indices.map(|id| id.index()))
         {
             Some(values) =>
                 if values.iter().enumerate().any(|(index,v)| !v.have_value() || v.generation() != indices[index].generation())
@@ -1269,8 +1288,7 @@ impl<T,Gen,C> GetManyMut<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
 }
 impl<T,Gen,C> Remove<usize> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration,
 {
     type Output=T;
@@ -1281,8 +1299,7 @@ impl<T,Gen,C> Remove<usize> for GenVecOf<T,Gen,C>
 
 impl<T,Gen,C> Remove<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration,
 {
     type Output=T;
@@ -1293,29 +1310,27 @@ impl<T,Gen,C> Remove<GenIDOf<Gen>> for GenVecOf<T,Gen,C>
 
 impl<T,Gen,C> CollectionStableKey for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+    C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration,
 {}
 
 
 
 impl<T,Gen,C> GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]>,
     Gen:IGeneration
 {
     /// Moves all the elements of `other` into `self`, leaving `other` empty by clearing it (don't invalidate all previous [GenID]).
     pub fn append<C2>(&mut self, other: &mut GenVecOf<T,Gen,C2>) -> impl GenIDUpdater<Gen> + 'static
         where
         T: GenIDUpdatable<Gen>,
-        C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]> + Push<Entry<T,Gen>>,
-        C2: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-        C2: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
-        C2: Clear,
+        C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]> + Push<Entry<T,Gen>>,
+        C2: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]> + Clear
     {
         let capacity = other.len();
         let mut h = HashMap::with_capacity(capacity);
 
-        for (index, entry) in other.values.as_mut_view().iter_mut().enumerate().filter(|(_,s)| s.have_value())
+        for (index, entry) in other.values.as_mut().iter_mut().enumerate().filter(|(_,s)| s.have_value())
         {
             let val = entry.value.take_and_set_vacant_unchecked(usize::MAX);
             let old_id = entry.get_id(index);
@@ -1334,8 +1349,7 @@ impl<T,Gen,C> GenVecOf<T,Gen,C>
 
 impl<T,Gen,C> Extend<T> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration,
     C: Push<Entry<T,Gen>>
 {
@@ -1361,7 +1375,7 @@ impl<Gen> GenIDUpdater<Gen> for HashMap<GenIDOf<Gen>,GenIDOf<Gen>> where Gen: IG
 }
 impl<C,Gen> GenIDUpdater<Gen> for GenVecOf<GenIDOf<Gen>,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<GenIDOf<Gen>,Gen>]>,
+    C: AsRef<[Entry<GenIDOf<Gen>,Gen>]>,
     Gen:IGeneration,
 {
     fn update(&self, dest: &mut GenIDOf<Gen>) {
@@ -1383,8 +1397,7 @@ impl<Gen> GenIDUpdatable<Gen> for GenIDOf<Gen> where Gen: IGeneration
 
 impl<T,Gen,C> Extend<(GenIDOf<Gen>, T)> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>,
-    C: for<'a> ViewMut<'a,ViewMut = &'a mut [Entry<T,Gen>]>,
+    C: AsRef<[Entry<T,Gen>]> + AsMut<[Entry<T,Gen>]>,
     Gen:IGeneration,
     C: Push<Entry<T,Gen>>,
     T: GenIDUpdatable<Gen>
@@ -1421,12 +1434,7 @@ impl<T,Gen,C> Extend<(GenIDOf<Gen>, T)> for GenVecOf<T,Gen,C>
 
 pub trait CollectToGenVec<T>: Sized + IntoIterator<Item = T>
 {
-    fn to_genvec(self) -> GenVec<T>
-    {
-        let values: Vec<Entry<T>> = self.into_iter().map(|v| Entry::new(EntryValue::Occupied(v), Generation::MIN)).collect();
-        let len = values.as_view().len();
-        GenVec { values, free: usize::MAX, len, phantom: PhantomData }
-    }
+    fn to_genvec(self) -> GenVec<T> { GenVec::from_iter(self) }
 }
 impl<I,T> CollectToGenVec<T> for I where I: IntoIterator<Item = T>, {}
 

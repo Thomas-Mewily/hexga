@@ -215,7 +215,7 @@ fn bi()
 
     let g = Grid2::from_values_and_bijection(s, BijectionPointToUsize::new(point2(2, 3)));
     dbg!(&g.get(point2(0, 1)));
-    dbg!(s.as_view().bijection_rev());
+    //dbg!(s.as_view().bijection_rev());
 
     // grid type ?
 }
@@ -250,10 +250,10 @@ fn gen_vec_view()
     gen_vec.*/
 
     let mut gen_vec = [1i32,2,3].to_genvec();
-    let view = gen_vec.as_view();
-    let view_mut = gen_vec.as_mut_view();
-    println!("{:?}", gen_vec);
-    gen_vec.get_entry_from_index(0);
+    //let view = gen_vec.as_view();
+    //let view_mut = gen_vec.as_mut_view();
+    //println!("{:?}", gen_vec);
+    //gen_vec.get_entry_from_index(0);
 
 }
 

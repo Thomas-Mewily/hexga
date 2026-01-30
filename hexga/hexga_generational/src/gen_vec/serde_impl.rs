@@ -75,7 +75,7 @@ where
 
 impl<T, C, Gen> Serialize for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+    C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration,
     C: Serialize, T: Serialize, Gen: Serialize
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
@@ -108,7 +108,7 @@ impl<T, C, Gen> Serialize for GenVecOf<T,Gen,C>
 
 impl<'de, T, C, Gen> Deserialize<'de> for GenVecOf<T,Gen,C>
     where
-    C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+    C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration,
     C: Deserialize<'de>, T: Deserialize<'de>, Gen: IGeneration + Deserialize<'de>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -118,13 +118,15 @@ impl<'de, T, C, Gen> Deserialize<'de> for GenVecOf<T,Gen,C>
         #[derive(Deserialize)]
         pub struct GenVec<T,Gen,C>
             where
-            C: for<'a> View<'a,View = &'a [Entry<T,Gen>]>, Gen:IGeneration,
+            C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration,
         {
             values: C,
             next: Option<usize>,
+            #[serde(skip)]
+            phantom: PhantomData<(T,Gen)>,
         }
 
-        let GenVec{ values, next } = GenVec::deserialize(deserializer)?;
+        let GenVec{ values, next, phantom: _ } = GenVec::deserialize(deserializer)?;
         GenVecOf::<T,Gen,C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX)).map_err(serde::de::Error::custom)
     }
 }

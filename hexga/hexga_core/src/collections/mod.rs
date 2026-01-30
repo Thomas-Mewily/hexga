@@ -44,8 +44,10 @@ pub use sequence::*;
 mod collect_to;
 pub use collect_to::*;
 
+/*
 mod view;
 pub use view::*;
 
 mod view_mut;
 pub use view_mut::*;
+*/
