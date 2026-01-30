@@ -9,21 +9,26 @@ use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 
 type DynFuture<T> = Pin<Box<dyn Future<Output = T> + Send + 'static>>;
 
-pub trait Loadable: Sized + 'static {
+pub trait Loadable: Sized + 'static
+{
     fn load(path: String) -> Asset<Self>;
 }
 
 #[derive(Debug)]
-pub struct UrlTitle {
+pub struct UrlTitle
+{
     pub title: String,
 }
 
-impl Loadable for UrlTitle {
+impl Loadable for UrlTitle
+{
     fn load(path: String) -> Asset<Self>
     {
         let p = path.clone();
         let fut = Box::pin(async move {
-            UrlTitle{ title: format!("Title of {}", p)}
+            UrlTitle {
+                title: format!("Title of {}", p),
+            }
         });
 
         Asset {
@@ -33,12 +38,14 @@ impl Loadable for UrlTitle {
     }
 }
 
-pub struct Asset<T: 'static> {
+pub struct Asset<T: 'static>
+{
     pub path: String,
     pub content: AssetState<T>,
 }
 
-pub enum AssetState<T: 'static> {
+pub enum AssetState<T: 'static>
+{
     Loading(DynFuture<T>),
     Loaded(T),
     Error,
@@ -46,19 +53,17 @@ pub enum AssetState<T: 'static> {
 
 type AsyncCtx<'a> = std::task::Context<'a>;
 
-impl<T: 'static> AssetState<T> {
+impl<T: 'static> AssetState<T>
+{
     pub fn poll(mut self, ctx: &mut AsyncCtx) -> Self
     {
         match self
         {
-            AssetState::Loading(mut fut) =>
+            AssetState::Loading(mut fut) => match fut.as_mut().poll(ctx)
             {
-                match fut.as_mut().poll(ctx)
-                {
-                    std::task::Poll::Ready(r) => Self::Loaded(r),
-                    std::task::Poll::Pending => Self::Loading(fut),
-                }
-            }
+                std::task::Poll::Ready(r) => Self::Loaded(r),
+                std::task::Poll::Pending => Self::Loading(fut),
+            },
             _ => self,
         }
     }
@@ -81,38 +86,35 @@ impl<T: 'static> AssetState<T> {
     }
 }
 
-impl<T: 'static> Asset<T> {
-    pub fn poll(mut self, ctx: &mut AsyncCtx)
-    {
-        self.content = self.content.poll(ctx);
-    }
+impl<T: 'static> Asset<T>
+{
+    pub fn poll(mut self, ctx: &mut AsyncCtx) { self.content = self.content.poll(ctx); }
 }
-impl<T: 'static> Deref for Asset<T> {
+impl<T: 'static> Deref for Asset<T>
+{
     type Target = AssetState<T>;
-    fn deref(&self) -> &Self::Target {
-        &self.content
-    }
+    fn deref(&self) -> &Self::Target { &self.content }
 }
-impl<T: 'static> DerefMut for Asset<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.content
-    }
+impl<T: 'static> DerefMut for Asset<T>
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.content }
 }
 
 // -----------------------------------------------------------------------------
 // Example main demonstrating how to use all of this
 // -----------------------------------------------------------------------------
-fn main() {
+fn main()
+{
     // Create an "asset" that's still loading
     let mut asset = UrlTitle::load("https://example.com".into());
 
     // Create a dummy waker and context for polling
 
-    fn dummy_raw_waker() -> RawWaker {
+    fn dummy_raw_waker() -> RawWaker
+    {
         fn no_op(_: *const ()) {}
         fn clone(_: *const ()) -> RawWaker { dummy_raw_waker() }
-        static VTABLE: RawWakerVTable =
-            RawWakerVTable::new(clone, no_op, no_op, no_op);
+        static VTABLE: RawWakerVTable = RawWakerVTable::new(clone, no_op, no_op, no_op);
         RawWaker::new(std::ptr::null(), &VTABLE)
     }
 
@@ -120,9 +122,11 @@ fn main() {
     let mut ctx = Context::from_waker(&waker);
 
     // Poll until loaded (simulate executor)
-    loop {
+    loop
+    {
         asset.content = asset.content.poll(&mut ctx);
-        if let AssetState::Loaded(_) = asset.content {
+        if let AssetState::Loaded(_) = asset.content
+        {
             break;
         }
     }

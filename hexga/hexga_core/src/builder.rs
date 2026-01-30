@@ -1,4 +1,3 @@
-
 // Infaillible Builder
 pub trait Builder
 {

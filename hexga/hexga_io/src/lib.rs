@@ -3,18 +3,20 @@
 //!
 //! It support custom user define extension and convertion,
 //! and it's also support common markup extension (json, ron, xml...).
+use hexga_encoding::{Base64Error, EncodeError, prelude::*};
 use std::fmt::Display;
 use std::{str::Utf8Error, string::FromUtf8Error};
-use hexga_encoding::{Base64Error, EncodeError, prelude::*};
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
-use serde::
-{
-    Serialize, Serializer, Deserialize, Deserializer, de::Visitor,
-    ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant}
+use serde::{
+    Deserialize, Deserializer, Serialize, Serializer,
+    de::Visitor,
+    ser::{
+        SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple,
+        SerializeTupleStruct, SerializeTupleVariant,
+    },
 };
-
 
 //mod fs_path;
 //pub use fs_path::*;
@@ -22,7 +24,7 @@ use serde::
 mod path_extension;
 pub use path_extension::*;
 
-pub use std::path::{Path,PathBuf};
+pub use std::path::{Path, PathBuf};
 
 mod io;
 pub use io::*;
@@ -36,27 +38,32 @@ mod fs;
 pub mod prelude
 {
     pub use super::{
-        io::*,
+        FileError,
+        IoError,
+        IoLoad,
+        IoResult,
+        IoSave, //fs_path::*,
         //result::*,
         PathExtension,
-        IoResult,IoError,FileError,
-        IoLoad,IoSave
-        //fs_path::*,
+        io::*,
     };
 }
 
-
-pub trait IoLoad : Load + Sized
+pub trait IoLoad: Load + Sized
 {
-    fn load<P>(path: P) -> IoResult<Self> where P: AsRef<Path>
+    fn load<P>(path: P) -> IoResult<Self>
+    where
+        P: AsRef<Path>,
     {
         Io.load(path)
     }
 }
 impl<T> IoLoad for T where T: Load {}
-pub trait IoSave : Save
+pub trait IoSave: Save
 {
-    fn save<P>(&self, path: P) -> IoResult where P: AsRef<Path>
+    fn save<P>(&self, path: P) -> IoResult
+    where
+        P: AsRef<Path>,
     {
         Io.save(path, self)
     }

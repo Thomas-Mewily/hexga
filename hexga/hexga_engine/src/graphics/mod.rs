@@ -5,8 +5,8 @@ pub use hexga_graphics::*;
 pub mod prelude
 {
     pub use super::Pen;
+    pub(crate) use super::{AppGraphics, GpuMessage, wgpu};
     pub use hexga_graphics::prelude::*;
-    pub(crate) use super::{AppGraphics,wgpu,GpuMessage};
 }
 /*
 singleton_single_thread_access!(
@@ -20,8 +20,7 @@ singleton_single_thread_access!(
 pub struct Pen;
 
 #[derive(Debug)]
-pub struct AppGraphics
-{
+pub struct AppGraphics {
     //pub(crate) immediate: ImmediateRender,
     /*
     pub(crate) binding: GpuBinding,
@@ -45,15 +44,14 @@ impl AppGraphics
         }
     }*/
 
-    pub(crate) fn new() -> Self
-    {
-        Self
-        {
+    pub(crate) fn new() -> Self { Self {} }
 
-        }
-    }
-
-    pub(crate) async fn init_gpu(instance: gpu::GpuInstance, surface: Option<graphics::GpuSurface<'static>>, window: Arc<WinitWindow>, mut param: GpuParam) -> GpuResult<Self>
+    pub(crate) async fn init_gpu(
+        instance: gpu::GpuInstance,
+        surface: Option<graphics::GpuSurface<'static>>,
+        window: Arc<WinitWindow>,
+        mut param: GpuParam,
+    ) -> GpuResult<Self>
     {
         let gpu_init = GpuInit::from_instance_and_surface(instance, surface, param).await?;
         let output = Gpu::from_init(gpu_init).await?;
@@ -61,12 +59,24 @@ impl AppGraphics
         Ok(Self::new())
     }
 
-    pub(crate) async fn async_init_gpu(instance: gpu::GpuInstance, surface: Option<graphics::GpuSurface<'static>>, window: Arc<WinitWindow>, param: GpuParam, proxy: EventLoopProxy)
+    pub(crate) async fn async_init_gpu(
+        instance: gpu::GpuInstance,
+        surface: Option<graphics::GpuSurface<'static>>,
+        window: Arc<WinitWindow>,
+        param: GpuParam,
+        proxy: EventLoopProxy,
+    )
     {
-        let _ = proxy.send_event(AppInternalEvent::Gpu(Self::init_gpu(instance, surface, window, param).await));
+        let _ = proxy.send_event(AppInternalEvent::Gpu(
+            Self::init_gpu(instance, surface, window, param).await,
+        ));
     }
 
-    pub(crate) fn init(window: Arc<WinitWindow>, mut param: GpuParam, proxy: EventLoopProxy) -> GpuResult
+    pub(crate) fn init(
+        window: Arc<WinitWindow>,
+        mut param: GpuParam,
+        proxy: EventLoopProxy,
+    ) -> GpuResult
     {
         //if app().graphics.is_some() { return Err(GpuError::GpuAlreadyInit); }
 
@@ -79,13 +89,17 @@ impl AppGraphics
         }
 
         let instance = gpu::GpuInstance::new(&param.instance);
-        let surface = Some(instance.wgpu.create_surface(param.compatible_surface.take().expect("missing surface"))?.into());
+        let surface = Some(
+            instance
+                .wgpu
+                .create_surface(param.compatible_surface.take().expect("missing surface"))?
+                .into(),
+        );
 
         Self::async_init_gpu(instance, surface, window, param, proxy).spawn();
         Ok(())
     }
 }
-
 
 /*
 impl ScopedFlow for Option<AppGraphics>
@@ -142,7 +156,6 @@ impl ScopedFlow for AppGraphics
     }
 }
 */
-
 
 pub(crate) type GpuMessage = GpuResult<AppGraphics>;
 /*

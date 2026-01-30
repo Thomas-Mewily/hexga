@@ -21,15 +21,25 @@ special type of asset that are load/unloaded automatically when not used for X s
 
 */
 
-
 // use std::clone::CloneToUninit;
 use std::{
-    any::{Any, TypeId}, collections::HashMap, default, hash::Hash, iter::FusedIterator, marker::PhantomData, ops::{Deref, DerefMut}, path::{Path, PathBuf}, sync::{Arc, LazyLock, MappedRwLockReadGuard, MappedRwLockWriteGuard, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard, Weak}
+    any::{Any, TypeId},
+    collections::HashMap,
+    default,
+    hash::Hash,
+    iter::FusedIterator,
+    marker::PhantomData,
+    ops::{Deref, DerefMut},
+    path::{Path, PathBuf},
+    sync::{
+        Arc, LazyLock, MappedRwLockReadGuard, MappedRwLockWriteGuard, PoisonError, RwLock,
+        RwLockReadGuard, RwLockWriteGuard, Weak,
+    },
 };
 
 use hexga_core::prelude::*;
-use hexga_generational::{gen_vec, /*multi_map::{self, EntryID},*/ prelude::*, /*table*/};
 use hexga_encoding::prelude::*;
+use hexga_generational::{gen_vec, /*multi_map::{self, EntryID},*/ prelude::* /*table*/};
 use hexga_io::prelude::*;
 
 mod asset;
@@ -45,9 +55,11 @@ mod hot_reload;
 pub use hot_reload::*;
 
 #[cfg(feature = "serde")]
-pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+pub use serde::{
+    Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct,
+};
 
 pub mod prelude
 {
-    pub use super::{Asset};
+    pub use super::Asset;
 }

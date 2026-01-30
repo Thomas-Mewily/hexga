@@ -1,47 +1,50 @@
 use super::*;
 
-
-
-pub struct AssetReadGuard<'a,T>
+pub struct AssetReadGuard<'a, T>
 {
-    guard: MappedRwLockReadGuard<'a,T>,
+    guard: MappedRwLockReadGuard<'a, T>,
 }
-impl<'a,T> Deref for AssetReadGuard<'a,T>
+impl<'a, T> Deref for AssetReadGuard<'a, T>
 {
-    type Target=T;
+    type Target = T;
     fn deref(&self) -> &Self::Target { self.guard.deref() }
 }
-pub struct AssetWriteGuard<'a,T>
+pub struct AssetWriteGuard<'a, T>
 {
-    guard: MappedRwLockWriteGuard<'a,T>
+    guard: MappedRwLockWriteGuard<'a, T>,
 }
-impl<'a,T> Deref for AssetWriteGuard<'a,T>
+impl<'a, T> Deref for AssetWriteGuard<'a, T>
 {
-    type Target=T;
+    type Target = T;
     fn deref(&self) -> &Self::Target { self.guard.deref() }
 }
-impl<'a,T> DerefMut for AssetWriteGuard<'a,T>
+impl<'a, T> DerefMut for AssetWriteGuard<'a, T>
 {
     fn deref_mut(&mut self) -> &mut Self::Target { self.guard.deref_mut() }
 }
 
-
 #[derive(Debug)]
-pub struct Asset<T> where T: Async
+pub struct Asset<T>
+where
+    T: Async,
 {
     pub(crate) inner: Arc<RwLock<AssetData<T>>>,
 }
-impl<T> PartialEq for Asset<T> where T: Async
+impl<T> PartialEq for Asset<T>
+where
+    T: Async,
 {
-    fn eq(&self, other: &Self) -> bool
-    {
-        self.ptr_eq(other)
-    }
+    fn eq(&self, other: &Self) -> bool { self.ptr_eq(other) }
 }
-impl<T> Clone for Asset<T> where T: Async
+impl<T> Clone for Asset<T>
+where
+    T: Async,
 {
-    fn clone(&self) -> Self {
-        Self { inner: self.inner.clone() }
+    fn clone(&self) -> Self
+    {
+        Self {
+            inner: self.inner.clone(),
+        }
     }
 }
 
@@ -56,15 +59,21 @@ mod serde_impl
         use super::*;
 
         #[derive(Serialize)]
-        pub(crate) enum Asset<'a,T> where T: Serialize + Save
+        pub(crate) enum Asset<'a, T>
+        where
+            T: Serialize + Save,
         {
             Path(&'a Path),
-            Value(&'a T)
+            Value(&'a T),
         }
 
-        impl<T> Serialize for A<T> where T: Async + Serialize + Save
+        impl<T> Serialize for A<T>
+        where
+            T: Async + Serialize + Save,
         {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
             {
                 let r = self.inner.read().unwrap();
                 let asset_rep = match &r.persistance
@@ -86,14 +95,18 @@ mod serde_impl
         use super::*;
 
         #[derive(Deserialize)]
-        pub(crate) enum Asset<T> where T: Async
+        pub(crate) enum Asset<T>
+        where
+            T: Async,
         {
             Path(PathBuf),
-            Value(T)
+            Value(T),
         }
 
         #[cfg(feature = "serde")]
-        impl<'de, T> Deserialize<'de> for A<T> where T: Async + Load
+        impl<'de, T> Deserialize<'de> for A<T>
+        where
+            T: Async + Load,
         {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -102,64 +115,69 @@ mod serde_impl
                 match Asset::deserialize(deserializer)?
                 {
                     Asset::Path(path_buf) => Ok(A::load(path_buf)),
-                    Asset::Value(value) => Ok(A::update_or_create(AssetPersistance::Generated, AssetInit::new(value))),
+                    Asset::Value(value) => Ok(A::update_or_create(
+                        AssetPersistance::Generated,
+                        AssetInit::new(value),
+                    )),
                 }
             }
         }
     }
 }
 
-
-impl<T> Asset<T> where T: Async
+impl<T> Asset<T>
+where
+    T: Async,
 {
     pub(crate) fn _new(state: AssetState<T>, persistance: AssetPersistance) -> Self
     {
-        Self { inner: Arc::new(RwLock::new(AssetData { state, persistance })) }
+        Self {
+            inner: Arc::new(RwLock::new(AssetData { state, persistance })),
+        }
     }
 
-    pub fn ptr_eq(&self, other: &Asset<T>) -> bool
-    {
-        Arc::ptr_eq(&self.inner, &other.inner)
-    }
-    pub fn strong_count(&self) -> usize
-    {
-        Arc::strong_count(&self.inner)
-    }
-    pub fn weak_count(&self) -> usize
-    {
-        Arc::weak_count(&self.inner)
-    }
+    pub fn ptr_eq(&self, other: &Asset<T>) -> bool { Arc::ptr_eq(&self.inner, &other.inner) }
+    pub fn strong_count(&self) -> usize { Arc::strong_count(&self.inner) }
+    pub fn weak_count(&self) -> usize { Arc::weak_count(&self.inner) }
 
     /// Returns a reference to the asset value only if it is in a loaded state.
     ///
     /// Unlike [`Self::get_or_placeholder`], this method never
     /// returns placeholder values for loading and error states.
-    pub fn get(&self) -> Option<AssetReadGuard<'_,T>>
+    pub fn get(&self) -> Option<AssetReadGuard<'_, T>>
     {
         let guard = self.inner.read().unwrap();
         match &guard.state
         {
-            AssetState::Loaded(_) => Some(AssetReadGuard{ guard:  RwLockReadGuard::map(guard, |g| g.state.as_loaded().unwrap())}),
+            AssetState::Loaded(_) => Some(AssetReadGuard {
+                guard: RwLockReadGuard::map(guard, |g| g.state.as_loaded().unwrap()),
+            }),
             _ => None,
         }
     }
 
     pub fn state(&self) -> AssetReadGuard<'_, AssetState<T>>
     {
-        AssetReadGuard{ guard: RwLockReadGuard::map(self.inner.read().unwrap(), |r| &r.state) }
+        AssetReadGuard {
+            guard: RwLockReadGuard::map(self.inner.read().unwrap(), |r| &r.state),
+        }
     }
     pub fn state_mut(&self) -> AssetWriteGuard<'_, AssetState<T>>
     {
-        AssetWriteGuard{ guard: RwLockWriteGuard::map(self.inner.write().unwrap(), |r| &mut r.state) }
+        AssetWriteGuard {
+            guard: RwLockWriteGuard::map(self.inner.write().unwrap(), |r| &mut r.state),
+        }
     }
 
     /// Returns a mutable reference to the asset value only if it is in a loaded state.
-    pub fn get_mut(&mut self) -> Option<AssetWriteGuard<'_,T>>
+    pub fn get_mut(&mut self) -> Option<AssetWriteGuard<'_, T>>
     {
         let guard = self.inner.write().unwrap();
         match &guard.state
         {
-            AssetState::Loaded(_) => Some(AssetWriteGuard{ guard: RwLockWriteGuard::map(guard, |g| g.state.as_loaded_mut().unwrap())}),
+            AssetState::Loaded(_) => Some(AssetWriteGuard {
+                guard: RwLockWriteGuard::map(guard, |g| g.state.as_loaded_mut().unwrap()),
+            }),
             _ => None,
         }
     }
@@ -167,7 +185,7 @@ impl<T> Asset<T> where T: Async
     /// Returns a reference to the asset value, using placeholder values for loading or error states if available.
     ///
     /// For access to only loaded assets, use [`Self::get`].
-    pub fn get_or_placeholder<'a>(&'a self) -> Option<AssetReadGuard<'a,T>>
+    pub fn get_or_placeholder<'a>(&'a self) -> Option<AssetReadGuard<'a, T>>
     {
         let guard = self.inner.read().unwrap();
         let guard = match &guard.state
@@ -183,10 +201,10 @@ impl<T> Asset<T> where T: Async
                 unsafe {
                     std::mem::transmute::<
                         RwLockReadGuard<'_, AssetData<T>>,
-                        RwLockReadGuard<'a, AssetData<T>>
+                        RwLockReadGuard<'a, AssetData<T>>,
                     >(loading_asset.inner.read().unwrap())
                 }
-            },
+            }
             AssetState::Loaded(_) => guard,
             AssetState::Error(_) =>
             {
@@ -199,12 +217,14 @@ impl<T> Asset<T> where T: Async
                 unsafe {
                     std::mem::transmute::<
                         RwLockReadGuard<'_, AssetData<T>>,
-                        RwLockReadGuard<'a, AssetData<T>>
+                        RwLockReadGuard<'a, AssetData<T>>,
                     >(loading_asset.inner.read().unwrap())
                 }
-            },
+            }
         };
-        Some(AssetReadGuard{ guard:  RwLockReadGuard::map(guard, |g| g.state.as_loaded().unwrap())})
+        Some(AssetReadGuard {
+            guard: RwLockReadGuard::map(guard, |g| g.state.as_loaded().unwrap()),
+        })
     }
 
     pub fn replace_state(&mut self, state: AssetState<T>) -> AssetState<T>
@@ -219,14 +239,19 @@ impl<T> Asset<T> where T: Async
     /// Create a weak reference that won't keep the asset loaded
     pub fn downgrade(&self) -> AssetWeak<T>
     {
-        AssetWeak{ inner: Arc::downgrade(&self.inner) }
+        AssetWeak {
+            inner: Arc::downgrade(&self.inner),
+        }
     }
 
     pub fn lifetime(&self) -> AssetLifetime
     {
         match &self.inner.read().unwrap().persistance
         {
-            AssetPersistance::Persistant(path) => Self::manager().inner.read().unwrap().values[path].lifetime(),
+            AssetPersistance::Persistant(path) =>
+            {
+                Self::manager().inner.read().unwrap().values[path].lifetime()
+            }
             AssetPersistance::Generated => AssetLifetime::ReferenceCounted,
         }
     }
@@ -250,22 +275,27 @@ impl<T> Asset<T> where T: Async
                     let e = w.values.get_mut(path).unwrap();
                     match e
                     {
-                        AssetStorage::Persistant(asset) => { *e = AssetStorage::ReferenceCounted(asset.downgrade()); },
-                        AssetStorage::ReferenceCounted(asset_weak) => { *e = AssetStorage::Persistant(asset_weak.upgrade().unwrap() /* The current asset have an arc to the value, so the weak one is still alive */); },
+                        AssetStorage::Persistant(asset) =>
+                        {
+                            *e = AssetStorage::ReferenceCounted(asset.downgrade());
+                        }
+                        AssetStorage::ReferenceCounted(asset_weak) =>
+                        {
+                            *e = AssetStorage::Persistant(
+                                asset_weak.upgrade().unwrap(), /* The current asset have an arc to the value, so the weak one is still alive */
+                            );
+                        }
                     }
                 }
-            },
-            AssetPersistance::Generated => {},
+            }
+            AssetPersistance::Generated =>
+            {}
         };
         drop(r);
         self
     }
 
-    pub fn manager() -> AssetManager<T>
-    {
-        Assets.manager()
-    }
-
+    pub fn manager() -> AssetManager<T> { Assets.manager() }
 
     pub fn is_loading(&self) -> bool { self.state().is_loading() }
     pub fn is_loaded(&self) -> bool { self.state().is_loaded() }
@@ -274,12 +304,17 @@ impl<T> Asset<T> where T: Async
 
     pub fn persistance(&self) -> AssetReadGuard<'_, AssetPersistance>
     {
-        AssetReadGuard{ guard: RwLockReadGuard::map(self.inner.read().unwrap(), |r| &r.persistance) }
+        AssetReadGuard {
+            guard: RwLockReadGuard::map(self.inner.read().unwrap(), |r| &r.persistance),
+        }
     }
     pub fn set_persistance(&self, persistance: AssetPersistance) -> &Self
     {
         let r = self.persistance();
-        if r.deref() == &persistance { return self; }
+        if r.deref() == &persistance
+        {
+            return self;
+        }
         drop(r);
 
         match persistance
@@ -291,9 +326,11 @@ impl<T> Asset<T> where T: Async
                 let manager = Self::manager();
                 let mut manager_w = manager.inner.write().unwrap();
                 w.persistance = AssetPersistance::Persistant(path.clone());
-                let old = manager_w.values.insert(path, AssetStorage::ReferenceCounted(weak));
+                let old = manager_w
+                    .values
+                    .insert(path, AssetStorage::ReferenceCounted(weak));
                 assert!(old.is_none());
-            },
+            }
             AssetPersistance::Generated =>
             {
                 let mut w = self.inner.write().unwrap();
@@ -310,7 +347,7 @@ impl<T> Asset<T> where T: Async
                 };
                 let old = manager_w.values.remove(&path);
                 assert!(old.is_some())
-            },
+            }
         }
         self
     }
@@ -326,7 +363,9 @@ impl<T> Asset<T> where T: Async
         }
     }
 }
-impl<T> Asset<T> where T: Async
+impl<T> Asset<T>
+where
+    T: Async,
 {
     /// Loads an asset from the specified file path.
     ///
@@ -334,60 +373,76 @@ impl<T> Asset<T> where T: Async
     /// to reload.
     ///
     /// If the asset is already successfully loaded, returns the existing asset instance.
-    pub fn load<P>(path: P) -> Asset<T> where P: AsRef<Path>, T: Load { Self::manager().load(path) }
-
+    pub fn load<P>(path: P) -> Asset<T>
+    where
+        P: AsRef<Path>,
+        T: Load,
+    {
+        Self::manager().load(path)
+    }
 
     /// Loads an asset or creates it if it doesn't exist.
     ///
     /// If the file exist and any error occur while reading it,
     /// the asset will be in an error state. (To avoid overriding a file)
-    pub fn load_or_create<P,F,O>(path: P, init: F) -> Asset<T>
-            where
-            P: AsRef<Path>,
-            F: FnOnce() -> O + 'static,
-            O: Into<AssetInit<T>>,
-            T: Load
+    pub fn load_or_create<P, F, O>(path: P, init: F) -> Asset<T>
+    where
+        P: AsRef<Path>,
+        F: FnOnce() -> O + 'static,
+        O: Into<AssetInit<T>>,
+        T: Load,
     {
         Self::manager().load_or_create(path, init)
     }
-    pub fn update_or_create<'a,P,I>(persistance: P, value: I) -> Asset<T>
-        where
+    pub fn update_or_create<'a, P, I>(persistance: P, value: I) -> Asset<T>
+    where
         P: Into<AssetPersistance<&'a Path>>,
-        I: Into<AssetInit<T>>
+        I: Into<AssetInit<T>>,
     {
         Self::manager().update_or_create(persistance, value)
     }
 
     pub fn error() -> Asset<T>
     {
-        Self::update_or_create(AssetPersistance::Generated, AssetState::Error(IoError::new("", FileError::custom("don't mind me, I'm always an error"))))
+        Self::update_or_create(
+            AssetPersistance::Generated,
+            AssetState::Error(IoError::new(
+                "",
+                FileError::custom("don't mind me, I'm always an error"),
+            )),
+        )
     }
 
-    pub fn get_or_generate<'a,P,F,O>(persistance: P, init: F) -> Asset<T>
-        where
+    pub fn get_or_generate<'a, P, F, O>(persistance: P, init: F) -> Asset<T>
+    where
         P: Into<AssetPersistance<&'a Path>>,
         F: FnOnce() -> O,
-        O: Into<AssetInit<T>>
+        O: Into<AssetInit<T>>,
     {
         Self::manager().get_or_generate(persistance, init)
     }
 
     /// Save the asset if it is Persistant
-    pub fn save(&mut self) -> IoResult where T: Save
+    pub fn save(&mut self) -> IoResult
+    where
+        T: Save,
     {
         let r = self.inner.read().unwrap();
         match &r.persistance
         {
-            AssetPersistance::Persistant(path) =>
+            AssetPersistance::Persistant(path) => match &r.state
             {
-                match &r.state
+                AssetState::Loading =>
                 {
-                    AssetState::Loading => Err(IoError::new(path, EncodeError::NotLoaded).when_writing()),
-                    AssetState::Loaded(value) => value.save(path),
-                    AssetState::Error(io_error) => Err(io_error.clone()),
+                    Err(IoError::new(path, EncodeError::NotLoaded).when_writing())
                 }
+                AssetState::Loaded(value) => value.save(path),
+                AssetState::Error(io_error) => Err(io_error.clone()),
             },
-            AssetPersistance::Generated => Err(IoError::new("", EncodeError::NotPersistant).when_writing()),
+            AssetPersistance::Generated =>
+            {
+                Err(IoError::new("", EncodeError::NotPersistant).when_writing())
+            }
         }
     }
 
@@ -395,13 +450,18 @@ impl<T> Asset<T> where T: Async
     ///
     /// If the asset is not persistant, return Ok.
     pub fn hot_reload(&mut self) -> IoResult<Option<AssetState<T>>>
-        where T: Load
+    where
+        T: Load,
     {
         if self.is_persistant()
         {
             let value = self.load_from_source();
-            Ok(Some(std::mem::replace(self.state_mut().deref_mut(), value.into())))
-        }else
+            Ok(Some(std::mem::replace(
+                self.state_mut().deref_mut(),
+                value.into(),
+            )))
+        }
+        else
         {
             Ok(None)
         }
@@ -411,7 +471,8 @@ impl<T> Asset<T> where T: Async
     ///
     /// If the asset is not persistant, return an error.
     pub fn load_from_source(&self) -> IoResult<T>
-        where T: Load
+    where
+        T: Load,
     {
         match self.persistance().deref()
         {
@@ -422,57 +483,60 @@ impl<T> Asset<T> where T: Async
 }
 
 #[derive(Debug)]
-pub struct AssetWeak<T> where T: Async
+pub struct AssetWeak<T>
+where
+    T: Async,
 {
     inner: Weak<RwLock<AssetData<T>>>,
 }
-impl<T> Clone for AssetWeak<T> where T: Async
+impl<T> Clone for AssetWeak<T>
+where
+    T: Async,
 {
-    fn clone(&self) -> Self {
-        Self { inner: self.inner.clone() }
+    fn clone(&self) -> Self
+    {
+        Self {
+            inner: self.inner.clone(),
+        }
     }
 }
-impl<T> Default for AssetWeak<T> where T: Async
+impl<T> Default for AssetWeak<T>
+where
+    T: Async,
 {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
-impl<T> AssetWeak<T> where T: Async
+impl<T> AssetWeak<T>
+where
+    T: Async,
 {
-    pub const fn new() -> Self { Self { inner: Weak::new() }}
+    pub const fn new() -> Self { Self { inner: Weak::new() } }
     pub fn upgrade(&self) -> Option<Asset<T>>
     {
         match self.inner.upgrade()
         {
-            Some(value) => Some(Asset{ inner: value }),
+            Some(value) => Some(Asset { inner: value }),
             None => None,
         }
     }
 
-    pub fn ptr_eq(&self, other: &AssetWeak<T>) -> bool
-    {
-        Weak::ptr_eq(&self.inner, &other.inner)
-    }
-    pub fn strong_count(&self) -> usize
-    {
-        Weak::strong_count(&self.inner)
-    }
-    pub fn weak_count(&self) -> usize
-    {
-        Weak::weak_count(&self.inner)
-    }
+    pub fn ptr_eq(&self, other: &AssetWeak<T>) -> bool { Weak::ptr_eq(&self.inner, &other.inner) }
+    pub fn strong_count(&self) -> usize { Weak::strong_count(&self.inner) }
+    pub fn weak_count(&self) -> usize { Weak::weak_count(&self.inner) }
 }
 
-
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub(crate) struct AssetData<T> where T: Async
+pub(crate) struct AssetData<T>
+where
+    T: Async,
 {
     pub(crate) state: AssetState<T>,
     pub(crate) persistance: AssetPersistance,
 }
 
-impl<T> Drop for AssetData<T>  where T: Async
+impl<T> Drop for AssetData<T>
+where
+    T: Async,
 {
     fn drop(&mut self)
     {
@@ -480,15 +544,21 @@ impl<T> Drop for AssetData<T>  where T: Async
         {
             AssetPersistance::Persistant(path) =>
             {
-                Asset::<T>::manager().inner.write().unwrap().values.remove(path);
-            },
-            AssetPersistance::Generated => {},
+                Asset::<T>::manager()
+                    .inner
+                    .write()
+                    .unwrap()
+                    .values
+                    .remove(path);
+            }
+            AssetPersistance::Generated =>
+            {}
         }
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum AssetPersistance<P=PathBuf>
+pub enum AssetPersistance<P = PathBuf>
 {
     Persistant(P),
     Generated,
@@ -501,30 +571,35 @@ impl AssetPersistance
     pub const fn is_persistant(&self) -> bool { matches!(self, Self::Persistant(_)) }
     pub const fn is_not_persistant(&self) -> bool { !self.is_persistant() }
 }
-impl<P> From<P> for AssetPersistance<PathBuf> where P: Into<PathBuf>
+impl<P> From<P> for AssetPersistance<PathBuf>
+where
+    P: Into<PathBuf>,
 {
-    fn from(value: P) -> Self {
-        Self::Persistant(value.into())
-    }
+    fn from(value: P) -> Self { Self::Persistant(value.into()) }
 }
-impl<'a,P> From<&'a P> for AssetPersistance<&'a Path> where P: AsRef<Path>
+impl<'a, P> From<&'a P> for AssetPersistance<&'a Path>
+where
+    P: AsRef<Path>,
 {
-    fn from(value: &'a P) -> Self {
-        Self::Persistant(value.as_ref())
-    }
+    fn from(value: &'a P) -> Self { Self::Persistant(value.as_ref()) }
 }
 
 #[non_exhaustive]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum AssetState<T> where T: Async
+pub enum AssetState<T>
+where
+    T: Async,
 {
     Loading,
     Loaded(T),
     Error(IoError),
 }
-impl<T> From<IoResult<T>> for AssetState<T> where T: Async
+impl<T> From<IoResult<T>> for AssetState<T>
+where
+    T: Async,
 {
-    fn from(value: IoResult<T>) -> Self {
+    fn from(value: IoResult<T>) -> Self
+    {
         match value
         {
             Ok(loaded) => Self::Loaded(loaded),
@@ -532,7 +607,9 @@ impl<T> From<IoResult<T>> for AssetState<T> where T: Async
         }
     }
 }
-impl<T> AssetState<T> where T: Async
+impl<T> AssetState<T>
+where
+    T: Async,
 {
     pub const fn is_loading(&self) -> bool { matches!(self, Self::Loading) }
     pub const fn is_loaded(&self) -> bool { matches!(self, Self::Loaded(_)) }
@@ -573,7 +650,6 @@ impl<T> AssetState<T> where T: Async
     }
 }
 
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Default)]
 pub enum AssetLifetime
 {
@@ -582,42 +658,45 @@ pub enum AssetLifetime
     Persistant,
 }
 
-
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct AssetInit<T> where T: Async
+pub struct AssetInit<T>
+where
+    T: Async,
 {
-    pub state : AssetState<T>,
+    pub state: AssetState<T>,
     /// Note, if the asset is generated, then it will always have a ReferenceCounted lifetime.
     pub lifetime: AssetLifetime,
 }
-impl<T> AssetInit<T> where T: Async
+impl<T> AssetInit<T>
+where
+    T: Async,
 {
     pub const fn with_state(state: AssetState<T>) -> Self
     {
-        Self { state, lifetime: AssetLifetime::ReferenceCounted }
+        Self {
+            state,
+            lifetime: AssetLifetime::ReferenceCounted,
+        }
     }
-    pub const fn new(value: T) -> Self
-    {
-        Self::with_state(AssetState::Loaded(value))
-    }
+    pub const fn new(value: T) -> Self { Self::with_state(AssetState::Loaded(value)) }
 }
-impl<T> Default for AssetInit<T> where T: Async + Default
+impl<T> Default for AssetInit<T>
+where
+    T: Async + Default,
 {
-    fn default() -> Self {
-        Self::new(T::default())
-    }
+    fn default() -> Self { Self::new(T::default()) }
 }
-impl<T> From<T> for AssetInit<T> where T: Async
+impl<T> From<T> for AssetInit<T>
+where
+    T: Async,
 {
-    fn from(value: T) -> Self {
-        Self::new(value)
-    }
+    fn from(value: T) -> Self { Self::new(value) }
 }
-impl<T> From<AssetState<T>> for AssetInit<T> where T: Async
+impl<T> From<AssetState<T>> for AssetInit<T>
+where
+    T: Async,
 {
-    fn from(value: AssetState<T>) -> Self {
-        Self::with_state(value)
-    }
+    fn from(value: AssetState<T>) -> Self { Self::with_state(value) }
 }
 
 /*

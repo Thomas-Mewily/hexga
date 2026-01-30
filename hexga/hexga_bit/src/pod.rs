@@ -47,10 +47,10 @@ map_on_number!(
 
 unsafe impl Pod for () {}
 unsafe impl<T: Pod> Pod for Wrapping<T> {}
-unsafe impl<T: Pod> Pod for core::num::Saturating<T>{}
+unsafe impl<T: Pod> Pod for core::num::Saturating<T> {}
 
 unsafe impl<T: ?Sized + 'static> Pod for PhantomData<T> {}
 unsafe impl Pod for PhantomPinned {}
 unsafe impl<T: Pod> Pod for core::mem::ManuallyDrop<T> {}
 
-unsafe impl<T,const N: usize> Pod for [T;N] where T: Pod {}
+unsafe impl<T, const N: usize> Pod for [T; N] where T: Pod {}

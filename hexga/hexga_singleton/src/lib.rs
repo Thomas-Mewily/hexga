@@ -1,2 +1,2 @@
 #[allow(dead_code)]
-fn no_longer_used(){}
+fn no_longer_used() {}

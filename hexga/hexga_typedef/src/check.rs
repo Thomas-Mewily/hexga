@@ -1,4 +1,4 @@
-//! compile time to check if the feature are correctly enable 
+//! compile time to check if the feature are correctly enable
 
 // Ensure that exactly one float flag is enabled
 #[cfg(not(any(
@@ -15,13 +15,16 @@ compile_error!(
     all(feature = "float_are_32_bits", feature = "float_are_64_bits"),
     all(feature = "float_are_32_bits", feature = "float_are_size_bits"),
     all(feature = "float_are_64_bits", feature = "float_are_size_bits"),
-    all(feature = "float_are_32_bits", feature = "float_are_64_bits", feature = "float_are_size_bits")
+    all(
+        feature = "float_are_32_bits",
+        feature = "float_are_64_bits",
+        feature = "float_are_size_bits"
+    )
 ))]
 compile_error!(
     "Multiple float flags enabled. Please enable only one of: \
      `float_are_32_bits`, `float_are_64_bits`, or `float_are_size_bits`."
 );
-
 
 // None enabled
 #[cfg(not(any(

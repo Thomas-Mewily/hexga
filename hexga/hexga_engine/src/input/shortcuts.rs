@@ -19,13 +19,15 @@ impl KeyboardShortcuts for AppKeyboard
 
     fn is_copy(&self) -> bool
     {
-        ((KeyCode::ControlLeft.is_down() || KeyCode::ControlRight.is_down()) && KeyCode::C.is_pressed())
-        || KeyCode::Copy.is_pressed()
+        ((KeyCode::ControlLeft.is_down() || KeyCode::ControlRight.is_down())
+            && KeyCode::C.is_pressed())
+            || KeyCode::Copy.is_pressed()
     }
 
     fn is_paste(&self) -> bool
     {
-        ((KeyCode::ControlLeft.is_down() || KeyCode::ControlRight.is_down()) && KeyCode::V.is_pressed())
-        || KeyCode::Paste.is_pressed()
+        ((KeyCode::ControlLeft.is_down() || KeyCode::ControlRight.is_down())
+            && KeyCode::V.is_pressed())
+            || KeyCode::Paste.is_pressed()
     }
 }

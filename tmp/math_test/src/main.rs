@@ -3,11 +3,19 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 
-
-use hexga::{generational::{gen_id::{GenIDOf, Generation}, gen_vec::GenVecOf}, prelude::*};
+use hexga::{
+    generational::{
+        gen_id::{GenIDOf, Generation},
+        gen_vec::GenVecOf,
+    },
+    prelude::*,
+};
 use hexga_math::bijection::*;
 
-fn dbg_mix<S,F>(src: S, dest:S, coef:F) where S:Mix<F> + Copy + Debug, F:Float
+fn dbg_mix<S, F>(src: S, dest: S, coef: F)
+where
+    S: Mix<F> + Copy + Debug,
+    F: Float,
 {
     dbg!(&src);
     dbg!(&dest);
@@ -18,13 +26,11 @@ fn x()
 {
     let v = vec2(0., 1.);
 
-
     let size = point2(20, 40);
     let mut g = size.to_grid(|v| -2);
     let mut g2 = size.to_grid(|v| v.sum_axis());
     let m = g.max(g2);
     println!("{}", m);
-
 
     dbg!(v);
     dbg!(m);
@@ -40,18 +46,16 @@ fn x()
     println!();
     println!();
 
-
     let x = 10.to_f32();
-    let x = [1i32,2,3].to_f32();
+    let x = [1i32, 2, 3].to_f32();
 
-    let a = max([1,5], [2,3]);
+    let a = max([1, 5], [2, 3]);
     dbg!(a);
     println!("hello world");
     dbg_mix(0., 1., 1.);
     dbg_mix(0., 1., 0.);
     dbg_mix(0., 1., 0.5);
 }
-
 
 fn img()
 {
@@ -70,8 +74,7 @@ fn img()
 
 fn img_test()
 {
-    let i = Image::from_fn_coef((1024, 1024),
-        |v|
+    let i = Image::from_fn_coef((1024, 1024), |v| {
         if (v - 0.5.splat2()).length() <= 0.5
         {
             ColorU8::WHITE
@@ -80,12 +83,12 @@ fn img_test()
         {
             ColorU8::BLACK
         }
-    ).save("./image_test.png").unwrap();
+    })
+    .save("./image_test.png")
+    .unwrap();
 }
 
 use std::{num::Saturating, ops::*};
-
-
 
 #[math_vec]
 pub struct DamageOf2<T>
@@ -94,19 +97,17 @@ pub struct DamageOf2<T>
     magic: T,
 }
 
-
-
 #[math_vec]
-pub struct DamageArray<T, const N:usize>
+pub struct DamageArray<T, const N: usize>
 {
-    boum:[T;N],
+    boum: [T; N],
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Foo
 {
-    bar:i32,
-    age:i32,
+    bar: i32,
+    age: i32,
 }
 
 #[math_vec]
@@ -118,7 +119,6 @@ pub struct DamageOf<T>
     melee: T,
 }
 type Damage = DamageOf<i32>;
-
 
 #[derive(Serialize, Deserialize)]
 pub enum DamageVersion
@@ -134,7 +134,6 @@ struct Linear<T>
     coef: T,
 }
 
-
 fn x2()
 {
     // A + Bx
@@ -144,16 +143,23 @@ fn x2()
     let f = &x.x;
 
     println!("{}", DamageOf::<u8>::ONE.to_ron().unwrap());
-    println!("{}", DamageOf::<u8>::from_ron("(melee:18,physic:42)").unwrap());
-    println!("{}", <DamageOf::<u8> as WithDefault<u8,ConstantOne<u8>>>::WithDefault::from_ron("(physic:1,melee:1)").unwrap().into_value());
+    println!(
+        "{}",
+        DamageOf::<u8>::from_ron("(melee:18,physic:42)").unwrap()
+    );
+    println!(
+        "{}",
+        <DamageOf::<u8> as WithDefault<u8, ConstantOne<u8>>>::WithDefault::from_ron(
+            "(physic:1,melee:1)"
+        )
+        .unwrap()
+        .into_value()
+    );
 
     //println!("{}", DamageVersion::Version2(DamageOf::MAX).to_ron().unwrap());
 
-
     //dbg!()
     //println!("{}", <Damage::<u8> as WithDefault<u8,ConstantMax<u8>>>::WithDefault::from_ron("(physic:1,melee:1)").unwrap().into_value());
-
-
 
     //println!("{}", DamageOf::<u8>::from_ron("(1, 1, 1)").unwrap());
 
@@ -184,7 +190,7 @@ pub enum Color
     Yellow, // = 6
     RedAndBlue = Color::Red | Self::Blue,
     Purple, // 7
-    GreenAndYellowAndPurple = ((Color::Yellow | Self::Purple)) | Self::Green,
+    GreenAndYellowAndPurple = (Color::Yellow | Self::Purple) | Self::Green,
 }
 
 fn color()
@@ -200,14 +206,12 @@ fn color()
     println!("hello world");
 }
 
-
-pub type Grid2<C, Idx, const N: usize> = Bijection<C,BijectionPointToUsize<Idx,N>>;
+pub type Grid2<C, Idx, const N: usize> = Bijection<C, BijectionPointToUsize<Idx, N>>;
 
 fn bi()
 {
-    let v = vec![1,2,3,4,5,6];
+    let v = vec![1, 2, 3, 4, 5, 6];
     let s: &[i32] = &*v;
-
 
     dbg!(&s.get(0));
     dbg!(&Bijection::from_values_and_bijection(s, BijectionRev::from(s)).get(0usize));
@@ -220,10 +224,9 @@ fn bi()
     // grid type ?
 }
 
-
 fn grid_bijection()
 {
-    let slice: &[char] = &['a','b','c','d','e','f'];
+    let slice: &[char] = &['a', 'b', 'c', 'd', 'e', 'f'];
 
     assert_eq!(slice.bijection_identity().get(0usize), Some(&'a'));
     assert_eq!(slice.bijection_rev().get(0usize), Some(&'f'));
@@ -235,7 +238,7 @@ fn grid_bijection()
     println!("{:?}", it);
 
     let grid_3x2 = slice.with_bijection(BijectionPointToUsize::new(point2(3, 2)));
-    assert_eq!(grid_3x2.get(point2(0,1)), Some(&'d'));
+    assert_eq!(grid_3x2.get(point2(0, 1)), Some(&'d'));
     let it = grid_3x2.into_iter().collect::<Vec<_>>();
     println!("{:?}", it);
 }
@@ -249,15 +252,11 @@ fn gen_vec_view()
     gen_vec.get_entry_from_index(0);
     gen_vec.*/
 
-    let mut gen_vec = [1i32,2,3].to_genvec();
+    let mut gen_vec = [1i32, 2, 3].to_genvec();
     //let view = gen_vec.as_view();
     //let view_mut = gen_vec.as_mut_view();
     //println!("{:?}", gen_vec);
     //gen_vec.get_entry_from_index(0);
-
 }
 
-fn main()
-{
-    gen_vec_view()
-}
+fn main() { gen_vec_view() }

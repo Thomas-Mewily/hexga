@@ -1,14 +1,11 @@
 use super::*;
 
-
 pub mod prelude
 {
     pub use super::{
-        ButtonToggle,ButtonToggleExtension,
-        ButtonRepeat,ButtonRepeatExtension,
-        ButtonState,ButtonStateExtension,
-        ButtonStateEvolution,
-        ButtonEvolution,ButtonEvolutionExtension,
+        ButtonEvolution, ButtonEvolutionExtension, ButtonRepeat, ButtonRepeatExtension,
+        ButtonState, ButtonStateEvolution, ButtonStateExtension, ButtonToggle,
+        ButtonToggleExtension,
     };
 }
 
@@ -43,7 +40,6 @@ impl From<ButtonToggle> for bool
 {
     fn from(value: ButtonToggle) -> Self { value.is_toggle() }
 }
-
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
@@ -96,14 +92,22 @@ impl ButtonRepeat
 }
 impl From<bool> for ButtonRepeat
 {
-    fn from(value: bool) -> Self { if value { Self::Repeated } else { Self::NotRepeated } }
+    fn from(value: bool) -> Self
+    {
+        if value
+        {
+            Self::Repeated
+        }
+        else
+        {
+            Self::NotRepeated
+        }
+    }
 }
 impl From<ButtonRepeat> for bool
 {
     fn from(value: ButtonRepeat) -> Self { value.is_repeated() }
 }
-
-
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum ButtonStateEvolution
@@ -132,7 +136,7 @@ impl Evolution<ButtonState> for ButtonStateEvolution
     fn old_value(&self) -> ButtonState { matches!(self, Self::Down | Self::Released).into() }
 }
 
-pub trait ButtonEvolutionExtension : Evolution<ButtonState>
+pub trait ButtonEvolutionExtension: Evolution<ButtonState>
 {
     fn is_down(&self) -> bool;
     fn was_down(&self) -> bool;
@@ -162,7 +166,9 @@ pub trait ButtonEvolutionExtension : Evolution<ButtonState>
     }
 }
 
-impl<T> ButtonEvolutionExtension for T where T:Evolution<ButtonState>
+impl<T> ButtonEvolutionExtension for T
+where
+    T: Evolution<ButtonState>,
 {
     fn is_down(&self) -> bool { self.value().is_down() }
     fn was_down(&self) -> bool { self.old_value().is_down() }

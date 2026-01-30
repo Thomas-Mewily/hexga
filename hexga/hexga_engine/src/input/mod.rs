@@ -13,7 +13,7 @@ pub use binding::*;
 mod shortcuts;
 pub use shortcuts::*;
 
-pub fn input() -> impl DerefMut<Target=AppInput> { APP.get_mut().guard_map_mut(|a| a.input()) }
+pub fn input() -> impl DerefMut<Target = AppInput> { APP.get_mut().guard_map_mut(|a| a.input()) }
 
 pub mod prelude
 {
@@ -23,5 +23,6 @@ pub mod prelude
     pub(crate) use super::*;
 
     #[allow(hidden_glob_reexports)]
-    pub(crate) mod prelude {}
+    pub(crate) mod prelude
+    {}
 }

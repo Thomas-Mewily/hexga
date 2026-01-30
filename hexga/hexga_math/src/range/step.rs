@@ -1,59 +1,102 @@
 use super::*;
 
-
 pub trait RangeStepExtension
 {
-    type Output : Iterator<Item = Self::Item> + DoubleEndedIterator + FusedIterator;
+    type Output: Iterator<Item = Self::Item> + DoubleEndedIterator + FusedIterator;
     type Item;
     /// Should emit an empty iterator if step is zero (not well defined)
     fn step(self, step: Self::Item) -> Self::Output;
-    fn step_by_one(self) -> Self::Output where Self : Sized, Self::Item : One { self.step(Self::Item::ONE) }
+    fn step_by_one(self) -> Self::Output
+    where
+        Self: Sized,
+        Self::Item: One,
+    {
+        self.step(Self::Item::ONE)
+    }
 }
 
-
 // Todo : Remove once the Step trait will be stabilized
-pub trait RangeStepIter : Primitive
+pub trait RangeStepIter: Primitive
 {
     // Using Range, last value is excluded
-    fn iter(max_excluded : Self) -> RangeStep<Self> { RangeStep { idx: Self::ZERO, end: max_excluded, step: Self::ONE } }
+    fn iter(max_excluded: Self) -> RangeStep<Self>
+    {
+        RangeStep {
+            idx: Self::ZERO,
+            end: max_excluded,
+            step: Self::ONE,
+        }
+    }
 }
 impl<T> RangeStepIter for T where T: Primitive {}
 
-pub trait RangeDefaultStepExtension : RangeDefault where Range<Self> : RangeStepExtension
+pub trait RangeDefaultStepExtension: RangeDefault
+where
+    Range<Self>: RangeStepExtension,
 {
     /// Step using the [`RangeDefault`] : `Self::RANGE_MIN..Self::MAX`
-    fn step(self, step: <Range::<Self> as RangeStepExtension>::Item) -> <Range::<Self> as RangeStepExtension>::Output;
+    fn step(
+        self,
+        step: <Range<Self> as RangeStepExtension>::Item,
+    ) -> <Range<Self> as RangeStepExtension>::Output;
 }
-impl<T> RangeDefaultStepExtension for T where T: RangeDefault, Range<T> : RangeStepExtension
+impl<T> RangeDefaultStepExtension for T
+where
+    T: RangeDefault,
+    Range<T>: RangeStepExtension,
 {
-    fn step(self, step: <Range::<Self> as RangeStepExtension>::Item) -> <Range::<Self> as RangeStepExtension>::Output { (Self::RANGE_MIN..Self::RANGE_MAX).step(step) }
+    fn step(
+        self,
+        step: <Range<Self> as RangeStepExtension>::Item,
+    ) -> <Range<Self> as RangeStepExtension>::Output
+    {
+        (Self::RANGE_MIN..Self::RANGE_MAX).step(step)
+    }
 }
-pub trait RangeDefaultStepInclusiveExtension : RangeDefault where RangeInclusive<Self> : RangeStepExtension
+pub trait RangeDefaultStepInclusiveExtension: RangeDefault
+where
+    RangeInclusive<Self>: RangeStepExtension,
 {
     /// Step using the [`RangeDefault`] : `Self::RANGE_MIN..=Self::MAX`
-    fn step_inclusive(self, step: <RangeInclusive::<Self> as RangeStepExtension>::Item) -> <RangeInclusive::<Self> as RangeStepExtension>::Output;
+    fn step_inclusive(
+        self,
+        step: <RangeInclusive<Self> as RangeStepExtension>::Item,
+    ) -> <RangeInclusive<Self> as RangeStepExtension>::Output;
 }
-impl<T> RangeDefaultStepInclusiveExtension for T where T: RangeDefault, RangeInclusive<T> : RangeStepExtension
+impl<T> RangeDefaultStepInclusiveExtension for T
+where
+    T: RangeDefault,
+    RangeInclusive<T>: RangeStepExtension,
 {
-    fn step_inclusive(self, step: <RangeInclusive::<Self> as RangeStepExtension>::Item) -> <RangeInclusive::<Self> as RangeStepExtension>::Output { (Self::RANGE_MIN..=Self::RANGE_MAX).step(step) }
+    fn step_inclusive(
+        self,
+        step: <RangeInclusive<Self> as RangeStepExtension>::Item,
+    ) -> <RangeInclusive<Self> as RangeStepExtension>::Output
+    {
+        (Self::RANGE_MIN..=Self::RANGE_MAX).step(step)
+    }
 }
 
 // Not [`Copy`] because Range<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct RangeStep<T> where T: Primitive
+pub struct RangeStep<T>
+where
+    T: Primitive,
 {
-    pub idx  : T,
-    pub end  : T,
-    pub step : T,
+    pub idx: T,
+    pub end: T,
+    pub step: T,
 }
 
-
-impl<T> Iterator for RangeStep<T> where T: Primitive
+impl<T> Iterator for RangeStep<T>
+where
+    T: Primitive,
 {
     type Item = T;
-    fn next(&mut self) -> Option<Self::Item> {
+    fn next(&mut self) -> Option<Self::Item>
+    {
         if self.idx <= self.end
         {
             let val = self.idx;
@@ -62,18 +105,33 @@ impl<T> Iterator for RangeStep<T> where T: Primitive
             match T::PRIMITIVE_TYPE
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
-                NumberType::Float => if self.idx == val { None } else { Some(val) },
-                NumberType::Bool => unsafe { unreachable_unchecked() },
+                NumberType::Float =>
+                {
+                    if self.idx == val
+                    {
+                        None
+                    }
+                    else
+                    {
+                        Some(val)
+                    }
+                }
+                NumberType::Bool =>
+                unsafe { unreachable_unchecked() },
             }
-        } else
+        }
+        else
         {
             None
         }
     }
 }
-impl<T> DoubleEndedIterator for RangeStep<T> where T: Primitive
+impl<T> DoubleEndedIterator for RangeStep<T>
+where
+    T: Primitive,
 {
-    fn next_back(&mut self) -> Option<Self::Item> {
+    fn next_back(&mut self) -> Option<Self::Item>
+    {
         if self.end >= self.idx
         {
             let val = self.end;
@@ -83,10 +141,22 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T: Primitive
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
-                NumberType::Float => if self.end == val { None } else { Some(val) },
-                NumberType::Bool => unsafe { unreachable_unchecked() },
+                NumberType::Float =>
+                {
+                    if self.end == val
+                    {
+                        None
+                    }
+                    else
+                    {
+                        Some(val)
+                    }
+                }
+                NumberType::Bool =>
+                unsafe { unreachable_unchecked() },
             }
-        } else
+        }
+        else
         {
             match T::PRIMITIVE_TYPE
             {
@@ -100,51 +170,64 @@ impl<T> DoubleEndedIterator for RangeStep<T> where T: Primitive
                         self.step = T::ZERO;
                         self.end = self.idx;
                         Some(self.idx)
-                    } else { None }
-                },
-                NumberType::Bool => unsafe { unreachable_unchecked() },
+                    }
+                    else
+                    {
+                        None
+                    }
+                }
+                NumberType::Bool =>
+                unsafe { unreachable_unchecked() },
             }
         }
     }
 }
-impl<T> FusedIterator for RangeStep<T> where T: Primitive  {}
+impl<T> FusedIterator for RangeStep<T> where T: Primitive {}
 
-
-impl<T> RangeStepExtension for Range<T> where T: Primitive
+impl<T> RangeStepExtension for Range<T>
+where
+    T: Primitive,
 {
     type Output = RangeStep<T>;
     type Item = T;
     fn step(self, step: T) -> Self::Output
     {
-        RangeStep { idx: self.start, end: self.end - step, step }
+        RangeStep {
+            idx: self.start,
+            end: self.end - step,
+            step,
+        }
     }
 }
-impl<T> RangeStepExtension for RangeTo<T> where T: Primitive + RangeDefault
+impl<T> RangeStepExtension for RangeTo<T>
+where
+    T: Primitive + RangeDefault,
 {
     type Output = RangeStep<T>;
     type Item = T;
-    fn step(self, step: T) -> Self::Output
-    {
-        (T::RANGE_MIN..self.end).step(step)
-    }
+    fn step(self, step: T) -> Self::Output { (T::RANGE_MIN..self.end).step(step) }
 }
-
 
 // Not [`Copy`] because RangeInclusive<T> don't impl Copy because iterator are used by reference most of the time
 // See https://stackoverflow.com/questions/43416914/why-doesnt-opsranget-implement-copy-even-if-t-is-copy
 #[derive(Clone, PartialEq, Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct RangeStepInclusive<T> where T: Primitive
+pub struct RangeStepInclusive<T>
+where
+    T: Primitive,
 {
-    pub idx  : T,
-    pub end  : T,
-    pub step : T,
+    pub idx: T,
+    pub end: T,
+    pub step: T,
 }
 
-impl<T> Iterator for RangeStepInclusive<T> where T: Primitive
+impl<T> Iterator for RangeStepInclusive<T>
+where
+    T: Primitive,
 {
     type Item = T;
-    fn next(&mut self) -> Option<Self::Item> {
+    fn next(&mut self) -> Option<Self::Item>
+    {
         if self.idx <= self.end
         {
             let val = self.idx;
@@ -154,10 +237,22 @@ impl<T> Iterator for RangeStepInclusive<T> where T: Primitive
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
-                NumberType::Float => if self.idx == val { None } else { Some(val) },
-                NumberType::Bool => unsafe { unreachable_unchecked() },
+                NumberType::Float =>
+                {
+                    if self.idx == val
+                    {
+                        None
+                    }
+                    else
+                    {
+                        Some(val)
+                    }
+                }
+                NumberType::Bool =>
+                unsafe { unreachable_unchecked() },
             }
-        } else
+        }
+        else
         {
             match T::PRIMITIVE_TYPE
             {
@@ -171,16 +266,24 @@ impl<T> Iterator for RangeStepInclusive<T> where T: Primitive
                         self.step = T::ZERO;
                         self.idx = self.end;
                         Some(self.end)
-                    } else { None }
-                },
-                NumberType::Bool => unsafe { unreachable_unchecked() },
+                    }
+                    else
+                    {
+                        None
+                    }
+                }
+                NumberType::Bool =>
+                unsafe { unreachable_unchecked() },
             }
         }
     }
 }
-impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T: Primitive
+impl<T> DoubleEndedIterator for RangeStepInclusive<T>
+where
+    T: Primitive,
 {
-    fn next_back(&mut self) -> Option<Self::Item> {
+    fn next_back(&mut self) -> Option<Self::Item>
+    {
         if self.end >= self.idx
         {
             let val = self.end;
@@ -190,10 +293,22 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T: Primitive
             {
                 NumberType::IntegerUnsigned | NumberType::IntegerSigned => Some(val),
                 // Reached the limit of floating-point precision
-                NumberType::Float => if self.end == val { return None } else { Some(val) },
-                NumberType::Bool => unsafe { unreachable_unchecked() },
+                NumberType::Float =>
+                {
+                    if self.end == val
+                    {
+                        return None;
+                    }
+                    else
+                    {
+                        Some(val)
+                    }
+                }
+                NumberType::Bool =>
+                unsafe { unreachable_unchecked() },
             }
-        } else
+        }
+        else
         {
             match T::PRIMITIVE_TYPE
             {
@@ -207,45 +322,52 @@ impl<T> DoubleEndedIterator for RangeStepInclusive<T> where T: Primitive
                         self.step = T::ZERO;
                         self.end = self.idx;
                         Some(self.idx)
-                    } else { None }
-                },
-                NumberType::Bool => unsafe { unreachable_unchecked() },
+                    }
+                    else
+                    {
+                        None
+                    }
+                }
+                NumberType::Bool =>
+                unsafe { unreachable_unchecked() },
             }
         }
     }
 }
-impl<T> FusedIterator for RangeStepInclusive<T> where T: Primitive  {}
+impl<T> FusedIterator for RangeStepInclusive<T> where T: Primitive {}
 
-
-impl<T> RangeStepExtension for RangeFrom<T> where T: Primitive + RangeDefault
+impl<T> RangeStepExtension for RangeFrom<T>
+where
+    T: Primitive + RangeDefault,
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
-    fn step(self, step: T) -> Self::Output
-    {
-        (self.start..=T::RANGE_MAX).step(step)
-    }
+    fn step(self, step: T) -> Self::Output { (self.start..=T::RANGE_MAX).step(step) }
 }
-impl<T> RangeStepExtension for RangeInclusive<T> where T: Primitive
+impl<T> RangeStepExtension for RangeInclusive<T>
+where
+    T: Primitive,
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
     fn step(self, step: T) -> Self::Output
     {
         let (start, end) = self.into_inner();
-        RangeStepInclusive { idx: start, end, step }
+        RangeStepInclusive {
+            idx: start,
+            end,
+            step,
+        }
     }
 }
-impl<T> RangeStepExtension for RangeToInclusive<T> where T: Primitive + RangeDefault
+impl<T> RangeStepExtension for RangeToInclusive<T>
+where
+    T: Primitive + RangeDefault,
 {
     type Output = RangeStepInclusive<T>;
     type Item = T;
-    fn step(self, step: T) -> Self::Output
-    {
-        (T::RANGE_MIN..=self.end).step(step)
-    }
+    fn step(self, step: T) -> Self::Output { (T::RANGE_MIN..=self.end).step(step) }
 }
-
 
 #[cfg(test)]
 mod range_test
@@ -255,53 +377,53 @@ mod range_test
     #[test]
     fn range()
     {
-        assert_eq!((-2..5).step(1).to_vec(), vec![-2,-1,0,1,2,3,4]);
+        assert_eq!((-2..5).step(1).to_vec(), vec![-2, -1, 0, 1, 2, 3, 4]);
     }
 
     #[test]
     fn range_rev()
     {
-        assert_eq!((-2..5).step(1).rev().to_vec(), vec![4,3,2,1,0,-1,-2]);
+        assert_eq!((-2..5).step(1).rev().to_vec(), vec![4, 3, 2, 1, 0, -1, -2]);
     }
 
     #[test]
     fn range_inclusive()
     {
-        assert_eq!((-2..=5).step(1).to_vec(), vec![-2,-1,0,1,2,3,4,5]);
+        assert_eq!((-2..=5).step(1).to_vec(), vec![-2, -1, 0, 1, 2, 3, 4, 5]);
     }
 
     #[test]
     fn range_inclusive_rev()
     {
-        assert_eq!((-2..=5).step(1).rev().to_vec(), vec![5,4,3,2,1,0,-1,-2]);
+        assert_eq!(
+            (-2..=5).step(1).rev().to_vec(),
+            vec![5, 4, 3, 2, 1, 0, -1, -2]
+        );
     }
-
-
 
     #[test]
     fn range_float()
     {
-        assert_eq!((0.5..2.5).step(1.).to_vec(), vec![0.5,1.5]);
+        assert_eq!((0.5..2.5).step(1.).to_vec(), vec![0.5, 1.5]);
     }
 
     #[test]
     fn range_rev_float()
     {
-        assert_eq!((0.5..2.5).step(1.).rev().to_vec(), vec![1.5,0.5]);
+        assert_eq!((0.5..2.5).step(1.).rev().to_vec(), vec![1.5, 0.5]);
     }
 
     #[test]
     fn range_inclusive_float()
     {
-        assert_eq!((0.5..=2.5).step(1.).to_vec(), vec![0.5,1.5,2.5]);
+        assert_eq!((0.5..=2.5).step(1.).to_vec(), vec![0.5, 1.5, 2.5]);
     }
 
     #[test]
     fn range_inclusive_rev_float()
     {
-        assert_eq!((0.5..=2.5).step(1.).rev().to_vec(), vec![2.5,1.5,0.5]);
+        assert_eq!((0.5..=2.5).step(1.).rev().to_vec(), vec![2.5, 1.5, 0.5]);
     }
-
 
     #[test]
     fn range_float_2()

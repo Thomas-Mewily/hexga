@@ -486,14 +486,13 @@ impl From<WinitKeyNativeCode> for KeyCodeNative
 }
 impl From<WinitKeyNativeCode> for KeyCode
 {
-    fn from(value: WinitKeyNativeCode) -> Self {
-        KeyCode::Unknow(value.into())
-    }
+    fn from(value: WinitKeyNativeCode) -> Self { KeyCode::Unknow(value.into()) }
 }
 
 impl From<WinitKeyPhysical> for KeyCode
 {
-    fn from(value: WinitKeyPhysical) -> Self {
+    fn from(value: WinitKeyPhysical) -> Self
+    {
         match value
         {
             winit::keyboard::PhysicalKey::Code(v) => v.into(),
@@ -504,7 +503,8 @@ impl From<WinitKeyPhysical> for KeyCode
 
 impl From<WinitKeyCode> for KeyCode
 {
-    fn from(value: WinitKeyCode) -> Self {
+    fn from(value: WinitKeyCode) -> Self
+    {
         match value
         {
             winit::keyboard::KeyCode::Backquote => KeyCode::Backquote,
@@ -705,4 +705,3 @@ impl From<WinitKeyCode> for KeyCode
         }
     }
 }
-

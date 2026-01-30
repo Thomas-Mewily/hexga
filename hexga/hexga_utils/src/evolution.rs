@@ -1,33 +1,38 @@
 use super::*;
 
-
 pub mod prelude
 {
-    pub use super::{PreviousValue,Evolution};
+    pub use super::{Evolution, PreviousValue};
 }
 
-
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
-pub struct PreviousValue<T> where T:Copy
+pub struct PreviousValue<T>
+where
+    T: Copy,
 {
-    pub value      : T,
-    pub old_value  : T,
+    pub value: T,
+    pub old_value: T,
     //pub last_change: T,
 }
 
-impl<V> PreviousValue<V>  where V:Copy
+impl<V> PreviousValue<V>
+where
+    V: Copy,
 {
-    pub fn new(value: V, old_value: V) -> Self { Self { value, old_value }}
+    pub fn new(value: V, old_value: V) -> Self { Self { value, old_value } }
 }
 
-impl<T> Evolution<T> for PreviousValue<T> where T:Copy
+impl<T> Evolution<T> for PreviousValue<T>
+where
+    T: Copy,
 {
     fn value(&self) -> T { self.value }
     fn old_value(&self) -> T { self.old_value }
 }
 
-
-pub trait Evolution<I> where I:Copy
+pub trait Evolution<I>
+where
+    I: Copy,
 {
     /// The current state right now
     fn value(&self) -> I;
@@ -35,7 +40,12 @@ pub trait Evolution<I> where I:Copy
     fn old_value(&self) -> I;
 
     /// `value() - old_value()`
-    fn delta(&self) -> I::Output where I:Sub { self.value() - self.old_value() }
+    fn delta(&self) -> I::Output
+    where
+        I: Sub,
+    {
+        self.value() - self.old_value()
+    }
 
     fn evolution(&self) -> PreviousValue<I> { PreviousValue::new(self.value(), self.old_value()) }
 
@@ -43,10 +53,6 @@ pub trait Evolution<I> where I:Copy
     // Delta time since the last change
     // fn dt_since(&self, current_time: T) -> T where T:Sub<T,Output=T> { current_time - self.last_time_change() }
 }
-
-
-
-
 
 /*
 impl<I> Evolution<I> where I:Copy

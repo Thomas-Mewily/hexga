@@ -2,22 +2,28 @@ use super::*;
 
 pub mod prelude
 {
-    pub(crate) use super::*;
     pub use super::perf;
+    pub(crate) use super::*;
 }
 
-pub fn perf() -> impl DerefMut<Target=AppPerf> { APP.get_mut().guard_map_mut(|a| a.perf()) }
+pub fn perf() -> impl DerefMut<Target = AppPerf> { APP.get_mut().guard_map_mut(|a| a.perf()) }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct AppPerf
 {
-    fps : TimeCounter,
+    fps: TimeCounter,
     ups: TimeCounter,
 }
 
 impl AppPerf
 {
-    pub(crate) fn new() -> Self { AppPerf { fps: ___(), ups: ___() }}
+    pub(crate) fn new() -> Self
+    {
+        AppPerf {
+            fps: ___(),
+            ups: ___(),
+        }
+    }
 
     /// Return the previous number of frame per second
     pub fn fps(&self) -> int { self.fps.nb() }
@@ -36,8 +42,6 @@ impl ScopedFlow for AppPerf
 }
 */
 
-
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct TimeCounter
 {
@@ -47,8 +51,13 @@ pub(crate) struct TimeCounter
 }
 impl Default for TimeCounter
 {
-    fn default() -> Self {
-        Self { timer: Time::since_launch(), counter: 0, last_counter: 0 }
+    fn default() -> Self
+    {
+        Self {
+            timer: Time::since_launch(),
+            counter: 0,
+            last_counter: 0,
+        }
     }
 }
 impl TimeCounter
@@ -66,4 +75,3 @@ impl TimeCounter
         self.counter += 1;
     }
 }
-

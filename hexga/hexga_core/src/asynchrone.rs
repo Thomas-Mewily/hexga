@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use std::{any::Any, pin::Pin};
 
-pub trait Async : Send + Sync + 'static {}
+pub trait Async: Send + Sync + 'static {}
 impl<T> Async for T where T: Send + Sync + 'static {}
 
 pub type AnyAsync = dyn Any + Send + Sync + 'static;

@@ -2,7 +2,6 @@ use super::*;
 
 // Most function are suffixed with `_elementwise` like min, max, clamp, because there are already defiend in [std::cmp::Ord] and I don't want to fully qualify them...
 
-
 /// Max function in a component way
 pub trait Max
 {
@@ -14,8 +13,12 @@ pub trait Max
 /// Max function in a component way
 ///
 /// Can cause a panic for grid if the size mismatch
-pub fn max<S>(a: S, b:S) -> S where S:Max  { a.max_elementwise(b) }
-
+pub fn max<S>(a: S, b: S) -> S
+where
+    S: Max,
+{
+    a.max_elementwise(b)
+}
 
 map_on_integer!(
     ($type_name: tt) =>
@@ -40,12 +43,16 @@ impl Max for bool
     fn max_elementwise(self, other: Self) -> Self { self | other }
 }
 
-impl<S> Max for S where S:MapInternWith, S::Item : Max
+impl<S> Max for S
+where
+    S: MapInternWith,
+    S::Item: Max,
 {
-    fn max_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Max::max_elementwise) }
+    fn max_elementwise(self, other: Self) -> Self
+    {
+        self.map_with_intern(other, Max::max_elementwise)
+    }
 }
-
-
 
 /// Min function in a component way
 pub trait Min
@@ -58,7 +65,12 @@ pub trait Min
 /// Min function in a component way
 ///
 /// Can cause a panic for grid if the size mismatch
-pub fn min<S>(a: S, b:S) -> S where S:Min  { a.min_elementwise(b) }
+pub fn min<S>(a: S, b: S) -> S
+where
+    S: Min,
+{
+    a.min_elementwise(b)
+}
 
 map_on_integer!(
     ($type_name: tt) =>
@@ -83,12 +95,16 @@ impl Min for bool
     fn min_elementwise(self, other: Self) -> Self { self & other }
 }
 
-impl<S> Min for S where S:MapInternWith, S::Item : Min
+impl<S> Min for S
+where
+    S: MapInternWith,
+    S::Item: Min,
 {
-    fn min_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Min::min_elementwise) }
+    fn min_elementwise(self, other: Self) -> Self
+    {
+        self.map_with_intern(other, Min::min_elementwise)
+    }
 }
-
-
 
 /// Clamp function in a component way
 pub trait Clamp
@@ -100,27 +116,32 @@ pub trait Clamp
     /// Can cause a panic for grid if the size mismatch
     fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self;
 }
-    /// Clamp function in a component way
-    ///
-    /// Clamps self between min_val and max_val (inclusive)
-    ///
-    /// Can cause a panic for grid if the size mismatch
-pub fn clamp<S>(value: S, min_val: S, max_val: S) -> S where S:Clamp  { value.clamp_elementwise(min_val, max_val) }
+/// Clamp function in a component way
+///
+/// Clamps self between min_val and max_val (inclusive)
+///
+/// Can cause a panic for grid if the size mismatch
+pub fn clamp<S>(value: S, min_val: S, max_val: S) -> S
+where
+    S: Clamp,
+{
+    value.clamp_elementwise(min_val, max_val)
+}
 
 impl<T> Clamp for T
 where
     T: Min + Max,
 {
-    fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self {
+    fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self
+    {
         self.max_elementwise(min_val).min_elementwise(max_val)
     }
 }
 
-
-
-
 /// Mix function in a component way
-pub trait Mix<C=float> : Sized where C: Float
+pub trait Mix<C = float>: Sized
+where
+    C: Float,
 {
     /// Mix function in a component way
     ///
@@ -130,7 +151,10 @@ pub trait Mix<C=float> : Sized where C: Float
     /// 1. => dest.
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn mix(self, dest: Self, coef: C) -> Self { self.mix_unchecked(dest, coef.clamp_partial(zero(), one())) }
+    fn mix(self, dest: Self, coef: C) -> Self
+    {
+        self.mix_unchecked(dest, coef.clamp_partial(zero(), one()))
+    }
 
     /// Mix function in a component way
     ///
@@ -150,11 +174,13 @@ pub trait Mix<C=float> : Sized where C: Float
 /// 1. => dest.
 ///
 /// Can cause a panic for grid if the size mismatch
-pub fn mix<S,F>(src: S, dest: S, coef: F) -> S where S:Mix<F>, F:Float
+pub fn mix<S, F>(src: S, dest: S, coef: F) -> S
+where
+    S: Mix<F>,
+    F: Float,
 {
     src.mix(dest, coef)
 }
-
 
 map_on_number_and_bool!(
     ($type_name: tt) =>
@@ -171,14 +197,17 @@ map_on_number_and_bool!(
         }
     }
 );
-impl<S,F> Mix<F> for S where S:MapInternWith, S::Item : Mix<F>, F:Float
+impl<S, F> Mix<F> for S
+where
+    S: MapInternWith,
+    S::Item: Mix<F>,
+    F: Float,
 {
     fn mix_unchecked(self, dest: Self, coef: F) -> Self
     {
-        self.map_with_intern(dest, |a,b| a.mix_unchecked(b, coef))
+        self.map_with_intern(dest, |a, b| a.mix_unchecked(b, coef))
     }
 }
-
 
 /// Abs function in a component way
 pub trait Abs
@@ -281,12 +310,13 @@ impl Abs for Wrapping<bool>
     #[inline(always)]
     fn abs(self) -> Self { self }
 }
-impl<S> Abs for S where S:Map, S::Item : Abs
+impl<S> Abs for S
+where
+    S: Map,
+    S::Item: Abs,
 {
     type Output = S::WithType<<S::Item as Abs>::Output>;
-    fn abs(self) -> Self::Output {
-        self.map(Abs::abs)
-    }
+    fn abs(self) -> Self::Output { self.map(Abs::abs) }
 }
 /// Absolute value in a component way.
 ///
@@ -295,31 +325,38 @@ impl<S> Abs for S where S:Map, S::Item : Abs
 /// This means that code in debug mode will trigger a panic on this case and optimized code will return `iX::MIN` without a panic.
 ///
 /// Can cause a panic for grid if the size mismatch
-pub fn abs<S>(value: S) -> S::Output where S:Abs
+pub fn abs<S>(value: S) -> S::Output
+where
+    S: Abs,
 {
     value.abs()
 }
 
-
-
-
 #[macro_export]
-macro_rules! impl_number_basic_trait
-{
+macro_rules! impl_number_basic_trait {
     () => {
-
         // NOTE: Most of these function clash with at least 2 traits (ex: max() is defined in the [`std::cmp::Ord`] (non component wise) and also in [`crate::number::Max`] (component wise)
         // Redefining them here and redirecting them to the correct trait avoid the need to fully qualify the method with the trait in order to call it
 
         /// Max function in a component way
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn max(self, other: Self) -> Self where Self: $crate::number::Max { $crate::number::Max::max_elementwise(self, other) }
+        pub fn max(self, other: Self) -> Self
+        where
+            Self: $crate::number::Max,
+        {
+            $crate::number::Max::max_elementwise(self, other)
+        }
 
         /// Min function in a component way
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn min(self, other: Self) -> Self where Self: $crate::number::Min { $crate::number::Min::min_elementwise(self, other) }
+        pub fn min(self, other: Self) -> Self
+        where
+            Self: $crate::number::Min,
+        {
+            $crate::number::Min::min_elementwise(self, other)
+        }
 
         /// Absolute value in a component way.
         ///
@@ -328,7 +365,12 @@ macro_rules! impl_number_basic_trait
         /// This means that code in debug mode will trigger a panic on this case and optimized code will return `iX::MIN` without a panic.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn abs(self) -> <Self as $crate::number::Abs>::Output where Self: $crate::number::Abs { $crate::number::Abs::abs(self) }
+        pub fn abs(self) -> <Self as $crate::number::Abs>::Output
+        where
+            Self: $crate::number::Abs,
+        {
+            $crate::number::Abs::abs(self)
+        }
 
         /// Mix function in a component way
         ///
@@ -338,7 +380,13 @@ macro_rules! impl_number_basic_trait
         /// 1. => dest.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn mix<C>(self, other: Self, coef: C) -> Self where Self: $crate::number::Mix<C>, C: Float { $crate::number::Mix::mix(self, other, coef) }
+        pub fn mix<C>(self, other: Self, coef: C) -> Self
+        where
+            Self: $crate::number::Mix<C>,
+            C: Float,
+        {
+            $crate::number::Mix::mix(self, other, coef)
+        }
 
         /// Mix function in a component way
         ///
@@ -348,18 +396,27 @@ macro_rules! impl_number_basic_trait
         /// 1. => dest.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn mix_unchecked<C>(self, other: Self, coef: C) -> Self where Self: $crate::number::Mix<C>, C: Float { $crate::number::Mix::mix_unchecked(self, other, coef) }
+        pub fn mix_unchecked<C>(self, other: Self, coef: C) -> Self
+        where
+            Self: $crate::number::Mix<C>,
+            C: Float,
+        {
+            $crate::number::Mix::mix_unchecked(self, other, coef)
+        }
 
         /// Clamp function in a component way
         ///
         /// Clamps self between min_val and max_val (inclusive)
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn clamp(self, min_val: Self, max_val: Self) -> Self where Self: $crate::number::Clamp { $crate::number::Clamp::clamp_elementwise(self, min_val, max_val) }
+        pub fn clamp(self, min_val: Self, max_val: Self) -> Self
+        where
+            Self: $crate::number::Clamp,
+        {
+            $crate::number::Clamp::clamp_elementwise(self, min_val, max_val)
+        }
     };
 }
-
-
 
 #[cfg(test)]
 mod tests
@@ -371,18 +428,17 @@ mod tests
     {
         assert_eq!(max(1, 2), 2);
         assert_eq!(max(2, 1), 2);
-        assert_eq!(max([1,10], [4,5]), [4,10]);
-        assert_eq!(max([10,1], [5,4]), [10,4]);
+        assert_eq!(max([1, 10], [4, 5]), [4, 10]);
+        assert_eq!(max([10, 1], [5, 4]), [10, 4]);
     }
-
 
     #[test]
     fn min_test()
     {
         assert_eq!(min(1, 2), 1);
         assert_eq!(min(2, 1), 1);
-        assert_eq!(min([1,10], [4,5]), [1,5]);
-        assert_eq!(min([10,1], [5,4]), [5,1]);
+        assert_eq!(min([1, 10], [4, 5]), [1, 5]);
+        assert_eq!(min([10, 1], [5, 4]), [5, 1]);
     }
 
     #[test]
@@ -399,9 +455,8 @@ mod tests
         assert_eq!(mix(1., 0., 0.5), 0.5);
         assert_eq!(mix(1., 0., 1.), 0.);
 
-        assert_eq!(mix([1.,2.], [4.,8.], 0.5), [2.5,5.]);
+        assert_eq!(mix([1., 2.], [4., 8.], 0.5), [2.5, 5.]);
     }
-
 
     #[test]
     fn abs_test()
@@ -409,8 +464,8 @@ mod tests
         assert_eq!(abs(-2), 2);
         assert_eq!(abs(u8::MAX), u8::MAX);
         assert_eq!(abs(i8::MAX), i8::MAX);
-        assert_eq!(abs(i8::MIN+1), i8::MAX);
-        assert_eq!(abs(i8::MIN+1), i8::MAX);
+        assert_eq!(abs(i8::MIN + 1), i8::MAX);
+        assert_eq!(abs(i8::MIN + 1), i8::MAX);
     }
 
     #[test]

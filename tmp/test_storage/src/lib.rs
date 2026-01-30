@@ -1,10 +1,11 @@
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{window, IdbDatabase, IdbOpenDbRequest, console};
 use serde::{Deserialize, Serialize};
+use wasm_bindgen::JsCast;
+use wasm_bindgen::prelude::*;
+use web_sys::{IdbDatabase, IdbOpenDbRequest, console, window};
 
 #[derive(Serialize, Deserialize)]
-struct User {
+struct User
+{
     id: u32,
     name: String,
 }
@@ -48,10 +49,15 @@ pub fn run() -> Result<(), JsValue>
         let store = tx.object_store("users").unwrap();
 
         // Serialize Rust struct -> JsValue
-        let user = User { id: 1, name: "Alice".into() };
+        let user = User {
+            id: 1,
+            name: "Alice".into(),
+        };
         let js_val = serde_wasm_bindgen::to_value(&user).unwrap();
 
-        store.put_with_key(&js_val, &JsValue::from_str("user_1")).unwrap();
+        store
+            .put_with_key(&js_val, &JsValue::from_str("user_1"))
+            .unwrap();
     }) as Box<dyn FnMut(_)>);
     request.set_onsuccess(Some(on_success.as_ref().unchecked_ref()));
     on_success.forget();
@@ -59,12 +65,10 @@ pub fn run() -> Result<(), JsValue>
     Ok(())
 }
 
-
 // fn main()
 // {
 //     run().unwrap();
 // }
-
 
 /*
 

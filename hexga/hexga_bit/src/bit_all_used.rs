@@ -1,6 +1,5 @@
 use super::*;
 
-
 /// [bytemuck::NoUninit](https://docs.rs/bytemuck/latest/bytemuck/trait.NoUninit.html) trait equivalent.
 ///
 /// Marker trait for "plain old data" types with no uninit (or padding) bytes.

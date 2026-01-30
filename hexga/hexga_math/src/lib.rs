@@ -50,35 +50,39 @@
 //! - [`Angle`] and [`Time`] use a [`float`] precision that can be changed using [`AngleOf`] and [`TimeOf`]
 
 #![allow(unused_imports)]
-#![feature(formatting_options)] // For grid view, to display aligned value they need to be fomatted in a temporary formatter
+#![feature(formatting_options)]
+// For grid view, to display aligned value they need to be fomatted in a temporary formatter
 //#![feature(try_trait_v2, try_trait_v2_residual)] // TryMap
 #![feature(array_try_map)] // array try_map
 
-use hexga_core::prelude::*;
 use hexga_core::cfg::*;
-use std::ops::*;
-use std::hash::{Hash, Hasher};
-use std::{fmt, num::{Saturating, Wrapping}};
-use std::marker::PhantomData;
-use std::cmp::Ordering;
+use hexga_core::prelude::*;
 use rayon::prelude::*;
-use std::iter::{FusedIterator,ExactSizeIterator};
+use std::cmp::Ordering;
+use std::hash::{Hash, Hasher};
+use std::iter::{ExactSizeIterator, FusedIterator};
+use std::marker::PhantomData;
+use std::ops::*;
+use std::{
+    fmt,
+    num::{Saturating, Wrapping},
+};
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 pub use hexga_typedef as typedef;
 mod utils;
 pub use utils::*;
+pub mod array;
+pub mod bijection;
 pub mod convert;
+pub mod derive;
+mod geometry;
 pub mod map_on;
 pub mod number;
 pub mod range;
-pub mod array;
 pub mod unit;
-pub mod derive;
-pub mod bijection;
-mod geometry;
 pub use geometry::*;
 
 // For macro
@@ -90,20 +94,18 @@ pub use hexga_core;
 #[doc(hidden)]
 pub use serde;
 
-
 use prelude::*;
 pub mod prelude
 {
-    pub use super::typedef::*;
-    pub use super::utils::prelude::*;
+    pub use super::array::*;
+    pub use super::bijection::prelude::*;
     pub use super::convert::*;
+    pub use super::derive::prelude::*;
+    pub use super::geometry::prelude::*;
     pub use super::map_on::*;
     pub use super::number::*;
     pub use super::range::*;
-    pub use super::array::*;
+    pub use super::typedef::*;
     pub use super::unit::*;
-    pub use super::bijection::prelude::*;
-    pub use super::derive::prelude::*;
-    pub use super::geometry::prelude::*;
+    pub use super::utils::prelude::*;
 }
-

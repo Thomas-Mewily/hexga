@@ -1,7 +1,5 @@
-use hexga::image::ImageBaseOf;
 use super::*;
-
-
+use hexga::image::ImageBaseOf;
 
 #[repr(transparent)]
 #[derive(Debug, Clone)]
@@ -18,8 +16,6 @@ impl From<GpuTextureView> for wgpu::TextureView
 {
     fn from(value: GpuTextureView) -> Self { value.wgpu }
 }
-
-
 
 #[repr(transparent)]
 #[derive(Debug, Clone)]
@@ -43,11 +39,23 @@ impl From<GpuTexture> for wgpu::Texture
 
 impl LoadExtension for GpuTexture
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { Image::load_custom_extensions() }
-
-    fn load_from_reader_with_custom_extension<R>(reader: R, extension: &extension) -> EncodeResult<Self> where Self: Sized, R: std::io::Read
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension>
     {
-        if Gpu::is_not_init() { return Err(EncodeError::custom("The Gpu was not initialized")); }
+        Image::load_custom_extensions()
+    }
+
+    fn load_from_reader_with_custom_extension<R>(
+        reader: R,
+        extension: &extension,
+    ) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
+    {
+        if Gpu::is_not_init()
+        {
+            return Err(EncodeError::custom("The Gpu was not initialized"));
+        }
         let img = Image::load_from_reader_with_custom_extension(reader, extension)?;
         Ok(Self::from(img))
     }
@@ -57,13 +65,16 @@ impl<'de> Deserialize<'de> for GpuTexture
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de> {
+        D: Deserializer<'de>,
+    {
         Ok(Image::deserialize(deserializer)?.into())
     }
 }
-impl<Idx> From<&ImageBaseOf<RgbaU8,Idx>> for GpuTexture where Idx: Integer
+impl<Idx> From<&ImageBaseOf<RgbaU8, Idx>> for GpuTexture
+where
+    Idx: Integer,
 {
-    fn from(value: &ImageBaseOf<RgbaU8,Idx>) -> Self
+    fn from(value: &ImageBaseOf<RgbaU8, Idx>) -> Self
     {
         let dimensions = value.size();
         let dimensions_u32 = dimensions.map(|v| v.to_u32());
@@ -100,19 +111,22 @@ impl<Idx> From<&ImageBaseOf<RgbaU8,Idx>> for GpuTexture where Idx: Integer
             },
             size,
         );
-        Self { wgpu:texture }
+        Self { wgpu: texture }
     }
 }
 
-impl<C,Idx> From<ImageBaseOf<C,Idx>> for GpuTexture where C: IColor<ToRgba::<u8> = RgbaU8>, Idx: Integer, u8: CastRangeFrom<C::Component>
+impl<C, Idx> From<ImageBaseOf<C, Idx>> for GpuTexture
+where
+    C: IColor<ToRgba<u8> = RgbaU8>,
+    Idx: Integer,
+    u8: CastRangeFrom<C::Component>,
 {
-    fn from(value: ImageBaseOf<C,Idx>) -> Self {
+    fn from(value: ImageBaseOf<C, Idx>) -> Self
+    {
         let rgba8 = value.to_rgba_u8();
         Self::from(&rgba8)
     }
 }
-
-
 
 #[derive(Debug, Clone)]
 pub struct GpuBindGroupTexture
@@ -120,7 +134,7 @@ pub struct GpuBindGroupTexture
     pub(crate) texture: GpuTexture,
     pub(crate) view: GpuTextureView,
     pub(crate) sampler: GpuSampler,
-    pub(crate) bind_group : GpuBindGroup
+    pub(crate) bind_group: GpuBindGroup,
 }
 impl GpuBindGroupTexture
 {
@@ -129,14 +143,24 @@ impl GpuBindGroupTexture
     pub fn sampler(&self) -> &GpuSampler { &self.sampler }
     pub fn bind_group(&self) -> &GpuBindGroup { &self.bind_group }
 
-    pub fn full_view(texture: GpuTexture, sampler: GpuSampler, bind_group : GpuBindGroup) -> Self
+    pub fn full_view(texture: GpuTexture, sampler: GpuSampler, bind_group: GpuBindGroup) -> Self
     {
         let view = texture.view();
         Self::new(texture, view, sampler, bind_group)
     }
-    pub fn new(texture: GpuTexture, view: GpuTextureView, sampler: GpuSampler, bind_group : GpuBindGroup) -> Self
+    pub fn new(
+        texture: GpuTexture,
+        view: GpuTextureView,
+        sampler: GpuSampler,
+        bind_group: GpuBindGroup,
+    ) -> Self
     {
-        Self { texture, view, sampler, bind_group }
+        Self {
+            texture,
+            view,
+            sampler,
+            bind_group,
+        }
     }
 
     /*

@@ -26,14 +26,8 @@ use coefficient::*;
 
 pub(crate) mod prelude
 {
-    pub use super::
-    {
-        vector::prelude::*,
-        rectangle::prelude::*,
-        matrix::*,
-        transform::*,
-        angle::*,
-        grid::prelude::*,
-        coefficient::Coef,
+    pub use super::{
+        angle::*, coefficient::Coef, grid::prelude::*, matrix::*, rectangle::prelude::*,
+        transform::*, vector::prelude::*,
     };
 }

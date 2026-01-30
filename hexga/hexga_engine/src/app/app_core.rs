@@ -3,26 +3,32 @@ use super::*;
 #[derive(Debug)]
 pub struct AppCore
 {
-    pub(crate) already_init:  bool,
+    pub(crate) already_init: bool,
 
     pub(crate) clipboard: AppClipboard,
     /// Created once the Gpu is initialized
-    pub(crate) graphics:  Option<AppGraphics>,
-    pub(crate) input:     AppInput,
-    pub(crate) window:    AppWindow,
-    pub(crate) perf:      AppPerf,
-    pub(crate) proxy:     Option<EventLoopProxy>,
+    pub(crate) graphics: Option<AppGraphics>,
+    pub(crate) input: AppInput,
+    pub(crate) window: AppWindow,
+    pub(crate) perf: AppPerf,
+    pub(crate) proxy: Option<EventLoopProxy>,
 
-    pub(crate) param:     AppParamInternal,
+    pub(crate) param: AppParamInternal,
 }
 
-pub(crate) static APP : Singleton<AppCore> = Singleton::new(AppCore::new);
+pub(crate) static APP: Singleton<AppCore> = Singleton::new(AppCore::new);
 
 #[inline(always)]
-pub fn try_app() -> Option<impl DerefMut<Target=AppCore>> { APP.inner().try_lock().ok().map(|l| l.guard_map_mut(DerefMut::deref_mut)) }
+pub fn try_app() -> Option<impl DerefMut<Target = AppCore>>
+{
+    APP.inner()
+        .try_lock()
+        .ok()
+        .map(|l| l.guard_map_mut(DerefMut::deref_mut))
+}
 #[inline(always)]
 #[track_caller]
-pub fn app() -> impl DerefMut<Target=AppCore> { try_app().expect("app already locked") }
+pub fn app() -> impl DerefMut<Target = AppCore> { try_app().expect("app already locked") }
 
 impl AppCore
 {
@@ -30,9 +36,15 @@ impl AppCore
     pub fn input(&mut self) -> &mut AppInput { &mut self.input }
     pub fn window(&mut self) -> &mut AppWindow { &mut self.window }
     pub fn perf(&mut self) -> &mut AppPerf { &mut self.perf }
-    pub fn graphics(&mut self) -> &mut AppGraphics { self.graphics.as_mut().expect("graphics is not init") }
+    pub fn graphics(&mut self) -> &mut AppGraphics
+    {
+        self.graphics.as_mut().expect("graphics is not init")
+    }
 
-    pub(crate) fn proxy(&self) -> &EventLoopProxy { self.proxy.as_ref().expect("proxy is not init") }
+    pub(crate) fn proxy(&self) -> &EventLoopProxy
+    {
+        self.proxy.as_ref().expect("proxy is not init")
+    }
     pub(crate) fn param(&self) -> &AppParamInternal { &self.param }
     //pub fn param_mut(&mut self) -> &mut AppParam { &mut self.param }
 }
@@ -54,7 +66,7 @@ impl AppCore
     {
         match &self.proxy
         {
-            Some(v) => v.send_event(event).map_err(|_|()),
+            Some(v) => v.send_event(event).map_err(|_| ()),
             None => Err(()),
         }
     }
@@ -64,8 +76,7 @@ impl AppCore
 {
     pub(crate) fn new() -> Self
     {
-        Self
-        {
+        Self {
             param: ___(),
             input: AppInput::new(),
             window: AppWindow::new(),
@@ -104,7 +115,6 @@ impl ScopedFlow for AppCore
 }
 */
 
-
 //singleton_single_thread!(pub App,AppCore,CONTEXT_APP,|| AppCore::new());
 
 /*
@@ -140,4 +150,3 @@ impl App
     }
 }
     */
-

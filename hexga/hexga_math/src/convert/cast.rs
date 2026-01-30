@@ -1,7 +1,5 @@
 use super::*;
 
-
-
 /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
 ///
@@ -33,16 +31,16 @@ use super::*;
 /// ```
 pub trait CastFrom<T>
 {
-    fn cast_from(value : T) -> Self;
+    fn cast_from(value: T) -> Self;
 }
-impl<C1,C2> CastFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> = Self>, C1::Item : CastFrom<C2::Item>
+impl<C1, C2> CastFrom<C2> for C1
+where
+    C1: Map,
+    C2: Map<WithType<C1::Item> = Self>,
+    C1::Item: CastFrom<C2::Item>,
 {
-    fn cast_from(value : C2) -> Self
-    {
-        value.map(|v| C1::Item::cast_from(v))
-    }
+    fn cast_from(value: C2) -> Self { value.map(|v| C1::Item::cast_from(v)) }
 }
-
 
 /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)
 /// keyword: `4f32 as u64`, and the [From] trait, but generic friendly.
@@ -73,36 +71,31 @@ impl<C1,C2> CastFrom<C2> for C1 where C1: Map, C2: Map<WithType<C1::Item> = Self
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
-pub trait CastInto<T> : Sized
+pub trait CastInto<T>: Sized
 {
     fn cast_into(self) -> T;
 }
-impl<S,T> CastInto<T> for S where T:CastFrom<S>
+impl<S, T> CastInto<T> for S
+where
+    T: CastFrom<S>,
 {
-    fn cast_into(self) -> T {
-        T::cast_from(self)
-    }
+    fn cast_into(self) -> T { T::cast_from(self) }
 }
 
-
 // Double recursive macro :)
-macro_rules! impl_cast_to
-{
-    ($src: ty, $dest: ty) =>
-    {
+macro_rules! impl_cast_to {
+    ($src: ty, $dest: ty) => {
         impl CastFrom<$src> for $dest
         {
             fn cast_from(value: $src) -> $dest { value as $dest }
         }
     };
 
-    ($cast_into: ty) =>
-    {
-        map_on_number!(impl_cast_to,$cast_into);
+    ($cast_into: ty) => {
+        map_on_number!(impl_cast_to, $cast_into);
     };
 }
 map_on_number!(impl_cast_to);
-
 
 map_on_integer!(
     ($itself: ty) =>
@@ -132,9 +125,10 @@ map_on_float!(
         }
     };
 );
-impl CastFrom<bool> for bool { fn cast_from(value : bool) -> Self { value } }
-
-
+impl CastFrom<bool> for bool
+{
+    fn cast_from(value: bool) -> Self { value }
+}
 
 trait_marker!(
     /// fX
@@ -171,7 +165,6 @@ CastFromIntegerUnsigned:
     CastFrom<usize>
 );
 
-
 trait_marker!(
 /// uX
 CastIntegerUnsigned: CastFromIntegerUnsigned + CastFromIntegerUnsigned
@@ -187,7 +180,6 @@ CastIntoIntegerSigned:
     CastInto<isize> + ToISize<Output = isize>
 );
 
-
 trait_marker!(
 /// iX
 CastFromIntegerSigned:
@@ -197,7 +189,6 @@ CastFromIntegerSigned:
     CastFrom<i64> +
     CastFrom<isize>
 );
-
 
 trait_marker!(
 /// iX
@@ -218,7 +209,6 @@ trait_marker!(
 /// iX uX
 CastInteger: CastIntoInteger + CastFromInteger
 );
-
 
 trait_marker!(
 /// bool

@@ -1,8 +1,10 @@
 use super::*;
-use std::{collections::*, ffi::{OsStr, OsString}, path::{PathBuf,Path}};
 use std::ops::Range;
-
-
+use std::{
+    collections::*,
+    ffi::{OsStr, OsString},
+    path::{Path, PathBuf},
+};
 
 mod length;
 pub use length::*;

@@ -2,30 +2,43 @@ use super::*;
 
 #[non_exhaustive]
 #[derive(Clone)]
-pub enum GridBaseError<Idx, const N : usize> where Idx : Integer
+pub enum GridBaseError<Idx, const N: usize>
+where
+    Idx: Integer,
 {
-    NegativeSize(Vector::<Idx,N>),
+    NegativeSize(Vector<Idx, N>),
     /// (dim, got)
-    WrongDimension(Vector<Idx,N>, usize),
-    ToBig(Vector<Idx,N>),
+    WrongDimension(Vector<Idx, N>, usize),
+    ToBig(Vector<Idx, N>),
 }
-impl<Idx, const N : usize> Debug for GridBaseError<Idx, N> where Idx : Debug, Idx : Integer
+impl<Idx, const N: usize> Debug for GridBaseError<Idx, N>
+where
+    Idx: Debug,
+    Idx: Integer,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
+    {
+        match self
+        {
             GridBaseError::NegativeSize(size) => write!(f, "Can't have a negative size {:?}", size),
-            GridBaseError::WrongDimension(size, got) => write!(f, "Wrong dimension : expected {:?} elements for a {:?} grid but got {:?} elements", size.area_usize(), size, got),
+            GridBaseError::WrongDimension(size, got) => write!(
+                f,
+                "Wrong dimension : expected {:?} elements for a {:?} grid but got {:?} elements",
+                size.area_usize(),
+                size,
+                got
+            ),
             GridBaseError::ToBig(size) => write!(f, "The size {:?} is too big !", size),
         }
     }
 }
-impl<Idx, const N : usize> Display  for GridBaseError<Idx, N> where Idx : Debug, Idx : Integer
+impl<Idx, const N: usize> Display for GridBaseError<Idx, N>
+where
+    Idx: Debug,
+    Idx: Integer,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        Debug::fmt(self, f)
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { Debug::fmt(self, f) }
 }
-
 
 pub trait IGrid<T, Idx, const N : usize> :
       GetRectangle<Idx,N> + GetPosition<Idx,N>
@@ -213,57 +226,102 @@ pub trait IGrid<T, Idx, const N : usize> :
     */
 }
 
-
-impl<T, Idx, const N : usize, S> IGridView<Self, T, Idx, N> for S where S : IGrid<T, Idx, N>, Idx : Integer
+impl<T, Idx, const N: usize, S> IGridView<Self, T, Idx, N> for S
+where
+    S: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    type WithLifetime<'a> = GridView<'a, Self, T, Idx, N> where Self: 'a;
-    fn view<'a,'b>(&'a self) -> Self::WithLifetime<'b> where 'a : 'b { GridView::new(self) }
+    type WithLifetime<'a>
+        = GridView<'a, Self, T, Idx, N>
+    where
+        Self: 'a;
+    fn view<'a, 'b>(&'a self) -> Self::WithLifetime<'b>
+    where
+        'a: 'b,
+    {
+        GridView::new(self)
+    }
 
     unsafe fn grid_unchecked(&self) -> &Self { self }
 
-    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b> where 'a: 'b
-    { unsafe { GridView::from_rect_unchecked(self, rect) } }
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(
+        &'a self,
+        rect: Rectangle<Idx, N>,
+    ) -> Self::WithLifetime<'b>
+    where
+        'a: 'b,
+    {
+        unsafe { GridView::from_rect_unchecked(self, rect) }
+    }
 }
 
-impl<T, Idx, const N : usize, S> IGridViewMut<Self, T, Idx, N> for S where S : IGrid<T, Idx, N>, Idx : Integer
+impl<T, Idx, const N: usize, S> IGridViewMut<Self, T, Idx, N> for S
+where
+    S: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    type WithLifetimeMut<'a> = GridViewMut<'a, Self, T, Idx, N> where Self: 'a;
-    fn view_mut<'a,'b>(&'a mut self) -> Self::WithLifetimeMut<'b> where 'a : 'b { GridViewMut::new(self) }
+    type WithLifetimeMut<'a>
+        = GridViewMut<'a, Self, T, Idx, N>
+    where
+        Self: 'a;
+    fn view_mut<'a, 'b>(&'a mut self) -> Self::WithLifetimeMut<'b>
+    where
+        'a: 'b,
+    {
+        GridViewMut::new(self)
+    }
 
     fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, N> { GridViewIterMut::new(self) }
-    fn for_each_mut<F>(&mut self, f : F) where F : FnMut((Vector<Idx,N>,&mut T)) { self.view_mut().for_each_mut(f) }
+    fn for_each_mut<F>(&mut self, f: F)
+    where
+        F: FnMut((Vector<Idx, N>, &mut T)),
+    {
+        self.view_mut().for_each_mut(f)
+    }
 
     unsafe fn grid_mut_unchecked(&mut self) -> &mut Self { self }
 }
 
-
-
-pub trait ToGrid<T, Idx, const N : usize> where Idx : Integer
+pub trait ToGrid<T, Idx, const N: usize>
+where
+    Idx: Integer,
 {
-    type Output : IGrid<T, Idx, N>;
+    type Output: IGrid<T, Idx, N>;
     fn to_grid(self) -> Self::Output;
 }
 
-impl<T, Idx, const N : usize> ToGrid<T, Idx, N> for GridOf<T, Idx, N> where Idx : Integer
+impl<T, Idx, const N: usize> ToGrid<T, Idx, N> for GridOf<T, Idx, N>
+where
+    Idx: Integer,
 {
-    type Output=Self;
+    type Output = Self;
     fn to_grid(self) -> Self::Output { self }
 }
 
-impl<'a, T, Idx, const N : usize> ToGrid<T, Idx, N> for GridView<'a,GridOf<T, Idx, N>, T, Idx, N> where Idx : Integer, T : Clone
+impl<'a, T, Idx, const N: usize> ToGrid<T, Idx, N> for GridView<'a, GridOf<T, Idx, N>, T, Idx, N>
+where
+    Idx: Integer,
+    T: Clone,
 {
-    type Output=GridOf<T, Idx, N>;
+    type Output = GridOf<T, Idx, N>;
     fn to_grid(self) -> Self::Output
     {
-        GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
+        GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe {
+            self.get_unchecked(idx).clone()
+        })
     }
 }
 
-impl<'a, T, Idx, const N : usize> ToGrid<T, Idx, N> for GridViewMut<'a,GridOf<T, Idx, N>, T, Idx, N> where Idx : Integer, T : Clone
+impl<'a, T, Idx, const N: usize> ToGrid<T, Idx, N> for GridViewMut<'a, GridOf<T, Idx, N>, T, Idx, N>
+where
+    Idx: Integer,
+    T: Clone,
 {
-    type Output=GridOf<T, Idx, N>;
+    type Output = GridOf<T, Idx, N>;
     fn to_grid(self) -> Self::Output
     {
-        GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() })
+        GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe {
+            self.get_unchecked(idx).clone()
+        })
     }
 }

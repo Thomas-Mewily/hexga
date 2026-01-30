@@ -1,21 +1,31 @@
 use super::*;
 
-pub trait WithBijection : Sized + Collection
+pub trait WithBijection: Sized + Collection
 {
-    fn with_bijection<B>(self, bijection: B) -> Bijection<Self,B>
+    fn with_bijection<B>(self, bijection: B) -> Bijection<Self, B>
     {
         Bijection::from_values_and_bijection(self, bijection)
     }
 }
 impl<T> WithBijection for T where T: Sized + Collection {}
 
-pub trait WithBijectionExtension : WithBijection
+pub trait WithBijectionExtension: WithBijection
 {
-    fn bijection_identity(self) -> Bijection<Self,BijectionIdentity<usize>> where Self: Get<usize> { self.with_bijection(BijectionIdentity::new()) }
-    fn bijection_rev(self) -> Bijection<Self,BijectionRev> where Self: Length { let len = self.len(); self.with_bijection(BijectionRev::new(len)) }
+    fn bijection_identity(self) -> Bijection<Self, BijectionIdentity<usize>>
+    where
+        Self: Get<usize>,
+    {
+        self.with_bijection(BijectionIdentity::new())
+    }
+    fn bijection_rev(self) -> Bijection<Self, BijectionRev>
+    where
+        Self: Length,
+    {
+        let len = self.len();
+        self.with_bijection(BijectionRev::new(len))
+    }
 }
 impl<T> WithBijectionExtension for T where T: WithBijection {}
-
 
 /*
 //TODO
@@ -39,14 +49,13 @@ pub trait BijectionView<C,Idx,T>:
 */
 //pub trait TODOBijectionBaseMut<C,Idx,T>:
 
-
 /// A View Type with bijection
 ///
 /// Can be used for N-dimensional grid. Can have a finite or infinite size
 //#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Bijection<C, B>
-    //where C: Get<B::Target>, B: Bijection,
+//where C: Get<B::Target>, B: Bijection,
 {
     pub(crate) values: C,
     pub(crate) bijection_fn: B,
@@ -72,11 +81,17 @@ impl<C, B> Bijection<C, B>
 {
     pub fn from_values_and_bijection(values: C, bijection: B) -> Self
     {
-        Self { values, bijection_fn: bijection }
+        Self {
+            values,
+            bijection_fn: bijection,
+        }
     }
     pub fn into_values_and_bijection(self) -> (C, B)
     {
-        let Self { values, bijection_fn: bijection } = self;
+        let Self {
+            values,
+            bijection_fn: bijection,
+        } = self;
         (values, bijection)
     }
 
@@ -89,35 +104,59 @@ impl<C, B> Bijection<C, B>
     pub fn bijection_fn_mut(&mut self) -> &mut B { &mut self.bijection_fn }
 }
 
-
-
-impl<C, B> MapIntern for Bijection<C, B> where C: MapIntern
+impl<C, B> MapIntern for Bijection<C, B>
+where
+    C: MapIntern,
 {
-    type Item=<C as MapIntern>::Item;
-    fn map_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item {
+    type Item = <C as MapIntern>::Item;
+    fn map_intern<F>(mut self, f: F) -> Self
+    where
+        F: FnMut(Self::Item) -> Self::Item,
+    {
         self.values = self.values.map_intern(f);
         self
     }
 }
-impl<C, B> MapInternWith for Bijection<C, B> where C: MapInternWith
+impl<C, B> MapInternWith for Bijection<C, B>
+where
+    C: MapInternWith,
 {
-    fn map_with_intern<F>(mut self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
+    fn map_with_intern<F>(mut self, other: Self, f: F) -> Self
+    where
+        F: FnMut(Self::Item, Self::Item) -> Self::Item,
+    {
         self.values = self.values.map_with_intern(other.values, f);
         self
     }
 }
-impl<C, B> Map for Bijection<C, B> where C: Map
+impl<C, B> Map for Bijection<C, B>
+where
+    C: Map,
 {
-    type WithType<R> = Bijection<C::WithType<R>,B>;
+    type WithType<R> = Bijection<C::WithType<R>, B>;
 
-    fn map<R,F>(self, f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R {
-        Bijection::<C::WithType<R>,B>{ bijection_fn: self.bijection_fn, values: self.values.map(f) }
+    fn map<R, F>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(Self::Item) -> R,
+    {
+        Bijection::<C::WithType<R>, B> {
+            bijection_fn: self.bijection_fn,
+            values: self.values.map(f),
+        }
     }
 }
-impl<C, B> MapWith for Bijection<C, B> where C: MapWith
+impl<C, B> MapWith for Bijection<C, B>
+where
+    C: MapWith,
 {
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f : F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R {
-        Bijection::<C::WithType<R>,B>{ bijection_fn: self.bijection_fn, values: self.values.map_with(other.values, f) }
+    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(Self::Item, Item2) -> R,
+    {
+        Bijection::<C::WithType<R>, B> {
+            bijection_fn: self.bijection_fn,
+            values: self.values.map_with(other.values, f),
+        }
     }
 }
 
@@ -148,26 +187,36 @@ impl<C, B> GetSize<Idx, N> for ContainerBijection<C, B>
 impl<C, B> Collection for Bijection<C, B> where C: Collection {}
 impl<C, B> CollectionBijective for Bijection<C, B> where C: CollectionBijective {}
 
-
 impl<Idx, C, B> Get<Idx> for Bijection<C, B>
-    where B: BijectionFn, C: Get<B::Target>, Idx: Into<B::Source>
+where
+    B: BijectionFn,
+    C: Get<B::Target>,
+    Idx: Into<B::Source>,
 {
-    type Output=C::Output;
-    fn get(&self, index: Idx) -> Option<&Self::Output> {
+    type Output = C::Output;
+    fn get(&self, index: Idx) -> Option<&Self::Output>
+    {
         let target_idx = self.bijection_fn.to_target(index.into())?;
         self.values.get(target_idx)
     }
 
     #[track_caller]
-    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output {
-        let target_idx = self.bijection_fn.to_target(index.into()).expect("bijection fail");
+    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output
+    {
+        let target_idx = self
+            .bijection_fn
+            .to_target(index.into())
+            .expect("bijection fail");
         unsafe { self.values.get_unchecked(target_idx) }
     }
 }
 impl<Idx, C, B> Index<Idx> for Bijection<C, B>
-    where B: BijectionFn, C: Get<B::Target>, Idx: Into<B::Source>
+where
+    B: BijectionFn,
+    C: Get<B::Target>,
+    Idx: Into<B::Source>,
 {
-    type Output=C::Output;
+    type Output = C::Output;
     #[inline(always)]
     #[track_caller]
     fn index(&self, index: Idx) -> &Self::Output { self.get_or_panic(index) }
@@ -175,72 +224,110 @@ impl<Idx, C, B> Index<Idx> for Bijection<C, B>
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub enum BijectionError<Bijection,Container>
+pub enum BijectionError<Bijection, Container>
 {
     Bijection(Bijection),
     Container(Container),
 }
 
 impl<Idx, C, B> TryGet<Idx> for Bijection<C, B>
-    where B: TryBijectionFn, C: TryGet<B::Target>, Idx: Into<B::Source>
+where
+    B: TryBijectionFn,
+    C: TryGet<B::Target>,
+    Idx: Into<B::Source>,
 {
-    type Error=BijectionError<B::SourceToTargetError,C::Error>;
-    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> {
-        let target_idx = self.bijection_fn.try_to_target(index.into())
+    type Error = BijectionError<B::SourceToTargetError, C::Error>;
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
+    {
+        let target_idx = self
+            .bijection_fn
+            .try_to_target(index.into())
             .map_err(|b| BijectionError::Bijection(b))?;
-        self.values.try_get(target_idx).map_err(|c| BijectionError::Container(c))
+        self.values
+            .try_get(target_idx)
+            .map_err(|c| BijectionError::Container(c))
     }
 }
 
 impl<Idx, C, B> GetMut<Idx> for Bijection<C, B>
-    where B: BijectionFn, C: GetMut<B::Target>, Idx: Into<B::Source>
+where
+    B: BijectionFn,
+    C: GetMut<B::Target>,
+    Idx: Into<B::Source>,
 {
-    fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> {
+    fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output>
+    {
         let target_idx = self.bijection_fn.to_target(index.into())?;
         self.values.get_mut(target_idx)
     }
 
-    unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output {
-        let target_idx = self.bijection_fn.to_target(index.into()).expect("bijection fail");
+    unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output
+    {
+        let target_idx = self
+            .bijection_fn
+            .to_target(index.into())
+            .expect("bijection fail");
         unsafe { self.values.get_unchecked_mut(target_idx) }
     }
 }
 impl<Idx, C, B> IndexMut<Idx> for Bijection<C, B>
-    where B: BijectionFn, C: GetMut<B::Target>, Idx: Into<B::Source>
+where
+    B: BijectionFn,
+    C: GetMut<B::Target>,
+    Idx: Into<B::Source>,
 {
     #[inline(always)]
     #[track_caller]
     fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-
 impl<Idx, C, B> TryGetMut<Idx> for Bijection<C, B>
-    where B: TryBijectionFn, C: TryGetMut<B::Target>, Idx: Into<B::Source>
+where
+    B: TryBijectionFn,
+    C: TryGetMut<B::Target>,
+    Idx: Into<B::Source>,
 {
-    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> {
-        let target_idx = self.bijection_fn.try_to_target(index.into())
+    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error>
+    {
+        let target_idx = self
+            .bijection_fn
+            .try_to_target(index.into())
             .map_err(|b| BijectionError::Bijection(b))?;
-        self.values.try_get_mut(target_idx).map_err(|c| BijectionError::Container(c))
+        self.values
+            .try_get_mut(target_idx)
+            .map_err(|c| BijectionError::Container(c))
     }
 }
 
 impl<Idx, C, B> GetManyMut<Idx> for Bijection<C, B>
-    where B: TryBijectionFn, C: GetManyMut<B::Target>, Idx: Into<B::Source>
+where
+    B: TryBijectionFn,
+    C: GetManyMut<B::Target>,
+    Idx: Into<B::Source>,
 {
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError> {
-        let idx = indices.try_map(|idx| { self.bijection_fn.to_target(idx.into()) }).ok_or(ManyMutError::IndexOutOfBounds)?;
+    fn try_get_many_mut<const N: usize>(
+        &mut self,
+        indices: [Idx; N],
+    ) -> Result<[&mut Self::Output; N], ManyMutError>
+    {
+        let idx = indices
+            .try_map(|idx| self.bijection_fn.to_target(idx.into()))
+            .ok_or(ManyMutError::IndexOutOfBounds)?;
         self.values.try_get_many_mut(idx)
     }
 }
 
-impl<C, B> Length for Bijection<C, B> where C: Length
+impl<C, B> Length for Bijection<C, B>
+where
+    C: Length,
 {
     #[inline(always)]
     fn len(&self) -> usize { self.values.len() }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct IntoIter<I, B> {
+pub struct IntoIter<I, B>
+{
     it: I,
     bijection: B,
     idx: usize,
@@ -254,7 +341,8 @@ where
     type Item = (B::Source, C::Item);
     type IntoIter = IntoIter<C::IntoIter, B>;
 
-    fn into_iter(self) -> Self::IntoIter {
+    fn into_iter(self) -> Self::IntoIter
+    {
         IntoIter {
             it: self.values.into_iter(),
             bijection: self.bijection_fn,
@@ -270,26 +358,36 @@ where
 {
     type Item = (B::Source, I::Item);
 
-    fn next(&mut self) -> Option<Self::Item> {
+    fn next(&mut self) -> Option<Self::Item>
+    {
         let value = self.it.next()?;
         debug_assert!(self.bijection.to_source(self.idx).is_some());
         let src = self.bijection.to_source_unchecked(self.idx);
         self.idx += 1;
         Some((src, value))
     }
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.it.size_hint()
-    }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.it.size_hint() }
 }
-impl<I, B> FusedIterator for IntoIter<I, B> where I: FusedIterator, B: BijectionFn<Target = usize> {}
-impl<I, B> ExactSizeIterator for IntoIter<I, B> where I: ExactSizeIterator, B: BijectionFn<Target = usize> {}
+impl<I, B> FusedIterator for IntoIter<I, B>
+where
+    I: FusedIterator,
+    B: BijectionFn<Target = usize>,
+{
+}
+impl<I, B> ExactSizeIterator for IntoIter<I, B>
+where
+    I: ExactSizeIterator,
+    B: BijectionFn<Target = usize>,
+{
+}
 
 impl<I, B> DoubleEndedIterator for IntoIter<I, B>
 where
     I: DoubleEndedIterator + ExactSizeIterator,
     B: BijectionFn<Target = usize>,
 {
-    fn next_back(&mut self) -> Option<Self::Item> {
+    fn next_back(&mut self) -> Option<Self::Item>
+    {
         let value = self.it.next_back()?;
         let target_idx = self.idx + self.it.len();
         debug_assert!(self.bijection.to_source(target_idx).is_some());
@@ -297,7 +395,6 @@ where
         Some((src, value))
     }
 }
-
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Iter<'a, I, B>
@@ -308,24 +405,25 @@ pub struct Iter<'a, I, B>
 }
 
 impl<'a, C, B> Bijection<C, B>
-    where B: BijectionFn<Target = usize>,
+where
+    B: BijectionFn<Target = usize>,
 {
-    pub fn iter<'b>(&'b self) -> Iter<'b,<&'b C as IntoIterator>::IntoIter,B>
-        where &'b C: IntoIterator
+    pub fn iter<'b>(&'b self) -> Iter<'b, <&'b C as IntoIterator>::IntoIter, B>
+    where
+        &'b C: IntoIterator,
     {
-        Iter
-        {
+        Iter {
             it: (&self.values).into_iter(),
             bijection: &self.bijection_fn,
             idx: 0,
         }
     }
 
-    pub fn iter_mut<'b>(&'b mut self) -> Iter<'b,<&'b mut C as IntoIterator>::IntoIter,B>
-        where &'b mut C: IntoIterator
+    pub fn iter_mut<'b>(&'b mut self) -> Iter<'b, <&'b mut C as IntoIterator>::IntoIter, B>
+    where
+        &'b mut C: IntoIterator,
     {
-        Iter
-        {
+        Iter {
             it: (&mut self.values).into_iter(),
             bijection: &self.bijection_fn,
             idx: 0,
@@ -341,16 +439,15 @@ where
     type Item = (B::Source, <&'a C as IntoIterator>::Item);
     type IntoIter = Iter<'a, <&'a C as IntoIterator>::IntoIter, B>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        Iter
-        {
+    fn into_iter(self) -> Self::IntoIter
+    {
+        Iter {
             it: (&self.values).into_iter(),
             bijection: &self.bijection_fn,
             idx: 0,
         }
     }
 }
-
 
 impl<'a, I, B> Iterator for Iter<'a, I, B>
 where
@@ -359,26 +456,36 @@ where
 {
     type Item = (B::Source, I::Item);
 
-    fn next(&mut self) -> Option<Self::Item> {
+    fn next(&mut self) -> Option<Self::Item>
+    {
         let value = self.it.next()?;
         debug_assert!(self.bijection.to_source(self.idx).is_some());
         let src = self.bijection.to_source_unchecked(self.idx);
         self.idx += 1;
         Some((src, value))
     }
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.it.size_hint()
-    }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.it.size_hint() }
 }
-impl<'a, I, B> FusedIterator for Iter<'a, I, B> where I: FusedIterator, B: BijectionFn<Target = usize> {}
-impl<'a, I, B> ExactSizeIterator for Iter<'a, I, B> where I: ExactSizeIterator, B: BijectionFn<Target = usize> {}
+impl<'a, I, B> FusedIterator for Iter<'a, I, B>
+where
+    I: FusedIterator,
+    B: BijectionFn<Target = usize>,
+{
+}
+impl<'a, I, B> ExactSizeIterator for Iter<'a, I, B>
+where
+    I: ExactSizeIterator,
+    B: BijectionFn<Target = usize>,
+{
+}
 
 impl<'a, I, B> DoubleEndedIterator for Iter<'a, I, B>
 where
     I: DoubleEndedIterator + ExactSizeIterator,
     B: BijectionFn<Target = usize>,
 {
-    fn next_back(&mut self) -> Option<Self::Item> {
+    fn next_back(&mut self) -> Option<Self::Item>
+    {
         let value = self.it.next_back()?;
         let target_idx = self.idx + self.it.len();
         debug_assert!(self.bijection.to_source(target_idx).is_some());
@@ -386,7 +493,6 @@ where
         Some((src, value))
     }
 }
-
 
 impl<'a, C, B> IntoIterator for &'a mut Bijection<C, B>
 where
@@ -396,17 +502,15 @@ where
     type Item = (B::Source, <&'a mut C as IntoIterator>::Item);
     type IntoIter = Iter<'a, <&'a mut C as IntoIterator>::IntoIter, B>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        Iter
-        {
+    fn into_iter(self) -> Self::IntoIter
+    {
+        Iter {
             it: (&mut self.values).into_iter(),
             bijection: &self.bijection_fn,
             idx: 0,
         }
     }
 }
-
-
 
 /*
 
@@ -429,7 +533,6 @@ where
     }
 }
 */
-
 
 /*
 impl<C, B> IntoIterator for Bijection<C, B> where C: IntoIterator

@@ -4,3 +4,4 @@ fn_single_line = true
 # Or be more specific:
 control_brace_style = "AlwaysNextLine"
 brace_style = "AlwaysNextLine"
+match_arm_blocks = true

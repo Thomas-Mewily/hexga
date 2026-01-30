@@ -2,7 +2,6 @@ use super::*;
 
 use serde::de::{MapAccess, SeqAccess};
 
-
 impl<T> serde::Serialize for EntryValue<T>
 where
     T: serde::Serialize,
@@ -11,9 +10,14 @@ where
     where
         S: serde::Serializer,
     {
-        match self {
-            EntryValue::Occupied(value) => serializer.serialize_newtype_variant("EntryValue", 0, "Used", value),
-            EntryValue::Vacant(idx) => {
+        match self
+        {
+            EntryValue::Occupied(value) =>
+            {
+                serializer.serialize_newtype_variant("EntryValue", 0, "Used", value)
+            }
+            EntryValue::Vacant(idx) =>
+            {
                 let opt = if idx.is_max() { None } else { Some(*idx) };
                 serializer.serialize_newtype_variant("EntryValue", 1, "Next", &opt)
             }
@@ -31,9 +35,14 @@ where
     {
         #[derive(serde::Deserialize)]
         #[serde(field_identifier)]
-        enum Field { Used, Next }
+        enum Field
+        {
+            Used,
+            Next,
+        }
 
-        struct EntryValueVisitor<T> {
+        struct EntryValueVisitor<T>
+        {
             marker: std::marker::PhantomData<T>,
         }
 
@@ -43,7 +52,8 @@ where
         {
             type Value = EntryValue<T>;
 
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result
+            {
                 formatter.write_str("enum EntryValue")
             }
 
@@ -53,9 +63,11 @@ where
             {
                 use serde::de::VariantAccess;
 
-                match data.variant()? {
+                match data.variant()?
+                {
                     (Field::Used, v) => Ok(EntryValue::Occupied(v.newtype_variant()?)),
-                    (Field::Next, v) => {
+                    (Field::Next, v) =>
+                    {
                         let opt: Option<usize> = v.newtype_variant()?;
                         Ok(EntryValue::Vacant(opt.unwrap_or(usize::MAX)))
                     }
@@ -66,19 +78,24 @@ where
         deserializer.deserialize_enum(
             "EntryValue",
             &["Used", "Next"],
-            EntryValueVisitor { marker: std::marker::PhantomData },
+            EntryValueVisitor {
+                marker: std::marker::PhantomData,
+            },
         )
     }
 }
 
-
-
-impl<T, C, Gen> Serialize for GenVecOf<T,Gen,C>
-    where
-    C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration,
-    C: Serialize, T: Serialize, Gen: Serialize
+impl<T, C, Gen> Serialize for GenVecOf<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: IGeneration,
+    C: Serialize,
+    T: Serialize,
+    Gen: Serialize,
 {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
     {
         let mut state = serializer.serialize_struct("GenVec", 2)?;
         state.serialize_field("values", &self.values)?;
@@ -104,29 +121,36 @@ impl<T, C, Gen> Serialize for GenVecOf<T,Gen,C>
     }
 }
 
-
-
-impl<'de, T, C, Gen> Deserialize<'de> for GenVecOf<T,Gen,C>
-    where
-    C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration,
-    C: Deserialize<'de>, T: Deserialize<'de>, Gen: IGeneration + Deserialize<'de>
+impl<'de, T, C, Gen> Deserialize<'de> for GenVecOf<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: IGeneration,
+    C: Deserialize<'de>,
+    T: Deserialize<'de>,
+    Gen: IGeneration + Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        pub struct GenVec<T,Gen,C>
-            where
-            C: AsRef<[Entry<T,Gen>]>, Gen:IGeneration,
+        pub struct GenVec<T, Gen, C>
+        where
+            C: AsRef<[Entry<T, Gen>]>,
+            Gen: IGeneration,
         {
             values: C,
             next: Option<usize>,
             #[serde(skip)]
-            phantom: PhantomData<(T,Gen)>,
+            phantom: PhantomData<(T, Gen)>,
         }
 
-        let GenVec{ values, next, phantom: _ } = GenVec::deserialize(deserializer)?;
-        GenVecOf::<T,Gen,C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX)).map_err(serde::de::Error::custom)
+        let GenVec {
+            values,
+            next,
+            phantom: _,
+        } = GenVec::deserialize(deserializer)?;
+        GenVecOf::<T, Gen, C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX))
+            .map_err(serde::de::Error::custom)
     }
 }

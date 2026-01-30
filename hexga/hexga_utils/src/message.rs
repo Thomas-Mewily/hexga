@@ -8,5 +8,3 @@ pub trait MessageHandler<E>
     fn message(&mut self, message: E);
     //fn update(&mut self);
 }
-
-

@@ -1,4 +1,4 @@
-pub type GpuResult<T=()> = Result<T,GpuError>;
+pub type GpuResult<T = ()> = Result<T, GpuError>;
 
 #[non_exhaustive]
 #[derive(Debug, Clone)]

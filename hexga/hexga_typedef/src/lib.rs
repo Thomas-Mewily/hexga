@@ -1,6 +1,5 @@
 //! Define what will be the default `int`, `uint` and `float` (and `coef` = `float`) typedef.
 
-
 mod check;
 #[allow(unused_imports)]
 use check::*;
@@ -14,7 +13,7 @@ mod integer_typedef
 
     /// Default signed integer type
     #[allow(non_camel_case_types)]
-    pub type int  = isize;
+    pub type int = isize;
 }
 
 #[cfg(feature = "int_are_8_bits")]
@@ -26,7 +25,7 @@ mod integer_typedef
 
     /// Default signed integer type
     #[allow(non_camel_case_types)]
-    pub type int  = i8;
+    pub type int = i8;
 }
 
 #[cfg(feature = "int_are_16_bits")]
@@ -38,7 +37,7 @@ mod integer_typedef
 
     /// Default signed integer type
     #[allow(non_camel_case_types)]
-    pub type int  = i16;
+    pub type int = i16;
 }
 
 #[cfg(feature = "int_are_32_bits")]
@@ -50,7 +49,7 @@ mod integer_typedef
 
     /// Default signed integer type
     #[allow(non_camel_case_types)]
-    pub type int  = i32;
+    pub type int = i32;
 }
 
 #[cfg(feature = "int_are_64_bits")]
@@ -62,10 +61,9 @@ mod integer_typedef
 
     /// Default signed integer type
     #[allow(non_camel_case_types)]
-    pub type int  = i64;
+    pub type int = i64;
 }
 pub use integer_typedef::*;
-
 
 #[cfg(feature = "float_are_size_bits")]
 mod float_typedef

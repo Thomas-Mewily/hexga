@@ -1,6 +1,5 @@
 use super::*;
 
-
 /// /!\ The number of genenric parameter may vary at any time. Avoid using it for stability.
 // #[derive(Serialize, Deserialize)]
 // #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -12,8 +11,7 @@ use super::*;
 // }
 
 /// Markup Langaga capable of serialize / deserializer almost everythings
-#[derive(Serialize, Deserialize)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum FormatMarkup
 {
     // TODO: change it to Ron by default when ron Serializer::into_inner method will be added https://github.com/ron-rs/ron/pull/588
@@ -23,11 +21,10 @@ pub enum FormatMarkup
     Xml,
 }
 
-
 impl FormatMarkup
 {
     // Todo: add a flag
-    pub const PREFERED : Self=Self::Ron;
+    pub const PREFERED: Self = Self::Ron;
     pub const ALL: &'static [Self] = &[Self::Ron, Self::Json, Self::Xml];
 
     pub const fn extension(self) -> &'static str
@@ -41,7 +38,8 @@ impl FormatMarkup
     }
 
     pub fn encode<T>(self, value: &T) -> EncodeResult<String>
-        where T: Serialize
+    where
+        T: Serialize,
     {
         match self
         {
@@ -52,7 +50,9 @@ impl FormatMarkup
     }
 
     pub fn encode_with_writer<T, W>(self, value: &T, writer: W) -> EncodeResult
-        where T: Serialize, W: Write
+    where
+        T: Serialize,
+        W: Write,
     {
         match self
         {
@@ -63,7 +63,8 @@ impl FormatMarkup
     }
 
     pub fn from_str<T>(self, markup: &str) -> EncodeResult<T>
-        where T: for<'de> Deserialize<'de>
+    where
+        T: for<'de> Deserialize<'de>,
     {
         match self
         {
@@ -74,8 +75,8 @@ impl FormatMarkup
     }
 
     pub fn from_bytes<T>(self, bytes: &[u8]) -> EncodeResult<T>
-        where
-        T: for<'de> Deserialize<'de>
+    where
+        T: for<'de> Deserialize<'de>,
     {
         match self
         {
@@ -86,8 +87,9 @@ impl FormatMarkup
     }
 
     pub fn from_reader<T, R>(self, reader: R) -> EncodeResult<T>
-        where
-        T: for<'de> Deserialize<'de>, R: Read
+    where
+        T: for<'de> Deserialize<'de>,
+        R: Read,
     {
         match self
         {
@@ -99,38 +101,29 @@ impl FormatMarkup
 }
 impl Display for FormatMarkup
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self) }
 }
 impl<'a> TryFrom<&'a str> for FormatMarkup
 {
-    type Error=();
-    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+    type Error = ();
+    fn try_from(value: &'a str) -> Result<Self, Self::Error>
+    {
         match value
         {
             Extension::RON => Ok(Self::Ron),
             Extension::JSON => Ok(Self::Json),
             Extension::XML => Ok(Self::Xml),
-            _ => Err(())
+            _ => Err(()),
         }
     }
 }
 
-
-
-
-
-
-
-#[derive(Serialize, Deserialize)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FormatSpecial
 {
     Txt,
     TmpBin,
 }
-
 
 impl FormatSpecial
 {
@@ -146,7 +139,8 @@ impl FormatSpecial
     }
 
     pub fn encode<T>(self, value: &T) -> EncodeResult<Vec<u8>>
-        where T: Serialize
+    where
+        T: Serialize,
     {
         match self
         {
@@ -155,18 +149,20 @@ impl FormatSpecial
                 let mut txt = String::with_capacity(1024);
                 value.serialize(SerializerTxt::new(&mut txt))?;
                 Ok(txt.into_bytes())
-            },
+            }
             FormatSpecial::TmpBin =>
             {
                 let mut bytes = Vec::with_capacity(256);
                 value.serialize(SerializerTmpBin::new(&mut bytes))?;
                 Ok(bytes)
-            },
+            }
         }
     }
 
     pub fn encode_with_writer<T, W>(self, value: &T, writer: W) -> EncodeResult
-        where T: Serialize, W: Write
+    where
+        T: Serialize,
+        W: Write,
     {
         match self
         {
@@ -174,17 +170,18 @@ impl FormatSpecial
             {
                 value.serialize(SerializerTxt::new(writer.to_fmt_writer()))?;
                 Ok(())
-            },
+            }
             FormatSpecial::TmpBin =>
             {
                 value.serialize(SerializerTmpBin::new(writer))?;
                 Ok(())
-            },
+            }
         }
     }
 
     pub fn from_bytes<T>(self, bytes: &[u8]) -> EncodeResult<T>
-        where T: for<'de> Deserialize<'de>
+    where
+        T: for<'de> Deserialize<'de>,
     {
         match self
         {
@@ -194,7 +191,9 @@ impl FormatSpecial
     }
 
     pub fn from_reader<T, R>(self, mut reader: R) -> EncodeResult<T>
-        where T: for<'de> Deserialize<'de>, R: Read
+    where
+        T: for<'de> Deserialize<'de>,
+        R: Read,
     {
         match self
         {
@@ -203,7 +202,7 @@ impl FormatSpecial
                 let mut txt = String::with_capacity(1024);
                 reader.read_to_string(&mut txt)?;
                 T::deserialize(DeserializerTxt::new(txt))
-            },
+            }
             FormatSpecial::TmpBin =>
             {
                 let mut bytes = Vec::with_capacity(256);
@@ -215,27 +214,23 @@ impl FormatSpecial
 }
 impl Display for FormatSpecial
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self) }
 }
 impl<'a> TryFrom<&'a str> for FormatSpecial
 {
-    type Error=();
-    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+    type Error = ();
+    fn try_from(value: &'a str) -> Result<Self, Self::Error>
+    {
         match value
         {
             Extension::TXT => Ok(Self::Txt),
             Extension::TMP_BIN => Ok(Self::TmpBin),
-            _ => Err(())
+            _ => Err(()),
         }
     }
 }
 
-
-
-#[derive(Serialize, Deserialize)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AnyFormat
 {
     Markup(FormatMarkup),
@@ -243,13 +238,11 @@ pub enum AnyFormat
 }
 impl Default for AnyFormat
 {
-    fn default() -> Self {
-        Self::Markup(FormatMarkup::default())
-    }
+    fn default() -> Self { Self::Markup(FormatMarkup::default()) }
 }
 impl AnyFormat
 {
-    pub const PREFERED : Self = Self::Markup(FormatMarkup::PREFERED);
+    pub const PREFERED: Self = Self::Markup(FormatMarkup::PREFERED);
     pub const ALL: &'static [Self] = &[
         Self::Markup(FormatMarkup::Ron),
         Self::Markup(FormatMarkup::Json),
@@ -268,7 +261,8 @@ impl AnyFormat
     }
 
     pub fn encode<T>(self, value: &T) -> EncodeResult<Vec<u8>>
-        where T: Serialize
+    where
+        T: Serialize,
     {
         match self
         {
@@ -278,7 +272,9 @@ impl AnyFormat
     }
 
     pub fn encode_with_writer<T, W>(self, value: &T, writer: W) -> EncodeResult
-        where T: Serialize, W: Write
+    where
+        T: Serialize,
+        W: Write,
     {
         match self
         {
@@ -288,7 +284,8 @@ impl AnyFormat
     }
 
     pub fn from_bytes<T>(self, bytes: &[u8]) -> EncodeResult<T>
-        where T: for<'de> Deserialize<'de>
+    where
+        T: for<'de> Deserialize<'de>,
     {
         match self
         {
@@ -298,7 +295,9 @@ impl AnyFormat
     }
 
     pub fn from_reader<T, R>(self, reader: R) -> EncodeResult<T>
-        where T: for<'de> Deserialize<'de>, R: Read
+    where
+        T: for<'de> Deserialize<'de>,
+        R: Read,
     {
         match self
         {
@@ -320,11 +319,17 @@ impl Display for AnyFormat
 }
 impl<'a> TryFrom<&'a str> for AnyFormat
 {
-    type Error=();
+    type Error = ();
     fn try_from(value: &'a str) -> Result<Self, Self::Error>
     {
-        if let Ok(v) = FormatMarkup::try_from(value) { return Ok(Self::Markup(v)); }
-        if let Ok(v) = FormatSpecial::try_from(value) { return Ok(Self::Special(v)); }
+        if let Ok(v) = FormatMarkup::try_from(value)
+        {
+            return Ok(Self::Markup(v));
+        }
+        if let Ok(v) = FormatSpecial::try_from(value)
+        {
+            return Ok(Self::Special(v));
+        }
         Err(())
     }
 }

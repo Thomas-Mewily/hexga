@@ -1,18 +1,21 @@
 use hexga_map_on::*;
 
-
 trait Foo
 {
     fn foo();
 }
 
-impl Foo for i32 {
-    fn foo() {
+impl Foo for i32
+{
+    fn foo()
+    {
         println!("foo from i32");
     }
 }
-impl Foo for bool {
-    fn foo() {
+impl Foo for bool
+{
+    fn foo()
+    {
         println!("foo from bool");
     }
 }

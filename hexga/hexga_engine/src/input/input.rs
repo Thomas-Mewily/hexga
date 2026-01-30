@@ -1,6 +1,5 @@
 use super::*;
 
-
 //singleton_single_thread_project!(pub Input,AppInput,App,input);
 
 /*

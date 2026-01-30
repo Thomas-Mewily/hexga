@@ -2,9 +2,9 @@
 
 use hexga_map_on as map_on;
 use std::cmp::Ordering;
-use std::ops::*;
-use std::iter::{Sum,Product};
+use std::iter::{Product, Sum};
 use std::num::{Saturating, Wrapping};
+use std::ops::*;
 
 pub use map_on::*;
 

@@ -3,12 +3,14 @@ use super::*;
 pub trait TryAsRef<T>
 {
     type Error: Debug;
-    fn try_as_ref(&self) -> Result<&T,Self::Error>;
+    fn try_as_ref(&self) -> Result<&T, Self::Error>;
 }
-impl<T,S> TryAsRef<T> for S where S: AsRef<T>
+impl<T, S> TryAsRef<T> for S
+where
+    S: AsRef<T>,
 {
-    type Error=Never;
-    fn try_as_ref(&self) -> Result<&T,Self::Error> { Ok(self.as_ref()) }
+    type Error = Never;
+    fn try_as_ref(&self) -> Result<&T, Self::Error> { Ok(self.as_ref()) }
 }
 
 /*

@@ -49,6 +49,7 @@ pub mod hexga_prelude
 {
     pub use std::collections::{HashMap,HashSet,BTreeMap,BTreeSet,VecDeque};
 
+    #[rustfmt::skip]
     #[allow(unused_imports)]
     pub use super::{
         accessor::*,

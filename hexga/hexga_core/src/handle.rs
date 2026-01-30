@@ -1,6 +1,5 @@
-
 // Prevision for https://smallcultfollowing.com/babysteps/blog/2025/10/07/the-handle-trait/
-pub trait Handle : Clone
+pub trait Handle: Clone
 {
     fn clone_handle(&self) -> Self { self.clone() }
 }

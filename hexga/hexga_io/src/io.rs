@@ -1,14 +1,21 @@
-use std::{borrow::Cow, collections::HashMap, sync::{LazyLock, RwLock}};
+use std::{
+    borrow::Cow,
+    collections::HashMap,
+    sync::{LazyLock, RwLock},
+};
 
 use super::*;
 
 pub struct Io;
 
-static BYTES_CACHE: LazyLock<RwLock<HashMap<PathBuf, Cow<'static, [u8]>>>> = LazyLock::new(|| Default::default());
+static BYTES_CACHE: LazyLock<RwLock<HashMap<PathBuf, Cow<'static, [u8]>>>> =
+    LazyLock::new(|| Default::default());
 
 impl Io
 {
-    pub fn load_bytes<P>(self, path: P) -> IoResult<Cow<'static, [u8]>> where P: AsRef<Path>
+    pub fn load_bytes<P>(self, path: P) -> IoResult<Cow<'static, [u8]>>
+    where
+        P: AsRef<Path>,
     {
         let path = path.as_ref();
         let cache = BYTES_CACHE.read().unwrap();
@@ -20,7 +27,10 @@ impl Io
         }
     }
 
-    pub fn load<P,T>(self, path: P) -> IoResult<T> where P: AsRef<Path>, T: Load
+    pub fn load<P, T>(self, path: P) -> IoResult<T>
+    where
+        P: AsRef<Path>,
+        T: Load,
     {
         let path = path.as_ref();
         let extension = path.extension_or_empty();
@@ -34,7 +44,10 @@ impl Io
 
                 for ext in T::load_extensions()
                 {
-                    if ext == extension { continue; }
+                    if ext == extension
+                    {
+                        continue;
+                    }
 
                     if let Ok(bytes) = Io.load_bytes(&path.with_extension(ext))
                     {
@@ -47,18 +60,22 @@ impl Io
                     Some(bytes_and_extension) => bytes_and_extension,
                     None => return Err(err),
                 }
-            },
+            }
         };
         T::load_from_bytes(&bytes, extension).map_err(|e| IoError::new(path, e).when_reading())
     }
 
-    pub fn load_string<P>(self, path: P) -> IoResult<String> where P: AsRef<Path>
+    pub fn load_string<P>(self, path: P) -> IoResult<String>
+    where
+        P: AsRef<Path>,
     {
         let bytes = fs::load_bytes(path.as_ref())?;
         String::from_utf8(bytes).map_err(|e| IoError::new(path.as_ref(), e))
     }
 
-    pub fn save_bytes<P>(self, path: P, bytes: &[u8]) -> IoResult where P: AsRef<Path>
+    pub fn save_bytes<P>(self, path: P, bytes: &[u8]) -> IoResult
+    where
+        P: AsRef<Path>,
     {
         let path = path.as_ref();
         let cache = BYTES_CACHE.read().unwrap();
@@ -70,20 +87,32 @@ impl Io
         fs::save_bytes(path.as_ref(), bytes)
     }
 
-    pub fn set_file_cache<P,B>(self, path: P, bytes: B) where P: AsRef<Path>, B: Into<Cow<'static,[u8]>>
+    pub fn set_file_cache<P, B>(self, path: P, bytes: B)
+    where
+        P: AsRef<Path>,
+        B: Into<Cow<'static, [u8]>>,
     {
-        BYTES_CACHE.write().unwrap().insert(path.as_ref().to_owned(), bytes.into());
+        BYTES_CACHE
+            .write()
+            .unwrap()
+            .insert(path.as_ref().to_owned(), bytes.into());
     }
 
-    pub fn save_str<P>(self, path: P, str: &str) -> IoResult where P: AsRef<Path>
+    pub fn save_str<P>(self, path: P, str: &str) -> IoResult
+    where
+        P: AsRef<Path>,
     {
         self.save_bytes(path, str.as_bytes())
     }
 
-    pub fn save<P,T>(self, path: P, value: &T) -> IoResult where P: AsRef<Path>, T: Save + ?Sized
+    pub fn save<P, T>(self, path: P, value: &T) -> IoResult
+    where
+        P: AsRef<Path>,
+        T: Save + ?Sized,
     {
         let path = path.as_ref();
-        let (bytes, extension) = value.save_to_bytes(path.extension_or_empty())
+        let (bytes, extension) = value
+            .save_to_bytes(path.extension_or_empty())
             .map_err(|e| IoError::new(path, e).when_writing())?;
 
         Io.save_bytes(&path.with_extension(extension.as_ref()), &bytes)

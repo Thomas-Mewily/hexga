@@ -1,7 +1,6 @@
 use super::*;
 
-
-pub trait Push<T> : Collection
+pub trait Push<T>: Collection
 {
     type Output;
     /// Push an item and return it's index.
@@ -9,7 +8,7 @@ pub trait Push<T> : Collection
 
     //fn push_mut ...
 }
-pub trait PushFront<T> : Collection
+pub trait PushFront<T>: Collection
 {
     type Output;
     /// Push an item and return it's index.
@@ -74,16 +73,12 @@ impl<T> TryPush<T> for VecDeque<T>
 impl<T> Push<T> for LinkedList<T>
 {
     type Output = ();
-    fn push(&mut self, item: T) -> Self::Output {
-        self.push_back(item);
-    }
+    fn push(&mut self, item: T) -> Self::Output { self.push_back(item); }
 }
 impl<T> PushFront<T> for LinkedList<T>
 {
     type Output = ();
-    fn push_front(&mut self, item: T) -> Self::Output {
-        self.push_front(item);
-    }
+    fn push_front(&mut self, item: T) -> Self::Output { self.push_front(item); }
 }
 /*
 impl<T> TryPush<T> for LinkedList<T>
@@ -96,12 +91,12 @@ impl<T> TryPush<T> for LinkedList<T>
 }
 */
 
-impl<T> Push<T> for BinaryHeap<T> where T: Ord
+impl<T> Push<T> for BinaryHeap<T>
+where
+    T: Ord,
 {
     type Output = ();
-    fn push(&mut self, item: T) -> Self::Output {
-        self.push(item);
-    }
+    fn push(&mut self, item: T) -> Self::Output { self.push(item); }
 }
 /*
 impl<T> TryPush<T> for BinaryHeap<T> where T: Ord
@@ -117,9 +112,7 @@ impl<T> TryPush<T> for BinaryHeap<T> where T: Ord
 impl Push<char> for String
 {
     type Output = ();
-    fn push(&mut self, item: char) -> Self::Output {
-        self.push(item);
-    }
+    fn push(&mut self, item: char) -> Self::Output { self.push(item); }
 }
 /*
 impl TryPush<char> for String
@@ -135,9 +128,7 @@ impl TryPush<char> for String
 impl<'b> Push<&'b OsStr> for OsString
 {
     type Output = ();
-    fn push(&mut self, item: &'b OsStr) -> Self::Output {
-        self.push(item);
-    }
+    fn push(&mut self, item: &'b OsStr) -> Self::Output { self.push(item); }
 }
 /*
 impl<'b> TryPush<&'b OsStr> for OsString
@@ -150,12 +141,12 @@ impl<'b> TryPush<&'b OsStr> for OsString
 }
 */
 
-impl<P> Push<P> for PathBuf where P: AsRef<Path>
+impl<P> Push<P> for PathBuf
+where
+    P: AsRef<Path>,
 {
     type Output = ();
-    fn push(&mut self, item: P) -> Self::Output {
-        self.push(item);
-    }
+    fn push(&mut self, item: P) -> Self::Output { self.push(item); }
 }
 /*
 impl<P> TryPush<P> for PathBuf where P: AsRef<Path>

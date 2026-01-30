@@ -1,63 +1,58 @@
 use super::*;
 
-
 /// Generalized function and constant for floating point like `f32`, `f64`...
 ///
 /// The func impl and documentation are copied from the Rust std because those are the same function, generalized in this trait
-pub trait Float : PrimitiveSigned + CastPrimitive + Half + NaNValue
+pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue
 {
     /// 2.
-    const TWO : Self;
+    const TWO: Self;
     /// 3.
-    const THREE : Self;
+    const THREE: Self;
     /// 6.
-    const SIX : Self;
+    const SIX: Self;
     /// 60.
-    const SIXTY : Self;
+    const SIXTY: Self;
     /// 24.
-    const TWENTY_FOUR : Self;
-
+    const TWENTY_FOUR: Self;
 
     /// Archimedes' constant (π)
-    const PI : Self;
+    const PI: Self;
 
     /// `2.0 * PI`
-    const TWO_PI : Self;
+    const TWO_PI: Self;
     /// `0.5 * PI`
-    const HALF_PI : Self;
+    const HALF_PI: Self;
 
-    const ANGLE_ZERO_RADIAN  : Self = Self::ZERO;
-    const ANGLE_FULL_RADIAN  : Self = Self::TWO_PI;
-    const ANGLE_HALF_RADIAN  : Self = Self::PI;
-    const ANGLE_FLAT_RADIAN  : Self = Self::PI;
-    const ANGLE_RIGHT_RADIAN : Self = Self::ANGLE_HALF_RADIAN;
+    const ANGLE_ZERO_RADIAN: Self = Self::ZERO;
+    const ANGLE_FULL_RADIAN: Self = Self::TWO_PI;
+    const ANGLE_HALF_RADIAN: Self = Self::PI;
+    const ANGLE_FLAT_RADIAN: Self = Self::PI;
+    const ANGLE_RIGHT_RADIAN: Self = Self::ANGLE_HALF_RADIAN;
 
-    const ANGLE_ZERO_DEGREE : Self = Self::ZERO;
-    const ANGLE_FULL_DEGREE : Self;
-    const ANGLE_HALF_DEGREE : Self;
-    const ANGLE_FLAT_DEGREE : Self = Self::ANGLE_HALF_DEGREE;
-    const ANGLE_RIGHT_DEGREE : Self;
+    const ANGLE_ZERO_DEGREE: Self = Self::ZERO;
+    const ANGLE_FULL_DEGREE: Self;
+    const ANGLE_HALF_DEGREE: Self;
+    const ANGLE_FLAT_DEGREE: Self = Self::ANGLE_HALF_DEGREE;
+    const ANGLE_RIGHT_DEGREE: Self;
 
-    const ANGLE_ZERO_TURN : Self = Self::ZERO;
-    const ANGLE_FULL_TURN : Self;
-    const ANGLE_HALF_TURN : Self;
-    const ANGLE_FLAT_TURN : Self = Self::ANGLE_HALF_TURN;
-    const ANGLE_RIGHT_TURN : Self;
+    const ANGLE_ZERO_TURN: Self = Self::ZERO;
+    const ANGLE_FULL_TURN: Self;
+    const ANGLE_HALF_TURN: Self;
+    const ANGLE_FLAT_TURN: Self = Self::ANGLE_HALF_TURN;
+    const ANGLE_RIGHT_TURN: Self;
 
-
-
-    const COLOR_30_DIV_360  : Self;
-    const COLOR_60_DIV_360  : Self;
-    const COLOR_90_DIV_360  : Self;
-    const COLOR_120_DIV_360 : Self;
-    const COLOR_150_DIV_360 : Self;
-    const COLOR_180_DIV_360 : Self;
-    const COLOR_210_DIV_360 : Self;
-    const COLOR_240_DIV_360 : Self;
-    const COLOR_270_DIV_360 : Self;
-    const COLOR_300_DIV_360 : Self;
-    const COLOR_330_DIV_360 : Self;
-
+    const COLOR_30_DIV_360: Self;
+    const COLOR_60_DIV_360: Self;
+    const COLOR_90_DIV_360: Self;
+    const COLOR_120_DIV_360: Self;
+    const COLOR_150_DIV_360: Self;
+    const COLOR_180_DIV_360: Self;
+    const COLOR_210_DIV_360: Self;
+    const COLOR_240_DIV_360: Self;
+    const COLOR_270_DIV_360: Self;
+    const COLOR_300_DIV_360: Self;
+    const COLOR_330_DIV_360: Self;
 
     /// Returns the square root of a number.
     ///
@@ -119,7 +114,6 @@ pub trait Float : PrimitiveSigned + CastPrimitive + Half + NaNValue
     /// ```
     #[must_use]
     fn signum(self) -> Self;
-
 
     /// Returns a number composed of the magnitude of `self` and the sign of
     /// `sign`.
@@ -383,7 +377,6 @@ pub trait Float : PrimitiveSigned + CastPrimitive + Half + NaNValue
     #[must_use]
     fn cos(self) -> Self;
 
-
     /// Computes the cotangent of a number (in radians).
     ///
     /// Defined as `1 / tan(x)` or equivalently `cos(x) / sin(x)`.
@@ -450,7 +443,6 @@ pub trait Float : PrimitiveSigned + CastPrimitive + Half + NaNValue
     /// ```
     #[must_use]
     fn cosh(self) -> Self;
-
 
     /// Computes the tangent of a number (in radians).
     ///
@@ -554,89 +546,116 @@ pub trait Float : PrimitiveSigned + CastPrimitive + Half + NaNValue
     /// assert!(abs_difference_2 <= f32::EPSILON);
     /// ```
     #[must_use]
-    fn atan2(self, other : Self) -> Self;
+    fn atan2(self, other: Self) -> Self;
 
     fn sin_cos(self) -> (Self, Self);
 
     /// between [0., 1.]
-    fn normalize(self) -> Self where Self : One { self.min_partial(Self::ONE).max_partial(Self::ZERO) }
+    fn normalize(self) -> Self
+    where
+        Self: One,
+    {
+        self.min_partial(Self::ONE).max_partial(Self::ZERO)
+    }
 
     fn floor(self) -> Self;
     fn round(self) -> Self;
-    fn ceil (self) -> Self;
+    fn ceil(self) -> Self;
 
     fn trunc(self) -> Self;
 
-    fn total_cmp(&self, other : &Self) -> ::std::cmp::Ordering;
+    fn total_cmp(&self, other: &Self) -> ::std::cmp::Ordering;
 
-    fn round_toward_zero(self) -> Self where Self : PositiveOrNegative { if self.is_positive_or_zero() { self.floor() } else { self.ceil() }}
-    fn round_away_from_zero(self) -> Self where Self : PositiveOrNegative { if self.is_positive_or_zero() { self.ceil() } else { self.floor() }}
+    fn round_toward_zero(self) -> Self
+    where
+        Self: PositiveOrNegative,
+    {
+        if self.is_positive_or_zero()
+        {
+            self.floor()
+        }
+        else
+        {
+            self.ceil()
+        }
+    }
+    fn round_away_from_zero(self) -> Self
+    where
+        Self: PositiveOrNegative,
+    {
+        if self.is_positive_or_zero()
+        {
+            self.ceil()
+        }
+        else
+        {
+            self.floor()
+        }
+    }
 }
 
 macro_rules! impl_floating_number {
-    ($primitive_name: ident) =>
-    {
+    ($primitive_name: ident) => {
         impl Float for $primitive_name
         {
-            #[inline(always)] fn floor(self) -> Self { Self::floor(self) }
-            #[inline(always)] fn ceil (self) -> Self { Self::ceil(self) }
-            #[inline(always)] fn round(self) -> Self { Self::round(self) }
-            #[inline(always)] fn trunc(self) -> Self { Self::trunc(self) }
+            #[inline(always)]
+            fn floor(self) -> Self { Self::floor(self) }
+            #[inline(always)]
+            fn ceil(self) -> Self { Self::ceil(self) }
+            #[inline(always)]
+            fn round(self) -> Self { Self::round(self) }
+            #[inline(always)]
+            fn trunc(self) -> Self { Self::trunc(self) }
 
-            const TWO   : Self = 2.0;
-            const THREE : Self = 3.0;
-            const SIX   : Self = 6.0;
-            const TWENTY_FOUR : Self = 24.;
-            const SIXTY : Self = 60.;
+            const TWO: Self = 2.0;
+            const THREE: Self = 3.0;
+            const SIX: Self = 6.0;
+            const TWENTY_FOUR: Self = 24.;
+            const SIXTY: Self = 60.;
 
-            const PI : Self =  std::$primitive_name::consts::PI;
-            const TWO_PI : Self  =  Self::PI * 2.;
-            const HALF_PI : Self =  Self::PI * 0.5;
+            const PI: Self = std::$primitive_name::consts::PI;
+            const TWO_PI: Self = Self::PI * 2.;
+            const HALF_PI: Self = Self::PI * 0.5;
 
+            const ANGLE_FULL_DEGREE: Self = 360.;
+            const ANGLE_HALF_DEGREE: Self = 180.;
+            const ANGLE_RIGHT_DEGREE: Self = 90.;
+            const ANGLE_FULL_TURN: Self = Self::ONE;
+            const ANGLE_HALF_TURN: Self = 0.5;
+            const ANGLE_RIGHT_TURN: Self = 0.25;
 
-
-            const ANGLE_FULL_DEGREE  : Self = 360.;
-            const ANGLE_HALF_DEGREE  : Self = 180.;
-            const ANGLE_RIGHT_DEGREE : Self = 90.;
-            const ANGLE_FULL_TURN    : Self = Self::ONE;
-            const ANGLE_HALF_TURN    : Self = 0.5;
-            const ANGLE_RIGHT_TURN   : Self = 0.25;
-
-            const COLOR_30_DIV_360  : Self = 30.  / 360. ;
-            const COLOR_60_DIV_360  : Self = 60.  / 360. ;
-            const COLOR_90_DIV_360  : Self = 90.  / 360. ;
-            const COLOR_120_DIV_360 : Self = 120. / 360. ;
-            const COLOR_150_DIV_360 : Self = 150. / 360. ;
-            const COLOR_180_DIV_360 : Self = 180. / 360. ;
-            const COLOR_210_DIV_360 : Self = 210. / 360. ;
-            const COLOR_240_DIV_360 : Self = 240. / 360. ;
-            const COLOR_270_DIV_360 : Self = 270. / 360. ;
-            const COLOR_300_DIV_360 : Self = 300. / 360. ;
-            const COLOR_330_DIV_360 : Self = 330. / 360. ;
-
-
+            const COLOR_30_DIV_360: Self = 30. / 360.;
+            const COLOR_60_DIV_360: Self = 60. / 360.;
+            const COLOR_90_DIV_360: Self = 90. / 360.;
+            const COLOR_120_DIV_360: Self = 120. / 360.;
+            const COLOR_150_DIV_360: Self = 150. / 360.;
+            const COLOR_180_DIV_360: Self = 180. / 360.;
+            const COLOR_210_DIV_360: Self = 210. / 360.;
+            const COLOR_240_DIV_360: Self = 240. / 360.;
+            const COLOR_270_DIV_360: Self = 270. / 360.;
+            const COLOR_300_DIV_360: Self = 300. / 360.;
+            const COLOR_330_DIV_360: Self = 330. / 360.;
 
             fn sqrt(self) -> Self { self.sqrt() }
 
-            fn cos (self) -> Self { self.cos () }
+            fn cos(self) -> Self { self.cos() }
             fn acos(self) -> Self { self.acos() }
             fn cosh(self) -> Self { self.cosh() }
 
-            fn sin (self) -> Self { self.sin () }
+            fn sin(self) -> Self { self.sin() }
             fn asin(self) -> Self { self.asin() }
             fn sinh(self) -> Self { self.sinh() }
 
-            fn tan (self) -> Self { self.tan () }
+            fn tan(self) -> Self { self.tan() }
             fn atan(self) -> Self { self.atan() }
             fn tanh(self) -> Self { self.tanh() }
 
-            fn atan2(self, other : Self) -> Self { self.atan2(other) }
+            fn atan2(self, other: Self) -> Self { self.atan2(other) }
 
             fn sin_cos(self) -> (Self, Self) { self.sin_cos() }
 
-
-            fn fract   (self) -> Self { self.fract() }
-            fn signum  (self) -> Self {self.signum() }
+            fn fract(self) -> Self { self.fract() }
+            fn signum(self) -> Self { self.signum() }
             fn copysign(self, sign: Self) -> Self { self.copysign(sign) }
 
             fn pow(self, n: Self) -> Self { self.powf(n) }
@@ -650,7 +669,7 @@ macro_rules! impl_floating_number {
             fn log2(self) -> Self { self.log2() }
             fn log10(self) -> Self { self.log10() }
 
-            fn total_cmp(&self, other : &Self) -> ::std::cmp::Ordering { self.total_cmp(other) }
+            fn total_cmp(&self, other: &Self) -> ::std::cmp::Ordering { self.total_cmp(other) }
         }
     };
 }

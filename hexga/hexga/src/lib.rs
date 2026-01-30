@@ -1,11 +1,11 @@
+pub use hexga_ansi_color as ansi_color;
+pub use hexga_bitflags as bitflags;
 pub use hexga_core::*;
 pub use hexga_generational as generational;
-pub use hexga_math as math;
-pub use hexga_bitflags as bitflags;
-pub use hexga_ansi_color as ansi_color;
-pub use hexga_utils as utils;
+pub use hexga_image::{color, image};
 pub use hexga_map_on as map_on;
-pub use hexga_image::{color,image};
+pub use hexga_math as math;
+pub use hexga_utils as utils;
 //pub use hexga_random as random;
 pub use hexga_encoding as encoding;
 
@@ -20,17 +20,17 @@ pub use hexga_asset as asset;
 #[cfg(all(test, feature = "serde"))]
 mod serde_test;
 
-pub mod core_prelude{}
-
-
+pub mod core_prelude
+{}
 
 pub mod prelude
 {
-    pub use hexga_core::prelude::*;
     pub use super::hexga_prelude::*;
+    pub use hexga_core::prelude::*;
 
     #[allow(hidden_glob_reexports)]
-    pub(crate) mod prelude {}
+    pub(crate) mod prelude
+    {}
 }
 
 #[doc(hidden)]
@@ -40,14 +40,14 @@ pub mod prelude
 pub mod hexga_prelude
 {
 
+    pub use crate::bitflags::bit_index;
     pub use crate::generational::prelude::*;
     pub use crate::math::prelude::*;
-    pub use crate::bitflags::bit_index;
     pub use crate::utils::prelude::*;
     pub use hexga_image::prelude::*;
     //pub use crate::random::*;
-    pub use crate::singleton::prelude::*;
     pub use crate::encoding::prelude::*;
+    pub use crate::singleton::prelude::*;
     //pub use crate::map_on::prelude::*;
 
     /*
@@ -62,18 +62,18 @@ pub mod hexga_prelude
     #[allow(unused_imports)]
     #[cfg(feature = "serde")]
     pub use serde;*/
+    #[cfg(feature = "serde")]
+    pub use hexga_io::prelude::*;
     #[allow(unused_imports)]
     #[cfg(feature = "serde")]
-    pub use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
-    #[cfg(feature = "serde")]
-    pub use
-    {
-        hexga_io::prelude::*,
+    pub use serde::{
+        Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct,
     };
 
     #[cfg(feature = "hexga_asset")]
     pub use hexga_asset::prelude::*;
 
     #[allow(hidden_glob_reexports)]
-    pub(crate) mod prelude {}
+    pub(crate) mod prelude
+    {}
 }

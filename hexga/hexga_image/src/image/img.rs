@@ -1,21 +1,17 @@
-use hexga_encoding::MediaType;
 use ::image::{DynamicImage, GenericImageView, ImageFormat};
+use hexga_encoding::MediaType;
 
 use super::*;
 
-
 pub(crate) mod prelude
 {
-    pub use super::
-    {
-        Image,ImageOf,ToImage,
-    };
+    pub use super::{Image, ImageOf, ToImage};
 }
 
 pub type Image = ImageOf;
-pub type ImageOf<C=ColorU8> = ImageBaseOf<C>;
+pub type ImageOf<C = ColorU8> = ImageBaseOf<C>;
 
-pub type ImageError<Idx> = GridBaseError<Idx,2>;
+pub type ImageError<Idx> = GridBaseError<Idx, 2>;
 
 /// Image have a different type than Grid because:
 ///
@@ -23,13 +19,13 @@ pub type ImageError<Idx> = GridBaseError<Idx,2>;
 /// - The layout of the pixels match the saving format, saving an image don't create a temporary vector
 //#[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Image"))]
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ImageBaseOf<C=ColorU8,Idx=int> where Idx: Integer
+pub struct ImageBaseOf<C = ColorU8, Idx = int>
+where
+    Idx: Integer,
 {
-    size  : Vector2<Idx>,
+    size: Vector2<Idx>,
     pixels: Vec<C>,
 }
-
-
 
 macro_rules! impl_img_fmt_method {
     ($trait_name :ident) => {
@@ -37,10 +33,11 @@ macro_rules! impl_img_fmt_method {
         {
             writeln!(f)?;
 
-            const SEP :&'static str = " ";
+            const SEP: &'static str = " ";
             let size = self.size();
 
-            let strings = self.iter()
+            let strings = self
+                .iter()
                 .map(|(_, v)| {
                     let mut s = String::new();
                     let mut tmp_f = std::fmt::Formatter::new(&mut s, ___());
@@ -56,7 +53,7 @@ macro_rules! impl_img_fmt_method {
             {
                 for x in 0..size[0].to_usize()
                 {
-                    let mut idx = Vector::<Idx,2>::ZERO;
+                    let mut idx = Vector::<Idx, 2>::ZERO;
                     idx[0] = Idx::cast_from(x);
                     idx[1] = Idx::cast_from(y);
                     write!(f, "{:>width$}", g[idx], width = width)?;
@@ -79,55 +76,69 @@ map_on_std_fmt!(
     }
 );
 
-
-impl<C,Idx> ImageBaseOf<C,Idx> where Idx: Integer
+impl<C, Idx> ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
 {
     pub fn pixels(&self) -> &[C] { self.values() }
-    pub fn pixels_mut(&mut self) -> &mut[C] { self.values_mut() }
+    pub fn pixels_mut(&mut self) -> &mut [C] { self.values_mut() }
 
     /// `self.view().crop_intersect(subrect).to_grid()`
-    fn subimage(&self, rect: Rectangle2<Idx>) -> Self where C: Clone { self.subview_intersect(rect).to_image() }
+    fn subimage(&self, rect: Rectangle2<Idx>) -> Self
+    where
+        C: Clone,
+    {
+        self.subview_intersect(rect).to_image()
+    }
 }
 
-impl<C,Idx> ImageBaseOf<C,Idx> where Idx: Integer
+impl<C, Idx> ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
 {
-    pub(crate) fn flip_y<P>(&self, mut pos: P) -> P where P: Into<Vector2::<Idx>> + From<Vector2::<Idx>>
-    { unsafe { Self::external_position_to_position_unchecked(pos.into(), self.size).into() } }
+    pub(crate) fn flip_y<P>(&self, mut pos: P) -> P
+    where
+        P: Into<Vector2<Idx>> + From<Vector2<Idx>>,
+    {
+        unsafe { Self::external_position_to_position_unchecked(pos.into(), self.size).into() }
+    }
 }
-
-
-
-
 
 pub trait ToImage
 {
     type Output;
     fn to_image(self) -> Self::Output;
 }
-impl<C,Idx> From<GridOf<C,Idx,2>> for ImageBaseOf<C, Idx> where Idx: Integer
+impl<C, Idx> From<GridOf<C, Idx, 2>> for ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
 {
-    fn from(value: GridOf<C,Idx,2>) -> Self { value.to_image() }
+    fn from(value: GridOf<C, Idx, 2>) -> Self { value.to_image() }
 }
-impl<'a,C,Idx> From<GridView<'a,GridOf<C,Idx,2>,C,Idx,2>> for ImageBaseOf<C, Idx> where Idx: Integer, C: Clone
+impl<'a, C, Idx> From<GridView<'a, GridOf<C, Idx, 2>, C, Idx, 2>> for ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
+    C: Clone,
 {
-    fn from(value: GridView<'a,GridOf<C,Idx,2>,C,Idx,2>) -> Self { value.to_image() }
-}
-
-impl<C,Idx> ToImage for ImageBaseOf<C,Idx> where Idx: Integer
-{
-    type Output=Self;
-    fn to_image(self) -> Self::Output {
-        self
-    }
+    fn from(value: GridView<'a, GridOf<C, Idx, 2>, C, Idx, 2>) -> Self { value.to_image() }
 }
 
+impl<C, Idx> ToImage for ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
+{
+    type Output = Self;
+    fn to_image(self) -> Self::Output { self }
+}
 
-impl<C,Idx> ToImage for GridOf<C,Idx,2> where Idx: Integer
+impl<C, Idx> ToImage for GridOf<C, Idx, 2>
+where
+    Idx: Integer,
 {
     type Output = ImageBaseOf<C, Idx>;
     fn to_image(mut self) -> Self::Output
     {
-        let (w,h) = self.size().into();
+        let (w, h) = self.size().into();
         for x in Idx::iter(w)
         {
             for y in Idx::iter(h / Idx::two())
@@ -139,11 +150,14 @@ impl<C,Idx> ToImage for GridOf<C,Idx,2> where Idx: Integer
         unsafe { ImageBaseOf::from_vec_unchecked(size, values) }
     }
 }
-impl<C,Idx> ToGrid<C,Idx,2> for ImageBaseOf<C, Idx> where Idx: Integer
+impl<C, Idx> ToGrid<C, Idx, 2> for ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
 {
-    type Output = GridOf<C, Idx,2>;
-    fn to_grid(mut self) -> Self::Output {
-        let (w,h) = self.size().into();
+    type Output = GridOf<C, Idx, 2>;
+    fn to_grid(mut self) -> Self::Output
+    {
+        let (w, h) = self.size().into();
         for x in Idx::iter(w)
         {
             for y in Idx::iter(h / Idx::two())
@@ -156,60 +170,83 @@ impl<C,Idx> ToGrid<C,Idx,2> for ImageBaseOf<C, Idx> where Idx: Integer
     }
 }
 
-
-impl<'a,C,Idx> ToImage for GridView<'a,GridOf<C,Idx,2>,C,Idx,2> where Idx: Integer, C: Clone
+impl<'a, C, Idx> ToImage for GridView<'a, GridOf<C, Idx, 2>, C, Idx, 2>
+where
+    Idx: Integer,
+    C: Clone,
 {
     type Output = ImageBaseOf<C, Idx>;
     fn to_image(self) -> Self::Output
     {
         let size = self.size();
-        Self::Output::from_fn(size, |p|
+        Self::Output::from_fn(size, |p| {
             unsafe { self.get_unchecked(vector2(p.x, size.y - p.y - Idx::ONE)) }.clone()
-        )
+        })
     }
 }
-impl<'a,C,Idx> ToImage for GridViewMut<'a,GridOf<C,Idx,2>,C,Idx,2> where Idx: Integer, C: Clone
+impl<'a, C, Idx> ToImage for GridViewMut<'a, GridOf<C, Idx, 2>, C, Idx, 2>
+where
+    Idx: Integer,
+    C: Clone,
 {
     type Output = ImageBaseOf<C, Idx>;
     fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
-
-impl<'a,C,Idx> ToImage for GridView<'a,ImageBaseOf<C,Idx>,C,Idx,2> where Idx: Integer, C: Clone
+impl<'a, C, Idx> ToImage for GridView<'a, ImageBaseOf<C, Idx>, C, Idx, 2>
+where
+    Idx: Integer,
+    C: Clone,
 {
     type Output = ImageBaseOf<C, Idx>;
     fn to_image(self) -> Self::Output
     {
-        Self::Output::from_fn(self.size(), |p| unsafe { self.get_unchecked(p) }.clone() )
+        Self::Output::from_fn(self.size(), |p| unsafe { self.get_unchecked(p) }.clone())
     }
 }
-impl<'a,C,Idx> ToImage for GridViewMut<'a,ImageBaseOf<C,Idx>,C,Idx,2> where Idx: Integer, C: Clone
+impl<'a, C, Idx> ToImage for GridViewMut<'a, ImageBaseOf<C, Idx>, C, Idx, 2>
+where
+    Idx: Integer,
+    C: Clone,
 {
     type Output = ImageBaseOf<C, Idx>;
     fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
-
-impl<C,Idx> IGrid<C,Idx,2> for ImageBaseOf<C,Idx> where Idx: Integer
+impl<C, Idx> IGrid<C, Idx, 2> for ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
 {
-    type WithType<U> = ImageBaseOf<U,Idx>;
+    type WithType<U> = ImageBaseOf<U, Idx>;
 
     fn values(&self) -> &[C] { &self.pixels }
     fn values_mut(&mut self) -> &mut [C] { &mut self.pixels }
 
     fn into_size_and_values(self) -> (Vector2<Idx>, Vec<C>) { (self.size, self.pixels) }
 
-    unsafe fn from_vec_unchecked<P>(size: P, pixels: Vec<C>) -> Self where P: Into<Vector2::<Idx>>
+    unsafe fn from_vec_unchecked<P>(size: P, pixels: Vec<C>) -> Self
+    where
+        P: Into<Vector2<Idx>>,
     {
-        Self { size: size.into(), pixels }
+        Self {
+            size: size.into(),
+            pixels,
+        }
     }
 
-    unsafe fn position_to_index_unchecked<P>(&self, pos: P) -> usize where P: Into<Vector2<Idx>> { unsafe { Vector2::<Idx>::to_index_unchecked(self.flip_y(pos.into()), self.size()) } }
+    unsafe fn position_to_index_unchecked<P>(&self, pos: P) -> usize
+    where
+        P: Into<Vector2<Idx>>,
+    {
+        unsafe { Vector2::<Idx>::to_index_unchecked(self.flip_y(pos.into()), self.size()) }
+    }
     unsafe fn index_to_position_unchecked(&self, index: usize) -> Vector2<Idx>
     {
         self.flip_y(unsafe { Vector2::<Idx>::from_index_unchecked(index, self.size()) })
     }
-    unsafe fn external_position_to_position_unchecked<P>(mut pos: P, size: P) -> P where P: Into<Vector2<Idx>> + From<Vector2<Idx>>
+    unsafe fn external_position_to_position_unchecked<P>(mut pos: P, size: P) -> P
+    where
+        P: Into<Vector2<Idx>> + From<Vector2<Idx>>,
     {
         let mut pos = pos.into();
         let size = size.into();
@@ -218,13 +255,16 @@ impl<C,Idx> IGrid<C,Idx,2> for ImageBaseOf<C,Idx> where Idx: Integer
     }
 }
 
-
-impl<T, Idx> GetPosition<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
+impl<T, Idx> GetPosition<Idx, 2> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
 {
     #[inline(always)]
     fn pos(&self) -> Vector2<Idx> { zero() }
 }
-impl<T, Idx> GetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
+impl<T, Idx> GetSize<Idx, 2> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
 {
     #[inline(always)]
     fn size(&self) -> Vector<Idx, 2> { self.size }
@@ -238,108 +278,157 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 }
 */
 
-
-
-impl<T, Idx> Collection for ImageBaseOf<T, Idx>  where Idx: Integer {}
-impl<T, Idx> CollectionBijective for ImageBaseOf<T, Idx>  where Idx: Integer {}
-impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>
+impl<T, Idx> Collection for ImageBaseOf<T, Idx> where Idx: Integer {}
+impl<T, Idx> CollectionBijective for ImageBaseOf<T, Idx> where Idx: Integer {}
+impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
 {
     type Output = T;
     #[inline(always)]
-    fn get(&self, pos: P) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) })) }
+    fn get(&self, pos: P) -> Option<&Self::Output>
+    {
+        self.position_to_index(pos)
+            .and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) }))
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(&self, pos: P) -> &Self::Output { unsafe { let idx = self.position_to_index_unchecked(pos.into()); self.pixels().get_unchecked(idx) } }
+    unsafe fn get_unchecked(&self, pos: P) -> &Self::Output
+    {
+        unsafe {
+            let idx = self.position_to_index_unchecked(pos.into());
+            self.pixels().get_unchecked(idx)
+        }
+    }
 }
-impl<P, T, Idx> TryGet<P> for ImageBaseOf<T, Idx>  where Idx: Integer, P: Into<Vector2<Idx>>
+impl<P, T, Idx> TryGet<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
 {
-    type Error = IndexOutOfBounds<Vector2<Idx>,Vector2<Idx>>;
+    type Error = IndexOutOfBounds<Vector2<Idx>, Vector2<Idx>>;
     #[inline(always)]
     fn try_get(&self, pos: P) -> Result<&Self::Output, Self::Error>
     {
         let p = pos.into();
-        self.get(p).ok_or_else(|| IndexOutOfBounds::new(p, self.size()))
+        self.get(p)
+            .ok_or_else(|| IndexOutOfBounds::new(p, self.size()))
     }
 }
 
-impl<P, T, Idx> TryGetMut<P> for ImageBaseOf<T, Idx> where Idx: Integer, P: Into<Vector2<Idx>>
+impl<P, T, Idx> TryGetMut<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
     fn try_get_mut(&mut self, pos: P) -> Result<&mut Self::Output, Self::Error>
     {
         let p = pos.into();
         let size = self.size();
-        self.get_mut(p).ok_or_else(|| IndexOutOfBounds::new(p, size))
+        self.get_mut(p)
+            .ok_or_else(|| IndexOutOfBounds::new(p, size))
     }
 }
-impl<P, T, Idx> GetMut<P> for ImageBaseOf<T, Idx> where Idx: Integer, P: Into<Vector2<Idx>>
+impl<P, T, Idx> GetMut<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output> { self.position_to_index(pos).and_then(|i| Some(unsafe { self.pixels_mut().get_unchecked_mut(i) })) }
+    fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output>
+    {
+        self.position_to_index(pos)
+            .and_then(|i| Some(unsafe { self.pixels_mut().get_unchecked_mut(i) }))
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut(&mut self, pos: P) -> &mut Self::Output{ unsafe { let idx = self.position_to_index_unchecked(pos); self.values_mut().get_unchecked_mut(idx)} }
+    unsafe fn get_unchecked_mut(&mut self, pos: P) -> &mut Self::Output
+    {
+        unsafe {
+            let idx = self.position_to_index_unchecked(pos);
+            self.values_mut().get_unchecked_mut(idx)
+        }
+    }
 }
 
-impl<P, T, Idx> GetManyMut<P> for ImageBaseOf<T, Idx> where Idx: Integer, P: Into<Vector2<Idx>>
+impl<P, T, Idx> GetManyMut<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> {
+    fn try_get_many_mut<const N2: usize>(
+        &mut self,
+        indices: [P; N2],
+    ) -> Result<[&mut Self::Output; N2], ManyMutError>
+    {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
         if indices.any(|x| x.is_none())
         {
             Err(ManyMutError::IndexOutOfBounds)
-        } else
+        }
+        else
         {
-            self.pixels_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
+            self.pixels_mut()
+                .try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 
-    fn get_many_mut<const N: usize>(&mut self, indices: [P; N]) -> Option<[&mut Self::Output;N]> {
+    fn get_many_mut<const N: usize>(&mut self, indices: [P; N]) -> Option<[&mut Self::Output; N]>
+    {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
         if indices.any(|x| x.is_none())
         {
             None
-        } else
+        }
+        else
         {
-            self.pixels_mut().get_many_mut(indices.map(|idx| idx.unwrap()))
+            self.pixels_mut()
+                .get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }
 
-impl<P, T, Idx> Index<P> for ImageBaseOf<T, Idx> where Idx: Integer, P: Into<Vector2<Idx>>
+impl<P, T, Idx> Index<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
 {
-    type Output=T;
+    type Output = T;
     #[inline(always)]
     fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
 }
-impl<P, T, Idx> IndexMut<P> for ImageBaseOf<T, Idx> where Idx: Integer, P: Into<Vector2<Idx>>
+impl<P, T, Idx> IndexMut<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
     fn index_mut(&mut self, index: P) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-
-
 impl<T, Idx> Length for ImageBaseOf<T, Idx>
-    where Idx: Integer
+where
+    Idx: Integer,
 {
     #[inline(always)]
     fn len(&self) -> usize { self.values().len() }
 }
 
-
-
-impl<T, Idx> Crop<Idx,2> for ImageBaseOf<T, Idx>
-    where Idx: Integer, T:Clone
+impl<T, Idx> Crop<Idx, 2> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    T: Clone,
 {
-    fn crop(self, subrect: Rectangle2<Idx>) -> Option<Self> {
+    fn crop(self, subrect: Rectangle2<Idx>) -> Option<Self>
+    {
         self.view().crop(subrect).map(|v| v.to_image())
     }
 }
-
 
 /*
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -415,145 +504,179 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx: Integer, C: ToColo
 }
 */
 
-impl<T, Idx> MapIntern for ImageBaseOf<T, Idx> where Idx: Integer
+impl<T, Idx> MapIntern for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
 {
-    type Item=T;
-    fn map_intern<F>(mut self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item {
+    type Item = T;
+    fn map_intern<F>(mut self, f: F) -> Self
+    where
+        F: FnMut(Self::Item) -> Self::Item,
+    {
         self.pixels = self.pixels.map_intern(f);
         self
     }
 }
-impl<T, Idx> MapInternWith for ImageBaseOf<T, Idx> where Idx: Integer
+impl<T, Idx> MapInternWith for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
 {
-    fn map_with_intern<F>(mut self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item {
+    fn map_with_intern<F>(mut self, other: Self, f: F) -> Self
+    where
+        F: FnMut(Self::Item, Self::Item) -> Self::Item,
+    {
         assert_eq!(self.size(), other.size(), "size mismatch");
         self.pixels = self.pixels.map_with_intern(other.pixels, f);
         self
     }
 }
-impl<T, Idx> Map for ImageBaseOf<T, Idx> where Idx: Integer
+impl<T, Idx> Map for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
 {
     type WithType<R> = ImageBaseOf<R, Idx>;
 
-    fn map<R,F>(self, f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R {
+    fn map<R, F>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(Self::Item) -> R,
+    {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.pixels.map(f)) }
     }
 }
-impl<T, Idx> MapWith for ImageBaseOf<T, Idx> where Idx: Integer
+impl<T, Idx> MapWith for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
 {
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R {
-        assert_eq!(self.size(), other.size(), "size mismatch");
-        unsafe { ImageBaseOf::from_vec_unchecked(self.size(), self.pixels.map_with(other.pixels, f)) }
-    }
-}
-
-
-
-
-impl <C,Idx> SaveExtension for ImageBaseOf<C,Idx>
+    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R>
     where
-    Idx : Integer + CfgSerialize,
-    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>> + CfgSerialize,
-    u8: CastRangeFrom<C::Component>,
-    u16: CastRangeFrom<C::Component>
-{
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
-        [ "png" ].into_iter()
-    }
-
-    fn save_to_writer_with_custom_extension<W>(&self, writer: W, extension: &extension) -> EncodeResult where W: Write {
-        match extension
-        {
-            "png" => {
-                match C::Component::PRIMITIVE_TYPE
-                {
-                    NumberType::IntegerSigned =>
-                    {
-                        if std::mem::size_of::<C::Component>() * 8 <= 8
-                        {
-                            self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension)
-                        }else
-                        {
-                            self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension)
-                        }
-                    },
-                    NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
-                    {
-                        8 =>
-                        {
-                            ::image::ImageEncoder::write_image(
-                            ::image::codecs::png::PngEncoder::new(writer),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba8,
-                            ).map_err(|e| EncodeError::custom(format!("Failed to encode .png rgba8 image : {}", e)))
-                        }
-                        16 =>
-                        {
-                            ::image::ImageEncoder::write_image(
-                            ::image::codecs::png::PngEncoder::new(writer),
-                            unsafe {
-                                std::slice::from_raw_parts(
-                                    self.pixels().as_ptr() as *const u8,
-                                    self.pixels().len() * std::mem::size_of::<C>(),
-                                )
-                            },
-                            self.width().to_usize() as _,
-                            self.height().to_usize() as _,
-                            ::image::ExtendedColorType::Rgba16,
-                            ).map_err(|e| EncodeError::custom(format!("Failed to encode .png rgba16 image : {}", e)))
-                        }
-                        _ =>
-                        {
-                            self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension)
-                        }
-                    }
-                    NumberType::Float => self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension),
-                    NumberType::Bool => self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension),
-                }
-            }
-            _ => Err(EncodeError::save_unsupported_extension_with_name::<Self>(extension.to_owned(), "Image")),
+        F: FnMut(Self::Item, Item2) -> R,
+    {
+        assert_eq!(self.size(), other.size(), "size mismatch");
+        unsafe {
+            ImageBaseOf::from_vec_unchecked(self.size(), self.pixels.map_with(other.pixels, f))
         }
     }
-
 }
 
-impl <C,Idx> MediaType for ImageBaseOf<C,Idx>
-    where
-    Idx : Integer,
-    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>>,
+impl<C, Idx> SaveExtension for ImageBaseOf<C, Idx>
+where
+    Idx: Integer + CfgSerialize,
+    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + CfgSerialize,
     u8: CastRangeFrom<C::Component>,
-    u16: CastRangeFrom<C::Component>
+    u16: CastRangeFrom<C::Component>,
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png"].into_iter() }
+
+    fn save_to_writer_with_custom_extension<W>(
+        &self,
+        writer: W,
+        extension: &extension,
+    ) -> EncodeResult
+    where
+        W: Write,
+    {
+        match extension
+        {
+            "png" => match C::Component::PRIMITIVE_TYPE
+            {
+                NumberType::IntegerSigned =>
+                {
+                    if std::mem::size_of::<C::Component>() * 8 <= 8
+                    {
+                        self.clone()
+                            .to_rgba_u8()
+                            .save_to_writer_with_custom_extension(writer, extension)
+                    }
+                    else
+                    {
+                        self.clone()
+                            .to_rgba_u16()
+                            .save_to_writer_with_custom_extension(writer, extension)
+                    }
+                }
+                NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
+                {
+                    8 => ::image::ImageEncoder::write_image(
+                        ::image::codecs::png::PngEncoder::new(writer),
+                        unsafe {
+                            std::slice::from_raw_parts(
+                                self.pixels().as_ptr() as *const u8,
+                                self.pixels().len() * std::mem::size_of::<C>(),
+                            )
+                        },
+                        self.width().to_usize() as _,
+                        self.height().to_usize() as _,
+                        ::image::ExtendedColorType::Rgba8,
+                    )
+                    .map_err(|e| {
+                        EncodeError::custom(format!("Failed to encode .png rgba8 image : {}", e))
+                    }),
+                    16 => ::image::ImageEncoder::write_image(
+                        ::image::codecs::png::PngEncoder::new(writer),
+                        unsafe {
+                            std::slice::from_raw_parts(
+                                self.pixels().as_ptr() as *const u8,
+                                self.pixels().len() * std::mem::size_of::<C>(),
+                            )
+                        },
+                        self.width().to_usize() as _,
+                        self.height().to_usize() as _,
+                        ::image::ExtendedColorType::Rgba16,
+                    )
+                    .map_err(|e| {
+                        EncodeError::custom(format!("Failed to encode .png rgba16 image : {}", e))
+                    }),
+                    _ => self
+                        .clone()
+                        .to_rgba_u8()
+                        .save_to_writer_with_custom_extension(writer, extension),
+                },
+                NumberType::Float => self
+                    .clone()
+                    .to_rgba_u16()
+                    .save_to_writer_with_custom_extension(writer, extension),
+                NumberType::Bool => self
+                    .clone()
+                    .to_rgba_u8()
+                    .save_to_writer_with_custom_extension(writer, extension),
+            },
+            _ => Err(EncodeError::save_unsupported_extension_with_name::<Self>(
+                extension.to_owned(),
+                "Image",
+            )),
+        }
+    }
+}
+
+impl<C, Idx> MediaType for ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
+    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>>,
+    u8: CastRangeFrom<C::Component>,
+    u16: CastRangeFrom<C::Component>,
 {
     fn media_type() -> &'static str { "image" }
 }
 
-impl <C,Idx> LoadExtension for ImageBaseOf<C,Idx>
-    where
-    Idx : Integer,
-    C : Clone + IColor<ToRgba<u8>=RgbaOf<u8>> + IColor<ToRgba<u16>=RgbaOf<u16>>,
+impl<C, Idx> LoadExtension for ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
+    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>>,
     u8: CastRangeFrom<C::Component>,
-    u16: CastRangeFrom<C::Component>
+    u16: CastRangeFrom<C::Component>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
-        [
-            "png",
-            "jpg", "jpeg",
-            "bmp",
-            "gif",
-            "webp",
-            "ico",
-            "tiff"
-        ].into_iter()
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension>
+    {
+        ["png", "jpg", "jpeg", "bmp", "gif", "webp", "ico", "tiff"].into_iter()
     }
 
-    fn load_from_reader_with_custom_extension<R>(mut reader: R, extension: &extension) -> EncodeResult<Self> where Self: Sized, R: std::io::Read
+    fn load_from_reader_with_custom_extension<R>(
+        mut reader: R,
+        extension: &extension,
+    ) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
     {
         // let format = match extension
         // {
@@ -575,24 +698,31 @@ impl <C,Idx> LoadExtension for ImageBaseOf<C,Idx>
         let img = match img
         {
             Ok(dyn_img) => dyn_img,
-            Err(e) => Err(EncodeError::load_unsupported_extension_with_name::<Self>(extension.to_owned(), "Image"))?,
+            Err(e) => Err(EncodeError::load_unsupported_extension_with_name::<Self>(
+                extension.to_owned(),
+                "Image",
+            ))?,
         };
 
-        let (width, height) : (u32, u32) = img.dimensions();
+        let (width, height): (u32, u32) = img.dimensions();
         let w = Idx::cast_from(width);
         let h = Idx::cast_from(height);
         let casted_width = w.to_u32();
         let casted_height = h.to_u32();
         if casted_width != width || height != casted_height
         {
-            return Err(EncodeError::custom(format!("Image is too big: {}", vector2(width, height))));
+            return Err(EncodeError::custom(format!(
+                "Image is too big: {}",
+                vector2(width, height)
+            )));
         }
 
         let error_invalid_size = || EncodeError::custom("Invalid bytes len");
 
         match C::Component::PRIMITIVE_TYPE
         {
-            NumberType::IntegerSigned => {}, // Todo: handle >= 16 bits signed to use u16 precision ?
+            NumberType::IntegerSigned =>
+            {} // Todo: handle >= 16 bits signed to use u16 precision ?
             NumberType::IntegerUnsigned =>
             {
                 if std::mem::size_of::<C::Component>() * 8 >= 16
@@ -601,7 +731,8 @@ impl <C,Idx> LoadExtension for ImageBaseOf<C,Idx>
                     {
                         DynamicImage::ImageRgba16(rgba) => rgba,
                         x => x.to_rgba16(),
-                    }.into_raw();
+                    }
+                    .into_raw();
                     let multiple = 4 * std::mem::size_of::<u16>(); // 4 components (rbga)
                     if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
                     {
@@ -623,37 +754,39 @@ impl <C,Idx> LoadExtension for ImageBaseOf<C,Idx>
 
                     return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
                 }
-            },
+            }
             NumberType::Float =>
             {
                 let bytes = match img
-                    {
-                        DynamicImage::ImageRgba32F(rgba) => rgba,
-                        x => x.to_rgba32f(),
-                    }.into_raw();
+                {
+                    DynamicImage::ImageRgba32F(rgba) => rgba,
+                    x => x.to_rgba32f(),
+                }
+                .into_raw();
 
-                    let multiple = 4 * std::mem::size_of::<float>(); // 4 components (rbga)
-                    if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
-                    {
-                        return Err(error_invalid_size());
-                    }
+                let multiple = 4 * std::mem::size_of::<float>(); // 4 components (rbga)
+                if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
+                {
+                    return Err(error_invalid_size());
+                }
 
-                    let rgba_vec: Vec<RgbaF32> = bytes
-                        .chunks_exact(4)
-                        .map(|chunk| RgbaF32 {
-                            r: chunk[0],
-                            g: chunk[1],
-                            b: chunk[2],
-                            a: chunk[3],
-                        })
-                        .collect();
+                let rgba_vec: Vec<RgbaF32> = bytes
+                    .chunks_exact(4)
+                    .map(|chunk| RgbaF32 {
+                        r: chunk[0],
+                        g: chunk[1],
+                        b: chunk[2],
+                        a: chunk[3],
+                    })
+                    .collect();
 
-                    let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_f32(v)).collect();
-                    let size = vector2(w, h);
+                let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_f32(v)).collect();
+                let size = vector2(w, h);
 
-                    return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
-            },
-            NumberType::Bool => {},
+                return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
+            }
+            NumberType::Bool =>
+            {}
         }
 
         // fallback on u8
@@ -661,7 +794,8 @@ impl <C,Idx> LoadExtension for ImageBaseOf<C,Idx>
         {
             DynamicImage::ImageRgba8(rgba8) => rgba8,
             x => x.to_rgba8(),
-        }.into_raw();
+        }
+        .into_raw();
         let multiple = 4 * std::mem::size_of::<u8>(); // 4 components (rbga)
         if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
         {
@@ -684,4 +818,3 @@ impl <C,Idx> LoadExtension for ImageBaseOf<C,Idx>
         Self::from_vec(size, pixels).ok_or_else(error_invalid_size)
     }
 }
-

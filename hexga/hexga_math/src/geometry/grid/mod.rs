@@ -1,6 +1,5 @@
 use super::*;
 
-
 #[cfg(feature = "serde")]
 mod serde_impl;
 #[cfg(feature = "serde")]
@@ -29,9 +28,8 @@ pub use iter_mut::*;
 
 pub mod prelude
 {
-    pub use super::
-    {
+    pub use super::{
+        igrid::{GridBaseError, IGrid, ToGrid},
         typedef::*,
-        igrid::{IGrid,ToGrid,GridBaseError},
     };
 }

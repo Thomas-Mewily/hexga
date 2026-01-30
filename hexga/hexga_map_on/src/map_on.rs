@@ -1,4 +1,3 @@
-
 /// A powerful macro to impl other macros for the given types.
 ///
 /// Can be used to impl trait to a lot of type using macro, where generic can't.

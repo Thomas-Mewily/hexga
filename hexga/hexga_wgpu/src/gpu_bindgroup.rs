@@ -1,6 +1,5 @@
-use hexga::image::ImageBaseOf;
 use super::*;
-
+use hexga::image::ImageBaseOf;
 
 #[repr(transparent)]
 #[derive(Debug, Clone)]

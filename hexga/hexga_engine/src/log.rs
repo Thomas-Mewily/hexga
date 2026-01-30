@@ -1,10 +1,10 @@
 use super::*;
 
-pub use ::log::{info, warn, error, debug};
+pub use ::log::{debug, error, info, warn};
 
 pub mod prelude
 {
-    pub use super::{info, warn, error, debug};
+    pub use super::{debug, error, info, warn};
 }
 
 static LOGGER_INIT: LazyLock<()> = LazyLock::new(|| {
@@ -12,16 +12,12 @@ static LOGGER_INIT: LazyLock<()> = LazyLock::new(|| {
     {
         use std::io::Write;
 
-        env_logger::Builder::from_env(
-            env_logger::Env::default().default_filter_or("debug")
-        )
-        .filter_module("wgpu_core", ::log::LevelFilter::Warn)
-        .filter_module("wgpu_hal", ::log::LevelFilter::Warn)
-        .filter_module("naga", ::log::LevelFilter::Warn)
-        .format(|buf, record| {
-            writeln!(buf, "{}", record.args())
-        })
-        .init();
+        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug"))
+            .filter_module("wgpu_core", ::log::LevelFilter::Warn)
+            .filter_module("wgpu_hal", ::log::LevelFilter::Warn)
+            .filter_module("naga", ::log::LevelFilter::Warn)
+            .format(|buf, record| writeln!(buf, "{}", record.args()))
+            .init();
     }
     #[cfg(target_arch = "wasm32")]
     {
@@ -29,7 +25,4 @@ static LOGGER_INIT: LazyLock<()> = LazyLock::new(|| {
     }
 });
 
-pub fn init()
-{
-    LazyLock::force(&LOGGER_INIT);
-}
+pub fn init() { LazyLock::force(&LOGGER_INIT); }

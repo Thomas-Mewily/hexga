@@ -4,15 +4,11 @@ use super::*;
 
 impl From<KeyBinding> for Binding
 {
-    fn from(value: KeyBinding) -> Self {
-        Self::Key(value)
-    }
+    fn from(value: KeyBinding) -> Self { Self::Key(value) }
 }
 impl From<KeyCode> for Binding
 {
-    fn from(value: KeyCode) -> Self {
-        Self::Key(value.into())
-    }
+    fn from(value: KeyCode) -> Self { Self::Key(value.into()) }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -44,7 +40,7 @@ impl Binding
             Binding::Or(v) => v.is_empty(),
             Binding::And(v) => v.is_empty(),
             Binding::None => true,
-            _ => false
+            _ => false,
         }
     }
 
@@ -52,15 +48,26 @@ impl Binding
     {
         let other = other.into();
 
-        if self.is_none() { return other; }
-        if other.is_none() { return self; }
+        if self.is_none()
+        {
+            return other;
+        }
+        if other.is_none()
+        {
+            return self;
+        }
 
-        fn flatten_and(binding: Binding, out: &mut Vec<Binding>) {
-            if let Binding::And(inner) = binding {
-                for b in inner {
+        fn flatten_and(binding: Binding, out: &mut Vec<Binding>)
+        {
+            if let Binding::And(inner) = binding
+            {
+                for b in inner
+                {
                     flatten_and(b, out);
                 }
-            } else {
+            }
+            else
+            {
                 out.push(binding);
             }
         }
@@ -80,15 +87,26 @@ impl Binding
     {
         let other = other.into();
 
-        if self.is_none() { return other; }
-        if other.is_none() { return self; }
+        if self.is_none()
+        {
+            return other;
+        }
+        if other.is_none()
+        {
+            return self;
+        }
 
-        fn flatten_or(binding: Binding, out: &mut Vec<Binding>) {
-            if let Binding::Or(inner) = binding {
-                for b in inner {
+        fn flatten_or(binding: Binding, out: &mut Vec<Binding>)
+        {
+            if let Binding::Or(inner) = binding
+            {
+                for b in inner
+                {
                     flatten_or(b, out);
                 }
-            } else {
+            }
+            else
+            {
                 out.push(binding);
             }
         }
@@ -104,7 +122,6 @@ impl Binding
         Binding::Or(items)
     }
 
-
     pub fn not(self) -> Self
     {
         if let Self::Not(n) = self
@@ -115,12 +132,16 @@ impl Binding
     }
 }
 
-impl<B> BitAnd<B> for Binding where B:Into<Self>
+impl<B> BitAnd<B> for Binding
+where
+    B: Into<Self>,
 {
-    type Output=Self;
+    type Output = Self;
     fn bitand(self, rhs: B) -> Self::Output { self.and(rhs) }
 }
-impl<B> BitAndAssign<B> for Binding where B:Into<Self>
+impl<B> BitAndAssign<B> for Binding
+where
+    B: Into<Self>,
 {
     fn bitand_assign(&mut self, rhs: B)
     {
@@ -130,12 +151,16 @@ impl<B> BitAndAssign<B> for Binding where B:Into<Self>
     }
 }
 
-impl<B> BitOr<B> for Binding where B:Into<Self>
+impl<B> BitOr<B> for Binding
+where
+    B: Into<Self>,
 {
-    type Output=Self;
+    type Output = Self;
     fn bitor(self, rhs: B) -> Self::Output { self.or(rhs) }
 }
-impl<B> BitOrAssign<B> for Binding where B:Into<Self>
+impl<B> BitOrAssign<B> for Binding
+where
+    B: Into<Self>,
 {
     fn bitor_assign(&mut self, rhs: B)
     {
@@ -147,13 +172,10 @@ impl<B> BitOrAssign<B> for Binding where B:Into<Self>
 
 impl Not for Binding
 {
-    type Output=Self;
+    type Output = Self;
 
-    fn not(self) -> Self::Output {
-        self.not()
-    }
+    fn not(self) -> Self::Output { self.not() }
 }
-
 
 pub trait Bindable
 {
@@ -174,39 +196,62 @@ impl Bindable for Binding
     }
 }
 
-
-
-
-
 // TODO: Make trait Getter/Setter for Toggle, State, Repeat..
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct KeyBinding
 {
-    pub code  : KeyCode,
+    pub code: KeyCode,
     pub repeat: ButtonRepeat,
-    pub state : ButtonState,
+    pub state: ButtonState,
     pub toggle: ButtonToggle,
 }
 impl KeyBinding
 {
-    pub const fn new(code : KeyCode) -> Self { Self { code, repeat: ButtonRepeat::NotRepeated, state: ButtonState::Down, toggle: ButtonToggle::Hold }}
-    pub const fn with_code(mut self, code : KeyCode) -> Self { self.code = code; self }
-    pub const fn with_repeat(mut self, repeat : ButtonRepeat) -> Self { self.repeat = repeat; self }
-    pub const fn with_state(mut self, state : ButtonState) -> Self { self.state = state; self }
-    pub const fn with_toggle(mut self, toggle : ButtonToggle) -> Self { self.toggle = toggle; self }
+    pub const fn new(code: KeyCode) -> Self
+    {
+        Self {
+            code,
+            repeat: ButtonRepeat::NotRepeated,
+            state: ButtonState::Down,
+            toggle: ButtonToggle::Hold,
+        }
+    }
+    pub const fn with_code(mut self, code: KeyCode) -> Self
+    {
+        self.code = code;
+        self
+    }
+    pub const fn with_repeat(mut self, repeat: ButtonRepeat) -> Self
+    {
+        self.repeat = repeat;
+        self
+    }
+    pub const fn with_state(mut self, state: ButtonState) -> Self
+    {
+        self.state = state;
+        self
+    }
+    pub const fn with_toggle(mut self, toggle: ButtonToggle) -> Self
+    {
+        self.toggle = toggle;
+        self
+    }
 }
 impl From<KeyCode> for KeyBinding
 {
     fn from(value: KeyCode) -> Self { Self::new(value) }
 }
 
-
 impl KeyBinding
 {
     pub(crate) fn evolution(&self) -> ButtonEvolution
     {
-        app().input().keyboard().key_manager_mut(self.repeat).evolution(self.code)
+        app()
+            .input()
+            .keyboard()
+            .key_manager_mut(self.repeat)
+            .evolution(self.code)
     }
 }
 impl Bindable for KeyBinding
@@ -244,10 +289,6 @@ impl IUsedFlag for KeyBinding
 }
 */
 
-
-
-
-
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub struct BindingDpad
@@ -262,12 +303,11 @@ impl Default for BindingDpad
 {
     fn default() -> Self
     {
-        Self
-        {
+        Self {
             up: Binding::from(KeyCode::Up).or(KeyCode::W),
             down: Binding::from(KeyCode::Down).or(KeyCode::S),
             left: Binding::from(KeyCode::Left).or(KeyCode::A),
-            right: Binding::from(KeyCode::Right).or(KeyCode::D)
+            right: Binding::from(KeyCode::Right).or(KeyCode::D),
         }
     }
 }

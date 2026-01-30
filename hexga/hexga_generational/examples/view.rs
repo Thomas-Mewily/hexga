@@ -7,7 +7,7 @@ pub struct Entity
     hp: i32,
 }
 
-fn increase_hp<'a>(entities: GenViewMut<'a,Entity>)
+fn increase_hp<'a>(entities: GenViewMut<'a, Entity>)
 {
     for (_id, entity) in entities
     {
@@ -15,10 +15,9 @@ fn increase_hp<'a>(entities: GenViewMut<'a,Entity>)
     }
 }
 
-
 fn main()
 {
-    let mut entities = [Entity{ hp: 42 }, Entity{ hp: 99 }].to_genvec();
+    let mut entities = [Entity { hp: 42 }, Entity { hp: 99 }].to_genvec();
     println!("{:?}", entities);
 
     increase_hp(entities.as_mut());

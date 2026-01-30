@@ -1,19 +1,26 @@
 use super::*;
 
-
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub enum OverflowPolicy { None, Wrapping, Saturating }
+pub enum OverflowPolicy
+{
+    None,
+    Wrapping,
+    Saturating,
+}
 
 impl OverflowPolicy
 {
-    #[inline(always)] pub const fn is_none(self) -> bool { matches!(self, Self::None) }
-    #[inline(always)] pub const fn is_wrapping(self) -> bool { matches!(self, Self::Wrapping) }
-    #[inline(always)] pub const fn is_saturating(self) -> bool { matches!(self, Self::Saturating) }
+    #[inline(always)]
+    pub const fn is_none(self) -> bool { matches!(self, Self::None) }
+    #[inline(always)]
+    pub const fn is_wrapping(self) -> bool { matches!(self, Self::Wrapping) }
+    #[inline(always)]
+    pub const fn is_saturating(self) -> bool { matches!(self, Self::Saturating) }
 }
 
 pub trait OverflowBehavior
 {
-    const OVERFLOW_BEHAVIOR : OverflowPolicy = OverflowPolicy::None;
+    const OVERFLOW_BEHAVIOR: OverflowPolicy = OverflowPolicy::None;
 }
 
 map_on_integer!(
@@ -23,8 +30,14 @@ map_on_integer!(
     };
 );
 
-impl<T> OverflowBehavior for Wrapping<T>   { const OVERFLOW_BEHAVIOR : OverflowPolicy = OverflowPolicy::Wrapping;   }
-impl<T> OverflowBehavior for Saturating<T> { const OVERFLOW_BEHAVIOR : OverflowPolicy = OverflowPolicy::Saturating; }
+impl<T> OverflowBehavior for Wrapping<T>
+{
+    const OVERFLOW_BEHAVIOR: OverflowPolicy = OverflowPolicy::Wrapping;
+}
+impl<T> OverflowBehavior for Saturating<T>
+{
+    const OVERFLOW_BEHAVIOR: OverflowPolicy = OverflowPolicy::Saturating;
+}
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum NumberType
@@ -45,7 +58,7 @@ impl NumberType
 
 pub trait PrimitiveType
 {
-    const PRIMITIVE_TYPE : NumberType;
+    const PRIMITIVE_TYPE: NumberType;
 }
 map_on_integer_unsigned!(
     ($typename:ident) =>
@@ -76,5 +89,5 @@ map_on_float!(
 );
 impl PrimitiveType for bool
 {
-    const PRIMITIVE_TYPE : NumberType = NumberType::Bool;
+    const PRIMITIVE_TYPE: NumberType = NumberType::Bool;
 }

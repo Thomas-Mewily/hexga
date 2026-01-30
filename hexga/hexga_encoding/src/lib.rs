@@ -1,17 +1,23 @@
 #![allow(unused_imports)]
-use std::io::{Read,Write,BufReader};
-use std::{fmt::{Display,Formatter}, str::Utf8Error, string::FromUtf8Error};
-use std::borrow::Cow;
 use hexga_core::cfg::*;
-use hexga_core::utils::*;
 use hexga_core::map_on::prelude::*;
+use hexga_core::utils::*;
+use std::borrow::Cow;
+use std::io::{BufReader, Read, Write};
+use std::{
+    fmt::{Display, Formatter},
+    str::Utf8Error,
+    string::FromUtf8Error,
+};
 
 #[cfg(feature = "serde")]
-use serde::
-{
-    Serialize, Serializer, Deserialize, Deserializer,
+use serde::{
+    Deserialize, Deserializer, Serialize, Serializer,
     de::Visitor,
-    ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant}
+    ser::{
+        SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple,
+        SerializeTupleStruct, SerializeTupleVariant,
+    },
 };
 
 mod fs_extension;
@@ -44,12 +50,8 @@ pub use url_data::*;
 
 pub mod prelude
 {
-    pub use super::
-    {
-        fs_extension::prelude::*,
-        result::*,
-        save::prelude::*,
-        load::prelude::*,
+    pub use super::{
+        fs_extension::prelude::*, load::prelude::*, result::*, save::prelude::*,
         url_data::prelude::*,
     };
 
@@ -57,11 +59,11 @@ pub mod prelude
     pub use super::serde_impl::prelude::*;
 
     #[cfg(feature = "derive")]
-    pub use hexga_encoding_derive::{Load,Save,io};
+    pub use hexga_encoding_derive::{Load, Save, io};
 }
 
 pub mod cfg
 {
-    pub use hexga_core::cfg::CfgSerialize;
     pub use hexga_core::cfg::CfgDeserialize;
+    pub use hexga_core::cfg::CfgSerialize;
 }

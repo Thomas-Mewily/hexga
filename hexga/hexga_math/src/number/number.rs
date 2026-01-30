@@ -1,6 +1,5 @@
 use super::*;
 
-
 trait_marker!(
 /// For every type that support bit based operation (and `&`, or `|`, xor `^`, not `!`, shift `<<` / `>>`...)
 BitArithmetic:
@@ -12,7 +11,6 @@ BitArithmetic:
         BitXor<Output = Self> + BitXorAssign +
         Not   <Output = Self>
 );
-
 
 trait_marker!(
 /// +, -, 0
@@ -38,7 +36,6 @@ ArithmeticSigned:
     Arithmetic + Neg<Output = Self>
 );
 
-
 trait_marker!(
     /// +, -, *, /, %, 0, ==, min, max, clamp, mix, abs
     Numeric: Arithmetic + PartialEq + Debug + Min + Max + Clamp + Mix + Abs<Output=Self>
@@ -56,7 +53,6 @@ trait_marker!(
 trait_marker!(
     NumericSignedIdentity: NumericSigned + One
 );
-
 
 trait_marker!(
     /// 1, +, -, *, /, %, 0, ==, >=, min, max, clamp, mix, abs
@@ -78,7 +74,6 @@ trait_marker!(
     PrimitiveSigned: Primitive + NumericSignedIdentity
 );
 
-
 trait_marker!(
     // uX, iX
     Integer: Primitive + Eq + Hash + Ord + BitArithmetic + BitManip + Increment + OverflowBehavior + fmt::Binary + fmt::Octal + fmt::LowerHex + fmt::UpperHex
@@ -93,8 +88,6 @@ trait_marker!(
     // iX
     IntegerSigned: PrimitiveSigned + Integer
 );
-
-
 
 pub trait BitManip
 {
@@ -112,12 +105,16 @@ map_on_integer!(
         }
     };
 );
-impl<T> BitManip for Wrapping<T> where T: BitManip
+impl<T> BitManip for Wrapping<T>
+where
+    T: BitManip,
 {
     fn count_bit_zeros(self) -> u32 { self.0.count_bit_zeros() }
     fn count_bit_ones(self) -> u32 { self.0.count_bit_ones() }
 }
-impl<T> BitManip for Saturating<T> where T: BitManip
+impl<T> BitManip for Saturating<T>
+where
+    T: BitManip,
 {
     fn count_bit_zeros(self) -> u32 { self.0.count_bit_zeros() }
     fn count_bit_ones(self) -> u32 { self.0.count_bit_ones() }

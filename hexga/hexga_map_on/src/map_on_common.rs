@@ -1,5 +1,3 @@
-
-
 /// `u8`, `u16`, `u32`, `u64`, `usize`
 #[macro_export]
 macro_rules! map_on_integer_unsigned {
@@ -7,8 +5,6 @@ macro_rules! map_on_integer_unsigned {
         $crate::map_on!((u8, u16, u32, u64, usize), $($macro_arms)*);
     };
 }
-
-
 
 /// `i8`, `i16`, `i32`, `i64`, `isize`
 #[macro_export]
@@ -67,7 +63,6 @@ macro_rules! map_on_number_and_bool_and_char
     };
 }
 
-
 /// `Add`, `Sub`
 #[macro_export]
 macro_rules! map_on_operator_binary_arithmetic_unit {
@@ -82,7 +77,6 @@ macro_rules! map_on_operator_binary_arithmetic_unit {
         );
     };
 }
-
 
 /// (`Add`, `Sub`) + (`Mul`, `Div`, `Rem`)
 #[macro_export]
@@ -128,10 +122,6 @@ macro_rules! map_on_operator_binary
     };
 }
 
-
-
-
-
 /// `AddAssign`, `SubAssign`
 #[macro_export]
 macro_rules! map_on_operator_assign_arithmetic_unit {
@@ -146,7 +136,6 @@ macro_rules! map_on_operator_assign_arithmetic_unit {
         );
     };
 }
-
 
 /// (`AddAssign`, `SubAssign`) + (`MulAssign`, `DivAssign`, `RemAssign`)
 #[macro_export]
@@ -241,11 +230,6 @@ macro_rules! map_on_std_fmt {
     };
 }
 
-
-
-
-
-
 /// `Not`
 #[macro_export]
 macro_rules! map_on_operator_unary_bit
@@ -277,7 +261,6 @@ macro_rules! map_on_operator_unary_arithmetic_unit
     };
 }
 
-
 /// (`Not`) + (`Neg`, `Abs`)
 #[macro_export]
 macro_rules! map_on_operator_unary
@@ -287,5 +270,3 @@ macro_rules! map_on_operator_unary
         $crate::map_on_operator_unary_arithmetic_unit!($($macro_arms)*);
     };
 }
-
-

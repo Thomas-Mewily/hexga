@@ -3,9 +3,8 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 
-use std::collections::HashMap;
 use hexga::prelude::*;
-
+use std::collections::HashMap;
 
 fn main()
 {
@@ -25,7 +24,7 @@ fn main()
     // dbg!(&img);
     // println!("{}", img.to_url("png").unwrap());
 
-    let img = Image::from_fn((256,256), |(x,y)| ColorU8::rgb(x as u8, y as u8, 255));
+    let img = Image::from_fn((256, 256), |(x, y)| ColorU8::rgb(x as u8, y as u8, 255));
     img.save("./tmp/io_serde/smiley5").unwrap();
     let img_loaded = Image::load("./tmp/io_serde/smiley5").unwrap();
     assert_eq!(img, img_loaded);

@@ -1,23 +1,31 @@
-use std::fs;
 use super::*;
-
+use std::fs;
 
 pub(crate) fn load_bytes(path: &Path) -> IoResult<Vec<u8>>
 {
     std::fs::read(path).map_err(|e| IoError::new(path, e).when_reading())
 }
 
-pub(crate) fn save_bytes(path: &Path, bytes: &[u8]) -> Result<(), IoError> {
-    if let Some(parent) = path.parent() {
-        for prefix in parent.iter() {
+pub(crate) fn save_bytes(path: &Path, bytes: &[u8]) -> Result<(), IoError>
+{
+    if let Some(parent) = path.parent()
+    {
+        for prefix in parent.iter()
+        {
             let std_path = Path::new(prefix);
 
-            if std_path.exists() {
-                if std_path.is_file() {
-                    fs::remove_file(std_path).map_err(|e| IoError::new(std_path, e).when_writing())?;
-                    fs::create_dir(std_path).map_err(|e| IoError::new(std_path, e).when_writing())?;
+            if std_path.exists()
+            {
+                if std_path.is_file()
+                {
+                    fs::remove_file(std_path)
+                        .map_err(|e| IoError::new(std_path, e).when_writing())?;
+                    fs::create_dir(std_path)
+                        .map_err(|e| IoError::new(std_path, e).when_writing())?;
                 }
-            } else {
+            }
+            else
+            {
                 fs::create_dir(std_path).map_err(|e| IoError::new(std_path, e).when_writing())?;
             }
         }

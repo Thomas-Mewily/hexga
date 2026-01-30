@@ -6,9 +6,11 @@
 //! (mostly for trait safety, study it, and doing some renaming...).
 //! Some comment aren't fixed...
 
-
+use core::{
+    marker::{PhantomData, PhantomPinned},
+    num::*,
+};
 use hexga_map_on::prelude::*;
-use core::{marker::{PhantomData, PhantomPinned}, num::*};
 
 mod bit_zero;
 pub use bit_zero::*;
@@ -34,7 +36,6 @@ pub use bit_any_pattern::*;
 mod bit_all_used;
 pub use bit_all_used::*;
 
-
 #[cfg(feature = "extern_crate_alloc")]
 extern crate alloc;
 
@@ -43,12 +44,10 @@ extern crate std;
 
 pub mod prelude
 {
-    pub use super::
-    {
-        BitZero,BitZeroed,Pod,BitAllUsed,BitAnyPattern,BitResult,BitError,BitPattern
+    pub use super::{
+        BitAllUsed, BitAnyPattern, BitError, BitPattern, BitResult, BitZero, BitZeroed, Pod,
     };
 
     #[cfg(feature = "derive")]
-    pub use hexga_bit_derive::{BitZero,Pod,BitAllUsed,BitPattern,BitAnyPattern};
+    pub use hexga_bit_derive::{BitAllUsed, BitAnyPattern, BitPattern, BitZero, Pod};
 }
-

@@ -23,18 +23,13 @@ pub use param::*;
 
 pub mod prelude
 {
-    pub use super::
-    {
-        application::Application,
-        event::AppEvent,
+    pub use super::{
+        app_core::app, application::Application, event::AppEvent, param::AppParam, result::*,
         spawn::AsyncSpawn,
-        param::AppParam,
-        app_core::app,
-        result::*,
     };
 
-    pub(crate) use super::app_core::{APP};
-    pub(crate) use super::{FlowMessage,AppInternalEvent};
+    pub(crate) use super::app_core::APP;
+    pub(crate) use super::{AppInternalEvent, FlowMessage};
 
     pub(crate) type EventLoopActive = winit::event_loop::ActiveEventLoop;
     pub(crate) type EventLoop = winit::event_loop::EventLoop<AppInternalEvent>;

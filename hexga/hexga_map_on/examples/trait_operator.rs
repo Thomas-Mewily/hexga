@@ -4,7 +4,7 @@ use hexga_map_on::*;
 struct X(pub i32);
 
 map_on_operator_binary!(
-    (($trait_name: tt, $fn_name: tt)) => 
+    (($trait_name: tt, $fn_name: tt)) =>
     {
         impl std::ops::$trait_name for X
         {
@@ -14,9 +14,9 @@ map_on_operator_binary!(
     }
 );
 
-fn main() 
+fn main()
 {
-    let x =      X(9) + X(3) * X(4) / X(2);
-    assert_eq!(x.0,   9  +   3  *   4  /   2 );
+    let x = X(9) + X(3) * X(4) / X(2);
+    assert_eq!(x.0, 9 + 3 * 4 / 2);
     dbg!(&x);
 }

@@ -1,9 +1,9 @@
-
-pub type BitResult<T=()> = Result<T, BitError>;
+pub type BitResult<T = ()> = Result<T, BitError>;
 
 /// The things that can go wrong when casting between [`Pod`] data forms.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum BitError {
+pub enum BitError
+{
     /// You tried to cast a reference into a reference to a type with a higher
     /// alignment requirement but the input reference wasn't aligned.
     TargetAlignmentGreaterAndInputNotAligned,

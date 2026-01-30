@@ -9,7 +9,6 @@ pub(crate) use serializer_txt::*;
 mod serializer_tmp_bin;
 pub(crate) use serializer_tmp_bin::*;
 
-
 mod deserializer_txt;
 pub(crate) use deserializer_txt::*;
 

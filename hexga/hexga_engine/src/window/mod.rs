@@ -6,7 +6,6 @@ pub use app_window::*;
 mod winit_convet;
 pub use winit_convet::*;
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum WindowEvent
 {
@@ -20,6 +19,6 @@ pub enum WindowEvent
 
 pub mod prelude
 {
-    pub use super::{WindowEvent,WindowExtension,WindowParamBuilder};
     pub(crate) use super::*;
+    pub use super::{WindowEvent, WindowExtension, WindowParamBuilder};
 }

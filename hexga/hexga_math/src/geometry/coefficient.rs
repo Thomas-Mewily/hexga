@@ -6,22 +6,23 @@ use super::*;
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 pub struct Coef<T>
 {
-    pub value: T
+    pub value: T,
 }
 impl<T> Coef<T>
 {
     #[inline(always)]
-    pub fn new(value: T) -> Self { Self { value }}
+    pub fn new(value: T) -> Self { Self { value } }
 }
 impl<T> From<T> for Coef<T>
 {
     fn from(value: T) -> Self { Self::new(value) }
 }
-impl<T> Default for Coef<T> where T: One
+impl<T> Default for Coef<T>
+where
+    T: One,
 {
     fn default() -> Self { Self::new(T::ONE) }
 }
-
 
 map_on_number_and_bool! {
     ($type_name:tt) => {

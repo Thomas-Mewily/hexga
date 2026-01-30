@@ -1,10 +1,10 @@
 use super::*;
 
-
-pub trait UrlDeserializer<'de> : Deserializer<'de>
+pub trait UrlDeserializer<'de>: Deserializer<'de>
 {
     fn deserialize_with_encoding<T>(self) -> Result<T, Self::Error>
-        where T: FromUrl
+    where
+        T: FromUrl,
     {
         if self.is_human_readable()
         {
@@ -17,19 +17,25 @@ pub trait UrlDeserializer<'de> : Deserializer<'de>
 }
 impl<'de, F> UrlDeserializer<'de> for F where F: Deserializer<'de> + ?Sized {}
 
-
-
-
-pub trait UrlSerializer : Serializer
+pub trait UrlSerializer: Serializer
 {
     fn serialize_with_encoding<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
-        where T: ToUrl
+    where
+        T: ToUrl,
     {
-        self.serialize_with_encoding_and_extension(value, T::save_prefered_extension().unwrap_or_default())
+        self.serialize_with_encoding_and_extension(
+            value,
+            T::save_prefered_extension().unwrap_or_default(),
+        )
     }
 
-    fn serialize_with_encoding_and_extension<T>(self, value: &T, extension: &extension) -> Result<Self::Ok, Self::Error>
-        where T: ToUrl
+    fn serialize_with_encoding_and_extension<T>(
+        self,
+        value: &T,
+        extension: &extension,
+    ) -> Result<Self::Ok, Self::Error>
+    where
+        T: ToUrl,
     {
         use serde::ser::Error;
 
@@ -50,10 +56,12 @@ impl<F> UrlSerializer for F where F: Serializer + ?Sized {}
 
 pub(crate) struct BytesVisitor;
 
-impl<'de> Visitor<'de> for BytesVisitor {
+impl<'de> Visitor<'de> for BytesVisitor
+{
     type Value = Vec<u8>;
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result
+    {
         formatter.write_str("a byte buffer")
     }
 
@@ -74,10 +82,12 @@ impl<'de> Visitor<'de> for BytesVisitor {
 
 pub(crate) struct StringVisitor;
 
-impl<'de> Visitor<'de> for StringVisitor {
+impl<'de> Visitor<'de> for StringVisitor
+{
     type Value = String;
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result
+    {
         formatter.write_str("a UTF-8 string")
     }
 

@@ -27,19 +27,11 @@ pub use xyzw::*;
 mod typedef;
 pub use typedef::*;
 
-
 pub mod prelude
 {
-    pub use super::
-    {
-        array_extension::*,
+    pub use super::{
+        array_extension::*, typedef::*, vector_iter::IterIndex, vector_n::prelude::*,
+        vector1::prelude::*, vector2::prelude::*, vector3::prelude::*, vector4::prelude::*,
         xyzw::*,
-        typedef::*,
-        vector_n::prelude::*,
-        vector1::prelude::*,
-        vector2::prelude::*,
-        vector3::prelude::*,
-        vector4::prelude::*,
-        vector_iter::IterIndex,
     };
 }

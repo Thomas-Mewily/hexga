@@ -16,96 +16,131 @@ pub trait IGridViewNonOwned<G, T, Idx, const N : usize> :
 /// Trait to a view into an N-dimensional grid.
 ///
 /// Can only shrink / be cropped.
-pub trait IGridView<G, T, Idx, const N : usize> :
-      GetRectangle<Idx,N>
-    + Get<Vector<Idx,N>,Output=T> + TryGet<Vector<Idx,N>,Output=T>
-    + Index<Vector<Idx,N>,Output=T>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer
+pub trait IGridView<G, T, Idx, const N: usize>:
+    GetRectangle<Idx, N>
+    + Get<Vector<Idx, N>, Output = T>
+    + TryGet<Vector<Idx, N>, Output = T>
+    + Index<Vector<Idx, N>, Output = T>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    type WithLifetime<'a> : IGridView<G,T,Idx,N> where Self: 'a;
-    fn view<'a,'b>(&'a self) -> Self::WithLifetime<'b> where 'a : 'b;
+    type WithLifetime<'a>: IGridView<G, T, Idx, N>
+    where
+        Self: 'a;
+    fn view<'a, 'b>(&'a self) -> Self::WithLifetime<'b>
+    where
+        'a: 'b;
 
-    fn subview<'a, 'b>(&'a self, mut rect : Rectangle<Idx,N>) -> Option<Self::WithLifetime<'b>> where 'a: 'b
+    fn subview<'a, 'b>(&'a self, mut rect: Rectangle<Idx, N>) -> Option<Self::WithLifetime<'b>>
+    where
+        'a: 'b,
     {
         rect.move_by(self.pos());
         if !self.rect().is_rect_inside(rect)
         {
             return None;
-        }else
+        }
+        else
         {
             Some(unsafe { self.subview_from_translated_rect_unchecked(rect) })
         }
     }
-    fn subview_intersect<'a,'b>(&'a self, mut rect : Rectangle<Idx,N>) -> Self::WithLifetime<'b> where 'a: 'b
+    fn subview_intersect<'a, 'b>(&'a self, mut rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b>
+    where
+        'a: 'b,
     {
         rect.move_by(self.pos());
         unsafe { self.subview_from_translated_rect_unchecked(self.rect().intersect_or_empty(rect)) }
     }
 
-
-    fn iter(&self) -> GridViewIter<'_, G, T, Idx, N> { unsafe { GridViewIter::from_rect_unchecked( self.grid_unchecked(), self.rect()) } }
-    fn for_each<F>(&self, f : F) where F : FnMut((Vector<Idx,N>,&T)) { self.iter().for_each(f); }
+    fn iter(&self) -> GridViewIter<'_, G, T, Idx, N>
+    {
+        unsafe { GridViewIter::from_rect_unchecked(self.grid_unchecked(), self.rect()) }
+    }
+    fn for_each<F>(&self, f: F)
+    where
+        F: FnMut((Vector<Idx, N>, &T)),
+    {
+        self.iter().for_each(f);
+    }
 
     /// `self.crop_intersect(subrect).to_grid()`
-    fn subgrid<'a,'b>(&'a self, subrect : Rectangle<Idx, N>) -> G
+    fn subgrid<'a, 'b>(&'a self, subrect: Rectangle<Idx, N>) -> G
     where
-        T : Clone,
-        Self : Crop<Idx,N>,
-        Self::WithLifetime<'b> : ToGrid<T,Idx,N,Output = G>, 'a: 'b
+        T: Clone,
+        Self: Crop<Idx, N>,
+        Self::WithLifetime<'b>: ToGrid<T, Idx, N, Output = G>,
+        'a: 'b,
     {
         self.subview_intersect(subrect).to_grid()
     }
 
-    fn transform<Dest, F>(&self, mut f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
-        where F : FnMut(&T) -> Dest
+    fn transform<Dest, F>(&self, mut f: F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
+    where
+        F: FnMut(&T) -> Dest,
     {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| {
+            f(unsafe { self.get_unchecked(idx) })
+        })
     }
 
-    fn transform_par<Dest, F>(&self, f : F) -> <G as IGrid<T, Idx, N>>::WithType<Dest> where F : Fn(&T) -> Dest + Sync, T : Send + Sync, Dest : Send, Idx : Sync, G : Sync, Self : Sync
+    fn transform_par<Dest, F>(&self, f: F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
+    where
+        F: Fn(&T) -> Dest + Sync,
+        T: Send + Sync,
+        Dest: Send,
+        Idx: Sync,
+        G: Sync,
+        Self: Sync,
     {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| {
+            f(unsafe { self.get_unchecked(idx) })
+        })
     }
 
-    fn update_into_or_panic<O,G2>(&self, other : &mut O)
-        where
-        O : IGridViewMut<G2,T,Idx,N>,
-        G2 : IGrid<T,Idx,N>,
-        T : Clone,
-        Self : Sized
-    { self.update_into(other).unwrap() }
-    fn update_into<O,G2>(&self, other : &mut O) -> Result<(), ()>
-        where
-        O : IGridViewMut<G2,T,Idx,N>,
-        G2 : IGrid<T,Idx,N>,
-        T : Clone,
-        Self : Sized
+    fn update_into_or_panic<O, G2>(&self, other: &mut O)
+    where
+        O: IGridViewMut<G2, T, Idx, N>,
+        G2: IGrid<T, Idx, N>,
+        T: Clone,
+        Self: Sized,
+    {
+        self.update_into(other).unwrap()
+    }
+    fn update_into<O, G2>(&self, other: &mut O) -> Result<(), ()>
+    where
+        O: IGridViewMut<G2, T, Idx, N>,
+        G2: IGrid<T, Idx, N>,
+        T: Clone,
+        Self: Sized,
     {
         other.update_from(self)
     }
-
 
     #[doc(hidden)]
     unsafe fn grid_unchecked(&self) -> &G;
 
     #[doc(hidden)]
-    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b> where 'a: 'b;
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(
+        &'a self,
+        rect: Rectangle<Idx, N>,
+    ) -> Self::WithLifetime<'b>
+    where
+        'a: 'b;
 }
-
 
 /// A view to a N-dimensional grid.
 ///
 /// Can only shrink / be cropped.
-pub struct GridView<'a, G, T, Idx, const N : usize>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer
+pub struct GridView<'a, G, T, Idx, const N: usize>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    grid : &'a G,
-    rect : Rectangle<Idx,N>,
-    phantom : std::marker::PhantomData<T>,
+    grid: &'a G,
+    rect: Rectangle<Idx, N>,
+    phantom: std::marker::PhantomData<T>,
 }
 
 /*
@@ -114,31 +149,47 @@ impl<'c, G, T, Idx, const N : usize> IGridViewNonOwned<G, T, Idx, N> for GridVie
     Idx : Integer {}
 */
 
-impl<'c, G, T, Idx, const N : usize> IGridView<G, T, Idx, N> for GridView<'c, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer
+impl<'c, G, T, Idx, const N: usize> IGridView<G, T, Idx, N> for GridView<'c, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    type WithLifetime<'a> = GridView<'a, G, T, Idx, N> where Self: 'a;
-    fn view<'a,'b>(&'a self) -> Self::WithLifetime<'b> where 'a : 'b { unsafe { GridView::from_rect_unchecked(self.grid, self.rect) } }
+    type WithLifetime<'a>
+        = GridView<'a, G, T, Idx, N>
+    where
+        Self: 'a;
+    fn view<'a, 'b>(&'a self) -> Self::WithLifetime<'b>
+    where
+        'a: 'b,
+    {
+        unsafe { GridView::from_rect_unchecked(self.grid, self.rect) }
+    }
 
     unsafe fn grid_unchecked(&self) -> &G { self.grid }
-    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b> where 'a: 'b
-    { unsafe { GridView::from_rect_unchecked(self.grid, rect) } }
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(
+        &'a self,
+        rect: Rectangle<Idx, N>,
+    ) -> Self::WithLifetime<'b>
+    where
+        'a: 'b,
+    {
+        unsafe { GridView::from_rect_unchecked(self.grid, rect) }
+    }
 }
 
-
-impl<'a, G, T, Idx, const N : usize> Copy for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer
-{}
-impl<'a, G, T, Idx, const N : usize> Clone for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer
+impl<'a, G, T, Idx, const N: usize> Copy for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    fn clone(&self) -> Self {
+}
+impl<'a, G, T, Idx, const N: usize> Clone for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+{
+    fn clone(&self) -> Self
+    {
         Self {
             grid: self.grid,
             rect: self.rect.clone(),
@@ -147,32 +198,31 @@ impl<'a, G, T, Idx, const N : usize> Clone for GridView<'a, G, T, Idx, N>
     }
 }
 
-impl<'a, G, T, Idx, const N : usize> PartialEq for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    T : PartialEq
+impl<'a, G, T, Idx, const N: usize> PartialEq for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    T: PartialEq,
 {
-    fn eq(&self, other: &Self) -> bool
-    {
-        self.rect == other.rect && self.iter().eq(other.iter())
-    }
+    fn eq(&self, other: &Self) -> bool { self.rect == other.rect && self.iter().eq(other.iter()) }
 }
 
-impl<'a, G, T, Idx, const N : usize> Eq for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    T : Eq
-{}
-
-impl<'a, G, T, Idx, const N : usize> Hash for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    T : Hash
+impl<'a, G, T, Idx, const N: usize> Eq for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    T: Eq,
 {
-    fn hash<H: Hasher>(&self, state: &mut H) {
+}
+
+impl<'a, G, T, Idx, const N: usize> Hash for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    T: Hash,
+{
+    fn hash<H: Hasher>(&self, state: &mut H)
+    {
         self.rect.hash(state);
         for (_, v) in self.iter()
         {
@@ -181,139 +231,159 @@ impl<'a, G, T, Idx, const N : usize> Hash for GridView<'a, G, T, Idx, N>
     }
 }
 
-impl<'a, G, T, Idx, const N : usize> PartialOrd for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    T : PartialOrd
+impl<'a, G, T, Idx, const N: usize> PartialOrd for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    T: PartialOrd,
 {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if self.rect == other.rect {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering>
+    {
+        if self.rect == other.rect
+        {
             self.iter().partial_cmp(other.iter())
-        }else
+        }
+        else
         {
             self.rect.partial_cmp(&other.rect)
         }
     }
 }
 
-impl<'a, G, T, Idx, const N : usize> Ord for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    T : Ord
+impl<'a, G, T, Idx, const N: usize> Ord for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    T: Ord,
 {
-    fn cmp(&self, other: &Self) -> Ordering {
-        if self.rect == other.rect {
+    fn cmp(&self, other: &Self) -> Ordering
+    {
+        if self.rect == other.rect
+        {
             self.iter().cmp(other.iter())
-        }else
+        }
+        else
         {
             self.rect.cmp(&other.rect)
         }
     }
 }
 
-
-impl<'a, G, T, Idx, const N : usize> GetPosition<Idx,N> for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer
+impl<'a, G, T, Idx, const N: usize> GetPosition<Idx, N> for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
     /// The view is relative to itself, so the position is zero
     #[inline(always)]
-    fn pos(&self) -> Vector<Idx,N> { zero() }
+    fn pos(&self) -> Vector<Idx, N> { zero() }
 }
-impl<'a, G, T, Idx, const N : usize> GetSize<Idx,N> for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer
+impl<'a, G, T, Idx, const N: usize> GetSize<Idx, N> for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
     #[inline(always)]
-    fn size(&self) -> Vector<Idx,N> { self.rect.size }
+    fn size(&self) -> Vector<Idx, N> { self.rect.size }
 }
 
-
-
-impl<'a, G, T, Idx, const N : usize> Collection for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-{}
-impl<'a, G, T, Idx, const N : usize> CollectionBijective for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-{}
-
-impl<'a, P, G, T, Idx, const N : usize> Get<P> for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    P : Into<Vector<Idx,N>>
+impl<'a, G, T, Idx, const N: usize> Collection for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    type Output = <G as Get<Vector<Idx,N>>>::Output;
+}
+impl<'a, G, T, Idx, const N: usize> CollectionBijective for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+{
+}
+
+impl<'a, P, G, T, Idx, const N: usize> Get<P> for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    P: Into<Vector<Idx, N>>,
+{
+    type Output = <G as Get<Vector<Idx, N>>>::Output;
 
     #[inline(always)]
-    fn get(&self, index : P) -> Option<&Self::Output> { self.grid.get(index.into() + self.rect.pos) }
+    fn get(&self, index: P) -> Option<&Self::Output> { self.grid.get(index.into() + self.rect.pos) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(&self, index : P) -> &Self::Output { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
+    unsafe fn get_unchecked(&self, index: P) -> &Self::Output
+    {
+        unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) }
+    }
 }
-impl<'a, P, G, T, Idx, const N : usize> TryGet<P> for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    P : Into<Vector<Idx,N>>
+impl<'a, P, G, T, Idx, const N: usize> TryGet<P> for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    P: Into<Vector<Idx, N>>,
 {
-    type Error = <G as TryGet<Vector<Idx,N>>>::Error;
-    fn try_get(&self, index : P) -> Result<&Self::Output, Self::Error> { self.grid.try_get(index.into() + self.rect.pos) }
+    type Error = <G as TryGet<Vector<Idx, N>>>::Error;
+    fn try_get(&self, index: P) -> Result<&Self::Output, Self::Error>
+    {
+        self.grid.try_get(index.into() + self.rect.pos)
+    }
 }
 
-impl<'a, P, G, T, Idx, const N : usize> Index<P> for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
-    P : Into<Vector<Idx,N>>
+impl<'a, P, G, T, Idx, const N: usize> Index<P> for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    P: Into<Vector<Idx, N>>,
 {
-    type Output = <Self as Get<Vector<Idx,N>>>::Output;
+    type Output = <Self as Get<Vector<Idx, N>>>::Output;
 
     #[track_caller]
     fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
 }
 
-
-impl<'a, G, T, Idx, const N : usize> GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer,
+impl<'a, G, T, Idx, const N: usize> GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    pub fn new(grid : &'a G) -> Self { unsafe { Self::from_rect_unchecked(grid, grid.rect()) } }
+    pub fn new(grid: &'a G) -> Self { unsafe { Self::from_rect_unchecked(grid, grid.rect()) } }
 
-    pub fn from_rect(grid : &'a G, rect : Rectangle<Idx,N>) -> Option<Self>
+    pub fn from_rect(grid: &'a G, rect: Rectangle<Idx, N>) -> Option<Self>
     {
-        if !grid.rect().is_rect_inside(rect) {
+        if !grid.rect().is_rect_inside(rect)
+        {
             return None;
-        }else
+        }
+        else
         {
             Some(unsafe { Self::from_rect_unchecked(grid, rect) })
         }
     }
-    pub unsafe fn from_rect_unchecked(grid : &'a G, rect : Rectangle<Idx,N>) -> Self { Self { grid, rect, phantom: PhantomData }}
+    pub unsafe fn from_rect_unchecked(grid: &'a G, rect: Rectangle<Idx, N>) -> Self
+    {
+        Self {
+            grid,
+            rect,
+            phantom: PhantomData,
+        }
+    }
 
-    pub fn from_rect_intersect(grid : &'a G, rect : Rectangle<Idx,N>) -> Self
+    pub fn from_rect_intersect(grid: &'a G, rect: Rectangle<Idx, N>) -> Self
     {
         unsafe { Self::from_rect_unchecked(grid, grid.rect().intersect_or_empty(rect)) }
     }
 }
 
-
-impl<'a, G, T, Idx, const N : usize> Crop<Idx,N> for GridView<'a, G, T, Idx, N>
-    where
-    G : IGrid<T, Idx, N>,
-    Idx : Integer
+impl<'a, G, T, Idx, const N: usize> Crop<Idx, N> for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
 {
-    fn crop(self, subrect : Rectangle<Idx, N>) -> Option<Self>
+    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self>
     {
-        self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) })
+        self.rect
+            .crop(subrect)
+            .map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) })
     }
 }

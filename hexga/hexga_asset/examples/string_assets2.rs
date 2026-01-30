@@ -10,6 +10,4 @@ fn main()
 {
     let mut hello = Asset::<String>::update_or_create(&"./tmp/hello", "hello world".to_owned());
     let mut hi = Asset::<String>::update_or_create(&"./tmp/hello", "world".to_owned());
-
-
 }

@@ -12,19 +12,16 @@ pub trait CastInto<T>
 }
 
 // Double recursive macro :)
-macro_rules! impl_cast_to
-{
-    ($itself: ty, $cast_into: ty) =>
-    {
+macro_rules! impl_cast_to {
+    ($itself: ty, $cast_into: ty) => {
         impl CastInto<$cast_into> for $itself
         {
             fn cast_to(self) -> $cast_into { self as _ }
         }
     };
 
-    ($cast_into: ty) =>
-    {
-        map_on_number!(impl_cast_to,$cast_into);
+    ($cast_into: ty) => {
+        map_on_number!(impl_cast_to, $cast_into);
     };
 }
 // Do 144 trait impl in a few lines :)

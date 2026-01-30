@@ -10,9 +10,8 @@ use quote::quote;
 use syn::{DeriveInput, Result, parse_macro_input};
 
 #[allow(unused_imports)]
-use crate::traits::
-{
-    BitAllUsed, BitAnyPattern, BitZero, Contiguous, Derivable, BitPattern, Pod, TransparentWrapper,
+use crate::traits::{
+    BitAllUsed, BitAnyPattern, BitPattern, BitZero, Contiguous, Derivable, Pod, TransparentWrapper,
     hexga_bit_crate_name,
 };
 
@@ -92,7 +91,8 @@ use crate::traits::
 /// let _: u32 = hexga_bit::transmute(Generic { a: 4u32, b: PhantomData::<NotPod> });
 /// ```
 #[proc_macro_derive(Pod, attributes(hexga_bit))]
-pub fn derive_pod(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn derive_pod(input: proc_macro::TokenStream) -> proc_macro::TokenStream
+{
     let expanded = derive_marker_trait::<Pod>(parse_macro_input!(input as DeriveInput));
 
     proc_macro::TokenStream::from(expanded)
@@ -107,7 +107,8 @@ pub fn derive_pod(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 ///
 /// - All fields in the struct must to implement `BitPattern`
 #[proc_macro_derive(BitPattern, attributes(hexga_bit))]
-pub fn derive_from_bit(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn derive_from_bit(input: proc_macro::TokenStream) -> proc_macro::TokenStream
+{
     let expanded = derive_marker_trait::<BitPattern>(parse_macro_input!(input as DeriveInput));
 
     proc_macro::TokenStream::from(expanded)
@@ -122,7 +123,8 @@ pub fn derive_from_bit(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 ///
 /// - All fields in the struct must to implement `BitAnyPattern`
 #[proc_macro_derive(BitAnyPattern, attributes(hexga_bit))]
-pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::TokenStream
+{
     let expanded = derive_marker_trait::<BitAnyPattern>(parse_macro_input!(input as DeriveInput));
     proc_macro::TokenStream::from(expanded)
 }
@@ -250,7 +252,8 @@ pub fn derive_bit_any_pattern(input: proc_macro::TokenStream) -> proc_macro::Tok
 /// ZeroableWhenTIsZeroable::<String>::zeroed();
 /// ```
 #[proc_macro_derive(BitZero, attributes(hexga_bit, bitzero))]
-pub fn derive_bitzero(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn derive_bitzero(input: proc_macro::TokenStream) -> proc_macro::TokenStream
+{
     let expanded = derive_marker_trait::<BitZero>(parse_macro_input!(input as DeriveInput));
 
     proc_macro::TokenStream::from(expanded)
@@ -281,14 +284,16 @@ pub fn derive_bitzero(input: proc_macro::TokenStream) -> proc_macro::TokenStream
 ///     variant fields
 /// - The enum must contain no generic parameters
 #[proc_macro_derive(BitAllUsed, attributes(hexga_bit))]
-pub fn derive_no_uninit(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn derive_no_uninit(input: proc_macro::TokenStream) -> proc_macro::TokenStream
+{
     let expanded = derive_marker_trait::<BitAllUsed>(parse_macro_input!(input as DeriveInput));
 
     proc_macro::TokenStream::from(expanded)
 }
 
 /// Basic wrapper for error handling
-fn derive_marker_trait<Trait: Derivable>(input: DeriveInput) -> TokenStream {
+fn derive_marker_trait<Trait: Derivable>(input: DeriveInput) -> TokenStream
+{
     derive_marker_trait_inner::<Trait>(input).unwrap_or_else(|err| err.into_compile_error())
 }
 
@@ -304,10 +309,12 @@ fn find_and_parse_helper_attributes<P: syn::parse::Parser + Copy>(
     parser: P,
     example_value: &str,
     invalid_value_msg: &str,
-) -> Result<Vec<P::Output>> {
+) -> Result<Vec<P::Output>>
+{
     let invalid_format_msg =
         format!("{name} attribute must be `{name}({key} = \"{example_value}\")`",);
-    let values_to_check = attributes.iter().filter_map(|attr| match &attr.meta {
+    let values_to_check = attributes.iter().filter_map(|attr| match &attr.meta
+    {
         // If a `Path` matches our `name`, return an error, else ignore it.
         // e.g. `#[bitZero]`
         syn::Meta::Path(path) => path
@@ -327,8 +334,10 @@ fn find_and_parse_helper_attributes<P: syn::parse::Parser + Copy>(
         syn::Meta::List(list) => list.path.is_ident(name).then(|| {
             let namevalue: syn::MetaNameValue = syn::parse2(list.tokens.clone())
                 .map_err(|_| syn::Error::new_spanned(&list.tokens, &invalid_format_msg))?;
-            if namevalue.path.is_ident(key) {
-                match namevalue.value {
+            if namevalue.path.is_ident(key)
+            {
+                match namevalue.value
+                {
                     syn::Expr::Lit(syn::ExprLit {
                         lit: syn::Lit::Str(strlit),
                         ..
@@ -338,7 +347,9 @@ fn find_and_parse_helper_attributes<P: syn::parse::Parser + Copy>(
                         &invalid_format_msg,
                     )),
                 }
-            } else {
+            }
+            else
+            {
                 Err(syn::Error::new_spanned(
                     &namevalue.path,
                     &invalid_format_msg,
@@ -357,13 +368,15 @@ fn find_and_parse_helper_attributes<P: syn::parse::Parser + Copy>(
         .collect()
 }
 
-fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result<TokenStream> {
+fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result<TokenStream>
+{
     let crate_name = hexga_bit_crate_name(&input);
     let trait_ = Trait::ident(&input, &crate_name)?;
     // If this trait allows explicit bounds, and any explicit bounds were given,
     // then use those explicit bounds. Else, apply the default bounds (bound
     // each generic type on this trait).
-    if let Some(name) = Trait::explicit_bounds_attribute_name() {
+    if let Some(name) = Trait::explicit_bounds_attribute_name()
+    {
         // See if any explicit bounds were given in attributes.
         let explicit_bounds = find_and_parse_helper_attributes(
             &input.attrs,
@@ -374,7 +387,8 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
             "invalid where predicate",
         )?;
 
-        if !explicit_bounds.is_empty() {
+        if !explicit_bounds.is_empty()
+        {
             // Explicit bounds were given.
             // Enforce explicitly given bounds, and emit "perfect derive" (i.e. add
             // bounds for each field's type).
@@ -383,16 +397,19 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
                 .flatten()
                 .collect::<Vec<syn::WherePredicate>>();
 
-            let fields = match (Trait::perfect_derive_fields(&input), &input.data) {
+            let fields = match (Trait::perfect_derive_fields(&input), &input.data)
+            {
                 (Some(fields), _) => fields,
                 (None, syn::Data::Struct(syn::DataStruct { fields, .. })) => fields.clone(),
-                (None, syn::Data::Union(_)) => {
+                (None, syn::Data::Union(_)) =>
+                {
                     return Err(syn::Error::new_spanned(
                         trait_,
                         &"perfect derive is not supported for unions",
                     ));
                 }
-                (None, syn::Data::Enum(_)) => {
+                (None, syn::Data::Enum(_)) =>
+                {
                     return Err(syn::Error::new_spanned(
                         trait_,
                         &"perfect derive is not supported for enums",
@@ -404,18 +421,23 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
 
             predicates.extend(explicit_bounds);
 
-            for field in fields {
+            for field in fields
+            {
                 let ty = field.ty;
                 predicates.push(syn::parse_quote!(
                   #ty: #trait_
                 ));
             }
-        } else {
+        }
+        else
+        {
             // No explicit bounds were given.
             // Enforce trait bound on all type generics.
             add_trait_marker(&mut input.generics, &trait_);
         }
-    } else {
+    }
+    else
+    {
         // This trait does not allow explicit bounds.
         // Enforce trait bound on all type generics.
         add_trait_marker(&mut input.generics, &trait_);
@@ -429,15 +451,21 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
     let asserts = Trait::asserts(&input, &crate_name)?;
     let (trait_impl_extras, trait_impl) = Trait::trait_impl(&input, &crate_name)?;
 
-    let implies_trait = if let Some(implies_trait) = Trait::implies_trait(&crate_name) {
+    let implies_trait = if let Some(implies_trait) = Trait::implies_trait(&crate_name)
+    {
         quote!(unsafe impl #impl_generics #implies_trait for #name #ty_generics #where_clause {})
-    } else {
+    }
+    else
+    {
         quote!()
     };
 
-    let where_clause = if Trait::requires_where_clause() {
+    let where_clause = if Trait::requires_where_clause()
+    {
         where_clause
-    } else {
+    }
+    else
+    {
         None
     };
 
@@ -455,7 +483,8 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
 }
 
 /// Add a trait marker to the generics if it is not already present
-fn add_trait_marker(generics: &mut syn::Generics, trait_name: &syn::Path) {
+fn add_trait_marker(generics: &mut syn::Generics, trait_name: &syn::Path)
+{
     // Get each generic type parameter.
     let type_params = generics
         .type_params()

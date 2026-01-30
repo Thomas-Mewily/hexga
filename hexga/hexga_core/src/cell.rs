@@ -1,5 +1,8 @@
 use super::*;
-use std::{cell::{BorrowError, BorrowMutError, Ref, RefCell, RefMut}, thread::ThreadId};
+use std::{
+    cell::{BorrowError, BorrowMutError, Ref, RefCell, RefMut},
+    thread::ThreadId,
+};
 
 /// A value that can be read and written by only one thread.
 ///
@@ -20,30 +23,33 @@ impl<T> SingleThreadCell<T>
 {
     pub const fn new(value: T) -> Self
     {
-        Self { value: RefCell::new(value), id: std::sync::OnceLock::new() }
+        Self {
+            value: RefCell::new(value),
+            id: std::sync::OnceLock::new(),
+        }
     }
     #[inline(always)]
-    pub(crate) fn same_thread(&self) -> Result<(),DifferentThreadError>
+    pub(crate) fn same_thread(&self) -> Result<(), DifferentThreadError>
     {
-        if std::thread::current().id() == *self.id.get_or_init(|| std::thread::current().id()) { Ok(()) } else { Err(DifferentThreadError) }
+        if std::thread::current().id() == *self.id.get_or_init(|| std::thread::current().id())
+        {
+            Ok(())
+        }
+        else
+        {
+            Err(DifferentThreadError)
+        }
     }
     #[inline(always)]
-    pub(crate) fn asset_same_thread(&self)
-    {
-        self.same_thread().unwrap();
-    }
+    pub(crate) fn asset_same_thread(&self) { self.same_thread().unwrap(); }
 }
-
-
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DifferentThreadError;
 
 impl Debug for DifferentThreadError
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "different thread")
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "different thread") }
 }
 
 #[derive(Debug)]
@@ -61,20 +67,27 @@ impl From<BorrowError> for SingleThreadError
     fn from(value: BorrowError) -> Self { Self::Borrow(value) }
 }
 
-
 impl<T> Guarded<T> for SingleThreadCell<T>
 {
-    type Guard<'a> = Ref<'a,T> where Self: 'a;
+    type Guard<'a>
+        = Ref<'a, T>
+    where
+        Self: 'a;
 
-    fn get<'a>(&'a self) -> Self::Guard<'a> {
+    fn get<'a>(&'a self) -> Self::Guard<'a>
+    {
         self.asset_same_thread();
         self.value.borrow()
     }
 }
 impl<T> TryGuarded<T> for SingleThreadCell<T>
 {
-    type Error<'a> = SingleThreadError where Self: 'a;
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
+    type Error<'a>
+        = SingleThreadError
+    where
+        Self: 'a;
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>
+    {
         self.same_thread()?;
         Ok(self.value.try_borrow()?)
     }
@@ -96,16 +109,24 @@ impl From<BorrowMutError> for SingleThreadMutError
 }
 impl<T> GuardedMut<T> for SingleThreadCell<T>
 {
-    type GuardMut<'a> = RefMut<'a, T> where Self: 'a;
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
+    type GuardMut<'a>
+        = RefMut<'a, T>
+    where
+        Self: 'a;
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
+    {
         self.asset_same_thread();
         self.value.borrow_mut()
     }
 }
 impl<T> TryGuardedMut<T> for SingleThreadCell<T>
 {
-    type Error<'a> = SingleThreadMutError where Self: 'a;
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
+    type Error<'a>
+        = SingleThreadMutError
+    where
+        Self: 'a;
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
+    {
         self.same_thread()?;
         Ok(self.value.try_borrow_mut()?)
     }

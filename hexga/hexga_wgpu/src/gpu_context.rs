@@ -6,10 +6,8 @@ pub struct Gpu;
 
 impl Deref for Gpu
 {
-    type Target=GpuContext;
-    fn deref(&self) -> &Self::Target {
-        GPU_CTX.get().expect("gpu not init")
-    }
+    type Target = GpuContext;
+    fn deref(&self) -> &Self::Target { GPU_CTX.get().expect("gpu not init") }
 }
 impl Gpu
 {
@@ -17,11 +15,13 @@ impl Gpu
     pub fn is_not_init() -> bool { !Self::is_init() }
 }
 
-impl<F> AsyncRunner<F,GpuParam> for Gpu
-    where F: AsyncFnOnce(GpuInitOutput)
+impl<F> AsyncRunner<F, GpuParam> for Gpu
+where
+    F: AsyncFnOnce(GpuInitOutput),
 {
-    type Output=GpuResult;
-    async fn run_with_param(f: F, param: GpuParam) -> Self::Output {
+    type Output = GpuResult;
+    async fn run_with_param(f: F, param: GpuParam) -> Self::Output
+    {
         let output = Self::new(param).await?;
         f(output);
         Ok(())
@@ -32,12 +32,15 @@ impl Gpu
 {
     pub async fn new(param: GpuParam) -> GpuResult<GpuInitOutput>
     {
-        if Gpu::is_init() { return Err(GpuError::GpuAlreadyInit) }
+        if Gpu::is_init()
+        {
+            return Err(GpuError::GpuAlreadyInit);
+        }
         Self::from_init(GpuInit::new(param).await?).await
     }
     pub async fn from_init(gpu: GpuInit) -> GpuResult<GpuInitOutput>
     {
-        let GpuInit{ gpu, output } = gpu;
+        let GpuInit { gpu, output } = gpu;
         match GPU_CTX.try_insert(gpu)
         {
             Ok(_) => Ok(output),
@@ -45,7 +48,6 @@ impl Gpu
         }
     }
 }
-
 
 #[derive(Default)]
 pub struct GpuParam
@@ -58,15 +60,20 @@ pub struct GpuParam
 }
 impl Debug for GpuParam
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("GpuParam").field("instance", &self.instance).field("power_preference", &self.power_preference).field("compatible_surface", &self.compatible_surface.is_some()).finish()
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    {
+        f.debug_struct("GpuParam")
+            .field("instance", &self.instance)
+            .field("power_preference", &self.power_preference)
+            .field("compatible_surface", &self.compatible_surface.is_some())
+            .finish()
     }
 }
 
-
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum PowerPreference {
+pub enum PowerPreference
+{
     #[default]
     /// Power usage is not considered when choosing an adapter.
     None = 0,
@@ -77,7 +84,8 @@ pub enum PowerPreference {
 }
 impl Into<wgpu::PowerPreference> for PowerPreference
 {
-    fn into(self) -> wgpu::PowerPreference {
+    fn into(self) -> wgpu::PowerPreference
+    {
         match self
         {
             PowerPreference::None => wgpu::PowerPreference::None,
@@ -87,7 +95,6 @@ impl Into<wgpu::PowerPreference> for PowerPreference
     }
 }
 
-
 #[derive(Debug)]
 pub struct GpuInit
 {
@@ -96,9 +103,14 @@ pub struct GpuInit
 }
 impl GpuInit
 {
-    pub async fn from_instance_and_surface(instance: GpuInstance, surface: Option<GpuSurface<'static>>, param: GpuParam) -> GpuResult<Self>
+    pub async fn from_instance_and_surface(
+        instance: GpuInstance,
+        surface: Option<GpuSurface<'static>>,
+        param: GpuParam,
+    ) -> GpuResult<Self>
     {
-        let adapter = instance.wgpu
+        let adapter = instance
+            .wgpu
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: param.power_preference.into(),
                 force_fallback_adapter: false,
@@ -113,9 +125,12 @@ impl GpuInit
                 required_features: wgpu::Features::empty(),
                 // WebGL doesn't support all of wgpu's features, so if
                 // we're building for the web we'll have to disable some.
-                required_limits: if cfg!(target_arch = "wasm32") {
+                required_limits: if cfg!(target_arch = "wasm32")
+                {
                     wgpu::Limits::downlevel_webgl2_defaults()
-                } else {
+                }
+                else
+                {
                     wgpu::Limits::default()
                 },
                 memory_hints: Default::default(),
@@ -123,12 +138,19 @@ impl GpuInit
             })
             .await?;
 
-        Ok(GpuInit
-            {
-                gpu:  GpuContext { wgpu: WgpuContext { instance, adapter, device, queue } },
-                output: GpuInitOutput { surface: surface.map(|wgpu| wgpu.into()) }
-            }
-        )
+        Ok(GpuInit {
+            gpu: GpuContext {
+                wgpu: WgpuContext {
+                    instance,
+                    adapter,
+                    device,
+                    queue,
+                },
+            },
+            output: GpuInitOutput {
+                surface: surface.map(|wgpu| wgpu.into()),
+            },
+        })
     }
     pub async fn new(mut param: GpuParam) -> GpuResult<Self>
     {
@@ -178,7 +200,8 @@ pub enum Backend
 
 impl From<Backend> for wgpu::Backends
 {
-    fn from(value: Backend) -> Self {
+    fn from(value: Backend) -> Self
+    {
         use wgpu::Backends as B;
         match value
         {
@@ -193,7 +216,8 @@ impl From<Backend> for wgpu::Backends
 }
 impl From<BackendFlags> for wgpu::Backends
 {
-    fn from(backends: BackendFlags) -> Self {
+    fn from(backends: BackendFlags) -> Self
+    {
         let mut flags = wgpu::Backends::empty();
         for backend in backends
         {
@@ -210,14 +234,13 @@ impl Default for BackendFlags
         if cfg!(debug_assertions)
         {
             BackendFlags::Debug
-        }else
+        }
+        else
         {
             BackendFlags::Primary | BackendFlags::Secondary
         }
     }
 }
-
-
 
 #[repr(transparent)]
 #[derive(Debug, Clone)]
@@ -242,10 +265,9 @@ impl WgpuContext
     pub fn wgpu_queue(&self) -> &wgpu::Queue { &self.queue }
 }
 
-pub fn instance() -> impl Deref<Target=GpuInstance> { &Gpu.wgpu.instance }
+pub fn instance() -> impl Deref<Target = GpuInstance> { &Gpu.wgpu.instance }
 
-pub fn wgpu_instance() -> impl Deref<Target=wgpu::Instance> { &Gpu.wgpu.instance.wgpu }
-pub fn wgpu_adapter() -> impl Deref<Target=wgpu::Adapter> { &Gpu.wgpu.adapter }
-pub fn wgpu_device() -> impl Deref<Target=wgpu::Device> { &Gpu.wgpu.device }
-pub fn wgpu_queue() -> impl Deref<Target=wgpu::Queue> { &Gpu.wgpu.queue }
-
+pub fn wgpu_instance() -> impl Deref<Target = wgpu::Instance> { &Gpu.wgpu.instance.wgpu }
+pub fn wgpu_adapter() -> impl Deref<Target = wgpu::Adapter> { &Gpu.wgpu.adapter }
+pub fn wgpu_device() -> impl Deref<Target = wgpu::Device> { &Gpu.wgpu.device }
+pub fn wgpu_queue() -> impl Deref<Target = wgpu::Queue> { &Gpu.wgpu.queue }

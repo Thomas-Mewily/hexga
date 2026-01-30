@@ -6,7 +6,7 @@ macro_rules! print_type {
     };
 }
 
-fn main() 
+fn main()
 {
     // manual stuff
     print_type!(f32);
@@ -16,7 +16,7 @@ fn main()
 
     // with a macro
     map_on!((f32, f64), print_type);
-    
+
     println!("---");
     println!("Hello, world!");
 }

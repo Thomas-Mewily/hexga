@@ -1,7 +1,6 @@
 use hexga_core::prelude::IndexExtension;
 use hexga_generational::prelude::*;
 
-
 fn main()
 {
     let mut entities = GenVec::new();

@@ -8,8 +8,5 @@ pub use bijection_fn::*;
 
 pub mod prelude
 {
-    pub use super::
-    {
-        bijection::{Bijection,WithBijection},
-    };
+    pub use super::bijection::{Bijection, WithBijection};
 }

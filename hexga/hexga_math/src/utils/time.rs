@@ -37,8 +37,17 @@ new_unit!(
     TimeOf
 );
 
-pub trait ToTime<T> : ToTimeComposite<Output = TimeOf<T>> where T: CastIntoFloat {}
-impl<S,T> ToTime<T> for S where S : ToTimeComposite<Output = TimeOf<T>>, T : CastIntoFloat {}
+pub trait ToTime<T>: ToTimeComposite<Output = TimeOf<T>>
+where
+    T: CastIntoFloat,
+{
+}
+impl<S, T> ToTime<T> for S
+where
+    S: ToTimeComposite<Output = TimeOf<T>>,
+    T: CastIntoFloat,
+{
+}
 
 pub trait ToTimeComposite
 {
@@ -46,13 +55,13 @@ pub trait ToTimeComposite
     /// Creates a new Time from the specified number of whole milliseconds.
     fn millis(self) -> Self::Output;
     /// Creates a new Time from the specified number of whole seconds.
-    fn secs  (self) -> Self::Output;
+    fn secs(self) -> Self::Output;
     /// Creates a new Time from the specified number of whole minutes.
-    fn mins  (self) -> Self::Output;
+    fn mins(self) -> Self::Output;
     /// Creates a new Time from the specified number of whole hours.
-    fn hours (self) -> Self::Output;
+    fn hours(self) -> Self::Output;
     /// Creates a new Time from the specified number of whole days.
-    fn days  (self) -> Self::Output;
+    fn days(self) -> Self::Output;
 }
 
 map_on_number!(
@@ -70,36 +79,60 @@ map_on_number!(
     }
 );
 
-impl<T> ToTimeComposite for T where T: Map, T::Item : ToTimeComposite
+impl<T> ToTimeComposite for T
+where
+    T: Map,
+    T::Item: ToTimeComposite,
 {
     type Output = T::WithType<<T::Item as ToTimeComposite>::Output>;
 
     fn millis(self) -> Self::Output { self.map(ToTimeComposite::millis) }
-    fn secs  (self) -> Self::Output { self.map(ToTimeComposite::secs  ) }
-    fn mins  (self) -> Self::Output { self.map(ToTimeComposite::mins  ) }
-    fn hours (self) -> Self::Output { self.map(ToTimeComposite::hours ) }
-    fn days  (self) -> Self::Output { self.map(ToTimeComposite::days  ) }
+    fn secs(self) -> Self::Output { self.map(ToTimeComposite::secs) }
+    fn mins(self) -> Self::Output { self.map(ToTimeComposite::mins) }
+    fn hours(self) -> Self::Output { self.map(ToTimeComposite::hours) }
+    fn days(self) -> Self::Output { self.map(ToTimeComposite::days) }
 }
 
-impl<T:Float> Debug for TimeOf<T> { fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self) } }
+impl<T: Float> Debug for TimeOf<T>
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self) }
+}
 
-impl<T:Float> TimeOf<T>
+impl<T: Float> TimeOf<T>
 {
     /// don't display the value if zero
-    fn display_non_zero_unit(f: &mut Formatter<'_>, val : i32, unit : &str) -> FmtResult
-    { if val != 0 {  Self::display_unit(f, val, unit)?; write!(f, " ") } else { Ok(())} }
+    fn display_non_zero_unit(f: &mut Formatter<'_>, val: i32, unit: &str) -> FmtResult
+    {
+        if val != 0
+        {
+            Self::display_unit(f, val, unit)?;
+            write!(f, " ")
+        }
+        else
+        {
+            Ok(())
+        }
+    }
 
-    fn display_unit(f: &mut Formatter<'_>, val : i32, unit : &str) -> FmtResult
-    { write!(f, "{}{}", val, unit) }
+    fn display_unit(f: &mut Formatter<'_>, val: i32, unit: &str) -> FmtResult
+    {
+        write!(f, "{}{}", val, unit)
+    }
 }
 
-impl<T:Float> Display for TimeOf<T>
+impl<T: Float> Display for TimeOf<T>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
-        if self.is_zero() { return write!(f, "0s"); }
+        if self.is_zero()
+        {
+            return write!(f, "0s");
+        }
 
-        if self.is_strictly_negative() { write!(f, "-")?; }
+        if self.is_strictly_negative()
+        {
+            write!(f, "-")?;
+        }
 
         Self::display_non_zero_unit(f, self.timer_days(), "d")?;
         Self::display_non_zero_unit(f, self.timer_hours(), "h")?;
@@ -110,14 +143,14 @@ impl<T:Float> Display for TimeOf<T>
     }
 }
 
-impl<T:Float> TimeOf<T>
+impl<T: Float> TimeOf<T>
 {
     /// milliseconds
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1000.millis(), 1.secs());
     /// ```
-    pub fn from_millis (ms : T) -> Self  { Self::from_secs(ms / 1000.cast_into()) }
+    pub fn from_millis(ms: T) -> Self { Self::from_secs(ms / 1000.cast_into()) }
 
     /// milliseconds
     /// ```
@@ -125,7 +158,6 @@ impl<T:Float> TimeOf<T>
     /// debug_assert_eq!(1f32.secs().millis(), 1000.);
     /// ```
     pub fn millis(self) -> T { self.0 * 1000.cast_into() }
-
 
     /// whole milliseconds
     /// ```
@@ -159,7 +191,7 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(60.secs(), 1.mins());
     /// ```
-    pub const fn from_secs(second : T) -> Self { Self(second) }
+    pub const fn from_secs(second: T) -> Self { Self(second) }
 
     /// total seconds
     /// ```
@@ -197,7 +229,7 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(60.mins(), 1.hours());
     /// ```
-    pub fn from_mins(min : T) -> Self { Self::from_secs(min * T::SIXTY) }
+    pub fn from_mins(min: T) -> Self { Self::from_secs(min * T::SIXTY) }
 
     /// minutes
     /// ```
@@ -221,7 +253,6 @@ impl<T:Float> TimeOf<T>
     /// ```
     pub fn whole_mins(self) -> i32 { self.mins().round_toward_zero().to_i32() }
 
-
     /// Can be used to display mins in a timer
     /// ```
     /// use hexga_math::prelude::*;
@@ -239,14 +270,13 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(24f32.hours(), 1.days());
     /// ```
-    pub fn from_hours(hours : T) -> Self { Self::from_secs(hours * (T::SIXTY * T::SIXTY)) }
+    pub fn from_hours(hours: T) -> Self { Self::from_secs(hours * (T::SIXTY * T::SIXTY)) }
     /// hours
     /// ```
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1f32.days().hours(), 24.);
     /// ```
     pub fn hours(self) -> T { self.0 / (T::SIXTY * T::SIXTY) }
-
 
     /// ```
     /// use hexga_math::prelude::*;
@@ -261,7 +291,6 @@ impl<T:Float> TimeOf<T>
     /// debug_assert_eq!(-1.9f32.hours().whole_hours(), -1);
     /// ```
     pub fn whole_hours(self) -> i32 { self.hours().round_toward_zero().to_i32() }
-
 
     /// Can be used to display hours in a timer
     /// ```
@@ -280,7 +309,10 @@ impl<T:Float> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1f32.days(), (3600*24).secs());
     /// ```
-    pub fn from_days(day : T) -> Self { Self::from_secs(day * (T::SIXTY * T::SIXTY * T::TWENTY_FOUR)) }
+    pub fn from_days(day: T) -> Self
+    {
+        Self::from_secs(day * (T::SIXTY * T::SIXTY * T::TWENTY_FOUR))
+    }
     /// days
     /// ```
     /// use hexga_math::prelude::*;
@@ -302,7 +334,6 @@ impl<T:Float> TimeOf<T>
     /// ```
     pub fn whole_days(self) -> i32 { self.days().round_toward_zero().to_i32() }
 
-
     /// Can be used to display days in a timer
     /// ```
     /// use hexga_math::prelude::*;
@@ -316,25 +347,33 @@ impl<T:Float> TimeOf<T>
     pub fn timer_days(self) -> i32 { self.days().abs().floor().to_i32() }
 }
 
-
-impl<T: Float> RangeDefault for TimeOf<T> where T: RangeDefault
+impl<T: Float> RangeDefault for TimeOf<T>
+where
+    T: RangeDefault,
 {
-    const RANGE_MIN  : Self = Self(T::RANGE_MIN);
-    const RANGE_HALF : Self = Self(T::RANGE_HALF);
-    const RANGE_MAX  : Self = Self(T::RANGE_MAX);
-    const RANGE      : Self = Self(T::RANGE);
+    const RANGE_MIN: Self = Self(T::RANGE_MIN);
+    const RANGE_HALF: Self = Self(T::RANGE_HALF);
+    const RANGE_MAX: Self = Self(T::RANGE_MAX);
+    const RANGE: Self = Self(T::RANGE);
 }
 
 #[cfg(feature = "serde")]
-impl<T> Serialize for TimeOf<T> where T: Float + Serialize
+impl<T> Serialize for TimeOf<T>
+where
+    T: Float + Serialize,
 {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
-    { self.secs().serialize(serializer) }
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.secs().serialize(serializer)
+    }
 }
 
-
 #[cfg(feature = "serde")]
-impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
+impl<'de, T> Deserialize<'de> for TimeOf<T>
+where
+    T: Float + Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -382,8 +421,7 @@ impl<'de, T> Deserialize<'de> for TimeOf<T> where T: Float + Deserialize<'de>
     }
 }
 
-
-pub trait TimeNow : Additive
+pub trait TimeNow: Additive
 {
     /// Provides access to a notion of "current time" relative to some starting point.
     ///
@@ -395,28 +433,28 @@ pub trait TimeNow : Additive
     fn since_launch() -> Self;
 }
 
-impl<F> TimeNow for TimeOf<F> where F:Float + CastFrom<f64>
+impl<F> TimeNow for TimeOf<F>
+where
+    F: Float + CastFrom<f64>,
 {
     fn since_launch() -> Self
     {
         #[cfg(not(target_arch = "wasm32"))]
         {
-            use std::{time::Instant, sync::Once};
+            use std::{sync::Once, time::Instant};
             static mut START_TIME: Option<Instant> = None;
             static INIT: Once = Once::new();
 
-            INIT.call_once(|| {
-                unsafe {
-                    START_TIME = Some(Instant::now());
-                }
+            INIT.call_once(|| unsafe {
+                START_TIME = Some(Instant::now());
             });
             let elapsed = unsafe { Instant::now() - START_TIME.unwrap() };
             return TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()));
         }
         #[cfg(target_arch = "wasm32")]
         {
-            use web_time::Instant;
             use std::sync::Once;
+            use web_time::Instant;
 
             static mut START_TIME: Option<Instant> = None;
             static INIT: Once = Once::new();

@@ -50,11 +50,11 @@ use super::*;
 ///   it to deal with atomic and cells etc. We require the sharing predicate to
 ///   be trivial and permit only read-only access.
 /// * There's probably more, don't mess it up (I mean it).
-pub unsafe trait BitAnyPattern:
-    BitZero + Sized + Copy + 'static
-{
-}
+pub unsafe trait BitAnyPattern: BitZero + Sized + Copy + 'static {}
 
 unsafe impl<T: Pod> BitAnyPattern for T {}
 unsafe impl<T> BitAnyPattern for core::mem::MaybeUninit<T> where T: BitAnyPattern {}
-unsafe impl<T, const N: usize> BitAnyPattern for [core::mem::MaybeUninit<T>; N] where T: BitAnyPattern {}
+unsafe impl<T, const N: usize> BitAnyPattern for [core::mem::MaybeUninit<T>; N] where
+    T: BitAnyPattern
+{
+}

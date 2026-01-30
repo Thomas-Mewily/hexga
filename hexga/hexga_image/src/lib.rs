@@ -20,17 +20,20 @@
 #![allow(unused_imports)]
 #![feature(formatting_options)] // For image, to display aligned value they need to be fomatted in a temporary formatter
 
-use std::{io::Write, ops::{Deref, DerefMut, Index, IndexMut, Range}, marker::PhantomData};
+use std::{
+    io::Write,
+    marker::PhantomData,
+    ops::{Deref, DerefMut, Index, IndexMut, Range},
+};
 
-use hexga_core::{prelude::*,cfg::*};
+use hexga_core::{cfg::*, prelude::*};
+use hexga_encoding::prelude::*;
 use hexga_math::grid::*;
 use hexga_math::prelude::*;
-use hexga_encoding::prelude::*;
 
 #[allow(unused_imports)]
-
 #[cfg(feature = "serde")]
-use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 use std::ops::*;
 

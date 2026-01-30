@@ -1,22 +1,24 @@
 use super::*;
 
-pub fn keyboard() -> impl DerefMut<Target=AppKeyboard> { APP.get_mut().guard_map_mut(|a| a.input().keyboard()) }
-
+pub fn keyboard() -> impl DerefMut<Target = AppKeyboard>
+{
+    APP.get_mut().guard_map_mut(|a| a.input().keyboard())
+}
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct AppKeyboard
 {
-    pub(crate) key : KeyCodeManager,
-    pub(crate) key_repeated : KeyCodeManager,
+    pub(crate) key: KeyCodeManager,
+    pub(crate) key_repeated: KeyCodeManager,
 }
 
 impl Default for AppKeyboard
 {
-    fn default() -> Self {
-        Self
-        {
+    fn default() -> Self
+    {
+        Self {
             key: KeyCodeManager::new(ButtonRepeat::NotRepeated),
-            key_repeated: KeyCodeManager::new(ButtonRepeat::Repeated)
+            key_repeated: KeyCodeManager::new(ButtonRepeat::Repeated),
         }
     }
 }
@@ -39,9 +41,9 @@ impl AppKeyboard
 {
     pub(crate) fn key_event(&mut self, ev: KeyEvent)
     {
-        self.key_manager_mut(ev.repeat).handle_event(ev.code, ev.state);
+        self.key_manager_mut(ev.repeat)
+            .handle_event(ev.code, ev.state);
     }
-
 
     pub fn keys(&self) -> &KeyCodeManager { &self.key }
     pub fn keys_mut(&mut self) -> &mut KeyCodeManager { &mut self.key }
@@ -51,23 +53,35 @@ impl AppKeyboard
 
     pub fn key_manager(&self, repeat: ButtonRepeat) -> &KeyCodeManager
     {
-        if repeat.is_repeated() { &self.key_repeated } else { &self.key }
+        if repeat.is_repeated()
+        {
+            &self.key_repeated
+        }
+        else
+        {
+            &self.key
+        }
     }
     pub fn key_manager_mut(&mut self, repeat: ButtonRepeat) -> &mut KeyCodeManager
     {
-        if repeat.is_repeated() { &mut self.key_repeated } else { &mut self.key }
+        if repeat.is_repeated()
+        {
+            &mut self.key_repeated
+        }
+        else
+        {
+            &mut self.key
+        }
     }
 }
-
-
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct KeyCodeManager
 {
-    pub(crate) repeat  : ButtonRepeat,
-    pub(crate) down    : HashSet<KeyCode>,
+    pub(crate) repeat: ButtonRepeat,
+    pub(crate) down: HashSet<KeyCode>,
     pub(crate) old_down: HashSet<KeyCode>,
-    pub(crate) pressed : HashSet<KeyCode>,
+    pub(crate) pressed: HashSet<KeyCode>,
     pub(crate) released: HashSet<KeyCode>,
 }
 
@@ -110,7 +124,16 @@ impl ScopedFlow for KeyCodeManager
 */
 impl KeyCodeManager
 {
-    pub fn new(repeat : ButtonRepeat) -> Self { Self { repeat, down: ___(), old_down: ___(), pressed: ___(), released: ___() }}
+    pub fn new(repeat: ButtonRepeat) -> Self
+    {
+        Self {
+            repeat,
+            down: ___(),
+            old_down: ___(),
+            pressed: ___(),
+            released: ___(),
+        }
+    }
 
     pub(crate) fn handle_event(&mut self, code: KeyCode, pressed: ButtonState)
     {
@@ -120,7 +143,7 @@ impl KeyCodeManager
             {
                 self.down.remove(&code);
                 self.released.insert(code);
-            },
+            }
             ButtonState::Down =>
             {
                 if !self.down.contains(&code)
@@ -136,7 +159,6 @@ impl KeyCodeManager
     pub fn released(&self) -> impl Iterator<Item = KeyCode> { self.released.iter().copied() }
     pub fn down(&self) -> impl Iterator<Item = KeyCode> { self.down.iter().copied() }
 
-
     pub fn is_down(&self, code: KeyCode) -> bool { self.button_state(code).is_down() }
     pub fn is_up(&self, code: KeyCode) -> bool { self.button_state(code).is_up() }
 
@@ -147,16 +169,21 @@ impl KeyCodeManager
     pub fn is_released(&self, code: KeyCode) -> bool { self.evolution(code).is_released() }
 
     pub fn button_state(&self, code: KeyCode) -> ButtonState { self.down.contains(&code).into() }
-    pub fn old_button_state(&self, code: KeyCode) -> ButtonState { self.old_down.contains(&code).into() }
+    pub fn old_button_state(&self, code: KeyCode) -> ButtonState
+    {
+        self.old_down.contains(&code).into()
+    }
 
-    pub fn evolution(&self, code: KeyCode) -> ButtonEvolution { PreviousValue::new(self.button_state(code), self.old_button_state(code)) }
+    pub fn evolution(&self, code: KeyCode) -> ButtonEvolution
+    {
+        PreviousValue::new(self.button_state(code), self.old_button_state(code))
+    }
 }
-
 
 impl Evolution<ButtonState> for KeyCode
 {
     fn value(&self) -> ButtonState { keyboard().keys().button_state(*self) }
-    fn old_value(&self) -> ButtonState { keyboard().keys().old_button_state(*self)  }
+    fn old_value(&self) -> ButtonState { keyboard().keys().old_button_state(*self) }
     fn evolution(&self) -> ButtonEvolution { keyboard().keys().evolution(*self) }
 }
 /*

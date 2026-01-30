@@ -1,8 +1,9 @@
-use hexga_encoding::markup::*;
 use crate::prelude::*;
+use hexga_encoding::markup::*;
 
-
-fn test_serialize_deserialize_tmp_bin<T>(value: &T) where T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug
+fn test_serialize_deserialize_tmp_bin<T>(value: &T)
+where
+    T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug,
 {
     // Not a self describing format
     let format = value.to_tmp_bin().unwrap();
@@ -10,21 +11,27 @@ fn test_serialize_deserialize_tmp_bin<T>(value: &T) where T: Serialize + for<'de
     assert_eq!(*value, from_format);
 }
 
-fn test_serialize_deserialize_ron<T>(value: &T) where T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug
+fn test_serialize_deserialize_ron<T>(value: &T)
+where
+    T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug,
 {
     let format = value.to_ron().unwrap();
     let from_format = T::from_ron(&format).unwrap();
     assert_eq!(*value, from_format);
 }
 
-fn test_serialize_deserialize_json<T>(value: &T) where T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug
+fn test_serialize_deserialize_json<T>(value: &T)
+where
+    T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug,
 {
     let format = value.to_json().unwrap();
     let from_format = T::from_json(&format).unwrap();
     assert_eq!(*value, from_format);
 }
 
-fn serde_test<T>(value: &T) where T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug
+fn serde_test<T>(value: &T)
+where
+    T: Serialize + for<'de> Deserialize<'de> + PartialEq + Debug,
 {
     test_serialize_deserialize_tmp_bin(value);
     test_serialize_deserialize_ron(value);
@@ -92,20 +99,14 @@ fn serialize_string()
 fn serialize_vec()
 {
     serde_test(&Vec::<u8>::new());
-    serde_test(&vec![1,4,3,2]);
+    serde_test(&vec![1, 4, 3, 2]);
 }
 
 #[test]
-fn serialize_hashmap()
-{
-    serde_test(&((0..5).map(|i| (i.to_string(), i)).to_hashmap()));
-}
+fn serialize_hashmap() { serde_test(&((0..5).map(|i| (i.to_string(), i)).to_hashmap())); }
 
 #[test]
-fn serialize_hashset()
-{
-    serde_test(&((0..5).map(|i| i.to_string())).to_hashset());
-}
+fn serialize_hashset() { serde_test(&((0..5).map(|i| i.to_string())).to_hashset()); }
 
 #[test]
 fn serialize_genvec()
@@ -147,7 +148,6 @@ fn serialize_fixed_size_vector()
     serde_test(&HslaF32::ROSE);
     serde_test(&HslaF64::ROSE);
 
-
     serde_test(&Rect1::SIZED_ONE);
     serde_test(&Rect2::SIZED_ONE);
     serde_test(&Rect3::SIZED_ONE);
@@ -166,16 +166,13 @@ fn serialize_unit()
     serde_test(&60.secs());
 }
 
-
 #[test]
-fn serialize_grid()
-{
-    serde_test(&Grid2::from_fn(point([3, 4]), |x| x.sum_axis()));
-}
-
+fn serialize_grid() { serde_test(&Grid2::from_fn(point([3, 4]), |x| x.sum_axis())); }
 
 #[test]
 fn serialize_image()
 {
-    serde_test(&Image::from_fn(point([3, 4]), |x| RgbaU8::rgb(x.x as _, x.y as _ , 0)));
+    serde_test(&Image::from_fn(point([3, 4]), |x| {
+        RgbaU8::rgb(x.x as _, x.y as _, 0)
+    }));
 }

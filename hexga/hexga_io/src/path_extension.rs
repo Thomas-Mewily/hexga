@@ -6,7 +6,8 @@ pub trait PathExtension
 }
 impl PathExtension for Path
 {
-    fn extension_or_empty(&self) -> &extension {
+    fn extension_or_empty(&self) -> &extension
+    {
         match self.extension()
         {
             Some(ex) => match ex.to_str()

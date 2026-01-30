@@ -5,7 +5,4 @@
 
 //use hexga::{encoding::markup::*, prelude::*};
 
-fn main()
-{
-
-}
+fn main() {}

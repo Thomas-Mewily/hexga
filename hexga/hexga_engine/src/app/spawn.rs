@@ -1,13 +1,14 @@
 use super::*;
 
-
-pub trait AsyncSpawn where
+pub trait AsyncSpawn
+where
     Self: Future<Output = ()> + Send + 'static,
 {
     fn spawn(self);
 }
 
-impl<F> AsyncSpawn for F where
+impl<F> AsyncSpawn for F
+where
     F: Future<Output = ()> + Send + 'static,
 {
     fn spawn(self)

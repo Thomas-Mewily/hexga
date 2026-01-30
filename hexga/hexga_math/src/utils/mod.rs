@@ -11,10 +11,5 @@ use default::*;
 
 pub(crate) mod prelude
 {
-    pub use super::
-    {
-        map::*,
-        time::*,
-        default::*,
-    };
+    pub use super::{default::*, map::*, time::*};
 }

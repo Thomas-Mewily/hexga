@@ -122,19 +122,21 @@
 
 extern crate proc_macro;
 
-
 use proc_macro::TokenStream;
-use quote::{format_ident, quote, ToTokens};
-use syn::{parse_macro_input, ItemEnum, Ident};
-
+use quote::{ToTokens, format_ident, quote};
+use syn::{Ident, ItemEnum, parse_macro_input};
 
 #[allow(unexpected_cfgs)]
 #[cfg(feature = "serde")]
-fn emit_serde_code(repr_type : &Ident, struct_name : &Ident) -> (
+fn emit_serde_code(
+    repr_type: &Ident,
+    struct_name: &Ident,
+) -> (
     proc_macro2::TokenStream,
     proc_macro2::TokenStream,
     proc_macro2::TokenStream,
-) {
+)
+{
     (
         quote! {
             #[allow(unexpected_cfgs)]
@@ -144,8 +146,7 @@ fn emit_serde_code(repr_type : &Ident, struct_name : &Ident) -> (
             #[allow(unexpected_cfgs)]
             #[cfg_attr(feature = "serde", derive(Serialize), serde(transparent))]
         },
-        quote!
-        {
+        quote! {
             #[allow(unexpected_cfgs)]
             #[cfg(feature = "serde")]
             impl<'de> ::serde::Deserialize<'de> for #struct_name {
@@ -168,16 +169,21 @@ fn emit_serde_code(repr_type : &Ident, struct_name : &Ident) -> (
 
 #[allow(unexpected_cfgs)]
 #[cfg(not(feature = "serde"))]
-fn emit_serde_code(_ : &Ident, _ : &Ident) -> (
+fn emit_serde_code(
+    _: &Ident,
+    _: &Ident,
+) -> (
     proc_macro2::TokenStream,
     proc_macro2::TokenStream,
     proc_macro2::TokenStream,
-) {
+)
+{
     (quote! {}, quote! {}, quote! {})
 }
 
 #[proc_macro_attribute]
-pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
+{
     let input = parse_macro_input!(item as ItemEnum);
     let repr_type = find_repr_type(&input.attrs).unwrap_or_else(|| syn::parse_quote!(u8));
 
@@ -191,15 +197,17 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let enum_name = &input.ident;
     let struct_name = format_ident!("{enum_name}Flags");
 
-    let max_bits = match repr_type.to_string().as_str() {
-        "u8"  => 8,
+    let max_bits = match repr_type.to_string().as_str()
+    {
+        "u8" => 8,
         "u16" => 16,
         "u32" => 32,
         "u64" => 64,
         _ => panic!("Unsupported repr type: {}", repr_type),
     };
 
-    for variant in &input.variants {
+    for variant in &input.variants
+    {
         let var_ident = &variant.ident;
         let flag_ident = var_ident.clone();
 
@@ -207,8 +215,12 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream {
         // Can probably be abused `Self::Red | 0b01`
         if let Some((_, expr)) = &variant.discriminant
         {
-            index = match syn::Expr::clone(expr) {
-                syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::Int(ref lit_int), .. }) => lit_int.base10_parse().unwrap(),
+            index = match syn::Expr::clone(expr)
+            {
+                syn::Expr::Lit(syn::ExprLit {
+                    lit: syn::Lit::Int(ref lit_int),
+                    ..
+                }) => lit_int.base10_parse().unwrap(),
                 _ =>
                 {
                     let tt = add_bits_field(expr);
@@ -217,7 +229,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         pub const #flag_ident: #struct_name = #struct_name { _bits_do_not_use_it: #tt };
                     });
                     continue;
-                },
+                }
             };
         }
 
@@ -227,13 +239,14 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #index as #repr_type
         };
 
-        if index >= max_bits {
+        if index >= max_bits
+        {
             return syn::Error::new_spanned(
-            var_ident,
-            format!(
-                "Too many enum variants for {}: {} exceeds max bits ({}) for repr type {}",
-                enum_name, index, max_bits, repr_type
-            ),
+                var_ident,
+                format!(
+                    "Too many enum variants for {}: {} exceeds max bits ({}) for repr type {}",
+                    enum_name, index, max_bits, repr_type
+                ),
             )
             .to_compile_error()
             .into();
@@ -248,7 +261,8 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let nb_variant = enum_variants.len();
 
-    let (serde_serialize_deserialize, serde_serialize_transparent, serde_deserialiaze_flags) = emit_serde_code(&repr_type, &struct_name);
+    let (serde_serialize_deserialize, serde_serialize_transparent, serde_deserialiaze_flags) =
+        emit_serde_code(&repr_type, &struct_name);
 
     let output = quote! {
 
@@ -644,7 +658,8 @@ fn add_bits_field(expr: &syn::Expr) -> proc_macro2::TokenStream
             let op = bin.op.to_token_stream();
             quote! { (#left #op #right) }
         }
-        syn::Expr::Paren(paren) => {
+        syn::Expr::Paren(paren) =>
+        {
             let inner = add_bits_field(&paren.expr);
             quote! { (#inner) }
         }
@@ -653,11 +668,16 @@ fn add_bits_field(expr: &syn::Expr) -> proc_macro2::TokenStream
     }
 }
 
-fn find_repr_type(attrs: &[syn::Attribute]) -> Option<syn::Ident> {
-    for attr in attrs {
-        if attr.path().is_ident("repr") {
-            let parser = syn::punctuated::Punctuated::<syn::Ident, syn::Token![,]>::parse_terminated;
-            if let Ok(idents) = attr.parse_args_with(parser) {
+fn find_repr_type(attrs: &[syn::Attribute]) -> Option<syn::Ident>
+{
+    for attr in attrs
+    {
+        if attr.path().is_ident("repr")
+        {
+            let parser =
+                syn::punctuated::Punctuated::<syn::Ident, syn::Token![,]>::parse_terminated;
+            if let Ok(idents) = attr.parse_args_with(parser)
+            {
                 return idents.first().cloned();
             }
         }
