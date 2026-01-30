@@ -2,10 +2,16 @@
 #![feature(unsafe_cell_access)]
 #![feature(mapped_lock_guards)]
 
-use std::{ops::Index, slice::SliceIndex};
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+
+use core::{borrow::Borrow, hash::Hash, ops::Index, slice::SliceIndex};
 use core::slice::GetDisjointMutIndex;
-use std::hash::{BuildHasher, Hash};
-use std::borrow::Borrow;
+
+#[cfg(feature = "std")]
+use std::hash::BuildHasher;
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
@@ -15,6 +21,7 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::
 pub mod accessor;
 pub mod asynchrone;
 pub mod builder;
+#[cfg(feature = "std")]
 pub mod cell;
 pub mod cfg;
 pub mod collections;
@@ -31,6 +38,7 @@ pub mod run;
 pub mod wrapper;
 pub mod result;
 pub mod convert;
+#[cfg(feature = "std")]
 pub mod singleton;
 pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
@@ -47,8 +55,15 @@ pub mod prelude
 /// You are probably looking for the `prelude` module.
 pub mod hexga_prelude
 {
-    pub use std::collections::{HashMap,HashSet,BTreeMap,BTreeSet,VecDeque,BinaryHeap};
-    pub(crate) use std::collections::{LinkedList};
+    #[cfg(feature = "std")]
+    pub use std::collections::{HashMap, HashSet, BTreeMap, BTreeSet, VecDeque, BinaryHeap};
+    #[cfg(feature = "std")]
+    pub(crate) use std::collections::LinkedList;
+
+    #[cfg(not(feature = "std"))]
+    pub use alloc::collections::{BTreeMap, BTreeSet, VecDeque, BinaryHeap, LinkedList};
+    #[cfg(not(feature = "std"))]
+    pub use alloc::{boxed::Box, string::String, vec::Vec};
 
     #[rustfmt::skip]
     #[allow(unused_imports)]
@@ -68,10 +83,12 @@ pub mod hexga_prelude
         wrapper::*,
         result::*,
         convert::*,
-        singleton::prelude::*,
         bit::prelude::*,
         map_on::prelude::*,
     };
+
+    #[cfg(feature = "std")]
+    pub use super::singleton::prelude::*;
 
 }
 
@@ -82,9 +99,5 @@ pub mod hexga_prelude
 pub mod std_prelude
 {
     // todo: use derive_more for Deref, DerefMut ? https://crates.io/crates/derive_more
-    pub use std::
-    {
-        convert::{AsRef,AsMut},
-        ops::{Deref,DerefMut}
-    };
+    pub use core::{convert::{AsRef,AsMut}, ops::{Deref,DerefMut}};
 }

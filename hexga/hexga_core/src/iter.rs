@@ -1,7 +1,12 @@
-pub use std::iter::{Product, Sum};
+pub use core::iter::{Product, Sum};
 use super::*;
 
+#[cfg(feature = "std")]
+use std::error::Error;
+#[cfg(feature = "std")]
+use core::any::Any;
 
+/// A trait to create a value from an iterator.
 pub trait TryFromIterator<T> : Sized
 {
     type Error: Debug;

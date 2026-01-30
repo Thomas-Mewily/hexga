@@ -1,7 +1,17 @@
 use super::*;
 
-pub use std::fmt::{Debug, Display, Formatter, format};
-pub type FmtResult = std::fmt::Result;
+pub use core::fmt::{Debug, Display, Formatter};
+pub type FmtResult = core::fmt::Result;
+
+#[cfg(feature = "std")]
+pub use std::format;
+#[cfg(not(feature = "std"))]
+pub use alloc::format;
+
+#[cfg(feature = "std")]
+use std::string::String;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
 pub trait ToDebug
 {
@@ -9,7 +19,7 @@ pub trait ToDebug
 }
 impl<T> ToDebug for T
 where
-    T: std::fmt::Debug,
+    T: core::fmt::Debug,
 {
     #[inline(always)]
     fn to_debug(&self) -> String { format!("{:?}", self) }
@@ -54,7 +64,7 @@ pub trait DebugExtension
     fn field_bool(&mut self, value: bool, name_true: &str, name_false: &str) -> &mut Self;
 }
 
-impl<'a, 'b: 'a> DebugExtension for std::fmt::DebugStruct<'a, 'b>
+impl<'a, 'b: 'a> DebugExtension for core::fmt::DebugStruct<'a, 'b>
 {
     fn field_if<T: Debug>(
         &mut self,
@@ -102,7 +112,7 @@ impl<'a, T> FmtOptional<'a, T>
 hexga_map_on::map_on_std_fmt!(
     ($trait_name:ident) =>
     {
-        impl<'a, T> std::fmt::$trait_name for FmtOptional<'a, T> where T: std::fmt::$trait_name
+        impl<'a, T> core::fmt::$trait_name for FmtOptional<'a, T> where T: core::fmt::$trait_name
         {
             fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
             {

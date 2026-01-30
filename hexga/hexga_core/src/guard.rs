@@ -1,5 +1,5 @@
 use super::*;
-use std::ops::{Deref, DerefMut};
+use core::ops::{Deref, DerefMut};
 
 pub trait Guarded<T: ?Sized>
 {
@@ -121,6 +121,7 @@ impl<'a, T> GuardMut<'a, T> for &'a mut T
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> Guarded<T> for std::cell::RefCell<T>
 {
     type Guard<'a>
@@ -129,6 +130,7 @@ impl<T> Guarded<T> for std::cell::RefCell<T>
         Self: 'a;
     fn get<'a>(&'a self) -> Self::Guard<'a> { self.borrow() }
 }
+#[cfg(feature = "std")]
 impl<T> TryGuarded<T> for std::cell::RefCell<T>
 {
     type Error<'a>
@@ -137,6 +139,7 @@ impl<T> TryGuarded<T> for std::cell::RefCell<T>
         Self: 'a;
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.try_borrow() }
 }
+#[cfg(feature = "std")]
 impl<T> GuardedMut<T> for std::cell::RefCell<T>
 {
     type GuardMut<'a>
@@ -145,6 +148,7 @@ impl<T> GuardedMut<T> for std::cell::RefCell<T>
         Self: 'a;
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.borrow_mut() }
 }
+#[cfg(feature = "std")]
 impl<T> TryGuardedMut<T> for std::cell::RefCell<T>
 {
     type Error<'a>
@@ -157,6 +161,7 @@ impl<T> TryGuardedMut<T> for std::cell::RefCell<T>
     }
 }
 
+#[cfg(feature = "std")]
 impl<T> Guarded<T> for std::sync::Mutex<T>
 {
     type Guard<'a>
@@ -165,6 +170,7 @@ impl<T> Guarded<T> for std::sync::Mutex<T>
         Self: 'a;
     fn get<'a>(&'a self) -> Self::Guard<'a> { self.lock().expect("poisoned") }
 }
+#[cfg(feature = "std")]
 impl<T> TryGuarded<T> for std::sync::Mutex<T>
 {
     type Error<'a>
@@ -173,6 +179,7 @@ impl<T> TryGuarded<T> for std::sync::Mutex<T>
         Self: 'a;
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.lock() }
 }
+#[cfg(feature = "std")]
 impl<T> GuardedMut<T> for std::sync::Mutex<T>
 {
     type GuardMut<'a>
@@ -181,6 +188,7 @@ impl<T> GuardedMut<T> for std::sync::Mutex<T>
         Self: 'a;
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.lock().expect("poisoned") }
 }
+#[cfg(feature = "std")]
 impl<T> TryGuardedMut<T> for std::sync::Mutex<T>
 {
     type Error<'a>
@@ -190,6 +198,7 @@ impl<T> TryGuardedMut<T> for std::sync::Mutex<T>
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.lock() }
 }
 
+#[cfg(feature = "std")]
 impl<T> Guarded<T> for std::sync::RwLock<T>
 {
     type Guard<'a>
@@ -198,6 +207,7 @@ impl<T> Guarded<T> for std::sync::RwLock<T>
         Self: 'a;
     fn get<'a>(&'a self) -> Self::Guard<'a> { self.read().expect("poisoned") }
 }
+#[cfg(feature = "std")]
 impl<T> TryGuarded<T> for std::sync::RwLock<T>
 {
     type Error<'a>
@@ -206,6 +216,7 @@ impl<T> TryGuarded<T> for std::sync::RwLock<T>
         Self: 'a;
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.read() }
 }
+#[cfg(feature = "std")]
 impl<T> GuardedMut<T> for std::sync::RwLock<T>
 {
     type GuardMut<'a>
@@ -214,6 +225,7 @@ impl<T> GuardedMut<T> for std::sync::RwLock<T>
         Self: 'a;
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.write().expect("poisoned") }
 }
+#[cfg(feature = "std")]
 impl<T> TryGuardedMut<T> for std::sync::RwLock<T>
 {
     type Error<'a>
@@ -225,6 +237,7 @@ impl<T> TryGuardedMut<T> for std::sync::RwLock<T>
 
 // TODO: impl it for SyncUnsafeCell<T> and all the std::sync::nonpoison::... type once they are stabilized
 
+#[cfg(feature = "std")]
 impl<'a, T: ?Sized> Guard<'a, T> for std::cell::Ref<'a, T>
 {
     type Mapped<U>
@@ -240,6 +253,7 @@ impl<'a, T: ?Sized> Guard<'a, T> for std::cell::Ref<'a, T>
     }
 }
 // Todo: impl Guard for RefMut when downgrade() will be available
+#[cfg(feature = "std")]
 impl<'a, T: ?Sized> GuardMut<'a, T> for std::cell::RefMut<'a, T>
 {
     type MappedMut<U>
@@ -255,6 +269,7 @@ impl<'a, T: ?Sized> GuardMut<'a, T> for std::cell::RefMut<'a, T>
     }
 }
 
+#[cfg(feature = "std")]
 impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockReadGuard<'a, T>
 {
     type Mapped<U>
@@ -270,6 +285,7 @@ impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockReadGuard<'a, T>
     }
 }
 
+#[cfg(feature = "std")]
 impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockWriteGuard<'a, T>
 {
     type Mapped<U>
@@ -284,6 +300,7 @@ impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockWriteGuard<'a, T>
         Self::downgrade(self).guard_map(f)
     }
 }
+#[cfg(feature = "std")]
 impl<'a, T: ?Sized> GuardMut<'a, T> for std::sync::RwLockWriteGuard<'a, T>
 {
     type MappedMut<U>
@@ -299,6 +316,7 @@ impl<'a, T: ?Sized> GuardMut<'a, T> for std::sync::RwLockWriteGuard<'a, T>
     }
 }
 
+#[cfg(feature = "std")]
 impl<'a, T> Guard<'a, T> for std::sync::MappedRwLockReadGuard<'a, T>
 {
     type Mapped<U>
@@ -314,6 +332,7 @@ impl<'a, T> Guard<'a, T> for std::sync::MappedRwLockReadGuard<'a, T>
     }
 }
 // Todo: impl Guard for MappedRwLockWriteGuard when downgrade() will be available
+#[cfg(feature = "std")]
 impl<'a, T> GuardMut<'a, T> for std::sync::MappedRwLockWriteGuard<'a, T>
 {
     type MappedMut<U>
@@ -329,6 +348,7 @@ impl<'a, T> GuardMut<'a, T> for std::sync::MappedRwLockWriteGuard<'a, T>
     }
 }
 
+#[cfg(feature = "std")]
 impl<'a, T> GuardMut<'a, T> for std::sync::MutexGuard<'a, T>
 {
     type MappedMut<U>
@@ -343,6 +363,7 @@ impl<'a, T> GuardMut<'a, T> for std::sync::MutexGuard<'a, T>
         Self::map(self, f)
     }
 }
+#[cfg(feature = "std")]
 impl<'a, T> GuardMut<'a, T> for std::sync::MappedMutexGuard<'a, T>
 {
     type MappedMut<U>

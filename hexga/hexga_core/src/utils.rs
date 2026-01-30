@@ -14,7 +14,7 @@ impl Toggleable for bool
     #[inline(always)]
     fn toggle(&mut self)
     {
-        use std::ops::Not;
+        use core::ops::Not;
         *self = self.not();
     }
 }
@@ -103,17 +103,6 @@ pub trait UniversalKey : Hash + Eq + Ord {}
 impl<T> UniversalKey for T where T: Hash + Eq + Ord {}
 */
 
-/*
-pub trait IteratorExtension<T> where T: PartialEq
-{
-    fn contains(self, value : &T) -> bool;
-}
-impl<I,T> IteratorExtension<T> for I where I : Iterator<Item = T>, T : PartialEq
-{
-    fn contains(mut self, value : &T) -> bool { self.position(|v| &v == value).is_some() }
-}
-*/
-
 pub trait ResultDebugExtension<T>
 {
     fn ok_or_debug(self) -> Result<T, String>;
@@ -125,10 +114,12 @@ where
     fn ok_or_debug(self) -> Result<T, String> { self.map_err(|e| e.to_debug()) }
 }
 
+#[cfg(feature = "std")]
 pub trait ToFmtWriter: std::io::Write + Sized
 {
     fn to_fmt_writer(self) -> IoWriteAdapter<Self>;
 }
+#[cfg(feature = "std")]
 impl<T> ToFmtWriter for T
 where
     T: std::io::Write,
@@ -136,11 +127,13 @@ where
     fn to_fmt_writer(self) -> IoWriteAdapter<Self> { IoWriteAdapter { writer: self } }
 }
 
+#[cfg(feature = "std")]
 #[doc(hidden)]
 pub struct IoWriteAdapter<W: std::io::Write>
 {
     pub writer: W,
 }
+#[cfg(feature = "std")]
 impl<W: std::io::Write> std::fmt::Write for IoWriteAdapter<W>
 {
     fn write_str(&mut self, s: &str) -> std::fmt::Result

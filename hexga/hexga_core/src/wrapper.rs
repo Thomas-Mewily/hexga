@@ -1,7 +1,17 @@
-use std::{
-    cell::{RefCell, UnsafeCell},
+use core::{
+    cell::UnsafeCell,
     pin::Pin,
+};
+
+#[cfg(feature = "std")]
+use std::{
+    cell::RefCell,
     sync::{Mutex, RwLock},
+};
+#[cfg(not(feature = "std"))]
+use alloc::{
+    boxed::Box,
+    cell::RefCell,
 };
 
 pub trait Wrapper
@@ -40,11 +50,13 @@ impl<T> Wrapper for RefCell<T>
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Self::new(value) }
 }
+#[cfg(feature = "std")]
 impl<T> Wrapper for Mutex<T>
 {
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Self::new(value) }
 }
+#[cfg(feature = "std")]
 impl<T> Wrapper for RwLock<T>
 {
     type Inside = T;
