@@ -17,8 +17,6 @@ use std::fmt::{Debug, Display};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[cfg_attr(featur
-
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum AnsiColorKind
