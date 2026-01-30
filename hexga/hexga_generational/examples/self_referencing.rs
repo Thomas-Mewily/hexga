@@ -3,7 +3,8 @@ use hexga_generational::prelude::*;
 #[derive(Debug)]
 struct Entity {
     name: &'static str,
-    /// GenID, by nature, can be NULL / always return none
+    // GenID, by nature, can be NULL / always return none,
+    // So there is no need to wrap it in an Option
     eating: GenID,
 }
 
