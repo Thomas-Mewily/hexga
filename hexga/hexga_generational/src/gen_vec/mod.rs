@@ -18,7 +18,7 @@ pub type GenViewMut<'a,T> = GenVecOf<T,Generation,&'a mut [Entry<T,Generation>]>
 
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum EntryValue<T>
+pub(crate) enum EntryValue<T>
 {
     Occupied(T),
     /// Next free entry.
@@ -43,6 +43,15 @@ impl<T> EntryValue<T>
 
     pub fn is_vacant(&self) -> bool { matches!(self, Self::Vacant(_))}
     pub fn is_occupied(&self) -> bool { matches!(self, Self::Occupied(_))}
+
+    pub fn into_value(self) -> Option<T>
+    {
+        match self
+        {
+            EntryValue::Occupied(v) => Some(v),
+            EntryValue::Vacant(_) => None,
+        }
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -87,13 +96,19 @@ impl<T,Gen> From<Entry<T,Gen>> for (EntryValue<T>, Gen) where Gen:IGeneration
 
 impl<T,Gen> Entry<T,Gen> where Gen:IGeneration
 {
-    pub fn new(value: EntryValue<T>, generation: Gen) -> Self { Self { value, generation }}
+    pub(crate) fn new(value: EntryValue<T>, generation: Gen) -> Self { Self { value, generation }}
     pub fn generation(&self) -> Gen { self.generation }
 
     pub fn have_value(&self) -> bool { self.value().is_some() }
 
     pub fn value(&self) -> Option<&T> { self.value.get() }
     pub fn value_mut(&mut self) -> Option<&mut T> { self.value.get_mut() }
+
+    pub fn is_vacant(&self) -> bool { self.value.is_vacant() }
+    pub fn is_occupied(&self) -> bool { self.value.is_occupied() }
+
+    pub fn into_value(self) -> Option<T> { self.value.into_value() }
+    pub fn into_value_and_gen(self) -> (Option<T>, Gen) { (self.value.into_value(), self.generation) }
 
     pub fn get_id(&self, index: usize) -> GenIDOf<Gen> { GenIDOf::from_index_and_generation(index, self.generation) }
 
@@ -695,43 +710,71 @@ impl<T, C, Gen> FromIterator<T> for GenVecOf<T,Gen,C>
 impl<T, C, Gen> IntoIterator for GenVecOf<T,Gen,C>
     where
     C: AsRef<[Entry<T,Gen>]>,
-    C: IntoIterator<Item = Entry<T,Gen>>,
+    C: IntoIterator,
+    C::Item: GenVecEntryIntoValue<Gen>,
     Gen:IGeneration,
 {
-    type Item = (GenIDOf<Gen>, T);
-    type IntoIter = IntoIter<T, <C as IntoIterator>::IntoIter, Gen>;
+    type Item = (GenIDOf<Gen>, <C::Item as GenVecEntryIntoValue<Gen>>::EntryItem);
+    type IntoIter = IntoIter<<C as IntoIterator>::IntoIter, Gen>;
 
     fn into_iter(self) -> Self::IntoIter {
         IntoIter
         {
             iter: self.values.into_iter().enumerate(),
             len_remaining: self.len,
+            phantom: PhantomData,
         }
     }
 }
+pub trait GenVecEntryIntoValue<Gen> where Gen: IGeneration
+{
+    type EntryItem;
+    fn into_value(self) -> Option<Self::EntryItem>;
+    fn generation(&self) -> Gen;
+}
+impl<T,Gen> GenVecEntryIntoValue<Gen> for Entry<T,Gen> where Gen:IGeneration
+{
+    type EntryItem = T;
+    fn into_value(self) -> Option<T> { self.into_value() }
+    fn generation(&self) -> Gen { self.generation() }
+}
+impl<'a,T,Gen> GenVecEntryIntoValue<Gen> for &'a Entry<T,Gen> where Gen:IGeneration
+{
+    type EntryItem=&'a T;
+    fn into_value(self) -> Option<Self::EntryItem> { self.value() }
+    fn generation(&self) -> Gen { (*self).generation() }
+}
+impl<'a,T,Gen> GenVecEntryIntoValue<Gen> for &'a mut Entry<T,Gen> where Gen:IGeneration
+{
+    type EntryItem=&'a mut T;
+    fn into_value(self) -> Option<Self::EntryItem> { self.value_mut() }
+    fn generation(&self) -> Gen { (**self).generation() }
+}
 
 #[derive(Clone, Debug)]
-pub struct IntoIter<T,I,Gen>
-    where I: Iterator<Item = Entry<T,Gen>>, Gen:IGeneration
+pub struct IntoIter<It,Gen>
+    where It: Iterator, It::Item: GenVecEntryIntoValue<Gen>, Gen:IGeneration,
 {
-    iter: std::iter::Enumerate<I>,
+    iter: std::iter::Enumerate<It>,
     len_remaining: usize,
+    phantom: PhantomData<Gen>
 }
 
 
-impl<T, I, Gen> Iterator for IntoIter<T, I, Gen>
-    where I: Iterator<Item = Entry<T,Gen>>, Gen:IGeneration
+impl<It,Gen> Iterator for IntoIter<It,Gen>
+    where It: Iterator, It::Item: GenVecEntryIntoValue<Gen>, Gen:IGeneration,
 {
-    type Item = (GenIDOf<Gen>, T);
+    type Item = (GenIDOf<Gen>, <It::Item as GenVecEntryIntoValue<Gen>>::EntryItem);
 
     fn next(&mut self) -> Option<Self::Item>
     {
         while let Some((index, entry)) = self.iter.next()
         {
-            if let EntryValue::Occupied(value) = entry.value
+            let generation = entry.generation();
+            if let Some(value) = entry.into_value()
             {
                 self.len_remaining -= 1;
-                return Some((GenIDOf::from_index_and_generation(index, entry.generation), value));
+                return Some((GenIDOf::from_index_and_generation(index, generation), value));
             }
         }
         None
@@ -739,16 +782,18 @@ impl<T, I, Gen> Iterator for IntoIter<T, I, Gen>
 
     fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
-impl<T, I, Gen> DoubleEndedIterator for IntoIter<T, I, Gen>
-    where I: Iterator<Item = Entry<T,Gen>> + DoubleEndedIterator + ExactSizeIterator, Gen:IGeneration
+impl<It,Gen> DoubleEndedIterator for IntoIter<It,Gen>
+    where It: Iterator + DoubleEndedIterator + ExactSizeIterator, It::Item: GenVecEntryIntoValue<Gen>, Gen:IGeneration
+
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         while let Some((index, entry)) = self.iter.next_back()
         {
-            if let EntryValue::Occupied(value) = entry.value
+            let generation = entry.generation();
+            if let Some(value) = entry.into_value()
             {
                 self.len_remaining -= 1;
-                return Some((GenIDOf::from_index_and_generation(index, entry.generation), value));
+                return Some((GenIDOf::from_index_and_generation(index, generation), value));
             }
         }
         None
@@ -756,9 +801,9 @@ impl<T, I, Gen> DoubleEndedIterator for IntoIter<T, I, Gen>
 }
 
 // Kinda unsafe:
-impl<T, I, Gen> FusedIterator for IntoIter<T, I, Gen> where I: Iterator<Item = Entry<T,Gen>>, Gen:IGeneration {}
+impl<It,Gen> FusedIterator for IntoIter<It,Gen> where It: Iterator, It::Item: GenVecEntryIntoValue<Gen>, Gen:IGeneration,  {}
 // Kinda unsafe:
-impl<T, I, Gen> ExactSizeIterator for IntoIter<T, I, Gen> where I: Iterator<Item = Entry<T,Gen>>, Gen:IGeneration { fn len(&self) -> usize { self.len_remaining } }
+impl<It,Gen> ExactSizeIterator for IntoIter<It,Gen> where It: Iterator, It::Item: GenVecEntryIntoValue<Gen>, Gen:IGeneration,  { fn len(&self) -> usize { self.len_remaining } }
 
 
 impl<'s, T, C, Gen> IntoIterator for &'s GenVecOf<T,Gen,C>

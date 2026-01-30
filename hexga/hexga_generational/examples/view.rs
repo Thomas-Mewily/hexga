@@ -7,11 +7,11 @@ pub struct Entity
     hp: i32,
 }
 
-fn increase_hp<'a>(mut entities: GenViewMut<'a,Entity>)
+fn increase_hp<'a>(entities: GenViewMut<'a,Entity>)
 {
-    for e in entities
+    for (_id, entity) in entities
     {
-
+        entity.hp += 1;
     }
 }
 
