@@ -17,6 +17,7 @@ use std::fmt::{Debug, Display};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+#[cfg_attr(featur
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
@@ -76,39 +77,40 @@ pub type AnsiColorStr = &'static str;
 
 impl AnsiColor
 {
-    pub const BLACK             : AnsiColorStr = "\x1b[30m";
-    pub const RED               : AnsiColorStr = "\x1b[31m";
-    pub const GREEN             : AnsiColorStr = "\x1b[32m";
-    pub const YELLOW            : AnsiColorStr = "\x1b[33m";
-    pub const BLUE              : AnsiColorStr = "\x1b[34m";
-    pub const MAGENTA           : AnsiColorStr = "\x1b[35m";
-    pub const CYAN              : AnsiColorStr = "\x1b[36m";
-    pub const WHITE             : AnsiColorStr = "\x1b[37m";
-    pub const GREY              : AnsiColorStr = "\x1b[90m";
+    #[rustfmt::skip] pub const BLACK             : AnsiColorStr = "\x1b[30m";
+    #[rustfmt::skip] pub const RED               : AnsiColorStr = "\x1b[31m";
+    #[rustfmt::skip] pub const GREEN             : AnsiColorStr = "\x1b[32m";
+    #[rustfmt::skip] pub const YELLOW            : AnsiColorStr = "\x1b[33m";
+    #[rustfmt::skip] pub const BLUE              : AnsiColorStr = "\x1b[34m";
+    #[rustfmt::skip] pub const MAGENTA           : AnsiColorStr = "\x1b[35m";
+    #[rustfmt::skip] pub const CYAN              : AnsiColorStr = "\x1b[36m";
+    #[rustfmt::skip] pub const WHITE             : AnsiColorStr = "\x1b[37m";
+    #[rustfmt::skip] pub const GREY              : AnsiColorStr = "\x1b[90m";
 
     // Same but suffixed by FOREGROUND
-    pub const BLACK_FOREGROUND  : AnsiColorStr = "\x1b[30m";
-    pub const RED_FOREGROUND    : AnsiColorStr = "\x1b[31m";
-    pub const GREEN_FOREGROUND  : AnsiColorStr = "\x1b[32m";
-    pub const YELLOW_FOREGROUND : AnsiColorStr = "\x1b[33m";
-    pub const BLUE_FOREGROUND   : AnsiColorStr = "\x1b[34m";
-    pub const MAGENTA_FOREGROUND: AnsiColorStr = "\x1b[35m";
-    pub const CYAN_FOREGROUND   : AnsiColorStr = "\x1b[36m";
-    pub const WHITE_FOREGROUND  : AnsiColorStr = "\x1b[37m";
-    pub const GREY_FOREGROUND   : AnsiColorStr = "\x1b[90m";
+    #[rustfmt::skip] pub const BLACK_FOREGROUND  : AnsiColorStr = "\x1b[30m";
+    #[rustfmt::skip] pub const RED_FOREGROUND    : AnsiColorStr = "\x1b[31m";
+    #[rustfmt::skip] pub const GREEN_FOREGROUND  : AnsiColorStr = "\x1b[32m";
+    #[rustfmt::skip] pub const YELLOW_FOREGROUND : AnsiColorStr = "\x1b[33m";
+    #[rustfmt::skip] pub const BLUE_FOREGROUND   : AnsiColorStr = "\x1b[34m";
+    #[rustfmt::skip] pub const MAGENTA_FOREGROUND: AnsiColorStr = "\x1b[35m";
+    #[rustfmt::skip] pub const CYAN_FOREGROUND   : AnsiColorStr = "\x1b[36m";
+    #[rustfmt::skip] pub const WHITE_FOREGROUND  : AnsiColorStr = "\x1b[37m";
+    #[rustfmt::skip] pub const GREY_FOREGROUND   : AnsiColorStr = "\x1b[90m";
 
-    pub const BLACK_BACKGROUND  : AnsiColorStr = "\x1b[40m";
-    pub const RED_BACKGROUND    : AnsiColorStr = "\x1b[41m";
-    pub const GREEN_BACKGROUND  : AnsiColorStr = "\x1b[42m";
-    pub const YELLOW_BACKGROUND : AnsiColorStr = "\x1b[43m";
-    pub const BLUE_BACKGROUND   : AnsiColorStr = "\x1b[44m";
-    pub const MAGENTA_BACKGROUND: AnsiColorStr = "\x1b[45m";
-    pub const CYAN_BACKGROUND   : AnsiColorStr = "\x1b[46m";
-    pub const WHITE_BACKGROUND  : AnsiColorStr = "\x1b[47m";
-    pub const GREY_BACKGROUND   : AnsiColorStr = "\x1b[100m";
+    #[rustfmt::skip] pub const BLACK_BACKGROUND  : AnsiColorStr = "\x1b[40m";
+    #[rustfmt::skip] pub const RED_BACKGROUND    : AnsiColorStr = "\x1b[41m";
+    #[rustfmt::skip] pub const GREEN_BACKGROUND  : AnsiColorStr = "\x1b[42m";
+    #[rustfmt::skip] pub const YELLOW_BACKGROUND : AnsiColorStr = "\x1b[43m";
+    #[rustfmt::skip] pub const BLUE_BACKGROUND   : AnsiColorStr = "\x1b[44m";
+    #[rustfmt::skip] pub const MAGENTA_BACKGROUND: AnsiColorStr = "\x1b[45m";
+    #[rustfmt::skip] pub const CYAN_BACKGROUND   : AnsiColorStr = "\x1b[46m";
+    #[rustfmt::skip] pub const WHITE_BACKGROUND  : AnsiColorStr = "\x1b[47m";
+    #[rustfmt::skip] pub const GREY_BACKGROUND   : AnsiColorStr = "\x1b[100m";
 
-    pub const BLACK_ON_WHITE : AnsiColorStr   = "\x1b[30m\x1b[47m";
-    pub const RESET: AnsiColorStr = "\x1b[37m\x1b[40m";
+    #[rustfmt::skip] pub const BLACK_ON_WHITE    : AnsiColorStr = "\x1b[30m\x1b[47m";
+    #[rustfmt::skip] pub const WHITE_ON_BLACK    : AnsiColorStr = "\x1b[37m\x1b[40m";
+    #[rustfmt::skip] pub const RESET             : AnsiColorStr = Self::WHITE_ON_BLACK;
 
     pub fn new(color : AnsiColorKind, layer : AnsiColorLayer) -> Self { Self { color, layer }}
     pub fn new_foreground(color : AnsiColorKind) -> Self { Self::new(color, AnsiColorLayer::Foreground) }
