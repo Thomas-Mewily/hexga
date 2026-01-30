@@ -2,4 +2,5 @@
 fn_single_line = true
 
 # Or be more specific:
-control_brace_style = "AlwaysSameLineWherePossible"
+control_brace_style = "AlwaysNextLine"
+brace_style = "AlwaysNextLine"
