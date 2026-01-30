@@ -651,6 +651,54 @@ where
         Ok(val)
     }
 
+    pub fn try_insert_cyclic<F>(&mut self, init: F) -> Result<GenIDOf<Gen>, C::Error>
+    where
+        F: FnOnce(GenIDOf<Gen>) -> T,
+        C: TryPush<Entry<T, Gen>>,
+    {
+        self.len += 1;
+
+        if self.free == usize::MAX
+        {
+            let index = self.values.as_ref().len();
+
+            // The last index is used for the null() key
+            assert!(
+                index != usize::MAX,
+                "How you didn't run out of memory before ?"
+            ); // ZST ?
+
+            let generation = Gen::MIN;
+            let id = GenIDOf::from_index_and_generation(index, generation);
+            self.values.try_push(Entry {
+                value: EntryValue::Occupied(init(id)),
+                generation,
+            })?;
+            return Ok(id);
+        }
+
+        let values = self.values.as_mut();
+
+        let EntryValue::Vacant(next_free_index) = values[self.free].value
+        else
+        {
+            unreachable!();
+        };
+        let free = self.free;
+        self.free = next_free_index;
+        let id = GenIDOf::from_index_and_generation(free, values[free].generation);
+        values[free].value = EntryValue::Occupied(init(id));
+        return Ok(id);
+    }
+
+    #[inline(always)]
+    pub fn try_insert(&mut self, value: T) -> Result<GenIDOf<Gen>, C::Error>
+    where
+        C: TryPush<Entry<T, Gen>>,
+    {
+        self.try_insert_cyclic(|_| value)
+    }
+
     pub fn insert_cyclic<F>(&mut self, init: F) -> GenIDOf<Gen>
     where
         F: FnOnce(GenIDOf<Gen>) -> T,
@@ -1236,7 +1284,16 @@ where
     C: Push<Entry<T, Gen>>,
 {
     type Output = GenIDOf<Gen>;
-    fn push(&mut self, item: T) -> Self::Output { self.insert(item) }
+    fn push(&mut self, value: T) -> Self::Output { self.insert(value) }
+}
+impl<T, Gen, C> TryPush<T> for GenVecOf<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
+    Gen: IGeneration,
+    C: TryPush<Entry<T, Gen>>,
+{
+    type Error=C::Error;
+    fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> { self.try_insert(value) }
 }
 
 impl<'s, T, Gen, C> From<&'s GenVecOf<T, Gen, C>> for GenVecOf<T, Gen, &'s [Entry<T, Gen>]>
@@ -1339,7 +1396,7 @@ where
     #[inline(always)]
     fn capacity(&self) -> usize { self.values.capacity() }
 }
-impl<T, Gen, C> FromCapacity for GenVecOf<T, Gen, C>
+impl<T, Gen, C> WithCapacity for GenVecOf<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,

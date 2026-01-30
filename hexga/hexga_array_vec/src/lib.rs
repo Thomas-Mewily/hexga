@@ -1397,4 +1397,42 @@ impl<T, const CAP: usize> AsMut<[T]> for ArrayVec<T, CAP>
     fn as_mut(&mut self) -> &mut [T] { self.as_mut_slice() }
 }
 
+impl<T, const CAP: usize> Push<T> for ArrayVec<T, CAP>
+{
+    type Output=usize;
+    fn push(&mut self, value: T) -> Self::Output {
+        let len = self.len();
+        self.push(value);
+        len
+    }
+}
+impl<T, const CAP: usize> TryPush<T> for ArrayVec<T, CAP>
+{
+    type Error=CapacityFullError<T>;
+    fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> {
+        let len = self.len();
+        self.try_push(value).map(|_| len)
+    }
+}
+impl<T, const CAP: usize> Pop<T> for ArrayVec<T, CAP>
+{
+    fn pop(&mut self) -> Option<T> {
+        self.pop()
+    }
+
+    fn pop_if<F>(&mut self, predicate: F) -> Option<T>
+    where
+        F: FnOnce(&mut T) -> bool
+    {
+        let Some(last) = self.last_mut() else { return None; };
+        if predicate(last)
+        {
+            self.pop()
+        }else
+        {
+            None
+        }
+    }
+}
+
 unsafe impl<T, const CAP: usize> BitZero for ArrayVec<T, CAP> where T: BitZero {}

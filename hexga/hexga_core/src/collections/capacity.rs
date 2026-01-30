@@ -5,7 +5,7 @@ pub trait Capacity: Collection
     fn capacity(&self) -> usize;
 }
 
-pub trait FromCapacity: Capacity
+pub trait WithCapacity: Capacity
 {
     type Param;
     fn with_capacity_and_param(capacity: usize, param: Self::Param) -> Self;
@@ -58,7 +58,7 @@ where
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl<K, V, S> FromCapacity for HashMap<K, V, S>
+impl<K, V, S> WithCapacity for HashMap<K, V, S>
 where
     K: Eq + Hash,
     S: BuildHasher,
@@ -107,7 +107,7 @@ where
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl<T> FromCapacity for std::collections::BinaryHeap<T>
+impl<T> WithCapacity for std::collections::BinaryHeap<T>
 where
     T: Ord,
 {
@@ -154,7 +154,7 @@ where
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl<T, S> FromCapacity for std::collections::HashSet<T, S>
+impl<T, S> WithCapacity for std::collections::HashSet<T, S>
 where
     T: Eq + Hash,
     S: BuildHasher,
@@ -201,7 +201,7 @@ impl<T> Capacity for std::collections::VecDeque<T>
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl<T> FromCapacity for std::collections::VecDeque<T>
+impl<T> WithCapacity for std::collections::VecDeque<T>
 {
     type Param = ();
     #[inline(always)]
@@ -243,7 +243,7 @@ impl Capacity for std::ffi::OsString
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl FromCapacity for std::ffi::OsString
+impl WithCapacity for std::ffi::OsString
 {
     type Param = ();
     #[inline(always)]
@@ -281,7 +281,7 @@ impl Capacity for std::path::PathBuf
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl FromCapacity for std::path::PathBuf
+impl WithCapacity for std::path::PathBuf
 {
     type Param = ();
     #[inline(always)]
@@ -319,7 +319,7 @@ impl<T> Capacity for Vec<T>
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl<T> FromCapacity for Vec<T>
+impl<T> WithCapacity for Vec<T>
 {
     type Param = ();
     #[inline(always)]
@@ -361,7 +361,7 @@ impl Capacity for String
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl FromCapacity for String
+impl WithCapacity for String
 {
     type Param = ();
     #[inline(always)]

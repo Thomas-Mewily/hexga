@@ -439,7 +439,7 @@ impl<T> Capacity for NonEmptyStack<T>
 {
     fn capacity(&self) -> usize { self.stack.capacity() + 1 }
 }
-impl<T> FromCapacity for NonEmptyStack<T>
+impl<T> WithCapacity for NonEmptyStack<T>
 {
     type Param = T;
     fn with_capacity_and_param(capacity: usize, value: Self::Param) -> Self
