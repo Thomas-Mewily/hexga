@@ -748,16 +748,51 @@ impl<T, const CAP: usize> ArrayVec<T, CAP> {
         Ok(())
     }
 
-    /// Return the inner fixed size array, if it is full to its capacity.
+    /// Attempts to fill the `ArrayVec` from an iterator, returning `None` if too many elements.
     ///
-    /// Return an `Ok` value with the array if length equals capacity,
-    /// return an `Err` with self otherwise.
-    pub fn into_inner(self) -> Result<[T; CAP], Self> {
-        if self.len() < self.capacity() {
-            Err(self)
-        } else {
-            unsafe { Ok(self.into_inner_unchecked()) }
+    /// If the iterator yields more than `CAP` elements, returns `None` and leaves
+    /// the `ArrayVec` in an unspecified state (some elements may have been added).
+    ///
+    /// Returns `Some(self)` on success.
+    pub fn try_from_iter<I>(mut self, it: I) -> Option<Self>
+    where
+        I: IntoIterator<Item = T>,
+    {
+        for item in it.into_iter() {
+            if self.try_push(item).is_err() {
+                return None;
+            }
         }
+        Some(self)
+    }
+
+    /// Converts into an array if length equals `N`.
+    pub fn into_array<const N: usize>(mut self) -> Result<[T; N], Self> {
+        if self.len != N { return Err(self); }
+
+        self.len = 0;
+
+        unsafe {
+            let mut result: [MaybeUninit<T>; N] = MaybeUninit::uninit().assume_init();
+
+            for i in 0..N {
+                let value = self.values.as_mut_ptr().add(i).read().assume_init();
+                result.as_mut_ptr().add(i).write(MaybeUninit::new(value));
+            }
+
+            Ok(result.map(|x| x.assume_init()))
+        }
+    }
+
+    /// Returns array reference if length equals `N`.
+    pub fn as_array<const N:usize>(&self) -> Option<&[T; N]>
+    {
+        self.as_slice().as_array()
+    }
+    /// Returns mutable array reference if length equals `N`.
+    pub fn as_mut_array<const N:usize>(&mut self) -> Option<&mut [T; N]>
+    {
+        self.as_mut_slice().as_mut_array()
     }
 
     /// Return the inner fixed size array.
@@ -1253,7 +1288,6 @@ where
     where
         D: serde::Deserializer<'de>,
     {
-        // Use a visitor that collects into ArrayVec directly
         struct ArrayVecVisitor<T, const CAP: usize>(std::marker::PhantomData<T>);
 
         impl<'de, T, const CAP: usize> serde::de::Visitor<'de> for ArrayVecVisitor<T, CAP>
@@ -1286,5 +1320,27 @@ where
         }
 
         deserializer.deserialize_seq(ArrayVecVisitor(std::marker::PhantomData))
+    }
+}
+
+
+impl<T, const CAP: usize> From<[T; CAP]> for ArrayVec<T, CAP> {
+    fn from(array: [T; CAP]) -> Self {
+        Self {
+            values: array.map(MaybeUninit::new),
+            len: CAP,
+        }
+    }
+}
+
+impl<T, const CAP: usize> AsRef<[T]> for ArrayVec<T, CAP> {
+    fn as_ref(&self) -> &[T] {
+        self.as_slice()
+    }
+}
+
+impl<T, const CAP: usize> AsMut<[T]> for ArrayVec<T, CAP> {
+    fn as_mut(&mut self) -> &mut [T] {
+        self.as_mut_slice()
     }
 }
