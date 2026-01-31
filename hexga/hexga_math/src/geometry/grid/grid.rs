@@ -20,6 +20,8 @@ macro_rules! impl_grid_fmt_method {
             const SEP: &'static str = " ";
             let size = self.size();
 
+            // TODO: use https://doc.rust-lang.org/stable/std/fmt/fn.from_fn.html,
+            // But at the moment it only support Display and Debug
             let strings = self
                 .iter()
                 .map(|(_, v)| {

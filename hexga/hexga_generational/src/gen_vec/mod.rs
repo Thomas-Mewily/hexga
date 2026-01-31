@@ -912,7 +912,8 @@ where
     }
 }
 
-
+// TODO: impl TryFromIterator cleanely when try_collect will be stablized
+/*
 impl<T, C, Gen> TryFromIterator<T> for GenVecOf<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
@@ -962,6 +963,7 @@ where
         */
     }
 }
+*/
 
 impl<T, C, Gen> Index<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
 where
