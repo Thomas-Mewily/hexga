@@ -5,11 +5,6 @@ pub mod prelude
     pub use super::{CollectToGenVec, GenVec, GenView, GenViewMut};
 }
 
-#[cfg(feature = "serde")]
-mod serde_impl;
-#[cfg(feature = "serde")]
-use serde_impl::*;
-
 pub type GenVec<T> = GenVecOf<T, Generation, Vec<Entry<T, Generation>>>;
 pub type GenView<'a, T> = GenVecOf<T, Generation, &'a [Entry<T, Generation>]>;
 pub type GenViewMut<'a, T> = GenVecOf<T, Generation, &'a mut [Entry<T, Generation>]>;
