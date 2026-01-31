@@ -157,9 +157,12 @@ pub type MultiHashMapIDOf<Gen> = GenIDOf<Gen>;
 /// - can have N number of keys (one (the main key), or multiple (the main keys then backward compatibility keys)),
 /// - have an [`TableIDOf<K,V,Gen>`] for fast access.
 #[derive(Clone, Debug)]
-pub struct MultiHashMapOf<K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
+pub struct MultiHashMapOf<K,V,Gen=Generation,S=std::hash::RandomState>
+    where
+    Gen: IGeneration,
+    S:BuildHasher,
 {
-    values: GenSlice<Entry<K,V,Gen,S>,Gen>,
+    values: GenVecOf<Entry<K,V,Gen,S>,Gen>,
     search: HashMap<K,MultiHashMapIDOf<Gen>,S>,
 }
 
@@ -194,13 +197,13 @@ where
     V: Deserialize<'de>,
     Gen: IGeneration + Deserialize<'de>,
     S: BuildHasher + Default,
-    GenSlice::<Entry<K, V, Gen, S>, Gen>: Deserialize<'de>
+    GenVecOf::<Entry<K, V, Gen, S>, Gen>: Deserialize<'de>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let mut values = GenSlice::<Entry<K, V, Gen, S>, Gen>::deserialize(deserializer)?;
+        let mut values = GenVecOf::<Entry<K, V, Gen, S>, Gen>::deserialize(deserializer)?;
         let mut search = HashMap::<K, GenIDOf<Gen>, S>::with_capacity(values.len());
 
         for (id, entry) in values.iter_mut()
@@ -228,7 +231,7 @@ impl<K,V,Gen,S> Default for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:
 impl<K,V,Gen> MultiHashMapOf<K,V,Gen,RandomState> where Gen: IGeneration
 {
     /// Constructs a new, empty [`MultiHashMap`] with at least the specified capacity.
-    pub fn with_capacity(capacity: usize) -> Self { Self { values: GenSlice::with_capacity(capacity), search: HashMap::with_capacity(capacity) } }
+    pub fn with_capacity(capacity: usize) -> Self { Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_capacity(capacity) } }
 }
 impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
@@ -241,13 +244,13 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
     /// Creates a new empty [`MultiHashMap`] with a custom hasher.
     pub fn with_hasher(hasher: S) -> Self
     {
-        Self { values: GenSlice::new(), search: HashMap::with_hasher(hasher) }
+        Self { values: GenVecOf::new(), search: HashMap::with_hasher(hasher) }
     }
 
     /// Creates a new `MultiHashMapOf` with at least the specified capacity and a custom hasher.
     pub fn with_capacity_and_hasher(capacity: usize, hasher: S) -> Self
     {
-        Self { values: GenSlice::with_capacity(capacity), search: HashMap::with_hasher(hasher) }
+        Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_hasher(hasher) }
     }
 
     /// Returns a reference to the entry associated with the given ID, or `None` if it does not exist.
@@ -303,7 +306,7 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
     pub fn get_mut(&mut self, id: MultiHashMapIDOf<Gen>) -> Option<&mut V> { self.get_entry_mut(id).map(|e| &mut e.value) }
 
     /// Returns a reference to the inner `GenVec` storing the entries.
-    pub fn inner_genvec(&self) -> &GenSlice<Entry<K,V,Gen,S>,Gen>
+    pub fn inner_genvec(&self) -> &GenVecOf<Entry<K,V,Gen,S>,Gen>
     {
         &self.values
     }
@@ -645,14 +648,19 @@ impl<K,V,Gen,S> Clear for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:Bu
 
 impl<K,V,Gen,S> Capacity for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
-    type Param=S;
-
     #[inline(always)]
     fn capacity(&self) -> usize { self.values.capacity() }
+}
+impl<K,V,Gen,S> WithCapacity for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+{
+    type Param=S;
 
     #[inline(always)]
     fn with_capacity_and_param(capacity: usize, hasher: Self::Param) -> Self { Self::with_capacity_and_hasher(capacity, hasher) }
 
+}
+impl<K,V,Gen,S> Reserve for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+{
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.values.reserve(additional); }
     #[inline(always)]

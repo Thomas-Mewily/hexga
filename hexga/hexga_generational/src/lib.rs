@@ -28,8 +28,8 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::
 
 pub mod gen_id;
 pub mod gen_vec;
-//pub mod multi_map;
-//pub mod table;
+pub mod multi_map;
+pub mod table;
 
 pub(crate) use prelude::*;
 pub mod prelude
@@ -37,7 +37,7 @@ pub mod prelude
     pub use super::{
         gen_id::prelude::*,
         gen_vec::prelude::*,
-        //multi_map::prelude::*,
-        //table::prelude::*,
+        multi_map::prelude::*,
+        table::prelude::*,
     };
 }
