@@ -1,5 +1,5 @@
 use hexga_core::prelude::*;
-use hexga_generational::{gen_vec::GenArrayVec, prelude::*};
+use hexga_generational::{gen_seq::GenArrayVec, prelude::*};
 
 #[derive(Debug)]
 pub struct Entity

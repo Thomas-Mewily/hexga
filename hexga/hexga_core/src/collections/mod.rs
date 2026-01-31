@@ -29,6 +29,9 @@ pub use remove::*;
 mod push;
 pub use push::*;
 
+mod insert;
+pub use insert::*;
+
 mod pop;
 pub use pop::*;
 

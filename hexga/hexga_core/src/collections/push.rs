@@ -10,7 +10,7 @@ pub trait Push<T>: Collection
 }
 pub trait TryPush<T>: Push<T>
 {
-    type Error: Debug;
+    type Error;
     /// Push an value and return it's index.
     fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error>;
 }
@@ -23,7 +23,7 @@ pub trait PushFront<T>: Collection
 }
 pub trait TryPushFront<T>: PushFront<T>
 {
-    type Error: Debug;
+    type Error;
     /// Push an value and return it's index.
     fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error>;
 }

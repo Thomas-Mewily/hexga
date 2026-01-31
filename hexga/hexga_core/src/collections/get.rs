@@ -31,6 +31,8 @@ pub trait Get<Idx>: Collection
         self.get(index).expect("invalid index")
     }
 
+    fn contains(&self, index: Idx) -> bool { self.get(index).is_some() }
+
     /// True if `get(index)` return [Some], false otherwise.
     #[inline(always)]
     fn is_index_valid(&self, index: Idx) -> bool { self.get(index).is_some() }

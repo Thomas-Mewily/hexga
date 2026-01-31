@@ -13,7 +13,7 @@ pub trait Pop<T>: Collection
 /*
 pub trait TryPop<T> : Pop<T>
 {
-    type Error: Debug;
+    type Error;
     /// Removes the last element from the collection and returns it, or an error.
     fn try_pop(&mut self) -> Result<T, Self::Error>;
 }

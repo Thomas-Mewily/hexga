@@ -5,12 +5,12 @@ pub mod prelude
     pub use super::{CollectToGenVec, GenVec, GenView, GenViewMut};
 }
 
-pub type GenVec<T> = GenVecOf<T, Generation, Vec<Entry<T, Generation>>>;
-pub type GenView<'a, T> = GenVecOf<T, Generation, &'a [Entry<T, Generation>]>;
-pub type GenViewMut<'a, T> = GenVecOf<T, Generation, &'a mut [Entry<T, Generation>]>;
+pub type GenVec<T> = GenSeq<T, Generation, Vec<Entry<T, Generation>>>;
+pub type GenView<'a, T> = GenSeq<T, Generation, &'a [Entry<T, Generation>]>;
+pub type GenViewMut<'a, T> = GenSeq<T, Generation, &'a mut [Entry<T, Generation>]>;
 
 #[cfg(feature = "serde")]
-pub type GenArrayVec<T, const N: usize> = GenVecOf<T, Generation, hexga_array_vec::ArrayVec<Entry<T, Generation>,N>>;
+pub type GenArrayVec<T, const N: usize> = GenSeq<T, Generation, hexga_array_vec::ArrayVec<Entry<T, Generation>,N>>;
 
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -172,7 +172,7 @@ where
 }
 
 #[derive(Clone, Copy)]
-pub struct GenVecOf<T, Gen = Generation, C = Vec<Entry<T, Gen>>>
+pub struct GenSeq<T, Gen = Generation, C = Vec<Entry<T, Gen>>>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -185,7 +185,7 @@ where
     phantom: PhantomData<(T, Gen)>,
 }
 
-impl<T, C, Gen> Debug for GenVecOf<T, Gen, C>
+impl<T, C, Gen> Debug for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -197,7 +197,7 @@ where
     }
 }
 
-impl<T, C, Gen> Eq for GenVecOf<T, Gen, C>
+impl<T, C, Gen> Eq for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -205,7 +205,7 @@ where
 {
 }
 
-impl<T, C, Gen> Hash for GenVecOf<T, Gen, C>
+impl<T, C, Gen> Hash for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -231,14 +231,14 @@ where
     }
 }
 
-impl<T, C, C2, Gen> PartialEq<GenVecOf<T, Gen, C2>> for GenVecOf<T, Gen, C>
+impl<T, C, C2, Gen> PartialEq<GenSeq<T, Gen, C2>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     C2: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
     T: PartialEq,
 {
-    fn eq(&self, other: &GenVecOf<T, Gen, C2>) -> bool
+    fn eq(&self, other: &GenSeq<T, Gen, C2>) -> bool
     {
         let view = self.values.as_ref();
         let other_view = self.values.as_ref();
@@ -253,8 +253,8 @@ where
                 We can't know if the gen vec is new or if the gen vec just wrapped arround.
 
                 Those two are equal: (Assuming Gen::MIN value is 0)
-                A: GenVecOf { entry: [Entry { value: Next(18446744073709551615), generation: 0 }], free: 0, len: 0 }
-                B: GenVecOf { entry: [], free: 18446744073709551615, len: 0 }
+                A: GenSeq { entry: [Entry { value: Next(18446744073709551615), generation: 0 }], free: 0, len: 0 }
+                B: GenSeq { entry: [], free: 18446744073709551615, len: 0 }
 
                 Both can represent unused wrapped gen vec.
 
@@ -268,8 +268,8 @@ where
 
                 But these 2 are different, because that generation was already used.
 
-                X: GenVecOf { entry: [Entry { value: Next(18446744073709551615), generation: 1 }], free: 0, len: 0 }
-                Y: GenVecOf { entry: [], free: 18446744073709551615, len: 0 }
+                X: GenSeq { entry: [Entry { value: Next(18446744073709551615), generation: 1 }], free: 0, len: 0 }
+                Y: GenSeq { entry: [], free: 18446744073709551615, len: 0 }
             */
 
             if self.len != other.len
@@ -349,7 +349,7 @@ where
     }
 }
 
-impl<T, C, Gen> GenVecOf<T, Gen, C>
+impl<T, C, Gen> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -439,7 +439,7 @@ where
     }
 }
 
-impl<T, Gen, C> Default for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Default for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -448,7 +448,7 @@ where
     fn default() -> Self { Self::new() }
 }
 
-impl<T, Gen, C> GenVecOf<T, Gen, C>
+impl<T, Gen, C> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -485,13 +485,13 @@ where
     }
 }
 
-impl<T, Gen, C> GenVecOf<T, Gen, C>
+impl<T, Gen, C> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
 {
     #[inline(always)]
-    pub fn as_ref<'a>(&'a self) -> GenVecOf<T, Gen, &'a [Entry<T, Gen>]> { self.into() }
+    pub fn as_ref<'a>(&'a self) -> GenSeq<T, Gen, &'a [Entry<T, Gen>]> { self.into() }
 
     #[inline(always)]
     pub fn get_entry_from_index(&self, index: usize) -> Option<&Entry<T, Gen>>
@@ -564,12 +564,12 @@ where
         0..self.values.as_ref().len()
     }
 
-    pub fn to_owned(&self) -> GenVecOf<T, Gen, C::Owned>
+    pub fn to_owned(&self) -> GenSeq<T, Gen, C::Owned>
     where
         C: ToOwned,
         C::Owned: AsRef<[Entry<T, Gen>]>,
     {
-        GenVecOf {
+        GenSeq {
             values: self.values.to_owned(),
             free: self.free,
             len: self.len,
@@ -578,13 +578,13 @@ where
     }
 }
 
-impl<T, Gen, C> GenVecOf<T, Gen, C>
+impl<T, Gen, C> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
 {
     #[inline(always)]
-    pub fn as_mut<'a>(&'a mut self) -> GenVecOf<T, Gen, &'a mut [Entry<T, Gen>]> { self.into() }
+    pub fn as_mut<'a>(&'a mut self) -> GenSeq<T, Gen, &'a mut [Entry<T, Gen>]> { self.into() }
 
     /// Removes all elements from the [`GenVec`] and invalidates all existing [`GenID`] (enforced).
     pub fn remove_all(&mut self)
@@ -909,7 +909,7 @@ where
 
 // TODO: impl TryFromIterator cleanely when try_collect will be stablized
 /*
-impl<T, C, Gen> TryFromIterator<T> for GenVecOf<T, Gen, C>
+impl<T, C, Gen> TryFromIterator<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -960,7 +960,7 @@ where
 }
 */
 
-impl<T, C, Gen> Index<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
+impl<T, C, Gen> Index<GenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -968,7 +968,7 @@ where
     type Output = T;
     fn index(&self, index: GenIDOf<Gen>) -> &Self::Output { self.get_or_panic(index) }
 }
-impl<T, C, Gen> IndexMut<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
+impl<T, C, Gen> IndexMut<GenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -979,7 +979,7 @@ where
     }
 }
 
-impl<T, C, Gen> Index<usize> for GenVecOf<T, Gen, C>
+impl<T, C, Gen> Index<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -987,7 +987,7 @@ where
     type Output = T;
     fn index(&self, index: usize) -> &Self::Output { self.get_from_index(index).unwrap() }
 }
-impl<T, C, Gen> IndexMut<usize> for GenVecOf<T, Gen, C>
+impl<T, C, Gen> IndexMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -998,7 +998,7 @@ where
     }
 }
 
-impl<T, C, Gen> FromIterator<T> for GenVecOf<T, Gen, C>
+impl<T, C, Gen> FromIterator<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1020,7 +1020,7 @@ where
     }
 }
 
-impl<T, C, Gen> IntoIterator for GenVecOf<T, Gen, C>
+impl<T, C, Gen> IntoIterator for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     C: IntoIterator,
@@ -1153,7 +1153,7 @@ where
     fn len(&self) -> usize { self.len_remaining }
 }
 
-impl<'s, T, C, Gen> IntoIterator for &'s GenVecOf<T, Gen, C>
+impl<'s, T, C, Gen> IntoIterator for &'s GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1233,7 +1233,7 @@ impl<'a, T, Gen: IGeneration> ExactSizeIterator for Iter<'a, T, Gen>
     fn len(&self) -> usize { self.len_remaining }
 }
 
-impl<'s, T, C, Gen> IntoIterator for &'s mut GenVecOf<T, Gen, C>
+impl<'s, T, C, Gen> IntoIterator for &'s mut GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1299,19 +1299,19 @@ impl<'a, T, Gen: IGeneration> ExactSizeIterator for IterMut<'a, T, Gen>
     fn len(&self) -> usize { self.len_remaining }
 }
 
-impl<T, Gen, C> Collection for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Collection for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
 {
 }
-impl<T, Gen, C> CollectionBijective for GenVecOf<T, Gen, C>
+impl<T, Gen, C> CollectionBijective for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
 {
 }
-impl<T, Gen, C> Length for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Length for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1319,7 +1319,7 @@ where
     #[inline(always)]
     fn len(&self) -> usize { self.len() }
 }
-impl<T, Gen, C> Clear for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Clear for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1329,7 +1329,7 @@ where
     fn clear(&mut self) { self.clear(); }
 }
 
-impl<T, Gen, C> Push<T> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Push<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1338,7 +1338,7 @@ where
     type Output = GenIDOf<Gen>;
     fn push(&mut self, value: T) -> Self::Output { self.insert(value) }
 }
-impl<T, Gen, C> TryPush<T> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> TryPush<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1348,13 +1348,13 @@ where
     fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> { self.try_insert(value) }
 }
 
-impl<'s, T, Gen, C> From<&'s GenVecOf<T, Gen, C>> for GenVecOf<T, Gen, &'s [Entry<T, Gen>]>
+impl<'s, T, Gen, C> From<&'s GenSeq<T, Gen, C>> for GenSeq<T, Gen, &'s [Entry<T, Gen>]>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
     T: 's,
 {
-    fn from(value: &'s GenVecOf<T, Gen, C>) -> Self
+    fn from(value: &'s GenSeq<T, Gen, C>) -> Self
     {
         Self {
             values: value.values.as_ref(),
@@ -1365,13 +1365,13 @@ where
     }
 }
 
-impl<'s, T, Gen, C> From<&'s mut GenVecOf<T, Gen, C>> for GenVecOf<T, Gen, &'s mut [Entry<T, Gen>]>
+impl<'s, T, Gen, C> From<&'s mut GenSeq<T, Gen, C>> for GenSeq<T, Gen, &'s mut [Entry<T, Gen>]>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
     T: 's,
 {
-    fn from(value: &'s mut GenVecOf<T, Gen, C>) -> Self
+    fn from(value: &'s mut GenSeq<T, Gen, C>) -> Self
     {
         Self {
             values: value.values.as_mut(),
@@ -1383,16 +1383,16 @@ where
 }
 
 /*
-impl<'s, T, Gen, C> View<'s> for GenVecOf<T, Gen, C>
+impl<'s, T, Gen, C> View<'s> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T,Gen>]>,
     Gen: IGeneration,
     T:'s
 {
-    type View = GenVecOf<T, Gen, &'s [Entry<T, Gen>]>;
+    type View = GenSeq<T, Gen, &'s [Entry<T, Gen>]>;
 
     fn as_view(&'s self) -> Self::View {
-        GenVecOf {
+        GenSeq {
             values: self.values,
             free: self.free,
             len: self.len,
@@ -1401,17 +1401,17 @@ where
     }
 }
 
-impl<'s, T, Gen, C> ViewMut<'s> for GenVecOf<T, Gen, C>
+impl<'s, T, Gen, C> ViewMut<'s> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T,Gen>]>,
     C: ViewMut<'s, ViewMut = &'s mut [Entry<T, Gen>]>,
     Gen: IGeneration,
     T:'s
 {
-    type ViewMut = GenVecOf<T, Gen, &'s mut [Entry<T, Gen>]>;
+    type ViewMut = GenSeq<T, Gen, &'s mut [Entry<T, Gen>]>;
 
     fn as_mut(&'s mut self) -> Self::ViewMut {
-        GenVecOf {
+        GenSeq {
             values: self.values.as_mut(),
             free: self.free,
             len: self.len,
@@ -1421,7 +1421,7 @@ where
 }
 */
 
-impl<T, Gen, C> Shrink for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Shrink for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1430,7 +1430,7 @@ where
     fn shrink_to_fit(&mut self) { self.values.shrink_to_fit(); }
     fn shrink_to(&mut self, min_capacity: usize) { self.values.shrink_to(min_capacity); }
 }
-impl<T, Gen, C> Truncate for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Truncate for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1439,7 +1439,7 @@ where
     fn truncate(&mut self, len: usize) { self.values.truncate(len); }
 }
 
-impl<T, Gen, C> Capacity for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Capacity for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1448,7 +1448,7 @@ where
     #[inline(always)]
     fn capacity(&self) -> usize { self.values.capacity() }
 }
-impl<T, Gen, C> WithCapacity for GenVecOf<T, Gen, C>
+impl<T, Gen, C> WithCapacity for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1462,7 +1462,7 @@ where
         Self::with_capacity(capacity)
     }
 }
-impl<T, Gen, C> Reserve for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Reserve for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1639,7 +1639,7 @@ where
     }
 }
 
-impl<T, Gen, C> Get<usize> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Get<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1648,7 +1648,7 @@ where
     #[inline(always)]
     fn get(&self, index: usize) -> Option<&Self::Output> { self.get_from_index(index) }
 }
-impl<T, Gen, C> TryGet<usize> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> TryGet<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1661,7 +1661,7 @@ where
     }
 }
 
-impl<T, Gen, C> Get<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Get<GenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1670,7 +1670,7 @@ where
     #[inline(always)]
     fn get(&self, index: GenIDOf<Gen>) -> Option<&Self::Output> { self.get(index) }
 }
-impl<T, Gen, C> TryGet<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> TryGet<GenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1706,7 +1706,7 @@ where
     }
 }
 
-impl<T, Gen, C> GetMut<usize> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> GetMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1717,7 +1717,7 @@ where
         self.get_mut_from_index(index)
     }
 }
-impl<T, Gen, C> TryGetMut<usize> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> TryGetMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1730,7 +1730,7 @@ where
     }
 }
 
-impl<T, Gen, C> GetManyMut<usize> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> GetManyMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1814,7 +1814,7 @@ where
     }
 }
 
-impl<T, Gen, C> GetMut<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> GetMut<GenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1822,7 +1822,7 @@ where
     #[inline(always)]
     fn get_mut(&mut self, index: GenIDOf<Gen>) -> Option<&mut Self::Output> { self.get_mut(index) }
 }
-impl<T, Gen, C> TryGetMut<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> TryGetMut<GenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1863,7 +1863,7 @@ where
     }
 }
 
-impl<T, Gen, C> GetManyMut<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> GetManyMut<GenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1931,7 +1931,7 @@ where
         }
     }
 }
-impl<T, Gen, C> Remove<usize> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Remove<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1940,7 +1940,7 @@ where
     fn remove(&mut self, index: usize) -> Option<Self::Output> { self.remove_from_index(index) }
 }
 
-impl<T, Gen, C> Remove<GenIDOf<Gen>> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Remove<GenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1949,14 +1949,14 @@ where
     fn remove(&mut self, index: GenIDOf<Gen>) -> Option<Self::Output> { self.remove(index) }
 }
 
-impl<T, Gen, C> CollectionStableKey for GenVecOf<T, Gen, C>
+impl<T, Gen, C> CollectionStableKey for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
 {
 }
 
-impl<T, Gen, C> GenVecOf<T, Gen, C>
+impl<T, Gen, C> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -1964,7 +1964,7 @@ where
     /// Moves all the elements of `other` into `self`, leaving `other` empty by clearing it (don't invalidate all previous [GenID]).
     pub fn append<C2>(
         &mut self,
-        other: &mut GenVecOf<T, Gen, C2>,
+        other: &mut GenSeq<T, Gen, C2>,
     ) -> impl GenIDUpdater<Gen> + 'static
     where
         T: GenIDUpdatable<Gen>,
@@ -1996,7 +1996,7 @@ where
     }
 }
 
-impl<T, Gen, C> Extend<T> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Extend<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -2027,7 +2027,7 @@ where
         *dest = self.get(&dest).copied().unwrap_or(GenIDOf::NULL);
     }
 }
-impl<C, Gen> GenIDUpdater<Gen> for GenVecOf<GenIDOf<Gen>, Gen, C>
+impl<C, Gen> GenIDUpdater<Gen> for GenSeq<GenIDOf<Gen>, Gen, C>
 where
     C: AsRef<[Entry<GenIDOf<Gen>, Gen>]>,
     Gen: IGeneration,
@@ -2050,7 +2050,7 @@ where
     fn update_id<U: GenIDUpdater<Gen>>(&mut self, updater: &U) { updater.update(self); }
 }
 
-impl<T, Gen, C> Extend<(GenIDOf<Gen>, T)> for GenVecOf<T, Gen, C>
+impl<T, Gen, C> Extend<(GenIDOf<Gen>, T)> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -2185,7 +2185,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<T, C, Gen> Serialize for GenVecOf<T, Gen, C>
+impl<T, C, Gen> Serialize for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -2222,7 +2222,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T, C, Gen> Deserialize<'de> for GenVecOf<T, Gen, C>
+impl<'de, T, C, Gen> Deserialize<'de> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: IGeneration,
@@ -2251,7 +2251,7 @@ where
             next,
             phantom: _,
         } = GenVec::deserialize(deserializer)?;
-        GenVecOf::<T, Gen, C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX))
+        GenSeq::<T, Gen, C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX))
             .map_err(serde::de::Error::custom)
     }
 }
@@ -2465,7 +2465,7 @@ mod tests
     #[test]
     fn saturation()
     {
-        let mut v = GenVecOf::<i32, u8, Vec<Entry<i32, u8>>>::new();
+        let mut v = GenSeq::<i32, u8, Vec<Entry<i32, u8>>>::new();
 
         assert_eq!(v.len(), 0);
 
@@ -2482,7 +2482,7 @@ mod tests
     #[test]
     fn wrapping()
     {
-        let mut v = GenVecOf::<i32, Wrapping<u8>, Vec<Entry<i32, Wrapping<u8>>>>::new();
+        let mut v = GenSeq::<i32, Wrapping<u8>, Vec<Entry<i32, Wrapping<u8>>>>::new();
 
         assert_eq!(v.len(), 0);
 
@@ -2535,9 +2535,9 @@ mod tests
         }
     }
 
-    fn wrapping_about_to_wrap() -> GenVecOf<i32, Wrapping<u8>, Vec<Entry<i32, Wrapping<u8>>>>
+    fn wrapping_about_to_wrap() -> GenSeq<i32, Wrapping<u8>, Vec<Entry<i32, Wrapping<u8>>>>
     {
-        let mut v = GenVecOf::<i32, Wrapping<u8>, Vec<Entry<i32, Wrapping<u8>>>>::new();
+        let mut v = GenSeq::<i32, Wrapping<u8>, Vec<Entry<i32, Wrapping<u8>>>>::new();
 
         for i in 0..255
         {
@@ -2549,9 +2549,9 @@ mod tests
         v
     }
 
-    fn non_wrapping_about_to_wrap() -> GenVecOf<i32, u8, Vec<Entry<i32, u8>>>
+    fn non_wrapping_about_to_wrap() -> GenSeq<i32, u8, Vec<Entry<i32, u8>>>
     {
-        let mut v = GenVecOf::<i32, u8, Vec<Entry<i32, u8>>>::new();
+        let mut v = GenSeq::<i32, u8, Vec<Entry<i32, u8>>>::new();
 
         for i in 0..255
         {
@@ -2586,7 +2586,7 @@ mod tests
     fn rollback_remove_wrapping_empty()
     {
         let mut genvec =
-            GenVecOf::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
+            GenSeq::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
         let id = genvec.insert(42);
 
         let old_gen = genvec.clone();
@@ -2689,7 +2689,7 @@ mod tests
         // We can't know if the gen vec is new or if the gen vec just wrapped
 
         let mut genvec =
-            GenVecOf::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
+            GenSeq::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
         let old_gen = genvec.clone();
 
         dbg!(&genvec);
@@ -2707,7 +2707,7 @@ mod tests
         // We can't know if the gen vec is new or if the gen vec just wrapped
 
         let mut genvec =
-            GenVecOf::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
+            GenSeq::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
         let _id = genvec.insert(45);
 
         let old_gen = genvec.clone();
@@ -2725,12 +2725,12 @@ mod tests
     fn rollback_insert_wrapping_dif()
     {
         let mut genvec =
-            GenVecOf::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
+            GenSeq::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
         let id = genvec.insert(45);
         genvec.remove(id);
         assert_ne!(
             genvec,
-            GenVecOf::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new()
+            GenSeq::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new()
         );
     }
 
@@ -2738,7 +2738,7 @@ mod tests
     fn rollback_insert_wrapping_4()
     {
         let mut genvec =
-            GenVecOf::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
+            GenSeq::<i32, Wrapping<Generation>, Vec<Entry<i32, Wrapping<Generation>>>>::new();
         let _ = genvec.insert(45);
 
         //dbg!(&genvec);
@@ -2747,11 +2747,11 @@ mod tests
         genvec.rollback_insert(id).unwrap();
         //dbg!(&genvec);
 
-        let mut old_gen: GenVecOf<
+        let mut old_gen: GenSeq<
             i32,
             Wrapping<Generation>,
             Vec<Entry<i32, Wrapping<Generation>>>,
-        > = GenVecOf::new();
+        > = GenSeq::new();
         old_gen.insert(50);
 
         assert_ne!(genvec, old_gen);

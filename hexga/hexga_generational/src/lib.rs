@@ -27,7 +27,8 @@ use hexga_number::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 pub mod gen_id;
-pub mod gen_vec;
+pub mod gen_seq;
+pub mod gen_map;
 pub mod multi_map;
 pub mod table;
 
@@ -36,7 +37,7 @@ pub mod prelude
 {
     pub use super::{
         gen_id::prelude::*,
-        gen_vec::prelude::*,
+        gen_seq::prelude::*,
         multi_map::prelude::*,
         table::prelude::*,
     };

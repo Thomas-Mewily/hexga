@@ -26,6 +26,52 @@ pub trait Reserve: Capacity
 
     fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError>;
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError>;
+
+    /// Ensure total capacity is at least `total`.
+    /// Does nothing if the current capacity is already >= `total`.
+    fn reserve_total(&mut self, total: usize) where Self: Length
+    {
+        let cap = self.capacity();
+
+        if total <= cap { return; }
+
+        let additional = total - cap;
+        self.reserve(additional);
+    }
+    /// Ensure total capacity is at least `total`.
+    /// Does nothing if the current capacity is already >= `total`.
+    fn try_reserve_total(&mut self, total: usize) -> Result<(), TryReserveError> where Self: Length
+    {
+        let cap = self.capacity();
+
+        if total <= cap { return Ok(()); }
+
+        let additional = total - cap;
+        self.try_reserve(additional)
+    }
+
+    /// Ensure total capacity is at least `total`.
+    /// Does nothing if the current capacity is already >= `total`.
+    fn reserve_total_exact(&mut self, total: usize) where Self: Length
+    {
+        let cap = self.capacity();
+
+        if total <= cap { return; }
+
+        let additional = total - cap;
+        self.reserve_exact(additional);
+    }
+    /// Ensure total capacity is at least `total`.
+    /// Does nothing if the current capacity is already >= `total`.
+    fn try_reserve_total_exact(&mut self, total: usize) -> Result<(), TryReserveError> where Self: Length
+    {
+        let cap = self.capacity();
+
+        if total <= cap { return Ok(()); }
+
+        let additional = total - cap;
+        self.try_reserve_exact(additional)
+    }
 }
 
 pub trait Shrink: Collection

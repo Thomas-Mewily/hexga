@@ -9,7 +9,7 @@ use core::any::Any;
 /// A trait to create a value from an iterator.
 pub trait TryFromIterator<T> : Sized
 {
-    type Error: Debug;
+    type Error;
     fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>;
 }
 impl<T> TryFromIterator<T> for Vec<T> {
@@ -87,12 +87,11 @@ impl<'a> TryFromIterator<&'a str> for String {
 
 
 
-
 #[repr(transparent)]
-#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd, Hash)]
 pub struct CapacityFullError<T = ()>
 {
-    element: T,
+    pub element: T,
 }
 
 impl<T> From<T> for CapacityFullError<T>
@@ -102,14 +101,7 @@ impl<T> From<T> for CapacityFullError<T>
 
 impl<T> CapacityFullError<T>
 {
-    /// Create a new `CapacityError` from `element`.
     pub const fn new(element: T) -> CapacityFullError<T> { CapacityFullError { element: element } }
-
-    /// Extract the overflowing element
-    pub fn element(self) -> T { self.element }
-
-    /// Convert into a `CapacityError` that does not carry an element.
-    pub fn simplify(self) -> CapacityFullError { CapacityFullError { element: () } }
 }
 
 const CAPERROR: &'static str = "capacity full";
@@ -132,14 +124,23 @@ impl<T> core::fmt::Debug for CapacityFullError<T>
 }
 
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd, Hash)]
 pub struct WrongLenError<T> {
     pub remaining: T,
+}
+impl<T> From<T> for WrongLenError<T>
+{
+    fn from(value: T) -> Self { Self::new(value) }
+}
+
+impl<T> WrongLenError<T>
+{
+    pub const fn new(remaining: T) -> WrongLenError<T> { WrongLenError { remaining } }
 }
 impl<T> Debug for WrongLenError<T>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        write!(f, "wrong len")
+        write!(f, "Wrong len")
     }
 }
 

@@ -1,5 +1,18 @@
 use super::*;
 
+
+pub trait SetLength
+{
+    unsafe fn set_len(&mut self, new_len: usize);
+}
+#[cfg(feature = "std")]
+impl<T> SetLength for Vec<T>
+{
+    unsafe fn set_len(&mut self, new_len: usize) {
+        unsafe { self.set_len(new_len) };
+    }
+}
+
 pub trait Length: Collection
 {
     // Returns the number of elements inside this collection, also referred as a 'length'.

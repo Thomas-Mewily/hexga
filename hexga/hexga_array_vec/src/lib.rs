@@ -991,7 +991,7 @@ impl<T, const CAP: usize> TryFromIterator<T> for ArrayVec<T, CAP>
             match vec.try_push(item)
             {
                 Ok(_) => {},
-                Err(e) => return Err(CapacityFullError::new((vec, e.element()))),
+                Err(e) => return Err(CapacityFullError::new((vec, e.element))),
             }
         }
         Ok(vec)
@@ -1271,10 +1271,25 @@ impl<T, const CAP: usize> Length for ArrayVec<T, CAP>
 {
     fn len(&self) -> usize { self.len() }
 }
+impl<T, const CAP: usize> SetLength for ArrayVec<T, CAP>
+{
+    unsafe fn set_len(&mut self, new_len: usize) {
+        unsafe { self.set_len(new_len) };
+    }
+}
 impl<T, const CAP: usize> Capacity for ArrayVec<T, CAP>
 {
     fn capacity(&self) -> usize { self.capacity() }
 }
+
+impl<T, const CAP: usize> Truncate for ArrayVec<T, CAP>
+{
+    fn truncate(&mut self, len: usize) {
+        self.truncate(len);
+    }
+}
+
+
 // Discutable...
 impl<T, const CAP: usize> WithCapacity for ArrayVec<T, CAP>
 {

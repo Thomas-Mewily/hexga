@@ -1,7 +1,7 @@
 use hexga_core::iter::IterExtension;
 
 use super::*;
-use crate::gen_vec::*;
+use crate::gen_seq::*;
 
 pub mod prelude
 {
@@ -162,7 +162,7 @@ pub struct MultiHashMapOf<K,V,Gen=Generation,S=std::hash::RandomState>
     Gen: IGeneration,
     S:BuildHasher,
 {
-    values: GenVecOf<Entry<K,V,Gen,S>,Gen>,
+    values: GenSeq<Entry<K,V,Gen,S>,Gen>,
     search: HashMap<K,MultiHashMapIDOf<Gen>,S>,
 }
 
@@ -197,13 +197,13 @@ where
     V: Deserialize<'de>,
     Gen: IGeneration + Deserialize<'de>,
     S: BuildHasher + Default,
-    GenVecOf::<Entry<K, V, Gen, S>, Gen>: Deserialize<'de>
+    GenSeq::<Entry<K, V, Gen, S>, Gen>: Deserialize<'de>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let mut values = GenVecOf::<Entry<K, V, Gen, S>, Gen>::deserialize(deserializer)?;
+        let mut values = GenSeq::<Entry<K, V, Gen, S>, Gen>::deserialize(deserializer)?;
         let mut search = HashMap::<K, GenIDOf<Gen>, S>::with_capacity(values.len());
 
         for (id, entry) in values.iter_mut()
@@ -231,7 +231,7 @@ impl<K,V,Gen,S> Default for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:
 impl<K,V,Gen> MultiHashMapOf<K,V,Gen,RandomState> where Gen: IGeneration
 {
     /// Constructs a new, empty [`MultiHashMap`] with at least the specified capacity.
-    pub fn with_capacity(capacity: usize) -> Self { Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_capacity(capacity) } }
+    pub fn with_capacity(capacity: usize) -> Self { Self { values: GenSeq::with_capacity(capacity), search: HashMap::with_capacity(capacity) } }
 }
 impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
@@ -244,13 +244,13 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
     /// Creates a new empty [`MultiHashMap`] with a custom hasher.
     pub fn with_hasher(hasher: S) -> Self
     {
-        Self { values: GenVecOf::new(), search: HashMap::with_hasher(hasher) }
+        Self { values: GenSeq::new(), search: HashMap::with_hasher(hasher) }
     }
 
     /// Creates a new `MultiHashMapOf` with at least the specified capacity and a custom hasher.
     pub fn with_capacity_and_hasher(capacity: usize, hasher: S) -> Self
     {
-        Self { values: GenVecOf::with_capacity(capacity), search: HashMap::with_hasher(hasher) }
+        Self { values: GenSeq::with_capacity(capacity), search: HashMap::with_hasher(hasher) }
     }
 
     /// Returns a reference to the entry associated with the given ID, or `None` if it does not exist.
@@ -306,7 +306,7 @@ impl<K,V,Gen,S> MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
     pub fn get_mut(&mut self, id: MultiHashMapIDOf<Gen>) -> Option<&mut V> { self.get_entry_mut(id).map(|e| &mut e.value) }
 
     /// Returns a reference to the inner `GenVec` storing the entries.
-    pub fn inner_genvec(&self) -> &GenVecOf<Entry<K,V,Gen,S>,Gen>
+    pub fn inner_genvec(&self) -> &GenSeq<Entry<K,V,Gen,S>,Gen>
     {
         &self.values
     }
@@ -697,7 +697,7 @@ impl<K,V,Gen,S> IntoIterator for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneratio
 #[derive(Clone, Debug)]
 pub struct IntoIter<K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
 {
-    iter: std::vec::IntoIter<crate::gen_vec::Entry<Entry<K,V,Gen,S>, Gen>>,
+    iter: std::vec::IntoIter<crate::gen_seq::Entry<Entry<K,V,Gen,S>, Gen>>,
     len_remaining: usize,
 }
 impl<K,V,Gen,S> Iterator for IntoIter<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
@@ -739,7 +739,7 @@ impl<'a,K,V,Gen,S> IntoIterator for &'a MultiHashMapOf<K,V,Gen,S> where Gen: IGe
 #[derive(Debug)]
 pub struct Iter<'a,K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
 {
-    iter: gen_vec::Iter<'a,Entry<K,V,Gen,S>,Gen>,
+    iter: gen_seq::Iter<'a,Entry<K,V,Gen,S>,Gen>,
 }
 impl<'a,K,V,Gen,S> Clone for Iter<'a,K, V, Gen, S> where Gen: IGeneration + Clone, S:BuildHasher + Clone
 {
@@ -777,7 +777,7 @@ impl<'a,K,V,Gen,S> IntoIterator for &'a mut MultiHashMapOf<K,V,Gen,S> where Gen:
 #[derive(Debug)]
 pub struct IterMut<'a,K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
 {
-    iter: gen_vec::IterMut<'a,Entry<K,V,Gen,S>,Gen>,
+    iter: gen_seq::IterMut<'a,Entry<K,V,Gen,S>,Gen>,
 }
 impl<'a,K,V,Gen,S> Iterator for IterMut<'a,K, V, Gen, S> where Gen: IGeneration, S:BuildHasher
 {

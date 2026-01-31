@@ -6,7 +6,7 @@
 use hexga::{
     generational::{
         gen_id::{GenIDOf, Generation},
-        gen_vec::GenVecOf,
+        gen_seq::GenSeq,
     },
     prelude::*,
 };

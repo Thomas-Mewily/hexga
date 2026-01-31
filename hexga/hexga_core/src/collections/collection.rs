@@ -4,7 +4,14 @@ use std::path::Path;
 use super::*;
 
 /// Contains element
-pub trait Collection {}
+pub trait Collection
+{
+    /*
+    const SEQUENCE: bool;
+    const ASSOCIATIF: bool;
+     */
+}
+
 
 impl<T> Collection for &T where T: Collection {}
 impl<T> Collection for &mut T where T: Collection {}

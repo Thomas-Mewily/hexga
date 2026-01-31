@@ -2,7 +2,7 @@ use super::*;
 
 pub trait TryAsRef<T>
 {
-    type Error: Debug;
+    type Error;
     fn try_as_ref(&self) -> Result<&T, Self::Error>;
 }
 impl<T, S> TryAsRef<T> for S
