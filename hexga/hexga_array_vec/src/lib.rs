@@ -1297,7 +1297,7 @@ impl<T, const CAP: usize> Truncate for ArrayVec<T, CAP>
     }
 }
 
-
+/*
 // Discutable...
 impl<T, const CAP: usize> WithCapacity for ArrayVec<T, CAP>
 {
@@ -1306,6 +1306,14 @@ impl<T, const CAP: usize> WithCapacity for ArrayVec<T, CAP>
         Self::new()
     }
 }
+*/
+
+impl<T, const CAP: usize> Shrink for ArrayVec<T, CAP>
+{
+    fn shrink_to_fit(&mut self) {}
+    fn shrink_to(&mut self, _min_capacity: usize) {}
+}
+
 
 #[cfg(feature = "serde")]
 impl<T, const CAP: usize> serde::Serialize for ArrayVec<T, CAP>

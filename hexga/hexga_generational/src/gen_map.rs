@@ -182,7 +182,14 @@ impl<K,V,Gen,S> Collection for GenMapOf<K,V,Gen,S>
     Gen: IGeneration,
     S: Collection
 {
+}
 
+impl<K,V,Gen,S> CollectionBijective for GenMapOf<K,V,Gen,S>
+    where
+    K: Clone,
+    Gen: IGeneration,
+    S: Collection
+{
 }
 
 impl<K,V,Gen,S> GenMapOf<K,V,Gen,S>
@@ -247,6 +254,23 @@ impl<K,V,Gen,S> Reserve for GenMapOf<K,V,Gen,S>
     }
 }
 
+impl<K,V,Gen,S> Shrink for GenMapOf<K,V,Gen,S>
+    where
+    K: Clone,
+    Gen: IGeneration,
+    S: Shrink
+{
+    fn shrink_to_fit(&mut self) {
+        self.values.shrink_to_fit();
+        self.search.shrink_to_fit();
+    }
+
+    fn shrink_to(&mut self, min_capacity: usize) {
+        self.values.shrink_to(min_capacity);
+        self.search.shrink_to(min_capacity);
+    }
+}
+
 impl<K, V, Gen, S> Length for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
@@ -265,11 +289,25 @@ where
 {
     type Output = V;
 
+    #[inline(always)]
     fn get(&self, index: &'a K) -> Option<&Self::Output>
     {
         let id = *self.search.get(index)?;
         self.values.get(id).map(|entry| &entry.value)
     }
+}
+
+impl<'a, K, V, Gen, S> std::ops::Index<&'a K> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Get<&'a K, Output = GenMapIDOf<Gen>>,
+{
+    type Output = V;
+
+    #[inline(always)]
+    #[track_caller]
+    fn index(&self, index: &'a K) -> &Self::Output { <Self as Get<&'a K>>::get_or_panic(self, index) }
 }
 
 impl<'a, K, V, Gen, S> TryGet<&'a K> for GenMapOf<K, V, Gen, S>
@@ -295,15 +333,33 @@ where
 {
     type Output = V;
 
+    #[inline(always)]
     fn get(&self, index: GenMapIDOf<Gen>) -> Option<&Self::Output>
     {
         self.values.get(index).map(|entry| &entry.value)
     }
 
     #[inline(always)]
+    #[track_caller]
     unsafe fn get_unchecked(&self, index: GenMapIDOf<Gen>) -> &Self::Output
     {
         &unsafe { self.values.get_unchecked(index) }.value
+    }
+}
+
+impl<K, V, Gen, S> std::ops::Index<GenMapIDOf<Gen>> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Collection,
+{
+    type Output = V;
+
+    #[inline(always)]
+    #[track_caller]
+    fn index(&self, index: GenMapIDOf<Gen>) -> &Self::Output
+    {
+        <Self as Get<GenMapIDOf<Gen>>>::get_or_panic(self, index)
     }
 }
 
@@ -327,10 +383,25 @@ where
     Gen: IGeneration,
     S: Get<&'a K, Output = GenMapIDOf<Gen>>,
 {
+    #[inline(always)]
     fn get_mut(&mut self, index: &'a K) -> Option<&mut Self::Output>
     {
         let id = *self.search.get(index)?;
         self.values.get_mut(id).map(|entry| &mut entry.value)
+    }
+}
+
+impl<'a, K, V, Gen, S> std::ops::IndexMut<&'a K> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Get<&'a K, Output = GenMapIDOf<Gen>>,
+{
+    #[inline(always)]
+    #[track_caller]
+    fn index_mut(&mut self, index: &'a K) -> &mut Self::Output
+    {
+        <Self as GetMut<&'a K>>::get_mut_or_panic(self, index)
     }
 }
 
@@ -353,15 +424,31 @@ where
     Gen: IGeneration,
     S: Collection,
 {
+    #[inline(always)]
     fn get_mut(&mut self, index: GenMapIDOf<Gen>) -> Option<&mut Self::Output>
     {
         self.values.get_mut(index).map(|entry| &mut entry.value)
     }
 
     #[inline(always)]
+    #[track_caller]
     unsafe fn get_unchecked_mut(&mut self, index: GenMapIDOf<Gen>) -> &mut Self::Output
     {
         &mut unsafe { self.values.get_unchecked_mut(index) }.value
+    }
+}
+
+impl<K, V, Gen, S> std::ops::IndexMut<GenMapIDOf<Gen>> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Collection,
+{
+    #[inline(always)]
+    #[track_caller]
+    fn index_mut(&mut self, index: GenMapIDOf<Gen>) -> &mut Self::Output
+    {
+        <Self as GetMut<GenMapIDOf<Gen>>>::get_mut_or_panic(self, index)
     }
 }
 
@@ -396,6 +483,7 @@ where
     }
 
     #[inline(always)]
+    #[track_caller]
     unsafe fn get_many_unchecked_mut<const N: usize>(
         &mut self,
         indices: [GenMapIDOf<Gen>; N],
