@@ -270,7 +270,7 @@ impl<K,V,Gen,S> WithCapacity for GenMapOf<K,V,Gen,S>
     where
     K: Clone,
     Gen: IGeneration,
-    S: WithCapacity, <S as WithCapacity>::Param : Default
+    S: WithCapacity + Length, <S as WithCapacity>::Param : Default
 {
     type Param=();
     fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
