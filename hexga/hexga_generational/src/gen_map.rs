@@ -345,44 +345,47 @@ where
     fn len(&self) -> usize { self.values.len() }
 }
 
-impl<'a, K, V, Gen, S> Get<&'a K> for GenMapOf<K, V, Gen, S>
+impl<'a, Q, K, V, Gen, S> Get<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a K, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<Gen>>,
 {
     type Output = V;
 
     #[inline(always)]
-    fn get(&self, index: &'a K) -> Option<&Self::Output>
+    fn get(&self, index: &'a Q) -> Option<&Self::Output>
     {
         let id = *self.search.get(index)?;
         self.values.get(id).map(|entry| &entry.value)
     }
 }
 
-impl<'a, K, V, Gen, S> std::ops::Index<&'a K> for GenMapOf<K, V, Gen, S>
+impl<'a, Q, K, V, Gen, S> std::ops::Index<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a K, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<Gen>>,
 {
     type Output = V;
 
     #[inline(always)]
     #[track_caller]
-    fn index(&self, index: &'a K) -> &Self::Output { <Self as Get<&'a K>>::get_or_panic(self, index) }
+    fn index(&self, index: &'a Q) -> &Self::Output { <Self as Get<&'a Q>>::get_or_panic(self, index) }
 }
 
-impl<'a, K, V, Gen, S> TryGet<&'a K> for GenMapOf<K, V, Gen, S>
+impl<'a, Q, K, V, Gen, S> TryGet<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized + Clone,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a K, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<Gen>>,
 {
-    type Error = MissingKey<K>;
+    type Error = MissingKey<Q>;
 
-    fn try_get(&self, index: &'a K) -> Result<&Self::Output, Self::Error>
+    fn try_get(&self, index: &'a Q) -> Result<&Self::Output, Self::Error>
     {
         self.get(index)
             .ok_or_else(|| MissingKey::new(index.clone()))
@@ -441,41 +444,44 @@ where
     }
 }
 
-impl<'a, K, V, Gen, S> GetMut<&'a K> for GenMapOf<K, V, Gen, S>
+impl<'a, Q, K, V, Gen, S> GetMut<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a K, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<Gen>>,
 {
     #[inline(always)]
-    fn get_mut(&mut self, index: &'a K) -> Option<&mut Self::Output>
+    fn get_mut(&mut self, index: &'a Q) -> Option<&mut Self::Output>
     {
         let id = *self.search.get(index)?;
         self.values.get_mut(id).map(|entry| &mut entry.value)
     }
 }
 
-impl<'a, K, V, Gen, S> std::ops::IndexMut<&'a K> for GenMapOf<K, V, Gen, S>
+impl<'a, Q, K, V, Gen, S> std::ops::IndexMut<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a K, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<Gen>>,
 {
     #[inline(always)]
     #[track_caller]
-    fn index_mut(&mut self, index: &'a K) -> &mut Self::Output
+    fn index_mut(&mut self, index: &'a Q) -> &mut Self::Output
     {
-        <Self as GetMut<&'a K>>::get_mut_or_panic(self, index)
+        <Self as GetMut<&'a Q>>::get_mut_or_panic(self, index)
     }
 }
 
-impl<'a, K, V, Gen, S> TryGetMut<&'a K> for GenMapOf<K, V, Gen, S>
+impl<'a, Q, K, V, Gen, S> TryGetMut<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized + Clone,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a K, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<Gen>>,
 {
-    fn try_get_mut(&mut self, index: &'a K) -> Result<&mut Self::Output, Self::Error>
+    fn try_get_mut(&mut self, index: &'a Q) -> Result<&mut Self::Output, Self::Error>
     {
         self.get_mut(index)
             .ok_or_else(|| MissingKey::new(index.clone()))
@@ -579,15 +585,16 @@ where
     }
 }
 
-impl<'a, K, V, Gen, S> Remove<&'a K> for GenMapOf<K, V, Gen, S>
+impl<'a, Q, K, V, Gen, S> Remove<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Remove<&'a K, Output = GenIDOf<Gen>>,
+    S: Remove<&'a Q, Output = GenIDOf<Gen>>,
 {
     type Output = V;
 
-    fn remove(&mut self, index: &'a K) -> Option<Self::Output>
+    fn remove(&mut self, index: &'a Q) -> Option<Self::Output>
     {
         let id = self.search.remove(index)?;
         let entry = self.values.remove(id).unwrap();

@@ -306,29 +306,31 @@ where
     fn len(&self) -> usize { self.values.len() }
 }
 
-impl<'a, K, Gen, S> Get<&'a K> for GenSetOf<K, Gen, S>
+impl<'a, Q, K, Gen, S> Get<&'a Q> for GenSetOf<K, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a K, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<Gen>>,
 {
     type Output = K;
 
-    fn get(&self, index: &'a K) -> Option<&Self::Output>
+    fn get(&self, index: &'a Q) -> Option<&Self::Output>
     {
         let id = *self.search.get(index)?;
         self.values.get(id)
     }
 }
 
-impl<'a, K, Gen, S> TryGet<&'a K> for GenSetOf<K, Gen, S>
+impl<'a, Q, K, Gen, S> TryGet<&'a Q> for GenSetOf<K, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized + Clone,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a K, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<Gen>>,
 {
-    type Error = MissingKey<K>;
-    fn try_get(&self, index: &'a K) -> Result<&Self::Output, Self::Error>
+    type Error = MissingKey<Q>;
+    fn try_get(&self, index: &'a Q) -> Result<&Self::Output, Self::Error>
     {
         self.get(index).ok_or_else(|| MissingKey::new(index.clone()))
     }
@@ -380,14 +382,15 @@ where
     }
 }
 
-impl<'a, K, Gen, S> Remove<&'a K> for GenSetOf<K, Gen, S>
+impl<'a, Q, K, Gen, S> Remove<&'a Q> for GenSetOf<K, Gen, S>
 where
-    K: Clone,
+    Q: ?Sized,
+    K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Remove<&'a K, Output = GenIDOf<Gen>>,
+    S: Remove<&'a Q, Output = GenIDOf<Gen>>,
 {
     type Output = ();
-    fn remove(&mut self, index: &'a K) -> Option<Self::Output>
+    fn remove(&mut self, index: &'a Q) -> Option<Self::Output>
     {
         let id = self.search.remove(index)?;
         self.values.remove(id).map(|_| ())
