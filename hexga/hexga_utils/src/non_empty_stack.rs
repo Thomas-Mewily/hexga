@@ -5,10 +5,6 @@ pub mod prelude
     pub use super::NonEmptyStack;
 }
 
-/*
-Todo: impl Truncate, Shrink,
-*/
-
 /// A stack that ALWAYS have at least one element.
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct NonEmptyStack<T>
@@ -469,6 +465,38 @@ impl<T> Reserve for NonEmptyStack<T>
     ) -> Result<(), std::collections::TryReserveError>
     {
         self.stack.try_reserve_exact(additional.saturating_sub(1))
+    }
+}
+
+impl<T> Truncate for NonEmptyStack<T>
+{
+    fn truncate(&mut self, len: usize)
+    {
+        if len >= self.len()
+        {
+            return;
+        }
+        if len <= 1
+        {
+            self.clear_and_keep_first();
+            return;
+        }
+
+        self.stack.truncate(len);
+        self.last = self.stack.pop().expect("should not by empty");
+    }
+}
+
+impl<T> Shrink for NonEmptyStack<T>
+{
+    fn shrink_to_fit(&mut self)
+    {
+        self.stack.shrink_to_fit();
+    }
+
+    fn shrink_to(&mut self, min_capacity: usize)
+    {
+        self.stack.shrink_to(min_capacity.saturating_sub(1));
     }
 }
 
