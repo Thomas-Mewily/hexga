@@ -219,7 +219,7 @@ impl<K, Gen, S> WithCapacity for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: WithCapacity,
+    S: WithCapacity  + Length,
     <S as WithCapacity>::Param: Default,
 {
     type Param = ();
@@ -538,8 +538,8 @@ where
         self.into_iter().collect()
     }
 }
-impl<I, K, S> CollectToGenSet<K, S> for I 
-where 
+impl<I, K, S> CollectToGenSet<K, S> for I
+where
     I: IntoIterator<Item = K>,
     K: Clone,
 {}
