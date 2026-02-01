@@ -48,7 +48,7 @@ pub struct GenMapOf<K,V,Gen=Generation,S=HashMap<K,V>>
     Gen: IGeneration
 {
     values: GenSeq<Entry<K,V>,Gen>,
-    search: S, // HashMap<K,GenMapID>
+    search: S, // Map<K,GenMapID>
 }
 
 impl<K,V,Gen,S> PartialEq for GenMapOf<K,V,Gen,S>
@@ -233,29 +233,37 @@ impl<K,V,Gen,S> GenMapOf<K,V,Gen,S>
     }
 
     #[inline(always)]
-    pub fn insert(&mut self, key: K, value: V) -> (GenIDOf<Gen>, Option<V>)
+    pub fn insert<Q>(&mut self, key: K, value: V) -> (GenIDOf<Gen>, Option<V>)
     where
-        S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+        K: Borrow<Q>,
+        Q: ?Sized + Eq,
+        S: for<'a> Remove<&'a Q, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
     {
         self.insert_cyclic(key, |_| value)
     }
 
     #[track_caller]
-    pub fn insert_cyclic<F>(&mut self, key: K, init: F) -> (GenIDOf<Gen>, Option<V>)
+    pub fn insert_cyclic<'s, F>(&'s mut self, key: K, init: F) -> (GenIDOf<Gen>, Option<V>)
     where
         F: FnOnce(GenIDOf<Gen>) -> V,
-        S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+        S: Insert<K, GenIDOf<Gen>>,
     {
-        // Remove existing entry if it exists
-        let old = self
-            .search
-            .remove(&key)
-            .and_then(|old_id| self.values.remove(old_id))
-            .map(|old_entry| old_entry.value);
-
-        let id = self.values.insert_cyclic(|id| Entry { key: key.clone(), value: init(id) });
-        self.search.insert(key, id);
-        (id, old)
+        let old_id = self.search.insert(key.clone(), GenIDOf::NULL);
+        match old_id
+        {
+            Some(id) =>
+            {
+                let old_value = std::mem::replace(&mut self.values[id].value, init(id));
+                self.search.insert(key, id);
+                (id, Some(old_value))
+            },
+            None =>
+            {
+                let id = self.values.insert_cyclic(|id| Entry::new(key.clone(), init(id)));
+                self.search.insert(key, id);
+                (id, None)
+            },
+        }
     }
 
     #[inline(always)]
@@ -611,6 +619,21 @@ where
     }
 }
 
+impl<K, V, Q, Gen, S> Insert<K, V> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    K: Borrow<Q>,
+    Q: ?Sized + Eq,
+    S: for<'a> Remove<&'a Q, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+{
+    fn insert(&mut self, key: K, value: V) -> Option<V>
+    {
+        let (_, old) = self.insert_cyclic(key, |_| value);
+        old
+    }
+}
+/*
 impl<K, V, Gen, S> Insert<K, V> for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
@@ -623,6 +646,7 @@ where
         old
     }
 }
+*/
 
 impl<'a, Q, K, V, Gen, S> Remove<&'a Q> for GenMapOf<K, V, Gen, S>
 where
