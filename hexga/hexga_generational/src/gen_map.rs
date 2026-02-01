@@ -248,14 +248,6 @@ impl<K,V,Gen,S> GenMapOf<K,V,Gen,S>
         <Self as Remove<Idx>>::remove(self, index)
     }
 
-    #[inline(always)]
-    pub fn truncate(&mut self, len: usize)
-    where
-        Self: Truncate,
-    {
-        <Self as Truncate>::truncate(self, len)
-    }
-
     pub fn iter(&self) -> Iter<'_, K, V, Gen> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_, K, V, Gen> { self.into_iter() }
 
