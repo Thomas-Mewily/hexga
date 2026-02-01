@@ -62,6 +62,29 @@ where
     }
 }
 
+impl<K, Gen, S> From<GenSeq<K, Gen>> for GenSetOf<K, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Default + Insert<K, GenIDOf<Gen>>,
+{
+    fn from(values: GenSeq<K, Gen>) -> Self
+    {
+        let mut search = S::default();
+
+        for (id, key) in values.iter()
+        {
+            let prev = search.insert(key.clone(), id);
+            assert!(
+                prev.is_none(),
+                "duplicate key found during GenSetOf conversion from GenSeq"
+            );
+        }
+
+        Self { values, search }
+    }
+}
+
 #[cfg(feature = "serde")]
 impl<'de, K, Gen, St> Deserialize<'de> for GenSetOf<K, Gen, St>
 where
@@ -145,6 +168,46 @@ where
         S: Default,
     {
         Self::___()
+    }
+
+    #[inline(always)]
+    pub fn len(&self) -> usize
+    where
+        Self: Length,
+    {
+        <Self as Length>::len(self)
+    }
+
+    #[inline(always)]
+    pub fn get<Idx>(&self, index: Idx) -> Option<&K>
+    where
+        Self: Get<Idx, Output = K>,
+    {
+        <Self as Get<Idx>>::get(self, index)
+    }
+
+    #[inline(always)]
+    pub fn try_get<Idx>(&self, index: Idx) -> Result<&K, <Self as TryGet<Idx>>::Error>
+    where
+        Self: TryGet<Idx, Output = K>,
+    {
+        <Self as TryGet<Idx>>::try_get(self, index)
+    }
+
+    #[inline(always)]
+    pub fn insert(&mut self, key: K) -> Option<()>
+    where
+        Self: Insert<K, ()>,
+    {
+        <Self as Insert<K, ()>>::insert(self, key, ())
+    }
+
+    #[inline(always)]
+    pub fn remove<Idx>(&mut self, index: Idx) -> Option<<Self as Remove<Idx>>::Output>
+    where
+        Self: Remove<Idx>,
+    {
+        <Self as Remove<Idx>>::remove(self, index)
     }
 
     pub fn iter(&self) -> Iter<'_, K, Gen> { self.into_iter() }
@@ -356,7 +419,7 @@ where
     {
         for k in iter
         {
-            let _ = self.insert(k, ());
+            let _ = Insert::insert(self, k, ());
         }
     }
 }
@@ -375,31 +438,6 @@ where
     }
 }
 
-impl<K, Gen, S> Truncate for GenSetOf<K, Gen, S>
-where
-    K: Clone,
-    Gen: IGeneration,
-    S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
-{
-    fn truncate(&mut self, len: usize)
-    {
-        let target = len;
-        while self.values.len() > target
-        {
-            let storage: &[crate::gen_seq::Entry<K, Gen>] = self.values.inner();
-            let entry_len = storage.len();
-            for idx in (0..entry_len).rev()
-            {
-                let id = self.values.index_to_id(idx);
-                if let Some(key) = self.values.remove(id)
-                {
-                    self.search.remove(&key);
-                    break;
-                }
-            }
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct IntoIter<K, Gen>
