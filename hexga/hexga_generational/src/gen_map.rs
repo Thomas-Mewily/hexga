@@ -6,8 +6,9 @@ pub mod prelude
     pub use super::{CollectToGenMap, GenHashMap, GenBTreeMap};
 }
 
-pub type GenHashMap<K,V,S=RandomState> = GenMapOf<K,V,Generation,S>;
-pub type GenBTreeMap<K,V> = GenMapOf<K,V,Generation,BTreeMap<K,V>>;
+pub type GenHashMap<K,V> = GenHashMapOf<K,V,RandomState>;
+pub type GenHashMapOf<K,V,S=RandomState> = GenMapOf<K,V,Generation,HashMap<K,GenIDOf<Generation>,S>>;
+pub type GenBTreeMap<K,V> = GenMapOf<K,V,Generation,BTreeMap<K,GenIDOf<Generation>>>;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Default, Clone, Copy, PartialEq, Eq, Hash)]
@@ -233,11 +234,9 @@ impl<K,V,Gen,S> GenMapOf<K,V,Gen,S>
     }
 
     #[inline(always)]
-    pub fn insert<Q>(&mut self, key: K, value: V) -> (GenIDOf<Gen>, Option<V>)
+    pub fn insert(&mut self, key: K, value: V) -> (GenIDOf<Gen>, Option<V>)
     where
-        K: Borrow<Q>,
-        Q: ?Sized + Eq,
-        S: for<'a> Remove<&'a Q, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+        S: Insert<K, GenIDOf<Gen>>,
     {
         self.insert_cyclic(key, |_| value)
     }
@@ -266,33 +265,39 @@ impl<K,V,Gen,S> GenMapOf<K,V,Gen,S>
         }
     }
 
+    /*
     #[inline(always)]
-    pub fn try_insert_cyclic<F>(&mut self, key: K, init: F) -> Result<(GenIDOf<Gen>, Option<V>), ()>
+    pub fn try_insert_cyclic<'s, F>(&'s mut self, key: K, init: F) -> Result<(GenIDOf<Gen>, Option<V>), ()>
     where
         F: FnOnce(GenIDOf<Gen>) -> V,
-        S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+        S: Insert<K, GenIDOf<Gen>>,
     {
-        // Remove existing entry if it exists
-        let old = self
-            .search
-            .remove(&key)
-            .and_then(|old_id| self.values.remove(old_id))
-            .map(|old_entry| old_entry.value);
-
-        // For now, we'll use a simplified approach that assumes success
-        // In a full implementation, this would need proper error handling
-        let id = self.values.insert_cyclic(|id| Entry { key: key.clone(), value: init(id) });
-        self.search.insert(key, id);
-        Ok((id, old))
+        let old_id = self.search.insert(key.clone(), GenIDOf::NULL);
+        match old_id
+        {
+            Some(id) =>
+            {
+                let old_value = std::mem::replace(&mut self.values[id].value, init(id));
+                self.search.insert(key, id);
+                Ok((id, Some(old_value)))
+            },
+            None =>
+            {
+                let id = self.values.insert_cyclic(|id| Entry::new(key.clone(), init(id)));
+                self.search.insert(key, id);
+                Ok((id, None))
+            },
+        }
     }
 
     #[inline(always)]
     pub fn try_insert(&mut self, key: K, value: V) -> Result<(GenIDOf<Gen>, Option<V>), ()>
     where
-        S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+        S: Insert<K, GenIDOf<Gen>>,
     {
         self.try_insert_cyclic(key, |_| value)
     }
+    */
 
     #[inline(always)]
     pub fn remove<Idx>(&mut self, index: Idx) -> Option<V>
@@ -619,13 +624,11 @@ where
     }
 }
 
-impl<K, V, Q, Gen, S> Insert<K, V> for GenMapOf<K, V, Gen, S>
+impl<K, V, Gen, S> Insert<K, V> for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    K: Borrow<Q>,
-    Q: ?Sized + Eq,
-    S: for<'a> Remove<&'a Q, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+    S: Insert<K, GenIDOf<Gen>>,
 {
     fn insert(&mut self, key: K, value: V) -> Option<V>
     {
@@ -685,7 +688,7 @@ impl<K, V, Gen, S> FromIterator<(K, V)> for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: Default + Insert<K, GenIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    S: Default + Insert<K, GenIDOf<Gen>>,
     Self: WithCapacity, <Self as WithCapacity>::Param: Default
 {
     fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self
@@ -718,7 +721,7 @@ impl<K, V, Gen, S> Extend<(K, V)> for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: Insert<K, GenIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    S: Insert<K, GenIDOf<Gen>>,
     Self: Reserve,
 {
     fn extend<I: IntoIterator<Item = (K, V)>>(&mut self, iter: I)
@@ -911,7 +914,7 @@ where
     where
         GenMapOf<K, V, Generation, S>: WithCapacity,
         <GenMapOf<K, V, Generation, S> as WithCapacity>::Param: Default,
-        S: Default + Insert<K, GenIDOf<Generation>> + for<'a> Remove<&'a K, Output = GenIDOf<Generation>>,
+        S: Default + Insert<K, GenIDOf<Generation>>,
     {
         self.into_iter().collect()
     }

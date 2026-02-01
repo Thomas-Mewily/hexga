@@ -260,4 +260,7 @@ fn gen_vec_view()
     //gen_vec.get_entry_from_index(0);
 }
 
-fn main() { gen_vec_view() }
+fn main()
+{
+    gen_vec_view();
+}

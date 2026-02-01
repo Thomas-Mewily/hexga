@@ -5,6 +5,7 @@ pub trait Insert<K,V=()> : Collection
 {
     /// Insert the (key, value), and return the old value
     fn insert(&mut self, key: K, value: V) -> Option<V>;
+    // -> Option<V> + Self::Extra; // ex; passing an GenID ??
 }
 /*
 pub trait TryInsert<K,V=()> : Insert<K,V>
