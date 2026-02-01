@@ -158,6 +158,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     /// vec.push(2);
     /// assert_eq!(vec.len(), 2);
     /// ```
+    #[track_caller]
     pub fn push(&mut self, value: T)
     {
         if self.len >= CAP
@@ -1390,6 +1391,7 @@ impl<T, const CAP: usize> AsMut<[T]> for ArrayVec<T, CAP>
 impl<T, const CAP: usize> Push<T> for ArrayVec<T, CAP>
 {
     type Output=usize;
+    #[track_caller]
     fn push(&mut self, value: T) -> Self::Output {
         let len = self.len();
         self.push(value);

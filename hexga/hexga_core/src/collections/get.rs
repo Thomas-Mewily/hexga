@@ -31,14 +31,14 @@ pub trait Get<Idx>: Collection
         self.get(index).expect("invalid index")
     }
 
-    fn contains(&self, index: Idx) -> bool { self.get(index).is_some() }
-
     /// True if `get(index)` return [Some], false otherwise.
     #[inline(always)]
     fn is_index_valid(&self, index: Idx) -> bool { self.get(index).is_some() }
     /// True if `get(index)` return [None], false otherwise.
     #[inline(always)]
     fn is_index_invalid(&self, index: Idx) -> bool { self.get(index).is_none() }
+
+    fn contains(&self, index: Idx) -> bool { self.get(index).is_some() }
 }
 
 pub trait TryGet<Idx>: Get<Idx>
@@ -790,10 +790,14 @@ where
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub struct MissingKey<K>
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
+pub struct MissingKey<K=()>
 {
     pub key: K,
+}
+impl<K> From<K> for MissingKey<K>
+{
+    fn from(key: K) -> Self { MissingKey { key }}
 }
 impl<K> MissingKey<K>
 {

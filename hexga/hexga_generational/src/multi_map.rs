@@ -196,7 +196,8 @@ where
     K: Deserialize<'de> + Eq + Hash + Clone,
     V: Deserialize<'de>,
     Gen: IGeneration + Deserialize<'de>,
-    S: BuildHasher + Default,
+    S: BuildHasher + Default + WithCapacity + Deserialize<'de>,
+    <S as WithCapacity>::Param : Default,
     GenSeq::<Entry<K, V, Gen, S>, Gen>: Deserialize<'de>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

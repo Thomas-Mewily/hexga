@@ -20,6 +20,7 @@ fn main()
     let mut entities = [Entity { hp: 42 }, Entity { hp: 99 }].to_genvec();
     println!("{:?}", entities);
 
+
     increase_hp(entities.as_mut());
     println!("{:?}", entities);
 }

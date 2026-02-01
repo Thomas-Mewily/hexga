@@ -97,6 +97,7 @@ pub struct DamageOf2<T>
     magic: T,
 }
 
+
 #[math_vec]
 pub struct DamageArray<T, const N: usize>
 {

@@ -698,6 +698,7 @@ where
         self.try_insert_cyclic(|_| value)
     }
 
+    #[track_caller]
     pub fn insert_cyclic<F>(&mut self, init: F) -> GenIDOf<Gen>
     where
         F: FnOnce(GenIDOf<Gen>) -> T,
@@ -739,6 +740,7 @@ where
     }
 
     #[inline(always)]
+    #[track_caller]
     pub fn insert(&mut self, value: T) -> GenIDOf<Gen>
     where
         C: Push<Entry<T, Gen>>,
@@ -1336,6 +1338,7 @@ where
     C: Push<Entry<T, Gen>>,
 {
     type Output = GenIDOf<Gen>;
+    #[track_caller]
     fn push(&mut self, value: T) -> Self::Output { self.insert(value) }
 }
 impl<T, Gen, C> TryPush<T> for GenSeq<T, Gen, C>
@@ -1493,7 +1496,7 @@ pub enum GenVecError<T, Gen>
 where
     Gen: IGeneration,
 {
-    IndexOutOfRange(IndexOutOfBounds),
+    IndexOutOfBounds(IndexOutOfBounds),
     WrongGeneration(GenVecWrongGeneration<T, Gen>),
     /// The entry at this index is saturated
     Saturated(usize),
@@ -1507,7 +1510,7 @@ where
     {
         match (self, other)
         {
-            (Self::IndexOutOfRange(l0), Self::IndexOutOfRange(r0)) => l0 == r0,
+            (Self::IndexOutOfBounds(l0), Self::IndexOutOfBounds(r0)) => l0 == r0,
             (Self::WrongGeneration(l0), Self::WrongGeneration(r0)) => l0 == r0,
             _ => false,
         }
@@ -1522,7 +1525,7 @@ where
     {
         match self
         {
-            GenVecError::IndexOutOfRange(v) => v.hash(state),
+            GenVecError::IndexOutOfBounds(v) => v.hash(state),
             GenVecError::WrongGeneration(v) => v.hash(state),
             GenVecError::Saturated(v) => v.hash(state),
         }
@@ -1539,7 +1542,7 @@ where
     {
         match self
         {
-            GenVecError::IndexOutOfRange(v) => Self::IndexOutOfRange(v.clone()),
+            GenVecError::IndexOutOfBounds(v) => Self::IndexOutOfBounds(v.clone()),
             GenVecError::WrongGeneration(v) => Self::WrongGeneration(v.clone()),
             GenVecError::Saturated(v) => Self::Saturated(v.clone()),
         }
@@ -1554,7 +1557,7 @@ where
     {
         match self
         {
-            GenVecError::IndexOutOfRange(arg0) =>
+            GenVecError::IndexOutOfBounds(arg0) =>
             {
                 f.debug_tuple("IndexOutOfRange").field(arg0).finish()
             }
@@ -1698,7 +1701,7 @@ where
                     }
                 }
             },
-            None => Err(GenVecError::IndexOutOfRange(IndexOutOfBounds::new(
+            None => Err(GenVecError::IndexOutOfBounds(IndexOutOfBounds::new(
                 id.index(),
                 0..self.len(),
             ))),
@@ -1855,7 +1858,7 @@ where
                     }
                 }
             }
-            None => Err(GenVecError::IndexOutOfRange(IndexOutOfBounds::new(
+            None => Err(GenVecError::IndexOutOfBounds(IndexOutOfBounds::new(
                 id.index(),
                 0..len,
             ))),
