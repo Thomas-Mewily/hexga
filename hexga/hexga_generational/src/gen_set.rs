@@ -3,7 +3,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{GenBTreeSet, GenHashSet};
+    pub use super::{CollectToGenSet, GenBTreeSet, GenHashSet};
 }
 
 pub type GenHashSet<K, S = RandomState> = GenSetOf<K, Generation, HashMap<K, GenIDOf<Generation>, S>>;
