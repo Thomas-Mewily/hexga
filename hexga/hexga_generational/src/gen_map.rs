@@ -59,6 +59,8 @@ pub struct GenMapOf<K,V,Gen=Generation,S=HashMap<K,V>>
     values: GenSeq<Entry<K,V>,Gen>,
     search: S, // HashMap<K,GenMapID>
 }
+
+
 impl<K,V,Gen,S> AsRef<GenSeq<Entry<K,V>,Gen>> for GenMapOf<K,V,Gen,S>
 where
     K: Clone,
@@ -146,14 +148,16 @@ impl<K,V,Gen,S> Reserve for GenMapOf<K,V,Gen,S>
 
     fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> {
         let total = self.capacity() + additional;
-        self.values.try_reserve_total(total)?;
-        self.search.try_reserve_total(total)
+        let r = self.values.try_reserve_total(total);
+        self.search.try_reserve_total(total)?;
+        r
     }
 
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> {
         let total = self.capacity() + additional;
-        self.values.try_reserve_total_exact(total)?;
-        self.search.try_reserve_total_exact(total)
+        let r = self.values.try_reserve_total_exact(total);
+        self.search.try_reserve_total_exact(total)?;
+        r
     }
 }
 

@@ -1283,6 +1283,13 @@ impl<T, const CAP: usize> Capacity for ArrayVec<T, CAP>
     fn capacity(&self) -> usize { self.capacity() }
 }
 
+impl<T, const CAP: usize> Clear for ArrayVec<T, CAP>
+{
+    fn clear(&mut self) {
+        self.clear();
+    }
+}
+
 impl<T, const CAP: usize> Truncate for ArrayVec<T, CAP>
 {
     fn truncate(&mut self, len: usize) {

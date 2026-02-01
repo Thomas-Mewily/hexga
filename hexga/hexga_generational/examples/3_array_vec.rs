@@ -17,8 +17,12 @@ fn increase_hp<'a>(entities: GenViewMut<'a, Entity>)
 
 fn main()
 {
-    let mut entities = GenArrayVec::<Entity, 10>::new();
+    let mut entities = GenArrayVec::<Entity, 4>::new();
     entities.push(Entity { hp: 42 });
+    entities.push(Entity { hp: 99 });
+    entities.push(Entity { hp: 99 });
+    entities.push(Entity { hp: 99 });
+    entities.push(Entity { hp: 99 });
     entities.push(Entity { hp: 99 });
     println!("{:?}", entities);
 

@@ -14,7 +14,7 @@ pub type MultiHashMapID = MultiHashMapIDOf<Generation>;
 
 
 #[derive(Clone)]
-pub struct Entry<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
+pub struct Entry<K,V,Gen=Generation,S=std::hash::RandomState> where Gen: IGeneration, S:BuildHasher
 {
     keys: Vec<K>,
     id: MultiHashMapIDOf<Gen>,
@@ -191,21 +191,22 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<'de, K, V, Gen, S> Deserialize<'de> for MultiHashMapOf<K, V, Gen, S>
+impl<'de, K, V, Gen> Deserialize<'de> for MultiHashMapOf<K, V, Gen>
 where
     K: Deserialize<'de> + Eq + Hash + Clone,
     V: Deserialize<'de>,
     Gen: IGeneration + Deserialize<'de>,
-    S: BuildHasher + Default + WithCapacity + Deserialize<'de>,
-    <S as WithCapacity>::Param : Default,
-    GenSeq::<Entry<K, V, Gen, S>, Gen>: Deserialize<'de>
+    //S: BuildHasher + Default + WithCapacity + Deserialize<'de>,
+    //<S as WithCapacity>::Param : Default,
+    GenSeq::<Entry<K, V, Gen>, Gen>: Deserialize<'de>
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let mut values = GenSeq::<Entry<K, V, Gen, S>, Gen>::deserialize(deserializer)?;
-        let mut search = HashMap::<K, GenIDOf<Gen>, S>::with_capacity(values.len());
+        let mut values = GenSeq::<Entry<K, V, Gen>, Gen>::deserialize(deserializer)?;
+        // HashMap::<K, GenIDOf<Gen>>::with_capacity is only available for S=std::hash::RandomState
+        let mut search = HashMap::<K, GenIDOf<Gen>>::with_capacity(values.len());
 
         for (id, entry) in values.iter_mut()
         {
