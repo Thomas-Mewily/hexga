@@ -6,7 +6,7 @@ pub mod prelude
 }
 
 /*
-Todo: impl Truncate
+Todo: impl Truncate, Shrink,
 */
 
 /// A stack that ALWAYS have at least one element.
