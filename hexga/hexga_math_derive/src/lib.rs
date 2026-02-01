@@ -288,7 +288,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     {
                         type WithType<T2> = #current_name<T2,N>;
                         fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
-                            Self::WithType::from_array(<[T;N] as Map>::map(self.into(), f))
+                            Self::WithType::from_array(<[T;N] as #crate_ident::map::Map>::map(self.into(), f))
                         }
                     }
                     impl<T, const N : usize> #crate_ident::map::MapWith for #current_name<T,N>
@@ -661,7 +661,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     {
                         type WithType<T2> = #current_name<T2>;
                         fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
-                            Self::WithType::from_array(<[T;#dim] as Map>::map(self.into(), f))
+                            Self::WithType::from_array(<[T;#dim] as #crate_ident::map::Map>::map(self.into(), f))
                         }
                     }
                     impl<T> #crate_ident::map::MapWith for #current_name<T>

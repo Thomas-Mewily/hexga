@@ -32,6 +32,8 @@ pub mod gen_map;
 pub mod gen_set;
 
 /*
+// Todo: update it
+// Not generic over the container type
 pub mod multi_map;
 pub mod table;
 */

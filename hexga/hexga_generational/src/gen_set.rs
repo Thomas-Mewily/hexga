@@ -417,10 +417,13 @@ where
     K: Clone,
     Gen: IGeneration,
     S: Insert<K, GenIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    Self: Reserve,
 {
     fn extend<I: IntoIterator<Item = K>>(&mut self, iter: I)
     {
-        for k in iter
+        let it = iter.into_iter();
+        self.reserve(it.size_hint().0);
+        for k in it
         {
             let _ = Insert::insert(self, k, ());
         }
@@ -432,10 +435,12 @@ where
     K: Clone,
     Gen: IGeneration,
     S: Default + Insert<K, GenIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    Self: WithCapacity, <Self as WithCapacity>::Param: Default
 {
     fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> Self
     {
-        let mut out = Self::default();
+        let iter = iter.into_iter();
+        let mut out = Self::with_capacity(iter.size_hint().0);
         out.extend(iter);
         out
     }
@@ -519,3 +524,22 @@ where
         Iter { iter: self.values.iter() }
     }
 }
+
+pub trait CollectToGenSet<K, S = RandomState>: Sized + IntoIterator<Item = K>
+where
+    K: Clone,
+{
+    fn to_genset(self) -> GenSetOf<K, Generation, S>
+    where
+        GenSetOf<K, Generation, S>: WithCapacity,
+        <GenSetOf<K, Generation, S> as WithCapacity>::Param: Default,
+        S: Default + Insert<K, GenIDOf<Generation>> + for<'a> Remove<&'a K, Output = GenIDOf<Generation>>,
+    {
+        self.into_iter().collect()
+    }
+}
+impl<I, K, S> CollectToGenSet<K, S> for I 
+where 
+    I: IntoIterator<Item = K>,
+    K: Clone,
+{}

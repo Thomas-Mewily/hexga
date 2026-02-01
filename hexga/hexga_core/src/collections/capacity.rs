@@ -5,7 +5,7 @@ pub trait Capacity: Collection
     fn capacity(&self) -> usize;
 }
 
-pub trait WithCapacity: Capacity
+pub trait WithCapacity: Capacity + Reserve
 {
     type Param;
     fn with_capacity_and_param(capacity: usize, param: Self::Param) -> Self;

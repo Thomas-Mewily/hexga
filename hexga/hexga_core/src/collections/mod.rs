@@ -2,9 +2,30 @@ use super::*;
 #[cfg(feature = "std")]
 use std::{
     collections::*,
+    //hash::RandomState,
     ffi::{OsStr, OsString},
     path::{Path, PathBuf},
 };
+
+/*
+#[cfg(feature = "std")]
+mod default_associatif
+{
+    use super::*;
+
+    pub type Map<K,V> = HashMap<K,V>;
+    pub type Set<T> = HashSet<T>;
+}
+#[cfg(not(feature = "std"))]
+mod default_associatif
+{
+    use super::*;
+
+    pub type Map<K,V> = alloc::collections::btree::map::BTreeMap<K,V>;
+    pub type Set<T> = alloc::collections::btree::map::BTreeSet<T>;
+}
+pub use default_associatif::*;
+*/
 
 use core::ops::Range;
 

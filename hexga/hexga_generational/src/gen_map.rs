@@ -656,10 +656,13 @@ where
     K: Clone,
     Gen: IGeneration,
     S: Insert<K, GenIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    Self: Reserve,
 {
     fn extend<I: IntoIterator<Item = (K, V)>>(&mut self, iter: I)
     {
-        for (k, v) in iter
+        let it = iter.into_iter();
+        self.reserve(it.size_hint().0);
+        for (k, v) in it
         {
             Insert::insert(self, k, v);
         }
@@ -836,3 +839,22 @@ where
         }
     }
 }
+
+pub trait CollectToGenMap<K, V, S = RandomState>: Sized + IntoIterator<Item = (K, V)>
+where
+    K: Clone,
+{
+    fn to_genmap(self) -> GenMapOf<K, V, Generation, S>
+    where
+        GenMapOf<K, V, Generation, S>: WithCapacity,
+        <GenMapOf<K, V, Generation, S> as WithCapacity>::Param: Default,
+        S: Default + Insert<K, GenIDOf<Generation>> + for<'a> Remove<&'a K, Output = GenIDOf<Generation>>,
+    {
+        self.into_iter().collect()
+    }
+}
+impl<I, K, V, S> CollectToGenMap<K, V, S> for I
+where
+    I: IntoIterator<Item = (K, V)>,
+    K: Clone,
+{}
