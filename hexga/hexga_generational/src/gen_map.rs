@@ -19,6 +19,7 @@ same for set...
 pub type GenMapID = GenMapIDOf<Generation>;
 pub type GenMapIDOf<G> = GenIDOf<G>;
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Entry<K,V>
 {
@@ -50,7 +51,7 @@ impl<K,V> Entry<K,V>
 }
 
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Clone)]
 pub struct GenMapOf<K,V,Gen=Generation,S=HashMap<K,V>>
     where
     K: Clone,
@@ -59,6 +60,91 @@ pub struct GenMapOf<K,V,Gen=Generation,S=HashMap<K,V>>
     values: GenSeq<Entry<K,V>,Gen>,
     search: S, // HashMap<K,GenMapID>
 }
+
+impl<K,V,Gen,S> PartialEq for GenMapOf<K,V,Gen,S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    K: PartialEq,
+    V: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.values == other.values
+    }
+}
+
+impl<K,V,Gen,S> Eq for GenMapOf<K,V,Gen,S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    K: Eq,
+    V: Eq,
+{
+
+}
+
+impl<K,V,Gen,S> Hash for GenMapOf<K,V,Gen,S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    K: Hash,
+    V: Hash,
+{
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.values.hash(state);
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<K, V, Gen, St> Serialize for GenMapOf<K, V, Gen, St>
+where
+    K: Clone,
+    Gen: IGeneration,
+    K: Serialize,
+    V: Serialize,
+    Gen: Serialize,
+    GenSeq<Entry<K, V>, Gen>: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.values.serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, K, V, Gen, St> Deserialize<'de> for GenMapOf<K, V, Gen, St>
+where
+    K: Clone,
+    Gen: IGeneration,
+    K: Deserialize<'de>,
+    V: Deserialize<'de>,
+    Gen: Deserialize<'de>,
+    St: Default + Insert<K, GenMapIDOf<Gen>>,
+    GenSeq<Entry<K, V>, Gen>: Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let values = GenSeq::<Entry<K, V>, Gen>::deserialize(deserializer)?;
+        let mut search = St::default();
+
+        for (id, entry) in values.iter()
+        {
+            if search.insert(entry.key.clone(), id).is_some()
+            {
+                return Err(serde::de::Error::custom(
+                    "duplicate key found during GenMapOf deserialization",
+                ));
+            }
+        }
+
+        Ok(Self { values, search })
+    }
+}
+
 
 
 impl<K,V,Gen,S> AsRef<GenSeq<Entry<K,V>,Gen>> for GenMapOf<K,V,Gen,S>
@@ -370,6 +456,39 @@ where
         let entry = self.values.remove(index)?;
         self.search.remove(&entry.key);
         Some(entry.value)
+    }
+}
+
+impl<K, V, Gen, S> FromIterator<(K, V)> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Default + Insert<K, GenMapIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenMapIDOf<Gen>>,
+    Self: WithCapacity, <Self as WithCapacity>::Param: Default
+{
+    fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self
+    {
+        let iter = iter.into_iter();
+        let mut out = Self::with_capacity(iter.size_hint().0);
+        out.extend(iter);
+        out
+    }
+}
+
+impl<K, V, Gen, S> From<GenSeq<Entry<K, V>, Gen>> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Default + Insert<K, GenMapIDOf<Gen>>
+{
+    fn from(values: GenSeq<Entry<K, V>, Gen>) -> Self
+    {
+        let mut search = S::default();
+        for (id, entry) in values.iter()
+        {
+            search.insert(entry.key.clone(), id);
+        }
+        Self { values, search }
     }
 }
 

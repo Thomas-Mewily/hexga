@@ -925,7 +925,7 @@ where
     fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
     {
         let it = iter.into_iter();
-        let mut values = C::with_capacity(it.size_hint().1.unwrap_or(0));
+        let mut values = C::with_capacity(it.size_hint().0);
 
         let mut len = 0;
         for v in it

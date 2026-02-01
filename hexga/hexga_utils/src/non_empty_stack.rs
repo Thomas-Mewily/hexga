@@ -5,6 +5,10 @@ pub mod prelude
     pub use super::NonEmptyStack;
 }
 
+/*
+Todo: impl Truncate
+*/
+
 /// A stack that ALWAYS have at least one element.
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct NonEmptyStack<T>
