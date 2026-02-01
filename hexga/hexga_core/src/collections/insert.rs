@@ -29,8 +29,7 @@ impl<K,S> Insert<K,()> for HashSet<K,S>
     S: BuildHasher
 {
     fn insert(&mut self, key: K, _value: ()) -> Option<()> {
-        self.insert(key);
-        Some(())
+        (!self.insert(key)).then_some(())
     }
 }
 
@@ -47,6 +46,6 @@ impl<K> Insert<K,()> for BTreeSet<K>
     K: Ord,
 {
     fn insert(&mut self, key: K, _value: ()) -> Option<()> {
-        self.insert(key); Some(())
+        (!self.insert(key)).then_some(())
     }
 }

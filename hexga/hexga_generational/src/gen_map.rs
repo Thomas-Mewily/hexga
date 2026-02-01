@@ -598,7 +598,7 @@ where
     fn remove(&mut self, index: &'a K) -> Option<Self::Output>
     {
         let id = self.search.remove(index)?;
-        let entry = self.values.remove(id)?;
+        let entry = self.values.remove(id).unwrap();
         Some(entry.value)
     }
 }
@@ -614,7 +614,7 @@ where
     fn remove(&mut self, index: GenIDOf<Gen>) -> Option<Self::Output>
     {
         let entry = self.values.remove(index)?;
-        self.search.remove(&entry.key);
+        self.search.remove(&entry.key).unwrap();
         Some(entry.value)
     }
 }
