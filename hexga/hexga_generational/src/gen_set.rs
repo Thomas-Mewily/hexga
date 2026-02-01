@@ -195,11 +195,57 @@ where
     }
 
     #[inline(always)]
-    pub fn insert(&mut self, key: K) -> Option<()>
+    pub fn insert(&mut self, key: K) -> (GenIDOf<Gen>, Option<()>)
     where
-        Self: Insert<K, ()>,
+        S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
     {
-        <Self as Insert<K, ()>>::insert(self, key, ())
+        self.insert_cyclic(key.clone(), |_| key)
+    }
+
+    #[track_caller]
+    pub fn insert_cyclic<F>(&mut self, key: K, init: F) -> (GenIDOf<Gen>, Option<()>)
+    where
+        F: FnOnce(GenIDOf<Gen>) -> K,
+        S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+    {
+        // Remove existing entry if it exists
+        let existed = self
+            .search
+            .remove(&key)
+            .and_then(|old_id| self.values.remove(old_id))
+            .is_some();
+
+        let id = self.values.insert_cyclic(|id| init(id));
+        self.search.insert(key, id);
+        (id, existed.then_some(()))
+    }
+
+    #[inline(always)]
+    pub fn try_insert_cyclic<F>(&mut self, key: K, init: F) -> Result<(GenIDOf<Gen>, Option<()>), ()>
+    where
+        F: FnOnce(GenIDOf<Gen>) -> K,
+        S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+    {
+        // Remove existing entry if it exists
+        let existed = self
+            .search
+            .remove(&key)
+            .and_then(|old_id| self.values.remove(old_id))
+            .is_some();
+
+        // For now, we'll use a simplified approach that assumes success
+        // In a full implementation, this would need proper error handling
+        let id = self.values.insert_cyclic(|id| init(id));
+        self.search.insert(key, id);
+        Ok((id, existed.then_some(())))
+    }
+
+    #[inline(always)]
+    pub fn try_insert(&mut self, key: K) -> Result<(GenIDOf<Gen>, Option<()>), ()>
+    where
+        S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
+    {
+        self.try_insert_cyclic(key.clone(), |_| key)
     }
 
     #[inline(always)]
@@ -367,18 +413,12 @@ impl<K, Gen, S> Insert<K, ()> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: Insert<K, GenIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>> + Insert<K, GenIDOf<Gen>>,
 {
     fn insert(&mut self, key: K, _value: ()) -> Option<()>
     {
-        let existed = self
-            .search
-            .remove(&key)
-            .and_then(|old_id| self.values.remove(old_id))
-            .is_some();
-        let id = self.values.insert(key.clone());
-        self.search.insert(key, id);
-        existed.then_some(())
+        let (_, old) = self.insert_cyclic(key.clone(), |_| key);
+        old
     }
 }
 
