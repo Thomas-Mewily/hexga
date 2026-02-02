@@ -41,7 +41,9 @@ impl<K,V> Entry<K,V>
     pub const fn new(key: K, value: V) -> Self { Self{ key, value }}
 }
 
-
+/// A Generational Map Collection.
+///
+/// [`GenID`] stay stable, even after inserting the same key twice.
 #[derive(Clone)]
 pub struct GenMapOf<K,V,Gen=Generation,S=HashMap<K,V>>
     where

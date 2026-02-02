@@ -10,6 +10,9 @@ pub type GenHashSet<K> = GenHashSetOf<K, RandomState>;
 pub type GenHashSetOf<K, S = RandomState> = GenSetOf<K, Generation, HashMap<K, GenIDOf<Generation>, S>>;
 pub type GenBTreeSet<K> = GenSetOf<K, Generation, BTreeMap<K, GenIDOf<Generation>>>;
 
+/// A Generational Set Collection.
+///
+/// [`GenID`] stay stable, even after inserting the same key twice.
 #[derive(Clone)]
 pub struct GenSetOf<K, Gen = Generation, S = HashMap<K, GenIDOf<Gen>>>
 where
