@@ -247,6 +247,34 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
     }
 }
 
+
+/*
+pub struct TypedIndex<T,Idx>
+{
+    pub index: Idx,
+    target: PhantomData<T>,
+}
+impl<T,Idx> Clone for TypedIndex<T,Idx>
+    where Idx: Clone
+{
+    fn clone(&self) -> Self { Self { index: self.index.clone(), target: PhantomData } }
+}
+// type parameter `C` must be covered by another type when it appears before the first local type ...
+impl<T,Idx,C> Index<TypedIndex<T,Idx>> for C
+    where C: Index<Idx,Output = T>
+{
+
+}
+impl<T,Idx,C> Get<TypedIndex<T,Idx>> for C
+    where C: Get<Idx,Output = T>
+{
+    type Output=T;
+    fn get(&self, index: TypedIndex<T,Idx>) -> Option<&Self::Output> { self.get(index.index) }
+}
+*/
+
+
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]

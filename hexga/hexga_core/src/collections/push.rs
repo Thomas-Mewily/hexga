@@ -1,5 +1,6 @@
 use super::*;
 
+
 pub trait Push<T>: Collection
 {
     type Output;
