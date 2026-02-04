@@ -22,14 +22,14 @@ fn main()
         eating: zombie,
     });
 
-    let vampire = entities.insert_cyclic(|id| Entity {
+    let ouroboros = entities.insert_cyclic(|id| Entity {
         name: "Ouroboros",
         eating: id,
     });
 
     if let Some(slime_entity) = entities.get_mut(slime)
     {
-        slime_entity.eating = vampire;
+        slime_entity.eating = ouroboros;
     }
 
     for (id, entity) in &entities
