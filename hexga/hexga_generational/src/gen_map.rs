@@ -466,14 +466,14 @@ where
     #[inline(always)]
     fn get(&self, index: UntypedGenIDOf<Gen>) -> Option<&Self::Output>
     {
-        self.values.get(index.typed()).map(|entry| &entry.value)
+        self.get(index.typed())
     }
 
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked(&self, index: UntypedGenIDOf<Gen>) -> &Self::Output
     {
-        &unsafe { self.values.get_unchecked(index.typed()) }.value
+        unsafe { self.get_unchecked(index.typed()) }
     }
 }
 impl<K, V, Gen, S> Get<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
@@ -552,7 +552,7 @@ where
 
     fn try_get(&self, index: UntypedGenIDOf<Gen>) -> Result<&Self::Output, Self::Error>
     {
-        self.values.try_get(index).map(|entry| &entry.value)
+        self.try_get(index.typed())
     }
 }
 

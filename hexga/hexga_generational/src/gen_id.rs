@@ -303,16 +303,7 @@ impl<T, Gen: IGeneration> Debug for GenIDOf<T,Gen>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
-        if self.is_null()
-        {
-            write!(f, "NULL")
-        }
-        else
-        {
-            f.debug_tuple("")
-                .field(&self.index())
-                .field(&GenerationDebug(self.generation()))
-                .finish()
-        }
+        // Todo: use a custom format with the TypeId<T> ?
+        self.untyped.fmt(f)
     }
 }

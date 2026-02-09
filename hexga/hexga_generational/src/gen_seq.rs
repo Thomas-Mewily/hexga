@@ -2018,6 +2018,7 @@ where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: IGeneration,
 {
+    #[inline(always)]
     fn try_get_mut(&mut self, id: UntypedGenIDOf<Gen>) -> Result<&mut Self::Output, Self::Error>
     {
         self.try_get_mut(id.typed::<T>())
@@ -2038,6 +2039,8 @@ where
         self.try_get_many_mut(indices.map(|idx| idx.typed::<T>()))
     }
 
+    #[track_caller]
+    #[inline(always)]
     fn get_many_mut<const N: usize>(
         &mut self,
         indices: [UntypedGenIDOf<Gen>; N],
@@ -2074,6 +2077,7 @@ where
     Gen: IGeneration,
 {
     type Output = T;
+    #[inline(always)]
     fn remove(&mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::Output> { self.remove(index.typed::<T>()) }
 }
 
