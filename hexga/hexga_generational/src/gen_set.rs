@@ -7,14 +7,14 @@ pub mod prelude
 }
 
 pub type GenHashSet<K> = GenHashSetOf<K, RandomState>;
-pub type GenHashSetOf<K, S = RandomState> = GenSetOf<K, Generation, HashMap<K, GenIDOf<Generation>, S>>;
-pub type GenBTreeSet<K> = GenSetOf<K, Generation, BTreeMap<K, GenIDOf<Generation>>>;
+pub type GenHashSetOf<K, S = RandomState> = GenSetOf<K, Generation, HashMap<K, GenIDOf<K,Generation>, S>>;
+pub type GenBTreeSet<K> = GenSetOf<K, Generation, BTreeMap<K, GenIDOf<K,Generation>>>;
 
 /// A Generational Set Collection.
 ///
 /// [`GenID`] stay stable, even after inserting the same key twice.
 #[derive(Clone)]
-pub struct GenSetOf<K, Gen = Generation, S = HashMap<K, GenIDOf<Gen>>>
+pub struct GenSetOf<K, Gen = Generation, S = HashMap<K, GenIDOf<K,Gen>>>
 where
     K: Clone,
     Gen: IGeneration,
@@ -70,7 +70,7 @@ impl<K, Gen, S> From<GenSeq<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: Default + Insert<K, GenIDOf<Gen>>,
+    S: Default + Insert<K, GenIDOf<K,Gen>>,
 {
     fn from(values: GenSeq<K, Gen>) -> Self
     {
@@ -96,7 +96,7 @@ where
     Gen: IGeneration,
     K: Deserialize<'de>,
     Gen: Deserialize<'de>,
-    St: Default + Insert<K, GenIDOf<Gen>>,
+    St: Default + Insert<K, GenIDOf<K,Gen>>,
     GenSeq<K, Gen>: Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -199,9 +199,9 @@ where
     }
 
     #[inline(always)]
-    pub fn insert(&mut self, key: K) -> (GenIDOf<Gen>, bool)
+    pub fn insert(&mut self, key: K) -> (GenIDOf<K,Gen>, bool)
     where
-        S: Insert<K, GenIDOf<Gen>>,
+        S: Insert<K, GenIDOf<K,Gen>>,
     {
         match self.search.insert(key.clone(), GenIDOf::NULL)
         {
@@ -229,7 +229,7 @@ where
     }
 
     pub fn iter(&self) -> Iter<'_, K, Gen> { self.into_iter() }
-    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<Gen>> + '_ { self.into_iter().map(|(id, _k)| id) }
+    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<K,Gen>> + '_ { self.into_iter().map(|(id, _k)| id) }
     pub fn values(&self) -> impl Iterator<Item = &K> + '_ { self.into_iter().map(|(_id, k)| k) }
 }
 
@@ -329,7 +329,7 @@ where
     Q: ?Sized,
     K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a Q, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<K,Gen>>,
 {
     type Output = K;
 
@@ -345,7 +345,7 @@ where
     Q: ?Sized + Clone,
     K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Get<&'a Q, Output = GenIDOf<Gen>>,
+    S: Get<&'a Q, Output = GenIDOf<K,Gen>>,
 {
     type Error = MissingKey<Q>;
     fn try_get(&self, index: &'a Q) -> Result<&Self::Output, Self::Error>
@@ -354,30 +354,62 @@ where
     }
 }
 
-impl<K, Gen, S> Get<GenIDOf<Gen>> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> Get<GenIDOf<K,Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
     S: Collection,
 {
     type Output = K;
-    fn get(&self, index: GenIDOf<Gen>) -> Option<&Self::Output> { self.values.get(index) }
-    unsafe fn get_unchecked(&self, index: GenIDOf<Gen>) -> &Self::Output
+    fn get(&self, index: GenIDOf<K,Gen>) -> Option<&Self::Output> { self.values.get(index) }
+    unsafe fn get_unchecked(&self, index: GenIDOf<K,Gen>) -> &Self::Output
     {
         unsafe { self.values.get_unchecked(index) }
     }
 }
 
-impl<K, Gen, S> TryGet<GenIDOf<Gen>> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> TryGet<GenIDOf<K,Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
     S: Collection,
 {
-    type Error = <GenSeq<K, Gen> as TryGet<GenIDOf<Gen>>>::Error;
-    fn try_get(&self, index: GenIDOf<Gen>) -> Result<&Self::Output, Self::Error>
+    type Error = <GenSeq<K, Gen> as TryGet<GenIDOf<K,Gen>>>::Error;
+    fn try_get(&self, index: GenIDOf<K,Gen>) -> Result<&Self::Output, Self::Error>
     {
         self.values.try_get(index)
+    }
+}
+
+impl<K, Gen, S> Get<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Collection,
+{
+    type Output = K;
+    #[inline(always)]
+    fn get(&self, index: UntypedGenIDOf<Gen>) -> Option<&Self::Output> { self.get(index.typed()) }
+    #[track_caller]
+    #[inline(always)]
+    unsafe fn get_unchecked(&self, index: UntypedGenIDOf<Gen>) -> &Self::Output
+    {
+        unsafe { self.get_unchecked(index.typed()) }
+    }
+}
+
+impl<K, Gen, S> TryGet<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: Collection,
+{
+    type Error = <GenSeq<K, Gen> as TryGet<UntypedGenIDOf<Gen>>>::Error;
+    #[track_caller]
+    #[inline(always)]
+    fn try_get(&self, index: UntypedGenIDOf<Gen>) -> Result<&Self::Output, Self::Error>
+    {
+        self.try_get(index.typed())
     }
 }
 
@@ -385,7 +417,7 @@ impl<K, Gen, S> Insert<K, ()> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: Insert<K, GenIDOf<Gen>>,
+    S: Insert<K, GenIDOf<K,Gen>>,
 {
     fn insert(&mut self, key: K, _value: ()) -> Option<()>
     {
@@ -399,7 +431,7 @@ where
     Q: ?Sized,
     K: Clone + Borrow<Q>,
     Gen: IGeneration,
-    S: Remove<&'a Q, Output = GenIDOf<Gen>>,
+    S: Remove<&'a Q, Output = GenIDOf<K,Gen>>,
 {
     type Output = ();
     fn remove(&mut self, index: &'a Q) -> Option<Self::Output>
@@ -409,14 +441,14 @@ where
     }
 }
 
-impl<K, Gen, S> Remove<GenIDOf<Gen>> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> Remove<GenIDOf<K,Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    S: for<'a> Remove<&'a K, Output = GenIDOf<K,Gen>>,
 {
     type Output = K;
-    fn remove(&mut self, index: GenIDOf<Gen>) -> Option<Self::Output>
+    fn remove(&mut self, index: GenIDOf<K,Gen>) -> Option<Self::Output>
     {
         let key = self.values.remove(index)?;
         self.search.remove(&key);
@@ -424,11 +456,24 @@ where
     }
 }
 
+impl<K, Gen, S> Remove<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
+where
+    K: Clone,
+    Gen: IGeneration,
+    S: for<'a> Remove<&'a K, Output = GenIDOf<K,Gen>>,
+{
+    type Output = K;
+    fn remove(&mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::Output>
+    {
+        self.remove(index.typed())
+    }
+}
+
 impl<K, Gen, S> Extend<K> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: Insert<K, GenIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    S: Insert<K, GenIDOf<K,Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<K,Gen>>,
     Self: Reserve,
 {
     fn extend<I: IntoIterator<Item = K>>(&mut self, iter: I)
@@ -446,7 +491,7 @@ impl<K, Gen, S> FromIterator<K> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: IGeneration,
-    S: Default + Insert<K, GenIDOf<Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<Gen>>,
+    S: Default + Insert<K, GenIDOf<K,Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<K,Gen>>,
     Self: WithCapacity, <Self as WithCapacity>::Param: Default
 {
     fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> Self
@@ -464,14 +509,14 @@ pub struct IntoIter<K, Gen>
 where
     Gen: IGeneration,
 {
-    iter: crate::gen_seq::IntoIter<std::vec::IntoIter<crate::gen_seq::Entry<K, Gen>>, Gen>,
+    iter: crate::gen_seq::IntoIter<K,std::vec::IntoIter<crate::gen_seq::Entry<K, Gen>>, Gen>,
 }
 
 impl<K, Gen> Iterator for IntoIter<K, Gen>
 where
     Gen: IGeneration,
 {
-    type Item = (GenIDOf<Gen>, K);
+    type Item = (GenIDOf<K,Gen>, K);
     fn next(&mut self) -> Option<Self::Item>
     {
         let (id, key) = self.iter.next()?;
@@ -491,7 +536,7 @@ impl<'a, K, Gen> Iterator for Iter<'a, K, Gen>
 where
     Gen: IGeneration,
 {
-    type Item = (GenIDOf<Gen>, &'a K);
+    type Item = (GenIDOf<K,Gen>, &'a K);
     fn next(&mut self) -> Option<Self::Item>
     {
         let (id, key) = self.iter.next()?;
@@ -512,7 +557,7 @@ where
     K: Clone,
     Gen: IGeneration,
 {
-    type Item = (GenIDOf<Gen>, K);
+    type Item = (GenIDOf<K,Gen>, K);
     type IntoIter = IntoIter<K, Gen>;
 
     fn into_iter(self) -> Self::IntoIter
@@ -528,7 +573,7 @@ where
     K: Clone,
     Gen: IGeneration,
 {
-    type Item = (GenIDOf<Gen>, &'a K);
+    type Item = (GenIDOf<K,Gen>, &'a K);
     type IntoIter = Iter<'a, K, Gen>;
 
     fn into_iter(self) -> Self::IntoIter
@@ -545,7 +590,7 @@ where
     where
         GenSetOf<K, Generation, S>: WithCapacity,
         <GenSetOf<K, Generation, S> as WithCapacity>::Param: Default,
-        S: Default + Insert<K, GenIDOf<Generation>> + for<'a> Remove<&'a K, Output = GenIDOf<Generation>>,
+        S: Default + Insert<K, GenIDOf<K,Generation>> + for<'a> Remove<&'a K, Output = GenIDOf<K,Generation>>,
     {
         self.into_iter().collect()
     }

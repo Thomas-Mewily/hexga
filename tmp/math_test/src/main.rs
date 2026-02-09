@@ -258,6 +258,14 @@ fn gen_vec_view()
     //let view_mut = gen_vec.as_mut_view();
     //println!("{:?}", gen_vec);
     //gen_vec.get_entry_from_index(0);
+
+    let mut set= GenHashSet::new();
+
+    let (id, first_insertion) = set.insert("abc".to_owned());
+    assert_eq!(first_insertion, true);
+    let (id2, first_insertion2) = set.insert("abc".to_owned());
+    assert_eq!(first_insertion2, false);
+    assert_eq!(id, id2);
 }
 
 fn main()

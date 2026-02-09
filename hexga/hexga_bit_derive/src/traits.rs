@@ -305,7 +305,7 @@ impl Derivable for BitAllUsed
             {
                 let assert_no_padding = generate_assert_no_padding(&input, None, "BitAllUsed")?;
                 let assert_fields_are_no_padding =
-                    generate_fields_are_trait(&input, None, Self::ident(input, crate_name)?)?;
+                    generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)?;
 
                 Ok(quote!(
                     #assert_no_padding
