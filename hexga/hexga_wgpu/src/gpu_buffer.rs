@@ -95,7 +95,7 @@ where
             .create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: None,
                 contents: bit::transmute_slice(value),
-                usage: desc.usages,
+                usage: desc.usages.into(),
             })
     }
 
@@ -103,7 +103,7 @@ where
     {
         Gpu.wgpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
-            usage: desc.usages,
+            usage: desc.usages.into(),
             size: (capacity * std::mem::size_of::<T>()) as _,
             mapped_at_creation: false,
         })
@@ -775,12 +775,10 @@ impl From<BufferUsageFlags> for wgpu::BufferUsages
     fn from(value: BufferUsageFlags) -> Self { Self::from_bits(value.bits()).expect("") }
 }
 
-pub type GpuBufferUsages = wgpu::BufferUsages;
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct GpuBufferDesc
 {
-    pub usages: GpuBufferUsages,
+    pub usages: BufferUsageFlags,
     pub name: Option<&'static str>,
 }
 impl Default for GpuBufferDesc
@@ -792,17 +790,17 @@ impl GpuBufferDesc
     pub const fn new() -> Self
     {
         Self {
-            usages: GpuBufferUsages::COPY_DST.union(GpuBufferUsages::COPY_SRC),
+            usages: BufferUsageFlags::CopyDst.union(BufferUsageFlags::CopySrc),
             name: None,
         }
     }
 
-    pub const fn add_usage(mut self, usage: GpuBufferUsages) -> Self
+    pub const fn add_usage(mut self, usage: BufferUsageFlags) -> Self
     {
         self.usages = self.usages.union(usage);
         self
     }
-    pub const fn with_usages(mut self, usages: GpuBufferUsages) -> Self
+    pub const fn with_usages(mut self, usages: BufferUsageFlags) -> Self
     {
         self.usages = usages;
         self
@@ -813,8 +811,8 @@ impl GpuBufferDesc
         self
     }
 
-    pub const VERTEX: Self = Self::new().add_usage(GpuBufferUsages::VERTEX);
-    pub const INDEX: Self = Self::new().add_usage(GpuBufferUsages::INDEX);
+    pub const VERTEX: Self = Self::new().add_usage(BufferUsageFlags::Vertex);
+    pub const INDEX: Self = Self::new().add_usage(BufferUsageFlags::Index);
 }
 
 pub trait ToGpuBuffer<T>

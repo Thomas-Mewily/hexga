@@ -31,14 +31,14 @@ where
             let new_buffer = Gpu.wgpu.device.create_buffer(&wgpu::BufferDescriptor {
                 label: None,
                 size: new_byte_size,
-                usage: self.desc.usages,
+                usage: self.desc.usages.into(),
                 mapped_at_creation: false,
             });
 
             if self.len > 0
             {
-                if !self.desc.usages.contains(GpuBufferUsages::COPY_SRC)
-                    || !self.desc.usages.contains(GpuBufferUsages::COPY_DST)
+                if !self.desc.usages.contains(BufferUsageFlags::CopySrc)
+                    || !self.desc.usages.contains(BufferUsageFlags::CopyDst)
                 {
                     return Err(());
                 }

@@ -500,6 +500,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
             // Similar fn to [`enumflags2`](https://docs.rs/enumflags2/0.7.12/src/enumflags2/lib.rs.html#843-845) :
 
+            /*
             #[must_use]
             #[inline(always)]
             pub fn union<T>(self, other: T) -> Self where T: Into<Self> { self | other }
@@ -509,16 +510,17 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             #[must_use]
             #[inline(always)]
             pub fn complement(self) -> Self { !self }
+            */
 
             #[must_use]
             #[inline(always)]
-            pub const fn const_union(self, other: Self) -> Self { #struct_name { _bits_do_not_use_it: self.bits() | (other.bits()) } }
+            pub const fn union(self, other: Self) -> Self { #struct_name { _bits_do_not_use_it: self.bits() | (other.bits()) } }
             #[must_use]
             #[inline(always)]
-            pub const fn const_intersection(self, other: Self) -> Self { #struct_name { _bits_do_not_use_it: self.bits() & (other.bits()) } }
+            pub const fn intersection(self, other: Self) -> Self { #struct_name { _bits_do_not_use_it: self.bits() & (other.bits()) } }
             #[must_use]
             #[inline(always)]
-            pub const fn const_complement(self) -> Self { #struct_name { _bits_do_not_use_it: !self.bits() & Self::ALL.bits() } } // Each 1 bit correspond to a variant that can be used, no illegal 1 bit
+            pub const fn complement(self) -> Self { #struct_name { _bits_do_not_use_it: !self.bits() & Self::ALL.bits() } } // Each 1 bit correspond to a variant that can be used, no illegal 1 bit
 
             /// Returns true if at least one flag is shared.
             #[inline(always)]
