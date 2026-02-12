@@ -75,7 +75,7 @@ pub use hexga_typedef as typedef;
 mod utils;
 pub use utils::*;
 pub mod array;
-pub mod bijection;
+//pub mod bijection;
 pub mod convert;
 pub mod derive;
 mod geometry;
@@ -98,7 +98,7 @@ use prelude::*;
 pub mod prelude
 {
     pub use super::array::*;
-    pub use super::bijection::prelude::*;
+    //pub use super::bijection::prelude::*;
     pub use super::convert::*;
     pub use super::derive::prelude::*;
     pub use super::geometry::prelude::*;

@@ -1,5 +1,7 @@
 use super::*;
 
+// Todo: finish it.
+// Missing Crop trait, and see how to merge the experimental grid with grid using bijection
 mod bijection;
 pub use bijection::*;
 

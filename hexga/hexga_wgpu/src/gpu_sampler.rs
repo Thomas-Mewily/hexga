@@ -16,12 +16,12 @@ impl From<GpuSampler> for wgpu::Sampler
 }
 impl Default for GpuSampler
 {
-    fn default() -> Self { Self::linear() }
+    fn default() -> Self { Self::new_linear() }
 }
 impl GpuSampler
 {
-    pub fn pixel_art() -> Self { Self::nearest() }
-    pub fn nearest() -> Self
+    pub fn new_pixel_art() -> Self { Self::new_nearest() }
+    pub fn new_nearest() -> Self
     {
         Gpu.wgpu
             .device
@@ -37,7 +37,7 @@ impl GpuSampler
             .into()
     }
 
-    pub fn linear() -> Self
+    pub fn new_linear() -> Self
     {
         Gpu.wgpu
             .device

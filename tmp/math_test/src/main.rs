@@ -10,7 +10,7 @@ use hexga::{
     },
     prelude::*,
 };
-use hexga_math::bijection::*;
+//use hexga_math::bijection::*;
 
 fn dbg_mix<S, F>(src: S, dest: S, coef: F)
 where
@@ -207,6 +207,7 @@ fn color()
     println!("hello world");
 }
 
+/*
 pub type Grid2<C, Idx, const N: usize> = Bijection<C, BijectionPointToUsize<Idx, N>>;
 
 fn bi()
@@ -243,6 +244,7 @@ fn grid_bijection()
     let it = grid_3x2.into_iter().collect::<Vec<_>>();
     println!("{:?}", it);
 }
+*/
 
 fn gen_vec_view()
 {
