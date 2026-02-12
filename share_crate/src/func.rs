@@ -15,7 +15,6 @@ pub fn publish_all_crate()
         publish_crate(name);
     }
 }
-
 pub fn publish_crate(name: &'static str)
 {
     println!("Publishing {}...", name);
