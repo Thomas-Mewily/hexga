@@ -11,16 +11,22 @@
 //! ```
 //!
 //! Based on previous crate [`minimal_ansi_color`](https://crates.io/crates/minimal_ansi_color), but integrated to hexga.
+#![no_std]
 
-use std::fmt::{Debug, Display};
+use core::{fmt::{Debug, Display, Result, Formatter}};
 
+#[cfg(feature = "serde")]
+extern crate std;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub enum AnsiColorKind
 {
+    /// The default terminal color
+    #[default]
+    Reset,
     Black,
     Red,
     Green,
@@ -37,6 +43,10 @@ impl AnsiColorKind
         pub use AnsiColorKind::*;
         &[Black, Red, Green, Yellow, Blue, Magenta, Cyan, White, Grey]
     };
+
+    pub const fn on_layer(self, layer: AnsiColorLayer) -> AnsiColor { AnsiColor::new(self, layer) }
+    pub const fn foreground(self) -> AnsiColor { self.on_layer(AnsiColorLayer::Foreground) }
+    pub const fn background(self) -> AnsiColor { self.on_layer(AnsiColorLayer::Background) }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -114,44 +124,47 @@ impl AnsiColor
 
     #[rustfmt::skip]    pub const BLACK_ON_WHITE    : AnsiColorStr = "\x1b[30m\x1b[47m";
     #[rustfmt::skip]    pub const WHITE_ON_BLACK    : AnsiColorStr = "\x1b[37m\x1b[40m";
-    #[rustfmt::skip]    pub const RESET             : AnsiColorStr = Self::WHITE_ON_BLACK;
 
-    pub fn new(color: AnsiColorKind, layer: AnsiColorLayer) -> Self { Self { color, layer } }
-    pub fn new_foreground(color: AnsiColorKind) -> Self
+    #[rustfmt::skip]    pub const RESET: &str = "\x1b[0m";
+    #[rustfmt::skip]    pub const RESET_FOREGROUND: &str = "\x1b[39m";
+    #[rustfmt::skip]    pub const RESET_BACKGROUND: &str = "\x1b[49m";
+
+    pub const fn new(color: AnsiColorKind, layer: AnsiColorLayer) -> Self { Self { color, layer } }
+    pub const fn new_foreground(color: AnsiColorKind) -> Self
     {
         Self::new(color, AnsiColorLayer::Foreground)
     }
-    pub fn new_background(color: AnsiColorKind) -> Self
+    pub const fn new_background(color: AnsiColorKind) -> Self
     {
         Self::new(color, AnsiColorLayer::Background)
     }
 
-    pub fn color(&self) -> AnsiColorKind { self.color }
-    pub fn set_color(&mut self, color: AnsiColorKind) -> &mut Self
+    pub const fn color(&self) -> AnsiColorKind { self.color }
+    pub const fn set_color(&mut self, color: AnsiColorKind) -> &mut Self
     {
         self.color = color;
         self
     }
-    pub fn with_color(mut self, color: AnsiColorKind) -> Self
+    pub const fn with_color(mut self, color: AnsiColorKind) -> Self
     {
         self.set_color(color);
         self
     }
 
-    pub fn layer(&self) -> AnsiColorLayer { self.layer }
-    pub fn set_layer(&mut self, layer: AnsiColorLayer) -> &mut Self
+    pub const fn layer(&self) -> AnsiColorLayer { self.layer }
+    pub const fn set_layer(&mut self, layer: AnsiColorLayer) -> &mut Self
     {
         self.layer = layer;
         self
     }
-    pub fn with_layer(mut self, layer: AnsiColorLayer) -> Self
+    pub const fn with_layer(mut self, layer: AnsiColorLayer) -> Self
     {
         self.set_layer(layer);
         self
     }
 
     /// Get the ansi color code
-    pub fn str(&self) -> AnsiColorStr
+    pub const fn str(&self) -> AnsiColorStr
     {
         match self.layer
         {
@@ -166,6 +179,7 @@ impl AnsiColor
                 AnsiColorKind::Cyan => Self::CYAN_FOREGROUND,
                 AnsiColorKind::White => Self::WHITE_FOREGROUND,
                 AnsiColorKind::Grey => Self::GREY_FOREGROUND,
+                AnsiColorKind::Reset => Self::RESET_FOREGROUND,
             },
             AnsiColorLayer::Background => match self.color
             {
@@ -178,6 +192,7 @@ impl AnsiColor
                 AnsiColorKind::Cyan => Self::CYAN_BACKGROUND,
                 AnsiColorKind::White => Self::WHITE_BACKGROUND,
                 AnsiColorKind::Grey => Self::GREY_BACKGROUND,
+                AnsiColorKind::Reset => Self::RESET_BACKGROUND,
             },
         }
     }
@@ -190,5 +205,42 @@ impl From<AnsiColor> for AnsiColorStr
 
 impl Display for AnsiColor
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str(self.str()) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result { f.write_str(self.str()) }
+}
+
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
+pub struct TerminalColor
+{
+    pub foreground: AnsiColorKind,
+    pub background: AnsiColorKind,
+}
+impl TerminalColor {
+    pub const fn new(foreground: AnsiColorKind, background: AnsiColorKind) -> Self {
+        Self { foreground, background }
+    }
+}
+
+impl From<(AnsiColorKind, AnsiColorKind)> for TerminalColor {
+    fn from((foreground, background): (AnsiColorKind, AnsiColorKind)) -> Self {
+        Self {
+            foreground,
+            background,
+        }
+    }
+}
+
+impl From<TerminalColor> for (AnsiColorKind, AnsiColorKind) {
+    fn from(tc: TerminalColor) -> Self {
+        (tc.foreground, tc.background)
+    }
+}
+
+impl Display for TerminalColor
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result
+    {
+        write!(f, "{}{}", self.foreground.foreground(), self.background.background())
+    }
 }
