@@ -13,7 +13,7 @@
 //! Based on previous crate [`minimal_ansi_color`](https://crates.io/crates/minimal_ansi_color), but integrated to hexga.
 #![no_std]
 
-use core::{fmt::{Debug, Display, Result, Formatter}};
+use core::fmt::{Debug, Display, Formatter, Result};
 
 #[cfg(feature = "serde")]
 extern crate std;
@@ -208,7 +208,6 @@ impl Display for AnsiColor
     fn fmt(&self, f: &mut Formatter<'_>) -> Result { f.write_str(self.str()) }
 }
 
-
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
 pub struct TerminalColor
@@ -216,31 +215,49 @@ pub struct TerminalColor
     pub foreground: AnsiColorKind,
     pub background: AnsiColorKind,
 }
-impl TerminalColor {
-    pub const fn new(foreground: AnsiColorKind, background: AnsiColorKind) -> Self {
-        Self { foreground, background }
-    }
-}
-
-impl From<(AnsiColorKind, AnsiColorKind)> for TerminalColor {
-    fn from((foreground, background): (AnsiColorKind, AnsiColorKind)) -> Self {
+impl TerminalColor
+{
+    pub const fn uniform(foreground_and_background: AnsiColorKind) -> Self { Self::new(foreground_and_background, foreground_and_background) }
+    pub const fn new(foreground: AnsiColorKind, background: AnsiColorKind) -> Self
+    {
         Self {
             foreground,
             background,
         }
     }
+
+    pub const RESET: Self = Self { foreground: AnsiColorKind::Reset, background: AnsiColorKind::Reset };
 }
 
-impl From<TerminalColor> for (AnsiColorKind, AnsiColorKind) {
-    fn from(tc: TerminalColor) -> Self {
-        (tc.foreground, tc.background)
+impl From<(AnsiColorKind, AnsiColorKind)> for TerminalColor
+{
+    fn from((foreground, background): (AnsiColorKind, AnsiColorKind)) -> Self
+    {
+        Self::new(foreground, background)
     }
+}
+impl From<AnsiColorKind> for TerminalColor
+{
+    fn from(foreground_and_background: AnsiColorKind) -> Self
+    {
+        Self::uniform(foreground_and_background)
+    }
+}
+
+impl From<TerminalColor> for (AnsiColorKind, AnsiColorKind)
+{
+    fn from(tc: TerminalColor) -> Self { (tc.foreground, tc.background) }
 }
 
 impl Display for TerminalColor
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result
     {
-        write!(f, "{}{}", self.foreground.foreground(), self.background.background())
+        write!(
+            f,
+            "{}{}",
+            self.foreground.foreground(),
+            self.background.background()
+        )
     }
 }
