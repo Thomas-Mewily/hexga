@@ -1,8 +1,4 @@
-pub type Option<T> = core::option::Option<T>;
-
-re_export_item_from_std!(option::Iter);
-re_export_item_from_std!(option::IterMut);
-re_export_item_from_std!(option::IntoIter);
+re_export_items_from_std!(option);
 
 pub mod prelude
 {

@@ -20,9 +20,20 @@ pub struct Memory;
 
 pub trait MemoryAlloc //: for<T> Alloc<T,Output = Box<T>>
 {
+    unsafe fn try_alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<PtrUnaliased<u8>>;
+    unsafe fn try_alloc_type<T>(&mut self) -> AllocResult<PtrUnaliased<T>> { unsafe { self.try_alloc_layout(AllocLayout::of_type::<T>()).map(|v| v.cast()) } }
+    unsafe fn try_alloc_value<T>(&mut self, value: T) -> AllocResult<PtrUnaliased<T>>
+    {
+        let ptr = unsafe { self.try_alloc_type::<T>() }?;
+        unsafe { ptr::write(ptr.as_ptr(), value) };
+        Ok(ptr)
+    }
+
     #[track_caller]
     unsafe fn alloc_layout(&mut self, layout: AllocLayout) -> PtrUnaliased<u8> { unsafe { self.try_alloc_layout(layout).expect("bad alloc") } }
-    unsafe fn try_alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<PtrUnaliased<u8>>;
+    #[track_caller]
+    unsafe fn alloc_type<T>(&mut self) -> PtrUnaliased<T> { unsafe { self.try_alloc_type::<T>().expect("bad alloc") } }
+    unsafe fn alloc_value<T>(&mut self, value: T) -> PtrUnaliased<T> { unsafe { self.try_alloc_value::<T>(value).expect("bad alloc") } }
 }
 
 unsafe impl<T> Alloc<T> for Memory
