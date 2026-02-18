@@ -492,7 +492,7 @@ where
     K: Clone,
     Gen: IGeneration,
     S: Default + Insert<K, GenIDOf<K,Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<K,Gen>>,
-    Self: WithCapacity, <Self as WithCapacity>::Param: Default
+    Self: WithCapacity + Reserve, <Self as WithCapacity>::Param: Default
 {
     fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> Self
     {
@@ -588,7 +588,7 @@ where
 {
     fn to_genset(self) -> GenSetOf<K, Generation, S>
     where
-        GenSetOf<K, Generation, S>: WithCapacity,
+        GenSetOf<K, Generation, S>: WithCapacity + Reserve,
         <GenSetOf<K, Generation, S> as WithCapacity>::Param: Default,
         S: Default + Insert<K, GenIDOf<K,Generation>> + for<'a> Remove<&'a K, Output = GenIDOf<K,Generation>>,
     {

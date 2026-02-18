@@ -825,7 +825,7 @@ where
     K: Clone,
     Gen: IGeneration,
     S: Default + Insert<K, GenIDOf<V, Gen>>,
-    Self: WithCapacity, <Self as WithCapacity>::Param: Default
+    Self: WithCapacity + Reserve, <Self as WithCapacity>::Param: Default
 {
     fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self
     {
@@ -1048,7 +1048,7 @@ where
 {
     fn to_genmap(self) -> GenMapOf<K, V, Generation, S>
     where
-        GenMapOf<K, V, Generation, S>: WithCapacity,
+        GenMapOf<K, V, Generation, S>: WithCapacity + Reserve,
         <GenMapOf<K, V, Generation, S> as WithCapacity>::Param: Default,
         S: Default + Insert<K, GenIDOf<V, Generation>>,
     {
