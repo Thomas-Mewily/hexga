@@ -11,30 +11,106 @@ use alloc::collections::TryReserveError;
 
 use core::{borrow::Borrow, hash::Hash, ops::Index, slice::SliceIndex};
 use core::slice::GetDisjointMutIndex;
+use core::hash::BuildHasher;
 
 #[cfg(feature = "std")]
-use std::hash::BuildHasher;
+use std::{
+    collections::*,
+    //hash::RandomState,
+    ffi::{OsStr, OsString},
+    path::{Path, PathBuf},
+};
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
 
+// re-export without rename
+macro_rules! re_export_item_from_std {
+    ($($segments:ident)::+) => {
+        #[cfg(feature = "std")]
+        pub use std::$($segments)::+;
 
+        #[cfg(not(feature = "std"))]
+        pub use alloc::$($segments)::+;
+    };
+}
+
+/*
+// re-export with rename
+macro_rules! re_export_item_from_std_as {
+    ($($segments:ident)::+ as $alias:ident) => {
+        #[cfg(feature = "std")]
+        pub use std::$($segments)::+ as $alias;
+
+        #[cfg(not(feature = "std"))]
+        pub use alloc::$($segments)::+ as $alias;
+    };
+}
+*/
+
+
+
+
+
+
+
+macro_rules! re_export_items_from_std {
+    ($($name:ident),+ $(,)?) => {
+        $(
+            #[allow(ambiguous_glob_reexports)]
+            #[cfg(feature = "std")]
+            pub use std::$name::*;
+            #[allow(ambiguous_glob_reexports)]
+            #[cfg(not(feature = "std"))]
+            pub use core::$name::*;
+        )+
+    };
+}
+
+macro_rules! re_export_mod_from_std {
+    // with rename
+    ($name:ident as $alias:ident $(, $rest:tt)*) => {
+        pub mod $alias {
+            re_export_items_from_std!($name);
+        }
+        re_export_mod_from_std!($($rest),*);
+    };
+
+    // without rename
+    ($name:ident $(, $rest:tt)*) => {
+        pub mod $name {
+            re_export_items_from_std!($name);
+        }
+        re_export_mod_from_std!($($rest),*);
+    };
+
+    () => {};
+}
 pub mod accessor;
+pub mod alloc;
 pub mod asynchrone;
+pub mod boxed;
 pub mod builder;
 #[cfg(feature = "std")]
 pub mod cell;
 pub mod cfg;
+pub mod ops;
+pub use ops::*;
 pub mod collections;
 pub mod default;
 pub mod format;
 pub mod guard;
 pub mod handle;
+pub mod option;
 pub mod iter;
 pub mod rc;
 pub mod sync;
+#[macro_use]
 pub mod macros;
+pub mod marker;
+pub mod ptr;
+pub mod primitives;
 pub mod utils;
 pub mod run;
 pub mod wrapper;
@@ -44,6 +120,17 @@ pub mod convert;
 pub mod singleton;
 pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
+
+re_export_mod_from_std!(
+    any,array,ascii,borrow,clone,cmp,
+    error,fmt,fs,future,hash,hint,io,mem,
+    net, num, panic, path, pin, task, thread,
+    // time <- Time don't work on WASM
+    str, string,
+    slice, vec
+    // random
+);
+
 
 use prelude::*;
 pub mod prelude
@@ -57,37 +144,35 @@ pub mod prelude
 /// You are probably looking for the `prelude` module.
 pub mod hexga_prelude
 {
-    #[cfg(feature = "std")]
-    pub use std::collections::{HashMap, HashSet, BTreeMap, BTreeSet, VecDeque, BinaryHeap};
-    #[cfg(feature = "std")]
-    pub(crate) use std::collections::LinkedList;
-
-    #[cfg(not(feature = "std"))]
-    pub use alloc::collections::{BTreeMap, BTreeSet, VecDeque, BinaryHeap, LinkedList};
-    #[cfg(not(feature = "std"))]
-    pub use alloc::{boxed::Box, string::String, vec::Vec};
-
     #[rustfmt::skip]
     #[allow(unused_imports)]
     pub use super::{
+        alloc::prelude::*,
         accessor::*,
         asynchrone::*,
+        boxed::prelude::*,
         builder::*,
-        collections::*,
-        default::*,
+        ops::prelude::*,
+        collections::prelude::*,
+        default::prelude::*,
         format::*,
         guard::*,
         handle::*,
-        iter::*,
+        option::prelude::*,
+        iter::prelude::*,
         macros::prelude::*,
+        marker::prelude::*,
+        primitives::prelude::*,
         run::*,
         utils::*,
         wrapper::*,
-        result::*,
+        result::prelude,
         convert::*,
         bit::prelude::*,
         map_on::prelude::*,
     };
+
+    pub(crate) use super::{ptr::*,primitives::*};
 
     #[cfg(feature = "std")]
     pub use super::singleton::prelude::*;
@@ -102,4 +187,6 @@ pub mod std_prelude
 {
     // todo: use derive_more for Deref, DerefMut ? https://crates.io/crates/derive_more
     pub use core::{convert::{AsRef,AsMut}, ops::{Deref,DerefMut}};
+
+    re_export_items_from_std!(prelude);
 }

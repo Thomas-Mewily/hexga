@@ -22,7 +22,7 @@ serde = ["dep:serde",
     "hexga_io/serde",
 ]
 
-serde_rc = ["serde/rc", "hexga_encoding/rc", "hexga_io/serde_rc"]
+serde_rc = ["serde/rc", "hexga_encoding/serde_rc", "hexga_io/serde_rc"]
 
 
 [dependencies]

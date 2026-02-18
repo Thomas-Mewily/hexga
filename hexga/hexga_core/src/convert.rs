@@ -1,4 +1,3 @@
-use super::*;
 
 pub trait TryAsRef<T>
 {
@@ -9,10 +8,11 @@ impl<T, S> TryAsRef<T> for S
 where
     S: AsRef<T>,
 {
-    type Error = Never;
+    type Error = crate::Never;
     fn try_as_ref(&self) -> Result<&T, Self::Error> { Ok(self.as_ref()) }
 }
 
+re_export_items_from_std!(convert);
 /*
 pub trait TryAsMut<T>
 {

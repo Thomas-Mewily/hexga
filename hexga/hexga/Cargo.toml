@@ -33,6 +33,7 @@ hexga_encoding_derive = ["hexga_encoding/derive"]
 
 serde = ["dep:serde",
   "hexga_generational/serde",
+  "hexga_arena/serde",
   "hexga_math/serde",
   "hexga_bitflags/serde",
   "hexga_ansi_color/serde",
@@ -45,13 +46,13 @@ serde = ["dep:serde",
 ]
 
 serde_rc = ["serde/rc",
-  "hexga_encoding/rc", "hexga_io/serde_rc", "hexga_asset/serde_rc", "hexga_utils/serde_rc", "hexga_array_vec/serde_rc"]
+  "hexga_encoding/serde_rc", "hexga_arena/serde_rc", "hexga_io/serde_rc", "hexga_asset/serde_rc", "hexga_utils/serde_rc", "hexga_array_vec/serde_rc"]
 
 hexga_asset = ["dep:hexga_asset"]
 
-
 [dependencies]
 hexga_core.workspace = true
+hexga_arena.workspace = true
 hexga_math.workspace = true
 hexga_generational.workspace = true
 hexga_bitflags.workspace = true

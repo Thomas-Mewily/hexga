@@ -17,7 +17,7 @@ default = ["serde", "serde_rc"]
 
 serde = ["dep:serde", "hexga_encoding/serde"]
 
-serde_rc = ["serde/rc", "hexga_encoding/rc"]
+serde_rc = ["serde/rc", "hexga_encoding/serde_rc"]
 
 [dependencies]
 hexga_encoding.workspace = true

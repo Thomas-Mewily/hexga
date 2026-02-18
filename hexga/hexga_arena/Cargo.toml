@@ -1,0 +1,26 @@
+[package]
+name = "hexga_arena"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+description = "An arena-based memory management crate with linked and fixed-size arenas"
+keywords = ["stack", "vector", "array", "data-structure"]
+categories = ["data-structures", "no-std"]
+
+[features]
+
+default = ["serde", "std"]
+serde   = ["dep:serde"]
+serde_rc = ["serde/rc"]
+
+std = []
+
+[dependencies]
+hexga_core.workspace = true
+
+serde = { version = "1.0.0", features = ["derive"], optional = true }

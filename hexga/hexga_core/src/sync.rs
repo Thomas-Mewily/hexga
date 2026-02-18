@@ -1,5 +1,3 @@
-#[cfg(feature = "std")]
-pub use std::sync::Weak as ArcWeak;
+re_export_item_from_std!(sync);
 
-#[cfg(not(feature = "std"))]
-pub use alloc::sync::Weak as ArcWeak;
+pub type ArcWeak<T> = sync::Weak<T>;

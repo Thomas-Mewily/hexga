@@ -23,6 +23,7 @@ hexga_io               = { path = "./hexga/hexga_io",                   version 
 hexga_asset            = { path = "./hexga/hexga_asset",                version = "0.0.11-beta.53", default-features = false }
 hexga_bitflags         = { path = "./hexga/hexga_bitflags",             version = "0.0.11-beta.53", default-features = false }
 hexga_core             = { path = "./hexga/hexga_core",                 version = "0.0.11-beta.53", default-features = false }
+hexga_arena            = { path = "./hexga/hexga_arena",                version = "0.0.11-beta.53", default-features = false }
 hexga_bit_derive       = { path = "./hexga/hexga_bit_derive",           version = "0.0.11-beta.53", default-features = false }
 hexga_bit              = { path = "./hexga/hexga_bit",                  version = "0.0.11-beta.53", default-features = false }
 hexga_array_vec        = { path = "./hexga/hexga_array_vec",            version = "0.0.11-beta.53", default-features = false }

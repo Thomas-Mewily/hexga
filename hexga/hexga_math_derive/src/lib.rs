@@ -183,54 +183,54 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
                     }
 
-                    impl<T, const N : usize> #crate_ident::hexga_core::collections::Collection for #current_name<T,N> {}
-                    impl<T, const N : usize> #crate_ident::hexga_core::collections::CollectionBijective for #current_name<T,N> {}
-                    impl<T, const N : usize> #crate_ident::hexga_core::collections::Length for #current_name<T,N> { fn len(&self) -> usize { N }}
-                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::Get<Idx>
+                    impl<T, const N : usize> #crate_ident::hexga_core::marker::Collection for #current_name<T,N> {}
+                    impl<T, const N : usize> #crate_ident::hexga_core::marker::CollectionBijective for #current_name<T,N> {}
+                    impl<T, const N : usize> #crate_ident::hexga_core::ops::Length for #current_name<T,N> { fn len(&self) -> usize { N }}
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::ops::Get<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::ops::Get<Idx>
                     {
-                        type Output = <[T;N] as #crate_ident::hexga_core::collections::Get<Idx>>::Output;
+                        type Output = <[T;N] as #crate_ident::hexga_core::ops::Get<Idx>>::Output;
 
                         #[inline(always)]
-                        fn get(&self, index: Idx) -> Option<&Self::Output> { #crate_ident::hexga_core::collections::Get::get(self.array(), index) }
+                        fn get(&self, index: Idx) -> Option<&Self::Output> { #crate_ident::hexga_core::ops::Get::get(self.array(), index) }
                         #[inline(always)]
                         #[track_caller]
-                        unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { #crate_ident::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
+                        unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { #crate_ident::hexga_core::ops::Get::get_unchecked(self.array(), index) } }
                     }
-                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::TryGet<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::TryGet<Idx>
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::ops::TryGet<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::ops::TryGet<Idx>
                     {
-                        type Error = <[T;N] as #crate_ident::hexga_core::collections::TryGet<Idx>>::Error;
+                        type Error = <[T;N] as #crate_ident::hexga_core::ops::TryGet<Idx>>::Error;
 
                         #[inline(always)]
                         fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
                         {
-                            #crate_ident::hexga_core::collections::TryGet::try_get(self.array(), index)
+                            #crate_ident::hexga_core::ops::TryGet::try_get(self.array(), index)
                         }
                     }
-                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::GetMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::GetMut<Idx>
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::ops::GetMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::ops::GetMut<Idx>
                     {
                         #[inline(always)]
-                        fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { #crate_ident::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
+                        fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { #crate_ident::hexga_core::ops::GetMut::get_mut(self.array_mut(), index) }
                         #[inline(always)]
                         #[track_caller]
-                        unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { #crate_ident::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
+                        unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { #crate_ident::hexga_core::ops::GetMut::get_unchecked_mut(self.array_mut(), index) } }
                     }
-                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::TryGetMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::TryGetMut<Idx>
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::ops::TryGetMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::ops::TryGetMut<Idx>
                     {
                         #[inline(always)]
-                        fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { #crate_ident::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
+                        fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { #crate_ident::hexga_core::ops::TryGetMut::try_get_mut(self.array_mut(), index) }
                     }
 
 
-                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::GetManyMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::GetManyMut<Idx>
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::ops::GetManyMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::ops::GetManyMut<Idx>
                     {
                         #[inline(always)]
-                        fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> { #crate_ident::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+                        fn try_get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Result<[&mut Self::Output;N2], ManyMutError> { #crate_ident::hexga_core::ops::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
                         #[inline(always)]
-                        fn get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Option<[&mut Self::Output;N2]> { #crate_ident::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
+                        fn get_many_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> Option<[&mut Self::Output;N2]> { #crate_ident::hexga_core::ops::GetManyMut::get_many_mut(self.array_mut(), indices) }
 
                         #[inline(always)]
                         #[track_caller]
-                        unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { #crate_ident::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
+                        unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [Idx; N2]) -> [&mut Self::Output;N2] { unsafe { #crate_ident::hexga_core::ops::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
                     }
 
 
@@ -561,51 +561,51 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
                     }
 
-                    impl<T> #crate_ident::hexga_core::collections::Collection for #current_name<T> {}
-                    impl<T> #crate_ident::hexga_core::collections::CollectionBijective for #current_name<T> {}
+                    impl<T> #crate_ident::hexga_core::marker::Collection for #current_name<T> {}
+                    impl<T> #crate_ident::hexga_core::marker::CollectionBijective for #current_name<T> {}
 
-                    impl<T> #crate_ident::hexga_core::collections::Length for #current_name<T> { fn len(&self) -> usize { #dim }}
-                    impl<T, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::Get<Idx>
+                    impl<T> #crate_ident::hexga_core::ops::Length for #current_name<T> { fn len(&self) -> usize { #dim }}
+                    impl<T, Idx> #crate_ident::hexga_core::ops::Get<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::ops::Get<Idx>
                     {
-                        type Output = <[T;#dim] as #crate_ident::hexga_core::collections::Get<Idx>>::Output;
+                        type Output = <[T;#dim] as #crate_ident::hexga_core::ops::Get<Idx>>::Output;
 
                         #[inline(always)]
-                        fn get(&self, index: Idx) -> Option<&Self::Output> { #crate_ident::hexga_core::collections::Get::get(self.array(), index) }
+                        fn get(&self, index: Idx) -> Option<&Self::Output> { #crate_ident::hexga_core::ops::Get::get(self.array(), index) }
                         #[inline(always)]
                         #[track_caller]
-                        unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { #crate_ident::hexga_core::collections::Get::get_unchecked(self.array(), index) } }
+                        unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { #crate_ident::hexga_core::ops::Get::get_unchecked(self.array(), index) } }
                     }
-                    impl<T, Idx> #crate_ident::hexga_core::collections::TryGet<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::TryGet<Idx>
+                    impl<T, Idx> #crate_ident::hexga_core::ops::TryGet<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::ops::TryGet<Idx>
                     {
-                        type Error = <[T;#dim] as #crate_ident::hexga_core::collections::TryGet<Idx>>::Error;
+                        type Error = <[T;#dim] as #crate_ident::hexga_core::ops::TryGet<Idx>>::Error;
 
                         #[inline(always)]
-                        fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { #crate_ident::hexga_core::collections::TryGet::try_get(self.array(), index) }
+                        fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { #crate_ident::hexga_core::ops::TryGet::try_get(self.array(), index) }
                     }
-                    impl<T, Idx> #crate_ident::hexga_core::collections::GetMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::GetMut<Idx>
+                    impl<T, Idx> #crate_ident::hexga_core::ops::GetMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::ops::GetMut<Idx>
                     {
                         #[inline(always)]
-                        fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { #crate_ident::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
+                        fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { #crate_ident::hexga_core::ops::GetMut::get_mut(self.array_mut(), index) }
                         #[inline(always)]
                         #[track_caller]
-                        unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { #crate_ident::hexga_core::collections::GetMut::get_unchecked_mut(self.array_mut(), index) } }
+                        unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { #crate_ident::hexga_core::ops::GetMut::get_unchecked_mut(self.array_mut(), index) } }
                     }
-                    impl<T, Idx> #crate_ident::hexga_core::collections::TryGetMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::TryGetMut<Idx>
+                    impl<T, Idx> #crate_ident::hexga_core::ops::TryGetMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::ops::TryGetMut<Idx>
                     {
                         #[inline(always)]
-                        fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { #crate_ident::hexga_core::collections::TryGetMut::try_get_mut(self.array_mut(), index) }
+                        fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { #crate_ident::hexga_core::ops::TryGetMut::try_get_mut(self.array_mut(), index) }
                     }
 
 
-                    impl<T, Idx> #crate_ident::hexga_core::collections::GetManyMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::GetManyMut<Idx>
+                    impl<T, Idx> #crate_ident::hexga_core::ops::GetManyMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::ops::GetManyMut<Idx>
                     {
                         #[inline(always)]
-                        fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError> { #crate_ident::hexga_core::collections::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
+                        fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output;N], ManyMutError> { #crate_ident::hexga_core::ops::GetManyMut::try_get_many_mut(self.array_mut(), indices) }
                         #[inline(always)]
-                        fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { #crate_ident::hexga_core::collections::GetManyMut::get_many_mut(self.array_mut(), indices) }
+                        fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output;N]> { #crate_ident::hexga_core::ops::GetManyMut::get_many_mut(self.array_mut(), indices) }
                         #[inline(always)]
                         #[track_caller]
-                        unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { #crate_ident::hexga_core::collections::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
+                        unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output;N] { unsafe { #crate_ident::hexga_core::ops::GetManyMut::get_many_unchecked_mut(self.array_mut(), indices) } }
                     }
 
 

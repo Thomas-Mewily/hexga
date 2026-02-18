@@ -74,3 +74,10 @@ pub trait DefaultExtension: Default + PartialEq
     fn is_not_default(&self) -> bool { !self.is_default() }
 }
 impl<T> DefaultExtension for T where T: Default + PartialEq {}
+
+re_export_items_from_std!(default);
+
+pub mod prelude
+{
+    pub use super::{Default, DefaultIsTripleUnderscore, DefaultExtension, ___};
+}

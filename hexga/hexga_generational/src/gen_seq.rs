@@ -1580,7 +1580,7 @@ where
     }
 }
 
-// error: the `Copy` impl for `hexga_core::collections::IndexOutOfRange` requires that `std::ops::Range<usize>: Copy`
+// error: the `Copy` impl for `hexga_core::ops::IndexOutOfRange` requires that `std::ops::Range<usize>: Copy`
 // impl<T,Gen,C> Copy for GenVecError<T,Gen> {}
 impl<T, Gen> Clone for GenVecError<T, Gen>
 where

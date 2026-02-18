@@ -162,7 +162,7 @@ impl<'a> SaveExtension for &'a str
     }
 }
 
-#[cfg(feature = "rc")]
+#[cfg(feature = "serde_rc")]
 impl_load_and_save!(Rc<T>, RcWeak<T>, Arc<T>, ArcWeak<T>,);
 
 impl<T> SaveExtension for Cell<T> where T: SaveExtension + Copy {}

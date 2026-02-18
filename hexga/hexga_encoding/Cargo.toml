@@ -13,7 +13,7 @@ keywords = ["encoding", "serde", "data-url", "load", "save"]
 categories = ["encoding", "filesystem", "data-structures", "compression"]
 
 [features]
-default = ["serde", "rc", "derive"]
+default = ["serde", "serde_rc", "derive"]
 
 serde = ["dep:serde",
     "dep:ron",
@@ -23,7 +23,7 @@ serde = ["dep:serde",
     "hexga_core/serde"
 ]
 
-rc = ["serde/rc"]
+serde_rc = ["serde/rc"]
 derive = ["dep:hexga_encoding_derive"]
 
 
