@@ -238,12 +238,20 @@ impl<A,C> ArenaOf<A,C> where A: Arenable, C: Push<A>
     pub(crate) fn iter_mut<'a>(&'a mut self) -> <&'a mut C as IntoIterator>::IntoIter where &'a mut C: IntoIterator<Item = &'a mut A> { self.arenas.into_iter() }
 }
 
-unsafe impl<T,A,C> Alloc<T, AllocLayout> for ArenaOf<A,C> where A: Arenable, C: Push<A>,
+A
+/*
+unsafe impl<T,A,C> Alloc<T> for ArenaOf<A,C> where A: Arenable, C: Push<A>,
     for<'a> &'a mut C: IntoIterator<Item = &'a mut A>
 {
     type Output<Target: ?Sized>=DropOnlyBox<Target>;
 
-    fn alloc(&mut self, value: T) -> Option<Self::Output<T>> {
-        self.alloc_layout(layout)
+    fn alloc(&mut self, value: T) -> Option<Self::Output<T>>
+    {
+        match unsafe { self.try_alloc_value(value) }
+        {
+            Ok(v) => Some(unsafe { DropOnlyBox::from_non_null(v) }),
+            Err(_) => None,
+        }
     }
 }
+*/
