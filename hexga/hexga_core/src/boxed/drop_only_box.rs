@@ -1,9 +1,27 @@
-use core::{pin::Pin, ptr::NonNull};
+use core::{pin::Pin};
 use super::*;
 
 /// A box that will, when dropped, drop in place it's content, but not deallocate
 pub struct DropOnlyBox<T: ?Sized> {
-    ptr: PtrUnaliased<T>,
+    ptr: NonNullUnaliased<T>,
+}
+
+
+unsafe impl<T> FromNonNull for DropOnlyBox<T>
+{
+    unsafe fn from_non_null(ptr: NonNull) -> Self {
+        unsafe { DropOnlyBox::from_raw(ptr.as_ptr() as *mut T) }
+    }
+}
+unsafe impl<T> IntoNonNull for DropOnlyBox<T>
+{
+    unsafe fn into_non_null(self) -> NonNull {
+        unsafe { NonNull::new_unchecked(Self::leak(self) as *mut T as *mut u8) }
+    }
+
+    unsafe fn as_non_null(&mut self) -> NonNull {
+        unsafe { NonNull::new_unchecked(self.as_mut() as *mut T as *mut u8) }
+    }
 }
 
 impl<T : ?Sized> DropOnlyBox<T>
@@ -16,10 +34,10 @@ impl<T : ?Sized> DropOnlyBox<T>
     pub const unsafe fn from_raw(ptr: *mut T) -> Self
     {
         debug_assert!(!ptr.is_null());
-        unsafe { Self::new(PtrUnaliased::new_unchecked(ptr)) }
+        unsafe { Self::new(NonNullUnaliased::new_unchecked(ptr)) }
     }
 
-    pub const unsafe fn new(ptr: PtrUnaliased<T>) -> Self {
+    pub const unsafe fn new(ptr: NonNullUnaliased<T>) -> Self {
         Self {
             ptr,
         }

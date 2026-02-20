@@ -2,7 +2,7 @@ use super::*;
 
 pub struct AllocBlock
 {
-    ptr   : PtrUnaliased,
+    ptr   : NonNullUnaliased,
     layout: AllocLayout,
 }
 
@@ -26,7 +26,7 @@ impl Clone for AllocBlock
 impl From<AllocLayout> for AllocBlock
 {
     fn from(layout: AllocLayout) -> Self {
-        Self { ptr: unsafe { Memory.alloc_layout(layout) }, layout }
+        Self { ptr: Memory.allocate_layout_or_panic(layout).cast(), layout }
     }
 }
 impl AllocBlock
@@ -36,7 +36,7 @@ impl AllocBlock
 impl Drop for AllocBlock
 {
     fn drop(&mut self) {
-        unsafe { Memory.dealloc_layout(self.layout, self.ptr.as_ptr()); };
+        Memory.deallocate_layout(self.ptr, self.layout);
     }
 }
 impl Deref for AllocBlock

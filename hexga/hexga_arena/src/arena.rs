@@ -1,5 +1,3 @@
-use hexga_core::boxed::DropOnlyBox;
-
 use super::*;
 
 pub type Arena<A> = ArenaOf<A>;
@@ -152,10 +150,17 @@ where
     }
 }
 
-impl<A,C> MemoryAlloc for ArenaOf<A,C> where A: Arenable, C: Push<A>,
+
+impl<A,C> ManagedBox for ArenaOf<A,C> where A: Arenable, C: Push<A>, A: ManagedBox
+{
+    type Box<T> = <A as ManagedBox>::Box<T>;
+}
+unsafe impl<A,C> AllocFromLayout for ArenaOf<A,C> where A: Arenable, C: Push<A>,
     for<'a> &'a mut C: IntoIterator<Item = &'a mut A>
 {
-    unsafe fn try_alloc_layout(&mut self, mut layout: AllocLayout) -> AllocResult<PtrUnaliased<u8>>
+    type Output = AllocOutput;
+
+    fn allocate_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output>
     {
         let mut empty = true;
         for arena in self.arenas.into_iter()
@@ -163,9 +168,12 @@ impl<A,C> MemoryAlloc for ArenaOf<A,C> where A: Arenable, C: Push<A>,
             empty = false;
             self.capacity -= arena.capacity();
             self.used -= arena.nb_used();
-            let alloc_result = unsafe { arena.try_alloc_layout(layout) };
+
+            let alloc_result = arena.allocate_layout(layout);
+
             self.capacity += arena.capacity();
             self.used += arena.nb_used();
+
             match alloc_result
             {
                 Ok(ptr) =>
@@ -175,15 +183,17 @@ impl<A,C> MemoryAlloc for ArenaOf<A,C> where A: Arenable, C: Push<A>,
                 Err(_) => {},
             }
         }
-        layout.size = (self.capacity * 2).max(layout.size);
+
+        let mut new_capacity = layout;
+        new_capacity.size = (self.capacity * 2).max(layout.size);
         if empty
         {
             // 16K bytes by default.
             // If you want any other amount, create the Arenas from an existing arena.
-            layout.size = layout.size.max(16 * 1024);
+            new_capacity.size = new_capacity.size.max(16 * 1024);
         }
-        let mut next_arena = A::from_alloc_layout(layout);
-        let ptr = unsafe { next_arena.try_alloc_layout(layout) }?;
+        let mut next_arena = A::from_alloc_layout(new_capacity);
+        let ptr = next_arena.allocate_layout(layout)?;
         self.capacity += next_arena.capacity();
         self.used += next_arena.nb_used();
         self.arenas.push(next_arena);
@@ -237,21 +247,3 @@ impl<A,C> ArenaOf<A,C> where A: Arenable, C: Push<A>
     #[allow(unused)]
     pub(crate) fn iter_mut<'a>(&'a mut self) -> <&'a mut C as IntoIterator>::IntoIter where &'a mut C: IntoIterator<Item = &'a mut A> { self.arenas.into_iter() }
 }
-
-A
-/*
-unsafe impl<T,A,C> Alloc<T> for ArenaOf<A,C> where A: Arenable, C: Push<A>,
-    for<'a> &'a mut C: IntoIterator<Item = &'a mut A>
-{
-    type Output<Target: ?Sized>=DropOnlyBox<Target>;
-
-    fn alloc(&mut self, value: T) -> Option<Self::Output<T>>
-    {
-        match unsafe { self.try_alloc_value(value) }
-        {
-            Ok(v) => Some(unsafe { DropOnlyBox::from_non_null(v) }),
-            Err(_) => None,
-        }
-    }
-}
-*/

@@ -1,4 +1,4 @@
-use crate::ptr::Ptr;
+use crate::ptr::NonNull;
 use crate::map_on_number;
 use crate::fmt::{Debug,Formatter};
 use crate::bit::*;
@@ -76,7 +76,7 @@ pub union word
     /// Use [`Self::as_char()`] for a safe equivalent !
     pub unsafe_char: char,
     pub f32: f32, pub f64: f64,
-    pub ptr: Option<Ptr>,
+    pub ptr: Option<NonNull>,
     /// Can be null
     pub const_ptr: *const u8,
     /// Can be null

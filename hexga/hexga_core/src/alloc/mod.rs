@@ -5,7 +5,10 @@ pub mod prelude
     pub use super::
     {
         FromAllocLayout,
-        MemoryAlloc,MemoryRealloc,MemoryDealloc,
+        Alloc,
+        AllocFromLayout,AllocFromLayoutRaw,
+        DeallocFromLayout,DeallocFromLayoutRaw
+        //MemoryAlloc,MemoryRealloc,MemoryDealloc,
     };
 }
 

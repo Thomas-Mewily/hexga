@@ -10,6 +10,11 @@ pub struct AllocLayout
     pub size: usize,
     pub align: usize,
 }
+impl AllocLayout
+{
+    pub const fn size(&self) -> usize { self.size }
+    pub const fn align(&self) -> usize { self.align }
+}
 
 pub trait FromAllocLayout : From<AllocLayout>
 {

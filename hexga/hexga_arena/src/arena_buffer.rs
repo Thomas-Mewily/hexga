@@ -1,3 +1,5 @@
+use hexga_core::boxed::DropOnlyBox;
+
 use super::*;
 
 
@@ -70,10 +72,15 @@ impl Capacity for BufferArena
 
 
 
-impl MemoryAlloc for BufferArena
+impl ManagedBox for BufferArena
 {
-    unsafe fn try_alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<PtrUnaliased<u8>>
-    {
+    type Box<T> = DropOnlyBox<T>;
+}
+unsafe impl AllocFromLayout for BufferArena
+{
+    type Output=AllocOutput;
+
+    fn allocate_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output> {
         assert_ne!(layout.align, 0);
 
         let base_ptr = self.block.as_mut_ptr() as usize;
@@ -90,7 +97,11 @@ impl MemoryAlloc for BufferArena
 
         self.offset = end;
 
-        Ok(unsafe { Ptr::new_unchecked(self.block.as_mut_ptr().add(offset)) })
+        let ptr = unsafe { self.block.as_mut_ptr().add(offset) };
+        Ok(unsafe { NonNull::slice_from_raw_parts(
+            NonNull::new_unchecked(ptr),
+            layout.size
+        ) })
     }
 }
 

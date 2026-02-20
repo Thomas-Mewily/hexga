@@ -23,9 +23,6 @@ pub use default_associatif::*;
 
 use core::ops::Range;
 
-mod alloc;
-pub use alloc::*;
-
 mod length;
 pub use length::*;
 
