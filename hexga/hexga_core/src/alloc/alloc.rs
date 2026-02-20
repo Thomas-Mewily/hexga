@@ -16,6 +16,7 @@ impl TryFrom<AllocLayout> for std::alloc::Layout
 
 pub type AllocOutput = NonNullUnaliased<[u8]>;
 
+// Can also be used for grid/texture atlas for ex.
 pub unsafe trait AllocFromLayout<Layout=AllocLayout>
 {
     type Output;
@@ -26,7 +27,12 @@ pub unsafe trait AllocFromLayout<Layout=AllocLayout>
 pub trait AllocFromLayoutRaw : AllocFromLayout<Output = AllocOutput>
 {
     fn allocate_type<T>(&mut self) -> AllocResult<AllocOutput> { self.allocate_layout(AllocLayout::of_type::<T>()) }
-    //fn allocate_type_from_layout<T>(&mut self, layout: AllocLayout) -> AllocOutput { self.allocate_layout(layout).expect("bad alloc") }
+    fn allocate_value<T>(&mut self, value: T) -> AllocResult<AllocOutput> {
+        let ptr = self.allocate_type::<T>()?;
+        let dst = ptr.as_ptr() as *mut T;
+        unsafe { std::ptr::write(dst, value) };
+        Ok(ptr)
+    }
 }
 impl<S> AllocFromLayoutRaw for S where S: AllocFromLayout<Output = AllocOutput> {}
 
