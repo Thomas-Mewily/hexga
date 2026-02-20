@@ -62,12 +62,12 @@ impl<T> SinglyLinkedNode<T>
         }
     }
 
-    pub fn replace(&mut self, value: T) -> T { std::mem::replace(&mut self.value, value) }
+    pub fn replace(&mut self, value: T) -> T { mem::replace(&mut self.value, value) }
 
     /// Replace the current value and push the old value as the next node
     pub fn push(&mut self, value: T)
     {
-        let old_value = std::mem::replace(&mut self.value, value);
+        let old_value = mem::replace(&mut self.value, value);
         self.push_next(old_value);
     }
 

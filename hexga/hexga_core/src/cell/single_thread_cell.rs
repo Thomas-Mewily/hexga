@@ -1,8 +1,6 @@
 use super::*;
-use std::{
-    cell::{BorrowError, BorrowMutError, Ref, RefCell, RefMut},
-    thread::ThreadId,
-};
+
+use std::{thread::ThreadId};
 
 /// A value that can be read and written by only one thread.
 ///
@@ -44,13 +42,7 @@ impl<T> SingleThreadCell<T>
     pub(crate) fn asset_same_thread(&self) { self.same_thread().unwrap(); }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct DifferentThreadError;
 
-impl Debug for DifferentThreadError
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "different thread") }
-}
 
 #[derive(Debug)]
 pub enum SingleThreadError

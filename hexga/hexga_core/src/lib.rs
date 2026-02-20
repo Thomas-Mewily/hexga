@@ -7,15 +7,16 @@
 extern crate alloc;
 #[cfg(not(feature = "std"))]
 use alloc::collections::TryReserveError;
+#[cfg(feature = "std")]
+use std::collections::TryReserveError;
 
+#[allow(unused)]
 use core::hash::BuildHasher;
 use core::slice::GetDisjointMutIndex;
 use core::{borrow::Borrow, hash::Hash, ops::Index, slice::SliceIndex};
 
 #[cfg(feature = "std")]
 use std::{
-    collections::*,
-    //hash::RandomState,
     ffi::{OsStr, OsString},
     path::{Path, PathBuf},
 };
@@ -42,7 +43,7 @@ macro_rules! re_export_items_from_std_or_alloc {
             pub use std::$name::*;
             #[allow(ambiguous_glob_reexports)]
             #[cfg(not(feature = "std"))]
-            pub use ::core::$name::*;
+            pub use ::alloc::$name::*;
         )+
     };
 }
@@ -122,7 +123,6 @@ pub mod allocation;
 pub mod asynchrone;
 pub mod boxed;
 pub mod builder;
-#[cfg(feature = "std")]
 pub mod cell;
 pub mod cfg;
 pub mod ops;
@@ -150,22 +150,91 @@ pub mod wrapper;
 pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
-re_export_mod_from_std_or_alloc!(
-    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, io, mem, net, num,
+re_export_mod_from_std_or_core!(
+    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num,
     panic, pin, task, // time <- Time don't work on WASM
     str, slice, // random
     borrow
 );
 
+// Manually re exported because it contains unstable/experimental feature
+#[cfg(feature = "std")]
+pub mod io
+{
+    // Struct
+    pub use std::io::{
+        prelude,
+        BufReader,BufWriter,Bytes,Chain,Cursor,Empty,Error,IntoInnerError,IoSlice,IoSliceMut,
+        LineWriter,Lines,PipeReader,PipeWriter,Repeat,Sink,Split,
+        Stderr,StderrLock,Stdin,StdinLock,Stdout,StdoutLock,
+        Take,
+        WriterPanicked,
+    };
+    // Enum
+    pub use std::io::{
+        ErrorKind,SeekFrom,
+    };
+    // Traits
+    pub use std::io::{
+        BufRead, IsTerminal, Read, Seek, Write,
+    };
+    // Functions
+    pub use std::io::{
+        copy,empty,pipe,read_to_string,repeat,sink,stderr,stdin,stdout,
+    };
+    // Type Alias
+    pub type IoResult<T> = Result<T, Error>;
+}
+//re_export_mod_from_std_or_core!(io);
+
+re_export_mod_from_std_or_alloc!(
+    vec, string
+);
+
 #[cfg(feature = "std")]
 re_export_mod_from_std_or_alloc!(
-    thread, fs, vec, string, path
+    thread, fs, path
 );
 
 use prelude::*;
+
 pub mod prelude
 {
     pub use super::{hexga_prelude::*, std_prelude::*};
+}
+
+#[doc(hidden)]
+pub mod modules
+{
+    pub use super::
+    {
+        accessor,allocation,asynchrone,boxed,builder,cell,cfg,ops,collections,default,format,guard,handle,iter,option,rc,sync,convert,marker,primitives,ptr,result,run,utils,wrapper,bit,
+    };
+    pub use crate::map_on;
+    pub use super::
+    {
+        any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num,
+        panic, pin, task,
+        str, slice,
+        borrow
+    };
+
+    pub use super::
+    {
+        vec, string
+    };
+
+    #[cfg(feature = "std")]
+    pub use super::
+    {
+        thread, fs, path, io
+    };
+
+    #[cfg(feature = "std")]
+    pub use super::
+    {
+        singleton
+    };
 }
 
 #[doc(hidden)]
@@ -201,6 +270,8 @@ pub mod hexga_prelude
         bit::prelude::*,
         map_on::prelude::*,
         ops::*,
+
+        vec::Vec, string::String
     };
 
     pub(crate) use super::{primitives::*, ptr::*};
@@ -221,5 +292,5 @@ pub mod std_prelude
         ops::{Deref, DerefMut},
     };
 
-    re_export_items_from_std_or_alloc!(prelude);
+    re_export_items_from_std_or_core!(prelude);
 }

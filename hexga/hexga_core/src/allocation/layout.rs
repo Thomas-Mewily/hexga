@@ -1,6 +1,6 @@
 use super::*;
 
-pub const MAX_ALIGN: usize = std::mem::align_of::<word>();
+pub const MAX_ALIGN: usize = mem::align_of::<word>();
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct AllocLayout
@@ -20,7 +20,7 @@ pub trait FromAllocLayout: From<AllocLayout>
 
     fn of_type<T>() -> Self
     {
-        Self::from_size_and_align(std::mem::size_of::<T>(), std::mem::align_of::<T>())
+        Self::from_size_and_align(mem::size_of::<T>(), mem::align_of::<T>())
     }
     fn from_size_and_align(size: usize, align: usize) -> Self
     {

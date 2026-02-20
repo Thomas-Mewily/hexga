@@ -1,5 +1,5 @@
+use super::{fmt::{self,Debug,Formatter},cmp,hash};
 use crate::bit::*;
-use crate::fmt::{Debug, Formatter};
 use crate::map_on_number;
 use crate::ptr::NonNull;
 
@@ -152,7 +152,7 @@ impl word
 }
 impl Debug for word
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result
     {
         unsafe {
             write!(
@@ -180,11 +180,11 @@ impl word
 }
 impl Ord for word
 {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering { unsafe { self.umax.cmp(&other.umax) } }
+    fn cmp(&self, other: &Self) -> cmp::Ordering { unsafe { self.umax.cmp(&other.umax) } }
 }
 impl PartialOrd for word
 {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering>
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering>
     {
         unsafe { self.umax.partial_cmp(&other.umax) }
     }
@@ -194,9 +194,9 @@ impl PartialEq for word
 {
     fn eq(&self, other: &Self) -> bool { unsafe { self.umax == other.umax } }
 }
-impl std::hash::Hash for word
+impl hash::Hash for word
 {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) { unsafe { self.umax.hash(state) }; }
+    fn hash<H: hash::Hasher>(&self, state: &mut H) { unsafe { self.umax.hash(state) }; }
 }
 impl Copy for word {}
 impl Clone for word

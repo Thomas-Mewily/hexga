@@ -60,7 +60,7 @@ impl<T: ?Sized> DropOnlyBox<T>
     pub const fn leak<'a>(mut s: Self) -> &'a mut T
     {
         let val = unsafe { s.ptr.as_mut() };
-        std::mem::forget(s);
+        mem::forget(s);
         val
     }
 }
@@ -69,7 +69,7 @@ impl<T> DropOnlyBox<T>
     pub fn into_inner(s: Self) -> T
     {
         let val = unsafe { s.ptr.read() };
-        std::mem::forget(s);
+        mem::forget(s);
         val
     }
 }
@@ -90,7 +90,7 @@ impl<T: ?Sized> Drop for DropOnlyBox<T>
     fn drop(&mut self)
     {
         unsafe {
-            std::ptr::drop_in_place(self.ptr.as_ptr());
+            ptr::drop_in_place(self.ptr.as_ptr());
         }
     }
 }

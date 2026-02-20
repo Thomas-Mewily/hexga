@@ -20,7 +20,7 @@ impl Default for AllocBlock
 
 impl Debug for AllocBlock
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", *self) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "{:?}", *self) }
 }
 
 impl Clone for AllocBlock
@@ -56,13 +56,13 @@ impl Deref for AllocBlock
     type Target = [u8];
     fn deref(&self) -> &Self::Target
     {
-        unsafe { std::slice::from_raw_parts(self.ptr.as_ptr(), self.layout.size) }
+        unsafe { slice::from_raw_parts(self.ptr.as_ptr(), self.layout.size) }
     }
 }
 impl DerefMut for AllocBlock
 {
     fn deref_mut(&mut self) -> &mut Self::Target
     {
-        unsafe { std::slice::from_raw_parts_mut(self.ptr.as_ptr(), self.layout.size) }
+        unsafe { slice::from_raw_parts_mut(self.ptr.as_ptr(), self.layout.size) }
     }
 }
