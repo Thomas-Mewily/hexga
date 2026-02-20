@@ -1,6 +1,6 @@
 use hexga_core::{alloc::*, collections::singly_linked::SinglyLinkedNode, prelude::*};
-use std::marker::PhantomData;
-use std::ptr::NonNull;
+use core::marker::PhantomData;
+use core::ptr::NonNull;
 
 pub mod prelude
 {

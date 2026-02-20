@@ -14,13 +14,17 @@ categories = ["data-structures", "no-std"]
 
 [features]
 
-default = ["serde", "std"]
+default = ["serde"]
 serde   = ["dep:serde"]
 serde_rc = ["serde/rc"]
 
-std = []
+std = ["hexga_core/std"]
 
 [dependencies]
-hexga_core.workspace = true
+hexga_core = { workspace = true }
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
+
+[[example]]
+name = "usage"
+required-features = ["std"]

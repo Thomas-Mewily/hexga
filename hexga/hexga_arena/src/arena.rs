@@ -24,7 +24,7 @@ where
     for<'a> &'a C: IntoIterator<Item = &'a A>,
     for<'a> &'a mut C: IntoIterator<Item = &'a mut A>,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result
     {
         let used = self.used;
         let cap = self.capacity;
