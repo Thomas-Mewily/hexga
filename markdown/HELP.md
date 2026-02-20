@@ -3,6 +3,9 @@ https://crates.io/category_slugs
 
 `cargo publish --dry-run`
 
+
+cargo fmt --all
+
 ./share_crate.cmd
 
 cargo doc --open

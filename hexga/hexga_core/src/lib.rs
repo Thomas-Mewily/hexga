@@ -89,7 +89,6 @@ pub mod builder;
 pub mod cell;
 pub mod cfg;
 pub mod ops;
-pub use ops::*;
 pub mod collections;
 pub mod default;
 pub mod format;
@@ -158,6 +157,7 @@ pub mod hexga_prelude
         convert::*,
         bit::prelude::*,
         map_on::prelude::*,
+        ops::*,
     };
 
     pub(crate) use super::{primitives::*, ptr::*};

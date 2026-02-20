@@ -2,7 +2,7 @@ use hexga_core::boxed::DropOnlyBox;
 
 use super::*;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct BufferArena
 {
     block: AllocBlock,

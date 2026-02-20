@@ -4,6 +4,7 @@ use std::ptr::NonNull;
 
 pub mod prelude
 {
+    pub use hexga_core::alloc::prelude::*;
     pub use super::{Arena, Arenable};
 }
 

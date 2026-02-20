@@ -5,7 +5,7 @@ pub mod prelude
     pub use super::SinglyLinkedNode;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SinglyLinkedNode<T>
 {
     pub next: Option<Box<Self>>,
@@ -156,12 +156,12 @@ impl<'a, T> Iterator for IterMut<'a, T>
 
 pub struct IntoIter<T>
 {
-    current: Option<Box<SinglyLinkedNode<T>>>,
+    current: Option<SinglyLinkedNode<T>>,
 }
 
 impl<T> IntoIter<T>
 {
-    pub fn new(head: Option<Box<SinglyLinkedNode<T>>>) -> Self { Self { current: head } }
+    pub fn new(head: Option<SinglyLinkedNode<T>>) -> Self { Self { current: head } }
 }
 
 impl<T> Iterator for IntoIter<T>
@@ -170,8 +170,36 @@ impl<T> Iterator for IntoIter<T>
 
     fn next(&mut self) -> Option<Self::Item>
     {
-        let mut node = self.current.take()?;
-        self.current = node.next.take();
-        Some(node.value)
+        let SinglyLinkedNode { next, value } = self.current.take()?;
+        self.current = next.map(|b| *b);
+        Some(value)
+    }
+}
+
+
+impl<T> IntoIterator for SinglyLinkedNode<T> {
+    type Item = T;
+    type IntoIter = IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter::new(Some(self))
+    }
+}
+
+impl<'a, T> IntoIterator for &'a SinglyLinkedNode<T> {
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Iter::new(self)
+    }
+}
+
+impl<'a, T> IntoIterator for &'a mut SinglyLinkedNode<T> {
+    type Item = &'a mut T;
+    type IntoIter = IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IterMut::new(self)
     }
 }

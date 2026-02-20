@@ -1,12 +1,12 @@
 use super::*;
 
-pub type Arena<A> = ArenaOf<A>;
+pub type Arena = ArenaOf;
 
 // Todo: You should probably not pass a Vec<A> for the container,
 // Because the iterator of vector act like a vector [0..n] and not a stack [n-1..=0]
 // So allocating will first iterate over the older arena that are probably full
 #[derive(Clone)]
-pub struct ArenaOf<A, C = SinglyLinkedNode<A>>
+pub struct ArenaOf<A=arena_buffer::BufferArena, C = SinglyLinkedNode<A>>
 where
     A: Arenable,
     C: Push<A>,
@@ -81,22 +81,18 @@ impl<A, C> ArenaOf<A, C>
 where
     A: Arenable,
     C: Push<A> + Default,
+    for<'a> &'a C: IntoIterator<Item = &'a A>,
 {
     pub fn new() -> Self
     {
-        Self {
-            capacity: 0,
-            used: 0,
-            arenas: C::___(),
-            phantom: PhantomData,
-        }
+        Self::from_arenas(C::___())
     }
 }
 
 /*
 impl<A,C> FromIterator<A> for ArenaOf<A,C>
 where
-    A: Arenable, C: Push<A> + Default + WithCapacity, for<'a> &'a C: Iterator<Item = &'a A>, <C as WithCapacity>::Param : Default
+    A: Arenable, C: Push<A> + Default + WithCapacity, for<'a> &'a C: IntoIterator<Item = &'a A>, <C as WithCapacity>::Param : Default
 {
     fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
         let mut s = Self::___();
@@ -150,7 +146,7 @@ impl<A, C> ArenaOf<A, C>
 where
     A: Arenable,
     C: Push<A>,
-    for<'a> &'a C: Iterator<Item = &'a A>,
+    for<'a> &'a C: IntoIterator<Item = &'a A>,
 {
     pub fn from_arenas(arenas: C) -> Self
     {
@@ -214,7 +210,7 @@ where
         {
             // 16K bytes by default.
             // If you want any other amount, create the Arenas from an existing arena.
-            new_capacity.size = new_capacity.size.max(16 * 1024);
+            new_capacity.size = new_capacity.size.max(AllocBlock::DEFAULT_SIZE);
         }
         let mut next_arena = A::from_alloc_layout(new_capacity);
         let ptr = next_arena.allocate_layout(layout)?;
@@ -224,6 +220,7 @@ where
         Ok(ptr)
     }
 }
+
 
 impl<A, C> ArenaOf<A, C>
 where

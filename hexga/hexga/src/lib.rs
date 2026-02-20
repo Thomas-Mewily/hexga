@@ -1,3 +1,4 @@
+pub use hexga_arena as arena;
 pub use hexga_ansi_color as ansi_color;
 pub use hexga_bitflags as bitflags;
 pub use hexga_core::*;

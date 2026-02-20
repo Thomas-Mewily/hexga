@@ -7,6 +7,19 @@ pub struct DropOnlyBox<T: ?Sized>
     ptr: NonNullUnaliased<T>,
 }
 
+impl<T: ?Sized> Debug for DropOnlyBox<T> where T: Debug
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        unsafe { self.ptr.as_ref().fmt(f) }
+    }
+}
+impl<T: ?Sized> Display for DropOnlyBox<T> where T: Display
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        unsafe { self.ptr.as_ref().fmt(f) }
+    }
+}
+
 unsafe impl<T> FromNonNull for DropOnlyBox<T>
 {
     unsafe fn from_non_null(ptr: NonNull) -> Self

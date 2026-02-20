@@ -6,6 +6,18 @@ pub struct AllocBlock
     layout: AllocLayout,
 }
 
+impl AllocBlock
+{
+    pub const DEFAULT_SIZE : usize = 16 * 1024; // 16K bytes
+}
+impl Default for AllocBlock
+{
+    fn default() -> Self {
+        Self::from_size_and_align(Self::DEFAULT_SIZE, 1)
+    }
+}
+
+
 impl Debug for AllocBlock
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", *self) }
