@@ -2,7 +2,6 @@ use hexga_core::boxed::DropOnlyBox;
 
 use super::*;
 
-
 #[derive(Clone)]
 pub struct BufferArena
 {
@@ -15,8 +14,8 @@ impl Debug for BufferArena
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
     {
         let used = self.nb_used();
-        let cap  = self.capacity();
-        let used_pourcent  = self.used_pourcent();
+        let cap = self.capacity();
+        let used_pourcent = self.used_pourcent();
 
         f.debug_struct("Arena")
             .field("used", &used)
@@ -26,10 +25,9 @@ impl Debug for BufferArena
     }
 }
 
-
 impl From<AllocBlock> for BufferArena
 {
-    fn from(block: AllocBlock) -> Self { Self{ block, offset: 0 } }
+    fn from(block: AllocBlock) -> Self { Self { block, offset: 0 } }
 }
 impl From<AllocLayout> for BufferArena
 {
@@ -44,33 +42,28 @@ impl BufferArena
 impl Collection for BufferArena {}
 impl Arenable for BufferArena
 {
-    fn contains(&self, ptr: NonNull<u8>) -> bool {
+    fn contains(&self, ptr: NonNull<u8>) -> bool
+    {
         self.block.deref().contains(unsafe { ptr.as_ref() })
     }
 }
 impl Length for BufferArena
 {
-    fn len(&self) -> usize {
-        self.nb_used()
-    }
+    fn len(&self) -> usize { self.nb_used() }
 }
 
 impl WithCapacity for BufferArena
 {
-    type Param=();
-    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
+    type Param = ();
+    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self
+    {
         Self::from_size(capacity)
     }
 }
 impl Capacity for BufferArena
 {
-    fn capacity(&self) -> usize {
-        self.capacity()
-    }
+    fn capacity(&self) -> usize { self.capacity() }
 }
-
-
-
 
 impl ManagedBox for BufferArena
 {
@@ -78,9 +71,10 @@ impl ManagedBox for BufferArena
 }
 unsafe impl AllocFromLayout for BufferArena
 {
-    type Output=AllocOutput;
+    type Output = AllocOutput;
 
-    fn allocate_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output> {
+    fn allocate_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output>
+    {
         assert_ne!(layout.align, 0);
 
         let base_ptr = self.block.as_mut_ptr() as usize;
@@ -91,17 +85,14 @@ unsafe impl AllocFromLayout for BufferArena
         let offset = start - base_ptr;
         let end = offset.checked_add(layout.size).ok_or(AllocError)?;
 
-        if end > self.capacity() {
+        if end > self.capacity()
+        {
             return Err(AllocError);
         }
 
         self.offset = end;
 
         let ptr = unsafe { self.block.as_mut_ptr().add(offset) };
-        Ok(unsafe { NonNull::slice_from_raw_parts(
-            NonNull::new_unchecked(ptr),
-            layout.size
-        ) })
+        Ok(unsafe { NonNull::slice_from_raw_parts(NonNull::new_unchecked(ptr), layout.size) })
     }
 }
-

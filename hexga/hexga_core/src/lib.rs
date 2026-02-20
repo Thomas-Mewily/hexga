@@ -1,7 +1,6 @@
 #![feature(get_disjoint_mut_helpers)]
 #![feature(unsafe_cell_access)]
 #![feature(mapped_lock_guards)]
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(not(feature = "std"))]
@@ -9,9 +8,9 @@ extern crate alloc;
 #[cfg(not(feature = "std"))]
 use alloc::collections::TryReserveError;
 
-use core::{borrow::Borrow, hash::Hash, ops::Index, slice::SliceIndex};
-use core::slice::GetDisjointMutIndex;
 use core::hash::BuildHasher;
+use core::slice::GetDisjointMutIndex;
+use core::{borrow::Borrow, hash::Hash, ops::Index, slice::SliceIndex};
 
 #[cfg(feature = "std")]
 use std::{
@@ -23,7 +22,7 @@ use std::{
 
 #[allow(unused_imports)]
 #[cfg(feature = "serde")]
-use serde::{Serialize, Serializer, Deserialize, Deserializer, de::Visitor, ser::SerializeStruct};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 // re-export without rename
 macro_rules! re_export_item_from_std {
@@ -48,12 +47,6 @@ macro_rules! re_export_item_from_std_as {
     };
 }
 */
-
-
-
-
-
-
 
 macro_rules! re_export_items_from_std {
     ($($name:ident),+ $(,)?) => {
@@ -102,40 +95,35 @@ pub mod default;
 pub mod format;
 pub mod guard;
 pub mod handle;
-pub mod option;
 pub mod iter;
+pub mod option;
 pub mod rc;
 pub mod sync;
 #[macro_use]
 pub mod macros;
-pub mod marker;
-pub mod ptr;
-pub mod primitives;
-pub mod utils;
-pub mod run;
-pub mod wrapper;
-pub mod result;
 pub mod convert;
+pub mod marker;
+pub mod primitives;
+pub mod ptr;
+pub mod result;
+pub mod run;
 #[cfg(feature = "std")]
 pub mod singleton;
+pub mod utils;
+pub mod wrapper;
 pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
 re_export_mod_from_std!(
-    any,array,ascii,borrow,clone,cmp,
-    error,fmt,fs,future,hash,hint,io,mem,
-    net, num, panic, path, pin, task, thread,
-    // time <- Time don't work on WASM
-    str, string,
-    slice, vec
-    // random
+    any, array, ascii, borrow, clone, cmp, error, fmt, fs, future, hash, hint, io, mem, net, num,
+    panic, path, pin, task, thread, // time <- Time don't work on WASM
+    str, string, slice, vec // random
 );
-
 
 use prelude::*;
 pub mod prelude
 {
-    pub use super::{hexga_prelude::*,std_prelude::*};
+    pub use super::{hexga_prelude::*, std_prelude::*};
 }
 
 #[doc(hidden)]
@@ -172,11 +160,10 @@ pub mod hexga_prelude
         map_on::prelude::*,
     };
 
-    pub(crate) use super::{ptr::*,primitives::*};
+    pub(crate) use super::{primitives::*, ptr::*};
 
     #[cfg(feature = "std")]
     pub use super::singleton::prelude::*;
-
 }
 
 #[doc(hidden)]
@@ -186,7 +173,10 @@ pub mod hexga_prelude
 pub mod std_prelude
 {
     // todo: use derive_more for Deref, DerefMut ? https://crates.io/crates/derive_more
-    pub use core::{convert::{AsRef,AsMut}, ops::{Deref,DerefMut}};
+    pub use core::{
+        convert::{AsMut, AsRef},
+        ops::{Deref, DerefMut},
+    };
 
     re_export_items_from_std!(prelude);
 }

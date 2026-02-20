@@ -3,7 +3,7 @@ use hexga_bit::prelude::*;
 #[derive(Clone, BitZero, Debug)]
 struct AlwaysBitZero<T>
 {
-    pub value: T
+    pub value: T,
 }
 
 fn main()

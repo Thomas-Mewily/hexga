@@ -3,7 +3,6 @@
 //! A crate mainly inspired by RustConf 2018 - Closing Keynote - Using Rust For Game Development by Catherine West : <https://youtu.be/aKLntZcp27M>
 //! and the SlotMap data structure <https://docs.rs/slotmap/latest/slotmap/>
 #![allow(unused_imports)]
-
 #![feature(get_disjoint_mut_helpers)]
 use std::{
     borrow::Borrow,
@@ -27,8 +26,8 @@ use hexga_number::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 pub mod gen_id;
-pub mod gen_seq;
 pub mod gen_map;
+pub mod gen_seq;
 pub mod gen_set;
 
 /*
@@ -43,10 +42,9 @@ pub mod prelude
 {
     pub use super::{
         gen_id::prelude::*,
-        gen_seq::prelude::*,
         gen_map::prelude::*,
+        gen_seq::prelude::*,
         gen_set::prelude::*,
-
         //multi_map::prelude::*,
         //table::prelude::*,
     };

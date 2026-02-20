@@ -79,5 +79,5 @@ re_export_items_from_std!(default);
 
 pub mod prelude
 {
-    pub use super::{Default, DefaultIsTripleUnderscore, DefaultExtension, ___};
+    pub use super::{___, Default, DefaultExtension, DefaultIsTripleUnderscore};
 }

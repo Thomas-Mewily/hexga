@@ -29,22 +29,32 @@ pub trait Reserve: Capacity
 
     /// Ensure total capacity is at least `total`.
     /// Does nothing if the current capacity is already >= `total`.
-    fn reserve_total(&mut self, total: usize) where Self: Length
+    fn reserve_total(&mut self, total: usize)
+    where
+        Self: Length,
     {
         let cap = self.capacity();
 
-        if total <= cap { return; }
+        if total <= cap
+        {
+            return;
+        }
 
         let additional = total - cap;
         self.reserve(additional);
     }
     /// Ensure total capacity is at least `total`.
     /// Does nothing if the current capacity is already >= `total`.
-    fn try_reserve_total(&mut self, total: usize) -> Result<(), TryReserveError> where Self: Length
+    fn try_reserve_total(&mut self, total: usize) -> Result<(), TryReserveError>
+    where
+        Self: Length,
     {
         let cap = self.capacity();
 
-        if total <= cap { return Ok(()); }
+        if total <= cap
+        {
+            return Ok(());
+        }
 
         let additional = total - cap;
         self.try_reserve(additional)
@@ -52,22 +62,32 @@ pub trait Reserve: Capacity
 
     /// Ensure total capacity is at least `total`.
     /// Does nothing if the current capacity is already >= `total`.
-    fn reserve_total_exact(&mut self, total: usize) where Self: Length
+    fn reserve_total_exact(&mut self, total: usize)
+    where
+        Self: Length,
     {
         let cap = self.capacity();
 
-        if total <= cap { return; }
+        if total <= cap
+        {
+            return;
+        }
 
         let additional = total - cap;
         self.reserve_exact(additional);
     }
     /// Ensure total capacity is at least `total`.
     /// Does nothing if the current capacity is already >= `total`.
-    fn try_reserve_total_exact(&mut self, total: usize) -> Result<(), TryReserveError> where Self: Length
+    fn try_reserve_total_exact(&mut self, total: usize) -> Result<(), TryReserveError>
+    where
+        Self: Length,
     {
         let cap = self.capacity();
 
-        if total <= cap { return Ok(()); }
+        if total <= cap
+        {
+            return Ok(());
+        }
 
         let additional = total - cap;
         self.try_reserve_exact(additional)

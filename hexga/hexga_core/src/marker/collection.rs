@@ -12,7 +12,6 @@ pub trait Collection
      */
 }
 
-
 impl<T> Collection for &T where T: Collection {}
 impl<T> Collection for &mut T where T: Collection {}
 

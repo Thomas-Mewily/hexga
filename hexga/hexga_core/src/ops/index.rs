@@ -62,5 +62,4 @@ pub trait IndexExtension<C>: Sized
     }
 }
 
-
 impl<I, T> IndexExtension<T> for I where I: core::slice::SliceIndex<T> {}

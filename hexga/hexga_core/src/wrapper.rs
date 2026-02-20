@@ -1,17 +1,11 @@
-use core::{
-    cell::UnsafeCell,
-    pin::Pin,
-};
+use core::{cell::UnsafeCell, pin::Pin};
 
+#[cfg(not(feature = "std"))]
+use ::{alloc::boxed::Box, core::cell::RefCell};
 #[cfg(feature = "std")]
 use std::{
     cell::RefCell,
     sync::{Mutex, RwLock},
-};
-#[cfg(not(feature = "std"))]
-use ::{
-    alloc::{boxed::Box},
-    core::cell::RefCell,
 };
 
 pub trait Wrapper

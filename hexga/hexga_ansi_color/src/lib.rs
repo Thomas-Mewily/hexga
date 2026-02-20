@@ -217,7 +217,10 @@ pub struct TerminalColor
 }
 impl TerminalColor
 {
-    pub const fn uniform(foreground_and_background: AnsiColorKind) -> Self { Self::new(foreground_and_background, foreground_and_background) }
+    pub const fn uniform(foreground_and_background: AnsiColorKind) -> Self
+    {
+        Self::new(foreground_and_background, foreground_and_background)
+    }
     pub const fn new(foreground: AnsiColorKind, background: AnsiColorKind) -> Self
     {
         Self {
@@ -226,7 +229,10 @@ impl TerminalColor
         }
     }
 
-    pub const RESET: Self = Self { foreground: AnsiColorKind::Reset, background: AnsiColorKind::Reset };
+    pub const RESET: Self = Self {
+        foreground: AnsiColorKind::Reset,
+        background: AnsiColorKind::Reset,
+    };
 }
 
 impl From<(AnsiColorKind, AnsiColorKind)> for TerminalColor

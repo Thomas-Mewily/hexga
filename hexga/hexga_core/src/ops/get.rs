@@ -247,7 +247,6 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
     }
 }
 
-
 /*
 pub struct TypedIndex<T,Idx>
 {
@@ -272,8 +271,6 @@ impl<T,Idx,C> Get<TypedIndex<T,Idx>> for C
     fn get(&self, index: TypedIndex<T,Idx>) -> Option<&Self::Output> { self.get(index.index) }
 }
 */
-
-
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(transparent)]
@@ -819,13 +816,13 @@ where
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
-pub struct MissingKey<K=()>
+pub struct MissingKey<K = ()>
 {
     pub key: K,
 }
 impl<K> From<K> for MissingKey<K>
 {
-    fn from(key: K) -> Self { MissingKey { key }}
+    fn from(key: K) -> Self { MissingKey { key } }
 }
 impl<K> MissingKey<K>
 {

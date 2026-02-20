@@ -3,15 +3,15 @@ use super::*;
 pub use core::fmt::{Debug, Display, Formatter};
 pub type FmtResult = core::fmt::Result;
 
-#[cfg(feature = "std")]
-pub use std::format;
 #[cfg(not(feature = "std"))]
 pub use alloc::format;
-
 #[cfg(feature = "std")]
-use std::string::String;
+pub use std::format;
+
 #[cfg(not(feature = "std"))]
 use alloc::string::String;
+#[cfg(feature = "std")]
+use std::string::String;
 
 pub trait ToDebug
 {

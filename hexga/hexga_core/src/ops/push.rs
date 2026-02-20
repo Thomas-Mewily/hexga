@@ -1,6 +1,5 @@
 use super::*;
 
-
 pub trait Push<T>: Collection
 {
     type Output;
@@ -29,7 +28,6 @@ pub trait TryPushFront<T>: PushFront<T>
     fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error>;
 }
 
-
 impl<T> Push<T> for Vec<T>
 {
     type Output = usize;
@@ -44,9 +42,11 @@ impl<T> Push<T> for Vec<T>
 impl<T> TryPush<T> for Vec<T>
 {
     type Error = (); // #proper_error
-    fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(Push::push(self, value)) }
+    fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error>
+    {
+        Ok(Push::push(self, value))
+    }
 }
-
 
 impl<T> Push<T> for VecDeque<T>
 {
@@ -60,7 +60,7 @@ impl<T> Push<T> for VecDeque<T>
 }
 impl<T> TryPush<T> for VecDeque<T>
 {
-    type Error=(); // #proper_error
+    type Error = (); // #proper_error
     fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
 impl<T> PushFront<T> for VecDeque<T>
@@ -74,11 +74,12 @@ impl<T> PushFront<T> for VecDeque<T>
 }
 impl<T> TryPushFront<T> for VecDeque<T>
 {
-    type Error=(); // #proper_error
-    fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
+    type Error = (); // #proper_error
+    fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error>
+    {
+        Ok(self.push(value))
+    }
 }
-
-
 
 impl<T> Push<T> for LinkedList<T>
 {
@@ -87,7 +88,7 @@ impl<T> Push<T> for LinkedList<T>
 }
 impl<T> TryPush<T> for LinkedList<T>
 {
-    type Error=();
+    type Error = ();
     fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
 impl<T> PushFront<T> for LinkedList<T>
@@ -97,8 +98,11 @@ impl<T> PushFront<T> for LinkedList<T>
 }
 impl<T> TryPushFront<T> for LinkedList<T>
 {
-    type Error=(); // #proper_error
-    fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
+    type Error = (); // #proper_error
+    fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error>
+    {
+        Ok(self.push(value))
+    }
 }
 
 impl<T> Push<T> for BinaryHeap<T>
@@ -112,10 +116,9 @@ impl<T> TryPush<T> for BinaryHeap<T>
 where
     T: Ord,
 {
-    type Error=(); // #proper_error
+    type Error = (); // #proper_error
     fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
-
 
 impl Push<char> for String
 {
@@ -125,7 +128,10 @@ impl Push<char> for String
 impl TryPush<char> for String
 {
     type Error = (); // #proper_error
-    fn try_push(&mut self, value: char) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
+    fn try_push(&mut self, value: char) -> Result<Self::Output, Self::Error>
+    {
+        Ok(self.push(value))
+    }
 }
 
 #[cfg(feature = "std")]
@@ -138,7 +144,10 @@ impl<'b> Push<&'b OsStr> for OsString
 impl<'b> TryPush<&'b OsStr> for OsString
 {
     type Error = (); // #proper_error
-    fn try_push(&mut self, value: &'b OsStr) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
+    fn try_push(&mut self, value: &'b OsStr) -> Result<Self::Output, Self::Error>
+    {
+        Ok(self.push(value))
+    }
 }
 
 #[cfg(feature = "std")]
@@ -150,7 +159,9 @@ where
     fn push(&mut self, value: P) -> Self::Output { self.push(value); }
 }
 #[cfg(feature = "std")]
-impl<P> TryPush<P> for PathBuf where P: AsRef<Path>
+impl<P> TryPush<P> for PathBuf
+where
+    P: AsRef<Path>,
 {
     type Error = (); // #proper_error
     fn try_push(&mut self, value: P) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }

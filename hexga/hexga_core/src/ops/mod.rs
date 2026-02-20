@@ -1,6 +1,5 @@
 use super::*;
 
-
 /*
 #[cfg(feature = "std")]
 mod default_associatif
@@ -70,17 +69,8 @@ pub use view_mut::*;
 
 pub mod prelude
 {
-    pub use super::
-    {
-        alloc::*,
-        length::*,
-        get::*,
-        index::*,
-        capacity::*,
-        clear::*,
+    pub use super::{
+        alloc::*, capacity::*, clear::*, get::*, index::*, insert::*, length::*, pop::*, push::*,
         remove::*,
-        push::*,
-        insert::*,
-        pop::*,
     };
 }

@@ -22,11 +22,13 @@ pub struct VertexOf<const N: usize = 3>
     pub uv: UV,
 }
 // + no padding
-unsafe impl<const N: usize> BitAllUsed for VertexOf<N> where
-    GpuVector<N> : BitAllUsed,
-    GpuColor : BitAllUsed,
-    UV: BitAllUsed
-    {}
+unsafe impl<const N: usize> BitAllUsed for VertexOf<N>
+where
+    GpuVector<N>: BitAllUsed,
+    GpuColor: BitAllUsed,
+    UV: BitAllUsed,
+{
+}
 impl<const N: usize> VertexOf<N>
 {
     pub const fn new() -> Self

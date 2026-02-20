@@ -1,9 +1,8 @@
 use hexga_generational::prelude::*;
 
-
 fn main()
 {
-    let mut set= GenHashSet::new();
+    let mut set = GenHashSet::new();
 
     let (id, first_insertion) = set.insert("abc".to_owned());
     assert_eq!(first_insertion, true);

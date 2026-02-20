@@ -1,6 +1,5 @@
 use super::*;
 
-
 pub trait SetLength
 {
     unsafe fn set_len(&mut self, new_len: usize);
@@ -8,9 +7,7 @@ pub trait SetLength
 #[cfg(feature = "std")]
 impl<T> SetLength for Vec<T>
 {
-    unsafe fn set_len(&mut self, new_len: usize) {
-        unsafe { self.set_len(new_len) };
-    }
+    unsafe fn set_len(&mut self, new_len: usize) { unsafe { self.set_len(new_len) }; }
 }
 
 pub trait Length: Collection
@@ -55,8 +52,6 @@ pub trait Length: Collection
     #[inline(always)]
     fn is_not_empty(&self) -> bool { !self.is_empty() }
 }
-
-
 
 impl<T> Length for Vec<T>
 {

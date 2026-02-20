@@ -977,21 +977,24 @@ impl<T, const CAP: usize> FromIterator<T> for ArrayVec<T, CAP>
         let mut vec = ArrayVec::new();
         for item in iter
         {
-            vec.try_push(item).expect("iterator contains more elements than capacity");
+            vec.try_push(item)
+                .expect("iterator contains more elements than capacity");
         }
         vec
     }
 }
 impl<T, const CAP: usize> TryFromIterator<T> for ArrayVec<T, CAP>
 {
-    type Error=CapacityFullError<(Self,T)>;
-    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> {
+    type Error = CapacityFullError<(Self, T)>;
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
+    {
         let mut vec = ArrayVec::new();
         for item in iter
         {
             match vec.try_push(item)
             {
-                Ok(_) => {},
+                Ok(_) =>
+                {}
                 Err(e) => return Err(CapacityFullError::new((vec, e.element))),
             }
         }
@@ -1176,7 +1179,6 @@ impl<'a, T: 'a, const CAP: usize> Drop for Drain<'a, T, CAP>
     }
 }
 
-
 impl<T, const CAP: usize> Collection for ArrayVec<T, CAP> {}
 impl<T, const CAP: usize> CollectionBijective for ArrayVec<T, CAP> {}
 
@@ -1274,9 +1276,7 @@ impl<T, const CAP: usize> Length for ArrayVec<T, CAP>
 }
 impl<T, const CAP: usize> SetLength for ArrayVec<T, CAP>
 {
-    unsafe fn set_len(&mut self, new_len: usize) {
-        unsafe { self.set_len(new_len) };
-    }
+    unsafe fn set_len(&mut self, new_len: usize) { unsafe { self.set_len(new_len) }; }
 }
 impl<T, const CAP: usize> Capacity for ArrayVec<T, CAP>
 {
@@ -1285,16 +1285,12 @@ impl<T, const CAP: usize> Capacity for ArrayVec<T, CAP>
 
 impl<T, const CAP: usize> Clear for ArrayVec<T, CAP>
 {
-    fn clear(&mut self) {
-        self.clear();
-    }
+    fn clear(&mut self) { self.clear(); }
 }
 
 impl<T, const CAP: usize> Truncate for ArrayVec<T, CAP>
 {
-    fn truncate(&mut self, len: usize) {
-        self.truncate(len);
-    }
+    fn truncate(&mut self, len: usize) { self.truncate(len); }
 }
 
 /*
@@ -1313,7 +1309,6 @@ impl<T, const CAP: usize> Shrink for ArrayVec<T, CAP>
     fn shrink_to_fit(&mut self) {}
     fn shrink_to(&mut self, _min_capacity: usize) {}
 }
-
 
 #[cfg(feature = "serde")]
 impl<T, const CAP: usize> serde::Serialize for ArrayVec<T, CAP>
@@ -1405,9 +1400,10 @@ impl<T, const CAP: usize> AsMut<[T]> for ArrayVec<T, CAP>
 
 impl<T, const CAP: usize> Push<T> for ArrayVec<T, CAP>
 {
-    type Output=usize;
+    type Output = usize;
     #[track_caller]
-    fn push(&mut self, value: T) -> Self::Output {
+    fn push(&mut self, value: T) -> Self::Output
+    {
         let len = self.len();
         self.push(value);
         len
@@ -1415,30 +1411,27 @@ impl<T, const CAP: usize> Push<T> for ArrayVec<T, CAP>
 }
 impl<T, const CAP: usize> TryPush<T> for ArrayVec<T, CAP>
 {
-    type Error=CapacityFullError<T>;
-    fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> {
+    type Error = CapacityFullError<T>;
+    fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error>
+    {
         let len = self.len();
         self.try_push(value).map(|_| len)
     }
 }
 impl<T, const CAP: usize> Pop<T> for ArrayVec<T, CAP>
 {
-    fn pop(&mut self) -> Option<T> {
-        self.pop()
-    }
+    fn pop(&mut self) -> Option<T> { self.pop() }
 
     fn pop_if<F>(&mut self, predicate: F) -> Option<T>
     where
-        F: FnOnce(&mut T) -> bool
+        F: FnOnce(&mut T) -> bool,
     {
-        let Some(last) = self.last_mut() else { return None; };
-        if predicate(last)
+        let Some(last) = self.last_mut()
+        else
         {
-            self.pop()
-        }else
-        {
-            None
-        }
+            return None;
+        };
+        if predicate(last) { self.pop() } else { None }
     }
 }
 

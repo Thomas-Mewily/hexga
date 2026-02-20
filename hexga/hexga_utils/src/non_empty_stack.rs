@@ -489,10 +489,7 @@ impl<T> Truncate for NonEmptyStack<T>
 
 impl<T> Shrink for NonEmptyStack<T>
 {
-    fn shrink_to_fit(&mut self)
-    {
-        self.stack.shrink_to_fit();
-    }
+    fn shrink_to_fit(&mut self) { self.stack.shrink_to_fit(); }
 
     fn shrink_to(&mut self, min_capacity: usize)
     {

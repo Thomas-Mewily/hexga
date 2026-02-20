@@ -2,13 +2,13 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::
-    {
-        FromAllocLayout,
+    pub use super::{
         Alloc,
-        AllocFromLayout,AllocFromLayoutRaw,
-        DeallocFromLayout,DeallocFromLayoutRaw
-        //MemoryAlloc,MemoryRealloc,MemoryDealloc,
+        AllocFromLayout,
+        AllocFromLayoutRaw,
+        DeallocFromLayout,
+        DeallocFromLayoutRaw, //MemoryAlloc,MemoryRealloc,MemoryDealloc,
+        FromAllocLayout,
     };
 }
 

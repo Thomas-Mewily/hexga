@@ -1,13 +1,19 @@
-use hexga_core::{alloc::*, prelude::*, collections::singly_linked::SinglyLinkedNode};
-use std::ptr::NonNull;
+use hexga_core::{alloc::*, collections::singly_linked::SinglyLinkedNode, prelude::*};
 use std::marker::PhantomData;
+use std::ptr::NonNull;
 
 pub mod prelude
 {
-    pub use super::{Arenable,Arena};
+    pub use super::{Arena, Arenable};
 }
 
-pub trait Arenable: Length + AllocFromLayout<AllocLayout,Output=AllocOutput> + Capacity + WithCapacity + From<AllocLayout> + ManagedBox
+pub trait Arenable:
+    Length
+    + AllocFromLayout<AllocLayout, Output = AllocOutput>
+    + Capacity
+    + WithCapacity
+    + From<AllocLayout>
+    + ManagedBox
 {
     /// Returns the number of bytes currently used in the buffer.
     fn nb_used(&self) -> usize { self.len() }

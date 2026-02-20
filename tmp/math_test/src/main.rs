@@ -97,7 +97,6 @@ pub struct DamageOf2<T>
     magic: T,
 }
 
-
 #[math_vec]
 pub struct DamageArray<T, const N: usize>
 {
@@ -261,7 +260,7 @@ fn gen_vec_view()
     //println!("{:?}", gen_vec);
     //gen_vec.get_entry_from_index(0);
 
-    let mut set= GenHashSet::new();
+    let mut set = GenHashSet::new();
 
     let (id, first_insertion) = set.insert("abc".to_owned());
     assert_eq!(first_insertion, true);
@@ -270,7 +269,4 @@ fn gen_vec_view()
     assert_eq!(id, id2);
 }
 
-fn main()
-{
-    gen_vec_view();
-}
+fn main() { gen_vec_view(); }
