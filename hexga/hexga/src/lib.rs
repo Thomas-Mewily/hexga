@@ -7,6 +7,7 @@ pub use hexga_image::{color, image};
 pub use hexga_map_on as map_on;
 pub use hexga_math as math;
 pub use hexga_utils as utils;
+pub use hexga_array_vec as array_vec;
 //pub use hexga_random as random;
 pub use hexga_encoding as encoding;
 
@@ -49,6 +50,7 @@ pub mod hexga_prelude
     //pub use crate::random::*;
     pub use crate::encoding::prelude::*;
     pub use crate::singleton::prelude::*;
+    pub use crate::array_vec::prelude::*;
     //pub use crate::map_on::prelude::*;
 
     /*
