@@ -210,7 +210,7 @@ where
         {
             // 16K bytes by default.
             // If you want any other amount, create the Arenas from an existing arena.
-            new_capacity.size = new_capacity.size.max(AllocBlock::DEFAULT_SIZE);
+            new_capacity.size = new_capacity.size.max(BLOCK_DEFAULT_SIZE);
         }
         let mut next_arena = A::from_alloc_layout(new_capacity);
         let ptr = next_arena.alloc_layout(layout)?;

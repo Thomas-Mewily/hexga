@@ -1,29 +1,31 @@
 use super::*;
 
-pub struct AllocBlock
+pub struct AllocBlock<T=u8> where T: BitAnyPattern
 {
-    ptr: NonNullUnaliased,
+    ptr: NonNullUnaliased<T>,
     layout: AllocLayout,
 }
 
-impl AllocBlock
+pub const BLOCK_DEFAULT_SIZE : usize = 16 * 1024; // 16K bytes
+
+impl<T> AllocBlock<T> where T: BitAnyPattern
 {
-    pub const DEFAULT_SIZE : usize = 16 * 1024; // 16K bytes
+    //pub const DEFAULT_SIZE : usize = 16 * 1024; // 16K bytes
 }
-impl Default for AllocBlock
+impl<T> Default for AllocBlock<T> where T: BitAnyPattern, T: Default
 {
     fn default() -> Self {
-        Self::from_size_and_align(Self::DEFAULT_SIZE, 1)
+        Self::from_size_and_align(BLOCK_DEFAULT_SIZE, MAX_ALIGN)
     }
 }
 
 
-impl Debug for AllocBlock
+impl<T> Debug for AllocBlock<T> where T: BitAnyPattern, T: Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "{:?}", *self) }
 }
 
-impl Clone for AllocBlock
+impl<T> Clone for AllocBlock<T> where T: BitAnyPattern
 {
     fn clone(&self) -> Self
     {
@@ -33,36 +35,55 @@ impl Clone for AllocBlock
     }
 }
 
-impl From<AllocLayout> for AllocBlock
+impl<T> From<AllocLayout> for AllocBlock<T> where T: BitAnyPattern
 {
     fn from(layout: AllocLayout) -> Self
     {
+        debug_assert_eq!(layout.align() % mem::align_of::<T>(), 0);
         Self {
-            ptr: Memory.allocate_layout_or_panic(layout).cast(),
+            ptr: Memory.alloc_layout_or_panic(layout).cast(),
             layout,
         }
     }
 }
-impl AllocBlock
+impl<T> Collection for AllocBlock<T> where T: BitAnyPattern {}
+impl<T> Capacity for AllocBlock<T> where T: BitAnyPattern
+{
+    #[inline(always)]
+    fn capacity(&self) -> usize { self.capacity() }
+}
+impl<T> AllocBlock<T> where T: BitAnyPattern
+{
+    pub const fn capacity(&self) -> usize { self.layout.size / size_of::<T>() }
+    pub const fn capacity_u8(&self) -> usize { self.layout.size }
+}
+impl<T> AllocBlock<T> where T: BitAnyPattern
 {
     pub fn layout(&self) -> AllocLayout { self.layout }
 }
-impl Drop for AllocBlock
+impl<T> Drop for AllocBlock<T> where T: BitAnyPattern
 {
-    fn drop(&mut self) { Memory.deallocate_layout(self.ptr, self.layout); }
-}
-impl Deref for AllocBlock
-{
-    type Target = [u8];
-    fn deref(&self) -> &Self::Target
+    fn drop(&mut self)
     {
-        unsafe { slice::from_raw_parts(self.ptr.as_ptr(), self.layout.size) }
+        for v in self.iter_mut()
+        {
+            unsafe { ptr::drop_in_place(v as *mut T) };
+        }
+        Memory.dealloc_layout(self.ptr.cast(), self.layout);
     }
 }
-impl DerefMut for AllocBlock
+impl<T> Deref for AllocBlock<T> where T: BitAnyPattern
+{
+    type Target = [T];
+    fn deref(&self) -> &Self::Target
+    {
+        unsafe { slice::from_raw_parts::<T>(self.ptr.as_ptr(), self.capacity()) }
+    }
+}
+impl<T> DerefMut for AllocBlock<T> where T: BitAnyPattern
 {
     fn deref_mut(&mut self) -> &mut Self::Target
     {
-        unsafe { slice::from_raw_parts_mut(self.ptr.as_ptr(), self.layout.size) }
+        unsafe { slice::from_raw_parts_mut::<T>(self.ptr.as_ptr(), self.capacity()) }
     }
 }
