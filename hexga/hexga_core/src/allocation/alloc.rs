@@ -34,29 +34,39 @@ pub type AllocOutput = NonNullUnaliased<[u8]>;
 pub unsafe trait AllocFromLayout<Layout = AllocLayout>
 {
     type Output;
-    fn allocate_layout(&mut self, layout: Layout) -> AllocResult<Self::Output>;
-    fn allocate_layout_or_panic(&mut self, layout: Layout) -> Self::Output
+    fn alloc_layout(&mut self, layout: Layout) -> AllocResult<Self::Output>;
+    fn alloc_layout_or_panic(&mut self, layout: Layout) -> Self::Output
     {
-        self.allocate_layout(layout).expect("bad alloc")
+        self.alloc_layout(layout).expect("bad alloc")
     }
 }
 
 pub trait AllocFromLayoutRaw: AllocFromLayout<Output = AllocOutput>
 {
-    fn allocate_type<T>(&mut self) -> AllocResult<AllocOutput>
+    fn alloc_type<T>(&mut self) -> AllocResult<AllocOutput>
     {
-        self.allocate_layout(AllocLayout::of_type::<T>())
+        self.alloc_layout(AllocLayout::of_type::<T>())
     }
-    fn allocate_value<T>(&mut self, value: T) -> AllocResult<AllocOutput>
+    fn alloc_type_zeroed<T>(&mut self) -> AllocResult<AllocOutput>
     {
-        let ptr = self.allocate_type::<T>()?;
+        let p = self.alloc_type::<T>()?;
+        unsafe {
+            let raw: *mut [u8] = p.as_ptr();
+            let data: *mut u8 = (*raw).as_mut_ptr();
+            core::ptr::write_bytes(data, 0, size_of::<T>());
+        }
+        Ok(p)
+    }
+    fn alloc_value<T>(&mut self, value: T) -> AllocResult<AllocOutput>
+    {
+        let ptr = self.alloc_type::<T>()?;
         let dst = ptr.as_ptr() as *mut T;
         unsafe { core::ptr::write(dst, value) };
         Ok(ptr)
     }
-    fn allocate_zeroed<T>(&mut self, layout: AllocLayout) -> AllocResult<AllocOutput>
+    fn alloc_zeroed<T>(&mut self, layout: AllocLayout) -> AllocResult<AllocOutput>
     {
-        let p = self.allocate_layout(layout)?;
+        let p = self.alloc_layout(layout)?;
         unsafe {
             let raw: *mut [u8] = p.as_ptr();
             let data: *mut u8 = (*raw).as_mut_ptr();
@@ -75,19 +85,24 @@ pub trait ManagedBox
 
 pub trait Alloc<T>: ManagedBox
 {
-    fn allocate(&mut self, value: T) -> AllocResult<Self::Box<T>>;
-    fn allocate_or_panic(&mut self, value: T) -> Self::Box<T>
+    // Can't add an extra lifetime to indicate the lifetime of the box, because the borrow checker
+    // will also think we will borrow the self reference (allocator), which is not the case !!!.
+    // So if we add the referece, we can only allocate 1 object, because on the second one the borrow checker will complain about already borrowed lifetime.
+    //
+    // fn alloc<'a>(&'a mut self, value: T) -> AllocResult<Self::Box<'a, T>>;
+    fn alloc(&mut self, value: T) -> AllocResult<Self::Box<T>>;
+    fn alloc_or_panic(&mut self, value: T) -> Self::Box<T>
     {
-        self.allocate(value).expect("bad alloc")
+        self.alloc(value).expect("bad alloc")
     }
 }
 impl<T, S> Alloc<T> for S
 where
     S: ManagedBox + AllocFromLayout<Output = AllocOutput>,
 {
-    fn allocate(&mut self, value: T) -> AllocResult<Self::Box<T>>
+    fn alloc(&mut self, value: T) -> AllocResult<Self::Box<T>>
     {
-        let slice = self.allocate_type::<T>().ok_or(AllocError)?;
+        let slice = self.alloc_type::<T>().ok_or(AllocError)?;
         unsafe { ptr::write::<T>(slice.as_ptr() as *mut T, value) };
         Ok(unsafe { Self::Box::from_non_null(NonNull::new_unchecked(slice.as_ptr() as *mut u8)) })
     }
@@ -97,7 +112,7 @@ where
 pub unsafe trait DeallocFromLayout<Layout = AllocLayout, Ptr = NonNullUnaliased<u8>>:
     AllocFromLayout<Layout>
 {
-    fn deallocate_layout(&mut self, ptr: Ptr, layout: Layout);
+    fn dealloc_layout(&mut self, ptr: Ptr, layout: Layout);
     fn realloc_layout(
         &mut self,
         ptr: Ptr,
@@ -118,9 +133,9 @@ pub unsafe trait DeallocFromLayout<Layout = AllocLayout, Ptr = NonNullUnaliased<
 
 pub unsafe trait DeallocFromLayoutRaw: DeallocFromLayout
 {
-    fn deallocate_type<T>(&mut self, ptr: NonNullUnaliased<u8>)
+    fn dealloc_type<T>(&mut self, ptr: NonNullUnaliased<u8>)
     {
-        self.deallocate_layout(ptr, AllocLayout::of_type::<T>())
+        self.dealloc_layout(ptr, AllocLayout::of_type::<T>())
     }
     //fn realloc_type<T>(&mut self, ptr: Box<[T]>, new_layout: Layout) -> AllocResult<Ptr>;
 }
@@ -137,7 +152,7 @@ impl ManagedBox for Memory
 unsafe impl AllocFromLayout for Memory
 {
     type Output = AllocOutput;
-    fn allocate_layout(&mut self, layout: AllocLayout) -> AllocResult<NonNull<[u8]>>
+    fn alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<NonNull<[u8]>>
     {
         let layout = core::alloc::Layout::try_from(layout).ok_or(AllocError)?;
         let ptr = unsafe { alloc(layout) };
@@ -156,7 +171,7 @@ unsafe impl AllocFromLayout for Memory
 }
 unsafe impl DeallocFromLayout for Memory
 {
-    fn deallocate_layout(&mut self, ptr: NonNullUnaliased<u8>, layout: AllocLayout)
+    fn dealloc_layout(&mut self, ptr: NonNullUnaliased<u8>, layout: AllocLayout)
     {
         let layout = core::alloc::Layout::try_from(layout).expect("invalid layout");
         unsafe { dealloc(ptr.as_ptr() as *mut u8, layout) };

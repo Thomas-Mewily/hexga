@@ -73,7 +73,7 @@ unsafe impl AllocFromLayout for BufferArena
 {
     type Output = AllocOutput;
 
-    fn allocate_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output>
+    fn alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output>
     {
         assert_ne!(layout.align, 0);
 

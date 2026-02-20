@@ -182,7 +182,7 @@ where
 {
     type Output = AllocOutput;
 
-    fn allocate_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output>
+    fn alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output>
     {
         let mut empty = true;
         for arena in self.arenas.into_iter()
@@ -191,7 +191,7 @@ where
             self.capacity -= arena.capacity();
             self.used -= arena.nb_used();
 
-            let alloc_result = arena.allocate_layout(layout);
+            let alloc_result = arena.alloc_layout(layout);
 
             self.capacity += arena.capacity();
             self.used += arena.nb_used();
@@ -213,7 +213,7 @@ where
             new_capacity.size = new_capacity.size.max(AllocBlock::DEFAULT_SIZE);
         }
         let mut next_arena = A::from_alloc_layout(new_capacity);
-        let ptr = next_arena.allocate_layout(layout)?;
+        let ptr = next_arena.alloc_layout(layout)?;
         self.capacity += next_arena.capacity();
         self.used += next_arena.nb_used();
         self.arenas.push(next_arena);

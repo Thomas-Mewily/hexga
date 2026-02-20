@@ -9,8 +9,12 @@ fn main()
     let mut arena = Arena::new();
     dbg!(&arena);
     {
-        let b = arena.allocate_or_panic(42);
-        dbg!(b);
+        let a = arena.alloc_or_panic(10);
+        let b = arena.alloc_or_panic(42);
+        dbg!(&a);
+        dbg!(&b);
+        drop(arena);
+        dbg!(&a);
     }
     println!("hello");
 }
