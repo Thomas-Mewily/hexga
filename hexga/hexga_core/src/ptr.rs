@@ -55,7 +55,6 @@ unsafe impl<T> IntoNonNull for &mut T
     }
 }
 
-#[cfg(feature = "std")]
 unsafe impl<T> FromNonNull for Box<T>
 {
     unsafe fn from_non_null(ptr: NonNull) -> Self
@@ -63,7 +62,6 @@ unsafe impl<T> FromNonNull for Box<T>
         unsafe { Box::from_raw(ptr.as_ptr() as *mut T) }
     }
 }
-#[cfg(feature = "std")]
 unsafe impl<T> IntoNonNull for Box<T>
 {
     unsafe fn into_non_null(self) -> NonNull

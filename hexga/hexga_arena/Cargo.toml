@@ -25,6 +25,3 @@ hexga_core = { workspace = true }
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 
-[[example]]
-name = "usage"
-required-features = ["std"]

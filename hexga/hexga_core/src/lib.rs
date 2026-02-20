@@ -114,9 +114,14 @@ pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
 re_export_mod_from_std!(
-    any, array, ascii, borrow, clone, cmp, error, fmt, fs, future, hash, hint, io, mem, net, num,
-    panic, path, pin, task, thread, // time <- Time don't work on WASM
-    str, string, slice, vec // random
+    any, array, ascii, borrow, clone, cmp, error, fmt, future, hash, hint, io, mem, net, num,
+    panic, path, pin, task, // time <- Time don't work on WASM
+    str, string, slice // random
+);
+
+#[cfg(feature = "std")]
+re_export_mod_from_std!(
+    thread, fs, vec
 );
 
 use prelude::*;
