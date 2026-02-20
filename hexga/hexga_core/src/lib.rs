@@ -6,7 +6,7 @@
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 #[cfg(not(feature = "std"))]
-use alloc::collections::TryReserveError;
+use allocation::collections::TryReserveError;
 
 use core::hash::BuildHasher;
 use core::slice::GetDisjointMutIndex;
@@ -31,7 +31,7 @@ macro_rules! re_export_item_from_std {
         pub use std::$($segments)::+;
 
         #[cfg(not(feature = "std"))]
-        pub use alloc::$($segments)::+;
+        pub use ::alloc::$($segments)::+;
     };
 }
 
@@ -43,7 +43,7 @@ macro_rules! re_export_item_from_std_as {
         pub use std::$($segments)::+ as $alias;
 
         #[cfg(not(feature = "std"))]
-        pub use alloc::$($segments)::+ as $alias;
+        pub use ::alloc::$($segments)::+ as $alias;
     };
 }
 */
@@ -56,7 +56,7 @@ macro_rules! re_export_items_from_std {
             pub use std::$name::*;
             #[allow(ambiguous_glob_reexports)]
             #[cfg(not(feature = "std"))]
-            pub use core::$name::*;
+            pub use ::core::$name::*;
         )+
     };
 }
@@ -81,7 +81,7 @@ macro_rules! re_export_mod_from_std {
     () => {};
 }
 pub mod accessor;
-pub mod alloc;
+pub mod allocation;
 pub mod asynchrone;
 pub mod boxed;
 pub mod builder;
@@ -139,7 +139,7 @@ pub mod hexga_prelude
     #[rustfmt::skip]
     #[allow(unused_imports)]
     pub use super::{
-        alloc::prelude::*,
+        allocation::prelude::*,
         accessor::*,
         asynchrone::*,
         boxed::prelude::*,
