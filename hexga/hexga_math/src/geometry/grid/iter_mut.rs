@@ -108,9 +108,9 @@ where
         self.iter_mut().for_each(|(_, v)| {
             unsafe {
                 // Temporary moving the reference
-                let old = std::ptr::read(v);
+                let old = core::ptr::read(v);
                 let new = f(old);
-                std::ptr::write(v, new);
+                core::ptr::write(v, new);
             }
         });
         self
@@ -135,7 +135,7 @@ where
                     // Temporary moving the reference
                     let old = std::ptr::read(a);
                     let new = f(old, b.clone());
-                    std::ptr::write(a, new);
+                    core::ptr::write(a, new);
                 }
             });
         self

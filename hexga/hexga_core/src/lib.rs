@@ -6,7 +6,7 @@
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 #[cfg(not(feature = "std"))]
-use allocation::collections::TryReserveError;
+use alloc::collections::TryReserveError;
 
 use core::hash::BuildHasher;
 use core::slice::GetDisjointMutIndex;
@@ -24,8 +24,7 @@ use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
-// re-export without rename
-macro_rules! re_export_item_from_std {
+macro_rules! re_export_item_from_std_or_alloc {
     ($($segments:ident)::+) => {
         #[cfg(feature = "std")]
         pub use std::$($segments)::+;
@@ -35,20 +34,7 @@ macro_rules! re_export_item_from_std {
     };
 }
 
-/*
-// re-export with rename
-macro_rules! re_export_item_from_std_as {
-    ($($segments:ident)::+ as $alias:ident) => {
-        #[cfg(feature = "std")]
-        pub use std::$($segments)::+ as $alias;
-
-        #[cfg(not(feature = "std"))]
-        pub use ::alloc::$($segments)::+ as $alias;
-    };
-}
-*/
-
-macro_rules! re_export_items_from_std {
+macro_rules! re_export_items_from_std_or_alloc {
     ($($name:ident),+ $(,)?) => {
         $(
             #[allow(ambiguous_glob_reexports)]
@@ -61,25 +47,76 @@ macro_rules! re_export_items_from_std {
     };
 }
 
-macro_rules! re_export_mod_from_std {
+macro_rules! re_export_mod_from_std_or_alloc {
+    /*
     // with rename
     ($name:ident as $alias:ident $(, $rest:tt)*) => {
         pub mod $alias {
-            re_export_items_from_std!($name);
+            re_export_items_from_std_or_alloc!($name);
         }
-        re_export_mod_from_std!($($rest),*);
+        re_export_mod_from_std_or_alloc!($($rest),*);
     };
+    */
 
     // without rename
     ($name:ident $(, $rest:tt)*) => {
         pub mod $name {
-            re_export_items_from_std!($name);
+            re_export_items_from_std_or_alloc!($name);
         }
-        re_export_mod_from_std!($($rest),*);
+        re_export_mod_from_std_or_alloc!($($rest),*);
     };
 
     () => {};
 }
+
+
+macro_rules! re_export_item_from_std_or_core {
+    ($($segments:ident)::+) => {
+        #[cfg(feature = "std")]
+        pub use std::$($segments)::+;
+
+        #[cfg(not(feature = "std"))]
+        pub use ::core::$($segments)::+;
+    };
+}
+
+#[allow(unused)]
+macro_rules! re_export_items_from_std_or_core {
+    ($($name:ident),+ $(,)?) => {
+        $(
+            #[allow(ambiguous_glob_reexports)]
+            #[cfg(feature = "std")]
+            pub use std::$name::*;
+            #[allow(ambiguous_glob_reexports)]
+            #[cfg(not(feature = "std"))]
+            pub use ::core::$name::*;
+        )+
+    };
+}
+
+#[allow(unused)]
+macro_rules! re_export_mod_from_std_or_core {
+    /*
+    // with rename
+    ($name:ident as $alias:ident $(, $rest:tt)*) => {
+        pub mod $alias {
+            re_export_items_from_std_or_core!($name);
+        }
+        re_export_mod_from_std_or_core!($($rest),*);
+    };
+    */
+
+    // without rename
+    ($name:ident $(, $rest:tt)*) => {
+        pub mod $name {
+            re_export_items_from_std_or_core!($name);
+        }
+        re_export_mod_from_std_or_core!($($rest),*);
+    };
+
+    () => {};
+}
+
 pub mod accessor;
 pub mod allocation;
 pub mod asynchrone;
@@ -113,15 +150,16 @@ pub mod wrapper;
 pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
-re_export_mod_from_std!(
-    any, array, ascii, borrow, clone, cmp, error, fmt, future, hash, hint, io, mem, net, num,
-    panic, path, pin, task, // time <- Time don't work on WASM
-    str, string, slice // random
+re_export_mod_from_std_or_alloc!(
+    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, io, mem, net, num,
+    panic, pin, task, // time <- Time don't work on WASM
+    str, slice, // random
+    borrow
 );
 
 #[cfg(feature = "std")]
-re_export_mod_from_std!(
-    thread, fs, vec
+re_export_mod_from_std_or_alloc!(
+    thread, fs, vec, string, path
 );
 
 use prelude::*;
@@ -183,5 +221,5 @@ pub mod std_prelude
         ops::{Deref, DerefMut},
     };
 
-    re_export_items_from_std!(prelude);
+    re_export_items_from_std_or_alloc!(prelude);
 }

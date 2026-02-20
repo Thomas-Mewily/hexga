@@ -6,6 +6,8 @@ https://crates.io/category_slugs
 
 cargo fmt --all
 
+cargo check --no-default-features
+
 ./share_crate.cmd
 
 cargo doc --open

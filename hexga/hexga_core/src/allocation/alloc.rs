@@ -1,16 +1,30 @@
 use super::*;
 
+#[allow(unused)]
+#[cfg(feature = "std")]
+mod alloc_fn
+{
+    pub use std::alloc::{alloc,alloc_zeroed,dealloc,realloc};
+}
+#[allow(unused)]
+#[cfg(not(feature = "std"))]
+mod alloc_fn
+{
+    pub use alloc::alloc::{alloc,alloc_zeroed,dealloc,realloc};
+}
+use alloc_fn::*;
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct AllocError;
 
 pub type AllocResult<T = ()> = Result<T, AllocError>;
 
-impl TryFrom<AllocLayout> for std::alloc::Layout
+impl TryFrom<AllocLayout> for core::alloc::Layout
 {
     type Error = AllocError;
     fn try_from(value: AllocLayout) -> Result<Self, Self::Error>
     {
-        std::alloc::Layout::from_size_align(value.size, value.align).ok_or(AllocError)
+        core::alloc::Layout::from_size_align(value.size, value.align).ok_or(AllocError)
     }
 }
 
@@ -37,8 +51,18 @@ pub trait AllocFromLayoutRaw: AllocFromLayout<Output = AllocOutput>
     {
         let ptr = self.allocate_type::<T>()?;
         let dst = ptr.as_ptr() as *mut T;
-        unsafe { std::ptr::write(dst, value) };
+        unsafe { core::ptr::write(dst, value) };
         Ok(ptr)
+    }
+    fn allocate_zeroed<T>(&mut self, layout: AllocLayout) -> AllocResult<AllocOutput>
+    {
+        let p = self.allocate_layout(layout)?;
+        unsafe {
+            let raw: *mut [u8] = p.as_ptr();
+            let data: *mut u8 = (*raw).as_mut_ptr();
+            core::ptr::write_bytes(data, 0, layout.size());
+        }
+        Ok(p)
     }
 }
 impl<S> AllocFromLayoutRaw for S where S: AllocFromLayout<Output = AllocOutput> {}
@@ -115,8 +139,8 @@ unsafe impl AllocFromLayout for Memory
     type Output = AllocOutput;
     fn allocate_layout(&mut self, layout: AllocLayout) -> AllocResult<NonNull<[u8]>>
     {
-        let layout = std::alloc::Layout::try_from(layout).ok_or(AllocError)?;
-        let ptr = unsafe { std::alloc::alloc(layout) };
+        let layout = core::alloc::Layout::try_from(layout).ok_or(AllocError)?;
+        let ptr = unsafe { alloc(layout) };
         if ptr.is_null()
         {
             Err(AllocError)
@@ -134,8 +158,8 @@ unsafe impl DeallocFromLayout for Memory
 {
     fn deallocate_layout(&mut self, ptr: NonNullUnaliased<u8>, layout: AllocLayout)
     {
-        let layout = std::alloc::Layout::try_from(layout).expect("invalid layout");
-        unsafe { std::alloc::dealloc(ptr.as_ptr() as *mut u8, layout) };
+        let layout = core::alloc::Layout::try_from(layout).expect("invalid layout");
+        unsafe { dealloc(ptr.as_ptr() as *mut u8, layout) };
     }
 
     fn realloc_layout(
@@ -145,15 +169,15 @@ unsafe impl DeallocFromLayout for Memory
         new_layout: AllocLayout,
     ) -> AllocResult<AllocOutput>
     {
-        let old_layout = std::alloc::Layout::try_from(old_layout).ok_or(AllocError)?;
-        let new_layout = std::alloc::Layout::try_from(new_layout).ok_or(AllocError)?;
+        let old_layout = core::alloc::Layout::try_from(old_layout).ok_or(AllocError)?;
+        let new_layout = core::alloc::Layout::try_from(new_layout).ok_or(AllocError)?;
         if new_layout.align() != old_layout.align()
         {
             return Err(AllocError);
         }
 
         let new_ptr =
-            unsafe { std::alloc::realloc(ptr.as_ptr() as *mut u8, old_layout, new_layout.size()) };
+            unsafe { realloc(ptr.as_ptr() as *mut u8, old_layout, new_layout.size()) };
         if new_ptr.is_null()
         {
             Err(AllocError)

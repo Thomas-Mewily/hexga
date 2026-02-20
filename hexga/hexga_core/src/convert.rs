@@ -11,7 +11,7 @@ where
     fn try_as_ref(&self) -> Result<&T, Self::Error> { Ok(self.as_ref()) }
 }
 
-re_export_items_from_std!(convert);
+re_export_items_from_std_or_alloc!(convert);
 /*
 pub trait TryAsMut<T>
 {

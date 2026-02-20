@@ -1,10 +1,10 @@
-use hexga_core::{alloc::*, collections::singly_linked::SinglyLinkedNode, prelude::*};
+use hexga_core::{allocation::*, collections::singly_linked::SinglyLinkedNode, prelude::*};
 use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 pub mod prelude
 {
-    pub use hexga_core::alloc::prelude::*;
+    pub use hexga_core::allocation::prelude::*;
     pub use super::{Arena, Arenable};
 }
 

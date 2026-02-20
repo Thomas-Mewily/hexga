@@ -3,7 +3,7 @@ pub mod prelude
     pub use super::{NonNull, NonNullUnaliased};
 }
 
-re_export_items_from_std!(ptr);
+re_export_items_from_std_or_alloc!(ptr);
 
 pub type NonNull<T = u8> = ::core::ptr::NonNull<T>;
 

@@ -75,7 +75,7 @@ pub trait DefaultExtension: Default + PartialEq
 }
 impl<T> DefaultExtension for T where T: Default + PartialEq {}
 
-re_export_items_from_std!(default);
+re_export_items_from_std_or_alloc!(default);
 
 pub mod prelude
 {
