@@ -14,6 +14,7 @@ pub mod evolution;
 pub mod lazy;
 pub mod message;
 pub mod scope;
+//pub mod interned_map;
 //pub mod owned_slice;
 //pub mod factorized;
 
@@ -28,4 +29,5 @@ pub mod prelude
     pub use super::lazy::prelude::*;
     pub use super::message::prelude::*;
     pub use super::scope::prelude;
+    //pub use super::interned_map::prelude;
 }

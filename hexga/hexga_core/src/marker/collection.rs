@@ -45,17 +45,67 @@ impl<K> Collection for BTreeSet<K> {}
 impl<T> Collection for LinkedList<T> {}
 impl<T> Collection for BinaryHeap<T> {}
 
-/// Doing operation on an entry (remove them, edit them) will not invalidate the others entries.
-///
-/// Implementation include `HashMap`, `BTreeMap`, `HashSet`, `BTreeSet`, `GenVec`...
-pub trait CollectionStableKey: Collection {}
+/// Adding elements at the end don't invalidate other existing entries Key.
+/// Examples: `Vec`, `VecDeque`, `GenVec`, `HashMap`, `BTreeMap`.
+pub trait CollectionPushStableKey: Collection {}
+
+// Adding elements at the front don't invalidate other existing entries Key.
+// pub trait CollectionPushFrontStableKey: Collection {}
+
+/// Removing elements from the end don't invalidate other existing entries Key.
+/// Examples: `Vec`, `VecDeque`, `GenVec`.
+pub trait CollectionPopStableKey: Collection {}
+
+// Removing elements from the front don't invalidate other existing entries Key.
+// pub trait CollectionPopFrontStableKey: Collection {}
+
+/// Inserting elements at an arbitrary position don't invalidate other existing entries Key.
+/// Examples: `HashMap`, `BTreeMap`, `HashSet`, `BTreeSet`, `GenVec`.
+pub trait CollectionInsertStableKey: Collection {}
+
+/// Removing elements at an arbitrary position or by key don't invalidate other existing entries Key.
+/// Examples: `HashMap`, `BTreeMap`, `HashSet`, `BTreeSet`, `GenVec`.
+pub trait CollectionRemoveStableKey: Collection {}
+
+/// Editing elements don't invalidate other existing entries Key.
+/// Examples: `HashMap`, `BTreeMap`, `Vec`, `GenVec`.
+pub trait CollectionGetMutStableKey: Collection {}
+
+pub trait CollectionStableKey: CollectionPushStableKey + CollectionPopStableKey + CollectionInsertStableKey + CollectionRemoveStableKey + CollectionGetMutStableKey {}
+impl<C> CollectionStableKey for C where C: CollectionPushStableKey + CollectionPopStableKey + CollectionInsertStableKey + CollectionRemoveStableKey + CollectionGetMutStableKey {}
 
 #[cfg(feature = "std")]
-impl<K, V, S> CollectionStableKey for HashMap<K, V, S> {}
-impl<K, V> CollectionStableKey for BTreeMap<K, V> {}
-#[cfg(feature = "std")]
-impl<K, S> CollectionStableKey for HashSet<K, S> {}
-impl<K> CollectionStableKey for BTreeSet<K> {}
+mod std_impl
+{
+    use super::*;
+    impl<K, V, S> CollectionPushStableKey for HashMap<K, V, S> {}
+    impl<K, V, S> CollectionPopStableKey for HashMap<K, V, S> {}
+    impl<K, V, S> CollectionInsertStableKey for HashMap<K, V, S> {}
+    impl<K, V, S> CollectionRemoveStableKey for HashMap<K, V, S> {}
+    impl<K, V, S> CollectionGetMutStableKey for HashMap<K, V, S> {}
+
+    impl<K, V> CollectionPushStableKey for HashSet<K, V> {}
+    impl<K, V> CollectionPopStableKey for HashSet<K, V> {}
+    impl<K, V> CollectionInsertStableKey for HashSet<K, V> {}
+    impl<K, V> CollectionRemoveStableKey for HashSet<K, V> {}
+    impl<K, V> CollectionGetMutStableKey for HashSet<K, V> {}
+
+    impl<T> CollectionPushStableKey for Vec<T> {}
+    impl<T> CollectionPopStableKey for Vec<T> {}
+    impl<T> CollectionGetMutStableKey for Vec<T> {}
+}
+
+impl<K, V> CollectionPushStableKey for BTreeMap<K, V> {}
+impl<K, V> CollectionPopStableKey for BTreeMap<K, V> {}
+impl<K, V> CollectionInsertStableKey for BTreeMap<K, V> {}
+impl<K, V> CollectionRemoveStableKey for BTreeMap<K, V> {}
+impl<K, V> CollectionGetMutStableKey for BTreeMap<K, V> {}
+
+impl<K> CollectionPushStableKey for BTreeSet<K> {}
+impl<K> CollectionPopStableKey for BTreeSet<K> {}
+impl<K> CollectionInsertStableKey for BTreeSet<K> {}
+impl<K> CollectionRemoveStableKey for BTreeSet<K> {}
+impl<K> CollectionGetMutStableKey for BTreeSet<K> {}
 
 // todo: impl for grid, image
 /// The mapping of `key <=> value` is a bijection: each key point to a unique value, each value is uniquely pointed by a key.
@@ -81,3 +131,17 @@ impl CollectionBijective for &mut str {}
 impl CollectionBijective for String {}
 #[cfg(feature = "std")]
 impl CollectionBijective for OsStr {}
+
+/*
+/// An unique key/index that can be used to identify a single element
+pub trait CollectionKey: Collection + Get<Self::Indice>
+{
+    type Indice;
+}
+impl<T, const N: usize> CollectionKey for [T; N] { type Indice = usize; }
+impl<T> CollectionKey for Vec<T> { type Indice = usize; }
+impl<T> CollectionKey for VecDeque<T> { type Indice = usize; }
+impl<T> CollectionKey for [T] { type Indice = usize; }
+impl<T> CollectionKey for &[T] { type Indice = usize; }
+impl<T> CollectionKey for &mut [T] { type Indice = usize; }
+*/

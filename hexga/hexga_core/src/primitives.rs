@@ -67,21 +67,33 @@ pub type fmax = f64;
 pub union word
 {
     pub u8: u8,
+    pub u8x8: [u8; 8],
     pub u16: u16,
+    pub u16x4: [u16; 4],
     pub u32: u32,
+    pub u32x2: [u32; 2],
     pub u64: u64,
+    pub u64x1: [u64; 1],
+
     pub usize: usize,
     pub umax: umax,
+
     pub i8: i8,
+    pub i8x8: [i8; 8],
     pub i16: i16,
+    pub i16x4: [i16; 4],
     pub i32: i32,
+    pub i32x2: [i32; 2],
     pub i64: i64,
+    pub i64x1: [i64; 1],
+
     pub isize: isize,
     pub imax: imax,
 
     /// Bool only allow 0 (false) or 1 (true), not other representation.
     /// Use [`Self::as_bool()`] for a safe equivalent !
     pub unsafe_bool: bool,
+    pub unsafe_boolx8: [bool;8],
     /// All bit pattern are not valid for word !
     /// Use [`Self::as_char()`] for a safe equivalent !
     pub unsafe_char: char,
@@ -93,6 +105,19 @@ pub union word
     /// Can be null
     pub mut_ptr: *mut u8,
 }
+
+impl From<[u8; 8]> for word { fn from(value: [u8; 8]) -> Self { Self {u8x8: value} } }
+impl From<[u16; 4]> for word { fn from(value: [u16; 4]) -> Self { Self {u16x4: value} } }
+impl From<[u32; 2]> for word { fn from(value: [u32; 2]) -> Self { Self {u32x2: value} } }
+impl From<[u64; 1]> for word { fn from(value: [u64; 1]) -> Self { Self {u64x1: value} } }
+
+impl From<[i8; 8]> for word { fn from(value: [i8; 8]) -> Self { Self {i8x8: value} } }
+impl From<[i16; 4]> for word { fn from(value: [i16; 4]) -> Self { Self {i16x4: value} } }
+impl From<[i32; 2]> for word { fn from(value: [i32; 2]) -> Self { Self {i32x2: value} } }
+impl From<[i64; 1]> for word { fn from(value: [i64; 1]) -> Self { Self {i64x1: value} } }
+
+impl From<[bool; 8]> for word { fn from(value: [bool; 8]) -> Self { Self {unsafe_boolx8: value} } }
+
 
 map_on_number!(
     ($type_name: tt) => {

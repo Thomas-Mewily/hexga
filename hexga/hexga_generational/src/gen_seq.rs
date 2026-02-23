@@ -2098,12 +2098,12 @@ where
     }
 }
 
-impl<T, Gen, C> CollectionStableKey for GenSeq<T, Gen, C>
-where
-    C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
-{
-}
+impl<T, Gen, C> CollectionPushStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
+impl<T, Gen, C> CollectionPopStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
+impl<T, Gen, C> CollectionInsertStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
+impl<T, Gen, C> CollectionRemoveStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
+impl<T, Gen, C> CollectionGetMutStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
+
 
 impl<T, Gen, C> GenSeq<T, Gen, C>
 where
