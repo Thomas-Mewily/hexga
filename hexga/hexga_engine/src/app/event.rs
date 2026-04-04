@@ -36,19 +36,16 @@ pub struct LibAppMessage<'a>
 */
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum AppMessage
+pub enum AppMessage<E=AppEvent>
 {
-    Event(AppEvent),
+    Event(E),
     Flow(FlowMessage),
 }
-impl From<AppEvent> for AppMessage
+impl<E> From<E> for AppMessage<E>
 {
-    fn from(value: AppEvent) -> Self { AppMessage::Event(value) }
+    fn from(value: E) -> Self { AppMessage::Event(value) }
 }
-impl From<FlowMessage> for AppMessage
-{
-    fn from(value: FlowMessage) -> Self { AppMessage::Flow(value) }
-}
+
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FlowMessage

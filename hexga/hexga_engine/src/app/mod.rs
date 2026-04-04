@@ -24,7 +24,7 @@ pub use param::*;
 pub mod prelude
 {
     pub use super::{
-        app_core::app, application::Application, event::AppEvent, param::AppParam, result::*,
+        app_core::app, application::{Application,AppCtx}, event::AppEvent, param::AppParam, result::*,
         spawn::AsyncSpawn,
     };
 

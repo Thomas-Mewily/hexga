@@ -8,12 +8,13 @@
 
 - trait Getter<T> et Setter<T> ? (GetPosition, GetRectangle, GetMatrix...)
 
+- trait ElementIndex (vector, hashmap, genvec...) Permet de lookup un seul élememnt (pas de range)
+
 - crée les crates:
 - pour gérer: les undo redo
 - les graphes de manière générique (Vector, GenVec, HashSet) en utilisant Get, GetMut...
 
 
-- HexgaIo : rewrite it in an async way
 
 - HexgaIo : default extension for saving if not specified + guess extension when loading
 - Parse extra extension as argument a give them during serialization. Ex: `mygrid.save("mygrid.flat.ron")` => `flat` is an argument ?
@@ -82,6 +83,78 @@ https://wbrbr.org/publications/LipschitzPruning/
 
 - SVF : Signed Vector Field (can also be used for collision)
 
+
+## Spacial Iterator
+
+a way to iterate on neightbord, with/without diagonal
+## Spacial "9 nice"
+
+1D : 012
+
+
+     678
+     345
+2D : 012
+
+3D: 27 value
+
+
+
+
+
+
+1 axis/dimension = 3 values : {low,mid,high}
+
+type PatchRect<T,const N: usize = 2> = Vector<Segment<T>, 2>
+
+struct Segment<T>
+{
+    left  : T,
+    middle: T,
+    right : T
+}
+
+# Hexga Engine
+
+// Can be used for
+
+-Animated2DSprite
+-Audio...
+
+
+struct MediaEntry<M,ID>
+    where M: Model
+{
+    model: M,
+    instance: M::Param
+    id: ID,
+}
+
+trait Model
+{
+    // When instancied
+    type Param;
+    type Instance : TryFrom<(&mut Self,Self::Param)>;
+}
+
+trait Media<M>
+    where M: Model
+{
+    type ID;
+    fn play(&mut self, model: M, param: M::Param) -> Self::ID;
+    fn stop(&mut self, id: Self::ID);
+    fn stop_all(&mut self);
+
+    fn all(&self) -> impl Iterator<Item=&MediaEntry<M,Self::ID>>
+    fn active(&self) -> impl Iterator<Item=&MediaEntry<M,Self::ID>>
+}
+
++ custom policy.
+ex:
+- only one active play (animation/music) at a time ?
+- multiple active at a time, but when a new one is play the other music are 50% quieter...
+
+
 ## Working On
 
 ## Done
@@ -117,5 +190,10 @@ ToTimeS
 ToTimeMin
 
 Time: get a TimerStruct{millis:T,secs:T,mins:T,hours:T,days:T,} // ...
+
+## Bad Idea
+
+- HexgaIo : rewrite it in an async way. NOPE
+
 
 ## Other

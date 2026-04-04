@@ -3,8 +3,8 @@ use super::*;
 pub trait AppInit<A>: FnOnce() -> A + Async {}
 impl<S, A> AppInit<A> for S where S: FnOnce() -> A + Async {}
 
-pub trait AppMessageHandler: MessageHandler<AppMessage> + 'static {}
-impl<S> AppMessageHandler for S where S: MessageHandler<AppMessage> + 'static {}
+pub trait AppMessageHandler: MessageHandler<AppMessage,AppCtx> + 'static {}
+impl<S> AppMessageHandler for S where S: MessageHandler<AppMessage,AppCtx> + 'static {}
 
 /// Run the application and init the App
 pub(crate) struct AppRunner<A, F>
@@ -127,14 +127,14 @@ where
 {
     pub(crate) fn exit(&mut self)
     {
-        self.event(AppEvent::Window(WindowEvent::Destroy));
+        self.event(AppEvent::Window(WindowEvent::Destroy), &mut AppCtx::___());
         app().exit();
     }
 
     pub(crate) fn app_event(&mut self, ev: AppEvent) { self.app_message(AppMessage::Event(ev)); }
     pub(crate) fn app_message(&mut self, msg: AppMessage)
     {
-        self.app_mut().map(|a| a.message(msg));
+        self.app_mut().map(|a| a.message(msg, &mut AppCtx::___()));
     }
 }
 
@@ -143,7 +143,7 @@ where
     F: AppInit<A>,
     A: AppMessageHandler,
 {
-    fn event(&mut self, ev: AppEvent)
+    fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx)
     {
         match &ev
         {
@@ -204,10 +204,10 @@ where
                 .expect("failed to init the gpu");
             }
             drop(app);
-            self.event(AppEvent::Window(WindowEvent::Open));
+            self.event(AppEvent::Window(WindowEvent::Open), &mut AppCtx::___());
         }
         self.app_mut()
-            .map(|a| a.message(AppMessage::Flow(FlowMessage::Resumed)));
+            .map(|a| a.message(AppMessage::Flow(FlowMessage::Resumed), &mut AppCtx::___()));
     }
 
     fn suspended(&mut self, event_loop: &winit::event_loop::ActiveEventLoop)
@@ -219,7 +219,7 @@ where
             {}
         }
         self.app_mut()
-            .map(|a| a.message(AppMessage::Flow(FlowMessage::Suspended)));
+            .map(|a| a.message(AppMessage::Flow(FlowMessage::Suspended), &mut AppCtx::___()));
     }
 
     fn window_event(
@@ -233,16 +233,16 @@ where
         {
             WinitWindowEvent::Resized(physical_size) =>
             {
-                Application::event(self, WindowEvent::Resize(physical_size.convert()).into())
+                Application::event(self, WindowEvent::Resize(physical_size.convert()).into(), &mut AppCtx::___())
             }
             winit::event::WindowEvent::CloseRequested =>
             {
-                Application::event(self, WindowEvent::Close.into());
+                Application::event(self, WindowEvent::Close.into(), &mut AppCtx::___());
                 event_loop.exit();
             }
             winit::event::WindowEvent::Destroyed =>
             {
-                Application::event(self, WindowEvent::Destroy.into())
+                Application::event(self, WindowEvent::Destroy.into(), &mut AppCtx::___())
             }
             WinitWindowEvent::KeyboardInput {
                 device_id: _,
@@ -287,7 +287,7 @@ where
                     state,
                     char,
                 };
-                Application::event(self, AppEvent::Input(InputEvent::Key(key)))
+                Application::event(self, AppEvent::Input(InputEvent::Key(key)), &mut AppCtx::___())
             }
             /*
             // TODO: interesting event to handle:
@@ -301,7 +301,7 @@ where
             */
             winit::event::WindowEvent::RedrawRequested =>
             {
-                Application::event(self, WindowEvent::Draw.into())
+                Application::event(self, WindowEvent::Draw.into(), &mut AppCtx::___())
             }
             _ => (),
         }

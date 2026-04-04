@@ -7,6 +7,23 @@ pub mod prelude
     //pub use super::{CollectToGenMap, GenBTreeMap, GenHashMap};
 }
 
+/*
+/// A Interned Map Collection.
+///
+/// [`GenID`] stay stable, even after inserting the same key twice.
+#[derive(Clone)]
+pub struct InternedMap<K, V, C=Vec<Entry<K,V>>, S = HashMap<K, V>>
+where
+    K: Clone,
+    C: CollectionStableKey
+{
+    values: C, // Vec<Entry<K,V>>
+    search: S, //
+    phantom: PhantomData<(K,V)>
+}
+*/
+
+/*
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Entry<K, V>
@@ -1083,3 +1100,4 @@ where
     K: Clone,
 {
 }
+*/
