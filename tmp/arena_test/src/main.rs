@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 use hexga::prelude::*;
-use hexga::arena::prelude::*;
+use hexga::experimental::arena::prelude::*;
 
 fn main()
 {
