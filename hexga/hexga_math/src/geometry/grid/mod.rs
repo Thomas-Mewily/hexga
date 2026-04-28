@@ -31,5 +31,6 @@ pub mod prelude
     pub use super::{
         igrid::{GridBaseError, IGrid, ToGrid},
         typedef::*,
+        IGridView,IGridViewMut
     };
 }

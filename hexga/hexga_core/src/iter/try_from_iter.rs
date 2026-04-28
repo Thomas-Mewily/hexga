@@ -186,14 +186,14 @@ pub trait IterPredicate<Item>: IntoIterator<Item = Item> + Sized
     where
         P: FnMut(Item) -> bool,
     {
-        self.into_iter().any(p)
+        Iterator::any(&mut self.into_iter(), p)
     }
     #[inline(always)]
     fn all<P>(self, p: P) -> bool
     where
         P: FnMut(Item) -> bool,
     {
-        self.into_iter().all(p)
+        Iterator::all(&mut self.into_iter(), p)
     }
     //#[inline(always)]
     //fn for_each<F>(self, f: F) where F: FnMut(Item) { self.into_iter().for_each(f); }

@@ -269,4 +269,42 @@ fn gen_vec_view()
     assert_eq!(id, id2);
 }
 
-fn main() { gen_vec_view(); }
+fn grid_test()
+{
+    use hexga_math::prelude::*;
+            //use super::*;
+
+        let size = point2(2, 3);
+
+        let mut grid1 = Grid2::from_fn(size, |p| p.x + 10 * p.y);
+        let mut grid2 = Grid2::from_fn(size, |p| p.x + 10 * p.y);
+
+        assert_eq!(grid1, grid2);
+        assert_eq!(grid1.view(), grid2.view());
+        assert_eq!(grid1.view_mut(), grid2.view_mut());
+
+        grid2[point2(1, 0)] = 42;
+
+        assert_ne!(grid1, grid2);
+        assert_ne!(grid1.view(), grid2.view());
+        assert_ne!(grid1.view_mut(), grid2.view_mut());
+
+        let rect = rect2i(0, 0, 1, size.y);
+        assert_eq!(
+            grid1.view().crop_intersect(rect),
+            grid2.view().crop_intersect(rect)
+        );
+        assert_eq!(
+            grid1.view_mut().crop_intersect(rect),
+            grid2.view_mut().crop_intersect(rect)
+        );
+        assert_eq!(
+            grid1.view_mut().subview(rect),
+            grid2.view_mut().subview(rect)
+        );
+}
+
+fn main() 
+{ 
+    grid_test();
+}

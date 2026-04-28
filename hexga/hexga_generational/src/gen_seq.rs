@@ -241,7 +241,7 @@ where
     fn eq(&self, other: &GenSeq<T, Gen, C2>) -> bool
     {
         let view = self.values.as_ref();
-        let other_view = self.values.as_ref();
+        let other_view = other.values.as_ref();
 
         if !Gen::OVERFLOW_BEHAVIOR.is_wrapping()
         {
