@@ -2,6 +2,7 @@ pub use hexga_arena as arena;
 pub use hexga_ansi_color as ansi_color;
 pub use hexga_bitflags as bitflags;
 pub use hexga_core::*;
+//pub use hexga_core as core;
 pub use hexga_generational as generational;
 pub use hexga_image::{color, image};
 pub use hexga_map_on as map_on;
@@ -10,6 +11,9 @@ pub use hexga_utils as utils;
 pub use hexga_array_vec as array_vec;
 //pub use hexga_random as random;
 pub use hexga_encoding as encoding;
+
+// Having a module `str` and a type `str` seem to cause some problem
+pub use hexga_core::primitive::str;
 
 //pub use hexga_undo_redo as undo;
 

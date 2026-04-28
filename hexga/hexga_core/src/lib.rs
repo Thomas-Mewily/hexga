@@ -139,7 +139,7 @@ pub mod sync;
 pub mod macros;
 pub mod convert;
 pub mod marker;
-pub mod primitives;
+pub mod primitive;
 pub mod ptr;
 pub mod result;
 pub mod run;
@@ -208,7 +208,7 @@ pub mod modules
 {
     pub use super::
     {
-        accessor,allocation,asynchrone,boxed,builder,cell,cfg,ops,collections,default,format,guard,handle,iter,option,rc,sync,convert,marker,primitives,ptr,result,run,utils,wrapper,bit,
+        accessor,allocation,asynchrone,boxed,builder,cell,cfg,ops,collections,default,format,guard,handle,iter,option,rc,sync,convert,marker,primitive,ptr,result,run,utils,wrapper,bit,
     };
     pub use crate::map_on;
     pub use super::
@@ -261,7 +261,7 @@ pub mod hexga_prelude
         iter::prelude::*,
         macros::prelude::*,
         marker::prelude::*,
-        primitives::prelude::*,
+        primitive::prelude::*,
         run::*,
         utils::*,
         wrapper::*,
@@ -274,7 +274,7 @@ pub mod hexga_prelude
         vec::Vec, string::String
     };
 
-    pub(crate) use super::{primitives::*, ptr::*};
+    pub(crate) use super::{primitive::*, ptr::*};
 
     #[cfg(feature = "std")]
     pub use super::singleton::prelude::*;
@@ -291,6 +291,6 @@ pub mod std_prelude
         convert::{AsMut, AsRef},
         ops::{Deref, DerefMut},
     };
-
+    
     re_export_items_from_std_or_core!(prelude);
 }

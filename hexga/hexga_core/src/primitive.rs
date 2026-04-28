@@ -101,9 +101,9 @@ pub union word
     pub f64: f64,
     pub ptr: Option<NonNull>,
     /// Can be null
-    pub const_ptr: *const u8,
+    pub ptr_const: *const u8,
     /// Can be null
-    pub mut_ptr: *mut u8,
+    pub ptr_mut: *mut u8,
 }
 
 impl From<[u8; 8]> for word { fn from(value: [u8; 8]) -> Self { Self {u8x8: value} } }
