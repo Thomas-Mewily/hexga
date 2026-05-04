@@ -22,7 +22,7 @@ pub(crate) static APP: Singleton<AppCore> = Singleton::new(AppCore::new);
 pub fn try_app() -> Option<impl DerefMut<Target = AppCore>>
 {
     APP.inner()
-        .try_lock()
+        .try_write()
         .ok()
         .map(|l| l.guard_map_mut(DerefMut::deref_mut))
 }
