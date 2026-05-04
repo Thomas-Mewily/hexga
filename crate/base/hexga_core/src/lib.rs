@@ -265,7 +265,7 @@ pub mod hexga_prelude
         run::*,
         utils::*,
         wrapper::*,
-        result::prelude,
+        result::prelude::*,
         convert::*,
         bit::prelude::*,
         map_on::prelude::*,

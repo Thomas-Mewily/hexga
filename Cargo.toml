@@ -1,6 +1,11 @@
 [workspace]
 resolver = "3"
-members = ["crate/base/*", "crate/engine/*", "share_crate", "tmp/*"]
+members = [
+    "crate/base/*", 
+    "crate/engine/*", 
+    "share_crate", 
+    "tmp/*"
+    ]
 
 
 [workspace.package]
@@ -33,6 +38,7 @@ hexga_math             = { path = "./crate/base/hexga_math",                 ver
 hexga_utils            = { path = "./crate/base/hexga_utils",                version = "0.0.11-beta.53", default-features = false }
 hexga_image            = { path = "./crate/base/hexga_image",                version = "0.0.11-beta.53", default-features = false }
 hexga                  = { path = "./crate/base/hexga",                      version = "0.0.11-beta.53", default-features = false }
+
 hexga_wgpu             = { path = "./crate/engine/hexga_wgpu",                 version = "0.0.11-beta.53", default-features = false }
 hexga_graphics         = { path = "./crate/engine/hexga_graphics",             version = "0.0.11-beta.53", default-features = false }
 hexga_engine           = { path = "./crate/engine/hexga_engine",               version = "0.0.11-beta.53", default-features = false }

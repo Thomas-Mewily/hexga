@@ -46,6 +46,7 @@ pub trait With<T>
 //pub trait GetterSetter<T> : Has<T> + Setter<T>{}
 //impl<S,T> GetterSetter<T> for S where S:Has<T> +Setter<T>{}
 
+/*
 // Based on [GGEZ Has trait](https://docs.rs/ggez/latest/ggez/context/trait.Has.html)
 pub trait HasRef<T>
 {
@@ -65,6 +66,7 @@ impl<T> HasMut<T> for T
 {
     fn retrive_mut(&mut self) -> &mut T { self }
 }
+*/
 
 //pub trait Has<T> : HasRef<T> + HasMut<T>{}
 //impl<S,T> Has<T> for S where S:HasRef<T> +HasMut<T>{}

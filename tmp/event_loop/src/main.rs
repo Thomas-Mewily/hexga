@@ -1,6 +1,29 @@
+#![allow(unused)]
+pub use hexga_engine::prelude::*;
+
+struct MonJeu;
+
+impl App for MonJeu
+{
+    fn update(&mut self, dt: DeltaTime, ctx: &mut Ctx) {
+        println!("update {dt}")
+    }
+
+    fn draw(&mut self, ctx: &mut Ctx) {
+        println!("draw")
+    }
+
+    fn resumed(&mut self, ctx: &mut Ctx) {
+        println!("resumed");
+    }
+
+    fn suspended(&mut self, ctx: &mut Ctx) {
+        println!("suspended");
+    }
+}
 
 
 fn main()
 {
-    println!("Hello, world!");
+    (|| MonJeu).run().expect("failed to run")
 }

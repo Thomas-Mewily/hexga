@@ -12,12 +12,27 @@ use std::sync::{Arc, LazyLock};
 
 pub use hexga::*;
 pub mod app;
+pub mod clipboard;
+mod free_function;
+pub mod graphics;
+pub mod input;
+pub mod log;
+pub mod perf;
+pub mod window;
+pub use free_function::*;
 
 use prelude::*;
 pub mod prelude
 {
     pub use super::{
         app::prelude::*,
+        clipboard::prelude::*,
+        graphics::prelude::*,
+        //clipboard::*,
+        input::prelude::*,
+        log::prelude::*,
+        perf::prelude::*,
+        window::prelude::*,
     };
     pub use hexga::prelude::*;
 }
