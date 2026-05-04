@@ -28,7 +28,7 @@ impl GpuInstance
 }
 
 #[non_exhaustive]
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct InstanceDescriptor
 {
     pub backends: BackendFlags,
@@ -43,6 +43,16 @@ pub struct WgpuInstanceDescriptor
     /// Options the control the behavior of various backends.
     pub backend_options: wgpu::BackendOptions,
 }
+
+impl PartialEq for WgpuInstanceDescriptor
+{
+    fn eq(&self, other: &Self) -> bool 
+    {
+        // Todo : also take into consideration the backend_options?
+        self.flags == other.flags
+    }
+}
+
 impl Default for WgpuInstanceDescriptor
 {
     fn default() -> Self

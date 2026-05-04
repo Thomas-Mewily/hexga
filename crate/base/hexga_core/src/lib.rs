@@ -142,7 +142,7 @@ pub mod marker;
 pub mod primitive;
 pub mod ptr;
 pub mod result;
-pub mod run;
+//pub mod run;
 #[cfg(feature = "std")]
 pub mod singleton;
 pub mod utils;
@@ -208,7 +208,9 @@ pub mod modules
 {
     pub use super::
     {
-        accessor,allocation,asynchrone,boxed,builder,cell,cfg,ops,collections,default,format,guard,handle,iter,option,rc,sync,convert,marker,primitive,ptr,result,run,utils,wrapper,bit,
+        accessor,allocation,asynchrone,boxed,builder,cell,cfg,ops,collections,default,format,guard,handle,iter,option,rc,sync,convert,marker,primitive,ptr,result,
+        //run,
+        utils,wrapper,bit,
     };
     pub use crate::map_on;
     pub use super::
@@ -262,7 +264,7 @@ pub mod hexga_prelude
         macros::prelude::*,
         marker::prelude::*,
         primitive::prelude::*,
-        run::*,
+        //run::*,
         utils::*,
         wrapper::*,
         result::prelude::*,

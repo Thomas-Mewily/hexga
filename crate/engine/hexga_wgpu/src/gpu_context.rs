@@ -15,6 +15,7 @@ impl Gpu
     pub fn is_not_init() -> bool { !Self::is_init() }
 }
 
+/*
 impl<F> AsyncRunner<F, GpuParam> for Gpu
 where
     F: AsyncFnOnce(GpuInitOutput),
@@ -27,20 +28,21 @@ where
         Ok(())
     }
 }
+*/
 
 impl Gpu
 {
-    pub async fn new(param: GpuParam) -> GpuResult<GpuInitOutput>
+    pub async fn new(param: GpuParam, compatible_surface: Option<wgpu::SurfaceTarget<'static>>) -> GpuResult<GpuInitOutput>
     {
         if Gpu::is_init()
         {
             return Err(GpuError::GpuAlreadyInit);
         }
-        Self::from_init(GpuInit::new(param).await?).await
+        Self::from_init(GpuInit::new(param, compatible_surface).await?).await
     }
     pub async fn from_init(gpu: GpuInit) -> GpuResult<GpuInitOutput>
     {
-        let GpuInit { gpu, output } = gpu;
+        let GpuInit { gpu, compatible_surface, output,  } = gpu;
         match GPU_CTX.try_insert(gpu)
         {
             Ok(_) => Ok(output),
@@ -49,14 +51,13 @@ impl Gpu
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, PartialEq)]
 pub struct GpuParam
 {
     pub instance: InstanceDescriptor,
     pub wgpu_instance: WgpuInstanceDescriptor,
-
     pub power_preference: PowerPreference,
-    pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
+    //pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
 }
 impl Debug for GpuParam
 {
@@ -65,7 +66,6 @@ impl Debug for GpuParam
         f.debug_struct("GpuParam")
             .field("instance", &self.instance)
             .field("power_preference", &self.power_preference)
-            .field("compatible_surface", &self.compatible_surface.is_some())
             .finish()
     }
 }
@@ -95,10 +95,10 @@ impl Into<wgpu::PowerPreference> for PowerPreference
     }
 }
 
-#[derive(Debug)]
 pub struct GpuInit
 {
     gpu: GpuContext,
+    compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
     output: GpuInitOutput,
 }
 impl GpuInit
@@ -106,6 +106,7 @@ impl GpuInit
     pub async fn from_instance_and_surface(
         instance: GpuInstance,
         surface: Option<GpuSurface<'static>>,
+        compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
         param: GpuParam,
     ) -> GpuResult<Self>
     {
@@ -150,18 +151,19 @@ impl GpuInit
             output: GpuInitOutput {
                 surface: surface.map(|wgpu| wgpu.into()),
             },
+            compatible_surface,
         })
     }
-    pub async fn new(mut param: GpuParam) -> GpuResult<Self>
+    pub async fn new(mut param: GpuParam, mut compatible_surface: Option<wgpu::SurfaceTarget<'static>>) -> GpuResult<Self>
     {
         let instance = GpuInstance::new(&param.instance);
 
-        let surface = match param.compatible_surface.take()
+        let surface = match compatible_surface.take()
         {
             Some(s) => Some(instance.wgpu.create_surface(s)?),
             None => None,
         };
-        Self::from_instance_and_surface(instance, surface.map(|v| v.into()), param).await
+        Self::from_instance_and_surface(instance, surface.map(|v| v.into()), compatible_surface, param).await
     }
 }
 #[derive(Debug)]
