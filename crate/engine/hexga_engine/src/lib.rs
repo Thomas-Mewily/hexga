@@ -15,6 +15,7 @@ pub mod app;
 pub mod graphics;
 pub mod log;
 pub mod window;
+pub mod input;
 mod free_fn;
 
 use prelude::*;
@@ -25,7 +26,7 @@ pub mod prelude
         graphics::prelude::*,
         log::prelude::*,
         window::prelude::*,
+        input::prelude::*,
     };
     pub use hexga::prelude::*;
-    
 }

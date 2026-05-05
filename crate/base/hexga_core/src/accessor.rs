@@ -11,6 +11,7 @@ impl<'a,T> Has<'a,T> for T where T:Copy
 }
 */
 
+/*
 pub trait Has<T>
 {
     fn retrieve(&self) -> T;
@@ -21,6 +22,7 @@ where
 {
     fn retrieve(&self) -> T { *self }
 }
+*/
 
 /*
 pub trait Setter<T>

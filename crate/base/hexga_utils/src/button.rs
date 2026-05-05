@@ -21,12 +21,16 @@ pub enum ButtonToggle
     /// True
     Toggle,
 }
-pub trait ButtonToggleExtension: Has<ButtonToggle>
+pub trait ButtonToggleExtension
 {
-    fn is_hold(&self) -> bool { self.retrieve().is_hold() }
-    fn is_toggle(&self) -> bool { self.retrieve().is_toggle() }
+    fn is_hold(&self) -> bool;
+    fn is_toggle(&self) -> bool;
 }
-impl<T> ButtonToggleExtension for T where T: Has<ButtonToggle> {}
+impl ButtonToggleExtension for ButtonToggle 
+{
+    fn is_hold(&self) -> bool { (*self).is_hold() }
+    fn is_toggle(&self) -> bool { (*self).is_toggle() }
+}
 impl ButtonToggle
 {
     pub const fn is_hold(self) -> bool { matches!(self, Self::Hold) }
@@ -51,12 +55,16 @@ pub enum ButtonState
     /// False
     Up,
 }
-pub trait ButtonStateExtension: Has<ButtonState>
+pub trait ButtonStateExtension
 {
-    fn is_up(&self) -> bool { self.retrieve().is_up() }
-    fn is_down(&self) -> bool { self.retrieve().is_down() }
+    fn is_up(&self) -> bool;
+    fn is_down(&self) -> bool;
 }
-impl<T> ButtonStateExtension for T where T: Has<ButtonState> {}
+impl ButtonStateExtension for ButtonState 
+{
+    fn is_up(&self) -> bool { (*self).is_up() }
+    fn is_down(&self) -> bool { (*self).is_down() }
+}
 impl ButtonState
 {
     pub const fn is_up(self) -> bool { matches!(self, ButtonState::Up) }
@@ -79,12 +87,15 @@ pub enum ButtonRepeat
     NotRepeated,
     Repeated,
 }
-pub trait ButtonRepeatExtension: Has<ButtonRepeat>
+pub trait ButtonRepeatExtension
 {
-    fn is_repeated(&self) -> bool { self.retrieve().is_repeated() }
-    fn is_not_repeated(&self) -> bool { self.retrieve().is_not_repeated() }
+    fn is_repeated(&self) -> bool;
+    fn is_not_repeated(&self) -> bool { !self.is_repeated() }
 }
-impl<T> ButtonRepeatExtension for T where T: Has<ButtonRepeat> {}
+impl ButtonRepeatExtension for ButtonRepeat 
+{
+    fn is_repeated(&self) -> bool { (*self).is_repeated() }
+}
 impl ButtonRepeat
 {
     pub const fn is_repeated(self) -> bool { matches!(self, ButtonRepeat::Repeated) }

@@ -7,6 +7,7 @@ pub(crate) enum AppInternalEvent
 }
 
 
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AppMessage<Event=AppEvent>
 {
@@ -14,7 +15,27 @@ pub enum AppMessage<Event=AppEvent>
     Flow(AppFlow),
 }
 
-pub struct AppEvent;
+#[derive(Debug, Clone, PartialEq)]
+pub enum AppEvent
+{
+    Input(InputEvent),
+    Window(WindowEvent),
+    //Custom(AppCustomEvent),
+}
+
+impl From<InputEvent> for AppEvent
+{
+    fn from(input: InputEvent) -> Self { Self::Input(input) }
+}
+impl From<KeyEvent> for AppEvent
+{
+    fn from(key: KeyEvent) -> Self { Self::Input(key.into()) }
+}
+impl From<WindowEvent> for AppEvent
+{
+    fn from(window: WindowEvent) -> Self { Self::Window(window.into()) }
+}
+
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum AppFlow

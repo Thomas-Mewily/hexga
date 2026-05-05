@@ -103,7 +103,7 @@ pub struct GpuInit
 }
 impl GpuInit
 {
-    pub async fn from_instance_and_surface(
+    pub async fn from_instance_and_compatible_surface(
         instance: GpuInstance,
         surface: Option<GpuSurface<'static>>,
         compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
@@ -154,16 +154,23 @@ impl GpuInit
             compatible_surface,
         })
     }
-    pub async fn new(mut param: GpuParam, mut compatible_surface: Option<wgpu::SurfaceTarget<'static>>) -> GpuResult<Self>
+    pub async fn from_instance(
+        instance: GpuInstance,
+        mut compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
+        param: GpuParam,
+    ) -> GpuResult<Self>
     {
-        let instance = GpuInstance::new(&param.instance);
-
         let surface = match compatible_surface.take()
         {
             Some(s) => Some(instance.wgpu.create_surface(s)?),
             None => None,
         };
-        Self::from_instance_and_surface(instance, surface.map(|v| v.into()), compatible_surface, param).await
+        Self::from_instance_and_compatible_surface(instance, surface.map(|v| v.into()), compatible_surface, param).await
+    }
+    pub async fn new(mut param: GpuParam, mut compatible_surface: Option<wgpu::SurfaceTarget<'static>>) -> GpuResult<Self>
+    {
+        let instance = GpuInstance::new(&param.instance);
+        Self::from_instance(instance, compatible_surface, param).await
     }
 }
 #[derive(Debug)]

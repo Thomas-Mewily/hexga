@@ -9,6 +9,7 @@ macro_rules! impl_new_unit_or_number {
             fn sum<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ZERO, Self::add) }
         }
 
+
         impl<T, T2> CastFrom<$name<T2>> for $name<T>
         where
             T: CastFrom<T2>,
@@ -340,6 +341,18 @@ macro_rules! new_number
                 }
             }
         );
+
+        impl<T: Min> Min for $name<T> {
+            fn min_elementwise(self, other: Self) -> Self {
+                $name(self.0.min_elementwise(other.0))
+            }
+        }
+
+        impl<T: Max> Max for $name<T> {
+            fn max_elementwise(self, other: Self) -> Self {
+                $name(self.0.max_elementwise(other.0))
+            }
+        }
 
         map_on_operator_assign!(
             (($trait_name: tt, $fn_name: tt)) =>

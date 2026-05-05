@@ -125,7 +125,7 @@ impl WindowAttribute for AppParam
         self
     }
 
-    fn is_active(self) -> bool {
+    fn is_active(&self) -> bool {
         self.window.is_active()
     }
 

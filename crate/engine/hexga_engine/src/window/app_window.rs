@@ -183,7 +183,7 @@ impl WindowAttribute for Window
         self
     }
 
-    fn is_active(self) -> bool {
+    fn is_active(&self) -> bool {
         self.param.is_active()
     }
 
@@ -236,7 +236,7 @@ pub trait WindowAttribute:
     fn set_content_protected(&mut self, protected: bool) -> &mut Self;
     fn with_content_protected(mut self, protected: bool) -> Self { self.set_content_protected(protected); self }
 
-    fn is_active(self) -> bool;
+    fn is_active(&self) -> bool;
     fn set_active(&mut self, active: bool) -> &mut Self;
     fn with_active(mut self, active: bool) -> Self { self.set_active(active); self }
 }
@@ -397,7 +397,7 @@ impl WindowAttribute for WindowParam
         self
     }
     
-    fn is_active(self) -> bool {
+    fn is_active(&self) -> bool {
         self.active
     }
     

@@ -30,7 +30,8 @@ impl<F,A> AppRunner<AppCtx> for F
             ctx,
             app: LazyFnValue::new(self),
             param,
-            proxy
+            proxy,
+            unhandled_event: Vec::new(),
         };
 
         // Todo handle wasm32
@@ -50,6 +51,89 @@ pub(crate) struct Runner<F, A, Ctx>
     app : LazyFnValue<A, F>,
     param : AppParam,
     proxy: WinitEventLoopProxy,
+    unhandled_event: Vec<AppEvent>,
+}
+
+
+impl<F, A, Ctx> Runner<F, A, Ctx>
+    where 
+        F: AppInit<A>,
+        A: App<AppEvent,Ctx>,
+        Ctx: AppContext
+{
+    fn event(&mut self, ev: impl Into<AppEvent>) -> Option<AppEvent> { App::event(self, ev.into(), &mut ()) }
+    fn message(&mut self, msg: impl Into<AppMessage>) 
+    { 
+        match msg.into()
+        {
+            AppMessage::Event(event) => { self.event(event); },
+            AppMessage::Flow(flow) => self.dispatch_flow(flow),
+        }
+    }
+
+    fn dispatch_flow(&mut self, flow: AppFlow) 
+    {
+        match flow
+        {
+            AppFlow::Resumed => self.resumed(&mut ()),
+            AppFlow::Suspended => self.suspended(&mut ()),
+            AppFlow::Update(dt) => self.update(dt, &mut ()),
+            AppFlow::Draw => self.draw(&mut ()),
+        }
+    }
+
+    fn init_app_if_needed(&mut self)
+    {
+        if self.app.is_init() { return; }
+        
+        let time = Time::since_launch();
+        self.ctx.time().current = time;
+        self.ctx.time().last = time;
+        self.ctx.time().dt = zero();
+        //self.ctx.time().tick = 0;
+
+        let app = self.app.as_mut();
+        for ev in self.unhandled_event.drain(..)
+        {
+            app.event(ev, &mut self.ctx);
+        }
+    }
+
+    fn update_app(&mut self)
+    {
+        if !self.app.is_init() { return; }
+        
+        let now = Time::since_launch();
+        let last_time = self.ctx.time().current;
+        let mut dt = now - last_time;
+        
+        let (step_dt, consume_dt_rest) = match self.ctx.time().strategy {
+            TimeStrategy::Variable => 
+            {
+                if dt > DeltaTime::ZERO 
+                {
+                    self.update(dt, &mut ());
+                }
+                return;
+            }
+            TimeStrategy::Fixed(step_dt) => (step_dt, false),
+            TimeStrategy::Capped(max_dt) => (dt.min_partial(max_dt), true)
+        };
+
+        if step_dt.is_negative_or_zero() { return; }
+        
+        while dt >= step_dt 
+        {
+            self.update(step_dt, &mut ());
+            dt -= step_dt;
+        }
+        
+        if consume_dt_rest && dt > DeltaTime::ZERO
+        {
+            self.update(dt, &mut ());
+            dt = DeltaTime::ZERO;
+        }
+    }
 }
 
 impl<F, A, Ctx> App<AppEvent,()> for Runner<F, A, Ctx>
@@ -58,8 +142,31 @@ impl<F, A, Ctx> App<AppEvent,()> for Runner<F, A, Ctx>
         A: App<AppEvent,Ctx>,
         Ctx: AppContext
 {
-    fn message(&mut self, msg: AppMessage, ctx: &mut ()) {
-        
+    fn draw(&mut self, ctx: &mut ()) 
+    {
+        if self.app.is_init()
+        {
+            self.app.as_mut().draw(&mut self.ctx);
+        }
+    }
+
+    fn update(&mut self, dt: DeltaTime, _ctx: &mut ()) 
+    {
+        self.ctx.time().last = self.ctx.time().current;
+        self.ctx.time().current += dt;
+        self.ctx.time().dt = dt;
+        self.ctx.time().tick += 1;
+
+        if !self.app.is_init() { return; }
+        self.app.as_mut().update(dt, &mut self.ctx);
+    }
+
+    fn event(&mut self, ev: AppEvent, ctx: &mut ()) -> Option<AppEvent> {
+        match self.app.observe_mut()
+        {
+            Some(app) => app.event(ev, &mut self.ctx),
+            None => { self.unhandled_event.push(ev); None },
+        }
     }
 }
 
@@ -74,24 +181,28 @@ impl<F, A, Ctx> winit::application::ApplicationHandler<AppInternalEvent> for Run
     {
         if self.ctx.window().init_window_if_needed(event_loop)
         {
-            if self.ctx.graphics().is_none()
+            if self.ctx.try_graphics().is_none()
             {
                 let shared_window = self.ctx.window().window.as_ref().unwrap().clone();
 
                 AppGraphics::init(
                     shared_window,
                     self.param.gpu.clone(),
+                    None,
                     self.proxy.clone(),
                 )
                 .expect("failed to init the gpu");
+                self.event(AppEvent::Window(WindowEvent::Open));
             }
         }
 
-        self.message(AppMessage::Flow(AppFlow::Resumed), &mut ());
+        self.message(AppMessage::Flow(AppFlow::Resumed));
     }
 
-    fn suspended(&mut self, event_loop: &WinitEventLoopActive) {
-        self.message(AppMessage::Flow(AppFlow::Suspended), &mut ());
+    fn suspended(&mut self, event_loop: &WinitEventLoopActive) 
+    {
+        self.message(AppMessage::Flow(AppFlow::Suspended));
+        // Do I need to destroy the window / graphics on some platform ?
     }
 
     fn window_event(
@@ -100,7 +211,83 @@ impl<F, A, Ctx> winit::application::ApplicationHandler<AppInternalEvent> for Run
         window_id: WinitWindowID,
         event: winit::event::WindowEvent,
     ) {
-        
+        match event
+        {
+            WinitWindowEvent::Resized(physical_size) =>
+            {
+                self.event(WindowEvent::Resize(physical_size.convert()));
+            }
+            winit::event::WindowEvent::CloseRequested =>
+            {
+                self.event(WindowEvent::Close);
+                event_loop.exit();
+            }
+            winit::event::WindowEvent::Destroyed =>
+            {
+                self.event(WindowEvent::Destroy);
+            }
+            WinitWindowEvent::KeyboardInput {
+                device_id: _,
+                event,
+                is_synthetic: _,
+            } =>
+            {
+                let code = KeyCode::from(event.physical_key);
+                let repeat = if event.repeat
+                {
+                    ButtonRepeat::Repeated
+                }
+                else
+                {
+                    ButtonRepeat::NotRepeated
+                };
+                let state = if event.state.is_pressed()
+                {
+                    ButtonState::Down
+                }
+                else
+                {
+                    ButtonState::Up
+                };
+
+                if code == KeyCode::Escape
+                // TODO make it debug/cfg/option<Binding> to force exit
+                {
+                    event_loop.exit();
+                }
+                let char: Option<char> = match &event.logical_key
+                {
+                    winit::keyboard::Key::Character(s) if s.chars().count() == 1 =>
+                    {
+                        s.chars().next()
+                    }
+                    _ => None,
+                };
+                let key = KeyEvent {
+                    code,
+                    repeat,
+                    state,
+                    char,
+                };
+                self.event(AppEvent::Input(InputEvent::Key(key).into()));
+            }
+            /*
+            // TODO: interesting event to handle:
+            winit::event::WindowEvent::DroppedFile(path_buf) => todo!(),
+            winit::event::WindowEvent::HoveredFile(path_buf) => todo!(),
+            winit::event::WindowEvent::HoveredFileCancelled => todo!(),
+            winit::event::WindowEvent::Focused(_) => todo!(),
+            winit::event::WindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer } => todo!(),
+            winit::event::WindowEvent::ThemeChanged(theme) => todo!(),
+            winit::event::WindowEvent::Occluded(_) => todo!()
+            */
+            winit::event::WindowEvent::RedrawRequested =>
+            {
+                self.update_app();
+                self.message(AppMessage::Flow(AppFlow::Draw));
+            }
+            _ => (),
+        }
     }
 
     fn new_events(&mut self, event_loop: &WinitEventLoopActive, cause: winit::event::StartCause)
@@ -111,6 +298,21 @@ impl<F, A, Ctx> winit::application::ApplicationHandler<AppInternalEvent> for Run
     fn exiting(&mut self, event_loop: &WinitEventLoopActive) {  }
 
     fn about_to_wait(&mut self, event_loop: &WinitEventLoopActive) {
-        
+
     }
+
+    fn user_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, event: AppInternalEvent) 
+    {
+        match event
+        {
+            AppInternalEvent::Gpu(app_graphics) =>
+            {
+                *self.ctx.try_graphics() = Some(app_graphics.expect("failed to init the gpu"));
+                //app.graphics = Some(app_graphics.expect("failed to init the gpu"));
+                self.ctx.window().init_surface_if_needed();
+                //app.window.init_surface_if_needed();
+            }
+        }
+    }
+
 }

@@ -26,7 +26,7 @@ impl AppGraphics
         mut param: GpuParam,
     ) -> GpuResult<Self>
     {
-        let gpu_init = GpuInit::from_instance_and_surface(instance, surface, compatible_surface, param).await?;
+        let gpu_init = GpuInit::from_instance_and_compatible_surface(instance, surface, compatible_surface, param).await?;
         let output = Gpu::from_init(gpu_init).await?;
 
         Ok(Self::new())
@@ -35,39 +35,41 @@ impl AppGraphics
     pub(crate) async fn async_init_gpu(
         instance: gpu::GpuInstance,
         surface: Option<graphics::GpuSurface<'static>>,
+        compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
         window: WinitWindowShared,
         param: GpuParam,
         proxy: WinitEventLoopProxy,
     )
     {
         let _ = proxy.send_event(AppInternalEvent::Gpu(
-            Self::init_gpu(instance, surface, window, param).await,
+            Self::init_gpu(instance, surface, compatible_surface, window, param).await,
         ));
     }
 
     pub(crate) fn init(
         window: WinitWindowShared,
         mut param: GpuParam,
+        mut compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
         proxy: WinitEventLoopProxy,
     ) -> GpuResult
     {
         let surface_size: Point2 = window.inner_size().convert();
         let surface_size = surface_size.max(one());
 
-        if param.compatible_surface.is_none()
+        if compatible_surface.is_none()
         {
-            param.compatible_surface = Some(window.clone().into());
+            compatible_surface = Some(window.clone().into());
         }
 
         let instance = gpu::GpuInstance::new(&param.instance);
         let surface = Some(
             instance
                 .wgpu
-                .create_surface(param.compatible_surface.take().expect("missing surface"))?
+                .create_surface(compatible_surface.take().expect("missing surface"))?
                 .into(),
         );
 
-        Self::async_init_gpu(instance, surface, window, param, proxy).spawn();
+        Self::async_init_gpu(instance, surface, compatible_surface, window, param, proxy).spawn();
         Ok(())
     }
 }
