@@ -316,6 +316,7 @@ impl<F, A, Ctx> winit::application::ApplicationHandler<AppInternalEvent> for Run
     }
 
     fn about_to_wait(&mut self, event_loop: &WinitEventLoopActive) {
+        // Todo: remove the update_app()
         self.update_app();
         self.ctx.window().undirty_if_needed();
     }

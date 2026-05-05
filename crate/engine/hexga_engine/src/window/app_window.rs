@@ -9,6 +9,9 @@ pub(crate) type WinitWindowShared = Arc<WinitWindow>;
 pub struct Window
 {
     pub(crate) param : DirtyFlag<WindowParam>,
+
+    pub(crate) is_pos_dirty : bool,
+    pub(crate) is_size_dirty : bool,
     //pub(crate) winit_param: WinitWindowAttributes,
 
     pub(crate) window: Option<WinitWindowShared>,
@@ -17,6 +20,13 @@ pub struct Window
 
 impl Window
 {
+    pub(crate) fn set_all_dirty(&mut self)
+    {
+        self.param.set_dirty(true);
+        self.is_pos_dirty = true;
+        self.is_size_dirty = true;
+    }
+
     pub(crate) fn init_window_if_needed(&mut self, active: &WinitEventLoopActive) -> bool
     {
         if self.window.is_some()
@@ -35,6 +45,7 @@ impl Window
 
         let window = WinitWindowShared::new(active.create_window(win_attr).expect("can't create window"));
         self.window = Some(window);
+        self.set_all_dirty();
         true
     }
 
@@ -63,11 +74,15 @@ impl Window
 
         window.set_title(title);
 
-        if size.area().is_non_zero()
+        if size.area().is_non_zero() && self.is_size_dirty
         {
             window.request_inner_size(to_winit_size(*size));
         }
-        window.set_outer_position(to_winit_pos(*position));
+
+        if self.is_pos_dirty
+        {
+            window.set_outer_position(to_winit_pos(*position));
+        }
         window.set_window_level((*level).into());
 
         if window.is_visible() != Some(!visible)
@@ -99,6 +114,8 @@ impl Window
         // window.set_cursor_grab(attr.cursor_grab).ok();
         // window.set_cursor_visible(cursor_visible);
 
+        self.is_pos_dirty = false;
+        self.is_size_dirty = false;
         self.param.set_dirty(false);
     }
 
@@ -124,6 +141,7 @@ impl Window
             .create_surface(shared_window)
             .expect("failed to create the window");
         self.surface = Some(GpuConfiguredSurface::from_surface(surface.into(), size));
+        self.set_all_dirty();
 
         true
     }
@@ -131,7 +149,17 @@ impl Window
 
 impl GetPosition<int,2> for Window
 {
-    fn pos(&self) -> Vector<int, 2> {
+    fn pos(&self) -> Vector<int, 2> 
+    {
+        match &self.window
+        {
+            Some(w) => match w.outer_position()
+            {
+                Ok(pos) => { return pos.convert(); },
+                Err(_) => {},
+            },
+            None => {},
+        }
         self.param.pos()
     }
 }
@@ -139,19 +167,26 @@ impl SetPosition<int,2> for Window
 {
     fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self {
         self.param.set_pos(pos); 
+        self.is_pos_dirty = true;
         self
     }
 }
 impl GetSize<int,2> for Window
 {
     fn size(&self) -> Vector<int, 2> {
-        self.param.size()
+        match &self.window
+        {
+            Some(w) => w.inner_size().convert(),
+            None => self.param.size(),
+        }
     }
 }
 impl SetSize<int,2> for Window
 {
     fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self {
-        self.param.set_size(size); self
+        self.param.set_size(size); 
+        self.is_size_dirty = true;
+        self
     }
 }
 

@@ -66,23 +66,13 @@ impl Default for TimeStrategy
     }
 }
 
-
-
-
-pub mod experimental
+pub trait AppContext
 {
-    pub(crate) use super::*;
-
-    pub trait AppContext
-    {
-        fn window(&mut self) -> &mut Window;
-        fn graphics(&mut self) -> &mut AppGraphics { self.try_graphics().as_mut().expect("graphics are not init") }
-        fn try_graphics(&mut self) -> &mut Option<AppGraphics>;
-        fn time(&mut self) -> &mut TimeManager;
-    }
+    fn window(&mut self) -> &mut Window;
+    fn graphics(&mut self) -> &mut AppGraphics { self.try_graphics().as_mut().expect("graphics are not init") }
+    fn try_graphics(&mut self) -> &mut Option<AppGraphics>;
+    fn time(&mut self) -> &mut TimeManager;
 }
-use experimental::*;
-
 
 pub trait App<Event=AppEvent,Ctx=AppCtx>
 {

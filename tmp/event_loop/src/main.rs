@@ -6,7 +6,9 @@ struct MonJeu;
 impl App for MonJeu
 {
     fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx) {
-        println!("update {dt}")
+        //println!("update {dt}")
+        let title = format!("{}", ctx.time().current);
+        ctx.window().set_title(title);
     }
 
     fn draw(&mut self, ctx: &mut AppCtx) {

@@ -18,9 +18,9 @@ pub use spawn::*;
 
 pub mod prelude
 {
-    pub use super::{App,AppRunner,AppCtx,AsyncSpawn};
+    pub use super::{App,AppRunner,AppCtx,AppContext,AsyncSpawn};
 
-    pub(crate) use super::{AppInternalEvent,application::experimental::AppContext};
+    pub(crate) use super::{AppInternalEvent};
     pub(crate) type WinitEventLoopActive = winit::event_loop::ActiveEventLoop;
     pub(crate) type WinitEventLoop = winit::event_loop::EventLoop<AppInternalEvent>;
     pub(crate) type WinitEventLoopProxy = winit::event_loop::EventLoopProxy<AppInternalEvent>;
