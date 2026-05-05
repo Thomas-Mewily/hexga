@@ -6,6 +6,7 @@ pub struct AppCtx
     pub(crate) window : Window,
     pub(crate) graphics : Option<AppGraphics>,
     pub(crate) time : TimeManager,
+    pub(crate) clipboard : Clipboard,
 }
 
 impl AppContext for AppCtx
@@ -21,6 +22,10 @@ impl AppContext for AppCtx
     
     fn time(&mut self) -> &mut TimeManager {
         &mut self.time
+    }
+    
+    fn clipboard(&mut self) -> &mut Clipboard {
+        &mut self.clipboard
     }
 }
 
@@ -72,6 +77,7 @@ pub trait AppContext
     fn graphics(&mut self) -> &mut AppGraphics { self.try_graphics().as_mut().expect("graphics are not init") }
     fn try_graphics(&mut self) -> &mut Option<AppGraphics>;
     fn time(&mut self) -> &mut TimeManager;
+    fn clipboard(&mut self) -> &mut Clipboard;
 }
 
 pub trait App<Event=AppEvent,Ctx=AppCtx>
