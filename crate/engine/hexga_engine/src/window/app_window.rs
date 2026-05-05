@@ -38,6 +38,70 @@ impl Window
         true
     }
 
+    pub(crate) fn undirty_if_needed(&mut self)
+    {
+        if !self.param.is_dirty() { return; }
+        let Some(window) = &self.window else { return; };
+
+        let WindowParam 
+        { 
+            title, 
+            size, 
+            position, 
+            level, 
+            resizable, 
+            buttons, 
+            maximized, 
+            visible, 
+            transparent, 
+            blur, 
+            decoration, 
+            content_protected, 
+            active, 
+            //cursor_visible 
+        } = self.param.deref();
+
+        window.set_title(title);
+
+        if size.area().is_non_zero()
+        {
+            window.request_inner_size(to_winit_size(*size));
+        }
+        window.set_outer_position(to_winit_pos(*position));
+        window.set_window_level((*level).into());
+
+        if window.is_visible() != Some(!visible)
+        {
+            window.set_visible(*visible);
+        }
+
+        window.set_resizable(*resizable);
+
+        let buttons = (*buttons).into();
+        if window.enabled_buttons() != buttons
+        {
+            window.set_enabled_buttons(buttons);
+        }
+
+        if window.is_maximized() != *maximized 
+        {
+            window.set_maximized(*maximized);
+        }
+        window.set_transparent(*transparent);
+        window.set_blur(*blur);
+
+        if window.is_decorated() != *decoration
+        {
+            window.set_decorations(*decoration);
+        }
+        window.set_content_protected(*content_protected);
+        
+        // window.set_cursor_grab(attr.cursor_grab).ok();
+        // window.set_cursor_visible(cursor_visible);
+
+        self.param.set_dirty(false);
+    }
+
     pub(crate) fn init_surface_if_needed(&mut self) -> bool
     {
         if Gpu::is_not_init()
@@ -239,6 +303,12 @@ pub trait WindowAttribute:
     fn is_active(&self) -> bool;
     fn set_active(&mut self, active: bool) -> &mut Self;
     fn with_active(mut self, active: bool) -> Self { self.set_active(active); self }
+
+    /* Not related to window
+    fn is_cursor_visible(&self) -> bool;
+    fn set_cursor_visible(&mut self, visible: bool) -> &mut Self;
+    fn with_cursor_visible(mut self, visible: bool) -> Self { self.set_cursor_visible(visible); self}
+    */
 }
 
 #[non_exhaustive]
@@ -255,9 +325,10 @@ pub struct WindowParam
     pub visible: bool,
     pub transparent: bool,
     pub blur: bool,
-    pub decorations: bool,
+    pub decoration: bool,
     pub content_protected: bool,
     pub active: bool,
+    //pub cursor_visible: bool,
 }
 impl Default for WindowParam
 {
@@ -265,7 +336,7 @@ impl Default for WindowParam
     {
         Self 
         {
-            title: String::new(),
+            title: "hexga app".to_owned(),
             size: Point2::ZERO,
             position: Point2::ZERO,
             level: ___(),
@@ -275,9 +346,10 @@ impl Default for WindowParam
             visible: true,
             transparent: false,
             blur: false,
-            decorations: true,
+            decoration: true,
             content_protected: false,
             active: true,
+            //cursor_visible: true,
         }
     }
 }
@@ -380,11 +452,11 @@ impl WindowAttribute for WindowParam
     }
 
     fn have_decoration(&self) -> bool {
-        self.decorations
+        self.decoration
     }
 
     fn set_decoration(&mut self, decorations: bool) -> &mut Self {
-        self.decorations = decorations;
+        self.decoration = decorations;
         self
     }
 
@@ -421,7 +493,7 @@ impl From<WindowParam> for WinitWindowAttributes
             visible,
             transparent,
             blur,
-            decorations: decoration,
+            decoration,
             content_protected,
             active,
         } = value;

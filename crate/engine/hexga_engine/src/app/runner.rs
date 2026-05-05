@@ -93,6 +93,7 @@ impl<F, A, Ctx> Runner<F, A, Ctx>
         //self.ctx.time().tick = 0;
 
         let app = self.app.as_mut();
+        app.resumed(&mut self.ctx);
         for ev in self.unhandled_event.drain(..)
         {
             app.event(ev, &mut self.ctx);
@@ -159,6 +160,20 @@ impl<F, A, Ctx> App<AppEvent,()> for Runner<F, A, Ctx>
 
         if !self.app.is_init() { return; }
         self.app.as_mut().update(dt, &mut self.ctx);
+    }
+
+    fn resumed(&mut self, ctx: &mut ()) {
+        if self.app.is_init()
+        {
+            self.app.as_mut().resumed(&mut self.ctx);
+        }
+    }
+
+    fn suspended(&mut self, ctx: &mut ()) {
+        if self.app.is_init()
+        {
+            self.app.as_mut().suspended(&mut self.ctx);
+        }
     }
 
     fn event(&mut self, ev: AppEvent, ctx: &mut ()) -> Option<AppEvent> {
@@ -295,10 +310,14 @@ impl<F, A, Ctx> winit::application::ApplicationHandler<AppInternalEvent> for Run
         
     }
 
-    fn exiting(&mut self, event_loop: &WinitEventLoopActive) {  }
+    fn exiting(&mut self, event_loop: &WinitEventLoopActive) 
+    { 
+        self.dispatch_flow(AppFlow::Suspended);
+    }
 
     fn about_to_wait(&mut self, event_loop: &WinitEventLoopActive) {
-
+        self.update_app();
+        self.ctx.window().undirty_if_needed();
     }
 
     fn user_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, event: AppInternalEvent) 
@@ -310,6 +329,7 @@ impl<F, A, Ctx> winit::application::ApplicationHandler<AppInternalEvent> for Run
                 *self.ctx.try_graphics() = Some(app_graphics.expect("failed to init the gpu"));
                 //app.graphics = Some(app_graphics.expect("failed to init the gpu"));
                 self.ctx.window().init_surface_if_needed();
+                self.init_app_if_needed();
                 //app.window.init_surface_if_needed();
             }
         }
