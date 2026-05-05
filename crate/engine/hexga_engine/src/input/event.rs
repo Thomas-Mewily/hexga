@@ -18,23 +18,16 @@ pub struct KeyEvent
     pub state: ButtonState,
     pub char: Option<char>,
 }
-impl ButtonRepeatExtension for KeyEvent
+impl Has<ButtonRepeat> for KeyEvent
 {
-    fn is_repeated(&self) -> bool {
-        self.repeat.is_repeated()
+    fn retrieve(&self) -> ButtonRepeat {
+        self.repeat
     }
-
-    fn is_not_repeated(&self) -> bool {
-        self.repeat.is_not_repeated() }
 }
-impl ButtonStateExtension for KeyEvent
+impl Has<ButtonState> for KeyEvent
 {
-    fn is_up(&self) -> bool {
-        self.state.is_up()
-    }
-
-    fn is_down(&self) -> bool {
-        self.state.is_down()
+    fn retrieve(&self) -> ButtonState {
+        self.state
     }
 }
 

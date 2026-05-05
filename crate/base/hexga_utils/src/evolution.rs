@@ -2,7 +2,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{Evolution, PreviousValue};
+    pub use super::{Evolution, EvolutionWithContext, PreviousValue};
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
@@ -28,6 +28,26 @@ where
 {
     fn value(&self) -> T { self.value }
     fn old_value(&self) -> T { self.old_value }
+}
+
+pub trait EvolutionWithContext<I, Ctx>
+where
+    I: Copy
+{
+    /// The current state right now
+    fn value(&self, ctx: &mut Ctx) -> I;
+    /// The state in the old frame
+    fn old_value(&self, ctx: &mut Ctx) -> I;
+
+    /// `value() - old_value()`
+    fn delta(&self, ctx: &mut Ctx) -> I::Output
+    where
+        I: Sub,
+    {
+        self.value(ctx) - self.old_value(ctx)
+    }
+
+    fn evolution(&self, ctx: &mut Ctx) -> PreviousValue<I> { PreviousValue::new(self.value(ctx), self.old_value(ctx)) }
 }
 
 pub trait Evolution<I>

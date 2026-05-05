@@ -12,6 +12,7 @@ pub struct Window
 
     pub(crate) is_pos_dirty : bool,
     pub(crate) is_size_dirty : bool,
+    pub(crate) is_content_protected_dirty : bool,
     //pub(crate) winit_param: WinitWindowAttributes,
 
     pub(crate) window: Option<WinitWindowShared>,
@@ -20,11 +21,27 @@ pub struct Window
 
 impl Window
 {
-    pub(crate) fn set_all_dirty(&mut self)
+    pub(crate) fn request_draw(&mut self)
     {
-        self.param.set_dirty(true);
-        self.is_pos_dirty = true;
-        self.is_size_dirty = true;
+        //unimplemented!()
+    }
+
+    pub(crate) fn configure_surface(&mut self)
+    {
+        //unimplemented!()
+    }
+
+    pub(crate) fn destroy(&mut self) { self.window = None; }
+}
+
+impl Window
+{
+    pub(crate) fn set_all_dirty(&mut self, dirty: bool)
+    {
+        self.param.set_dirty(dirty);
+        self.is_pos_dirty = dirty;
+        self.is_size_dirty = dirty;
+        self.is_content_protected_dirty = dirty;
     }
 
     pub(crate) fn init_window_if_needed(&mut self, active: &WinitEventLoopActive) -> bool
@@ -45,7 +62,7 @@ impl Window
 
         let window = WinitWindowShared::new(active.create_window(win_attr).expect("can't create window"));
         self.window = Some(window);
-        self.set_all_dirty();
+        self.set_all_dirty(true);
         true
     }
 
@@ -109,14 +126,16 @@ impl Window
         {
             window.set_decorations(*decoration);
         }
-        window.set_content_protected(*content_protected);
+
+        if self.is_content_protected_dirty != *content_protected
+        {
+            window.set_content_protected(*content_protected);
+        }
         
         // window.set_cursor_grab(attr.cursor_grab).ok();
         // window.set_cursor_visible(cursor_visible);
 
-        self.is_pos_dirty = false;
-        self.is_size_dirty = false;
-        self.param.set_dirty(false);
+        self.set_all_dirty(false);
     }
 
     pub(crate) fn init_surface_if_needed(&mut self) -> bool
@@ -141,7 +160,7 @@ impl Window
             .create_surface(shared_window)
             .expect("failed to create the window");
         self.surface = Some(GpuConfiguredSurface::from_surface(surface.into(), size));
-        self.set_all_dirty();
+        self.set_all_dirty(true);
 
         true
     }
@@ -279,6 +298,7 @@ impl WindowAttribute for Window
 
     fn set_content_protected(&mut self, protected: bool) -> &mut Self {
         self.param.set_content_protected(protected);
+        self.is_content_protected_dirty = true;
         self
     }
 

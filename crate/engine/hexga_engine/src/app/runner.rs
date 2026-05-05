@@ -135,6 +135,15 @@ impl<F, A, Ctx> Runner<F, A, Ctx>
             dt = DeltaTime::ZERO;
         }
     }
+
+    fn app_event(&mut self, ev: AppEvent) -> Option<AppEvent> 
+    {
+        match self.app.observe_mut()
+        {
+            Some(app) => app.event(ev, &mut self.ctx),
+            None => { self.unhandled_event.push(ev); None },
+        }
+    }
 }
 
 impl<F, A, Ctx> App<AppEvent,()> for Runner<F, A, Ctx>
@@ -176,11 +185,23 @@ impl<F, A, Ctx> App<AppEvent,()> for Runner<F, A, Ctx>
         }
     }
 
-    fn event(&mut self, ev: AppEvent, ctx: &mut ()) -> Option<AppEvent> {
-        match self.app.observe_mut()
+    fn event(&mut self, ev: AppEvent, ctx: &mut ()) -> Option<AppEvent> 
+    {
+
+        match &ev
         {
-            Some(app) => app.event(ev, &mut self.ctx),
-            None => { self.unhandled_event.push(ev); None },
+            AppEvent::Input(input) => match input
+            {
+                InputEvent::Key(k) => { self.ctx.keyboard().key_event(*k); self.app_event(ev) },
+            },
+            AppEvent::Window(window) => match window
+            {
+                WindowEvent::Resize(size) => { self.ctx.window().configure_surface(); self.app_event(ev) },
+                WindowEvent::Move(_) => self.app_event(ev),
+                WindowEvent::Open => self.app_event(ev),
+                WindowEvent::Close => self.app_event(ev),
+                WindowEvent::Destroy => { let ev = self.app_event(ev); self.ctx.window().destroy(); ev },
+            },
         }
     }
 }
