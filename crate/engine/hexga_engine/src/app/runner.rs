@@ -196,8 +196,16 @@ impl<A> ::winit::application::ApplicationHandler<AppInternalEvent> for AppRunner
         self.execute(event_loop, |app, ctx| app.resumed(ctx));
     }
 
-    fn suspended(&mut self, event_loop: &::winit::event_loop::ActiveEventLoop) {
+    fn suspended(&mut self, event_loop: &WinitEventLoopActive) {
         self.execute(event_loop, |app, ctx| app.paused(ctx));
+    }
+
+    fn exiting(&mut self, event_loop: &WinitEventLoopActive) {
+        self.execute(event_loop, |app, ctx| app.paused(ctx));
+    }
+
+    fn about_to_wait(&mut self, event_loop: &WinitEventLoopActive) {
+        
     }
 
     fn window_event(
@@ -207,6 +215,10 @@ impl<A> ::winit::application::ApplicationHandler<AppInternalEvent> for AppRunner
         event: ::winit::event::WindowEvent,
     ) {
         //todo!()
+    }
+
+    fn user_event(&mut self, event_loop: &WinitEventLoopActive, event: AppInternalEvent) {
+        
     }
 }
 
