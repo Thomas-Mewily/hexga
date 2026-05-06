@@ -21,9 +21,23 @@ pub struct Window
 
 impl Window
 {
-    pub(crate) fn request_draw(&mut self)
+    pub fn request_draw(&mut self)
     {
-        //unimplemented!()
+        match &self.window
+        {
+            Some(w) => w.request_redraw(),
+            None => {},
+        }
+    }
+
+    pub fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>)
+    {
+        let request_type = request_type.into();
+        match &self.window
+        {
+            Some(w) => { w.request_user_attention(request_type.map(|v| v.into())); },
+            None => {},
+        }
     }
 
     pub(crate) fn configure_surface(&mut self)
@@ -36,7 +50,7 @@ impl Window
 
 impl Window
 {
-    pub(crate) fn set_all_dirty(&mut self, dirty: bool)
+    pub(crate) fn set_dirty(&mut self, dirty: bool)
     {
         self.param.set_dirty(dirty);
         self.is_pos_dirty = dirty;
@@ -62,7 +76,7 @@ impl Window
 
         let window = WinitWindowShared::new(active.create_window(win_attr).expect("can't create window"));
         self.window = Some(window);
-        self.set_all_dirty(true);
+        self.set_dirty(true);
         true
     }
 
@@ -135,7 +149,7 @@ impl Window
         // window.set_cursor_grab(attr.cursor_grab).ok();
         // window.set_cursor_visible(cursor_visible);
 
-        self.set_all_dirty(false);
+        self.set_dirty(false);
     }
 
     pub(crate) fn init_surface_if_needed(&mut self) -> bool
@@ -160,7 +174,7 @@ impl Window
             .create_surface(shared_window)
             .expect("failed to create the window");
         self.surface = Some(GpuConfiguredSurface::from_surface(surface.into(), size));
-        self.set_all_dirty(true);
+        self.set_dirty(true);
 
         true
     }
@@ -629,6 +643,40 @@ impl From<WindowLevel> for winit::window::WindowLevel
             WindowLevel::AlwaysOnBottom => W::AlwaysOnBottom,
             WindowLevel::Normal => W::Normal,
             WindowLevel::AlwaysOnTop => W::AlwaysOnTop,
+        }
+    }
+}
+
+/// ## Platform-specific
+///
+/// - **X11:** Sets the WM's `XUrgencyHint`. No distinction between [`Critical`] and
+///   [`Informational`].
+///
+/// [`Critical`]: Self::Critical
+/// [`Informational`]: Self::Informational
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum UserAttentionType {
+    /// ## Platform-specific
+    ///
+    /// - **macOS:** Bounces the dock icon until the application is in focus.
+    /// - **Windows:** Flashes both the window and the taskbar button until the application is in
+    ///   focus.
+    Critical,
+
+    /// ## Platform-specific
+    ///
+    /// - **macOS:** Bounces the dock icon once.
+    /// - **Windows:** Flashes the taskbar button until the application is in focus.
+    #[default]
+    Informational,
+}
+impl From<UserAttentionType> for winit::window::UserAttentionType
+{
+    fn from(value: UserAttentionType) -> Self {
+        match value
+        {
+            UserAttentionType::Critical => winit::window::UserAttentionType::Critical,
+            UserAttentionType::Informational => winit::window::UserAttentionType::Informational,
         }
     }
 }

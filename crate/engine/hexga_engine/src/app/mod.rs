@@ -18,10 +18,14 @@ pub use spawn::*;
 mod context;
 pub use context::*;
 
+mod event_loop;
+pub use event_loop::*;
+
 
 pub mod prelude
 {
-    pub use super::{App,AppRunner,AppCtx,AppContext,AsyncSpawn};
+    pub use super::{App,AppRun,AppRunRaw,AppCtx,AppEventLoop,AsyncSpawn};
+    pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutTimeManager,HasMutGraphics};
 
     pub(crate) use super::{AppInternalEvent};
     pub(crate) type WinitEventLoopActive = winit::event_loop::ActiveEventLoop;

@@ -3,18 +3,18 @@ pub use hexga_graphics::*;
 
 pub mod prelude
 {
-    pub(crate) use super::{AppGraphics, GpuMessage, wgpu};
+    pub(crate) use super::{Graphics, GpuMessage, wgpu};
     pub use hexga_graphics::prelude::*;
 }
 
 
 #[derive(Debug)]
-pub struct AppGraphics 
+pub struct Graphics 
 {
 
 }
 
-impl AppGraphics
+impl Graphics
 {
     pub(crate) fn new() -> Self { Self {} }
 
@@ -75,4 +75,4 @@ impl AppGraphics
 }
 
 
-pub(crate) type GpuMessage = GpuResult<AppGraphics>;
+pub(crate) type GpuMessage = GpuResult<Graphics>;

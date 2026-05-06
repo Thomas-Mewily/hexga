@@ -1,3 +1,4 @@
+/*
 /// Run some code after some complexe initialization
 pub trait Runner<F, P>
 {
@@ -23,3 +24,4 @@ pub trait AsyncRunner<F, P>
     }
     async fn run_with_param(f: F, param: P) -> Self::Output;
 }
+*/

@@ -77,6 +77,16 @@ impl<T> HasMut<T> for T
     fn retrive_mut(&mut self) -> &mut T { self }
 }
 
+#[macro_export]
+macro_rules! impl_has_mut_trait {
+    ($trait_name:ident, $type_name:ty, $method_name:ident) => {
+        pub trait $trait_name : HasMut<$type_name>
+        {
+            fn $method_name(&mut self) -> &mut $type_name { self.retrive_mut() }
+        }
+        impl<T> $trait_name for T where T: HasMut<$type_name> {}
+    };
+}
 
 //pub trait Has<T> : HasRef<T> + HasMut<T>{}
 //impl<S,T> Has<T> for S where S:HasRef<T> +HasMut<T>{}
