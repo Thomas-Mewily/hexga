@@ -41,7 +41,7 @@ impl Graphics
         proxy: WinitEventLoopProxy,
     )
     {
-        let _ = proxy.send_event(AppInternalEvent::Gpu(
+        let _ = proxy.send_event(DefaultContextEvent::Gpu(
             Self::init_gpu(instance, surface, compatible_surface, window, param).await,
         ));
     }

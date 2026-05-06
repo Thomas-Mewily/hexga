@@ -1,6 +1,6 @@
 use super::*;
 
-pub enum AppInternalEvent
+pub enum DefaultContextEvent
 {
     Gpu(GpuMessage),
     //Custom(CustomEvent),
@@ -16,10 +16,11 @@ pub enum AppMessage<Event=AppEvent>
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum AppEvent
+pub enum AppEvent<User=DefaultContextEvent>
 {
     Input(InputEvent),
     Window(WindowEvent),
+    User(User),
     //Custom(AppCustomEvent),
 }
 

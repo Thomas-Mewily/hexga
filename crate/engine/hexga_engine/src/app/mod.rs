@@ -25,10 +25,10 @@ pub mod winit
 {
     use super::*;
 
-    pub type WinitEventLoopProxy = ::winit::event_loop::EventLoopProxy<AppInternalEvent>;
+    pub type WinitEventLoopProxy = ::winit::event_loop::EventLoopProxy<DefaultContextEvent>;
 
     pub(crate) type WinitEventLoopActive = ::winit::event_loop::ActiveEventLoop;
-    pub(crate) type WinitEventLoop = ::winit::event_loop::EventLoop<AppInternalEvent>;
+    pub(crate) type WinitEventLoop = ::winit::event_loop::EventLoop<DefaultContextEvent>;
     pub(crate) type WinitWindowEvent = ::winit::event::WindowEvent;
 }
 
@@ -38,7 +38,7 @@ pub mod prelude
     pub use super::{App,AppRun,AppRunRaw,AppCtx,AppEventLoop,AsyncSpawn};
     pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutTimeManager,HasMutGraphics};
 
-    pub(crate) use super::{AppInternalEvent};
+    pub(crate) use super::{DefaultContextEvent};
     pub(crate) use super::winit::*;
 }
 

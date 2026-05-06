@@ -49,6 +49,10 @@ impl<A> App<A> for AppDefaultCtx
     fn draw(&mut self, ctx: &mut AppCtx<A>) {
         
     }
+    
+    fn exit(&mut self, ctx: &mut AppCtx<A>) {
+        todo!()
+    }
 }
 
 /*
@@ -208,6 +212,9 @@ impl<A,Ctx> App<()> for AppWithCtx<A,Ctx>
     fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx<()>) -> Option<AppEvent> {
         self.ctx.event(ev, &mut ctx.with_ctx(&mut self.app))
     }
+    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<()>) {
+        self.ctx.update(dt, &mut ctx.with_ctx(&mut self.app))
+    }
     fn draw(&mut self, ctx: &mut AppCtx<()>) {
         self.ctx.draw(&mut ctx.with_ctx(&mut self.app))
     }
@@ -217,8 +224,9 @@ impl<A,Ctx> App<()> for AppWithCtx<A,Ctx>
     fn resumed(&mut self, ctx: &mut AppCtx<()>) {
         self.ctx.resumed(&mut ctx.with_ctx(&mut self.app))
     }
-    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<()>) {
-        self.ctx.update(dt, &mut ctx.with_ctx(&mut self.app))
+
+    fn exit(&mut self, ctx: &mut AppCtx<()>) {
+        self.ctx.exit(&mut ctx.with_ctx(&mut self.app))
     }
 }
 

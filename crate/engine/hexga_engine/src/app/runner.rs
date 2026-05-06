@@ -89,6 +89,15 @@ where
             None => {},
         }
     }
+
+    fn exit(&mut self, ctx: &mut AppCtx<Ctx>)
+    {
+        match self.app.observe_mut()
+        {
+            Some(app) => app.exit(ctx),
+            None => {},
+        }
+    }
 }
 
 
@@ -187,7 +196,7 @@ impl<A> AppRunner<A>
     }
 }
 
-impl<A> ::winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A>
+impl<A> ::winit::application::ApplicationHandler<DefaultContextEvent> for AppRunner<A>
     where 
         A: App<()>,
 {
@@ -217,7 +226,7 @@ impl<A> ::winit::application::ApplicationHandler<AppInternalEvent> for AppRunner
         //todo!()
     }
 
-    fn user_event(&mut self, event_loop: &WinitEventLoopActive, event: AppInternalEvent) {
+    fn user_event(&mut self, event_loop: &WinitEventLoopActive, event: DefaultContextEvent) {
         
     }
 }
