@@ -63,13 +63,26 @@ pub trait App<Ctx=AppDefaultCtx> : Sized
 
 pub struct AppCtx<'a,'b,Ctx=AppDefaultCtx>
 {
-    pub(crate) ctx: &'a mut Ctx,
-    pub(crate) event_loop: &'a mut AppEventLoop<'b>,
+    ctx: &'a mut Ctx,
+    event_loop: &'a mut AppEventLoop<'b>,
+    app_param: &'a AppParam,
+    proxy: &'a WinitEventLoopProxy,
 }
 impl<'a,'b,Ctx> AppCtx<'a,'b,Ctx>
 {
-    pub(crate) fn new(ctx: &'a mut Ctx, event_loop: &'a mut AppEventLoop<'b>) -> Self
+    pub(crate) fn new(ctx: &'a mut Ctx, event_loop: &'a mut AppEventLoop<'b>, app_param: &'a AppParam, proxy : &'a WinitEventLoopProxy) -> Self
     {
-        Self { ctx, event_loop }
+        Self { ctx, event_loop, app_param, proxy }
+    }
+    pub fn event_loop(&mut self) -> &mut AppEventLoop<'b> { self.event_loop }
+    pub fn context(&mut self) -> &mut Ctx { self.ctx }
+    pub fn app_param(&mut self) -> &AppParam { self.app_param }
+    // Todo : wrap the proxy type ? 
+    pub fn proxy(&mut self) -> &WinitEventLoopProxy { self.proxy }
+
+    pub fn with_ctx<'c,C>(&'c mut self, new_ctx: &'c mut C) -> AppCtx<'c,'b,C> where 'a: 'c
+    {
+        AppCtx { ctx: new_ctx, event_loop: self.event_loop, app_param: self.app_param, proxy: self.proxy }
     }
 }
+

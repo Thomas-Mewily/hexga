@@ -24,8 +24,24 @@ impl<A> App<A> for AppDefaultCtx
     fn paused(&mut self, ctx: &mut AppCtx<A>) {
         
     }
-    fn resumed(&mut self, ctx: &mut AppCtx<A>) {
-        
+    fn resumed(&mut self, ctx: &mut AppCtx<A>) 
+    {
+        if self.window().init_window_if_needed(ctx.event_loop())
+        {
+            if self.try_graphics().is_none()
+            {
+                let shared_window = self.window().window.as_ref().unwrap().clone();
+
+                Graphics::init(
+                    shared_window,
+                    ctx.app_param().gpu.clone(),
+                    None,
+                    ctx.proxy().clone(),
+                )
+                .expect("failed to init the gpu");
+                //self.event(AppEvent::Window(WindowEvent::Open));
+            }
+        }
     }
     fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<A>) {
         
@@ -190,19 +206,19 @@ impl<A,Ctx> App<()> for AppWithCtx<A,Ctx>
     Ctx: App<A>
 {
     fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx<()>) -> Option<AppEvent> {
-        self.ctx.event(ev, &mut AppCtx::new(&mut self.app, ctx.event_loop))
+        self.ctx.event(ev, &mut ctx.with_ctx(&mut self.app))
     }
     fn draw(&mut self, ctx: &mut AppCtx<()>) {
-        self.ctx.draw(&mut AppCtx::new(&mut self.app, ctx.event_loop))
+        self.ctx.draw(&mut ctx.with_ctx(&mut self.app))
     }
     fn paused(&mut self, ctx: &mut AppCtx<()>) {
-        self.ctx.paused(&mut AppCtx::new(&mut self.app, ctx.event_loop))
+        self.ctx.paused(&mut ctx.with_ctx(&mut self.app))
     }
     fn resumed(&mut self, ctx: &mut AppCtx<()>) {
-        self.ctx.resumed(&mut AppCtx::new(&mut self.app, ctx.event_loop))
+        self.ctx.resumed(&mut ctx.with_ctx(&mut self.app))
     }
     fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<()>) {
-        self.ctx.update(dt, &mut AppCtx::new(&mut self.app, ctx.event_loop))
+        self.ctx.update(dt, &mut ctx.with_ctx(&mut self.app))
     }
 }
 

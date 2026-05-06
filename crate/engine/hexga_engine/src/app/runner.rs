@@ -172,21 +172,41 @@ pub(crate) struct AppRunner<A>
     */
 }
 
+impl<A> AppRunner<A>
+    where 
+    A: App<()>
+{
+    fn execute<F,O>(&mut self, event_loop: &WinitEventLoopActive, f: F) -> O
+    where 
+    F: Fn(&mut A, &mut AppCtx<()>) -> O
+    {
+        let mut no_ctx = ();
+        let mut event_loop = AppEventLoop::new(event_loop, &mut self.event_loop);
+        let mut ctx = AppCtx::new(&mut no_ctx, &mut event_loop, &self.param, &self.proxy);
+        f(&mut self.app, &mut ctx)
+    }
+}
+
 impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A>
     where 
         A: App<()>,
 {
-    fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
-        self.app.resumed(&mut AppCtx::new(&mut (), &mut AppEventLoop::new(event_loop, &mut self.event_loop)));
+    fn resumed(&mut self, event_loop: &WinitEventLoopActive) 
+    {
+        self.execute(event_loop, |app, ctx| app.resumed(ctx));
+    }
+
+    fn suspended(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+        self.execute(event_loop, |app, ctx| app.paused(ctx));
     }
 
     fn window_event(
         &mut self,
-        event_loop: &winit::event_loop::ActiveEventLoop,
+        event_loop: &WinitEventLoopActive,
         window_id: winit::window::WindowId,
         event: winit::event::WindowEvent,
     ) {
-        todo!()
+        //todo!()
     }
 }
 

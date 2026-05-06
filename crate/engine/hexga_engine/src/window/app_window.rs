@@ -58,7 +58,7 @@ impl Window
         self.is_content_protected_dirty = dirty;
     }
 
-    pub(crate) fn init_window_if_needed(&mut self, active: &WinitEventLoopActive) -> bool
+    pub(crate) fn init_window_if_needed(&mut self, active: &AppEventLoop) -> bool
     {
         if self.window.is_some()
         {
@@ -74,7 +74,7 @@ impl Window
             win_attr = win_attr.with_append(true);
         }
 
-        let window = WinitWindowShared::new(active.create_window(win_attr).expect("can't create window"));
+        let window = WinitWindowShared::new(active.winit().create_window(win_attr).expect("can't create window"));
         self.window = Some(window);
         self.set_dirty(true);
         true
