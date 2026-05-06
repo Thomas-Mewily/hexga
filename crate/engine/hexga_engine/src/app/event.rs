@@ -1,6 +1,6 @@
 use super::*;
 
-pub(crate) enum AppInternalEvent
+pub enum AppInternalEvent
 {
     Gpu(GpuMessage),
     //Custom(CustomEvent),

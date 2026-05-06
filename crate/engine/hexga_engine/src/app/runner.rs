@@ -102,8 +102,8 @@ pub trait AppRunRaw
         free_fn::init();
 
         let event_loop = WinitEventLoop::with_user_event().build().map_err(|_|())?;
-        event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
-        let proxy = event_loop.create_proxy();
+        event_loop.set_control_flow(::winit::event_loop::ControlFlow::Poll);
+        let proxy = AppProxy::new(event_loop.create_proxy());
 
         let mut runner = AppRunner
         {
@@ -161,7 +161,7 @@ pub(crate) struct AppRunner<A>
 {
     app: A,
     param : AppParam,
-    proxy: WinitEventLoopProxy,
+    proxy: AppProxy,
     event_loop: AppEventLoopInner,
     /*
     ctx : Ctx,
@@ -187,7 +187,7 @@ impl<A> AppRunner<A>
     }
 }
 
-impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A>
+impl<A> ::winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A>
     where 
         A: App<()>,
 {
@@ -196,15 +196,15 @@ impl<A> winit::application::ApplicationHandler<AppInternalEvent> for AppRunner<A
         self.execute(event_loop, |app, ctx| app.resumed(ctx));
     }
 
-    fn suspended(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
+    fn suspended(&mut self, event_loop: &::winit::event_loop::ActiveEventLoop) {
         self.execute(event_loop, |app, ctx| app.paused(ctx));
     }
 
     fn window_event(
         &mut self,
         event_loop: &WinitEventLoopActive,
-        window_id: winit::window::WindowId,
-        event: winit::event::WindowEvent,
+        window_id: ::winit::window::WindowId,
+        event: ::winit::event::WindowEvent,
     ) {
         //todo!()
     }

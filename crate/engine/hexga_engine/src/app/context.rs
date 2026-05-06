@@ -36,7 +36,7 @@ impl<A> App<A> for AppDefaultCtx
                     shared_window,
                     ctx.app_param().gpu.clone(),
                     None,
-                    ctx.proxy().clone(),
+                    ctx.proxy().winit().clone(),
                 )
                 .expect("failed to init the gpu");
                 //self.event(AppEvent::Window(WindowEvent::Open));
