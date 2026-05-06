@@ -8,6 +8,14 @@ impl App for MonJeu
     fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx) {
         
     }
+
+    fn draw(&mut self, ctx: &mut AppCtx, l: &mut AppCtx) {
+        
+    }
+
+    fn paused(&mut self, ctx: &mut AppCtx<AppDefaultUserEvent,AppDefaultCtx>) {
+        
+    }
 }
 
 
