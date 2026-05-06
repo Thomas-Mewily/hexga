@@ -18,6 +18,9 @@ pub use spawn::*;
 mod context;
 pub use context::*;
 
+mod defaut_context;
+pub use defaut_context::*;
+
 mod event_loop;
 pub use event_loop::*;
 
@@ -25,20 +28,20 @@ pub mod winit
 {
     use super::*;
 
-    pub type WinitEventLoopProxy = ::winit::event_loop::EventLoopProxy<DefaultContextEvent>;
+    pub type WinitEventLoopProxy<User> = ::winit::event_loop::EventLoopProxy<User>;
 
     pub(crate) type WinitEventLoopActive = ::winit::event_loop::ActiveEventLoop;
-    pub(crate) type WinitEventLoop = ::winit::event_loop::EventLoop<DefaultContextEvent>;
+    pub(crate) type WinitEventLoop<User> = ::winit::event_loop::EventLoop<User>;
     pub(crate) type WinitWindowEvent = ::winit::event::WindowEvent;
 }
 
 
 pub mod prelude
 {
-    pub use super::{App,AppRun,AppRunRaw,AppCtx,AppEventLoop,AsyncSpawn};
+    pub use super::{App,AppRun,AppRunRaw,AppCtx,AppEventLoop,AppUserEvent,AppSendEvent,AsyncSpawn};
     pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutTimeManager,HasMutGraphics};
 
-    pub(crate) use super::{DefaultContextEvent};
+    pub(crate) use super::{AppDefaultUserEvent,AppDefaultUserEventInner};
     pub(crate) use super::winit::*;
 }
 

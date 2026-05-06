@@ -1,9 +1,11 @@
+use crate::app::AppDefaultUserEventInner;
+
 use super::*;
 pub use hexga_graphics::*;
 
 pub mod prelude
 {
-    pub(crate) use super::{Graphics, GpuMessage, wgpu};
+    pub(crate) use super::{Graphics, GpuEvent, wgpu};
     pub use hexga_graphics::prelude::*;
 }
 
@@ -32,26 +34,26 @@ impl Graphics
         Ok(Self::new())
     }
 
-    pub(crate) async fn async_init_gpu(
+    pub(crate) async fn async_init_gpu<P>(
         instance: gpu::GpuInstance,
         surface: Option<graphics::GpuSurface<'static>>,
         compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
         window: WinitWindowShared,
         param: GpuParam,
-        proxy: WinitEventLoopProxy,
+        mut proxy: P,
     )
+    where P: AppSendEvent<GpuEvent> + Async
     {
-        let _ = proxy.send_event(DefaultContextEvent::Gpu(
-            Self::init_gpu(instance, surface, compatible_surface, window, param).await,
-        ));
+        let _ = proxy.send_event(Self::init_gpu(instance, surface, compatible_surface, window, param).await);
     }
 
-    pub(crate) fn init(
+    pub(crate) fn init<P>(
         window: WinitWindowShared,
         mut param: GpuParam,
         mut compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
-        proxy: WinitEventLoopProxy,
+        mut proxy: P,
     ) -> GpuResult
+        where P: AppSendEvent<GpuEvent> + Async
     {
         let surface_size: Point2 = window.inner_size().convert();
         let surface_size = surface_size.max(one());
@@ -75,4 +77,4 @@ impl Graphics
 }
 
 
-pub(crate) type GpuMessage = GpuResult<Graphics>;
+pub(crate) type GpuEvent = GpuResult<Graphics>;

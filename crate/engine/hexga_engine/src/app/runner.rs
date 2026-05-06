@@ -3,7 +3,7 @@ use super::*;
 pub trait AppInit<A>: Fn() -> A + Async {}
 impl<S, A> AppInit<A> for S where S: Fn() -> A + Async {}
 
-pub trait AppRun<Ctx=AppDefaultCtx> : Sized
+pub trait AppRun<User=AppDefaultUserEvent, Ctx=AppDefaultCtx> : Sized
 {
     fn run(self) -> AppResult where Ctx: Default { self.run_with_param(AppParam::default()) }
     fn run_with_param(self, param : AppParam) -> AppResult where Ctx: Default { self.run_with_param_and_ctx(param, ___()) }
@@ -14,8 +14,12 @@ pub trait AppRun<Ctx=AppDefaultCtx> : Sized
     }*/
 }
 
-impl<Ctx,F,A> AppRun<Ctx> for F 
-    where F: Fn() -> A, A: App<Ctx>, Ctx: App<AppInitOnResume<F,A,Ctx>> + App<A>
+impl<User,Ctx,F,A> AppRun<User,Ctx> for F 
+    where 
+    F: Fn() -> A, 
+    A: App<User,Ctx>, 
+    Ctx: App<User,AppInitOnResume<F,A,User,Ctx>> + App<User,A>,
+    User: AppUserEvent
 {
     fn run_with_param_and_ctx(self, param : AppParam, ctx: Ctx) -> AppResult {
         let app = AppInitOnResume::new(self);
@@ -25,31 +29,34 @@ impl<Ctx,F,A> AppRun<Ctx> for F
 
 
 // Lazily create the app on App::resume()
-pub struct AppInitOnResume<F,A,Ctx>
+pub struct AppInitOnResume<F,A,User,Ctx>
 where
     F: Fn() -> A,
-    A: App<Ctx>,
-    Ctx: App<A>
+    A: App<User,Ctx>,
+    Ctx: App<User,A>,
+    User: AppUserEvent
 {
     app : LazyFnValue<A,F>,
-    phantom: PhantomData<Ctx>
+    phantom: PhantomData<(Ctx,User)>
 }
-impl<F,A,Ctx> AppInitOnResume<F,A,Ctx>
+impl<F,A,User,Ctx> AppInitOnResume<F,A,User,Ctx>
 where
     F: Fn() -> A,
-    A: App<Ctx>,
-    Ctx: App<A>
+    A: App<User,Ctx>,
+    Ctx: App<User,A>,
+    User: AppUserEvent
 {
     pub fn new(init: F) -> Self { Self { app: LazyFnValue::new(init), phantom: PhantomData }}
 }
 
-impl<F,A,Ctx> App<Ctx> for AppInitOnResume<F,A,Ctx>
+impl<F,A,User,Ctx> App<User,Ctx> for AppInitOnResume<F,A,User,Ctx>
 where
     F: Fn() -> A,
-    A: App<Ctx>,
-    Ctx: App<A>
+    A: App<User,Ctx>,
+    Ctx: App<User,A>,
+    User: AppUserEvent
 {
-    fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx<Ctx>) -> Option<AppEvent> 
+    fn event(&mut self, ev: AppEvent<User>, ctx: &mut AppCtx<User,Ctx>) -> Option<AppEvent<User>> 
     { 
         match self.app.observe_mut()
         {
@@ -58,7 +65,7 @@ where
         }
     }
 
-    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<Ctx>) 
+    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<User,Ctx>) 
     {
         match self.app.observe_mut()
         {
@@ -67,7 +74,7 @@ where
         }
     }
 
-    fn draw(&mut self, ctx: &mut AppCtx<Ctx>) 
+    fn draw(&mut self, ctx: &mut AppCtx<User,Ctx>) 
     {
         match self.app.observe_mut()
         {
@@ -76,12 +83,12 @@ where
         }
     }
 
-    fn resumed(&mut self, ctx: &mut AppCtx<Ctx>)
+    fn resumed(&mut self, ctx: &mut AppCtx<User,Ctx>)
     {
         self.app.as_mut().resumed(ctx);
     }
 
-    fn paused(&mut self, ctx: &mut AppCtx<Ctx>)
+    fn paused(&mut self, ctx: &mut AppCtx<User,Ctx>)
     {
         match self.app.observe_mut()
         {
@@ -90,7 +97,7 @@ where
         }
     }
 
-    fn exit(&mut self, ctx: &mut AppCtx<Ctx>)
+    fn exit(&mut self, ctx: &mut AppCtx<User,Ctx>)
     {
         match self.app.observe_mut()
         {
@@ -103,10 +110,11 @@ where
 
 
 
-pub trait AppRunRaw
+pub trait AppRunRaw<User=AppDefaultUserEvent>
+    where User: AppUserEvent
 {
     /// Run the app without wrapping it
-    fn run_raw(app : Self, param: AppParam) -> AppResult where Self: App<()>
+    fn run_raw(app : Self, param: AppParam) -> AppResult where Self: App<User,()>
     {
         free_fn::init();
 
@@ -120,6 +128,7 @@ pub trait AppRunRaw
             param,
             proxy,
             event_loop: AppEventLoopInner::new(),
+            phantom: PhantomData,
         };
 
         // Todo handle wasm32
@@ -128,7 +137,11 @@ pub trait AppRunRaw
         Ok(())
     }
 }
-impl<A> AppRunRaw for A where A: App<()> {}
+impl<A,User> AppRunRaw<User> for A 
+where 
+    A: App<User,()>, 
+    User: AppUserEvent
+{}
 
 /*
 impl<F,A> AppRunner<AppCtx> for F 
@@ -163,15 +176,17 @@ impl<F,A> AppRunner<AppCtx> for F
 */
 
 /// Interface between the winit Application trait <=> App trait
-pub(crate) struct AppRunner<A>
+pub(crate) struct AppRunner<A,User>
     where 
-    A: App<()>,
+    A: App<User,()>,
+    User: AppUserEvent,
     //Ctx: AppContext<A>
 {
     app: A,
     param : AppParam,
-    proxy: AppProxy,
+    proxy: AppProxy<User>,
     event_loop: AppEventLoopInner,
+    phantom: PhantomData<User>,
     /*
     ctx : Ctx,
     app : LazyFnValue<A, F>,
@@ -181,13 +196,14 @@ pub(crate) struct AppRunner<A>
     */
 }
 
-impl<A> AppRunner<A>
+impl<A,User> AppRunner<A,User>
     where 
-    A: App<()>
+    A: App<User,()>,
+    User: AppUserEvent
 {
     fn execute<F,O>(&mut self, event_loop: &WinitEventLoopActive, f: F) -> O
     where 
-    F: Fn(&mut A, &mut AppCtx<()>) -> O
+        F: FnOnce(&mut A, &mut AppCtx<User,()>) -> O
     {
         let mut no_ctx = ();
         let mut event_loop = AppEventLoop::new(event_loop, &mut self.event_loop);
@@ -196,9 +212,10 @@ impl<A> AppRunner<A>
     }
 }
 
-impl<A> ::winit::application::ApplicationHandler<DefaultContextEvent> for AppRunner<A>
+impl<A,User> ::winit::application::ApplicationHandler<User> for AppRunner<A,User>
     where 
-        A: App<()>,
+        A: App<User,()>,
+        User: AppUserEvent
 {
     fn resumed(&mut self, event_loop: &WinitEventLoopActive) 
     {
@@ -226,8 +243,8 @@ impl<A> ::winit::application::ApplicationHandler<DefaultContextEvent> for AppRun
         //todo!()
     }
 
-    fn user_event(&mut self, event_loop: &WinitEventLoopActive, event: DefaultContextEvent) {
-        
+    fn user_event(&mut self, event_loop: &WinitEventLoopActive, event: User) {
+        self.execute(event_loop, |app, ctx| app.event(AppEvent::User(event), ctx));
     }
 }
 

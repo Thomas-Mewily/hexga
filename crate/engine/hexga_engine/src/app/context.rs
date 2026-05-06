@@ -1,140 +1,6 @@
-use hexga::ptr::NonNull;
-
 use super::*;
 
 
-/// A single window context
-#[derive(Default)]
-pub struct AppDefaultCtx // <UserData>
-{
-    pub(crate) window : Window,
-    pub(crate) graphics : Option<Graphics>,
-    pub(crate) time : TimeManager,
-    pub(crate) clipboard : Clipboard,
-    pub(crate) keyboard : Keyboard,
-    pub(crate) unhandled_event : Vec<AppEvent>,
-}
-
-impl<A> App<A> for AppDefaultCtx
-{
-    fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx<A>) -> Option<AppEvent> 
-    {
-        Some(ev)
-    }
-    fn paused(&mut self, ctx: &mut AppCtx<A>) {
-        
-    }
-    fn resumed(&mut self, ctx: &mut AppCtx<A>) 
-    {
-        if self.window().init_window_if_needed(ctx.event_loop())
-        {
-            if self.try_graphics().is_none()
-            {
-                let shared_window = self.window().window.as_ref().unwrap().clone();
-
-                Graphics::init(
-                    shared_window,
-                    ctx.app_param().gpu.clone(),
-                    None,
-                    ctx.proxy().winit().clone(),
-                )
-                .expect("failed to init the gpu");
-                //self.event(AppEvent::Window(WindowEvent::Open));
-            }
-        }
-    }
-    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<A>) {
-        
-    }
-    fn draw(&mut self, ctx: &mut AppCtx<A>) {
-        
-    }
-    
-    fn exit(&mut self, ctx: &mut AppCtx<A>) {
-        todo!()
-    }
-}
-
-/*
-impl AppWithEventLoop<AppEvent,()> for AppCtx
-{
-    fn event(&mut self, ev: AppEvent, ctx: &mut ()) -> Option<AppEvent> {
-        match &ev
-        {
-            AppEvent::Input(input) => match input
-            {
-                InputEvent::Key(k) => { self.keyboard().key_event(*k); None },
-            },
-            AppEvent::Window(window) => match window
-            {
-                WindowEvent::Resize(size) => { self.window().configure_surface(); None },
-                WindowEvent::Move(_pos) => Some(ev),
-                WindowEvent::Open => Some(ev),
-                WindowEvent::Close => Some(ev),
-                WindowEvent::Destroy => { self.window().destroy(); None },
-            },
-        }
-    }
-
-    fn resumed(&mut self, ctx: &mut ()) {
-        
-    }
-
-    fn paused(&mut self, ctx: &mut ()) {
-        
-    }
-
-    fn update(&mut self, dt: DeltaTime, ctx: &mut ()) {
-        
-    }
-
-    fn draw(&mut self, ctx: &mut ()) {
-        
-    }
-}
-impl<A> AppContext<A> for AppCtx where A: AppWithEventLoop<AppEvent,Self>
-{
-    fn set_graphics(&mut self, gfx: Option<Graphics>, app: &mut A) 
-    {
-        self.graphics = gfx;
-    }
-}
-*/
-
-
-
-impl HasMut<Graphics> for AppDefaultCtx
-{
-    fn retrive_mut(&mut self) -> &mut Graphics {
-        self.graphics.as_mut().expect("graphics not init")
-    }
-}
-impl HasMut<Keyboard> for AppDefaultCtx
-{
-    fn retrive_mut(&mut self) -> &mut Keyboard {
-        &mut self.keyboard
-    }
-}
-impl HasMut<Window> for AppDefaultCtx
-{
-    fn retrive_mut(&mut self) -> &mut Window {
-        &mut self.window
-    }
-}
-impl HasMut<TimeManager> for AppDefaultCtx
-{
-    fn retrive_mut(&mut self) -> &mut TimeManager {
-        &mut self.time
-    }
-}
-
-impl AppDefaultCtx
-{
-    fn try_graphics(&mut self) -> &mut Option<Graphics> 
-    {
-        &mut self.graphics
-    }
-}
 
 pub type Tick = u64;
 
@@ -181,51 +47,54 @@ impl Default for TimeStrategy
 
 
 #[derive(Clone, Debug)]
-pub struct AppWithCtx<A,Ctx>
+pub struct AppWithCtx<A,User,Ctx>
     where 
-    A : App<Ctx>,
-    Ctx: App<A>
+    A : App<User,Ctx>,
+    Ctx: App<User,A>,
+    User: AppUserEvent,
 {
     pub app : A,
     pub ctx : Ctx,
-    no_unpack: PhantomData<()>,
+    phantom: PhantomData<User>,
 }
 
 
-impl<A,Ctx> AppWithCtx<A,Ctx>
+impl<A,User,Ctx> AppWithCtx<A,User,Ctx>
     where 
-    A : App<Ctx>,
-    Ctx: App<A>
+    A : App<User,Ctx>,
+    Ctx: App<User,A>,
+    User: AppUserEvent
 {
     pub fn new(app: A, ctx: Ctx) -> Self 
     {
-        Self { app, ctx, no_unpack: PhantomData }
+        Self { app, ctx, phantom: PhantomData }
     }
     pub fn into_app_and_ctx(self) -> (A,Ctx) { (self.app, self.ctx) }
 }
 
-impl<A,Ctx> App<()> for AppWithCtx<A,Ctx>
+impl<A,User,Ctx> App<User,()> for AppWithCtx<A,User,Ctx>
     where 
-    A : App<Ctx>,
-    Ctx: App<A>
+    A : App<User,Ctx>,
+    Ctx: App<User,A>,
+    User: AppUserEvent
 {
-    fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx<()>) -> Option<AppEvent> {
+    fn event(&mut self, ev: AppEvent<User>, ctx: &mut AppCtx<User,()>) -> Option<AppEvent<User>> {
         self.ctx.event(ev, &mut ctx.with_ctx(&mut self.app))
     }
-    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<()>) {
+    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<User, ()>) {
         self.ctx.update(dt, &mut ctx.with_ctx(&mut self.app))
     }
-    fn draw(&mut self, ctx: &mut AppCtx<()>) {
+    fn draw(&mut self, ctx: &mut AppCtx<User, ()>) {
         self.ctx.draw(&mut ctx.with_ctx(&mut self.app))
     }
-    fn paused(&mut self, ctx: &mut AppCtx<()>) {
+    fn paused(&mut self, ctx: &mut AppCtx<User, ()>) {
         self.ctx.paused(&mut ctx.with_ctx(&mut self.app))
     }
-    fn resumed(&mut self, ctx: &mut AppCtx<()>) {
+    fn resumed(&mut self, ctx: &mut AppCtx<User, ()>) {
         self.ctx.resumed(&mut ctx.with_ctx(&mut self.app))
     }
 
-    fn exit(&mut self, ctx: &mut AppCtx<()>) {
+    fn exit(&mut self, ctx: &mut AppCtx<User, ()>) {
         self.ctx.exit(&mut ctx.with_ctx(&mut self.app))
     }
 }
