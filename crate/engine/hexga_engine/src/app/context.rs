@@ -3,6 +3,7 @@ use hexga::ptr::NonNull;
 use super::*;
 
 
+/// A single window context
 #[derive(Default)]
 pub struct AppDefaultCtx // <UserData>
 {
@@ -11,12 +12,27 @@ pub struct AppDefaultCtx // <UserData>
     pub(crate) time : TimeManager,
     pub(crate) clipboard : Clipboard,
     pub(crate) keyboard : Keyboard,
-    // user_data : UserData,
+    pub(crate) unhandled_event : Vec<AppEvent>,
 }
 
 impl<A> App<A> for AppDefaultCtx
 {
-    
+    fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx<A>) -> Option<AppEvent> 
+    {
+        Some(ev)
+    }
+    fn paused(&mut self, ctx: &mut AppCtx<A>) {
+        
+    }
+    fn resumed(&mut self, ctx: &mut AppCtx<A>) {
+        
+    }
+    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<A>) {
+        
+    }
+    fn draw(&mut self, ctx: &mut AppCtx<A>) {
+        
+    }
 }
 
 /*

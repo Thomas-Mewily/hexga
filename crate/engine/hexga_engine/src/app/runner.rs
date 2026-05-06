@@ -15,36 +15,35 @@ pub trait AppRun<Ctx=AppDefaultCtx> : Sized
 }
 
 impl<Ctx,F,A> AppRun<Ctx> for F 
-    where F: Fn() -> A, A: App<Ctx>, Ctx: App<AppLazyInit<F,A,Ctx>> + App<A>
+    where F: Fn() -> A, A: App<Ctx>, Ctx: App<AppInitOnResume<F,A,Ctx>> + App<A>
 {
     fn run_with_param_and_ctx(self, param : AppParam, ctx: Ctx) -> AppResult {
-        let app = AppLazyInit::new(self);
+        let app = AppInitOnResume::new(self);
         AppRunRaw::run_raw(AppWithCtx::new(app, ctx), param)
     }
 }
 
 
-// Lazily create the app once every system (graphics, window) is created
-pub struct AppLazyInit<F,A,Ctx>
+// Lazily create the app on App::resume()
+pub struct AppInitOnResume<F,A,Ctx>
 where
     F: Fn() -> A,
     A: App<Ctx>,
     Ctx: App<A>
 {
     app : LazyFnValue<A,F>,
-    unhandled_event : Vec<AppEvent>,
     phantom: PhantomData<Ctx>
 }
-impl<F,A,Ctx> AppLazyInit<F,A,Ctx>
+impl<F,A,Ctx> AppInitOnResume<F,A,Ctx>
 where
     F: Fn() -> A,
     A: App<Ctx>,
     Ctx: App<A>
 {
-    pub fn new(init: F) -> Self { Self { app: LazyFnValue::new(init), unhandled_event: Vec::new(), phantom: PhantomData }}
+    pub fn new(init: F) -> Self { Self { app: LazyFnValue::new(init), phantom: PhantomData }}
 }
 
-impl<F,A,Ctx> App<Ctx> for AppLazyInit<F,A,Ctx>
+impl<F,A,Ctx> App<Ctx> for AppInitOnResume<F,A,Ctx>
 where
     F: Fn() -> A,
     A: App<Ctx>,
@@ -55,7 +54,7 @@ where
         match self.app.observe_mut()
         {
             Some(app) => app.event(ev, ctx),
-            None => { self.unhandled_event.push(ev); None },
+            None => None,
         }
     }
 
@@ -79,11 +78,7 @@ where
 
     fn resumed(&mut self, ctx: &mut AppCtx<Ctx>)
     {
-        match self.app.observe_mut()
-        {
-            Some(app) => app.resumed(ctx),
-            None => {},
-        }
+        self.app.as_mut().resumed(ctx);
     }
 
     fn paused(&mut self, ctx: &mut AppCtx<Ctx>)
