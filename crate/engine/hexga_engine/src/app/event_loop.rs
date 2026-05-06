@@ -1,27 +1,32 @@
 use super::*;
 
-pub struct AppEventLoop<'a>
+pub struct AppEventLoop<'a, User>
+    where User: AppUserEvent
 {
     event_loop : &'a WinitEventLoopActive,
-    inner : &'a mut AppEventLoopInner,
+    inner : &'a mut AppContextField,
+    proxy: &'a AppProxy<User>,
 }
-impl<'a> AppEventLoop<'a>
+impl<'a,User> AppEventLoop<'a,User>
+    where User: AppUserEvent
 {
     pub fn winit(&self) -> &WinitEventLoopActive { self.event_loop }
 }
-impl<'a> AppEventLoop<'a>
+impl<'a, User> AppEventLoop<'a, User>
+    where User: AppUserEvent
 {
-    pub(crate) fn new(event_loop: &'a WinitEventLoopActive, inner : &'a mut AppEventLoopInner) -> Self {
-        Self { event_loop, inner }
+    pub(crate) fn new(event_loop: &'a WinitEventLoopActive, inner : &'a mut AppContextField, proxy: &'a AppProxy<User>) -> Self {
+        Self { event_loop, inner, proxy }
     }
+    pub fn proxy(&mut self) -> &AppProxy<User> { self.proxy }
+    pub fn time(&mut self) -> &mut TimeManager { &mut self.inner.time }
 }
 
-
-pub(crate) struct AppEventLoopInner
+pub(crate) struct AppContextField
 {
-
+    time : TimeManager,
 } 
-impl AppEventLoopInner
+impl AppContextField
 {
-    pub(crate) fn new() -> Self { Self{}}
+    pub(crate) fn new(time : TimeManager) -> Self { Self{ time }}
 }

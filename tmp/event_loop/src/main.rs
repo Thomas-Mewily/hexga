@@ -5,7 +5,9 @@ struct MonJeu;
 
 impl App for MonJeu
 {
-
+    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx) {
+        
+    }
 }
 
 

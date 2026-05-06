@@ -122,12 +122,13 @@ pub trait AppRunRaw<User=AppDefaultUserEvent>
         event_loop.set_control_flow(::winit::event_loop::ControlFlow::Poll);
         let proxy = AppProxy::new(event_loop.create_proxy());
 
+        let update_strat = param.update;
         let mut runner = AppRunner
         {
             app,
             param,
             proxy,
-            event_loop: AppEventLoopInner::new(),
+            event_loop: AppContextField::new(TimeManager::new(update_strat)),
             phantom: PhantomData,
         };
 
@@ -185,7 +186,7 @@ pub(crate) struct AppRunner<A,User>
     app: A,
     param : AppParam,
     proxy: AppProxy<User>,
-    event_loop: AppEventLoopInner,
+    event_loop: AppContextField,
     phantom: PhantomData<User>,
     /*
     ctx : Ctx,
@@ -206,9 +207,51 @@ impl<A,User> AppRunner<A,User>
         F: FnOnce(&mut A, &mut AppCtx<User,()>) -> O
     {
         let mut no_ctx = ();
-        let mut event_loop = AppEventLoop::new(event_loop, &mut self.event_loop);
-        let mut ctx = AppCtx::new(&mut no_ctx, &mut event_loop, &self.param, &self.proxy);
+        let mut event_loop = AppEventLoop::new(event_loop, &mut self.event_loop, &self.proxy);
+        let mut ctx = AppCtx::new(&mut no_ctx, &mut event_loop, &self.param);
         f(&mut self.app, &mut ctx)
+    }
+
+
+    fn update_app(&mut self, event_loop: &WinitEventLoopActive)
+    {
+        let now = Time::since_launch();
+        self.execute(event_loop, |app, ctx|
+            {
+
+                //ctx.event_loop().time()
+            });
+
+        /*
+        let last_time = self.ctx.time().current;
+        let mut dt = now - last_time;
+        
+        let (step_dt, consume_dt_rest) = match self.ctx.time().strategy {
+            TimeStrategy::Variable => 
+            {
+                if dt > DeltaTime::ZERO 
+                {
+                    self.update(dt, &mut ());
+                }
+                return;
+            }
+            TimeStrategy::Fixed(step_dt) => (step_dt, false),
+            TimeStrategy::Capped(max_dt) => (dt.min_partial(max_dt), true)
+        };
+
+        if step_dt.is_negative_or_zero() { return; }
+        
+        while dt >= step_dt 
+        {
+            self.update(step_dt, &mut ());
+            dt -= step_dt;
+        }
+        
+        if consume_dt_rest && dt > DeltaTime::ZERO
+        {
+            self.update(dt, &mut ());
+            dt = DeltaTime::ZERO;
+        }*/
     }
 }
 
@@ -231,7 +274,7 @@ impl<A,User> ::winit::application::ApplicationHandler<User> for AppRunner<A,User
     }
 
     fn about_to_wait(&mut self, event_loop: &WinitEventLoopActive) {
-        
+        self.update_app(event_loop);
     }
 
     fn window_event(

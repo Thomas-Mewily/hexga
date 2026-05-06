@@ -58,7 +58,8 @@ impl Window
         self.is_content_protected_dirty = dirty;
     }
 
-    pub(crate) fn init_window_if_needed(&mut self, active: &AppEventLoop) -> bool
+    pub(crate) fn init_window_if_needed<User>(&mut self, active: &AppEventLoop<User>) -> bool
+        where User: AppUserEvent
     {
         if self.window.is_some()
         {

@@ -8,15 +8,29 @@ pub type Tick = u64;
 pub struct TimeManager
 {
     /// Current accumulated time
-    pub dt: DeltaTime,
+    pub(crate) dt: DeltaTime,
     /// Current time
-    pub current: Time,
+    pub(crate) current: Time,
     /// Previous time (before current dt)
-    pub last: Time,
+    pub(crate) last: Time,
     /// Frame/step counter
-    pub tick: Tick,
+    pub(crate) tick: Tick,
 
     pub strategy : TimeStrategy,
+}
+
+impl TimeManager
+{
+    pub fn dt(&self) -> DeltaTime { self.dt }
+    pub fn current(&self) -> Time { self.current }
+    pub fn last(&self) -> Time { self.last }
+    pub fn tick(&self) -> Tick { self.tick }
+
+    pub(crate) fn new(strategy : TimeStrategy) -> Self 
+    {
+        let time = Time::since_launch();
+        Self { dt: zero(), current: time, last: time, tick: 0, strategy }
+    }
 }
 
 
@@ -36,6 +50,7 @@ pub enum TimeStrategy
     /// Each delta time will be less than or equal to the specified cap.
     Capped(DeltaTime)
 }
+
 
 impl Default for TimeStrategy
 {
@@ -130,7 +145,6 @@ pub trait AppContext : HasMut<Keyboard>
 impl_has_mut_trait!(HasMutWindow, Window, window);
 impl_has_mut_trait!(HasMutKeyboard, Keyboard, keyboard);
 impl_has_mut_trait!(HasMutClipboard, Clipboard, clipboard);
-impl_has_mut_trait!(HasMutTimeManager, TimeManager, time);
 pub trait HasMutGraphics: HasMut<Graphics>
 {
     fn graphics(&mut self) ->  &mut Graphics 

@@ -39,7 +39,7 @@ pub mod winit
 pub mod prelude
 {
     pub use super::{App,AppRun,AppRunRaw,AppCtx,AppEventLoop,AppUserEvent,AppSendEvent,AsyncSpawn};
-    pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutTimeManager,HasMutGraphics};
+    pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutGraphics};
 
     pub(crate) use super::{AppDefaultUserEvent,AppDefaultUserEventInner};
     pub(crate) use super::winit::*;
@@ -51,6 +51,6 @@ pub mod prelude
 
 
 
-pub type AppResult = Result;
+pub type AppResult<T=()> = Result<T>;
 
 

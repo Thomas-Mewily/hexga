@@ -6,6 +6,19 @@ pub struct AppParam
 {
     pub window : WindowParam,
     pub gpu: GpuParam,
+    pub update : TimeStrategy,
+}
+
+pub trait WithUpdateStrategy
+{
+    fn with_update(self, strat: TimeStrategy) -> Self;   
+}
+
+impl WithUpdateStrategy for AppParam
+{
+    fn with_update(mut self, strat: TimeStrategy) -> Self {
+        self.update = strat; self
+    }
 }
 
 impl GetPosition<int,2> for AppParam
