@@ -16,7 +16,72 @@ pub struct TimeManager
     /// Frame/step counter
     pub(crate) tick: Tick,
 
+    /// The update strategy
     pub strategy : TimeStrategy,
+}
+
+
+pub struct TimeManagerUpdater<'a>
+{
+    manager: &'a mut TimeManager,
+    target: DeltaTime,
+    //finish: bool,
+}
+
+impl<'a> Drop for TimeManagerUpdater<'a>
+{
+    fn drop(&mut self) {
+        self.manager.last = self.manager.current;
+    }
+}
+
+impl<'a> Iterator for TimeManagerUpdater<'a>
+{
+    type Item=DeltaTime;
+    fn next(&mut self) -> Option<Self::Item> 
+    {
+        let time = &mut self.manager;
+        let target = self.target;
+
+        if time.current >= target { return None; };
+
+        let mut dt = target - time.current;
+
+        if dt <= DeltaTime::ZERO { return None; }
+        
+        let (step_dt, consume_dt_rest) = match time.strategy 
+        {
+            TimeStrategy::Variable => 
+            {
+                time.last = time.current;
+                time.current = target;
+                time.dt = dt;
+                return Some(dt);
+            }
+            TimeStrategy::Fixed(step_dt) => (step_dt, false),
+            TimeStrategy::Capped(max_dt) => (dt.min_partial(max_dt), true)
+        };
+
+        if step_dt.is_negative_or_zero() { return None; }
+        
+        if dt >= step_dt
+        {
+            time.last = time.current;
+            time.current += step_dt;
+            time.dt = step_dt;
+            Some(step_dt)
+        }
+        else if consume_dt_rest
+        {
+            time.last = time.current;
+            time.current = target;
+            time.dt = dt;
+            Some(dt)
+        } else
+        {
+            None
+        }
+    }
 }
 
 impl TimeManager
@@ -30,6 +95,16 @@ impl TimeManager
     {
         let time = Time::since_launch();
         Self { dt: zero(), current: time, last: time, tick: 0, strategy }
+    }
+
+    pub fn update(&mut self, dt: DeltaTime) -> TimeManagerUpdater<'_>
+    {
+        //self.last = self.current;
+        //self += dt;
+        //self.dt = dt;
+        //self.tick += 1;
+        let target = self.current + dt;
+        TimeManagerUpdater { manager: self, target }
     }
 }
 
@@ -93,24 +168,24 @@ impl<A,User,Ctx> App<User,()> for AppWithCtx<A,User,Ctx>
     Ctx: App<User,A>,
     User: AppUserEvent
 {
-    fn event(&mut self, ev: AppEvent<User>, ctx: &mut AppCtx<User,()>) -> Option<AppEvent<User>> {
-        self.ctx.event(ev, &mut ctx.with_ctx(&mut self.app))
+    fn event(&mut self, ev: AppEvent<User>, l: &mut AppLoop<User>, ctx: &mut ()) -> Option<AppEvent<User>> {
+        self.ctx.event(ev, l, &mut self.app)
     }
-    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<User, ()>) {
-        self.ctx.update(dt, &mut ctx.with_ctx(&mut self.app))
+    fn tick(&mut self, dt: DeltaTime, l: &mut AppLoop<User>, ctx: &mut ()) {
+        self.ctx.tick(dt, l, &mut self.app)
     }
-    fn draw(&mut self, ctx: &mut AppCtx<User, ()>) {
-        self.ctx.draw(&mut ctx.with_ctx(&mut self.app))
+    fn draw(&mut self, l: &mut AppLoop<User>, ctx: &mut ()) {
+        self.ctx.draw(l, &mut self.app)
     }
-    fn paused(&mut self, ctx: &mut AppCtx<User, ()>) {
-        self.ctx.paused(&mut ctx.with_ctx(&mut self.app))
+    fn paused(&mut self, l: &mut AppLoop<User>, ctx: &mut ()) {
+        self.ctx.paused(l, &mut self.app)
     }
-    fn resumed(&mut self, ctx: &mut AppCtx<User, ()>) {
-        self.ctx.resumed(&mut ctx.with_ctx(&mut self.app))
+    fn resumed(&mut self, l: &mut AppLoop<User>, ctx: &mut ()) {
+        self.ctx.resumed(l, &mut self.app)
     }
 
-    fn exit(&mut self, ctx: &mut AppCtx<User, ()>) {
-        self.ctx.exit(&mut ctx.with_ctx(&mut self.app))
+    fn exit(&mut self, l: &mut AppLoop<User>, ctx: &mut ()) {
+        self.ctx.exit(l, &mut self.app)
     }
 }
 
@@ -147,7 +222,7 @@ impl_has_mut_trait!(HasMutKeyboard, Keyboard, keyboard);
 impl_has_mut_trait!(HasMutClipboard, Clipboard, clipboard);
 pub trait HasMutGraphics: HasMut<Graphics>
 {
-    fn graphics(&mut self) ->  &mut Graphics 
+    fn gfx(&mut self) ->  &mut Graphics 
     {
         self.retrive_mut()
     }

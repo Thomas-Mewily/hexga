@@ -1,36 +1,54 @@
 use super::*;
 
-pub trait App<User=AppDefaultUserEvent,Ctx=AppDefaultCtx> : Sized
+pub trait App<User=UserEvent,Ctx=AppCtx> : Sized
     where User: AppUserEvent
 {
-    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<User,Ctx>) { let _ = (dt, ctx); }
-    fn draw(&mut self, ctx: &mut AppCtx<User,Ctx>) { let _ = ctx; }
+    fn tick(&mut self, dt: DeltaTime, l: &mut AppLoop<User>, ctx: &mut Ctx) 
+    {
+        // Todo: mettre la target dans l.time
+        /* 
+        while let Some(dt) = l.time.next()
+        {
 
-    fn resumed(&mut self, ctx: &mut AppCtx<User,Ctx>) { let _ = ctx; }
-    fn paused(&mut self, ctx: &mut AppCtx<User,Ctx>) { let _ = ctx; }
+        }
+        */
+        /*
+        for dt in l.time.update(dt)
+        {
+            self.update(dt, l, ctx);
+        }
+        */
+    }
 
-    fn exit(&mut self, ctx: &mut AppCtx<User,Ctx>) { let _ = ctx; }
+    fn update(&mut self, dt: DeltaTime, l: &mut AppLoop<User>, ctx: &mut Ctx) { let _ = (dt, ctx); }
+    fn draw(&mut self, l: &mut AppLoop<User>, ctx: &mut Ctx) { let _ = ctx; }
 
-    fn event(&mut self, ev: AppEvent<User>, ctx: &mut AppCtx<User,Ctx>) -> Option<AppEvent<User>> 
+    fn resumed(&mut self, l: &mut AppLoop<User>, ctx: &mut Ctx) { let _ = ctx; }
+    fn paused(&mut self, l: &mut AppLoop<User>, ctx: &mut Ctx) { let _ = ctx; }
+
+    fn exit(&mut self, l: &mut AppLoop<User>, ctx: &mut Ctx) { let _ = ctx; }
+
+    fn event(&mut self, ev: AppEvent<User>, l: &mut AppLoop<User>, ctx: &mut Ctx) -> Option<AppEvent<User>> 
     {
         match ev
         {
-            AppEvent::Input(input) => self.input_event(input, ctx).map(AppEvent::Input),
-            AppEvent::Window(window) => self.window_event(window, ctx).map(AppEvent::Window),
-            AppEvent::User(user) => self.user_event(user, ctx).map(AppEvent::User),
+            AppEvent::Input(input) => self.input_event(input, l, ctx).map(AppEvent::Input),
+            AppEvent::Window(window) => self.window_event(window, l, ctx).map(AppEvent::Window),
+            AppEvent::User(user) => self.user_event(user, l, ctx).map(AppEvent::User),
         }
     }
 
-    fn user_event(&mut self, ev: User, ctx: &mut AppCtx<User,Ctx>) -> Option<User> { let _ = ctx; Some(ev) }
-    fn window_event(&mut self, ev: WindowEvent, ctx: &mut AppCtx<User,Ctx>) -> Option<WindowEvent> { let _ = ctx; Some(ev) }
-    fn input_event(&mut self, ev: InputEvent, ctx: &mut AppCtx<User,Ctx>) -> Option<InputEvent> { let _ = ctx; Some(ev) }
+    fn user_event(&mut self, ev: User, l: &mut AppLoop<User>, ctx: &mut Ctx) -> Option<User> { let _ = ctx; Some(ev) }
+    fn window_event(&mut self, ev: WindowEvent, l: &mut AppLoop<User>, ctx: &mut Ctx) -> Option<WindowEvent> { let _ = ctx; Some(ev) }
+    fn input_event(&mut self, ev: InputEvent, l: &mut AppLoop<User>, ctx: &mut Ctx) -> Option<InputEvent> { let _ = ctx; Some(ev) }
 }
 
+/*
 pub struct AppCtx<'a,'b,User=AppDefaultUserEvent, Ctx=AppDefaultCtx>
     where User: AppUserEvent
 {
     ctx: &'a mut Ctx,
-    event_loop: &'a mut AppEventLoop<'b, User>,
+    event_loop: &'a mut AppLoop<'b, User>,
     app_param: &'a AppParam,
 }
 impl<'a,'b,User,Ctx> Deref for AppCtx<'a,'b,User,Ctx>
@@ -49,6 +67,8 @@ impl<'a,'b,User,Ctx> DerefMut for AppCtx<'a,'b,User,Ctx>
         self.ctx
     }
 }
+*/
+
 /*
 impl<'a,'b,User,Ctx,T> HasRef<T> for AppCtx<'a,'b,User,Ctx>
     where User: AppUserEvent, Ctx: HasRef<T>
@@ -58,15 +78,15 @@ impl<'a,'b,User,Ctx,T> HasRef<T> for AppCtx<'a,'b,User,Ctx>
     }
 }
 */
-
+/*
 impl<'a,'b,User,Ctx> AppCtx<'a,'b,User,Ctx>
     where User: AppUserEvent
 {
-    pub(crate) fn new(ctx: &'a mut Ctx, event_loop: &'a mut AppEventLoop<'b,User>, app_param: &'a AppParam) -> Self
+    pub(crate) fn new(ctx: &'a mut Ctx, event_loop: &'a mut AppLoop<'b,User>, app_param: &'a AppParam) -> Self
     {
         Self { ctx, event_loop, app_param }
     }
-    pub fn event_loop(&mut self) -> &mut AppEventLoop<'b, User> { self.event_loop }
+    pub fn event_loop(&mut self) -> &mut AppLoop<'b, User> { self.event_loop }
     pub fn context(&mut self) -> &mut Ctx { self.ctx }
     pub fn app_param(&mut self) -> &AppParam { self.app_param }
 
@@ -81,6 +101,7 @@ impl<'a,'b,User,Ctx> AppCtx<'a,'b,User,Ctx>
         self.change_ctx(new_ctx).0
     }
 }
+*/
 
 pub struct AppProxy<User>
     where User: AppUserEvent

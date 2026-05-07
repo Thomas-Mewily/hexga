@@ -39,9 +39,9 @@ pub mod winit
 pub mod prelude
 {
     pub use super::{
-        App,AppRun,AppRunRaw,AppCtx,AppEventLoop,AppUserEvent,AppSendEvent,
+        App,AppRun,AppRunRaw,AppCtx,AppLoop,AppUserEvent,AppSendEvent,
         AsyncSpawn,
-        AppDefaultUserEvent, AppDefaultCtx
+        UserEvent,
     };
     pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutGraphics};
     pub(crate) use super::{AppDefaultUserEventInner};

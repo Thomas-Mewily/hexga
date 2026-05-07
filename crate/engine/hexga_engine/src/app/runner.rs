@@ -3,7 +3,7 @@ use super::*;
 pub trait AppInit<A>: Fn() -> A + Async {}
 impl<S, A> AppInit<A> for S where S: Fn() -> A + Async {}
 
-pub trait AppRun<User=AppDefaultUserEvent, Ctx=AppDefaultCtx> : Sized
+pub trait AppRun<User=UserEvent, Ctx=AppCtx> : Sized
 {
     fn run(self) -> AppResult where Ctx: Default { self.run_with_param(AppParam::default()) }
     fn run_with_param(self, param : AppParam) -> AppResult where Ctx: Default { self.run_with_param_and_ctx(param, ___()) }
@@ -56,52 +56,52 @@ where
     Ctx: App<User,A>,
     User: AppUserEvent
 {
-    fn event(&mut self, ev: AppEvent<User>, ctx: &mut AppCtx<User,Ctx>) -> Option<AppEvent<User>> 
+    fn event(&mut self, ev: AppEvent<User>, l: &mut AppLoop<User>, ctx: &mut Ctx) -> Option<AppEvent<User>> 
     { 
         match self.app.observe_mut()
         {
-            Some(app) => app.event(ev, ctx),
+            Some(app) => app.event(ev, l, ctx),
             None => None,
         }
     }
 
-    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<User,Ctx>) 
+    fn tick(&mut self, dt: DeltaTime, l: &mut AppLoop<User>, ctx: &mut Ctx) 
     {
         match self.app.observe_mut()
         {
-            Some(app) => app.update(dt, ctx),
+            Some(app) => app.tick(dt, l, ctx),
             None => {},
         }
     }
 
-    fn draw(&mut self, ctx: &mut AppCtx<User,Ctx>) 
+    fn draw(&mut self, l: &mut AppLoop<User>, ctx: &mut Ctx) 
     {
         match self.app.observe_mut()
         {
-            Some(app) => app.draw(ctx),
+            Some(app) => app.draw(l, ctx),
             None => {},
         }
     }
 
-    fn resumed(&mut self, ctx: &mut AppCtx<User,Ctx>)
+    fn resumed(&mut self, l: &mut AppLoop<User>, ctx: &mut Ctx)
     {
-        self.app.as_mut().resumed(ctx);
+        self.app.as_mut().resumed(l, ctx);
     }
 
-    fn paused(&mut self, ctx: &mut AppCtx<User,Ctx>)
+    fn paused(&mut self, l: &mut AppLoop<User>, ctx: &mut Ctx)
     {
         match self.app.observe_mut()
         {
-            Some(app) => app.paused(ctx),
+            Some(app) => app.paused(l, ctx),
             None => {},
         }
     }
 
-    fn exit(&mut self, ctx: &mut AppCtx<User,Ctx>)
+    fn exit(&mut self, l: &mut AppLoop<User>, ctx: &mut Ctx)
     {
         match self.app.observe_mut()
         {
-            Some(app) => app.exit(ctx),
+            Some(app) => app.exit(l, ctx),
             None => {},
         }
     }
@@ -110,7 +110,7 @@ where
 
 
 
-pub trait AppRunRaw<User=AppDefaultUserEvent>
+pub trait AppRunRaw<User=UserEvent>
     where User: AppUserEvent
 {
     /// Run the app without wrapping it
@@ -128,7 +128,7 @@ pub trait AppRunRaw<User=AppDefaultUserEvent>
             app,
             param,
             proxy,
-            event_loop: AppContextField::new(TimeManager::new(update_strat)),
+            time: TimeManager::new(update_strat),
             phantom: PhantomData,
         };
 
@@ -186,7 +186,7 @@ pub(crate) struct AppRunner<A,User>
     app: A,
     param : AppParam,
     proxy: AppProxy<User>,
-    event_loop: AppContextField,
+    time: TimeManager,
     phantom: PhantomData<User>,
     /*
     ctx : Ctx,
@@ -204,54 +204,16 @@ impl<A,User> AppRunner<A,User>
 {
     fn execute<F,O>(&mut self, event_loop: &WinitEventLoopActive, f: F) -> O
     where 
-        F: FnOnce(&mut A, &mut AppCtx<User,()>) -> O
+        F: FnOnce(&mut A, &mut AppLoop<User>, &mut ()) -> O
     {
         let mut no_ctx = ();
-        let mut event_loop = AppEventLoop::new(event_loop, &mut self.event_loop, &self.proxy);
-        let mut ctx = AppCtx::new(&mut no_ctx, &mut event_loop, &self.param);
-        f(&mut self.app, &mut ctx)
+        let mut app_loop = AppLoop::new(event_loop, &mut self.time, &mut self.proxy, &self.param);
+        f(&mut self.app, &mut app_loop, &mut no_ctx)
     }
 
-
-    fn update_app(&mut self, event_loop: &WinitEventLoopActive)
+    fn update(&mut self, dt: DeltaTime, _ctx: &mut ()) 
     {
-        let now = Time::since_launch();
-        self.execute(event_loop, |app, ctx|
-            {
-
-                //ctx.event_loop().time()
-            });
-
-        /*
-        let last_time = self.ctx.time().current;
-        let mut dt = now - last_time;
         
-        let (step_dt, consume_dt_rest) = match self.ctx.time().strategy {
-            TimeStrategy::Variable => 
-            {
-                if dt > DeltaTime::ZERO 
-                {
-                    self.update(dt, &mut ());
-                }
-                return;
-            }
-            TimeStrategy::Fixed(step_dt) => (step_dt, false),
-            TimeStrategy::Capped(max_dt) => (dt.min_partial(max_dt), true)
-        };
-
-        if step_dt.is_negative_or_zero() { return; }
-        
-        while dt >= step_dt 
-        {
-            self.update(step_dt, &mut ());
-            dt -= step_dt;
-        }
-        
-        if consume_dt_rest && dt > DeltaTime::ZERO
-        {
-            self.update(dt, &mut ());
-            dt = DeltaTime::ZERO;
-        }*/
     }
 }
 
@@ -262,19 +224,19 @@ impl<A,User> ::winit::application::ApplicationHandler<User> for AppRunner<A,User
 {
     fn resumed(&mut self, event_loop: &WinitEventLoopActive) 
     {
-        self.execute(event_loop, |app, ctx| app.resumed(ctx));
+        self.execute(event_loop, |app, l, ctx| app.resumed(l, ctx));
     }
 
     fn suspended(&mut self, event_loop: &WinitEventLoopActive) {
-        self.execute(event_loop, |app, ctx| app.paused(ctx));
+        self.execute(event_loop, |app, l, ctx| app.paused(l, ctx));
     }
 
     fn exiting(&mut self, event_loop: &WinitEventLoopActive) {
-        self.execute(event_loop, |app, ctx| app.paused(ctx));
+        self.execute(event_loop, |app, l, ctx| app.paused(l, ctx));
     }
 
     fn about_to_wait(&mut self, event_loop: &WinitEventLoopActive) {
-        self.update_app(event_loop);
+        //self.update_app(event_loop); tick
     }
 
     fn window_event(
@@ -287,7 +249,7 @@ impl<A,User> ::winit::application::ApplicationHandler<User> for AppRunner<A,User
     }
 
     fn user_event(&mut self, event_loop: &WinitEventLoopActive, event: User) {
-        self.execute(event_loop, |app, ctx| app.event(AppEvent::User(event), ctx));
+        self.execute(event_loop, |app, l, ctx| app.event(AppEvent::User(event), l, ctx));
     }
 }
 

@@ -34,7 +34,7 @@ impl<Ev> From<AppFlow> for AppMessage<Ev>
 */
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum AppEvent<User=AppDefaultUserEvent>
+pub enum AppEvent<User=UserEvent>
 {
     Input(InputEvent),
     Window(WindowEvent),

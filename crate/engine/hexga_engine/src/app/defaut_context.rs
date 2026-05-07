@@ -1,14 +1,14 @@
 use super::*;
 
-pub struct AppDefaultUserEvent
+pub struct UserEvent
 {
     inner : AppDefaultUserEventInner,
 }
-impl AppDefaultUserEvent
+impl UserEvent
 {
     pub(crate) fn new(inner : AppDefaultUserEventInner) -> Self { Self { inner }}
 }
-impl From<GpuEvent> for AppDefaultUserEvent
+impl From<GpuEvent> for UserEvent
 {
     fn from(value: GpuEvent) -> Self 
     {
@@ -24,7 +24,7 @@ pub(crate) enum AppDefaultUserEventInner
 
 /// A single window context
 #[derive(Default)]
-pub struct AppDefaultCtx // <UserData>
+pub struct AppCtx
 {
     pub(crate) window : Window,
     pub(crate) graphics : Option<Graphics>,
@@ -35,21 +35,20 @@ pub struct AppDefaultCtx // <UserData>
     pub(crate) fully_init : bool,
 }
 
-impl AppDefaultCtx
+impl AppCtx
 {
-    fn init_app_if_needed<A>(&mut self, ctx: &mut AppCtx<AppDefaultUserEvent,A>)
-        where A: App<AppDefaultUserEvent, Self>
+    fn init_app_if_needed<A>(&mut self, l: &mut AppLoop<UserEvent>, app: &mut A)
+        where A: App<UserEvent, Self>
     {
         if self.fully_init || self.try_graphics().is_none() { return; }
         self.fully_init = true;
 
         let mut unhandled_event = mem::take(&mut self.unhandled_event);
-        let (mut ctx, app) = ctx.change_ctx(self);
-        app.resumed(&mut ctx);
+        app.resumed(l, self);
 
         for ev in unhandled_event.drain(..)
         {
-            app.event(ev, &mut ctx);
+            app.event(ev, l, self);
         }
 
         
@@ -71,42 +70,39 @@ impl AppDefaultCtx
     }
 }
 
-impl<A> App<AppDefaultUserEvent, A> for AppDefaultCtx
-    where A: App<AppDefaultUserEvent, Self>
+impl<A> App<UserEvent, A> for AppCtx
+    where A: App<UserEvent, Self>
 {
-    fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx<AppDefaultUserEvent,A>) -> Option<AppEvent> 
-    {
+    fn event(&mut self, ev: AppEvent<UserEvent>, l: &mut AppLoop<UserEvent>, app: &mut A) -> Option<AppEvent<UserEvent>> {
         if self.fully_init
         {
-            let (mut ctx, app) = ctx.change_ctx(self);
-            app.event(ev, &mut ctx)
+            app.event(ev, l, self)
         }else
         {
             self.unhandled_event.push(ev);
             None
         }
     }
-    fn paused(&mut self, ctx: &mut AppCtx<AppDefaultUserEvent,A>) 
+    fn paused(&mut self, l: &mut AppLoop<UserEvent>, app: &mut A) 
     {
         if self.fully_init
         {
-            let (mut ctx, app) = ctx.change_ctx(self);
-            app.paused(&mut ctx);
+            app.paused(l, self);
         }
     }
 
-    fn resumed(&mut self, ctx: &mut AppCtx<AppDefaultUserEvent,A>) 
+    fn resumed(&mut self, l: &mut AppLoop<UserEvent>, app: &mut A) 
     {
-        if self.window().init_window_if_needed(ctx.event_loop())
+        if self.window().init_window_if_needed(l)
         {
             if self.try_graphics().is_none()
             {
                 let shared_window = self.window().window.as_ref().unwrap().clone();
 
-                let proxy = ctx.event_loop().proxy().clone();
+                let proxy = l.proxy.clone();
                 Graphics::init(
                     shared_window,
-                    ctx.app_param().gpu.clone(),
+                    l.param.gpu.clone(),
                     None,
                     proxy,
                 )
@@ -115,38 +111,35 @@ impl<A> App<AppDefaultUserEvent, A> for AppDefaultCtx
             }
         }
     }
-    fn update(&mut self, dt: DeltaTime, ctx: &mut AppCtx<AppDefaultUserEvent,A>) {
+    fn tick(&mut self, dt: DeltaTime, l: &mut AppLoop<UserEvent>, app: &mut A) {
         if self.fully_init
         {
-            let (mut ctx, app) = ctx.change_ctx(self);
-            app.update(dt, &mut ctx);
+            app.tick(dt, l, self);
         }
     }
 
-    fn draw(&mut self, ctx: &mut AppCtx<AppDefaultUserEvent,A>) {
+    fn draw(&mut self, l: &mut AppLoop<UserEvent>, app: &mut A) {
         if self.fully_init
         {
-            let (mut ctx, app) = ctx.change_ctx(self);
-            app.draw(&mut ctx);
+            app.draw(l, self);
         }
     }
     
-    fn exit(&mut self, ctx: &mut AppCtx<AppDefaultUserEvent,A>) {
+    fn exit(&mut self, l: &mut AppLoop<UserEvent>, app: &mut A) {
         if self.fully_init
         {
-            let (mut ctx, app) = ctx.change_ctx(self);
-            app.exit(&mut ctx);
+            app.exit(l, self);
         }
     }
 
-    fn user_event(&mut self, ev: AppDefaultUserEvent, ctx: &mut AppCtx<AppDefaultUserEvent,A>) -> Option<AppDefaultUserEvent> {
+    fn user_event(&mut self, ev: UserEvent, l: &mut AppLoop<UserEvent>, app: &mut A) -> Option<UserEvent> {
         match ev.inner
         {
             AppDefaultUserEventInner::Gpu(graphics) => 
             {
                 *self.try_graphics() = Some(graphics.expect("failed to init the gpu"));
                 self.window().init_surface_if_needed();
-                self.init_app_if_needed(ctx);
+                self.init_app_if_needed(l, app);
                 None
             },
         }
@@ -202,32 +195,32 @@ impl<A> AppContext<A> for AppCtx where A: AppWithEventLoop<AppEvent,Self>
 
 
 
-impl HasMut<Graphics> for AppDefaultCtx
+impl HasMut<Graphics> for AppCtx
 {
     fn retrive_mut(&mut self) -> &mut Graphics {
         self.graphics.as_mut().expect("graphics not init")
     }
 }
-impl HasMut<Keyboard> for AppDefaultCtx
+impl HasMut<Keyboard> for AppCtx
 {
     fn retrive_mut(&mut self) -> &mut Keyboard {
         &mut self.keyboard
     }
 }
-impl HasMut<Window> for AppDefaultCtx
+impl HasMut<Window> for AppCtx
 {
     fn retrive_mut(&mut self) -> &mut Window {
         &mut self.window
     }
 }
-impl HasMut<TimeManager> for AppDefaultCtx
+impl HasMut<TimeManager> for AppCtx
 {
     fn retrive_mut(&mut self) -> &mut TimeManager {
         &mut self.time
     }
 }
 
-impl AppDefaultCtx
+impl AppCtx
 {
     fn try_graphics(&mut self) -> &mut Option<Graphics> 
     {
