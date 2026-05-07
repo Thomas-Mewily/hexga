@@ -12,6 +12,10 @@ impl App for MonJeu
     fn resumed(&mut self, l: &mut AppLoop<UserEvent>, ctx: &mut AppCtx) {
         
     }
+
+    fn event(&mut self, ev: AppEvent<UserEvent>, l: &mut AppLoop<UserEvent>, ctx: &mut AppCtx) -> Option<AppEvent<UserEvent>> {
+        None
+    }
 }
 
 /*

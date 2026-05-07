@@ -39,7 +39,7 @@ pub mod winit
 pub mod prelude
 {
     pub use super::{
-        App,AppRun,AppRunRaw,AppCtx,AppLoop,AppUserEvent,AppSendEvent,
+        App,AppRun,AppRunRaw,AppCtx,AppLoop,AppUserEvent,AppSendEvent,AppEvent,
         AsyncSpawn,
         UserEvent,
     };
