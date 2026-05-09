@@ -32,12 +32,15 @@ impl<'a, Ev> EventLoopSendEvent<PlatformEvent<Ev>> for EventLoop<'a, Ev>
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub(crate) struct EventLoopState
 {
-    pub dt: Duration,
-    pub time : Time,
+    pub(crate) dt: Duration,
+    pub(crate) time : Time,
+    pub(crate) clipboard : Clipboard,
+    pub(crate) mods : KeyModsFlags,
 }
+
 
 pub trait PlatformEventHandler<CustomEvent=()> : Sized
     where CustomEvent: PlatformCustomEvent
@@ -75,24 +78,7 @@ pub trait PlatformEventHandler<CustomEvent=()> : Sized
     fn exit(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
     
 
-    fn event(&mut self, ev: PlatformEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformEvent<CustomEvent>> 
-    {
-        self.dispatch_event(ev, event_loop)
-    }
-    fn dispatch_event(&mut self, ev: PlatformEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformEvent<CustomEvent>> 
-    {
-        match ev
-        {
-            PlatformEvent::Input(input) => self.input_event(input, event_loop).map(PlatformEvent::Input),
-            PlatformEvent::Window(window) => self.window_event(window, event_loop).map(PlatformEvent::Window),
-            PlatformEvent::Custom(custom) => self.custom_event(custom, event_loop).map(PlatformEvent::Custom),
-        }
-    }
-
-    fn custom_event(&mut self, ev: CustomEvent, event_loop: &mut EventLoop<CustomEvent>) -> Option<CustomEvent> { Some(ev) }
-    fn window_event(&mut self, ev: WindowEvent, event_loop: &mut EventLoop<CustomEvent>) -> Option<WindowEvent> { Some(ev) }
-    fn input_event(&mut self, ev: InputEvent, event_loop: &mut EventLoop<CustomEvent>) -> Option<InputEvent> { Some(ev) }
-
+    fn event(&mut self, ev: PlatformEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformEvent<CustomEvent>> { Some(ev) }
 
     fn run_event_loop_with_param(self, param: EventLoopParam) -> EventLoopResult 
     {

@@ -11,6 +11,6 @@ pub use event::*;
 
 pub mod prelude
 {
-    pub use super::{KeyCode, InputEvent, KeyEvent};
-    pub(crate) use super::Keyboard;
+    pub use super::{KeyEvent, KeyCode, KeyAction, KeyActionMods, KeyActionModsBinding};
+    pub(crate) use super::{Keyboard,KeyMods,KeyModsFlags};
 }

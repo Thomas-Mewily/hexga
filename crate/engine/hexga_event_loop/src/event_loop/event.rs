@@ -8,21 +8,26 @@ impl<E> PlatformCustomEvent for E where E: Async {}
 #[derive(Debug, Clone, PartialEq)]
 pub enum PlatformEvent<Ev>
 {
-    Input(InputEvent),
-    Window(WindowEvent),
+    Key(KeyEvent),
+
+    /// Clipboard Cut
+    Cut,
+    /// Clipboard Paste
+    Paste(String),
+    /// Clipboard Copy
+    Copy,
+
+    // Window:
+    Resize(Point2),
+    Move(Point2),
+    Open,
+    Close,
+    Destroy,
+
     Custom(Ev),
 }
 
-impl<User> From<InputEvent> for PlatformEvent<User>
-{
-    fn from(input: InputEvent) -> Self { Self::Input(input) }
-}
 impl<User> From<KeyEvent> for PlatformEvent<User>
 {
-    fn from(key: KeyEvent) -> Self { Self::Input(key.into()) }
+    fn from(key: KeyEvent) -> Self { Self::Key(key) }
 }
-impl<User> From<WindowEvent> for PlatformEvent<User>
-{
-    fn from(window: WindowEvent) -> Self { Self::Window(window.into()) }
-}
-

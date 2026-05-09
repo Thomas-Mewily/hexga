@@ -1,9 +1,28 @@
 use super::*;
 
 #[derive(Debug, Clone, Default, PartialEq)]
+#[non_exhaustive]
 pub struct EventLoopParam
 {
     pub control_flow : EventLoopControlFlow,
+    pub shortcut: DefaultShortcut,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DefaultShortcut
+{
+    /*
+    pub close : Option<KeyAction>,
+    pub copy  : Option<KeyActionMods>,
+    pub paste : Option<KeyActionMods>,
+    pub cut   : Option<KeyActionMods>,
+    */
+}
+impl Default for DefaultShortcut
+{
+    fn default() -> Self {
+        Self{}
+    }
 }
 
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
@@ -54,7 +73,7 @@ pub fn run<EventHandler, CustomEvent>(event_handler: EventHandler, param: EventL
     let mut runner = EventLoopRunner
     {
         event_handler,
-        state: EventLoopState { dt: zero(), time: Time::since_launch() },
+        state: EventLoopState { dt: zero(), time: Time::since_launch(), clipboard: ___(), mods: ___() },
         proxy,
         param,
     };
@@ -72,7 +91,34 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
 {
     fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<PlatformEvent<CustomEvent>>)
     {
-        let ev = ev.into();
+        let mut ev = ev.into();
+
+        match &mut ev
+        {
+            PlatformEvent::Key(k) => 
+            {
+                let down = k.is_down();
+                match k.code
+                {
+                    KeyCode::ShiftLeft => { self.state.mods.set(KeyMods::ShiftLeft, down); },
+                    KeyCode::ShiftRight => { self.state.mods.set(KeyMods::ShiftRight, down); },
+
+                    KeyCode::ControlLeft => { self.state.mods.set(KeyMods::ControlLeft, down); },
+                    KeyCode::ControlRight => { self.state.mods.set(KeyMods::ControlRight, down); },
+
+                    KeyCode::AltLeft => { self.state.mods.set(KeyMods::AltLeft, down); },
+                    KeyCode::AltRight => { self.state.mods.set(KeyMods::AltRight, down); },
+
+                    KeyCode::SuperLeft => { self.state.mods.set(KeyMods::SuperLeft, down); },
+                    KeyCode::SuperRight => { self.state.mods.set(KeyMods::SuperRight, down); },
+                    _ => {},
+                }
+                k.mods = self.state.mods;
+            },
+            PlatformEvent::Close => { active.exit(); }
+            _ => {}
+        }
+
         self.app(active, |event_handler,event_loop| event_handler.event(ev, event_loop));
     }
 
@@ -126,16 +172,15 @@ impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Platfor
         {
             WinitWindowEvent::Resized(physical_size) =>
             {
-                self.event(active, WindowEvent::Resize(physical_size.convert()));
+                self.event(active, PlatformEvent::Resize(physical_size.convert()));
             }
             winit::event::WindowEvent::CloseRequested =>
             {
-                self.event(active, WindowEvent::Close);
-                active.exit();
+                self.event(active, PlatformEvent::Close);
             }
             winit::event::WindowEvent::Destroyed =>
             {
-                self.event(active, WindowEvent::Destroy);
+                self.event(active, PlatformEvent::Destroy);
             }
             WinitWindowEvent::KeyboardInput {
                 device_id: _,
@@ -144,6 +189,8 @@ impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Platfor
             } =>
             {
                 let code = KeyCode::from(event.physical_key);
+                let pressed = event.state.is_pressed();
+
                 let repeat = if event.repeat
                 {
                     ButtonRepeat::Repeated
@@ -152,7 +199,7 @@ impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Platfor
                 {
                     ButtonRepeat::NotRepeated
                 };
-                let state = if event.state.is_pressed()
+                let state = if pressed
                 {
                     ButtonState::Down
                 }
@@ -178,12 +225,11 @@ impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Platfor
                     _ => None,
                 };
                 let key = KeyEvent {
-                    code,
+                    action: KeyActionMods { code, state, mods: self.state.mods },
                     repeat,
-                    state,
                     char,
                 };
-                self.event(active, InputEvent::Key(key));
+                self.event(active, PlatformEvent::Key(key));
             }
             /*
             // TODO: interesting event to handle:

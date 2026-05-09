@@ -344,8 +344,12 @@ pub enum KeyCode
     AudioVolumeMute,
     AudioVolumeUp,
     WakeUp,
-    // Legacy modifier key. Also called "Super" in certain places.
-    Meta,
+    /// Used to enable "super" modifier function for interpreting concurrent or subsequent keyboard
+    /// input. This key value is used for the "Windows Logo" key and the Apple `Command` or `⌘`
+    /// key.
+    ///
+    /// Note: In some contexts (e.g. the Web) this is referred to as the "Meta" key.
+    Super,
     // Legacy modifier key.
     Hyper,
     Turbo,
@@ -649,7 +653,7 @@ impl From<WinitKeyCode> for KeyCode
             winit::keyboard::KeyCode::AudioVolumeMute => KeyCode::AudioVolumeMute,
             winit::keyboard::KeyCode::AudioVolumeUp => KeyCode::AudioVolumeUp,
             winit::keyboard::KeyCode::WakeUp => KeyCode::WakeUp,
-            winit::keyboard::KeyCode::Meta => KeyCode::Meta,
+            winit::keyboard::KeyCode::Meta => KeyCode::Super,
             winit::keyboard::KeyCode::Hyper => KeyCode::Hyper,
             winit::keyboard::KeyCode::Turbo => KeyCode::Turbo,
             winit::keyboard::KeyCode::Abort => KeyCode::Abort,
@@ -702,6 +706,91 @@ impl From<WinitKeyCode> for KeyCode
             winit::keyboard::KeyCode::F34 => KeyCode::F34,
             winit::keyboard::KeyCode::F35 => KeyCode::F35,
             _ => KeyCode::Unknow(KeyCodeNative::Unidentified),
+        }
+    }
+}
+
+
+#[bit_index]
+#[repr(u8)]
+pub enum KeyMods
+{
+    ShiftLeft,
+    ShiftRight,
+    Shift = Self::ShiftLeft | Self::ShiftRight,
+
+    ControlLeft,
+    ControlRight,
+    Control = Self::ControlLeft | Self::ControlRight,
+
+    AltLeft,
+    AltRight,
+    Alt = Self::AltLeft | Self::AltRight,
+
+    SuperLeft,
+    SuperRight,
+    Super = Self::SuperLeft | Self::SuperRight,
+
+    // Todo: add the other modifier ? https://en.wikipedia.org/wiki/Modifier_key
+    // Fn, AltGr...
+}
+
+impl Default for KeyModsFlags
+{
+    fn default() -> Self {
+        Self::EMPTY
+    }
+}
+
+impl KeyModsFlags
+{
+    /// Checks if the actual modifier flags match the expected modifier pattern.
+    ///
+    /// Also handles both composite modifiers (e.g., `Shift`) and side-specific modifiers (e.g., `ShiftLeft`).
+    pub fn matches(self, lexem: Self) -> bool 
+    {
+        fn check_mods(self_bits: KeyModsFlags, lexem_bits: KeyModsFlags, left: KeyModsFlags, right: KeyModsFlags, left_or_right: KeyModsFlags) -> bool {
+            if self_bits.contains(left_or_right) {
+                return lexem_bits.contains(left) || lexem_bits.contains(right);
+            } else 
+            {
+                if self_bits.contains(left) && !lexem_bits.contains(left) {
+                    return false;
+                }
+                if self_bits.contains(right) && !lexem_bits.contains(right) {
+                    return false;
+                }
+                return true;
+            }
+        }
+        
+        check_mods(self, lexem, Self::ShiftLeft, Self::ShiftRight, Self::Shift) 
+        && check_mods(self, lexem, Self::ControlLeft, Self::ControlRight, Self::Control) 
+        && check_mods(self, lexem, Self::AltLeft, Self::AltRight, Self::Alt) 
+        && check_mods(self, lexem, Self::SuperLeft, Self::SuperRight, Self::Super)
+    }
+}
+
+impl KeyMods
+{
+    pub fn from_keycode(key : KeyCode) -> Option<Self> { Self::try_from(key).ok() }
+}
+
+impl TryFrom<KeyCode> for KeyMods
+{
+    type Error = ();
+    fn try_from(value: KeyCode) -> Result<KeyMods, Self::Error> {
+        match value
+        {
+            KeyCode::ShiftLeft => Ok(Self::ShiftLeft),
+            KeyCode::ShiftRight => Ok(Self::ShiftRight),
+            KeyCode::ControlLeft => Ok(Self::ControlLeft),
+            KeyCode::ControlRight => Ok(Self::ControlRight),
+            KeyCode::AltLeft => Ok(Self::AltLeft),
+            KeyCode::AltRight => Ok(Self::AltRight),
+            KeyCode::SuperLeft => Ok(Self::SuperLeft),
+            KeyCode::SuperRight => Ok(Self::SuperRight),
+            _ => Err(()),
         }
     }
 }
