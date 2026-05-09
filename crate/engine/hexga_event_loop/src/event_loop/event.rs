@@ -6,7 +6,7 @@ impl<E> PlatformCustomEvent for E where E: Async {}
 
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum PlatformEvent<Ev=()>
+pub enum PlatformEvent<Ev>
 {
     Input(InputEvent),
     Window(WindowEvent),
