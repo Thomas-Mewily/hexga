@@ -131,12 +131,33 @@ use syn::{Ident, ItemEnum, parse_macro_input};
 fn emit_serde_code(
     repr_type: &Ident,
     struct_name: &Ident,
+    enum_variants_name: &[Ident],
 ) -> (
     proc_macro2::TokenStream,
     proc_macro2::TokenStream,
     proc_macro2::TokenStream,
 )
 {
+    let helper_struct_name = format_ident!("{}SerdeHelper", struct_name);
+    
+    // Generate boolean fields for the helper struct
+    let helper_fields: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let field_name = format_ident!("{}", variant.to_string().to_lowercase());
+        quote! { #field_name: bool }
+    }).collect();
+
+    // Generate field initialization from bits
+    let helper_from_bits: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let field_name = format_ident!("{}", variant.to_string().to_lowercase());
+        quote! { #field_name: (bits & #struct_name::#variant.bits()) != 0 }
+    }).collect();
+
+    // Generate bits from helper struct
+    let bits_from_helper: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let field_name = format_ident!("{}", variant.to_string().to_lowercase());
+        quote! { if helper.#field_name { #struct_name::#variant.bits() } else { 0 } }
+    }).collect();
+
     (
         quote! {
             #[allow(unexpected_cfgs)]
@@ -144,7 +165,27 @@ fn emit_serde_code(
         },
         quote! {
             #[allow(unexpected_cfgs)]
-            #[cfg_attr(feature = "serde", derive(Serialize), serde(transparent))]
+            #[cfg(feature = "serde")]
+            impl ::serde::Serialize for #struct_name {
+                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                where
+                    S: ::serde::Serializer,
+                {
+                    use serde::ser::Serialize;
+                    
+                    if serializer.is_human_readable() {
+                        // Text serialization: use helper struct with boolean fields
+                        let bits = self.bits();
+                        let helper = #helper_struct_name {
+                            #(#helper_from_bits,)*
+                        };
+                        helper.serialize(serializer)
+                    } else {
+                        // Binary serialization: serialize raw bits
+                        self.bits().serialize(serializer)
+                    }
+                }
+            }
         },
         quote! {
             #[allow(unexpected_cfgs)]
@@ -152,16 +193,44 @@ fn emit_serde_code(
             impl<'de> ::serde::Deserialize<'de> for #struct_name {
                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                 where
-                D: ::serde::Deserializer<'de>,
+                    D: ::serde::Deserializer<'de>,
                 {
-                    let bits = <#repr_type as serde::Deserialize>::deserialize(deserializer)?;
-                    Self::try_from_bits(bits).map_err(|invalid_bits| {
-                        <D::Error as ::serde::de::Error>::invalid_value(
-                            ::serde::de::Unexpected::Unsigned(invalid_bits as u64),
-                            &"a valid bitflag value",
-                        )
-                    })
+                    use serde::de::Deserialize;
+                    
+                    if deserializer.is_human_readable() {
+                        // Text deserialization: deserialize helper struct with boolean fields
+                        let helper = #helper_struct_name::deserialize(deserializer)?;
+                        let bits = #( #bits_from_helper |)* 0;
+                        Self::try_from_bits(bits).map_err(|invalid_bits| {
+                            <D::Error as ::serde::de::Error>::invalid_value(
+                                ::serde::de::Unexpected::Unsigned(invalid_bits as u64),
+                                &"a valid bitflag value",
+                            )
+                        })
+                    } else {
+                        // Binary deserialization: deserialize raw bits
+                        let bits = <#repr_type as serde::Deserialize>::deserialize(deserializer)?;
+                        Self::try_from_bits(bits).map_err(|invalid_bits| {
+                            <D::Error as ::serde::de::Error>::invalid_value(
+                                ::serde::de::Unexpected::Unsigned(invalid_bits as u64),
+                                &"a valid bitflag value",
+                            )
+                        })
+                    }
                 }
+            }
+
+            // TODO: Make a generic BitFlags<T> in the futur.
+            // Can't be done right now, because a lot of fn are const,
+            // and const fn are not supported in trait
+
+            #[allow(unexpected_cfgs)]
+            #[cfg(feature = "serde")]
+            #[derive(::serde::Serialize, ::serde::Deserialize)]
+            #[serde(rename_all = "lowercase")]
+            #[doc(hidden)]
+            struct #helper_struct_name {
+                #(#helper_fields,)*
             }
         },
     )
@@ -172,6 +241,7 @@ fn emit_serde_code(
 fn emit_serde_code(
     _: &Ident,
     _: &Ident,
+    _: &[Ident],
 ) -> (
     proc_macro2::TokenStream,
     proc_macro2::TokenStream,
@@ -261,8 +331,67 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     let nb_variant = enum_variants.len();
 
-    let (serde_serialize_deserialize, serde_serialize_transparent, serde_deserialiaze_flags) =
-        emit_serde_code(&repr_type, &struct_name);
+    // Generate method names for enum and flags
+    let enum_is_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("is_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Returns true if this enum variant matches #variant
+            pub const fn #method_name(&self) -> bool { matches!(self, Self::#variant) }
+        }
+    }).collect();
+
+    let flags_is_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("is_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Returns true if #variant flag is set
+            pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) != 0 }
+        }
+    }).collect();
+
+    let flags_set_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("set_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Conditionally set or unset #variant flag
+            pub fn #method_name(&mut self, insert: bool) -> &mut Self { 
+                *self = self.with(#struct_name::#variant, insert); 
+                self 
+            }
+        }
+    }).collect();
+
+    let flags_with_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("with_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Returns a new flags with #variant conditionally set or unset
+            pub fn #method_name(self, insert: bool) -> Self { 
+                self.with(#struct_name::#variant, insert) 
+            }
+        }
+    }).collect();
+
+    let flags_toggle_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("toggle_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Toggles the #variant flag
+            pub const fn #method_name(&mut self) -> &mut Self { 
+                self._bits_do_not_use_it ^= (#struct_name::#variant)._bits_do_not_use_it; 
+                self 
+            }
+        }
+    }).collect();
+
+    let flags_with_toggle_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("toggled_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Returns a new flags with #variant flag toggled
+            pub const fn #method_name(self) -> Self { 
+                Self { _bits_do_not_use_it: self._bits_do_not_use_it ^ (#struct_name::#variant)._bits_do_not_use_it } 
+            }
+        }
+    }).collect();
+
+    let (serde_serialize_deserialize, serde_serialize_flags, serde_deserialiaze_flags) =
+        emit_serde_code(&repr_type, &struct_name, &enum_variants_name);
 
     let output = quote! {
 
@@ -341,6 +470,8 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
                     _ => unreachable!(),
                 }
             }
+
+            #(#enum_is_methods)*
         }
 
 
@@ -376,8 +507,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             fn from(value: #enum_name) -> Self { value.flags() }
         }
 
-        // TODO: serialize as a struct of bool
-        // #serde_serialize_transparent
+        #serde_serialize_flags
         #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
         #visibility struct #struct_name
         {
@@ -385,8 +515,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             _bits_do_not_use_it: #repr_type
         }
 
-        // TODO: deserialize as a struct of bool
-        //#serde_deserialiaze_flags
+        #serde_deserialiaze_flags
 
         impl ::core::cmp::PartialEq<#enum_name> for #struct_name { fn eq(&self, other: &#enum_name) -> bool { *self == other.flags() }}
 
@@ -580,6 +709,16 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
             /// Unsets all bits in the flags to 0.
             pub fn clear(&mut self) { *self = Self::EMPTY; }
+
+            #(#flags_is_methods)*
+
+            #(#flags_set_methods)*
+
+            #(#flags_with_methods)*
+
+            #(#flags_toggle_methods)*
+
+            #(#flags_with_toggle_methods)*
         }
 
         impl<T> std::ops::BitOr<T> for #struct_name where T: Into<Self>

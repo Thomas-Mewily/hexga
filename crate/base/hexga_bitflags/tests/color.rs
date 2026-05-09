@@ -34,7 +34,6 @@ mod tests
         red.set_red(true);
         assert_eq!(red, ColorFlags::Red);
 
-
         assert_eq!(Color::Blue as u8, 5);
         assert_eq!(Color::Blue.index(), 5);
         assert_eq!(Color::Blue.bits(), 0b100000);
