@@ -24,4 +24,4 @@ I'm to lazy to write a conclusion, and I will not do the supplice to generate a 
 
 - Mewily.
 
-TL;DR: Mostly handwritten with selective AI help for boilerplate and complex macros. *<- LLM written then human edited*
+TL;DR: Mostly handwritten with selective AI help for boilerplate and complex macros. *<- This line was LLM written then human edited*
