@@ -1,5 +1,6 @@
 use super::*;
 
+/*
 pub struct AppLoop<'a, User>
     where User: AppUserEvent
 {
@@ -20,3 +21,4 @@ impl<'a, User> AppLoop<'a, User>
         Self { event_loop, proxy, time, param }
     }
 }
+*/

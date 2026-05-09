@@ -1,5 +1,13 @@
-use crate::app::AppDefaultUserEventInner;
+use super::*;
+pub use hexga_graphics::*;
 
+pub mod prelude
+{
+    //pub(crate) use super::{Graphics, GpuEvent, wgpu};
+    pub use hexga_graphics::prelude::*;
+}
+
+/*
 use super::*;
 pub use hexga_graphics::*;
 
@@ -42,7 +50,7 @@ impl Graphics
         param: GpuParam,
         mut proxy: P,
     )
-    where P: AppSendEvent<GpuEvent> + Async
+    where P: EventLoopSendEvent<GpuEvent> + Async
     {
         let _ = proxy.send_event(Self::init_gpu(instance, surface, compatible_surface, window, param).await);
     }
@@ -53,7 +61,7 @@ impl Graphics
         mut compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
         mut proxy: P,
     ) -> GpuResult
-        where P: AppSendEvent<GpuEvent> + Async
+        where P: EventLoopSendEvent<GpuEvent> + Async
     {
         let surface_size: Point2 = window.inner_size().convert();
         let surface_size = surface_size.max(one());
@@ -78,3 +86,4 @@ impl Graphics
 
 
 pub(crate) type GpuEvent = GpuResult<Graphics>;
+*/

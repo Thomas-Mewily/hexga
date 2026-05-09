@@ -22,13 +22,13 @@ pub type Time = TimeOf<float>;
 ///
 /// Uses `float` as its underlying representation.
 ///
-/// See [`DeltaTimeOf`] to use your own precision.
-pub type DeltaTime = Time;
+/// See [`DurationOf`] to use your own precision.
+pub type Duration = DurationOf<float>;
 
 /// Represents time which can be used as an instant or a duration.
 ///
 /// Provides conversion to other time units (seconds, minutes, days...).
-pub type DeltaTimeOf<T> = TimeOf<T>;
+pub type DurationOf<T> = TimeOf<T>;
 
 new_unit!(
     /// Represents time which can be used as an instant or a duration.
@@ -456,14 +456,14 @@ where
             use std::sync::Once;
             use web_time::Instant;
 
-            static mut START_TIME: Option<Instant> = None;
+            static mut START_TIME: Option<Duration> = None;
             static INIT: Once = Once::new();
 
             INIT.call_once(|| unsafe {
-                START_TIME = Some(Instant::now());
+                START_TIME = Some(Duration::now());
             });
 
-            let elapsed = unsafe { Instant::now() - START_TIME.unwrap() };
+            let elapsed = unsafe { Duration::now() - START_TIME.unwrap() };
             return TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()));
         }
     }

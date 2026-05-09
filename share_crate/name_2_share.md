@@ -42,6 +42,7 @@ hexga_asset
 hexga
 hexga_wgpu
 hexga_graphics
+hexga_event_loop
 hexga_engine
 //hexga_undo_redo
 

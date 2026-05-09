@@ -1,5 +1,6 @@
 use super::*;
 
+/*
 pub(crate) type WinitWindow = winit::window::Window;
 pub(crate) type WinitWindowAttributes = winit::window::WindowAttributes;
 pub(crate) type WinitWindowID = winit::window::WindowId;
@@ -58,8 +59,8 @@ impl Window
         self.is_content_protected_dirty = dirty;
     }
 
-    pub(crate) fn init_window_if_needed<User>(&mut self, active: &AppLoop<User>) -> bool
-        where User: AppUserEvent
+    pub(crate) fn init_window_if_needed<User>(&mut self, active: &EventLoop<User>) -> bool
+        where User: PlatformCustomEvent
     {
         if self.window.is_some()
         {
@@ -75,7 +76,7 @@ impl Window
             win_attr = win_attr.with_append(true);
         }
 
-        let window = WinitWindowShared::new(active.winit().create_window(win_attr).expect("can't create window"));
+        let window = WinitWindowShared::new(active.winit_event_loop().create_window(win_attr).expect("can't create window"));
         self.window = Some(window);
         self.set_dirty(true);
         true
@@ -743,3 +744,4 @@ impl From<winit::window::WindowButtons> for WindowButtonFlags
         flags
     }
 }
+*/
