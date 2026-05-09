@@ -121,10 +121,12 @@
 #![allow(unexpected_cfgs)]
 
 extern crate proc_macro;
+extern crate heck;
 
 use proc_macro::TokenStream;
 use quote::{ToTokens, format_ident, quote};
 use syn::{Ident, ItemEnum, parse_macro_input};
+use heck::ToSnakeCase;
 
 #[allow(unexpected_cfgs)]
 #[cfg(feature = "serde")]
@@ -259,6 +261,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     let mut enum_variants = Vec::new();
     let mut enum_variants_name = Vec::new();
+    let mut composite_variants_name = Vec::new();
     let mut struct_non_composite_const = Vec::new();
     let mut struct_composite_const = Vec::new();
     let mut index: usize = 0;
@@ -298,6 +301,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
                         #[allow(non_upper_case_globals)]
                         pub const #flag_ident: #struct_name = #struct_name { _bits_do_not_use_it: #tt };
                     });
+                    composite_variants_name.push(flag_ident.clone());
                     continue;
                 }
             };
@@ -331,6 +335,9 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     let nb_variant = enum_variants.len();
 
+    // Combine regular and composite field names
+    let all_field_names: Vec<_> = enum_variants_name.iter().chain(composite_variants_name.iter()).collect();
+
     // Generate method names for enum and flags
     let enum_is_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
         let method_name = format_ident!("is_{}", variant.to_string().to_lowercase());
@@ -340,16 +347,16 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
     }).collect();
 
-    let flags_is_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let method_name = format_ident!("is_{}", variant.to_string().to_lowercase());
+    let flags_is_methods: Vec<_> = all_field_names.iter().map(|variant| {
+        let method_name = format_ident!("is_{}", variant.to_string().to_snake_case());
         quote! {
             /// Returns true if #variant flag is set
             pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) != 0 }
         }
     }).collect();
 
-    let flags_set_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let method_name = format_ident!("set_{}", variant.to_string().to_lowercase());
+    let flags_set_methods: Vec<_> = all_field_names.iter().map(|variant| {
+        let method_name = format_ident!("set_{}", variant.to_string().to_snake_case());
         quote! {
             /// Conditionally set or unset #variant flag
             pub fn #method_name(&mut self, insert: bool) -> &mut Self { 
@@ -359,8 +366,8 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
     }).collect();
 
-    let flags_with_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let method_name = format_ident!("with_{}", variant.to_string().to_lowercase());
+    let flags_with_methods: Vec<_> = all_field_names.iter().map(|variant| {
+        let method_name = format_ident!("with_{}", variant.to_string().to_snake_case());
         quote! {
             /// Returns a new flags with #variant conditionally set or unset
             pub fn #method_name(self, insert: bool) -> Self { 
@@ -369,10 +376,10 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
     }).collect();
 
-    let flags_toggle_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let method_name = format_ident!("toggle_{}", variant.to_string().to_lowercase());
+    let flags_toggle_methods: Vec<_> = all_field_names.iter().map(|variant| {
+        let method_name = format_ident!("toggle_{}", variant.to_string().to_snake_case());
         quote! {
-            /// Toggles the #variant flag
+            /// Toggles #variant flag
             pub const fn #method_name(&mut self) -> &mut Self { 
                 self._bits_do_not_use_it ^= (#struct_name::#variant)._bits_do_not_use_it; 
                 self 
@@ -380,13 +387,30 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
     }).collect();
 
-    let flags_with_toggle_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let method_name = format_ident!("toggled_{}", variant.to_string().to_lowercase());
+    let flags_with_toggle_methods: Vec<_> = all_field_names.iter().map(|variant| {
+        let method_name = format_ident!("toggled_{}", variant.to_string().to_snake_case());
         quote! {
             /// Returns a new flags with #variant flag toggled
             pub const fn #method_name(self) -> Self { 
                 Self { _bits_do_not_use_it: self._bits_do_not_use_it ^ (#struct_name::#variant)._bits_do_not_use_it } 
             }
+        }
+    }).collect();
+
+    // Generate composite-specific methods
+    let flags_is_all_methods: Vec<_> = composite_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("is_all_{}", variant.to_string().to_snake_case());
+        quote! {
+            /// Returns true if all flags in #variant are set
+            pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) == #struct_name::#variant.bits() }
+        }
+    }).collect();
+
+    let flags_is_any_methods: Vec<_> = composite_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("is_any_{}", variant.to_string().to_snake_case());
+        quote! {
+            /// Returns true if any flag in #variant is set
+            pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) != 0 }
         }
     }).collect();
 
@@ -719,6 +743,10 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             #(#flags_toggle_methods)*
 
             #(#flags_with_toggle_methods)*
+
+            #(#flags_is_all_methods)*
+
+            #(#flags_is_any_methods)*
         }
 
         impl<T> std::ops::BitOr<T> for #struct_name where T: Into<Self>
