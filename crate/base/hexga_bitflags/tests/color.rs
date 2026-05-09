@@ -2,7 +2,6 @@
 mod tests
 {
     use hexga_bitflags::*;
-    use serde::{Serialize, Deserialize};
 
     #[bit_index]
     #[repr(u8)]
@@ -29,6 +28,12 @@ mod tests
         assert_eq!(Color::Green.index(), 1);
         assert_eq!(Color::Green.bits(), 0b10);
         assert_eq!(Color::Green.flags().bits(), 0b10);
+
+        assert_eq!(ColorFlags::ZERO.with_red(true), ColorFlags::Red);
+        let mut red = ColorFlags::ZERO;
+        red.set_red(true);
+        assert_eq!(red, ColorFlags::Red);
+
 
         assert_eq!(Color::Blue as u8, 5);
         assert_eq!(Color::Blue.index(), 5);

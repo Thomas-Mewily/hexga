@@ -220,6 +220,10 @@ fn emit_serde_code(
                 }
             }
 
+            // TODO: Make a generic BitFlags<T> in the futur.
+            // Can't be done right now, because a lot of fn are const,
+            // and const fn are not supported in trait
+
             #[allow(unexpected_cfgs)]
             #[cfg(feature = "serde")]
             #[derive(::serde::Serialize, ::serde::Deserialize)]
@@ -327,6 +331,44 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     let nb_variant = enum_variants.len();
 
+    // Generate method names for enum and flags
+    let enum_is_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("is_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Returns true if this enum variant matches #variant
+            pub const fn #method_name(&self) -> bool { matches!(self, Self::#variant) }
+        }
+    }).collect();
+
+    let flags_is_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("is_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Returns true if #variant flag is set
+            pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) != 0 }
+        }
+    }).collect();
+
+    let flags_set_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("set_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Conditionally set or unset #variant flag
+            pub fn #method_name(&mut self, insert: bool) -> &mut Self { 
+                *self = self.with(#struct_name::#variant, insert); 
+                self 
+            }
+        }
+    }).collect();
+
+    let flags_with_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("with_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Returns a new flags with #variant conditionally set or unset
+            pub fn #method_name(self, insert: bool) -> Self { 
+                self.with(#struct_name::#variant, insert) 
+            }
+        }
+    }).collect();
+
     let (serde_serialize_deserialize, serde_serialize_flags, serde_deserialiaze_flags) =
         emit_serde_code(&repr_type, &struct_name, &enum_variants_name);
 
@@ -407,6 +449,8 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
                     _ => unreachable!(),
                 }
             }
+
+            #(#enum_is_methods)*
         }
 
 
@@ -644,6 +688,12 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
             /// Unsets all bits in the flags to 0.
             pub fn clear(&mut self) { *self = Self::EMPTY; }
+
+            #(#flags_is_methods)*
+
+            #(#flags_set_methods)*
+
+            #(#flags_with_methods)*
         }
 
         impl<T> std::ops::BitOr<T> for #struct_name where T: Into<Self>
