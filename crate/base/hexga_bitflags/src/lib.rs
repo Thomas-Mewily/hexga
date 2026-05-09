@@ -369,6 +369,27 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
     }).collect();
 
+    let flags_toggle_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("toggle_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Toggles the #variant flag
+            pub const fn #method_name(&mut self) -> &mut Self { 
+                self._bits_do_not_use_it ^= (#struct_name::#variant)._bits_do_not_use_it; 
+                self 
+            }
+        }
+    }).collect();
+
+    let flags_with_toggle_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
+        let method_name = format_ident!("toggled_{}", variant.to_string().to_lowercase());
+        quote! {
+            /// Returns a new flags with #variant flag toggled
+            pub const fn #method_name(self) -> Self { 
+                Self { _bits_do_not_use_it: self._bits_do_not_use_it ^ (#struct_name::#variant)._bits_do_not_use_it } 
+            }
+        }
+    }).collect();
+
     let (serde_serialize_deserialize, serde_serialize_flags, serde_deserialiaze_flags) =
         emit_serde_code(&repr_type, &struct_name, &enum_variants_name);
 
@@ -694,6 +715,10 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             #(#flags_set_methods)*
 
             #(#flags_with_methods)*
+
+            #(#flags_toggle_methods)*
+
+            #(#flags_with_toggle_methods)*
         }
 
         impl<T> std::ops::BitOr<T> for #struct_name where T: Into<Self>
