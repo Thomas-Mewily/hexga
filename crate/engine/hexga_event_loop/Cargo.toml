@@ -30,7 +30,7 @@ float_are_32_bits   = ["hexga/float_are_32_bits"]
 float_are_64_bits   = ["hexga/float_are_64_bits"]
 float_are_size_bits = ["hexga/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga/serde"]
+serde = ["dep:serde", "hexga/serde", "winit/serde"]
 serde_rc = ["serde/rc", "hexga/serde_rc"]
 
 hexga_encoding_derive = ["hexga/hexga_encoding_derive"]

@@ -1,5 +1,4 @@
 use hexga_core::prelude::*;
-use std::fmt;
 use std::iter::{FromIterator, IntoIterator};
 /// A fixed-capacity vector backed by an inline array.
 ///
@@ -944,9 +943,9 @@ where
 }
 
 // Display implementation
-impl<T: fmt::Debug, const CAP: usize> fmt::Debug for ArrayVec<T, CAP>
+impl<T: Debug, const CAP: usize> Debug for ArrayVec<T, CAP>
 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
         f.debug_list().entries(self.iter()).finish()
     }

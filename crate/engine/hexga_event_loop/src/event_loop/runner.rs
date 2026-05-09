@@ -73,7 +73,7 @@ pub fn run<EventHandler, CustomEvent>(event_handler: EventHandler, param: EventL
     let mut runner = EventLoopRunner
     {
         event_handler,
-        state: EventLoopState { dt: zero(), time: Time::since_launch(), clipboard: ___(), mods: ___() },
+        state: EventLoopState { dt: zero(), time: Time::since_launch(), clipboard: ___(), key_modifiers: ___() },
         proxy,
         param,
     };
@@ -100,20 +100,20 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
                 let down = k.is_down();
                 match k.code
                 {
-                    KeyCode::ShiftLeft => { self.state.mods.set(KeyMods::ShiftLeft, down); },
-                    KeyCode::ShiftRight => { self.state.mods.set(KeyMods::ShiftRight, down); },
+                    KeyCode::ShiftLeft => { self.state.key_modifiers.set(KeyModifiers::ShiftLeft, down); },
+                    KeyCode::ShiftRight => { self.state.key_modifiers.set(KeyModifiers::ShiftRight, down); },
 
-                    KeyCode::ControlLeft => { self.state.mods.set(KeyMods::ControlLeft, down); },
-                    KeyCode::ControlRight => { self.state.mods.set(KeyMods::ControlRight, down); },
+                    KeyCode::ControlLeft => { self.state.key_modifiers.set(KeyModifiers::ControlLeft, down); },
+                    KeyCode::ControlRight => { self.state.key_modifiers.set(KeyModifiers::ControlRight, down); },
 
-                    KeyCode::AltLeft => { self.state.mods.set(KeyMods::AltLeft, down); },
-                    KeyCode::AltRight => { self.state.mods.set(KeyMods::AltRight, down); },
+                    KeyCode::AltLeft => { self.state.key_modifiers.set(KeyModifiers::AltLeft, down); },
+                    KeyCode::AltRight => { self.state.key_modifiers.set(KeyModifiers::AltRight, down); },
 
-                    KeyCode::SuperLeft => { self.state.mods.set(KeyMods::SuperLeft, down); },
-                    KeyCode::SuperRight => { self.state.mods.set(KeyMods::SuperRight, down); },
+                    KeyCode::SuperLeft => { self.state.key_modifiers.set(KeyModifiers::SuperLeft, down); },
+                    KeyCode::SuperRight => { self.state.key_modifiers.set(KeyModifiers::SuperRight, down); },
                     _ => {},
                 }
-                k.mods = self.state.mods;
+                k.modifiers = self.state.key_modifiers;
             },
             PlatformEvent::Close => { active.exit(); }
             _ => {}
@@ -188,48 +188,7 @@ impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Platfor
                 is_synthetic: _,
             } =>
             {
-                let code = KeyCode::from(event.physical_key);
-                let pressed = event.state.is_pressed();
-
-                let repeat = if event.repeat
-                {
-                    ButtonRepeat::Repeated
-                }
-                else
-                {
-                    ButtonRepeat::NotRepeated
-                };
-                let state = if pressed
-                {
-                    ButtonState::Down
-                }
-                else
-                {
-                    ButtonState::Up
-                };
-
-                /*
-                // Todo: configure the param to define react to ALT F4, Control C, Control V, Control X...
-                if code == KeyCode::Escape
-                // TODO make it debug/cfg/option<Binding> to force exit
-                {
-                    active.exit();
-                }
-                */
-                let char: Option<char> = match &event.logical_key
-                {
-                    winit::keyboard::Key::Character(s) if s.chars().count() == 1 =>
-                    {
-                        s.chars().next()
-                    }
-                    _ => None,
-                };
-                let key = KeyEvent {
-                    action: KeyActionMods { code, state, mods: self.state.mods },
-                    repeat,
-                    char,
-                };
-                self.event(active, PlatformEvent::Key(key));
+                self.event(active, PlatformEvent::Key(event.into()));
             }
             /*
             // TODO: interesting event to handle:

@@ -38,7 +38,7 @@ pub(crate) struct EventLoopState
     pub(crate) dt: Duration,
     pub(crate) time : Time,
     pub(crate) clipboard : Clipboard,
-    pub(crate) mods : KeyModsFlags,
+    pub(crate) key_modifiers : KeyModifiersFlags,
 }
 
 

@@ -42,6 +42,7 @@ impl From<ButtonToggle> for bool
     fn from(value: ButtonToggle) -> Self { value.is_toggle() }
 }
 
+/// Describes the state of a button.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
 pub enum ButtonState

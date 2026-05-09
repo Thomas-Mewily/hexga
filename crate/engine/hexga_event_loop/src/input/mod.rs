@@ -3,6 +3,9 @@ use super::*;
 mod keycode;
 pub use keycode::*;
 
+mod key;
+pub use key::*;
+
 mod keyboard;
 pub use keyboard::*;
 
@@ -11,6 +14,11 @@ pub use event::*;
 
 pub mod prelude
 {
-    pub use super::{KeyEvent, KeyCode, KeyAction, KeyActionMods, KeyActionModsBinding};
-    pub(crate) use super::{Keyboard,KeyMods,KeyModsFlags};
+    pub use super::{KeyEvent, KeyCode, KeyAction};
+    pub(crate) use super::{Keyboard,KeyModifiers,KeyModifiersFlags};
+}
+
+pub mod traits
+{
+    pub use super::{KeyModifiersExtension};
 }

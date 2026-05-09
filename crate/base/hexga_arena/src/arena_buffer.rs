@@ -11,7 +11,7 @@ pub struct BufferArena
 
 impl Debug for BufferArena
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
         let used = self.nb_used();
         let cap = self.capacity();

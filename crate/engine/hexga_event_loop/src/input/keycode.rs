@@ -1,12 +1,13 @@
 use super::*;
 
 pub(crate) type WinitKeyCode = winit::keyboard::KeyCode;
+pub(crate) type WinitKeyLocation = winit::keyboard::KeyLocation;
 pub(crate) type WinitKeyPhysical = winit::keyboard::PhysicalKey;
 pub(crate) type WinitKeyNativeCode = winit::keyboard::NativeKeyCode;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum KeyCodeNative
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum NativeKeyCode
 {
     Unidentified,
     /// An Android "scancode".
@@ -19,12 +20,41 @@ pub enum KeyCodeNative
     Xkb(u32),
 }
 
+impl Debug for NativeKeyCode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        let mut debug_tuple;
+        match self {
+            NativeKeyCode::Unidentified => {
+                debug_tuple = f.debug_tuple("Unidentified");
+            },
+            NativeKeyCode::Android(code) => {
+                debug_tuple = f.debug_tuple("Android");
+                debug_tuple.field(&format_args!("0x{code:04X}"));
+            },
+            NativeKeyCode::MacOS(code) => {
+                debug_tuple = f.debug_tuple("MacOS");
+                debug_tuple.field(&format_args!("0x{code:04X}"));
+            },
+            NativeKeyCode::Windows(code) => {
+                debug_tuple = f.debug_tuple("Windows");
+                debug_tuple.field(&format_args!("0x{code:04X}"));
+            },
+            NativeKeyCode::Xkb(code) => {
+                debug_tuple = f.debug_tuple("Xkb");
+                debug_tuple.field(&format_args!("0x{code:04X}"));
+            },
+        }
+        debug_tuple.finish()
+    }
+}
+
+
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum KeyCode
 {
-    Unknow(KeyCodeNative),
+    Unknow(NativeKeyCode),
     /// <kbd>`</kbd> on a US keyboard. This is also called a backtick or grave.
     /// This is the <kbd>半角</kbd>/<kbd>全角</kbd>/<kbd>漢字</kbd>
     /// (hankaku/zenkaku/kanji) key on Japanese keyboards
@@ -344,12 +374,8 @@ pub enum KeyCode
     AudioVolumeMute,
     AudioVolumeUp,
     WakeUp,
-    /// Used to enable "super" modifier function for interpreting concurrent or subsequent keyboard
-    /// input. This key value is used for the "Windows Logo" key and the Apple `Command` or `⌘`
-    /// key.
-    ///
-    /// Note: In some contexts (e.g. the Web) this is referred to as the "Meta" key.
-    Super,
+    // Legacy modifier key. Also called "Super" in certain places.
+    Meta,
     // Legacy modifier key.
     Hyper,
     Turbo,
@@ -474,17 +500,17 @@ pub enum KeyCode
     F35,
 }
 
-impl From<WinitKeyNativeCode> for KeyCodeNative
+impl From<WinitKeyNativeCode> for NativeKeyCode
 {
     fn from(value: WinitKeyNativeCode) -> Self
     {
         match value
         {
-            WinitKeyNativeCode::Unidentified => KeyCodeNative::Unidentified,
-            WinitKeyNativeCode::Android(v) => KeyCodeNative::Android(v),
-            WinitKeyNativeCode::MacOS(v) => KeyCodeNative::MacOS(v),
-            WinitKeyNativeCode::Windows(v) => KeyCodeNative::Windows(v),
-            WinitKeyNativeCode::Xkb(v) => KeyCodeNative::Xkb(v),
+            WinitKeyNativeCode::Unidentified => NativeKeyCode::Unidentified,
+            WinitKeyNativeCode::Android(v) => NativeKeyCode::Android(v),
+            WinitKeyNativeCode::MacOS(v) => NativeKeyCode::MacOS(v),
+            WinitKeyNativeCode::Windows(v) => NativeKeyCode::Windows(v),
+            WinitKeyNativeCode::Xkb(v) => NativeKeyCode::Xkb(v),
         }
     }
 }
@@ -653,7 +679,7 @@ impl From<WinitKeyCode> for KeyCode
             winit::keyboard::KeyCode::AudioVolumeMute => KeyCode::AudioVolumeMute,
             winit::keyboard::KeyCode::AudioVolumeUp => KeyCode::AudioVolumeUp,
             winit::keyboard::KeyCode::WakeUp => KeyCode::WakeUp,
-            winit::keyboard::KeyCode::Meta => KeyCode::Super,
+            winit::keyboard::KeyCode::Meta => KeyCode::Meta,
             winit::keyboard::KeyCode::Hyper => KeyCode::Hyper,
             winit::keyboard::KeyCode::Turbo => KeyCode::Turbo,
             winit::keyboard::KeyCode::Abort => KeyCode::Abort,
@@ -705,92 +731,118 @@ impl From<WinitKeyCode> for KeyCode
             winit::keyboard::KeyCode::F33 => KeyCode::F33,
             winit::keyboard::KeyCode::F34 => KeyCode::F34,
             winit::keyboard::KeyCode::F35 => KeyCode::F35,
-            _ => KeyCode::Unknow(KeyCodeNative::Unidentified),
+            _ => KeyCode::Unknow(NativeKeyCode::Unidentified),
         }
     }
 }
 
 
-#[bit_index]
-#[repr(u8)]
-pub enum KeyMods
-{
-    ShiftLeft,
-    ShiftRight,
-    Shift = Self::ShiftLeft | Self::ShiftRight,
-
-    ControlLeft,
-    ControlRight,
-    Control = Self::ControlLeft | Self::ControlRight,
-
-    AltLeft,
-    AltRight,
-    Alt = Self::AltLeft | Self::AltRight,
-
-    SuperLeft,
-    SuperRight,
-    Super = Self::SuperLeft | Self::SuperRight,
-
-    // Todo: add the other modifier ? https://en.wikipedia.org/wiki/Modifier_key
-    // Fn, AltGr...
+impl PartialEq<NativeKeyCode> for KeyCode {
+    #[inline]
+    fn eq(&self, rhs: &NativeKeyCode) -> bool {
+        match &self {
+            KeyCode::Unknow(code) => code == rhs,
+            _ => false,
+        }
+    }
 }
-
-impl Default for KeyModsFlags
-{
-    fn default() -> Self {
-        Self::EMPTY
+impl PartialEq<KeyCode> for NativeKeyCode {
+    #[inline]
+    fn eq(&self, rhs: &KeyCode) -> bool {
+        rhs == self
     }
 }
 
-impl KeyModsFlags
+
+/// The location of the key on the keyboard.
+///
+/// Certain physical keys on the keyboard can have the same value, but are in different locations.
+/// For instance, the Shift key can be on the left or right side of the keyboard, or the number
+/// keys can be above the letters or on the numpad. This enum allows the user to differentiate
+/// them.
+///
+/// See the documentation for the [`location`] field on the [`KeyEvent`] struct for more
+/// information.
+///
+/// [`location`]: ../event/struct.KeyEvent.html#structfield.location
+/// [`KeyEvent`]: crate::event::KeyEvent
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum KeyLocation 
 {
-    /// Checks if the actual modifier flags match the expected modifier pattern.
+    /// The key is in its "normal" location on the keyboard.
     ///
-    /// Also handles both composite modifiers (e.g., `Shift`) and side-specific modifiers (e.g., `ShiftLeft`).
-    pub fn matches(self, lexem: Self) -> bool 
-    {
-        fn check_mods(self_bits: KeyModsFlags, lexem_bits: KeyModsFlags, left: KeyModsFlags, right: KeyModsFlags, left_or_right: KeyModsFlags) -> bool {
-            if self_bits.contains(left_or_right) {
-                return lexem_bits.contains(left) || lexem_bits.contains(right);
-            } else 
-            {
-                if self_bits.contains(left) && !lexem_bits.contains(left) {
-                    return false;
-                }
-                if self_bits.contains(right) && !lexem_bits.contains(right) {
-                    return false;
-                }
-                return true;
-            }
-        }
-        
-        check_mods(self, lexem, Self::ShiftLeft, Self::ShiftRight, Self::Shift) 
-        && check_mods(self, lexem, Self::ControlLeft, Self::ControlRight, Self::Control) 
-        && check_mods(self, lexem, Self::AltLeft, Self::AltRight, Self::Alt) 
-        && check_mods(self, lexem, Self::SuperLeft, Self::SuperRight, Self::Super)
-    }
+    /// For instance, the "1" key above the "Q" key on a QWERTY keyboard will use this location.
+    /// This invariant is also returned when the location of the key cannot be identified.
+    ///
+    /// ![Standard 1 key](https://raw.githubusercontent.com/rust-windowing/winit/master/docs/res/keyboard_standard_1_key.svg)
+    ///
+    /// <sub>
+    ///   For image attribution, see the
+    ///   <a href="https://github.com/rust-windowing/winit/blob/master/docs/res/ATTRIBUTION.md">
+    ///     ATTRIBUTION.md
+    ///   </a>
+    ///   file.
+    /// </sub>
+    Standard,
+
+    /// The key is on the left side of the keyboard.
+    ///
+    /// For instance, the left Shift key below the Caps Lock key on a QWERTY keyboard will use this
+    /// location.
+    ///
+    /// ![Left Shift key](https://raw.githubusercontent.com/rust-windowing/winit/master/docs/res/keyboard_left_shift_key.svg)
+    ///
+    /// <sub>
+    ///   For image attribution, see the
+    ///   <a href="https://github.com/rust-windowing/winit/blob/master/docs/res/ATTRIBUTION.md">
+    ///     ATTRIBUTION.md
+    ///   </a>
+    ///   file.
+    /// </sub>
+    Left,
+
+    /// The key is on the right side of the keyboard.
+    ///
+    /// For instance, the right Shift key below the Enter key on a QWERTY keyboard will use this
+    /// location.
+    ///
+    /// ![Right Shift key](https://raw.githubusercontent.com/rust-windowing/winit/master/docs/res/keyboard_right_shift_key.svg)
+    ///
+    /// <sub>
+    ///   For image attribution, see the
+    ///   <a href="https://github.com/rust-windowing/winit/blob/master/docs/res/ATTRIBUTION.md">
+    ///     ATTRIBUTION.md
+    ///   </a>
+    ///   file.
+    /// </sub>
+    Right,
+
+    /// The key is on the numpad.
+    ///
+    /// For instance, the "1" key on the numpad will use this location.
+    ///
+    /// ![Numpad 1 key](https://raw.githubusercontent.com/rust-windowing/winit/master/docs/res/keyboard_numpad_1_key.svg)
+    ///
+    /// <sub>
+    ///   For image attribution, see the
+    ///   <a href="https://github.com/rust-windowing/winit/blob/master/docs/res/ATTRIBUTION.md">
+    ///     ATTRIBUTION.md
+    ///   </a>
+    ///   file.
+    /// </sub>
+    Numpad,
 }
 
-impl KeyMods
+impl From<WinitKeyLocation> for KeyLocation
 {
-    pub fn from_keycode(key : KeyCode) -> Option<Self> { Self::try_from(key).ok() }
-}
-
-impl TryFrom<KeyCode> for KeyMods
-{
-    type Error = ();
-    fn try_from(value: KeyCode) -> Result<KeyMods, Self::Error> {
+    fn from(value: WinitKeyLocation) -> Self {
         match value
         {
-            KeyCode::ShiftLeft => Ok(Self::ShiftLeft),
-            KeyCode::ShiftRight => Ok(Self::ShiftRight),
-            KeyCode::ControlLeft => Ok(Self::ControlLeft),
-            KeyCode::ControlRight => Ok(Self::ControlRight),
-            KeyCode::AltLeft => Ok(Self::AltLeft),
-            KeyCode::AltRight => Ok(Self::AltRight),
-            KeyCode::SuperLeft => Ok(Self::SuperLeft),
-            KeyCode::SuperRight => Ok(Self::SuperRight),
-            _ => Err(()),
+            winit::keyboard::KeyLocation::Standard => KeyLocation::Standard,
+            winit::keyboard::KeyLocation::Left => KeyLocation::Left,
+            winit::keyboard::KeyLocation::Right => KeyLocation::Right,
+            winit::keyboard::KeyLocation::Numpad => KeyLocation::Numpad,
         }
     }
-}
+} 

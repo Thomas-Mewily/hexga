@@ -274,7 +274,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             #(#enum_variants)*
         }
 
-        impl ::std::cmp::PartialEq<#struct_name> for #enum_name { fn eq(&self, other: &#struct_name) -> bool { self.flags() == *other }}
+        impl ::core::cmp::PartialEq<#struct_name> for #enum_name { fn eq(&self, other: &#struct_name) -> bool { self.flags() == *other }}
 
         impl #enum_name
         {
@@ -313,7 +313,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             }
             pub unsafe fn from_index_unchecked(index: #repr_type) -> Option<Self>
             {
-                unsafe { ::std::mem::transmute_copy(&index) }
+                unsafe { ::core::mem::transmute_copy(&index) }
             }
 
             pub fn from_flags(flags: #struct_name) -> Option<Self>
@@ -376,7 +376,8 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             fn from(value: #enum_name) -> Self { value.flags() }
         }
 
-        #serde_serialize_transparent
+        // TODO: serialize as a struct of bool
+        // #serde_serialize_transparent
         #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
         #visibility struct #struct_name
         {
@@ -384,13 +385,15 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             _bits_do_not_use_it: #repr_type
         }
 
-        impl ::std::cmp::PartialEq<#enum_name> for #struct_name { fn eq(&self, other: &#enum_name) -> bool { *self == other.flags() }}
+        // TODO: deserialize as a struct of bool
+        //#serde_deserialiaze_flags
 
-        #serde_deserialiaze_flags
+        impl ::core::cmp::PartialEq<#enum_name> for #struct_name { fn eq(&self, other: &#enum_name) -> bool { *self == other.flags() }}
 
-        impl ::std::fmt::Debug for #struct_name
+
+        impl ::core::fmt::Debug for #struct_name
         {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result
             {
                 f.write_str(stringify!(#struct_name))?;
                 write!(f, "({:#b}", self._bits_do_not_use_it)?;
@@ -411,35 +414,35 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
                 write!(f, ")")
             }
         }
-        impl ::std::fmt::Binary for #struct_name
+        impl ::core::fmt::Binary for #struct_name
         {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                ::std::fmt::Binary::fmt(&self._bits_do_not_use_it, f)
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::Binary::fmt(&self._bits_do_not_use_it, f)
             }
         }
-        impl ::std::fmt::LowerHex for #struct_name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                ::std::fmt::LowerHex::fmt(&self._bits_do_not_use_it, f)
+        impl ::core::fmt::LowerHex for #struct_name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::LowerHex::fmt(&self._bits_do_not_use_it, f)
             }
         }
-        impl ::std::fmt::UpperHex for #struct_name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                ::std::fmt::UpperHex::fmt(&self._bits_do_not_use_it, f)
+        impl ::core::fmt::UpperHex for #struct_name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::UpperHex::fmt(&self._bits_do_not_use_it, f)
             }
         }
-        impl ::std::fmt::LowerExp for #struct_name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                ::std::fmt::LowerExp::fmt(&self._bits_do_not_use_it, f)
+        impl ::core::fmt::LowerExp for #struct_name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::LowerExp::fmt(&self._bits_do_not_use_it, f)
             }
         }
-        impl ::std::fmt::UpperExp for #struct_name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                ::std::fmt::UpperExp::fmt(&self._bits_do_not_use_it, f)
+        impl ::core::fmt::UpperExp for #struct_name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::UpperExp::fmt(&self._bits_do_not_use_it, f)
             }
         }
-        impl ::std::fmt::Octal for #struct_name {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                ::std::fmt::Octal::fmt(&self._bits_do_not_use_it, f)
+        impl ::core::fmt::Octal for #struct_name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::Octal::fmt(&self._bits_do_not_use_it, f)
             }
         }
 
@@ -586,7 +589,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
         impl<T> std::ops::BitOrAssign<T> for #struct_name where T: Into<Self>
         {
-            fn bitor_assign(&mut self, other: T) { *self = <Self as ::std::ops::BitOr<T>>::bitor(*self, other); }
+            fn bitor_assign(&mut self, other: T) { *self = <Self as ::core::ops::BitOr<T>>::bitor(*self, other); }
         }
 
         impl<T> std::ops::BitXor<T> for #struct_name where T: Into<Self>
@@ -596,7 +599,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
         impl<T> std::ops::BitXorAssign<T> for #struct_name where T: Into<Self>
         {
-            fn bitxor_assign(&mut self, other: T) { *self = <Self as ::std::ops::BitXor<T>>::bitxor(*self, other); }
+            fn bitxor_assign(&mut self, other: T) { *self = <Self as ::core::ops::BitXor<T>>::bitxor(*self, other); }
         }
 
         impl<T> std::ops::BitAnd<T> for #struct_name where T: Into<Self>
@@ -606,7 +609,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
 
         impl<T> std::ops::BitAndAssign<T> for #struct_name where T: Into<Self>
         {
-            fn bitand_assign(&mut self, other: T) { *self = <Self as ::std::ops::BitAnd<T>>::bitand(*self, other); }
+            fn bitand_assign(&mut self, other: T) { *self = <Self as ::core::ops::BitAnd<T>>::bitand(*self, other); }
         }
 
         impl std::ops::Not for #struct_name
@@ -623,7 +626,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
 
 
-        impl ::std::iter::Iterator for #struct_name
+        impl ::core::iter::Iterator for #struct_name
         {
             type Item = #enum_name;
 
