@@ -5,6 +5,13 @@ use super::*;
 pub enum InputEvent
 {
     Key(KeyEvent),
+
+    /// Clipboard Cut
+    Cut,
+    /// Clipboard Paste
+    Paste(String),
+    /// Clipboard Copy
+    Copy,
 }
 impl From<KeyEvent> for InputEvent
 {

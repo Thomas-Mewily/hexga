@@ -16,4 +16,5 @@ pub mod prelude
     pub use super::{WindowAttribute, WindowEvent};
     */
     pub use super::{WindowEvent};
+    pub(crate) use super::{ExternLibConvert};
 }
