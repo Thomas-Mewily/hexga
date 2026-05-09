@@ -2,6 +2,7 @@
 mod tests
 {
     use hexga_bitflags::*;
+    use serde::{Serialize, Deserialize};
 
     #[bit_index]
     #[repr(u8)]
