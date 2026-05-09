@@ -12,9 +12,6 @@ The reason why I'm still writing most of the code manually is because I care abo
 - Re-usability
 - Long Term Maintainabilty (even if most of the hexga crates are experimental right now).
 
-There some stuff I'm proud of like 
-- having generic array size fixed vector with `hexga_math::prelude::Vector<T,N>` that also have a field `x` and `y` and `z` and `w` depending on the dimension, that somethings that other create like glam don't have/have unrolled code for every kind of vector (float, int, bool...).
-
 There are some stuff I'm proud of like 
 - having a generic array-size fixed vector with `hexga_math::prelude::Vector<T, const N: usize>` that also has fields `x`, `y`, `z`, and `w` depending on the dimension using some safe `Deref`/`DerefMut` hack, which is something that other crates like `glam` don't have, they have unrolled code for every kind of vector (float, int, bool...).
 
