@@ -1,6 +1,6 @@
 #![feature(get_disjoint_mut_helpers)]
 //#![feature(unsafe_cell_access)]
-#![feature(mapped_lock_guards)]
+#![cfg_attr(feature = "std", feature(mapped_lock_guards))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(not(feature = "std"))]
