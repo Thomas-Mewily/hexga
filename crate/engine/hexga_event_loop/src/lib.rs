@@ -32,6 +32,7 @@ pub mod prelude
         window::prelude::*,
         input::prelude::*,
     };
+    pub use super::traits::*;
 }
 
 pub mod traits
