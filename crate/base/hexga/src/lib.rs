@@ -49,7 +49,6 @@ pub mod prelude
 /// You are probably looking for the `prelude` module.
 pub mod hexga_prelude
 {
-
     pub use crate::bitflags::bit_index;
     pub use crate::generational::prelude::*;
     pub use crate::math::prelude::*;

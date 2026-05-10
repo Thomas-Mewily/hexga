@@ -2,7 +2,13 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{CollectToGenVec, GenVec, GenView, GenViewMut};
+    pub use super::{GenVec, GenView, GenViewMut};
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::{GenSeqEntryIntoValue, GenIDUpdater, GenIDUpdatable, CollectToGenVec};
 }
 
 pub type GenVec<T> = GenSeq<T, Generation, Vec<Entry<T, Generation>>>;
@@ -75,7 +81,7 @@ impl<T> EntryValue<T>
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Entry<T, Gen = Generation>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     pub(crate) value: EntryValue<T>,
     #[cfg_attr(feature = "serde", serde(rename = "gen"))]
@@ -85,7 +91,7 @@ where
 impl<T, Gen> std::fmt::Debug for Entry<T, Gen>
 where
     T: std::fmt::Debug,
-    Gen: IGeneration + std::fmt::Debug,
+    Gen: GenerationalIndex + std::fmt::Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
@@ -103,20 +109,20 @@ where
 
 impl<T, Gen> From<(EntryValue<T>, Gen)> for Entry<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn from((value, generation): (EntryValue<T>, Gen)) -> Self { Self::new(value, generation) }
 }
 impl<T, Gen> From<Entry<T, Gen>> for (EntryValue<T>, Gen)
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn from(entry: Entry<T, Gen>) -> Self { (entry.value, entry.generation) }
 }
 
 impl<T, Gen> Entry<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     pub(crate) fn new(value: EntryValue<T>, generation: Gen) -> Self { Self { value, generation } }
     pub fn generation(&self) -> Gen { self.generation }
@@ -175,7 +181,7 @@ where
 pub struct GenSeq<T, Gen = Generation, C = Vec<Entry<T, Gen>>>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     pub(crate) values: C,
     /// The first index of the slot that is None.
@@ -188,7 +194,7 @@ where
 impl<T, C, Gen> Debug for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     T: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
@@ -200,7 +206,7 @@ where
 impl<T, C, Gen> Eq for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     T: PartialEq,
 {
 }
@@ -208,7 +214,7 @@ where
 impl<T, C, Gen> Hash for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     T: Hash,
 {
     fn hash<H: Hasher>(&self, state: &mut H)
@@ -235,7 +241,7 @@ impl<T, C, C2, Gen> PartialEq<GenSeq<T, Gen, C2>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     C2: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     T: PartialEq,
 {
     fn eq(&self, other: &GenSeq<T, Gen, C2>) -> bool
@@ -352,7 +358,7 @@ where
 impl<T, C, Gen> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     pub fn try_from_raw_parts(values: C, free: usize) -> Result<Self, String>
     where
@@ -364,7 +370,7 @@ where
         if view.len() == usize::MAX
         {
             return Err(
-                "GenVec: the last usize value is used for null in a GenVec and cannot be used"
+                "GenSeq: the last usize value is used for null in a GenSeq and cannot be used"
                     .to_owned(),
             );
         }
@@ -380,12 +386,12 @@ where
                 let Some(next_entry) = view.get(cur_free)
                 else
                 {
-                    return Err(format!("GenVec: entry {:?} is out of range", cur_free));
+                    return Err(format!("GenSeq: entry {:?} is out of range", cur_free));
                 };
                 let EntryValue::Vacant(f) = next_entry.value
                 else
                 {
-                    return Err(format!("GenVec: entry {:?} was not free", cur_free));
+                    return Err(format!("GenSeq: entry {:?} was not free", cur_free));
                 };
 
                 // This is super important to check if there is no cycle in the free list.
@@ -400,7 +406,7 @@ where
                     }
                     // not the last free index, should point to the next one
                     return Err(format!(
-                        "GenVec: invalid free head {:?} at {:?}",
+                        "GenSeq: invalid free head {:?} at {:?}",
                         f, cur_free
                     ));
                 }
@@ -410,7 +416,7 @@ where
                 if nb_free == 0
                 {
                     return Err(format!(
-                        "GenVec: last value at index {cur_free} should point to nothings and not {f}"
+                        "GenSeq: last value at index {cur_free} should point to nothings and not {f}"
                     ));
                 }
             }
@@ -420,7 +426,7 @@ where
             if free.is_not_max()
             {
                 return Err(format!(
-                    "GenVec: invalid next {free} in a fully used genvec"
+                    "GenSeq: invalid next {free} in a fully used genseq"
                 )); // should be max value
             }
         }
@@ -442,7 +448,7 @@ where
 impl<T, Gen, C> Default for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Default,
 {
     fn default() -> Self { Self::new() }
@@ -451,7 +457,7 @@ where
 impl<T, Gen, C> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     pub fn new() -> Self
     where
@@ -471,7 +477,7 @@ where
     pub fn shrink_to_fit(mut self) { self.values.shrink_to_fit(); }
     */
 
-    /// Clears the [`GenVec`], removing all elements and resetting all [`GenID`] values.
+    /// Clears the [`GenSeq`], removing all elements and resetting all [`GenID`] values.
     ///
     /// After calling this method, any previous [`GenID`] is no longer valid (not enforced) and
     /// **must** not be used, as doing so may lead to undefined behavior.
@@ -488,7 +494,7 @@ where
 impl<T, Gen, C> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     pub fn as_ref<'a>(&'a self) -> GenSeq<T, Gen, &'a [Entry<T, Gen>]> { self.into() }
@@ -561,7 +567,7 @@ where
     ///
     /// The correct way to iterate over all entry index.
     ///
-    /// Use this instead of `0..genvec.len()` (wrong).
+    /// Use this instead of `0..gen_seq.len()` (wrong).
     pub fn iter_index(&self) -> impl Iterator<Item = usize> + 'static
     {
         0..self.values.as_ref().len()
@@ -584,12 +590,12 @@ where
 impl<T, Gen, C> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     pub fn as_mut<'a>(&'a mut self) -> GenSeq<T, Gen, &'a mut [Entry<T, Gen>]> { self.into() }
 
-    /// Removes all elements from the [`GenVec`] and invalidates all existing [`GenID`] (enforced).
+    /// Removes all elements from the [`GenSeq`] and invalidates all existing [`GenID`] (enforced).
     pub fn remove_all(&mut self)
     {
         for (index, v) in self.values.as_mut().iter_mut().enumerate()
@@ -968,7 +974,7 @@ where
 impl<T, C, Gen> Index<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = T;
     #[track_caller]
@@ -978,7 +984,7 @@ where
 impl<T, C, Gen> IndexMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[track_caller]
     #[inline(always)]
@@ -991,7 +997,7 @@ where
 impl<T, C, Gen> Index<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = T;
     #[track_caller]
@@ -1001,7 +1007,7 @@ where
 impl<T, C, Gen> IndexMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[track_caller]
     #[inline(always)]
@@ -1014,7 +1020,7 @@ where
 impl<T, C, Gen> Index<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = T;
     fn index(&self, index: usize) -> &Self::Output { self.get_from_index(index).unwrap() }
@@ -1022,7 +1028,7 @@ where
 impl<T, C, Gen> IndexMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output
     {
@@ -1033,7 +1039,7 @@ where
 impl<T, C, Gen> FromIterator<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: FromIterator<Entry<T, Gen>>,
 {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self
@@ -1056,12 +1062,12 @@ impl<T, C, Gen> IntoIterator for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     C: IntoIterator,
-    C::Item: GenVecEntryIntoValue<Gen>,
-    Gen: IGeneration,
+    C::Item: GenSeqEntryIntoValue<Gen>,
+    Gen: GenerationalIndex,
 {
     type Item = (
         GenIDOf<T, Gen>,
-        <C::Item as GenVecEntryIntoValue<Gen>>::EntryItem,
+        <C::Item as GenSeqEntryIntoValue<Gen>>::EntryItem,
     );
     type IntoIter = IntoIter<T, <C as IntoIterator>::IntoIter, Gen>;
 
@@ -1074,33 +1080,35 @@ where
         }
     }
 }
-pub trait GenVecEntryIntoValue<Gen>
+
+
+pub trait GenSeqEntryIntoValue<Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type EntryItem;
     fn into_value(self) -> Option<Self::EntryItem>;
     fn generation(&self) -> Gen;
 }
-impl<T, Gen> GenVecEntryIntoValue<Gen> for Entry<T, Gen>
+impl<T, Gen> GenSeqEntryIntoValue<Gen> for Entry<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type EntryItem = T;
     fn into_value(self) -> Option<T> { self.into_value() }
     fn generation(&self) -> Gen { self.generation() }
 }
-impl<'a, T, Gen> GenVecEntryIntoValue<Gen> for &'a Entry<T, Gen>
+impl<'a, T, Gen> GenSeqEntryIntoValue<Gen> for &'a Entry<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type EntryItem = &'a T;
     fn into_value(self) -> Option<Self::EntryItem> { self.value() }
     fn generation(&self) -> Gen { (*self).generation() }
 }
-impl<'a, T, Gen> GenVecEntryIntoValue<Gen> for &'a mut Entry<T, Gen>
+impl<'a, T, Gen> GenSeqEntryIntoValue<Gen> for &'a mut Entry<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type EntryItem = &'a mut T;
     fn into_value(self) -> Option<Self::EntryItem> { self.value_mut() }
@@ -1110,8 +1118,8 @@ where
 pub struct IntoIter<T, It, Gen>
 where
     It: Iterator,
-    It::Item: GenVecEntryIntoValue<Gen>,
-    Gen: IGeneration,
+    It::Item: GenSeqEntryIntoValue<Gen>,
+    Gen: GenerationalIndex,
 {
     iter: std::iter::Enumerate<It>,
     len_remaining: usize,
@@ -1120,8 +1128,8 @@ where
 impl<T, It, Gen> Clone for IntoIter<T, It, Gen>
 where
     It: Iterator + Clone,
-    It::Item: GenVecEntryIntoValue<Gen>,
-    Gen: IGeneration + Clone,
+    It::Item: GenSeqEntryIntoValue<Gen>,
+    Gen: GenerationalIndex + Clone,
 {
     fn clone(&self) -> Self
     {
@@ -1135,8 +1143,8 @@ where
 impl<T, It, Gen> Debug for IntoIter<T, It, Gen>
 where
     It: Iterator + Debug,
-    It::Item: GenVecEntryIntoValue<Gen>,
-    Gen: IGeneration + Debug,
+    It::Item: GenSeqEntryIntoValue<Gen>,
+    Gen: GenerationalIndex + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
     {
@@ -1150,12 +1158,12 @@ where
 impl<T, It, Gen> Iterator for IntoIter<T, It, Gen>
 where
     It: Iterator,
-    It::Item: GenVecEntryIntoValue<Gen>,
-    Gen: IGeneration,
+    It::Item: GenSeqEntryIntoValue<Gen>,
+    Gen: GenerationalIndex,
 {
     type Item = (
         GenIDOf<T, Gen>,
-        <It::Item as GenVecEntryIntoValue<Gen>>::EntryItem,
+        <It::Item as GenSeqEntryIntoValue<Gen>>::EntryItem,
     );
 
     fn next(&mut self) -> Option<Self::Item>
@@ -1177,8 +1185,8 @@ where
 impl<T, It, Gen> DoubleEndedIterator for IntoIter<T, It, Gen>
 where
     It: Iterator + DoubleEndedIterator + ExactSizeIterator,
-    It::Item: GenVecEntryIntoValue<Gen>,
-    Gen: IGeneration,
+    It::Item: GenSeqEntryIntoValue<Gen>,
+    Gen: GenerationalIndex,
 {
     fn next_back(&mut self) -> Option<Self::Item>
     {
@@ -1199,16 +1207,16 @@ where
 impl<T, It, Gen> FusedIterator for IntoIter<T, It, Gen>
 where
     It: Iterator,
-    It::Item: GenVecEntryIntoValue<Gen>,
-    Gen: IGeneration,
+    It::Item: GenSeqEntryIntoValue<Gen>,
+    Gen: GenerationalIndex,
 {
 }
 // Kinda unsafe:
 impl<T, It, Gen> ExactSizeIterator for IntoIter<T, It, Gen>
 where
     It: Iterator,
-    It::Item: GenVecEntryIntoValue<Gen>,
-    Gen: IGeneration,
+    It::Item: GenSeqEntryIntoValue<Gen>,
+    Gen: GenerationalIndex,
 {
     fn len(&self) -> usize { self.len_remaining }
 }
@@ -1216,7 +1224,7 @@ where
 impl<'s, T, C, Gen> IntoIterator for &'s GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Item = (GenIDOf<T, Gen>, &'s T);
     type IntoIter = Iter<'s, T, Gen>;
@@ -1231,12 +1239,12 @@ where
 }
 
 #[derive(Debug)]
-pub struct Iter<'a, T, Gen: IGeneration = Generation>
+pub struct Iter<'a, T, Gen: GenerationalIndex = Generation>
 {
     iter: std::iter::Enumerate<std::slice::Iter<'a, Entry<T, Gen>>>,
     len_remaining: usize,
 }
-impl<'a, T, Gen: IGeneration> Clone for Iter<'a, T, Gen>
+impl<'a, T, Gen: GenerationalIndex> Clone for Iter<'a, T, Gen>
 {
     fn clone(&self) -> Self
     {
@@ -1247,7 +1255,7 @@ impl<'a, T, Gen: IGeneration> Clone for Iter<'a, T, Gen>
     }
 }
 
-impl<'a, T, Gen: IGeneration> Iterator for Iter<'a, T, Gen>
+impl<'a, T, Gen: GenerationalIndex> Iterator for Iter<'a, T, Gen>
 {
     type Item = (GenIDOf<T, Gen>, &'a T);
 
@@ -1269,7 +1277,7 @@ impl<'a, T, Gen: IGeneration> Iterator for Iter<'a, T, Gen>
 
     fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
-impl<'a, T, Gen: IGeneration> DoubleEndedIterator for Iter<'a, T, Gen>
+impl<'a, T, Gen: GenerationalIndex> DoubleEndedIterator for Iter<'a, T, Gen>
 {
     fn next_back(&mut self) -> Option<Self::Item>
     {
@@ -1287,8 +1295,8 @@ impl<'a, T, Gen: IGeneration> DoubleEndedIterator for Iter<'a, T, Gen>
         None
     }
 }
-impl<'a, T, Gen: IGeneration> FusedIterator for Iter<'a, T, Gen> {}
-impl<'a, T, Gen: IGeneration> ExactSizeIterator for Iter<'a, T, Gen>
+impl<'a, T, Gen: GenerationalIndex> FusedIterator for Iter<'a, T, Gen> {}
+impl<'a, T, Gen: GenerationalIndex> ExactSizeIterator for Iter<'a, T, Gen>
 {
     fn len(&self) -> usize { self.len_remaining }
 }
@@ -1296,7 +1304,7 @@ impl<'a, T, Gen: IGeneration> ExactSizeIterator for Iter<'a, T, Gen>
 impl<'s, T, C, Gen> IntoIterator for &'s mut GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Item = (GenIDOf<T, Gen>, &'s mut T);
     type IntoIter = IterMut<'s, T, Gen>;
@@ -1311,13 +1319,13 @@ where
 }
 
 #[derive(Debug)]
-pub struct IterMut<'a, T, Gen: IGeneration = Generation>
+pub struct IterMut<'a, T, Gen: GenerationalIndex = Generation>
 {
     iter: std::iter::Enumerate<std::slice::IterMut<'a, Entry<T, Gen>>>,
     len_remaining: usize,
 }
 
-impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen>
+impl<'a, T, Gen: GenerationalIndex> Iterator for IterMut<'a, T, Gen>
 {
     type Item = (GenIDOf<T, Gen>, &'a mut T);
 
@@ -1337,7 +1345,7 @@ impl<'a, T, Gen: IGeneration> Iterator for IterMut<'a, T, Gen>
 
     fn size_hint(&self) -> (usize, Option<usize>) { (self.len_remaining, Some(self.len_remaining)) }
 }
-impl<'a, T, Gen: IGeneration> DoubleEndedIterator for IterMut<'a, T, Gen>
+impl<'a, T, Gen: GenerationalIndex> DoubleEndedIterator for IterMut<'a, T, Gen>
 {
     fn next_back(&mut self) -> Option<Self::Item>
     {
@@ -1353,8 +1361,8 @@ impl<'a, T, Gen: IGeneration> DoubleEndedIterator for IterMut<'a, T, Gen>
         None
     }
 }
-impl<'a, T, Gen: IGeneration> FusedIterator for IterMut<'a, T, Gen> {}
-impl<'a, T, Gen: IGeneration> ExactSizeIterator for IterMut<'a, T, Gen>
+impl<'a, T, Gen: GenerationalIndex> FusedIterator for IterMut<'a, T, Gen> {}
+impl<'a, T, Gen: GenerationalIndex> ExactSizeIterator for IterMut<'a, T, Gen>
 {
     fn len(&self) -> usize { self.len_remaining }
 }
@@ -1362,19 +1370,19 @@ impl<'a, T, Gen: IGeneration> ExactSizeIterator for IterMut<'a, T, Gen>
 impl<T, Gen, C> Collection for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
 }
 impl<T, Gen, C> CollectionBijective for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
 }
 impl<T, Gen, C> Length for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     fn len(&self) -> usize { self.len() }
@@ -1382,7 +1390,7 @@ where
 impl<T, Gen, C> Clear for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Clear,
 {
     #[inline(always)]
@@ -1392,7 +1400,7 @@ where
 impl<T, Gen, C> Push<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Push<Entry<T, Gen>>,
 {
     type Output = GenIDOf<T, Gen>;
@@ -1402,7 +1410,7 @@ where
 impl<T, Gen, C> TryPush<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: TryPush<Entry<T, Gen>>,
 {
     type Error = C::Error;
@@ -1412,7 +1420,7 @@ where
 impl<'s, T, Gen, C> From<&'s GenSeq<T, Gen, C>> for GenSeq<T, Gen, &'s [Entry<T, Gen>]>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     T: 's,
 {
     fn from(value: &'s GenSeq<T, Gen, C>) -> Self
@@ -1429,7 +1437,7 @@ where
 impl<'s, T, Gen, C> From<&'s mut GenSeq<T, Gen, C>> for GenSeq<T, Gen, &'s mut [Entry<T, Gen>]>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     T: 's,
 {
     fn from(value: &'s mut GenSeq<T, Gen, C>) -> Self
@@ -1485,7 +1493,7 @@ where
 impl<T, Gen, C> Shrink for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Shrink,
 {
     fn shrink_to_fit(&mut self) { self.values.shrink_to_fit(); }
@@ -1494,7 +1502,7 @@ where
 impl<T, Gen, C> Truncate for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Truncate,
 {
     fn truncate(&mut self, len: usize) { self.values.truncate(len); }
@@ -1503,7 +1511,7 @@ where
 impl<T, Gen, C> Capacity for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Reserve,
 {
     #[inline(always)]
@@ -1512,7 +1520,7 @@ where
 impl<T, Gen, C> WithCapacity for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Reserve,
 {
     type Param = ();
@@ -1526,7 +1534,7 @@ where
 impl<T, Gen, C> Reserve for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Reserve,
 {
     #[inline(always)]
@@ -1550,19 +1558,19 @@ where
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum GenVecError<T, Gen>
+pub enum GenSeqError<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     IndexOutOfBounds(IndexOutOfBounds),
-    WrongGeneration(GenVecWrongGeneration<T, Gen>),
+    WrongGeneration(GenSeqWrongGeneration<T, Gen>),
     /// The entry at this index is saturated
     Saturated(usize),
 }
-impl<T, Gen> Eq for GenVecError<T, Gen> where Gen: IGeneration {}
-impl<T, Gen> PartialEq for GenVecError<T, Gen>
+impl<T, Gen> Eq for GenSeqError<T, Gen> where Gen: GenerationalIndex {}
+impl<T, Gen> PartialEq for GenSeqError<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn eq(&self, other: &Self) -> bool
     {
@@ -1575,63 +1583,63 @@ where
     }
 }
 
-impl<T, Gen> Hash for GenVecError<T, Gen>
+impl<T, Gen> Hash for GenSeqError<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn hash<H: Hasher>(&self, state: &mut H)
     {
         match self
         {
-            GenVecError::IndexOutOfBounds(v) => v.hash(state),
-            GenVecError::WrongGeneration(v) => v.hash(state),
-            GenVecError::Saturated(v) => v.hash(state),
+            GenSeqError::IndexOutOfBounds(v) => v.hash(state),
+            GenSeqError::WrongGeneration(v) => v.hash(state),
+            GenSeqError::Saturated(v) => v.hash(state),
         }
     }
 }
 
 // error: the `Copy` impl for `hexga_core::ops::IndexOutOfRange` requires that `std::ops::Range<usize>: Copy`
-// impl<T,Gen,C> Copy for GenVecError<T,Gen> {}
-impl<T, Gen> Clone for GenVecError<T, Gen>
+//impl<T,Gen> Copy for GenSeqError<T,Gen> {}
+impl<T, Gen> Clone for GenSeqError<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn clone(&self) -> Self
     {
         match self
         {
-            GenVecError::IndexOutOfBounds(v) => Self::IndexOutOfBounds(v.clone()),
-            GenVecError::WrongGeneration(v) => Self::WrongGeneration(v.clone()),
-            GenVecError::Saturated(v) => Self::Saturated(v.clone()),
+            GenSeqError::IndexOutOfBounds(v) => Self::IndexOutOfBounds(v.clone()),
+            GenSeqError::WrongGeneration(v) => Self::WrongGeneration(v.clone()),
+            GenSeqError::Saturated(v) => Self::Saturated(v.clone()),
         }
     }
 }
 
-impl<T, Gen> Debug for GenVecError<T, Gen>
+impl<T, Gen> Debug for GenSeqError<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
     {
         match self
         {
-            GenVecError::IndexOutOfBounds(arg0) =>
+            GenSeqError::IndexOutOfBounds(arg0) =>
             {
                 f.debug_tuple("IndexOutOfRange").field(arg0).finish()
             }
-            GenVecError::WrongGeneration(arg0) =>
+            GenSeqError::WrongGeneration(arg0) =>
             {
                 f.debug_tuple("WrongGeneration").field(arg0).finish()
             }
-            GenVecError::Saturated(arg0) => f.debug_tuple("Saturated").field(arg0).finish(),
+            GenSeqError::Saturated(arg0) => f.debug_tuple("Saturated").field(arg0).finish(),
         }
     }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct GenVecWrongGeneration<T, Gen>
+pub struct GenSeqWrongGeneration<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     pub got: Gen,
     pub expected: Gen,
@@ -1639,9 +1647,9 @@ where
     phantom: PhantomData<T>,
 }
 
-impl<T, Gen> GenVecWrongGeneration<T, Gen>
+impl<T, Gen> GenSeqWrongGeneration<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     pub fn new(got: Gen, expected: Gen) -> Self
     {
@@ -1652,17 +1660,17 @@ where
         }
     }
 }
-impl<T, Gen> Eq for GenVecWrongGeneration<T, Gen> where Gen: IGeneration {}
-impl<T, Gen> PartialEq for GenVecWrongGeneration<T, Gen>
+impl<T, Gen> Eq for GenSeqWrongGeneration<T, Gen> where Gen: GenerationalIndex {}
+impl<T, Gen> PartialEq for GenSeqWrongGeneration<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn eq(&self, other: &Self) -> bool { self.got == other.got && self.expected == other.expected }
 }
 
-impl<T, Gen> Hash for GenVecWrongGeneration<T, Gen>
+impl<T, Gen> Hash for GenSeqWrongGeneration<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn hash<H: Hasher>(&self, state: &mut H)
     {
@@ -1671,10 +1679,10 @@ where
     }
 }
 
-impl<T, Gen> Copy for GenVecWrongGeneration<T, Gen> where Gen: IGeneration {}
-impl<T, Gen> Clone for GenVecWrongGeneration<T, Gen>
+impl<T, Gen> Copy for GenSeqWrongGeneration<T, Gen> where Gen: GenerationalIndex {}
+impl<T, Gen> Clone for GenSeqWrongGeneration<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn clone(&self) -> Self
     {
@@ -1686,16 +1694,15 @@ where
     }
 }
 
-impl<T, Gen> Debug for GenVecWrongGeneration<T, Gen>
+impl<T, Gen> Debug for GenSeqWrongGeneration<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
     {
-        f.debug_struct("GenVecWrongGeneration")
+        f.debug_struct("GenSeqWrongGeneration")
             .field("got", &self.got)
             .field("expected", &self.expected)
-            .field("phantom", &self.phantom)
             .finish()
     }
 }
@@ -1703,7 +1710,7 @@ where
 impl<T, Gen, C> Get<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = <Self as Index<usize>>::Output;
     #[inline(always)]
@@ -1712,7 +1719,7 @@ where
 impl<T, Gen, C> TryGet<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Error = IndexOutOfBounds;
     fn try_get(&self, index: usize) -> Result<&Self::Output, Self::Error>
@@ -1725,7 +1732,7 @@ where
 impl<T, Gen, C> Get<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = <Self as Index<GenIDOf<T, Gen>>>::Output;
     #[inline(always)]
@@ -1737,9 +1744,9 @@ where
 impl<T, Gen, C> TryGet<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
-    type Error = GenVecError<T, Gen>;
+    type Error = GenSeqError<T, Gen>;
     fn try_get(&self, id: UntypedGenIDOf<Gen>) -> Result<&Self::Output, Self::Error>
     {
         self.try_get(id.typed::<T>())
@@ -1749,7 +1756,7 @@ where
 impl<T, Gen, C> Get<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = <Self as Index<GenIDOf<T, Gen>>>::Output;
     #[inline(always)]
@@ -1758,9 +1765,9 @@ where
 impl<T, Gen, C> TryGet<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
-    type Error = GenVecError<T, Gen>;
+    type Error = GenSeqError<T, Gen>;
     fn try_get(&self, id: GenIDOf<T, Gen>) -> Result<&Self::Output, Self::Error>
     {
         match self.get_entry_from_index(id.index())
@@ -1772,18 +1779,18 @@ where
                 {
                     if s.is_generation_saturated()
                     {
-                        Err(GenVecError::Saturated(id.index()))
+                        Err(GenSeqError::Saturated(id.index()))
                     }
                     else
                     {
-                        Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(
+                        Err(GenSeqError::WrongGeneration(GenSeqWrongGeneration::new(
                             id.generation(),
                             s.generation(),
                         )))
                     }
                 }
             },
-            None => Err(GenVecError::IndexOutOfBounds(IndexOutOfBounds::new(
+            None => Err(GenSeqError::IndexOutOfBounds(IndexOutOfBounds::new(
                 id.index(),
                 0..self.len(),
             ))),
@@ -1794,7 +1801,7 @@ where
 impl<T, Gen, C> GetMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     fn get_mut(&mut self, index: usize) -> Option<&mut Self::Output>
@@ -1805,7 +1812,7 @@ where
 impl<T, Gen, C> TryGetMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn try_get_mut(&mut self, index: usize) -> Result<&mut Self::Output, Self::Error>
     {
@@ -1818,7 +1825,7 @@ where
 impl<T, Gen, C> GetManyMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     fn try_get_many_mut<const N: usize>(
@@ -1902,7 +1909,7 @@ where
 impl<T, Gen, C> GetMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     fn get_mut(&mut self, index: GenIDOf<T, Gen>) -> Option<&mut Self::Output>
@@ -1913,7 +1920,7 @@ where
 impl<T, Gen, C> TryGetMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn try_get_mut(&mut self, id: GenIDOf<T, Gen>) -> Result<&mut Self::Output, Self::Error>
     {
@@ -1931,11 +1938,11 @@ where
                     {
                         if is_saturated
                         {
-                            Err(GenVecError::Saturated(id.index()))
+                            Err(GenSeqError::Saturated(id.index()))
                         }
                         else
                         {
-                            Err(GenVecError::WrongGeneration(GenVecWrongGeneration::new(
+                            Err(GenSeqError::WrongGeneration(GenSeqWrongGeneration::new(
                                 id.generation(),
                                 generation,
                             )))
@@ -1943,7 +1950,7 @@ where
                     }
                 }
             }
-            None => Err(GenVecError::IndexOutOfBounds(IndexOutOfBounds::new(
+            None => Err(GenSeqError::IndexOutOfBounds(IndexOutOfBounds::new(
                 id.index(),
                 0..len,
             ))),
@@ -1954,7 +1961,7 @@ where
 impl<T, Gen, C> GetManyMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     fn try_get_many_mut<const N: usize>(
@@ -2023,7 +2030,7 @@ where
 impl<T, Gen, C> GetMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     fn get_mut(&mut self, index: UntypedGenIDOf<Gen>) -> Option<&mut Self::Output>
@@ -2034,7 +2041,7 @@ where
 impl<T, Gen, C> TryGetMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     fn try_get_mut(&mut self, id: UntypedGenIDOf<Gen>) -> Result<&mut Self::Output, Self::Error>
@@ -2046,7 +2053,7 @@ where
 impl<T, Gen, C> GetManyMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     #[inline(always)]
     fn try_get_many_mut<const N: usize>(
@@ -2071,7 +2078,7 @@ where
 impl<T, Gen, C> Remove<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = T;
     fn remove(&mut self, index: usize) -> Option<Self::Output> { self.remove_from_index(index) }
@@ -2080,7 +2087,7 @@ where
 impl<T, Gen, C> Remove<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = T;
     fn remove(&mut self, index: GenIDOf<T, Gen>) -> Option<Self::Output> { self.remove(index) }
@@ -2088,7 +2095,7 @@ where
 impl<T, Gen, C> Remove<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Output = T;
     #[inline(always)]
@@ -2098,17 +2105,17 @@ where
     }
 }
 
-impl<T, Gen, C> CollectionPushStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
-impl<T, Gen, C> CollectionPopStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
-impl<T, Gen, C> CollectionInsertStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
-impl<T, Gen, C> CollectionRemoveStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
-impl<T, Gen, C> CollectionGetMutStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: IGeneration, {}
+impl<T, Gen, C> CollectionPushStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
+impl<T, Gen, C> CollectionPopStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
+impl<T, Gen, C> CollectionInsertStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
+impl<T, Gen, C> CollectionRemoveStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
+impl<T, Gen, C> CollectionGetMutStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
 
 
 impl<T, Gen, C> GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     /// Moves all the elements of `other` into `self`, leaving `other` empty by clearing it (don't invalidate all previous [GenID]).
     pub fn append<C2>(
@@ -2148,7 +2155,7 @@ where
 impl<T, Gen, C> Extend<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Push<Entry<T, Gen>>,
 {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I)
@@ -2160,15 +2167,16 @@ where
     }
 }
 
+
 pub trait GenIDUpdater<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn update(&self, dest: &mut GenIDOf<T, Gen>);
 }
 impl<T, Gen> GenIDUpdater<T, Gen> for HashMap<GenIDOf<T, Gen>, GenIDOf<T, Gen>>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn update(&self, dest: &mut GenIDOf<T, Gen>)
     {
@@ -2189,13 +2197,13 @@ where
     }
 }*/
 
-pub trait GenIDUpdatable<T, Gen: IGeneration = Generation>: Sized
+pub trait GenIDUpdatable<T, Gen: GenerationalIndex = Generation>: Sized
 {
     fn update_id<U: GenIDUpdater<T, Gen>>(&mut self, updater: &U);
 }
 impl<T, Gen> GenIDUpdatable<T, Gen> for GenIDOf<T, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn update_id<U: GenIDUpdater<T, Gen>>(&mut self, updater: &U) { updater.update(self); }
 }
@@ -2203,7 +2211,7 @@ where
 impl<T, Gen, C> Extend<(GenIDOf<T, Gen>, T)> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Push<Entry<T, Gen>>,
     T: GenIDUpdatable<T, Gen>,
 {
@@ -2236,6 +2244,7 @@ where
         }
     }
 }
+
 
 pub trait CollectToGenVec<T>: Sized + IntoIterator<Item = T>
 {
@@ -2335,7 +2344,7 @@ where
 impl<T, C, Gen> Serialize for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Serialize,
     T: Serialize,
     Gen: Serialize,
@@ -2344,7 +2353,7 @@ where
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("GenVec", 2)?;
+        let mut state = serializer.serialize_struct("GenSeq", 2)?;
         state.serialize_field("values", &self.values)?;
         // need to be in the same order on all machine for determinist
         state.serialize_field("next", &Some(self.free))?;
@@ -2372,20 +2381,20 @@ where
 impl<'de, T, C, Gen> Deserialize<'de> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     C: Deserialize<'de>,
     T: Deserialize<'de>,
-    Gen: IGeneration + Deserialize<'de>,
+    Gen: GenerationalIndex + Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        pub struct GenVec<T, Gen, C>
+        pub struct GenSeq<T, Gen, C>
         where
             C: AsRef<[Entry<T, Gen>]>,
-            Gen: IGeneration,
+            Gen: GenerationalIndex,
         {
             values: C,
             next: Option<usize>,
@@ -2393,12 +2402,12 @@ where
             phantom: PhantomData<(T, Gen)>,
         }
 
-        let GenVec {
+        let GenSeq {
             values,
             next,
             phantom: _,
-        } = GenVec::deserialize(deserializer)?;
-        GenSeq::<T, Gen, C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX))
+        } = GenSeq::deserialize(deserializer)?;
+        crate::gen_seq::GenSeq::<T, Gen, C>::try_from_raw_parts(values, next.unwrap_or(usize::MAX))
             .map_err(serde::de::Error::custom)
     }
 }

@@ -49,3 +49,15 @@ pub mod prelude
         //table::prelude::*,
     };
 }
+
+pub mod traits
+{
+    pub use super::{
+        gen_id::traits::*,
+        gen_map::traits::*,
+        gen_seq::traits::*,
+        gen_set::traits::*,
+        //multi_map::traits::*,
+        //table::traits::*,
+    };
+}

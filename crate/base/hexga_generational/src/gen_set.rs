@@ -3,7 +3,13 @@ use crate::gen_seq::GenSeq;
 
 pub mod prelude
 {
-    pub use super::{CollectToGenSet, GenBTreeSet, GenHashSet};
+    pub use super::{GenBTreeSet, GenHashSet};
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::CollectToGenSet;
 }
 
 pub type GenHashSet<K> = GenHashSetOf<K, RandomState>;
@@ -18,7 +24,7 @@ pub type GenBTreeSet<K> = GenSetOf<K, Generation, BTreeMap<K, GenIDOf<K, Generat
 pub struct GenSetOf<K, Gen = Generation, S = HashMap<K, GenIDOf<K, Gen>>>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     values: GenSeq<K, Gen>,
     search: S,
@@ -27,7 +33,7 @@ where
 impl<K, Gen, S> PartialEq for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     K: PartialEq,
 {
     fn eq(&self, other: &Self) -> bool { self.values == other.values }
@@ -36,7 +42,7 @@ where
 impl<K, Gen, S> Eq for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     K: Eq,
 {
 }
@@ -44,7 +50,7 @@ where
 impl<K, Gen, S> Hash for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     K: Hash,
 {
     fn hash<H: Hasher>(&self, state: &mut H) { self.values.hash(state); }
@@ -54,7 +60,7 @@ where
 impl<K, Gen, St> Serialize for GenSetOf<K, Gen, St>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     K: Serialize,
     Gen: Serialize,
     GenSeq<K, Gen>: Serialize,
@@ -70,7 +76,7 @@ where
 impl<K, Gen, S> From<GenSeq<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Default + Insert<K, GenIDOf<K, Gen>>,
 {
     fn from(values: GenSeq<K, Gen>) -> Self
@@ -94,7 +100,7 @@ where
 impl<'de, K, Gen, St> Deserialize<'de> for GenSetOf<K, Gen, St>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     K: Deserialize<'de>,
     Gen: Deserialize<'de>,
     St: Default + Insert<K, GenIDOf<K, Gen>>,
@@ -124,7 +130,7 @@ where
 impl<K, Gen, S> AsRef<GenSeq<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn as_ref(&self) -> &GenSeq<K, Gen> { &self.values }
 }
@@ -132,7 +138,7 @@ where
 impl<K, Gen, S> Default for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Default,
 {
     fn default() -> Self
@@ -147,7 +153,7 @@ where
 impl<K, Gen, S> Debug for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     K: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
@@ -159,7 +165,7 @@ where
 impl<K, Gen, S> Collection for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Collection,
 {
 }
@@ -167,7 +173,7 @@ where
 impl<K, Gen, S> CollectionBijective for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Collection,
 {
 }
@@ -175,7 +181,7 @@ where
 impl<K, Gen, S> GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     pub fn new() -> Self
     where
@@ -249,7 +255,7 @@ where
 impl<K, Gen, S> WithCapacity for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: WithCapacity + Length,
     <S as WithCapacity>::Param: Default,
 {
@@ -266,7 +272,7 @@ where
 impl<K, Gen, S> Capacity for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Capacity,
 {
     fn capacity(&self) -> usize { self.values.capacity() / 2 + self.search.capacity() / 2 }
@@ -275,7 +281,7 @@ where
 impl<K, Gen, S> Reserve for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Reserve + Length,
 {
     fn reserve(&mut self, additional: usize)
@@ -315,7 +321,7 @@ where
 impl<K, Gen, S> Shrink for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Shrink,
 {
     fn shrink_to_fit(&mut self)
@@ -334,7 +340,7 @@ where
 impl<K, Gen, S> Length for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Collection,
 {
     fn len(&self) -> usize { self.values.len() }
@@ -344,7 +350,7 @@ impl<'a, Q, K, Gen, S> Get<&'a Q> for GenSetOf<K, Gen, S>
 where
     Q: ?Sized,
     K: Clone + Borrow<Q>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Get<&'a Q, Output = GenIDOf<K, Gen>>,
 {
     type Output = K;
@@ -360,7 +366,7 @@ impl<'a, Q, K, Gen, S> TryGet<&'a Q> for GenSetOf<K, Gen, S>
 where
     Q: ?Sized + Clone,
     K: Clone + Borrow<Q>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Get<&'a Q, Output = GenIDOf<K, Gen>>,
 {
     type Error = MissingKey<Q>;
@@ -374,7 +380,7 @@ where
 impl<K, Gen, S> Get<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Collection,
 {
     type Output = K;
@@ -388,7 +394,7 @@ where
 impl<K, Gen, S> TryGet<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Collection,
 {
     type Error = <GenSeq<K, Gen> as TryGet<GenIDOf<K, Gen>>>::Error;
@@ -401,7 +407,7 @@ where
 impl<K, Gen, S> Get<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Collection,
 {
     type Output = K;
@@ -418,7 +424,7 @@ where
 impl<K, Gen, S> TryGet<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Collection,
 {
     type Error = <GenSeq<K, Gen> as TryGet<UntypedGenIDOf<Gen>>>::Error;
@@ -433,7 +439,7 @@ where
 impl<K, Gen, S> Insert<K, ()> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Insert<K, GenIDOf<K, Gen>>,
 {
     fn insert(&mut self, key: K, _value: ()) -> Option<()>
@@ -447,7 +453,7 @@ impl<'a, Q, K, Gen, S> Remove<&'a Q> for GenSetOf<K, Gen, S>
 where
     Q: ?Sized,
     K: Clone + Borrow<Q>,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Remove<&'a Q, Output = GenIDOf<K, Gen>>,
 {
     type Output = ();
@@ -461,7 +467,7 @@ where
 impl<K, Gen, S> Remove<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: for<'a> Remove<&'a K, Output = GenIDOf<K, Gen>>,
 {
     type Output = K;
@@ -476,7 +482,7 @@ where
 impl<K, Gen, S> Remove<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: for<'a> Remove<&'a K, Output = GenIDOf<K, Gen>>,
 {
     type Output = K;
@@ -489,7 +495,7 @@ where
 impl<K, Gen, S> Extend<K> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Insert<K, GenIDOf<K, Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<K, Gen>>,
     Self: Reserve,
 {
@@ -507,7 +513,7 @@ where
 impl<K, Gen, S> FromIterator<K> for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
     S: Default + Insert<K, GenIDOf<K, Gen>> + for<'a> Remove<&'a K, Output = GenIDOf<K, Gen>>,
     Self: WithCapacity + Reserve,
     <Self as WithCapacity>::Param: Default,
@@ -524,14 +530,14 @@ where
 #[derive(Debug, Clone)]
 pub struct IntoIter<K, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     iter: crate::gen_seq::IntoIter<K, std::vec::IntoIter<crate::gen_seq::Entry<K, Gen>>, Gen>,
 }
 
 impl<K, Gen> Iterator for IntoIter<K, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Item = (GenIDOf<K, Gen>, K);
     fn next(&mut self) -> Option<Self::Item>
@@ -544,14 +550,14 @@ where
 #[derive(Debug, Clone)]
 pub struct Iter<'a, K, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     iter: crate::gen_seq::Iter<'a, K, Gen>,
 }
 
 impl<'a, K, Gen> Iterator for Iter<'a, K, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Item = (GenIDOf<K, Gen>, &'a K);
     fn next(&mut self) -> Option<Self::Item>
@@ -561,10 +567,10 @@ where
     }
 }
 
-impl<'a, K, Gen> FusedIterator for Iter<'a, K, Gen> where Gen: IGeneration {}
+impl<'a, K, Gen> FusedIterator for Iter<'a, K, Gen> where Gen: GenerationalIndex {}
 impl<'a, K, Gen> ExactSizeIterator for Iter<'a, K, Gen>
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn len(&self) -> usize { self.iter.len() }
 }
@@ -572,7 +578,7 @@ where
 impl<K, Gen, S> IntoIterator for GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Item = (GenIDOf<K, Gen>, K);
     type IntoIter = IntoIter<K, Gen>;
@@ -588,7 +594,7 @@ where
 impl<'a, K, Gen, S> IntoIterator for &'a GenSetOf<K, Gen, S>
 where
     K: Clone,
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     type Item = (GenIDOf<K, Gen>, &'a K);
     type IntoIter = Iter<'a, K, Gen>;

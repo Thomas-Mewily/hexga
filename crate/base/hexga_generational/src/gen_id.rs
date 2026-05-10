@@ -2,11 +2,17 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{GenID, IGenID};
-    pub(crate) use super::{GenIDOf, Generation, IGeneration, UntypedGenIDOf};
+    pub use super::traits::*;
+    pub use super::{GenID};
+    pub(crate) use super::{GenIDOf, Generation, UntypedGenIDOf};
 }
 
-pub trait IGenID<Gen = Generation>:
+pub mod traits
+{
+    pub use super::{GenerationalID,GenerationalIndex};
+}
+
+pub trait GenerationalID<Gen = Generation>:
     From<(usize, Gen)>
     + Into<(usize, Gen)>
     + Clone
@@ -18,7 +24,7 @@ pub trait IGenID<Gen = Generation>:
     + PartialOrd
     + Default
 where
-    Gen: IGeneration,
+    Gen: GenerationalIndex,
 {
     fn from_index_and_generation(index: usize, generation: Gen) -> Self
     {
@@ -44,7 +50,7 @@ where
     fn untyped(self) -> UntypedGenIDOf<Gen> { UntypedGenIDOf::from(self.index_and_generation()) }
 }
 
-pub trait IGeneration:
+pub trait GenerationalIndex:
     Eq
     + Hash
     + Ord
@@ -59,7 +65,7 @@ pub trait IGeneration:
     + 'static
 {
 }
-impl<T> IGeneration for T where
+impl<T> GenerationalIndex for T where
     T: Eq
         + Hash
         + Ord
@@ -89,16 +95,16 @@ where
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
-pub struct UntypedGenIDOf<Gen: IGeneration = Generation>
+pub struct UntypedGenIDOf<Gen: GenerationalIndex = Generation>
 {
     index: usize,
     generation: Gen,
 }
-impl<Gen: IGeneration> Default for UntypedGenIDOf<Gen>
+impl<Gen: GenerationalIndex> Default for UntypedGenIDOf<Gen>
 {
     fn default() -> Self { Self::NULL }
 }
-impl<Gen: IGeneration> IGenID<Gen> for UntypedGenIDOf<Gen>
+impl<Gen: GenerationalIndex> GenerationalID<Gen> for UntypedGenIDOf<Gen>
 {
     fn index(self) -> usize { self.index }
     fn generation(self) -> Gen { self.generation }
@@ -108,7 +114,7 @@ impl<Gen: IGeneration> IGenID<Gen> for UntypedGenIDOf<Gen>
         generation: Gen::MIN,
     };
 }
-impl<Gen: IGeneration> UntypedGenIDOf<Gen>
+impl<Gen: GenerationalIndex> UntypedGenIDOf<Gen>
 {
     #[inline(always)]
     pub const fn from_index_and_generation(index: usize, generation: Gen) -> Self
@@ -121,27 +127,27 @@ impl<Gen: IGeneration> UntypedGenIDOf<Gen>
     #[inline(always)]
     pub const fn generation(self) -> Gen { self.generation }
 }
-impl<Gen: IGeneration, C> IndexExtension<C> for UntypedGenIDOf<Gen> {}
+impl<Gen: GenerationalIndex, C> IndexExtension<C> for UntypedGenIDOf<Gen> {}
 
-impl<Gen: IGeneration> From<(usize, Gen)> for UntypedGenIDOf<Gen>
+impl<Gen: GenerationalIndex> From<(usize, Gen)> for UntypedGenIDOf<Gen>
 {
     fn from((index, generation): (usize, Gen)) -> Self
     {
         Self::from_index_and_generation(index, generation)
     }
 }
-impl<Gen: IGeneration> From<UntypedGenIDOf<Gen>> for (usize, Gen)
+impl<Gen: GenerationalIndex> From<UntypedGenIDOf<Gen>> for (usize, Gen)
 {
     fn from(value: UntypedGenIDOf<Gen>) -> Self { (value.index, value.generation) }
 }
-impl<T, Gen: IGeneration> From<GenIDOf<T, Gen>> for UntypedGenIDOf<Gen>
+impl<T, Gen: GenerationalIndex> From<GenIDOf<T, Gen>> for UntypedGenIDOf<Gen>
 {
     fn from(value: GenIDOf<T, Gen>) -> Self
     {
         Self::from_index_and_generation(value.index(), value.generation())
     }
 }
-impl<T, Gen: IGeneration> From<UntypedGenIDOf<Gen>> for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> From<UntypedGenIDOf<Gen>> for GenIDOf<T, Gen>
 {
     fn from(value: UntypedGenIDOf<Gen>) -> Self
     {
@@ -150,7 +156,7 @@ impl<T, Gen: IGeneration> From<UntypedGenIDOf<Gen>> for GenIDOf<T, Gen>
 }
 
 #[cfg(feature = "serde")]
-impl<Gen: IGeneration> Serialize for UntypedGenIDOf<Gen>
+impl<Gen: GenerationalIndex> Serialize for UntypedGenIDOf<Gen>
 where
     Gen: Serialize,
 {
@@ -171,7 +177,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<'de, Gen: IGeneration> Deserialize<'de> for UntypedGenIDOf<Gen>
+impl<'de, Gen: GenerationalIndex> Deserialize<'de> for UntypedGenIDOf<Gen>
 where
     Gen: Deserialize<'de>,
 {
@@ -186,7 +192,7 @@ where
         }
     }
 }
-impl<Gen: IGeneration> Debug for UntypedGenIDOf<Gen>
+impl<Gen: GenerationalIndex> Debug for UntypedGenIDOf<Gen>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
@@ -204,12 +210,12 @@ impl<Gen: IGeneration> Debug for UntypedGenIDOf<Gen>
     }
 }
 
-pub struct GenIDOf<T, Gen: IGeneration = Generation>
+pub struct GenIDOf<T, Gen: GenerationalIndex = Generation>
 {
     untyped: UntypedGenIDOf<Gen>,
     phantom: PhantomData<T>,
 }
-impl<T, Gen: IGeneration> Clone for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> Clone for GenIDOf<T, Gen>
 {
     fn clone(&self) -> Self
     {
@@ -219,32 +225,32 @@ impl<T, Gen: IGeneration> Clone for GenIDOf<T, Gen>
         }
     }
 }
-impl<T, Gen: IGeneration> Copy for GenIDOf<T, Gen> {}
-impl<T, Gen: IGeneration> PartialEq for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> Copy for GenIDOf<T, Gen> {}
+impl<T, Gen: GenerationalIndex> PartialEq for GenIDOf<T, Gen>
 {
     fn eq(&self, other: &Self) -> bool { self.untyped == other.untyped }
 }
-impl<T, Gen: IGeneration> Eq for GenIDOf<T, Gen> {}
-impl<T, Gen: IGeneration> Ord for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> Eq for GenIDOf<T, Gen> {}
+impl<T, Gen: GenerationalIndex> Ord for GenIDOf<T, Gen>
 {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering { self.untyped.cmp(&other.untyped) }
 }
-impl<T, Gen: IGeneration> PartialOrd for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> PartialOrd for GenIDOf<T, Gen>
 {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering>
     {
         self.untyped.partial_cmp(&other.untyped)
     }
 }
-impl<T, Gen: IGeneration> Hash for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> Hash for GenIDOf<T, Gen>
 {
     fn hash<H: Hasher>(&self, state: &mut H) { self.untyped.hash(state); }
 }
-impl<T, Gen: IGeneration> Default for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> Default for GenIDOf<T, Gen>
 {
     fn default() -> Self { Self::NULL }
 }
-impl<T, Gen: IGeneration> IGenID<Gen> for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> GenerationalID<Gen> for GenIDOf<T, Gen>
 {
     #[inline(always)]
     fn index(self) -> usize { self.untyped.index() }
@@ -256,7 +262,7 @@ impl<T, Gen: IGeneration> IGenID<Gen> for GenIDOf<T, Gen>
         phantom: PhantomData,
     };
 }
-impl<T, Gen: IGeneration> GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> GenIDOf<T, Gen>
 {
     #[inline(always)]
     pub const fn from_index_and_generation(index: usize, generation: Gen) -> Self
@@ -272,22 +278,22 @@ impl<T, Gen: IGeneration> GenIDOf<T, Gen>
     #[inline(always)]
     pub const fn generation(self) -> Gen { self.untyped.generation() }
 }
-impl<T, Gen: IGeneration, C> IndexExtension<C> for GenIDOf<T, Gen> {}
+impl<T, Gen: GenerationalIndex, C> IndexExtension<C> for GenIDOf<T, Gen> {}
 
-impl<T, Gen: IGeneration> From<(usize, Gen)> for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> From<(usize, Gen)> for GenIDOf<T, Gen>
 {
     fn from((index, generation): (usize, Gen)) -> Self
     {
         Self::from_index_and_generation(index, generation)
     }
 }
-impl<T, Gen: IGeneration> From<GenIDOf<T, Gen>> for (usize, Gen)
+impl<T, Gen: GenerationalIndex> From<GenIDOf<T, Gen>> for (usize, Gen)
 {
     fn from(value: GenIDOf<T, Gen>) -> Self { (value.index(), value.generation()) }
 }
 
 #[cfg(feature = "serde")]
-impl<T, Gen: IGeneration> Serialize for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> Serialize for GenIDOf<T, Gen>
 where
     Gen: Serialize,
 {
@@ -300,7 +306,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T, Gen: IGeneration> Deserialize<'de> for GenIDOf<T, Gen>
+impl<'de, T, Gen: GenerationalIndex> Deserialize<'de> for GenIDOf<T, Gen>
 where
     Gen: Deserialize<'de>,
 {
@@ -311,7 +317,7 @@ where
         Ok(Self::from(UntypedGenIDOf::deserialize(deserializer)?))
     }
 }
-impl<T, Gen: IGeneration> Debug for GenIDOf<T, Gen>
+impl<T, Gen: GenerationalIndex> Debug for GenIDOf<T, Gen>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
     {
