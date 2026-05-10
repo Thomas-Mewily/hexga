@@ -24,6 +24,17 @@ impl<'a, Ev> EventLoop<'a, Ev>
 
     pub fn winit_event_loop(&self) -> &'a WinitEventLoopActive { self.winit }
 }
+impl<'a, Ev> Clipboardable for EventLoop<'a, Ev>
+    where Ev: PlatformCustomEvent
+{
+    fn get_clipboard(&mut self) -> Option<String> {
+        self.state.get_clipboard()
+    }
+
+    fn set_clipboard(&mut self, paste: String) -> Result<(), ()> {
+        self.state.set_clipboard(paste)
+    }
+}
 impl<'a, Ev> EventLoopSendEvent<PlatformEvent<Ev>> for EventLoop<'a, Ev>
     where Ev: PlatformCustomEvent
 {
@@ -39,6 +50,17 @@ pub(crate) struct EventLoopState
     pub(crate) time : Time,
     pub(crate) clipboard : Clipboard,
     pub(crate) key_modifiers : KeyModifiersFlags,
+}
+
+impl Clipboardable for EventLoopState
+{
+    fn get_clipboard(&mut self) -> Option<String> {
+        self.clipboard.get_clipboard()
+    }
+
+    fn set_clipboard(&mut self, paste: String) -> Result<(), ()> {
+        self.clipboard.set_clipboard(paste)
+    }
 }
 
 

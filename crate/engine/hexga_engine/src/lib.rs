@@ -11,6 +11,7 @@ use std::rc::Rc;
 use std::sync::{Arc, LazyLock};
 
 pub use hexga::*;
+pub use hexga_event_loop as event_loop;
 pub mod graphics;
 pub mod context;
 

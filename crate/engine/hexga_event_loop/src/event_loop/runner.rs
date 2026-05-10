@@ -159,7 +159,7 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
                 }
                 if self.param.shortcut.paste.matches(&k)
                 {
-                    match self.state.clipboard.get()
+                    match self.state.get_clipboard()
                     {
                         Some(txt) =>  { let _ = self.send_event(PlatformEvent::Paste(txt)); },
                         None => {},

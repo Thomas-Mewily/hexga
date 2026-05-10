@@ -9,8 +9,8 @@ pub mod prelude
 
 pub trait Clipboardable
 {
-    fn get(&mut self) -> Option<String>;
-    fn set(&mut self, paste: String) -> Result<(), ()>;
+    fn get_clipboard(&mut self) -> Option<String>;
+    fn set_clipboard(&mut self, paste: String) -> Result<(), ()>;
 }
 
 
@@ -44,12 +44,12 @@ impl Clipboard
 
 impl Clipboardable for Clipboard
 {
-    fn get(&mut self) -> Option<String>
+    fn get_clipboard(&mut self) -> Option<String>
     {
         self.ctx.as_mut().map(|c| c.get_contents().ok()).flatten()
     }
 
-    fn set(&mut self, paste: String) -> Result<(), ()>
+    fn set_clipboard(&mut self, paste: String) -> Result<(), ()>
     {
         if let Some(c) = self.ctx.as_mut()
         {

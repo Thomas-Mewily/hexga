@@ -10,12 +10,13 @@ pub enum PlatformEvent<Ev=()>
 {
     Key(KeyEvent),
 
-    /// Clipboard Cut
-    Cut,
-    /// Clipboard Paste
-    Paste(String),
-    /// Clipboard Copy
-    Copy,
+    // The comment was taken from the notan codebase
+        /// Text cut to the clipboard
+        Cut,
+        /// Text pasted from the clipboard
+        Paste(String),
+        /// Text copied to the clipboard
+        Copy,
 
     // Window:
     Resize(Point2),

@@ -4,7 +4,7 @@ use super::*;
 
 pub type AppEvent = PlatformEvent<()>;
 
-pub trait App<Event,Ctx>
+pub trait App<Event,Ctx=()>
 {
     fn event(&mut self, ev: Event, ctx: &mut Ctx) -> Option<Event>;
     fn update(&mut self, dt: Duration, ctx: &mut Ctx); 
