@@ -12,7 +12,7 @@ use std::sync::{Arc, LazyLock};
 
 pub use hexga::*;
 pub mod graphics;
-pub mod experimental;
+pub mod context;
 
 use prelude::*;
 pub mod prelude
