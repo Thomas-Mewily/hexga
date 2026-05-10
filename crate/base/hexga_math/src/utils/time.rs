@@ -457,7 +457,7 @@ where
             use web_time::Instant;
 
             static mut START_TIME: Option<Duration> = None;
-            static INIT: Once = Once::new();
+            static INIT: DoOnce = DoOnce::new();
 
             INIT.call_once(|| unsafe {
                 START_TIME = Some(Duration::now());

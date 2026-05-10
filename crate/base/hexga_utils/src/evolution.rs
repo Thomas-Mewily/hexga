@@ -2,7 +2,13 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{Evolution, EvolutionWithContext, PreviousValue};
+    pub use super::PreviousValue;
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::{Evolution, EvolutionWithContext};
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]

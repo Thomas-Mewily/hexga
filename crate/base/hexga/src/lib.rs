@@ -43,6 +43,11 @@ pub mod prelude
     {}
 }
 
+pub mod traits
+{
+    pub use crate::hexga_traits::*;
+}
+
 #[doc(hidden)]
 /// Hexga specific prelude without the core.
 ///
@@ -86,6 +91,14 @@ pub mod hexga_prelude
     #[allow(hidden_glob_reexports)]
     pub(crate) mod prelude
     {}
+}
+
+
+#[doc(hidden)]
+pub mod hexga_traits
+{
+    pub use crate::utils::traits::*;
+    pub use crate::generational::traits::*;
 }
 
 

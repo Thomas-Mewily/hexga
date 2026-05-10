@@ -19,14 +19,14 @@ impl Toggleable for bool
     }
 }
 
-pub trait Once
+pub trait DoOnce
 {
     //Excute the lambda one time, and modify the caller to indicate t
     fn once<R, F>(&mut self, f: F) -> Option<R>
     where
         F: FnOnce() -> R;
 }
-impl Once for bool
+impl DoOnce for bool
 {
     fn once<R, F>(&mut self, f: F) -> Option<R>
     where

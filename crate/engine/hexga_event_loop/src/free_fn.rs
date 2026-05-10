@@ -1,6 +1,8 @@
+use std::sync::Once;
+
 use super::*;
 
-static INIT_PANIC: sync::Once = sync::Once::new();
+static INIT_PANIC: Once = Once::new();
 
 pub fn init()
 {

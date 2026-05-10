@@ -15,28 +15,32 @@ categories = ["asynchronous", "game-development"]
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde", "serde_rc", "hexga_encoding_derive"
+            "serde", "serde_rc", #"hexga_encoding_derive"
           ]
 
 
 
-int_are_8_bits    = ["hexga/int_are_8_bits"]
-int_are_16_bits   = ["hexga/int_are_16_bits"]
-int_are_32_bits   = ["hexga/int_are_32_bits"]
-int_are_64_bits   = ["hexga/int_are_64_bits"]
-int_are_size_bits = ["hexga/int_are_size_bits"]
+int_are_8_bits    = ["hexga_math/int_are_8_bits"]
+int_are_16_bits   = ["hexga_math/int_are_16_bits"]
+int_are_32_bits   = ["hexga_math/int_are_32_bits"]
+int_are_64_bits   = ["hexga_math/int_are_64_bits"]
+int_are_size_bits = ["hexga_math/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga/float_are_32_bits"]
-float_are_64_bits   = ["hexga/float_are_64_bits"]
-float_are_size_bits = ["hexga/float_are_size_bits"]
+float_are_32_bits   = ["hexga_math/float_are_32_bits"]
+float_are_64_bits   = ["hexga_math/float_are_64_bits"]
+float_are_size_bits = ["hexga_math/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga/serde", "winit/serde"]
-serde_rc = ["serde/rc", "hexga/serde_rc"]
+serde = ["dep:serde", "hexga_core/serde", "hexga_utils/serde", "hexga_math/serde", "hexga_bitflags/serde", "winit/serde"]
+serde_rc = ["serde/rc", "hexga_core/serde_rc", "hexga_utils/serde_rc", "hexga_math/serde_rc"]
 
-hexga_encoding_derive = ["hexga/hexga_encoding_derive"]
+#hexga_encoding_derive = ["hexga_math/hexga_encoding_derive"]
 
 [dependencies]
-hexga.workspace = true
+hexga_core.workspace = true
+hexga_bitflags.workspace = true
+hexga_math.workspace = true
+hexga_utils.workspace = true
+
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 winit = "0.30.11"
 smol = "2.0.2"

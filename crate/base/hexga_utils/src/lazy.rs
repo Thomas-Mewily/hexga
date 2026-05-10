@@ -2,7 +2,13 @@ use std::fmt::Debug;
 
 pub mod prelude
 {
-    pub use super::{LazyAccess, LazyFnMutValue, LazyFnOnceValue, LazyFnValue, LazyNew};
+    pub use super::{LazyFnMutValue, LazyFnOnceValue, LazyFnValue};
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::{LazyAccess, LazyNew};
 }
 
 pub trait LazyAccess<T, F>

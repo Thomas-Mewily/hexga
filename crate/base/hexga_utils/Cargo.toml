@@ -13,8 +13,8 @@ description = "miscellaneous stuff, when somethings will be too big it will be o
 categories = ["rust-patterns"]
 
 [features]
-
 default = ["serde"]
+
 serde   = ["dep:serde"]
 serde_rc = ["serde/rc"]
 

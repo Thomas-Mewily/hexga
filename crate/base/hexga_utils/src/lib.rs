@@ -31,3 +31,14 @@ pub mod prelude
     pub use super::scope::prelude;
     //pub use super::interned_map::prelude;
 }
+
+
+pub mod traits
+{
+    pub use super::button::traits::*;
+    pub use super::dirty::traits::*;
+    pub use super::evolution::traits::*;
+    pub use super::lazy::traits::*;
+    pub use super::message::traits::*;
+    pub use super::scope::traits::*;
+}

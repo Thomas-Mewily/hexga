@@ -2,7 +2,13 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{Dirty, DirtyFlag};
+    pub use super::DirtyFlag;
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::Dirty;
 }
 
 pub trait Dirty

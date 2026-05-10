@@ -33,7 +33,7 @@ float_are_size_bits = ["hexga/float_are_size_bits", "hexga_graphics/float_are_si
 serde = ["dep:serde", "hexga/serde", "hexga_graphics/serde", "hexga_event_loop/serde"]
 serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_graphics/serde_rc", "hexga_event_loop/serde_rc"]
 
-hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_graphics/hexga_encoding_derive", "hexga_event_loop/hexga_encoding_derive"]
+hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_graphics/hexga_encoding_derive"] #, "hexga_event_loop/hexga_encoding_derive"]
 
 [dependencies]
 hexga.workspace = true

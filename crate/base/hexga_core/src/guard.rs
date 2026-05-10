@@ -300,6 +300,7 @@ impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockWriteGuard<'a, T>
         Self::downgrade(self).guard_map(f)
     }
 }
+
 #[cfg(feature = "std")]
 impl<'a, T: ?Sized> GuardMut<'a, T> for std::sync::RwLockWriteGuard<'a, T>
 {
