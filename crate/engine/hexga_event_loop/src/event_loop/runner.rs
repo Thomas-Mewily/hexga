@@ -1,27 +1,42 @@
 use super::*;
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct EventLoopParam
 {
+    /// Controls the blocking behavior of the event loop
     pub control_flow : EventLoopControlFlow,
-    pub shortcut: DefaultShortcut,
+    /// Translated unhandled KeyEvent into KeyboardEvent during event processing
+    pub shortcut: EventLoopShortcut,
+}
+
+impl Default for EventLoopParam
+{
+    fn default() -> Self 
+    {
+        Self { control_flow: Default::default(), shortcut: Default::default() }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct DefaultShortcut
+pub struct EventLoopShortcut
 {
-    /*
-    pub close : Option<KeyAction>,
-    pub copy  : Option<KeyActionMods>,
-    pub paste : Option<KeyActionMods>,
-    pub cut   : Option<KeyActionMods>,
-    */
+    pub exit  : Option<KeyShortcut>,
+    pub copy  : Option<KeyShortcut>,
+    pub paste : Option<KeyShortcut>,
+    pub cut   : Option<KeyShortcut>,
 }
-impl Default for DefaultShortcut
+impl Default for EventLoopShortcut
 {
-    fn default() -> Self {
-        Self{}
+    fn default() -> Self 
+    {
+        Self
+        {
+            exit: Some(KeyShortcut::EXIT),
+            copy: Some(KeyShortcut::COPY),
+            paste: Some(KeyShortcut::PASTE),
+            cut: Some(KeyShortcut::CUT),
+        }
     }
 }
 
@@ -58,6 +73,15 @@ struct EventLoopRunner<EventHandler,CustomEvent>
     param: EventLoopParam,
 }
 
+impl<EventHandler, CustomEvent> EventLoopSendEvent<PlatformEvent<CustomEvent>> for EventLoopRunner<EventHandler,CustomEvent> 
+    where 
+    EventHandler: PlatformEventHandler<CustomEvent>,
+    CustomEvent: PlatformCustomEvent
+{
+    fn send_event(&self, ev: PlatformEvent<CustomEvent>) -> ProxyResult {
+        self.proxy.send_event(ev)
+    }
+}
     
 pub fn run<EventHandler, CustomEvent>(event_handler: EventHandler, param: EventLoopParam) -> EventLoopResult
     where 
@@ -119,7 +143,49 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
             _ => {}
         }
 
-        self.app(active, |event_handler,event_loop| event_handler.event(ev, event_loop));
+        let Some(ev) = self.app(active, |event_handler,event_loop| event_handler.event(ev, event_loop)) else { return; };
+
+        match ev
+        {
+            PlatformEvent::Key(k) => 
+            {
+                if self.param.shortcut.exit.matches(&k)
+                {
+                    let _ = self.send_event(PlatformEvent::Close);
+                }
+                if self.param.shortcut.copy.matches(&k)
+                {
+                    let _ = self.send_event(PlatformEvent::Copy);
+                }
+                if self.param.shortcut.paste.matches(&k)
+                {
+                    match self.state.clipboard.get()
+                    {
+                        Some(txt) =>  { let _ = self.send_event(PlatformEvent::Paste(txt)); },
+                        None => {},
+                    }
+                }
+                if self.param.shortcut.cut.matches(&k)
+                {
+                    let _ = self.send_event(PlatformEvent::Cut);
+                }
+            }
+            PlatformEvent::Paste(txt) => 
+            {
+                let key_event = KeyEvent 
+                { 
+                    code: KeyCode::Unknow(KeyCodeNative::Unknow), 
+                    state: KeyState::Down, 
+                    modifiers: self.state.key_modifiers, 
+                    repeat: ButtonRepeat::NotRepeated, 
+                    key: Key::Text(txt.clone().into()), 
+                    location: KeyLocation::Unknow, 
+                    text : Some(txt.into()),
+                };
+                let _ = self.send_event(PlatformEvent::Key(key_event));
+            }
+            _ => {}
+        };
     }
 
 

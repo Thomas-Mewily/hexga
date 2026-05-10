@@ -19,74 +19,98 @@ impl From<KeyEvent> for InputEvent
     fn from(key: KeyEvent) -> Self { Self::Key(key) }
 }*/
 
+pub type KeyState = ButtonState;
+pub type KeyRepeat = ButtonRepeat;
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct KeyAction
 {
     pub code: KeyCode,
-    pub state: ButtonState,
+    pub state: KeyState,
 }
 
 impl Has<KeyCode> for KeyAction
 {
     fn retrieve(&self) -> KeyCode { self.code }
 }
-impl Has<ButtonState> for KeyAction
+impl Has<KeyState> for KeyAction
 {
-    fn retrieve(&self) -> ButtonState { self.state }
+    fn retrieve(&self) -> KeyState { self.state }
 }
-
-/*
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct KeyActionMods
+impl KeyAction
 {
-    pub code : KeyCode,
-    pub state: ButtonState,
-    pub mods : KeyModsFlags,
-}
-
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct KeyActionModsBinding
-{
-    pub code : KeyCode,
-    pub state: ButtonState,
-    pub mods : KeyModsFlags,
-}
-
-impl PartialEq<KeyActionModsBinding> for KeyActionMods
-{
-    fn eq(&self, other: &KeyActionModsBinding) -> bool {
-        other.eq(self)
-    }
-}
-impl PartialEq<KeyActionMods> for KeyActionModsBinding
-{
-    fn eq(&self, other: &KeyActionMods) -> bool 
+    pub const fn shortcut(self) -> KeyShortcut
     {
-        self.code == other.code  && self.state == other.state && self.mods.matches(other.mods) 
+        KeyShortcut { code: self.code, modifiers: KeyModifiersFlags::EMPTY }
     }
 }
 
-impl Has<KeyCode> for KeyActionMods
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct KeyShortcut
+{
+    pub code : KeyCode,
+    pub modifiers : KeyModifiersFlags,
+}
+impl Matches<KeyCode> for KeyShortcut
+{
+    type Output=bool;
+    fn matches(&self, lexem: &KeyCode) -> Self::Output {
+        self.code == *lexem
+    }
+}
+impl Matches<KeyEvent> for KeyShortcut
+{
+    type Output=bool;
+    fn matches(&self, lexem: &KeyEvent) -> Self::Output {
+        self.code == lexem.code && self.modifiers.matches(&lexem.modifiers)
+    }
+}
+
+impl From<KeyCode> for KeyShortcut
+{
+    fn from(code: KeyCode) -> Self {
+        Self::from_code(code)
+    }
+}
+impl From<KeyAction> for KeyShortcut
+{
+    fn from(value: KeyAction) -> Self {
+        Self::from_action(value)
+    }
+}
+impl KeyShortcut
+{
+    pub const fn from_code(code: KeyCode) -> Self {
+        Self{ code, modifiers: KeyModifiersFlags::EMPTY }
+    }
+
+    pub const fn from_action(value: KeyAction) -> Self {
+        value.shortcut()
+    }
+
+    pub const fn with_modifier(mut self, modifiers: KeyModifiersFlags) -> Self { self.modifiers = modifiers; self }
+}
+
+impl Has<KeyCode> for KeyShortcut
 {
     fn retrieve(&self) -> KeyCode { self.code }
 }
-impl Has<ButtonState> for KeyActionMods
+impl Has<KeyModifiersFlags> for KeyShortcut
 {
-    fn retrieve(&self) -> ButtonState { self.state }
+    fn retrieve(&self) -> KeyModifiersFlags { self.modifiers }
 }
-impl Has<KeyModsFlags> for KeyActionMods
+impl From<KeyShortcut> for KeyAction
 {
-    fn retrieve(&self) -> KeyModsFlags { self.mods }
+    fn from(value: KeyShortcut) -> Self {
+        value.action()
+    }
 }
-impl KeyActionMods
+impl KeyShortcut
 {
-    pub fn action(&self) -> KeyAction { KeyAction{ code: self.code, state: self.state }}
+    pub const fn action(self) -> KeyAction { KeyAction { code: self.code, state: KeyState::Down }}
 }
-*/
 
 
 // winit KeyEvent wrapper
@@ -125,9 +149,9 @@ pub struct KeyEvent
     /// Whether the key is being pressed or released.
     ///
     /// See the [`ElementState`] type for more details.
-    pub state     : ButtonState,
+    pub state     : KeyState,
     pub modifiers : KeyModifiersFlags,
-    pub repeat    : ButtonRepeat,
+    pub repeat    : KeyRepeat,
     /// Logical Key.
     /// 
     /// This value is affected by all modifiers except <kbd>Ctrl</kbd>.
@@ -144,8 +168,6 @@ pub struct KeyEvent
     /// ## Platform-specific
     /// - **Web:** Dead keys might be reported as the real key instead of `Dead` depending on the
     ///   browser/OS.
-    ///
-    /// [`key_without_modifiers`]: crate::platform::modifier_supplement::KeyEventExtModifierSupplement::key_without_modifiers
     pub key     : Key,
 
     /// Contains the location of this key on the keyboard.
@@ -187,9 +209,9 @@ pub struct KeyEvent
 
 pub type KeyText = winit::keyboard::SmolStr;
 
-impl Has<ButtonState> for KeyEvent
+impl Has<KeyState> for KeyEvent
 {
-    fn retrieve(&self) -> ButtonState {
+    fn retrieve(&self) -> KeyState {
         self.state
     }
 }
@@ -199,13 +221,18 @@ impl Has<KeyCode> for KeyEvent
         self.code
     }
 }
-impl Has<ButtonRepeat> for KeyEvent
+impl Has<KeyRepeat> for KeyEvent
 {
-    fn retrieve(&self) -> ButtonRepeat {
+    fn retrieve(&self) -> KeyRepeat {
         self.repeat
     }
 }
-
+impl Has<KeyModifiersFlags> for KeyEvent
+{
+    fn retrieve(&self) -> KeyModifiersFlags {
+        self.modifiers
+    }
+}
 
 impl From<winit::event::KeyEvent> for KeyEvent
 {
@@ -216,19 +243,19 @@ impl From<winit::event::KeyEvent> for KeyEvent
 
         let repeat = if event.repeat
         {
-            ButtonRepeat::Repeated
+            KeyRepeat::Repeated
         }
         else
         {
-            ButtonRepeat::NotRepeated
+            KeyRepeat::NotRepeated
         };
         let state = if pressed
         {
-            ButtonState::Down
+            KeyState::Down
         }
         else
         {
-            ButtonState::Up
+            KeyState::Up
         };
 
         
@@ -253,6 +280,9 @@ pub trait KeyboardShortcuts
     fn is_exit(&self) -> bool;
     /// `F5`
     fn is_reload(&self) -> bool;
+    
+    /// `F11`
+    fn is_fullscreen(&self) -> bool;
 
     /// `Control + C`
     fn is_copy(&self) -> bool;
@@ -280,13 +310,116 @@ pub trait KeyboardShortcuts
     fn is_redo(&self) -> bool;
 }
 
-pub trait KeyConstant
+impl<S> KeyboardShortcuts for S where S: KeyConstants + PartialEq
 {
-    const EXIT : Self;
-    const COPY : Self;
-    const PASTE : Self;
-    const CUT : Self;
-    const SAVE : Self;
-    const UNDO : Self;
-    const REDO : Self;
+    fn is_exit(&self) -> bool {
+        *self == Self::EXIT
+    }
+
+    fn is_reload(&self) -> bool {
+        *self == Self::RELOAD
+    }
+
+    fn is_fullscreen(&self) -> bool 
+    {
+        *self == Self::FULLSCREEN
+    }
+
+    fn is_copy(&self) -> bool {
+        *self == Self::COPY
+    }
+
+    fn is_paste(&self) -> bool {
+        *self == Self::PASTE
+    }
+
+    fn is_cut(&self) -> bool {
+        *self == Self::CUT
+    }
+
+    fn is_open(&self) -> bool {
+        *self == Self::OPEN
+    }
+
+    fn is_save(&self) -> bool {
+        *self == Self::SAVE
+    }
+
+    fn is_new(&self) -> bool {
+        *self == Self::NEW
+    }
+
+    fn is_print(&self) -> bool {
+        *self == Self::PRINT
+    }
+
+    fn is_search(&self) -> bool {
+        *self == Self::SEARCH
+    }
+
+    fn is_undo(&self) -> bool {
+        *self == Self::UNDO
+    }
+
+    fn is_redo(&self) -> bool {
+        *self == Self::REDO
+    }
+}
+
+pub trait KeyConstants
+{
+    /// `Alt + F4`
+    const EXIT: Self;
+    
+    /// `F5`
+    const RELOAD: Self;
+
+    /// `F11`
+    const FULLSCREEN: Self;
+    
+    /// `Control + C`
+    const COPY: Self;
+    
+    /// `Control + V`
+    const PASTE: Self;
+    
+    /// `Control + X`
+    const CUT: Self;
+    
+    /// `Control + O`
+    const OPEN: Self;
+    
+    /// `Control + S`
+    const SAVE: Self;
+    
+    /// `Control + N`
+    const NEW: Self;
+    
+    /// `Control + P`
+    const PRINT: Self;
+    
+    /// `Control + F`
+    const SEARCH: Self;
+    
+    /// `Control + Z`
+    const UNDO: Self;
+    
+    /// `Control + Y`
+    const REDO: Self;
+}
+impl KeyConstants for KeyShortcut
+{
+    const EXIT: Self = KeyCode::F4.shortcut().with_modifier(KeyModifiersFlags::Alt);
+    const RELOAD: Self = KeyCode::F5.shortcut();
+    const FULLSCREEN: Self = KeyCode::F11.shortcut();
+    const COPY: Self = KeyCode::C.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const PASTE: Self = KeyCode::V.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const CUT: Self = KeyCode::X.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const OPEN: Self = KeyCode::O.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const SAVE: Self = KeyCode::S.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const NEW: Self = KeyCode::N.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const PRINT: Self = KeyCode::P.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const SEARCH: Self = KeyCode::F.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const UNDO: Self = KeyCode::Z.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const REDO: Self = KeyCode::Y.shortcut().with_modifier(KeyModifiersFlags::Control);
 }

@@ -14,11 +14,16 @@ pub use event::*;
 
 pub mod prelude
 {
-    pub use super::{KeyEvent, KeyCode, KeyAction};
-    pub(crate) use super::{Keyboard,KeyModifiers,KeyModifiersFlags};
+    pub use super::{KeyEvent, KeyCode, KeyAction, KeyShortcut, KeyModifiers, KeyModifiersFlags};
+    pub(crate) use super::{Keyboard, KeyCodeNative, KeyState, KeyRepeat, Key, KeyLocation};
+    pub use super::traits::*;
 }
 
 pub mod traits
 {
-    pub use super::{KeyModifiersExtension};
+    pub use super::{
+        KeyboardShortcuts,
+        KeyConstants,
+        KeyModifiersExtension,
+    };
 }

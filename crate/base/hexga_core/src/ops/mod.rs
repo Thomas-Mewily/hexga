@@ -49,6 +49,9 @@ pub use insert::*;
 mod pop;
 pub use pop::*;
 
+mod matches;
+pub use matches::*;
+
 /*
 mod insert_pop;
 pub use insert_pop::*;
@@ -72,5 +75,6 @@ pub mod prelude
     pub use super::{
         capacity::*, clear::*, get::*, index::*, insert::*, length::*, pop::*, push::*,
         remove::*,
+        matches::*,
     };
 }

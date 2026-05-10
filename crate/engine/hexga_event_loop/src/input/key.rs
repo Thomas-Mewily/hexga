@@ -85,8 +85,8 @@ pub(crate) type WinitKey<Str> = winit::keyboard::Key<Str>;
 /// define keybinds which work in the presence of identifiers we haven't mapped for you yet.
 #[derive(Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum NativeKey {
-    Unidentified,
+pub enum KeyNative {
+    Unknow,
     /// An Android "keycode", which is similar to a "virtual-key code" on Windows.
     Android(u32),
     /// A macOS "scancode". There does not appear to be any direct analogue to either keysyms or
@@ -100,29 +100,29 @@ pub enum NativeKey {
     Web(KeyText),
 }
 
-impl From<WinitKeyNative> for NativeKey
+impl From<WinitKeyNative> for KeyNative
 {
     fn from(value: WinitKeyNative) -> Self {
         match value
         {
-            winit::keyboard::NativeKey::Unidentified => NativeKey::Unidentified,
-            winit::keyboard::NativeKey::Android(v) => NativeKey::Android(v),
-            winit::keyboard::NativeKey::MacOS(v) => NativeKey::MacOS(v),
-            winit::keyboard::NativeKey::Windows(v) => NativeKey::Windows(v),
-            winit::keyboard::NativeKey::Xkb(v) => NativeKey::Xkb(v),
-            winit::keyboard::NativeKey::Web(v) => NativeKey::Web(v),
+            winit::keyboard::NativeKey::Unidentified => KeyNative::Unknow,
+            winit::keyboard::NativeKey::Android(v) => KeyNative::Android(v),
+            winit::keyboard::NativeKey::MacOS(v) => KeyNative::MacOS(v),
+            winit::keyboard::NativeKey::Windows(v) => KeyNative::Windows(v),
+            winit::keyboard::NativeKey::Xkb(v) => KeyNative::Xkb(v),
+            winit::keyboard::NativeKey::Web(v) => KeyNative::Web(v),
         }
     }
 }
 
 
-impl Debug for NativeKey {
+impl Debug for KeyNative {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        use NativeKey::{Android, MacOS, Unidentified, Web, Windows, Xkb};
+        use KeyNative::{Android, MacOS, Unknow, Web, Windows, Xkb};
         let mut debug_tuple;
         match self {
-            Unidentified => {
-                debug_tuple = f.debug_tuple("Unidentified");
+            Unknow => {
+                debug_tuple = f.debug_tuple("Unknow");
             },
             Android(code) => {
                 debug_tuple = f.debug_tuple("Android");
@@ -149,31 +149,31 @@ impl Debug for NativeKey {
     }
 }
 
-impl From<NativeKeyCode> for NativeKey {
+impl From<KeyCodeNative> for KeyNative {
     #[inline]
-    fn from(code: NativeKeyCode) -> Self {
+    fn from(code: KeyCodeNative) -> Self {
         match code {
-            NativeKeyCode::Unidentified => NativeKey::Unidentified,
-            NativeKeyCode::Android(x) => NativeKey::Android(x),
-            NativeKeyCode::MacOS(x) => NativeKey::MacOS(x),
-            NativeKeyCode::Windows(x) => NativeKey::Windows(x),
-            NativeKeyCode::Xkb(x) => NativeKey::Xkb(x),
+            KeyCodeNative::Unknow => KeyNative::Unknow,
+            KeyCodeNative::Android(x) => KeyNative::Android(x),
+            KeyCodeNative::MacOS(x) => KeyNative::MacOS(x),
+            KeyCodeNative::Windows(x) => KeyNative::Windows(x),
+            KeyCodeNative::Xkb(x) => KeyNative::Xkb(x),
         }
     }
 }
 
-impl PartialEq<NativeKey> for NativeKeyCode {
+impl PartialEq<KeyNative> for KeyCodeNative {
     #[allow(clippy::cmp_owned)] // uses less code than direct match; target is stack allocated
     #[inline]
-    fn eq(&self, rhs: &NativeKey) -> bool {
-        NativeKey::from(*self) == *rhs
+    fn eq(&self, rhs: &KeyNative) -> bool {
+        KeyNative::from(*self) == *rhs
     }
 }
 
 
-impl PartialEq<NativeKeyCode> for NativeKey {
+impl PartialEq<KeyCodeNative> for KeyNative {
     #[inline]
-    fn eq(&self, rhs: &NativeKeyCode) -> bool {
+    fn eq(&self, rhs: &KeyCodeNative) -> bool {
         rhs == self
     }
 }
@@ -191,7 +191,7 @@ impl PartialEq<NativeKeyCode> for NativeKey {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum NamedKey 
+pub enum KeyNamed 
 {
     /// `Unknow` / error value, used if the convertion from Winit NamedKey was not handled 
     /// (because Winit NamedKey is also non exhaustive)
@@ -901,323 +901,323 @@ pub enum NamedKey
     F35,
 }
 
-impl From<WinitKeyName> for NamedKey
+impl From<WinitKeyName> for KeyNamed
 {
     fn from(value: WinitKeyName) -> Self {
         match value
         {
-            winit::keyboard::NamedKey::Alt => NamedKey::Alt,
-            winit::keyboard::NamedKey::AltGraph => NamedKey::AltGraph,
-            winit::keyboard::NamedKey::CapsLock => NamedKey::CapsLock,
-            winit::keyboard::NamedKey::Control => NamedKey::Control,
-            winit::keyboard::NamedKey::Fn => NamedKey::Fn,
-            winit::keyboard::NamedKey::FnLock => NamedKey::FnLock,
-            winit::keyboard::NamedKey::NumLock => NamedKey::NumLock,
-            winit::keyboard::NamedKey::ScrollLock => NamedKey::ScrollLock,
-            winit::keyboard::NamedKey::Shift => NamedKey::Shift,
-            winit::keyboard::NamedKey::Symbol => NamedKey::Symbol,
-            winit::keyboard::NamedKey::SymbolLock => NamedKey::SymbolLock,
-            winit::keyboard::NamedKey::Meta => NamedKey::Meta,
-            winit::keyboard::NamedKey::Hyper => NamedKey::Hyper,
-            winit::keyboard::NamedKey::Super => NamedKey::Super,
-            winit::keyboard::NamedKey::Enter => NamedKey::Enter,
-            winit::keyboard::NamedKey::Tab => NamedKey::Tab,
-            winit::keyboard::NamedKey::Space => NamedKey::Space,
-            winit::keyboard::NamedKey::ArrowDown => NamedKey::ArrowDown,
-            winit::keyboard::NamedKey::ArrowLeft => NamedKey::ArrowLeft,
-            winit::keyboard::NamedKey::ArrowRight => NamedKey::ArrowRight,
-            winit::keyboard::NamedKey::ArrowUp => NamedKey::ArrowUp,
-            winit::keyboard::NamedKey::End => NamedKey::End,
-            winit::keyboard::NamedKey::Home => NamedKey::Home,
-            winit::keyboard::NamedKey::PageDown => NamedKey::PageDown,
-            winit::keyboard::NamedKey::PageUp => NamedKey::PageUp,
-            winit::keyboard::NamedKey::Backspace => NamedKey::Backspace,
-            winit::keyboard::NamedKey::Clear => NamedKey::Clear,
-            winit::keyboard::NamedKey::Copy => NamedKey::Copy,
-            winit::keyboard::NamedKey::CrSel => NamedKey::CrSel,
-            winit::keyboard::NamedKey::Cut => NamedKey::Cut,
-            winit::keyboard::NamedKey::Delete => NamedKey::Delete,
-            winit::keyboard::NamedKey::EraseEof => NamedKey::EraseEof,
-            winit::keyboard::NamedKey::ExSel => NamedKey::ExSel,
-            winit::keyboard::NamedKey::Insert => NamedKey::Insert,
-            winit::keyboard::NamedKey::Paste => NamedKey::Paste,
-            winit::keyboard::NamedKey::Redo => NamedKey::Redo,
-            winit::keyboard::NamedKey::Undo => NamedKey::Undo,
-            winit::keyboard::NamedKey::Accept => NamedKey::Accept,
-            winit::keyboard::NamedKey::Again => NamedKey::Again,
-            winit::keyboard::NamedKey::Attn => NamedKey::Attn,
-            winit::keyboard::NamedKey::Cancel => NamedKey::Cancel,
-            winit::keyboard::NamedKey::ContextMenu => NamedKey::ContextMenu,
-            winit::keyboard::NamedKey::Escape => NamedKey::Escape,
-            winit::keyboard::NamedKey::Execute => NamedKey::Execute,
-            winit::keyboard::NamedKey::Find => NamedKey::Find,
-            winit::keyboard::NamedKey::Help => NamedKey::Help,
-            winit::keyboard::NamedKey::Pause => NamedKey::Pause,
-            winit::keyboard::NamedKey::Play => NamedKey::Play,
-            winit::keyboard::NamedKey::Props => NamedKey::Props,
-            winit::keyboard::NamedKey::Select => NamedKey::Select,
-            winit::keyboard::NamedKey::ZoomIn => NamedKey::ZoomIn,
-            winit::keyboard::NamedKey::ZoomOut => NamedKey::ZoomOut,
-            winit::keyboard::NamedKey::BrightnessDown => NamedKey::BrightnessDown,
-            winit::keyboard::NamedKey::BrightnessUp => NamedKey::BrightnessUp,
-            winit::keyboard::NamedKey::Eject => NamedKey::Eject,
-            winit::keyboard::NamedKey::LogOff => NamedKey::LogOff,
-            winit::keyboard::NamedKey::Power => NamedKey::Power,
-            winit::keyboard::NamedKey::PowerOff => NamedKey::PowerOff,
-            winit::keyboard::NamedKey::PrintScreen => NamedKey::PrintScreen,
-            winit::keyboard::NamedKey::Hibernate => NamedKey::Hibernate,
-            winit::keyboard::NamedKey::Standby => NamedKey::Standby,
-            winit::keyboard::NamedKey::WakeUp => NamedKey::WakeUp,
-            winit::keyboard::NamedKey::AllCandidates => NamedKey::AllCandidates,
-            winit::keyboard::NamedKey::Alphanumeric => NamedKey::Alphanumeric,
-            winit::keyboard::NamedKey::CodeInput => NamedKey::CodeInput,
-            winit::keyboard::NamedKey::Compose => NamedKey::Compose,
-            winit::keyboard::NamedKey::Convert => NamedKey::Convert,
-            winit::keyboard::NamedKey::FinalMode => NamedKey::FinalMode,
-            winit::keyboard::NamedKey::GroupFirst => NamedKey::GroupFirst,
-            winit::keyboard::NamedKey::GroupLast => NamedKey::GroupLast,
-            winit::keyboard::NamedKey::GroupNext => NamedKey::GroupNext,
-            winit::keyboard::NamedKey::GroupPrevious => NamedKey::GroupPrevious,
-            winit::keyboard::NamedKey::ModeChange => NamedKey::ModeChange,
-            winit::keyboard::NamedKey::NextCandidate => NamedKey::NextCandidate,
-            winit::keyboard::NamedKey::NonConvert => NamedKey::NonConvert,
-            winit::keyboard::NamedKey::PreviousCandidate => NamedKey::PreviousCandidate,
-            winit::keyboard::NamedKey::Process => NamedKey::Process,
-            winit::keyboard::NamedKey::SingleCandidate => NamedKey::SingleCandidate,
-            winit::keyboard::NamedKey::HangulMode => NamedKey::HangulMode,
-            winit::keyboard::NamedKey::HanjaMode => NamedKey::HanjaMode,
-            winit::keyboard::NamedKey::JunjaMode => NamedKey::JunjaMode,
-            winit::keyboard::NamedKey::Eisu => NamedKey::Eisu,
-            winit::keyboard::NamedKey::Hankaku => NamedKey::Hankaku,
-            winit::keyboard::NamedKey::Hiragana => NamedKey::Hiragana,
-            winit::keyboard::NamedKey::HiraganaKatakana => NamedKey::HiraganaKatakana,
-            winit::keyboard::NamedKey::KanaMode => NamedKey::KanaMode,
-            winit::keyboard::NamedKey::KanjiMode => NamedKey::KanjiMode,
-            winit::keyboard::NamedKey::Katakana => NamedKey::Katakana,
-            winit::keyboard::NamedKey::Romaji => NamedKey::Romaji,
-            winit::keyboard::NamedKey::Zenkaku => NamedKey::Zenkaku,
-            winit::keyboard::NamedKey::ZenkakuHankaku => NamedKey::ZenkakuHankaku,
-            winit::keyboard::NamedKey::Soft1 => NamedKey::Soft1,
-            winit::keyboard::NamedKey::Soft2 => NamedKey::Soft2,
-            winit::keyboard::NamedKey::Soft3 => NamedKey::Soft3,
-            winit::keyboard::NamedKey::Soft4 => NamedKey::Soft4,
-            winit::keyboard::NamedKey::ChannelDown => NamedKey::ChannelDown,
-            winit::keyboard::NamedKey::ChannelUp => NamedKey::ChannelUp,
-            winit::keyboard::NamedKey::Close => NamedKey::Close,
-            winit::keyboard::NamedKey::MailForward => NamedKey::MailForward,
-            winit::keyboard::NamedKey::MailReply => NamedKey::MailReply,
-            winit::keyboard::NamedKey::MailSend => NamedKey::MailSend,
-            winit::keyboard::NamedKey::MediaClose => NamedKey::MediaClose,
-            winit::keyboard::NamedKey::MediaFastForward => NamedKey::MediaFastForward,
-            winit::keyboard::NamedKey::MediaPause => NamedKey::MediaPause,
-            winit::keyboard::NamedKey::MediaPlay => NamedKey::MediaPlay,
-            winit::keyboard::NamedKey::MediaPlayPause => NamedKey::MediaPlayPause,
-            winit::keyboard::NamedKey::MediaRecord => NamedKey::MediaRecord,
-            winit::keyboard::NamedKey::MediaRewind => NamedKey::MediaRewind,
-            winit::keyboard::NamedKey::MediaStop => NamedKey::MediaStop,
-            winit::keyboard::NamedKey::MediaTrackNext => NamedKey::MediaTrackNext,
-            winit::keyboard::NamedKey::MediaTrackPrevious => NamedKey::MediaTrackPrevious,
-            winit::keyboard::NamedKey::New => NamedKey::New,
-            winit::keyboard::NamedKey::Open => NamedKey::Open,
-            winit::keyboard::NamedKey::Print => NamedKey::Print,
-            winit::keyboard::NamedKey::Save => NamedKey::Save,
-            winit::keyboard::NamedKey::SpellCheck => NamedKey::SpellCheck,
-            winit::keyboard::NamedKey::Key11 => NamedKey::Key11,
-            winit::keyboard::NamedKey::Key12 => NamedKey::Key12,
-            winit::keyboard::NamedKey::AudioBalanceLeft => NamedKey::AudioBalanceLeft,
-            winit::keyboard::NamedKey::AudioBalanceRight => NamedKey::AudioBalanceRight,
-            winit::keyboard::NamedKey::AudioBassBoostDown => NamedKey::AudioBassBoostDown,
-            winit::keyboard::NamedKey::AudioBassBoostToggle => NamedKey::AudioBassBoostToggle,
-            winit::keyboard::NamedKey::AudioBassBoostUp => NamedKey::AudioBassBoostUp,
-            winit::keyboard::NamedKey::AudioFaderFront => NamedKey::AudioFaderFront,
-            winit::keyboard::NamedKey::AudioFaderRear => NamedKey::AudioFaderRear,
-            winit::keyboard::NamedKey::AudioSurroundModeNext => NamedKey::AudioSurroundModeNext,
-            winit::keyboard::NamedKey::AudioTrebleDown => NamedKey::AudioTrebleDown,
-            winit::keyboard::NamedKey::AudioTrebleUp => NamedKey::AudioTrebleUp,
-            winit::keyboard::NamedKey::AudioVolumeDown => NamedKey::AudioVolumeDown,
-            winit::keyboard::NamedKey::AudioVolumeUp => NamedKey::AudioVolumeUp,
-            winit::keyboard::NamedKey::AudioVolumeMute => NamedKey::AudioVolumeMute,
-            winit::keyboard::NamedKey::MicrophoneToggle => NamedKey::MicrophoneToggle,
-            winit::keyboard::NamedKey::MicrophoneVolumeDown => NamedKey::MicrophoneVolumeDown,
-            winit::keyboard::NamedKey::MicrophoneVolumeUp => NamedKey::MicrophoneVolumeUp,
-            winit::keyboard::NamedKey::MicrophoneVolumeMute => NamedKey::MicrophoneVolumeMute,
-            winit::keyboard::NamedKey::SpeechCorrectionList => NamedKey::SpeechCorrectionList,
-            winit::keyboard::NamedKey::SpeechInputToggle => NamedKey::SpeechInputToggle,
-            winit::keyboard::NamedKey::LaunchApplication1 => NamedKey::LaunchApplication1,
-            winit::keyboard::NamedKey::LaunchApplication2 => NamedKey::LaunchApplication2,
-            winit::keyboard::NamedKey::LaunchCalendar => NamedKey::LaunchCalendar,
-            winit::keyboard::NamedKey::LaunchContacts => NamedKey::LaunchContacts,
-            winit::keyboard::NamedKey::LaunchMail => NamedKey::LaunchMail,
-            winit::keyboard::NamedKey::LaunchMediaPlayer => NamedKey::LaunchMediaPlayer,
-            winit::keyboard::NamedKey::LaunchMusicPlayer => NamedKey::LaunchMusicPlayer,
-            winit::keyboard::NamedKey::LaunchPhone => NamedKey::LaunchPhone,
-            winit::keyboard::NamedKey::LaunchScreenSaver => NamedKey::LaunchScreenSaver,
-            winit::keyboard::NamedKey::LaunchSpreadsheet => NamedKey::LaunchSpreadsheet,
-            winit::keyboard::NamedKey::LaunchWebBrowser => NamedKey::LaunchWebBrowser,
-            winit::keyboard::NamedKey::LaunchWebCam => NamedKey::LaunchWebCam,
-            winit::keyboard::NamedKey::LaunchWordProcessor => NamedKey::LaunchWordProcessor,
-            winit::keyboard::NamedKey::BrowserBack => NamedKey::BrowserBack,
-            winit::keyboard::NamedKey::BrowserFavorites => NamedKey::BrowserFavorites,
-            winit::keyboard::NamedKey::BrowserForward => NamedKey::BrowserForward,
-            winit::keyboard::NamedKey::BrowserHome => NamedKey::BrowserHome,
-            winit::keyboard::NamedKey::BrowserRefresh => NamedKey::BrowserRefresh,
-            winit::keyboard::NamedKey::BrowserSearch => NamedKey::BrowserSearch,
-            winit::keyboard::NamedKey::BrowserStop => NamedKey::BrowserStop,
-            winit::keyboard::NamedKey::AppSwitch => NamedKey::AppSwitch,
-            winit::keyboard::NamedKey::Call => NamedKey::Call,
-            winit::keyboard::NamedKey::Camera => NamedKey::Camera,
-            winit::keyboard::NamedKey::CameraFocus => NamedKey::CameraFocus,
-            winit::keyboard::NamedKey::EndCall => NamedKey::EndCall,
-            winit::keyboard::NamedKey::GoBack => NamedKey::GoBack,
-            winit::keyboard::NamedKey::GoHome => NamedKey::GoHome,
-            winit::keyboard::NamedKey::HeadsetHook => NamedKey::HeadsetHook,
-            winit::keyboard::NamedKey::LastNumberRedial => NamedKey::LastNumberRedial,
-            winit::keyboard::NamedKey::Notification => NamedKey::Notification,
-            winit::keyboard::NamedKey::MannerMode => NamedKey::MannerMode,
-            winit::keyboard::NamedKey::VoiceDial => NamedKey::VoiceDial,
-            winit::keyboard::NamedKey::TV => NamedKey::TV,
-            winit::keyboard::NamedKey::TV3DMode => NamedKey::TV3DMode,
-            winit::keyboard::NamedKey::TVAntennaCable => NamedKey::TVAntennaCable,
-            winit::keyboard::NamedKey::TVAudioDescription => NamedKey::TVAudioDescription,
-            winit::keyboard::NamedKey::TVAudioDescriptionMixDown => NamedKey::TVAudioDescriptionMixDown,
-            winit::keyboard::NamedKey::TVAudioDescriptionMixUp => NamedKey::TVAudioDescriptionMixUp,
-            winit::keyboard::NamedKey::TVContentsMenu => NamedKey::TVContentsMenu,
-            winit::keyboard::NamedKey::TVDataService => NamedKey::TVDataService,
-            winit::keyboard::NamedKey::TVInput => NamedKey::TVInput,
-            winit::keyboard::NamedKey::TVInputComponent1 => NamedKey::TVInputComponent1,
-            winit::keyboard::NamedKey::TVInputComponent2 => NamedKey::TVInputComponent2,
-            winit::keyboard::NamedKey::TVInputComposite1 => NamedKey::TVInputComposite1,
-            winit::keyboard::NamedKey::TVInputComposite2 => NamedKey::TVInputComposite2,
-            winit::keyboard::NamedKey::TVInputHDMI1 => NamedKey::TVInputHDMI1,
-            winit::keyboard::NamedKey::TVInputHDMI2 => NamedKey::TVInputHDMI2,
-            winit::keyboard::NamedKey::TVInputHDMI3 => NamedKey::TVInputHDMI3,
-            winit::keyboard::NamedKey::TVInputHDMI4 => NamedKey::TVInputHDMI4,
-            winit::keyboard::NamedKey::TVInputVGA1 => NamedKey::TVInputVGA1,
-            winit::keyboard::NamedKey::TVMediaContext => NamedKey::TVMediaContext,
-            winit::keyboard::NamedKey::TVNetwork => NamedKey::TVNetwork,
-            winit::keyboard::NamedKey::TVNumberEntry => NamedKey::TVNumberEntry,
-            winit::keyboard::NamedKey::TVPower => NamedKey::TVPower,
-            winit::keyboard::NamedKey::TVRadioService => NamedKey::TVRadioService,
-            winit::keyboard::NamedKey::TVSatellite => NamedKey::TVSatellite,
-            winit::keyboard::NamedKey::TVSatelliteBS => NamedKey::TVSatelliteBS,
-            winit::keyboard::NamedKey::TVSatelliteCS => NamedKey::TVSatelliteCS,
-            winit::keyboard::NamedKey::TVSatelliteToggle => NamedKey::TVSatelliteToggle,
-            winit::keyboard::NamedKey::TVTerrestrialAnalog => NamedKey::TVTerrestrialAnalog,
-            winit::keyboard::NamedKey::TVTerrestrialDigital => NamedKey::TVTerrestrialDigital,
-            winit::keyboard::NamedKey::TVTimer => NamedKey::TVTimer,
-            winit::keyboard::NamedKey::AVRInput => NamedKey::AVRInput,
-            winit::keyboard::NamedKey::AVRPower => NamedKey::AVRPower,
-            winit::keyboard::NamedKey::ColorF0Red => NamedKey::ColorF0Red,
-            winit::keyboard::NamedKey::ColorF1Green => NamedKey::ColorF1Green,
-            winit::keyboard::NamedKey::ColorF2Yellow => NamedKey::ColorF2Yellow,
-            winit::keyboard::NamedKey::ColorF3Blue => NamedKey::ColorF3Blue,
-            winit::keyboard::NamedKey::ColorF4Grey => NamedKey::ColorF4Grey,
-            winit::keyboard::NamedKey::ColorF5Brown => NamedKey::ColorF5Brown,
-            winit::keyboard::NamedKey::ClosedCaptionToggle => NamedKey::ClosedCaptionToggle,
-            winit::keyboard::NamedKey::Dimmer => NamedKey::Dimmer,
-            winit::keyboard::NamedKey::DisplaySwap => NamedKey::DisplaySwap,
-            winit::keyboard::NamedKey::DVR => NamedKey::DVR,
-            winit::keyboard::NamedKey::Exit => NamedKey::Exit,
-            winit::keyboard::NamedKey::FavoriteClear0 => NamedKey::FavoriteClear0,
-            winit::keyboard::NamedKey::FavoriteClear1 => NamedKey::FavoriteClear1,
-            winit::keyboard::NamedKey::FavoriteClear2 => NamedKey::FavoriteClear2,
-            winit::keyboard::NamedKey::FavoriteClear3 => NamedKey::FavoriteClear3,
-            winit::keyboard::NamedKey::FavoriteRecall0 => NamedKey::FavoriteRecall0,
-            winit::keyboard::NamedKey::FavoriteRecall1 => NamedKey::FavoriteRecall1,
-            winit::keyboard::NamedKey::FavoriteRecall2 => NamedKey::FavoriteRecall2,
-            winit::keyboard::NamedKey::FavoriteRecall3 => NamedKey::FavoriteRecall3,
-            winit::keyboard::NamedKey::FavoriteStore0 => NamedKey::FavoriteStore0,
-            winit::keyboard::NamedKey::FavoriteStore1 => NamedKey::FavoriteStore1,
-            winit::keyboard::NamedKey::FavoriteStore2 => NamedKey::FavoriteStore2,
-            winit::keyboard::NamedKey::FavoriteStore3 => NamedKey::FavoriteStore3,
-            winit::keyboard::NamedKey::Guide => NamedKey::Guide,
-            winit::keyboard::NamedKey::GuideNextDay => NamedKey::GuideNextDay,
-            winit::keyboard::NamedKey::GuidePreviousDay => NamedKey::GuidePreviousDay,
-            winit::keyboard::NamedKey::Info => NamedKey::Info,
-            winit::keyboard::NamedKey::InstantReplay => NamedKey::InstantReplay,
-            winit::keyboard::NamedKey::Link => NamedKey::Link,
-            winit::keyboard::NamedKey::ListProgram => NamedKey::ListProgram,
-            winit::keyboard::NamedKey::LiveContent => NamedKey::LiveContent,
-            winit::keyboard::NamedKey::Lock => NamedKey::Lock,
-            winit::keyboard::NamedKey::MediaApps => NamedKey::MediaApps,
-            winit::keyboard::NamedKey::MediaAudioTrack => NamedKey::MediaAudioTrack,
-            winit::keyboard::NamedKey::MediaLast => NamedKey::MediaLast,
-            winit::keyboard::NamedKey::MediaSkipBackward => NamedKey::MediaSkipBackward,
-            winit::keyboard::NamedKey::MediaSkipForward => NamedKey::MediaSkipForward,
-            winit::keyboard::NamedKey::MediaStepBackward => NamedKey::MediaStepBackward,
-            winit::keyboard::NamedKey::MediaStepForward => NamedKey::MediaStepForward,
-            winit::keyboard::NamedKey::MediaTopMenu => NamedKey::MediaTopMenu,
-            winit::keyboard::NamedKey::NavigateIn => NamedKey::NavigateIn,
-            winit::keyboard::NamedKey::NavigateNext => NamedKey::NavigateNext,
-            winit::keyboard::NamedKey::NavigateOut => NamedKey::NavigateOut,
-            winit::keyboard::NamedKey::NavigatePrevious => NamedKey::NavigatePrevious,
-            winit::keyboard::NamedKey::NextFavoriteChannel => NamedKey::NextFavoriteChannel,
-            winit::keyboard::NamedKey::NextUserProfile => NamedKey::NextUserProfile,
-            winit::keyboard::NamedKey::OnDemand => NamedKey::OnDemand,
-            winit::keyboard::NamedKey::Pairing => NamedKey::Pairing,
-            winit::keyboard::NamedKey::PinPDown => NamedKey::PinPDown,
-            winit::keyboard::NamedKey::PinPMove => NamedKey::PinPMove,
-            winit::keyboard::NamedKey::PinPToggle => NamedKey::PinPToggle,
-            winit::keyboard::NamedKey::PinPUp => NamedKey::PinPUp,
-            winit::keyboard::NamedKey::PlaySpeedDown => NamedKey::PlaySpeedDown,
-            winit::keyboard::NamedKey::PlaySpeedReset => NamedKey::PlaySpeedReset,
-            winit::keyboard::NamedKey::PlaySpeedUp => NamedKey::PlaySpeedUp,
-            winit::keyboard::NamedKey::RandomToggle => NamedKey::RandomToggle,
-            winit::keyboard::NamedKey::RcLowBattery => NamedKey::RcLowBattery,
-            winit::keyboard::NamedKey::RecordSpeedNext => NamedKey::RecordSpeedNext,
-            winit::keyboard::NamedKey::RfBypass => NamedKey::RfBypass,
-            winit::keyboard::NamedKey::ScanChannelsToggle => NamedKey::ScanChannelsToggle,
-            winit::keyboard::NamedKey::ScreenModeNext => NamedKey::ScreenModeNext,
-            winit::keyboard::NamedKey::Settings => NamedKey::Settings,
-            winit::keyboard::NamedKey::SplitScreenToggle => NamedKey::SplitScreenToggle,
-            winit::keyboard::NamedKey::STBInput => NamedKey::STBInput,
-            winit::keyboard::NamedKey::STBPower => NamedKey::STBPower,
-            winit::keyboard::NamedKey::Subtitle => NamedKey::Subtitle,
-            winit::keyboard::NamedKey::Teletext => NamedKey::Teletext,
-            winit::keyboard::NamedKey::VideoModeNext => NamedKey::VideoModeNext,
-            winit::keyboard::NamedKey::Wink => NamedKey::Wink,
-            winit::keyboard::NamedKey::ZoomToggle => NamedKey::ZoomToggle,
-            winit::keyboard::NamedKey::F1 => NamedKey::F1,
-            winit::keyboard::NamedKey::F2 => NamedKey::F2,
-            winit::keyboard::NamedKey::F3 => NamedKey::F3,
-            winit::keyboard::NamedKey::F4 => NamedKey::F4,
-            winit::keyboard::NamedKey::F5 => NamedKey::F5,
-            winit::keyboard::NamedKey::F6 => NamedKey::F6,
-            winit::keyboard::NamedKey::F7 => NamedKey::F7,
-            winit::keyboard::NamedKey::F8 => NamedKey::F8,
-            winit::keyboard::NamedKey::F9 => NamedKey::F9,
-            winit::keyboard::NamedKey::F10 => NamedKey::F10,
-            winit::keyboard::NamedKey::F11 => NamedKey::F11,
-            winit::keyboard::NamedKey::F12 => NamedKey::F12,
-            winit::keyboard::NamedKey::F13 => NamedKey::F13,
-            winit::keyboard::NamedKey::F14 => NamedKey::F14,
-            winit::keyboard::NamedKey::F15 => NamedKey::F15,
-            winit::keyboard::NamedKey::F16 => NamedKey::F16,
-            winit::keyboard::NamedKey::F17 => NamedKey::F17,
-            winit::keyboard::NamedKey::F18 => NamedKey::F18,
-            winit::keyboard::NamedKey::F19 => NamedKey::F19,
-            winit::keyboard::NamedKey::F20 => NamedKey::F20,
-            winit::keyboard::NamedKey::F21 => NamedKey::F21,
-            winit::keyboard::NamedKey::F22 => NamedKey::F22,
-            winit::keyboard::NamedKey::F23 => NamedKey::F23,
-            winit::keyboard::NamedKey::F24 => NamedKey::F24,
-            winit::keyboard::NamedKey::F25 => NamedKey::F25,
-            winit::keyboard::NamedKey::F26 => NamedKey::F26,
-            winit::keyboard::NamedKey::F27 => NamedKey::F27,
-            winit::keyboard::NamedKey::F28 => NamedKey::F28,
-            winit::keyboard::NamedKey::F29 => NamedKey::F29,
-            winit::keyboard::NamedKey::F30 => NamedKey::F30,
-            winit::keyboard::NamedKey::F31 => NamedKey::F31,
-            winit::keyboard::NamedKey::F32 => NamedKey::F32,
-            winit::keyboard::NamedKey::F33 => NamedKey::F33,
-            winit::keyboard::NamedKey::F34 => NamedKey::F34,
-            winit::keyboard::NamedKey::F35 => NamedKey::F35,
+            winit::keyboard::NamedKey::Alt => KeyNamed::Alt,
+            winit::keyboard::NamedKey::AltGraph => KeyNamed::AltGraph,
+            winit::keyboard::NamedKey::CapsLock => KeyNamed::CapsLock,
+            winit::keyboard::NamedKey::Control => KeyNamed::Control,
+            winit::keyboard::NamedKey::Fn => KeyNamed::Fn,
+            winit::keyboard::NamedKey::FnLock => KeyNamed::FnLock,
+            winit::keyboard::NamedKey::NumLock => KeyNamed::NumLock,
+            winit::keyboard::NamedKey::ScrollLock => KeyNamed::ScrollLock,
+            winit::keyboard::NamedKey::Shift => KeyNamed::Shift,
+            winit::keyboard::NamedKey::Symbol => KeyNamed::Symbol,
+            winit::keyboard::NamedKey::SymbolLock => KeyNamed::SymbolLock,
+            winit::keyboard::NamedKey::Meta => KeyNamed::Meta,
+            winit::keyboard::NamedKey::Hyper => KeyNamed::Hyper,
+            winit::keyboard::NamedKey::Super => KeyNamed::Super,
+            winit::keyboard::NamedKey::Enter => KeyNamed::Enter,
+            winit::keyboard::NamedKey::Tab => KeyNamed::Tab,
+            winit::keyboard::NamedKey::Space => KeyNamed::Space,
+            winit::keyboard::NamedKey::ArrowDown => KeyNamed::ArrowDown,
+            winit::keyboard::NamedKey::ArrowLeft => KeyNamed::ArrowLeft,
+            winit::keyboard::NamedKey::ArrowRight => KeyNamed::ArrowRight,
+            winit::keyboard::NamedKey::ArrowUp => KeyNamed::ArrowUp,
+            winit::keyboard::NamedKey::End => KeyNamed::End,
+            winit::keyboard::NamedKey::Home => KeyNamed::Home,
+            winit::keyboard::NamedKey::PageDown => KeyNamed::PageDown,
+            winit::keyboard::NamedKey::PageUp => KeyNamed::PageUp,
+            winit::keyboard::NamedKey::Backspace => KeyNamed::Backspace,
+            winit::keyboard::NamedKey::Clear => KeyNamed::Clear,
+            winit::keyboard::NamedKey::Copy => KeyNamed::Copy,
+            winit::keyboard::NamedKey::CrSel => KeyNamed::CrSel,
+            winit::keyboard::NamedKey::Cut => KeyNamed::Cut,
+            winit::keyboard::NamedKey::Delete => KeyNamed::Delete,
+            winit::keyboard::NamedKey::EraseEof => KeyNamed::EraseEof,
+            winit::keyboard::NamedKey::ExSel => KeyNamed::ExSel,
+            winit::keyboard::NamedKey::Insert => KeyNamed::Insert,
+            winit::keyboard::NamedKey::Paste => KeyNamed::Paste,
+            winit::keyboard::NamedKey::Redo => KeyNamed::Redo,
+            winit::keyboard::NamedKey::Undo => KeyNamed::Undo,
+            winit::keyboard::NamedKey::Accept => KeyNamed::Accept,
+            winit::keyboard::NamedKey::Again => KeyNamed::Again,
+            winit::keyboard::NamedKey::Attn => KeyNamed::Attn,
+            winit::keyboard::NamedKey::Cancel => KeyNamed::Cancel,
+            winit::keyboard::NamedKey::ContextMenu => KeyNamed::ContextMenu,
+            winit::keyboard::NamedKey::Escape => KeyNamed::Escape,
+            winit::keyboard::NamedKey::Execute => KeyNamed::Execute,
+            winit::keyboard::NamedKey::Find => KeyNamed::Find,
+            winit::keyboard::NamedKey::Help => KeyNamed::Help,
+            winit::keyboard::NamedKey::Pause => KeyNamed::Pause,
+            winit::keyboard::NamedKey::Play => KeyNamed::Play,
+            winit::keyboard::NamedKey::Props => KeyNamed::Props,
+            winit::keyboard::NamedKey::Select => KeyNamed::Select,
+            winit::keyboard::NamedKey::ZoomIn => KeyNamed::ZoomIn,
+            winit::keyboard::NamedKey::ZoomOut => KeyNamed::ZoomOut,
+            winit::keyboard::NamedKey::BrightnessDown => KeyNamed::BrightnessDown,
+            winit::keyboard::NamedKey::BrightnessUp => KeyNamed::BrightnessUp,
+            winit::keyboard::NamedKey::Eject => KeyNamed::Eject,
+            winit::keyboard::NamedKey::LogOff => KeyNamed::LogOff,
+            winit::keyboard::NamedKey::Power => KeyNamed::Power,
+            winit::keyboard::NamedKey::PowerOff => KeyNamed::PowerOff,
+            winit::keyboard::NamedKey::PrintScreen => KeyNamed::PrintScreen,
+            winit::keyboard::NamedKey::Hibernate => KeyNamed::Hibernate,
+            winit::keyboard::NamedKey::Standby => KeyNamed::Standby,
+            winit::keyboard::NamedKey::WakeUp => KeyNamed::WakeUp,
+            winit::keyboard::NamedKey::AllCandidates => KeyNamed::AllCandidates,
+            winit::keyboard::NamedKey::Alphanumeric => KeyNamed::Alphanumeric,
+            winit::keyboard::NamedKey::CodeInput => KeyNamed::CodeInput,
+            winit::keyboard::NamedKey::Compose => KeyNamed::Compose,
+            winit::keyboard::NamedKey::Convert => KeyNamed::Convert,
+            winit::keyboard::NamedKey::FinalMode => KeyNamed::FinalMode,
+            winit::keyboard::NamedKey::GroupFirst => KeyNamed::GroupFirst,
+            winit::keyboard::NamedKey::GroupLast => KeyNamed::GroupLast,
+            winit::keyboard::NamedKey::GroupNext => KeyNamed::GroupNext,
+            winit::keyboard::NamedKey::GroupPrevious => KeyNamed::GroupPrevious,
+            winit::keyboard::NamedKey::ModeChange => KeyNamed::ModeChange,
+            winit::keyboard::NamedKey::NextCandidate => KeyNamed::NextCandidate,
+            winit::keyboard::NamedKey::NonConvert => KeyNamed::NonConvert,
+            winit::keyboard::NamedKey::PreviousCandidate => KeyNamed::PreviousCandidate,
+            winit::keyboard::NamedKey::Process => KeyNamed::Process,
+            winit::keyboard::NamedKey::SingleCandidate => KeyNamed::SingleCandidate,
+            winit::keyboard::NamedKey::HangulMode => KeyNamed::HangulMode,
+            winit::keyboard::NamedKey::HanjaMode => KeyNamed::HanjaMode,
+            winit::keyboard::NamedKey::JunjaMode => KeyNamed::JunjaMode,
+            winit::keyboard::NamedKey::Eisu => KeyNamed::Eisu,
+            winit::keyboard::NamedKey::Hankaku => KeyNamed::Hankaku,
+            winit::keyboard::NamedKey::Hiragana => KeyNamed::Hiragana,
+            winit::keyboard::NamedKey::HiraganaKatakana => KeyNamed::HiraganaKatakana,
+            winit::keyboard::NamedKey::KanaMode => KeyNamed::KanaMode,
+            winit::keyboard::NamedKey::KanjiMode => KeyNamed::KanjiMode,
+            winit::keyboard::NamedKey::Katakana => KeyNamed::Katakana,
+            winit::keyboard::NamedKey::Romaji => KeyNamed::Romaji,
+            winit::keyboard::NamedKey::Zenkaku => KeyNamed::Zenkaku,
+            winit::keyboard::NamedKey::ZenkakuHankaku => KeyNamed::ZenkakuHankaku,
+            winit::keyboard::NamedKey::Soft1 => KeyNamed::Soft1,
+            winit::keyboard::NamedKey::Soft2 => KeyNamed::Soft2,
+            winit::keyboard::NamedKey::Soft3 => KeyNamed::Soft3,
+            winit::keyboard::NamedKey::Soft4 => KeyNamed::Soft4,
+            winit::keyboard::NamedKey::ChannelDown => KeyNamed::ChannelDown,
+            winit::keyboard::NamedKey::ChannelUp => KeyNamed::ChannelUp,
+            winit::keyboard::NamedKey::Close => KeyNamed::Close,
+            winit::keyboard::NamedKey::MailForward => KeyNamed::MailForward,
+            winit::keyboard::NamedKey::MailReply => KeyNamed::MailReply,
+            winit::keyboard::NamedKey::MailSend => KeyNamed::MailSend,
+            winit::keyboard::NamedKey::MediaClose => KeyNamed::MediaClose,
+            winit::keyboard::NamedKey::MediaFastForward => KeyNamed::MediaFastForward,
+            winit::keyboard::NamedKey::MediaPause => KeyNamed::MediaPause,
+            winit::keyboard::NamedKey::MediaPlay => KeyNamed::MediaPlay,
+            winit::keyboard::NamedKey::MediaPlayPause => KeyNamed::MediaPlayPause,
+            winit::keyboard::NamedKey::MediaRecord => KeyNamed::MediaRecord,
+            winit::keyboard::NamedKey::MediaRewind => KeyNamed::MediaRewind,
+            winit::keyboard::NamedKey::MediaStop => KeyNamed::MediaStop,
+            winit::keyboard::NamedKey::MediaTrackNext => KeyNamed::MediaTrackNext,
+            winit::keyboard::NamedKey::MediaTrackPrevious => KeyNamed::MediaTrackPrevious,
+            winit::keyboard::NamedKey::New => KeyNamed::New,
+            winit::keyboard::NamedKey::Open => KeyNamed::Open,
+            winit::keyboard::NamedKey::Print => KeyNamed::Print,
+            winit::keyboard::NamedKey::Save => KeyNamed::Save,
+            winit::keyboard::NamedKey::SpellCheck => KeyNamed::SpellCheck,
+            winit::keyboard::NamedKey::Key11 => KeyNamed::Key11,
+            winit::keyboard::NamedKey::Key12 => KeyNamed::Key12,
+            winit::keyboard::NamedKey::AudioBalanceLeft => KeyNamed::AudioBalanceLeft,
+            winit::keyboard::NamedKey::AudioBalanceRight => KeyNamed::AudioBalanceRight,
+            winit::keyboard::NamedKey::AudioBassBoostDown => KeyNamed::AudioBassBoostDown,
+            winit::keyboard::NamedKey::AudioBassBoostToggle => KeyNamed::AudioBassBoostToggle,
+            winit::keyboard::NamedKey::AudioBassBoostUp => KeyNamed::AudioBassBoostUp,
+            winit::keyboard::NamedKey::AudioFaderFront => KeyNamed::AudioFaderFront,
+            winit::keyboard::NamedKey::AudioFaderRear => KeyNamed::AudioFaderRear,
+            winit::keyboard::NamedKey::AudioSurroundModeNext => KeyNamed::AudioSurroundModeNext,
+            winit::keyboard::NamedKey::AudioTrebleDown => KeyNamed::AudioTrebleDown,
+            winit::keyboard::NamedKey::AudioTrebleUp => KeyNamed::AudioTrebleUp,
+            winit::keyboard::NamedKey::AudioVolumeDown => KeyNamed::AudioVolumeDown,
+            winit::keyboard::NamedKey::AudioVolumeUp => KeyNamed::AudioVolumeUp,
+            winit::keyboard::NamedKey::AudioVolumeMute => KeyNamed::AudioVolumeMute,
+            winit::keyboard::NamedKey::MicrophoneToggle => KeyNamed::MicrophoneToggle,
+            winit::keyboard::NamedKey::MicrophoneVolumeDown => KeyNamed::MicrophoneVolumeDown,
+            winit::keyboard::NamedKey::MicrophoneVolumeUp => KeyNamed::MicrophoneVolumeUp,
+            winit::keyboard::NamedKey::MicrophoneVolumeMute => KeyNamed::MicrophoneVolumeMute,
+            winit::keyboard::NamedKey::SpeechCorrectionList => KeyNamed::SpeechCorrectionList,
+            winit::keyboard::NamedKey::SpeechInputToggle => KeyNamed::SpeechInputToggle,
+            winit::keyboard::NamedKey::LaunchApplication1 => KeyNamed::LaunchApplication1,
+            winit::keyboard::NamedKey::LaunchApplication2 => KeyNamed::LaunchApplication2,
+            winit::keyboard::NamedKey::LaunchCalendar => KeyNamed::LaunchCalendar,
+            winit::keyboard::NamedKey::LaunchContacts => KeyNamed::LaunchContacts,
+            winit::keyboard::NamedKey::LaunchMail => KeyNamed::LaunchMail,
+            winit::keyboard::NamedKey::LaunchMediaPlayer => KeyNamed::LaunchMediaPlayer,
+            winit::keyboard::NamedKey::LaunchMusicPlayer => KeyNamed::LaunchMusicPlayer,
+            winit::keyboard::NamedKey::LaunchPhone => KeyNamed::LaunchPhone,
+            winit::keyboard::NamedKey::LaunchScreenSaver => KeyNamed::LaunchScreenSaver,
+            winit::keyboard::NamedKey::LaunchSpreadsheet => KeyNamed::LaunchSpreadsheet,
+            winit::keyboard::NamedKey::LaunchWebBrowser => KeyNamed::LaunchWebBrowser,
+            winit::keyboard::NamedKey::LaunchWebCam => KeyNamed::LaunchWebCam,
+            winit::keyboard::NamedKey::LaunchWordProcessor => KeyNamed::LaunchWordProcessor,
+            winit::keyboard::NamedKey::BrowserBack => KeyNamed::BrowserBack,
+            winit::keyboard::NamedKey::BrowserFavorites => KeyNamed::BrowserFavorites,
+            winit::keyboard::NamedKey::BrowserForward => KeyNamed::BrowserForward,
+            winit::keyboard::NamedKey::BrowserHome => KeyNamed::BrowserHome,
+            winit::keyboard::NamedKey::BrowserRefresh => KeyNamed::BrowserRefresh,
+            winit::keyboard::NamedKey::BrowserSearch => KeyNamed::BrowserSearch,
+            winit::keyboard::NamedKey::BrowserStop => KeyNamed::BrowserStop,
+            winit::keyboard::NamedKey::AppSwitch => KeyNamed::AppSwitch,
+            winit::keyboard::NamedKey::Call => KeyNamed::Call,
+            winit::keyboard::NamedKey::Camera => KeyNamed::Camera,
+            winit::keyboard::NamedKey::CameraFocus => KeyNamed::CameraFocus,
+            winit::keyboard::NamedKey::EndCall => KeyNamed::EndCall,
+            winit::keyboard::NamedKey::GoBack => KeyNamed::GoBack,
+            winit::keyboard::NamedKey::GoHome => KeyNamed::GoHome,
+            winit::keyboard::NamedKey::HeadsetHook => KeyNamed::HeadsetHook,
+            winit::keyboard::NamedKey::LastNumberRedial => KeyNamed::LastNumberRedial,
+            winit::keyboard::NamedKey::Notification => KeyNamed::Notification,
+            winit::keyboard::NamedKey::MannerMode => KeyNamed::MannerMode,
+            winit::keyboard::NamedKey::VoiceDial => KeyNamed::VoiceDial,
+            winit::keyboard::NamedKey::TV => KeyNamed::TV,
+            winit::keyboard::NamedKey::TV3DMode => KeyNamed::TV3DMode,
+            winit::keyboard::NamedKey::TVAntennaCable => KeyNamed::TVAntennaCable,
+            winit::keyboard::NamedKey::TVAudioDescription => KeyNamed::TVAudioDescription,
+            winit::keyboard::NamedKey::TVAudioDescriptionMixDown => KeyNamed::TVAudioDescriptionMixDown,
+            winit::keyboard::NamedKey::TVAudioDescriptionMixUp => KeyNamed::TVAudioDescriptionMixUp,
+            winit::keyboard::NamedKey::TVContentsMenu => KeyNamed::TVContentsMenu,
+            winit::keyboard::NamedKey::TVDataService => KeyNamed::TVDataService,
+            winit::keyboard::NamedKey::TVInput => KeyNamed::TVInput,
+            winit::keyboard::NamedKey::TVInputComponent1 => KeyNamed::TVInputComponent1,
+            winit::keyboard::NamedKey::TVInputComponent2 => KeyNamed::TVInputComponent2,
+            winit::keyboard::NamedKey::TVInputComposite1 => KeyNamed::TVInputComposite1,
+            winit::keyboard::NamedKey::TVInputComposite2 => KeyNamed::TVInputComposite2,
+            winit::keyboard::NamedKey::TVInputHDMI1 => KeyNamed::TVInputHDMI1,
+            winit::keyboard::NamedKey::TVInputHDMI2 => KeyNamed::TVInputHDMI2,
+            winit::keyboard::NamedKey::TVInputHDMI3 => KeyNamed::TVInputHDMI3,
+            winit::keyboard::NamedKey::TVInputHDMI4 => KeyNamed::TVInputHDMI4,
+            winit::keyboard::NamedKey::TVInputVGA1 => KeyNamed::TVInputVGA1,
+            winit::keyboard::NamedKey::TVMediaContext => KeyNamed::TVMediaContext,
+            winit::keyboard::NamedKey::TVNetwork => KeyNamed::TVNetwork,
+            winit::keyboard::NamedKey::TVNumberEntry => KeyNamed::TVNumberEntry,
+            winit::keyboard::NamedKey::TVPower => KeyNamed::TVPower,
+            winit::keyboard::NamedKey::TVRadioService => KeyNamed::TVRadioService,
+            winit::keyboard::NamedKey::TVSatellite => KeyNamed::TVSatellite,
+            winit::keyboard::NamedKey::TVSatelliteBS => KeyNamed::TVSatelliteBS,
+            winit::keyboard::NamedKey::TVSatelliteCS => KeyNamed::TVSatelliteCS,
+            winit::keyboard::NamedKey::TVSatelliteToggle => KeyNamed::TVSatelliteToggle,
+            winit::keyboard::NamedKey::TVTerrestrialAnalog => KeyNamed::TVTerrestrialAnalog,
+            winit::keyboard::NamedKey::TVTerrestrialDigital => KeyNamed::TVTerrestrialDigital,
+            winit::keyboard::NamedKey::TVTimer => KeyNamed::TVTimer,
+            winit::keyboard::NamedKey::AVRInput => KeyNamed::AVRInput,
+            winit::keyboard::NamedKey::AVRPower => KeyNamed::AVRPower,
+            winit::keyboard::NamedKey::ColorF0Red => KeyNamed::ColorF0Red,
+            winit::keyboard::NamedKey::ColorF1Green => KeyNamed::ColorF1Green,
+            winit::keyboard::NamedKey::ColorF2Yellow => KeyNamed::ColorF2Yellow,
+            winit::keyboard::NamedKey::ColorF3Blue => KeyNamed::ColorF3Blue,
+            winit::keyboard::NamedKey::ColorF4Grey => KeyNamed::ColorF4Grey,
+            winit::keyboard::NamedKey::ColorF5Brown => KeyNamed::ColorF5Brown,
+            winit::keyboard::NamedKey::ClosedCaptionToggle => KeyNamed::ClosedCaptionToggle,
+            winit::keyboard::NamedKey::Dimmer => KeyNamed::Dimmer,
+            winit::keyboard::NamedKey::DisplaySwap => KeyNamed::DisplaySwap,
+            winit::keyboard::NamedKey::DVR => KeyNamed::DVR,
+            winit::keyboard::NamedKey::Exit => KeyNamed::Exit,
+            winit::keyboard::NamedKey::FavoriteClear0 => KeyNamed::FavoriteClear0,
+            winit::keyboard::NamedKey::FavoriteClear1 => KeyNamed::FavoriteClear1,
+            winit::keyboard::NamedKey::FavoriteClear2 => KeyNamed::FavoriteClear2,
+            winit::keyboard::NamedKey::FavoriteClear3 => KeyNamed::FavoriteClear3,
+            winit::keyboard::NamedKey::FavoriteRecall0 => KeyNamed::FavoriteRecall0,
+            winit::keyboard::NamedKey::FavoriteRecall1 => KeyNamed::FavoriteRecall1,
+            winit::keyboard::NamedKey::FavoriteRecall2 => KeyNamed::FavoriteRecall2,
+            winit::keyboard::NamedKey::FavoriteRecall3 => KeyNamed::FavoriteRecall3,
+            winit::keyboard::NamedKey::FavoriteStore0 => KeyNamed::FavoriteStore0,
+            winit::keyboard::NamedKey::FavoriteStore1 => KeyNamed::FavoriteStore1,
+            winit::keyboard::NamedKey::FavoriteStore2 => KeyNamed::FavoriteStore2,
+            winit::keyboard::NamedKey::FavoriteStore3 => KeyNamed::FavoriteStore3,
+            winit::keyboard::NamedKey::Guide => KeyNamed::Guide,
+            winit::keyboard::NamedKey::GuideNextDay => KeyNamed::GuideNextDay,
+            winit::keyboard::NamedKey::GuidePreviousDay => KeyNamed::GuidePreviousDay,
+            winit::keyboard::NamedKey::Info => KeyNamed::Info,
+            winit::keyboard::NamedKey::InstantReplay => KeyNamed::InstantReplay,
+            winit::keyboard::NamedKey::Link => KeyNamed::Link,
+            winit::keyboard::NamedKey::ListProgram => KeyNamed::ListProgram,
+            winit::keyboard::NamedKey::LiveContent => KeyNamed::LiveContent,
+            winit::keyboard::NamedKey::Lock => KeyNamed::Lock,
+            winit::keyboard::NamedKey::MediaApps => KeyNamed::MediaApps,
+            winit::keyboard::NamedKey::MediaAudioTrack => KeyNamed::MediaAudioTrack,
+            winit::keyboard::NamedKey::MediaLast => KeyNamed::MediaLast,
+            winit::keyboard::NamedKey::MediaSkipBackward => KeyNamed::MediaSkipBackward,
+            winit::keyboard::NamedKey::MediaSkipForward => KeyNamed::MediaSkipForward,
+            winit::keyboard::NamedKey::MediaStepBackward => KeyNamed::MediaStepBackward,
+            winit::keyboard::NamedKey::MediaStepForward => KeyNamed::MediaStepForward,
+            winit::keyboard::NamedKey::MediaTopMenu => KeyNamed::MediaTopMenu,
+            winit::keyboard::NamedKey::NavigateIn => KeyNamed::NavigateIn,
+            winit::keyboard::NamedKey::NavigateNext => KeyNamed::NavigateNext,
+            winit::keyboard::NamedKey::NavigateOut => KeyNamed::NavigateOut,
+            winit::keyboard::NamedKey::NavigatePrevious => KeyNamed::NavigatePrevious,
+            winit::keyboard::NamedKey::NextFavoriteChannel => KeyNamed::NextFavoriteChannel,
+            winit::keyboard::NamedKey::NextUserProfile => KeyNamed::NextUserProfile,
+            winit::keyboard::NamedKey::OnDemand => KeyNamed::OnDemand,
+            winit::keyboard::NamedKey::Pairing => KeyNamed::Pairing,
+            winit::keyboard::NamedKey::PinPDown => KeyNamed::PinPDown,
+            winit::keyboard::NamedKey::PinPMove => KeyNamed::PinPMove,
+            winit::keyboard::NamedKey::PinPToggle => KeyNamed::PinPToggle,
+            winit::keyboard::NamedKey::PinPUp => KeyNamed::PinPUp,
+            winit::keyboard::NamedKey::PlaySpeedDown => KeyNamed::PlaySpeedDown,
+            winit::keyboard::NamedKey::PlaySpeedReset => KeyNamed::PlaySpeedReset,
+            winit::keyboard::NamedKey::PlaySpeedUp => KeyNamed::PlaySpeedUp,
+            winit::keyboard::NamedKey::RandomToggle => KeyNamed::RandomToggle,
+            winit::keyboard::NamedKey::RcLowBattery => KeyNamed::RcLowBattery,
+            winit::keyboard::NamedKey::RecordSpeedNext => KeyNamed::RecordSpeedNext,
+            winit::keyboard::NamedKey::RfBypass => KeyNamed::RfBypass,
+            winit::keyboard::NamedKey::ScanChannelsToggle => KeyNamed::ScanChannelsToggle,
+            winit::keyboard::NamedKey::ScreenModeNext => KeyNamed::ScreenModeNext,
+            winit::keyboard::NamedKey::Settings => KeyNamed::Settings,
+            winit::keyboard::NamedKey::SplitScreenToggle => KeyNamed::SplitScreenToggle,
+            winit::keyboard::NamedKey::STBInput => KeyNamed::STBInput,
+            winit::keyboard::NamedKey::STBPower => KeyNamed::STBPower,
+            winit::keyboard::NamedKey::Subtitle => KeyNamed::Subtitle,
+            winit::keyboard::NamedKey::Teletext => KeyNamed::Teletext,
+            winit::keyboard::NamedKey::VideoModeNext => KeyNamed::VideoModeNext,
+            winit::keyboard::NamedKey::Wink => KeyNamed::Wink,
+            winit::keyboard::NamedKey::ZoomToggle => KeyNamed::ZoomToggle,
+            winit::keyboard::NamedKey::F1 => KeyNamed::F1,
+            winit::keyboard::NamedKey::F2 => KeyNamed::F2,
+            winit::keyboard::NamedKey::F3 => KeyNamed::F3,
+            winit::keyboard::NamedKey::F4 => KeyNamed::F4,
+            winit::keyboard::NamedKey::F5 => KeyNamed::F5,
+            winit::keyboard::NamedKey::F6 => KeyNamed::F6,
+            winit::keyboard::NamedKey::F7 => KeyNamed::F7,
+            winit::keyboard::NamedKey::F8 => KeyNamed::F8,
+            winit::keyboard::NamedKey::F9 => KeyNamed::F9,
+            winit::keyboard::NamedKey::F10 => KeyNamed::F10,
+            winit::keyboard::NamedKey::F11 => KeyNamed::F11,
+            winit::keyboard::NamedKey::F12 => KeyNamed::F12,
+            winit::keyboard::NamedKey::F13 => KeyNamed::F13,
+            winit::keyboard::NamedKey::F14 => KeyNamed::F14,
+            winit::keyboard::NamedKey::F15 => KeyNamed::F15,
+            winit::keyboard::NamedKey::F16 => KeyNamed::F16,
+            winit::keyboard::NamedKey::F17 => KeyNamed::F17,
+            winit::keyboard::NamedKey::F18 => KeyNamed::F18,
+            winit::keyboard::NamedKey::F19 => KeyNamed::F19,
+            winit::keyboard::NamedKey::F20 => KeyNamed::F20,
+            winit::keyboard::NamedKey::F21 => KeyNamed::F21,
+            winit::keyboard::NamedKey::F22 => KeyNamed::F22,
+            winit::keyboard::NamedKey::F23 => KeyNamed::F23,
+            winit::keyboard::NamedKey::F24 => KeyNamed::F24,
+            winit::keyboard::NamedKey::F25 => KeyNamed::F25,
+            winit::keyboard::NamedKey::F26 => KeyNamed::F26,
+            winit::keyboard::NamedKey::F27 => KeyNamed::F27,
+            winit::keyboard::NamedKey::F28 => KeyNamed::F28,
+            winit::keyboard::NamedKey::F29 => KeyNamed::F29,
+            winit::keyboard::NamedKey::F30 => KeyNamed::F30,
+            winit::keyboard::NamedKey::F31 => KeyNamed::F31,
+            winit::keyboard::NamedKey::F32 => KeyNamed::F32,
+            winit::keyboard::NamedKey::F33 => KeyNamed::F33,
+            winit::keyboard::NamedKey::F34 => KeyNamed::F34,
+            winit::keyboard::NamedKey::F35 => KeyNamed::F35,
             _ => 
             {
                 if cfg!(debug_assertions) {
                     panic!("Unhandled winit KeyName : {:?}", value);
                 } else {
-                    NamedKey::Unknow
+                    KeyNamed::Unknow
                 }
             },
         }
@@ -1229,7 +1229,7 @@ impl From<WinitKeyName> for NamedKey
 /// This is a superset of the UI Events Specification's [`KeyboardEvent.key`] with
 /// additions:
 /// - All simple variants are wrapped under the `Named` variant
-/// - The `Unidentified` variant here, can still identify a key through it's `NativeKeyCode`.
+/// - The `Unknow` variant here, can still identify a key through it's [`KeyCodeNative`].
 /// - The `Dead` variant here, can specify the character which is inserted when pressing the
 ///   dead-key twice.
 ///
@@ -1238,18 +1238,18 @@ impl From<WinitKeyName> for NamedKey
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Key<Str = KeyText> {
     /// A simple (unparameterised) action
-    Named(NamedKey),
+    Named(KeyNamed),
 
     /// A key string that corresponds to the character typed by the user, taking into account the
     /// user’s current locale setting, and any system-level keyboard mapping overrides that are in
     /// effect.
-    Character(Str),
+    Text(Str),
 
     /// This variant is used when the key cannot be translated to any other variant.
     ///
     /// The native key is provided (if available) in order to allow the user to specify keybindings
     /// for keys which are not defined by this API, mainly through some sort of UI.
-    Unknow(NativeKey),
+    Unknow(KeyNative),
 
     /// Contains the text representation of the dead-key when available.
     ///
@@ -1264,30 +1264,30 @@ impl<Str> From<WinitKey<Str>> for Key<Str>
         match value
         {
             winit::keyboard::Key::Named(named_key) => Key::Named(named_key.into()),
-            winit::keyboard::Key::Character(c) => Key::Character(c),
+            winit::keyboard::Key::Character(c) => Key::Text(c),
             winit::keyboard::Key::Unidentified(native_key) => Key::Unknow(native_key.into()),
             winit::keyboard::Key::Dead(d) => Key::Dead(d),
         }
     }
 }
 
-impl From<NamedKey> for Key {
+impl From<KeyNamed> for Key {
     #[inline]
-    fn from(action: NamedKey) -> Self {
+    fn from(action: KeyNamed) -> Self {
         Key::Named(action)
     }
 }
 
-impl From<NativeKey> for Key {
+impl From<KeyNative> for Key {
     #[inline]
-    fn from(code: NativeKey) -> Self {
+    fn from(code: KeyNative) -> Self {
         Key::Unknow(code)
     }
 }
 
-impl<Str> PartialEq<NamedKey> for Key<Str> {
+impl<Str> PartialEq<KeyNamed> for Key<Str> {
     #[inline]
-    fn eq(&self, rhs: &NamedKey) -> bool {
+    fn eq(&self, rhs: &KeyNamed) -> bool {
         match &self {
             Key::Named(a) => a == rhs,
             _ => false,
@@ -1300,7 +1300,7 @@ impl<Str: PartialEq<str>> PartialEq<str> for Key<Str> {
     #[inline]
     fn eq(&self, rhs: &str) -> bool {
         match &self {
-            Key::Character(s) => s == rhs,
+            Key::Text(s) => s == rhs,
             _ => false,
         }
     }
@@ -1312,16 +1312,16 @@ impl<Str: PartialEq<str>> PartialEq<&str> for Key<Str> {
     }
 }
 
-impl<Str> PartialEq<NativeKey> for Key<Str> {
+impl<Str> PartialEq<KeyNative> for Key<Str> {
     #[inline]
-    fn eq(&self, rhs: &NativeKey) -> bool {
+    fn eq(&self, rhs: &KeyNative) -> bool {
         match &self {
             Key::Unknow(code) => code == rhs,
             _ => false,
         }
     }
 }
-impl<Str> PartialEq<Key<Str>> for NativeKey {
+impl<Str> PartialEq<Key<Str>> for KeyNative {
     #[inline]
     fn eq(&self, rhs: &Key<Str>) -> bool {
         rhs == self
@@ -1335,7 +1335,7 @@ impl Key
     pub fn as_ref(&self) -> Key<&str> {
         match self {
             Key::Named(a) => Key::Named(*a),
-            Key::Character(ch) => Key::Character(ch.as_str()),
+            Key::Text(ch) => Key::Text(ch.as_str()),
             Key::Dead(d) => Key::Dead(*d),
             Key::Unknow(u) => Key::Unknow(u.clone()),
         }
@@ -1343,7 +1343,7 @@ impl Key
 }
 
 
-impl NamedKey {
+impl KeyNamed {
     /// Convert an action to its approximate textual equivalent.
     ///
     /// # Examples
@@ -1356,11 +1356,11 @@ impl NamedKey {
     /// ```
     pub fn to_text(&self) -> Option<&str> {
         match self {
-            NamedKey::Enter => Some("\r"),
-            NamedKey::Backspace => Some("\x08"),
-            NamedKey::Tab => Some("\t"),
-            NamedKey::Space => Some(" "),
-            NamedKey::Escape => Some("\x1b"),
+            KeyNamed::Enter => Some("\r"),
+            KeyNamed::Backspace => Some("\x08"),
+            KeyNamed::Tab => Some("\t"),
+            KeyNamed::Space => Some(" "),
+            KeyNamed::Escape => Some("\x1b"),
             _ => None,
         }
     }
@@ -1418,12 +1418,14 @@ impl Default for KeyModifiersFlags
     }
 }
 
-impl KeyModifiersFlags
+
+impl Matches for KeyModifiersFlags
 {
+    type Output = bool;
     /// Checks if the actual modifier flags match the expected modifier pattern.
     ///
     /// Also handles both composite modifiers (e.g., `Shift`) and side-specific modifiers (e.g., `ShiftLeft`).
-    pub fn matches(self, lexem: Self) -> bool 
+    fn matches(&self, lexem: &Self) -> bool 
     {
         fn check_mods(self_bits: KeyModifiersFlags, lexem_bits: KeyModifiersFlags, left: KeyModifiersFlags, right: KeyModifiersFlags, left_or_right: KeyModifiersFlags) -> bool {
             if self_bits.contains(left_or_right) {
@@ -1440,10 +1442,10 @@ impl KeyModifiersFlags
             }
         }
         
-        check_mods(self, lexem, Self::ShiftLeft, Self::ShiftRight, Self::Shift) 
-        && check_mods(self, lexem, Self::ControlLeft, Self::ControlRight, Self::Control) 
-        && check_mods(self, lexem, Self::AltLeft, Self::AltRight, Self::Alt) 
-        && check_mods(self, lexem, Self::SuperLeft, Self::SuperRight, Self::Super)
+        check_mods(*self, *lexem, Self::ShiftLeft, Self::ShiftRight, Self::Shift) 
+        && check_mods(*self, *lexem, Self::ControlLeft, Self::ControlRight, Self::Control) 
+        && check_mods(*self, *lexem, Self::AltLeft, Self::AltRight, Self::Alt) 
+        && check_mods(*self, *lexem, Self::SuperLeft, Self::SuperRight, Self::Super)
     }
 }
 
@@ -1481,16 +1483,16 @@ impl TryFrom<KeyCode> for KeyModifiers
 
 type KeyError = ();
 
-impl TryFrom<NamedKey> for KeyModifiersFlags
+impl TryFrom<KeyNamed> for KeyModifiersFlags
 {
     type Error = KeyError;
-    fn try_from(value: NamedKey) -> Result<KeyModifiersFlags, Self::Error> {
+    fn try_from(value: KeyNamed) -> Result<KeyModifiersFlags, Self::Error> {
         match value
         {
-            NamedKey::Shift => Ok(Self::Shift),
-            NamedKey::Alt => Ok(Self::Alt),
-            NamedKey::Super => Ok(Self::Super),
-            NamedKey::Control => Ok(Self::Control),
+            KeyNamed::Shift => Ok(Self::Shift),
+            KeyNamed::Alt => Ok(Self::Alt),
+            KeyNamed::Super => Ok(Self::Super),
+            KeyNamed::Control => Ok(Self::Control),
             _ => Err(()),
         }
     }
