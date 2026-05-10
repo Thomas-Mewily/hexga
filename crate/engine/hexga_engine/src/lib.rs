@@ -10,7 +10,9 @@ use std::ops::*;
 use std::rc::Rc;
 use std::sync::{Arc, LazyLock};
 
+pub use hexga::*;
 pub mod graphics;
+pub mod experimental;
 
 use prelude::*;
 pub mod prelude
@@ -19,4 +21,10 @@ pub mod prelude
         graphics::prelude::*,
     };
     pub use hexga::prelude::*;
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use hexga::traits::*;
 }

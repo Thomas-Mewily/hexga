@@ -24,10 +24,10 @@ impl<'a, Ev> EventLoop<'a, Ev>
 
     pub fn winit_event_loop(&self) -> &'a WinitEventLoopActive { self.winit }
 }
-impl<'a, Ev> EventLoopSendEvent<PlatformEvent<Ev>> for EventLoop<'a, Ev>
+impl<'a, Ev> EventLoopSendEvent<Event<Ev>> for EventLoop<'a, Ev>
     where Ev: PlatformCustomEvent
 {
-    fn send_event(&self, ev: PlatformEvent<Ev>) -> ProxyResult {
+    fn send_event(&self, ev: Event<Ev>) -> ProxyResult {
         self.proxy().send_event(ev)
     }
 }
@@ -78,7 +78,7 @@ pub trait PlatformEventHandler<CustomEvent=()> : Sized
     fn exit(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
     
 
-    fn event(&mut self, ev: PlatformEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformEvent<CustomEvent>> { Some(ev) }
+    fn event(&mut self, ev: Event<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<Event<CustomEvent>> { Some(ev) }
 
     fn run_event_loop_with_param(self, param: EventLoopParam) -> EventLoopResult 
     {
@@ -177,10 +177,10 @@ impl<CustomEvent> Clone for EventLoopProxy<CustomEvent> where CustomEvent: Platf
 
 pub type ProxyResult<T=()> = Result<T,()>;
 
-impl<CustomEvent> EventLoopSendEvent<PlatformEvent<CustomEvent>> for EventLoopProxy<CustomEvent> 
+impl<CustomEvent> EventLoopSendEvent<Event<CustomEvent>> for EventLoopProxy<CustomEvent> 
     where CustomEvent: PlatformCustomEvent
 {
-    fn send_event(&self, ev: PlatformEvent<CustomEvent>) -> ProxyResult {
+    fn send_event(&self, ev: Event<CustomEvent>) -> ProxyResult {
         match self.winit.send_event(ev)
         {
             Ok(_) => Ok(()),

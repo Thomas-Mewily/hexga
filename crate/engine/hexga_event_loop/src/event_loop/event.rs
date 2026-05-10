@@ -6,7 +6,7 @@ impl<E> PlatformCustomEvent for E where E: Async {}
 
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum PlatformEvent<Ev>
+pub enum Event<Ev>
 {
     Key(KeyEvent),
 
@@ -27,7 +27,7 @@ pub enum PlatformEvent<Ev>
     Custom(Ev),
 }
 
-impl<User> From<KeyEvent> for PlatformEvent<User>
+impl<User> From<KeyEvent> for Event<User>
 {
     fn from(key: KeyEvent) -> Self { Self::Key(key) }
 }

@@ -91,6 +91,8 @@ pub mod hexga_prelude
     #[allow(hidden_glob_reexports)]
     pub(crate) mod prelude
     {}
+
+    pub use super::hexga_traits::*;
 }
 
 

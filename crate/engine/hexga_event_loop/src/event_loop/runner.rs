@@ -73,12 +73,12 @@ struct EventLoopRunner<EventHandler,CustomEvent>
     param: EventLoopParam,
 }
 
-impl<EventHandler, CustomEvent> EventLoopSendEvent<PlatformEvent<CustomEvent>> for EventLoopRunner<EventHandler,CustomEvent> 
+impl<EventHandler, CustomEvent> EventLoopSendEvent<Event<CustomEvent>> for EventLoopRunner<EventHandler,CustomEvent> 
     where 
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: PlatformCustomEvent
 {
-    fn send_event(&self, ev: PlatformEvent<CustomEvent>) -> ProxyResult {
+    fn send_event(&self, ev: Event<CustomEvent>) -> ProxyResult {
         self.proxy.send_event(ev)
     }
 }
@@ -113,13 +113,13 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: PlatformCustomEvent
 {
-    fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<PlatformEvent<CustomEvent>>)
+    fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<Event<CustomEvent>>)
     {
         let mut ev = ev.into();
 
         match &mut ev
         {
-            PlatformEvent::Key(k) => 
+            Event::Key(k) => 
             {
                 let down = k.is_down();
                 match k.code
@@ -139,7 +139,7 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
                 }
                 k.modifiers = self.state.key_modifiers;
             },
-            PlatformEvent::Close => { active.exit(); }
+            Event::Close => { active.exit(); }
             _ => {}
         }
 
@@ -147,30 +147,30 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
 
         match ev
         {
-            PlatformEvent::Key(k) => 
+            Event::Key(k) => 
             {
                 if self.param.shortcut.exit.matches(&k)
                 {
-                    let _ = self.send_event(PlatformEvent::Close);
+                    let _ = self.send_event(Event::Close);
                 }
                 if self.param.shortcut.copy.matches(&k)
                 {
-                    let _ = self.send_event(PlatformEvent::Copy);
+                    let _ = self.send_event(Event::Copy);
                 }
                 if self.param.shortcut.paste.matches(&k)
                 {
                     match self.state.clipboard.get()
                     {
-                        Some(txt) =>  { let _ = self.send_event(PlatformEvent::Paste(txt)); },
+                        Some(txt) =>  { let _ = self.send_event(Event::Paste(txt)); },
                         None => {},
                     }
                 }
                 if self.param.shortcut.cut.matches(&k)
                 {
-                    let _ = self.send_event(PlatformEvent::Cut);
+                    let _ = self.send_event(Event::Cut);
                 }
             }
-            PlatformEvent::Paste(txt) => 
+            Event::Paste(txt) => 
             {
                 let key_event = KeyEvent 
                 { 
@@ -182,7 +182,7 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
                     location: KeyLocation::Unknow, 
                     text : Some(txt.into()),
                 };
-                let _ = self.send_event(PlatformEvent::Key(key_event));
+                let _ = self.send_event(Event::Key(key_event));
             }
             _ => {}
         };
@@ -197,7 +197,7 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
         f(&mut self.event_handler, &mut event_loop)
     }
 }
-impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<PlatformEvent<CustomEvent>> for EventLoopRunner<EventHandler,CustomEvent> 
+impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Event<CustomEvent>> for EventLoopRunner<EventHandler,CustomEvent> 
     where 
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: PlatformCustomEvent
@@ -223,7 +223,7 @@ impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Platfor
         self.app(active, |event_handler,event_loop| event_handler.update(dt, event_loop));
     }
 
-    fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformEvent<CustomEvent>) 
+    fn user_event(&mut self, active: &WinitEventLoopActive, event: Event<CustomEvent>) 
     {
         self.event(active, event);
     }
@@ -238,15 +238,15 @@ impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Platfor
         {
             WinitWindowEvent::Resized(physical_size) =>
             {
-                self.event(active, PlatformEvent::Resize(physical_size.convert()));
+                self.event(active, Event::Resize(physical_size.convert()));
             }
             winit::event::WindowEvent::CloseRequested =>
             {
-                self.event(active, PlatformEvent::Close);
+                self.event(active, Event::Close);
             }
             winit::event::WindowEvent::Destroyed =>
             {
-                self.event(active, PlatformEvent::Destroy);
+                self.event(active, Event::Destroy);
             }
             WinitWindowEvent::KeyboardInput {
                 device_id: _,
@@ -254,7 +254,7 @@ impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<Platfor
                 is_synthetic: _,
             } =>
             {
-                self.event(active, PlatformEvent::Key(event.into()));
+                self.event(active, Event::Key(event.into()));
             }
             /*
             // TODO: interesting event to handle:

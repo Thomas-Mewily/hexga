@@ -12,9 +12,16 @@ pub use keyboard::*;
 mod event;
 pub use event::*;
 
+mod clipboard;
+pub use clipboard::*;
+
 pub mod prelude
 {
-    pub use super::{KeyEvent, KeyCode, KeyAction, KeyShortcut, KeyModifiers, KeyModifiersFlags};
+    pub use super::{
+        KeyEvent, KeyCode, KeyAction, KeyShortcut, KeyModifiers, KeyModifiersFlags,
+        
+        Clipboard,
+    };
     pub(crate) use super::{Keyboard, KeyCodeNative, KeyState, KeyRepeat, Key, KeyLocation};
     pub use super::traits::*;
 }
@@ -25,5 +32,7 @@ pub mod traits
         KeyboardShortcuts,
         KeyConstants,
         KeyModifiersExtension,
+
+        Clipboardable
     };
 }

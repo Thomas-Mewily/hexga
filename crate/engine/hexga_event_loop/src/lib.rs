@@ -19,7 +19,6 @@ pub mod event_loop;
 pub mod log;
 pub mod window;
 pub mod input;
-pub mod clipboard;
 mod free_fn;
 
 use prelude::*;
@@ -32,6 +31,13 @@ pub mod prelude
         log::prelude::*,
         window::prelude::*,
         input::prelude::*,
-        clipboard::prelude::*,
+    };
+}
+
+pub mod traits
+{
+    pub use super::
+    {
+        event_loop::traits::*,
     };
 }
