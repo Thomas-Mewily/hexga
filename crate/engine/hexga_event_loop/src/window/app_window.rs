@@ -1,13 +1,12 @@
 use super::*;
 
-/*
 pub(crate) type WinitWindow = winit::window::Window;
 pub(crate) type WinitWindowAttributes = winit::window::WindowAttributes;
 pub(crate) type WinitWindowID = winit::window::WindowId;
 pub(crate) type WinitWindowShared = Arc<WinitWindow>;
 
-#[derive(Debug, Default)]
-pub struct Window
+#[derive(Debug)]
+pub struct Window<GpuSurface>
 {
     pub(crate) param : DirtyFlag<WindowParam>,
 
@@ -16,40 +15,34 @@ pub struct Window
     pub(crate) is_content_protected_dirty : bool,
     //pub(crate) winit_param: WinitWindowAttributes,
 
-    pub(crate) window: Option<WinitWindowShared>,
-    pub(crate) surface: Option<GpuConfiguredSurface<'static>>,
+    pub(crate) window: WinitWindowShared,
+    pub(crate) surface: Option<GpuSurface>,
 }
 
-impl Window
+pub type WindowError = ();
+pub type WindowResult<T> = Result<T,WindowError>;
+
+pub trait WindowManager
+{
+    fn create_window<GpuSurface>(&mut self, param: WindowParam) -> WindowResult<Window<GpuSurface>>;
+}
+
+
+impl<GpuSurface> Window<GpuSurface>
 {
     pub fn request_draw(&mut self)
     {
-        match &self.window
-        {
-            Some(w) => w.request_redraw(),
-            None => {},
-        }
+        self.window.request_redraw()
     }
 
     pub fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>)
     {
         let request_type = request_type.into();
-        match &self.window
-        {
-            Some(w) => { w.request_user_attention(request_type.map(|v| v.into())); },
-            None => {},
-        }
+        self.window.request_user_attention(request_type.map(|v| v.into()));
     }
-
-    pub(crate) fn configure_surface(&mut self)
-    {
-        //unimplemented!()
-    }
-
-    pub(crate) fn destroy(&mut self) { self.window = None; }
 }
 
-impl Window
+impl<GpuSurface> Window<GpuSurface>
 {
     pub(crate) fn set_dirty(&mut self, dirty: bool)
     {
@@ -59,6 +52,7 @@ impl Window
         self.is_content_protected_dirty = dirty;
     }
 
+    /*
     pub(crate) fn init_window_if_needed<User>(&mut self, active: &EventLoop<User>) -> bool
         where User: PlatformCustomEvent
     {
@@ -80,12 +74,13 @@ impl Window
         self.window = Some(window);
         self.set_dirty(true);
         true
-    }
+    }*/
 
     pub(crate) fn undirty_if_needed(&mut self)
     {
         if !self.param.is_dirty() { return; }
-        let Some(window) = &self.window else { return; };
+        //let Some(window) = &self.window else { return; };
+        let window = &self.window;
 
         let WindowParam 
         { 
@@ -154,6 +149,7 @@ impl Window
         self.set_dirty(false);
     }
 
+    /*
     pub(crate) fn init_surface_if_needed(&mut self) -> bool
     {
         if Gpu::is_not_init()
@@ -180,25 +176,21 @@ impl Window
 
         true
     }
+    */
 }
 
-impl GetPosition<int,2> for Window
+impl<GpuSurface> GetPosition<int,2> for Window<GpuSurface>
 {
     fn pos(&self) -> Vector<int, 2> 
     {
-        match &self.window
+        match &self.window.outer_position()
         {
-            Some(w) => match w.outer_position()
-            {
-                Ok(pos) => { return pos.convert(); },
-                Err(_) => {},
-            },
-            None => {},
+            Ok(pos) => { return pos.convert(); },
+            Err(e) => self.param.pos(),
         }
-        self.param.pos()
     }
 }
-impl SetPosition<int,2> for Window
+impl<GpuSurface> SetPosition<int,2> for Window<GpuSurface>
 {
     fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self {
         self.param.set_pos(pos); 
@@ -206,17 +198,13 @@ impl SetPosition<int,2> for Window
         self
     }
 }
-impl GetSize<int,2> for Window
+impl<GpuSurface> GetSize<int,2> for Window<GpuSurface>
 {
     fn size(&self) -> Vector<int, 2> {
-        match &self.window
-        {
-            Some(w) => w.inner_size().convert(),
-            None => self.param.size(),
-        }
+        self.window.inner_size().convert()
     }
 }
-impl SetSize<int,2> for Window
+impl<GpuSurface> SetSize<int,2> for Window<GpuSurface>
 {
     fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self {
         self.param.set_size(size); 
@@ -225,7 +213,7 @@ impl SetSize<int,2> for Window
     }
 }
 
-impl WindowAttribute for Window
+impl<GpuSurface> WindowAttribute for Window<GpuSurface>
 {
     fn title(&self) -> &str {
         self.param.title()
@@ -744,4 +732,3 @@ impl From<winit::window::WindowButtons> for WindowButtonFlags
         flags
     }
 }
-*/

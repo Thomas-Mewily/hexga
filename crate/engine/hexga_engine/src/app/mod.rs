@@ -1,14 +1,23 @@
-use hexga_event_loop::event_loop::*;
-
 use super::*;
 
-pub type AppEvent = PlatformEvent<()>;
+mod application;
+pub use application::*;
 
-pub trait App<Event,Ctx=()>
+mod param;
+pub use param::*;
+
+mod runner;
+pub use runner::*;
+
+pub mod prelude
 {
-    fn event(&mut self, ev: Event, ctx: &mut Ctx) -> Option<Event>;
-    fn update(&mut self, dt: Duration, ctx: &mut Ctx); 
-    fn draw(&mut self, coef: float, ctx: &mut Ctx);
+    pub use super::{AppParam,AppEvent,AppResult,AppError};
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::{App,AppRun};
 }
 
 /*

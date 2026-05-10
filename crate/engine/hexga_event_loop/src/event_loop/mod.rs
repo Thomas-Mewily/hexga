@@ -30,7 +30,7 @@ pub mod experimental
 pub mod prelude
 {
     pub use super::{
-        EventLoop,PlatformEvent,
+        EventLoop,PlatformEvent,EventLoopResult,EventLoopError
     };
     //pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutGraphics};
     //pub(crate) use super::{AppDefaultUserEventInner};
@@ -44,7 +44,9 @@ pub mod traits
         PlatformEventHandler,PlatformEventHandlerExtension,
         PlatformCustomEvent,EventLoopSendEvent,
         AsyncSpawn,
+        WithEventLoopShortcut,WithEventLoopParam,
     };
 }
 
 pub type EventLoopResult<T=()> = Result<T>;
+pub type EventLoopError = ();

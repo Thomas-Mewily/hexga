@@ -1,6 +1,7 @@
 use super::*;
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[non_exhaustive]
 pub struct EventLoopParam
 {
@@ -8,6 +9,76 @@ pub struct EventLoopParam
     pub control_flow : EventLoopControlFlow,
     /// Translated unhandled KeyEvent into KeyboardEvent during event processing
     pub shortcut: EventLoopShortcut,
+}
+
+pub trait WithEventLoopParam : WithEventLoopShortcut
+{
+    fn control_flow(&self) -> EventLoopControlFlow;
+    fn with_control_flow(self, control_flow : EventLoopControlFlow) -> Self;
+}
+
+impl WithEventLoopShortcut for EventLoopParam
+{
+    fn exit_shortcut(&self) -> Option<KeyShortcut> {
+        self.shortcut.exit.clone()
+    }
+
+    fn with_exit_shortcut(mut self, exit: Option<KeyShortcut>) -> Self {
+        self.shortcut.exit = exit;
+        self
+    }
+
+    fn copy_shortcut(&self) -> Option<KeyShortcut> {
+        self.shortcut.copy.clone()
+    }
+
+    fn with_copy_shortcut(mut self, copy: Option<KeyShortcut>) -> Self {
+        self.shortcut.copy = copy;
+        self
+    }
+
+    fn paste_shortcut(&self) -> Option<KeyShortcut> {
+        self.shortcut.paste.clone()
+    }
+
+    fn with_paste_shortcut(mut self, paste: Option<KeyShortcut>) -> Self {
+        self.shortcut.paste = paste;
+        self
+    }
+
+    fn cut_shortcut(&self) -> Option<KeyShortcut> {
+        self.shortcut.cut.clone()
+    }
+
+    fn with_cut_shortcut(mut self, cut: Option<KeyShortcut>) -> Self {
+        self.shortcut.cut = cut;
+        self
+    }
+}
+
+impl WithEventLoopParam for EventLoopParam
+{
+    fn control_flow(&self) -> EventLoopControlFlow {
+        self.control_flow
+    }
+
+    fn with_control_flow(mut self, control_flow : EventLoopControlFlow) -> Self {
+        self.control_flow = control_flow; self
+    }
+}
+
+impl HasMut<EventLoopControlFlow> for EventLoopParam
+{
+    fn retrive_mut(&mut self) -> &mut EventLoopControlFlow {
+        &mut self.control_flow
+    }
+}
+
+impl HasMut<EventLoopShortcut> for EventLoopParam
+{
+    fn retrive_mut(&mut self) -> &mut EventLoopShortcut {
+        &mut self.shortcut
+    }
 }
 
 impl Default for EventLoopParam
@@ -18,7 +89,8 @@ impl Default for EventLoopParam
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct EventLoopShortcut
 {
     pub exit  : Option<KeyShortcut>,
@@ -26,6 +98,61 @@ pub struct EventLoopShortcut
     pub paste : Option<KeyShortcut>,
     pub cut   : Option<KeyShortcut>,
 }
+
+impl WithEventLoopShortcut for EventLoopShortcut
+{
+    fn exit_shortcut(&self) -> Option<KeyShortcut> {
+        self.exit
+    }
+
+    fn with_exit_shortcut(mut self, exit: Option<KeyShortcut>) -> Self {
+        self.exit = exit;
+        self
+    }
+
+    fn copy_shortcut(&self) -> Option<KeyShortcut> {
+        self.copy
+    }
+
+    fn with_copy_shortcut(mut self, copy: Option<KeyShortcut>) -> Self {
+        self.copy = copy;
+        self
+    }
+
+    fn paste_shortcut(&self) -> Option<KeyShortcut> {
+        self.paste
+    }
+
+    fn with_paste_shortcut(mut self, paste: Option<KeyShortcut>) -> Self {
+        self.paste = paste;
+        self
+    }
+
+    fn cut_shortcut(&self) -> Option<KeyShortcut> {
+        self.cut
+    }
+
+    fn with_cut_shortcut(mut self, cut: Option<KeyShortcut>) -> Self {
+        self.cut = cut;
+        self
+    }
+}
+
+pub trait WithEventLoopShortcut
+{
+    fn exit_shortcut(&self) -> Option<KeyShortcut>;
+    fn with_exit_shortcut(self, exit: Option<KeyShortcut>) -> Self;
+
+    fn copy_shortcut(&self) -> Option<KeyShortcut>;
+    fn with_copy_shortcut(self, copy: Option<KeyShortcut>) -> Self;
+
+    fn paste_shortcut(&self) -> Option<KeyShortcut>;
+    fn with_paste_shortcut(self, paste: Option<KeyShortcut>) -> Self;
+
+    fn cut_shortcut(&self) -> Option<KeyShortcut>;
+    fn with_cut_shortcut(self, cut: Option<KeyShortcut>) -> Self;
+}
+
 impl Default for EventLoopShortcut
 {
     fn default() -> Self 
@@ -40,6 +167,7 @@ impl Default for EventLoopShortcut
     }
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub enum EventLoopControlFlow 
 {

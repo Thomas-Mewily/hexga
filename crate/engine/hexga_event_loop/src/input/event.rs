@@ -116,6 +116,7 @@ impl KeyShortcut
 // winit KeyEvent wrapper
 /// The text equivalent of KeyState
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct KeyEvent
 {
     /// Physical Key.

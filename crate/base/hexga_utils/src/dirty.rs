@@ -32,6 +32,7 @@ impl<T> From<T> for DirtyFlag<T>
 }
 impl<T> DirtyFlag<T>
 {
+    pub fn new_dirty(value: T) -> Self { Self::with_used(value, true) }
     pub fn new(value: T) -> Self { Self::with_used(value, false) }
     pub fn with_used(value: T, used: bool) -> Self { Self { value, used } }
 

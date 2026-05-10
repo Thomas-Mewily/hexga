@@ -5,7 +5,6 @@ pub trait Matches<Lexem=Self>
     type Output;
     fn matches(&self, lexem: &Lexem) -> Self::Output;
 }
-
 impl<S,L> Matches<L> for Option<S> where S: Matches<L>, S::Output : Default
 {
     type Output= S::Output;

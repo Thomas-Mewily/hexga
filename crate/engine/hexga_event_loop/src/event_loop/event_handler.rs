@@ -10,6 +10,18 @@ pub struct EventLoop<'a, Ev=()>
     proxy: &'a EventLoopProxy<Ev>,
 }
 
+impl<'a, Ev> WindowManager for EventLoop<'a, Ev>
+    where Ev: PlatformCustomEvent
+{
+    fn create_window<GpuSurface>(&mut self, param: WindowParam) -> WindowResult<Window<GpuSurface>> {
+        match self.winit.create_window(param.clone().into())
+        {
+            Ok(window) => Ok(Window{ param: DirtyFlag::new_dirty(param), is_pos_dirty: true, is_size_dirty: true, is_content_protected_dirty: true, window: Arc::new(window), surface: None }),
+            Err(_) => Err(()),
+        }
+    }
+}
+
 impl<'a, Ev> EventLoop<'a, Ev>
     where Ev: PlatformCustomEvent
 {
