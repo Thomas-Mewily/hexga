@@ -6,6 +6,9 @@ pub use winit_convert::*;
 mod app_window;
 pub use app_window::*;
 
+mod cursor;
+pub use cursor::*;
+
 mod event;
 pub use event::*;
 

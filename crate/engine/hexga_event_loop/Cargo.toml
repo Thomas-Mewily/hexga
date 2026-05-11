@@ -8,7 +8,7 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
-description = "A multimedia game and software engine for handling graphics, audio, and input."
+description = "winit crate wrapper to handle the event loop"
 keywords = ["event_loop", "window", "software"]
 categories = ["asynchronous", "game-development"]
 
@@ -20,17 +20,17 @@ default = [
 
 
 
-int_are_8_bits    = ["hexga_math/int_are_8_bits"]
-int_are_16_bits   = ["hexga_math/int_are_16_bits"]
-int_are_32_bits   = ["hexga_math/int_are_32_bits"]
-int_are_64_bits   = ["hexga_math/int_are_64_bits"]
-int_are_size_bits = ["hexga_math/int_are_size_bits"]
+int_are_8_bits    = ["hexga_math/int_are_8_bits", "hexga_image/int_are_8_bits"]
+int_are_16_bits   = ["hexga_math/int_are_16_bits", "hexga_image/int_are_16_bits"]
+int_are_32_bits   = ["hexga_math/int_are_32_bits", "hexga_image/int_are_32_bits"]
+int_are_64_bits   = ["hexga_math/int_are_64_bits", "hexga_image/int_are_64_bits"]
+int_are_size_bits = ["hexga_math/int_are_size_bits", "hexga_image/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga_math/float_are_32_bits"]
-float_are_64_bits   = ["hexga_math/float_are_64_bits"]
-float_are_size_bits = ["hexga_math/float_are_size_bits"]
+float_are_32_bits   = ["hexga_math/float_are_32_bits", "hexga_image/float_are_32_bits"]
+float_are_64_bits   = ["hexga_math/float_are_64_bits", "hexga_image/float_are_64_bits"]
+float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_image/float_are_size_bits"]
 
-serde = ["dep:serde", "hexga_core/serde", "hexga_utils/serde", "hexga_math/serde", "hexga_bitflags/serde", "winit/serde"]
+serde = ["dep:serde", "hexga_core/serde", "hexga_utils/serde", "hexga_math/serde", "hexga_image/serde", "hexga_bitflags/serde", "winit/serde"]
 serde_rc = ["serde/rc", "hexga_core/serde_rc", "hexga_utils/serde_rc", "hexga_math/serde_rc"]
 
 #hexga_encoding_derive = ["hexga_math/hexga_encoding_derive"]
@@ -40,6 +40,7 @@ hexga_core.workspace = true
 hexga_bitflags.workspace = true
 hexga_math.workspace = true
 hexga_utils.workspace = true
+hexga_image.workspace = true
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 winit = "0.30.11"

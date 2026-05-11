@@ -6,9 +6,10 @@ pub struct CurrentWindow;
 
 impl Windowable for CurrentWindow
 {
-    fn request_draw(&mut self)
+    fn request_draw(&mut self) -> &mut Self
     {
         WINDOW.get_mut().request_draw();
+        self
     }
 
     fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>)
@@ -29,8 +30,48 @@ impl Windowable for CurrentWindow
     }
     
     fn available_monitors(&self) -> impl Iterator<Item=hexga_event_loop::monitor::Monitor> {
-        let v = WINDOW.get_mut().available_monitors().to_vec();
-        v.into_iter()
+        WINDOW.get_mut().available_monitors().to_vec().into_iter()
+    }
+    
+    fn has_focus(&self) -> bool {
+        WINDOW.get_mut().has_focus()
+    }
+    
+    fn focus(&mut self) -> &mut Self {
+        WINDOW.get_mut().focus();
+        self
+    }
+    
+    fn is_minimised(&self) -> Option<bool> {
+        WINDOW.get_mut().is_minimised()
+    }
+    
+    fn set_minimised(&mut self, minimized: bool) -> &mut Self {
+        WINDOW.get_mut().set_minimised(minimized);
+        self
+    }
+    
+    fn set_cursor(&mut self, cursor: impl Into<hexga_event_loop::window::Cursor>) -> &mut Self {
+        WINDOW.get_mut().set_cursor(cursor);
+        self
+    }
+    
+    fn set_cursor_pos(&mut self, pos: Point2) -> &mut Self {
+        WINDOW.get_mut().set_cursor_pos(pos);
+        self
+    }
+    
+    fn set_cursor_visible(&mut self, visible: bool) -> &mut Self {
+        WINDOW.get_mut().set_cursor_visible(visible);
+        self
+    }
+    
+    fn set_cursor_grab(&mut self, mode: hexga_event_loop::window::CursorGrab) -> hexga_event_loop::window::CursorResult {
+        WINDOW.get_mut().set_cursor_grab(mode)
+    }
+    
+    fn set_cursor_hittest(&mut self, hittest: bool) -> hexga_event_loop::window::CursorResult {
+        WINDOW.get_mut().set_cursor_hittest(hittest)
     }
 }
 
@@ -102,8 +143,8 @@ impl WindowAttribute for CurrentWindow
         self
     }
 
-    fn maximised(&self) -> bool {
-        WINDOW.get_mut().maximised()
+    fn is_maximised(&self) -> bool {
+        WINDOW.get_mut().is_maximised()
     }
 
     fn set_maximized(&mut self, maximized: bool) -> &mut Self {
@@ -162,6 +203,24 @@ impl WindowAttribute for CurrentWindow
 
     fn set_active(&mut self, active: bool) -> &mut Self {
         WINDOW.get_mut().set_active(active);
+        self
+    }
+    
+    fn theme(&self) -> Option<hexga_event_loop::window::Theme> {
+        WINDOW.get_mut().theme()
+    }
+    
+    fn set_theme(&mut self, theme: Option<hexga_event_loop::window::Theme>) -> &mut Self {
+        WINDOW.get_mut().set_theme(theme);
+        self
+    }
+    
+    fn icon(&self) -> Option<Image> {
+        WINDOW.get_mut().icon()
+    }
+    
+    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self {
+        WINDOW.get_mut().set_icon(icon);
         self
     }
 }

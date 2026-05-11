@@ -1,6 +1,8 @@
 use super::*;
 
 use experimental::*;
+use hexga_image::image::Image;
+
 pub mod experimental
 {
     use super::*;
@@ -31,20 +33,107 @@ pub trait Windowable
     /// Returns the list of all the monitors available on the system.
     fn current_monitor(&self) -> Option<Monitor>;
 
+    /// Gets whether the window has keyboard focus.
+    fn has_focus(&self) -> bool;
+    /// Brings the window to the front and sets input focus. Has no effect if the window is
+    /// already in focus, minimized, or not visible.
+    ///
+    /// This method steals input focus from other applications. Do not use this method unless
+    /// you are certain that's what the user wants. Focus stealing can cause an extremely disruptive
+    /// user experience.
+    fn focus(&mut self) -> &mut Self;
+
     /// Returns the primary monitor of the system.
     ///
     /// Returns `None` if it can't identify any monitor as a primary one.
     fn primary_monitor(&self) -> Option<Monitor>;
 
+    fn is_minimised(&self) -> Option<bool>;
+    fn set_minimised(&mut self, minimized: bool) -> &mut Self;
+
     /// Returns the list of all the monitors available on the system.
     fn available_monitors(&self) -> impl Iterator<Item=Monitor>;
 
-    fn request_draw(&mut self);
+    fn request_draw(&mut self) -> &mut Self;
     fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>);
+
+
+    /// Modifies the cursor icon of the window.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS / Android / Orbital:** Unsupported.
+    /// - **Web:** Custom cursors have to be loaded and decoded first, until then the previous
+    ///   cursor is shown.
+    fn set_cursor(&mut self, cursor: impl Into<Cursor>) -> &mut Self;
+
+    /// Changes the position of the cursor in window coordinates.
+    /// 
+    /// ## Platform-specific
+    ///
+    /// - **Wayland**: Cursor must be in [`CursorGrabMode::Locked`].
+    /// - **iOS / Android / Web / Orbital:** Always returns an [`ExternalError::NotSupported`].
+    fn set_cursor_pos(&mut self, pos: Point2) -> &mut Self;
+
+    /// Modifies the cursor's visibility.
+    ///
+    /// If `false`, this will hide the cursor. If `true`, this will show the cursor.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **Windows:** The cursor is only hidden within the confines of the window.
+    /// - **X11:** The cursor is only hidden within the confines of the window.
+    /// - **Wayland:** The cursor is only hidden within the confines of the window.
+    /// - **macOS:** The cursor is hidden as long as the window has input focus, even if the cursor
+    ///   is outside of the window.
+    /// - **iOS / Android:** Unsupported.
+    fn set_cursor_visible(&mut self, visible: bool) -> &mut Self;
+
+    /// Set grabbing [mode][CursorGrabMode] on the cursor preventing it from leaving the window.
+    fn set_cursor_grab(&mut self, mode: CursorGrab) -> CursorResult;
+
+    /// Modifies whether the window catches cursor events.
+    ///
+    /// If `true`, the window will catch the cursor events. If `false`, events are passed through
+    /// the window such that any other window behind it receives them. By default hittest is
+    /// enabled.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS / Android / Web / Orbital:** Always returns an [`ExternalError::NotSupported`].
+    fn set_cursor_hittest(&mut self, hittest: bool) -> CursorResult;
 
     /// Lib specific method
     #[doc(hidden)]
     fn winit_window(&self) -> WinitWindowShared;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum Theme {
+    Light,
+    #[default]
+    Dark,
+}
+impl From<Theme> for winit::window::Theme
+{
+    fn from(value: Theme) -> Self {
+        match value
+        {
+            Theme::Light => winit::window::Theme::Light,
+            Theme::Dark => winit::window::Theme::Light,
+        }
+    }
+}
+impl From<winit::window::Theme> for Theme
+{
+    fn from(value: winit::window::Theme) -> Self {
+        match value
+        {
+            winit::window::Theme::Light => Theme::Light,
+            winit::window::Theme::Dark => Theme::Light,
+        }
+    }
 }
 
 pub trait WindowableSurface<Surface>
@@ -203,9 +292,10 @@ impl<Surface> Windowable for Window<Surface>
         self.window.available_monitors().map(Into::into)
     }
 
-    fn request_draw(&mut self)
+    fn request_draw(&mut self) -> &mut Self
     {
-        self.window.request_redraw()
+        self.window.request_redraw();
+        self
     }
 
     fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>)
@@ -218,6 +308,48 @@ impl<Surface> Windowable for Window<Surface>
     #[doc(hidden)]
     fn winit_window(&self) -> WinitWindowShared {
         self.window.clone()
+    }
+    
+    fn has_focus(&self) -> bool {
+        self.window.has_focus()
+    }
+    
+    fn focus(&mut self) -> &mut Self {
+        self.window.focus_window();
+        self
+    }
+    
+    fn is_minimised(&self) -> Option<bool> {
+        self.window.is_minimized()
+    }
+    
+    fn set_minimised(&mut self, minimized: bool) -> &mut Self {
+        self.window.set_minimized(minimized);
+        self
+    }
+    
+    fn set_cursor(&mut self, cursor: impl Into<Cursor>) -> &mut Self {
+        let cursor: Cursor = cursor.into();
+        self.window.set_cursor(cursor);
+        self
+    }
+    
+    fn set_cursor_pos(&mut self, pos: Point2) -> &mut Self {
+        self.window.set_cursor_position(to_winit_pos(pos));
+        self
+    }
+    
+    fn set_cursor_visible(&mut self, visible: bool) -> &mut Self {
+        self.window.set_cursor_visible(visible);
+        self
+    }
+    
+    fn set_cursor_grab(&mut self, mode: CursorGrab) -> CursorResult {
+        self.window.set_cursor_grab(mode.into()).map_err(|_|CursorError)
+    }
+    
+    fn set_cursor_hittest(&mut self, hittest: bool) -> CursorResult {
+        self.window.set_cursor_hittest(hittest).map_err(|_|CursorError)
     }
 }
 impl<Surface> WindowableSurface<Surface> for Window<Surface>
@@ -276,6 +408,7 @@ impl<Surface> WindowAttribute for Window<Surface>
         self.param.set_title(title);
         self
     }
+    
 
     fn level(&self) -> WindowLevel {
         self.param.level()
@@ -307,8 +440,8 @@ impl<Surface> WindowAttribute for Window<Surface>
         self
     }
 
-    fn maximised(&self) -> bool {
-        self.param.maximised()
+    fn is_maximised(&self) -> bool {
+        self.param.is_maximised()
     }
 
     fn set_maximized(&mut self, maximized: bool) -> &mut Self {
@@ -375,8 +508,50 @@ impl<Surface> WindowAttribute for Window<Surface>
         self.param.set_active(active);
         self
     }
+    
+    fn icon(&self) -> Option<Image> {
+        self.param.icon.clone()
+    }
+    
+    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self {
+
+        let icon = icon.into();
+        let winit_icon = match &icon
+        {
+            Some(icon) => image_to_winit_icon(icon),
+            None => None,
+        };
+
+        self.window.set_window_icon(winit_icon);
+        self.param.icon = icon;
+        self
+    }
+    
+    fn theme(&self) -> Option<Theme> {
+        match self.window.theme()
+        {
+            Some(t) => Some(t.into()),
+            None => self.param.theme,
+        }
+    }
+    
+    fn set_theme(&mut self, theme: Option<Theme>) -> &mut Self {
+        self.window.set_theme(theme.map(Into::into));
+        self.param.set_theme(theme);
+        self
+    }
 }
 
+pub(crate) fn image_to_winit_icon(image: &Image) -> Option<winit::window::Icon>
+{
+    let pixels_bytes : &[u8] = hexga_core::bit::transmute_slice(image.pixels());
+
+    match winit::window::Icon::from_rgba(pixels_bytes.to_owned(), image.width() as _, image.height() as _)
+    {
+        Ok(icon) => Some(icon),
+        Err(_) => None,
+    }
+}
 
 pub trait WindowAttribute: 
     Sized + GetSize<int,2> + SetSize<int,2> + GetPosition<int,2> + SetPosition<int,2>
@@ -384,6 +559,34 @@ pub trait WindowAttribute:
     fn title(&self) -> String;
     fn set_title(&mut self, title: String) -> &mut Self;
     fn with_title(mut self, title: String) -> Self { self.set_title(title); self }
+
+    /// Returns the current window theme.
+    ///
+    /// Returns `None` if it cannot be determined on the current platform.
+    fn theme(&self) -> Option<Theme>;
+
+    /// Set or override the window theme.
+    ///
+    /// Specify `None` to reset the theme to the system default.
+    fn set_theme(&mut self, theme: Option<Theme>) -> &mut Self;
+
+    fn icon(&self) -> Option<Image>;
+    /// Sets the window icon.
+    ///
+    /// On Windows and X11, this is typically the small icon in the top-left
+    /// corner of the titlebar.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS / Android / Web / Wayland / macOS / Orbital:** Unsupported.
+    ///
+    /// - **Windows:** Sets `ICON_SMALL`. The base size for a window icon is 16x16, but it's
+    ///   recommended to account for screen scaling and pick a multiple of that, i.e. 32x32.
+    ///
+    /// - **X11:** Has no universal guidelines for icon sizes, so you're at the whims of the WM.
+    ///   That said, it's usually in the same ballpark as on Windows.
+    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self;
+    fn with_icon(mut self, icon: impl Into<Option<Image>>) -> Self { self.set_icon(icon); self }
 
     fn level(&self) -> WindowLevel;
     fn set_level(&mut self, level: WindowLevel) -> &mut Self;
@@ -397,7 +600,7 @@ pub trait WindowAttribute:
     fn set_buttons(&mut self, buttons: WindowButtonFlags) -> &mut Self;
     fn with_buttons(mut self, buttons: WindowButtonFlags) -> Self { self.set_buttons(buttons); self }
 
-    fn maximised(&self) -> bool;
+    fn is_maximised(&self) -> bool;
     fn set_maximized(&mut self, maximized: bool) -> &mut Self;
     fn with_maximized(mut self, maximized: bool) -> Self { self.set_maximized(maximized); self }
 
@@ -424,12 +627,6 @@ pub trait WindowAttribute:
     fn is_active(&self) -> bool;
     fn set_active(&mut self, active: bool) -> &mut Self;
     fn with_active(mut self, active: bool) -> Self { self.set_active(active); self }
-
-    /* Not related to window
-    fn is_cursor_visible(&self) -> bool;
-    fn set_cursor_visible(&mut self, visible: bool) -> &mut Self;
-    fn with_cursor_visible(mut self, visible: bool) -> Self { self.set_cursor_visible(visible); self}
-    */
 }
 
 #[non_exhaustive]
@@ -449,13 +646,15 @@ pub struct WindowParam
     pub decoration: bool,
     pub content_protected: bool,
     pub active: bool,
+    pub icon: Option<Image>,
+    pub theme: Option<Theme>,
     //pub cursor_visible: bool,
 }
 impl Default for WindowParam
 {
     fn default() -> Self
     {
-        Self 
+        Self
         {
             title: "hexga app".to_owned(),
             size: Point2::ZERO,
@@ -470,6 +669,8 @@ impl Default for WindowParam
             decoration: true,
             content_protected: false,
             active: true,
+            icon: None,
+            theme: ___(),
             //cursor_visible: true,
         }
     }
@@ -536,7 +737,7 @@ impl WindowAttribute for WindowParam
         self
     }
 
-    fn maximised(&self) -> bool {
+    fn is_maximised(&self) -> bool {
         self.maximized
     }
 
@@ -597,6 +798,24 @@ impl WindowAttribute for WindowParam
     fn set_active(&mut self, active: bool) -> &mut Self {
         self.active = active; self
     }
+    
+    fn theme(&self) -> Option<Theme> {
+        self.theme
+    }
+    
+    fn set_theme(&mut self, theme: Option<Theme>) -> &mut Self {
+        self.theme = theme;
+        self
+    }
+    
+    fn icon(&self) -> Option<Image> {
+        self.icon.clone()
+    }
+    
+    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self {
+        self.icon = icon.into();
+        self
+    }
 }
 
 impl From<WindowParam> for WinitWindowAttributes
@@ -617,6 +836,8 @@ impl From<WindowParam> for WinitWindowAttributes
             decoration,
             content_protected,
             active,
+            icon,
+            theme,
         } = value;
 
         let mut attr = winit::window::Window::default_attributes();
@@ -647,6 +868,8 @@ impl From<WindowParam> for WinitWindowAttributes
         attr.active = active;
         attr.cursor = ___(); // Todo expose the cursor
         attr.fullscreen = None;
+        attr.preferred_theme = theme.map(Into::into);
+        attr.window_icon = icon.map(|i| image_to_winit_icon(&i)).flatten();
 
         attr
     }
@@ -671,6 +894,7 @@ pub(crate) fn to_winit_pos(size: Point2) -> winit::dpi::PhysicalPosition<i32>
 ///
 /// - **iOS / Android / Web / Wayland:** Unsupported.
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum WindowLevel
 {
     /// The window will always be below normal windows.

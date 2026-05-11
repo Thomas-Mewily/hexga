@@ -128,8 +128,8 @@ impl WindowAttribute for AppParam
         self
     }
 
-    fn maximised(&self) -> bool {
-        self.window.maximised()
+    fn is_maximised(&self) -> bool {
+        self.window.is_maximised()
     }
 
     fn set_maximized(&mut self, maximized: bool) -> &mut Self {
@@ -188,6 +188,24 @@ impl WindowAttribute for AppParam
 
     fn set_active(&mut self, active: bool) -> &mut Self {
         self.window.set_active(active);
+        self
+    }
+    
+    fn theme(&self) -> Option<hexga_event_loop::window::Theme> {
+        self.window.theme()
+    }
+    
+    fn set_theme(&mut self, theme: Option<hexga_event_loop::window::Theme>) -> &mut Self {
+        self.window.set_theme(theme);
+        self
+    }
+    
+    fn icon(&self) -> Option<Image> {
+        self.window.icon()
+    }
+    
+    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self {
+        self.window.set_icon(icon);
         self
     }
 }
