@@ -132,6 +132,7 @@ pub mod format;
 pub mod guard;
 pub mod handle;
 pub mod iter;
+pub mod identity;
 pub mod option;
 pub mod rc;
 pub mod sync;

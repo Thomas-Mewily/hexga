@@ -92,7 +92,7 @@ impl SetSize<int,2> for AppParam
 
 impl WindowAttribute for AppParam
 {
-    fn title(&self) -> &str {
+    fn title(&self) -> String {
         self.window.title()
     }
 

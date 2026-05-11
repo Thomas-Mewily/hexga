@@ -27,20 +27,12 @@ pub trait WindowManager
     fn create_window<GpuSurface>(&mut self, param: WindowParam) -> WindowResult<Window<GpuSurface>>;
 }
 
-
-impl<GpuSurface> Window<GpuSurface>
+pub trait Windowable
 {
-    pub fn request_draw(&mut self)
-    {
-        self.window.request_redraw()
-    }
-
-    pub fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>)
-    {
-        let request_type = request_type.into();
-        self.window.request_user_attention(request_type.map(|v| v.into()));
-    }
+    fn request_draw(&mut self);
+    fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>);
 }
+
 
 impl<GpuSurface> Window<GpuSurface>
 {
@@ -179,6 +171,21 @@ impl<GpuSurface> Window<GpuSurface>
     */
 }
 
+impl<GpuSurface> Windowable for Window<GpuSurface>
+{
+    fn request_draw(&mut self)
+    {
+        self.window.request_redraw()
+    }
+
+    fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>)
+    {
+        let request_type = request_type.into();
+        self.window.request_user_attention(request_type.map(|v| v.into()));
+    }
+}
+
+
 impl<GpuSurface> GetPosition<int,2> for Window<GpuSurface>
 {
     fn pos(&self) -> Vector<int, 2> 
@@ -215,7 +222,7 @@ impl<GpuSurface> SetSize<int,2> for Window<GpuSurface>
 
 impl<GpuSurface> WindowAttribute for Window<GpuSurface>
 {
-    fn title(&self) -> &str {
+    fn title(&self) -> String {
         self.param.title()
     }
 
@@ -316,12 +323,13 @@ impl<GpuSurface> WindowAttribute for Window<GpuSurface>
     }
 }
 
+
 pub trait WindowAttribute: 
     Sized + GetSize<int,2> + SetSize<int,2> + GetPosition<int,2> + SetPosition<int,2>
 {
-    fn title(&self) -> &str;
+    fn title(&self) -> String;
     fn set_title(&mut self, title: impl Into<String>) -> &mut Self;
-    fn with_title(mut self, title: impl Into<String>) -> Self { self.set_title(title); self}
+    fn with_title(mut self, title: impl Into<String>) -> Self { self.set_title(title); self }
 
     fn level(&self) -> WindowLevel;
     fn set_level(&mut self, level: WindowLevel) -> &mut Self;
@@ -441,7 +449,7 @@ impl SetSize<int,2> for WindowParam
 
 impl WindowAttribute for WindowParam
 {
-    fn title(&self) -> &str { &self.title }
+    fn title(&self) -> String { self.title.clone() }
     fn set_title(&mut self, title: impl Into<String>) -> &mut Self {  
         self.title = title.into(); 
         self 

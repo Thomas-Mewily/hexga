@@ -9,6 +9,9 @@ pub use param::*;
 mod runner;
 pub use runner::*;
 
+mod window;
+pub use window::*;
+
 pub mod prelude
 {
     pub use super::{AppParam,AppEvent,AppResult,AppError};

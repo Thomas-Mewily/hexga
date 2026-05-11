@@ -1,5 +1,4 @@
 use hexga_event_loop::event_loop::EventLoopResult;
-
 use super::*;
 
 pub type AppResult = EventLoopResult;
@@ -16,6 +15,32 @@ pub(crate) struct AppRunner<F,A>
     init : F,
     app : Option<A>,
     param: AppParam,
+}
+
+
+
+impl<F,A> AppRunner<F,A>
+    where 
+    F: AppInit<A>,
+    A: App
+{
+    fn exit(&mut self)
+    {
+        WINDOW.reset_or_panic();
+        self.app = None;
+    }
+}
+
+
+impl<F,A> Drop for AppRunner<F,A>
+    where 
+    F: AppInit<A>,
+    A: App
+{
+    fn drop(&mut self) 
+    {
+        self.exit();
+    }
 }
 
 impl<F,A> PlatformEventHandler for AppRunner<F,A>
@@ -38,7 +63,7 @@ impl<F,A> PlatformEventHandler for AppRunner<F,A>
         {
             Some(app) => app.draw(1., &mut ()),
             None => {},
-        } 
+        }
     }
 
     fn event(&mut self, ev: PlatformEvent, event_loop: &mut EventLoop) -> Option<PlatformEvent> 
@@ -48,6 +73,22 @@ impl<F,A> PlatformEventHandler for AppRunner<F,A>
             Some(app) => app.event(ev, &mut ()),
             None => Some(ev),
         } 
+    }
+
+    fn resumed(&mut self, event_loop: &mut EventLoop) 
+    {
+        WINDOW.init_from_fn(||
+            {
+                let main_window = event_loop.create_window(self.param.window.clone()).expect("failed to create main window");
+                main_window
+
+                //if Gpu::is_init()
+            }
+        ).map_err(|_|()).expect("can't init the main window");
+    }
+
+    fn exit(&mut self, event_loop: &mut EventLoop) {
+        self.exit();
     }
 }
 

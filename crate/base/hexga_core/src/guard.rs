@@ -6,7 +6,11 @@ pub trait Guarded<T: ?Sized>
     type Guard<'a>: Deref<Target = T>
     where
         Self: 'a;
-    /// Can panic on exceptional behavior (ex poisoned mutex, wrong thread for SingleThreadCell)
+    
+    /// Returns a guard that dereferences to the inner value.
+    /// 
+    /// May panic on exceptional behavior (ex poisoned mutex, wrong thread for SingleThreadCell...)
+    #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a>;
 }
 pub trait TryGuarded<T: ?Sized>: Guarded<T>
@@ -14,6 +18,10 @@ pub trait TryGuarded<T: ?Sized>: Guarded<T>
     type Error<'a>: Debug
     where
         Self: 'a;
+
+    /// Tries to return a guard that dereferences to the inner value.
+    /// 
+    /// This function never panics.
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>;
 }
 
@@ -22,7 +30,10 @@ pub trait GuardedMut<T: ?Sized>
     type GuardMut<'a>: DerefMut<Target = T>
     where
         Self: 'a;
-    /// Can panic on exceptional behavior (ex poisoned mutex, wrong thread for SingleThreadCell)
+    /// Returns a mutable guard that dereferences to the inner value.
+    ///
+    /// May panic on exceptional behavior (ex poisoned mutex, wrong thread for SingleThreadCell)
+    #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>;
 }
 pub trait TryGuardedMut<T: ?Sized>: GuardedMut<T>
@@ -30,6 +41,10 @@ pub trait TryGuardedMut<T: ?Sized>: GuardedMut<T>
     type Error<'a>: Debug
     where
         Self: 'a;
+
+    /// Tries to return a mutable guard that dereferences to the inner value.
+    /// 
+    /// This function never panics.
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>;
 }
 
@@ -128,6 +143,7 @@ impl<T> Guarded<T> for std::cell::RefCell<T>
         = std::cell::Ref<'a, T>
     where
         Self: 'a;
+    #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a> { self.borrow() }
 }
 #[cfg(feature = "std")]
@@ -146,6 +162,7 @@ impl<T> GuardedMut<T> for std::cell::RefCell<T>
         = std::cell::RefMut<'a, T>
     where
         Self: 'a;
+    #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.borrow_mut() }
 }
 #[cfg(feature = "std")]
@@ -168,6 +185,7 @@ impl<T> Guarded<T> for std::sync::Mutex<T>
         = std::sync::MutexGuard<'a, T>
     where
         Self: 'a;
+    #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a> { self.lock().expect("poisoned") }
 }
 #[cfg(feature = "std")]
@@ -186,6 +204,7 @@ impl<T> GuardedMut<T> for std::sync::Mutex<T>
         = std::sync::MutexGuard<'a, T>
     where
         Self: 'a;
+    #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.lock().expect("poisoned") }
 }
 #[cfg(feature = "std")]
@@ -205,6 +224,7 @@ impl<T> Guarded<T> for std::sync::RwLock<T>
         = std::sync::RwLockReadGuard<'a, T>
     where
         Self: 'a;
+    #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a> { self.read().expect("poisoned") }
 }
 #[cfg(feature = "std")]
@@ -223,6 +243,7 @@ impl<T> GuardedMut<T> for std::sync::RwLock<T>
         = std::sync::RwLockWriteGuard<'a, T>
     where
         Self: 'a;
+    #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.write().expect("poisoned") }
 }
 #[cfg(feature = "std")]
@@ -348,6 +369,11 @@ impl<'a, T> GuardMut<'a, T> for std::sync::MappedRwLockWriteGuard<'a, T>
         Self::map(self, f)
     }
 }
+
+// Can't impl yet Guard for std::sync::MutexGuard and std::sync::MappedMutexGuard
+// by delegating it to GuardMut, because fn guard_map expect a fn that return a mutable reference.
+// More generally, you can't map a const reference with mutex guard:
+// https://doc.rust-lang.org/std/sync/struct.MutexGuard.html#method.map is `&mut` only
 
 #[cfg(feature = "std")]
 impl<'a, T> GuardMut<'a, T> for std::sync::MutexGuard<'a, T>

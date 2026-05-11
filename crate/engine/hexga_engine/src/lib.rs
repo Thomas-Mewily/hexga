@@ -3,7 +3,8 @@
 
 use hexga::prelude::*;
 use hexga_graphics::gpu::{Gpu, GpuConfiguredSurface, GpuInit, GpuParam, GpuSurface};
-use hexga_event_loop::prelude::*;
+use hexga_event_loop::{event_loop::prelude::*,input::*,window::{traits::*,WindowParam}};
+pub(crate) type Singleton<T> = hexga::singleton::SingletonOptionMutex<T>;
 use std::any::Any;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -15,6 +16,7 @@ pub use hexga::*;
 pub use hexga_event_loop as event_loop;
 pub mod graphics;
 pub mod app;
+pub mod experimental;
 
 use prelude::*;
 pub mod prelude
@@ -25,6 +27,7 @@ pub mod prelude
     };
     pub use hexga::prelude::*;
     pub use super::traits::*;
+    pub(crate) use super::experimental::*;
 }
 
 pub mod traits

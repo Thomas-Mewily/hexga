@@ -24,5 +24,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{WindowManager, WindowAttribute};
+    pub use super::{WindowManager, WindowAttribute, Windowable};
 }

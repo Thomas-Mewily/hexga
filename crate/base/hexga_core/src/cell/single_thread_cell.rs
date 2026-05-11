@@ -27,7 +27,7 @@ impl<T> SingleThreadCell<T>
         }
     }
     #[inline(always)]
-    pub(crate) fn same_thread(&self) -> Result<(), DifferentThreadError>
+    pub fn is_same_thread(&self) -> Result<(), DifferentThreadError>
     {
         if std::thread::current().id() == *self.id.get_or_init(|| std::thread::current().id())
         {
@@ -39,7 +39,7 @@ impl<T> SingleThreadCell<T>
         }
     }
     #[inline(always)]
-    pub(crate) fn assert_same_thread(&self) { self.same_thread().unwrap(); }
+    pub(crate) fn assert_same_thread(&self) { self.is_same_thread().unwrap(); }
 }
 
 
@@ -49,6 +49,7 @@ pub enum SingleThreadError
 {
     DifferentThread(DifferentThreadError),
     Borrow(BorrowError),
+    NotInit(NotInitError),
 }
 impl From<DifferentThreadError> for SingleThreadError
 {
@@ -72,6 +73,15 @@ impl<T> Guarded<T> for SingleThreadCell<T>
         self.value.borrow()
     }
 }
+impl<T> SingleThreadCell<T>
+{
+    #[inline]
+    pub fn get<'a>(&'a self) -> Ref<'a, T>
+    {
+        Guarded::get(self)
+    }
+}
+
 impl<T> TryGuarded<T> for SingleThreadCell<T>
 {
     type Error<'a>
@@ -80,8 +90,16 @@ impl<T> TryGuarded<T> for SingleThreadCell<T>
         Self: 'a;
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>
     {
-        self.same_thread()?;
+        self.is_same_thread()?;
         Ok(self.value.try_borrow()?)
+    }
+}
+impl<T> SingleThreadCell<T>
+{
+    #[inline]
+    pub fn try_get<'a>(&'a self) -> Result<<Self as Guarded<T>>::Guard<'a>, <Self as TryGuarded<T>>::Error<'a>>
+    {
+        TryGuarded::try_get(self)
     }
 }
 
@@ -90,6 +108,7 @@ pub enum SingleThreadMutError
 {
     DifferentThread(DifferentThreadError),
     BorrowMut(BorrowMutError),
+    NotInit(NotInitError),
 }
 impl From<DifferentThreadError> for SingleThreadMutError
 {
@@ -111,6 +130,14 @@ impl<T> GuardedMut<T> for SingleThreadCell<T>
         self.value.borrow_mut()
     }
 }
+impl<T> SingleThreadCell<T>
+{
+    #[inline]
+    pub fn get_mut<'a>(&'a mut self) -> RefMut<'a, T>
+    {
+        GuardedMut::get_mut(self)
+    }
+}
 impl<T> TryGuardedMut<T> for SingleThreadCell<T>
 {
     type Error<'a>
@@ -119,7 +146,15 @@ impl<T> TryGuardedMut<T> for SingleThreadCell<T>
         Self: 'a;
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
     {
-        self.same_thread()?;
+        self.is_same_thread()?;
         Ok(self.value.try_borrow_mut()?)
+    }
+}
+impl<T> SingleThreadCell<T>
+{
+    #[inline]
+    pub fn try_get_mut<'a>(&'a mut self) -> Result<<Self as GuardedMut<T>>::GuardMut<'a>, <Self as TryGuardedMut<T>>::Error<'a>>
+    {
+        TryGuardedMut::try_get_mut(self)
     }
 }
