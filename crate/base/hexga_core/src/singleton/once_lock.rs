@@ -1,19 +1,12 @@
 use super::*;
 
-// TODO: impl them
-/*
+
 /// Multi threaded read only singleton, where the value is initialized at compile time.
 pub type SingletonOnce<T> = SingletonOf<OnceLock<T>>;
 /// Multi threaded read only singleton, where the value is initialized from a static fn / lambda at runtime.
 pub type SingletonOnceLazy<T> = SingletonOf<LazyLock<T>>;
-*/
-
-/*
-/// Multi threaded read only singleton, where the value is initialized at compile time.
-pub type SingletonOnce<T> = SingletonOf<OnceLock<T>>;
 
 impl<T> SingletonOnce<T> {
-    /// Creates an uninitialized singleton.
     pub const fn uninit() -> Self {
         Self::from_guard(OnceLock::new())
     }
@@ -23,14 +16,16 @@ impl<T> SingletonOnce<T> {
     }
 }
 
+
 impl<T> Debug for SingletonOnce<T>
 where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self.guarded.get() {
-            Some(v) => write!(f, "Some({:?})", v),
-            None => write!(f, "None"),
+        match self.try_get()
+        {
+            Ok(guard) => write!(f, "{:?}", guard),
+            Err(e) => write!(f, "SingletonOnce<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -44,9 +39,6 @@ impl<T> Guarded<T> for SingletonOnce<T> {
             panic!("SingletonOnce<{}> not initialized", std::any::type_name::<T>())
         })
     }
-}
-
-impl<T> TryGuarded<T> for SingletonOnce<T> {
     type Error<'a> = () where Self: 'a;
 
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
@@ -54,16 +46,54 @@ impl<T> TryGuarded<T> for SingletonOnce<T> {
     }
 }
 
-impl<T> SingletonOnceable<T> for SingletonOnce<T> {
-    fn init_from_fn<F>(&self, f: F) -> Result<Self::Guard<'_>, (Self::Error<'_>, F)>
-    where
-        F: FnOnce() -> T,
+impl<T> SingletonOnceable<T> for SingletonOnce<T> 
+{
+    fn init_from_fn<'a,F>(&'a self, init: F) -> Result<Self::Guard<'a>, F> 
+        where F: FnOnce() -> T 
     {
-        // OnceLock::get_or_init never fails and returns &T
-        // Our Error type is (), so we can't represent failure here
-        Ok(self.guarded.get_or_init(f))
+        Ok(self.guarded.get_or_init(init))
     }
 }
 
 impl_singleton_methods_get!(SingletonOnce);
-*/
+
+
+
+impl<T> SingletonOnceLazy<T> {
+    pub const fn new(f: fn() -> T) -> Self {
+        Self::from_guard(LazyLock::new(f))
+    }
+
+    pub const fn uninit() -> Self {
+        Self::from_guard(LazyLock::new(|| panic!("LazyLock not initialized")))
+    }
+}
+
+impl<T> Debug for SingletonOnceLazy<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self.try_get()
+        {
+            Ok(guard) => write!(f, "{:?}", guard),
+            Err(e) => write!(f, "SingletonOnceLazy<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
+        }
+    }
+}
+
+impl<T> Guarded<T> for SingletonOnceLazy<T> {
+    type Guard<'a> = &'a T where Self: 'a;
+
+    #[track_caller]
+    fn get<'a>(&'a self) -> Self::Guard<'a> {
+        &self.guarded
+    }
+
+    type Error<'a> = std::convert::Infallible where Self: 'a;
+
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
+        Ok(&self.guarded)
+    }
+}
+impl_singleton_methods_get!(SingletonOnceLazy);

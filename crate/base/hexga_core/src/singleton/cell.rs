@@ -22,7 +22,7 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self.try_get() {
-            Ok(v) => write!(f, "{:?}", v.deref()),
+            Ok(guard) => write!(f, "{:?}", guard.deref()),
             Err(e) => write!(f, "SingletonCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
@@ -74,7 +74,7 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self.try_get() {
-            Ok(v) => write!(f, "{:?}", v.deref()),
+            Ok(guard) => write!(f, "{:?}", guard.deref()),
             Err(e) => write!(f, "SingletonLazyCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
@@ -154,7 +154,7 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self.try_get() {
-            Ok(v) => write!(f, "Some({:?})", v.deref()),
+            Ok(guard) => write!(f, "Some({:?})", guard.deref()),
             Err(e) => write!(f, "SingletonOptionCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }

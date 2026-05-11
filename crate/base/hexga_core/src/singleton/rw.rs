@@ -22,7 +22,7 @@ where
     {
         match self.try_get()
         {
-            Ok(v) => write!(f, "{:?}", v.deref()),
+            Ok(guard) => write!(f, "{:?}", guard.deref()),
             Err(e) => write!(f, "Singleton<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }

@@ -22,8 +22,8 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self.guarded.lock() {
-            Ok(guard) => write!(f, "{:?}", guard.as_ref()),
+        match self.try_get_mut() {
+            Ok(guard) => write!(f, "{:?}", guard.deref()),
             Err(e) => write!(f, "SingletonMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
@@ -64,7 +64,7 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self.guarded.lock() {
+        match self.try_get_mut() {
             Ok(guard) => write!(f, "{:?}", guard.deref()),
             Err(e) => write!(f, "SingletonLazyMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
@@ -149,8 +149,8 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self.guarded.lock() {
-            Ok(guard) => write!(f, "{:?}", guard.as_ref()),
+        match self.try_get_mut() {
+            Ok(guard) => write!(f, "{:?}", guard.deref()),
             Err(e) => write!(f, "SingletonOptionMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }

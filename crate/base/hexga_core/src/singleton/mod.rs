@@ -212,6 +212,7 @@ pub trait SingletonOnceable<T>: Guarded<T>
     /// If already initialized, returns the existing guard without calling the function.
     fn init_from_fn<'a,F>(&'a self, init: F) -> Result<Self::Guard<'a>, F> 
         where F: FnOnce() -> T;
+    
     /// Ensures the singleton is initialized with the given value, 
     /// while blocking the current thread until it is able to do so.
     /// 
