@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 use hexga::prelude::*;
-use hexga_graphics::gpu::{Gpu, GpuConfiguredSurface, GpuInit, GpuParam, GpuSurface};
+use hexga_graphics::gpu::{Gpu, GpuConfiguredSurface, GpuParam, GpuSurface, wgpu};
 use hexga_event_loop::{event_loop::prelude::*,input::*,window::{traits::*,WindowParam}};
 pub(crate) type Singleton<T> = hexga::singleton::SingletonOptionMutex<T>;
 use std::any::Any;
@@ -15,6 +15,7 @@ use std::sync::{Arc, LazyLock};
 pub use hexga::*;
 pub use hexga_event_loop as event_loop;
 pub mod graphics;
+pub mod window;
 pub mod app;
 pub mod experimental;
 
@@ -24,6 +25,7 @@ pub mod prelude
     pub use super::{
         graphics::prelude::*,
         app::prelude::*,
+        window::prelude::*,
     };
     pub use hexga::prelude::*;
     pub use super::traits::*;

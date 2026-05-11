@@ -38,6 +38,7 @@ where
 }
 */
 
+/*
 impl Gpu
 {
     pub async fn new(param: GpuParam, compatible_surface: Option<wgpu::SurfaceTarget<'static>>) -> GpuResult<GpuInitOutput>
@@ -50,19 +51,19 @@ impl Gpu
     }
     pub fn from_init(gpu: GpuInit) -> GpuResult<GpuInitOutput>
     {
-        let GpuInit { gpu, compatible_surface, output,  } = gpu;
+        let GpuInit { gpu, surface: compatible_surface, output,  } = gpu;
         match GPU.init_from_fn(|| gpu)
         {
             Ok(_) => Ok(output),
             Err(_) => Err(GpuError::CantInitGpu),
         }
     }
-}
+}*/
 
 #[derive(Default, Clone, PartialEq)]
 pub struct GpuParam
 {
-    pub instance: InstanceDescriptor,
+    pub instance: GpuInstanceDescriptor,
     pub wgpu_instance: WgpuInstanceDescriptor,
     pub power_preference: PowerPreference,
     //pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
@@ -103,10 +104,11 @@ impl Into<wgpu::PowerPreference> for PowerPreference
     }
 }
 
+/*
 pub struct GpuInit
 {
     gpu: GpuContext,
-    compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
+    surface: Option<wgpu::SurfaceTarget<'static>>,
     output: GpuInitOutput,
 }
 impl GpuInit
@@ -114,7 +116,6 @@ impl GpuInit
     pub async fn from_instance_and_compatible_surface(
         instance: GpuInstance,
         surface: Option<GpuSurface<'static>>,
-        compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
         param: GpuParam,
     ) -> GpuResult<Self>
     {
@@ -159,7 +160,7 @@ impl GpuInit
             output: GpuInitOutput {
                 surface: surface.map(|wgpu| wgpu.into()),
             },
-            compatible_surface,
+            surface,
         })
     }
     pub async fn from_instance(
@@ -186,6 +187,7 @@ pub struct GpuInitOutput
 {
     pub surface: Option<GpuSurface<'static>>,
 }
+*/
 
 #[bit_index]
 #[repr(u8)]

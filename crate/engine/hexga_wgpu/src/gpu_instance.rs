@@ -15,7 +15,7 @@ impl<'a> From<GpuInstance> for wgpu::Instance
 }
 impl GpuInstance
 {
-    pub fn new(desc: &InstanceDescriptor) -> Self
+    pub fn new(desc: &GpuInstanceDescriptor) -> Self
     {
         Self {
             wgpu: wgpu::Instance::new(&wgpu::InstanceDescriptor {
@@ -29,7 +29,7 @@ impl GpuInstance
 
 #[non_exhaustive]
 #[derive(Default, Debug, Clone, PartialEq)]
-pub struct InstanceDescriptor
+pub struct GpuInstanceDescriptor
 {
     pub backends: BackendFlags,
     pub wgpu: WgpuInstanceDescriptor,

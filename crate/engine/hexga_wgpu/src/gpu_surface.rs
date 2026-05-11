@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GpuSurface<'a>
 {
     pub wgpu: wgpu::Surface<'a>,

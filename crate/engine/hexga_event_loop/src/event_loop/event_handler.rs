@@ -10,10 +10,10 @@ pub struct EventLoop<'a, Ev=()>
     proxy: &'a EventLoopProxy<Ev>,
 }
 
-impl<'a, Ev> WindowManager for EventLoop<'a, Ev>
-    where Ev: PlatformCustomEvent
+impl<'a, Ev, Surface> WindowManager<Surface> for EventLoop<'a, Ev>
+    where Ev: PlatformCustomEvent, Surface: Clone
 {
-    fn create_window<GpuSurface>(&mut self, param: WindowParam) -> WindowResult<Window<GpuSurface>> {
+    fn create_window(&mut self, param: WindowParam) -> WindowResult<Window<Surface>> {
         match self.winit.create_window(param.clone().into())
         {
             Ok(window) => Ok(Window{ param: DirtyFlag::new_dirty(param), is_pos_dirty: true, is_size_dirty: true, is_content_protected_dirty: true, window: Arc::new(window), surface: None }),
@@ -116,23 +116,7 @@ pub trait PlatformEventHandler<CustomEvent=()> : Sized
     
 
     fn event(&mut self, ev: PlatformEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformEvent<CustomEvent>> { Some(ev) }
-
-    fn run_event_loop_with_param(self, param: EventLoopParam) -> EventLoopResult 
-    {
-        crate::event_loop::run(self, param)
-    }
 }
-
-pub trait PlatformEventHandlerExtension<CustomEvent> : PlatformEventHandler<CustomEvent>
-    where CustomEvent: PlatformCustomEvent
-{
-    fn run_event_loop(self) -> EventLoopResult { self.run_event_loop_with_param(___()) }
-}
-impl<CustomEvent,EventHandler> PlatformEventHandlerExtension<CustomEvent> for EventHandler
-    where 
-    CustomEvent: PlatformCustomEvent,
-    EventHandler: PlatformEventHandler<CustomEvent>
-{}
 
 /*
 pub struct AppCtx<'a,'b,User=AppDefaultUserEvent, Ctx=AppDefaultCtx>

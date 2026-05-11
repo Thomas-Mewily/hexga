@@ -41,6 +41,7 @@ hexga_bitflags.workspace = true
 hexga_math.workspace = true
 hexga_utils.workspace = true
 
+instability = "0.3.12"
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 winit = "0.30.11"
 smol = "2.0.2"

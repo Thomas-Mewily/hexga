@@ -1,12 +1,18 @@
 use super::*;
 
-pub(crate) type WinitWindow = winit::window::Window;
-pub(crate) type WinitWindowAttributes = winit::window::WindowAttributes;
-pub(crate) type WinitWindowID = winit::window::WindowId;
-pub(crate) type WinitWindowShared = Arc<WinitWindow>;
+use experimental::*;
+pub mod experimental
+{
+    use super::*;
+    pub type WinitWindow = winit::window::Window;
+    pub type WinitWindowAttributes = winit::window::WindowAttributes;
+    pub type WinitWindowID = winit::window::WindowId;
+    pub type WinitWindowShared = Arc<WinitWindow>;
+}
 
 #[derive(Debug)]
-pub struct Window<GpuSurface>
+pub struct Window<Surface>
+    where Surface: Clone
 {
     pub(crate) param : DirtyFlag<WindowParam>,
 
@@ -16,25 +22,33 @@ pub struct Window<GpuSurface>
     //pub(crate) winit_param: WinitWindowAttributes,
 
     pub(crate) window: WinitWindowShared,
-    pub(crate) surface: Option<GpuSurface>,
+    pub(crate) surface: Option<Surface>,
 }
 
 pub type WindowError = ();
 pub type WindowResult<T> = Result<T,WindowError>;
 
-pub trait WindowManager
+pub trait WindowManager<Surface>
+    where Surface: Clone
 {
-    fn create_window<GpuSurface>(&mut self, param: WindowParam) -> WindowResult<Window<GpuSurface>>;
+    fn create_window(&mut self, param: WindowParam) -> WindowResult<Window<Surface>>;
 }
 
-pub trait Windowable
+pub trait Windowable<Surface>
 {
     fn request_draw(&mut self);
     fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>);
+
+    fn surface(&self) -> Option<Surface>;
+    fn set_surface(&mut self, surface: Option<Surface>) -> &mut Self;
+
+    /// Lib specific method
+    fn winit_window(&self) -> WinitWindowShared;
 }
 
 
-impl<GpuSurface> Window<GpuSurface>
+impl<Surface> Window<Surface>
+    where Surface: Clone
 {
     pub(crate) fn set_dirty(&mut self, dirty: bool)
     {
@@ -171,7 +185,8 @@ impl<GpuSurface> Window<GpuSurface>
     */
 }
 
-impl<GpuSurface> Windowable for Window<GpuSurface>
+impl<Surface> Windowable<Surface> for Window<Surface>
+    where Surface: Clone
 {
     fn request_draw(&mut self)
     {
@@ -183,10 +198,25 @@ impl<GpuSurface> Windowable for Window<GpuSurface>
         let request_type = request_type.into();
         self.window.request_user_attention(request_type.map(|v| v.into()));
     }
+    
+    /// Lib specific method, expose impl details
+    #[self::unstable]
+    fn winit_window(&self) -> WinitWindowShared {
+        self.window.clone()
+    }
+    
+    fn surface(&self) -> Option<Surface> {
+        self.surface.clone()
+    }
+    
+    fn set_surface(&mut self, surface: Option<Surface>) -> &mut Self {
+        self.surface = surface; self
+    }
 }
 
 
-impl<GpuSurface> GetPosition<int,2> for Window<GpuSurface>
+impl<Surface> GetPosition<int,2> for Window<Surface>
+    where Surface: Clone
 {
     fn pos(&self) -> Vector<int, 2> 
     {
@@ -197,7 +227,8 @@ impl<GpuSurface> GetPosition<int,2> for Window<GpuSurface>
         }
     }
 }
-impl<GpuSurface> SetPosition<int,2> for Window<GpuSurface>
+impl<Surface> SetPosition<int,2> for Window<Surface>
+    where Surface: Clone
 {
     fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self {
         self.param.set_pos(pos); 
@@ -205,13 +236,15 @@ impl<GpuSurface> SetPosition<int,2> for Window<GpuSurface>
         self
     }
 }
-impl<GpuSurface> GetSize<int,2> for Window<GpuSurface>
+impl<Surface> GetSize<int,2> for Window<Surface>
+    where Surface: Clone
 {
     fn size(&self) -> Vector<int, 2> {
         self.window.inner_size().convert()
     }
 }
-impl<GpuSurface> SetSize<int,2> for Window<GpuSurface>
+impl<Surface> SetSize<int,2> for Window<Surface>
+    where Surface: Clone
 {
     fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self {
         self.param.set_size(size); 
@@ -220,7 +253,8 @@ impl<GpuSurface> SetSize<int,2> for Window<GpuSurface>
     }
 }
 
-impl<GpuSurface> WindowAttribute for Window<GpuSurface>
+impl<Surface> WindowAttribute for Window<Surface>
+    where Surface: Clone
 {
     fn title(&self) -> String {
         self.param.title()

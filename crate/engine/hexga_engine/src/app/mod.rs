@@ -9,13 +9,18 @@ pub use param::*;
 mod runner;
 pub use runner::*;
 
-mod window;
-pub use window::*;
+mod event;
+pub use event::*;
 
 pub mod prelude
 {
     pub use super::{AppParam,AppEvent,AppResult,AppError};
     pub use super::traits::*;
+
+    pub(crate) use super::{AppInternalEvent, AppCustomEvent,
+        AppInternalProxy,AppInternalEventLoop
+    };
+    
 }
 
 pub mod traits

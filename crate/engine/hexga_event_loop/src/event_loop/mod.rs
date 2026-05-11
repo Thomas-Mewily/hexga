@@ -41,7 +41,7 @@ pub mod prelude
 pub mod traits
 {
     pub use super::{
-        PlatformEventHandler,PlatformEventHandlerExtension,
+        PlatformEventHandler,
         PlatformCustomEvent,EventLoopSendEvent,
         AsyncSpawn,
         WithEventLoopShortcut,WithEventLoopParam,

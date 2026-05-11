@@ -210,9 +210,10 @@ impl<EventHandler, CustomEvent> EventLoopSendEvent<PlatformEvent<CustomEvent>> f
         self.proxy.send_event(ev)
     }
 }
-    
-pub fn run<EventHandler, CustomEvent>(event_handler: EventHandler, param: EventLoopParam) -> EventLoopResult
+
+pub fn run_with_param<F,EventHandler,CustomEvent>(init: F, param: EventLoopParam) -> EventLoopResult
     where 
+    F: FnOnce(EventLoopProxy<CustomEvent>) -> EventHandler,
     EventHandler : PlatformEventHandler<CustomEvent>,
     CustomEvent: PlatformCustomEvent
 {
@@ -224,7 +225,7 @@ pub fn run<EventHandler, CustomEvent>(event_handler: EventHandler, param: EventL
 
     let mut runner = EventLoopRunner
     {
-        event_handler,
+        event_handler : init(proxy.clone()),
         state: EventLoopState { dt: zero(), time: Time::since_launch(), clipboard: ___(), key_modifiers: ___() },
         proxy,
         param,

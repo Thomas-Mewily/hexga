@@ -1,9 +1,7 @@
 use super::*;
 
 
-pub type AppEvent = PlatformEvent<()>;
-
-pub(crate) type AppInternalEvent = ();
+//pub(crate) type AppInternalEvent = ();
 
 pub trait App<Event=AppEvent,Ctx=()>
 {
