@@ -254,13 +254,13 @@ pub enum KeyNamed
     /// Used in text to insert a space between words. Usually located below the character keys.
     Space,
     /// Navigate or traverse downward. (`KEYCODE_DPAD_DOWN`)
-    ArrowDown,
+    Down,
     /// Navigate or traverse leftward. (`KEYCODE_DPAD_LEFT`)
-    ArrowLeft,
+    Left,
     /// Navigate or traverse rightward. (`KEYCODE_DPAD_RIGHT`)
-    ArrowRight,
+    Right,
     /// Navigate or traverse upward. (`KEYCODE_DPAD_UP`)
-    ArrowUp,
+    Up,
     /// The End key, used with keyboard entry to go to the end of content (`KEYCODE_MOVE_END`).
     End,
     /// The Home key, used with keyboard entry, to go to start of content (`KEYCODE_MOVE_HOME`).
@@ -923,10 +923,10 @@ impl From<WinitKeyName> for KeyNamed
             winit::keyboard::NamedKey::Enter => KeyNamed::Enter,
             winit::keyboard::NamedKey::Tab => KeyNamed::Tab,
             winit::keyboard::NamedKey::Space => KeyNamed::Space,
-            winit::keyboard::NamedKey::ArrowDown => KeyNamed::ArrowDown,
-            winit::keyboard::NamedKey::ArrowLeft => KeyNamed::ArrowLeft,
-            winit::keyboard::NamedKey::ArrowRight => KeyNamed::ArrowRight,
-            winit::keyboard::NamedKey::ArrowUp => KeyNamed::ArrowUp,
+            winit::keyboard::NamedKey::ArrowDown => KeyNamed::Down,
+            winit::keyboard::NamedKey::ArrowLeft => KeyNamed::Left,
+            winit::keyboard::NamedKey::ArrowRight => KeyNamed::Right,
+            winit::keyboard::NamedKey::ArrowUp => KeyNamed::Up,
             winit::keyboard::NamedKey::End => KeyNamed::End,
             winit::keyboard::NamedKey::Home => KeyNamed::Home,
             winit::keyboard::NamedKey::PageDown => KeyNamed::PageDown,

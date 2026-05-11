@@ -13,10 +13,13 @@ pub struct EventLoop<'a, Ev=()>
 impl<'a, Ev, Surface> WindowManager<Surface> for EventLoop<'a, Ev>
     where Ev: PlatformCustomEvent
 {
-    fn create_window(&mut self, param: WindowParam) -> WindowResult<Window<Surface>> {
+    fn create_window(&mut self, mut param: WindowParam) -> WindowResult<Window<Surface>> {
         match self.winit.create_window(param.clone().into())
         {
-            Ok(window) => Ok(Window{ param, window: Arc::new(window), surface: None }),
+            Ok(window) => 
+            {
+                Ok(Window{ param, window: Arc::new(window), surface: None }) 
+            },
             Err(_) => Err(()),
         }
     }

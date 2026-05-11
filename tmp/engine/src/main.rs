@@ -8,7 +8,8 @@ impl App for MonJeu
 {
     fn event(&mut self, ev: AppEvent, ctx: &mut ()) -> Option<AppEvent> 
     {
-        None
+        println!("{ev:?}");
+        Some(ev)
     }
 
     fn update(&mut self, dt: Duration, ctx: &mut ()) {
@@ -25,6 +26,6 @@ fn main()
 {
     let mut param = AppParam::default()
         .with_icon(Image::load_from_bytes(include_bytes!("icon.png"), Some("png")).expect("no icon"))
-        .with_exit_shortcut(None);
+        ;
     (||MonJeu).run_with_param(param).expect("failed to run");
 }
