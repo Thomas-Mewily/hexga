@@ -4,7 +4,7 @@ pub(crate) use experimental::*;
 pub mod experimental
 {
     use super::*;
-    pub static GPU: OnceLock<GpuContext> = OnceLock::new();
+    pub static GPU: SingletonOnce<GpuContext> = SingletonOnce::new();
 }
 
 #[derive(Clone, Copy)]
@@ -13,14 +13,14 @@ pub struct Gpu;
 impl SingletonEmptyStruct for Gpu
 {
     fn is_init() -> bool {
-        GPU.get().is_some()
+        GPU.try_get().is_ok()
     }
 }
 
 impl Deref for Gpu
 {
     type Target = GpuContext;
-    fn deref(&self) -> &Self::Target { GPU.get().expect("gpu not init") }
+    fn deref(&self) -> &Self::Target { GPU.get() }
 }
 
 /*
@@ -44,17 +44,17 @@ impl Gpu
     {
         if Gpu::is_init()
         {
-            return Err(GpuError::GpuAlreadyInit);
+            return Err(GpuError::CantInitGpu);
         }
         Self::from_init(GpuInit::new(param, compatible_surface).await?)
     }
     pub fn from_init(gpu: GpuInit) -> GpuResult<GpuInitOutput>
     {
         let GpuInit { gpu, compatible_surface, output,  } = gpu;
-        match GPU.try_insert(gpu)
+        match GPU.init_from_fn(|| gpu)
         {
             Ok(_) => Ok(output),
-            Err(_) => Err(GpuError::GpuAlreadyInit),
+            Err(_) => Err(GpuError::CantInitGpu),
         }
     }
 }

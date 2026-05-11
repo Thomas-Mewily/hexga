@@ -4,7 +4,7 @@ pub type GpuResult<T = ()> = Result<T, GpuError>;
 #[derive(Debug, Clone)]
 pub enum GpuError
 {
-    GpuAlreadyInit,
+    CantInitGpu,
     Adapter(wgpu::RequestAdapterError),
     Device(wgpu::RequestDeviceError),
     BufferRead(wgpu::BufferAsyncError),

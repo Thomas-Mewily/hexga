@@ -42,12 +42,19 @@ pub mod prelude
 {
     pub(crate) use super::NotInitError;
     pub use super::traits::*;
-    //pub use super::{SingletonLazyMutex, SingletonLazyRw, SingletonLazyCell};
+    pub use super::{
+        SingletonMutex, SingletonLazyMutex, SingletonOptionMutex,
+        SingletonRw, SingletonLazyRw, SingletonOptionRw,
+        SingletonCell, SingletonLazyCell, SingletonOptionCell,
+        
+        SingletonOnceCell, SingletonOnceLazyCell,
+        SingletonOnce, SingletonOnceLazy,
+    };
 }
 
 pub mod traits
 {
-    pub use super::{SingletonOptionable, SingletonEmptyStruct};
+    pub use super::{SingletonOptionable, SingletonEmptyStruct, SingletonOnceable};
 }
 
 /// Single interface for every singleton type.
