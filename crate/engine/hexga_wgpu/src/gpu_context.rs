@@ -1,18 +1,26 @@
 use super::*;
 
-static GPU_CTX: OnceLock<GpuContext> = OnceLock::new();
+pub(crate) use experimental::*;
+pub mod experimental
+{
+    use super::*;
+    pub static GPU: OnceLock<GpuContext> = OnceLock::new();
+}
 
+#[derive(Clone, Copy)]
 pub struct Gpu;
+
+impl SingletonEmptyStruct for Gpu
+{
+    fn is_init() -> bool {
+        GPU.get().is_some()
+    }
+}
 
 impl Deref for Gpu
 {
     type Target = GpuContext;
-    fn deref(&self) -> &Self::Target { GPU_CTX.get().expect("gpu not init") }
-}
-impl Gpu
-{
-    pub fn is_init() -> bool { GPU_CTX.get().is_some() }
-    pub fn is_not_init() -> bool { !Self::is_init() }
+    fn deref(&self) -> &Self::Target { GPU.get().expect("gpu not init") }
 }
 
 /*
@@ -38,12 +46,12 @@ impl Gpu
         {
             return Err(GpuError::GpuAlreadyInit);
         }
-        Self::from_init(GpuInit::new(param, compatible_surface).await?).await
+        Self::from_init(GpuInit::new(param, compatible_surface).await?)
     }
-    pub async fn from_init(gpu: GpuInit) -> GpuResult<GpuInitOutput>
+    pub fn from_init(gpu: GpuInit) -> GpuResult<GpuInitOutput>
     {
         let GpuInit { gpu, compatible_surface, output,  } = gpu;
-        match GPU_CTX.try_insert(gpu)
+        match GPU.try_insert(gpu)
         {
             Ok(_) => Ok(output),
             Err(_) => Err(GpuError::GpuAlreadyInit),

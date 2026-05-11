@@ -1,6 +1,7 @@
 
 use super::*;
 use crate::{cell::{SingleThreadCell, SingleThreadError, SingleThreadMutError, Ref, RefMut}, identity::Identity};
+#[allow(unused)]
 use std::{
     cell::{LazyCell, OnceCell},
     sync::{
@@ -49,7 +50,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::SingletonOptionable;
+    pub use super::{SingletonOptionable, SingletonEmptyStruct};
 }
 
 /// Single interface for every singleton type.
@@ -227,4 +228,13 @@ pub trait SingletonOptionable<T>:
             panic!("SingletonOptionCell<{}> reset failed: {:?}", std::any::type_name::<T>(), e)
         })
     }
+}
+
+/// A trait for singletons that exist as a zero-sized type (ZST).
+///
+/// It is typically implemented for empty structs that delegate to a real static singleton instance.
+pub trait SingletonEmptyStruct : Copy
+{
+    fn is_init() -> bool;
+    fn is_not_init() -> bool { !Self::is_init() }
 }
