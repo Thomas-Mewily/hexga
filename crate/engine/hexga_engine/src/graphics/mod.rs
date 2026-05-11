@@ -6,16 +6,8 @@ pub mod prelude
 {
     //pub(crate) use super::{Graphics, GpuEvent, wgpu};
     pub use hexga_graphics::prelude::*;
-    pub(crate) use super::Graphics;
 }
 
 #[derive(Clone, Copy)]
 pub struct Pen;
 
-pub(crate) type GpuEvent = GpuResult<Graphics>;
-
-
-pub(crate) struct Graphics
-{
-
-}

@@ -11,5 +11,5 @@ impl PlatformEventHandler for MonJeu
 
 fn main()
 {
-    MonJeu.run_event_loop();
+    hexga_event_loop::event_loop::run_with_param(|proxy| MonJeu,  Default::default());
 }

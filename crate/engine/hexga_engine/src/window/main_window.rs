@@ -4,7 +4,7 @@ use super::*;
 pub struct MainWindow;
 
 
-impl Windowable<GpuSurface<'static>> for MainWindow
+impl Windowable for MainWindow
 {
     fn request_draw(&mut self)
     {
@@ -18,14 +18,6 @@ impl Windowable<GpuSurface<'static>> for MainWindow
     
     fn winit_window(&self) -> hexga_event_loop::window::experimental::WinitWindowShared {
         WINDOW.get_mut().winit_window()
-    }
-    
-    fn surface(&self) -> Option<GpuSurface<'static>> {
-        WINDOW.get_mut().surface()
-    }
-    
-    fn set_surface(&mut self, surface: Option<GpuSurface<'static>>) -> &mut Self {
-        WINDOW.get_mut().set_surface(surface); self
     }
 }
 

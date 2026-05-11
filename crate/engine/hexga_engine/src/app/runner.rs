@@ -1,4 +1,6 @@
 use hexga_event_loop::event_loop::EventLoopResult;
+use crate::window::WindowInitGpu;
+
 use super::*;
 
 pub type AppResult = EventLoopResult;
@@ -30,6 +32,25 @@ impl<F,A> AppRunner<F,A>
         WINDOW.reset();
         self.app = None;
     }
+
+    fn init_app_if_needed(&mut self, event_loop: &mut AppInternalEventLoop) 
+    {
+        if self.app.is_some() { return; }
+
+        match WINDOW.try_get_mut()
+        {
+            Ok(w) => 
+            { 
+                if w.surface().is_some()
+                {
+                    let mut app = (self.init)();
+                    //app.resume()
+                    self.app = Some(app);
+                }
+            }
+            Err(e) => {},
+        }
+    }
 }
 
 
@@ -55,7 +76,7 @@ impl<F,A> PlatformEventHandler<AppCustomEvent> for AppRunner<F,A>
         {
             Some(app) => app.update(dt, &mut ()),
             None => {},
-        } 
+        }
     }
 
     fn draw(&mut self, event_loop: &mut AppInternalEventLoop) 
@@ -71,10 +92,33 @@ impl<F,A> PlatformEventHandler<AppCustomEvent> for AppRunner<F,A>
     {
         let (ev, app_internal) = ev.replace_custom_event(||());
 
-        match &app_internal
+        match app_internal
         {
-            Some(_) => todo!(),
-            None => todo!(),
+            Some(e) => match e
+            {
+                AppCustomEvent::GpuReady(surface) => 
+                { 
+                    let mut window = match WINDOW.try_get_mut()
+                    {
+                        Ok(w) => w,
+                        Err(_) => { return None; },
+                    };
+                    let size = window.size();
+                    window.replace_surface(Some(GpuConfiguredSurface::from_surface(surface, size)));
+                    window.configure_surface();
+                    drop(window);
+                    self.init_app_if_needed(event_loop);
+                    return None; 
+                },
+                AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
+            },
+            None => {},
+        }
+
+        match &ev
+        {
+            PlatformEvent::Resize(size) => { WINDOW.try_get_mut().map(|mut w| w.configure_surface()); },
+            _ => {},
         }
 
         match &mut self.app
@@ -90,7 +134,7 @@ impl<F,A> PlatformEventHandler<AppCustomEvent> for AppRunner<F,A>
     fn resumed(&mut self, event_loop: &mut AppInternalEventLoop) 
     {
         let mut created = false;
-        let window = WINDOW.init_from_fn(||
+        let mut window = WINDOW.init_from_fn(||
             {
                 created = true;
                 event_loop.create_window(self.param.window.clone()).expect("failed to create main window")
@@ -99,7 +143,7 @@ impl<F,A> PlatformEventHandler<AppCustomEvent> for AppRunner<F,A>
 
         if created
         {
-            todo!()
+            window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface");
         }
     }
 

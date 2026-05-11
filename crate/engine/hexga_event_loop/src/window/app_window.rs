@@ -12,7 +12,6 @@ pub mod experimental
 
 #[derive(Debug)]
 pub struct Window<Surface>
-    where Surface: Clone
 {
     pub(crate) param : DirtyFlag<WindowParam>,
 
@@ -29,26 +28,28 @@ pub type WindowError = ();
 pub type WindowResult<T> = Result<T,WindowError>;
 
 pub trait WindowManager<Surface>
-    where Surface: Clone
 {
     fn create_window(&mut self, param: WindowParam) -> WindowResult<Window<Surface>>;
 }
 
-pub trait Windowable<Surface>
+pub trait Windowable
 {
     fn request_draw(&mut self);
     fn request_user_attention(&mut self, request_type : impl Into<Option<UserAttentionType>>);
-
-    fn surface(&self) -> Option<Surface>;
-    fn set_surface(&mut self, surface: Option<Surface>) -> &mut Self;
 
     /// Lib specific method
     fn winit_window(&self) -> WinitWindowShared;
 }
 
+pub trait WindowableSurface<Surface>
+{
+    fn surface(&self) -> Option<&Surface>;
+    /// Don't forget to request_draw if needed
+    fn replace_surface(&mut self, surface: Option<Surface>) -> Option<Surface>;
+}
+
 
 impl<Surface> Window<Surface>
-    where Surface: Clone
 {
     pub(crate) fn set_dirty(&mut self, dirty: bool)
     {
@@ -82,9 +83,10 @@ impl<Surface> Window<Surface>
         true
     }*/
 
-    pub(crate) fn undirty_if_needed(&mut self)
+    /// Lib specific method, expose impl details
+    #[doc(hidden)]
+    pub(crate) fn apply_change(&mut self)
     {
-        if !self.param.is_dirty() { return; }
         //let Some(window) = &self.window else { return; };
         let window = &self.window;
 
@@ -151,7 +153,14 @@ impl<Surface> Window<Surface>
         
         // window.set_cursor_grab(attr.cursor_grab).ok();
         // window.set_cursor_visible(cursor_visible);
+    }
 
+    /// Lib specific method, expose impl details
+    #[doc(hidden)]
+    pub(crate) fn apply_change_if_needed(&mut self)
+    {
+        if !self.param.is_dirty() { return; }
+        self.apply_change();
         self.set_dirty(false);
     }
 
@@ -185,8 +194,7 @@ impl<Surface> Window<Surface>
     */
 }
 
-impl<Surface> Windowable<Surface> for Window<Surface>
-    where Surface: Clone
+impl<Surface> Windowable for Window<Surface>
 {
     fn request_draw(&mut self)
     {
@@ -200,23 +208,23 @@ impl<Surface> Windowable<Surface> for Window<Surface>
     }
     
     /// Lib specific method, expose impl details
-    #[self::unstable]
+    #[doc(hidden)]
     fn winit_window(&self) -> WinitWindowShared {
         self.window.clone()
     }
-    
-    fn surface(&self) -> Option<Surface> {
-        self.surface.clone()
-    }
-    
-    fn set_surface(&mut self, surface: Option<Surface>) -> &mut Self {
-        self.surface = surface; self
+}
+impl<Surface> WindowableSurface<Surface> for Window<Surface>
+{
+    fn surface(&self) -> Option<&Surface> { self.surface.as_ref() }
+
+    fn replace_surface(&mut self, surface: Option<Surface>) -> Option<Surface> {
+        let s = std::mem::replace(&mut self.surface, surface);
+        s
     }
 }
 
 
 impl<Surface> GetPosition<int,2> for Window<Surface>
-    where Surface: Clone
 {
     fn pos(&self) -> Vector<int, 2> 
     {
@@ -228,33 +236,31 @@ impl<Surface> GetPosition<int,2> for Window<Surface>
     }
 }
 impl<Surface> SetPosition<int,2> for Window<Surface>
-    where Surface: Clone
 {
     fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self {
         self.param.set_pos(pos); 
         self.is_pos_dirty = true;
+        self.apply_change_if_needed();
         self
     }
 }
 impl<Surface> GetSize<int,2> for Window<Surface>
-    where Surface: Clone
 {
     fn size(&self) -> Vector<int, 2> {
         self.window.inner_size().convert()
     }
 }
 impl<Surface> SetSize<int,2> for Window<Surface>
-    where Surface: Clone
 {
     fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self {
         self.param.set_size(size); 
         self.is_size_dirty = true;
+        self.apply_change_if_needed();
         self
     }
 }
 
 impl<Surface> WindowAttribute for Window<Surface>
-    where Surface: Clone
 {
     fn title(&self) -> String {
         self.param.title()
@@ -262,6 +268,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_title(&mut self, title: impl Into<String>) -> &mut Self {
         self.param.set_title(title);
+        self.apply_change_if_needed();
         self
     }
 
@@ -271,6 +278,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_level(&mut self, level: WindowLevel) -> &mut Self {
         self.param.set_level(level);
+        self.apply_change_if_needed();
         self
     }
 
@@ -280,6 +288,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_resizable(&mut self, resizable: bool) -> &mut Self {
         self.param.set_resizable(resizable);
+        self.apply_change_if_needed();
         self
     }
 
@@ -289,6 +298,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_buttons(&mut self, buttons: WindowButtonFlags) -> &mut Self {
         self.param.set_buttons(buttons);
+        self.apply_change_if_needed();
         self
     }
 
@@ -298,6 +308,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_maximized(&mut self, maximized: bool) -> &mut Self {
         self.param.set_maximized(maximized);
+        self.apply_change_if_needed();
         self
     }
 
@@ -307,6 +318,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_visible(&mut self, visible: bool) -> &mut Self {
         self.param.set_visible(visible);
+        self.apply_change_if_needed();
         self
     }
 
@@ -316,6 +328,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_transparent(&mut self, transparent: bool) -> &mut Self {
         self.param.set_transparent(transparent);
+        self.apply_change_if_needed();
         self
     }
 
@@ -325,6 +338,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_blur(&mut self, blur: bool) -> &mut Self {
         self.param.set_blur(blur);
+        self.apply_change_if_needed();
         self
     }
 
@@ -334,6 +348,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_decoration(&mut self, decorations: bool) -> &mut Self {
         self.param.set_decoration(decorations);
+        self.apply_change_if_needed();
         self
     }
 
@@ -344,6 +359,7 @@ impl<Surface> WindowAttribute for Window<Surface>
     fn set_content_protected(&mut self, protected: bool) -> &mut Self {
         self.param.set_content_protected(protected);
         self.is_content_protected_dirty = true;
+        self.apply_change_if_needed();
         self
     }
 
@@ -353,6 +369,7 @@ impl<Surface> WindowAttribute for Window<Surface>
 
     fn set_active(&mut self, active: bool) -> &mut Self {
         self.param.set_active(active);
+        self.apply_change_if_needed();
         self
     }
 }

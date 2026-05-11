@@ -11,7 +11,7 @@ pub(crate) type AppInternalEventLoop<'a> = EventLoop<'a, AppCustomEvent>;
 
 pub(crate) enum AppCustomEvent
 {
-    GpuReady,
+    GpuReady(GpuSurface<'static>),
     GpuError(GpuError),
 }
 

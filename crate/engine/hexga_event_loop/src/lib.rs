@@ -14,7 +14,6 @@ use std::sync::{Arc, LazyLock};
 use std::collections::HashSet;
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer, Deserialize};
-use instability::unstable;
 
 pub mod event_loop;
 pub mod log;

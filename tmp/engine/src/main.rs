@@ -11,11 +11,17 @@ impl App for MonJeu
     }
 
     fn update(&mut self, dt: Duration, ctx: &mut ()) {
-        todo!()
+
+        println!("{}", Time::since_launch());
+        let pos = (MainWindow.pos());
+        dbg!(&pos);
+        dbg!(&pos.moved_x(1));
+        MainWindow.set_pos(pos.moved_x(1));
+        println!();
     }
 
     fn draw(&mut self, coef: coef, ctx: &mut ()) {
-        todo!()
+        
     }
 }
 
