@@ -46,7 +46,7 @@ impl LoadExtension for GpuTexture
 
     fn load_from_reader_with_custom_extension<R>(
         reader: R,
-        extension: &extension,
+        extension: Option<&extension>,
     ) -> EncodeResult<Self>
     where
         Self: Sized,

@@ -33,7 +33,7 @@ impl Io
         T: Load,
     {
         let path = path.as_ref();
-        let extension = path.extension_or_empty();
+        let extension = path.extension().map(|e| e.to_str()).flatten();
 
         let (bytes, extension) = match Io.load_bytes(path)
         {
@@ -44,14 +44,14 @@ impl Io
 
                 for ext in T::load_extensions()
                 {
-                    if ext == extension
+                    if Some(ext) == extension
                     {
                         continue;
                     }
 
                     if let Ok(bytes) = Io.load_bytes(&path.with_extension(ext))
                     {
-                        found = Some((bytes, ext));
+                        found = Some((bytes, Some(ext)));
                         break;
                     }
                 }
@@ -112,10 +112,16 @@ impl Io
     {
         let path = path.as_ref();
         let (bytes, extension) = value
-            .save_to_bytes(path.extension_or_empty())
+            .save_to_bytes(path.extension().map(|ex| ex.to_str()).flatten())
             .map_err(|e| IoError::new(path, e).when_writing())?;
 
-        Io.save_bytes(&path.with_extension(extension.as_ref()), &bytes)
+        let path = match extension
+        {
+            Some(ex) => path.with_extension(ex.as_ref()),
+            None => path.to_owned(),
+        };
+
+        Io.save_bytes(&path, &bytes)
     }
 
     /*

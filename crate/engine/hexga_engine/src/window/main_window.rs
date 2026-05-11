@@ -73,6 +73,11 @@ impl Windowable for CurrentWindow
     fn set_cursor_hittest(&mut self, hittest: bool) -> hexga_event_loop::window::CursorResult {
         WINDOW.get_mut().set_cursor_hittest(hittest)
     }
+    
+    fn destroy_surface(&mut self) -> &mut Self {
+        WINDOW.get_mut().destroy_surface();
+        self
+    }
 }
 
 

@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use super::*;
 
 pub type EncodeResult<T = ()> = Result<T, EncodeError>;
@@ -28,8 +30,8 @@ pub enum EncodeError
     },
     UnsupportedExtension
     {
-        got: CowExtensionStatic,
-        expected: Vec<CowExtensionStatic>,
+        got: Option<CowExtensionStatic>,
+        expected: HashSet<CowExtensionStatic>,
     },
     Custom(Reason),
     Base64(Base64Error),
@@ -110,7 +112,7 @@ impl Display for EncodeError
             }
             EncodeError::UnsupportedExtension { got, expected } => write!(
                 f,
-                "unsupported extension {got}, expected one of {expected:?}"
+                "unsupported extension {got:?}, expected one of {expected:?}"
             ),
             EncodeError::Custom(reason) => write!(f, "custom: {}", reason),
             EncodeError::Unknow => write!(f, "unknow"),
@@ -139,7 +141,7 @@ impl EncodeError
     }
 
     pub fn save_unsupported_extension_with_name<T: SaveExtension + ?Sized>(
-        got: impl Into<CowExtensionStatic>,
+        got: impl Into<Option<CowExtensionStatic>>,
         _name: impl Into<String>,
     ) -> Self
     {
@@ -150,14 +152,14 @@ impl EncodeError
         }
     }
     pub fn save_unsupported_extension<T: SaveExtension + ?Sized>(
-        got: impl Into<CowExtensionStatic>,
+        got: impl Into<Option<CowExtensionStatic>>,
     ) -> Self
     {
         Self::save_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>())
     }
 
     pub fn load_unsupported_extension_with_name<T: LoadExtension + ?Sized>(
-        got: impl Into<CowExtensionStatic>,
+        got: impl Into<Option<CowExtensionStatic>>,
         _name: impl Into<String>,
     ) -> Self
     {
@@ -168,7 +170,7 @@ impl EncodeError
         }
     }
     pub fn load_unsupported_extension<T: LoadExtension + ?Sized>(
-        got: impl Into<CowExtensionStatic>,
+        got: impl Into<Option<CowExtensionStatic>>,
     ) -> Self
     {
         Self::load_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>())

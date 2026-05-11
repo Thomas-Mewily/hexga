@@ -570,14 +570,14 @@ where
     fn save_to_writer_with_custom_extension<W>(
         &self,
         writer: W,
-        extension: &extension,
+        extension: Option<&extension>,
     ) -> EncodeResult
     where
         W: Write,
     {
         match extension
         {
-            "png" => match C::Component::PRIMITIVE_TYPE
+            Some("png") => match C::Component::PRIMITIVE_TYPE
             {
                 NumberType::IntegerSigned =>
                 {
@@ -641,7 +641,7 @@ where
                     .save_to_writer_with_custom_extension(writer, extension),
             },
             _ => Err(EncodeError::save_unsupported_extension_with_name::<Self>(
-                extension.to_owned(),
+                extension.map(|e| e.to_owned().into()),
                 "Image",
             )),
         }
@@ -672,7 +672,7 @@ where
 
     fn load_from_reader_with_custom_extension<R>(
         mut reader: R,
-        extension: &extension,
+        extension: Option<&extension>,
     ) -> EncodeResult<Self>
     where
         Self: Sized,
@@ -699,7 +699,7 @@ where
         {
             Ok(dyn_img) => dyn_img,
             Err(e) => Err(EncodeError::load_unsupported_extension_with_name::<Self>(
-                extension.to_owned(),
+                extension.map(|e| e.to_owned().into()),
                 "Image",
             ))?,
         };

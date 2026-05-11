@@ -221,7 +221,7 @@ pub trait ToUrl: MediaType + SaveExtension
     /// Returns an error if the image cannot be encoded for the given extension.
     fn to_url(&self, extension: &extension) -> EncodeResult<String>
     {
-        let (bytes, _deduced_extension) = self.save_to_bytes(extension)?;
+        let (bytes, _deduced_extension) = self.save_to_bytes(Some(extension))?;
         let media = Self::media_type();
         let url = bytes.to_base64_in(format!("data:{media}/{extension};base64,"));
         Ok(url)
@@ -236,7 +236,7 @@ pub trait ToUrl: MediaType + SaveExtension
         let mut data = Vec::with_capacity(1024);
         write!(&mut data, "bin_data:{media}/{extension};base64,")
             .map_err(|e| EncodeError::from(e))?;
-        let (data, _deduced_extension) = self.save_to_bytes_in(data, extension)?;
+        let (data, _deduced_extension) = self.save_to_bytes_in(data, Some(extension))?;
         Ok(data)
     }
 }
@@ -261,7 +261,7 @@ pub trait FromUrl: LoadExtension
     {
         let url = UrlData::try_from(url)?;
         let bytes = Vec::<u8>::from_base64(url.data)?;
-        Self::load_from_bytes_with_custom_extension(&bytes, url.extension)
+        Self::load_from_bytes_with_custom_extension(&bytes, Some(url.extension))
     }
 
     /// Loads an instance from a **binary URL** (custom `bin_data:` scheme).
@@ -276,7 +276,7 @@ pub trait FromUrl: LoadExtension
         Self: Sized,
     {
         let url = BinUrlData::try_from(url)?;
-        Self::load_from_bytes_with_custom_extension(&url.data, url.extension)
+        Self::load_from_bytes_with_custom_extension(&url.data, Some(url.extension))
     }
 
     /// Loads an instance from a **binary URL** (custom `bin_data:` scheme), falling back to raw bytes if parsing fails.
@@ -290,7 +290,7 @@ pub trait FromUrl: LoadExtension
         match Self::from_bin_url(bytes)
         {
             Ok(o) => Ok(o),
-            Err(_) => Self::load_from_bytes_with_custom_extension(bytes, extension),
+            Err(_) => Self::load_from_bytes_with_custom_extension(bytes, Some(extension)),
         }
     }
 }

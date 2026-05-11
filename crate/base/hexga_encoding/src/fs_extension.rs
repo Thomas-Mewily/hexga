@@ -1,11 +1,14 @@
+use std::collections::HashSet;
 use super::*;
 
 pub type Extension = String;
 #[allow(non_camel_case_types)]
 pub type extension = str;
 
+pub type Extensions<T=CowExtensionStatic> = HashSet<T>;
+
 pub type CowExtensionStatic = CowExtension<'static>;
-pub type CowExtension<'a> = Cow<'a, str>;
+pub type CowExtension<'a> = Cow<'a, extension>;
 pub type DeducedExtension<'a> = CowExtension<'a>;
 
 pub trait CommonExtensions

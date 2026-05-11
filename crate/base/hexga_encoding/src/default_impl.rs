@@ -108,7 +108,7 @@ impl SaveExtension for String
     fn save_to_writer_with_custom_extension<W>(
         &self,
         writer: W,
-        extension: &extension,
+        extension: Option<&extension>,
     ) -> EncodeResult
     where
         W: Write,
@@ -126,7 +126,7 @@ impl LoadExtension for String
 
     fn load_from_reader_with_custom_extension<R>(
         mut reader: R,
-        _extension: &extension,
+        _extension: Option<&extension>,
     ) -> EncodeResult<Self>
     where
         Self: Sized,
@@ -152,7 +152,7 @@ impl<'a> SaveExtension for &'a str
     fn save_to_writer_with_custom_extension<W>(
         &self,
         mut writer: W,
-        _extension: &extension,
+        _extension: Option<&extension>,
     ) -> EncodeResult
     where
         W: Write,

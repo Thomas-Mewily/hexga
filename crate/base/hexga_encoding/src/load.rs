@@ -10,7 +10,7 @@ pub trait LoadExtension
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn load_from_reader_with_custom_extension<R>(
         reader: R,
-        extension: &extension,
+        extension: Option<&extension>,
     ) -> EncodeResult<Self>
     where
         Self: Sized,
@@ -25,7 +25,7 @@ pub trait LoadExtensionBytes: LoadExtension
 {
     fn load_from_bytes_with_custom_extension(
         bytes: &[u8],
-        extension: &extension,
+        extension: Option<&extension>,
     ) -> EncodeResult<Self>
     where
         Self: Sized,
@@ -51,32 +51,36 @@ pub trait Load: LoadExtension + for<'de> CfgDeserialize<'de>
         Self::load_custom_extensions().next()
     }
 
-    fn load_from_bytes(bytes: &[u8], extension: &extension) -> EncodeResult<Self>
+    fn load_from_bytes(bytes: &[u8], extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
     {
         Self::load_from_reader(bytes, extension)
     }
 
-    fn load_from_reader<R>(reader: R, extension: &extension) -> EncodeResult<Self>
+    fn load_from_reader<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: Read,
     {
-        if Self::load_custom_extensions().any(|e| e == extension)
+        if Self::load_custom_extensions().any(|e| Some(e) == extension)
         {
             return Self::load_from_reader_with_custom_extension(reader, extension);
         }
 
         #[cfg(feature = "serde")]
         {
-            let format = AnyFormat::try_from(extension).unwrap_or_default();
+            let format = match extension 
+            {
+                Some(ex) => AnyFormat::try_from(ex).ok(),
+                None => None,
+            }.unwrap_or_default();
             return format.from_reader(reader);
         }
 
         #[allow(unreachable_code)]
         Err(EncodeError::load_unsupported_extension::<Self>(
-            extension.to_owned(),
+            extension.map(Into::into),
         ))
     }
 }
@@ -96,7 +100,7 @@ where
     }
     fn load_from_reader_with_custom_extension<R>(
         reader: R,
-        extension: &extension,
+        extension: Option<&extension>,
     ) -> EncodeResult<Self>
     where
         Self: Sized,

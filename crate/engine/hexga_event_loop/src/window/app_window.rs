@@ -106,6 +106,8 @@ pub trait Windowable
     /// Lib specific method
     #[doc(hidden)]
     fn winit_window(&self) -> WinitWindowShared;
+
+    fn destroy_surface(&mut self) -> &mut Self;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
@@ -350,6 +352,11 @@ impl<Surface> Windowable for Window<Surface>
     
     fn set_cursor_hittest(&mut self, hittest: bool) -> CursorResult {
         self.window.set_cursor_hittest(hittest).map_err(|_|CursorError)
+    }
+    
+    fn destroy_surface(&mut self) -> &mut Self {
+        self.surface = None;
+        self
     }
 }
 impl<Surface> WindowableSurface<Surface> for Window<Surface>
