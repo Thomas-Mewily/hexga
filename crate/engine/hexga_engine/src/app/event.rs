@@ -1,4 +1,5 @@
 use hexga_event_loop::event_loop::EventLoopProxy;
+use hexga_graphics::gpu::GpuContext;
 
 use super::*;
 
@@ -11,7 +12,7 @@ pub(crate) type AppInternalEventLoop<'a> = EventLoop<'a, AppCustomEvent>;
 
 pub(crate) enum AppCustomEvent
 {
-    GpuReady(GpuSurface<'static>),
+    GpuReady { surface : GpuSurface<'static>, gpu: GpuContext },
     GpuError(GpuError),
 }
 

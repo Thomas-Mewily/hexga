@@ -33,6 +33,7 @@ where
 impl<T> Guarded<T> for SingletonOnce<T> {
     type Guard<'a> = &'a T where Self: 'a;
 
+    #[inline]
     #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a> {
         self.guarded.get().unwrap_or_else(|| {
@@ -41,6 +42,7 @@ impl<T> Guarded<T> for SingletonOnce<T> {
     }
     type Error<'a> = () where Self: 'a;
 
+    
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
         self.guarded.get().ok_or(())
     }

@@ -20,6 +20,8 @@ impl SingletonEmptyStruct for Gpu
 impl Deref for Gpu
 {
     type Target = GpuContext;
+    #[track_caller]
+    #[inline]
     fn deref(&self) -> &Self::Target { GPU.get() }
 }
 

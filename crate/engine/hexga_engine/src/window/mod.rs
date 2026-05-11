@@ -4,20 +4,20 @@ use super::*;
 
 mod main_window;
 use hexga_event_loop::event_loop::EventLoopProxy;
-use hexga_graphics::gpu::{GpuInstance, GpuInstanceDescriptor};
+use hexga_graphics::gpu::{GpuContext, GpuInstance, GpuInstanceDescriptor, WgpuContext};
 pub use main_window::*;
 
 pub(crate) type WindowType = hexga_event_loop::window::Window<GpuConfiguredSurface<'static>>;
 
 pub(crate) trait WindowInitGpu
 {
-    fn initialize_surface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult;
+    fn initialize_gpu_andsurface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult;
     fn configure_surface(&mut self);
 }
 
 impl WindowInitGpu for WindowType
 {
-    fn initialize_surface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult
+    fn initialize_gpu_andsurface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult
     {
         if Gpu::is_init() { return Ok(()); }
 
@@ -51,12 +51,12 @@ pub(crate) async fn async_init_gpu_in_proxy(instance: GpuInstance, param: GpuPar
 {
     let _ = match async_init_gpu(instance, param, surface).await
     {
-        Ok(surface) => proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuReady(surface))),
+        Ok((surface, gpu)) => proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuReady{ surface, gpu })),
         Err(e) => proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuError(e))),
     };
 }
 
-pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>) -> GpuResult<GpuSurface<'static>>
+pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>) -> GpuResult<(GpuSurface<'static>, GpuContext)>
 {
     let compatible_surface = Some(&surface.wgpu);
 
@@ -89,7 +89,18 @@ pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surfa
         })
         .await?;
 
-    Ok(surface)
+    let gpu = GpuContext
+    {
+        wgpu: WgpuContext
+        {
+            instance,
+            adapter,
+            device,
+            queue,
+        },
+    };
+
+    Ok((surface, gpu))
 }
 
 pub mod prelude

@@ -96,8 +96,11 @@ impl<F,A> PlatformEventHandler<AppCustomEvent> for AppRunner<F,A>
         {
             Some(e) => match e
             {
-                AppCustomEvent::GpuReady(surface) => 
-                { 
+
+                AppCustomEvent::GpuReady { surface, gpu } => 
+                {
+                    hexga_graphics::gpu::experimental::GPU.init(gpu).expect("can't init the gpu");
+                    assert!(Gpu::is_init());
                     let mut window = match WINDOW.try_get_mut()
                     {
                         Ok(w) => w,
@@ -108,7 +111,7 @@ impl<F,A> PlatformEventHandler<AppCustomEvent> for AppRunner<F,A>
                     window.configure_surface();
                     drop(window);
                     self.init_app_if_needed(event_loop);
-                    return None; 
+                    return None;
                 },
                 AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
             },
@@ -143,7 +146,7 @@ impl<F,A> PlatformEventHandler<AppCustomEvent> for AppRunner<F,A>
 
         if created
         {
-            window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface");
+            window.initialize_gpu_andsurface(&self.param.gpu, event_loop).expect("failed to init the surface");
         }
     }
 
