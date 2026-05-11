@@ -1,5 +1,5 @@
 #![allow(unused)]
-use hexga_engine::event_loop::window::WindowAttribute;
+use hexga_engine::event_loop::{traits::WithEventLoopShortcut, window::WindowAttribute};
 pub use hexga_engine::prelude::*;
 
 struct MonJeu;
@@ -24,8 +24,7 @@ impl App for MonJeu
 fn main()
 {
     let mut param = AppParam::default()
-        .with_icon(
-            Image::load_from_bytes(include_bytes!("icon.png"), Some("png")).expect("no icon")
-        );
+        .with_icon(Image::load_from_bytes(include_bytes!("icon.png"), Some("png")).expect("no icon"))
+        .with_exit_shortcut(None);
     (||MonJeu).run_with_param(param).expect("failed to run");
 }

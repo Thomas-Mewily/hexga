@@ -410,17 +410,17 @@ pub trait KeyConstants
 }
 impl KeyConstants for KeyShortcut
 {
-    const EXIT: Self = KeyCode::F4.shortcut().with_modifier(KeyModifiersFlags::Alt);
+    const EXIT: Self = KeyModifiersFlags::Alt.shortcut(KeyCode::F4);
     const RELOAD: Self = KeyCode::F5.shortcut();
     const FULLSCREEN: Self = KeyCode::F11.shortcut();
-    const COPY: Self = KeyCode::C.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const PASTE: Self = KeyCode::V.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const CUT: Self = KeyCode::X.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const OPEN: Self = KeyCode::O.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const SAVE: Self = KeyCode::S.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const NEW: Self = KeyCode::N.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const PRINT: Self = KeyCode::P.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const SEARCH: Self = KeyCode::F.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const UNDO: Self = KeyCode::Z.shortcut().with_modifier(KeyModifiersFlags::Control);
-    const REDO: Self = KeyCode::Y.shortcut().with_modifier(KeyModifiersFlags::Control);
+    const COPY: Self = KeyModifiersFlags::Control.shortcut(KeyCode::C);
+    const PASTE: Self = KeyModifiersFlags::Control.shortcut(KeyCode::V);
+    const CUT: Self = KeyModifiersFlags::Control.shortcut(KeyCode::X);
+    const OPEN: Self = KeyModifiersFlags::Control.shortcut(KeyCode::O);
+    const SAVE: Self = KeyModifiersFlags::Control.shortcut(KeyCode::S);
+    const NEW: Self = KeyModifiersFlags::Control.shortcut(KeyCode::N);
+    const PRINT: Self = KeyModifiersFlags::Control.shortcut(KeyCode::P);
+    const SEARCH: Self = KeyModifiersFlags::Control.shortcut(KeyCode::F);
+    const UNDO: Self = KeyModifiersFlags::Control.shortcut(KeyCode::Z);
+    const REDO: Self = KeyModifiersFlags::Control.shortcut(KeyCode::Y);
 }

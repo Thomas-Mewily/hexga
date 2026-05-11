@@ -1395,6 +1395,11 @@ pub enum KeyModifiers
     // Fn, AltGr...
 }
 
+impl KeyModifiersFlags
+{
+    pub const fn shortcut(self, code: KeyCode) -> KeyShortcut { KeyShortcut::from_code(code).with_modifier(self) }
+}
+
 pub trait KeyModifiersExtension
 {
     fn is_shift(&self) -> bool;
@@ -1427,6 +1432,8 @@ impl Matches for KeyModifiersFlags
     /// Also handles both composite modifiers (e.g., `Shift`) and side-specific modifiers (e.g., `ShiftLeft`).
     fn matches(&self, lexem: &Self) -> bool 
     {
+        // Some one will probbaly find a clever bit flags way to do it.
+        // Anyways, it's not a performance bottle neck
         fn check_mods(self_bits: KeyModifiersFlags, lexem_bits: KeyModifiersFlags, left: KeyModifiersFlags, right: KeyModifiersFlags, left_or_right: KeyModifiersFlags) -> bool {
             if self_bits.contains(left_or_right) {
                 return lexem_bits.contains(left) || lexem_bits.contains(right);
@@ -1455,6 +1462,42 @@ impl KeyModifiersExtension for KeyModifiersFlags
     fn is_control(&self) -> bool { self.contains_any(Self::Control) }
     fn is_super(&self) -> bool { self.contains_any(Self::Super) }
     fn is_alt(&self) -> bool { self.contains_any(Self::Alt) }
+}
+
+impl KeyModifiersFlags
+{
+    /// Converts side-specific modifiers to their composite form.
+    /// 
+    /// If any left or right modifier (e.g., `ShiftLeft` or `ShiftRight`) is present,
+    /// the corresponding composite flag (`Shift`) is also set. Side-specific flags
+    /// are preserved for detailed checking if needed.
+    /// 
+    /// # Example
+    /// ```
+    /// use hexga_event_loop::input::prelude::*;
+    /// 
+    /// let modifiers = KeyModifiersFlags::ShiftLeft | KeyModifiersFlags::ControlRight;
+    /// assert_eq!(modifiers.generalize(), KeyModifiersFlags::Shift | KeyModifiersFlags::Control);
+    /// ```
+    pub fn generalize(self) -> Self 
+    {
+        let mut result = Self::ZERO;
+        
+        if self.contains_any(Self::Shift) {
+            result |= Self::Shift;
+        }
+        if self.contains_any(Self::Control) {
+            result |= Self::Control;
+        }
+        if self.contains_any(Self::Alt) {
+            result |= Self::Alt;
+        }
+        if self.contains_any(Self::Super) {
+            result |= Self::Super;
+        }
+        
+        result
+    }
 }
 
 impl KeyModifiers
