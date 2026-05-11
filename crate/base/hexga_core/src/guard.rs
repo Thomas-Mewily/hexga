@@ -47,7 +47,7 @@ pub trait GuardedMut<T: ?Sized>
     ///
     /// May panic on exceptional behavior (ex poisoned mutex, wrong thread for SingleThreadCell)
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.write().expect("poisoned") }
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.try_get_mut().expect("poisoned") }
 }
 pub trait Guard<'a, T>: Deref<Target = T>
 where
