@@ -278,25 +278,28 @@ impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler,CustomEvent>
         {
             PlatformEvent::Key(k) => 
             {
-                if self.param.shortcut.exit.matches(&k)
+                if k.is_down() && k.is_not_repeated()
                 {
-                    let _ = self.send_event(PlatformEvent::Close);
-                }
-                if self.param.shortcut.copy.matches(&k)
-                {
-                    let _ = self.send_event(PlatformEvent::Copy);
-                }
-                if self.param.shortcut.paste.matches(&k)
-                {
-                    match self.state.get_clipboard()
+                    if self.param.shortcut.exit.matches(&k)
                     {
-                        Some(txt) =>  { let _ = self.send_event(PlatformEvent::Paste(txt)); },
-                        None => {},
+                        let _ = self.send_event(PlatformEvent::Close);
                     }
-                }
-                if self.param.shortcut.cut.matches(&k)
-                {
-                    let _ = self.send_event(PlatformEvent::Cut);
+                    if self.param.shortcut.copy.matches(&k)
+                    {
+                        let _ = self.send_event(PlatformEvent::Copy);
+                    }
+                    if self.param.shortcut.paste.matches(&k)
+                    {
+                        match self.state.get_clipboard()
+                        {
+                            Some(txt) =>  { let _ = self.send_event(PlatformEvent::Paste(txt)); },
+                            None => {},
+                        }
+                    }
+                    if self.param.shortcut.cut.matches(&k)
+                    {
+                        let _ = self.send_event(PlatformEvent::Cut);
+                    }
                 }
             }
             PlatformEvent::Paste(txt) => 
