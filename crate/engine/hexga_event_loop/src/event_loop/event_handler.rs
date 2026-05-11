@@ -16,7 +16,7 @@ impl<'a, Ev, Surface> WindowManager<Surface> for EventLoop<'a, Ev>
     fn create_window(&mut self, param: WindowParam) -> WindowResult<Window<Surface>> {
         match self.winit.create_window(param.clone().into())
         {
-            Ok(window) => Ok(Window{ param: DirtyFlag::new_dirty(param), is_pos_dirty: true, is_size_dirty: true, is_content_protected_dirty: true, window: Arc::new(window), surface: None }),
+            Ok(window) => Ok(Window{ param, window: Arc::new(window), surface: None }),
             Err(_) => Err(()),
         }
     }

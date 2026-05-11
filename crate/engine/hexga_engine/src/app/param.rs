@@ -96,7 +96,7 @@ impl WindowAttribute for AppParam
         self.window.title()
     }
 
-    fn set_title(&mut self, title: impl Into<String>) -> &mut Self {
+    fn set_title(&mut self, title: String) -> &mut Self {
         self.window.set_title(title);
         self
     }

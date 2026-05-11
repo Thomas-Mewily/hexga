@@ -19,6 +19,7 @@ pub mod event_loop;
 pub mod log;
 pub mod window;
 pub mod input;
+pub mod monitor;
 mod free_fn;
 
 use prelude::*;
@@ -31,6 +32,7 @@ pub mod prelude
         log::prelude::*,
         window::prelude::*,
         input::prelude::*,
+        monitor::prelude::*,
     };
     pub use super::traits::*;
 }

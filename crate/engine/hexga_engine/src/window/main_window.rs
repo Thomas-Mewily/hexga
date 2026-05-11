@@ -19,6 +19,19 @@ impl Windowable for CurrentWindow
     fn winit_window(&self) -> hexga_event_loop::window::experimental::WinitWindowShared {
         WINDOW.get_mut().winit_window()
     }
+    
+    fn current_monitor(&self) -> Option<hexga_event_loop::monitor::Monitor> {
+        WINDOW.get_mut().current_monitor()
+    }
+    
+    fn primary_monitor(&self) -> Option<hexga_event_loop::monitor::Monitor> {
+        WINDOW.get_mut().primary_monitor()
+    }
+    
+    fn available_monitors(&self) -> impl Iterator<Item=hexga_event_loop::monitor::Monitor> {
+        let v = WINDOW.get_mut().available_monitors().to_vec();
+        v.into_iter()
+    }
 }
 
 
@@ -57,7 +70,7 @@ impl WindowAttribute for CurrentWindow
         WINDOW.get_mut().title()
     }
 
-    fn set_title(&mut self, title: impl Into<String>) -> &mut Self {
+    fn set_title(&mut self, title: String) -> &mut Self {
         WINDOW.get_mut().set_title(title);
         self
     }
