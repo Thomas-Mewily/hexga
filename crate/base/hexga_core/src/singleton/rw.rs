@@ -151,7 +151,7 @@ impl<T> SingletonOptionRw<T> {
 
 impl<T> SingletonOptionable<T> for SingletonOptionRw<T> 
 {
-    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<MappedRwLockWriteGuard<'a, T>, (TryLockError<RwLockWriteGuard<'a, Option<T>>>, F)> 
+    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<MappedRwLockWriteGuard<'a, T>, F> 
     where 
         F: FnOnce() -> T
     {
@@ -162,11 +162,11 @@ impl<T> SingletonOptionable<T> for SingletonOptionRw<T>
                 }
                 Ok(RwLockWriteGuard::map(guard, |opt| opt.as_mut().unwrap()))
             }
-            Err(e) => Err((e, init)),
+            Err(_) => Err(init),
         }
     }
 
-    fn swap<'a>(&'a self, other: &mut Option<T>) -> Result<(), TryLockError<RwLockWriteGuard<'a, Option<T>>>> {
+    fn swap<'a>(&'a self, other: &mut Option<T>) -> Result<(), Self::Error<'a>> {
         match self.guarded.try_write() {
             Ok(mut guard) => {
                 std::mem::swap(&mut *guard, other);

@@ -137,31 +137,20 @@ impl<T> SingletonOptionCell<T>
 
 impl<T> SingletonOptionable<T> for SingletonOptionCell<T> 
 {
-    fn init_from_fn<F>(&self, init: F) -> Result<RefMut<'_,T>, (SingleThreadMutError, F)> 
+    fn init_from_fn<F>(&self, init: F) -> Result<RefMut<'_,T>, F> 
         where F: FnOnce() -> T
     {
-        match self.guarded.try_get_mut() {
-            Ok(mut guard) => {
-                if guard.is_none() 
-                {
-                    *guard = Some(init());
-                }
-                Ok(guard.guard_map_mut(|v| v.as_mut().unwrap()))
-            }
-            Err(e) => {
-                Err((e, init))
-            }
-        }
+        let mut guard = self.guarded.get_mut();
+        match guard.deref_mut() {
+            Some(_) => {},
+            None => { *guard = Some(init()); }
+        };
+        Ok(guard.guard_map_mut(|v| v.as_mut().unwrap()))
     }
 
-    fn swap(&self, other: &mut Option<T>) -> Result<(), SingleThreadMutError> {
-        match self.guarded.try_get_mut() {
-            Ok(mut guard) => {
-                std::mem::swap(&mut *guard, other);
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
+    fn swap<'a>(&'a self, other: &mut Option<T>) -> Result<(), Self::Error<'a>> {
+        std::mem::swap(self.guarded.get_mut().deref_mut(), other);
+        Ok(())
     }
 }
 

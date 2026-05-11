@@ -1,7 +1,6 @@
 
 use super::*;
 use crate::{cell::{SingleThreadCell, SingleThreadError, SingleThreadMutError, Ref, RefMut}, identity::Identity};
-#[allow(unused)]
 use std::{
     cell::{LazyCell, OnceCell},
     sync::{
@@ -23,13 +22,11 @@ pub use mutex::*;
 mod cell;
 pub use cell::*;
 
-/*
 mod once_cell;
 pub use once_cell::*;
 
 mod once_lock;
 pub use once_lock::*;
-*/
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NotInitError;
@@ -54,6 +51,9 @@ pub mod traits
 }
 
 /// Single interface for every singleton type.
+/// The generally wrap std type, but it make sure that it expose only the same set of methods for reading/writting the value,
+/// regardless of how the singleton should be initiliazed,
+/// and how it should be guarded.
 pub struct SingletonOf<T>
 {
     pub(crate) guarded: T,
@@ -152,81 +152,77 @@ macro_rules! impl_singleton_methods_get {
 pub trait SingletonOptionable<T>: 
     TryGuardedMut<T>
 {
-    /// Tries to initialize the singleton using a factory function.
-    /// If already initialized, returns the existing guard without calling the function.
-    /// Always returns a guard on success, regardless of whether initialization occurred.
+    /// Tries to initialize the singleton from a fn, 
+    /// while blocking the current thread until it is able to do so.
     /// 
-    /// # Returns
-    /// - `Ok(guard)` - The singleton is now initialized (either just now or already)
-    /// - `Err((error, init))` - Failed to acquire mutable access
-    fn init_from_fn<'a,F>(&'a self, init: F) -> Result<Self::GuardMut<'a>, (Self::Error<'a>, F)> 
+    /// If already initialized, returns the existing guard without calling the function.
+    fn init_from_fn<'a,F>(&'a self, init: F) -> Result<Self::GuardMut<'a>, F> 
         where F: FnOnce() -> T;
 
-    /// Swaps the value with an external Option.
-    /// The singleton's value is exchanged with the provided Option.
-    ///
-    /// # Returns
-    /// - `Ok(())` - Swap successful
-    /// - `Err(error)` - Failed to acquire mutable access
+    /// Swaps the value with an external value, 
+    /// while blocking the current thread until it is able to do so.
     fn swap<'a>(&'a self, other: &mut Option<T>) -> Result<(), Self::Error<'a>>;
 
-    /// Ensures the singleton is initialized with the given value.
-    /// If already initialized, the existing value is kept and the provided value is discarded.
-    /// Always returns a guard on success.
-    ///
-    /// # Returns
-    /// - `Ok(guard)` - The singleton is initialized (kept existing or set new)
-    /// - `Err((error, value))` - Failed to acquire mutable access
-    fn init<'a>(&'a self, value: T) -> Result<Self::GuardMut<'a>, (Self::Error<'a>, T)> 
+    /// Ensures the singleton is initialized with the given value, 
+    /// while blocking the current thread until it is able to do so.
+    /// 
+    /// If already initialized, returns the existing guard without replacing the value.
+    fn init<'a>(&'a self, value: T) -> Result<Self::GuardMut<'a>, T> 
     {
         match self.init_from_fn(|| value)
         {
             Ok(v) => Ok(v),
-            Err((e, init)) => Err((e, init())),
+            Err(init) => Err(init()),
         }
     }
 
 
-    /// Replaces the current value with the given option, returning the previous value.
+    /// Replaces the current value with the given option, returning the previous value, 
+    /// while blocking the current thread until it is able to do so.
+    /// 
     /// If `None` is provided, the singleton becomes uninitialized.
-    ///
-    /// # Returns
-    /// - `Ok(Some(old))` - Previous value was replaced with `Some(new)`
-    /// - `Ok(None)` - Was uninitialized (or became uninitialized if `None` provided)
-    /// - `Err(error)` - Failed to acquire mutable access
     fn replace<'a>(&'a self, mut value: Option<T>) -> Result<Option<T>, Self::Error<'a>> {
-        match self.swap(&mut value)
-        {
-            Ok(_) => Ok(value),
-            Err(e) => Err(e),
-        }
+        self.swap(&mut value)?;
+        Ok(value)
     }
 
-    /// Takes the value out of the singleton, leaving it uninitialized.
+    /// Takes the value out of the singleton, leaving it uninitialized,
+    /// while blocking the current thread until it is able to do so.
+    /// 
     /// Equivalent to `replace(None)`.
-    ///
-    /// # Returns
-    /// - `Ok(Some(value))` - The value that was taken
-    /// - `Ok(None)` - Was already uninitialized
-    /// - `Err(error)` - Failed to acquire mutable access
     fn take<'a>(&'a self) -> Result<Option<T>, Self::Error<'a>> {
         self.replace(None)
     }
 
-    /// Resets the singleton to uninitialized state.
+    /// Resets the singleton to uninitialized state,
+    /// while blocking the current thread until it is able to do so.
+    /// 
     /// Alias for `take()`.
     fn reset<'a>(&'a self) -> Result<Option<T>, Self::Error<'a>> {
         self.take()
     }
+}
 
-    /// Resets the singleton to uninitialized state.
+// Similar to SingletonOptionable, except initialization return a Guard and not a GuardMut
+pub trait SingletonOnceable<T>: TryGuarded<T> 
+{
+    /// Tries to initialize the singleton from a fn, 
+    /// while blocking the current thread until it is able to do so.
     /// 
-    /// # Panics
-    /// Panics if the singleton cannot acquire mutable access.
-    fn reset_or_panic(&self) -> Option<T> {
-        self.reset().unwrap_or_else(|e| {
-            panic!("SingletonOptionCell<{}> reset failed: {:?}", std::any::type_name::<T>(), e)
-        })
+    /// If already initialized, returns the existing guard without calling the function.
+    fn init_from_fn<'a,F>(&'a self, init: F) -> Result<Self::Guard<'a>, F> 
+        where F: FnOnce() -> T;
+    /// Ensures the singleton is initialized with the given value, 
+    /// while blocking the current thread until it is able to do so.
+    /// 
+    /// If already initialized, returns the existing guard without replacing the value.
+    fn init<'a>(&'a self, value: T) -> Result<Self::Guard<'a>, T> 
+    {
+        match self.init_from_fn(|| value)
+        {
+            Ok(v) => Ok(v),
+            Err(init) => Err(init()),
+        }
     }
 }
 

@@ -114,28 +114,39 @@ impl<T> SingletonOptionMutex<T> {
 
 impl<T> SingletonOptionable<T> for SingletonOptionMutex<T> 
 {
-    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<MappedMutexGuard<'a, T>, (TryLockError<MutexGuard<'a, Option<T>>>, F)> 
+    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<MappedMutexGuard<'a, T>, F> 
     where 
         F: FnOnce() -> T
     {
-        match self.guarded.try_lock() {
+        match self.guarded.lock() {
             Ok(mut guard) => {
                 if guard.is_none() {
                     *guard = Some(init());
                 }
                 Ok(MutexGuard::map(guard, |opt| opt.as_mut().unwrap()))
             }
-            Err(e) => Err((e, init)),
+            Err(_) => Err(init),
         }
     }
 
-    fn swap<'a>(&'a self, other: &mut Option<T>) -> Result<(), TryLockError<MutexGuard<'a, Option<T>>>> {
-        match self.guarded.try_lock() {
+    fn swap<'a>(&'a self, other: &mut Option<T>) -> Result<(), Self::Error<'a>> {
+        match self.guarded.lock() {
             Ok(mut guard) => {
                 std::mem::swap(&mut *guard, other);
                 Ok(())
             }
-            Err(e) => Err(e),
+            Err(_) => // Since this error type on this line don't match
+            {
+                match self.guarded.try_lock()
+                {
+                    Ok(mut guard) => 
+                    {
+                        std::mem::swap(&mut *guard, other);
+                        Ok(())
+                    },
+                    Err(e) => Err(e),
+                }
+            },
         }
     }
 }

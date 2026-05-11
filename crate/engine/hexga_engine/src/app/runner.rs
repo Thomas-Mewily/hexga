@@ -26,7 +26,7 @@ impl<F,A> AppRunner<F,A>
 {
     fn exit(&mut self)
     {
-        WINDOW.reset_or_panic();
+        WINDOW.reset();
         self.app = None;
     }
 }
