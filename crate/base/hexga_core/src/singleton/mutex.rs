@@ -22,7 +22,7 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self.guarded.try_lock() {
+        match self.guarded.lock() {
             Ok(guard) => write!(f, "{:?}", guard.as_ref()),
             Err(e) => write!(f, "SingletonMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
@@ -39,13 +39,13 @@ impl<T> GuardedMut<T> for SingletonMutex<T> {
             .unwrap_or_else(|e| panic!("SingletonMutex<{}> poisoned: {:?}", std::any::type_name::<T>(), e))
             .guard_map_mut(|v| v.as_mut())
     }
-}
-
-impl<T> TryGuardedMut<T> for SingletonMutex<T> {
-    type Error<'a> = TryLockError<MutexGuard<'a, Identity<T>>> where Self: 'a;
+    type Error<'a> = PoisonError<MutexGuard<'a, Identity<T>>> where Self: 'a;
 
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
-        Ok(self.guarded.try_lock()?.guard_map_mut(|v| v.as_mut()))
+        
+        Ok(self.guarded
+            .lock()?
+            .guard_map_mut(|v| v.as_mut()))
     }
 }
 impl_singleton_methods_get_mut!(SingletonMutex);
@@ -64,7 +64,7 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self.guarded.try_lock() {
+        match self.guarded.lock() {
             Ok(guard) => write!(f, "{:?}", guard.deref()),
             Err(e) => write!(f, "SingletonLazyMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
@@ -81,13 +81,15 @@ impl<T> GuardedMut<T> for SingletonLazyMutex<T> {
             .unwrap_or_else(|e| panic!("SingletonLazyMutex<{}> poisoned: {:?}", std::any::type_name::<T>(), e))
             .guard_map_mut(|v| v.deref_mut())
     }
-}
 
-impl<T> TryGuardedMut<T> for SingletonLazyMutex<T> {
     type Error<'a> = TryLockError<MutexGuard<'a, LazyLock<T>>> where Self: 'a;
     
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
-        Ok(self.guarded.try_lock()?.guard_map_mut(|v| v.deref_mut()))
+        Ok(
+            self.guarded
+                .lock()?
+                .guard_map_mut(|v| v.deref_mut())
+        )
     }
 }
 impl_singleton_methods_get_mut!(SingletonLazyMutex);
@@ -135,18 +137,7 @@ impl<T> SingletonOptionable<T> for SingletonOptionMutex<T>
                 std::mem::swap(&mut *guard, other);
                 Ok(())
             }
-            Err(_) => // Since this error type on this line don't match
-            {
-                match self.guarded.try_lock()
-                {
-                    Ok(mut guard) => 
-                    {
-                        std::mem::swap(&mut *guard, other);
-                        Ok(())
-                    },
-                    Err(e) => Err(e),
-                }
-            },
+            Err(e) => Err(e.into()),
         }
     }
 }
@@ -158,7 +149,7 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self.guarded.try_lock() {
+        match self.guarded.lock() {
             Ok(guard) => write!(f, "{:?}", guard.as_ref()),
             Err(e) => write!(f, "SingletonOptionMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
@@ -180,13 +171,11 @@ impl<T> GuardedMut<T> for SingletonOptionMutex<T> {
         
         MutexGuard::map(guard, |opt| opt.as_mut().unwrap())
     }
-}
 
-impl<T> TryGuardedMut<T> for SingletonOptionMutex<T> {
     type Error<'a> = TryLockError<MutexGuard<'a, Option<T>>> where Self: 'a;
     
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
-        let guard = self.guarded.try_lock()?;
+        let guard = self.guarded.lock()?;
         if guard.is_none() {
             return Err(TryLockError::WouldBlock);
         }

@@ -72,18 +72,6 @@ impl<T> Guarded<T> for SingleThreadCell<T>
         self.assert_same_thread();
         self.value.borrow()
     }
-}
-impl<T> SingleThreadCell<T>
-{
-    #[inline]
-    pub fn get<'a>(&'a self) -> Ref<'a, T>
-    {
-        Guarded::get(self)
-    }
-}
-
-impl<T> TryGuarded<T> for SingleThreadCell<T>
-{
     type Error<'a>
         = SingleThreadError
     where
@@ -94,14 +82,8 @@ impl<T> TryGuarded<T> for SingleThreadCell<T>
         Ok(self.value.try_borrow()?)
     }
 }
-impl<T> SingleThreadCell<T>
-{
-    #[inline]
-    pub fn try_get<'a>(&'a self) -> Result<<Self as Guarded<T>>::Guard<'a>, <Self as TryGuarded<T>>::Error<'a>>
-    {
-        TryGuarded::try_get(self)
-    }
-}
+impl_singleton_methods!(SingleThreadCell);
+
 
 #[derive(Debug)]
 pub enum SingleThreadMutError
@@ -129,17 +111,6 @@ impl<T> GuardedMut<T> for SingleThreadCell<T>
         self.assert_same_thread();
         self.value.borrow_mut()
     }
-}
-impl<T> SingleThreadCell<T>
-{
-    #[inline]
-    pub fn get_mut<'a>(&'a mut self) -> RefMut<'a, T>
-    {
-        GuardedMut::get_mut(self)
-    }
-}
-impl<T> TryGuardedMut<T> for SingleThreadCell<T>
-{
     type Error<'a>
         = SingleThreadMutError
     where
@@ -148,13 +119,5 @@ impl<T> TryGuardedMut<T> for SingleThreadCell<T>
     {
         self.is_same_thread()?;
         Ok(self.value.try_borrow_mut()?)
-    }
-}
-impl<T> SingleThreadCell<T>
-{
-    #[inline]
-    pub fn try_get_mut<'a>(&'a mut self) -> Result<<Self as GuardedMut<T>>::GuardMut<'a>, <Self as TryGuardedMut<T>>::Error<'a>>
-    {
-        TryGuardedMut::try_get_mut(self)
     }
 }

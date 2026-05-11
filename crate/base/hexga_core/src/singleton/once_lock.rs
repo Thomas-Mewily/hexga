@@ -8,51 +8,18 @@ pub type SingletonOnce<T> = SingletonOf<OnceLock<T>>;
 pub type SingletonOnceLazy<T> = SingletonOf<LazyLock<T>>;
 */
 
+/*
 /// Multi threaded read only singleton, where the value is initialized at compile time.
 pub type SingletonOnce<T> = SingletonOf<OnceLock<T>>;
 
-/*
 impl<T> SingletonOnce<T> {
     /// Creates an uninitialized singleton.
     pub const fn uninit() -> Self {
         Self::from_guard(OnceLock::new())
     }
 
-    pub const fn new(value: T) -> Self {
-        Self::from_guard(OnceLock::new())
-    }
-
-
-    /// Sets the value if not already set.
-    pub fn set(&self, value: T) -> Result<(), T> {
-        self.guarded.set(value)
-    }
-
-    /// Returns true if initialized.
-    pub fn is_initialized(&self) -> bool {
-        self.guarded.get().is_some()
-    }
-
-    /// Gets or initializes with a function.
-    pub fn get_or_init<F>(&self, f: F) -> &T
-    where
-        F: FnOnce() -> T,
-    {
-        self.guarded.get_or_init(f)
-    }
-
-    /// Gets or initializes with a fallible function.
-    pub fn get_or_try_init<F, E>(&self, f: F) -> Result<&T, E>
-    where
-        F: FnOnce() -> Result<T, E>,
-    {
-        self.guarded.get_or_try_init(f)
-    }
-}
-
-impl<T> Default for SingletonOnce<T> {
-    fn default() -> Self {
-        Self::new()
+    pub const fn new() -> Self {
+        Self::uninit()
     }
 }
 

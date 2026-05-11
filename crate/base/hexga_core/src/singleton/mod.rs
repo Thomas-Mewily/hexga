@@ -110,9 +110,9 @@ macro_rules! impl_singleton_methods_get_mut {
             #[inline]
             pub fn try_get_mut<'a>(&'a self) -> Result<
                 <Self as GuardedMut<T>>::GuardMut<'a>,
-                <Self as TryGuardedMut<T>>::Error<'a>
+                <Self as GuardedMut<T>>::Error<'a>
             > {
-                TryGuardedMut::try_get_mut(self)
+                GuardedMut::try_get_mut(self)
             }
         }
     };
@@ -138,9 +138,9 @@ macro_rules! impl_singleton_methods_get {
             #[inline]
             pub fn try_get<'a>(&'a self) -> Result<
                 <Self as Guarded<T>>::Guard<'a>,
-                <Self as TryGuarded<T>>::Error<'a>
+                <Self as Guarded<T>>::Error<'a>
             > {
-                TryGuarded::try_get(self)
+                Guarded::try_get(self)
             }
         }
     };
@@ -150,7 +150,7 @@ macro_rules! impl_singleton_methods_get {
 
 
 pub trait SingletonOptionable<T>: 
-    TryGuardedMut<T>
+    GuardedMut<T>
 {
     /// Tries to initialize the singleton from a fn, 
     /// while blocking the current thread until it is able to do so.
@@ -204,7 +204,7 @@ pub trait SingletonOptionable<T>:
 }
 
 // Similar to SingletonOptionable, except initialization return a Guard and not a GuardMut
-pub trait SingletonOnceable<T>: TryGuarded<T> 
+pub trait SingletonOnceable<T>: Guarded<T> 
 {
     /// Tries to initialize the singleton from a fn, 
     /// while blocking the current thread until it is able to do so.

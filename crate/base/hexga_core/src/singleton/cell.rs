@@ -35,14 +35,14 @@ impl<T> Guarded<T> for SingletonCell<T> {
     fn get<'a>(&'a self) -> Self::Guard<'a> {
         Ref::map(self.guarded.get(), |v| v.as_ref())
     }
-}
-impl<T> TryGuarded<T> for SingletonCell<T> {
+
     type Error<'a> = SingleThreadError where Self: 'a;
     
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
         Ok(Ref::map(self.guarded.try_get()?, |v| v.as_ref()))
     }
 }
+
 
 impl<T> GuardedMut<T> for SingletonCell<T> {
     type GuardMut<'a> = RefMut<'a, T> where Self: 'a;
@@ -51,9 +51,7 @@ impl<T> GuardedMut<T> for SingletonCell<T> {
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
         RefMut::map(self.guarded.get_mut(), |v| v.as_mut())
     }
-}
 
-impl<T> TryGuardedMut<T> for SingletonCell<T> {
     type Error<'a> = SingleThreadMutError where Self: 'a;
     
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
@@ -89,15 +87,13 @@ impl<T> Guarded<T> for SingletonLazyCell<T> {
     fn get<'a>(&'a self) -> Self::Guard<'a> {
         Ref::map(self.guarded.get(), |v| v.deref())
     }
-}
-
-impl<T> TryGuarded<T> for SingletonLazyCell<T> {
     type Error<'a> = SingleThreadError where Self: 'a;
     
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
         Ok(Ref::map(self.guarded.try_get()?, |v| v.deref()))
     }
 }
+
 impl<T> GuardedMut<T> for SingletonLazyCell<T> {
     type GuardMut<'a> = RefMut<'a, T> where Self: 'a;
     
@@ -105,8 +101,6 @@ impl<T> GuardedMut<T> for SingletonLazyCell<T> {
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
         RefMut::map(self.guarded.get_mut(), |v| v.deref_mut())
     }
-}
-impl<T> TryGuardedMut<T> for SingletonLazyCell<T> {
     type Error<'a> = SingleThreadMutError where Self: 'a;
     
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
@@ -180,9 +174,6 @@ impl<T> Guarded<T> for SingletonOptionCell<T> {
             }
         ))
     }
-}
-
-impl<T> TryGuarded<T> for SingletonOptionCell<T> {
     type Error<'a> = SingleThreadError where Self: 'a;
     
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
@@ -208,9 +199,7 @@ impl<T> GuardedMut<T> for SingletonOptionCell<T> {
                 }
             )
     }
-}
 
-impl<T> TryGuardedMut<T> for SingletonOptionCell<T> {
     type Error<'a> = SingleThreadMutError where Self: 'a;
     
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {

@@ -68,4 +68,12 @@ impl<T> Guarded<T> for Identity<T>
     fn get<'a>(&'a self) -> Self::Guard<'a> {
         self
     }
+    
+    type Error<'a> = ()
+    where
+        Self: 'a;
+    
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
+        Ok(self)
+    }
 }
