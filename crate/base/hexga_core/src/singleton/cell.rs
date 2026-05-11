@@ -154,7 +154,7 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self.try_get() {
-            Ok(guard) => write!(f, "Some({:?})", guard.deref()),
+            Ok(guard) => write!(f, "{:?}", guard.deref()),
             Err(e) => write!(f, "SingletonOptionCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
