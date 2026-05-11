@@ -11,7 +11,7 @@ impl App for MonJeu
     }
 
     fn update(&mut self, dt: Duration, ctx: &mut ()) {
-        
+        CurrentWindow.set_pos(pos)
     }
 
     fn draw(&mut self, coef: coef, ctx: &mut ()) {

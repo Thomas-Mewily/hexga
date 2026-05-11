@@ -1,10 +1,10 @@
 use hexga_event_loop::window::{UserAttentionType, WindowButtonFlags, WindowLevel};
 use super::*;
 
-pub struct MainWindow;
+pub struct CurrentWindow;
 
 
-impl Windowable for MainWindow
+impl Windowable for CurrentWindow
 {
     fn request_draw(&mut self)
     {
@@ -22,27 +22,27 @@ impl Windowable for MainWindow
 }
 
 
-impl GetPosition<int,2> for MainWindow
+impl GetPosition<int,2> for CurrentWindow
 {
     fn pos(&self) -> Vector<int, 2> 
     {
         WINDOW.get_mut().pos()
     }
 }
-impl SetPosition<int,2> for MainWindow
+impl SetPosition<int,2> for CurrentWindow
 {
     fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self {
         WINDOW.get_mut().set_pos(pos);
         self
     }
 }
-impl GetSize<int,2> for MainWindow
+impl GetSize<int,2> for CurrentWindow
 {
     fn size(&self) -> Vector<int, 2> {
         WINDOW.get_mut().size()
     }
 }
-impl SetSize<int,2> for MainWindow
+impl SetSize<int,2> for CurrentWindow
 {
     fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self {
         WINDOW.get_mut().set_size(size);
@@ -50,7 +50,7 @@ impl SetSize<int,2> for MainWindow
     }
 }
 
-impl WindowAttribute for MainWindow
+impl WindowAttribute for CurrentWindow
 {
     fn title(&self) -> String
     {

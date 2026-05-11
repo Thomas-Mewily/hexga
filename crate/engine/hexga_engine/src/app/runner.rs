@@ -120,7 +120,10 @@ impl<F,A> PlatformEventHandler<AppCustomEvent> for AppRunner<F,A>
 
         match &ev
         {
-            PlatformEvent::Resize(size) => { WINDOW.try_get_mut().map(|mut w| w.configure_surface()); },
+            PlatformEvent::Resize(size) => 
+            { 
+                WINDOW.try_get_mut().map(|mut w| w.configure_surface()); 
+            },
             _ => {},
         }
 
