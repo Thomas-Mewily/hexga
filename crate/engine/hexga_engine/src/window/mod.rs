@@ -29,7 +29,7 @@ impl WindowInitGpu for WindowType
     {
         let size = self.size().max(one());
 
-        if Gpu::is_init()
+        if Gpu::is_not_init()
         {
             let instance = GpuInstance::new(&param.instance);
             let surface = instance.wgpu.create_surface(self.winit_window())?.into();
