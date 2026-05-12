@@ -12,7 +12,7 @@ pub mod experimental
     pub type WinitWindowShared = Arc<WinitWindow>;
 }
 
-#[derive(Debug)]
+//#[derive(Debug)]
 pub struct Window<Surface>
 {
     pub(crate) param: WindowParam,
@@ -20,6 +20,13 @@ pub struct Window<Surface>
     pub(crate) pos: Point2,
     pub(crate) window: WinitWindowShared,
     pub(crate) surface: Option<Surface>,
+}
+
+impl<Surface> Debug for Window<Surface>
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.param)
+    }
 }
 
 pub type WindowError = ();

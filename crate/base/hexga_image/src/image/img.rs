@@ -88,7 +88,42 @@ impl<C, Idx> Debug for ImageBaseOf<C, Idx> where Idx: Integer, C: Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
-        write!(f, "Image({}, {:?}x{:?})", std::any::type_name::<C>(), self.size().x, self.size().y)
+        write!(f, "Image({}, {:?}x{:?})", std::any::type_name::<C>(), self.size().x, self.size().y)?;
+        if self.size().area_usize() <= 16 * 16
+        {
+            writeln!(f)?;
+
+            const SEP: &'static str = " ";
+            let size = self.size();
+
+            let strings = self
+                .iter()
+                .map(|(_, v)| {
+                    let mut s = String::new();
+                    let mut tmp_f = std::fmt::Formatter::new(&mut s, ___());
+                    std::fmt::Debug::fmt(v, &mut tmp_f)?;
+                    Ok(s)
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
+            let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
+            let g = unsafe { ImageBaseOf::from_vec_unchecked(size, strings) };
+
+            for y in (0..size[1].to_usize()).rev()
+            {
+                for x in 0..size[0].to_usize()
+                {
+                    let mut idx = Vector::<Idx, 2>::ZERO;
+                    idx[0] = Idx::cast_from(x);
+                    idx[1] = Idx::cast_from(y);
+                    write!(f, "{:>width$}", g[idx], width = width)?;
+                    f.write_str(SEP)?;
+                }
+                writeln!(f)?;
+            }
+            writeln!(f, "size: {:?}", size)?;
+        }
+        Ok(())
     }
 }
 
