@@ -41,6 +41,9 @@ pub use gpu_sampler::*;
 mod gpu_bindgroup;
 pub use gpu_bindgroup::*;
 
+mod texture;
+pub use texture::*;
+
 pub mod prelude
 {
     pub use super::{

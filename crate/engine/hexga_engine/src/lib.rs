@@ -29,7 +29,11 @@ pub mod prelude
 {
     pub(crate) use super::experimental::*;
     pub use super::traits::*;
-    pub use super::{app::prelude::*, graphics::prelude::*, window::prelude::*};
+    pub use super::{
+        app::prelude::*, 
+        graphics::prelude::*, 
+        window::prelude::*
+    };
     pub use hexga::prelude::*;
 }
 

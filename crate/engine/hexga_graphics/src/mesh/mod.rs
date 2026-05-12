@@ -10,3 +10,18 @@ pub use mesh_geometry::*;
 mod mesh;
 #[cfg(feature = "wgpu")]
 pub use mesh::*;
+
+
+pub mod prelude
+{
+    pub use super::
+    {
+        traits::*,
+        Mesh
+    };
+}
+
+pub mod traits
+{
+    pub use super::BuilderMesh;
+}

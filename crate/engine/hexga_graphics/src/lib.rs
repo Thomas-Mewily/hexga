@@ -32,14 +32,30 @@ pub mod format;
 #[cfg(feature = "wgpu")]
 pub(crate) use format::*;
 
-#[cfg(feature = "wgpu")]
-pub mod gfx;
-#[cfg(feature = "wgpu")]
-pub(crate) use gfx::*;
 
 pub mod prelude
 {
     pub use super::typedef::*;
     #[cfg(feature = "wgpu")]
     pub use hexga_wgpu::prelude::*;
+
+    pub use super::traits::*;
+    pub use super::
+    {
+        camera::prelude::*,
+        mesh::prelude::*,
+        render::prelude::*,
+        vertex::prelude::*,
+    };
+}
+
+pub mod traits
+{
+    pub use super::
+    {
+        camera::traits::*,
+        mesh::traits::*,
+        render::traits::*,
+        vertex::traits::*,
+    };
 }

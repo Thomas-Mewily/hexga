@@ -1,8 +1,18 @@
 use super::*;
 
-pub(crate) mod prelude
+pub mod prelude
 {
-    pub use super::vertex::{UV, Vertex, VertexIndex};
+    pub use super::{
+        traits::*,
+        UV, 
+        Vertex, 
+        VertexIndex
+    };
+}
+
+pub mod traits
+{
+
 }
 
 pub type VertexIndex = u32;

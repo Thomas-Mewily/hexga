@@ -1,5 +1,16 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{ImmediateRenderBuilder,ImmediateRender,DrawGeometry,DrawGeometryImmediate,DrawCall};
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+
+}
+
 pub struct ImmediateRenderBuilder<P = DrawParam>
 {
     pub draw_call: NonEmptyStack<DrawCall<P>>,
@@ -8,7 +19,7 @@ pub struct ImmediateRenderBuilder<P = DrawParam>
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct ImmediateRender<P>
+pub struct ImmediateRender<P=DrawParam>
 {
     pub draw_call: Vec<DrawCall<P>>,
 }
@@ -27,6 +38,14 @@ pub struct DrawGeometryImmediate
     pub indices_begin: usize,
     pub indices_len: usize,
 }
+
+/*
+pub struct DrawGeometrySliceIndice
+{
+    pub begin: usize,
+    pub len: usize,
+}
+*/
 
 impl Default for DrawGeometry
 {
