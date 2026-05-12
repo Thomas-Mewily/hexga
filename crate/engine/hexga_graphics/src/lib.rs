@@ -27,11 +27,6 @@ pub(crate) use vertex::*;
 pub mod typedef;
 pub(crate) use typedef::*;
 
-#[cfg(feature = "wgpu")]
-mod back_end_wgpu;
-#[cfg(feature = "wgpu")]
-pub use back_end_wgpu::*;
-
 
 pub mod prelude
 {
