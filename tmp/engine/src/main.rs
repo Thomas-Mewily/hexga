@@ -1,5 +1,5 @@
 #![allow(unused)]
-use hexga_engine::event_loop::{traits::WithEventLoopShortcut, window::WindowAttribute};
+use hexga_engine::event_loop::{traits::WithEventLoopShortcut, window::{UserAttentionType, WindowAttribute, Windowable}};
 pub use hexga_engine::prelude::*;
 
 struct MonJeu;
@@ -14,11 +14,11 @@ impl App for MonJeu
 
     fn update(&mut self, dt: Duration, ctx: &mut ())
     {
-        
     }
 
     fn draw(&mut self, coef: coef, ctx: &mut ()) 
     {
+        dbg!(CurrentWindow);
         CurrentWindow.set_title(format!("{}", Time::since_launch()));
     }
 }

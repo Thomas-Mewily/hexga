@@ -14,7 +14,7 @@ pub type Color = Rgba;
 pub type ColorFloat = RgbaFloat;
 pub type ColorF32 = RgbaF32;
 pub type ColorF64 = RgbaF64;
-pub type ColorU8 = RgbaU8;
+pub type ColorU8  = RgbaU8;
 pub type ColorU16 = RgbaU16;
 
 pub mod rgba;

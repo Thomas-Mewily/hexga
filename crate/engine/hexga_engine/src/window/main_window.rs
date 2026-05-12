@@ -1,7 +1,23 @@
 use super::*;
 use hexga_event_loop::window::{UserAttentionType, WindowButtonFlags, WindowLevel};
 
+#[derive(Clone, Copy)]
 pub struct CurrentWindow;
+
+impl Debug for CurrentWindow
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{WINDOW:?}")
+    }
+}
+
+impl SingletonEmptyStruct for CurrentWindow
+{
+    fn is_init() -> bool {
+        WINDOW.try_get_mut().is_ok()
+    }
+}
+
 
 impl Windowable for CurrentWindow
 {

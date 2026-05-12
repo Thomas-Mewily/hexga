@@ -27,6 +27,7 @@ where
     pixels: Vec<C>,
 }
 
+/*
 macro_rules! impl_img_fmt_method {
     ($trait_name :ident) => {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
@@ -65,16 +66,31 @@ macro_rules! impl_img_fmt_method {
         }
     };
 }
+*/
 
+/*
 map_on_std_fmt!(
     ($trait_name :ident) =>
     {
         impl<C, Idx> std::fmt::$trait_name for ImageBaseOf<C, Idx> where Idx: Integer, C: std::fmt::$trait_name
         {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+            {
+                std::write!(f, "Image({}, {:?}x{:?})", std::any::type_name::<C>(), self.size().x, self.size().y)
+            }
             impl_img_fmt_method!($trait_name);
         }
     }
 );
+*/
+
+impl<C, Idx> Debug for ImageBaseOf<C, Idx> where Idx: Integer, C: Debug
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
+    {
+        write!(f, "Image({}, {:?}x{:?})", std::any::type_name::<C>(), self.size().x, self.size().y)
+    }
+}
 
 impl<C, Idx> ImageBaseOf<C, Idx>
 where
