@@ -28,9 +28,9 @@ pub mod typedef;
 pub(crate) use typedef::*;
 
 #[cfg(feature = "wgpu")]
-pub mod format;
+mod back_end_wgpu;
 #[cfg(feature = "wgpu")]
-pub(crate) use format::*;
+pub use back_end_wgpu::*;
 
 
 pub mod prelude
@@ -38,6 +38,8 @@ pub mod prelude
     pub use super::typedef::*;
     #[cfg(feature = "wgpu")]
     pub use hexga_wgpu::prelude::*;
+    #[cfg(feature = "wgpu")]
+    pub use super::back_end_wgpu::prelude::*;
 
     pub use super::traits::*;
     pub use super::
@@ -58,4 +60,6 @@ pub mod traits
         render::traits::*,
         vertex::traits::*,
     };
+    #[cfg(feature = "wgpu")]
+    pub use super::back_end_wgpu::traits::*;
 }

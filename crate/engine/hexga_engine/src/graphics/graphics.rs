@@ -12,3 +12,12 @@ pub struct Graphics
     //pub(crate) background_color : Option<Color>,
     //pub(crate) white_pixel: Option<Texture>,
 }
+
+
+impl Graphics
+{
+    pub(crate) fn new() -> Self
+    {
+        todo!()
+    }
+}
