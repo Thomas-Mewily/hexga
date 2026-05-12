@@ -119,6 +119,7 @@ where
                     let size = window.size();
                     window.replace_surface(Some(GpuConfiguredSurface::from_surface(surface, size)));
                     window.configure_surface();
+                    window.request_draw();
                     drop(window);
                     self.init_app_if_needed(event_loop);
                     return None;

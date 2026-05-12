@@ -18,7 +18,6 @@ impl App for MonJeu
 
     fn draw(&mut self, coef: coef, ctx: &mut ()) 
     {
-        dbg!(CurrentWindow);
         CurrentWindow.set_title(format!("{}", Time::since_launch()));
     }
 }
