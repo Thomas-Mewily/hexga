@@ -33,8 +33,6 @@ pub mod prelude
     pub use super::typedef::*;
     #[cfg(feature = "wgpu")]
     pub use hexga_wgpu::prelude::*;
-    #[cfg(feature = "wgpu")]
-    pub use super::back_end_wgpu::prelude::*;
 
     pub use super::traits::*;
     pub use super::
@@ -55,6 +53,4 @@ pub mod traits
         render::traits::*,
         vertex::traits::*,
     };
-    #[cfg(feature = "wgpu")]
-    pub use super::back_end_wgpu::traits::*;
 }
