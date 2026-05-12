@@ -1,5 +1,5 @@
 use crate::window::WindowInitGpu;
-use hexga_event_loop::event_loop::EventLoopResult;
+use hexga_event_loop::{event_loop::EventLoopResult};
 
 use super::*;
 
@@ -82,7 +82,13 @@ where
     {
         match &mut self.app
         {
-            Some(app) => app.draw(1., &mut ()),
+            Some(app) => 
+            {
+                if WINDOW.try_get_mut().map(|mut w| w.surface().is_some()).unwrap_or(false)
+                {
+                    app.draw(1., &mut ());
+                }
+            },
             None =>
             {}
         }
@@ -171,7 +177,8 @@ where
         }
     }
 
-    fn paused(&mut self, event_loop: &mut EventLoop<AppCustomEvent>) {
+    fn paused(&mut self, event_loop: &mut EventLoop<AppCustomEvent>) 
+    {
         WINDOW.try_get_mut().map(|mut w| { w.destroy_surface(); });
     }
 

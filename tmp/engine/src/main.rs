@@ -8,16 +8,19 @@ impl App for MonJeu
 {
     fn event(&mut self, ev: AppEvent, ctx: &mut ()) -> Option<AppEvent>
     {
-        println!("{ev:?}");
+        //println!("{ev:?}");
         Some(ev)
     }
 
     fn update(&mut self, dt: Duration, ctx: &mut ())
     {
-        CurrentWindow.set_title(format!("{}", Time::since_launch()));
+        
     }
 
-    fn draw(&mut self, coef: coef, ctx: &mut ()) {}
+    fn draw(&mut self, coef: coef, ctx: &mut ()) 
+    {
+        CurrentWindow.set_title(format!("{}", Time::since_launch()));
+    }
 }
 
 fn main()

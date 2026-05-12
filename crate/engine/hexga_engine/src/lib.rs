@@ -9,6 +9,7 @@ use hexga_event_loop::{
 };
 use hexga_graphics::gpu::{Gpu, GpuConfiguredSurface, GpuParam, GpuSurface, wgpu};
 pub(crate) type Singleton<T> = hexga::singleton::SingletonOptionMutex<T>;
+pub(crate) use hexga_event_loop::log::prelude::*;
 use std::any::Any;
 use std::fmt::Debug;
 use std::marker::PhantomData;
