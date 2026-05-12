@@ -42,12 +42,12 @@ impl<T> Guarded<T> for SingletonOnce<T>
     #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a>
     {
-        self.guarded.get().unwrap_or_else(|| {
-            panic!(
-                "SingletonOnce<{}> not initialized",
-                std::any::type_name::<T>()
-            )
-        })
+        match self.guarded.get() {
+            Some(guard) => guard,
+            None => {
+                panic!("SingletonOnce<{}> not initialized", std::any::type_name::<T>())
+            }
+        }
     }
     type Error<'a>
         = ()
@@ -78,7 +78,7 @@ impl<T> SingletonOnceLazy<T>
 
     pub const fn uninit() -> Self
     {
-        Self::from_guard(LazyLock::new(|| panic!("LazyLock not initialized")))
+        Self::from_guard(LazyLock::new(|| panic!("SingletonOnceLazy<{}> not initialized", std::any::type_name::<T>())))
     }
 }
 

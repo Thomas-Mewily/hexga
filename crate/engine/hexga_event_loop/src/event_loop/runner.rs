@@ -418,7 +418,7 @@ where
         &mut self,
         active: &WinitEventLoopActive,
         window_id: winit::window::WindowId,
-        event: winit::event::WindowEvent,
+        event: WinitWindowEvent,
     )
     {
         match event
@@ -431,11 +431,11 @@ where
             {
                 self.event(active, PlatformEvent::Resize(size.convert()));
             }
-            winit::event::WindowEvent::CloseRequested =>
+            WinitWindowEvent::CloseRequested =>
             {
                 self.event(active, PlatformEvent::Close);
             }
-            winit::event::WindowEvent::Destroyed =>
+            WinitWindowEvent::Destroyed =>
             {
                 self.event(active, PlatformEvent::Destroy);
             }

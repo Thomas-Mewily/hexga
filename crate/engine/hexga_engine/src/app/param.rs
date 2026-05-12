@@ -61,30 +61,6 @@ impl WithEventLoopShortcut for AppParam
     }
 }
 
-impl GetPosition<int, 2> for AppParam
-{
-    fn pos(&self) -> Vector<int, 2> { self.window.pos() }
-}
-impl SetPosition<int, 2> for AppParam
-{
-    fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self
-    {
-        self.window.set_pos(pos);
-        self
-    }
-}
-impl GetSize<int, 2> for AppParam
-{
-    fn size(&self) -> Vector<int, 2> { self.window.size() }
-}
-impl SetSize<int, 2> for AppParam
-{
-    fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self
-    {
-        self.window.set_size(size);
-        self
-    }
-}
 
 impl WindowAttribute for AppParam
 {

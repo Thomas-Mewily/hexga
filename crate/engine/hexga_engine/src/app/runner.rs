@@ -100,12 +100,8 @@ where
         {
             Some(e) => match e
             {
-                AppCustomEvent::GpuReady { surface, gpu } =>
+                AppCustomEvent::SurfaceReady(surface) =>
                 {
-                    hexga_graphics::gpu::experimental::GPU
-                        .init(gpu)
-                        .expect("can't init the gpu");
-                    assert!(Gpu::is_init());
                     let mut window = match WINDOW.try_get_mut()
                     {
                         Ok(w) => w,
@@ -119,6 +115,14 @@ where
                     window.configure_surface();
                     drop(window);
                     self.init_app_if_needed(event_loop);
+                    return None;
+                }
+                AppCustomEvent::GpuReady(gpu) =>
+                {
+                    hexga_graphics::gpu::experimental::GPU
+                        .init(gpu)
+                        .expect("can't init the gpu");
+                    assert!(Gpu::is_init());
                     return None;
                 }
                 AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
@@ -159,12 +163,16 @@ where
             .map_err(|_| ())
             .expect("can't init the main window");
 
-        if created
+        if created || window.surface().is_none()
         {
             window
-                .initialize_gpu_andsurface(&self.param.gpu, event_loop)
+                .initialize_surface(&self.param.gpu, event_loop)
                 .expect("failed to init the surface");
         }
+    }
+
+    fn paused(&mut self, event_loop: &mut EventLoop<AppCustomEvent>) {
+        WINDOW.try_get_mut().map(|mut w| { w.destroy_surface(); });
     }
 
     fn exit(&mut self, event_loop: &mut AppInternalEventLoop) { self.exit(); }

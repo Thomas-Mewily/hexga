@@ -44,18 +44,19 @@ impl<T> Guarded<T> for SingletonRw<T>
         Self: 'a;
 
     #[track_caller]
-    fn get<'a>(&'a self) -> Self::Guard<'a>
-    {
-        self.guarded
-            .read()
-            .unwrap_or_else(|e| {
+    fn get<'a>(&'a self) -> Self::Guard<'a> {
+        let guard = match self.guarded.read() {
+            Ok(guard) => guard,
+            Err(e) => {
                 panic!(
-                    "Singleton<{}> can't be read: {:?}",
+                    "SingletonRw<{}> can't be read: {:?}",
                     std::any::type_name::<T>(),
                     e
                 )
-            })
-            .guard_map(|v| v.as_ref())
+            }
+        };
+        
+        guard.guard_map(|v| v.as_ref())
     }
 
     type Error<'a>
@@ -77,18 +78,19 @@ impl<T> GuardedMut<T> for SingletonRw<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        self.guarded
-            .write()
-            .unwrap_or_else(|e| {
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
+        let guard = match self.guarded.write() {
+            Ok(guard) => guard,
+            Err(e) => {
                 panic!(
-                    "Singleton<{}> can't be written: {:?}",
+                    "SingletonRw<{}> can't be written: {:?}",
                     std::any::type_name::<T>(),
                     e
                 )
-            })
-            .guard_map_mut(|v| v.as_mut())
+            }
+        };
+        
+        guard.guard_map_mut(|v| v.as_mut())
     }
 
     type Error<'a>
@@ -140,18 +142,19 @@ impl<T> Guarded<T> for SingletonLazyRw<T>
         Self: 'a;
 
     #[track_caller]
-    fn get<'a>(&'a self) -> Self::Guard<'a>
-    {
-        self.guarded
-            .read()
-            .unwrap_or_else(|e| {
+    fn get<'a>(&'a self) -> Self::Guard<'a> {
+        let guard = match self.guarded.read() {
+            Ok(guard) => guard,
+            Err(e) => {
                 panic!(
                     "SingletonLazyRw<{}> can't be read: {:?}",
                     std::any::type_name::<T>(),
                     e
                 )
-            })
-            .guard_map(|v| v.deref())
+            }
+        };
+        
+        guard.guard_map(|v| v.deref())
     }
 
     type Error<'a>
@@ -173,18 +176,17 @@ impl<T> GuardedMut<T> for SingletonLazyRw<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        self.guarded
-            .write()
-            .unwrap_or_else(|e| {
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
+        match self.guarded.write() {
+            Ok(guard) => guard.guard_map_mut(|v| v.deref_mut()),
+            Err(e) => {
                 panic!(
                     "SingletonLazyRw<{}> can't be written: {:?}",
                     std::any::type_name::<T>(),
                     e
                 )
-            })
-            .guard_map_mut(|v| v.deref_mut())
+            }
+        }
     }
 
     type Error<'a>
@@ -280,18 +282,19 @@ impl<T> Guarded<T> for SingletonOptionRw<T>
         Self: 'a;
 
     #[track_caller]
-    fn get<'a>(&'a self) -> Self::Guard<'a>
-    {
-        let guard = self.guarded.read().unwrap_or_else(|e| {
-            panic!(
-                "SingletonOptionRw<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            )
-        });
+    fn get<'a>(&'a self) -> Self::Guard<'a> {
+        let guard = match self.guarded.read() {
+            Ok(guard) => guard,
+            Err(e) => {
+                panic!(
+                    "SingletonOptionRw<{}> can't be read: {:?}",
+                    std::any::type_name::<T>(),
+                    e
+                )
+            }
+        };
 
-        if guard.is_none()
-        {
+        if guard.is_none() {
             panic!(
                 "SingletonOptionRw<{}> not initialized: call init() first",
                 std::any::type_name::<T>()
@@ -326,18 +329,19 @@ impl<T> GuardedMut<T> for SingletonOptionRw<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        let guard = self.guarded.write().unwrap_or_else(|e| {
-            panic!(
-                "SingletonOptionRw<{}> can't be written: {:?}",
-                std::any::type_name::<T>(),
-                e
-            )
-        });
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
+        let guard = match self.guarded.write() {
+            Ok(guard) => guard,
+            Err(e) => {
+                panic!(
+                    "SingletonOptionRw<{}> can't be written: {:?}",
+                    std::any::type_name::<T>(),
+                    e
+                )
+            }
+        };
 
-        if guard.is_none()
-        {
+        if guard.is_none() {
             panic!(
                 "SingletonOptionRw<{}> not initialized: call init() first",
                 std::any::type_name::<T>()

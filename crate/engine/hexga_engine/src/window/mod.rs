@@ -11,7 +11,7 @@ pub(crate) type WindowType = hexga_event_loop::window::Window<GpuConfiguredSurfa
 
 pub(crate) trait WindowInitGpu
 {
-    fn initialize_gpu_andsurface(
+    fn initialize_surface(
         &mut self,
         param: &GpuParam,
         event_loop: &AppInternalEventLoop,
@@ -21,27 +21,29 @@ pub(crate) trait WindowInitGpu
 
 impl WindowInitGpu for WindowType
 {
-    fn initialize_gpu_andsurface(
+    fn initialize_surface(
         &mut self,
         param: &GpuParam,
         event_loop: &AppInternalEventLoop,
     ) -> GpuResult
     {
-        if Gpu::is_init()
-        {
-            return Ok(());
-        }
-
         let size = self.size().max(one());
 
-        let instance = GpuInstance::new(&param.instance);
+        if Gpu::is_init()
+        {
+            let instance = GpuInstance::new(&param.instance);
+            let surface = instance.wgpu.create_surface(self.winit_window())?.into();
 
-        let surface = instance.wgpu.create_surface(self.winit_window())?.into();
+            async_init_gpu_in_proxy(instance, param.clone(), surface, event_loop.proxy().clone())
+                .spawn();
 
-        async_init_gpu_in_proxy(instance, param.clone(), surface, event_loop.proxy().clone())
-            .spawn();
-
-        Ok(())
+            Ok(())
+        }else
+        {
+            let surface = Gpu.wgpu.instance.wgpu.create_surface(self.winit_window())?.into();
+            event_loop.send_event(PlatformEvent::Custom(AppCustomEvent::SurfaceReady(surface)));
+            Ok(())
+        }
     }
 
     fn configure_surface(&mut self)
@@ -67,11 +69,12 @@ pub(crate) async fn async_init_gpu_in_proxy(
 {
     let _ = match async_init_gpu(instance, param, surface).await
     {
-        Ok((surface, gpu)) => proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuReady {
-            surface,
-            gpu,
-        })),
-        Err(e) => proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuError(e))),
+        Ok((surface, gpu)) => 
+        {
+            proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuReady(gpu)));
+            proxy.send_event(PlatformEvent::Custom(AppCustomEvent::SurfaceReady(surface)));
+        },
+        Err(e) => { proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuError(e))); },
     };
 }
 

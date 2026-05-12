@@ -46,19 +46,21 @@ impl<T> GuardedMut<T> for SingletonMutex<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        self.guarded
-            .lock()
-            .unwrap_or_else(|e| {
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
+        let guard = match self.guarded.lock() {
+            Ok(guard) => guard,
+            Err(e) => {
                 panic!(
                     "SingletonMutex<{}> poisoned: {:?}",
                     std::any::type_name::<T>(),
                     e
                 )
-            })
-            .guard_map_mut(|v| v.as_mut())
+            }
+        };
+        
+        guard.guard_map_mut(|v| v.as_mut())
     }
+
     type Error<'a>
         = PoisonError<MutexGuard<'a, Identity<T>>>
     where
@@ -108,18 +110,19 @@ impl<T> GuardedMut<T> for SingletonLazyMutex<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        self.guarded
-            .lock()
-            .unwrap_or_else(|e| {
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
+        let guard = match self.guarded.lock() {
+            Ok(guard) => guard,
+            Err(e) => {
                 panic!(
                     "SingletonLazyMutex<{}> poisoned: {:?}",
                     std::any::type_name::<T>(),
                     e
                 )
-            })
-            .guard_map_mut(|v| v.deref_mut())
+            }
+        };
+        
+        guard.guard_map_mut(|v| v.deref_mut())
     }
 
     type Error<'a>
@@ -212,18 +215,19 @@ impl<T> GuardedMut<T> for SingletonOptionMutex<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        let guard = self.guarded.lock().unwrap_or_else(|e| {
-            panic!(
-                "SingletonOptionMutex<{}> poisoned: {:?}",
-                std::any::type_name::<T>(),
-                e
-            )
-        });
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
+        let guard = match self.guarded.lock() {
+            Ok(guard) => guard,
+            Err(e) => {
+                panic!(
+                    "SingletonOptionMutex<{}> poisoned: {:?}",
+                    std::any::type_name::<T>(),
+                    e
+                )
+            }
+        };
 
-        if guard.is_none()
-        {
+        if guard.is_none() {
             panic!(
                 "SingletonOptionMutex<{}> not initialized: call init() first",
                 std::any::type_name::<T>()

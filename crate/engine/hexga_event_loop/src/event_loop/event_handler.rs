@@ -19,11 +19,18 @@ where
     {
         match self.winit.create_window(param.clone().into())
         {
-            Ok(window) => Ok(Window {
-                param,
-                window: Arc::new(window),
-                surface: None,
-            }),
+            Ok(window) => 
+            {
+                let size = window.inner_size().convert();
+                let pos = window.inner_position().map(|w| w.convert()).unwrap_or_default();
+                Ok(Window {
+                    param,
+                    window: Arc::new(window),
+                    surface: None,
+                    size,
+                    pos,
+                })
+            },
             Err(_) => Err(()),
         }
     }

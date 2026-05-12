@@ -16,6 +16,8 @@ pub mod experimental
 pub struct Window<Surface>
 {
     pub(crate) param: WindowParam,
+    pub(crate) size: Point2,
+    pub(crate) pos: Point2,
     pub(crate) window: WinitWindowShared,
     pub(crate) surface: Option<Surface>,
 }
@@ -381,7 +383,7 @@ impl<Surface> GetPosition<int, 2> for Window<Surface>
             {
                 return pos.convert();
             }
-            Err(e) => self.param.pos(),
+            Err(e) => self.pos,
         }
     }
 }
@@ -389,7 +391,7 @@ impl<Surface> SetPosition<int, 2> for Window<Surface>
 {
     fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self
     {
-        self.param.set_pos(pos);
+        self.pos = pos;
         let p : WinitPhysicialPos = pos.convert();
         self.window.set_outer_position(p);
         self
@@ -403,7 +405,7 @@ impl<Surface> SetSize<int, 2> for Window<Surface>
 {
     fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self
     {
-        self.param.set_size(size);
+        self.size = size;
         let size : WinitPhysicialSize = size.convert();
         self.window.request_inner_size(size);
         self
@@ -558,8 +560,7 @@ pub(crate) fn image_to_winit_icon(image: &Image) -> Option<winit::window::Icon>
     }
 }
 
-pub trait WindowAttribute:
-    Sized + GetSize<int, 2> + SetSize<int, 2> + GetPosition<int, 2> + SetPosition<int, 2>
+pub trait WindowAttribute: Sized
 {
     fn title(&self) -> String;
     fn set_title(&mut self, title: String) -> &mut Self;
@@ -687,8 +688,8 @@ pub trait WindowAttribute:
 pub struct WindowParam
 {
     pub title: String,
-    pub size: Point2,
-    pub position: Point2,
+    //pub size: Point2,
+    //pub position: Point2,
     pub level: WindowLevel,
     pub resizable: bool,
     pub buttons: WindowButtonFlags,
@@ -709,8 +710,6 @@ impl Default for WindowParam
     {
         Self {
             title: "hexga app".to_owned(),
-            size: Point2::ZERO,
-            position: Point2::ZERO,
             level: ___(),
             resizable: true,
             buttons: ___(),
@@ -728,30 +727,6 @@ impl Default for WindowParam
     }
 }
 
-impl GetPosition<int, 2> for WindowParam
-{
-    fn pos(&self) -> Vector<int, 2> { self.position }
-}
-impl SetPosition<int, 2> for WindowParam
-{
-    fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self
-    {
-        self.position = pos;
-        self
-    }
-}
-impl GetSize<int, 2> for WindowParam
-{
-    fn size(&self) -> Vector<int, 2> { self.size }
-}
-impl SetSize<int, 2> for WindowParam
-{
-    fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self
-    {
-        self.size = size;
-        self
-    }
-}
 
 impl WindowAttribute for WindowParam
 {
@@ -865,8 +840,6 @@ impl From<WindowParam> for WinitWindowAttributes
     {
         let WindowParam {
             title,
-            size,
-            position,
             level,
             resizable,
             buttons,
@@ -883,23 +856,10 @@ impl From<WindowParam> for WinitWindowAttributes
 
         let mut attr = winit::window::Window::default_attributes();
 
-        // Todo do better than a special ZERO value
-        let size = if size.area().is_zero()
-        {
-            None
-        }
-        else
-        {
-            let size : WinitPhysicialSize = size.convert();
-            Some(size.into())
-        };
-
-        let pos : WinitPhysicialPos = position.convert();
-
-        attr.inner_size = size;
+        attr.inner_size = None;
         attr.min_inner_size = None;
         attr.max_inner_size = None;
-        attr.position = Some(pos.into());
+        attr.position = None;
         attr.resizable = resizable;
         attr.enabled_buttons = buttons.into();
         attr.title = title;
@@ -915,6 +875,12 @@ impl From<WindowParam> for WinitWindowAttributes
         attr.fullscreen = None;
         attr.preferred_theme = theme.map(Into::into);
         attr.window_icon = icon.map(|i| image_to_winit_icon(&i)).flatten();
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            use winit::platform::web::WindowAttributesExtWebSys;
+            win_attr = win_attr.with_append(true);
+        }
 
         attr
     }
