@@ -11,15 +11,26 @@ pub(crate) type WindowType = hexga_event_loop::window::Window<GpuConfiguredSurfa
 
 pub(crate) trait WindowInitGpu
 {
-    fn initialize_gpu_andsurface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult;
+    fn initialize_gpu_andsurface(
+        &mut self,
+        param: &GpuParam,
+        event_loop: &AppInternalEventLoop,
+    ) -> GpuResult;
     fn configure_surface(&mut self);
 }
 
 impl WindowInitGpu for WindowType
 {
-    fn initialize_gpu_andsurface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult
+    fn initialize_gpu_andsurface(
+        &mut self,
+        param: &GpuParam,
+        event_loop: &AppInternalEventLoop,
+    ) -> GpuResult
     {
-        if Gpu::is_init() { return Ok(()); }
+        if Gpu::is_init()
+        {
+            return Ok(());
+        }
 
         let size = self.size().max(one());
 
@@ -27,7 +38,8 @@ impl WindowInitGpu for WindowType
 
         let surface = instance.wgpu.create_surface(self.winit_window())?.into();
 
-        async_init_gpu_in_proxy(instance, param.clone(), surface, event_loop.proxy().clone()).spawn();
+        async_init_gpu_in_proxy(instance, param.clone(), surface, event_loop.proxy().clone())
+            .spawn();
 
         Ok(())
     }
@@ -37,7 +49,7 @@ impl WindowInitGpu for WindowType
         if let Some(mut surface) = self.replace_surface(None)
         {
             let size = self.size().max(one());
-            if surface.size() != size 
+            if surface.size() != size
             {
                 surface.resize(size);
             }
@@ -46,17 +58,28 @@ impl WindowInitGpu for WindowType
     }
 }
 
-
-pub(crate) async fn async_init_gpu_in_proxy(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>, proxy: AppInternalProxy)
+pub(crate) async fn async_init_gpu_in_proxy(
+    instance: GpuInstance,
+    param: GpuParam,
+    surface: GpuSurface<'static>,
+    proxy: AppInternalProxy,
+)
 {
     let _ = match async_init_gpu(instance, param, surface).await
     {
-        Ok((surface, gpu)) => proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuReady{ surface, gpu })),
+        Ok((surface, gpu)) => proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuReady {
+            surface,
+            gpu,
+        })),
         Err(e) => proxy.send_event(PlatformEvent::Custom(AppCustomEvent::GpuError(e))),
     };
 }
 
-pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>) -> GpuResult<(GpuSurface<'static>, GpuContext)>
+pub(crate) async fn async_init_gpu(
+    instance: GpuInstance,
+    param: GpuParam,
+    surface: GpuSurface<'static>,
+) -> GpuResult<(GpuSurface<'static>, GpuContext)>
 {
     let compatible_surface = Some(&surface.wgpu);
 
@@ -66,7 +89,7 @@ pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surfa
             power_preference: param.power_preference.into(),
             force_fallback_adapter: false,
             // Request an adapter which can render to our surface
-            compatible_surface
+            compatible_surface,
         })
         .await?;
 
@@ -89,10 +112,8 @@ pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surfa
         })
         .await?;
 
-    let gpu = GpuContext
-    {
-        wgpu: WgpuContext
-        {
+    let gpu = GpuContext {
+        wgpu: WgpuContext {
             instance,
             adapter,
             device,
@@ -105,6 +126,6 @@ pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surfa
 
 pub mod prelude
 {
-    pub(crate) use super::WindowType;
     pub use super::CurrentWindow;
+    pub(crate) use super::WindowType;
 }

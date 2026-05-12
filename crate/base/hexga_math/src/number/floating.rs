@@ -2,8 +2,8 @@ use super::*;
 
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 /// To avoid any problem, avoid NaN value.
-/// 
-/// The Hash implementation treats all NaN values as equal for hashing purposes (impl detail/can be changed), 
+///
+/// The Hash implementation treats all NaN values as equal for hashing purposes (impl detail/can be changed),
 /// so different NaN patterns (signaling NaN, quiet NaN, payloads) will all collide to the same hash value.
 pub struct OrderedFloat<F>(pub F);
 
@@ -16,25 +16,34 @@ map_on_float!(
 
 impl Hash for OrderedFloat<f32>
 {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        match self.0.classify() {
-            std::num::FpCategory::Nan => {
+    fn hash<H: Hasher>(&self, state: &mut H)
+    {
+        match self.0.classify()
+        {
+            std::num::FpCategory::Nan =>
+            {
                 // All NaN values hash to the same value
                 0x7fc00000u32.hash(state); // Canonical NaN bits
             }
-            std::num::FpCategory::Infinite => {
+            std::num::FpCategory::Infinite =>
+            {
                 // Distinguish between +inf and -inf
-                if self.0.is_sign_positive() {
+                if self.0.is_sign_positive()
+                {
                     0x7f800000u32.hash(state); // +inf
-                } else {
+                }
+                else
+                {
                     0xff800000u32.hash(state); // -inf
                 }
             }
-            std::num::FpCategory::Zero => {
+            std::num::FpCategory::Zero =>
+            {
                 // +0.0 and -0.0 hash to the same value
                 0x00000000u32.hash(state); // +0
             }
-            std::num::FpCategory::Normal | std::num::FpCategory::Subnormal => {
+            std::num::FpCategory::Normal | std::num::FpCategory::Subnormal =>
+            {
                 // Normal and subnormal numbers: preserve sign
                 let bits = self.0.to_bits();
                 bits.hash(state);
@@ -43,26 +52,36 @@ impl Hash for OrderedFloat<f32>
     }
 }
 
-impl Hash for OrderedFloat<f64> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        match self.0.classify() {
-            std::num::FpCategory::Nan => {
+impl Hash for OrderedFloat<f64>
+{
+    fn hash<H: Hasher>(&self, state: &mut H)
+    {
+        match self.0.classify()
+        {
+            std::num::FpCategory::Nan =>
+            {
                 // All NaN values hash to the same value
                 0x7ff8000000000000u64.hash(state); // Canonical NaN bits
             }
-            std::num::FpCategory::Infinite => {
+            std::num::FpCategory::Infinite =>
+            {
                 // Distinguish between +inf and -inf
-                if self.0.is_sign_positive() {
+                if self.0.is_sign_positive()
+                {
                     0x7ff0000000000000u64.hash(state); // +inf
-                } else {
+                }
+                else
+                {
                     0xfff0000000000000u64.hash(state); // -inf
                 }
             }
-            std::num::FpCategory::Zero => {
+            std::num::FpCategory::Zero =>
+            {
                 // +0.0 and -0.0 hash to the same value
                 0x0000000000000000u64.hash(state); // +0
             }
-            std::num::FpCategory::Normal | std::num::FpCategory::Subnormal => {
+            std::num::FpCategory::Normal | std::num::FpCategory::Subnormal =>
+            {
                 // Normal and subnormal numbers: preserve sign
                 let bits = self.0.to_bits();
                 bits.hash(state);

@@ -14,18 +14,17 @@ pub use event::*;
 
 pub mod prelude
 {
-    pub use super::{WindowParam, Window, WindowResult};
+    pub use super::{Window, WindowParam, WindowResult};
     /*
     pub(crate) use super::{Window, WindowParam, WindowLevel, WinitWindowID, WinitWindowShared, ExternLibConvert};
     pub use super::{WindowAttribute, WindowEvent};
     */
     //pub use super::{WindowEvent};
-    pub(crate) use super::{ExternLibConvert};
+    pub(crate) use super::ExternLibConvert;
     pub use super::traits::*;
 }
 
-
 pub mod traits
 {
-    pub use super::{WindowManager, WindowAttribute, Windowable, WindowableSurface};
+    pub use super::{WindowAttribute, WindowManager, Windowable, WindowableSurface};
 }

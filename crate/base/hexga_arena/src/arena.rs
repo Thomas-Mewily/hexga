@@ -6,7 +6,7 @@ pub type Arena = ArenaOf;
 // Because the iterator of vector act like a vector [0..n] and not a stack [n-1..=0]
 // So allocating will first iterate over the older arena that are probably full
 #[derive(Clone)]
-pub struct ArenaOf<A=arena_buffer::BufferArena, C = SinglyLinkedNode<A>>
+pub struct ArenaOf<A = arena_buffer::BufferArena, C = SinglyLinkedNode<A>>
 where
     A: Arenable,
     C: Push<A>,
@@ -83,10 +83,7 @@ where
     C: Push<A> + Default,
     for<'a> &'a C: IntoIterator<Item = &'a A>,
 {
-    pub fn new() -> Self
-    {
-        Self::from_arenas(C::___())
-    }
+    pub fn new() -> Self { Self::from_arenas(C::___()) }
 }
 
 /*
@@ -220,7 +217,6 @@ where
         Ok(ptr)
     }
 }
-
 
 impl<A, C> ArenaOf<A, C>
 where

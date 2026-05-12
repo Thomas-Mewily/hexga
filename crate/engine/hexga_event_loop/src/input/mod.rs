@@ -17,22 +17,14 @@ pub use clipboard::*;
 
 pub mod prelude
 {
-    pub use super::{
-        KeyEvent, KeyCode, KeyAction, KeyShortcut, KeyModifiers, KeyModifiersFlags,
-        
-        Clipboard,
-    };
-    pub(crate) use super::{Keyboard, KeyCodeNative, KeyState, KeyRepeat, Key, KeyLocation};
     pub use super::traits::*;
+    pub use super::{
+        Clipboard, KeyAction, KeyCode, KeyEvent, KeyModifiers, KeyModifiersFlags, KeyShortcut,
+    };
+    pub(crate) use super::{Key, KeyCodeNative, KeyLocation, KeyRepeat, KeyState, Keyboard};
 }
 
 pub mod traits
 {
-    pub use super::{
-        KeyboardShortcuts,
-        KeyConstants,
-        KeyModifiersExtension,
-
-        Clipboardable
-    };
+    pub use super::{Clipboardable, KeyConstants, KeyModifiersExtension, KeyboardShortcuts};
 }

@@ -2,17 +2,16 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{
-        ButtonEvolution, ButtonRepeat,
-        ButtonState, ButtonStateEvolution, 
-        ButtonToggle,
-    };
     pub use super::traits::*;
+    pub use super::{
+        ButtonEvolution, ButtonRepeat, ButtonState, ButtonStateEvolution, ButtonToggle,
+    };
 }
 pub mod traits
 {
     pub use super::{
-        ButtonEvolutionExtension, ButtonRepeatExtension, ButtonStateExtension, ButtonToggleExtension
+        ButtonEvolutionExtension, ButtonRepeatExtension, ButtonStateExtension,
+        ButtonToggleExtension,
     };
 }
 

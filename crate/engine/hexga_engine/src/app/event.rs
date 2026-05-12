@@ -3,7 +3,6 @@ use hexga_graphics::gpu::GpuContext;
 
 use super::*;
 
-
 pub type AppEvent = PlatformEvent<()>;
 
 pub(crate) type AppInternalEvent = PlatformEvent<AppCustomEvent>;
@@ -12,7 +11,10 @@ pub(crate) type AppInternalEventLoop<'a> = EventLoop<'a, AppCustomEvent>;
 
 pub(crate) enum AppCustomEvent
 {
-    GpuReady { surface : GpuSurface<'static>, gpu: GpuContext },
+    GpuReady
+    {
+        surface: GpuSurface<'static>,
+        gpu: GpuContext,
+    },
     GpuError(GpuError),
 }
-

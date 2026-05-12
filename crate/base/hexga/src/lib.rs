@@ -7,12 +7,12 @@ pub use hexga_ansi_color as ansi_color;
 pub use hexga_bitflags as bitflags;
 pub use hexga_core::*;
 //pub use hexga_core as core;
+pub use hexga_array_vec as array_vec;
 pub use hexga_generational as generational;
 pub use hexga_image::{color, image};
 pub use hexga_map_on as map_on;
 pub use hexga_math as math;
 pub use hexga_utils as utils;
-pub use hexga_array_vec as array_vec;
 //pub use hexga_random as random;
 pub use hexga_encoding as encoding;
 
@@ -60,9 +60,9 @@ pub mod hexga_prelude
     pub use crate::utils::prelude::*;
     pub use hexga_image::prelude::*;
     //pub use crate::random::*;
+    pub use crate::array_vec::prelude::*;
     pub use crate::encoding::prelude::*;
     pub use crate::singleton::prelude::*;
-    pub use crate::array_vec::prelude::*;
     //pub use crate::map_on::prelude::*;
 
     /*
@@ -95,13 +95,11 @@ pub mod hexga_prelude
     pub use super::hexga_traits::*;
 }
 
-
 #[doc(hidden)]
 pub mod hexga_traits
 {
-    pub use crate::utils::traits::*;
     pub use crate::generational::traits::*;
+    pub use crate::utils::traits::*;
 }
-
 
 // Todo: introduce a `mods traits`

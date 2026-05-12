@@ -85,7 +85,8 @@ pub(crate) type WinitKey<Str> = winit::keyboard::Key<Str>;
 /// define keybinds which work in the presence of identifiers we haven't mapped for you yet.
 #[derive(Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum KeyNative {
+pub enum KeyNative
+{
     Unknow,
     /// An Android "keycode", which is similar to a "virtual-key code" on Windows.
     Android(u32),
@@ -102,7 +103,8 @@ pub enum KeyNative {
 
 impl From<WinitKeyNative> for KeyNative
 {
-    fn from(value: WinitKeyNative) -> Self {
+    fn from(value: WinitKeyNative) -> Self
+    {
         match value
         {
             winit::keyboard::NativeKey::Unidentified => KeyNative::Unknow,
@@ -115,44 +117,55 @@ impl From<WinitKeyNative> for KeyNative
     }
 }
 
-
-impl Debug for KeyNative {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+impl Debug for KeyNative
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
+    {
         use KeyNative::{Android, MacOS, Unknow, Web, Windows, Xkb};
         let mut debug_tuple;
-        match self {
-            Unknow => {
+        match self
+        {
+            Unknow =>
+            {
                 debug_tuple = f.debug_tuple("Unknow");
-            },
-            Android(code) => {
+            }
+            Android(code) =>
+            {
                 debug_tuple = f.debug_tuple("Android");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
-            },
-            MacOS(code) => {
+            }
+            MacOS(code) =>
+            {
                 debug_tuple = f.debug_tuple("MacOS");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
-            },
-            Windows(code) => {
+            }
+            Windows(code) =>
+            {
                 debug_tuple = f.debug_tuple("Windows");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
-            },
-            Xkb(code) => {
+            }
+            Xkb(code) =>
+            {
                 debug_tuple = f.debug_tuple("Xkb");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
-            },
-            Web(code) => {
+            }
+            Web(code) =>
+            {
                 debug_tuple = f.debug_tuple("Web");
                 debug_tuple.field(code);
-            },
+            }
         }
         debug_tuple.finish()
     }
 }
 
-impl From<KeyCodeNative> for KeyNative {
+impl From<KeyCodeNative> for KeyNative
+{
     #[inline]
-    fn from(code: KeyCodeNative) -> Self {
-        match code {
+    fn from(code: KeyCodeNative) -> Self
+    {
+        match code
+        {
             KeyCodeNative::Unknow => KeyNative::Unknow,
             KeyCodeNative::Android(x) => KeyNative::Android(x),
             KeyCodeNative::MacOS(x) => KeyNative::MacOS(x),
@@ -162,20 +175,17 @@ impl From<KeyCodeNative> for KeyNative {
     }
 }
 
-impl PartialEq<KeyNative> for KeyCodeNative {
+impl PartialEq<KeyNative> for KeyCodeNative
+{
     #[allow(clippy::cmp_owned)] // uses less code than direct match; target is stack allocated
     #[inline]
-    fn eq(&self, rhs: &KeyNative) -> bool {
-        KeyNative::from(*self) == *rhs
-    }
+    fn eq(&self, rhs: &KeyNative) -> bool { KeyNative::from(*self) == *rhs }
 }
 
-
-impl PartialEq<KeyCodeNative> for KeyNative {
+impl PartialEq<KeyCodeNative> for KeyNative
+{
     #[inline]
-    fn eq(&self, rhs: &KeyCodeNative) -> bool {
-        rhs == self
-    }
+    fn eq(&self, rhs: &KeyCodeNative) -> bool { rhs == self }
 }
 
 /// A [`Key::Named`] value
@@ -191,9 +201,9 @@ impl PartialEq<KeyCodeNative> for KeyNative {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum KeyNamed 
+pub enum KeyNamed
 {
-    /// `Unknow` / error value, used if the convertion from Winit NamedKey was not handled 
+    /// `Unknow` / error value, used if the convertion from Winit NamedKey was not handled
     /// (because Winit NamedKey is also non exhaustive)
     Unknow,
 
@@ -903,7 +913,8 @@ pub enum KeyNamed
 
 impl From<WinitKeyName> for KeyNamed
 {
-    fn from(value: WinitKeyName) -> Self {
+    fn from(value: WinitKeyName) -> Self
+    {
         match value
         {
             winit::keyboard::NamedKey::Alt => KeyNamed::Alt,
@@ -1079,7 +1090,10 @@ impl From<WinitKeyName> for KeyNamed
             winit::keyboard::NamedKey::TV3DMode => KeyNamed::TV3DMode,
             winit::keyboard::NamedKey::TVAntennaCable => KeyNamed::TVAntennaCable,
             winit::keyboard::NamedKey::TVAudioDescription => KeyNamed::TVAudioDescription,
-            winit::keyboard::NamedKey::TVAudioDescriptionMixDown => KeyNamed::TVAudioDescriptionMixDown,
+            winit::keyboard::NamedKey::TVAudioDescriptionMixDown =>
+            {
+                KeyNamed::TVAudioDescriptionMixDown
+            }
             winit::keyboard::NamedKey::TVAudioDescriptionMixUp => KeyNamed::TVAudioDescriptionMixUp,
             winit::keyboard::NamedKey::TVContentsMenu => KeyNamed::TVContentsMenu,
             winit::keyboard::NamedKey::TVDataService => KeyNamed::TVDataService,
@@ -1212,14 +1226,17 @@ impl From<WinitKeyName> for KeyNamed
             winit::keyboard::NamedKey::F33 => KeyNamed::F33,
             winit::keyboard::NamedKey::F34 => KeyNamed::F34,
             winit::keyboard::NamedKey::F35 => KeyNamed::F35,
-            _ => 
+            _ =>
             {
-                if cfg!(debug_assertions) {
+                if cfg!(debug_assertions)
+                {
                     panic!("Unhandled winit KeyName : {:?}", value);
-                } else {
+                }
+                else
+                {
                     KeyNamed::Unknow
                 }
-            },
+            }
         }
     }
 }
@@ -1236,7 +1253,8 @@ impl From<WinitKeyName> for KeyNamed
 /// [`KeyboardEvent.key`]: https://w3c.github.io/uievents-key/
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum Key<Str = KeyText> {
+pub enum Key<Str = KeyText>
+{
     /// A simple (unparameterised) action
     Named(KeyNamed),
 
@@ -1260,7 +1278,8 @@ pub enum Key<Str = KeyText> {
 
 impl<Str> From<WinitKey<Str>> for Key<Str>
 {
-    fn from(value: WinitKey<Str>) -> Self {
+    fn from(value: WinitKey<Str>) -> Self
+    {
         match value
         {
             winit::keyboard::Key::Named(named_key) => Key::Named(named_key.into()),
@@ -1271,69 +1290,75 @@ impl<Str> From<WinitKey<Str>> for Key<Str>
     }
 }
 
-impl From<KeyNamed> for Key {
+impl From<KeyNamed> for Key
+{
     #[inline]
-    fn from(action: KeyNamed) -> Self {
-        Key::Named(action)
-    }
+    fn from(action: KeyNamed) -> Self { Key::Named(action) }
 }
 
-impl From<KeyNative> for Key {
+impl From<KeyNative> for Key
+{
     #[inline]
-    fn from(code: KeyNative) -> Self {
-        Key::Unknow(code)
-    }
+    fn from(code: KeyNative) -> Self { Key::Unknow(code) }
 }
 
-impl<Str> PartialEq<KeyNamed> for Key<Str> {
+impl<Str> PartialEq<KeyNamed> for Key<Str>
+{
     #[inline]
-    fn eq(&self, rhs: &KeyNamed) -> bool {
-        match &self {
+    fn eq(&self, rhs: &KeyNamed) -> bool
+    {
+        match &self
+        {
             Key::Named(a) => a == rhs,
             _ => false,
         }
     }
 }
 
-
-impl<Str: PartialEq<str>> PartialEq<str> for Key<Str> {
+impl<Str: PartialEq<str>> PartialEq<str> for Key<Str>
+{
     #[inline]
-    fn eq(&self, rhs: &str) -> bool {
-        match &self {
+    fn eq(&self, rhs: &str) -> bool
+    {
+        match &self
+        {
             Key::Text(s) => s == rhs,
             _ => false,
         }
     }
 }
-impl<Str: PartialEq<str>> PartialEq<&str> for Key<Str> {
+impl<Str: PartialEq<str>> PartialEq<&str> for Key<Str>
+{
     #[inline]
-    fn eq(&self, rhs: &&str) -> bool {
-        self == *rhs
-    }
+    fn eq(&self, rhs: &&str) -> bool { self == *rhs }
 }
 
-impl<Str> PartialEq<KeyNative> for Key<Str> {
+impl<Str> PartialEq<KeyNative> for Key<Str>
+{
     #[inline]
-    fn eq(&self, rhs: &KeyNative) -> bool {
-        match &self {
+    fn eq(&self, rhs: &KeyNative) -> bool
+    {
+        match &self
+        {
             Key::Unknow(code) => code == rhs,
             _ => false,
         }
     }
 }
-impl<Str> PartialEq<Key<Str>> for KeyNative {
+impl<Str> PartialEq<Key<Str>> for KeyNative
+{
     #[inline]
-    fn eq(&self, rhs: &Key<Str>) -> bool {
-        rhs == self
-    }
+    fn eq(&self, rhs: &Key<Str>) -> bool { rhs == self }
 }
 
 impl Key
 {
     /// Convert `Key::Character(SmolStr)` to `Key::Character(&str)` so you can more easily match on
     /// `Key`. All other variants remain unchanged.
-    pub fn as_ref(&self) -> Key<&str> {
-        match self {
+    pub fn as_ref(&self) -> Key<&str>
+    {
+        match self
+        {
             Key::Named(a) => Key::Named(*a),
             Key::Text(ch) => Key::Text(ch.as_str()),
             Key::Dead(d) => Key::Dead(*d),
@@ -1342,8 +1367,8 @@ impl Key
     }
 }
 
-
-impl KeyNamed {
+impl KeyNamed
+{
     /// Convert an action to its approximate textual equivalent.
     ///
     /// # Examples
@@ -1354,8 +1379,10 @@ impl KeyNamed {
     /// assert_eq!(NamedKey::Enter.to_text(), Some("\r"));
     /// assert_eq!(NamedKey::F20.to_text(), None);
     /// ```
-    pub fn to_text(&self) -> Option<&str> {
-        match self {
+    pub fn to_text(&self) -> Option<&str>
+    {
+        match self
+        {
             KeyNamed::Enter => Some("\r"),
             KeyNamed::Backspace => Some("\x08"),
             KeyNamed::Tab => Some("\t"),
@@ -1390,14 +1417,16 @@ pub enum KeyModifiers
     SuperLeft,
     SuperRight,
     Super = Self::SuperLeft | Self::SuperRight,
-
     // Todo: add the other modifier ? https://en.wikipedia.org/wiki/Modifier_key
     // Fn, AltGr...
 }
 
 impl KeyModifiersFlags
 {
-    pub const fn shortcut(self, code: KeyCode) -> KeyShortcut { KeyShortcut::from_code(code).with_modifier(self) }
+    pub const fn shortcut(self, code: KeyCode) -> KeyShortcut
+    {
+        KeyShortcut::from_code(code).with_modifier(self)
+    }
 }
 
 pub trait KeyModifiersExtension
@@ -1418,11 +1447,8 @@ impl KeyModifiersExtension for KeyModifiers
 
 impl Default for KeyModifiersFlags
 {
-    fn default() -> Self {
-        Self::EMPTY
-    }
+    fn default() -> Self { Self::EMPTY }
 }
-
 
 impl Matches for KeyModifiersFlags
 {
@@ -1430,34 +1456,61 @@ impl Matches for KeyModifiersFlags
     /// Checks if the actual modifier flags match the expected modifier pattern.
     ///
     /// Also handles both composite modifiers (e.g., `Shift`) and side-specific modifiers (e.g., `ShiftLeft`).
-    fn matches(&self, lexem: &Self) -> bool 
+    fn matches(&self, lexem: &Self) -> bool
     {
         // Some one will probbaly find a clever bit flags way to do it.
         // Anyways, it's not a performance bottle neck
-        fn check_mods(self_bits: KeyModifiersFlags, lexem_bits: KeyModifiersFlags, left: KeyModifiersFlags, right: KeyModifiersFlags, left_or_right: KeyModifiersFlags) -> bool {
-            if self_bits.contains(left_or_right) {
-                return lexem_bits.contains(left) || lexem_bits.contains(right);
-            } else 
+        fn check_mods(
+            self_bits: KeyModifiersFlags,
+            lexem_bits: KeyModifiersFlags,
+            left: KeyModifiersFlags,
+            right: KeyModifiersFlags,
+            left_or_right: KeyModifiersFlags,
+        ) -> bool
+        {
+            if self_bits.contains(left_or_right)
             {
-                if self_bits.contains(left) && !lexem_bits.contains(left) {
+                return lexem_bits.contains(left) || lexem_bits.contains(right);
+            }
+            else
+            {
+                if self_bits.contains(left) && !lexem_bits.contains(left)
+                {
                     return false;
                 }
-                if self_bits.contains(right) && !lexem_bits.contains(right) {
+                if self_bits.contains(right) && !lexem_bits.contains(right)
+                {
                     return false;
                 }
                 return true;
             }
         }
-        
-        check_mods(*self, *lexem, Self::ShiftLeft, Self::ShiftRight, Self::Shift) 
-        && check_mods(*self, *lexem, Self::ControlLeft, Self::ControlRight, Self::Control) 
-        && check_mods(*self, *lexem, Self::AltLeft, Self::AltRight, Self::Alt) 
-        && check_mods(*self, *lexem, Self::SuperLeft, Self::SuperRight, Self::Super)
+
+        check_mods(
+            *self,
+            *lexem,
+            Self::ShiftLeft,
+            Self::ShiftRight,
+            Self::Shift,
+        ) && check_mods(
+            *self,
+            *lexem,
+            Self::ControlLeft,
+            Self::ControlRight,
+            Self::Control,
+        ) && check_mods(*self, *lexem, Self::AltLeft, Self::AltRight, Self::Alt)
+            && check_mods(
+                *self,
+                *lexem,
+                Self::SuperLeft,
+                Self::SuperRight,
+                Self::Super,
+            )
     }
 }
 
-impl KeyModifiersExtension for KeyModifiersFlags 
-{ 
+impl KeyModifiersExtension for KeyModifiersFlags
+{
     fn is_shift(&self) -> bool { self.contains_any(Self::Shift) }
     fn is_control(&self) -> bool { self.contains_any(Self::Control) }
     fn is_super(&self) -> bool { self.contains_any(Self::Super) }
@@ -1467,48 +1520,53 @@ impl KeyModifiersExtension for KeyModifiersFlags
 impl KeyModifiersFlags
 {
     /// Converts side-specific modifiers to their composite form.
-    /// 
+    ///
     /// If any left or right modifier (e.g., `ShiftLeft` or `ShiftRight`) is present,
     /// the corresponding composite flag (`Shift`) is also set. Side-specific flags
     /// are preserved for detailed checking if needed.
-    /// 
+    ///
     /// # Example
     /// ```
     /// use hexga_event_loop::input::prelude::*;
-    /// 
+    ///
     /// let modifiers = KeyModifiersFlags::ShiftLeft | KeyModifiersFlags::ControlRight;
     /// assert_eq!(modifiers.generalize(), KeyModifiersFlags::Shift | KeyModifiersFlags::Control);
     /// ```
-    pub fn generalize(self) -> Self 
+    pub fn generalize(self) -> Self
     {
         let mut result = Self::ZERO;
-        
-        if self.contains_any(Self::Shift) {
+
+        if self.contains_any(Self::Shift)
+        {
             result |= Self::Shift;
         }
-        if self.contains_any(Self::Control) {
+        if self.contains_any(Self::Control)
+        {
             result |= Self::Control;
         }
-        if self.contains_any(Self::Alt) {
+        if self.contains_any(Self::Alt)
+        {
             result |= Self::Alt;
         }
-        if self.contains_any(Self::Super) {
+        if self.contains_any(Self::Super)
+        {
             result |= Self::Super;
         }
-        
+
         result
     }
 }
 
 impl KeyModifiers
 {
-    pub fn from_keycode(key : KeyCode) -> Option<Self> { Self::try_from(key).ok() }
+    pub fn from_keycode(key: KeyCode) -> Option<Self> { Self::try_from(key).ok() }
 }
 
 impl TryFrom<KeyCode> for KeyModifiers
 {
     type Error = ();
-    fn try_from(value: KeyCode) -> Result<KeyModifiers, Self::Error> {
+    fn try_from(value: KeyCode) -> Result<KeyModifiers, Self::Error>
+    {
         match value
         {
             KeyCode::ShiftLeft => Ok(Self::ShiftLeft),
@@ -1529,7 +1587,8 @@ type KeyError = ();
 impl TryFrom<KeyNamed> for KeyModifiersFlags
 {
     type Error = KeyError;
-    fn try_from(value: KeyNamed) -> Result<KeyModifiersFlags, Self::Error> {
+    fn try_from(value: KeyNamed) -> Result<KeyModifiersFlags, Self::Error>
+    {
         match value
         {
             KeyNamed::Shift => Ok(Self::Shift),
@@ -1544,7 +1603,8 @@ impl TryFrom<KeyNamed> for KeyModifiersFlags
 impl TryFrom<Key> for KeyModifiersFlags
 {
     type Error = KeyError;
-    fn try_from(value: Key) -> Result<KeyModifiersFlags, Self::Error> {
+    fn try_from(value: Key) -> Result<KeyModifiersFlags, Self::Error>
+    {
         match value
         {
             Key::Named(n) => n.try_into(),

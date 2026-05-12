@@ -38,7 +38,7 @@ where
 
 pub trait EvolutionWithContext<I, Ctx>
 where
-    I: Copy
+    I: Copy,
 {
     /// The current state right now
     fn value(&self, ctx: &mut Ctx) -> I;
@@ -53,7 +53,10 @@ where
         self.value(ctx) - self.old_value(ctx)
     }
 
-    fn evolution(&self, ctx: &mut Ctx) -> PreviousValue<I> { PreviousValue::new(self.value(ctx), self.old_value(ctx)) }
+    fn evolution(&self, ctx: &mut Ctx) -> PreviousValue<I>
+    {
+        PreviousValue::new(self.value(ctx), self.old_value(ctx))
+    }
 }
 
 pub trait Evolution<I>

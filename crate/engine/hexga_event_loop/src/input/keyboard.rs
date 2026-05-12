@@ -123,14 +123,14 @@ impl KeyCodeManager
     }
 }
 
-impl<Ctx> EvolutionWithContext<ButtonState,Ctx> for KeyCode
-    where Ctx: HasMut<Keyboard>
+impl<Ctx> EvolutionWithContext<ButtonState, Ctx> for KeyCode
+where
+    Ctx: HasMut<Keyboard>,
 {
-    fn value(&self, ctx: &mut Ctx) -> ButtonState {
-        ctx.retrive_mut().keys().button_state(*self)
-    }
+    fn value(&self, ctx: &mut Ctx) -> ButtonState { ctx.retrive_mut().keys().button_state(*self) }
 
-    fn old_value(&self, ctx: &mut Ctx) -> ButtonState {
+    fn old_value(&self, ctx: &mut Ctx) -> ButtonState
+    {
         ctx.retrive_mut().keys().old_button_state(*self)
     }
 }

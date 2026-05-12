@@ -40,7 +40,7 @@ pub trait With<T>
 //impl<S,T> GetterSetter<T> for S where S:Has<T> +Setter<T>{}
 
 /// Used to represent types that can provide a certain context type.
-/// 
+///
 /// Based on [GGEZ Has trait](https://docs.rs/ggez/latest/ggez/context/trait.Has.html)
 pub trait Has<T>
 {
@@ -80,7 +80,7 @@ impl<T> HasMut<T> for T
 #[macro_export]
 macro_rules! impl_has_mut_trait {
     ($trait_name:ident, $type_name:ty, $method_name:ident) => {
-        pub trait $trait_name : HasMut<$type_name>
+        pub trait $trait_name: HasMut<$type_name>
         {
             fn $method_name(&mut self) -> &mut $type_name { self.retrive_mut() }
         }

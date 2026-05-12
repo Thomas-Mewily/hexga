@@ -13,7 +13,6 @@ pub trait Clipboardable
     fn set_clipboard(&mut self, paste: String) -> Result<(), ()>;
 }
 
-
 pub struct Clipboard
 {
     ctx: Option<copypasta::ClipboardContext>,
@@ -21,10 +20,7 @@ pub struct Clipboard
 
 impl Debug for Clipboard
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
-        write!(f, "Clipboard")
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "Clipboard") }
 }
 
 impl Default for Clipboard

@@ -12,9 +12,7 @@ pub struct Gpu;
 
 impl SingletonEmptyStruct for Gpu
 {
-    fn is_init() -> bool {
-        GPU.try_get().is_ok()
-    }
+    fn is_init() -> bool { GPU.try_get().is_ok() }
 }
 
 impl Deref for Gpu

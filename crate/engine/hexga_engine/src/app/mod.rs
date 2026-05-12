@@ -14,18 +14,17 @@ pub use event::*;
 
 pub mod prelude
 {
-    pub use super::{AppParam,AppEvent,AppResult,AppError};
     pub use super::traits::*;
+    pub use super::{AppError, AppEvent, AppParam, AppResult};
 
-    pub(crate) use super::{AppInternalEvent, AppCustomEvent,
-        AppInternalProxy,AppInternalEventLoop
+    pub(crate) use super::{
+        AppCustomEvent, AppInternalEvent, AppInternalEventLoop, AppInternalProxy,
     };
-    
 }
 
 pub mod traits
 {
-    pub use super::{App,AppRun};
+    pub use super::{App, AppRun};
 }
 
 /*
@@ -37,9 +36,9 @@ pub(crate) struct AppCtx<A>
 
 impl PlatformEventHandler for AppCtx
 {
-    fn update(&mut self, dt: Duration, event_loop: &mut EventLoop<()>) 
-    { 
-        let _ = dt; 
+    fn update(&mut self, dt: Duration, event_loop: &mut EventLoop<()>)
+    {
+        let _ = dt;
     }
 
     fn draw(&mut self, event_loop: &mut EventLoop<()>) { let _ = event_loop; }

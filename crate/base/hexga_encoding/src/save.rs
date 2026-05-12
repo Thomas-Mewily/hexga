@@ -23,7 +23,10 @@ pub trait SaveExtension: CfgSerialize
 
 pub trait SaveExtensionBytes: SaveExtension
 {
-    fn save_to_bytes_with_custom_extension(&self, extension: Option<&extension>) -> EncodeResult<Vec<u8>>
+    fn save_to_bytes_with_custom_extension(
+        &self,
+        extension: Option<&extension>,
+    ) -> EncodeResult<Vec<u8>>
     {
         self.save_to_bytes_with_custom_extension_in(
             Vec::with_capacity(DEFAULT_WRITER_CAPACITY),
@@ -94,17 +97,18 @@ pub trait Save: SaveExtension
             && let Some(ext) = Self::save_prefered_extension()
         {
             return self
-                .save_to_writer_with_custom_extension(writer,  Some(ext))
+                .save_to_writer_with_custom_extension(writer, Some(ext))
                 .map(|_| Some(ext.into()));
         }
 
         #[cfg(feature = "serde")]
         {
-            let format = match extension 
+            let format = match extension
             {
                 Some(ex) => AnyFormat::try_from(ex).ok(),
                 None => None,
-            }.unwrap_or_default();
+            }
+            .unwrap_or_default();
 
             format.encode_with_writer(&self, writer)?;
             return Ok(Some(format.extension().into()));

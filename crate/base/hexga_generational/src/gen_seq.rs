@@ -2,13 +2,13 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{GenVec, GenView, GenViewMut};
     pub use super::traits::*;
+    pub use super::{GenVec, GenView, GenViewMut};
 }
 
 pub mod traits
 {
-    pub use super::{GenSeqEntryIntoValue, GenIDUpdater, GenIDUpdatable, CollectToGenVec};
+    pub use super::{CollectToGenVec, GenIDUpdatable, GenIDUpdater, GenSeqEntryIntoValue};
 }
 
 pub type GenVec<T> = GenSeq<T, Generation, Vec<Entry<T, Generation>>>;
@@ -1081,7 +1081,6 @@ where
     }
 }
 
-
 pub trait GenSeqEntryIntoValue<Gen>
 where
     Gen: GenerationalIndex,
@@ -2105,12 +2104,36 @@ where
     }
 }
 
-impl<T, Gen, C> CollectionPushStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
-impl<T, Gen, C> CollectionPopStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
-impl<T, Gen, C> CollectionInsertStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
-impl<T, Gen, C> CollectionRemoveStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
-impl<T, Gen, C> CollectionGetMutStableKey for GenSeq<T, Gen, C> where C: AsRef<[Entry<T, Gen>]>, Gen: GenerationalIndex, {}
-
+impl<T, Gen, C> CollectionPushStableKey for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
+}
+impl<T, Gen, C> CollectionPopStableKey for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
+}
+impl<T, Gen, C> CollectionInsertStableKey for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
+}
+impl<T, Gen, C> CollectionRemoveStableKey for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
+}
+impl<T, Gen, C> CollectionGetMutStableKey for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
+}
 
 impl<T, Gen, C> GenSeq<T, Gen, C>
 where
@@ -2166,7 +2189,6 @@ where
         }
     }
 }
-
 
 pub trait GenIDUpdater<T, Gen>
 where
@@ -2244,7 +2266,6 @@ where
         }
     }
 }
-
 
 pub trait CollectToGenVec<T>: Sized + IntoIterator<Item = T>
 {

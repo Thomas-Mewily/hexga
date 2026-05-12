@@ -46,7 +46,7 @@ pub struct WgpuInstanceDescriptor
 
 impl PartialEq for WgpuInstanceDescriptor
 {
-    fn eq(&self, other: &Self) -> bool 
+    fn eq(&self, other: &Self) -> bool
     {
         // Todo : also take into consideration the backend_options?
         self.flags == other.flags

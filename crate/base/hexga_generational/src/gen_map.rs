@@ -3,8 +3,8 @@ use crate::gen_seq::GenSeq;
 
 pub mod prelude
 {
-    pub use super::{GenBTreeMap, GenHashMap};
     pub use super::traits::*;
+    pub use super::{GenBTreeMap, GenHashMap};
 }
 
 pub mod traits

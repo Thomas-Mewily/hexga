@@ -176,30 +176,26 @@ impl<T> Iterator for IntoIter<T>
     }
 }
 
-
-impl<T> IntoIterator for SinglyLinkedNode<T> {
+impl<T> IntoIterator for SinglyLinkedNode<T>
+{
     type Item = T;
     type IntoIter = IntoIter<T>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        IntoIter::new(Some(self))
-    }
+    fn into_iter(self) -> Self::IntoIter { IntoIter::new(Some(self)) }
 }
 
-impl<'a, T> IntoIterator for &'a SinglyLinkedNode<T> {
+impl<'a, T> IntoIterator for &'a SinglyLinkedNode<T>
+{
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        Iter::new(self)
-    }
+    fn into_iter(self) -> Self::IntoIter { Iter::new(self) }
 }
 
-impl<'a, T> IntoIterator for &'a mut SinglyLinkedNode<T> {
+impl<'a, T> IntoIterator for &'a mut SinglyLinkedNode<T>
+{
     type Item = &'a mut T;
     type IntoIter = IterMut<'a, T>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        IterMut::new(self)
-    }
+    fn into_iter(self) -> Self::IntoIter { IterMut::new(self) }
 }

@@ -120,13 +120,13 @@
 // TODO fix the serde feature flags warnings...
 #![allow(unexpected_cfgs)]
 
-extern crate proc_macro;
 extern crate heck;
+extern crate proc_macro;
 
+use heck::ToSnakeCase;
 use proc_macro::TokenStream;
 use quote::{ToTokens, format_ident, quote};
 use syn::{Ident, ItemEnum, parse_macro_input};
-use heck::ToSnakeCase;
 
 #[allow(unexpected_cfgs)]
 #[cfg(feature = "serde")]
@@ -141,24 +141,33 @@ fn emit_serde_code(
 )
 {
     let helper_struct_name = format_ident!("{}SerdeHelper", struct_name);
-    
+
     // Generate boolean fields for the helper struct
-    let helper_fields: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let field_name = format_ident!("{}", variant.to_string().to_lowercase());
-        quote! { #field_name: bool }
-    }).collect();
+    let helper_fields: Vec<_> = enum_variants_name
+        .iter()
+        .map(|variant| {
+            let field_name = format_ident!("{}", variant.to_string().to_lowercase());
+            quote! { #field_name: bool }
+        })
+        .collect();
 
     // Generate field initialization from bits
-    let helper_from_bits: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let field_name = format_ident!("{}", variant.to_string().to_lowercase());
-        quote! { #field_name: (bits & #struct_name::#variant.bits()) != 0 }
-    }).collect();
+    let helper_from_bits: Vec<_> = enum_variants_name
+        .iter()
+        .map(|variant| {
+            let field_name = format_ident!("{}", variant.to_string().to_lowercase());
+            quote! { #field_name: (bits & #struct_name::#variant.bits()) != 0 }
+        })
+        .collect();
 
     // Generate bits from helper struct
-    let bits_from_helper: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let field_name = format_ident!("{}", variant.to_string().to_lowercase());
-        quote! { if helper.#field_name { #struct_name::#variant.bits() } else { 0 } }
-    }).collect();
+    let bits_from_helper: Vec<_> = enum_variants_name
+        .iter()
+        .map(|variant| {
+            let field_name = format_ident!("{}", variant.to_string().to_lowercase());
+            quote! { if helper.#field_name { #struct_name::#variant.bits() } else { 0 } }
+        })
+        .collect();
 
     (
         quote! {
@@ -174,7 +183,7 @@ fn emit_serde_code(
                     S: ::serde::Serializer,
                 {
                     use serde::ser::Serialize;
-                    
+
                     if serializer.is_human_readable() {
                         // Text serialization: use helper struct with boolean fields
                         let bits = self.bits();
@@ -198,7 +207,7 @@ fn emit_serde_code(
                     D: ::serde::Deserializer<'de>,
                 {
                     use serde::de::Deserialize;
-                    
+
                     if deserializer.is_human_readable() {
                         // Text deserialization: deserialize helper struct with boolean fields
                         let helper = #helper_struct_name::deserialize(deserializer)?;
@@ -336,16 +345,22 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
     let nb_variant = enum_variants.len();
 
     // Combine regular and composite field names
-    let all_field_names: Vec<_> = enum_variants_name.iter().chain(composite_variants_name.iter()).collect();
+    let all_field_names: Vec<_> = enum_variants_name
+        .iter()
+        .chain(composite_variants_name.iter())
+        .collect();
 
     // Generate method names for enum and flags
-    let enum_is_methods: Vec<_> = enum_variants_name.iter().map(|variant| {
-        let method_name = format_ident!("is_{}", variant.to_string().to_lowercase());
-        quote! {
-            /// Returns true if this enum variant matches #variant
-            pub const fn #method_name(&self) -> bool { matches!(self, Self::#variant) }
-        }
-    }).collect();
+    let enum_is_methods: Vec<_> = enum_variants_name
+        .iter()
+        .map(|variant| {
+            let method_name = format_ident!("is_{}", variant.to_string().to_lowercase());
+            quote! {
+                /// Returns true if this enum variant matches #variant
+                pub const fn #method_name(&self) -> bool { matches!(self, Self::#variant) }
+            }
+        })
+        .collect();
 
     let flags_is_methods: Vec<_> = all_field_names.iter().map(|variant| {
         let method_name = format_ident!("is_{}", variant.to_string().to_snake_case());
@@ -355,37 +370,46 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
     }).collect();
 
-    let flags_set_methods: Vec<_> = all_field_names.iter().map(|variant| {
-        let method_name = format_ident!("set_{}", variant.to_string().to_snake_case());
-        quote! {
-            /// Conditionally set or unset #variant flag
-            pub fn #method_name(&mut self, insert: bool) -> &mut Self { 
-                *self = self.with(#struct_name::#variant, insert); 
-                self 
+    let flags_set_methods: Vec<_> = all_field_names
+        .iter()
+        .map(|variant| {
+            let method_name = format_ident!("set_{}", variant.to_string().to_snake_case());
+            quote! {
+                /// Conditionally set or unset #variant flag
+                pub fn #method_name(&mut self, insert: bool) -> &mut Self {
+                    *self = self.with(#struct_name::#variant, insert);
+                    self
+                }
             }
-        }
-    }).collect();
+        })
+        .collect();
 
-    let flags_with_methods: Vec<_> = all_field_names.iter().map(|variant| {
-        let method_name = format_ident!("with_{}", variant.to_string().to_snake_case());
-        quote! {
-            /// Returns a new flags with #variant conditionally set or unset
-            pub fn #method_name(self, insert: bool) -> Self { 
-                self.with(#struct_name::#variant, insert) 
+    let flags_with_methods: Vec<_> = all_field_names
+        .iter()
+        .map(|variant| {
+            let method_name = format_ident!("with_{}", variant.to_string().to_snake_case());
+            quote! {
+                /// Returns a new flags with #variant conditionally set or unset
+                pub fn #method_name(self, insert: bool) -> Self {
+                    self.with(#struct_name::#variant, insert)
+                }
             }
-        }
-    }).collect();
+        })
+        .collect();
 
-    let flags_toggle_methods: Vec<_> = all_field_names.iter().map(|variant| {
-        let method_name = format_ident!("toggle_{}", variant.to_string().to_snake_case());
-        quote! {
-            /// Toggles #variant flag
-            pub const fn #method_name(&mut self) -> &mut Self { 
-                self._bits_do_not_use_it ^= (#struct_name::#variant)._bits_do_not_use_it; 
-                self 
+    let flags_toggle_methods: Vec<_> = all_field_names
+        .iter()
+        .map(|variant| {
+            let method_name = format_ident!("toggle_{}", variant.to_string().to_snake_case());
+            quote! {
+                /// Toggles #variant flag
+                pub const fn #method_name(&mut self) -> &mut Self {
+                    self._bits_do_not_use_it ^= (#struct_name::#variant)._bits_do_not_use_it;
+                    self
+                }
             }
-        }
-    }).collect();
+        })
+        .collect();
 
     let flags_with_toggle_methods: Vec<_> = all_field_names.iter().map(|variant| {
         let method_name = format_ident!("toggled_{}", variant.to_string().to_snake_case());

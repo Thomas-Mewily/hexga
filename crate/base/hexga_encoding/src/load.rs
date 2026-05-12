@@ -70,11 +70,12 @@ pub trait Load: LoadExtension + for<'de> CfgDeserialize<'de>
 
         #[cfg(feature = "serde")]
         {
-            let format = match extension 
+            let format = match extension
             {
                 Some(ex) => AnyFormat::try_from(ex).ok(),
                 None => None,
-            }.unwrap_or_default();
+            }
+            .unwrap_or_default();
             return format.from_reader(reader);
         }
 

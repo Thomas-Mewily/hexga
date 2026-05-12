@@ -2,8 +2,8 @@ use std::fmt::Debug;
 
 pub mod prelude
 {
-    pub use super::{LazyFnMutValue, LazyFnOnceValue, LazyFnValue};
     pub use super::traits::*;
+    pub use super::{LazyFnMutValue, LazyFnOnceValue, LazyFnValue};
 }
 
 pub mod traits

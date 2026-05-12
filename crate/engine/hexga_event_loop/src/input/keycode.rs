@@ -20,34 +20,41 @@ pub enum KeyCodeNative
     Xkb(u32),
 }
 
-impl Debug for KeyCodeNative {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+impl Debug for KeyCodeNative
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
+    {
         let mut debug_tuple;
-        match self {
-            KeyCodeNative::Unknow => {
+        match self
+        {
+            KeyCodeNative::Unknow =>
+            {
                 debug_tuple = f.debug_tuple("Unknow");
-            },
-            KeyCodeNative::Android(code) => {
+            }
+            KeyCodeNative::Android(code) =>
+            {
                 debug_tuple = f.debug_tuple("Android");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
-            },
-            KeyCodeNative::MacOS(code) => {
+            }
+            KeyCodeNative::MacOS(code) =>
+            {
                 debug_tuple = f.debug_tuple("MacOS");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
-            },
-            KeyCodeNative::Windows(code) => {
+            }
+            KeyCodeNative::Windows(code) =>
+            {
                 debug_tuple = f.debug_tuple("Windows");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
-            },
-            KeyCodeNative::Xkb(code) => {
+            }
+            KeyCodeNative::Xkb(code) =>
+            {
                 debug_tuple = f.debug_tuple("Xkb");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
-            },
+            }
         }
         debug_tuple.finish()
     }
 }
-
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -741,23 +748,23 @@ impl From<WinitKeyCode> for KeyCode
     }
 }
 
-
-impl PartialEq<KeyCodeNative> for KeyCode {
+impl PartialEq<KeyCodeNative> for KeyCode
+{
     #[inline]
-    fn eq(&self, rhs: &KeyCodeNative) -> bool {
-        match &self {
+    fn eq(&self, rhs: &KeyCodeNative) -> bool
+    {
+        match &self
+        {
             KeyCode::Unknow(code) => code == rhs,
             _ => false,
         }
     }
 }
-impl PartialEq<KeyCode> for KeyCodeNative {
+impl PartialEq<KeyCode> for KeyCodeNative
+{
     #[inline]
-    fn eq(&self, rhs: &KeyCode) -> bool {
-        rhs == self
-    }
+    fn eq(&self, rhs: &KeyCode) -> bool { rhs == self }
 }
-
 
 /// The location of the key on the keyboard.
 ///
@@ -773,7 +780,7 @@ impl PartialEq<KeyCode> for KeyCodeNative {
 /// [`KeyEvent`]: crate::event::KeyEvent
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum KeyLocation 
+pub enum KeyLocation
 {
     /// Unknow location
     Unknow,
@@ -843,7 +850,8 @@ pub enum KeyLocation
 
 impl From<WinitKeyLocation> for KeyLocation
 {
-    fn from(value: WinitKeyLocation) -> Self {
+    fn from(value: WinitKeyLocation) -> Self
+    {
         match value
         {
             winit::keyboard::KeyLocation::Standard => KeyLocation::Standard,
@@ -852,4 +860,4 @@ impl From<WinitKeyLocation> for KeyLocation
             winit::keyboard::KeyLocation::Numpad => KeyLocation::Numpad,
         }
     }
-} 
+}

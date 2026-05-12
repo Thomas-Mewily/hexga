@@ -1107,9 +1107,9 @@ impl<T: PartialEq, const CAP: usize> PartialEq<[T]> for ArrayVec<T, CAP>
     fn eq(&self, other: &[T]) -> bool { self.as_slice() == other }
 }
 
-impl<T: PartialEq, const CAP: usize, const N:usize> PartialEq<[T;N]> for ArrayVec<T, CAP>
+impl<T: PartialEq, const CAP: usize, const N: usize> PartialEq<[T; N]> for ArrayVec<T, CAP>
 {
-    fn eq(&self, other: &[T;N]) -> bool { self.as_slice() == other.as_slice() }
+    fn eq(&self, other: &[T; N]) -> bool { self.as_slice() == other.as_slice() }
 }
 
 impl<T, const CAP: usize> Default for ArrayVec<T, CAP>

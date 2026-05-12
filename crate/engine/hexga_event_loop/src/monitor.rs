@@ -12,15 +12,11 @@ pub struct Monitor
 }
 impl From<WinitMonitorHandle> for Monitor
 {
-    fn from(handle: WinitMonitorHandle) -> Self {
-        Self { handle }
-    }
+    fn from(handle: WinitMonitorHandle) -> Self { Self { handle } }
 }
 impl From<Monitor> for WinitMonitorHandle
 {
-    fn from(value: Monitor) -> Self {
-        value.handle
-    }
+    fn from(value: Monitor) -> Self { value.handle }
 }
 
 impl Monitor
@@ -34,17 +30,13 @@ impl Monitor
     #[doc(hidden)]
     pub fn winit(&self) -> &WinitMonitorHandle { &self.handle }
 }
-impl GetPosition<int,2> for Monitor
+impl GetPosition<int, 2> for Monitor
 {
-    fn pos(&self) -> Vector<int, 2> {
-        self.handle.position().convert()
-    }
+    fn pos(&self) -> Vector<int, 2> { self.handle.position().convert() }
 }
-impl GetSize<int,2> for Monitor
+impl GetSize<int, 2> for Monitor
 {
-    fn size(&self) -> Vector<int, 2> {
-        self.handle.size().convert()
-    }
+    fn size(&self) -> Vector<int, 2> { self.handle.size().convert() }
 }
 
-pub(crate) type WinitMonitorHandle = winit::monitor::MonitorHandle; 
+pub(crate) type WinitMonitorHandle = winit::monitor::MonitorHandle;

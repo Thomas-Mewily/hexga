@@ -73,8 +73,7 @@ pub use view_mut::*;
 pub mod prelude
 {
     pub use super::{
-        capacity::*, clear::*, get::*, index::*, insert::*, length::*, pop::*, push::*,
+        capacity::*, clear::*, get::*, index::*, insert::*, length::*, matches::*, pop::*, push::*,
         remove::*,
-        matches::*,
     };
 }

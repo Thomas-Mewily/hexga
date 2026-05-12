@@ -2,14 +2,14 @@ use super::*;
 
 pub mod prelude
 {
+    pub use super::GenID;
     pub use super::traits::*;
-    pub use super::{GenID};
     pub(crate) use super::{GenIDOf, Generation, UntypedGenIDOf};
 }
 
 pub mod traits
 {
-    pub use super::{GenerationalID,GenerationalIndex};
+    pub use super::{GenerationalID, GenerationalIndex};
 }
 
 pub trait GenerationalID<Gen = Generation>:

@@ -9,7 +9,6 @@ macro_rules! impl_new_unit_or_number {
             fn sum<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ZERO, Self::add) }
         }
 
-
         impl<T, T2> CastFrom<$name<T2>> for $name<T>
         where
             T: CastFrom<T2>,

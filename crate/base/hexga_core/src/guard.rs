@@ -8,20 +8,20 @@ pub trait Guarded<T: ?Sized>
     type Guard<'a>: Deref<Target = T>
     where
         Self: 'a;
-    
+
     type Error<'a>: Debug
     where
         Self: 'a;
 
     /// Tries to return a guard that dereferences to the inner value,
     /// while blocking the current thread until it is able to do so.
-    /// 
+    ///
     /// This function never panics.
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>;
 
     /// Returns a guard that dereferences to the inner value,
     /// while blocking the current thread until it is able to do so.
-    /// 
+    ///
     /// May panic on exceptional behavior (ex poisoned mutex, wrong thread for SingleThreadCell...)
     #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a> { self.try_get().expect("poisoned") }
@@ -38,7 +38,7 @@ pub trait GuardedMut<T: ?Sized>
 
     /// Tries to return a mutable guard that dereferences to the inner value,
     /// while blocking the current thread until it is able to do so.
-    /// 
+    ///
     /// This function never panics.
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>;
 
@@ -173,7 +173,6 @@ impl<T> GuardedMut<T> for std::cell::RefCell<T>
     }
 }
 
-
 #[cfg(feature = "std")]
 impl<T> Guarded<T> for std::sync::Mutex<T>
 {
@@ -203,7 +202,6 @@ impl<T> GuardedMut<T> for std::sync::Mutex<T>
         Self: 'a;
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.lock() }
 }
-
 
 #[cfg(feature = "std")]
 impl<T> Guarded<T> for std::sync::RwLock<T>

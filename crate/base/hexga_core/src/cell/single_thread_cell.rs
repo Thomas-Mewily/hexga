@@ -1,6 +1,6 @@
 use super::*;
 
-use std::{thread::ThreadId};
+use std::thread::ThreadId;
 
 /// A value that can be read and written by only one thread.
 ///
@@ -42,8 +42,6 @@ impl<T> SingleThreadCell<T>
     pub(crate) fn assert_same_thread(&self) { self.is_same_thread().unwrap(); }
 }
 
-
-
 #[derive(Debug)]
 pub enum SingleThreadError
 {
@@ -83,7 +81,6 @@ impl<T> Guarded<T> for SingleThreadCell<T>
     }
 }
 impl_singleton_methods!(SingleThreadCell);
-
 
 #[derive(Debug)]
 pub enum SingleThreadMutError

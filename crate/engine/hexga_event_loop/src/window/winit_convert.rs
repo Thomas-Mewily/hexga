@@ -1,5 +1,3 @@
-
-
 //use copypasta::{ClipboardContext, ClipboardProvider};
 use serde::de;
 
@@ -10,44 +8,63 @@ pub(crate) trait ExternLibConvert<Output>
     fn convert(self) -> Output;
 }
 
-impl<T> ExternLibConvert<Vec2> for winit::dpi::LogicalSize<T>
+pub(crate) type WinitPhysicialSize<T=i32> = winit::dpi::PhysicalSize<T>;
+pub(crate) type WinitPhysicialPos<T=i32> = winit::dpi::PhysicalPosition<T>;
+
+pub(crate) type WinitLogicalSize<T=i32> = winit::dpi::LogicalSize<T>;
+pub(crate) type WinitLogicalPos<T=i32> = winit::dpi::LogicalPosition<T>;
+
+
+impl<T> ExternLibConvert<Vec2> for WinitLogicalSize<T>
 where
     T: ToFloat<Output = float>,
 {
     fn convert(self) -> Vec2 { vec2(self.width.to_float(), self.height.to_float()) }
 }
-impl<T> ExternLibConvert<Point2> for winit::dpi::LogicalSize<T>
+impl<T> ExternLibConvert<Point2> for WinitLogicalSize<T>
 where
     T: ToInt<Output = int>,
 {
     fn convert(self) -> Point2 { point2(self.width.to_int(), self.height.to_int()) }
 }
 
-impl<T> ExternLibConvert<Vec2> for winit::dpi::PhysicalSize<T>
+impl<T> ExternLibConvert<Vec2> for WinitPhysicialSize<T>
 where
     T: ToFloat<Output = float>,
 {
     fn convert(self) -> Vec2 { vec2(self.width.to_float(), self.height.to_float()) }
 }
-impl<T> ExternLibConvert<Point2> for winit::dpi::PhysicalSize<T>
+impl<T> ExternLibConvert<Point2> for WinitPhysicialSize<T>
 where
     T: ToInt<Output = int>,
 {
     fn convert(self) -> Point2 { point2(self.width.to_int(), self.height.to_int()) }
 }
 
-impl<T> ExternLibConvert<Vec2> for winit::dpi::PhysicalPosition<T>
+impl<T> ExternLibConvert<Vec2> for WinitPhysicialPos<T>
 where
     T: ToFloat<Output = float>,
 {
     fn convert(self) -> Vec2 { vec2(self.x.to_float(), self.y.to_float()) }
 }
-impl<T> ExternLibConvert<Point2> for winit::dpi::PhysicalPosition<T>
+impl<T> ExternLibConvert<Point2> for WinitPhysicialPos<T>
 where
     T: ToInt<Output = int>,
 {
     fn convert(self) -> Point2 { point2(self.x.to_int(), self.y.to_int()) }
 }
+
+impl ExternLibConvert<WinitPhysicialPos> for Point2
+{
+    fn convert(self) -> WinitPhysicialPos { WinitPhysicialPos::new(self.x as i32, self.y as i32) }
+}
+
+impl ExternLibConvert<WinitPhysicialSize> for Point2
+{
+    fn convert(self) -> WinitPhysicialSize { WinitPhysicialSize::new(self.x as i32, self.y as i32) }
+}
+
+
 
 /*
 impl<T> ExternLibConvert<wgpu::Color> for T

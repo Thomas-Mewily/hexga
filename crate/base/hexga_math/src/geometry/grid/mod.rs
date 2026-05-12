@@ -29,8 +29,8 @@ pub use iter_mut::*;
 pub mod prelude
 {
     pub use super::{
+        IGridView, IGridViewMut,
         igrid::{GridBaseError, IGrid, ToGrid},
         typedef::*,
-        IGridView,IGridViewMut
     };
 }

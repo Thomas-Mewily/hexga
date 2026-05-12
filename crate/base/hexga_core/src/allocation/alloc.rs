@@ -4,13 +4,13 @@ use super::*;
 #[cfg(feature = "std")]
 mod alloc_fn
 {
-    pub use std::alloc::{alloc,alloc_zeroed,dealloc,realloc};
+    pub use std::alloc::{alloc, alloc_zeroed, dealloc, realloc};
 }
 #[allow(unused)]
 #[cfg(not(feature = "std"))]
 mod alloc_fn
 {
-    pub use alloc::alloc::{alloc,alloc_zeroed,dealloc,realloc};
+    pub use alloc::alloc::{alloc, alloc_zeroed, dealloc, realloc};
 }
 use alloc_fn::*;
 
@@ -91,10 +91,7 @@ pub trait Alloc<T>: ManagedBox
     //
     // fn alloc<'a>(&'a mut self, value: T) -> AllocResult<Self::Box<'a, T>>;
     fn alloc(&mut self, value: T) -> AllocResult<Self::Box<T>>;
-    fn alloc_or_panic(&mut self, value: T) -> Self::Box<T>
-    {
-        self.alloc(value).expect("bad alloc")
-    }
+    fn alloc_or_panic(&mut self, value: T) -> Self::Box<T> { self.alloc(value).expect("bad alloc") }
 }
 impl<T, S> Alloc<T> for S
 where
@@ -191,8 +188,7 @@ unsafe impl DeallocFromLayout for Memory
             return Err(AllocError);
         }
 
-        let new_ptr =
-            unsafe { realloc(ptr.as_ptr() as *mut u8, old_layout, new_layout.size()) };
+        let new_ptr = unsafe { realloc(ptr.as_ptr() as *mut u8, old_layout, new_layout.size()) };
         if new_ptr.is_null()
         {
             Err(AllocError)

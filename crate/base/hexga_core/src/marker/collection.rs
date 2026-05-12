@@ -71,8 +71,22 @@ pub trait CollectionRemoveStableKey: Collection {}
 /// Examples: `HashMap`, `BTreeMap`, `Vec`, `GenVec`.
 pub trait CollectionGetMutStableKey: Collection {}
 
-pub trait CollectionStableKey: CollectionPushStableKey + CollectionPopStableKey + CollectionInsertStableKey + CollectionRemoveStableKey + CollectionGetMutStableKey {}
-impl<C> CollectionStableKey for C where C: CollectionPushStableKey + CollectionPopStableKey + CollectionInsertStableKey + CollectionRemoveStableKey + CollectionGetMutStableKey {}
+pub trait CollectionStableKey:
+    CollectionPushStableKey
+    + CollectionPopStableKey
+    + CollectionInsertStableKey
+    + CollectionRemoveStableKey
+    + CollectionGetMutStableKey
+{
+}
+impl<C> CollectionStableKey for C where
+    C: CollectionPushStableKey
+        + CollectionPopStableKey
+        + CollectionInsertStableKey
+        + CollectionRemoveStableKey
+        + CollectionGetMutStableKey
+{
+}
 
 #[cfg(feature = "std")]
 mod std_impl

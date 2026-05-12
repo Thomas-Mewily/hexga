@@ -70,7 +70,6 @@ macro_rules! re_export_mod_from_std_or_alloc {
     () => {};
 }
 
-
 macro_rules! re_export_item_from_std_or_core {
     ($($segments:ident)::+) => {
         #[cfg(feature = "std")]
@@ -125,14 +124,14 @@ pub mod boxed;
 pub mod builder;
 pub mod cell;
 pub mod cfg;
-pub mod ops;
 pub mod collections;
 pub mod default;
 pub mod format;
 pub mod guard;
 pub mod handle;
-pub mod iter;
 pub mod identity;
+pub mod iter;
+pub mod ops;
 pub mod option;
 pub mod rc;
 pub mod sync;
@@ -152,8 +151,8 @@ pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
 re_export_mod_from_std_or_core!(
-    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num,
-    panic, pin, task, // time <- Time don't work on WASM
+    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num, panic, pin,
+    task, // time <- Time don't work on WASM
     str, slice, // random
     borrow
 );
@@ -164,38 +163,25 @@ pub mod io
 {
     // Struct
     pub use std::io::{
-        prelude,
-        BufReader,BufWriter,Bytes,Chain,Cursor,Empty,Error,IntoInnerError,IoSlice,IoSliceMut,
-        LineWriter,Lines,PipeReader,PipeWriter,Repeat,Sink,Split,
-        Stderr,StderrLock,Stdin,StdinLock,Stdout,StdoutLock,
-        Take,
-        WriterPanicked,
+        BufReader, BufWriter, Bytes, Chain, Cursor, Empty, Error, IntoInnerError, IoSlice,
+        IoSliceMut, LineWriter, Lines, PipeReader, PipeWriter, Repeat, Sink, Split, Stderr,
+        StderrLock, Stdin, StdinLock, Stdout, StdoutLock, Take, WriterPanicked, prelude,
     };
     // Enum
-    pub use std::io::{
-        ErrorKind,SeekFrom,
-    };
+    pub use std::io::{ErrorKind, SeekFrom};
     // Traits
-    pub use std::io::{
-        BufRead, IsTerminal, Read, Seek, Write,
-    };
+    pub use std::io::{BufRead, IsTerminal, Read, Seek, Write};
     // Functions
-    pub use std::io::{
-        copy,empty,pipe,read_to_string,repeat,sink,stderr,stdin,stdout,
-    };
+    pub use std::io::{copy, empty, pipe, read_to_string, repeat, sink, stderr, stdin, stdout};
     // Type Alias
     pub type IoResult<T> = Result<T, Error>;
 }
 //re_export_mod_from_std_or_core!(io);
 
-re_export_mod_from_std_or_alloc!(
-    vec, string
-);
+re_export_mod_from_std_or_alloc!(vec, string);
 
 #[cfg(feature = "std")]
-re_export_mod_from_std_or_alloc!(
-    thread, fs, path
-);
+re_export_mod_from_std_or_alloc!(thread, fs, path);
 
 use prelude::*;
 
@@ -207,37 +193,47 @@ pub mod prelude
 #[doc(hidden)]
 pub mod modules
 {
-    pub use super::
-    {
-        accessor,allocation,asynchrone,boxed,builder,cell,cfg,ops,collections,default,format,guard,handle,iter,option,rc,sync,convert,marker,primitive,ptr,result,
+    pub use super::{
+        accessor,
+        allocation,
+        asynchrone,
+        bit,
+        boxed,
+        builder,
+        cell,
+        cfg,
+        collections,
+        convert,
+        default,
+        format,
+        guard,
+        handle,
+        iter,
+        marker,
+        ops,
+        option,
+        primitive,
+        ptr,
+        rc,
+        result,
+        sync,
         //run,
-        utils,wrapper,bit,
+        utils,
+        wrapper,
+    };
+    pub use super::{
+        any, array, ascii, borrow, clone, cmp, error, fmt, future, hash, hint, mem, net, num,
+        panic, pin, slice, str, task,
     };
     pub use crate::map_on;
-    pub use super::
-    {
-        any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num,
-        panic, pin, task,
-        str, slice,
-        borrow
-    };
 
-    pub use super::
-    {
-        vec, string
-    };
+    pub use super::{string, vec};
 
     #[cfg(feature = "std")]
-    pub use super::
-    {
-        thread, fs, path, io
-    };
+    pub use super::{fs, io, path, thread};
 
     #[cfg(feature = "std")]
-    pub use super::
-    {
-        singleton
-    };
+    pub use super::singleton;
 }
 
 #[doc(hidden)]
@@ -294,6 +290,6 @@ pub mod std_prelude
         convert::{AsMut, AsRef},
         ops::{Deref, DerefMut},
     };
-    
+
     re_export_items_from_std_or_core!(prelude);
 }

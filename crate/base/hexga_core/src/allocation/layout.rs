@@ -18,10 +18,7 @@ pub trait FromAllocLayout: From<AllocLayout>
 {
     fn from_alloc_layout(layout: AllocLayout) -> Self { Self::from(layout) }
 
-    fn of_type<T>() -> Self
-    {
-        Self::from_size_and_align(mem::size_of::<T>(), mem::align_of::<T>())
-    }
+    fn of_type<T>() -> Self { Self::from_size_and_align(mem::size_of::<T>(), mem::align_of::<T>()) }
     fn from_size_and_align(size: usize, align: usize) -> Self
     {
         Self::from(AllocLayout::from_size_and_align(size, align))
