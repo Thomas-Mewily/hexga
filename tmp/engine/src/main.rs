@@ -14,11 +14,12 @@ impl App for MonJeu
 
     fn update(&mut self, dt: Duration, ctx: &mut ())
     {
+        //CurrentWindow.set_title(format!("{}", Time::since_launch()));
     }
 
     fn draw(&mut self, coef: coef, ctx: &mut ()) 
     {
-        CurrentWindow.set_title(format!("{}", Time::since_launch()));
+        //CurrentWindow.set_title(format!("{}", Time::since_launch()));
     }
 }
 
