@@ -1,3 +1,5 @@
+use std::range::Range;
+
 use super::*;
 
 pub mod prelude
@@ -29,6 +31,15 @@ pub enum DrawGeometry
 {
     Immediate(DrawGeometryImmediate),
 }
+
+#[derive(Clone, Debug, Default)]
+pub struct DrawGeometryImmediate
+{
+    pub vertices: Range<usize>,
+    pub indices: Range<usize>,
+}
+
+/*
 #[derive(Clone, Debug, Default)]
 pub struct DrawGeometryImmediate
 {
@@ -38,7 +49,7 @@ pub struct DrawGeometryImmediate
     pub indices_begin: usize,
     pub indices_len: usize,
 }
-
+*/
 /*
 pub struct DrawGeometrySliceIndice
 {

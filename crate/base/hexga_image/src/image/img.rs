@@ -13,6 +13,8 @@ pub type ImageOf<C = ColorU8> = ImageBaseOf<C>;
 
 pub type ImageError<Idx> = GridBaseError<Idx, 2>;
 
+// Todo: make a trait for C, IColor ?
+
 /// Image have a different type than Grid because:
 ///
 /// - An image can be saved with more extension than a grid (png, gif...)

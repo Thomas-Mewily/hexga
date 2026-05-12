@@ -44,6 +44,9 @@ pub use gpu_bindgroup::*;
 mod texture;
 pub use texture::*;
 
+mod format;
+pub use format::*;
+
 pub mod prelude
 {
     pub use super::{
