@@ -88,6 +88,8 @@ macro_rules! impl_has_mut_trait {
     };
 }
 
+
+
 //pub trait Has<T> : HasRef<T> + HasMut<T>{}
 //impl<S,T> Has<T> for S where S:HasRef<T> +HasMut<T>{}
 

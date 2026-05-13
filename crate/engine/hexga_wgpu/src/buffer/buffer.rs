@@ -43,6 +43,19 @@ impl<T> GpuBufferNew<T> for GpuBuffer<T>
     fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self {
         Self { buffer: Arc::new(<WgpuBuffer as GpuBufferNew<T>>::new(value, usage)), typed: PhantomData }
     }
+    
+    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self {
+        WithCapacity::with_capacity_and_param(capacity, usage)
+    }
+}
+
+impl<T> WithCapacity for GpuBuffer<T>
+    where T: BitAllUsed
+{
+    type Param=GpuBufferUsageFlags;
+    fn with_capacity_and_param(capacity: usize, usage: Self::Param) -> Self {
+        Self { buffer: Arc::new(<WgpuBuffer as GpuBufferNew<T>>::with_capacity(capacity, usage)), typed: PhantomData }
+    }
 }
 
 

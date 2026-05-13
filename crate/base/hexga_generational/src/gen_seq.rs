@@ -1597,7 +1597,7 @@ where
     }
 }
 
-// error: the `Copy` impl for `hexga_core::ops::IndexOutOfRange` requires that `std::ops::Range<usize>: Copy`
+// error: the `Copy` impl for `hexga_core::collections::IndexOutOfRange` requires that `std::ops::Range<usize>: Copy`
 //impl<T,Gen> Copy for GenSeqError<T,Gen> {}
 impl<T, Gen> Clone for GenSeqError<T, Gen>
 where

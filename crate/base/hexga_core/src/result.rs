@@ -7,4 +7,9 @@ re_export_item_from_std_or_core!(result::Iter);
 pub mod prelude
 {
     pub use super::Result;
+    #[allow(unused)]
+    pub use super::traits::*;
+}
+pub mod traits
+{
 }

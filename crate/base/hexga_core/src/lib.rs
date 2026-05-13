@@ -131,7 +131,6 @@ pub mod guard;
 pub mod handle;
 pub mod identity;
 pub mod iter;
-pub mod ops;
 pub mod option;
 pub mod rc;
 pub mod sync;
@@ -151,7 +150,7 @@ pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
 re_export_mod_from_std_or_core!(
-    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num, panic, pin,
+    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num, panic, pin, ops,
     task, // time <- Time don't work on WASM
     str, slice, // random
     borrow
@@ -250,7 +249,6 @@ pub mod hexga_prelude
         asynchrone::*,
         boxed::prelude::*,
         builder::*,
-        ops::prelude::*,
         collections::prelude::*,
         default::prelude::*,
         format::*,
@@ -262,21 +260,56 @@ pub mod hexga_prelude
         marker::prelude::*,
         primitive::prelude::*,
         //run::*,
-        utils::*,
-        wrapper::*,
+        utils::prelude::*,
+        wrapper::prelude::*,
         result::prelude::*,
-        convert::*,
+        convert::prelude::*,
         bit::prelude::*,
         map_on::prelude::*,
-        ops::*,
-
-        vec::Vec, string::String
     };
 
     pub(crate) use super::{primitive::*, ptr::*};
 
     #[cfg(feature = "std")]
     pub use super::singleton::prelude::*;
+}
+
+#[doc(hidden)]
+/// Hexga specific prelude without the std.
+///
+/// You are probably looking for the `prelude` module.
+pub mod hexga_traits
+{
+    #[rustfmt::skip]
+    #[allow(unused_imports)]
+    pub use super::{
+        allocation::traits::*,
+        accessor::*,
+        asynchrone::*,
+        boxed::traits::*,
+        builder::*,
+        collections::traits::*,
+        collections::traits::*,
+        default::traits::*,
+        format::*,
+        guard::*,
+        handle::*,
+        /*
+        option::traits::*,
+        iter::traits::*,
+        macros::traits::*,
+        marker::traits::*,
+        primitive::traits::*,
+        */
+        //run::*,
+        utils::traits::*,
+        wrapper::traits::*,
+        result::traits::*,
+        convert::traits::*,
+        bit::traits::*,
+        //map_on::traits::*,
+        collections::traits,
+    };
 }
 
 #[doc(hidden)]

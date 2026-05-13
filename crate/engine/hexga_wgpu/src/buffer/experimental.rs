@@ -9,7 +9,7 @@ pub type WgpuBufferView<'a> = wgpu::BufferView<'a>;
 pub type WgpuBufferViewMut<'a> = wgpu::BufferViewMut<'a>;
 
 impl<T> GpuBufferNew<T> for WgpuBuffer
-    where T: BitAllUsed + Copy
+    where T: BitAllUsed
 {
     fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self {
         device()
@@ -18,6 +18,21 @@ impl<T> GpuBufferNew<T> for WgpuBuffer
                 contents: bit::transmute_slice(value),
                 usage: usage.into(),
             })
+    }
+
+    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self
+    {
+        let size = capacity
+            .checked_mul(std::mem::size_of::<T>())
+            .and_then(|b| WgpuBufferAddress::try_from(b).ok())
+            .expect("Buffer capacity overflow: capacity * element_size exceeds addressable memory");
+
+        device().create_buffer(&wgpu::BufferDescriptor {
+            label: None,
+            usage: usage.into(),
+            size,
+            mapped_at_creation: false,
+        })
     }
 }
 

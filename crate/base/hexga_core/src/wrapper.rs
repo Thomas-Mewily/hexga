@@ -8,55 +8,61 @@ use std::{
     sync::{Mutex, RwLock},
 };
 
-pub trait Wrapper
+pub trait NewWrapper
 {
     type Inside;
     fn new(value: Self::Inside) -> Self;
 }
 
-impl<T> Wrapper for Option<T>
+impl<T> NewWrapper for Option<T>
 {
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Self::Some(value) }
 }
-impl<T, E> Wrapper for Result<T, E>
+impl<T, E> NewWrapper for Result<T, E>
 {
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Self::Ok(value) }
 }
-impl<T> Wrapper for Box<T>
+impl<T> NewWrapper for Box<T>
 {
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Self::new(value) }
 }
-impl<T> Wrapper for Pin<Box<T>>
+impl<T> NewWrapper for Pin<Box<T>>
 {
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Box::pin(value) }
 }
-impl<T> Wrapper for UnsafeCell<T>
+impl<T> NewWrapper for UnsafeCell<T>
 {
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Self::new(value) }
 }
-impl<T> Wrapper for RefCell<T>
-{
-    type Inside = T;
-    fn new(value: Self::Inside) -> Self { Self::new(value) }
-}
-#[cfg(feature = "std")]
-impl<T> Wrapper for Mutex<T>
+impl<T> NewWrapper for RefCell<T>
 {
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Self::new(value) }
 }
 #[cfg(feature = "std")]
-impl<T> Wrapper for RwLock<T>
+impl<T> NewWrapper for Mutex<T>
+{
+    type Inside = T;
+    fn new(value: Self::Inside) -> Self { Self::new(value) }
+}
+#[cfg(feature = "std")]
+impl<T> NewWrapper for RwLock<T>
 {
     type Inside = T;
     fn new(value: Self::Inside) -> Self { Self::new(value) }
 }
 
+pub mod prelude {}
+
+pub mod traits
+{
+    pub use super::NewWrapper;
+}
 /*
 // unstable library feature
 impl<T> Wrapper for SyncUnsafeCell<T>

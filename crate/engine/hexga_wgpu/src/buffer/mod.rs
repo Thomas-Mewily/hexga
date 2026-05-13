@@ -34,21 +34,23 @@ pub mod traits
     pub use super::{GpuBufferNew,GpuBufferElement,GpuSliceable,GpuSliceableMut};
 }
 
-pub trait GpuBufferNew<T>
-    where T: GpuBufferElement
+pub trait GpuBufferNew<T> //: WithCapacity<Param=GpuBufferUsageFlags>
+    where T: BitAllUsed
 {
     fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self;
+    // Redirect to the WithCapacity. Can't impl WithCapacity for WgpuBuffer since this lib own neither.
+    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self;
 }
 pub trait GpuSliceable<T> //: WgpuSliceable<T>
     where T: GpuBufferElement
 {
     fn usage(&self) -> GpuBufferUsageFlags;
 
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T>;
-    fn as_slice(&self) -> GpuSlice<'_, T> { self.slice(..) }
+    fn slice<'a,S: RangeBounds<usize>>(&'a self, bounds: S) -> GpuSlice<'a, T>;
+    fn as_slice<'a>(&'a self) -> GpuSlice<'a, T> { self.slice(..) }
 
-    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T>;
-    fn as_read<S: RangeBounds<usize>>(&self) -> GpuSliceRead<'_, T> { self.read(..) }
+    fn read<'a,S: RangeBounds<usize>>(&'a self, bounds: S) -> GpuSliceRead<'a, T>;
+    fn as_read<'a>(&'a self) -> GpuSliceRead<'a, T> { self.read(..) }
 }
 
 

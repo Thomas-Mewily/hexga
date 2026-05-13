@@ -25,14 +25,20 @@ pub trait WithCapacity
 /// methods for reserving space for new elements.
 pub trait Reserve: Capacity
 {
-    /// Reserves capacity for at least `additional` more elements.
-    /// 
-    /// This method silently ignores allocation failures. To handle allocation
-    /// errors, use [`Reserve::try_reserve`] instead.
+    /// Reserves capacity for at least `additional` elements more than the
+    /// current length. The allocator may reserve more space to speculatively
+    /// avoid frequent allocations. After calling `reserve`,
+    /// capacity will be greater than or equal to `self.len() + additional`.
+    /// Does nothing if capacity is already sufficient.
     fn reserve(&mut self, additional: usize) { let _ = self.try_reserve(additional); }
-    fn reserve_exact(&mut self, additional: usize) { let _ =  self.try_reserve_exact(additional); }
-
     fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError>;
+    
+    /// Reserves the minimum capacity for at least `additional` elements more than
+    /// the current length. Unlike [`Self::reserve`], this will not
+    /// deliberately over-allocate to speculatively avoid frequent allocations.
+    /// After calling `reserve_exact`, capacity will be greater than or equal to
+    /// `self.len() + additional`. Does nothing if the capacity is already
+    fn reserve_exact(&mut self, additional: usize) { let _ =  self.try_reserve_exact(additional); }
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError>;
 
     /// Ensure total capacity is at least `total`.

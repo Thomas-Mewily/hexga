@@ -7,8 +7,8 @@ pub struct GpuSlice<'a, T>
     where T: GpuBufferElement
 {
     buffer: &'a GpuBuffer<T>,
-    begin: usize,
-    len: usize,
+    pub(crate) begin: usize,
+    pub(crate) len: usize,
 }
 impl<'a,T> From<&'a GpuBuffer<T>> for  GpuSlice<'a, T> where T: GpuBufferElement 
 {

@@ -44,10 +44,14 @@ extern crate std;
 
 pub mod prelude
 {
-    pub use super::{
-        BitAllUsed, BitAnyPattern, BitError, BitPattern, BitResult, BitZero, BitZeroed, Pod,
-    };
+    pub use super::traits::*;
 
     #[cfg(feature = "derive")]
     pub use hexga_bit_derive::{BitAllUsed, BitAnyPattern, BitPattern, BitZero, Pod};
+}
+pub mod traits
+{
+    pub use super::{
+        BitAllUsed, BitAnyPattern, BitError, BitPattern, BitResult, BitZero, BitZeroed, Pod,
+    };
 }

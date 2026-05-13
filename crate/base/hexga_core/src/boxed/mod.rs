@@ -9,3 +9,8 @@ pub mod prelude
 {
     pub use super::Box;
 }
+
+pub mod traits
+{
+    
+}

@@ -11,7 +11,17 @@ where
     fn try_as_ref(&self) -> Result<&T, Self::Error> { Ok(self.as_ref()) }
 }
 
+// Todo: add TryAsMut
+
 re_export_items_from_std_or_core!(convert);
+
+pub mod prelude 
+{
+    pub use super::{AsRef,AsMut,TryAsRef};
+    #[allow(unused)]
+    pub use super::traits::*;
+}
+pub mod traits {}
 /*
 pub trait TryAsMut<T>
 {
