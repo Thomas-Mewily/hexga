@@ -284,6 +284,8 @@ where
     Gen: GenerationalIndex,
     S: Reserve + Length,
 {
+    type Error = ();
+
     fn reserve(&mut self, additional: usize)
     {
         let total = self.capacity() + additional;
@@ -298,23 +300,23 @@ where
         self.search.reserve_total_exact(total);
     }
 
-    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError>
+    fn try_reserve(&mut self, additional: usize) -> Result<(), ()>
     {
         let total = self.capacity() + additional;
         let r = self.values.try_reserve_total(total);
-        self.search.try_reserve_total(total)?;
-        r
+        self.search.try_reserve_total(total).ok_or_void()?;
+        r.ok_or_void()
     }
 
     fn try_reserve_exact(
         &mut self,
         additional: usize,
-    ) -> Result<(), std::collections::TryReserveError>
+    ) -> Result<(), ()>
     {
         let total = self.capacity() + additional;
         let r = self.values.try_reserve_total_exact(total);
-        self.search.try_reserve_total_exact(total)?;
-        r
+        self.search.try_reserve_total_exact(total).ok_or_void()?;
+        r.ok_or_void()
     }
 }
 

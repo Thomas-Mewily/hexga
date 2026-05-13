@@ -48,22 +48,29 @@ impl<T> Clear for GpuVec<T>
 }
 
 
-impl<T> Reserve for GpuVec<T> where T: GpuBufferElement
+impl<T> Reserve for GpuVec<T> where T: GpuBufferElement + BitAllUsed
 {
-    fn reserve(&mut self, additional: usize) {
-        todo!()
+    type Error = ();
+
+    fn try_reserve(&mut self, additional: usize) -> Result<(), ()> {
+        let new_capacity = self.len.checked_add(additional)
+            .ok_or(())?;
+        
+        if new_capacity > self.capacity() {
+            let new_capacity_pow2 = new_capacity.next_power_of_two();
+            self.force_reallocate(new_capacity_pow2)?;
+        }
+        Ok(())
     }
 
-    fn reserve_exact(&mut self, additional: usize) {
-        todo!()
-    }
-
-    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> {
-        todo!()
-    }
-
-    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> {
-        todo!()
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), ()> {
+        let new_capacity = self.len.checked_add(additional)
+            .ok_or(())?;
+        
+        if new_capacity > self.capacity() {
+            self.force_reallocate(new_capacity)?;
+        }
+        Ok(())
     }
 }
 
@@ -183,70 +190,96 @@ impl<T> GpuSliceableMut<T> for GpuVec<T>
     }
 }
 
+impl<'a,T> Push<&'a[T]> for GpuVec<T> where T: BitAllUsed
+{
+    type Output=();
+    fn push(&mut self, value: &'a[T]) -> Self::Output {
+        self.update_part(self.len(), value);
+    }
+}
+impl<'a,T> TryPush<&'a[T]> for GpuVec<T> where T: BitAllUsed
+{
+    type Error = ();
+    fn try_push(&mut self, value: &'a[T]) -> Result<Self::Output, Self::Error> {
+        self.try_update_part(self.len(), value)
+    }
+}
+
 impl<T> GpuVec<T> where T: BitAllUsed
 {
-    /*
     pub fn update_part(&mut self, offset: usize, data: &[T])
     {
         self.try_update_part(offset, data)
-            .expect("failed to update the gpu vec");
+            .expect("GpuVec failed to update");
     }
-    pub fn try_update_part(&mut self, offset: usize, data: &[T]) -> Result<(), ()>
-    {
+
+    pub fn try_update_part(&mut self, offset: usize, data: &[T]) -> Result<(), ()> {
         let elem_size = std::mem::size_of::<T>().max(1);
         let required_len = offset.checked_add(data.len()).ok_or(())?;
 
-        if required_len > self.capacity()
-        {
+        if required_len > self.capacity() {
             let new_capacity = required_len.next_power_of_two();
-            let new_byte_size = (new_capacity * elem_size) as wgpu::BufferAddress;
-
-            let new_buffer = device().create_buffer(&wgpu::BufferDescriptor {
-                label: None,
-                size: new_byte_size,
-                usage: self.usage,
-                mapped_at_creation: false,
-            });
-
-            if self.len > 0
-            {
-                if !self.desc.usages.contains(BufferUsageFlags::CopySrc)
-                    || !self.desc.usages.contains(BufferUsageFlags::CopyDst)
-                {
-                    return Err(());
-                }
-
-                let copy_byte_len = (self.len * elem_size) as wgpu::BufferAddress;
-
-                let mut encoder = Gpu
-                    .wgpu
-                    .device
-                    .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
-                encoder.copy_buffer_to_buffer(&self.buffer.wgpu, 0, &new_buffer, 0, copy_byte_len);
-
-                Gpu.wgpu.queue.submit(Some(encoder.finish()));
-            }
-
-            self.buffer.wgpu = new_buffer;
+            self.force_reallocate(new_capacity)?;
         }
 
-        let write_byte_offset = (offset * elem_size) as wgpu::BufferAddress;
+        let write_byte_offset = (offset * elem_size) as u64;
+        let write_bytes = bit::try_transmute_slice(data).map_err(|_| ())?;
+        queue().write_buffer(&self.buffer.buffer, write_byte_offset, write_bytes);
 
-        let write_bytes = bit::try_transmute_slice(data).map_err(|e| ())?;
-
-        Gpu.wgpu
-            .queue
-            .write_buffer(&self.buffer.wgpu, write_byte_offset, write_bytes);
-
-        if required_len > self.len
-        {
+        if required_len > self.len {
             self.len = required_len;
         }
 
         Ok(())
     }
-    */
+
+    fn force_reallocate(&mut self, new_capacity: usize) -> Result<(), ()> {
+        let elem_size = std::mem::size_of::<T>();
+        
+        let new_byte_size = new_capacity
+            .checked_mul(elem_size)
+            .and_then(|b| u64::try_from(b).ok())
+            .ok_or(())?;
+        
+        let usage = self.buffer.usage();
+        
+        if self.len > 0 {
+            if !usage.contains(GpuBufferUsageFlags::CopySrc) 
+                || !usage.contains(GpuBufferUsageFlags::CopyDst) 
+            {
+                return Err(());
+            }
+        }
+        
+        let new_wgpu_buffer = device().create_buffer(&wgpu::BufferDescriptor {
+            label: None,
+            size: new_byte_size,
+            usage: usage.into(),
+            mapped_at_creation: false,
+        });
+        
+        if self.len > 0 {
+            let copy_byte_len = (self.len * elem_size) as u64;
+            let mut encoder = device().create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("gpu_vec_reallocate"),
+            });
+            
+            encoder.copy_buffer_to_buffer(
+                &self.buffer.buffer, 
+                0, 
+                &new_wgpu_buffer, 
+                0, 
+                copy_byte_len
+            );
+            
+            queue().submit(Some(encoder.finish()));
+            device().poll(wgpu::PollType::Wait);
+        }
+        
+        self.buffer.buffer = Arc::new(new_wgpu_buffer);
+        
+        Ok(())
+    }
 }
 
 

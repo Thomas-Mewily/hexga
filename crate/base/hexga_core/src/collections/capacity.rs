@@ -25,13 +25,15 @@ pub trait WithCapacity
 /// methods for reserving space for new elements.
 pub trait Reserve: Capacity
 {
+    type Error: Debug;
+
     /// Reserves capacity for at least `additional` elements more than the
     /// current length. The allocator may reserve more space to speculatively
     /// avoid frequent allocations. After calling `reserve`,
     /// capacity will be greater than or equal to `self.len() + additional`.
     /// Does nothing if capacity is already sufficient.
     fn reserve(&mut self, additional: usize) { let _ = self.try_reserve(additional); }
-    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError>;
+    fn try_reserve(&mut self, additional: usize) -> Result<(), Self::Error>;
     
     /// Reserves the minimum capacity for at least `additional` elements more than
     /// the current length. Unlike [`Self::reserve`], this will not
@@ -39,7 +41,7 @@ pub trait Reserve: Capacity
     /// After calling `reserve_exact`, capacity will be greater than or equal to
     /// `self.len() + additional`. Does nothing if the capacity is already
     fn reserve_exact(&mut self, additional: usize) { let _ =  self.try_reserve_exact(additional); }
-    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError>;
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), Self::Error>;
 
     /// Ensure total capacity is at least `total`.
     /// Does nothing if the current capacity is already >= `total`.
@@ -59,7 +61,7 @@ pub trait Reserve: Capacity
     }
     /// Ensure total capacity is at least `total`.
     /// Does nothing if the current capacity is already >= `total`.
-    fn try_reserve_total(&mut self, total: usize) -> Result<(), TryReserveError>
+    fn try_reserve_total(&mut self, total: usize) -> Result<(), Self::Error>
     where
         Self: Length,
     {
@@ -92,7 +94,7 @@ pub trait Reserve: Capacity
     }
     /// Ensure total capacity is at least `total`.
     /// Does nothing if the current capacity is already >= `total`.
-    fn try_reserve_total_exact(&mut self, total: usize) -> Result<(), TryReserveError>
+    fn try_reserve_total_exact(&mut self, total: usize) -> Result<(), Self::Error>
     where
         Self: Length,
     {
@@ -158,6 +160,7 @@ where
     K: Eq + Hash,
     S: BuildHasher,
 {
+    type Error = TryReserveError;
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -206,6 +209,7 @@ impl<T> Reserve for BinaryHeap<T>
 where
     T: Ord,
 {
+    type Error = TryReserveError;
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -258,6 +262,7 @@ where
     T: Eq + Hash,
     S: BuildHasher,
 {
+    type Error = TryReserveError;
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -300,6 +305,7 @@ impl<T> WithCapacity for VecDeque<T>
 }
 impl<T> Reserve for VecDeque<T>
 {
+    type Error = TryReserveError;
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -345,6 +351,7 @@ impl WithCapacity for std::ffi::OsString
 #[cfg(feature = "std")]
 impl Reserve for std::ffi::OsString
 {
+    type Error = TryReserveError;
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -387,6 +394,7 @@ impl WithCapacity for std::path::PathBuf
 #[cfg(feature = "std")]
 impl Reserve for std::path::PathBuf
 {
+    type Error = TryReserveError;
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -426,6 +434,7 @@ impl<T> WithCapacity for Vec<T>
 }
 impl<T> Reserve for Vec<T>
 {
+    type Error = TryReserveError;
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]
@@ -468,6 +477,7 @@ impl WithCapacity for String
 }
 impl Reserve for String
 {
+    type Error = TryReserveError;
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.reserve(additional); }
     #[inline(always)]

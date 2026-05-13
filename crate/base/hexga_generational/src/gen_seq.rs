@@ -1536,13 +1536,15 @@ where
     Gen: GenerationalIndex,
     C: Reserve,
 {
+    type Error = C::Error;
+
     #[inline(always)]
     fn reserve(&mut self, additional: usize) { self.values.reserve(additional); }
     #[inline(always)]
     fn reserve_exact(&mut self, additional: usize) { self.values.reserve_exact(additional); }
 
     #[inline(always)]
-    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError>
+    fn try_reserve(&mut self, additional: usize) -> Result<(), Self::Error>
     {
         self.values.try_reserve(additional)
     }
@@ -1550,7 +1552,7 @@ where
     fn try_reserve_exact(
         &mut self,
         additional: usize,
-    ) -> Result<(), std::collections::TryReserveError>
+    ) -> Result<(), Self::Error>
     {
         self.values.try_reserve_exact(additional)
     }

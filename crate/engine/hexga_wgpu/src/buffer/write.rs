@@ -13,9 +13,16 @@ impl<'a,T> GpuSliceMutWrite<'a, T> where T: GpuBufferElement
         Self { view, phantom: PhantomData }
     }
 
+    pub fn try_update(&mut self, src : &[T]) -> BitResult
+    {
+        let slice = unsafe { bit::try_transmute_slice_unchecked(src) }?;
+        self.view.copy_from_slice(slice);
+        Ok(())
+    }
+
     pub fn update(&mut self, src : &[T])
     {
-        self.view.copy_from_slice(unsafe { bit::try_transmute_slice_unchecked(src) }.unwrap());
+        self.try_update(src).expect("bit cast failed")
     }
 }
 

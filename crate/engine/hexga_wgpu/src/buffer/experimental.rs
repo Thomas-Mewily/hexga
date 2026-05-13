@@ -25,7 +25,7 @@ impl<T> GpuBufferNew<T> for WgpuBuffer
         let size = capacity
             .checked_mul(std::mem::size_of::<T>())
             .and_then(|b| WgpuBufferAddress::try_from(b).ok())
-            .expect("Buffer capacity overflow: capacity * element_size exceeds addressable memory");
+            .expect("GpuBuffer capacity overflow");
 
         device().create_buffer(&wgpu::BufferDescriptor {
             label: None,

@@ -449,6 +449,8 @@ impl<T> WithCapacity for NonEmptyStack<T>
 }
 impl<T> Reserve for NonEmptyStack<T>
 {
+    type Error = std::collections::TryReserveError;
+
     fn reserve(&mut self, additional: usize) { self.stack.reserve(additional.saturating_sub(1)); }
     fn reserve_exact(&mut self, additional: usize)
     {
