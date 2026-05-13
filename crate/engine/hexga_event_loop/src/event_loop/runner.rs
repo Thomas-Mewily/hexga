@@ -231,8 +231,14 @@ where
         param,
     };
 
-    // Todo handle wasm32
-    event_loop.run_app(&mut runner).map_err(|_| ());
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        event_loop.run_app(&mut runner).map_err(|_| ())?;
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        event_loop.spawn_app(app);
+    }
 
     Ok(())
 }

@@ -44,5 +44,5 @@ pub mod traits
     };
 }
 
-pub type EventLoopResult<T = ()> = Result<T>;
+pub type EventLoopResult<T = ()> = Result<T,EventLoopError>;
 pub type EventLoopError = ();

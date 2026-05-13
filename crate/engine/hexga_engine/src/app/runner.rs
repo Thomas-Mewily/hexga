@@ -131,7 +131,7 @@ where
                         .expect("can't init the gpu");
                     assert!(Gpu::is_init());
                     
-                    GRAPHICS.init_from_fn(|| Graphics::new()).map_err(|_| ()).expect("can't init the graphics");
+                    //GRAPHICS.init_from_fn(|| Graphics::new()).map_err(|_| ()).expect("can't init the graphics");
                     return None;
                 }
                 AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),

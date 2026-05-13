@@ -72,7 +72,7 @@ impl From<Vertex2> for Vertex3
         Self {
             position: value.position.with_z(zero()),
             color: value.color,
-            uv: zero(),
+            uv: value.uv,
         }
     }
 }
