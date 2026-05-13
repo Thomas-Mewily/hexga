@@ -4,11 +4,13 @@ use super::*;
 
 mod main_window;
 use hexga_event_loop::event_loop::EventLoopProxy;
-use hexga_graphics::gpu::{GpuContext, GpuInstance, GpuInstanceDescriptor, WgpuContext};
+//use hexga_graphics::gpu::{GpuContext, GpuInstance, GpuInstanceDescriptor, WgpuContext};
 pub use main_window::*;
 
-pub(crate) type WindowType = hexga_event_loop::window::Window<GpuConfiguredSurface<'static>>;
+pub(crate) type WindowType = hexga_event_loop::window::Window<()>;
+//pub(crate) type WindowType = hexga_event_loop::window::Window<GpuConfiguredSurface<'static>>;
 
+/*
 pub(crate) trait WindowInitGpu
 {
     fn initialize_surface(
@@ -126,6 +128,7 @@ pub(crate) async fn async_init_gpu(
 
     Ok((surface, gpu))
 }
+*/
 
 pub mod prelude
 {

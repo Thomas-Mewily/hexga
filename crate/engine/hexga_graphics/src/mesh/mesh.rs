@@ -1,7 +1,7 @@
+/*
 use hexga_wgpu::GpuBufferDesc;
 
 use super::*;
-
 /// A mesh, stored on the Gpu.
 ///
 /// Can be cheaply [`Clone`]d
@@ -45,3 +45,4 @@ impl<const N: usize> From<MeshBuilder<N>> for Mesh<N>
         Self::from_iterator(vertices, indices)
     }
 }
+*/

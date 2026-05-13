@@ -129,6 +129,7 @@ impl<const N: usize> MeshBuilder<N>
     }
 }
 
+/*
 impl<const N: usize> Builder for MeshBuilder<N>
 {
     type Output = Mesh<N>;
@@ -144,7 +145,7 @@ impl<const N: usize> Builder for MeshBuilder<N>
         dest.vertices.update(&self.vertices);
     }
 }
-
+*/
 impl<const N: usize> Clear for MeshBuilder<N>
 {
     fn clear(&mut self)

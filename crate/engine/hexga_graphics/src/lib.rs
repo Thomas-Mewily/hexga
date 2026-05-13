@@ -8,7 +8,7 @@ pub use hexga_wgpu as gpu;
 #[cfg(feature = "wgpu")]
 pub use hexga_wgpu::wgpu;
 #[cfg(feature = "wgpu")]
-pub(crate) use hexga_wgpu::{GpuVec, prelude::*};
+//pub(crate) use hexga_wgpu::{GpuVec, prelude::*};
 #[cfg(feature = "wgpu")]
 pub(crate) type GpuVertexBufferLayout<'a> = wgpu::VertexBufferLayout<'a>;
 
