@@ -63,6 +63,7 @@ pub use sequence::*;
 */
 
 /*
+// Generic view trait that also work for grid (because slice type some pointer metadata hack in deref)
 mod view;
 pub use view::*;
 
