@@ -21,8 +21,6 @@ impl<'a,T> GpuSliceMut<'a, T> where T: GpuBufferElement
 {
     pub fn new<S: RangeBounds<usize>>(buffer: &'a mut GpuBuffer<T>, bounds: S) -> Self
     {
-        use std::ops::Bound;
-        
         let buffer_len = buffer.len();
         
         let begin = match bounds.start_bound() {
@@ -143,9 +141,7 @@ impl<'a, T> GpuSliceable<T> for GpuSliceMut<'a, T>
 impl<'a, T> GpuSliceableMut<T> for GpuSliceMut<'a, T>
     where T:GpuBufferElement
 {
-    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T> {
-        use std::ops::Bound;
-        
+    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T> {        
         let slice_len = self.len;
         
         let relative_start = match bounds.start_bound() {

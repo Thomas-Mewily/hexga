@@ -20,8 +20,6 @@ impl<'a,T> GpuSlice<'a, T> where T: GpuBufferElement
 {
     pub fn new<S: RangeBounds<usize>>(buffer: &'a GpuBuffer<T>, bounds: S) -> Self
     {
-        use std::ops::Bound;
-        
         let buffer_len = buffer.len();
         
         let begin = match bounds.start_bound() {

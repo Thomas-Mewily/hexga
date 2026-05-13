@@ -19,6 +19,13 @@ impl<'a,T> GpuSliceMutWrite<'a, T> where T: GpuBufferElement
     }
 }
 
+/*
+pub trait GpuBufferWrite<T>
+{
+    fn update(&mut self, src : &[T]);
+}
+*/
+
 impl<'a, T> Collection for GpuSliceMutWrite<'a, T> where T: GpuBufferElement {}
 impl<'a, T> Length for GpuSliceMutWrite<'a, T> where T: GpuBufferElement
 {

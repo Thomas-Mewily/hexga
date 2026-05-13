@@ -101,8 +101,6 @@ impl<T> GpuSliceable<T> for GpuVec<T>
     fn usage(&self) -> GpuBufferUsageFlags { self.buffer.usage() }
     fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T> 
     {
-        use std::ops::Bound;
-        
         let vec_len = self.len;
         
         let start = match bounds.start_bound() {
@@ -149,8 +147,6 @@ impl<T> GpuSliceableMut<T> for GpuVec<T>
 {
     fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T> 
     {
-        use std::ops::Bound;
-        
         let vec_len = self.len;
         
         let start = match bounds.start_bound() {
