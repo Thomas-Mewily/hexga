@@ -1,20 +1,14 @@
 use super::*;
 pub use wgpu;
 
-pub static GPU: SingletonOnce<GpuContext> = SingletonOnce::new();
+mod context;
+pub use context::*;
 
-pub struct GpuContext
-{
-    pub instance: wgpu::Instance,
-    pub adapter: wgpu::Adapter,
-    pub device: wgpu::Device,
-    pub queue: wgpu::Queue,
-}
+mod init;
+pub use init::*;
 
-pub fn instance() -> impl Deref<Target = wgpu::Instance> { &GPU.get().instance }
-pub fn adapter() -> impl Deref<Target = wgpu::Adapter> { &GPU.get().adapter }
-pub fn device() -> impl Deref<Target = wgpu::Device> { &GPU.get().device }
-pub fn queue() -> impl Deref<Target = wgpu::Queue> { &GPU.get().queue }
+mod format;
+pub use format::*;
 
 pub mod prelude
 {

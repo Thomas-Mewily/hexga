@@ -10,8 +10,9 @@ use std::sync::{Arc, Mutex};
 use wgpu::util::DeviceExt;
 
 pub mod experimental;
-pub mod buffer;
 
+mod buffer;
+pub use buffer::*;
 
 use prelude::*;
 pub mod prelude

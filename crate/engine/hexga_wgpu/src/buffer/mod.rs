@@ -21,72 +21,62 @@ pub use read::*;
 mod write;
 pub use write::*;
 
-pub mod prelude {}
-pub mod traits {}
+mod vec;
+pub use write::*;
+
+pub mod prelude 
+{
+    pub use super::traits::*;
+}
+
+pub mod traits 
+{
+    pub use super::{GpuBufferNew,GpuBufferElement,GpuSliceable,GpuSliceableMut};
+}
 
 pub trait GpuBufferNew<T>
-    where T: Copy
+    where T: GpuBufferElement
 {
     fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self;
 }
-pub trait GpuSliceable<T> : WgpuSliceable<T>
-    where T: Copy
+pub trait GpuSliceable<T> //: WgpuSliceable<T>
+    where T: GpuBufferElement
 {
-    fn usage(&self) -> GpuBufferUsageFlags { self.wgpu_usage().into() }
+    fn usage(&self) -> GpuBufferUsageFlags;
 
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T> { 
-        
-        let start_byte = match bounds.start_bound() {
-            Bound::Included(&i) => Bound::Included(i as WgpuBufferAddress),
-            Bound::Excluded(&i) => Bound::Excluded(i as WgpuBufferAddress),
-            Bound::Unbounded => Bound::Unbounded,
-        };
-        
-        let end_byte = match bounds.end_bound() {
-            Bound::Included(&i) => Bound::Included((i + 1) as WgpuBufferAddress),
-            Bound::Excluded(&i) => Bound::Excluded(i as WgpuBufferAddress),
-            Bound::Unbounded => Bound::Unbounded,
-        };
-        
-        let byte_bounds = (start_byte, end_byte);
-        
-        unsafe { 
-            GpuSlice::<T>::from_wgpu(self.wgpu_slice(byte_bounds)) 
-        }
-    }
-    fn as_slice(&self) -> GpuSlice<'_, T> { unsafe { GpuSlice::from_wgpu(self.wgpu_as_slice()) } }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T>;
+    fn as_slice(&self) -> GpuSlice<'_, T> { self.slice(..) }
 
-    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T> 
-    {
-        unsafe { GpuSliceRead::from_wgpu(self.wgpu_view()) }
-    }
+    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T>;
+    fn as_read<S: RangeBounds<usize>>(&self) -> GpuSliceRead<'_, T> { self.read(..) }
 }
-impl<T,S> GpuSliceable<T> for S where S: WgpuSliceable<T>, T: Copy {}
 
-pub trait GpuSliceableMut<T: Copy> : GpuSliceable<T>
+
+pub trait GpuBufferElement : Copy + 'static {}
+impl<T> GpuBufferElement for T where T: Copy + 'static {}
+
+pub trait GpuSliceableMut<T> where T: GpuBufferElement
 {
-    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T>
-    {
-        let start_byte = match bounds.start_bound() {
-            Bound::Included(&i) => Bound::Included(i as WgpuBufferAddress),
-            Bound::Excluded(&i) => Bound::Excluded(i as WgpuBufferAddress),
-            Bound::Unbounded => Bound::Unbounded,
-        };
-        
-        let end_byte = match bounds.end_bound() {
-            Bound::Included(&i) => Bound::Included((i + 1) as WgpuBufferAddress),
-            Bound::Excluded(&i) => Bound::Excluded(i as WgpuBufferAddress),
-            Bound::Unbounded => Bound::Unbounded,
-        };
-        
-        let byte_bounds = (start_byte, end_byte);
-        
-        unsafe { 
-            GpuSliceMut::<T>::from_wgpu(self.wgpu_slice(byte_bounds)) 
-        }
-    }
+    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T>;
     fn as_mut_slice(&mut self) -> GpuSliceMut<'_, T> { self.slice_mut(..) }
 
+    fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMutWrite<'_, T> 
+    {
+        let slice_mut = self.slice_mut(bounds);
+        if Arc::get_mut(&mut slice_mut.buffer.buffer).is_none()
+        {
+            // COW : Copy on write
+            let buff = slice_mut.wgpu_deep_clone();
+            slice_mut.buffer.buffer = Arc::new(buff);
+        }
+
+        unsafe {
+            GpuSliceMutWrite::from_wgpu(WgpuSliceable::<T>::wgpu_view_mut(slice_mut.buffer.buffer.deref())) 
+        }
+    }
+    fn as_write<S: RangeBounds<usize>>(&mut self) -> GpuSliceMutWrite<'_, T> { self.write(..) } 
+
+    /*
     fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMutWrite<'_, T>
     {
         unsafe {
@@ -94,6 +84,7 @@ pub trait GpuSliceableMut<T: Copy> : GpuSliceable<T>
         }
     }
     fn update(&mut self, src: &mut [T]) { self.write(..).view.copy_from_slice(unsafe { bit::try_transmute_slice_unchecked(src) }.unwrap()); }
+    */
     //fn fill(&mut self, value: T) { self.write(..).view.fill(value); }
     // fn update_from_fn ?
 }

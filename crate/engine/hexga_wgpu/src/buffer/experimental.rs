@@ -21,11 +21,11 @@ impl<T> GpuBufferNew<T> for WgpuBuffer
     }
 }
 
-pub trait WgpuSliceable<T> where T: Copy
+pub trait WgpuSliceable<T> where T: GpuBufferElement
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage;
     fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_>;
-    fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_>;
+    fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { self.wgpu_slice(..) }
     fn wgpu_view(&self) -> WgpuBufferView<'_>;
     fn wgpu_view_mut(&self) -> WgpuBufferViewMut<'_>;
 
@@ -57,9 +57,8 @@ pub trait WgpuSliceable<T> where T: Copy
     }
 }
 
-impl<T: Copy> GpuSliceableMut<T> for WgpuBuffer  {}
 
-impl<T: Copy> WgpuSliceable<T> for WgpuBuffer {
+impl<T: GpuBufferElement> WgpuSliceable<T> for WgpuBuffer {
     fn wgpu_usage(&self) -> WgpuBufferUsage {
         self.usage()
     }

@@ -1,18 +1,27 @@
 use super::*;
 
 /// A strongly typed buffer that live on the GPU.
-/// This have value like semantic + Copy on Write:
-/// - Clone is always deep (don't worry, clonning the same value multiple time will reuse the same instance)
+/// This have regular value semantics with Copy-on-Write (CoW) optimization:
+/// 
+/// - Cloning performs a deep copy semantically, but internally shares the underlying GPU buffer
+///   until a modification is required (copy-on-write).
+/// 
+/// # Performance Characteristics
+/// 
+/// - `Clone` is O(1) and cheap: it only increments a reference count internally.
+/// 
+/// - Mutation is cheap when the buffer is uniquely owned; a deep clone of the GPU buffer
+///   occurs only when the buffer is shared.
 #[derive(Clone)]
 pub struct GpuBuffer<T>
-    where T: Copy
+    where T: GpuBufferElement
 {
-    buffer: Arc<WgpuBuffer>,
+    pub(crate) buffer: Arc<WgpuBuffer>,
     typed: PhantomData<T>,
 }
 
 impl<T> Debug for GpuBuffer<T>
-    where T: Copy
+    where T: GpuBufferElement
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result 
     {
@@ -22,8 +31,8 @@ impl<T> Debug for GpuBuffer<T>
 
 
 
-impl<T> Collection for GpuBuffer<T> where T: Copy {}
-impl<T> Length for GpuBuffer<T> where T: Copy
+impl<T> Collection for GpuBuffer<T> where T: GpuBufferElement {}
+impl<T> Length for GpuBuffer<T> where T: GpuBufferElement
 {
     fn len(&self) -> usize { self.buffer.size() as _ }
 }
@@ -38,7 +47,7 @@ impl<T> GpuBufferNew<T> for GpuBuffer<T>
 
 
 impl<T> WgpuSliceable<T> for GpuBuffer<T>
-    where T: Copy
+    where T: GpuBufferElement
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage {
         WgpuSliceable::<T>::wgpu_usage(self.buffer.deref())
@@ -64,20 +73,21 @@ impl<T> WgpuSliceable<T> for GpuBuffer<T>
         WgpuSliceable::<T>::wgpu_deep_clone_order(self.buffer.deref())
     }
 }
-impl<T> GpuSliceableMut<T> for GpuBuffer<T> 
-    where T: Copy
-{
-    fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMutWrite<'_, T> 
-    {
-        if Arc::get_mut(&mut self.buffer).is_none()
-        {
-            // COW : Copy on write
-            let buff = self.wgpu_deep_clone();
-            self.buffer = Arc::new(buff);
-        }
 
-        unsafe {
-            GpuSliceMutWrite::from_wgpu(self.wgpu_view_mut()) 
-        }
+
+impl<T> GpuSliceable<T> for GpuBuffer<T> 
+    where T: GpuBufferElement
+{
+    fn usage(&self) -> GpuBufferUsageFlags { self.wgpu_usage().into() }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T> { GpuSlice::new(self, bounds) }
+
+    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T> {
+        unsafe { GpuSliceRead::from_wgpu(WgpuSliceable::<T>::wgpu_view(self.buffer.deref())) }
     }
+}
+
+impl<T> GpuSliceableMut<T> for GpuBuffer<T> 
+    where T: GpuBufferElement
+{
+    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T> { GpuSliceMut::new(self, bounds) }
 }
