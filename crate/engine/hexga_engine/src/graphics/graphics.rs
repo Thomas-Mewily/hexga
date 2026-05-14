@@ -16,10 +16,8 @@ pub struct Graphics
 
 impl Graphics
 {
-    /*
     pub(crate) fn new() -> Self
     {
         todo!()
     }
-    */
 }

@@ -126,7 +126,6 @@ where
                 }
                 AppCustomEvent::GpuReady(gpu) =>
                 {
-                    
                     hexga_graphics::gpu::experimental::GPU
                         .init(gpu)
                         .ok_or_void()
@@ -134,6 +133,11 @@ where
                     assert!(Gpu::is_init());
 
                     self.init_app_if_needed(event_loop);
+
+                    if GRAPHICS.try_get_mut().is_err()
+                    {
+                        GRAPHICS.init_from_fn(|| Graphics::new()).ok_or_void().expect("Can't init the graphics");
+                    }
                     
                     return None;
                 }
@@ -172,7 +176,7 @@ where
                     .create_window(self.param.window.clone())
                     .expect("failed to create main window")
             })
-            .map_err(|_| ())
+            .ok_or_void()
             .expect("can't init the main window");
 
         if created || window.surface().is_none()

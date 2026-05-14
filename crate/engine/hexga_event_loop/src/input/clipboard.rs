@@ -49,7 +49,7 @@ impl Clipboardable for Clipboard
     {
         if let Some(c) = self.ctx.as_mut()
         {
-            c.set_contents(paste).map_err(|_| ())
+            c.set_contents(paste).ok_or_void()
         }
         else
         {

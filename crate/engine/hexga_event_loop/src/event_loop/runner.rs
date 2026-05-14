@@ -215,7 +215,7 @@ where
 {
     free_fn::init();
 
-    let event_loop = WinitEventLoop::with_user_event().build().map_err(|_| ())?;
+    let event_loop = WinitEventLoop::with_user_event().build().ok_or_void()?;
     event_loop.set_control_flow(param.control_flow.into());
     let proxy = EventLoopProxy::new(event_loop.create_proxy());
 
@@ -233,7 +233,7 @@ where
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        event_loop.run_app(&mut runner).map_err(|_| ())?;
+        event_loop.run_app(&mut runner).ok_or_void()?;
     }
     #[cfg(target_arch = "wasm32")]
     {
