@@ -117,8 +117,8 @@ where
                         }
                     };
                     let size = window.size();
-                    //window.replace_surface(Some(GpuConfiguredSurface::from_surface(surface, size)));
-                    //window.configure_surface();
+                    window.replace_surface(Some(GpuSurfaceConfigured::from_surface(surface, size)));
+                    window.configure_surface();
                     window.request_draw();
                     drop(window);
                     self.init_app_if_needed(event_loop);
@@ -126,14 +126,13 @@ where
                 }
                 AppCustomEvent::GpuReady(gpu) =>
                 {
-                    /*
+                    
                     hexga_graphics::gpu::experimental::GPU
                         .init(gpu)
-                        .expect("can't init the gpu");
+                        .ok_or_void()
+                        .expect("Can't init the gpu");
                     assert!(Gpu::is_init());
                     
-                    //GRAPHICS.init_from_fn(|| Graphics::new()).map_err(|_| ()).expect("can't init the graphics");
-                    */
                     return None;
                 }
                 AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
@@ -146,7 +145,7 @@ where
         {
             PlatformEvent::Resize(size) =>
             {
-                //WINDOW.try_get_mut().map(|mut w| w.configure_surface());
+                WINDOW.try_get_mut().map(|mut w| w.configure_surface());
             }
             _ =>
             {}

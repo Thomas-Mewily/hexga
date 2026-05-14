@@ -222,9 +222,9 @@ impl<T> GpuVec<T> where T: BitAllUsed
             self.force_reallocate(new_capacity)?;
         }
 
-        let write_byte_offset = (offset * elem_size) as u64;
+        let write_byte_offset = (offset * elem_size) as WgpuBufferAddress;
         let write_bytes = bit::try_transmute_slice(data).map_err(|_| ())?;
-        queue().write_buffer(&self.buffer.buffer, write_byte_offset, write_bytes);
+        Gpu.queue().write_buffer(&self.buffer.buffer, write_byte_offset, write_bytes);
 
         if required_len > self.len {
             self.len = required_len;
@@ -238,8 +238,10 @@ impl<T> GpuVec<T> where T: BitAllUsed
         
         let new_byte_size = new_capacity
             .checked_mul(elem_size)
-            .and_then(|b| u64::try_from(b).ok())
+            .and_then(|b| WgpuBufferAddress::try_from(b).ok())
             .ok_or(())?;
+
+        
         
         let usage = self.buffer.usage();
         
@@ -251,7 +253,7 @@ impl<T> GpuVec<T> where T: BitAllUsed
             }
         }
         
-        let new_wgpu_buffer = device().create_buffer(&wgpu::BufferDescriptor {
+        let new_wgpu_buffer = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
             label: None,
             size: new_byte_size,
             usage: usage.into(),
@@ -259,8 +261,8 @@ impl<T> GpuVec<T> where T: BitAllUsed
         });
         
         if self.len > 0 {
-            let copy_byte_len = (self.len * elem_size) as u64;
-            let mut encoder = device().create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            let copy_byte_len = (self.len * elem_size) as WgpuBufferAddress;
+            let mut encoder = Gpu.device().create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("gpu_vec_reallocate"),
             });
             
@@ -272,8 +274,8 @@ impl<T> GpuVec<T> where T: BitAllUsed
                 copy_byte_len
             );
             
-            queue().submit(Some(encoder.finish()));
-            device().poll(wgpu::PollType::Wait);
+            Gpu.queue().submit(Some(encoder.finish()));
+            Gpu.wait();
         }
         
         self.buffer.buffer = Arc::new(new_wgpu_buffer);

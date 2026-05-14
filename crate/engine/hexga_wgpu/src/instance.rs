@@ -1,10 +1,39 @@
 use super::*;
 
+
+#[derive(Debug, Clone)]
+pub struct GpuInstance
+{
+    pub wgpu: wgpu::Instance,
+}
+impl<'a> From<wgpu::Instance> for GpuInstance
+{
+    fn from(surface: wgpu::Instance) -> Self { Self { wgpu: surface } }
+}
+impl<'a> From<GpuInstance> for wgpu::Instance
+{
+    fn from(surface: GpuInstance) -> Self { surface.wgpu }
+}
+impl GpuInstance
+{
+    pub fn new(desc: &GpuInstanceDescriptor) -> Self
+    {
+        Self {
+            wgpu: wgpu::Instance::new(&wgpu::InstanceDescriptor {
+                backends: desc.backends.into(),
+                flags: desc.wgpu.flags,
+                backend_options: desc.wgpu.backend_options.clone(),
+            }),
+        }
+    }
+}
+
+
 #[non_exhaustive]
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct GpuInstanceDescriptor
 {
-    pub backends: BackendFlags,
+    pub backends: GpuBackendFlags,
     pub wgpu: WgpuInstanceDescriptor,
 }
 
@@ -42,7 +71,7 @@ pub struct WgpuInstanceDescriptor
 
 #[bit_index]
 #[repr(u8)]
-pub enum Backend
+pub enum GpuBackend
 {
     // No operation
     Noop,
@@ -65,29 +94,30 @@ pub enum Backend
     /// All the apis that wgpu offers second tier of support for. These may
     /// be unsupported/still experimental.
     Secondary = Self::Gl,
+    /// Apis that are quick to debug / setup for a fast iteration cycle
     Debug = Self::Gl,
 }
 
 
-impl From<Backend> for wgpu::Backends
+impl From<GpuBackend> for wgpu::Backends
 {
-    fn from(value: Backend) -> Self
+    fn from(value: GpuBackend) -> Self
     {
         use wgpu::Backends as B;
         match value
         {
-            Backend::Noop => B::NOOP,
-            Backend::Vulkan => B::VULKAN,
-            Backend::Gl => B::GL,
-            Backend::Metal => B::METAL,
-            Backend::Dx12 => B::DX12,
-            Backend::BrowserWebgpu => B::BROWSER_WEBGPU,
+            GpuBackend::Noop => B::NOOP,
+            GpuBackend::Vulkan => B::VULKAN,
+            GpuBackend::Gl => B::GL,
+            GpuBackend::Metal => B::METAL,
+            GpuBackend::Dx12 => B::DX12,
+            GpuBackend::BrowserWebgpu => B::BROWSER_WEBGPU,
         }
     }
 }
-impl From<BackendFlags> for wgpu::Backends
+impl From<GpuBackendFlags> for wgpu::Backends
 {
-    fn from(backends: BackendFlags) -> Self
+    fn from(backends: GpuBackendFlags) -> Self
     {
         let mut flags = wgpu::Backends::empty();
         for backend in backends
@@ -98,17 +128,17 @@ impl From<BackendFlags> for wgpu::Backends
     }
 }
 
-impl Default for BackendFlags
+impl Default for GpuBackendFlags
 {
     fn default() -> Self
     {
         if cfg!(debug_assertions)
         {
-            BackendFlags::Debug
+            GpuBackendFlags::Debug
         }
         else
         {
-            BackendFlags::Primary | BackendFlags::Secondary
+            GpuBackendFlags::Primary | GpuBackendFlags::Secondary
         }
     }
 }
@@ -119,14 +149,14 @@ pub struct GpuParam
 {
     pub instance: GpuInstanceDescriptor,
     pub wgpu_instance: WgpuInstanceDescriptor,
-    pub power_preference: PowerPreference,
+    pub power_preference: GpuPowerPreference,
     //pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
 }
 
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum PowerPreference
+pub enum GpuPowerPreference
 {
     #[default]
     /// Power usage is not considered when choosing an adapter.
@@ -136,15 +166,15 @@ pub enum PowerPreference
     /// Adapter that has the highest performance. This is often a discrete GPU.
     HighPerformance = 2,
 }
-impl Into<wgpu::PowerPreference> for PowerPreference
+impl Into<wgpu::PowerPreference> for GpuPowerPreference
 {
     fn into(self) -> wgpu::PowerPreference
     {
         match self
         {
-            PowerPreference::None => wgpu::PowerPreference::None,
-            PowerPreference::LowPower => wgpu::PowerPreference::LowPower,
-            PowerPreference::HighPerformance => wgpu::PowerPreference::HighPerformance,
+            GpuPowerPreference::None => wgpu::PowerPreference::None,
+            GpuPowerPreference::LowPower => wgpu::PowerPreference::LowPower,
+            GpuPowerPreference::HighPerformance => wgpu::PowerPreference::HighPerformance,
         }
     }
 }

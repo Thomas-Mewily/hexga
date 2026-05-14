@@ -22,7 +22,7 @@ mod write;
 pub use write::*;
 
 mod vec;
-pub use write::*;
+pub use vec::*;
 
 pub mod prelude 
 {

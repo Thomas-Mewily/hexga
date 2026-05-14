@@ -4,13 +4,10 @@ use super::*;
 
 mod main_window;
 use hexga_event_loop::event_loop::EventLoopProxy;
-//use hexga_graphics::gpu::{GpuContext, GpuInstance, GpuInstanceDescriptor, WgpuContext};
 pub use main_window::*;
 
-pub(crate) type WindowType = hexga_event_loop::window::Window<()>;
-//pub(crate) type WindowType = hexga_event_loop::window::Window<GpuConfiguredSurface<'static>>;
+pub(crate) type WindowType = hexga_event_loop::window::Window<GpuSurfaceConfigured<'static>>;
 
-/*
 pub(crate) trait WindowInitGpu
 {
     fn initialize_surface(
@@ -42,7 +39,7 @@ impl WindowInitGpu for WindowType
             Ok(())
         }else
         {
-            let surface = Gpu.wgpu.instance.wgpu.create_surface(self.winit_window())?.into();
+            let surface = Gpu.instance().create_surface(self.winit_window())?.into();
             event_loop.send_event(PlatformEvent::Custom(AppCustomEvent::SurfaceReady(surface)));
             Ok(())
         }
@@ -118,20 +115,23 @@ pub(crate) async fn async_init_gpu(
         .await?;
 
     let gpu = GpuContext {
-        wgpu: WgpuContext {
-            instance,
-            adapter,
-            device,
-            queue,
-        },
+        instance: instance.into(),
+        adapter,
+        device,
+        queue,
     };
 
     Ok((surface, gpu))
 }
-*/
 
 pub mod prelude
 {
     pub use super::CurrentWindow;
+    pub use super::traits::*;
     pub(crate) use super::WindowType;
+}
+
+pub mod traits
+{
+    pub(crate) use super::WindowInitGpu;
 }

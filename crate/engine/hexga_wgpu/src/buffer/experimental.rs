@@ -12,7 +12,7 @@ impl<T> GpuBufferNew<T> for WgpuBuffer
     where T: BitAllUsed
 {
     fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self {
-        device()
+        Gpu.device()
             .create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: None,
                 contents: bit::transmute_slice(value),
@@ -27,7 +27,7 @@ impl<T> GpuBufferNew<T> for WgpuBuffer
             .and_then(|b| WgpuBufferAddress::try_from(b).ok())
             .expect("GpuBuffer capacity overflow");
 
-        device().create_buffer(&wgpu::BufferDescriptor {
+        Gpu.device().create_buffer(&wgpu::BufferDescriptor {
             label: None,
             usage: usage.into(),
             size,
@@ -67,7 +67,7 @@ pub trait WgpuSliceable<T> where T: GpuBufferElement
     fn wgpu_deep_clone(&self) -> WgpuBuffer 
     { 
         let buff = self.wgpu_deep_clone_order(); 
-        device().poll(wgpu::PollType::Wait);
+        Gpu.wait();
         buff
     }
 }
@@ -112,19 +112,19 @@ impl<T: GpuBufferElement> WgpuSliceable<T> for WgpuBuffer {
         let size = self.size();
         let usage = self.usage();
         
-        let new_buffer = device().create_buffer(&wgpu::BufferDescriptor {
+        let new_buffer = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
             label: None,
             size,
             usage,
             mapped_at_creation: false,
         });
         
-        let mut encoder = device().create_command_encoder(&wgpu::CommandEncoderDescriptor {
+        let mut encoder = Gpu.device().create_command_encoder(&wgpu::CommandEncoderDescriptor {
             label: None,
         });
         
         encoder.copy_buffer_to_buffer(self, 0, &new_buffer, 0, size);
-        queue().submit(Some(encoder.finish()));
+        Gpu.queue().submit(Some(encoder.finish()));
         
         new_buffer
     }
