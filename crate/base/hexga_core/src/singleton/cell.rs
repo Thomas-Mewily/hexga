@@ -7,6 +7,14 @@ pub type SingletonLazyCell<T> = SingletonOf<SingleThreadCell<LazyCell<T>>>;
 /// Single threaded singleton, where the value should be manually initialized at runtime.
 pub type SingletonOptionCell<T> = SingletonOf<SingleThreadCell<Option<T>>>;
 
+// FIXME: Hack for wasm
+#[cfg(target_arch = "wasm32")]
+unsafe impl<T> core::marker::Sync for SingletonCell<T> {}
+#[cfg(target_arch = "wasm32")]
+unsafe impl<T> core::marker::Sync for SingletonLazyCell<T> {}
+#[cfg(target_arch = "wasm32")]
+unsafe impl<T> core::marker::Sync for SingletonOptionCell<T> {}
+
 impl<T> SingletonCell<T>
 {
     pub const fn new(value: T) -> Self

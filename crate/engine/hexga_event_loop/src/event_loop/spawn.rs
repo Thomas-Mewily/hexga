@@ -2,14 +2,14 @@ use super::*;
 
 pub trait AsyncSpawn
 where
-    Self: Future<Output = ()> + Send + 'static,
+    Self: Future<Output = ()> + WasmSend + 'static,
 {
     fn spawn(self);
 }
 
 impl<F> AsyncSpawn for F
 where
-    F: Future<Output = ()> + Send + 'static,
+    F: Future<Output = ()> + WasmSend + 'static,
 {
     fn spawn(self)
     {

@@ -1,14 +1,14 @@
 use super::*;
 
 #[allow(non_upper_case_globals)]
-pub(crate) static Assets: LazyLock<AssetsManagerUntyped> =
-    LazyLock::new(|| AssetsManagerUntyped::default());
+//pub(crate) static ASSET: LazyLock<AssetsManagerUntyped> = LazyLock::new(|| AssetsManagerUntyped::default());
+pub(crate) static ASSET: SingletonOnceLazy<AssetsManagerUntyped> = SingletonOnceLazy::new(|| AssetsManagerUntyped::default());
 
 #[derive(Default)]
 pub(crate) struct AssetsManagerUntyped
 {
     //path_resolver: PathResolver,
-    assets: RwLock<HashMap<TypeId, Arc<AnyAsync>>>,
+    assets: RwLock<HashMap<TypeId, Arc<DynAnyAsync>>>,
 }
 
 /*
@@ -23,14 +23,14 @@ impl AssetsManagerUntyped
 {
     pub fn manager<T>(&self) -> AssetManager<T>
     where
-        T: Async + Sync,
+        T: Async,
     {
         let type_id = TypeId::of::<T>();
         {
             let assets_read = self.assets.read().unwrap();
             if let Some(any_manager) = assets_read.get(&type_id)
             {
-                let asset_manager = any_manager.downcast_ref::<AssetManager<T>>().unwrap();
+                let asset_manager = any_manager.as_any().downcast_ref::<AssetManager<T>>().unwrap();
                 return asset_manager.clone();
             }
         }

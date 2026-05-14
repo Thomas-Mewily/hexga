@@ -295,7 +295,7 @@ where
         self
     }
 
-    pub fn manager() -> AssetManager<T> { Assets.manager() }
+    pub fn manager() -> AssetManager<T> { ASSET.get().manager() }
 
     pub fn is_loading(&self) -> bool { self.state().is_loading() }
     pub fn is_loaded(&self) -> bool { self.state().is_loaded() }

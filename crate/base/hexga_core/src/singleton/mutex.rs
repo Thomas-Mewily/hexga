@@ -9,6 +9,14 @@ pub type SingletonLazyMutex<T> = SingletonOf<Mutex<LazyLock<T>>>;
 /// Multi threaded singleton, where the value should be manually initialized at runtime.
 pub type SingletonOptionMutex<T> = SingletonOf<Mutex<Option<T>>>;
 
+// FIXME: Hack for wasm
+#[cfg(target_arch = "wasm32")]
+unsafe impl<T> core::marker::Sync for SingletonMutex<T> {}
+#[cfg(target_arch = "wasm32")]
+unsafe impl<T> core::marker::Sync for SingletonLazyMutex<T> {}
+#[cfg(target_arch = "wasm32")]
+unsafe impl<T> core::marker::Sync for SingletonOptionMutex<T> {}
+
 impl<T> SingletonMutex<T>
 {
     pub const fn new(value: T) -> Self

@@ -5,10 +5,11 @@ pub type SingletonOnce<T> = SingletonOf<OnceLock<T>>;
 /// Multi threaded read only singleton, where the value is initialized from a static fn / lambda at runtime.
 pub type SingletonOnceLazy<T> = SingletonOf<LazyLock<T>>;
 
-/*
+// FIXME: Hack for wasm
 #[cfg(target_arch = "wasm32")]
-unsafe impl<T> Sync for SingletonOnce<T> {}
-*/
+unsafe impl<T> core::marker::Sync for SingletonOnce<T> {}
+#[cfg(target_arch = "wasm32")]
+unsafe impl<T> core::marker::Sync for SingletonOnceLazy<T> {}
 
 
 impl<T> SingletonOnce<T>
