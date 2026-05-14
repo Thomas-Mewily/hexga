@@ -4,7 +4,7 @@ use super::*;
 #[derive(Debug)]
 pub struct Graphics 
 {
-    pub(crate) immediate: ImmediateRender,
+    //pub(crate) immediate: ImmediateRender,
     //pub(crate) binding: GpuBinding,
     //pub(crate) render: GpuRender,
 
@@ -18,6 +18,8 @@ impl Graphics
 {
     pub(crate) fn new() -> Self
     {
-        todo!()
+        //todo!()
+
+        Graphics{}
     }
 }

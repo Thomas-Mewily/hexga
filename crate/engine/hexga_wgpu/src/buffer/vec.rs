@@ -223,7 +223,7 @@ impl<T> GpuVec<T> where T: BitAllUsed
         }
 
         let write_byte_offset = (offset * elem_size) as WgpuBufferAddress;
-        let write_bytes = bit::try_transmute_slice(data).map_err(|_| ())?;
+        let write_bytes = bit::try_transmute_slice(data).ok_or_void()?;
         Gpu.queue().write_buffer(&self.buffer.buffer, write_byte_offset, write_bytes);
 
         if required_len > self.len {

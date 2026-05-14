@@ -181,11 +181,9 @@ where
 
         if created || window.surface().is_none()
         {
-            /*
             window
                 .initialize_surface(&self.param.gpu, event_loop)
                 .expect("failed to init the surface");
-            */
         }
     }
 

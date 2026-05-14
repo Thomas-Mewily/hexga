@@ -5,7 +5,7 @@ use hexga_event_loop::event_loop::EventLoopParam;
 pub struct AppParam
 {
     pub window: WindowParam,
-    //pub gpu: GpuParam,
+    pub gpu: GpuParam,
     pub event_loop: EventLoopParam, //pub update : TimeStrategy,
 }
 

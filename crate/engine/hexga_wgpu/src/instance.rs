@@ -152,7 +152,16 @@ pub struct GpuParam
     pub power_preference: GpuPowerPreference,
     //pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
 }
-
+impl Debug for GpuParam
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    {
+        f.debug_struct("GpuParam")
+            .field("instance", &self.instance)
+            .field("power_preference", &self.power_preference)
+            .finish()
+    }
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

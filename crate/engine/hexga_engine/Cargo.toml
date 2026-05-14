@@ -15,7 +15,10 @@ categories = ["game-engines", "game-development", "graphics", "games"]
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde", "serde_rc", "hexga_encoding_derive"
+            "serde", "serde_rc", "hexga_encoding_derive",
+
+            "gpu_backend_webgpu", "gpu_backend_gles", "gpu_backend_noop", 
+            "gpu_strict_asserts", "gpu_wgsl"
           ]
 
 
@@ -35,8 +38,19 @@ serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_graphics/serde_rc", "hexga_even
 
 hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_graphics/hexga_encoding_derive"] #, "hexga_event_loop/hexga_encoding_derive"]
 
+
+gpu_backend_webgpu = ["hexga_graphics/gpu_backend_webgpu"]
+gpu_backend_gles = ["hexga_graphics/gpu_backend_gles"]
+gpu_backend_metal = ["hexga_graphics/gpu_backend_metal"]
+gpu_backend_dx12 = ["hexga_graphics/gpu_backend_dx12"]
+gpu_backend_vulkan = ["hexga_graphics/gpu_backend_vulkan"]
+gpu_backend_noop = ["hexga_graphics/gpu_backend_noop"]
+
+gpu_strict_asserts = ["hexga_graphics/gpu_strict_asserts"]
+gpu_wgsl = ["hexga_graphics/gpu_wgsl"]
+
 [dependencies]
 hexga.workspace = true
 hexga_event_loop.workspace = true
-hexga_graphics = { workspace = true, features = ["wgpu"] }
+hexga_graphics = { workspace = true, features = ["gpu"] }
 serde = { version = "1.0.0", features = ["derive"], optional = true }

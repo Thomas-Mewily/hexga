@@ -16,7 +16,10 @@ categories = ["game-development", "graphics"]
 default = [
             "int_are_32_bits", "float_are_32_bits",
             "serde", "serde_rc", "hexga_encoding_derive",
-            "wgpu"
+
+            "gpu",
+            "gpu_backend_webgpu", "gpu_backend_gles", "gpu_backend_noop", 
+            "gpu_strict_asserts", "gpu_wgsl"
           ]
 
 int_are_8_bits    = ["hexga/int_are_8_bits", "hexga_wgpu/int_are_8_bits"]
@@ -32,9 +35,22 @@ float_are_size_bits = ["hexga/float_are_size_bits", "hexga_wgpu/float_are_size_b
 serde = ["dep:serde", "hexga/serde", "hexga_wgpu/serde"]
 serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_wgpu/serde_rc"]
 
-wgpu = ["dep:hexga_wgpu"]
-
 hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_wgpu/hexga_encoding_derive"]
+
+
+
+gpu = ["dep:hexga_wgpu"]
+
+gpu_backend_webgpu = ["hexga_wgpu/gpu_backend_webgpu"]
+gpu_backend_gles = ["hexga_wgpu/gpu_backend_gles"]
+gpu_backend_metal = ["hexga_wgpu/gpu_backend_metal"]
+gpu_backend_dx12 = ["hexga_wgpu/gpu_backend_dx12"]
+gpu_backend_vulkan = ["hexga_wgpu/gpu_backend_vulkan"]
+gpu_backend_noop = ["hexga_wgpu/gpu_backend_noop"]
+
+gpu_strict_asserts = ["hexga_wgpu/gpu_strict_asserts"]
+gpu_wgsl = ["hexga_wgpu/gpu_wgsl"]
+
 
 [dependencies]
 hexga.workspace = true

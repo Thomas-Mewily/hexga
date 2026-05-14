@@ -2,14 +2,14 @@
 #![allow(unused)]
 use hexga::prelude::*;
 
-#[cfg(feature = "wgpu")]
+#[cfg(feature = "gpu")]
 pub use hexga_wgpu as gpu;
 
-//#[cfg(feature = "wgpu")]
+//#[cfg(feature = "gpu")]
 //pub use hexga_wgpu::wgpu;
-//#[cfg(feature = "wgpu")]
+//#[cfg(feature = "gpu")]
 //pub(crate) use hexga_wgpu::{GpuVec, prelude::*};
-//#[cfg(feature = "wgpu")]
+//#[cfg(feature = "gpu")]
 //pub(crate) type GpuVertexBufferLayout<'a> = wgpu::VertexBufferLayout<'a>;
 
 pub mod render;
@@ -31,7 +31,7 @@ pub(crate) use typedef::*;
 pub mod prelude
 {
     pub use super::typedef::*;
-    #[cfg(feature = "wgpu")]
+    #[cfg(feature = "gpu")]
     pub use hexga_wgpu::prelude::*;
 
     pub use super::traits::*;
