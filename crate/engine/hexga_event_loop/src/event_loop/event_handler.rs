@@ -93,7 +93,7 @@ impl Clipboardable for EventLoopState
     }
 }
 
-pub trait PlatformEventHandler<CustomEvent = ()>: Sized
+pub trait PlatformEventHandler<CustomEvent = ()>: Sized + 'static
 where
     CustomEvent: PlatformCustomEvent,
 {

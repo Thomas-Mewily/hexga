@@ -456,14 +456,14 @@ where
             use std::sync::Once;
             use web_time::Instant;
 
-            static mut START_TIME: Option<Duration> = None;
-            static INIT: DoOnce = DoOnce::new();
+            static mut START_TIME: Option<::web_time::Instant> = None;
+            static INIT: Once = Once::new();
 
             INIT.call_once(|| unsafe {
-                START_TIME = Some(Duration::now());
+                START_TIME = Some(::web_time::Instant::now());
             });
 
-            let elapsed = unsafe { Duration::now() - START_TIME.unwrap() };
+            let elapsed = unsafe { ::web_time::Instant::now() - START_TIME.unwrap() };
             return TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()));
         }
     }

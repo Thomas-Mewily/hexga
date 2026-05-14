@@ -237,7 +237,9 @@ where
     }
     #[cfg(target_arch = "wasm32")]
     {
-        event_loop.spawn_app(app);
+        use winit::platform::web::EventLoopExtWebSys;
+
+        event_loop.spawn_app(runner);
     }
 
     Ok(())

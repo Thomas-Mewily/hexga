@@ -684,6 +684,8 @@ name = "engine"
 version = "0.0.11-beta.53"
 dependencies = [
  "hexga_engine",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]
@@ -1189,6 +1191,7 @@ dependencies = [
  "log",
  "serde",
  "smol",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
  "winit",
 ]

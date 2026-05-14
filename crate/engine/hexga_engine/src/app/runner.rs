@@ -108,6 +108,8 @@ where
                 let Ok(mut window) = WINDOW.try_get_mut() else { return; };
                 let Some(surface) = window.surface() else { return; };
 
+                //a
+
                 let surface = surface.surface();
                 let output = match surface.wgpu.get_current_texture()
                 {

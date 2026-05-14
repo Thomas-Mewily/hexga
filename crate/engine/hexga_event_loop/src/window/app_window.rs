@@ -886,7 +886,7 @@ impl From<WindowParam> for WinitWindowAttributes
         #[cfg(target_arch = "wasm32")]
         {
             use winit::platform::web::WindowAttributesExtWebSys;
-            win_attr = win_attr.with_append(true);
+            attr = attr.with_append(true);
         }
 
         attr
