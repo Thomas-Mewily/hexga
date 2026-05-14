@@ -7,12 +7,12 @@ pub type SingletonLazyRw<T> = SingletonOf<RwLock<LazyLock<T>>>;
 /// Multi threaded singleton, where the value should be manually initialized at runtime.
 pub type SingletonOptionRw<T> = SingletonOf<RwLock<Option<T>>>;
 
-// FIXME: Hack for wasm
-#[cfg(target_arch = "wasm32")]
+// Wasm is single threaded right now, so this is ok.
+#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
 unsafe impl<T> core::marker::Sync for SingletonRw<T> {}
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
 unsafe impl<T> core::marker::Sync for SingletonLazyRw<T> {}
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
 unsafe impl<T> core::marker::Sync for SingletonOptionRw<T> {}
 
 impl<T> SingletonRw<T>
