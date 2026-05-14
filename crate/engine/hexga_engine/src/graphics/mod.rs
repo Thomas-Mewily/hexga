@@ -12,5 +12,6 @@ pub mod prelude
 {
     //pub(crate) use super::{Graphics, GpuEvent, wgpu};
     pub use hexga_graphics::prelude::*;
-    pub use super::Graphics;
+    pub(crate) use super::Graphics;
+    pub use super::Pen;
 }

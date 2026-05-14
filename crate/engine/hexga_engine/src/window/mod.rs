@@ -114,12 +114,7 @@ pub(crate) async fn async_init_gpu(
         })
         .await?;
 
-    let gpu = GpuContext {
-        instance: instance.into(),
-        adapter,
-        device,
-        queue,
-    };
+    let gpu = GpuContext::from_wgpu(instance.into(), adapter, device, queue);
 
     Ok((surface, gpu))
 }

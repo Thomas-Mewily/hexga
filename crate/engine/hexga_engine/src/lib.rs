@@ -7,7 +7,7 @@ use hexga_event_loop::{
     input::*,
     window::{WindowParam, traits::*},
 };
-use hexga_graphics::gpu::experimental::wgpu;
+use hexga_graphics::gpu::wgpu;
 pub(crate) type Singleton<T> = hexga::singleton::SingletonOptionMutex<T>;
 pub(crate) use hexga_event_loop::log::prelude::*;
 use std::any::Any;

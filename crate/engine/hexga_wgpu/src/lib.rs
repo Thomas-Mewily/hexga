@@ -9,6 +9,8 @@ use std::sync::OnceLock;
 use std::sync::{Arc, Mutex};
 use wgpu::util::DeviceExt;
 
+pub use wgpu;
+
 pub mod experimental;
 
 mod buffer;
@@ -50,6 +52,7 @@ pub mod prelude
 
         GpuSurface, GpuSurfaceConfigured,
     };
+    pub(crate) use super::experimental::*;
 }
 
 pub mod traits

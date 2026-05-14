@@ -41,7 +41,16 @@ impl<'a> GpuSurfaceConfigured<'a>
     {
         GetSize::size(self)
     }
+
+    pub fn surface(&self) -> &GpuSurface<'a> { &self.surface }
 }
+impl<'a> AsRef<GpuSurface<'a>> for GpuSurfaceConfigured<'a>
+{
+    fn as_ref(&self) -> &GpuSurface<'a> {
+        self.surface()
+    }
+}
+
 impl<'a> SetSize<int, 2> for GpuSurfaceConfigured<'a>
 {
     fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self

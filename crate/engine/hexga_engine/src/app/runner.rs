@@ -31,6 +31,26 @@ where
         self.app = None;
     }
 
+    fn init_stuff_if_needed(&mut self, event_loop: &mut AppInternalEventLoop)
+    {
+        self.init_graphics_if_needed();
+        self.init_app_if_needed(event_loop);
+    }
+
+    fn init_graphics_if_needed(&mut self)
+    {
+        if CurrentWindow::is_not_init() || Gpu::is_not_init() { return; }
+
+        if GRAPHICS.try_get_mut().is_err()
+        {
+            let mut w = WINDOW.get_mut();
+            if let Some(surface) = w.surface()
+            {
+                GRAPHICS.init_from_fn(|| Graphics::new(surface.surface(), w.size())).ok_or_void().expect("Can't init the graphics");
+            }
+        }
+    }
+
     fn init_app_if_needed(&mut self, event_loop: &mut AppInternalEventLoop)
     {
         if self.app.is_some() || Gpu::is_not_init()
@@ -84,10 +104,54 @@ where
         {
             Some(app) => 
             {
-                if WINDOW.try_get_mut().map(|mut w| w.surface().is_some()).unwrap_or(false)
+                let Ok(mut graphics) = GRAPHICS.try_get_mut() else { return; };
+                let Ok(mut window) = WINDOW.try_get_mut() else { return; };
+                let Some(surface) = window.surface() else { return; };
+
+                let surface = surface.surface();
+                let output = match surface.wgpu.get_current_texture()
                 {
-                    app.draw(1., &mut ());
+                    Ok(s) => s,
+                    Err(_) => return,
+                };
+
+                let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+                let mut encoder = Gpu.device()
+                    .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                        label: Some("Render Encoder"),
+                    });
+
+                {
+                    let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                        label: Some("Render Pass"),
+                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                            view: &view,
+                            resolve_target: None,
+                            ops: wgpu::Operations {
+                                load: wgpu::LoadOp::Clear(wgpu::Color {
+                                    r: 0.1,
+                                    g: 0.2,
+                                    b: 0.3,
+                                    a: 1.0,
+                                }),
+                                store: wgpu::StoreOp::Store,
+                            },
+                        })],
+                        depth_stencil_attachment: None,
+                        occlusion_query_set: None,
+                        timestamp_writes: None,
+                    });
+
+                    render_pass.set_pipeline(&graphics.pipeline);
+                    render_pass.draw(0..3, 0..1);
                 }
+
+                Gpu.queue().submit(iter::once(encoder.finish()));
+                output.present();
+                
+
+                app.draw(1., &mut ());
             },
             None =>
             {}
@@ -121,7 +185,9 @@ where
                     window.configure_surface();
                     window.request_draw();
                     drop(window);
-                    self.init_app_if_needed(event_loop);
+
+                    self.init_stuff_if_needed(event_loop);
+
                     return None;
                 }
                 AppCustomEvent::GpuReady(gpu) =>
@@ -132,12 +198,7 @@ where
                         .expect("Can't init the gpu");
                     assert!(Gpu::is_init());
 
-                    self.init_app_if_needed(event_loop);
-
-                    if GRAPHICS.try_get_mut().is_err()
-                    {
-                        GRAPHICS.init_from_fn(|| Graphics::new()).ok_or_void().expect("Can't init the graphics");
-                    }
+                    self.init_stuff_if_needed(event_loop);
                     
                     return None;
                 }

@@ -2,10 +2,19 @@ use super::*;
 
 pub struct GpuContext
 {
-    pub instance: wgpu::Instance,
-    pub adapter: wgpu::Adapter,
-    pub device: wgpu::Device,
-    pub queue: wgpu::Queue,
+    instance: wgpu::Instance,
+    adapter: wgpu::Adapter,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+}
+impl GpuContext
+{
+    pub fn from_wgpu(
+        instance: wgpu::Instance,
+        adapter: wgpu::Adapter,
+        device: wgpu::Device,
+        queue: wgpu::Queue
+    ) -> Self { Self { instance, adapter, device, queue }}
 }
 
 impl GpuContext
