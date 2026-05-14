@@ -33,7 +33,7 @@ where
 
     fn init_app_if_needed(&mut self, event_loop: &mut AppInternalEventLoop)
     {
-        if self.app.is_some()
+        if self.app.is_some() || Gpu::is_not_init()
         {
             return;
         }
@@ -132,6 +132,8 @@ where
                         .ok_or_void()
                         .expect("Can't init the gpu");
                     assert!(Gpu::is_init());
+
+                    self.init_app_if_needed(event_loop);
                     
                     return None;
                 }
