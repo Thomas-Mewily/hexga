@@ -1,6 +1,6 @@
 ## HexGa Map On
 
-Define the `map_on!` macro that can be used to impl a lot of trait quickly using macros
+Define the `map_on!` macro that can be used to impl a lot of trait quickly using macros.
 You can have a finer control about what you want to impl :
 
 ```rust
