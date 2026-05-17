@@ -1,0 +1,19 @@
+[package]
+name = "hexga_guard"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+keywords = ["guard", "guarded", "mutex", "rwlock", "synchronization"]
+description = "Unified trait interface for Mutex, RwLock, RefCell, and other guard-based / interior mutability types"
+categories = ["rust-patterns", "concurrency", "no-std"]
+
+[features]
+default = ["std"]
+
+std = []
+
+[dependencies]

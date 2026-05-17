@@ -8,6 +8,7 @@ hexga_bit_derive
 hexga_bit
 
 
+hexga_guard
 hexga_core
 
 hexga_array_vec

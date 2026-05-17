@@ -1138,6 +1138,7 @@ name = "hexga_core"
 version = "0.0.11-beta.53"
 dependencies = [
  "hexga_bit",
+ "hexga_guard",
  "hexga_map_on",
  "serde",
 ]
@@ -1214,6 +1215,10 @@ dependencies = [
  "hexga_wgpu",
  "serde",
 ]
+
+[[package]]
+name = "hexga_guard"
+version = "0.0.11-beta.53"
 
 [[package]]
 name = "hexga_image"

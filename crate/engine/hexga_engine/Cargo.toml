@@ -54,3 +54,13 @@ hexga.workspace = true
 hexga_event_loop.workspace = true
 hexga_graphics = { workspace = true, features = ["gpu"] }
 serde = { version = "1.0.0", features = ["derive"], optional = true }
+
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 0
+debug = true
+# Disable optimizations that slow down compilation
+codegen-units = 256
+lto = false
+incremental = true

@@ -22,6 +22,7 @@ hexga_map_on           = { path = "./crate/base/hexga_map_on",               ver
 hexga_typedef          = { path = "./crate/base/hexga_typedef",              version = "0.0.11-beta.53", default-features = false }
 hexga_number           = { path = "./crate/base/hexga_number",               version = "0.0.11-beta.53", default-features = false }
 hexga_array            = { path = "./crate/base/hexga_array",                version = "0.0.11-beta.53", default-features = false }
+hexga_guard            = { path = "./crate/base/hexga_guard",                version = "0.0.11-beta.53", default-features = false }
 hexga_encoding_derive  = { path = "./crate/base/hexga_encoding_derive",      version = "0.0.11-beta.53", default-features = false }
 hexga_encoding         = { path = "./crate/base/hexga_encoding",             version = "0.0.11-beta.53", default-features = false }
 hexga_io               = { path = "./crate/base/hexga_io",                   version = "0.0.11-beta.53", default-features = false }
