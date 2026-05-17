@@ -41,17 +41,19 @@ mod sync_trait
     impl<T: Send + Sync> WasmSendSync for T {}
 }
 
+// Rename WasmSend => CrossSend (change the prefix ?) Cross ? Portable ?
+
 // Condition: WASM without atomics (pure single-thread)
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
 mod sync_trait
 {
-    /// Send trait for WASM compatibility.
+    /// Send compatible trait for WASM.
     pub trait WasmSend {}
     
-    /// Sync trait for WASM compatibility.
+    /// Sync compatible trait for WASM.
     pub trait WasmSync {}
     
-    /// Send + Sync trait for WASM compatibility.
+    /// Send + Sync compatible trait for WASM.
     pub trait WasmSendSync: WasmSend + WasmSync {}
     
     impl<T> WasmSend for T {}
