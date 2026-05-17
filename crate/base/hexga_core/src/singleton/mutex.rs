@@ -11,11 +11,20 @@ pub type SingletonOptionMutex<T> = SingletonOf<Mutex<Option<T>>>;
 
 // Wasm is single threaded right now, so this is ok.
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonMutex<T> {}
-#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonLazyMutex<T> {}
-#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonOptionMutex<T> {}
+mod single_thread {
+    use super::*;
+
+    unsafe impl<T> Sync for SingletonMutex<T> {}
+    unsafe impl<T> Send for SingletonMutex<T> {}
+
+    unsafe impl<T> Sync for SingletonLazyMutex<T> {}
+    unsafe impl<T> Send for SingletonLazyMutex<T> {}
+
+    unsafe impl<T> Sync for SingletonOptionMutex<T> {}
+    unsafe impl<T> Send for SingletonOptionMutex<T> {}
+}
+
+
 
 impl<T> SingletonMutex<T>
 {

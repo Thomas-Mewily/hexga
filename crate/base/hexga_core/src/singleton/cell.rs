@@ -9,11 +9,21 @@ pub type SingletonOptionCell<T> = SingletonOf<SingleThreadCell<Option<T>>>;
 
 // Wasm is single threaded right now, so this is ok.
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonCell<T> {}
-#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonLazyCell<T> {}
-#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonOptionCell<T> {}
+mod single_thread {
+    use super::*;
+
+    unsafe impl<T> Sync for SingletonCell<T> {}
+    unsafe impl<T> Send for SingletonCell<T> {}
+
+    unsafe impl<T> Sync for SingletonLazyCell<T> {}
+    unsafe impl<T> Send for SingletonLazyCell<T> {}
+
+    unsafe impl<T> Sync for SingletonOptionCell<T> {}
+    unsafe impl<T> Send for SingletonOptionCell<T> {}
+}
+
+
+
 
 impl<T> SingletonCell<T>
 {

@@ -9,11 +9,18 @@ pub type SingletonOptionRw<T> = SingletonOf<RwLock<Option<T>>>;
 
 // Wasm is single threaded right now, so this is ok.
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonRw<T> {}
-#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonLazyRw<T> {}
-#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonOptionRw<T> {}
+mod single_thread {
+    use super::*;
+    unsafe impl<T> Sync for SingletonRw<T> {}
+    unsafe impl<T> Send for SingletonRw<T> {}
+
+    unsafe impl<T> Sync for SingletonLazyRw<T> {}
+    unsafe impl<T> Send for SingletonLazyRw<T> {}
+
+    unsafe impl<T> Sync for SingletonOptionRw<T> {}
+    unsafe impl<T> Send for SingletonOptionRw<T> {}
+}
+
 
 impl<T> SingletonRw<T>
 {

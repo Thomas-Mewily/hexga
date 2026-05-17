@@ -7,9 +7,16 @@ pub type SingletonOnceLazy<T> = SingletonOf<LazyLock<T>>;
 
 // Wasm is single threaded right now, so this is ok.
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonOnce<T> {}
-#[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-unsafe impl<T> core::marker::Sync for SingletonOnceLazy<T> {}
+mod single_thread {
+    use super::*;
+
+    unsafe impl<T> Sync for SingletonOnce<T> {}
+    unsafe impl<T> Send for SingletonOnce<T> {}
+
+    unsafe impl<T> Sync for SingletonOnceLazy<T> {}
+    unsafe impl<T> Send for SingletonOnceLazy<T> {}
+}
+
 
 
 impl<T> SingletonOnce<T>
