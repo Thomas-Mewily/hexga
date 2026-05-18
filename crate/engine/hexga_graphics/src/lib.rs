@@ -7,7 +7,6 @@ pub use hexga_wgpu as gpu;
 #[cfg(feature = "gpu")]
 pub use hexga_wgpu::wgpu;
 
-
 //#[cfg(feature = "gpu")]
 //pub use hexga_wgpu::wgpu;
 //#[cfg(feature = "gpu")]
@@ -30,7 +29,6 @@ pub(crate) use vertex::*;
 pub mod typedef;
 pub(crate) use typedef::*;
 
-
 pub mod prelude
 {
     pub use super::typedef::*;
@@ -38,22 +36,10 @@ pub mod prelude
     pub use hexga_wgpu::prelude::*;
 
     pub use super::traits::*;
-    pub use super::
-    {
-        camera::prelude::*,
-        mesh::prelude::*,
-        render::prelude::*,
-        vertex::prelude::*,
-    };
+    pub use super::{camera::prelude::*, mesh::prelude::*, render::prelude::*, vertex::prelude::*};
 }
 
 pub mod traits
 {
-    pub use super::
-    {
-        camera::traits::*,
-        mesh::traits::*,
-        render::traits::*,
-        vertex::traits::*,
-    };
+    pub use super::{camera::traits::*, mesh::traits::*, render::traits::*, vertex::traits::*};
 }

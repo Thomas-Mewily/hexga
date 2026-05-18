@@ -35,6 +35,7 @@ pub unsafe trait AllocFromLayout<Layout = AllocLayout>
 {
     type Output;
     fn alloc_layout(&mut self, layout: Layout) -> AllocResult<Self::Output>;
+
     fn alloc_layout_or_panic(&mut self, layout: Layout) -> Self::Output
     {
         self.alloc_layout(layout).expect("bad alloc")
@@ -110,6 +111,7 @@ pub unsafe trait DeallocFromLayout<Layout = AllocLayout, Ptr = NonNullUnaliased<
     AllocFromLayout<Layout>
 {
     fn dealloc_layout(&mut self, ptr: Ptr, layout: Layout);
+    
     fn realloc_layout(
         &mut self,
         ptr: Ptr,

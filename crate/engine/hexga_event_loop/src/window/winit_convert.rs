@@ -8,12 +8,11 @@ pub(crate) trait ExternLibConvert<Output>
     fn convert(self) -> Output;
 }
 
-pub(crate) type WinitPhysicialSize<T=i32> = winit::dpi::PhysicalSize<T>;
-pub(crate) type WinitPhysicialPos<T=i32> = winit::dpi::PhysicalPosition<T>;
+pub(crate) type WinitPhysicialSize<T = i32> = winit::dpi::PhysicalSize<T>;
+pub(crate) type WinitPhysicialPos<T = i32> = winit::dpi::PhysicalPosition<T>;
 
-pub(crate) type WinitLogicalSize<T=i32> = winit::dpi::LogicalSize<T>;
-pub(crate) type WinitLogicalPos<T=i32> = winit::dpi::LogicalPosition<T>;
-
+pub(crate) type WinitLogicalSize<T = i32> = winit::dpi::LogicalSize<T>;
+pub(crate) type WinitLogicalPos<T = i32> = winit::dpi::LogicalPosition<T>;
 
 impl<T> ExternLibConvert<Vec2> for WinitLogicalSize<T>
 where
@@ -63,8 +62,6 @@ impl ExternLibConvert<WinitPhysicialSize> for Point2
 {
     fn convert(self) -> WinitPhysicialSize { WinitPhysicialSize::new(self.x as i32, self.y as i32) }
 }
-
-
 
 /*
 impl<T> ExternLibConvert<wgpu::Color> for T

@@ -7,7 +7,8 @@ pub type SingletonOnceLazy<T> = SingletonOf<LazyLock<T>>;
 
 // Wasm is single threaded right now, so this is ok.
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-mod single_thread {
+mod single_thread
+{
     use super::*;
 
     unsafe impl<T> Sync for SingletonOnce<T> {}
@@ -16,8 +17,6 @@ mod single_thread {
     unsafe impl<T> Sync for SingletonOnceLazy<T> {}
     unsafe impl<T> Send for SingletonOnceLazy<T> {}
 }
-
-
 
 impl<T> SingletonOnce<T>
 {
@@ -56,10 +55,15 @@ impl<T> Guarded<T> for SingletonOnce<T>
     #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a>
     {
-        match self.guarded.get() {
+        match self.guarded.get()
+        {
             Some(guard) => guard,
-            None => {
-                panic!("SingletonOnce<{}> not initialized", std::any::type_name::<T>())
+            None =>
+            {
+                panic!(
+                    "SingletonOnce<{}> not initialized",
+                    std::any::type_name::<T>()
+                )
             }
         }
     }
@@ -92,7 +96,12 @@ impl<T> SingletonOnceLazy<T>
 
     pub const fn uninit() -> Self
     {
-        Self::from_guard(LazyLock::new(|| panic!("SingletonOnceLazy<{}> not initialized", std::any::type_name::<T>())))
+        Self::from_guard(LazyLock::new(|| {
+            panic!(
+                "SingletonOnceLazy<{}> not initialized",
+                std::any::type_name::<T>()
+            )
+        }))
     }
 }
 

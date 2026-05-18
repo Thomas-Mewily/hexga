@@ -12,6 +12,8 @@ cargo watch -s "wasm-pack build --target web --dev"
 # peut être plus lent à compiler
 cargo watch -s 'wasm-pack build --target web'
 
+cargo watch -s "wasm-pack build --target web --dev --profile wasm-dev"
+
 # + lancer web serveur sur vscode
 ```
 

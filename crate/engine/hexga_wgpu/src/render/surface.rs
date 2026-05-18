@@ -37,18 +37,13 @@ impl<'a> GpuSurfaceConfigured<'a>
         }
     }
 
-    fn size(&self) -> Point2
-    {
-        GetSize::size(self)
-    }
+    fn size(&self) -> Point2 { GetSize::size(self) }
 
     pub fn surface(&self) -> &GpuSurface<'a> { &self.surface }
 }
 impl<'a> AsRef<GpuSurface<'a>> for GpuSurfaceConfigured<'a>
 {
-    fn as_ref(&self) -> &GpuSurface<'a> {
-        self.surface()
-    }
+    fn as_ref(&self) -> &GpuSurface<'a> { self.surface() }
 }
 
 impl<'a> SetSize<int, 2> for GpuSurfaceConfigured<'a>
@@ -58,7 +53,9 @@ impl<'a> SetSize<int, 2> for GpuSurfaceConfigured<'a>
         let size = size.max(one());
         self.configuration.width = size.x as _;
         self.configuration.height = size.y as _;
-        self.surface.wgpu.configure(&Gpu.device(), &self.configuration);
+        self.surface
+            .wgpu
+            .configure(&Gpu.device(), &self.configuration);
         self
     }
 }

@@ -84,10 +84,8 @@ pub mod prelude
     #[allow(unused)]
     pub(crate) use super::collections::{BinaryHeap, LinkedList};
 
-        
-
     pub use super::collections::{BTreeMap, BTreeSet, VecDeque};
-    pub use crate::{vec::Vec,string::String};
+    pub use crate::{string::String, vec::Vec};
     //pub use vec::Vec;
 
     #[cfg(feature = "std")]
@@ -98,7 +96,7 @@ pub mod prelude
 pub mod traits
 {
     pub use super::{
-        capacity::*, clear::*, get::*, index::*, insert::*, length::*, matches::*, pop::*, push::*,
-        remove::*, collection::*
+        capacity::*, clear::*, collection::*, get::*, index::*, insert::*, length::*, matches::*,
+        pop::*, push::*, remove::*,
     };
 }

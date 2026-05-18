@@ -7,7 +7,8 @@ pub type SingletonOnceLazyCell<T> = SingletonOf<SingleThreadCell<LazyLock<T>>>;
 
 // Wasm is single threaded right now, so this is ok.
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-mod single_thread {
+mod single_thread
+{
     use super::*;
 
     unsafe impl<T> Sync for SingletonOnceCell<T> {}

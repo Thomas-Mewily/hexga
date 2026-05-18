@@ -11,11 +11,9 @@ mod mesh;
 #[cfg(feature = "gpu")]
 pub use mesh::*;
 
-
 pub mod prelude
 {
-    pub use super::
-    {
+    pub use super::{
         traits::*,
         //Mesh
     };

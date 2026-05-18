@@ -86,11 +86,20 @@ map_on_std_fmt!(
 );
 */
 
-impl<C, Idx> Debug for ImageBaseOf<C, Idx> where Idx: Integer, C: Debug
+impl<C, Idx> Debug for ImageBaseOf<C, Idx>
+where
+    Idx: Integer,
+    C: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
-        write!(f, "Image({}, {:?}x{:?})", std::any::type_name::<C>(), self.size().x, self.size().y)?;
+        write!(
+            f,
+            "Image({}, {:?}x{:?})",
+            std::any::type_name::<C>(),
+            self.size().x,
+            self.size().y
+        )?;
         if self.size().area_usize() <= 16 * 16
         {
             writeln!(f)?;

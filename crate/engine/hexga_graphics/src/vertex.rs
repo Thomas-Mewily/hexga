@@ -2,18 +2,11 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{
-        traits::*,
-        UV, 
-        Vertex, 
-        VertexIndex
-    };
+    pub use super::{UV, Vertex, VertexIndex, traits::*};
 }
 
 pub mod traits
-{
-
-}
+{}
 
 pub type VertexIndex = u32;
 

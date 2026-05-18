@@ -1549,10 +1549,7 @@ where
         self.values.try_reserve(additional)
     }
     #[inline(always)]
-    fn try_reserve_exact(
-        &mut self,
-        additional: usize,
-    ) -> Result<(), Self::Error>
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), Self::Error>
     {
         self.values.try_reserve_exact(additional)
     }

@@ -30,7 +30,10 @@ impl AssetsManagerUntyped
             let assets_read = self.assets.read().unwrap();
             if let Some(any_manager) = assets_read.get(&type_id)
             {
-                let asset_manager = any_manager.as_any().downcast_ref::<AssetManager<T>>().unwrap();
+                let asset_manager = any_manager
+                    .as_any()
+                    .downcast_ref::<AssetManager<T>>()
+                    .unwrap();
                 return asset_manager.clone();
             }
         }

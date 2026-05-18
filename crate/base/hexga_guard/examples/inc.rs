@@ -1,17 +1,19 @@
-use std::sync::*;
 use hexga_guard::*;
+use std::sync::*;
 
-fn display_and_inc<G>(guarded: &G) where G: GuardedMut<i32>
+fn display_and_inc<G>(guarded: &G)
+where
+    G: GuardedMut<i32>,
 {
     print!("{} = ", std::any::type_name::<G>());
     match guarded.try_get_mut()
     {
-        Ok(mut guard) => 
+        Ok(mut guard) =>
         {
             *guard += 1;
             let value = *guard;
             println!("{value}");
-        },
+        }
         Err(e) => println!("Can't write: {:?}", e),
     }
 }

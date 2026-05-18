@@ -2,7 +2,7 @@ use super::*;
 
 //pub(crate) type AppInternalEvent = ();
 
-pub trait App<Event = AppEvent, Ctx = ()> : 'static
+pub trait App<Event = AppEvent, Ctx = ()>: 'static
 {
     fn event(&mut self, ev: Event, ctx: &mut Ctx) -> Option<Event>;
 

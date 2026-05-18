@@ -61,7 +61,6 @@ impl WithEventLoopShortcut for AppParam
     }
 }
 
-
 impl WindowAttribute for AppParam
 {
     fn title(&self) -> String { self.window.title() }

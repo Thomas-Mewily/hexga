@@ -11,7 +11,8 @@ pub type SingletonOptionMutex<T> = SingletonOf<Mutex<Option<T>>>;
 
 // Wasm is single threaded right now, so this is ok.
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-mod single_thread {
+mod single_thread
+{
     use super::*;
 
     unsafe impl<T> Sync for SingletonMutex<T> {}
@@ -23,8 +24,6 @@ mod single_thread {
     unsafe impl<T> Sync for SingletonOptionMutex<T> {}
     unsafe impl<T> Send for SingletonOptionMutex<T> {}
 }
-
-
 
 impl<T> SingletonMutex<T>
 {
@@ -63,10 +62,13 @@ impl<T> GuardedMut<T> for SingletonMutex<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
-        let guard = match self.guarded.lock() {
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
+    {
+        let guard = match self.guarded.lock()
+        {
             Ok(guard) => guard,
-            Err(e) => {
+            Err(e) =>
+            {
                 panic!(
                     "SingletonMutex<{}> poisoned: {:?}",
                     std::any::type_name::<T>(),
@@ -74,7 +76,7 @@ impl<T> GuardedMut<T> for SingletonMutex<T>
                 )
             }
         };
-        
+
         guard.guard_map_mut(|v| v.as_mut())
     }
 
@@ -127,10 +129,13 @@ impl<T> GuardedMut<T> for SingletonLazyMutex<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
-        let guard = match self.guarded.lock() {
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
+    {
+        let guard = match self.guarded.lock()
+        {
             Ok(guard) => guard,
-            Err(e) => {
+            Err(e) =>
+            {
                 panic!(
                     "SingletonLazyMutex<{}> poisoned: {:?}",
                     std::any::type_name::<T>(),
@@ -138,7 +143,7 @@ impl<T> GuardedMut<T> for SingletonLazyMutex<T>
                 )
             }
         };
-        
+
         guard.guard_map_mut(|v| v.deref_mut())
     }
 
@@ -232,10 +237,13 @@ impl<T> GuardedMut<T> for SingletonOptionMutex<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
-        let guard = match self.guarded.lock() {
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
+    {
+        let guard = match self.guarded.lock()
+        {
             Ok(guard) => guard,
-            Err(e) => {
+            Err(e) =>
+            {
                 panic!(
                     "SingletonOptionMutex<{}> poisoned: {:?}",
                     std::any::type_name::<T>(),
@@ -244,7 +252,8 @@ impl<T> GuardedMut<T> for SingletonOptionMutex<T>
             }
         };
 
-        if guard.is_none() {
+        if guard.is_none()
+        {
             panic!(
                 "SingletonOptionMutex<{}> not initialized: call init() first",
                 std::any::type_name::<T>()

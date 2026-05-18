@@ -1,6 +1,5 @@
 use super::*;
 
-
 /// Different ways that you can use a buffer.
 ///
 /// The usages determine what kind of memory the buffer is allocated from and what
@@ -61,5 +60,9 @@ impl From<wgpu::BufferUsages> for GpuBufferUsageFlags
 }
 impl From<GpuBufferUsageFlags> for wgpu::BufferUsages
 {
-    fn from(value: GpuBufferUsageFlags) -> Self { Self::from_bits(value.bits()).expect("Oops! WGPU added more usage flags and this code is not updated") }
+    fn from(value: GpuBufferUsageFlags) -> Self
+    {
+        Self::from_bits(value.bits())
+            .expect("Oops! WGPU added more usage flags and this code is not updated")
+    }
 }

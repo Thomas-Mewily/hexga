@@ -57,7 +57,8 @@ impl<T> NewWrapper for RwLock<T>
     fn new(value: Self::Inside) -> Self { Self::new(value) }
 }
 
-pub mod prelude {}
+pub mod prelude
+{}
 
 pub mod traits
 {

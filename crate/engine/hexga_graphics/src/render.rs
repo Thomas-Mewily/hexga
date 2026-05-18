@@ -4,14 +4,14 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{ImmediateRenderBuilder,ImmediateRender,DrawGeometry,DrawGeometryImmediate,DrawCall};
     pub use super::traits::*;
+    pub use super::{
+        DrawCall, DrawGeometry, DrawGeometryImmediate, ImmediateRender, ImmediateRenderBuilder,
+    };
 }
 
 pub mod traits
-{
-
-}
+{}
 
 pub struct ImmediateRenderBuilder<P = DrawParam>
 {
@@ -21,7 +21,7 @@ pub struct ImmediateRenderBuilder<P = DrawParam>
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct ImmediateRender<P=DrawParam>
+pub struct ImmediateRender<P = DrawParam>
 {
     pub draw_call: Vec<DrawCall<P>>,
 }

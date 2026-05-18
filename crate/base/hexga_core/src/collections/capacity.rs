@@ -34,13 +34,13 @@ pub trait Reserve: Capacity
     /// Does nothing if capacity is already sufficient.
     fn reserve(&mut self, additional: usize) { let _ = self.try_reserve(additional); }
     fn try_reserve(&mut self, additional: usize) -> Result<(), Self::Error>;
-    
+
     /// Reserves the minimum capacity for at least `additional` elements more than
     /// the current length. Unlike [`Self::reserve`], this will not
     /// deliberately over-allocate to speculatively avoid frequent allocations.
     /// After calling `reserve_exact`, capacity will be greater than or equal to
     /// `self.len() + additional`. Does nothing if the capacity is already
-    fn reserve_exact(&mut self, additional: usize) { let _ =  self.try_reserve_exact(additional); }
+    fn reserve_exact(&mut self, additional: usize) { let _ = self.try_reserve_exact(additional); }
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), Self::Error>;
 
     /// Ensure total capacity is at least `total`.

@@ -24,9 +24,7 @@ pub struct Window<Surface>
 
 impl<Surface> Debug for Window<Surface>
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.param)
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.param) }
 }
 
 pub type WindowError = ();
@@ -338,7 +336,7 @@ impl<Surface> Windowable for Window<Surface>
 
     fn set_cursor_pos(&mut self, pos: Point2) -> &mut Self
     {
-        let p : WinitPhysicialPos = pos.convert();
+        let p: WinitPhysicialPos = pos.convert();
         self.window.set_cursor_position(p);
         self
     }
@@ -399,7 +397,7 @@ impl<Surface> SetPosition<int, 2> for Window<Surface>
     fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self
     {
         self.pos = pos;
-        let p : WinitPhysicialPos = pos.convert();
+        let p: WinitPhysicialPos = pos.convert();
         self.window.set_outer_position(p);
         self
     }
@@ -413,7 +411,7 @@ impl<Surface> SetSize<int, 2> for Window<Surface>
     fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self
     {
         self.size = size;
-        let size : WinitPhysicialSize = size.convert();
+        let size: WinitPhysicialSize = size.convert();
         self.window.request_inner_size(size);
         self
     }
@@ -733,7 +731,6 @@ impl Default for WindowParam
         }
     }
 }
-
 
 impl WindowAttribute for WindowParam
 {

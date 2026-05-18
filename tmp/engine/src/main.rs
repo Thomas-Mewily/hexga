@@ -1,5 +1,1 @@
-
-fn main()
-{
-    ::engine::run();
-}
+fn main() { ::engine::run(); }

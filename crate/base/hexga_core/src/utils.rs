@@ -44,7 +44,6 @@ impl DoOnce for bool
     }
 }
 
-
 /// Useful to silence/convert to void some Err.
 ///
 /// Some of my lib will probably have proper error type instead of () (Look for `#proper_error` to know which error type are temporary) when I will have time to add them
@@ -69,8 +68,6 @@ impl<T> OkOr<T, ()> for Option<T>
 
     fn ok_or<E>(self, err: E) -> Result<T, E> { self.ok_or(err) }
 }
-
-
 
 pub trait ResultInto<T, E>: OkOr<T, E>
 {
@@ -105,7 +102,6 @@ impl<T, E> ResultInto<T, E> for Result<T, E>
 pub trait UniversalKey : Hash + Eq + Ord {}
 impl<T> UniversalKey for T where T: Hash + Eq + Ord {}
 */
-
 
 pub trait ResultDebugExtension<T>
 {
@@ -148,7 +144,6 @@ impl<W: std::io::Write> std::fmt::Write for IoWriteAdapter<W>
     }
 }
 
-
 pub mod prelude
 {
     pub use super::Never;
@@ -156,7 +151,5 @@ pub mod prelude
 }
 pub mod traits
 {
-    pub use super::{
-        Toggleable, DoOnce, OkOr, ResultInto, ResultDebugExtension
-    };
+    pub use super::{DoOnce, OkOr, ResultDebugExtension, ResultInto, Toggleable};
 }

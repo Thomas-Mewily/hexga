@@ -1,6 +1,5 @@
 use super::*;
 
-
 #[derive(Debug, Clone)]
 pub struct GpuInstance
 {
@@ -28,7 +27,6 @@ impl GpuInstance
     }
 }
 
-
 #[non_exhaustive]
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct GpuInstanceDescriptor
@@ -36,7 +34,6 @@ pub struct GpuInstanceDescriptor
     pub backends: GpuBackendFlags,
     pub wgpu: WgpuInstanceDescriptor,
 }
-
 
 impl PartialEq for WgpuInstanceDescriptor
 {
@@ -68,7 +65,6 @@ pub struct WgpuInstanceDescriptor
     pub backend_options: wgpu::BackendOptions,
 }
 
-
 #[bit_index]
 #[repr(u8)]
 pub enum GpuBackend
@@ -97,7 +93,6 @@ pub enum GpuBackend
     /// Apis that are quick to debug / setup for a fast iteration cycle
     Debug = Self::Gl,
 }
-
 
 impl From<GpuBackend> for wgpu::Backends
 {
@@ -142,7 +137,6 @@ impl Default for GpuBackendFlags
         }
     }
 }
-
 
 #[derive(Default, Clone, PartialEq)]
 pub struct GpuParam

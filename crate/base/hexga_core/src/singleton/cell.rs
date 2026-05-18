@@ -9,7 +9,8 @@ pub type SingletonOptionCell<T> = SingletonOf<SingleThreadCell<Option<T>>>;
 
 // Wasm is single threaded right now, so this is ok.
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-mod single_thread {
+mod single_thread
+{
     use super::*;
 
     unsafe impl<T> Sync for SingletonCell<T> {}
@@ -21,9 +22,6 @@ mod single_thread {
     unsafe impl<T> Sync for SingletonOptionCell<T> {}
     unsafe impl<T> Send for SingletonOptionCell<T> {}
 }
-
-
-
 
 impl<T> SingletonCell<T>
 {
@@ -234,11 +232,14 @@ impl<T> Guarded<T> for SingletonOptionCell<T>
         Self: 'a;
 
     #[track_caller]
-    fn get<'a>(&'a self) -> Self::Guard<'a> {
+    fn get<'a>(&'a self) -> Self::Guard<'a>
+    {
         let inner = self.guarded.get();
-        
-        if inner.is_none() {
-            match self.try_get() {
+
+        if inner.is_none()
+        {
+            match self.try_get()
+            {
                 Ok(_) => panic!(
                     "SingletonOptionCell<{}> can't be read",
                     std::any::type_name::<T>()
@@ -250,10 +251,10 @@ impl<T> Guarded<T> for SingletonOptionCell<T>
                 ),
             }
         }
-        
+
         inner.guard_map(|g| g.as_ref().unwrap())
     }
-    
+
     type Error<'a>
         = SingleThreadError
     where
@@ -278,22 +279,23 @@ impl<T> GuardedMut<T> for SingletonOptionCell<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> {
-        match RefMut::filter_map(self.guarded.get_mut(), |opt| opt.as_mut()) {
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
+    {
+        match RefMut::filter_map(self.guarded.get_mut(), |opt| opt.as_mut())
+        {
             Ok(guard) => guard,
-            Err(_) => {
-                match self.try_get() {
-                    Ok(_) => panic!(
-                        "SingletonOptionCell<{}> can't be written",
-                        std::any::type_name::<T>()
-                    ),
-                    Err(e) => panic!(
-                        "SingletonOptionCell<{}> can't be written: {:?}",
-                        std::any::type_name::<T>(),
-                        e
-                    ),
-                }
-            }
+            Err(_) => match self.try_get()
+            {
+                Ok(_) => panic!(
+                    "SingletonOptionCell<{}> can't be written",
+                    std::any::type_name::<T>()
+                ),
+                Err(e) => panic!(
+                    "SingletonOptionCell<{}> can't be written: {:?}",
+                    std::any::type_name::<T>(),
+                    e
+                ),
+            },
         }
     }
 

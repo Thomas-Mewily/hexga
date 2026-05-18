@@ -1,5 +1,5 @@
 //use crate::window::WindowInitGpu;
-use hexga_event_loop::{event_loop::EventLoopResult};
+use hexga_event_loop::event_loop::EventLoopResult;
 
 use super::*;
 
@@ -39,14 +39,20 @@ where
 
     fn init_graphics_if_needed(&mut self)
     {
-        if CurrentWindow::is_not_init() || Gpu::is_not_init() { return; }
+        if CurrentWindow::is_not_init() || Gpu::is_not_init()
+        {
+            return;
+        }
 
         if GRAPHICS.try_get_mut().is_err()
         {
             let mut w = WINDOW.get_mut();
             if let Some(surface) = w.surface()
             {
-                GRAPHICS.init_from_fn(|| Graphics::new(surface.surface(), w.size())).ok_or_void().expect("Can't init the graphics");
+                GRAPHICS
+                    .init_from_fn(|| Graphics::new(surface.surface(), w.size()))
+                    .ok_or_void()
+                    .expect("Can't init the graphics");
             }
         }
     }
@@ -102,11 +108,23 @@ where
     {
         match &mut self.app
         {
-            Some(app) => 
+            Some(app) =>
             {
-                let Ok(mut graphics) = GRAPHICS.try_get_mut() else { return; };
-                let Ok(mut window) = WINDOW.try_get_mut() else { return; };
-                let Some(surface) = window.surface() else { return; };
+                let Ok(mut graphics) = GRAPHICS.try_get_mut()
+                else
+                {
+                    return;
+                };
+                let Ok(mut window) = WINDOW.try_get_mut()
+                else
+                {
+                    return;
+                };
+                let Some(surface) = window.surface()
+                else
+                {
+                    return;
+                };
 
                 //a
 
@@ -117,12 +135,15 @@ where
                     Err(_) => return,
                 };
 
-                let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+                let view = output
+                    .texture
+                    .create_view(&wgpu::TextureViewDescriptor::default());
 
-                let mut encoder = Gpu.device()
-                    .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                        label: Some("Render Encoder"),
-                    });
+                let mut encoder =
+                    Gpu.device()
+                        .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                            label: Some("Render Encoder"),
+                        });
 
                 {
                     let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -132,9 +153,9 @@ where
                             resolve_target: None,
                             ops: wgpu::Operations {
                                 load: wgpu::LoadOp::Clear(wgpu::Color {
-                                    r: 0.9,
-                                    g: 0.1,
-                                    b: 0.9,
+                                    r: 0.2,
+                                    g: 0.0,
+                                    b: 0.2,
                                     a: 1.0,
                                 }),
                                 store: wgpu::StoreOp::Store,
@@ -151,10 +172,9 @@ where
 
                 Gpu.queue().submit(iter::once(encoder.finish()));
                 output.present();
-                
 
                 app.draw(1., &mut ());
-            },
+            }
             None =>
             {}
         }
@@ -201,7 +221,7 @@ where
                     assert!(Gpu::is_init());
 
                     self.init_stuff_if_needed(event_loop);
-                    
+
                     return None;
                 }
                 AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
@@ -250,9 +270,11 @@ where
         }
     }
 
-    fn paused(&mut self, event_loop: &mut EventLoop<AppCustomEvent>) 
+    fn paused(&mut self, event_loop: &mut EventLoop<AppCustomEvent>)
     {
-        WINDOW.try_get_mut().map(|mut w| { w.destroy_surface(); });
+        WINDOW.try_get_mut().map(|mut w| {
+            w.destroy_surface();
+        });
     }
 
     fn exit(&mut self, event_loop: &mut AppInternalEventLoop) { self.exit(); }

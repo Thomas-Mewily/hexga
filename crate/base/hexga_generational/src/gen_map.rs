@@ -390,10 +390,7 @@ where
         r.ok_or_void()
     }
 
-    fn try_reserve_exact(
-        &mut self,
-        additional: usize,
-    ) -> Result<(), Self::Error>
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), Self::Error>
     {
         let total = self.capacity() + additional;
         let r = self.values.try_reserve_total_exact(total);

@@ -1,5 +1,7 @@
 #![allow(unused)]
-use hexga_engine::event_loop::{traits::WithEventLoopShortcut, window::{UserAttentionType, WindowAttribute, Windowable}};
+use hexga_engine::event_loop::{
+    input::KeyCode, traits::WithEventLoopShortcut, window::{UserAttentionType, WindowAttribute, Windowable}
+};
 pub use hexga_engine::prelude::*;
 
 struct MonJeu;
@@ -17,11 +19,12 @@ impl App for MonJeu
         //CurrentWindow.set_title(format!("{}", Time::since_launch()));
     }
 
-    fn draw(&mut self, coef: coef, ctx: &mut ()) 
+    fn draw(&mut self, coef: coef, ctx: &mut ())
     {
         //CurrentWindow.set_title(format!("{}", Time::since_launch()));
     }
 }
+
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen::prelude::wasm_bindgen(start)]
@@ -29,8 +32,12 @@ pub fn run_wasm() { run(); }
 
 pub fn run()
 {
+    let mut v = point3(1,2, 3);
+    let [x,y,z] = v.as_array_mut();
+
     let mut param = AppParam::default().with_icon(
         Image::load_from_bytes(include_bytes!("icon.png"), Some("png")).expect("no icon"),
     );
+
     (|| MonJeu).run_with_param(param).expect("failed to run");
 }
