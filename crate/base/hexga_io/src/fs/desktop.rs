@@ -1,10 +1,7 @@
 use super::*;
 use std::fs;
 
-pub(crate) fn load_bytes(path: &Path) -> IoResult<Vec<u8>>
-{
-    std::fs::read(path).map_err(|e| IoError::new(path, e).when_reading())
-}
+pub(crate) fn load_bytes(path: &Path) -> IoResult<Vec<u8>> { std::fs::read(path).map_err(|e| IoError::new(path, e).when_reading()) }
 
 pub(crate) fn save_bytes(path: &Path, bytes: &[u8]) -> Result<(), IoError>
 {
@@ -18,10 +15,8 @@ pub(crate) fn save_bytes(path: &Path, bytes: &[u8]) -> Result<(), IoError>
             {
                 if std_path.is_file()
                 {
-                    fs::remove_file(std_path)
-                        .map_err(|e| IoError::new(std_path, e).when_writing())?;
-                    fs::create_dir(std_path)
-                        .map_err(|e| IoError::new(std_path, e).when_writing())?;
+                    fs::remove_file(std_path).map_err(|e| IoError::new(std_path, e).when_writing())?;
+                    fs::create_dir(std_path).map_err(|e| IoError::new(std_path, e).when_writing())?;
                 }
             }
             else

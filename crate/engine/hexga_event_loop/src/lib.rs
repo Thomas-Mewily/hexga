@@ -27,10 +27,7 @@ use prelude::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{
-        event_loop::prelude::*, input::prelude::*, log::prelude::*, monitor::prelude::*,
-        window::prelude::*,
-    };
+    pub use super::{event_loop::prelude::*, input::prelude::*, log::prelude::*, monitor::prelude::*, window::prelude::*};
 }
 
 pub mod traits

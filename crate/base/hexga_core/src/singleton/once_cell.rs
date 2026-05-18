@@ -34,12 +34,7 @@ where
         match self.try_get()
         {
             Ok(guard) => write!(f, "{:?}", guard),
-            Err(e) => write!(
-                f,
-                "SingletonOnceCell<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonOnceCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -57,10 +52,7 @@ impl<T> Guarded<T> for SingletonOnceCell<T>
         let guard = self.guarded.get();
         if guard.get().is_none()
         {
-            panic!(
-                "SingletonOnceCell<{}> not initialized",
-                std::any::type_name::<T>()
-            );
+            panic!("SingletonOnceCell<{}> not initialized", std::any::type_name::<T>());
         }
         Ref::map(guard, |cell: &OnceCell<T>| cell.get().unwrap())
     }
@@ -105,10 +97,7 @@ impl_singleton_methods_get!(SingletonOnceCell);
 
 impl<T> SingletonOnceLazyCell<T>
 {
-    pub const fn new(f: fn() -> T) -> Self
-    {
-        Self::from_guard(SingleThreadCell::new(LazyLock::new(f)))
-    }
+    pub const fn new(f: fn() -> T) -> Self { Self::from_guard(SingleThreadCell::new(LazyLock::new(f))) }
 
     pub const fn default() -> Self
     where
@@ -127,12 +116,7 @@ where
         match self.try_get()
         {
             Ok(guard) => write!(f, "{:?}", guard),
-            Err(e) => write!(
-                f,
-                "SingletonOnceLazyCell<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonOnceLazyCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -152,9 +136,6 @@ impl<T> Guarded<T> for SingletonOnceLazyCell<T>
     where
         Self: 'a;
 
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>
-    {
-        Ok(Ref::map(self.guarded.try_get()?, |v| v.deref()))
-    }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(Ref::map(self.guarded.try_get()?, |v| v.deref())) }
 }
 impl_singleton_methods_get!(SingletonOnceLazyCell);

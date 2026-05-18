@@ -21,10 +21,7 @@ pub fn publish_crate(name: &'static str)
 
     env::set_current_dir(format!("hexga/{name}")).unwrap();
 
-    let status = Command::new("cargo")
-        .arg("publish")
-        .status()
-        .expect("Failed to execute cargo publish");
+    let status = Command::new("cargo").arg("publish").status().expect("Failed to execute cargo publish");
 
     if !status.success()
     {
@@ -82,8 +79,7 @@ pub fn create_crate(name: &'static str)
     let toml_path = dst.join("Cargo.toml");
     if let Ok(content) = fs::read_to_string(&toml_path)
     {
-        let updated_content =
-            content.replace("name = \"template\"", &format!("name = \"{}\"", name));
+        let updated_content = content.replace("name = \"template\"", &format!("name = \"{}\"", name));
         if let Err(e) = fs::write(&toml_path, updated_content)
         {
             eprintln!("Failed to update Cargo.toml: {}", e);

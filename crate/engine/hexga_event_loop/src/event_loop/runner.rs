@@ -192,22 +192,15 @@ where
     param: EventLoopParam,
 }
 
-impl<EventHandler, CustomEvent> EventLoopSendEvent<PlatformEvent<CustomEvent>>
-    for EventLoopRunner<EventHandler, CustomEvent>
+impl<EventHandler, CustomEvent> EventLoopSendEvent<PlatformEvent<CustomEvent>> for EventLoopRunner<EventHandler, CustomEvent>
 where
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: PlatformCustomEvent,
 {
-    fn send_event(&self, ev: PlatformEvent<CustomEvent>) -> ProxyResult
-    {
-        self.proxy.send_event(ev)
-    }
+    fn send_event(&self, ev: PlatformEvent<CustomEvent>) -> ProxyResult { self.proxy.send_event(ev) }
 }
 
-pub fn run_with_param<F, EventHandler, CustomEvent>(
-    init: F,
-    param: EventLoopParam,
-) -> EventLoopResult
+pub fn run_with_param<F, EventHandler, CustomEvent>(init: F, param: EventLoopParam) -> EventLoopResult
 where
     F: FnOnce(EventLoopProxy<CustomEvent>) -> EventHandler,
     EventHandler: PlatformEventHandler<CustomEvent>,
@@ -272,15 +265,11 @@ where
 
                     KeyCode::ControlLeft =>
                     {
-                        self.state
-                            .key_modifiers
-                            .set(KeyModifiers::ControlLeft, down);
+                        self.state.key_modifiers.set(KeyModifiers::ControlLeft, down);
                     }
                     KeyCode::ControlRight =>
                     {
-                        self.state
-                            .key_modifiers
-                            .set(KeyModifiers::ControlRight, down);
+                        self.state.key_modifiers.set(KeyModifiers::ControlRight, down);
                     }
 
                     KeyCode::AltLeft =>
@@ -313,9 +302,7 @@ where
             {}
         }
 
-        let Some(ev) = self.app(active, |event_handler, event_loop| {
-            event_handler.event(ev, event_loop)
-        })
+        let Some(ev) = self.app(active, |event_handler, event_loop| event_handler.event(ev, event_loop))
         else
         {
             return;
@@ -379,32 +366,16 @@ where
         f(&mut self.event_handler, &mut event_loop)
     }
 }
-impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<PlatformEvent<CustomEvent>>
-    for EventLoopRunner<EventHandler, CustomEvent>
+impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<PlatformEvent<CustomEvent>> for EventLoopRunner<EventHandler, CustomEvent>
 where
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: PlatformCustomEvent,
 {
-    fn resumed(&mut self, active: &WinitEventLoopActive)
-    {
-        self.app(active, |event_handler, event_loop| {
-            event_handler.resumed(event_loop)
-        });
-    }
+    fn resumed(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.resumed(event_loop)); }
 
-    fn suspended(&mut self, active: &WinitEventLoopActive)
-    {
-        self.app(active, |event_handler, event_loop| {
-            event_handler.paused(event_loop)
-        });
-    }
+    fn suspended(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.paused(event_loop)); }
 
-    fn exiting(&mut self, active: &WinitEventLoopActive)
-    {
-        self.app(active, |event_handler, event_loop| {
-            event_handler.exit(event_loop)
-        });
-    }
+    fn exiting(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.exit(event_loop)); }
 
     fn about_to_wait(&mut self, active: &WinitEventLoopActive)
     {
@@ -412,22 +383,12 @@ where
         let dt = time - self.state.time;
         self.state.time = time;
 
-        self.app(active, |event_handler, event_loop| {
-            event_handler.update(dt, event_loop)
-        });
+        self.app(active, |event_handler, event_loop| event_handler.update(dt, event_loop));
     }
 
-    fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformEvent<CustomEvent>)
-    {
-        self.event(active, event);
-    }
+    fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformEvent<CustomEvent>) { self.event(active, event); }
 
-    fn window_event(
-        &mut self,
-        active: &WinitEventLoopActive,
-        window_id: winit::window::WindowId,
-        event: WinitWindowEvent,
-    )
+    fn window_event(&mut self, active: &WinitEventLoopActive, window_id: winit::window::WindowId, event: WinitWindowEvent)
     {
         match event
         {
@@ -467,9 +428,7 @@ where
             */
             winit::event::WindowEvent::RedrawRequested =>
             {
-                self.app(active, |event_handler, event_loop| {
-                    event_handler.draw(event_loop)
-                });
+                self.app(active, |event_handler, event_loop| event_handler.draw(event_loop));
             }
             _ => (),
         }

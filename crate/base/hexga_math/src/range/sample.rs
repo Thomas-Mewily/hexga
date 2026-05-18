@@ -19,10 +19,7 @@ where
     T: RangeDefault,
     Range<T>: RangeSampleExtension<I>,
 {
-    fn sample(nb_sample: I) -> <Range<Self> as RangeSampleExtension<I>>::Output
-    {
-        (Self::RANGE_MIN..Self::RANGE_MAX).sample(nb_sample)
-    }
+    fn sample(nb_sample: I) -> <Range<Self> as RangeSampleExtension<I>>::Output { (Self::RANGE_MIN..Self::RANGE_MAX).sample(nb_sample) }
 }
 pub trait RangeDefaultSampleInclusiveExtension<I = usize>: RangeDefault
 where
@@ -36,10 +33,7 @@ where
     T: RangeDefault,
     RangeInclusive<T>: RangeSampleExtension<I>,
 {
-    fn sample_inclusive(nb_sample: I) -> <RangeInclusive<Self> as RangeSampleExtension<I>>::Output
-    {
-        (Self::RANGE_MIN..=Self::RANGE_MAX).sample(nb_sample)
-    }
+    fn sample_inclusive(nb_sample: I) -> <RangeInclusive<Self> as RangeSampleExtension<I>>::Output { (Self::RANGE_MIN..=Self::RANGE_MAX).sample(nb_sample) }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

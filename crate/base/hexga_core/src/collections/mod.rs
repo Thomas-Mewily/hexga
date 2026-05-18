@@ -95,8 +95,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{
-        capacity::*, clear::*, collection::*, get::*, index::*, insert::*, length::*, matches::*,
-        pop::*, push::*, remove::*,
-    };
+    pub use super::{capacity::*, clear::*, collection::*, get::*, index::*, insert::*, length::*, matches::*, pop::*, push::*, remove::*};
 }

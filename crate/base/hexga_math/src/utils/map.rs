@@ -115,11 +115,7 @@ impl<T, const N: usize> MapWith for [T; N]
     {
         let mut t1 = self.into_iter();
         let mut t2 = other.into_iter();
-        std::array::from_fn(|_| {
-            f(unsafe { t1.next().unwrap_unchecked() }, unsafe {
-                t2.next().unwrap_unchecked()
-            })
-        })
+        std::array::from_fn(|_| f(unsafe { t1.next().unwrap_unchecked() }, unsafe { t2.next().unwrap_unchecked() }))
     }
 }
 

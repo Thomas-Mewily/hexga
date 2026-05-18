@@ -14,12 +14,11 @@ where
 {
     fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self
     {
-        Gpu.device()
-            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: None,
-                contents: bit::transmute_slice(value),
-                usage: usage.into(),
-            })
+        Gpu.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: None,
+            contents: bit::transmute_slice(value),
+            usage: usage.into(),
+        })
     }
 
     fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self
@@ -119,9 +118,7 @@ impl<T: GpuBufferElement> WgpuSliceable<T> for WgpuBuffer
             mapped_at_creation: false,
         });
 
-        let mut encoder = Gpu
-            .device()
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        let mut encoder = Gpu.device().create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         encoder.copy_buffer_to_buffer(self, 0, &new_buffer, 0, size);
         Gpu.queue().submit(Some(encoder.finish()));

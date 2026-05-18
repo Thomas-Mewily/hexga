@@ -29,9 +29,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{
-        GpuBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut, ToGpuBuffer, ToGpuVec,
-    };
+    pub use super::{GpuBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut, ToGpuBuffer, ToGpuVec};
 }
 
 pub trait GpuBufferNew<T>
@@ -75,11 +73,7 @@ where
             slice_mut.buffer.buffer = Arc::new(buff);
         }
 
-        unsafe {
-            GpuSliceMutWrite::from_wgpu(WgpuSliceable::<T>::wgpu_view_mut(
-                slice_mut.buffer.buffer.deref(),
-            ))
-        }
+        unsafe { GpuSliceMutWrite::from_wgpu(WgpuSliceable::<T>::wgpu_view_mut(slice_mut.buffer.buffer.deref())) }
     }
     fn as_write<S: RangeBounds<usize>>(&mut self) -> GpuSliceMutWrite<'_, T> { self.write(..) }
 

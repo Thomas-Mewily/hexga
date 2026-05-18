@@ -64,10 +64,7 @@ impl Matches<KeyCode> for KeyShortcut
 impl Matches<KeyEvent> for KeyShortcut
 {
     type Output = bool;
-    fn matches(&self, lexem: &KeyEvent) -> Self::Output
-    {
-        self.code == lexem.code && self.modifiers.matches(&lexem.modifiers)
-    }
+    fn matches(&self, lexem: &KeyEvent) -> Self::Output { self.code == lexem.code && self.modifiers.matches(&lexem.modifiers) }
 }
 
 impl From<KeyCode> for KeyShortcut
@@ -241,22 +238,8 @@ impl From<winit::event::KeyEvent> for KeyEvent
         let code = KeyCode::from(event.physical_key);
         let pressed = event.state.is_pressed();
 
-        let repeat = if event.repeat
-        {
-            KeyRepeat::Repeated
-        }
-        else
-        {
-            KeyRepeat::NotRepeated
-        };
-        let state = if pressed
-        {
-            KeyState::Down
-        }
-        else
-        {
-            KeyState::Up
-        };
+        let repeat = if event.repeat { KeyRepeat::Repeated } else { KeyRepeat::NotRepeated };
+        let state = if pressed { KeyState::Down } else { KeyState::Up };
 
         KeyEvent {
             code,

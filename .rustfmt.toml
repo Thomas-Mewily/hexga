@@ -5,3 +5,6 @@ fn_single_line = true
 control_brace_style = "AlwaysNextLine"
 brace_style = "AlwaysNextLine"
 match_arm_blocks = true
+
+# I have a wide 1920x1080 screen...
+max_width = 160

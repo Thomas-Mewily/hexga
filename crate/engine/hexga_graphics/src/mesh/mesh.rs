@@ -20,11 +20,7 @@ impl<const N: usize> Clear for Mesh<N>
 
 impl<const N: usize> Mesh<N>
 {
-    pub(crate) fn from_gpu_vec(vertices: GpuVec<VertexOf<N>>, indices: GpuVec<VertexIndex>)
-    -> Self
-    {
-        Self { vertices, indices }
-    }
+    pub(crate) fn from_gpu_vec(vertices: GpuVec<VertexOf<N>>, indices: GpuVec<VertexIndex>) -> Self { Self { vertices, indices } }
 
     pub fn new(vertices: &[VertexOf<N>], indices: &[VertexIndex]) -> Self
     {
@@ -33,15 +29,9 @@ impl<const N: usize> Mesh<N>
         Self { vertices, indices }
     }
 
-    pub fn from_iterator(
-        vertices: impl IntoIterator<Item = VertexOf<N>>,
-        indices: impl IntoIterator<Item = VertexIndex>,
-    ) -> Self
+    pub fn from_iterator(vertices: impl IntoIterator<Item = VertexOf<N>>, indices: impl IntoIterator<Item = VertexIndex>) -> Self
     {
-        Self::new(
-            &vertices.into_iter().to_vec(),
-            &indices.into_iter().to_vec(),
-        )
+        Self::new(&vertices.into_iter().to_vec(), &indices.into_iter().to_vec())
     }
 }
 impl<const N: usize> From<&MeshBuilder<N>> for Mesh<N>

@@ -71,9 +71,7 @@ where
         let idx = self.rect.next()?;
         // # Safety
         // Each index are different
-        Some((idx, unsafe {
-            (&mut *(&mut *self.grid as *mut G)).get_unchecked_mut(idx)
-        }))
+        Some((idx, unsafe { (&mut *(&mut *self.grid as *mut G)).get_unchecked_mut(idx) }))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) { self.rect.size_hint() }
@@ -85,8 +83,7 @@ where
     RectangleIter<Idx, N>: std::iter::FusedIterator,
 {
 }
-impl<'a, G, T, Idx, const N: usize> std::iter::ExactSizeIterator
-    for GridViewIterMut<'a, G, T, Idx, N>
+impl<'a, G, T, Idx, const N: usize> std::iter::ExactSizeIterator for GridViewIterMut<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
@@ -128,16 +125,14 @@ where
         F: FnMut(Self::Item, Self::Item) -> Self::Item,
     {
         assert_eq!(self.size(), other.size(), "size mismatch");
-        self.iter_mut()
-            .zip(other.iter_mut())
-            .for_each(|((_, a), (_, b))| {
-                unsafe {
-                    // Temporary moving the reference
-                    let old = std::ptr::read(a);
-                    let new = f(old, b.clone());
-                    core::ptr::write(a, new);
-                }
-            });
+        self.iter_mut().zip(other.iter_mut()).for_each(|((_, a), (_, b))| {
+            unsafe {
+                // Temporary moving the reference
+                let old = std::ptr::read(a);
+                let new = f(old, b.clone());
+                core::ptr::write(a, new);
+            }
+        });
         self
     }
 }

@@ -100,34 +100,20 @@ impl<T> SaveExtension for &[T] where T: SaveExtension {}
 
 impl SaveExtension for String
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension>
-    {
-        ["txt", "md", "cvs"].into_iter()
-    }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["txt", "md", "cvs"].into_iter() }
 
-    fn save_to_writer_with_custom_extension<W>(
-        &self,
-        writer: W,
-        extension: Option<&extension>,
-    ) -> EncodeResult
+    fn save_to_writer_with_custom_extension<W>(&self, writer: W, extension: Option<&extension>) -> EncodeResult
     where
         W: Write,
     {
-        self.as_str()
-            .save_to_writer_with_custom_extension(writer, extension)
+        self.as_str().save_to_writer_with_custom_extension(writer, extension)
     }
 }
 impl LoadExtension for String
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension>
-    {
-        Self::save_custom_extensions()
-    }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { Self::save_custom_extensions() }
 
-    fn load_from_reader_with_custom_extension<R>(
-        mut reader: R,
-        _extension: Option<&extension>,
-    ) -> EncodeResult<Self>
+    fn load_from_reader_with_custom_extension<R>(mut reader: R, _extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: Read,
@@ -144,16 +130,9 @@ impl LoadExtension for String
 }
 impl<'a> SaveExtension for &'a str
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension>
-    {
-        String::save_custom_extensions()
-    }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { String::save_custom_extensions() }
 
-    fn save_to_writer_with_custom_extension<W>(
-        &self,
-        mut writer: W,
-        _extension: Option<&extension>,
-    ) -> EncodeResult
+    fn save_to_writer_with_custom_extension<W>(&self, mut writer: W, _extension: Option<&extension>) -> EncodeResult
     where
         W: Write,
     {
@@ -189,10 +168,7 @@ impl_load_and_save!(
 
 impl<T: SaveExtension> SaveExtension for Saturating<T> {}
 
-impl<T: LoadExtension> LoadExtension for Saturating<T> where
-    for<'de> Saturating<T>: CfgDeserialize<'de>
-{
-}
+impl<T: LoadExtension> LoadExtension for Saturating<T> where for<'de> Saturating<T>: CfgDeserialize<'de> {}
 
 impl<T, const N: usize> SaveExtension for [T; N] where [T; N]: CfgSerialize {}
 impl<T, const N: usize> LoadExtension for [T; N] where Self: for<'de> CfgDeserialize<'de> {}

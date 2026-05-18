@@ -43,10 +43,6 @@ fn main()
     dbg!(std::mem::size_of::<Option<u32>>());
     dbg!(std::mem::size_of::<Option<NonZero<u32>>>());
     dbg!(std::mem::size_of::<
-        Option<
-            Option<
-                Option<Option<Option<Option<Option<Option<Option<Option<Option<Option<u32>>>>>>>>>>,
-            >,
-        >,
+        Option<Option<Option<Option<Option<Option<Option<Option<Option<Option<Option<Option<u32>>>>>>>>>>>>,
     >());
 }

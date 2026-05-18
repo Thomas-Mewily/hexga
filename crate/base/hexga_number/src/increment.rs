@@ -43,14 +43,7 @@ pub trait Increment: One + Add<Self, Output = Self> + AddAssign<Self> + Copy + S
     where
         Self: OverflowBehavior + MaxValue + PartialEq,
     {
-        if self.have_successor()
-        {
-            Ok(self.successor())
-        }
-        else
-        {
-            Err(())
-        }
+        if self.have_successor() { Ok(self.successor()) } else { Err(()) }
     }
 
     /// Do the current value have a successor.
@@ -109,14 +102,7 @@ pub trait Decrement: One + Sub<Self, Output = Self> + SubAssign<Self> + Copy + S
     where
         Self: OverflowBehavior + MinValue + PartialEq,
     {
-        if self.have_predecessor()
-        {
-            Ok(self.predecessor())
-        }
-        else
-        {
-            Err(())
-        }
+        if self.have_predecessor() { Ok(self.predecessor()) } else { Err(()) }
     }
 
     /// Do the current value have a predecessor.

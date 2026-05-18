@@ -74,16 +74,12 @@ fn img()
 
 fn img_test()
 {
-    let i = Image::from_fn_coef((1024, 1024), |v| {
-        if (v - 0.5.splat2()).length() <= 0.5
-        {
-            ColorU8::WHITE
-        }
-        else
-        {
-            ColorU8::BLACK
-        }
-    })
+    let i = Image::from_fn_coef(
+        (1024, 1024),
+        |v| {
+            if (v - 0.5.splat2()).length() <= 0.5 { ColorU8::WHITE } else { ColorU8::BLACK }
+        },
+    )
     .save("./image_test.png")
     .unwrap();
 }
@@ -146,17 +142,12 @@ fn x2()
     println!("{}", DamageOf::<u8>::ONE.to_ron().unwrap());
     println!("{}", DamageOf::<u8>::ONE.to_json().unwrap());
     println!("{}", DamageOf::<u8>::ONE.to_xml().unwrap());
+    println!("{}", DamageOf::<u8>::from_ron("(melee:18,physic:42)").unwrap());
     println!(
         "{}",
-        DamageOf::<u8>::from_ron("(melee:18,physic:42)").unwrap()
-    );
-    println!(
-        "{}",
-        <DamageOf::<u8> as WithDefault<u8, ConstantOne<u8>>>::WithDefault::from_ron(
-            "(physic:1,melee:1)"
-        )
-        .unwrap()
-        .into_value()
+        <DamageOf::<u8> as WithDefault<u8, ConstantOne<u8>>>::WithDefault::from_ron("(physic:1,melee:1)")
+            .unwrap()
+            .into_value()
     );
 
     //println!("{}", DamageVersion::Version2(DamageOf::MAX).to_ron().unwrap());
@@ -293,18 +284,9 @@ fn grid_test()
     assert_ne!(grid1.view_mut(), grid2.view_mut());
 
     let rect = rect2i(0, 0, 1, size.y);
-    assert_eq!(
-        grid1.view().crop_intersect(rect),
-        grid2.view().crop_intersect(rect)
-    );
-    assert_eq!(
-        grid1.view_mut().crop_intersect(rect),
-        grid2.view_mut().crop_intersect(rect)
-    );
-    assert_eq!(
-        grid1.view_mut().subview(rect),
-        grid2.view_mut().subview(rect)
-    );
+    assert_eq!(grid1.view().crop_intersect(rect), grid2.view().crop_intersect(rect));
+    assert_eq!(grid1.view_mut().crop_intersect(rect), grid2.view_mut().crop_intersect(rect));
+    assert_eq!(grid1.view_mut().subview(rect), grid2.view_mut().subview(rect));
 }
 
 fn main()

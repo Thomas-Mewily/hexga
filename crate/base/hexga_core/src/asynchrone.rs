@@ -20,10 +20,7 @@ pub type DynAnyAsync = dyn AnyAsync + 'static;
 //pub type DynAnyAsync = dyn Any + Send + Sync + 'static;
 
 // Condition: Native OR WASM with atomics (multi-thread capable)
-#[cfg(any(
-    not(target_arch = "wasm32"),
-    all(target_arch = "wasm32", target_feature = "atomics")
-))]
+#[cfg(any(not(target_arch = "wasm32"), all(target_arch = "wasm32", target_feature = "atomics")))]
 mod sync_trait
 {
     /// Send trait compatible with Wasm. Requires real Send on native.

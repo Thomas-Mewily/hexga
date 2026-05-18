@@ -40,10 +40,7 @@ impl Clipboard
 
 impl Clipboardable for Clipboard
 {
-    fn get_clipboard(&mut self) -> Option<String>
-    {
-        self.ctx.as_mut().map(|c| c.get_contents().ok()).flatten()
-    }
+    fn get_clipboard(&mut self) -> Option<String> { self.ctx.as_mut().map(|c| c.get_contents().ok()).flatten() }
 
     fn set_clipboard(&mut self, paste: String) -> Result<(), ()>
     {

@@ -140,10 +140,7 @@ where
 }
 impl<T> std::fmt::Debug for ConstantMinusInfinity<T>
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        write!(f, "MinusInfinity")
-    }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "MinusInfinity") }
 }
 
 /// Define the `0` representation : The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`

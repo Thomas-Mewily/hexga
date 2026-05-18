@@ -2,10 +2,7 @@ use hexga_map_on::*;
 
 macro_rules! print_type {
     ($type_name:ty) => {
-        println!(
-            "print type from macro name {}",
-            ::std::any::type_name::<$type_name>()
-        );
+        println!("print type from macro name {}", ::std::any::type_name::<$type_name>());
     };
 }
 

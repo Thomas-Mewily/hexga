@@ -40,12 +40,7 @@ impl<T> Clone for Asset<T>
 where
     T: Async,
 {
-    fn clone(&self) -> Self
-    {
-        Self {
-            inner: self.inner.clone(),
-        }
-    }
+    fn clone(&self) -> Self { Self { inner: self.inner.clone() } }
 }
 
 #[cfg(feature = "serde")]
@@ -115,10 +110,7 @@ mod serde_impl
                 match Asset::deserialize(deserializer)?
                 {
                     Asset::Path(path_buf) => Ok(A::load(path_buf)),
-                    Asset::Value(value) => Ok(A::update_or_create(
-                        AssetPersistance::Generated,
-                        AssetInit::new(value),
-                    )),
+                    Asset::Value(value) => Ok(A::update_or_create(AssetPersistance::Generated, AssetInit::new(value))),
                 }
             }
         }
@@ -198,12 +190,7 @@ where
 
                 // SAFETY: The AssetManager<T>, once created, lives for the entire program duration.
                 // The RwLockReadGuard is tied to data owned by the eternal manager, so extending the lifetime is safe.
-                unsafe {
-                    std::mem::transmute::<
-                        RwLockReadGuard<'_, AssetData<T>>,
-                        RwLockReadGuard<'a, AssetData<T>>,
-                    >(loading_asset.inner.read().unwrap())
-                }
+                unsafe { std::mem::transmute::<RwLockReadGuard<'_, AssetData<T>>, RwLockReadGuard<'a, AssetData<T>>>(loading_asset.inner.read().unwrap()) }
             }
             AssetState::Loaded(_) => guard,
             AssetState::Error(_) =>
@@ -214,12 +201,7 @@ where
 
                 // SAFETY: The AssetManager<T>, once created, lives for the entire program duration.
                 // The RwLockReadGuard is tied to data owned by the eternal manager, so extending the lifetime is safe.
-                unsafe {
-                    std::mem::transmute::<
-                        RwLockReadGuard<'_, AssetData<T>>,
-                        RwLockReadGuard<'a, AssetData<T>>,
-                    >(loading_asset.inner.read().unwrap())
-                }
+                unsafe { std::mem::transmute::<RwLockReadGuard<'_, AssetData<T>>, RwLockReadGuard<'a, AssetData<T>>>(loading_asset.inner.read().unwrap()) }
             }
         };
         Some(AssetReadGuard {
@@ -227,14 +209,8 @@ where
         })
     }
 
-    pub fn replace_state(&mut self, state: AssetState<T>) -> AssetState<T>
-    {
-        std::mem::replace(&mut self.inner.write().unwrap().state, state)
-    }
-    pub fn replace(&mut self, value: T) -> AssetState<T>
-    {
-        self.replace_state(AssetState::Loaded(value))
-    }
+    pub fn replace_state(&mut self, state: AssetState<T>) -> AssetState<T> { std::mem::replace(&mut self.inner.write().unwrap().state, state) }
+    pub fn replace(&mut self, value: T) -> AssetState<T> { self.replace_state(AssetState::Loaded(value)) }
 
     /// Create a weak reference that won't keep the asset loaded
     pub fn downgrade(&self) -> AssetWeak<T>
@@ -248,10 +224,7 @@ where
     {
         match &self.inner.read().unwrap().persistance
         {
-            AssetPersistance::Persistant(path) =>
-            {
-                Self::manager().inner.read().unwrap().values[path].lifetime()
-            }
+            AssetPersistance::Persistant(path) => Self::manager().inner.read().unwrap().values[path].lifetime(),
             AssetPersistance::Generated => AssetLifetime::ReferenceCounted,
         }
     }
@@ -326,9 +299,7 @@ where
                 let manager = Self::manager();
                 let mut manager_w = manager.inner.write().unwrap();
                 w.persistance = AssetPersistance::Persistant(path.clone());
-                let old = manager_w
-                    .values
-                    .insert(path, AssetStorage::ReferenceCounted(weak));
+                let old = manager_w.values.insert(path, AssetStorage::ReferenceCounted(weak));
                 assert!(old.is_none());
             }
             AssetPersistance::Generated =>
@@ -406,10 +377,7 @@ where
     {
         Self::update_or_create(
             AssetPersistance::Generated,
-            AssetState::Error(IoError::new(
-                "",
-                FileError::custom("don't mind me, I'm always an error"),
-            )),
+            AssetState::Error(IoError::new("", FileError::custom("don't mind me, I'm always an error"))),
         )
     }
 
@@ -432,17 +400,11 @@ where
         {
             AssetPersistance::Persistant(path) => match &r.state
             {
-                AssetState::Loading =>
-                {
-                    Err(IoError::new(path, EncodeError::NotLoaded).when_writing())
-                }
+                AssetState::Loading => Err(IoError::new(path, EncodeError::NotLoaded).when_writing()),
                 AssetState::Loaded(value) => value.save(path),
                 AssetState::Error(io_error) => Err(io_error.clone()),
             },
-            AssetPersistance::Generated =>
-            {
-                Err(IoError::new("", EncodeError::NotPersistant).when_writing())
-            }
+            AssetPersistance::Generated => Err(IoError::new("", EncodeError::NotPersistant).when_writing()),
         }
     }
 
@@ -456,10 +418,7 @@ where
         if self.is_persistant()
         {
             let value = self.load_from_source();
-            Ok(Some(std::mem::replace(
-                self.state_mut().deref_mut(),
-                value.into(),
-            )))
+            Ok(Some(std::mem::replace(self.state_mut().deref_mut(), value.into())))
         }
         else
         {
@@ -493,12 +452,7 @@ impl<T> Clone for AssetWeak<T>
 where
     T: Async,
 {
-    fn clone(&self) -> Self
-    {
-        Self {
-            inner: self.inner.clone(),
-        }
-    }
+    fn clone(&self) -> Self { Self { inner: self.inner.clone() } }
 }
 impl<T> Default for AssetWeak<T>
 where
@@ -544,12 +498,7 @@ where
         {
             AssetPersistance::Persistant(path) =>
             {
-                Asset::<T>::manager()
-                    .inner
-                    .write()
-                    .unwrap()
-                    .values
-                    .remove(path);
+                Asset::<T>::manager().inner.write().unwrap().values.remove(path);
             }
             AssetPersistance::Generated =>
             {}

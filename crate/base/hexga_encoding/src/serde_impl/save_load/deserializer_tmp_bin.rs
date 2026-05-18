@@ -6,12 +6,7 @@ pub(crate) struct DeserializerTmpBin<'a>
 }
 impl<'a> DeserializerTmpBin<'a>
 {
-    pub fn new(bytes: impl Into<Cow<'a, [u8]>>) -> Self
-    {
-        Self {
-            bytes: bytes.into(),
-        }
-    }
+    pub fn new(bytes: impl Into<Cow<'a, [u8]>>) -> Self { Self { bytes: bytes.into() } }
 }
 impl<'a, 'de> Deserializer<'de> for DeserializerTmpBin<'a>
 {
@@ -150,22 +145,14 @@ impl<'a, 'de> Deserializer<'de> for DeserializerTmpBin<'a>
         Err(Default::default())
     }
 
-    fn deserialize_unit_struct<V>(
-        self,
-        _name: &'static str,
-        _visitor: V,
-    ) -> Result<V::Value, Self::Error>
+    fn deserialize_unit_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
         Err(Default::default())
     }
 
-    fn deserialize_newtype_struct<V>(
-        self,
-        _name: &'static str,
-        _visitor: V,
-    ) -> Result<V::Value, Self::Error>
+    fn deserialize_newtype_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
@@ -186,12 +173,7 @@ impl<'a, 'de> Deserializer<'de> for DeserializerTmpBin<'a>
         Err(Default::default())
     }
 
-    fn deserialize_tuple_struct<V>(
-        self,
-        _name: &'static str,
-        _len: usize,
-        _visitor: V,
-    ) -> Result<V::Value, Self::Error>
+    fn deserialize_tuple_struct<V>(self, _name: &'static str, _len: usize, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
@@ -205,24 +187,14 @@ impl<'a, 'de> Deserializer<'de> for DeserializerTmpBin<'a>
         Err(Default::default())
     }
 
-    fn deserialize_struct<V>(
-        self,
-        _name: &'static str,
-        _fields: &'static [&'static str],
-        _visitor: V,
-    ) -> Result<V::Value, Self::Error>
+    fn deserialize_struct<V>(self, _name: &'static str, _fields: &'static [&'static str], _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
         Err(Default::default())
     }
 
-    fn deserialize_enum<V>(
-        self,
-        _name: &'static str,
-        _variants: &'static [&'static str],
-        _visitor: V,
-    ) -> Result<V::Value, Self::Error>
+    fn deserialize_enum<V>(self, _name: &'static str, _variants: &'static [&'static str], _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {

@@ -25,10 +25,7 @@ mod single_thread
 
 impl<T> SingletonCell<T>
 {
-    pub const fn new(value: T) -> Self
-    {
-        Self::from_guard(SingleThreadCell::new(Identity::new(value)))
-    }
+    pub const fn new(value: T) -> Self { Self::from_guard(SingleThreadCell::new(Identity::new(value))) }
 }
 
 impl<T> Debug for SingletonCell<T>
@@ -40,12 +37,7 @@ where
         match self.try_get()
         {
             Ok(guard) => write!(f, "{:?}", guard.deref()),
-            Err(e) => write!(
-                f,
-                "SingletonCell<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -65,10 +57,7 @@ impl<T> Guarded<T> for SingletonCell<T>
     where
         Self: 'a;
 
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>
-    {
-        Ok(Ref::map(self.guarded.try_get()?, |v| v.as_ref()))
-    }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(Ref::map(self.guarded.try_get()?, |v| v.as_ref())) }
 }
 
 impl<T> GuardedMut<T> for SingletonCell<T>
@@ -79,29 +68,20 @@ impl<T> GuardedMut<T> for SingletonCell<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        RefMut::map(self.guarded.get_mut(), |v| v.as_mut())
-    }
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { RefMut::map(self.guarded.get_mut(), |v| v.as_mut()) }
 
     type Error<'a>
         = SingleThreadMutError
     where
         Self: 'a;
 
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
-    {
-        Ok(RefMut::map(self.guarded.try_get_mut()?, |v| v.as_mut()))
-    }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(RefMut::map(self.guarded.try_get_mut()?, |v| v.as_mut())) }
 }
 impl_singleton_methods!(SingletonCell);
 
 impl<T> SingletonLazyCell<T>
 {
-    pub const fn new(f: fn() -> T) -> Self
-    {
-        Self::from_guard(SingleThreadCell::new(LazyCell::new(f)))
-    }
+    pub const fn new(f: fn() -> T) -> Self { Self::from_guard(SingleThreadCell::new(LazyCell::new(f))) }
 }
 
 impl<T> Debug for SingletonLazyCell<T>
@@ -113,12 +93,7 @@ where
         match self.try_get()
         {
             Ok(guard) => write!(f, "{:?}", guard.deref()),
-            Err(e) => write!(
-                f,
-                "SingletonLazyCell<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonLazyCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -137,10 +112,7 @@ impl<T> Guarded<T> for SingletonLazyCell<T>
     where
         Self: 'a;
 
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>
-    {
-        Ok(Ref::map(self.guarded.try_get()?, |v| v.deref()))
-    }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(Ref::map(self.guarded.try_get()?, |v| v.deref())) }
 }
 
 impl<T> GuardedMut<T> for SingletonLazyCell<T>
@@ -151,19 +123,13 @@ impl<T> GuardedMut<T> for SingletonLazyCell<T>
         Self: 'a;
 
     #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        RefMut::map(self.guarded.get_mut(), |v| v.deref_mut())
-    }
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { RefMut::map(self.guarded.get_mut(), |v| v.deref_mut()) }
     type Error<'a>
         = SingleThreadMutError
     where
         Self: 'a;
 
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
-    {
-        Ok(RefMut::map(self.guarded.try_get_mut()?, |v| v.deref_mut()))
-    }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(RefMut::map(self.guarded.try_get_mut()?, |v| v.deref_mut())) }
 }
 impl_singleton_methods!(SingletonLazyCell);
 
@@ -214,12 +180,7 @@ where
         match self.try_get()
         {
             Ok(guard) => write!(f, "{:?}", guard.deref()),
-            Err(e) => write!(
-                f,
-                "SingletonOptionCell<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonOptionCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -240,15 +201,8 @@ impl<T> Guarded<T> for SingletonOptionCell<T>
         {
             match self.try_get()
             {
-                Ok(_) => panic!(
-                    "SingletonOptionCell<{}> can't be read",
-                    std::any::type_name::<T>()
-                ),
-                Err(e) => panic!(
-                    "SingletonOptionCell<{}> can't be read: {:?}",
-                    std::any::type_name::<T>(),
-                    e
-                ),
+                Ok(_) => panic!("SingletonOptionCell<{}> can't be read", std::any::type_name::<T>()),
+                Err(e) => panic!("SingletonOptionCell<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
             }
         }
 
@@ -286,15 +240,8 @@ impl<T> GuardedMut<T> for SingletonOptionCell<T>
             Ok(guard) => guard,
             Err(_) => match self.try_get()
             {
-                Ok(_) => panic!(
-                    "SingletonOptionCell<{}> can't be written",
-                    std::any::type_name::<T>()
-                ),
-                Err(e) => panic!(
-                    "SingletonOptionCell<{}> can't be written: {:?}",
-                    std::any::type_name::<T>(),
-                    e
-                ),
+                Ok(_) => panic!("SingletonOptionCell<{}> can't be written", std::any::type_name::<T>()),
+                Err(e) => panic!("SingletonOptionCell<{}> can't be written: {:?}", std::any::type_name::<T>(), e),
             },
         }
     }

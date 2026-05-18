@@ -22,10 +22,7 @@ where
             Ok(window) =>
             {
                 let size = window.inner_size().convert();
-                let pos = window
-                    .inner_position()
-                    .map(|w| w.convert())
-                    .unwrap_or_default();
+                let pos = window.inner_position().map(|w| w.convert()).unwrap_or_default();
                 Ok(Window {
                     param,
                     window: Arc::new(window),
@@ -47,18 +44,7 @@ where
     pub fn time(&self) -> Time { self.state.time }
     pub fn proxy(&self) -> &'a EventLoopProxy<Ev> { self.proxy }
 
-    pub(crate) fn new(
-        winit: &'a WinitEventLoopActive,
-        state: &'a mut EventLoopState,
-        proxy: &'a EventLoopProxy<Ev>,
-    ) -> Self
-    {
-        Self {
-            winit,
-            state,
-            proxy,
-        }
-    }
+    pub(crate) fn new(winit: &'a WinitEventLoopActive, state: &'a mut EventLoopState, proxy: &'a EventLoopProxy<Ev>) -> Self { Self { winit, state, proxy } }
 
     pub fn winit_event_loop(&self) -> &'a WinitEventLoopActive { self.winit }
 }
@@ -90,10 +76,7 @@ impl Clipboardable for EventLoopState
 {
     fn get_clipboard(&mut self) -> Option<String> { self.clipboard.get_clipboard() }
 
-    fn set_clipboard(&mut self, paste: String) -> Result<(), ()>
-    {
-        self.clipboard.set_clipboard(paste)
-    }
+    fn set_clipboard(&mut self, paste: String) -> Result<(), ()> { self.clipboard.set_clipboard(paste) }
 }
 
 pub trait PlatformEventHandler<CustomEvent = ()>: Sized + 'static
@@ -134,14 +117,7 @@ where
 
     fn exit(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
 
-    fn event(
-        &mut self,
-        ev: PlatformEvent<CustomEvent>,
-        event_loop: &mut EventLoop<CustomEvent>,
-    ) -> Option<PlatformEvent<CustomEvent>>
-    {
-        Some(ev)
-    }
+    fn event(&mut self, ev: PlatformEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformEvent<CustomEvent>> { Some(ev) }
 }
 
 /*
@@ -220,12 +196,7 @@ impl<CustomEvent> Clone for EventLoopProxy<CustomEvent>
 where
     CustomEvent: PlatformCustomEvent,
 {
-    fn clone(&self) -> Self
-    {
-        Self {
-            winit: self.winit.clone(),
-        }
-    }
+    fn clone(&self) -> Self { Self { winit: self.winit.clone() } }
 }
 
 pub type ProxyResult<T = ()> = Result<T, ()>;

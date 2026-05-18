@@ -150,8 +150,7 @@ pub use hexga_bit as bit;
 pub use hexga_map_on as map_on;
 
 re_export_mod_from_std_or_core!(
-    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num, panic, pin, ops,
-    task, // time <- Time don't work on WASM
+    any, array, ascii, clone, cmp, error, fmt, future, hash, hint, mem, net, num, panic, pin, ops, task, // time <- Time don't work on WASM
     str, slice, // random
     borrow
 );
@@ -162,9 +161,8 @@ pub mod io
 {
     // Struct
     pub use std::io::{
-        BufReader, BufWriter, Bytes, Chain, Cursor, Empty, Error, IntoInnerError, IoSlice,
-        IoSliceMut, LineWriter, Lines, PipeReader, PipeWriter, Repeat, Sink, Split, Stderr,
-        StderrLock, Stdin, StdinLock, Stdout, StdoutLock, Take, WriterPanicked, prelude,
+        BufReader, BufWriter, Bytes, Chain, Cursor, Empty, Error, IntoInnerError, IoSlice, IoSliceMut, LineWriter, Lines, PipeReader, PipeWriter, Repeat, Sink,
+        Split, Stderr, StderrLock, Stdin, StdinLock, Stdout, StdoutLock, Take, WriterPanicked, prelude,
     };
     // Enum
     pub use std::io::{ErrorKind, SeekFrom};
@@ -220,10 +218,7 @@ pub mod modules
         utils,
         wrapper,
     };
-    pub use super::{
-        any, array, ascii, borrow, clone, cmp, error, fmt, future, hash, hint, mem, net, num,
-        panic, pin, slice, str, task,
-    };
+    pub use super::{any, array, ascii, borrow, clone, cmp, error, fmt, future, hash, hint, mem, net, num, panic, pin, slice, str, task};
     pub use crate::map_on;
 
     pub use super::{string, vec};

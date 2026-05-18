@@ -18,9 +18,7 @@ pub use clipboard::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{
-        Clipboard, KeyAction, KeyCode, KeyEvent, KeyModifiers, KeyModifiersFlags, KeyShortcut,
-    };
+    pub use super::{Clipboard, KeyAction, KeyCode, KeyEvent, KeyModifiers, KeyModifiersFlags, KeyShortcut};
     pub(crate) use super::{Key, KeyCodeNative, KeyLocation, KeyRepeat, KeyState, Keyboard};
 }
 

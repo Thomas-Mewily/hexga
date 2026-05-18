@@ -12,10 +12,7 @@ pub type GpuVec4 = Vector4<Gpufloat>;
 pub const fn gpu_vec1(x: Gpufloat) -> GpuVec1 { GpuVec1::new(x) }
 pub const fn gpu_vec2(x: Gpufloat, y: Gpufloat) -> GpuVec2 { GpuVec2::new(x, y) }
 pub const fn gpu_vec3(x: Gpufloat, y: Gpufloat, z: Gpufloat) -> GpuVec3 { GpuVec3::new(x, y, z) }
-pub const fn gpu_vec4(x: Gpufloat, y: Gpufloat, z: Gpufloat, w: Gpufloat) -> GpuVec4
-{
-    GpuVec4::new(x, y, z, w)
-}
+pub const fn gpu_vec4(x: Gpufloat, y: Gpufloat, z: Gpufloat, w: Gpufloat) -> GpuVec4 { GpuVec4::new(x, y, z, w) }
 
 pub type GpuRectangle<const N: usize> = Rectangle<Gpufloat, N>;
 pub type GpuRect1 = GpuRectangle<1>;

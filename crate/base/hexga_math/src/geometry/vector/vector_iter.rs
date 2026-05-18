@@ -45,14 +45,7 @@ where
     {
         Self {
             cur,
-            end: if end.have_area_usize()
-            {
-                end
-            }
-            else
-            {
-                Vector::ZERO
-            },
+            end: if end.have_area_usize() { end } else { Vector::ZERO },
         }
     }
 
@@ -105,10 +98,7 @@ impl<Idx, const N: usize> std::iter::ExactSizeIterator for VectorIter<Idx, N>
 where
     Idx: Integer,
 {
-    fn len(&self) -> usize
-    {
-        self.end.area_usize() - unsafe { Vector::<Idx, N>::to_index_unchecked(self.cur, self.end) }
-    }
+    fn len(&self) -> usize { self.end.area_usize() - unsafe { Vector::<Idx, N>::to_index_unchecked(self.cur, self.end) } }
 }
 
 impl<Idx, const N: usize> IterIndex<Idx, N> for Vector<Idx, N>

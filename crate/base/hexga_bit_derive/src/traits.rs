@@ -25,18 +25,9 @@ pub trait Derivable
 {
     fn ident(input: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path>;
     fn implies_trait(_crate_name: &TokenStream) -> Option<TokenStream> { None }
-    fn asserts(_input: &DeriveInput, _crate_name: &TokenStream) -> Result<TokenStream>
-    {
-        Ok(quote!())
-    }
+    fn asserts(_input: &DeriveInput, _crate_name: &TokenStream) -> Result<TokenStream> { Ok(quote!()) }
     fn check_attributes(_ty: &Data, _attributes: &[Attribute]) -> Result<()> { Ok(()) }
-    fn trait_impl(
-        _input: &DeriveInput,
-        _crate_name: &TokenStream,
-    ) -> Result<(TokenStream, TokenStream)>
-    {
-        Ok((quote!(), quote!()))
-    }
+    fn trait_impl(_input: &DeriveInput, _crate_name: &TokenStream) -> Result<(TokenStream, TokenStream)> { Ok((quote!(), quote!())) }
     fn requires_where_clause() -> bool { true }
     fn explicit_bounds_attribute_name() -> Option<&'static str> { None }
 
@@ -51,10 +42,7 @@ pub struct Pod;
 
 impl Derivable for Pod
 {
-    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path>
-    {
-        Ok(syn::parse_quote!(#crate_name::Pod))
-    }
+    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path> { Ok(syn::parse_quote!(#crate_name::Pod)) }
 
     fn asserts(input: &DeriveInput, crate_name: &TokenStream) -> Result<TokenStream>
     {
@@ -83,8 +71,7 @@ impl Derivable for Pod
                 {
                     None
                 };
-                let assert_fields_are_pod =
-                    generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)?;
+                let assert_fields_are_pod = generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)?;
 
                 Ok(quote!(
                   #assert_no_padding
@@ -115,15 +102,9 @@ pub struct BitAnyPattern;
 
 impl Derivable for BitAnyPattern
 {
-    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path>
-    {
-        Ok(syn::parse_quote!(#crate_name::BitAnyPattern))
-    }
+    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path> { Ok(syn::parse_quote!(#crate_name::BitAnyPattern)) }
 
-    fn implies_trait(crate_name: &TokenStream) -> Option<TokenStream>
-    {
-        Some(quote!(#crate_name::BitZero))
-    }
+    fn implies_trait(crate_name: &TokenStream) -> Option<TokenStream> { Some(quote!(#crate_name::BitZero)) }
 
     fn asserts(input: &DeriveInput, crate_name: &TokenStream) -> Result<TokenStream>
     {
@@ -131,10 +112,7 @@ impl Derivable for BitAnyPattern
         {
             Data::Union(_) => Ok(quote!()), /* unions are always */
             // `BitAnyPattern`
-            Data::Struct(_) =>
-            {
-                generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)
-            }
+            Data::Struct(_) => generate_fields_are_trait(input, None, Self::ident(input, crate_name)?),
             Data::Enum(_) =>
             {
                 bail!("Deriving BitAnyPattern is not supported for enums")
@@ -165,10 +143,7 @@ fn get_zero_variant(enum_: &DataEnum) -> Result<Option<&Variant>>
 
 impl Derivable for BitZero
 {
-    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path>
-    {
-        Ok(syn::parse_quote!(#crate_name::BitZero))
-    }
+    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path> { Ok(syn::parse_quote!(#crate_name::BitZero)) }
 
     fn check_attributes(ty: &Data, attributes: &[Attribute]) -> Result<()>
     {
@@ -178,14 +153,9 @@ impl Derivable for BitZero
             Data::Struct(_) => Ok(()),
             Data::Enum(_) =>
             {
-                if !matches!(
-                    repr.repr,
-                    Repr::C | Repr::Integer(_) | Repr::CWithDiscriminant(_)
-                )
+                if !matches!(repr.repr, Repr::C | Repr::Integer(_) | Repr::CWithDiscriminant(_))
                 {
-                    bail!(
-                        "BitZero requires the enum to be an explicit #[repr(Int)] and/or #[repr(C)]"
-                    )
+                    bail!("BitZero requires the enum to be an explicit #[repr(Int)] and/or #[repr(C)]")
                 }
 
                 // We ensure there is a zero variant in `asserts`, since it is
@@ -202,10 +172,7 @@ impl Derivable for BitZero
         match &input.data
         {
             Data::Union(_) => Ok(quote!()), // unions are always `BitZero`
-            Data::Struct(_) =>
-            {
-                generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)
-            }
+            Data::Struct(_) => generate_fields_are_trait(input, None, Self::ident(input, crate_name)?),
             Data::Enum(enum_) =>
             {
                 let zero_variant = get_zero_variant(enum_)?;
@@ -244,10 +211,7 @@ pub struct BitAllUsed;
 
 impl Derivable for BitAllUsed
 {
-    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path>
-    {
-        Ok(syn::parse_quote!(#crate_name::BitAllUsed))
-    }
+    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path> { Ok(syn::parse_quote!(#crate_name::BitAllUsed)) }
 
     fn check_attributes(ty: &Data, attributes: &[Attribute]) -> Result<()>
     {
@@ -277,9 +241,7 @@ impl Derivable for BitAllUsed
                 }
                 else if matches!(repr.repr, Repr::Rust)
                 {
-                    bail!(
-                        "BitAllUsed requires an explicit repr annotation because `repr(Rust)` doesn't have a specified type layout"
-                    )
+                    bail!("BitAllUsed requires an explicit repr annotation because `repr(Rust)` doesn't have a specified type layout")
                 }
                 else
                 {
@@ -304,8 +266,7 @@ impl Derivable for BitAllUsed
             Data::Struct(DataStruct { .. }) =>
             {
                 let assert_no_padding = generate_assert_no_padding(&input, None, "BitAllUsed")?;
-                let assert_fields_are_no_padding =
-                    generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)?;
+                let assert_fields_are_no_padding = generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)?;
 
                 Ok(quote!(
                     #assert_no_padding
@@ -362,13 +323,8 @@ impl Derivable for BitAllUsed
                     let variant_assertions = variants
                         .iter()
                         .map(|variant| {
-                            let assert_no_padding =
-                                generate_assert_no_padding(&input, Some(variant), "BitAllUsed")?;
-                            let assert_fields_are_no_padding = generate_fields_are_trait(
-                                &input,
-                                Some(variant),
-                                Self::ident(input, crate_name)?,
-                            )?;
+                            let assert_no_padding = generate_assert_no_padding(&input, Some(variant), "BitAllUsed")?;
+                            let assert_fields_are_no_padding = generate_fields_are_trait(&input, Some(variant), Self::ident(input, crate_name)?)?;
 
                             Ok(quote!(
                                 #assert_no_padding
@@ -392,23 +348,14 @@ impl Derivable for BitAllUsed
         }
     }
 
-    fn trait_impl(
-        _input: &DeriveInput,
-        _crate_name: &TokenStream,
-    ) -> Result<(TokenStream, TokenStream)>
-    {
-        Ok((quote!(), quote!()))
-    }
+    fn trait_impl(_input: &DeriveInput, _crate_name: &TokenStream) -> Result<(TokenStream, TokenStream)> { Ok((quote!(), quote!())) }
 }
 
 pub struct BitPattern;
 
 impl Derivable for BitPattern
 {
-    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path>
-    {
-        Ok(syn::parse_quote!(#crate_name::BitPattern))
-    }
+    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path> { Ok(syn::parse_quote!(#crate_name::BitPattern)) }
 
     fn check_attributes(ty: &Data, attributes: &[Attribute]) -> Result<()>
     {
@@ -418,9 +365,7 @@ impl Derivable for BitPattern
             Data::Struct(_) => match repr.repr
             {
                 Repr::C | Repr::Transparent => Ok(()),
-                _ => bail!(
-                    "BitPattern derive requires the struct to be #[repr(C)] or #[repr(transparent)]"
-                ),
+                _ => bail!("BitPattern derive requires the struct to be #[repr(C)] or #[repr(transparent)]"),
             },
             Data::Enum(DataEnum { variants, .. }) =>
             {
@@ -437,9 +382,7 @@ impl Derivable for BitPattern
                 }
                 else if matches!(repr.repr, Repr::Rust)
                 {
-                    bail!(
-                        "BitPattern requires an explicit repr annotation because `repr(Rust)` doesn't have a specified type layout"
-                    )
+                    bail!("BitPattern requires an explicit repr annotation because `repr(Rust)` doesn't have a specified type layout")
                 }
                 else
                 {
@@ -461,8 +404,7 @@ impl Derivable for BitPattern
         {
             Data::Struct(DataStruct { .. }) =>
             {
-                let assert_fields_are_maybe_pod =
-                    generate_fields_are_trait(&input, None, Self::ident(input, crate_name)?)?;
+                let assert_fields_are_maybe_pod = generate_fields_are_trait(&input, None, Self::ident(input, crate_name)?)?;
 
                 Ok(assert_fields_are_maybe_pod)
             }
@@ -476,21 +418,12 @@ impl Derivable for BitPattern
         }
     }
 
-    fn trait_impl(
-        input: &DeriveInput,
-        crate_name: &TokenStream,
-    ) -> Result<(TokenStream, TokenStream)>
+    fn trait_impl(input: &DeriveInput, crate_name: &TokenStream) -> Result<(TokenStream, TokenStream)>
     {
         match &input.data
         {
-            Data::Struct(DataStruct { fields, .. }) =>
-            {
-                generate_checked_bit_pattern_struct(&input.ident, fields, &input.attrs, crate_name)
-            }
-            Data::Enum(DataEnum { variants, .. }) =>
-            {
-                generate_checked_bit_pattern_enum(input, variants, crate_name)
-            }
+            Data::Struct(DataStruct { fields, .. }) => generate_checked_bit_pattern_struct(&input.ident, fields, &input.attrs, crate_name),
+            Data::Enum(DataEnum { variants, .. }) => generate_checked_bit_pattern_enum(input, variants, crate_name),
             Data::Union(_) =>
             {
                 bail!("Internal error in BitPattern derive")
@@ -513,11 +446,7 @@ impl TransparentWrapper
 {
     fn get_wrapped_type(attributes: &[Attribute], fields: &Fields) -> Option<WrappedType>
     {
-        let transparent_param =
-            get_type_from_simple_attr(attributes, "transparent").map(|wrapped_type| WrappedType {
-                wrapped_type,
-                explicit: true,
-            });
+        let transparent_param = get_type_from_simple_attr(attributes, "transparent").map(|wrapped_type| WrappedType { wrapped_type, explicit: true });
         transparent_param.or_else(|| {
             let mut types = get_field_types(&fields);
             let first_type = types.next();
@@ -528,10 +457,7 @@ impl TransparentWrapper
             }
             else
             {
-                first_type.cloned().map(|wrapped_type| WrappedType {
-                    wrapped_type,
-                    explicit: false,
-                })
+                first_type.cloned().map(|wrapped_type| WrappedType { wrapped_type, explicit: false })
             }
         })
     }
@@ -543,9 +469,7 @@ impl Derivable for TransparentWrapper
     {
         let fields = get_struct_fields(input)?;
 
-        let WrappedType {
-            wrapped_type: ty, ..
-        } = match Self::get_wrapped_type(&input.attrs, &fields)
+        let WrappedType { wrapped_type: ty, .. } = match Self::get_wrapped_type(&input.attrs, &fields)
         {
             Some(ty) => ty,
             None => bail!(
@@ -564,10 +488,7 @@ impl Derivable for TransparentWrapper
         let fields = get_struct_fields(input)?;
         let (wrapped_type, explicit) = match Self::get_wrapped_type(&input.attrs, &fields)
         {
-            Some(WrappedType {
-                wrapped_type,
-                explicit,
-            }) => (wrapped_type.to_token_stream().to_string(), explicit),
+            Some(WrappedType { wrapped_type, explicit }) => (wrapped_type.to_token_stream().to_string(), explicit),
             None => unreachable!(), /* other code will already reject
                                      * this derive */
         };
@@ -645,15 +566,9 @@ pub struct Contiguous;
 
 impl Derivable for Contiguous
 {
-    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path>
-    {
-        Ok(syn::parse_quote!(#crate_name::Contiguous))
-    }
+    fn ident(_: &DeriveInput, crate_name: &TokenStream) -> Result<syn::Path> { Ok(syn::parse_quote!(#crate_name::Contiguous)) }
 
-    fn trait_impl(
-        input: &DeriveInput,
-        _crate_name: &TokenStream,
-    ) -> Result<(TokenStream, TokenStream)>
+    fn trait_impl(input: &DeriveInput, _crate_name: &TokenStream) -> Result<(TokenStream, TokenStream)>
     {
         let repr = get_repr(&input.attrs)?;
 
@@ -669,25 +584,15 @@ impl Derivable for Contiguous
         let variants = get_enum_variants(input)?;
         if enum_has_fields(variants.clone())
         {
-            return Err(Error::new_spanned(
-                &input,
-                "Only fieldless enums are supported",
-            ));
+            return Err(Error::new_spanned(&input, "Only fieldless enums are supported"));
         }
 
         let mut variants_with_discriminant = VariantDiscriminantIterator::new(variants);
 
-        let (min, max, count) = variants_with_discriminant.try_fold(
-            (i128::MAX, i128::MIN, 0),
-            |(min, max, count), res| {
-                let (discriminant, _variant) = res?;
-                Ok::<_, Error>((
-                    i128::min(min, discriminant),
-                    i128::max(max, discriminant),
-                    count + 1,
-                ))
-            },
-        )?;
+        let (min, max, count) = variants_with_discriminant.try_fold((i128::MAX, i128::MIN, 0), |(min, max, count), res| {
+            let (discriminant, _variant) = res?;
+            Ok::<_, Error>((i128::min(min, discriminant), i128::max(max, discriminant), count + 1))
+        })?;
 
         if max - min != count - 1
         {
@@ -764,9 +669,7 @@ fn get_fields(input: &DeriveInput, enum_variant: Option<&Variant>) -> Result<Fie
     }
 }
 
-fn get_enum_variants<'a>(
-    input: &'a DeriveInput,
-) -> Result<impl Iterator<Item = &'a Variant> + Clone + 'a>
+fn get_enum_variants<'a>(input: &'a DeriveInput) -> Result<impl Iterator<Item = &'a Variant> + Clone + 'a>
 {
     if let Data::Enum(DataEnum { variants, .. }) = &input.data
     {
@@ -778,10 +681,7 @@ fn get_enum_variants<'a>(
     }
 }
 
-fn get_field_types<'a>(fields: &'a Fields) -> impl Iterator<Item = &'a Type> + 'a
-{
-    fields.iter().map(|field| &field.ty)
-}
+fn get_field_types<'a>(fields: &'a Fields) -> impl Iterator<Item = &'a Type> + 'a { fields.iter().map(|field| &field.ty) }
 
 fn generate_checked_bit_pattern_struct(
     input_ident: &Ident,
@@ -797,12 +697,7 @@ fn generate_checked_bit_pattern_struct(
     let field_names = fields
         .iter()
         .enumerate()
-        .map(|(i, field)| {
-            field
-                .ident
-                .clone()
-                .unwrap_or_else(|| Ident::new(&format!("field{}", i), input_ident.span()))
-        })
+        .map(|(i, field)| field.ident.clone().unwrap_or_else(|| Ident::new(&format!("field{}", i), input_ident.span())))
         .collect::<Vec<_>>();
     let field_tys = fields.iter().map(|field| &field.ty).collect::<Vec<_>>();
 
@@ -868,17 +763,10 @@ fn generate_checked_bit_pattern_enum_without_fields(
     let span = input.span();
     let mut variants_with_discriminant = VariantDiscriminantIterator::new(variants.iter());
 
-    let (min, max, count) = variants_with_discriminant.try_fold(
-        (i128::MAX, i128::MIN, 0),
-        |(min, max, count), res| {
-            let (discriminant, _variant) = res?;
-            Ok::<_, Error>((
-                i128::min(min, discriminant),
-                i128::max(max, discriminant),
-                count + 1,
-            ))
-        },
-    )?;
+    let (min, max, count) = variants_with_discriminant.try_fold((i128::MAX, i128::MIN, 0), |(min, max, count), res| {
+        let (discriminant, _variant) = res?;
+        Ok::<_, Error>((i128::min(min, discriminant), i128::max(max, discriminant), count + 1))
+    })?;
 
     let check = if count == 0
     {
@@ -962,53 +850,44 @@ fn generate_checked_bit_pattern_enum_with_fields(
             // `BitPattern` derive applied, thus generating
             // `{variant_struct_ident}Bits` structs, which are the ones that go
             // into this union.
-            let variants_union_ident =
-                Ident::new(&format!("{}Variants", input.ident), input.span());
+            let variants_union_ident = Ident::new(&format!("{}Variants", input.ident), input.span());
 
-            let variant_struct_idents = variants
-                .iter()
-                .map(|v| Ident::new(&format!("{input_ident}Variant{}", v.ident), v.span()));
+            let variant_struct_idents = variants.iter().map(|v| Ident::new(&format!("{input_ident}Variant{}", v.ident), v.span()));
 
-            let variant_struct_definitions = variant_struct_idents
-                .clone()
-                .zip(variants.iter())
-                .map(|(variant_struct_ident, v)| {
-                    let fields = v.fields.iter().map(|v| &v.ty);
+            let variant_struct_definitions = variant_struct_idents.clone().zip(variants.iter()).map(|(variant_struct_ident, v)| {
+                let fields = v.fields.iter().map(|v| &v.ty);
 
-                    quote! {
-                      #[derive(::core::clone::Clone, ::core::marker::Copy, #crate_name::BitPattern)]
-                      #[repr(C)]
-                      #vis struct #variant_struct_ident(#(#fields),*);
-                    }
-                });
+                quote! {
+                  #[derive(::core::clone::Clone, ::core::marker::Copy, #crate_name::BitPattern)]
+                  #[repr(C)]
+                  #vis struct #variant_struct_ident(#(#fields),*);
+                }
+            });
 
-            let union_fields = variant_struct_idents.clone().zip(variants.iter()).map(
-                |(variant_struct_ident, v)| {
-                    let variant_struct_bits_ident =
-                        Ident::new(&format!("{variant_struct_ident}Bits"), input.span());
-                    let field_ident = &v.ident;
-                    quote! {
-                      #field_ident: #variant_struct_bits_ident
-                    }
-                },
-            );
+            let union_fields = variant_struct_idents.clone().zip(variants.iter()).map(|(variant_struct_ident, v)| {
+                let variant_struct_bits_ident = Ident::new(&format!("{variant_struct_ident}Bits"), input.span());
+                let field_ident = &v.ident;
+                quote! {
+                  #field_ident: #variant_struct_bits_ident
+                }
+            });
 
             let variant_checks = variant_struct_idents
-            .clone()
-            .zip(VariantDiscriminantIterator::new(variants.iter()))
-            .zip(variants.iter())
-            .map(|((variant_struct_ident, discriminant), v)| -> Result<_> {
-              let (discriminant, _variant) = discriminant?;
-              let discriminant = LitInt::new(&discriminant.to_string(), v.span());
-              let ident = &v.ident;
-              Ok(quote! {
-                #discriminant => {
-                  let payload = unsafe { &bits.payload.#ident };
-                  <#variant_struct_ident as #crate_name::BitPattern>::is_valid_bit_pattern(payload)
-                }
-              })
-            })
-            .collect::<Result<Vec<_>>>()?;
+                .clone()
+                .zip(VariantDiscriminantIterator::new(variants.iter()))
+                .zip(variants.iter())
+                .map(|((variant_struct_ident, discriminant), v)| -> Result<_> {
+                    let (discriminant, _variant) = discriminant?;
+                    let discriminant = LitInt::new(&discriminant.to_string(), v.span());
+                    let ident = &v.ident;
+                    Ok(quote! {
+                      #discriminant => {
+                        let payload = unsafe { &bits.payload.#ident };
+                        <#variant_struct_ident as #crate_name::BitPattern>::is_valid_bit_pattern(payload)
+                      }
+                    })
+                })
+                .collect::<Result<Vec<_>>>()?;
 
             Ok((
                 quote! {
@@ -1118,51 +997,43 @@ fn generate_checked_bit_pattern_enum_with_fields(
             // see: https://doc.rust-lang.org/reference/type-layout.html#primitive-representation-of-enums-with-fields
             let bits_ty_ident = Ident::new(&format!("{input_ident}Bits"), input.span());
 
-            let variant_struct_idents = variants
-                .iter()
-                .map(|v| Ident::new(&format!("{input_ident}Variant{}", v.ident), v.span()));
+            let variant_struct_idents = variants.iter().map(|v| Ident::new(&format!("{input_ident}Variant{}", v.ident), v.span()));
 
-            let variant_struct_definitions = variant_struct_idents
-                .clone()
-                .zip(variants.iter())
-                .map(|(variant_struct_ident, v)| {
-                    let fields = v.fields.iter().map(|v| &v.ty);
+            let variant_struct_definitions = variant_struct_idents.clone().zip(variants.iter()).map(|(variant_struct_ident, v)| {
+                let fields = v.fields.iter().map(|v| &v.ty);
 
-                    // adding the discriminant repr integer as first field, as described above
-                    quote! {
-                      #[derive(::core::clone::Clone, ::core::marker::Copy, #crate_name::BitPattern)]
-                      #[repr(C)]
-                      #vis struct #variant_struct_ident(#integer, #(#fields),*);
-                    }
-                });
+                // adding the discriminant repr integer as first field, as described above
+                quote! {
+                  #[derive(::core::clone::Clone, ::core::marker::Copy, #crate_name::BitPattern)]
+                  #[repr(C)]
+                  #vis struct #variant_struct_ident(#integer, #(#fields),*);
+                }
+            });
 
-            let union_fields = variant_struct_idents.clone().zip(variants.iter()).map(
-                |(variant_struct_ident, v)| {
-                    let variant_struct_bits_ident =
-                        Ident::new(&format!("{variant_struct_ident}Bits"), input.span());
-                    let field_ident = &v.ident;
-                    quote! {
-                      #field_ident: #variant_struct_bits_ident
-                    }
-                },
-            );
+            let union_fields = variant_struct_idents.clone().zip(variants.iter()).map(|(variant_struct_ident, v)| {
+                let variant_struct_bits_ident = Ident::new(&format!("{variant_struct_ident}Bits"), input.span());
+                let field_ident = &v.ident;
+                quote! {
+                  #field_ident: #variant_struct_bits_ident
+                }
+            });
 
             let variant_checks = variant_struct_idents
-            .clone()
-            .zip(VariantDiscriminantIterator::new(variants.iter()))
-            .zip(variants.iter())
-            .map(|((variant_struct_ident, discriminant), v)| -> Result<_> {
-              let (discriminant, _variant) = discriminant?;
-              let discriminant = LitInt::new(&discriminant.to_string(), v.span());
-              let ident = &v.ident;
-              Ok(quote! {
-                #discriminant => {
-                  let payload = unsafe { &bits.#ident };
-                  <#variant_struct_ident as #crate_name::BitPattern>::is_valid_bit_pattern(payload)
-                }
-              })
-            })
-            .collect::<Result<Vec<_>>>()?;
+                .clone()
+                .zip(VariantDiscriminantIterator::new(variants.iter()))
+                .zip(variants.iter())
+                .map(|((variant_struct_ident, discriminant), v)| -> Result<_> {
+                    let (discriminant, _variant) = discriminant?;
+                    let discriminant = LitInt::new(&discriminant.to_string(), v.span());
+                    let ident = &v.ident;
+                    Ok(quote! {
+                      #discriminant => {
+                        let payload = unsafe { &bits.#ident };
+                        <#variant_struct_ident as #crate_name::BitPattern>::is_valid_bit_pattern(payload)
+                      }
+                    })
+                })
+                .collect::<Result<Vec<_>>>()?;
 
             Ok((
                 quote! {
@@ -1209,11 +1080,7 @@ fn generate_checked_bit_pattern_enum_with_fields(
 /// Check that a struct or enum has no padding by asserting that the size of
 /// the type is equal to the sum of the size of it's fields and discriminant
 /// (for enums, this must be asserted for each variant).
-fn generate_assert_no_padding(
-    input: &DeriveInput,
-    enum_variant: Option<&Variant>,
-    for_trait: &str,
-) -> Result<TokenStream>
+fn generate_assert_no_padding(input: &DeriveInput, enum_variant: Option<&Variant>, for_trait: &str) -> Result<TokenStream>
 {
     let struct_type = &input.ident;
     let fields = get_fields(input, enum_variant)?;
@@ -1230,9 +1097,7 @@ fn generate_assert_no_padding(
     };
 
     // Prepend the type of the discriminant to the types of the fields.
-    let mut field_types = enum_discriminant
-        .into_iter()
-        .chain(get_field_types(&fields).map(ToTokens::to_token_stream));
+    let mut field_types = enum_discriminant.into_iter().chain(get_field_types(&fields).map(ToTokens::to_token_stream));
     let size_sum = if let Some(first) = field_types.next()
     {
         let size_first = quote!(::core::mem::size_of::<#first>());
@@ -1256,11 +1121,7 @@ fn generate_assert_no_padding(
 }
 
 /// Check that all fields implement a given trait
-fn generate_fields_are_trait(
-    input: &DeriveInput,
-    enum_variant: Option<&Variant>,
-    trait_: syn::Path,
-) -> Result<TokenStream>
+fn generate_fields_are_trait(input: &DeriveInput, enum_variant: Option<&Variant>, trait_: syn::Path) -> Result<TokenStream>
 {
     let (impl_generics, _ty_generics, where_clause) = input.generics.split_for_impl();
     let fields = get_fields(input, enum_variant)?;
@@ -1294,31 +1155,20 @@ fn generate_fields_are_trait(
 /// specified behavior, see https://doc.rust-lang.org/stable/reference/type-layout.html#reprc-enums-with-fields
 ///
 /// Returns a tuple of (type ident, auxiliary definitions)
-fn get_enum_discriminant(
-    input: &DeriveInput,
-    crate_name: &TokenStream,
-) -> Result<(TokenStream, TokenStream)>
+fn get_enum_discriminant(input: &DeriveInput, crate_name: &TokenStream) -> Result<(TokenStream, TokenStream)>
 {
     let repr = get_repr(&input.attrs)?;
     match repr.repr
     {
         Repr::C =>
         {
-            let e = if let Data::Enum(e) = &input.data
-            {
-                e
-            }
-            else
-            {
-                unreachable!()
-            };
+            let e = if let Data::Enum(e) = &input.data { e } else { unreachable!() };
             if enum_has_fields(e.variants.iter())
             {
                 // If the enum has fields, we must first isolate the
                 // discriminant by removing all the fields.
                 let enum_discriminant = generate_enum_discriminant(input)?;
-                let discriminant_ident =
-                    Ident::new(&format!("{}Discriminant", input.ident), input.ident.span());
+                let discriminant_ident = Ident::new(&format!("{}Discriminant", input.ident), input.ident.span());
                 Ok((
                     quote!(<[::core::primitive::u8; ::core::mem::size_of::<#discriminant_ident>()] as #crate_name::derive::EnumTagIntegerBytes>::Integer),
                     quote! {
@@ -1336,24 +1186,14 @@ fn get_enum_discriminant(
                 ))
             }
         }
-        Repr::Integer(integer) | Repr::CWithDiscriminant(integer) =>
-        {
-            Ok((quote!(#integer), quote!()))
-        }
+        Repr::Integer(integer) | Repr::CWithDiscriminant(integer) => Ok((quote!(#integer), quote!())),
         _ => unreachable!(),
     }
 }
 
 fn generate_enum_discriminant(input: &DeriveInput) -> Result<TokenStream>
 {
-    let e = if let Data::Enum(e) = &input.data
-    {
-        e
-    }
-    else
-    {
-        unreachable!()
-    };
+    let e = if let Data::Enum(e) = &input.data { e } else { unreachable!() };
     let repr = get_repr(&input.attrs)?;
     let repr = match repr.repr
     {
@@ -1519,17 +1359,7 @@ enum Repr
 
 impl Repr
 {
-    fn as_integer(&self) -> Option<IntegerRepr>
-    {
-        if let Self::Integer(v) = self
-        {
-            Some(*v)
-        }
-        else
-        {
-            None
-        }
-    }
+    fn as_integer(&self) -> Option<IntegerRepr> { if let Self::Integer(v) = self { Some(*v) } else { None } }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1589,17 +1419,13 @@ impl Parse for Representation
                     let contents;
                     parenthesized!(contents in input);
                     let new_align = LitInt::base10_parse::<u32>(&contents.parse()?)?;
-                    ret.align = Some(
-                        ret.align
-                            .map_or(new_align, |old_align| cmp::max(old_align, new_align)),
-                    );
+                    ret.align = Some(ret.align.map_or(new_align, |old_align| cmp::max(old_align, new_align)));
                     let _: Option<Token![,]> = input.parse()?;
                     continue;
                 }
                 ident =>
                 {
-                    let primitive = IntegerRepr::try_from(ident)
-                        .map_err(|_| input.error("unrecognized representation hint"))?;
+                    let primitive = IntegerRepr::try_from(ident).map_err(|_| input.error("unrecognized representation hint"))?;
                     Repr::Integer(primitive)
                 }
             };
@@ -1665,10 +1491,7 @@ impl ToTokens for Representation
     }
 }
 
-fn enum_has_fields<'a>(mut variants: impl Iterator<Item = &'a Variant>) -> bool
-{
-    variants.any(|v| matches!(v.fields, Fields::Named(_) | Fields::Unnamed(_)))
-}
+fn enum_has_fields<'a>(mut variants: impl Iterator<Item = &'a Variant>) -> bool { variants.any(|v| matches!(v.fields, Fields::Named(_) | Fields::Unnamed(_))) }
 
 struct VariantDiscriminantIterator<'a, I: Iterator<Item = &'a Variant> + 'a>
 {
@@ -1678,13 +1501,7 @@ struct VariantDiscriminantIterator<'a, I: Iterator<Item = &'a Variant> + 'a>
 
 impl<'a, I: Iterator<Item = &'a Variant> + 'a> VariantDiscriminantIterator<'a, I>
 {
-    fn new(inner: I) -> Self
-    {
-        VariantDiscriminantIterator {
-            inner,
-            last_value: -1,
-        }
-    }
+    fn new(inner: I) -> Self { VariantDiscriminantIterator { inner, last_value: -1 } }
 }
 
 impl<'a, I: Iterator<Item = &'a Variant> + 'a> Iterator for VariantDiscriminantIterator<'a, I>
@@ -1743,18 +1560,9 @@ fn parse_int_expr(expr: &Expr) -> Result<i128>
 {
     match expr
     {
-        Expr::Unary(ExprUnary {
-            op: UnOp::Neg(_),
-            expr,
-            ..
-        }) => parse_int_expr(expr).map(|int| -int),
-        Expr::Lit(ExprLit {
-            lit: Lit::Int(int), ..
-        }) => int.base10_parse(),
-        Expr::Lit(ExprLit {
-            lit: Lit::Byte(byte),
-            ..
-        }) => Ok(byte.value().into()),
+        Expr::Unary(ExprUnary { op: UnOp::Neg(_), expr, .. }) => parse_int_expr(expr).map(|int| -int),
+        Expr::Lit(ExprLit { lit: Lit::Int(int), .. }) => int.base10_parse(),
+        Expr::Lit(ExprLit { lit: Lit::Byte(byte), .. }) => Ok(byte.value().into()),
         _ => bail!("Not an integer expression"),
     }
 }
@@ -1908,10 +1716,7 @@ pub fn hexga_bit_crate_name(input: &DeriveInput) -> TokenStream
                 {
                     value = &e.expr;
                 }
-                if let syn::Expr::Lit(syn::ExprLit {
-                    lit: syn::Lit::Str(lit),
-                    ..
-                }) = value
+                if let syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::Str(lit), .. }) = value
                 {
                     let suffix = lit.suffix();
                     if !suffix.is_empty()
@@ -1941,5 +1746,4 @@ pub fn hexga_bit_crate_name(input: &DeriveInput) -> TokenStream
     return crate_name;
 }
 
-const GENERATED_TYPE_DOCUMENTATION: &str =
-    " `hexga_bit`-generated type for internal purposes only.";
+const GENERATED_TYPE_DOCUMENTATION: &str = " `hexga_bit`-generated type for internal purposes only.";

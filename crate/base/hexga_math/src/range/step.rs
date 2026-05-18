@@ -35,20 +35,14 @@ where
     Range<Self>: RangeStepExtension,
 {
     /// Step using the [`RangeDefault`] : `Self::RANGE_MIN..Self::MAX`
-    fn step(
-        self,
-        step: <Range<Self> as RangeStepExtension>::Item,
-    ) -> <Range<Self> as RangeStepExtension>::Output;
+    fn step(self, step: <Range<Self> as RangeStepExtension>::Item) -> <Range<Self> as RangeStepExtension>::Output;
 }
 impl<T> RangeDefaultStepExtension for T
 where
     T: RangeDefault,
     Range<T>: RangeStepExtension,
 {
-    fn step(
-        self,
-        step: <Range<Self> as RangeStepExtension>::Item,
-    ) -> <Range<Self> as RangeStepExtension>::Output
+    fn step(self, step: <Range<Self> as RangeStepExtension>::Item) -> <Range<Self> as RangeStepExtension>::Output
     {
         (Self::RANGE_MIN..Self::RANGE_MAX).step(step)
     }
@@ -58,20 +52,14 @@ where
     RangeInclusive<Self>: RangeStepExtension,
 {
     /// Step using the [`RangeDefault`] : `Self::RANGE_MIN..=Self::MAX`
-    fn step_inclusive(
-        self,
-        step: <RangeInclusive<Self> as RangeStepExtension>::Item,
-    ) -> <RangeInclusive<Self> as RangeStepExtension>::Output;
+    fn step_inclusive(self, step: <RangeInclusive<Self> as RangeStepExtension>::Item) -> <RangeInclusive<Self> as RangeStepExtension>::Output;
 }
 impl<T> RangeDefaultStepInclusiveExtension for T
 where
     T: RangeDefault,
     RangeInclusive<T>: RangeStepExtension,
 {
-    fn step_inclusive(
-        self,
-        step: <RangeInclusive<Self> as RangeStepExtension>::Item,
-    ) -> <RangeInclusive<Self> as RangeStepExtension>::Output
+    fn step_inclusive(self, step: <RangeInclusive<Self> as RangeStepExtension>::Item) -> <RangeInclusive<Self> as RangeStepExtension>::Output
     {
         (Self::RANGE_MIN..=Self::RANGE_MAX).step(step)
     }
@@ -353,11 +341,7 @@ where
     fn step(self, step: T) -> Self::Output
     {
         let (start, end) = self.into_inner();
-        RangeStepInclusive {
-            idx: start,
-            end,
-            step,
-        }
+        RangeStepInclusive { idx: start, end, step }
     }
 }
 impl<T> RangeStepExtension for RangeToInclusive<T>
@@ -395,10 +379,7 @@ mod range_test
     #[test]
     fn range_inclusive_rev()
     {
-        assert_eq!(
-            (-2..=5).step(1).rev().to_vec(),
-            vec![5, 4, 3, 2, 1, 0, -1, -2]
-        );
+        assert_eq!((-2..=5).step(1).rev().to_vec(), vec![5, 4, 3, 2, 1, 0, -1, -2]);
     }
 
     #[test]

@@ -57,11 +57,7 @@ impl<T, const ROW: usize, const COL: usize> DerefMut for Matrix<T, ROW, COL>
 
 impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
 {
-    fn _fmt(
-        &self,
-        f: &mut Formatter<'_>,
-        d: impl Fn(&T, &mut Formatter<'_>) -> FmtResult,
-    ) -> FmtResult
+    fn _fmt(&self, f: &mut Formatter<'_>, d: impl Fn(&T, &mut Formatter<'_>) -> FmtResult) -> FmtResult
     {
         writeln!(f)?;
         const SEP: &'static str = " ";
@@ -160,10 +156,7 @@ where
 impl<T, const ROW: usize> Matrix<T, ROW, 1>
 {
     /// From a `Mx1` vector
-    pub const fn from_vector(vector: Vector<T, ROW>) -> Self
-    {
-        Self::from_col(Vector::from_array([vector]))
-    }
+    pub const fn from_vector(vector: Vector<T, ROW>) -> Self { Self::from_col(Vector::from_array([vector])) }
 }
 
 impl<T, const ROW: usize> From<Vector<T, ROW>> for Matrix<T, ROW, 1>
@@ -193,18 +186,14 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
     where
         F: FnMut(usize, usize) -> T,
     {
-        Self::from_col_array(std::array::from_fn(|column| {
-            std::array::from_fn(|row| column_then_row(column, row))
-        }))
+        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| column_then_row(column, row))))
     }
 
     pub fn from_row_fn<F>(mut row_then_column: F) -> Self
     where
         F: FnMut(usize, usize) -> T,
     {
-        Self::from_col_array(std::array::from_fn(|column| {
-            std::array::from_fn(|row| row_then_column(row, column))
-        }))
+        Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| row_then_column(row, column))))
     }
 
     pub const fn from_col(columns: Vector<Vector<T, ROW>, COL>) -> Self { Self { columns } }
@@ -225,9 +214,7 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
     where
         T: Copy,
     {
-        Self::from_row(Vector::from_array(
-            rows.map(|array| Vector::from_array(array)),
-        ))
+        Self::from_row(Vector::from_array(rows.map(|array| Vector::from_array(array))))
     }
 
     pub fn col(&self) -> Vector<Vector<T, ROW>, COL>
@@ -483,8 +470,7 @@ map_on!(
 
 impl<T, const ROW: usize, const COL: usize> Add<Self> for Matrix<T, ROW, COL>
 where
-    Vector<Vector<T, ROW>, COL>:
-        Add<Vector<Vector<T, ROW>, COL>, Output = Vector<Vector<T, ROW>, COL>>,
+    Vector<Vector<T, ROW>, COL>: Add<Vector<Vector<T, ROW>, COL>, Output = Vector<Vector<T, ROW>, COL>>,
 {
     type Output = Self;
 
@@ -500,8 +486,7 @@ where
 
 impl<T, const ROW: usize, const COL: usize> Sub<Self> for Matrix<T, ROW, COL>
 where
-    Vector<Vector<T, ROW>, COL>:
-        Sub<Vector<Vector<T, ROW>, COL>, Output = Vector<Vector<T, ROW>, COL>>,
+    Vector<Vector<T, ROW>, COL>: Sub<Vector<Vector<T, ROW>, COL>, Output = Vector<Vector<T, ROW>, COL>>,
 {
     type Output = Self;
 
@@ -545,8 +530,7 @@ where
 ///
 /// assert_eq!(m1 * m2, m3);
 /// ```
-impl<T, const ROW: usize, const COL: usize, const COL2: usize> Mul<Matrix<T, COL, COL2>>
-    for Matrix<T, ROW, COL>
+impl<T, const ROW: usize, const COL: usize, const COL2: usize> Mul<Matrix<T, COL, COL2>> for Matrix<T, ROW, COL>
 where
     T: Numeric,
 {
@@ -597,79 +581,29 @@ where
             {
                 let mut r = Self::Output::ZERO;
 
-                r[0][0] = self[0][0] * rhs[0][0]
-                    + self[1][0] * rhs[0][1]
-                    + self[2][0] * rhs[0][2]
-                    + self[3][0] * rhs[0][3];
-                r[0][1] = self[0][1] * rhs[0][0]
-                    + self[1][1] * rhs[0][1]
-                    + self[2][1] * rhs[0][2]
-                    + self[3][1] * rhs[0][3];
-                r[0][2] = self[0][2] * rhs[0][0]
-                    + self[1][2] * rhs[0][1]
-                    + self[2][2] * rhs[0][2]
-                    + self[3][2] * rhs[0][3];
-                r[0][3] = self[0][3] * rhs[0][0]
-                    + self[1][3] * rhs[0][1]
-                    + self[2][3] * rhs[0][2]
-                    + self[3][3] * rhs[0][3];
+                r[0][0] = self[0][0] * rhs[0][0] + self[1][0] * rhs[0][1] + self[2][0] * rhs[0][2] + self[3][0] * rhs[0][3];
+                r[0][1] = self[0][1] * rhs[0][0] + self[1][1] * rhs[0][1] + self[2][1] * rhs[0][2] + self[3][1] * rhs[0][3];
+                r[0][2] = self[0][2] * rhs[0][0] + self[1][2] * rhs[0][1] + self[2][2] * rhs[0][2] + self[3][2] * rhs[0][3];
+                r[0][3] = self[0][3] * rhs[0][0] + self[1][3] * rhs[0][1] + self[2][3] * rhs[0][2] + self[3][3] * rhs[0][3];
 
-                r[1][0] = self[0][0] * rhs[1][0]
-                    + self[1][0] * rhs[1][1]
-                    + self[2][0] * rhs[1][2]
-                    + self[3][0] * rhs[1][3];
-                r[1][1] = self[0][1] * rhs[1][0]
-                    + self[1][1] * rhs[1][1]
-                    + self[2][1] * rhs[1][2]
-                    + self[3][1] * rhs[1][3];
-                r[1][2] = self[0][2] * rhs[1][0]
-                    + self[1][2] * rhs[1][1]
-                    + self[2][2] * rhs[1][2]
-                    + self[3][2] * rhs[1][3];
-                r[1][3] = self[0][3] * rhs[1][0]
-                    + self[1][3] * rhs[1][1]
-                    + self[2][3] * rhs[1][2]
-                    + self[3][3] * rhs[1][3];
+                r[1][0] = self[0][0] * rhs[1][0] + self[1][0] * rhs[1][1] + self[2][0] * rhs[1][2] + self[3][0] * rhs[1][3];
+                r[1][1] = self[0][1] * rhs[1][0] + self[1][1] * rhs[1][1] + self[2][1] * rhs[1][2] + self[3][1] * rhs[1][3];
+                r[1][2] = self[0][2] * rhs[1][0] + self[1][2] * rhs[1][1] + self[2][2] * rhs[1][2] + self[3][2] * rhs[1][3];
+                r[1][3] = self[0][3] * rhs[1][0] + self[1][3] * rhs[1][1] + self[2][3] * rhs[1][2] + self[3][3] * rhs[1][3];
 
-                r[2][0] = self[0][0] * rhs[2][0]
-                    + self[1][0] * rhs[2][1]
-                    + self[2][0] * rhs[2][2]
-                    + self[3][0] * rhs[2][3];
-                r[2][1] = self[0][1] * rhs[2][0]
-                    + self[1][1] * rhs[2][1]
-                    + self[2][1] * rhs[2][2]
-                    + self[3][1] * rhs[2][3];
-                r[2][2] = self[0][2] * rhs[2][0]
-                    + self[1][2] * rhs[2][1]
-                    + self[2][2] * rhs[2][2]
-                    + self[3][2] * rhs[2][3];
-                r[2][3] = self[0][3] * rhs[2][0]
-                    + self[1][3] * rhs[2][1]
-                    + self[2][3] * rhs[2][2]
-                    + self[3][3] * rhs[2][3];
+                r[2][0] = self[0][0] * rhs[2][0] + self[1][0] * rhs[2][1] + self[2][0] * rhs[2][2] + self[3][0] * rhs[2][3];
+                r[2][1] = self[0][1] * rhs[2][0] + self[1][1] * rhs[2][1] + self[2][1] * rhs[2][2] + self[3][1] * rhs[2][3];
+                r[2][2] = self[0][2] * rhs[2][0] + self[1][2] * rhs[2][1] + self[2][2] * rhs[2][2] + self[3][2] * rhs[2][3];
+                r[2][3] = self[0][3] * rhs[2][0] + self[1][3] * rhs[2][1] + self[2][3] * rhs[2][2] + self[3][3] * rhs[2][3];
 
-                r[3][0] = self[0][0] * rhs[3][0]
-                    + self[1][0] * rhs[3][1]
-                    + self[2][0] * rhs[3][2]
-                    + self[3][0] * rhs[3][3];
-                r[3][1] = self[0][1] * rhs[3][0]
-                    + self[1][1] * rhs[3][1]
-                    + self[2][1] * rhs[3][2]
-                    + self[3][1] * rhs[3][3];
-                r[3][2] = self[0][2] * rhs[3][0]
-                    + self[1][2] * rhs[3][1]
-                    + self[2][2] * rhs[3][2]
-                    + self[3][2] * rhs[3][3];
-                r[3][3] = self[0][3] * rhs[3][0]
-                    + self[1][3] * rhs[3][1]
-                    + self[2][3] * rhs[3][2]
-                    + self[3][3] * rhs[3][3];
+                r[3][0] = self[0][0] * rhs[3][0] + self[1][0] * rhs[3][1] + self[2][0] * rhs[3][2] + self[3][0] * rhs[3][3];
+                r[3][1] = self[0][1] * rhs[3][0] + self[1][1] * rhs[3][1] + self[2][1] * rhs[3][2] + self[3][1] * rhs[3][3];
+                r[3][2] = self[0][2] * rhs[3][0] + self[1][2] * rhs[3][1] + self[2][2] * rhs[3][2] + self[3][2] * rhs[3][3];
+                r[3][3] = self[0][3] * rhs[3][0] + self[1][3] * rhs[3][1] + self[2][3] * rhs[3][2] + self[3][3] * rhs[3][3];
 
                 r
             }
-            _ => Matrix::from_col(Vector::from_fn(|c| {
-                Vector::from_fn(|r| (0..COL).map(|k| self[k][r] * rhs[c][k]).sum())
-            })),
+            _ => Matrix::from_col(Vector::from_fn(|c| Vector::from_fn(|r| (0..COL).map(|k| self[k][r] * rhs[c][k]).sum()))),
         }
     }
 }
@@ -704,10 +638,7 @@ where
 {
     type Output = Matrix<T::Output, ROW, COL>;
 
-    fn mul(self, rhs: T) -> Self::Output
-    {
-        Matrix::from_col(self.columns.map(|v| v.map(|i| i.mul(rhs))))
-    }
+    fn mul(self, rhs: T) -> Self::Output { Matrix::from_col(self.columns.map(|v| v.map(|i| i.mul(rhs)))) }
 }
 
 impl<T, const ROW: usize, const COL: usize> MulAssign<T> for Matrix<T, ROW, COL>
@@ -723,10 +654,7 @@ where
 {
     type Output = Matrix<T::Output, ROW, COL>;
 
-    fn div(self, rhs: T) -> Self::Output
-    {
-        Matrix::from_col(self.columns.map(|v| v.map(|i| i.div(rhs))))
-    }
+    fn div(self, rhs: T) -> Self::Output { Matrix::from_col(self.columns.map(|v| v.map(|i| i.div(rhs)))) }
 }
 
 impl<T, const ROW: usize, const COL: usize> DivAssign<T> for Matrix<T, ROW, COL>
@@ -776,13 +704,7 @@ impl<T, const ROW: usize, const COL: usize> MapWith for Matrix<T, ROW, COL>
     {
         let mut it1 = self.columns.into_iter();
         let mut it2 = other.columns.into_iter();
-        let cols = std::array::from_fn(|_| {
-            MapWith::map_with(
-                unsafe { it1.next().unwrap_unchecked() },
-                unsafe { it2.next().unwrap_unchecked() },
-                &mut f,
-            )
-        });
+        let cols = std::array::from_fn(|_| MapWith::map_with(unsafe { it1.next().unwrap_unchecked() }, unsafe { it2.next().unwrap_unchecked() }, &mut f));
         Self::WithType::<R>::from_col(Vector::from_array(cols))
     }
 }
@@ -890,8 +812,7 @@ where
 {
     pub fn det(&self) -> T
     {
-        self[0][0] * (self[1][1] * self[2][2] - self[1][2] * self[2][1])
-            - self[0][1] * (self[1][0] * self[2][2] - self[1][2] * self[2][0])
+        self[0][0] * (self[1][1] * self[2][2] - self[1][2] * self[2][1]) - self[0][1] * (self[1][0] * self[2][2] - self[1][2] * self[2][0])
             + self[0][2] * (self[1][0] * self[2][1] - self[1][1] * self[2][0])
     }
 }
@@ -909,8 +830,7 @@ where
         let e = self[2][0] * self[3][2] - self[2][2] * self[3][0];
         let f = self[2][0] * self[3][1] - self[2][1] * self[3][0];
 
-        self[0][0] * (self[1][1] * a - self[1][2] * b + self[1][3] * c)
-            - self[0][1] * (self[1][0] * a - self[1][2] * d + self[1][3] * e)
+        self[0][0] * (self[1][1] * a - self[1][2] * b + self[1][3] * c) - self[0][1] * (self[1][0] * a - self[1][2] * d + self[1][3] * e)
             + self[0][2] * (self[1][0] * b - self[1][1] * d + self[1][3] * f)
             - self[0][3] * (self[1][0] * c - self[1][1] * e + self[1][2] * f)
     }
@@ -1444,24 +1364,9 @@ mod test_matrix
     #[test]
     fn multiplication_4x4_basic()
     {
-        let a = Mat4i::from_row_array([
-            [1, 2, 3, 4],
-            [5, 6, 7, 8],
-            [9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]);
-        let b = Mat4i::from_row_array([
-            [16, 15, 14, 13],
-            [12, 11, 10, 9],
-            [8, 7, 6, 5],
-            [4, 3, 2, 1],
-        ]);
-        let expected = Mat4i::from_row_array([
-            [80, 70, 60, 50],
-            [240, 214, 188, 162],
-            [400, 358, 316, 274],
-            [560, 502, 444, 386],
-        ]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
+        let expected = Mat4i::from_row_array([[80, 70, 60, 50], [240, 214, 188, 162], [400, 358, 316, 274], [560, 502, 444, 386]]);
 
         assert_eq!(a * b, expected);
     }
@@ -1469,12 +1374,7 @@ mod test_matrix
     #[test]
     fn multiplication_4x4_identity()
     {
-        let a = Mat4i::from_row_array([
-            [1, 2, 3, 4],
-            [5, 6, 7, 8],
-            [9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
         let identity = Mat4i::IDENTITY;
 
         assert_eq!(a * identity, a);
@@ -1484,12 +1384,7 @@ mod test_matrix
     #[test]
     fn multiplication_4x4_zero()
     {
-        let a = Mat4i::from_row_array([
-            [1, 2, 3, 4],
-            [5, 6, 7, 8],
-            [9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
         let zero = Mat4i::ZERO;
 
         assert_eq!(a * zero, zero);
@@ -1539,18 +1434,8 @@ mod test_matrix
     #[test]
     fn multiplication_associativity_4x4()
     {
-        let a = Mat4i::from_row_array([
-            [1, 2, 3, 4],
-            [5, 6, 7, 8],
-            [9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]);
-        let b = Mat4i::from_row_array([
-            [16, 15, 14, 13],
-            [12, 11, 10, 9],
-            [8, 7, 6, 5],
-            [4, 3, 2, 1],
-        ]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
         let c = Mat4i::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
 
         assert_eq!((a * b) * c, a * (b * c));
@@ -1579,18 +1464,8 @@ mod test_matrix
     #[test]
     fn multiplication_distributivity_4x4()
     {
-        let a = Mat4i::from_row_array([
-            [1, 2, 3, 4],
-            [5, 6, 7, 8],
-            [9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]);
-        let b = Mat4i::from_row_array([
-            [16, 15, 14, 13],
-            [12, 11, 10, 9],
-            [8, 7, 6, 5],
-            [4, 3, 2, 1],
-        ]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
         let c = Mat4i::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
 
         assert_eq!(a * (b + c), a * b + a * c);
@@ -1628,14 +1503,8 @@ mod test_matrix
     fn multiplication_non_commutative_4x4()
     {
         // Test non-commutativity for 4x4 matrices
-        let a = Mat4i::from_row_array([
-            [1, 2, 3, 4],
-            [5, 6, 7, 8],
-            [9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]);
-        let b =
-            Mat4i::from_row_array([[2, 1, 0, 0], [6, 5, 4, 3], [10, 9, 8, 7], [14, 13, 12, 11]]);
+        let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
+        let b = Mat4i::from_row_array([[2, 1, 0, 0], [6, 5, 4, 3], [10, 9, 8, 7], [14, 13, 12, 11]]);
 
         assert_ne!(a * b, b * a);
     }

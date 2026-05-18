@@ -13,23 +13,11 @@ pub mod traits
 }
 
 pub trait GenerationalID<Gen = Generation>:
-    From<(usize, Gen)>
-    + Into<(usize, Gen)>
-    + Clone
-    + Copy
-    + PartialEq
-    + Eq
-    + Hash
-    + Ord
-    + PartialOrd
-    + Default
+    From<(usize, Gen)> + Into<(usize, Gen)> + Clone + Copy + PartialEq + Eq + Hash + Ord + PartialOrd + Default
 where
     Gen: GenerationalIndex,
 {
-    fn from_index_and_generation(index: usize, generation: Gen) -> Self
-    {
-        Self::from((index, generation))
-    }
+    fn from_index_and_generation(index: usize, generation: Gen) -> Self { Self::from((index, generation)) }
 
     fn index(self) -> usize;
     fn generation(self) -> Gen;
@@ -50,36 +38,8 @@ where
     fn untyped(self) -> UntypedGenIDOf<Gen> { UntypedGenIDOf::from(self.index_and_generation()) }
 }
 
-pub trait GenerationalIndex:
-    Eq
-    + Hash
-    + Ord
-    + Increment
-    + Decrement
-    + OverflowBehavior
-    + Debug
-    + MaxValue
-    + MinValue
-    + Zero
-    + Copy
-    + 'static
-{
-}
-impl<T> GenerationalIndex for T where
-    T: Eq
-        + Hash
-        + Ord
-        + Increment
-        + Decrement
-        + OverflowBehavior
-        + Debug
-        + MaxValue
-        + MinValue
-        + Zero
-        + Copy
-        + 'static
-{
-}
+pub trait GenerationalIndex: Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Zero + Copy + 'static {}
+impl<T> GenerationalIndex for T where T: Eq + Hash + Ord + Increment + Decrement + OverflowBehavior + Debug + MaxValue + MinValue + Zero + Copy + 'static {}
 
 // Todo: Make a flag for the generation
 pub type Generation = u32;
@@ -117,10 +77,7 @@ impl<Gen: GenerationalIndex> GenerationalID<Gen> for UntypedGenIDOf<Gen>
 impl<Gen: GenerationalIndex> UntypedGenIDOf<Gen>
 {
     #[inline(always)]
-    pub const fn from_index_and_generation(index: usize, generation: Gen) -> Self
-    {
-        Self { index, generation }
-    }
+    pub const fn from_index_and_generation(index: usize, generation: Gen) -> Self { Self { index, generation } }
 
     #[inline(always)]
     pub const fn index(self) -> usize { self.index }
@@ -131,10 +88,7 @@ impl<Gen: GenerationalIndex, C> IndexExtension<C> for UntypedGenIDOf<Gen> {}
 
 impl<Gen: GenerationalIndex> From<(usize, Gen)> for UntypedGenIDOf<Gen>
 {
-    fn from((index, generation): (usize, Gen)) -> Self
-    {
-        Self::from_index_and_generation(index, generation)
-    }
+    fn from((index, generation): (usize, Gen)) -> Self { Self::from_index_and_generation(index, generation) }
 }
 impl<Gen: GenerationalIndex> From<UntypedGenIDOf<Gen>> for (usize, Gen)
 {
@@ -142,17 +96,11 @@ impl<Gen: GenerationalIndex> From<UntypedGenIDOf<Gen>> for (usize, Gen)
 }
 impl<T, Gen: GenerationalIndex> From<GenIDOf<T, Gen>> for UntypedGenIDOf<Gen>
 {
-    fn from(value: GenIDOf<T, Gen>) -> Self
-    {
-        Self::from_index_and_generation(value.index(), value.generation())
-    }
+    fn from(value: GenIDOf<T, Gen>) -> Self { Self::from_index_and_generation(value.index(), value.generation()) }
 }
 impl<T, Gen: GenerationalIndex> From<UntypedGenIDOf<Gen>> for GenIDOf<T, Gen>
 {
-    fn from(value: UntypedGenIDOf<Gen>) -> Self
-    {
-        Self::from_index_and_generation(value.index, value.generation)
-    }
+    fn from(value: UntypedGenIDOf<Gen>) -> Self { Self::from_index_and_generation(value.index, value.generation) }
 }
 
 #[cfg(feature = "serde")]
@@ -164,15 +112,7 @@ where
     where
         S: Serializer,
     {
-        if self.index.is_max()
-        {
-            None
-        }
-        else
-        {
-            Some((self.index, self.generation))
-        }
-        .serialize(serializer)
+        if self.index.is_max() { None } else { Some((self.index, self.generation)) }.serialize(serializer)
     }
 }
 
@@ -202,10 +142,7 @@ impl<Gen: GenerationalIndex> Debug for UntypedGenIDOf<Gen>
         }
         else
         {
-            f.debug_tuple("")
-                .field(&self.index())
-                .field(&GenerationDebug(self.generation()))
-                .finish()
+            f.debug_tuple("").field(&self.index()).field(&GenerationDebug(self.generation())).finish()
         }
     }
 }
@@ -237,10 +174,7 @@ impl<T, Gen: GenerationalIndex> Ord for GenIDOf<T, Gen>
 }
 impl<T, Gen: GenerationalIndex> PartialOrd for GenIDOf<T, Gen>
 {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering>
-    {
-        self.untyped.partial_cmp(&other.untyped)
-    }
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { self.untyped.partial_cmp(&other.untyped) }
 }
 impl<T, Gen: GenerationalIndex> Hash for GenIDOf<T, Gen>
 {
@@ -282,10 +216,7 @@ impl<T, Gen: GenerationalIndex, C> IndexExtension<C> for GenIDOf<T, Gen> {}
 
 impl<T, Gen: GenerationalIndex> From<(usize, Gen)> for GenIDOf<T, Gen>
 {
-    fn from((index, generation): (usize, Gen)) -> Self
-    {
-        Self::from_index_and_generation(index, generation)
-    }
+    fn from((index, generation): (usize, Gen)) -> Self { Self::from_index_and_generation(index, generation) }
 }
 impl<T, Gen: GenerationalIndex> From<GenIDOf<T, Gen>> for (usize, Gen)
 {

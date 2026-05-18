@@ -9,17 +9,7 @@ pub trait Remove<Idx: ?Sized>
 impl<T> Remove<usize> for Vec<T>
 {
     type Output = T;
-    fn remove(&mut self, index: usize) -> Option<Self::Output>
-    {
-        if index < self.len()
-        {
-            Some(self.remove(index))
-        }
-        else
-        {
-            None
-        }
-    }
+    fn remove(&mut self, index: usize) -> Option<Self::Output> { if index < self.len() { Some(self.remove(index)) } else { None } }
 }
 
 impl<T> Remove<usize> for VecDeque<T>

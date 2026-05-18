@@ -660,27 +660,13 @@ pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue
     where
         Self: PositiveOrNegative,
     {
-        if self.is_positive_or_zero()
-        {
-            self.floor()
-        }
-        else
-        {
-            self.ceil()
-        }
+        if self.is_positive_or_zero() { self.floor() } else { self.ceil() }
     }
     fn round_away_from_zero(self) -> Self
     where
         Self: PositiveOrNegative,
     {
-        if self.is_positive_or_zero()
-        {
-            self.ceil()
-        }
-        else
-        {
-            self.floor()
-        }
+        if self.is_positive_or_zero() { self.ceil() } else { self.floor() }
     }
 }
 

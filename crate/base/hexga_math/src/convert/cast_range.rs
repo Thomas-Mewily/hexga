@@ -127,10 +127,7 @@ macro_rules! impl_cast_range_to_integer {
                             ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     }
-                    (NumberType::IntegerSigned, NumberType::Float) =>
-                    {
-                        ((value as $dest - <$src>::RANGE_MIN as $dest) / (<$src>::RANGE as $dest))
-                    }
+                    (NumberType::IntegerSigned, NumberType::Float) => ((value as $dest - <$src>::RANGE_MIN as $dest) / (<$src>::RANGE as $dest)),
                     (NumberType::IntegerSigned, NumberType::Bool) =>
                     {
                         if (value > <$src>::ZERO)
@@ -177,10 +174,7 @@ macro_rules! impl_cast_range_to_integer {
                             ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     }
-                    (NumberType::IntegerUnsigned, NumberType::Float) =>
-                    {
-                        ((value as $dest - <$src>::RANGE_MIN as $dest) / (<$src>::RANGE as $dest))
-                    }
+                    (NumberType::IntegerUnsigned, NumberType::Float) => ((value as $dest - <$src>::RANGE_MIN as $dest) / (<$src>::RANGE as $dest)),
                     (NumberType::IntegerUnsigned, NumberType::Bool) =>
                     {
                         if (value > <$src>::ZERO)
@@ -192,18 +186,9 @@ macro_rules! impl_cast_range_to_integer {
                             <$dest>::RANGE_MIN
                         }
                     }
-                    (NumberType::Float, NumberType::IntegerSigned) =>
-                    {
-                        (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest
-                    }
-                    (NumberType::Float, NumberType::IntegerUnsigned) =>
-                    {
-                        (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest
-                    }
-                    (NumberType::Float, NumberType::Float) =>
-                    {
-                        (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest
-                    }
+                    (NumberType::Float, NumberType::IntegerSigned) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
+                    (NumberType::Float, NumberType::IntegerUnsigned) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
+                    (NumberType::Float, NumberType::Float) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
                     (NumberType::Float, NumberType::Bool) =>
                     {
                         if (value > <$src>::ZERO)
@@ -429,14 +414,8 @@ mod cast_range_test
     {
         macro_rules! check_identity {
             ($type_name : ident) => {
-                assert_eq!(
-                    <$type_name>::cast_range_from(<$type_name>::RANGE_MIN),
-                    <$type_name>::RANGE_MIN
-                );
-                assert_eq!(
-                    <$type_name>::cast_range_from(<$type_name>::RANGE_MAX),
-                    <$type_name>::RANGE_MAX
-                );
+                assert_eq!(<$type_name>::cast_range_from(<$type_name>::RANGE_MIN), <$type_name>::RANGE_MIN);
+                assert_eq!(<$type_name>::cast_range_from(<$type_name>::RANGE_MAX), <$type_name>::RANGE_MAX);
             };
         }
 
@@ -450,10 +429,7 @@ mod cast_range_test
     {
         assert_eq!(u16::cast_range_from(0u8), 0u16);
         assert_eq!(u16::cast_range_from(u8::RANGE_MAX), u16::RANGE_MAX);
-        assert_eq!(
-            u16::cast_range_from(u8::RANGE_MAX / 2),
-            u16::RANGE_MAX / 2 - (u8::RANGE_MAX as u16) / 2 - 1
-        );
+        assert_eq!(u16::cast_range_from(u8::RANGE_MAX / 2), u16::RANGE_MAX / 2 - (u8::RANGE_MAX as u16) / 2 - 1);
     }
 
     #[test]
@@ -461,10 +437,7 @@ mod cast_range_test
     {
         macro_rules! check_bool {
             ($type_name : ident) => {
-                assert_eq!(
-                    <$type_name>::cast_range_from(false),
-                    <$type_name>::RANGE_MIN
-                );
+                assert_eq!(<$type_name>::cast_range_from(false), <$type_name>::RANGE_MIN);
                 assert_eq!(<$type_name>::cast_range_from(true), <$type_name>::RANGE_MAX);
             };
         }
@@ -477,14 +450,8 @@ mod cast_range_test
     {
         macro_rules! check_float {
             ($type_name : ident) => {
-                assert_eq!(
-                    <$type_name>::cast_range_from(f32::RANGE_MAX),
-                    <$type_name>::RANGE_MAX
-                );
-                assert_eq!(
-                    <$type_name>::cast_range_from(f32::RANGE_MIN),
-                    <$type_name>::RANGE_MIN
-                );
+                assert_eq!(<$type_name>::cast_range_from(f32::RANGE_MAX), <$type_name>::RANGE_MAX);
+                assert_eq!(<$type_name>::cast_range_from(f32::RANGE_MIN), <$type_name>::RANGE_MIN);
             };
         }
 

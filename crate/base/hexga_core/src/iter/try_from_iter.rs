@@ -15,93 +15,63 @@ pub trait TryFromIterator<T>: Sized
 impl<T> TryFromIterator<T> for Vec<T>
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 impl<T> TryFromIterator<T> for VecDeque<T>
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 impl<T> TryFromIterator<T> for LinkedList<T>
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 impl<T: Ord> TryFromIterator<T> for BinaryHeap<T>
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 #[cfg(feature = "std")]
 impl<T: Eq + Hash, S: BuildHasher + Default> TryFromIterator<T> for HashSet<T, S>
 {
     type Error = Never; // HashSet::from_iter never fails
-    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 impl<T: Ord> TryFromIterator<T> for BTreeSet<T>
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 #[cfg(feature = "std")]
 impl<K: Eq + Hash, V, S: BuildHasher + Default> TryFromIterator<(K, V)> for HashMap<K, V, S>
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = (K, V)>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = (K, V)>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 impl<K: Ord, V> TryFromIterator<(K, V)> for BTreeMap<K, V>
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = (K, V)>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = (K, V)>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 impl TryFromIterator<char> for String
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = char>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = char>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 impl<'a> TryFromIterator<&'a str> for String
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = &'a str>>(iter: It) -> Result<Self, Self::Error>
-    {
-        Ok(Self::from_iter(iter))
-    }
+    fn try_from_iter<It: IntoIterator<Item = &'a str>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
 }
 
 #[repr(transparent)]
@@ -134,10 +104,7 @@ impl<T> core::fmt::Display for CapacityFullError<T>
 
 impl<T> core::fmt::Debug for CapacityFullError<T>
 {
-    fn fmt(&self, f: &mut Formatter) -> core::fmt::Result
-    {
-        write!(f, "{}: {}", "CapacityError", CAPERROR)
-    }
+    fn fmt(&self, f: &mut Formatter) -> core::fmt::Result { write!(f, "{}: {}", "CapacityError", CAPERROR) }
 }
 
 #[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd, Hash)]
@@ -165,8 +132,7 @@ impl<T, const N: usize> TryFromIterator<T> for [T; N]
     fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
     {
         let vec: Vec<T> = iter.into_iter().collect();
-        vec.try_into()
-            .map_err(|remaining| WrongLenError { remaining })
+        vec.try_into().map_err(|remaining| WrongLenError { remaining })
     }
 }
 

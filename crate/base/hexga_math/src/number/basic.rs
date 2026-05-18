@@ -48,10 +48,7 @@ where
     S: MapInternWith,
     S::Item: Max,
 {
-    fn max_elementwise(self, other: Self) -> Self
-    {
-        self.map_with_intern(other, Max::max_elementwise)
-    }
+    fn max_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Max::max_elementwise) }
 }
 
 /// Min function in a component way
@@ -100,10 +97,7 @@ where
     S: MapInternWith,
     S::Item: Min,
 {
-    fn min_elementwise(self, other: Self) -> Self
-    {
-        self.map_with_intern(other, Min::min_elementwise)
-    }
+    fn min_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Min::min_elementwise) }
 }
 
 /// Clamp function in a component way
@@ -132,10 +126,7 @@ impl<T> Clamp for T
 where
     T: Min + Max,
 {
-    fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self
-    {
-        self.max_elementwise(min_val).min_elementwise(max_val)
-    }
+    fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self { self.max_elementwise(min_val).min_elementwise(max_val) }
 }
 
 /// Mix function in a component way
@@ -151,10 +142,7 @@ where
     /// 1. => dest.
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn mix(self, dest: Self, coef: C) -> Self
-    {
-        self.mix_unchecked(dest, coef.clamp_partial(zero(), one()))
-    }
+    fn mix(self, dest: Self, coef: C) -> Self { self.mix_unchecked(dest, coef.clamp_partial(zero(), one())) }
 
     /// Mix function in a component way
     ///
@@ -203,10 +191,7 @@ where
     S::Item: Mix<F>,
     F: Floating,
 {
-    fn mix_unchecked(self, dest: Self, coef: F) -> Self
-    {
-        self.map_with_intern(dest, |a, b| a.mix_unchecked(b, coef))
-    }
+    fn mix_unchecked(self, dest: Self, coef: F) -> Self { self.map_with_intern(dest, |a, b| a.mix_unchecked(b, coef)) }
 }
 
 /// Abs function in a component way

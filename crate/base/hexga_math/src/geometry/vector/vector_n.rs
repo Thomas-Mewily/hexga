@@ -33,10 +33,7 @@ where
     fn default() -> Self { Self::from_fn(|_| ___()) }
 }
 
-pub const fn vector<T, const N: usize>(values: [T; N]) -> Vector<T, N>
-{
-    Vector::from_array(values)
-}
+pub const fn vector<T, const N: usize>(values: [T; N]) -> Vector<T, N> { Vector::from_array(values) }
 pub const fn int<const N: usize>(values: [int; N]) -> Int<N> { Int::from_array(values) }
 
 impl<T, const N: usize> GetPosition<T, N> for Vector<T, N>
@@ -85,8 +82,7 @@ impl<T, const N: usize> Vector<T, N>
     where
         T: Number,
     {
-        self.iter()
-            .fold(T::ONE, |a, b| a * (*b).max_partial(T::ZERO))
+        self.iter().fold(T::ONE, |a, b| a * (*b).max_partial(T::ZERO))
     }
     /// Will always be >= 0.
     ///
@@ -101,8 +97,7 @@ impl<T, const N: usize> Vector<T, N>
         }
         else
         {
-            self.iter()
-                .fold(usize::ONE, |a, b| a * (*b).max_partial(T::ZERO).to_usize())
+            self.iter().fold(usize::ONE, |a, b| a * (*b).max_partial(T::ZERO).to_usize())
         }
     }
 
@@ -221,10 +216,7 @@ impl<T, const N: usize> Vector<T, N>
     where
         T: Numeric,
     {
-        self.array
-            .into_iter()
-            .zip(other.array.into_iter())
-            .fold(T::ZERO, |acc, (a, b)| acc + a * b)
+        self.array.into_iter().zip(other.array.into_iter()).fold(T::ZERO, |acc, (a, b)| acc + a * b)
     }
 
     /// target - self
@@ -249,11 +241,7 @@ where
     Idx: Integer,
 {
     #[inline(always)]
-    pub fn to_index(self, size: Self) -> Option<usize>
-    {
-        self.is_inside(size)
-            .then(|| unsafe { self.to_index_unchecked(size) })
-    }
+    pub fn to_index(self, size: Self) -> Option<usize> { self.is_inside(size).then(|| unsafe { self.to_index_unchecked(size) }) }
 
     #[inline(always)]
     /// # Safety
@@ -333,10 +321,7 @@ where
     */
 
     #[inline(always)]
-    pub fn from_index(index: usize, size: Self) -> Option<Self>
-    {
-        (index < size.area_usize()).then(|| unsafe { Self::from_index_unchecked(index, size) })
-    }
+    pub fn from_index(index: usize, size: Self) -> Option<Self> { (index < size.area_usize()).then(|| unsafe { Self::from_index_unchecked(index, size) }) }
 
     /// # Safety
     /// This function assuming that :
@@ -454,17 +439,7 @@ where
         *self = self.normalized();
         self
     }
-    pub fn normalized(self) -> Self
-    {
-        if self.have_length()
-        {
-            self / Self::splat(self.length())
-        }
-        else
-        {
-            Self::ZERO
-        }
-    }
+    pub fn normalized(self) -> Self { if self.have_length() { self / Self::splat(self.length()) } else { Self::ZERO } }
 
     /// set the angle of the `(x, y)` axis
     pub fn set_angle(&mut self, angle: AngleOf<T>) -> &mut Self

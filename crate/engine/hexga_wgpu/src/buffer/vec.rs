@@ -35,10 +35,7 @@ where
         }
     }
 
-    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self
-    {
-        WithCapacity::with_capacity_and_param(capacity, usage)
-    }
+    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self { WithCapacity::with_capacity_and_param(capacity, usage) }
 }
 
 impl<T> WithCapacity for GpuVec<T>
@@ -99,27 +96,15 @@ where
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { WgpuSliceable::<T>::wgpu_usage(&self.buffer) }
 
-    fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_>
-    {
-        WgpuSliceable::<T>::wgpu_slice(&self.buffer, bounds)
-    }
+    fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::wgpu_slice(&self.buffer, bounds) }
 
-    fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_>
-    {
-        WgpuSliceable::<T>::wgpu_as_slice(&self.buffer)
-    }
+    fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::wgpu_as_slice(&self.buffer) }
 
     fn wgpu_view(&self) -> WgpuBufferView<'_> { WgpuSliceable::<T>::wgpu_view(&self.buffer) }
 
-    fn wgpu_view_mut(&self) -> WgpuBufferViewMut<'_>
-    {
-        WgpuSliceable::<T>::wgpu_view_mut(&self.buffer)
-    }
+    fn wgpu_view_mut(&self) -> WgpuBufferViewMut<'_> { WgpuSliceable::<T>::wgpu_view_mut(&self.buffer) }
 
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer
-    {
-        WgpuSliceable::<T>::wgpu_deep_clone_order(&self.buffer)
-    }
+    fn wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::wgpu_deep_clone_order(&self.buffer) }
 }
 
 impl<T> GpuSliceable<T> for GpuVec<T>
@@ -145,19 +130,9 @@ where
             Bound::Unbounded => vec_len,
         };
 
-        debug_assert!(
-            start <= vec_len,
-            "Slice start index {} out of bounds for GpuVec of length {}",
-            start,
-            vec_len
-        );
+        debug_assert!(start <= vec_len, "Slice start index {} out of bounds for GpuVec of length {}", start, vec_len);
 
-        debug_assert!(
-            end <= vec_len,
-            "Slice end index {} out of bounds for GpuVec of length {}",
-            end,
-            vec_len
-        );
+        debug_assert!(end <= vec_len, "Slice end index {} out of bounds for GpuVec of length {}", end, vec_len);
 
         debug_assert!(start <= end, "Slice start {} must be <= end {}", start, end);
 
@@ -193,19 +168,9 @@ where
             Bound::Unbounded => vec_len,
         };
 
-        debug_assert!(
-            start <= vec_len,
-            "Slice start index {} out of bounds for GpuVec of length {}",
-            start,
-            vec_len
-        );
+        debug_assert!(start <= vec_len, "Slice start index {} out of bounds for GpuVec of length {}", start, vec_len);
 
-        debug_assert!(
-            end <= vec_len,
-            "Slice end index {} out of bounds for GpuVec of length {}",
-            end,
-            vec_len
-        );
+        debug_assert!(end <= vec_len, "Slice end index {} out of bounds for GpuVec of length {}", end, vec_len);
 
         debug_assert!(start <= end, "Slice start {} must be <= end {}", start, end);
 
@@ -225,21 +190,14 @@ where
     T: BitAllUsed,
 {
     type Error = ();
-    fn try_push(&mut self, value: &'a [T]) -> Result<Self::Output, Self::Error>
-    {
-        self.try_update_part(self.len(), value)
-    }
+    fn try_push(&mut self, value: &'a [T]) -> Result<Self::Output, Self::Error> { self.try_update_part(self.len(), value) }
 }
 
 impl<T> GpuVec<T>
 where
     T: BitAllUsed,
 {
-    pub fn update_part(&mut self, offset: usize, data: &[T])
-    {
-        self.try_update_part(offset, data)
-            .expect("GpuVec failed to update");
-    }
+    pub fn update_part(&mut self, offset: usize, data: &[T]) { self.try_update_part(offset, data).expect("GpuVec failed to update"); }
 
     pub fn try_update_part(&mut self, offset: usize, data: &[T]) -> Result<(), ()>
     {
@@ -254,8 +212,7 @@ where
 
         let write_byte_offset = (offset * elem_size) as WgpuBufferAddress;
         let write_bytes = bit::try_transmute_slice(data).ok_or_void()?;
-        Gpu.queue()
-            .write_buffer(&self.buffer.buffer, write_byte_offset, write_bytes);
+        Gpu.queue().write_buffer(&self.buffer.buffer, write_byte_offset, write_bytes);
 
         if required_len > self.len
         {
@@ -278,8 +235,7 @@ where
 
         if self.len > 0
         {
-            if !usage.contains(GpuBufferUsageFlags::CopySrc)
-                || !usage.contains(GpuBufferUsageFlags::CopyDst)
+            if !usage.contains(GpuBufferUsageFlags::CopySrc) || !usage.contains(GpuBufferUsageFlags::CopyDst)
             {
                 return Err(());
             }
@@ -295,19 +251,11 @@ where
         if self.len > 0
         {
             let copy_byte_len = (self.len * elem_size) as WgpuBufferAddress;
-            let mut encoder =
-                Gpu.device()
-                    .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                        label: Some("gpu_vec_reallocate"),
-                    });
+            let mut encoder = Gpu.device().create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("gpu_vec_reallocate"),
+            });
 
-            encoder.copy_buffer_to_buffer(
-                &self.buffer.buffer,
-                0,
-                &new_wgpu_buffer,
-                0,
-                copy_byte_len,
-            );
+            encoder.copy_buffer_to_buffer(&self.buffer.buffer, 0, &new_wgpu_buffer, 0, copy_byte_len);
 
             Gpu.queue().submit(Some(encoder.finish()));
             Gpu.wait();

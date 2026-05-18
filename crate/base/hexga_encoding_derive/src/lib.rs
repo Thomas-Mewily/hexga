@@ -24,8 +24,7 @@ fn add_save_trait_bounds(mut generics: Generics) -> Generics
     {
         if let GenericParam::Type(ty) = param
         {
-            ty.bounds
-                .push(parse_quote!(::hexga_encoding::SaveExtension));
+            ty.bounds.push(parse_quote!(::hexga_encoding::SaveExtension));
         }
     }
     generics
@@ -53,8 +52,7 @@ fn add_load_trait_bounds(mut generics: Generics) -> Generics
     {
         if let GenericParam::Type(ty) = param
         {
-            ty.bounds
-                .push(parse_quote!(::hexga_encoding::LoadExtension));
+            ty.bounds.push(parse_quote!(::hexga_encoding::LoadExtension));
         }
     }
     generics

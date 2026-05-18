@@ -19,14 +19,8 @@ pub trait FromAllocLayout: From<AllocLayout>
     fn from_alloc_layout(layout: AllocLayout) -> Self { Self::from(layout) }
 
     fn of_type<T>() -> Self { Self::from_size_and_align(mem::size_of::<T>(), mem::align_of::<T>()) }
-    fn from_size_and_align(size: usize, align: usize) -> Self
-    {
-        Self::from(AllocLayout::from_size_and_align(size, align))
-    }
-    fn from_size_and_align_and_array(size: usize, align: usize, len: usize) -> Self
-    {
-        Self::from(AllocLayout::from_size_and_align(size, align).array(len))
-    }
+    fn from_size_and_align(size: usize, align: usize) -> Self { Self::from(AllocLayout::from_size_and_align(size, align)) }
+    fn from_size_and_align_and_array(size: usize, align: usize, len: usize) -> Self { Self::from(AllocLayout::from_size_and_align(size, align).array(len)) }
     /// Use the maximum align
     fn from_size(size: usize) -> Self { Self::from_size_and_align(size, MAX_ALIGN) }
 }
@@ -39,10 +33,7 @@ impl AllocLayout
     pub fn try_array(self, len: usize) -> Option<Self>
     {
         let size = self.size.checked_mul(len)?;
-        Some(Self {
-            size,
-            align: self.align,
-        })
+        Some(Self { size, align: self.align })
     }
     /// Panics on multiplicatin overflow
     #[track_caller]

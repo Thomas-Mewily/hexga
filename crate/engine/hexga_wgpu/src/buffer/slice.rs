@@ -52,19 +52,9 @@ where
             buffer_len
         );
 
-        debug_assert!(
-            end <= buffer_len,
-            "Slice end index {} out of bounds for buffer of length {}",
-            end,
-            buffer_len
-        );
+        debug_assert!(end <= buffer_len, "Slice end index {} out of bounds for buffer of length {}", end, buffer_len);
 
-        debug_assert!(
-            begin <= end,
-            "Slice start index {} must be <= end index {}",
-            begin,
-            end
-        );
+        debug_assert!(begin <= end, "Slice start index {} must be <= end index {}", begin, end);
 
         let len = end - begin;
 
@@ -86,10 +76,7 @@ where
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { self.buffer.wgpu_usage() }
 
-    fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_>
-    {
-        self.buffer.wgpu_slice(bounds)
-    }
+    fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_> { self.buffer.wgpu_slice(bounds) }
 
     fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { self.buffer.wgpu_as_slice() }
 

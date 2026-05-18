@@ -22,10 +22,7 @@ pub type AllocResult<T = ()> = Result<T, AllocError>;
 impl TryFrom<AllocLayout> for core::alloc::Layout
 {
     type Error = AllocError;
-    fn try_from(value: AllocLayout) -> Result<Self, Self::Error>
-    {
-        core::alloc::Layout::from_size_align(value.size, value.align).ok_or(AllocError)
-    }
+    fn try_from(value: AllocLayout) -> Result<Self, Self::Error> { core::alloc::Layout::from_size_align(value.size, value.align).ok_or(AllocError) }
 }
 
 pub type AllocOutput = NonNullUnaliased<[u8]>;
@@ -36,18 +33,12 @@ pub unsafe trait AllocFromLayout<Layout = AllocLayout>
     type Output;
     fn alloc_layout(&mut self, layout: Layout) -> AllocResult<Self::Output>;
 
-    fn alloc_layout_or_panic(&mut self, layout: Layout) -> Self::Output
-    {
-        self.alloc_layout(layout).expect("bad alloc")
-    }
+    fn alloc_layout_or_panic(&mut self, layout: Layout) -> Self::Output { self.alloc_layout(layout).expect("bad alloc") }
 }
 
 pub trait AllocFromLayoutRaw: AllocFromLayout<Output = AllocOutput>
 {
-    fn alloc_type<T>(&mut self) -> AllocResult<AllocOutput>
-    {
-        self.alloc_layout(AllocLayout::of_type::<T>())
-    }
+    fn alloc_type<T>(&mut self) -> AllocResult<AllocOutput> { self.alloc_layout(AllocLayout::of_type::<T>()) }
     fn alloc_type_zeroed<T>(&mut self) -> AllocResult<AllocOutput>
     {
         let p = self.alloc_type::<T>()?;
@@ -107,35 +98,20 @@ where
 }
 // Todo allocate_slice ?
 
-pub unsafe trait DeallocFromLayout<Layout = AllocLayout, Ptr = NonNullUnaliased<u8>>:
-    AllocFromLayout<Layout>
+pub unsafe trait DeallocFromLayout<Layout = AllocLayout, Ptr = NonNullUnaliased<u8>>: AllocFromLayout<Layout>
 {
     fn dealloc_layout(&mut self, ptr: Ptr, layout: Layout);
 
-    fn realloc_layout(
-        &mut self,
-        ptr: Ptr,
-        old_layout: Layout,
-        new_layout: Layout,
-    ) -> AllocResult<Self::Output>;
-    fn realloc_layout_or_panic(
-        &mut self,
-        ptr: Ptr,
-        old_layout: Layout,
-        new_layout: Layout,
-    ) -> Self::Output
+    fn realloc_layout(&mut self, ptr: Ptr, old_layout: Layout, new_layout: Layout) -> AllocResult<Self::Output>;
+    fn realloc_layout_or_panic(&mut self, ptr: Ptr, old_layout: Layout, new_layout: Layout) -> Self::Output
     {
-        self.realloc_layout(ptr, old_layout, new_layout)
-            .expect("bad realloc")
+        self.realloc_layout(ptr, old_layout, new_layout).expect("bad realloc")
     }
 }
 
 pub unsafe trait DeallocFromLayoutRaw: DeallocFromLayout
 {
-    fn dealloc_type<T>(&mut self, ptr: NonNullUnaliased<u8>)
-    {
-        self.dealloc_layout(ptr, AllocLayout::of_type::<T>())
-    }
+    fn dealloc_type<T>(&mut self, ptr: NonNullUnaliased<u8>) { self.dealloc_layout(ptr, AllocLayout::of_type::<T>()) }
     //fn realloc_type<T>(&mut self, ptr: Box<[T]>, new_layout: Layout) -> AllocResult<Ptr>;
 }
 unsafe impl<S> DeallocFromLayoutRaw for S where S: DeallocFromLayout {}
@@ -176,12 +152,7 @@ unsafe impl DeallocFromLayout for Memory
         unsafe { dealloc(ptr.as_ptr() as *mut u8, layout) };
     }
 
-    fn realloc_layout(
-        &mut self,
-        ptr: NonNullUnaliased<u8>,
-        old_layout: AllocLayout,
-        new_layout: AllocLayout,
-    ) -> AllocResult<AllocOutput>
+    fn realloc_layout(&mut self, ptr: NonNullUnaliased<u8>, old_layout: AllocLayout, new_layout: AllocLayout) -> AllocResult<AllocOutput>
     {
         let old_layout = core::alloc::Layout::try_from(old_layout).ok_or(AllocError)?;
         let new_layout = core::alloc::Layout::try_from(new_layout).ok_or(AllocError)?;

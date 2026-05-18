@@ -197,11 +197,7 @@ where
         }
     }
 
-    fn event(
-        &mut self,
-        ev: AppInternalEvent,
-        event_loop: &mut AppInternalEventLoop,
-    ) -> Option<AppInternalEvent>
+    fn event(&mut self, ev: AppInternalEvent, event_loop: &mut AppInternalEventLoop) -> Option<AppInternalEvent>
     {
         let (ev, app_internal) = ev.replace_custom_event(|| ());
 
@@ -231,10 +227,7 @@ where
                 }
                 AppCustomEvent::GpuReady(gpu) =>
                 {
-                    hexga_graphics::gpu::experimental::GPU
-                        .init(gpu)
-                        .ok_or_void()
-                        .expect("Can't init the gpu");
+                    hexga_graphics::gpu::experimental::GPU.init(gpu).ok_or_void().expect("Can't init the gpu");
                     assert!(Gpu::is_init());
 
                     self.init_stuff_if_needed(event_loop);
@@ -259,9 +252,7 @@ where
 
         match &mut self.app
         {
-            Some(app) => app
-                .event(ev, &mut ())
-                .map(|ev| ev.replace_custom_event(|| app_internal.unwrap()).0),
+            Some(app) => app.event(ev, &mut ()).map(|ev| ev.replace_custom_event(|| app_internal.unwrap()).0),
             None => None,
         }
     }
@@ -272,18 +263,14 @@ where
         let mut window = WINDOW
             .init_from_fn(|| {
                 created = true;
-                event_loop
-                    .create_window(self.param.window.clone())
-                    .expect("failed to create main window")
+                event_loop.create_window(self.param.window.clone()).expect("failed to create main window")
             })
             .ok_or_void()
             .expect("can't init the main window");
 
         if created || window.surface().is_none()
         {
-            window
-                .initialize_surface(&self.param.gpu, event_loop)
-                .expect("failed to init the surface");
+            window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface");
         }
     }
 

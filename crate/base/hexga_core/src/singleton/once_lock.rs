@@ -34,12 +34,7 @@ where
         match self.try_get()
         {
             Ok(guard) => write!(f, "{:?}", guard),
-            Err(e) => write!(
-                f,
-                "SingletonOnce<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonOnce<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -60,10 +55,7 @@ impl<T> Guarded<T> for SingletonOnce<T>
             Some(guard) => guard,
             None =>
             {
-                panic!(
-                    "SingletonOnce<{}> not initialized",
-                    std::any::type_name::<T>()
-                )
+                panic!("SingletonOnce<{}> not initialized", std::any::type_name::<T>())
             }
         }
     }
@@ -72,10 +64,7 @@ impl<T> Guarded<T> for SingletonOnce<T>
     where
         Self: 'a;
 
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>
-    {
-        self.guarded.get().ok_or(())
-    }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.guarded.get().ok_or(()) }
 }
 
 impl<T> SingletonOnceable<T> for SingletonOnce<T>
@@ -94,15 +83,7 @@ impl<T> SingletonOnceLazy<T>
 {
     pub const fn new(f: fn() -> T) -> Self { Self::from_guard(LazyLock::new(f)) }
 
-    pub const fn uninit() -> Self
-    {
-        Self::from_guard(LazyLock::new(|| {
-            panic!(
-                "SingletonOnceLazy<{}> not initialized",
-                std::any::type_name::<T>()
-            )
-        }))
-    }
+    pub const fn uninit() -> Self { Self::from_guard(LazyLock::new(|| panic!("SingletonOnceLazy<{}> not initialized", std::any::type_name::<T>()))) }
 }
 
 impl<T> Debug for SingletonOnceLazy<T>
@@ -114,12 +95,7 @@ where
         match self.try_get()
         {
             Ok(guard) => write!(f, "{:?}", guard),
-            Err(e) => write!(
-                f,
-                "SingletonOnceLazy<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonOnceLazy<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }

@@ -11,13 +11,7 @@ impl<'a, T> GpuSliceRead<'a, T>
 where
     T: GpuBufferElement,
 {
-    pub unsafe fn from_wgpu(view: WgpuBufferView<'a>) -> Self
-    {
-        Self {
-            view,
-            phantom: PhantomData,
-        }
-    }
+    pub unsafe fn from_wgpu(view: WgpuBufferView<'a>) -> Self { Self { view, phantom: PhantomData } }
 }
 impl<T> Deref for GpuSliceRead<'_, T>
 where

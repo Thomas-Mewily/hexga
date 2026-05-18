@@ -23,17 +23,10 @@ pub trait UrlSerializer: Serializer
     where
         T: ToUrl,
     {
-        self.serialize_with_encoding_and_extension(
-            value,
-            T::save_prefered_extension().unwrap_or_default(),
-        )
+        self.serialize_with_encoding_and_extension(value, T::save_prefered_extension().unwrap_or_default())
     }
 
-    fn serialize_with_encoding_and_extension<T>(
-        self,
-        value: &T,
-        extension: &extension,
-    ) -> Result<Self::Ok, Self::Error>
+    fn serialize_with_encoding_and_extension<T>(self, value: &T, extension: &extension) -> Result<Self::Ok, Self::Error>
     where
         T: ToUrl,
     {
@@ -60,10 +53,7 @@ impl<'de> Visitor<'de> for BytesVisitor
 {
     type Value = Vec<u8>;
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
-        formatter.write_str("a byte buffer")
-    }
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result { formatter.write_str("a byte buffer") }
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
     where
@@ -86,10 +76,7 @@ impl<'de> Visitor<'de> for StringVisitor
 {
     type Value = String;
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result
-    {
-        formatter.write_str("a UTF-8 string")
-    }
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result { formatter.write_str("a UTF-8 string") }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where

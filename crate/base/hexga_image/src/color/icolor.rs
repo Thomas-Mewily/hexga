@@ -447,8 +447,7 @@ impl<T> ToColor<T> for HslaOf<T> where T: Float
 /// Constant color name are based on <https://colornames.org/>
 ///
 /// (+-1 u8 unit per channel, otherwise `#FF7F00` should be named `Orange Juice` and not `Orange`, because `Orange` is `#FF7F00`)
-pub trait IColor: Sized + ToColor<Self::Component>
-//+ ToColor<Self::Component> //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<Self::Component>>
+pub trait IColor: Sized + ToColor<Self::Component> //+ ToColor<Self::Component> //+ ToRgbaComposite<Output<Self::Component> = RgbaOf::<Self::Component>>
 {
     type Component: Primitive;
     const TRANSPARENT: Self;

@@ -103,10 +103,7 @@ where
     }
 
     unsafe fn grid_unchecked(&self) -> &G { self.grid }
-    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(
-        &'a self,
-        rect: Rectangle<Idx, N>,
-    ) -> Self::WithLifetime<'b>
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b>
     where
         'a: 'b,
     {
@@ -139,10 +136,7 @@ where
         }
     }
 
-    fn iter_mut(&mut self) -> GridViewIterMut<'_, G, T, Idx, N>
-    {
-        GridViewIterMut::from_rect(self.grid, self.rect()).unwrap()
-    }
+    fn iter_mut(&mut self) -> GridViewIterMut<'_, G, T, Idx, N> { GridViewIterMut::from_rect(self.grid, self.rect()).unwrap() }
     fn for_each_mut<F>(&mut self, f: F)
     where
         F: FnMut((Vector<Idx, N>, &mut T)),
@@ -267,10 +261,7 @@ where
     fn get(&self, index: P) -> Option<&Self::Output> { self.grid.get(index.into() + self.rect.pos) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(&self, index: P) -> &Self::Output
-    {
-        unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) }
-    }
+    unsafe fn get_unchecked(&self, index: P) -> &Self::Output { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
 }
 impl<'a, P, G, T, Idx, const N: usize> TryGet<P> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -281,10 +272,7 @@ where
     type Error = <G as TryGet<Vector<Idx, N>>>::Error;
 
     #[inline(always)]
-    fn try_get(&self, index: P) -> Result<&Self::Output, Self::Error>
-    {
-        self.grid.try_get(index.into() + self.rect.pos)
-    }
+    fn try_get(&self, index: P) -> Result<&Self::Output, Self::Error> { self.grid.try_get(index.into() + self.rect.pos) }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> Index<P> for GridViewMut<'a, G, T, Idx, N>
@@ -306,10 +294,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, index: P) -> Result<&mut Self::Output, Self::Error>
-    {
-        self.grid.try_get_mut(index.into() + self.rect.pos)
-    }
+    fn try_get_mut(&mut self, index: P) -> Result<&mut Self::Output, Self::Error> { self.grid.try_get_mut(index.into() + self.rect.pos) }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> GetMut<P> for GridViewMut<'a, G, T, Idx, N>
@@ -319,16 +304,10 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn get_mut(&mut self, index: P) -> Option<&mut Self::Output>
-    {
-        self.grid.get_mut(index.into() + self.rect.pos)
-    }
+    fn get_mut(&mut self, index: P) -> Option<&mut Self::Output> { self.grid.get_mut(index.into() + self.rect.pos) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut(&mut self, index: P) -> &mut Self::Output
-    {
-        unsafe { self.grid.get_unchecked_mut(index.into() + self.rect.pos) }
-    }
+    unsafe fn get_unchecked_mut(&mut self, index: P) -> &mut Self::Output { unsafe { self.grid.get_unchecked_mut(index.into() + self.rect.pos) } }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> IndexMut<P> for GridViewMut<'a, G, T, Idx, N>
@@ -348,32 +327,20 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    fn try_get_many_mut<const N2: usize>(
-        &mut self,
-        indices: [P; N2],
-    ) -> Result<[&mut Self::Output; N2], ManyMutError>
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output; N2], ManyMutError>
     {
-        self.grid
-            .try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos))
+        self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos))
     }
     #[inline(always)]
-    fn get_many_mut<const N2: usize>(&mut self, indices: [P; N2])
-    -> Option<[&mut Self::Output; N2]>
+    fn get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Option<[&mut Self::Output; N2]>
     {
-        self.grid
-            .try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos))
-            .ok()
+        self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)).ok()
     }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_many_unchecked_mut<const N2: usize>(
-        &mut self,
-        indices: [P; N2],
-    ) -> [&mut Self::Output; N2]
+    unsafe fn get_many_unchecked_mut<const N2: usize>(&mut self, indices: [P; N2]) -> [&mut Self::Output; N2]
     {
-        self.grid
-            .get_many_mut(indices.map(|idx| idx.into() + self.rect.pos))
-            .expect("invalid index")
+        self.grid.get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)).expect("invalid index")
     }
 }
 
@@ -415,10 +382,5 @@ where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
-    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self>
-    {
-        self.rect
-            .crop(subrect)
-            .map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) })
-    }
+    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> { self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) }) }
 }

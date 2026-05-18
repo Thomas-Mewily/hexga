@@ -31,10 +31,7 @@ use std::{
     marker::PhantomData,
     ops::{Deref, DerefMut},
     path::{Path, PathBuf},
-    sync::{
-        Arc, LazyLock, MappedRwLockReadGuard, MappedRwLockWriteGuard, PoisonError, RwLock,
-        RwLockReadGuard, RwLockWriteGuard, Weak,
-    },
+    sync::{Arc, LazyLock, MappedRwLockReadGuard, MappedRwLockWriteGuard, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard, Weak},
 };
 
 use hexga_core::prelude::*;
@@ -54,9 +51,7 @@ mod hot_reload;
 pub use hot_reload::*;
 
 #[cfg(feature = "serde")]
-pub use serde::{
-    Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct,
-};
+pub use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 pub mod prelude
 {

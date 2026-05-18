@@ -289,10 +289,7 @@ impl<Surface> Windowable for Window<Surface>
 
     fn primary_monitor(&self) -> Option<Monitor> { self.window.primary_monitor().map(Into::into) }
 
-    fn available_monitors(&self) -> impl Iterator<Item = Monitor>
-    {
-        self.window.available_monitors().map(Into::into)
-    }
+    fn available_monitors(&self) -> impl Iterator<Item = Monitor> { self.window.available_monitors().map(Into::into) }
 
     fn request_draw(&mut self) -> &mut Self
     {
@@ -303,8 +300,7 @@ impl<Surface> Windowable for Window<Surface>
     fn request_user_attention(&mut self, request_type: impl Into<Option<UserAttentionType>>)
     {
         let request_type = request_type.into();
-        self.window
-            .request_user_attention(request_type.map(|v| v.into()));
+        self.window.request_user_attention(request_type.map(|v| v.into()));
     }
 
     /// Lib specific method, expose impl details
@@ -347,19 +343,9 @@ impl<Surface> Windowable for Window<Surface>
         self
     }
 
-    fn set_cursor_grab(&mut self, mode: CursorGrab) -> CursorResult
-    {
-        self.window
-            .set_cursor_grab(mode.into())
-            .map_err(|_| CursorError)
-    }
+    fn set_cursor_grab(&mut self, mode: CursorGrab) -> CursorResult { self.window.set_cursor_grab(mode.into()).map_err(|_| CursorError) }
 
-    fn set_cursor_hittest(&mut self, hittest: bool) -> CursorResult
-    {
-        self.window
-            .set_cursor_hittest(hittest)
-            .map_err(|_| CursorError)
-    }
+    fn set_cursor_hittest(&mut self, hittest: bool) -> CursorResult { self.window.set_cursor_hittest(hittest).map_err(|_| CursorError) }
 
     fn destroy_surface(&mut self) -> &mut Self
     {
@@ -554,11 +540,7 @@ pub(crate) fn image_to_winit_icon(image: &Image) -> Option<winit::window::Icon>
 {
     let pixels_bytes: &[u8] = hexga_core::bit::transmute_slice(image.pixels());
 
-    match winit::window::Icon::from_rgba(
-        pixels_bytes.to_owned(),
-        image.width() as _,
-        image.height() as _,
-    )
+    match winit::window::Icon::from_rgba(pixels_bytes.to_owned(), image.width() as _, image.height() as _)
     {
         Ok(icon) => Some(icon),
         Err(_) => None,

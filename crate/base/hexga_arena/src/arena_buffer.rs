@@ -42,10 +42,7 @@ impl BufferArena
 impl Collection for BufferArena {}
 impl Arenable for BufferArena
 {
-    fn contains(&self, ptr: NonNull<u8>) -> bool
-    {
-        self.block.deref().contains(unsafe { ptr.as_ref() })
-    }
+    fn contains(&self, ptr: NonNull<u8>) -> bool { self.block.deref().contains(unsafe { ptr.as_ref() }) }
 }
 impl Length for BufferArena
 {
@@ -55,10 +52,7 @@ impl Length for BufferArena
 impl WithCapacity for BufferArena
 {
     type Param = ();
-    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self
-    {
-        Self::from_size(capacity)
-    }
+    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::from_size(capacity) }
 }
 impl Capacity for BufferArena
 {

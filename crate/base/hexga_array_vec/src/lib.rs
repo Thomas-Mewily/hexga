@@ -167,10 +167,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
 
         // SAFETY: We just checked that there's space
         unsafe {
-            self.values
-                .as_mut_ptr()
-                .add(self.len)
-                .write(MaybeUninit::new(value));
+            self.values.as_mut_ptr().add(self.len).write(MaybeUninit::new(value));
         }
         self.len += 1;
     }
@@ -196,10 +193,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
 
         // SAFETY: We just checked that there's space
         unsafe {
-            self.values
-                .as_mut_ptr()
-                .add(self.len)
-                .write(MaybeUninit::new(value));
+            self.values.as_mut_ptr().add(self.len).write(MaybeUninit::new(value));
         }
         self.len += 1;
         Ok(())
@@ -213,12 +207,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     pub unsafe fn push_unchecked(&mut self, value: T)
     {
         debug_assert!(self.len < CAP, "ArrayVec capacity exceeded");
-        unsafe {
-            self.values
-                .as_mut_ptr()
-                .add(self.len)
-                .write(MaybeUninit::new(value))
-        };
+        unsafe { self.values.as_mut_ptr().add(self.len).write(MaybeUninit::new(value)) };
         self.len += 1;
     }
 
@@ -360,27 +349,12 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     /// Panics if `index` is out of bounds.
     pub fn remove(&mut self, index: usize) -> T
     {
-        self.try_remove(index).unwrap_or_else(|| {
-            panic!(
-                "remove index (is {}) should be < len (is {})",
-                index,
-                self.len()
-            )
-        })
+        self.try_remove(index)
+            .unwrap_or_else(|| panic!("remove index (is {}) should be < len (is {})", index, self.len()))
     }
 
     /// Removes and returns the element at position `index`, returning `None` if out of bounds.
-    pub fn try_remove(&mut self, index: usize) -> Option<T>
-    {
-        if index >= self.len()
-        {
-            None
-        }
-        else
-        {
-            self.drain(index..=index).next()
-        }
-    }
+    pub fn try_remove(&mut self, index: usize) -> Option<T> { if index >= self.len() { None } else { self.drain(index..=index).next() } }
 
     /// Insert `element` at position `index`.
     ///
@@ -451,10 +425,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
         Ok(())
     }
 
-    unsafe fn get_unchecked_ptr(&mut self, index: usize) -> *mut T
-    {
-        unsafe { self.as_mut_ptr().add(index) }
-    }
+    unsafe fn get_unchecked_ptr(&mut self, index: usize) -> *mut T { unsafe { self.as_mut_ptr().add(index) } }
 
     /// Returns a slice containing all elements in the vector.
     ///
@@ -629,11 +600,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     /// assert_eq!(array.swap_remove(1), 2);
     /// assert_eq!(&array[..], &[3]);
     /// ```
-    pub fn swap_remove(&mut self, index: usize) -> T
-    {
-        self.swap_pop(index)
-            .unwrap_or_else(|| panic!("Can't swap remove at idx {index}"))
-    }
+    pub fn swap_remove(&mut self, index: usize) -> T { self.swap_pop(index).unwrap_or_else(|| panic!("Can't swap remove at idx {index}")) }
 
     /// Retains only the elements specified by the predicate.
     ///
@@ -677,9 +644,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
                     unsafe {
                         ptr::copy(
                             self.v.as_ptr().add(self.processed_len),
-                            self.v
-                                .as_mut_ptr()
-                                .add(self.processed_len - self.deleted_cnt),
+                            self.v.as_mut_ptr().add(self.processed_len - self.deleted_cnt),
                             self.original_len - self.processed_len,
                         );
                     }
@@ -698,10 +663,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
         };
 
         #[inline(always)]
-        fn process_one<F: FnMut(&mut T) -> bool, T, const CAP: usize, const DELETED: bool>(
-            f: &mut F,
-            g: &mut BackshiftOnDrop<'_, T, CAP>,
-        ) -> bool
+        fn process_one<F: FnMut(&mut T) -> bool, T, const CAP: usize, const DELETED: bool>(f: &mut F, g: &mut BackshiftOnDrop<'_, T, CAP>) -> bool
         {
             let cur = unsafe { g.v.as_mut_ptr().add(g.processed_len) };
             if !f(unsafe { &mut *cur })
@@ -824,10 +786,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     /// Returns array reference if length equals `N`.
     pub fn as_array<const N: usize>(&self) -> Option<&[T; N]> { self.as_slice().as_array() }
     /// Returns mutable array reference if length equals `N`.
-    pub fn as_mut_array<const N: usize>(&mut self) -> Option<&mut [T; N]>
-    {
-        self.as_mut_slice().as_mut_array()
-    }
+    pub fn as_mut_array<const N: usize>(&mut self) -> Option<&mut [T; N]> { self.as_mut_slice().as_mut_array() }
 
     /// Return the inner fixed size array.
     ///
@@ -936,19 +895,13 @@ impl<T, Idx, const CAP: usize> IndexMut<Idx> for ArrayVec<T, CAP>
 where
     Idx: SliceIndex<[T]>,
 {
-    fn index_mut(&mut self, index: Idx) -> &mut Self::Output
-    {
-        self.as_mut_slice().index_mut(index)
-    }
+    fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.as_mut_slice().index_mut(index) }
 }
 
 // Display implementation
 impl<T: Debug, const CAP: usize> Debug for ArrayVec<T, CAP>
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
-        f.debug_list().entries(self.iter()).finish()
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_list().entries(self.iter()).finish() }
 }
 
 impl<T: Clone, const CAP: usize> Clone for ArrayVec<T, CAP>
@@ -976,8 +929,7 @@ impl<T, const CAP: usize> FromIterator<T> for ArrayVec<T, CAP>
         let mut vec = ArrayVec::new();
         for item in iter
         {
-            vec.try_push(item)
-                .expect("iterator contains more elements than capacity");
+            vec.try_push(item).expect("iterator contains more elements than capacity");
         }
         vec
     }
@@ -1007,13 +959,7 @@ impl<T, const CAP: usize> IntoIterator for ArrayVec<T, CAP>
     type Item = T;
     type IntoIter = IntoIter<T, CAP>;
 
-    fn into_iter(self) -> Self::IntoIter
-    {
-        IntoIter {
-            index: 0,
-            array: self,
-        }
-    }
+    fn into_iter(self) -> Self::IntoIter { IntoIter { index: 0, array: self } }
 }
 
 pub struct IntoIter<T, const CAP: usize>
@@ -1090,8 +1036,7 @@ impl<T, const CAP: usize> Drop for IntoIter<T, CAP>
         let len = self.array.len();
         unsafe {
             self.array.set_len(0);
-            let elements =
-                slice::from_raw_parts_mut(self.array.get_unchecked_ptr(index), len - index);
+            let elements = slice::from_raw_parts_mut(self.array.get_unchecked_ptr(index), len - index);
             ptr::drop_in_place(elements);
         }
     }
@@ -1136,24 +1081,14 @@ impl<'a, T: 'a, const CAP: usize> Iterator for Drain<'a, T, CAP>
 {
     type Item = T;
 
-    fn next(&mut self) -> Option<Self::Item>
-    {
-        self.iter
-            .next()
-            .map(|elt| unsafe { ptr::read(elt as *const T) })
-    }
+    fn next(&mut self) -> Option<Self::Item> { self.iter.next().map(|elt| unsafe { ptr::read(elt as *const T) }) }
 
     fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 
 impl<'a, T: 'a, const CAP: usize> DoubleEndedIterator for Drain<'a, T, CAP>
 {
-    fn next_back(&mut self) -> Option<Self::Item>
-    {
-        self.iter
-            .next_back()
-            .map(|elt| unsafe { ptr::read(elt as *const T) })
-    }
+    fn next_back(&mut self) -> Option<Self::Item> { self.iter.next_back().map(|elt| unsafe { ptr::read(elt as *const T) }) }
 }
 
 impl<'a, T: 'a, const CAP: usize> ExactSizeIterator for Drain<'a, T, CAP> {}
@@ -1197,10 +1132,7 @@ where
 
     #[track_caller]
     #[inline(always)]
-    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output
-    {
-        unsafe { Get::get_unchecked(self.as_slice(), index) }
-    }
+    unsafe fn get_unchecked(&self, index: Idx) -> &Self::Output { unsafe { Get::get_unchecked(self.as_slice(), index) } }
 }
 impl<Idx, T, const CAP: usize> TryGet<Idx> for ArrayVec<T, CAP>
 where
@@ -1209,10 +1141,7 @@ where
     type Error = <[T] as TryGet<Idx>>::Error;
 
     #[inline(always)]
-    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error>
-    {
-        TryGet::try_get(self.as_slice(), index)
-    }
+    fn try_get(&self, index: Idx) -> Result<&Self::Output, Self::Error> { TryGet::try_get(self.as_slice(), index) }
 }
 
 impl<Idx, T, const CAP: usize> TryGetMut<Idx> for ArrayVec<T, CAP>
@@ -1220,10 +1149,7 @@ where
     [T]: TryGetMut<Idx>,
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error>
-    {
-        TryGetMut::try_get_mut(self.as_mut_slice(), index)
-    }
+    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { TryGetMut::try_get_mut(self.as_mut_slice(), index) }
 }
 
 impl<Idx, T, const CAP: usize> GetMut<Idx> for ArrayVec<T, CAP>
@@ -1231,16 +1157,10 @@ where
     [T]: GetMut<Idx>,
 {
     #[inline(always)]
-    fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output>
-    {
-        GetMut::get_mut(self.as_mut_slice(), index)
-    }
+    fn get_mut(&mut self, index: Idx) -> Option<&mut Self::Output> { GetMut::get_mut(self.as_mut_slice(), index) }
 
     #[inline(always)]
-    unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output
-    {
-        unsafe { GetMut::get_unchecked_mut(self.as_mut_slice(), index) }
-    }
+    unsafe fn get_unchecked_mut(&mut self, index: Idx) -> &mut Self::Output { unsafe { GetMut::get_unchecked_mut(self.as_mut_slice(), index) } }
 }
 
 impl<Idx, T, const CAP: usize> GetManyMut<Idx> for ArrayVec<T, CAP>
@@ -1249,29 +1169,19 @@ where
 {
     #[track_caller]
     #[inline(always)]
-    unsafe fn get_many_unchecked_mut<const N: usize>(
-        &mut self,
-        indices: [Idx; N],
-    ) -> [&mut Self::Output; N]
+    unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [Idx; N]) -> [&mut Self::Output; N]
     {
         unsafe { GetManyMut::get_many_unchecked_mut(self.as_mut_slice(), indices) }
     }
 
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(
-        &mut self,
-        indices: [Idx; N],
-    ) -> Result<[&mut Self::Output; N], ManyMutError>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output; N], ManyMutError>
     {
         GetManyMut::try_get_many_mut(self.as_mut_slice(), indices)
     }
 
     #[inline(always)]
-    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N])
-    -> Option<[&mut Self::Output; N]>
-    {
-        GetManyMut::get_many_mut(self.as_mut_slice(), indices)
-    }
+    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output; N]> { GetManyMut::get_many_mut(self.as_mut_slice(), indices) }
 }
 
 impl<T, const CAP: usize> Length for ArrayVec<T, CAP>
@@ -1351,10 +1261,7 @@ where
         {
             type Value = ArrayVec<T, CAP>;
 
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result
-            {
-                write!(formatter, "a sequence with at most {} elements", CAP)
-            }
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result { write!(formatter, "a sequence with at most {} elements", CAP) }
 
             fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
             where
@@ -1366,10 +1273,7 @@ where
                 {
                     if array_vec.try_push(element).is_err()
                     {
-                        return Err(serde::de::Error::invalid_length(
-                            CAP + 1,
-                            &format!("at most {} elements", CAP).as_str(),
-                        ));
+                        return Err(serde::de::Error::invalid_length(CAP + 1, &format!("at most {} elements", CAP).as_str()));
                     }
                 }
 

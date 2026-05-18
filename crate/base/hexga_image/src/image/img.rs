@@ -93,13 +93,7 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
-        write!(
-            f,
-            "Image({}, {:?}x{:?})",
-            std::any::type_name::<C>(),
-            self.size().x,
-            self.size().y
-        )?;
+        write!(f, "Image({}, {:?}x{:?})", std::any::type_name::<C>(), self.size().x, self.size().y)?;
         if self.size().area_usize() <= 16 * 16
         {
             writeln!(f)?;
@@ -241,9 +235,7 @@ where
     fn to_image(self) -> Self::Output
     {
         let size = self.size();
-        Self::Output::from_fn(size, |p| {
-            unsafe { self.get_unchecked(vector2(p.x, size.y - p.y - Idx::ONE)) }.clone()
-        })
+        Self::Output::from_fn(size, |p| unsafe { self.get_unchecked(vector2(p.x, size.y - p.y - Idx::ONE)) }.clone())
     }
 }
 impl<'a, C, Idx> ToImage for GridViewMut<'a, GridOf<C, Idx, 2>, C, Idx, 2>
@@ -261,10 +253,7 @@ where
     C: Clone,
 {
     type Output = ImageBaseOf<C, Idx>;
-    fn to_image(self) -> Self::Output
-    {
-        Self::Output::from_fn(self.size(), |p| unsafe { self.get_unchecked(p) }.clone())
-    }
+    fn to_image(self) -> Self::Output { Self::Output::from_fn(self.size(), |p| unsafe { self.get_unchecked(p) }.clone()) }
 }
 impl<'a, C, Idx> ToImage for GridViewMut<'a, ImageBaseOf<C, Idx>, C, Idx, 2>
 where
@@ -290,10 +279,7 @@ where
     where
         P: Into<Vector2<Idx>>,
     {
-        Self {
-            size: size.into(),
-            pixels,
-        }
+        Self { size: size.into(), pixels }
     }
 
     unsafe fn position_to_index_unchecked<P>(&self, pos: P) -> usize
@@ -349,11 +335,7 @@ where
 {
     type Output = T;
     #[inline(always)]
-    fn get(&self, pos: P) -> Option<&Self::Output>
-    {
-        self.position_to_index(pos)
-            .and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) }))
-    }
+    fn get(&self, pos: P) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) })) }
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked(&self, pos: P) -> &Self::Output
@@ -374,8 +356,7 @@ where
     fn try_get(&self, pos: P) -> Result<&Self::Output, Self::Error>
     {
         let p = pos.into();
-        self.get(p)
-            .ok_or_else(|| IndexOutOfBounds::new(p, self.size()))
+        self.get(p).ok_or_else(|| IndexOutOfBounds::new(p, self.size()))
     }
 }
 
@@ -389,8 +370,7 @@ where
     {
         let p = pos.into();
         let size = self.size();
-        self.get_mut(p)
-            .ok_or_else(|| IndexOutOfBounds::new(p, size))
+        self.get_mut(p).ok_or_else(|| IndexOutOfBounds::new(p, size))
     }
 }
 impl<P, T, Idx> GetMut<P> for ImageBaseOf<T, Idx>
@@ -421,10 +401,7 @@ where
     P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(
-        &mut self,
-        indices: [P; N2],
-    ) -> Result<[&mut Self::Output; N2], ManyMutError>
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output; N2], ManyMutError>
     {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
@@ -434,8 +411,7 @@ where
         }
         else
         {
-            self.pixels_mut()
-                .try_get_many_mut(indices.map(|idx| idx.unwrap()))
+            self.pixels_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 
@@ -449,8 +425,7 @@ where
         }
         else
         {
-            self.pixels_mut()
-                .get_many_mut(indices.map(|idx| idx.unwrap()))
+            self.pixels_mut().get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }
@@ -486,10 +461,7 @@ where
     Idx: Integer,
     T: Clone,
 {
-    fn crop(self, subrect: Rectangle2<Idx>) -> Option<Self>
-    {
-        self.view().crop(subrect).map(|v| v.to_image())
-    }
+    fn crop(self, subrect: Rectangle2<Idx>) -> Option<Self> { self.view().crop(subrect).map(|v| v.to_image()) }
 }
 
 /*
@@ -614,9 +586,7 @@ where
         F: FnMut(Self::Item, Item2) -> R,
     {
         assert_eq!(self.size(), other.size(), "size mismatch");
-        unsafe {
-            ImageBaseOf::from_vec_unchecked(self.size(), self.pixels.map_with(other.pixels, f))
-        }
+        unsafe { ImageBaseOf::from_vec_unchecked(self.size(), self.pixels.map_with(other.pixels, f)) }
     }
 }
 
@@ -629,11 +599,7 @@ where
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png"].into_iter() }
 
-    fn save_to_writer_with_custom_extension<W>(
-        &self,
-        writer: W,
-        extension: Option<&extension>,
-    ) -> EncodeResult
+    fn save_to_writer_with_custom_extension<W>(&self, writer: W, extension: Option<&extension>) -> EncodeResult
     where
         W: Write,
     {
@@ -645,62 +611,35 @@ where
                 {
                     if std::mem::size_of::<C::Component>() * 8 <= 8
                     {
-                        self.clone()
-                            .to_rgba_u8()
-                            .save_to_writer_with_custom_extension(writer, extension)
+                        self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension)
                     }
                     else
                     {
-                        self.clone()
-                            .to_rgba_u16()
-                            .save_to_writer_with_custom_extension(writer, extension)
+                        self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension)
                     }
                 }
                 NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
                 {
                     8 => ::image::ImageEncoder::write_image(
                         ::image::codecs::png::PngEncoder::new(writer),
-                        unsafe {
-                            std::slice::from_raw_parts(
-                                self.pixels().as_ptr() as *const u8,
-                                self.pixels().len() * std::mem::size_of::<C>(),
-                            )
-                        },
+                        unsafe { std::slice::from_raw_parts(self.pixels().as_ptr() as *const u8, self.pixels().len() * std::mem::size_of::<C>()) },
                         self.width().to_usize() as _,
                         self.height().to_usize() as _,
                         ::image::ExtendedColorType::Rgba8,
                     )
-                    .map_err(|e| {
-                        EncodeError::custom(format!("Failed to encode .png rgba8 image : {}", e))
-                    }),
+                    .map_err(|e| EncodeError::custom(format!("Failed to encode .png rgba8 image : {}", e))),
                     16 => ::image::ImageEncoder::write_image(
                         ::image::codecs::png::PngEncoder::new(writer),
-                        unsafe {
-                            std::slice::from_raw_parts(
-                                self.pixels().as_ptr() as *const u8,
-                                self.pixels().len() * std::mem::size_of::<C>(),
-                            )
-                        },
+                        unsafe { std::slice::from_raw_parts(self.pixels().as_ptr() as *const u8, self.pixels().len() * std::mem::size_of::<C>()) },
                         self.width().to_usize() as _,
                         self.height().to_usize() as _,
                         ::image::ExtendedColorType::Rgba16,
                     )
-                    .map_err(|e| {
-                        EncodeError::custom(format!("Failed to encode .png rgba16 image : {}", e))
-                    }),
-                    _ => self
-                        .clone()
-                        .to_rgba_u8()
-                        .save_to_writer_with_custom_extension(writer, extension),
+                    .map_err(|e| EncodeError::custom(format!("Failed to encode .png rgba16 image : {}", e))),
+                    _ => self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension),
                 },
-                NumberType::Float => self
-                    .clone()
-                    .to_rgba_u16()
-                    .save_to_writer_with_custom_extension(writer, extension),
-                NumberType::Bool => self
-                    .clone()
-                    .to_rgba_u8()
-                    .save_to_writer_with_custom_extension(writer, extension),
+                NumberType::Float => self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension),
+                NumberType::Bool => self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension),
             },
             _ => Err(EncodeError::save_unsupported_extension_with_name::<Self>(
                 extension.map(|e| e.to_owned().into()),
@@ -727,15 +666,9 @@ where
     u8: CastRangeFrom<C::Component>,
     u16: CastRangeFrom<C::Component>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension>
-    {
-        ["png", "jpg", "jpeg", "bmp", "gif", "webp", "ico", "tiff"].into_iter()
-    }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png", "jpg", "jpeg", "bmp", "gif", "webp", "ico", "tiff"].into_iter() }
 
-    fn load_from_reader_with_custom_extension<R>(
-        mut reader: R,
-        extension: Option<&extension>,
-    ) -> EncodeResult<Self>
+    fn load_from_reader_with_custom_extension<R>(mut reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: std::io::Read,
@@ -773,10 +706,7 @@ where
         let casted_height = h.to_u32();
         if casted_width != width || height != casted_height
         {
-            return Err(EncodeError::custom(format!(
-                "Image is too big: {}",
-                vector2(width, height)
-            )));
+            return Err(EncodeError::custom(format!("Image is too big: {}", vector2(width, height))));
         }
 
         let error_invalid_size = || EncodeError::custom("Invalid bytes len");

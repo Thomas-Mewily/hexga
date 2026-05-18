@@ -28,8 +28,6 @@ impl FromBase64 for Vec<u8>
     where
         D: AsRef<[u8]>,
     {
-        ::base64::engine::general_purpose::STANDARD
-            .decode(data)
-            .map_err(|e| e.into())
+        ::base64::engine::general_purpose::STANDARD.decode(data).map_err(|e| e.into())
     }
 }

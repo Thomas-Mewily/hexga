@@ -111,10 +111,7 @@ where
     C: TryPush<A>,
 {
     type Error = C::Error;
-    fn try_push(&mut self, value: A) -> Result<Self::Output, Self::Error>
-    {
-        self.arenas.try_push(value)
-    }
+    fn try_push(&mut self, value: A) -> Result<Self::Output, Self::Error> { self.arenas.try_push(value) }
 }
 
 impl<A, C> PushFront<A> for ArenaOf<A, C>
@@ -131,10 +128,7 @@ where
     C: Push<A> + TryPushFront<A>,
 {
     type Error = <C as TryPushFront<A>>::Error;
-    fn try_push_front(&mut self, value: A) -> Result<Self::Output, Self::Error>
-    {
-        self.arenas.try_push_front(value)
-    }
+    fn try_push_front(&mut self, value: A) -> Result<Self::Output, Self::Error> { self.arenas.try_push_front(value) }
 }
 
 // Should I impl Pop and PopFront (absolutely unsafe, but arena are all about unsafe ?)

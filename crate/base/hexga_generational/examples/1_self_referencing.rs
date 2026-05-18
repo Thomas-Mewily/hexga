@@ -17,15 +17,9 @@ fn main()
         name: "zombie",
         eating: GenID::NULL,
     });
-    let slime = entities.insert(Entity {
-        name: "slime",
-        eating: zombie,
-    });
+    let slime = entities.insert(Entity { name: "slime", eating: zombie });
 
-    let ouroboros = entities.insert_cyclic(|id| Entity {
-        name: "Ouroboros",
-        eating: id,
-    });
+    let ouroboros = entities.insert_cyclic(|id| Entity { name: "Ouroboros", eating: id });
 
     if let Some(slime_entity) = entities.get_mut(slime)
     {
@@ -34,9 +28,6 @@ fn main()
 
     for (id, entity) in &entities
     {
-        println!(
-            "{:?} => name: {}, target: {:?}",
-            id, entity.name, entity.eating
-        );
+        println!("{:?} => name: {}, target: {:?}", id, entity.name, entity.eating);
     }
 }

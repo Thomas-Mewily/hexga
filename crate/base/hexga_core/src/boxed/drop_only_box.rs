@@ -11,39 +11,24 @@ impl<T: ?Sized> Debug for DropOnlyBox<T>
 where
     T: Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result
-    {
-        unsafe { self.ptr.as_ref().fmt(f) }
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result { unsafe { self.ptr.as_ref().fmt(f) } }
 }
 impl<T: ?Sized> Display for DropOnlyBox<T>
 where
     T: Display,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result
-    {
-        unsafe { self.ptr.as_ref().fmt(f) }
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result { unsafe { self.ptr.as_ref().fmt(f) } }
 }
 
 unsafe impl<T> FromNonNull for DropOnlyBox<T>
 {
-    unsafe fn from_non_null(ptr: NonNull) -> Self
-    {
-        unsafe { DropOnlyBox::from_raw(ptr.as_ptr() as *mut T) }
-    }
+    unsafe fn from_non_null(ptr: NonNull) -> Self { unsafe { DropOnlyBox::from_raw(ptr.as_ptr() as *mut T) } }
 }
 unsafe impl<T> IntoNonNull for DropOnlyBox<T>
 {
-    unsafe fn into_non_null(self) -> NonNull
-    {
-        unsafe { NonNull::new_unchecked(Self::leak(self) as *mut T as *mut u8) }
-    }
+    unsafe fn into_non_null(self) -> NonNull { unsafe { NonNull::new_unchecked(Self::leak(self) as *mut T as *mut u8) } }
 
-    unsafe fn as_non_null(&mut self) -> NonNull
-    {
-        unsafe { NonNull::new_unchecked(self.as_mut() as *mut T as *mut u8) }
-    }
+    unsafe fn as_non_null(&mut self) -> NonNull { unsafe { NonNull::new_unchecked(self.as_mut() as *mut T as *mut u8) } }
 }
 
 impl<T: ?Sized> DropOnlyBox<T>

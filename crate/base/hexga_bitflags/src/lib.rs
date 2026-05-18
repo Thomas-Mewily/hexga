@@ -134,11 +134,7 @@ fn emit_serde_code(
     repr_type: &Ident,
     struct_name: &Ident,
     enum_variants_name: &[Ident],
-) -> (
-    proc_macro2::TokenStream,
-    proc_macro2::TokenStream,
-    proc_macro2::TokenStream,
-)
+) -> (proc_macro2::TokenStream, proc_macro2::TokenStream, proc_macro2::TokenStream)
 {
     let helper_struct_name = format_ident!("{}SerdeHelper", struct_name);
 
@@ -249,15 +245,7 @@ fn emit_serde_code(
 
 #[allow(unexpected_cfgs)]
 #[cfg(not(feature = "serde"))]
-fn emit_serde_code(
-    _: &Ident,
-    _: &Ident,
-    _: &[Ident],
-) -> (
-    proc_macro2::TokenStream,
-    proc_macro2::TokenStream,
-    proc_macro2::TokenStream,
-)
+fn emit_serde_code(_: &Ident, _: &Ident, _: &[Ident]) -> (proc_macro2::TokenStream, proc_macro2::TokenStream, proc_macro2::TokenStream)
 {
     (quote! {}, quote! {}, quote! {})
 }
@@ -316,7 +304,8 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             };
         }
 
-        struct_non_composite_const.push(quote! { pub const #flag_ident: #struct_name = #struct_name { _bits_do_not_use_it: 1 << (#enum_name::#flag_ident as #repr_type) }; });
+        struct_non_composite_const
+            .push(quote! { pub const #flag_ident: #struct_name = #struct_name { _bits_do_not_use_it: 1 << (#enum_name::#flag_ident as #repr_type) }; });
         enum_variants_name.push(flag_ident.clone());
         let value = quote! {
             #index as #repr_type
@@ -345,10 +334,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
     let nb_variant = enum_variants.len();
 
     // Combine regular and composite field names
-    let all_field_names: Vec<_> = enum_variants_name
-        .iter()
-        .chain(composite_variants_name.iter())
-        .collect();
+    let all_field_names: Vec<_> = enum_variants_name.iter().chain(composite_variants_name.iter()).collect();
 
     // Generate method names for enum and flags
     let enum_is_methods: Vec<_> = enum_variants_name
@@ -362,13 +348,16 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         })
         .collect();
 
-    let flags_is_methods: Vec<_> = all_field_names.iter().map(|variant| {
-        let method_name = format_ident!("is_{}", variant.to_string().to_snake_case());
-        quote! {
-            /// Returns true if #variant flag is set
-            pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) != 0 }
-        }
-    }).collect();
+    let flags_is_methods: Vec<_> = all_field_names
+        .iter()
+        .map(|variant| {
+            let method_name = format_ident!("is_{}", variant.to_string().to_snake_case());
+            quote! {
+                /// Returns true if #variant flag is set
+                pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) != 0 }
+            }
+        })
+        .collect();
 
     let flags_set_methods: Vec<_> = all_field_names
         .iter()
@@ -411,35 +400,43 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         })
         .collect();
 
-    let flags_with_toggle_methods: Vec<_> = all_field_names.iter().map(|variant| {
-        let method_name = format_ident!("toggled_{}", variant.to_string().to_snake_case());
-        quote! {
-            /// Returns a new flags with #variant flag toggled
-            pub const fn #method_name(self) -> Self {
-                Self { _bits_do_not_use_it: self._bits_do_not_use_it ^ (#struct_name::#variant)._bits_do_not_use_it }
+    let flags_with_toggle_methods: Vec<_> = all_field_names
+        .iter()
+        .map(|variant| {
+            let method_name = format_ident!("toggled_{}", variant.to_string().to_snake_case());
+            quote! {
+                /// Returns a new flags with #variant flag toggled
+                pub const fn #method_name(self) -> Self {
+                    Self { _bits_do_not_use_it: self._bits_do_not_use_it ^ (#struct_name::#variant)._bits_do_not_use_it }
+                }
             }
-        }
-    }).collect();
+        })
+        .collect();
 
     // Generate composite-specific methods
-    let flags_is_all_methods: Vec<_> = composite_variants_name.iter().map(|variant| {
-        let method_name = format_ident!("is_all_{}", variant.to_string().to_snake_case());
-        quote! {
-            /// Returns true if all flags in #variant are set
-            pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) == #struct_name::#variant.bits() }
-        }
-    }).collect();
+    let flags_is_all_methods: Vec<_> = composite_variants_name
+        .iter()
+        .map(|variant| {
+            let method_name = format_ident!("is_all_{}", variant.to_string().to_snake_case());
+            quote! {
+                /// Returns true if all flags in #variant are set
+                pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) == #struct_name::#variant.bits() }
+            }
+        })
+        .collect();
 
-    let flags_is_any_methods: Vec<_> = composite_variants_name.iter().map(|variant| {
-        let method_name = format_ident!("is_any_{}", variant.to_string().to_snake_case());
-        quote! {
-            /// Returns true if any flag in #variant is set
-            pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) != 0 }
-        }
-    }).collect();
+    let flags_is_any_methods: Vec<_> = composite_variants_name
+        .iter()
+        .map(|variant| {
+            let method_name = format_ident!("is_any_{}", variant.to_string().to_snake_case());
+            quote! {
+                /// Returns true if any flag in #variant is set
+                pub const fn #method_name(&self) -> bool { (self.bits() & #struct_name::#variant.bits()) != 0 }
+            }
+        })
+        .collect();
 
-    let (serde_serialize_deserialize, serde_serialize_flags, serde_deserialiaze_flags) =
-        emit_serde_code(&repr_type, &struct_name, &enum_variants_name);
+    let (serde_serialize_deserialize, serde_serialize_flags, serde_deserialiaze_flags) = emit_serde_code(&repr_type, &struct_name, &enum_variants_name);
 
     let output = quote! {
 
@@ -870,8 +867,7 @@ fn find_repr_type(attrs: &[syn::Attribute]) -> Option<syn::Ident>
     {
         if attr.path().is_ident("repr")
         {
-            let parser =
-                syn::punctuated::Punctuated::<syn::Ident, syn::Token![,]>::parse_terminated;
+            let parser = syn::punctuated::Punctuated::<syn::Ident, syn::Token![,]>::parse_terminated;
             if let Ok(idents) = attr.parse_args_with(parser)
             {
                 return idents.first().cloned();

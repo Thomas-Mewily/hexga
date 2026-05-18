@@ -156,13 +156,7 @@ impl<F> Debug for CameraOf<F>
 where
     F: Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
-        f.debug_struct("Camera")
-            .field("matrix", &self.matrix)
-            .field("depth", &self.depth)
-            .finish()
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { f.debug_struct("Camera").field("matrix", &self.matrix).field("depth", &self.depth).finish() }
 }
 impl<T> MapIntern for CameraOf<T>
 {

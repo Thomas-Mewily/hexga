@@ -37,10 +37,7 @@ pub mod prelude
 {
     pub(crate) use super::experimental::*;
     pub use super::traits::*;
-    pub use super::{
-        Gpu, GpuBackend, GpuBufferUsage, GpuBufferUsageFlags, GpuContext, GpuError, GpuInstance,
-        GpuParam, GpuPowerPreference, GpuResult,
-    };
+    pub use super::{Gpu, GpuBackend, GpuBufferUsage, GpuBufferUsageFlags, GpuContext, GpuError, GpuInstance, GpuParam, GpuPowerPreference, GpuResult};
     pub use super::{buffer::prelude::*, render::prelude::*};
 }
 

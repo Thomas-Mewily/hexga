@@ -21,10 +21,7 @@ where
 impl<'de, C, Idx> Deserialize<'de> for ImageBaseOf<C, Idx>
 where
     Idx: Integer + Deserialize<'de>,
-    C: Clone
-        + IColor<ToRgba<u8> = RgbaOf<u8>>
-        + IColor<ToRgba<u16> = RgbaOf<u16>>
-        + Deserialize<'de>,
+    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + Deserialize<'de>,
     u8: CastRangeFrom<C::Component>,
     u16: CastRangeFrom<C::Component>,
 {

@@ -34,47 +34,26 @@ unsafe impl<T> FromNonNull for &mut T
 }
 unsafe impl<T> IntoNonNull for &T
 {
-    unsafe fn into_non_null(self) -> NonNull
-    {
-        unsafe { NonNull::new_unchecked(self as *const T as *const u8 as *mut u8) }
-    }
+    unsafe fn into_non_null(self) -> NonNull { unsafe { NonNull::new_unchecked(self as *const T as *const u8 as *mut u8) } }
 
-    unsafe fn as_non_null(&mut self) -> NonNull
-    {
-        unsafe { NonNull::new_unchecked(*self as *const T as *const u8 as *mut u8) }
-    }
+    unsafe fn as_non_null(&mut self) -> NonNull { unsafe { NonNull::new_unchecked(*self as *const T as *const u8 as *mut u8) } }
 }
 unsafe impl<T> IntoNonNull for &mut T
 {
-    unsafe fn into_non_null(self) -> NonNull
-    {
-        unsafe { NonNull::new_unchecked(self as *mut T as *mut u8) }
-    }
+    unsafe fn into_non_null(self) -> NonNull { unsafe { NonNull::new_unchecked(self as *mut T as *mut u8) } }
 
-    unsafe fn as_non_null(&mut self) -> NonNull
-    {
-        unsafe { NonNull::new_unchecked(*self as *mut T as *mut u8) }
-    }
+    unsafe fn as_non_null(&mut self) -> NonNull { unsafe { NonNull::new_unchecked(*self as *mut T as *mut u8) } }
 }
 
 unsafe impl<T> FromNonNull for Box<T>
 {
-    unsafe fn from_non_null(ptr: NonNull) -> Self
-    {
-        unsafe { Box::from_raw(ptr.as_ptr() as *mut T) }
-    }
+    unsafe fn from_non_null(ptr: NonNull) -> Self { unsafe { Box::from_raw(ptr.as_ptr() as *mut T) } }
 }
 unsafe impl<T> IntoNonNull for Box<T>
 {
-    unsafe fn into_non_null(self) -> NonNull
-    {
-        unsafe { NonNull::new_unchecked(Self::leak(self) as *mut T as *mut u8) }
-    }
+    unsafe fn into_non_null(self) -> NonNull { unsafe { NonNull::new_unchecked(Self::leak(self) as *mut T as *mut u8) } }
 
-    unsafe fn as_non_null(&mut self) -> NonNull
-    {
-        unsafe { NonNull::new_unchecked(self.as_mut() as *mut T as *mut u8) }
-    }
+    unsafe fn as_non_null(&mut self) -> NonNull { unsafe { NonNull::new_unchecked(self.as_mut() as *mut T as *mut u8) } }
 }
 
 // Copied from the std: https://doc.rust-lang.org/stable/src/core/ptr/unique.rs.html#46-49

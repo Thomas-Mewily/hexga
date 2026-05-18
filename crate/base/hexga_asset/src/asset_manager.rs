@@ -2,8 +2,7 @@ use super::*;
 
 #[allow(non_upper_case_globals)]
 //pub(crate) static ASSET: LazyLock<AssetsManagerUntyped> = LazyLock::new(|| AssetsManagerUntyped::default());
-pub(crate) static ASSET: SingletonOnceLazy<AssetsManagerUntyped> =
-    SingletonOnceLazy::new(|| AssetsManagerUntyped::default());
+pub(crate) static ASSET: SingletonOnceLazy<AssetsManagerUntyped> = SingletonOnceLazy::new(|| AssetsManagerUntyped::default());
 
 #[derive(Default)]
 pub(crate) struct AssetsManagerUntyped
@@ -31,10 +30,7 @@ impl AssetsManagerUntyped
             let assets_read = self.assets.read().unwrap();
             if let Some(any_manager) = assets_read.get(&type_id)
             {
-                let asset_manager = any_manager
-                    .as_any()
-                    .downcast_ref::<AssetManager<T>>()
-                    .unwrap();
+                let asset_manager = any_manager.as_any().downcast_ref::<AssetManager<T>>().unwrap();
                 return asset_manager.clone();
             }
         }
@@ -59,12 +55,7 @@ impl<T> Clone for AssetManager<T>
 where
     T: Async,
 {
-    fn clone(&self) -> Self
-    {
-        Self {
-            inner: self.inner.clone(),
-        }
-    }
+    fn clone(&self) -> Self { Self { inner: self.inner.clone() } }
 }
 // IDEA : make a feature flag for non async loading ?
 impl<T> AssetManager<T>
@@ -229,10 +220,7 @@ where
         drop(r);
 
         let mut w = self.inner.write().unwrap();
-        let AssetInit {
-            state: value,
-            lifetime,
-        } = init().into();
+        let AssetInit { state: value, lifetime } = init().into();
         let asset = Asset::_new(value, AssetPersistance::Persistant(path.to_owned()));
 
         let storage = match lifetime
@@ -244,22 +232,8 @@ where
         asset
     }
 
-    pub fn all(&self) -> Vec<Asset<T>>
-    {
-        self.inner
-            .read()
-            .unwrap()
-            .values
-            .values()
-            .filter_map(|v| v.upgrade())
-            .collect()
-    }
-    pub fn iter(&self) -> AssetIter<T>
-    {
-        AssetIter {
-            inner: self.all().into_iter(),
-        }
-    }
+    pub fn all(&self) -> Vec<Asset<T>> { self.inner.read().unwrap().values.values().filter_map(|v| v.upgrade()).collect() }
+    pub fn iter(&self) -> AssetIter<T> { AssetIter { inner: self.all().into_iter() } }
 
     pub fn error_value(&self) -> AssetWeak<T> { self.inner.read().unwrap().error.clone() }
     pub fn set_error_value(&self, value: AssetWeak<T>) -> &Self

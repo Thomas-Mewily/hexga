@@ -22,30 +22,15 @@ impl Windowable for CurrentWindow
         self
     }
 
-    fn request_user_attention(&mut self, request_type: impl Into<Option<UserAttentionType>>)
-    {
-        WINDOW.get_mut().request_user_attention(request_type);
-    }
+    fn request_user_attention(&mut self, request_type: impl Into<Option<UserAttentionType>>) { WINDOW.get_mut().request_user_attention(request_type); }
 
-    fn winit_window(&self) -> hexga_event_loop::window::experimental::WinitWindowShared
-    {
-        WINDOW.get_mut().winit_window()
-    }
+    fn winit_window(&self) -> hexga_event_loop::window::experimental::WinitWindowShared { WINDOW.get_mut().winit_window() }
 
-    fn current_monitor(&self) -> Option<hexga_event_loop::monitor::Monitor>
-    {
-        WINDOW.get_mut().current_monitor()
-    }
+    fn current_monitor(&self) -> Option<hexga_event_loop::monitor::Monitor> { WINDOW.get_mut().current_monitor() }
 
-    fn primary_monitor(&self) -> Option<hexga_event_loop::monitor::Monitor>
-    {
-        WINDOW.get_mut().primary_monitor()
-    }
+    fn primary_monitor(&self) -> Option<hexga_event_loop::monitor::Monitor> { WINDOW.get_mut().primary_monitor() }
 
-    fn available_monitors(&self) -> impl Iterator<Item = hexga_event_loop::monitor::Monitor>
-    {
-        WINDOW.get_mut().available_monitors().to_vec().into_iter()
-    }
+    fn available_monitors(&self) -> impl Iterator<Item = hexga_event_loop::monitor::Monitor> { WINDOW.get_mut().available_monitors().to_vec().into_iter() }
 
     fn has_focus(&self) -> bool { WINDOW.get_mut().has_focus() }
 
@@ -81,18 +66,12 @@ impl Windowable for CurrentWindow
         self
     }
 
-    fn set_cursor_grab(
-        &mut self,
-        mode: hexga_event_loop::window::CursorGrab,
-    ) -> hexga_event_loop::window::CursorResult
+    fn set_cursor_grab(&mut self, mode: hexga_event_loop::window::CursorGrab) -> hexga_event_loop::window::CursorResult
     {
         WINDOW.get_mut().set_cursor_grab(mode)
     }
 
-    fn set_cursor_hittest(&mut self, hittest: bool) -> hexga_event_loop::window::CursorResult
-    {
-        WINDOW.get_mut().set_cursor_hittest(hittest)
-    }
+    fn set_cursor_hittest(&mut self, hittest: bool) -> hexga_event_loop::window::CursorResult { WINDOW.get_mut().set_cursor_hittest(hittest) }
 
     fn destroy_surface(&mut self) -> &mut Self
     {

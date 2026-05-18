@@ -53,10 +53,7 @@ where
         self.value(ctx) - self.old_value(ctx)
     }
 
-    fn evolution(&self, ctx: &mut Ctx) -> PreviousValue<I>
-    {
-        PreviousValue::new(self.value(ctx), self.old_value(ctx))
-    }
+    fn evolution(&self, ctx: &mut Ctx) -> PreviousValue<I> { PreviousValue::new(self.value(ctx), self.old_value(ctx)) }
 }
 
 pub trait Evolution<I>

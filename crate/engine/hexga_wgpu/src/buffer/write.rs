@@ -11,13 +11,7 @@ impl<'a, T> GpuSliceMutWrite<'a, T>
 where
     T: GpuBufferElement,
 {
-    pub unsafe fn from_wgpu(view: WgpuBufferViewMut<'a>) -> Self
-    {
-        Self {
-            view,
-            phantom: PhantomData,
-        }
-    }
+    pub unsafe fn from_wgpu(view: WgpuBufferViewMut<'a>) -> Self { Self { view, phantom: PhantomData } }
 
     pub fn try_update(&mut self, src: &[T]) -> BitResult
     {

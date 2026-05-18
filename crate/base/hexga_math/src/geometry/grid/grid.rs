@@ -134,12 +134,7 @@ where
         F: FnMut(Self::Item, Item2) -> R,
     {
         assert_eq!(self.size(), other.size(), "size mismatch");
-        unsafe {
-            Self::WithType::<R>::from_vec_unchecked(
-                self.size,
-                self.values.map_with(other.values, f),
-            )
-        }
+        unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map_with(other.values, f)) }
     }
 }
 
@@ -220,8 +215,7 @@ where
     fn try_get(&self, index: P) -> Result<&Self::Output, Self::Error>
     {
         let i = index.into();
-        self.get(i)
-            .ok_or_else(|| IndexOutOfBounds::new(i, self.size()))
+        self.get(i).ok_or_else(|| IndexOutOfBounds::new(i, self.size()))
     }
 }
 
@@ -234,8 +228,7 @@ where
     {
         let i = index.into();
         let size = self.size();
-        self.get_mut(i)
-            .ok_or_else(|| IndexOutOfBounds::new(i, size))
+        self.get_mut(i).ok_or_else(|| IndexOutOfBounds::new(i, size))
     }
 }
 impl<P, T, Idx, const N: usize> GetMut<P> for GridOf<T, Idx, N>
@@ -266,10 +259,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(
-        &mut self,
-        indices: [P; N2],
-    ) -> Result<[&mut Self::Output; N2], ManyMutError>
+    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output; N2], ManyMutError>
     {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos.into()));
@@ -279,13 +269,11 @@ where
         }
         else
         {
-            self.values_mut()
-                .try_get_many_mut(indices.map(|idx| idx.unwrap()))
+            self.values_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 
-    fn get_many_mut<const N2: usize>(&mut self, indices: [P; N2])
-    -> Option<[&mut Self::Output; N2]>
+    fn get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Option<[&mut Self::Output; N2]>
     {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos.into()));
@@ -295,8 +283,7 @@ where
         }
         else
         {
-            self.values_mut()
-                .get_many_mut(indices.map(|idx| idx.unwrap()))
+            self.values_mut().get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 }
@@ -332,10 +319,7 @@ where
     Idx: Integer,
     T: Clone,
 {
-    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self>
-    {
-        self.view().crop(subrect).map(|v| v.to_grid())
-    }
+    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> { self.view().crop(subrect).map(|v| v.to_grid()) }
 }
 
 #[cfg(test)]
@@ -432,10 +416,7 @@ mod grid_test
             p.x + 10 * p.y
         });
 
-        assert_eq!(
-            top_right_grid,
-            grid.subgrid(top_right_grid_size.to_rect().moved_by(offset))
-        );
+        assert_eq!(top_right_grid, grid.subgrid(top_right_grid_size.to_rect().moved_by(offset)));
     }
 
     #[test]
@@ -459,17 +440,8 @@ mod grid_test
         assert_ne!(grid1.view_mut(), grid2.view_mut());
 
         let rect = rect2i(0, 0, 1, size.y);
-        assert_eq!(
-            grid1.view().crop_intersect(rect),
-            grid2.view().crop_intersect(rect)
-        );
-        assert_eq!(
-            grid1.view_mut().crop_intersect(rect),
-            grid2.view_mut().crop_intersect(rect)
-        );
-        assert_eq!(
-            grid1.view_mut().subview(rect),
-            grid2.view_mut().subview(rect)
-        );
+        assert_eq!(grid1.view().crop_intersect(rect), grid2.view().crop_intersect(rect));
+        assert_eq!(grid1.view_mut().crop_intersect(rect), grid2.view_mut().crop_intersect(rect));
+        assert_eq!(grid1.view_mut().subview(rect), grid2.view_mut().subview(rect));
     }
 }

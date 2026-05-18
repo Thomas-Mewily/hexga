@@ -146,12 +146,7 @@ impl From<[i64; 1]> for word
 
 impl From<[bool; 8]> for word
 {
-    fn from(value: [bool; 8]) -> Self
-    {
-        Self {
-            unsafe_boolx8: value,
-        }
-    }
+    fn from(value: [bool; 8]) -> Self { Self { unsafe_boolx8: value } }
 }
 
 map_on_number!(
@@ -244,10 +239,7 @@ impl Ord for word
 }
 impl PartialOrd for word
 {
-    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering>
-    {
-        unsafe { self.umax.partial_cmp(&other.umax) }
-    }
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> { unsafe { self.umax.partial_cmp(&other.umax) } }
 }
 impl Eq for word {}
 impl PartialEq for word

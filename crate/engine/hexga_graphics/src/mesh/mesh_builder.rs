@@ -3,25 +3,14 @@ use super::*;
 pub trait BuilderMesh<const N: usize = 3>
 {
     /// Index are relative to the vertex passed
-    fn geometry(
-        &mut self,
-        vertex: impl IntoIterator<Item = VertexOf<N>>,
-        index: impl IntoIterator<Item = VertexIndex>,
-    );
+    fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>);
 
-    fn triangles_indexed(
-        &mut self,
-        vertex: impl IntoIterator<Item = VertexOf<N>>,
-        index: impl IntoIterator<Item = TriangleVertexIndex>,
-    )
+    fn triangles_indexed(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = TriangleVertexIndex>)
     {
         self.geometry(vertex, index.into_iter().flatten())
     }
 
-    fn triangle(&mut self, triangle: TriangleVertex<N>)
-    {
-        self.geometry(triangle.points, [0, 1, 2]);
-    }
+    fn triangle(&mut self, triangle: TriangleVertex<N>) { self.geometry(triangle.points, [0, 1, 2]); }
     fn triangles(&mut self, triangles: impl IntoIterator<Item = TriangleVertex<N>>)
     {
         for triangle in triangles.into_iter()
@@ -47,10 +36,7 @@ impl<const N: usize> MeshBuilder<N>
     pub const DEFAULT_CAPACITY_VERTEX: usize = 512;
     pub const DEFAULT_CAPACITY_INDEX: usize = Self::DEFAULT_CAPACITY_VERTEX * 2;
 
-    pub fn new() -> Self
-    {
-        Self::with_capacity(Self::DEFAULT_CAPACITY_VERTEX, Self::DEFAULT_CAPACITY_INDEX)
-    }
+    pub fn new() -> Self { Self::with_capacity(Self::DEFAULT_CAPACITY_VERTEX, Self::DEFAULT_CAPACITY_INDEX) }
     pub fn with_capacity(nb_vertices: usize, nb_indices: usize) -> Self
     {
         Self {
@@ -58,11 +44,7 @@ impl<const N: usize> MeshBuilder<N>
             indices: Vec::with_capacity(nb_indices),
         }
     }
-    pub fn from_vertices_and_indices(vertices: Vec<VertexOf<N>>, indices: Vec<VertexIndex>)
-    -> Self
-    {
-        Self { vertices, indices }
-    }
+    pub fn from_vertices_and_indices(vertices: Vec<VertexOf<N>>, indices: Vec<VertexIndex>) -> Self { Self { vertices, indices } }
 
     pub fn is_valid(&self) -> bool
     {
@@ -96,35 +78,23 @@ impl<const N: usize> MeshBuilder<N>
     {
         // Safety: TriangleVertexIndex is repr(C) with the same layout as [VertexIndex; 3].
         let (tris, remainder) = self.indices.as_chunks::<3>();
-        assert!(
-            remainder.is_empty(),
-            "indices length must be divisible by 3"
-        );
+        assert!(remainder.is_empty(), "indices length must be divisible by 3");
         unsafe { std::slice::from_raw_parts(tris.as_ptr().cast(), tris.len()) }
     }
     pub fn triangle_indices_mut(&mut self) -> &mut [TriangleVertexIndex]
     {
         // Safety: TriangleVertexIndex is repr(C) with the same layout as [VertexIndex; 3].
         let (tris, remainder) = self.indices.as_chunks_mut::<3>();
-        assert!(
-            remainder.is_empty(),
-            "indices length must be divisible by 3"
-        );
+        assert!(remainder.is_empty(), "indices length must be divisible by 3");
         unsafe { std::slice::from_raw_parts_mut(tris.as_mut_ptr().cast(), tris.len()) }
     }
 
-    pub fn to_vertices_and_indices(self) -> (Vec<VertexOf<N>>, Vec<VertexIndex>)
-    {
-        (self.vertices, self.indices)
-    }
+    pub fn to_vertices_and_indices(self) -> (Vec<VertexOf<N>>, Vec<VertexIndex>) { (self.vertices, self.indices) }
     pub fn to_vertices_and_triangles_indices(self) -> (Vec<VertexOf<N>>, Vec<TriangleVertexIndex>)
     {
         (
             self.vertices,
-            self.indices
-                .chunks_exact(3)
-                .map(|c| TriangleVertexIndex::new(c[0], c[1], c[2]))
-                .collect(),
+            self.indices.chunks_exact(3).map(|c| TriangleVertexIndex::new(c[0], c[1], c[2])).collect(),
         )
     }
 }
@@ -157,11 +127,7 @@ impl<const N: usize> Clear for MeshBuilder<N>
 
 impl<const N: usize> BuilderMesh<N> for MeshBuilder<N>
 {
-    fn geometry(
-        &mut self,
-        vertex: impl IntoIterator<Item = VertexOf<N>>,
-        index: impl IntoIterator<Item = VertexIndex>,
-    )
+    fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>)
     {
         let vertices_prev_len = self.nb_vertex();
         self.vertices.extend(vertex);
@@ -171,14 +137,9 @@ impl<const N: usize> BuilderMesh<N> for MeshBuilder<N>
         let index_offset = vertices_prev_len as VertexIndex;
 
         let indices_prev_len = self.nb_index();
-        self.indices
-            .extend(index.into_iter().map(|idx| idx + index_offset));
+        self.indices.extend(index.into_iter().map(|idx| idx + index_offset));
         let indices_new_len = self.nb_index();
         let nb_indices_added = indices_new_len - indices_prev_len;
-        assert_eq!(
-            nb_indices_added % 3,
-            0,
-            "Index need to be a multiple of 3, because they form a triangle"
-        );
+        assert_eq!(nb_indices_added % 3, 0, "Index need to be a multiple of 3, because they form a triangle");
     }
 }

@@ -114,10 +114,7 @@ impl<T: Floating> TimeOf<T>
         }
     }
 
-    fn display_unit(f: &mut Formatter<'_>, val: i32, unit: &str) -> FmtResult
-    {
-        write!(f, "{}{}", val, unit)
-    }
+    fn display_unit(f: &mut Formatter<'_>, val: i32, unit: &str) -> FmtResult { write!(f, "{}{}", val, unit) }
 }
 
 impl<T: Floating> Display for TimeOf<T>
@@ -309,10 +306,7 @@ impl<T: Floating> TimeOf<T>
     /// use hexga_math::prelude::*;
     /// debug_assert_eq!(1f32.days(), (3600*24).secs());
     /// ```
-    pub fn from_days(day: T) -> Self
-    {
-        Self::from_secs(day * (T::SIXTY * T::SIXTY * T::TWENTY_FOUR))
-    }
+    pub fn from_days(day: T) -> Self { Self::from_secs(day * (T::SIXTY * T::SIXTY * T::TWENTY_FOUR)) }
     /// days
     /// ```
     /// use hexga_math::prelude::*;

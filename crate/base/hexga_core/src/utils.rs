@@ -136,12 +136,7 @@ pub struct IoWriteAdapter<W: std::io::Write>
 #[cfg(feature = "std")]
 impl<W: std::io::Write> std::fmt::Write for IoWriteAdapter<W>
 {
-    fn write_str(&mut self, s: &crate::primitive::str) -> std::fmt::Result
-    {
-        self.writer
-            .write_all(s.as_bytes())
-            .map_err(|_| std::fmt::Error)
-    }
+    fn write_str(&mut self, s: &crate::primitive::str) -> std::fmt::Result { self.writer.write_all(s.as_bytes()).map_err(|_| std::fmt::Error) }
 }
 
 pub mod prelude

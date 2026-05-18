@@ -8,8 +8,7 @@ use super::*;
 
 pub struct Io;
 
-static BYTES_CACHE: LazyLock<RwLock<HashMap<PathBuf, Cow<'static, [u8]>>>> =
-    LazyLock::new(|| Default::default());
+static BYTES_CACHE: LazyLock<RwLock<HashMap<PathBuf, Cow<'static, [u8]>>>> = LazyLock::new(|| Default::default());
 
 impl Io
 {
@@ -92,10 +91,7 @@ impl Io
         P: AsRef<Path>,
         B: Into<Cow<'static, [u8]>>,
     {
-        BYTES_CACHE
-            .write()
-            .unwrap()
-            .insert(path.as_ref().to_owned(), bytes.into());
+        BYTES_CACHE.write().unwrap().insert(path.as_ref().to_owned(), bytes.into());
     }
 
     pub fn save_str<P>(self, path: P, str: &str) -> IoResult

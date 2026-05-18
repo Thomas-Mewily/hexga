@@ -3,16 +3,11 @@ use super::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{
-        ButtonEvolution, ButtonRepeat, ButtonState, ButtonStateEvolution, ButtonToggle,
-    };
+    pub use super::{ButtonEvolution, ButtonRepeat, ButtonState, ButtonStateEvolution, ButtonToggle};
 }
 pub mod traits
 {
-    pub use super::{
-        ButtonEvolutionExtension, ButtonRepeatExtension, ButtonStateExtension,
-        ButtonToggleExtension,
-    };
+    pub use super::{ButtonEvolutionExtension, ButtonRepeatExtension, ButtonStateExtension, ButtonToggleExtension};
 }
 
 pub type ButtonEvolution = PreviousValue<ButtonState>;
@@ -102,17 +97,7 @@ impl ButtonRepeat
 }
 impl From<bool> for ButtonRepeat
 {
-    fn from(value: bool) -> Self
-    {
-        if value
-        {
-            Self::Repeated
-        }
-        else
-        {
-            Self::NotRepeated
-        }
-    }
+    fn from(value: bool) -> Self { if value { Self::Repeated } else { Self::NotRepeated } }
 }
 impl From<ButtonRepeat> for bool
 {

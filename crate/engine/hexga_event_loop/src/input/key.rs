@@ -1090,10 +1090,7 @@ impl From<WinitKeyName> for KeyNamed
             winit::keyboard::NamedKey::TV3DMode => KeyNamed::TV3DMode,
             winit::keyboard::NamedKey::TVAntennaCable => KeyNamed::TVAntennaCable,
             winit::keyboard::NamedKey::TVAudioDescription => KeyNamed::TVAudioDescription,
-            winit::keyboard::NamedKey::TVAudioDescriptionMixDown =>
-            {
-                KeyNamed::TVAudioDescriptionMixDown
-            }
+            winit::keyboard::NamedKey::TVAudioDescriptionMixDown => KeyNamed::TVAudioDescriptionMixDown,
             winit::keyboard::NamedKey::TVAudioDescriptionMixUp => KeyNamed::TVAudioDescriptionMixUp,
             winit::keyboard::NamedKey::TVContentsMenu => KeyNamed::TVContentsMenu,
             winit::keyboard::NamedKey::TVDataService => KeyNamed::TVDataService,
@@ -1423,10 +1420,7 @@ pub enum KeyModifiers
 
 impl KeyModifiersFlags
 {
-    pub const fn shortcut(self, code: KeyCode) -> KeyShortcut
-    {
-        KeyShortcut::from_code(code).with_modifier(self)
-    }
+    pub const fn shortcut(self, code: KeyCode) -> KeyShortcut { KeyShortcut::from_code(code).with_modifier(self) }
 }
 
 pub trait KeyModifiersExtension
@@ -1486,26 +1480,10 @@ impl Matches for KeyModifiersFlags
             }
         }
 
-        check_mods(
-            *self,
-            *lexem,
-            Self::ShiftLeft,
-            Self::ShiftRight,
-            Self::Shift,
-        ) && check_mods(
-            *self,
-            *lexem,
-            Self::ControlLeft,
-            Self::ControlRight,
-            Self::Control,
-        ) && check_mods(*self, *lexem, Self::AltLeft, Self::AltRight, Self::Alt)
-            && check_mods(
-                *self,
-                *lexem,
-                Self::SuperLeft,
-                Self::SuperRight,
-                Self::Super,
-            )
+        check_mods(*self, *lexem, Self::ShiftLeft, Self::ShiftRight, Self::Shift)
+            && check_mods(*self, *lexem, Self::ControlLeft, Self::ControlRight, Self::Control)
+            && check_mods(*self, *lexem, Self::AltLeft, Self::AltRight, Self::Alt)
+            && check_mods(*self, *lexem, Self::SuperLeft, Self::SuperRight, Self::Super)
     }
 }
 

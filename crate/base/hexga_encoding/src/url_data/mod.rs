@@ -56,9 +56,7 @@ impl<'a> TryFrom<&'a str> for UrlDataMeta<'a>
     {
         let value = value.trim();
 
-        let (scheme, rest) = value
-            .split_once(':')
-            .ok_or_else(|| EncodeError::custom("URL must have a scheme"))?;
+        let (scheme, rest) = value.split_once(':').ok_or_else(|| EncodeError::custom("URL must have a scheme"))?;
 
         let meta = rest.split(',').next().unwrap_or(rest);
 
@@ -112,11 +110,9 @@ impl<'a> TryFrom<&'a str> for UrlData<'a>
         let search_len = value.len().min(MIN_BYTE_SEPARATOR_SEARCH);
         let prefix = &value[..search_len];
 
-        let comma_pos = prefix.find(',').ok_or_else(|| {
-            EncodeError::custom(format!(
-                "Missing ',' separator in URL (first {MIN_BYTE_SEPARATOR_SEARCH} bytes)"
-            ))
-        })?;
+        let comma_pos = prefix
+            .find(',')
+            .ok_or_else(|| EncodeError::custom(format!("Missing ',' separator in URL (first {MIN_BYTE_SEPARATOR_SEARCH} bytes)")))?;
 
         let (meta_str, data) = value.split_at(comma_pos);
         let data = &data[1..]; // skip the comma itself
@@ -162,24 +158,20 @@ impl<'a> TryFrom<&'a [u8]> for BinUrlData<'a>
         let search_len = value.len().min(MIN_BYTE_SEPARATOR_SEARCH);
         let prefix = &value[..search_len];
 
-        let comma_pos = prefix.iter().position(|&b| b == b',').ok_or_else(|| {
-            EncodeError::custom(format!(
-                "Missing ',' separator in Bin URL (first {MIN_BYTE_SEPARATOR_SEARCH} bytes)"
-            ))
-        })?;
+        let comma_pos = prefix
+            .iter()
+            .position(|&b| b == b',')
+            .ok_or_else(|| EncodeError::custom(format!("Missing ',' separator in Bin URL (first {MIN_BYTE_SEPARATOR_SEARCH} bytes)")))?;
 
         let meta_bytes = &value[..comma_pos];
         let data = &value[comma_pos + 1..]; // raw payload
 
-        let meta_str = std::str::from_utf8(meta_bytes)
-            .map_err(|_| EncodeError::custom("Invalid UTF-8 in metadata"))?;
+        let meta_str = std::str::from_utf8(meta_bytes).map_err(|_| EncodeError::custom("Invalid UTF-8 in metadata"))?;
 
         let meta = UrlDataMeta::try_from(meta_str)?;
         if meta.scheme != "bin_data"
         {
-            return Err(EncodeError::custom(
-                "Invalid URL scheme: expected 'bin_data'",
-            ));
+            return Err(EncodeError::custom("Invalid URL scheme: expected 'bin_data'"));
         }
 
         Ok(BinUrlData { meta, data })
@@ -234,8 +226,7 @@ pub trait ToUrl: MediaType + SaveExtension
     {
         let media = Self::media_type();
         let mut data = Vec::with_capacity(1024);
-        write!(&mut data, "bin_data:{media}/{extension};base64,")
-            .map_err(|e| EncodeError::from(e))?;
+        write!(&mut data, "bin_data:{media}/{extension};base64,").map_err(|e| EncodeError::from(e))?;
         let (data, _deduced_extension) = self.save_to_bytes_in(data, Some(extension))?;
         Ok(data)
     }

@@ -6,8 +6,8 @@ use crate::{
 use std::{
     cell::{LazyCell, OnceCell},
     sync::{
-        LazyLock, MappedMutexGuard, MappedRwLockReadGuard, MappedRwLockWriteGuard, Mutex, OnceLock,
-        PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard, TryLockError,
+        LazyLock, MappedMutexGuard, MappedRwLockReadGuard, MappedRwLockWriteGuard, Mutex, OnceLock, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard,
+        TryLockError,
     },
 };
 
@@ -43,9 +43,8 @@ pub mod prelude
     pub(crate) use super::NotInitError;
     pub use super::traits::*;
     pub use super::{
-        SingletonCell, SingletonLazyCell, SingletonLazyMutex, SingletonLazyRw, SingletonMutex,
-        SingletonOnce, SingletonOnceCell, SingletonOnceLazy, SingletonOnceLazyCell,
-        SingletonOptionCell, SingletonOptionMutex, SingletonOptionRw, SingletonRw,
+        SingletonCell, SingletonLazyCell, SingletonLazyMutex, SingletonLazyRw, SingletonMutex, SingletonOnce, SingletonOnceCell, SingletonOnceLazy,
+        SingletonOnceLazyCell, SingletonOptionCell, SingletonOptionMutex, SingletonOptionRw, SingletonRw,
     };
 }
 
@@ -103,19 +102,14 @@ macro_rules! impl_singleton_methods_get_mut {
             /// May panic on exceptional behavior (ex poisoned mutex, wrong thread for SingleThreadCell)
             #[track_caller]
             #[inline]
-            pub fn get_mut<'a>(&'a self) -> <Self as GuardedMut<T>>::GuardMut<'a>
-            {
-                GuardedMut::get_mut(self)
-            }
+            pub fn get_mut<'a>(&'a self) -> <Self as GuardedMut<T>>::GuardMut<'a> { GuardedMut::get_mut(self) }
 
             /// Tries to return a mutable guard that dereferences to the inner value.
             ///
             /// This function never panics.
             #[track_caller]
             #[inline]
-            pub fn try_get_mut<'a>(
-                &'a self,
-            ) -> Result<<Self as GuardedMut<T>>::GuardMut<'a>, <Self as GuardedMut<T>>::Error<'a>>
+            pub fn try_get_mut<'a>(&'a self) -> Result<<Self as GuardedMut<T>>::GuardMut<'a>, <Self as GuardedMut<T>>::Error<'a>>
             {
                 GuardedMut::try_get_mut(self)
             }
@@ -140,12 +134,7 @@ macro_rules! impl_singleton_methods_get {
             /// This function never panics.
             #[track_caller]
             #[inline]
-            pub fn try_get<'a>(
-                &'a self,
-            ) -> Result<<Self as Guarded<T>>::Guard<'a>, <Self as Guarded<T>>::Error<'a>>
-            {
-                Guarded::try_get(self)
-            }
+            pub fn try_get<'a>(&'a self) -> Result<<Self as Guarded<T>>::Guard<'a>, <Self as Guarded<T>>::Error<'a>> { Guarded::try_get(self) }
         }
     };
 }

@@ -9,12 +9,7 @@ pub struct GpuContext
 }
 impl GpuContext
 {
-    pub fn from_wgpu(
-        instance: wgpu::Instance,
-        adapter: wgpu::Adapter,
-        device: wgpu::Device,
-        queue: wgpu::Queue,
-    ) -> Self
+    pub fn from_wgpu(instance: wgpu::Instance, adapter: wgpu::Adapter, device: wgpu::Device, queue: wgpu::Queue) -> Self
     {
         Self {
             instance,

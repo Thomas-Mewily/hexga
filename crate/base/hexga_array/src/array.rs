@@ -3,8 +3,7 @@ use std::cmp::Ordering;
 
 /// An array that is indexable, without any information if the type and the size are generic.
 /// Check [`ArrayWithType`] and [ArrayWithSize] for editable generic type.
-pub trait Array<T, const N: usize>:
-    From<[T; N]> + Into<[T; N]> + Index<usize, Output = T> + IndexMut<usize, Output = T>
+pub trait Array<T, const N: usize>: From<[T; N]> + Into<[T; N]> + Index<usize, Output = T> + IndexMut<usize, Output = T>
 {
     const DIMENSION: usize = N;
 
@@ -84,10 +83,7 @@ pub trait ArrayMin<T, const N: usize>: Array<T, N>
     where
         F: FnMut(&T, &T) -> Ordering,
     {
-        self.array()
-            .iter()
-            .min_by(|a, b| compare(a, b))
-            .expect("size can't be empty")
+        self.array().iter().min_by(|a, b| compare(a, b)).expect("size can't be empty")
     }
     fn min_element_by_key<F, K>(&self, mut f: F) -> &T
     where
@@ -100,10 +96,7 @@ pub trait ArrayMin<T, const N: usize>: Array<T, N>
     where
         F: FnMut(&T, &T) -> Ordering,
     {
-        self.array_mut()
-            .iter_mut()
-            .min_by(|a, b| compare(a, b))
-            .expect("size can't be empty")
+        self.array_mut().iter_mut().min_by(|a, b| compare(a, b)).expect("size can't be empty")
     }
     fn min_element_mut_by_key<F, K>(&mut self, mut f: F) -> &mut T
     where
@@ -116,10 +109,7 @@ pub trait ArrayMin<T, const N: usize>: Array<T, N>
     where
         T: PartialOrd,
     {
-        self.array()
-            .iter()
-            .min_by(|a, b| a.partial_cmp(b).unwrap())
-            .expect("size can't be empty")
+        self.array().iter().min_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty")
     }
     fn min_element_mut(&mut self) -> &mut T
     where
@@ -151,10 +141,7 @@ pub trait ArrayMax<T, const N: usize>: Array<T, N>
     where
         F: FnMut(&T, &T) -> Ordering,
     {
-        self.array()
-            .iter()
-            .max_by(|a, b| compare(a, b))
-            .expect("size can't be empty")
+        self.array().iter().max_by(|a, b| compare(a, b)).expect("size can't be empty")
     }
     fn max_element_by_key<F, K>(&self, mut f: F) -> &T
     where
@@ -167,10 +154,7 @@ pub trait ArrayMax<T, const N: usize>: Array<T, N>
     where
         F: FnMut(&T, &T) -> Ordering,
     {
-        self.array_mut()
-            .iter_mut()
-            .max_by(|a, b| compare(a, b))
-            .expect("size can't be empty")
+        self.array_mut().iter_mut().max_by(|a, b| compare(a, b)).expect("size can't be empty")
     }
     fn max_element_mut_by_key<F, K>(&mut self, mut f: F) -> &mut T
     where
@@ -183,10 +167,7 @@ pub trait ArrayMax<T, const N: usize>: Array<T, N>
     where
         T: PartialOrd,
     {
-        self.array()
-            .iter()
-            .max_by(|a, b| a.partial_cmp(b).unwrap())
-            .expect("size can't be empty")
+        self.array().iter().max_by(|a, b| a.partial_cmp(b).unwrap()).expect("size can't be empty")
     }
     fn max_element_mut(&mut self) -> &mut T
     where

@@ -13,8 +13,7 @@ pub mod traits
 }
 
 pub type GenHashSet<K> = GenHashSetOf<K, RandomState>;
-pub type GenHashSetOf<K, S = RandomState> =
-    GenSetOf<K, Generation, HashMap<K, GenIDOf<K, Generation>, S>>;
+pub type GenHashSetOf<K, S = RandomState> = GenSetOf<K, Generation, HashMap<K, GenIDOf<K, Generation>, S>>;
 pub type GenBTreeSet<K> = GenSetOf<K, Generation, BTreeMap<K, GenIDOf<K, Generation>>>;
 
 /// A Generational Set Collection.
@@ -86,10 +85,7 @@ where
         for (id, key) in values.iter()
         {
             let prev = search.insert(key.clone(), id);
-            assert!(
-                prev.is_none(),
-                "duplicate key found during GenSetOf conversion from GenSeq"
-            );
+            assert!(prev.is_none(), "duplicate key found during GenSetOf conversion from GenSeq");
         }
 
         Self { values, search }
@@ -117,9 +113,7 @@ where
         {
             if search.insert(key.clone(), id).is_some()
             {
-                return Err(serde::de::Error::custom(
-                    "duplicate key found during GenSetOf deserialization",
-                ));
+                return Err(serde::de::Error::custom("duplicate key found during GenSetOf deserialization"));
             }
         }
 
@@ -156,10 +150,7 @@ where
     Gen: GenerationalIndex,
     K: Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
-        f.debug_set().entries(self.values.iter()).finish()
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { f.debug_set().entries(self.values.iter()).finish() }
 }
 
 impl<K, Gen, S> Collection for GenSetOf<K, Gen, S>
@@ -245,10 +236,7 @@ where
     }
 
     pub fn iter(&self) -> Iter<'_, K, Gen> { self.into_iter() }
-    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<K, Gen>> + '_
-    {
-        self.into_iter().map(|(id, _k)| id)
-    }
+    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<K, Gen>> + '_ { self.into_iter().map(|(id, _k)| id) }
     pub fn values(&self) -> impl Iterator<Item = &K> + '_ { self.into_iter().map(|(_id, k)| k) }
 }
 
@@ -369,11 +357,7 @@ where
     S: Get<&'a Q, Output = GenIDOf<K, Gen>>,
 {
     type Error = MissingKey<Q>;
-    fn try_get(&self, index: &'a Q) -> Result<&Self::Output, Self::Error>
-    {
-        self.get(index)
-            .ok_or_else(|| MissingKey::new(index.clone()))
-    }
+    fn try_get(&self, index: &'a Q) -> Result<&Self::Output, Self::Error> { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 
 impl<K, Gen, S> Get<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
@@ -384,10 +368,7 @@ where
 {
     type Output = K;
     fn get(&self, index: GenIDOf<K, Gen>) -> Option<&Self::Output> { self.values.get(index) }
-    unsafe fn get_unchecked(&self, index: GenIDOf<K, Gen>) -> &Self::Output
-    {
-        unsafe { self.values.get_unchecked(index) }
-    }
+    unsafe fn get_unchecked(&self, index: GenIDOf<K, Gen>) -> &Self::Output { unsafe { self.values.get_unchecked(index) } }
 }
 
 impl<K, Gen, S> TryGet<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
@@ -397,10 +378,7 @@ where
     S: Collection,
 {
     type Error = <GenSeq<K, Gen> as TryGet<GenIDOf<K, Gen>>>::Error;
-    fn try_get(&self, index: GenIDOf<K, Gen>) -> Result<&Self::Output, Self::Error>
-    {
-        self.values.try_get(index)
-    }
+    fn try_get(&self, index: GenIDOf<K, Gen>) -> Result<&Self::Output, Self::Error> { self.values.try_get(index) }
 }
 
 impl<K, Gen, S> Get<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
@@ -414,10 +392,7 @@ where
     fn get(&self, index: UntypedGenIDOf<Gen>) -> Option<&Self::Output> { self.get(index.typed()) }
     #[track_caller]
     #[inline(always)]
-    unsafe fn get_unchecked(&self, index: UntypedGenIDOf<Gen>) -> &Self::Output
-    {
-        unsafe { self.get_unchecked(index.typed()) }
-    }
+    unsafe fn get_unchecked(&self, index: UntypedGenIDOf<Gen>) -> &Self::Output { unsafe { self.get_unchecked(index.typed()) } }
 }
 
 impl<K, Gen, S> TryGet<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
@@ -429,10 +404,7 @@ where
     type Error = <GenSeq<K, Gen> as TryGet<UntypedGenIDOf<Gen>>>::Error;
     #[track_caller]
     #[inline(always)]
-    fn try_get(&self, index: UntypedGenIDOf<Gen>) -> Result<&Self::Output, Self::Error>
-    {
-        self.try_get(index.typed())
-    }
+    fn try_get(&self, index: UntypedGenIDOf<Gen>) -> Result<&Self::Output, Self::Error> { self.try_get(index.typed()) }
 }
 
 impl<K, Gen, S> Insert<K, ()> for GenSetOf<K, Gen, S>
@@ -485,10 +457,7 @@ where
     S: for<'a> Remove<&'a K, Output = GenIDOf<K, Gen>>,
 {
     type Output = K;
-    fn remove(&mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::Output>
-    {
-        self.remove(index.typed())
-    }
+    fn remove(&mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::Output> { self.remove(index.typed()) }
 }
 
 impl<K, Gen, S> Extend<K> for GenSetOf<K, Gen, S>
@@ -582,12 +551,7 @@ where
     type Item = (GenIDOf<K, Gen>, K);
     type IntoIter = IntoIter<K, Gen>;
 
-    fn into_iter(self) -> Self::IntoIter
-    {
-        IntoIter {
-            iter: self.values.into_iter(),
-        }
-    }
+    fn into_iter(self) -> Self::IntoIter { IntoIter { iter: self.values.into_iter() } }
 }
 
 impl<'a, K, Gen, S> IntoIterator for &'a GenSetOf<K, Gen, S>
@@ -598,12 +562,7 @@ where
     type Item = (GenIDOf<K, Gen>, &'a K);
     type IntoIter = Iter<'a, K, Gen>;
 
-    fn into_iter(self) -> Self::IntoIter
-    {
-        Iter {
-            iter: self.values.iter(),
-        }
-    }
+    fn into_iter(self) -> Self::IntoIter { Iter { iter: self.values.iter() } }
 }
 
 pub trait CollectToGenSet<K, S = RandomState>: Sized + IntoIterator<Item = K>
@@ -614,9 +573,7 @@ where
     where
         GenSetOf<K, Generation, S>: WithCapacity + Reserve,
         <GenSetOf<K, Generation, S> as WithCapacity>::Param: Default,
-        S: Default
-            + Insert<K, GenIDOf<K, Generation>>
-            + for<'a> Remove<&'a K, Output = GenIDOf<K, Generation>>,
+        S: Default + Insert<K, GenIDOf<K, Generation>> + for<'a> Remove<&'a K, Output = GenIDOf<K, Generation>>,
     {
         self.into_iter().collect()
     }

@@ -48,10 +48,7 @@ pub enum GpuBufferUsage
 }
 impl GpuBufferUsageFlags
 {
-    pub const fn from_wgpu(value: wgpu::BufferUsages) -> Self
-    {
-        unsafe { Self::from_bits_unchecked(value.bits()) }
-    }
+    pub const fn from_wgpu(value: wgpu::BufferUsages) -> Self { unsafe { Self::from_bits_unchecked(value.bits()) } }
 }
 impl From<wgpu::BufferUsages> for GpuBufferUsageFlags
 {
@@ -60,9 +57,5 @@ impl From<wgpu::BufferUsages> for GpuBufferUsageFlags
 }
 impl From<GpuBufferUsageFlags> for wgpu::BufferUsages
 {
-    fn from(value: GpuBufferUsageFlags) -> Self
-    {
-        Self::from_bits(value.bits())
-            .expect("Oops! WGPU added more usage flags and this code is not updated")
-    }
+    fn from(value: GpuBufferUsageFlags) -> Self { Self::from_bits(value.bits()).expect("Oops! WGPU added more usage flags and this code is not updated") }
 }

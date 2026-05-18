@@ -170,10 +170,7 @@ impl<T> GuardedMut<T> for std::cell::RefCell<T>
         = std::cell::BorrowMutError
     where
         Self: 'a;
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
-    {
-        self.try_borrow_mut()
-    }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.try_borrow_mut() }
 }
 
 #[cfg(feature = "std")]

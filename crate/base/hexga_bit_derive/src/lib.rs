@@ -10,10 +10,7 @@ use quote::quote;
 use syn::{DeriveInput, Result, parse_macro_input};
 
 #[allow(unused_imports)]
-use crate::traits::{
-    BitAllUsed, BitAnyPattern, BitPattern, BitZero, Contiguous, Derivable, Pod, TransparentWrapper,
-    hexga_bit_crate_name,
-};
+use crate::traits::{BitAllUsed, BitAnyPattern, BitPattern, BitZero, Contiguous, Derivable, Pod, TransparentWrapper, hexga_bit_crate_name};
 
 /// Derive the `Pod` trait for a struct
 ///
@@ -311,49 +308,36 @@ fn find_and_parse_helper_attributes<P: syn::parse::Parser + Copy>(
     invalid_value_msg: &str,
 ) -> Result<Vec<P::Output>>
 {
-    let invalid_format_msg =
-        format!("{name} attribute must be `{name}({key} = \"{example_value}\")`",);
+    let invalid_format_msg = format!("{name} attribute must be `{name}({key} = \"{example_value}\")`",);
     let values_to_check = attributes.iter().filter_map(|attr| match &attr.meta
     {
         // If a `Path` matches our `name`, return an error, else ignore it.
         // e.g. `#[bitZero]`
-        syn::Meta::Path(path) => path
-            .is_ident(name)
-            .then(|| Err(syn::Error::new_spanned(path, &invalid_format_msg))),
+        syn::Meta::Path(path) => path.is_ident(name).then(|| Err(syn::Error::new_spanned(path, &invalid_format_msg))),
         // If a `NameValue` matches our `name`, return an error, else ignore it.
         // e.g. `#[bitZero = "hello"]`
-        syn::Meta::NameValue(namevalue) => namevalue.path.is_ident(name).then(|| {
-            Err(syn::Error::new_spanned(
-                &namevalue.path,
-                &invalid_format_msg,
-            ))
-        }),
+        syn::Meta::NameValue(namevalue) => namevalue
+            .path
+            .is_ident(name)
+            .then(|| Err(syn::Error::new_spanned(&namevalue.path, &invalid_format_msg))),
         // If a `List` matches our `name`, match its contents to our format, else
         // ignore it. If its contents match our format, return the value, else
         // return an error.
         syn::Meta::List(list) => list.path.is_ident(name).then(|| {
-            let namevalue: syn::MetaNameValue = syn::parse2(list.tokens.clone())
-                .map_err(|_| syn::Error::new_spanned(&list.tokens, &invalid_format_msg))?;
+            let namevalue: syn::MetaNameValue = syn::parse2(list.tokens.clone()).map_err(|_| syn::Error::new_spanned(&list.tokens, &invalid_format_msg))?;
             if namevalue.path.is_ident(key)
             {
                 match namevalue.value
                 {
                     syn::Expr::Lit(syn::ExprLit {
-                        lit: syn::Lit::Str(strlit),
-                        ..
+                        lit: syn::Lit::Str(strlit), ..
                     }) => Ok(strlit),
-                    _ => Err(syn::Error::new_spanned(
-                        &namevalue.path,
-                        &invalid_format_msg,
-                    )),
+                    _ => Err(syn::Error::new_spanned(&namevalue.path, &invalid_format_msg)),
                 }
             }
             else
             {
-                Err(syn::Error::new_spanned(
-                    &namevalue.path,
-                    &invalid_format_msg,
-                ))
+                Err(syn::Error::new_spanned(&namevalue.path, &invalid_format_msg))
             }
         }),
     });
@@ -392,10 +376,7 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
             // Explicit bounds were given.
             // Enforce explicitly given bounds, and emit "perfect derive" (i.e. add
             // bounds for each field's type).
-            let explicit_bounds = explicit_bounds
-                .into_iter()
-                .flatten()
-                .collect::<Vec<syn::WherePredicate>>();
+            let explicit_bounds = explicit_bounds.into_iter().flatten().collect::<Vec<syn::WherePredicate>>();
 
             let fields = match (Trait::perfect_derive_fields(&input), &input.data)
             {
@@ -403,17 +384,11 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
                 (None, syn::Data::Struct(syn::DataStruct { fields, .. })) => fields.clone(),
                 (None, syn::Data::Union(_)) =>
                 {
-                    return Err(syn::Error::new_spanned(
-                        trait_,
-                        &"perfect derive is not supported for unions",
-                    ));
+                    return Err(syn::Error::new_spanned(trait_, &"perfect derive is not supported for unions"));
                 }
                 (None, syn::Data::Enum(_)) =>
                 {
-                    return Err(syn::Error::new_spanned(
-                        trait_,
-                        &"perfect derive is not supported for enums",
-                    ));
+                    return Err(syn::Error::new_spanned(trait_, &"perfect derive is not supported for enums"));
                 }
             };
 
@@ -460,14 +435,7 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
         quote!()
     };
 
-    let where_clause = if Trait::requires_where_clause()
-    {
-        where_clause
-    }
-    else
-    {
-        None
-    };
+    let where_clause = if Trait::requires_where_clause() { where_clause } else { None };
 
     Ok(quote! {
       #asserts

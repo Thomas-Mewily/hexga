@@ -49,10 +49,7 @@ impl<T> HslaOf<T>
     /// S : Grayscale : `0`, `1`: pure color.
     ///
     /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
-    pub const fn hsla(hue: T, saturation: T, lightness: T, alpha: T) -> Self
-    {
-        Self::new(hue, saturation, lightness, alpha)
-    }
+    pub const fn hsla(hue: T, saturation: T, lightness: T, alpha: T) -> Self { Self::new(hue, saturation, lightness, alpha) }
 
     /// Alpha is at max
     ///
@@ -445,10 +442,7 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
 /// S : Grayscale : `0`, `1`: pure color.
 ///
 /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
-pub const fn hsla<T>(hue: T, saturation: T, lightness: T, alpha: T) -> HslaOf<T>
-{
-    HslaOf::hsla(hue, saturation, lightness, alpha)
-}
+pub const fn hsla<T>(hue: T, saturation: T, lightness: T, alpha: T) -> HslaOf<T> { HslaOf::hsla(hue, saturation, lightness, alpha) }
 
 /// Alpha is at max
 ///

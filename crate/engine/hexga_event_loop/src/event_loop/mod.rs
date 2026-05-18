@@ -19,8 +19,7 @@ pub mod experimental
 {
     use super::*;
 
-    pub type WinitEventLoopProxy<CustomEvent> =
-        ::winit::event_loop::EventLoopProxy<PlatformEvent<CustomEvent>>;
+    pub type WinitEventLoopProxy<CustomEvent> = ::winit::event_loop::EventLoopProxy<PlatformEvent<CustomEvent>>;
 
     pub(crate) type WinitEventLoopActive = ::winit::event_loop::ActiveEventLoop;
     pub(crate) type WinitEventLoop<User> = ::winit::event_loop::EventLoop<User>;
@@ -38,10 +37,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{
-        AsyncSpawn, EventLoopSendEvent, PlatformCustomEvent, PlatformEventHandler,
-        WithEventLoopParam, WithEventLoopShortcut,
-    };
+    pub use super::{AsyncSpawn, EventLoopSendEvent, PlatformCustomEvent, PlatformEventHandler, WithEventLoopParam, WithEventLoopShortcut};
 }
 
 pub type EventLoopResult<T = ()> = Result<T, EventLoopError>;

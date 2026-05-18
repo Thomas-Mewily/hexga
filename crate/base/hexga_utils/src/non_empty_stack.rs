@@ -27,10 +27,7 @@ impl<T> DerefMut for NonEmptyStack<T>
 impl<T> TryFrom<Vec<T>> for NonEmptyStack<T>
 {
     type Error = ();
-    fn try_from(value: Vec<T>) -> std::result::Result<Self, Self::Error>
-    {
-        Self::from_vec(value).ok_or(())
-    }
+    fn try_from(value: Vec<T>) -> std::result::Result<Self, Self::Error> { Self::from_vec(value).ok_or(()) }
 }
 
 /// A stack that always have at least one element,
@@ -52,10 +49,7 @@ impl<T> NonEmptyStack<T>
             stack: Vec::with_capacity(capacity.saturating_sub(1)),
         }
     }
-    pub fn from_vec(mut stack: Vec<T>) -> Option<Self>
-    {
-        stack.pop().and_then(|last| Some(Self { last, stack }))
-    }
+    pub fn from_vec(mut stack: Vec<T>) -> Option<Self> { stack.pop().and_then(|last| Some(Self { last, stack })) }
 
     pub fn len(&self) -> usize { self.stack.len() + 1 }
 
@@ -322,17 +316,7 @@ impl<T> Get<usize> for NonEmptyStack<T>
 {
     type Output = T;
     #[inline(always)]
-    fn get(&self, index: usize) -> Option<&Self::Output>
-    {
-        if index == self.len() - 1
-        {
-            Some(&self.last)
-        }
-        else
-        {
-            self.stack.get(index)
-        }
-    }
+    fn get(&self, index: usize) -> Option<&Self::Output> { if index == self.len() - 1 { Some(&self.last) } else { self.stack.get(index) } }
     #[inline(always)]
     unsafe fn get_unchecked(&self, index: usize) -> &Self::Output
     {
@@ -389,10 +373,7 @@ impl<T> IndexMut<usize> for NonEmptyStack<T>
 }
 impl<T> GetManyMut<usize> for NonEmptyStack<T>
 {
-    fn try_get_many_mut<const N: usize>(
-        &mut self,
-        indices: [usize; N],
-    ) -> Result<[&mut Self::Output; N], ManyMutError>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output; N], ManyMutError>
     {
         let len = self.len();
         if indices.iter().any(|&i| i >= len)
@@ -442,29 +423,17 @@ impl<T> Capacity for NonEmptyStack<T>
 impl<T> WithCapacity for NonEmptyStack<T>
 {
     type Param = T;
-    fn with_capacity_and_param(capacity: usize, value: Self::Param) -> Self
-    {
-        Self::with_capacity(value, capacity)
-    }
+    fn with_capacity_and_param(capacity: usize, value: Self::Param) -> Self { Self::with_capacity(value, capacity) }
 }
 impl<T> Reserve for NonEmptyStack<T>
 {
     type Error = std::collections::TryReserveError;
 
     fn reserve(&mut self, additional: usize) { self.stack.reserve(additional.saturating_sub(1)); }
-    fn reserve_exact(&mut self, additional: usize)
-    {
-        self.stack.reserve_exact(additional.saturating_sub(1));
-    }
+    fn reserve_exact(&mut self, additional: usize) { self.stack.reserve_exact(additional.saturating_sub(1)); }
 
-    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError>
-    {
-        self.stack.try_reserve(additional.saturating_sub(1))
-    }
-    fn try_reserve_exact(
-        &mut self,
-        additional: usize,
-    ) -> Result<(), std::collections::TryReserveError>
+    fn try_reserve(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError> { self.stack.try_reserve(additional.saturating_sub(1)) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), std::collections::TryReserveError>
     {
         self.stack.try_reserve_exact(additional.saturating_sub(1))
     }
@@ -493,10 +462,7 @@ impl<T> Shrink for NonEmptyStack<T>
 {
     fn shrink_to_fit(&mut self) { self.stack.shrink_to_fit(); }
 
-    fn shrink_to(&mut self, min_capacity: usize)
-    {
-        self.stack.shrink_to(min_capacity.saturating_sub(1));
-    }
+    fn shrink_to(&mut self, min_capacity: usize) { self.stack.shrink_to(min_capacity.saturating_sub(1)); }
 }
 
 #[cfg(feature = "serde")]

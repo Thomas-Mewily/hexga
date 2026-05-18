@@ -244,10 +244,7 @@ where
 
     unsafe fn grid_unchecked(&self) -> &Self { self }
 
-    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(
-        &'a self,
-        rect: Rectangle<Idx, N>,
-    ) -> Self::WithLifetime<'b>
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b>
     where
         'a: 'b,
     {
@@ -304,12 +301,7 @@ where
     T: Clone,
 {
     type Output = GridOf<T, Idx, N>;
-    fn to_grid(self) -> Self::Output
-    {
-        GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe {
-            self.get_unchecked(idx).clone()
-        })
-    }
+    fn to_grid(self) -> Self::Output { GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() }) }
 }
 
 impl<'a, T, Idx, const N: usize> ToGrid<T, Idx, N> for GridViewMut<'a, GridOf<T, Idx, N>, T, Idx, N>
@@ -318,10 +310,5 @@ where
     T: Clone,
 {
     type Output = GridOf<T, Idx, N>;
-    fn to_grid(self) -> Self::Output
-    {
-        GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe {
-            self.get_unchecked(idx).clone()
-        })
-    }
+    fn to_grid(self) -> Self::Output { GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() }) }
 }

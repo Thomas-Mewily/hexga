@@ -40,10 +40,7 @@ macro_rules! impl_cast_into {
         {
             type Output = S::WithType<<S::Item as $trait_name>::Output>;
             fn $fn_map_name(self) -> Self::Output { self.map($trait_name::$fn_map_name) }
-            fn $fn_map_range_name(self) -> Self::Output
-            {
-                self.map($trait_name::$fn_map_range_name)
-            }
+            fn $fn_map_range_name(self) -> Self::Output { self.map($trait_name::$fn_map_range_name) }
         }
     };
 }

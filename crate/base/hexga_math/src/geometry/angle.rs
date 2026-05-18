@@ -164,10 +164,7 @@ impl<T: Floating> AngleOf<T>
     pub const RIGHT: Self = AngleOf(T::HALF_PI);
 
     pub fn from_radian(rad: T) -> Self { Self(rad) }
-    pub fn from_degree(degree: T) -> Self
-    {
-        Self(degree * (T::ANGLE_FULL_RADIAN / T::ANGLE_FULL_DEGREE))
-    }
+    pub fn from_degree(degree: T) -> Self { Self(degree * (T::ANGLE_FULL_RADIAN / T::ANGLE_FULL_DEGREE)) }
     pub fn from_turn(coef: T) -> Self { Self(coef * T::ANGLE_FULL_RADIAN) }
 
     pub fn radian(self) -> T { self.0 }
@@ -176,26 +173,14 @@ impl<T: Floating> AngleOf<T>
 
     // Todo : check for a better way to do it
     /// `[0, 2PI[`
-    pub fn normalized_positive(self) -> Self
-    {
-        Self::from_radian(
-            (self.0 % T::ANGLE_FULL_RADIAN + T::ANGLE_FULL_RADIAN) % T::ANGLE_FULL_RADIAN,
-        )
-    }
+    pub fn normalized_positive(self) -> Self { Self::from_radian((self.0 % T::ANGLE_FULL_RADIAN + T::ANGLE_FULL_RADIAN) % T::ANGLE_FULL_RADIAN) }
 
     // Todo : check for a better way to do it
     /// `]PI; PI]`
     pub fn normalized(self) -> Self
     {
         let tmp = self.normalized_positive();
-        if tmp < Self::HALF
-        {
-            tmp
-        }
-        else
-        {
-            tmp - Self::FULL
-        }
+        if tmp < Self::HALF { tmp } else { tmp - Self::FULL }
     }
 
     // TODO: make a Trigonometric trait for float and angle ?
@@ -270,10 +255,7 @@ impl<T: Floating> AngleOf<T>
     #[inline(always)]
     pub fn to_vector2_normalized(self) -> Vector2<T> { self.to_vector2(T::ONE) }
     #[inline(always)]
-    pub fn to_vector2(self, length: T) -> Vector2<T>
-    {
-        Vector2::new(self.cos() * length, self.sin() * length)
-    }
+    pub fn to_vector2(self, length: T) -> Vector2<T> { Vector2::new(self.cos() * length, self.sin() * length) }
 
     pub fn inside_range(self, begin: Self, end: Self) -> bool
     {

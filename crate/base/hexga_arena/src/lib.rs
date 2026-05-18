@@ -8,13 +8,7 @@ pub mod prelude
     pub use hexga_core::allocation::prelude::*;
 }
 
-pub trait Arenable:
-    Length
-    + AllocFromLayout<AllocLayout, Output = AllocOutput>
-    + Capacity
-    + WithCapacity
-    + From<AllocLayout>
-    + ManagedBox
+pub trait Arenable: Length + AllocFromLayout<AllocLayout, Output = AllocOutput> + Capacity + WithCapacity + From<AllocLayout> + ManagedBox
 {
     /// Returns the number of bytes currently used in the buffer.
     fn nb_used(&self) -> usize { self.len() }

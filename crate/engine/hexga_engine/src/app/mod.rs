@@ -17,9 +17,7 @@ pub mod prelude
     pub use super::traits::*;
     pub use super::{AppError, AppEvent, AppParam, AppResult};
 
-    pub(crate) use super::{
-        AppCustomEvent, AppInternalEvent, AppInternalEventLoop, AppInternalProxy,
-    };
+    pub(crate) use super::{AppCustomEvent, AppInternalEvent, AppInternalEventLoop, AppInternalProxy};
 }
 
 pub mod traits

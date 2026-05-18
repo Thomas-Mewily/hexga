@@ -48,19 +48,9 @@ impl<T> SinglyLinkedNode<T>
 {
     pub fn new(value: T) -> Self { Self { next: None, value } }
 
-    pub fn iter<'a>(head: &'a Option<Box<Self>>) -> Iter<'a, T>
-    {
-        Iter {
-            current: head.as_deref(),
-        }
-    }
+    pub fn iter<'a>(head: &'a Option<Box<Self>>) -> Iter<'a, T> { Iter { current: head.as_deref() } }
 
-    pub fn iter_mut<'a>(head: &'a mut Option<Box<Self>>) -> IterMut<'a, T>
-    {
-        IterMut {
-            current: head.as_deref_mut(),
-        }
-    }
+    pub fn iter_mut<'a>(head: &'a mut Option<Box<Self>>) -> IterMut<'a, T> { IterMut { current: head.as_deref_mut() } }
 
     pub fn replace(&mut self, value: T) -> T { mem::replace(&mut self.value, value) }
 
@@ -97,22 +87,12 @@ pub struct Iter<'a, T>
 }
 impl<'a, T> Clone for Iter<'a, T>
 {
-    fn clone(&self) -> Self
-    {
-        Self {
-            current: self.current.clone(),
-        }
-    }
+    fn clone(&self) -> Self { Self { current: self.current.clone() } }
 }
 
 impl<'a, T> Iter<'a, T>
 {
-    pub fn new(head: &'a SinglyLinkedNode<T>) -> Self
-    {
-        Self {
-            current: Some(head),
-        }
-    }
+    pub fn new(head: &'a SinglyLinkedNode<T>) -> Self { Self { current: Some(head) } }
 }
 
 impl<'a, T> Iterator for Iter<'a, T>
@@ -134,12 +114,7 @@ pub struct IterMut<'a, T>
 
 impl<'a, T> IterMut<'a, T>
 {
-    pub fn new(head: &'a mut SinglyLinkedNode<T>) -> Self
-    {
-        Self {
-            current: Some(head),
-        }
-    }
+    pub fn new(head: &'a mut SinglyLinkedNode<T>) -> Self { Self { current: Some(head) } }
 }
 
 impl<'a, T> Iterator for IterMut<'a, T>

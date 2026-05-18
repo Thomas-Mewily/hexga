@@ -33,10 +33,7 @@ impl<'se> MarkupSerializer<'se> for SerializerRon<'se>
 {
     const EXTENSION: &'static str = Extension::RON;
 
-    fn new_serializer(src: &'se mut Vec<u8>) -> Self
-    {
-        SerializerRon::new(VecWrite(src), Some(Default::default())).unwrap()
-    }
+    fn new_serializer(src: &'se mut Vec<u8>) -> Self { SerializerRon::new(VecWrite(src), Some(Default::default())).unwrap() }
 }
 impl<'se> MarkupSerializer<'se> for SerializerJson<'se>
 {

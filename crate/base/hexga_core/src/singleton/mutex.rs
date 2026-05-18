@@ -44,12 +44,7 @@ where
         match self.try_get_mut()
         {
             Ok(guard) => write!(f, "{:?}", guard.deref()),
-            Err(e) => write!(
-                f,
-                "SingletonMutex<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -69,11 +64,7 @@ impl<T> GuardedMut<T> for SingletonMutex<T>
             Ok(guard) => guard,
             Err(e) =>
             {
-                panic!(
-                    "SingletonMutex<{}> poisoned: {:?}",
-                    std::any::type_name::<T>(),
-                    e
-                )
+                panic!("SingletonMutex<{}> poisoned: {:?}", std::any::type_name::<T>(), e)
             }
         };
 
@@ -85,10 +76,7 @@ impl<T> GuardedMut<T> for SingletonMutex<T>
     where
         Self: 'a;
 
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
-    {
-        Ok(self.guarded.lock()?.guard_map_mut(|v| v.as_mut()))
-    }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(self.guarded.lock()?.guard_map_mut(|v| v.as_mut())) }
 }
 impl_singleton_methods_get_mut!(SingletonMutex);
 
@@ -111,12 +99,7 @@ where
         match self.try_get_mut()
         {
             Ok(guard) => write!(f, "{:?}", guard.deref()),
-            Err(e) => write!(
-                f,
-                "SingletonLazyMutex<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonLazyMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -136,11 +119,7 @@ impl<T> GuardedMut<T> for SingletonLazyMutex<T>
             Ok(guard) => guard,
             Err(e) =>
             {
-                panic!(
-                    "SingletonLazyMutex<{}> poisoned: {:?}",
-                    std::any::type_name::<T>(),
-                    e
-                )
+                panic!("SingletonLazyMutex<{}> poisoned: {:?}", std::any::type_name::<T>(), e)
             }
         };
 
@@ -152,10 +131,7 @@ impl<T> GuardedMut<T> for SingletonLazyMutex<T>
     where
         Self: 'a;
 
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
-    {
-        Ok(self.guarded.lock()?.guard_map_mut(|v| v.deref_mut()))
-    }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(self.guarded.lock()?.guard_map_mut(|v| v.deref_mut())) }
 }
 impl_singleton_methods_get_mut!(SingletonLazyMutex);
 
@@ -168,12 +144,7 @@ impl<T> SingletonOptionMutex<T>
     pub const fn from_value(value: T) -> Self { Self::new(Some(value)) }
 
     /// Creates a singleton with the given option state.
-    pub const fn new(value: Option<T>) -> Self
-    {
-        Self {
-            guarded: Mutex::new(value),
-        }
-    }
+    pub const fn new(value: Option<T>) -> Self { Self { guarded: Mutex::new(value) } }
 }
 
 impl<T> SingletonOptionable<T> for SingletonOptionMutex<T>
@@ -219,12 +190,7 @@ where
         match self.try_get_mut()
         {
             Ok(guard) => write!(f, "{:?}", guard.deref()),
-            Err(e) => write!(
-                f,
-                "SingletonOptionMutex<{}> can't be read: {:?}",
-                std::any::type_name::<T>(),
-                e
-            ),
+            Err(e) => write!(f, "SingletonOptionMutex<{}> can't be read: {:?}", std::any::type_name::<T>(), e),
         }
     }
 }
@@ -244,20 +210,13 @@ impl<T> GuardedMut<T> for SingletonOptionMutex<T>
             Ok(guard) => guard,
             Err(e) =>
             {
-                panic!(
-                    "SingletonOptionMutex<{}> poisoned: {:?}",
-                    std::any::type_name::<T>(),
-                    e
-                )
+                panic!("SingletonOptionMutex<{}> poisoned: {:?}", std::any::type_name::<T>(), e)
             }
         };
 
         if guard.is_none()
         {
-            panic!(
-                "SingletonOptionMutex<{}> not initialized: call init() first",
-                std::any::type_name::<T>()
-            );
+            panic!("SingletonOptionMutex<{}> not initialized: call init() first", std::any::type_name::<T>());
         }
 
         MutexGuard::map(guard, |opt| opt.as_mut().unwrap())

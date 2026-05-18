@@ -17,10 +17,7 @@ pub trait IGridViewNonOwned<G, T, Idx, const N : usize> :
 ///
 /// Can only shrink / be cropped.
 pub trait IGridView<G, T, Idx, const N: usize>:
-    GetRectangle<Idx, N>
-    + Get<Vector<Idx, N>, Output = T>
-    + TryGet<Vector<Idx, N>, Output = T>
-    + Index<Vector<Idx, N>, Output = T>
+    GetRectangle<Idx, N> + Get<Vector<Idx, N>, Output = T> + TryGet<Vector<Idx, N>, Output = T> + Index<Vector<Idx, N>, Output = T>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
@@ -54,10 +51,7 @@ where
         unsafe { self.subview_from_translated_rect_unchecked(self.rect().intersect_or_empty(rect)) }
     }
 
-    fn iter(&self) -> GridViewIter<'_, G, T, Idx, N>
-    {
-        unsafe { GridViewIter::from_rect_unchecked(self.grid_unchecked(), self.rect()) }
-    }
+    fn iter(&self) -> GridViewIter<'_, G, T, Idx, N> { unsafe { GridViewIter::from_rect_unchecked(self.grid_unchecked(), self.rect()) } }
     fn for_each<F>(&self, f: F)
     where
         F: FnMut((Vector<Idx, N>, &T)),
@@ -80,9 +74,7 @@ where
     where
         F: FnMut(&T) -> Dest,
     {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| {
-            f(unsafe { self.get_unchecked(idx) })
-        })
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
     }
 
     fn transform_par<Dest, F>(&self, f: F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
@@ -94,9 +86,7 @@ where
         G: Sync,
         Self: Sync,
     {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| {
-            f(unsafe { self.get_unchecked(idx) })
-        })
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
     }
 
     fn update_into_or_panic<O, G2>(&self, other: &mut O)
@@ -122,10 +112,7 @@ where
     unsafe fn grid_unchecked(&self) -> &G;
 
     #[doc(hidden)]
-    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(
-        &'a self,
-        rect: Rectangle<Idx, N>,
-    ) -> Self::WithLifetime<'b>
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b>
     where
         'a: 'b;
 }
@@ -166,10 +153,7 @@ where
     }
 
     unsafe fn grid_unchecked(&self) -> &G { self.grid }
-    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(
-        &'a self,
-        rect: Rectangle<Idx, N>,
-    ) -> Self::WithLifetime<'b>
+    unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b>
     where
         'a: 'b,
     {
@@ -312,10 +296,7 @@ where
     fn get(&self, index: P) -> Option<&Self::Output> { self.grid.get(index.into() + self.rect.pos) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(&self, index: P) -> &Self::Output
-    {
-        unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) }
-    }
+    unsafe fn get_unchecked(&self, index: P) -> &Self::Output { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
 }
 impl<'a, P, G, T, Idx, const N: usize> TryGet<P> for GridView<'a, G, T, Idx, N>
 where
@@ -324,10 +305,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Error = <G as TryGet<Vector<Idx, N>>>::Error;
-    fn try_get(&self, index: P) -> Result<&Self::Output, Self::Error>
-    {
-        self.grid.try_get(index.into() + self.rect.pos)
-    }
+    fn try_get(&self, index: P) -> Result<&Self::Output, Self::Error> { self.grid.try_get(index.into() + self.rect.pos) }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> Index<P> for GridView<'a, G, T, Idx, N>
@@ -380,10 +358,5 @@ where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
-    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self>
-    {
-        self.rect
-            .crop(subrect)
-            .map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) })
-    }
+    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> { self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) }) }
 }

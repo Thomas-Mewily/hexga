@@ -14,10 +14,7 @@ use std::{
 use serde::{
     Deserialize, Deserializer, Serialize, Serializer,
     de::Visitor,
-    ser::{
-        SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple,
-        SerializeTupleStruct, SerializeTupleVariant,
-    },
+    ser::{SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant},
 };
 
 mod fs_extension;
@@ -50,10 +47,7 @@ pub use url_data::*;
 
 pub mod prelude
 {
-    pub use super::{
-        fs_extension::prelude::*, load::prelude::*, result::*, save::prelude::*,
-        url_data::prelude::*,
-    };
+    pub use super::{fs_extension::prelude::*, load::prelude::*, result::*, save::prelude::*, url_data::prelude::*};
 
     #[cfg(feature = "serde")]
     pub use super::serde_impl::prelude::*;

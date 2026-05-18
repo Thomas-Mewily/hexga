@@ -1,9 +1,6 @@
 use super::*;
 
-pub(crate) fn load_bytes(path: &Path) -> IoResult<Vec<u8>>
-{
-    Err(IoError::new(path, FileError::NotSupported).when_reading())
-}
+pub(crate) fn load_bytes(path: &Path) -> IoResult<Vec<u8>> { Err(IoError::new(path, FileError::NotSupported).when_reading()) }
 
 pub(crate) fn save_bytes(path: &Path, bytes: &[u8]) -> IoResult
 {

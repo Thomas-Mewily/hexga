@@ -96,17 +96,11 @@ where
     T: BitAnyPattern,
 {
     type Target = [T];
-    fn deref(&self) -> &Self::Target
-    {
-        unsafe { slice::from_raw_parts::<T>(self.ptr.as_ptr(), self.capacity()) }
-    }
+    fn deref(&self) -> &Self::Target { unsafe { slice::from_raw_parts::<T>(self.ptr.as_ptr(), self.capacity()) } }
 }
 impl<T> DerefMut for AllocBlock<T>
 where
     T: BitAnyPattern,
 {
-    fn deref_mut(&mut self) -> &mut Self::Target
-    {
-        unsafe { slice::from_raw_parts_mut::<T>(self.ptr.as_ptr(), self.capacity()) }
-    }
+    fn deref_mut(&mut self) -> &mut Self::Target { unsafe { slice::from_raw_parts_mut::<T>(self.ptr.as_ptr(), self.capacity()) } }
 }

@@ -81,9 +81,7 @@ pub mod hexga_prelude
     pub use hexga_io::prelude::*;
     #[allow(unused_imports)]
     #[cfg(feature = "serde")]
-    pub use serde::{
-        Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct,
-    };
+    pub use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
     #[cfg(feature = "hexga_asset")]
     pub use hexga_asset::prelude::*;

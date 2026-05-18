@@ -13,8 +13,7 @@ pub mod traits
 }
 
 pub type GenHashMap<K, V> = GenHashMapOf<K, V, RandomState>;
-pub type GenHashMapOf<K, V, S = RandomState> =
-    GenMapOf<K, V, Generation, HashMap<K, GenIDOf<V, Generation>, S>>;
+pub type GenHashMapOf<K, V, S = RandomState> = GenMapOf<K, V, Generation, HashMap<K, GenIDOf<V, Generation>, S>>;
 pub type GenBTreeMap<K, V> = GenMapOf<K, V, Generation, BTreeMap<K, GenIDOf<V, Generation>>>;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -29,13 +28,7 @@ where
     K: Debug,
     V: Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
-        f.debug_tuple("")
-            .field(&self.key)
-            .field(&self.value)
-            .finish()
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { f.debug_tuple("").field(&self.key).field(&self.value).finish() }
 }
 impl<K, V> From<(K, V)> for Entry<K, V>
 {
@@ -132,9 +125,7 @@ where
         {
             if search.insert(entry.key.clone(), id.typed()).is_some()
             {
-                return Err(serde::de::Error::custom(
-                    "duplicate key found during GenMapOf deserialization",
-                ));
+                return Err(serde::de::Error::custom("duplicate key found during GenMapOf deserialization"));
             }
         }
 
@@ -170,10 +161,7 @@ where
     K: Debug,
     V: Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
-        f.debug_set().entries(self.values.iter()).finish()
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { f.debug_set().entries(self.values.iter()).finish() }
 }
 impl<K, V, Gen, S> Collection for GenMapOf<K, V, Gen, S>
 where
@@ -269,9 +257,7 @@ where
             }
             None =>
             {
-                let id = self
-                    .values
-                    .insert_cyclic(|id| Entry::new(key.clone(), init(id.typed())));
+                let id = self.values.insert_cyclic(|id| Entry::new(key.clone(), init(id.typed())));
                 let id = id.typed::<V>();
                 self.search.insert(key, id);
                 (id, None)
@@ -324,17 +310,11 @@ where
     pub fn iter(&self) -> Iter<'_, K, V, Gen> { self.into_iter() }
     pub fn iter_mut(&mut self) -> IterMut<'_, K, V, Gen> { self.into_iter() }
 
-    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<V, Gen>> + '_
-    {
-        self.into_iter().map(|(id, _k, _v)| id)
-    }
+    pub fn ids(&self) -> impl Iterator<Item = GenIDOf<V, Gen>> + '_ { self.into_iter().map(|(id, _k, _v)| id) }
 
     pub fn values(&self) -> impl Iterator<Item = &V> + '_ { self.into_iter().map(|(_id, _k, v)| v) }
 
-    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> + '_
-    {
-        self.into_iter().map(|(_id, _k, v)| v)
-    }
+    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> + '_ { self.into_iter().map(|(_id, _k, v)| v) }
 }
 impl<K, V, Gen, S> WithCapacity for GenMapOf<K, V, Gen, S>
 where
@@ -456,10 +436,7 @@ where
 
     #[inline(always)]
     #[track_caller]
-    fn index(&self, index: &'a Q) -> &Self::Output
-    {
-        <Self as Get<&'a Q>>::get_or_panic(self, index)
-    }
+    fn index(&self, index: &'a Q) -> &Self::Output { <Self as Get<&'a Q>>::get_or_panic(self, index) }
 }
 
 impl<'a, Q, K, V, Gen, S> TryGet<&'a Q> for GenMapOf<K, V, Gen, S>
@@ -471,11 +448,7 @@ where
 {
     type Error = MissingKey<Q>;
 
-    fn try_get(&self, index: &'a Q) -> Result<&Self::Output, Self::Error>
-    {
-        self.get(index)
-            .ok_or_else(|| MissingKey::new(index.clone()))
-    }
+    fn try_get(&self, index: &'a Q) -> Result<&Self::Output, Self::Error> { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 
 impl<K, V, Gen, S> Get<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
@@ -491,10 +464,7 @@ where
 
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(&self, index: UntypedGenIDOf<Gen>) -> &Self::Output
-    {
-        unsafe { self.get_unchecked(index.typed()) }
-    }
+    unsafe fn get_unchecked(&self, index: UntypedGenIDOf<Gen>) -> &Self::Output { unsafe { self.get_unchecked(index.typed()) } }
 }
 impl<K, V, Gen, S> Get<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
 where
@@ -505,17 +475,11 @@ where
     type Output = V;
 
     #[inline(always)]
-    fn get(&self, index: GenIDOf<V, Gen>) -> Option<&Self::Output>
-    {
-        self.values.get(index.typed()).map(|entry| &entry.value)
-    }
+    fn get(&self, index: GenIDOf<V, Gen>) -> Option<&Self::Output> { self.values.get(index.typed()).map(|entry| &entry.value) }
 
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(&self, index: GenIDOf<V, Gen>) -> &Self::Output
-    {
-        &unsafe { self.values.get_unchecked(index.typed()) }.value
-    }
+    unsafe fn get_unchecked(&self, index: GenIDOf<V, Gen>) -> &Self::Output { &unsafe { self.values.get_unchecked(index.typed()) }.value }
 }
 
 impl<K, V, Gen, S> Index<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
@@ -528,10 +492,7 @@ where
 
     #[inline(always)]
     #[track_caller]
-    fn index(&self, index: GenIDOf<V, Gen>) -> &Self::Output
-    {
-        <Self as Get<GenIDOf<V, Gen>>>::get_or_panic(self, index)
-    }
+    fn index(&self, index: GenIDOf<V, Gen>) -> &Self::Output { <Self as Get<GenIDOf<V, Gen>>>::get_or_panic(self, index) }
 }
 impl<K, V, Gen, S> Index<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
 where
@@ -554,10 +515,7 @@ where
 {
     type Error = <GenSeq<Entry<K, V>, Gen> as TryGet<GenIDOf<Entry<K, V>, Gen>>>::Error;
 
-    fn try_get(&self, index: GenIDOf<V, Gen>) -> Result<&Self::Output, Self::Error>
-    {
-        self.values.try_get(index.typed()).map(|entry| &entry.value)
-    }
+    fn try_get(&self, index: GenIDOf<V, Gen>) -> Result<&Self::Output, Self::Error> { self.values.try_get(index.typed()).map(|entry| &entry.value) }
 }
 impl<K, V, Gen, S> TryGet<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
 where
@@ -567,10 +525,7 @@ where
 {
     type Error = <GenSeq<Entry<K, V>, Gen> as TryGet<UntypedGenIDOf<Gen>>>::Error;
 
-    fn try_get(&self, index: UntypedGenIDOf<Gen>) -> Result<&Self::Output, Self::Error>
-    {
-        self.try_get(index.typed())
-    }
+    fn try_get(&self, index: UntypedGenIDOf<Gen>) -> Result<&Self::Output, Self::Error> { self.try_get(index.typed()) }
 }
 
 impl<'a, Q, K, V, Gen, S> GetMut<&'a Q> for GenMapOf<K, V, Gen, S>
@@ -584,9 +539,7 @@ where
     fn get_mut(&mut self, index: &'a Q) -> Option<&mut Self::Output>
     {
         let id = *self.search.get(index)?;
-        self.values
-            .get_mut(id.typed())
-            .map(|entry| &mut entry.value)
+        self.values.get_mut(id.typed()).map(|entry| &mut entry.value)
     }
 }
 
@@ -599,10 +552,7 @@ where
 {
     #[inline(always)]
     #[track_caller]
-    fn index_mut(&mut self, index: &'a Q) -> &mut Self::Output
-    {
-        <Self as GetMut<&'a Q>>::get_mut_or_panic(self, index)
-    }
+    fn index_mut(&mut self, index: &'a Q) -> &mut Self::Output { <Self as GetMut<&'a Q>>::get_mut_or_panic(self, index) }
 }
 
 impl<'a, Q, K, V, Gen, S> TryGetMut<&'a Q> for GenMapOf<K, V, Gen, S>
@@ -612,11 +562,7 @@ where
     Gen: GenerationalIndex,
     S: Get<&'a Q, Output = GenIDOf<V, Gen>>,
 {
-    fn try_get_mut(&mut self, index: &'a Q) -> Result<&mut Self::Output, Self::Error>
-    {
-        self.get_mut(index)
-            .ok_or_else(|| MissingKey::new(index.clone()))
-    }
+    fn try_get_mut(&mut self, index: &'a Q) -> Result<&mut Self::Output, Self::Error> { self.get_mut(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 
 impl<K, V, Gen, S> GetMut<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
@@ -626,19 +572,11 @@ where
     S: Collection,
 {
     #[inline(always)]
-    fn get_mut(&mut self, index: GenIDOf<V, Gen>) -> Option<&mut Self::Output>
-    {
-        self.values
-            .get_mut(index.typed())
-            .map(|entry| &mut entry.value)
-    }
+    fn get_mut(&mut self, index: GenIDOf<V, Gen>) -> Option<&mut Self::Output> { self.values.get_mut(index.typed()).map(|entry| &mut entry.value) }
 
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut(&mut self, index: GenIDOf<V, Gen>) -> &mut Self::Output
-    {
-        &mut unsafe { self.values.get_unchecked_mut(index.typed()) }.value
-    }
+    unsafe fn get_unchecked_mut(&mut self, index: GenIDOf<V, Gen>) -> &mut Self::Output { &mut unsafe { self.values.get_unchecked_mut(index.typed()) }.value }
 }
 
 impl<K, V, Gen, S> GetMut<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
@@ -648,12 +586,7 @@ where
     S: Collection,
 {
     #[inline(always)]
-    fn get_mut(&mut self, index: UntypedGenIDOf<Gen>) -> Option<&mut Self::Output>
-    {
-        self.values
-            .get_mut(index.typed())
-            .map(|entry| &mut entry.value)
-    }
+    fn get_mut(&mut self, index: UntypedGenIDOf<Gen>) -> Option<&mut Self::Output> { self.values.get_mut(index.typed()).map(|entry| &mut entry.value) }
 
     #[inline(always)]
     #[track_caller]
@@ -671,10 +604,7 @@ where
 {
     #[inline(always)]
     #[track_caller]
-    fn index_mut(&mut self, index: GenIDOf<V, Gen>) -> &mut Self::Output
-    {
-        <Self as GetMut<GenIDOf<V, Gen>>>::get_mut_or_panic(self, index)
-    }
+    fn index_mut(&mut self, index: GenIDOf<V, Gen>) -> &mut Self::Output { <Self as GetMut<GenIDOf<V, Gen>>>::get_mut_or_panic(self, index) }
 }
 impl<K, V, Gen, S> IndexMut<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
 where
@@ -684,10 +614,7 @@ where
 {
     #[inline(always)]
     #[track_caller]
-    fn index_mut(&mut self, index: UntypedGenIDOf<Gen>) -> &mut Self::Output
-    {
-        <Self as GetMut<UntypedGenIDOf<Gen>>>::get_mut_or_panic(self, index)
-    }
+    fn index_mut(&mut self, index: UntypedGenIDOf<Gen>) -> &mut Self::Output { <Self as GetMut<UntypedGenIDOf<Gen>>>::get_mut_or_panic(self, index) }
 }
 
 impl<K, V, Gen, S> TryGetMut<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
@@ -698,9 +625,7 @@ where
 {
     fn try_get_mut(&mut self, index: GenIDOf<V, Gen>) -> Result<&mut Self::Output, Self::Error>
     {
-        self.values
-            .try_get_mut(index.typed())
-            .map(|entry| &mut entry.value)
+        self.values.try_get_mut(index.typed()).map(|entry| &mut entry.value)
     }
 }
 impl<K, V, Gen, S> TryGetMut<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
@@ -710,11 +635,7 @@ where
     S: Collection,
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, index: UntypedGenIDOf<Gen>)
-    -> Result<&mut Self::Output, Self::Error>
-    {
-        self.try_get_mut(index.typed())
-    }
+    fn try_get_mut(&mut self, index: UntypedGenIDOf<Gen>) -> Result<&mut Self::Output, Self::Error> { self.try_get_mut(index.typed()) }
 }
 
 impl<K, V, Gen, S> GetManyMut<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
@@ -723,10 +644,7 @@ where
     Gen: GenerationalIndex,
     S: Collection,
 {
-    fn try_get_many_mut<const N: usize>(
-        &mut self,
-        indices: [GenIDOf<V, Gen>; N],
-    ) -> Result<[&mut Self::Output; N], ManyMutError>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [GenIDOf<V, Gen>; N]) -> Result<[&mut Self::Output; N], ManyMutError>
     {
         self.values
             .try_get_many_mut(indices.map(|i| i.typed()))
@@ -735,16 +653,9 @@ where
 
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_many_unchecked_mut<const N: usize>(
-        &mut self,
-        indices: [GenIDOf<V, Gen>; N],
-    ) -> [&mut Self::Output; N]
+    unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [GenIDOf<V, Gen>; N]) -> [&mut Self::Output; N]
     {
-        unsafe {
-            self.values
-                .get_many_unchecked_mut(indices.map(|i| i.typed()))
-        }
-        .map(|entry| &mut entry.value)
+        unsafe { self.values.get_many_unchecked_mut(indices.map(|i| i.typed())) }.map(|entry| &mut entry.value)
     }
 }
 impl<K, V, Gen, S> GetManyMut<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
@@ -754,20 +665,14 @@ where
     S: Collection,
 {
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(
-        &mut self,
-        indices: [UntypedGenIDOf<Gen>; N],
-    ) -> Result<[&mut Self::Output; N], ManyMutError>
+    fn try_get_many_mut<const N: usize>(&mut self, indices: [UntypedGenIDOf<Gen>; N]) -> Result<[&mut Self::Output; N], ManyMutError>
     {
         self.try_get_many_mut(indices.map(|i| i.typed()))
     }
 
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_many_unchecked_mut<const N: usize>(
-        &mut self,
-        indices: [UntypedGenIDOf<Gen>; N],
-    ) -> [&mut Self::Output; N]
+    unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [UntypedGenIDOf<Gen>; N]) -> [&mut Self::Output; N]
     {
         unsafe { self.get_many_unchecked_mut(indices.map(|i| i.typed())) }
     }
@@ -840,10 +745,7 @@ where
 {
     type Output = V;
 
-    fn remove(&mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::Output>
-    {
-        self.remove(index.typed())
-    }
+    fn remove(&mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::Output> { self.remove(index.typed()) }
 }
 
 impl<K, V, Gen, S> FromIterator<(K, V)> for GenMapOf<K, V, Gen, S>
@@ -902,11 +804,7 @@ pub struct IntoIter<K, V, Gen>
 where
     Gen: GenerationalIndex,
 {
-    iter: crate::gen_seq::IntoIter<
-        Entry<K, V>,
-        std::vec::IntoIter<crate::gen_seq::Entry<Entry<K, V>, Gen>>,
-        Gen,
-    >,
+    iter: crate::gen_seq::IntoIter<Entry<K, V>, std::vec::IntoIter<crate::gen_seq::Entry<Entry<K, V>, Gen>>, Gen>,
 }
 
 impl<K, V, Gen> Iterator for IntoIter<K, V, Gen>
@@ -1033,12 +931,7 @@ where
     type Item = (GenIDOf<V, Gen>, K, V);
     type IntoIter = IntoIter<K, V, Gen>;
 
-    fn into_iter(self) -> Self::IntoIter
-    {
-        IntoIter {
-            iter: self.values.into_iter(),
-        }
-    }
+    fn into_iter(self) -> Self::IntoIter { IntoIter { iter: self.values.into_iter() } }
 }
 
 impl<'a, K, V, Gen, S> IntoIterator for &'a GenMapOf<K, V, Gen, S>
@@ -1049,12 +942,7 @@ where
     type Item = (GenIDOf<V, Gen>, &'a K, &'a V);
     type IntoIter = Iter<'a, K, V, Gen>;
 
-    fn into_iter(self) -> Self::IntoIter
-    {
-        Iter {
-            iter: self.values.iter(),
-        }
-    }
+    fn into_iter(self) -> Self::IntoIter { Iter { iter: self.values.iter() } }
 }
 
 impl<'a, K, V, Gen, S> IntoIterator for &'a mut GenMapOf<K, V, Gen, S>
@@ -1065,12 +953,7 @@ where
     type Item = (GenIDOf<V, Gen>, &'a K, &'a mut V);
     type IntoIter = IterMut<'a, K, V, Gen>;
 
-    fn into_iter(self) -> Self::IntoIter
-    {
-        IterMut {
-            iter: self.values.iter_mut(),
-        }
-    }
+    fn into_iter(self) -> Self::IntoIter { IterMut { iter: self.values.iter_mut() } }
 }
 
 pub trait CollectToGenMap<K, V, S = RandomState>: Sized + IntoIterator<Item = (K, V)>

@@ -10,21 +10,13 @@ pub(crate) type WindowType = hexga_event_loop::window::Window<GpuSurfaceConfigur
 
 pub(crate) trait WindowInitGpu
 {
-    fn initialize_surface(
-        &mut self,
-        param: &GpuParam,
-        event_loop: &AppInternalEventLoop,
-    ) -> GpuResult;
+    fn initialize_surface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult;
     fn configure_surface(&mut self);
 }
 
 impl WindowInitGpu for WindowType
 {
-    fn initialize_surface(
-        &mut self,
-        param: &GpuParam,
-        event_loop: &AppInternalEventLoop,
-    ) -> GpuResult
+    fn initialize_surface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult
     {
         let size = self.size().max(one());
 
@@ -33,8 +25,7 @@ impl WindowInitGpu for WindowType
             let instance = GpuInstance::new(&param.instance);
             let surface = instance.wgpu.create_surface(self.winit_window())?.into();
 
-            async_init_gpu_in_proxy(instance, param.clone(), surface, event_loop.proxy().clone())
-                .spawn();
+            async_init_gpu_in_proxy(instance, param.clone(), surface, event_loop.proxy().clone()).spawn();
 
             Ok(())
         }
@@ -60,12 +51,7 @@ impl WindowInitGpu for WindowType
     }
 }
 
-pub(crate) async fn async_init_gpu_in_proxy(
-    instance: GpuInstance,
-    param: GpuParam,
-    surface: GpuSurface<'static>,
-    proxy: AppInternalProxy,
-)
+pub(crate) async fn async_init_gpu_in_proxy(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>, proxy: AppInternalProxy)
 {
     let _ = match async_init_gpu(instance, param, surface).await
     {
@@ -81,11 +67,7 @@ pub(crate) async fn async_init_gpu_in_proxy(
     };
 }
 
-pub(crate) async fn async_init_gpu(
-    instance: GpuInstance,
-    param: GpuParam,
-    surface: GpuSurface<'static>,
-) -> GpuResult<(GpuSurface<'static>, GpuContext)>
+pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>) -> GpuResult<(GpuSurface<'static>, GpuContext)>
 {
     let compatible_surface = Some(&surface.wgpu);
 

@@ -11,15 +11,9 @@ pub struct AppParam
 
 impl WithEventLoopParam for AppParam
 {
-    fn control_flow(&self) -> hexga_event_loop::event_loop::EventLoopControlFlow
-    {
-        self.event_loop.control_flow()
-    }
+    fn control_flow(&self) -> hexga_event_loop::event_loop::EventLoopControlFlow { self.event_loop.control_flow() }
 
-    fn with_control_flow(
-        mut self,
-        control_flow: hexga_event_loop::event_loop::EventLoopControlFlow,
-    ) -> Self
+    fn with_control_flow(mut self, control_flow: hexga_event_loop::event_loop::EventLoopControlFlow) -> Self
     {
         self.event_loop = self.event_loop.with_control_flow(control_flow);
         self

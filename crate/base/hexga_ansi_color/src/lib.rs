@@ -130,14 +130,8 @@ impl AnsiColor
     #[rustfmt::skip]    pub const RESET_BACKGROUND: &str = "\x1b[49m";
 
     pub const fn new(color: AnsiColorKind, layer: AnsiColorLayer) -> Self { Self { color, layer } }
-    pub const fn new_foreground(color: AnsiColorKind) -> Self
-    {
-        Self::new(color, AnsiColorLayer::Foreground)
-    }
-    pub const fn new_background(color: AnsiColorKind) -> Self
-    {
-        Self::new(color, AnsiColorLayer::Background)
-    }
+    pub const fn new_foreground(color: AnsiColorKind) -> Self { Self::new(color, AnsiColorLayer::Foreground) }
+    pub const fn new_background(color: AnsiColorKind) -> Self { Self::new(color, AnsiColorLayer::Background) }
 
     pub const fn color(&self) -> AnsiColorKind { self.color }
     pub const fn set_color(&mut self, color: AnsiColorKind) -> &mut Self
@@ -217,17 +211,8 @@ pub struct TerminalColor
 }
 impl TerminalColor
 {
-    pub const fn uniform(foreground_and_background: AnsiColorKind) -> Self
-    {
-        Self::new(foreground_and_background, foreground_and_background)
-    }
-    pub const fn new(foreground: AnsiColorKind, background: AnsiColorKind) -> Self
-    {
-        Self {
-            foreground,
-            background,
-        }
-    }
+    pub const fn uniform(foreground_and_background: AnsiColorKind) -> Self { Self::new(foreground_and_background, foreground_and_background) }
+    pub const fn new(foreground: AnsiColorKind, background: AnsiColorKind) -> Self { Self { foreground, background } }
 
     pub const RESET: Self = Self {
         foreground: AnsiColorKind::Reset,
@@ -237,17 +222,11 @@ impl TerminalColor
 
 impl From<(AnsiColorKind, AnsiColorKind)> for TerminalColor
 {
-    fn from((foreground, background): (AnsiColorKind, AnsiColorKind)) -> Self
-    {
-        Self::new(foreground, background)
-    }
+    fn from((foreground, background): (AnsiColorKind, AnsiColorKind)) -> Self { Self::new(foreground, background) }
 }
 impl From<AnsiColorKind> for TerminalColor
 {
-    fn from(foreground_and_background: AnsiColorKind) -> Self
-    {
-        Self::uniform(foreground_and_background)
-    }
+    fn from(foreground_and_background: AnsiColorKind) -> Self { Self::uniform(foreground_and_background) }
 }
 
 impl From<TerminalColor> for (AnsiColorKind, AnsiColorKind)
@@ -257,13 +236,5 @@ impl From<TerminalColor> for (AnsiColorKind, AnsiColorKind)
 
 impl Display for TerminalColor
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result
-    {
-        write!(
-            f,
-            "{}{}",
-            self.foreground.foreground(),
-            self.background.background()
-        )
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result { write!(f, "{}{}", self.foreground.foreground(), self.background.background()) }
 }

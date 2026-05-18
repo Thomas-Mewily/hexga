@@ -43,8 +43,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     let name = &input.ident;
 
-    let hexga_math_crate =
-        crate_name("hexga_math").unwrap_or_else(|_| FoundCrate::Name("hexga_math".to_string()));
+    let hexga_math_crate = crate_name("hexga_math").unwrap_or_else(|_| FoundCrate::Name("hexga_math".to_string()));
 
     let crate_name_str = match hexga_math_crate
     {
@@ -56,22 +55,14 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
-    let has_non_exhaustive = input
-        .attrs
-        .iter()
-        .any(|a| a.path().is_ident("non_exhaustive"));
+    let has_non_exhaustive = input.attrs.iter().any(|a| a.path().is_ident("non_exhaustive"));
 
     // Detect const generic
-    let const_generic = input.generics.params.iter().find_map(|p| {
-        if let GenericParam::Const(c) = p
-        {
-            Some(&c.ident)
-        }
-        else
-        {
-            None
-        }
-    });
+    let const_generic = input
+        .generics
+        .params
+        .iter()
+        .find_map(|p| if let GenericParam::Const(c) = p { Some(&c.ident) } else { None });
 
     let dim = match (&input.fields, const_generic)
     {
@@ -85,12 +76,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         {
             if fields.named.len() != 1
             {
-                return syn::Error::new_spanned(
-                    fields,
-                    "math_vec with const generic requires exactly one array field",
-                )
-                .to_compile_error()
-                .into();
+                return syn::Error::new_spanned(fields, "math_vec with const generic requires exactly one array field")
+                    .to_compile_error()
+                    .into();
             }
 
             let field = fields.named.iter().next().unwrap();
@@ -103,21 +91,16 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                 }
                 _ =>
                 {
-                    return syn::Error::new_spanned(&field.ty, "expected an array field `[T; N]`")
-                        .to_compile_error()
-                        .into();
+                    return syn::Error::new_spanned(&field.ty, "expected an array field `[T; N]`").to_compile_error().into();
                 }
             }
         }
 
         _ =>
         {
-            return syn::Error::new_spanned(
-                &input,
-                "math_vec only supports structs with named fields",
-            )
-            .to_compile_error()
-            .into();
+            return syn::Error::new_spanned(&input, "math_vec only supports structs with named fields")
+                .to_compile_error()
+                .into();
         }
     };
 
@@ -133,24 +116,16 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         _ => panic!("Expected the first generic parameter to be the vector component type"),
     };
 
-    generics_with_policy
-        .make_where_clause()
-        .predicates
-        .push(syn::parse_quote!(
-            Policy: #crate_ident::number::Constant<#generic_type_ident>
-        ));
+    generics_with_policy.make_where_clause().predicates.push(syn::parse_quote!(
+        Policy: #crate_ident::number::Constant<#generic_type_ident>
+    ));
 
-    let (impl_generics_with_policy, ty_generics_with_policy, _where_clause_with_policy) =
-        generics_with_policy.split_for_impl();
+    let (impl_generics_with_policy, ty_generics_with_policy, _where_clause_with_policy) = generics_with_policy.split_for_impl();
 
     //let name_coef_str = format!("{}Coef", &input.ident);
     //let name_coef = Ident::new(&name_coef_str, name.span());
 
-    let is_array_struct = input
-        .generics
-        .params
-        .iter()
-        .any(|p| matches!(p, syn::GenericParam::Const(_)));
+    let is_array_struct = input.generics.params.iter().any(|p| matches!(p, syn::GenericParam::Const(_)));
 
     let names = [&name]; //, &name_coef];
 
@@ -917,18 +892,14 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         syn::Fields::Named(f) => &f.named,
                         _ =>
                         {
-                            return syn::Error::new_spanned(
-                                &input,
-                                "math_vec only supports structs with named fields",
-                            )
-                            .to_compile_error()
-                            .into();
+                            return syn::Error::new_spanned(&input, "math_vec only supports structs with named fields")
+                                .to_compile_error()
+                                .into();
                         }
                     };
 
                     // serialize field by field
-                    let field_idents: Vec<_> =
-                        fields.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                    let field_idents: Vec<_> = fields.iter().map(|f| f.ident.as_ref().unwrap()).collect();
                     //let field_names: Vec<_> = field_idents.iter().map(|f| f.to_string()).collect();
                     let num_fields = field_idents.len();
 
@@ -1040,11 +1011,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         })
     };
 
-    fn where_with_bounds(
-        base: Option<&syn::WhereClause>,
-        generics: &syn::Generics,
-        bound: syn::Path,
-    ) -> syn::WhereClause
+    fn where_with_bounds(base: Option<&syn::WhereClause>, generics: &syn::Generics, bound: syn::Path) -> syn::WhereClause
     {
         let mut wc = base.cloned().unwrap_or_else(|| syn::WhereClause {
             where_token: Default::default(),
@@ -1064,41 +1031,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         wc
     }
 
-    let clone_where_clause = where_with_bounds(
-        where_clause,
-        &input.generics,
-        syn::parse_quote!(::std::clone::Clone),
-    );
-    let copy_where_clause = where_with_bounds(
-        where_clause,
-        &input.generics,
-        syn::parse_quote!(::std::marker::Copy),
-    );
-    let partial_eq_where_clause = where_with_bounds(
-        where_clause,
-        &input.generics,
-        syn::parse_quote!(::std::cmp::PartialEq),
-    );
-    let eq_where_clause = where_with_bounds(
-        where_clause,
-        &input.generics,
-        syn::parse_quote!(::std::cmp::Eq),
-    );
-    let partial_ord_where_clause = where_with_bounds(
-        where_clause,
-        &input.generics,
-        syn::parse_quote!(::std::cmp::PartialOrd),
-    );
-    let ord_where_clause = where_with_bounds(
-        where_clause,
-        &input.generics,
-        syn::parse_quote!(::std::cmp::Ord),
-    );
-    let hash_where_clause = where_with_bounds(
-        where_clause,
-        &input.generics,
-        syn::parse_quote!(::std::hash::Hash),
-    );
+    let clone_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::clone::Clone));
+    let copy_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::marker::Copy));
+    let partial_eq_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::PartialEq));
+    let eq_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::Eq));
+    let partial_ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::PartialOrd));
+    let ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::Ord));
+    let hash_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::hash::Hash));
 
     let [basic_impl] = std::array::from_fn(|idx| {
         let current_name = names[idx];

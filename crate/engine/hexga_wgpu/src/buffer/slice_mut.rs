@@ -16,11 +16,7 @@ where
     fn from(buffer: &'a mut GpuBuffer<T>) -> Self
     {
         let len = buffer.len();
-        Self {
-            buffer,
-            begin: 0,
-            len,
-        }
+        Self { buffer, begin: 0, len }
     }
 }
 impl<'a, T> GpuSliceMut<'a, T>
@@ -52,19 +48,9 @@ where
             buffer_len
         );
 
-        debug_assert!(
-            end <= buffer_len,
-            "Slice end index {} out of bounds for buffer of length {}",
-            end,
-            buffer_len
-        );
+        debug_assert!(end <= buffer_len, "Slice end index {} out of bounds for buffer of length {}", end, buffer_len);
 
-        debug_assert!(
-            begin <= end,
-            "Slice start index {} must be <= end index {}",
-            begin,
-            end
-        );
+        debug_assert!(begin <= end, "Slice start index {} must be <= end index {}", begin, end);
 
         let len = end - begin;
 
@@ -102,10 +88,7 @@ where
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { self.buffer.wgpu_usage() }
 
-    fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_>
-    {
-        self.buffer.wgpu_slice(bounds)
-    }
+    fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_> { self.buffer.wgpu_slice(bounds) }
 
     fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { self.buffer.wgpu_as_slice() }
 
@@ -124,15 +107,9 @@ where
 
     fn as_slice(&self) -> GpuSlice<'_, T> { *self.deref() }
 
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T>
-    {
-        self.deref().slice(bounds)
-    }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T> { self.deref().slice(bounds) }
 
-    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T>
-    {
-        self.deref().read(bounds)
-    }
+    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T> { self.deref().read(bounds) }
 }
 
 impl<'a, T> GpuSliceableMut<T> for GpuSliceMut<'a, T>

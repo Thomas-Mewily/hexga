@@ -42,10 +42,7 @@ impl<T> Push<T> for Vec<T>
 impl<T> TryPush<T> for Vec<T>
 {
     type Error = (); // #proper_error
-    fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error>
-    {
-        Ok(Push::push(self, value))
-    }
+    fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(Push::push(self, value)) }
 }
 
 impl<T> Push<T> for VecDeque<T>
@@ -75,10 +72,7 @@ impl<T> PushFront<T> for VecDeque<T>
 impl<T> TryPushFront<T> for VecDeque<T>
 {
     type Error = (); // #proper_error
-    fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error>
-    {
-        Ok(self.push(value))
-    }
+    fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
 
 impl<T> Push<T> for LinkedList<T>
@@ -99,10 +93,7 @@ impl<T> PushFront<T> for LinkedList<T>
 impl<T> TryPushFront<T> for LinkedList<T>
 {
     type Error = (); // #proper_error
-    fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error>
-    {
-        Ok(self.push(value))
-    }
+    fn try_push_front(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
 
 impl<T> Push<T> for BinaryHeap<T>
@@ -128,10 +119,7 @@ impl Push<char> for String
 impl TryPush<char> for String
 {
     type Error = (); // #proper_error
-    fn try_push(&mut self, value: char) -> Result<Self::Output, Self::Error>
-    {
-        Ok(self.push(value))
-    }
+    fn try_push(&mut self, value: char) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
 
 #[cfg(feature = "std")]
@@ -144,10 +132,7 @@ impl<'b> Push<&'b OsStr> for OsString
 impl<'b> TryPush<&'b OsStr> for OsString
 {
     type Error = (); // #proper_error
-    fn try_push(&mut self, value: &'b OsStr) -> Result<Self::Output, Self::Error>
-    {
-        Ok(self.push(value))
-    }
+    fn try_push(&mut self, value: &'b OsStr) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
 
 #[cfg(feature = "std")]

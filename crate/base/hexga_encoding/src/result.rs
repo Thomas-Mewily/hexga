@@ -87,33 +87,19 @@ impl Display for EncodeError
             {
                 write!(f, "failed to convert to {extension} : {reason}")
             }
-            EncodeError::Utf8Error {
-                valid_up_to,
-                error_len,
-            } =>
+            EncodeError::Utf8Error { valid_up_to, error_len } =>
             {
                 // Copied from std Utf8Error
                 if let Some(error_len) = error_len
                 {
-                    write!(
-                        f,
-                        "invalid utf-8 sequence of {} bytes from index {}",
-                        error_len, valid_up_to
-                    )
+                    write!(f, "invalid utf-8 sequence of {} bytes from index {}", error_len, valid_up_to)
                 }
                 else
                 {
-                    write!(
-                        f,
-                        "incomplete utf-8 byte sequence from index {}",
-                        valid_up_to
-                    )
+                    write!(f, "incomplete utf-8 byte sequence from index {}", valid_up_to)
                 }
             }
-            EncodeError::UnsupportedExtension { got, expected } => write!(
-                f,
-                "unsupported extension {got:?}, expected one of {expected:?}"
-            ),
+            EncodeError::UnsupportedExtension { got, expected } => write!(f, "unsupported extension {got:?}, expected one of {expected:?}"),
             EncodeError::Custom(reason) => write!(f, "custom: {}", reason),
             EncodeError::Unknow => write!(f, "unknow"),
             EncodeError::Base64(base64) => write!(f, "base64: {}", base64),
@@ -132,18 +118,9 @@ impl std::fmt::Debug for EncodeError
 
 impl EncodeError
 {
-    pub fn utf8_error(valid_up_to: usize, error_len: Option<usize>) -> Self
-    {
-        Self::Utf8Error {
-            valid_up_to,
-            error_len,
-        }
-    }
+    pub fn utf8_error(valid_up_to: usize, error_len: Option<usize>) -> Self { Self::Utf8Error { valid_up_to, error_len } }
 
-    pub fn save_unsupported_extension_with_name<T: SaveExtension + ?Sized>(
-        got: impl Into<Option<CowExtensionStatic>>,
-        _name: impl Into<String>,
-    ) -> Self
+    pub fn save_unsupported_extension_with_name<T: SaveExtension + ?Sized>(got: impl Into<Option<CowExtensionStatic>>, _name: impl Into<String>) -> Self
     {
         Self::UnsupportedExtension {
             //name: name.into(),
@@ -151,17 +128,12 @@ impl EncodeError
             expected: T::save_extensions().map(|ext| ext.into()).collect(),
         }
     }
-    pub fn save_unsupported_extension<T: SaveExtension + ?Sized>(
-        got: impl Into<Option<CowExtensionStatic>>,
-    ) -> Self
+    pub fn save_unsupported_extension<T: SaveExtension + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
     {
         Self::save_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>())
     }
 
-    pub fn load_unsupported_extension_with_name<T: LoadExtension + ?Sized>(
-        got: impl Into<Option<CowExtensionStatic>>,
-        _name: impl Into<String>,
-    ) -> Self
+    pub fn load_unsupported_extension_with_name<T: LoadExtension + ?Sized>(got: impl Into<Option<CowExtensionStatic>>, _name: impl Into<String>) -> Self
     {
         Self::UnsupportedExtension {
             //name: name.into(),
@@ -169,15 +141,12 @@ impl EncodeError
             expected: T::load_custom_extensions().map(|ext| ext.into()).collect(),
         }
     }
-    pub fn load_unsupported_extension<T: LoadExtension + ?Sized>(
-        got: impl Into<Option<CowExtensionStatic>>,
-    ) -> Self
+    pub fn load_unsupported_extension<T: LoadExtension + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
     {
         Self::load_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>())
     }
 
-    pub fn markup<T: ?Sized>(extension: impl Into<CowExtensionStatic>, reason: impl Display)
-    -> Self
+    pub fn markup<T: ?Sized>(extension: impl Into<CowExtensionStatic>, reason: impl Display) -> Self
     {
         Self::Markup {
             //name: std::any::type_name::<T>().to_owned(),

@@ -72,19 +72,11 @@ pub trait CollectionRemoveStableKey: Collection {}
 pub trait CollectionGetMutStableKey: Collection {}
 
 pub trait CollectionStableKey:
-    CollectionPushStableKey
-    + CollectionPopStableKey
-    + CollectionInsertStableKey
-    + CollectionRemoveStableKey
-    + CollectionGetMutStableKey
+    CollectionPushStableKey + CollectionPopStableKey + CollectionInsertStableKey + CollectionRemoveStableKey + CollectionGetMutStableKey
 {
 }
 impl<C> CollectionStableKey for C where
-    C: CollectionPushStableKey
-        + CollectionPopStableKey
-        + CollectionInsertStableKey
-        + CollectionRemoveStableKey
-        + CollectionGetMutStableKey
+    C: CollectionPushStableKey + CollectionPopStableKey + CollectionInsertStableKey + CollectionRemoveStableKey + CollectionGetMutStableKey
 {
 }
 

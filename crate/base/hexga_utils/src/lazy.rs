@@ -41,10 +41,7 @@ impl<T> Debug for LazyFnOnceValue<T, fn() -> T>
 where
     T: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        write!(f, "{:?}", &self.inner)
-    }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", &self.inner) }
 }
 impl<T> Default for LazyFnOnceValue<T, fn() -> T>
 where
@@ -198,10 +195,7 @@ impl<T> Debug for LazyFnValue<T, fn() -> T>
 where
     T: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        write!(f, "{:?}", &self.value)
-    }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", &self.value) }
 }
 impl<T> Default for LazyFnValue<T, fn() -> T>
 where
@@ -265,10 +259,7 @@ impl<T> Debug for LazyFnMutValue<T, fn() -> T>
 where
     T: Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
-    {
-        write!(f, "{:?}", &self.value)
-    }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", &self.value) }
 }
 impl<T> Default for LazyFnMutValue<T, fn() -> T>
 where

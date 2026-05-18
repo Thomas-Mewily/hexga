@@ -63,10 +63,7 @@ impl<T> Pop<T> for VecDeque<T>
 impl<T> PopFront<T> for VecDeque<T>
 {
     fn pop_front(&mut self) -> Option<T> { self.pop_front() }
-    fn pop_front_if(&mut self, predicate: impl FnOnce(&mut T) -> bool) -> Option<T>
-    {
-        self.pop_front_if(predicate)
-    }
+    fn pop_front_if(&mut self, predicate: impl FnOnce(&mut T) -> bool) -> Option<T> { self.pop_front_if(predicate) }
 }
 /*
 impl<T> TryPop<T> for VecDeque<T>

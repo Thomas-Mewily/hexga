@@ -54,7 +54,4 @@ pub unsafe trait BitAnyPattern: BitZero + Sized + Copy + 'static {}
 
 unsafe impl<T: Pod> BitAnyPattern for T {}
 unsafe impl<T> BitAnyPattern for core::mem::MaybeUninit<T> where T: BitAnyPattern {}
-unsafe impl<T, const N: usize> BitAnyPattern for [core::mem::MaybeUninit<T>; N] where
-    T: BitAnyPattern
-{
-}
+unsafe impl<T, const N: usize> BitAnyPattern for [core::mem::MaybeUninit<T>; N] where T: BitAnyPattern {}

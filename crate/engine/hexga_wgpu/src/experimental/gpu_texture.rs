@@ -19,15 +19,9 @@ impl From<GpuTexture> for wgpu::Texture
 
 impl LoadExtension for GpuTexture
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension>
-    {
-        Image::load_custom_extensions()
-    }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { Image::load_custom_extensions() }
 
-    fn load_from_reader_with_custom_extension<R>(
-        reader: R,
-        extension: Option<&extension>,
-    ) -> EncodeResult<Self>
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: std::io::Read,
