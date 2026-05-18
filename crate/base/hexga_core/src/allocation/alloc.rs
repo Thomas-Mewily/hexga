@@ -111,7 +111,7 @@ pub unsafe trait DeallocFromLayout<Layout = AllocLayout, Ptr = NonNullUnaliased<
     AllocFromLayout<Layout>
 {
     fn dealloc_layout(&mut self, ptr: Ptr, layout: Layout);
-    
+
     fn realloc_layout(
         &mut self,
         ptr: Ptr,

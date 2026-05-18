@@ -32,6 +32,7 @@ pub trait BuilderMesh<const N: usize = 3>
     // circle, oval...
 }
 
+
 #[derive(Default, Clone, PartialEq, PartialOrd, Debug)]
 pub struct MeshBuilder<const N: usize = 3>
 {
@@ -92,7 +93,7 @@ impl<const N: usize> MeshBuilder<N>
     pub fn indices_mut(&mut self) -> &mut [VertexIndex] { &mut self.indices }
 
     pub fn nb_triangle(&self) -> usize { self.nb_index() / 3 }
-    pub fn triangles(&self) -> &[TriangleVertexIndex]
+    pub fn triangle_indices(&self) -> &[TriangleVertexIndex]
     {
         // Safety: TriangleVertexIndex is repr(C) with the same layout as [VertexIndex; 3].
         let (tris, remainder) = self.indices.as_chunks::<3>();
@@ -102,7 +103,7 @@ impl<const N: usize> MeshBuilder<N>
         );
         unsafe { std::slice::from_raw_parts(tris.as_ptr().cast(), tris.len()) }
     }
-    pub fn triangles_mut(&mut self) -> &mut [TriangleVertexIndex]
+    pub fn triangle_indices_mut(&mut self) -> &mut [TriangleVertexIndex]
     {
         // Safety: TriangleVertexIndex is repr(C) with the same layout as [VertexIndex; 3].
         let (tris, remainder) = self.indices.as_chunks_mut::<3>();
@@ -129,7 +130,6 @@ impl<const N: usize> MeshBuilder<N>
     }
 }
 
-/*
 impl<const N: usize> Builder for MeshBuilder<N>
 {
     type Output = Mesh<N>;
@@ -141,11 +141,12 @@ impl<const N: usize> Builder for MeshBuilder<N>
 
     fn build_in(&self, dest: &mut Self::Output)
     {
-        dest.indices.update(&self.indices);
-        dest.vertices.update(&self.vertices);
+        dest.clear();
+        dest.vertices.push(&self.vertices);
+        dest.indices.push(&self.indices);
     }
 }
-*/
+
 impl<const N: usize> Clear for MeshBuilder<N>
 {
     fn clear(&mut self)

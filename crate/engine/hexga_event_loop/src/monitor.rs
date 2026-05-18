@@ -12,7 +12,8 @@ pub struct Monitor
 }
 impl Debug for Monitor
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+    {
         f.debug_struct("Monitor")
             .field("name", &self.name())
             .field("refresh_rate_millihertz", &self.refresh_rate_millihertz())

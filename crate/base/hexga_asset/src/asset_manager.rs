@@ -2,7 +2,8 @@ use super::*;
 
 #[allow(non_upper_case_globals)]
 //pub(crate) static ASSET: LazyLock<AssetsManagerUntyped> = LazyLock::new(|| AssetsManagerUntyped::default());
-pub(crate) static ASSET: SingletonOnceLazy<AssetsManagerUntyped> = SingletonOnceLazy::new(|| AssetsManagerUntyped::default());
+pub(crate) static ASSET: SingletonOnceLazy<AssetsManagerUntyped> =
+    SingletonOnceLazy::new(|| AssetsManagerUntyped::default());
 
 #[derive(Default)]
 pub(crate) struct AssetsManagerUntyped

@@ -1,11 +1,14 @@
-use hexga_graphics::wgpu::RenderPipeline;
+use hexga_graphics::{vertex::WgpuVertexDesc, wgpu::RenderPipeline};
+use hexga_graphics::gpu::experimental::prelude::*;
 
 use super::*;
 
 #[derive(Debug)]
 pub struct Graphics
 {
-    //pub(crate) immediate: ImmediateRender,
+    pub(crate) immediate: ImmediateRenderBuilder,
+    pub(crate) immediate_mesh: Option<Mesh>,
+
     //pub(crate) binding: GpuBinding,
     //pub(crate) render: GpuRender,
 
@@ -63,7 +66,7 @@ impl Graphics
                 vertex: wgpu::VertexState {
                     module: &shader,
                     entry_point: Some("vs_main"),
-                    buffers: &[],
+                    buffers: &[Vertex::wgpu_vertex_description()],
                     compilation_options: Default::default(),
                 },
                 fragment: Some(wgpu::FragmentState {
@@ -81,7 +84,7 @@ impl Graphics
                 }),
                 primitive: wgpu::PrimitiveState {
                     topology: wgpu::PrimitiveTopology::TriangleList,
-                    strip_index_format: None,
+                    strip_index_format: Some(VertexIndex::GPU_INDEX_FORMAT),
                     front_face: wgpu::FrontFace::Ccw,
                     cull_mode: Some(wgpu::Face::Back),
                     // Setting this to anything other than Fill requires Features::POLYGON_MODE_LINE
@@ -103,6 +106,6 @@ impl Graphics
                 multiview: None,
             });
 
-        Graphics { pipeline }
+        Graphics { pipeline, immediate: ___(), immediate_mesh: None }
     }
 }

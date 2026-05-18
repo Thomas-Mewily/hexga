@@ -38,13 +38,13 @@ pub mod prelude
     pub(crate) use super::experimental::*;
     pub use super::traits::*;
     pub use super::{
-        Gpu, GpuBackend, GpuBuffer, GpuBufferUsage, GpuBufferUsageFlags, GpuContext, GpuError,
-        GpuInstance, GpuParam, GpuPowerPreference, GpuResult, GpuSlice, GpuSliceMut, GpuSurface,
-        GpuSurfaceConfigured, GpuVec,
+        Gpu, GpuBackend, GpuBufferUsage, GpuBufferUsageFlags, GpuContext, GpuError,
+        GpuInstance, GpuParam, GpuPowerPreference, GpuResult
     };
+    pub use super::{buffer::prelude::*, render::prelude::*};
 }
 
 pub mod traits
 {
-    pub use super::{GpuBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut};
+    pub use super::{buffer::prelude::*, render::prelude::*};
 }

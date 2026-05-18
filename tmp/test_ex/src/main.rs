@@ -1,5 +1,8 @@
 #![allow(unused)]
-use std::{num::NonZero, ops::{Add, DerefMut}};
+use std::{
+    num::NonZero,
+    ops::{Add, DerefMut},
+};
 
 fn add_10<T>(val: T) -> T
 where
@@ -16,25 +19,21 @@ struct Foo
     c: u8,
 }
 
-
 type CustomError = ();
 
 trait ComputeHash<const N: usize>
 {
-    fn compute_hash(&self) -> Result<[u8;N],CustomError>;
+    fn compute_hash(&self) -> Result<[u8; N], CustomError>;
 }
 
 use std::fmt::Debug;
 
 trait ComputeHash2
 {
-    type Hash : DerefMut<Target=u8>;
-    type Error : Debug;
-    fn compute_hash(&self) -> Result<Self::Hash,Self::Error>;
+    type Hash: DerefMut<Target = u8>;
+    type Error: Debug;
+    fn compute_hash(&self) -> Result<Self::Hash, Self::Error>;
 }
-
-
-
 
 fn main()
 {

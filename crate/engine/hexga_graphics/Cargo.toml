@@ -17,7 +17,7 @@ default = [
             "int_are_32_bits", "float_are_32_bits",
             "serde", "serde_rc", "hexga_encoding_derive",
 
-            "gpu",
+            #"gpu",
             "gpu_backend_gles", "gpu_backend_noop", 
             "gpu_strict_asserts", "gpu_wgsl"
           ]
@@ -39,7 +39,7 @@ hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_wgpu/hexga_encodi
 
 
 
-gpu = ["dep:hexga_wgpu"]
+#gpu = ["dep:hexga_wgpu"]
 
 gpu_backend_webgpu = ["hexga_wgpu/gpu_backend_webgpu"]
 gpu_backend_gles = ["hexga_wgpu/gpu_backend_gles"]
@@ -64,6 +64,6 @@ default = [
 
 [dependencies]
 hexga.workspace = true
-hexga_wgpu = { workspace = true, optional = true }
+hexga_wgpu = { workspace = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 

@@ -170,7 +170,8 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
     /// Returns multiples mutables references to the values.
     /// All values that can be accessed with the indices must be disjoint.
     #[doc(alias = "get_disjoint_mut")]
-    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output; N]>
+    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N])
+    -> Option<[&mut Self::Output; N]>
     {
         self.try_get_many_mut(indices).ok()
     }

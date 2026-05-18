@@ -1,9 +1,8 @@
 use super::*;
 use hexga::image::ImageBaseOf;
 
-
 #[repr(transparent)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct GpuTexture
 {
     pub wgpu: wgpu::Texture,

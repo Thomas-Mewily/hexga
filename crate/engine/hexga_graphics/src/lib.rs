@@ -2,10 +2,11 @@
 #![allow(unused)]
 use hexga::prelude::*;
 
-#[cfg(feature = "gpu")]
 pub use hexga_wgpu as gpu;
-#[cfg(feature = "gpu")]
 pub use hexga_wgpu::wgpu;
+
+use gpu::prelude::*;
+use gpu::experimental::prelude::*;
 
 //#[cfg(feature = "gpu")]
 //pub use hexga_wgpu::wgpu;
@@ -32,7 +33,6 @@ pub(crate) use typedef::*;
 pub mod prelude
 {
     pub use super::typedef::*;
-    #[cfg(feature = "gpu")]
     pub use hexga_wgpu::prelude::*;
 
     pub use super::traits::*;

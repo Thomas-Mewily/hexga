@@ -129,3 +129,16 @@ where
         GpuSliceMut::new(self, bounds)
     }
 }
+
+pub trait ToGpuBuffer<T>
+where
+    T: BitAllUsed,
+{
+    fn to_gpu_buffer(self, desc: GpuBufferUsageFlags) -> GpuBuffer<T>;
+}
+impl<T> ToGpuBuffer<T> for &[T]
+where
+    T: BitAllUsed,
+{
+    fn to_gpu_buffer(self, desc: GpuBufferUsageFlags) -> GpuBuffer<T> { GpuBuffer::new(self, desc) }
+}

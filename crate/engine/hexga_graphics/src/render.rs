@@ -13,17 +13,18 @@ pub mod prelude
 pub mod traits
 {}
 
-pub struct ImmediateRenderBuilder<P = DrawParam>
+#[derive(Debug, Default)]
+pub struct ImmediateRenderBuilder
 {
-    pub draw_call: NonEmptyStack<DrawCall<P>>,
-    pub params: NonEmptyStack<P>,
+    pub draw_call: NonEmptyStack<DrawCall>,
+    pub params: NonEmptyStack<DrawParam>,
     pub big_mesh: MeshBuilder,
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct ImmediateRender<P = DrawParam>
+pub struct ImmediateRender
 {
-    pub draw_call: Vec<DrawCall<P>>,
+    pub draw_call: Vec<DrawCall>,
 }
 
 #[derive(Clone, Debug)]
@@ -64,34 +65,32 @@ impl Default for DrawGeometry
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct DrawCall<P = DrawParam>
+pub struct DrawCall
 {
     pub geometry: DrawGeometry,
-    pub param: P,
+    pub param: DrawParam,
 }
-impl<P> Deref for DrawCall<P>
+impl Deref for DrawCall
 {
-    type Target = P;
+    type Target = DrawParam;
     fn deref(&self) -> &Self::Target { &self.param }
 }
-impl<P> DerefMut for DrawCall<P>
+impl DerefMut for DrawCall
 {
     fn deref_mut(&mut self) -> &mut Self::Target { &mut self.param }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct DrawParam<T = ()>
+pub struct DrawParam
 {
     pub camera: Camera,
     pub viewport: Rect2,
     pub viewport_min_depth: float,
     pub viewport_max_depth: float,
     pub scissor: Rect2i,
-    pub texture: T,
+    pub texture: Option<Texture>,
 }
-impl<T> Default for DrawParam<T>
-where
-    T: Default,
+impl Default for DrawParam
 {
     fn default() -> Self
     {

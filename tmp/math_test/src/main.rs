@@ -315,4 +315,3 @@ fn main()
     //let g = Grid2::from_fn((2,3), |idx| idx.0 + idx.1 * 2 + 20);
     //println!("{:x}", g);
 }
-

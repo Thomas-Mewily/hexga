@@ -62,5 +62,5 @@ default = [
 [dependencies]
 hexga.workspace = true
 hexga_event_loop.workspace = true
-hexga_graphics = { workspace = true, features = ["gpu"] }
+hexga_graphics = { workspace = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }

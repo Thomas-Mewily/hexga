@@ -10,6 +10,7 @@ pub mod traits
 
 pub type VertexIndex = u32;
 
+
 pub type Vertex2 = VertexOf<2>;
 pub type Vertex3 = VertexOf<3>;
 pub type Vertex = Vertex3;
@@ -24,6 +25,40 @@ pub struct VertexOf<const N: usize = 3>
     pub color: GpuColor,
     pub uv: UV,
 }
+
+pub trait WgpuVertexDesc
+{
+    fn wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>;
+}
+impl<const N: usize> WgpuVertexDesc for VertexOf<N>
+    where GpuVector<N>: WgpuVertex
+{
+    fn wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static> {
+        wgpu::VertexBufferLayout {
+            array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &[
+                wgpu::VertexAttribute {
+                    offset: std::mem::offset_of!(Self, position) as wgpu::BufferAddress,
+                    shader_location: 0,
+                    format: GpuVector::<N>::GPU_VERTEX_FORMAT,
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::offset_of!(Self, color) as wgpu::BufferAddress,
+                    shader_location: 1,
+                    format: GpuColor::GPU_VERTEX_FORMAT,
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::offset_of!(Self, uv) as wgpu::BufferAddress,
+                    shader_location: 2,
+                    format: UV::GPU_VERTEX_FORMAT,
+                },
+            ],
+        }
+    }
+}
+
+
 // + no padding
 unsafe impl<const N: usize> BitAllUsed for VertexOf<N>
 where
@@ -44,13 +79,19 @@ impl<const N: usize> VertexOf<N>
     }
     pub const fn with_position(mut self, position: GpuVector<N>) -> Self
     {
-        self.position = position; self
+        self.position = position;
+        self
     }
     pub const fn with_color(mut self, color: GpuColor) -> Self
     {
-        self.color = color; self
+        self.color = color;
+        self
     }
-    pub const fn with_uv(mut self, uv: UV) -> Self { self.uv = uv; self }
+    pub const fn with_uv(mut self, uv: UV) -> Self
+    {
+        self.uv = uv;
+        self
+    }
 }
 impl From<Vertex2> for Vertex3
 {

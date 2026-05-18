@@ -6,7 +6,9 @@ Use it at your own risk, and keep in mind that the API may change in future vers
 
 ## HexGa Graphics
 
-Cpu based rendering structure and trait. Can enable the wgpu backend using the "wgpu" flag.
+Rendering abstraction on top of wgpu.
+
+~~Cpu based rendering structure and trait. Can enable the wgpu backend using the "wgpu" flag.~~
 
 ## Main Hexga crate
 

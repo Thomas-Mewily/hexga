@@ -175,6 +175,22 @@ where
 
                 app.draw(1., &mut ());
                 */
+                let Ok(mut graphics) = GRAPHICS.try_get_mut()
+                else
+                {
+                    return;
+                };
+                let Ok(mut window) = WINDOW.try_get_mut()
+                else
+                {
+                    return;
+                };
+                let Some(surface) = window.surface()
+                else
+                {
+                    return;
+                };
+                app.draw(1., &mut ());
             }
             None =>
             {}

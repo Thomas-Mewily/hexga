@@ -23,12 +23,13 @@ pub use vec::*;
 
 pub mod prelude
 {
+    pub use super::{GpuVec, GpuBuffer, GpuSlice, GpuSliceMut};
     pub use super::traits::*;
 }
 
 pub mod traits
 {
-    pub use super::{GpuBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut};
+    pub use super::{GpuBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut,ToGpuBuffer,ToGpuVec};
 }
 
 pub trait GpuBufferNew<T>

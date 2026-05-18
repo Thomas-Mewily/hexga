@@ -318,3 +318,16 @@ where
         Ok(())
     }
 }
+
+pub trait ToGpuVec<T>
+where
+    T: BitAllUsed,
+{
+    fn to_gpu_vec(self, desc: GpuBufferUsageFlags) -> GpuVec<T>;
+}
+impl<T> ToGpuVec<T> for &[T]
+where
+    T: BitAllUsed,
+{
+    fn to_gpu_vec(self, desc: GpuBufferUsageFlags) -> GpuVec<T> { GpuVec::new(self, desc) }
+}
