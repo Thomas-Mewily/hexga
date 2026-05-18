@@ -16,10 +16,12 @@ pub mod traits
 #[derive(Debug, Default)]
 pub struct ImmediateRenderBuilder
 {
-    pub draw_call: NonEmptyStack<DrawCall>,
-    pub params: NonEmptyStack<DrawParam>,
-    pub big_mesh: MeshBuilder,
+    pub(crate) draw_call: NonEmptyStack<DrawCall>,
+    pub(crate) params: NonEmptyStack<DrawParam>,
+    pub(crate) big_mesh: MeshBuilder,
 }
+
+
 
 #[derive(Clone, Debug, Default)]
 pub struct ImmediateRender
