@@ -110,6 +110,7 @@ where
         {
             Some(app) =>
             {
+                /*
                 let Ok(mut graphics) = GRAPHICS.try_get_mut()
                 else
                 {
@@ -126,7 +127,6 @@ where
                     return;
                 };
 
-                //a
 
                 let surface = surface.surface();
                 let output = match surface.wgpu.get_current_texture()
@@ -174,6 +174,7 @@ where
                 output.present();
 
                 app.draw(1., &mut ());
+                */
             }
             None =>
             {}

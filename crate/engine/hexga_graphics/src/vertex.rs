@@ -42,21 +42,15 @@ impl<const N: usize> VertexOf<N>
             uv: zero(),
         }
     }
-    pub const fn with_position(self, position: GpuVector<N>) -> Self
+    pub const fn with_position(mut self, position: GpuVector<N>) -> Self
     {
-        Self {
-            position: position,
-            ..self
-        }
+        self.position = position; self
     }
-    pub const fn with_color(self, color: GpuColor) -> Self
+    pub const fn with_color(mut self, color: GpuColor) -> Self
     {
-        Self {
-            color: color,
-            ..self
-        }
+        self.color = color; self
     }
-    pub const fn with_uv(self, uv: UV) -> Self { Self { uv: uv, ..self } }
+    pub const fn with_uv(mut self, uv: UV) -> Self { self.uv = uv; self }
 }
 impl From<Vertex2> for Vertex3
 {

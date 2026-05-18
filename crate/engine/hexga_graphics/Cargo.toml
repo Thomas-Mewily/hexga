@@ -18,7 +18,7 @@ default = [
             "serde", "serde_rc", "hexga_encoding_derive",
 
             "gpu",
-            "gpu_backend_webgpu", "gpu_backend_gles", "gpu_backend_noop", 
+            "gpu_backend_gles", "gpu_backend_noop", 
             "gpu_strict_asserts", "gpu_wgsl"
           ]
 
@@ -50,6 +50,16 @@ gpu_backend_noop = ["hexga_wgpu/gpu_backend_noop"]
 
 gpu_strict_asserts = ["hexga_wgpu/gpu_strict_asserts"]
 gpu_wgsl = ["hexga_wgpu/gpu_wgsl"]
+
+[target.'cfg(target_arch = "wasm32")'.features]
+default = [
+            "int_are_32_bits", "float_are_32_bits",
+            "serde", "serde_rc", "hexga_encoding_derive",
+
+            "gpu_backend_webgpu", # only on wasm ?
+            "gpu_backend_gles", "gpu_backend_noop", 
+            "gpu_strict_asserts", "gpu_wgsl"
+          ]
 
 
 [dependencies]
