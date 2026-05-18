@@ -1,6 +1,6 @@
 #![no_std]
 
-pub mod map_on;
+mod map_on;
 mod map_on_common;
 mod map_on_tuple;
 

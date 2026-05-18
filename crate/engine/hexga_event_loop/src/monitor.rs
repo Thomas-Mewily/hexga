@@ -5,10 +5,20 @@ pub mod prelude
     pub(crate) use super::Monitor;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Monitor
 {
     handle: WinitMonitorHandle,
+}
+impl Debug for Monitor
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Monitor")
+            .field("name", &self.name())
+            .field("refresh_rate_millihertz", &self.refresh_rate_millihertz())
+            .field("scale", &self.scale())
+            .finish()
+    }
 }
 impl From<WinitMonitorHandle> for Monitor
 {

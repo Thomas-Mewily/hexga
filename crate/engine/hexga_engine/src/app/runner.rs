@@ -153,8 +153,8 @@ where
                             resolve_target: None,
                             ops: wgpu::Operations {
                                 load: wgpu::LoadOp::Clear(wgpu::Color {
-                                    r: 0.2,
-                                    g: 0.0,
+                                    r: 0.9,
+                                    g: 0.9,
                                     b: 0.2,
                                     a: 1.0,
                                 }),

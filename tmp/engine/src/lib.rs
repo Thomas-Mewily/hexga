@@ -10,12 +10,19 @@ impl App for MonJeu
 {
     fn event(&mut self, ev: AppEvent, ctx: &mut ()) -> Option<AppEvent>
     {
-        //println!("{ev:?}");
+        for m  in CurrentWindow.available_monitors()
+        {
+            dbg!(m);
+        }
+
+        println!("{ev:?}");
+        //None
         Some(ev)
     }
 
     fn update(&mut self, dt: Duration, ctx: &mut ())
     {
+        
         //CurrentWindow.set_title(format!("{}", Time::since_launch()));
     }
 
@@ -32,12 +39,10 @@ pub fn run_wasm() { run(); }
 
 pub fn run()
 {
-    let mut v = point3(1,2, 3);
-    let [x,y,z] = v.as_array_mut();
-
     let mut param = AppParam::default().with_icon(
         Image::load_from_bytes(include_bytes!("icon.png"), Some("png")).expect("no icon"),
     );
 
+    
     (|| MonJeu).run_with_param(param).expect("failed to run");
 }
