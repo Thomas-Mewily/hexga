@@ -2,7 +2,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{Vector, point, vector};
+    pub use super::{Vector, int, vector};
 }
 
 /// A wrapper for an array that applies binary operators component-wise.
@@ -37,7 +37,7 @@ pub const fn vector<T, const N: usize>(values: [T; N]) -> Vector<T, N>
 {
     Vector::from_array(values)
 }
-pub const fn point<const N: usize>(values: [int; N]) -> Point<N> { Point::from_array(values) }
+pub const fn int<const N: usize>(values: [int; N]) -> Int<N> { Int::from_array(values) }
 
 impl<T, const N: usize> GetPosition<T, N> for Vector<T, N>
 where
@@ -186,7 +186,7 @@ impl<T, const N: usize> Vector<T, N>
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
-    /// assert_eq!(point2(3,4).sum_axis(), 7);
+    /// assert_eq!(int2(3,4).sum_axis(), 7);
     /// ```
     pub fn sum_axis(self) -> T
     where
@@ -263,10 +263,10 @@ where
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
-    /// assert_eq!(unsafe{ point2(0,0).to_index_unchecked(point2(10, 20)) }, 0);
-    /// assert_eq!(unsafe{ point2(3,0).to_index_unchecked(point2(10, 20)) }, 3);
-    /// assert_eq!(unsafe{ point2(3,1).to_index_unchecked(point2(10, 20)) }, 3+1*10);
-    /// assert_eq!(unsafe{ point2(3,5).to_index_unchecked(point2(10, 20)) }, 3+5*10);
+    /// assert_eq!(unsafe{ int2(0,0).to_index_unchecked(int2(10, 20)) }, 0);
+    /// assert_eq!(unsafe{ int2(3,0).to_index_unchecked(int2(10, 20)) }, 3);
+    /// assert_eq!(unsafe{ int2(3,1).to_index_unchecked(int2(10, 20)) }, 3+1*10);
+    /// assert_eq!(unsafe{ int2(3,5).to_index_unchecked(int2(10, 20)) }, 3+5*10);
     /// ```
     pub unsafe fn to_index_unchecked(self, size: Self) -> usize
     {
@@ -347,11 +347,11 @@ where
     /// use hexga_math::prelude::*;
     /// unsafe
     /// {
-    ///     let size = point2(10, 20);
-    ///     for point in [point2(0,0), point2(3,0), point2(3,1), point2(0,5)]
+    ///     let size = int2(10, 20);
+    ///     for point in [int2(0,0), int2(3,0), int2(3,1), int2(0,5)]
     ///     {
     ///         let index = point.to_index_unchecked(size);
-    ///         let point_back = Point2::from_index_unchecked(index, size);
+    ///         let point_back = Int2::from_index_unchecked(index, size);
     ///         assert_eq!(point, point_back);
     ///     }
     /// }
@@ -443,7 +443,7 @@ where
 
 impl<T, const N: usize> Vector<T, N>
 where
-    T: Float,
+    T: Floating,
 {
     pub fn distance_to(self, target: Self) -> T { self.vector_to(target).length() }
 

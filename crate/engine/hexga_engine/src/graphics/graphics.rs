@@ -1,5 +1,5 @@
-use hexga_graphics::{vertex::WgpuVertexDesc, wgpu::RenderPipeline};
 use hexga_graphics::gpu::experimental::prelude::*;
+use hexga_graphics::{vertex::WgpuVertexDesc, wgpu::RenderPipeline};
 
 use super::*;
 
@@ -20,7 +20,7 @@ pub struct Graphics
 
 impl Graphics
 {
-    pub(crate) fn new(surface: &GpuSurface, size: Point2) -> Self
+    pub(crate) fn new(surface: &GpuSurface, size: Int2) -> Self
     {
         let surface_caps = surface.wgpu.get_capabilities(&Gpu.adapter());
         // Shader code in this tutorial assumes an Srgb surface texture. Using a different
@@ -106,6 +106,10 @@ impl Graphics
                 multiview: None,
             });
 
-        Graphics { pipeline, immediate: ___(), immediate_mesh: None }
+        Graphics {
+            pipeline,
+            immediate: ___(),
+            immediate_mesh: None,
+        }
     }
 }

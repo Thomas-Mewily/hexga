@@ -48,14 +48,17 @@ impl<T> From<Vector4<T>> for (T, T, T, T)
 pub const fn vector4<T>(x: T, y: T, z: T, w: T) -> Vector4<T> { Vector4::new(x, y, z, w) }
 
 pub type Bool4 = Bool<4>;
-pub const fn vec4b(x: bool, y: bool, z: bool, w: bool) -> Bool4 { Bool4::new(x, y, z, w) }
+pub const fn bool4(x: bool, y: bool, z: bool, w: bool) -> Bool4 { Bool4::new(x, y, z, w) }
 
 pub type Vec4 = Vector4<float>;
 pub const fn vec4(x: float, y: float, z: float, w: float) -> Vec4 { Vec4::new(x, y, z, w) }
 pub type Coef4 = Vec4;
 
-pub type Point4 = Point<4>;
-pub const fn point4(x: int, y: int, z: int, w: int) -> Point4 { Point4::new(x, y, z, w) }
+pub type Int4 = Int<4>;
+pub const fn int4(x: int, y: int, z: int, w: int) -> Int4 { Int4::new(x, y, z, w) }
+
+pub type Uint4 = Uint<4>;
+pub const fn uint4(x: uint, y: uint, z: uint, w: uint) -> Uint4 { Uint4::new(x, y, z, w) }
 
 impl<T> HaveX<T> for Vector4<T>
 {
@@ -196,5 +199,7 @@ pub type Vector4Iter<T> = VectorIter<Vector4<T>, 4>;
 
 pub(crate) mod prelude
 {
-    pub use super::{Bool4, Point4, SplatCoord4, Vec4, Vector4, point4, vec4, vec4b, vector4};
+    pub use super::{
+        Bool4, Int4, SplatCoord4, Uint4, Vec4, Vector4, bool4, int4, uint4, vec4, vector4,
+    };
 }

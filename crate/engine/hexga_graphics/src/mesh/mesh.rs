@@ -11,16 +11,17 @@ pub struct Mesh<const N: usize = 3>
 
 impl<const N: usize> Clear for Mesh<N>
 {
-    fn clear(&mut self) {
+    fn clear(&mut self)
+    {
         self.vertices.clear();
         self.indices.clear();
     }
 }
 
-
 impl<const N: usize> Mesh<N>
 {
-    pub(crate) fn from_gpu_vec(vertices: GpuVec<VertexOf<N>>, indices: GpuVec<VertexIndex>) -> Self
+    pub(crate) fn from_gpu_vec(vertices: GpuVec<VertexOf<N>>, indices: GpuVec<VertexIndex>)
+    -> Self
     {
         Self { vertices, indices }
     }
@@ -45,8 +46,5 @@ impl<const N: usize> Mesh<N>
 }
 impl<const N: usize> From<&MeshBuilder<N>> for Mesh<N>
 {
-    fn from(mesh: &MeshBuilder<N>) -> Self
-    {
-        Self::new(mesh.vertices(), mesh.indices())
-    }
+    fn from(mesh: &MeshBuilder<N>) -> Self { Self::new(mesh.vertices(), mesh.indices()) }
 }

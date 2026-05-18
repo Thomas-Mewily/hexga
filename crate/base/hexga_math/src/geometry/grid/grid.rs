@@ -347,8 +347,8 @@ mod grid_test
     fn index_order()
     {
         use super::*;
-        //let x = Grid::<char>::new(point2(2, 4));
-        let size = point2(2, 3);
+        //let x = Grid::<char>::new(int2(2, 4));
+        let size = int2(2, 3);
 
         let grid = Grid2::from_fn(size, |p| p.x + 10 * p.y);
 
@@ -358,34 +358,34 @@ mod grid_test
         {
             for x in 0..size.x
             {
-                print!("{:2} ", grid[point2(x, y)]);
+                print!("{:2} ", grid[int2(x, y)]);
             }
             println!()
         }
         */
 
         let mut indice = 0;
-        assert_eq!(grid.values()[indice], grid[point2(0, 0)]);
+        assert_eq!(grid.values()[indice], grid[int2(0, 0)]);
         assert_eq!(grid.values()[indice], 0);
 
         indice += 1;
-        assert_eq!(grid.values()[indice], grid[point2(1, 0)]);
+        assert_eq!(grid.values()[indice], grid[int2(1, 0)]);
         assert_eq!(grid.values()[indice], 1);
 
         indice += 1;
-        assert_eq!(grid.values()[indice], grid[point2(0, 1)]);
+        assert_eq!(grid.values()[indice], grid[int2(0, 1)]);
         assert_eq!(grid.values()[indice], 10);
 
         indice += 1;
-        assert_eq!(grid.values()[indice], grid[point2(1, 1)]);
+        assert_eq!(grid.values()[indice], grid[int2(1, 1)]);
         assert_eq!(grid.values()[indice], 11);
 
         indice += 1;
-        assert_eq!(grid.values()[indice], grid[point2(0, 2)]);
+        assert_eq!(grid.values()[indice], grid[int2(0, 2)]);
         assert_eq!(grid.values()[indice], 20);
 
         indice += 1;
-        assert_eq!(grid.values()[indice], grid[point2(1, 2)]);
+        assert_eq!(grid.values()[indice], grid[int2(1, 2)]);
         assert_eq!(grid.values()[indice], 21);
     }
 
@@ -393,17 +393,17 @@ mod grid_test
     fn out_of_range()
     {
         use super::*;
-        let grid = Grid2::from_fn(point2(2, 3), |_| 42);
+        let grid = Grid2::from_fn(int2(2, 3), |_| 42);
 
-        assert_eq!(grid.get(point2(0, 0)), Some(&42));
-        assert_eq!(grid.get(point2(-1, 0)), None);
-        assert_eq!(grid.get(point2(1, 0)), Some(&42));
-        assert_eq!(grid.get(point2(2, 0)), None);
+        assert_eq!(grid.get(int2(0, 0)), Some(&42));
+        assert_eq!(grid.get(int2(-1, 0)), None);
+        assert_eq!(grid.get(int2(1, 0)), Some(&42));
+        assert_eq!(grid.get(int2(2, 0)), None);
 
-        assert_eq!(grid.get(point2(0, 0)), Some(&42));
-        assert_eq!(grid.get(point2(0, -1)), None);
-        assert_eq!(grid.get(point2(0, 2)), Some(&42));
-        assert_eq!(grid.get(point2(0, 3)), None);
+        assert_eq!(grid.get(int2(0, 0)), Some(&42));
+        assert_eq!(grid.get(int2(0, -1)), None);
+        assert_eq!(grid.get(int2(0, 2)), Some(&42));
+        assert_eq!(grid.get(int2(0, 3)), None);
     }
 
     #[test]
@@ -411,7 +411,7 @@ mod grid_test
     {
         use super::*;
 
-        let size = point2(2, 3);
+        let size = int2(2, 3);
         let grid = Grid2::from_fn(size, |p| p.x + 10 * p.y);
 
         assert_eq!(grid.size(), grid.view().size());
@@ -420,12 +420,12 @@ mod grid_test
 
         assert_eq!(grid, subgrid);
 
-        let smaller_size = point2(1, 2);
+        let smaller_size = int2(1, 2);
         let smaller_grid = Grid2::from_fn(smaller_size, |p| p.x + 10 * p.y);
         let smaller_grid_from_bigger_grid = grid.view().subgrid(smaller_size.to_rect());
         assert_eq!(smaller_grid, smaller_grid_from_bigger_grid);
 
-        let top_right_grid_size = point2(1, 2);
+        let top_right_grid_size = int2(1, 2);
         let offset = Vector2::ONE;
         let top_right_grid = Grid2::from_fn(smaller_size, |p| {
             let p = p + offset;
@@ -443,7 +443,7 @@ mod grid_test
     {
         use super::*;
 
-        let size = point2(2, 3);
+        let size = int2(2, 3);
 
         let mut grid1 = Grid2::from_fn(size, |p| p.x + 10 * p.y);
         let mut grid2 = Grid2::from_fn(size, |p| p.x + 10 * p.y);
@@ -452,7 +452,7 @@ mod grid_test
         assert_eq!(grid1.view(), grid2.view());
         assert_eq!(grid1.view_mut(), grid2.view_mut());
 
-        grid2[point2(1, 0)] = 42;
+        grid2[int2(1, 0)] = 42;
 
         assert_ne!(grid1, grid2);
         assert_ne!(grid1.view(), grid2.view());

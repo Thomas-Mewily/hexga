@@ -58,8 +58,11 @@ pub type Vec3 = Vector3<float>;
 pub const fn vec3(x: float, y: float, z: float) -> Vec3 { Vec3::new(x, y, z) }
 pub type Coef3 = Vec3;
 
-pub type Point3 = Point<3>;
-pub const fn point3(x: int, y: int, z: int) -> Point3 { Point3::new(x, y, z) }
+pub type Int3 = Int<3>;
+pub const fn int3(x: int, y: int, z: int) -> Int3 { Int3::new(x, y, z) }
+
+pub type Uint3 = Uint<3>;
+pub const fn uint3(x: uint, y: uint, z: uint) -> Uint3 { Uint3::new(x, y, z) }
 
 impl<T> HaveX<T> for Vector3<T>
 {
@@ -189,5 +192,7 @@ where
 
 pub(crate) mod prelude
 {
-    pub use super::{Bool3, Point3, SplatCoord3, Vec3, Vector3, bool3, point3, vec3, vector3};
+    pub use super::{
+        Bool3, Int3, SplatCoord3, Uint3, Vec3, Vector3, bool3, int3, uint3, vec3, vector3,
+    };
 }

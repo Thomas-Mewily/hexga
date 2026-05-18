@@ -291,20 +291,20 @@ where
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
-pub struct BijectionPointToUsize<Idx, const N: usize>
+pub struct BijectionVectorToUsize<Idx, const N: usize>
 where
     Idx: Integer,
 {
     pub size: Vector<Idx, N>,
 }
-impl<Idx, const N: usize> BijectionPointToUsize<Idx, N>
+impl<Idx, const N: usize> BijectionVectorToUsize<Idx, N>
 where
     Idx: Integer,
 {
     pub const fn new(size: Vector<Idx, N>) -> Self { Self { size } }
 }
 
-unsafe impl<Idx, const N: usize> BijectionFn for BijectionPointToUsize<Idx, N>
+unsafe impl<Idx, const N: usize> BijectionFn for BijectionVectorToUsize<Idx, N>
 where
     Idx: Integer,
 {
@@ -336,7 +336,7 @@ where
         (dest < self.size.area_usize()).then(|| self.to_source_unchecked(dest))
     }
 }
-unsafe impl<Idx, const N: usize> TryBijectionFn for BijectionPointToUsize<Idx, N>
+unsafe impl<Idx, const N: usize> TryBijectionFn for BijectionVectorToUsize<Idx, N>
 where
     Idx: Integer,
 {
@@ -356,14 +356,14 @@ where
     }
 }
 
-impl<Idx, const N: usize> GetPosition<Idx, N> for BijectionPointToUsize<Idx, N>
+impl<Idx, const N: usize> GetPosition<Idx, N> for BijectionVectorToUsize<Idx, N>
 where
     Idx: Integer,
 {
     #[inline(always)]
     fn pos(&self) -> Vector<Idx, N> { zero() }
 }
-impl<Idx, const N: usize> GetSize<Idx, N> for BijectionPointToUsize<Idx, N>
+impl<Idx, const N: usize> GetSize<Idx, N> for BijectionVectorToUsize<Idx, N>
 where
     Idx: Integer,
 {

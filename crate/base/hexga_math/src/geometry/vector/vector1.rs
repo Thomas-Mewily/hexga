@@ -56,8 +56,11 @@ pub type Vec1 = Vector1<float>;
 pub const fn vec1(x: float) -> Vec1 { Vec1::new(x) }
 pub type Coef1 = Vec1;
 
-pub type Point1 = Point<1>;
-pub const fn point1(x: int) -> Point1 { Point1::new(x) }
+pub type Int1 = Int<1>;
+pub const fn int1(x: int) -> Int1 { Int1::new(x) }
+
+pub type Uint1 = Uint<1>;
+pub const fn uint1(x: uint) -> Uint1 { Uint1::new(x) }
 
 impl<T> HaveX<T> for Vector1<T>
 {
@@ -117,5 +120,7 @@ pub type Vector1Iter<T> = VectorIter<Vector1<T>, 1>;
 
 pub(crate) mod prelude
 {
-    pub use super::{Bool1, Point1, SplatCoord1, Vec1, Vector1, bool1, point1, vec1, vector1};
+    pub use super::{
+        Bool1, Int1, SplatCoord1, Uint1, Vec1, Vector1, bool1, int1, uint1, vec1, vector1,
+    };
 }

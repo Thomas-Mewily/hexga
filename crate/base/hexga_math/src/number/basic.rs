@@ -141,7 +141,7 @@ where
 /// Mix function in a component way
 pub trait Mix<C = float>: Sized
 where
-    C: Float,
+    C: Floating,
 {
     /// Mix function in a component way
     ///
@@ -177,7 +177,7 @@ where
 pub fn mix<S, F>(src: S, dest: S, coef: F) -> S
 where
     S: Mix<F>,
-    F: Float,
+    F: Floating,
 {
     src.mix(dest, coef)
 }
@@ -185,7 +185,7 @@ where
 map_on_number_and_bool!(
     ($type_name: tt) =>
     {
-        impl<F> Mix<F> for $type_name where F: Float
+        impl<F> Mix<F> for $type_name where F: Floating
         {
             fn mix_unchecked(self, dest: Self, coef: F) -> Self
             {
@@ -201,7 +201,7 @@ impl<S, F> Mix<F> for S
 where
     S: MapInternWith,
     S::Item: Mix<F>,
-    F: Float,
+    F: Floating,
 {
     fn mix_unchecked(self, dest: Self, coef: F) -> Self
     {
@@ -383,7 +383,7 @@ macro_rules! impl_number_basic_trait {
         pub fn mix<C>(self, other: Self, coef: C) -> Self
         where
             Self: $crate::number::Mix<C>,
-            C: Float,
+            C: $crate::number::Floating,
         {
             $crate::number::Mix::mix(self, other, coef)
         }
@@ -399,7 +399,7 @@ macro_rules! impl_number_basic_trait {
         pub fn mix_unchecked<C>(self, other: Self, coef: C) -> Self
         where
             Self: $crate::number::Mix<C>,
-            C: Float,
+            C: $crate::number::Floating,
         {
             $crate::number::Mix::mix_unchecked(self, other, coef)
         }

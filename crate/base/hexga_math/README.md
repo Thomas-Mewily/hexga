@@ -41,7 +41,7 @@ Similar traits for casting remapping the range of an primitive to another primit
 There are some quick typedef in the prelude :
 
 - [`int`], [`uint`] and [`float`]  : The default primitive precision used in the typedef. (can be change with the feature flags)
-- [`Vec2i`], [`Vec3i`], [`Vec4i`] for Vector of [`int`],
+- [`Int2`], [`Int3`], [`Int4`] for Vector of [`int`],
 - [`Vec2`], [`Vec3`], [`Vec4`] for Vector of [`float`],
 - [`Rect2`], [`Rect3`], [`Rect4`] for Rectangle of [`float`],
 - [`Rect2i`], [`Rect3i`], [`Rect4i`] for Rectangle of [`int`] (`P` for point),

@@ -19,5 +19,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::format::{WgpuIndex,WgpuVertex};
+    pub use super::format::{WgpuIndex, WgpuVertex};
 }

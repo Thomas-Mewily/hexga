@@ -3,7 +3,7 @@ use super::*;
 // Based on https://docs.rs/macroquad/latest/macroquad/camera/index.html
 pub trait ICamera<F = float>: GetMatrix<F, 4, 4>
 where
-    F: Float,
+    F: Floating,
 {
     fn have_depth(&self) -> bool;
     //fn viewport(&self) -> Option<Rect2i>;
@@ -36,7 +36,7 @@ pub type Camera3D = Camera3DOf<float>;
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Camera3DOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     pub position: Vector3<F>,
     pub target: Vector3<F>,
@@ -55,7 +55,7 @@ impl<F> Default for Camera3DOf<F> where F:Float
 */
 impl<F> GetMatrix<F, 4, 4> for Camera3DOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn matrix(&self) -> Matrix<F, 4, 4> { self.matrix() }
 }
@@ -65,7 +65,7 @@ pub type CameraPerspective = CameraPerspectiveOf<float>;
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct CameraPerspectiveOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     pub aspect: F,
     pub fovy: AngleOf<F>,
@@ -82,7 +82,7 @@ impl<F> Default for CameraPerspectiveOf<F> where F:Float
 }*/
 impl<F> From<CameraPerspectiveOf<F>> for Matrix4<F>
 where
-    F: Float,
+    F: Floating,
 {
     // Based on https://docs.rs/cgmath/latest/src/cgmath/projection.rs.html#108
     fn from(p: CameraPerspectiveOf<F>) -> Self
@@ -119,7 +119,7 @@ pub enum Projection
 
 impl<F> Camera3DOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn matrix(&self) -> Matrix4<F>
     {
@@ -139,7 +139,7 @@ where
 
 impl<F> ICamera<F> for Camera3DOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn have_depth(&self) -> bool { true }
 }
@@ -192,13 +192,13 @@ impl<T> Map for CameraOf<T>
 
 impl<F> GetPosition<F, 3> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn pos(&self) -> Vector<F, 3> { self.matrix.pos() }
 }
 impl<F> SetPosition<F, 3> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn set_pos(&mut self, pos: Vector<F, 3>) -> &mut Self
     {
@@ -208,13 +208,13 @@ where
 }
 impl<F> GetScale<F, 3> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn scale(&self) -> Vector<F, 3> { self.matrix.scale() }
 }
 impl<F> SetScale<F, 3> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn set_scale(&mut self, scale: Vector<F, 3>) -> &mut Self
     {
@@ -224,7 +224,7 @@ where
 }
 impl<F> RotateX<F> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn rotate_x(&mut self, angle: AngleOf<F>) -> &mut Self
     {
@@ -234,7 +234,7 @@ where
 }
 impl<F> RotateY<F> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn rotate_y(&mut self, angle: AngleOf<F>) -> &mut Self
     {
@@ -244,7 +244,7 @@ where
 }
 impl<F> RotateZ<F> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn rotate_z(&mut self, angle: AngleOf<F>) -> &mut Self
     {
@@ -254,13 +254,13 @@ where
 }
 impl<F> GetMatrix<F, 4, 4> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn matrix(&self) -> Matrix<F, 4, 4> { self.matrix }
 }
 impl<F> SetMatrix<F, 4, 4> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn set_matrix(&mut self, matrix: Matrix<F, 4, 4>) -> &mut Self
     {
@@ -271,7 +271,7 @@ where
 
 impl<F> CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     pub const CAMERA_2D: Self = Self {
         matrix: Matrix4::IDENTITY,
@@ -289,13 +289,13 @@ where
 }
 impl<F> Default for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn default() -> Self { Self::CAMERA_3D }
 }
 impl<F> ICamera<F> for CameraOf<F>
 where
-    F: Float,
+    F: Floating,
 {
     fn have_depth(&self) -> bool { self.depth }
 }

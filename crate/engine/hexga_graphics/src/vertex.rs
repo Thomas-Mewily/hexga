@@ -10,7 +10,6 @@ pub mod traits
 
 pub type VertexIndex = u32;
 
-
 pub type Vertex2 = VertexOf<2>;
 pub type Vertex3 = VertexOf<3>;
 pub type Vertex = Vertex3;
@@ -31,9 +30,11 @@ pub trait WgpuVertexDesc
     fn wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>;
 }
 impl<const N: usize> WgpuVertexDesc for VertexOf<N>
-    where GpuVector<N>: WgpuVertex
+where
+    GpuVector<N>: WgpuVertex,
 {
-    fn wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static> {
+    fn wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>
+    {
         wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,
@@ -57,7 +58,6 @@ impl<const N: usize> WgpuVertexDesc for VertexOf<N>
         }
     }
 }
-
 
 // + no padding
 unsafe impl<const N: usize> BitAllUsed for VertexOf<N>

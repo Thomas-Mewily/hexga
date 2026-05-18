@@ -11,10 +11,7 @@ pub use mesh::*;
 
 pub mod prelude
 {
-    pub use super::{
-        traits::*,
-        Mesh, MeshBuilder,
-    };
+    pub use super::{Mesh, MeshBuilder, traits::*};
 }
 
 pub mod traits

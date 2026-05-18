@@ -78,7 +78,7 @@ where
 #[cfg(feature = "serde")]
 impl<T> Serialize for AngleOf<T>
 where
-    T: Float + Serialize,
+    T: Floating + Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -109,7 +109,7 @@ enum AngleInput<T> where T: Float
 #[cfg(feature = "serde")]
 impl<'de, T> Deserialize<'de> for AngleOf<T>
 where
-    T: Float + Deserialize<'de>,
+    T: Floating + Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -152,7 +152,7 @@ where
     }
 }
 
-impl<T: Float> AngleOf<T>
+impl<T: Floating> AngleOf<T>
 {
     /// `360°`
     pub const FULL: Self = AngleOf(T::TWO_PI);
@@ -292,20 +292,20 @@ impl<T: Float> AngleOf<T>
     }
 }
 
-impl<T: Float> Debug for AngleOf<T>
+impl<T: Floating> Debug for AngleOf<T>
 where
     T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{:?}°", self.degree()) }
 }
-impl<T: Float> Display for AngleOf<T>
+impl<T: Floating> Display for AngleOf<T>
 where
     T: Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{:}°", self.degree()) }
 }
 
-impl<T: Float> RangeDefault for AngleOf<T>
+impl<T: Floating> RangeDefault for AngleOf<T>
 {
     const RANGE_MIN: Self = Self::ZERO;
     const RANGE_HALF: Self = Self::FLAT;

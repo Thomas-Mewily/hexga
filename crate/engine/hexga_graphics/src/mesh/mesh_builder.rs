@@ -32,7 +32,6 @@ pub trait BuilderMesh<const N: usize = 3>
     // circle, oval...
 }
 
-
 #[derive(Default, Clone, PartialEq, PartialOrd, Debug)]
 pub struct MeshBuilder<const N: usize = 3>
 {

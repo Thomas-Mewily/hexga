@@ -33,13 +33,13 @@ impl<T> HslaOf<T>
     }
     pub const fn new_hue(hue: T) -> Self
     where
-        T: Float,
+        T: Floating,
     {
         Self::hsl(hue, T::ONE, T::HALF)
     }
     pub const fn gray(coef: T) -> Self
     where
-        T: Float,
+        T: Floating,
     {
         Self::hsl(T::ZERO, T::ZERO, coef)
     }
@@ -63,7 +63,7 @@ impl<T> HslaOf<T>
     /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
     pub const fn hsl(hue: T, saturation: T, lightness: T) -> Self
     where
-        T: Float,
+        T: Floating,
     {
         Self::hsla(hue, saturation, lightness, T::ONE)
     }
@@ -218,7 +218,7 @@ impl<T> From<HslaOf<T>> for (T, T, T, T)
 
 impl<T> From<(T, T, T)> for HslaOf<T>
 where
-    T: Float,
+    T: Floating,
 {
     fn from(value: (T, T, T)) -> Self { HslaOf::hsl(value.0, value.1, value.2) }
 }
@@ -229,7 +229,7 @@ impl<T> From<HslaOf<T>> for (T, T, T)
 
 impl<T> From<[T; 3]> for HslaOf<T>
 where
-    T: Float,
+    T: Floating,
 {
     fn from(value: [T; 3]) -> Self
     {
@@ -261,7 +261,7 @@ impl<T> From<HslaOf<T>> for Vector4<T>
 
 impl<T> From<Vector3<T>> for HslaOf<T>
 where
-    T: Float,
+    T: Floating,
 {
     fn from(value: Vector3<T>) -> Self
     {
@@ -278,14 +278,14 @@ impl<T> From<HslaOf<T>> for Vector3<T>
     }
 }
 
-impl<C: Float> Default for HslaOf<C>
+impl<C: Floating> Default for HslaOf<C>
 {
     fn default() -> Self { Self::hsla(zero(), zero(), one(), one()) }
 }
 
 impl<T> HslaOf<T>
 where
-    T: Float,
+    T: Floating,
 {
     pub fn to_rgba_of<R>(self) -> RgbaOf<R>
     where
@@ -307,7 +307,7 @@ where
         {
             fn hue_to_rgb<T>(p: T, q: T, mut t: T) -> T
             where
-                T: Float,
+                T: Floating,
             {
                 if t < T::ZERO
                 {
@@ -350,7 +350,7 @@ where
 
     pub fn to_hsla_of<R>(self) -> HslaOf<R>
     where
-        R: Float + CastRangeFrom<T>,
+        R: Floating + CastRangeFrom<T>,
     {
         self.cast_range_into()
     }
@@ -358,7 +358,7 @@ where
 
 impl<T> IColor for HslaOf<T>
 where
-    T: Float,
+    T: Floating,
 {
     type Component = T;
 
@@ -395,7 +395,7 @@ where
 
     fn to_hsla_of<R>(self) -> HslaOf<R>
     where
-        R: Float + CastRangeFrom<Self::Component>,
+        R: Floating + CastRangeFrom<Self::Component>,
     {
         self.to_hsla_of()
     }
@@ -459,7 +459,7 @@ pub const fn hsla<T>(hue: T, saturation: T, lightness: T, alpha: T) -> HslaOf<T>
 /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
 pub const fn hsl<T>(hue: T, saturation: T, lightness: T) -> HslaOf<T>
 where
-    T: Float,
+    T: Floating,
 {
     HslaOf::hsl(hue, saturation, lightness)
 }

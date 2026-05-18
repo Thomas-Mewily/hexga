@@ -172,7 +172,7 @@ pub trait IGrid<T, Idx, const N : usize> :
     fn from_fn_ndc_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
         where
         P : Into<Vector::<Idx,N>>,
-        Precision : Float + CastFrom<Idx>,
+        Precision : Floating + CastFrom<Idx>,
         F : FnMut(Vector<Precision,N>) -> T,
     {
         let size : Vector::<Idx,N> = size.into();
@@ -204,7 +204,7 @@ pub trait IGrid<T, Idx, const N : usize> :
     fn from_fn_coef_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
         where
         P : Into<Vector::<Idx,N>>,
-        Precision : Float + CastFrom<Idx>,
+        Precision : Floating + CastFrom<Idx>,
         F : FnMut(Vector<Precision,N>) -> T,
     {
         let size : Vector::<Idx,N> = size.into();

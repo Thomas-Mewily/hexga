@@ -5,8 +5,8 @@ use hexga::prelude::*;
 pub use hexga_wgpu as gpu;
 pub use hexga_wgpu::wgpu;
 
-use gpu::prelude::*;
 use gpu::experimental::prelude::*;
+use gpu::prelude::*;
 
 //#[cfg(feature = "gpu")]
 //pub use hexga_wgpu::wgpu;

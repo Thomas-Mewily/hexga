@@ -415,8 +415,8 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         let method_name = format_ident!("toggled_{}", variant.to_string().to_snake_case());
         quote! {
             /// Returns a new flags with #variant flag toggled
-            pub const fn #method_name(self) -> Self { 
-                Self { _bits_do_not_use_it: self._bits_do_not_use_it ^ (#struct_name::#variant)._bits_do_not_use_it } 
+            pub const fn #method_name(self) -> Self {
+                Self { _bits_do_not_use_it: self._bits_do_not_use_it ^ (#struct_name::#variant)._bits_do_not_use_it }
             }
         }
     }).collect();

@@ -327,49 +327,49 @@ impl<T, const N: usize> Rectangle<T, N>
 where
     T: Number,
 {
-    /// Check if a point inside the rectangle.
+    /// Check if a position is inside the rectangle.
     /// Also work for indexing
     ///
     /// ```
     /// use hexga_math::prelude::*;
     ///
     /// // inside :
-    /// assert!(rect2i(0, 0, 2, 2).is_inside(point2(1, 1)));
-    /// assert!(rect2i(0, 0, 2, 2).is_inside(point2(0, 0)));
+    /// assert!(rect2i(0, 0, 2, 2).is_inside(int2(1, 1)));
+    /// assert!(rect2i(0, 0, 2, 2).is_inside(int2(0, 0)));
     ///
     ///
     /// // not inside :
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2(2, 0)));
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2(0, 2)));
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2(2, 2)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2(2, 0)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2(0, 2)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2(2, 2)));
     ///
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2( 3,   3)));
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2(-1,  -1)));
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2(-1,  -1)));
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2( 1,  10)));
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2( 1, -10)));
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2(-10,  1)));
-    /// assert!(!rect2i(0, 0, 2, 2).is_inside(point2( 10,  1)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2( 3,   3)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2(-1,  -1)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2(-1,  -1)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2( 1,  10)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2( 1, -10)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2(-10,  1)));
+    /// assert!(!rect2i(0, 0, 2, 2).is_inside(int2( 10,  1)));
     ///
     /// ```
-    pub fn is_inside(&self, point: Vector<T, N>) -> bool
+    pub fn is_inside(&self, pos: Vector<T, N>) -> bool
     {
         self.bounds_min()
-            .all_with(point, |axis, other_axis| other_axis >= axis)
+            .all_with(pos, |axis, other_axis| other_axis >= axis)
             && self
                 .bounds_max()
-                .all_with(point, |axis, other_axis| other_axis < axis)
+                .all_with(pos, |axis, other_axis| other_axis < axis)
     }
 
-    /// Check if a point inside the rectangle.
+    /// Check if a position is inside the rectangle.
     /// Don't work for indexing
-    pub fn is_inside_inclusif(&self, point: Vector<T, N>) -> bool
+    pub fn is_inside_inclusif(&self, pos: Vector<T, N>) -> bool
     {
         self.bounds_min()
-            .all_with(point, |axis, other_axis| other_axis >= axis)
+            .all_with(pos, |axis, other_axis| other_axis >= axis)
             && self
                 .bounds_max()
-                .all_with(point, |axis, other_axis| other_axis <= axis)
+                .all_with(pos, |axis, other_axis| other_axis <= axis)
     }
 
     pub fn is_rect_inside(&self, rect: Rectangle<T, N>) -> bool
@@ -1040,7 +1040,7 @@ mod rect_test
     fn crop_normal()
     {
         let rect = rect2i(0, 0, 10, 10);
-        let cropped = rect.crop_margin_intersect(point2(1, 1), point2(2, 2));
+        let cropped = rect.crop_margin_intersect(int2(1, 1), int2(2, 2));
         assert_eq!(cropped, rect2i(1, 1, 7, 7));
     }
 
@@ -1048,7 +1048,7 @@ mod rect_test
     fn crop_to_much()
     {
         let rect = rect2i(0, 0, 10, 10);
-        let cropped = rect.crop_margin_intersect(point2(0, 0), point2(20, 20));
+        let cropped = rect.crop_margin_intersect(int2(0, 0), int2(20, 20));
         assert_eq!(cropped, zero());
     }
 
@@ -1056,7 +1056,7 @@ mod rect_test
     fn crop_to_much_2()
     {
         let rect = rect2i(0, 0, 10, 10);
-        let cropped = rect.crop_margin_intersect(point2(20, 20), point2(0, 0));
+        let cropped = rect.crop_margin_intersect(int2(20, 20), int2(0, 0));
         assert_eq!(cropped, rect2i(20, 20, 0, 0));
     }
 
@@ -1064,7 +1064,7 @@ mod rect_test
     fn crop_to_much_3()
     {
         let rect = rect2i(0, 0, 10, 10);
-        let cropped = rect.crop_margin_intersect(point2(20, 20), point2(20, 20));
+        let cropped = rect.crop_margin_intersect(int2(20, 20), int2(20, 20));
         assert_eq!(cropped, rect2i(20, 20, 0, 0));
     }
 
