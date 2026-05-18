@@ -83,7 +83,7 @@ where
 }
 
 // Double recursive macro :)
-macro_rules! impl_cast_to {
+macro_rules! impl_cast_into {
     ($src: ty, $dest: ty) => {
         impl CastFrom<$src> for $dest
         {
@@ -92,10 +92,10 @@ macro_rules! impl_cast_to {
     };
 
     ($cast_into: ty) => {
-        map_on_number!(impl_cast_to, $cast_into);
+        map_on_number!(impl_cast_into, $cast_into);
     };
 }
-map_on_number!(impl_cast_to);
+map_on_number!(impl_cast_into);
 
 map_on_integer!(
     ($itself: ty) =>

@@ -913,10 +913,10 @@ impl<T,const N: usize> Rectangle<T,N>
 {
     pub fn split_axis(&self, axis: Vector<T,N>, nb: usize) -> impl Iterator<Item = Rectangle<T,N>> + '_
     {
-        let coef = (Vector::splat(nb.cast_to()) * axis).max(Vector::ONE);
+        let coef = (Vector::splat(nb.cast_into()) * axis).max(Vector::ONE);
         let size = self.size / coef;
         let offset = size * axis;
-        (0..nb).map(move |i| Rectangle::new(self.pos + offset * Vector::splat(i.cast_to()), size))
+        (0..nb).map(move |i| Rectangle::new(self.pos + offset * Vector::splat(i.cast_into()), size))
     }
 
 

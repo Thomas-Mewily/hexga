@@ -2,7 +2,7 @@ use super::*;
 
 /// Macro to implement a "cast-to" trait for primitive numeric types
 /// and for generic containers that implement `MapGeneric`.
-macro_rules! impl_cast_to {
+macro_rules! impl_cast_into {
     ($trait_name:ident, $fn_map_name:ident, $fn_map_range_name:ident, $output_type:ty) => {
         /// Helper trait based on [`CastInto`] and [`CastRangeInto`]
         /// Also work on composite like [`std::array`], [`Vector`]...
@@ -48,19 +48,19 @@ macro_rules! impl_cast_to {
     };
 }
 
-impl_cast_to!(ToFloat, to_float, to_float_range, float);
-impl_cast_to!(ToInt, to_int, to_int_range, int);
-impl_cast_to!(ToUInt, to_uint, to_uint_range, uint);
-impl_cast_to!(ToF32, to_f32, to_f32_range, f32);
-impl_cast_to!(ToF64, to_f64, to_f64_range, f64);
-impl_cast_to!(ToU8, to_u8, to_u8_range, u8);
-impl_cast_to!(ToU16, to_u16, to_u16_range, u16);
-impl_cast_to!(ToU32, to_u32, to_u32_range, u32);
-impl_cast_to!(ToU64, to_u64, to_u64_range, u64);
-impl_cast_to!(ToUSize, to_usize, to_usize_range, usize);
-impl_cast_to!(ToI8, to_i8, to_i8_range, i8);
-impl_cast_to!(ToI16, to_i16, to_i16_range, i16);
-impl_cast_to!(ToI32, to_i32, to_i32_range, i32);
-impl_cast_to!(ToI64, to_i64, to_i64_range, i64);
-impl_cast_to!(ToISize, to_isize, to_isize_range, isize);
-impl_cast_to!(ToBool, to_bool, to_bool_range, bool);
+impl_cast_into!(ToFloat, to_float, to_float_range, float);
+impl_cast_into!(ToInt, to_int, to_int_range, int);
+impl_cast_into!(ToUInt, to_uint, to_uint_range, uint);
+impl_cast_into!(ToF32, to_f32, to_f32_range, f32);
+impl_cast_into!(ToF64, to_f64, to_f64_range, f64);
+impl_cast_into!(ToU8, to_u8, to_u8_range, u8);
+impl_cast_into!(ToU16, to_u16, to_u16_range, u16);
+impl_cast_into!(ToU32, to_u32, to_u32_range, u32);
+impl_cast_into!(ToU64, to_u64, to_u64_range, u64);
+impl_cast_into!(ToUSize, to_usize, to_usize_range, usize);
+impl_cast_into!(ToI8, to_i8, to_i8_range, i8);
+impl_cast_into!(ToI16, to_i16, to_i16_range, i16);
+impl_cast_into!(ToI32, to_i32, to_i32_range, i32);
+impl_cast_into!(ToI64, to_i64, to_i64_range, i64);
+impl_cast_into!(ToISize, to_isize, to_isize_range, isize);
+impl_cast_into!(ToBool, to_bool, to_bool_range, bool);
