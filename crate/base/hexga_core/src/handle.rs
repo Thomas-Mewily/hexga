@@ -11,3 +11,5 @@ impl<T> Handle for rc::Rc<T> where T: ?Sized {}
 impl<T> Handle for rc::Weak<T> where T: ?Sized {}
 impl<T> Handle for sync::Arc<T> where T: ?Sized {}
 impl<T> Handle for sync::Weak<T> where T: ?Sized {}
+impl<T> Handle for Option<T> where T: Handle {}
+impl<T,E> Handle for Result<T,E> where T: Handle, E: Handle {}

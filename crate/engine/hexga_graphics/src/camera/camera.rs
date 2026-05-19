@@ -1,7 +1,7 @@
 use super::*;
 
 // Based on https://docs.rs/macroquad/latest/macroquad/camera/index.html
-pub trait ICamera<F = float>: GetMatrix<F, 4, 4>
+pub trait GetCamera<F = float>: GetMatrix<F, 4, 4>
 where
     F: Floating,
 {
@@ -29,6 +29,10 @@ where
     {
         Cam.scope_cam(self, scope);
     }*/
+}
+pub trait SetCamera<F = float>: SetMatrix<F, 4, 4>
+{
+    fn set_camera(&mut self, camera: CameraOf<F>) -> &mut Self;
 }
 
 pub type Camera3D = Camera3DOf<float>;
@@ -137,7 +141,7 @@ where
     ));
 }
 
-impl<F> ICamera<F> for Camera3DOf<F>
+impl<F> GetCamera<F> for Camera3DOf<F>
 where
     F: Floating,
 {
@@ -147,7 +151,7 @@ where
 pub type Camera = CameraOf<float>;
 
 #[derive(Clone, Copy, PartialEq)]
-pub struct CameraOf<F>
+pub struct CameraOf<F=float>
 {
     pub matrix: Matrix4<F>,
     pub depth: bool,
@@ -287,7 +291,7 @@ where
 {
     fn default() -> Self { Self::CAMERA_3D }
 }
-impl<F> ICamera<F> for CameraOf<F>
+impl<F> GetCamera<F> for CameraOf<F>
 where
     F: Floating,
 {

@@ -10,5 +10,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::ICamera;
+    pub use super::GetCamera;
 }

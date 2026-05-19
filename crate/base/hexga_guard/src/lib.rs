@@ -381,3 +381,13 @@ impl<'a, T> GuardMut<'a, T> for std::sync::MappedMutexGuard<'a, T>
         Self::map(self, f)
     }
 }
+
+
+pub mod prelude
+{
+    pub use super::traits::*;
+}
+pub mod traits
+{
+    pub use super::{Guarded,GuardedMut,Guard,GuardMut};
+}
