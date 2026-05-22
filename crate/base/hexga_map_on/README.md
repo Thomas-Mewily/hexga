@@ -1,7 +1,10 @@
 ## HexGa Map On
 
-Define the `map_on!` macro that can be used to impl a lot of trait quickly using macros.
-You can have a finer control about what you want to impl :
+The core `map_on!` macro allows you to iterate over a list of tokens and generate repetitive code patterns.
+This is particularly useful for avoiding repetitive boilerplate code when implementing traits for multiple primitive types for example.
+
+The fundamental idea is simple: take a list of tokens and apply a macro to each one.
+This is useful for avoiding boilerplate when implementing traits for multiple types:
 
 ```rust
 use hexga_map_on::*;
@@ -213,3 +216,8 @@ The definiton for lambda `map_on!` macro is the following :
     };
 };
 ```
+
+This is the kind of stuff I was doing in C, ported to Rust while also using the full power of Rust macros.
+
+The official name for this technique seem to be `X macro`, but since the main focus is mapping tokens over tokens I prefer the name `map_on macro`.
+https://en.wikipedia.org/wiki/X_macro
