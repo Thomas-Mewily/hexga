@@ -69,7 +69,14 @@ where
 }
 impl<const N: usize> VertexOf<N>
 {
-    pub const fn new() -> Self { Self { position: GpuVector::ZERO, color: GpuColor::WHITE, uv: zero() } }
+    pub const fn new() -> Self
+    {
+        Self {
+            position: GpuVector::ZERO,
+            color: GpuColor::WHITE,
+            uv: zero(),
+        }
+    }
     pub const fn with_position(self, position: GpuVector<N>) -> Self { Self { position: position, ..self } }
     pub const fn with_color(self, color: GpuColor) -> Self { Self { color: color, ..self } }
     pub const fn with_uv(self, uv: UV) -> Self { Self { uv: uv, ..self } }

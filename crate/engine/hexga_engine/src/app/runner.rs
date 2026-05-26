@@ -175,22 +175,39 @@ where
 
                 app.draw(1., &mut ());
                 */
-                let Ok(mut graphics) = GRAPHICS.try_get_mut()
-                else
+
                 {
-                    return;
-                };
-                let Ok(mut window) = WINDOW.try_get_mut()
-                else
+                    let Ok(mut window) = WINDOW.try_get_mut()
+                    else
+                    {
+                        return;
+                    };
+
+                    let Some(surface) = window.surface()
+                    else
+                    {
+                        return;
+                    };
+                }
+
                 {
-                    return;
-                };
-                let Some(surface) = window.surface()
-                else
-                {
-                    return;
-                };
+                    let Ok(mut graphics) = GRAPHICS.try_get_mut()
+                    else
+                    {
+                        return;
+                    };
+                    graphics.begin_draw();
+                }
                 app.draw(1., &mut ());
+
+                {
+                    let Ok(mut graphics) = GRAPHICS.try_get_mut()
+                    else
+                    {
+                        return;
+                    };
+                    graphics.end_draw();
+                }
             }
             None =>
             {}

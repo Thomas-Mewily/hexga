@@ -151,7 +151,7 @@ where
 pub type Camera = CameraOf<float>;
 
 #[derive(Clone, Copy, PartialEq)]
-pub struct CameraOf<F=float>
+pub struct CameraOf<F = float>
 {
     pub matrix: Matrix4<F>,
     pub depth: bool,

@@ -265,6 +265,12 @@ where
 
         Ok(())
     }
+
+    pub fn reset(&mut self, data: &[T])
+    {
+        self.update_part(0, data);
+        self.len = data.len();
+    }
 }
 
 pub trait ToGpuVec<T>

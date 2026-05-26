@@ -353,7 +353,7 @@ where
 
     pub fn is_rect_inside(&self, rect: Rectangle<T, N>) -> bool { self.is_inside(rect.bounds_min()) && self.is_inside_inclusif(rect.bounds_max()) }
 
-    pub fn is_empty(&self) -> bool { self.size.is_zero() }
+    pub fn is_empty(&self) -> bool { self.size.is_empty() }
 
     pub fn clamp_vector(&self, vector: Vector<T, N>) -> Vector<T, N>
     where

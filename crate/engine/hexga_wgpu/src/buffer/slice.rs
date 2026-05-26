@@ -6,7 +6,7 @@ pub struct GpuSlice<'a, T>
 where
     T: GpuBufferElement,
 {
-    buffer: &'a GpuBuffer<T>,
+    pub(crate) buffer: &'a GpuBuffer<T>,
     pub(crate) begin: usize,
     pub(crate) len: usize,
 }

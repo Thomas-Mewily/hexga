@@ -10,33 +10,30 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{DrawParamAttribute, DrawCallBuilder};
+    pub use super::{DrawCallBuilder, DrawParamAttribute};
 }
 
 #[derive(Debug, Default)]
-pub struct ImmediateRenderBuilder<const N: usize=3>
+pub struct ImmediateRenderBuilder<const N: usize = 3>
 {
-    pub(crate) draw_call: NonEmptyStack<DrawCall>,
-    pub(crate) big_mesh: MeshBuilder,
-    pub(crate) params: NonEmptyStack<DrawParam>,
+    pub draw_call: NonEmptyStack<DrawCall>,
+    pub big_mesh: MeshBuilder,
+    pub params: NonEmptyStack<DrawParam>,
 }
 
 impl BuilderMesh for ImmediateRenderBuilder
 {
-    fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf>, index: impl IntoIterator<Item = VertexIndex>) {
-        self.big_mesh.geometry(vertex, index);
-    }
+    fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf>, index: impl IntoIterator<Item = VertexIndex>) { self.big_mesh.geometry(vertex, index); }
 }
 
-impl GetMatrix<float,4,4> for ImmediateRenderBuilder
+impl GetMatrix<float, 4, 4> for ImmediateRenderBuilder
 {
-    fn matrix(&self) -> Matrix<float, 4, 4> {
-        self.params.camera.matrix()
-    }
+    fn matrix(&self) -> Matrix<float, 4, 4> { self.params.camera.matrix() }
 }
 impl SetMatrix<float, 4, 4> for ImmediateRenderBuilder
 {
-    fn set_matrix(&mut self, matrix: Matrix<float, 4, 4>) -> &mut Self {
+    fn set_matrix(&mut self, matrix: Matrix<float, 4, 4>) -> &mut Self
+    {
         self.param_map(|p| p.camera.matrix = matrix);
         self
     }
@@ -44,13 +41,12 @@ impl SetMatrix<float, 4, 4> for ImmediateRenderBuilder
 
 impl GetCamera for ImmediateRenderBuilder
 {
-    fn have_depth(&self) -> bool {
-        self.params.camera.have_depth()
-    }
+    fn have_depth(&self) -> bool { self.params.camera.have_depth() }
 }
 impl SetCamera for ImmediateRenderBuilder
 {
-    fn set_camera(&mut self, camera: Camera) -> &mut Self {
+    fn set_camera(&mut self, camera: Camera) -> &mut Self
+    {
         self.param_map(|p| p.camera = camera);
         self
     }
@@ -58,72 +54,84 @@ impl SetCamera for ImmediateRenderBuilder
 
 impl GetPosition for ImmediateRenderBuilder
 {
-    fn pos(&self) -> Vec3 {
-        self.params.camera.pos()
-    }
+    fn pos(&self) -> Vec3 { self.params.camera.pos() }
 }
 impl SetPosition for ImmediateRenderBuilder
 {
-    fn set_pos(&mut self, pos: Vec3) -> &mut Self {
-        self.param_map(|p| { p.camera.set_pos(pos); });
+    fn set_pos(&mut self, pos: Vec3) -> &mut Self
+    {
+        self.param_map(|p| {
+            p.camera.set_pos(pos);
+        });
         self
     }
 }
 impl GetScale for ImmediateRenderBuilder
 {
-    fn scale(&self) -> Vec3 {
-        self.params.camera.scale()
-    }
+    fn scale(&self) -> Vec3 { self.params.camera.scale() }
 }
 impl SetScale for ImmediateRenderBuilder
 {
-    fn set_scale(&mut self, scale: Vec3) -> &mut Self {
-        self.param_map(|p| { p.camera.set_scale(scale); }); self
+    fn set_scale(&mut self, scale: Vec3) -> &mut Self
+    {
+        self.param_map(|p| {
+            p.camera.set_scale(scale);
+        });
+        self
     }
 }
 impl RotateX for ImmediateRenderBuilder
 {
-    fn rotate_x(&mut self, angle: Angle) -> &mut Self {
-        self.param_map(|p| { p.camera.rotate_x(angle); }); self
+    fn rotate_x(&mut self, angle: Angle) -> &mut Self
+    {
+        self.param_map(|p| {
+            p.camera.rotate_x(angle);
+        });
+        self
     }
 }
 impl RotateY for ImmediateRenderBuilder
 {
-    fn rotate_y(&mut self, angle: Angle) -> &mut Self {
-        self.param_map(|p| { p.camera.rotate_y(angle); }); self
+    fn rotate_y(&mut self, angle: Angle) -> &mut Self
+    {
+        self.param_map(|p| {
+            p.camera.rotate_y(angle);
+        });
+        self
     }
 }
 impl RotateZ for ImmediateRenderBuilder
 {
-    fn rotate_z(&mut self, angle: Angle) -> &mut Self {
-        self.param_map(|p| { p.camera.rotate_z(angle); }); self
+    fn rotate_z(&mut self, angle: Angle) -> &mut Self
+    {
+        self.param_map(|p| {
+            p.camera.rotate_z(angle);
+        });
+        self
     }
 }
 
 impl DrawParamAttribute for ImmediateRenderBuilder
 {
-    fn viewport(&self) -> Viewport {
-        self.params.viewport
-    }
-    fn set_viewport(&mut self, viewport: Viewport) -> &mut Self {
+    fn viewport(&self) -> Viewport { self.params.viewport }
+    fn set_viewport(&mut self, viewport: Viewport) -> &mut Self
+    {
         self.param_map(|p| p.viewport = viewport);
         self
     }
 
-    fn scissor(&self) -> Rect2i {
-        self.params.scissor
-    }
+    fn scissor(&self) -> Rect2i { self.params.scissor }
 
-    fn set_scissor(&mut self, scissor: Rect2i) -> &mut Self {
+    fn set_scissor(&mut self, scissor: Rect2i) -> &mut Self
+    {
         self.param_map(|p| p.scissor = scissor);
         self
     }
 
-    fn texture(&self) -> Option<Texture> {
-        self.params.texture.clone_handle()
-    }
+    fn texture(&self) -> Option<Texture> { self.params.texture.clone_handle() }
 
-    fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self {
+    fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self
+    {
         self.param_map(|p| p.texture = texture.into());
         self
     }
@@ -139,8 +147,8 @@ impl ImmediateRenderBuilder
         {
             DrawGeometry::Immediate(immediate) =>
             {
-                immediate.indices.end =  mesh.nb_index();
-                immediate.vertices.end =  mesh.nb_vertex();
+                immediate.indices.end = mesh.nb_index();
+                immediate.vertices.end = mesh.nb_vertex();
             }
         };
     }
@@ -148,36 +156,44 @@ impl ImmediateRenderBuilder
 
 impl DrawCallBuilder for ImmediateRenderBuilder
 {
-    fn set_param(&mut self, param: DrawParam) {
-        if self.draw_call.param == param { return; }
+    fn set_param(&mut self, param: DrawParam)
+    {
+        if self.draw_call.param == param
+        {
+            return;
+        }
 
         self.update_last_draw_call();
 
         if !self.draw_call.is_geometry_empty()
         {
             let mut draw_call = self.draw_call.last().clone();
-            draw_call.geometry = DrawGeometry::Immediate(DrawGeometryImmediate
-                {
-                    vertices: Range { start: self.big_mesh.nb_vertex(), end: self.big_mesh.nb_vertex() },
-                    indices: Range { start: self.big_mesh.nb_index(), end: self.big_mesh.nb_index() } ,
-                }
-            );
+            draw_call.geometry = DrawGeometry::Immediate(DrawGeometryImmediate {
+                vertices: Range {
+                    start: self.big_mesh.nb_vertex(),
+                    end: self.big_mesh.nb_vertex(),
+                },
+                indices: Range {
+                    start: self.big_mesh.nb_index(),
+                    end: self.big_mesh.nb_index(),
+                },
+            });
             self.draw_call.push(draw_call);
         }
         self.draw_call.param = param;
     }
-    
-    fn param(&self) -> DrawParam {
-        self.params.last().clone()
-    }
+
+    fn param(&self) -> DrawParam { self.params.last().clone() }
 }
 
-pub trait DrawCallBuilder<const N: usize = 3> : BuilderMesh + DrawParamAttribute + GetCamera
+pub trait DrawCallBuilder<const N: usize = 3>: BuilderMesh + DrawParamAttribute + GetCamera
 {
     fn param(&self) -> DrawParam;
     fn set_param(&mut self, param: DrawParam);
 
-    fn param_map<F,O>(&mut self, f: F) -> O where F: FnOnce(&mut DrawParam) -> O
+    fn param_map<F, O>(&mut self, f: F) -> O
+    where
+        F: FnOnce(&mut DrawParam) -> O,
     {
         let mut param = self.param();
         let o = f(&mut param);
@@ -290,10 +306,7 @@ impl DerefMut for DrawCall
 }
 impl DrawCall
 {
-    pub fn is_geometry_empty(&self) -> bool
-    {
-        self.geometry.is_empty()
-    }
+    pub fn is_geometry_empty(&self) -> bool { self.geometry.is_empty() }
 }
 
 #[derive(Clone, PartialEq, Debug, Default)]
@@ -314,20 +327,23 @@ pub struct Viewport
 
 impl Default for Viewport
 {
-    fn default() -> Self {
-        Self { area: ___(), depth: Range { start: 0., end: 1. } }
+    fn default() -> Self
+    {
+        Self {
+            area: ___(),
+            depth: Range { start: 0., end: 1. },
+        }
     }
 }
 
-impl GetMatrix<float,4,4> for DrawParam
+impl GetMatrix<float, 4, 4> for DrawParam
 {
-    fn matrix(&self) -> Matrix<float, 4, 4> {
-        self.camera.matrix
-    }
+    fn matrix(&self) -> Matrix<float, 4, 4> { self.camera.matrix }
 }
 impl SetMatrix<float, 4, 4> for DrawParam
 {
-    fn set_matrix(&mut self, matrix: Matrix<float, 4, 4>) -> &mut Self {
+    fn set_matrix(&mut self, matrix: Matrix<float, 4, 4>) -> &mut Self
+    {
         self.camera.matrix = matrix;
         self
     }
@@ -335,97 +351,94 @@ impl SetMatrix<float, 4, 4> for DrawParam
 
 impl GetCamera for DrawParam
 {
-    fn have_depth(&self) -> bool {
-        self.camera.have_depth()
-    }
+    fn have_depth(&self) -> bool { self.camera.have_depth() }
 }
 
 impl SetCamera for DrawParam
 {
-    fn set_camera(&mut self, camera: CameraOf<f32>) -> &mut Self {
+    fn set_camera(&mut self, camera: CameraOf<f32>) -> &mut Self
+    {
         self.camera = camera;
         self
     }
 }
 impl GetPosition for DrawParam
 {
-    fn pos(&self) -> Vec3 {
-        self.camera.pos()
-    }
+    fn pos(&self) -> Vec3 { self.camera.pos() }
 }
 impl SetPosition for DrawParam
 {
-    fn set_pos(&mut self, pos: Vec3) -> &mut Self {
+    fn set_pos(&mut self, pos: Vec3) -> &mut Self
+    {
         self.camera.set_pos(pos);
         self
     }
 }
 impl GetScale for DrawParam
 {
-    fn scale(&self) -> Vec3 {
-        self.camera.scale()
-    }
+    fn scale(&self) -> Vec3 { self.camera.scale() }
 }
 impl SetScale for DrawParam
 {
-    fn set_scale(&mut self, scale: Vec3) -> &mut Self {
+    fn set_scale(&mut self, scale: Vec3) -> &mut Self
+    {
         self.camera.set_scale(scale);
         self
     }
 }
 impl RotateX for DrawParam
 {
-    fn rotate_x(&mut self, angle: Angle) -> &mut Self {
-        self.camera.rotate_x(angle); self
+    fn rotate_x(&mut self, angle: Angle) -> &mut Self
+    {
+        self.camera.rotate_x(angle);
+        self
     }
 }
 impl RotateY for DrawParam
 {
-    fn rotate_y(&mut self, angle: Angle) -> &mut Self {
-        self.camera.rotate_y(angle); self
+    fn rotate_y(&mut self, angle: Angle) -> &mut Self
+    {
+        self.camera.rotate_y(angle);
+        self
     }
 }
 impl RotateZ for DrawParam
 {
-    fn rotate_z(&mut self, angle: Angle) -> &mut Self {
-        self.camera.rotate_z(angle); self
+    fn rotate_z(&mut self, angle: Angle) -> &mut Self
+    {
+        self.camera.rotate_z(angle);
+        self
     }
 }
 
-impl DrawParamAttribute for DrawParam {
-    fn viewport(&self) -> Viewport {
-        self.viewport
-    }
+impl DrawParamAttribute for DrawParam
+{
+    fn viewport(&self) -> Viewport { self.viewport }
 
-    fn set_viewport(&mut self, viewport: Viewport) -> &mut Self {
+    fn set_viewport(&mut self, viewport: Viewport) -> &mut Self
+    {
         self.viewport = viewport;
         self
     }
 
-    fn scissor(&self) -> Rect2i {
-        self.scissor
-    }
+    fn scissor(&self) -> Rect2i { self.scissor }
 
-    fn set_scissor(&mut self, scissor: Rect2i) -> &mut Self {
+    fn set_scissor(&mut self, scissor: Rect2i) -> &mut Self
+    {
         self.scissor = scissor;
         self
     }
 
-    fn texture(&self) -> Option<Texture> {
-        self.texture.clone()
-    }
+    fn texture(&self) -> Option<Texture> { self.texture.clone() }
 
-    fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self {
+    fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self
+    {
         self.texture = texture.into();
         self
     }
 }
 
-pub trait DrawParamAttribute : 
-    GetCamera + SetCamera +
-    GetPosition + SetPosition +
-    GetScale + SetScale +
-    RotateX + RotateY + RotateZ
+pub trait DrawParamAttribute: GetCamera + SetCamera + GetPosition + SetPosition + GetScale + SetScale + RotateX + RotateY + RotateZ
 {
     fn viewport(&self) -> Viewport;
     fn set_viewport(&mut self, viewport: Viewport) -> &mut Self;
@@ -436,8 +449,16 @@ pub trait DrawParamAttribute :
     fn texture(&self) -> Option<Texture>;
     fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self;
 
-    fn draw_param(&self) -> DrawParam { DrawParam { camera: self.camera(), viewport: self.viewport(), scissor: self.scissor(), texture: self.texture() } }
-    fn set_draw_param(&mut self, param: DrawParam) -> &mut Self 
+    fn draw_param(&self) -> DrawParam
+    {
+        DrawParam {
+            camera: self.camera(),
+            viewport: self.viewport(),
+            scissor: self.scissor(),
+            texture: self.texture(),
+        }
+    }
+    fn set_draw_param(&mut self, param: DrawParam) -> &mut Self
     {
         self.set_viewport(param.viewport);
         self.set_camera(param.camera);
