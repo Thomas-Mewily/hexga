@@ -53,8 +53,9 @@ pub mod traits
     pub use super::{SingletonEmptyStruct, SingletonOnceable, SingletonOptionable};
 }
 
+
 /// Single interface for every singleton type.
-/// The generally wrap std type, but it make sure that it expose only the same set of methods for reading/writting the value,
+/// They generally wrap std type, but it make sure that it expose only the same set of methods for reading/writting the value,
 /// regardless of how the singleton should be initiliazed,
 /// and how it should be guarded.
 pub struct SingletonOf<T>

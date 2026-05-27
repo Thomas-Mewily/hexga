@@ -458,22 +458,22 @@ pub trait IColor: Sized + ToColor<Self::Component> //+ ToColor<Self::Component> 
     const BLACK: Self;
     /// #777777
     ///
-    /// If you preferer the name `Gray`, just do :
+    /// If you preferer the name `Grey`, just do :
     ///
     /// ```
     /// use hexga_image::prelude::*;
     /// use hexga_math::prelude::*;
     ///
-    /// pub trait IPreferGray
+    /// pub trait IPreferGrey
     /// {
-    ///    const GRAY : Self;
+    ///    const GREY : Self;
     /// }
-    /// impl<C> IPreferGray for C where C: IColor
+    /// impl<C> IPreferGrey for C where C: IColor
     /// {
-    ///    const GRAY : Self = Self::GREY;
+    ///    const GREY : Self = Self::GRAY;
     /// }
     /// ```
-    const GREY: Self;
+    const GRAY: Self;
     /// #FFFFFF
     ///
     /// ⬜ : 🟥🟩🟦

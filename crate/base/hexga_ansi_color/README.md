@@ -24,7 +24,7 @@ pub enum AnsiColorKind
     Magenta,
     Cyan,
     White,
-    Grey,
+    Gray,
 }
 
 pub enum AnsiColorLayer 

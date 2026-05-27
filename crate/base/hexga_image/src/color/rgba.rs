@@ -350,7 +350,7 @@ where
         b: T::RANGE_MIN,
         a: T::RANGE_MAX,
     };
-    const GREY: Self = Self {
+    const GRAY: Self = Self {
         r: T::RANGE_HALF,
         g: T::RANGE_HALF,
         b: T::RANGE_HALF,
