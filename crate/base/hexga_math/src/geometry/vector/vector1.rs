@@ -60,7 +60,7 @@ pub type Vec1I = VecI<1>;
 pub const fn vec1i(x: int) -> Vec1I { Vec1I::new(x) }
 
 pub type Vec1U = VecU<1>;
-pub const fn uint1(x: uint) -> Vec1U { Vec1U::new(x) }
+pub const fn vec1u(x: uint) -> Vec1U { Vec1U::new(x) }
 
 impl<T> HaveX<T> for Vector1<T>
 {
@@ -120,5 +120,5 @@ pub type Vector1Iter<T> = VectorIter<Vector1<T>, 1>;
 
 pub(crate) mod prelude
 {
-    pub use super::{Vec1B, Vec1I, SplatCoord1, Vec1U, Vec1, Vector1, vec1b, vec1i, uint1, vec1, vector1};
+    pub use super::{Vec1B, Vec1I, SplatCoord1, Vec1U, Vec1, Vector1, vec1b, vec1i, vec1u, vec1, vector1};
 }

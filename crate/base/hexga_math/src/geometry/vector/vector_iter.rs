@@ -8,7 +8,7 @@ pub trait IterIndex<T, const N: usize>
     ///
     /// The last value is always excluded.
     ///
-    /// Work on `Point`, Rect and Grid ([`Int1`], [`Vec2I`], [`Vec3I`], [`Vec4I`], [`Rect1`], [`Rect2`], [`Rect3`], [`Rect4`]) for ex.
+    /// Work on `Point`, Rect and Grid ([`Vec1I`], [`Vec2I`], [`Vec3I`], [`Vec4I`], [`Rect1`], [`Rect2`], [`Rect3`], [`Rect4`]) for ex.
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
