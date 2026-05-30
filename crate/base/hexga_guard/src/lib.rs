@@ -382,12 +382,11 @@ impl<'a, T> GuardMut<'a, T> for std::sync::MappedMutexGuard<'a, T>
     }
 }
 
-
 pub mod prelude
 {
     pub use super::traits::*;
 }
 pub mod traits
 {
-    pub use super::{Guarded,GuardedMut,Guard,GuardMut};
+    pub use super::{Guard, GuardMut, Guarded, GuardedMut};
 }

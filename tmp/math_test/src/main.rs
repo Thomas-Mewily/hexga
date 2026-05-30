@@ -26,7 +26,7 @@ fn x()
 {
     let v = vec2(0., 1.);
 
-    let size = int2(20, 40);
+    let size = vec2i(20, 40);
     let mut g = size.to_grid(|v| -2);
     let mut g2 = size.to_grid(|v| v.sum_axis());
     let m = g.max(g2);
@@ -212,8 +212,8 @@ fn bi()
     dbg!(&Bijection::from_values_and_bijection(s, BijectionRev::from(s)).get(0usize));
     dbg!(s.bijection_rev());
 
-    let g = Grid2::from_values_and_bijection(s, BijectionVectorToUsize::new(int2(2, 3)));
-    dbg!(&g.get(int2(0, 1)));
+    let g = Grid2::from_values_and_bijection(s, BijectionVectorToUsize::new(vec2i(2, 3)));
+    dbg!(&g.get(vec2i(0, 1)));
     //dbg!(s.as_view().bijection_rev());
 
     // grid type ?
@@ -232,8 +232,8 @@ fn grid_bijection()
     let it = slice.bijection_rev().into_iter().collect::<Vec<_>>();
     println!("{:?}", it);
 
-    let grid_3x2 = slice.with_bijection(BijectionVectorToUsize::new(int2(3, 2)));
-    assert_eq!(grid_3x2.get(int2(0, 1)), Some(&'d'));
+    let grid_3x2 = slice.with_bijection(BijectionVectorToUsize::new(vec2i(3, 2)));
+    assert_eq!(grid_3x2.get(vec2i(0, 1)), Some(&'d'));
     let it = grid_3x2.into_iter().collect::<Vec<_>>();
     println!("{:?}", it);
 }
@@ -268,7 +268,7 @@ fn grid_test()
     use hexga_math::prelude::*;
     //use super::*;
 
-    let size = int2(2, 3);
+    let size = vec2i(2, 3);
 
     let mut grid1 = Grid2::from_fn(size, |p| p.x + 10 * p.y);
     let mut grid2 = Grid2::from_fn(size, |p| p.x + 10 * p.y);
@@ -277,7 +277,7 @@ fn grid_test()
     assert_eq!(grid1.view(), grid2.view());
     assert_eq!(grid1.view_mut(), grid2.view_mut());
 
-    grid2[int2(1, 0)] = 42;
+    grid2[vec2i(1, 0)] = 42;
 
     assert_ne!(grid1, grid2);
     assert_ne!(grid1.view(), grid2.view());

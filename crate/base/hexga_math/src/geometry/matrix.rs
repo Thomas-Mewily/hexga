@@ -175,10 +175,10 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
     /// Create a matrix from a `fn((columns,row))`
     pub fn from_fn<F>(mut column_then_row: F) -> Self
     where
-        F: FnMut(Int2) -> T,
+        F: FnMut(Vec2I) -> T,
     {
         Self::from_col_array(std::array::from_fn(|column| {
-            std::array::from_fn(|row| column_then_row(int2(column as _, row as _)))
+            std::array::from_fn(|row| column_then_row(vec2i(column as _, row as _)))
         }))
     }
 
@@ -517,9 +517,9 @@ where
 /// ```
 /// use hexga_math::prelude::*;
 ///
-/// let m1  = Mat2i::from_col((int2(7, 6), int2(5, 3)).into());
-/// let m2  = Mat2i::from_col((int2(2, 5), int2(1, 1)).into());
-/// let m3  = Mat2i::from_col((int2(39, 27), int2(12, 9)).into());
+/// let m1  = Mat2i::from_col((vec2i(7, 6), vec2i(5, 3)).into());
+/// let m2  = Mat2i::from_col((vec2i(2, 5), vec2i(1, 1)).into());
+/// let m3  = Mat2i::from_col((vec2i(39, 27), vec2i(12, 9)).into());
 ///
 /// assert_eq!(m1 * m2, m3);
 ///

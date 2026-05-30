@@ -17,8 +17,8 @@ pub enum PlatformEvent<Ev = ()>
     Copy,
 
     // Window:
-    Resize(Int2),
-    Move(Int2),
+    Resize(Vec2I),
+    Move(Vec2I),
     Open,
     Close,
     Destroy,

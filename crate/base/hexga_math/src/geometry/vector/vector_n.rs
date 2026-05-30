@@ -2,7 +2,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{Vector, int, vector};
+    pub use super::{Vector, vector};
 }
 
 /// A wrapper for an array that applies binary operators component-wise.
@@ -34,7 +34,6 @@ where
 }
 
 pub const fn vector<T, const N: usize>(values: [T; N]) -> Vector<T, N> { Vector::from_array(values) }
-pub const fn int<const N: usize>(values: [int; N]) -> Int<N> { Int::from_array(values) }
 
 impl<T, const N: usize> GetPosition<T, N> for Vector<T, N>
 where
@@ -181,7 +180,7 @@ impl<T, const N: usize> Vector<T, N>
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
-    /// assert_eq!(int2(3,4).sum_axis(), 7);
+    /// assert_eq!(vec2i(3,4).sum_axis(), 7);
     /// ```
     pub fn sum_axis(self) -> T
     where
@@ -251,10 +250,10 @@ where
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
-    /// assert_eq!(unsafe{ int2(0,0).to_index_unchecked(int2(10, 20)) }, 0);
-    /// assert_eq!(unsafe{ int2(3,0).to_index_unchecked(int2(10, 20)) }, 3);
-    /// assert_eq!(unsafe{ int2(3,1).to_index_unchecked(int2(10, 20)) }, 3+1*10);
-    /// assert_eq!(unsafe{ int2(3,5).to_index_unchecked(int2(10, 20)) }, 3+5*10);
+    /// assert_eq!(unsafe{ vec2i(0,0).to_index_unchecked(vec2i(10, 20)) }, 0);
+    /// assert_eq!(unsafe{ vec2i(3,0).to_index_unchecked(vec2i(10, 20)) }, 3);
+    /// assert_eq!(unsafe{ vec2i(3,1).to_index_unchecked(vec2i(10, 20)) }, 3+1*10);
+    /// assert_eq!(unsafe{ vec2i(3,5).to_index_unchecked(vec2i(10, 20)) }, 3+5*10);
     /// ```
     pub unsafe fn to_index_unchecked(self, size: Self) -> usize
     {
@@ -332,11 +331,11 @@ where
     /// use hexga_math::prelude::*;
     /// unsafe
     /// {
-    ///     let size = int2(10, 20);
-    ///     for point in [int2(0,0), int2(3,0), int2(3,1), int2(0,5)]
+    ///     let size = vec2i(10, 20);
+    ///     for point in [vec2i(0,0), vec2i(3,0), vec2i(3,1), vec2i(0,5)]
     ///     {
     ///         let index = point.to_index_unchecked(size);
-    ///         let point_back = Int2::from_index_unchecked(index, size);
+    ///         let point_back = Vec2I::from_index_unchecked(index, size);
     ///         assert_eq!(point, point_back);
     ///     }
     /// }

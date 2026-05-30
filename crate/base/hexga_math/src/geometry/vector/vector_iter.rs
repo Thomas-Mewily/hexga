@@ -8,14 +8,14 @@ pub trait IterIndex<T, const N: usize>
     ///
     /// The last value is always excluded.
     ///
-    /// Work on `Point`, Rect and Grid ([`Int1`], [`Int2`], [`Int3`], [`Int4`], [`Rect1`], [`Rect2`], [`Rect3`], [`Rect4`]) for ex.
+    /// Work on `Point`, Rect and Grid ([`Int1`], [`Vec2I`], [`Vec3I`], [`Vec4I`], [`Rect1`], [`Rect2`], [`Rect3`], [`Rect4`]) for ex.
     ///
     /// ```rust
     /// use hexga_math::prelude::*;
     ///
-    /// let expected_points = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)].map(|(x,y)| int2(x, y));
+    /// let expected_points = [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)].map(|(x,y)| vec2i(x, y));
     ///
-    /// for (i, expected) in int2(2, 3).iter_index().zip(expected_points.iter())
+    /// for (i, expected) in vec2i(2, 3).iter_index().zip(expected_points.iter())
     /// {
     ///     assert_eq!(&i, expected);
     /// }

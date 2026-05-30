@@ -29,7 +29,7 @@ pub trait IGraphics
 
 impl Graphics
 {
-    pub(crate) fn new(surface: &GpuSurface, size: Int2) -> Self
+    pub(crate) fn new(surface: &GpuSurface, size: Vec2I) -> Self
     {
         let surface_caps = surface.wgpu.get_capabilities(&Gpu.adapter());
         // Shader code in this tutorial assumes an Srgb surface texture. Using a different
@@ -202,7 +202,7 @@ impl Graphics
                     viewport = max_viewport.intersect_or_empty(viewport);
                     scissor = max_scissor.intersect_or_empty(scissor);
 
-                    
+
 
                     if viewport.is_empty() || scissor.size.is_empty()
                     {

@@ -130,10 +130,10 @@ fn serialize_multihashmap()
 #[test]
 fn serialize_fixed_size_vector()
 {
-    serde_test(&int1(0));
-    serde_test(&int2(10, 20));
-    serde_test(&int3(10, 20, -30));
-    serde_test(&int4(10, 20, -30, -40));
+    serde_test(&vec1i(0));
+    serde_test(&vec2i(10, 20));
+    serde_test(&vec3i(10, 20, -30));
+    serde_test(&vec4i(10, 20, -30, -40));
 
     serde_test(&vec2(10.5, 20.25));
     serde_test(&vec1(-8.));
@@ -167,7 +167,7 @@ fn serialize_unit()
 }
 
 #[test]
-fn serialize_grid() { serde_test(&Grid2::from_fn(int([3, 4]), |x| x.sum_axis())); }
+fn serialize_grid() { serde_test(&Grid2::from_fn(vector([3, 4]), |x| x.sum_axis())); }
 
 #[test]
-fn serialize_image() { serde_test(&Image::from_fn(int([3, 4]), |x| RgbaU8::rgb(x.x as _, x.y as _, 0))); }
+fn serialize_image() { serde_test(&Image::from_fn(vector([3, 4]), |x| RgbaU8::rgb(x.x as _, x.y as _, 0))); }

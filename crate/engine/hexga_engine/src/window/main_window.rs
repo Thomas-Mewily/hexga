@@ -54,7 +54,7 @@ impl Windowable for CurrentWindow
         self
     }
 
-    fn set_cursor_pos(&mut self, pos: Int2) -> &mut Self
+    fn set_cursor_pos(&mut self, pos: Vec2I) -> &mut Self
     {
         WINDOW.get_mut().set_cursor_pos(pos);
         self

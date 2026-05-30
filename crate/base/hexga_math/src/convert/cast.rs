@@ -25,7 +25,7 @@ use super::*;
 /// assert_eq!(y, [1f32, 2f32]);
 ///
 ///
-/// let a = int2(1, 2);
+/// let a = vec2i(1, 2);
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
@@ -67,7 +67,7 @@ where
 /// assert_eq!(y, [1f32, 2f32]);
 ///
 ///
-/// let a = int2(1, 2);
+/// let a = vec2i(1, 2);
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
