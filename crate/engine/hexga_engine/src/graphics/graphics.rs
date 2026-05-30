@@ -109,6 +109,9 @@ impl Graphics
             immediate: ___(),
             immediate_mesh: None,
             white_pixel: None,
+            camera_buffer: todo!(),
+            camera_bind_group: todo!(),
+            texture_bind_group: todo!(),
         }
     }
 
@@ -116,6 +119,9 @@ impl Graphics
 
     pub(crate) fn end_draw(&mut self)
     {
+        todo!()
+
+        /*
         if self.white_pixel.is_none()
         {
             self.white_pixel = Some(Texture::from(Image::sized_one(ColorU8::WHITE)));
@@ -267,6 +273,7 @@ impl Graphics
                 }
             }
         }
+        */
     }
 }
 
