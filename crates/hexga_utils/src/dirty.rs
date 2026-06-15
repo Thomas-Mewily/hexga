@@ -14,12 +14,13 @@ pub mod traits
 pub trait IsDirty
 {
     fn is_dirty(&self) -> bool;
+    fn is_not_dirty(&self) -> bool { !self.is_dirty() }
 }
 pub trait SetDirty: IsDirty
 {
     fn set_dirty(&mut self, used: bool) -> &mut Self;
     fn mark_dirty(&mut self) -> &mut Self { self.set_dirty(true) }
-    fn clear_dirty(&mut self) -> &mut Self { self.set_dirty(false) }
+    fn undirty(&mut self) -> &mut Self { self.set_dirty(false) }
 }
 
 /// A Dirty flag that is automatically marked as dirty when mutated (using [`DerefMut`])
@@ -35,9 +36,10 @@ impl<T> From<T> for Dirty<T>
 }
 impl<T> Dirty<T>
 {
-    pub fn new_dirty(value: T) -> Self { Self::with_used(value, true) }
-    pub fn new(value: T) -> Self { Self::with_used(value, false) }
-    pub fn with_used(value: T, used: bool) -> Self { Self { value, used } }
+    pub fn new_dirty(value: T) -> Self { Self::with_dirty(value, true) }
+    /// Create a new undirty value
+    pub fn new(value: T) -> Self { Self::with_dirty(value, false) }
+    pub fn with_dirty(value: T, dirty: bool) -> Self { Self { value, used: dirty } }
 
     pub fn into_value(self) -> T { self.value }
     pub fn into_value_and_used(self) -> (T, bool) { (self.value, self.used) }

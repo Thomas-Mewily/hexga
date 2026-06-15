@@ -161,12 +161,6 @@ pub trait FsRead
         };
         T::load_from_bytes(&bytes, extension).map_err(|e| IoError::new_with_path(IoErrorKind::InvalidData, e, path))
     }
-
-    /// Read the file content and load a decode it using the provided extension.
-    fn load_or_create<T,P,F>(&mut self, path: P, init: F) -> T where P: AsRef<Path>, T: Load + Sized, F: FnOnce() -> T
-    {
-        
-    }
 }
 impl<T> FsRead for T
 where
@@ -238,6 +232,42 @@ pub trait FsWrite: FsRead + FsDynWrite
         {
             Some(ex) =>  Io.write_bytes(&path.with_extension(ex.as_ref()), &bytes),
             None => Io.write_bytes(path, &bytes),
+        }
+    }
+
+    /// Read the file content and load a decode it using the provided extension.
+    /// If the file don't exist, the value is created, saved, and returned.
+    /// It's ok if saving fail.
+    fn load_or_create_unresolved<T,P,F>(&mut self, path: P, init: F) -> T where P: AsRef<Path>, T: Load + Save + Sized, F: FnOnce() -> T
+    {
+        let path = path.as_ref();
+        match self.load_unresolved(path)
+        {
+            Ok(v) => v,
+            Err(_) => 
+            {
+                let value = init();
+                let _ = self.save_unresolved(path, &value);
+                value
+            },
+        }
+    }
+
+    /// Read the file content and load a decode it using the provided extension.
+    /// If the file don't exist, the value is created, saved, and returned.
+    /// It's ok if saving fail.
+    fn load_or_create<T,P,F>(&mut self, path: P, init: F) -> T where P: AsRef<Path>, T: Load + Save + Sized, F: FnOnce() -> T
+    {
+        let path = path.as_ref();
+        match self.load(path)
+        {
+            Ok(v) => v,
+            Err(_) => 
+            {
+                let value = init();
+                let _ = self.save(path, &value);
+                value
+            },
         }
     }
 }
