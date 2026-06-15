@@ -23,7 +23,7 @@ pub enum FormatMarkup
 
 impl FormatMarkup
 {
-    // Todo: add a flag
+    // Todo: add a feature flag
     pub const PREFERED: Self = Self::Ron;
     pub const ALL: &'static [Self] = &[Self::Ron, Self::Json, Self::Xml];
 
