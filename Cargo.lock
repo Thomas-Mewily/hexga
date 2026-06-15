@@ -254,6 +254,10 @@ name = "hexga_guard"
 version = "0.0.11-beta.53"
 
 [[package]]
+name = "hexga_io"
+version = "0.0.11-beta.53"
+
+[[package]]
 name = "hexga_map_on"
 version = "0.0.11-beta.53"
 

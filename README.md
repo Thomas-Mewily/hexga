@@ -43,5 +43,3 @@ or
 
 (Depending of the context)
 The name was inspired by Excalibur, the sword.
-
-Currently, HexGa is the continuation/start from scratch from a [school project](https://gitlab.isima.fr/thtamagnau/zz3_interpreter), as well as my personnal set of crate to do common task that I started way before the school project.
