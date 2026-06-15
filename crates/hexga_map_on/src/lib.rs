@@ -146,7 +146,9 @@
 //!
 //! Right now it is impossible to use the `map_on!` macro in a non const context (like in a function body) with lambda syntax.
 //!
-//! ```rust
+//! ```rust,ignore
+//! use hexga_map_on::map_on;
+//! 
 //! macro_rules! print_type {
 //!     ($type_name:ty) => {
 //!         println!("print type from macro name {}", ::std::any::type_name::<$type_name>());
@@ -183,7 +185,7 @@
 //!
 //! The definiton for lambda `map_on!` macro is the following :
 //!
-//! ```rust
+//! ```rust,ignore
 //! ($tokens:tt, $($macro_arms:tt)+) => {
 //!     const _: () = {
 //!         macro_rules! __map_on_inliner {
