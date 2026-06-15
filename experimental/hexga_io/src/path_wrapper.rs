@@ -1,4 +1,4 @@
-use std::ffi::OsStr;
+use std::{borrow::Borrow, ffi::OsStr, rc::Rc, sync::Arc};
 
 use super::*;
 
@@ -11,45 +11,178 @@ pub type StdPathBuf = std::path::PathBuf;
 #[cfg_attr(feature = "serde", derive(Serialize))]
 #[cfg_attr(feature = "serde", serde(transparent))]
 #[allow(non_camel_case_types)]
-pub struct path
+pub struct Path
 {
     path: StdPath,
 }
-impl std::fmt::Debug for path
+impl<'a> From<&'a Path> for Cow<'a, Path> {
+    /// Creates a clone-on-write pointer from a reference to
+    /// [`Path`].
+    ///
+    /// This conversion does not clone or allocate.
+    #[inline]
+    fn from(s: &'a Path) -> Cow<'a, Path> {
+        Cow::Borrowed(s)
+    }
+}
+
+impl<'a> From<PathBuf> for Cow<'a, Path> {
+    /// Creates a clone-on-write pointer from an owned
+    /// instance of [`PathBuf`].
+    ///
+    /// This conversion does not clone or allocate.
+    #[inline]
+    fn from(s: PathBuf) -> Cow<'a, Path> {
+        Cow::Owned(s)
+    }
+}
+
+impl<'a> From<&'a PathBuf> for Cow<'a, Path> {
+    /// Creates a clone-on-write pointer from a reference to
+    /// [`PathBuf`].
+    ///
+    /// This conversion does not clone or allocate.
+    #[inline]
+    fn from(p: &'a PathBuf) -> Cow<'a, Path> {
+        Cow::Borrowed(p.as_path())
+    }
+}
+
+impl<'a> From<Cow<'a, Path>> for PathBuf {
+    /// Converts a clone-on-write pointer to an owned path.
+    ///
+    /// Converting from a `Cow::Owned` does not clone or allocate.
+    #[inline]
+    fn from(p: Cow<'a, Path>) -> Self {
+        p.into_owned()
+    }
+}
+
+impl From<PathBuf> for Arc<Path> {
+    /// Converts a [`PathBuf`] into an <code>[Arc]<[Path]></code> by moving the [`PathBuf`] data
+    /// into a new [`Arc`] buffer.
+    #[inline]
+    fn from(s: PathBuf) -> Arc<Path> {
+        let arc: Arc<OsStr> = Arc::from(s.into_os_string());
+        unsafe { Arc::from_raw(Arc::into_raw(arc) as *const Path) }
+    }
+}
+
+#[stable(feature = "shared_from_slice2", since = "1.24.0")]
+impl From<&Path> for Arc<Path> {
+    /// Converts a [`Path`] into an [`Arc`] by copying the [`Path`] data into a new [`Arc`] buffer.
+    #[inline]
+    fn from(s: &Path) -> Arc<Path> {
+        let arc: Arc<OsStr> = Arc::from(s.as_os_str());
+        unsafe { Arc::from_raw(Arc::into_raw(arc) as *const Path) }
+    }
+}
+
+#[stable(feature = "shared_from_mut_slice", since = "1.84.0")]
+impl From<&mut Path> for Arc<Path> {
+    /// Converts a [`Path`] into an [`Arc`] by copying the [`Path`] data into a new [`Arc`] buffer.
+    #[inline]
+    fn from(s: &mut Path) -> Arc<Path> {
+        Arc::from(&*s)
+    }
+}
+
+#[stable(feature = "shared_from_slice2", since = "1.24.0")]
+impl From<PathBuf> for Rc<Path> {
+    /// Converts a [`PathBuf`] into an <code>[Rc]<[Path]></code> by moving the [`PathBuf`] data into
+    /// a new [`Rc`] buffer.
+    #[inline]
+    fn from(s: PathBuf) -> Rc<Path> {
+        let rc: Rc<OsStr> = Rc::from(s.into_os_string());
+        unsafe { Rc::from_raw(Rc::into_raw(rc) as *const Path) }
+    }
+}
+
+#[stable(feature = "shared_from_slice2", since = "1.24.0")]
+impl From<&Path> for Rc<Path> {
+    /// Converts a [`Path`] into an [`Rc`] by copying the [`Path`] data into a new [`Rc`] buffer.
+    #[inline]
+    fn from(s: &Path) -> Rc<Path> {
+        let rc: Rc<OsStr> = Rc::from(s.as_os_str());
+        unsafe { Rc::from_raw(Rc::into_raw(rc) as *const Path) }
+    }
+}
+
+#[stable(feature = "shared_from_mut_slice", since = "1.84.0")]
+impl From<&mut Path> for Rc<Path> {
+    /// Converts a [`Path`] into an [`Rc`] by copying the [`Path`] data into a new [`Rc`] buffer.
+    #[inline]
+    fn from(s: &mut Path) -> Rc<Path> {
+        Rc::from(&*s)
+    }
+}
+impl AsRef<Path> for Path
+{
+    fn as_ref(&self) -> &Path {
+        self
+    }
+}
+impl AsRef<Path> for str
+{
+    fn as_ref(&self) -> &Path {
+        let os_str : &OsStr = &self.as_ref();
+        Path::new(os_str)
+    }
+}
+impl AsRef<StdPath> for Path
+{
+    fn as_ref(&self) -> &StdPath {
+        self.path.as_ref()
+    }
+}
+impl AsRef<OsStr> for Path
+{
+    fn as_ref(&self) -> &OsStr {
+        self.path.as_ref()
+    }
+}
+impl ToOwned for Path
+{
+    type Owned=PathBuf;
+    fn to_owned(&self) -> Self::Owned {
+        self.path.to_owned().into()
+    }
+}
+impl std::fmt::Debug for Path
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", &self.path)
     }
 }
-impl std::fmt::Display for path
+impl std::fmt::Display for Path
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", &self.path.display())
     }
 }
 
-impl<'a> From<&'a StdPath> for &'a path
+impl<'a> From<&'a StdPath> for &'a Path
 {
-    fn from(value: &'a StdPath) -> Self { path::new(value) }
+    fn from(value: &'a StdPath) -> Self { Path::new(value) }
 }
-impl<'a> From<&'a path> for &'a StdPath
+impl<'a> From<&'a Path> for &'a StdPath
 {
-    fn from(value: &'a path) -> Self { &value.path }
+    fn from(value: &'a Path) -> Self { &value.path }
 }
 
-impl path
+impl Path
 {
-    pub fn new<'a, S: AsRef<StdPath> + ?Sized>(p: &'a S) -> &'a path
+    pub fn new<'a, S: AsRef<StdPath> + ?Sized>(p: &'a S) -> &'a Path
     {
         let std_path = p.as_ref();
-        unsafe { &*(std_path as *const StdPath as *const path) }
+        unsafe { &*(std_path as *const StdPath as *const Path) }
     }
 
-    fn new_mut<'a>(std_path: &'a mut StdPath) -> &'a mut path
+    fn new_mut<'a>(std_path: &'a mut StdPath) -> &'a mut Path
     {
         // SAFETY: Path is just a wrapper around OsStr,
         // therefore converting &mut OsStr to &mut Path is safe.
-        unsafe { &mut *(std_path.as_mut_os_str() as *mut OsStr as *mut Path) }
+        unsafe { &mut *(std_path.as_mut_os_str() as *mut OsStr as *mut PathBuf) }
     }
 
     /// Makes the path absolute without accessing the filesystem.
@@ -63,8 +196,8 @@ impl path
     /// * If the path is syntactically invalid; in particular, if it is empty.
     /// * If getting the [current directory][crate::env::current_dir] fails.
     #[must_use]
-    pub fn absolute(&self) -> IoResult<Path> {
-        Ok(Path::from(std::path::absolute(&self.path)?))
+    pub fn absolute(&self) -> IoResult<PathBuf> {
+        Ok(PathBuf::from(std::path::absolute(&self.path)?))
     }
 
     /// Produces an iterator over `Path` and its ancestors.
@@ -137,7 +270,7 @@ impl path
     /// # Examples
     ///
     /// ```
-    /// use std::path::{Path, PathBuf};
+    /// use std::path::{Path, Path};
     ///
     /// let path = Path::new("/test/haha/foo.txt");
     ///
@@ -151,12 +284,12 @@ impl path
     /// assert!(path.strip_prefix("/te").is_err());
     /// assert!(path.strip_prefix("/haha").is_err());
     ///
-    /// let prefix = PathBuf::from("/test/");
+    /// let prefix = Path::from("/test/");
     /// assert_eq!(path.strip_prefix(prefix), Ok(Path::new("haha/foo.txt")));
     /// ```
-    pub fn strip_prefix<P>(&self, base: P) -> Result<&path, std::path::StripPrefixError>
+    pub fn strip_prefix<P>(&self, base: P) -> Result<&Path, std::path::StripPrefixError>
     where
-        P: AsRef<path>,
+        P: AsRef<Path>,
     {
         Ok(Self::new(self.path.strip_prefix(&base.as_ref().path)?))
     }
@@ -184,7 +317,7 @@ impl path
     /// assert!(!Path::new("/etc/foo.rs").starts_with("/etc/foo"));
     /// ```
     #[must_use]
-    pub fn starts_with<P: AsRef<path>>(&self, base: P) -> bool {
+    pub fn starts_with<P: AsRef<Path>>(&self, base: P) -> bool {
         self.path.starts_with(&base.as_ref().path)
     }
 
@@ -207,7 +340,7 @@ impl path
     /// assert!(!path.ends_with("conf")); // use .extension() instead
     /// ```
     #[must_use]
-    pub fn ends_with<P: AsRef<path>>(&self, child: P) -> bool {
+    pub fn ends_with<P: AsRef<Path>>(&self, child: P) -> bool {
         self.path.ends_with(&child.as_ref().path)
     }
 
@@ -300,7 +433,7 @@ impl path
         self.path.extension()
     }
 
-    /// Creates an owned [`PathBuf`] with `path` adjoined to `self`.
+    /// Creates an owned [`Path`] with `path` adjoined to `self`.
     ///
     /// If `path` is absolute, it replaces the current path.
     ///
@@ -313,45 +446,45 @@ impl path
     ///   and `path` is not empty, the new path is normalized: all references
     ///   to `.` and `..` are removed.
     ///
-    /// See [`PathBuf::push`] for more details on what it means to adjoin a path.
+    /// See [`Path::push`] for more details on what it means to adjoin a path.
     ///
     /// # Examples
     ///
     /// ```
-    /// use std::path::{Path, PathBuf};
+    /// use std::path::{Path, Path};
     ///
-    /// assert_eq!(Path::new("/etc").join("passwd"), PathBuf::from("/etc/passwd"));
-    /// assert_eq!(Path::new("/etc").join("/bin/sh"), PathBuf::from("/bin/sh"));
+    /// assert_eq!(Path::new("/etc").join("passwd"), Path::from("/etc/passwd"));
+    /// assert_eq!(Path::new("/etc").join("/bin/sh"), Path::from("/bin/sh"));
     /// ```
     #[must_use]
-    pub fn join<P: AsRef<path>>(&self, path: P) -> Path {
+    pub fn join<P: AsRef<Path>>(&self, path: P) -> PathBuf {
         self.path.join(&path.as_ref().path).into()
     }
 
-    /// Creates an owned [`PathBuf`] like `self` but with the given file name.
+    /// Creates an owned [`Path`] like `self` but with the given file name.
     ///
-    /// See [`PathBuf::set_file_name`] for more details.
+    /// See [`Path::set_file_name`] for more details.
     ///
     /// # Examples
     ///
     /// ```
-    /// use std::path::{Path, PathBuf};
+    /// use std::path::{Path, Path};
     ///
     /// let path = Path::new("/tmp/foo.png");
-    /// assert_eq!(path.with_file_name("bar"), PathBuf::from("/tmp/bar"));
-    /// assert_eq!(path.with_file_name("bar.txt"), PathBuf::from("/tmp/bar.txt"));
+    /// assert_eq!(path.with_file_name("bar"), Path::from("/tmp/bar"));
+    /// assert_eq!(path.with_file_name("bar.txt"), Path::from("/tmp/bar.txt"));
     ///
     /// let path = Path::new("/tmp");
-    /// assert_eq!(path.with_file_name("var"), PathBuf::from("/var"));
+    /// assert_eq!(path.with_file_name("var"), Path::from("/var"));
     /// ```
     #[must_use]
-    pub fn with_file_name<S: AsRef<OsStr>>(&self, file_name: S) -> Path {
+    pub fn with_file_name<S: AsRef<OsStr>>(&self, file_name: S) -> PathBuf {
         self.path.with_file_name(file_name).into()
     }
 
-    /// Creates an owned [`PathBuf`] like `self` but with the given extension.
+    /// Creates an owned [`Path`] like `self` but with the given extension.
     ///
-    /// See [`PathBuf::set_extension`] for more details.
+    /// See [`Path::set_extension`] for more details.
     ///
     /// # Examples
     ///
@@ -381,28 +514,28 @@ impl path
     /// let path = Path::new("foo");
     /// assert_eq!(path.with_extension("rs"), Path::new("foo.rs"));
     /// ```
-    pub fn with_extension<S: AsRef<OsStr>>(&self, extension: S) -> Path {
+    pub fn with_extension<S: AsRef<OsStr>>(&self, extension: S) -> PathBuf {
         self.path.with_extension(extension).into()
     }
 
-    /// Creates an owned [`PathBuf`] like `self` but with the extension added.
+    /// Creates an owned [`Path`] like `self` but with the extension added.
     ///
-    /// See [`PathBuf::add_extension`] for more details.
+    /// See [`Path::add_extension`] for more details.
     ///
     /// # Examples
     ///
     /// ```
-    /// use std::path::{Path, PathBuf};
+    /// use std::path::{Path, Path};
     ///
     /// let path = Path::new("foo.rs");
-    /// assert_eq!(path.with_added_extension("txt"), PathBuf::from("foo.rs.txt"));
+    /// assert_eq!(path.with_added_extension("txt"), Path::from("foo.rs.txt"));
     ///
     /// let path = Path::new("foo.tar.gz");
-    /// assert_eq!(path.with_added_extension(""), PathBuf::from("foo.tar.gz"));
-    /// assert_eq!(path.with_added_extension("xz"), PathBuf::from("foo.tar.gz.xz"));
-    /// assert_eq!(path.with_added_extension("").with_added_extension("txt"), PathBuf::from("foo.tar.gz.txt"));
+    /// assert_eq!(path.with_added_extension(""), Path::from("foo.tar.gz"));
+    /// assert_eq!(path.with_added_extension("xz"), Path::from("foo.tar.gz.xz"));
+    /// assert_eq!(path.with_added_extension("").with_added_extension("txt"), Path::from("foo.tar.gz.txt"));
     /// ```
-    pub fn with_added_extension<S: AsRef<OsStr>>(&self, extension: S) -> Path {
+    pub fn with_added_extension<S: AsRef<OsStr>>(&self, extension: S) -> PathBuf {
         self.path.with_added_extension(extension).into()
     }
 
@@ -467,56 +600,92 @@ impl path
     pub fn iter(&self) -> std::path::Iter<'_> {
         self.path.iter()
     }
+
+    pub const fn as_path(&self) -> &Path { self }
 }
 
-/// Similar to [`std::path::PathBuf`] but don't contains any method that rely on the physical file system.
+/// Similar to [`std::path::Path`] but don't contains any method that rely on the physical file system.
 #[derive(Default, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[repr(transparent)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[cfg_attr(feature = "serde", serde(transparent))]
-pub struct Path
+pub struct PathBuf
 {
     path: StdPathBuf,
 }
-impl Deref for Path
+
+
+impl AsRef<PathBuf> for PathBuf
 {
-    type Target=path;
-    fn deref(&self) -> &Self::Target {
-        path::new(&self.path)
+    fn as_ref(&self) -> &PathBuf {
+        self
     }
 }
-impl DerefMut for Path
+impl AsRef<Path> for PathBuf
+{
+    fn as_ref(&self) -> &Path {
+        Path::new(&self.path)
+    }
+}
+impl AsRef<StdPath> for PathBuf
+{
+    fn as_ref(&self) -> &StdPath {
+        self.path.as_ref()
+    }
+}
+impl AsRef<OsStr> for PathBuf
+{
+    fn as_ref(&self) -> &OsStr {
+        self.path.as_ref()
+    }
+}
+impl Borrow<Path> for PathBuf
+{
+    fn borrow(&self) -> &Path {
+        Path::new(&self.path)
+    }
+}
+impl Deref for PathBuf
+{
+    type Target=Path;
+    fn deref(&self) -> &Self::Target {
+        Path::new(&self.path)
+    }
+}
+impl DerefMut for PathBuf
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        path::new_mut(&mut self.path)
+        Path::new_mut(&mut self.path)
     }
 }
-impl std::fmt::Debug for Path
+impl std::fmt::Debug for PathBuf
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", &self.path)
     }
 }
-impl std::fmt::Display for Path
+impl std::fmt::Display for PathBuf
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", &self.path.display())
     }
 }
-impl From<StdPathBuf> for Path
+impl From<StdPathBuf> for PathBuf
 {
     fn from(path: StdPathBuf) -> Self { Self { path } }
 }
-impl From<Path> for StdPathBuf
+impl From<PathBuf> for StdPathBuf
 {
-    fn from(value: Path) -> Self { value.path }
+    fn from(value: PathBuf) -> Self { value.path }
 }
-impl Path
+impl PathBuf
 {
     pub const fn new() -> Self { Self { path: StdPathBuf::new() } }
     pub fn with_capacity(capacity: usize) -> Self { Self { path: StdPathBuf::with_capacity(capacity) } }
+
+    pub fn as_path(&self) -> &Path { Path::new(self) }
 }
-impl WithCapacity for Path
+impl WithCapacity for PathBuf
 {
     type Param = ();
     fn with_capacity_and_param(capacity: usize, _param: Self::Param) -> Self {

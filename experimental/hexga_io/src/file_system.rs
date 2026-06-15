@@ -72,7 +72,7 @@ pub trait FsRead
     fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType>;
     fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { let path = self.resolve_path(path)?; self.file_type_unresolved(path) }
 
-    /// Given a Path to a file, return all occurence of the file on the disk with the same name, regardless of the extension.
+    /// Given a path to a file, return all occurence of the file on the disk with the same name, regardless of the extension.
     fn resolve_paths<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>>;
     /// Resolve incomplete file extension by finding the matching file on disk.
     /// Returns an error if multiple files with the same stem exist or if the path is not valid.

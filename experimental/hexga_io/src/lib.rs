@@ -2,7 +2,6 @@
 use std::borrow::Cow;
 pub use std::{
     fs, io,
-    path::{Path, PathBuf},
 };
 
 #[cfg(feature = "serde")]
@@ -15,8 +14,10 @@ pub use file_system::*;
 mod global_io;
 pub use global_io::*;
 
-mod path_wrapper;
-pub use path_wrapper::*;
+//mod path_wrapper;
+//pub use path_wrapper::*;
+
+pub use std::path::{Path, PathBuf};
 
 mod path_extension;
 pub use path_extension::*;
@@ -28,7 +29,7 @@ pub type IoResult<T = ()> = Result<T, IoError>;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{Io, IoError, IoErrorKind, IoResult};
+    pub use super::{Io, IoError, IoErrorKind, IoResult, PathBuf, Path};
 }
 
 pub mod traits
