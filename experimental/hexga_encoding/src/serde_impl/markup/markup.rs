@@ -1,6 +1,6 @@
 use super::*;
 
-/// /!\ The number of genenric parameter may vary at any time. Avoid using it for stability.
+/// /!\ The number of generic parameter may vary at any time. Avoid using it for stability.
 // #[derive(Serialize, Deserialize)]
 // #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 // pub enum Markup<Ron,Json,Xml>

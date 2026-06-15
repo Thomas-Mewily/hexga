@@ -52,6 +52,14 @@ pub mod prelude
     #[cfg(feature = "serde")]
     pub use super::serde_impl::prelude::*;
 
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    #[cfg(feature = "serde")]
+    pub use super::serde_impl::traits::*;
+
     #[cfg(feature = "derive")]
     pub use hexga_encoding_derive::{Load, Save, io};
 }

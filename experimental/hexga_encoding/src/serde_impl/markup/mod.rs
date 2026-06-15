@@ -3,5 +3,5 @@ use super::*;
 pub(crate) mod to_markup;
 pub use to_markup::*;
 
-mod markup;
+pub(crate) mod markup;
 pub use markup::*;

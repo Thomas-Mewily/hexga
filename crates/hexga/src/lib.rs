@@ -14,7 +14,7 @@ pub use hexga_map_on as map_on;
 pub use hexga_math as math;
 pub use hexga_utils as utils;
 //pub use hexga_random as random;
-//pub use hexga_encoding as encoding;
+pub use hexga_encoding as encoding;
 
 // Having a module `str` and a type `str` seem to cause some problem, hence the explicit `str` type import
 pub use hexga_core::primitive::str;
@@ -73,6 +73,8 @@ pub mod hexga_prelude
     #[cfg(feature = "hexga_io")]
     pub use crate::io::prelude::*;
 
+    pub use crate::encoding::prelude::*;
+
     /*
     #[allow(unused_imports)]
     #[cfg(feature = "serde")]
@@ -101,6 +103,8 @@ pub mod hexga_traits
 
     #[cfg(feature = "hexga_io")]
     pub use crate::io::traits::*;
+
+    pub use crate::encoding::traits::*;
 }
 
 // Todo: introduce a `mods traits`
