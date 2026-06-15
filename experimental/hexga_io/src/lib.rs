@@ -7,10 +7,9 @@ pub use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use hexga_core::prelude::*;
-use hexga_encoding::*;
 
-mod file_system;
-pub use file_system::*;
+mod io_traits;
+pub use io_traits::*;
 
 mod global_io;
 pub use global_io::*;
@@ -34,5 +33,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{FsDynRead, FsDynWrite, FsRead, FsWrite, Fs, IoErrorExt};
+    pub use super::{IoDynRead, IoDynWrite, IoRead, IoWrite, IoProvider, IoErrorExt};
 }

@@ -185,11 +185,10 @@ dependencies = [
  "hexga_array_vec",
  "hexga_bitflags",
  "hexga_core",
- "hexga_encoding",
  "hexga_generational",
- "hexga_io",
  "hexga_map_on",
  "hexga_math",
+ "hexga_save",
  "hexga_utils",
  "serde",
 ]
@@ -307,7 +306,6 @@ name = "hexga_io"
 version = "0.0.11-beta.53"
 dependencies = [
  "hexga_core",
- "hexga_encoding",
  "serde",
 ]
 
@@ -346,6 +344,15 @@ name = "hexga_number"
 version = "0.0.11-beta.53"
 dependencies = [
  "hexga_map_on",
+]
+
+[[package]]
+name = "hexga_save"
+version = "0.0.11-beta.53"
+dependencies = [
+ "hexga_encoding",
+ "hexga_io",
+ "serde",
 ]
 
 [[package]]

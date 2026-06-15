@@ -4,7 +4,7 @@ use super::*;
 #[derive(Debug, Default)]
 pub struct Io;
 
-impl FsDynRead for Io
+impl IoDynRead for Io
 {
     fn dyn_try_exist_unresolved(&mut self, path: &Path) -> IoResult<bool> 
     { 
@@ -94,7 +94,7 @@ impl FsDynRead for Io
         Err(IoError::new_with_path(IoErrorKind::InvalidFilename, "Can't gess the file type", path))
     }
 }
-impl FsDynWrite for Io
+impl IoDynWrite for Io
 {
     fn dyn_write_bytes_unresolved(&mut self, path: &Path, value: &[u8]) -> IoResult
     {

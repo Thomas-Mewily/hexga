@@ -11,7 +11,7 @@ pub enum FileType
 }
 
 #[doc(hidden)]
-pub trait FsDynRead
+pub trait IoDynRead
 {
     #[doc(hidden)]
     fn dyn_try_exist_unresolved(&mut self, path: &Path) -> IoResult<bool> { self.dyn_file_type_unresolved(path)?; Ok(true) }
@@ -50,7 +50,7 @@ pub trait FsDynRead
     fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>;
 }
 #[doc(hidden)]
-pub trait FsDynWrite: FsDynRead
+pub trait IoDynWrite: IoDynRead
 {
     /// Write the byte at a file.
     /// If the file or the directory don't exist, create it.
@@ -67,7 +67,7 @@ pub trait FsDynWrite: FsDynRead
 }
 
 
-pub trait FsRead
+pub trait IoRead
 {
     fn exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> bool { self.try_exist_unresolved(path).is_ok_and(|exist| exist) }
     fn try_exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool>;
@@ -107,64 +107,10 @@ pub trait FsRead
         let path = self.resolve_path(path)?;
         self.read_dir_unresolved(path)
     }
-
-    /// Read the file content and load a decode it using the provided extension.
-    fn load_unresolved<T, P>(&mut self, path: P) -> IoResult<T> 
-    where 
-        P: AsRef<Path>, 
-        T: Load + Sized,
-    {
-        let path = path.as_ref();
-        let extension = path.extension().and_then(|e| e.to_str());
-        
-        let bytes = self.read_bytes_unresolved(path).map_err(|e| {
-            IoError::new_with_path(IoErrorKind::NotFound, e, path)
-        })?;
-        
-        T::load_from_bytes(&bytes, extension).map_err(|e| {
-            IoError::new_with_path(IoErrorKind::InvalidData, e, path)
-        })
-    }
-
-    /// Read the file content and load a decode it using the provided extension.
-    fn load<T,P>(&mut self, path: P) -> IoResult<T> where P: AsRef<Path>, T: Load + Sized
-    {
-        let path = path.as_ref();
-        let extension = path.extension().map(|e| e.to_str()).flatten();
-
-        let (bytes, extension) = match Io.read_bytes(path)
-        {
-            Ok(bytes) => (bytes, extension),
-            Err(err) =>
-            {
-                let mut found = None;
-
-                for ext in T::load_extensions()
-                {
-                    if Some(ext) == extension
-                    {
-                        continue;
-                    }
-
-                    if let Ok(bytes) = Io.read_bytes(&path.with_extension(ext))
-                    {
-                        found = Some((bytes, Some(ext)));
-                        break;
-                    }
-                }
-                match found
-                {
-                    Some(bytes_and_extension) => bytes_and_extension,
-                    None => return Err(err),
-                }
-            }
-        };
-        T::load_from_bytes(&bytes, extension).map_err(|e| IoError::new_with_path(IoErrorKind::InvalidData, e, path))
-    }
 }
-impl<T> FsRead for T
+impl<T> IoRead for T
 where
-    T: FsDynRead,
+    T: IoDynRead,
 {
     fn try_exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { self.dyn_try_exist_unresolved(path.as_ref()) }
     fn read_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> { self.dyn_read_bytes_unresolved(path.as_ref()) }
@@ -178,10 +124,10 @@ where
     fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_unresolved(path.as_ref()) }
 }
 
-pub trait Fs : FsWrite + FsRead + Default {}
-impl<F> Fs for F where F: FsWrite + FsRead + Default {}
+pub trait IoProvider : IoWrite + IoRead + Default {}
+impl<F> IoProvider for F where F: IoWrite + IoRead + Default {}
 
-pub trait FsWrite: FsRead + FsDynWrite
+pub trait IoWrite: IoRead + IoDynWrite
 {
     /// Write the byte at a file.
     /// If the file or the directory don't exist, create it.
@@ -202,78 +148,10 @@ pub trait FsWrite: FsRead + FsDynWrite
     fn remove_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult;
     /// Remove any file or folder recursively
     fn remove<P: AsRef<Path>>(&mut self, path: P) -> IoResult { let path = self.resolve_path(path)?; self.remove_unresolved(path) }
-
-    /// Encode the value using the provided extension and write it to a file.
-    fn save_unresolved<P, T>(&mut self, path: P, value: &T) -> IoResult
-    where
-        P: AsRef<Path>,
-        T: Save + ?Sized,
-    {
-        let path = path.as_ref();
-        let (bytes, _extension) = value
-            .save_to_bytes(path.extension().map(|ex| ex.to_str()).flatten())
-            .map_err(|e| IoError::new_with_path(IoErrorKind::InvalidData, e, path))?;
-
-        Io.write_bytes_unresolved(&path, &bytes)
-    }
-
-    /// Encode the value using the provided extension and write it to a file.
-    fn save<P, T>(&mut self, path: P, value: &T) -> IoResult
-    where
-        P: AsRef<Path>,
-        T: Save + ?Sized,
-    {
-        let path = path.as_ref();
-        let (bytes, extension) = value
-            .save_to_bytes(path.extension().map(|ex| ex.to_str()).flatten())
-            .map_err(|e| IoError::new_with_path(IoErrorKind::InvalidData, e, path))?;
-
-        match extension
-        {
-            Some(ex) =>  Io.write_bytes(&path.with_extension(ex.as_ref()), &bytes),
-            None => Io.write_bytes(path, &bytes),
-        }
-    }
-
-    /// Read the file content and load a decode it using the provided extension.
-    /// If the file don't exist, the value is created, saved, and returned.
-    /// It's ok if saving fail.
-    fn load_or_create_unresolved<T,P,F>(&mut self, path: P, init: F) -> T where P: AsRef<Path>, T: Load + Save + Sized, F: FnOnce() -> T
-    {
-        let path = path.as_ref();
-        match self.load_unresolved(path)
-        {
-            Ok(v) => v,
-            Err(_) => 
-            {
-                let value = init();
-                let _ = self.save_unresolved(path, &value);
-                value
-            },
-        }
-    }
-
-    /// Read the file content and load a decode it using the provided extension.
-    /// If the file don't exist, the value is created, saved, and returned.
-    /// It's ok if saving fail.
-    fn load_or_create<T,P,F>(&mut self, path: P, init: F) -> T where P: AsRef<Path>, T: Load + Save + Sized, F: FnOnce() -> T
-    {
-        let path = path.as_ref();
-        match self.load(path)
-        {
-            Ok(v) => v,
-            Err(_) => 
-            {
-                let value = init();
-                let _ = self.save(path, &value);
-                value
-            },
-        }
-    }
 }
-impl<T> FsWrite for T
+impl<T> IoWrite for T
 where
-    T: FsRead + FsDynWrite,
+    T: IoRead + IoDynWrite,
 {
     fn write_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult { self.dyn_write_bytes_unresolved(path.as_ref(), value) }
 

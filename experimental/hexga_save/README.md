@@ -4,9 +4,10 @@ This crate is currently in **beta** and **experimental**.
 It is subject to **breaking changes** in future releases.
 Use it at your own risk, and keep in mind that the API may change in future versions.
 
-## HexGa Io
+## HexGa Save
 
-Io file traits abstraction to allow read/write bytes from a file, and iterating over directory.
+Hexga Io + Hexga Encoding :
+Io file traits abstraction based to allow load/save value into a file while also managing the encoding, and iterating over directory.
 
 ## Main Hexga crate
 
