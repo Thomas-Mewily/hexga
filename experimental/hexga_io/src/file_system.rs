@@ -1,5 +1,15 @@
 use super::*;
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[non_exhaustive]
+pub enum FileType
+{
+    File,
+    Dir,
+    Symlink
+}
+
 #[doc(hidden)]
 pub trait FsDynRead
 {
@@ -9,6 +19,8 @@ pub trait FsDynRead
     fn dyn_read_bytes_unresolved(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>;
     #[doc(hidden)]
     fn dyn_read_dir_unresolved(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>;
+    #[doc(hidden)]
+    fn dyn_file_type_unresolved(&mut self, path: &Path) -> IoResult<FileType>;
 
     /// Returns all existing files or directories with the same stem name as the given path, regardless of extension.
     #[doc(hidden)]
@@ -18,12 +30,15 @@ pub trait FsDynRead
     /// Returns an error if multiple files with the same stem exist or if the path is not valid.
     /// If no file exist with the same name, return Ok(path).
     #[doc(hidden)]
-    fn dyn_resolve_path(&mut self, path: &Path) -> IoResult<PathBuf> 
+    fn dyn_resolve_path(&mut self, path: &Path) -> IoResult<PathBuf>
     {
         let mut paths = self.dyn_resolve_paths(path)?;
         if let Some(p) = paths.pop()
         {
-            if !paths.is_empty() { return Err(IoError::new(io::ErrorKind::InvalidInput, "Can be resolved to multiple path")) }
+            if !paths.is_empty()
+            {
+                return Err(IoError::new(io::ErrorKind::InvalidInput, "Can be resolved to multiple path"));
+            }
             return Ok(p);
         }
         Ok(path.to_owned())
@@ -33,12 +48,11 @@ pub trait FsDynRead
     fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>;
 }
 #[doc(hidden)]
-pub trait FsDynWrite : FsDynRead
+pub trait FsDynWrite: FsDynRead
 {
     #[doc(hidden)]
     fn dyn_write_bytes_unresolved(&mut self, path: &Path, value: &[u8]) -> IoResult;
 }
-
 
 pub trait FsRead
 {
@@ -48,9 +62,15 @@ pub trait FsRead
     fn read_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>>;
     fn read_dir_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>>;
 
-
     fn exist<P: AsRef<Path>>(&mut self, path: P) -> bool { self.try_exist(path).is_ok_and(|exist| exist) }
-    fn try_exist<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { let path = self.resolve_path(path)?; self.try_exist_unresolved(path) }
+    fn try_exist<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool>
+    {
+        let path = self.resolve_path(path)?;
+        self.try_exist_unresolved(path)
+    }
+
+    fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType>;
+    fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { let path = self.resolve_path(path)?; self.file_type_unresolved(path) }
 
     /// Given a Path to a file, return all occurence of the file on the disk with the same name, regardless of the extension.
     fn resolve_paths<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>>;
@@ -61,27 +81,45 @@ pub trait FsRead
 
     fn canonicalize<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf>;
 
-    fn read_bytes<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> { let path = self.resolve_path(path)?; self.read_bytes_unresolved(path) }
-    fn read_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { let path = self.resolve_path(path)?; self.read_dir_unresolved(path) }
+    fn read_bytes<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>>
+    {
+        let path = self.resolve_path(path)?;
+        self.read_bytes_unresolved(path)
+    }
+    fn read_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>>
+    {
+        let path = self.resolve_path(path)?;
+        self.read_dir_unresolved(path)
+    }
 }
-impl<T> FsRead for T where T:FsDynRead
+impl<T> FsRead for T
+where
+    T: FsDynRead,
 {
     fn try_exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { self.dyn_try_exist_unresolved(path.as_ref()) }
     fn read_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> { self.dyn_read_bytes_unresolved(path.as_ref()) }
     fn read_dir_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_read_dir_unresolved(path.as_ref()) }
-    
+
     fn resolve_paths<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_resolve_paths(path.as_ref()) }
     fn resolve_path<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_resolve_path(path.as_ref()) }
-    
+
     fn canonicalize<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_canonicalize(path.as_ref()) }
+    
+    fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_unresolved(path.as_ref()) }
 }
 
-pub trait FsWrite : FsRead + FsDynWrite
+pub trait FsWrite: FsRead + FsDynWrite
 {
     fn write_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult;
-    fn write_bytes<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult { let path = self.resolve_path(path)?; self.write_bytes_unresolved(path, value) }
+    fn write_bytes<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult
+    {
+        let path = self.resolve_path(path)?;
+        self.write_bytes_unresolved(path, value)
+    }
 }
-impl<T> FsWrite for T where T: FsRead + FsDynWrite
+impl<T> FsWrite for T
+where
+    T: FsRead + FsDynWrite,
 {
     fn write_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult { self.dyn_write_bytes_unresolved(path.as_ref(), value) }
 }

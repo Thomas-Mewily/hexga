@@ -13,7 +13,7 @@ pub mod traits
         AllocFromLayoutRaw,
         DeallocFromLayout,
         DeallocFromLayoutRaw, //MemoryAlloc,MemoryRealloc,MemoryDealloc,
-        FromAllocLayout
+        FromAllocLayout,
     };
 }
 

@@ -1,6 +1,6 @@
+use std::env;
 use std::process::Command;
 use std::time::Duration;
-use std::env;
 
 pub fn publish_all_crate()
 {

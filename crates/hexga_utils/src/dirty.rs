@@ -15,7 +15,7 @@ pub trait IsDirty
 {
     fn is_dirty(&self) -> bool;
 }
-pub trait SetDirty : IsDirty
+pub trait SetDirty: IsDirty
 {
     fn set_dirty(&mut self, used: bool) -> &mut Self;
     fn mark_dirty(&mut self) -> &mut Self { self.set_dirty(true) }

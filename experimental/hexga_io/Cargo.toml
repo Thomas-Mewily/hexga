@@ -6,5 +6,19 @@ license.workspace = true
 homepage.workspace = true
 repository.workspace = true
 edition.workspace = true
+readme = "README.md"
+
+description = "io file traits abstraction based to allow loading/saving bytes from a file, and iterating over directory"
+categories = ["filesystem"]
+
+[features]
+default = ["serde", "serde_rc"]
+
+serde = ["dep:serde", "hexga_core/serde"]
+serde_rc = ["serde/rc",  "hexga_core/serde_rc"]
+
+
 
 [dependencies]
+serde = { version = "1.0.0", optional = true }
+hexga_core.workspace = true

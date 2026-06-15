@@ -1,6 +1,5 @@
 use super::*;
 
-
 pub trait IndexExtension<C>: Sized
 {
     #[inline(always)]

@@ -120,5 +120,5 @@ pub type Vector1Iter<T> = VectorIter<Vector1<T>, 1>;
 
 pub(crate) mod prelude
 {
-    pub use super::{Vec1B, Vec1I, SplatCoord1, Vec1U, Vec1, Vector1, vec1b, vec1i, vec1u, vec1, vector1};
+    pub use super::{SplatCoord1, Vec1, Vec1B, Vec1I, Vec1U, Vector1, vec1, vec1b, vec1i, vec1u, vector1};
 }

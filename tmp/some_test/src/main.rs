@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use hexga::prelude::*;
+use std::path::{Path, PathBuf};
 
 fn print_dir_rec(path: PathBuf) -> IoResult
 {
@@ -11,7 +11,4 @@ fn print_dir_rec(path: PathBuf) -> IoResult
     Ok(())
 }
 
-fn main()
-{
-    let _ = print_dir_rec("./".into());
-}
+fn main() { let _ = print_dir_rec("./".into()); }
