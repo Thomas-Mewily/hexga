@@ -62,7 +62,7 @@ pub mod hexga_prelude
     //pub use crate::random::*;
     pub use crate::array_vec::prelude::*;
     //pub use crate::encoding::prelude::*;
-    pub use crate::singleton::prelude::*;
+    //pub use crate::singleton::prelude::*;
     //pub use crate::map_on::prelude::*;
 
     /*
