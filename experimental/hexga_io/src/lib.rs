@@ -7,6 +7,7 @@ pub use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use hexga_core::prelude::*;
+use hexga_encoding::*;
 
 mod file_system;
 pub use file_system::*;
@@ -22,9 +23,8 @@ pub use std::path::{Path, PathBuf};
 mod path_extension;
 pub use path_extension::*;
 
-pub type IoErrorKind = std::io::ErrorKind;
-pub type IoError = std::io::Error;
-pub type IoResult<T = ()> = Result<T, IoError>;
+mod result;
+pub use result::*;
 
 pub mod prelude
 {
@@ -34,5 +34,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{FsDynRead, FsDynWrite, FsRead, FsWrite};
+    pub use super::{FsDynRead, FsDynWrite, FsRead, FsWrite, IoErrorExt};
 }

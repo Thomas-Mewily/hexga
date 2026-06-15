@@ -1,4 +1,4 @@
-use hexga::prelude::*;
+use hexga_io::prelude::*;
 
 fn main()
 {
