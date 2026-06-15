@@ -34,5 +34,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{FsDynRead, FsDynWrite, FsRead, FsWrite, IoErrorExt};
+    pub use super::{FsDynRead, FsDynWrite, FsRead, FsWrite, Fs, IoErrorExt};
 }
