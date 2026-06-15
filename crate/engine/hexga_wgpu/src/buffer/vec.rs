@@ -94,17 +94,48 @@ impl<T> WgpuSliceable<T> for GpuVec<T>
 where
     T: GpuBufferElement,
 {
-    fn wgpu_usage(&self) -> WgpuBufferUsage { WgpuSliceable::<T>::wgpu_usage(&self.buffer) }
+    fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_> 
+    {
+        let start_byte = match bounds.start_bound()
+        {
+            Bound::Included(&i) => i,
+            Bound::Excluded(&i) => i + 1,
+            Bound::Unbounded => 0,
+        };
 
-    fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::wgpu_slice(&self.buffer, bounds) }
+        let end_byte = match bounds.end_bound()
+        {
+            Bound::Included(&i) => i + 1,
+            Bound::Excluded(&i) => i,
+            Bound::Unbounded => self.len(),
+        };
+        WgpuSliceable::<T>::wgpu_slice(self.wgpu_buffer_ref(), start_byte..end_byte)
+    }
 
-    fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::wgpu_as_slice(&self.buffer) }
+    /*
+    fn wgpu_deep_clone_order(&self) -> WgpuBuffer
+    {
+        let size = self.size();
+        let usage = WgpuSliceable::<T>::wgpu_usage(self);
 
-    fn wgpu_view(&self) -> WgpuBufferView<'_> { WgpuSliceable::<T>::wgpu_view(&self.buffer) }
+        let new_buffer = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
+            label: None,
+            size,
+            usage,
+            mapped_at_creation: false,
+        });
 
-    fn wgpu_view_mut(&self) -> WgpuBufferViewMut<'_> { WgpuSliceable::<T>::wgpu_view_mut(&self.buffer) }
+        let mut encoder = Gpu.device().create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::wgpu_deep_clone_order(&self.buffer) }
+        encoder.copy_buffer_to_buffer(self., 0, &new_buffer, 0, size);
+        Gpu.queue().submit(Some(encoder.finish()));
+
+        new_buffer
+    }
+    */
+    
+    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.wgpu_buffer_ref() }
+
 }
 
 impl<T> GpuSliceable<T> for GpuVec<T>

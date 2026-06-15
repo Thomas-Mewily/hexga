@@ -69,7 +69,7 @@ where
         if Arc::get_mut(&mut slice_mut.buffer.buffer).is_none()
         {
             // COW : Copy on write
-            let buff = slice_mut.wgpu_deep_clone();
+            let buff = slice_mut.wgpu_deep_clone_and_wait();
             slice_mut.buffer.buffer = Arc::new(buff);
         }
 

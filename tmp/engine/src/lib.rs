@@ -31,7 +31,7 @@ impl App for MonJeu
 
     fn draw(&mut self, coef: coef, ctx: &mut ())
     {
-        let vertices: &[Vertex] = &[
+        let vertices = &[
             Vertex {
                 position: [-0.0868241, 0.49240386, 0.0].into(),
                 color: [0.5, 0.0, 0.5].into(),
@@ -59,7 +59,9 @@ impl App for MonJeu
             }, // E
         ];
 
-        let indices: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4, /* padding */ 0];
+        let indices = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
+
+        Pen.geometry(vertices, indices);
 
         //CurrentWindow.set_title(format!("{}", Time::since_launch()));
     }

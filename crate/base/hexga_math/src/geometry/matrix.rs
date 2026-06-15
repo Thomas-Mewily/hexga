@@ -44,6 +44,17 @@ pub struct Matrix<T, const ROW: usize, const COL: usize>
     pub columns: Vector<Vector<T, ROW>, COL>,
 }
 
+unsafe impl<T, const ROW: usize, const COL: usize> crate::hexga_core::bit::BitAllUsed for Matrix<T, ROW, COL> where T: BitAllUsed {}
+unsafe impl<T, const ROW: usize, const COL: usize> crate::hexga_core::bit::BitZero for Matrix<T, ROW, COL> where T: BitZero {}
+impl<T, const ROW: usize, const COL: usize> crate::hexga_core::bit::BitPattern for Matrix<T, ROW, COL>
+where
+    T: BitPattern,
+    [[T::Bits; ROW]; COL]: BitAnyPattern,
+{
+    type Bits = [[T::Bits; ROW]; COL];
+    fn is_bit_pattern_valid(bits_col: &Self::Bits) -> bool { bits_col.iter().all(|bits_row| bits_row.iter().all(|b| T::is_bit_pattern_valid(b))) }
+}
+
 impl<T, const ROW: usize, const COL: usize> Deref for Matrix<T, ROW, COL>
 {
     type Target = Vector<Vector<T, ROW>, COL>;

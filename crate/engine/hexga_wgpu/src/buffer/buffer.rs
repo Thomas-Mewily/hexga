@@ -74,17 +74,7 @@ impl<T> WgpuSliceable<T> for GpuBuffer<T>
 where
     T: GpuBufferElement,
 {
-    fn wgpu_usage(&self) -> WgpuBufferUsage { WgpuSliceable::<T>::wgpu_usage(self.buffer.deref()) }
-
-    fn wgpu_slice<S: RangeBounds<WgpuBufferAddress>>(&self, bounds: S) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::wgpu_slice(self.buffer.deref(), bounds) }
-
-    fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::wgpu_as_slice(self.buffer.deref()) }
-
-    fn wgpu_view(&self) -> WgpuBufferView<'_> { WgpuSliceable::<T>::wgpu_view(self.buffer.deref()) }
-
-    fn wgpu_view_mut(&self) -> WgpuBufferViewMut<'_> { WgpuSliceable::<T>::wgpu_view_mut(self.buffer.deref()) }
-
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::wgpu_deep_clone_order(self.buffer.deref()) }
+    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { &*self.buffer }
 }
 
 impl<T> GpuSliceable<T> for GpuBuffer<T>

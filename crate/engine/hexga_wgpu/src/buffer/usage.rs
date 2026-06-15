@@ -29,6 +29,7 @@ pub enum GpuBufferUsage
     /// Allow a buffer to be the destination buffer for a [`CommandEncoder::copy_buffer_to_buffer`], [`CommandEncoder::copy_texture_to_buffer`],
     /// [`CommandEncoder::clear_buffer`] or [`Queue::write_buffer`] operation.
     CopyDst = 3,
+
     /// Allow a buffer to be the index buffer in a draw operation.
     Index = 4,
     /// Allow a buffer to be the vertex buffer in a draw operation.
@@ -45,6 +46,13 @@ pub enum GpuBufferUsage
     BlasInput = 10,
     /// Allows a buffer to be used as input for a top level acceleration structure build
     TlasInput = 11,
+
+
+    /// Allow a buffer to be the source buffer for a [`CommandEncoder::copy_buffer_to_buffer`] or [`CommandEncoder::copy_buffer_to_texture`]
+    /// operation.
+    /// Allow a buffer to be the destination buffer for a [`CommandEncoder::copy_buffer_to_buffer`], [`CommandEncoder::copy_texture_to_buffer`],
+    /// [`CommandEncoder::clear_buffer`] or [`Queue::write_buffer`] operation.
+    CopySrcAndDst = Self::CopySrc | Self::CopyDst,
 }
 impl GpuBufferUsageFlags
 {

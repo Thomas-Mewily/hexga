@@ -23,7 +23,8 @@ pub struct ImmediateRenderBuilder<const N: usize = 3>
 
 impl BuilderMesh for ImmediateRenderBuilder
 {
-    fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf>, index: impl IntoIterator<Item = VertexIndex>) { self.big_mesh.geometry(vertex, index); }
+    fn extend(&mut self, vertex: impl IntoIterator<Item = VertexOf>, index: impl IntoIterator<Item = VertexIndex>) { self.big_mesh.extend(vertex, index); }
+    fn geometry(&mut self, vertex: &[VertexOf<3>], index: &[VertexIndex]) { self.big_mesh.geometry(vertex, index); }
 }
 
 impl GetMatrix<float, 4, 4> for ImmediateRenderBuilder

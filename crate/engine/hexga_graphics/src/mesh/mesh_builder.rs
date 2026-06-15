@@ -3,14 +3,17 @@ use super::*;
 pub trait BuilderMesh<const N: usize = 3>
 {
     /// Index are relative to the vertex passed
-    fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>);
+    fn extend(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>);
+    fn geometry(&mut self, vertex: &[VertexOf<N>], index: &[VertexIndex]);
 
+    /*
     fn triangles_indexed(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = TriangleVertexIndex>)
     {
-        self.geometry(vertex, index.into_iter().flatten())
+        self.extend(vertex, index.into_iter().flatten())
     }
-
-    fn triangle(&mut self, triangle: TriangleVertex<N>) { self.geometry(triangle.points, [0, 1, 2]); }
+    */
+    
+    fn triangle(&mut self, triangle: TriangleVertex<N>) { self.extend(triangle.points, [0, 1, 2]); }
     fn triangles(&mut self, triangles: impl IntoIterator<Item = TriangleVertex<N>>)
     {
         for triangle in triangles.into_iter()
@@ -126,7 +129,7 @@ impl<const N: usize> Clear for MeshBuilder<N>
 
 impl<const N: usize> BuilderMesh<N> for MeshBuilder<N>
 {
-    fn geometry(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>)
+    fn extend(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>)
     {
         let vertices_prev_len = self.nb_vertex();
         self.vertices.extend(vertex);
@@ -139,6 +142,22 @@ impl<const N: usize> BuilderMesh<N> for MeshBuilder<N>
         self.indices.extend(index.into_iter().map(|idx| idx + index_offset));
         let indices_new_len = self.nb_index();
         let nb_indices_added = indices_new_len - indices_prev_len;
-        assert_eq!(nb_indices_added % 3, 0, "Index need to be a multiple of 3, because they form a triangle");
+        debug_assert_eq!(nb_indices_added % 3, 0, "Index need to be a multiple of 3, because they form a triangle");
+    }
+
+    fn geometry(&mut self, vertex: &[VertexOf<N>], index: &[VertexIndex]) 
+    {
+        let vertices_prev_len = self.nb_vertex();
+        self.vertices.extend_from_slice(vertex);
+        let vertices_new_len = self.nb_vertex();
+        let nb_vertices_added = vertices_new_len - vertices_prev_len;
+
+        let index_offset = vertices_prev_len as VertexIndex;
+
+        let indices_prev_len = self.nb_index();
+        self.indices.extend(index.into_iter().map(|idx| idx + index_offset));
+        let indices_new_len = self.nb_index();
+        let nb_indices_added = indices_new_len - indices_prev_len;
+        debug_assert_eq!(nb_indices_added % 3, 0, "Index need to be a multiple of 3, because they form a triangle");
     }
 }

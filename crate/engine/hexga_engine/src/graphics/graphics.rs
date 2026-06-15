@@ -1,3 +1,5 @@
+use hexga_graphics::gpu::experimental::WgpuSliceable;
+
 use super::*;
 
 #[derive(Debug)]
@@ -7,7 +9,7 @@ pub struct Graphics
     pub(crate) immediate_mesh: Option<Mesh>,
 
     //pub(crate) camera_buffer: GpuVec<Camera>,
-    pub(crate) camera_buffer: wgpu::Buffer,
+    pub(crate) camera_buffer: GpuBuffer<GpuMat4>,
     pub(crate) camera_bind_group: wgpu::BindGroup,
     pub(crate) texture_bind_group: wgpu::BindGroupLayout,
 
@@ -82,7 +84,7 @@ impl Graphics
             }),
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
-                strip_index_format: Some(VertexIndex::GPU_INDEX_FORMAT),
+                strip_index_format: None, //Some(VertexIndex::GPU_INDEX_FORMAT),
                 front_face: wgpu::FrontFace::Ccw,
                 cull_mode: Some(wgpu::Face::Back),
                 // Setting this to anything other than Fill requires Features::POLYGON_MODE_LINE
@@ -104,14 +106,63 @@ impl Graphics
             multiview: None,
         });
 
+        let camera_buffer = GpuBuffer::new(&[Mat4::IDENTITY], GpuBufferUsageFlags::Uniform | GpuBufferUsageFlags::CopySrc);
+
+        let camera_bind_group_layout =
+            Gpu.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+            label: Some("camera_bind_group_layout"),
+        });
+
+        let camera_bind_group = Gpu.device().create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &camera_bind_group_layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: camera_buffer.wgpu_buffer_ref().as_entire_binding(),
+            }],
+            label: Some("camera_bind_group"),
+        });
+
+        let texture_bind_group =
+            Gpu.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Texture {
+                            multisampled: false,
+                            view_dimension: wgpu::TextureViewDimension::D2,
+                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        },
+                        count: None,
+                    },
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                        count: None,
+                    },
+                ],
+                label: Some("texture_bind_group_layout"),
+            });
+
         Graphics {
             pipeline,
             immediate: ___(),
             immediate_mesh: None,
             white_pixel: None,
-            camera_buffer: todo!(),
-            camera_bind_group: todo!(),
-            texture_bind_group: todo!(),
+            camera_buffer,
+            camera_bind_group,
+            texture_bind_group,
         }
     }
 
@@ -119,9 +170,6 @@ impl Graphics
 
     pub(crate) fn end_draw(&mut self)
     {
-        todo!()
-
-        /*
         if self.white_pixel.is_none()
         {
             self.white_pixel = Some(Texture::from(Image::sized_one(ColorU8::WHITE)));
@@ -139,7 +187,7 @@ impl Graphics
         };
 
         let max_scissor = surface.size().to_rect();
-        let max_viewport = max_scissor.cast_into();
+        let max_viewport = max_scissor.to_float();
 
         let surface = surface.surface();
         let surface_texture = match surface.wgpu.get_current_texture()
@@ -178,31 +226,20 @@ impl Graphics
 
             if !self.immediate.big_mesh.is_empty()
             {
-                match self.immediate_mesh.as_mut()
-                {
-                    Some(m) => self.immediate.big_mesh.build_in(m),
-                    None =>
-                    {
-                        self.immediate_mesh = Some(self.immediate.big_mesh.build());
-                    },
-                };
+                self.immediate.big_mesh.build_in_option(&mut self.immediate_mesh);
+
                 let Mesh { vertices, indices } = self.immediate_mesh.as_ref().unwrap();
-
-
-
 
                 for dc in self.immediate.draw_call.iter()
                 {
                     //dbg!(&dc);
 
-                    let Viewport { area: viewport, depth } = dc.viewport;
+                    let Viewport { area: mut viewport, mut depth } = dc.viewport;
                     let (viewport_min_depth, viewport_max_depth) = (dc.viewport.depth.start, dc.viewport.depth.end);
-                    let mut scissor = dc.scissor;
+                    let mut scissor: math::rectangle::RectangleOf<Vector<i32, 2>> = dc.scissor;
 
                     viewport = max_viewport.intersect_or_empty(viewport);
                     scissor = max_scissor.intersect_or_empty(scissor);
-
-
 
                     if viewport.is_empty() || scissor.size.is_empty()
                     {
@@ -211,8 +248,8 @@ impl Graphics
 
                     // Todo: use:
                     //self.camera_buffer.reset() // + remove some constraint
-                    let camera = &[dc.param.camera.matrix()];
-                    Gpu.queue().write_buffer(&self.camera_buffer, 0, unsafe { bit::try_transmute_slice_unchecked(camera) }.unwrap() );
+                    self.camera_buffer.write(0..1).update(&[dc.param.camera.matrix()]);
+                    //Gpu.queue().write_buffer(&self.camera_buffer.wgpu_buffer(), 0, unsafe { bit::try_transmute_slice_unchecked(camera) }.unwrap() );
 
                     /*
                     let viewport : Rect2i = viewport.cast_into();
@@ -228,27 +265,20 @@ impl Graphics
                     rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
 
                     let texture_index = 1;
-                    let offset = &[];
-                    rpass.set_bind_group(texture_index, &dc.texture.shared.bind_group, offset);
+                    //let offset = &[];
 
                     /*
                     match &dc.texture
                     {
-                        DrawTexture::None =>
+                        Some(_) => todo!(),
+                        None => 
                         {
                             rpass.set_bind_group(texture_index, &self.white_pixel.as_ref().unwrap().shared.bind_group, offset)
                         },
-                        DrawTexture::Texture(texture) =>
-                        {
-                            rpass.set_bind_group(texture_index, &texture.shared.bind_group, offset)
-                        },
-                        DrawTexture::Asset(asset) => match asset.get_or_placeholder()
-                        {
-                            Some(texture) => rpass.set_bind_group(1, &texture.shared.bind_group, offset),
-                            None => rpass.set_bind_group(texture_index, &self.white_pixel.as_ref().unwrap().shared.bind_group, offset),
-                        },
-                    };
+                    }
+                    rpass.set_bind_group(texture_index, &dc.texture.shared.bind_group, offset);
                     */
+
                     //let texture = dc.texture.as_ref().unwrap_or(self.white_pixel.as_ref().unwrap());
                     //rpass.set_bind_group(1, bindgroup, &[]);
 
@@ -257,29 +287,24 @@ impl Graphics
                         DrawGeometry::Immediate(im) =>
                         {
                             if im.is_empty() { continue; }
-                            let (vertices_begin, vertices_len) = (im.vertices_begin, im.vertices_len);
-                            let vertices_end = im.vertices_begin+im.vertices_len;
 
-                            let (indices_begin, indices_len) = (im.indices_begin, im.indices_len);
-                            let indices_end = im.indices_begin+im.indices_len;
-
-                            rpass.set_vertex_buffer(0, vertices.wgpu_slice(vertices_begin..vertices_end));
-                            rpass.set_index_buffer(indices.wgpu_slice(indices_begin..indices_end), VertexIndex::GPU_INDEX_FORMAT);
+                            rpass.set_vertex_buffer(0, vertices.wgpu_slice(im.vertices));
+                            rpass.set_index_buffer(indices.wgpu_slice(im.indices), VertexIndex::GPU_INDEX_FORMAT);
                             //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
                             // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
-                            rpass.draw_indexed(0 ..(indices_len as _), -(vertices_begin as i32), 0..1);
+                            rpass.draw_indexed(0 ..((im.vertices.end - im.vertices.start) as _), -(im.vertices.start as i32), 0..1);
                         },
                     }
                 }
             }
         }
-        */
     }
 }
 
 impl BuilderMesh for Graphics
 {
-    fn geometry(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) { self.immediate.geometry(vertex, index); }
+    fn extend(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) { self.immediate.extend(vertex, index); }
+    fn geometry(&mut self, vertex: &[vertex::VertexOf<3>], index: &[VertexIndex]) { self.immediate.geometry(vertex, index); }
 }
 
 impl GetMatrix<float, 4, 4> for Graphics
