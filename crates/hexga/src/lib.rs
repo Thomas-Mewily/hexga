@@ -22,7 +22,7 @@ pub use hexga_core::primitive::str;
 //pub use hexga_undo_redo as undo;
 
 //#[cfg(feature = "serde")]
-//pub use hexga_io as io;
+pub use hexga_io as io;
 
 //#[cfg(feature = "hexga_asset")]
 //pub use hexga_asset as asset;
@@ -70,8 +70,8 @@ pub mod hexga_prelude
     #[cfg(feature = "hexga_io")]
     pub use hexga_io;*/
     // #[allow(unused_imports)]
-    // #[cfg(feature = "hexga_io")]
-    // pub use crate::io::prelude::*;
+    #[cfg(feature = "hexga_io")]
+    pub use crate::io::prelude::*;
 
     /*
     #[allow(unused_imports)]
@@ -98,6 +98,9 @@ pub mod hexga_traits
 {
     pub use crate::generational::traits::*;
     pub use crate::utils::traits::*;
+
+    #[cfg(feature = "hexga_io")]
+    pub use crate::io::traits::*;
 }
 
 // Todo: introduce a `mods traits`

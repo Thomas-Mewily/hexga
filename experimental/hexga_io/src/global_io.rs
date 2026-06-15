@@ -26,20 +26,26 @@ impl FsDynRead for Io
     
     fn dyn_resolve_paths<'a>(&mut self, path: &'a Path) -> IoResult<Vec<PathBuf>> 
     {
+        let path = self.canonicalize(path)?;
         let parent = path.parent().ok_or_else(|| {
             io::Error::new(io::ErrorKind::InvalidInput, "Path has no parent directory")
         })?;
         let stem = path.file_stem().unwrap_or(path.as_os_str());
 
-        let matches: Vec<PathBuf> = std::fs::read_dir(parent)?
+        let parent = std::fs::read_dir(parent)?;
+
+        let matches: Vec<PathBuf> = parent
             .filter_map(|entry| entry.ok())
             .map(|entry| entry.path())
             .filter(|candidate| {
-                candidate.is_file() && candidate.file_stem() == Some(stem)
+                candidate.file_stem() == Some(stem)
             })
             .collect();
-
         Ok(matches)
+    }
+    
+    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf> {
+        fs::canonicalize(path)
     }
 }
 impl FsDynWrite for Io

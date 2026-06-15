@@ -16,6 +16,7 @@ categories = ["rust-patterns"]
 default = [
             "int_are_32_bits", "float_are_32_bits",
             "serde", "serde_rc", 
+            "hexga_io",
             #"hexga_encoding_derive", 
             #"hexga_asset"
           ]
@@ -54,6 +55,7 @@ serde_rc = ["serde/rc",
   #"hexga_asset/serde_rc", 
   "hexga_utils/serde_rc", "hexga_array_vec/serde_rc"]
 
+hexga_io = ["dep:hexga_io"]
 #hexga_asset = ["dep:hexga_asset"]
 
 [dependencies]
@@ -67,7 +69,7 @@ hexga_utils.workspace = true
 hexga_map_on.workspace = true
 #hexga_image.workspace = true
 #hexga_encoding.workspace = true
-#hexga_io.workspace = true
+hexga_io = { workspace = true, optional = true }
 hexga_array_vec.workspace = true
 #hexga_asset = { workspace = true, optional = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }

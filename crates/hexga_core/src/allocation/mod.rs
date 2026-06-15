@@ -4,6 +4,7 @@ pub mod prelude
 {
     pub use super::traits::*;
 }
+
 pub mod traits
 {
     pub use super::{
@@ -12,7 +13,7 @@ pub mod traits
         AllocFromLayoutRaw,
         DeallocFromLayout,
         DeallocFromLayoutRaw, //MemoryAlloc,MemoryRealloc,MemoryDealloc,
-        FromAllocLayout,
+        FromAllocLayout
     };
 }
 

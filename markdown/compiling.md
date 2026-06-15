@@ -6,3 +6,7 @@ https://sotrh.github.io/learn-wgpu/beginner/tutorial1-window/#wasm-pack
 wasm-pack build
 
 wasm-pack build --target web
+
+
+rustup install nightly-2026-03-09
+rustup override set nightly-2026-03-09
