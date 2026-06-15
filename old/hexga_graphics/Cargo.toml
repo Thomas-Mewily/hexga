@@ -1,0 +1,69 @@
+[package]
+name = "hexga_graphics"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+description = "The default graphic renderer of hexga_event_loop."
+keywords = ["multimedia", "graphics"]
+categories = ["game-development", "graphics"]
+
+[features]
+default = [
+            "int_are_32_bits", "float_are_32_bits",
+            "serde", "serde_rc", "hexga_encoding_derive",
+
+            #"gpu",
+            "gpu_backend_gles", "gpu_backend_noop", 
+            "gpu_strict_asserts", "gpu_wgsl"
+          ]
+
+int_are_8_bits    = ["hexga/int_are_8_bits", "hexga_wgpu/int_are_8_bits"]
+int_are_16_bits   = ["hexga/int_are_16_bits", "hexga_wgpu/int_are_16_bits"]
+int_are_32_bits   = ["hexga/int_are_32_bits", "hexga_wgpu/int_are_32_bits"]
+int_are_64_bits   = ["hexga/int_are_64_bits", "hexga_wgpu/int_are_64_bits"]
+int_are_size_bits = ["hexga/int_are_size_bits", "hexga_wgpu/int_are_size_bits"]
+
+float_are_32_bits   = ["hexga/float_are_32_bits", "hexga_wgpu/float_are_32_bits"]
+float_are_64_bits   = ["hexga/float_are_64_bits", "hexga_wgpu/float_are_64_bits"]
+float_are_size_bits = ["hexga/float_are_size_bits", "hexga_wgpu/float_are_size_bits"]
+
+serde = ["dep:serde", "hexga/serde", "hexga_wgpu/serde"]
+serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_wgpu/serde_rc"]
+
+hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_wgpu/hexga_encoding_derive"]
+
+
+
+#gpu = ["dep:hexga_wgpu"]
+
+gpu_backend_webgpu = ["hexga_wgpu/gpu_backend_webgpu"]
+gpu_backend_gles = ["hexga_wgpu/gpu_backend_gles"]
+gpu_backend_metal = ["hexga_wgpu/gpu_backend_metal"]
+gpu_backend_dx12 = ["hexga_wgpu/gpu_backend_dx12"]
+gpu_backend_vulkan = ["hexga_wgpu/gpu_backend_vulkan"]
+gpu_backend_noop = ["hexga_wgpu/gpu_backend_noop"]
+
+gpu_strict_asserts = ["hexga_wgpu/gpu_strict_asserts"]
+gpu_wgsl = ["hexga_wgpu/gpu_wgsl"]
+
+[target.'cfg(target_arch = "wasm32")'.features]
+default = [
+            "int_are_32_bits", "float_are_32_bits",
+            "serde", "serde_rc", "hexga_encoding_derive",
+
+            "gpu_backend_webgpu", # only on wasm ?
+            "gpu_backend_gles", "gpu_backend_noop", 
+            "gpu_strict_asserts", "gpu_wgsl"
+          ]
+
+
+[dependencies]
+hexga.workspace = true
+hexga_wgpu = { workspace = true }
+serde = { version = "1.0.0", features = ["derive"], optional = true }
+

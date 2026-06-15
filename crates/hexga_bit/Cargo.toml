@@ -1,0 +1,24 @@
+[package]
+name = "hexga_bit"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+description = "A bytemuck wrapper for hexga. A crate for manipulating bytes"
+keywords = ["transmute", "bytes", "casting"]
+categories = ["encoding", "no-std"]
+
+[features]
+default = ["derive"]
+
+derive = ["hexga_bit_derive", "extern_crate_std"]
+extern_crate_alloc = []
+extern_crate_std = ["extern_crate_alloc"]  # std requires alloc
+
+[dependencies]
+hexga_bit_derive = { workspace = true, optional = true }
+hexga_map_on.workspace = true

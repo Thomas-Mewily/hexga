@@ -1,0 +1,11 @@
+[package]
+name = "some_test"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[dependencies]
+hexga = { workspace = true, default-features = true }

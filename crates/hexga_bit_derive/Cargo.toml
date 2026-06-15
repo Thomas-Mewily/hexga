@@ -1,0 +1,24 @@
+[package]
+name = "hexga_bit_derive"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+description = "Derive macro for hexga_bit"
+keywords = []
+categories = []
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+
+#[dev-dependencies]
+#hexga_bit = { workspace = true, features = ["derive"] }

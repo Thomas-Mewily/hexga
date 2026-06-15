@@ -1,0 +1,28 @@
+[package]
+name = "hexga_core"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+keywords = []
+description = "Basic set of functionalities common to all hexga crate"
+categories = ["rust-patterns"]
+
+[features]
+default = ["std", "serde", "serde_rc"]
+
+std = ["hexga_guard/std"]
+
+serde = ["dep:serde"]
+serde_rc = ["serde/rc"]
+
+
+[dependencies]
+hexga_guard.workspace = true
+hexga_map_on.workspace = true
+hexga_bit = { workspace = true, features = ["derive"] }
+serde = { version = "1.0.0", features = ["derive"], optional = true }
