@@ -11,6 +11,7 @@ pub(crate) struct AssetsManagerUntyped
     assets: HashMap<TypeId, Arc<DynAnyAsync>>,
 }
 
+/*
 pub(crate) type ArcRwLockAssetManager<T> = Arc<RwLock<AssetManager<T>>>;
 
 #[derive(Debug)]
@@ -20,6 +21,7 @@ where
 {
     pub(crate) values: HashMap<PathBuf, AssetStorage<T>>,
 }
+*/
 
 /*
 #[derive(Debug)]
