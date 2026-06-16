@@ -93,6 +93,10 @@ impl IoDynRead for Io
         if file_type.is_symlink() { return Ok(FileType::Symlink); }
         Err(IoError::new_with_path(IoErrorKind::InvalidFilename, "Can't gess the file type", path))
     }
+    
+    fn dyn_rename_unresolved(&mut self, from: &Path, to: &Path) -> IoResult {
+        std::fs::rename(from, to)
+    }
 }
 impl IoDynWrite for Io
 {

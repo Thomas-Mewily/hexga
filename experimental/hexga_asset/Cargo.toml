@@ -1,0 +1,26 @@
+[package]
+name = "hexga_asset"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+description = "A crossplatform way to load file, and factorize them into asset, and hot reload them."
+categories = ["filesystem", "encoding", "data-structures"]
+
+[features]
+default = ["serde", "serde_rc", "hexga_encoding_derive"]
+
+serde = ["dep:serde", "hexga_save/serde"]
+serde_rc = ["serde/rc",  "hexga_save/serde_rc"]
+
+hexga_encoding_derive = ["hexga_save/hexga_encoding_derive"]
+
+[dependencies]
+serde = { version = "1.0.0", optional = true }
+hexga_io.workspace = true
+hexga_save.workspace = true
+hexga_utils.workspace = true

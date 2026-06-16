@@ -45,7 +45,7 @@ serde = ["dep:serde",
   #"hexga_io/serde",
   #"hexga_encoding/serde",
   "hexga_save/serde",
-  #"hexga_asset/serde",
+  "hexga_asset/serde",
   "hexga_utils/serde",
   "hexga_array_vec/serde",
 ]
@@ -55,7 +55,7 @@ serde_rc = ["serde/rc",
   #"hexga_io/serde_rc", 
   "hexga_save/serde_rc", 
   "hexga_arena/serde_rc", 
-  #"hexga_asset/serde_rc", 
+  "hexga_asset/serde_rc", 
   "hexga_utils/serde_rc", "hexga_array_vec/serde_rc"]
 
 #hexga_io = ["dep:hexga_io"]
@@ -76,7 +76,7 @@ hexga_save.workspace = true
 #hexga_encoding.workspace = true
 #hexga_io = { workspace = true, optional = true }
 hexga_array_vec.workspace = true
-#hexga_asset = { workspace = true, optional = true }
+hexga_asset = { workspace = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 
 

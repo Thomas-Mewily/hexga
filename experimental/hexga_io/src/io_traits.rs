@@ -48,6 +48,14 @@ pub trait IoDynRead
     /// Canonicalizes the path like `std::fs::canonicalize`, but works even if the file doesn't exist.
     /// Returns an error when resolving above root (e.g., `/..`).
     fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>;
+
+
+    #[doc(hidden)]
+    /// Renames a file or directory to a new name, replacing the original file if
+    /// `to` already exists.
+    ///
+    /// This will not work if the new name is on a different mount point.
+    fn dyn_rename_unresolved(&mut self, from: &Path, to: &Path) -> IoResult;
 }
 #[doc(hidden)]
 pub trait IoDynWrite: IoDynRead
@@ -132,12 +140,14 @@ pub trait IoWrite: IoRead + IoDynWrite
     /// Write the byte at a file.
     /// If the file or the directory don't exist, create it.
     fn write_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult;
+
     /// Write the byte at a file.
     /// If the file or the directory don't exist, create it.
-    fn write_bytes<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult
+    fn write_bytes<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult<PathBuf>
     {
         let path = self.resolve_path(path)?;
-        self.write_bytes_unresolved(path, value)
+        self.write_bytes_unresolved(&path, value)?;
+        Ok(path)
     }
 
     /// Create recursively all dir in the path.
@@ -147,7 +157,25 @@ pub trait IoWrite: IoRead + IoDynWrite
     /// Remove any file or folder recursively
     fn remove_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult;
     /// Remove any file or folder recursively
-    fn remove<P: AsRef<Path>>(&mut self, path: P) -> IoResult { let path = self.resolve_path(path)?; self.remove_unresolved(path) }
+    fn remove<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { let path = self.resolve_path(path)?; self.remove_unresolved(&path)?; Ok(path) }
+
+    /// Renames a file or directory to a new name, replacing the original file if
+    /// `to` already exists.
+    ///
+    /// This will not work if the new name is on a different mount point.
+    fn rename_unresolved<P: AsRef<Path>, Q: AsRef<Path>>(&mut self, from: P, to: Q) -> IoResult { self.dyn_rename_unresolved(from.as_ref(), to.as_ref()) }
+
+    /// Renames a file or directory to a new name, replacing the original file if
+    /// `to` already exists.
+    ///
+    /// This will not work if the new name is on a different mount point.
+    fn rename<P: AsRef<Path>, Q: AsRef<Path>>(&mut self, from: P, to: Q) -> IoResult<PathBuf>
+    {
+        let from = self.resolve_path(from)?;
+        let to = self.resolve_path(to)?;
+        self.rename_unresolved(from, &to)?;
+        Ok(to)
+    }
 }
 impl<T> IoWrite for T
 where

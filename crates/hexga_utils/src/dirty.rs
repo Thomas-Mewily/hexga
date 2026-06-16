@@ -8,7 +8,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::IsDirty;
+    pub use super::{IsDirty,SetDirty};
 }
 
 pub trait IsDirty

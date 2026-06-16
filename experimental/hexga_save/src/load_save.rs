@@ -23,37 +23,16 @@ pub trait IoLoad : IoRead
     /// Read the file content and load a decode it using the provided extension.
     fn load<T,P>(&mut self, path: P) -> IoResult<T> where P: AsRef<Path>, T: Load + Sized
     {
-        let path = path.as_ref();
-        let extension = path.extension().map(|e| e.to_str()).flatten();
-
-        let (bytes, extension) = match Io.read_bytes(path)
-        {
-            Ok(bytes) => (bytes, extension),
-            Err(err) =>
-            {
-                let mut found = None;
-
-                for ext in T::load_extensions()
-                {
-                    if Some(ext) == extension
-                    {
-                        continue;
-                    }
-
-                    if let Ok(bytes) = Io.read_bytes(&path.with_extension(ext))
-                    {
-                        found = Some((bytes, Some(ext)));
-                        break;
-                    }
-                }
-                match found
-                {
-                    Some(bytes_and_extension) => bytes_and_extension,
-                    None => return Err(err),
-                }
-            }
-        };
-        T::load_from_bytes(&bytes, extension).map_err(|e| IoError::new_with_path(IoErrorKind::InvalidData, e, path))
+        let path = &self.resolve_path(path)?;
+        let extension = path.extension().and_then(|e| e.to_str());
+        
+        let bytes = self.read_bytes_unresolved(path).map_err(|e| {
+            IoError::new_with_path(IoErrorKind::NotFound, e, path)
+        })?;
+        
+        T::load_from_bytes(&bytes, extension).map_err(|e| {
+            IoError::new_with_path(IoErrorKind::InvalidData, e, path)
+        })
     }
 }
 
@@ -81,7 +60,7 @@ pub trait IoSave: IoWrite + IoLoad
     }
 
     /// Encode the value using the provided extension and write it to a file.
-    fn save<P, T>(&mut self, path: P, value: &T) -> IoResult
+    fn save<P, T>(&mut self, path: P, value: &T) -> IoResult<PathBuf>
     where
         P: AsRef<Path>,
         T: Save + ?Sized,
@@ -91,11 +70,14 @@ pub trait IoSave: IoWrite + IoLoad
             .save_to_bytes(path.extension().map(|ex| ex.to_str()).flatten())
             .map_err(|e| IoError::new_with_path(IoErrorKind::InvalidData, e, path))?;
 
-        match extension
+        let pathbuf = match extension
         {
-            Some(ex) =>  Io.write_bytes(&path.with_extension(ex.as_ref()), &bytes),
-            None => Io.write_bytes(path, &bytes),
-        }
+            Some(ex) =>  path.with_extension(ex.as_ref()),
+            None => path.to_owned(),
+        };
+
+        Io.write_bytes(&pathbuf, &bytes)?;
+        Ok(pathbuf)
     }
 
     /// Read the file content and load a decode it using the provided extension.

@@ -183,6 +183,7 @@ dependencies = [
  "hexga_ansi_color",
  "hexga_arena",
  "hexga_array_vec",
+ "hexga_asset",
  "hexga_bitflags",
  "hexga_core",
  "hexga_generational",
@@ -220,6 +221,16 @@ name = "hexga_array_vec"
 version = "0.0.11-beta.53"
 dependencies = [
  "hexga_core",
+ "serde",
+]
+
+[[package]]
+name = "hexga_asset"
+version = "0.0.11-beta.53"
+dependencies = [
+ "hexga_io",
+ "hexga_save",
+ "hexga_utils",
  "serde",
 ]
 
