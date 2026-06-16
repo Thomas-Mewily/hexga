@@ -5,8 +5,8 @@ use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::fmt::{Debug,Display,Formatter,Result as FmtResult};
 
-mod hot_reload;
-pub use hot_reload::*;
+mod reload;
+pub use reload::*;
 
 mod file;
 pub use file::*;
