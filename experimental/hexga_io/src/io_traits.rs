@@ -131,6 +131,20 @@ where
     
     fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_unresolved(path.as_ref()) }
 }
+/*
+impl IoRead for dyn IoDynRead
+{
+    fn try_exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { self.dyn_try_exist_unresolved(path.as_ref()) }
+    fn read_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> { self.dyn_read_bytes_unresolved(path.as_ref()) }
+    fn read_dir_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_read_dir_unresolved(path.as_ref()) }
+
+    fn resolve_paths<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_resolve_paths(path.as_ref()) }
+    fn resolve_path<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_resolve_path(path.as_ref()) }
+
+    fn canonicalize<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_canonicalize(path.as_ref()) }
+    
+    fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_unresolved(path.as_ref()) }
+}*/
 
 pub trait IoProvider : IoWrite + IoRead + Default {}
 impl<F> IoProvider for F where F: IoWrite + IoRead + Default {}

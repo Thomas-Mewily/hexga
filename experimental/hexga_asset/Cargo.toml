@@ -14,8 +14,8 @@ categories = ["filesystem", "encoding", "data-structures"]
 [features]
 default = ["serde", "serde_rc", "hexga_encoding_derive"]
 
-serde = ["dep:serde", "hexga_save/serde"]
-serde_rc = ["serde/rc",  "hexga_save/serde_rc"]
+serde = ["dep:serde", "hexga_save/serde", "hexga_core/serde"]
+serde_rc = ["serde/rc",  "hexga_save/serde_rc", "hexga_core/serde_rc"]
 
 hexga_encoding_derive = ["hexga_save/hexga_encoding_derive"]
 
@@ -24,3 +24,4 @@ serde = { version = "1.0.0", optional = true }
 hexga_io.workspace = true
 hexga_save.workspace = true
 hexga_utils.workspace = true
+hexga_core.workspace = true

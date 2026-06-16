@@ -1,80 +1,77 @@
 use super::*;
 
-pub type FileData<T> = FileDataOf<T>;
-
 #[derive(Clone)]
-pub struct FileDataOf<T, IO=Io> // A:AutoSave>
+pub struct AssetData<T, IO=Io> // A:AutoSave>
     where 
     IO: IoProvider,
     T: Load + Save
 {
-    path: PathBuf,
-    value: Dirty<T>,
-    phantom: PhantomData<IO>,
+    file: FileDataOf<T,IO>
 }
 
-impl<T,IO> std::hash::Hash for FileDataOf<T,IO> where 
+impl<T,IO> std::hash::Hash for AssetData<T,IO> where 
     IO: IoProvider,
     T: Load + Save 
 {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.path.hash(state);
+        self.file.hash(state);
     }
 }
 
-impl<T,IO> Ord for FileDataOf<T,IO> where 
+impl<T,IO> Ord for AssetData<T,IO> where 
     IO: IoProvider,
     T: Load + Save 
 {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.path.cmp(&other.path)
+        self.file.cmp(&other.file)
     }
 }
-impl<T,IO> PartialOrd for FileDataOf<T,IO> 
+impl<T,IO> PartialOrd for AssetData<T,IO> 
 where 
     IO: IoProvider,
     T: Load + Save 
 {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.path.partial_cmp(&other.path) 
+        self.file.partial_cmp(&other.file)
     }
 }
 
-impl<T,IO> Eq for FileDataOf<T,IO> where 
+impl<T,IO> Eq for AssetData<T,IO> where 
     IO: IoProvider,
     T: Load + Save 
 {}
-impl<T,IO> PartialEq for FileDataOf<T,IO> 
+impl<T,IO> PartialEq for AssetData<T,IO> 
 where 
     IO: IoProvider,
     T: Load + Save 
 {
     fn eq(&self, other: &Self) -> bool {
-        self.path == other.path
+        self.file == other.file
     }
 }
 
-impl<T,IO> Debug for FileDataOf<T,IO> 
+impl<T,IO> Debug for AssetData<T,IO> 
     where 
     IO: IoProvider,
     T: Load + Save + Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        f.debug_struct("File").field("path", &self.path).field("value", self.value()).finish()
+        Debug::fmt(&self.file, f)
     }
 }
 
-impl<T,IO> Display for FileDataOf<T,IO> 
+impl<T,IO> Display for AssetData<T,IO> 
     where 
     IO: IoProvider,
     T: Load + Save + Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        write!(f, "{} at {}", self.value(), self.path.display())
+        Display::fmt(&self.file, f)
     }
 }
 
-impl<T,IO> Deref for FileDataOf<T,IO> 
+/*
+impl<T,IO> Deref for AssetData<T,IO> 
     where 
     IO: IoProvider,
     T: Load + Save
@@ -84,7 +81,7 @@ impl<T,IO> Deref for FileDataOf<T,IO>
         &self.value
     }
 }
-impl<T,IO> DerefMut for FileDataOf<T,IO> 
+impl<T,IO> DerefMut for AssetData<T,IO> 
     where 
     IO: IoProvider,
     T: Load + Save
@@ -93,20 +90,23 @@ impl<T,IO> DerefMut for FileDataOf<T,IO>
         &mut self.value
     }
 }
+*/
 
-impl<T,IO> FileDataOf<T,IO> 
+
+/*
+impl<T,IO> AssetData<T,IO> 
     where 
     IO: IoProvider,
     T: Load + Save
 {
-    pub fn load<P: AsRef<Path>>(path: P) -> IoResult<FileDataOf<T,IO>>
+    pub fn load<P: AsRef<Path>>(path: P) -> IoResult<AssetData<T,IO>>
     {
         let mut io = IO::default();
         let path = io.resolve_path(path)?;
         let value = io.load_unresolved(&path)?;
         Ok(Self{ path, value: Dirty::new(value), phantom: PhantomData })
     }
-    pub fn load_or_create<P: AsRef<Path>, F>(path: P, init: F) -> FileDataOf<T,IO> where T: Load + Save + Sized, F: FnOnce() -> T 
+    pub fn load_or_create<P: AsRef<Path>, F>(path: P, init: F) -> AssetData<T,IO> where T: Load + Save + Sized, F: FnOnce() -> T 
     {
         let mut io = IO::default();
         let p = path.as_ref();
@@ -114,13 +114,13 @@ impl<T,IO> FileDataOf<T,IO>
         let value = io.load_or_create(&path, init);
         Self { path: path, value: Dirty::new(value), phantom: PhantomData }
     }
-    pub fn load_unresolved<P: AsRef<Path>>(path: P) -> IoResult<FileDataOf<T,IO>>
+    pub fn load_unresolved<P: AsRef<Path>>(path: P) -> IoResult<AssetData<T,IO>>
     {
         let path = path.as_ref();
         let value = IO::default().load_unresolved(path)?;
         Ok(Self{ path: path.to_owned(), value: Dirty::new(value), phantom: PhantomData })
     }
-    pub fn load_or_create_unresolved<P: AsRef<Path>, F>(path: P, init: F) -> FileDataOf<T,IO> where T: Load + Save + Sized, F: FnOnce() -> T 
+    pub fn load_or_create_unresolved<P: AsRef<Path>, F>(path: P, init: F) -> AssetData<T,IO> where T: Load + Save + Sized, F: FnOnce() -> T 
     {
         let path = path.as_ref();
         let value = IO::default().load_or_create_unresolved(path, init);
@@ -196,7 +196,7 @@ impl<T,IO> FileDataOf<T,IO>
     }*/
 }
 
-impl<T,IO> Reload for FileDataOf<T,IO> 
+impl<T,IO> Reload for AssetData<T,IO> 
     where 
     IO: IoProvider,
     T: Load + Save
@@ -214,7 +214,7 @@ impl<T,IO> Reload for FileDataOf<T,IO>
     }
 }
 
-impl<T,IO> Drop for FileDataOf<T,IO> 
+impl<T,IO> Drop for AssetData<T,IO> 
     where 
     IO: IoProvider,
     T: Load + Save
@@ -224,3 +224,4 @@ impl<T,IO> Drop for FileDataOf<T,IO>
         let _ = self.save();
     }
 }
+*/

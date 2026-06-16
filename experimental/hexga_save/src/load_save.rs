@@ -115,6 +115,22 @@ pub trait IoSave: IoWrite + IoLoad
             },
         }
     }
+
+    /// Read the file content and load a decode it using the provided extension.
+    /// If the file don't exist, the value is created using [`Default`], saved, and returned.
+    /// It's ok if saving fail.
+    fn load_or_default<T,P>(&mut self, path: P) -> T where P: AsRef<Path>, T: Load + Save + Sized + Default
+    {
+        self.load_or_create(path, || Default::default())
+    }
+
+    /// Read the file content and load a decode it using the provided extension.
+    /// If the file don't exist, the value is created using [`Default`], saved, and returned.
+    /// It's ok if saving fail.
+    fn load_or_default_unresolved<T,P>(&mut self, path: P) -> T where P: AsRef<Path>, T: Load + Save + Sized + Default
+    {
+        self.load_or_create_unresolved(path, || Default::default())
+    }
 }
 impl<I> IoSave for I
 where

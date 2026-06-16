@@ -228,6 +228,7 @@ dependencies = [
 name = "hexga_asset"
 version = "0.0.11-beta.53"
 dependencies = [
+ "hexga_core",
  "hexga_io",
  "hexga_save",
  "hexga_utils",
