@@ -1,11 +1,11 @@
 
-mod load_save;
+mod fs_load_save;
 
 pub mod io
 {
     pub use hexga_io::*;
 
-    pub use super::load_save::*;
+    pub use super::fs_load_save::*;
 
     pub mod prelude
     {
@@ -16,7 +16,7 @@ pub mod io
     pub mod traits
     {
         pub use hexga_io::traits::*;
-        pub use crate::load_save::*;
+        pub use crate::fs_load_save::*;
     }
 }
 

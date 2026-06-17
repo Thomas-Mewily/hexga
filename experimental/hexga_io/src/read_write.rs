@@ -10,8 +10,9 @@ pub enum FileType
     Symlink
 }
 
+
 #[doc(hidden)]
-pub trait IoDynRead
+pub trait FsDynRead
 {
     #[doc(hidden)]
     fn dyn_try_exist_unresolved(&mut self, path: &Path) -> IoResult<bool> { self.dyn_file_type_unresolved(path)?; Ok(true) }
@@ -58,7 +59,7 @@ pub trait IoDynRead
     fn dyn_rename_unresolved(&mut self, from: &Path, to: &Path) -> IoResult;
 }
 #[doc(hidden)]
-pub trait IoDynWrite: IoDynRead
+pub trait FsDynWrite: FsDynRead
 {
     /// Write the byte at a file.
     /// If the file or the directory don't exist, create it.
@@ -75,13 +76,13 @@ pub trait IoDynWrite: IoDynRead
 }
 
 
-pub trait IoRead
+pub trait FsRead : FsDynRead
 {
     fn exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> bool { self.try_exist_unresolved(path).is_ok_and(|exist| exist) }
-    fn try_exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool>;
+    fn try_exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { self.dyn_try_exist_unresolved(path.as_ref()) }
 
-    fn read_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>>;
-    fn read_dir_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>>;
+    fn read_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> { self.dyn_read_bytes_unresolved(path.as_ref()) }
+    fn read_dir_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_read_dir_unresolved(path.as_ref()) }
 
     fn exist<P: AsRef<Path>>(&mut self, path: P) -> bool { self.try_exist(path).is_ok_and(|exist| exist) }
     fn try_exist<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool>
@@ -90,20 +91,20 @@ pub trait IoRead
         self.try_exist_unresolved(path)
     }
 
-    fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType>;
+    fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_unresolved(path.as_ref()) }
     fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { let path = self.resolve_path(path)?; self.file_type_unresolved(path) }
 
     /// Given a path to a file, return all occurence of the file on the disk with the same name, regardless of the extension.
     /// If the path already have an extension, return it.
-    fn resolve_paths<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>>;
+    fn resolve_paths<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_resolve_paths(path.as_ref()) }
     /// Resolve incomplete file extension by finding the matching file on disk.
     /// Returns an error if multiple files with the same stem exist or if the path is not valid.
     /// If no file exist with the same name, return Ok(path).
-    fn resolve_path<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf>;
+    fn resolve_path<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_resolve_path(path.as_ref()) }
 
     /// Canonicalizes the path like `std::fs::canonicalize`, but works even if the file doesn't exist.
     /// Returns an error when resolving above root (e.g., `/..`).
-    fn canonicalize<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf>;
+    fn canonicalize<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_canonicalize(path.as_ref()) }
 
     fn read_bytes<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>>
     {
@@ -116,44 +117,23 @@ pub trait IoRead
         self.read_dir_unresolved(path)
     }
 }
-impl<T> IoRead for T
-where
-    T: IoDynRead,
-{
-    fn try_exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { self.dyn_try_exist_unresolved(path.as_ref()) }
-    fn read_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> { self.dyn_read_bytes_unresolved(path.as_ref()) }
-    fn read_dir_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_read_dir_unresolved(path.as_ref()) }
+impl<T> FsRead for T where T: FsDynRead { }
+impl FsRead for dyn FsDynRead { }
+impl FsRead for dyn Fs { }
 
-    fn resolve_paths<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_resolve_paths(path.as_ref()) }
-    fn resolve_path<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_resolve_path(path.as_ref()) }
 
-    fn canonicalize<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_canonicalize(path.as_ref()) }
-    
-    fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_unresolved(path.as_ref()) }
-}
-/*
-impl IoRead for dyn IoDynRead
-{
-    fn try_exist_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { self.dyn_try_exist_unresolved(path.as_ref()) }
-    fn read_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> { self.dyn_read_bytes_unresolved(path.as_ref()) }
-    fn read_dir_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_read_dir_unresolved(path.as_ref()) }
+pub trait FsProvider : Fs + Default {}
+impl<F> FsProvider for F where F: Fs + Default {}
 
-    fn resolve_paths<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<PathBuf>> { self.dyn_resolve_paths(path.as_ref()) }
-    fn resolve_path<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_resolve_path(path.as_ref()) }
+pub trait Fs : FsDynWrite + FsDynRead {}
+impl<F> Fs for F where F: FsDynWrite + FsDynRead {}
 
-    fn canonicalize<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { self.dyn_canonicalize(path.as_ref()) }
-    
-    fn file_type_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_unresolved(path.as_ref()) }
-}*/
 
-pub trait IoProvider : IoWrite + IoRead + Default {}
-impl<F> IoProvider for F where F: IoWrite + IoRead + Default {}
-
-pub trait IoWrite: IoRead + IoDynWrite
+pub trait FsWrite: FsRead + FsDynWrite
 {
     /// Write the byte at a file.
     /// If the file or the directory don't exist, create it.
-    fn write_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult;
+    fn write_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult { self.dyn_write_bytes_unresolved(path.as_ref(), value) }
 
     /// Write the byte at a file.
     /// If the file or the directory don't exist, create it.
@@ -166,10 +146,10 @@ pub trait IoWrite: IoRead + IoDynWrite
 
     /// Create recursively all dir in the path.
     /// If any element is a file on the way, delete it.
-    fn create_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult;
+    fn create_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult { self.dyn_create_dir(path.as_ref()) }
     
     /// Remove any file or folder recursively
-    fn remove_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult;
+    fn remove_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult { self.dyn_remove_unresolved(path.as_ref()) }
     /// Remove any file or folder recursively
     fn remove<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { let path = self.resolve_path(path)?; self.remove_unresolved(&path)?; Ok(path) }
 
@@ -191,12 +171,5 @@ pub trait IoWrite: IoRead + IoDynWrite
         Ok(to)
     }
 }
-impl<T> IoWrite for T
-where
-    T: IoRead + IoDynWrite,
-{
-    fn write_bytes_unresolved<P: AsRef<Path>>(&mut self, path: P, value: &[u8]) -> IoResult { self.dyn_write_bytes_unresolved(path.as_ref(), value) }
-
-    fn create_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult { self.dyn_create_dir(path.as_ref()) }
-    fn remove_unresolved<P: AsRef<Path>>(&mut self, path: P) -> IoResult { self.dyn_remove_unresolved(path.as_ref()) }
-}
+impl<T> FsWrite for T where T: Fs {}
+impl FsWrite for dyn Fs {}

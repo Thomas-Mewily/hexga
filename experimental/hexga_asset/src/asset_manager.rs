@@ -34,17 +34,19 @@ where
 }
     */
 
+/*
 pub struct AssetData<T, IO>
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     data: FileDataOf<T, IO>
 }
+*/
 
 pub struct Asset<T,IO>
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     inner: Arc<RwLock<AssetData<T,IO>>>
@@ -53,7 +55,7 @@ pub struct Asset<T,IO>
 
 pub struct AssetWeak<T,IO>
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     inner: ArcWeak<RwLock<AssetData<T,IO>>>

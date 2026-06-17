@@ -4,7 +4,7 @@ use super::*;
 #[derive(Debug, Default)]
 pub struct Io;
 
-impl IoDynRead for Io
+impl FsDynRead for Io
 {
     fn dyn_try_exist_unresolved(&mut self, path: &Path) -> IoResult<bool> 
     { 
@@ -98,7 +98,7 @@ impl IoDynRead for Io
         std::fs::rename(from, to)
     }
 }
-impl IoDynWrite for Io
+impl FsDynWrite for Io
 {
     fn dyn_write_bytes_unresolved(&mut self, path: &Path, value: &[u8]) -> IoResult
     {

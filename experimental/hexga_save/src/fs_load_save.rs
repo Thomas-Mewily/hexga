@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait IoLoad : IoRead
+pub trait FsLoad : FsRead
 {
     /// Read the file content and load a decode it using the provided extension.
     fn load_unresolved<T, P>(&mut self, path: P) -> IoResult<T> 
@@ -37,13 +37,13 @@ pub trait IoLoad : IoRead
 }
 
 
-impl<I> IoLoad for I
+impl<I> FsLoad for I
 where
-    I: IoRead,
+    I: FsRead,
 {
 }
 
-pub trait IoSave: IoWrite + IoLoad
+pub trait FsSave: FsWrite + FsLoad
 {
     /// Encode the value using the provided extension and write it to a file.
     fn save_unresolved<P, T>(&mut self, path: P, value: &T) -> IoResult
@@ -132,7 +132,7 @@ pub trait IoSave: IoWrite + IoLoad
         self.load_or_create_unresolved(path, || Default::default())
     }
 }
-impl<I> IoSave for I
+impl<I> FsSave for I
 where
-    I: IoWrite,
+    I: FsWrite,
 {}

@@ -3,14 +3,14 @@ use super::*;
 #[derive(Clone)]
 pub struct AssetData<T, IO=Io> // A:AutoSave>
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     file: FileDataOf<T,IO>
 }
 
 impl<T,IO> std::hash::Hash for AssetData<T,IO> where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -19,7 +19,7 @@ impl<T,IO> std::hash::Hash for AssetData<T,IO> where
 }
 
 impl<T,IO> Ord for AssetData<T,IO> where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
@@ -28,7 +28,7 @@ impl<T,IO> Ord for AssetData<T,IO> where
 }
 impl<T,IO> PartialOrd for AssetData<T,IO> 
 where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
@@ -37,12 +37,12 @@ where
 }
 
 impl<T,IO> Eq for AssetData<T,IO> where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {}
 impl<T,IO> PartialEq for AssetData<T,IO> 
 where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {
     fn eq(&self, other: &Self) -> bool {
@@ -52,7 +52,7 @@ where
 
 impl<T,IO> Debug for AssetData<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save + Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
@@ -62,7 +62,7 @@ impl<T,IO> Debug for AssetData<T,IO>
 
 impl<T,IO> Display for AssetData<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save + Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {

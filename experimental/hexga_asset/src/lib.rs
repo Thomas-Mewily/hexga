@@ -11,12 +11,13 @@ pub use reload::*;
 mod file;
 pub use file::*;
 
+/*
 mod asset_manager;
 pub use asset_manager::*;
 
 mod asset;
 pub use asset::*;
-
+*/
 
 pub mod prelude
 {

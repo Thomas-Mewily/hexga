@@ -5,7 +5,7 @@ pub type FileData<T> = FileDataOf<T>;
 #[derive(Clone)]
 pub struct FileDataOf<T, IO=Io> // A:AutoSave>
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     path: PathBuf,
@@ -14,7 +14,7 @@ pub struct FileDataOf<T, IO=Io> // A:AutoSave>
 }
 
 impl<T,IO> std::hash::Hash for FileDataOf<T,IO> where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -23,7 +23,7 @@ impl<T,IO> std::hash::Hash for FileDataOf<T,IO> where
 }
 
 impl<T,IO> Ord for FileDataOf<T,IO> where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
@@ -32,7 +32,7 @@ impl<T,IO> Ord for FileDataOf<T,IO> where
 }
 impl<T,IO> PartialOrd for FileDataOf<T,IO> 
 where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
@@ -41,12 +41,12 @@ where
 }
 
 impl<T,IO> Eq for FileDataOf<T,IO> where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {}
 impl<T,IO> PartialEq for FileDataOf<T,IO> 
 where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save 
 {
     fn eq(&self, other: &Self) -> bool {
@@ -56,7 +56,7 @@ where
 
 impl<T,IO> Debug for FileDataOf<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save + Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
@@ -66,7 +66,7 @@ impl<T,IO> Debug for FileDataOf<T,IO>
 
 impl<T,IO> Display for FileDataOf<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save + Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
@@ -76,7 +76,7 @@ impl<T,IO> Display for FileDataOf<T,IO>
 
 impl<T,IO> Deref for FileDataOf<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     type Target=Dirty<T>;
@@ -86,7 +86,7 @@ impl<T,IO> Deref for FileDataOf<T,IO>
 }
 impl<T,IO> DerefMut for FileDataOf<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
@@ -96,7 +96,7 @@ impl<T,IO> DerefMut for FileDataOf<T,IO>
 
 impl<T,IO> FileDataOf<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     pub fn load<P: AsRef<Path>>(path: P) -> IoResult<FileDataOf<T,IO>>
@@ -198,7 +198,7 @@ impl<T,IO> FileDataOf<T,IO>
 
 impl<T,IO> Reload for FileDataOf<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     type Ok = ();
@@ -216,7 +216,7 @@ impl<T,IO> Reload for FileDataOf<T,IO>
 
 impl<T,IO> Drop for FileDataOf<T,IO> 
     where 
-    IO: IoProvider,
+    IO: FsProvider,
     T: Load + Save
 {
     fn drop(&mut self) {
