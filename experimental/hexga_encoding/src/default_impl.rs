@@ -1,3 +1,4 @@
+use std::borrow::Cow::Owned;
 use std::cell::{Cell, RefCell};
 use std::cmp::Reverse;
 // do delegation on Serde serialize https://docs.rs/serde/latest/serde/trait.Serialize.html#impl-Serialize-for-str
@@ -21,11 +22,11 @@ macro_rules! impl_load_and_save {
         ),* $(,)?
     ) => {
         $(
-            impl$(<$( $generic: Save ),+>)? SaveExtension for $name$(<$( $generic ),+>)?
+            impl$(<$( $generic: Save ),+>)? Save for $name$(<$( $generic ),+>)?
             {
             }
 
-            impl$(<$( $generic: Load ),+>)? LoadExtension for $name$(<$( $generic ),+>)?
+            impl$(<$( $generic: Load ),+>)? Load for $name$(<$( $generic ),+>)?
             {
             }
         )*
@@ -49,67 +50,67 @@ impl_load_and_save!(
     Vec<T>, LinkedList<T>, VecDeque<T>,
 );
 
-impl<K, V, S> SaveExtension for HashMap<K, V, S>
+impl<K, V, S> Save for HashMap<K, V, S>
 where
-    K: SaveExtension + Eq + Hash,
-    V: SaveExtension,
+    K: Save + Eq + Hash,
+    V: Save,
     S: BuildHasher + Default,
 {
 }
-impl<K, V, S> LoadExtension for HashMap<K, V, S>
+impl<K, V, S> Load for HashMap<K, V, S>
 where
-    K: LoadExtension + Eq + Hash,
-    V: LoadExtension,
-    S: BuildHasher + Default,
-{
-}
-
-impl<K, S> SaveExtension for HashSet<K, S>
-where
-    K: SaveExtension + Eq + Hash,
-    S: BuildHasher + Default,
-{
-}
-impl<K, S> LoadExtension for HashSet<K, S>
-where
-    K: LoadExtension + Eq + Hash,
+    K: Load + Eq + Hash,
+    V: Load,
     S: BuildHasher + Default,
 {
 }
 
-impl<K, V> SaveExtension for BTreeMap<K, V>
+impl<K, S> Save for HashSet<K, S>
 where
-    K: SaveExtension + Ord,
-    V: SaveExtension,
+    K: Save + Eq + Hash,
+    S: BuildHasher + Default,
 {
 }
-impl<K, V> LoadExtension for BTreeMap<K, V>
+impl<K, S> Load for HashSet<K, S>
 where
-    K: LoadExtension + Ord,
-    V: LoadExtension,
+    K: Load + Eq + Hash,
+    S: BuildHasher + Default,
 {
 }
 
-impl<K> SaveExtension for BTreeSet<K> where K: SaveExtension + Ord {}
-impl<K> LoadExtension for BTreeSet<K> where K: LoadExtension + Ord {}
+impl<K, V> Save for BTreeMap<K, V>
+where
+    K: Save + Ord,
+    V: Save,
+{
+}
+impl<K, V> Load for BTreeMap<K, V>
+where
+    K: Load + Ord,
+    V: Load,
+{
+}
 
-impl<T> SaveExtension for BinaryHeap<T> where T: SaveExtension + Ord {}
-impl<T> LoadExtension for BinaryHeap<T> where T: LoadExtension + Ord {}
+impl<K> Save for BTreeSet<K> where K: Save + Ord {}
+impl<K> Load for BTreeSet<K> where K: Load + Ord {}
 
-impl<T> SaveExtension for &[T] where T: SaveExtension {}
+impl<T> Save for BinaryHeap<T> where T: Save + Ord {}
+impl<T> Load for BinaryHeap<T> where T: Load + Ord {}
 
-impl SaveExtension for String
+impl<T> Save for &[T] where T: Save {}
+
+impl Save for String
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["txt", "md", "cvs"].into_iter() }
 
-    fn save_to_writer_with_custom_extension<W>(&self, writer: W, extension: Option<&extension>) -> EncodeResult
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
     {
         self.as_str().save_to_writer_with_custom_extension(writer, extension)
     }
 }
-impl LoadExtension for String
+impl Load for String
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { Self::save_custom_extensions() }
 
@@ -128,24 +129,28 @@ impl LoadExtension for String
         }
     }
 }
-impl<'a> SaveExtension for &'a str
+impl<'a> Save for &'a str
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { String::save_custom_extensions() }
 
-    fn save_to_writer_with_custom_extension<W>(&self, mut writer: W, _extension: Option<&extension>) -> EncodeResult
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, mut writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
     {
         writer.write(self.as_bytes())?;
-        Ok(())
+        match extension
+        {
+            Some(ex) => Ok(DeducedExtension::Borrowed(ex)),
+            None => Ok(Owned("txt".to_owned())),
+        }
     }
 }
 
 #[cfg(feature = "serde_rc")]
 impl_load_and_save!(Rc<T>, RcWeak<T>, Arc<T>, ArcWeak<T>,);
 
-impl<T> SaveExtension for Cell<T> where T: SaveExtension + Copy {}
-impl<T> LoadExtension for Cell<T> where T: LoadExtension + Copy {}
+impl<T> Save for Cell<T> where T: Save + Copy {}
+impl<T> Load for Cell<T> where T: Load + Copy {}
 
 // https://docs.rs/serde/latest/serde/trait.Serialize.html#impl-Serialize-for-str
 impl_load_and_save!(
@@ -166,12 +171,12 @@ impl_load_and_save!(
     RwLock<T>,
 );
 
-impl<T: SaveExtension> SaveExtension for Saturating<T> {}
+impl<T: Save> Save for Saturating<T> {}
 
-impl<T: LoadExtension> LoadExtension for Saturating<T> where for<'de> Saturating<T>: CfgDeserialize<'de> {}
+impl<T: Load> Load for Saturating<T> where for<'de> Saturating<T>: CfgDeserialize<'de> {}
 
-impl<T, const N: usize> SaveExtension for [T; N] where [T; N]: CfgSerialize {}
-impl<T, const N: usize> LoadExtension for [T; N] where Self: for<'de> CfgDeserialize<'de> {}
+impl<T, const N: usize> Save for [T; N] where [T; N]: CfgSerialize {}
+impl<T, const N: usize> Load for [T; N] where Self: for<'de> CfgDeserialize<'de> {}
 
 map_on_tuple!(
     (
@@ -181,9 +186,9 @@ map_on_tuple!(
     ) => {
         $(
             #[cfg_attr(docsrs, doc(fake_variadic))]
-            impl<$( $typ: SaveExtension ),+> SaveExtension for ( $( $typ ),+ ,) { }
+            impl<$( $typ: Save ),+> Save for ( $( $typ ),+ ,) { }
             #[cfg_attr(docsrs, doc(fake_variadic))]
-            impl<$( $typ: LoadExtension ),+> LoadExtension for ( $( $typ ),+ ,) { }
+            impl<$( $typ: Load ),+> Load for ( $( $typ ),+ ,) { }
         )*
     };
 );

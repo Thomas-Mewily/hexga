@@ -5,12 +5,23 @@ pub(crate) mod prelude
     pub use super::{Load, LoadExtension, LoadFrom};
 }
 
-pub trait LoadExtension
+pub trait Load : Sized + for<'de> CfgDeserialize<'de>
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
+
+    fn load_from_fs_with_extension<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> EncodeResult<Self> 
+    where
+        Self: Sized
+    {
+        let path = path.as_ref();
+        let extension = path.extension().map(|v| v.to_str()).flatten();
+
+        let bytes = fs.read_bytes(path)?;
+        Self::load_from_bytes_with_extension(bytes.as_ref(), extension)
+    }
+
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
-        Self: Sized,
         R: Read,
     {
         let _ = (reader, extension);
@@ -18,18 +29,7 @@ pub trait LoadExtension
     }
 }
 
-pub trait LoadExtensionBytes: LoadExtension
-{
-    fn load_from_bytes_with_custom_extension(bytes: &[u8], extension: Option<&extension>) -> EncodeResult<Self>
-    where
-        Self: Sized,
-    {
-        Self::load_from_reader_with_custom_extension(bytes, extension)
-    }
-}
-impl<T> LoadExtensionBytes for T where T: LoadExtension {}
-
-pub trait Load: LoadExtension + for<'de> CfgDeserialize<'de>
+pub trait LoadExtension: Load
 {
     fn load_extensions() -> impl Iterator<Item = &'static extension>
     {
@@ -41,14 +41,29 @@ pub trait Load: LoadExtension + for<'de> CfgDeserialize<'de>
     }
     fn load_prefered_extension() -> Option<&'static extension> { Self::load_custom_extensions().next() }
 
-    fn load_from_bytes(bytes: &[u8], extension: Option<&extension>) -> EncodeResult<Self>
+    fn load_from_bytes(bytes: &[u8]) -> EncodeResult<Self>
     where
         Self: Sized,
     {
-        Self::load_from_reader(bytes, extension)
+        Self::load_from_reader_with_extension(bytes, None)
     }
 
-    fn load_from_reader<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    fn load_from_bytes_with_extension(bytes: &[u8], extension: Option<&extension>) -> EncodeResult<Self>
+    where
+        Self: Sized,
+    {
+        Self::load_from_reader_with_extension(bytes, extension)
+    }
+
+    fn load_from_reader<R>(reader: R) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: Read
+    {
+        Self::load_from_reader_with_extension(reader, None)
+    }
+
+    fn load_from_reader_with_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: Read,
@@ -57,33 +72,40 @@ pub trait Load: LoadExtension + for<'de> CfgDeserialize<'de>
         {
             return Self::load_from_reader_with_custom_extension(reader, extension);
         }
+        if extension.is_none()
+        {
+            return Self::load_from_reader_with_custom_extension(reader, Self::load_prefered_extension());
+        }
 
         #[cfg(feature = "serde")]
-        {
-            let format = match extension
+        {   
+            if let Some(ex) = extension
             {
-                Some(ex) => AnyFormat::try_from(ex).ok(),
-                None => None,
+                return AnyFormat::try_from(ex).unwrap_or_default().from_reader(reader);
             }
-            .unwrap_or_default();
-            return format.from_reader(reader);
         }
 
         #[allow(unreachable_code)]
-        Err(EncodeError::load_unsupported_extension::<Self>(extension.map(Into::into)))
+        return Err(EncodeError::load_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into())))
     }
 }
-impl<T> Load for T where T: LoadExtension + for<'de> CfgDeserialize<'de> + ?Sized {}
+impl<T> LoadExtension for T where T: Load {}
 
 pub trait LoadFrom: From<Self::Source>
 {
-    type Source: LoadExtension + Into<Self>;
+    type Source: Load + Into<Self>;
 }
-impl<S> LoadExtension for S
+impl<S> Load for S
 where
-    S: LoadFrom,
+    S: LoadFrom + for<'de> CfgDeserialize<'de>,
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Source::load_custom_extensions() }
+    fn load_from_fs_with_extension<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> EncodeResult<Self> 
+    where
+        Self: Sized
+    {
+        S::Source::load_from_fs_with_extension(fs, path).map(|v| v.into())
+    }
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,

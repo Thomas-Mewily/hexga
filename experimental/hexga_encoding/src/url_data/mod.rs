@@ -198,7 +198,7 @@ impl<'a> MediaType for &'a str
     fn media_type() -> &'static str { String::media_type() }
 }
 
-pub trait ToUrl: MediaType + SaveExtension
+pub trait ToUrl: MediaType + Save
 {
     /// Converts the encoded image into a Data URL (RFC 2397).
     ///
@@ -213,7 +213,7 @@ pub trait ToUrl: MediaType + SaveExtension
     /// Returns an error if the image cannot be encoded for the given extension.
     fn to_url(&self, extension: &extension) -> EncodeResult<String>
     {
-        let (bytes, _deduced_extension) = self.save_to_bytes(Some(extension))?;
+        let (bytes, _deduced_extension) = self.save_to_bytes_with_extension(Some(extension))?;
         let media = Self::media_type();
         let url = bytes.to_base64_in(format!("data:{media}/{extension};base64,"));
         Ok(url)
@@ -227,17 +227,17 @@ pub trait ToUrl: MediaType + SaveExtension
         let media = Self::media_type();
         let mut data = Vec::with_capacity(1024);
         write!(&mut data, "bin_data:{media}/{extension};base64,").map_err(|e| EncodeError::from(e))?;
-        let (data, _deduced_extension) = self.save_to_bytes_in(data, Some(extension))?;
+        let (data, _deduced_extension) = self.save_to_bytes_with_extension_in(data, Some(extension))?;
         Ok(data)
     }
 }
-impl<T> ToUrl for T where T: MediaType + SaveExtension {}
+impl<T> ToUrl for T where T: MediaType + Save {}
 
 /// Trait for types that can be **loaded from URL-like data** or raw bytes.
 ///
 /// This trait extends [`Load`] and provides methods to create an the value
 /// from either a **Data URL (RFC 2397)**, a **binary URL**, or raw bytes.
-pub trait FromUrl: LoadExtension
+pub trait FromUrl: Load
 {
     /// Loads an instance from a standard **Data URL (RFC 2397)** string.
     ///
@@ -252,7 +252,7 @@ pub trait FromUrl: LoadExtension
     {
         let url = UrlData::try_from(url)?;
         let bytes = Vec::<u8>::from_base64(url.data)?;
-        Self::load_from_bytes_with_custom_extension(&bytes, Some(url.extension))
+        Self::load_from_bytes_with_extension(&bytes, Some(url.extension))
     }
 
     /// Loads an instance from a **binary URL** (custom `bin_data:` scheme).
@@ -267,7 +267,7 @@ pub trait FromUrl: LoadExtension
         Self: Sized,
     {
         let url = BinUrlData::try_from(url)?;
-        Self::load_from_bytes_with_custom_extension(&url.data, Some(url.extension))
+        Self::load_from_bytes_with_extension(&url.data, Some(url.extension))
     }
 
     /// Loads an instance from a **binary URL** (custom `bin_data:` scheme), falling back to raw bytes if parsing fails.
@@ -281,8 +281,8 @@ pub trait FromUrl: LoadExtension
         match Self::from_bin_url(bytes)
         {
             Ok(o) => Ok(o),
-            Err(_) => Self::load_from_bytes_with_custom_extension(bytes, Some(extension)),
+            Err(_) => Self::load_from_bytes_with_extension(bytes, Some(extension)),
         }
     }
 }
-impl<T> FromUrl for T where T: LoadExtension {}
+impl<T> FromUrl for T where T: Load {}

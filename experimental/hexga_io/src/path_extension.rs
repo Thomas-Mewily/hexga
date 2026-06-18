@@ -1,4 +1,35 @@
+use hexga_core::io::IoResult;
+
 use super::*;
+
+
+pub trait GetPath
+{
+    fn get_path(&self) -> &Path;
+}
+impl GetPath for Path
+{
+    fn get_path(&self) -> &Path { self }
+}
+impl<P> GetPath for P where P: AsRef<Path>
+{
+    fn get_path(&self) -> &Path {
+        self.as_ref()
+    }
+}
+
+
+pub trait SetPath
+{
+    fn set_path<P : AsRef<Path>>(&mut self, path: P) -> Result<(), P>;
+}
+impl SetPath for PathBuf
+{
+    fn set_path<P : AsRef<Path>>(&mut self, path: P) -> Result<(), P> {
+        *self = path.as_ref().to_owned();
+        Ok(())
+    }
+}
 
 /*
 pub trait PathExtension

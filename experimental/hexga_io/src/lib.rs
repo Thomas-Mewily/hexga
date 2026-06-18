@@ -18,10 +18,10 @@ pub use global_io::*;
 /*
 mod path_wrapper;
 pub use path_wrapper::*;
+*/
 
 mod path_extension;
 pub use path_extension::*;
-*/
 
 
 mod result;
@@ -35,5 +35,10 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{FsDynRead, FsDynWrite, FsRead, FsWrite, FsProvider, IoErrorExt};
+    pub use super::{
+        FsDynRead, FsDynWrite, 
+        FsRead, FsWrite, Fs, 
+        FsProvider, 
+        IoErrorExt
+    };
 }

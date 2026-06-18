@@ -6,19 +6,19 @@ pub struct Io;
 
 impl FsDynRead for Io
 {
-    fn dyn_try_exist_unresolved(&mut self, path: &Path) -> IoResult<bool> 
+    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool> 
     { 
         //let path : &Path = path.into(); 
         Ok(path.exists()) 
     }
 
-    fn dyn_read_bytes_unresolved(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>
+    fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>
     {
         let bytes = std::fs::read(path)?;
         Ok(Cow::Owned(bytes))
     }
 
-    fn dyn_read_dir_unresolved(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>
+    fn dyn_read_dir_at(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>
     {
         let entries = std::fs::read_dir(path)?;
         let paths = entries.filter_map(|entry| entry.ok()).map(|entry| entry.path().into()).collect();
@@ -85,7 +85,7 @@ impl FsDynRead for Io
         Ok(resolved)
     }
     
-    fn dyn_file_type_unresolved(&mut self, path: &Path) -> IoResult<FileType> {
+    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType> {
         //let path : &Path = path.into();
         let file_type = path.metadata()?.file_type();
         if file_type.is_file() { return Ok(FileType::File); }
@@ -94,13 +94,13 @@ impl FsDynRead for Io
         Err(IoError::new_with_path(IoErrorKind::InvalidFilename, "Can't gess the file type", path))
     }
     
-    fn dyn_rename_unresolved(&mut self, from: &Path, to: &Path) -> IoResult {
+    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult {
         std::fs::rename(from, to)
     }
 }
 impl FsDynWrite for Io
 {
-    fn dyn_write_bytes_unresolved(&mut self, path: &Path, value: &[u8]) -> IoResult
+    fn dyn_write_bytes_at(&mut self, path: &Path, value: &[u8]) -> IoResult
     {
         if let Some(parent) = path.parent() {
             if !parent.exists() {
@@ -123,7 +123,7 @@ impl FsDynWrite for Io
         Ok(())
     }
     
-    fn dyn_remove_unresolved(&mut self, path: &Path) -> IoResult {
+    fn dyn_remove_at(&mut self, path: &Path) -> IoResult {
         if path.is_dir() 
         {
             std::fs::remove_dir_all(path)?;

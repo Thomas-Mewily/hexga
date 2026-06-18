@@ -39,7 +39,7 @@ impl FormatMarkup
 
     pub fn encode<T>(self, value: &T) -> EncodeResult<String>
     where
-        T: Serialize,
+        T: Serialize + ?Sized,
     {
         match self
         {
@@ -51,7 +51,7 @@ impl FormatMarkup
 
     pub fn encode_with_writer<T, W>(self, value: &T, writer: W) -> EncodeResult
     where
-        T: Serialize,
+        T: Serialize + ?Sized,
         W: Write,
     {
         match self
@@ -140,7 +140,7 @@ impl FormatSpecial
 
     pub fn encode<T>(self, value: &T) -> EncodeResult<Vec<u8>>
     where
-        T: Serialize,
+        T: Serialize + ?Sized,
     {
         match self
         {
@@ -161,7 +161,7 @@ impl FormatSpecial
 
     pub fn encode_with_writer<T, W>(self, value: &T, writer: W) -> EncodeResult
     where
-        T: Serialize,
+        T: Serialize + ?Sized,
         W: Write,
     {
         match self
@@ -262,7 +262,7 @@ impl AnyFormat
 
     pub fn encode<T>(self, value: &T) -> EncodeResult<Vec<u8>>
     where
-        T: Serialize,
+        T: Serialize + ?Sized,
     {
         match self
         {
@@ -273,7 +273,7 @@ impl AnyFormat
 
     pub fn encode_with_writer<T, W>(self, value: &T, writer: W) -> EncodeResult
     where
-        T: Serialize,
+        T: Serialize + ?Sized,
         W: Write,
     {
         match self

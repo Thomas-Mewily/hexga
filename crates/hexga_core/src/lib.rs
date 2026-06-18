@@ -171,7 +171,7 @@ pub mod io
     // Functions
     pub use std::io::{copy, empty, pipe, read_to_string, repeat, sink, stderr, stdin, stdout};
     // Type Alias
-    pub type IoResult<T> = Result<T, Error>;
+    pub type IoResult<T=()> = Result<T, Error>;
 }
 //re_export_mod_from_std_or_core!(io);
 

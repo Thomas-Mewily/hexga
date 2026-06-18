@@ -9,6 +9,7 @@ use std::{
     str::Utf8Error,
     string::FromUtf8Error,
 };
+use hexga_io::prelude::*;
 
 #[cfg(feature = "serde")]
 use serde::{

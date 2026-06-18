@@ -35,7 +35,7 @@ hexga_encoding_derive  = { path = "./experimental/hexga_encoding_derive",version
 hexga_encoding         = { path = "./experimental/hexga_encoding",       version = "0.0.11-beta.53", default-features = false }
 
 hexga_io               = { path = "./experimental/hexga_io",             version = "0.0.11-beta.53", default-features = false }
-hexga_save             = { path = "./experimental/hexga_save",           version = "0.0.11-beta.53", default-features = false }
+#hexga_save             = { path = "./experimental/hexga_save",           version = "0.0.11-beta.53", default-features = false }
 hexga_asset            = { path = "./experimental/hexga_asset",          version = "0.0.11-beta.53", default-features = false }
 
 hexga_bitflags         = { path = "./crates/hexga_bitflags",             version = "0.0.11-beta.53", default-features = false }

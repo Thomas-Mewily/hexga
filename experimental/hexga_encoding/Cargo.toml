@@ -20,15 +20,18 @@ serde = ["dep:serde",
     "dep:serde_json",
     "dep:serde-xml-rs",
     "dep:bincode",
-    "hexga_core/serde"
+    
+    "hexga_core/serde",
+    "hexga_io/serde",
 ]
 
-serde_rc = ["serde/rc"]
+serde_rc = ["serde/rc", "hexga_io/serde_rc"]
 derive = ["dep:hexga_encoding_derive"]
 
 
 [dependencies]
 hexga_core = { workspace = true, features = ["std"] }
+hexga_io.workspace = true
 
 serde = { version = "1.0.0", optional = true }
 hexga_encoding_derive = { workspace = true, optional = true }

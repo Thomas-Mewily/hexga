@@ -35,7 +35,7 @@ pub enum EncodeError
     },
     Custom(Reason),
     Base64(Base64Error),
-    Std(std::io::ErrorKind),
+    Std(IoErrorKind),
 }
 impl From<FromUtf8Error> for EncodeError
 {
@@ -55,13 +55,13 @@ impl From<Base64Error> for EncodeError
 {
     fn from(value: Base64Error) -> Self { Self::Base64(value) }
 }
-impl From<std::io::Error> for EncodeError
+impl From<IoError> for EncodeError
 {
-    fn from(value: std::io::Error) -> Self { value.kind().into() }
+    fn from(value: IoError) -> Self { value.kind().into() }
 }
-impl From<std::io::ErrorKind> for EncodeError
+impl From<IoErrorKind> for EncodeError
 {
-    fn from(kind: std::io::ErrorKind) -> Self { Self::Std(kind) }
+    fn from(kind: IoErrorKind) -> Self { Self::Std(kind) }
 }
 impl From<std::fmt::Error> for EncodeError
 {
@@ -120,7 +120,7 @@ impl EncodeError
 {
     pub fn utf8_error(valid_up_to: usize, error_len: Option<usize>) -> Self { Self::Utf8Error { valid_up_to, error_len } }
 
-    pub fn save_unsupported_extension_with_name<T: SaveExtension + ?Sized>(got: impl Into<Option<CowExtensionStatic>>, _name: impl Into<String>) -> Self
+    pub fn save_unsupported_extension_with_name<T: Save + ?Sized>(got: impl Into<Option<CowExtensionStatic>>, _name: impl Into<String>) -> Self
     {
         Self::UnsupportedExtension {
             //name: name.into(),
@@ -128,12 +128,12 @@ impl EncodeError
             expected: T::save_extensions().map(|ext| ext.into()).collect(),
         }
     }
-    pub fn save_unsupported_extension<T: SaveExtension + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
+    pub fn save_unsupported_extension<T: Save + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
     {
         Self::save_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>())
     }
 
-    pub fn load_unsupported_extension_with_name<T: LoadExtension + ?Sized>(got: impl Into<Option<CowExtensionStatic>>, _name: impl Into<String>) -> Self
+    pub fn load_unsupported_extension_with_name<T: Load + ?Sized>(got: impl Into<Option<CowExtensionStatic>>, _name: impl Into<String>) -> Self
     {
         Self::UnsupportedExtension {
             //name: name.into(),
@@ -141,7 +141,7 @@ impl EncodeError
             expected: T::load_custom_extensions().map(|ext| ext.into()).collect(),
         }
     }
-    pub fn load_unsupported_extension<T: LoadExtension + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
+    pub fn load_unsupported_extension<T: Load + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
     {
         Self::load_unsupported_extension_with_name::<T>(got, std::any::type_name::<T>())
     }
