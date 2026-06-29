@@ -15,9 +15,16 @@ pub struct FileDataOf<T, FS=Io> // A:AutoSave>
     phantom: PhantomData<FS>,
 }
 
-
+pub trait FsProvider
+{
+    type Fs : FsWrite;
+}
+impl FsProvider for Io
+{
+    type Fs = Io;
+}
 pub trait FsLoad<T,FS>
-    where FS: FsProvider
+    where FS: FsProvider + FsLoad<T,FS>
 {
     type Output;
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output;
@@ -25,16 +32,15 @@ pub trait FsLoad<T,FS>
     fn load_unresolved<P: AsRef<Path>>(path: P) -> IoResult<Self::Output>
     {
         let path = path.as_ref();
-        let value = FS::provide_fs().read
-        //Ok(Self)
+        let value: T = FS::Fs::load_unresolved(path)?;
+        Ok(Self::from_path_and_value(Some(path.to_owned()), value))
     }
 
     fn load<P: AsRef<Path>>(path: P) -> IoResult<Self::Output>
     {
-        let mut io = FS::provide_fs();
-        let path = io.resolve_path(path)?;
-        let value = io.load_unresolved(&path)?;
-        Ok(Self{ path, value: Dirty::new(value), phantom: PhantomData })
+        let path = path.as_ref();
+        let value: T = FS::Fs::load(path)?;
+        Ok(Self::from_path_and_value(Some(path.to_owned()), value))
     }
 }
 
@@ -44,6 +50,10 @@ impl<T> FsLoad<T,Io> for Io where
     type Output=FileDataOf<T,Io>;
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output {
         FileDataOf::<T,Io>::from_path_and_value(path, value)
+    }
+
+    fn load<P: AsRef<Path>>(path: P) -> IoResult<Self::Output> {
+        T::load_from_fs(fs, path)
     }
 }
 

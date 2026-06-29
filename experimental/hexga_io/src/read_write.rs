@@ -122,22 +122,6 @@ impl FsRead for dyn FsDynRead { }
 impl FsRead for dyn Fs { }
 
 
-//pub trait FsProvider : Fs + Default {}
-//impl<F> FsProvider for F where F: Fs + Default {}
-
-pub trait FsProvider
-{
-    type Fs : Fs;
-    fn provide_fs() -> Self::Fs;
-}
-impl FsProvider for Io
-{
-    type Fs = Io;
-    fn provide_fs() -> Self::Fs {
-        Io
-    }
-}
-
 pub trait Fs : FsDynWrite + FsDynRead {}
 impl<F> Fs for F where F: FsDynWrite + FsDynRead {}
 
