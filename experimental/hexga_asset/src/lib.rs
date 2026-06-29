@@ -12,6 +12,9 @@ pub use reload::*;
 mod file;
 pub use file::*;
 
+mod load_save;
+pub use load_save::*;
+
 /*
 mod asset_manager;
 pub use asset_manager::*;
@@ -28,5 +31,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::Reload;
+    pub use super::{Reload, Persistant, PersistantValue, FsLoad};
 }

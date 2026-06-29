@@ -1,5 +1,6 @@
 use super::*;
 
+
 /// 🔥 Hot Reloading.
 pub trait Reload
 {
@@ -8,6 +9,13 @@ pub trait Reload
     fn try_reload(&mut self) -> Result<Self::Ok, Self::Error>;
     fn reload(&mut self) -> bool { self.try_reload().is_ok() }
 }
+
+/*
+pub trait PersistentSave
+{
+    fn save(&mut self) -> IoResult;
+}
+*/
 
 
 /*

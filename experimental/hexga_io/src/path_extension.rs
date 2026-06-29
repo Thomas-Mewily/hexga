@@ -89,33 +89,45 @@ impl<P> GetPath for P where P: AsRef<Path>
 
 pub trait SetPath
 {
-    fn set_path<P : AsRef<Path>>(&mut self, path: impl Into<Option<P>>) -> Result<(), Option<P>>;
+    /// Change the path without moving the old file.
+    fn set_path<P : AsRef<Path>>(&mut self, path: Option<P>) -> IoResult;
+
+    /// Change the path and move the old file.
+    /// Do not change the file path if the renaming failed.
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult;
 }
 impl SetPath for PathBuf
 {
-    fn set_path<P : AsRef<Path>>(&mut self, path: impl Into<Option<P>>) -> Result<(), Option<P>> {
-        match path.into()
+    fn set_path<P : AsRef<Path>>(&mut self, path: Option<P>) -> IoResult {
+        match path
         {
             Some(new_path) => { *self = new_path.as_ref().to_owned(); },
             None => {},
         }
         Ok(())
     }
+    
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult {
+        self.set_path(Some(to))
+    }
 }
 impl SetPath for String
 {
-    fn set_path<P: AsRef<Path>>(&mut self, path: impl Into<Option<P>>) -> Result<(), Option<P>> {
-        match path.into()
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult {
+        match path
         {
             Some(new_path) => {
                 *self = new_path.as_ref()
                     .to_str()
                     .map(|s| s.to_string())
-                    .ok_or_else(|| new_path)?;
+                    .ok_or_else(|| IoError::new(io::ErrorKind::InvalidFilename, "Path contains invalid UTF-8"))?;
             },
             None => {},
         }
         Ok(())
+    }
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult {
+        self.set_path(Some(to))
     }
 }
 

@@ -9,7 +9,7 @@ pub trait Load : Sized + for<'de> CfgDeserialize<'de>
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
 
-    fn load_from_fs_with_extension<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> EncodeResult<Self> 
+    fn load_from_fs<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> EncodeResult<Self> 
     where
         Self: Sized
     {
@@ -100,11 +100,11 @@ where
     S: LoadFrom + for<'de> CfgDeserialize<'de>,
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Source::load_custom_extensions() }
-    fn load_from_fs_with_extension<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> EncodeResult<Self> 
+    fn load_from_fs<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> EncodeResult<Self> 
     where
         Self: Sized
     {
-        S::Source::load_from_fs_with_extension(fs, path).map(|v| v.into())
+        S::Source::load_from_fs(fs, path).map(|v| v.into())
     }
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
