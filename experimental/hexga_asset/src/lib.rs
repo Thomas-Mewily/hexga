@@ -9,10 +9,10 @@ use hexga_core::prelude::*;
 mod reload;
 pub use reload::*;
 
-/*
 mod file;
 pub use file::*;
 
+/*
 mod asset_manager;
 pub use asset_manager::*;
 
@@ -22,7 +22,7 @@ pub use asset::*;
 
 pub mod prelude
 {
-    //pub use super::FileData;
+    pub use super::FileData;
     pub use super::traits::*;
 }
 

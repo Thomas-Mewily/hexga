@@ -24,11 +24,39 @@ pub trait SetDirty: IsDirty
 }
 
 /// A Dirty flag that is automatically marked as dirty when mutated (using [`DerefMut`])
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
+#[derive(Clone, Copy, Eq, Debug, Default)]
 pub struct Dirty<T>
 {
     value: T,
     used: bool,
+}
+impl<T> PartialEq for Dirty<T>
+    where T: PartialEq
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+impl<T> PartialOrd for Dirty<T>
+    where T: PartialOrd
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.value.partial_cmp(&other.value)
+    }
+}
+impl<T> Ord for Dirty<T>
+    where T: Ord
+{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.value.cmp(other)
+    }
+}
+impl<T> Hash for Dirty<T>
+    where T: Hash
+{
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.value.hash(state);
+    }
 }
 impl<T> From<T> for Dirty<T>
 {

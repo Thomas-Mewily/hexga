@@ -317,7 +317,8 @@ pub mod std_prelude
     pub use core::{
         convert::{AsMut, AsRef},
         ops::{Deref, DerefMut},
+        hash::{Hash, Hasher},
+        cmp::Ordering
     };
-
     re_export_items_from_std_or_core!(prelude);
 }

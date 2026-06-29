@@ -38,7 +38,9 @@ pub mod traits
     pub use super::{
         FsDynRead, FsDynWrite, 
         FsRead, FsWrite, Fs, 
-        FsProvider, 
-        IoErrorExt
+        FsProvider,
+        IoErrorExt,
+
+        GetPath, SetPath,
     };
 }

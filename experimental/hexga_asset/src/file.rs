@@ -3,94 +3,154 @@ use super::*;
 pub type FileData<T> = FileDataOf<T>;
 
 #[derive(Clone)]
-pub struct FileDataOf<T, IO=Io> // A:AutoSave>
+pub struct FileDataOf<T, FS=Io> // A:AutoSave>
     where 
-    IO: FsProvider,
+    FS: FsProvider,
     T: Load + Save
 {
-    path: PathBuf,
-    value: Dirty<T>,
-    phantom: PhantomData<IO>,
+    /// If no path, it's just a value
+    path: Option<PathBuf>,
+    // Always Some. Is only used for Self::into_value()
+    value: Option<Dirty<T>>,
+    phantom: PhantomData<FS>,
 }
 
-impl<T,IO> std::hash::Hash for FileDataOf<T,IO> where 
-    IO: FsProvider,
-    T: Load + Save 
+
+pub trait FsLoad<T,FS>
+    where FS: FsProvider
 {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.path.hash(state);
+    type Output;
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output;
+
+    fn load_unresolved<P: AsRef<Path>>(path: P) -> IoResult<Self::Output>
+    {
+        let path = path.as_ref();
+        let value = FS::provide_fs().read
+        //Ok(Self)
+    }
+
+    fn load<P: AsRef<Path>>(path: P) -> IoResult<Self::Output>
+    {
+        let mut io = FS::provide_fs();
+        let path = io.resolve_path(path)?;
+        let value = io.load_unresolved(&path)?;
+        Ok(Self{ path, value: Dirty::new(value), phantom: PhantomData })
     }
 }
 
-impl<T,IO> Ord for FileDataOf<T,IO> where 
-    IO: FsProvider,
+impl<T> FsLoad<T,Io> for Io where 
     T: Load + Save 
 {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.path.cmp(&other.path)
+    type Output=FileDataOf<T,Io>;
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output {
+        FileDataOf::<T,Io>::from_path_and_value(path, value)
     }
 }
-impl<T,IO> PartialOrd for FileDataOf<T,IO> 
+
+impl<T,FS> FsLoad<T,FS> for FileDataOf<T,FS> where 
+    FS: FsProvider,
+    T: Load + Save 
+{
+    type Output=Self;
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output {
+        Self{ path, value: Some(Dirty::new(value)), phantom: PhantomData }
+    }
+}
+
+impl<T,FS> FsProvider for FileDataOf<T,FS> where 
+    FS: FsProvider,
+    T: Load + Save 
+{
+    type Fs = FS::Fs;
+    fn provide_fs() -> Self::Fs {
+        FS::provide_fs()
+    }
+}
+
+impl<T,FS> Hash for FileDataOf<T,FS> where 
+    FS: FsProvider,
+    T: Load + Save + Hash
+{
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.get_path().hash(state);
+        self.value().hash(state);
+    }
+}
+
+impl<T,FS> Ord for FileDataOf<T,FS> where 
+    FS: FsProvider,
+    T: Load + Save + Ord
+{
+    fn cmp(&self, other: &Self) -> Ordering {
+        (self.get_path(), self.value()).cmp(&(other.get_path(), other.value()))
+    }
+}
+impl<T,FS> PartialOrd for FileDataOf<T,FS> 
 where 
-    IO: FsProvider,
-    T: Load + Save 
+    FS: FsProvider,
+    T: Load + Save + PartialOrd
 {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.path.partial_cmp(&other.path) 
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        (self.get_path(), self.value()).partial_cmp(&(other.get_path(), other.value()))
     }
 }
 
-impl<T,IO> Eq for FileDataOf<T,IO> where 
-    IO: FsProvider,
-    T: Load + Save 
+impl<T,FS> Eq for FileDataOf<T,FS> where 
+    FS: FsProvider,
+    T: Load + Save + Eq
 {}
-impl<T,IO> PartialEq for FileDataOf<T,IO> 
+impl<T,FS> PartialEq for FileDataOf<T,FS> 
 where 
-    IO: FsProvider,
-    T: Load + Save 
+    FS: FsProvider,
+    T: Load + Save + PartialEq
 {
     fn eq(&self, other: &Self) -> bool {
-        self.path == other.path
+        self.get_path() == other.get_path() && self.value() == other.value()
     }
 }
 
-impl<T,IO> Debug for FileDataOf<T,IO> 
+impl<T,FS> Debug for FileDataOf<T,FS> 
     where 
-    IO: FsProvider,
+    FS: FsProvider,
     T: Load + Save + Debug
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        f.debug_struct("File").field("path", &self.path).field("value", self.value()).finish()
+        f.debug_struct("File").field("path", &self.get_path()).field("value", self.value()).finish()
     }
 }
 
-impl<T,IO> Display for FileDataOf<T,IO> 
+impl<T,FS> Display for FileDataOf<T,FS> 
     where 
-    IO: FsProvider,
+    FS: FsProvider,
     T: Load + Save + Display
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        write!(f, "{} at {}", self.value(), self.path.display())
+        write!(f, "{}", self.value())?;
+        if let Some(path) = self.get_path()
+        {
+            write!(f, " at {}", path.display())?;
+        }
+        Ok(())
     }
 }
 
-impl<T,IO> Deref for FileDataOf<T,IO> 
+impl<T,FS> Deref for FileDataOf<T,FS> 
     where 
-    IO: FsProvider,
+    FS: FsProvider,
     T: Load + Save
 {
-    type Target=Dirty<T>;
+    type Target=T;
     fn deref(&self) -> &Self::Target {
-        &self.value
+        self.value.as_ref().unwrap().deref()
     }
 }
-impl<T,IO> DerefMut for FileDataOf<T,IO> 
+impl<T,FS> DerefMut for FileDataOf<T,FS> 
     where 
-    IO: FsProvider,
+    FS: FsProvider,
     T: Load + Save
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.value
+        self.value.as_mut().unwrap().deref_mut()
     }
 }
 
@@ -99,6 +159,7 @@ impl<T,IO> FileDataOf<T,IO>
     IO: FsProvider,
     T: Load + Save
 {
+    /*
     pub fn load<P: AsRef<Path>>(path: P) -> IoResult<FileDataOf<T,IO>>
     {
         let mut io = IO::default();
@@ -141,11 +202,13 @@ impl<T,IO> FileDataOf<T,IO>
         self.undirty();
         IO::default().save_unresolved(&self.path, self.value()) 
     }
-
+    */
+    
     pub fn value(&self) -> &T { self.deref() }
     pub fn value_mut(&mut self) -> &mut T { self.deref_mut() }
 
-    pub fn path(&self) -> &Path { &self.path }
+    /*
+    pub fn path(&self) -> Option<&Path> { self.path.map(|p| p.as_path()) }
 
     /// Change the path without moving the old file.
     pub fn set_path_unresolved<P: AsRef<Path>>(&mut self, path: P)
@@ -187,6 +250,7 @@ impl<T,IO> FileDataOf<T,IO>
         self.path = to;
         Ok(())
     }
+    */
 
     /*
     pub fn into_value_without_saving(self) -> T {
@@ -194,11 +258,51 @@ impl<T,IO> FileDataOf<T,IO>
         let result = value.into_value();
         result
     }*/
+
+    pub fn into_value_without_saving(mut self) -> T 
+    {
+        std::mem::take(&mut self.value).unwrap().into_value()
+    }
 }
 
+impl<T,FS> IsDirty for FileDataOf<T,FS> 
+    where 
+    FS: FsProvider,
+    T: Load + Save
+{
+    fn is_dirty(&self) -> bool {
+        self.value.as_ref().unwrap().is_dirty()
+    }
+}
+impl<T,FS> SetDirty for FileDataOf<T,FS> 
+    where 
+    FS: FsProvider,
+    T: Load + Save
+{
+    fn set_dirty(&mut self, used: bool) -> &mut Self {
+        self.value.as_mut().unwrap().set_dirty(used);
+        self
+    }
+}
+impl<T,FS> GetPath for FileDataOf<T,FS> 
+    where 
+    FS: FsProvider,
+    T: Load + Save
+{
+    fn get_path(&self) -> Option<&Path> {
+        match &self.path
+        {
+            Some(p) => Some(p.deref()),
+            None => None,
+        }
+    }
+}
+
+
+/*
 impl<T,IO> Reload for FileDataOf<T,IO> 
     where 
-    IO: FsProvider,
+    IO: Fs,
     T: Load + Save
 {
     type Ok = ();
@@ -213,14 +317,16 @@ impl<T,IO> Reload for FileDataOf<T,IO>
         }
     }
 }
+*/
 
-impl<T,IO> Drop for FileDataOf<T,IO> 
+impl<T,FS> Drop for FileDataOf<T,FS> 
     where 
-    IO: FsProvider,
+    FS: FsProvider,
     T: Load + Save
 {
     fn drop(&mut self) {
         // Todo: if saving fail, try to save the file somewhere else / in a recovery folder ?
-        let _ = self.save();
+        //let _ = self.save();
+        todo!()
     }
 }

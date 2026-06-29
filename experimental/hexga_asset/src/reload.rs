@@ -9,6 +9,7 @@ pub trait Reload
     fn reload(&mut self) -> bool { self.try_reload().is_ok() }
 }
 
+
 /*
 impl<T> HotReload for Asset<T>
 where
