@@ -6,6 +6,22 @@ pub trait RangeSampleExtension<I = usize>
     type Item;
     fn sample(self, nb_sample: I) -> Self::Output;
 }
+/*
+impl<U, P, I> RangeSampleExtension<I> for Range<U> where U: Unit<P>
+where
+    Range<U>: RangeSampleExtension<I, Item = T>,
+{
+    type Output = $crate::unit::WrappedIterator<$name<T>, T, <Range<T> as RangeSampleExtension<I>>::Output>;
+    type Item = $name<T>;
+
+    fn sample(self, nb_sample: I) -> Self::Output
+    {
+        $crate::unit::WrappedIterator::new(<Range<T> as RangeSampleExtension<I>>::sample(
+            unsafe { self.start.inner_value() }..unsafe { self.end.inner_value() },
+            nb_sample,
+        ))
+    }
+}*/
 
 pub trait RangeDefaultSampleExtension<I = usize>: RangeDefault
 where
@@ -41,7 +57,7 @@ where
 pub struct RangeSample<I, T>
 where
     I: Number + CastInto<T>,
-    T: Number,
+    T: Additive,
 {
     pub idx: I,
     pub end: I,

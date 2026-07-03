@@ -1,13 +1,16 @@
 #![allow(unused_imports)]
 
 use hexga_map_on as map_on;
-use std::cmp::Ordering;
-use std::iter::{Product, Sum};
-use std::num::{Saturating, Wrapping};
-use std::fmt::{Debug,Display,Formatter,self};
-use std::ops::*;
-use std::marker::PhantomData;
-use std::hash::Hash;
+use std::{
+    hash::{Hash, Hasher},
+    iter::{Product, Sum, FusedIterator},
+    num::{Saturating, Wrapping},
+    fmt::{Debug,Display,Formatter,self},
+    ops::*,
+    marker::PhantomData,
+    cmp::Ordering,
+};
+
 //use hexga_typedef::*;
 
 #[cfg(feature = "serde")]

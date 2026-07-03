@@ -16,6 +16,7 @@ macro_rules! impl_new_unit_or_number {
             fn cast_from(value: $name<T2>) -> Self { $name(T::cast_from(value.0)) }
         }
 
+        /*
         impl<T> $crate::unit::WrappedType<T> for $name<T>
         {
             unsafe fn inner_value(self) -> T { self.0 }
@@ -24,7 +25,6 @@ macro_rules! impl_new_unit_or_number {
         }
 
         // TODO Re enable it
-        /*
         impl<T, I> RangeSampleExtension<I> for Range<$name<T>>
         where
             Range<T>: RangeSampleExtension<I, Item = T>,
@@ -349,138 +349,5 @@ macro_rules! new_number
 }
 pub(crate) use new_number;
 
-// To construct basic wrapped type from their inner type
-pub trait WrappedType<T>: Sized
-{
-    /// Return the inner value.
-    /// Unsafe because it expose the inner value, but the unit is not specified and may change
-    unsafe fn inner_value(self) -> T;
 
-    /// Create from the inner value.
-    /// Unsafe because it expose the inner value, but the unit is not specified and may change
-    unsafe fn from_inner_value(inner_value: T) -> Self;
-}
 
-pub struct WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-{
-    pub it: It,
-    phantom: PhantomData<(Wrapped, Precision)>,
-}
-impl<Wrapped, Precision, It> WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-{
-    pub const fn new(it: It) -> Self { Self { it, phantom: PhantomData } }
-}
-
-impl<Wrapped, Precision, It> Debug for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: Debug,
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", &self.it) }
-}
-
-impl<Wrapped, Precision, It> Copy for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: Copy,
-{
-}
-impl<Wrapped, Precision, It> Clone for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: Clone,
-{
-    fn clone(&self) -> Self
-    {
-        Self {
-            it: self.it.clone(),
-            phantom: PhantomData,
-        }
-    }
-}
-
-impl<Wrapped, Precision, It> PartialEq for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: PartialEq,
-{
-    fn eq(&self, other: &Self) -> bool { PartialEq::eq(&self, &other) }
-}
-impl<Wrapped, Precision, It> Eq for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: Eq,
-{
-}
-
-impl<Wrapped, Precision, It> PartialOrd for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: PartialOrd,
-{
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { PartialOrd::partial_cmp(&self.it, &other.it) }
-}
-impl<Wrapped, Precision, It> Ord for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: Ord,
-{
-    fn cmp(&self, other: &Self) -> Ordering { Ord::cmp(&self.it, &other.it) }
-}
-
-impl<Wrapped, Precision, It> Hash for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: Hash,
-{
-    fn hash<H: Hasher>(&self, state: &mut H) { self.it.hash(state); }
-}
-
-impl<Wrapped, Precision, It> Iterator for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: Iterator,
-{
-    type Item = Wrapped;
-
-    fn next(&mut self) -> Option<Self::Item> { self.it.next().map(|v| unsafe { Wrapped::from_inner_value(v) }) }
-}
-
-impl<Wrapped, Precision, It> DoubleEndedIterator for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: DoubleEndedIterator,
-{
-    fn next_back(&mut self) -> Option<Self::Item> { self.it.next_back().map(|v| unsafe { Wrapped::from_inner_value(v) }) }
-}
-
-impl<Wrapped, Precision, It> FusedIterator for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: FusedIterator,
-{
-}
-impl<Wrapped, Precision, It> ExactSizeIterator for WrappedIterator<Wrapped, Precision, It>
-where
-    It: Iterator<Item = Precision>,
-    Wrapped: WrappedType<Precision>,
-    It: ExactSizeIterator,
-{
-}
