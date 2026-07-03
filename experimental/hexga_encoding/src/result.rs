@@ -35,7 +35,7 @@ pub enum EncodeError
     },
     Custom(Reason),
     Base64(Base64Error),
-    Std(IoErrorKind),
+    Io(IoErrorKind),
 }
 impl From<FromUtf8Error> for EncodeError
 {
@@ -61,7 +61,7 @@ impl From<IoError> for EncodeError
 }
 impl From<IoErrorKind> for EncodeError
 {
-    fn from(kind: IoErrorKind) -> Self { Self::Std(kind) }
+    fn from(kind: IoErrorKind) -> Self { Self::Io(kind) }
 }
 impl From<std::fmt::Error> for EncodeError
 {
@@ -103,7 +103,7 @@ impl Display for EncodeError
             EncodeError::Custom(reason) => write!(f, "custom: {}", reason),
             EncodeError::Unknow => write!(f, "unknow"),
             EncodeError::Base64(base64) => write!(f, "base64: {}", base64),
-            EncodeError::Std(std) => write!(f, "std: {}", std),
+            EncodeError::Io(std) => write!(f, "std: {}", std),
             EncodeError::Fmt => write!(f, "formating"),
             EncodeError::Unimplemented => write!(f, "unimplemented"),
             EncodeError::NotPersistant => write!(f, "not persistant"),

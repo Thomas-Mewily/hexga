@@ -70,7 +70,31 @@ impl<T,FS> Reload for FileDataOf<T,FS> where
 
     fn try_reload(&mut self) -> Result<Self::Ok, Self::Error> {
         let Some(path) = self.get_path() else { return Ok(()); };
-        *self.value_mut() = T::load_from_fs(&mut FS::provide_fs(), path)?;
+
+        match T::load_from_fs(&mut FS::provide_fs(), path)
+        {
+            Ok(v) => { *self.value_mut() = v; },
+            Err(e) => 
+            {
+                match e
+                {A
+                    EncodeError::Unknow => todo!(),
+                    EncodeError::Fmt => todo!(),
+                    EncodeError::NotPersistant => todo!(),
+                    EncodeError::NotLoaded => todo!(),
+                    EncodeError::Unimplemented => todo!(),
+                    EncodeError::Markup { extension, reason } => todo!(),
+                    EncodeError::Utf8Error { valid_up_to, error_len } => todo!(),
+                    EncodeError::UnsupportedExtension { got, expected } => todo!(),
+                    EncodeError::Custom(cow) => todo!(),
+                    EncodeError::Base64(decode_error) => todo!(),
+                    EncodeError::Io(error_kind) => todo!(),
+                    _ => todo!(),
+                }
+            },
+        }
+
+        
         Ok(())
     }
 }
