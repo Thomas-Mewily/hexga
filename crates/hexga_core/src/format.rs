@@ -2,6 +2,18 @@ use super::*;
 
 pub use core::fmt::{Debug, Display, Formatter};
 pub type FmtResult = core::fmt::Result;
+pub type FmtError = core::fmt::Error;
+
+pub mod prelude
+{
+    pub use super::{FmtResult, FmtError, Formatter};
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::{Debug, Display, ToDebug};
+}
 
 re_export_item_from_std_or_alloc!(format);
 

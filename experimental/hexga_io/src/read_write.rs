@@ -10,6 +10,7 @@ pub enum FileType
     Symlink
 }
 
+// fn `foo_at()` (with `_at`) don't resolve the path
 
 #[doc(hidden)]
 pub trait FsDynRead

@@ -52,10 +52,10 @@ impl<T,FS> Persistant for FileDataOf<T,FS> where
     FS: FsProvider,
     T: Load + Save
 {
-    fn save(&mut self) -> EncodeResult {
+    fn save(&mut self) -> FileResult {
         if self.is_not_dirty() { return Ok(()); }
         let Some(path) = self.get_path() else { return Ok(()); };
-        self.value().save_to_fs_with_extension(&mut FS::provide_fs(), path)?;
+        self.value().save_to_fs(&mut FS::provide_fs(), path)?;
         self.undirty();
         Ok(())
     }
@@ -66,36 +66,42 @@ impl<T,FS> Reload for FileDataOf<T,FS> where
     T: Load + Save
 {
     type Ok=();
-    type Error=EncodeError;
+    type Error=FileError;
 
     fn try_reload(&mut self) -> Result<Self::Ok, Self::Error> {
         let Some(path) = self.get_path() else { return Ok(()); };
 
         match T::load_from_fs(&mut FS::provide_fs(), path)
         {
-            Ok(v) => { *self.value_mut() = v; },
+            Ok(v) => { *self.value_mut() = v; Ok(()) },
             Err(e) => 
             {
-                match e
-                {A
-                    EncodeError::Unknow => todo!(),
-                    EncodeError::Fmt => todo!(),
-                    EncodeError::NotPersistant => todo!(),
-                    EncodeError::NotLoaded => todo!(),
-                    EncodeError::Unimplemented => todo!(),
-                    EncodeError::Markup { extension, reason } => todo!(),
-                    EncodeError::Utf8Error { valid_up_to, error_len } => todo!(),
-                    EncodeError::UnsupportedExtension { got, expected } => todo!(),
-                    EncodeError::Custom(cow) => todo!(),
-                    EncodeError::Base64(decode_error) => todo!(),
-                    EncodeError::Io(error_kind) => todo!(),
-                    _ => todo!(),
+                if e.is_io() && path.extension().is_some()
+                {
+                    // Maybe the extension was changed
+                    let resolved = FS::provide_fs().resolve_path(path.with_extension(""))?;
+                    if path != resolved 
+                    {
+                        match T::load_from_fs(&mut FS::provide_fs(), &resolved)
+                        {
+                            Ok(v) => { *self.value_mut() = v; self.path = Some(resolved); Ok(()) },
+                            Err(e) => 
+                            { 
+                                // Still change the path
+                                self.path = Some(resolved); 
+                                Err(e) 
+                            },
+                        }
+                    }else
+                    {
+                        Err(e)
+                    }
+                }else
+                {
+                    Err(e)
                 }
             },
         }
-
-        
-        Ok(())
     }
 }
 

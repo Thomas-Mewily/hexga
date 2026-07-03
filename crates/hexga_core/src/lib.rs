@@ -246,7 +246,7 @@ pub mod hexga_prelude
         builder::*,
         collections::prelude::*,
         default::prelude::*,
-        format::*,
+        format::prelude::*,
         guard::prelude::*,
         handle::*,
         option::prelude::*,
@@ -286,7 +286,7 @@ pub mod hexga_traits
         collections::traits::*,
         collections::traits::*,
         default::traits::*,
-        format::*,
+        format::traits::*,
         guard::traits::*,
         handle::Handle,
         /*
@@ -318,7 +318,7 @@ pub mod std_prelude
         convert::{AsMut, AsRef},
         ops::{Deref, DerefMut},
         hash::{Hash, Hasher},
-        cmp::Ordering
+        cmp::Ordering,
     };
     re_export_items_from_std_or_core!(prelude);
 }

@@ -8,8 +8,9 @@ pub(crate) mod prelude
 pub trait Load : Sized + for<'de> CfgDeserialize<'de>
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
+    fn load_prefered_extension() -> &'static extension { Self::load_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }
 
-    fn load_from_fs<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> EncodeResult<Self> 
+    fn load_from_fs<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> 
     where
         Self: Sized
     {
@@ -17,7 +18,8 @@ pub trait Load : Sized + for<'de> CfgDeserialize<'de>
         let extension = path.extension().map(|v| v.to_str()).flatten();
 
         let bytes = fs.read_bytes(path)?;
-        Self::load_from_bytes_with_extension(bytes.as_ref(), extension)
+        let value = Self::load_from_bytes_with_extension(bytes.as_ref(), extension)?;
+        Ok(value)
     }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
@@ -39,7 +41,6 @@ pub trait LoadExtension: Load
         #[cfg(not(feature = "serde"))]
         return Self::load_custom_extensions();
     }
-    fn load_prefered_extension() -> Option<&'static extension> { Self::load_custom_extensions().next() }
 
     fn load_from_bytes(bytes: &[u8]) -> EncodeResult<Self>
     where
@@ -74,7 +75,7 @@ pub trait LoadExtension: Load
         }
         if extension.is_none()
         {
-            return Self::load_from_reader_with_custom_extension(reader, Self::load_prefered_extension());
+            return Self::load_from_reader_with_custom_extension(reader, Some(Self::load_prefered_extension()));
         }
 
         #[cfg(feature = "serde")]
@@ -100,7 +101,7 @@ where
     S: LoadFrom + for<'de> CfgDeserialize<'de>,
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Source::load_custom_extensions() }
-    fn load_from_fs<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> EncodeResult<Self> 
+    fn load_from_fs<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> 
     where
         Self: Sized
     {

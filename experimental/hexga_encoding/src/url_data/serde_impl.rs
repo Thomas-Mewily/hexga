@@ -23,7 +23,7 @@ pub trait UrlSerializer: Serializer
     where
         T: ToUrl,
     {
-        self.serialize_with_encoding_and_extension(value, T::save_prefered_extension().unwrap_or_default())
+        self.serialize_with_encoding_and_extension(value, T::save_prefered_extension())
     }
 
     fn serialize_with_encoding_and_extension<T>(self, value: &T, extension: &extension) -> Result<Self::Ok, Self::Error>

@@ -119,7 +119,7 @@ impl Load for String
         Self: Sized,
         R: Read,
     {
-        let mut buf = Vec::with_capacity(16);
+        let mut buf: Vec<u8> = Vec::with_capacity(16);
         reader.read_to_end(&mut buf)?;
 
         match std::str::from_utf8(&buf)

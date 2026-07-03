@@ -1,12 +1,112 @@
-use std::collections::HashSet;
-
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{EncodeResult, EncodeError};
+}
+
+/// Encoding = inside a buffer. No file system involved.
 pub type EncodeResult<T = ()> = Result<T, EncodeError>;
 
+#[non_exhaustive]
+#[derive(Default, Clone, PartialEq, Eq)]
+pub enum EncodeError 
+{
+    #[default]
+    Unknow,
+    Unimplemented,
+    Base64(Base64Error),
+    Extension(EncodeErrorExtension),
+    Utf8(EncodeErrorUtf8),
+    /// Error with the Read/Write/Seek trait
+    Io(IoErrorKind),
+    Custom(EncodeErrorReason),
+    Markup(EncodeErrorMarkup),
+    Fmt(FmtError),
+}
+
+impl Debug for EncodeError
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
+            EncodeError::Unknow => write!(f, "Unknow"),
+            EncodeError::Unimplemented => write!(f, "Unimplemented"),
+            EncodeError::Base64(v) => write!(f, "{:?}", v),
+            EncodeError::Extension(v) => write!(f, "{:?}", v),
+            EncodeError::Utf8(v) => write!(f, "{:?}", v),
+            EncodeError::Custom(v) => write!(f, "{:?}", v),
+            EncodeError::Io(v) => write!(f, "{:?}", v),
+            EncodeError::Markup(v) => write!(f, "{:?}", v),
+            EncodeError::Fmt(v) => write!(f, "{:?}", v),
+        }
+    }
+}
+impl Display for EncodeError
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "{:?}", self)
+    }
+}
+
+pub type EncodeErrorReason = String;
+
+impl From<Base64Error> for EncodeError { fn from(value: Base64Error) -> Self { Self::Base64(value) } }
+impl From<EncodeErrorExtension> for EncodeError { fn from(value: EncodeErrorExtension) -> Self { Self::Extension(value) } }
+impl From<EncodeErrorUtf8> for EncodeError { fn from(value: EncodeErrorUtf8) -> Self { Self::Utf8(value) } }
+impl From<Utf8Error> for EncodeError { fn from(value: Utf8Error) -> Self { Self::Utf8(value.into()) } }
+impl From<EncodeErrorReason> for EncodeError { fn from(value: EncodeErrorReason) -> Self { Self::Custom(value) } }
+impl From<IoErrorKind> for EncodeError { fn from(value: IoErrorKind) -> Self { Self::Io(value) } }
+impl From<IoError> for EncodeError { fn from(value: IoError) -> Self { Self::Io(value.kind()) } }
+impl From<EncodeErrorMarkup> for EncodeError { fn from(value: EncodeErrorMarkup) -> Self { Self::Markup(value) } }
+impl From<FmtError> for EncodeError { fn from(value: FmtError) -> Self { Self::Fmt(value) } }
+
+impl EncodeError
+{
+    pub fn at_path(self, path: Option<PathBuf>) -> EncodeFileError
+    {
+        EncodeFileError::new(self).with_path(path)
+    }
+}
+
+
+#[derive(Default, Clone, PartialEq, Eq)]
+pub struct EncodeErrorExtension
+{
+    pub got: Option<CowExtensionStatic>,
+    pub expected: Vec<CowExtensionStatic>,
+}
+impl Debug for EncodeErrorExtension
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "Extension {:?} is not supported, expected one of the following extension {:?}, ", self.got, self.expected)
+    }
+}
+
+#[derive(Default, Clone, PartialEq, Eq, Debug)]
+pub struct EncodeErrorUtf8
+{
+    pub valid_up_to: usize,
+    pub error_len: Option<usize>,
+}
+impl From<Utf8Error> for EncodeErrorUtf8
+{
+    fn from(value: Utf8Error) -> Self {
+        Self { valid_up_to: value.valid_up_to(), error_len: value.error_len() }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EncodeErrorMarkup
+{
+    pub extension: CowExtensionStatic,
+    pub reason: EncodeErrorReason,
+}
+
+/*
 pub type Reason = Cow<'static, str>;
 
 // const PREFIX: &[u8] = b"custom_extension;";
+
 
 #[non_exhaustive]
 #[derive(Default, Clone, PartialEq, Eq)]
@@ -79,7 +179,7 @@ impl From<&'static str> for EncodeError
 
 impl Display for EncodeError
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> FmtResult
     {
         match self
         {
@@ -113,9 +213,44 @@ impl Display for EncodeError
 }
 impl std::fmt::Debug for EncodeError
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{}", self) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self) }
+}
+*/
+
+impl EncodeError
+{
+    pub fn save_unsupported_extension<T: Save + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
+    {
+        Self::Extension(EncodeErrorExtension{
+            //name: std::any::type_name::<T>().to_owned(),
+            got: got.into(),
+            expected: T::save_extensions().map(|ext| ext.into()).collect(),
+        })
+    }
+
+    pub fn load_unsupported_extension<T: Load + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
+    {
+        Self::Extension(EncodeErrorExtension{
+            //name: std::any::type_name::<T>().to_owned(),
+            got: got.into(),
+            expected: T::load_extensions().map(|ext| ext.into()).collect(),
+        })
+    }
+
+    pub fn markup<T: ?Sized>(extension: impl Into<CowExtensionStatic>, reason: impl Display) -> Self
+    {
+        Self::Markup(EncodeErrorMarkup {
+            //name: std::any::type_name::<T>().to_owned(),
+            extension: extension.into(),
+            reason: reason.to_string().into(),
+        })
+    }
+
+    pub fn custom(reason: impl Into<EncodeErrorReason>) -> Self { Self::Custom(reason.into()) }
+    pub fn from_display(reason: impl Display) -> Self { Self::custom(reason.to_string()) }
 }
 
+/*
 impl EncodeError
 {
     pub fn utf8_error(valid_up_to: usize, error_len: Option<usize>) -> Self { Self::Utf8Error { valid_up_to, error_len } }
@@ -176,6 +311,29 @@ impl serde::de::Error for EncodeError
     fn custom<T>(msg: T) -> Self
     where
         T: std::fmt::Display,
+    {
+        Self::custom(msg.to_string())
+    }
+}
+*/
+
+impl std::error::Error for EncodeError {}
+#[cfg(feature = "serde")]
+impl serde::ser::Error for EncodeError
+{
+    fn custom<T>(msg: T) -> Self
+    where
+        T: Display,
+    {
+        Self::custom(msg.to_string())
+    }
+}
+#[cfg(feature = "serde")]
+impl serde::de::Error for EncodeError
+{
+    fn custom<T>(msg: T) -> Self
+    where
+        T: Display,
     {
         Self::custom(msg.to_string())
     }

@@ -23,7 +23,7 @@ pub trait PersistantValue<T> : Persistant + Into<T>
 
 pub trait Persistant : GetPath + SetPath + Reload
 {
-    fn save(&mut self) -> EncodeResult;
+    fn save(&mut self) -> FileResult;
 }
 
 pub trait PersistantValue<T> : Persistant + Guarded<T> {}
@@ -39,11 +39,11 @@ pub trait FsLoad<T,FS>
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output;
 
     /// Read and decode the value using the provided extension.
-    fn load<P: AsRef<Path>>(path: P) -> EncodeResult<Self::Output>
+    fn load<P: AsRef<Path>>(path: P) -> FileResult<Self::Output>
     {
         let mut path = FS::provide_fs().resolve_path(path)?;
-        if path.extension().is_none() && let Some(ex) = T::load_prefered_extension() {
-            path.set_extension(ex);
+        if path.extension().is_none() {
+            path.set_extension(T::load_prefered_extension());
         }
         let value = T::load_from_fs(&mut FS::provide_fs(), &path)?;
         Ok(Self::from_path_and_value(Some(path), value))
@@ -64,8 +64,9 @@ pub trait FsLoad<T,FS>
                 let value = init();
                 
                 let mut path = FS::provide_fs().resolve_path(path).unwrap_or_else(|_| path.to_path_buf());
-                if path.extension().is_none() && let Some(ex) = T::load_prefered_extension() {
-                    path.set_extension(ex);
+                if path.extension().is_none() 
+                {
+                    path.set_extension(T::load_prefered_extension());
                 }
 
                 let mut fs_value = Self::from_path_and_value(Some(path), value);

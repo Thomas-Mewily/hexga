@@ -1,11 +1,14 @@
 #![allow(unused_imports)]
 use hexga_core::cfg::*;
-use hexga_core::map_on::prelude::*;
 use hexga_core::utils::*;
+/*
+use hexga_core::map_on::prelude::*;
+*/
+use hexga_core::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufReader, Read, Write};
 use std::{
-    fmt::{Display, Formatter},
+    fmt::{Display, Formatter, Debug},
     str::Utf8Error,
     string::FromUtf8Error,
 };
@@ -23,8 +26,11 @@ pub use fs_extension::*;
 
 mod default_impl;
 
-mod result;
-pub use result::*;
+mod encode_result;
+pub use encode_result::*;
+
+mod file_result;
+pub use file_result::*;
 
 mod save;
 pub use save::*;
@@ -48,7 +54,7 @@ pub use url_data::*;
 
 pub mod prelude
 {
-    pub use super::{fs_extension::prelude::*, load::prelude::*, result::*, save::prelude::*, url_data::prelude::*};
+    pub use super::{fs_extension::prelude::*, load::prelude::*, encode_result::prelude::*, file_result::prelude::*, save::prelude::*, url_data::prelude::*};
 
     #[cfg(feature = "serde")]
     pub use super::serde_impl::prelude::*;
