@@ -50,6 +50,44 @@ where
     /// Read and decode the value using the provided extension.
     /// If the file don't exist, the value is created, saved, and returned.
     /// It's ok if saving fail.
+    /// 
+    /// If the file exists but is malformed/corrupted/badly encoded, return an error and don't override the file.
+    fn try_load_or_create<P: AsRef<Path>, F>(path: P, init: F) -> FileResult<Self::Output>
+    where
+        F: FnOnce() -> T,
+    {
+        let path = path.as_ref();
+        match Self::load(&path)
+        {
+            Ok(v) => Ok(v),
+            Err(e) =>
+            {
+                if e.is_encode() 
+                {
+                    // Badly encoded
+                    return Err(e);
+                }
+                let value = init();
+
+                let mut path = FS::provide_fs().resolve_path(path).unwrap_or_else(|_| path.to_path_buf());
+                if path.extension().is_none()
+                {
+                    path.set_extension(T::load_prefered_extension());
+                }
+
+                let mut fs_value = Self::from_path_and_value(Some(path), value);
+                let _ = fs_value.save();
+                Ok(fs_value)
+            }
+        }
+    }
+
+    /// Read and decode the value using the provided extension.
+    /// If the file don't exist, the value is created, saved, and returned.
+    /// It's ok if saving fail.
+    /// 
+    /// **Important:** If the file exists but is malformed/corrupted/badly encoded, it will be **silently overwritten** with the init value. 
+    /// Use [`Self::try_load_or_create`] to avoid silently override a badly encoded file.
     fn load_or_create<P: AsRef<Path>, F>(path: P, init: F) -> Self::Output
     where
         F: FnOnce() -> T,
@@ -78,12 +116,29 @@ where
     /// Read the file content and load a decode it using the provided extension.
     /// If the file don't exist, the value is created using [`Default`], saved, and returned.
     /// It's ok if saving fail.
+    ///
+    /// **Important:** If the file exists but is malformed/corrupted/badly encoded, it will be **silently overwritten** with the init value. 
+    /// Use [`Self::try_load_or_default`] to avoid silently override a badly encoded file.
     fn load_or_default<P: AsRef<Path>>(&mut self, path: P) -> Self::Output
     where
         P: AsRef<Path>,
         T: Default,
     {
         Self::load_or_create(path, || ___())
+    }
+
+
+    /// Read the file content and load a decode it using the provided extension.
+    /// If the file don't exist, the value is created using [`Default`], saved, and returned.
+    /// It's ok if saving fail.
+    ///
+    /// If the file exists but is malformed/corrupted/badly encoded, return an error and don't override the file.
+    fn try_load_or_default<P: AsRef<Path>>(&mut self, path: P) -> FileResult<Self::Output>
+    where
+        P: AsRef<Path>,
+        T: Default,
+    {
+        Self::try_load_or_create(path, || ___())
     }
 }
 
