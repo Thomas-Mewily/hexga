@@ -1,8 +1,5 @@
 use super::*;
 
-pub mod map;
-use map::*;
-
 pub mod time;
 use time::*;
 
@@ -11,5 +8,5 @@ use default::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{default::*, map::*, time::*};
+    pub use super::{default::*, time::*};
 }

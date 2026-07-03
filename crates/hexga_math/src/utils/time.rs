@@ -79,6 +79,7 @@ map_on_number!(
     }
 );
 
+/*
 impl<T> ToTimeComposite for T
 where
     T: Map,
@@ -92,6 +93,7 @@ where
     fn hours(self) -> Self::Output { self.map(ToTimeComposite::hours) }
     fn days(self) -> Self::Output { self.map(ToTimeComposite::days) }
 }
+*/
 
 impl<T: Floating> Debug for TimeOf<T>
 {

@@ -72,16 +72,24 @@ use std::{
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
 pub use hexga_typedef as typedef;
+
+//pub use hexga_number as number;
+pub use hexga_number::*;
+
+impl_cast_into!(ToFloat, to_float, to_float_range, float);
+impl_cast_into!(ToInt, to_int, to_int_range, int);
+impl_cast_into!(ToUInt, to_uint, to_uint_range, uint);
+
+
 mod utils;
 pub use utils::*;
 pub mod array;
 //pub mod bijection;
-pub mod convert;
+//pub mod convert;
 pub mod derive;
 mod geometry;
 pub mod map_on;
-pub mod number;
-pub mod range;
+//pub mod range;
 pub mod unit;
 pub use geometry::*;
 
@@ -99,12 +107,12 @@ pub mod prelude
 {
     pub use super::array::*;
     //pub use super::bijection::prelude::*;
-    pub use super::convert::*;
+    //pub use super::convert::*;
     pub use super::derive::prelude::*;
     pub use super::geometry::prelude::*;
     pub use super::map_on::*;
-    pub use super::number::*;
-    pub use super::range::*;
+    pub use hexga_number::*;
+    //pub use super::range::*;
     pub use super::typedef::*;
     pub use super::unit::*;
     pub use super::utils::prelude::*;

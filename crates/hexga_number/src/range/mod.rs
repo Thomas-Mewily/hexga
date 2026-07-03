@@ -11,3 +11,14 @@ pub use step::*;
 
 mod sample;
 pub use sample::*;
+
+/*
+pub mod prelude
+{
+    pub use super::traits::*;
+}
+pub mod traits
+{
+    pub use super::{RangeDefault,RangeStepExtension, RangeStepIter, RangeDefaultStepExtension, RangeDefaultStepInclusiveExtension};
+}
+*/

@@ -1,5 +1,6 @@
 use super::*;
 
+/*
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 /// To avoid any problem, avoid NaN value.
 ///
@@ -89,6 +90,7 @@ impl Hash for OrderedFloat<f64>
         }
     }
 }
+*/
 
 /// Generalized function and constant for floating point like `f32`, `f64`...
 ///
@@ -96,14 +98,19 @@ impl Hash for OrderedFloat<f64>
 pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue
 {
     /// 2.
+    #[doc(hidden)]
     const TWO: Self;
     /// 3.
+    #[doc(hidden)]
     const THREE: Self;
     /// 6.
+    #[doc(hidden)]
     const SIX: Self;
     /// 60.
+    #[doc(hidden)]
     const SIXTY: Self;
     /// 24.
+    #[doc(hidden)]
     const TWENTY_FOUR: Self;
 
     /// Archimedes' constant (π)
@@ -114,34 +121,60 @@ pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue
     /// `0.5 * PI`
     const HALF_PI: Self;
 
+    #[doc(hidden)]
     const ANGLE_ZERO_RADIAN: Self = Self::ZERO;
+    #[doc(hidden)]
     const ANGLE_FULL_RADIAN: Self = Self::TWO_PI;
+    #[doc(hidden)]
     const ANGLE_HALF_RADIAN: Self = Self::PI;
+    #[doc(hidden)]
     const ANGLE_FLAT_RADIAN: Self = Self::PI;
+    #[doc(hidden)]
     const ANGLE_RIGHT_RADIAN: Self = Self::ANGLE_HALF_RADIAN;
 
+    #[doc(hidden)]
     const ANGLE_ZERO_DEGREE: Self = Self::ZERO;
+    #[doc(hidden)]
     const ANGLE_FULL_DEGREE: Self;
+    #[doc(hidden)]
     const ANGLE_HALF_DEGREE: Self;
+    #[doc(hidden)]
     const ANGLE_FLAT_DEGREE: Self = Self::ANGLE_HALF_DEGREE;
+    #[doc(hidden)]
     const ANGLE_RIGHT_DEGREE: Self;
 
+    #[doc(hidden)]
     const ANGLE_ZERO_TURN: Self = Self::ZERO;
+    #[doc(hidden)]
     const ANGLE_FULL_TURN: Self;
+    #[doc(hidden)]
     const ANGLE_HALF_TURN: Self;
+    #[doc(hidden)]
     const ANGLE_FLAT_TURN: Self = Self::ANGLE_HALF_TURN;
+    #[doc(hidden)]
     const ANGLE_RIGHT_TURN: Self;
 
+    #[doc(hidden)]
     const COLOR_30_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_60_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_90_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_120_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_150_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_180_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_210_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_240_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_270_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_300_DIV_360: Self;
+    #[doc(hidden)]
     const COLOR_330_DIV_360: Self;
 
     /// Returns the square root of a number.

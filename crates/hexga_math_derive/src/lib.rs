@@ -117,7 +117,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
     };
 
     generics_with_policy.make_where_clause().predicates.push(syn::parse_quote!(
-        Policy: #crate_ident::number::Constant<#generic_type_ident>
+        Policy: #crate_ident::Constant<#generic_type_ident>
     ));
 
     let (impl_generics_with_policy, ty_generics_with_policy, _where_clause_with_policy) = generics_with_policy.split_for_impl();
@@ -244,7 +244,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     }
 
 
-                    impl<T, const N : usize> #crate_ident::map::MapIntern for #current_name<T,N>
+                    impl<T, const N : usize> #crate_ident::MapIntern for #current_name<T,N>
                     {
                         type Item=T;
                         fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
@@ -252,21 +252,21 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             Self::from_array(<[T;N]>::from(self).map_intern(f))
                         }
                     }
-                    impl<T, const N : usize> #crate_ident::map::MapInternWith for #current_name<T,N>
+                    impl<T, const N : usize> #crate_ident::MapInternWith for #current_name<T,N>
                     {
                         fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
                         {
                             Self::from_array(<[T;N]>::from(self).map_with_intern(other.into(), f))
                         }
                     }
-                    impl<T, const N : usize> #crate_ident::map::Map for #current_name<T,N>
+                    impl<T, const N : usize> #crate_ident::Map for #current_name<T,N>
                     {
                         type WithType<T2> = #current_name<T2,N>;
                         fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
-                            Self::WithType::from_array(<[T;N] as #crate_ident::map::Map>::map(self.into(), f))
+                            Self::WithType::from_array(<[T;N] as #crate_ident::Map>::map(self.into(), f))
                         }
                     }
-                    impl<T, const N : usize> #crate_ident::map::MapWith for #current_name<T,N>
+                    impl<T, const N : usize> #crate_ident::MapWith for #current_name<T,N>
                     {
                         fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
                         {
@@ -327,17 +327,17 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                     // ================= Iter =========
 
-                    impl<T, const N : usize> ::std::iter::Sum for #current_name<T,N> where Self : #crate_ident::number::Zero + ::std::ops::Add<Self,Output = Self>
+                    impl<T, const N : usize> ::std::iter::Sum for #current_name<T,N> where Self : #crate_ident::Zero + ::std::ops::Add<Self,Output = Self>
                     {
                         fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::number::Zero>::ZERO, <Self as ::std::ops::Add<Self>>::add)
+                            iter.fold(<Self as #crate_ident::Zero>::ZERO, <Self as ::std::ops::Add<Self>>::add)
                         }
                     }
 
-                    impl<T, const N : usize> ::std::iter::Product for #current_name<T,N> where Self : #crate_ident::number::One + ::std::ops::Mul<Self,Output = Self>
+                    impl<T, const N : usize> ::std::iter::Product for #current_name<T,N> where Self : #crate_ident::One + ::std::ops::Mul<Self,Output = Self>
                     {
                         fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::number::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
+                            iter.fold(<Self as #crate_ident::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
                         }
                     }
 
@@ -356,7 +356,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     (
                         (($trait_name: tt, $constant_name: tt)) =>
                         {
-                            impl<T, const N:usize> #crate_ident::number::$trait_name for #current_name<T,N> where T: #crate_ident::number::$trait_name + ::std::marker::Copy
+                            impl<T, const N:usize> #crate_ident::$trait_name for #current_name<T,N> where T: #crate_ident::$trait_name + ::std::marker::Copy
                             {
                                 const $constant_name: Self = Self::from_array(<[T;N]>::$constant_name);
                             }
@@ -482,7 +482,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     impl<T, Policy, const N: usize> #crate_ident::serde::Serialize for #name_with_default #ty_generics_with_policy
                         where
                         #name<T, N>: #crate_ident::serde::Serialize,
-                        Policy: #crate_ident::number::Constant<T>,
+                        Policy: #crate_ident::Constant<T>,
                     {
                         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                         where
@@ -498,7 +498,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         impl<'de, T, Policy, const N: usize> #crate_ident::serde::Deserialize<'de> for #name_with_default #ty_generics_with_policy
                             where
                             #name<T, N> : #crate_ident::serde::Deserialize<'de>,
-                            Policy: #crate_ident::number::Constant<T>,
+                            Policy: #crate_ident::Constant<T>,
                         {
                             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                             where
@@ -617,7 +617,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         }
                     }
 
-                    impl<T> #crate_ident::map::MapIntern for #current_name<T>
+                    impl<T> #crate_ident::MapIntern for #current_name<T>
                     {
                         type Item=T;
                         fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
@@ -625,21 +625,21 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             Self::from_array(<[T;#dim]>::from(self).map_intern(f))
                         }
                     }
-                    impl<T> #crate_ident::map::MapInternWith for #current_name<T>
+                    impl<T> #crate_ident::MapInternWith for #current_name<T>
                     {
                         fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
                         {
                             Self::from_array(<[T;#dim]>::from(self).map_with_intern(other.into(), f))
                         }
                     }
-                    impl<T> #crate_ident::map::Map for #current_name<T>
+                    impl<T> #crate_ident::Map for #current_name<T>
                     {
                         type WithType<T2> = #current_name<T2>;
                         fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
-                            Self::WithType::from_array(<[T;#dim] as #crate_ident::map::Map>::map(self.into(), f))
+                            Self::WithType::from_array(<[T;#dim] as #crate_ident::Map>::map(self.into(), f))
                         }
                     }
-                    impl<T> #crate_ident::map::MapWith for #current_name<T>
+                    impl<T> #crate_ident::MapWith for #current_name<T>
                     {
                         fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
                         {
@@ -700,17 +700,17 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                     // ================= Iter =========
 
-                    impl<T> ::std::iter::Sum for #current_name<T> where Self : #crate_ident::number::Zero + ::std::ops::Add<Self,Output = Self>
+                    impl<T> ::std::iter::Sum for #current_name<T> where Self : #crate_ident::Zero + ::std::ops::Add<Self,Output = Self>
                     {
                         fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::number::Zero>::ZERO, Self::add)
+                            iter.fold(<Self as #crate_ident::Zero>::ZERO, Self::add)
                         }
                     }
 
-                    impl<T> ::std::iter::Product for #current_name<T> where Self : #crate_ident::number::One + ::std::ops:: Mul<Self,Output = Self>
+                    impl<T> ::std::iter::Product for #current_name<T> where Self : #crate_ident::One + ::std::ops:: Mul<Self,Output = Self>
                     {
                         fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::number::One>::ONE, Self::mul)
+                            iter.fold(<Self as #crate_ident::One>::ONE, Self::mul)
                         }
                     }
 
@@ -729,7 +729,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     (
                         (($trait_name: tt, $constant_name: tt)) =>
                         {
-                            impl<T> #crate_ident::number::$trait_name for #current_name<T> where T: #crate_ident::number::$trait_name + ::std::marker::Copy
+                            impl<T> #crate_ident::$trait_name for #current_name<T> where T: #crate_ident::$trait_name + ::std::marker::Copy
                             {
                                 const $constant_name: Self = Self::from_array(<[T;#dim]>::$constant_name);
                             }
@@ -857,7 +857,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         impl<T, Policy> #crate_ident::serde::Serialize for #name_with_default #ty_generics_with_policy
                             where
                             #name<T>: #crate_ident::serde::Serialize,
-                            Policy: #crate_ident::number::Constant<T>,
+                            Policy: #crate_ident::Constant<T>,
                         {
                             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                             where
@@ -873,7 +873,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             impl<'de, T, Policy> #crate_ident::serde::Deserialize<'de> for #name_with_default #ty_generics_with_policy
                                 where
                                 #name<T> : #crate_ident::serde::Deserialize<'de>,
-                                Policy: #crate_ident::number::Constant<T>,
+                                Policy: #crate_ident::Constant<T>,
                             {
                                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                 where
@@ -954,7 +954,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         impl<T, Policy> #crate_ident::serde::Serialize for #name_with_default #ty_generics_with_policy
                             where
                             T: #crate_ident::serde::Serialize,
-                            Policy: #crate_ident::number::Constant<T>,
+                            Policy: #crate_ident::Constant<T>,
                         {
                             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                             where
@@ -970,7 +970,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             impl<'de, T, Policy> #crate_ident::serde::Deserialize<'de> for #name_with_default #ty_generics_with_policy
                                 where
                                 T : #crate_ident::serde::Deserialize<'de>,
-                                Policy: #crate_ident::number::Constant<T>,
+                                Policy: #crate_ident::Constant<T>,
                             {
                                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                                 where
@@ -978,9 +978,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 {
                                     fn __default_val<T, Policy>() -> T
                                     where
-                                        Policy: #crate_ident::number::Constant<T>,
+                                        Policy: #crate_ident::Constant<T>,
                                     {
-                                        <Policy as #crate_ident::number::Constant<T>>::CONSTANT
+                                        <Policy as #crate_ident::Constant<T>>::CONSTANT
                                     }
 
                                     #[derive(::serde::Deserialize)]
@@ -988,7 +988,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                     #[serde(rename = #name_str)]
                                     struct __Temp<T, Policy>
                                     where
-                                        Policy: #crate_ident::number::Constant<T>,
+                                        Policy: #crate_ident::Constant<T>,
                                     {
                                         #( #[serde(default = "__default_val::<T, Policy>")] #field_idents: T, )*
 
@@ -1132,7 +1132,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         /// and different deserialization based on a constant for non_exhaustive/missing field.
         #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
         pub struct #name_with_default #impl_generics_with_policy
-            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+            where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             pub value: #name #ty_generics,
             phantom: ::core::marker::PhantomData<Policy>,
@@ -1140,23 +1140,23 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
 
         impl #impl_generics_with_policy ::std::default::Default for #name_with_default #ty_generics_with_policy
-            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+            where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn default() -> Self {
-                Self::new(#name :: #ty_generics :: from_array(::std::array::from_fn(|_| <Policy as #crate_ident::number::Constant<#generic_type_ident>>::CONSTANT)))
+                Self::new(#name :: #ty_generics :: from_array(::std::array::from_fn(|_| <Policy as #crate_ident::Constant<#generic_type_ident>>::CONSTANT)))
             }
         }
 
 
         impl #impl_generics_with_policy ::std::convert::From<#name #ty_generics> for #name_with_default #ty_generics_with_policy
-            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+            where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn from(value: #name #ty_generics) -> Self {
                 Self::new(value)
             }
         }
         impl #impl_generics_with_policy ::std::convert::From<#name_with_default #ty_generics_with_policy> for #name #ty_generics
-            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+            where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn from(value: #name_with_default #ty_generics_with_policy) -> Self {
                 value.into_value()
@@ -1164,7 +1164,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
 
         impl #impl_generics_with_policy ::std::convert::AsRef<#name #ty_generics> for #name_with_default #ty_generics_with_policy
-            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+            where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn as_ref(&self) -> &#name #ty_generics {
                 &self.value
@@ -1172,7 +1172,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
 
         impl #impl_generics_with_policy ::std::convert::AsMut<#name #ty_generics> for #name_with_default #ty_generics_with_policy
-            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+            where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn as_mut(&mut self) -> &mut #name #ty_generics {
                 &mut self.value
@@ -1180,7 +1180,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
 
         impl #impl_generics_with_policy #name_with_default #ty_generics_with_policy
-            where Policy: #crate_ident::number::Constant<#generic_type_ident>
+            where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             pub const fn new(value: #name #ty_generics) -> Self { Self { value, phantom: ::std::marker::PhantomData }}
             pub fn into_value(self) -> #name #ty_generics { self.value }
@@ -1190,7 +1190,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
             where
             Self : #crate_ident::hexga_core::cfg::CfgSerialize + for<'de> #crate_ident::hexga_core::cfg::CfgDeserialize<'de>,
             #generic_type_ident: #crate_ident::hexga_core::cfg::CfgSerialize + for<'de> #crate_ident::hexga_core::cfg::CfgDeserialize<'de>,
-            Policy: #crate_ident::number::Constant<#generic_type_ident>
+            Policy: #crate_ident::Constant<#generic_type_ident>
         {
             type WithDefault = #name_with_default #ty_generics_with_policy;
         }
@@ -1198,7 +1198,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
         /*
         impl<T,Policy> Default for #name_with_default<T,Policy>
-            where Policy: #crate_ident::number::Constant<T>
+            where Policy: #crate_ident::Constant<T>
         {
             fn default() -> Self {
                 Self::new(Policy::CONSTANT)

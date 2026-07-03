@@ -26,7 +26,7 @@ pub trait Two: Sized
 }
 impl<T> Two for T
 where
-    T: NumericIdentity,
+    T: One + Add<Self, Output = Self>,
 {
     #[inline(always)]
     fn two() -> Self { Self::ONE + Self::ONE }

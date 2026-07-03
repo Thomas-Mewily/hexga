@@ -123,7 +123,7 @@ where
 }
 
 /// Mix function in a component way
-pub trait Mix<C = float>: Sized
+pub trait Mix<C /*= float*/>: Sized
 where
     C: Floating,
 {
@@ -305,7 +305,7 @@ where
 #[macro_export]
 macro_rules! impl_number_basic_trait {
     () => {
-        // NOTE: Most of these function clash with at least 2 traits (ex: max() is defined in the [`std::cmp::Ord`] (non component wise) and also in [`crate::number::Max`] (component wise)
+        // NOTE: Most of these function clash with at least 2 traits (ex: max() is defined in the [`std::cmp::Ord`] (non component wise) and also in [`crate::Max`] (component wise)
         // Redefining them here and redirecting them to the correct trait avoid the need to fully qualify the method with the trait in order to call it
 
         /// Max function in a component way
@@ -313,9 +313,9 @@ macro_rules! impl_number_basic_trait {
         /// Can cause a panic for grid if the size mismatch
         pub fn max(self, other: Self) -> Self
         where
-            Self: $crate::number::Max,
+            Self: $crate::Max,
         {
-            $crate::number::Max::max_elementwise(self, other)
+            $crate::Max::max_elementwise(self, other)
         }
 
         /// Min function in a component way
@@ -323,9 +323,9 @@ macro_rules! impl_number_basic_trait {
         /// Can cause a panic for grid if the size mismatch
         pub fn min(self, other: Self) -> Self
         where
-            Self: $crate::number::Min,
+            Self: $crate::Min,
         {
-            $crate::number::Min::min_elementwise(self, other)
+            $crate::Min::min_elementwise(self, other)
         }
 
         /// Absolute value in a component way.
@@ -335,11 +335,11 @@ macro_rules! impl_number_basic_trait {
         /// This means that code in debug mode will trigger a panic on this case and optimized code will return `iX::MIN` without a panic.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn abs(self) -> <Self as $crate::number::Abs>::Output
+        pub fn abs(self) -> <Self as $crate::Abs>::Output
         where
-            Self: $crate::number::Abs,
+            Self: $crate::Abs,
         {
-            $crate::number::Abs::abs(self)
+            $crate::Abs::abs(self)
         }
 
         /// Mix function in a component way
@@ -352,10 +352,10 @@ macro_rules! impl_number_basic_trait {
         /// Can cause a panic for grid if the size mismatch
         pub fn mix<C>(self, other: Self, coef: C) -> Self
         where
-            Self: $crate::number::Mix<C>,
-            C: $crate::number::Floating,
+            Self: $crate::Mix<C>,
+            C: $crate::Floating,
         {
-            $crate::number::Mix::mix(self, other, coef)
+            $crate::Mix::mix(self, other, coef)
         }
 
         /// Mix function in a component way
@@ -368,10 +368,10 @@ macro_rules! impl_number_basic_trait {
         /// Can cause a panic for grid if the size mismatch
         pub fn mix_unchecked<C>(self, other: Self, coef: C) -> Self
         where
-            Self: $crate::number::Mix<C>,
-            C: $crate::number::Floating,
+            Self: $crate::Mix<C>,
+            C: $crate::Floating,
         {
-            $crate::number::Mix::mix_unchecked(self, other, coef)
+            $crate::Mix::mix_unchecked(self, other, coef)
         }
 
         /// Clamp function in a component way
@@ -381,12 +381,90 @@ macro_rules! impl_number_basic_trait {
         /// Can cause a panic for grid if the size mismatch
         pub fn clamp(self, min_val: Self, max_val: Self) -> Self
         where
-            Self: $crate::number::Clamp,
+            Self: $crate::Clamp,
         {
-            $crate::number::Clamp::clamp_elementwise(self, min_val, max_val)
+            $crate::Clamp::clamp_elementwise(self, min_val, max_val)
         }
     };
 }
+
+
+
+
+pub trait RemEuclid<Rhs = Self>
+{
+    type Output;
+    fn rem_euclid(self, rhs: Rhs) -> Self::Output;
+}
+
+map_on_number!(($primitive_name: ty) => 
+{ 
+    impl RemEuclid for $primitive_name 
+    {
+        type Output = Self;
+        fn rem_euclid(self, rhs: Self) -> Self::Output { self.rem_euclid(rhs) }
+    } 
+});
+
+impl<T> RemEuclid for Wrapping<T>
+where
+    T: RemEuclid,
+{
+    type Output = Wrapping<T::Output>;
+    fn rem_euclid(self, rhs: Self) -> Self::Output { Wrapping(self.0.rem_euclid(rhs.0)) }
+}
+impl<T> RemEuclid for Saturating<T>
+where
+    T: RemEuclid,
+{
+    type Output = Saturating<T::Output>;
+    fn rem_euclid(self, rhs: Self) -> Self::Output { Saturating(self.0.rem_euclid(rhs.0)) }
+}
+
+
+pub trait Pow<Exp = Self>
+{
+    type Output;
+    fn pow(self, exp: Exp) -> Self::Output;
+}
+
+map_on_integer!(($primitive_name: ty) => 
+{ 
+    impl Pow for $primitive_name 
+    {
+        type Output = Self;
+        fn pow(self, exp: Self) -> Self::Output { self.pow(exp as _) }
+    } 
+});
+
+map_on_float!(($primitive_name: ty) => 
+{ 
+    impl Pow for $primitive_name 
+    {
+        type Output = Self;
+        fn pow(self, exp: Self) -> Self::Output { self.powf(exp) }
+    }
+});
+
+impl<T> Pow for Wrapping<T>
+where
+    T: Pow,
+{
+    type Output = Wrapping<T::Output>;
+    fn pow(self, rhs: Self) -> Self::Output { Wrapping(self.0.pow(rhs.0)) }
+}
+impl<T> Pow for Saturating<T>
+where
+    T: Pow,
+{
+    type Output = Saturating<T::Output>;
+    fn pow(self, rhs: Self) -> Self::Output { Saturating(self.0.pow(rhs.0)) }
+}
+
+
+
+
+
 
 #[cfg(test)]
 mod tests
@@ -460,3 +538,4 @@ mod tests
         assert_eq!(clamp(false, false, false), false);
     }
 }
+

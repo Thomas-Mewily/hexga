@@ -23,6 +23,8 @@ macro_rules! impl_new_unit_or_number {
             unsafe fn from_inner_value(inner_value: T) -> Self { Self(inner_value) }
         }
 
+        // TODO Re enable it
+        /*
         impl<T, I> RangeSampleExtension<I> for Range<$name<T>>
         where
             Range<T>: RangeSampleExtension<I, Item = T>,
@@ -175,6 +177,7 @@ macro_rules! impl_new_unit_or_number {
                 ))
             }
         }
+        */
     };
 }
 pub(crate) use impl_new_unit_or_number;

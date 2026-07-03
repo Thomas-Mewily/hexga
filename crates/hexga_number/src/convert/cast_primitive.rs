@@ -2,6 +2,7 @@ use super::*;
 
 /// Macro to implement a "cast-to" trait for primitive numeric types
 /// and for generic containers that implement `MapGeneric`.
+#[macro_export]
 macro_rules! impl_cast_into {
     ($trait_name:ident, $fn_map_name:ident, $fn_map_range_name:ident, $output_type:ty) => {
         /// Helper trait based on [`CastInto`] and [`CastRangeInto`]
@@ -33,6 +34,7 @@ macro_rules! impl_cast_into {
             }
         }}
 
+        /*
         impl<S> $trait_name for S
         where
             S: $crate::map::Map + CastInto<S::WithType<<S::Item as $trait_name>::Output>>,
@@ -42,12 +44,17 @@ macro_rules! impl_cast_into {
             fn $fn_map_name(self) -> Self::Output { self.map($trait_name::$fn_map_name) }
             fn $fn_map_range_name(self) -> Self::Output { self.map($trait_name::$fn_map_range_name) }
         }
+        */
     };
 }
 
+// TODO re enable
+/*
 impl_cast_into!(ToFloat, to_float, to_float_range, float);
 impl_cast_into!(ToInt, to_int, to_int_range, int);
 impl_cast_into!(ToUInt, to_uint, to_uint_range, uint);
+*/
+
 impl_cast_into!(ToF32, to_f32, to_f32_range, f32);
 impl_cast_into!(ToF64, to_f64, to_f64_range, f64);
 impl_cast_into!(ToU8, to_u8, to_u8_range, u8);

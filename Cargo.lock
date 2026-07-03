@@ -357,7 +357,9 @@ dependencies = [
 name = "hexga_number"
 version = "0.0.11-beta.53"
 dependencies = [
+ "hexga_array",
  "hexga_map_on",
+ "serde",
 ]
 
 [[package]]

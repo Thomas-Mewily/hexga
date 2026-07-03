@@ -1,5 +1,17 @@
 use super::*;
 
+/*
+pub mod prelude
+{
+    use super::traits::*;
+}
+
+pub mod traits
+{
+    use super::{OverflowBehavior, PrimitiveType};
+}
+*/
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum OverflowPolicy
 {

@@ -358,6 +358,12 @@ mod range_test
 {
     use super::*;
 
+    trait HelperToVec : Iterator + Sized
+    {
+        fn to_vec(self) -> Vec<Self::Item> { self.collect() } 
+    }
+    impl<I> HelperToVec for I where I: Iterator + Sized {}
+
     #[test]
     fn range()
     {

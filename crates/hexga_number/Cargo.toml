@@ -12,5 +12,28 @@ keywords = ["math", "number"]
 description = "Provide basic trait and constant for number, and the macro map_on!."
 categories = ["mathematics", "rust-patterns"]
 
+[features]
+default = [
+    "serde", "serde_rc",
+    #"int_are_32_bits", "float_are_32_bits"
+]
+
+# int_are_8_bits    = ["hexga_typedef/int_are_8_bits"]
+# int_are_16_bits   = ["hexga_typedef/int_are_16_bits"]
+# int_are_32_bits   = ["hexga_typedef/int_are_32_bits"]
+# int_are_64_bits   = ["hexga_typedef/int_are_64_bits"]
+# int_are_size_bits = ["hexga_typedef/int_are_size_bits"]
+
+# float_are_32_bits   = ["hexga_typedef/float_are_32_bits"]
+# float_are_64_bits   = ["hexga_typedef/float_are_64_bits"]
+# float_are_size_bits = ["hexga_typedef/float_are_size_bits"]
+
+serde = ["dep:serde"]
+
+serde_rc = ["serde/rc"]
+
 [dependencies]
 hexga_map_on.workspace = true
+#hexga_typedef.workspace = true
+hexga_array.workspace = true
+serde = { version = "1.0.0", features = ["derive"], optional = true }

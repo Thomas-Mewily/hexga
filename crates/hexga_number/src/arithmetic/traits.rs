@@ -1,5 +1,7 @@
 use super::*;
 
+
+
 trait_marker!(
 /// For every type that support bit based operation (and `&`, or `|`, xor `^`, not `!`, shift `<<` / `>>`...)
 BitArithmetic:
@@ -38,7 +40,7 @@ ArithmeticSigned:
 
 trait_marker!(
     /// +, -, *, /, %, 0, ==, min, max, clamp, mix, abs
-    Numeric: Arithmetic + PartialEq + Debug + Min + Max + Clamp + Mix + Abs<Output=Self>
+    Numeric: Arithmetic + PartialEq + Debug + Min + Max + Clamp + Mix<f32> + Mix<f64> + Abs<Output=Self>
 );
 
 trait_marker!(

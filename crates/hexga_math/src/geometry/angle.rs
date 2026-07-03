@@ -64,6 +64,7 @@ map_on_number!(
     }
 );
 
+/*
 impl<T> ToAngleComposite for T
 where
     T: Map,
@@ -74,6 +75,7 @@ where
     fn radian(self) -> Self::Output { self.map(ToAngleComposite::radian) }
     fn turn(self) -> Self::Output { self.map(ToAngleComposite::turn) }
 }
+*/
 
 #[cfg(feature = "serde")]
 impl<T> Serialize for AngleOf<T>
