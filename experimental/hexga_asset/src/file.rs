@@ -1,9 +1,9 @@
 use super::*;
 
-pub type FileData<T> = FileDataOf<T>;
+pub type FileData<T> = FileDataIn<T>;
 
 #[derive(Clone)]
-pub struct FileDataOf<T, FS = Io>
+pub struct FileDataIn<T, FS = Io>
 // A:AutoSave>
 where
     FS: FsProvider,
@@ -15,7 +15,7 @@ where
     value: Option<Dirty<T>>,
     phantom: PhantomData<FS>,
 }
-impl<T, FS> From<T> for FileDataOf<T, FS>
+impl<T, FS> From<T> for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -23,7 +23,7 @@ where
     fn from(value: T) -> Self { Self::from_path_and_value(None, value) }
 }
 
-impl<T, FS> Guarded<T> for FileDataOf<T, FS>
+impl<T, FS> Guarded<T> for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -53,7 +53,7 @@ impl<T,FS> GuardedMut<T> for FileDataOf<T,FS> where
 }
 */
 
-impl<T, FS> Persistant for FileDataOf<T, FS>
+impl<T, FS> Persistant for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -75,7 +75,7 @@ where
     }
 }
 
-impl<T, FS> Reload for FileDataOf<T, FS>
+impl<T, FS> Reload for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -136,7 +136,7 @@ where
     }
 }
 
-impl<T, FS> FsProvider for FileDataOf<T, FS>
+impl<T, FS> FsProvider for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -145,7 +145,7 @@ where
     fn provide_fs() -> Self::Fs { FS::provide_fs() }
 }
 
-impl<T, FS> FsLoad<T, FS> for FileDataOf<T, FS>
+impl<T, FS> FsLoad<T, FS> for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -161,7 +161,7 @@ where
     }
 }
 
-impl<T, FS> Hash for FileDataOf<T, FS>
+impl<T, FS> Hash for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save + Hash,
@@ -173,14 +173,14 @@ where
     }
 }
 
-impl<T, FS> Ord for FileDataOf<T, FS>
+impl<T, FS> Ord for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save + Ord,
 {
     fn cmp(&self, other: &Self) -> Ordering { (self.get_path(), self.value()).cmp(&(other.get_path(), other.value())) }
 }
-impl<T, FS> PartialOrd for FileDataOf<T, FS>
+impl<T, FS> PartialOrd for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save + PartialOrd,
@@ -188,13 +188,13 @@ where
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (self.get_path(), self.value()).partial_cmp(&(other.get_path(), other.value())) }
 }
 
-impl<T, FS> Eq for FileDataOf<T, FS>
+impl<T, FS> Eq for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save + Eq,
 {
 }
-impl<T, FS> PartialEq for FileDataOf<T, FS>
+impl<T, FS> PartialEq for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save + PartialEq,
@@ -202,7 +202,7 @@ where
     fn eq(&self, other: &Self) -> bool { self.get_path() == other.get_path() && self.value() == other.value() }
 }
 
-impl<T, FS> Debug for FileDataOf<T, FS>
+impl<T, FS> Debug for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save + Debug,
@@ -210,7 +210,7 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("File").field("path", &self.get_path()).field("value", self.value()).finish() }
 }
 
-impl<T, FS> Display for FileDataOf<T, FS>
+impl<T, FS> Display for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save + Display,
@@ -226,7 +226,7 @@ where
     }
 }
 
-impl<T, FS> Deref for FileDataOf<T, FS>
+impl<T, FS> Deref for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -234,7 +234,7 @@ where
     type Target = T;
     fn deref(&self) -> &Self::Target { self.value.as_ref().unwrap().deref() }
 }
-impl<T, FS> DerefMut for FileDataOf<T, FS>
+impl<T, FS> DerefMut for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -242,7 +242,7 @@ where
     fn deref_mut(&mut self) -> &mut Self::Target { self.value.as_mut().unwrap().deref_mut() }
 }
 
-impl<T, IO> FileDataOf<T, IO>
+impl<T, IO> FileDataIn<T, IO>
 where
     IO: FsProvider,
     T: Load + Save,
@@ -254,14 +254,14 @@ where
     pub fn into_value(mut self) -> T { std::mem::take(&mut self.value).unwrap().into_value() }
 }
 
-impl<T, FS> IsDirty for FileDataOf<T, FS>
+impl<T, FS> IsDirty for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
 {
     fn is_dirty(&self) -> bool { self.value.as_ref().unwrap().is_dirty() }
 }
-impl<T, FS> SetDirty for FileDataOf<T, FS>
+impl<T, FS> SetDirty for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -272,7 +272,7 @@ where
         self
     }
 }
-impl<T, FS> GetPath for FileDataOf<T, FS>
+impl<T, FS> GetPath for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -286,7 +286,7 @@ where
         }
     }
 }
-impl<T, FS> SetPath for FileDataOf<T, FS>
+impl<T, FS> SetPath for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -334,7 +334,7 @@ where
     }
 }
 
-impl<T, FS> Drop for FileDataOf<T, FS>
+impl<T, FS> Drop for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,

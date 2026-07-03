@@ -146,6 +146,6 @@ impl<T> FsLoad<T, Io> for Io
 where
     T: Load + Save,
 {
-    type Output = FileDataOf<T, Io>;
-    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output { FileDataOf::<T, Io>::from_path_and_value(path, value) }
+    type Output = FileDataIn<T, Io>;
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output { FileDataIn::<T, Io>::from_path_and_value(path, value) }
 }

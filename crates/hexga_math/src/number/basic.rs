@@ -2,17 +2,14 @@ use super::*;
 
 // Most function are suffixed with `_elementwise` like min, max, clamp, because there are already defiend in [std::cmp::Ord] and I don't want to fully qualify them...
 
-/// Max function in a component way
+/// Max function in a component way.
 pub trait Max
 {
-    /// Max function in a component way
-    ///
-    /// Can cause a panic for grid if the size mismatch
+    /// Max function in a component way.
     fn max_elementwise(self, other: Self) -> Self;
 }
-/// Max function in a component way
-///
-/// Can cause a panic for grid if the size mismatch
+
+/// Max function in a component way.
 pub fn max<S>(a: S, b: S) -> S
 where
     S: Max,
@@ -51,17 +48,13 @@ where
     fn max_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Max::max_elementwise) }
 }
 
-/// Min function in a component way
+/// Min function in a component way.
 pub trait Min
 {
-    /// Min function in a component way
-    ///
-    /// Can cause a panic for grid if the size mismatch
+    /// Min function in a component way.
     fn min_elementwise(self, other: Self) -> Self;
 }
-/// Min function in a component way
-///
-/// Can cause a panic for grid if the size mismatch
+/// Min function in a component way.
 pub fn min<S>(a: S, b: S) -> S
 where
     S: Min,
@@ -204,7 +197,7 @@ pub trait Abs
     /// The absolute value of `iX::MIN` cannot be represented as an `iX`, and attempting to calculate it will cause an overflow.
     /// This means that code in debug mode will trigger a panic on this case and optimized code will return `iX::MIN` without a panic.
     ///
-    /// Can cause a panic for grid if the size mismatch
+    /// Can cause a panic for grid if the size mismatch.
     fn abs(self) -> Self::Output;
 }
 map_on_integer_unsigned!(
@@ -216,6 +209,7 @@ map_on_integer_unsigned!(
             #[inline(always)]
             fn abs(self) -> Self { self }
         }
+        /*
         impl Abs for Saturating<$primitive_name>
         {
             type Output = Self;
@@ -227,7 +221,7 @@ map_on_integer_unsigned!(
             type Output = Self;
             #[inline(always)]
             fn abs(self) -> Self { self }
-        }
+        }*/
     }
 );
 map_on_integer_signed!(
@@ -239,6 +233,7 @@ map_on_integer_signed!(
             #[inline(always)]
             fn abs(self) -> Self { self.abs() }
         }
+        /*
         impl Abs for Saturating<$primitive_name>
         {
             type Output = Self;
@@ -252,6 +247,7 @@ map_on_integer_signed!(
             #[inline(always)]
             fn abs(self) -> Self { if self.is_max() { Self(<$primitive_name>::MIN) } else { Self(<$primitive_name>::abs(self.0)) } }
         }
+        */
     }
 );
 map_on_float!(
@@ -263,33 +259,21 @@ map_on_float!(
             #[inline(always)]
             fn abs(self) -> Self { self.abs() }
         }
-        impl Abs for Saturating<$primitive_name>
-        {
-            type Output = Self;
-            #[inline(always)]
-            fn abs(self) -> Self { Self::abs(self) }
-        }
-        impl Abs for Wrapping<$primitive_name>
-        {
-            type Output = Self;
-            #[inline(always)]
-            fn abs(self) -> Self { Self::abs(self) }
-        }
     }
 );
+impl<T> Abs for Saturating<T> where T: Abs
+{
+    type Output = Saturating<T::Output>;
+    #[inline(always)]
+    fn abs(self) -> Self::Output { Saturating(self.0.abs()) }
+}
+impl<T> Abs for Wrapping<T> where T: Abs
+{
+    type Output = Wrapping<T::Output>;
+    #[inline(always)]
+    fn abs(self) -> Self::Output { Wrapping(self.0.abs()) }
+}
 impl Abs for bool
-{
-    type Output = Self;
-    #[inline(always)]
-    fn abs(self) -> Self { self }
-}
-impl Abs for Saturating<bool>
-{
-    type Output = Self;
-    #[inline(always)]
-    fn abs(self) -> Self { self }
-}
-impl Abs for Wrapping<bool>
 {
     type Output = Self;
     #[inline(always)]
@@ -303,6 +287,7 @@ where
     type Output = S::WithType<<S::Item as Abs>::Output>;
     fn abs(self) -> Self::Output { self.map(Abs::abs) }
 }
+
 /// Absolute value in a component way.
 ///
 /// ## Overflow behavior
