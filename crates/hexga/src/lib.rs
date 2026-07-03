@@ -72,9 +72,9 @@ pub mod hexga_prelude
     #[cfg(feature = "hexga_io")]
     pub use hexga_io;*/
     // #[allow(unused_imports)]
-    pub use crate::io::prelude::*;
-    pub use crate::encoding::prelude::*;
     pub use crate::asset::prelude::*;
+    pub use crate::encoding::prelude::*;
+    pub use crate::io::prelude::*;
 
     /*
     #[allow(unused_imports)]
@@ -102,10 +102,9 @@ pub mod hexga_traits
     pub use crate::generational::traits::*;
     pub use crate::utils::traits::*;
 
-    pub use crate::io::traits::*;
-    pub use crate::encoding::traits::*;
     pub use crate::asset::traits::*;
-
+    pub use crate::encoding::traits::*;
+    pub use crate::io::traits::*;
 }
 
 // Todo: introduce a `mods traits`

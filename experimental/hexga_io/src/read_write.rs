@@ -7,7 +7,7 @@ pub enum FileType
 {
     File,
     Dir,
-    Symlink
+    Symlink,
 }
 
 // fn `foo_at()` (with `_at`) don't resolve the path
@@ -16,7 +16,11 @@ pub enum FileType
 pub trait FsDynRead
 {
     #[doc(hidden)]
-    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool> { self.dyn_file_type_at(path)?; Ok(true) }
+    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool>
+    {
+        self.dyn_file_type_at(path)?;
+        Ok(true)
+    }
     #[doc(hidden)]
     fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>;
     #[doc(hidden)]
@@ -51,7 +55,6 @@ pub trait FsDynRead
     /// Returns an error when resolving above root (e.g., `/..`).
     fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>;
 
-
     #[doc(hidden)]
     /// Renames a file or directory to a new name, replacing the original file if
     /// `to` already exists.
@@ -76,8 +79,7 @@ pub trait FsDynWrite: FsDynRead
     fn dyn_remove_at(&mut self, path: &Path) -> IoResult;
 }
 
-
-pub trait FsRead : FsDynRead
+pub trait FsRead: FsDynRead
 {
     fn exist_at<P: AsRef<Path>>(&mut self, path: P) -> bool { self.try_exist_at(path).is_ok_and(|exist| exist) }
     fn try_exist_at<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { self.dyn_try_exist_at(path.as_ref()) }
@@ -93,7 +95,11 @@ pub trait FsRead : FsDynRead
     }
 
     fn file_type_at<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_at(path.as_ref()) }
-    fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { let path = self.resolve_path(path)?; self.file_type_at(path) }
+    fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType>
+    {
+        let path = self.resolve_path(path)?;
+        self.file_type_at(path)
+    }
 
     /// Given a path to a file, return all occurence of the file on the disk with the same name, regardless of the extension.
     /// If the path already have an extension, return it.
@@ -118,14 +124,12 @@ pub trait FsRead : FsDynRead
         self.read_dir_at(path)
     }
 }
-impl<T> FsRead for T where T: FsDynRead { }
-impl FsRead for dyn FsDynRead { }
-impl FsRead for dyn Fs { }
+impl<T> FsRead for T where T: FsDynRead {}
+impl FsRead for dyn FsDynRead {}
+impl FsRead for dyn Fs {}
 
-
-pub trait Fs : FsDynWrite + FsDynRead {}
+pub trait Fs: FsDynWrite + FsDynRead {}
 impl<F> Fs for F where F: FsDynWrite + FsDynRead {}
-
 
 pub trait FsWrite: FsRead + FsDynWrite
 {
@@ -145,11 +149,16 @@ pub trait FsWrite: FsRead + FsDynWrite
     /// Create recursively all dir in the path.
     /// If any element is a file on the way, delete it.
     fn create_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult { self.dyn_create_dir(path.as_ref()) }
-    
+
     /// Remove any file or folder recursively
     fn remove_at<P: AsRef<Path>>(&mut self, path: P) -> IoResult { self.dyn_remove_at(path.as_ref()) }
     /// Remove any file or folder recursively
-    fn remove<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> { let path = self.resolve_path(path)?; self.remove_at(&path)?; Ok(path) }
+    fn remove<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf>
+    {
+        let path = self.resolve_path(path)?;
+        self.remove_at(&path)?;
+        Ok(path)
+    }
 
     /// Renames a file or directory to a new name, replacing the original file if
     /// `to` already exists.

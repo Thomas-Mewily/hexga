@@ -6,8 +6,8 @@ pub type FmtError = core::fmt::Error;
 
 pub mod prelude
 {
-    pub use super::{FmtResult, FmtError, Formatter};
     pub use super::traits::*;
+    pub use super::{FmtError, FmtResult, Formatter};
 }
 
 pub mod traits

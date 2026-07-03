@@ -5,14 +5,14 @@ pub(crate) mod prelude
     pub use super::{Load, LoadExtension, LoadFrom};
 }
 
-pub trait Load : Sized + for<'de> CfgDeserialize<'de>
+pub trait Load: Sized + for<'de> CfgDeserialize<'de>
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn load_prefered_extension() -> &'static extension { Self::load_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }
 
-    fn load_from_fs<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> 
+    fn load_from_fs<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>
     where
-        Self: Sized
+        Self: Sized,
     {
         let path = path.as_ref();
         let extension = path.extension().map(|v| v.to_str()).flatten();
@@ -59,7 +59,7 @@ pub trait LoadExtension: Load
     fn load_from_reader<R>(reader: R) -> EncodeResult<Self>
     where
         Self: Sized,
-        R: Read
+        R: Read,
     {
         Self::load_from_reader_with_extension(reader, None)
     }
@@ -79,7 +79,7 @@ pub trait LoadExtension: Load
         }
 
         #[cfg(feature = "serde")]
-        {   
+        {
             if let Some(ex) = extension
             {
                 return AnyFormat::try_from(ex).unwrap_or_default().from_reader(reader);
@@ -87,7 +87,7 @@ pub trait LoadExtension: Load
         }
 
         #[allow(unreachable_code)]
-        return Err(EncodeError::load_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into())))
+        return Err(EncodeError::load_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into())));
     }
 }
 impl<T> LoadExtension for T where T: Load {}
@@ -101,9 +101,9 @@ where
     S: LoadFrom + for<'de> CfgDeserialize<'de>,
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Source::load_custom_extensions() }
-    fn load_from_fs<FS: Fs, P : AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> 
+    fn load_from_fs<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>
     where
-        Self: Sized
+        Self: Sized,
     {
         S::Source::load_from_fs(fs, path).map(|v| v.into())
     }

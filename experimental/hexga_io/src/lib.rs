@@ -1,13 +1,11 @@
 #![allow(unused_imports)]
 use std::borrow::Cow;
 pub use std::path::{Path, PathBuf};
-pub use std::{
-    fs, io,
-};
+pub use std::{fs, io};
 
+use hexga_core::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use hexga_core::prelude::*;
 
 mod read_write;
 pub use read_write::*;
@@ -23,24 +21,27 @@ pub use path_wrapper::*;
 mod path_extension;
 pub use path_extension::*;
 
-
 mod result;
 pub use result::*;
 
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{Io, IoError, IoErrorKind, IoResult, PathBuf, Path};
+    pub use super::{Io, IoError, IoErrorKind, IoResult, Path, PathBuf};
 }
 
 pub mod traits
 {
     pub use super::{
-        FsDynRead, FsDynWrite, 
-        FsRead, FsWrite, Fs, 
+        Fs,
+        FsDynRead,
+        FsDynWrite,
+        FsRead,
+        FsWrite,
+        GetPath,
         //FsProvider,
         IoErrorExt,
 
-        GetPath, SetPath,
+        SetPath,
     };
 }

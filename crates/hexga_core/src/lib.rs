@@ -171,7 +171,7 @@ pub mod io
     // Functions
     pub use std::io::{copy, empty, pipe, read_to_string, repeat, sink, stderr, stdin, stdout};
     // Type Alias
-    pub type IoResult<T=()> = Result<T, Error>;
+    pub type IoResult<T = ()> = Result<T, Error>;
 }
 //re_export_mod_from_std_or_core!(io);
 
@@ -315,10 +315,10 @@ pub mod std_prelude
 {
     // todo: use derive_more for Deref, DerefMut ? https://crates.io/crates/derive_more
     pub use core::{
-        convert::{AsMut, AsRef},
-        ops::{Deref, DerefMut},
-        hash::{Hash, Hasher},
         cmp::Ordering,
+        convert::{AsMut, AsRef},
+        hash::{Hash, Hasher},
+        ops::{Deref, DerefMut},
     };
     re_export_items_from_std_or_core!(prelude);
 }

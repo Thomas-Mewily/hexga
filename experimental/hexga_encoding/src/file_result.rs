@@ -2,13 +2,12 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{FileResult, FileError};
+    pub use super::{FileError, FileResult};
 }
-
 
 pub type FileResult<T = ()> = Result<T, FileError>;
 
-pub enum FileError 
+pub enum FileError
 {
     /// Problem when encoding the data.
     Encode(EncodeFileError),
@@ -38,13 +37,17 @@ impl From<EncodeError> for FileError
 }
 
 #[derive(Default, Clone, PartialEq, Eq)]
-pub struct EncodeFileError 
+pub struct EncodeFileError
 {
     pub error: EncodeError,
     pub path: Option<PathBuf>,
 }
 impl EncodeFileError
 {
-    pub fn new(error: EncodeError) -> Self { Self { error, path: None }}
-    pub fn with_path(mut self, path: Option<PathBuf>) -> Self { self.path = path; self }
+    pub fn new(error: EncodeError) -> Self { Self { error, path: None } }
+    pub fn with_path(mut self, path: Option<PathBuf>) -> Self
+    {
+        self.path = path;
+        self
+    }
 }

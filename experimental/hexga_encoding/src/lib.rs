@@ -5,14 +5,14 @@ use hexga_core::utils::*;
 use hexga_core::map_on::prelude::*;
 */
 use hexga_core::prelude::*;
+use hexga_io::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufReader, Read, Write};
 use std::{
-    fmt::{Display, Formatter, Debug},
+    fmt::{Debug, Display, Formatter},
     str::Utf8Error,
     string::FromUtf8Error,
 };
-use hexga_io::prelude::*;
 
 #[cfg(feature = "serde")]
 use serde::{
@@ -54,7 +54,7 @@ pub use url_data::*;
 
 pub mod prelude
 {
-    pub use super::{fs_extension::prelude::*, load::prelude::*, encode_result::prelude::*, file_result::prelude::*, save::prelude::*, url_data::prelude::*};
+    pub use super::{encode_result::prelude::*, file_result::prelude::*, fs_extension::prelude::*, load::prelude::*, save::prelude::*, url_data::prelude::*};
 
     #[cfg(feature = "serde")]
     pub use super::serde_impl::prelude::*;

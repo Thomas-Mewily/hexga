@@ -2,7 +2,6 @@ use hexga_core::io::IoResult;
 
 use super::*;
 
-
 pub trait GetPath
 {
     fn get_path(&self) -> Option<&Path>;
@@ -14,15 +13,12 @@ impl GetPath for Path
 }
 impl GetPath for Option<&Path>
 {
-    fn get_path(&self) -> Option<&Path> 
-    { 
-        self.map(|p| p.get_path()).flatten()
-    }
+    fn get_path(&self) -> Option<&Path> { self.map(|p| p.get_path()).flatten() }
 }
-impl<E> GetPath for Result<&Path,E>
+impl<E> GetPath for Result<&Path, E>
 {
-    fn get_path(&self) -> Option<&Path> 
-    { 
+    fn get_path(&self) -> Option<&Path>
+    {
         match self
         {
             Ok(p) => Some(p),
@@ -37,15 +33,12 @@ impl GetPath for PathBuf
 }
 impl GetPath for Option<&PathBuf>
 {
-    fn get_path(&self) -> Option<&Path> 
-    { 
-        self.map(|p| p.get_path()).flatten()
-    }
+    fn get_path(&self) -> Option<&Path> { self.map(|p| p.get_path()).flatten() }
 }
-impl<E> GetPath for Result<&PathBuf,E>
+impl<E> GetPath for Result<&PathBuf, E>
 {
-    fn get_path(&self) -> Option<&Path> 
-    { 
+    fn get_path(&self) -> Option<&Path>
+    {
         match self
         {
             Ok(p) => Some(p),
@@ -60,15 +53,12 @@ impl GetPath for &str
 }
 impl GetPath for Option<&str>
 {
-    fn get_path(&self) -> Option<&Path> 
-    { 
-        self.map(|p| p.as_ref())
-    }
+    fn get_path(&self) -> Option<&Path> { self.map(|p| p.as_ref()) }
 }
-impl<E> GetPath for Result<&str,E>
+impl<E> GetPath for Result<&str, E>
 {
-    fn get_path(&self) -> Option<&Path> 
-    { 
+    fn get_path(&self) -> Option<&Path>
+    {
         match self
         {
             Ok(p) => Some(p.as_ref()),
@@ -76,7 +66,6 @@ impl<E> GetPath for Result<&str,E>
         }
     }
 }
-
 
 /*
 impl<P> GetPath for P where P: AsRef<Path>
@@ -90,7 +79,7 @@ impl<P> GetPath for P where P: AsRef<Path>
 pub trait SetPath
 {
     /// Change the path without moving the old file.
-    fn set_path<P : AsRef<Path>>(&mut self, path: Option<P>) -> IoResult;
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult;
 
     /// Change the path and move the old file.
     /// Do not change the file path if the renaming failed.
@@ -98,37 +87,42 @@ pub trait SetPath
 }
 impl SetPath for PathBuf
 {
-    fn set_path<P : AsRef<Path>>(&mut self, path: Option<P>) -> IoResult {
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
+    {
         match path
         {
-            Some(new_path) => { *self = new_path.as_ref().to_owned(); },
-            None => {},
+            Some(new_path) =>
+            {
+                *self = new_path.as_ref().to_owned();
+            }
+            None =>
+            {}
         }
         Ok(())
     }
-    
-    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult {
-        self.set_path(Some(to))
-    }
+
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult { self.set_path(Some(to)) }
 }
 impl SetPath for String
 {
-    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult {
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
+    {
         match path
         {
-            Some(new_path) => {
-                *self = new_path.as_ref()
+            Some(new_path) =>
+            {
+                *self = new_path
+                    .as_ref()
                     .to_str()
                     .map(|s| s.to_string())
                     .ok_or_else(|| IoError::new(io::ErrorKind::InvalidFilename, "Path contains invalid UTF-8"))?;
-            },
-            None => {},
+            }
+            None =>
+            {}
         }
         Ok(())
     }
-    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult {
-        self.set_path(Some(to))
-    }
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult { self.set_path(Some(to)) }
 }
 
 /*

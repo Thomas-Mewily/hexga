@@ -8,7 +8,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{IsDirty,SetDirty};
+    pub use super::{IsDirty, SetDirty};
 }
 
 pub trait IsDirty
@@ -31,32 +31,28 @@ pub struct Dirty<T>
     used: bool,
 }
 impl<T> PartialEq for Dirty<T>
-    where T: PartialEq
+where
+    T: PartialEq,
 {
-    fn eq(&self, other: &Self) -> bool {
-        self.value == other.value
-    }
+    fn eq(&self, other: &Self) -> bool { self.value == other.value }
 }
 impl<T> PartialOrd for Dirty<T>
-    where T: PartialOrd
+where
+    T: PartialOrd,
 {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.value.partial_cmp(&other.value)
-    }
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { self.value.partial_cmp(&other.value) }
 }
 impl<T> Ord for Dirty<T>
-    where T: Ord
+where
+    T: Ord,
 {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.value.cmp(other)
-    }
+    fn cmp(&self, other: &Self) -> Ordering { self.value.cmp(other) }
 }
 impl<T> Hash for Dirty<T>
-    where T: Hash
+where
+    T: Hash,
 {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.value.hash(state);
-    }
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.value.hash(state); }
 }
 impl<T> From<T> for Dirty<T>
 {

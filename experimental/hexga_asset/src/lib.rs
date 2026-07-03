@@ -1,10 +1,10 @@
 #![allow(unused_imports)]
-use hexga_utils::dirty::prelude::*;
-use hexga_io::prelude::*;
+use hexga_core::prelude::*;
 use hexga_encoding::prelude::*;
+use hexga_io::prelude::*;
+use hexga_utils::dirty::prelude::*;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
-use hexga_core::prelude::*;
 
 mod reload;
 pub use reload::*;
@@ -31,5 +31,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{Reload, Persistant, PersistantValue, FsLoad};
+    pub use super::{FsLoad, Persistant, PersistantValue, Reload};
 }

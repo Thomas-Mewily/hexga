@@ -6,10 +6,10 @@ pub struct Io;
 
 impl FsDynRead for Io
 {
-    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool> 
-    { 
-        //let path : &Path = path.into(); 
-        Ok(path.exists()) 
+    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool>
+    {
+        //let path : &Path = path.into();
+        Ok(path.exists())
     }
 
     fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>
@@ -28,7 +28,10 @@ impl FsDynRead for Io
     fn dyn_resolve_paths<'a>(&mut self, path: &'a Path) -> IoResult<Vec<PathBuf>>
     {
         let path = self.canonicalize(path)?;
-        if path.extension().is_some() { return Ok(vec![path]); }
+        if path.extension().is_some()
+        {
+            return Ok(vec![path]);
+        }
 
         let parent = match path.parent()
         {
@@ -37,7 +40,7 @@ impl FsDynRead for Io
         };
         let stem = path.file_stem().unwrap_or(path.as_os_str());
 
-        let parent = match std::fs::read_dir(parent) 
+        let parent = match std::fs::read_dir(parent)
         {
             Ok(dir) => dir,
             Err(_e) => return Ok(vec![path]),
@@ -45,65 +48,90 @@ impl FsDynRead for Io
 
         let matches: Vec<PathBuf> = parent
             .filter_map(|entry| entry.ok())
-            .map(|entry| { let p : PathBuf = entry.path().into(); p })
+            .map(|entry| {
+                let p: PathBuf = entry.path().into();
+                p
+            })
             .filter(|candidate| candidate.file_stem() == Some(stem))
             .collect();
         Ok(matches)
     }
 
-    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf> { 
-        let path : &Path = path.into();
+    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>
+    {
+        let path: &Path = path.into();
 
-        if path.exists() {
+        if path.exists()
+        {
             return path.canonicalize();
         }
 
         let mut resolved = PathBuf::with_capacity(path.as_os_str().len());
-        for component in path.components() {
-            match component {
-                std::path::Component::CurDir => {
+        for component in path.components()
+        {
+            match component
+            {
+                std::path::Component::CurDir =>
+                {
                     // Skip ".". Does nothing
                     continue;
                 }
-                std::path::Component::ParentDir => {
+                std::path::Component::ParentDir =>
+                {
                     // Pop the last component for ".."
-                    if resolved.pop() == false { return Err(IoErrorKind::InvalidInput.into()) };
+                    if resolved.pop() == false
+                    {
+                        return Err(IoErrorKind::InvalidInput.into());
+                    };
                 }
-                std::path::Component::RootDir => {
+                std::path::Component::RootDir =>
+                {
                     resolved.push("/");
                 }
-                std::path::Component::Prefix(prefix) => {
+                std::path::Component::Prefix(prefix) =>
+                {
                     // Windows drive letter (e.g., "C:")
                     resolved.push(prefix.as_os_str());
                 }
-                std::path::Component::Normal(segment) => {
+                std::path::Component::Normal(segment) =>
+                {
                     resolved.push(segment);
                 }
             }
         }
-        
+
         Ok(resolved)
     }
-    
-    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType> {
+
+    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType>
+    {
         //let path : &Path = path.into();
         let file_type = path.metadata()?.file_type();
-        if file_type.is_file() { return Ok(FileType::File); }
-        if file_type.is_dir() { return Ok(FileType::Dir); }
-        if file_type.is_symlink() { return Ok(FileType::Symlink); }
+        if file_type.is_file()
+        {
+            return Ok(FileType::File);
+        }
+        if file_type.is_dir()
+        {
+            return Ok(FileType::Dir);
+        }
+        if file_type.is_symlink()
+        {
+            return Ok(FileType::Symlink);
+        }
         Err(IoError::new_with_path(IoErrorKind::InvalidFilename, "Can't gess the file type", path))
     }
-    
-    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult {
-        std::fs::rename(from, to)
-    }
+
+    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult { std::fs::rename(from, to) }
 }
 impl FsDynWrite for Io
 {
     fn dyn_write_bytes_at(&mut self, path: &Path, value: &[u8]) -> IoResult
     {
-        if let Some(parent) = path.parent() {
-            if !parent.exists() {
+        if let Some(parent) = path.parent()
+        {
+            if !parent.exists()
+            {
                 std::fs::create_dir_all(parent)?;
             }
         }
@@ -111,26 +139,32 @@ impl FsDynWrite for Io
         std::fs::write(path, value)?;
         Ok(())
     }
-    
-    fn dyn_create_dir(&mut self, path: &Path) -> IoResult {
-        if path.exists() {
-            if path.is_file() {
+
+    fn dyn_create_dir(&mut self, path: &Path) -> IoResult
+    {
+        if path.exists()
+        {
+            if path.is_file()
+            {
                 std::fs::remove_file(path)?;
             }
         }
-        
+
         std::fs::create_dir_all(path)?;
         Ok(())
     }
-    
-    fn dyn_remove_at(&mut self, path: &Path) -> IoResult {
-        if path.is_dir() 
+
+    fn dyn_remove_at(&mut self, path: &Path) -> IoResult
+    {
+        if path.is_dir()
         {
             std::fs::remove_dir_all(path)?;
-        } else if path.is_file() 
+        }
+        else if path.is_file()
         {
             std::fs::remove_file(path)?;
-        } else if !path.exists() 
+        }
+        else if !path.exists()
         {
             return Ok(());
         }

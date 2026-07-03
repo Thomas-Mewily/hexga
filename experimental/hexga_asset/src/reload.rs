@@ -1,6 +1,5 @@
 use super::*;
 
-
 /// 🔥 Hot Reloading.
 pub trait Reload
 {
@@ -16,7 +15,6 @@ pub trait PersistentSave
     fn save(&mut self) -> IoResult;
 }
 */
-
 
 /*
 impl<T> HotReload for Asset<T>
