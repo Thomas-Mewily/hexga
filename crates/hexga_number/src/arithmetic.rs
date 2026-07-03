@@ -34,5 +34,38 @@ where
 pub trait Pow<Exp = Self>
 {
     type Output;
-    fn pow(self, exp: Exp) -> Self;
+    fn pow(self, exp: Exp) -> Self::Output;
+}
+
+map_on_integer!(($primitive_name: ty) => 
+{ 
+    impl Pow for $primitive_name 
+    {
+        type Output = Self;
+        fn pow(self, exp: Self) -> Self::Output { self.pow(exp as _) }
+    } 
+});
+
+map_on_float!(($primitive_name: ty) => 
+{ 
+    impl Pow for $primitive_name 
+    {
+        type Output = Self;
+        fn pow(self, exp: Self) -> Self::Output { self.powf(exp) }
+    }
+});
+
+impl<T> Pow for Wrapping<T>
+where
+    T: Pow,
+{
+    type Output = Wrapping<T::Output>;
+    fn pow(self, rhs: Self) -> Self::Output { Wrapping(self.0.pow(rhs.0)) }
+}
+impl<T> Pow for Saturating<T>
+where
+    T: Pow,
+{
+    type Output = Saturating<T::Output>;
+    fn pow(self, rhs: Self) -> Self::Output { Saturating(self.0.pow(rhs.0)) }
 }

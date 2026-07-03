@@ -17,8 +17,8 @@ pub use increment::*;
 mod reflection;
 pub use reflection::*;
 
-//mod arithmetic;
-//pub use arithmetic::*;
+mod arithmetic;
+pub use arithmetic::*;
 
 pub mod prelude
 {
