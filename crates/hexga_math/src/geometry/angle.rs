@@ -64,6 +64,8 @@ map_on_number!(
     }
 );
 
+// Todo: When negative trait bound will be added, uncomment it. This allow to use expr like `[1, 2].degree()` of result type `[Angle; 2]`
+// Same for Time
 /*
 impl<T> ToAngleComposite for T
 where
