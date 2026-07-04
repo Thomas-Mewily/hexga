@@ -25,7 +25,7 @@ fn main()
     }
     */
 
-    for i in (0.0..=1.0f32).sample(10.1)//.rev()
+    for i in (0.0..=1.0f32).sample(9.9).rev()
     {
         println!("{}", i);
     }
