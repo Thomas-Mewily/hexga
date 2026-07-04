@@ -131,7 +131,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     let [array_impl, specific_impl] = if is_array_struct
     {
-        std::array::from_fn(|idx| {
+        ::core::array::from_fn(|idx| {
             if idx <= 0
             {
                 let current_name = names[idx];
@@ -277,20 +277,37 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     #crate_ident::map_on::map_on_operator_binary!(
                         (($trait_name: tt, $fn_name: tt)) =>
                         {
-                            impl<T, const N : usize> std::ops::$trait_name<Self> for #current_name<T,N>
-                                where T: std::ops::$trait_name<T>
+                            impl<T, const N : usize> ::core::ops::$trait_name<Self> for #current_name<T,N>
+                                where T: ::core::ops::$trait_name<T>
                             {
                                 type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output,N>;
                                 fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
                             }
 
-                            impl<T, const N : usize> std::ops::$trait_name<T> for #current_name<T,N> where T: std::ops::$trait_name<T> + Copy
+                            impl<T, const N : usize> ::core::ops::$trait_name<T> for #current_name<T,N> where T: ::core::ops::$trait_name<T> + Copy
                             {
                                 type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output,N>;
                                 fn $fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$fn_name(rhs)).into() }
                             }
                         }
                     );
+
+                    impl<T, const N : usize> #crate_ident::RemEuclid<Self> for #current_name<T,N>
+                        where T: #crate_ident::RemEuclid<T>
+                    {
+                        type Output = #current_name<<T as #crate_ident::RemEuclid<T>>::Output,N>;
+                        fn rem_euclid(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::rem_euclid) }
+                        // Todo: impl it once try_map is available
+                        //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.to_array().map(|v| v.$fn_name(rhs)).into() }
+                    }
+
+                    impl<T, const N : usize> #crate_ident::Pow<Self> for #current_name<T,N>
+                        where T: #crate_ident::Pow<T>
+                    {
+                        type Output = #current_name<<T as #crate_ident::Pow<T>>::Output,N>;
+                        fn pow(self, exp: Self) -> Self::Output { self.map_with(exp, T::pow) }
+                    }
+
 
                     #crate_ident::map_on::map_on_operator_assign!(
                         (($trait_name: tt, $fn_name: tt)) =>
@@ -366,9 +383,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     #crate_ident::map_on::map_on_std_fmt!(
                         ($trait_name :ident) =>
                         {
-                            impl<T, const N : usize> std::fmt::$trait_name  for #current_name<T,N> where T: std::fmt::$trait_name
+                            impl<T, const N : usize> ::core::fmt::$trait_name  for #current_name<T,N> where T: ::core::fmt::$trait_name
                             {
-                                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+                                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result
                                 {
                                     write!(f, "(")?;
                                     let mut it = self.array().iter().peekable();
@@ -432,7 +449,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                     type Value = Arr<T, N>;
 
                                     fn expecting(&self, formatter: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-                                        write!(formatter, "an {} of length {}", std::any::type_name::<#name<T,N>>(), N)
+                                        write!(formatter, "an {} of length {}", ::core::any::type_name::<#name<T,N>>(), N)
                                     }
 
                                     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
@@ -514,7 +531,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
     }
     else
     {
-        std::array::from_fn(|idx| {
+        ::core::array::from_fn(|idx| {
             if idx <= 0
             {
                 let current_name = names[idx];
@@ -665,6 +682,22 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         }
                     );
 
+                    impl<T> #crate_ident::RemEuclid<Self> for #current_name<T>
+                        where T: #crate_ident::RemEuclid<T>
+                    {
+                        type Output = #current_name<<T as #crate_ident::RemEuclid<T>>::Output>;
+                        fn rem_euclid(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::rem_euclid) }
+                        // Todo: impl it once try_map is available
+                        //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.to_array().map(|v| v.$fn_name(rhs)).into() }
+                    }
+
+                    impl<T> #crate_ident::Pow<Self> for #current_name<T>
+                        where T: #crate_ident::Pow<T>
+                    {
+                        type Output = #current_name<<T as #crate_ident::Pow<T>>::Output>;
+                        fn pow(self, exp: Self) -> Self::Output { self.map_with(exp, T::pow) }
+                    }
+
                     #crate_ident::map_on::map_on_operator_assign!(
                         (($trait_name: tt, $fn_name: tt)) =>
                         {
@@ -739,9 +772,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     #crate_ident::map_on::map_on_std_fmt!(
                         ($trait_name :ident) =>
                         {
-                            impl<T> std::fmt::$trait_name for #current_name<T> where T: std::fmt::$trait_name
+                            impl<T> ::core::fmt::$trait_name for #current_name<T> where T: ::core::fmt::$trait_name
                             {
-                                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+                                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result
                                 {
                                     write!(f, "(")?;
                                     let mut it = self.array().iter().peekable();
@@ -808,7 +841,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                         type Value = Arr<T>;
 
                                         fn expecting(&self, formatter: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-                                            write!(formatter, "an {}", std::any::type_name::<#name<T>>())
+                                            write!(formatter, "an {}", ::core::any::type_name::<#name<T>>())
                                         }
 
                                         fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
@@ -993,7 +1026,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                         #( #[serde(default = "__default_val::<T, Policy>")] #field_idents: T, )*
 
                                         #[serde(skip)]
-                                        __phantom_policy : std::marker::PhantomData<Policy>,
+                                        __phantom_policy : ::core::marker::PhantomData<Policy>,
                                     }
 
                                     // Use super::#name to construct the original type
@@ -1039,7 +1072,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
     let ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::cmp::Ord));
     let hash_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::hash::Hash));
 
-    let [basic_impl] = std::array::from_fn(|idx| {
+    let [basic_impl] = ::core::array::from_fn(|idx| {
         let current_name = names[idx];
         quote! {
 
@@ -1051,29 +1084,29 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                 #[allow(dead_code)]
                 pub(crate) const IS_VALID: () =
                 {
-                    assert!(std::mem::size_of::<Self>() == std::mem::size_of::<[T;#dim]>());
+                    assert!(std::mem::size_of::<Self>() == ::core::mem::size_of::<[T;#dim]>());
                 };
 
                 pub const fn from_array(array : [T;#dim]) -> Self
                 {
                     let _ = Self::IS_VALID;
-                    let s = unsafe { std::ptr::read(&array as *const [T;#dim] as *const Self) };
-                    std::mem::forget(array);
+                    let s = unsafe { ::core::ptr::read(&array as *const [T;#dim] as *const Self) };
+                    ::core::mem::forget(array);
                     s
                 }
 
                 pub const fn to_array(self) -> [T;#dim]
                 {
                     let _ = Self::IS_VALID;
-                    let s = unsafe { std::ptr::read(&self as *const Self as *const [T;#dim]) };
-                    std::mem::forget(self);
+                    let s = unsafe { ::core::ptr::read(&self as *const Self as *const [T;#dim]) };
+                    ::core::mem::forget(self);
                     s
                 }
 
                 #[inline(always)]
-                pub const fn array(&self) -> &[T; #dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
+                pub const fn array(&self) -> &[T; #dim] { let _ = Self::IS_VALID; unsafe { ::core::mem::transmute(self) } }
                 #[inline(always)]
-                pub const fn array_mut(&mut self) -> &mut[T; #dim] { let _ = Self::IS_VALID; unsafe { std::mem::transmute(self) } }
+                pub const fn array_mut(&mut self) -> &mut[T; #dim] { let _ = Self::IS_VALID; unsafe { ::core::mem::transmute(self) } }
 
                 #crate_ident::impl_number_basic_trait!();
             }

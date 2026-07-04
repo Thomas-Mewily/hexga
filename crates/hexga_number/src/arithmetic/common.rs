@@ -403,8 +403,10 @@ pub trait RemEuclid<Rhs = Self>
     /// 
     /// This function can panic on integer if `rhs` is zero, or if any overflow occur.
     fn rem_euclid(self, rhs: Rhs) -> Self::Output;
-    /// Checked Euclidean modulo. Computes `self.rem_euclid(rhs)`, returning `None` if `rhs == 0`.
-    fn checked_rem_euclid(self, rhs: Rhs) -> Option<Self::Output>;
+    
+    // Todo: enable it when TryMap will be available
+    // Checked Euclidean modulo. Computes `self.rem_euclid(rhs)`, returning `None` if `rhs == 0`.
+    //fn checked_rem_euclid(self, rhs: Rhs) -> Option<Self::Output>;
 }
 
 map_on_integer!(($primitive_name: ty) => 
@@ -413,7 +415,7 @@ map_on_integer!(($primitive_name: ty) =>
     {
         type Output = Self;
         fn rem_euclid(self, rhs: Self) -> Self::Output { self.rem_euclid(rhs) }
-        fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.checked_rem_euclid(rhs) }
+        //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.checked_rem_euclid(rhs) }
     } 
 });
 
@@ -423,7 +425,7 @@ map_on_float!(($primitive_name: ty) =>
     {
         type Output = Self;
         fn rem_euclid(self, rhs: Self) -> Self::Output { self.rem_euclid(rhs) }
-        fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { if rhs == 0.0 || rhs.is_nan() { None } else { Some(self.rem_euclid(rhs)) } }
+        //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { if rhs == 0.0 || rhs.is_nan() { None } else { Some(self.rem_euclid(rhs)) } }
     } 
 });
 
@@ -433,7 +435,7 @@ where
 {
     type Output = Wrapping<T::Output>;
     fn rem_euclid(self, rhs: Self) -> Self::Output { Wrapping(self.0.rem_euclid(rhs.0)) }
-    fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.0.checked_rem_euclid(rhs.0).map(|v| Wrapping(v)) }
+    //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.0.checked_rem_euclid(rhs.0).map(|v| Wrapping(v)) }
 }
 impl<T> RemEuclid for Saturating<T>
 where
@@ -441,7 +443,7 @@ where
 {
     type Output = Saturating<T::Output>;
     fn rem_euclid(self, rhs: Self) -> Self::Output { Saturating(self.0.rem_euclid(rhs.0)) }
-    fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.0.checked_rem_euclid(rhs.0).map(|v| Saturating(v)) }
+    //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.0.checked_rem_euclid(rhs.0).map(|v| Saturating(v)) }
 }
 
 
