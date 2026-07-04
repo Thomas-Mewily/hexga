@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait RangeStepExtension
+pub trait IterStep
 {
     type Output: Iterator<Item = Self::Item> + DoubleEndedIterator + FusedIterator;
     type Item;
@@ -16,7 +16,7 @@ pub trait RangeStepExtension
 }
 
 // Todo : Remove once the Step trait will be stabilized
-pub trait RangeStepIter: Unit + One
+pub trait IterStepMax: Unit + One
 {
     // Using Range, last value is excluded
     fn iter(max_excluded: Self) -> RangeStep<Self>
@@ -28,38 +28,38 @@ pub trait RangeStepIter: Unit + One
         }
     }
 }
-impl<U> RangeStepIter for U where U: Unit + One {}
+impl<U> IterStepMax for U where U: Unit + One {}
 
-pub trait RangeDefaultStepExtension: RangeDefault
+pub trait IterStepDefault: RangeDefault
 where
-    Range<Self>: RangeStepExtension,
+    Range<Self>: IterStep,
 {
     /// Step using the [`RangeDefault`] : `Self::RANGE_MIN..Self::MAX`
-    fn step(step: <Range<Self> as RangeStepExtension>::Item) -> <Range<Self> as RangeStepExtension>::Output;
+    fn step(step: <Range<Self> as IterStep>::Item) -> <Range<Self> as IterStep>::Output;
 }
-impl<T> RangeDefaultStepExtension for T
+impl<T> IterStepDefault for T
 where
     T: RangeDefault,
-    Range<T>: RangeStepExtension,
+    Range<T>: IterStep,
 {
-    fn step(step: <Range<Self> as RangeStepExtension>::Item) -> <Range<Self> as RangeStepExtension>::Output
+    fn step(step: <Range<Self> as IterStep>::Item) -> <Range<Self> as IterStep>::Output
     {
         (Self::RANGE_MIN..Self::RANGE_MAX).step(step)
     }
 }
-pub trait RangeDefaultStepInclusiveExtension: RangeDefault
+pub trait IterStepDefaultInclusive: RangeDefault
 where
-    RangeInclusive<Self>: RangeStepExtension,
+    RangeInclusive<Self>: IterStep,
 {
     /// Step using the [`RangeDefault`] : `Self::RANGE_MIN..=Self::MAX`
-    fn step_inclusive(step: <RangeInclusive<Self> as RangeStepExtension>::Item) -> <RangeInclusive<Self> as RangeStepExtension>::Output;
+    fn step_inclusive(step: <RangeInclusive<Self> as IterStep>::Item) -> <RangeInclusive<Self> as IterStep>::Output;
 }
-impl<T> RangeDefaultStepInclusiveExtension for T
+impl<T> IterStepDefaultInclusive for T
 where
     T: RangeDefault,
-    RangeInclusive<T>: RangeStepExtension,
+    RangeInclusive<T>: IterStep,
 {
-    fn step_inclusive(step: <RangeInclusive<Self> as RangeStepExtension>::Item) -> <RangeInclusive<Self> as RangeStepExtension>::Output
+    fn step_inclusive(step: <RangeInclusive<Self> as IterStep>::Item) -> <RangeInclusive<Self> as IterStep>::Output
     {
         (Self::RANGE_MIN..=Self::RANGE_MAX).step(step)
     }
@@ -170,7 +170,7 @@ where
 }
 impl<U> FusedIterator for RangeStep<U> where U: Unit {}
 
-impl<U> RangeStepExtension for Range<U>
+impl<U> IterStep for Range<U>
 where
     U: Unit,
 {
@@ -185,7 +185,7 @@ where
         }
     }
 }
-impl<U> RangeStepExtension for RangeTo<U>
+impl<U> IterStep for RangeTo<U>
 where
     U: Unit + RangeDefault,
 {
@@ -318,7 +318,7 @@ where
 }
 impl<U> FusedIterator for RangeStepInclusive<U> where U: Unit {}
 
-impl<U> RangeStepExtension for RangeFrom<U>
+impl<U> IterStep for RangeFrom<U>
 where
     U: Unit + RangeDefault,
 {
@@ -326,7 +326,7 @@ where
     type Item = U;
     fn step(self, step: U) -> Self::Output { (self.start..=U::RANGE_MAX).step(step) }
 }
-impl<U> RangeStepExtension for RangeInclusive<U>
+impl<U> IterStep for RangeInclusive<U>
 where
     U: Unit,
 {
@@ -338,7 +338,7 @@ where
         RangeStepInclusive { idx: start, end, step }
     }
 }
-impl<U> RangeStepExtension for RangeToInclusive<U>
+impl<U> IterStep for RangeToInclusive<U>
 where
     U: Unit + RangeDefault,
 {

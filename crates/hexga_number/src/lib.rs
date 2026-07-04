@@ -86,8 +86,8 @@ pub mod traits
         Unit,
 
         RangeDefault,
-        Sample, SampleDefault, SampleDefaultInclusive,
-        RangeStepExtension, RangeStepIter, RangeDefaultStepExtension, RangeDefaultStepInclusiveExtension,
+        IterSample, IterSampleDefault, IterSampleDefaultInclusive,
+        IterStep, IterStepMax, IterStepDefault, IterStepDefaultInclusive,
 
         MapIntern, MapInternWith, Map, MapWith
     };

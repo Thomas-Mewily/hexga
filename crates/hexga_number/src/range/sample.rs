@@ -1,39 +1,39 @@
 use super::*;
 
-pub trait Sample<I = usize>
+pub trait IterSample<I = usize>
 {
     type Output: Iterator<Item = Self::Item> + DoubleEndedIterator + FusedIterator;
     type Item;
     fn sample(self, nb_sample: I) -> Self::Output;
 }
 
-pub trait SampleDefault<I = usize>: RangeDefault
+pub trait IterSampleDefault<I = usize>: RangeDefault
 where
-    Range<Self>: Sample<I>,
+    Range<Self>: IterSample<I>,
 {
     /// Sample using the [`RangeDefault`] : `Self::RANGE_MIN..Self::MAX`
-    fn sample(nb_sample: I) -> <Range<Self> as Sample<I>>::Output;
+    fn sample(nb_sample: I) -> <Range<Self> as IterSample<I>>::Output;
 }
-impl<I, T> SampleDefault<I> for T
+impl<I, T> IterSampleDefault<I> for T
 where
     T: RangeDefault,
-    Range<T>: Sample<I>,
+    Range<T>: IterSample<I>,
 {
-    fn sample(nb_sample: I) -> <Range<Self> as Sample<I>>::Output { (Self::RANGE_MIN..Self::RANGE_MAX).sample(nb_sample) }
+    fn sample(nb_sample: I) -> <Range<Self> as IterSample<I>>::Output { (Self::RANGE_MIN..Self::RANGE_MAX).sample(nb_sample) }
 }
-pub trait SampleDefaultInclusive<I = usize>: RangeDefault
+pub trait IterSampleDefaultInclusive<I = usize>: RangeDefault
 where
-    RangeInclusive<Self>: Sample<I>,
+    RangeInclusive<Self>: IterSample<I>,
 {
     /// Sample using the [`RangeDefault`] : `Self::RANGE_MIN..=Self::MAX`
-    fn sample_inclusive(nb_sample: I) -> <RangeInclusive<Self> as Sample<I>>::Output;
+    fn sample_inclusive(nb_sample: I) -> <RangeInclusive<Self> as IterSample<I>>::Output;
 }
-impl<I, T> SampleDefaultInclusive<I> for T
+impl<I, T> IterSampleDefaultInclusive<I> for T
 where
     T: RangeDefault,
-    RangeInclusive<T>: Sample<I>,
+    RangeInclusive<T>: IterSample<I>,
 {
-    fn sample_inclusive(nb_sample: I) -> <RangeInclusive<Self> as Sample<I>>::Output { (Self::RANGE_MIN..=Self::RANGE_MAX).sample(nb_sample) }
+    fn sample_inclusive(nb_sample: I) -> <RangeInclusive<Self> as IterSample<I>>::Output { (Self::RANGE_MIN..=Self::RANGE_MAX).sample(nb_sample) }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -96,7 +96,7 @@ where
 {
 }
 
-impl<I, U> Sample<I> for Range<U>
+impl<I, U> IterSample<I> for Range<U>
 where
     I: Number + CastInto<U::Precision>,
     U: Unit,
@@ -124,7 +124,7 @@ where
     }
 }
 
-impl<I, U> Sample<I> for RangeInclusive<U>
+impl<I, U> IterSample<I> for RangeInclusive<U>
 where
     I: Number + CastInto<U::Precision>,
     U: Unit,
@@ -152,7 +152,7 @@ where
     }
 }
 
-impl<I, U> Sample<I> for RangeTo<U>
+impl<I, U> IterSample<I> for RangeTo<U>
 where
     I: Number + CastInto<U::Precision>,
     U: Unit + RangeDefault
@@ -162,7 +162,7 @@ where
 
     fn sample(self, nb_sample: I) -> Self::Output { (U::RANGE_MIN..self.end).sample(nb_sample) }
 }
-impl<I, U> Sample<I> for RangeToInclusive<U>
+impl<I, U> IterSample<I> for RangeToInclusive<U>
 where
     I: Number + CastInto<U::Precision>,
     U: Unit + RangeDefault
@@ -173,7 +173,7 @@ where
     fn sample(self, nb_sample: I) -> Self::Output { (U::RANGE_MIN..=self.end).sample(nb_sample) }
 }
 
-impl<I, U> Sample<I> for RangeFrom<U>
+impl<I, U> IterSample<I> for RangeFrom<U>
 where
     I: Number + CastInto<U::Precision>,
     U: Unit + RangeDefault
