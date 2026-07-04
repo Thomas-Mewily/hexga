@@ -5,8 +5,9 @@ pub trait Unit: Additive
     + Mul<Self::Precision, Output=Self> + MulAssign<Self::Precision>
     + Div<Self::Precision, Output=Self> + DivAssign<Self::Precision>
     + Rem<Self, Output=Self> + RemAssign<Self>
+    + PartialEq
 {
-    type Precision : Number;
+    type Precision : Number + PrimitiveType + OverflowBehavior;
     /// Return the inner value.
     /// This expose how the inner value is stored, but it's impl details and it may change.
     #[doc(hidden)]

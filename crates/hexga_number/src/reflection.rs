@@ -42,6 +42,13 @@ map_on_integer!(
     };
 );
 
+map_on_float!(
+    ($primitive_name: ty) =>
+    {
+        impl OverflowBehavior for $primitive_name {}
+    };
+);
+
 impl<T> OverflowBehavior for Wrapping<T>
 {
     const OVERFLOW_BEHAVIOR: OverflowPolicy = OverflowPolicy::Wrapping;

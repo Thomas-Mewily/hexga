@@ -261,15 +261,15 @@ pub trait SplitOn<T>
 }
 */
 
-impl<T, const N: usize> Rectangle<T, N>
+impl<U, const N: usize> Rectangle<U, N>
 where
-    T: Primitive,
+    U: Unit,
 {
-    pub fn split_axis(&self, nb: T, axis: usize) -> impl Iterator<Item = Self>
+    pub fn split_axis(&self, nb: U, axis: usize) -> impl Iterator<Item = Self>
     {
         let begin = self.pos[axis];
         let end = begin + self.size[axis];
-        let step = self.size[axis] / nb;
+        let step = self.size[axis] / nb.inner_value();
 
         let cuts = (begin..=end).step(step);
 
@@ -281,33 +281,33 @@ where
         })
     }
 
-    pub fn split_x(&self, nb: T) -> impl Iterator<Item = Self>
+    pub fn split_x(&self, nb: U) -> impl Iterator<Item = Self>
     where
-        Vector<T, N>: HaveX<T>,
+        Vector<U, N>: HaveX<U>,
     {
-        self.split_axis(nb, Vector::<T, N>::X_INDEX)
+        self.split_axis(nb, Vector::<U, N>::X_INDEX)
     }
-    pub fn split_y(&self, nb: T) -> impl Iterator<Item = Self>
+    pub fn split_y(&self, nb: U) -> impl Iterator<Item = Self>
     where
-        Vector<T, N>: HaveY<T>,
+        Vector<U, N>: HaveY<U>,
     {
-        self.split_axis(nb, Vector::<T, N>::Y_INDEX)
+        self.split_axis(nb, Vector::<U, N>::Y_INDEX)
     }
-    pub fn split_z(&self, nb: T) -> impl Iterator<Item = Self>
+    pub fn split_z(&self, nb: U) -> impl Iterator<Item = Self>
     where
-        Vector<T, N>: HaveZ<T>,
+        Vector<U, N>: HaveZ<U>,
     {
-        self.split_axis(nb, Vector::<T, N>::Z_INDEX)
+        self.split_axis(nb, Vector::<U, N>::Z_INDEX)
     }
-    pub fn split_w(&self, nb: T) -> impl Iterator<Item = Self>
+    pub fn split_w(&self, nb: U) -> impl Iterator<Item = Self>
     where
-        Vector<T, N>: HaveW<T>,
+        Vector<U, N>: HaveW<U>,
     {
-        self.split_axis(nb, Vector::<T, N>::W_INDEX)
+        self.split_axis(nb, Vector::<U, N>::W_INDEX)
     }
 
-    pub fn split_min(&self, nb: T) -> impl Iterator<Item = Self> { self.split_axis(nb, self.size.min_element_idx()) }
-    pub fn split_max(&self, nb: T) -> impl Iterator<Item = Self> { self.split_axis(nb, self.size.max_element_idx()) }
+    pub fn split_min(&self, nb: U) -> impl Iterator<Item = Self> where U: PartialOrd { self.split_axis(nb, self.size.min_element_idx()) }
+    pub fn split_max(&self, nb: U) -> impl Iterator<Item = Self> where U: PartialOrd { self.split_axis(nb, self.size.max_element_idx()) }
 }
 
 impl<T, const N: usize> Rectangle<T, N>

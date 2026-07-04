@@ -30,7 +30,7 @@ macro_rules! new_unit
         #[derive(Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd, Hash)]
         pub struct $name<P>(pub(crate) P);
 
-        impl<P> $crate::Unit for $name<P> where P: $crate::Number
+        impl<P> $crate::Unit for $name<P> where P: $crate::Number + $crate::PrimitiveType + $crate::OverflowBehavior
         {
             type Precision = P;
             #[inline]

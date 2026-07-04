@@ -37,7 +37,7 @@ where
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct RangeSample<I, U>
 where
     I: Number + CastInto<U::Precision>,
@@ -113,7 +113,7 @@ where
         }
         else
         {
-            (end - start).inner_value() / nb_sample.cast_into()
+            end.inner_value() - start.inner_value() / nb_sample.cast_into()
         };
         RangeSample {
             idx: I::ZERO,
@@ -141,7 +141,7 @@ where
         }
         else
         {
-            (end - start).inner_value() / (nb_sample - I::ONE).cast_into()
+            end.inner_value() - start.inner_value() / (nb_sample - I::ONE).cast_into()
         };
         RangeSample {
             idx: I::ZERO,
