@@ -243,14 +243,14 @@ impl<T: Floating> AngleOf<T>
     where
         T: Into<float>,
     {
-        unsafe { Angle::from_inner_value(self.0.into()).to_vector2_normalized() }
+        Angle::from_inner_value(self.0.into()).to_vector2_normalized()
     }
     #[inline(always)]
     pub fn to_vec2(self, length: T) -> Vec2
     where
         T: Into<float>,
     {
-        unsafe { Angle::from_inner_value(self.0.into()).to_vector2(length.into()) }
+        Angle::from_inner_value(self.0.into()).to_vector2(length.into())
     }
 
     /// Return a normalized (length = 1) vector with the same angle

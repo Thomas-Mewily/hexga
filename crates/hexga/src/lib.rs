@@ -105,6 +105,15 @@ pub mod hexga_traits
     pub use crate::asset::traits::*;
     pub use crate::encoding::traits::*;
     pub use crate::io::traits::*;
+
+    pub use super::fullname_crate::*;
 }
 
-// Todo: introduce a `mods traits`
+pub use fullname_crate::*;
+
+#[doc(hidden)]
+pub mod fullname_crate
+{
+    #[doc(hidden)] // For macro like new_unit
+    pub use hexga_math;
+}

@@ -6,7 +6,7 @@ fn main()
     dbg!(f.get_path());
     f.push_str(" goodbye!");
 
-    for i in (0.0..=1.0).sample(10)
+    for i in (0.0..=1.0f32).sample(10f32)
     {
         println!("{}", i);
     }

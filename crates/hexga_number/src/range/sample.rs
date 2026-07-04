@@ -6,22 +6,6 @@ pub trait RangeSampleExtension<I = usize>
     type Item;
     fn sample(self, nb_sample: I) -> Self::Output;
 }
-/*
-impl<U, P, I> RangeSampleExtension<I> for Range<U> where U: Unit<P>
-where
-    Range<U>: RangeSampleExtension<I, Item = T>,
-{
-    type Output = $crate::unit::WrappedIterator<$name<T>, T, <Range<T> as RangeSampleExtension<I>>::Output>;
-    type Item = $name<T>;
-
-    fn sample(self, nb_sample: I) -> Self::Output
-    {
-        $crate::unit::WrappedIterator::new(<Range<T> as RangeSampleExtension<I>>::sample(
-            unsafe { self.start.inner_value() }..unsafe { self.end.inner_value() },
-            nb_sample,
-        ))
-    }
-}*/
 
 pub trait RangeDefaultSampleExtension<I = usize>: RangeDefault
 where
@@ -54,23 +38,23 @@ where
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug)]
-pub struct RangeSample<I, T>
+pub struct RangeSample<I, U>
 where
-    I: Number + CastInto<T>,
-    T: Additive,
+    I: Number + CastInto<U::Precision>,
+    U: Unit,
 {
     pub idx: I,
     pub end: I,
-    pub offset: T,
-    pub step: T,
+    pub offset: U,
+    pub step: U,
 }
 
-impl<I, T> Iterator for RangeSample<I, T>
+impl<I, U> Iterator for RangeSample<I, U>
 where
-    I: Number + CastInto<T>,
-    T: Number,
+    I: Number + CastInto<U::Precision>,
+    U: Unit,
 {
-    type Item = T;
+    type Item = U;
 
     fn next(&mut self) -> Option<Self::Item>
     {
@@ -80,17 +64,17 @@ where
         }
         else
         {
-            let val = self.offset + self.idx.cast_into() * self.step;
+            let val = self.offset.inner_value() + self.idx.cast_into() * self.step.inner_value();
             self.idx.increment();
-            Some(val)
+            Some(U::from_inner_value(val))
         }
     }
 }
 
-impl<I, T> DoubleEndedIterator for RangeSample<I, T>
+impl<I, U> DoubleEndedIterator for RangeSample<I, U>
 where
-    I: Number + CastInto<T>,
-    T: Number,
+    I: Number + CastInto<U::Precision>,
+    U: Unit,
 {
     fn next_back(&mut self) -> Option<Self::Item>
     {
@@ -101,101 +85,101 @@ where
         else
         {
             self.end.decrement();
-            Some(self.offset + self.idx.cast_into() * self.step)
+            Some(U::from_inner_value(self.offset.inner_value() + self.idx.cast_into() * self.step.inner_value()))
         }
     }
 }
-impl<I, T> FusedIterator for RangeSample<I, T>
+impl<I, U> FusedIterator for RangeSample<I, U>
 where
-    I: Number + CastInto<T>,
-    T: Number,
+    I: Number + CastInto<U::Precision>,
+    U: Unit,
 {
 }
 
-impl<I, T> RangeSampleExtension<I> for Range<T>
+impl<I, U> RangeSampleExtension<I> for Range<U>
 where
-    I: Number + CastInto<T>,
-    T: Number,
+    I: Number + CastInto<U::Precision>,
+    U: Unit,
 {
-    type Output = RangeSample<I, T>;
-    type Item = T;
+    type Output = RangeSample<I, U>;
+    type Item = U;
 
     fn sample(self, nb_sample: I) -> Self::Output
     {
         let (start, end) = (self.start, self.end);
         let step = if nb_sample.is_zero()
         {
-            T::ZERO
+            U::Precision::ZERO
         }
         else
         {
-            (end - start) / nb_sample.cast_into()
+            (end - start).inner_value() / nb_sample.cast_into()
         };
         RangeSample {
             idx: I::ZERO,
             end: nb_sample,
             offset: start,
-            step,
+            step: U::from_inner_value(step),
         }
     }
 }
 
-impl<I, T> RangeSampleExtension<I> for RangeInclusive<T>
+impl<I, U> RangeSampleExtension<I> for RangeInclusive<U>
 where
-    I: Number + CastInto<T>,
-    T: Number,
+    I: Number + CastInto<U::Precision>,
+    U: Unit,
 {
-    type Output = RangeSample<I, T>;
-    type Item = T;
+    type Output = RangeSample<I, U>;
+    type Item = U;
 
     fn sample(self, nb_sample: I) -> Self::Output
     {
         let (start, end) = self.into_inner();
         let step = if nb_sample.is_zero()
         {
-            T::ZERO
+            U::Precision::ZERO
         }
         else
         {
-            (end - start) / (nb_sample - I::ONE).cast_into()
+            (end - start).inner_value() / (nb_sample - I::ONE).cast_into()
         };
         RangeSample {
             idx: I::ZERO,
             end: nb_sample,
             offset: start,
-            step,
+            step: U::from_inner_value(step),
         }
     }
 }
 
-impl<I, T> RangeSampleExtension<I> for RangeTo<T>
+impl<I, U> RangeSampleExtension<I> for RangeTo<U>
 where
-    I: Number + CastInto<T>,
-    T: Number + RangeDefault,
+    I: Number + CastInto<U::Precision>,
+    U: Unit + RangeDefault
 {
-    type Output = RangeSample<I, T>;
-    type Item = T;
+    type Output = RangeSample<I, U>;
+    type Item = U;
 
-    fn sample(self, nb_sample: I) -> Self::Output { (T::RANGE_MIN..self.end).sample(nb_sample) }
+    fn sample(self, nb_sample: I) -> Self::Output { (U::RANGE_MIN..self.end).sample(nb_sample) }
 }
-impl<I, T> RangeSampleExtension<I> for RangeToInclusive<T>
+impl<I, U> RangeSampleExtension<I> for RangeToInclusive<U>
 where
-    I: Number + CastInto<T>,
-    T: Number + RangeDefault,
+    I: Number + CastInto<U::Precision>,
+    U: Unit + RangeDefault
 {
-    type Output = RangeSample<I, T>;
-    type Item = T;
+    type Output = RangeSample<I, U>;
+    type Item = U;
 
-    fn sample(self, nb_sample: I) -> Self::Output { (T::RANGE_MIN..=self.end).sample(nb_sample) }
+    fn sample(self, nb_sample: I) -> Self::Output { (U::RANGE_MIN..=self.end).sample(nb_sample) }
 }
 
-impl<I, T> RangeSampleExtension<I> for RangeFrom<T>
+impl<I, U> RangeSampleExtension<I> for RangeFrom<U>
 where
-    I: Number + CastInto<T>,
-    T: Number + RangeDefault,
+    I: Number + CastInto<U::Precision>,
+    U: Unit + RangeDefault
 {
-    type Output = RangeSample<I, T>;
-    type Item = T;
+    type Output = RangeSample<I, U>;
+    type Item = U;
 
-    fn sample(self, nb_sample: I) -> Self::Output { (self.start..=T::RANGE_MAX).sample(nb_sample) }
+    fn sample(self, nb_sample: I) -> Self::Output { (self.start..=U::RANGE_MAX).sample(nb_sample) }
 }

@@ -146,13 +146,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         type WithSize<const M:usize>=#current_name<T,M>;
                     }
 
-                    impl<T, const N : usize, Idx> ::std::ops::Index<Idx> for #current_name<T,N> where [T;N] : ::std::ops::Index<Idx>
+                    impl<T, const N : usize, Idx> ::core::ops::Index<Idx> for #current_name<T,N> where [T;N] : ::core::ops::Index<Idx>
                     {
-                        type Output=<[T;N] as ::std::ops::Index<Idx>>::Output;
+                        type Output=<[T;N] as ::core::ops::Index<Idx>>::Output;
                         #[inline(always)]
                         fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
                     }
-                    impl<T, const N : usize, Idx> ::std::ops::IndexMut<Idx> for #current_name<T,N> where [T;N] : ::std::ops::IndexMut<Idx>
+                    impl<T, const N : usize, Idx> ::core::ops::IndexMut<Idx> for #current_name<T,N> where [T;N] : ::core::ops::IndexMut<Idx>
                     {
                         #[inline(always)]
                         fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
@@ -209,10 +209,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     }
 
 
-                    impl<T, const N : usize> ::std::iter::IntoIterator for #current_name<T,N> where [T;N] : ::std::iter::IntoIterator
+                    impl<T, const N : usize> ::core::iter::IntoIterator for #current_name<T,N> where [T;N] : ::core::iter::IntoIterator
                     {
-                        type Item = <[T;N] as ::std::iter::IntoIterator>::Item;
-                        type IntoIter = <[T;N] as ::std::iter::IntoIterator>::IntoIter;
+                        type Item = <[T;N] as ::core::iter::IntoIterator>::Item;
+                        type IntoIter = <[T;N] as ::core::iter::IntoIterator>::IntoIter;
 
                         fn into_iter(self) -> Self::IntoIter
                         {
@@ -220,10 +220,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         }
                     }
 
-                    impl<'a, T, const N : usize> ::std::iter::IntoIterator for &'a #current_name<T,N> where &'a [T;N] : ::std::iter::IntoIterator
+                    impl<'a, T, const N : usize> ::core::iter::IntoIterator for &'a #current_name<T,N> where &'a [T;N] : ::core::iter::IntoIterator
                     {
-                        type Item = <&'a [T;N] as ::std::iter::IntoIterator>::Item;
-                        type IntoIter = <&'a [T;N] as ::std::iter::IntoIterator>::IntoIter;
+                        type Item = <&'a [T;N] as ::core::iter::IntoIterator>::Item;
+                        type IntoIter = <&'a [T;N] as ::core::iter::IntoIterator>::IntoIter;
 
                         fn into_iter(self) -> Self::IntoIter
                         {
@@ -232,7 +232,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         }
                     }
 
-                    impl<'a, T, const N : usize> ::std::iter::IntoIterator for &'a mut #current_name<T,N> where &'a mut [T;N] : ::std::iter::IntoIterator
+                    impl<'a, T, const N : usize> ::core::iter::IntoIterator for &'a mut #current_name<T,N> where &'a mut [T;N] : ::core::iter::IntoIterator
                     {
                         type Item = <&'a mut [T;N] as IntoIterator>::Item;
                         type IntoIter = <&'a mut [T;N] as IntoIterator>::IntoIter;
@@ -280,13 +280,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             impl<T, const N : usize> std::ops::$trait_name<Self> for #current_name<T,N>
                                 where T: std::ops::$trait_name<T>
                             {
-                                type Output=#current_name<<T as ::std::ops::$trait_name<T>>::Output,N>;
+                                type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output,N>;
                                 fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
                             }
 
                             impl<T, const N : usize> std::ops::$trait_name<T> for #current_name<T,N> where T: std::ops::$trait_name<T> + Copy
                             {
-                                type Output=#current_name<<T as ::std::ops::$trait_name<T>>::Output,N>;
+                                type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output,N>;
                                 fn $fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$fn_name(rhs)).into() }
                             }
                         }
@@ -295,7 +295,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     #crate_ident::map_on::map_on_operator_assign!(
                         (($trait_name: tt, $fn_name: tt)) =>
                         {
-                            impl<T, const N : usize> ::std::ops::$trait_name<Self> for #current_name<T,N> where T: ::std::ops::$trait_name
+                            impl<T, const N : usize> ::core::ops::$trait_name<Self> for #current_name<T,N> where T: ::core::ops::$trait_name
                             {
                                 fn $fn_name(&mut self, rhs: Self)
                                 {
@@ -304,40 +304,40 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 }
                             }
 
-                            impl<T, const N : usize> ::std::ops::$trait_name<&Self> for #current_name<T,N> where T: ::std::ops::$trait_name + Copy
+                            impl<T, const N : usize> ::core::ops::$trait_name<&Self> for #current_name<T,N> where T: ::core::ops::$trait_name + Copy
                             {
-                                fn $fn_name(&mut self, rhs: &Self) { ::std::ops::$trait_name::$fn_name(self,*rhs) }
+                                fn $fn_name(&mut self, rhs: &Self) { ::core::ops::$trait_name::$fn_name(self,*rhs) }
                             }
                         }
                     );
 
                     // ================= Unary =========
 
-                    impl<T, const N : usize> ::std::ops::Not for #current_name<T,N> where T: ::std::ops::Not
+                    impl<T, const N : usize> ::core::ops::Not for #current_name<T,N> where T: ::core::ops::Not
                     {
                         type Output = #current_name<T::Output,N>;
-                        fn not(self) -> Self::Output { self.map(::std::ops::Not::not) }
+                        fn not(self) -> Self::Output { self.map(::core::ops::Not::not) }
                     }
 
-                    impl<T, const N : usize> ::std::ops::Neg for #current_name<T,N> where T: ::std::ops::Neg
+                    impl<T, const N : usize> ::core::ops::Neg for #current_name<T,N> where T: ::core::ops::Neg
                     {
                         type Output = #current_name<T::Output,N>;
-                        fn neg(self) -> Self::Output { self.map(::std::ops::Neg::neg) }
+                        fn neg(self) -> Self::Output { self.map(::core::ops::Neg::neg) }
                     }
 
                     // ================= Iter =========
 
-                    impl<T, const N : usize> ::std::iter::Sum for #current_name<T,N> where Self : #crate_ident::Zero + ::std::ops::Add<Self,Output = Self>
+                    impl<T, const N : usize> ::core::iter::Sum for #current_name<T,N> where Self : #crate_ident::Zero + ::core::ops::Add<Self,Output = Self>
                     {
                         fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::Zero>::ZERO, <Self as ::std::ops::Add<Self>>::add)
+                            iter.fold(<Self as #crate_ident::Zero>::ZERO, <Self as ::core::ops::Add<Self>>::add)
                         }
                     }
 
-                    impl<T, const N : usize> ::std::iter::Product for #current_name<T,N> where Self : #crate_ident::One + ::std::ops::Mul<Self,Output = Self>
+                    impl<T, const N : usize> ::core::iter::Product for #current_name<T,N> where Self : #crate_ident::One + ::core::ops::Mul<Self,Output = Self>
                     {
                         fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::One>::ONE, <Self as ::std::ops::Mul<Self>>::mul)
+                            iter.fold(<Self as #crate_ident::One>::ONE, <Self as ::core::ops::Mul<Self>>::mul)
                         }
                     }
 
@@ -356,7 +356,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     (
                         (($trait_name: tt, $constant_name: tt)) =>
                         {
-                            impl<T, const N:usize> #crate_ident::$trait_name for #current_name<T,N> where T: #crate_ident::$trait_name + ::std::marker::Copy
+                            impl<T, const N:usize> #crate_ident::$trait_name for #current_name<T,N> where T: #crate_ident::$trait_name + ::core::marker::Copy
                             {
                                 const $constant_name: Self = Self::from_array(<[T;N]>::$constant_name);
                             }
@@ -423,7 +423,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             where
                                 D: #crate_ident::serde::Deserializer<'de>,
                             {
-                                struct ArrVisitor<T, const N: usize>(::std::marker::PhantomData<T>);
+                                struct ArrVisitor<T, const N: usize>(::core::marker::PhantomData<T>);
 
                                 impl<'de, T, const N: usize> #crate_ident::serde::de::Visitor<'de> for ArrVisitor<T, N>
                                 where
@@ -431,7 +431,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 {
                                     type Value = Arr<T, N>;
 
-                                    fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                                    fn expecting(&self, formatter: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                                         write!(formatter, "an {} of length {}", std::any::type_name::<#name<T,N>>(), N)
                                     }
 
@@ -440,15 +440,15 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                         A: #crate_ident::serde::de::SeqAccess<'de>,
                                     {
                                         // SAFETY: We'll ensure every element is initialized or properly dropped
-                                        let mut data: [::std::mem::MaybeUninit<T>; N] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+                                        let mut data: [::core::mem::MaybeUninit<T>; N] = unsafe { ::core::mem::MaybeUninit::uninit().assume_init() };
                                         for i in 0..N {
                                             match seq.next_element()? {
-                                                Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
+                                                Some(value) => data[i] = ::core::mem::MaybeUninit::new(value),
                                                 None => {
                                                     if ::core::mem::needs_drop::<T>() {
                                                         // Drop any already initialized elements before returning
                                                         for j in 0..i {
-                                                            unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
+                                                            unsafe { ::core::ptr::drop_in_place(data[j].as_mut_ptr()) };
                                                         }
                                                     }
                                                     return Err(::serde::de::Error::invalid_length(i, &self));
@@ -467,12 +467,12 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                         }
 
                                         // SAFETY: All elements are initialized
-                                        let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T;N]) };
+                                        let result = unsafe { ::core::ptr::read(&data as *const _ as *const [T;N]) };
                                         Ok(Arr(result))
                                     }
                                 }
 
-                                deserializer.deserialize_tuple(N, ArrVisitor::<T, N>(::std::marker::PhantomData)).map(|arr| #name::<T, N>::from(arr.0))
+                                deserializer.deserialize_tuple(N, ArrVisitor::<T, N>(::core::marker::PhantomData)).map(|arr| #name::<T, N>::from(arr.0))
                             }
                         }
                     };
@@ -524,13 +524,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     {
                         type WithType<T2> = #current_name<T2>;
                     }
-                    impl<T, Idx> ::std::ops::Index<Idx> for #current_name<T> where [T;#dim] : ::std::ops::Index<Idx>
+                    impl<T, Idx> ::core::ops::Index<Idx> for #current_name<T> where [T;#dim] : ::core::ops::Index<Idx>
                     {
-                        type Output=<[T;#dim] as ::std::ops::Index<Idx>>::Output;
+                        type Output=<[T;#dim] as ::core::ops::Index<Idx>>::Output;
                         #[inline(always)]
                         fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
                     }
-                    impl<T, Idx> ::std::ops::IndexMut<Idx> for #current_name<T> where [T;#dim] : ::std::ops::IndexMut<Idx>
+                    impl<T, Idx> ::core::ops::IndexMut<Idx> for #current_name<T> where [T;#dim] : ::core::ops::IndexMut<Idx>
                     {
                         #[inline(always)]
                         fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
@@ -584,10 +584,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     }
 
 
-                    impl<T> ::std::iter::IntoIterator for #current_name<T> where [T;#dim] : ::std::iter::IntoIterator
+                    impl<T> ::core::iter::IntoIterator for #current_name<T> where [T;#dim] : ::core::iter::IntoIterator
                     {
-                        type Item = <[T;#dim] as ::std::iter::IntoIterator>::Item;
-                        type IntoIter = <[T;#dim] as ::std::iter::IntoIterator>::IntoIter;
+                        type Item = <[T;#dim] as ::core::iter::IntoIterator>::Item;
+                        type IntoIter = <[T;#dim] as ::core::iter::IntoIterator>::IntoIter;
 
                         fn into_iter(self) -> Self::IntoIter
                         {
@@ -595,10 +595,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         }
                     }
 
-                    impl<'a, T> ::std::iter::IntoIterator for &'a #current_name<T> where &'a [T;#dim] : ::std::iter::IntoIterator
+                    impl<'a, T> ::core::iter::IntoIterator for &'a #current_name<T> where &'a [T;#dim] : ::core::iter::IntoIterator
                     {
-                        type Item = <&'a [T;#dim] as ::std::iter::IntoIterator>::Item;
-                        type IntoIter = <&'a [T;#dim] as ::std::iter::IntoIterator>::IntoIter;
+                        type Item = <&'a [T;#dim] as ::core::iter::IntoIterator>::Item;
+                        type IntoIter = <&'a [T;#dim] as ::core::iter::IntoIterator>::IntoIter;
 
                         fn into_iter(self) -> Self::IntoIter {
                             let array : &[T;#dim] = self.as_ref();
@@ -606,7 +606,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         }
                     }
 
-                    impl<'a, T> ::std::iter::IntoIterator for &'a mut #current_name<T> where &'a mut [T;#dim] : ::std::iter::IntoIterator
+                    impl<'a, T> ::core::iter::IntoIterator for &'a mut #current_name<T> where &'a mut [T;#dim] : ::core::iter::IntoIterator
                     {
                         type Item = <&'a mut [T;#dim] as IntoIterator>::Item;
                         type IntoIter = <&'a mut [T;#dim] as IntoIterator>::IntoIter;
@@ -650,16 +650,16 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     #crate_ident::map_on::map_on_operator_binary!(
                         (($trait_name: tt, $fn_name: tt)) =>
                         {
-                            impl<T> ::std::ops::$trait_name<Self> for #current_name<T>
+                            impl<T> ::core::ops::$trait_name<Self> for #current_name<T>
                                 where T: $trait_name<T>
                             {
-                                type Output=#current_name<<T as ::std::ops::$trait_name<T>>::Output>;
+                                type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output>;
                                 fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
                             }
 
-                            impl<T> ::std::ops::$trait_name<T> for #current_name<T> where T: $trait_name<T> + Copy
+                            impl<T> ::core::ops::$trait_name<T> for #current_name<T> where T: $trait_name<T> + Copy
                             {
-                                type Output=#current_name<<T as ::std::ops::$trait_name<T>>::Output>;
+                                type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output>;
                                 fn $fn_name(self, rhs: T) -> Self::Output { <[T;#dim]>::from(self).map(|v| v.$fn_name(rhs)).into() }
                             }
                         }
@@ -668,7 +668,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     #crate_ident::map_on::map_on_operator_assign!(
                         (($trait_name: tt, $fn_name: tt)) =>
                         {
-                            impl<T> ::std::ops::$trait_name<Self> for #current_name<T> where T: $trait_name
+                            impl<T> ::core::ops::$trait_name<Self> for #current_name<T> where T: $trait_name
                             {
                                 fn $fn_name(&mut self, rhs: Self)
                                 {
@@ -677,7 +677,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 }
                             }
 
-                            impl<T> ::std::ops::$trait_name<&Self> for #current_name<T> where T: $trait_name + Copy
+                            impl<T> ::core::ops::$trait_name<&Self> for #current_name<T> where T: $trait_name + Copy
                             {
                                 fn $fn_name(&mut self, rhs: &Self) { $trait_name::$fn_name(self,*rhs) }
                             }
@@ -686,28 +686,28 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                     // ================= Unary =========
 
-                    impl<T> ::std::ops::Not for #current_name<T> where T: ::std::ops::Not
+                    impl<T> ::core::ops::Not for #current_name<T> where T: ::core::ops::Not
                     {
                         type Output = #current_name<T::Output>;
-                        fn not(self) -> Self::Output { self.map(::std::ops::Not::not) }
+                        fn not(self) -> Self::Output { self.map(::core::ops::Not::not) }
                     }
 
-                    impl<T> ::std::ops::Neg for #current_name<T> where T: ::std::ops::Neg
+                    impl<T> ::core::ops::Neg for #current_name<T> where T: ::core::ops::Neg
                     {
                         type Output = #current_name<T::Output>;
-                        fn neg(self) -> Self::Output { self.map(::std::ops::Neg::neg) }
+                        fn neg(self) -> Self::Output { self.map(::core::ops::Neg::neg) }
                     }
 
                     // ================= Iter =========
 
-                    impl<T> ::std::iter::Sum for #current_name<T> where Self : #crate_ident::Zero + ::std::ops::Add<Self,Output = Self>
+                    impl<T> ::core::iter::Sum for #current_name<T> where Self : #crate_ident::Zero + ::core::ops::Add<Self,Output = Self>
                     {
                         fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
                             iter.fold(<Self as #crate_ident::Zero>::ZERO, Self::add)
                         }
                     }
 
-                    impl<T> ::std::iter::Product for #current_name<T> where Self : #crate_ident::One + ::std::ops:: Mul<Self,Output = Self>
+                    impl<T> ::core::iter::Product for #current_name<T> where Self : #crate_ident::One + ::core::ops:: Mul<Self,Output = Self>
                     {
                         fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
                             iter.fold(<Self as #crate_ident::One>::ONE, Self::mul)
@@ -729,7 +729,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     (
                         (($trait_name: tt, $constant_name: tt)) =>
                         {
-                            impl<T> #crate_ident::$trait_name for #current_name<T> where T: #crate_ident::$trait_name + ::std::marker::Copy
+                            impl<T> #crate_ident::$trait_name for #current_name<T> where T: #crate_ident::$trait_name + ::core::marker::Copy
                             {
                                 const $constant_name: Self = Self::from_array(<[T;#dim]>::$constant_name);
                             }
@@ -799,7 +799,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 where
                                     D: #crate_ident::serde::Deserializer<'de>,
                                 {
-                                    struct ArrVisitor<T>(::std::marker::PhantomData<T>);
+                                    struct ArrVisitor<T>(::core::marker::PhantomData<T>);
 
                                     impl<'de, T> #crate_ident::serde::de::Visitor<'de> for ArrVisitor<T>
                                     where
@@ -807,7 +807,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                     {
                                         type Value = Arr<T>;
 
-                                        fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                                        fn expecting(&self, formatter: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                                             write!(formatter, "an {}", std::any::type_name::<#name<T>>())
                                         }
 
@@ -816,15 +816,15 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                             A: #crate_ident::serde::de::SeqAccess<'de>,
                                         {
                                             // SAFETY: We'll ensure every element is initialized or properly dropped
-                                            let mut data: [::std::mem::MaybeUninit<T>; #dim] = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+                                            let mut data: [::core::mem::MaybeUninit<T>; #dim] = unsafe { ::core::mem::MaybeUninit::uninit().assume_init() };
                                             for i in 0..#dim {
                                                 match seq.next_element()? {
-                                                    Some(value) => data[i] = ::std::mem::MaybeUninit::new(value),
+                                                    Some(value) => data[i] = ::core::mem::MaybeUninit::new(value),
                                                     None => {
                                                         if ::core::mem::needs_drop::<T>() {
                                                             // Drop any already initialized elements before returning
                                                             for j in 0..i {
-                                                                unsafe { ::std::ptr::drop_in_place(data[j].as_mut_ptr()) };
+                                                                unsafe { ::core::ptr::drop_in_place(data[j].as_mut_ptr()) };
                                                             }
                                                         }
                                                         return Err(::serde::de::Error::invalid_length(i, &self));
@@ -843,12 +843,12 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                             }
 
                                             // SAFETY: All elements are initialized
-                                            let result = unsafe { ::std::ptr::read(&data as *const _ as *const [T; #dim]) };
+                                            let result = unsafe { ::core::ptr::read(&data as *const _ as *const [T; #dim]) };
                                             Ok(Arr(result))
                                         }
                                     }
 
-                                    deserializer.deserialize_tuple(#dim, ArrVisitor::<T>(::std::marker::PhantomData)).map(|arr| #name::<T>::from(arr.0))
+                                    deserializer.deserialize_tuple(#dim, ArrVisitor::<T>(::core::marker::PhantomData)).map(|arr| #name::<T>::from(arr.0))
                                 }
                             }
                         };
@@ -925,7 +925,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         #[cfg(feature = "serde")]
                         impl<'de, T> #crate_ident::serde::Deserialize<'de> for #name<T>
                         where
-                            T: #crate_ident::serde::Deserialize<'de> + ::std::default::Default,
+                            T: #crate_ident::serde::Deserialize<'de> + ::core::default::Default,
                         {
                             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
                             where
@@ -937,9 +937,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                                 struct __Temp<T>
                                 where
-                                    T: ::std::default::Default,
+                                    T: ::core::default::Default,
                                 {
-                                    #( #[serde(default = "::std::default::Default::default")] #field_idents: T, )*
+                                    #( #[serde(default = "::core::default::Default::default")] #field_idents: T, )*
                                 }
 
                                 // Use super::#name to construct the original type
@@ -1031,13 +1031,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         wc
     }
 
-    let clone_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::clone::Clone));
-    let copy_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::marker::Copy));
-    let partial_eq_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::PartialEq));
-    let eq_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::Eq));
-    let partial_ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::PartialOrd));
-    let ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::cmp::Ord));
-    let hash_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::std::hash::Hash));
+    let clone_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::clone::Clone));
+    let copy_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::marker::Copy));
+    let partial_eq_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::cmp::PartialEq));
+    let eq_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::cmp::Eq));
+    let partial_ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::cmp::PartialOrd));
+    let ord_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::cmp::Ord));
+    let hash_where_clause = where_with_bounds(where_clause, &input.generics, syn::parse_quote!(::core::hash::Hash));
 
     let [basic_impl] = std::array::from_fn(|idx| {
         let current_name = names[idx];
@@ -1078,37 +1078,37 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                 #crate_ident::impl_number_basic_trait!();
             }
 
-            impl #impl_generics ::std::convert::From<[T; #dim]> for #current_name #ty_generics { fn from(value: [T; #dim]) -> Self { Self::from_array(value) } }
-            impl #impl_generics ::std::convert::From<#current_name #ty_generics> for [T; #dim] { fn from(value: #current_name #ty_generics) -> Self { value.to_array() } }
+            impl #impl_generics ::core::convert::From<[T; #dim]> for #current_name #ty_generics { fn from(value: [T; #dim]) -> Self { Self::from_array(value) } }
+            impl #impl_generics ::core::convert::From<#current_name #ty_generics> for [T; #dim] { fn from(value: #current_name #ty_generics) -> Self { value.to_array() } }
 
-            impl #impl_generics ::std::convert::AsRef<[T; #dim]> for #current_name #ty_generics { fn as_ref(&self) -> &[T; #dim] { self.array() } }
-            impl #impl_generics ::std::convert::AsMut<[T; #dim]> for #current_name #ty_generics { fn as_mut(&mut self) -> &mut [T; #dim] { self.array_mut() } }
+            impl #impl_generics ::core::convert::AsRef<[T; #dim]> for #current_name #ty_generics { fn as_ref(&self) -> &[T; #dim] { self.array() } }
+            impl #impl_generics ::core::convert::AsMut<[T; #dim]> for #current_name #ty_generics { fn as_mut(&mut self) -> &mut [T; #dim] { self.array_mut() } }
 
 
-            impl #impl_generics ::std::clone::Clone for #current_name #ty_generics #clone_where_clause
+            impl #impl_generics ::core::clone::Clone for #current_name #ty_generics #clone_where_clause
             {
                 fn clone(&self) -> Self { self.array().clone().into() }
             }
-            impl #impl_generics ::std::marker::Copy for #current_name #ty_generics #copy_where_clause {}
+            impl #impl_generics ::core::marker::Copy for #current_name #ty_generics #copy_where_clause {}
 
-            impl #impl_generics ::std::cmp::PartialEq for #current_name #ty_generics #partial_eq_where_clause
+            impl #impl_generics ::core::cmp::PartialEq for #current_name #ty_generics #partial_eq_where_clause
             {
                 fn eq(&self, rhs : &Self) -> bool { self.array() == rhs.array() }
             }
-            impl #impl_generics ::std::cmp::Eq for #current_name #ty_generics #eq_where_clause {}
+            impl #impl_generics ::core::cmp::Eq for #current_name #ty_generics #eq_where_clause {}
 
-            impl #impl_generics ::std::cmp::PartialOrd for #current_name #ty_generics #partial_ord_where_clause
+            impl #impl_generics ::core::cmp::PartialOrd for #current_name #ty_generics #partial_ord_where_clause
             {
-                fn partial_cmp(&self, rhs : &Self) -> ::std::option::Option<::std::cmp::Ordering> { ::std::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
+                fn partial_cmp(&self, rhs : &Self) -> ::core::option::Option<::core::cmp::Ordering> { ::core::cmp::PartialOrd::partial_cmp(self.array(), rhs.array()) }
             }
-            impl #impl_generics ::std::cmp::Ord for #current_name #ty_generics #ord_where_clause
+            impl #impl_generics ::core::cmp::Ord for #current_name #ty_generics #ord_where_clause
             {
-                fn cmp(&self, rhs : &Self) -> ::std::cmp::Ordering { ::std::cmp::Ord::cmp(self.array(), rhs.array()) }
+                fn cmp(&self, rhs : &Self) -> ::core::cmp::Ordering { ::core::cmp::Ord::cmp(self.array(), rhs.array()) }
             }
 
-            impl #impl_generics ::std::hash::Hash for #current_name #ty_generics #hash_where_clause
+            impl #impl_generics ::core::hash::Hash for #current_name #ty_generics #hash_where_clause
             {
-                fn hash<H>(&self, state: &mut H) where H: ::std::hash::Hasher { self.as_ref().hash(state); }
+                fn hash<H>(&self, state: &mut H) where H: ::core::hash::Hasher { self.as_ref().hash(state); }
             }
 
             impl #impl_generics #crate_ident::array::Array<T, #dim> for #current_name #ty_generics
@@ -1139,23 +1139,23 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
 
 
-        impl #impl_generics_with_policy ::std::default::Default for #name_with_default #ty_generics_with_policy
+        impl #impl_generics_with_policy ::core::default::Default for #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn default() -> Self {
-                Self::new(#name :: #ty_generics :: from_array(::std::array::from_fn(|_| <Policy as #crate_ident::Constant<#generic_type_ident>>::CONSTANT)))
+                Self::new(#name :: #ty_generics :: from_array(::core::array::from_fn(|_| <Policy as #crate_ident::Constant<#generic_type_ident>>::CONSTANT)))
             }
         }
 
 
-        impl #impl_generics_with_policy ::std::convert::From<#name #ty_generics> for #name_with_default #ty_generics_with_policy
+        impl #impl_generics_with_policy ::core::convert::From<#name #ty_generics> for #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn from(value: #name #ty_generics) -> Self {
                 Self::new(value)
             }
         }
-        impl #impl_generics_with_policy ::std::convert::From<#name_with_default #ty_generics_with_policy> for #name #ty_generics
+        impl #impl_generics_with_policy ::core::convert::From<#name_with_default #ty_generics_with_policy> for #name #ty_generics
             where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn from(value: #name_with_default #ty_generics_with_policy) -> Self {
@@ -1163,7 +1163,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
             }
         }
 
-        impl #impl_generics_with_policy ::std::convert::AsRef<#name #ty_generics> for #name_with_default #ty_generics_with_policy
+        impl #impl_generics_with_policy ::core::convert::AsRef<#name #ty_generics> for #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn as_ref(&self) -> &#name #ty_generics {
@@ -1171,7 +1171,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
             }
         }
 
-        impl #impl_generics_with_policy ::std::convert::AsMut<#name #ty_generics> for #name_with_default #ty_generics_with_policy
+        impl #impl_generics_with_policy ::core::convert::AsMut<#name #ty_generics> for #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::Constant<#generic_type_ident>
         {
             fn as_mut(&mut self) -> &mut #name #ty_generics {
@@ -1182,7 +1182,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         impl #impl_generics_with_policy #name_with_default #ty_generics_with_policy
             where Policy: #crate_ident::Constant<#generic_type_ident>
         {
-            pub const fn new(value: #name #ty_generics) -> Self { Self { value, phantom: ::std::marker::PhantomData }}
+            pub const fn new(value: #name #ty_generics) -> Self { Self { value, phantom: ::core::marker::PhantomData }}
             pub fn into_value(self) -> #name #ty_generics { self.value }
         }
 

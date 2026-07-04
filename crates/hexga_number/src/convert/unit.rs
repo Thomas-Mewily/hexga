@@ -1,28 +1,37 @@
 use super::*;
 
 /// To construct basic unit from their inner precision type.
-pub trait Unit<Precision>: Sized
+pub trait Unit: Additive 
+    + Mul<Self::Precision, Output=Self> + MulAssign<Self::Precision>
+    + Div<Self::Precision, Output=Self> + DivAssign<Self::Precision>
+    + Rem<Self, Output=Self> + RemAssign<Self>
 {
+    type Precision : Number;
     /// Return the inner value.
-    /// Unsafe because it expose how the inner value is stored, but it's impl details and it may change.
-    unsafe fn inner_value(self) -> Precision;
+    /// This expose how the inner value is stored, but it's impl details and it may change.
+    #[doc(hidden)]
+    fn inner_value(self) -> Self::Precision;
 
     /// Create from the inner value.
-    /// Unsafe because it expose how the inner value is stored, but it's impl details and it may change.
-    unsafe fn from_inner_value(inner_value: Precision) -> Self;
+    /// This expose how the inner value is stored, but it's impl details and it may change.
+    #[doc(hidden)]
+    fn from_inner_value(inner_value: Self::Precision) -> Self;
 }
 
 map_on_number!(
     ($type_name : ident) =>
     {
-        impl Unit<$type_name> for $type_name 
+        impl Unit for $type_name 
         {
-            unsafe fn inner_value(self) -> $type_name { self }
-            unsafe fn from_inner_value(inner_value: $type_name) -> Self { inner_value }
+            type Precision = Self;
+            fn inner_value(self) -> $type_name { self }
+            fn from_inner_value(inner_value: $type_name) -> Self { inner_value }
         }
     }
 );
 
+// TODO: re enable
+/*
 pub struct UnitIterator<U, Precision, It>
 where
     It: Iterator<Item = Precision>,
@@ -145,3 +154,4 @@ where
     It: ExactSizeIterator,
 {
 }
+*/
