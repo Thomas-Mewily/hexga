@@ -8,7 +8,7 @@ use super::*;
 /// Like the [`as`](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
 ///
 /// ```rust
-/// use hexga_math::prelude::*;
+/// use hexga_number::prelude::*;
 ///
 /// assert_eq!(i32::cast_from(12.3f32), 12);
 ///
@@ -18,7 +18,7 @@ use super::*;
 ///
 /// Also work with composite type
 /// ```ignore
-/// use hexga_math::prelude::*;
+/// use hexga_number::prelude::*;
 ///
 /// let x = [1, 2i32];
 /// let y : [f32; 2] = x.cast_into(),
@@ -50,7 +50,7 @@ where
 /// Like the [`as`](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
 ///
 /// ```rust
-/// use hexga_math::prelude::*;
+/// use hexga_number::prelude::*;
 ///
 /// assert_eq!(i32::cast_from(12.3f32), 12);
 ///
@@ -60,7 +60,7 @@ where
 ///
 /// Also work with composite type
 /// ```ignore
-/// use hexga_math::prelude::*;
+/// use hexga_number::prelude::*;
 ///
 /// let x = [1, 2i32];
 /// let y : [f32; 2] = x.cast_into(),

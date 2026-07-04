@@ -507,7 +507,7 @@ pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue
     /// # Examples
     ///
     /// ```
-    /// use hexga_math::number::*;
+    /// use hexga_number::prelude::*;
     ///
     /// let x = std::f32::consts::FRAC_PI_4; // 45°
     ///
