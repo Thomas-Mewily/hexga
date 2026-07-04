@@ -22,9 +22,10 @@ fn main()
     for i in (10.degree()..=20.degree()).step(1.degree())
     {
         println!("{}", i);
-    }*/
+    }
+    */
 
-    for i in (0.0..=1.0f32).sample(10).rev()
+    for i in (0.0..=1.0f32).sample(10.1)//.rev()
     {
         println!("{}", i);
     }

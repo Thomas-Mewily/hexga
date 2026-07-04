@@ -60,15 +60,15 @@ where
 
     fn next(&mut self) -> Option<Self::Item>
     {
-        if self.idx >= self.nb
-        {
-            None
-        }
-        else
+        if self.idx < self.nb
         {
             let val = self.begin.inner_value() + self.idx.cast_into() * self.step.inner_value();
             self.idx.increment();
             Some(U::from_inner_value(val.clamp_partial(self.begin.inner_value(), self.end.inner_value())))
+        }
+        else
+        {
+            None
         }
     }
 }
@@ -80,15 +80,15 @@ where
 {
     fn next_back(&mut self) -> Option<Self::Item>
     {
-        if self.idx >= self.nb
-        {
-            None
-        }
-        else
+        if self.idx < self.nb
         {
             self.nb.decrement();
             let val = self.begin.inner_value() + self.nb.cast_into() * self.step.inner_value();
             Some(U::from_inner_value(val.clamp_partial(self.begin.inner_value(), self.end.inner_value())))
+        }
+        else
+        {
+            None
         }
     }
 }
