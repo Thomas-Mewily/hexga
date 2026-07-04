@@ -6,7 +6,7 @@ pub use common::*;
 mod increment;
 pub use increment::*;
 
-mod traits;
+pub(crate) mod traits;
 pub use traits::*;
 
 mod floating;

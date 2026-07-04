@@ -5,10 +5,10 @@ use super::*;
 ///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
 ///
-/// One should always prefer implementing [`CastRangeFrom`] over [`CastRangeInto`] because implementing [`CastRangeFrom`] automatically provides one with an implementation of [`CastRangeInto`] thanks to the blanket implementation in the hexga_math library.
+/// One should always prefer implementing [`CastRangeFrom`] over [`CastRangeInto`] because implementing [`CastRangeFrom`] automatically provides one with an implementation of [`CastRangeInto`] thanks to the blanket implementation in the hexga_number library.
 ///
 /// ```rust
-/// use hexga_math::prelude::*;
+/// use hexga_number::prelude::*;
 ///
 /// assert_eq!(u8::cast_range_from(1f32), 255u8);
 /// assert_eq!(u8::cast_range_from(0f32), 0u8);
@@ -20,7 +20,7 @@ use super::*;
 /// Also work with composite like [`std::array`], [`Vector`]...
 ///
 /// ```ignore
-/// use hexga_math::prelude::*;
+/// use hexga_number::prelude::*;
 ///
 /// let x = [0u8, 127u8, 255u8];
 /// let y : [u16; 3] = x.cast_range_into(),
@@ -49,10 +49,10 @@ where
 ///
 /// `[Self::RANGE_MIN..Self::RANGE_MAX]` => `[T::RANGE_MIN..T::RANGE_MAX]`
 ///
-/// One should always prefer implementing [`CastRangeFrom`] over [`CastRangeInto`] because implementing [`CastRangeFrom`] automatically provides one with an implementation of [`CastRangeInto`] thanks to the blanket implementation in the hexga_math library.
+/// One should always prefer implementing [`CastRangeFrom`] over [`CastRangeInto`] because implementing [`CastRangeFrom`] automatically provides one with an implementation of [`CastRangeInto`] thanks to the blanket implementation in the hexga_number library.
 ///
 /// ```rust
-/// use hexga_math::prelude::*;
+/// use hexga_number::prelude::*;
 ///
 /// assert_eq!(u8::cast_range_from(1f32), 255u8);
 /// assert_eq!(u8::cast_range_from(0f32), 0u8);
@@ -64,7 +64,7 @@ where
 /// Also work with composite like [`std::array`], [`Vector`]...
 ///
 /// ```ignore
-/// use hexga_math::prelude::*;
+/// use hexga_number::prelude::*;
 ///
 /// let x = [0u8, 127u8, 255u8];
 /// let y : [u16; 3] = x.cast_range_into(),

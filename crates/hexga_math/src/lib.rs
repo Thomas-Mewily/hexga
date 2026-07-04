@@ -111,7 +111,7 @@ pub mod prelude
     pub use super::derive::prelude::*;
     pub use super::geometry::prelude::*;
     pub use super::map_on::*;
-    pub use hexga_number::*;
+    pub use hexga_number::prelude::*;
     //pub use super::range::*;
     pub use super::typedef::*;
     pub use super::unit::*;

@@ -51,24 +51,44 @@ pub use range::*;
 mod convert;
 pub use convert::*;
 
-/*
 pub mod prelude
 {
-    pub use super::typedef::*;
+    pub use super::{
+        max,min,mix,clamp, // abs
     
-    pub use super::arithmetic::*;
-    pub use super::map::*;
-    pub use super::constant::*;
-    pub use super::convert::*;
-    pub use super::range::prelude::*;
-    pub use super::reflection::prelude::*;
+        zero, one, minus_one, half
+    };
+    pub use super::traits::*;
 }
-use prelude::*;
 
-*/
-/*
 pub mod traits
 {
+    pub use crate::{
+        Max,Min,Mix,Clamp,Abs,Pow,RemEuclid, 
+        Floating,
+        Increment, Decrement,
+        arithmetic::traits::*,
 
+        Zero, ZeroIter, UnwrapZero,
+        One, OneIter,
+        Two, Three, 
+        OddOrEven, PositiveOrNegative,
+        MinusOne, MinusOneIter,
+        Half, TakeHalf,
+        NaNValue, MinValue, MaxValue, Infinity, MinusInfinity,
+        PartialOrdExtension,
+
+        Constant,
+
+        CastRangeFrom, CastRangeInto,
+        CastFrom, CastInto,
+
+        Unit,
+
+        RangeDefault,
+        Sample, SampleDefault, SampleDefaultInclusive,
+        RangeStepExtension, RangeStepIter, RangeDefaultStepExtension, RangeDefaultStepInclusiveExtension,
+
+        MapIntern, MapInternWith, Map, MapWith
+    };
 }
-*/
