@@ -44,9 +44,11 @@ where
     U: Unit,
 {
     pub idx: I,
-    pub end: I,
-    pub offset: U,
-    pub step: U,
+    pub nb: I,
+
+    pub begin: U,
+    pub end  : U,
+    pub step : U,
 }
 
 impl<I, U> Iterator for RangeSample<I, U>
@@ -58,15 +60,15 @@ where
 
     fn next(&mut self) -> Option<Self::Item>
     {
-        if self.idx >= self.end
+        if self.idx >= self.nb
         {
             None
         }
         else
         {
-            let val = self.offset.inner_value() + self.idx.cast_into() * self.step.inner_value();
+            let val = self.begin.inner_value() + self.idx.cast_into() * self.step.inner_value();
             self.idx.increment();
-            Some(U::from_inner_value(val))
+            Some(U::from_inner_value(val.clamp_partial(self.begin.inner_value(), self.end.inner_value())))
         }
     }
 }
@@ -78,14 +80,15 @@ where
 {
     fn next_back(&mut self) -> Option<Self::Item>
     {
-        if self.idx >= self.end
+        if self.idx >= self.nb
         {
             None
         }
         else
         {
-            self.end.decrement();
-            Some(U::from_inner_value(self.offset.inner_value() + self.idx.cast_into() * self.step.inner_value()))
+            self.nb.decrement();
+            let val = self.begin.inner_value() + self.nb.cast_into() * self.step.inner_value();
+            Some(U::from_inner_value(val.clamp_partial(self.begin.inner_value(), self.end.inner_value())))
         }
     }
 }
@@ -107,7 +110,7 @@ where
     fn sample(self, nb_sample: I) -> Self::Output
     {
         let (start, end) = (self.start, self.end);
-        let step = if nb_sample.is_zero()
+        let step = if nb_sample <= one()
         {
             U::Precision::ZERO
         }
@@ -117,9 +120,10 @@ where
         };
         RangeSample {
             idx: I::ZERO,
-            end: nb_sample,
-            offset: start,
+            nb: nb_sample,
+            begin: start,
             step: U::from_inner_value(step),
+            end,
         }
     }
 }
@@ -135,7 +139,7 @@ where
     fn sample(self, nb_sample: I) -> Self::Output
     {
         let (start, end) = self.into_inner();
-        let step = if nb_sample.is_zero()
+        let step = if nb_sample <= one()
         {
             U::Precision::ZERO
         }
@@ -145,9 +149,10 @@ where
         };
         RangeSample {
             idx: I::ZERO,
-            end: nb_sample,
-            offset: start,
+            nb: nb_sample,
+            begin: start,
             step: U::from_inner_value(step),
+            end,
         }
     }
 }

@@ -24,7 +24,7 @@ fn main()
         println!("{}", i);
     }*/
 
-    for i in (0.0..=1.0f32).sample(10)
+    for i in (0.0..=1.0f32).sample(10).rev()
     {
         println!("{}", i);
     }
