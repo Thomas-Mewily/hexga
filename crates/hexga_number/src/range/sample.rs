@@ -113,7 +113,7 @@ where
         }
         else
         {
-            end.inner_value() - start.inner_value() / nb_sample.cast_into()
+            (end.inner_value() - start.inner_value()) / nb_sample.cast_into()
         };
         RangeSample {
             idx: I::ZERO,
@@ -141,7 +141,7 @@ where
         }
         else
         {
-            end.inner_value() - start.inner_value() / (nb_sample - I::ONE).cast_into()
+            (end.inner_value() - start.inner_value()) / (nb_sample - I::ONE).cast_into()
         };
         RangeSample {
             idx: I::ZERO,
