@@ -31,5 +31,8 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{FsLoad, Persistant, PersistantValue, Reload};
+    pub use super::{
+        FsLoad, FsProvider, FsSave,
+        Persistant, PersistantValue, Reload, 
+    };
 }

@@ -12,16 +12,22 @@ pub trait Save : CfgSerialize
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn save_prefered_extension() -> &'static extension { Self::save_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }
 
-    fn save_to_fs<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult
-    where
-        Self: Sized,
+    fn save_to_fs<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult<PathBuf>
     {
         let path = path.as_ref();
         let extension = path.extension().map(|v| v.to_str()).flatten();
 
-        let (writer, _extension) = self.save_to_bytes_with_extension_in(Vec::with_capacity(DEFAULT_WRITER_CAPACITY), extension)?;
-        fs.write_bytes(path, &writer)?;
-        Ok(())
+        let (writer, extension) = self.save_to_bytes_with_extension_in(Vec::with_capacity(DEFAULT_WRITER_CAPACITY), extension)?;
+
+        if path.extension().map(|e| e.to_str()).flatten() != Some(extension.as_ref())
+        {
+            let output_path = fs.write_bytes(path.with_extension(extension.as_ref()), &writer)?;
+            Ok(output_path)
+        }else
+        {
+            let output_path = fs.write_bytes(path, &writer)?;
+            Ok(output_path)
+        }
     }
 
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
@@ -112,7 +118,7 @@ where
     S: SaveInto + CfgSerialize,
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Output::save_custom_extensions() }
-    fn save_to_fs<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult
+    fn save_to_fs<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult<PathBuf>
     where
         Self: Sized,
     {

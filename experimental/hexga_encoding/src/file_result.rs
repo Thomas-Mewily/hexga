@@ -14,6 +14,16 @@ pub enum FileError
     /// Problem with the file system : File not found, out of free space...
     Io(IoError),
 }
+impl Debug for FileError
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Encode(v) => write!(f, "{:?}", v),
+            Self::Io(v) => write!(f, "{:?}", v),
+        }
+    }
+}
+
 impl FileError
 {
     pub fn is_io(&self) -> bool { matches!(self, Self::Io(_)) }
@@ -41,6 +51,16 @@ pub struct EncodeFileError
 {
     pub error: EncodeError,
     pub path: Option<PathBuf>,
+}
+impl Debug for EncodeFileError
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match &self.path
+        {
+            Some(at) => write!(f, "{:?} at {:?}", self.error, at.display()),
+            None => write!(f, "{:?}", self.error),
+        }
+    }
 }
 impl EncodeFileError
 {

@@ -26,6 +26,21 @@ pub trait Persistant: GetPath + SetPath + Reload
 pub trait PersistantValue<T>: Persistant + Guarded<T> {}
 impl<S, T> PersistantValue<T> for S where S: Persistant + Guarded<T> {}
 
+pub trait FsSave<T> : FsProvider
+    where 
+    T: Save + ?Sized,
+{
+    /// Encode the value using the provided extension and write it to a file.
+    fn save<P : AsRef<Path>>(value: &T, path: P) -> FileResult<PathBuf>
+    {
+        value.save_to_fs(&mut Self::provide_fs(), path)
+    }
+}
+impl<S,T> FsSave<T> for S 
+    where S: FsProvider, 
+    T: Save + ?Sized,
+{}
+
 pub trait FsLoad<T, FS>
 where
     T: Load,
@@ -119,7 +134,7 @@ where
     ///
     /// **Important:** If the file exists but is malformed/corrupted/badly encoded, it will be **silently overwritten** with the init value. 
     /// Use [`Self::try_load_or_default`] to avoid silently override a badly encoded file.
-    fn load_or_default<P: AsRef<Path>>(&mut self, path: P) -> Self::Output
+    fn load_or_default<P: AsRef<Path>>(path: P) -> Self::Output
     where
         P: AsRef<Path>,
         T: Default,
@@ -133,7 +148,7 @@ where
     /// It's ok if saving fail.
     ///
     /// If the file exists but is malformed/corrupted/badly encoded, return an error and don't override the file.
-    fn try_load_or_default<P: AsRef<Path>>(&mut self, path: P) -> FileResult<Self::Output>
+    fn try_load_or_default<P: AsRef<Path>>(path: P) -> FileResult<Self::Output>
     where
         P: AsRef<Path>,
         T: Default,

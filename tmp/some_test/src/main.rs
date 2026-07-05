@@ -32,11 +32,12 @@ fn main()
 
     let img = Image::from_fn((16,16), |(x,y)| 
     {
-        ColorU8::rgb((255 / x) as _, (255 / y) as _, 0)
+        ColorU8::rgb((255 / 16 * x) as _, (255 / 16 * y) as _, 0)
     });
 
-    //Io.
-
+    Io::save(&img, "image").unwrap();
+    //Io::load_or_create(path, init)
+img.save_to_fs(&mut Io, "image2").unwrap();
     //img.save_to_fs(extension)
 
     
