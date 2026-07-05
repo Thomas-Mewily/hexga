@@ -53,7 +53,8 @@ where
     /// Read and decode the value using the provided extension.
     fn load<P: AsRef<Path>>(path: P) -> FileResult<Self::Output>
     {
-        let mut path = FS::provide_fs().resolve_path(path)?;
+        let path = path.as_ref();
+        let mut path = FS::provide_fs().resolve_path(path).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
         if path.extension().is_none()
         {
             path.set_extension(T::load_prefered_extension());

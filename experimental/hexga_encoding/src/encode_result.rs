@@ -89,7 +89,7 @@ impl From<FmtError> for EncodeError
 
 impl EncodeError
 {
-    pub fn at_path(self, path: Option<PathBuf>) -> EncodeFileError { EncodeFileError::new(self).with_path(path) }
+    pub fn at_path(self, path: Option<PathBuf>) -> FileError { FileError::new(self).with_path(path) }
 }
 
 #[derive(Default, Clone, PartialEq, Eq)]

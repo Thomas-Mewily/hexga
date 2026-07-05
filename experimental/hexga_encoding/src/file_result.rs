@@ -7,16 +7,66 @@ pub mod prelude
 
 pub type FileResult<T = ()> = Result<T, FileError>;
 
-pub enum FileError
+pub struct FileError
 {
-    /// Problem when encoding the data.
-    Encode(EncodeFileError),
-    /// Problem with the file system : File not found, out of free space...
-    Io(IoError),
+    pub path: Option<PathBuf>,
+    pub kind: FileErrorKind,
+}
+impl FileError
+{
+    pub fn new(kind: impl Into<FileErrorKind>) -> Self { Self { kind: kind.into(), path: None } }
+    pub fn with_path(mut self, path: Option<PathBuf>) -> Self
+    {
+        self.path = path;
+        self
+    }
+}
+impl Deref for FileError
+{
+    type Target=FileErrorKind;
+    fn deref(&self) -> &Self::Target {
+        &self.kind
+    }
+}
+impl DerefMut for FileError
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.kind
+    }
 }
 impl Debug for FileError
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult 
+    {
+        match &self.path
+        {
+            Some(path) => write!(f, "{:?} at {:?}", self.kind, path.display()),
+            None => write!(f, "{:?} at unknow path", self.kind),
+        }
+    }
+}
+pub enum FileErrorKind
+{
+    /// Problem when encoding the data.
+    Encode(EncodeError),
+    /// Problem with the file system : File not found, out of free space...
+    Io(IoError),
+}
+impl From<IoError> for FileErrorKind
+{
+    fn from(value: IoError) -> Self { Self::Io(value) }
+}
+impl From<IoErrorKind> for FileErrorKind
+{
+    fn from(value: IoErrorKind) -> Self { Self::Io(IoError::from(value)) }
+}
+impl From<EncodeError> for FileErrorKind
+{
+    fn from(value: EncodeError) -> Self { Self::Encode(value) }
+}
+impl Debug for FileErrorKind
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self {
             Self::Encode(v) => write!(f, "{:?}", v),
             Self::Io(v) => write!(f, "{:?}", v),
@@ -24,28 +74,13 @@ impl Debug for FileError
     }
 }
 
-impl FileError
+impl FileErrorKind
 {
     pub fn is_io(&self) -> bool { matches!(self, Self::Io(_)) }
     pub fn is_encode(&self) -> bool { matches!(self, Self::Encode(_)) }
 }
-impl From<EncodeFileError> for FileError
-{
-    fn from(value: EncodeFileError) -> Self { Self::Encode(value) }
-}
-impl From<IoError> for FileError
-{
-    fn from(value: IoError) -> Self { Self::Io(value) }
-}
-impl From<IoErrorKind> for FileError
-{
-    fn from(value: IoErrorKind) -> Self { Self::Io(IoError::from(value)) }
-}
-impl From<EncodeError> for FileError
-{
-    fn from(value: EncodeError) -> Self { Self::Encode(EncodeFileError::new(value)) }
-}
 
+/*
 #[derive(Default, Clone, PartialEq, Eq)]
 pub struct EncodeFileError
 {
@@ -71,3 +106,4 @@ impl EncodeFileError
         self
     }
 }
+*/

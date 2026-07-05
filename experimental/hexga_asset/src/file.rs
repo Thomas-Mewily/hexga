@@ -103,7 +103,7 @@ where
                 if e.is_io() && path.extension().is_some()
                 {
                     // Maybe the extension was changed
-                    let resolved = FS::provide_fs().resolve_path(path.with_extension(""))?;
+                    let resolved = FS::provide_fs().resolve_path(path.with_extension("")).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
                     if path != resolved
                     {
                         match T::load_from_fs(&mut FS::provide_fs(), &resolved)

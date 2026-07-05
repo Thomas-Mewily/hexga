@@ -17,8 +17,8 @@ pub trait Load: Sized + for<'de> CfgDeserialize<'de>
         let path = path.as_ref();
         let extension = path.extension().map(|v| v.to_str()).flatten();
 
-        let bytes = fs.read_bytes(path)?;
-        let value = Self::load_from_bytes_with_extension(bytes.as_ref(), extension)?;
+        let bytes = fs.read_bytes(path).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
+        let value = Self::load_from_bytes_with_extension(bytes.as_ref(), extension).map_err(|e| e.at_path(Some(path.to_path_buf())))?;
         Ok(value)
     }
 

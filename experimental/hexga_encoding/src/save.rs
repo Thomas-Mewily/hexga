@@ -17,15 +17,15 @@ pub trait Save : CfgSerialize
         let path = path.as_ref();
         let extension = path.extension().map(|v| v.to_str()).flatten();
 
-        let (writer, extension) = self.save_to_bytes_with_extension_in(Vec::with_capacity(DEFAULT_WRITER_CAPACITY), extension)?;
+        let (writer, extension) = self.save_to_bytes_with_extension_in(Vec::with_capacity(DEFAULT_WRITER_CAPACITY), extension).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
 
         if path.extension().map(|e| e.to_str()).flatten() != Some(extension.as_ref())
         {
-            let output_path = fs.write_bytes(path.with_extension(extension.as_ref()), &writer)?;
+            let output_path = fs.write_bytes(path.with_extension(extension.as_ref()), &writer).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
             Ok(output_path)
         }else
         {
-            let output_path = fs.write_bytes(path, &writer)?;
+            let output_path = fs.write_bytes(path, &writer).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
             Ok(output_path)
         }
     }
