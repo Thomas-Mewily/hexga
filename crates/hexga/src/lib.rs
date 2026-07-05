@@ -60,7 +60,7 @@ pub mod hexga_prelude
     pub use crate::generational::prelude::*;
     pub use crate::math::prelude::*;
     pub use crate::utils::prelude::*;
-    //pub use hexga_image::prelude::*;
+    pub use hexga_image::prelude::*;
     //pub use crate::random::*;
     pub use crate::array_vec::prelude::*;
     //pub use crate::encoding::prelude::*;
@@ -101,6 +101,7 @@ pub mod hexga_traits
 {
     pub use crate::generational::traits::*;
     pub use crate::utils::traits::*;
+    pub use hexga_image::traits::*;
 
     pub use crate::asset::traits::*;
     pub use crate::encoding::traits::*;

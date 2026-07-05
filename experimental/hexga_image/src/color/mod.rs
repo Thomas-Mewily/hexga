@@ -8,6 +8,12 @@ pub mod prelude
         icolor::{ArrayToColor, IColor, ToColor},
         rgba::{Rgba, RgbaF32, RgbaF64, RgbaFloat, RgbaOf, RgbaU8, RgbaU16, rgb, rgba},
     };
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::{ToColor,IColor,ArrayToColor};
 }
 
 pub type Color = Rgba;

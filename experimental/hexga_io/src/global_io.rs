@@ -4,6 +4,7 @@ use super::*;
 #[derive(Debug, Default)]
 pub struct Io;
 
+
 impl FsDynRead for Io
 {
     fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool>

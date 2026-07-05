@@ -29,4 +29,15 @@ fn main()
     {
         println!("{}", i);
     }
+
+    let img = Image::from_fn((16,16), |(x,y)| 
+    {
+        ColorU8::rgb((255 / x) as _, (255 / y) as _, 0)
+    });
+
+    //Io.
+
+    //img.save_to_fs(extension)
+
+    
 }
