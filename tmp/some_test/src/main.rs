@@ -3,7 +3,7 @@ use hexga::prelude::*;
 fn main()
 {
     /*
-    let mut f = FileData::load_or_create("hello", || "hi".to_owned());
+    let mut f = FileData::load_or_create("_tmp/hello", || "hi".to_owned());
     dbg!(f.get_path());
     f.push_str(" goodbye!");
 
@@ -35,9 +35,9 @@ fn main()
         ColorU8::rgb((255 / 16 * x) as _, (255 / 16 * y) as _, 0)
     });
 
-    Io::save(&img, "image").unwrap();
+    Io::save(&img, "_tmp/image").unwrap();
     //Io::load_or_create(path, init)
-img.save_to_fs(&mut Io, "image2").unwrap();
+img.save_to_fs(&mut Io, "_tmp/image2").unwrap();
     //img.save_to_fs(extension)
 
     
