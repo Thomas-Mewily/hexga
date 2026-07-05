@@ -31,7 +31,7 @@ pub trait Load: Sized + for<'de> CfgDeserialize<'de>
     }
 }
 
-pub trait LoadExtension: Load
+pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
 {
     fn load_extensions() -> impl Iterator<Item = &'static extension>
     {
@@ -90,7 +90,7 @@ pub trait LoadExtension: Load
         return Err(EncodeError::load_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into())));
     }
 }
-impl<T> LoadExtension for T where T: Load {}
+impl<T> LoadExtension for T where T: Load + for<'de> CfgDeserialize<'de> {}
 
 pub trait LoadFrom: From<Self::Source>
 {

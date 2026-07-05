@@ -7,7 +7,7 @@ pub(crate) mod prelude
 
 const DEFAULT_WRITER_CAPACITY: usize = 1024;
 
-pub trait Save: CfgSerialize
+pub trait Save : CfgSerialize
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn save_prefered_extension() -> &'static extension { Self::save_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }

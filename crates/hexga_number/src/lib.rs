@@ -89,6 +89,8 @@ pub mod traits
         IterSample, IterSampleDefault, IterSampleDefaultInclusive,
         IterStep, IterStepMax, IterStepDefault, IterStepDefaultInclusive,
 
-        MapIntern, MapInternWith, Map, MapWith
+        MapIntern, MapInternWith, Map, MapWith,
+
+        OverflowBehavior, PrimitiveType,
     };
 }

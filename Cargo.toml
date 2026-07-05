@@ -48,7 +48,7 @@ hexga_math_derive      = { path = "./crates/hexga_math_derive",          version
 hexga_math             = { path = "./crates/hexga_math",                 version = "0.0.11-beta.53", default-features = false }
 
 hexga_utils            = { path = "./crates/hexga_utils",                version = "0.0.11-beta.53", default-features = false }
-# hexga_image            = { path = "./crates/hexga_image",              version = "0.0.11-beta.53", default-features = false }
+hexga_image            = { path = "./experimental/hexga_image",          version = "0.0.11-beta.53", default-features = false }
 
 hexga                  = { path = "./crates/hexga",                      version = "0.0.11-beta.53", default-features = false }
 

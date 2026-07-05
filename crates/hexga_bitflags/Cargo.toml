@@ -19,6 +19,7 @@ proc-macro = true
 default = []
 
 serde = ["dep:serde"]
+serde_rc = ["serde/rc"]
 
 
 [dependencies]

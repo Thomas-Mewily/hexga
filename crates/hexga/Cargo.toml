@@ -21,15 +21,15 @@ default = [
             #"hexga_asset"
           ]
 
-int_are_8_bits    = ["hexga_math/int_are_8_bits"] #, "hexga_image/int_are_8_bits"]
-int_are_16_bits   = ["hexga_math/int_are_16_bits"] #, "hexga_image/int_are_16_bits"]
-int_are_32_bits   = ["hexga_math/int_are_32_bits"] #, "hexga_image/int_are_32_bits"]
-int_are_64_bits   = ["hexga_math/int_are_64_bits"] #, "hexga_image/int_are_64_bits"]
-int_are_size_bits = ["hexga_math/int_are_size_bits"] #, "hexga_image/int_are_size_bits"]
+int_are_8_bits    = ["hexga_math/int_are_8_bits", "hexga_image/int_are_8_bits"]
+int_are_16_bits   = ["hexga_math/int_are_16_bits", "hexga_image/int_are_16_bits"]
+int_are_32_bits   = ["hexga_math/int_are_32_bits", "hexga_image/int_are_32_bits"]
+int_are_64_bits   = ["hexga_math/int_are_64_bits", "hexga_image/int_are_64_bits"]
+int_are_size_bits = ["hexga_math/int_are_size_bits", "hexga_image/int_are_size_bits"]
 
-float_are_32_bits   = ["hexga_math/float_are_32_bits"] #, "hexga_image/float_are_32_bits"]
-float_are_64_bits   = ["hexga_math/float_are_64_bits"] #, "hexga_image/float_are_64_bits"]
-float_are_size_bits = ["hexga_math/float_are_size_bits"] #, "hexga_image/float_are_size_bits"]
+float_are_32_bits   = ["hexga_math/float_are_32_bits", "hexga_image/float_are_32_bits"]
+float_are_64_bits   = ["hexga_math/float_are_64_bits", "hexga_image/float_are_64_bits"]
+float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_image/float_are_size_bits"]
 
 hexga_encoding_derive = ["hexga_encoding/derive"]
 #hexga_encoding_derive = ["hexga_save/hexga_encoding_derive"]
@@ -37,26 +37,33 @@ hexga_encoding_derive = ["hexga_encoding/derive"]
 
 serde = ["dep:serde",
   "hexga_generational/serde",
-  "hexga_arena/serde",
   "hexga_math/serde",
   "hexga_bitflags/serde",
   "hexga_ansi_color/serde",
-  #"hexga_image/serde",
+  "hexga_image/serde",
   "hexga_io/serde",
   "hexga_encoding/serde",
   #"hexga_save/serde",
+  "hexga_arena/serde",
   "hexga_asset/serde",
   "hexga_utils/serde",
   "hexga_array_vec/serde",
 ]
 
 serde_rc = ["serde/rc",
-  "hexga_encoding/serde_rc", 
+  "hexga_generational/serde_rc",
+  "hexga_math/serde_rc",
+  "hexga_bitflags/serde_rc",
+  "hexga_ansi_color/serde_rc",
+  "hexga_image/serde_rc",
   "hexga_io/serde_rc", 
+  "hexga_encoding/serde_rc",
   #"hexga_save/serde_rc", 
   "hexga_arena/serde_rc", 
   "hexga_asset/serde_rc", 
-  "hexga_utils/serde_rc", "hexga_array_vec/serde_rc"]
+  "hexga_utils/serde_rc", 
+  "hexga_array_vec/serde_rc"
+]
 
 #hexga_io = ["dep:hexga_io"]
 #hexga_asset = ["dep:hexga_asset"]
@@ -70,7 +77,7 @@ hexga_bitflags.workspace = true
 hexga_ansi_color.workspace = true
 hexga_utils.workspace = true
 hexga_map_on.workspace = true
-#hexga_image.workspace = true
+hexga_image.workspace = true
 
 #hexga_save.workspace = true
 hexga_encoding.workspace = true
