@@ -134,6 +134,7 @@ pub mod iter;
 pub mod option;
 pub mod rc;
 pub mod sync;
+pub mod shared;
 #[macro_use]
 pub mod macros;
 pub mod convert;
@@ -214,6 +215,7 @@ pub mod modules
         rc,
         result,
         sync,
+        shared,
         //run,
         utils,
         wrapper,
@@ -258,6 +260,7 @@ pub mod hexga_prelude
         utils::prelude::*,
         wrapper::prelude::*,
         result::prelude::*,
+        shared::prelude::*,
         convert::prelude::*,
         bit::prelude::*,
         map_on::prelude::*,
@@ -300,6 +303,7 @@ pub mod hexga_traits
         utils::traits::*,
         wrapper::traits::*,
         result::traits::*,
+        shared::traits::*,
         convert::traits::*,
         bit::traits::*,
         //map_on::traits::*,

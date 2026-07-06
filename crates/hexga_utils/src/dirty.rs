@@ -30,6 +30,31 @@ pub struct Dirty<T>
     value: T,
     used: bool,
 }
+
+#[cfg(feature = "serde")]
+impl<T: Serialize> Serialize for Dirty<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.value.serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T: Deserialize<'de>> Deserialize<'de> for Dirty<T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = T::deserialize(deserializer)?;
+        Ok(Dirty {
+            value,
+            used: true,
+        })
+    }
+}
+
 impl<T> PartialEq for Dirty<T>
 where
     T: PartialEq,

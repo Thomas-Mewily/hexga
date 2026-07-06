@@ -1,227 +1,349 @@
+use std::any::TypeId;
+
 use super::*;
 
+pub type AssetData<T> = AssetDataIn<T>;
+
 #[derive(Clone)]
-pub struct AssetData<T, IO=Io> // A:AutoSave>
-    where 
-    IO: FsProvider,
-    T: Load + Save
+pub struct AssetDataIn<T, FS = Io>
+where
+    FS: FsProvider,
+    T: Load + Save,
 {
-    file: FileDataOf<T,IO>
+    file: FileDataIn<T,FS>
 }
 
-impl<T,IO> std::hash::Hash for AssetData<T,IO> where 
-    IO: FsProvider,
-    T: Load + Save 
+// Todo: better impl
+impl<T, FS> Load for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save {}
+
+impl<T, FS> Save for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save {}
+
+#[cfg(feature = "serde")]
+impl<T, FS> Serialize for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + Serialize,
 {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.file.hash(state);
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.file.serialize(serializer)
     }
 }
 
-impl<T,IO> Ord for AssetData<T,IO> where 
-    IO: FsProvider,
-    T: Load + Save 
+#[cfg(feature = "serde")]
+impl<'de, T, FS> Deserialize<'de> for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + for <'de2> Deserialize<'de2>,
 {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.file.cmp(&other.file)
-    }
-}
-impl<T,IO> PartialOrd for AssetData<T,IO> 
-where 
-    IO: FsProvider,
-    T: Load + Save 
-{
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.file.partial_cmp(&other.file)
-    }
-}
-
-impl<T,IO> Eq for AssetData<T,IO> where 
-    IO: FsProvider,
-    T: Load + Save 
-{}
-impl<T,IO> PartialEq for AssetData<T,IO> 
-where 
-    IO: FsProvider,
-    T: Load + Save 
-{
-    fn eq(&self, other: &Self) -> bool {
-        self.file == other.file
-    }
-}
-
-impl<T,IO> Debug for AssetData<T,IO> 
-    where 
-    IO: FsProvider,
-    T: Load + Save + Debug
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        Debug::fmt(&self.file, f)
-    }
-}
-
-impl<T,IO> Display for AssetData<T,IO> 
-    where 
-    IO: FsProvider,
-    T: Load + Save + Display
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        Display::fmt(&self.file, f)
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let file = FileDataIn::<T,FS>::deserialize(deserializer)?;
+        Ok(AssetDataIn { file })
     }
 }
 
 /*
-impl<T,IO> Deref for AssetData<T,IO> 
-    where 
-    IO: IoProvider,
-    T: Load + Save
+impl<T, FS> From<T> for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
 {
-    type Target=Dirty<T>;
-    fn deref(&self) -> &Self::Target {
-        &self.value
-    }
+    fn from(value: T) -> Self { Self::from_path_and_value(None, value) }
 }
-impl<T,IO> DerefMut for AssetData<T,IO> 
-    where 
-    IO: IoProvider,
+*/
+
+impl<T, FS> Guarded<T> for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    type Guard<'a>
+        = &'a T
+    where
+        Self: 'a;
+    type Error<'a>
+        = Never
+    where
+        Self: 'a;
+
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.file.try_get() }
+}
+/*
+impl<T,FS> GuardedMut<T> for AssetOf<T,FS> where
+    FS: FsProvider,
     T: Load + Save
 {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.value
+    type GuardMut<'a> = &'a mut T where Self: 'a ;
+    type Error<'a> = Never where Self: 'a;
+
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
+        Ok(self.value_mut())
     }
 }
 */
 
-
-/*
-impl<T,IO> AssetData<T,IO> 
-    where 
-    IO: IoProvider,
-    T: Load + Save
+impl<T, FS> Persistant for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
 {
-    pub fn load<P: AsRef<Path>>(path: P) -> IoResult<AssetData<T,IO>>
+    fn save(&mut self) -> FileResult
     {
-        let mut io = IO::default();
-        let path = io.resolve_path(path)?;
-        let value = io.load_unresolved(&path)?;
-        Ok(Self{ path, value: Dirty::new(value), phantom: PhantomData })
+        self.file.save()
     }
-    pub fn load_or_create<P: AsRef<Path>, F>(path: P, init: F) -> AssetData<T,IO> where T: Load + Save + Sized, F: FnOnce() -> T 
-    {
-        let mut io = IO::default();
-        let p = path.as_ref();
-        let path = io.resolve_path(p).unwrap_or_else(|_| p.to_owned());
-        let value = io.load_or_create(&path, init);
-        Self { path: path, value: Dirty::new(value), phantom: PhantomData }
-    }
-    pub fn load_unresolved<P: AsRef<Path>>(path: P) -> IoResult<AssetData<T,IO>>
-    {
-        let path = path.as_ref();
-        let value = IO::default().load_unresolved(path)?;
-        Ok(Self{ path: path.to_owned(), value: Dirty::new(value), phantom: PhantomData })
-    }
-    pub fn load_or_create_unresolved<P: AsRef<Path>, F>(path: P, init: F) -> AssetData<T,IO> where T: Load + Save + Sized, F: FnOnce() -> T 
-    {
-        let path = path.as_ref();
-        let value = IO::default().load_or_create_unresolved(path, init);
-        Self { path: path.to_owned(), value: Dirty::new(value), phantom: PhantomData }
-    }
-
-    pub fn save(&mut self) -> IoResult
-    { 
-        if self.is_not_dirty() { return Ok(()); }
-        self.undirty();
-        self.path = IO::default().save(&self.path, self.value())?;
-        Ok(())
-    }
-
-    pub fn save_unresolved(&mut self) -> IoResult 
-    { 
-        if self.is_not_dirty() { return Ok(()); }
-        self.undirty();
-        IO::default().save_unresolved(&self.path, self.value()) 
-    }
-
-    pub fn value(&self) -> &T { self.deref() }
-    pub fn value_mut(&mut self) -> &mut T { self.deref_mut() }
-
-    pub fn path(&self) -> &Path { &self.path }
-
-    /// Change the path without moving the old file.
-    pub fn set_path_unresolved<P: AsRef<Path>>(&mut self, path: P)
-    {
-        self.path = path.as_ref().to_path_buf();
-        self.mark_dirty();
-    }
-
-    /// Change the path without moving the old file.
-    pub fn set_path<P: AsRef<Path>>(&mut self, path: P)
-    {
-        let path = path.as_ref();
-        self.path = IO::default().resolve_path(path).unwrap_or_else(|_| 
-            match self.path.extension()
-            {
-                Some(ex) => path.with_extension(ex),
-                None => path.to_owned(),
-            }
-        );
-        self.mark_dirty();
-    }
-
-    /// Change the path and move the old file.
-    /// Do not change the file path if the renaming failed.
-    pub fn rename<P: AsRef<Path>>(&mut self, to: P) -> IoResult
-    {
-        let mut io = IO::default();
-        self.path = io.rename(&self.path, &to)?;
-        Ok(())
-    }
-
-    /// Change the path and move the old file.
-    /// Do not change the file path if the renaming failed.
-    pub fn rename_unresolved<P: AsRef<Path>>(&mut self, to: P) -> IoResult
-    {
-        let mut io = IO::default();
-        let to = to.as_ref().to_owned();
-        io.rename_unresolved(&self.path, &to)?;
-        self.path = to;
-        Ok(())
-    }
-
-    /*
-    pub fn into_value_without_saving(self) -> T {
-        let Self { value, path, phantom } = self;
-        let result = value.into_value();
-        result
-    }*/
 }
 
-impl<T,IO> Reload for AssetData<T,IO> 
-    where 
-    IO: IoProvider,
-    T: Load + Save
+impl<T, FS> Reload for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
 {
     type Ok = ();
-    type Error = IoError;
+    type Error = FileError;
 
-    fn try_reload(&mut self) -> Result<Self::Ok, Self::Error> {
-        self.path = IO::default().resolve_path(&self.path).unwrap_or_else(|_| std::mem::take(&mut self.path));
-        match IO::default().load(&self.path)
+    fn try_reload(&mut self) -> Result<Self::Ok, Self::Error>
+    {
+        let Some(path) = self.get_path()
+        else
         {
-            Ok(v) => { self.value = Dirty::new(v); Ok(()) },
-            Err(e) => Err(e),
+            return Ok(());
+        };
+
+        match T::load_from_fs(&mut FS::provide_fs(), path)
+        {
+            Ok(v) =>
+            {
+                *self.value_mut() = v;
+                Ok(())
+            }
+            Err(e) =>
+            {
+                if e.is_io() && path.extension().is_some()
+                {
+                    // Maybe the extension was changed
+                    let resolved = FS::provide_fs().resolve_path(path.with_extension("")).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
+                    if path != resolved
+                    {
+                        match T::load_from_fs(&mut FS::provide_fs(), &resolved)
+                        {
+                            Ok(v) =>
+                            {
+                                *self.value_mut() = v;
+                                let _ = self.set_path(Some(resolved));
+                                Ok(())
+                            }
+                            Err(e) =>
+                            {
+                                // Still change the path
+                                let _ = self.set_path(Some(resolved));
+                                Err(e)
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Err(e)
+                    }
+                }
+                else
+                {
+                    Err(e)
+                }
+            }
         }
     }
 }
 
-impl<T,IO> Drop for AssetData<T,IO> 
-    where 
-    IO: IoProvider,
-    T: Load + Save
+impl<T, FS> FsProvider for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
 {
-    fn drop(&mut self) {
+    type Fs = FS::Fs;
+    fn provide_fs() -> Self::Fs { FS::provide_fs() }
+}
+
+
+
+impl<T, FS> Hash for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + Hash,
+{
+    fn hash<H: Hasher>(&self, state: &mut H)
+    {
+        self.get_path().hash(state);
+        self.value().hash(state);
+    }
+}
+
+impl<T, FS> Ord for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + Ord,
+{
+    fn cmp(&self, other: &Self) -> Ordering { (self.get_path(), self.value()).cmp(&(other.get_path(), other.value())) }
+}
+impl<T, FS> PartialOrd for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + PartialOrd,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (self.get_path(), self.value()).partial_cmp(&(other.get_path(), other.value())) }
+}
+
+impl<T, FS> Eq for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + Eq,
+{
+}
+impl<T, FS> PartialEq for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool { self.get_path() == other.get_path() && self.value() == other.value() }
+}
+
+impl<T, FS> Debug for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("Asset").field("path", &self.get_path()).field("value", self.value()).finish() }
+}
+
+impl<T, FS> Display for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + Display,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
+    {
+        write!(f, "{}", self.value())?;
+        if let Some(path) = self.get_path()
+        {
+            write!(f, " at {}", path.display())?;
+        }
+        Ok(())
+    }
+}
+
+impl<T, FS> Deref for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    type Target = T;
+    fn deref(&self) -> &Self::Target { self.file.deref() }
+}
+impl<T, FS> DerefMut for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target { self.file.deref_mut() }
+}
+
+impl<T, IO> AssetDataIn<T, IO>
+where
+    IO: FsProvider,
+    T: Load + Save,
+{
+    pub fn value(&self) -> &T { self.deref() }
+    pub fn value_mut(&mut self) -> &mut T { self.deref_mut() }
+
+    // Extract the value without saving it.
+    // pub fn into_value(mut self) -> T { std::mem::take(&mut self.value).unwrap().into_value() }
+}
+
+impl<T, FS> IsDirty for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    fn is_dirty(&self) -> bool { self.file.is_dirty() }
+}
+impl<T, FS> SetDirty for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    fn set_dirty(&mut self, used: bool) -> &mut Self
+    {
+        self.file.set_dirty(used);
+        self
+    }
+}
+impl<T, FS> GetPath for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    fn get_path(&self) -> Option<&Path>
+    {
+        self.file.get_path()
+    }
+}
+impl<T, FS> SetPath for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
+    {
+        todo!();
+        self.file.set_path(path);
+    }
+
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult
+    {
+        let path = self.get_path();
+        let path = match &path
+        {
+            Some(path) => path,
+            None =>
+            {
+                return self.set_path(Some(to));
+            }
+        };
+        let dest = to.as_ref();
+        match FS::provide_fs().rename(path, dest)
+        {
+            Ok(path) =>
+            {
+                let _ = self.set_path(Some(path));
+                Ok(())
+            }
+            Err(e) =>
+            {
+                let _ = self.set_path(Some(dest.to_path_buf()));
+                Err(e)
+            }
+        }
+    }
+}
+
+impl<T, FS> Drop for AssetDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    fn drop(&mut self)
+    {
         // Todo: if saving fail, try to save the file somewhere else / in a recovery folder ?
         let _ = self.save();
     }
 }
-*/

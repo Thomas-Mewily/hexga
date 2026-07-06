@@ -7,12 +7,14 @@ impl<T> Async for T where T: WasmSend + WasmSync + 'static {}
 pub trait AnyAsync: Any + WasmSendSync + 'static
 {
     fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 impl<T> AnyAsync for T
 where
     T: Any + WasmSendSync + 'static,
 {
     fn as_any(&self) -> &dyn Any { self }
+    fn as_any_mut(&mut self) -> &mut dyn Any { self }
 }
 
 pub type DynAnyAsync = dyn AnyAsync + 'static;

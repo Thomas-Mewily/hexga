@@ -4,7 +4,6 @@ pub type FileData<T> = FileDataIn<T>;
 
 #[derive(Clone)]
 pub struct FileDataIn<T, FS = Io>
-// A:AutoSave>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -15,6 +14,60 @@ where
     value: Option<Dirty<T>>,
     phantom: PhantomData<FS>,
 }
+
+// Todo: better impl
+impl<T, FS> Load for FileDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save {}
+
+impl<T, FS> Save for FileDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save {}
+
+#[cfg(feature = "serde")]
+impl<T, FS> Serialize for FileDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("FileDataIn", 2)?;
+        state.serialize_field("path", &self.path)?;
+        state.serialize_field("value", &self.value)?;
+        state.end()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T, FS> Deserialize<'de> for FileDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save + for<'de2> Deserialize<'de2>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct FileDataIn<T> {
+            path: Option<PathBuf>,
+            value: Option<Dirty<T>>,
+        }
+        
+        let helper = FileDataIn::deserialize(deserializer)?;
+        Ok(super::FileDataIn {
+            path: helper.path,
+            value: helper.value,
+            phantom: PhantomData,
+        })
+    }
+}
+
 impl<T, FS> From<T> for FileDataIn<T, FS>
 where
     FS: FsProvider,
@@ -111,13 +164,13 @@ where
                             Ok(v) =>
                             {
                                 *self.value_mut() = v;
-                                self.path = Some(resolved);
+                                self.set_path(Some(resolved));
                                 Ok(())
                             }
                             Err(e) =>
                             {
                                 // Still change the path
-                                self.path = Some(resolved);
+                                self.set_path(Some(resolved));
                                 Err(e)
                             }
                         }
@@ -322,12 +375,12 @@ where
         {
             Ok(path) =>
             {
-                self.path = Some(path);
+                self.set_path(Some(path));
                 Ok(())
             }
             Err(e) =>
             {
-                self.path = Some(dest.to_path_buf());
+                self.set_path(Some(dest.to_path_buf()));
                 Err(e)
             }
         }

@@ -6,6 +6,9 @@ use hexga_utils::dirty::prelude::*;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
+
 mod reload;
 pub use reload::*;
 
@@ -15,13 +18,11 @@ pub use file::*;
 mod load_save;
 pub use load_save::*;
 
-/*
 mod asset_manager;
 pub use asset_manager::*;
 
 mod asset;
 pub use asset::*;
-*/
 
 pub mod prelude
 {

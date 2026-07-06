@@ -47,8 +47,8 @@ where
     FS: FsProvider,
 {
     type Output: PersistantValue<T>;
-    /// Unresolved version of the path
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output;
+    fn from_value(value: T) -> Self::Output { Self::from_path_and_value(None, value) }
 
     /// Read and decode the value using the provided extension.
     fn load<P: AsRef<Path>>(path: P) -> FileResult<Self::Output>

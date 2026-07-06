@@ -37,7 +37,7 @@ fn main()
 
     Io::save(&img, "_tmp/image").unwrap();
     //Io::load_or_create(path, init)
-img.save_to_fs(&mut Io, "_tmp/image2").unwrap();
+    img.save_to_fs(&mut Io, "_tmp/image2").unwrap();
     //img.save_to_fs(extension)
 
     
