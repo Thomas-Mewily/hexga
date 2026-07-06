@@ -1,349 +1,399 @@
-use std::any::TypeId;
+use std::{any::TypeId, sync::{Arc, RwLock}};
+use hexga_core::sync::{ArcWeak};
 
 use super::*;
 
-pub type AssetData<T> = AssetDataIn<T>;
+pub(crate) static ASSET: SingletonLazyRw<AssetsManagerUntyped> = SingletonLazyRw::new(|| AssetsManagerUntyped::default());
 
-#[derive(Clone)]
-pub struct AssetDataIn<T, FS = Io>
-where
-    FS: FsProvider,
-    T: Load + Save,
+#[derive(Default)]
+pub(crate) struct AssetsManagerUntyped
 {
-    file: FileDataIn<T,FS>
+    /// HashMap<typeof(AssetManager<T,FS>), Box<AssetManager<T,FS>>>
+    assets: HashMap<TypeId, Box<DynAnyAsync>>,
+}
+impl AssetsManagerUntyped
+{
+    pub(crate) fn get_manager<'a,T, FS>(&'a mut self) -> &'a mut AssetManager<T, FS>
+    where
+        FS: FsProvider + Async,
+        T: Load + Save + Async,
+    {
+        let typeid = TypeId::of::<AssetManager<T, FS>>();
+
+        let boxed_any: &'a mut Box<dyn AnyAsync + 'static> = self.assets
+            .entry(typeid)
+            .or_insert_with(|| {
+                Box::new(AssetManager::<T, FS>::___()) as Box<DynAnyAsync>
+            });
+
+        boxed_any.as_any_mut()
+            .downcast_mut::<AssetManager<T, FS>>()
+            .expect("Type mismatch")
+    }
 }
 
-// Todo: better impl
-impl<T, FS> Load for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save {}
+pub(crate) type ArcRwLockAssetManager<T,FS> = Arc<RwLock<AssetManager<T,FS>>>;
 
-impl<T, FS> Save for AssetDataIn<T, FS>
+#[derive(Debug)]
+pub(crate) struct AssetManager<T,FS>
 where
-    FS: FsProvider,
-    T: Load + Save {}
+    FS: FsProvider + Async,
+    T: Load + Save + Async,
+{
+    pub(crate) values: HashMap<PathBuf, AssetStorage<T, FS>>,
+}
+impl<T,FS> Default for AssetManager<T,FS>
+    where
+        FS: FsProvider + Async,
+        T: Load + Save + Async,
+{
+    fn default() -> Self {
+        Self { values: Default::default() }
+    }
+}
+
+#[derive(Debug)]
+pub enum AssetStorage<T,FS>
+where
+    FS: FsProvider + Async,
+    T: Load + Save + Async,
+{
+    Strong(AssetIn<T,FS>),
+    Weak(AssetWeakIn<T,FS>),
+}
+impl<T,FS> AssetStorage<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    pub fn is_strong(&self) -> bool { matches!(self, Self::Strong(_)) }
+    pub fn is_weak(&self) -> bool { matches!(self, Self::Weak(_)) }
+}
+
+impl<T,FS> SharedCount for AssetStorage<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    fn strong_count(&self) -> usize {
+        match self
+        {
+            AssetStorage::Strong(v) => v.strong_count(),
+            AssetStorage::Weak(v) => v.strong_count(),
+        }
+    }
+
+    fn weak_count(&self) -> usize {
+        match self
+        {
+            AssetStorage::Strong(v) => v.weak_count(),
+            AssetStorage::Weak(v) => v.weak_count(),
+        }
+    }
+}
+impl<T,FS> SharedDowngrade for AssetStorage<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    type Ouput = AssetWeakIn<T,FS>;
+
+    fn downgrade(&self) -> Self::Ouput {
+        match self
+        {
+            AssetStorage::Strong(v) => v.downgrade(),
+            AssetStorage::Weak(v) => v.clone(),
+        }
+    }
+}
+
+impl<T,FS> SharedUpgrade for AssetStorage<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    type Output = AssetIn<T,FS>;
+
+    fn upgrade(&self) -> Option<Self::Output> {
+        match self
+        {
+            AssetStorage::Strong(v) => Some(v.clone()),
+            AssetStorage::Weak(v) => v.upgrade(),
+        }
+    }
+}
+/*
+pub struct AssetIn<T, IO>
+    where 
+    IO: FsProvider,
+    T: Load + Save + Async
+{
+    data: FileDataOf<T, IO>
+}
+*/
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+enum AssetLocation<T,P>
+{
+    Path(P),
+    Value(T),
+}
+
+
+pub struct AssetIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async,
+{
+    inner: Arc<RwLock<AssetDataIn<T,FS>>>
+}
+
 
 #[cfg(feature = "serde")]
-impl<T, FS> Serialize for AssetDataIn<T, FS>
+impl<T, FS> Serialize for AssetIn<T, FS>
 where
-    FS: FsProvider,
-    T: Load + Save + Serialize,
+    FS: FsProvider + Async,
+    T: Load + Save + Async + Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        self.file.serialize(serializer)
+        let asset = self.get();
+        match asset.get_path()
+        {
+            Some(path) => AssetLocation::Path(path),
+            None => AssetLocation::Value(asset.value()),
+        }.serialize(serializer)
     }
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T, FS> Deserialize<'de> for AssetDataIn<T, FS>
+impl<'de, T, FS> Deserialize<'de> for AssetIn<T, FS>
 where
-    FS: FsProvider,
-    T: Load + Save + for <'de2> Deserialize<'de2>,
+    FS: FsProvider + Async,
+    T: Load + Save + Async + for <'de2> Deserialize<'de2>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let file = FileDataIn::<T,FS>::deserialize(deserializer)?;
-        Ok(AssetDataIn { file })
+        let val = AssetLocation::<T,PathBuf>::deserialize(deserializer)?;
+        match val 
+        {
+            AssetLocation::Path(path) => AssetIn::load(path).map_err(|e| serde::de::Error::custom(e.to_debug())),
+            AssetLocation::Value(value) => Ok(AssetIn::from_value(value)),
+        }
     }
 }
 
-/*
-impl<T, FS> From<T> for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
+impl<T,FS> Clone for AssetIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
 {
-    fn from(value: T) -> Self { Self::from_path_and_value(None, value) }
-}
-*/
-
-impl<T, FS> Guarded<T> for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
-{
-    type Guard<'a>
-        = &'a T
-    where
-        Self: 'a;
-    type Error<'a>
-        = Never
-    where
-        Self: 'a;
-
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.file.try_get() }
-}
-/*
-impl<T,FS> GuardedMut<T> for AssetOf<T,FS> where
-    FS: FsProvider,
-    T: Load + Save
-{
-    type GuardMut<'a> = &'a mut T where Self: 'a ;
-    type Error<'a> = Never where Self: 'a;
-
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> {
-        Ok(self.value_mut())
+    fn clone(&self) -> Self {
+        Self { inner: self.inner.clone() }
     }
 }
-*/
+impl<T,FS> SharedCount for AssetIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    fn strong_count(&self) -> usize {
+        self.inner.strong_count()
+    }
 
-impl<T, FS> Persistant for AssetDataIn<T, FS>
+    fn weak_count(&self) -> usize {
+        self.inner.weak_count()
+    }
+}
+impl<T,FS> SharedDowngrade for AssetIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    type Ouput = AssetWeakIn<T,FS>;
+
+    fn downgrade(&self) -> Self::Ouput {
+        AssetWeakIn{ inner: self.inner.downgrade() }
+    }
+}
+impl<T,FS> Debug for AssetIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async + Debug
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self.try_get()
+        {
+            Ok(v) => write!(f, "{:?}", v.deref()),
+            Err(e) => write!(f, "Can't read asset {:?}", e),
+        }
+    }
+}
+impl<T,FS> Guarded<AssetDataIn<T,FS>> for AssetIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    type Guard<'a> = <RwLock<AssetDataIn<T,FS>> as Guarded<AssetDataIn<T,FS>>>::Guard<'a> where Self: 'a;
+    type Error<'a> = <RwLock<AssetDataIn<T,FS>> as Guarded<AssetDataIn<T,FS>>>::Error<'a> where Self: 'a;
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.inner.try_get() }
+}
+impl<T,FS> GuardedMut<AssetDataIn<T,FS>> for AssetIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    type GuardMut<'a> = <RwLock<AssetDataIn<T,FS>> as GuardedMut<AssetDataIn<T,FS>>>::GuardMut<'a> where Self: 'a;
+    type Error<'a> = <RwLock<AssetDataIn<T,FS>> as GuardedMut<AssetDataIn<T,FS>>>::Error<'a> where Self: 'a;
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.inner.try_get_mut() }
+}
+
+impl<T, FS> GetPath for AssetIn<T, FS>
 where
-    FS: FsProvider,
-    T: Load + Save,
+    FS: FsProvider + Async,
+    T: Load + Save + Async,
+{
+    fn get_path(&self) -> Option<PathBuf>
+    {
+        self.get().get_path()
+    }
+}
+impl<T, FS> SetPath for AssetIn<T, FS>
+where
+    FS: FsProvider + Async,
+    T: Load + Save + Async,
+{
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult {
+        todo!();
+        self.get_mut().set_path(path)
+    }
+
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult {
+        todo!();
+        self.get_mut().rename_path(to)
+    }
+}
+
+impl<T, FS> Persistant for AssetIn<T, FS>
+where
+    FS: FsProvider + Async,
+    T: Load + Save + Async,
 {
     fn save(&mut self) -> FileResult
     {
-        self.file.save()
+        self.get_mut().save()
     }
 }
 
-impl<T, FS> Reload for AssetDataIn<T, FS>
+impl<T, FS> Reload for AssetIn<T, FS>
 where
-    FS: FsProvider,
-    T: Load + Save,
+    FS: FsProvider + Async,
+    T: Load + Save + Async,
 {
     type Ok = ();
     type Error = FileError;
 
     fn try_reload(&mut self) -> Result<Self::Ok, Self::Error>
     {
-        let Some(path) = self.get_path()
-        else
+        let (result, path_changed) = self.get_mut().try_reload_and_indicate_if_path_changed();
+        if path_changed
         {
-            return Ok(());
-        };
+            self.set_path(path)
+        }
+        result
+    }
+}
 
-        match T::load_from_fs(&mut FS::provide_fs(), path)
+
+impl<T, FS> FsLoad<T, FS> for AssetIn<T, FS>
+where
+    FS: FsProvider + Async,
+    T: Load + Save + Async,
+{
+    type Output = Self;
+
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output
+    {
+        todo!()
+        /*
+        if let Some(path) = path
         {
-            Ok(v) =>
+            match ASSET.get_mut().get_manager::<T,FS>().values.get(&path)
             {
-                *self.value_mut() = v;
-                Ok(())
-            }
-            Err(e) =>
-            {
-                if e.is_io() && path.extension().is_some()
+                Some(asset) => match asset
                 {
-                    // Maybe the extension was changed
-                    let resolved = FS::provide_fs().resolve_path(path.with_extension("")).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
-                    if path != resolved
-                    {
-                        match T::load_from_fs(&mut FS::provide_fs(), &resolved)
-                        {
-                            Ok(v) =>
-                            {
-                                *self.value_mut() = v;
-                                let _ = self.set_path(Some(resolved));
-                                Ok(())
-                            }
-                            Err(e) =>
-                            {
-                                // Still change the path
-                                let _ = self.set_path(Some(resolved));
-                                Err(e)
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Err(e)
-                    }
-                }
-                else
-                {
-                    Err(e)
-                }
+                    AssetStorage::Strong(asset) => todo!(),
+                    AssetStorage::Weak(asset) => todo!(),
+                },
+                None => todo!(),
             }
         }
-    }
-}
-
-impl<T, FS> FsProvider for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
-{
-    type Fs = FS::Fs;
-    fn provide_fs() -> Self::Fs { FS::provide_fs() }
-}
-
-
-
-impl<T, FS> Hash for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save + Hash,
-{
-    fn hash<H: Hasher>(&self, state: &mut H)
-    {
-        self.get_path().hash(state);
-        self.value().hash(state);
-    }
-}
-
-impl<T, FS> Ord for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save + Ord,
-{
-    fn cmp(&self, other: &Self) -> Ordering { (self.get_path(), self.value()).cmp(&(other.get_path(), other.value())) }
-}
-impl<T, FS> PartialOrd for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save + PartialOrd,
-{
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (self.get_path(), self.value()).partial_cmp(&(other.get_path(), other.value())) }
-}
-
-impl<T, FS> Eq for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save + Eq,
-{
-}
-impl<T, FS> PartialEq for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save + PartialEq,
-{
-    fn eq(&self, other: &Self) -> bool { self.get_path() == other.get_path() && self.value() == other.value() }
-}
-
-impl<T, FS> Debug for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save + Debug,
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("Asset").field("path", &self.get_path()).field("value", self.value()).finish() }
-}
-
-impl<T, FS> Display for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save + Display,
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
-        write!(f, "{}", self.value())?;
-        if let Some(path) = self.get_path()
-        {
-            write!(f, " at {}", path.display())?;
+        Self {
+            file: FileDataIn::from_path_and_value(path, value)
         }
-        Ok(())
+        */
     }
 }
 
-impl<T, FS> Deref for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
-{
-    type Target = T;
-    fn deref(&self) -> &Self::Target { self.file.deref() }
-}
-impl<T, FS> DerefMut for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { self.file.deref_mut() }
-}
 
-impl<T, IO> AssetDataIn<T, IO>
-where
-    IO: FsProvider,
-    T: Load + Save,
-{
-    pub fn value(&self) -> &T { self.deref() }
-    pub fn value_mut(&mut self) -> &mut T { self.deref_mut() }
 
-    // Extract the value without saving it.
-    // pub fn into_value(mut self) -> T { std::mem::take(&mut self.value).unwrap().into_value() }
-}
 
-impl<T, FS> IsDirty for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
+pub struct AssetWeakIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
 {
-    fn is_dirty(&self) -> bool { self.file.is_dirty() }
+    inner: ArcWeak<RwLock<AssetDataIn<T,FS>>>
 }
-impl<T, FS> SetDirty for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
+impl<T,FS> Clone for AssetWeakIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
 {
-    fn set_dirty(&mut self, used: bool) -> &mut Self
-    {
-        self.file.set_dirty(used);
-        self
+    fn clone(&self) -> Self {
+        Self { inner: self.inner.clone() }
     }
 }
-impl<T, FS> GetPath for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
+impl<T,FS> SharedCount for AssetWeakIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
 {
-    fn get_path(&self) -> Option<&Path>
-    {
-        self.file.get_path()
-    }
-}
-impl<T, FS> SetPath for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
-{
-    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
-    {
-        todo!();
-        self.file.set_path(path);
+    fn strong_count(&self) -> usize {
+        self.inner.strong_count()
     }
 
-    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult
-    {
-        let path = self.get_path();
-        let path = match &path
+    fn weak_count(&self) -> usize {
+        self.inner.weak_count()
+    }
+}
+impl<T,FS> SharedUpgrade for AssetWeakIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async
+{
+    type Output = AssetIn<T,FS>;
+    
+    fn upgrade(&self) -> Option<Self::Output> {
+        self.inner.upgrade().map(|inner| AssetIn { inner })   
+    }
+}
+
+impl<T,FS> Debug for AssetWeakIn<T,FS>
+    where 
+    FS: FsProvider + Async,
+    T: Load + Save + Async + Debug
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self.upgrade()
         {
-            Some(path) => path,
-            None =>
-            {
-                return self.set_path(Some(to));
-            }
-        };
-        let dest = to.as_ref();
-        match FS::provide_fs().rename(path, dest)
-        {
-            Ok(path) =>
-            {
-                let _ = self.set_path(Some(path));
-                Ok(())
-            }
-            Err(e) =>
-            {
-                let _ = self.set_path(Some(dest.to_path_buf()));
-                Err(e)
-            }
+            Some(asset) => write!(f, "{:?}", asset),
+            None => write!(f, "Asset was dropped"),
         }
-    }
-}
-
-impl<T, FS> Drop for AssetDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
-{
-    fn drop(&mut self)
-    {
-        // Todo: if saving fail, try to save the file somewhere else / in a recovery folder ?
-        let _ = self.save();
     }
 }

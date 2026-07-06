@@ -18,11 +18,11 @@ pub use file::*;
 mod load_save;
 pub use load_save::*;
 
-mod asset_manager;
-pub use asset_manager::*;
-
 mod asset;
 pub use asset::*;
+
+mod asset_data;
+pub use asset_data::*;
 
 pub mod prelude
 {
@@ -34,6 +34,6 @@ pub mod traits
 {
     pub use super::{
         FsLoad, FsProvider, FsSave,
-        Persistant, PersistantValue, Reload, 
+        Persistant, Reload, 
     };
 }

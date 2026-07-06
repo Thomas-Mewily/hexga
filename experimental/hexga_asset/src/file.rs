@@ -9,7 +9,7 @@ where
     T: Load + Save,
 {
     /// If no path, it's just a value
-    path: Option<PathBuf>,
+    pub(crate) path: Option<PathBuf>,
     // Always Some. Is only used for Self::into_value()
     value: Option<Dirty<T>>,
     phantom: PhantomData<FS>,
@@ -117,7 +117,7 @@ where
         {
             return Ok(());
         }
-        let Some(path) = self.get_path()
+        let Some(path) = &self.path
         else
         {
             return Ok(());
@@ -138,7 +138,7 @@ where
 
     fn try_reload(&mut self) -> Result<Self::Ok, Self::Error>
     {
-        let Some(path) = self.get_path()
+        let Some(path) = &self.path
         else
         {
             return Ok(());
@@ -157,7 +157,7 @@ where
                 {
                     // Maybe the extension was changed
                     let resolved = FS::provide_fs().resolve_path(path.with_extension("")).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
-                    if path != resolved
+                    if *path != resolved
                     {
                         match T::load_from_fs(&mut FS::provide_fs(), &resolved)
                         {
@@ -221,7 +221,7 @@ where
 {
     fn hash<H: Hasher>(&self, state: &mut H)
     {
-        self.get_path().hash(state);
+        self.path.hash(state);
         self.value().hash(state);
     }
 }
@@ -231,14 +231,14 @@ where
     FS: FsProvider,
     T: Load + Save + Ord,
 {
-    fn cmp(&self, other: &Self) -> Ordering { (self.get_path(), self.value()).cmp(&(other.get_path(), other.value())) }
+    fn cmp(&self, other: &Self) -> Ordering { (&self.path, self.value()).cmp(&(&other.path, other.value())) }
 }
 impl<T, FS> PartialOrd for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save + PartialOrd,
 {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (self.get_path(), self.value()).partial_cmp(&(other.get_path(), other.value())) }
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (&self.path, self.value()).partial_cmp(&(&other.path, other.value())) }
 }
 
 impl<T, FS> Eq for FileDataIn<T, FS>
@@ -252,7 +252,7 @@ where
     FS: FsProvider,
     T: Load + Save + PartialEq,
 {
-    fn eq(&self, other: &Self) -> bool { self.get_path() == other.get_path() && self.value() == other.value() }
+    fn eq(&self, other: &Self) -> bool { self.path == other.path && self.value() == other.value() }
 }
 
 impl<T, FS> Debug for FileDataIn<T, FS>
@@ -260,7 +260,7 @@ where
     FS: FsProvider,
     T: Load + Save + Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("File").field("path", &self.get_path()).field("value", self.value()).finish() }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("File").field("path", &self.path).field("value", self.value()).finish() }
 }
 
 impl<T, FS> Display for FileDataIn<T, FS>
@@ -271,7 +271,7 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
         write!(f, "{}", self.value())?;
-        if let Some(path) = self.get_path()
+        if let Some(path) = &self.path
         {
             write!(f, " at {}", path.display())?;
         }
@@ -330,11 +330,11 @@ where
     FS: FsProvider,
     T: Load + Save,
 {
-    fn get_path(&self) -> Option<&Path>
+    fn get_path(&self) -> Option<PathBuf>
     {
         match &self.path
         {
-            Some(p) => Some(p.deref()),
+            Some(p) => Some(p.clone()),
             None => None,
         }
     }

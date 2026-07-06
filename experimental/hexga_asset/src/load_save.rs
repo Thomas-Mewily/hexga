@@ -23,8 +23,10 @@ pub trait Persistant: GetPath + SetPath + Reload
     fn save(&mut self) -> FileResult;
 }
 
+/*
 pub trait PersistantValue<T>: Persistant + Guarded<T> {}
 impl<S, T> PersistantValue<T> for S where S: Persistant + Guarded<T> {}
+*/
 
 pub trait FsSave<T> : FsProvider
     where 
@@ -46,7 +48,7 @@ where
     T: Load,
     FS: FsProvider,
 {
-    type Output: PersistantValue<T>;
+    type Output: Persistant; //PersistantValue<T>;
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output;
     fn from_value(value: T) -> Self::Output { Self::from_path_and_value(None, value) }
 

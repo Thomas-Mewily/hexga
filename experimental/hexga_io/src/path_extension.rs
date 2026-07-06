@@ -4,24 +4,24 @@ use super::*;
 
 pub trait GetPath
 {
-    fn get_path(&self) -> Option<&Path>;
+    fn get_path(&self) -> Option<PathBuf>;
 }
 
 impl GetPath for Path
 {
-    fn get_path(&self) -> Option<&Path> { Some(self) }
+    fn get_path(&self) -> Option<PathBuf> { Some(self.to_path_buf()) }
 }
 impl GetPath for Option<&Path>
 {
-    fn get_path(&self) -> Option<&Path> { self.map(|p| p.get_path()).flatten() }
+    fn get_path(&self) -> Option<PathBuf> { self.map(|p| p.get_path()).flatten() }
 }
 impl<E> GetPath for Result<&Path, E>
 {
-    fn get_path(&self) -> Option<&Path>
+    fn get_path(&self) -> Option<PathBuf>
     {
         match self
         {
-            Ok(p) => Some(p),
+            Ok(p) => Some(p.to_path_buf()),
             Err(_) => None,
         }
     }
@@ -29,19 +29,19 @@ impl<E> GetPath for Result<&Path, E>
 
 impl GetPath for PathBuf
 {
-    fn get_path(&self) -> Option<&Path> { Some(self) }
+    fn get_path(&self) -> Option<PathBuf> { Some(self.clone()) }
 }
 impl GetPath for Option<&PathBuf>
 {
-    fn get_path(&self) -> Option<&Path> { self.map(|p| p.get_path()).flatten() }
+    fn get_path(&self) -> Option<PathBuf> { self.map(|p| p.get_path()).flatten() }
 }
 impl<E> GetPath for Result<&PathBuf, E>
 {
-    fn get_path(&self) -> Option<&Path>
+    fn get_path(&self) -> Option<PathBuf>
     {
         match self
         {
-            Ok(p) => Some(p),
+            Ok(p) => Some((*p).clone()),
             Err(_) => None,
         }
     }
@@ -49,19 +49,19 @@ impl<E> GetPath for Result<&PathBuf, E>
 
 impl GetPath for &str
 {
-    fn get_path(&self) -> Option<&Path> { Some(self.as_ref()) }
+    fn get_path(&self) -> Option<PathBuf> { Some(self.into()) }
 }
 impl GetPath for Option<&str>
 {
-    fn get_path(&self) -> Option<&Path> { self.map(|p| p.as_ref()) }
+    fn get_path(&self) -> Option<PathBuf> { self.map(|p| p.into()) }
 }
 impl<E> GetPath for Result<&str, E>
 {
-    fn get_path(&self) -> Option<&Path>
+    fn get_path(&self) -> Option<PathBuf>
     {
         match self
         {
-            Ok(p) => Some(p.as_ref()),
+            Ok(p) => Some(p.into()),
             Err(_) => None,
         }
     }
