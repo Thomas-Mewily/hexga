@@ -30,6 +30,9 @@ use core::ops::Range;
 mod length;
 pub use length::*;
 
+mod retain;
+pub use retain::*;
+
 mod get;
 pub use get::*;
 
@@ -95,5 +98,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{capacity::*, clear::*, collection::*, get::*, index::*, insert::*, length::*, matches::*, pop::*, push::*, remove::*};
+    pub use super::{capacity::*, clear::*, collection::*, get::*, index::*, insert::*, length::*, matches::*, pop::*, push::*, remove::*, retain::*};
 }

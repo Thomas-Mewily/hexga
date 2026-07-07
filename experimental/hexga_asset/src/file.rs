@@ -9,7 +9,7 @@ where
     T: Load + Save,
 {
     /// If no path, it's just a value
-    pub(crate) path: Option<PathBuf>,
+    path: Option<PathBuf>,
     // Always Some. Is only used for Self::into_value()
     value: Option<Dirty<T>>,
     phantom: PhantomData<FS>,
@@ -106,7 +106,9 @@ impl<T,FS> GuardedMut<T> for FileDataOf<T,FS> where
 }
 */
 
-impl<T, FS> Persistant for FileDataIn<T, FS>
+
+
+impl<T, FS> Saveable for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,
@@ -117,6 +119,10 @@ where
         {
             return Ok(());
         }
+        self.force_save()
+    }
+
+    fn force_save(&mut self) -> FileResult {
         let Some(path) = &self.path
         else
         {
@@ -164,13 +170,13 @@ where
                             Ok(v) =>
                             {
                                 *self.value_mut() = v;
-                                self.set_path(Some(resolved));
+                                let _ = self.set_path(Some(resolved));
                                 Ok(())
                             }
                             Err(e) =>
                             {
                                 // Still change the path
-                                self.set_path(Some(resolved));
+                                let _ = self.set_path(Some(resolved));
                                 Err(e)
                             }
                         }
@@ -262,7 +268,6 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("File").field("path", &self.path).field("value", self.value()).finish() }
 }
-
 impl<T, FS> Display for FileDataIn<T, FS>
 where
     FS: FsProvider,
@@ -270,7 +275,7 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
-        write!(f, "{}", self.value())?;
+        write!(f, "File {}", self.value())?;
         if let Some(path) = &self.path
         {
             write!(f, " at {}", path.display())?;
@@ -295,9 +300,9 @@ where
     fn deref_mut(&mut self) -> &mut Self::Target { self.value.as_mut().unwrap().deref_mut() }
 }
 
-impl<T, IO> FileDataIn<T, IO>
+impl<T, FS> FileDataIn<T, FS>
 where
-    IO: FsProvider,
+    FS: FsProvider,
     T: Load + Save,
 {
     pub fn value(&self) -> &T { self.deref() }
@@ -375,12 +380,12 @@ where
         {
             Ok(path) =>
             {
-                self.set_path(Some(path));
+                let _ = self.set_path(Some(path));
                 Ok(())
             }
             Err(e) =>
             {
-                self.set_path(Some(dest.to_path_buf()));
+                let _ =  self.set_path(Some(dest.to_path_buf()));
                 Err(e)
             }
         }
@@ -398,3 +403,9 @@ where
         let _ = self.save();
     }
 }
+
+pub trait ToFileData : Load + Save
+{
+    fn to_file_data<FS: FsProvider>(self, path: Option<PathBuf>) -> FileDataIn<Self,FS> { FileDataIn::from_path_and_value(path, self) }
+}
+impl<T> ToFileData for T where T: Load + Save {}

@@ -4,6 +4,8 @@
 ## To-do
 
 
+## Io
+
 For io, I want don't want to specify the extension. 
 
 When saving a value a value to a path, if the path don't have any extension, the extension should be deduced from the type itself. 
@@ -37,8 +39,13 @@ The path in those need to be factorized. It will always use the non extension ve
 
 ``Path
 
+Serialisation inside file (support multiple file) different than serde
+
+
+## Math
 
 Bijection 1D <=> ND, Grid, Triangle, Spacial (infinite) + View type
 Image
 
-Serialisation inside file (support multiple file) different than serde
+## Draft
+

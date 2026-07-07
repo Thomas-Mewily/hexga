@@ -3,14 +3,14 @@ use super::*;
 /*
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
-pub enum Asset<T,E=(),L=()>
+pub enum Loading<T,E=(),L=()>
 {
     Loading(L),
     Loaded(T),
     Error(E),
 }
 
-impl<T,E,L> Asset<T,E,L>
+impl<T,E,L> Loading<T,E,L>
 {
     pub fn as_loading(&self) -> Option<&L> { if let Self::Loading(l) = self { Some(l) } else { None }}
     pub fn as_loading_mut(&mut self) -> Option<&mut L> { if let Self::Loading(l) = self { Some(l) } else { None }}

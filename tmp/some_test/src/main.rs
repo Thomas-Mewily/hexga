@@ -25,6 +25,7 @@ fn main()
     }
     */
 
+    /*
     for i in (0.0..=1.0f32).sample(9.9).rev()
     {
         println!("{}", i);
@@ -38,6 +39,20 @@ fn main()
     Io::save(&img, "_tmp/image").unwrap();
     //Io::load_or_create(path, init)
     img.save_to_fs(&mut Io, "_tmp/image2").unwrap();
+    */
+
+    //let m = FileData::load_or_create("_tmp/hello", || "hello".to_owned());
+    let hello = Asset::load_or_create("_tmp/hello", || "hello".to_owned());
+    let hi = Asset::load_or_create("_tmp/hello", || "hi".to_owned());
+    let hi2 = Asset::load_or_create("_tmp/hello.txt", || "hi2".to_owned());
+
+    println!("{}", hello);
+    println!("{}", hi);
+    println!("{}", hi2);
+
+    dbg!(AssetManager::<String,Io>::assets());
+    
+
     //img.save_to_fs(extension)
 
     

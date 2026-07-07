@@ -1,3 +1,7 @@
+use std::collections::hash_map::Values;
+
+use hexga_encoding::FileErrorKind;
+
 use super::*;
 
 pub trait FsProvider
@@ -18,9 +22,15 @@ pub trait PersistantValue<T> : Persistant + Into<T>
 }
 */
 
-pub trait Persistant: GetPath + SetPath + Reload
+trait_marker!(Persistant: Saveable + GetPath + SetPath + Reload);
+
+pub trait Saveable
 {
-    fn save(&mut self) -> FileResult;
+    /// Attempts to save the value, but may skip the operation if no changes have been made.
+    fn save(&mut self) -> FileResult { self.force_save() }
+
+    /// Forcefully saves the value, regardless of whether it has been modified.
+    fn force_save(&mut self) -> FileResult;
 }
 
 /*
@@ -50,6 +60,14 @@ where
 {
     type Output: Persistant; //PersistantValue<T>;
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output;
+    /// This fn can return an error only if the init fn return an error. Otherwise it's a logic bug in the impl.
+    #[doc(hidden)]
+    fn from_path_and_fn<F>(path: Option<PathBuf>, init: F) -> FileResult<Self::Output> where F: FnOnce(Option<&Path>) -> FileResult<T>
+    {
+        let value = init(path.as_ref().map(|p| p.as_ref()))?;
+        Ok(Self::from_path_and_value(path, value))
+    }
+
     fn from_value(value: T) -> Self::Output { Self::from_path_and_value(None, value) }
 
     /// Read and decode the value using the provided extension.
@@ -61,8 +79,18 @@ where
         {
             path.set_extension(T::load_prefered_extension());
         }
-        let value = T::load_from_fs(&mut FS::provide_fs(), &path)?;
-        Ok(Self::from_path_and_value(Some(path), value))
+
+        Ok(Self::from_path_and_fn(Some(path), |p| 
+        {
+            match p
+            {
+                Some(path) => T::load_from_fs(&mut FS::provide_fs(), path),
+                None => Err(FileError::new(FileErrorKind::Io(IoError::new(IoErrorKind::InvalidData, "Missing file name")))),
+            }
+        })?)
+
+        //let value = T::load_from_fs(&mut FS::provide_fs(), &path)?;
+        //Ok(Self::from_path_and_value(Some(path), value))
     }
 
     /// Read and decode the value using the provided extension.
@@ -85,7 +113,6 @@ where
                     // Badly encoded
                     return Err(e);
                 }
-                let value = init();
 
                 let mut path = FS::provide_fs().resolve_path(path).unwrap_or_else(|_| path.to_path_buf());
                 if path.extension().is_none()
@@ -93,8 +120,12 @@ where
                     path.set_extension(T::load_prefered_extension());
                 }
 
-                let mut fs_value = Self::from_path_and_value(Some(path), value);
-                let _ = fs_value.save();
+                let mut need_save = false;
+                let mut fs_value = Self::from_path_and_fn(Some(path), |_| { need_save = true; Ok(init()) })?;
+                if need_save
+                {
+                    let _ = fs_value.save();
+                }
                 Ok(fs_value)
             }
         }
@@ -116,16 +147,18 @@ where
             Ok(v) => v,
             Err(_) =>
             {
-                let value = init();
-
                 let mut path = FS::provide_fs().resolve_path(path).unwrap_or_else(|_| path.to_path_buf());
                 if path.extension().is_none()
                 {
                     path.set_extension(T::load_prefered_extension());
                 }
 
-                let mut fs_value = Self::from_path_and_value(Some(path), value);
-                let _ = fs_value.save();
+                let mut need_save = false;
+                let mut fs_value = Self::from_path_and_fn(Some(path), |_| { need_save = true; Ok(init()) }).expect("Bad impl");
+                if need_save
+                {
+                    let _ = fs_value.force_save();
+                }
                 fs_value
             }
         }
