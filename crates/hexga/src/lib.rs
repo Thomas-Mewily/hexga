@@ -61,33 +61,17 @@ pub mod hexga_prelude
     pub use crate::math::prelude::*;
     pub use crate::utils::prelude::*;
     pub use hexga_image::prelude::*;
-    //pub use crate::random::*;
     pub use crate::array_vec::prelude::*;
-    //pub use crate::encoding::prelude::*;
-    //pub use crate::singleton::prelude::*;
-    //pub use crate::map_on::prelude::*;
 
-    /*
-    #[allow(unused_imports)]
-    #[cfg(feature = "hexga_io")]
-    pub use hexga_io;*/
+    //pub use crate::random::*;
     // #[allow(unused_imports)]
     pub use crate::asset::prelude::*;
     pub use crate::encoding::prelude::*;
     pub use crate::io::prelude::*;
 
-    /*
-    #[allow(unused_imports)]
-    #[cfg(feature = "serde")]
-    pub use serde;*/
-    //#[cfg(feature = "serde")]
-    //pub use hexga_io::prelude::*;
     #[allow(unused_imports)]
     #[cfg(feature = "serde")]
     pub use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
-
-    //#[cfg(feature = "hexga_asset")]
-    //pub use hexga_asset::prelude::*;
 
     #[allow(hidden_glob_reexports)]
     pub(crate) mod prelude
