@@ -31,24 +31,27 @@ impl CommonExtensions for Extension {}
 
 pub(crate) mod prelude
 {
-    pub use super::{CommonExtensions, Extension, extension};
     pub use super::traits::*;
+    pub use super::{CommonExtensions, Extension, extension};
 }
 
-pub mod traits 
+pub mod traits
 {
     pub use super::{FsResolvePathWithExtension, PreferedExtension};
 }
-
 
 pub trait FsResolvePathWithExtension: FsRead
 {
     /// Resolve incomplete file extension by finding the matching file on disk.
     /// If no file exist with the same name, return the path with the prefered extension.
-    fn resolve_path_for<T, P: AsRef<Path>>(&mut self, path: P) -> PathBuf where T: PreferedExtension + ?Sized
+    fn resolve_path_for<T, P: AsRef<Path>>(&mut self, path: P) -> PathBuf
+    where
+        T: PreferedExtension + ?Sized,
     {
         let path = path.as_ref();
-        let mut path = self.resolve_path(&path).unwrap_or_else(|_| self.canonicalize(path).unwrap_or_else(|_| path.to_path_buf()));
+        let mut path = self
+            .resolve_path(&path)
+            .unwrap_or_else(|_| self.canonicalize(path).unwrap_or_else(|_| path.to_path_buf()));
         if path.extension().is_none()
         {
             path.set_extension(T::prefered_extension());
@@ -58,7 +61,7 @@ pub trait FsResolvePathWithExtension: FsRead
 }
 impl<T> FsResolvePathWithExtension for T where T: FsRead {}
 
-pub trait PreferedExtension : Save 
+pub trait PreferedExtension: Save
 {
     fn prefered_extension() -> &'static extension { Self::save_prefered_extension() }
 }

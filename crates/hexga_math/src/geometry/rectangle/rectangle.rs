@@ -306,8 +306,18 @@ where
         self.split_axis(nb, Vector::<U, N>::W_INDEX)
     }
 
-    pub fn split_min(&self, nb: U) -> impl Iterator<Item = Self> where U: PartialOrd { self.split_axis(nb, self.size.min_element_idx()) }
-    pub fn split_max(&self, nb: U) -> impl Iterator<Item = Self> where U: PartialOrd { self.split_axis(nb, self.size.max_element_idx()) }
+    pub fn split_min(&self, nb: U) -> impl Iterator<Item = Self>
+    where
+        U: PartialOrd,
+    {
+        self.split_axis(nb, self.size.min_element_idx())
+    }
+    pub fn split_max(&self, nb: U) -> impl Iterator<Item = Self>
+    where
+        U: PartialOrd,
+    {
+        self.split_axis(nb, self.size.max_element_idx())
+    }
 }
 
 impl<T, const N: usize> Rectangle<T, N>

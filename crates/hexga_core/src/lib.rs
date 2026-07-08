@@ -133,8 +133,8 @@ pub mod identity;
 pub mod iter;
 pub mod option;
 pub mod rc;
-pub mod sync;
 pub mod shared;
+pub mod sync;
 #[macro_use]
 pub mod macros;
 pub mod convert;
@@ -214,8 +214,8 @@ pub mod modules
         ptr,
         rc,
         result,
-        sync,
         shared,
+        sync,
         //run,
         utils,
         wrapper,

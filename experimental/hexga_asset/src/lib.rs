@@ -26,18 +26,11 @@ pub use asset_data::*;
 
 pub mod prelude
 {
-    pub use super::
-    {
-        FileData,
-        Asset, AssetManager,
-    };
     pub use super::traits::*;
+    pub use super::{Asset, AssetManager, FileData};
 }
 
 pub mod traits
 {
-    pub use super::{
-        FsLoadSave, FsProvider, FsSave,
-        Persistant, Reload, Saveable,
-    };
+    pub use super::{FsLoadSave, FsProvider, FsSave, Persistant, Reload, Saveable};
 }

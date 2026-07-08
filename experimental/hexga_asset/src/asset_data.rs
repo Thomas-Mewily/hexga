@@ -13,7 +13,7 @@ where
 {
     /// If no path, it's just a value
     pub(crate) path: Option<PathBuf>,
-    
+
     // Probably a bad idea since it can't be serialized
     //pub(crate) storage : Option<AssetStorage>,
 
@@ -160,7 +160,8 @@ where
         self.save_forced()
     }
 
-    fn save_forced(&mut self) -> FileResult {
+    fn save_forced(&mut self) -> FileResult
+    {
         let Some(path) = &self.path
         else
         {

@@ -18,11 +18,10 @@ where
     }
 }
 
-
 impl<'de, C, Idx> Deserialize<'de> for ImageBaseOf<C, Idx>
 where
-    Idx: Integer + for <'de2> Deserialize<'de2>,
-    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + for <'de2> Deserialize<'de2>,
+    Idx: Integer + for<'de2> Deserialize<'de2>,
+    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + for<'de2> Deserialize<'de2>,
     u8: CastRangeFrom<C::Component>,
     u16: CastRangeFrom<C::Component>,
 {

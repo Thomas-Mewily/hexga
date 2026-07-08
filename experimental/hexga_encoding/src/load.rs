@@ -16,7 +16,7 @@ pub trait Load: Sized + for<'de> CfgDeserialize<'de>
         let extension = path.extension().map(|v| v.to_str()).flatten();
 
         let bytes = fs.read_bytes_at(path).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
-        
+
         let value = Self::load_from_bytes_with_extension(bytes.as_ref(), extension).map_err(|e| e.at_path(Some(path.to_path_buf())))?;
         Ok(value)
     }
@@ -106,13 +106,13 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
                 path = &resolved.as_ref().unwrap();
             }
         }
-        
+
         Self::load_from_fs_at(fs, &path).map(|v| (v, resolved))
     }
 
     fn load_from_fs<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>
     where
-        Self: Sized
+        Self: Sized,
     {
         Self::load_from_fs_resolved(fs, path).map(|(value, _path)| value)
     }
@@ -128,10 +128,8 @@ where
     S: LoadFrom + for<'de> CfgDeserialize<'de>,
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Source::load_custom_extensions() }
-    
-    fn load_from_fs_at<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> {
-        S::Source::load_from_fs_at(fs, path).map(|v| v.into())
-    }
+
+    fn load_from_fs_at<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> { S::Source::load_from_fs_at(fs, path).map(|v| v.into()) }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where

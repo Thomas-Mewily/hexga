@@ -42,10 +42,7 @@ where
     T: RangeDefault,
     Range<T>: IterStep,
 {
-    fn step(step: <Range<Self> as IterStep>::Item) -> <Range<Self> as IterStep>::Output
-    {
-        (Self::RANGE_MIN..Self::RANGE_MAX).step(step)
-    }
+    fn step(step: <Range<Self> as IterStep>::Item) -> <Range<Self> as IterStep>::Output { (Self::RANGE_MIN..Self::RANGE_MAX).step(step) }
 }
 pub trait IterStepDefaultInclusive: RangeDefault
 where
@@ -353,9 +350,9 @@ mod range_test
 {
     use super::*;
 
-    trait HelperToVec : Iterator + Sized
+    trait HelperToVec: Iterator + Sized
     {
-        fn to_vec(self) -> Vec<Self::Item> { self.collect() } 
+        fn to_vec(self) -> Vec<Self::Item> { self.collect() }
     }
     impl<I> HelperToVec for I where I: Iterator + Sized {}
 

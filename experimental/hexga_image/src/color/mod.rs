@@ -2,18 +2,18 @@ use super::*;
 
 pub mod prelude
 {
+    pub use super::traits::*;
     pub use super::{
         Color, ColorF32, ColorF64, ColorFloat, ColorU8, ColorU16,
         hsla::{Hsla, HslaF32, HslaF64, HslaFloat, HslaOf, hsl, hsla},
         icolor::{ArrayToColor, IColor, ToColor},
         rgba::{Rgba, RgbaF32, RgbaF64, RgbaFloat, RgbaOf, RgbaU8, RgbaU16, rgb, rgba},
     };
-    pub use super::traits::*;
 }
 
 pub mod traits
 {
-    pub use super::{ToColor,IColor,ArrayToColor};
+    pub use super::{ArrayToColor, IColor, ToColor};
 }
 
 pub type Color = Rgba;

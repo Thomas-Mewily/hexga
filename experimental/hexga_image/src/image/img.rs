@@ -1,6 +1,6 @@
-use hexga_math::NumberType;
 use ::image::{DynamicImage, GenericImageView, ImageFormat};
 use hexga_encoding::{DeducedExtension, MediaType};
+use hexga_math::NumberType;
 
 use super::*;
 
@@ -642,7 +642,7 @@ where
                     {
                         Ok(v) => Ok("png".into()),
                         Err(e) => Err(EncodeError::custom(format!("Failed to encode .png rgba16 image : {}", e))),
-                    }
+                    },
                     _ => self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension),
                 },
                 NumberType::Float => self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension),

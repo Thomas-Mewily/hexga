@@ -4,7 +4,6 @@ use super::*;
 #[derive(Debug, Default)]
 pub struct Io;
 
-
 impl FsDynRead for Io
 {
     fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool>
@@ -33,23 +32,22 @@ impl FsDynRead for Io
     {
         match self._dyn_resolve_paths(path)
         {
-            Ok(v) => 
+            Ok(v) =>
             {
                 #[cfg(feature = "print_io")]
-                println!("io : resolving {} -> [{}]", 
-                    path.display(), 
-                    v.iter()
-                        .map(|p| p.display().to_string())
-                        .collect::<Vec<_>>()
-                        .join(", ")
+                println!(
+                    "io : resolving {} -> [{}]",
+                    path.display(),
+                    v.iter().map(|p| p.display().to_string()).collect::<Vec<_>>().join(", ")
                 );
                 Ok(v)
-            },
-            Err(e) => {
+            }
+            Err(e) =>
+            {
                 #[cfg(feature = "print_io")]
                 println!("io : resolving failed {}", e);
                 Err(e)
-            },
+            }
         }
     }
 
@@ -57,18 +55,18 @@ impl FsDynRead for Io
     {
         match self._dyn_canonicalize(path)
         {
-            Ok(canonized) => 
+            Ok(canonized) =>
             {
                 #[cfg(feature = "print_io")]
                 println!("io : canonicalize {} -> {}", path.display(), canonized.display());
                 Ok(canonized)
-            },
-            Err(e) => 
+            }
+            Err(e) =>
             {
                 #[cfg(feature = "print_io")]
                 println!("io : canonicalize failed {}", e);
                 Err(e)
-            },
+            }
         }
     }
 
@@ -91,11 +89,11 @@ impl FsDynRead for Io
         Err(IoError::new_with_path(IoErrorKind::InvalidFilename, "Can't gess the file type", path))
     }
 
-    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult 
-    { 
+    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult
+    {
         #[cfg(feature = "print_io")]
         println!("io : rename {} -> {}", from.display(), to.display());
-        std::fs::rename(from, to) 
+        std::fs::rename(from, to)
     }
 }
 
@@ -135,7 +133,7 @@ impl Io
 
     fn _dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>
     {
-        let path : &Path = path.into();
+        let path: &Path = path.into();
 
         /*
         if path.exists()
@@ -146,7 +144,7 @@ impl Io
 
         let mut resolved = std::env::current_dir()?;
         resolved.reserve(path.as_os_str().len());
-        
+
         for component in path.components()
         {
             match component
@@ -182,7 +180,6 @@ impl Io
 
         Ok(resolved)
     }
-
 }
 
 impl FsDynWrite for Io

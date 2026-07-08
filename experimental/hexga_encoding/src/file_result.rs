@@ -23,20 +23,16 @@ impl FileError
 }
 impl Deref for FileError
 {
-    type Target=FileErrorKind;
-    fn deref(&self) -> &Self::Target {
-        &self.kind
-    }
+    type Target = FileErrorKind;
+    fn deref(&self) -> &Self::Target { &self.kind }
 }
 impl DerefMut for FileError
 {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.kind
-    }
+    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.kind }
 }
 impl Debug for FileError
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult 
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
         match &self.path
         {
@@ -66,8 +62,10 @@ impl From<EncodeError> for FileErrorKind
 }
 impl Debug for FileErrorKind
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        match self {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
+    {
+        match self
+        {
             Self::Encode(v) => write!(f, "{:?}", v),
             Self::Io(v) => write!(f, "{:?}", v),
         }

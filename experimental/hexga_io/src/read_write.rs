@@ -50,7 +50,6 @@ pub trait FsDynRead
         Ok(path.to_owned())
     }
 
-
     #[doc(hidden)]
     /// Canonicalizes the path like `std::fs::canonicalize`, but works even if the file doesn't exist.
     /// Returns an error when resolving above root (e.g., `/..`).

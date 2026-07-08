@@ -38,20 +38,19 @@ pub trait PersistantValue<T>: Persistant + Guarded<T> {}
 impl<S, T> PersistantValue<T> for S where S: Persistant + Guarded<T> {}
 */
 
-pub trait FsSave<T> : FsProvider
-    where 
+pub trait FsSave<T>: FsProvider
+where
     T: Save + ?Sized,
 {
     /// Encode the value using the provided extension and write it to a file.
-    fn save<P : AsRef<Path>>(value: &T, path: P) -> FileResult
-    {
-        value.save_to_fs(&mut Self::provide_fs(), path)
-    }
+    fn save<P: AsRef<Path>>(value: &T, path: P) -> FileResult { value.save_to_fs(&mut Self::provide_fs(), path) }
 }
-impl<S,T> FsSave<T> for S 
-    where S: FsProvider, 
+impl<S, T> FsSave<T> for S
+where
+    S: FsProvider,
     T: Save + ?Sized,
-{}
+{
+}
 
 pub trait FsLoadSave<T, FS>
 where
@@ -63,11 +62,11 @@ where
     /// This fn can return an error only if the init fn return an error. Otherwise it's a logic bug in the impl.
     /// Resolving the path should be done here.
     #[doc(hidden)]
-    fn from_path_and_fn<F>(mut path: Option<PathBuf>, init: F) -> FileResult<Self::Output> 
-        where 
-        F: FnOnce(Option<&mut PathBuf>) -> FileResult<T>
+    fn from_path_and_fn<F>(mut path: Option<PathBuf>, init: F) -> FileResult<Self::Output>
+    where
+        F: FnOnce(Option<&mut PathBuf>) -> FileResult<T>,
     {
-        path.as_mut().map(|p| *p = FS::provide_fs().resolve_path_for::<T,_>(&p));
+        path.as_mut().map(|p| *p = FS::provide_fs().resolve_path_for::<T, _>(&p));
         let value = init(path.as_mut())?;
         Ok(Self::from_path_and_value(path, value))
     }
@@ -77,20 +76,17 @@ where
     /// Read and decode the value using the provided extension.
     fn load<P: AsRef<Path>>(path: P) -> FileResult<Self::Output>
     {
-        Self::from_path_and_fn(Some(path.as_ref().to_path_buf()), |p| 
+        Self::from_path_and_fn(Some(path.as_ref().to_path_buf()), |p| match p
         {
-            match p
-            {
-                Some(path) => T::load_from_fs_at(&mut FS::provide_fs(), &path),
-                None => Err(FileError::new(FileErrorKind::Io(IoError::new(IoErrorKind::InvalidData, "Missing path")))),
-            }
+            Some(path) => T::load_from_fs_at(&mut FS::provide_fs(), &path),
+            None => Err(FileError::new(FileErrorKind::Io(IoError::new(IoErrorKind::InvalidData, "Missing path")))),
         })
     }
 
     /// Read and decode the value using the provided extension.
     /// If the file don't exist, the value is created, saved, and returned.
     /// It's ok if saving fail.
-    /// 
+    ///
     /// If the file exists but is malformed/corrupted/badly encoded, return an error and don't override the file.
     fn try_load_or_create<P: AsRef<Path>, F>(path: P, init: F) -> FileResult<Self::Output>
     where
@@ -102,16 +98,19 @@ where
             Ok(v) => Ok(v),
             Err(e) =>
             {
-                if e.is_encode() 
+                if e.is_encode()
                 {
                     // Badly encoded
                     return Err(e);
                 }
 
-                let path = FS::provide_fs().resolve_path_for::<T,_>(path);
+                let path = FS::provide_fs().resolve_path_for::<T, _>(path);
 
                 let mut need_save = false;
-                let mut fs_value = Self::from_path_and_fn(Some(path), |_| { need_save = true; Ok(init()) })?;
+                let mut fs_value = Self::from_path_and_fn(Some(path), |_| {
+                    need_save = true;
+                    Ok(init())
+                })?;
                 if need_save
                 {
                     let _ = fs_value.save_forced();
@@ -124,8 +123,8 @@ where
     /// Read and decode the value using the provided extension.
     /// If the file don't exist, the value is created, saved, and returned.
     /// It's ok if saving fail.
-    /// 
-    /// **Important:** If the file exists but is malformed/corrupted/badly encoded, it will be **silently overwritten** with the init value. 
+    ///
+    /// **Important:** If the file exists but is malformed/corrupted/badly encoded, it will be **silently overwritten** with the init value.
     /// Use [`Self::try_load_or_create`] to avoid silently override a badly encoded file.
     fn load_or_create<P: AsRef<Path>, F>(path: P, init: F) -> Self::Output
     where
@@ -137,10 +136,14 @@ where
             Ok(v) => v,
             Err(_) =>
             {
-                let path = FS::provide_fs().resolve_path_for::<T,_>(path);
+                let path = FS::provide_fs().resolve_path_for::<T, _>(path);
 
                 let mut need_save = false;
-                let mut fs_value = Self::from_path_and_fn(Some(path), |_| { need_save = true; Ok(init()) }).expect("Bad impl");
+                let mut fs_value = Self::from_path_and_fn(Some(path), |_| {
+                    need_save = true;
+                    Ok(init())
+                })
+                .expect("Bad impl");
                 if need_save
                 {
                     let _ = fs_value.save_forced();
@@ -154,7 +157,7 @@ where
     /// If the file don't exist, the value is created using [`Default`], saved, and returned.
     /// It's ok if saving fail.
     ///
-    /// **Important:** If the file exists but is malformed/corrupted/badly encoded, it will be **silently overwritten** with the init value. 
+    /// **Important:** If the file exists but is malformed/corrupted/badly encoded, it will be **silently overwritten** with the init value.
     /// Use [`Self::try_load_or_default`] to avoid silently override a badly encoded file.
     fn load_or_default<P: AsRef<Path>>(path: P) -> Self::Output
     where
@@ -163,7 +166,6 @@ where
     {
         Self::load_or_create(path, || ___())
     }
-
 
     /// Read the file content and load a decode it using the provided extension.
     /// If the file don't exist, the value is created using [`Default`], saved, and returned.

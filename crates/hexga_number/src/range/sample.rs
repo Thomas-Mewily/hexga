@@ -47,8 +47,8 @@ where
     pub nb: I,
 
     pub begin: U,
-    pub end  : U,
-    pub step : U,
+    pub end: U,
+    pub step: U,
 }
 
 impl<I, U> Iterator for RangeSample<I, U>
@@ -160,7 +160,7 @@ where
 impl<I, U> IterSample<I> for RangeTo<U>
 where
     I: Number + CastInto<U::Precision>,
-    U: Unit + RangeDefault
+    U: Unit + RangeDefault,
 {
     type Output = RangeSample<I, U>;
     type Item = U;
@@ -170,7 +170,7 @@ where
 impl<I, U> IterSample<I> for RangeToInclusive<U>
 where
     I: Number + CastInto<U::Precision>,
-    U: Unit + RangeDefault
+    U: Unit + RangeDefault,
 {
     type Output = RangeSample<I, U>;
     type Item = U;
@@ -181,7 +181,7 @@ where
 impl<I, U> IterSample<I> for RangeFrom<U>
 where
     I: Number + CastInto<U::Precision>,
-    U: Unit + RangeDefault
+    U: Unit + RangeDefault,
 {
     type Output = RangeSample<I, U>;
     type Item = U;

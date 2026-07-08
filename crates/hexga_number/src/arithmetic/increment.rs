@@ -1,6 +1,5 @@
 use super::*;
 
-
 /// The `+1` operation
 pub trait Increment: One + Add<Self, Output = Self> + AddAssign<Self> + Copy + Sized
 {

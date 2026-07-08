@@ -32,7 +32,8 @@ pub struct Dirty<T>
 }
 
 #[cfg(feature = "serde")]
-impl<T: Serialize> Serialize for Dirty<T> {
+impl<T: Serialize> Serialize for Dirty<T>
+{
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -42,16 +43,14 @@ impl<T: Serialize> Serialize for Dirty<T> {
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T: Deserialize<'de>> Deserialize<'de> for Dirty<T> {
+impl<'de, T: Deserialize<'de>> Deserialize<'de> for Dirty<T>
+{
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
         let value = T::deserialize(deserializer)?;
-        Ok(Dirty {
-            value,
-            used: true,
-        })
+        Ok(Dirty { value, used: true })
     }
 }
 

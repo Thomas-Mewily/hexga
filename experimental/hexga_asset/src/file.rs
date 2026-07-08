@@ -19,12 +19,16 @@ where
 impl<T, FS> Load for FileDataIn<T, FS>
 where
     FS: FsProvider,
-    T: Load + Save {}
+    T: Load + Save,
+{
+}
 
 impl<T, FS> Save for FileDataIn<T, FS>
 where
     FS: FsProvider,
-    T: Load + Save {}
+    T: Load + Save,
+{
+}
 
 #[cfg(feature = "serde")]
 impl<T, FS> Serialize for FileDataIn<T, FS>
@@ -54,11 +58,12 @@ where
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct FileDataIn<T> {
+        struct FileDataIn<T>
+        {
             path: Option<PathBuf>,
             value: Option<Dirty<T>>,
         }
-        
+
         let helper = FileDataIn::deserialize(deserializer)?;
         Ok(super::FileDataIn {
             path: helper.path,
@@ -106,8 +111,6 @@ impl<T,FS> GuardedMut<T> for FileDataOf<T,FS> where
 }
 */
 
-
-
 impl<T, FS> Saveable for FileDataIn<T, FS>
 where
     FS: FsProvider,
@@ -122,7 +125,8 @@ where
         self.save_forced()
     }
 
-    fn save_forced(&mut self) -> FileResult {
+    fn save_forced(&mut self) -> FileResult
+    {
         let Some(path) = &self.path
         else
         {
@@ -167,7 +171,9 @@ where
                 if e.is_io() && path.extension().is_some()
                 {
                     // Maybe the extension was changed
-                    let resolved = FS::provide_fs().resolve_path(path.with_extension("")).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
+                    let resolved = FS::provide_fs()
+                        .resolve_path(path.with_extension(""))
+                        .map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
                     if *path != resolved
                     {
                         match T::load_from_fs(&mut FS::provide_fs(), &resolved)
@@ -390,7 +396,7 @@ where
             }
             Err(e) =>
             {
-                let _ =  self.set_path(Some(dest.to_path_buf()));
+                let _ = self.set_path(Some(dest.to_path_buf()));
                 Err(e)
             }
         }
@@ -409,8 +415,8 @@ where
     }
 }
 
-pub trait ToFileData : Load + Save
+pub trait ToFileData: Load + Save
 {
-    fn to_file_data<FS: FsProvider>(self, path: Option<PathBuf>) -> FileDataIn<Self,FS> { FileDataIn::from_path_and_value(path, self) }
+    fn to_file_data<FS: FsProvider>(self, path: Option<PathBuf>) -> FileDataIn<Self, FS> { FileDataIn::from_path_and_value(path, self) }
 }
 impl<T> ToFileData for T where T: Load + Save {}

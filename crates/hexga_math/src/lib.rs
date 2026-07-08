@@ -80,7 +80,6 @@ impl_cast_into!(ToFloat, to_float, to_float_range, float);
 impl_cast_into!(ToInt, to_int, to_int_range, int);
 impl_cast_into!(ToUInt, to_uint, to_uint_range, uint);
 
-
 mod utils;
 pub use utils::*;
 pub mod array;

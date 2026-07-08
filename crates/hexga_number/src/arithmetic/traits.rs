@@ -1,7 +1,5 @@
 use super::*;
 
-
-
 trait_marker!(
 /// For every type that support bit based operation (and `&`, or `|`, xor `^`, not `!`, shift `<<` / `>>`...)
 BitArithmetic:

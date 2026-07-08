@@ -261,13 +261,17 @@ map_on_float!(
         }
     }
 );
-impl<T> Abs for Saturating<T> where T: Abs
+impl<T> Abs for Saturating<T>
+where
+    T: Abs,
 {
     type Output = Saturating<T::Output>;
     #[inline(always)]
     fn abs(self) -> Self::Output { Saturating(self.0.abs()) }
 }
-impl<T> Abs for Wrapping<T> where T: Abs
+impl<T> Abs for Wrapping<T>
+where
+    T: Abs,
 {
     type Output = Wrapping<T::Output>;
     #[inline(always)]
@@ -388,25 +392,24 @@ macro_rules! impl_number_basic_trait {
     };
 }
 
-
 pub trait Pow<Exp = Self>
 {
     type Output;
     fn pow(self, exp: Exp) -> Self::Output;
 }
 
-map_on_integer!(($primitive_name: ty) => 
-{ 
-    impl Pow for $primitive_name 
+map_on_integer!(($primitive_name: ty) =>
+{
+    impl Pow for $primitive_name
     {
         type Output = Self;
         fn pow(self, exp: Self) -> Self::Output { self.pow(exp as _) }
-    } 
+    }
 });
 
-map_on_float!(($primitive_name: ty) => 
-{ 
-    impl Pow for $primitive_name 
+map_on_float!(($primitive_name: ty) =>
+{
+    impl Pow for $primitive_name
     {
         type Output = Self;
         fn pow(self, exp: Self) -> Self::Output { self.powf(exp) }
@@ -428,45 +431,44 @@ where
     fn pow(self, rhs: Self) -> Self::Output { Saturating(self.0.pow(rhs.0)) }
 }
 
-
 pub trait RemEuclid<Rhs = Self>
 {
     type Output;
 
     /// Calculates the least nonnegative remainder of `self` when divided by `rhs`.
-    /// 
-    /// This is done as if by the Euclidean division algorithm – given `r = self.rem_euclid(rhs)`, the result satisfies 
+    ///
+    /// This is done as if by the Euclidean division algorithm – given `r = self.rem_euclid(rhs)`, the result satisfies
     /// `self = rhs * self.div_euclid(rhs) + r` and `0 <= r < abs(rhs)`.
     ///
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This function can panic on integer if `rhs` is zero, or if any overflow occur.
     fn rem_euclid(self, rhs: Rhs) -> Self::Output;
-    
+
     // Todo: enable it when TryMap will be available
     // Checked Euclidean modulo. Computes `self.rem_euclid(rhs)`, returning `None` if `rhs == 0`.
     //fn checked_rem_euclid(self, rhs: Rhs) -> Option<Self::Output>;
 }
 
-map_on_integer!(($primitive_name: ty) => 
-{ 
-    impl RemEuclid for $primitive_name 
+map_on_integer!(($primitive_name: ty) =>
+{
+    impl RemEuclid for $primitive_name
     {
         type Output = Self;
         fn rem_euclid(self, rhs: Self) -> Self::Output { self.rem_euclid(rhs) }
         //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.checked_rem_euclid(rhs) }
-    } 
+    }
 });
 
-map_on_float!(($primitive_name: ty) => 
-{ 
-    impl RemEuclid for $primitive_name 
+map_on_float!(($primitive_name: ty) =>
+{
+    impl RemEuclid for $primitive_name
     {
         type Output = Self;
         fn rem_euclid(self, rhs: Self) -> Self::Output { self.rem_euclid(rhs) }
         //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { if rhs == 0.0 || rhs.is_nan() { None } else { Some(self.rem_euclid(rhs)) } }
-    } 
+    }
 });
 
 impl<T> RemEuclid for Wrapping<T>
@@ -485,14 +487,6 @@ where
     fn rem_euclid(self, rhs: Self) -> Self::Output { Saturating(self.0.rem_euclid(rhs.0)) }
     //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.0.checked_rem_euclid(rhs.0).map(|v| Saturating(v)) }
 }
-
-
-
-
-
-
-
-
 
 #[cfg(test)]
 mod tests
@@ -566,4 +560,3 @@ mod tests
         assert_eq!(clamp(false, false, false), false);
     }
 }
-

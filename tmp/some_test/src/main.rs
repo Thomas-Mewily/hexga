@@ -31,7 +31,7 @@ fn main()
         println!("{}", i);
     }
 
-    let img = Image::from_fn((16,16), |(x,y)| 
+    let img = Image::from_fn((16,16), |(x,y)|
     {
         ColorU8::rgb((255 / 16 * x) as _, (255 / 16 * y) as _, 0)
     });
@@ -54,7 +54,7 @@ fn main()
     println!("{}", hi);
     println!("{}", hi2);
 
-    dbg!(AssetManager::<String,Io>::assets());
+    dbg!(AssetManager::<String, Io>::assets());
 
     println!();
     drop(hello);
@@ -63,10 +63,7 @@ fn main()
     println!();
     drop(hi2);
 
-    dbg!(AssetManager::<String,Io>::assets());
-    
+    dbg!(AssetManager::<String, Io>::assets());
 
     //img.save_to_fs(extension)
-
-    
 }

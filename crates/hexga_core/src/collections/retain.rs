@@ -16,7 +16,8 @@ impl<T> RetainMut<T> for Vec<T>
 {
     fn retain_mut<F>(&mut self, f: F)
     where
-        F: FnMut(&mut T) -> bool {
+        F: FnMut(&mut T) -> bool,
+    {
         self.retain_mut(f);
     }
 }
@@ -25,7 +26,8 @@ impl<T> RetainMut<T> for VecDeque<T>
 {
     fn retain_mut<F>(&mut self, f: F)
     where
-        F: FnMut(&mut T) -> bool {
+        F: FnMut(&mut T) -> bool,
+    {
         self.retain_mut(f);
     }
 }

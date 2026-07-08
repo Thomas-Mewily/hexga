@@ -2,20 +2,19 @@
 
 use hexga_map_on as map_on;
 use std::{
-    hash::{Hash, Hasher},
-    iter::{Product, Sum, FusedIterator},
-    num::{Saturating, Wrapping},
-    fmt::{Debug,Display,Formatter,self},
-    ops::*,
-    marker::PhantomData,
     cmp::Ordering,
+    fmt::{self, Debug, Display, Formatter},
+    hash::{Hash, Hasher},
+    iter::{FusedIterator, Product, Sum},
+    marker::PhantomData,
+    num::{Saturating, Wrapping},
+    ops::*,
 };
 
 //use hexga_typedef::*;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
-
 
 macro_rules! trait_marker {
     (
@@ -27,7 +26,6 @@ macro_rules! trait_marker {
         impl<T> $name for T where T: $($bounds)+ {}
     };
 }
-
 
 // pub use hexga_typedef as typedef;
 
@@ -53,44 +51,26 @@ pub use convert::*;
 
 pub mod prelude
 {
-    pub use super::{
-        max,min,mix,clamp, // abs
-    
-        zero, one, minus_one, half
-    };
     pub use super::traits::*;
+    pub use super::{
+        clamp, // abs
+
+        half,
+        max,
+        min,
+        minus_one,
+        mix,
+        one,
+        zero,
+    };
 }
 
 pub mod traits
 {
     pub use crate::{
-        Max,Min,Mix,Clamp,Abs,Pow,RemEuclid, 
-        Floating,
-        Increment, Decrement,
-        arithmetic::traits::*,
-
-        Zero, ZeroIter, UnwrapZero,
-        One, OneIter,
-        Two, Three, 
-        OddOrEven, PositiveOrNegative,
-        MinusOne, MinusOneIter,
-        Half, TakeHalf,
-        NaNValue, MinValue, MaxValue, Infinity, MinusInfinity,
-        PartialOrdExtension,
-
-        Constant,
-
-        CastRangeFrom, CastRangeInto,
-        CastFrom, CastInto,
-
-        Unit,
-
-        RangeDefault,
-        IterSample, IterSampleDefault, IterSampleDefaultInclusive,
-        IterStep, IterStepMax, IterStepDefault, IterStepDefaultInclusive,
-
-        MapIntern, MapInternWith, Map, MapWith,
-
-        OverflowBehavior, PrimitiveType,
+        Abs, CastFrom, CastInto, CastRangeFrom, CastRangeInto, Clamp, Constant, Decrement, Floating, Half, Increment, Infinity, IterSample, IterSampleDefault,
+        IterSampleDefaultInclusive, IterStep, IterStepDefault, IterStepDefaultInclusive, IterStepMax, Map, MapIntern, MapInternWith, MapWith, Max, MaxValue,
+        Min, MinValue, MinusInfinity, MinusOne, MinusOneIter, Mix, NaNValue, OddOrEven, One, OneIter, OverflowBehavior, PartialOrdExtension,
+        PositiveOrNegative, Pow, PrimitiveType, RangeDefault, RemEuclid, TakeHalf, Three, Two, Unit, UnwrapZero, Zero, ZeroIter, arithmetic::traits::*,
     };
 }

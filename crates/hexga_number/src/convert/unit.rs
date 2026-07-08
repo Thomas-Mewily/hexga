@@ -1,13 +1,17 @@
 use super::*;
 
 /// To construct basic unit from their inner precision type.
-pub trait Unit: Additive 
-    + Mul<Self::Precision, Output=Self> + MulAssign<Self::Precision>
-    + Div<Self::Precision, Output=Self> + DivAssign<Self::Precision>
-    + Rem<Self, Output=Self> + RemAssign<Self>
+pub trait Unit:
+    Additive
+    + Mul<Self::Precision, Output = Self>
+    + MulAssign<Self::Precision>
+    + Div<Self::Precision, Output = Self>
+    + DivAssign<Self::Precision>
+    + Rem<Self, Output = Self>
+    + RemAssign<Self>
     + PartialEq
 {
-    type Precision : Number + PrimitiveType + OverflowBehavior;
+    type Precision: Number + PrimitiveType + OverflowBehavior;
     /// Return the inner value.
     /// This expose how the inner value is stored, but it's impl details and it may change.
     #[doc(hidden)]
@@ -22,7 +26,7 @@ pub trait Unit: Additive
 map_on_number!(
     ($type_name : ident) =>
     {
-        impl Unit for $type_name 
+        impl Unit for $type_name
         {
             type Precision = Self;
             fn inner_value(self) -> $type_name { self }
