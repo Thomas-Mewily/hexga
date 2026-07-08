@@ -1,6 +1,6 @@
 use hexga::prelude::*;
 
-fn main()
+fn _x()
 {
     /*
     let mut f = FileData::load_or_create("_tmp/hello", || "hi".to_owned());
@@ -68,5 +68,10 @@ fn main()
     dbg!(AssetManager::<String, Io>::assets());
 
     //img.save_to_fs(extension)
+}
+
+fn main()
+{
+    
 }
 

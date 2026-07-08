@@ -132,6 +132,7 @@ pub mod handle;
 pub mod identity;
 pub mod iter;
 pub mod option;
+pub mod range;
 pub mod rc;
 pub mod shared;
 pub mod sync;

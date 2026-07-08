@@ -71,14 +71,11 @@ use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
-pub use hexga_typedef as typedef;
 
 //pub use hexga_number as number;
 pub use hexga_number::*;
 
-impl_cast_into!(ToFloat, to_float, to_float_range, float);
-impl_cast_into!(ToInt, to_int, to_int_range, int);
-impl_cast_into!(ToUInt, to_uint, to_uint_range, uint);
+pub mod typedef;
 
 mod utils;
 pub use utils::*;

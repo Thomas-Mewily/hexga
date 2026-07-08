@@ -3,7 +3,7 @@ resolver = "3"
 members = [
     "crates/*", 
     "experimental/*", "tmp/some_test", 
-    "share_crate", 
+    "share_crate", "tmp/engine_test", 
     ]
 
 
@@ -52,10 +52,10 @@ hexga_image            = { path = "./experimental/hexga_image",          version
 
 hexga                  = { path = "./crates/hexga",                      version = "0.0.11-beta.53", default-features = false }
 
-# hexga_wgpu             = { path = "./crates/engine/hexga_wgpu",        version = "0.0.11-beta.53", default-features = false }
-# hexga_graphics         = { path = "./crates/engine/hexga_graphics",    version = "0.0.11-beta.53", default-features = false }
-# hexga_event_loop       = { path = "./crates/engine/hexga_event_loop",  version = "0.0.11-beta.53", default-features = false }
-# hexga_engine           = { path = "./crates/engine/hexga_engine",      version = "0.0.11-beta.53", default-features = false }
+hexga_wgpu             = { path = "./experimental/hexga_wgpu",           version = "0.0.11-beta.53", default-features = false }
+hexga_graphics         = { path = "./experimental/hexga_graphics",       version = "0.0.11-beta.53", default-features = false }
+hexga_event_loop       = { path = "./experimental/hexga_event_loop",     version = "0.0.11-beta.53", default-features = false }
+hexga_engine           = { path = "./experimental/hexga_engine",         version = "0.0.11-beta.53", default-features = false }
 
 
 

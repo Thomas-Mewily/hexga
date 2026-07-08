@@ -35,7 +35,6 @@ macro_rules! impl_cast_into {
             }
         }}
 
-        /*
         impl<S> $trait_name for S
         where
             S: $crate::map::Map + CastInto<S::WithType<<S::Item as $trait_name>::Output>>,
@@ -45,7 +44,6 @@ macro_rules! impl_cast_into {
             fn $fn_map_name(self) -> Self::Output { self.map($trait_name::$fn_map_name) }
             fn $fn_map_range_name(self) -> Self::Output { self.map($trait_name::$fn_map_range_name) }
         }
-        */
     };
 }
 
