@@ -43,12 +43,13 @@ pub trait FsDynRead
         {
             if !paths.is_empty()
             {
-                return Err(IoError::new_with_path(io::ErrorKind::InvalidInput, "Can be resolved to multiple path", path));
+                return Err(IoError::new_with_path(io::ErrorKind::InvalidInput, "Can't be resolved to multiple path", path));
             }
             return Ok(p);
         }
         Ok(path.to_owned())
     }
+
 
     #[doc(hidden)]
     /// Canonicalizes the path like `std::fs::canonicalize`, but works even if the file doesn't exist.

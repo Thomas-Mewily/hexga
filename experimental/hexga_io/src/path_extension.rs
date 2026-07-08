@@ -150,3 +150,8 @@ impl PathExtension for Path
     }*/
 }
 */
+
+/*
+pub trait FsPath : AsRef<Path> //+ Into<PathBuf> {}
+impl<P> FsPath for P where P: AsRef<Path> //+ Into<PathBuf> {}
+*/

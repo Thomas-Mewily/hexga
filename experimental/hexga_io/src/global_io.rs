@@ -26,7 +26,7 @@ impl FsDynRead for Io
         Ok(paths)
     }
 
-    fn dyn_resolve_paths<'a>(&mut self, path: &'a Path) -> IoResult<Vec<PathBuf>>
+    fn dyn_resolve_paths(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>
     {
         let path = self.canonicalize(path)?;
         if path.extension().is_some()

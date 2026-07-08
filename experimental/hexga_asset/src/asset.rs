@@ -40,7 +40,6 @@ impl AssetsManagerUntyped
 
         self.managers.get(&typeid)?.deref().as_any()
             .downcast_ref::<AssetManager<T, FS>>()
-            //.map(|v| v.as_ref())
     }
 }
 
@@ -542,8 +541,8 @@ where
         self.get_mut().save()
     }
     
-    fn force_save(&mut self) -> FileResult {
-        self.get_mut().force_save()
+    fn save_forced(&mut self) -> FileResult {
+        self.get_mut().save_forced()
     }
 }
 
@@ -558,69 +557,66 @@ where
     fn try_reload(&mut self) -> Result<Self::Ok, Self::Error>
     {
         let mut data = self.get_mut();
-        let Some(path) = &data.path
+        let Some(path) = &mut data.path
         else
         {
             return Ok(());
         };
-
-        match T::load_from_fs(&mut FS::provide_fs(), path)
+        
+        match T::load_from_fs_and_resolve(&mut FS::provide_fs(), &path)
         {
-            Ok(v) =>
+            Ok((value, path)) => 
             {
-                *data.value_mut() = v;
+                *data.value_mut() = value;
+                if let Some(resolved) = path
+                {
+                    let mut assets = ASSET.get_mut();
+                    let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T,FS>();
+                    self.clone().force_set_path(&mut data, Some(resolved), manager);
+                }
                 Ok(())
-            }
-            Err(e) =>
+            },
+            Err(e) => 
             {
                 if e.is_io() && path.extension().is_some()
                 {
                     // Maybe the extension was changed
-                    let resolved = FS::provide_fs().resolve_path(path.with_extension("")).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
-                    if *path != resolved
+                    path.set_extension("");
+                    match T::load_from_fs_and_resolve(&mut FS::provide_fs(), path)
                     {
-                        let mut assets = ASSET.get_mut();
-                        let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T,FS>();
-
-                        match T::load_from_fs(&mut FS::provide_fs(), &resolved)
+                        Ok((value, path)) => 
                         {
-                            Ok(v) =>
+                            *data.value_mut() = value;
+                            if let Some(resolved) = path
                             {
-                                *data.value_mut() = v;
+                                let mut assets = ASSET.get_mut();
+                                let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T,FS>();
                                 self.clone().force_set_path(&mut data, Some(resolved), manager);
-                                Ok(())
                             }
-                            Err(e) =>
-                            {
-                                // Still change the path
-                                self.clone().force_set_path(&mut data, Some(resolved), manager);
-                                Err(e)
-                            }
-                        }
+                            Ok(())
+                        },
+                        Err(_) => Err(e),
                     }
-                    else
-                    {
-                        Err(e)
-                    }
-                }
-                else
+                }else
                 {
                     Err(e)
                 }
-            }
+            },
         }
     }
 }
 
 
-impl<T, FS> FsLoad<T, FS> for AssetIn<T, FS>
+impl<T, FS> FsLoadSave<T, FS> for AssetIn<T, FS>
 where
     FS: FsProvider + Async,
     T: Load + Save + Async,
 {
     type Output = Self;
 
-    fn from_path_and_fn<F>(path: Option<PathBuf>, init: F) -> FileResult<Self::Output> where F: FnOnce(Option<&Path>) -> FileResult<T> 
+    fn from_path_and_fn<F>(path: Option<PathBuf>, init: F) -> FileResult<Self::Output> 
+        where 
+        F: FnOnce(Option<&mut PathBuf>) -> FileResult<T>
     {
         let Some(path) = path else 
         {
@@ -629,6 +625,8 @@ where
 
         let mut assets = ASSET.get_mut();
         let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T,FS>();
+        
+        let mut path = FS::provide_fs().resolve_path_for::<T,_>(path);
 
         match manager.values.get(&path)
         {
@@ -642,10 +640,26 @@ where
 
         // Drop the assets lock, because init can take some time. That way multiple asset can be loaded in parallel.
         drop(assets);
+        let value = init(Some(&mut path))?;
+
         let mut assets = ASSET.get_mut();
         let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T,FS>();
 
-        let value = init(Some(&path))?;
+        match manager.values.get_mut(&path)
+        {
+            Some(shared) => match shared.upgrade()
+            {
+                Some(asset) => 
+                {
+                    // Asset was loaded again by someone else during init. Replace it
+                    *asset.get_mut().value_mut() = value;
+                    return Ok(asset);
+                },
+                None => {},
+            },
+            None => {},
+        }
+
         let asset = Self { inner: Arc::new(RwLock::new(AssetDataIn { path: Some(path.clone()), value: Some(Dirty::new(value)), phantom: PhantomData })) };
         
         let entry = match manager.default_storage
@@ -655,8 +669,6 @@ where
         };
         manager.values.insert(path, entry);
         return Ok(asset)
-
-        
     }
 
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output

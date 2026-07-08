@@ -119,10 +119,10 @@ where
         {
             return Ok(());
         }
-        self.force_save()
+        self.save_forced()
     }
 
-    fn force_save(&mut self) -> FileResult {
+    fn save_forced(&mut self) -> FileResult {
         let Some(path) = &self.path
         else
         {
@@ -204,7 +204,7 @@ where
     fn provide_fs() -> Self::Fs { FS::provide_fs() }
 }
 
-impl<T, FS> FsLoad<T, FS> for FileDataIn<T, FS>
+impl<T, FS> FsLoadSave<T, FS> for FileDataIn<T, FS>
 where
     FS: FsProvider,
     T: Load + Save,

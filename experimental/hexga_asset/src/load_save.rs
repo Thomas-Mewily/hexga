@@ -1,4 +1,4 @@
-use std::collections::hash_map::Values;
+use std::{borrow::Cow, collections::hash_map::Values};
 
 use hexga_encoding::FileErrorKind;
 
@@ -27,10 +27,10 @@ trait_marker!(Persistant: Saveable + GetPath + SetPath + Reload);
 pub trait Saveable
 {
     /// Attempts to save the value, but may skip the operation if no changes have been made.
-    fn save(&mut self) -> FileResult { self.force_save() }
+    fn save(&mut self) -> FileResult { self.save_forced() }
 
     /// Forcefully saves the value, regardless of whether it has been modified.
-    fn force_save(&mut self) -> FileResult;
+    fn save_forced(&mut self) -> FileResult;
 }
 
 /*
@@ -53,18 +53,21 @@ impl<S,T> FsSave<T> for S
     T: Save + ?Sized,
 {}
 
-pub trait FsLoad<T, FS>
+pub trait FsLoadSave<T, FS>
 where
-    T: Load,
+    T: Load + Save,
     FS: FsProvider,
 {
     type Output: Persistant; //PersistantValue<T>;
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output;
     /// This fn can return an error only if the init fn return an error. Otherwise it's a logic bug in the impl.
+    /// Resolving the path should be done here.
     #[doc(hidden)]
-    fn from_path_and_fn<F>(path: Option<PathBuf>, init: F) -> FileResult<Self::Output> where F: FnOnce(Option<&Path>) -> FileResult<T>
+    fn from_path_and_fn<F>(mut path: Option<PathBuf>, init: F) -> FileResult<Self::Output> 
+        where 
+        F: FnOnce(Option<&mut PathBuf>) -> FileResult<T>
     {
-        let value = init(path.as_ref().map(|p| p.as_ref()))?;
+        let value = init(path.as_mut())?;
         Ok(Self::from_path_and_value(path, value))
     }
 
@@ -73,24 +76,25 @@ where
     /// Read and decode the value using the provided extension.
     fn load<P: AsRef<Path>>(path: P) -> FileResult<Self::Output>
     {
-        let path = path.as_ref();
-        let mut path = FS::provide_fs().resolve_path(path).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
-        if path.extension().is_none()
-        {
-            path.set_extension(T::load_prefered_extension());
-        }
-
-        Ok(Self::from_path_and_fn(Some(path), |p| 
+        Self::from_path_and_fn(Some(path.as_ref().to_path_buf()), |p| 
         {
             match p
             {
-                Some(path) => T::load_from_fs(&mut FS::provide_fs(), path),
-                None => Err(FileError::new(FileErrorKind::Io(IoError::new(IoErrorKind::InvalidData, "Missing file name")))),
+                Some(path) => match T::load_from_fs_and_resolve(&mut FS::provide_fs(), &path)
+                {
+                    Ok((value, resolved)) => 
+                    {
+                        if let Some(r) = resolved
+                        {
+                            *path = r;
+                        };
+                        Ok(value)
+                    },
+                    Err(e) => Err(e),
+                }
+                None => Err(FileError::new(FileErrorKind::Io(IoError::new(IoErrorKind::InvalidData, "Missing path")))),
             }
-        })?)
-
-        //let value = T::load_from_fs(&mut FS::provide_fs(), &path)?;
-        //Ok(Self::from_path_and_value(Some(path), value))
+        })
     }
 
     /// Read and decode the value using the provided extension.
@@ -114,17 +118,13 @@ where
                     return Err(e);
                 }
 
-                let mut path = FS::provide_fs().resolve_path(path).unwrap_or_else(|_| path.to_path_buf());
-                if path.extension().is_none()
-                {
-                    path.set_extension(T::load_prefered_extension());
-                }
+                let path = FS::provide_fs().resolve_path_for::<T,_>(path);
 
                 let mut need_save = false;
                 let mut fs_value = Self::from_path_and_fn(Some(path), |_| { need_save = true; Ok(init()) })?;
                 if need_save
                 {
-                    let _ = fs_value.save();
+                    let _ = fs_value.save_forced();
                 }
                 Ok(fs_value)
             }
@@ -147,17 +147,13 @@ where
             Ok(v) => v,
             Err(_) =>
             {
-                let mut path = FS::provide_fs().resolve_path(path).unwrap_or_else(|_| path.to_path_buf());
-                if path.extension().is_none()
-                {
-                    path.set_extension(T::load_prefered_extension());
-                }
+                let path = FS::provide_fs().resolve_path_for::<T,_>(path);
 
                 let mut need_save = false;
                 let mut fs_value = Self::from_path_and_fn(Some(path), |_| { need_save = true; Ok(init()) }).expect("Bad impl");
                 if need_save
                 {
-                    let _ = fs_value.force_save();
+                    let _ = fs_value.save_forced();
                 }
                 fs_value
             }
@@ -193,7 +189,7 @@ where
     }
 }
 
-impl<T> FsLoad<T, Io> for Io
+impl<T> FsLoadSave<T, Io> for Io
 where
     T: Load + Save,
 {

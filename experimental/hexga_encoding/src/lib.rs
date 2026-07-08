@@ -64,6 +64,8 @@ pub mod prelude
 
 pub mod traits
 {
+    pub use super::fs_extension::traits::*;
+
     #[cfg(feature = "serde")]
     pub use super::serde_impl::traits::*;
 

@@ -27,10 +27,39 @@ pub trait CommonExtensions
     /// Not suitable for long-term storage, as the implementation or encoding may change at any time.
     const TMP_BIN: &'static str = "tmp";
 }
-
 impl CommonExtensions for Extension {}
 
 pub(crate) mod prelude
 {
     pub use super::{CommonExtensions, Extension, extension};
+    pub use super::traits::*;
 }
+
+pub mod traits 
+{
+    pub use super::{FsResolvePathWithExtension, PreferedExtension};
+}
+
+
+pub trait FsResolvePathWithExtension: FsRead
+{
+    /// Resolve incomplete file extension by finding the matching file on disk.
+    /// Returns an error if multiple files with the same stem exist or if the path is not valid.
+    /// If no file exist with the same name, return the path with the prefered extension.
+    fn resolve_path_for<T, P: AsRef<Path>>(&mut self, path: P) -> PathBuf where T: PreferedExtension
+    {
+        let mut path = self.resolve_path(path.as_ref()).unwrap_or_else(|_| path.as_ref().to_path_buf());
+        if path.extension().is_none()
+        {
+            path.set_extension(T::prefered_extension());
+        }
+        path
+    }
+}
+impl<T> FsResolvePathWithExtension for T where T: FsRead {}
+
+pub trait PreferedExtension : Load + Save 
+{
+    fn prefered_extension() -> &'static extension { Self::save_prefered_extension() }
+}
+impl<T> PreferedExtension for T where T: Load + Save {}

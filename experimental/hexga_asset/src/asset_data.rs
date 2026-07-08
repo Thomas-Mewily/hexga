@@ -157,11 +157,11 @@ where
         {
             return Ok(());
         }
-        self.force_save()
+        self.save_forced()
     }
 
-    fn force_save(&mut self) -> FileResult {
-            let Some(path) = &self.path
+    fn save_forced(&mut self) -> FileResult {
+        let Some(path) = &self.path
         else
         {
             return Ok(());
