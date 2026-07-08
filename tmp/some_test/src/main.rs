@@ -54,6 +54,8 @@ fn main()
     println!("{}", hi);
     println!("{}", hi2);
 
+    //Asset::load
+
     dbg!(AssetManager::<String, Io>::assets());
 
     println!();

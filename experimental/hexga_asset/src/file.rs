@@ -16,6 +16,7 @@ where
 }
 
 // Todo: better impl
+/*
 impl<T, FS> Load for FileDataIn<T, FS>
 where
     FS: FsProvider,
@@ -29,6 +30,16 @@ where
     T: Load + Save,
 {
 }
+
+impl<T, FS> FsProvider for FileDataIn<T, FS>
+where
+    FS: FsProvider,
+    T: Load + Save,
+{
+    type Fs = FS::Fs;
+    fn provide_fs() -> Self::Fs { FS::provide_fs() }
+}
+*/
 
 #[cfg(feature = "serde")]
 impl<T, FS> Serialize for FileDataIn<T, FS>
@@ -206,14 +217,6 @@ where
     }
 }
 
-impl<T, FS> FsProvider for FileDataIn<T, FS>
-where
-    FS: FsProvider,
-    T: Load + Save,
-{
-    type Fs = FS::Fs;
-    fn provide_fs() -> Self::Fs { FS::provide_fs() }
-}
 
 impl<T, FS> FsLoadSave<T, FS> for FileDataIn<T, FS>
 where
