@@ -70,15 +70,7 @@ where
     FS: FsProvider + Async,
     T: Load + Save + Async,
 {
-    pub fn shared_assets() -> Vec<AssetShared<T, FS>> 
-    {
-        match ASSET.get().try_manager::<T,FS>()
-        {
-            Some(manager) => manager.values.iter().map(|(_path, value)| value.clone()).collect(),
-            None => Vec::new(),
-        }
-    }
-
+    /// Return all the assets that are loaded of this type.
     pub fn assets() -> Vec<AssetIn<T, FS>> 
     {
         match ASSET.get().try_manager::<T,FS>()
@@ -88,6 +80,7 @@ where
         }
     }
 
+    /// The default storage about how the asset should be stored in memory.
     pub fn default_storage() -> AssetStorage 
     { 
         match ASSET.get().try_manager::<T,FS>()
@@ -131,12 +124,7 @@ where
         }
     }
 }
-/*
-Todo make a empty struct AssetManager<T,FS> ?
 
-
-
-*/
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub enum AssetStorage

@@ -50,6 +50,10 @@ fn main()
     println!("{}", hi);
     println!("{}", hi2);
 
+    drop(hello);
+    drop(hi);
+    drop(hi2);
+
     dbg!(AssetManager::<String,Io>::assets());
     
 
