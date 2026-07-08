@@ -216,7 +216,7 @@ pub trait ToUrl: MediaType + Save
         let (bytes, _deduced_extension) = self.save_to_bytes_with_extension(Some(extension))?;
         let media = Self::media_type();
         let url = bytes.to_base64_in(format!("data:{media}/{extension};base64,"));
-        Ok(url)
+        Ok(url) 
     }
 
     /// Converts the encoded image into a binary url.

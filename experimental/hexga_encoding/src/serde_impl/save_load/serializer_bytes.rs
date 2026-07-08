@@ -1,21 +1,21 @@
 use super::*;
 
-pub(crate) struct SerializerTxt<W>
+pub(crate) struct SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     writer: W,
 }
-impl<W> SerializerTxt<W>
+impl<W> SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     pub fn new(writer: W) -> Self { Self { writer } }
 }
 
-impl<W> SerializeSeq for SerializerTxt<W>
+impl<W> SerializeSeq for SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     type Ok = W;
     type Error = EncodeError;
@@ -29,9 +29,9 @@ where
 
     fn end(self) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 }
-impl<W> SerializeTuple for SerializerTxt<W>
+impl<W> SerializeTuple for SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     type Ok = W;
     type Error = EncodeError;
@@ -45,9 +45,9 @@ where
 
     fn end(self) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 }
-impl<W> SerializeTupleStruct for SerializerTxt<W>
+impl<W> SerializeTupleStruct for SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     type Ok = W;
     type Error = EncodeError;
@@ -61,9 +61,9 @@ where
 
     fn end(self) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 }
-impl<W> SerializeTupleVariant for SerializerTxt<W>
+impl<W> SerializeTupleVariant for SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     type Ok = W;
     type Error = EncodeError;
@@ -77,9 +77,9 @@ where
 
     fn end(self) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 }
-impl<W> SerializeMap for SerializerTxt<W>
+impl<W> SerializeMap for SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     type Ok = W;
     type Error = EncodeError;
@@ -100,9 +100,9 @@ where
 
     fn end(self) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 }
-impl<W> SerializeStruct for SerializerTxt<W>
+impl<W> SerializeStruct for SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     type Ok = W;
     type Error = EncodeError;
@@ -116,9 +116,9 @@ where
 
     fn end(self) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 }
-impl<W> SerializeStructVariant for SerializerTxt<W>
+impl<W> SerializeStructVariant for SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     type Ok = W;
     type Error = EncodeError;
@@ -133,20 +133,20 @@ where
     fn end(self) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 }
 
-impl<W> Serializer for SerializerTxt<W>
+impl<W> Serializer for SerializerBytes<W>
 where
-    W: std::fmt::Write,
+    W: std::io::Write,
 {
     type Ok = W;
     type Error = EncodeError;
 
-    type SerializeSeq = SerializerTxt<W>;
-    type SerializeTuple = SerializerTxt<W>;
-    type SerializeTupleStruct = SerializerTxt<W>;
-    type SerializeTupleVariant = SerializerTxt<W>;
-    type SerializeMap = SerializerTxt<W>;
-    type SerializeStruct = SerializerTxt<W>;
-    type SerializeStructVariant = SerializerTxt<W>;
+    type SerializeSeq = SerializerBytes<W>;
+    type SerializeTuple = SerializerBytes<W>;
+    type SerializeTupleStruct = SerializerBytes<W>;
+    type SerializeTupleVariant = SerializerBytes<W>;
+    type SerializeMap = SerializerBytes<W>;
+    type SerializeStruct = SerializerBytes<W>;
+    type SerializeStructVariant = SerializerBytes<W>;
 
     fn serialize_bool(self, _: bool) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 
@@ -170,19 +170,15 @@ where
 
     fn serialize_f64(self, _: f64) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 
-    fn serialize_char(mut self, c: char) -> Result<Self::Ok, Self::Error>
+    fn serialize_char(self, _: char) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
+
+    fn serialize_str(self, _: &str) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
+
+    fn serialize_bytes(mut self, v: &[u8]) -> Result<Self::Ok, Self::Error>
     {
-        self.writer.write_char(c)?;
+        self.writer.write(v)?;
         Ok(self.writer)
     }
-
-    fn serialize_str(mut self, s: &str) -> Result<Self::Ok, Self::Error>
-    {
-        self.writer.write_str(s)?;
-        Ok(self.writer)
-    }
-
-    fn serialize_bytes(self, _: &[u8]) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> { Err(Default::default()) }
 

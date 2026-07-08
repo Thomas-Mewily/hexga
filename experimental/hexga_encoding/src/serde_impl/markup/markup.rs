@@ -147,13 +147,13 @@ impl FormatSpecial
             FormatSpecial::Txt =>
             {
                 let mut txt = String::with_capacity(1024);
-                value.serialize(SerializerTxt::new(&mut txt))?;
+                value.serialize(SerializerString::new(&mut txt))?;
                 Ok(txt.into_bytes())
             }
             FormatSpecial::TmpBin =>
             {
                 let mut bytes = Vec::with_capacity(256);
-                value.serialize(SerializerTmpBin::new(&mut bytes))?;
+                value.serialize(SerializerBytes::new(&mut bytes))?;
                 Ok(bytes)
             }
         }
@@ -168,12 +168,12 @@ impl FormatSpecial
         {
             FormatSpecial::Txt =>
             {
-                value.serialize(SerializerTxt::new(writer.to_fmt_writer()))?;
+                value.serialize(SerializerString::new(writer.to_fmt_writer()))?;
                 Ok(())
             }
             FormatSpecial::TmpBin =>
             {
-                value.serialize(SerializerTmpBin::new(writer))?;
+                value.serialize(SerializerBytes::new(writer))?;
                 Ok(())
             }
         }
@@ -185,8 +185,8 @@ impl FormatSpecial
     {
         match self
         {
-            FormatSpecial::Txt => T::deserialize(DeserializerTxt::new(str::from_utf8(bytes)?)),
-            FormatSpecial::TmpBin => T::deserialize(DeserializerTmpBin::new(bytes)),
+            FormatSpecial::Txt => T::deserialize(DeserializerString::new(str::from_utf8(bytes)?)),
+            FormatSpecial::TmpBin => T::deserialize(DeserializerBytes::new(bytes)),
         }
     }
 
@@ -201,13 +201,13 @@ impl FormatSpecial
             {
                 let mut txt = String::with_capacity(1024);
                 reader.read_to_string(&mut txt)?;
-                T::deserialize(DeserializerTxt::new(txt))
+                T::deserialize(DeserializerString::new(txt))
             }
             FormatSpecial::TmpBin =>
             {
                 let mut bytes = Vec::with_capacity(256);
                 reader.read_to_end(&mut bytes)?;
-                T::deserialize(DeserializerTmpBin::new(bytes))
+                T::deserialize(DeserializerBytes::new(bytes))
             }
         }
     }

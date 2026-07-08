@@ -1,14 +1,14 @@
 use super::*;
 
-pub(crate) struct DeserializerTxt<'a>
+pub(crate) struct DeserializerBytes<'a>
 {
-    pub(crate) txt: Cow<'a, str>,
+    pub(crate) bytes: Cow<'a, [u8]>,
 }
-impl<'a> DeserializerTxt<'a>
+impl<'a> DeserializerBytes<'a>
 {
-    pub fn new(txt: impl Into<Cow<'a, str>>) -> Self { Self { txt: txt.into() } }
+    pub fn new(bytes: impl Into<Cow<'a, [u8]>>) -> Self { Self { bytes: bytes.into() } }
 }
-impl<'a, 'de> Deserializer<'de> for DeserializerTxt<'a>
+impl<'a, 'de> Deserializer<'de> for DeserializerBytes<'a>
 {
     type Error = EncodeError;
 
@@ -16,7 +16,7 @@ impl<'a, 'de> Deserializer<'de> for DeserializerTxt<'a>
     where
         V: Visitor<'de>,
     {
-        self.deserialize_string(visitor)
+        self.deserialize_bytes(visitor)
     }
 
     fn deserialize_bool<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
@@ -96,54 +96,39 @@ impl<'a, 'de> Deserializer<'de> for DeserializerTxt<'a>
         Err(Default::default())
     }
 
-    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: Visitor<'de>,
-    {
-        let mut chars = self.txt.chars();
-        if let Some(c) = chars.next()
-        {
-            if chars.next().is_none()
-            {
-                visitor.visit_char(c)
-            }
-            else
-            {
-                Err(EncodeError::custom("expected exactly one character"))
-            }
-        }
-        else
-        {
-            Err(EncodeError::custom("expected exactly one character, got empty string"))
-        }
-    }
-
-    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: Visitor<'de>,
-    {
-        visitor.visit_str(self.txt.as_ref())
-    }
-
-    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: Visitor<'de>,
-    {
-        visitor.visit_string(self.txt.into_owned())
-    }
-
-    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
         Err(Default::default())
     }
 
-    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
         Err(Default::default())
+    }
+
+    fn deserialize_string<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        Err(Default::default())
+    }
+
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        visitor.visit_bytes(self.bytes.as_ref())
+    }
+
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        visitor.visit_byte_buf(self.bytes.into_owned())
     }
 
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
