@@ -34,6 +34,7 @@ float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_image/float_are_
 hexga_encoding_derive = ["hexga_encoding/derive"]
 #hexga_encoding_derive = ["hexga_save/hexga_encoding_derive"]
 
+print_io = ["hexga_io/print_io", "hexga_encoding/print_io", "hexga_asset/print_io"]
 
 serde = ["dep:serde",
   "hexga_generational/serde",

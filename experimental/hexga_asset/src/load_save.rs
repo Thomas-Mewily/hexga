@@ -43,7 +43,7 @@ pub trait FsSave<T> : FsProvider
     T: Save + ?Sized,
 {
     /// Encode the value using the provided extension and write it to a file.
-    fn save<P : AsRef<Path>>(value: &T, path: P) -> FileResult<PathBuf>
+    fn save<P : AsRef<Path>>(value: &T, path: P) -> FileResult
     {
         value.save_to_fs(&mut Self::provide_fs(), path)
     }
@@ -67,6 +67,7 @@ where
         where 
         F: FnOnce(Option<&mut PathBuf>) -> FileResult<T>
     {
+        path.as_mut().map(|p| *p = FS::provide_fs().resolve_path_for::<T,_>(&p));
         let value = init(path.as_mut())?;
         Ok(Self::from_path_and_value(path, value))
     }
@@ -80,18 +81,7 @@ where
         {
             match p
             {
-                Some(path) => match T::load_from_fs_and_resolve(&mut FS::provide_fs(), &path)
-                {
-                    Ok((value, resolved)) => 
-                    {
-                        if let Some(r) = resolved
-                        {
-                            *path = r;
-                        };
-                        Ok(value)
-                    },
-                    Err(e) => Err(e),
-                }
+                Some(path) => T::load_from_fs_at(&mut FS::provide_fs(), &path),
                 None => Err(FileError::new(FileErrorKind::Io(IoError::new(IoErrorKind::InvalidData, "Missing path")))),
             }
         })

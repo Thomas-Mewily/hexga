@@ -8,4 +8,6 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
-hexga = { workspace = true, default-features = true }
+hexga = { workspace = true, default-features = true, 
+    features = ["print_io"] 
+}

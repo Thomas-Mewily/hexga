@@ -128,7 +128,12 @@ where
         {
             return Ok(());
         };
-        self.value().save_to_fs(&mut FS::provide_fs(), path)?;
+        self.value().save_to_fs_at(&mut FS::provide_fs(), path)?;
+        /*
+        if let Some(resolved) = self.value().save_to_fs_resolved(&mut FS::provide_fs(), path)?
+        {
+            let _ = self.set_path(Some(resolved));
+        }*/
         self.undirty();
         Ok(())
     }

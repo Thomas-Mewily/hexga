@@ -18,6 +18,7 @@ serde = ["dep:serde", "hexga_io/serde", "hexga_encoding/serde", "hexga_core/serd
 serde_rc = ["serde/rc",  "hexga_io/serde_rc", "hexga_encoding/serde_rc", "hexga_core/serde_rc"]
 
 hexga_encoding_derive = ["hexga_encoding/derive"]
+print_io = ["hexga_io/print_io"]
 
 [dependencies]
 serde = { version = "1.0.0", optional = true }

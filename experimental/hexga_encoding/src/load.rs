@@ -10,30 +10,15 @@ pub trait Load: Sized + for<'de> CfgDeserialize<'de>
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn load_prefered_extension() -> &'static extension { Self::load_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }
 
-    /// Also return the resolved path if it is different than the passed path.
-    #[doc(hidden)]
-    fn load_from_fs_and_resolve<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<(Self, Option<PathBuf>)>
-    where
-        Self: Sized,
+    fn load_from_fs_at<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>
     {
-        let mut path = path.as_ref();
-        let mut resolved = None;
-
-        if let Ok(resolve) = fs.resolve_path(&path)
-        {
-            if resolve != path
-            {
-                resolved = Some(resolve);
-                path = &resolved.as_ref().unwrap();
-            }
-        }
-        
+        let path = path.as_ref();
         let extension = path.extension().map(|v| v.to_str()).flatten();
 
-        let bytes = fs.read_bytes(path).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
+        let bytes = fs.read_bytes_at(path).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
         
         let value = Self::load_from_bytes_with_extension(bytes.as_ref(), extension).map_err(|e| e.at_path(Some(path.to_path_buf())))?;
-        Ok((value, resolved))
+        Ok(value)
     }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
@@ -104,11 +89,32 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
         return Err(EncodeError::load_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into())));
     }
 
+    /// Also return the resolved path if it is different than the passed path.
+    #[doc(hidden)]
+    fn load_from_fs_resolved<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<(Self, Option<PathBuf>)>
+    where
+        Self: Sized,
+    {
+        let mut path = path.as_ref();
+        let mut resolved = None;
+
+        if let Ok(resolve) = fs.resolve_path(&path)
+        {
+            if resolve != path
+            {
+                resolved = Some(resolve);
+                path = &resolved.as_ref().unwrap();
+            }
+        }
+        
+        Self::load_from_fs_at(fs, &path).map(|v| (v, resolved))
+    }
+
     fn load_from_fs<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>
     where
         Self: Sized
     {
-        Self::load_from_fs_and_resolve(fs, path).map(|(value, _path)| value)
+        Self::load_from_fs_resolved(fs, path).map(|(value, _path)| value)
     }
 }
 impl<T> LoadExtension for T where T: Load + for<'de> CfgDeserialize<'de> {}
@@ -123,13 +129,9 @@ where
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Source::load_custom_extensions() }
     
-    fn load_from_fs_and_resolve<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<(Self, Option<PathBuf>)>
-    where
-        Self: Sized,
-    {
-            S::Source::load_from_fs_and_resolve(fs, path).map(|(v, path)| (v.into(), path))
+    fn load_from_fs_at<FS: Fs, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> {
+        S::Source::load_from_fs_at(fs, path).map(|v| v.into())
     }
-
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where

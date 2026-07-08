@@ -44,11 +44,11 @@ pub mod traits
 pub trait FsResolvePathWithExtension: FsRead
 {
     /// Resolve incomplete file extension by finding the matching file on disk.
-    /// Returns an error if multiple files with the same stem exist or if the path is not valid.
     /// If no file exist with the same name, return the path with the prefered extension.
-    fn resolve_path_for<T, P: AsRef<Path>>(&mut self, path: P) -> PathBuf where T: PreferedExtension
+    fn resolve_path_for<T, P: AsRef<Path>>(&mut self, path: P) -> PathBuf where T: PreferedExtension + ?Sized
     {
-        let mut path = self.resolve_path(path.as_ref()).unwrap_or_else(|_| path.as_ref().to_path_buf());
+        let path = path.as_ref();
+        let mut path = self.resolve_path(&path).unwrap_or_else(|_| self.canonicalize(path).unwrap_or_else(|_| path.to_path_buf()));
         if path.extension().is_none()
         {
             path.set_extension(T::prefered_extension());
@@ -58,8 +58,8 @@ pub trait FsResolvePathWithExtension: FsRead
 }
 impl<T> FsResolvePathWithExtension for T where T: FsRead {}
 
-pub trait PreferedExtension : Load + Save 
+pub trait PreferedExtension : Save 
 {
     fn prefered_extension() -> &'static extension { Self::save_prefered_extension() }
 }
-impl<T> PreferedExtension for T where T: Load + Save {}
+impl<T> PreferedExtension for T where T: Save + ?Sized {}

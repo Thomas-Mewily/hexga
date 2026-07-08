@@ -42,16 +42,25 @@ fn main()
     */
 
     //let m = FileData::load_or_create("_tmp/hello", || "hello".to_owned());
-    let hello = Asset::load_or_create("_tmp/hello", || "hello".to_owned());
+    let hello = Asset::load_or_create("_tmp/hello.txt", || "hello".to_owned());
+    println!();
     let hi = Asset::load_or_create("_tmp/hello", || "hi".to_owned());
-    let hi2 = Asset::from_path_and_value(Some("_tmp/hello.txt".into()), "hi2".to_owned());
+    println!();
+
+    let hi2 = Asset::from_path_and_value(Some("_tmp/hello.txt".into()), "hi 2".to_owned());
+    println!();
 
     println!("{}", hello);
     println!("{}", hi);
     println!("{}", hi2);
 
+    dbg!(AssetManager::<String,Io>::assets());
+
+    println!();
     drop(hello);
+    println!();
     drop(hi);
+    println!();
     drop(hi2);
 
     dbg!(AssetManager::<String,Io>::assets());

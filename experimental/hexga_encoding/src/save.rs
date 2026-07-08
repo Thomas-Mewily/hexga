@@ -12,22 +12,15 @@ pub trait Save : CfgSerialize
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn save_prefered_extension() -> &'static extension { Self::save_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }
 
-    fn save_to_fs<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult<PathBuf>
+    fn save_to_fs_at<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult
     {
         let path = path.as_ref();
         let extension = path.extension().map(|v| v.to_str()).flatten();
 
-        let (writer, extension) = self.save_to_bytes_with_extension_in(Vec::with_capacity(DEFAULT_WRITER_CAPACITY), extension).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
+        let (writer, _extension) = self.save_to_bytes_with_extension_in(Vec::with_capacity(DEFAULT_WRITER_CAPACITY), extension).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
 
-        if path.extension().map(|e| e.to_str()).flatten() != Some(extension.as_ref())
-        {
-            let output_path = fs.write_bytes(path.with_extension(extension.as_ref()), &writer).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
-            Ok(output_path)
-        }else
-        {
-            let output_path = fs.write_bytes(path, &writer).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
-            Ok(output_path)
-        }
+        fs.write_bytes_at(path, &writer).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
+        Ok(())
     }
 
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
@@ -106,6 +99,28 @@ pub trait SaveExtension: Save
         #[allow(unreachable_code)]
         Err(EncodeError::save_unsupported_extension::<Self>(extension.map(Into::into)))
     }
+
+    /// Also return the resolved path if it is different than the passed path.
+    #[doc(hidden)]
+    fn save_to_fs_resolved<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult<Option<PathBuf>>
+    {
+        let mut path = path.as_ref();
+        let mut resolved = None;
+
+        let resolve = fs.resolve_path_for::<Self,_>(&path);
+        if resolve != path
+        {
+            resolved = Some(resolve);
+            path = &resolved.as_ref().unwrap();
+        }
+        
+        self.save_to_fs_at(fs, path).map(|_| resolved)
+    }
+
+    fn save_to_fs<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult
+    {
+        self.save_to_fs_resolved(fs, path).map(|_| ())
+    }
 }
 impl<T> SaveExtension for T where T: Save + ?Sized {}
 
@@ -118,12 +133,11 @@ where
     S: SaveInto + CfgSerialize,
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Output::save_custom_extensions() }
-    fn save_to_fs<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult<PathBuf>
-    where
-        Self: Sized,
-    {
+
+    fn save_to_fs_at<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult {
         S::Output::save_to_fs(&self.into(), fs, path)
     }
+
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,

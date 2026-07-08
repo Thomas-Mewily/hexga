@@ -334,7 +334,7 @@ impl<T,FS> Debug for AssetIn<T,FS>
     FS: FsProvider + Async,
     T: Load + Save + Async + Debug
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self.try_get()
         {
             Ok(v) => write!(f, "{:?}", v.deref()),
@@ -347,7 +347,7 @@ impl<T,FS> Display for AssetIn<T,FS>
     FS: FsProvider + Async,
     T: Load + Save + Async + Display
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self.try_get()
         {
             Ok(v) => write!(f, "{}", v.deref()),
@@ -551,7 +551,7 @@ where
             return Ok(());
         };
         
-        match T::load_from_fs_and_resolve(&mut FS::provide_fs(), &path)
+        match T::load_from_fs_resolved(&mut FS::provide_fs(), &path)
         {
             Ok((value, path)) => 
             {
@@ -570,7 +570,7 @@ where
                 {
                     // Maybe the extension was changed
                     path.set_extension("");
-                    match T::load_from_fs_and_resolve(&mut FS::provide_fs(), path)
+                    match T::load_from_fs_resolved(&mut FS::provide_fs(), path)
                     {
                         Ok((value, path)) => 
                         {
@@ -611,11 +611,11 @@ where
             return Ok(Self { inner: Arc::new(RwLock::new(AssetDataIn { path: None, value: Some(Dirty::new(init(None)?)), phantom: PhantomData })) });
         };
 
+        let mut path = FS::provide_fs().resolve_path_for::<T,_>(path);
         let mut assets = ASSET.get_mut();
+
         let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T,FS>();
         
-        let mut path = FS::provide_fs().resolve_path_for::<T,_>(path);
-
         match manager.values.get(&path)
         {
             Some(asset) => match asset
@@ -779,7 +779,7 @@ impl<T,FS> Debug for AssetWeakIn<T,FS>
     FS: FsProvider + Async,
     T: Load + Save + Async + Debug
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self.upgrade()
         {
             Some(asset) => write!(f, "{:?}", asset),
