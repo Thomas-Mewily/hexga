@@ -81,8 +81,9 @@ impl<'a> TryFrom<&'a str> for UrlDataMeta<'a>
 
 /// Represents a parsed [data url](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data) (Data URL, RFC 2397).
 ///
-///
-/// Example Data URL: (single red pixel)
+/// # Example 
+/// Data URL for a image of a single red pixel encoded in png will look like:
+/// 
 /// ```text
 /// data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AP8AAP8FAAH/+lyI0QAAAABJRU5ErkJggg==
 /// ```
@@ -120,22 +121,23 @@ impl<'a> TryFrom<&'a str> for UrlData<'a>
         let meta = UrlDataMeta::try_from(meta_str)?;
         if meta.scheme != "data"
         {
-            return Err(EncodeError::custom("Invalid URL scheme: expected 'data'"));
+            return Err(EncodeError::custom("Invalid URL scheme: expected scheme 'data'"));
+        }
+        if meta.encoding != Some("base64")
+        {
+            return Err(EncodeError::custom("Invalid URL scheme: expected encoding 'base64'"));
         }
 
         Ok(UrlData { meta, data })
     }
 }
 
-/// Represents a parsed bin_data url (similar to a Data URL, RFC 2397, but the data is in binary).
-///
-/// This struct stores references to the different components of a URL-like string
-/// without allocating new memory. It can be used for both Base64-encoded data URLs
-/// and custom binary URLs with a similar structure.
-///
-/// Example binary URL (custom format):
+/// Represents a parsed data url, similar to a Data URL, RFC 2397 but it's not something official, but the data is in binary `bin` not `base64`.
+/// 
+/// # Example
+/// Example of a binary URL (custom format):
 /// ```text
-/// bin_data:image/png;base64,<raw bytes>
+/// data:image/png;bin,<raw bytes>
 /// ```
 #[derive(Debug, PartialEq, Eq)]
 pub struct BinUrlData<'a>
@@ -169,9 +171,13 @@ impl<'a> TryFrom<&'a [u8]> for BinUrlData<'a>
         let meta_str = std::str::from_utf8(meta_bytes).map_err(|_| EncodeError::custom("Invalid UTF-8 in metadata"))?;
 
         let meta = UrlDataMeta::try_from(meta_str)?;
-        if meta.scheme != "bin_data"
+        if meta.scheme != "data"
         {
-            return Err(EncodeError::custom("Invalid URL scheme: expected 'bin_data'"));
+            return Err(EncodeError::custom("Invalid URL scheme: expected scheme 'data'"));
+        }
+        if meta.encoding != Some("bin")
+        {
+            return Err(EncodeError::custom("Invalid URL scheme: expected encoding 'bin'"));
         }
 
         Ok(BinUrlData { meta, data })
@@ -182,6 +188,14 @@ pub trait MediaType
 {
     /// [Media types (MIME types)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types/Common_types)
     fn media_type() -> &'static str;
+    fn mime_type_in(mut inside: String, extension: &extension) -> String
+    {
+        use std::fmt::Write;
+        inside.clear();
+        let media = Self::media_type();
+        write!(&mut inside, "{media}/{extension}").expect("failed to write in string");
+        inside
+    }
     fn mime_type(extension: &extension) -> String
     {
         let media = Self::media_type();
@@ -200,17 +214,13 @@ impl<'a> MediaType for &'a str
 
 pub trait ToUrl: MediaType + Save
 {
-    /// Converts the encoded image into a Data URL (RFC 2397).
+    /// Converts the encoded value into a Data URL (RFC 2397).
     ///
-    /// # Parameters
-    /// - `extension`: The file extension (e.g., `png`, `jpeg`).
-    ///
-    /// # Returns
-    /// An `EncodeResult<String>` containing the Data URL, in the format:
+    /// The extension parameter should not contains any dot. (e.g., `png`, not `.png`).
+    /// Return an `EncodeResult<String>` containing the Data URL, in the format:
     /// `data:<media_type>/<extension>;base64,<base64_encoded_data>`.
-    ///
-    /// # Errors
-    /// Returns an error if the image cannot be encoded for the given extension.
+    /// 
+    /// Returns an error if the data cannot be encoded for the given extension.
     fn to_url(&self, extension: &extension) -> EncodeResult<String>
     {
         let (bytes, _deduced_extension) = self.save_to_bytes_with_extension(Some(extension))?;
@@ -219,14 +229,19 @@ pub trait ToUrl: MediaType + Save
         Ok(url) 
     }
 
-    /// Converts the encoded image into a binary url.
+    /// Converts the encoded image into a Binary Data URL (not an official RFC).
+    /// It's similar to [`Encode::to_url`], except the `<base64_encoded_data>` is in binary.
     ///
-    /// Similar to [`Encode::to_url`], except the `<base64_encoded_data>` is in binary
+    /// The extension parameter should not contains any dot. (e.g., `png`, not `.png`).
+    /// Return an `EncodeResult<String>` containing the Data URL, in the format:
+    /// `data:<media_type>/<extension>;bin,<binary_data>`.
+    /// 
+    /// Returns an error if the data cannot be encoded for the given extension.
     fn to_url_bin(&self, extension: &extension) -> EncodeResult<Vec<u8>>
     {
         let media = Self::media_type();
         let mut data = Vec::with_capacity(1024);
-        write!(&mut data, "bin_data:{media}/{extension};base64,").map_err(|e| EncodeError::from(e))?;
+        write!(&mut data, "data:{media}/{extension};bin,").map_err(|e| EncodeError::from(e))?;
         let (data, _deduced_extension) = self.save_to_bytes_with_extension_in(data, Some(extension))?;
         Ok(data)
     }

@@ -7,6 +7,7 @@ pub mod prelude
 
 pub type FileResult<T = ()> = Result<T, FileError>;
 
+#[derive(Default)]
 pub struct FileError
 {
     pub path: Option<PathBuf>,
@@ -41,6 +42,41 @@ impl Debug for FileError
         }
     }
 }
+impl Display for FileError
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
+    {
+        match &self.path
+        {
+            Some(path) => write!(f, "{:?} at {:?}", self.kind, path.display()),
+            None => write!(f, "{:?} at unknow path", self.kind),
+        }
+    }
+}
+impl std::error::Error for FileError {}
+#[cfg(feature = "serde")]
+impl serde::ser::Error for FileError
+{
+    fn custom<T>(msg: T) -> Self
+    where
+        T: Display,
+    {
+        FileError { path: None, kind: FileErrorKind::Encode(EncodeError::Custom(msg.to_string())) }
+    }
+}
+#[cfg(feature = "serde")]
+impl serde::de::Error for FileError
+{
+    fn custom<T>(msg: T) -> Self
+    where
+        T: Display,
+    {
+        FileError { path: None, kind: FileErrorKind::Encode(EncodeError::Custom(msg.to_string())) }
+    }
+}
+
+
+
 pub enum FileErrorKind
 {
     /// Problem when encoding the data.
@@ -48,6 +84,13 @@ pub enum FileErrorKind
     /// Problem with the file system : File not found, out of free space...
     Io(IoError),
 }
+impl Default for FileErrorKind
+{
+    fn default() -> Self {
+        FileErrorKind::Encode(EncodeError::Unknow)
+    }
+}
+
 impl From<IoError> for FileErrorKind
 {
     fn from(value: IoError) -> Self { Self::Io(value) }

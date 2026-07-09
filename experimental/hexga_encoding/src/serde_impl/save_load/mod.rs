@@ -14,3 +14,6 @@ pub(crate) use deserializer_string::*;
 
 mod deserializer_bytes;
 pub(crate) use deserializer_bytes::*;
+
+mod serializer_file;
+pub(crate) use serializer_file::*;
