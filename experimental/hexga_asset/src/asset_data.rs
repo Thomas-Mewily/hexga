@@ -2,11 +2,11 @@ use std::any::TypeId;
 
 use super::*;
 
-pub type AssetData<T> = AssetDataIn<T>;
+//pub type AssetData<T> = AssetDataIn<T>;
 
 // Not a FileData, because every operation that can modify the Path also need to update hashmap<Path, Asset> inside the global AssetManager.
 #[derive(Clone)]
-pub struct AssetDataIn<T, FS = IoGlobal>
+pub struct AssetValue<T, FS = IoData>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -22,7 +22,7 @@ where
     pub(crate) phantom: PhantomData<FS>,
 }
 
-impl<T, FS> Hash for AssetDataIn<T, FS>
+impl<T, FS> Hash for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + Hash,
@@ -34,14 +34,14 @@ where
     }
 }
 
-impl<T, FS> Ord for AssetDataIn<T, FS>
+impl<T, FS> Ord for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + Ord,
 {
     fn cmp(&self, other: &Self) -> Ordering { (&self.path, self.value()).cmp(&(&other.path, other.value())) }
 }
-impl<T, FS> PartialOrd for AssetDataIn<T, FS>
+impl<T, FS> PartialOrd for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + PartialOrd,
@@ -49,13 +49,13 @@ where
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (&self.path, self.value()).partial_cmp(&(&other.path, other.value())) }
 }
 
-impl<T, FS> Eq for AssetDataIn<T, FS>
+impl<T, FS> Eq for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + Eq,
 {
 }
-impl<T, FS> PartialEq for AssetDataIn<T, FS>
+impl<T, FS> PartialEq for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + PartialEq,
@@ -63,7 +63,7 @@ where
     fn eq(&self, other: &Self) -> bool { self.path == other.path && self.value() == other.value() }
 }
 
-impl<T, FS> Debug for AssetDataIn<T, FS>
+impl<T, FS> Debug for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + Debug,
@@ -71,7 +71,7 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("Asset").field("path", &self.path).field("value", self.value()).finish() }
 }
 
-impl<T, FS> Display for AssetDataIn<T, FS>
+impl<T, FS> Display for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + Display,
@@ -87,7 +87,7 @@ where
     }
 }
 
-impl<T, FS> Deref for AssetDataIn<T, FS>
+impl<T, FS> Deref for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -95,7 +95,7 @@ where
     type Target = T;
     fn deref(&self) -> &Self::Target { self.value.as_ref().unwrap().deref() }
 }
-impl<T, FS> DerefMut for AssetDataIn<T, FS>
+impl<T, FS> DerefMut for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -103,7 +103,7 @@ where
     fn deref_mut(&mut self) -> &mut Self::Target { self.value.as_mut().unwrap().deref_mut() }
 }
 
-impl<T, FS> AssetDataIn<T, FS>
+impl<T, FS> AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -115,14 +115,14 @@ where
     // pub fn into_value(mut self) -> T { std::mem::take(&mut self.value).unwrap().into_value() }
 }
 
-impl<T, FS> IsDirty for AssetDataIn<T, FS>
+impl<T, FS> IsDirty for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn is_dirty(&self) -> bool { self.value.as_ref().unwrap().is_dirty() }
 }
-impl<T, FS> SetDirty for AssetDataIn<T, FS>
+impl<T, FS> SetDirty for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -134,7 +134,7 @@ where
     }
 }
 
-impl<T, FS> Drop for AssetDataIn<T, FS>
+impl<T, FS> Drop for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -146,7 +146,7 @@ where
     }
 }
 
-impl<T, FS> Saveable for AssetDataIn<T, FS>
+impl<T, FS> Saveable for AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,

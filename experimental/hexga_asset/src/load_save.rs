@@ -176,6 +176,6 @@ impl<T> FileSystemLoadSave<T, IoGlobal> for IoGlobal
 where
     T: Load + Save,
 {
-    type Output = FileDataIn<T, IoGlobal>;
-    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output { FileDataIn::<T, IoGlobal>::from_path_and_value(path, value) }
+    type Output = FileIn<T, IoGlobal>;
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output { FileIn::<T, IoGlobal>::from_path_and_value(path, value) }
 }

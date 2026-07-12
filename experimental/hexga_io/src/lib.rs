@@ -31,7 +31,7 @@ pub mod prelude
 {
     pub use super::traits::*;
     pub use super::{
-        IoGlobal, IoExe, IoData,
+        IoGlobal, IoData,
         IoResult, IoError, IoErrorKind, Path, PathBuf
     };
 }

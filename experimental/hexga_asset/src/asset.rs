@@ -43,11 +43,11 @@ impl AssetsManagerUntyped
     }
 }
 
-//pub(crate) type ArcRwLockAssetManager<T,FS> = Arc<RwLock<AssetManager<T,FS>>>;
-pub type AssetManager<T> = AssetManagerIn<T>;
+pub type AssetManagerData<T> = AssetManagerIn<T, IoData>;
+pub type AssetManagerGlobal<T> = AssetManagerIn<T, IoGlobal>;
 
 #[derive(Debug)]
-pub struct AssetManagerIn<T, FS=IoGlobal>
+pub struct AssetManagerIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -258,14 +258,15 @@ enum AssetLocation<T, P>
     Value(T),
 }
 
-pub type Asset<T> = AssetIn<T, IoGlobal>;
+pub type AssetGlobal<T> = AssetIn<T, IoGlobal>;
+pub type AssetData<T> = AssetIn<T, IoData>;
 
 pub struct AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    inner: Arc<RwLock<AssetDataIn<T, FS>>>,
+    inner: Arc<RwLock<AssetValue<T, FS>>>,
 }
 
 #[cfg(feature = "serde")]
@@ -360,32 +361,32 @@ where
         }
     }
 }
-impl<T, FS> Guarded<AssetDataIn<T, FS>> for AssetIn<T, FS>
+impl<T, FS> Guarded<AssetValue<T, FS>> for AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Guard<'a>
-        = <RwLock<AssetDataIn<T, FS>> as Guarded<AssetDataIn<T, FS>>>::Guard<'a>
+        = <RwLock<AssetValue<T, FS>> as Guarded<AssetValue<T, FS>>>::Guard<'a>
     where
         Self: 'a;
     type Error<'a>
-        = <RwLock<AssetDataIn<T, FS>> as Guarded<AssetDataIn<T, FS>>>::Error<'a>
+        = <RwLock<AssetValue<T, FS>> as Guarded<AssetValue<T, FS>>>::Error<'a>
     where
         Self: 'a;
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.inner.try_get() }
 }
-impl<T, FS> GuardedMut<AssetDataIn<T, FS>> for AssetIn<T, FS>
+impl<T, FS> GuardedMut<AssetValue<T, FS>> for AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type GuardMut<'a>
-        = <RwLock<AssetDataIn<T, FS>> as GuardedMut<AssetDataIn<T, FS>>>::GuardMut<'a>
+        = <RwLock<AssetValue<T, FS>> as GuardedMut<AssetValue<T, FS>>>::GuardMut<'a>
     where
         Self: 'a;
     type Error<'a>
-        = <RwLock<AssetDataIn<T, FS>> as GuardedMut<AssetDataIn<T, FS>>>::Error<'a>
+        = <RwLock<AssetValue<T, FS>> as GuardedMut<AssetValue<T, FS>>>::Error<'a>
     where
         Self: 'a;
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.inner.try_get_mut() }
@@ -433,7 +434,7 @@ where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    pub(crate) fn force_set_path(self, data: &mut RwLockWriteGuard<'_, AssetDataIn<T, FS>>, path: Option<PathBuf>, manager: &mut AssetManagerIn<T, FS>)
+    pub(crate) fn force_set_path(self, data: &mut RwLockWriteGuard<'_, AssetValue<T, FS>>, path: Option<PathBuf>, manager: &mut AssetManagerIn<T, FS>)
     {
         //todo!("what about if the other path is already used by another asset. Need to merge them");
         if let Some(old_path) = &data.path
@@ -481,7 +482,7 @@ where
         {
             drop(data);
 
-            let mut data: RwLockWriteGuard<'_, AssetDataIn<T, FS>> = self.get_mut();
+            let mut data: RwLockWriteGuard<'_, AssetValue<T, FS>> = self.get_mut();
             let mut assets = ASSET.get_mut();
             let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
@@ -618,7 +619,7 @@ where
         else
         {
             return Ok(Self {
-                inner: Arc::new(RwLock::new(AssetDataIn {
+                inner: Arc::new(RwLock::new(AssetValue {
                     path: None,
                     value: Some(Dirty::new(init(None)?)),
                     phantom: PhantomData,
@@ -673,7 +674,7 @@ where
         }
 
         let asset = Self {
-            inner: Arc::new(RwLock::new(AssetDataIn {
+            inner: Arc::new(RwLock::new(AssetValue {
                 path: Some(path.clone()),
                 value: Some(Dirty::new(value)),
                 phantom: PhantomData,
@@ -706,7 +707,7 @@ where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    inner: ArcWeak<RwLock<AssetDataIn<T, FS>>>,
+    inner: ArcWeak<RwLock<AssetValue<T, FS>>>,
 }
 
 impl<T, FS> AssetWeakIn<T, FS>
