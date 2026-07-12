@@ -4,13 +4,9 @@ use super::*;
 #[derive(Debug, Default)]
 pub struct Io;
 
-impl FsDynRead for Io
+impl FileSystemDynRead for Io
 {
-    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool>
-    {
-        //let path : &Path = path.into();
-        Ok(path.exists())
-    }
+    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool> { path.try_exists() }
 
     fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>
     {
@@ -18,13 +14,13 @@ impl FsDynRead for Io
         Ok(Cow::Owned(bytes))
     }
 
-    fn dyn_read_dir_at(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>
+    fn dyn_read_dir_at(&mut self, path: &Path) -> IoResult<Vec<IoResult<PathBuf>>>
     {
         #[cfg(feature = "print_io")]
         println!("io : read at {}", path.display());
 
         let entries = std::fs::read_dir(path)?;
-        let paths = entries.filter_map(|entry| entry.ok()).map(|entry| entry.path().into()).collect();
+        let paths = entries.map(|entry| entry.map(|entry| entry.path().to_path_buf())).collect();
         Ok(paths)
     }
 
@@ -70,30 +66,37 @@ impl FsDynRead for Io
         }
     }
 
-    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType>
+    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileKind>
     {
         //let path : &Path = path.into();
         let file_type = path.metadata()?.file_type();
         if file_type.is_file()
         {
-            return Ok(FileType::File);
+            return Ok(FileKind::File);
         }
         if file_type.is_dir()
         {
-            return Ok(FileType::Dir);
+            return Ok(FileKind::Dir);
         }
         if file_type.is_symlink()
         {
-            return Ok(FileType::Symlink);
+            return Ok(FileKind::Symlink);
         }
         Err(IoError::new_with_path(IoErrorKind::InvalidFilename, "Can't gess the file type", path))
     }
+    
+    fn dyn_tile_type_at(&mut self, path: &Path) -> IoResult<FileType> {
+        let meta = fs::metadata(path)?;
+        let file_type = meta.file_type();
 
-    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult
-    {
-        #[cfg(feature = "print_io")]
-        println!("io : rename {} -> {}", from.display(), to.display());
-        std::fs::rename(from, to)
+        if file_type.is_dir() { return Ok(Some(FileKind::Dir)); }
+        if file_type.is_file() { return Ok(Some(FileKind::File)); }
+        if file_type.is_symlink() { return Ok(Some(FileKind::Symlink)); }
+        Ok(None)
+    }
+    
+    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> {
+        path.read_link()
     }
 }
 
@@ -182,7 +185,7 @@ impl Io
     }
 }
 
-impl FsDynWrite for Io
+impl FileSystemDynWrite for Io
 {
     fn dyn_write_bytes_at(&mut self, path: &Path, value: &[u8]) -> IoResult
     {
@@ -233,5 +236,12 @@ impl FsDynWrite for Io
             return Ok(());
         }
         Ok(())
+    }
+
+    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult
+    {
+        #[cfg(feature = "print_io")]
+        println!("io : rename {} -> {}", from.display(), to.display());
+        std::fs::rename(from, to)
     }
 }

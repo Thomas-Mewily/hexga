@@ -19,7 +19,7 @@ impl AssetsManagerUntyped
 {
     pub(crate) fn manager_mut<'a, T, FS>(&'a mut self) -> &'a mut AssetManager<T, FS>
     where
-        FS: FsProvider + Async,
+        FS: FileSystemProvider + Async,
         T: Load + Save + Async,
     {
         let typeid = TypeId::of::<AssetManager<T, FS>>();
@@ -34,7 +34,7 @@ impl AssetsManagerUntyped
 
     pub(crate) fn try_manager<'a, T, FS>(&'a self) -> Option<&'a AssetManager<T, FS>>
     where
-        FS: FsProvider + Async,
+        FS: FileSystemProvider + Async,
         T: Load + Save + Async,
     {
         let typeid = TypeId::of::<AssetManager<T, FS>>();
@@ -48,7 +48,7 @@ impl AssetsManagerUntyped
 #[derive(Debug)]
 pub struct AssetManager<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     pub(crate) values: HashMap<PathBuf, AssetShared<T, FS>>,
@@ -57,7 +57,7 @@ where
 }
 impl<T, FS> Default for AssetManager<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn default() -> Self
@@ -71,7 +71,7 @@ where
 
 impl<T, FS> AssetManager<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     /// Return all the assets that are loaded of this type.
@@ -153,7 +153,7 @@ pub enum AssetStorage
 #[derive(Debug)]
 pub enum AssetShared<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     Strong(AssetIn<T, FS>),
@@ -161,7 +161,7 @@ where
 }
 impl<T, FS> AssetShared<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     pub fn is_strong(&self) -> bool { matches!(self, Self::Strong(_)) }
@@ -170,7 +170,7 @@ where
 
 impl<T, FS> Clone for AssetShared<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn clone(&self) -> Self
@@ -185,7 +185,7 @@ where
 
 impl<T, FS> SharedCount for AssetShared<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn strong_count(&self) -> usize
@@ -208,7 +208,7 @@ where
 }
 impl<T, FS> SharedDowngrade for AssetShared<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Ouput = AssetWeakIn<T, FS>;
@@ -225,7 +225,7 @@ where
 
 impl<T, FS> SharedUpgrade for AssetShared<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Output = AssetIn<T, FS>;
@@ -261,7 +261,7 @@ pub type Asset<T> = AssetIn<T, Io>;
 
 pub struct AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     inner: Arc<RwLock<AssetDataIn<T, FS>>>,
@@ -270,7 +270,7 @@ where
 #[cfg(feature = "serde")]
 impl<T, FS> Serialize for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -290,7 +290,7 @@ where
 #[cfg(feature = "serde")]
 impl<'de, T, FS> Deserialize<'de> for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + for<'de2> Deserialize<'de2>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -308,14 +308,14 @@ where
 
 impl<T, FS> Clone for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn clone(&self) -> Self { Self { inner: self.inner.clone() } }
 }
 impl<T, FS> SharedCount for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn strong_count(&self) -> usize { self.inner.strong_count() }
@@ -324,7 +324,7 @@ where
 }
 impl<T, FS> SharedDowngrade for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Ouput = AssetWeakIn<T, FS>;
@@ -333,7 +333,7 @@ where
 }
 impl<T, FS> Debug for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
@@ -347,7 +347,7 @@ where
 }
 impl<T, FS> Display for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
@@ -361,7 +361,7 @@ where
 }
 impl<T, FS> Guarded<AssetDataIn<T, FS>> for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Guard<'a>
@@ -376,7 +376,7 @@ where
 }
 impl<T, FS> GuardedMut<AssetDataIn<T, FS>> for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type GuardMut<'a>
@@ -392,7 +392,7 @@ where
 
 impl<T, FS> AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     pub fn value(&self) -> impl Deref<Target = T> { self.get().guard_map(|v| v.value()) }
@@ -401,7 +401,7 @@ where
 
 impl<T, FS> IsDirty for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn is_dirty(&self) -> bool { self.get().is_dirty() }
@@ -409,7 +409,7 @@ where
 
 impl<T, FS> SetDirty for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn set_dirty(&mut self, used: bool) -> &mut Self
@@ -421,7 +421,7 @@ where
 
 impl<T, FS> GetPath for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn get_path(&self) -> Option<PathBuf> { self.get().path.clone() }
@@ -429,7 +429,7 @@ where
 
 impl<T, FS> AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     pub(crate) fn force_set_path(self, data: &mut RwLockWriteGuard<'_, AssetDataIn<T, FS>>, path: Option<PathBuf>, manager: &mut AssetManager<T, FS>)
@@ -467,7 +467,7 @@ where
 
 impl<T, FS> SetPath for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
@@ -533,7 +533,7 @@ where
 
 impl<T, FS> Saveable for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn save(&mut self) -> FileResult { self.get_mut().save() }
@@ -543,7 +543,7 @@ where
 
 impl<T, FS> Reload for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Ok = ();
@@ -602,9 +602,9 @@ where
     }
 }
 
-impl<T, FS> FsLoadSave<T, FS> for AssetIn<T, FS>
+impl<T, FS> FileSystemLoadSave<T, FS> for AssetIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Output = Self;
@@ -702,7 +702,7 @@ where
 
 pub struct AssetWeakIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     inner: ArcWeak<RwLock<AssetDataIn<T, FS>>>,
@@ -710,7 +710,7 @@ where
 
 impl<T, FS> AssetWeakIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     /// Constructs a new `AssetWeakIn<T, FS>`, without allocating any memory, technically in the provided
@@ -758,21 +758,21 @@ where
 }
 impl<T, FS> Default for AssetWeakIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn default() -> Self { Self::new() }
 }
 impl<T, FS> Clone for AssetWeakIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn clone(&self) -> Self { Self { inner: self.inner.clone() } }
 }
 impl<T, FS> SharedCount for AssetWeakIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn strong_count(&self) -> usize { self.inner.strong_count() }
@@ -781,7 +781,7 @@ where
 }
 impl<T, FS> SharedUpgrade for AssetWeakIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Output = AssetIn<T, FS>;
@@ -791,7 +791,7 @@ where
 
 impl<T, FS> Debug for AssetWeakIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult

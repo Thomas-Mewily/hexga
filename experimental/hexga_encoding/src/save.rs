@@ -12,7 +12,7 @@ pub trait Save: CfgSerialize
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
     fn save_prefered_extension() -> &'static extension { Self::save_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }
 
-    fn save_to_fs_at<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult
+    fn save_to_fs_at<FS: FileSystem, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult
     {
         let path = path.as_ref();
         let extension = path.extension().map(|v| v.to_str()).flatten();
@@ -105,7 +105,7 @@ pub trait SaveExtension: Save
 
     /// Also return the resolved path if it is different than the passed path.
     #[doc(hidden)]
-    fn save_to_fs_resolved<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult<Option<PathBuf>>
+    fn save_to_fs_resolved<FS: FileSystem, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult<Option<PathBuf>>
     {
         let mut path = path.as_ref();
         let mut resolved = None;
@@ -120,7 +120,7 @@ pub trait SaveExtension: Save
         self.save_to_fs_at(fs, path).map(|_| resolved)
     }
 
-    fn save_to_fs<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult { self.save_to_fs_resolved(fs, path).map(|_| ()) }
+    fn save_to_fs<FS: FileSystem, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult { self.save_to_fs_resolved(fs, path).map(|_| ()) }
 }
 impl<T> SaveExtension for T where T: Save + ?Sized {}
 
@@ -134,7 +134,7 @@ where
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Output::save_custom_extensions() }
 
-    fn save_to_fs_at<FS: Fs, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult { S::Output::save_to_fs(&self.into(), fs, path) }
+    fn save_to_fs_at<FS: FileSystem, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult { S::Output::save_to_fs(&self.into(), fs, path) }
 
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where

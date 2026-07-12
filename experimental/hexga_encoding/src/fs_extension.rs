@@ -40,7 +40,7 @@ pub mod traits
     pub use super::{FsResolvePathWithExtension, PreferedExtension};
 }
 
-pub trait FsResolvePathWithExtension: FsRead
+pub trait FsResolvePathWithExtension: FileSystemRead
 {
     /// Resolve incomplete file extension by finding the matching file on disk.
     /// If no file exist with the same name, return the path with the prefered extension.
@@ -59,7 +59,7 @@ pub trait FsResolvePathWithExtension: FsRead
         path
     }
 }
-impl<T> FsResolvePathWithExtension for T where T: FsRead {}
+impl<T> FsResolvePathWithExtension for T where T: FileSystemRead {}
 
 pub trait PreferedExtension: Save
 {

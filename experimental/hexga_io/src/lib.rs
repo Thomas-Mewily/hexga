@@ -7,8 +7,11 @@ use hexga_core::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-mod read_write;
-pub use read_write::*;
+mod file_kind;
+pub use file_kind::*;
+
+mod file_system;
+pub use file_system::*;
 
 mod global_io;
 pub use global_io::*;
@@ -32,16 +35,20 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{
-        Fs,
-        FsDynRead,
-        FsDynWrite,
-        FsRead,
-        FsWrite,
+    pub use super::
+    {
+        FileSystem,
+
+        FileSystemDynRead,
+        FileSystemDynWrite,
+
+        FileSystemRead,
+        FileSystemWrite,
+
         GetPath,
+        SetPath,
+
         //FsProvider,
         IoErrorExt,
-
-        SetPath,
     };
 }

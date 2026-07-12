@@ -5,7 +5,7 @@ pub type FileData<T> = FileDataIn<T>;
 #[derive(Clone)]
 pub struct FileDataIn<T, FS = Io>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     /// If no path, it's just a value
@@ -44,7 +44,7 @@ where
 #[cfg(feature = "serde")]
 impl<T, FS> Serialize for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -61,7 +61,7 @@ where
 #[cfg(feature = "serde")]
 impl<'de, T, FS> Deserialize<'de> for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + for<'de2> Deserialize<'de2>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -86,7 +86,7 @@ where
 
 impl<T, FS> From<T> for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     fn from(value: T) -> Self { Self::from_path_and_value(None, value) }
@@ -94,7 +94,7 @@ where
 
 impl<T, FS> Guarded<T> for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     type Guard<'a>
@@ -124,7 +124,7 @@ impl<T,FS> GuardedMut<T> for FileDataOf<T,FS> where
 
 impl<T, FS> Saveable for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     fn save(&mut self) -> FileResult
@@ -156,7 +156,7 @@ where
 
 impl<T, FS> Reload for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     type Ok = ();
@@ -218,9 +218,9 @@ where
 }
 
 
-impl<T, FS> FsLoadSave<T, FS> for FileDataIn<T, FS>
+impl<T, FS> FileSystemLoadSave<T, FS> for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     type Output = Self;
@@ -236,7 +236,7 @@ where
 
 impl<T, FS> Hash for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + Hash,
 {
     fn hash<H: Hasher>(&self, state: &mut H)
@@ -248,14 +248,14 @@ where
 
 impl<T, FS> Ord for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + Ord,
 {
     fn cmp(&self, other: &Self) -> Ordering { (&self.path, self.value()).cmp(&(&other.path, other.value())) }
 }
 impl<T, FS> PartialOrd for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + PartialOrd,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (&self.path, self.value()).partial_cmp(&(&other.path, other.value())) }
@@ -263,13 +263,13 @@ where
 
 impl<T, FS> Eq for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + Eq,
 {
 }
 impl<T, FS> PartialEq for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + PartialEq,
 {
     fn eq(&self, other: &Self) -> bool { self.path == other.path && self.value() == other.value() }
@@ -277,14 +277,14 @@ where
 
 impl<T, FS> Debug for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("File").field("path", &self.path).field("value", self.value()).finish() }
 }
 impl<T, FS> Display for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save + Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
@@ -300,7 +300,7 @@ where
 
 impl<T, FS> Deref for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     type Target = T;
@@ -308,7 +308,7 @@ where
 }
 impl<T, FS> DerefMut for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     fn deref_mut(&mut self) -> &mut Self::Target { self.value.as_mut().unwrap().deref_mut() }
@@ -316,7 +316,7 @@ where
 
 impl<T, FS> FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     pub fn value(&self) -> &T { self.deref() }
@@ -328,14 +328,14 @@ where
 
 impl<T, FS> IsDirty for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     fn is_dirty(&self) -> bool { self.value.as_ref().unwrap().is_dirty() }
 }
 impl<T, FS> SetDirty for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     fn set_dirty(&mut self, used: bool) -> &mut Self
@@ -346,7 +346,7 @@ where
 }
 impl<T, FS> GetPath for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     fn get_path(&self) -> Option<PathBuf>
@@ -360,7 +360,7 @@ where
 }
 impl<T, FS> SetPath for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
@@ -408,7 +408,7 @@ where
 
 impl<T, FS> Drop for FileDataIn<T, FS>
 where
-    FS: FsProvider,
+    FS: FileSystemProvider,
     T: Load + Save,
 {
     fn drop(&mut self)
@@ -420,6 +420,6 @@ where
 
 pub trait ToFileData: Load + Save
 {
-    fn to_file_data<FS: FsProvider>(self, path: Option<PathBuf>) -> FileDataIn<Self, FS> { FileDataIn::from_path_and_value(path, self) }
+    fn to_file_data<FS: FileSystemProvider>(self, path: Option<PathBuf>) -> FileDataIn<Self, FS> { FileDataIn::from_path_and_value(path, self) }
 }
 impl<T> ToFileData for T where T: Load + Save {}

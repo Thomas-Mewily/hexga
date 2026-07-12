@@ -8,7 +8,7 @@ pub type AssetData<T> = AssetDataIn<T>;
 #[derive(Clone)]
 pub struct AssetDataIn<T, FS = Io>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     /// If no path, it's just a value
@@ -24,7 +24,7 @@ where
 
 impl<T, FS> Hash for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Hash,
 {
     fn hash<H: Hasher>(&self, state: &mut H)
@@ -36,14 +36,14 @@ where
 
 impl<T, FS> Ord for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Ord,
 {
     fn cmp(&self, other: &Self) -> Ordering { (&self.path, self.value()).cmp(&(&other.path, other.value())) }
 }
 impl<T, FS> PartialOrd for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + PartialOrd,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (&self.path, self.value()).partial_cmp(&(&other.path, other.value())) }
@@ -51,13 +51,13 @@ where
 
 impl<T, FS> Eq for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Eq,
 {
 }
 impl<T, FS> PartialEq for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + PartialEq,
 {
     fn eq(&self, other: &Self) -> bool { self.path == other.path && self.value() == other.value() }
@@ -65,7 +65,7 @@ where
 
 impl<T, FS> Debug for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("Asset").field("path", &self.path).field("value", self.value()).finish() }
@@ -73,7 +73,7 @@ where
 
 impl<T, FS> Display for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async + Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
@@ -89,7 +89,7 @@ where
 
 impl<T, FS> Deref for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     type Target = T;
@@ -97,7 +97,7 @@ where
 }
 impl<T, FS> DerefMut for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn deref_mut(&mut self) -> &mut Self::Target { self.value.as_mut().unwrap().deref_mut() }
@@ -105,7 +105,7 @@ where
 
 impl<T, FS> AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     pub fn value(&self) -> &T { self.deref() }
@@ -117,14 +117,14 @@ where
 
 impl<T, FS> IsDirty for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn is_dirty(&self) -> bool { self.value.as_ref().unwrap().is_dirty() }
 }
 impl<T, FS> SetDirty for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn set_dirty(&mut self, used: bool) -> &mut Self
@@ -136,7 +136,7 @@ where
 
 impl<T, FS> Drop for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn drop(&mut self)
@@ -148,7 +148,7 @@ where
 
 impl<T, FS> Saveable for AssetDataIn<T, FS>
 where
-    FS: FsProvider + Async,
+    FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
     fn save(&mut self) -> FileResult

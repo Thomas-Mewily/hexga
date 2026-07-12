@@ -4,12 +4,12 @@ use hexga_encoding::FileErrorKind;
 
 use super::*;
 
-pub trait FsProvider
+pub trait FileSystemProvider
 {
-    type Fs: FsWrite;
+    type Fs: FileSystem;
     fn provide_fs() -> Self::Fs;
 }
-impl FsProvider for Io
+impl FileSystemProvider for Io
 {
     type Fs = Io;
     fn provide_fs() -> Self::Fs { Io }
@@ -38,24 +38,24 @@ pub trait PersistantValue<T>: Persistant + Guarded<T> {}
 impl<S, T> PersistantValue<T> for S where S: Persistant + Guarded<T> {}
 */
 
-pub trait FsSave<T>: FsProvider
+pub trait FileSystemSave<T>: FileSystemProvider
 where
     T: Save + ?Sized,
 {
     /// Encode the value using the provided extension and write it to a file.
     fn save<P: AsRef<Path>>(value: &T, path: P) -> FileResult { value.save_to_fs(&mut Self::provide_fs(), path) }
 }
-impl<S, T> FsSave<T> for S
+impl<S, T> FileSystemSave<T> for S
 where
-    S: FsProvider,
+    S: FileSystemProvider,
     T: Save + ?Sized,
 {
 }
 
-pub trait FsLoadSave<T, FS>
+pub trait FileSystemLoadSave<T, FS>
 where
     T: Load + Save,
-    FS: FsProvider,
+    FS: FileSystemProvider,
 {
     type Output: Persistant; //PersistantValue<T>;
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output;
@@ -181,7 +181,7 @@ where
     }
 }
 
-impl<T> FsLoadSave<T, Io> for Io
+impl<T> FileSystemLoadSave<T, Io> for Io
 where
     T: Load + Save,
 {
