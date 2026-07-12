@@ -56,7 +56,7 @@ fn _x()
 
     //Asset::load
 
-    dbg!(AssetManager::<String, Io>::assets());
+    dbg!(AssetManagerIn::<String, Io>::assets());
 
     println!();
     drop(hello);
@@ -65,7 +65,7 @@ fn _x()
     println!();
     drop(hi2);
 
-    dbg!(AssetManager::<String, Io>::assets());
+    dbg!(AssetManagerIn::<String, Io>::assets());
 
     //img.save_to_fs(extension)
 }

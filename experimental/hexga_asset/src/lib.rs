@@ -27,7 +27,11 @@ pub use asset_data::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{Asset, AssetManager, FileData};
+    pub use super::{
+        Asset, AssetIn, 
+        AssetManager, AssetManagerIn, 
+        FileData, FileDataIn,
+    };
 }
 
 pub mod traits

@@ -17,36 +17,37 @@ pub(crate) struct AssetsManagerUntyped
 }
 impl AssetsManagerUntyped
 {
-    pub(crate) fn manager_mut<'a, T, FS>(&'a mut self) -> &'a mut AssetManager<T, FS>
+    pub(crate) fn manager_mut<'a, T, FS>(&'a mut self) -> &'a mut AssetManagerIn<T, FS>
     where
         FS: FileSystemProvider + Async,
         T: Load + Save + Async,
     {
-        let typeid = TypeId::of::<AssetManager<T, FS>>();
+        let typeid = TypeId::of::<AssetManagerIn<T, FS>>();
 
         let boxed_any: &'a mut Box<dyn AnyAsync + 'static> = self
             .managers
             .entry(typeid)
-            .or_insert_with(|| Box::new(AssetManager::<T, FS>::___()) as Box<DynAnyAsync>);
+            .or_insert_with(|| Box::new(AssetManagerIn::<T, FS>::___()) as Box<DynAnyAsync>);
 
-        boxed_any.deref_mut().as_any_mut().downcast_mut::<AssetManager<T, FS>>().expect("Type mismatch")
+        boxed_any.deref_mut().as_any_mut().downcast_mut::<AssetManagerIn<T, FS>>().expect("Type mismatch")
     }
 
-    pub(crate) fn try_manager<'a, T, FS>(&'a self) -> Option<&'a AssetManager<T, FS>>
+    pub(crate) fn try_manager<'a, T, FS>(&'a self) -> Option<&'a AssetManagerIn<T, FS>>
     where
         FS: FileSystemProvider + Async,
         T: Load + Save + Async,
     {
-        let typeid = TypeId::of::<AssetManager<T, FS>>();
+        let typeid = TypeId::of::<AssetManagerIn<T, FS>>();
 
-        self.managers.get(&typeid)?.deref().as_any().downcast_ref::<AssetManager<T, FS>>()
+        self.managers.get(&typeid)?.deref().as_any().downcast_ref::<AssetManagerIn<T, FS>>()
     }
 }
 
 //pub(crate) type ArcRwLockAssetManager<T,FS> = Arc<RwLock<AssetManager<T,FS>>>;
+pub type AssetManager<T> = AssetManagerIn<T>;
 
 #[derive(Debug)]
-pub struct AssetManager<T, FS>
+pub struct AssetManagerIn<T, FS=Io>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -55,7 +56,7 @@ where
     pub(crate) default_storage: AssetStorage,
     // PersistancePreference : Strong or Weak.
 }
-impl<T, FS> Default for AssetManager<T, FS>
+impl<T, FS> Default for AssetManagerIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -69,7 +70,7 @@ where
     }
 }
 
-impl<T, FS> AssetManager<T, FS>
+impl<T, FS> AssetManagerIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -432,7 +433,7 @@ where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    pub(crate) fn force_set_path(self, data: &mut RwLockWriteGuard<'_, AssetDataIn<T, FS>>, path: Option<PathBuf>, manager: &mut AssetManager<T, FS>)
+    pub(crate) fn force_set_path(self, data: &mut RwLockWriteGuard<'_, AssetDataIn<T, FS>>, path: Option<PathBuf>, manager: &mut AssetManagerIn<T, FS>)
     {
         //todo!("what about if the other path is already used by another asset. Need to merge them");
         if let Some(old_path) = &data.path
@@ -482,7 +483,7 @@ where
 
             let mut data: RwLockWriteGuard<'_, AssetDataIn<T, FS>> = self.get_mut();
             let mut assets = ASSET.get_mut();
-            let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T, FS>();
+            let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
             self.clone().force_set_path(&mut data, path.map(|p| p.to_path_buf()), manager);
             data.mark_dirty();
@@ -504,7 +505,7 @@ where
             None =>
             {
                 let mut assets = ASSET.get_mut();
-                let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T, FS>();
+                let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
                 data.mark_dirty();
                 self.clone().force_set_path(&mut data, Some(dest.to_path_buf()), manager);
                 return Ok(());
@@ -512,7 +513,7 @@ where
         };
 
         let mut assets = ASSET.get_mut();
-        let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T, FS>();
+        let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
         match FS::provide_fs().rename(path, dest)
         {
             Ok(path) =>
@@ -566,7 +567,7 @@ where
                 if let Some(resolved) = path
                 {
                     let mut assets = ASSET.get_mut();
-                    let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T, FS>();
+                    let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
                     self.clone().force_set_path(&mut data, Some(resolved), manager);
                 }
                 Ok(())
@@ -585,7 +586,7 @@ where
                             if let Some(resolved) = path
                             {
                                 let mut assets = ASSET.get_mut();
-                                let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T, FS>();
+                                let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
                                 self.clone().force_set_path(&mut data, Some(resolved), manager);
                             }
                             Ok(())
@@ -628,7 +629,7 @@ where
         let mut path = FS::provide_fs().resolve_path_for::<T, _>(path);
         let mut assets = ASSET.get_mut();
 
-        let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T, FS>();
+        let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
         match manager.values.get(&path)
         {
@@ -652,7 +653,7 @@ where
         let value = init(Some(&mut path))?;
 
         let mut assets = ASSET.get_mut();
-        let manager: &mut AssetManager<T, FS> = assets.manager_mut::<T, FS>();
+        let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
         match manager.values.get_mut(&path)
         {
