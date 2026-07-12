@@ -6,7 +6,7 @@ use super::*;
 
 // Not a FileData, because every operation that can modify the Path also need to update hashmap<Path, Asset> inside the global AssetManager.
 #[derive(Clone)]
-pub struct AssetValue<T, FS = IoData>
+pub struct AssetValue<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
