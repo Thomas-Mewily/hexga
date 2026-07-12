@@ -13,8 +13,8 @@ pub use file_kind::*;
 mod file_system;
 pub use file_system::*;
 
-mod global_io;
-pub use global_io::*;
+mod common_io;
+pub use common_io::*;
 
 /*
 mod path_wrapper;
@@ -30,7 +30,10 @@ pub use result::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{Io, IoError, IoErrorKind, IoResult, Path, PathBuf};
+    pub use super::{
+        IoGlobal, IoExe, IoData,
+        IoResult, IoError, IoErrorKind, Path, PathBuf
+    };
 }
 
 pub mod traits
@@ -44,6 +47,9 @@ pub mod traits
 
         FileSystemRead,
         FileSystemWrite,
+
+        FileSystemProvider,
+        FileSystemIsolated,
 
         GetPath,
         SetPath,

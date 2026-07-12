@@ -4,16 +4,7 @@ use hexga_encoding::FileErrorKind;
 
 use super::*;
 
-pub trait FileSystemProvider
-{
-    type Fs: FileSystem;
-    fn provide_fs() -> Self::Fs;
-}
-impl FileSystemProvider for Io
-{
-    type Fs = Io;
-    fn provide_fs() -> Self::Fs { Io }
-}
+
 
 /*
 pub trait PersistantValue<T> : Persistant + Into<T>
@@ -43,7 +34,7 @@ where
     T: Save + ?Sized,
 {
     /// Encode the value using the provided extension and write it to a file.
-    fn save<P: AsRef<Path>>(value: &T, path: P) -> FileResult { value.save_to_fs(&mut Self::provide_fs(), path) }
+    fn save<P: AsRef<Path>>(value: &T, path: P) -> FileResult { value.save_to_fs(&mut Self::file_system(), path) }
 }
 impl<S, T> FileSystemSave<T> for S
 where
@@ -66,7 +57,7 @@ where
     where
         F: FnOnce(Option<&mut PathBuf>) -> FileResult<T>,
     {
-        path.as_mut().map(|p| *p = FS::provide_fs().resolve_path_for::<T, _>(&p));
+        path.as_mut().map(|p| *p = FS::file_system().resolve_path_for::<T, _>(&p));
         let value = init(path.as_mut())?;
         Ok(Self::from_path_and_value(path, value))
     }
@@ -78,7 +69,7 @@ where
     {
         Self::from_path_and_fn(Some(path.as_ref().to_path_buf()), |p| match p
         {
-            Some(path) => T::load_from_fs_at(&mut FS::provide_fs(), &path),
+            Some(path) => T::load_from_fs_at(&mut FS::file_system(), &path),
             None => Err(FileError::new(FileErrorKind::Io(IoError::new(IoErrorKind::InvalidData, "Missing path")))),
         })
     }
@@ -104,7 +95,7 @@ where
                     return Err(e);
                 }
 
-                let path = FS::provide_fs().resolve_path_for::<T, _>(path);
+                let path = FS::file_system().resolve_path_for::<T, _>(path);
 
                 let mut need_save = false;
                 let mut fs_value = Self::from_path_and_fn(Some(path), |_| {
@@ -136,7 +127,7 @@ where
             Ok(v) => v,
             Err(_) =>
             {
-                let path = FS::provide_fs().resolve_path_for::<T, _>(path);
+                let path = FS::file_system().resolve_path_for::<T, _>(path);
 
                 let mut need_save = false;
                 let mut fs_value = Self::from_path_and_fn(Some(path), |_| {
@@ -181,10 +172,10 @@ where
     }
 }
 
-impl<T> FileSystemLoadSave<T, Io> for Io
+impl<T> FileSystemLoadSave<T, IoGlobal> for IoGlobal
 where
     T: Load + Save,
 {
-    type Output = FileDataIn<T, Io>;
-    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output { FileDataIn::<T, Io>::from_path_and_value(path, value) }
+    type Output = FileDataIn<T, IoGlobal>;
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output { FileDataIn::<T, IoGlobal>::from_path_and_value(path, value) }
 }

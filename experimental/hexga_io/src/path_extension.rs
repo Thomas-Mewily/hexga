@@ -115,7 +115,7 @@ impl SetPath for String
                     .as_ref()
                     .to_str()
                     .map(|s| s.to_string())
-                    .ok_or_else(|| IoError::new(io::ErrorKind::InvalidFilename, "Path contains invalid UTF-8"))?;
+                    .ok_or_else(|| IoError::new(IoErrorKind::InvalidFilename, "Path contains invalid UTF-8"))?;
             }
             None =>
             {}

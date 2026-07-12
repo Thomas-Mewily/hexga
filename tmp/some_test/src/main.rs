@@ -56,7 +56,7 @@ fn _x()
 
     //Asset::load
 
-    dbg!(AssetManagerIn::<String, Io>::assets());
+    dbg!(AssetManagerIn::<String, IoGlobal>::assets());
 
     println!();
     drop(hello);
@@ -65,7 +65,7 @@ fn _x()
     println!();
     drop(hi2);
 
-    dbg!(AssetManagerIn::<String, Io>::assets());
+    dbg!(AssetManagerIn::<String, IoGlobal>::assets());
 
     //img.save_to_fs(extension)
 }
@@ -77,6 +77,8 @@ fn main()
         ColorU8::rgb((255 / 16 * x) as _, (255 / 16 * y) as _, 0)
     });
 
-    Io::save(&img, "_tmp/image3").unwrap();
+    //IoGlobal::save(&img, "_tmp/image3").unwrap();
+
+    IoData::save(&"hello", "cool").unwrap();
 }
 

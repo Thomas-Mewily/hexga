@@ -47,7 +47,7 @@ impl AssetsManagerUntyped
 pub type AssetManager<T> = AssetManagerIn<T>;
 
 #[derive(Debug)]
-pub struct AssetManagerIn<T, FS=Io>
+pub struct AssetManagerIn<T, FS=IoGlobal>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -258,7 +258,7 @@ enum AssetLocation<T, P>
     Value(T),
 }
 
-pub type Asset<T> = AssetIn<T, Io>;
+pub type Asset<T> = AssetIn<T, IoGlobal>;
 
 pub struct AssetIn<T, FS>
 where
@@ -514,7 +514,7 @@ where
 
         let mut assets = ASSET.get_mut();
         let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
-        match FS::provide_fs().rename(path, dest)
+        match FS::file_system().rename(path, dest)
         {
             Ok(path) =>
             {
@@ -559,7 +559,7 @@ where
             return Ok(());
         };
 
-        match T::load_from_fs_resolved(&mut FS::provide_fs(), &path)
+        match T::load_from_fs_resolved(&mut FS::file_system(), &path)
         {
             Ok((value, path)) =>
             {
@@ -578,7 +578,7 @@ where
                 {
                     // Maybe the extension was changed
                     path.set_extension("");
-                    match T::load_from_fs_resolved(&mut FS::provide_fs(), path)
+                    match T::load_from_fs_resolved(&mut FS::file_system(), path)
                     {
                         Ok((value, path)) =>
                         {
@@ -626,7 +626,7 @@ where
             });
         };
 
-        let mut path = FS::provide_fs().resolve_path_for::<T, _>(path);
+        let mut path = FS::file_system().resolve_path_for::<T, _>(path);
         let mut assets = ASSET.get_mut();
 
         let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();

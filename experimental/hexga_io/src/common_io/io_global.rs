@@ -1,10 +1,18 @@
 use super::*;
 
 /// The Global I/O operations for the filesystem.
+/// It have access to the whole file system.
+/// Use other `Io` struct to sandbox it.
 #[derive(Debug, Default)]
-pub struct Io;
+pub struct IoGlobal;
 
-impl FileSystemDynRead for Io
+impl FileSystemProvider for IoGlobal
+{
+    type FileSystem = Self;
+    fn file_system() -> Self::FileSystem { Self }
+}
+
+impl FileSystemDynRead for IoGlobal
 {
     fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool> { path.try_exists() }
 
@@ -47,8 +55,21 @@ impl FileSystemDynRead for Io
         }
     }
 
-    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>
-    {
+    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType> {
+        let meta = fs::metadata(path)?;
+        let file_type = meta.file_type();
+
+        if file_type.is_dir() { return Ok(Some(FileKind::Dir)); }
+        if file_type.is_file() { return Ok(Some(FileKind::File)); }
+        if file_type.is_symlink() { return Ok(Some(FileKind::Symlink)); }
+        Ok(None)
+    }
+    
+    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> {
+        path.read_link()
+    }
+    
+    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf> {
         match self._dyn_canonicalize(path)
         {
             Ok(canonized) =>
@@ -65,42 +86,9 @@ impl FileSystemDynRead for Io
             }
         }
     }
-
-    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileKind>
-    {
-        //let path : &Path = path.into();
-        let file_type = path.metadata()?.file_type();
-        if file_type.is_file()
-        {
-            return Ok(FileKind::File);
-        }
-        if file_type.is_dir()
-        {
-            return Ok(FileKind::Dir);
-        }
-        if file_type.is_symlink()
-        {
-            return Ok(FileKind::Symlink);
-        }
-        Err(IoError::new_with_path(IoErrorKind::InvalidFilename, "Can't gess the file type", path))
-    }
-    
-    fn dyn_tile_type_at(&mut self, path: &Path) -> IoResult<FileType> {
-        let meta = fs::metadata(path)?;
-        let file_type = meta.file_type();
-
-        if file_type.is_dir() { return Ok(Some(FileKind::Dir)); }
-        if file_type.is_file() { return Ok(Some(FileKind::File)); }
-        if file_type.is_symlink() { return Ok(Some(FileKind::Symlink)); }
-        Ok(None)
-    }
-    
-    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> {
-        path.read_link()
-    }
 }
 
-impl Io
+impl IoGlobal
 {
     fn _dyn_resolve_paths(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>
     {
@@ -185,7 +173,7 @@ impl Io
     }
 }
 
-impl FileSystemDynWrite for Io
+impl FileSystemDynWrite for IoGlobal
 {
     fn dyn_write_bytes_at(&mut self, path: &Path, value: &[u8]) -> IoResult
     {

@@ -6,7 +6,7 @@ pub type AssetData<T> = AssetDataIn<T>;
 
 // Not a FileData, because every operation that can modify the Path also need to update hashmap<Path, Asset> inside the global AssetManager.
 #[derive(Clone)]
-pub struct AssetDataIn<T, FS = Io>
+pub struct AssetDataIn<T, FS = IoGlobal>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
@@ -167,7 +167,7 @@ where
         {
             return Ok(());
         };
-        self.value().save_to_fs_at(&mut FS::provide_fs(), path)?;
+        self.value().save_to_fs_at(&mut FS::file_system(), path)?;
         self.undirty();
         Ok(())
     }

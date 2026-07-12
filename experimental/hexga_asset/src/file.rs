@@ -3,7 +3,7 @@ use super::*;
 pub type FileData<T> = FileDataIn<T>;
 
 #[derive(Clone)]
-pub struct FileDataIn<T, FS = Io>
+pub struct FileDataIn<T, FS = IoGlobal>
 where
     FS: FileSystemProvider,
     T: Load + Save,
@@ -143,7 +143,7 @@ where
         {
             return Ok(());
         };
-        self.value().save_to_fs_at(&mut FS::provide_fs(), path)?;
+        self.value().save_to_fs_at(&mut FS::file_system(), path)?;
         /*
         if let Some(resolved) = self.value().save_to_fs_resolved(&mut FS::provide_fs(), path)?
         {
@@ -170,7 +170,7 @@ where
             return Ok(());
         };
 
-        match T::load_from_fs(&mut FS::provide_fs(), path)
+        match T::load_from_fs(&mut FS::file_system(), path)
         {
             Ok(v) =>
             {
@@ -182,12 +182,12 @@ where
                 if e.is_io() && path.extension().is_some()
                 {
                     // Maybe the extension was changed
-                    let resolved = FS::provide_fs()
+                    let resolved = FS::file_system()
                         .resolve_path(path.with_extension(""))
                         .map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
                     if *path != resolved
                     {
-                        match T::load_from_fs(&mut FS::provide_fs(), &resolved)
+                        match T::load_from_fs(&mut FS::file_system(), &resolved)
                         {
                             Ok(v) =>
                             {
@@ -368,7 +368,7 @@ where
         let path = path.as_ref().map(|p| p.as_ref());
         self.path = match path
         {
-            Some(p) => match FS::provide_fs().resolve_path(p)
+            Some(p) => match FS::file_system().resolve_path(p)
             {
                 Ok(resolved) => Some(resolved),
                 Err(_) => Some(p.to_path_buf()),
@@ -390,7 +390,7 @@ where
             }
         };
         let dest = to.as_ref();
-        match FS::provide_fs().rename(path, dest)
+        match FS::file_system().rename(path, dest)
         {
             Ok(path) =>
             {
