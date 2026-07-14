@@ -14,13 +14,13 @@ hexga_core
 hexga_array_vec
 
 // deprecated
-hexga_singleton
+// hexga_singleton
 
 hexga_encoding_derive
 hexga_encoding
 
 // deprecated
-hexga_io_derive
+// hexga_io_derive
 hexga_io
 
 hexga_ansi_color
@@ -41,9 +41,11 @@ hexga_image
 hexga_asset
 
 hexga
-hexga_wgpu
-hexga_graphics
-hexga_event_loop
-hexga_engine
-//hexga_undo_redo
+
+
+// hexga_wgpu
+// hexga_graphics
+// hexga_event_loop
+// hexga_engine
+// hexga_undo_redo
 

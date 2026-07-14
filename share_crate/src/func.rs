@@ -18,14 +18,14 @@ pub fn publish_all_crate()
 
 pub fn publish_crate(name: &'static str)
 {
-    const CRATES_FOLDER: [&'static str; 3] = ["base", "experimental", "old"];
+    const CRATES_FOLDER: [&'static str; 3] = ["crates", "experimental", "old"];
 
     println!("Publishing {}...", name);
 
     // Find which folder contains this crate
     let crate_path = CRATES_FOLDER
         .iter()
-        .map(|folder| format!("crates/{}/{}", folder, name))
+        .map(|folder| format!("{}/{}", folder, name))
         .find(|path| std::path::Path::new(path).exists())
         .unwrap_or_else(|| panic!("Crate '{}' not found in any crates subfolder", name));
 

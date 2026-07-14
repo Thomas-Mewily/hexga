@@ -8,7 +8,7 @@ members = [
 
 
 [workspace.package]
-version = "0.0.11-beta.53"
+version = "0.0.11-beta.54"
 authors = ["Mewily <thomas.mewily@gmail.com>"]
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/Thomas-Mewily/hexga"
@@ -16,46 +16,46 @@ repository = "https://github.com/Thomas-Mewily/hexga"
 edition = "2024"
 
 [workspace.dependencies]
-hexga_ansi_color       = { path = "./crates/hexga_ansi_color",           version = "0.0.11-beta.53", default-features = false }
-hexga_map_on           = { path = "./crates/hexga_map_on",               version = "0.0.11-beta.53", default-features = false }
-hexga_typedef          = { path = "./crates/hexga_typedef",              version = "0.0.11-beta.53", default-features = false }
+hexga_ansi_color       = { path = "./crates/hexga_ansi_color",           version = "0.0.11-beta.54", default-features = false }
+hexga_map_on           = { path = "./crates/hexga_map_on",               version = "0.0.11-beta.54", default-features = false }
+hexga_typedef          = { path = "./crates/hexga_typedef",              version = "0.0.11-beta.54", default-features = false }
 
-hexga_number           = { path = "./crates/hexga_number",               version = "0.0.11-beta.53", default-features = false }
-hexga_array            = { path = "./crates/hexga_array",                version = "0.0.11-beta.53", default-features = false }
+hexga_number           = { path = "./crates/hexga_number",               version = "0.0.11-beta.54", default-features = false }
+hexga_array            = { path = "./crates/hexga_array",                version = "0.0.11-beta.54", default-features = false }
 
-hexga_guard            = { path = "./crates/hexga_guard",                version = "0.0.11-beta.53", default-features = false }
+hexga_guard            = { path = "./crates/hexga_guard",                version = "0.0.11-beta.54", default-features = false }
 
-hexga_bit_derive       = { path = "./crates/hexga_bit_derive",           version = "0.0.11-beta.53", default-features = false }
-hexga_bit              = { path = "./crates/hexga_bit",                  version = "0.0.11-beta.53", default-features = false }
+hexga_bit_derive       = { path = "./crates/hexga_bit_derive",           version = "0.0.11-beta.54", default-features = false }
+hexga_bit              = { path = "./crates/hexga_bit",                  version = "0.0.11-beta.54", default-features = false }
 
-hexga_core             = { path = "./crates/hexga_core",                 version = "0.0.11-beta.53", default-features = false }
+hexga_core             = { path = "./crates/hexga_core",                 version = "0.0.11-beta.54", default-features = false }
 
 
-hexga_encoding_derive  = { path = "./experimental/hexga_encoding_derive",version = "0.0.11-beta.53", default-features = false }
-hexga_encoding         = { path = "./experimental/hexga_encoding",       version = "0.0.11-beta.53", default-features = false }
+hexga_encoding_derive  = { path = "./experimental/hexga_encoding_derive",version = "0.0.11-beta.54", default-features = false }
+hexga_encoding         = { path = "./experimental/hexga_encoding",       version = "0.0.11-beta.54", default-features = false }
 
-hexga_io               = { path = "./experimental/hexga_io",             version = "0.0.11-beta.53", default-features = false }
-#hexga_save             = { path = "./experimental/hexga_save",           version = "0.0.11-beta.53", default-features = false }
-hexga_asset            = { path = "./experimental/hexga_asset",          version = "0.0.11-beta.53", default-features = false }
+hexga_io               = { path = "./experimental/hexga_io",             version = "0.0.11-beta.54", default-features = false }
+#hexga_save             = { path = "./experimental/hexga_save",           version = "0.0.11-beta.54", default-features = false }
+hexga_asset            = { path = "./experimental/hexga_asset",          version = "0.0.11-beta.54", default-features = false }
 
-hexga_bitflags         = { path = "./crates/hexga_bitflags",             version = "0.0.11-beta.53", default-features = false }
-hexga_arena            = { path = "./experimental/hexga_arena",          version = "0.0.11-beta.53", default-features = false }
+hexga_bitflags         = { path = "./crates/hexga_bitflags",             version = "0.0.11-beta.54", default-features = false }
+hexga_arena            = { path = "./experimental/hexga_arena",          version = "0.0.11-beta.54", default-features = false }
 
-hexga_array_vec        = { path = "./crates/hexga_array_vec",            version = "0.0.11-beta.53", default-features = false }
-hexga_generational     = { path = "./crates/hexga_generational",         version = "0.0.11-beta.53", default-features = false }
+hexga_array_vec        = { path = "./crates/hexga_array_vec",            version = "0.0.11-beta.54", default-features = false }
+hexga_generational     = { path = "./crates/hexga_generational",         version = "0.0.11-beta.54", default-features = false }
 
-hexga_math_derive      = { path = "./crates/hexga_math_derive",          version = "0.0.11-beta.53", default-features = false }
-hexga_math             = { path = "./crates/hexga_math",                 version = "0.0.11-beta.53", default-features = false }
+hexga_math_derive      = { path = "./crates/hexga_math_derive",          version = "0.0.11-beta.54", default-features = false }
+hexga_math             = { path = "./crates/hexga_math",                 version = "0.0.11-beta.54", default-features = false }
 
-hexga_utils            = { path = "./crates/hexga_utils",                version = "0.0.11-beta.53", default-features = false }
-hexga_image            = { path = "./experimental/hexga_image",          version = "0.0.11-beta.53", default-features = false }
+hexga_utils            = { path = "./crates/hexga_utils",                version = "0.0.11-beta.54", default-features = false }
+hexga_image            = { path = "./experimental/hexga_image",          version = "0.0.11-beta.54", default-features = false }
 
-hexga                  = { path = "./crates/hexga",                      version = "0.0.11-beta.53", default-features = false }
+hexga                  = { path = "./crates/hexga",                      version = "0.0.11-beta.54", default-features = false }
 
-hexga_wgpu             = { path = "./experimental/hexga_wgpu",           version = "0.0.11-beta.53", default-features = false }
-hexga_graphics         = { path = "./experimental/hexga_graphics",       version = "0.0.11-beta.53", default-features = false }
-hexga_event_loop       = { path = "./experimental/hexga_event_loop",     version = "0.0.11-beta.53", default-features = false }
-hexga_engine           = { path = "./experimental/hexga_engine",         version = "0.0.11-beta.53", default-features = false }
+hexga_wgpu             = { path = "./experimental/hexga_wgpu",           version = "0.0.11-beta.54", default-features = false }
+hexga_graphics         = { path = "./experimental/hexga_graphics",       version = "0.0.11-beta.54", default-features = false }
+hexga_event_loop       = { path = "./experimental/hexga_event_loop",     version = "0.0.11-beta.54", default-features = false }
+hexga_engine           = { path = "./experimental/hexga_engine",         version = "0.0.11-beta.54", default-features = false }
 
 
 
