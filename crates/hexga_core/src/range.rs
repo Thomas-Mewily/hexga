@@ -1,7 +1,7 @@
-use std::ops::{Bound, RangeBounds};
+use core::ops::{Bound, RangeBounds};
 use super::*;
 
-/// Range compatibilty type that support `Copy`. Will be replaced by the next `std::range::Range` type when stable.
+/// Range compatibilty type that support `Copy`. Will be replaced by the next `core::range::Range` type when stable.
 #[derive(Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub struct Range<Idx>
 {
@@ -16,13 +16,13 @@ impl<Idx: Debug> Debug for Range<Idx> {
         Ok(())
     }
 }
-impl<Idx> From<std::ops::Range<Idx>> for Range<Idx>
+impl<Idx> From<core::ops::Range<Idx>> for Range<Idx>
 {
-    fn from(value: std::ops::Range<Idx>) -> Self {
+    fn from(value: core::ops::Range<Idx>) -> Self {
         Self { start: value.start, end: value.end }
     }
 }
-impl<Idx> From<Range<Idx>> for std::ops::Range<Idx>
+impl<Idx> From<Range<Idx>> for core::ops::Range<Idx>
 {
     fn from(value: Range<Idx>) -> Self {
         Self { start: value.start, end: value.end }
@@ -31,7 +31,7 @@ impl<Idx> From<Range<Idx>> for std::ops::Range<Idx>
 
 impl<Idx: PartialOrd<Idx>> Range<Idx> {
 
-    pub fn as_std(self) -> std::ops::Range<Idx> { self.into() }
+    pub fn as_std(self) -> core::ops::Range<Idx> { self.into() }
 
     /// Returns `true` if `item` is contained in the range.
     ///
