@@ -1,5 +1,3 @@
-use hexga_core::io::IoResult;
-
 use super::*;
 
 pub trait GetPath
