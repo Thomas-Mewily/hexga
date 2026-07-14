@@ -14,8 +14,8 @@ categories = ["filesystem", "encoding", "data-structures"]
 [features]
 default = ["serde", "serde_rc", "hexga_encoding_derive"]
 
-serde = ["dep:serde", "hexga_io/serde", "hexga_encoding/serde", "hexga_core/serde"]
-serde_rc = ["serde/rc",  "hexga_io/serde_rc", "hexga_encoding/serde_rc", "hexga_core/serde_rc"]
+serde = ["dep:serde", "hexga_io/serde", "hexga_encoding/serde", "hexga_core/serde", "hexga_utils/serde"]
+serde_rc = ["serde/rc",  "hexga_io/serde_rc", "hexga_encoding/serde_rc", "hexga_core/serde_rc", "hexga_utils/serde_rc"]
 
 hexga_encoding_derive = ["hexga_encoding/derive"]
 print_io = ["hexga_io/print_io"]
