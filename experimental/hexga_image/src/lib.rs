@@ -12,7 +12,7 @@
 //!
 //! Likewise, image types are built on a generic base:
 //!
-//! - [`Image`] is an alias for [`ImageBase<RgbaU8>`] or [`ImageBaseOf<RgbaU8, int>`].
+//! - [`Image`] is an alias for [`ImageOf<RgbaU8>`] or [`ImageBaseOf<RgbaU8, int>`].
 
 #![allow(unused_mut)]
 #![allow(unused_variables)]

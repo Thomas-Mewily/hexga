@@ -772,12 +772,6 @@ impl PartialEq<KeyCode> for KeyCodeNative
 /// For instance, the Shift key can be on the left or right side of the keyboard, or the number
 /// keys can be above the letters or on the numpad. This enum allows the user to differentiate
 /// them.
-///
-/// See the documentation for the [`location`] field on the [`KeyEvent`] struct for more
-/// information.
-///
-/// [`location`]: ../event/struct.KeyEvent.html#structfield.location
-/// [`KeyEvent`]: crate::event::KeyEvent
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum KeyLocation

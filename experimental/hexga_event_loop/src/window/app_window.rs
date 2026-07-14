@@ -77,8 +77,8 @@ pub trait Windowable
     ///
     /// ## Platform-specific
     ///
-    /// - **Wayland**: Cursor must be in [`CursorGrabMode::Locked`].
-    /// - **iOS / Android / Web / Orbital:** Always returns an [`ExternalError::NotSupported`].
+    /// - **Wayland**: Cursor must be in [`CursorGrab::Locked`].
+    /// - **iOS / Android / Web / Orbital:** Always do nothings.
     fn set_cursor_pos(&mut self, pos: Vec2I) -> &mut Self;
 
     /// Modifies the cursor's visibility.
@@ -95,7 +95,7 @@ pub trait Windowable
     /// - **iOS / Android:** Unsupported.
     fn set_cursor_visible(&mut self, visible: bool) -> &mut Self;
 
-    /// Set grabbing [mode][CursorGrabMode] on the cursor preventing it from leaving the window.
+    /// Set grabbing [CursorGrab] on the cursor preventing it from leaving the window.
     fn set_cursor_grab(&mut self, mode: CursorGrab) -> CursorResult;
 
     /// Modifies whether the window catches cursor events.
@@ -106,7 +106,7 @@ pub trait Windowable
     ///
     /// ## Platform-specific
     ///
-    /// - **iOS / Android / Web / Orbital:** Always returns an [`ExternalError::NotSupported`].
+    /// - **iOS / Android / Web / Orbital:** Always returns an error.
     fn set_cursor_hittest(&mut self, hittest: bool) -> CursorResult;
 
     /// Lib specific method

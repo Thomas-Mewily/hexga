@@ -152,8 +152,6 @@ pub struct KeyEvent
     pub code: KeyCode,
 
     /// Whether the key is being pressed or released.
-    ///
-    /// See the [`ElementState`] type for more details.
     pub state: KeyState,
     pub modifiers: KeyModifiersFlags,
     pub repeat: KeyRepeat,
@@ -163,9 +161,8 @@ pub struct KeyEvent
     ///
     /// This has two use cases:
     /// - Allows querying whether the current input is a Dead key.
-    /// - Allows handling key-bindings on platforms which don't support [`key_without_modifiers`].
     ///
-    /// If you use this field (or [`key_without_modifiers`] for that matter) for keyboard
+    /// If you use this field for keyboard
     /// shortcuts, **it is important that you provide users with a way to configure your
     /// application's shortcuts so you don't render your application unusable for users with an
     /// incompatible keyboard layout.**
@@ -184,10 +181,6 @@ pub struct KeyEvent
     ///
     /// This field allows the user to differentiate between keys like this that have the same
     /// symbolic value but different locations on the keyboard.
-    ///
-    /// See the [`KeyLocation`] type for more details.
-    ///
-    /// [`KeyLocation`]: crate::keyboard::KeyLocation
     pub location: KeyLocation,
 
     /// Contains the text produced by this keypress.

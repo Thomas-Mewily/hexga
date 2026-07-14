@@ -449,8 +449,8 @@ pub enum CursorGrab
     ///
     ///  ## Platform-specific
     ///
-    /// - **macOS:** Not implemented. Always returns [`ExternalError::NotSupported`] for now.
-    /// - **iOS / Android / Web:** Always returns an [`ExternalError::NotSupported`].
+    /// - **macOS:** Not implemented. Always returns an error for now.
+    /// - **iOS / Android / Web:** Always returns an error.
     Confined,
 
     /// The cursor is locked inside the window area to the certain position.
@@ -460,8 +460,8 @@ pub enum CursorGrab
     ///
     /// ## Platform-specific
     ///
-    /// - **X11:** Not implemented. Always returns [`ExternalError::NotSupported`] for now.
-    /// - **iOS / Android:** Always returns an [`ExternalError::NotSupported`].
+    /// - **X11:** Not implemented. Always returns an error for now.
+    /// - **iOS / Android:** Always returns an error.
     Locked,
 }
 
