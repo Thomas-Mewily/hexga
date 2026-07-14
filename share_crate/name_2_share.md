@@ -40,6 +40,8 @@ hexga_image
 
 hexga_asset
 
+hexga_arena
+
 hexga
 
 
