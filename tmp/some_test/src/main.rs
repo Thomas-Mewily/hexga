@@ -72,7 +72,7 @@ fn _x()
 
 fn main()
 {
-    let img = Image::from_fn((16,16), |(x,y)|
+    let _img = Image::from_fn((16,16), |(x,y)|
     {
         ColorU8::rgb((255 / 16 * x) as _, (255 / 16 * y) as _, 0)
     });
