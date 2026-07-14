@@ -17,7 +17,7 @@ use super::*;
 /// assert_eq!(casted_range, u16::MAX);
 /// ```
 ///
-/// Also work with composite like [`std::array`], [`Vector`]...
+/// Also work with composite like [`std::array`], `Vector`...
 ///
 /// ```ignore
 /// use hexga_number::prelude::*;
@@ -61,7 +61,7 @@ where
 /// assert_eq!(casted_range, u16::MAX);
 /// ```
 ///
-/// Also work with composite like [`std::array`], [`Vector`]...
+/// Also work with composite like [`std::array`], `Vector`...
 ///
 /// ```ignore
 /// use hexga_number::prelude::*;

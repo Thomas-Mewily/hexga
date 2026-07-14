@@ -1,3 +1,6 @@
+#[allow(unused)] // Needed for the `Pod` doc link
+use super::*;
+
 pub type BitResult<T = ()> = Result<T, BitError>;
 
 /// The things that can go wrong when casting between [`Pod`] data forms.

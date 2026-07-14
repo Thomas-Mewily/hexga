@@ -14,8 +14,8 @@ use super::*;
 /// [`Pod`] is a subset of [`BitAnyPattern`], meaning that any `T: Pod` is also
 /// [`BitAnyPattern`] but any `T: BitAnyPattern` is not necessarily [`Pod`].
 ///
-/// [`BitAnyPattern`] is a subset of [`Zeroable`], meaning that any `T:
-/// BitAnyPattern` is also [`Zeroable`], but any `T: Zeroable` is not
+/// [`BitAnyPattern`] is a subset of [`BitZero`], meaning that any `T:
+/// BitAnyPattern` is also [`BitZero`], but any `T: BitZero` is not
 /// necessarily [`BitAnyPattern`]
 ///
 /// # Derive

@@ -717,7 +717,7 @@ where
 {
     /// Constructs a new `AssetWeakIn<T, FS>`, without allocating any memory, technically in the provided
     /// allocator.
-    /// Calling [`upgrade`] on the return value always gives [`None`].
+    /// Calling [`SharedUpgrade::upgrade`] on the return value always gives [`None`].
     pub const fn new() -> Self { Self { inner: ArcWeak::new() } }
 
     /// Return a weak pointer of the asset from the path.

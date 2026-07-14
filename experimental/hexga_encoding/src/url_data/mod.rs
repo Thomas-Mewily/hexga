@@ -230,7 +230,7 @@ pub trait ToUrl: MediaType + Save
     }
 
     /// Converts the encoded image into a Binary Data URL (not an official RFC).
-    /// It's similar to [`Encode::to_url`], except the `<base64_encoded_data>` is in binary.
+    /// It's similar to [`ToUrl::to_url`], except the `<base64_encoded_data>` is in binary.
     ///
     /// The extension parameter should not contains any dot. (e.g., `png`, not `.png`).
     /// Return an `EncodeResult<String>` containing the Data URL, in the format:

@@ -53,3 +53,4 @@ pub mod traits
 {
     pub use super::{BitAllUsed, BitAnyPattern, BitError, BitPattern, BitResult, BitZero, BitZeroed, Pod};
 }
+use prelude::*;

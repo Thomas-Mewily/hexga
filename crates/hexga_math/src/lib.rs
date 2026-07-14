@@ -46,7 +46,7 @@
 //!
 //! If you need more control about the precision, each type have another more generic base type :
 //!
-//! - [`Grid`] type uses a `Point` for the indexing precision, but that can be changed by using with the [`hexga_math::grid::GridBase`] type.
+//! - [`Grid`] type uses a `Point` for the indexing precision, but that can be changed by using with the [`GridBase`][crate::grid::GridBase] type.
 //! - [`Angle`] and [`Time`] use a [`float`] precision that can be changed using [`AngleOf`] and [`TimeOf`]
 
 #![allow(unused_imports)]

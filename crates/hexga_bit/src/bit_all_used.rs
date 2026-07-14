@@ -6,7 +6,7 @@ use super::*;
 ///
 /// The requirements for this is very similar to [`Pod`],
 /// except that it doesn't require that all bit patterns of the type are valid,
-/// i.e. it does not require the type to be [`Zeroable`][crate::Zeroable].
+/// i.e. it does not require the type to be [`BitZero`][crate::BitZero].
 /// This limits what you can do with a type of this kind, but also broadens the
 /// included types to things like C-style enums. Notably, you can only cast from
 /// *immutable* references to a [`BitAllUsed`] type into *immutable* references of
@@ -17,7 +17,7 @@ use super::*;
 /// [`BitAllUsed`] but any `T: BitAllUsed` is not necessarily [`Pod`]. If possible,
 /// prefer implementing [`Pod`] directly. To get more [`Pod`]-like functionality
 /// for a type that is only [`BitAllUsed`], consider also implementing
-/// [`CheckedBitPattern`][crate::CheckedBitPattern].
+/// [`BitPattern`][crate::BitPattern].
 ///
 /// The rules for padding for various types and representations are documented
 /// in the Rust reference section on [type layout].
@@ -35,7 +35,7 @@ use super::*;
 ///
 /// The same as [`Pod`] except we disregard the rule about it must
 /// allow any bit pattern (i.e. it does not need to be
-/// [`Zeroable`][crate::Zeroable]). Still, this is a quite strong guarantee
+/// [`BitZero`][crate::BitZero]). Still, this is a quite strong guarantee
 /// about a type, so *be careful* whem implementing it manually.
 ///
 /// * The type must be inhabited (eg: no

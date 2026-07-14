@@ -13,7 +13,7 @@ pub trait SharedCount
 {
     /// Gets the number of strong pointers pointing to this allocation.
     ///
-    /// If `self` was created using [`Weak::new`], this will return 0.
+    /// If `self` was created using `Weak::new`, this will return 0.
     fn strong_count(&self) -> usize;
 
     /// Gets the number of `Weak` pointers pointing to this allocation.
@@ -35,7 +35,7 @@ pub trait SharedUpgrade: SharedCount
 pub trait SharedDowngrade: SharedCount
 {
     type Ouput: SharedCount + SharedUpgrade; //+ SharedUpgrade<Output = Self>;
-    /// Creates a new [`Weak`] pointer to this allocation.
+    /// Creates a new `Weak` pointer to this allocation.
     fn downgrade(&self) -> Self::Ouput;
 }
 

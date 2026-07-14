@@ -7,7 +7,7 @@ use super::*;
 macro_rules! impl_cast_into {
     ($trait_name:ident, $fn_map_name:ident, $fn_map_range_name:ident, $output_type:ty) => {
         /// Helper trait based on [`CastInto`] and [`CastRangeInto`]
-        /// Also work on composite like [`std::array`], [`Vector`]...
+        /// Also work on composite like [`std::array`], `Vector`...
         pub trait $trait_name: CastInto<Self::Output>
         {
             type Output;

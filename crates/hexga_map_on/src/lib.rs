@@ -200,7 +200,7 @@
 //! This is the kind of stuff I was doing in C, ported to Rust while also using the full power of Rust macros.
 //!
 //! The official name for this technique seem to be `X macro`, but since the main focus is mapping tokens over tokens I prefer the name `map_on macro`.
-//! https://en.wikipedia.org/wiki/X_macro
+//! <https://en.wikipedia.org/wiki/X_macro>
 //!
 
 #![no_std]

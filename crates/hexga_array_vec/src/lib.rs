@@ -18,7 +18,7 @@ pub mod prelude
 /// `ArrayVec<T, CAP>` stores up to `CAP` elements without heap allocation.
 /// Unlike `Vec<T>`, it cannot grow beyond `CAP`.
 ///
-/// When the capacity is exceeded, [`push`] will panic; use [`try_push`] if you
+/// When the capacity is exceeded, [`Self::push`] will panic; use [`Self::try_push`] if you
 /// want to handle the full case.
 pub struct ArrayVec<T, const CAP: usize>
 {
