@@ -2,6 +2,7 @@
 // Each name can only depend on the upper name
 hexga_map_on
 
+hexga_array
 hexga_number
 
 hexga_bit_derive
@@ -27,7 +28,6 @@ hexga_ansi_color
 hexga_bitflags
 
 // hexga_base // moved to hexga_core
-hexga_array
 hexga_typedef
 hexga_generational
 
