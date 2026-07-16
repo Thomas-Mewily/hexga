@@ -1,4 +1,5 @@
-use hexga::prelude::*;
+#[allow(unused)]
+use hexga::{default, prelude::*};
 
 fn _x()
 {
@@ -70,8 +71,19 @@ fn _x()
     //img.save_to_fs(extension)
 }
 
+
+fn _cast_into<X,Y>(value: X) -> Y where X: CastInto<Y> { value.cast_into() }
+
+
+
 fn main()
 {
+
+    //let x = [1u8, 2u8] as [f32;2];
+    //let x : [f32;2] = [1u8, 2u8].cast_into();
+    
+    
+    /*
     let _img = Image::from_fn((16,16), |(x,y)|
     {
         ColorU8::rgb((255 / 16 * x) as _, (255 / 16 * y) as _, 0)
@@ -79,8 +91,39 @@ fn main()
 
     //IoGlobal::save(&img, "_tmp/image3").unwrap();
 
-    IoData::save(&"hello", "cool").unwrap();
+    //IoData::save(&"hello", "cool").unwrap();
 
-    _x();
+    //let f = FileData::from("hello".to_owned());
+    //println!("{:?}", f.get_path());
+    */
+    //_x();
+
+
+    
+    //let x = AssetData::<String>::from_path_and_value(None, "Toto".to_owned());
+    //let x = AssetGlobal::<String>::from_path_and_value(None, "Toto".to_owned());
+
+    //IoData::read_bytes(&mut self, "todo")
+    //"grass"
+    //"block/dirt"
+    /*
+    let mut f = FileData::load_or_create("toto", || "hello !".to_owned());
+    let mut f = FileData::load_or_create("toto", || "hello !".to_owned());
+    let mut f = FileData::load_or_create("toto", || "hello !".to_owned());
+    let mut f = FileData::load_or_create("toto", || "hello !".to_owned());
+    let mut f = FileData::load_or_create("toto", || "hello !".to_owned());
+    f.push_str(" hi !");
+
+    let mut f = AssetData::load_or_create("toto", || "hello !".to_owned());
+    let mut f = AssetData::load_or_create("toto", || "hello !".to_owned());
+    let mut f = AssetData::load_or_create("toto", || "hello !".to_owned());
+    let mut f = AssetData::load_or_create("toto", || "hello !".to_owned());
+    let mut f = AssetData::load_or_create("toto", || "hello !".to_owned());
+        */
+    //IoGlobal.read_bytes("/toto")
+    
+    //dbg!(f.get_path())
+
+    
 }
 

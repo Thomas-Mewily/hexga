@@ -101,7 +101,7 @@ impl<T> Save for &[T] where T: Save {}
 
 impl Save for String
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["txt", "md", "cvs"].into_iter() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["txt", "md", "csv"].into_iter() }
 
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where

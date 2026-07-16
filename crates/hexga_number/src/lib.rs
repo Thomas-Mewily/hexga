@@ -68,7 +68,8 @@ pub mod prelude
 pub mod traits
 {
     pub use crate::{
-        Abs, CastFrom, CastInto, CastRangeFrom, CastRangeInto, Clamp, Constant, Decrement, Floating, Half, Increment, Infinity, IterSample, IterSampleDefault,
+        Abs, CastFrom, CastInto, convert::cast_primitive::*,
+        CastRangeFrom, CastRangeInto, Clamp, Constant, Decrement, Floating, Half, Increment, Infinity, IterSample, IterSampleDefault,
         IterSampleDefaultInclusive, IterStep, IterStepDefault, IterStepDefaultInclusive, IterStepMax, Map, MapIntern, MapInternWith, MapWith, Max, MaxValue,
         Min, MinValue, MinusInfinity, MinusOne, MinusOneIter, Mix, NaNValue, OddOrEven, One, OneIter, OverflowBehavior, PartialOrdExtension,
         PositiveOrNegative, Pow, PrimitiveType, RangeDefault, RemEuclid, TakeHalf, Three, Two, Unit, UnwrapZero, Zero, ZeroIter, arithmetic::traits::*,

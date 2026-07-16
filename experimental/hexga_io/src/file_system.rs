@@ -279,7 +279,12 @@ pub trait FileSystemRead: FileSystemDynRead
 
     /// Read the file at the resolved path.
     #[must_use]
-    fn read_bytes<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> { let path = self.resolve_path(path)?; self.read_bytes_at(path) }
+    fn read_bytes<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> 
+    { 
+        let path = self.resolve_path(path)?;
+        self.read_bytes_at(path) 
+    }
+    
     /// Read the contents of a directory at the given resolved path.
     #[must_use]
     fn read_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<IoResult<PathBuf>>> { let path = self.resolve_path(path)?; self.read_dir_at(path) }
