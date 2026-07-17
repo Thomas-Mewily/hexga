@@ -5,7 +5,7 @@ fn main()
 {
     let _ : f32 = 2u8.cast_into();
     let _ = f32::cast_from(2u8);
-    let _ : f32 = 2u8.to_f32();
+    let _ = 2u8.to_f32();
 
     // Not possible in rust
     // let x = [1u8, 2u8] as [f32;2];
