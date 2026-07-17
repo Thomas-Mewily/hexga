@@ -3,13 +3,12 @@ use hexga::prelude::*;
 
 fn main()
 {
-    // Not possible in rust
-    // let x = [1u8, 2u8] as [f32;2];
-
     let _ : f32 = 2u8.cast_into();
     let _ = f32::cast_from(2u8);
     let _ : f32 = 2u8.to_f32();
 
+    // Not possible in rust
+    // let x = [1u8, 2u8] as [f32;2];
     let _ : [f32;2] = [1u8, 2u8].cast_into(); // Need to manually type the binding
     let _ = <[f32;2]>::cast_from([1u8, 2u8]); 
     let _ = [1u8, 2u8].to_f32(); // ok
