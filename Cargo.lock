@@ -1064,6 +1064,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_action"
+version = "0.0.11-beta.56"
+
+[[package]]
 name = "hexga_ansi_color"
 version = "0.0.11-beta.56"
 dependencies = [

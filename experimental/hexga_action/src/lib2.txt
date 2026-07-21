@@ -1,0 +1,147 @@
+use std::{collections::VecDeque, fmt::Debug};
+
+/*
+
+pub trait ActionUnit<Ctx>
+{
+    type Ok;
+    type Err: Debug + 'static;
+
+    fn execute(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err>;
+    fn undo(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { self.execute(ctx) }
+}
+*/
+
+pub trait Action<Ctx>
+{
+    type Ok;
+    type Err: Debug + 'static;
+
+    fn execute<A : ActionCtx<Ctx>>(self, ctx: &mut A) -> Result<Self::Ok, Self::Err>;
+    fn undo<A : ActionCtx<Ctx>>(self, ctx: &mut A) -> Result<Self::Ok, Self::Err> { self.execute(ctx) }
+}
+
+pub trait ActionComposite<A, Ctx>
+    where A: Action<Ctx>
+{
+    fn push(&mut self, value: A) -> Result<A::Ok, A::Err>;
+}
+
+pub trait ActionCtx<A, Ctx>
+    where A: Action<Ctx>
+{
+    type Composite : ActionComposite;
+    fn unit(self, action : impl Fn(&mut A) -> Result<A::Ok, A::Err>) -> Result<A::Ok, A::Err>;
+    fn composite(self, action : A, ctx: &mut Ctx) -> Self::Composite;
+}
+
+pub trait ActionUndoRedo<A, Ctx>
+    where A: Action<Ctx>
+{
+    fn can_redo(&mut self) -> bool;
+    fn redo(&mut self) -> Result<A::Ok, Option<A::Err>>;
+    fn redo_by(&mut self, nb: usize) -> Result<(), Option<A::Err>> { for _ in 0..nb { self.redo()?; } Ok(()) }
+
+    fn can_undo(&mut self) -> bool;
+    fn undo(&mut self) -> Result<A::Ok, Option<A::Err>>;
+    fn undo_by(&mut self, nb: usize) -> Result<(), Option<A::Err>> { for _ in 0..nb { self.undo()?; } Ok(()) }
+}
+
+/*
+pub struct UndoRedoStack<A, Ctx>
+    where A: Action<Ctx>
+{
+    pub undo: Vec<A>,
+    pub redo: Vec<A>,
+}
+*/
+
+pub struct UndoRedo<A, Ctx>
+    where A: Action<Ctx>
+{
+    pub ctx : Ctx,
+    pub undo: Vec<A>,
+    pub redo: Vec<A>,
+}
+impl<A, Ctx> ActionUndoRedo<A, Ctx> for UndoRedo<A, Ctx>
+    where A: Action<Ctx>
+{
+    fn can_redo(&mut self) -> bool {
+        !self.redo.is_empty()
+    }
+
+    fn redo(&mut self) -> Result<A::Ok, Option<A::Err>> {
+        match self.redo.pop()
+        {
+            Some(action) => 
+            {
+                action.execute(ctx, composite)
+            },
+            None => Err(None),
+        }
+    }
+
+    fn can_undo(&mut self) -> bool {
+        todo!()
+    }
+
+    fn undo(&mut self) -> Result<A::Ok, Option<A::Err>> {
+        todo!()
+    }
+}
+
+
+/*
+
+pub trait ActionManager<A, Ctx>
+    where A: Action<Ctx>
+{
+    fn execute(&mut self, action : A, ctx: &mut Ctx) -> Result<A::Ok, A::Err>;
+    fn undo(&mut self, action : A, ctx: &mut Ctx) -> Result<A::Ok, A::Err>;
+}
+*/
+/*
+pub trait ActionManager<A> : Sized
+    where A: Action<Self>
+{
+    fn execute
+}
+*/
+
+
+/*
+Swap
+*/
+
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub struct PushPop<T>
+{
+    pub value: Option<T>
+}
+impl<T> ActionUnit<Vec<T>> for PushPop<T>
+{
+    type Ok=();
+    type Err=();
+
+    fn execute(&mut self, ctx: &mut Vec<T>) -> Result<Self::Ok, Self::Err> {
+        match self.value.take()
+        {
+            Some(v) => { ctx.push(v); Ok(()) },
+            None => { self.value = Some(ctx.pop().ok_or(())?); Ok(()) },
+        }
+    }
+}
+impl<T> ActionUnit<VecDeque<T>> for PushPop<T>
+{
+    type Ok=();
+    type Err=();
+
+    fn execute(&mut self, ctx: &mut VecDeque<T>) -> Result<Self::Ok, Self::Err> {
+        match self.value.take()
+        {
+            Some(v) => { ctx.push_back(v); Ok(()) },
+            None => { self.value = Some(ctx.pop_back().ok_or(())?); Ok(()) },
+        }
+    }
+}
