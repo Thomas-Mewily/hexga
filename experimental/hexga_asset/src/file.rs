@@ -301,6 +301,15 @@ where
         self.into_path_and_value()
     }
 }
+impl<T, FS> WrapperTryIntoInnerOrClone for FileIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async + Clone,
+{
+    fn into_inner_or_clone(self) -> Self::Inside {
+        self.into_path_and_value()
+    }
+}
 
 impl<T, FS> Debug for FileIn<T, FS>
 where

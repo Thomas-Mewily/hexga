@@ -33,7 +33,10 @@ impl<T> WrapperTryIntoInner for T where T: WrapperIntoInner
         Some(WrapperIntoInner::into_inner(self))
     }
 }
-
+pub trait WrapperTryIntoInnerOrClone : WrapperTryIntoInner
+{
+    fn into_inner_or_clone(self) -> Self::Inside;
+}
 
 impl<T> Wrapper for Option<T>
 {
@@ -167,7 +170,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{Wrapper, WrapperNew, WrapperIntoInner, WrapperTryIntoInner};
+    pub use super::{Wrapper, WrapperNew, WrapperIntoInner, WrapperTryIntoInner, WrapperTryIntoInnerOrClone};
 }
 
 /*

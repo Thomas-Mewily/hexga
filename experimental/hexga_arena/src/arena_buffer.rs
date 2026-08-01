@@ -1,4 +1,4 @@
-use hexga_core::boxed::DropOnlyBox;
+use hexga_core::boxed::PreAllocateBox;
 
 use super::*;
 
@@ -61,7 +61,7 @@ impl Capacity for BufferArena
 
 impl ManagedBox for BufferArena
 {
-    type Box<T> = DropOnlyBox<T>;
+    type Box<T> = PreAllocateBox<T>;
 }
 unsafe impl AllocFromLayout for BufferArena
 {

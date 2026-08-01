@@ -358,6 +358,23 @@ where
         Some(Arc::into_inner(self.inner)?.into_inner().ok()?.into_path_and_value())
     }
 }
+impl<T, FS> WrapperTryIntoInnerOrClone for AssetIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async + Clone,
+{
+    fn into_inner_or_clone(self) -> Self::Inside {
+        match Arc::try_unwrap(self.inner)
+        {
+            Ok(guard) => guard.into_inner().expect("poisoned").into_path_and_value(),
+            Err(inner) => {
+                let asset = AssetIn { inner };
+                let v = asset.get();
+                (v.path.clone(), v.value().clone())
+            },
+        }
+    }
+}
 
 impl<T, FS> Debug for AssetIn<T, FS>
 where
