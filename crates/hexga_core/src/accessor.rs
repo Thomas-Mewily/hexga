@@ -98,3 +98,13 @@ pub trait HasReadGuard<'a,T>
 }
 impl<'a,T> HasReadGuard<'a,&'a T> for &'a T  { fn retrive_guard_ref(&'a self) -> &'a T { self } }
 */
+
+
+pub mod prelude
+{
+    pub use super::traits::*;
+}
+pub mod traits
+{
+    pub use super::{Has, HasMut, HasRef};
+}

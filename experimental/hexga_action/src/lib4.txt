@@ -1,51 +1,47 @@
-//use std::{collections::VecDeque, fmt::Debug};
+use std::{collections::VecDeque, fmt::Debug};
 
-/* 
-
-/*
-
-make 2 trait:
-
-trait MemoryAction. Undo redo = swap. Terminal/Unit Action
-
-MemoryAction auto impl Action.
-
-and trait Action (composite).
-*/
-
-
-pub trait ActionUnit<Ctx> : Sized
+/// An atomic action
+pub trait Action<Ctx> : Sized
 {
-    type Ok : Default;
+    type Ok;
     type Err: Debug + 'static;
 
-    fn execute_unit(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { Default::default() }
-    fn undo_unit(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { self.execute_unit(ctx) }
-    
-    fn composite<A : ActionComposite<Ctx>>(&mut self, composite: A) { let _ = composite; }
+    /*
+    fn execute_atomic<A: ActionCat<Self, Ctx>>(&mut self, ctx: &mut A) -> Result<Self::Ok, Self::Err>;
+    fn undo_atomic<A: ActionCat<Self,Ctx>>(&mut self, ctx: &mut A) -> Result<Self::Ok, Self::Err> { self.execute_atomic(ctx) }
 
-    fn execute<A : ActionComposite<Ctx>>(mut self, a: A) -> Result<Self::Ok, Self::Err> 
+    fn register(mut self, ctx: &mut Ctx)
     {
-        self.execute_unit(ctx)?;
-        
-        self.composite(composite)?;
+        self.execute_atomic(ctx);
     }
-    fn undo(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { self.execute_unit(ctx) }
+    */
+
+    fn execute<A: ActionCat<Self, Ctx>>(&mut self, ctx: A) -> Result<Self::Ok, Self::Err>;
+    fn undo<A: ActionCat<Self, Ctx>>(&mut self, ctx: A) -> Result<Self::Ok, Self::Err> { self.execute(ctx) }
 }
+
 
 
 pub trait ActionComposite<A, Ctx>
-    where A: ActionUnit<Ctx>
+    where A: Action<Ctx>
 {
-    type Composite : Extend<A>;
-    fn composite(self) -> Self::Composite;
-
-    fn execute(self, action : A) -> Result<Self::Ok, Self::Err>
-    {
-        action.execute_unit(ctx);
-        action.composite(composite);
-    }
+    fn push(&mut self, action: A) -> Result<A::Ok, A::Err>;
 }
+
+pub trait ActionCat<A, Ctx>
+    where A: Action<Ctx>
+{
+    type Composite : ActionComposite<A, Ctx>;
+    fn leaf<F>(self, action: F) -> Result<A::Ok, A::Err> where F: FnOnce(&mut Ctx) -> Result<A::Ok, A::Err>;
+    fn composite<F>(self, action: F) -> Result<A::Ok, A::Err> where F: FnOnce(&mut Ctx) -> Result<(A::Ok, Self::Composite), A::Err>;
+}
+
+
+/*
+
+
+*/
+
 
 
 pub trait ActionMarkerGroup
@@ -247,5 +243,4 @@ impl<T> Action<VecDeque<T>> for PushPop<T>
         }
     }
 }
-*/
 */

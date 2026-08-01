@@ -1,4 +1,3 @@
-use hexga_core::sync::ArcWeak;
 use std::{
     any::TypeId,
     default, mem,
@@ -333,6 +332,33 @@ where
 
     fn downgrade(&self) -> Self::Ouput { AssetWeakIn { inner: self.inner.downgrade() } }
 }
+
+impl<T, FS> Wrapper for AssetIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async,
+{
+    type Inside = (Option<PathBuf>, T);
+}
+impl<T, FS> WrapperNew for AssetIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async,
+{
+    fn new_wrapper(value: Self::Inside) -> Self {
+        Self::from_path_and_value(value.0, value.1)
+    }
+}
+impl<T, FS> WrapperTryIntoInner for AssetIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async,
+{
+    fn into_inner(self) -> Option<Self::Inside> {
+        Some(Arc::into_inner(self.inner)?.into_inner().ok()?.into_path_and_value())
+    }
+}
+
 impl<T, FS> Debug for AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,

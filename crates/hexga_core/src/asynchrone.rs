@@ -59,3 +59,14 @@ mod sync_trait
     impl<T> WasmSendSync for T {}
 }
 pub use sync_trait::*;
+
+
+pub mod prelude
+{
+    pub use super::DynAnyAsync;
+    pub use super::traits::*;
+}
+pub mod traits
+{
+    pub use super::{Async, AnyAsync};
+}

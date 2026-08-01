@@ -1,51 +1,26 @@
-//use std::{collections::VecDeque, fmt::Debug};
+use std::{collections::VecDeque, fmt::Debug};
 
-/* 
-
-/*
-
-make 2 trait:
-
-trait MemoryAction. Undo redo = swap. Terminal/Unit Action
-
-MemoryAction auto impl Action.
-
-and trait Action (composite).
-*/
-
-
-pub trait ActionUnit<Ctx> : Sized
+/// An atomic action
+pub trait Action<Ctx>
 {
-    type Ok : Default;
+    type Ok;
     type Err: Debug + 'static;
 
-    fn execute_unit(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { Default::default() }
-    fn undo_unit(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { self.execute_unit(ctx) }
-    
-    fn composite<A : ActionComposite<Ctx>>(&mut self, composite: A) { let _ = composite; }
+    fn execute_atomic(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err>;
+    fn undo_atomic(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { self.execute_atomic(ctx) }
 
-    fn execute<A : ActionComposite<Ctx>>(mut self, a: A) -> Result<Self::Ok, Self::Err> 
+    fn register(mut self, ctx: &mut Ctx)
     {
-        self.execute_unit(ctx)?;
-        
-        self.composite(composite)?;
+        self.execute_atomic(ctx);
+
     }
-    fn undo(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { self.execute_unit(ctx) }
 }
 
-
-pub trait ActionComposite<A, Ctx>
-    where A: ActionUnit<Ctx>
+pub trait ActionRegister
 {
-    type Composite : Extend<A>;
-    fn composite(self) -> Self::Composite;
 
-    fn execute(self, action : A) -> Result<Self::Ok, Self::Err>
-    {
-        action.execute_unit(ctx);
-        action.composite(composite);
-    }
 }
+
 
 
 pub trait ActionMarkerGroup
@@ -128,7 +103,6 @@ pub struct UndoRedoIn<A, Ctx>
     pub undo_redo : UndoRedo<A>,
 }
 
-/*
 impl<A, Ctx> ActionUndoRedoIn<A, Ctx> for UndoRedo<A>
     where A: Action<Ctx>
 {
@@ -170,7 +144,7 @@ impl<A, Ctx> ActionUndoRedoIn<A, Ctx> for UndoRedo<A>
         }
     }
 }
-*/
+
 
 /*
 
@@ -193,29 +167,8 @@ pub trait ActionManager<A> : Sized
 /*
 Swap
 */
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-pub struct PushPop<T>
-{
-    pub value: Option<T>
-}
-impl<T> Action<Vec<T>> for PushPop<T>
-{
-    type Ok=();
-    type Err=();
-    
-    fn execute<A: ActionCat<Self, Vec<T>>>(&mut self, ctx: A) -> Result<Self::Ok, Self::Err> {
-        ctx.leaf(|ctx| 
-            {
-                match self.value.take()
-                {
-                    Some(v) => { ctx.push(v); Ok(()) },
-                    None => { self.value = Some(ctx.pop().ok_or(())?); Ok(()) },
-                }
-            })
-    }
-}
 
-/*
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct PushPop<T>
 {
@@ -247,5 +200,3 @@ impl<T> Action<VecDeque<T>> for PushPop<T>
         }
     }
 }
-*/
-*/

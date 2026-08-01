@@ -111,8 +111,10 @@ where
     pub fn value(&self) -> &T { self.deref() }
     pub fn value_mut(&mut self) -> &mut T { self.deref_mut() }
 
-    // Extract the value without saving it.
-    // pub fn into_value(mut self) -> T { std::mem::take(&mut self.value).unwrap().into_value() }
+    /// Extract the value without saving it.
+    pub fn into_value(self) -> T { self.into_path_and_value().1 }
+    /// Extract the path and value without saving it.
+    pub fn into_path_and_value(mut self) -> (Option<PathBuf>, T) { (std::mem::take(&mut self.path), std::mem::take(&mut self.value).unwrap().into_value()) }
 }
 
 impl<T, FS> IsDirty for AssetValue<T, FS>

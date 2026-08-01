@@ -243,15 +243,16 @@ pub mod hexga_prelude
     #[allow(unused_imports)]
     pub use super::{
         allocation::prelude::*,
-        accessor::*,
-        asynchrone::*,
+        accessor::prelude::*,
+        asynchrone::prelude::*,
         boxed::prelude::*,
-        builder::*,
+        builder::prelude::*,
         collections::prelude::*,
         default::prelude::*,
         format::prelude::*,
         guard::prelude::*,
-        handle::*,
+        handle::prelude::*,
+        sync::prelude::*,
         option::prelude::*,
         iter::prelude::*,
         macros::prelude::*,
@@ -283,16 +284,17 @@ pub mod hexga_traits
     #[allow(unused_imports)]
     pub use super::{
         allocation::traits::*,
-        accessor::*,
-        asynchrone::*,
+        accessor::traits::*,
+        asynchrone::traits::*,
         boxed::traits::*,
-        builder::*,
+        builder::traits::*,
         collections::traits::*,
         collections::traits::*,
         default::traits::*,
         format::traits::*,
         guard::traits::*,
-        handle::Handle,
+        handle::traits::*,
+        sync::traits::*,
         /*
         option::traits::*,
         iter::traits::*,
@@ -308,7 +310,7 @@ pub mod hexga_traits
         convert::traits::*,
         bit::traits::*,
         //map_on::traits::*,
-        collections::traits,
+        collections::traits::*,
     };
 }
 

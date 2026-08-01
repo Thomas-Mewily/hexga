@@ -39,6 +39,14 @@ pub trait SharedDowngrade: SharedCount
     fn downgrade(&self) -> Self::Ouput;
 }
 
+/*
+pub trait SharedIntoInner: SharedCount
+{
+    type Value;
+    fn into_inner(self) -> Option<Value>;
+}
+*/
+
 #[cfg(feature = "std")]
 mod std_impl
 {

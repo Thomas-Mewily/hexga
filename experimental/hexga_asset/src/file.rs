@@ -276,6 +276,32 @@ where
     fn eq(&self, other: &Self) -> bool { self.path == other.path && self.value() == other.value() }
 }
 
+impl<T, FS> Wrapper for FileIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async,
+{
+    type Inside = (Option<PathBuf>, T);
+}
+impl<T, FS> WrapperNew for FileIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async,
+{
+    fn new_wrapper(value: Self::Inside) -> Self {
+        Self::from_path_and_value(value.0, value.1)
+    }
+}
+impl<T, FS> WrapperIntoInner for FileIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async,
+{
+    fn into_inner(self) -> Self::Inside {
+        self.into_path_and_value()
+    }
+}
+
 impl<T, FS> Debug for FileIn<T, FS>
 where
     FS: FileSystemProvider,
@@ -324,7 +350,9 @@ where
     pub fn value_mut(&mut self) -> &mut T { self.deref_mut() }
 
     /// Extract the value without saving it.
-    pub fn into_value(mut self) -> T { std::mem::take(&mut self.value).unwrap().into_value() }
+    pub fn into_value(self) -> T { self.into_path_and_value().1 }
+    /// Extract the path and value without saving it.
+    pub fn into_path_and_value(mut self) -> (Option<PathBuf>, T) { (std::mem::take(&mut self.path), std::mem::take(&mut self.value).unwrap().into_value()) }
 }
 
 impl<T, FS> IsDirty for FileIn<T, FS>
