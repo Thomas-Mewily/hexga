@@ -140,10 +140,22 @@ mod std_impl
     {
         fn new_wrapper(value: Self::Inside) -> Self { Self::new(value) }
     }
-    impl<T> WrapperTryIntoInner for Mutex<T>
+    // Maybe I should just impl `WrapperTryIntoInner` and return None when poisoned
+    impl<T> WrapperIntoInner for Mutex<T>
     {
-        fn into_inner(self) -> Option<Self::Inside> {
-            Mutex::into_inner(self).ok()
+        fn into_inner(self) -> Self::Inside 
+        {
+            match Mutex::into_inner(self)
+            {
+                Ok(v) => v,
+                Err(v) => v.into_inner(),
+            }
+        }
+    }
+    impl<T> WrapperTryIntoInnerOrClone for Mutex<T> where T: Clone
+    {
+        fn into_inner_or_clone(self) -> Self::Inside {
+            WrapperIntoInner::into_inner(self)
         }
     }
 
@@ -155,10 +167,20 @@ mod std_impl
     {
         fn new_wrapper(value: Self::Inside) -> Self { Self::new(value) }
     }
-    impl<T> WrapperTryIntoInner for RwLock<T>
+    impl<T> WrapperIntoInner for RwLock<T>
     {
-        fn into_inner(self) -> Option<Self::Inside> {
-            RwLock::into_inner(self).ok()
+        fn into_inner(self) -> Self::Inside {
+            match RwLock::into_inner(self)
+            {
+                Ok(v) => v,
+                Err(v) => v.into_inner(),
+            }
+        }
+    }
+    impl<T> WrapperTryIntoInnerOrClone for RwLock<T> where T: Clone
+    {
+        fn into_inner_or_clone(self) -> Self::Inside {
+            WrapperIntoInner::into_inner(self)
         }
     }
 }

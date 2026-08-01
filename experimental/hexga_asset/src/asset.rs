@@ -355,7 +355,7 @@ where
     T: Load + Save + Async,
 {
     fn into_inner(self) -> Option<Self::Inside> {
-        Some(Arc::into_inner(self.inner)?.into_inner().ok()?.into_path_and_value())
+        Some(WrapperIntoInner::into_inner(Arc::into_inner(self.inner)?).into_path_and_value())
     }
 }
 impl<T, FS> WrapperTryIntoInnerOrClone for AssetIn<T, FS>
@@ -366,7 +366,7 @@ where
     fn into_inner_or_clone(self) -> Self::Inside {
         match Arc::try_unwrap(self.inner)
         {
-            Ok(guard) => guard.into_inner().expect("poisoned").into_path_and_value(),
+            Ok(guard) => WrapperIntoInner::into_inner(guard).into_path_and_value(),
             Err(inner) => {
                 let asset = AssetIn { inner };
                 let v = asset.get();
