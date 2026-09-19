@@ -27,7 +27,6 @@ map_on!
     ),
     impl_one
 );
-
 */
 
 fn main()

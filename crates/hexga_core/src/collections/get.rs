@@ -12,7 +12,7 @@
 
 use super::*;
 
-/// The collection have a quick way to access each element, where the index is copyable
+/// A collection have a quick way to access each element.
 pub trait Get<Idx>: Collection
 {
     type Output: ?Sized;

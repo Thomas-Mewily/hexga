@@ -258,3 +258,21 @@ impl Clone for word
 unsafe impl BitZero for word {}
 unsafe impl BitAnyPattern for word {}
 unsafe impl BitAllUsed for word {}
+
+
+/*
+// Can be used for stuff like GenVec with Generation = u0
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
+pub struct u0;
+
+unsafe impl BitZero for u0 {}
+unsafe impl BitAnyPattern for u0 {}
+unsafe impl BitAllUsed for u0 {}
+
+#[allow(non_camel_case_types)]
+pub struct i0;
+#[allow(non_camel_case_types)]
+pub struct f0;
+*/

@@ -598,8 +598,10 @@ where
     u8: CastRangeFrom<C::Component>,
     u16: CastRangeFrom<C::Component>,
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png", "jpg", "jpeg", "gif", "ico", "webp", "bmp"].into_iter() }
+    //fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png", "jpg", "jpeg", "gif", "ico", "webp", "bmp"].into_iter() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png"].into_iter() }
 
+    // TODO only support PNG for the moment
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,

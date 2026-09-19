@@ -2,6 +2,7 @@
 #![allow(unused_imports)]
 use hexga_core::prelude::*;
 use std::ops::*;
+use std::marker::PhantomData;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, ser::SerializeSeq};
@@ -14,9 +15,15 @@ pub mod evolution;
 pub mod lazy;
 pub mod message;
 pub mod scope;
-//pub mod interned_map;
+pub mod interned_map;
 //pub mod owned_slice;
 //pub mod factorized;
+
+// TODO : impl common hexga trait on these:
+pub mod stable_map;
+pub mod stable_set;
+pub mod string_interned;
+
 
 use prelude::*;
 pub mod prelude

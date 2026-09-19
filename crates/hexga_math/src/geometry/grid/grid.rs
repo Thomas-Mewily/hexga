@@ -2,7 +2,7 @@ use super::*;
 
 /// A N-dimensional grid
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Grid"))]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Grid"))] // Todo: use an enum to serialize it with different algo for compressing the grid
 pub struct GridOf<T, Idx, const N: usize>
 where
     Idx: Integer,

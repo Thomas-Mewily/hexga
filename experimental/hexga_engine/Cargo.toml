@@ -38,6 +38,7 @@ serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_graphics/serde_rc", "hexga_even
 
 hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_graphics/hexga_encoding_derive"] #, "hexga_event_loop/hexga_encoding_derive"]
 
+print_io = ["hexga/print_io"]
 
 gpu_backend_webgpu = ["hexga_graphics/gpu_backend_webgpu"]
 gpu_backend_gles = ["hexga_graphics/gpu_backend_gles"]

@@ -1,4 +1,4 @@
-#![feature(get_disjoint_mut_helpers)]
+#![feature(get_disjoint_mut_helpers)] // for https://doc.rust-lang.org/core/slice/trait.GetDisjointMutIndex.html
 //#![feature(unsafe_cell_access)]
 #![cfg_attr(feature = "std", feature(mapped_lock_guards))]
 #![cfg_attr(not(feature = "std"), no_std)]
