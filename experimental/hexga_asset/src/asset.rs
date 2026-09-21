@@ -404,6 +404,31 @@ where
         }
     }
 }
+
+impl<T, FS> std::fmt::Write for AssetIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async + std::fmt::Write 
+{
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        self.value_mut().write_str(s)
+    }
+}
+
+impl<T, FS> std::io::Write for AssetIn<T, FS>
+where
+    FS: FileSystemProvider + Async,
+    T: Load + Save + Async + std::io::Write 
+{
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.value_mut().write(buf)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.value_mut().flush()
+    }
+}
+
 impl<T, FS> Guarded<AssetValue<T, FS>> for AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,
