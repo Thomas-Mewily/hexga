@@ -184,7 +184,7 @@ impl From<EventLoopControlFlow> for ::winit::event_loop::ControlFlow
 struct EventLoopRunner<EventHandler, CustomEvent>
 where
     EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
     event_handler: EventHandler,
     state: EventLoopState,
@@ -192,19 +192,19 @@ where
     param: EventLoopParam,
 }
 
-impl<EventHandler, CustomEvent> EventLoopSendEvent<PlatformEvent<CustomEvent>> for EventLoopRunner<EventHandler, CustomEvent>
+impl<EventHandler, CustomEvent> EventLoopSendEvent<PlatformEvent> for EventLoopRunner<EventHandler, CustomEvent>
 where
     EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
-    fn send_event(&self, ev: PlatformEvent<CustomEvent>) -> ProxyResult { self.proxy.send_event(ev) }
+    fn send_event(&self, ev: PlatformEvent) -> ProxyResult { self.proxy.send_event(ev.into()) }
 }
 
 pub fn run_with_param<F, EventHandler, CustomEvent>(init: F, param: EventLoopParam) -> EventLoopResult
 where
     F: FnOnce(EventLoopProxy<CustomEvent>) -> EventHandler,
     EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
     free_fn::init();
 
@@ -241,13 +241,15 @@ where
 impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler, CustomEvent>
 where
     EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
-    fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<PlatformEvent<CustomEvent>>)
+    fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<PlatformCustomEvent<CustomEvent>>)
     {
         let mut ev = ev.into();
 
         match &mut ev
+        {
+            PlatformCustomEvent::Platform(platform_event) => match platform_event
         {
             PlatformEvent::Key(k) =>
             {
@@ -300,7 +302,11 @@ where
             }
             _ =>
             {}
+        },
+            PlatformCustomEvent::Custom(_) => {},
         }
+
+        
 
         let Some(ev) = self.app(active, |event_handler, event_loop| event_handler.event(ev, event_loop))
         else
@@ -309,6 +315,9 @@ where
         };
 
         match ev
+        {
+            PlatformCustomEvent::Platform(platform_event) => 
+match platform_event
         {
             PlatformEvent::Key(k) =>
             {
@@ -355,7 +364,10 @@ where
             }
             _ =>
             {}
-        };
+        },
+            PlatformCustomEvent::Custom(_) => todo!(),
+        }
+        
     }
 
     fn app<F, O>(&mut self, active: &WinitEventLoopActive, f: F) -> O
@@ -366,10 +378,10 @@ where
         f(&mut self.event_handler, &mut event_loop)
     }
 }
-impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<PlatformEvent<CustomEvent>> for EventLoopRunner<EventHandler, CustomEvent>
+impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<PlatformCustomEvent<CustomEvent>> for EventLoopRunner<EventHandler, CustomEvent>
 where
     EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
     fn resumed(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.resumed(event_loop)); }
 
@@ -386,7 +398,7 @@ where
         self.app(active, |event_handler, event_loop| event_handler.update(dt, event_loop));
     }
 
-    fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformEvent<CustomEvent>) { self.event(active, event); }
+    fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformCustomEvent<CustomEvent>) { self.event(active, event); }
 
     fn window_event(&mut self, active: &WinitEventLoopActive, window_id: winit::window::WindowId, event: WinitWindowEvent)
     {

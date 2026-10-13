@@ -3,7 +3,7 @@ use super::*;
 #[derive(Debug)]
 pub struct EventLoop<'a, Ev = ()>
 where
-    Ev: PlatformCustomEvent,
+    Ev: IPlatformEvent,
 {
     winit: &'a WinitEventLoopActive,
     state: &'a mut EventLoopState,
@@ -13,7 +13,7 @@ where
 
 impl<'a, Ev, Surface> WindowManager<Surface> for EventLoop<'a, Ev>
 where
-    Ev: PlatformCustomEvent,
+    Ev: IPlatformEvent,
 {
     fn create_window(&mut self, mut param: WindowParam) -> WindowResult<Window<Surface>>
     {
@@ -38,7 +38,7 @@ where
 
 impl<'a, Ev> EventLoop<'a, Ev>
 where
-    Ev: PlatformCustomEvent,
+    Ev: IPlatformEvent,
 {
     pub fn dt(&self) -> Duration { self.state.dt }
     pub fn time(&self) -> Time { self.state.time }
@@ -50,17 +50,17 @@ where
 }
 impl<'a, Ev> Clipboardable for EventLoop<'a, Ev>
 where
-    Ev: PlatformCustomEvent,
+    Ev: IPlatformEvent,
 {
     fn get_clipboard(&mut self) -> Option<String> { self.state.get_clipboard() }
 
     fn set_clipboard(&mut self, paste: String) -> Result<(), ()> { self.state.set_clipboard(paste) }
 }
-impl<'a, Ev> EventLoopSendEvent<PlatformEvent<Ev>> for EventLoop<'a, Ev>
+impl<'a, Ev> EventLoopSendEvent<PlatformCustomEvent<Ev>> for EventLoop<'a, Ev>
 where
-    Ev: PlatformCustomEvent,
+    Ev: IPlatformEvent,
 {
-    fn send_event(&self, ev: PlatformEvent<Ev>) -> ProxyResult { self.proxy().send_event(ev) }
+    fn send_event(&self, ev: PlatformCustomEvent<Ev>) -> ProxyResult { self.proxy().send_event(ev) }
 }
 
 #[derive(Debug)]
@@ -81,7 +81,7 @@ impl Clipboardable for EventLoopState
 
 pub trait PlatformEventHandler<CustomEvent = ()>: Sized + 'static
 where
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
     /*
     fn tick(&mut self, dt: DeltaTime, l: &mut AppLoop<CustomEvent>)
@@ -117,7 +117,7 @@ where
 
     fn exit(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
 
-    fn event(&mut self, ev: PlatformEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformEvent<CustomEvent>> { Some(ev) }
+    fn event(&mut self, ev: PlatformCustomEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformCustomEvent<CustomEvent>> { Some(ev) }
 }
 
 /*
@@ -182,30 +182,30 @@ impl<'a,'b,User,Ctx> AppCtx<'a,'b,User,Ctx>
 
 pub struct EventLoopProxy<CustomEvent>
 where
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
     winit: WinitEventLoopProxy<CustomEvent>,
 }
 impl<CustomEvent> Debug for EventLoopProxy<CustomEvent>
 where
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "EventLoopProxy") }
 }
 impl<CustomEvent> Clone for EventLoopProxy<CustomEvent>
 where
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
     fn clone(&self) -> Self { Self { winit: self.winit.clone() } }
 }
 
 pub type ProxyResult<T = ()> = Result<T, ()>;
 
-impl<CustomEvent> EventLoopSendEvent<PlatformEvent<CustomEvent>> for EventLoopProxy<CustomEvent>
+impl<CustomEvent> EventLoopSendEvent<PlatformCustomEvent<CustomEvent>> for EventLoopProxy<CustomEvent>
 where
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
-    fn send_event(&self, ev: PlatformEvent<CustomEvent>) -> ProxyResult
+    fn send_event(&self, ev: PlatformCustomEvent<CustomEvent>) -> ProxyResult
     {
         match self.winit.send_event(ev)
         {
@@ -221,7 +221,7 @@ pub trait EventLoopSendEvent<E>
 
 impl<CustomEvent> EventLoopProxy<CustomEvent>
 where
-    CustomEvent: PlatformCustomEvent,
+    CustomEvent: IPlatformEvent,
 {
     pub(crate) fn new(winit: WinitEventLoopProxy<CustomEvent>) -> Self { Self { winit } }
     pub fn winit(&self) -> &WinitEventLoopProxy<CustomEvent> { &self.winit }

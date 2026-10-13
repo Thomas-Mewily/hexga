@@ -216,7 +216,7 @@ where
 
     fn event(&mut self, ev: AppInternalEvent, event_loop: &mut AppInternalEventLoop) -> Option<AppInternalEvent>
     {
-        let (ev, app_internal) = ev.replace_custom_event(|| ());
+        let (ev, app_internal) = ev.replace_custom_event_from_fn(|| ());
 
         match app_internal
         {
@@ -257,19 +257,25 @@ where
             {}
         }
 
-        match &ev
+        let e = match ev
         {
-            PlatformEvent::Resize(size) =>
+            PlatformCustomEvent::Platform(ev) => 
+            {
+                match &ev
+            {
+                            PlatformEvent::Resize(size) =>
             {
                 WINDOW.try_get_mut().map(|mut w| w.configure_surface());
             }
             _ =>
             {}
-        }
+            }ev},
+            PlatformCustomEvent::Custom(_) => todo!(),
+        };
 
         match &mut self.app
         {
-            Some(app) => app.event(ev, &mut ()).map(|ev| ev.replace_custom_event(|| app_internal.unwrap()).0),
+            Some(app) => app.event(e, &mut ()).map(|e| PlatformCustomEvent::Platform(e)),
             None => None,
         }
     }
