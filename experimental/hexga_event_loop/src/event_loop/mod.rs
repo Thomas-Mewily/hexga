@@ -42,3 +42,9 @@ pub mod traits
 
 pub type EventLoopResult<T = ()> = Result<T, EventLoopError>;
 pub type EventLoopError = ();
+
+pub fn init_if_needed()
+{
+    crash::init_if_needed();
+    log::init_if_needed();
+}

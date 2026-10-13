@@ -42,3 +42,9 @@ pub mod traits
 
 pub type EventLoopResult<T = ()> = Result<T, EventLoopError>;
 pub type EventLoopError = ();
+
+pub fn init()
+{
+    crate::free_fn::init();
+    log::init();
+}

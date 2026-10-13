@@ -25,4 +25,4 @@ static LOGGER_INIT: LazyLock<()> = LazyLock::new(|| {
     }
 });
 
-pub fn init() { LazyLock::force(&LOGGER_INIT); }
+pub fn init_if_needed() { LazyLock::force(&LOGGER_INIT); }

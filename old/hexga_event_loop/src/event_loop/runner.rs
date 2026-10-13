@@ -206,7 +206,7 @@ where
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: PlatformCustomEvent,
 {
-    free_fn::init();
+    event_loop::init();
 
     let event_loop = WinitEventLoop::with_user_event().build().ok_or_void()?;
     event_loop.set_control_flow(param.control_flow.into());

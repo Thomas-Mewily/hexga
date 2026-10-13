@@ -16,7 +16,7 @@ use std::rc::Rc;
 use std::sync::{Arc, LazyLock};
 
 pub mod event_loop;
-mod free_fn;
+pub(crate) mod crash;
 pub mod input;
 pub mod log;
 pub mod monitor;
