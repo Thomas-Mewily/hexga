@@ -1,3 +1,5 @@
+use hexga_event::WithContext;
+
 use super::*;
 
 #[derive(Debug)]
@@ -78,6 +80,7 @@ impl Clipboardable for EventLoopState
 
     fn set_clipboard(&mut self, paste: String) -> Result<(), ()> { self.clipboard.set_clipboard(paste) }
 }
+
 
 pub trait PlatformEventHandler<CustomEvent = ()>: Sized + 'static
 where

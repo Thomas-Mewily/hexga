@@ -19,6 +19,7 @@ edition = "2024"
 hexga_ansi_color       = { path = "./crates/hexga_ansi_color",           version = "0.0.11-beta.56", default-features = false }
 hexga_map_on           = { path = "./crates/hexga_map_on",               version = "0.0.11-beta.56", default-features = false }
 hexga_typedef          = { path = "./crates/hexga_typedef",              version = "0.0.11-beta.56", default-features = false }
+hexga_event            = { path = "./crates/hexga_event",                version = "0.0.11-beta.56", default-features = false }
 
 hexga_number           = { path = "./crates/hexga_number",               version = "0.0.11-beta.56", default-features = false }
 hexga_array            = { path = "./crates/hexga_array",                version = "0.0.11-beta.56", default-features = false }

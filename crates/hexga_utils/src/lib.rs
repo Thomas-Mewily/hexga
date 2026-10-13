@@ -13,7 +13,6 @@ pub mod button;
 pub mod dirty;
 pub mod evolution;
 pub mod lazy;
-pub mod event;
 pub mod scope;
 //pub mod interned_map;
 //pub mod owned_slice;
@@ -34,7 +33,6 @@ pub mod prelude
     pub use super::dirty::prelude::*;
     pub use super::evolution::prelude::*;
     pub use super::lazy::prelude::*;
-    pub use super::event::prelude::*;
     pub use super::scope::prelude;
     //pub use super::interned_map::prelude;
 }
@@ -45,6 +43,5 @@ pub mod traits
     pub use super::dirty::traits::*;
     pub use super::evolution::traits::*;
     pub use super::lazy::traits::*;
-    pub use super::event::traits::*;
     pub use super::scope::traits::*;
 }
