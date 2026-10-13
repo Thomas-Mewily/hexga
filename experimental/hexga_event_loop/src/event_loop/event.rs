@@ -22,7 +22,6 @@ pub enum PlatformEvent
     Open,
     Close,
     Destroy,
-
     //Custom(Ev),
 }
 
@@ -30,8 +29,6 @@ impl From<KeyEvent> for PlatformEvent
 {
     fn from(key: KeyEvent) -> Self { Self::Key(key) }
 }
-
-
 
 pub enum PlatformMessage<Ev>
 {
@@ -104,7 +101,9 @@ impl<Ev> PlatformMessage<Ev>
     }
 }
 
-impl<E,Ev> From<E> for PlatformMessage<Ev> where E: Into<PlatformEvent>
+impl<E, Ev> From<E> for PlatformMessage<Ev>
+where
+    E: Into<PlatformEvent>,
 {
     fn from(event: E) -> Self { Self::Event(event.into()) }
 }

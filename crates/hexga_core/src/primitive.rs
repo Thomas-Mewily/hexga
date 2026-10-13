@@ -259,7 +259,6 @@ unsafe impl BitZero for word {}
 unsafe impl BitAnyPattern for word {}
 unsafe impl BitAllUsed for word {}
 
-
 /*
 // Can be used for stuff like GenVec with Generation = u0
 

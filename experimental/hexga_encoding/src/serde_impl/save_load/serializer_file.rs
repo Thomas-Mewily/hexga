@@ -317,7 +317,7 @@ impl<'a,FS> Serializer for &'a mut SerializerFile<'a,FS>
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> { impl_ser!(self, serialize_char, v) }
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> { impl_ser!(self, serialize_str, v) }
 
-    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> { 
+    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
         todo!("check for url / binary url (depending if binary is set here)");
         impl_ser!(self, serialize_bytes, v)
     }
@@ -327,22 +327,22 @@ impl<'a,FS> Serializer for &'a mut SerializerFile<'a,FS>
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> { impl_ser!(self, serialize_unit_struct, name) }
     fn serialize_unit_variant(self, name: &'static str, variant_index: u32, variant: &'static str) -> Result<Self::Ok, Self::Error>  { impl_ser!(self, serialize_unit_variant, name, variant_index, variant) }
 
-    fn serialize_newtype_struct<T>(self, name: &'static str, value: &T) -> Result<Self::Ok, Self::Error> where T: ?Sized + Serialize 
+    fn serialize_newtype_struct<T>(self, name: &'static str, value: &T) -> Result<Self::Ok, Self::Error> where T: ?Sized + Serialize
     {
         todo!()
     }
-    fn serialize_some<T>(mut self, v: &T) -> Result<Self::Ok, Self::Error> where T: ?Sized + Serialize 
-    { 
+    fn serialize_some<T>(mut self, v: &T) -> Result<Self::Ok, Self::Error> where T: ?Sized + Serialize
+    {
         todo!()
     }
     fn serialize_newtype_variant<T>(mut self, name: &'static str, variant_index: u32, variant: &'static str, value: &T) -> Result<Self::Ok, Self::Error>
     where
         T: ?Sized + Serialize
-    {         
+    {
         todo!()
     }
 
-    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> 
+    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error>
     {
         let seq = match self.serializer.as_mut().unwrap() {
             SerializerMarkup::Ron(ser) => {
@@ -352,7 +352,7 @@ impl<'a,FS> Serializer for &'a mut SerializerFile<'a,FS>
                     Err(e) => Err(FileError::new(EncodeError::markup::<Self>(Extension::RON, e)).with_path(Some(self.path.to_path_buf()))),
                 }
             }
-            SerializerMarkup::Json(ser) => 
+            SerializerMarkup::Json(ser) =>
             {
                 match ser.serialize_seq(len)
                 {
@@ -413,7 +413,7 @@ pub type SerializerMarkupSeq<'a> = Markup<SerializerRonSeq<'a>,SerializerJsonSeq
 
 pub struct SerializerFileSeq<'a,FS>
 {
-    file : &'a mut SerializerFile<'a,FS>, 
+    file : &'a mut SerializerFile<'a,FS>,
     seq : SerializerMarkupSeq<'a>
 }
 
@@ -429,10 +429,10 @@ impl<'a,FS> SerializeSeq for SerializerFileSeq<'a,FS>
         T: ?Sized + Serialize {
         match &mut self.serializer
         {
-            Markup::Ron(s) => 
+            Markup::Ron(s) =>
             {
                 //SerializeSeq::serialize_element(s, value).map_err(|e| FileError::new(EncodeError::markup::<Self>(Extension::RON, e)).with_path(Some(self.path.to_path_buf()))),
-                
+
             }
             Markup::Json(s) => SerializeSeq::serialize_element(s, value).map_err(|e| FileError::new(EncodeError::markup::<Self>(Extension::JSON, e)).with_path(Some(self.path.to_path_buf()))),
         }

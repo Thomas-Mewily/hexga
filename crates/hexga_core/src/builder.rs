@@ -16,7 +16,6 @@ pub trait Builder
 }
 // pub trait TryBuilder ...
 
-
 pub mod prelude
 {
     pub use super::traits::*;

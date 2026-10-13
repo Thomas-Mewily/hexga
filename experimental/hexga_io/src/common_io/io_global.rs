@@ -55,21 +55,30 @@ impl FileSystemDynRead for IoGlobal
         }
     }
 
-    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType> {
+    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType>
+    {
         let meta = fs::metadata(path)?;
         let file_type = meta.file_type();
 
-        if file_type.is_dir() { return Ok(Some(FileKind::Dir)); }
-        if file_type.is_file() { return Ok(Some(FileKind::File)); }
-        if file_type.is_symlink() { return Ok(Some(FileKind::Symlink)); }
+        if file_type.is_dir()
+        {
+            return Ok(Some(FileKind::Dir));
+        }
+        if file_type.is_file()
+        {
+            return Ok(Some(FileKind::File));
+        }
+        if file_type.is_symlink()
+        {
+            return Ok(Some(FileKind::Symlink));
+        }
         Ok(None)
     }
-    
-    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> {
-        path.read_link()
-    }
-    
-    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf> {
+
+    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> { path.read_link() }
+
+    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>
+    {
         match self._dyn_canonicalize(path)
         {
             Ok(canonized) =>

@@ -256,7 +256,7 @@ impl CursorIcon
     ///
     /// This name most of the time could be passed as is to cursor loading
     /// libraries on X11/Wayland and could be used as-is on web.
-    
+
     /*
     /// # Examples
     ///
@@ -281,7 +281,7 @@ impl CursorIcon
     /// # Ok(())
     /// # }
     /// ```
-    */
+     */
     pub fn name(&self) -> &'static str
     {
         match self

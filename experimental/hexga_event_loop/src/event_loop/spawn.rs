@@ -1,5 +1,5 @@
-use hexga_core::asynchrone::WasmSend;
 use super::*;
+use hexga_core::asynchrone::WasmSend;
 
 pub trait AsyncSpawn
 where

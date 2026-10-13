@@ -1,5 +1,3 @@
-use hexga_event::WithContext;
-
 use super::*;
 
 #[derive(Debug)]
@@ -81,7 +79,6 @@ impl Clipboardable for EventLoopState
     fn set_clipboard(&mut self, paste: String) -> Result<(), ()> { self.clipboard.set_clipboard(paste) }
 }
 
-
 pub trait PlatformEventHandler<CustomEvent = ()>: Sized + 'static
 where
     CustomEvent: IPlatformEvent,
@@ -112,12 +109,16 @@ where
 
     //fn tick// + make a struct ApplyUpdateStrategyEventHandler to echantilloner les update. fn event_end + fn event_begin ?
 
-    fn message(&mut self, ev: PlatformMessage<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformMessage<CustomEvent>> 
+    fn message(&mut self, ev: PlatformMessage<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformMessage<CustomEvent>>
     {
         match ev
         {
             PlatformMessage::Event(ev) => self.event(ev, event_loop).map(PlatformMessage::Event),
-            PlatformMessage::Flow(flow) => { self.flow(flow, event_loop); None },
+            PlatformMessage::Flow(flow) =>
+            {
+                self.flow(flow, event_loop);
+                None
+            }
             PlatformMessage::Custom(ev) => self.custom(ev, event_loop).map(PlatformMessage::Custom),
         }
     }

@@ -56,12 +56,12 @@ pub mod traits
 /// You are probably looking for the `prelude` module.
 pub mod hexga_prelude
 {
+    pub use crate::array_vec::prelude::*;
     pub use crate::bitflags::bit_index;
     pub use crate::generational::prelude::*;
     pub use crate::math::prelude::*;
     pub use crate::utils::prelude::*;
     pub use hexga_image::prelude::*;
-    pub use crate::array_vec::prelude::*;
 
     //pub use crate::random::*;
     // #[allow(unused_imports)]

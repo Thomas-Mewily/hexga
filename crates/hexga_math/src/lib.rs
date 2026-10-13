@@ -71,7 +71,6 @@ use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
-
 //pub use hexga_number as number;
 pub use hexga_number::*;
 

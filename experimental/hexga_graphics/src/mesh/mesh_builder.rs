@@ -12,7 +12,7 @@ pub trait BuilderMesh<const N: usize = 3>
         self.extend(vertex, index.into_iter().flatten())
     }
     */
-    
+
     fn triangle(&mut self, triangle: TriangleVertex<N>) { self.extend(triangle.points, [0, 1, 2]); }
     fn triangles(&mut self, triangles: impl IntoIterator<Item = TriangleVertex<N>>)
     {
@@ -145,7 +145,7 @@ impl<const N: usize> BuilderMesh<N> for MeshBuilder<N>
         debug_assert_eq!(nb_indices_added % 3, 0, "Index need to be a multiple of 3, because they form a triangle");
     }
 
-    fn geometry(&mut self, vertex: &[VertexOf<N>], index: &[VertexIndex]) 
+    fn geometry(&mut self, vertex: &[VertexOf<N>], index: &[VertexIndex])
     {
         let vertices_prev_len = self.nb_vertex();
         self.vertices.extend_from_slice(vertex);

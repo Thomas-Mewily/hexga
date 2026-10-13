@@ -1,6 +1,6 @@
 //use std::{collections::VecDeque, fmt::Debug};
 
-/* 
+/*
 
 /*
 
@@ -21,13 +21,13 @@ pub trait ActionUnit<Ctx> : Sized
 
     fn execute_unit(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { Default::default() }
     fn undo_unit(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { self.execute_unit(ctx) }
-    
+
     fn composite<A : ActionComposite<Ctx>>(&mut self, composite: A) { let _ = composite; }
 
-    fn execute<A : ActionComposite<Ctx>>(mut self, a: A) -> Result<Self::Ok, Self::Err> 
+    fn execute<A : ActionComposite<Ctx>>(mut self, a: A) -> Result<Self::Ok, Self::Err>
     {
         self.execute_unit(ctx)?;
-        
+
         self.composite(composite)?;
     }
     fn undo(&mut self, ctx: &mut Ctx) -> Result<Self::Ok, Self::Err> { self.execute_unit(ctx) }
@@ -69,14 +69,14 @@ pub trait ActionUndoRedoIn<A, Ctx>
     /// Redo the current action.
     fn redo(&mut self, ctx: &mut Ctx) -> Result<A::Ok, Option<A::Err>>;
     /// Redo the `nb` next actions in an atomic way.
-    fn redo_by(&mut self, nb: usize, ctx: &mut Ctx) -> Result<(), Option<A::Err>> 
+    fn redo_by(&mut self, nb: usize, ctx: &mut Ctx) -> Result<(), Option<A::Err>>
     {
-        for ok_until in 0..nb 
-        { 
-            match self.redo(ctx) 
+        for ok_until in 0..nb
+        {
+            match self.redo(ctx)
             {
                 Ok(_) => continue,
-                Err(e) => 
+                Err(e) =>
                 {
                     for _ in 0..ok_until
                     {
@@ -85,8 +85,8 @@ pub trait ActionUndoRedoIn<A, Ctx>
                     return Err(e);
                 },
             }
-        } 
-        Ok(()) 
+        }
+        Ok(())
     }
     /// Is there are action to undo ?
     fn can_undo(&mut self) -> bool;
@@ -94,14 +94,14 @@ pub trait ActionUndoRedoIn<A, Ctx>
     /// Undo the current action.
     fn undo(&mut self, ctx: &mut Ctx) -> Result<A::Ok, Option<A::Err>>;
     /// Undo the `nb` next actions in an atomic way.
-    fn undo_by(&mut self, nb: usize, ctx: &mut Ctx) -> Result<(), Option<A::Err>> 
-    { 
-        for ok_until in 0..nb 
-        { 
-            match self.undo(ctx) 
+    fn undo_by(&mut self, nb: usize, ctx: &mut Ctx) -> Result<(), Option<A::Err>>
+    {
+        for ok_until in 0..nb
+        {
+            match self.undo(ctx)
             {
                 Ok(_) => continue,
-                Err(e) => 
+                Err(e) =>
                 {
                     for _ in 0..ok_until
                     {
@@ -110,8 +110,8 @@ pub trait ActionUndoRedoIn<A, Ctx>
                     return Err(e);
                 },
             }
-        } 
-        Ok(()) 
+        }
+        Ok(())
     }
 }
 
@@ -139,7 +139,7 @@ impl<A, Ctx> ActionUndoRedoIn<A, Ctx> for UndoRedo<A>
     fn redo(&mut self, ctx: &mut Ctx) -> Result<A::Ok, Option<A::Err>> {
         match self.redo.pop()
         {
-            Some(mut action) => 
+            Some(mut action) =>
             {
                 match action.execute_atomic(ctx)
                 {
@@ -158,7 +158,7 @@ impl<A, Ctx> ActionUndoRedoIn<A, Ctx> for UndoRedo<A>
     fn undo(&mut self, ctx: &mut Ctx) -> Result<A::Ok, Option<A::Err>> {
         match self.undo.pop()
         {
-            Some(mut action) => 
+            Some(mut action) =>
             {
                 match action.execute_atomic(ctx)
                 {
@@ -202,9 +202,9 @@ impl<T> Action<Vec<T>> for PushPop<T>
 {
     type Ok=();
     type Err=();
-    
+
     fn execute<A: ActionCat<Self, Vec<T>>>(&mut self, ctx: A) -> Result<Self::Ok, Self::Err> {
-        ctx.leaf(|ctx| 
+        ctx.leaf(|ctx|
             {
                 match self.value.take()
                 {

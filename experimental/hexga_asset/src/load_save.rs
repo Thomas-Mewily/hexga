@@ -4,8 +4,6 @@ use hexga_encoding::FileErrorKind;
 
 use super::*;
 
-
-
 /*
 pub trait PersistantValue<T> : Persistant + Into<T>
 {

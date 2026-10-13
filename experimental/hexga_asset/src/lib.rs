@@ -24,15 +24,10 @@ pub use asset::*;
 mod asset_data;
 pub use asset_data::*;
 
-
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{
-        AssetIn, AssetGlobal, AssetData, 
-        AssetManagerIn, AssetManagerData, AssetManagerGlobal,
-        FileIn, FileData, FileGlobal,
-    };
+    pub use super::{AssetData, AssetGlobal, AssetIn, AssetManagerData, AssetManagerGlobal, AssetManagerIn, FileData, FileGlobal, FileIn};
 }
 
 pub mod traits

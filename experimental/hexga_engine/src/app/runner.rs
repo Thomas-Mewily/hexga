@@ -259,17 +259,19 @@ where
 
         let e = match ev
         {
-            PlatformMessage::Event(ev) => 
+            PlatformMessage::Event(ev) =>
             {
                 match &ev
-            {
-                            PlatformEvent::Resize(size) =>
-            {
-                WINDOW.try_get_mut().map(|mut w| w.configure_surface());
+                {
+                    PlatformEvent::Resize(size) =>
+                    {
+                        WINDOW.try_get_mut().map(|mut w| w.configure_surface());
+                    }
+                    _ =>
+                    {}
+                }
+                ev
             }
-            _ =>
-            {}
-            }ev},
             PlatformMessage::Custom(_) => todo!(),
             PlatformMessage::Flow(platform_flow) => todo!(),
         };

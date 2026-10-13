@@ -108,18 +108,17 @@ impl Graphics
 
         let camera_buffer = GpuBuffer::new(&[Mat4::IDENTITY], GpuBufferUsageFlags::Uniform | GpuBufferUsageFlags::CopySrc);
 
-        let camera_bind_group_layout =
-            Gpu.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                entries: &[wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                }],
+        let camera_bind_group_layout = Gpu.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
             label: Some("camera_bind_group_layout"),
         });
 
@@ -132,28 +131,27 @@ impl Graphics
             label: Some("camera_bind_group"),
         });
 
-        let texture_bind_group =
-            Gpu.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                entries: &[
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            multisampled: false,
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        },
-                        count: None,
+        let texture_bind_group = Gpu.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        multisampled: false,
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
                     },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                        count: None,
-                    },
-                ],
-                label: Some("texture_bind_group_layout"),
-            });
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                    count: None,
+                },
+            ],
+            label: Some("texture_bind_group_layout"),
+        });
 
         Graphics {
             pipeline,
@@ -195,8 +193,6 @@ impl Graphics
             Ok(s) => s,
             Err(_) => return,
         };
-
-
 
         let texture_view = surface_texture.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
@@ -260,8 +256,14 @@ impl Graphics
                     if scissor.width().is_zero() { continue; }
                     */
 
-
-                    rpass.set_viewport(viewport.pos.x as _, viewport.pos.y as _, viewport.size.x as _, viewport.size.y as _, viewport_min_depth, viewport_max_depth);
+                    rpass.set_viewport(
+                        viewport.pos.x as _,
+                        viewport.pos.y as _,
+                        viewport.size.x as _,
+                        viewport.size.y as _,
+                        viewport_min_depth,
+                        viewport_max_depth,
+                    );
                     rpass.set_scissor_rect(scissor.pos.x as _, scissor.pos.y as _, scissor.size.x as _, scissor.size.y as _);
 
                     let texture_index = 1;
@@ -271,7 +273,7 @@ impl Graphics
                     match &dc.texture
                     {
                         Some(_) => todo!(),
-                        None => 
+                        None =>
                         {
                             rpass.set_bind_group(texture_index, &self.white_pixel.as_ref().unwrap().shared.bind_group, offset)
                         },
@@ -286,14 +288,17 @@ impl Graphics
                     {
                         DrawGeometry::Immediate(im) =>
                         {
-                            if im.is_empty() { continue; }
+                            if im.is_empty()
+                            {
+                                continue;
+                            }
 
                             rpass.set_vertex_buffer(0, vertices.wgpu_slice(im.vertices));
                             rpass.set_index_buffer(indices.wgpu_slice(im.indices), VertexIndex::GPU_INDEX_FORMAT);
                             //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
                             // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
-                            rpass.draw_indexed(0 ..((im.vertices.end - im.vertices.start) as _), -(im.vertices.start as i32), 0..1);
-                        },
+                            rpass.draw_indexed(0..((im.vertices.end - im.vertices.start) as _), -(im.vertices.start as i32), 0..1);
+                        }
                     }
                 }
             }

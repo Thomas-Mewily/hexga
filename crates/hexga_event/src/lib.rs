@@ -17,12 +17,14 @@ pub trait HandleEventWithContext<E, Ctx: ?Sized =()>
 }
 */
 
+/*
 #[derive(Debug)]
 pub struct WithContext<'a,V,Ctx>
 {
     pub value: &'a mut V,
-    pub context: &'a mut Ctx, 
+    pub context: &'a mut Ctx,
 }
+*/
 
 pub trait HandleEvent<E>
 {
@@ -36,5 +38,5 @@ impl<E,Ctx,S> HandleEventWithContext<E, Ctx> for S where S: HandleEvent<E>, Ctx:
         let _ = ctx;
         self.handle_event(event)
     }
-} 
+}
 */

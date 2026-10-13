@@ -18,10 +18,9 @@ pub trait FileSystemNode
 }
 */
 
-
-pub trait FileSystemIsolated : FileSystemProvider
+pub trait FileSystemIsolated: FileSystemProvider
 {
-    type HostFileSystem : FileSystem;
+    type HostFileSystem: FileSystem;
 
     /// The root of this isolated file system.
     /// Cant only read and write file/dir inside this root.
@@ -31,13 +30,14 @@ pub trait FileSystemIsolated : FileSystemProvider
 
     /// Validates that a path is within the isolated root.
     /// Returns an error if the path escapes the root.
-    fn validate_path<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf> {
+    fn validate_path<P: AsRef<Path>>(&mut self, path: P) -> IoResult<PathBuf>
+    {
         let path = path.as_ref();
-        
+
         let mut fs = Self::non_isolated_file_system();
 
         let mut full_path = fs.canonicalize(&self.isolated_root())?;
-        
+
         full_path.reserve(path.as_os_str().len() + 1);
 
         let mut depth = 0;
@@ -47,72 +47,88 @@ pub trait FileSystemIsolated : FileSystemProvider
         {
             match c
             {
-                std::path::Component::Prefix(prefix) => 
+                std::path::Component::Prefix(prefix) =>
                 {
-                    return Err(IoError::new_with_path(IoErrorKind::InvalidFilename, format!("found prefix {:?} in the middle of the path", prefix), path)); 
-                },
-                std::path::Component::RootDir => 
+                    return Err(IoError::new_with_path(
+                        IoErrorKind::InvalidFilename,
+                        format!("found prefix {:?} in the middle of the path", prefix),
+                        path,
+                    ));
+                }
+                std::path::Component::RootDir =>
                 {
-                    if idx != 0 { return Err(IoError::new_with_path(IoErrorKind::InvalidFilename, format!("found root dir in the middle of the path"), path))} 
-                },
-                std::path::Component::CurDir =>  { continue; } // Skip .,
-                std::path::Component::ParentDir => 
+                    if idx != 0
+                    {
+                        return Err(IoError::new_with_path(
+                            IoErrorKind::InvalidFilename,
+                            format!("found root dir in the middle of the path"),
+                            path,
+                        ));
+                    }
+                }
+                std::path::Component::CurDir =>
                 {
-                    if depth == 0 {
+                    continue;
+                } // Skip .,
+                std::path::Component::ParentDir =>
+                {
+                    if depth == 0
+                    {
                         return Err(IoError::new_with_path(
                             IoErrorKind::InvalidFilename,
                             "Path attempts to escape root with '..'".to_string(),
-                            path
+                            path,
                         ));
                     }
                     depth -= 1;
                     full_path.pop();
-                },
-                std::path::Component::Normal(os_str) => 
+                }
+                std::path::Component::Normal(os_str) =>
                 {
                     depth += 1;
                     full_path.push(os_str);
-                },
+                }
             }
         }
-        
+
         Ok(full_path)
     }
 }
-impl<T> FileSystemDynRead for T where T: FileSystemIsolated
+impl<T> FileSystemDynRead for T
+where
+    T: FileSystemIsolated,
 {
-    fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>> {
+    fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>
+    {
         Self::non_isolated_file_system().dyn_read_bytes_at(&self.validate_path(path)?)
     }
 
-    fn dyn_read_dir_at(&mut self, path: &Path) -> IoResult<Vec<IoResult<PathBuf>>> {
+    fn dyn_read_dir_at(&mut self, path: &Path) -> IoResult<Vec<IoResult<PathBuf>>>
+    {
         Self::non_isolated_file_system().dyn_read_dir_at(&self.validate_path(path)?)
     }
 
-    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> {
-        Self::non_isolated_file_system().dyn_read_link_at(&self.validate_path(path)?)
-    }
+    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> { Self::non_isolated_file_system().dyn_read_link_at(&self.validate_path(path)?) }
 
-    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType> {
-        Self::non_isolated_file_system().dyn_file_type_at(&self.validate_path(path)?)
-    }
+    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType> { Self::non_isolated_file_system().dyn_file_type_at(&self.validate_path(path)?) }
 
-    fn dyn_resolve_paths(&mut self, path: &Path) -> IoResult<Vec<PathBuf>> 
+    fn dyn_resolve_paths(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>
     {
         let root = self.isolated_root();
         let mut resolved = Self::non_isolated_file_system().dyn_resolve_paths(&self.validate_path(path)?)?;
-        resolved.retain_mut(|p| 
+        resolved.retain_mut(|p| match strip_prefix(&p, &root)
+        {
+            Ok(stripped) =>
             {
-                match strip_prefix(&p, &root)
-                {
-                    Ok(stripped) => { *p = stripped; true },
-                    Err(_) => false,
-                }
-            });
+                *p = stripped;
+                true
+            }
+            Err(_) => false,
+        });
         Ok(resolved)
     }
 
-    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf> 
+    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>
     {
         let path = self.validate_path(path)?;
         let root = self.isolated_root();
@@ -127,29 +143,29 @@ fn strip_prefix(path: &Path, root: &Path) -> IoResult<PathBuf>
         Ok(p) => Ok(p.to_path_buf()),
         Err(_err) => Err(IoError::new(
             IoErrorKind::InvalidInput,
-            format!("Path '{:?}' is not within the isolated root '{:?}'", path, root))),
+            format!("Path '{:?}' is not within the isolated root '{:?}'", path, root),
+        )),
     }
 }
 
-impl<T> FileSystemDynWrite for T where T: FileSystemIsolated
+impl<T> FileSystemDynWrite for T
+where
+    T: FileSystemIsolated,
 {
-    fn dyn_write_bytes_at(&mut self, path: &Path, value: &[u8]) -> IoResult {
+    fn dyn_write_bytes_at(&mut self, path: &Path, value: &[u8]) -> IoResult
+    {
         Self::non_isolated_file_system().dyn_write_bytes_at(&self.validate_path(path)?, value)
     }
 
-    fn dyn_create_dir(&mut self, path: &Path) -> IoResult {
-        Self::non_isolated_file_system().dyn_create_dir(&self.validate_path(path)?)
-    }
+    fn dyn_create_dir(&mut self, path: &Path) -> IoResult { Self::non_isolated_file_system().dyn_create_dir(&self.validate_path(path)?) }
 
-    fn dyn_remove_at(&mut self, path: &Path) -> IoResult {
-        Self::non_isolated_file_system().dyn_remove_at(&self.validate_path(path)?)
-    }
+    fn dyn_remove_at(&mut self, path: &Path) -> IoResult { Self::non_isolated_file_system().dyn_remove_at(&self.validate_path(path)?) }
 
-    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult {
+    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult
+    {
         Self::non_isolated_file_system().dyn_rename_at(&self.validate_path(from)?, &self.validate_path(to)?)
     }
 }
-
 
 pub trait FileSystemProvider
 {
@@ -171,7 +187,7 @@ pub trait FileSystemDynRead
     #[doc(hidden)]
     #[must_use]
     fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>;
-    #[doc(hidden)] 
+    #[doc(hidden)]
     #[must_use]
     fn dyn_read_dir_at(&mut self, path: &Path) -> IoResult<Vec<IoResult<PathBuf>>>;
     #[doc(hidden)]
@@ -257,7 +273,11 @@ pub trait FileSystemRead: FileSystemDynRead
     fn exist<P: AsRef<Path>>(&mut self, path: P) -> bool { self.try_exist(path).is_ok_and(|exist| exist) }
     /// Resolve the path anc check if it exist.
     #[must_use]
-    fn try_exist<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { let path = self.resolve_path(path)?; self.dyn_try_exist_at(&path) }
+    fn try_exist<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool>
+    {
+        let path = self.resolve_path(path)?;
+        self.dyn_try_exist_at(&path)
+    }
 
     /// Check if the path exist.
     #[must_use]
@@ -265,7 +285,6 @@ pub trait FileSystemRead: FileSystemDynRead
     /// Check if the path exist.
     #[must_use]
     fn try_exist_at<P: AsRef<Path>>(&mut self, path: P) -> IoResult<bool> { self.dyn_try_exist_at(path.as_ref()) }
-
 
     /// Read the file at path.
     #[must_use]
@@ -279,23 +298,35 @@ pub trait FileSystemRead: FileSystemDynRead
 
     /// Read the file at the resolved path.
     #[must_use]
-    fn read_bytes<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>> 
-    { 
+    fn read_bytes<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Cow<'static, [u8]>>
+    {
         let path = self.resolve_path(path)?;
-        self.read_bytes_at(path) 
+        self.read_bytes_at(path)
     }
-    
+
     /// Read the contents of a directory at the given resolved path.
     #[must_use]
-    fn read_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<IoResult<PathBuf>>> { let path = self.resolve_path(path)?; self.read_dir_at(path) }
+    fn read_dir<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<IoResult<PathBuf>>>
+    {
+        let path = self.resolve_path(path)?;
+        self.read_dir_at(path)
+    }
     /// Read the link at the given resolved path.
     #[must_use]
-    fn read_link<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<IoResult<PathBuf>>> { let path = self.resolve_path(path)?; self.read_link_at(path) }
+    fn read_link<P: AsRef<Path>>(&mut self, path: P) -> IoResult<Vec<IoResult<PathBuf>>>
+    {
+        let path = self.resolve_path(path)?;
+        self.read_link_at(path)
+    }
 
     #[must_use]
     fn file_type_at<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_at(path.as_ref()) }
     #[must_use]
-    fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { let path = self.resolve_path(path)?; self.file_type_at(path) }
+    fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType>
+    {
+        let path = self.resolve_path(path)?;
+        self.file_type_at(path)
+    }
 
     /// Given a path to a file, return all occurence of the file on the disk with the same name, regardless of the extension.
     /// If the path already have an extension, return it.

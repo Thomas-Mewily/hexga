@@ -60,7 +60,6 @@ mod sync_trait
 }
 pub use sync_trait::*;
 
-
 pub mod prelude
 {
     pub use super::DynAnyAsync;
@@ -68,5 +67,5 @@ pub mod prelude
 }
 pub mod traits
 {
-    pub use super::{Async, AnyAsync};
+    pub use super::{AnyAsync, Async};
 }

@@ -28,7 +28,11 @@ impl AssetsManagerUntyped
             .entry(typeid)
             .or_insert_with(|| Box::new(AssetManagerIn::<T, FS>::___()) as Box<DynAnyAsync>);
 
-        boxed_any.deref_mut().as_any_mut().downcast_mut::<AssetManagerIn<T, FS>>().expect("Type mismatch")
+        boxed_any
+            .deref_mut()
+            .as_any_mut()
+            .downcast_mut::<AssetManagerIn<T, FS>>()
+            .expect("Type mismatch")
     }
 
     pub(crate) fn try_manager<'a, T, FS>(&'a self) -> Option<&'a AssetManagerIn<T, FS>>
@@ -345,33 +349,31 @@ where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    fn new_wrapper(value: Self::Inside) -> Self {
-        Self::from_path_and_value(value.0, value.1)
-    }
+    fn new_wrapper(value: Self::Inside) -> Self { Self::from_path_and_value(value.0, value.1) }
 }
 impl<T, FS> WrapperTryIntoInner for AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    fn into_inner(self) -> Option<Self::Inside> {
-        Some(WrapperIntoInner::into_inner(Arc::into_inner(self.inner)?).into_path_and_value())
-    }
+    fn into_inner(self) -> Option<Self::Inside> { Some(WrapperIntoInner::into_inner(Arc::into_inner(self.inner)?).into_path_and_value()) }
 }
 impl<T, FS> WrapperTryIntoInnerOrClone for AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + Clone,
 {
-    fn into_inner_or_clone(self) -> Self::Inside {
+    fn into_inner_or_clone(self) -> Self::Inside
+    {
         match Arc::try_unwrap(self.inner)
         {
             Ok(guard) => WrapperIntoInner::into_inner(guard).into_path_and_value(),
-            Err(inner) => {
+            Err(inner) =>
+            {
                 let asset = AssetIn { inner };
                 let v = asset.get();
                 (v.path.clone(), v.value().clone())
-            },
+            }
         }
     }
 }
@@ -408,25 +410,19 @@ where
 impl<T, FS> std::fmt::Write for AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,
-    T: Load + Save + Async + std::fmt::Write 
+    T: Load + Save + Async + std::fmt::Write,
 {
-    fn write_str(&mut self, s: &str) -> std::fmt::Result {
-        self.value_mut().write_str(s)
-    }
+    fn write_str(&mut self, s: &str) -> std::fmt::Result { self.value_mut().write_str(s) }
 }
 
 impl<T, FS> std::io::Write for AssetIn<T, FS>
 where
     FS: FileSystemProvider + Async,
-    T: Load + Save + Async + std::io::Write 
+    T: Load + Save + Async + std::io::Write,
 {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.value_mut().write(buf)
-    }
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> { self.value_mut().write(buf) }
 
-    fn flush(&mut self) -> std::io::Result<()> {
-        self.value_mut().flush()
-    }
+    fn flush(&mut self) -> std::io::Result<()> { self.value_mut().flush() }
 }
 
 impl<T, FS> Guarded<AssetValue<T, FS>> for AssetIn<T, FS>

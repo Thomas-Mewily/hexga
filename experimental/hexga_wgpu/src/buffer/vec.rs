@@ -94,7 +94,7 @@ impl<T> WgpuSliceable<T> for GpuVec<T>
 where
     T: GpuBufferElement,
 {
-    fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_> 
+    fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
     {
         let start_byte = match bounds.start_bound()
         {
@@ -133,9 +133,8 @@ where
         new_buffer
     }
     */
-    
-    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.wgpu_buffer_ref() }
 
+    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.wgpu_buffer_ref() }
 }
 
 impl<T> GpuSliceable<T> for GpuVec<T>

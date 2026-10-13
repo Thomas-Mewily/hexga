@@ -11,16 +11,16 @@ impl FileSystemProvider for IoExe
 }
 impl FileSystemIsolated for IoExe
 {
-    fn isolated_root(&mut self) -> PathBuf { 
+    fn isolated_root(&mut self) -> PathBuf
+    {
         let mut current_exe = std::env::current_exe().expect("Failed to get the current exe path");
         current_exe.pop();
         current_exe
     }
-    
+
     type HostFileSystem = IoGlobal;
     fn non_isolated_file_system() -> Self::HostFileSystem { IoGlobal }
 }
-
 
 /// Access the `data` folder where the exe is stored.
 #[derive(Debug, Default)]
@@ -34,7 +34,7 @@ impl FileSystemProvider for IoData
 impl FileSystemIsolated for IoData
 {
     fn isolated_root(&mut self) -> PathBuf { IoExe.isolated_root().join("data") }
-    
+
     type HostFileSystem = IoGlobal;
     fn non_isolated_file_system() -> Self::HostFileSystem { IoGlobal }
 }

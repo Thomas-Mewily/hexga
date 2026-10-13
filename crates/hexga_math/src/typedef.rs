@@ -28,7 +28,6 @@ macro_rules! impl_cast_into {
     };
 }
 
-
 #[cfg(feature = "int_are_8_bits")]
 impl_cast_into!(ToInt, to_int, to_int_range, int, ToI8, to_i8, to_i8_range, i8);
 
@@ -44,9 +43,6 @@ impl_cast_into!(ToInt, to_int, to_int_range, int, ToI64, to_i64, to_i64_range, i
 #[cfg(feature = "int_are_size_bits")]
 impl_cast_into!(ToInt, to_int, to_int_range, int, ToISize, to_isize, to_isize_range, isize);
 
-
-
-
 #[cfg(feature = "int_are_8_bits")]
 impl_cast_into!(ToUInt, to_uint, to_uint_range, uint, ToU8, to_u8, to_u8_range, u8);
 
@@ -61,8 +57,6 @@ impl_cast_into!(ToUInt, to_uint, to_uint_range, uint, ToU64, to_u64, to_u64_rang
 
 #[cfg(feature = "int_are_size_bits")]
 impl_cast_into!(ToUInt, to_uint, to_uint_range, uint, ToUSize, to_usize, to_usize_range, usize);
-
-
 
 #[cfg(feature = "float_are_32_bits")]
 impl_cast_into!(ToFloat, to_float, to_float_range, float, ToF32, to_f32, to_f32_range, f32);

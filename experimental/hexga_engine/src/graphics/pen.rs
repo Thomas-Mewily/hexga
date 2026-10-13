@@ -10,10 +10,7 @@ impl SingletonEmptyStruct for Pen
 
 impl BuilderMesh for Pen
 {
-    fn extend(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>)
-    {
-        GRAPHICS.get_mut().extend(vertex, index)
-    }
+    fn extend(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) { GRAPHICS.get_mut().extend(vertex, index) }
     fn geometry(&mut self, vertex: &[vertex::VertexOf<3>], index: &[VertexIndex]) { GRAPHICS.get_mut().geometry(vertex, index); }
 }
 

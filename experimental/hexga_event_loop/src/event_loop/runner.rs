@@ -250,64 +250,62 @@ where
         match &mut ev
         {
             PlatformMessage::Event(platform_event) => match platform_event
-        {
-            PlatformEvent::Key(k) =>
             {
-                let down = k.is_down();
-                match k.code
+                PlatformEvent::Key(k) =>
                 {
-                    KeyCode::ShiftLeft =>
+                    let down = k.is_down();
+                    match k.code
                     {
-                        self.state.key_modifiers.set(KeyModifiers::ShiftLeft, down);
-                    }
-                    KeyCode::ShiftRight =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::ShiftRight, down);
-                    }
+                        KeyCode::ShiftLeft =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::ShiftLeft, down);
+                        }
+                        KeyCode::ShiftRight =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::ShiftRight, down);
+                        }
 
-                    KeyCode::ControlLeft =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::ControlLeft, down);
-                    }
-                    KeyCode::ControlRight =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::ControlRight, down);
-                    }
+                        KeyCode::ControlLeft =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::ControlLeft, down);
+                        }
+                        KeyCode::ControlRight =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::ControlRight, down);
+                        }
 
-                    KeyCode::AltLeft =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::AltLeft, down);
-                    }
-                    KeyCode::AltRight =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::AltRight, down);
-                    }
+                        KeyCode::AltLeft =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::AltLeft, down);
+                        }
+                        KeyCode::AltRight =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::AltRight, down);
+                        }
 
-                    KeyCode::SuperLeft =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::SuperLeft, down);
+                        KeyCode::SuperLeft =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::SuperLeft, down);
+                        }
+                        KeyCode::SuperRight =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::SuperRight, down);
+                        }
+                        _ =>
+                        {}
                     }
-                    KeyCode::SuperRight =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::SuperRight, down);
-                    }
-                    _ =>
-                    {}
+                    k.modifiers = self.state.key_modifiers;
                 }
-                k.modifiers = self.state.key_modifiers;
-            }
-            PlatformEvent::Close =>
-            {
-                active.exit();
-            }
+                PlatformEvent::Close =>
+                {
+                    active.exit();
+                }
+                _ =>
+                {}
+            },
             _ =>
             {}
-        },
-            PlatformMessage::Flow(_) => {},
-            PlatformMessage::Custom(_) => {},
         }
-
-        
 
         let Some(ev) = self.app(active, |event_handler, event_loop| event_handler.message(ev, event_loop))
         else
@@ -317,59 +315,57 @@ where
 
         match ev
         {
-            PlatformMessage::Event(platform_event) => 
-match platform_event
-        {
-            PlatformEvent::Key(k) =>
+            PlatformMessage::Event(platform_event) => match platform_event
             {
-                if k.is_down() && k.is_not_repeated()
+                PlatformEvent::Key(k) =>
                 {
-                    if self.param.shortcut.exit.matches(&k)
+                    if k.is_down() && k.is_not_repeated()
                     {
-                        let _ = self.send_event(PlatformEvent::Close);
-                    }
-                    if self.param.shortcut.copy.matches(&k)
-                    {
-                        let _ = self.send_event(PlatformEvent::Copy);
-                    }
-                    if self.param.shortcut.paste.matches(&k)
-                    {
-                        match self.state.get_clipboard()
+                        if self.param.shortcut.exit.matches(&k)
                         {
-                            Some(txt) =>
+                            let _ = self.send_event(PlatformEvent::Close);
+                        }
+                        if self.param.shortcut.copy.matches(&k)
+                        {
+                            let _ = self.send_event(PlatformEvent::Copy);
+                        }
+                        if self.param.shortcut.paste.matches(&k)
+                        {
+                            match self.state.get_clipboard()
                             {
-                                let _ = self.send_event(PlatformEvent::Paste(txt));
+                                Some(txt) =>
+                                {
+                                    let _ = self.send_event(PlatformEvent::Paste(txt));
+                                }
+                                None =>
+                                {}
                             }
-                            None =>
-                            {}
+                        }
+                        if self.param.shortcut.cut.matches(&k)
+                        {
+                            let _ = self.send_event(PlatformEvent::Cut);
                         }
                     }
-                    if self.param.shortcut.cut.matches(&k)
-                    {
-                        let _ = self.send_event(PlatformEvent::Cut);
-                    }
                 }
-            }
-            PlatformEvent::Paste(txt) =>
-            {
-                let key_event = KeyEvent {
-                    code: KeyCode::Unknow(KeyCodeNative::Unknow),
-                    state: KeyState::Down,
-                    modifiers: self.state.key_modifiers,
-                    repeat: ButtonRepeat::NotRepeated,
-                    key: Key::Text(txt.clone().into()),
-                    location: KeyLocation::Unknow,
-                    text: Some(txt.into()),
-                };
-                let _ = self.send_event(PlatformEvent::Key(key_event));
-            }
+                PlatformEvent::Paste(txt) =>
+                {
+                    let key_event = KeyEvent {
+                        code: KeyCode::Unknow(KeyCodeNative::Unknow),
+                        state: KeyState::Down,
+                        modifiers: self.state.key_modifiers,
+                        repeat: ButtonRepeat::NotRepeated,
+                        key: Key::Text(txt.clone().into()),
+                        location: KeyLocation::Unknow,
+                        text: Some(txt.into()),
+                    };
+                    let _ = self.send_event(PlatformEvent::Key(key_event));
+                }
+                _ =>
+                {}
+            },
             _ =>
             {}
-        },
-            PlatformMessage::Custom(_) => todo!(),
-            PlatformMessage::Flow(_) => todo!(),
         }
-        
     }
 
     fn app<F, O>(&mut self, active: &WinitEventLoopActive, f: F) -> O
@@ -385,11 +381,26 @@ where
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: IPlatformEvent,
 {
-    fn resumed(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.resume(event_loop)); }
+    fn resumed(&mut self, active: &WinitEventLoopActive)
+    {
+        self.app(active, |event_handler, event_loop| {
+            event_handler.message(PlatformMessage::Flow(PlatformFlow::Resume), event_loop)
+        });
+    }
 
-    fn suspended(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.pause(event_loop)); }
+    fn suspended(&mut self, active: &WinitEventLoopActive)
+    {
+        self.app(active, |event_handler, event_loop| {
+            event_handler.message(PlatformMessage::Flow(PlatformFlow::Pause), event_loop)
+        });
+    }
 
-    fn exiting(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.exit(event_loop)); }
+    fn exiting(&mut self, active: &WinitEventLoopActive)
+    {
+        self.app(active, |event_handler, event_loop| {
+            event_handler.message(PlatformMessage::Flow(PlatformFlow::Exit), event_loop)
+        });
+    }
 
     fn about_to_wait(&mut self, active: &WinitEventLoopActive)
     {
@@ -397,7 +408,9 @@ where
         let dt = time - self.state.time;
         self.state.time = time;
 
-        self.app(active, |event_handler, event_loop| event_handler.update(dt, event_loop));
+        self.app(active, |event_handler, event_loop| {
+            event_handler.message(PlatformMessage::Flow(PlatformFlow::Update(dt)), event_loop)
+        });
     }
 
     fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformMessage<CustomEvent>) { self.event(active, event); }

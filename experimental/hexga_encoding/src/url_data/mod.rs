@@ -81,9 +81,9 @@ impl<'a> TryFrom<&'a str> for UrlDataMeta<'a>
 
 /// Represents a parsed [data url](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Schemes/data) (Data URL, RFC 2397).
 ///
-/// # Example 
+/// # Example
 /// Data URL for a image of a single red pixel encoded in png will look like:
-/// 
+///
 /// ```text
 /// data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AP8AAP8FAAH/+lyI0QAAAABJRU5ErkJggg==
 /// ```
@@ -133,7 +133,7 @@ impl<'a> TryFrom<&'a str> for UrlData<'a>
 }
 
 /// Represents a parsed data url, similar to a Data URL, RFC 2397 but it's not something official, but the data is in binary `bin` not `base64`.
-/// 
+///
 /// # Example
 /// Example of a binary URL (custom format):
 /// ```text
@@ -219,14 +219,14 @@ pub trait ToUrl: MediaType + Save
     /// The extension parameter should not contains any dot. (e.g., `png`, not `.png`).
     /// Return an `EncodeResult<String>` containing the Data URL, in the format:
     /// `data:<media_type>/<extension>;base64,<base64_encoded_data>`.
-    /// 
+    ///
     /// Returns an error if the data cannot be encoded for the given extension.
     fn to_url(&self, extension: &extension) -> EncodeResult<String>
     {
         let (bytes, _deduced_extension) = self.save_to_bytes_with_extension(Some(extension))?;
         let media = Self::media_type();
         let url = bytes.to_base64_in(format!("data:{media}/{extension};base64,"));
-        Ok(url) 
+        Ok(url)
     }
 
     /// Converts the encoded image into a Binary Data URL (not an official RFC).
@@ -235,7 +235,7 @@ pub trait ToUrl: MediaType + Save
     /// The extension parameter should not contains any dot. (e.g., `png`, not `.png`).
     /// Return an `EncodeResult<String>` containing the Data URL, in the format:
     /// `data:<media_type>/<extension>;bin,<binary_data>`.
-    /// 
+    ///
     /// Returns an error if the data cannot be encoded for the given extension.
     fn to_url_bin(&self, extension: &extension) -> EncodeResult<Vec<u8>>
     {

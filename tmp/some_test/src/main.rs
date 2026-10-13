@@ -71,18 +71,19 @@ fn _x()
     //img.save_to_fs(extension)
 }
 
-
-fn _cast_into<X,Y>(value: X) -> Y where X: CastInto<Y> { value.cast_into() }
-
-
+fn _cast_into<X, Y>(value: X) -> Y
+where
+    X: CastInto<Y>,
+{
+    value.cast_into()
+}
 
 fn main()
 {
 
     //let x = [1u8, 2u8] as [f32;2];
     //let x : [f32;2] = [1u8, 2u8].cast_into();
-    
-    
+
     /*
     let _img = Image::from_fn((16,16), |(x,y)|
     {
@@ -98,8 +99,6 @@ fn main()
     */
     //_x();
 
-
-    
     //let x = AssetData::<String>::from_path_and_value(None, "Toto".to_owned());
     //let x = AssetGlobal::<String>::from_path_and_value(None, "Toto".to_owned());
 
@@ -121,9 +120,6 @@ fn main()
     let mut f = AssetData::load_or_create("toto", || "hello !".to_owned());
         */
     //IoGlobal.read_bytes("/toto")
-    
+
     //dbg!(f.get_path())
-
-    
 }
-

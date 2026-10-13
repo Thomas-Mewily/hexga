@@ -61,7 +61,10 @@ impl serde::ser::Error for FileError
     where
         T: Display,
     {
-        FileError { path: None, kind: FileErrorKind::Encode(EncodeError::Custom(msg.to_string())) }
+        FileError {
+            path: None,
+            kind: FileErrorKind::Encode(EncodeError::Custom(msg.to_string())),
+        }
     }
 }
 #[cfg(feature = "serde")]
@@ -71,11 +74,12 @@ impl serde::de::Error for FileError
     where
         T: Display,
     {
-        FileError { path: None, kind: FileErrorKind::Encode(EncodeError::Custom(msg.to_string())) }
+        FileError {
+            path: None,
+            kind: FileErrorKind::Encode(EncodeError::Custom(msg.to_string())),
+        }
     }
 }
-
-
 
 pub enum FileErrorKind
 {
@@ -86,9 +90,7 @@ pub enum FileErrorKind
 }
 impl Default for FileErrorKind
 {
-    fn default() -> Self {
-        FileErrorKind::Encode(EncodeError::Unknow)
-    }
+    fn default() -> Self { FileErrorKind::Encode(EncodeError::Unknow) }
 }
 
 impl From<IoError> for FileErrorKind

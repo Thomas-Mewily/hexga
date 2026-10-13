@@ -40,7 +40,7 @@ hexga_core.workspace = true
 hexga_bitflags.workspace = true
 hexga_math.workspace = true
 hexga_utils.workspace = true
-hexga_event.workspace = true
+#hexga_event.workspace = true
 hexga_image.workspace = true
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }

@@ -218,7 +218,6 @@ where
     }
 }
 
-
 impl<T, FS> FileSystemLoadSave<T, FS> for FileIn<T, FS>
 where
     FS: FileSystemProvider,
@@ -288,27 +287,21 @@ where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    fn new_wrapper(value: Self::Inside) -> Self {
-        Self::from_path_and_value(value.0, value.1)
-    }
+    fn new_wrapper(value: Self::Inside) -> Self { Self::from_path_and_value(value.0, value.1) }
 }
 impl<T, FS> WrapperIntoInner for FileIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    fn into_inner(self) -> Self::Inside {
-        self.into_path_and_value()
-    }
+    fn into_inner(self) -> Self::Inside { self.into_path_and_value() }
 }
 impl<T, FS> WrapperTryIntoInnerOrClone for FileIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + Clone,
 {
-    fn into_inner_or_clone(self) -> Self::Inside {
-        self.into_path_and_value()
-    }
+    fn into_inner_or_clone(self) -> Self::Inside { self.into_path_and_value() }
 }
 
 impl<T, FS> Debug for FileIn<T, FS>
@@ -337,25 +330,19 @@ where
 impl<T, FS> std::fmt::Write for FileIn<T, FS>
 where
     FS: FileSystemProvider,
-    T: Load + Save + std::fmt::Write 
+    T: Load + Save + std::fmt::Write,
 {
-    fn write_str(&mut self, s: &str) -> std::fmt::Result {
-        self.value_mut().write_str(s)
-    }
+    fn write_str(&mut self, s: &str) -> std::fmt::Result { self.value_mut().write_str(s) }
 }
 
 impl<T, FS> std::io::Write for FileIn<T, FS>
 where
     FS: FileSystemProvider,
-    T: Load + Save + std::io::Write 
+    T: Load + Save + std::io::Write,
 {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.value_mut().write(buf)
-    }
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> { self.value_mut().write(buf) }
 
-    fn flush(&mut self) -> std::io::Result<()> {
-        self.value_mut().flush()
-    }
+    fn flush(&mut self) -> std::io::Result<()> { self.value_mut().flush() }
 }
 
 impl<T, FS> Deref for FileIn<T, FS>

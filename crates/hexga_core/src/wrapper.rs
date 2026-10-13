@@ -13,27 +13,27 @@ pub trait Wrapper
     type Inside;
 }
 
-pub trait WrapperNew : Wrapper
+pub trait WrapperNew: Wrapper
 {
     fn new_wrapper(value: Self::Inside) -> Self;
 }
 
-pub trait WrapperIntoInner : Wrapper
+pub trait WrapperIntoInner: Wrapper
 {
     fn into_inner(self) -> Self::Inside;
 }
 
-pub trait WrapperTryIntoInner : Wrapper
+pub trait WrapperTryIntoInner: Wrapper
 {
     fn into_inner(self) -> Option<Self::Inside>;
 }
-impl<T> WrapperTryIntoInner for T where T: WrapperIntoInner
+impl<T> WrapperTryIntoInner for T
+where
+    T: WrapperIntoInner,
 {
-    fn into_inner(self) -> Option<Self::Inside> {
-        Some(WrapperIntoInner::into_inner(self))
-    }
+    fn into_inner(self) -> Option<Self::Inside> { Some(WrapperIntoInner::into_inner(self)) }
 }
-pub trait WrapperTryIntoInnerOrClone : WrapperTryIntoInner
+pub trait WrapperTryIntoInnerOrClone: WrapperTryIntoInner
 {
     fn into_inner_or_clone(self) -> Self::Inside;
 }
@@ -61,9 +61,7 @@ impl<T, E> WrapperNew for Result<T, E>
 }
 impl<T, E> WrapperTryIntoInner for Result<T, E>
 {
-    fn into_inner(self) -> Option<Self::Inside> {
-        self.ok()
-    }
+    fn into_inner(self) -> Option<Self::Inside> { self.ok() }
 }
 
 impl<T> Wrapper for Box<T>
@@ -76,11 +74,8 @@ impl<T> WrapperNew for Box<T>
 }
 impl<T> WrapperIntoInner for Box<T>
 {
-    fn into_inner(self) -> Self::Inside {
-        *self
-    }
+    fn into_inner(self) -> Self::Inside { *self }
 }
-
 
 impl<T> Wrapper for Pin<Box<T>>
 {
@@ -92,9 +87,7 @@ impl<T> WrapperNew for Pin<Box<T>>
 }
 impl<T: core::marker::Unpin> WrapperIntoInner for Pin<Box<T>>
 {
-    fn into_inner(self) -> Self::Inside {
-        *Pin::into_inner(self)
-    }
+    fn into_inner(self) -> Self::Inside { *Pin::into_inner(self) }
 }
 
 impl<T> Wrapper for UnsafeCell<T>
@@ -107,9 +100,7 @@ impl<T> WrapperNew for UnsafeCell<T>
 }
 impl<T> WrapperIntoInner for UnsafeCell<T>
 {
-    fn into_inner(self) -> Self::Inside {
-        self.into_inner()
-    }
+    fn into_inner(self) -> Self::Inside { self.into_inner() }
 }
 
 impl<T> Wrapper for RefCell<T>
@@ -122,9 +113,7 @@ impl<T> WrapperNew for RefCell<T>
 }
 impl<T> WrapperIntoInner for RefCell<T>
 {
-    fn into_inner(self) -> Self::Inside {
-        RefCell::into_inner(self)
-    }
+    fn into_inner(self) -> Self::Inside { RefCell::into_inner(self) }
 }
 
 #[cfg(feature = "std")]
@@ -143,7 +132,7 @@ mod std_impl
     // Maybe I should just impl `WrapperTryIntoInner` and return None when poisoned
     impl<T> WrapperIntoInner for Mutex<T>
     {
-        fn into_inner(self) -> Self::Inside 
+        fn into_inner(self) -> Self::Inside
         {
             match Mutex::into_inner(self)
             {
@@ -152,11 +141,11 @@ mod std_impl
             }
         }
     }
-    impl<T> WrapperTryIntoInnerOrClone for Mutex<T> where T: Clone
+    impl<T> WrapperTryIntoInnerOrClone for Mutex<T>
+    where
+        T: Clone,
     {
-        fn into_inner_or_clone(self) -> Self::Inside {
-            WrapperIntoInner::into_inner(self)
-        }
+        fn into_inner_or_clone(self) -> Self::Inside { WrapperIntoInner::into_inner(self) }
     }
 
     impl<T> Wrapper for RwLock<T>
@@ -169,7 +158,8 @@ mod std_impl
     }
     impl<T> WrapperIntoInner for RwLock<T>
     {
-        fn into_inner(self) -> Self::Inside {
+        fn into_inner(self) -> Self::Inside
+        {
             match RwLock::into_inner(self)
             {
                 Ok(v) => v,
@@ -177,11 +167,11 @@ mod std_impl
             }
         }
     }
-    impl<T> WrapperTryIntoInnerOrClone for RwLock<T> where T: Clone
+    impl<T> WrapperTryIntoInnerOrClone for RwLock<T>
+    where
+        T: Clone,
     {
-        fn into_inner_or_clone(self) -> Self::Inside {
-            WrapperIntoInner::into_inner(self)
-        }
+        fn into_inner_or_clone(self) -> Self::Inside { WrapperIntoInner::into_inner(self) }
     }
 }
 
@@ -192,7 +182,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{Wrapper, WrapperNew, WrapperIntoInner, WrapperTryIntoInner, WrapperTryIntoInnerOrClone};
+    pub use super::{Wrapper, WrapperIntoInner, WrapperNew, WrapperTryIntoInner, WrapperTryIntoInnerOrClone};
 }
 
 /*

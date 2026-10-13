@@ -30,31 +30,26 @@ pub use result::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{
-        IoGlobal, IoData,
-        IoResult, IoError, IoErrorKind, Path, PathBuf
-    };
+    pub use super::{IoData, IoError, IoErrorKind, IoGlobal, IoResult, Path, PathBuf};
 }
 
 pub mod traits
 {
-    pub use super::
-    {
+    pub use super::{
         FileSystem,
 
         FileSystemDynRead,
         FileSystemDynWrite,
 
+        FileSystemIsolated,
+
+        FileSystemProvider,
         FileSystemRead,
         FileSystemWrite,
 
-        FileSystemProvider,
-        FileSystemIsolated,
-
         GetPath,
-        SetPath,
-
         //FsProvider,
         IoErrorExt,
+        SetPath,
     };
 }

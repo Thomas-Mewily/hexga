@@ -1198,7 +1198,6 @@ dependencies = [
  "env_logger",
  "hexga_bitflags",
  "hexga_core",
- "hexga_event",
  "hexga_image",
  "hexga_math",
  "hexga_utils",

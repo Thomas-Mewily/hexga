@@ -43,7 +43,7 @@ where
     T: GpuBufferElement,
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { self.wgpu_buffer_ref().usage() }
-    
+
     fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::wgpu_slice(self.wgpu_buffer_ref(), bounds) }
 
     fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { self.wgpu_slice(..) }
@@ -61,9 +61,7 @@ where
     ///
     /// # Returns
     /// A new `WgpuBuffer` with the same size and usage, but the contents are not yet guaranteed to be copied.
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer { 
-        WgpuSliceable::<T>::wgpu_deep_clone_order(&self.wgpu_slice(..))
-    }
+    fn wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::wgpu_deep_clone_order(&self.wgpu_slice(..)) }
 
     /// Performs a deep clone of the GPU buffer and blocks until the copy is complete.
     ///
@@ -85,7 +83,7 @@ where
 
 impl<T> WgpuSliceable<T> for WgpuBuffer
 where
-    T: GpuBufferElement
+    T: GpuBufferElement,
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { self.usage() }
 
@@ -116,25 +114,21 @@ where
 
     fn wgpu_view_mut(&self) -> WgpuBufferViewMut<'_> { self.slice(..).get_mapped_range_mut() }
 
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer
-    {
-        WgpuSliceable::<T>::wgpu_deep_clone_order(&<wgpu::Buffer as WgpuSliceable<T>>::wgpu_slice(self, ..))
-    }
+    fn wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::wgpu_deep_clone_order(&<wgpu::Buffer as WgpuSliceable<T>>::wgpu_slice(self, ..)) }
 
     fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self }
 }
 
-
-impl<'a,T> WgpuSliceable<T> for WgpuBufferSlice<'a>
+impl<'a, T> WgpuSliceable<T> for WgpuBufferSlice<'a>
 where
-    T: GpuBufferElement
+    T: GpuBufferElement,
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { self.buffer().usage() }
 
     fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
     {
         let element_size = std::mem::size_of::<T>() as WgpuBufferAddress;
-        
+
         let start_byte = match bounds.start_bound()
         {
             Bound::Included(&i) => (i as WgpuBufferAddress) * element_size,

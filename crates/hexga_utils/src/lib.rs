@@ -1,8 +1,8 @@
 //! Stuff inside this crate need to be moved somewhere else/other subcrate...
 #![allow(unused_imports)]
 use hexga_core::prelude::*;
-use std::ops::*;
 use std::marker::PhantomData;
+use std::ops::*;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, ser::SerializeSeq};
@@ -22,7 +22,6 @@ pub mod scope;
 pub mod stable_map;
 pub mod stable_set;
 //pub mod string_interned;
-
 
 use prelude::*;
 pub mod prelude

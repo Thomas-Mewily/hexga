@@ -15,8 +15,8 @@ use std::ops::*;
 use std::rc::Rc;
 use std::sync::{Arc, LazyLock};
 
-pub mod event_loop;
 mod crash;
+pub mod event_loop;
 pub mod input;
 pub mod log;
 pub mod monitor;
