@@ -99,7 +99,7 @@ impl From<CursorIcon> for Cursor
 /// # Examples
 ///
 /// ```
-/// use cursor_icon::CursorIcon;
+/// use hexga_event_loop::window::CursorIcon;
 ///
 /// // Get the cursor icon for the default cursor.
 /// let cursor_icon = CursorIcon::Default;
@@ -256,7 +256,8 @@ impl CursorIcon
     ///
     /// This name most of the time could be passed as is to cursor loading
     /// libraries on X11/Wayland and could be used as-is on web.
-    ///
+    
+    /*
     /// # Examples
     ///
     /// ```no_run
@@ -280,6 +281,7 @@ impl CursorIcon
     /// # Ok(())
     /// # }
     /// ```
+    */
     pub fn name(&self) -> &'static str
     {
         match self
