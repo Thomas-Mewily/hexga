@@ -214,7 +214,7 @@ where
         }
     }
 
-    fn event(&mut self, ev: AppInternalEvent, event_loop: &mut AppInternalEventLoop) -> Option<AppInternalEvent>
+    fn message(&mut self, ev: AppInternalEvent, event_loop: &mut AppInternalEventLoop) -> Option<AppInternalEvent>
     {
         let (ev, app_internal) = ev.replace_custom_event_from_fn(|| ());
 
@@ -259,7 +259,7 @@ where
 
         let e = match ev
         {
-            PlatformCustomEvent::Platform(ev) => 
+            PlatformMessage::Event(ev) => 
             {
                 match &ev
             {
@@ -270,17 +270,18 @@ where
             _ =>
             {}
             }ev},
-            PlatformCustomEvent::Custom(_) => todo!(),
+            PlatformMessage::Custom(_) => todo!(),
+            PlatformMessage::Flow(platform_flow) => todo!(),
         };
 
         match &mut self.app
         {
-            Some(app) => app.event(e, &mut ()).map(|e| PlatformCustomEvent::Platform(e)),
+            Some(app) => app.event(e, &mut ()).map(|e| PlatformMessage::Event(e)),
             None => None,
         }
     }
 
-    fn resumed(&mut self, event_loop: &mut AppInternalEventLoop)
+    fn resume(&mut self, event_loop: &mut AppInternalEventLoop)
     {
         let mut created = false;
         let mut window = WINDOW
@@ -297,7 +298,7 @@ where
         }
     }
 
-    fn paused(&mut self, event_loop: &mut EventLoop<AppCustomEvent>)
+    fn pause(&mut self, event_loop: &mut EventLoop<AppCustomEvent>)
     {
         WINDOW.try_get_mut().map(|mut w| {
             w.destroy_surface();

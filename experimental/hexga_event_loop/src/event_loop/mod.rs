@@ -19,7 +19,7 @@ pub mod experimental
 {
     use super::*;
 
-    pub type WinitEventLoopProxy<CustomEvent> = ::winit::event_loop::EventLoopProxy<PlatformCustomEvent<CustomEvent>>;
+    pub type WinitEventLoopProxy<CustomEvent> = ::winit::event_loop::EventLoopProxy<PlatformMessage<CustomEvent>>;
 
     pub(crate) type WinitEventLoopActive = ::winit::event_loop::ActiveEventLoop;
     pub(crate) type WinitEventLoop<User> = ::winit::event_loop::EventLoop<User>;
@@ -28,7 +28,7 @@ pub mod experimental
 
 pub mod prelude
 {
-    pub use super::{EventLoop, EventLoopError, EventLoopResult, PlatformEvent, PlatformCustomEvent};
+    pub use super::{EventLoop, EventLoopError, EventLoopResult, PlatformEvent, PlatformMessage};
     //pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutGraphics};
     //pub(crate) use super::{AppDefaultUserEventInner};
     pub(crate) use super::experimental::*;

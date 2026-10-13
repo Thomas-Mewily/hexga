@@ -5,7 +5,7 @@ use super::*;
 
 pub type AppEvent = PlatformEvent;
 
-pub(crate) type AppInternalEvent = PlatformCustomEvent<AppCustomEvent>;
+pub(crate) type AppInternalEvent = PlatformMessage<AppCustomEvent>;
 pub(crate) type AppInternalProxy = EventLoopProxy<AppCustomEvent>;
 pub(crate) type AppInternalEventLoop<'a> = EventLoop<'a, AppCustomEvent>;
 

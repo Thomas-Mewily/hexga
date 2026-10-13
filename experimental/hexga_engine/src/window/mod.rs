@@ -32,7 +32,7 @@ impl WindowInitGpu for WindowType
         else
         {
             let surface = Gpu.instance().create_surface(self.winit_window())?.into();
-            event_loop.send_event(PlatformCustomEvent::Custom(AppCustomEvent::SurfaceReady(surface)));
+            event_loop.send_event(PlatformMessage::Custom(AppCustomEvent::SurfaceReady(surface)));
             Ok(())
         }
     }
@@ -57,12 +57,12 @@ pub(crate) async fn async_init_gpu_in_proxy(instance: GpuInstance, param: GpuPar
     {
         Ok((surface, gpu)) =>
         {
-            proxy.send_event(PlatformCustomEvent::Custom(AppCustomEvent::GpuReady(gpu)));
-            proxy.send_event(PlatformCustomEvent::Custom(AppCustomEvent::SurfaceReady(surface)));
+            proxy.send_event(PlatformMessage::Custom(AppCustomEvent::GpuReady(gpu)));
+            proxy.send_event(PlatformMessage::Custom(AppCustomEvent::SurfaceReady(surface)));
         }
         Err(e) =>
         {
-            proxy.send_event(PlatformCustomEvent::Custom(AppCustomEvent::GpuError(e)));
+            proxy.send_event(PlatformMessage::Custom(AppCustomEvent::GpuError(e)));
         }
     };
 }

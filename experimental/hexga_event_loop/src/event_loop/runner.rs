@@ -243,13 +243,13 @@ where
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: IPlatformEvent,
 {
-    fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<PlatformCustomEvent<CustomEvent>>)
+    fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<PlatformMessage<CustomEvent>>)
     {
         let mut ev = ev.into();
 
         match &mut ev
         {
-            PlatformCustomEvent::Platform(platform_event) => match platform_event
+            PlatformMessage::Event(platform_event) => match platform_event
         {
             PlatformEvent::Key(k) =>
             {
@@ -303,12 +303,13 @@ where
             _ =>
             {}
         },
-            PlatformCustomEvent::Custom(_) => {},
+            PlatformMessage::Flow(_) => {},
+            PlatformMessage::Custom(_) => {},
         }
 
         
 
-        let Some(ev) = self.app(active, |event_handler, event_loop| event_handler.event(ev, event_loop))
+        let Some(ev) = self.app(active, |event_handler, event_loop| event_handler.message(ev, event_loop))
         else
         {
             return;
@@ -316,7 +317,7 @@ where
 
         match ev
         {
-            PlatformCustomEvent::Platform(platform_event) => 
+            PlatformMessage::Event(platform_event) => 
 match platform_event
         {
             PlatformEvent::Key(k) =>
@@ -365,7 +366,8 @@ match platform_event
             _ =>
             {}
         },
-            PlatformCustomEvent::Custom(_) => todo!(),
+            PlatformMessage::Custom(_) => todo!(),
+            PlatformMessage::Flow(_) => todo!(),
         }
         
     }
@@ -378,14 +380,14 @@ match platform_event
         f(&mut self.event_handler, &mut event_loop)
     }
 }
-impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<PlatformCustomEvent<CustomEvent>> for EventLoopRunner<EventHandler, CustomEvent>
+impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<PlatformMessage<CustomEvent>> for EventLoopRunner<EventHandler, CustomEvent>
 where
     EventHandler: PlatformEventHandler<CustomEvent>,
     CustomEvent: IPlatformEvent,
 {
-    fn resumed(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.resumed(event_loop)); }
+    fn resumed(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.resume(event_loop)); }
 
-    fn suspended(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.paused(event_loop)); }
+    fn suspended(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.pause(event_loop)); }
 
     fn exiting(&mut self, active: &WinitEventLoopActive) { self.app(active, |event_handler, event_loop| event_handler.exit(event_loop)); }
 
@@ -398,7 +400,7 @@ where
         self.app(active, |event_handler, event_loop| event_handler.update(dt, event_loop));
     }
 
-    fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformCustomEvent<CustomEvent>) { self.event(active, event); }
+    fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformMessage<CustomEvent>) { self.event(active, event); }
 
     fn window_event(&mut self, active: &WinitEventLoopActive, window_id: winit::window::WindowId, event: WinitWindowEvent)
     {

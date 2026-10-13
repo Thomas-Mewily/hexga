@@ -56,11 +56,11 @@ where
 
     fn set_clipboard(&mut self, paste: String) -> Result<(), ()> { self.state.set_clipboard(paste) }
 }
-impl<'a, Ev> EventLoopSendEvent<PlatformCustomEvent<Ev>> for EventLoop<'a, Ev>
+impl<'a, Ev> EventLoopSendEvent<PlatformMessage<Ev>> for EventLoop<'a, Ev>
 where
     Ev: IPlatformEvent,
 {
-    fn send_event(&self, ev: PlatformCustomEvent<Ev>) -> ProxyResult { self.proxy().send_event(ev) }
+    fn send_event(&self, ev: PlatformMessage<Ev>) -> ProxyResult { self.proxy().send_event(ev) }
 }
 
 #[derive(Debug)]
@@ -109,15 +109,38 @@ where
 
     //fn tick// + make a struct ApplyUpdateStrategyEventHandler to echantilloner les update. fn event_end + fn event_begin ?
 
+    fn message(&mut self, ev: PlatformMessage<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformMessage<CustomEvent>> 
+    {
+        match ev
+        {
+            PlatformMessage::Event(ev) => self.event(ev, event_loop).map(PlatformMessage::Event),
+            PlatformMessage::Flow(flow) => { self.flow(flow, event_loop); None },
+            PlatformMessage::Custom(ev) => self.custom(ev, event_loop).map(PlatformMessage::Custom),
+        }
+    }
+
+    fn flow(&mut self, flow: PlatformFlow, event_loop: &mut EventLoop<CustomEvent>)
+    {
+        match flow
+        {
+            PlatformFlow::Update(dt) => self.update(dt, event_loop),
+            PlatformFlow::Draw => self.draw(event_loop),
+            PlatformFlow::Resume => self.resume(event_loop),
+            PlatformFlow::Pause => self.pause(event_loop),
+            PlatformFlow::Exit => self.exit(event_loop),
+        }
+    }
+
+    fn event(&mut self, ev: PlatformEvent, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformEvent> { Some(ev) }
+    fn custom(&mut self, ev: CustomEvent, event_loop: &mut EventLoop<CustomEvent>) -> Option<CustomEvent> { Some(ev) }
+
     fn update(&mut self, dt: Duration, event_loop: &mut EventLoop<CustomEvent>) { let _ = dt; }
     fn draw(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
 
-    fn resumed(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
-    fn paused(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
+    fn resume(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
+    fn pause(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
 
     fn exit(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
-
-    fn event(&mut self, ev: PlatformCustomEvent<CustomEvent>, event_loop: &mut EventLoop<CustomEvent>) -> Option<PlatformCustomEvent<CustomEvent>> { Some(ev) }
 }
 
 /*
@@ -201,11 +224,11 @@ where
 
 pub type ProxyResult<T = ()> = Result<T, ()>;
 
-impl<CustomEvent> EventLoopSendEvent<PlatformCustomEvent<CustomEvent>> for EventLoopProxy<CustomEvent>
+impl<CustomEvent> EventLoopSendEvent<PlatformMessage<CustomEvent>> for EventLoopProxy<CustomEvent>
 where
     CustomEvent: IPlatformEvent,
 {
-    fn send_event(&self, ev: PlatformCustomEvent<CustomEvent>) -> ProxyResult
+    fn send_event(&self, ev: PlatformMessage<CustomEvent>) -> ProxyResult
     {
         match self.winit.send_event(ev)
         {
