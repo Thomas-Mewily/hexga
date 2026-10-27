@@ -11,7 +11,7 @@ pub use event::*;
 
 pub use hexga_event_loop::app::{
     EventLoop, AppError, AppResult, 
-    AppMessage, AppControlFlow, AppEvent, 
+    AppMessage, AppControlFlow, AppEvent, AppFlow,
     EventLoopParam, AppShortcut, AppProxy,
 };
 pub use hexga_event_loop::app::{AsyncSpawn, AppSendEvent, IAppEvent, App, AppRunRaw, WithAppParam, WithAppShortcut};
@@ -21,11 +21,11 @@ pub mod prelude
 {
     pub use super::{
         EventLoop, AppError, AppResult, 
-        AppMessage, AppControlFlow, AppEvent, 
+        AppMessage, AppControlFlow, AppEvent, AppFlow,
         AppShortcut,
         AppCtx, AppParam
     };
-    pub(crate) use super::{AppInternalEventLoop,AppCustomEvent,AppInternalProxy, AppInternalEvent};
+    pub(crate) use super::{AppInternalEventLoop,AppCustomEvent,AppInternalProxy, AppInternalMessage};
     pub use super::traits::*;
 }
 

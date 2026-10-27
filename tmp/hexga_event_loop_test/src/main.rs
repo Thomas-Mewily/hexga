@@ -3,11 +3,9 @@ use hexga_event_loop::prelude::*;
 
 pub struct MyApp;
 
-impl App for MyApp
+impl<'a> App<AppEvent, EventLoop<'a, AppEvent>>  for MyApp
 {
-    type Ctx<'a> = EventLoop<'a>;
-
-    fn event(&mut self, ev: AppEvent, ctx: &mut EventLoop) -> Option<AppEvent> {
+    fn event(&mut self, ev: AppEvent, ctx: &mut EventLoop<'a, AppEvent>) -> Option<AppEvent> {
         println!("{:?}", ev);
         None
     }

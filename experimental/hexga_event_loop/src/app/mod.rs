@@ -30,7 +30,7 @@ pub mod prelude
 {
     pub use super::{
         EventLoop, AppError, AppResult, 
-        AppMessage, AppControlFlow, AppEvent, 
+        AppMessage, AppControlFlow, AppEvent, AppFlow,
         EventLoopParam, AppShortcut
     };
     //pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutGraphics};

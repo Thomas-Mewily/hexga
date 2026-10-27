@@ -183,7 +183,7 @@ impl From<AppControlFlow> for ::winit::event_loop::ControlFlow
 }
 
 /// Run the app from an OS pov, but the user need to manually initialize all the other system like the window, the rendering...
-pub trait AppRunRaw<CustomEvent = ()> : for<'a> App<CustomEvent, Ctx<'a> = EventLoop<'a,CustomEvent>> + Sized + 'static
+pub trait AppRunRaw<CustomEvent = ()> : for<'a> App<CustomEvent, EventLoop<'a, CustomEvent>> + Sized + 'static
     where CustomEvent: IAppEvent,
 {
     fn run_raw<F>(init : F) -> AppResult
@@ -225,13 +225,13 @@ pub trait AppRunRaw<CustomEvent = ()> : for<'a> App<CustomEvent, Ctx<'a> = Event
     }
 }
 
-impl<S,CustomEvent> AppRunRaw<CustomEvent> for S where S : for<'a> App<CustomEvent, Ctx<'a> = EventLoop<'a,CustomEvent>> + Sized + 'static,
+impl<S,CustomEvent> AppRunRaw<CustomEvent> for S where S : for<'a> App<CustomEvent, EventLoop<'a,CustomEvent>> + Sized + 'static,
 CustomEvent: IAppEvent 
 {}
 
 struct AppRunner<A, CustomEvent>
 where
-    A: App<CustomEvent>,
+    A: for<'a> App<CustomEvent, EventLoop<'a, CustomEvent>>,
     CustomEvent: IAppEvent,
 {
     event_handler: A,
@@ -242,7 +242,7 @@ where
 
 impl<A, CustomEvent> AppSendEvent<AppEvent> for AppRunner<A, CustomEvent>
 where
-    A: App<CustomEvent>,
+    A: for<'a> App<CustomEvent, EventLoop<'a, CustomEvent>>,
     CustomEvent: IAppEvent,
 {
     fn send_event(&self, ev: AppEvent) -> ProxyResult { self.proxy.send_event(ev.into()) }
@@ -251,7 +251,7 @@ where
 
 impl<EventHandler, CustomEvent> AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: for<'a> App<CustomEvent, Ctx<'a> = EventLoop<'a,CustomEvent>>,
+    EventHandler: for<'a> App<CustomEvent, EventLoop<'a,CustomEvent>>,
     CustomEvent: IAppEvent,
 {
     fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<AppMessage<CustomEvent>>)
@@ -389,27 +389,27 @@ where
 }
 impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<AppMessage<CustomEvent>> for AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: for<'a> App<CustomEvent, Ctx<'a> = EventLoop<'a,CustomEvent>>,
+    EventHandler: for<'a> App<CustomEvent, EventLoop<'a,CustomEvent>>,
     CustomEvent: IAppEvent,
 {
     fn resumed(&mut self, active: &WinitEventLoopActive)
     {
         self.app(active, |event_handler, event_loop| {
-            event_handler.message(AppMessage::Flow(PlatformFlow::Resume), event_loop)
+            event_handler.message(AppMessage::Flow(AppFlow::Resume), event_loop)
         });
     }
 
     fn suspended(&mut self, active: &WinitEventLoopActive)
     {
         self.app(active, |event_handler, event_loop| {
-            event_handler.message(AppMessage::Flow(PlatformFlow::Pause), event_loop)
+            event_handler.message(AppMessage::Flow(AppFlow::Pause), event_loop)
         });
     }
 
     fn exiting(&mut self, active: &WinitEventLoopActive)
     {
         self.app(active, |event_handler, event_loop| {
-            event_handler.message(AppMessage::Flow(PlatformFlow::Exit), event_loop)
+            event_handler.message(AppMessage::Flow(AppFlow::Exit), event_loop)
         });
     }
 
@@ -420,7 +420,7 @@ where
         self.state.time = time;
 
         self.app(active, |event_handler, event_loop| {
-            event_handler.message(AppMessage::Flow(PlatformFlow::Update(dt)), event_loop)
+            event_handler.message(AppMessage::Flow(AppFlow::Update(dt)), event_loop)
         });
     }
 

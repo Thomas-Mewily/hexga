@@ -1,16 +1,17 @@
 #![allow(unused)]
 use hexga_engine::prelude::*;
 
-/*
 pub struct MyApp;
 
-impl App for MyApp
+impl<'a> App<(), AppCtx<'a>>  for MyApp
 {
-    type Ctx<'a> = AppCtx;
+    fn event(&mut self, ev: AppEvent, ctx: &mut AppCtx) -> Option<AppEvent> {
+        println!("{:?}", ev);
+        None
+    }
 }
-*/
 
 fn main()
 {
-    //MyApp::run(|_| MyApp);
+    MyApp::run_with_param(|| MyApp, AppParam::default());
 }

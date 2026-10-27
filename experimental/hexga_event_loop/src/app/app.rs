@@ -1,6 +1,6 @@
 use super::*;
 
-pub struct EventLoop<'a, Ev = ()>
+pub struct EventLoop<'a, Ev>
 where
     Ev: IAppEvent,
 {
@@ -86,13 +86,15 @@ impl Clipboardable for AppState
     fn set_clipboard(&mut self, paste: String) -> Result<(), ()> { self.clipboard.set_clipboard(paste) }
 }
 
-pub trait App<CustomEvent = ()>
+pub trait App<CustomEvent, Ctx>
 where
     CustomEvent: IAppEvent,
 {
-    type Ctx<'a> : Debug;
-    
-    fn message(&mut self, ev: AppMessage<CustomEvent>, ctx: &mut Self::Ctx<'_>) -> Option<AppMessage<CustomEvent>>
+    fn message(&mut self, ev: AppMessage<CustomEvent>, ctx: &mut Ctx) -> Option<AppMessage<CustomEvent>>
+    {
+        self.dispatch_message(ev, ctx)
+    }
+    fn dispatch_message(&mut self, ev: AppMessage<CustomEvent>, ctx: &mut Ctx) -> Option<AppMessage<CustomEvent>>
     {
         match ev
         {
@@ -106,28 +108,32 @@ where
         }
     }
 
-    fn flow(&mut self, flow: PlatformFlow, ctx: &mut Self::Ctx<'_>)
+    fn flow(&mut self, flow: AppFlow, ctx: &mut Ctx)
+    {
+        self.dispatch_flow(flow, ctx)
+    }
+    fn dispatch_flow(&mut self, flow: AppFlow, ctx: &mut Ctx)
     {
         match flow
         {
-            PlatformFlow::Update(dt) => self.update(dt, ctx),
-            PlatformFlow::Draw => self.draw(ctx),
-            PlatformFlow::Resume => self.resume(ctx),
-            PlatformFlow::Pause => self.pause(ctx),
-            PlatformFlow::Exit => self.exit(ctx),
+            AppFlow::Update(dt) => self.update(dt, ctx),
+            AppFlow::Draw => self.draw(ctx),
+            AppFlow::Resume => self.resume(ctx),
+            AppFlow::Pause => self.pause(ctx),
+            AppFlow::Exit => self.exit(ctx),
         }
     }
 
-    fn event(&mut self, ev: AppEvent, ctx: &mut Self::Ctx<'_>) -> Option<AppEvent> { Some(ev) }
-    fn custom(&mut self, ev: CustomEvent, ctx: &mut Self::Ctx<'_>) -> Option<CustomEvent> { Some(ev) }
+    fn event(&mut self, ev: AppEvent, ctx: &mut Ctx) -> Option<AppEvent> { Some(ev) }
+    fn custom(&mut self, ev: CustomEvent, ctx: &mut Ctx) -> Option<CustomEvent> { Some(ev) }
 
-    fn update(&mut self, dt: Duration, ctx: &mut Self::Ctx<'_>) { let _ = dt; }
-    fn draw(&mut self, ctx: &mut Self::Ctx<'_>) { let _ = ctx; }
+    fn update(&mut self, dt: Duration, ctx: &mut Ctx) { let _ = dt; }
+    fn draw(&mut self, ctx: &mut Ctx) { let _ = ctx; }
 
-    fn resume(&mut self, ctx: &mut Self::Ctx<'_>) { let _ = ctx; }
-    fn pause(&mut self, ctx: &mut Self::Ctx<'_>) { let _ = ctx; }
+    fn resume(&mut self, ctx: &mut Ctx) { let _ = ctx; }
+    fn pause(&mut self, ctx: &mut Ctx) { let _ = ctx; }
 
-    fn exit(&mut self, ctx: &mut Self::Ctx<'_>) { let _ = ctx; }
+    fn exit(&mut self, ctx: &mut Ctx) { let _ = ctx; }
 }
 
 /*

@@ -1,6 +1,4 @@
 //use crate::window::WindowInitGpu;
-use hexga_event_loop::app::AppResult;
-
 use super::*;
 
 //pub type AppResult = AppResult;
@@ -12,17 +10,17 @@ use super::*;
 pub trait AppInit<A>: Fn() -> A + Async {}
 impl<S, A> AppInit<A> for S where S: Fn() -> A + Async {}
 
-pub trait AppRun<CustomEvent = ()> : App<CustomEvent> + Sized + 'static
-    where CustomEvent: IAppEvent,
+pub trait AppRun : for<'a> App<(), AppCtx<'a>> + Sized + 'static
+    //where CustomEvent: IAppEvent,
 {
     fn run<F>(init : F) -> AppResult
         where F: AppInit<Self> { Self::run_with_param(init, ___()) }
     
-    fn run_with_param<F>(init : F, param: EventLoopParam) -> AppResult
+    fn run_with_param<F>(init : F, param: AppParam) -> AppResult
         where F: AppInit<Self>
     {
-        todo!();
-        //AppRunnner::run_raw_with_param(|p|)
+        let p = param.event_loop.clone();
+        AppRunner::<F, Self>::run_raw_with_param(|proxy| AppRunner { init, app: None, param, proxy }, p)
         /*
         AppRunner
         {
@@ -34,6 +32,7 @@ pub trait AppRun<CustomEvent = ()> : App<CustomEvent> + Sized + 'static
         */
     }
 }
+impl<S> AppRun for S where S: for<'a> App<(), AppCtx<'a>> + Sized + 'static {} //, CustomEvent: IAppEvent {}
 
 
 pub type AppCtx<'a> = ();
@@ -41,7 +40,7 @@ pub type AppCtx<'a> = ();
 pub(crate) struct AppRunner<F, A>
 where
     F: AppInit<A>,
-    A: for<'a> App<(), Ctx<'a> = AppCtx<'a>>,
+    A: for<'a> App<(), AppCtx<'a>>,
 {
     init: F,
     app: Option<A>,
@@ -52,7 +51,7 @@ where
 impl<F, A> AppRunner<F, A>
 where
     F: AppInit<A>,
-    A: for<'a> App<(), Ctx<'a> = AppCtx<'a>>,
+    A: for<'a> App<(), AppCtx<'a>>,
 {
     fn exit(&mut self)
     {
@@ -113,25 +112,22 @@ where
 impl<F, A> Drop for AppRunner<F, A>
 where
     F: AppInit<A>,
-    A: for<'a> App<(), Ctx<'a> = AppCtx<'a>>,
+    A: for<'a> App<(), AppCtx<'a>>,
 {
     fn drop(&mut self) { self.exit(); }
 }
 
-impl<F, A> App<AppCustomEvent> for AppRunner<F, A>
+impl<'a, F, A> App<AppCustomEvent, AppInternalEventLoop<'a>> for AppRunner<F, A>
 where
     F: AppInit<A>,
-    A: for<'a> App<(), Ctx<'a> = AppCtx<'a>>,
+    A: App<(), AppCtx<'a>>,
 {
-    type Ctx<'a> = AppInternalEventLoop<'a>;
-
     fn update(&mut self, dt: Duration, el: &mut AppInternalEventLoop)
     {
         match &mut self.app
         {
-            Some(app) => app.update(dt, &mut ()),
-            None =>
-            {}
+            Some(app) => { app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ()); },
+            None => {}
         }
     }
 
@@ -229,7 +225,7 @@ where
                     };
                     graphics.begin_draw();
                 }
-                app.draw(&mut ());
+                app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
 
                 {
                     let Ok(mut graphics) = GRAPHICS.try_get_mut()
@@ -245,7 +241,7 @@ where
         }
     }
 
-    fn message(&mut self, ev: AppInternalEvent, event_loop: &mut AppInternalEventLoop) -> Option<AppInternalEvent>
+    fn message(&mut self, ev: AppInternalMessage, event_loop: &mut AppInternalEventLoop) -> Option<AppInternalMessage>
     {
         let (ev, app_internal) = ev.replace_custom_event_from_fn(|| ());
 
@@ -288,7 +284,7 @@ where
             {}
         }
 
-        let e = match ev
+        let e: AppMessage = match ev
         {
             AppMessage::Event(ev) =>
             {
@@ -301,15 +297,18 @@ where
                     _ =>
                     {}
                 }
-                ev
+                ev.into()
             }
-            AppMessage::Custom(_) => todo!(),
-            AppMessage::Flow(platform_flow) => todo!(),
+            AppMessage::Custom(_) => return None,
+            AppMessage::Flow(flow) => 
+            {
+                flow.into()
+            },
         };
 
         match &mut self.app
         {
-            Some(app) => app.event(e, &mut ()).map(|e| AppMessage::Event(e)),
+            Some(app) => app.message(e, &mut ()).map(|e| e.remove_custom()).flatten(),
             None => None,
         }
     }

@@ -34,12 +34,13 @@ impl From<KeyEvent> for AppEvent
 pub enum AppMessage<Ev=()>
 {
     Event(AppEvent),
-    Flow(PlatformFlow),
+    Flow(AppFlow),
     Custom(Ev),
 }
 
+
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
-pub enum PlatformFlow
+pub enum AppFlow
 {
     Update(Duration),
     Draw,
@@ -100,11 +101,23 @@ impl<Ev> AppMessage<Ev>
             AppMessage::Custom(c) => (AppMessage::Custom(init()), Some(c)),
         }
     }
+    
+    pub fn remove_custom<Ev2>(self) -> Option<AppMessage<Ev2>>
+    {
+        match self
+        {
+            AppMessage::Event(ev) => Some(AppMessage::Event(ev)),
+            AppMessage::Flow(flow) => Some(AppMessage::Flow(flow)),
+            AppMessage::Custom(_) => None,
+        }
+    }
 }
 
-impl<E, Ev> From<E> for AppMessage<Ev>
-where
-    E: Into<AppEvent>,
+impl<Ev> From<AppEvent> for AppMessage<Ev>
 {
-    fn from(event: E) -> Self { Self::Event(event.into()) }
+    fn from(event: AppEvent) -> Self { Self::Event(event) }
+}
+impl<Ev> From<AppFlow> for AppMessage<Ev>
+{
+    fn from(flow: AppFlow) -> Self { Self::Flow(flow) }
 }
