@@ -20,11 +20,11 @@ where
 {
     fn convert(self) -> Vec2 { vec2(self.width.to_float(), self.height.to_float()) }
 }
-impl<T> ExternLibConvert<Vec2I> for WinitLogicalSize<T>
+impl<T> ExternLibConvert<Vec2i> for WinitLogicalSize<T>
 where
     T: ToInt<Output = int>,
 {
-    fn convert(self) -> Vec2I { vec2i(self.width.to_int(), self.height.to_int()) }
+    fn convert(self) -> Vec2i { vec2i(self.width.to_int(), self.height.to_int()) }
 }
 
 impl<T> ExternLibConvert<Vec2> for WinitPhysicialSize<T>
@@ -33,11 +33,11 @@ where
 {
     fn convert(self) -> Vec2 { vec2(self.width.to_float(), self.height.to_float()) }
 }
-impl<T> ExternLibConvert<Vec2I> for WinitPhysicialSize<T>
+impl<T> ExternLibConvert<Vec2i> for WinitPhysicialSize<T>
 where
     T: ToInt<Output = int>,
 {
-    fn convert(self) -> Vec2I { vec2i(self.width.to_int(), self.height.to_int()) }
+    fn convert(self) -> Vec2i { vec2i(self.width.to_int(), self.height.to_int()) }
 }
 
 impl<T> ExternLibConvert<Vec2> for WinitPhysicialPos<T>
@@ -46,19 +46,19 @@ where
 {
     fn convert(self) -> Vec2 { vec2(self.x.to_float(), self.y.to_float()) }
 }
-impl<T> ExternLibConvert<Vec2I> for WinitPhysicialPos<T>
+impl<T> ExternLibConvert<Vec2i> for WinitPhysicialPos<T>
 where
     T: ToInt<Output = int>,
 {
-    fn convert(self) -> Vec2I { vec2i(self.x.to_int(), self.y.to_int()) }
+    fn convert(self) -> Vec2i { vec2i(self.x.to_int(), self.y.to_int()) }
 }
 
-impl ExternLibConvert<WinitPhysicialPos> for Vec2I
+impl ExternLibConvert<WinitPhysicialPos> for Vec2i
 {
     fn convert(self) -> WinitPhysicialPos { WinitPhysicialPos::new(self.x as i32, self.y as i32) }
 }
 
-impl ExternLibConvert<WinitPhysicialSize> for Vec2I
+impl ExternLibConvert<WinitPhysicialSize> for Vec2i
 {
     fn convert(self) -> WinitPhysicialSize { WinitPhysicialSize::new(self.x as i32, self.y as i32) }
 }

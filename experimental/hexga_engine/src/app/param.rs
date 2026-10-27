@@ -1,26 +1,27 @@
 use super::*;
-use hexga_event_loop::event_loop::EventLoopParam;
+use hexga_event_loop::app::AppParam;
 
+/*
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct AppParam
 {
     pub window: WindowParam,
     pub gpu: GpuParam,
-    pub event_loop: EventLoopParam, //pub update : TimeStrategy,
+    pub event_loop: AppParam, //pub update : TimeStrategy,
 }
 
-impl WithEventLoopParam for AppParam
+impl WithAppParam for AppParam
 {
-    fn control_flow(&self) -> hexga_event_loop::event_loop::EventLoopControlFlow { self.event_loop.control_flow() }
+    fn control_flow(&self) -> hexga_event_loop::app::AppControlFlow { self.event_loop.control_flow() }
 
-    fn with_control_flow(mut self, control_flow: hexga_event_loop::event_loop::EventLoopControlFlow) -> Self
+    fn with_control_flow(mut self, control_flow: hexga_event_loop::app::AppControlFlow) -> Self
     {
         self.event_loop = self.event_loop.with_control_flow(control_flow);
         self
     }
 }
 
-impl WithEventLoopShortcut for AppParam
+impl WithAppShortcut for AppParam
 {
     fn exit_shortcut(&self) -> Option<KeyShortcut> { self.event_loop.exit_shortcut() }
 
@@ -161,3 +162,4 @@ impl WindowAttribute for AppParam
         self
     }
 }
+*/

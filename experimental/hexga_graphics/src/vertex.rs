@@ -14,14 +14,14 @@ pub type Vertex2 = VertexOf<2>;
 pub type Vertex3 = VertexOf<3>;
 pub type Vertex = Vertex3;
 
-pub type UV = GpuVector<2>;
+pub type UV = GVector<2>;
 
 #[repr(C)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, PartialOrd)]
 pub struct VertexOf<const N: usize = 3>
 {
-    pub position: GpuVector<N>,
-    pub color: GpuColor,
+    pub position: GVector<N>,
+    pub color: GColor,
     pub uv: UV,
 }
 
@@ -31,7 +31,7 @@ pub trait WgpuVertexDesc
 }
 impl<const N: usize> WgpuVertexDesc for VertexOf<N>
 where
-    GpuVector<N>: WgpuVertex,
+    GVector<N>: WgpuVertex,
 {
     fn wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>
     {
@@ -42,12 +42,12 @@ where
                 wgpu::VertexAttribute {
                     offset: std::mem::offset_of!(Self, position) as wgpu::BufferAddress,
                     shader_location: 0,
-                    format: GpuVector::<N>::GPU_VERTEX_FORMAT,
+                    format: GVector::<N>::GPU_VERTEX_FORMAT,
                 },
                 wgpu::VertexAttribute {
                     offset: std::mem::offset_of!(Self, color) as wgpu::BufferAddress,
                     shader_location: 1,
-                    format: GpuColor::GPU_VERTEX_FORMAT,
+                    format: GColor::GPU_VERTEX_FORMAT,
                 },
                 wgpu::VertexAttribute {
                     offset: std::mem::offset_of!(Self, uv) as wgpu::BufferAddress,
@@ -62,8 +62,8 @@ where
 // + no padding
 unsafe impl<const N: usize> BitAllUsed for VertexOf<N>
 where
-    GpuVector<N>: BitAllUsed,
-    GpuColor: BitAllUsed,
+    GVector<N>: BitAllUsed,
+    GColor: BitAllUsed,
     UV: BitAllUsed,
 {
 }
@@ -72,13 +72,13 @@ impl<const N: usize> VertexOf<N>
     pub const fn new() -> Self
     {
         Self {
-            position: GpuVector::ZERO,
-            color: GpuColor::WHITE,
+            position: GVector::ZERO,
+            color: GColor::WHITE,
             uv: zero(),
         }
     }
-    pub const fn with_position(self, position: GpuVector<N>) -> Self { Self { position: position, ..self } }
-    pub const fn with_color(self, color: GpuColor) -> Self { Self { color: color, ..self } }
+    pub const fn with_position(self, position: GVector<N>) -> Self { Self { position: position, ..self } }
+    pub const fn with_color(self, color: GColor) -> Self { Self { color: color, ..self } }
     pub const fn with_uv(self, uv: UV) -> Self { Self { uv: uv, ..self } }
 }
 impl From<Vertex2> for Vertex3

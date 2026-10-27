@@ -23,7 +23,7 @@ pub struct GpuSurfaceConfigured<'a>
 
 impl<'a> GpuSurfaceConfigured<'a>
 {
-    pub fn from_surface(surface: GpuSurface<'a>, size: Vec2I) -> Self
+    pub fn from_surface(surface: GpuSurface<'a>, size: Vec2i) -> Self
     {
         let size = size.max(one());
         let configuration = surface.wgpu.get_default_config(&Gpu.adapter(), size.x as _, size.y as _).unwrap();
@@ -31,7 +31,7 @@ impl<'a> GpuSurfaceConfigured<'a>
         Self { surface, configuration }
     }
 
-    fn size(&self) -> Vec2I { GetSize::size(self) }
+    fn size(&self) -> Vec2i { GetSize::size(self) }
 
     pub fn surface(&self) -> &GpuSurface<'a> { &self.surface }
 }

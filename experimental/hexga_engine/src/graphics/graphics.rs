@@ -9,7 +9,7 @@ pub struct Graphics
     pub(crate) immediate_mesh: Option<Mesh>,
 
     //pub(crate) camera_buffer: GpuVec<Camera>,
-    pub(crate) camera_buffer: GpuBuffer<GpuMat4>,
+    pub(crate) camera_buffer: GpuBuffer<GMat4>,
     pub(crate) camera_bind_group: wgpu::BindGroup,
     pub(crate) texture_bind_group: wgpu::BindGroupLayout,
 
@@ -31,7 +31,7 @@ pub trait IGraphics
 
 impl Graphics
 {
-    pub(crate) fn new(surface: &GpuSurface, size: Vec2I) -> Self
+    pub(crate) fn new(surface: &GpuSurface, size: Vec2i) -> Self
     {
         let surface_caps = surface.wgpu.get_capabilities(&Gpu.adapter());
         // Shader code in this tutorial assumes an Srgb surface texture. Using a different

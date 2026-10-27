@@ -1,7 +1,7 @@
 use super::*;
 
-mod event_handler;
-pub use event_handler::*;
+mod app;
+pub use app::*;
 
 mod runner;
 pub use runner::*;
@@ -19,7 +19,7 @@ pub mod experimental
 {
     use super::*;
 
-    pub type WinitEventLoopProxy<CustomEvent> = ::winit::event_loop::EventLoopProxy<PlatformMessage<CustomEvent>>;
+    pub type WinitEventLoopProxy<CustomEvent> = ::winit::event_loop::EventLoopProxy<AppMessage<CustomEvent>>;
 
     pub(crate) type WinitEventLoopActive = ::winit::event_loop::ActiveEventLoop;
     pub(crate) type WinitEventLoop<User> = ::winit::event_loop::EventLoop<User>;
@@ -28,7 +28,11 @@ pub mod experimental
 
 pub mod prelude
 {
-    pub use super::{EventLoop, EventLoopError, EventLoopResult, PlatformEvent, PlatformMessage};
+    pub use super::{
+        EventLoop, AppError, AppResult, 
+        AppMessage, AppControlFlow, AppEvent, 
+        AppParam, AppShortcut
+    };
     //pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutGraphics};
     //pub(crate) use super::{AppDefaultUserEventInner};
     pub(crate) use super::experimental::*;
@@ -37,11 +41,11 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{AsyncSpawn, EventLoopSendEvent, IPlatformEvent, PlatformEventHandler, WithEventLoopParam, WithEventLoopShortcut};
+    pub use super::{AsyncSpawn, AppSendEvent, IAppEvent, App, AppRun, WithAppParam, WithAppShortcut};
 }
 
-pub type EventLoopResult<T = ()> = Result<T, EventLoopError>;
-pub type EventLoopError = ();
+pub type AppResult<T = ()> = Result<T, AppError>;
+pub type AppError = ();
 
 pub fn init_if_needed()
 {

@@ -335,7 +335,7 @@ where
     ///     for point in [vec2i(0,0), vec2i(3,0), vec2i(3,1), vec2i(0,5)]
     ///     {
     ///         let index = point.to_index_unchecked(size);
-    ///         let point_back = Vec2I::from_index_unchecked(index, size);
+    ///         let point_back = Vec2i::from_index_unchecked(index, size);
     ///         assert_eq!(point, point_back);
     ///     }
     /// }

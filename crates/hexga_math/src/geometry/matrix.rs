@@ -186,7 +186,7 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
     /// Create a matrix from a `fn((columns,row))`
     pub fn from_fn<F>(mut column_then_row: F) -> Self
     where
-        F: FnMut(Vec2I) -> T,
+        F: FnMut(Vec2i) -> T,
     {
         Self::from_col_array(std::array::from_fn(|column| {
             std::array::from_fn(|row| column_then_row(vec2i(column as _, row as _)))

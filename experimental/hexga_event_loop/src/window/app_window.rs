@@ -16,8 +16,8 @@ pub mod experimental
 pub struct Window<Surface>
 {
     pub(crate) param: WindowParam,
-    pub(crate) size: Vec2I,
-    pub(crate) pos: Vec2I,
+    pub(crate) size: Vec2i,
+    pub(crate) pos: Vec2i,
     pub(crate) window: WinitWindowShared,
     pub(crate) surface: Option<Surface>,
 }
@@ -79,7 +79,7 @@ pub trait Windowable
     ///
     /// - **Wayland**: Cursor must be in [`CursorGrab::Locked`].
     /// - **iOS / Android / Web / Orbital:** Always do nothings.
-    fn set_cursor_pos(&mut self, pos: Vec2I) -> &mut Self;
+    fn set_cursor_pos(&mut self, pos: Vec2i) -> &mut Self;
 
     /// Modifies the cursor's visibility.
     ///
@@ -330,7 +330,7 @@ impl<Surface> Windowable for Window<Surface>
         self
     }
 
-    fn set_cursor_pos(&mut self, pos: Vec2I) -> &mut Self
+    fn set_cursor_pos(&mut self, pos: Vec2i) -> &mut Self
     {
         let p: WinitPhysicialPos = pos.convert();
         self.window.set_cursor_position(p);

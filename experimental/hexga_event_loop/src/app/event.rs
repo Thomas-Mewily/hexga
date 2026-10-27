@@ -1,10 +1,10 @@
 use super::*;
 
-pub trait IPlatformEvent: Async {}
-impl<E> IPlatformEvent for E where E: Async {}
+pub trait IAppEvent: Async {}
+impl<E> IAppEvent for E where E: Async {}
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum PlatformEvent
+pub enum AppEvent
 {
     Key(KeyEvent),
 
@@ -17,22 +17,23 @@ pub enum PlatformEvent
     Copy,
 
     // Window:
-    Resize(Vec2I),
-    Move(Vec2I),
+    Resize(Vec2i),
+    Move(Vec2i),
     Open,
     Close,
     Destroy,
     //Custom(Ev),
 }
 
-impl From<KeyEvent> for PlatformEvent
+impl From<KeyEvent> for AppEvent
 {
     fn from(key: KeyEvent) -> Self { Self::Key(key) }
 }
 
-pub enum PlatformMessage<Ev>
+#[derive(Clone, PartialEq, Debug)]
+pub enum AppMessage<Ev=()>
 {
-    Event(PlatformEvent),
+    Event(AppEvent),
     Flow(PlatformFlow),
     Custom(Ev),
 }
@@ -86,24 +87,24 @@ impl<Ev> PlatformMessage<Ev>
 }
 */
 
-impl<Ev> PlatformMessage<Ev>
+impl<Ev> AppMessage<Ev>
 {
-    pub fn replace_custom_event_from_fn<Ev2, F>(self, init: F) -> (PlatformMessage<Ev2>, Option<Ev>)
+    pub fn replace_custom_event_from_fn<Ev2, F>(self, init: F) -> (AppMessage<Ev2>, Option<Ev>)
     where
         F: FnOnce() -> Ev2,
     {
         match self
         {
-            PlatformMessage::Event(v) => (PlatformMessage::Event(v), None),
-            PlatformMessage::Flow(v) => (PlatformMessage::Flow(v), None),
-            PlatformMessage::Custom(c) => (PlatformMessage::Custom(init()), Some(c)),
+            AppMessage::Event(v) => (AppMessage::Event(v), None),
+            AppMessage::Flow(v) => (AppMessage::Flow(v), None),
+            AppMessage::Custom(c) => (AppMessage::Custom(init()), Some(c)),
         }
     }
 }
 
-impl<E, Ev> From<E> for PlatformMessage<Ev>
+impl<E, Ev> From<E> for AppMessage<Ev>
 where
-    E: Into<PlatformEvent>,
+    E: Into<AppEvent>,
 {
     fn from(event: E) -> Self { Self::Event(event.into()) }
 }

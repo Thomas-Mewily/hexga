@@ -3,7 +3,8 @@ resolver = "3"
 members = [
     "crates/*", 
     "experimental/*", "tmp/some_test", 
-    "share_crate", "tmp/engine_test", "tmp/math_tmp", 
+    "share_crate", 
+    "tmp/hexga_event_loop_test", "tmp/engine_test", "tmp/math_tmp", 
     ]
 
 

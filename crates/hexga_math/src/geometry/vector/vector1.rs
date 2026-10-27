@@ -49,18 +49,18 @@ impl<T> From<Vector1<T>> for (T,)
 
 pub const fn vector1<T>(x: T) -> Vector1<T> { Vector1::new(x) }
 
-pub type Vec1B = VecB<1>;
-pub const fn vec1b(x: bool) -> Vec1B { Vec1B::new(x) }
+pub type Vec1b = VecB<1>;
+pub const fn vec1b(x: bool) -> Vec1b { Vec1b::new(x) }
 
 pub type Vec1 = Vector1<float>;
 pub const fn vec1(x: float) -> Vec1 { Vec1::new(x) }
 pub type Coef1 = Vec1;
 
-pub type Vec1I = VecI<1>;
-pub const fn vec1i(x: int) -> Vec1I { Vec1I::new(x) }
+pub type Vec1i = VecI<1>;
+pub const fn vec1i(x: int) -> Vec1i { Vec1i::new(x) }
 
-pub type Vec1U = VecU<1>;
-pub const fn vec1u(x: uint) -> Vec1U { Vec1U::new(x) }
+pub type Vec1u = VecU<1>;
+pub const fn vec1u(x: uint) -> Vec1u { Vec1u::new(x) }
 
 impl<T> HaveX<T> for Vector1<T>
 {
@@ -120,5 +120,5 @@ pub type Vector1Iter<T> = VectorIter<Vector1<T>, 1>;
 
 pub(crate) mod prelude
 {
-    pub use super::{SplatCoord1, Vec1, Vec1B, Vec1I, Vec1U, Vector1, vec1, vec1b, vec1i, vec1u, vector1};
+    pub use super::{SplatCoord1, Vec1, Vec1b, Vec1i, Vec1u, Vector1, vec1, vec1b, vec1i, vec1u, vector1};
 }

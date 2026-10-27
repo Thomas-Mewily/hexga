@@ -3,21 +3,21 @@ use super::*;
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[non_exhaustive]
-pub struct EventLoopParam
+pub struct AppParam
 {
     /// Controls the blocking behavior of the event loop
-    pub control_flow: EventLoopControlFlow,
+    pub control_flow: AppControlFlow,
     /// Translated unhandled KeyEvent into KeyboardEvent during event processing
-    pub shortcut: EventLoopShortcut,
+    pub shortcut: AppShortcut,
 }
 
-pub trait WithEventLoopParam: WithEventLoopShortcut
+pub trait WithAppParam: WithAppShortcut
 {
-    fn control_flow(&self) -> EventLoopControlFlow;
-    fn with_control_flow(self, control_flow: EventLoopControlFlow) -> Self;
+    fn control_flow(&self) -> AppControlFlow;
+    fn with_control_flow(self, control_flow: AppControlFlow) -> Self;
 }
 
-impl WithEventLoopShortcut for EventLoopParam
+impl WithAppShortcut for AppParam
 {
     fn exit_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.exit.clone() }
 
@@ -52,28 +52,28 @@ impl WithEventLoopShortcut for EventLoopParam
     }
 }
 
-impl WithEventLoopParam for EventLoopParam
+impl WithAppParam for AppParam
 {
-    fn control_flow(&self) -> EventLoopControlFlow { self.control_flow }
+    fn control_flow(&self) -> AppControlFlow { self.control_flow }
 
-    fn with_control_flow(mut self, control_flow: EventLoopControlFlow) -> Self
+    fn with_control_flow(mut self, control_flow: AppControlFlow) -> Self
     {
         self.control_flow = control_flow;
         self
     }
 }
 
-impl HasMut<EventLoopControlFlow> for EventLoopParam
+impl HasMut<AppControlFlow> for AppParam
 {
-    fn retrive_mut(&mut self) -> &mut EventLoopControlFlow { &mut self.control_flow }
+    fn retrive_mut(&mut self) -> &mut AppControlFlow { &mut self.control_flow }
 }
 
-impl HasMut<EventLoopShortcut> for EventLoopParam
+impl HasMut<AppShortcut> for AppParam
 {
-    fn retrive_mut(&mut self) -> &mut EventLoopShortcut { &mut self.shortcut }
+    fn retrive_mut(&mut self) -> &mut AppShortcut { &mut self.shortcut }
 }
 
-impl Default for EventLoopParam
+impl Default for AppParam
 {
     fn default() -> Self
     {
@@ -86,7 +86,7 @@ impl Default for EventLoopParam
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct EventLoopShortcut
+pub struct AppShortcut
 {
     pub exit: Option<KeyShortcut>,
     pub copy: Option<KeyShortcut>,
@@ -94,7 +94,7 @@ pub struct EventLoopShortcut
     pub cut: Option<KeyShortcut>,
 }
 
-impl WithEventLoopShortcut for EventLoopShortcut
+impl WithAppShortcut for AppShortcut
 {
     fn exit_shortcut(&self) -> Option<KeyShortcut> { self.exit }
 
@@ -129,7 +129,7 @@ impl WithEventLoopShortcut for EventLoopShortcut
     }
 }
 
-pub trait WithEventLoopShortcut
+pub trait WithAppShortcut
 {
     fn exit_shortcut(&self) -> Option<KeyShortcut>;
     fn with_exit_shortcut(self, exit: Option<KeyShortcut>) -> Self;
@@ -144,7 +144,7 @@ pub trait WithEventLoopShortcut
     fn with_cut_shortcut(self, cut: Option<KeyShortcut>) -> Self;
 }
 
-impl Default for EventLoopShortcut
+impl Default for AppShortcut
 {
     fn default() -> Self
     {
@@ -159,7 +159,7 @@ impl Default for EventLoopShortcut
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
-pub enum EventLoopControlFlow
+pub enum AppControlFlow
 {
     /// When the current loop iteration finishes, immediately begin a new iteration regardless of
     /// whether or not new events are available to process.
@@ -169,52 +169,126 @@ pub enum EventLoopControlFlow
     /// When the current loop iteration finishes, suspend the thread until another event arrives.
     Wait,
 }
-impl From<EventLoopControlFlow> for ::winit::event_loop::ControlFlow
+impl From<AppControlFlow> for ::winit::event_loop::ControlFlow
 {
-    fn from(value: EventLoopControlFlow) -> Self
+    fn from(value: AppControlFlow) -> Self
     {
         match value
         {
-            EventLoopControlFlow::Poll => ::winit::event_loop::ControlFlow::Poll,
-            EventLoopControlFlow::Wait => ::winit::event_loop::ControlFlow::Wait,
+            AppControlFlow::Poll => ::winit::event_loop::ControlFlow::Poll,
+            AppControlFlow::Wait => ::winit::event_loop::ControlFlow::Wait,
         }
     }
 }
 
-struct EventLoopRunner<EventHandler, CustomEvent>
+pub trait AppRun<CustomEvent = ()> : App<CustomEvent> + Sized + 'static
+    where CustomEvent: IAppEvent,
+{
+    fn run<F>(init : F) -> AppResult
+        where F: FnOnce(EventLoopProxy<CustomEvent>) -> Self { Self::run_with_param(init, ___()) }
+    fn run_with_param<F>(init : F, param: AppParam) -> AppResult
+        where F: FnOnce(EventLoopProxy<CustomEvent>) -> Self
+    {
+        crate::app::init_if_needed();
+
+        let event_loop = WinitEventLoop::with_user_event().build().ok_or_void()?;
+        event_loop.set_control_flow(param.control_flow.into());
+        let proxy = EventLoopProxy::new(event_loop.create_proxy());
+
+        let mut runner = AppRunner {
+            event_handler: init(proxy.clone()),
+            state: AppState {
+                dt: zero(),
+                time: Time::since_launch(),
+                clipboard: ___(),
+                key_modifiers: ___(),
+            },
+            proxy,
+            param,
+        };
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            event_loop.run_app(&mut runner).ok_or_void()?;
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            use winit::platform::web::EventLoopExtWebSys;
+
+            event_loop.spawn_app(runner);
+        }
+
+        Ok(())
+    }
+}
+
+impl<S,CustomEvent> AppRun<CustomEvent> for S where S : App<CustomEvent> + Sized + 'static,
+CustomEvent: IAppEvent 
+{}
+
+struct AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: IPlatformEvent,
+    EventHandler: App<CustomEvent>,
+    CustomEvent: IAppEvent,
 {
     event_handler: EventHandler,
-    state: EventLoopState,
+    state: AppState,
     proxy: EventLoopProxy<CustomEvent>,
-    param: EventLoopParam,
+    param: AppParam,
 }
 
-impl<EventHandler, CustomEvent> EventLoopSendEvent<PlatformEvent> for EventLoopRunner<EventHandler, CustomEvent>
+impl<EventHandler, CustomEvent> AppSendEvent<AppEvent> for AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: IPlatformEvent,
+    EventHandler: App<CustomEvent>,
+    CustomEvent: IAppEvent,
 {
-    fn send_event(&self, ev: PlatformEvent) -> ProxyResult { self.proxy.send_event(ev.into()) }
+    fn send_event(&self, ev: AppEvent) -> ProxyResult { self.proxy.send_event(ev.into()) }
 }
 
-pub fn run_with_param<F, EventHandler, CustomEvent>(init: F, param: EventLoopParam) -> EventLoopResult
+
+/*
+pub trait AppInit<A>: Fn() -> A + Async {}
+impl<S, A> AppInit<A> for S where S: Fn() -> A + Async {}
+
+impl<F, A> AppRun for F
+where
+    F: AppInit<A> + Fn() -> A,
+    A: App,
+{
+    fn run_with_param(self, param: AppParam) -> AppResult
+    {
+        /*
+        let event_loop_param = param.event_loop.clone();
+
+        event_loop::app::run_with_param(
+            |proxy| AppRunner {
+                app: None,
+                init: self,
+                param,
+                proxy,
+            },
+            event_loop_param,
+        )
+        */
+    }
+}
+*/
+/*
+pub fn run_with_param<F, EventHandler, CustomEvent>(init: F, param: AppParam) -> AppResult
 where
     F: FnOnce(EventLoopProxy<CustomEvent>) -> EventHandler,
-    EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: IPlatformEvent,
+    EventHandler: App<CustomEvent>,
+    CustomEvent: IAppEvent,
 {
-    crate::event_loop::init_if_needed();
+    crate::app::init_if_needed();
 
     let event_loop = WinitEventLoop::with_user_event().build().ok_or_void()?;
     event_loop.set_control_flow(param.control_flow.into());
     let proxy = EventLoopProxy::new(event_loop.create_proxy());
 
-    let mut runner = EventLoopRunner {
+    let mut runner = AppRunner {
         event_handler: init(proxy.clone()),
-        state: EventLoopState {
+        state: AppState {
             dt: zero(),
             time: Time::since_launch(),
             clipboard: ___(),
@@ -237,21 +311,21 @@ where
 
     Ok(())
 }
-
-impl<EventHandler, CustomEvent> EventLoopRunner<EventHandler, CustomEvent>
+*/
+impl<EventHandler, CustomEvent> AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: IPlatformEvent,
+    EventHandler: App<CustomEvent>,
+    CustomEvent: IAppEvent,
 {
-    fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<PlatformMessage<CustomEvent>>)
+    fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<AppMessage<CustomEvent>>)
     {
         let mut ev = ev.into();
 
         match &mut ev
         {
-            PlatformMessage::Event(platform_event) => match platform_event
+            AppMessage::Event(platform_event) => match platform_event
             {
-                PlatformEvent::Key(k) =>
+                AppEvent::Key(k) =>
                 {
                     let down = k.is_down();
                     match k.code
@@ -296,7 +370,7 @@ where
                     }
                     k.modifiers = self.state.key_modifiers;
                 }
-                PlatformEvent::Close =>
+                AppEvent::Close =>
                 {
                     active.exit();
                 }
@@ -315,19 +389,19 @@ where
 
         match ev
         {
-            PlatformMessage::Event(platform_event) => match platform_event
+            AppMessage::Event(platform_event) => match platform_event
             {
-                PlatformEvent::Key(k) =>
+                AppEvent::Key(k) =>
                 {
                     if k.is_down() && k.is_not_repeated()
                     {
                         if self.param.shortcut.exit.matches(&k)
                         {
-                            let _ = self.send_event(PlatformEvent::Close);
+                            let _ = self.send_event(AppEvent::Close);
                         }
                         if self.param.shortcut.copy.matches(&k)
                         {
-                            let _ = self.send_event(PlatformEvent::Copy);
+                            let _ = self.send_event(AppEvent::Copy);
                         }
                         if self.param.shortcut.paste.matches(&k)
                         {
@@ -335,7 +409,7 @@ where
                             {
                                 Some(txt) =>
                                 {
-                                    let _ = self.send_event(PlatformEvent::Paste(txt));
+                                    let _ = self.send_event(AppEvent::Paste(txt));
                                 }
                                 None =>
                                 {}
@@ -343,11 +417,11 @@ where
                         }
                         if self.param.shortcut.cut.matches(&k)
                         {
-                            let _ = self.send_event(PlatformEvent::Cut);
+                            let _ = self.send_event(AppEvent::Cut);
                         }
                     }
                 }
-                PlatformEvent::Paste(txt) =>
+                AppEvent::Paste(txt) =>
                 {
                     let key_event = KeyEvent {
                         code: KeyCode::Unknow(KeyCodeNative::Unknow),
@@ -358,7 +432,7 @@ where
                         location: KeyLocation::Unknow,
                         text: Some(txt.into()),
                     };
-                    let _ = self.send_event(PlatformEvent::Key(key_event));
+                    let _ = self.send_event(AppEvent::Key(key_event));
                 }
                 _ =>
                 {}
@@ -376,29 +450,29 @@ where
         f(&mut self.event_handler, &mut event_loop)
     }
 }
-impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<PlatformMessage<CustomEvent>> for EventLoopRunner<EventHandler, CustomEvent>
+impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<AppMessage<CustomEvent>> for AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: PlatformEventHandler<CustomEvent>,
-    CustomEvent: IPlatformEvent,
+    EventHandler: App<CustomEvent>,
+    CustomEvent: IAppEvent,
 {
     fn resumed(&mut self, active: &WinitEventLoopActive)
     {
         self.app(active, |event_handler, event_loop| {
-            event_handler.message(PlatformMessage::Flow(PlatformFlow::Resume), event_loop)
+            event_handler.message(AppMessage::Flow(PlatformFlow::Resume), event_loop)
         });
     }
 
     fn suspended(&mut self, active: &WinitEventLoopActive)
     {
         self.app(active, |event_handler, event_loop| {
-            event_handler.message(PlatformMessage::Flow(PlatformFlow::Pause), event_loop)
+            event_handler.message(AppMessage::Flow(PlatformFlow::Pause), event_loop)
         });
     }
 
     fn exiting(&mut self, active: &WinitEventLoopActive)
     {
         self.app(active, |event_handler, event_loop| {
-            event_handler.message(PlatformMessage::Flow(PlatformFlow::Exit), event_loop)
+            event_handler.message(AppMessage::Flow(PlatformFlow::Exit), event_loop)
         });
     }
 
@@ -409,11 +483,11 @@ where
         self.state.time = time;
 
         self.app(active, |event_handler, event_loop| {
-            event_handler.message(PlatformMessage::Flow(PlatformFlow::Update(dt)), event_loop)
+            event_handler.message(AppMessage::Flow(PlatformFlow::Update(dt)), event_loop)
         });
     }
 
-    fn user_event(&mut self, active: &WinitEventLoopActive, event: PlatformMessage<CustomEvent>) { self.event(active, event); }
+    fn user_event(&mut self, active: &WinitEventLoopActive, event: AppMessage<CustomEvent>) { self.event(active, event); }
 
     fn window_event(&mut self, active: &WinitEventLoopActive, window_id: winit::window::WindowId, event: WinitWindowEvent)
     {
@@ -421,19 +495,19 @@ where
         {
             WinitWindowEvent::Moved(pos) =>
             {
-                self.event(active, PlatformEvent::Move(pos.convert()));
+                self.event(active, AppEvent::Move(pos.convert()));
             }
             WinitWindowEvent::Resized(size) =>
             {
-                self.event(active, PlatformEvent::Resize(size.convert()));
+                self.event(active, AppEvent::Resize(size.convert()));
             }
             WinitWindowEvent::CloseRequested =>
             {
-                self.event(active, PlatformEvent::Close);
+                self.event(active, AppEvent::Close);
             }
             WinitWindowEvent::Destroyed =>
             {
-                self.event(active, PlatformEvent::Destroy);
+                self.event(active, AppEvent::Destroy);
             }
             WinitWindowEvent::KeyboardInput {
                 device_id: _,
@@ -441,7 +515,7 @@ where
                 is_synthetic: _,
             } =>
             {
-                self.event(active, PlatformEvent::Key(event.into()));
+                self.event(active, AppEvent::Key(event.into()));
             }
             /*
             // TODO: interesting event to handle:

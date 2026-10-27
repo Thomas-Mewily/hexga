@@ -51,15 +51,15 @@ impl<T> From<Vector3<T>> for (T, T, T)
 
 pub const fn vector3<T>(x: T, y: T, z: T) -> Vector3<T> { Vector3::new(x, y, z) }
 
-pub type Vec3B = VecB<3>;
-pub const fn vec3b(x: bool, y: bool, z: bool) -> Vec3B { Vec3B::new(x, y, z) }
+pub type Vec3b = VecB<3>;
+pub const fn vec3b(x: bool, y: bool, z: bool) -> Vec3b { Vec3b::new(x, y, z) }
 
 pub type Vec3 = Vector3<float>;
 pub const fn vec3(x: float, y: float, z: float) -> Vec3 { Vec3::new(x, y, z) }
 pub type Coef3 = Vec3;
 
-pub type Vec3I = VecI<3>;
-pub const fn vec3i(x: int, y: int, z: int) -> Vec3I { Vec3I::new(x, y, z) }
+pub type Vec3i = VecI<3>;
+pub const fn vec3i(x: int, y: int, z: int) -> Vec3i { Vec3i::new(x, y, z) }
 
 pub type Vec3U = VecU<3>;
 pub const fn vec3u(x: uint, y: uint, z: uint) -> Vec3U { Vec3U::new(x, y, z) }
@@ -192,5 +192,5 @@ where
 
 pub(crate) mod prelude
 {
-    pub use super::{SplatCoord3, Vec3, Vec3B, Vec3I, Vec3U, Vector3, vec3, vec3b, vec3i, vec3u, vector3};
+    pub use super::{SplatCoord3, Vec3, Vec3b, Vec3i, Vec3U, Vector3, vec3, vec3b, vec3i, vec3u, vector3};
 }

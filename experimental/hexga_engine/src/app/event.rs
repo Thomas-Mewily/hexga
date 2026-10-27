@@ -1,13 +1,10 @@
-use hexga_event_loop::event_loop::EventLoopProxy;
+use hexga_event_loop::app::{EventLoopProxy, PlatformFlow};
 //use hexga_graphics::gpu::GpuContext;
 
 use super::*;
 
-pub type AppEvent = PlatformEvent;
-
-pub(crate) type AppInternalEvent = PlatformMessage<AppCustomEvent>;
-pub(crate) type AppInternalProxy = EventLoopProxy<AppCustomEvent>;
 pub(crate) type AppInternalEventLoop<'a> = EventLoop<'a, AppCustomEvent>;
+pub(crate) type AppInternalProxy = EventLoopProxy<AppCustomEvent>;
 
 pub(crate) enum AppCustomEvent
 {
@@ -15,3 +12,19 @@ pub(crate) enum AppCustomEvent
     GpuReady(GpuContext),
     GpuError(GpuError),
 }
+
+/*
+pub type AppEvent = PlatformEvent;
+pub type AppFlow = PlatformFlow;
+
+pub(crate) type AppInternalEvent = AppMessage<AppCustomEvent>;
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum AppMessage<Event=AppEvent>
+{
+    Event(Event),
+    Flow(AppFlow),
+}
+
+
+*/

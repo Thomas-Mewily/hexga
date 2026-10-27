@@ -41,11 +41,11 @@ Similar traits for casting remapping the range of an primitive to another primit
 There are some quick typedef in the prelude :
 
 - [`int`], [`uint`] and [`float`]  : The default primitive precision used in the typedef. (can be change with the feature flags)
-- [`Vec2I`], [`Vec3I`], [`Vec4I`] for Vector of [`int`],
-- [`Vec2`], [`Vec3`], [`Vec4`] for Vector of [`float`],
-- [`Rect2`], [`Rect3`], [`Rect4`] for Rectangle of [`float`],
+- [`Vec2i`], [`Vec3i`], [`Vec4i`] for Vector of [`int`],
+- [`Vec2f`], [`Vec3f`], [`Vec4f`] for Vector of [`float`],
+- [`Rect2f`], [`Rect3f`], [`Rect4f`] for Rectangle of [`float`],
 - [`Rect2i`], [`Rect3i`], [`Rect4i`] for Rectangle of [`int`],
-- [`Mat2`], [`Mat3`], [`Mat4`] for Matrix of [`float`], and [`Mat2i`], [`Mat3i`], [`Mat4i`] use [`int`],
+- [`Mat2f`], [`Mat3f`], [`Mat4f`] for Matrix of [`float`], and [`Mat2i`], [`Mat3i`], [`Mat4i`] use [`int`],
 - [`Grid2`], [`Grid3`], [`Grid3`]  can only be indexed by `VecXi` by default.
 
 ## More advanced type

@@ -1,13 +1,12 @@
+/*
 //use crate::window::WindowInitGpu;
-use hexga_event_loop::event_loop::EventLoopResult;
+use hexga_event_loop::app::AppResult;
 
 use super::*;
 
-pub type AppResult = EventLoopResult;
-pub type AppError = EventLoopError;
+pub type AppResult = AppResult;
+pub type AppError = AppError;
 
-pub trait AppInit<A>: Fn() -> A + Async {}
-impl<S, A> AppInit<A> for S where S: Fn() -> A + Async {}
 
 pub(crate) struct AppRunner<F, A>
 where
@@ -89,7 +88,7 @@ where
     fn drop(&mut self) { self.exit(); }
 }
 
-impl<F, A> PlatformEventHandler<AppCustomEvent> for AppRunner<F, A>
+impl<F, A> App<AppCustomEvent> for AppRunner<F, A>
 where
     F: AppInit<A>,
     A: App,
@@ -259,7 +258,7 @@ where
 
         let e = match ev
         {
-            PlatformMessage::Event(ev) =>
+            AppMessage::Event(ev) =>
             {
                 match &ev
                 {
@@ -272,13 +271,13 @@ where
                 }
                 ev
             }
-            PlatformMessage::Custom(_) => todo!(),
-            PlatformMessage::Flow(platform_flow) => todo!(),
+            AppMessage::Custom(_) => todo!(),
+            AppMessage::Flow(platform_flow) => todo!(),
         };
 
         match &mut self.app
         {
-            Some(app) => app.event(e, &mut ()).map(|e| PlatformMessage::Event(e)),
+            Some(app) => app.event(e, &mut ()).map(|e| AppMessage::Event(e)),
             None => None,
         }
     }
@@ -309,30 +308,4 @@ where
 
     fn exit(&mut self, event_loop: &mut AppInternalEventLoop) { self.exit(); }
 }
-
-pub trait AppRun: Sized
-{
-    fn run(self) -> AppResult { self.run_with_param(___()) }
-    fn run_with_param(self, param: AppParam) -> AppResult;
-}
-
-impl<F, A> AppRun for F
-where
-    F: AppInit<A> + Fn() -> A,
-    A: App,
-{
-    fn run_with_param(self, param: AppParam) -> AppResult
-    {
-        let event_loop_param = param.event_loop.clone();
-
-        event_loop::event_loop::run_with_param(
-            |proxy| AppRunner {
-                app: None,
-                init: self,
-                param,
-                proxy,
-            },
-            event_loop_param,
-        )
-    }
-}
+*/

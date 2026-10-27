@@ -16,7 +16,7 @@ use std::rc::Rc;
 use std::sync::{Arc, LazyLock};
 
 mod crash;
-pub mod event_loop;
+pub mod app;
 pub mod input;
 pub mod log;
 pub mod monitor;
@@ -27,10 +27,10 @@ use prelude::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{event_loop::prelude::*, input::prelude::*, log::prelude::*, monitor::prelude::*, window::prelude::*};
+    pub use super::{app::prelude::*, input::prelude::*, log::prelude::*, monitor::prelude::*, window::prelude::*};
 }
 
 pub mod traits
 {
-    pub use super::event_loop::traits::*;
+    pub use super::app::traits::*;
 }

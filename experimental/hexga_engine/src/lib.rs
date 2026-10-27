@@ -3,7 +3,7 @@
 
 use hexga::prelude::*;
 use hexga_event_loop::{
-    event_loop::prelude::*,
+    app::prelude::*,
     input::*,
     window::{WindowParam, traits::*},
 };

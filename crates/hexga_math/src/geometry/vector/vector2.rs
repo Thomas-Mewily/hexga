@@ -50,18 +50,18 @@ impl<T> From<Vector2<T>> for (T, T)
 
 pub const fn vector2<T>(x: T, y: T) -> Vector2<T> { Vector2::new(x, y) }
 
-pub type Vec2B = VecB<2>;
-pub const fn vec2b(x: bool, y: bool) -> Vec2B { Vec2B::new(x, y) }
+pub type Vec2b = VecB<2>;
+pub const fn vec2b(x: bool, y: bool) -> Vec2b { Vec2b::new(x, y) }
 
 pub type Vec2 = Vector2<float>;
 pub const fn vec2(x: float, y: float) -> Vec2 { Vec2::new(x, y) }
 pub type Coef2 = Vec2;
 
-pub type Vec2I = VecI<2>;
-pub const fn vec2i(x: int, y: int) -> Vec2I { Vec2I::new(x, y) }
+pub type Vec2i = VecI<2>;
+pub const fn vec2i(x: int, y: int) -> Vec2i { Vec2i::new(x, y) }
 
-pub type Vec2U = VecU<2>;
-pub const fn vec2u(x: uint, y: uint) -> Vec2U { Vec2U::new(x, y) }
+pub type Vec2u = VecU<2>;
+pub const fn vec2u(x: uint, y: uint) -> Vec2u { Vec2u::new(x, y) }
 
 impl<T> HaveX<T> for Vector2<T>
 {
@@ -148,5 +148,5 @@ pub type Vector2Iter<T> = VectorIter<Vector2<T>, 2>;
 
 pub(crate) mod prelude
 {
-    pub use super::{SplatCoord2, Vec2, Vec2B, Vec2I, Vec2U, Vector2, vec2, vec2b, vec2i, vec2u, vector2};
+    pub use super::{SplatCoord2, Vec2, Vec2b, Vec2i, Vec2u, Vector2, vec2, vec2b, vec2i, vec2u, vector2};
 }
