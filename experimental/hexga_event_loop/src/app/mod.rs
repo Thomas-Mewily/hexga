@@ -31,7 +31,7 @@ pub mod prelude
     pub use super::{
         EventLoop, AppError, AppResult, 
         AppMessage, AppControlFlow, AppEvent, 
-        AppParam, AppShortcut
+        EventLoopParam, AppShortcut
     };
     //pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutGraphics};
     //pub(crate) use super::{AppDefaultUserEventInner};
@@ -41,7 +41,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{AsyncSpawn, AppSendEvent, IAppEvent, App, AppRun, WithAppParam, WithAppShortcut};
+    pub use super::{AsyncSpawn, AppSendEvent, IAppEvent, App, AppRunRaw, WithAppParam, WithAppShortcut};
 }
 
 pub type AppResult<T = ()> = Result<T, AppError>;

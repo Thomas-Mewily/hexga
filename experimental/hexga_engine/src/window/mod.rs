@@ -1,7 +1,7 @@
 use super::*;
 
 mod main_window;
-use hexga_event_loop::app::EventLoopProxy;
+use hexga_event_loop::app::AppProxy;
 pub use main_window::*;
 
 pub(crate) type WindowType = hexga_event_loop::window::Window<GpuSurfaceConfigured<'static>>;

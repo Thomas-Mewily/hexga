@@ -1,13 +1,12 @@
 use super::*;
-use hexga_event_loop::app::AppParam;
+use hexga_event_loop::app::EventLoopParam;
 
-/*
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct AppParam
 {
     pub window: WindowParam,
     pub gpu: GpuParam,
-    pub event_loop: AppParam, //pub update : TimeStrategy,
+    pub event_loop: EventLoopParam,
 }
 
 impl WithAppParam for AppParam
@@ -162,4 +161,3 @@ impl WindowAttribute for AppParam
         self
     }
 }
-*/

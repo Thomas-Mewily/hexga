@@ -1,6 +1,5 @@
 use super::*;
 
-#[derive(Debug)]
 pub struct EventLoop<'a, Ev = ()>
 where
     Ev: IAppEvent,
@@ -8,7 +7,16 @@ where
     winit: &'a WinitEventLoopActive,
     state: &'a mut AppState,
     //pub time : &'a mut TimeManager,
-    proxy: &'a EventLoopProxy<Ev>,
+    proxy: &'a AppProxy<Ev>,
+}
+
+impl<'a, Ev> Debug for EventLoop<'a, Ev>
+where
+    Ev: IAppEvent,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        f.debug_struct("EventLoop").field("winit", &self.winit).field("state", &self.state).field("proxy", &self.proxy).finish()
+    }
 }
 
 impl<'a, Ev, Surface> WindowManager<Surface> for EventLoop<'a, Ev>
@@ -42,9 +50,9 @@ where
 {
     pub fn dt(&self) -> Duration { self.state.dt }
     pub fn time(&self) -> Time { self.state.time }
-    pub fn proxy(&self) -> &'a EventLoopProxy<Ev> { self.proxy }
+    pub fn proxy(&self) -> &'a AppProxy<Ev> { self.proxy }
 
-    pub(crate) fn new(winit: &'a WinitEventLoopActive, state: &'a mut AppState, proxy: &'a EventLoopProxy<Ev>) -> Self { Self { winit, state, proxy } }
+    pub(crate) fn new(winit: &'a WinitEventLoopActive, state: &'a mut AppState, proxy: &'a AppProxy<Ev>) -> Self { Self { winit, state, proxy } }
 
     pub fn winit_event_loop(&self) -> &'a WinitEventLoopActive { self.winit }
 }
@@ -82,44 +90,57 @@ pub trait App<CustomEvent = ()>
 where
     CustomEvent: IAppEvent,
 {
-    fn message(&mut self, ev: AppMessage<CustomEvent>, el: &mut EventLoop<CustomEvent>) -> Option<AppMessage<CustomEvent>>
+    type Ctx<'a> : Debug;
+    
+    fn message(&mut self, ev: AppMessage<CustomEvent>, ctx: &mut Self::Ctx<'_>) -> Option<AppMessage<CustomEvent>>
     {
         match ev
         {
-            AppMessage::Event(ev) => self.event(ev, el).map(AppMessage::Event),
+            AppMessage::Event(ev) => self.event(ev, ctx).map(AppMessage::Event),
             AppMessage::Flow(flow) =>
             {
-                self.flow(flow, el);
+                self.flow(flow, ctx);
                 None
             }
-            AppMessage::Custom(ev) => self.custom(ev, el).map(AppMessage::Custom),
+            AppMessage::Custom(ev) => self.custom(ev, ctx).map(AppMessage::Custom),
         }
     }
 
-    fn flow(&mut self, flow: PlatformFlow, el: &mut EventLoop<CustomEvent>)
+    fn flow(&mut self, flow: PlatformFlow, ctx: &mut Self::Ctx<'_>)
     {
         match flow
         {
-            PlatformFlow::Update(dt) => self.update(dt, el),
-            PlatformFlow::Draw => self.draw(el),
-            PlatformFlow::Resume => self.resume(el),
-            PlatformFlow::Pause => self.pause(el),
-            PlatformFlow::Exit => self.exit(el),
+            PlatformFlow::Update(dt) => self.update(dt, ctx),
+            PlatformFlow::Draw => self.draw(ctx),
+            PlatformFlow::Resume => self.resume(ctx),
+            PlatformFlow::Pause => self.pause(ctx),
+            PlatformFlow::Exit => self.exit(ctx),
         }
     }
 
-    fn event(&mut self, ev: AppEvent, el: &mut EventLoop<CustomEvent>) -> Option<AppEvent> { Some(ev) }
-    fn custom(&mut self, ev: CustomEvent, el: &mut EventLoop<CustomEvent>) -> Option<CustomEvent> { Some(ev) }
+    fn event(&mut self, ev: AppEvent, ctx: &mut Self::Ctx<'_>) -> Option<AppEvent> { Some(ev) }
+    fn custom(&mut self, ev: CustomEvent, ctx: &mut Self::Ctx<'_>) -> Option<CustomEvent> { Some(ev) }
 
-    fn update(&mut self, dt: Duration, el: &mut EventLoop<CustomEvent>) { let _ = dt; }
-    fn draw(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
+    fn update(&mut self, dt: Duration, ctx: &mut Self::Ctx<'_>) { let _ = dt; }
+    fn draw(&mut self, ctx: &mut Self::Ctx<'_>) { let _ = ctx; }
 
-    fn resume(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
-    fn pause(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
+    fn resume(&mut self, ctx: &mut Self::Ctx<'_>) { let _ = ctx; }
+    fn pause(&mut self, ctx: &mut Self::Ctx<'_>) { let _ = ctx; }
 
-    fn exit(&mut self, event_loop: &mut EventLoop<CustomEvent>) { let _ = event_loop; }
+    fn exit(&mut self, ctx: &mut Self::Ctx<'_>) { let _ = ctx; }
 }
 
+/*
+pub struct Update
+{
+    dt: DeltaTime,
+}
+pub struct Draw
+{
+    coef: coef,
+}
+
+*/
 
 /*
 pub struct AppCtx<'a,'b,User=AppDefaultUserEvent, Ctx=AppDefaultCtx>
@@ -181,19 +202,20 @@ impl<'a,'b,User,Ctx> AppCtx<'a,'b,User,Ctx>
 }
 */
 
-pub struct EventLoopProxy<CustomEvent>
+/// Proxy to send event to the App.
+pub struct AppProxy<CustomEvent>
 where
     CustomEvent: IAppEvent,
 {
     winit: WinitEventLoopProxy<CustomEvent>,
 }
-impl<CustomEvent> Debug for EventLoopProxy<CustomEvent>
+impl<CustomEvent> Debug for AppProxy<CustomEvent>
 where
     CustomEvent: IAppEvent,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "EventLoopProxy") }
 }
-impl<CustomEvent> Clone for EventLoopProxy<CustomEvent>
+impl<CustomEvent> Clone for AppProxy<CustomEvent>
 where
     CustomEvent: IAppEvent,
 {
@@ -202,7 +224,7 @@ where
 
 pub type ProxyResult<T = ()> = Result<T, ()>;
 
-impl<CustomEvent> AppSendEvent<AppMessage<CustomEvent>> for EventLoopProxy<CustomEvent>
+impl<CustomEvent> AppSendEvent<AppMessage<CustomEvent>> for AppProxy<CustomEvent>
 where
     CustomEvent: IAppEvent,
 {
@@ -220,7 +242,7 @@ pub trait AppSendEvent<E>
     fn send_event(&self, ev: E) -> ProxyResult;
 }
 
-impl<CustomEvent> EventLoopProxy<CustomEvent>
+impl<CustomEvent> AppProxy<CustomEvent>
 where
     CustomEvent: IAppEvent,
 {

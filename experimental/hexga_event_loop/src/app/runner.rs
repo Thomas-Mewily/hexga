@@ -3,7 +3,7 @@ use super::*;
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[non_exhaustive]
-pub struct AppParam
+pub struct EventLoopParam
 {
     /// Controls the blocking behavior of the event loop
     pub control_flow: AppControlFlow,
@@ -17,7 +17,7 @@ pub trait WithAppParam: WithAppShortcut
     fn with_control_flow(self, control_flow: AppControlFlow) -> Self;
 }
 
-impl WithAppShortcut for AppParam
+impl WithAppShortcut for EventLoopParam
 {
     fn exit_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.exit.clone() }
 
@@ -52,7 +52,7 @@ impl WithAppShortcut for AppParam
     }
 }
 
-impl WithAppParam for AppParam
+impl WithAppParam for EventLoopParam
 {
     fn control_flow(&self) -> AppControlFlow { self.control_flow }
 
@@ -63,17 +63,17 @@ impl WithAppParam for AppParam
     }
 }
 
-impl HasMut<AppControlFlow> for AppParam
+impl HasMut<AppControlFlow> for EventLoopParam
 {
     fn retrive_mut(&mut self) -> &mut AppControlFlow { &mut self.control_flow }
 }
 
-impl HasMut<AppShortcut> for AppParam
+impl HasMut<AppShortcut> for EventLoopParam
 {
     fn retrive_mut(&mut self) -> &mut AppShortcut { &mut self.shortcut }
 }
 
-impl Default for AppParam
+impl Default for EventLoopParam
 {
     fn default() -> Self
     {
@@ -92,6 +92,7 @@ pub struct AppShortcut
     pub copy: Option<KeyShortcut>,
     pub paste: Option<KeyShortcut>,
     pub cut: Option<KeyShortcut>,
+    // undo, redo
 }
 
 impl WithAppShortcut for AppShortcut
@@ -181,19 +182,21 @@ impl From<AppControlFlow> for ::winit::event_loop::ControlFlow
     }
 }
 
-pub trait AppRun<CustomEvent = ()> : App<CustomEvent> + Sized + 'static
+/// Run the app from an OS pov, but the user need to manually initialize all the other system like the window, the rendering...
+pub trait AppRunRaw<CustomEvent = ()> : for<'a> App<CustomEvent, Ctx<'a> = EventLoop<'a,CustomEvent>> + Sized + 'static
     where CustomEvent: IAppEvent,
 {
-    fn run<F>(init : F) -> AppResult
-        where F: FnOnce(EventLoopProxy<CustomEvent>) -> Self { Self::run_with_param(init, ___()) }
-    fn run_with_param<F>(init : F, param: AppParam) -> AppResult
-        where F: FnOnce(EventLoopProxy<CustomEvent>) -> Self
+    fn run_raw<F>(init : F) -> AppResult
+        where F: FnOnce(AppProxy<CustomEvent>) -> Self { Self::run_raw_with_param(init, ___()) }
+    
+    fn run_raw_with_param<F>(init : F, param: EventLoopParam) -> AppResult
+        where F: FnOnce(AppProxy<CustomEvent>) -> Self
     {
         crate::app::init_if_needed();
 
         let event_loop = WinitEventLoop::with_user_event().build().ok_or_void()?;
         event_loop.set_control_flow(param.control_flow.into());
-        let proxy = EventLoopProxy::new(event_loop.create_proxy());
+        let proxy = AppProxy::new(event_loop.create_proxy());
 
         let mut runner = AppRunner {
             event_handler: init(proxy.clone()),
@@ -222,99 +225,33 @@ pub trait AppRun<CustomEvent = ()> : App<CustomEvent> + Sized + 'static
     }
 }
 
-impl<S,CustomEvent> AppRun<CustomEvent> for S where S : App<CustomEvent> + Sized + 'static,
+impl<S,CustomEvent> AppRunRaw<CustomEvent> for S where S : for<'a> App<CustomEvent, Ctx<'a> = EventLoop<'a,CustomEvent>> + Sized + 'static,
 CustomEvent: IAppEvent 
 {}
 
-struct AppRunner<EventHandler, CustomEvent>
+struct AppRunner<A, CustomEvent>
 where
-    EventHandler: App<CustomEvent>,
+    A: App<CustomEvent>,
     CustomEvent: IAppEvent,
 {
-    event_handler: EventHandler,
+    event_handler: A,
     state: AppState,
-    proxy: EventLoopProxy<CustomEvent>,
-    param: AppParam,
+    proxy: AppProxy<CustomEvent>,
+    param: EventLoopParam,
 }
 
-impl<EventHandler, CustomEvent> AppSendEvent<AppEvent> for AppRunner<EventHandler, CustomEvent>
+impl<A, CustomEvent> AppSendEvent<AppEvent> for AppRunner<A, CustomEvent>
 where
-    EventHandler: App<CustomEvent>,
+    A: App<CustomEvent>,
     CustomEvent: IAppEvent,
 {
     fn send_event(&self, ev: AppEvent) -> ProxyResult { self.proxy.send_event(ev.into()) }
 }
 
 
-/*
-pub trait AppInit<A>: Fn() -> A + Async {}
-impl<S, A> AppInit<A> for S where S: Fn() -> A + Async {}
-
-impl<F, A> AppRun for F
-where
-    F: AppInit<A> + Fn() -> A,
-    A: App,
-{
-    fn run_with_param(self, param: AppParam) -> AppResult
-    {
-        /*
-        let event_loop_param = param.event_loop.clone();
-
-        event_loop::app::run_with_param(
-            |proxy| AppRunner {
-                app: None,
-                init: self,
-                param,
-                proxy,
-            },
-            event_loop_param,
-        )
-        */
-    }
-}
-*/
-/*
-pub fn run_with_param<F, EventHandler, CustomEvent>(init: F, param: AppParam) -> AppResult
-where
-    F: FnOnce(EventLoopProxy<CustomEvent>) -> EventHandler,
-    EventHandler: App<CustomEvent>,
-    CustomEvent: IAppEvent,
-{
-    crate::app::init_if_needed();
-
-    let event_loop = WinitEventLoop::with_user_event().build().ok_or_void()?;
-    event_loop.set_control_flow(param.control_flow.into());
-    let proxy = EventLoopProxy::new(event_loop.create_proxy());
-
-    let mut runner = AppRunner {
-        event_handler: init(proxy.clone()),
-        state: AppState {
-            dt: zero(),
-            time: Time::since_launch(),
-            clipboard: ___(),
-            key_modifiers: ___(),
-        },
-        proxy,
-        param,
-    };
-
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        event_loop.run_app(&mut runner).ok_or_void()?;
-    }
-    #[cfg(target_arch = "wasm32")]
-    {
-        use winit::platform::web::EventLoopExtWebSys;
-
-        event_loop.spawn_app(runner);
-    }
-
-    Ok(())
-}
-*/
 impl<EventHandler, CustomEvent> AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: App<CustomEvent>,
+    EventHandler: for<'a> App<CustomEvent, Ctx<'a> = EventLoop<'a,CustomEvent>>,
     CustomEvent: IAppEvent,
 {
     fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<AppMessage<CustomEvent>>)
@@ -452,7 +389,7 @@ where
 }
 impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<AppMessage<CustomEvent>> for AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: App<CustomEvent>,
+    EventHandler: for<'a> App<CustomEvent, Ctx<'a> = EventLoop<'a,CustomEvent>>,
     CustomEvent: IAppEvent,
 {
     fn resumed(&mut self, active: &WinitEventLoopActive)

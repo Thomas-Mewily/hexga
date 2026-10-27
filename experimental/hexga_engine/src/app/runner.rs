@@ -1,17 +1,47 @@
-/*
 //use crate::window::WindowInitGpu;
 use hexga_event_loop::app::AppResult;
 
 use super::*;
 
-pub type AppResult = AppResult;
-pub type AppError = AppError;
+//pub type AppResult = AppResult;
+//pub type AppError = AppError;
 
+
+// Todo wrap app run for the engine
+
+pub trait AppInit<A>: Fn() -> A + Async {}
+impl<S, A> AppInit<A> for S where S: Fn() -> A + Async {}
+
+pub trait AppRun<CustomEvent = ()> : App<CustomEvent> + Sized + 'static
+    where CustomEvent: IAppEvent,
+{
+    fn run<F>(init : F) -> AppResult
+        where F: AppInit<Self> { Self::run_with_param(init, ___()) }
+    
+    fn run_with_param<F>(init : F, param: EventLoopParam) -> AppResult
+        where F: AppInit<Self>
+    {
+        todo!();
+        //AppRunnner::run_raw_with_param(|p|)
+        /*
+        AppRunner
+        {
+            init,
+            app: None,
+            param,
+            proxy: todo!(),
+        }
+        */
+    }
+}
+
+
+pub type AppCtx<'a> = ();
 
 pub(crate) struct AppRunner<F, A>
 where
     F: AppInit<A>,
-    A: App,
+    A: for<'a> App<(), Ctx<'a> = AppCtx<'a>>,
 {
     init: F,
     app: Option<A>,
@@ -22,7 +52,7 @@ where
 impl<F, A> AppRunner<F, A>
 where
     F: AppInit<A>,
-    A: App,
+    A: for<'a> App<(), Ctx<'a> = AppCtx<'a>>,
 {
     fn exit(&mut self)
     {
@@ -83,7 +113,7 @@ where
 impl<F, A> Drop for AppRunner<F, A>
 where
     F: AppInit<A>,
-    A: App,
+    A: for<'a> App<(), Ctx<'a> = AppCtx<'a>>,
 {
     fn drop(&mut self) { self.exit(); }
 }
@@ -91,9 +121,11 @@ where
 impl<F, A> App<AppCustomEvent> for AppRunner<F, A>
 where
     F: AppInit<A>,
-    A: App,
+    A: for<'a> App<(), Ctx<'a> = AppCtx<'a>>,
 {
-    fn update(&mut self, dt: Duration, event_loop: &mut AppInternalEventLoop)
+    type Ctx<'a> = AppInternalEventLoop<'a>;
+
+    fn update(&mut self, dt: Duration, el: &mut AppInternalEventLoop)
     {
         match &mut self.app
         {
@@ -197,7 +229,7 @@ where
                     };
                     graphics.begin_draw();
                 }
-                app.draw(1., &mut ());
+                app.draw(&mut ());
 
                 {
                     let Ok(mut graphics) = GRAPHICS.try_get_mut()
@@ -262,7 +294,7 @@ where
             {
                 match &ev
                 {
-                    PlatformEvent::Resize(size) =>
+                    AppEvent::Resize(size) =>
                     {
                         WINDOW.try_get_mut().map(|mut w| w.configure_surface());
                     }
@@ -308,4 +340,3 @@ where
 
     fn exit(&mut self, event_loop: &mut AppInternalEventLoop) { self.exit(); }
 }
-*/

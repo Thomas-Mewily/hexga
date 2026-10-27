@@ -5,7 +5,9 @@ pub struct MyApp;
 
 impl App for MyApp
 {
-    fn event(&mut self, ev: AppEvent, event_loop: &mut EventLoop<()>) -> Option<AppEvent> {
+    type Ctx<'a> = EventLoop<'a>;
+
+    fn event(&mut self, ev: AppEvent, ctx: &mut EventLoop) -> Option<AppEvent> {
         println!("{:?}", ev);
         None
     }
@@ -13,5 +15,5 @@ impl App for MyApp
 
 fn main()
 {
-    MyApp::run_with_param(|proxy| MyApp, Default::default());
+    MyApp::run_raw_with_param(|proxy| MyApp, Default::default());
 }
