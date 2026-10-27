@@ -94,13 +94,15 @@ where
 
         match WINDOW.try_get_mut()
         {
-            Ok(w) =>
+            Ok(mut w) =>
             {
                 if w.surface().is_some()
                 {
                     let mut app = (self.init)();
+                    app.message(AppMessage::Flow(AppFlow::Resume), &mut ());
                     //app.resume()
                     self.app = Some(app);
+                    w.request_draw();
                 }
             }
             Err(e) =>
@@ -241,13 +243,11 @@ where
         }
     }
 
-    fn message(&mut self, ev: AppInternalMessage, event_loop: &mut AppInternalEventLoop) -> Option<AppInternalMessage>
+    fn message(&mut self, ev: AppInternalMessage, ctx: &mut AppInternalEventLoop) -> Option<AppInternalMessage>
     {
-        let (ev, app_internal) = ev.replace_custom_event_from_fn(|| ());
-
-        match app_internal
+        match ev
         {
-            Some(e) => match e
+            AppMessage::Custom(e) => match e
             {
                 AppCustomEvent::SurfaceReady(surface) =>
                 {
@@ -265,7 +265,7 @@ where
                     window.request_draw();
                     drop(window);
 
-                    self.init_stuff_if_needed(event_loop);
+                    self.init_stuff_if_needed(ctx);
 
                     return None;
                 }
@@ -274,16 +274,16 @@ where
                     hexga_graphics::gpu::experimental::GPU.init(gpu).ok_or_void().expect("Can't init the gpu");
                     assert!(Gpu::is_init());
 
-                    self.init_stuff_if_needed(event_loop);
+                    self.init_stuff_if_needed(ctx);
 
                     return None;
                 }
                 AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
             },
-            None =>
-            {}
+            s @ _ => { self.dispatch_message(s, ctx) }
         }
 
+        /*
         let e: AppMessage = match ev
         {
             AppMessage::Event(ev) =>
@@ -311,6 +311,35 @@ where
             Some(app) => app.message(e, &mut ()).map(|e| e.remove_custom()).flatten(),
             None => None,
         }
+        */
+    }
+
+    fn event(&mut self, ev: AppEvent, ctx: &mut AppInternalEventLoop<'a>) -> Option<AppEvent> {
+        match &ev
+        {
+            AppEvent::Resize(size) =>
+            {
+                WINDOW.try_get_mut().map(|mut w| w.configure_surface());
+            }
+            _ => {}
+        };
+
+        let Some(app) = &mut self.app else { return None; };
+        let Some(ev) = app.message(ev.into(), &mut ()) else { return None; };
+        match ev
+        {
+            AppMessage::Event(ev) => Some(ev),
+            _ => 
+            {
+                #[cfg(debug_assertions)]
+                {
+                    // probably a logic bug, an AppEvent should not return anythings else than another AppEvent (if the passed event was consumed)
+                    panic!("Invalid event {:?}", ev);
+                }
+                None 
+            }, 
+        }
+        
     }
 
     fn resume(&mut self, event_loop: &mut AppInternalEventLoop)
@@ -328,14 +357,33 @@ where
         {
             window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface");
         }
+
+        if let Some(app) = &mut self.app 
+        {
+            app.message(AppMessage::Flow(AppFlow::Resume), &mut ());
+        }
     }
 
     fn pause(&mut self, event_loop: &mut EventLoop<AppCustomEvent>)
     {
+        if let Some(app) = &mut self.app 
+        {
+            app.message(AppMessage::Flow(AppFlow::Pause), &mut ());
+        }
+
         WINDOW.try_get_mut().map(|mut w| {
             w.destroy_surface();
         });
+
     }
 
-    fn exit(&mut self, event_loop: &mut AppInternalEventLoop) { self.exit(); }
+    fn exit(&mut self, event_loop: &mut AppInternalEventLoop) 
+    {
+        if let Some(app) = &mut self.app 
+        {
+            app.message(AppMessage::Flow(AppFlow::Exit), &mut ());
+        }
+
+        self.exit(); 
+    }
 }
