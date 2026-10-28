@@ -66,7 +66,7 @@ impl Graphics
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
-                buffers: &[Vertex::wgpu_vertex_description()],
+                buffers: &[], //&[Vertex::wgpu_vertex_description()],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {

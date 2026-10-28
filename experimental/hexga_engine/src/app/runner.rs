@@ -140,7 +140,6 @@ where
         {
             Some(app) =>
             {
-                /*
                 let Ok(mut graphics) = GRAPHICS.try_get_mut()
                 else
                 {
@@ -203,8 +202,10 @@ where
                 Gpu.queue().submit(iter::once(encoder.finish()));
                 output.present();
 
+                app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
+
+                /*
                 app.draw(1., &mut ());
-                */
 
                 {
                     let Ok(mut window) = WINDOW.try_get_mut()
@@ -229,7 +230,7 @@ where
                     graphics.begin_draw();
                 }
                 app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
-
+                
                 {
                     let Ok(mut graphics) = GRAPHICS.try_get_mut()
                     else
@@ -238,6 +239,7 @@ where
                     };
                     graphics.end_draw();
                 }
+                */
             }
             None =>
             {}

@@ -199,7 +199,7 @@ where
                     graphics.begin_draw();
                 }
                 app.draw(1., &mut ());
-
+                
                 {
                     let Ok(mut graphics) = GRAPHICS.try_get_mut()
                     else
