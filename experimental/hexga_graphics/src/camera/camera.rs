@@ -42,7 +42,7 @@ pub struct Camera3DOf<F>
 where
     F: Floating,
 {
-    pub position: Vector3<F>,
+    pub pos: Vector3<F>,
     pub target: Vector3<F>,
     pub up: Vector3<F>,
     pub perspective: CameraPerspectiveOf<F>,
@@ -128,7 +128,7 @@ where
     fn matrix(&self) -> Matrix4<F>
     {
         // https://sotrh.github.io/learn-wgpu/beginner/tutorial6-uniforms/#a-perspective-camera
-        let view: Matrix<F, 4, 4> = Matrix4::<F>::look_at_rh(self.position, self.target, self.up);
+        let view: Matrix<F, 4, 4> = Matrix4::<F>::look_at_rh(self.pos, self.target, self.up);
         let proj = Matrix4::<F>::from(self.perspective);
         return Self::OPENGL_TO_WGPU_MATRIX * proj * view;
     }

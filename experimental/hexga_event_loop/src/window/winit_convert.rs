@@ -3,6 +3,7 @@ use serde::de;
 
 use super::*;
 
+/// Similar to Into::into(), but we can't use it because both type are declared in different crate
 pub(crate) trait ExternLibConvert<Output>
 {
     fn convert(self) -> Output;
@@ -61,6 +62,82 @@ impl ExternLibConvert<WinitPhysicialPos> for Vec2i
 impl ExternLibConvert<WinitPhysicialSize> for Vec2i
 {
     fn convert(self) -> WinitPhysicialSize { WinitPhysicialSize::new(self.x as i32, self.y as i32) }
+}
+
+impl ExternLibConvert<ButtonState> for winit::event::ElementState
+{
+    fn convert(self) -> ButtonState
+    { 
+        match self
+        {
+            WinitEvent::ElementState::Pressed => ButtonState::Down,
+            WinitEvent::ElementState::Released => ButtonState::Up,
+        } 
+    }
+}
+
+
+impl ExternLibConvert<Vec2> for winit::event::MouseScrollDelta
+{
+    fn convert(self) -> Vec2
+    { 
+        match self
+        {
+            WinitEvent::MouseScrollDelta::LineDelta(x, y) => vec2(x as _, y as _),
+            WinitEvent::MouseScrollDelta::PixelDelta(p) => p.convert(),
+        }
+    }
+}
+
+impl ExternLibConvert<TouchPhase> for winit::event::TouchPhase
+{
+    fn convert(self) -> TouchPhase
+    { 
+        match self
+        {
+            WinitEvent::TouchPhase::Started => TouchPhase::Begin,
+            WinitEvent::TouchPhase::Moved => TouchPhase::Move,
+            WinitEvent::TouchPhase::Ended => TouchPhase::End,
+            WinitEvent::TouchPhase::Cancelled => TouchPhase::Cancel,
+        }
+    }
+}
+
+
+impl ExternLibConvert<MouseButton> for winit::event::MouseButton
+{
+    fn convert(self) -> MouseButton
+    { 
+        match self
+        {
+            WinitEvent::MouseButton::Left => MouseButton::Left,
+            WinitEvent::MouseButton::Right => MouseButton::Right,
+            WinitEvent::MouseButton::Middle => MouseButton::Middle,
+            WinitEvent::MouseButton::Back => MouseButton::Back,
+            WinitEvent::MouseButton::Forward => MouseButton::Forward,
+            WinitEvent::MouseButton::Other(v) => MouseButton::Other(v),
+        }
+    }
+}
+
+impl ExternLibConvert<Touch> for winit::event::Touch
+{
+    fn convert(self) -> Touch
+    { 
+        Touch { phase: self.phase.convert(), pos: self.location.convert(), id: self.id }
+    }
+}
+
+impl ExternLibConvert<AppTheme> for winit::window::Theme
+{
+    fn convert(self) -> AppTheme
+    {
+        match self
+        {
+            winit::window::Theme::Light => AppTheme::Light,
+            winit::window::Theme::Dark => AppTheme::Dark,
+        } 
+    }
 }
 
 /*

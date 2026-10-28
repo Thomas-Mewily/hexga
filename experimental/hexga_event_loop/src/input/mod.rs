@@ -15,14 +15,19 @@ pub use event::*;
 mod clipboard;
 pub use clipboard::*;
 
+mod mouse;
+pub use mouse::*;
+
+mod touch;
+pub use touch::*;
+
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{Clipboard, KeyAction, KeyCode, KeyEvent, KeyModifiers, KeyModifiersFlags, KeyShortcut};
-    pub(crate) use super::{Key, KeyCodeNative, KeyLocation, KeyRepeat, KeyState, Keyboard};
+    pub use super::{Clipboard, KeyAction, KeyCode, KeyEvent, KeyModifiers, KeyModifiersFlags, KeyShortcut, Key, KeyCodeNative, KeyLocation, KeyRepeat, KeyState, Keyboard, MouseWheel, MouseButton, MouseClick, TouchPhase, Touch};
 }
 
 pub mod traits
 {
-    pub use super::{Clipboardable, KeyConstants, KeyModifiersExtension, KeyboardShortcuts};
+    pub use super::{Clipboardable, KeyConstants, KeyModifiersExtension, KeyboardShortcuts, TouchPhaseExtension};
 }

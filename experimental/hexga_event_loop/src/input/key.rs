@@ -1590,3 +1590,27 @@ impl TryFrom<Key> for KeyModifiersFlags
         }
     }
 }
+
+/*
+impl From<WinitEvent::Modifiers> for KeyModifiersFlags
+{
+    fn from(value: WinitEvent::Modifiers) -> Self {
+        /*
+        // Wrong because lalt_state() state is either pressed or unknow, not released
+        let mut s = KeyModifiersFlags::default();
+        s.set_alt_left(value.lalt_state().is_not_default());
+        s.set_alt_right(value.ralt_state().is_not_default());
+
+        s.set_control_left(value.lcontrol_state().is_not_default());
+        s.set_control_right(value.rcontrol_state().is_not_default());
+
+        s.set_shift_left(value.lshift_state().is_not_default());
+        s.set_shift_right(value.rshift_state().is_not_default());
+
+        s.set_super_left(value.lsuper_state().is_not_default());
+        s.set_super_right(value.rsuper_state().is_not_default());
+        s
+        */
+    }
+}
+    */

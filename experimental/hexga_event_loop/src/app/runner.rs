@@ -262,6 +262,7 @@ where
         {
             AppMessage::Event(platform_event) => match platform_event
             {
+                AppEvent::KeyModifiers(modifier) => { self.state.key_modifiers = *modifier; }
                 AppEvent::Key(k) =>
                 {
                     let down = k.is_down();
@@ -307,7 +308,7 @@ where
                     }
                     k.modifiers = self.state.key_modifiers;
                 }
-                AppEvent::Close =>
+                AppEvent::WindowClose =>
                 {
                     active.exit();
                 }
@@ -334,11 +335,11 @@ where
                     {
                         if self.param.shortcut.exit.matches(&k)
                         {
-                            let _ = self.send_event(AppEvent::Close);
+                            let _ = self.send_event(AppEvent::WindowClose);
                         }
                         if self.param.shortcut.copy.matches(&k)
                         {
-                            let _ = self.send_event(AppEvent::Copy);
+                            let _ = self.send_event(AppEvent::ClipboardCopy);
                         }
                         if self.param.shortcut.paste.matches(&k)
                         {
@@ -346,7 +347,7 @@ where
                             {
                                 Some(txt) =>
                                 {
-                                    let _ = self.send_event(AppEvent::Paste(txt));
+                                    let _ = self.send_event(AppEvent::ClipboardPaste(txt));
                                 }
                                 None =>
                                 {}
@@ -354,11 +355,11 @@ where
                         }
                         if self.param.shortcut.cut.matches(&k)
                         {
-                            let _ = self.send_event(AppEvent::Cut);
+                            let _ = self.send_event(AppEvent::ClipboardCut);
                         }
                     }
                 }
-                AppEvent::Paste(txt) =>
+                AppEvent::ClipboardPaste(txt) =>
                 {
                     let key_event = KeyEvent {
                         code: KeyCode::Unknow(KeyCodeNative::Unknow),
@@ -426,25 +427,36 @@ where
 
     fn user_event(&mut self, active: &WinitEventLoopActive, event: AppMessage<CustomEvent>) { self.event(active, event); }
 
+
+    fn device_event(
+        &mut self,
+        event_loop: &winit::event_loop::ActiveEventLoop,
+        device_id: WinitEvent::DeviceId,
+        event: WinitEvent::DeviceEvent,
+    )
+    {
+        
+    }
+
     fn window_event(&mut self, active: &WinitEventLoopActive, window_id: winit::window::WindowId, event: WinitWindowEvent)
     {
         match event
         {
             WinitWindowEvent::Moved(pos) =>
             {
-                self.event(active, AppEvent::Move(pos.convert()));
+                self.event(active, AppEvent::WindowMove(pos.convert()));
             }
             WinitWindowEvent::Resized(size) =>
             {
-                self.event(active, AppEvent::Resize(size.convert()));
+                self.event(active, AppEvent::WindowResize(size.convert()));
             }
             WinitWindowEvent::CloseRequested =>
             {
-                self.event(active, AppEvent::Close);
+                self.event(active, AppEvent::WindowClose);
             }
             WinitWindowEvent::Destroyed =>
             {
-                self.event(active, AppEvent::Destroy);
+                self.event(active, AppEvent::WindowDestroy);
             }
             WinitWindowEvent::KeyboardInput {
                 device_id: _,
@@ -464,10 +476,44 @@ where
             winit::event::WindowEvent::ThemeChanged(theme) => todo!(),
             winit::event::WindowEvent::Occluded(_) => todo!()
             */
-            winit::event::WindowEvent::RedrawRequested =>
+            WinitWindowEvent::RedrawRequested =>
             {
                 self.app(active, |event_handler, event_loop| event_handler.draw(event_loop));
             }
+            WinitWindowEvent::ActivationTokenDone { serial, token } => {},
+            WinitWindowEvent::Resized(physical_size) => {},
+            WinitWindowEvent::Moved(physical_position) => {},
+            WinitWindowEvent::CloseRequested => {},
+            WinitWindowEvent::Destroyed => {},
+            WinitWindowEvent::DroppedFile(path_buf) => { self.event(active, AppEvent::FileDrop(path_buf)); },
+            WinitWindowEvent::HoveredFile(path_buf) => { self.event(active, AppEvent::FileHover(path_buf)); },
+            WinitWindowEvent::HoveredFileCancelled => { self.event(active, AppEvent::FileHoveredCancel); },
+            WinitWindowEvent::Focused(focus) => { self.event(active, AppEvent::WindowFocus(focus)); },
+            //WinitWindowEvent::ModifiersChanged(modifiers) => { self.event(active, AppEvent::KeyModifiers(modifiers.into())); },
+            WinitWindowEvent::Ime(ime) => {},
+            WinitWindowEvent::CursorMoved { device_id, position } => { self.event(active, AppEvent::MouseMove(position.convert())); },
+            WinitWindowEvent::CursorEntered { device_id } => { self.event(active, AppEvent::MouseFocus(true)); },
+            WinitWindowEvent::CursorLeft { device_id } => { self.event(active, AppEvent::MouseFocus(false)); },
+            WinitWindowEvent::MouseWheel { device_id, delta, phase } =>  { 
+                self.event(active, AppEvent::MouseWheel(MouseWheel { delta: delta.convert(), phase: phase.convert() })); 
+            },
+            WinitWindowEvent::MouseInput { device_id, state, button } => 
+            {
+                self.event(active, AppEvent::MouseClick(MouseClick { button: button.convert(), state: state.convert() })); 
+            },
+            // macOS and iOS specific
+            WinitWindowEvent::PinchGesture { device_id, delta, phase } => {},
+            WinitWindowEvent::PanGesture { device_id, delta, phase } => {},
+            WinitWindowEvent::DoubleTapGesture { device_id } => {},
+            WinitWindowEvent::RotationGesture { device_id, delta, phase } => {},
+            WinitWindowEvent::Occluded(_) => {},
+
+            WinitWindowEvent::TouchpadPressure { device_id, pressure, stage } => {},
+            WinitWindowEvent::AxisMotion { device_id, axis, value } => {},
+            WinitWindowEvent::Touch(touch) => { self.event(active, AppEvent::Touch(touch.convert())); },
+            WinitWindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer } => todo!(),
+            WinitWindowEvent::ThemeChanged(theme) => { self.event(active, AppEvent::Theme(theme.convert())); },
+            WinitWindowEvent::RedrawRequested => { self.event(active, AppFlow::Draw); },
             _ => (),
         }
     }

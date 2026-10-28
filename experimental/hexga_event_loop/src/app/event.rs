@@ -7,21 +7,43 @@ impl<E> IAppEvent for E where E: Async {}
 pub enum AppEvent
 {
     Key(KeyEvent),
+    KeyModifiers(KeyModifiersFlags),
+
+    MouseMove(Vec2),
+    MouseFocus(bool),
+    MouseWheel(MouseWheel),
+    MouseClick(MouseClick),
+
+    Theme(AppTheme),
+
+    Touch(Touch),
 
     // The comment was taken from the notan codebase
     /// Text cut to the clipboard
-    Cut,
+    ClipboardCut,
     /// Text pasted from the clipboard
-    Paste(String),
-    /// Text copied to the clipboard
-    Copy,
+    ClipboardPaste(String),
+    /// Need to copy the text/image/selection to the clipboard
+    ClipboardCopy,
+
+    FileDrop(PathBuf),
+    FileHover(PathBuf),
+    FileHoveredCancel,
 
     // Window:
-    Resize(Vec2i),
-    Move(Vec2i),
-    Open,
-    Close,
-    Destroy,
+    /// The window was resized
+    WindowResize(Vec2i),
+    /// The window was moved
+    WindowMove(Vec2i),
+    /// The window is open
+    WindowOpen,
+    /// The window will be closed
+    WindowClose,
+    /// The window has been destroyed
+    WindowDestroy,
+    /// The window gain/lose focus
+    WindowFocus(bool),
+    MouseButtonEvent {  },
     //Custom(Ev),
 }
 

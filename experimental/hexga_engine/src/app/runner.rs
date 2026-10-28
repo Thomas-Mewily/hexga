@@ -99,6 +99,7 @@ where
                 if w.surface().is_some()
                 {
                     let mut app = (self.init)();
+                    app.message(AppMessage::Event(AppEvent::WindowOpen), &mut ());
                     app.message(AppMessage::Flow(AppFlow::Resume), &mut ());
                     //app.resume()
                     self.app = Some(app);
@@ -317,7 +318,7 @@ where
     fn event(&mut self, ev: AppEvent, ctx: &mut AppInternalEventLoop<'a>) -> Option<AppEvent> {
         match &ev
         {
-            AppEvent::Resize(size) =>
+            AppEvent::WindowResize(size) =>
             {
                 WINDOW.try_get_mut().map(|mut w| w.configure_surface());
             }

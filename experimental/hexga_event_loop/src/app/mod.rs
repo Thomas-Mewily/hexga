@@ -12,6 +12,9 @@ pub use event::*;
 mod spawn;
 pub use spawn::*;
 
+mod theme;
+pub use theme::*;
+
 mod event_loop;
 pub use event_loop::*;
 
@@ -24,6 +27,7 @@ pub mod experimental
     pub(crate) type WinitEventLoopActive = ::winit::event_loop::ActiveEventLoop;
     pub(crate) type WinitEventLoop<User> = ::winit::event_loop::EventLoop<User>;
     pub(crate) type WinitWindowEvent = ::winit::event::WindowEvent;
+    pub(crate) use ::winit::event as WinitEvent;
 }
 
 pub mod prelude
@@ -31,7 +35,7 @@ pub mod prelude
     pub use super::{
         EventLoop, AppError, AppResult, 
         AppMessage, AppControlFlow, AppEvent, AppFlow,
-        EventLoopParam, AppShortcut
+        EventLoopParam, AppShortcut, AppTheme
     };
     //pub use super::{HasMutWindow,HasMutKeyboard,HasMutClipboard,HasMutGraphics};
     //pub(crate) use super::{AppDefaultUserEventInner};

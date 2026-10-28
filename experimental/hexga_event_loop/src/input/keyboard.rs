@@ -19,7 +19,7 @@ impl Default for Keyboard
 
 impl Keyboard
 {
-    pub(crate) fn key_event(&mut self, ev: KeyEvent) { self.key_manager_mut(ev.repeat).handle_event(ev.code, ev.state); }
+    pub fn handle_event(&mut self, ev: KeyEvent) { self.key_manager_mut(ev.repeat).handle_event(ev.code, ev.state); }
 
     pub fn keys(&self) -> &KeyCodeManager { &self.key }
     pub fn keys_mut(&mut self) -> &mut KeyCodeManager { &mut self.key }
@@ -31,7 +31,7 @@ impl Keyboard
     pub fn key_manager_mut(&mut self, repeat: ButtonRepeat) -> &mut KeyCodeManager { if repeat.is_repeated() { &mut self.key_repeated } else { &mut self.key } }
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Default)]
 pub struct KeyCodeManager
 {
     pub(crate) repeat: ButtonRepeat,
@@ -43,7 +43,7 @@ pub struct KeyCodeManager
 
 impl KeyCodeManager
 {
-    pub(crate) fn new(repeat: ButtonRepeat) -> Self
+    pub fn new(repeat: ButtonRepeat) -> Self
     {
         Self {
             repeat,
@@ -54,7 +54,7 @@ impl KeyCodeManager
         }
     }
 
-    pub(crate) fn handle_event(&mut self, code: KeyCode, pressed: ButtonState)
+    pub fn handle_event(&mut self, code: KeyCode, pressed: ButtonState)
     {
         match pressed
         {

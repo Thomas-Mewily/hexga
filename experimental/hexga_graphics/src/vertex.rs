@@ -20,7 +20,7 @@ pub type UV = GVector<2>;
 #[derive(Copy, Clone, Default, Debug, PartialEq, PartialOrd)]
 pub struct VertexOf<const N: usize = 3>
 {
-    pub position: GVector<N>,
+    pub pos: GVector<N>,
     pub color: GColor,
     pub uv: UV,
 }
@@ -40,7 +40,7 @@ where
             step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &[
                 wgpu::VertexAttribute {
-                    offset: std::mem::offset_of!(Self, position) as wgpu::BufferAddress,
+                    offset: std::mem::offset_of!(Self, pos) as wgpu::BufferAddress,
                     shader_location: 0,
                     format: GVector::<N>::GPU_VERTEX_FORMAT,
                 },
@@ -72,12 +72,12 @@ impl<const N: usize> VertexOf<N>
     pub const fn new() -> Self
     {
         Self {
-            position: GVector::ZERO,
+            pos: GVector::ZERO,
             color: GColor::WHITE,
             uv: zero(),
         }
     }
-    pub const fn with_position(self, position: GVector<N>) -> Self { Self { position: position, ..self } }
+    pub const fn with_position(self, position: GVector<N>) -> Self { Self { pos: position, ..self } }
     pub const fn with_color(self, color: GColor) -> Self { Self { color: color, ..self } }
     pub const fn with_uv(self, uv: UV) -> Self { Self { uv: uv, ..self } }
 }
@@ -86,7 +86,7 @@ impl From<Vertex2> for Vertex3
     fn from(value: Vertex2) -> Self
     {
         Self {
-            position: value.position.with_z(zero()),
+            pos: value.pos.with_z(zero()),
             color: value.color,
             uv: value.uv,
         }
