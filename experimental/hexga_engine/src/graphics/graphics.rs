@@ -66,7 +66,7 @@ impl Graphics
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
-                buffers: &[], //&[Vertex::wgpu_vertex_description()],
+                buffers: &[Vertex::wgpu_vertex_description()],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -106,7 +106,7 @@ impl Graphics
             multiview: None,
         });
 
-        let camera_buffer = GpuBuffer::new(&[Mat4::IDENTITY], GpuBufferUsageFlags::Uniform | GpuBufferUsageFlags::CopySrc);
+        let camera_buffer = GpuBuffer::new(&[Mat4::IDENTITY], GpuBufferUsageFlags::Uniform | GpuBufferUsageFlags::CopySource);
 
         let camera_bind_group_layout = Gpu.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[wgpu::BindGroupLayoutEntry {
@@ -294,7 +294,7 @@ impl Graphics
                             }
 
                             rpass.set_vertex_buffer(0, vertices.wgpu_slice(im.vertices));
-                            rpass.set_index_buffer(indices.wgpu_slice(im.indices), VertexIndex::GPU_INDEX_FORMAT);
+                            rpass.set_index_buffer(indices.wgpu_slice(im.indices), VertexIndex::INDEX_FORMAT);
                             //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
                             // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
                             rpass.draw_indexed(0..((im.vertices.end - im.vertices.start) as _), -(im.vertices.start as i32), 0..1);

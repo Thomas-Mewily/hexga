@@ -84,9 +84,9 @@ where
     fn usage(&self) -> GpuBufferUsageFlags { self.wgpu_usage().into() }
     fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T> { GpuSlice::new(self, bounds) }
 
-    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T>
+    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GSliceRead<'_, T>
     {
-        unsafe { GpuSliceRead::from_wgpu(WgpuSliceable::<T>::wgpu_view(self.buffer.deref())) }
+        unsafe { GSliceRead::from_wgpu(WgpuSliceable::<T>::wgpu_view(self.buffer.deref())) }
     }
 }
 

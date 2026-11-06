@@ -1,6 +1,7 @@
 use super::*;
 
-pub trait IndexExtension<C>: Sized
+/// Mostly used for indexing from some ID, for a single element.
+pub trait IndexID<C>: Sized
 {
     #[inline(always)]
     fn get(self, collection: &C) -> Option<&C::Output>
@@ -18,23 +19,6 @@ pub trait IndexExtension<C>: Sized
         C::Output: Sized,
     {
         unsafe { collection.get_unchecked(self) }
-    }
-    #[inline(always)]
-    fn get_mut(self, collection: &mut C) -> Option<&C::Output>
-    where
-        C: GetMut<Self>,
-        C::Output: Sized,
-    {
-        collection.get(self)
-    }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked_mut(self, collection: &mut C) -> &mut C::Output
-    where
-        C: GetMut<Self>,
-        C::Output: Sized,
-    {
-        unsafe { collection.get_unchecked_mut(self) }
     }
 
     #[inline(always)]
@@ -62,4 +46,18 @@ pub trait IndexExtension<C>: Sized
     }
 }
 
-impl<I, T> IndexExtension<T> for I where I: core::slice::SliceIndex<T> {}
+impl<C> IndexID<C> for bool {}
+impl<C> IndexID<C> for char {}
+
+map_on_number!(
+    ($type_name : ident) =>
+    {
+        {
+            use ::core::num::{Wrapping, Saturating};
+
+            impl<C> IndexID<C> for $type_name {}
+            impl<C> IndexID<C> for Wrapping<$type_name> {}
+            impl<C> IndexID<C> for Saturating<$type_name> {}
+        }
+    }
+);

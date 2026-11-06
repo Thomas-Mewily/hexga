@@ -99,7 +99,7 @@ where
 
     fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T> { self.deref().slice(bounds) }
 
-    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T> { self.deref().read(bounds) }
+    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GSliceRead<'_, T> { self.deref().read(bounds) }
 }
 
 impl<'a, T> GpuSliceableMut<T> for GpuSliceMut<'a, T>

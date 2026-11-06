@@ -4,6 +4,7 @@ hexga_map_on
 
 hexga_array
 hexga_number
+hexga_event
 
 hexga_bit_derive
 hexga_bit
@@ -46,9 +47,9 @@ hexga_arena
 hexga
 
 
-// hexga_wgpu
-// hexga_graphics
-// hexga_event_loop
-// hexga_engine
+hexga_wgpu
+hexga_graphics
+hexga_event_loop
+hexga_engine
 // hexga_undo_redo
 

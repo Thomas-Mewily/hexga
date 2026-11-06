@@ -5,8 +5,8 @@ use super::*;
 /// The usages determine what kind of memory the buffer is allocated from and what
 /// actions the buffer can partake in.
 ///
-/// Corresponds to [WebGPU `GPUBufferUsageFlags`](
-/// https://gpuweb.github.io/gpuweb/#typedefdef-gpubufferusageflags).
+/// Corresponds to [WebGPU `GpuBufferUsageFlags`](
+/// https://gpuweb.github.io/gpuweb/#typedefdef-GpuBufferUsageFlags).
 #[bit_index]
 #[repr(u32)]
 pub enum GpuBufferUsage
@@ -16,7 +16,7 @@ pub enum GpuBufferUsage
     ///
     /// If [`Features::MAPPABLE_PRIMARY_BUFFERS`] isn't enabled, the only other usage a buffer
     /// may have is COPY_DST.
-    MapReap = 0,
+    MapRead = 0,
     /// Allow a buffer to be mapped for writing using [`Buffer::map_async`] + [`Buffer::get_mapped_range_mut`].
     /// This does not include creating a buffer with `mapped_at_creation` set.
     ///
@@ -25,10 +25,10 @@ pub enum GpuBufferUsage
     MapWrite = 1,
     /// Allow a buffer to be the source buffer for a [`CommandEncoder::copy_buffer_to_buffer`] or [`CommandEncoder::copy_buffer_to_texture`]
     /// operation.
-    CopySrc = 2,
+    CopySource = 2,
     /// Allow a buffer to be the destination buffer for a [`CommandEncoder::copy_buffer_to_buffer`], [`CommandEncoder::copy_texture_to_buffer`],
     /// [`CommandEncoder::clear_buffer`] or [`Queue::write_buffer`] operation.
-    CopyDst = 3,
+    CopyDest = 3,
 
     /// Allow a buffer to be the index buffer in a draw operation.
     Index = 4,
@@ -47,11 +47,17 @@ pub enum GpuBufferUsage
     /// Allows a buffer to be used as input for a top level acceleration structure build
     TlasInput = 11,
 
+    /// `CopySource | CopyDest`
+    /// 
     /// Allow a buffer to be the source buffer for a [`CommandEncoder::copy_buffer_to_buffer`] or [`CommandEncoder::copy_buffer_to_texture`]
     /// operation.
     /// Allow a buffer to be the destination buffer for a [`CommandEncoder::copy_buffer_to_buffer`], [`CommandEncoder::copy_texture_to_buffer`],
     /// [`CommandEncoder::clear_buffer`] or [`Queue::write_buffer`] operation.
-    CopySrcAndDst = Self::CopySrc | Self::CopyDst,
+    CopySourceDest = Self::CopySource | Self::CopyDest,
+
+    /// `MapRead | MapWrite`
+    /// 
+    MapReadWrite = Self::MapRead | Self::MapWrite,
 }
 impl GpuBufferUsageFlags
 {
@@ -65,4 +71,27 @@ impl From<wgpu::BufferUsages> for GpuBufferUsageFlags
 impl From<GpuBufferUsageFlags> for wgpu::BufferUsages
 {
     fn from(value: GpuBufferUsageFlags) -> Self { Self::from_bits(value.bits()).expect("Oops! WGPU added more usage flags and this code is not updated") }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn check_wgpu_enum_bit() {
+        type WgpuBuffUsage = wgpu::BufferUsages;
+        assert_eq!(GpuBufferUsage::MapRead.bits(), WgpuBuffUsage::MAP_READ.bits());
+        assert_eq!(GpuBufferUsage::MapWrite.bits(), WgpuBuffUsage::MAP_WRITE.bits());
+        assert_eq!(GpuBufferUsage::CopySource.bits(), WgpuBuffUsage::COPY_SRC.bits());
+        assert_eq!(GpuBufferUsage::CopyDest.bits(), WgpuBuffUsage::COPY_DST.bits());
+        assert_eq!(GpuBufferUsage::Index.bits(), WgpuBuffUsage::INDEX.bits());
+        assert_eq!(GpuBufferUsage::Vertex.bits(), WgpuBuffUsage::VERTEX.bits());
+        assert_eq!(GpuBufferUsage::Uniform.bits(), WgpuBuffUsage::UNIFORM.bits());
+        assert_eq!(GpuBufferUsage::Storage.bits(), WgpuBuffUsage::STORAGE.bits());
+        assert_eq!(GpuBufferUsage::Indirect.bits(), WgpuBuffUsage::INDIRECT.bits());
+        assert_eq!(GpuBufferUsage::QueryResolve.bits(), WgpuBuffUsage::QUERY_RESOLVE.bits());
+        assert_eq!(GpuBufferUsage::BlasInput.bits(), WgpuBuffUsage::BLAS_INPUT.bits());
+        assert_eq!(GpuBufferUsage::TlasInput.bits(), WgpuBuffUsage::TLAS_INPUT.bits());
+    }
 }

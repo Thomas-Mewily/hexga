@@ -1,4 +1,6 @@
 use super::*;
+
+
 /// A mesh, stored on the Gpu.
 ///
 /// Can be cheaply [`Clone`]d
@@ -24,8 +26,8 @@ impl<const N: usize> Mesh<N>
 
     pub fn new(vertices: &[VertexOf<N>], indices: &[VertexIndex]) -> Self
     {
-        let indices = indices.to_gpu_vec(GpuBufferUsageFlags::Index);
-        let vertices = vertices.to_gpu_vec(GpuBufferUsageFlags::Vertex);
+        let indices = indices.to_gpu_vec(GpuBufferUsageFlags::Index | GpuBufferUsageFlags::CopySourceDest | GpuBufferUsageFlags::MapReadWrite);
+        let vertices = vertices.to_gpu_vec(GpuBufferUsageFlags::Vertex | GpuBufferUsageFlags::CopySourceDest | GpuBufferUsageFlags::MapReadWrite);
         Self { vertices, indices }
     }
 

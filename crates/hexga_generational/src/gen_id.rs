@@ -84,7 +84,7 @@ impl<Gen: GenerationalIndex> UntypedGenIDOf<Gen>
     #[inline(always)]
     pub const fn generation(self) -> Gen { self.generation }
 }
-impl<Gen: GenerationalIndex, C> IndexExtension<C> for UntypedGenIDOf<Gen> {}
+impl<Gen: GenerationalIndex, C> IndexID<C> for UntypedGenIDOf<Gen> {}
 
 impl<Gen: GenerationalIndex> From<(usize, Gen)> for UntypedGenIDOf<Gen>
 {
@@ -212,7 +212,7 @@ impl<T, Gen: GenerationalIndex> GenIDOf<T, Gen>
     #[inline(always)]
     pub const fn generation(self) -> Gen { self.untyped.generation() }
 }
-impl<T, Gen: GenerationalIndex, C> IndexExtension<C> for GenIDOf<T, Gen> {}
+impl<T, Gen: GenerationalIndex, C> IndexID<C> for GenIDOf<T, Gen> {}
 
 impl<T, Gen: GenerationalIndex> From<(usize, Gen)> for GenIDOf<T, Gen>
 {

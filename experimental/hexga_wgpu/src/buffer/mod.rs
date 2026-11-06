@@ -49,8 +49,8 @@ where
     fn slice<'a, S: RangeBounds<usize>>(&'a self, bounds: S) -> GpuSlice<'a, T>;
     fn as_slice<'a>(&'a self) -> GpuSlice<'a, T> { self.slice(..) }
 
-    fn read<'a, S: RangeBounds<usize>>(&'a self, bounds: S) -> GpuSliceRead<'a, T>;
-    fn as_read<'a>(&'a self) -> GpuSliceRead<'a, T> { self.read(..) }
+    fn read<'a, S: RangeBounds<usize>>(&'a self, bounds: S) -> GSliceRead<'a, T>;
+    fn as_read<'a>(&'a self) -> GSliceRead<'a, T> { self.read(..) }
 }
 
 pub trait GpuBufferElement: Copy + 'static {}
@@ -63,7 +63,7 @@ where
     fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T>;
     fn as_mut_slice(&mut self) -> GpuSliceMut<'_, T> { self.slice_mut(..) }
 
-    fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMutWrite<'_, T>
+    fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMutWrite<'_, T>
     {
         let slice_mut = self.slice_mut(bounds);
         if Arc::get_mut(&mut slice_mut.buffer.buffer).is_none()
@@ -73,9 +73,9 @@ where
             slice_mut.buffer.buffer = Arc::new(buff);
         }
 
-        unsafe { GpuSliceMutWrite::from_wgpu(WgpuSliceable::<T>::wgpu_view_mut(slice_mut.buffer.buffer.deref())) }
+        unsafe { GSliceMutWrite::from_wgpu(WgpuSliceable::<T>::wgpu_view_mut(slice_mut.buffer.buffer.deref())) }
     }
-    fn as_write<S: RangeBounds<usize>>(&mut self) -> GpuSliceMutWrite<'_, T> { self.write(..) }
+    fn as_write<S: RangeBounds<usize>>(&mut self) -> GSliceMutWrite<'_, T> { self.write(..) }
 
     /*
     fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMutWrite<'_, T>

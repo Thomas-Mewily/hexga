@@ -140,6 +140,7 @@ where
         {
             Some(app) =>
             {
+                /*
                 let Ok(mut graphics) = GRAPHICS.try_get_mut()
                 else
                 {
@@ -155,8 +156,8 @@ where
                 {
                     return;
                 };
-
-
+                */
+                /*
                 let surface = surface.surface();
                 let output = match surface.wgpu.get_current_texture()
                 {
@@ -198,14 +199,14 @@ where
                     render_pass.set_pipeline(&graphics.pipeline);
                     render_pass.draw(0..3, 0..1);
                 }
-
+                
                 Gpu.queue().submit(iter::once(encoder.finish()));
                 output.present();
 
                 app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
+                */
 
-                /*
-                app.draw(1., &mut ());
+                //app.draw(1., &mut ());
 
                 {
                     let Ok(mut window) = WINDOW.try_get_mut()
@@ -239,7 +240,7 @@ where
                     };
                     graphics.end_draw();
                 }
-                */
+                
             }
             None =>
             {}

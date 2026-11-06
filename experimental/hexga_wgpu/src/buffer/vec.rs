@@ -169,7 +169,7 @@ where
         self.buffer.slice(start..end)
     }
 
-    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T>
+    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GSliceRead<'_, T>
     {
         let slice = self.slice(bounds);
         self.buffer.read(slice.begin..slice.begin + slice.len())
@@ -265,7 +265,7 @@ where
 
         if self.len > 0
         {
-            if !usage.contains(GpuBufferUsageFlags::CopySrc) || !usage.contains(GpuBufferUsageFlags::CopyDst)
+            if !usage.contains(GpuBufferUsageFlags::CopySource) || !usage.contains(GpuBufferUsageFlags::CopyDest)
             {
                 return Err(());
             }

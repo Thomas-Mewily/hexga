@@ -1,13 +1,13 @@
 use super::*;
 
-pub struct GpuSliceMutWrite<'a, T>
+pub struct GSliceMutWrite<'a, T>
 where
     T: GpuBufferElement,
 {
     pub(crate) view: WgpuBufferViewMut<'a>,
     phantom: PhantomData<T>,
 }
-impl<'a, T> GpuSliceMutWrite<'a, T>
+impl<'a, T> GSliceMutWrite<'a, T>
 where
     T: GpuBufferElement,
 {
@@ -23,15 +23,9 @@ where
     pub fn update(&mut self, src: &[T]) { self.try_update(src).expect("bit cast failed") }
 }
 
-/*
-pub trait GpuBufferWrite<T>
-{
-    fn update(&mut self, src : &[T]);
-}
-*/
 
-impl<'a, T> Collection for GpuSliceMutWrite<'a, T> where T: GpuBufferElement {}
-impl<'a, T> Length for GpuSliceMutWrite<'a, T>
+impl<'a, T> Collection for GSliceMutWrite<'a, T> where T: GpuBufferElement {}
+impl<'a, T> Length for GSliceMutWrite<'a, T>
 where
     T: GpuBufferElement,
 {

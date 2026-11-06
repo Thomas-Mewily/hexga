@@ -134,7 +134,7 @@ where
         }
     }
 
-    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSliceRead<'_, T>
+    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GSliceRead<'_, T>
     {
         let slice = self.slice(bounds);
         self.buffer.read(slice.begin..slice.begin + slice.len)

@@ -1,4 +1,4 @@
-use hexga_core::prelude::IndexExtension;
+use hexga_core::prelude::IndexID;
 use hexga_generational::prelude::*;
 
 fn main()
@@ -7,8 +7,8 @@ fn main()
     let enemy = entities.insert("zoombie");
 
     assert_eq!(enemy.get(&entities), Some(&"zoombie"));
+    assert_eq!(entities.get(enemy), Some(&"zoombie"));
     assert_eq!(entities[enemy], "zoombie");
-    assert!(entities.get(enemy).is_some());
 
     entities.remove(enemy); // the key is no longer valid
     assert!(entities.get(enemy).is_none()); // the value don't exist

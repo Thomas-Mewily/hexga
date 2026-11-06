@@ -36,8 +36,8 @@ pub use retain::*;
 mod get;
 pub use get::*;
 
-mod index;
-pub use index::*;
+mod index_id;
+pub use index_id::*;
 
 mod capacity;
 pub use capacity::*;
@@ -98,5 +98,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{capacity::*, clear::*, collection::*, get::*, index::*, insert::*, length::*, matches::*, pop::*, push::*, remove::*, retain::*};
+    pub use super::{capacity::*, clear::*, collection::*, get::*, index_id::*, insert::*, length::*, matches::*, pop::*, push::*, remove::*, retain::*};
 }
