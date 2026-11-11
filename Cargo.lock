@@ -681,7 +681,7 @@ checksum = "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
 
 [[package]]
 name = "engine_test"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_engine",
 ]
@@ -1045,7 +1045,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hexga"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_ansi_color",
  "hexga_arena",
@@ -1065,18 +1065,18 @@ dependencies = [
 
 [[package]]
 name = "hexga_action"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 
 [[package]]
 name = "hexga_ansi_color"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "hexga_arena"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_core",
  "serde",
@@ -1084,14 +1084,14 @@ dependencies = [
 
 [[package]]
 name = "hexga_array"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_map_on",
 ]
 
 [[package]]
 name = "hexga_array_vec"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_core",
  "serde",
@@ -1099,7 +1099,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_asset"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_core",
  "hexga_encoding",
@@ -1110,7 +1110,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_bit"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_bit_derive",
  "hexga_map_on",
@@ -1118,7 +1118,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_bit_derive"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1127,7 +1127,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_bitflags"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "heck",
  "hexga_number",
@@ -1141,7 +1141,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_core"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_bit",
  "hexga_guard",
@@ -1151,7 +1151,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_encoding"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "base64",
  "bincode",
@@ -1167,7 +1167,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_encoding_derive"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1176,7 +1176,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_engine"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga",
  "hexga_event_loop",
@@ -1186,11 +1186,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_event"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 
 [[package]]
 name = "hexga_event_loop"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
@@ -1211,14 +1211,14 @@ dependencies = [
 
 [[package]]
 name = "hexga_event_loop_test"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_event_loop",
 ]
 
 [[package]]
 name = "hexga_generational"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_array_vec",
  "hexga_core",
@@ -1228,7 +1228,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_graphics"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga",
  "hexga_wgpu",
@@ -1237,11 +1237,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_guard"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 
 [[package]]
 name = "hexga_image"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_core",
  "hexga_encoding",
@@ -1252,7 +1252,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_io"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_core",
  "serde",
@@ -1260,11 +1260,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_map_on"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 
 [[package]]
 name = "hexga_math"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_array",
  "hexga_core",
@@ -1279,7 +1279,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_math_derive"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -1290,7 +1290,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_number"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_array",
  "hexga_map_on",
@@ -1299,11 +1299,11 @@ dependencies = [
 
 [[package]]
 name = "hexga_typedef"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 
 [[package]]
 name = "hexga_utils"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga_core",
  "serde",
@@ -1311,7 +1311,7 @@ dependencies = [
 
 [[package]]
 name = "hexga_wgpu"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga",
  "serde",
@@ -1552,8 +1552,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "math_test"
+version = "0.0.12-beta.2"
+dependencies = [
+ "hexga",
+ "hexga_core",
+ "hexga_math",
+ "serde",
+]
+
+[[package]]
 name = "math_tmp"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga",
 ]
@@ -2410,7 +2420,7 @@ dependencies = [
 
 [[package]]
 name = "share_crate"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 
 [[package]]
 name = "shlex"
@@ -2562,7 +2572,7 @@ dependencies = [
 
 [[package]]
 name = "some_test"
-version = "0.0.12-beta.1"
+version = "0.0.12-beta.2"
 dependencies = [
  "hexga",
 ]
