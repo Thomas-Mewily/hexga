@@ -1,5 +1,4 @@
 use std::sync::MutexGuard;
-
 use super::*;
 
 /// Multi threaded singleton, where the value is initialized at compile time.
@@ -49,34 +48,23 @@ where
     }
 }
 
+
 impl<T> GuardedMut<T> for SingletonMutex<T>
 {
-    type GuardMut<'a>
-        = MappedMutexGuard<'a, T>
-    where
-        Self: 'a;
+    type GuardMut<'a> = DoubleDeref<MutexGuard<'a, Identity<T>>> where Self: 'a;
+    type Error<'a> = PoisonError<MutexGuard<'a, Identity<T>>> where Self: 'a;
 
     #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
     {
-        let guard = match self.guarded.lock()
+        match self.try_get_mut()
         {
             Ok(guard) => guard,
-            Err(e) =>
-            {
-                panic!("SingletonMutex<{}> poisoned: {:?}", std::any::type_name::<T>(), e)
-            }
-        };
-
-        guard.guard_map_mut(|v| v.as_mut())
+            Err(e) => panic!("SingletonMutex<{}> is poisoned: {:?}", std::any::type_name::<T>(), e),
+        }
     }
 
-    type Error<'a>
-        = PoisonError<MutexGuard<'a, Identity<T>>>
-    where
-        Self: 'a;
-
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(self.guarded.lock()?.guard_map_mut(|v| v.as_mut())) }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.guarded.lock().map(DoubleDeref::from) }
 }
 impl_singleton_methods_get_mut!(SingletonMutex);
 
@@ -106,32 +94,23 @@ where
 
 impl<T> GuardedMut<T> for SingletonLazyMutex<T>
 {
-    type GuardMut<'a>
-        = MappedMutexGuard<'a, T>
+    type GuardMut<'a> = DoubleDeref<MutexGuard<'a, LazyLock<T>>> where Self: 'a;
+    type Error<'a>
+        = PoisonError<MutexGuard<'a, LazyLock<T>>>
     where
         Self: 'a;
 
     #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
     {
-        let guard = match self.guarded.lock()
+        match self.try_get_mut()
         {
             Ok(guard) => guard,
-            Err(e) =>
-            {
-                panic!("SingletonLazyMutex<{}> poisoned: {:?}", std::any::type_name::<T>(), e)
-            }
-        };
-
-        guard.guard_map_mut(|v| v.deref_mut())
+            Err(e) => panic!("SingletonMutex<{}> is poisoned: {:?}", std::any::type_name::<T>(), e),
+        }
     }
 
-    type Error<'a>
-        = TryLockError<MutexGuard<'a, LazyLock<T>>>
-    where
-        Self: 'a;
-
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(self.guarded.lock()?.guard_map_mut(|v| v.deref_mut())) }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.guarded.lock().map(DoubleDeref::from) }
 }
 impl_singleton_methods_get_mut!(SingletonLazyMutex);
 
@@ -149,7 +128,7 @@ impl<T> SingletonOptionMutex<T>
 
 impl<T> SingletonOptionable<T> for SingletonOptionMutex<T>
 {
-    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<MappedMutexGuard<'a, T>, F>
+    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<DoubleDerefOption<MutexGuard<'a, Option<T>>, T>, F>
     where
         F: FnOnce() -> T,
     {
@@ -161,7 +140,7 @@ impl<T> SingletonOptionable<T> for SingletonOptionMutex<T>
                 {
                     *guard = Some(init());
                 }
-                Ok(MutexGuard::map(guard, |opt| opt.as_mut().unwrap()))
+                Ok(DoubleDerefOption::from(guard))
             }
             Err(_) => Err(init),
         }
@@ -195,46 +174,37 @@ where
     }
 }
 
+
 impl<T> GuardedMut<T> for SingletonOptionMutex<T>
 {
     type GuardMut<'a>
-        = MappedMutexGuard<'a, T>
+        = DoubleDerefOption<MutexGuard<'a, Option<T>>, T>
+    where
+        Self: 'a;
+    type Error<'a>
+        = NotInitErrorOr<PoisonError<MutexGuard<'a, Option<T>>>>
     where
         Self: 'a;
 
     #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
     {
-        let guard = match self.guarded.lock()
+        match self.try_get_mut()
         {
-            Ok(guard) => guard,
-            Err(e) =>
+            Ok(guard) => return guard,
+            Err(e) => match e
             {
-                panic!("SingletonOptionMutex<{}> poisoned: {:?}", std::any::type_name::<T>(), e)
-            }
-        };
-
-        if guard.is_none()
-        {
-            panic!("SingletonOptionMutex<{}> not initialized: call init() first", std::any::type_name::<T>());
+                NotInitErrorOr::NotInit => panic!("SingletonOptionMutex<{}> not initialized: call init() first", std::any::type_name::<T>()),
+                NotInitErrorOr::Other(guard) => panic!("SingletonOptionMutex<{}> is poisoned: {:?}", std::any::type_name::<T>(), guard),
+            },
         }
-
-        MutexGuard::map(guard, |opt| opt.as_mut().unwrap())
     }
-
-    type Error<'a>
-        = TryLockError<MutexGuard<'a, Option<T>>>
-    where
-        Self: 'a;
 
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
     {
         let guard = self.guarded.lock()?;
-        if guard.is_none()
-        {
-            return Err(TryLockError::WouldBlock);
-        }
-        Ok(MutexGuard::map(guard, |opt| opt.as_mut().unwrap()))
+        if guard.is_none() { return Err(NotInitErrorOr::NotInit); }
+        return Ok(DoubleDerefOption::from(guard));
     }
 }
 impl_singleton_methods_get_mut!(SingletonOptionMutex);

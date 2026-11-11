@@ -1,6 +1,9 @@
 use super::*;
 
 pub fn identity<T>(value: T) -> T { value }
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[repr(transparent)]
 pub struct Identity<T>
 {
     pub value: T,

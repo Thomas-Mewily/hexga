@@ -50,7 +50,7 @@
 //! - [`Angle`] and [`Time`] use a [`float`] precision that can be changed using [`AngleOf`] and [`TimeOf`]
 
 #![allow(unused_imports)]
-#![feature(formatting_options)]
+//#![feature(formatting_options)]
 // For grid view, to display aligned value they need to be fomatted in a temporary formatter
 //#![feature(try_trait_v2, try_trait_v2_residual)] // TryMap
 //#![feature(array_try_map)] // array try_map

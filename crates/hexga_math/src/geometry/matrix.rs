@@ -82,9 +82,11 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
             for r in 0..ROW
             {
                 strings.push(___());
-                let mut tmp_f = std::fmt::Formatter::new(strings.last_mut().unwrap(), ___());
-                d(&self[c][r], &mut tmp_f)?;
-                width = max(width, strings.last().unwrap().len());
+                use std::fmt::Write;
+                let mut s = String::new();
+                write!(s, "{}", std::fmt::from_fn(|f| d(&self[c][r], f)))?;
+                width = max(width, s.len());
+                strings.push(s);
             }
         }
 

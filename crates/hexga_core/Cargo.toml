@@ -16,6 +16,7 @@ categories = ["rust-patterns"]
 default = ["std", "serde", "serde_rc"]
 
 std = ["hexga_guard/std"]
+feature_mapped_lock_guards = ["hexga_guard/feature_mapped_lock_guards"]
 
 serde = ["dep:serde"]
 serde_rc = ["serde/rc"]

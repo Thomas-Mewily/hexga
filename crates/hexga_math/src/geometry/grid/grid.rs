@@ -13,24 +13,24 @@ where
 
 macro_rules! impl_grid_fmt_method {
     ($trait_name :ident) => {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result
         {
             writeln!(f)?;
 
             const SEP: &'static str = " ";
             let size = self.size();
 
-            // TODO: use https://doc.rust-lang.org/stable/std/fmt/fn.from_fn.html,
-            // But at the moment it only support Display and Debug
+            use ::core::fmt::Write;
+
             let strings = self
                 .iter()
                 .map(|(_, v)| {
                     let mut s = String::new();
-                    let mut tmp_f = std::fmt::Formatter::new(&mut s, ___());
-                    std::fmt::$trait_name::fmt(v, &mut tmp_f)?;
+                    let wrapper = fmt::from_fn(|f| ::core::fmt::$trait_name::fmt(v, f));
+                    write!(s, "{}", wrapper)?;
                     Ok(s)
                 })
-                .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Result<Vec<_>, _>>()?;
 
             match N
             {

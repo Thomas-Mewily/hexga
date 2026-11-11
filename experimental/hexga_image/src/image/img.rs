@@ -102,15 +102,18 @@ where
             const SEP: &'static str = " ";
             let size = self.size();
 
+   
+            use ::core::fmt::{self, Write};
+
             let strings = self
                 .iter()
                 .map(|(_, v)| {
                     let mut s = String::new();
-                    let mut tmp_f = std::fmt::Formatter::new(&mut s, ___());
-                    std::fmt::Debug::fmt(v, &mut tmp_f)?;
+                    let wrapper = fmt::from_fn(|f| ::core::fmt::Debug::fmt(v, f));
+                    write!(s, "{}", wrapper)?;
                     Ok(s)
                 })
-                .collect::<Result<Vec<_>, _>>()?;
+            .collect::<Result<Vec<_>, _>>()?;
 
             let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
             let g = unsafe { ImageBaseOf::from_vec_unchecked(size, strings) };

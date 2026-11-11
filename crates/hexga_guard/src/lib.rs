@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "std", feature(mapped_lock_guards))]
+#![cfg_attr(all(feature = "std", feature = "feature_mapped_lock_guards"), feature(mapped_lock_guards))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use core::fmt::Debug;
@@ -32,12 +32,8 @@ pub trait Guarded<T: ?Sized>
 
 pub trait GuardedMut<T: ?Sized>
 {
-    type GuardMut<'a>: DerefMut<Target = T>
-    where
-        Self: 'a;
-    type Error<'a>: Debug
-    where
-        Self: 'a;
+    type GuardMut<'a>: DerefMut<Target = T> where Self: 'a;
+    type Error<'a>: Debug where Self: 'a;
 
     /// Tries to return a mutable guard that dereferences to the inner value,
     /// while blocking the current thread until it is able to do so.
@@ -266,7 +262,7 @@ impl<'a, T: ?Sized> GuardMut<'a, T> for std::cell::RefMut<'a, T>
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "feature_mapped_lock_guards"))]
 impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockReadGuard<'a, T>
 {
     type Mapped<U>
@@ -282,7 +278,7 @@ impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockReadGuard<'a, T>
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "feature_mapped_lock_guards"))]
 impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockWriteGuard<'a, T>
 {
     type Mapped<U>
@@ -298,7 +294,7 @@ impl<'a, T: ?Sized> Guard<'a, T> for std::sync::RwLockWriteGuard<'a, T>
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "feature_mapped_lock_guards"))]
 impl<'a, T: ?Sized> GuardMut<'a, T> for std::sync::RwLockWriteGuard<'a, T>
 {
     type MappedMut<U>
@@ -314,7 +310,7 @@ impl<'a, T: ?Sized> GuardMut<'a, T> for std::sync::RwLockWriteGuard<'a, T>
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "feature_mapped_lock_guards"))]
 impl<'a, T> Guard<'a, T> for std::sync::MappedRwLockReadGuard<'a, T>
 {
     type Mapped<U>
@@ -330,7 +326,7 @@ impl<'a, T> Guard<'a, T> for std::sync::MappedRwLockReadGuard<'a, T>
     }
 }
 // Todo: impl Guard for MappedRwLockWriteGuard when downgrade() will be available
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "feature_mapped_lock_guards"))]
 impl<'a, T> GuardMut<'a, T> for std::sync::MappedRwLockWriteGuard<'a, T>
 {
     type MappedMut<U>
@@ -351,7 +347,7 @@ impl<'a, T> GuardMut<'a, T> for std::sync::MappedRwLockWriteGuard<'a, T>
 // More generally, you can't map a const reference with mutex guard:
 // https://doc.rust-lang.org/std/sync/struct.MutexGuard.html#method.map is `&mut` only
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "feature_mapped_lock_guards"))]
 impl<'a, T> GuardMut<'a, T> for std::sync::MutexGuard<'a, T>
 {
     type MappedMut<U>
@@ -366,7 +362,7 @@ impl<'a, T> GuardMut<'a, T> for std::sync::MutexGuard<'a, T>
         Self::map(self, f)
     }
 }
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "feature_mapped_lock_guards"))]
 impl<'a, T> GuardMut<'a, T> for std::sync::MappedMutexGuard<'a, T>
 {
     type MappedMut<U>

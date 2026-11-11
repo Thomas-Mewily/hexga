@@ -49,61 +49,53 @@ where
 impl<T> Guarded<T> for SingletonRw<T>
 {
     type Guard<'a>
-        = MappedRwLockReadGuard<'a, T>
+        = DoubleDeref<RwLockReadGuard<'a, Identity<T>>>
+    where
+        Self: 'a;
+    type Error<'a>
+        = PoisonError<RwLockReadGuard<'a, Identity<T>>>
     where
         Self: 'a;
 
     #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a>
     {
-        let guard = match self.guarded.read()
+        match self.try_get()
         {
             Ok(guard) => guard,
-            Err(e) =>
-            {
-                panic!("SingletonRw<{}> can't be read: {:?}", std::any::type_name::<T>(), e)
-            }
-        };
-
-        guard.guard_map(|v| v.as_ref())
+            Err(e) => panic!("SingletonRw<{}> can't be read: {:?}", std::any::type_name::<T>(), e)
+        }
     }
 
-    type Error<'a>
-        = TryLockError<RwLockReadGuard<'a, Identity<T>>>
-    where
-        Self: 'a;
-
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(self.guarded.read()?.guard_map(|v| v.as_ref())) }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(DoubleDeref::from(self.guarded.read()?)) }
 }
 
 impl<T> GuardedMut<T> for SingletonRw<T>
 {
     type GuardMut<'a>
-        = MappedRwLockWriteGuard<'a, T>
+        = DoubleDeref<RwLockWriteGuard<'a, Identity<T>>>
     where
         Self: 'a;
-
-    #[track_caller]
-    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
-    {
-        let guard = match self.guarded.write()
-        {
-            Ok(guard) => guard,
-            Err(e) =>
-            {
-                panic!("SingletonRw<{}> can't be written: {:?}", std::any::type_name::<T>(), e)
-            }
-        };
-
-        guard.guard_map_mut(|v| v.as_mut())
-    }
 
     type Error<'a>
         = TryLockError<RwLockWriteGuard<'a, Identity<T>>>
     where
         Self: 'a;
 
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(self.guarded.write()?.guard_map_mut(|v| v.as_mut())) }
+    #[track_caller]
+    fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
+    {
+        match self.try_get_mut()
+        {
+            Ok(guard) => guard,
+            Err(e) =>
+            {
+                panic!("SingletonRw<{}> can't be written: {:?}", std::any::type_name::<T>(), e)
+            }
+        }
+    }
+
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(DoubleDeref::from(self.guarded.write()?)) }
 }
 impl_singleton_methods!(SingletonRw);
 
@@ -134,46 +126,45 @@ where
 impl<T> Guarded<T> for SingletonLazyRw<T>
 {
     type Guard<'a>
-        = MappedRwLockReadGuard<'a, T>
+        = DoubleDeref<RwLockReadGuard<'a, LazyLock<T>>>
+    where
+        Self: 'a;
+    type Error<'a>
+        = PoisonError<RwLockReadGuard<'a, LazyLock<T>>>
     where
         Self: 'a;
 
     #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a>
     {
-        let guard = match self.guarded.read()
+        match self.try_get()
         {
             Ok(guard) => guard,
-            Err(e) =>
-            {
-                panic!("SingletonLazyRw<{}> can't be read: {:?}", std::any::type_name::<T>(), e)
-            }
-        };
-
-        guard.guard_map(|v| v.deref())
+            Err(e) => panic!("SingletonLazyRw<{}> can't be read: {:?}", std::any::type_name::<T>(), e)
+        }
     }
 
-    type Error<'a>
-        = TryLockError<RwLockReadGuard<'a, LazyLock<T>>>
-    where
-        Self: 'a;
-
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(self.guarded.read()?.guard_map(|v| v.deref())) }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(DoubleDeref::from(self.guarded.read()?)) }
 }
 
 impl<T> GuardedMut<T> for SingletonLazyRw<T>
 {
     type GuardMut<'a>
-        = MappedRwLockWriteGuard<'a, T>
+        = DoubleDeref<RwLockWriteGuard<'a, LazyLock<T>>>
+    where
+        Self: 'a;
+
+    type Error<'a>
+        = TryLockError<RwLockWriteGuard<'a, LazyLock<T>>>
     where
         Self: 'a;
 
     #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
     {
-        match self.guarded.write()
+        match self.try_get_mut()
         {
-            Ok(guard) => guard.guard_map_mut(|v| v.deref_mut()),
+            Ok(guard) => guard,
             Err(e) =>
             {
                 panic!("SingletonLazyRw<{}> can't be written: {:?}", std::any::type_name::<T>(), e)
@@ -181,12 +172,7 @@ impl<T> GuardedMut<T> for SingletonLazyRw<T>
         }
     }
 
-    type Error<'a>
-        = TryLockError<RwLockWriteGuard<'a, LazyLock<T>>>
-    where
-        Self: 'a;
-
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(self.guarded.write()?.guard_map_mut(|v| v.deref_mut())) }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(DoubleDeref::from(self.guarded.write()?)) }
 }
 impl_singleton_methods!(SingletonLazyRw);
 
@@ -207,7 +193,7 @@ impl<T> SingletonOptionRw<T>
 
 impl<T> SingletonOptionable<T> for SingletonOptionRw<T>
 {
-    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<MappedRwLockWriteGuard<'a, T>, F>
+    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<DoubleDerefOption<RwLockWriteGuard<'a, Option<T>>,T>, F>
     where
         F: FnOnce() -> T,
     {
@@ -219,7 +205,7 @@ impl<T> SingletonOptionable<T> for SingletonOptionRw<T>
                 {
                     *guard = Some(init());
                 }
-                Ok(RwLockWriteGuard::map(guard, |opt| opt.as_mut().unwrap()))
+                Ok(DoubleDerefOption::from(guard))
             }
             Err(_) => Err(init),
         }
@@ -256,87 +242,66 @@ where
 impl<T> Guarded<T> for SingletonOptionRw<T>
 {
     type Guard<'a>
-        = MappedRwLockReadGuard<'a, T>
+        = DoubleDerefOption<RwLockReadGuard<'a, Option<T>>, T>
+    where
+        Self: 'a;
+    type Error<'a>
+        = NotInitErrorOr<PoisonError<RwLockReadGuard<'a, Option<T>>>>
     where
         Self: 'a;
 
     #[track_caller]
     fn get<'a>(&'a self) -> Self::Guard<'a>
     {
-        let guard = match self.guarded.read()
+        match self.try_get()
         {
-            Ok(guard) => guard,
-            Err(e) =>
+            Ok(guard) => return guard,
+            Err(e) => match e
             {
-                panic!("SingletonOptionRw<{}> can't be read: {:?}", std::any::type_name::<T>(), e)
-            }
-        };
-
-        if guard.is_none()
-        {
-            panic!("SingletonOptionRw<{}> not initialized: call init() first", std::any::type_name::<T>());
+                NotInitErrorOr::NotInit => panic!("SingletonOptionRw<{}> not initialized: call init() first", std::any::type_name::<T>()),
+                NotInitErrorOr::Other(guard) => panic!("SingletonOptionRw<{}> is poisoned: {:?}", std::any::type_name::<T>(), guard),
+            },
         }
-
-        RwLockReadGuard::map(guard, |opt| opt.as_ref().unwrap())
     }
-
-    type Error<'a>
-        = PoisonError<RwLockReadGuard<'a, Option<T>>>
-    where
-        Self: 'a;
 
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>>
     {
         let guard = self.guarded.read()?;
-        if guard.is_none()
-        {
-            // FIXME: make some kind of proper error
-            return Err(PoisonError::new(guard));
-        }
-        Ok(RwLockReadGuard::map(guard, |opt| opt.as_ref().unwrap()))
+        if guard.is_none() { return Err(NotInitErrorOr::NotInit); }
+        return Ok(DoubleDerefOption::from(guard));
     }
 }
 
 impl<T> GuardedMut<T> for SingletonOptionRw<T>
 {
     type GuardMut<'a>
-        = MappedRwLockWriteGuard<'a, T>
+        = DoubleDerefOption<RwLockWriteGuard<'a, Option<T>>, T>
+    where
+        Self: 'a;
+    type Error<'a>
+        = NotInitErrorOr<PoisonError<RwLockWriteGuard<'a, Option<T>>>>
     where
         Self: 'a;
 
     #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
     {
-        let guard = match self.guarded.write()
+        match self.try_get_mut()
         {
-            Ok(guard) => guard,
-            Err(e) =>
+            Ok(guard) => return guard,
+            Err(e) => match e
             {
-                panic!("SingletonOptionRw<{}> can't be written: {:?}", std::any::type_name::<T>(), e)
-            }
-        };
-
-        if guard.is_none()
-        {
-            panic!("SingletonOptionRw<{}> not initialized: call init() first", std::any::type_name::<T>());
+                NotInitErrorOr::NotInit => panic!("SingletonOptionRw<{}> not initialized: call init() first", std::any::type_name::<T>()),
+                NotInitErrorOr::Other(guard) => panic!("SingletonOptionRw<{}> is poisoned: {:?}", std::any::type_name::<T>(), guard),
+            },
         }
-
-        RwLockWriteGuard::map(guard, |opt| opt.as_mut().unwrap())
     }
-
-    type Error<'a>
-        = TryLockError<RwLockWriteGuard<'a, Option<T>>>
-    where
-        Self: 'a;
 
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
     {
         let guard = self.guarded.write()?;
-        if guard.is_none()
-        {
-            return Err(TryLockError::WouldBlock);
-        }
-        Ok(RwLockWriteGuard::map(guard, |opt| opt.as_mut().unwrap()))
+        if guard.is_none() { return Err(NotInitErrorOr::NotInit); }
+        return Ok(DoubleDerefOption::from(guard));
     }
 }
 impl_singleton_methods!(SingletonOptionRw);

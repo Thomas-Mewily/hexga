@@ -15,5 +15,6 @@ categories = ["rust-patterns", "concurrency", "no-std"]
 default = ["std"]
 
 std = []
+feature_mapped_lock_guards = []
 
 [dependencies]

@@ -461,8 +461,8 @@ where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    pub fn value(&self) -> impl Deref<Target = T> { self.get().guard_map(|v| v.value()) }
-    pub fn value_mut(&mut self) -> impl DerefMut<Target = T> { self.get_mut().guard_map_mut(|v| v.value_mut()) }
+    pub fn value(&self) -> impl Deref<Target = T> { hexga_core::utils::DoubleDeref::from(self.get()) }
+    pub fn value_mut(&mut self) -> impl DerefMut<Target = T> { hexga_core::utils::DoubleDeref::from(self.get_mut()) }
 }
 
 impl<T, FS> IsDirty for AssetIn<T, FS>

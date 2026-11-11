@@ -1,6 +1,6 @@
-#![feature(get_disjoint_mut_helpers)] // for https://doc.rust-lang.org/core/slice/trait.GetDisjointMutIndex.html
+//#![feature(get_disjoint_mut_helpers)] // for https://doc.rust-lang.org/core/slice/trait.GetDisjointMutIndex.html
 //#![feature(unsafe_cell_access)]
-#![cfg_attr(feature = "std", feature(mapped_lock_guards))]
+#![cfg_attr(all(feature = "std", feature = "feature_mapped_lock_guards"), feature(mapped_lock_guards))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(not(feature = "std"))]
@@ -12,7 +12,7 @@ use std::collections::TryReserveError;
 
 #[allow(unused)]
 use core::hash::BuildHasher;
-use core::slice::GetDisjointMutIndex;
+//use core::slice::GetDisjointMutIndex;
 use core::{borrow::Borrow, hash::Hash, ops::Index, slice::SliceIndex};
 
 #[cfg(feature = "std")]

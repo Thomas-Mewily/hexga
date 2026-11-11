@@ -6,10 +6,15 @@ use crate::{
 use std::{
     cell::{LazyCell, OnceCell},
     sync::{
-        LazyLock, MappedMutexGuard, MappedRwLockReadGuard, MappedRwLockWriteGuard, Mutex, OnceLock, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard,
+        LazyLock, Mutex, OnceLock, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard,
         TryLockError,
     },
 };
+
+use crate::utils::{DoubleDeref, DoubleDerefOption};
+
+#[cfg(feature = "feature_mapped_lock_guards")]
+use std::sync::{MappedMutexGuard, MappedRwLockReadGuard, MappedRwLockWriteGuard};
 
 // Todo: impl Default for singleton (init with default value) when const trait are here
 
@@ -30,10 +35,29 @@ pub use once_cell::*;
 mod once_lock;
 pub use once_lock::*;
 
+//#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+//pub struct NotInitError;
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NotInitError;
-
 impl Debug for NotInitError
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.write_str("Not init") }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum NotInitErrorOr<T>
+{
+    NotInit,
+    Other(T),
+}
+impl<T> From<T> for NotInitErrorOr<T>
+{
+    fn from(value: T) -> Self {
+        NotInitErrorOr::Other(value)
+    }
+}
+impl<T> Debug for NotInitErrorOr<T>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.write_str("Not init") }
 }

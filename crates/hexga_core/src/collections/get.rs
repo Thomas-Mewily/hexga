@@ -221,6 +221,126 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
     }
 }
 
+
+mod wrap_std_nightly_only_feature_to_stay_in_stable
+{
+    use super::{GetManyMut,ManyMutError,map_on};
+
+    /*
+    /// To wrap [core::slice::GetDisjointMutIndex](https://doc.rust-lang.org/core/slice/trait.GetDisjointMutIndex.html) because it's nightly-only experimental API...
+    pub(crate) unsafe trait DisjointIndex: Clone 
+    {
+        fn is_in_bounds(&self, len: usize) -> bool;
+        fn is_overlapping(&self, other: &Self) -> bool;
+    }
+
+    // SAFETY: We implement `is_in_bounds()` and `is_overlapping()` correctly.
+    unsafe impl DisjointIndex for usize {
+        #[inline]
+        fn is_in_bounds(&self, len: usize) -> bool {
+            *self < len
+        }
+
+        #[inline]
+        fn is_overlapping(&self, other: &Self) -> bool {
+            *self == *other
+        }
+    }
+
+    // SAFETY: We implement `is_in_bounds()` and `is_overlapping()` correctly.
+    unsafe impl DisjointIndex for core::ops::Range<usize> {
+        #[inline]
+        fn is_in_bounds(&self, len: usize) -> bool {
+            (self.start <= self.end) & (self.end <= len)
+        }
+
+        #[inline]
+        fn is_overlapping(&self, other: &Self) -> bool {
+            (self.start < other.end) & (other.start < self.end)
+        }
+    }
+
+    // SAFETY: We implement `is_in_bounds()` and `is_overlapping()` correctly.
+    unsafe impl DisjointIndex for core::ops::RangeInclusive<usize> {
+        #[inline]
+        fn is_in_bounds(&self, len: usize) -> bool {
+            (self.start() <= self.end()) & (*self.end() < len)
+        }
+
+        #[inline]
+        fn is_overlapping(&self, other: &Self) -> bool {
+            (self.start() <= other.end()) & (other.start() <= self.end())
+        }
+    }
+
+    // SAFETY: We implement `is_in_bounds()` and `is_overlapping()` correctly.
+    unsafe impl DisjointIndex for core::range::Range<usize> {
+        #[inline]
+        fn is_in_bounds(&self, len: usize) -> bool {
+            core::ops::Range::from(*self).is_in_bounds(len)
+        }
+
+        #[inline]
+        fn is_overlapping(&self, other: &Self) -> bool {
+            core::ops::Range::from(*self).is_overlapping(&core::ops::Range::from(*other))
+        }
+    }
+
+    // SAFETY: We implement `is_in_bounds()` and `is_overlapping()` correctly.
+    unsafe impl DisjointIndex for core::range::RangeInclusive<usize> {
+        #[inline]
+        fn is_in_bounds(&self, len: usize) -> bool {
+            core::ops::RangeInclusive::from(*self).is_in_bounds(len)
+        }
+
+        #[inline]
+        fn is_overlapping(&self, other: &Self) -> bool {
+            core::ops::RangeInclusive::from(*self).is_overlapping(&core::ops::RangeInclusive::from(*other))
+        }
+    }
+    */
+
+    
+    type StdOpsRange = core::ops::Range<usize>;
+    type StdRangeRange = core::range::Range<usize>;
+    type StdOpsRangeInclusive = core::ops::RangeInclusive<usize>;
+    type StdRangeRangeInclusive = core::range::RangeInclusive<usize>;
+
+    map_on!(
+        (
+            StdOpsRange,
+            StdRangeRange,
+            StdOpsRangeInclusive,
+            StdRangeRangeInclusive,
+            usize
+        ),
+        ($type_name:ty) =>
+        {
+            impl<T> GetManyMut<$type_name> for [T]
+            {
+                #[inline(always)]
+                fn get_many_mut<const N: usize>(&mut self, indices: [$type_name; N]) -> Option<[&mut Self::Output; N]>
+                {
+                    <[T]>::get_disjoint_mut(self, indices).ok()
+                }
+
+                #[inline(always)]
+                fn try_get_many_mut<const N: usize>(&mut self, indices: [$type_name; N]) -> Result<[&mut Self::Output; N], ManyMutError>
+                {
+                    <[T]>::get_disjoint_mut(self, indices)
+                }
+
+                #[inline(always)]
+                #[track_caller]
+                unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [$type_name; N]) -> [&mut Self::Output; N]
+                {
+                    unsafe { <[T]>::get_disjoint_unchecked_mut(self, indices) }
+                }
+            }
+        }
+    );
+}
+
 /*
 pub struct TypedIndex<T,Idx>
 {
@@ -361,6 +481,7 @@ where
         self.get_mut(index.clone()).ok_or(IndexOutOfBounds { index, bound: 0..len })
     }
 }
+/*
 impl<Idx, T> TryGetMut<Idx> for &mut [T]
 where
     Idx: SliceIndex<[T]> + Clone,
@@ -368,9 +489,18 @@ where
     #[inline(always)]
     fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { (**self).try_get_mut(index) }
 }
+*/
+impl<'a, Idx, T> TryGetMut<Idx> for &'a mut [T]
+where
+    Idx: SliceIndex<[T]> + Clone, &'a [T] : TryGetMut<Idx>
+{
+    #[inline(always)]
+    fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { (**self).try_get_mut(index) }
+}
+/*
 impl<Idx, T> GetManyMut<Idx> for [T]
 where
-    Idx: SliceIndex<[T]> + GetDisjointMutIndex,
+    Idx: SliceIndex<[T]> + DisjointIndex,
 {
     #[inline(always)]
     fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output; N]> { self.get_disjoint_mut(indices).ok() }
@@ -385,12 +515,15 @@ where
         unsafe { self.get_disjoint_unchecked_mut(indices) }
     }
 }
-impl<Idx, T> GetManyMut<Idx> for &mut [T]
+*/
+
+
+impl<'a, Idx, T> GetManyMut<Idx> for &'a mut [T]
 where
-    Idx: SliceIndex<[T]> + GetDisjointMutIndex,
+    Idx: SliceIndex<[T]>, [T] : GetManyMut<Idx,Output = Self::Output>
 {
     #[inline(always)]
-    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output; N]> { (*self).get_many_mut(indices) }
+    fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output; N]> { <[T] as GetManyMut<Idx>>::get_many_mut(*self, indices) }
 
     #[inline(always)]
     fn try_get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Result<[&mut Self::Output; N], ManyMutError> { (*self).try_get_many_mut(indices) }
