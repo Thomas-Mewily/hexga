@@ -66,10 +66,11 @@ pub mod prelude
 {
     pub(crate) use super::NotInitError;
     pub use super::traits::*;
-    pub use super::{
-        SingletonCell, SingletonLazyCell, SingletonLazyMutex, SingletonLazyRw, SingletonMutex, SingletonOnce, SingletonOnceCell, SingletonOnceLazy,
-        SingletonOnceLazyCell, SingletonOptionCell, SingletonOptionMutex, SingletonOptionRw, SingletonRw,
-    };
+    pub use super::cell::{SingletonCell, SingletonLazyCell};
+    pub use super::mutex::{SingletonMutex, SingletonLazyMutex, SingletonOptionMutex};
+    pub use super::rw::{SingletonRw, SingletonLazyRw, SingletonOptionRw};
+    pub use super::once_cell::{SingletonOnceLazyCell, SingletonOnceCell};
+    pub use super::once_lock::{SingletonOnceLazy, SingletonOnce};
 }
 
 pub mod traits
