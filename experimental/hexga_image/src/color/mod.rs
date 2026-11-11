@@ -13,7 +13,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{ArrayToColor, IColor, ToColor};
+    pub use super::icolor::{ArrayToColor, IColor, ToColor};
 }
 
 pub type Color = Rgba;

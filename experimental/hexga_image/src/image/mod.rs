@@ -16,5 +16,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::ToImage;
+    pub use super::img::ToImage;
 }

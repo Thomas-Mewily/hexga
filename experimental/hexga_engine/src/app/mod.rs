@@ -23,14 +23,15 @@ pub mod prelude
         EventLoop, AppError, AppResult, 
         AppMessage, AppControlFlow, AppEvent, AppFlow,
         AppShortcut,
-        AppCtx, AppParam
     };
-    pub(crate) use super::{AppInternalEventLoop,AppCustomEvent,AppInternalProxy, AppInternalMessage};
+    pub use super::param::AppParam;
+    pub use super::runner::AppCtx;
+    pub(crate) use super::event::{AppCustomEvent, AppInternalEventLoop, AppInternalMessage, AppInternalProxy};
     pub use super::traits::*;
 }
 
 pub mod traits
 {
-    pub use super::{AsyncSpawn, AppSendEvent, IAppEvent, App, WithAppParam, WithAppShortcut};
-    pub use super::AppRun;
+    pub use super::runner::AppRun;
+    pub use hexga_event_loop::app::traits::*;
 }

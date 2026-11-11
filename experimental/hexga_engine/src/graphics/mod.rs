@@ -15,14 +15,14 @@ pub use graphics::*;
 pub mod prelude
 {
     //pub(crate) use super::{Graphics, GpuEvent, wgpu};
-    pub(crate) use super::Graphics;
-    pub use super::Pen;
+    pub(crate) use super::graphics::Graphics;
+    pub use super::pen::Pen;
     pub use super::traits::*;
     pub use hexga_graphics::prelude::*;
 }
 
 pub mod traits
 {
-    pub(crate) use super::ExternLibConvert;
+    pub(crate) use super::graphics::ExternLibConvert;
     pub use hexga_graphics::traits::*;
 }

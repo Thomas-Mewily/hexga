@@ -24,12 +24,17 @@ pub use vec::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{GpuBuffer, GpuSlice, GpuSliceMut, GpuVec};
+    pub use super::buffer::GpuBuffer;
+    pub use super::slice::GpuSlice;
+    pub use super::slice_mut::GpuSliceMut;
+    pub use super::vec::GpuVec;
 }
 
 pub mod traits
 {
-    pub use super::{GpuBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut, ToGpuBuffer, ToGpuVec};
+    pub use crate::buffer::{GpuBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut};
+    pub use super::buffer::ToGpuBuffer;
+    pub use super::vec::ToGpuVec;
 }
 
 pub trait GpuBufferNew<T>

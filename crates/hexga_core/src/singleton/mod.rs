@@ -21,19 +21,19 @@ use std::sync::{MappedMutexGuard, MappedRwLockReadGuard, MappedRwLockWriteGuard}
 //pub type Singleton<T> = SingletonMutex<T>;
 
 mod rw;
-pub use rw::*;
+pub use rw::{SingletonLazyRw, SingletonOptionRw, SingletonRw};
 
 mod mutex;
-pub use mutex::*;
+pub use mutex::{SingletonLazyMutex, SingletonMutex, SingletonOptionMutex};
 
 mod cell;
-pub use cell::*;
+pub use cell::{SingletonCell, SingletonLazyCell, SingletonOptionCell};
 
 mod once_cell;
-pub use once_cell::*;
+pub use once_cell::{SingletonOnceCell, SingletonOnceLazyCell};
 
 mod once_lock;
-pub use once_lock::*;
+pub use once_lock::{SingletonOnce, SingletonOnceLazy};
 
 //#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 //pub struct NotInitError;

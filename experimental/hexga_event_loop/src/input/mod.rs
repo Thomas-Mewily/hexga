@@ -24,10 +24,19 @@ pub use touch::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{Clipboard, KeyAction, KeyCode, KeyEvent, KeyModifiers, KeyModifiersFlags, KeyShortcut, Key, KeyCodeNative, KeyLocation, KeyRepeat, KeyState, Keyboard, MouseWheel, MouseButton, MouseClick, TouchPhase, Touch};
+    pub use super::clipboard::Clipboard;
+    pub use super::event::{KeyAction, KeyEvent, KeyRepeat, KeyShortcut, KeyState};
+    pub use super::key::{Key, KeyModifiers, KeyModifiersFlags};
+    pub use super::keycode::{KeyCode, KeyCodeNative, KeyLocation};
+    pub use super::keyboard::Keyboard;
+    pub use super::mouse::{MouseButton, MouseClick, MouseWheel, TouchPhase};
+    pub use super::touch::Touch;
 }
 
 pub mod traits
 {
-    pub use super::{Clipboardable, KeyConstants, KeyModifiersExtension, KeyboardShortcuts, TouchPhaseExtension};
+    pub use super::clipboard::Clipboardable;
+    pub use super::event::{KeyConstants, KeyboardShortcuts};
+    pub use super::key::KeyModifiersExtension;
+    pub use super::mouse::TouchPhaseExtension;
 }
