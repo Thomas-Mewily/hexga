@@ -1,6 +1,7 @@
 ## HexGa Action
 
 Trait for defining action, command, and undo redo system.
+Currenlty not impl because I'm not sure about the design of the API. 
 
 ## Main Hexga crate
 
