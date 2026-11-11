@@ -1,5 +1,77 @@
 use super::*;
 
+#[cfg(feature = "feature_mapped_lock_guards")]
+fn map_identity_rw_read_guard<'a, T>(guard: RwLockReadGuard<'a, Identity<T>>) -> MappedRwLockReadGuard<'a, T>
+{
+    RwLockReadGuard::map(guard, |identity| &identity.value)
+}
+
+#[cfg(not(feature = "feature_mapped_lock_guards"))]
+fn map_identity_rw_read_guard<'a, T>(guard: RwLockReadGuard<'a, Identity<T>>) -> DoubleDeref<RwLockReadGuard<'a, Identity<T>>>
+{
+    DoubleDeref::from(guard)
+}
+
+#[cfg(feature = "feature_mapped_lock_guards")]
+fn map_identity_rw_write_guard<'a, T>(guard: RwLockWriteGuard<'a, Identity<T>>) -> MappedRwLockWriteGuard<'a, T>
+{
+    RwLockWriteGuard::map(guard, |identity| &mut identity.value)
+}
+
+#[cfg(not(feature = "feature_mapped_lock_guards"))]
+fn map_identity_rw_write_guard<'a, T>(guard: RwLockWriteGuard<'a, Identity<T>>) -> DoubleDeref<RwLockWriteGuard<'a, Identity<T>>>
+{
+    DoubleDeref::from(guard)
+}
+
+#[cfg(feature = "feature_mapped_lock_guards")]
+fn map_lazy_rw_read_guard<'a, T>(guard: RwLockReadGuard<'a, LazyLock<T>>) -> MappedRwLockReadGuard<'a, T>
+{
+    RwLockReadGuard::map(guard, |lazy| &**lazy)
+}
+
+#[cfg(not(feature = "feature_mapped_lock_guards"))]
+fn map_lazy_rw_read_guard<'a, T>(guard: RwLockReadGuard<'a, LazyLock<T>>) -> DoubleDeref<RwLockReadGuard<'a, LazyLock<T>>>
+{
+    DoubleDeref::from(guard)
+}
+
+#[cfg(feature = "feature_mapped_lock_guards")]
+fn map_lazy_rw_write_guard<'a, T>(guard: RwLockWriteGuard<'a, LazyLock<T>>) -> MappedRwLockWriteGuard<'a, T>
+{
+    RwLockWriteGuard::map(guard, |lazy| &mut **lazy)
+}
+
+#[cfg(not(feature = "feature_mapped_lock_guards"))]
+fn map_lazy_rw_write_guard<'a, T>(guard: RwLockWriteGuard<'a, LazyLock<T>>) -> DoubleDeref<RwLockWriteGuard<'a, LazyLock<T>>>
+{
+    DoubleDeref::from(guard)
+}
+
+#[cfg(feature = "feature_mapped_lock_guards")]
+fn map_option_rw_read_guard<'a, T>(guard: RwLockReadGuard<'a, Option<T>>) -> MappedRwLockReadGuard<'a, T>
+{
+    RwLockReadGuard::map(guard, |value| value.as_ref().expect("should not be none"))
+}
+
+#[cfg(not(feature = "feature_mapped_lock_guards"))]
+fn map_option_rw_read_guard<'a, T>(guard: RwLockReadGuard<'a, Option<T>>) -> DoubleDerefOption<RwLockReadGuard<'a, Option<T>>, T>
+{
+    DoubleDerefOption::from(guard)
+}
+
+#[cfg(feature = "feature_mapped_lock_guards")]
+fn map_option_rw_write_guard<'a, T>(guard: RwLockWriteGuard<'a, Option<T>>) -> MappedRwLockWriteGuard<'a, T>
+{
+    RwLockWriteGuard::map(guard, |value| value.as_mut().expect("should not be none"))
+}
+
+#[cfg(not(feature = "feature_mapped_lock_guards"))]
+fn map_option_rw_write_guard<'a, T>(guard: RwLockWriteGuard<'a, Option<T>>) -> DoubleDerefOption<RwLockWriteGuard<'a, Option<T>>, T>
+{
+    DoubleDerefOption::from(guard)
+}
+
 /// Multi threaded singleton, where the value is initialized at compile time.
 pub type SingletonRw<T> = SingletonOf<RwLock<Identity<T>>>;
 /// Multi threaded singleton, where the value is initialized from a static fn / lambda at runtime.
@@ -48,6 +120,9 @@ where
 
 impl<T> Guarded<T> for SingletonRw<T>
 {
+    #[cfg(feature = "feature_mapped_lock_guards")]
+    type Guard<'a> = MappedRwLockReadGuard<'a, T> where Self: 'a;
+    #[cfg(not(feature = "feature_mapped_lock_guards"))]
     type Guard<'a>
         = DoubleDeref<RwLockReadGuard<'a, Identity<T>>>
     where
@@ -67,11 +142,14 @@ impl<T> Guarded<T> for SingletonRw<T>
         }
     }
 
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(DoubleDeref::from(self.guarded.read()?)) }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.guarded.read().map(map_identity_rw_read_guard) }
 }
 
 impl<T> GuardedMut<T> for SingletonRw<T>
 {
+    #[cfg(feature = "feature_mapped_lock_guards")]
+    type GuardMut<'a> = MappedRwLockWriteGuard<'a, T> where Self: 'a;
+    #[cfg(not(feature = "feature_mapped_lock_guards"))]
     type GuardMut<'a>
         = DoubleDeref<RwLockWriteGuard<'a, Identity<T>>>
     where
@@ -95,7 +173,7 @@ impl<T> GuardedMut<T> for SingletonRw<T>
         }
     }
 
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(DoubleDeref::from(self.guarded.write()?)) }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.guarded.write().map(map_identity_rw_write_guard).map_err(Into::into) }
 }
 impl_singleton_methods!(SingletonRw);
 
@@ -125,6 +203,9 @@ where
 
 impl<T> Guarded<T> for SingletonLazyRw<T>
 {
+    #[cfg(feature = "feature_mapped_lock_guards")]
+    type Guard<'a> = MappedRwLockReadGuard<'a, T> where Self: 'a;
+    #[cfg(not(feature = "feature_mapped_lock_guards"))]
     type Guard<'a>
         = DoubleDeref<RwLockReadGuard<'a, LazyLock<T>>>
     where
@@ -144,11 +225,14 @@ impl<T> Guarded<T> for SingletonLazyRw<T>
         }
     }
 
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(DoubleDeref::from(self.guarded.read()?)) }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.guarded.read().map(map_lazy_rw_read_guard) }
 }
 
 impl<T> GuardedMut<T> for SingletonLazyRw<T>
 {
+    #[cfg(feature = "feature_mapped_lock_guards")]
+    type GuardMut<'a> = MappedRwLockWriteGuard<'a, T> where Self: 'a;
+    #[cfg(not(feature = "feature_mapped_lock_guards"))]
     type GuardMut<'a>
         = DoubleDeref<RwLockWriteGuard<'a, LazyLock<T>>>
     where
@@ -172,7 +256,7 @@ impl<T> GuardedMut<T> for SingletonLazyRw<T>
         }
     }
 
-    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { Ok(DoubleDeref::from(self.guarded.write()?)) }
+    fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>> { self.guarded.write().map(map_lazy_rw_write_guard).map_err(Into::into) }
 }
 impl_singleton_methods!(SingletonLazyRw);
 
@@ -193,7 +277,7 @@ impl<T> SingletonOptionRw<T>
 
 impl<T> SingletonOptionable<T> for SingletonOptionRw<T>
 {
-    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<DoubleDerefOption<RwLockWriteGuard<'a, Option<T>>,T>, F>
+    fn init_from_fn<'a, F>(&'a self, init: F) -> Result<Self::GuardMut<'a>, F>
     where
         F: FnOnce() -> T,
     {
@@ -205,7 +289,7 @@ impl<T> SingletonOptionable<T> for SingletonOptionRw<T>
                 {
                     *guard = Some(init());
                 }
-                Ok(DoubleDerefOption::from(guard))
+                Ok(map_option_rw_write_guard(guard))
             }
             Err(_) => Err(init),
         }
@@ -241,6 +325,9 @@ where
 
 impl<T> Guarded<T> for SingletonOptionRw<T>
 {
+    #[cfg(feature = "feature_mapped_lock_guards")]
+    type Guard<'a> = MappedRwLockReadGuard<'a, T> where Self: 'a;
+    #[cfg(not(feature = "feature_mapped_lock_guards"))]
     type Guard<'a>
         = DoubleDerefOption<RwLockReadGuard<'a, Option<T>>, T>
     where
@@ -268,12 +355,15 @@ impl<T> Guarded<T> for SingletonOptionRw<T>
     {
         let guard = self.guarded.read()?;
         if guard.is_none() { return Err(NotInitErrorOr::NotInit); }
-        return Ok(DoubleDerefOption::from(guard));
+        return Ok(map_option_rw_read_guard(guard));
     }
 }
 
 impl<T> GuardedMut<T> for SingletonOptionRw<T>
 {
+    #[cfg(feature = "feature_mapped_lock_guards")]
+    type GuardMut<'a> = MappedRwLockWriteGuard<'a, T> where Self: 'a;
+    #[cfg(not(feature = "feature_mapped_lock_guards"))]
     type GuardMut<'a>
         = DoubleDerefOption<RwLockWriteGuard<'a, Option<T>>, T>
     where
@@ -301,7 +391,7 @@ impl<T> GuardedMut<T> for SingletonOptionRw<T>
     {
         let guard = self.guarded.write()?;
         if guard.is_none() { return Err(NotInitErrorOr::NotInit); }
-        return Ok(DoubleDerefOption::from(guard));
+        return Ok(map_option_rw_write_guard(guard));
     }
 }
 impl_singleton_methods!(SingletonOptionRw);

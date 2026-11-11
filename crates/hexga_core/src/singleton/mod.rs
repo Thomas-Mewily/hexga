@@ -11,6 +11,7 @@ use std::{
     },
 };
 
+#[cfg(not(feature = "feature_mapped_lock_guards"))]
 use crate::utils::{DoubleDeref, DoubleDerefOption};
 
 #[cfg(feature = "feature_mapped_lock_guards")]
