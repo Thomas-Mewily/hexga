@@ -213,6 +213,8 @@ impl<T> Guarded<T> for std::sync::RwLock<T>
         Self: 'a;
     fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { self.read() }
 }
+// TODO: use feature_mapped_lock_guards : MappedRwLockWriteGuard when it will be stable ? 
+// That way `{ guard.get_mut().guard_map(|v| &v.x) }` will compile, currently it will complain about a temporary value dropped created by `.get_mut()`, because mapping it don't move the guard
 #[cfg(feature = "std")]
 impl<T> GuardedMut<T> for std::sync::RwLock<T>
 {
