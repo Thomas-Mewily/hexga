@@ -10,6 +10,6 @@ readme = "README.md"
 
 keywords = []
 description = ""
-categories = [""]
+categories = ["rust-patterns"]
 
 [dependencies]
