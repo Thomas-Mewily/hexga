@@ -8,4 +8,8 @@ repository.workspace = true
 edition.workspace = true
 readme = "README.md"
 
+keywords = []
+description = ""
+categories = [""]
+
 [dependencies]
