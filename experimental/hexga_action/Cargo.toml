@@ -9,7 +9,7 @@ edition.workspace = true
 readme = "README.md"
 
 keywords = []
-description = ""
+description = "Trait for defining action, command, and undo redo system."
 categories = ["rust-patterns"]
 
 [dependencies]
