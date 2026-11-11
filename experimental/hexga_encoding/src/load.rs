@@ -119,6 +119,7 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
 }
 impl<T> LoadExtension for T where T: Load + for<'de> CfgDeserialize<'de> {}
 
+// TODO: Should use a singleton for the global file system.
 pub trait LoadGlobal: LoadExtension
 {
     fn load<P: AsRef<Path>>(path: P) -> FileResult<Self>

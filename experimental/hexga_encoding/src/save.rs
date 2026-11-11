@@ -124,6 +124,7 @@ pub trait SaveExtension: Save
 }
 impl<T> SaveExtension for T where T: Save + ?Sized {}
 
+// TODO: Should use a singleton for the global file system.
 pub trait SaveGlobal: SaveExtension
 {
     fn save<P: AsRef<Path>>(&self, path: P) -> FileResult { self.save_to_fs(&mut IoGlobal, path) }
