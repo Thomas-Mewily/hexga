@@ -2,7 +2,7 @@ use super::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{Save, SaveExtension, SaveInto};
+    pub use super::{Save, SaveExtension, SaveInto, SaveGlobal};
 }
 
 const DEFAULT_WRITER_CAPACITY: usize = 1024;
@@ -123,6 +123,12 @@ pub trait SaveExtension: Save
     fn save_to_fs<FS: FileSystem, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult { self.save_to_fs_resolved(fs, path).map(|_| ()) }
 }
 impl<T> SaveExtension for T where T: Save + ?Sized {}
+
+pub trait SaveGlobal: SaveExtension
+{
+    fn save<P: AsRef<Path>>(&self, path: P) -> FileResult { self.save_to_fs(&mut IoGlobal, path) }
+}
+impl<T> SaveGlobal for T where T: SaveExtension + ?Sized {}
 
 pub trait SaveInto
 {

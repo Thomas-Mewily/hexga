@@ -2,7 +2,7 @@ use super::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{Load, LoadExtension, LoadFrom};
+    pub use super::{Load, LoadExtension, LoadFrom, LoadGlobal};
 }
 
 pub trait Load: Sized + for<'de> CfgDeserialize<'de>
@@ -118,6 +118,17 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
     }
 }
 impl<T> LoadExtension for T where T: Load + for<'de> CfgDeserialize<'de> {}
+
+pub trait LoadGlobal: LoadExtension
+{
+    fn load<P: AsRef<Path>>(path: P) -> FileResult<Self>
+    where
+        Self: Sized,
+    {
+        Self::load_from_fs(&mut IoGlobal, path)
+    }
+}
+impl<T> LoadGlobal for T where T: LoadExtension + Sized {}
 
 pub trait LoadFrom: From<Self::Source>
 {

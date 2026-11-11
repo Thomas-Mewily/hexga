@@ -64,7 +64,7 @@ fn img()
     let original_pixels = i.pixels().to_owned();
 
     i.save("./test").unwrap();
-    let i = ImageOf::<ColorU16>::load("./test.png").unwrap();
+    let i = ImageOf::<ColorU16>::load("./test").unwrap();
     let open_pixels = i.pixels().to_owned();
 
     assert_eq!(original_pixels, open_pixels);
@@ -151,7 +151,7 @@ fn x2()
     println!("{}", DamageOf::<u8>::from_ron("(melee:18,physic:42)").unwrap());
     println!(
         "{}",
-        <DamageOf::<u8> as WithDefault<u8, ConstantOne<u8>>>::WithDefault::from_ron("(physic:1,melee:1)")
+        <DamageOf::<u8> as WithDefault<u8, hexga_math::ConstantOne<u8>>>::WithDefault::from_ron("(physic:1,melee:1)")
             .unwrap()
             .into_value()
     );
