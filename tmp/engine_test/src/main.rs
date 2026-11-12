@@ -4,7 +4,8 @@ pub struct MyApp;
 
 impl<'a> App<(), AppCtx<'a>> for MyApp
 {
-    fn event(&mut self, ev: AppEvent, _ctx: &mut AppCtx) -> Option<AppEvent> {
+    fn event(&mut self, ev: AppEvent, _ctx: &mut AppCtx) -> Option<AppEvent>
+    {
         println!("{:?}", ev);
         None
     }
@@ -23,7 +24,4 @@ impl<'a> App<(), AppCtx<'a>> for MyApp
     }
 }
 
-fn main()
-{
-    MyApp::run_with_param(|| MyApp, AppParam::default()).expect("failed to run triangle example");
-}
+fn main() { MyApp::run_with_param(|| MyApp, AppParam::default()).expect("failed to run triangle example"); }

@@ -30,7 +30,7 @@ macro_rules! impl_grid_fmt_method {
                     write!(s, "{}", wrapper)?;
                     Ok(s)
                 })
-            .collect::<Result<Vec<_>, _>>()?;
+                .collect::<Result<Vec<_>, _>>()?;
 
             match N
             {

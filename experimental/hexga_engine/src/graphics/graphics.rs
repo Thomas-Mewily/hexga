@@ -177,7 +177,10 @@ impl Graphics
             if let Some(surface) = window.surface()
             {
                 let area = surface.size().to_rect();
-                self.immediate.set_viewport(Viewport { area: area.to_float(), ..Default::default() });
+                self.immediate.set_viewport(Viewport {
+                    area: area.to_float(),
+                    ..Default::default()
+                });
                 self.immediate.set_scissor(area);
             }
         }

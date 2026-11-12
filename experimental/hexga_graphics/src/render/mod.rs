@@ -504,7 +504,10 @@ mod tests
     fn parameter_changes_preserve_state_and_split_draw_calls()
     {
         let mut builder = ImmediateRenderBuilder::default();
-        let viewport = Viewport { area: vec2(640., 480.).to_rect(), ..Default::default() };
+        let viewport = Viewport {
+            area: vec2(640., 480.).to_rect(),
+            ..Default::default()
+        };
         let scissor = Vec2i::new(320, 240).to_rect();
         builder.set_viewport(viewport);
         builder.set_scissor(scissor);

@@ -151,33 +151,53 @@ pub mod traits
     pub use super::{DoOnce, OkOr, ResultDebugExtension, ResultInto, Toggleable};
 }
 
-
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct DoubleDeref<G> { pub guard: G }
-
-impl<G> From<G> for DoubleDeref<G> { fn from(guard: G) -> Self { Self { guard }}}
-impl<G> Deref for DoubleDeref<G> where G: Deref, G::Target: Deref
+pub struct DoubleDeref<G>
 {
-    type Target=<G::Target as Deref>::Target;
+    pub guard: G,
+}
+
+impl<G> From<G> for DoubleDeref<G>
+{
+    fn from(guard: G) -> Self { Self { guard } }
+}
+impl<G> Deref for DoubleDeref<G>
+where
+    G: Deref,
+    G::Target: Deref,
+{
+    type Target = <G::Target as Deref>::Target;
     fn deref(&self) -> &Self::Target { self.guard.deref().deref() }
 }
-impl<G> DerefMut for DoubleDeref<G> where G: DerefMut, G::Target: DerefMut
+impl<G> DerefMut for DoubleDeref<G>
+where
+    G: DerefMut,
+    G::Target: DerefMut,
 {
     fn deref_mut(&mut self) -> &mut Self::Target { self.guard.deref_mut().deref_mut() }
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct DoubleDerefOption<G,T> { pub guard: G, phantom: PhantomData<T> }
-
-impl<G,T> From<G> for DoubleDerefOption<G,T> { fn from(guard: G) -> Self { Self { guard, phantom: PhantomData }}}
-impl<G,T> Deref for DoubleDerefOption<G,T> where G: Deref<Target = Option<T>>
+pub struct DoubleDerefOption<G, T>
 {
-    type Target=T;
+    pub guard: G,
+    phantom: PhantomData<T>,
+}
+
+impl<G, T> From<G> for DoubleDerefOption<G, T>
+{
+    fn from(guard: G) -> Self { Self { guard, phantom: PhantomData } }
+}
+impl<G, T> Deref for DoubleDerefOption<G, T>
+where
+    G: Deref<Target = Option<T>>,
+{
+    type Target = T;
     fn deref(&self) -> &Self::Target { self.guard.deref().as_ref().unwrap() }
 }
-impl<G,T> DerefMut for DoubleDerefOption<G,T> where G: DerefMut<Target=Option<T>>
+impl<G, T> DerefMut for DoubleDerefOption<G, T>
+where
+    G: DerefMut<Target = Option<T>>,
 {
     fn deref_mut(&mut self) -> &mut Self::Target { self.guard.deref_mut().as_mut().unwrap() }
 }

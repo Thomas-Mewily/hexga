@@ -14,8 +14,13 @@ impl<'a, Ev> Debug for EventLoop<'a, Ev>
 where
     Ev: IAppEvent,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        f.debug_struct("EventLoop").field("winit", &self.winit).field("state", &self.state).field("proxy", &self.proxy).finish()
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
+    {
+        f.debug_struct("EventLoop")
+            .field("winit", &self.winit)
+            .field("state", &self.state)
+            .field("proxy", &self.proxy)
+            .finish()
     }
 }
 
@@ -90,10 +95,7 @@ pub trait App<CustomEvent, Ctx>
 where
     CustomEvent: IAppEvent,
 {
-    fn message(&mut self, ev: AppMessage<CustomEvent>, ctx: &mut Ctx) -> Option<AppMessage<CustomEvent>>
-    {
-        self.dispatch_message(ev, ctx)
-    }
+    fn message(&mut self, ev: AppMessage<CustomEvent>, ctx: &mut Ctx) -> Option<AppMessage<CustomEvent>> { self.dispatch_message(ev, ctx) }
     fn dispatch_message(&mut self, ev: AppMessage<CustomEvent>, ctx: &mut Ctx) -> Option<AppMessage<CustomEvent>>
     {
         match ev
@@ -108,10 +110,7 @@ where
         }
     }
 
-    fn flow(&mut self, flow: AppFlow, ctx: &mut Ctx)
-    {
-        self.dispatch_flow(flow, ctx)
-    }
+    fn flow(&mut self, flow: AppFlow, ctx: &mut Ctx) { self.dispatch_flow(flow, ctx) }
     fn dispatch_flow(&mut self, flow: AppFlow, ctx: &mut Ctx)
     {
         match flow

@@ -48,7 +48,7 @@ pub enum GpuBufferUsage
     TlasInput = 11,
 
     /// `CopySource | CopyDest`
-    /// 
+    ///
     /// Allow a buffer to be the source buffer for a [`CommandEncoder::copy_buffer_to_buffer`] or [`CommandEncoder::copy_buffer_to_texture`]
     /// operation.
     /// Allow a buffer to be the destination buffer for a [`CommandEncoder::copy_buffer_to_buffer`], [`CommandEncoder::copy_texture_to_buffer`],
@@ -56,7 +56,7 @@ pub enum GpuBufferUsage
     CopySourceDest = Self::CopySource | Self::CopyDest,
 
     /// `MapRead | MapWrite`
-    /// 
+    ///
     MapReadWrite = Self::MapRead | Self::MapWrite,
 }
 impl GpuBufferUsageFlags
@@ -73,13 +73,14 @@ impl From<GpuBufferUsageFlags> for wgpu::BufferUsages
     fn from(value: GpuBufferUsageFlags) -> Self { Self::from_bits(value.bits()).expect("Oops! WGPU added more usage flags and this code is not updated") }
 }
 
-
 #[cfg(test)]
-mod tests {
+mod tests
+{
     use super::*;
 
     #[test]
-    fn check_wgpu_enum_bit() {
+    fn check_wgpu_enum_bit()
+    {
         type WgpuBuffUsage = wgpu::BufferUsages;
         assert_eq!(GpuBufferUsage::MapRead.bits(), WgpuBuffUsage::MAP_READ.bits());
         assert_eq!(GpuBufferUsage::MapWrite.bits(), WgpuBuffUsage::MAP_WRITE.bits());

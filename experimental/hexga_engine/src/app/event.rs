@@ -1,4 +1,4 @@
-use hexga_event_loop::app::{AppProxy, AppFlow};
+use hexga_event_loop::app::{AppFlow, AppProxy};
 //use hexga_graphics::gpu::GpuContext;
 
 use super::*;

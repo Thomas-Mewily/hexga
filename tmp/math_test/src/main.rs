@@ -76,8 +76,6 @@ fn img_test()
 {
     //let x = i32::
 
-
-
     let i = Image::from_fn_coef(
         (1024, 1024),
         |v| {
@@ -86,8 +84,6 @@ fn img_test()
     )
     .save("./image_test.png")
     .unwrap();
-
-    
 }
 
 use std::{num::Saturating, ops::*};
@@ -297,7 +293,7 @@ fn grid_test()
 
 fn main()
 {
-    
+
     //x2();
     //grid_test();
 

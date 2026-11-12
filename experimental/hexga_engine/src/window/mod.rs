@@ -105,8 +105,8 @@ pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surfa
 
 pub mod prelude
 {
-    pub use super::main_window::CurrentWindow;
     pub(crate) use super::WindowType;
+    pub use super::main_window::CurrentWindow;
     pub use super::traits::*;
 }
 

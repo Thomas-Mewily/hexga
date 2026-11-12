@@ -1,6 +1,5 @@
 use super::*;
 
-
 /// A mesh, stored on the Gpu.
 ///
 /// Can be cheaply [`Clone`]d

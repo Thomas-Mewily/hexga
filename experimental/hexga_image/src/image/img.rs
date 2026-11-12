@@ -102,7 +102,6 @@ where
             const SEP: &'static str = " ";
             let size = self.size();
 
-   
             use ::core::fmt::{self, Write};
 
             let strings = self
@@ -113,7 +112,7 @@ where
                     write!(s, "{}", wrapper)?;
                     Ok(s)
                 })
-            .collect::<Result<Vec<_>, _>>()?;
+                .collect::<Result<Vec<_>, _>>()?;
 
             let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
             let g = unsafe { ImageBaseOf::from_vec_unchecked(size, strings) };

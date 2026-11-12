@@ -183,14 +183,20 @@ impl From<AppControlFlow> for ::winit::event_loop::ControlFlow
 }
 
 /// Run the app from an OS pov, but the user need to manually initialize all the other system like the window, the rendering...
-pub trait AppRunRaw<CustomEvent = ()> : for<'a> App<CustomEvent, EventLoop<'a, CustomEvent>> + Sized + 'static
-    where CustomEvent: IAppEvent,
+pub trait AppRunRaw<CustomEvent = ()>: for<'a> App<CustomEvent, EventLoop<'a, CustomEvent>> + Sized + 'static
+where
+    CustomEvent: IAppEvent,
 {
-    fn run_raw<F>(init : F) -> AppResult
-        where F: FnOnce(AppProxy<CustomEvent>) -> Self { Self::run_raw_with_param(init, ___()) }
-    
-    fn run_raw_with_param<F>(init : F, param: EventLoopParam) -> AppResult
-        where F: FnOnce(AppProxy<CustomEvent>) -> Self
+    fn run_raw<F>(init: F) -> AppResult
+    where
+        F: FnOnce(AppProxy<CustomEvent>) -> Self,
+    {
+        Self::run_raw_with_param(init, ___())
+    }
+
+    fn run_raw_with_param<F>(init: F, param: EventLoopParam) -> AppResult
+    where
+        F: FnOnce(AppProxy<CustomEvent>) -> Self,
     {
         crate::app::init_if_needed();
 
@@ -225,9 +231,12 @@ pub trait AppRunRaw<CustomEvent = ()> : for<'a> App<CustomEvent, EventLoop<'a, C
     }
 }
 
-impl<S,CustomEvent> AppRunRaw<CustomEvent> for S where S : for<'a> App<CustomEvent, EventLoop<'a,CustomEvent>> + Sized + 'static,
-CustomEvent: IAppEvent 
-{}
+impl<S, CustomEvent> AppRunRaw<CustomEvent> for S
+where
+    S: for<'a> App<CustomEvent, EventLoop<'a, CustomEvent>> + Sized + 'static,
+    CustomEvent: IAppEvent,
+{
+}
 
 struct AppRunner<A, CustomEvent>
 where
@@ -248,10 +257,9 @@ where
     fn send_event(&self, ev: AppEvent) -> ProxyResult { self.proxy.send_event(ev.into()) }
 }
 
-
 impl<EventHandler, CustomEvent> AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: for<'a> App<CustomEvent, EventLoop<'a,CustomEvent>>,
+    EventHandler: for<'a> App<CustomEvent, EventLoop<'a, CustomEvent>>,
     CustomEvent: IAppEvent,
 {
     fn event(&mut self, active: &WinitEventLoopActive, ev: impl Into<AppMessage<CustomEvent>>)
@@ -262,7 +270,10 @@ where
         {
             AppMessage::Event(platform_event) => match platform_event
             {
-                AppEvent::KeyModifiers(modifier) => { self.state.key_modifiers = *modifier; }
+                AppEvent::KeyModifiers(modifier) =>
+                {
+                    self.state.key_modifiers = *modifier;
+                }
                 AppEvent::Key(k) =>
                 {
                     let down = k.is_down();
@@ -390,7 +401,7 @@ where
 }
 impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<AppMessage<CustomEvent>> for AppRunner<EventHandler, CustomEvent>
 where
-    EventHandler: for<'a> App<CustomEvent, EventLoop<'a,CustomEvent>>,
+    EventHandler: for<'a> App<CustomEvent, EventLoop<'a, CustomEvent>>,
     CustomEvent: IAppEvent,
 {
     fn resumed(&mut self, active: &WinitEventLoopActive)
@@ -427,16 +438,7 @@ where
 
     fn user_event(&mut self, active: &WinitEventLoopActive, event: AppMessage<CustomEvent>) { self.event(active, event); }
 
-
-    fn device_event(
-        &mut self,
-        event_loop: &winit::event_loop::ActiveEventLoop,
-        device_id: WinitEvent::DeviceId,
-        event: WinitEvent::DeviceEvent,
-    )
-    {
-        
-    }
+    fn device_event(&mut self, event_loop: &winit::event_loop::ActiveEventLoop, device_id: WinitEvent::DeviceId, event: WinitEvent::DeviceEvent) {}
 
     fn window_event(&mut self, active: &WinitEventLoopActive, window_id: winit::window::WindowId, event: WinitWindowEvent)
     {
@@ -480,40 +482,100 @@ where
             {
                 self.app(active, |event_handler, event_loop| event_handler.draw(event_loop));
             }
-            WinitWindowEvent::ActivationTokenDone { serial, token } => {},
-            WinitWindowEvent::Resized(physical_size) => {},
-            WinitWindowEvent::Moved(physical_position) => {},
-            WinitWindowEvent::CloseRequested => {},
-            WinitWindowEvent::Destroyed => {},
-            WinitWindowEvent::DroppedFile(path_buf) => { self.event(active, AppEvent::FileDrop(path_buf)); },
-            WinitWindowEvent::HoveredFile(path_buf) => { self.event(active, AppEvent::FileHover(path_buf)); },
-            WinitWindowEvent::HoveredFileCancelled => { self.event(active, AppEvent::FileHoveredCancel); },
-            WinitWindowEvent::Focused(focus) => { self.event(active, AppEvent::WindowFocus(focus)); },
-            //WinitWindowEvent::ModifiersChanged(modifiers) => { self.event(active, AppEvent::KeyModifiers(modifiers.into())); },
-            WinitWindowEvent::Ime(ime) => {},
-            WinitWindowEvent::CursorMoved { device_id, position } => { self.event(active, AppEvent::MouseMove(position.convert())); },
-            WinitWindowEvent::CursorEntered { device_id } => { self.event(active, AppEvent::MouseFocus(true)); },
-            WinitWindowEvent::CursorLeft { device_id } => { self.event(active, AppEvent::MouseFocus(false)); },
-            WinitWindowEvent::MouseWheel { device_id, delta, phase } =>  { 
-                self.event(active, AppEvent::MouseWheel(MouseWheel { delta: delta.convert(), phase: phase.convert() })); 
-            },
-            WinitWindowEvent::MouseInput { device_id, state, button } => 
+            WinitWindowEvent::ActivationTokenDone { serial, token } =>
+            {}
+            WinitWindowEvent::Resized(physical_size) =>
+            {}
+            WinitWindowEvent::Moved(physical_position) =>
+            {}
+            WinitWindowEvent::CloseRequested =>
+            {}
+            WinitWindowEvent::Destroyed =>
+            {}
+            WinitWindowEvent::DroppedFile(path_buf) =>
             {
-                self.event(active, AppEvent::MouseClick(MouseClick { button: button.convert(), state: state.convert() })); 
-            },
+                self.event(active, AppEvent::FileDrop(path_buf));
+            }
+            WinitWindowEvent::HoveredFile(path_buf) =>
+            {
+                self.event(active, AppEvent::FileHover(path_buf));
+            }
+            WinitWindowEvent::HoveredFileCancelled =>
+            {
+                self.event(active, AppEvent::FileHoveredCancel);
+            }
+            WinitWindowEvent::Focused(focus) =>
+            {
+                self.event(active, AppEvent::WindowFocus(focus));
+            }
+            //WinitWindowEvent::ModifiersChanged(modifiers) => { self.event(active, AppEvent::KeyModifiers(modifiers.into())); },
+            WinitWindowEvent::Ime(ime) =>
+            {}
+            WinitWindowEvent::CursorMoved { device_id, position } =>
+            {
+                self.event(active, AppEvent::MouseMove(position.convert()));
+            }
+            WinitWindowEvent::CursorEntered { device_id } =>
+            {
+                self.event(active, AppEvent::MouseFocus(true));
+            }
+            WinitWindowEvent::CursorLeft { device_id } =>
+            {
+                self.event(active, AppEvent::MouseFocus(false));
+            }
+            WinitWindowEvent::MouseWheel { device_id, delta, phase } =>
+            {
+                self.event(
+                    active,
+                    AppEvent::MouseWheel(MouseWheel {
+                        delta: delta.convert(),
+                        phase: phase.convert(),
+                    }),
+                );
+            }
+            WinitWindowEvent::MouseInput { device_id, state, button } =>
+            {
+                self.event(
+                    active,
+                    AppEvent::MouseClick(MouseClick {
+                        button: button.convert(),
+                        state: state.convert(),
+                    }),
+                );
+            }
             // macOS and iOS specific
-            WinitWindowEvent::PinchGesture { device_id, delta, phase } => {},
-            WinitWindowEvent::PanGesture { device_id, delta, phase } => {},
-            WinitWindowEvent::DoubleTapGesture { device_id } => {},
-            WinitWindowEvent::RotationGesture { device_id, delta, phase } => {},
-            WinitWindowEvent::Occluded(_) => {},
+            WinitWindowEvent::PinchGesture { device_id, delta, phase } =>
+            {}
+            WinitWindowEvent::PanGesture { device_id, delta, phase } =>
+            {}
+            WinitWindowEvent::DoubleTapGesture { device_id } =>
+            {}
+            WinitWindowEvent::RotationGesture { device_id, delta, phase } =>
+            {}
+            WinitWindowEvent::Occluded(_) =>
+            {}
 
-            WinitWindowEvent::TouchpadPressure { device_id, pressure, stage } => {},
-            WinitWindowEvent::AxisMotion { device_id, axis, value } => {},
-            WinitWindowEvent::Touch(touch) => { self.event(active, AppEvent::Touch(touch.convert())); },
-            WinitWindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer } => {}, // TODO test do somethings about it
-            WinitWindowEvent::ThemeChanged(theme) => { self.event(active, AppEvent::Theme(theme.convert())); },
-            WinitWindowEvent::RedrawRequested => { self.event(active, AppFlow::Draw); },
+            WinitWindowEvent::TouchpadPressure { device_id, pressure, stage } =>
+            {}
+            WinitWindowEvent::AxisMotion { device_id, axis, value } =>
+            {}
+            WinitWindowEvent::Touch(touch) =>
+            {
+                self.event(active, AppEvent::Touch(touch.convert()));
+            }
+            WinitWindowEvent::ScaleFactorChanged {
+                scale_factor,
+                inner_size_writer,
+            } =>
+            {} // TODO test do somethings about it
+            WinitWindowEvent::ThemeChanged(theme) =>
+            {
+                self.event(active, AppEvent::Theme(theme.convert()));
+            }
+            WinitWindowEvent::RedrawRequested =>
+            {
+                self.event(active, AppFlow::Draw);
+            }
             _ => (),
         }
     }

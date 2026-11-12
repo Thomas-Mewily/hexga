@@ -67,20 +67,19 @@ impl ExternLibConvert<WinitPhysicialSize> for Vec2i
 impl ExternLibConvert<ButtonState> for winit::event::ElementState
 {
     fn convert(self) -> ButtonState
-    { 
+    {
         match self
         {
             WinitEvent::ElementState::Pressed => ButtonState::Down,
             WinitEvent::ElementState::Released => ButtonState::Up,
-        } 
+        }
     }
 }
-
 
 impl ExternLibConvert<Vec2> for winit::event::MouseScrollDelta
 {
     fn convert(self) -> Vec2
-    { 
+    {
         match self
         {
             WinitEvent::MouseScrollDelta::LineDelta(x, y) => vec2(x as _, y as _),
@@ -92,7 +91,7 @@ impl ExternLibConvert<Vec2> for winit::event::MouseScrollDelta
 impl ExternLibConvert<TouchPhase> for winit::event::TouchPhase
 {
     fn convert(self) -> TouchPhase
-    { 
+    {
         match self
         {
             WinitEvent::TouchPhase::Started => TouchPhase::Begin,
@@ -103,11 +102,10 @@ impl ExternLibConvert<TouchPhase> for winit::event::TouchPhase
     }
 }
 
-
 impl ExternLibConvert<MouseButton> for winit::event::MouseButton
 {
     fn convert(self) -> MouseButton
-    { 
+    {
         match self
         {
             WinitEvent::MouseButton::Left => MouseButton::Left,
@@ -123,8 +121,12 @@ impl ExternLibConvert<MouseButton> for winit::event::MouseButton
 impl ExternLibConvert<Touch> for winit::event::Touch
 {
     fn convert(self) -> Touch
-    { 
-        Touch { phase: self.phase.convert(), pos: self.location.convert(), id: self.id }
+    {
+        Touch {
+            phase: self.phase.convert(),
+            pos: self.location.convert(),
+            id: self.id,
+        }
     }
 }
 
@@ -136,7 +138,7 @@ impl ExternLibConvert<AppTheme> for winit::window::Theme
         {
             winit::window::Theme::Light => AppTheme::Light,
             winit::window::Theme::Dark => AppTheme::Dark,
-        } 
+        }
     }
 }
 

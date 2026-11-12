@@ -2,7 +2,7 @@ use super::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{Save, SaveExtension, SaveInto, SaveGlobal};
+    pub use super::{Save, SaveExtension, SaveGlobal, SaveInto};
 }
 
 const DEFAULT_WRITER_CAPACITY: usize = 1024;

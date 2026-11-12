@@ -43,7 +43,7 @@ pub enum AppEvent
     WindowDestroy,
     /// The window gain/lose focus
     WindowFocus(bool),
-    MouseButtonEvent {  },
+    MouseButtonEvent {},
     //Custom(Ev),
 }
 
@@ -53,13 +53,12 @@ impl From<KeyEvent> for AppEvent
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum AppMessage<Ev=()>
+pub enum AppMessage<Ev = ()>
 {
     Event(AppEvent),
     Flow(AppFlow),
     Custom(Ev),
 }
-
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
 pub enum AppFlow
@@ -123,7 +122,7 @@ impl<Ev> AppMessage<Ev>
             AppMessage::Custom(c) => (AppMessage::Custom(init()), Some(c)),
         }
     }
-    
+
     pub fn remove_custom<Ev2>(self) -> Option<AppMessage<Ev2>>
     {
         match self

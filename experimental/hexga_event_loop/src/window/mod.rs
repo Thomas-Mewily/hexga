@@ -20,8 +20,8 @@ pub mod prelude
     pub use super::{WindowAttribute, WindowEvent};
     */
     //pub use super::{WindowEvent};
-    pub(crate) use super::winit_convert::ExternLibConvert;
     pub use super::traits::*;
+    pub(crate) use super::winit_convert::ExternLibConvert;
 }
 
 pub mod traits

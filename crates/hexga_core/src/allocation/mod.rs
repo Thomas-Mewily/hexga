@@ -14,9 +14,7 @@ pub mod traits
         DeallocFromLayout,
         DeallocFromLayoutRaw, //MemoryAlloc,MemoryRealloc,MemoryDealloc,
     };
-    pub use super::layout::{
-        FromAllocLayout,
-    };
+    pub use super::layout::FromAllocLayout;
 }
 
 mod alloc;

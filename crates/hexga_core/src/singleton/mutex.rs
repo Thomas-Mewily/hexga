@@ -1,5 +1,5 @@
-use std::sync::MutexGuard;
 use super::*;
+use std::sync::MutexGuard;
 
 /// Multi threaded singleton, where the value is initialized at compile time.
 pub type SingletonMutex<T> = SingletonOf<Mutex<Identity<T>>>;
@@ -48,14 +48,22 @@ where
     }
 }
 
-
 impl<T> GuardedMut<T> for SingletonMutex<T>
 {
     #[cfg(feature = "feature_mapped_lock_guards")]
-    type GuardMut<'a> = MappedMutexGuard<'a, T> where Self: 'a;
+    type GuardMut<'a>
+        = MappedMutexGuard<'a, T>
+    where
+        Self: 'a;
     #[cfg(not(feature = "feature_mapped_lock_guards"))]
-    type GuardMut<'a> = DoubleDeref<MutexGuard<'a, Identity<T>>> where Self: 'a;
-    type Error<'a> = PoisonError<MutexGuard<'a, Identity<T>>> where Self: 'a;
+    type GuardMut<'a>
+        = DoubleDeref<MutexGuard<'a, Identity<T>>>
+    where
+        Self: 'a;
+    type Error<'a>
+        = PoisonError<MutexGuard<'a, Identity<T>>>
+    where
+        Self: 'a;
 
     #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a>
@@ -71,16 +79,10 @@ impl<T> GuardedMut<T> for SingletonMutex<T>
 }
 
 #[cfg(feature = "feature_mapped_lock_guards")]
-fn map_identity_mutex_guard<'a, T>(guard: MutexGuard<'a, Identity<T>>) -> MappedMutexGuard<'a, T>
-{
-    MutexGuard::map(guard, |identity| &mut identity.value)
-}
+fn map_identity_mutex_guard<'a, T>(guard: MutexGuard<'a, Identity<T>>) -> MappedMutexGuard<'a, T> { MutexGuard::map(guard, |identity| &mut identity.value) }
 
 #[cfg(not(feature = "feature_mapped_lock_guards"))]
-fn map_identity_mutex_guard<'a, T>(guard: MutexGuard<'a, Identity<T>>) -> DoubleDeref<MutexGuard<'a, Identity<T>>>
-{
-    DoubleDeref::from(guard)
-}
+fn map_identity_mutex_guard<'a, T>(guard: MutexGuard<'a, Identity<T>>) -> DoubleDeref<MutexGuard<'a, Identity<T>>> { DoubleDeref::from(guard) }
 
 impl_singleton_methods_get_mut!(SingletonMutex);
 
@@ -111,9 +113,15 @@ where
 impl<T> GuardedMut<T> for SingletonLazyMutex<T>
 {
     #[cfg(feature = "feature_mapped_lock_guards")]
-    type GuardMut<'a> = MappedMutexGuard<'a, T> where Self: 'a;
+    type GuardMut<'a>
+        = MappedMutexGuard<'a, T>
+    where
+        Self: 'a;
     #[cfg(not(feature = "feature_mapped_lock_guards"))]
-    type GuardMut<'a> = DoubleDeref<MutexGuard<'a, LazyLock<T>>> where Self: 'a;
+    type GuardMut<'a>
+        = DoubleDeref<MutexGuard<'a, LazyLock<T>>>
+    where
+        Self: 'a;
     type Error<'a>
         = PoisonError<MutexGuard<'a, LazyLock<T>>>
     where
@@ -133,16 +141,10 @@ impl<T> GuardedMut<T> for SingletonLazyMutex<T>
 }
 
 #[cfg(feature = "feature_mapped_lock_guards")]
-fn map_lazy_mutex_guard<'a, T>(guard: MutexGuard<'a, LazyLock<T>>) -> MappedMutexGuard<'a, T>
-{
-    MutexGuard::map(guard, |lazy| &mut **lazy)
-}
+fn map_lazy_mutex_guard<'a, T>(guard: MutexGuard<'a, LazyLock<T>>) -> MappedMutexGuard<'a, T> { MutexGuard::map(guard, |lazy| &mut **lazy) }
 
 #[cfg(not(feature = "feature_mapped_lock_guards"))]
-fn map_lazy_mutex_guard<'a, T>(guard: MutexGuard<'a, LazyLock<T>>) -> DoubleDeref<MutexGuard<'a, LazyLock<T>>>
-{
-    DoubleDeref::from(guard)
-}
+fn map_lazy_mutex_guard<'a, T>(guard: MutexGuard<'a, LazyLock<T>>) -> DoubleDeref<MutexGuard<'a, LazyLock<T>>> { DoubleDeref::from(guard) }
 
 impl_singleton_methods_get_mut!(SingletonLazyMutex);
 
@@ -206,11 +208,13 @@ where
     }
 }
 
-
 impl<T> GuardedMut<T> for SingletonOptionMutex<T>
 {
     #[cfg(feature = "feature_mapped_lock_guards")]
-    type GuardMut<'a> = MappedMutexGuard<'a, T> where Self: 'a;
+    type GuardMut<'a>
+        = MappedMutexGuard<'a, T>
+    where
+        Self: 'a;
     #[cfg(not(feature = "feature_mapped_lock_guards"))]
     type GuardMut<'a>
         = DoubleDerefOption<MutexGuard<'a, Option<T>>, T>
@@ -238,7 +242,10 @@ impl<T> GuardedMut<T> for SingletonOptionMutex<T>
     fn try_get_mut<'a>(&'a self) -> Result<Self::GuardMut<'a>, Self::Error<'a>>
     {
         let guard = self.guarded.lock()?;
-        if guard.is_none() { return Err(NotInitErrorOr::NotInit); }
+        if guard.is_none()
+        {
+            return Err(NotInitErrorOr::NotInit);
+        }
         return Ok(map_option_mutex_guard(guard));
     }
 }
@@ -251,7 +258,4 @@ fn map_option_mutex_guard<'a, T>(guard: MutexGuard<'a, Option<T>>) -> MappedMute
 }
 
 #[cfg(not(feature = "feature_mapped_lock_guards"))]
-fn map_option_mutex_guard<'a, T>(guard: MutexGuard<'a, Option<T>>) -> DoubleDerefOption<MutexGuard<'a, Option<T>>, T>
-{
-    DoubleDerefOption::from(guard)
-}
+fn map_option_mutex_guard<'a, T>(guard: MutexGuard<'a, Option<T>>) -> DoubleDerefOption<MutexGuard<'a, Option<T>>, T> { DoubleDerefOption::from(guard) }

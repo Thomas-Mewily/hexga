@@ -4,20 +4,23 @@ use super::*;
 //pub type AppResult = AppResult;
 //pub type AppError = AppError;
 
-
 // Todo wrap app run for the engine
 
 pub trait AppInit<A>: Fn() -> A + Async {}
 impl<S, A> AppInit<A> for S where S: Fn() -> A + Async {}
 
-pub trait AppRun : for<'a> App<(), AppCtx<'a>> + Sized + 'static
-    //where CustomEvent: IAppEvent,
+pub trait AppRun: for<'a> App<(), AppCtx<'a>> + Sized + 'static //where CustomEvent: IAppEvent,
 {
-    fn run<F>(init : F) -> AppResult
-        where F: AppInit<Self> { Self::run_with_param(init, ___()) }
-    
-    fn run_with_param<F>(init : F, param: AppParam) -> AppResult
-        where F: AppInit<Self>
+    fn run<F>(init: F) -> AppResult
+    where
+        F: AppInit<Self>,
+    {
+        Self::run_with_param(init, ___())
+    }
+
+    fn run_with_param<F>(init: F, param: AppParam) -> AppResult
+    where
+        F: AppInit<Self>,
     {
         let p = param.event_loop.clone();
         AppRunner::<F, Self>::run_raw_with_param(|proxy| AppRunner { init, app: None, param, proxy }, p)
@@ -128,8 +131,12 @@ where
     {
         match &mut self.app
         {
-            Some(app) => { app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ()); },
-            None => {}
+            Some(app) =>
+            {
+                app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ());
+            }
+            None =>
+            {}
         }
     }
 
@@ -198,7 +205,7 @@ where
                     render_pass.set_pipeline(&graphics.pipeline);
                     render_pass.draw(0..3, 0..1);
                 }
-                
+
                 Gpu.queue().submit(iter::once(encoder.finish()));
                 output.present();
 
@@ -283,7 +290,7 @@ where
                 }
                 AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
             },
-            s @ _ => { self.dispatch_message(s, ctx) }
+            s @ _ => self.dispatch_message(s, ctx),
         }
 
         /*
@@ -303,7 +310,7 @@ where
                 ev.into()
             }
             AppMessage::Custom(_) => return None,
-            AppMessage::Flow(flow) => 
+            AppMessage::Flow(flow) =>
             {
                 flow.into()
             },
@@ -317,32 +324,41 @@ where
         */
     }
 
-    fn event(&mut self, ev: AppEvent, ctx: &mut AppInternalEventLoop<'a>) -> Option<AppEvent> {
+    fn event(&mut self, ev: AppEvent, ctx: &mut AppInternalEventLoop<'a>) -> Option<AppEvent>
+    {
         match &ev
         {
             AppEvent::WindowResize(size) =>
             {
                 WINDOW.try_get_mut().map(|mut w| w.configure_surface());
             }
-            _ => {}
+            _ =>
+            {}
         };
 
-        let Some(app) = &mut self.app else { return None; };
-        let Some(ev) = app.message(ev.into(), &mut ()) else { return None; };
+        let Some(app) = &mut self.app
+        else
+        {
+            return None;
+        };
+        let Some(ev) = app.message(ev.into(), &mut ())
+        else
+        {
+            return None;
+        };
         match ev
         {
             AppMessage::Event(ev) => Some(ev),
-            _ => 
+            _ =>
             {
                 #[cfg(debug_assertions)]
                 {
                     // probably a logic bug, an AppEvent should not return anythings else than another AppEvent (if the passed event was consumed)
                     panic!("Invalid event {:?}", ev);
                 }
-                None 
-            }, 
+                None
+            }
         }
-        
     }
 
     fn resume(&mut self, event_loop: &mut AppInternalEventLoop)
@@ -361,7 +377,7 @@ where
             window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface");
         }
 
-        if let Some(app) = &mut self.app 
+        if let Some(app) = &mut self.app
         {
             app.message(AppMessage::Flow(AppFlow::Resume), &mut ());
         }
@@ -369,7 +385,7 @@ where
 
     fn pause(&mut self, event_loop: &mut EventLoop<AppCustomEvent>)
     {
-        if let Some(app) = &mut self.app 
+        if let Some(app) = &mut self.app
         {
             app.message(AppMessage::Flow(AppFlow::Pause), &mut ());
         }
@@ -377,16 +393,15 @@ where
         WINDOW.try_get_mut().map(|mut w| {
             w.destroy_surface();
         });
-
     }
 
-    fn exit(&mut self, event_loop: &mut AppInternalEventLoop) 
+    fn exit(&mut self, event_loop: &mut AppInternalEventLoop)
     {
-        if let Some(app) = &mut self.app 
+        if let Some(app) = &mut self.app
         {
             app.message(AppMessage::Flow(AppFlow::Exit), &mut ());
         }
 
-        self.exit(); 
+        self.exit();
     }
 }

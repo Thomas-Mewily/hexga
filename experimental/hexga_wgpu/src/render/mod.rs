@@ -11,9 +11,9 @@ pub type Texture = experimental::GpuTexture;
 
 pub mod prelude
 {
-    pub use super::traits::*;
-    pub use super::surface::{GpuSurface, GpuSurfaceConfigured};
     pub use super::Texture;
+    pub use super::surface::{GpuSurface, GpuSurfaceConfigured};
+    pub use super::traits::*;
 }
 
 pub mod traits

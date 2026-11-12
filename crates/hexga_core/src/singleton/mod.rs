@@ -5,10 +5,7 @@ use crate::{
 };
 use std::{
     cell::{LazyCell, OnceCell},
-    sync::{
-        LazyLock, Mutex, OnceLock, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard,
-        TryLockError,
-    },
+    sync::{LazyLock, Mutex, OnceLock, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard, TryLockError},
 };
 
 #[cfg(not(feature = "feature_mapped_lock_guards"))]
@@ -54,9 +51,7 @@ pub enum NotInitErrorOr<T>
 }
 impl<T> From<T> for NotInitErrorOr<T>
 {
-    fn from(value: T) -> Self {
-        NotInitErrorOr::Other(value)
-    }
+    fn from(value: T) -> Self { NotInitErrorOr::Other(value) }
 }
 impl<T> Debug for NotInitErrorOr<T>
 {
@@ -66,12 +61,12 @@ impl<T> Debug for NotInitErrorOr<T>
 pub mod prelude
 {
     pub(crate) use super::NotInitError;
-    pub use super::traits::*;
     pub use super::cell::{SingletonCell, SingletonLazyCell};
-    pub use super::mutex::{SingletonMutex, SingletonLazyMutex, SingletonOptionMutex};
-    pub use super::rw::{SingletonRw, SingletonLazyRw, SingletonOptionRw};
-    pub use super::once_cell::{SingletonOnceLazyCell, SingletonOnceCell};
-    pub use super::once_lock::{SingletonOnceLazy, SingletonOnce};
+    pub use super::mutex::{SingletonLazyMutex, SingletonMutex, SingletonOptionMutex};
+    pub use super::once_cell::{SingletonOnceCell, SingletonOnceLazyCell};
+    pub use super::once_lock::{SingletonOnce, SingletonOnceLazy};
+    pub use super::rw::{SingletonLazyRw, SingletonOptionRw, SingletonRw};
+    pub use super::traits::*;
 }
 
 pub mod traits

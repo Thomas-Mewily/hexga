@@ -12,12 +12,12 @@ use std::collections::HashSet;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::ops::*;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::{Arc, LazyLock};
-use std::path::PathBuf;
 
-mod crash;
 pub mod app;
+mod crash;
 pub mod input;
 pub mod log;
 pub mod monitor;

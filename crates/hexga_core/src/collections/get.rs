@@ -221,14 +221,13 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
     }
 }
 
-
 mod wrap_std_nightly_only_feature_to_stay_in_stable
 {
-    use super::{GetManyMut,ManyMutError,map_on};
+    use super::{GetManyMut, ManyMutError, map_on};
 
     /*
     /// To wrap [core::slice::GetDisjointMutIndex](https://doc.rust-lang.org/core/slice/trait.GetDisjointMutIndex.html) because it's nightly-only experimental API...
-    pub(crate) unsafe trait DisjointIndex: Clone 
+    pub(crate) unsafe trait DisjointIndex: Clone
     {
         fn is_in_bounds(&self, len: usize) -> bool;
         fn is_overlapping(&self, other: &Self) -> bool;
@@ -300,7 +299,6 @@ mod wrap_std_nightly_only_feature_to_stay_in_stable
     }
     */
 
-    
     type StdOpsRange = core::ops::Range<usize>;
     type StdRangeRange = core::range::Range<usize>;
     type StdOpsRangeInclusive = core::ops::RangeInclusive<usize>;
@@ -492,7 +490,8 @@ where
 */
 impl<'a, Idx, T> TryGetMut<Idx> for &'a mut [T]
 where
-    Idx: SliceIndex<[T]> + Clone, &'a [T] : TryGetMut<Idx>
+    Idx: SliceIndex<[T]> + Clone,
+    &'a [T]: TryGetMut<Idx>,
 {
     #[inline(always)]
     fn try_get_mut(&mut self, index: Idx) -> Result<&mut Self::Output, Self::Error> { (**self).try_get_mut(index) }
@@ -517,10 +516,10 @@ where
 }
 */
 
-
 impl<'a, Idx, T> GetManyMut<Idx> for &'a mut [T]
 where
-    Idx: SliceIndex<[T]>, [T] : GetManyMut<Idx,Output = Self::Output>
+    Idx: SliceIndex<[T]>,
+    [T]: GetManyMut<Idx, Output = Self::Output>,
 {
     #[inline(always)]
     fn get_many_mut<const N: usize>(&mut self, indices: [Idx; N]) -> Option<[&mut Self::Output; N]> { <[T] as GetManyMut<Idx>>::get_many_mut(*self, indices) }
