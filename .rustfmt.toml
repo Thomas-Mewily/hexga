@@ -1,6 +1,6 @@
 # Allow short functions on single line
 fn_single_line = true
-fn_args_layout = "Compressed"
+fn_params_layout = "Compressed"
 
 # Or be more specific:
 control_brace_style = "AlwaysNextLine"
