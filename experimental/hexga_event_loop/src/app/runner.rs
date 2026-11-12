@@ -511,7 +511,7 @@ where
             WinitWindowEvent::TouchpadPressure { device_id, pressure, stage } => {},
             WinitWindowEvent::AxisMotion { device_id, axis, value } => {},
             WinitWindowEvent::Touch(touch) => { self.event(active, AppEvent::Touch(touch.convert())); },
-            WinitWindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer } => todo!(),
+            WinitWindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer } => {}, // TODO test do somethings about it
             WinitWindowEvent::ThemeChanged(theme) => { self.event(active, AppEvent::Theme(theme.convert())); },
             WinitWindowEvent::RedrawRequested => { self.event(active, AppFlow::Draw); },
             _ => (),
