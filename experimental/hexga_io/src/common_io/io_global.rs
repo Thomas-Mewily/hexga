@@ -122,10 +122,7 @@ impl IoGlobal
 
         let matches: Vec<PathBuf> = parent
             .filter_map(|entry| entry.ok())
-            .map(|entry| {
-                let p: PathBuf = entry.path().into();
-                p
-            })
+            .map(|entry| entry.path())
             .filter(|candidate| candidate.file_stem() == Some(stem))
             .collect();
         Ok(matches)
@@ -133,7 +130,7 @@ impl IoGlobal
 
     fn _dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>
     {
-        let path: &Path = path.into();
+        let path: &Path = path;
 
         /*
         if path.exists()
@@ -157,7 +154,7 @@ impl IoGlobal
                 std::path::Component::ParentDir =>
                 {
                     // Pop the last component for ".."
-                    if resolved.pop() == false
+                    if !resolved.pop()
                     {
                         return Err(IoErrorKind::InvalidInput.into());
                     };
@@ -190,12 +187,10 @@ impl FileSystemDynWrite for IoGlobal
         println!("io : write at {}", path.display());
 
         if let Some(parent) = path.parent()
-        {
-            if !parent.exists()
+            && !parent.exists()
             {
                 std::fs::create_dir_all(parent)?;
             }
-        }
 
         std::fs::write(path, value)?;
         Ok(())
@@ -204,12 +199,10 @@ impl FileSystemDynWrite for IoGlobal
     fn dyn_create_dir(&mut self, path: &Path) -> IoResult
     {
         if path.exists()
-        {
-            if path.is_file()
+            && path.is_file()
             {
                 std::fs::remove_file(path)?;
             }
-        }
 
         std::fs::create_dir_all(path)?;
         Ok(())

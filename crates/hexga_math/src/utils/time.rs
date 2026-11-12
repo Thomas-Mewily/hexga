@@ -445,7 +445,7 @@ where
                 START_TIME = Some(Instant::now());
             });
             let elapsed = unsafe { Instant::now() - START_TIME.unwrap() };
-            return TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()));
+            TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()))
         }
         #[cfg(target_arch = "wasm32")]
         {
@@ -460,7 +460,7 @@ where
             });
 
             let elapsed = unsafe { ::web_time::Instant::now() - START_TIME.unwrap() };
-            return TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()));
+            TimeOf::from_secs(F::cast_from(elapsed.as_secs_f64()));
         }
     }
 }

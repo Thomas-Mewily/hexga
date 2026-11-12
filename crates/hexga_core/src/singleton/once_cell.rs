@@ -25,6 +25,12 @@ impl<T> SingletonOnceCell<T>
     pub const fn new() -> Self { Self::uninit() }
 }
 
+impl<T> Default for SingletonOnceCell<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> Debug for SingletonOnceCell<T>
 where
     T: Debug,

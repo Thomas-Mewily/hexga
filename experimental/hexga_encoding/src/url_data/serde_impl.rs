@@ -12,7 +12,7 @@ pub trait UrlDeserializer<'de>: Deserializer<'de>
             return T::from_url(&url).map_err(serde::de::Error::custom);
         }
         let url = self.deserialize_byte_buf(BytesVisitor)?;
-        return T::from_bin_url_or_bytes(&url, "").map_err(serde::de::Error::custom);
+        T::from_bin_url_or_bytes(&url, "").map_err(serde::de::Error::custom)
     }
 }
 impl<'de, S> UrlDeserializer<'de> for S where S: Deserializer<'de> + ?Sized {}

@@ -274,7 +274,7 @@ where
         let cuts = (begin..=end).step(step);
 
         cuts.clone().zip(cuts.skip(1)).map(move |(x0, x1)| {
-            let mut r = self.clone();
+            let mut r = *self;
             r.pos[axis] = x0;
             r.size[axis] = x1 - x0;
             r

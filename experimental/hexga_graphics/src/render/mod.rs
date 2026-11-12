@@ -154,7 +154,7 @@ impl ImmediateRenderBuilder
     {
         let mesh = &mut self.big_mesh;
 
-        let immediate_mode = match &mut self.draw_call.last_mut().geometry
+        match &mut self.draw_call.last_mut().geometry
         {
             DrawGeometry::Immediate(immediate) =>
             {

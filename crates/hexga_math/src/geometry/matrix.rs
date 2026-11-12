@@ -71,7 +71,7 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
     fn _fmt(&self, f: &mut Formatter<'_>, d: impl Fn(&T, &mut Formatter<'_>) -> FmtResult) -> FmtResult
     {
         writeln!(f)?;
-        const SEP: &'static str = " ";
+        const SEP: &str = " ";
 
         let mut strings: Vec<String> = Vec::with_capacity(ROW * COL);
 
@@ -1052,7 +1052,7 @@ where
                 let factor = scale[i] / len;
                 for j in 0..2
                 {
-                    self[i][j] = self[i][j] * factor;
+                    self[i][j] *= factor;
                 }
             }
         }
@@ -1079,7 +1079,7 @@ where
                 let factor = scale[i] / len;
                 for j in 0..3
                 {
-                    self[i][j] = self[i][j] * factor;
+                    self[i][j] *= factor;
                 }
             }
         }

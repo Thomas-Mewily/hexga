@@ -265,7 +265,7 @@ impl Derivable for BitAllUsed
         {
             Data::Struct(DataStruct { .. }) =>
             {
-                let assert_no_padding = generate_assert_no_padding(&input, None, "BitAllUsed")?;
+                let assert_no_padding = generate_assert_no_padding(input, None, "BitAllUsed")?;
                 let assert_fields_are_no_padding = generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)?;
 
                 Ok(quote!(
@@ -323,8 +323,8 @@ impl Derivable for BitAllUsed
                     let variant_assertions = variants
                         .iter()
                         .map(|variant| {
-                            let assert_no_padding = generate_assert_no_padding(&input, Some(variant), "BitAllUsed")?;
-                            let assert_fields_are_no_padding = generate_fields_are_trait(&input, Some(variant), Self::ident(input, crate_name)?)?;
+                            let assert_no_padding = generate_assert_no_padding(input, Some(variant), "BitAllUsed")?;
+                            let assert_fields_are_no_padding = generate_fields_are_trait(input, Some(variant), Self::ident(input, crate_name)?)?;
 
                             Ok(quote!(
                                 #assert_no_padding
@@ -404,7 +404,7 @@ impl Derivable for BitPattern
         {
             Data::Struct(DataStruct { .. }) =>
             {
-                let assert_fields_are_maybe_pod = generate_fields_are_trait(&input, None, Self::ident(input, crate_name)?)?;
+                let assert_fields_are_maybe_pod = generate_fields_are_trait(input, None, Self::ident(input, crate_name)?)?;
 
                 Ok(assert_fields_are_maybe_pod)
             }
@@ -448,12 +448,12 @@ impl TransparentWrapper
     {
         let transparent_param = get_type_from_simple_attr(attributes, "transparent").map(|wrapped_type| WrappedType { wrapped_type, explicit: true });
         transparent_param.or_else(|| {
-            let mut types = get_field_types(&fields);
+            let mut types = get_field_types(fields);
             let first_type = types.next();
-            if let Some(_) = types.next()
+            if types.next().is_some()
             {
                 // can't guess param type if there is more than one field
-                return None;
+                None
             }
             else
             {
@@ -469,7 +469,7 @@ impl Derivable for TransparentWrapper
     {
         let fields = get_struct_fields(input)?;
 
-        let WrappedType { wrapped_type: ty, .. } = match Self::get_wrapped_type(&input.attrs, &fields)
+        let WrappedType { wrapped_type: ty, .. } = match Self::get_wrapped_type(&input.attrs, fields)
         {
             Some(ty) => ty,
             None => bail!(
@@ -486,7 +486,7 @@ impl Derivable for TransparentWrapper
     {
         let (impl_generics, _ty_generics, where_clause) = input.generics.split_for_impl();
         let fields = get_struct_fields(input)?;
-        let (wrapped_type, explicit) = match Self::get_wrapped_type(&input.attrs, &fields)
+        let (wrapped_type, explicit) = match Self::get_wrapped_type(&input.attrs, fields)
         {
             Some(WrappedType { wrapped_type, explicit }) => (wrapped_type.to_token_stream().to_string(), explicit),
             None => unreachable!(), /* other code will already reject
@@ -584,7 +584,7 @@ impl Derivable for Contiguous
         let variants = get_enum_variants(input)?;
         if enum_has_fields(variants.clone())
         {
-            return Err(Error::new_spanned(&input, "Only fieldless enums are supported"));
+            return Err(Error::new_spanned(input, "Only fieldless enums are supported"));
         }
 
         let mut variants_with_discriminant = VariantDiscriminantIterator::new(variants);
@@ -1244,15 +1244,11 @@ fn get_type_from_simple_attr(attributes: &[Attribute], attr_name: &str) -> Optio
     for attr in attributes
     {
         if let (AttrStyle::Outer, Meta::List(list)) = (&attr.style, &attr.meta)
-        {
-            if list.path.is_ident(attr_name)
-            {
-                if let Some(ty) = get_wrapped_type_from_stream(list.tokens.clone())
+            && list.path.is_ident(attr_name)
+                && let Some(ty) = get_wrapped_type_from_stream(list.tokens.clone())
                 {
                     return Some(ty);
                 }
-            }
-        }
     }
 
     None
@@ -1697,7 +1693,7 @@ mod tests
 
 pub fn hexga_bit_crate_name(input: &DeriveInput) -> TokenStream
 {
-    const ATTR_NAME: &'static str = "crate";
+    const ATTR_NAME: &str = "crate";
 
     let mut crate_name = quote!(::hexga_bit);
     for attr in &input.attrs
@@ -1743,7 +1739,7 @@ pub fn hexga_bit_crate_name(input: &DeriveInput) -> TokenStream
         .unwrap();
     }
 
-    return crate_name;
+    crate_name
 }
 
 const GENERATED_TYPE_DOCUMENTATION: &str = " `hexga_bit`-generated type for internal purposes only.";

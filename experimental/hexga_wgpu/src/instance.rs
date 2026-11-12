@@ -44,19 +44,10 @@ impl PartialEq for WgpuInstanceDescriptor
     }
 }
 
-impl Default for WgpuInstanceDescriptor
-{
-    fn default() -> Self
-    {
-        Self {
-            flags: Default::default(),
-            backend_options: Default::default(),
-        }
-    }
-}
 
 #[non_exhaustive]
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct WgpuInstanceDescriptor
 {
     /// Flags to tune the behavior of the instance.
@@ -169,11 +160,11 @@ pub enum GpuPowerPreference
     /// Adapter that has the highest performance. This is often a discrete GPU.
     HighPerformance = 2,
 }
-impl Into<wgpu::PowerPreference> for GpuPowerPreference
+impl From<GpuPowerPreference> for wgpu::PowerPreference
 {
-    fn into(self) -> wgpu::PowerPreference
+    fn from(val: GpuPowerPreference) -> Self
     {
-        match self
+        match val
         {
             GpuPowerPreference::None => wgpu::PowerPreference::None,
             GpuPowerPreference::LowPower => wgpu::PowerPreference::LowPower,

@@ -1464,7 +1464,7 @@ impl Matches for KeyModifiersFlags
         {
             if self_bits.contains(left_or_right)
             {
-                return lexem_bits.contains(left) || lexem_bits.contains(right);
+                lexem_bits.contains(left) || lexem_bits.contains(right)
             }
             else
             {
@@ -1476,7 +1476,7 @@ impl Matches for KeyModifiersFlags
                 {
                     return false;
                 }
-                return true;
+                true
             }
         }
 

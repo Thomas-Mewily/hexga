@@ -6,7 +6,7 @@ use std::{
 
 use super::*;
 
-pub(crate) static ASSET: SingletonLazyRw<AssetsManagerUntyped> = SingletonLazyRw::new(|| AssetsManagerUntyped::default());
+pub(crate) static ASSET: SingletonLazyRw<AssetsManagerUntyped> = SingletonLazyRw::new(AssetsManagerUntyped::default);
 
 #[derive(Default)]
 pub(crate) struct AssetsManagerUntyped
@@ -35,7 +35,7 @@ impl AssetsManagerUntyped
             .expect("Type mismatch")
     }
 
-    pub(crate) fn try_manager<'a, T, FS>(&'a self) -> Option<&'a AssetManagerIn<T, FS>>
+    pub(crate) fn try_manager<T, FS>(&self) -> Option<&AssetManagerIn<T, FS>>
     where
         FS: FileSystemProvider + Async,
         T: Load + Save + Async,
@@ -83,7 +83,7 @@ where
     {
         match ASSET.get().try_manager::<T, FS>()
         {
-            Some(manager) => manager.values.iter().filter_map(|(_path, value)| value.upgrade()).collect(),
+            Some(manager) => manager.values.values().filter_map(|value| value.upgrade()).collect(),
             None => Vec::new(),
         }
     }
@@ -517,15 +517,13 @@ where
             };
 
             if let Some(replaced_shared_asset) = manager.values.insert(path.to_owned(), entry)
-            {
-                if let Some(mut _replaced_asset) = replaced_shared_asset.upgrade()
+                && let Some(mut _replaced_asset) = replaced_shared_asset.upgrade()
                 {
                     // Can't do anythings about it right now.
                     // I don't want to impose T: Clone.
                     // Maybe I can swap the old path with the new_path of the 2 instance ?
                     //*replaced_asset.get_mut() = self.get
                 }
-            }
             data.path = Some(path);
         }
     }
@@ -696,22 +694,17 @@ where
 
         let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
-        match manager.values.get(&path)
+        if let Some(asset) = manager.values.get(&path) { match asset
         {
-            Some(asset) => match asset
+            AssetShared::Strong(asset) => return Ok(asset.clone()),
+            AssetShared::Weak(asset) =>
             {
-                AssetShared::Strong(asset) => return Ok(asset.clone()),
-                AssetShared::Weak(asset) =>
+                if let Some(asset) = asset.upgrade()
                 {
-                    if let Some(asset) = asset.upgrade()
-                    {
-                        return Ok(asset);
-                    }
+                    return Ok(asset);
                 }
-            },
-            None =>
-            {}
-        }
+            }
+        } }
 
         // Drop the assets lock, because init can take some time. That way multiple asset can be loaded in parallel.
         drop(assets);
@@ -720,22 +713,11 @@ where
         let mut assets = ASSET.get_mut();
         let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
-        match manager.values.get_mut(&path)
-        {
-            Some(shared) => match shared.upgrade()
-            {
-                Some(asset) =>
-                {
-                    // Asset was loaded again by someone else during init. Replace it
-                    *asset.get_mut().value_mut() = value;
-                    return Ok(asset);
-                }
-                None =>
-                {}
-            },
-            None =>
-            {}
-        }
+        if let Some(shared) = manager.values.get_mut(&path) { if let Some(asset) = shared.upgrade() {
+            // Asset was loaded again by someone else during init. Replace it
+            *asset.get_mut().value_mut() = value;
+            return Ok(asset);
+        } }
 
         let asset = Self {
             inner: Arc::new(RwLock::new(AssetValue {
@@ -751,7 +733,7 @@ where
             AssetStorage::ReferenceCounted => AssetShared::Weak(asset.downgrade()),
         };
         manager.values.insert(path, entry);
-        return Ok(asset);
+        Ok(asset)
     }
 
     fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output

@@ -11,8 +11,8 @@ impl<T> Clone for StableSetID<T>
     fn clone(&self) -> Self
     {
         Self {
-            idx: self.idx.clone(),
-            phantom: self.phantom.clone(),
+            idx: self.idx,
+            phantom: self.phantom,
         }
     }
 }
@@ -83,7 +83,7 @@ where
         {
             return false;
         }
-        self.iter().all(|(idx, v)| other.get(idx).map_or(false, |v2| v == v2))
+        self.iter().all(|(idx, v)| other.get(idx) == Some(v))
     }
 }
 
@@ -191,7 +191,7 @@ where
         }
     }
 
-    pub fn id(&self, value: &T) -> Option<StableSetID<T>> { self.idx.binary_search_by(|i| self.values[*i].cmp(&value)).ok().map(|v| v.into()) }
+    pub fn id(&self, value: &T) -> Option<StableSetID<T>> { self.idx.binary_search_by(|i| self.values[*i].cmp(value)).ok().map(|v| v.into()) }
     pub fn contains(&self, value: &T) -> bool
     {
         let Some(id) = self.id(value)

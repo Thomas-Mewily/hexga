@@ -230,7 +230,7 @@ impl<T> GuardedMut<T> for SingletonOptionMutex<T>
     {
         match self.try_get_mut()
         {
-            Ok(guard) => return guard,
+            Ok(guard) => guard,
             Err(e) => match e
             {
                 NotInitErrorOr::NotInit => panic!("SingletonOptionMutex<{}> not initialized: call init() first", std::any::type_name::<T>()),
@@ -246,7 +246,7 @@ impl<T> GuardedMut<T> for SingletonOptionMutex<T>
         {
             return Err(NotInitErrorOr::NotInit);
         }
-        return Ok(map_option_mutex_guard(guard));
+        Ok(map_option_mutex_guard(guard))
     }
 }
 impl_singleton_methods_get_mut!(SingletonOptionMutex);

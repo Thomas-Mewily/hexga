@@ -516,7 +516,7 @@ where
 }
 */
 
-impl<'a, Idx, T> GetManyMut<Idx> for &'a mut [T]
+impl<Idx, T> GetManyMut<Idx> for &mut [T]
 where
     Idx: SliceIndex<[T]>,
     [T]: GetManyMut<Idx, Output = Self::Output>,

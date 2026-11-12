@@ -97,7 +97,7 @@ impl<const N: usize> MeshBuilder<N>
     {
         (
             self.vertices,
-            self.indices.chunks_exact(3).map(|c| TriangleVertexIndex::new(c[0], c[1], c[2])).collect(),
+            self.indices.as_chunks::<3>().0.iter().map(|c| TriangleVertexIndex::new(c[0], c[1], c[2])).collect(),
         )
     }
 }
@@ -155,7 +155,7 @@ impl<const N: usize> BuilderMesh<N> for MeshBuilder<N>
         let index_offset = vertices_prev_len as VertexIndex;
 
         let indices_prev_len = self.nb_index();
-        self.indices.extend(index.into_iter().map(|idx| idx + index_offset));
+        self.indices.extend(index.iter().map(|idx| idx + index_offset));
         let indices_new_len = self.nb_index();
         let nb_indices_added = indices_new_len - indices_prev_len;
         debug_assert_eq!(nb_indices_added % 3, 0, "Index need to be a multiple of 3, because they form a triangle");

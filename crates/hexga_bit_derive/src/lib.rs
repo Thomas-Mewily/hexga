@@ -384,11 +384,11 @@ fn derive_marker_trait_inner<Trait: Derivable>(mut input: DeriveInput) -> Result
                 (None, syn::Data::Struct(syn::DataStruct { fields, .. })) => fields.clone(),
                 (None, syn::Data::Union(_)) =>
                 {
-                    return Err(syn::Error::new_spanned(trait_, &"perfect derive is not supported for unions"));
+                    return Err(syn::Error::new_spanned(trait_, "perfect derive is not supported for unions"));
                 }
                 (None, syn::Data::Enum(_)) =>
                 {
-                    return Err(syn::Error::new_spanned(trait_, &"perfect derive is not supported for enums"));
+                    return Err(syn::Error::new_spanned(trait_, "perfect derive is not supported for enums"));
                 }
             };
 

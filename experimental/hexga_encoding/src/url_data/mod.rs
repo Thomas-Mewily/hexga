@@ -207,7 +207,7 @@ impl MediaType for String
 {
     fn media_type() -> &'static str { "text" }
 }
-impl<'a> MediaType for &'a str
+impl MediaType for &str
 {
     fn media_type() -> &'static str { String::media_type() }
 }
@@ -241,7 +241,7 @@ pub trait ToUrl: MediaType + Save
     {
         let media = Self::media_type();
         let mut data = Vec::with_capacity(1024);
-        write!(&mut data, "data:{media}/{extension};bin,").map_err(|e| EncodeError::from(e))?;
+        write!(&mut data, "data:{media}/{extension};bin,").map_err(EncodeError::from)?;
         let (data, _deduced_extension) = self.save_to_bytes_with_extension_in(data, Some(extension))?;
         Ok(data)
     }
@@ -282,7 +282,7 @@ pub trait FromUrl: Load
         Self: Sized,
     {
         let url = BinUrlData::try_from(url)?;
-        Self::load_from_bytes_with_extension(&url.data, Some(url.extension))
+        Self::load_from_bytes_with_extension(url.data, Some(url.extension))
     }
 
     /// Loads an instance from a **binary URL** (custom `bin_data:` scheme), falling back to raw bytes if parsing fails.

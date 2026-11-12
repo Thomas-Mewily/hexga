@@ -157,7 +157,7 @@ impl<T, Gen: GenerationalIndex> Clone for GenIDOf<T, Gen>
     fn clone(&self) -> Self
     {
         Self {
-            untyped: self.untyped.clone(),
+            untyped: self.untyped,
             phantom: PhantomData,
         }
     }

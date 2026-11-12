@@ -290,15 +290,11 @@ where
         R: CastRangeFrom<T>,
     {
         // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
-        let r;
-        let g;
-        let b;
-
-        if self.s == T::ZERO
+        
+  
+        let (r, g, b) = if self.s == T::ZERO
         {
-            r = self.l;
-            g = self.l;
-            b = self.l;
+            (self.l, self.l, self.l)
         }
         else
         {
@@ -338,10 +334,8 @@ where
                 self.l + self.s - self.l * self.s
             };
             let p = T::TWO * self.l - q;
-            r = hue_to_rgb(p, q, self.h + T::ONE / T::THREE);
-            g = hue_to_rgb(p, q, self.h);
-            b = hue_to_rgb(p, q, self.h - T::ONE / T::THREE);
-        }
+            (hue_to_rgb(p, q, self.h + T::ONE / T::THREE), hue_to_rgb(p, q, self.h), hue_to_rgb(p, q, self.h - T::ONE / T::THREE))
+        };
         RgbaOf::from_array([r, g, b, self.a].cast_range_into())
     }
 

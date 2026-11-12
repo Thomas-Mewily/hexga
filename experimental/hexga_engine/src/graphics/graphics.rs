@@ -173,8 +173,7 @@ impl Graphics
         self.immediate.params.clear();
 
         if let Ok(mut window) = WINDOW.try_get_mut()
-        {
-            if let Some(surface) = window.surface()
+            && let Some(surface) = window.surface()
             {
                 let area = surface.size().to_rect();
                 self.immediate.set_viewport(Viewport {
@@ -183,7 +182,6 @@ impl Graphics
                 });
                 self.immediate.set_scissor(area);
             }
-        }
     }
 
     pub(crate) fn end_draw(&mut self)

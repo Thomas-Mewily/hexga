@@ -51,7 +51,7 @@ impl WindowInitGpu for WindowType
 
 pub(crate) async fn async_init_gpu_in_proxy(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>, proxy: AppInternalProxy)
 {
-    let _ = match async_init_gpu(instance, param, surface).await
+    match async_init_gpu(instance, param, surface).await
     {
         Ok((surface, gpu)) =>
         {

@@ -36,7 +36,7 @@ where
         rect.move_by(self.pos());
         if !self.rect().is_rect_inside(rect)
         {
-            return None;
+            None
         }
         else
         {
@@ -176,7 +176,7 @@ where
     {
         Self {
             grid: self.grid,
-            rect: self.rect.clone(),
+            rect: self.rect,
             phantom: std::marker::PhantomData,
         }
     }
@@ -331,7 +331,7 @@ where
     {
         if !grid.rect().is_rect_inside(rect)
         {
-            return None;
+            None
         }
         else
         {

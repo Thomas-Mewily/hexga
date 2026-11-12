@@ -400,11 +400,7 @@ where
 {
     fn get_path(&self) -> Option<PathBuf>
     {
-        match &self.path
-        {
-            Some(p) => Some(p.clone()),
-            None => None,
-        }
+        self.path.clone()
     }
 }
 impl<T, FS> SetPath for FileIn<T, FS>

@@ -36,7 +36,7 @@ pub trait FileSystemIsolated: FileSystemProvider
 
         let mut fs = Self::non_isolated_file_system();
 
-        let mut full_path = fs.canonicalize(&self.isolated_root())?;
+        let mut full_path = fs.canonicalize(self.isolated_root())?;
 
         full_path.reserve(path.as_os_str().len() + 1);
 
@@ -61,7 +61,7 @@ pub trait FileSystemIsolated: FileSystemProvider
                     {
                         return Err(IoError::new_with_path(
                             IoErrorKind::InvalidFilename,
-                            format!("found root dir in the middle of the path"),
+                            "found root dir in the middle of the path".to_string(),
                             path,
                         ));
                     }
@@ -116,7 +116,7 @@ where
     {
         let root = self.isolated_root();
         let mut resolved = Self::non_isolated_file_system().dyn_resolve_paths(&self.validate_path(path)?)?;
-        resolved.retain_mut(|p| match strip_prefix(&p, &root)
+        resolved.retain_mut(|p| match strip_prefix(p, &root)
         {
             Ok(stripped) =>
             {
@@ -138,7 +138,7 @@ where
 
 fn strip_prefix(path: &Path, root: &Path) -> IoResult<PathBuf>
 {
-    match path.strip_prefix(&root)
+    match path.strip_prefix(root)
     {
         Ok(p) => Ok(p.to_path_buf()),
         Err(_err) => Err(IoError::new(
@@ -319,9 +319,9 @@ pub trait FileSystemRead: FileSystemDynRead
         self.read_link_at(path)
     }
 
-    #[must_use]
+    
     fn file_type_at<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_at(path.as_ref()) }
-    #[must_use]
+    
     fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType>
     {
         let path = self.resolve_path(path)?;

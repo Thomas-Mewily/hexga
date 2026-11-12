@@ -87,14 +87,8 @@ impl SetPath for PathBuf
 {
     fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
     {
-        match path
-        {
-            Some(new_path) =>
-            {
-                *self = new_path.as_ref().to_owned();
-            }
-            None =>
-            {}
+        if let Some(new_path) = path {
+            *self = new_path.as_ref().to_owned();
         }
         Ok(())
     }
@@ -105,18 +99,12 @@ impl SetPath for String
 {
     fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
     {
-        match path
-        {
-            Some(new_path) =>
-            {
-                *self = new_path
-                    .as_ref()
-                    .to_str()
-                    .map(|s| s.to_string())
-                    .ok_or_else(|| IoError::new(IoErrorKind::InvalidFilename, "Path contains invalid UTF-8"))?;
-            }
-            None =>
-            {}
+        if let Some(new_path) = path {
+            *self = new_path
+                .as_ref()
+                .to_str()
+                .map(|s| s.to_string())
+                .ok_or_else(|| IoError::new(IoErrorKind::InvalidFilename, "Path contains invalid UTF-8"))?;
         }
         Ok(())
     }

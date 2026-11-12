@@ -274,7 +274,7 @@ impl EncodeError
         Self::Markup(EncodeErrorMarkup {
             //name: std::any::type_name::<T>().to_owned(),
             extension: extension.into(),
-            reason: reason.to_string().into(),
+            reason: reason.to_string(),
         })
     }
 

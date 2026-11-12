@@ -82,7 +82,7 @@ where
         F: FnOnce() -> T,
     {
         let path = path.as_ref();
-        match Self::load(&path)
+        match Self::load(path)
         {
             Ok(v) => Ok(v),
             Err(e) =>
@@ -120,7 +120,7 @@ where
         F: FnOnce() -> T,
     {
         let path = path.as_ref();
-        match Self::load(&path)
+        match Self::load(path)
         {
             Ok(v) => v,
             Err(_) =>

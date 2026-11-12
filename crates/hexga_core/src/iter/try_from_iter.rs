@@ -88,10 +88,10 @@ impl<T> From<T> for CapacityFullError<T>
 
 impl<T> CapacityFullError<T>
 {
-    pub const fn new(element: T) -> CapacityFullError<T> { CapacityFullError { element: element } }
+    pub const fn new(element: T) -> CapacityFullError<T> { CapacityFullError { element } }
 }
 
-const CAPERROR: &'static str = "capacity full";
+const CAPERROR: &str = "capacity full";
 
 #[cfg(feature = "std")]
 /// Requires `features="std"`.
@@ -104,7 +104,7 @@ impl<T> core::fmt::Display for CapacityFullError<T>
 
 impl<T> core::fmt::Debug for CapacityFullError<T>
 {
-    fn fmt(&self, f: &mut Formatter) -> core::fmt::Result { write!(f, "{}: {}", "CapacityError", CAPERROR) }
+    fn fmt(&self, f: &mut Formatter) -> core::fmt::Result { write!(f, "CapacityError: {}", CAPERROR) }
 }
 
 #[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd, Hash)]

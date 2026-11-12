@@ -192,8 +192,7 @@ where
     #[inline(always)]
     fn get(&self, pos: P) -> Option<&Self::Output>
     {
-        self.position_to_index(pos.into())
-            .and_then(|idx| Some(unsafe { self.values().get_unchecked(idx) }))
+        self.position_to_index(pos.into()).map(|idx| unsafe { self.values().get_unchecked(idx) })
     }
     #[inline(always)]
     #[track_caller]
@@ -239,8 +238,7 @@ where
     #[inline(always)]
     fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output>
     {
-        self.position_to_index(pos.into())
-            .and_then(|i| Some(unsafe { self.values_mut().get_unchecked_mut(i) }))
+        self.position_to_index(pos.into()).map(|i| unsafe { self.values_mut().get_unchecked_mut(i) })
     }
     #[track_caller]
     #[inline(always)]

@@ -13,7 +13,7 @@ pub trait Load: Sized + for<'de> CfgDeserialize<'de>
     fn load_from_fs_at<FS: FileSystem, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>
     {
         let path = path.as_ref();
-        let extension = path.extension().map(|v| v.to_str()).flatten();
+        let extension = path.extension().and_then(|v| v.to_str());
 
         let bytes = fs.read_bytes_at(path).map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
 
@@ -35,7 +35,7 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
     fn load_extensions() -> impl Iterator<Item = &'static extension>
     {
         #[cfg(feature = "serde")]
-        return Self::load_custom_extensions().chain(AnyFormat::ALL.into_iter().map(|v| v.extension()));
+        return Self::load_custom_extensions().chain(AnyFormat::ALL.iter().map(|v| v.extension()));
 
         #[cfg(not(feature = "serde"))]
         return Self::load_custom_extensions();
@@ -98,16 +98,14 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
         let mut path = path.as_ref();
         let mut resolved = None;
 
-        if let Ok(resolve) = fs.resolve_path(&path)
-        {
-            if resolve != path
+        if let Ok(resolve) = fs.resolve_path(path)
+            && resolve != path
             {
                 resolved = Some(resolve);
-                path = &resolved.as_ref().unwrap();
+                path = resolved.as_ref().unwrap();
             }
-        }
 
-        Self::load_from_fs_at(fs, &path).map(|v| (v, resolved))
+        Self::load_from_fs_at(fs, path).map(|v| (v, resolved))
     }
 
     fn load_from_fs<FS: FileSystem, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>

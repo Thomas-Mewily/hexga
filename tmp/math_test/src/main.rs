@@ -76,7 +76,7 @@ fn img_test()
 {
     //let x = i32::
 
-    let i = Image::from_fn_coef(
+    Image::from_fn_coef(
         (1024, 1024),
         |v| {
             if (v - 0.5.splat2()).length() <= 0.5 { ColorU8::WHITE } else { ColorU8::BLACK }
@@ -259,9 +259,9 @@ fn gen_vec_view()
     let mut set = GenHashSet::new();
 
     let (id, first_insertion) = set.insert("abc".to_owned());
-    assert_eq!(first_insertion, true);
+    assert!(first_insertion);
     let (id2, first_insertion2) = set.insert("abc".to_owned());
-    assert_eq!(first_insertion2, false);
+    assert!(!first_insertion2);
     assert_eq!(id, id2);
 }
 

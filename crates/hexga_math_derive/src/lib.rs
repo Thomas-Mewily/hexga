@@ -104,7 +104,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         }
     };
 
-    let name_with_default_str = format!("{}WithDefault", &input.ident);
+    let name_with_default_str = format!("{}WithDefault", input.ident);
     let name_with_default = Ident::new(&name_with_default_str, name.span());
 
     let mut generics_with_policy = input.generics.clone();
@@ -926,8 +926,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         _ =>
                         {
                             return syn::Error::new_spanned(&input, "math_vec only supports structs with named fields")
-                                .to_compile_error()
-                                .into();
+                                .to_compile_error();
                         }
                     };
 

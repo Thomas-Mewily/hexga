@@ -796,8 +796,8 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     {
         debug_assert_eq!(self.len(), self.capacity());
         let self_ = ManuallyDrop::new(self);
-        let array = unsafe { ptr::read(self_.as_ptr() as *const [T; CAP]) };
-        array
+        
+        unsafe { ptr::read(self_.as_ptr() as *const [T; CAP]) }
     }
 
     /// Return a raw pointer to the vector's buffer.
@@ -1100,7 +1100,7 @@ impl<'a, T: 'a, const CAP: usize> Drop for Drain<'a, T, CAP>
         // len is currently 0 so panicking while dropping will not cause a double drop.
 
         // exhaust self first
-        while let Some(_) = self.next()
+        for _ in self.by_ref()
         {}
 
         if self.tail_len > 0

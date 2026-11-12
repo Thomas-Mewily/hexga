@@ -142,11 +142,11 @@ impl<T> Map for Vec<T>
 {
     type WithType<T2> = Vec<T2>;
 
-    fn map<T2, F>(self, mut f: F) -> Self::WithType<T2>
+    fn map<T2, F>(self, f: F) -> Self::WithType<T2>
     where
         F: FnMut(Self::Item) -> T2,
     {
-        self.into_iter().map(|v| f(v)).collect()
+        self.into_iter().map(f).collect()
     }
 }
 impl<T> MapWith for Vec<T>

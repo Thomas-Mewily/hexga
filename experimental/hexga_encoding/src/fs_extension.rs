@@ -50,7 +50,7 @@ pub trait FsResolvePathWithExtension: FileSystemRead
     {
         let path = path.as_ref();
         let mut path = self
-            .resolve_path(&path)
+            .resolve_path(path)
             .unwrap_or_else(|_| self.canonicalize(path).unwrap_or_else(|_| path.to_path_buf()));
         if path.extension().is_none()
         {

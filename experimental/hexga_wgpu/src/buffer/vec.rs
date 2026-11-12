@@ -264,12 +264,10 @@ where
         let usage = self.buffer.usage();
 
         if self.len > 0
-        {
-            if !usage.contains(GpuBufferUsageFlags::CopySource) || !usage.contains(GpuBufferUsageFlags::CopyDest)
+            && (!usage.contains(GpuBufferUsageFlags::CopySource) || !usage.contains(GpuBufferUsageFlags::CopyDest))
             {
                 return Err(());
             }
-        }
 
         let new_wgpu_buffer = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
             label: None,

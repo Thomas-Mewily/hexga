@@ -355,7 +355,7 @@ where
     {
         if !grid.rect().is_rect_inside(rect)
         {
-            return None;
+            None
         }
         else
         {

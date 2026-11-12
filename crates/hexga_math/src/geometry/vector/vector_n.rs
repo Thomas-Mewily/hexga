@@ -215,7 +215,7 @@ impl<T, const N: usize> Vector<T, N>
     where
         T: Numeric,
     {
-        self.array.into_iter().zip(other.array.into_iter()).fold(T::ZERO, |acc, (a, b)| acc + a * b)
+        self.array.into_iter().zip(other.array).fold(T::ZERO, |acc, (a, b)| acc + a * b)
     }
 
     /// target - self

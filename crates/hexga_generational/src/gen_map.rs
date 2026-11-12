@@ -240,7 +240,7 @@ where
     }
 
     #[track_caller]
-    pub fn insert_cyclic<'s, F>(&'s mut self, key: K, init: F) -> (GenIDOf<V, Gen>, Option<V>)
+    pub fn insert_cyclic<F>(&mut self, key: K, init: F) -> (GenIDOf<V, Gen>, Option<V>)
     where
         F: FnOnce(GenIDOf<V, Gen>) -> V,
         S: Insert<K, GenIDOf<V, Gen>>,

@@ -129,7 +129,7 @@ impl Load for String
         }
     }
 }
-impl<'a> Save for &'a str
+impl Save for &str
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { String::save_custom_extensions() }
 

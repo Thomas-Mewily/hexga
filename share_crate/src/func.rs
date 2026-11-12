@@ -18,7 +18,7 @@ pub fn publish_all_crate()
 
 pub fn publish_crate(name: &'static str)
 {
-    const CRATES_FOLDER: [&'static str; 3] = ["crates", "experimental", "old"];
+    const CRATES_FOLDER: [&str; 3] = ["crates", "experimental", "old"];
 
     println!("Publishing {}...", name);
 

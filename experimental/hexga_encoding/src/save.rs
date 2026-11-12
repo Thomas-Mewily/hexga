@@ -15,7 +15,7 @@ pub trait Save: CfgSerialize
     fn save_to_fs_at<FS: FileSystem, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult
     {
         let path = path.as_ref();
-        let extension = path.extension().map(|v| v.to_str()).flatten();
+        let extension = path.extension().and_then(|v| v.to_str());
 
         let (writer, _extension) = self
             .save_to_bytes_with_extension_in(Vec::with_capacity(DEFAULT_WRITER_CAPACITY), extension)
@@ -49,7 +49,7 @@ pub trait SaveExtension: Save
     fn save_extensions() -> impl Iterator<Item = &'static extension>
     {
         #[cfg(feature = "serde")]
-        return Self::save_custom_extensions().chain(AnyFormat::ALL.into_iter().map(|v| v.extension()));
+        return Self::save_custom_extensions().chain(AnyFormat::ALL.iter().map(|v| v.extension()));
 
         #[cfg(not(feature = "serde"))]
         return Self::save_custom_extensions();
@@ -114,7 +114,7 @@ pub trait SaveExtension: Save
         if resolve != path
         {
             resolved = Some(resolve);
-            path = &resolved.as_ref().unwrap();
+            path = resolved.as_ref().unwrap();
         }
 
         self.save_to_fs_at(fs, path).map(|_| resolved)

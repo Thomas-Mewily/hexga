@@ -129,127 +129,115 @@ where
 {
     fn update(&mut self, dt: Duration, el: &mut AppInternalEventLoop)
     {
-        match &mut self.app
-        {
-            Some(app) =>
-            {
-                app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ());
-            }
-            None =>
-            {}
+        if let Some(app) = &mut self.app {
+            app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ());
         }
     }
 
     fn draw(&mut self, event_loop: &mut AppInternalEventLoop)
     {
-        match &mut self.app
-        {
-            Some(app) =>
+        if let Some(app) = &mut self.app {
+            /*
+            let Ok(mut graphics) = GRAPHICS.try_get_mut()
+            else
             {
-                /*
-                let Ok(mut graphics) = GRAPHICS.try_get_mut()
-                else
-                {
-                    return;
-                };
+                return;
+            };
+            let Ok(mut window) = WINDOW.try_get_mut()
+            else
+            {
+                return;
+            };
+            let Some(surface) = window.surface()
+            else
+            {
+                return;
+            };
+            */
+            /*
+            let surface = surface.surface();
+            let output = match surface.wgpu.get_current_texture()
+            {
+                Ok(s) => s,
+                Err(_) => return,
+            };
+
+            let view = output
+                .texture
+                .create_view(&wgpu::TextureViewDescriptor::default());
+
+            let mut encoder =
+                Gpu.device()
+                    .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                        label: Some("Render Encoder"),
+                    });
+
+            {
+                let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: Some("Render Pass"),
+                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                        view: &view,
+                        resolve_target: None,
+                        ops: wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(wgpu::Color {
+                                r: 0.9,
+                                g: 0.9,
+                                b: 0.2,
+                                a: 1.0,
+                            }),
+                            store: wgpu::StoreOp::Store,
+                        },
+                    })],
+                    depth_stencil_attachment: None,
+                    occlusion_query_set: None,
+                    timestamp_writes: None,
+                });
+
+                render_pass.set_pipeline(&graphics.pipeline);
+                render_pass.draw(0..3, 0..1);
+            }
+
+            Gpu.queue().submit(iter::once(encoder.finish()));
+            output.present();
+
+            app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
+            */
+
+            //app.draw(1., &mut ());
+
+            {
                 let Ok(mut window) = WINDOW.try_get_mut()
                 else
                 {
                     return;
                 };
+
                 let Some(surface) = window.surface()
                 else
                 {
                     return;
                 };
-                */
-                /*
-                let surface = surface.surface();
-                let output = match surface.wgpu.get_current_texture()
-                {
-                    Ok(s) => s,
-                    Err(_) => return,
-                };
-
-                let view = output
-                    .texture
-                    .create_view(&wgpu::TextureViewDescriptor::default());
-
-                let mut encoder =
-                    Gpu.device()
-                        .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                            label: Some("Render Encoder"),
-                        });
-
-                {
-                    let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                        label: Some("Render Pass"),
-                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                            view: &view,
-                            resolve_target: None,
-                            ops: wgpu::Operations {
-                                load: wgpu::LoadOp::Clear(wgpu::Color {
-                                    r: 0.9,
-                                    g: 0.9,
-                                    b: 0.2,
-                                    a: 1.0,
-                                }),
-                                store: wgpu::StoreOp::Store,
-                            },
-                        })],
-                        depth_stencil_attachment: None,
-                        occlusion_query_set: None,
-                        timestamp_writes: None,
-                    });
-
-                    render_pass.set_pipeline(&graphics.pipeline);
-                    render_pass.draw(0..3, 0..1);
-                }
-
-                Gpu.queue().submit(iter::once(encoder.finish()));
-                output.present();
-
-                app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
-                */
-
-                //app.draw(1., &mut ());
-
-                {
-                    let Ok(mut window) = WINDOW.try_get_mut()
-                    else
-                    {
-                        return;
-                    };
-
-                    let Some(surface) = window.surface()
-                    else
-                    {
-                        return;
-                    };
-                }
-
-                {
-                    let Ok(mut graphics) = GRAPHICS.try_get_mut()
-                    else
-                    {
-                        return;
-                    };
-                    graphics.begin_draw();
-                }
-
-                app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
-
-                {
-                    let Ok(mut graphics) = GRAPHICS.try_get_mut()
-                    else
-                    {
-                        return;
-                    };
-                    graphics.end_draw();
-                }
             }
-            None =>
-            {}
+
+            {
+                let Ok(mut graphics) = GRAPHICS.try_get_mut()
+                else
+                {
+                    return;
+                };
+                graphics.begin_draw();
+            }
+
+            app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
+
+            {
+                let Ok(mut graphics) = GRAPHICS.try_get_mut()
+                else
+                {
+                    return;
+                };
+                graphics.end_draw();
+            }
         }
     }
 
@@ -277,7 +265,7 @@ where
 
                     self.init_stuff_if_needed(ctx);
 
-                    return None;
+                    None
                 }
                 AppCustomEvent::GpuReady(gpu) =>
                 {
@@ -286,11 +274,11 @@ where
 
                     self.init_stuff_if_needed(ctx);
 
-                    return None;
+                    None
                 }
                 AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
             },
-            s @ _ => self.dispatch_message(s, ctx),
+            s => self.dispatch_message(s, ctx),
         }
 
         /*
@@ -326,14 +314,8 @@ where
 
     fn event(&mut self, ev: AppEvent, ctx: &mut AppInternalEventLoop<'a>) -> Option<AppEvent>
     {
-        match &ev
-        {
-            AppEvent::WindowResize(size) =>
-            {
-                WINDOW.try_get_mut().map(|mut w| w.configure_surface());
-            }
-            _ =>
-            {}
+        if let AppEvent::WindowResize(size) = &ev {
+            if let Ok(mut w) = WINDOW.try_get_mut() { w.configure_surface() }
         };
 
         let Some(app) = &mut self.app
@@ -390,9 +372,7 @@ where
             app.message(AppMessage::Flow(AppFlow::Pause), &mut ());
         }
 
-        WINDOW.try_get_mut().map(|mut w| {
-            w.destroy_surface();
-        });
+        if let Ok(mut w) = WINDOW.try_get_mut() { w.destroy_surface(); }
     }
 
     fn exit(&mut self, event_loop: &mut AppInternalEventLoop)

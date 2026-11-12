@@ -342,7 +342,7 @@ impl<T> Guarded<T> for SingletonOptionRw<T>
     {
         match self.try_get()
         {
-            Ok(guard) => return guard,
+            Ok(guard) => guard,
             Err(e) => match e
             {
                 NotInitErrorOr::NotInit => panic!("SingletonOptionRw<{}> not initialized: call init() first", std::any::type_name::<T>()),
@@ -358,7 +358,7 @@ impl<T> Guarded<T> for SingletonOptionRw<T>
         {
             return Err(NotInitErrorOr::NotInit);
         }
-        return Ok(map_option_rw_read_guard(guard));
+        Ok(map_option_rw_read_guard(guard))
     }
 }
 
@@ -384,7 +384,7 @@ impl<T> GuardedMut<T> for SingletonOptionRw<T>
     {
         match self.try_get_mut()
         {
-            Ok(guard) => return guard,
+            Ok(guard) => guard,
             Err(e) => match e
             {
                 NotInitErrorOr::NotInit => panic!("SingletonOptionRw<{}> not initialized: call init() first", std::any::type_name::<T>()),
@@ -400,7 +400,7 @@ impl<T> GuardedMut<T> for SingletonOptionRw<T>
         {
             return Err(NotInitErrorOr::NotInit);
         }
-        return Ok(map_option_rw_write_guard(guard));
+        Ok(map_option_rw_write_guard(guard))
     }
 }
 impl_singleton_methods!(SingletonOptionRw);

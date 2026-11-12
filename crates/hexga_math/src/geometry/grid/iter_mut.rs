@@ -22,7 +22,7 @@ where
         let rect = grid.rect().iter_index();
         Self {
             grid,
-            rect: rect,
+            rect,
             phantom: std::marker::PhantomData,
         }
     }
@@ -31,7 +31,7 @@ where
     {
         if !grid.rect().is_rect_inside(rect)
         {
-            return None;
+            None
         }
         else
         {

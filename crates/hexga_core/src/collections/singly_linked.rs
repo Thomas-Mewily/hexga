@@ -87,7 +87,7 @@ pub struct Iter<'a, T>
 }
 impl<'a, T> Clone for Iter<'a, T>
 {
-    fn clone(&self) -> Self { Self { current: self.current.clone() } }
+    fn clone(&self) -> Self { Self { current: self.current } }
 }
 
 impl<'a, T> Iter<'a, T>

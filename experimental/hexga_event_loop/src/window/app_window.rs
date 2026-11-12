@@ -359,8 +359,7 @@ impl<Surface> WindowableSurface<Surface> for Window<Surface>
 
     fn replace_surface(&mut self, surface: Option<Surface>) -> Option<Surface>
     {
-        let s = std::mem::replace(&mut self.surface, surface);
-        s
+        std::mem::replace(&mut self.surface, surface)
     }
 }
 
@@ -372,7 +371,7 @@ impl<Surface> GetPosition<int, 2> for Window<Surface>
         {
             Ok(pos) =>
             {
-                return pos.convert();
+                pos.convert()
             }
             Err(e) => self.pos,
         }
@@ -540,11 +539,7 @@ pub(crate) fn image_to_winit_icon(image: &Image) -> Option<winit::window::Icon>
 {
     let pixels_bytes: &[u8] = hexga_core::bit::transmute_slice(image.pixels());
 
-    match winit::window::Icon::from_rgba(pixels_bytes.to_owned(), image.width() as _, image.height() as _)
-    {
-        Ok(icon) => Some(icon),
-        Err(_) => None,
-    }
+    winit::window::Icon::from_rgba(pixels_bytes.to_owned(), image.width() as _, image.height() as _).ok()
 }
 
 pub trait WindowAttribute: Sized
@@ -717,7 +712,7 @@ impl WindowAttribute for WindowParam
     fn title(&self) -> String { self.title.clone() }
     fn set_title(&mut self, title: String) -> &mut Self
     {
-        self.title = title.into();
+        self.title = title;
         self
     }
 
@@ -858,7 +853,7 @@ impl From<WindowParam> for WinitWindowAttributes
         attr.cursor = ___(); // Todo expose the cursor
         attr.fullscreen = None;
         attr.preferred_theme = theme.map(Into::into);
-        attr.window_icon = icon.map(|i| image_to_winit_icon(&i)).flatten();
+        attr.window_icon = icon.and_then(|i| image_to_winit_icon(&i));
 
         #[cfg(target_arch = "wasm32")]
         {

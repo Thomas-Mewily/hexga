@@ -279,7 +279,7 @@ where
                 {
                     if self.end == val
                     {
-                        return None;
+                        None
                     }
                     else
                     {

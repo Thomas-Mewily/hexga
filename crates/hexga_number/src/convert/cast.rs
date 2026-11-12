@@ -39,7 +39,7 @@ where
     C2: Map<WithType<C1::Item> = Self>,
     C1::Item: CastFrom<C2::Item>,
 {
-    fn cast_from(value: C2) -> Self { value.map(|v| C1::Item::cast_from(v)) }
+    fn cast_from(value: C2) -> Self { value.map(C1::Item::cast_from) }
 }
 
 /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)

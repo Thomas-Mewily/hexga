@@ -86,6 +86,17 @@ where
     pub fn new() -> Self { Self::from_arenas(C::___()) }
 }
 
+impl<A, C> Default for ArenaOf<A, C>
+where
+    A: Arenable,
+    C: Push<A> + Default,
+    for<'a> &'a C: IntoIterator<Item = &'a A>,
+ {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /*
 impl<A,C> FromIterator<A> for ArenaOf<A,C>
 where
@@ -187,12 +198,7 @@ where
             self.capacity += arena.capacity();
             self.used += arena.nb_used();
 
-            match alloc_result
-            {
-                Ok(ptr) => return Ok(ptr),
-                Err(_) =>
-                {}
-            }
+            if let Ok(ptr) = alloc_result { return Ok(ptr) }
         }
 
         let mut new_capacity = layout;

@@ -455,7 +455,7 @@ where
     Gen: GenerationalIndex,
 {
     #[inline(always)]
-    pub fn as_ref<'a>(&'a self) -> GenSeq<T, Gen, &'a [Entry<T, Gen>]> { self.into() }
+    pub fn as_ref(&self) -> GenSeq<T, Gen, &[Entry<T, Gen>]> { self.into() }
 
     #[inline(always)]
     pub fn get_entry_from_index(&self, index: usize) -> Option<&Entry<T, Gen>> { self.values.as_ref().get(index) }
@@ -475,7 +475,7 @@ where
     /// Return a valid [`GenID`] to the current index or return [`GenIDOf::NULL`] if the index is outside the range
     pub fn index_to_id(&self, index: usize) -> GenIDOf<T, Gen> { self.get_entry_from_index(index).map(|v| v.get_id(index)).unwrap_or(GenIDOf::NULL) }
 
-    pub fn entries(&self) -> impl Iterator<Item = &Entry<T, Gen>> + DoubleEndedIterator + FusedIterator { self.values.as_ref().iter() }
+    pub fn entries(&self) -> impl DoubleEndedIterator<Item = &Entry<T, Gen>> + FusedIterator { self.values.as_ref().iter() }
 
     pub const fn len(&self) -> usize { self.len }
 
@@ -525,7 +525,7 @@ where
     Gen: GenerationalIndex,
 {
     #[inline(always)]
-    pub fn as_mut<'a>(&'a mut self) -> GenSeq<T, Gen, &'a mut [Entry<T, Gen>]> { self.into() }
+    pub fn as_mut(&mut self) -> GenSeq<T, Gen, &mut [Entry<T, Gen>]> { self.into() }
 
     /// Removes all elements from the [`GenSeq`] and invalidates all existing [`GenID`] (enforced).
     pub fn remove_all(&mut self)
@@ -568,12 +568,10 @@ where
         }
 
         if free.is_max()
-        {
-            if index + 1 != entry_len
+            && index + 1 != entry_len
             {
                 return Err(());
             }
-        }
 
         let can_not_decrease = !entry.can_decrement_generation();
         let val = entry.value.take_and_set_vacant_unchecked(free);
@@ -625,7 +623,7 @@ where
         self.free = next_free_index;
         let id = GenIDOf::from_index_and_generation(free, values[free].generation);
         values[free].value = EntryValue::Occupied(init(id));
-        return Ok(id);
+        Ok(id)
     }
 
     #[inline(always)]
@@ -671,7 +669,7 @@ where
         self.free = next_free_index;
         let id = GenIDOf::from_index_and_generation(free, values[free].generation);
         values[free].value = EntryValue::Occupied(init(id));
-        return id;
+        id
     }
 
     #[inline(always)]
@@ -786,10 +784,7 @@ where
 
     pub fn remove(&mut self, id: GenIDOf<T, Gen>) -> Option<T>
     {
-        if self.get(id).is_none()
-        {
-            return None;
-        }
+        self.get(id)?;
         self.remove_from_index(id.index())
     }
 
@@ -1031,7 +1026,7 @@ where
     {
         Self {
             iter: self.iter.clone(),
-            len_remaining: self.len_remaining.clone(),
+            len_remaining: self.len_remaining,
             phantom: PhantomData,
         }
     }
@@ -1061,7 +1056,7 @@ where
 
     fn next(&mut self) -> Option<Self::Item>
     {
-        while let Some((index, entry)) = self.iter.next()
+        for (index, entry) in self.iter.by_ref()
         {
             let generation = entry.generation();
             if let Some(value) = entry.into_value()
@@ -1143,7 +1138,7 @@ impl<'a, T, Gen: GenerationalIndex> Clone for Iter<'a, T, Gen>
     {
         Self {
             iter: self.iter.clone(),
-            len_remaining: self.len_remaining.clone(),
+            len_remaining: self.len_remaining,
         }
     }
 }
@@ -1154,7 +1149,7 @@ impl<'a, T, Gen: GenerationalIndex> Iterator for Iter<'a, T, Gen>
 
     fn next(&mut self) -> Option<Self::Item>
     {
-        while let Some((index, entry)) = self.iter.next()
+        for (index, entry) in self.iter.by_ref()
         {
             if let Some(value) = entry.value()
             {
@@ -1218,7 +1213,7 @@ impl<'a, T, Gen: GenerationalIndex> Iterator for IterMut<'a, T, Gen>
 
     fn next(&mut self) -> Option<Self::Item>
     {
-        while let Some((index, entry)) = self.iter.next()
+        for (index, entry) in self.iter.by_ref()
         {
             let generation = entry.generation();
             if let Some(value) = entry.value_mut()
@@ -1486,8 +1481,8 @@ where
         match self
         {
             GenSeqError::IndexOutOfBounds(v) => Self::IndexOutOfBounds(v.clone()),
-            GenSeqError::WrongGeneration(v) => Self::WrongGeneration(v.clone()),
-            GenSeqError::Saturated(v) => Self::Saturated(v.clone()),
+            GenSeqError::WrongGeneration(v) => Self::WrongGeneration(*v),
+            GenSeqError::Saturated(v) => Self::Saturated(*v),
         }
     }
 }
@@ -1558,8 +1553,8 @@ where
     fn clone(&self) -> Self
     {
         Self {
-            got: self.got.clone(),
-            expected: self.expected.clone(),
+            got: self.got,
+            expected: self.expected,
             phantom: PhantomData,
         }
     }
@@ -1993,8 +1988,8 @@ where
 {
     fn update(&self, dest: &mut GenIDOf<T, Gen>)
     {
-        debug_assert!(dest.is_null() || self.get(&dest).is_some());
-        *dest = self.get(&dest).copied().unwrap_or(GenIDOf::NULL);
+        debug_assert!(dest.is_null() || self.get(dest).is_some());
+        *dest = self.get(dest).copied().unwrap_or(GenIDOf::NULL);
     }
 }
 /*

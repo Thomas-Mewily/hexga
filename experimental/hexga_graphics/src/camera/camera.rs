@@ -130,7 +130,7 @@ where
         // https://sotrh.github.io/learn-wgpu/beginner/tutorial6-uniforms/#a-perspective-camera
         let view: Matrix<F, 4, 4> = Matrix4::<F>::look_at_rh(self.pos, self.target, self.up);
         let proj = Matrix4::<F>::from(self.perspective);
-        return Self::OPENGL_TO_WGPU_MATRIX * proj * view;
+        Self::OPENGL_TO_WGPU_MATRIX * proj * view
     }
 
     pub(crate) const OPENGL_TO_WGPU_MATRIX: Matrix4<F> = Matrix4::from_col(vector4(

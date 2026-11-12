@@ -49,7 +49,7 @@ impl<T> NonEmptyStack<T>
             stack: Vec::with_capacity(capacity.saturating_sub(1)),
         }
     }
-    pub fn from_vec(mut stack: Vec<T>) -> Option<Self> { stack.pop().and_then(|last| Some(Self { last, stack })) }
+    pub fn from_vec(mut stack: Vec<T>) -> Option<Self> { stack.pop().map(|last| Self { last, stack }) }
 
     pub fn len(&self) -> usize { self.stack.len() + 1 }
 
@@ -123,9 +123,9 @@ impl<T> NonEmptyStack<T>
     }
     pub fn pop(&mut self) -> Option<T>
     {
-        self.stack.pop().and_then(|mut v| {
+        self.stack.pop().map(|mut v| {
             std::mem::swap(&mut v, &mut self.last);
-            Some(v)
+            v
         })
     }
 

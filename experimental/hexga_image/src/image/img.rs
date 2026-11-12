@@ -99,7 +99,7 @@ where
         {
             writeln!(f)?;
 
-            const SEP: &'static str = " ";
+            const SEP: &str = " ";
             let size = self.size();
 
             use ::core::fmt::{self, Write};
@@ -338,7 +338,7 @@ where
 {
     type Output = T;
     #[inline(always)]
-    fn get(&self, pos: P) -> Option<&Self::Output> { self.position_to_index(pos).and_then(|idx| Some(unsafe { self.pixels().get_unchecked(idx) })) }
+    fn get(&self, pos: P) -> Option<&Self::Output> { self.position_to_index(pos).map(|idx| unsafe { self.pixels().get_unchecked(idx) }) }
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked(&self, pos: P) -> &Self::Output
@@ -384,8 +384,7 @@ where
     #[inline(always)]
     fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output>
     {
-        self.position_to_index(pos)
-            .and_then(|i| Some(unsafe { self.pixels_mut().get_unchecked_mut(i) }))
+        self.position_to_index(pos).map(|i| unsafe { self.pixels_mut().get_unchecked_mut(i) })
     }
     #[inline(always)]
     #[track_caller]
@@ -627,7 +626,7 @@ where
                 {
                     8 => match ::image::ImageEncoder::write_image(
                         ::image::codecs::png::PngEncoder::new(writer),
-                        unsafe { std::slice::from_raw_parts(self.pixels().as_ptr() as *const u8, self.pixels().len() * std::mem::size_of::<C>()) },
+                        unsafe { std::slice::from_raw_parts(self.pixels().as_ptr() as *const u8, std::mem::size_of_val(self.pixels())) },
                         self.width().to_usize() as _,
                         self.height().to_usize() as _,
                         ::image::ExtendedColorType::Rgba8,
@@ -638,7 +637,7 @@ where
                     },
                     16 => match ::image::ImageEncoder::write_image(
                         ::image::codecs::png::PngEncoder::new(writer),
-                        unsafe { std::slice::from_raw_parts(self.pixels().as_ptr() as *const u8, self.pixels().len() * std::mem::size_of::<C>()) },
+                        unsafe { std::slice::from_raw_parts(self.pixels().as_ptr() as *const u8, std::mem::size_of_val(self.pixels())) },
                         self.width().to_usize() as _,
                         self.height().to_usize() as _,
                         ::image::ExtendedColorType::Rgba16,
@@ -737,7 +736,7 @@ where
                     }
 
                     let rgba_vec: Vec<RgbaU16> = bytes
-                        .chunks_exact(4)
+                        .as_chunks::<4>().0.iter()
                         .map(|chunk| RgbaU16 {
                             r: chunk[0],
                             g: chunk[1],
@@ -768,7 +767,7 @@ where
                 }
 
                 let rgba_vec: Vec<RgbaF32> = bytes
-                    .chunks_exact(4)
+                    .as_chunks::<4>().0.iter()
                     .map(|chunk| RgbaF32 {
                         r: chunk[0],
                         g: chunk[1],
@@ -800,7 +799,7 @@ where
         }
 
         let rgba_vec: Vec<RgbaU8> = bytes
-            .chunks_exact(4)
+            .as_chunks::<4>().0.iter()
             .map(|chunk| RgbaU8 {
                 r: chunk[0],
                 g: chunk[1],

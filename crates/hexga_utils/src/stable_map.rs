@@ -11,8 +11,8 @@ impl<T> Clone for StableMapID<T>
     fn clone(&self) -> Self
     {
         Self {
-            idx: self.idx.clone(),
-            phantom: self.phantom.clone(),
+            idx: self.idx,
+            phantom: self.phantom,
         }
     }
 }
@@ -94,7 +94,7 @@ where
         {
             return false;
         }
-        self.iter().all(|(idx, k, v)| other.get(idx).map_or(false, |(k2, v2)| k == k2 && v == v2))
+        self.iter().all(|(idx, k, v)| other.get(idx).is_some_and(|(k2, v2)| k == k2 && v == v2))
     }
 }
 
@@ -218,7 +218,7 @@ where
         }
     }
 
-    pub fn id(&self, key: &K) -> Option<StableMapID<V>> { self.index.binary_search_by(|i| self.values[*i].0.cmp(&key)).ok().map(|v| v.into()) }
+    pub fn id(&self, key: &K) -> Option<StableMapID<V>> { self.index.binary_search_by(|i| self.values[*i].0.cmp(key)).ok().map(|v| v.into()) }
     pub fn contains(&self, key: &K) -> bool
     {
         let Some(id) = self.id(key)
@@ -260,9 +260,9 @@ impl<K, V> StableMap<K, V>
     pub fn iter<'a>(&'a self) -> Iter<'a, K, V> { self.into_iter() }
     pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, K, V> { self.into_iter() }
 
-    pub fn keys(&self) -> impl Iterator<Item = &K> + DoubleEndedIterator + ExactSizeIterator { self.values.iter().map(|(k, _)| k) }
-    pub fn values(&self) -> impl Iterator<Item = &V> + DoubleEndedIterator + ExactSizeIterator { self.values.iter().map(|(_, v)| v) }
-    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> + DoubleEndedIterator + ExactSizeIterator { self.values.iter_mut().map(|(_, v)| v) }
+    pub fn keys(&self) -> impl DoubleEndedIterator<Item = &K> + ExactSizeIterator { self.values.iter().map(|(k, _)| k) }
+    pub fn values(&self) -> impl DoubleEndedIterator<Item = &V> + ExactSizeIterator { self.values.iter().map(|(_, v)| v) }
+    pub fn values_mut(&mut self) -> impl DoubleEndedIterator<Item = &mut V> + ExactSizeIterator { self.values.iter_mut().map(|(_, v)| v) }
 }
 
 impl<K, V> Index<StableMapID<V>> for StableMap<K, V>

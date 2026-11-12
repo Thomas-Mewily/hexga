@@ -41,7 +41,7 @@ where
     C2: Map<WithType<C1::Item> = Self>,
     C1::Item: CastRangeFrom<C2::Item>,
 {
-    fn cast_range_from(value: C2) -> Self { value.map(|v| C1::Item::cast_range_from(v)) }
+    fn cast_range_from(value: C2) -> Self { value.map(C1::Item::cast_range_from) }
 }
 
 /// Remap the value [`RangeDefault`] to the [`RangeDefault`] of the target type,

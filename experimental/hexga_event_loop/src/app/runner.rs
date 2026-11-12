@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[non_exhaustive]
 pub struct EventLoopParam
@@ -19,7 +19,7 @@ pub trait WithAppParam: WithAppShortcut
 
 impl WithAppShortcut for EventLoopParam
 {
-    fn exit_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.exit.clone() }
+    fn exit_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.exit }
 
     fn with_exit_shortcut(mut self, exit: Option<KeyShortcut>) -> Self
     {
@@ -27,7 +27,7 @@ impl WithAppShortcut for EventLoopParam
         self
     }
 
-    fn copy_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.copy.clone() }
+    fn copy_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.copy }
 
     fn with_copy_shortcut(mut self, copy: Option<KeyShortcut>) -> Self
     {
@@ -35,7 +35,7 @@ impl WithAppShortcut for EventLoopParam
         self
     }
 
-    fn paste_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.paste.clone() }
+    fn paste_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.paste }
 
     fn with_paste_shortcut(mut self, paste: Option<KeyShortcut>) -> Self
     {
@@ -43,7 +43,7 @@ impl WithAppShortcut for EventLoopParam
         self
     }
 
-    fn cut_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.cut.clone() }
+    fn cut_shortcut(&self) -> Option<KeyShortcut> { self.shortcut.cut }
 
     fn with_cut_shortcut(mut self, cut: Option<KeyShortcut>) -> Self
     {
@@ -73,16 +73,6 @@ impl HasMut<AppShortcut> for EventLoopParam
     fn retrive_mut(&mut self) -> &mut AppShortcut { &mut self.shortcut }
 }
 
-impl Default for EventLoopParam
-{
-    fn default() -> Self
-    {
-        Self {
-            control_flow: Default::default(),
-            shortcut: Default::default(),
-        }
-    }
-}
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -266,69 +256,64 @@ where
     {
         let mut ev = ev.into();
 
-        match &mut ev
+        if let AppMessage::Event(platform_event) = &mut ev { match platform_event
         {
-            AppMessage::Event(platform_event) => match platform_event
+            AppEvent::KeyModifiers(modifier) =>
             {
-                AppEvent::KeyModifiers(modifier) =>
+                self.state.key_modifiers = *modifier;
+            }
+            AppEvent::Key(k) =>
+            {
+                let down = k.is_down();
+                match k.code
                 {
-                    self.state.key_modifiers = *modifier;
-                }
-                AppEvent::Key(k) =>
-                {
-                    let down = k.is_down();
-                    match k.code
+                    KeyCode::ShiftLeft =>
                     {
-                        KeyCode::ShiftLeft =>
-                        {
-                            self.state.key_modifiers.set(KeyModifiers::ShiftLeft, down);
-                        }
-                        KeyCode::ShiftRight =>
-                        {
-                            self.state.key_modifiers.set(KeyModifiers::ShiftRight, down);
-                        }
-
-                        KeyCode::ControlLeft =>
-                        {
-                            self.state.key_modifiers.set(KeyModifiers::ControlLeft, down);
-                        }
-                        KeyCode::ControlRight =>
-                        {
-                            self.state.key_modifiers.set(KeyModifiers::ControlRight, down);
-                        }
-
-                        KeyCode::AltLeft =>
-                        {
-                            self.state.key_modifiers.set(KeyModifiers::AltLeft, down);
-                        }
-                        KeyCode::AltRight =>
-                        {
-                            self.state.key_modifiers.set(KeyModifiers::AltRight, down);
-                        }
-
-                        KeyCode::SuperLeft =>
-                        {
-                            self.state.key_modifiers.set(KeyModifiers::SuperLeft, down);
-                        }
-                        KeyCode::SuperRight =>
-                        {
-                            self.state.key_modifiers.set(KeyModifiers::SuperRight, down);
-                        }
-                        _ =>
-                        {}
+                        self.state.key_modifiers.set(KeyModifiers::ShiftLeft, down);
                     }
-                    k.modifiers = self.state.key_modifiers;
+                    KeyCode::ShiftRight =>
+                    {
+                        self.state.key_modifiers.set(KeyModifiers::ShiftRight, down);
+                    }
+
+                    KeyCode::ControlLeft =>
+                    {
+                        self.state.key_modifiers.set(KeyModifiers::ControlLeft, down);
+                    }
+                    KeyCode::ControlRight =>
+                    {
+                        self.state.key_modifiers.set(KeyModifiers::ControlRight, down);
+                    }
+
+                    KeyCode::AltLeft =>
+                    {
+                        self.state.key_modifiers.set(KeyModifiers::AltLeft, down);
+                    }
+                    KeyCode::AltRight =>
+                    {
+                        self.state.key_modifiers.set(KeyModifiers::AltRight, down);
+                    }
+
+                    KeyCode::SuperLeft =>
+                    {
+                        self.state.key_modifiers.set(KeyModifiers::SuperLeft, down);
+                    }
+                    KeyCode::SuperRight =>
+                    {
+                        self.state.key_modifiers.set(KeyModifiers::SuperRight, down);
+                    }
+                    _ =>
+                    {}
                 }
-                AppEvent::WindowClose =>
-                {
-                    active.exit();
-                }
-                _ =>
-                {}
-            },
+                k.modifiers = self.state.key_modifiers;
+            }
+            AppEvent::WindowClose =>
+            {
+                active.exit();
+            }
             _ =>
             {}
-        }
+        } }
 
         let Some(ev) = self.app(active, |event_handler, event_loop| event_handler.message(ev, event_loop))
         else
@@ -336,59 +321,46 @@ where
             return;
         };
 
-        match ev
+        if let AppMessage::Event(platform_event) = ev { match platform_event
         {
-            AppMessage::Event(platform_event) => match platform_event
+            AppEvent::Key(k) =>
             {
-                AppEvent::Key(k) =>
+                if k.is_down() && k.is_not_repeated()
                 {
-                    if k.is_down() && k.is_not_repeated()
+                    if self.param.shortcut.exit.matches(&k)
                     {
-                        if self.param.shortcut.exit.matches(&k)
-                        {
-                            let _ = self.send_event(AppEvent::WindowClose);
+                        let _ = self.send_event(AppEvent::WindowClose);
+                    }
+                    if self.param.shortcut.copy.matches(&k)
+                    {
+                        let _ = self.send_event(AppEvent::ClipboardCopy);
+                    }
+                    if self.param.shortcut.paste.matches(&k)
+                        && let Some(txt) = self.state.get_clipboard() {
+                            let _ = self.send_event(AppEvent::ClipboardPaste(txt));
                         }
-                        if self.param.shortcut.copy.matches(&k)
-                        {
-                            let _ = self.send_event(AppEvent::ClipboardCopy);
-                        }
-                        if self.param.shortcut.paste.matches(&k)
-                        {
-                            match self.state.get_clipboard()
-                            {
-                                Some(txt) =>
-                                {
-                                    let _ = self.send_event(AppEvent::ClipboardPaste(txt));
-                                }
-                                None =>
-                                {}
-                            }
-                        }
-                        if self.param.shortcut.cut.matches(&k)
-                        {
-                            let _ = self.send_event(AppEvent::ClipboardCut);
-                        }
+                    if self.param.shortcut.cut.matches(&k)
+                    {
+                        let _ = self.send_event(AppEvent::ClipboardCut);
                     }
                 }
-                AppEvent::ClipboardPaste(txt) =>
-                {
-                    let key_event = KeyEvent {
-                        code: KeyCode::Unknow(KeyCodeNative::Unknow),
-                        state: KeyState::Down,
-                        modifiers: self.state.key_modifiers,
-                        repeat: ButtonRepeat::NotRepeated,
-                        key: Key::Text(txt.clone().into()),
-                        location: KeyLocation::Unknow,
-                        text: Some(txt.into()),
-                    };
-                    let _ = self.send_event(AppEvent::Key(key_event));
-                }
-                _ =>
-                {}
-            },
+            }
+            AppEvent::ClipboardPaste(txt) =>
+            {
+                let key_event = KeyEvent {
+                    code: KeyCode::Unknow(KeyCodeNative::Unknow),
+                    state: KeyState::Down,
+                    modifiers: self.state.key_modifiers,
+                    repeat: ButtonRepeat::NotRepeated,
+                    key: Key::Text(txt.clone().into()),
+                    location: KeyLocation::Unknow,
+                    text: Some(txt.into()),
+                };
+                let _ = self.send_event(AppEvent::Key(key_event));
+            }
             _ =>
             {}
-        }
+        } }
     }
 
     fn app<F, O>(&mut self, active: &WinitEventLoopActive, f: F) -> O
