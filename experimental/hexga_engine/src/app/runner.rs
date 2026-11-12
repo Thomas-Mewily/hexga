@@ -34,7 +34,6 @@ pub trait AppRun : for<'a> App<(), AppCtx<'a>> + Sized + 'static
 }
 impl<S> AppRun for S where S: for<'a> App<(), AppCtx<'a>> + Sized + 'static {} //, CustomEvent: IAppEvent {}
 
-
 pub type AppCtx<'a> = ();
 
 pub(crate) struct AppRunner<F, A>
@@ -230,8 +229,9 @@ where
                     };
                     graphics.begin_draw();
                 }
+
                 app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
-                
+
                 {
                     let Ok(mut graphics) = GRAPHICS.try_get_mut()
                     else
@@ -240,7 +240,6 @@ where
                     };
                     graphics.end_draw();
                 }
-                
             }
             None =>
             {}

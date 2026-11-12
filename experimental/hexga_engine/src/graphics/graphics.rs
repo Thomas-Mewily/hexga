@@ -303,6 +303,9 @@ impl Graphics
                 }
             }
         }
+
+        Gpu.queue().submit(std::iter::once(encoder.finish()));
+        surface_texture.present();
     }
 }
 
