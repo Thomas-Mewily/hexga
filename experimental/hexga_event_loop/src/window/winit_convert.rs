@@ -56,12 +56,14 @@ where
 
 impl ExternLibConvert<WinitPhysicialPos> for Vec2i
 {
-    fn convert(self) -> WinitPhysicialPos { WinitPhysicialPos::new(self.x as i32, self.y as i32) }
+    #[allow(clippy::unnecessary_cast)]
+    fn convert(self) -> WinitPhysicialPos { WinitPhysicialPos::new(self.x as _, self.y as _) }
 }
 
 impl ExternLibConvert<WinitPhysicialSize> for Vec2i
 {
-    fn convert(self) -> WinitPhysicialSize { WinitPhysicialSize::new(self.x as i32, self.y as i32) }
+    #[allow(clippy::unnecessary_cast)]
+    fn convert(self) -> WinitPhysicialSize { WinitPhysicialSize::new(self.x as _, self.y as _) }
 }
 
 impl ExternLibConvert<ButtonState> for winit::event::ElementState
@@ -78,6 +80,7 @@ impl ExternLibConvert<ButtonState> for winit::event::ElementState
 
 impl ExternLibConvert<Vec2> for winit::event::MouseScrollDelta
 {
+    #[allow(clippy::unnecessary_cast)]
     fn convert(self) -> Vec2
     {
         match self
