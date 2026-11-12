@@ -84,10 +84,13 @@ where
 {
     fn drop(&mut self)
     {
+        /*
         for v in self.iter_mut()
         {
+            // calls to `std::ptr::drop_in_place` with a pointer to a value that implements `Copy` does nothing
             unsafe { ptr::drop_in_place(v as *mut T) };
         }
+        */
         Memory.dealloc_layout(self.ptr.cast(), self.layout);
     }
 }

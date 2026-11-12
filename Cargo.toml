@@ -12,7 +12,7 @@ members = [
 version = "0.0.12-beta.2"
 authors = ["Mewily <thomas.mewily@gmail.com>"]
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/Thomas-Mewily/hexga"
+#homepage = "https://github.com/Thomas-Mewily/hexga"
 repository = "https://github.com/Thomas-Mewily/hexga"
 edition = "2024"
 
@@ -20,7 +20,7 @@ edition = "2024"
 hexga_ansi_color       = { path = "./crates/hexga_ansi_color",           version = "0.0.12-beta.2", default-features = false }
 hexga_map_on           = { path = "./crates/hexga_map_on",               version = "0.0.12-beta.2", default-features = false }
 hexga_typedef          = { path = "./crates/hexga_typedef",              version = "0.0.12-beta.2", default-features = false }
-hexga_event            = { path = "./crates/hexga_event",                version = "0.0.12-beta.2", default-features = false }
+#hexga_event            = { path = "./crates/hexga_event",                version = "0.0.12-beta.2", default-features = false }
 
 hexga_number           = { path = "./crates/hexga_number",               version = "0.0.12-beta.2", default-features = false }
 hexga_array            = { path = "./crates/hexga_array",                version = "0.0.12-beta.2", default-features = false }
@@ -36,7 +36,7 @@ hexga_core             = { path = "./crates/hexga_core",                 version
 hexga_encoding_derive  = { path = "./experimental/hexga_encoding_derive",version = "0.0.12-beta.2", default-features = false }
 hexga_encoding         = { path = "./experimental/hexga_encoding",       version = "0.0.12-beta.2", default-features = false }
 
-hexga_action           = { path = "./experimental/hexga_action",         version = "0.0.12-beta.2", default-features = false }
+#hexga_action           = { path = "./experimental/hexga_action",         version = "0.0.12-beta.2", default-features = false }
 
 hexga_io               = { path = "./experimental/hexga_io",             version = "0.0.12-beta.2", default-features = false }
 #hexga_save             = { path = "./experimental/hexga_save",           version = "0.0.12-beta.2", default-features = false }
