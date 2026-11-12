@@ -91,10 +91,8 @@ where
     A: Arenable,
     C: Push<A> + Default,
     for<'a> &'a C: IntoIterator<Item = &'a A>,
- {
-    fn default() -> Self {
-        Self::new()
-    }
+{
+    fn default() -> Self { Self::new() }
 }
 
 /*
@@ -198,7 +196,10 @@ where
             self.capacity += arena.capacity();
             self.used += arena.nb_used();
 
-            if let Ok(ptr) = alloc_result { return Ok(ptr) }
+            if let Ok(ptr) = alloc_result
+            {
+                return Ok(ptr);
+            }
         }
 
         let mut new_capacity = layout;

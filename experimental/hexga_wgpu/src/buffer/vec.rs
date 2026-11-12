@@ -263,11 +263,10 @@ where
 
         let usage = self.buffer.usage();
 
-        if self.len > 0
-            && (!usage.contains(GpuBufferUsageFlags::CopySource) || !usage.contains(GpuBufferUsageFlags::CopyDest))
-            {
-                return Err(());
-            }
+        if self.len > 0 && (!usage.contains(GpuBufferUsageFlags::CopySource) || !usage.contains(GpuBufferUsageFlags::CopyDest))
+        {
+            return Err(());
+        }
 
         let new_wgpu_buffer = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
             label: None,

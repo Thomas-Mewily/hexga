@@ -300,12 +300,7 @@ fn derive_marker_trait<Trait: Derivable>(input: DeriveInput) -> TokenStream
 /// Returns an error if any attributes with the given `name` do not match the
 /// expected format. Returns `Ok([])` if no attributes with `name` are found.
 fn find_and_parse_helper_attributes<P: syn::parse::Parser + Copy>(
-    attributes: &[syn::Attribute],
-    name: &str,
-    key: &str,
-    parser: P,
-    example_value: &str,
-    invalid_value_msg: &str,
+    attributes: &[syn::Attribute], name: &str, key: &str, parser: P, example_value: &str, invalid_value_msg: &str,
 ) -> Result<Vec<P::Output>>
 {
     let invalid_format_msg = format!("{name} attribute must be `{name}({key} = \"{example_value}\")`",);

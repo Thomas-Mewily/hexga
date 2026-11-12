@@ -190,10 +190,7 @@ where
 {
     type Output = <Self as Index<Vector<Idx, N>>>::Output;
     #[inline(always)]
-    fn get(&self, pos: P) -> Option<&Self::Output>
-    {
-        self.position_to_index(pos.into()).map(|idx| unsafe { self.values().get_unchecked(idx) })
-    }
+    fn get(&self, pos: P) -> Option<&Self::Output> { self.position_to_index(pos.into()).map(|idx| unsafe { self.values().get_unchecked(idx) }) }
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked(&self, pos: P) -> &Self::Output
@@ -236,10 +233,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output>
-    {
-        self.position_to_index(pos.into()).map(|i| unsafe { self.values_mut().get_unchecked_mut(i) })
-    }
+    fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output> { self.position_to_index(pos.into()).map(|i| unsafe { self.values_mut().get_unchecked_mut(i) }) }
     #[track_caller]
     #[inline(always)]
     unsafe fn get_unchecked_mut(&mut self, pos: P) -> &mut Self::Output

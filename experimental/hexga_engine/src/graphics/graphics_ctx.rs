@@ -174,14 +174,14 @@ impl Graphics
 
         if let Ok(mut window) = WINDOW.try_get_mut()
             && let Some(surface) = window.surface()
-            {
-                let area = surface.size().to_rect();
-                self.immediate.set_viewport(Viewport {
-                    area: area.to_float(),
-                    ..Default::default()
-                });
-                self.immediate.set_scissor(area);
-            }
+        {
+            let area = surface.size().to_rect();
+            self.immediate.set_viewport(Viewport {
+                area: area.to_float(),
+                ..Default::default()
+            });
+            self.immediate.set_scissor(area);
+        }
     }
 
     pub(crate) fn end_draw(&mut self)

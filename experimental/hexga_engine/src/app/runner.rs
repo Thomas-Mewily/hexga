@@ -129,14 +129,16 @@ where
 {
     fn update(&mut self, dt: Duration, el: &mut AppInternalEventLoop)
     {
-        if let Some(app) = &mut self.app {
+        if let Some(app) = &mut self.app
+        {
             app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ());
         }
     }
 
     fn draw(&mut self, event_loop: &mut AppInternalEventLoop)
     {
-        if let Some(app) = &mut self.app {
+        if let Some(app) = &mut self.app
+        {
             /*
             let Ok(mut graphics) = GRAPHICS.try_get_mut()
             else
@@ -315,7 +317,10 @@ where
     fn event(&mut self, ev: AppEvent, ctx: &mut AppInternalEventLoop<'a>) -> Option<AppEvent>
     {
         if let AppEvent::WindowResize(size) = &ev
-            && let Ok(mut w) = WINDOW.try_get_mut() { w.configure_surface() };
+            && let Ok(mut w) = WINDOW.try_get_mut()
+        {
+            w.configure_surface()
+        };
 
         let Some(app) = &mut self.app
         else
@@ -371,7 +376,10 @@ where
             app.message(AppMessage::Flow(AppFlow::Pause), &mut ());
         }
 
-        if let Ok(mut w) = WINDOW.try_get_mut() { w.destroy_surface(); }
+        if let Ok(mut w) = WINDOW.try_get_mut()
+        {
+            w.destroy_surface();
+        }
     }
 
     fn exit(&mut self, event_loop: &mut AppInternalEventLoop)

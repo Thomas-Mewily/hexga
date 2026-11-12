@@ -100,10 +100,10 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
 
         if let Ok(resolve) = fs.resolve_path(path)
             && resolve != path
-            {
-                resolved = Some(resolve);
-                path = resolved.as_ref().unwrap();
-            }
+        {
+            resolved = Some(resolve);
+            path = resolved.as_ref().unwrap();
+        }
 
         Self::load_from_fs_at(fs, path).map(|v| (v, resolved))
     }

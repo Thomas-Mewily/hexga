@@ -684,10 +684,7 @@ fn get_enum_variants<'a>(input: &'a DeriveInput) -> Result<impl Iterator<Item = 
 fn get_field_types<'a>(fields: &'a Fields) -> impl Iterator<Item = &'a Type> + 'a { fields.iter().map(|field| &field.ty) }
 
 fn generate_checked_bit_pattern_struct(
-    input_ident: &Ident,
-    fields: &Fields,
-    attrs: &[Attribute],
-    crate_name: &TokenStream,
+    input_ident: &Ident, fields: &Fields, attrs: &[Attribute], crate_name: &TokenStream,
 ) -> Result<(TokenStream, TokenStream)>
 {
     let bits_ty = Ident::new(&format!("{}Bits", input_ident), input_ident.span());
@@ -739,9 +736,7 @@ fn generate_checked_bit_pattern_struct(
 }
 
 fn generate_checked_bit_pattern_enum(
-    input: &DeriveInput,
-    variants: &Punctuated<Variant, Token![,]>,
-    crate_name: &TokenStream,
+    input: &DeriveInput, variants: &Punctuated<Variant, Token![,]>, crate_name: &TokenStream,
 ) -> Result<(TokenStream, TokenStream)>
 {
     if enum_has_fields(variants.iter())
@@ -755,9 +750,7 @@ fn generate_checked_bit_pattern_enum(
 }
 
 fn generate_checked_bit_pattern_enum_without_fields(
-    input: &DeriveInput,
-    variants: &Punctuated<Variant, Token![,]>,
-    crate_name: &TokenStream,
+    input: &DeriveInput, variants: &Punctuated<Variant, Token![,]>, crate_name: &TokenStream,
 ) -> Result<(TokenStream, TokenStream)>
 {
     let span = input.span();
@@ -813,9 +806,7 @@ fn generate_checked_bit_pattern_enum_without_fields(
 }
 
 fn generate_checked_bit_pattern_enum_with_fields(
-    input: &DeriveInput,
-    variants: &Punctuated<Variant, Token![,]>,
-    crate_name: &TokenStream,
+    input: &DeriveInput, variants: &Punctuated<Variant, Token![,]>, crate_name: &TokenStream,
 ) -> Result<(TokenStream, TokenStream)>
 {
     let representation = get_repr(&input.attrs)?;
@@ -1245,10 +1236,10 @@ fn get_type_from_simple_attr(attributes: &[Attribute], attr_name: &str) -> Optio
     {
         if let (AttrStyle::Outer, Meta::List(list)) = (&attr.style, &attr.meta)
             && list.path.is_ident(attr_name)
-                && let Some(ty) = get_wrapped_type_from_stream(list.tokens.clone())
-                {
-                    return Some(ty);
-                }
+            && let Some(ty) = get_wrapped_type_from_stream(list.tokens.clone())
+        {
+            return Some(ty);
+        }
     }
 
     None

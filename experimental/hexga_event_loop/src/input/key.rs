@@ -1455,11 +1455,7 @@ impl Matches for KeyModifiersFlags
         // Some one will probbaly find a clever bit flags way to do it.
         // Anyways, it's not a performance bottle neck
         fn check_mods(
-            self_bits: KeyModifiersFlags,
-            lexem_bits: KeyModifiersFlags,
-            left: KeyModifiersFlags,
-            right: KeyModifiersFlags,
-            left_or_right: KeyModifiersFlags,
+            self_bits: KeyModifiersFlags, lexem_bits: KeyModifiersFlags, left: KeyModifiersFlags, right: KeyModifiersFlags, left_or_right: KeyModifiersFlags,
         ) -> bool
         {
             if self_bits.contains(left_or_right)

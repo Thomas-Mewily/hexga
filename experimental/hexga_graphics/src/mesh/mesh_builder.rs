@@ -97,7 +97,12 @@ impl<const N: usize> MeshBuilder<N>
     {
         (
             self.vertices,
-            self.indices.as_chunks::<3>().0.iter().map(|c| TriangleVertexIndex::new(c[0], c[1], c[2])).collect(),
+            self.indices
+                .as_chunks::<3>()
+                .0
+                .iter()
+                .map(|c| TriangleVertexIndex::new(c[0], c[1], c[2]))
+                .collect(),
         )
     }
 }

@@ -188,9 +188,9 @@ impl FileSystemDynWrite for IoGlobal
 
         if let Some(parent) = path.parent()
             && !parent.exists()
-            {
-                std::fs::create_dir_all(parent)?;
-            }
+        {
+            std::fs::create_dir_all(parent)?;
+        }
 
         std::fs::write(path, value)?;
         Ok(())
@@ -198,11 +198,10 @@ impl FileSystemDynWrite for IoGlobal
 
     fn dyn_create_dir(&mut self, path: &Path) -> IoResult
     {
-        if path.exists()
-            && path.is_file()
-            {
-                std::fs::remove_file(path)?;
-            }
+        if path.exists() && path.is_file()
+        {
+            std::fs::remove_file(path)?;
+        }
 
         std::fs::create_dir_all(path)?;
         Ok(())

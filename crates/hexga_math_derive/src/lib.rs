@@ -925,8 +925,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         syn::Fields::Named(f) => &f.named,
                         _ =>
                         {
-                            return syn::Error::new_spanned(&input, "math_vec only supports structs with named fields")
-                                .to_compile_error();
+                            return syn::Error::new_spanned(&input, "math_vec only supports structs with named fields").to_compile_error();
                         }
                     };
 

@@ -357,10 +357,7 @@ impl<Surface> WindowableSurface<Surface> for Window<Surface>
 {
     fn surface(&self) -> Option<&Surface> { self.surface.as_ref() }
 
-    fn replace_surface(&mut self, surface: Option<Surface>) -> Option<Surface>
-    {
-        std::mem::replace(&mut self.surface, surface)
-    }
+    fn replace_surface(&mut self, surface: Option<Surface>) -> Option<Surface> { std::mem::replace(&mut self.surface, surface) }
 }
 
 impl<Surface> GetPosition<int, 2> for Window<Surface>
@@ -369,10 +366,7 @@ impl<Surface> GetPosition<int, 2> for Window<Surface>
     {
         match &self.window.outer_position()
         {
-            Ok(pos) =>
-            {
-                pos.convert()
-            }
+            Ok(pos) => pos.convert(),
             Err(e) => self.pos,
         }
     }

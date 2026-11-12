@@ -382,10 +382,7 @@ where
     P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output>
-    {
-        self.position_to_index(pos).map(|i| unsafe { self.pixels_mut().get_unchecked_mut(i) })
-    }
+    fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output> { self.position_to_index(pos).map(|i| unsafe { self.pixels_mut().get_unchecked_mut(i) }) }
     #[inline(always)]
     #[track_caller]
     unsafe fn get_unchecked_mut(&mut self, pos: P) -> &mut Self::Output
@@ -736,7 +733,9 @@ where
                     }
 
                     let rgba_vec: Vec<RgbaU16> = bytes
-                        .as_chunks::<4>().0.iter()
+                        .as_chunks::<4>()
+                        .0
+                        .iter()
                         .map(|chunk| RgbaU16 {
                             r: chunk[0],
                             g: chunk[1],
@@ -767,7 +766,9 @@ where
                 }
 
                 let rgba_vec: Vec<RgbaF32> = bytes
-                    .as_chunks::<4>().0.iter()
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
                     .map(|chunk| RgbaF32 {
                         r: chunk[0],
                         g: chunk[1],
@@ -799,7 +800,9 @@ where
         }
 
         let rgba_vec: Vec<RgbaU8> = bytes
-            .as_chunks::<4>().0.iter()
+            .as_chunks::<4>()
+            .0
+            .iter()
             .map(|chunk| RgbaU8 {
                 r: chunk[0],
                 g: chunk[1],

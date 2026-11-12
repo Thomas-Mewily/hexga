@@ -131,9 +131,7 @@ use syn::{Ident, ItemEnum, parse_macro_input};
 #[allow(unexpected_cfgs)]
 #[cfg(feature = "serde")]
 fn emit_serde_code(
-    repr_type: &Ident,
-    struct_name: &Ident,
-    enum_variants_name: &[Ident],
+    repr_type: &Ident, struct_name: &Ident, enum_variants_name: &[Ident],
 ) -> (proc_macro2::TokenStream, proc_macro2::TokenStream, proc_macro2::TokenStream)
 {
     let helper_struct_name = format_ident!("{}SerdeHelper", struct_name);

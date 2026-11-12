@@ -87,7 +87,8 @@ impl SetPath for PathBuf
 {
     fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
     {
-        if let Some(new_path) = path {
+        if let Some(new_path) = path
+        {
             *self = new_path.as_ref().to_owned();
         }
         Ok(())
@@ -99,7 +100,8 @@ impl SetPath for String
 {
     fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
     {
-        if let Some(new_path) = path {
+        if let Some(new_path) = path
+        {
             *self = new_path
                 .as_ref()
                 .to_str()

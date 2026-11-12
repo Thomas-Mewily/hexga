@@ -219,11 +219,7 @@ where
     fn serialize_tuple_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeTupleStruct, Self::Error> { Err(Default::default()) }
 
     fn serialize_tuple_variant(
-        self,
-        _name: &'static str,
-        _variant_index: u32,
-        _variant: &'static str,
-        _len: usize,
+        self, _name: &'static str, _variant_index: u32, _variant: &'static str, _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error>
     {
         Err(Default::default())
@@ -234,11 +230,7 @@ where
     fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeStruct, Self::Error> { Err(Default::default()) }
 
     fn serialize_struct_variant(
-        self,
-        _name: &'static str,
-        _variant_index: u32,
-        _variant: &'static str,
-        _len: usize,
+        self, _name: &'static str, _variant_index: u32, _variant: &'static str, _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error>
     {
         Err(Default::default())

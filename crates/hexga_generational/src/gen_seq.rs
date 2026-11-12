@@ -567,11 +567,10 @@ where
             return Err(());
         }
 
-        if free.is_max()
-            && index + 1 != entry_len
-            {
-                return Err(());
-            }
+        if free.is_max() && index + 1 != entry_len
+        {
+            return Err(());
+        }
 
         let can_not_decrease = !entry.can_decrement_generation();
         let val = entry.value.take_and_set_vacant_unchecked(free);

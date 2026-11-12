@@ -518,12 +518,12 @@ where
 
             if let Some(replaced_shared_asset) = manager.values.insert(path.to_owned(), entry)
                 && let Some(mut _replaced_asset) = replaced_shared_asset.upgrade()
-                {
-                    // Can't do anythings about it right now.
-                    // I don't want to impose T: Clone.
-                    // Maybe I can swap the old path with the new_path of the 2 instance ?
-                    //*replaced_asset.get_mut() = self.get
-                }
+            {
+                // Can't do anythings about it right now.
+                // I don't want to impose T: Clone.
+                // Maybe I can swap the old path with the new_path of the 2 instance ?
+                //*replaced_asset.get_mut() = self.get
+            }
             data.path = Some(path);
         }
     }
@@ -694,17 +694,20 @@ where
 
         let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
-        if let Some(asset) = manager.values.get(&path) { match asset
+        if let Some(asset) = manager.values.get(&path)
         {
-            AssetShared::Strong(asset) => return Ok(asset.clone()),
-            AssetShared::Weak(asset) =>
+            match asset
             {
-                if let Some(asset) = asset.upgrade()
+                AssetShared::Strong(asset) => return Ok(asset.clone()),
+                AssetShared::Weak(asset) =>
                 {
-                    return Ok(asset);
+                    if let Some(asset) = asset.upgrade()
+                    {
+                        return Ok(asset);
+                    }
                 }
             }
-        } }
+        }
 
         // Drop the assets lock, because init can take some time. That way multiple asset can be loaded in parallel.
         drop(assets);
@@ -713,7 +716,9 @@ where
         let mut assets = ASSET.get_mut();
         let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
-        if let Some(shared) = manager.values.get_mut(&path) && let Some(asset) = shared.upgrade() {
+        if let Some(shared) = manager.values.get_mut(&path)
+            && let Some(asset) = shared.upgrade()
+        {
             // Asset was loaded again by someone else during init. Replace it
             *asset.get_mut().value_mut() = value;
             return Ok(asset);

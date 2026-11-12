@@ -44,10 +44,8 @@ impl PartialEq for WgpuInstanceDescriptor
     }
 }
 
-
 #[non_exhaustive]
-#[derive(Debug, Clone)]
-#[derive(Default)]
+#[derive(Debug, Clone, Default)]
 pub struct WgpuInstanceDescriptor
 {
     /// Flags to tune the behavior of the instance.

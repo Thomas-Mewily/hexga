@@ -319,9 +319,8 @@ pub trait FileSystemRead: FileSystemDynRead
         self.read_link_at(path)
     }
 
-    
     fn file_type_at<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType> { self.dyn_file_type_at(path.as_ref()) }
-    
+
     fn file_type<P: AsRef<Path>>(&mut self, path: P) -> IoResult<FileType>
     {
         let path = self.resolve_path(path)?;

@@ -398,10 +398,7 @@ where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn get_path(&self) -> Option<PathBuf>
-    {
-        self.path.clone()
-    }
+    fn get_path(&self) -> Option<PathBuf> { self.path.clone() }
 }
 impl<T, FS> SetPath for FileIn<T, FS>
 where

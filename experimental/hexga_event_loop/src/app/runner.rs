@@ -73,7 +73,6 @@ impl HasMut<AppShortcut> for EventLoopParam
     fn retrive_mut(&mut self) -> &mut AppShortcut { &mut self.shortcut }
 }
 
-
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AppShortcut
@@ -256,64 +255,67 @@ where
     {
         let mut ev = ev.into();
 
-        if let AppMessage::Event(platform_event) = &mut ev { match platform_event
+        if let AppMessage::Event(platform_event) = &mut ev
         {
-            AppEvent::KeyModifiers(modifier) =>
+            match platform_event
             {
-                self.state.key_modifiers = *modifier;
-            }
-            AppEvent::Key(k) =>
-            {
-                let down = k.is_down();
-                match k.code
+                AppEvent::KeyModifiers(modifier) =>
                 {
-                    KeyCode::ShiftLeft =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::ShiftLeft, down);
-                    }
-                    KeyCode::ShiftRight =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::ShiftRight, down);
-                    }
-
-                    KeyCode::ControlLeft =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::ControlLeft, down);
-                    }
-                    KeyCode::ControlRight =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::ControlRight, down);
-                    }
-
-                    KeyCode::AltLeft =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::AltLeft, down);
-                    }
-                    KeyCode::AltRight =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::AltRight, down);
-                    }
-
-                    KeyCode::SuperLeft =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::SuperLeft, down);
-                    }
-                    KeyCode::SuperRight =>
-                    {
-                        self.state.key_modifiers.set(KeyModifiers::SuperRight, down);
-                    }
-                    _ =>
-                    {}
+                    self.state.key_modifiers = *modifier;
                 }
-                k.modifiers = self.state.key_modifiers;
+                AppEvent::Key(k) =>
+                {
+                    let down = k.is_down();
+                    match k.code
+                    {
+                        KeyCode::ShiftLeft =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::ShiftLeft, down);
+                        }
+                        KeyCode::ShiftRight =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::ShiftRight, down);
+                        }
+
+                        KeyCode::ControlLeft =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::ControlLeft, down);
+                        }
+                        KeyCode::ControlRight =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::ControlRight, down);
+                        }
+
+                        KeyCode::AltLeft =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::AltLeft, down);
+                        }
+                        KeyCode::AltRight =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::AltRight, down);
+                        }
+
+                        KeyCode::SuperLeft =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::SuperLeft, down);
+                        }
+                        KeyCode::SuperRight =>
+                        {
+                            self.state.key_modifiers.set(KeyModifiers::SuperRight, down);
+                        }
+                        _ =>
+                        {}
+                    }
+                    k.modifiers = self.state.key_modifiers;
+                }
+                AppEvent::WindowClose =>
+                {
+                    active.exit();
+                }
+                _ =>
+                {}
             }
-            AppEvent::WindowClose =>
-            {
-                active.exit();
-            }
-            _ =>
-            {}
-        } }
+        }
 
         let Some(ev) = self.app(active, |event_handler, event_loop| event_handler.message(ev, event_loop))
         else
@@ -321,46 +323,50 @@ where
             return;
         };
 
-        if let AppMessage::Event(platform_event) = ev { match platform_event
+        if let AppMessage::Event(platform_event) = ev
         {
-            AppEvent::Key(k) =>
+            match platform_event
             {
-                if k.is_down() && k.is_not_repeated()
+                AppEvent::Key(k) =>
                 {
-                    if self.param.shortcut.exit.matches(&k)
+                    if k.is_down() && k.is_not_repeated()
                     {
-                        let _ = self.send_event(AppEvent::WindowClose);
-                    }
-                    if self.param.shortcut.copy.matches(&k)
-                    {
-                        let _ = self.send_event(AppEvent::ClipboardCopy);
-                    }
-                    if self.param.shortcut.paste.matches(&k)
-                        && let Some(txt) = self.state.get_clipboard() {
+                        if self.param.shortcut.exit.matches(&k)
+                        {
+                            let _ = self.send_event(AppEvent::WindowClose);
+                        }
+                        if self.param.shortcut.copy.matches(&k)
+                        {
+                            let _ = self.send_event(AppEvent::ClipboardCopy);
+                        }
+                        if self.param.shortcut.paste.matches(&k)
+                            && let Some(txt) = self.state.get_clipboard()
+                        {
                             let _ = self.send_event(AppEvent::ClipboardPaste(txt));
                         }
-                    if self.param.shortcut.cut.matches(&k)
-                    {
-                        let _ = self.send_event(AppEvent::ClipboardCut);
+                        if self.param.shortcut.cut.matches(&k)
+                        {
+                            let _ = self.send_event(AppEvent::ClipboardCut);
+                        }
                     }
                 }
+                AppEvent::ClipboardPaste(txt) =>
+                {
+                    let key_event = KeyEvent {
+                        code: KeyCode::Unknow(KeyCodeNative::Unknow),
+                        state: KeyState::Down,
+                        modifiers: self.state.key_modifiers,
+                        repeat: ButtonRepeat::NotRepeated,
+                        key: Key::Text(txt.clone().into()),
+                        location: KeyLocation::Unknow,
+                        text: Some(txt.into()),
+                    };
+                    let _ = self.send_event(AppEvent::Key(key_event));
+                }
+                _ =>
+                {}
             }
-            AppEvent::ClipboardPaste(txt) =>
-            {
-                let key_event = KeyEvent {
-                    code: KeyCode::Unknow(KeyCodeNative::Unknow),
-                    state: KeyState::Down,
-                    modifiers: self.state.key_modifiers,
-                    repeat: ButtonRepeat::NotRepeated,
-                    key: Key::Text(txt.clone().into()),
-                    location: KeyLocation::Unknow,
-                    text: Some(txt.into()),
-                };
-                let _ = self.send_event(AppEvent::Key(key_event));
-            }
-            _ =>
-            {}
-        } }
+        }
     }
 
     fn app<F, O>(&mut self, active: &WinitEventLoopActive, f: F) -> O
