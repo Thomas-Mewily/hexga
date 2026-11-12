@@ -441,7 +441,7 @@ where
 
 impl<'a, Q, K, V, Gen, S> TryGet<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    Q: ?Sized + Clone,
+    Q: Clone,
     K: Clone + Borrow<Q>,
     Gen: GenerationalIndex,
     S: Get<&'a Q, Output = GenIDOf<V, Gen>>,
@@ -557,7 +557,7 @@ where
 
 impl<'a, Q, K, V, Gen, S> TryGetMut<&'a Q> for GenMapOf<K, V, Gen, S>
 where
-    Q: ?Sized + Clone,
+    Q: Clone,
     K: Clone + Borrow<Q>,
     Gen: GenerationalIndex,
     S: Get<&'a Q, Output = GenIDOf<V, Gen>>,

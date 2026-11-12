@@ -28,7 +28,7 @@ impl<T> Hash for StableSetID<T>
 }
 impl<T> PartialOrd for StableSetID<T>
 {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { self.idx.partial_cmp(&other.idx) }
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { Some(self.cmp(other)) }
 }
 impl<T> Ord for StableSetID<T>
 {

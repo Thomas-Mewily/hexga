@@ -174,7 +174,7 @@ impl<T, Gen: GenerationalIndex> Ord for GenIDOf<T, Gen>
 }
 impl<T, Gen: GenerationalIndex> PartialOrd for GenIDOf<T, Gen>
 {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { self.untyped.partial_cmp(&other.untyped) }
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { Some(self.cmp(other)) }
 }
 impl<T, Gen: GenerationalIndex> Hash for GenIDOf<T, Gen>
 {

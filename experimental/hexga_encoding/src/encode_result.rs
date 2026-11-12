@@ -260,7 +260,7 @@ impl EncodeError
         })
     }
 
-    pub fn load_unsupported_extension<T: Load + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
+    pub fn load_unsupported_extension<T: Load>(got: impl Into<Option<CowExtensionStatic>>) -> Self
     {
         Self::Extension(EncodeErrorExtension {
             //name: std::any::type_name::<T>().to_owned(),

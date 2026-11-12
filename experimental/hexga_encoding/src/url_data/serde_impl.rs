@@ -15,7 +15,7 @@ pub trait UrlDeserializer<'de>: Deserializer<'de>
         T::from_bin_url_or_bytes(&url, "").map_err(serde::de::Error::custom)
     }
 }
-impl<'de, S> UrlDeserializer<'de> for S where S: Deserializer<'de> + ?Sized {}
+impl<'de, S> UrlDeserializer<'de> for S where S: Deserializer<'de> {}
 
 pub trait UrlSerializer: Serializer
 {

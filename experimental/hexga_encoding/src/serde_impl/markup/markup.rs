@@ -103,6 +103,15 @@ impl Display for FormatMarkup
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self) }
 }
+impl<'a> core::str::FromStr for FormatMarkup
+{
+    type Err = ();
+
+    fn from_str(s: &str) -> v1::Result<Self, Self::Err> {
+        Self::try_from(s)
+    }
+}
+
 impl<'a> TryFrom<&'a str> for FormatMarkup
 {
     type Error = ();
@@ -317,6 +326,15 @@ impl Display for AnyFormat
         }
     }
 }
+impl<'a> core::str::FromStr for AnyFormat
+{
+    type Err = ();
+
+    fn from_str(s: &str) -> v1::Result<Self, Self::Err> {
+        Self::try_from(s)
+    }
+}
+
 impl<'a> TryFrom<&'a str> for AnyFormat
 {
     type Error = ();
