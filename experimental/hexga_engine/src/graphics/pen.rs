@@ -3,6 +3,15 @@ use super::*;
 #[derive(Clone, Copy)]
 pub struct Pen;
 
+impl Pen
+{
+    pub fn set_background_color(&mut self, color: Color) -> &mut Self
+    {
+        GRAPHICS.get_mut().background_color = color;
+        self
+    }
+}
+
 impl SingletonEmptyStruct for Pen
 {
     fn is_init() -> bool { GRAPHICS.try_get_mut().is_ok() }

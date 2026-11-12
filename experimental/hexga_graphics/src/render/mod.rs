@@ -25,8 +25,16 @@ pub struct ImmediateRenderBuilder<const N: usize = 3>
 
 impl BuilderMesh for ImmediateRenderBuilder
 {
-    fn extend(&mut self, vertex: impl IntoIterator<Item = VertexOf>, index: impl IntoIterator<Item = VertexIndex>) { self.big_mesh.extend(vertex, index); }
-    fn geometry(&mut self, vertex: &[VertexOf<3>], index: &[VertexIndex]) { self.big_mesh.geometry(vertex, index); }
+    fn extend(&mut self, vertex: impl IntoIterator<Item = VertexOf>, index: impl IntoIterator<Item = VertexIndex>)
+    {
+        self.big_mesh.extend(vertex, index);
+        self.update_last_draw_call();
+    }
+    fn geometry(&mut self, vertex: &[VertexOf<3>], index: &[VertexIndex])
+    {
+        self.big_mesh.geometry(vertex, index);
+        self.update_last_draw_call();
+    }
 }
 
 impl GetMatrix<float, 4, 4> for ImmediateRenderBuilder
@@ -161,6 +169,7 @@ impl DrawCallBuilder for ImmediateRenderBuilder
 {
     fn set_param(&mut self, param: DrawParam)
     {
+        *self.params.last_mut() = param.clone();
         if self.draw_call.param == param
         {
             return;
@@ -468,5 +477,53 @@ pub trait DrawParamAttribute: GetCamera + SetCamera + GetPosition + SetPosition 
         self.set_scissor(param.scissor);
         self.set_texture(param.texture);
         self
+    }
+}
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+
+    #[test]
+    fn geometry_updates_draw_ranges()
+    {
+        let mut builder = ImmediateRenderBuilder::default();
+        builder.geometry(&[Vertex::new(); 4], &[0, 1, 2, 0, 2, 3]);
+        builder.extend([Vertex::new(); 3], [0, 1, 2]);
+
+        let DrawGeometry::Immediate(geometry) = builder.draw_call.last().geometry;
+        assert_eq!(geometry.vertices.start, 0);
+        assert_eq!(geometry.vertices.end, 7);
+        assert_eq!(geometry.indices.start, 0);
+        assert_eq!(geometry.indices.end, 9);
+        assert_eq!(builder.big_mesh.indices(), &[0, 1, 2, 0, 2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn parameter_changes_preserve_state_and_split_draw_calls()
+    {
+        let mut builder = ImmediateRenderBuilder::default();
+        let viewport = Viewport { area: vec2(640., 480.).to_rect(), ..Default::default() };
+        let scissor = Vec2i::new(320, 240).to_rect();
+        builder.set_viewport(viewport);
+        builder.set_scissor(scissor);
+        builder.geometry(&[Vertex::new(); 3], &[0, 1, 2]);
+        builder.set_camera(Camera::CAMERA_2D);
+        builder.geometry(&[Vertex::new(); 3], &[0, 1, 2]);
+
+        assert_eq!(builder.viewport(), viewport);
+        assert_eq!(builder.scissor(), scissor);
+        assert_eq!(builder.draw_call.len(), 2);
+        let calls: Vec<_> = builder.draw_call.iter().collect();
+        assert_eq!(calls[0].viewport, viewport);
+        assert_eq!(calls[1].viewport, viewport);
+        assert_eq!(calls[1].scissor, scissor);
+        assert_eq!(calls[1].camera, Camera::CAMERA_2D);
+        let DrawGeometry::Immediate(geometry) = calls[1].geometry;
+        assert_eq!(geometry.vertices.start, 3);
+        assert_eq!(geometry.vertices.end, 6);
+        assert_eq!(geometry.indices.start, 3);
+        assert_eq!(geometry.indices.end, 6);
     }
 }

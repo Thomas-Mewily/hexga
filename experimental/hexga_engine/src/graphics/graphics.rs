@@ -5,6 +5,7 @@ use super::*;
 #[derive(Debug)]
 pub struct Graphics
 {
+    pub(crate) background_color: Color,
     pub(crate) immediate: ImmediateRenderBuilder,
     pub(crate) immediate_mesh: Option<Mesh>,
 
@@ -155,6 +156,7 @@ impl Graphics
 
         Graphics {
             pipeline,
+            background_color: Color::WHITE,
             immediate: ___(),
             immediate_mesh: None,
             white_pixel: None,
@@ -164,7 +166,22 @@ impl Graphics
         }
     }
 
-    pub(crate) fn begin_draw(&mut self) {}
+    pub(crate) fn begin_draw(&mut self)
+    {
+        self.immediate.big_mesh.clear();
+        self.immediate.draw_call.clear();
+        self.immediate.params.clear();
+
+        if let Ok(mut window) = WINDOW.try_get_mut()
+        {
+            if let Some(surface) = window.surface()
+            {
+                let area = surface.size().to_rect();
+                self.immediate.set_viewport(Viewport { area: area.to_float(), ..Default::default() });
+                self.immediate.set_scissor(area);
+            }
+        }
+    }
 
     pub(crate) fn end_draw(&mut self)
     {
@@ -196,9 +213,6 @@ impl Graphics
 
         let texture_view = surface_texture.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-        // Todo: expose it in a field
-        let background_color = Some(Color::WHITE);
-
         let mut encoder = Gpu.device().create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         {
@@ -208,7 +222,7 @@ impl Graphics
                     view: &texture_view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(background_color.unwrap_or_default().convert()),
+                        load: wgpu::LoadOp::Clear(self.background_color.convert()),
                         store: wgpu::StoreOp::Store,
                     },
                 })],
@@ -218,7 +232,6 @@ impl Graphics
             });
 
             rpass.set_pipeline(&self.pipeline);
-            rpass.set_bind_group(0, &self.camera_bind_group, &[]);
 
             if !self.immediate.big_mesh.is_empty()
             {
@@ -241,11 +254,6 @@ impl Graphics
                     {
                         continue;
                     }
-
-                    // Todo: use:
-                    //self.camera_buffer.reset() // + remove some constraint
-                    self.camera_buffer.write(0..1).update(&[dc.param.camera.matrix()]);
-                    //Gpu.queue().write_buffer(&self.camera_buffer.wgpu_buffer(), 0, unsafe { bit::try_transmute_slice_unchecked(camera) }.unwrap() );
 
                     /*
                     let viewport : Rect2i = viewport.cast_into();
@@ -297,7 +305,7 @@ impl Graphics
                             rpass.set_index_buffer(indices.wgpu_slice(im.indices), VertexIndex::INDEX_FORMAT);
                             //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
                             // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
-                            rpass.draw_indexed(0..((im.vertices.end - im.vertices.start) as _), -(im.vertices.start as i32), 0..1);
+                            rpass.draw_indexed(0..((im.indices.end - im.indices.start) as _), -(im.vertices.start as i32), 0..1);
                         }
                     }
                 }
