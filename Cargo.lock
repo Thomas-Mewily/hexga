@@ -1158,7 +1158,6 @@ dependencies = [
  "hexga_core",
  "hexga_encoding_derive",
  "hexga_io",
- "hexga_utils",
  "ron",
  "serde",
  "serde-xml-rs",

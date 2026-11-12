@@ -314,9 +314,8 @@ where
 
     fn event(&mut self, ev: AppEvent, ctx: &mut AppInternalEventLoop<'a>) -> Option<AppEvent>
     {
-        if let AppEvent::WindowResize(size) = &ev {
-            if let Ok(mut w) = WINDOW.try_get_mut() { w.configure_surface() }
-        };
+        if let AppEvent::WindowResize(size) = &ev
+            && let Ok(mut w) = WINDOW.try_get_mut() { w.configure_surface() };
 
         let Some(app) = &mut self.app
         else

@@ -713,11 +713,11 @@ where
         let mut assets = ASSET.get_mut();
         let manager: &mut AssetManagerIn<T, FS> = assets.manager_mut::<T, FS>();
 
-        if let Some(shared) = manager.values.get_mut(&path) { if let Some(asset) = shared.upgrade() {
+        if let Some(shared) = manager.values.get_mut(&path) && let Some(asset) = shared.upgrade() {
             // Asset was loaded again by someone else during init. Replace it
             *asset.get_mut().value_mut() = value;
             return Ok(asset);
-        } }
+        }
 
         let asset = Self {
             inner: Arc::new(RwLock::new(AssetValue {

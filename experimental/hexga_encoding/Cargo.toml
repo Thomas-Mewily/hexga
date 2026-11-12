@@ -32,7 +32,7 @@ print_io = ["hexga_io/print_io"]
 
 [dependencies]
 hexga_core = { workspace = true, features = ["std"] }
-hexga_utils.workspace = true
+#hexga_utils.workspace = true
 hexga_io.workspace = true
 
 serde = { version = "1.0.0", optional = true }

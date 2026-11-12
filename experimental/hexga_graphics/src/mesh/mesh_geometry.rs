@@ -41,11 +41,11 @@ impl<'a, T, const N: usize> IntoIterator for &'a Geometry<T, N>
 {
     type Item = <&'a [T; N] as IntoIterator>::Item;
     type IntoIter = <&'a [T; N] as IntoIterator>::IntoIter;
-    fn into_iter(self) -> Self::IntoIter { (&self.points).iter() }
+    fn into_iter(self) -> Self::IntoIter { self.points.iter() }
 }
 impl<'a, T, const N: usize> IntoIterator for &'a mut Geometry<T, N>
 {
     type Item = <&'a mut [T; N] as IntoIterator>::Item;
     type IntoIter = <&'a mut [T; N] as IntoIterator>::IntoIter;
-    fn into_iter(self) -> Self::IntoIter { (&mut self.points).iter_mut() }
+    fn into_iter(self) -> Self::IntoIter { self.points.iter_mut() }
 }
