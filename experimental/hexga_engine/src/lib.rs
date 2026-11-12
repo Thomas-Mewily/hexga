@@ -1,6 +1,6 @@
 #![allow(unused)]
 #![allow(dead_code)]
-
+#![recursion_limit = "256"]
 use hexga::prelude::*;
 use hexga_event_loop::{
     app::prelude::*,

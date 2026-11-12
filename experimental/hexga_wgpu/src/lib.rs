@@ -1,5 +1,6 @@
 //#![feature(once_cell_try_insert)]
 #![allow(unused)]
+#![recursion_limit = "256"]
 use hexga::bit;
 use hexga::prelude::*;
 use std::fmt::Debug;
