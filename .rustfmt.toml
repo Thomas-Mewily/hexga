@@ -2,7 +2,8 @@
 fn_single_line = true
 fn_params_layout = "Compressed"
 
-single_line_if_else_max_width = 128
+single_line_if_else_max_width = 64
+single_line_let_else_max_width = 64
 
 # Or be more specific:
 control_brace_style = "AlwaysNextLine"

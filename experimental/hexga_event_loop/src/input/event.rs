@@ -231,7 +231,14 @@ impl From<winit::event::KeyEvent> for KeyEvent
         let code = KeyCode::from(event.physical_key);
         let pressed = event.state.is_pressed();
 
-        let repeat = if event.repeat { KeyRepeat::Repeated } else { KeyRepeat::NotRepeated };
+        let repeat = if event.repeat
+        {
+            KeyRepeat::Repeated
+        }
+        else
+        {
+            KeyRepeat::NotRepeated
+        };
         let state = if pressed { KeyState::Down } else { KeyState::Up };
 
         KeyEvent {

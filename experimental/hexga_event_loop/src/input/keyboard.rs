@@ -27,8 +27,28 @@ impl Keyboard
     pub fn keys_repeated(&self) -> &KeyCodeManager { &self.key_repeated }
     pub fn keys_repeated_mut(&mut self) -> &mut KeyCodeManager { &mut self.key_repeated }
 
-    pub fn key_manager(&self, repeat: ButtonRepeat) -> &KeyCodeManager { if repeat.is_repeated() { &self.key_repeated } else { &self.key } }
-    pub fn key_manager_mut(&mut self, repeat: ButtonRepeat) -> &mut KeyCodeManager { if repeat.is_repeated() { &mut self.key_repeated } else { &mut self.key } }
+    pub fn key_manager(&self, repeat: ButtonRepeat) -> &KeyCodeManager
+    {
+        if repeat.is_repeated()
+        {
+            &self.key_repeated
+        }
+        else
+        {
+            &self.key
+        }
+    }
+    pub fn key_manager_mut(&mut self, repeat: ButtonRepeat) -> &mut KeyCodeManager
+    {
+        if repeat.is_repeated()
+        {
+            &mut self.key_repeated
+        }
+        else
+        {
+            &mut self.key
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Debug, Default)]

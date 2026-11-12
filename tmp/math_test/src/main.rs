@@ -76,12 +76,16 @@ fn img_test()
 {
     //let x = i32::
 
-    Image::from_fn_coef(
-        (1024, 1024),
-        |v| {
-            if (v - 0.5.splat2()).length() <= 0.5 { ColorU8::WHITE } else { ColorU8::BLACK }
-        },
-    )
+    Image::from_fn_coef((1024, 1024), |v| {
+        if (v - 0.5.splat2()).length() <= 0.5
+        {
+            ColorU8::WHITE
+        }
+        else
+        {
+            ColorU8::BLACK
+        }
+    })
     .save("./image_test.png")
     .unwrap();
 }

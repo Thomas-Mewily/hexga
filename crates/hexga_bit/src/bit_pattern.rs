@@ -254,7 +254,14 @@ pub unsafe fn try_transmute_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -
     }
     else if (size_of::<Dst>() != 0 && input_bytes.is_multiple_of(size_of::<Dst>())) || (size_of::<Dst>() == 0 && input_bytes == 0)
     {
-        let new_len = if size_of::<Dst>() != 0 { input_bytes / size_of::<Dst>() } else { 0 };
+        let new_len = if size_of::<Dst>() != 0
+        {
+            input_bytes / size_of::<Dst>()
+        }
+        else
+        {
+            0
+        };
         Ok(unsafe { core::slice::from_raw_parts(src.as_ptr() as *const Dst, new_len) })
     }
     else
@@ -350,7 +357,14 @@ pub unsafe fn try_transmute_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut 
     }
     else if (size_of::<Dst>() != 0 && input_bytes.is_multiple_of(size_of::<Dst>())) || (size_of::<Dst>() == 0 && input_bytes == 0)
     {
-        let new_len = if size_of::<Dst>() != 0 { input_bytes / size_of::<Dst>() } else { 0 };
+        let new_len = if size_of::<Dst>() != 0
+        {
+            input_bytes / size_of::<Dst>()
+        }
+        else
+        {
+            0
+        };
         Ok(unsafe { core::slice::from_raw_parts_mut(src.as_mut_ptr() as *mut Dst, new_len) })
     }
     else

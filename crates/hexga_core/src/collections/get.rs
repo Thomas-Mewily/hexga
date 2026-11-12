@@ -884,7 +884,14 @@ where
         // [Option<T>, N] to Option<[T;N]> (same for result)
         let r = self.get_disjoint_mut(keys);
 
-        if r.iter().any(|x| x.is_none()) { None } else { Some(r.map(|x| x.unwrap())) }
+        if r.iter().any(|x| x.is_none())
+        {
+            None
+        }
+        else
+        {
+            Some(r.map(|x| x.unwrap()))
+        }
     }
 }
 

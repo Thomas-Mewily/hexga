@@ -316,7 +316,17 @@ impl<T> Get<usize> for NonEmptyStack<T>
 {
     type Output = T;
     #[inline(always)]
-    fn get(&self, index: usize) -> Option<&Self::Output> { if index == self.len() - 1 { Some(&self.last) } else { self.stack.get(index) } }
+    fn get(&self, index: usize) -> Option<&Self::Output>
+    {
+        if index == self.len() - 1
+        {
+            Some(&self.last)
+        }
+        else
+        {
+            self.stack.get(index)
+        }
+    }
     #[inline(always)]
     unsafe fn get_unchecked(&self, index: usize) -> &Self::Output
     {

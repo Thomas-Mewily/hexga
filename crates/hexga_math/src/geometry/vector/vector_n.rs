@@ -438,7 +438,17 @@ where
         *self = self.normalized();
         self
     }
-    pub fn normalized(self) -> Self { if self.have_length() { self / Self::splat(self.length()) } else { Self::ZERO } }
+    pub fn normalized(self) -> Self
+    {
+        if self.have_length()
+        {
+            self / Self::splat(self.length())
+        }
+        else
+        {
+            Self::ZERO
+        }
+    }
 
     /// set the angle of the `(x, y)` axis
     pub fn set_angle(&mut self, angle: AngleOf<T>) -> &mut Self

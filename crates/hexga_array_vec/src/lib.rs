@@ -354,7 +354,17 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     }
 
     /// Removes and returns the element at position `index`, returning `None` if out of bounds.
-    pub fn try_remove(&mut self, index: usize) -> Option<T> { if index >= self.len() { None } else { self.drain(index..=index).next() } }
+    pub fn try_remove(&mut self, index: usize) -> Option<T>
+    {
+        if index >= self.len()
+        {
+            None
+        }
+        else
+        {
+            self.drain(index..=index).next()
+        }
+    }
 
     /// Insert `element` at position `index`.
     ///

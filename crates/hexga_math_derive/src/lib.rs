@@ -58,11 +58,16 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
     let has_non_exhaustive = input.attrs.iter().any(|a| a.path().is_ident("non_exhaustive"));
 
     // Detect const generic
-    let const_generic = input
-        .generics
-        .params
-        .iter()
-        .find_map(|p| if let GenericParam::Const(c) = p { Some(&c.ident) } else { None });
+    let const_generic = input.generics.params.iter().find_map(|p| {
+        if let GenericParam::Const(c) = p
+        {
+            Some(&c.ident)
+        }
+        else
+        {
+            None
+        }
+    });
 
     let dim = match (&input.fields, const_generic)
     {

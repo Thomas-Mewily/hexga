@@ -112,7 +112,15 @@ where
     where
         S: Serializer,
     {
-        if self.index.is_max() { None } else { Some((self.index, self.generation)) }.serialize(serializer)
+        if self.index.is_max()
+        {
+            None
+        }
+        else
+        {
+            Some((self.index, self.generation))
+        }
+        .serialize(serializer)
     }
 }
 

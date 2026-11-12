@@ -308,7 +308,14 @@ where
         }
 
         // it's not gray
-        let s = if l < R::HALF { delta / (max + min) } else { delta / (R::TWO - max - min) };
+        let s = if l < R::HALF
+        {
+            delta / (max + min)
+        }
+        else
+        {
+            delta / (R::TWO - max - min)
+        };
 
         // Hue
         let r2 = (((max - r) / R::SIX) + (delta / R::TWO)) / delta;
