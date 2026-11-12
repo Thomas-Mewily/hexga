@@ -45,7 +45,7 @@ pub trait UrlSerializer: Serializer
     }
 }
 
-impl<F> UrlSerializer for F where F: Serializer + ?Sized {}
+impl<F> UrlSerializer for F where F: Serializer {}
 
 pub(crate) struct BytesVisitor;
 
