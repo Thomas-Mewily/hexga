@@ -150,14 +150,14 @@ macro_rules! new_number
         );
 
         impl<T: Min> Min for $name<T> {
-            fn min_elementwise(self, other: Self) -> Self {
-                $name(self.0.min_elementwise(other.0))
+            fn min(self, other: Self) -> Self {
+                $name(self.0.min(other.0))
             }
         }
 
         impl<T: Max> Max for $name<T> {
-            fn max_elementwise(self, other: Self) -> Self {
-                $name(self.0.max_elementwise(other.0))
+            fn max(self, other: Self) -> Self {
+                $name(self.0.max(other.0))
             }
         }
 

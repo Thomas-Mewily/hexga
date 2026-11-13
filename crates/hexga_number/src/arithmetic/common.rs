@@ -1,12 +1,12 @@
 use super::*;
 
-// Most function are suffixed with `_elementwise` like min, max, clamp, because there are already defiend in [std::cmp::Ord] and I don't want to fully qualify them...
+// Most function are suffixed with `` like min, max, clamp, because there are already defiend in [std::cmp::Ord] and I don't want to fully qualify them...
 
 /// Max function in a component way.
 pub trait Max
 {
     /// Max function in a component way.
-    fn max_elementwise(self, other: Self) -> Self;
+    fn max(self, other: Self) -> Self;
 }
 
 /// Max function in a component way.
@@ -14,7 +14,7 @@ pub fn max<S>(a: S, b: S) -> S
 where
     S: Max,
 {
-    a.max_elementwise(b)
+    a.max(b)
 }
 
 map_on_integer!(
@@ -22,7 +22,7 @@ map_on_integer!(
     {
         impl Max for $type_name
         {
-            fn max_elementwise(self, other: Self) -> Self { Ord::max(self, other) }
+            fn max(self, other: Self) -> Self { Ord::max(self, other) }
         }
     }
 );
@@ -31,13 +31,13 @@ map_on_float!(
     {
         impl Max for $type_name
         {
-            fn max_elementwise(self, other: Self) -> Self { Self::max(self, other) }
+            fn max(self, other: Self) -> Self { Self::max(self, other) }
         }
     }
 );
 impl Max for bool
 {
-    fn max_elementwise(self, other: Self) -> Self { self | other }
+    fn max(self, other: Self) -> Self { self | other }
 }
 
 impl<S> Max for S
@@ -45,21 +45,21 @@ where
     S: MapInternWith,
     S::Item: Max,
 {
-    fn max_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Max::max_elementwise) }
+    fn max(self, other: Self) -> Self { self.map_with_intern(other, Max::max) }
 }
 
 /// Min function in a component way.
 pub trait Min
 {
     /// Min function in a component way.
-    fn min_elementwise(self, other: Self) -> Self;
+    fn min(self, other: Self) -> Self;
 }
 /// Min function in a component way.
 pub fn min<S>(a: S, b: S) -> S
 where
     S: Min,
 {
-    a.min_elementwise(b)
+    a.min(b)
 }
 
 map_on_integer!(
@@ -67,7 +67,7 @@ map_on_integer!(
     {
         impl Min for $type_name
         {
-            fn min_elementwise(self, other: Self) -> Self { Ord::min(self, other) }
+            fn min(self, other: Self) -> Self { Ord::min(self, other) }
         }
     }
 );
@@ -76,13 +76,13 @@ map_on_float!(
     {
         impl Min for $type_name
         {
-            fn min_elementwise(self, other: Self) -> Self { Self::min(self, other) }
+            fn min(self, other: Self) -> Self { Self::min(self, other) }
         }
     }
 );
 impl Min for bool
 {
-    fn min_elementwise(self, other: Self) -> Self { self & other }
+    fn min(self, other: Self) -> Self { self & other }
 }
 
 impl<S> Min for S
@@ -90,7 +90,7 @@ where
     S: MapInternWith,
     S::Item: Min,
 {
-    fn min_elementwise(self, other: Self) -> Self { self.map_with_intern(other, Min::min_elementwise) }
+    fn min(self, other: Self) -> Self { self.map_with_intern(other, Min::min) }
 }
 
 /// Clamp function in a component way
@@ -101,7 +101,7 @@ pub trait Clamp
     /// Clamp self between min_val and max_val (inclusive)
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self;
+    fn clamp(self, min_val: Self, max_val: Self) -> Self;
 }
 /// Clamp function in a component way
 ///
@@ -112,14 +112,14 @@ pub fn clamp<S>(value: S, min_val: S, max_val: S) -> S
 where
     S: Clamp,
 {
-    value.clamp_elementwise(min_val, max_val)
+    value.clamp(min_val, max_val)
 }
 
 impl<T> Clamp for T
 where
     T: Min + Max,
 {
-    fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self { self.max_elementwise(min_val).min_elementwise(max_val) }
+    fn clamp(self, min_val: Self, max_val: Self) -> Self { self.max(min_val).min(max_val) }
 }
 
 /// Clamp the value inside the `from` range, and linearly map it from `from` range to `to` range.
@@ -140,7 +140,7 @@ pub trait Remap : Sized
 impl<T> Remap for T where T: Arithmetic
 {
     fn remap(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self where Self: Clamp {
-        self.clamp_elementwise(from.start, from.end).remap_unchecked(from, to)
+        self.clamp(from.start, from.end).remap_unchecked(from, to)
     }
 
     fn remap_unchecked(self, from: Range<Self>, to: Range<Self>) -> Self {
@@ -391,7 +391,7 @@ macro_rules! impl_number_basic_trait {
         where
             Self: $crate::Max,
         {
-            $crate::Max::max_elementwise(self, other)
+            $crate::Max::max(self, other)
         }
 
         /// Min function in a component way
@@ -401,7 +401,7 @@ macro_rules! impl_number_basic_trait {
         where
             Self: $crate::Min,
         {
-            $crate::Min::min_elementwise(self, other)
+            $crate::Min::min(self, other)
         }
 
         /// Absolute value in a component way.
@@ -418,7 +418,7 @@ macro_rules! impl_number_basic_trait {
             $crate::Abs::abs(self)
         }
 
-        /// Mix function in a component way
+        /// Mix function in a component way. Same as [`Self::lerp`].
         ///
         /// The coef is clamped between `0.0..1.`
         ///
@@ -434,7 +434,7 @@ macro_rules! impl_number_basic_trait {
             $crate::Mix::mix(self, other, coef)
         }
 
-        /// Mix function in a component way
+        /// Mix function in a component way. Same as [`Self::mix_unchecked`].
         ///
         /// The coef is **not** clamped between `0.0..1.`
         ///
@@ -450,6 +450,28 @@ macro_rules! impl_number_basic_trait {
             $crate::Mix::mix_unchecked(self, other, coef)
         }
 
+        /// Lerp function in a component way. Same as [`Self::mix`].
+        ///
+        /// The coef is clamped between `0.0..1.`
+        ///
+        /// 0. => self,
+        /// 1. => dest.
+        ///
+        /// Can cause a panic for grid if the size mismatch
+        #[inline(always)]
+        fn lerp<C>(self, other: Self, coef: C) -> Self where Self: $crate::Lerp<C>, C: $crate::Floating { self.mix(other, coef) }
+
+        /// Lerp function in a component way. [`Self::mix_unchecked`].
+        ///
+        /// The coef is **not** clamped between `0.0..1.`
+        ///
+        /// 0. => self,
+        /// 1. => dest.
+        ///
+        /// Can cause a panic for grid if the size mismatch
+        #[inline(always)]
+        fn lerp_unchecked<C>(self, other: Self, coef: C) -> Self where Self: $crate::Lerp<C>, C: $crate::Floating { self.mix_unchecked(other, coef) }
+
         /// Clamp function in a component way
         ///
         /// Clamps self between min_val and max_val (inclusive)
@@ -459,7 +481,7 @@ macro_rules! impl_number_basic_trait {
         where
             Self: $crate::Clamp,
         {
-            $crate::Clamp::clamp_elementwise(self, min_val, max_val)
+            $crate::Clamp::clamp(self, min_val, max_val)
         }
     };
 }

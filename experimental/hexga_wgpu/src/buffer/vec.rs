@@ -231,7 +231,9 @@ where
 
     pub fn try_update_part(&mut self, offset: usize, data: &[T]) -> Result<(), ()>
     {
-        let elem_size = std::mem::size_of::<T>().max(1);
+        let elem_size = std::mem::size_of::<T>();
+        if elem_size <= 0 { return Ok(()); }
+        
         let required_len = offset.checked_add(data.len()).ok_or(())?;
 
         if required_len > self.capacity()
