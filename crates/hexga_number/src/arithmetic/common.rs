@@ -98,14 +98,14 @@ pub trait Clamp
 {
     /// Clamp function in a component way
     ///
-    /// Clamps self between min_val and max_val (inclusive)
+    /// Clamp self between min_val and max_val (inclusive)
     ///
     /// Can cause a panic for grid if the size mismatch
     fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self;
 }
 /// Clamp function in a component way
 ///
-/// Clamps self between min_val and max_val (inclusive)
+/// Clamp self between min_val and max_val (inclusive)
 ///
 /// Can cause a panic for grid if the size mismatch
 pub fn clamp<S>(value: S, min_val: S, max_val: S) -> S
@@ -122,12 +122,39 @@ where
     fn clamp_elementwise(self, min_val: Self, max_val: Self) -> Self { self.max_elementwise(min_val).min_elementwise(max_val) }
 }
 
-/// Mix function in a component way
+/// Clamp the value inside the `from` range, and linearly map it from `from` range to `to` range.
+pub fn remap<T>(value: T, from: std::ops::Range<T>, to: std::ops::Range<T>) -> T where T: Arithmetic + Clamp
+{
+    value.remap(from, to)
+}
+
+/// Remap a value inside a Range to another Range
+pub trait Remap : Sized
+{
+    /// Clamp the value inside the `from` range, and linearly map it from `from` range to `to` range.
+    fn remap(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self where Self: Clamp;
+
+    /// Linearly map the value from `from` range to `to` range.
+    fn remap_unchecked(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self;
+}
+impl<T> Remap for T where T: Arithmetic
+{
+    fn remap(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self where Self: Clamp {
+        self.clamp_elementwise(from.start, from.end).remap_unchecked(from, to)
+    }
+
+    fn remap_unchecked(self, from: Range<Self>, to: Range<Self>) -> Self {
+        to.start + (to.end - to.start) * ((self - from.start) / (from.end - from.start))
+    }
+}
+
+
+/// Mix function in a component way. Same as [`Lerp`]
 pub trait Mix<C /*= float*/>: Sized
 where
     C: Floating,
 {
-    /// Mix function in a component way
+    /// Mix function in a component way. Same as [`Lerp::lerp`].
     ///
     /// The coef is clamped between `0.0..1.`
     ///
@@ -137,7 +164,7 @@ where
     /// Can cause a panic for grid if the size mismatch
     fn mix(self, dest: Self, coef: C) -> Self { self.mix_unchecked(dest, coef.clamp_partial(zero(), one())) }
 
-    /// Mix function in a component way
+    /// Mix function in a component way. Same as [`Lerp::lerp_unchecked`].
     ///
     /// The coef is **not** clamped between `0.0..1.`
     ///
@@ -147,7 +174,36 @@ where
     /// Can cause a panic for grid if the size mismatch
     fn mix_unchecked(self, dest: Self, coef: C) -> Self;
 }
-/// Mix function in a component way
+
+/// Lerp function in a component way. Same as [`Mix`]
+pub trait Lerp<C> : Mix<C> where
+    C: Floating,
+{
+    /// Lerp function in a component way. Same as [`Mix::mix`].
+    ///
+    /// The coef is clamped between `0.0..1.`
+    ///
+    /// 0. => self,
+    /// 1. => dest.
+    ///
+    /// Can cause a panic for grid if the size mismatch
+    #[inline(always)]
+    fn lerp(self, dest: Self, coef: C) -> Self { self.mix(dest, coef) }
+
+    /// Lerp function in a component way. [`Mix::mix_unchecked`].
+    ///
+    /// The coef is **not** clamped between `0.0..1.`
+    ///
+    /// 0. => self,
+    /// 1. => dest.
+    ///
+    /// Can cause a panic for grid if the size mismatch
+    #[inline(always)]
+    fn lerp_unchecked(self, dest: Self, coef: C) -> Self { self.mix_unchecked(dest, coef) }
+}
+impl<T,C> Lerp<C> for T where T: Mix<C>, C: Floating {}
+
+/// Mix function in a component way. Same as [`Lerp::lerp`].
 ///
 /// The coef is clamped between `0.0..1.`
 ///
@@ -161,6 +217,22 @@ where
     F: Floating,
 {
     src.mix(dest, coef)
+}
+
+/// Lerp function in a component way. Same as [`Mix::mix`].
+///
+/// The coef is clamped between `0.0..1.`
+///
+/// 0. => self,
+/// 1. => dest.
+///
+/// Can cause a panic for grid if the size mismatch
+pub fn lerp<S, F>(src: S, dest: S, coef: F) -> S
+where
+    S: Lerp<F>,
+    F: Floating,
+{
+    src.lerp(dest, coef)
 }
 
 map_on_number_and_bool!(
