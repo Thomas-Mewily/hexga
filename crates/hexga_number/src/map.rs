@@ -3,22 +3,70 @@ use hexga_array::ArrayWithType;
 use super::*;
 use std::ops::RangeBounds;
 
-// Todo: Make 2 trait ? Map, MapWith ? Output type ?
-// + impl it for reference &Self ? (like iterator)
-
 /*
-pub trait Mappable
+/// Similar to [`Iterator::map`], but for container-like types that keep their shape.
+pub trait MapInternN : Sized
 {
     type Item;
+
+    /// Apply `f` to each item, producing a new container of the same type.
+    fn map_intern_elementwise<F, const N: usize>(f: F, this : [Self; N]) -> Self
+    where
+        F: FnMut([Self::Item; N]) -> Self::Item;
+
+    /// Apply `f` to each item, producing a new container of the same type.
+    fn map_intern<F>(self, mut f: F) -> Self where F: FnMut(Self::Item) -> Self::Item { Self::map_intern_elementwise(|[a]| f(a), [self]) }
+
+    /// Combine `self` and `other` elementwise with `f`.
+    fn map_intern_with<F>(self, other: Self, mut f: F) -> Self
+    where
+        F: FnMut(Self::Item, Self::Item) -> Self::Item { Self::map_intern_elementwise(|[a, b]| f(a,b), [self, other]) }
 }
 
-pub trait MapRefIntern : Mappable
+
+/// Similar to [`Iterator::map`]. Contrary to [`MapIntern`], it allows changing the item type.
+pub trait MapN : MapIntern
 {
-    type Item;
-    /// Apply `f` to each item, producing a new container of the same type.
-    fn map_intern<F>(&self, f: F) -> Self where F: FnMut(&Self::Item) -> Self::Item;
+    type WithType<R>: Map<Item = R>;
+
+    /// Apply `f` to each item, returning a container of the mapped values.
+    fn map_elementwise<F, R, const N: usize>(f: F, this : [Self; N]) -> Self::WithType<R>
+    where
+        F: FnMut([Self::Item; N]) -> R;
+
+    /// Apply `f` to each item, producing a new container of the mapped values.
+    fn map<F, R>(self, mut f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R { Self::map_elementwise(|[a]| f(a), [self]) }
+
+    /// Combine `self` and `other` elementwise with `f`, producing a new container
+    /// of the mapped values.
+    fn map_with<F, R>(self, other: Self, mut f: F) -> Self::WithType<R>
+    where
+        F: FnMut(Self::Item, Self::Item) -> R { Self::map_elementwise(|[a, b]| f(a,b), [self, other]) }
 }
 */
+
+impl<T,const M: usize> MapInternN for [T;M]
+{
+    type Item=T;
+    fn map_intern_elementwise<F, const N: usize>(mut f: F, this : [Self; N]) -> Self
+    where
+        F: FnMut([Self::Item; N]) -> Self::Item 
+    {
+        let this = core::mem::ManuallyDrop::new(this);
+
+        core::array::from_fn(|i| {
+            f(core::array::from_fn(|j| unsafe {
+                // SAFETY: `this` is ManuallyDrop, so its elements are never
+                // dropped by the compiler. We read `this[j][i]` exactly once for each (j, i) pair.
+                // The pointer is valid because `this` is a live ManuallyDrop<[Self; N]>.
+                core::ptr::read(&this[j][i])
+            }))
+        })
+    }
+
+
+}
+
 
 /// Similar to [`Iterator::map`], but for container-like types that keep their shape.
 pub trait MapIntern
