@@ -43,7 +43,6 @@ pub trait MapN : MapIntern
     where
         F: FnMut(Self::Item, Self::Item) -> R { Self::map_elementwise(|[a, b]| f(a,b), [self, other]) }
 }
-*/
 
 impl<T,const M: usize> MapInternN for [T;M]
 {
@@ -66,6 +65,7 @@ impl<T,const M: usize> MapInternN for [T;M]
 
 
 }
+*/
 
 
 /// Similar to [`Iterator::map`], but for container-like types that keep their shape.
