@@ -62,9 +62,58 @@ map_on_float!(
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Integrate<V,Time>(pub V, pub Time);
 
+/*
+// TODO impl it
+impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<V, Time>
+    where V: Lerp<C, V2, Output=V>, C: IntegrateProduct<Time>
+{
+    type Output = V;
+    fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
+
+    }
+}
+*/
+
+// https://youtu.be/LSNQuFEDOyQ *Lerp smoothing is broken* by Freya Holmér
+
+impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<V, Time>
+    where V: Lerp<C, V2, Output=V>, C: IntegrateProduct<Time>
+{
+    type Output = V;
+    fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
+        let Integrate(value, dt) = self;
+        value.lerp_unchecked(dest, coef.integrate_product(dt))
+    }
+}
+
+/*
+impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<&mut V, Time>
+    where V: Lerp<C, V2, Output=V>, C: IntegrateProduct<Time>
+{
+    type Output = ();
+    fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
+        let Integrate(value, dt) = self;
+        *value = (*value).lerp_unchecked(dest, coef.integrate_product(dt));
+        ()
+    }
+}
+*/
+//TODO impl it 
+impl<Time, V> MapIntern for  Integrate<V, Time>
+{
+    type Item=V;
+
+    fn map_intern<F>(mut self, mut f: F) -> Self
+    where
+        F: FnMut(Self::Item) -> Self::Item {
+        self.0 = f(self.0);
+        self
+    }
+}
+
 impl<Time, V> AddAssign<V> for Integrate<&mut V, Time>
 where
-    V: IntegrateRate<Time> + AddAssign<V>, Time: Copy,
+    V: IntegrateRate<Time> + AddAssign<V>, Time: Copy
 {
     fn add_assign(&mut self, rhs: V) {
         *self.0 += rhs.integrate_rate(self.1);
