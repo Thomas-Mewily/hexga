@@ -1,5 +1,23 @@
 use super::*;
 
+pub mod prelude
+{
+    pub use super::{
+        Matrix, 
+        Matrix1, Matrix2, Matrix3, Matrix4,
+        Mat1, Mat2, Mat3, Mat4,
+        Mat1i, Mat2i, Mat3i, Mat4i,
+        SquareMatrix
+
+    };
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    
+}
+
 /// 1x1 matrix
 pub type Matrix1<T> = SquareMatrix<T, 1>;
 /// 2x2 matrix

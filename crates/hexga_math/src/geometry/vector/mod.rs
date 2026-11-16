@@ -30,7 +30,13 @@ pub use typedef::*;
 pub mod prelude
 {
     pub use super::{
-        array_extension::*, typedef::*, vector_iter::IterIndex, vector_n::prelude::*, vector1::prelude::*, vector2::prelude::*, vector3::prelude::*,
+        typedef::*, vector_n::prelude::*, vector1::prelude::*, vector2::prelude::*, vector3::prelude::*,
         vector4::prelude::*, xyzw::*,
     };
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::{array_extension::*, vector_iter::IterIndex};
 }

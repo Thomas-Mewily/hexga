@@ -192,5 +192,11 @@ where
 
 pub(crate) mod prelude
 {
-    pub use super::{SplatCoord3, Vec3, Vec3U, Vec3b, Vec3i, Vector3, vec3, vec3b, vec3i, vec3u, vector3};
+    pub use super::{Vec3, Vec3U, Vec3b, Vec3i, Vector3, vec3, vec3b, vec3i, vec3u, vector3};
+    pub use super::traits::*;
+}
+
+pub(crate) mod traits
+{
+    pub use super::{SplatCoord3};
 }

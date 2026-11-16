@@ -1,3 +1,1 @@
-use super::*;
-
-pub use hexga_array::prelude::*;
+pub use hexga_array::*;

@@ -82,10 +82,12 @@ pub mod array;
 //pub mod bijection;
 //pub mod convert;
 pub mod derive;
-mod geometry;
 pub mod map_on;
+pub mod integration;
 //pub mod range;
 pub mod unit;
+
+mod geometry;
 pub use geometry::*;
 
 // For macro
@@ -97,18 +99,34 @@ pub use hexga_core;
 #[doc(hidden)]
 pub use serde;
 
-use prelude::*;
+use crate::prelude::*;
 pub mod prelude
 {
-    pub use super::array::*;
+    pub use super::array::prelude::*;
     //pub use super::bijection::prelude::*;
     //pub use super::convert::*;
     pub use super::derive::prelude::*;
-    pub use super::geometry::prelude::*;
-    pub use super::map_on::*;
+    pub use super::geometry::_prelude::*;
+    pub use super::map_on::prelude::*;
+    pub use super::integration::prelude::*;
     pub use hexga_number::prelude::*;
     //pub use super::range::*;
     pub use super::typedef::*;
     pub use super::unit::*;
     pub use super::utils::prelude::*;
+    
+    pub use super::traits::*;
+}
+
+pub mod traits
+{
+    pub use super::array::traits::*;
+    //pub use super::bijection::traits::*;
+    //pub use super::convert::*;
+    pub use super::derive::traits::*;
+    pub use super::geometry::_traits::*;
+    pub use super::integration::traits::*;
+    pub use hexga_number::traits::*;
+    //pub use super::range::*;
+    pub use super::utils::traits::*;
 }

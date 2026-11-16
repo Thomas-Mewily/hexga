@@ -8,5 +8,11 @@ use default::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{default::*, time::*};
+    pub use super::{default::*, time::{Duration, DurationOf, Time, TimeOf}};
+    pub use super::traits::*;
+}
+
+pub(crate) mod traits
+{
+    pub use super::{default::*, time::{ToTime, ToTimeComposite, TimeNow}};
 }

@@ -8,5 +8,10 @@ pub use extension::*;
 
 pub mod prelude
 {
-    pub use super::*;
+    pub use super::traits::*;
+}
+
+pub mod traits 
+{
+    pub use super::{array::*, extension::*};
 }

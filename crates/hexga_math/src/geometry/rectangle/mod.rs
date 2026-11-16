@@ -44,7 +44,13 @@ pub use rectangle::*;
 pub mod prelude
 {
     pub use super::{
-        rectangle::{Crop, GetRectangle, GetSize, Rectangle, SetRectangle, SetSize},
+        rectangle::Rectangle,
         typedef::*,
     };
+    pub use super::*;
+}
+
+pub mod traits
+{
+    pub use super::rectangle::{Crop, GetRectangle, GetSize, SetRectangle, SetSize};
 }
