@@ -260,7 +260,7 @@ impl CursorIcon
     /*
     /// # Examples
     ///
-    /// ```no_run
+    /// ```ignore
     /// use cursor_icon::CursorIcon;
     /// use wayland_cursor::CursorTheme;
     ///

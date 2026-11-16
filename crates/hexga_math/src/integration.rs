@@ -17,7 +17,7 @@ pub trait IntegrateRate<F>
 
     /// Time integration: replaces `a += x` with a dt-scaled step.
     ///
-    /// ```
+    /// ```ignore
     /// a += x;
     /// // replace it by
     /// a += x.integrate_rate(dt);
@@ -32,7 +32,7 @@ pub trait IntegrateProduct<F>
 
     /// Time integration: replaces `a *= x` with a dt-scaled step.
     ///
-    /// ```
+    /// ```ignore
     /// a *= x;
     /// // replace it by
     /// a *= x.integrate_product(dt);

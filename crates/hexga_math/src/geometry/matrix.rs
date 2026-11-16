@@ -5,10 +5,10 @@ pub mod prelude
     pub use super::{
         Matrix, 
         Matrix1, Matrix2, Matrix3, Matrix4,
+        Mat,
         Mat1, Mat2, Mat3, Mat4,
         Mat1i, Mat2i, Mat3i, Mat4i,
         SquareMatrix
-
     };
     pub use super::traits::*;
 }
