@@ -45,7 +45,7 @@ where
     S: MapInternWith,
     S::Item: Max,
 {
-    fn max(self, other: Self) -> Self { self.map_with_intern(other, Max::max) }
+    fn max(self, other: Self) -> Self { self.map_intern_with(other, Max::max) }
 }
 
 /// Min function in a component way.
@@ -90,7 +90,35 @@ where
     S: MapInternWith,
     S::Item: Min,
 {
-    fn min(self, other: Self) -> Self { self.map_with_intern(other, Min::min) }
+    fn min(self, other: Self) -> Self { self.map_intern_with(other, Min::min) }
+}
+
+/// Clamp function in a component way between Zero..=One
+pub trait ClampUnit : Clamp + Zero + One
+{
+    /// Clamp function in a component way
+    ///
+    /// Clamp self between Zero..=One (inclusive)
+    ///
+    /// Can cause a panic for grid if the size mismatch
+    fn clamp_unit(self) -> Self;
+}
+impl<C> ClampUnit for C where C: Clamp + Zero + One
+{
+    fn clamp_unit(self) -> Self {
+        self.clamp(zero(), one())
+    }
+}
+/// Clamp function in a component way
+///
+/// Clamp self between Zero..=One (inclusive)
+///
+/// Can cause a panic for grid if the size mismatch
+pub fn clamp_unit<S>(value: S) -> S
+where
+    S: ClampUnit,
+{
+    value.clamp_unit()
 }
 
 /// Clamp function in a component way
@@ -178,10 +206,10 @@ where
 */
 
 /// Lerp function in a component way. Same as [`Mix`]
-pub trait Lerp<C,D=Self> : Sized //: Mix<C> 
-where
-    C: Floating,
+pub trait Lerp<C,D=Self> : Sized //: Mix<C> ,
 {
+    type Output;
+
     /// Lerp function in a component way.
     ///
     /// The coef is clamped between `0.0..1.`
@@ -190,7 +218,7 @@ where
     /// 1. => dest.
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn lerp(self, dest: D, coef: C) -> Self { self.lerp_unchecked(dest, coef.clamp_partial(zero(), one())) }
+    fn lerp(self, dest: D, coef: C) -> Self::Output where C: ClampUnit { self.lerp_unchecked(dest, coef.clamp(zero(), one())) }
 
     /// Lerp function in a component way. [`Lerp::lerp_unchecked`].
     ///
@@ -200,7 +228,7 @@ where
     /// 1. => dest.
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn lerp_unchecked(self, dest: D, coef: C) -> Self;
+    fn lerp_unchecked(self, dest: D, coef: C) -> Self::Output;
 }
 
 //impl<T,C> Lerp<C> for T where T: Mix<C>, C: Floating {}
@@ -231,7 +259,7 @@ where
 /// 1. => dest.
 ///
 /// Can cause a panic for grid if the size mismatch
-pub fn lerp<S, F>(src: S, dest: S, coef: F) -> S
+pub fn lerp<S, F>(src: S, dest: S, coef: F) -> S::Output
 where
     S: Lerp<F>,
     F: Floating,
@@ -244,6 +272,7 @@ map_on_number_and_bool!(
     {
         impl<F> Lerp<F> for $type_name where F: Floating
         {
+            type Output = Self;
             fn lerp_unchecked(self, dest: Self, coef: F) -> Self
             {
                 let src  = F::cast_from(self);
@@ -257,10 +286,11 @@ map_on_number_and_bool!(
 impl<S, F> Lerp<F> for S
 where
     S: MapInternWith,
-    S::Item: Lerp<F>,
-    F: Floating,
+    S::Item: Lerp<F, Output = S::Item>,
+    F: Copy,
 {
-    fn lerp_unchecked(self, dest: Self, coef: F) -> Self { self.map_with_intern(dest, |a, b| a.lerp_unchecked(b, coef)) }
+    type Output = S;
+    fn lerp_unchecked(self, dest: Self, coef: F) -> Self { self.map_intern_with(dest, |a, b| a.lerp_unchecked(b, coef)) }
 }
 
 /// Abs function in a component way
@@ -430,7 +460,7 @@ macro_rules! impl_number_basic_trait {
         /// 1. => dest.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn lerp<C>(self, other: Self, coef: C) -> Self
+        pub fn lerp<C>(self, other: Self, coef: C) -> <Self as Lerp<C>>::Output
         where
             Self: $crate::Lerp<C>,
             C: $crate::Floating,
@@ -446,7 +476,7 @@ macro_rules! impl_number_basic_trait {
         /// 1. => dest.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn lerp_unchecked<C>(self, other: Self, coef: C) -> Self
+        pub fn lerp_unchecked<C>(self, other: Self, coef: C) -> <Self as Lerp<C>>::Output
         where
             Self: $crate::Lerp<C>,
             C: $crate::Floating,
