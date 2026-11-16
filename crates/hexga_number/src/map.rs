@@ -3,9 +3,8 @@ use hexga_array::ArrayWithType;
 use super::*;
 use std::ops::RangeBounds;
 
-/*
 /// Similar to [`Iterator::map`], but for container-like types that keep their shape.
-pub trait MapInternN : Sized
+pub trait MapIntern : Sized
 {
     type Item;
 
@@ -23,16 +22,15 @@ pub trait MapInternN : Sized
         F: FnMut(Self::Item, Self::Item) -> Self::Item { Self::map_intern_elementwise(|[a, b]| f(a,b), [self, other]) }
 }
 
-
 /// Similar to [`Iterator::map`]. Contrary to [`MapIntern`], it allows changing the item type.
-pub trait MapN : MapIntern
+pub trait Map : MapIntern
 {
     type WithType<R>: Map<Item = R>;
 
     /// Apply `f` to each item, returning a container of the mapped values.
-    fn map_elementwise<F, R, const N: usize>(f: F, this : [Self; N]) -> Self::WithType<R>
+    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
     where
-        F: FnMut([Self::Item; N]) -> R;
+        F: FnMut([Self::Item; M]) -> R;
 
     /// Apply `f` to each item, producing a new container of the mapped values.
     fn map<F, R>(self, mut f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R { Self::map_elementwise(|[a]| f(a), [self]) }
@@ -44,13 +42,24 @@ pub trait MapN : MapIntern
         F: FnMut(Self::Item, Self::Item) -> R { Self::map_elementwise(|[a, b]| f(a,b), [self, other]) }
 }
 
-impl<T,const M: usize> MapInternN for [T;M]
+impl<T,const N: usize> MapIntern for [T;N]
 {
     type Item=T;
-    fn map_intern_elementwise<F, const N: usize>(mut f: F, this : [Self; N]) -> Self
+    fn map_intern_elementwise<F, const M: usize>(mut f: F, this : [Self; M]) -> Self
     where
-        F: FnMut([Self::Item; N]) -> Self::Item 
+        F: FnMut([Self::Item; M]) -> Self::Item 
     {
+        Self::map_elementwise(f, this)
+    }
+}
+impl<T,const N: usize> Map for [T;N]
+{
+    type WithType<R> = [R;N];
+
+    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
+    where
+        F: FnMut([Self::Item; M]) -> R {
+        
         let this = core::mem::ManuallyDrop::new(this);
 
         core::array::from_fn(|i| {
@@ -62,12 +71,34 @@ impl<T,const M: usize> MapInternN for [T;M]
             }))
         })
     }
-
-
 }
-*/
+
+impl<T> MapIntern for Vec<T>
+{
+    type Item=T;
+    fn map_intern_elementwise<F, const M: usize>(mut f: F, this : [Self; M]) -> Self
+    where
+        F: FnMut([Self::Item; M]) -> Self::Item 
+    {
+        Self::map_elementwise(f, this)
+    }
+}
+impl<T> Map for Vec<T>
+{
+    type WithType<R> = Vec<R>;
+
+    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
+    where
+        F: FnMut([Self::Item; M]) -> R {
+
+        let mut len = 0;
+        let mut iters = this.map(|v| { len = max(v.len(), 0); v.into_iter() });
+        Vec::from_fn(len, |_| f(core::array::from_fn(|i| iters[i].next().unwrap())))
+    }
+}
 
 
+/* 
 /// Similar to [`Iterator::map`], but for container-like types that keep their shape.
 pub trait MapIntern
 {
@@ -77,6 +108,7 @@ pub trait MapIntern
     where
         F: FnMut(Self::Item) -> Self::Item;
 }
+
 
 /// Elementwise mapping of two containers of the same type.
 pub trait MapInternWith: MapIntern
@@ -206,3 +238,4 @@ impl<T> MapWith for Vec<T>
         self.into_iter().zip(other).map(|(a, b)| f(a, b)).collect()
     }
 }
+*/

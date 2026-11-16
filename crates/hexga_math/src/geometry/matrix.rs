@@ -698,11 +698,11 @@ where
 impl<T, const ROW: usize, const COL: usize> MapIntern for Matrix<T, ROW, COL>
 {
     type Item = T;
-    fn map_intern<F>(self, f: F) -> Self
+
+    fn map_intern_elementwise<F, const N: usize>(f: F, this : [Self; N]) -> Self
     where
-        F: FnMut(Self::Item) -> Self::Item,
-    {
-        self.map(f)
+        F: FnMut([Self::Item; N]) -> Self::Item {
+        Self::map_elementwise(f, this)
     }
 }
 impl<T, const ROW: usize, const COL: usize> MapInternWith for Matrix<T, ROW, COL>
@@ -717,6 +717,22 @@ impl<T, const ROW: usize, const COL: usize> MapInternWith for Matrix<T, ROW, COL
 impl<T, const ROW: usize, const COL: usize> Map for Matrix<T, ROW, COL>
 {
     type WithType<R> = Matrix<R, ROW, COL>;
+
+    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
+    where
+        F: FnMut([Self::Item; M]) -> R
+    {
+        use std::array;
+
+        let mut it= this.map(|m| m.columns.into_iter());
+
+        let cols = array::from_fn(|_| {
+            let cols = array::from_fn(|i| it[i].next().unwrap());
+            <Vector<T, ROW> as Map>::map_elementwise(&mut f, cols)
+        });
+TMP
+        Matrix::<R, ROW, COL>::from_col(Vector::from_array(cols))
+    }
 
     fn map<R, F>(self, mut f: F) -> Self::WithType<R>
     where
