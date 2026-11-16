@@ -34,7 +34,7 @@ pub trait MapIntern
 pub trait MapInternWith: MapIntern
 {
     /// Combine `self` and `other` elementwise with `f`.
-    fn map_with_intern<F>(self, other: Self, f: F) -> Self
+    fn map_intern_with<F>(self, other: Self, f: F) -> Self
     where
         F: FnMut(Self::Item, Self::Item) -> Self::Item;
 }
@@ -88,7 +88,7 @@ impl<T, const N: usize> MapIntern for [T; N]
 impl<T, const N: usize> MapInternWith for [T; N]
 {
     #[inline(always)]
-    fn map_with_intern<F>(self, other: Self, f: F) -> Self
+    fn map_intern_with<F>(self, other: Self, f: F) -> Self
     where
         F: FnMut(Self::Item, Self::Item) -> Self::Item,
     {
@@ -131,7 +131,7 @@ impl<T> MapIntern for Vec<T>
 }
 impl<T> MapInternWith for Vec<T>
 {
-    fn map_with_intern<F>(self, other: Self, f: F) -> Self
+    fn map_intern_with<F>(self, other: Self, f: F) -> Self
     where
         F: FnMut(Self::Item, Self::Item) -> Self::Item,
     {

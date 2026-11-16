@@ -707,7 +707,7 @@ impl<T, const ROW: usize, const COL: usize> MapIntern for Matrix<T, ROW, COL>
 }
 impl<T, const ROW: usize, const COL: usize> MapInternWith for Matrix<T, ROW, COL>
 {
-    fn map_with_intern<F>(self, other: Self, f: F) -> Self
+    fn map_intern_with<F>(self, other: Self, f: F) -> Self
     where
         F: FnMut(Self::Item, Self::Item) -> Self::Item,
     {

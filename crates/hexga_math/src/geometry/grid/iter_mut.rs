@@ -120,7 +120,7 @@ where
     Idx: Integer,
     T: Clone,
 {
-    fn map_with_intern<F>(mut self, mut other: Self, mut f: F) -> Self
+    fn map_intern_with<F>(mut self, mut other: Self, mut f: F) -> Self
     where
         F: FnMut(Self::Item, Self::Item) -> Self::Item,
     {

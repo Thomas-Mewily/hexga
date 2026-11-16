@@ -103,12 +103,12 @@ impl<T, Idx, const N: usize> MapInternWith for GridOf<T, Idx, N>
 where
     Idx: Integer,
 {
-    fn map_with_intern<F>(mut self, other: Self, f: F) -> Self
+    fn map_intern_with<F>(mut self, other: Self, f: F) -> Self
     where
         F: FnMut(Self::Item, Self::Item) -> Self::Item,
     {
         assert_eq!(self.size(), other.size(), "size mismatch");
-        self.values = self.values.map_with_intern(other.values, f);
+        self.values = self.values.map_intern_with(other.values, f);
         self
     }
 }

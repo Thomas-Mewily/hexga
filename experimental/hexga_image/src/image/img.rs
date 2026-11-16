@@ -554,12 +554,12 @@ impl<T, Idx> MapInternWith for ImageBaseOf<T, Idx>
 where
     Idx: Integer,
 {
-    fn map_with_intern<F>(mut self, other: Self, f: F) -> Self
+    fn map_intern_with<F>(mut self, other: Self, f: F) -> Self
     where
         F: FnMut(Self::Item, Self::Item) -> Self::Item,
     {
         assert_eq!(self.size(), other.size(), "size mismatch");
-        self.pixels = self.pixels.map_with_intern(other.pixels, f);
+        self.pixels = self.pixels.map_intern_with(other.pixels, f);
         self
     }
 }

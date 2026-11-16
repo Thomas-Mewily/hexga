@@ -121,11 +121,11 @@ impl<C, B> MapInternWith for Bijection<C, B>
 where
     C: MapInternWith,
 {
-    fn map_with_intern<F>(mut self, other: Self, f: F) -> Self
+    fn map_intern_with<F>(mut self, other: Self, f: F) -> Self
     where
         F: FnMut(Self::Item, Self::Item) -> Self::Item,
     {
-        self.values = self.values.map_with_intern(other.values, f);
+        self.values = self.values.map_intern_with(other.values, f);
         self
     }
 }

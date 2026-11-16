@@ -259,9 +259,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     }
                     impl<T, const N : usize> #crate_ident::MapInternWith for #current_name<T,N>
                     {
-                        fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
+                        fn map_intern_with<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
                         {
-                            Self::from_array(<[T;N]>::from(self).map_with_intern(other.into(), f))
+                            Self::from_array(<[T;N]>::from(self).map_intern_with(other.into(), f))
                         }
                     }
                     impl<T, const N : usize> #crate_ident::Map for #current_name<T,N>
@@ -649,9 +649,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     }
                     impl<T> #crate_ident::MapInternWith for #current_name<T>
                     {
-                        fn map_with_intern<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
+                        fn map_intern_with<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
                         {
-                            Self::from_array(<[T;#dim]>::from(self).map_with_intern(other.into(), f))
+                            Self::from_array(<[T;#dim]>::from(self).map_intern_with(other.into(), f))
                         }
                     }
                     impl<T> #crate_ident::Map for #current_name<T>

@@ -14,7 +14,7 @@ use hexga::{
 
 fn dbg_lerp<S, F>(src: S, dest: S, coef: F)
 where
-    S: Lerp<F> + Copy + Debug,
+    S: Lerp<F> + Copy + Debug, S::Output: Debug,
     F: Floating,
 {
     dbg!(&src);
