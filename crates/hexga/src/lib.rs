@@ -84,6 +84,7 @@ pub mod hexga_prelude
 pub mod hexga_traits
 {
     pub use crate::generational::traits::*;
+    pub use crate::math::traits::*;
     pub use crate::utils::traits::*;
     pub use hexga_image::traits::*;
 
