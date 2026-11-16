@@ -149,6 +149,7 @@ impl<T> Remap for T where T: Arithmetic
 }
 
 
+/*
 /// Mix function in a component way. Same as [`Lerp`]
 pub trait Mix<C /*= float*/>: Sized
 where
@@ -174,12 +175,14 @@ where
     /// Can cause a panic for grid if the size mismatch
     fn mix_unchecked(self, dest: Self, coef: C) -> Self;
 }
+*/
 
 /// Lerp function in a component way. Same as [`Mix`]
-pub trait Lerp<C> : Mix<C> where
+pub trait Lerp<C,D=Self> : Sized //: Mix<C> 
+where
     C: Floating,
 {
-    /// Lerp function in a component way. Same as [`Mix::mix`].
+    /// Lerp function in a component way.
     ///
     /// The coef is clamped between `0.0..1.`
     ///
@@ -187,10 +190,9 @@ pub trait Lerp<C> : Mix<C> where
     /// 1. => dest.
     ///
     /// Can cause a panic for grid if the size mismatch
-    #[inline(always)]
-    fn lerp(self, dest: Self, coef: C) -> Self { self.mix(dest, coef) }
+    fn lerp(self, dest: D, coef: C) -> Self { self.lerp_unchecked(dest, coef.clamp_partial(zero(), one())) }
 
-    /// Lerp function in a component way. [`Mix::mix_unchecked`].
+    /// Lerp function in a component way. [`Lerp::lerp_unchecked`].
     ///
     /// The coef is **not** clamped between `0.0..1.`
     ///
@@ -198,11 +200,12 @@ pub trait Lerp<C> : Mix<C> where
     /// 1. => dest.
     ///
     /// Can cause a panic for grid if the size mismatch
-    #[inline(always)]
-    fn lerp_unchecked(self, dest: Self, coef: C) -> Self { self.mix_unchecked(dest, coef) }
+    fn lerp_unchecked(self, dest: D, coef: C) -> Self;
 }
-impl<T,C> Lerp<C> for T where T: Mix<C>, C: Floating {}
 
+//impl<T,C> Lerp<C> for T where T: Mix<C>, C: Floating {}
+
+/*
 /// Mix function in a component way. Same as [`Lerp::lerp`].
 ///
 /// The coef is clamped between `0.0..1.`
@@ -218,6 +221,7 @@ where
 {
     src.mix(dest, coef)
 }
+*/
 
 /// Lerp function in a component way. Same as [`Mix::mix`].
 ///
@@ -238,9 +242,9 @@ where
 map_on_number_and_bool!(
     ($type_name: tt) =>
     {
-        impl<F> Mix<F> for $type_name where F: Floating
+        impl<F> Lerp<F> for $type_name where F: Floating
         {
-            fn mix_unchecked(self, dest: Self, coef: F) -> Self
+            fn lerp_unchecked(self, dest: Self, coef: F) -> Self
             {
                 let src  = F::cast_from(self);
                 let dest = F::cast_from(dest);
@@ -250,13 +254,13 @@ map_on_number_and_bool!(
         }
     }
 );
-impl<S, F> Mix<F> for S
+impl<S, F> Lerp<F> for S
 where
     S: MapInternWith,
-    S::Item: Mix<F>,
+    S::Item: Lerp<F>,
     F: Floating,
 {
-    fn mix_unchecked(self, dest: Self, coef: F) -> Self { self.map_with_intern(dest, |a, b| a.mix_unchecked(b, coef)) }
+    fn lerp_unchecked(self, dest: Self, coef: F) -> Self { self.map_with_intern(dest, |a, b| a.lerp_unchecked(b, coef)) }
 }
 
 /// Abs function in a component way
@@ -418,7 +422,7 @@ macro_rules! impl_number_basic_trait {
             $crate::Abs::abs(self)
         }
 
-        /// Mix function in a component way. Same as [`Self::lerp`].
+        /// Mix function in a component way.
         ///
         /// The coef is clamped between `0.0..1.`
         ///
@@ -426,15 +430,15 @@ macro_rules! impl_number_basic_trait {
         /// 1. => dest.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn mix<C>(self, other: Self, coef: C) -> Self
+        pub fn lerp<C>(self, other: Self, coef: C) -> Self
         where
-            Self: $crate::Mix<C>,
+            Self: $crate::Lerp<C>,
             C: $crate::Floating,
         {
-            $crate::Mix::mix(self, other, coef)
+            $crate::Lerp::lerp(self, other, coef)
         }
 
-        /// Mix function in a component way. Same as [`Self::mix_unchecked`].
+        /// Mix function in a component way.
         ///
         /// The coef is **not** clamped between `0.0..1.`
         ///
@@ -442,35 +446,13 @@ macro_rules! impl_number_basic_trait {
         /// 1. => dest.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn mix_unchecked<C>(self, other: Self, coef: C) -> Self
+        pub fn lerp_unchecked<C>(self, other: Self, coef: C) -> Self
         where
-            Self: $crate::Mix<C>,
+            Self: $crate::Lerp<C>,
             C: $crate::Floating,
         {
-            $crate::Mix::mix_unchecked(self, other, coef)
+            $crate::Lerp::lerp_unchecked(self, other, coef)
         }
-
-        /// Lerp function in a component way. Same as [`Self::mix`].
-        ///
-        /// The coef is clamped between `0.0..1.`
-        ///
-        /// 0. => self,
-        /// 1. => dest.
-        ///
-        /// Can cause a panic for grid if the size mismatch
-        #[inline(always)]
-        fn lerp<C>(self, other: Self, coef: C) -> Self where Self: $crate::Lerp<C>, C: $crate::Floating { self.mix(other, coef) }
-
-        /// Lerp function in a component way. [`Self::mix_unchecked`].
-        ///
-        /// The coef is **not** clamped between `0.0..1.`
-        ///
-        /// 0. => self,
-        /// 1. => dest.
-        ///
-        /// Can cause a panic for grid if the size mismatch
-        #[inline(always)]
-        fn lerp_unchecked<C>(self, other: Self, coef: C) -> Self where Self: $crate::Lerp<C>, C: $crate::Floating { self.mix_unchecked(other, coef) }
 
         /// Clamp function in a component way
         ///
@@ -608,18 +590,18 @@ mod tests
     #[test]
     fn mix_test()
     {
-        assert_eq!(mix(0., 1., 0.), 0.);
-        assert_eq!(mix(0., 1., 0.5), 0.5);
-        assert_eq!(mix(0., 1., 1.), 1.);
+        assert_eq!(lerp(0., 1., 0.), 0.);
+        assert_eq!(lerp(0., 1., 0.5), 0.5);
+        assert_eq!(lerp(0., 1., 1.), 1.);
 
-        assert_eq!(mix(0., 100., 0.), 0.);
-        assert_eq!(mix(0., 100., 1.), 100.);
+        assert_eq!(lerp(0., 100., 0.), 0.);
+        assert_eq!(lerp(0., 100., 1.), 100.);
 
-        assert_eq!(mix(1., 0., 0.), 1.);
-        assert_eq!(mix(1., 0., 0.5), 0.5);
-        assert_eq!(mix(1., 0., 1.), 0.);
+        assert_eq!(lerp(1., 0., 0.), 1.);
+        assert_eq!(lerp(1., 0., 0.5), 0.5);
+        assert_eq!(lerp(1., 0., 1.), 0.);
 
-        assert_eq!(mix([1., 2.], [4., 8.], 0.5), [2.5, 5.]);
+        assert_eq!(lerp([1., 2.], [4., 8.], 0.5), [2.5, 5.]);
     }
 
     #[test]

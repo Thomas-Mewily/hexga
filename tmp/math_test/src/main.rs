@@ -12,14 +12,14 @@ use hexga::{
 };
 //use hexga_math::bijection::*;
 
-fn dbg_mix<S, F>(src: S, dest: S, coef: F)
+fn dbg_lerp<S, F>(src: S, dest: S, coef: F)
 where
-    S: Mix<F> + Copy + Debug,
+    S: Lerp<F> + Copy + Debug,
     F: Floating,
 {
     dbg!(&src);
     dbg!(&dest);
-    dbg!(src.mix(dest, coef));
+    dbg!(src.lerp(dest, coef));
 }
 
 fn x()
@@ -41,7 +41,7 @@ fn x()
     for coef in (0.0..=1.).sample(10)
     {
         dbg!(coef);
-        dbg!(false.mix(true, coef));
+        dbg!(false.lerp(true, coef));
     }
     println!();
     println!();
@@ -52,9 +52,9 @@ fn x()
     let a = max([1, 5], [2, 3]);
     dbg!(a);
     println!("hello world");
-    dbg_mix(0., 1., 1.);
-    dbg_mix(0., 1., 0.);
-    dbg_mix(0., 1., 0.5);
+    dbg_lerp(0., 1., 1.);
+    dbg_lerp(0., 1., 0.);
+    dbg_lerp(0., 1., 0.5);
 }
 
 fn img()

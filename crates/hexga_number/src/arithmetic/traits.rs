@@ -36,9 +36,10 @@ ArithmeticSigned:
     Arithmetic + Neg<Output = Self>
 );
 
+// TODO: harcoded float type
 trait_marker!(
     /// +, -, *, /, %, 0, ==, min, max, clamp, mix, abs
-    Numeric: Arithmetic + PartialEq + Debug + Min + Max + Clamp + Mix<f32> + Mix<f64> + Abs<Output=Self>
+    Numeric: Arithmetic + PartialEq + Debug + Min + Max + Clamp + Lerp<f32> + Lerp<f64> + Abs<Output=Self>
 );
 
 trait_marker!(
