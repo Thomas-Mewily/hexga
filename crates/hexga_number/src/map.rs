@@ -1,7 +1,4 @@
-use hexga_array::ArrayWithType;
-
 use super::*;
-use std::{any::TypeId, ops::RangeBounds};
 
 // Update it and add `try_map` once stabilized ?
 // https://doc.rust-lang.org/std/primitive.array.html#method.try_map
@@ -64,8 +61,28 @@ impl<T,const N: usize> Map for [T;N]
     where
         F: FnMut([Self::Item; M]) -> R 
     {
+        /*
         let mut iters = this.map(|v| v.into_iter());
-        core::array::from_fn(|_| f(core::array::from_fn(|i| unsafe { iters[i].next().unwrap_unchecked() })))    
+        core::array::from_fn(|_| f(core::array::from_fn(|i| unsafe { iters[i].next().unwrap_unchecked() })))
+        */
+
+        // SAFETY notes:
+        // - `this` is wrapped in `ManuallyDrop`, so its elements are never dropped by the
+        //   compiler on unwind; we take ownership of each element exactly once via `ptr::read`.
+        // - Every `(j, i)` index pair is visited exactly once (outer loop over `i`, inner over `j`),
+        //   so each `this[j][i]` is read exactly once and never read again.
+        // - `f` may panic; if it does, `this` (ManuallyDrop) leaks its not-yet-read elements,
+        //   which is safe (just a leak), and the already-read elements are owned by `args`
+        //   which drops correctly on unwind.
+        let this = core::mem::ManuallyDrop::new(this);
+
+        core::array::from_fn(|i| {
+            f(core::array::from_fn(|j| unsafe {
+                // SAFETY: see above. `j < M`, `i < N`; pointer is valid and initialized.
+                core::ptr::read(&this[j][i])
+            }))
+        })
+
         /* 
         let this = core::mem::ManuallyDrop::new(this);
 
@@ -108,6 +125,15 @@ impl<T> MapIntern for Vec<T> {
             return Vec::new();
         }
 
+        /*
+        if M == 1 {
+            // The compiler is too dumb to know that M == 1 here...
+            // `this` has exactly one element (M == 1); take it out.
+            let mut v: Vec<T> = this[0];
+            v.iter_mut().for_each(|v| v.by_value(|v| f([v])));
+            return v;
+        }
+        */
         let len = this.iter().map(Vec::len).min().unwrap_or(0);
 
         // Reuse this[0] allocation for the output vector.

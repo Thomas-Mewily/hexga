@@ -49,6 +49,9 @@ pub use range::*;
 mod convert;
 pub use convert::*;
 
+mod utils;
+pub use utils::*;
+
 pub mod prelude
 {
     pub use super::traits::*;
@@ -91,5 +94,7 @@ pub mod traits
         PrimitiveType, OverflowBehavior, 
         PartialOrdExtension, PositiveOrNegative, 
         RemEuclid, Unit, arithmetic::traits::*,
+
+        RefMutByValue
     };
 }
