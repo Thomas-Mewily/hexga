@@ -95,6 +95,6 @@ pub mod traits
         PartialOrdExtension, PositiveOrNegative, 
         RemEuclid, Unit, arithmetic::traits::*,
 
-        RefMutMap
+        //RefMutMap
     };
 }
