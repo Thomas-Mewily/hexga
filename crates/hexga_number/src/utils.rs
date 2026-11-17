@@ -1,9 +1,9 @@
-pub trait RefMutByValue
+pub trait RefMutMap
 {
     type Item;
-    fn by_value<F>(self, f: F) where F: FnOnce(Self::Item) -> Self::Item;
+    fn map<F>(self, f: F) where F: FnOnce(Self::Item) -> Self::Item;
 }
-impl<T> RefMutByValue for &mut T {
+impl<T> RefMutMap for &mut T {
     type Item = T;
 
     /// Replaces the pointee with `f(old_value)`, moving the old value into `f`.
@@ -13,7 +13,7 @@ impl<T> RefMutByValue for &mut T {
     /// `f` must not panic. If it does, behavior is **undefined**: the slot is
     /// left logically uninitialized between `ptr::read` and `ptr::write`, and
     /// unwinding will double-drop. No abort, no guard.
-    fn by_value<F>(self, f: F)
+    fn map<F>(self, f: F)
     where
         F: FnOnce(Self::Item) -> Self::Item,
     {
