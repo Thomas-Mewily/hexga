@@ -11,6 +11,15 @@ where
     pub(crate) values: Vec<T>,
 }
 
+impl<T, Idx, const N: usize> Default for GridOf<T, Idx, N>
+where
+    Idx: Integer,
+{
+    fn default() -> Self {
+        Self { size: ___(), values: ___() }
+    }
+}
+
 macro_rules! impl_grid_fmt_method {
     ($trait_name :ident) => {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result
@@ -98,18 +107,11 @@ where
         self.values = self.values.map_intern(f);
         self
     }
-}
-impl<T, Idx, const N: usize> MapInternWith for GridOf<T, Idx, N>
-where
-    Idx: Integer,
-{
-    fn map_intern_with<F>(mut self, other: Self, f: F) -> Self
+    
+    fn map_intern_elementwise<F, const M: usize>(mut f: F, this : [Self; M]) -> Self
     where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item,
-    {
-        assert_eq!(self.size(), other.size(), "size mismatch");
-        self.values = self.values.map_intern_with(other.values, f);
-        self
+        F: FnMut([Self::Item; M]) -> Self::Item {
+        Self::map_intern(f, this)
     }
 }
 impl<T, Idx, const N: usize> Map for GridOf<T, Idx, N>
@@ -118,11 +120,21 @@ where
 {
     type WithType<R> = GridOf<R, Idx, N>;
 
-    fn map<R, F>(self, f: F) -> Self::WithType<R>
+    fn map<F, R>(self, f: F) -> Self::WithType<R>
     where
         F: FnMut(Self::Item) -> R,
     {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map(f)) }
+    }
+    
+    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
+    where
+        F: FnMut([Self::Item; M]) -> R {
+        if M == 0 { return ___(); }
+
+        let size = this[0].size();
+        assert!(this.all(|g| g.size() == size), "size mismatch");
+        unsafe { <Self::WithType<R>>::from_vec(size, Map::map_elementwise(f, this.map(|g| g.values))).unwrap() }
     }
 }
 impl<T, Idx, const N: usize> MapWith for GridOf<T, Idx, N>
@@ -155,13 +167,15 @@ where
     fn values_mut(&mut self) -> &mut [T] { &mut self.values }
 
     fn into_size_and_values(self) -> (Vector<Idx, N>, Vec<T>) { (self.size, self.values) }
-    unsafe fn from_vec_unchecked<P>(size: P, value: Vec<T>) -> Self
+    unsafe fn from_vec_unchecked<P>(size: P, values: Vec<T>) -> Self
     where
         P: Into<Vector<Idx, N>>,
     {
+        let size = size.into();
+        debug_assert_eq!(size.area_usize_checked(), Some(values.len()));
         Self {
-            size: size.into(),
-            values: value,
+            size,
+            values,
         }
     }
 }

@@ -23,7 +23,7 @@ where
             GridBaseError::NegativeSize(size) => write!(f, "Can't have a negative size {:?}", size),
             GridBaseError::WrongDimension(size, got) => write!(
                 f,
-                "Wrong dimension : expected {:?} elements for a {:?} grid but got {:?} elements",
+                "Wrong dimension: expected {:?} elements for a {:?} grid but got {:?} elements",
                 size.area_usize(),
                 size,
                 got
@@ -40,7 +40,7 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { Debug::fmt(self, f) }
 }
 
-pub trait IGrid<T, Idx, const N : usize> :
+pub trait IGrid<T, Idx, const N: usize> :
       GetRectangle<Idx,N> + GetPosition<Idx,N>
 
 
@@ -59,9 +59,9 @@ pub trait IGrid<T, Idx, const N : usize> :
     + Map<Item=T>
 
     + Sized
-    where Idx : Integer
+    where Idx: Integer
 {
-    type WithType<U> : IGrid<U, Idx, N>;
+    type WithType<U>: IGrid<U, Idx, N>;
 
     // Those expose the implementation, put in another trait like IGridVector
     fn values(&self) -> &[T];
@@ -73,28 +73,28 @@ pub trait IGrid<T, Idx, const N : usize> :
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
     /// If you override this, you probably also want to override [`IGrid::index_to_position_unchecked`] and [`IGrid::external_position_to_position_unchecked`]
-    unsafe fn position_to_index_unchecked<P>(&self, pos : P) -> usize where P: Into<Vector<Idx,N>> { unsafe { Vector::<Idx,N>::to_index_unchecked(pos.into(), self.size()) } }
+    unsafe fn position_to_index_unchecked<P>(&self, pos: P) -> usize where P: Into<Vector<Idx,N>> { unsafe { Vector::<Idx,N>::to_index_unchecked(pos.into(), self.size()) } }
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
     /// If you override this, you probably also want to override [`IGrid::position_to_index_unchecked`] and [`IGrid::external_position_to_position_unchecked`]
-    unsafe fn index_to_position_unchecked(&self, index : usize) -> Vector<Idx,N> { unsafe { Vector::<Idx,N>::from_index_unchecked(index, self.size()) } }
+    unsafe fn index_to_position_unchecked(&self, index: usize) -> Vector<Idx,N> { unsafe { Vector::<Idx,N>::from_index_unchecked(index, self.size()) } }
     #[allow(unused_variables)]
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     ///
     /// If you override this, you probably also want to override [`IGrid::position_to_index_unchecked`] and [`IGrid::index_to_position_unchecked`]
-    unsafe fn external_position_to_position_unchecked<P>(pos : P, size : P) -> P where P: Into<Vector<Idx,N>> + From<Vector<Idx,N>> { pos }
+    unsafe fn external_position_to_position_unchecked<P>(pos: P, size: P) -> P where P: Into<Vector<Idx,N>> + From<Vector<Idx,N>> { pos }
 
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     #[inline(always)]
     fn position_to_index<P>(&self, pos: P) -> Option<usize> where P: Into<Vector<Idx,N>> { let pos = pos.into(); pos.is_inside(self.size()).then(|| unsafe { self.position_to_index_unchecked(pos) }) }
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
     #[inline(always)]
-    fn index_to_position(&self, index : usize) -> Option<Vector<Idx,N>> { (index < self.size().area_usize()).then(|| unsafe { self.index_to_position_unchecked(index) }) }
+    fn index_to_position(&self, index: usize) -> Option<Vector<Idx,N>> { (index < self.size().area_usize()).then(|| unsafe { self.index_to_position_unchecked(index) }) }
 
 
 
-    fn from_vec<P>(size : P, values : Vec<T>) -> Option<Self> where P: Into<Vector<Idx,N>> { Self::try_from_vec(size, values).ok() }
-    fn try_from_vec<P>(size : P, values : Vec<T>) -> Result<Self, GridBaseError<Idx,N>> where P: Into<Vector<Idx,N>>
+    fn from_vec<P>(size: P, values: Vec<T>) -> Option<Self> where P: Into<Vector<Idx,N>> { Self::try_from_vec(size, values).ok() }
+    fn try_from_vec<P>(size: P, values: Vec<T>) -> Result<Self, GridBaseError<Idx,N>> where P: Into<Vector<Idx,N>>
     {
         let size = size.into();
         if *size.min_element() < Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
@@ -108,19 +108,19 @@ pub trait IGrid<T, Idx, const N : usize> :
         Ok(unsafe { Self::from_vec_unchecked(size, values) })
     }
 
-    unsafe fn from_vec_unchecked<P>(size : P, value : Vec<T>) -> Self where P: Into<Vector<Idx,N>>;
+    unsafe fn from_vec_unchecked<P>(size: P, values: Vec<T>) -> Self where P: Into<Vector<Idx,N>>;
 
-    fn sized_one(value : T) -> Self
+    fn sized_one(value: T) -> Self
     {
         Self::from_vec(Vector::<Idx,N>::ONE, vec![value]).unwrap()
     }
 
     /// Create a grid from a function
-    fn from_fn<P,F>(size : P, mut f : F) -> Self
+    fn from_fn<P,F>(size: P, mut f: F) -> Self
         where
-        F : FnMut(P) -> T,
-        P : Into<Vector::<Idx,N>>,
-        Vector::<Idx,N> : Into<P>,
+        F: FnMut(P) -> T,
+        P: Into<Vector::<Idx,N>>,
+        Vector::<Idx,N>: Into<P>,
     {
         let size = size.into();
         let area = size.area_usize();
@@ -132,14 +132,14 @@ pub trait IGrid<T, Idx, const N : usize> :
         unsafe { Self::from_vec_unchecked(size, value) }
     }
     /// Create a grid from a function in parallel
-    fn from_fn_par<P,F>(size : P, f : F) -> Self
+    fn from_fn_par<P,F>(size: P, f: F) -> Self
         where
-        F : Fn(P) -> T + Sync,
-        P : Into<Vector::<Idx,N>>,
-        Vector::<Idx,N> : Into<P>,
+        F: Fn(P) -> T + Sync,
+        P: Into<Vector::<Idx,N>>,
+        Vector::<Idx,N>: Into<P>,
 
-        T : Send,
-        Idx : Sync,
+        T: Send,
+        Idx: Sync,
     {
         let size = size.into();
         let area = size.area_usize();
@@ -149,10 +149,10 @@ pub trait IGrid<T, Idx, const N : usize> :
     }
 
     /// Create a new grid and fill it with the [`Default`] value
-    fn new(size : Vector::<Idx,N>) -> Self where T: Default { Self::try_from_vec(size, (0..size.area_usize()).map(|_| ___()).collect()).unwrap() }
+    fn new(size: Vector::<Idx,N>) -> Self where T: Default { Self::try_from_vec(size, (0..size.area_usize()).map(|_| ___()).collect()).unwrap() }
 
     /// Create a new grid and fill it by [`Clone`]ing the value
-    fn new_uniform(size : Vector::<Idx,N>, value : T) -> Self where T: Clone { Self::try_from_vec(size, vec![value; size.area_usize()]).unwrap() }
+    fn new_uniform(size: Vector::<Idx,N>, value: T) -> Self where T: Clone { Self::try_from_vec(size, vec![value; size.area_usize()]).unwrap() }
 
 
 
@@ -160,27 +160,27 @@ pub trait IGrid<T, Idx, const N : usize> :
     /// Create a grid from a Normalized Device Coordinates.
     ///
     /// Each component of the vector will be between `-1.0..=1.0`
-    fn from_fn_ndc<P,F>(size : P, f : F) -> Self
+    fn from_fn_ndc<P,F>(size: P, f: F) -> Self
     where
-    P : Into<Vector::<Idx,N>>,
-    float : CastFrom<Idx>,
-    F : FnMut(Vector<float,N>) -> T{ Self::from_fn_ndc_with_precision(size, f) }
+    P: Into<Vector::<Idx,N>>,
+    float: CastFrom<Idx>,
+    F: FnMut(Vector<float,N>) -> T{ Self::from_fn_ndc_with_precision(size, f) }
 
     /// Create a grid from a Normalized Device Coordinates.
     ///
     /// Each component of the vector will be between `-1.0..=1.0`
-    fn from_fn_ndc_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
+    fn from_fn_ndc_with_precision<P,Precision,F>(size: P, mut f: F) -> Self
         where
-        P : Into<Vector::<Idx,N>>,
-        Precision : Floating + CastFrom<Idx>,
-        F : FnMut(Vector<Precision,N>) -> T,
+        P: Into<Vector::<Idx,N>>,
+        Precision: Floating + CastFrom<Idx>,
+        F: FnMut(Vector<Precision,N>) -> T,
     {
-        let size : Vector::<Idx,N> = size.into();
-        let size_float : Vector::<Precision,N> = size.cast_into();
+        let size: Vector::<Idx,N> = size.into();
+        let size_float: Vector::<Precision,N> = size.cast_into();
 
         Self::from_fn(size, |p|
             {
-                let pos_float : Vector::<Precision,N> = p.cast_into();
+                let pos_float: Vector::<Precision,N> = p.cast_into();
                 f(pos_float / size_float * Precision::TWO - Vector::<Precision,N>::ONE)
             })
     }
@@ -192,33 +192,33 @@ pub trait IGrid<T, Idx, const N : usize> :
     /// Create a grid from a coefficients.
     ///
     /// Each component of the vector will be between `0..1.0`
-    fn from_fn_coef<P,F>(size : P, f : F) -> Self
+    fn from_fn_coef<P,F>(size: P, f: F) -> Self
     where
-    P : Into<Vector::<Idx,N>>,
-    float : CastFrom<Idx>,
-    F : FnMut(Vector<float,N>) -> T{ Self::from_fn_coef_with_precision(size, f) }
+    P: Into<Vector::<Idx,N>>,
+    float: CastFrom<Idx>,
+    F: FnMut(Vector<float,N>) -> T{ Self::from_fn_coef_with_precision(size, f) }
 
     /// Create a grid from a coefficients.
     ///
     /// Each component of the vector will be between `0..1.0`
-    fn from_fn_coef_with_precision<P,Precision,F>(size : P, mut f : F) -> Self
+    fn from_fn_coef_with_precision<P,Precision,F>(size: P, mut f: F) -> Self
         where
-        P : Into<Vector::<Idx,N>>,
-        Precision : Floating + CastFrom<Idx>,
-        F : FnMut(Vector<Precision,N>) -> T,
+        P: Into<Vector::<Idx,N>>,
+        Precision: Floating + CastFrom<Idx>,
+        F: FnMut(Vector<Precision,N>) -> T,
     {
-        let size : Vector::<Idx,N> = size.into();
-        let size_float : Vector::<Precision,N> = size.cast_into();
+        let size: Vector::<Idx,N> = size.into();
+        let size_float: Vector::<Precision,N> = size.cast_into();
 
         Self::from_fn(size, |p|
             {
-                let pos_float : Vector::<Precision,N> = p.cast_into();
+                let pos_float: Vector::<Precision,N> = p.cast_into();
                 f(pos_float / size_float)
             })
     }
 
     /*
-    fn map<Dest,F>(self, mut f : F) -> <Self as IGrid<T,Idx,N>>::WithType<Dest> where F : FnMut(T) -> Dest
+    fn map<Dest,F>(self, mut f: F) -> <Self as IGrid<T,Idx,N>>::WithType<Dest> where F: FnMut(T) -> Dest
     {
         let size = self.size();
         unsafe { <Self as IGrid<T,Idx,N>>::WithType::from_vec_unchecked(size, self.into_values().into_iter().map(|v| f(v)).collect()) }

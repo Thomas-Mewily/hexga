@@ -3,15 +3,18 @@ use hexga_array::ArrayWithType;
 use super::*;
 use std::ops::RangeBounds;
 
-/// Similar to [`Iterator::map`], but for container-like types that keep their shape.
+// Update it and add `try_map` once stabilized ?
+// https://doc.rust-lang.org/std/primitive.array.html#method.try_map
+
+/// Similar to [`Iterator::map`], but for container-like types that keep their shape/type.
 pub trait MapIntern : Sized
 {
     type Item;
 
     /// Apply `f` to each item, producing a new container of the same type.
-    fn map_intern_elementwise<F, const N: usize>(f: F, this : [Self; N]) -> Self
+    fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
     where
-        F: FnMut([Self::Item; N]) -> Self::Item;
+        F: FnMut([Self::Item; M]) -> Self::Item;
 
     /// Apply `f` to each item, producing a new container of the same type.
     fn map_intern<F>(self, mut f: F) -> Self where F: FnMut(Self::Item) -> Self::Item { Self::map_intern_elementwise(|[a]| f(a), [self]) }
@@ -45,7 +48,7 @@ pub trait Map : MapIntern
 impl<T,const N: usize> MapIntern for [T;N]
 {
     type Item=T;
-    fn map_intern_elementwise<F, const M: usize>(mut f: F, this : [Self; M]) -> Self
+    fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
     where
         F: FnMut([Self::Item; M]) -> Self::Item 
     {
@@ -56,10 +59,13 @@ impl<T,const N: usize> Map for [T;N]
 {
     type WithType<R> = [R;N];
 
-    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
+    fn map_elementwise<F, R, const M: usize>(mut f: F, this : [Self; M]) -> Self::WithType<R>
     where
-        F: FnMut([Self::Item; M]) -> R {
-        
+        F: FnMut([Self::Item; M]) -> R 
+    {
+        let mut iters = this.map(|v| v.into_iter());
+        core::array::from_fn(|_| f(core::array::from_fn(|i| unsafe { iters[i].next().unwrap_unchecked() })))    
+        /* 
         let this = core::mem::ManuallyDrop::new(this);
 
         core::array::from_fn(|i| {
@@ -70,172 +76,42 @@ impl<T,const N: usize> Map for [T;N]
                 core::ptr::read(&this[j][i])
             }))
         })
+        */
     }
 }
 
 impl<T> MapIntern for Vec<T>
 {
     type Item=T;
-    fn map_intern_elementwise<F, const M: usize>(mut f: F, this : [Self; M]) -> Self
+    fn map_intern_elementwise<F, const M: usize>(mut f: F, mut this : [Self; M]) -> Self
     where
         F: FnMut([Self::Item; M]) -> Self::Item 
     {
-        Self::map_elementwise(f, this)
+        if M == 0 { return Vec::new(); }
+
+        Todo
+// Reuse allocation here of this[0] + update GRID 
+
+        let len = this.iter().map(Vec::len).min().unwrap();
+        this[0].truncate(len);
+
+        let mut len = usize::MAX;
+        let mut iters = this.map(|v| { len = min(v.len(), len); v.into_iter() });
+        Vec::from_fn(len, |_| f(core::array::from_fn(|i| unsafe { iters[i].next().unwrap_unchecked() })))
     }
 }
 impl<T> Map for Vec<T>
 {
     type WithType<R> = Vec<R>;
 
-    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
+    fn map_elementwise<F, R, const M: usize>(mut f: F, this : [Self; M]) -> Self::WithType<R>
     where
-        F: FnMut([Self::Item; M]) -> R {
-
-        let mut len = 0;
-        let mut iters = this.map(|v| { len = max(v.len(), 0); v.into_iter() });
-        Vec::from_fn(len, |_| f(core::array::from_fn(|i| iters[i].next().unwrap())))
-    }
-}
-
-
-/* 
-/// Similar to [`Iterator::map`], but for container-like types that keep their shape.
-pub trait MapIntern
-{
-    type Item;
-    /// Apply `f` to each item, producing a new container of the same type.
-    fn map_intern<F>(self, f: F) -> Self
-    where
-        F: FnMut(Self::Item) -> Self::Item;
-}
-
-
-/// Elementwise mapping of two containers of the same type.
-pub trait MapInternWith: MapIntern
-{
-    /// Combine `self` and `other` elementwise with `f`.
-    fn map_intern_with<F>(self, other: Self, f: F) -> Self
-    where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item;
-}
-
-/// Similar to [`Iterator::map`]. Contrary to [`MapIntern`], it allows changing the item type.
-pub trait Map: MapIntern
-{
-    type WithType<R>: Map<Item = R>;
-    /// Apply `f` to each item, returning a container of the mapped values.
-    fn map<R, F>(self, f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item) -> R;
-}
-
-/*
-// Update it with try_map once stabilized ?
-// https://doc.rust-lang.org/std/primitive.array.html#method.try_map
-//
-/// `TryMap` allows the mapping function to return a fallible result.
-pub trait TryMap: Map + Sized {
-    /// Apply `f` to each item. If any `Try` fails, propagate the failure.
-    #[inline(always)]
-    fn try_map<O,E,F>(self, f: F) -> Result<Self::WithType<O>,E> where F: FnMut(Self::Item) -> Result<O,E>
+        F: FnMut([Self::Item; M]) -> R 
     {
-        let f = self.map(f);
-    }
-}
-*/
+        if M == 0 { return Vec::new(); }
 
-/// Elementwise mapping of two containers with possibly different item types.
-pub trait MapWith: Map + MapInternWith
-{
-    /// Combine `self` and `other` elementwise with `f`, producing a new container
-    /// of the mapped values.
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item, Item2) -> R;
-}
-
-impl<T, const N: usize> MapIntern for [T; N]
-{
-    type Item = T;
-    #[inline(always)]
-    fn map_intern<F>(self, f: F) -> Self
-    where
-        F: FnMut(Self::Item) -> Self::Item,
-    {
-        self.map(f)
+        let mut len = usize::MAX;
+        let mut iters = this.map(|v| { len = min(v.len(), len); v.into_iter() });
+        Vec::from_fn(len, |_| f(core::array::from_fn(|i| unsafe { iters[i].next().unwrap_unchecked() })))
     }
 }
-impl<T, const N: usize> MapInternWith for [T; N]
-{
-    #[inline(always)]
-    fn map_intern_with<F>(self, other: Self, f: F) -> Self
-    where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item,
-    {
-        self.map_with(other, f)
-    }
-}
-impl<T, const N: usize> Map for [T; N]
-{
-    type WithType<T2> = [T2; N];
-    #[inline(always)]
-    fn map<R, F>(self, f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item) -> R,
-    {
-        self.map(f)
-    }
-}
-impl<T, const N: usize> MapWith for [T; N]
-{
-    #[inline(always)]
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, mut f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item, Item2) -> R,
-    {
-        let mut t1 = self.into_iter();
-        let mut t2 = other.into_iter();
-        std::array::from_fn(|_| f(unsafe { t1.next().unwrap_unchecked() }, unsafe { t2.next().unwrap_unchecked() }))
-    }
-}
-
-impl<T> MapIntern for Vec<T>
-{
-    type Item = T;
-    fn map_intern<F>(self, f: F) -> Self
-    where
-        F: FnMut(Self::Item) -> Self::Item,
-    {
-        self.map(f)
-    }
-}
-impl<T> MapInternWith for Vec<T>
-{
-    fn map_intern_with<F>(self, other: Self, f: F) -> Self
-    where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item,
-    {
-        self.map_with(other, f)
-    }
-}
-impl<T> Map for Vec<T>
-{
-    type WithType<T2> = Vec<T2>;
-
-    fn map<T2, F>(self, f: F) -> Self::WithType<T2>
-    where
-        F: FnMut(Self::Item) -> T2,
-    {
-        self.into_iter().map(f).collect()
-    }
-}
-impl<T> MapWith for Vec<T>
-{
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, mut f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item, Item2) -> R,
-    {
-        self.into_iter().zip(other).map(|(a, b)| f(a, b)).collect()
-    }
-}
-*/

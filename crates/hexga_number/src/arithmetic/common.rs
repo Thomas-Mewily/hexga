@@ -42,7 +42,7 @@ impl Max for bool
 
 impl<S> Max for S
 where
-    S: MapInternWith,
+    S: MapIntern,
     S::Item: Max,
 {
     fn max(self, other: Self) -> Self { self.map_intern_with(other, Max::max) }
@@ -87,7 +87,7 @@ impl Min for bool
 
 impl<S> Min for S
 where
-    S: MapInternWith,
+    S: MapIntern,
     S::Item: Min,
 {
     fn min(self, other: Self) -> Self { self.map_intern_with(other, Min::min) }
@@ -121,6 +121,7 @@ where
     value.clamp_unit()
 }
 
+// TODO: ClampInterval ? fn clamp<R>(self, range: R); 3.clamp(0..=10); 3.clamp(Union([0..2, 6..10]);
 /// Clamp function in a component way
 pub trait Clamp
 {
@@ -285,7 +286,7 @@ map_on_number_and_bool!(
 );
 impl<S, F> Lerp<F> for S
 where
-    S: MapInternWith,
+    S: MapIntern,
     S::Item: Lerp<F, Output = S::Item>,
     F: Copy,
 {

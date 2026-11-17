@@ -30,6 +30,15 @@ where
     pixels: Vec<C>,
 }
 
+impl<C, Idx, const N: usize> Default for ImageBaseOf<C, Idx, N>
+where
+    Idx: Integer,
+{
+    fn default() -> Self {
+        Self { size: ___(), pixels: ___() }
+    }
+}
+
 /*
 macro_rules! impl_img_fmt_method {
     ($trait_name :ident) => {
@@ -282,7 +291,12 @@ where
     where
         P: Into<Vector2<Idx>>,
     {
-        Self { size: size.into(), pixels }
+        let size = size.into();
+        debug_assert_eq!(size.area_usize_checked(), Some(pixels.len()));
+        Self {
+            size,
+            pixels,
+        }
     }
 
     unsafe fn position_to_index_unchecked<P>(&self, pos: P) -> usize
