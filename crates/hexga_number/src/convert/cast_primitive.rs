@@ -37,12 +37,12 @@ macro_rules! impl_cast_into {
 
         impl<S> $trait_name for S
         where
-            S: $crate::map::Map + CastInto<S::WithType<<S::Item as $trait_name>::Output>>,
+            S: $crate::map::MapInto + CastInto<S::WithType<<S::Item as $trait_name>::Output>>,
             S::Item: $trait_name,
         {
             type Output = S::WithType<<S::Item as $trait_name>::Output>;
-            fn $fn_map_name(self) -> Self::Output { self.map($trait_name::$fn_map_name) }
-            fn $fn_map_range_name(self) -> Self::Output { self.map($trait_name::$fn_map_range_name) }
+            fn $fn_map_name(self) -> Self::Output { self.map_into($trait_name::$fn_map_name) }
+            fn $fn_map_range_name(self) -> Self::Output { self.map_into($trait_name::$fn_map_range_name) }
         }
     };
 }

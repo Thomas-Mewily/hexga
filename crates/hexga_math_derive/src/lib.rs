@@ -155,12 +155,12 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     {
                         type Output=<[T;N] as ::core::ops::Index<Idx>>::Output;
                         #[inline(always)]
-                        fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
+                        fn index(&self, index: Idx) -> &Self::Output { <[T; N] as ::core::ops::Index<Idx>>::index(self.array(), index) }
                     }
                     impl<T, const N : usize, Idx> ::core::ops::IndexMut<Idx> for #current_name<T,N> where [T;N] : ::core::ops::IndexMut<Idx>
                     {
                         #[inline(always)]
-                        fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
+                        fn index_mut(&mut self, index: Idx) -> &mut Self::Output { <[T; N] as ::core::ops::IndexMut<Idx>>::index_mut(self.array_mut(), index) }
                     }
 
                     impl<T, const N : usize> #crate_ident::hexga_core::collections::Collection for #current_name<T,N> {}
@@ -221,7 +221,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                         fn into_iter(self) -> Self::IntoIter
                         {
-                            <[T;N]>::from(self).into_iter()
+                            ::core::iter::IntoIterator::into_iter(<[T; N] as ::core::convert::From<Self>>::from(self))
                         }
                     }
 
@@ -232,45 +232,63 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                         fn into_iter(self) -> Self::IntoIter
                         {
-                            let array : &[T;N] = self.as_ref();
-                            array.into_iter()
+                            let array: &[T; N] = <#current_name<T, N> as ::core::convert::AsRef<[T; N]>>::as_ref(self);
+                            ::core::iter::IntoIterator::into_iter(array)
                         }
                     }
 
                     impl<'a, T, const N : usize> ::core::iter::IntoIterator for &'a mut #current_name<T,N> where &'a mut [T;N] : ::core::iter::IntoIterator
                     {
-                        type Item = <&'a mut [T;N] as IntoIterator>::Item;
-                        type IntoIter = <&'a mut [T;N] as IntoIterator>::IntoIter;
+                        type Item = <&'a mut [T;N] as ::core::iter::IntoIterator>::Item;
+                        type IntoIter = <&'a mut [T;N] as ::core::iter::IntoIterator>::IntoIter;
 
                         fn into_iter(self) -> Self::IntoIter {
-                            let array : &mut [T;N] = self.as_mut();
-                            array.into_iter()
+                            let array: &mut [T; N] = <#current_name<T, N> as ::core::convert::AsMut<[T; N]>>::as_mut(self);
+                            ::core::iter::IntoIterator::into_iter(array)
                         }
                     }
 
 
-                    impl<T, const N : usize> #crate_ident::MapIntern for #current_name<T,N>
-                    {
-                        type Item=T;
-
-                        fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
-                        where
-                            F: FnMut([Self::Item; M]) -> Self::Item 
-                        {
-                            <Self as  #crate_ident::Map>::map_elementwise(f, this)
-                        }
-                    }
                     impl<T, const N : usize> #crate_ident::Map for #current_name<T,N>
                     {
-                        type WithType<T2> = #current_name<T2,N>;
-
-                        fn map_elementwise<F, R, const M: usize>(mut f: F, this: [Self; M]) -> Self::WithType<R>
-                        where
-                            F: FnMut([Self::Item; M]) -> R,
-                        {
-                            let mut iters: [::core::array::IntoIter<T, N>; M] = this.map(|v| ::core::convert::Into::<[T; N]>::into(v).into_iter());
-                            let out: [R; N] = ::core::array::from_fn(|_| f(::core::array::from_fn(|j| unsafe { iters[j].next().unwrap_unchecked() })));
-                            <Self::WithType<R> as #crate_ident::array::FromArray<R, N>>::from_array(out)
+                        type Item=T;
+                        fn map<F>(self, f: F) -> Self where F: FnMut(T) -> T {
+                            let array: [T; N] = <Self as ::core::convert::Into<[T; N]>>::into(self);
+                            let output = <[T; N] as #crate_ident::Map>::map(array, f);
+                            <Self as ::core::convert::From<[T; N]>>::from(output)
+                        }
+                    }
+                    impl<T, const N : usize> #crate_ident::MapInto for #current_name<T,N>
+                    {
+                        type WithType<R> = #current_name<R,N>;
+                        fn map_into<F, R>(self, f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
+                            let array: [T; N] = <Self as ::core::convert::Into<[T; N]>>::into(self);
+                            let output = <[T; N] as #crate_ident::MapInto>::map_into(array, f);
+                            <Self::WithType<R> as ::core::convert::From<[R; N]>>::from(output)
+                        }
+                    }
+                    impl<T, const N : usize> #crate_ident::MapZip for #current_name<T,N>
+                    {
+                        fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self where F: FnMut([T; M]) -> T {
+                            let mut iters: [::core::array::IntoIter<T, N>; M] = this.map(|v| {
+                                ::core::iter::IntoIterator::into_iter(<Self as ::core::convert::Into<[T; N]>>::into(v))
+                            });
+                            let output: [T; N] = ::core::array::from_fn(|_| f(::core::array::from_fn(|j| unsafe {
+                                ::core::iter::Iterator::next(&mut iters[j]).unwrap_unchecked()
+                            })));
+                            <Self as ::core::convert::From<[T; N]>>::from(output)
+                        }
+                    }
+                    impl<T, const N : usize> #crate_ident::MapZipInto for #current_name<T,N>
+                    {
+                        fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
+                            let mut iters: [::core::array::IntoIter<T, N>; M] = this.map(|v| {
+                                ::core::iter::IntoIterator::into_iter(<Self as ::core::convert::Into<[T; N]>>::into(v))
+                            });
+                            let output: [R; N] = ::core::array::from_fn(|_| f(::core::array::from_fn(|j| unsafe {
+                                ::core::iter::Iterator::next(&mut iters[j]).unwrap_unchecked()
+                            })));
+                            <Self::WithType<R> as ::core::convert::From<[R; N]>>::from(output)
                         }
                     }
 
@@ -281,13 +299,19 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 where T: ::core::ops::$trait_name<T>
                             {
                                 type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output,N>;
-                                fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
+                                fn $fn_name(self, rhs: Self) -> Self::Output {
+                                    <Self as #crate_ident::MapZipInto>::map_with_into(self, rhs, |a, b| <T as ::core::ops::$trait_name<T>>::$fn_name(a, b))
+                                }
                             }
 
                             impl<T, const N : usize> ::core::ops::$trait_name<T> for #current_name<T,N> where T: ::core::ops::$trait_name<T> + Copy
                             {
                                 type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output,N>;
-                                fn $fn_name(self, rhs: T) -> Self::Output { self.to_array().map(|v| v.$fn_name(rhs)).into() }
+                                fn $fn_name(self, rhs: T) -> Self::Output {
+                                    let array: [T; N] = <Self as ::core::convert::Into<[T; N]>>::into(self);
+                                    let output = <[T; N] as #crate_ident::MapInto>::map_into(array, |v| <T as ::core::ops::$trait_name<T>>::$fn_name(v, rhs));
+                                    <Self::Output as ::core::convert::From<[<T as ::core::ops::$trait_name<T>>::Output; N]>>::from(output)
+                                }
                             }
                         }
                     );
@@ -296,16 +320,19 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         where T: #crate_ident::RemEuclid<T>
                     {
                         type Output = #current_name<<T as #crate_ident::RemEuclid<T>>::Output,N>;
-                        fn rem_euclid(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::rem_euclid) }
+                        fn rem_euclid(self, rhs: Self) -> Self::Output {
+                            <Self as #crate_ident::MapZipInto>::map_with_into(self, rhs, |a, b| <T as #crate_ident::RemEuclid<T>>::rem_euclid(a, b))
+                        }
                         // Todo: impl it once try_map is available
-                        //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.to_array().map(|v| v.$fn_name(rhs)).into() }
                     }
 
                     impl<T, const N : usize> #crate_ident::Pow<Self> for #current_name<T,N>
                         where T: #crate_ident::Pow<T>
                     {
                         type Output = #current_name<<T as #crate_ident::Pow<T>>::Output,N>;
-                        fn pow(self, exp: Self) -> Self::Output { self.map_with(exp, T::pow) }
+                        fn pow(self, exp: Self) -> Self::Output {
+                            <Self as #crate_ident::MapZipInto>::map_with_into(self, exp, |a, b| <T as #crate_ident::Pow<T>>::pow(a, b))
+                        }
                     }
 
 
@@ -316,14 +343,21 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             {
                                 fn $fn_name(&mut self, rhs: Self)
                                 {
-                                    let arr : [T;N] = rhs.into();
-                                    self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
+                                    let arr: [T; N] = <Self as ::core::convert::Into<[T; N]>>::into(rhs);
+                                    let left = self.array_mut();
+                                    ::core::iter::Iterator::for_each(
+                                        ::core::iter::Iterator::zip(
+                                            ::core::iter::IntoIterator::into_iter(left.iter_mut()),
+                                            ::core::iter::IntoIterator::into_iter(arr),
+                                        ),
+                                        |(a, b)| <T as ::core::ops::$trait_name>::$fn_name(a, b),
+                                    );
                                 }
                             }
 
                             impl<T, const N : usize> ::core::ops::$trait_name<&Self> for #current_name<T,N> where T: ::core::ops::$trait_name + Copy
                             {
-                                fn $fn_name(&mut self, rhs: &Self) { ::core::ops::$trait_name::$fn_name(self,*rhs) }
+                                fn $fn_name(&mut self, rhs: &Self) { <Self as ::core::ops::$trait_name<Self>>::$fn_name(self, *rhs) }
                             }
                         }
                     );
@@ -333,13 +367,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     impl<T, const N : usize> ::core::ops::Not for #current_name<T,N> where T: ::core::ops::Not
                     {
                         type Output = #current_name<T::Output,N>;
-                        fn not(self) -> Self::Output { self.map(::core::ops::Not::not) }
+                        fn not(self) -> Self::Output { <Self as #crate_ident::MapInto>::map_into(self, <T as ::core::ops::Not>::not) }
                     }
 
                     impl<T, const N : usize> ::core::ops::Neg for #current_name<T,N> where T: ::core::ops::Neg
                     {
                         type Output = #current_name<T::Output,N>;
-                        fn neg(self) -> Self::Output { self.map(::core::ops::Neg::neg) }
+                        fn neg(self) -> Self::Output { <Self as #crate_ident::MapInto>::map_into(self, <T as ::core::ops::Neg>::neg) }
                     }
 
                     // ================= Iter =========
@@ -347,14 +381,14 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     impl<T, const N : usize> ::core::iter::Sum for #current_name<T,N> where Self : #crate_ident::Zero + ::core::ops::Add<Self,Output = Self>
                     {
                         fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::Zero>::ZERO, <Self as ::core::ops::Add<Self>>::add)
+                            ::core::iter::Iterator::fold(iter, <Self as #crate_ident::Zero>::ZERO, |a, b| <Self as ::core::ops::Add<Self>>::add(a, b))
                         }
                     }
 
                     impl<T, const N : usize> ::core::iter::Product for #current_name<T,N> where Self : #crate_ident::One + ::core::ops::Mul<Self,Output = Self>
                     {
                         fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::One>::ONE, <Self as ::core::ops::Mul<Self>>::mul)
+                            ::core::iter::Iterator::fold(iter, <Self as #crate_ident::One>::ONE, |a, b| <Self as ::core::ops::Mul<Self>>::mul(a, b))
                         }
                     }
 
@@ -365,7 +399,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         type Bits = [T::Bits;N];
 
                         fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
-                            bits.iter().all(|b| T::is_bit_pattern_valid(b))
+                            let mut bits = ::core::iter::IntoIterator::into_iter(bits);
+                            ::core::iter::Iterator::all(&mut bits, |b| <T as #crate_ident::hexga_core::bit::BitPattern>::is_bit_pattern_valid(b))
                         }
                     }
 
@@ -375,7 +410,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         {
                             impl<T, const N:usize> #crate_ident::$trait_name for #current_name<T,N> where T: #crate_ident::$trait_name + ::core::marker::Copy
                             {
-                                const $constant_name: Self = Self::from_array(<[T;N]>::$constant_name);
+                                const $constant_name: Self = Self::from_array(<[T; N] as #crate_ident::$trait_name>::$constant_name);
                             }
                         }
                     );
@@ -388,10 +423,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result
                                 {
                                     write!(f, "(")?;
-                                    let mut it = self.array().iter().peekable();
-                                    while let Some(v) = it.next()
+                                    let mut it = ::core::iter::Iterator::peekable(::core::iter::IntoIterator::into_iter(self.array()));
+                                    while let Some(v) = ::core::iter::Iterator::next(&mut it)
                                     {
-                                        v.fmt(f)?;
+                                        <T as ::core::fmt::$trait_name>::fmt(v, f)?;
                                         if it.peek().is_some()
                                         {
                                             write!(f, ", ")?;
@@ -415,14 +450,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         where
                             S: #crate_ident::serde::Serializer,
                         {
-                            use #crate_ident::serde::ser::SerializeTuple;
-
-                            let arr = self.as_array();
-                            let mut tup = serializer.serialize_tuple(N)?;
-                            for item in arr {
-                                tup.serialize_element(item)?;
+                            let arr = <#name<T, N> as #crate_ident::array::AsArray<T, N>>::as_array(self);
+                            let mut tup = <S as #crate_ident::serde::Serializer>::serialize_tuple(serializer, N)?;
+                            let mut items = ::core::iter::IntoIterator::into_iter(arr);
+                            while let Some(item) = ::core::iter::Iterator::next(&mut items) {
+                                #crate_ident::serde::ser::SerializeTuple::serialize_element(&mut tup, item)?;
                             }
-                            tup.end()
+                            #crate_ident::serde::ser::SerializeTuple::end(tup)
                         }
                     }
 
@@ -459,7 +493,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                         // SAFETY: We'll ensure every element is initialized or properly dropped
                                         let mut data: [::core::mem::MaybeUninit<T>; N] = unsafe { ::core::mem::MaybeUninit::uninit().assume_init() };
                                         for i in 0..N {
-                                            match seq.next_element()? {
+                                            match <A as #crate_ident::serde::de::SeqAccess<'de>>::next_element::<T>(&mut seq)? {
                                                 Some(value) => data[i] = ::core::mem::MaybeUninit::new(value),
                                                 None => {
                                                     if ::core::mem::needs_drop::<T>() {
@@ -474,7 +508,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                         }
 
                                         // Ensure no extra elements
-                                        if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
+                                        if <A as #crate_ident::serde::de::SeqAccess<'de>>::next_element::<::serde::de::IgnoredAny>(&mut seq)?.is_some() {
                                             if ::core::mem::needs_drop::<T>() {
                                                 for i in 0..N {
                                                     unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
@@ -489,7 +523,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                     }
                                 }
 
-                                deserializer.deserialize_tuple(N, ArrVisitor::<T, N>(::core::marker::PhantomData)).map(|arr| #name::<T, N>::from(arr.0))
+                                <D as #crate_ident::serde::Deserializer<'de>>::deserialize_tuple(deserializer, N, ArrVisitor::<T, N>(::core::marker::PhantomData)).map(|arr| <#name<T, N> as ::core::convert::From<[T; N]>>::from(arr.0))
                             }
                         }
                     };
@@ -545,12 +579,12 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     {
                         type Output=<[T;#dim] as ::core::ops::Index<Idx>>::Output;
                         #[inline(always)]
-                        fn index(&self, index: Idx) -> &Self::Output { self.array().index(index) }
+                        fn index(&self, index: Idx) -> &Self::Output { <[T; #dim] as ::core::ops::Index<Idx>>::index(self.array(), index) }
                     }
                     impl<T, Idx> ::core::ops::IndexMut<Idx> for #current_name<T> where [T;#dim] : ::core::ops::IndexMut<Idx>
                     {
                         #[inline(always)]
-                        fn index_mut(&mut self, index: Idx) -> &mut Self::Output { self.array_mut().index_mut(index) }
+                        fn index_mut(&mut self, index: Idx) -> &mut Self::Output { <[T; #dim] as ::core::ops::IndexMut<Idx>>::index_mut(self.array_mut(), index) }
                     }
 
                     impl<T> #crate_ident::hexga_core::collections::Collection for #current_name<T> {}
@@ -608,7 +642,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                         fn into_iter(self) -> Self::IntoIter
                         {
-                            <[T;#dim]>::from(self).into_iter()
+                            ::core::iter::IntoIterator::into_iter(<[T; #dim] as ::core::convert::From<Self>>::from(self))
                         }
                     }
 
@@ -618,47 +652,64 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         type IntoIter = <&'a [T;#dim] as ::core::iter::IntoIterator>::IntoIter;
 
                         fn into_iter(self) -> Self::IntoIter {
-                            let array : &[T;#dim] = self.as_ref();
-                            array.into_iter()
+                            let array: &[T; #dim] = <#current_name<T> as ::core::convert::AsRef<[T; #dim]>>::as_ref(self);
+                            ::core::iter::IntoIterator::into_iter(array)
                         }
                     }
 
                     impl<'a, T> ::core::iter::IntoIterator for &'a mut #current_name<T> where &'a mut [T;#dim] : ::core::iter::IntoIterator
                     {
-                        type Item = <&'a mut [T;#dim] as IntoIterator>::Item;
-                        type IntoIter = <&'a mut [T;#dim] as IntoIterator>::IntoIter;
+                        type Item = <&'a mut [T;#dim] as ::core::iter::IntoIterator>::Item;
+                        type IntoIter = <&'a mut [T;#dim] as ::core::iter::IntoIterator>::IntoIter;
 
                         fn into_iter(self) -> Self::IntoIter {
-                            let array : &mut [T;#dim] = self.as_mut();
-                            array.into_iter()
+                            let array: &mut [T; #dim] = <#current_name<T> as ::core::convert::AsMut<[T; #dim]>>::as_mut(self);
+                            ::core::iter::IntoIterator::into_iter(array)
                         }
                     }
 
-                    impl<T> #crate_ident::MapIntern for #current_name<T>
-                    {
-                        type Item=T;
-
-                        fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
-                        where
-                            F: FnMut([Self::Item; M]) -> Self::Item 
-                        {
-                            <Self as #crate_ident::Map>::map_elementwise(f, this)
-                        }
-                    }
                     impl<T> #crate_ident::Map for #current_name<T>
                     {
-                        type WithType<T2> = #current_name<T2>;
-
-                        fn map_elementwise<F, R, const M: usize>(mut f: F, this: [Self; M]) -> Self::WithType<R>
-                        where
-                            F: FnMut([Self::Item; M]) -> R,
-                        {
-                            let mut iters: [::core::array::IntoIter<T, #dim>; M] = this.map(|v| ::core::convert::Into::<[T; #dim]>::into(v).into_iter());
-                            let out: [R; #dim] = ::core::array::from_fn(|_| f(::core::array::from_fn(|j| unsafe { iters[j].next().unwrap_unchecked() })));
-                            <Self::WithType<R> as #crate_ident::array::FromArray<R, #dim>>::from_array(out)
+                        type Item=T;
+                        fn map<F>(self, f: F) -> Self where F: FnMut(T) -> T {
+                            let array: [T; #dim] = <Self as ::core::convert::Into<[T; #dim]>>::into(self);
+                            let output = <[T; #dim] as #crate_ident::Map>::map(array, f);
+                            <Self as ::core::convert::From<[T; #dim]>>::from(output)
                         }
                     }
-
+                    impl<T> #crate_ident::MapInto for #current_name<T>
+                    {
+                        type WithType<R> = #current_name<R>;
+                        fn map_into<F, R>(self, f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
+                            let array: [T; #dim] = <Self as ::core::convert::Into<[T; #dim]>>::into(self);
+                            let output = <[T; #dim] as #crate_ident::MapInto>::map_into(array, f);
+                            <Self::WithType<R> as ::core::convert::From<[R; #dim]>>::from(output)
+                        }
+                    }
+                    impl<T> #crate_ident::MapZip for #current_name<T>
+                    {
+                        fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self where F: FnMut([T; M]) -> T {
+                            let mut iters: [::core::array::IntoIter<T, #dim>; M] = this.map(|v| {
+                                ::core::iter::IntoIterator::into_iter(<Self as ::core::convert::Into<[T; #dim]>>::into(v))
+                            });
+                            let output: [T; #dim] = ::core::array::from_fn(|_| f(::core::array::from_fn(|j| unsafe {
+                                ::core::iter::Iterator::next(&mut iters[j]).unwrap_unchecked()
+                            })));
+                            <Self as ::core::convert::From<[T; #dim]>>::from(output)
+                        }
+                    }
+                    impl<T> #crate_ident::MapZipInto for #current_name<T>
+                    {
+                        fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
+                            let mut iters: [::core::array::IntoIter<T, #dim>; M] = this.map(|v| {
+                                ::core::iter::IntoIterator::into_iter(<Self as ::core::convert::Into<[T; #dim]>>::into(v))
+                            });
+                            let output: [R; #dim] = ::core::array::from_fn(|_| f(::core::array::from_fn(|j| unsafe {
+                                ::core::iter::Iterator::next(&mut iters[j]).unwrap_unchecked()
+                            })));
+                            <Self::WithType<R> as ::core::convert::From<[R; #dim]>>::from(output)
+                        }
+                    }
                     #crate_ident::map_on::map_on_operator_binary!(
                         (($trait_name: tt, $fn_name: tt)) =>
                         {
@@ -666,13 +717,19 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 where T: $trait_name<T>
                             {
                                 type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output>;
-                                fn $fn_name(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::$fn_name) }
+                                fn $fn_name(self, rhs: Self) -> Self::Output {
+                                    <Self as #crate_ident::MapZipInto>::map_with_into(self, rhs, |a, b| <T as ::core::ops::$trait_name<T>>::$fn_name(a, b))
+                                }
                             }
 
                             impl<T> ::core::ops::$trait_name<T> for #current_name<T> where T: $trait_name<T> + Copy
                             {
                                 type Output=#current_name<<T as ::core::ops::$trait_name<T>>::Output>;
-                                fn $fn_name(self, rhs: T) -> Self::Output { <[T;#dim]>::from(self).map(|v| v.$fn_name(rhs)).into() }
+                                fn $fn_name(self, rhs: T) -> Self::Output {
+                                    let array: [T; #dim] = <Self as ::core::convert::Into<[T; #dim]>>::into(self);
+                                    let output = <[T; #dim] as #crate_ident::MapInto>::map_into(array, |v| <T as ::core::ops::$trait_name<T>>::$fn_name(v, rhs));
+                                    <Self::Output as ::core::convert::From<[<T as ::core::ops::$trait_name<T>>::Output; #dim]>>::from(output)
+                                }
                             }
                         }
                     );
@@ -681,16 +738,19 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         where T: #crate_ident::RemEuclid<T>
                     {
                         type Output = #current_name<<T as #crate_ident::RemEuclid<T>>::Output>;
-                        fn rem_euclid(self, rhs: Self) -> Self::Output { self.map_with(rhs, T::rem_euclid) }
+                        fn rem_euclid(self, rhs: Self) -> Self::Output {
+                            <Self as #crate_ident::MapZipInto>::map_with_into(self, rhs, |a, b| <T as #crate_ident::RemEuclid<T>>::rem_euclid(a, b))
+                        }
                         // Todo: impl it once try_map is available
-                        //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.to_array().map(|v| v.$fn_name(rhs)).into() }
                     }
 
                     impl<T> #crate_ident::Pow<Self> for #current_name<T>
                         where T: #crate_ident::Pow<T>
                     {
                         type Output = #current_name<<T as #crate_ident::Pow<T>>::Output>;
-                        fn pow(self, exp: Self) -> Self::Output { self.map_with(exp, T::pow) }
+                        fn pow(self, exp: Self) -> Self::Output {
+                            <Self as #crate_ident::MapZipInto>::map_with_into(self, exp, |a, b| <T as #crate_ident::Pow<T>>::pow(a, b))
+                        }
                     }
 
                     #crate_ident::map_on::map_on_operator_assign!(
@@ -700,14 +760,21 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             {
                                 fn $fn_name(&mut self, rhs: Self)
                                 {
-                                    let arr : [T; #dim] = rhs.into();
-                                    self.array_mut().iter_mut().zip(arr.into_iter()).for_each(|(a, b)| a.$fn_name(b));
+                                    let arr: [T; #dim] = <Self as ::core::convert::Into<[T; #dim]>>::into(rhs);
+                                    let left = self.array_mut();
+                                    ::core::iter::Iterator::for_each(
+                                        ::core::iter::Iterator::zip(
+                                            ::core::iter::IntoIterator::into_iter(left.iter_mut()),
+                                            ::core::iter::IntoIterator::into_iter(arr),
+                                        ),
+                                        |(a, b)| <T as ::core::ops::$trait_name>::$fn_name(a, b),
+                                    );
                                 }
                             }
 
                             impl<T> ::core::ops::$trait_name<&Self> for #current_name<T> where T: $trait_name + Copy
                             {
-                                fn $fn_name(&mut self, rhs: &Self) { $trait_name::$fn_name(self,*rhs) }
+                                fn $fn_name(&mut self, rhs: &Self) { <Self as ::core::ops::$trait_name<Self>>::$fn_name(self, *rhs) }
                             }
                         }
                     );
@@ -717,13 +784,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     impl<T> ::core::ops::Not for #current_name<T> where T: ::core::ops::Not
                     {
                         type Output = #current_name<T::Output>;
-                        fn not(self) -> Self::Output { self.map(::core::ops::Not::not) }
+                        fn not(self) -> Self::Output { <Self as #crate_ident::MapInto>::map_into(self, <T as ::core::ops::Not>::not) }
                     }
 
                     impl<T> ::core::ops::Neg for #current_name<T> where T: ::core::ops::Neg
                     {
                         type Output = #current_name<T::Output>;
-                        fn neg(self) -> Self::Output { self.map(::core::ops::Neg::neg) }
+                        fn neg(self) -> Self::Output { <Self as #crate_ident::MapInto>::map_into(self, <T as ::core::ops::Neg>::neg) }
                     }
 
                     // ================= Iter =========
@@ -731,14 +798,14 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     impl<T> ::core::iter::Sum for #current_name<T> where Self : #crate_ident::Zero + ::core::ops::Add<Self,Output = Self>
                     {
                         fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::Zero>::ZERO, Self::add)
+                            ::core::iter::Iterator::fold(iter, <Self as #crate_ident::Zero>::ZERO, |a, b| <Self as ::core::ops::Add<Self>>::add(a, b))
                         }
                     }
 
                     impl<T> ::core::iter::Product for #current_name<T> where Self : #crate_ident::One + ::core::ops:: Mul<Self,Output = Self>
                     {
                         fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-                            iter.fold(<Self as #crate_ident::One>::ONE, Self::mul)
+                            ::core::iter::Iterator::fold(iter, <Self as #crate_ident::One>::ONE, |a, b| <Self as ::core::ops::Mul<Self>>::mul(a, b))
                         }
                     }
 
@@ -749,7 +816,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         type Bits = [T::Bits;#dim];
 
                         fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
-                            bits.iter().all(|b| T::is_bit_pattern_valid(b))
+                            let mut bits = ::core::iter::IntoIterator::into_iter(bits);
+                            ::core::iter::Iterator::all(&mut bits, |b| <T as #crate_ident::hexga_core::bit::BitPattern>::is_bit_pattern_valid(b))
                         }
                     }
 
@@ -759,7 +827,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         {
                             impl<T> #crate_ident::$trait_name for #current_name<T> where T: #crate_ident::$trait_name + ::core::marker::Copy
                             {
-                                const $constant_name: Self = Self::from_array(<[T;#dim]>::$constant_name);
+                                const $constant_name: Self = Self::from_array(<[T; #dim] as #crate_ident::$trait_name>::$constant_name);
                             }
                         }
                     );
@@ -772,10 +840,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                 fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result
                                 {
                                     write!(f, "(")?;
-                                    let mut it = self.array().iter().peekable();
-                                    while let Some(v) = it.next()
+                                    let mut it = ::core::iter::Iterator::peekable(::core::iter::IntoIterator::into_iter(self.array()));
+                                    while let Some(v) = ::core::iter::Iterator::next(&mut it)
                                     {
-                                        v.fmt(f)?;
+                                        <T as ::core::fmt::$trait_name>::fmt(v, f)?;
                                         if it.peek().is_some()
                                         {
                                             write!(f, ", ")?;
@@ -803,14 +871,13 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             where
                                 S: #crate_ident::serde::Serializer,
                             {
-                                use #crate_ident::serde::ser::SerializeTuple;
-
-                                let arr = self.as_array();
-                                let mut tup = serializer.serialize_tuple(#dim)?;
-                                for item in arr {
-                                    tup.serialize_element(item)?;
+                                let arr = <#name<T> as #crate_ident::array::AsArray<T, #dim>>::as_array(self);
+                                let mut tup = <S as #crate_ident::serde::Serializer>::serialize_tuple(serializer, #dim)?;
+                                let mut items = ::core::iter::IntoIterator::into_iter(arr);
+                                while let Some(item) = ::core::iter::Iterator::next(&mut items) {
+                                    #crate_ident::serde::ser::SerializeTuple::serialize_element(&mut tup, item)?;
                                 }
-                                tup.end()
+                                #crate_ident::serde::ser::SerializeTuple::end(tup)
                             }
                         }
 
@@ -846,7 +913,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                             // SAFETY: We'll ensure every element is initialized or properly dropped
                                             let mut data: [::core::mem::MaybeUninit<T>; #dim] = unsafe { ::core::mem::MaybeUninit::uninit().assume_init() };
                                             for i in 0..#dim {
-                                                match seq.next_element()? {
+                                                match <A as #crate_ident::serde::de::SeqAccess<'de>>::next_element::<T>(&mut seq)? {
                                                     Some(value) => data[i] = ::core::mem::MaybeUninit::new(value),
                                                     None => {
                                                         if ::core::mem::needs_drop::<T>() {
@@ -861,7 +928,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                             }
 
                                             // Ensure no extra elements
-                                            if seq.next_element::<::serde::de::IgnoredAny>()?.is_some() {
+                                            if <A as #crate_ident::serde::de::SeqAccess<'de>>::next_element::<::serde::de::IgnoredAny>(&mut seq)?.is_some() {
                                                 if ::core::mem::needs_drop::<T>() {
                                                     for i in 0..#dim {
                                                         unsafe { ::core::ptr::drop_in_place(data[i].as_mut_ptr()) };
@@ -876,7 +943,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                                         }
                                     }
 
-                                    deserializer.deserialize_tuple(#dim, ArrVisitor::<T>(::core::marker::PhantomData)).map(|arr| #name::<T>::from(arr.0))
+                                <D as #crate_ident::serde::Deserializer<'de>>::deserialize_tuple(deserializer, #dim, ArrVisitor::<T>(::core::marker::PhantomData)).map(|arr| <#name<T> as ::core::convert::From<[T; #dim]>>::from(arr.0))
                                 }
                             }
                         };
@@ -942,9 +1009,15 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             where
                                 S: #crate_ident::serde::Serializer
                             {
-                                let mut state = serializer.serialize_struct(stringify!(#name), #num_fields)?;
-                                #(state.serialize_field(stringify!(#field_idents), &self.#field_idents)?;)*
-                                state.end()
+                                let mut state = <S as #crate_ident::serde::Serializer>::serialize_struct(serializer, stringify!(#name), #num_fields)?;
+                                #(
+                                    #crate_ident::serde::ser::SerializeStruct::serialize_field(
+                                        &mut state,
+                                        stringify!(#field_idents),
+                                        &self.#field_idents,
+                                    )?;
+                                )*
+                                #crate_ident::serde::ser::SerializeStruct::end(state)
                             }
                         }
 
@@ -1113,7 +1186,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
             impl #impl_generics ::core::clone::Clone for #current_name #ty_generics #clone_where_clause
             {
-                fn clone(&self) -> Self { self.array().clone().into() }
+                fn clone(&self) -> Self {
+                    let array = <[T; #dim] as ::core::clone::Clone>::clone(self.array());
+                    <Self as ::core::convert::From<[T; #dim]>>::from(array)
+                }
             }
             impl #impl_generics ::core::marker::Copy for #current_name #ty_generics #copy_where_clause {}
 
@@ -1134,7 +1210,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
             impl #impl_generics ::core::hash::Hash for #current_name #ty_generics #hash_where_clause
             {
-                fn hash<H>(&self, state: &mut H) where H: ::core::hash::Hasher { self.as_ref().hash(state); }
+                fn hash<H>(&self, state: &mut H) where H: ::core::hash::Hasher {
+                    ::core::hash::Hash::hash(<Self as ::core::convert::AsRef<[T; #dim]>>::as_ref(self), state);
+                }
             }
 
             impl #impl_generics #crate_ident::array::Array<T, #dim> for #current_name #ty_generics

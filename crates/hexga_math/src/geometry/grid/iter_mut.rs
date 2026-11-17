@@ -91,57 +91,59 @@ where
 {
 }
 
-/* 
-impl<'a, G, T, Idx, const N: usize> MapIntern for GridViewMut<'a, G, T, Idx, N>
+
+/*
+impl<'a, G, T, Idx, const N: usize> Map for GridViewMut<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
     type Item = T;
 
-    fn map_intern<F>(mut self, mut f: F) -> Self
+    fn map<F>(mut self, mut f: F) -> Self
     where
-        F: FnMut(Self::Item) -> Self::Item,
+        F: FnMut(T) -> T,
     {
-        self.iter_mut().for_each(|(_, v)| {
-            unsafe {
-                // Temporary moving the reference
-                let old = core::ptr::read(v);
-                let new = f(old);
-                core::ptr::write(v, new);
-            }
+        self.for_each_mut(|(_, value)| {
+            // RefMutMap requires the callback not to panic; see its panic contract.
+            unsafe { <&mut T as RefMutMap>::map(value, &mut f) };
         });
         self
     }
-    
-    fn map_intern_elementwise<F, const M: usize>(mut f: F, mut this: [Self; M]) -> Self
-    where
-        F: FnMut([Self::Item; M]) -> Self::Item,
-    {
-
-    }
 }
+*/
 
-impl<'a, G, T, Idx, const N: usize> MapInternWith for GridViewMut<'a, G, T, Idx, N>
+/*
+impl<'a, G, T, Idx, const N: usize> MapZip for GridViewMut<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
     T: Clone,
 {
-    fn map_intern_with<F>(mut self, mut other: Self, mut f: F) -> Self
+    fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self
     where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item,
+        F: FnMut([T; M]) -> T,
     {
-        assert_eq!(self.size(), other.size(), "size mismatch");
-        self.iter_mut().zip(other.iter_mut()).for_each(|((_, a), (_, b))| {
-            unsafe {
-                // Temporary moving the reference
-                let old = std::ptr::read(a);
-                let new = f(old, b.clone());
-                core::ptr::write(a, new);
+        assert!(M > 0);
+
+        let mut views = this.into_iter();
+        let mut result = views.next().expect("at least one grid view is required");
+        let size = result.size();
+        let sources: Vec<_> = views.collect();
+        assert!(sources.iter().all(|view| view.size() == size), "size mismatch");
+
+        let mut source_iters: Vec<_> = sources.iter().map(|view| view.iter()).collect();
+        result.for_each_mut(|(_, target)| {
+            let mut values = Vec::with_capacity(M);
+            values.push(target.clone());
+            for iter in &mut source_iters {
+                values.push(iter.next().expect("grid views have matching sizes").1.clone());
             }
+            let values: [T; M] = values.try_into().ok().expect("one value per grid view");
+            *target = f(values);
         });
-        self
+
+        result
     }
 }
 */

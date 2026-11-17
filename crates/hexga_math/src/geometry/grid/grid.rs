@@ -107,9 +107,9 @@ where Idx: Integer,
 impl<T, Idx, const N: usize> MapInto for GridOf<T, Idx, N>
 where Idx: Integer,
 {
-    type With<R> = GridOf<R, Idx, N>;
-    fn map_into<F, R>(self, f: F) -> Self::With<R> where F: FnMut(T) -> R {
-        unsafe { Self::With::<R>::from_vec_unchecked(self.size, self.values.map_into(f)) }
+    type WithType<R> = GridOf<R, Idx, N>;
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
+        unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map_into(f)) }
     }
 }
 impl<T, Idx, const N: usize> MapZip for GridOf<T, Idx, N>
@@ -125,7 +125,6 @@ where Idx: Integer,
 impl<T, Idx, const N: usize> MapZipInto for GridOf<T, Idx, N>
 where Idx: Integer,
 {
-    type WithType<R> = GridOf<R, Idx, N>;
     fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
         assert!(M > 0);
         let size = this[0].size();

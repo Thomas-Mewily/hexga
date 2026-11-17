@@ -702,8 +702,8 @@ impl<T, const ROW: usize, const COL: usize> Map for Matrix<T, ROW, COL> {
     }
 }
 impl<T, const ROW: usize, const COL: usize> MapInto for Matrix<T, ROW, COL> {
-    type With<R> = Matrix<R, ROW, COL>;
-    fn map_into<F, R>(self, mut f: F) -> Self::With<R> where F: FnMut(T) -> R {
+    type WithType<R> = Matrix<R, ROW, COL>;
+    fn map_into<F, R>(self, mut f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
         Matrix::from_col(self.columns.map_into(|col| col.map_into(&mut f)))
     }
 }
@@ -716,7 +716,6 @@ impl<T, const ROW: usize, const COL: usize> MapZip for Matrix<T, ROW, COL> {
     }
 }
 impl<T, const ROW: usize, const COL: usize> MapZipInto for Matrix<T, ROW, COL> {
-    type WithType<R> = Matrix<R, ROW, COL>;
     fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
         assert!(M > 0);
         Matrix::from_col(MapZipInto::map_zip_into(this.map(|m| m.columns), |column| {

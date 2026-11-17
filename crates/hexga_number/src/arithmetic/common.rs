@@ -395,7 +395,7 @@ where
     S: MapInto,
     S::Item: Abs,
 {
-    type Output = S::With<<S::Item as Abs>::Output>;
+    type Output = S::WithType<<S::Item as Abs>::Output>;
     fn abs(self) -> Self::Output { self.map_into(Abs::abs) }
 }
 

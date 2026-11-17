@@ -565,9 +565,9 @@ impl<T, Idx> MapInto for ImageBaseOf<T, Idx>
 where
     Idx: Integer,
 {
-    type With<R> = ImageBaseOf<R, Idx>;
-    fn map_into<F, R>(self, f: F) -> Self::With<R> where F: FnMut(T) -> R {
-        unsafe { Self::With::<R>::from_vec_unchecked(self.size, self.pixels.map_into(f)) }
+    type WithType<R> = ImageBaseOf<R, Idx>;
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
+        unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.pixels.map_into(f)) }
     }
 }
 impl<T, Idx> MapZip for ImageBaseOf<T, Idx>
@@ -583,7 +583,6 @@ where Idx: Integer,
 impl<T, Idx> MapZipInto for ImageBaseOf<T, Idx>
 where Idx: Integer,
 {
-    type WithType<R> = ImageBaseOf<R, Idx>;
     fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
         assert!(M > 0);
         let size = this[0].size();

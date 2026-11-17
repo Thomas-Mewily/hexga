@@ -30,7 +30,8 @@
 //! );
 //! ```
 //!
-//! Some variation of `map_on` exist for different use case :
+//! The crate also provides variants of `map_on!` for common type groups. For example, `map_on_number!`
+//! applies the expansion to supported numeric types:
 //!
 //! ```rust
 //! use hexga_map_on::*;
@@ -51,7 +52,7 @@
 //! );
 //! ```
 //!
-//! ## More Example
+//! ## More Examples
 //!
 //! You can also use the `map_on!` macro to call another macro :
 //!
@@ -170,11 +171,11 @@
 //! }
 //! ```
 //!
-//! The reason is that the lambda macro form will create a temporary macro with the name `__map_on_inliner`.
+//! The reason is that the lambda macro form creates a temporary macro with the name `__map_on_inliner`.
 //! Because nested lambda map_on! macro call will generate a new macro each time with the same name `__map_on_inliner`, it will conflict with the previous one.
-//! So we need a mecansime to scope the macro name.
+//! So we need a mechanism to scope the macro name.
 //!
-//! Right now the only way to do that that I know is to use a `const` block, which is not ideal because it limit where the macro can be used : in a const context.
+//! Right now the only way to do that that I know is to use a `const` block, which is not ideal because it limits where the macro can be used: in a const context.
 //!
 //! ```rust
 //! const _: () = {
@@ -183,7 +184,7 @@
 //! ```
 //! <https://internals.rust-lang.org/t/anonymous-modules/15441/2?u=thomas-mewily>
 //!
-//! The definiton for lambda `map_on!` macro is the following :
+//! The definition for the lambda form of `map_on!` is the following:
 //!
 //! ```rust,ignore
 //! ($tokens:tt, $($macro_arms:tt)+) => {
@@ -199,7 +200,7 @@
 //!
 //! This is the kind of stuff I was doing in C, ported to Rust while also using the full power of Rust macros.
 //!
-//! The official name for this technique seem to be `X macro`, but since the main focus is mapping tokens over tokens I prefer the name `map_on macro`.
+//! The official name for this technique seems to be `X macro`, but since the main focus is applying macros to tokens, I prefer the name `map_on` macro.
 //! <https://en.wikipedia.org/wiki/X_macro>
 //!
 

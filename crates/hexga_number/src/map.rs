@@ -3,197 +3,209 @@ use super::*;
 // Update it and add `try_map` once stabilized ?
 // https://doc.rust-lang.org/std/primitive.array.html#method.try_map
 
+
+/// Map item inside self.
+/// 
 /// Similar to [`Iterator::map`], but for container-like types that keep their shape/type.
-pub trait MapIntern : Sized
-{
+/// Best effort is made to reuses the existing allocation when possible. That why [`Map::map`] is easier to use/write than [`MapInto::map_into`].
+pub trait Map: Sized {
     type Item;
 
-    /// Apply `f` to each item, producing a new container of the same type.
-    /// For some stuff like Grid, may crash if the dimension is different.
-    fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
+    /// Apply `f` to each item.
+    fn map<F>(self, f: F) -> Self
+    where
+        F: FnMut(Self::Item) -> Self::Item;
+}
+
+/// Map item inside self, while allowing its type to change.
+/// 
+/// Depending on the type, the output usually needs a fresh allocation (ex: [`Vec`]).
+/// If the mapped type is the same type as the item, consider [`Map::map`] instead because it can often reuse the allocation.
+pub trait MapInto: Map {
+    type WithType<R>: MapInto<Item = R>;
+
+    /// Elementwise apply `f` to each item, while allowing the item type to change.
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(Self::Item) -> R;
+}
+
+
+/// Map item from multiple self.
+/// 
+/// Similar to [`Iterator::map`], but for container-like types that keep their shape/type.
+/// Best effort is made to reuses the existing allocation when possible. That why [`MapZip::map_zip`] is easier to use/write than [`MapZipInto::map_zip_into`].
+pub trait MapZip: Map
+{
+    /// Elementwise apply `f` to the corresponding items across `M` containers.
+    ///
+    /// # Panics
+    ///
+    /// May panic if `M == 0`, or if the containers shapes mismatch (ex two `Grid` of different size).
+    /// 
+    /// For [`Vec`], a length mismatch is fine because it zips to the shortest length.
+    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self
     where
         F: FnMut([Self::Item; M]) -> Self::Item;
 
-    /// Apply `f` to each item, producing a new container of the same type.
-    fn map_intern<F>(self, mut f: F) -> Self where F: FnMut(Self::Item) -> Self::Item { Self::map_intern_elementwise(|[a]| f(a), [self]) }
-
-    /// Combine `self` and `other` elementwise with `f`.
-    fn map_intern_with<F>(self, other: Self, mut f: F) -> Self
+    /// Elementwise apply `f` to `self` and `other`.
+    ///
+    /// # Panics
+    ///
+    /// May panic if the containers shapes mismatch (ex two `Grid` of different size).
+    /// 
+    /// For [`Vec`], a length mismatch is fine because it zips to the shortest length.
+    fn map_with<F>(self, other: Self, mut f: F) -> Self
     where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item { Self::map_intern_elementwise(|[a, b]| f(a,b), [self, other]) }
+        F: FnMut(Self::Item, Self::Item) -> Self::Item,
+    {
+        Self::map_zip([self, other], |[a, b]| f(a, b))
+    }
 }
 
-/// Similar to [`Iterator::map`]. Contrary to [`MapIntern`], it allows changing the item type.
-pub trait Map : MapIntern
-{
-    type WithType<R>: Map<Item = R>;
 
-    /// Apply `f` to each item, returning a container of the mapped values.
-    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
+/// Map item from multiple self, while allowing its type to change.
+pub trait MapZipInto: MapZip + MapInto 
+{
+    /// Elementwise apply `f` to the corresponding items across `M` containers.
+    ///
+    /// # Panics
+    ///
+    /// May panic if `M == 0`, or if the containers shapes mismatch (ex two `Grid` of different size).
+    /// 
+    /// For [`Vec`], a length mismatch is fine because it zips to the shortest length.
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R>
     where
         F: FnMut([Self::Item; M]) -> R;
 
-    /// Apply `f` to each item, producing a new container of the mapped values.
-    fn map<F, R>(self, mut f: F) -> Self::WithType<R> where F: FnMut(Self::Item) -> R { Self::map_elementwise(|[a]| f(a), [self]) }
-
-    /// Combine `self` and `other` elementwise with `f`, producing a new container
-    /// of the mapped values.
-    fn map_with<F, R>(self, other: Self, mut f: F) -> Self::WithType<R>
+    /// Combine `self` and `other` elementwise with `f`.
+    ///
+    /// # Panics
+    ///
+    /// May panic if the containers shapes mismatch (ex two `Grid` of different size).
+    /// 
+    /// For [`Vec`], a length mismatch is fine because it zips to the shortest length.
+    fn map_with_into<F, R>(self, other: Self, mut f: F) -> Self::WithType<R>
     where
-        F: FnMut(Self::Item, Self::Item) -> R { Self::map_elementwise(|[a, b]| f(a,b), [self, other]) }
-}
-
-impl<T,const N: usize> MapIntern for [T;N]
-{
-    type Item=T;
-    fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
-    where
-        F: FnMut([Self::Item; M]) -> Self::Item 
+        F: FnMut(Self::Item, Self::Item) -> R,
     {
-        Self::map_elementwise(f, this)
-    }
-}
-impl<T,const N: usize> Map for [T;N]
-{
-    type WithType<R> = [R;N];
-
-    fn map_elementwise<F, R, const M: usize>(mut f: F, this : [Self; M]) -> Self::WithType<R>
-    where
-        F: FnMut([Self::Item; M]) -> R 
-    {
-        /*
-        let mut iters = this.map(|v| v.into_iter());
-        core::array::from_fn(|_| f(core::array::from_fn(|i| unsafe { iters[i].next().unwrap_unchecked() })))
-        */
-
-        // SAFETY notes:
-        // - `this` is wrapped in `ManuallyDrop`, so its elements are never dropped by the
-        //   compiler on unwind; we take ownership of each element exactly once via `ptr::read`.
-        // - Every `(j, i)` index pair is visited exactly once (outer loop over `i`, inner over `j`),
-        //   so each `this[j][i]` is read exactly once and never read again.
-        // - `f` may panic; if it does, `this` (ManuallyDrop) leaks its not-yet-read elements,
-        //   which is safe (just a leak), and the already-read elements are owned by `args`
-        //   which drops correctly on unwind.
-        let this = core::mem::ManuallyDrop::new(this);
-
-        core::array::from_fn(|i| {
-            f(core::array::from_fn(|j| unsafe {
-                // SAFETY: see above. `j < M`, `i < N`; pointer is valid and initialized.
-                core::ptr::read(&this[j][i])
-            }))
-        })
-
-        /* 
-        let this = core::mem::ManuallyDrop::new(this);
-
-        core::array::from_fn(|i| {
-            f(core::array::from_fn(|j| unsafe {
-                // SAFETY: `this` is ManuallyDrop, so its elements are never
-                // dropped by the compiler. We read `this[j][i]` exactly once for each (j, i) pair.
-                // The pointer is valid because `this` is a live ManuallyDrop<[Self; N]>.
-                core::ptr::read(&this[j][i])
-            }))
-        })
-        */
+        Self::map_zip_into([self, other], |[a, b]| f(a, b))
     }
 }
 
-/*
-impl<T> MapIntern for Vec<T>
-{
-    type Item=T;
-    fn map_intern_elementwise<F, const M: usize>(mut f: F, this : [Self; M]) -> Self
-    where
-        F: FnMut([Self::Item; M]) -> Self::Item 
-    {
-        // TODO : reuse the allocation of vector `this[0]` to avoid re allocating ?
-        Self::map_elementwise(f, this)
-    }
-}
-*/
-impl<T> MapIntern for Vec<T> {
+impl<T, const N: usize> Map for [T; N] {
     type Item = T;
 
-    fn map_intern_elementwise<F, const M: usize>(mut f: F, mut this: [Self; M]) -> Self
+    fn map<F>(self, mut f: F) -> Self
     where
-        F: FnMut([Self::Item; M]) -> Self::Item,
+        F: FnMut(T) -> T,
     {
-        // Safe version, but will do a allocation
-        //return Self::map_elementwise(f, this);
+        self.map(|v| f(v))
+    }
+}
+impl<T, const N: usize> MapInto for [T; N] {
+    type WithType<R> = [R; N];
 
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
+        self.map(f)
+    }
+}
+impl<T, const N: usize> MapZip for [T; N] {
+    fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self
+    where
+        F: FnMut([T; M]) -> T,
+    {
+        let mut iters = this.map(|v| v.into_iter());
+        core::array::from_fn(|_| f(core::array::from_fn(|i| unsafe {
+            iters[i].next().unwrap_unchecked()
+        })))
+    }
+}
+impl<T, const N: usize> MapZipInto for [T; N] {
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R>
+    where
+        F: FnMut([T; M]) -> R,
+    {
+        let mut iters = this.map(|v| v.into_iter());
+        core::array::from_fn(|_| f(core::array::from_fn(|i| unsafe {
+            iters[i].next().unwrap_unchecked()
+        })))
+    }
+}
+
+impl<T> Map for Vec<T> {
+    type Item = T;
+
+    fn map<F>(self, f: F) -> Self
+    where
+        F: FnMut(T) -> T,
+    {
+        self.into_iter().map(f).collect()
+    }
+}
+impl<T> MapInto for Vec<T> {
+    type WithType<R> = Vec<R>;
+
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
+        self.into_iter().map(f).collect()
+    }
+}
+impl<T> MapZip for Vec<T> {
+    fn map_zip<F, const M: usize>(mut this: [Self; M], mut f: F) -> Self
+    where
+        F: FnMut([T; M]) -> T,
+    {
         if M == 0 {
             return Vec::new();
         }
-
-        /*
-        if M == 1 {
-            // The compiler is too dumb to know that M == 1 here...
-            // `this` has exactly one element (M == 1); take it out.
-            let mut v: Vec<T> = this[0];
-            v.iter_mut().for_each(|v| v.by_value(|v| f([v])));
-            return v;
-        }
-        */
         let len = this.iter().map(Vec::len).min().unwrap_or(0);
-
-        // Reuse this[0] allocation for the output vector.
         let mut result = core::mem::take(&mut this[0]);
         result.truncate(len);
-
+        let mut iters = this.map(IntoIterator::into_iter);
         let base = result.as_mut_ptr();
         let mut out_ptr = base;
-
-        // this[0] is now empty; iters[0] is never read. Indices 1..M feed the tail.
-        let mut iters = this.map(|v| v.into_iter());
-
         let mut k = 0;
         while k < len {
             unsafe { result.set_len(k); }
-
-            let mut args: [core::mem::MaybeUninit<T>; M] = [const { core::mem::MaybeUninit::uninit() }; M];
-
+            let mut args: [core::mem::MaybeUninit<T>; M] =
+                [const { core::mem::MaybeUninit::uninit() }; M];
             unsafe { args[0].write(core::ptr::read(out_ptr)); }
-
-            // Indices 1..M: straight-line, no `if i == 0` branch.
             for j in 1..M {
                 args[j].write(unsafe { iters[j].next().unwrap_unchecked() });
             }
-
             let args: [T; M] = unsafe { core::ptr::read(args.as_ptr() as *const [T; M]) };
-            let v = f(args);
-
-            unsafe { core::ptr::write(out_ptr, v); }
-
-            unsafe { out_ptr = out_ptr.add(1); }
+            let value = f(args);
+            unsafe {
+                core::ptr::write(out_ptr, value);
+                out_ptr = out_ptr.add(1);
+            }
             k += 1;
         }
-
         unsafe { result.set_len(len); }
         result
     }
 }
-
-impl<T> Map for Vec<T>
-{
-    type WithType<R> = Vec<R>;
-
-    fn map_elementwise<F, R, const M: usize>(mut f: F, this : [Self; M]) -> Self::WithType<R>
+impl<T> MapZipInto for Vec<T> {
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R>
     where
-        F: FnMut([Self::Item; M]) -> R 
+        F: FnMut([T; M]) -> R,
     {
-        if M == 0 { return Vec::new(); }
-
-        // Can do crazy opti (skip new vector allocation) if `sizeof<R> <= sizeof<T>` and if the align match
-
-        /*
-        if TypeId::of::<T>() == TypeId::of::<R>() 
-        {
-
-        } 
-        */
-
+        if M == 0 {
+            return Vec::new();
+        }
         let mut len = usize::MAX;
-        let mut iters = this.map(|v| { len = min(v.len(), len); v.into_iter() });
-        Vec::from_fn(len, |_| f(core::array::from_fn(|i| unsafe { iters[i].next().unwrap_unchecked() })))
+        let mut iters = this.map(|v| {
+            len = min(v.len(), len);
+            v.into_iter()
+        });
+        Vec::from_fn(len, |_| f(core::array::from_fn(|i| unsafe {
+            iters[i].next().unwrap_unchecked()
+        })))
     }
 }

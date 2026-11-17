@@ -122,9 +122,9 @@ impl<C, B> MapInto for Bijection<C, B>
 where
     C: MapInto,
 {
-    type With<R> = Bijection<C::With<R>, B>;
+    type WithType<R> = Bijection<C::WithType<R>, B>;
 
-    fn map_into<F, R>(self, f: F) -> Self::With<R>
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
     where
         F: FnMut(Self::Item) -> R,
     {

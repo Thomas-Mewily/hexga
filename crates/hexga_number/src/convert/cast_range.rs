@@ -38,7 +38,7 @@ pub trait CastRangeFrom<T>
 impl<C1, C2> CastRangeFrom<C2> for C1
 where
     C1: MapInto,
-    C2: MapInto<With<C1::Item> = Self>,
+    C2: MapInto<WithType<C1::Item> = Self>,
     C1::Item: CastRangeFrom<C2::Item>,
 {
     fn cast_range_from(value: C2) -> Self { value.map_into(C1::Item::cast_range_from) }

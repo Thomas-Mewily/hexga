@@ -170,8 +170,8 @@ impl<T> Map for CameraOf<T>
     }
 }
 impl<T> MapInto for CameraOf<T> {
-    type With<R> = CameraOf<R>;
-    fn map_into<F, R>(self, f: F) -> Self::With<R> where F: FnMut(T) -> R {
+    type WithType<R> = CameraOf<R>;
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
         CameraOf { matrix: self.matrix.map_into(f), depth: self.depth }
     }
 }
