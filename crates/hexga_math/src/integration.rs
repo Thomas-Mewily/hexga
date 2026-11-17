@@ -11,18 +11,20 @@ pub mod traits
 }
 
 /// Time integration for rate `a += x`.
-pub trait IntegrateRate<F>
+pub trait IntegrateLinear<F>
 {
     //type Output;
 
-    /// Time integration: replaces `a += x` with a dt-scaled step.
+    /// Time integration: replaces `a += x` with a dt scaled step.
     ///
     /// ```ignore
-    /// a += x;
+    /// a += x; // not time integrated
+    /// =>
+    /// a += (x * dt); // time integrated
     /// // replace it by
-    /// a += x.integrate_rate(dt);
+    /// a += x.integrate_linear(dt);
     /// ```
-    fn integrate_rate(self, dt: F) -> Self;
+    fn integrate_linear(self, dt: F) -> Self;
 }
 
 /// Time integration for product `a *= x`.
@@ -30,10 +32,12 @@ pub trait IntegrateProduct<F>
 {
     //type Output;
 
-    /// Time integration: replaces `a *= x` with a dt-scaled step.
+    /// Time integration: replaces `a *= x` with a dt scaled step.
     ///
     /// ```ignore
-    /// a *= x;
+    /// a *= x; // not time integrated
+    /// =>
+    /// a *= (x.pow(dt)); // time integrated
     /// // replace it by
     /// a *= x.integrate_product(dt);
     /// ```
@@ -42,9 +46,9 @@ pub trait IntegrateProduct<F>
 
 map_on_float!(
     ($name:ty) => {
-        impl IntegrateRate<$name> for $name
+        impl IntegrateLinear<$name> for $name
         {
-            fn integrate_rate(self, dt: $name) -> Self {
+            fn integrate_linear(self, dt: $name) -> Self {
                 self * dt
             }
         }
@@ -52,7 +56,7 @@ map_on_float!(
         impl IntegrateProduct<$name> for $name
         {
             fn integrate_product(self, dt: $name) -> Self {
-                self * dt
+                self.pow(dt)
             }
         }
     }
@@ -76,10 +80,11 @@ impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<V, Time>
 
 // https://youtu.be/LSNQuFEDOyQ *Lerp smoothing is broken* by Freya Holmér
 
-impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<V, Time>
+impl<Time, V, V2, C> Lerp<C, V2> for Integrate<V, Time>
     where V: Lerp<C, V2, Output=V>, C: IntegrateProduct<Time>
 {
     type Output = V;
+
     fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
         let Integrate(value, dt) = self;
         value.lerp_unchecked(dest, coef.integrate_product(dt))
@@ -99,13 +104,12 @@ impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<&mut V, Time>
 }
 */
 
-
 impl<Time, V> AddAssign<V> for Integrate<&mut V, Time>
 where
-    V: IntegrateRate<Time> + AddAssign<V>, Time: Copy
+    V: IntegrateLinear<Time> + AddAssign<V>, Time: Copy
 {
     fn add_assign(&mut self, rhs: V) {
-        *self.0 += rhs.integrate_rate(self.1);
+        *self.0 += rhs.integrate_linear(self.1);
     }
 }
 

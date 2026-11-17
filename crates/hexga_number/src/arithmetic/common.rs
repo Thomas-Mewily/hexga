@@ -206,7 +206,7 @@ where
 }
 */
 
-/// Lerp function in a component way. Same as [`Mix`]
+/// Lerp function in a component way.
 pub trait Lerp<C,D=Self> : Sized //: Mix<C> ,
 {
     type Output;

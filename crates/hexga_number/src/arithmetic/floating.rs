@@ -95,7 +95,7 @@ impl Hash for OrderedFloat<f64>
 /// Generalized function and constant for floating point like `f32`, `f64`...
 ///
 /// The func impl and documentation are copied from the Rust std because those are the same function, generalized in this trait
-pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue
+pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow
 {
     /// 2.
     #[doc(hidden)]
@@ -267,6 +267,7 @@ pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue
     #[must_use]
     fn copysign(self, sign: Self) -> Self;
 
+    /*
     /// Raises a number to a floating point power.
     ///
     /// # Unspecified precision
@@ -284,6 +285,7 @@ pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue
     /// ```
     #[must_use]
     fn pow(self, n: Self) -> Self;
+    */
 
     /// Returns `e^(self)`, (the exponential function).
     ///
@@ -781,7 +783,7 @@ macro_rules! impl_floating_number {
             fn signum(self) -> Self { self.signum() }
             fn copysign(self, sign: Self) -> Self { self.copysign(sign) }
 
-            fn pow(self, n: Self) -> Self { self.powf(n) }
+            //fn pow(self, n: Self) -> Self { self.powf(n) }
 
             fn exp(self) -> Self { self.exp() }
             fn exp2(self) -> Self { self.exp2() }
