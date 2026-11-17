@@ -51,7 +51,7 @@ where
     fn from(value: &ImageBaseOf<RgbaU8, Idx>) -> Self
     {
         let dimensions = value.size();
-        let dimensions_u32 = dimensions.map(|v| v.to_u32());
+        let dimensions_u32 = dimensions.map_into(|v| v.to_u32());
 
         let size = wgpu::Extent3d {
             width: dimensions_u32.x,

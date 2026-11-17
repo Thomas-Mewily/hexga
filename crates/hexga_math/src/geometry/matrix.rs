@@ -669,7 +669,7 @@ where
 {
     type Output = Matrix<T::Output, ROW, COL>;
 
-    fn mul(self, rhs: T) -> Self::Output { Matrix::from_col(self.columns.map(|v| v.map(|i| i.mul(rhs)))) }
+    fn mul(self, rhs: T) -> Self::Output { Matrix::from_col(self.columns.map_into(|v| v.map_into(|i| i.mul(rhs)))) }
 }
 
 impl<T, const ROW: usize, const COL: usize> MulAssign<T> for Matrix<T, ROW, COL>
@@ -685,7 +685,7 @@ where
 {
     type Output = Matrix<T::Output, ROW, COL>;
 
-    fn div(self, rhs: T) -> Self::Output { Matrix::from_col(self.columns.map(|v| v.map(|i| i.div(rhs)))) }
+    fn div(self, rhs: T) -> Self::Output { Matrix::from_col(self.columns.map_into(|v| v.map_into(|i| i.div(rhs)))) }
 }
 
 impl<T, const ROW: usize, const COL: usize> DivAssign<T> for Matrix<T, ROW, COL>
@@ -695,37 +695,35 @@ where
     fn div_assign(&mut self, rhs: T) { *self = (*self).div(rhs); }
 }
 
-impl<T, const ROW: usize, const COL: usize> MapIntern for Matrix<T, ROW, COL>
-{
+impl<T, const ROW: usize, const COL: usize> Map for Matrix<T, ROW, COL> {
     type Item = T;
-
-    fn map_intern_elementwise<F, const N: usize>(f: F, this : [Self; N]) -> Self
-    where
-        F: FnMut([Self::Item; N]) -> Self::Item {
-        Self::map_elementwise(f, this)
+    fn map<F>(self, mut f: F) -> Self where F: FnMut(T) -> T {
+        Matrix::from_col(self.columns.map(|col| col.map(&mut f)))
     }
 }
-impl<T, const ROW: usize, const COL: usize> Map for Matrix<T, ROW, COL>
-{
+impl<T, const ROW: usize, const COL: usize> MapInto for Matrix<T, ROW, COL> {
+    type With<R> = Matrix<R, ROW, COL>;
+    fn map_into<F, R>(self, mut f: F) -> Self::With<R> where F: FnMut(T) -> R {
+        Matrix::from_col(self.columns.map_into(|col| col.map_into(&mut f)))
+    }
+}
+impl<T, const ROW: usize, const COL: usize> MapZip for Matrix<T, ROW, COL> {
+    fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self where F: FnMut([T; M]) -> T {
+        assert!(M > 0);
+        Matrix::from_col(MapZip::map_zip(this.map(|m| m.columns), |column| {
+            <Vector<T, ROW> as MapZip>::map_zip(column, &mut f)
+        }))
+    }
+}
+impl<T, const ROW: usize, const COL: usize> MapZipInto for Matrix<T, ROW, COL> {
     type WithType<R> = Matrix<R, ROW, COL>;
-
-    fn map_elementwise<F, R, const M: usize>(mut f: F, this : [Self; M]) -> Self::WithType<R>
-    where
-        F: FnMut([Self::Item; M]) -> R
-    {
-        use std::array;
-
-        let mut it= this.map(|m| m.columns.into_iter());
-
-        let cols = array::from_fn(|_| {
-            let cols = array::from_fn(|i| unsafe { it[i].next().unwrap_unchecked() });
-            <Vector<T, ROW> as Map>::map_elementwise(&mut f, cols)
-        });
-        Matrix::<R, ROW, COL>::from_col(Vector::from_array(cols))
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
+        assert!(M > 0);
+        Matrix::from_col(MapZipInto::map_zip_into(this.map(|m| m.columns), |column| {
+            <Vector<T, ROW> as MapZipInto>::map_zip_into(column, &mut f)
+        }))
     }
 }
-
-
 impl<T, const N: usize> SquareMatrix<T, N>
 where
     T: Floating,

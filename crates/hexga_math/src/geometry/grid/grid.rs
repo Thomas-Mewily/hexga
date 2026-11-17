@@ -95,55 +95,44 @@ map_on_std_fmt!(
     }
 );
 
-impl<T, Idx, const N: usize> MapIntern for GridOf<T, Idx, N>
-where
-    Idx: Integer,
+impl<T, Idx, const N: usize> Map for GridOf<T, Idx, N>
+where Idx: Integer,
 {
     type Item = T;
-    fn map_intern<F>(mut self, f: F) -> Self
-    where
-        F: FnMut(Self::Item) -> Self::Item,
-    {
-        self.values = self.values.map_intern(f);
+    fn map<F>(mut self, f: F) -> Self where F: FnMut(T) -> T {
+        self.values = self.values.map(f);
         self
     }
-    
-    fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
-    where
-        F: FnMut([Self::Item; M]) -> Self::Item 
-    {
-        if M == 0 { return ___(); }
-
-        let size = this[0].size();
-        assert!((&this).all(|g| g.size() == size), "size mismatch");
-        unsafe { Self::from_vec_unchecked(size, MapIntern::map_intern_elementwise(f, this.map(|g| g.values))) }
+}
+impl<T, Idx, const N: usize> MapInto for GridOf<T, Idx, N>
+where Idx: Integer,
+{
+    type With<R> = GridOf<R, Idx, N>;
+    fn map_into<F, R>(self, f: F) -> Self::With<R> where F: FnMut(T) -> R {
+        unsafe { Self::With::<R>::from_vec_unchecked(self.size, self.values.map_into(f)) }
     }
 }
-impl<T, Idx, const N: usize> Map for GridOf<T, Idx, N>
-where
-    Idx: Integer,
+impl<T, Idx, const N: usize> MapZip for GridOf<T, Idx, N>
+where Idx: Integer,
+{
+    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self where F: FnMut([T; M]) -> T {
+        assert!(M > 0);
+        let size = this[0].size();
+        assert!((&this).all(|g| g.size() == size), "size mismatch");
+        unsafe { Self::from_vec_unchecked(size, <Vec<T> as MapZip>::map_zip(this.map(|g| g.values), f)) }
+    }
+}
+impl<T, Idx, const N: usize> MapZipInto for GridOf<T, Idx, N>
+where Idx: Integer,
 {
     type WithType<R> = GridOf<R, Idx, N>;
-
-    fn map<F, R>(self, f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item) -> R,
-    {
-        unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map(f)) }
-    }
-    
-    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
-    where
-        F: FnMut([Self::Item; M]) -> R 
-    {
-        if M == 0 { return ___(); }
-
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
+        assert!(M > 0);
         let size = this[0].size();
         assert!((&this).all(|g| g.size() == size), "size mismatch");
-        unsafe { <Self::WithType<R>>::from_vec_unchecked(size, Map::map_elementwise(f, this.map(|g| g.values))) }
+        unsafe { Self::WithType::<R>::from_vec_unchecked(size, <Vec<T> as MapZipInto>::map_zip_into(this.map(|g| g.values), f)) }
     }
 }
-
 impl<T, Idx, const N: usize> GridOf<T, Idx, N>
 where
     Idx: Integer,

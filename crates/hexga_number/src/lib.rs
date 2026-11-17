@@ -85,7 +85,7 @@ pub mod traits
         Decrement, Increment,
         Floating, Half, Infinity, 
         IterSample, IterSampleDefault, IterSampleDefaultInclusive, IterStep, IterStepDefault, IterStepDefaultInclusive, IterStepMax, 
-        Map, MapIntern, 
+        Map, MapInto, MapZip, MapZipInto,
         Max, MaxValue, Min, MinValue, 
         MinusOne, NaNValue, 
         OddOrEven,

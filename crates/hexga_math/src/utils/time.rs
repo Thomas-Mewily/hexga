@@ -82,16 +82,16 @@ map_on_number!(
 /*
 impl<T> ToTimeComposite for T
 where
-    T: Map,
+    T: MapInto,
     T::Item: ToTimeComposite,
 {
     type Output = T::WithType<<T::Item as ToTimeComposite>::Output>;
 
-    fn millis(self) -> Self::Output { self.map(ToTimeComposite::millis) }
-    fn secs(self) -> Self::Output { self.map(ToTimeComposite::secs) }
-    fn mins(self) -> Self::Output { self.map(ToTimeComposite::mins) }
-    fn hours(self) -> Self::Output { self.map(ToTimeComposite::hours) }
-    fn days(self) -> Self::Output { self.map(ToTimeComposite::days) }
+    fn millis(self) -> Self::Output { self.map_into(ToTimeComposite::millis) }
+    fn secs(self) -> Self::Output { self.map_into(ToTimeComposite::secs) }
+    fn mins(self) -> Self::Output { self.map_into(ToTimeComposite::mins) }
+    fn hours(self) -> Self::Output { self.map_into(ToTimeComposite::hours) }
+    fn days(self) -> Self::Output { self.map_into(ToTimeComposite::days) }
 }
 */
 

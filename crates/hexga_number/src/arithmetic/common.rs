@@ -42,10 +42,10 @@ impl Max for bool
 
 impl<S> Max for S
 where
-    S: MapIntern,
+    S: MapZip,
     S::Item: Max,
 {
-    fn max(self, other: Self) -> Self { self.map_intern_with(other, Max::max) }
+    fn max(self, other: Self) -> Self { self.map_with(other, Max::max) }
 }
 
 /// Min function in a component way.
@@ -87,10 +87,10 @@ impl Min for bool
 
 impl<S> Min for S
 where
-    S: MapIntern,
+    S: MapZip,
     S::Item: Min,
 {
-    fn min(self, other: Self) -> Self { self.map_intern_with(other, Min::min) }
+    fn min(self, other: Self) -> Self { self.map_with(other, Min::min) }
 }
 
 /// Clamp function in a component way between Zero..=One
@@ -286,12 +286,12 @@ map_on_number_and_bool!(
 );
 impl<S, F> Lerp<F> for S
 where
-    S: MapIntern,
+    S: MapZip,
     S::Item: Lerp<F, Output = S::Item>,
     F: Copy,
 {
     type Output = S;
-    fn lerp_unchecked(self, dest: Self, coef: F) -> Self { self.map_intern_with(dest, |a, b| a.lerp_unchecked(b, coef)) }
+    fn lerp_unchecked(self, dest: Self, coef: F) -> Self { self.map_with(dest, |a, b| a.lerp_unchecked(b, coef)) }
 }
 
 /// Abs function in a component way
@@ -392,11 +392,11 @@ impl Abs for bool
 }
 impl<S> Abs for S
 where
-    S: Map,
+    S: MapInto,
     S::Item: Abs,
 {
-    type Output = S::WithType<<S::Item as Abs>::Output>;
-    fn abs(self) -> Self::Output { self.map(Abs::abs) }
+    type Output = S::With<<S::Item as Abs>::Output>;
+    fn abs(self) -> Self::Output { self.map_into(Abs::abs) }
 }
 
 /// Absolute value in a component way.

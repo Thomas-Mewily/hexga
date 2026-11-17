@@ -18,7 +18,7 @@ This crate define N dimensional math stuff (2d, 3d, 4d, ... nd) like vector/poin
 The *same* common functions such as [`min`], [`max`], [`mix`],
 [`abs`], and [`clamp`] work for
 - primitive values(`u32`, `i32`, `f32`, `bool`, ...)
-- and on composite types (`Array`, `Vector`, `Color`, `Rectangle`, `Matrix`, `Grid`, ...) that implement the [`Map`] / [`MapWith`] / [`MapIntern`] / [`MapInternWith`] traits.
+- and on composite types (`Array`, `Vector`, `Color`, `Rectangle`, `Matrix`, `Grid`, ...) that implement the [`Map`] / [`MapInto`] / [`MapZip`] / [`MapZipInto`] traits.
 
 Any external type implementing these traits automatically gains support for these common functions.
 

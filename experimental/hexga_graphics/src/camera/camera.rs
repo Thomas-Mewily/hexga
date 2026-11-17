@@ -162,33 +162,20 @@ where
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { f.debug_struct("Camera").field("matrix", &self.matrix).field("depth", &self.depth).finish() }
 }
-impl<T> MapIntern for CameraOf<T>
-{
-    type Item = T;
-    fn map_intern_elementwise<F, const M: usize>(f: F, mut this : [Self; M]) -> Self
-    where
-        F: FnMut([Self::Item; M]) -> Self::Item 
-    {
-        Self::map_elementwise(f, this)
-    }
-}
 impl<T> Map for CameraOf<T>
 {
-    type WithType<R> = CameraOf<R>;
-
-    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
-    where
-        F: FnMut([Self::Item; M]) -> R {
-        assert!(M > 0);
-        let depth = this[0].depth;
-        let matrix = Map::map_elementwise(f, this.map(|v| v.matrix));
-        CameraOf
-        {
-            matrix,
-            depth,
-        }
+    type Item = T;
+    fn map<F>(self, f: F) -> Self where F: FnMut(T) -> T {
+        CameraOf { matrix: self.matrix.map(f), depth: self.depth }
     }
 }
+impl<T> MapInto for CameraOf<T> {
+    type With<R> = CameraOf<R>;
+    fn map_into<F, R>(self, f: F) -> Self::With<R> where F: FnMut(T) -> R {
+        CameraOf { matrix: self.matrix.map_into(f), depth: self.depth }
+    }
+}
+
 
 impl<F> GetPosition<F, 3> for CameraOf<F>
 where

@@ -551,52 +551,44 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx: Integer, C: ToColo
 }
 */
 
-impl<T, Idx> MapIntern for ImageBaseOf<T, Idx>
-where
-    Idx: Integer,
-{
-    type Item = T;
-    fn map_intern<F>(mut self, f: F) -> Self
-    where
-        F: FnMut(Self::Item) -> Self::Item,
-    {
-        self.pixels = self.pixels.map_intern(f);
-        self
-    }
-    
-    fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
-    where
-        F: FnMut([Self::Item; M]) -> Self::Item 
-    {
-        if M == 0 { return ___(); }
-
-        let size = this[0].size();
-        assert!((&this).all(|g| g.size() == size), "size mismatch");
-        unsafe { Self::from_vec_unchecked(size, MapIntern::map_intern_elementwise(f, this.map(|g| g.pixels))) }
-    }
-}
 impl<T, Idx> Map for ImageBaseOf<T, Idx>
 where
     Idx: Integer,
 {
-    type WithType<R> = ImageBaseOf<R, Idx>;
-
-    fn map<F, R>(self, f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item) -> R,
-    {
-        unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.pixels.map(f)) }
+    type Item = T;
+    fn map<F>(mut self, f: F) -> Self where F: FnMut(T) -> T {
+        self.pixels = self.pixels.map(f);
+        self
     }
-    
-    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
-    where
-        F: FnMut([Self::Item; M]) -> R 
-    {
-        if M == 0 { return ___(); }
-
+}
+impl<T, Idx> MapInto for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+{
+    type With<R> = ImageBaseOf<R, Idx>;
+    fn map_into<F, R>(self, f: F) -> Self::With<R> where F: FnMut(T) -> R {
+        unsafe { Self::With::<R>::from_vec_unchecked(self.size, self.pixels.map_into(f)) }
+    }
+}
+impl<T, Idx> MapZip for ImageBaseOf<T, Idx>
+where Idx: Integer,
+{
+    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self where F: FnMut([T; M]) -> T {
+        assert!(M > 0);
         let size = this[0].size();
         assert!((&this).all(|g| g.size() == size), "size mismatch");
-        unsafe { <Self::WithType<R>>::from_vec_unchecked(size, Map::map_elementwise(f, this.map(|g| g.pixels))) }
+        unsafe { Self::from_vec_unchecked(size, <Vec<T> as MapZip>::map_zip(this.map(|g| g.pixels), f)) }
+    }
+}
+impl<T, Idx> MapZipInto for ImageBaseOf<T, Idx>
+where Idx: Integer,
+{
+    type WithType<R> = ImageBaseOf<R, Idx>;
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
+        assert!(M > 0);
+        let size = this[0].size();
+        assert!((&this).all(|g| g.size() == size), "size mismatch");
+        unsafe { Self::WithType::<R>::from_vec_unchecked(size, <Vec<T> as MapZipInto>::map_zip_into(this.map(|g| g.pixels), f)) }
     }
 }
 

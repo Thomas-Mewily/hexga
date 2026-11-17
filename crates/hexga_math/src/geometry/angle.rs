@@ -69,13 +69,13 @@ map_on_number!(
 /*
 impl<T> ToAngleComposite for T
 where
-    T: Map,
+    T: MapInto,
     T::Item: ToAngleComposite,
 {
     type Output = T::WithType<<T::Item as ToAngleComposite>::Output>;
-    fn degree(self) -> Self::Output { self.map(ToAngleComposite::degree) }
-    fn radian(self) -> Self::Output { self.map(ToAngleComposite::radian) }
-    fn turn(self) -> Self::Output { self.map(ToAngleComposite::turn) }
+    fn degree(self) -> Self::Output { self.map_into(ToAngleComposite::degree) }
+    fn radian(self) -> Self::Output { self.map_into(ToAngleComposite::radian) }
+    fn turn(self) -> Self::Output { self.map_into(ToAngleComposite::turn) }
 }
 */
 

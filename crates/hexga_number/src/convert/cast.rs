@@ -35,11 +35,11 @@ pub trait CastFrom<T>
 }
 impl<C1, C2> CastFrom<C2> for C1
 where
-    C1: Map,
-    C2: Map<WithType<C1::Item> = Self>,
+    C1: MapInto,
+    C2: MapInto<With<C1::Item> = Self>,
     C1::Item: CastFrom<C2::Item>,
 {
-    fn cast_from(value: C2) -> Self { value.map(C1::Item::cast_from) }
+    fn cast_from(value: C2) -> Self { value.map_into(C1::Item::cast_from) }
 }
 
 /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)

@@ -104,61 +104,34 @@ impl<C, B> Bijection<C, B>
     pub fn bijection_fn_mut(&mut self) -> &mut B { &mut self.bijection_fn }
 }
 
-impl<C, B> MapIntern for Bijection<C, B>
-where
-    C: MapIntern,
-{
-    type Item = <C as MapIntern>::Item;
-    fn map_intern<F>(mut self, f: F) -> Self
-    where
-        F: FnMut(Self::Item) -> Self::Item,
-    {
-        self.values = self.values.map_intern(f);
-        self
-    }
-}
-impl<C, B> MapInternWith for Bijection<C, B>
-where
-    C: MapInternWith,
-{
-    fn map_intern_with<F>(mut self, other: Self, f: F) -> Self
-    where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item,
-    {
-        self.values = self.values.map_intern_with(other.values, f);
-        self
-    }
-}
 impl<C, B> Map for Bijection<C, B>
 where
     C: Map,
 {
-    type WithType<R> = Bijection<C::WithType<R>, B>;
+    type Item = C::Item;
 
-    fn map<R, F>(self, f: F) -> Self::WithType<R>
+    fn map<F>(mut self, f: F) -> Self
+    where
+        F: FnMut(Self::Item) -> Self::Item,
+    {
+        self.values = self.values.map(f);
+        self
+    }
+}
+impl<C, B> MapInto for Bijection<C, B>
+where
+    C: MapInto,
+{
+    type With<R> = Bijection<C::With<R>, B>;
+
+    fn map_into<F, R>(self, f: F) -> Self::With<R>
     where
         F: FnMut(Self::Item) -> R,
     {
-        Bijection::<C::WithType<R>, B> {
-            bijection_fn: self.bijection_fn,
-            values: self.values.map(f),
-        }
+        Bijection { bijection_fn: self.bijection_fn, values: self.values.map_into(f) }
     }
 }
-impl<C, B> MapWith for Bijection<C, B>
-where
-    C: MapWith,
-{
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item, Item2) -> R,
-    {
-        Bijection::<C::WithType<R>, B> {
-            bijection_fn: self.bijection_fn,
-            values: self.values.map_with(other.values, f),
-        }
-    }
-}
+
 
 /*
 // Todo: re impl it

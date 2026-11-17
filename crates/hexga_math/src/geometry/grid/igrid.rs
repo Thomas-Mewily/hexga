@@ -54,8 +54,8 @@ pub trait IGrid<T, Idx, const N: usize> :
     + GetMut<Vector<Idx,N>,Output = T> + TryGetMut<Vector<Idx,N>,Output = T> + GetManyMut<Vector<Idx,N>,Output=T>
     + IndexMut<Vector<Idx,N>, Output = T>
 
-    //+ MapIntern<Item=T>
-    //+ Map<Item=T>
+    + Map<Item=T> + MapInto<Item=T>
+    + MapZip<Item=T> + MapZipInto<Item=T>
 
     + Sized
     where Idx: Integer

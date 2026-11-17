@@ -178,7 +178,7 @@ where
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.map(ToColor::to_rgba_of)
+        self.map_into(ToColor::to_rgba_of)
     }
 
     type ToHsla<R>
@@ -189,7 +189,7 @@ where
     where
         R: Floating + CastRangeFrom<P>,
     {
-        self.map(ToColor::to_hsla_of)
+        self.map_into(ToColor::to_hsla_of)
     }
 }
 impl<T, P> ToColor<P> for Vec<T>
@@ -205,7 +205,7 @@ where
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.map(ToColor::to_rgba_of)
+        self.map_into(ToColor::to_rgba_of)
     }
 
     type ToHsla<R>
@@ -216,7 +216,7 @@ where
     where
         R: Floating + CastRangeFrom<P>,
     {
-        self.map(ToColor::to_hsla_of)
+        self.map_into(ToColor::to_hsla_of)
     }
 }
 impl<P, T, Idx, const N: usize> ToColor<P> for GridOf<T, Idx, N>
@@ -233,7 +233,7 @@ where
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.map(ToColor::to_rgba_of)
+        self.map_into(ToColor::to_rgba_of)
     }
 
     type ToHsla<R>
@@ -244,7 +244,7 @@ where
     where
         R: Floating + CastRangeFrom<P>,
     {
-        self.map(ToColor::to_hsla_of)
+        self.map_into(ToColor::to_hsla_of)
     }
 }
 impl<T, C, Idx> ToColor<T> for ImageBaseOf<C, Idx>
@@ -261,7 +261,7 @@ where
     where
         R: Primitive + CastRangeFrom<T>,
     {
-        self.map(ToColor::to_rgba_of)
+        self.map_into(ToColor::to_rgba_of)
     }
 
     type ToHsla<R>
@@ -272,7 +272,7 @@ where
     where
         R: Floating + CastRangeFrom<T>,
     {
-        self.map(ToColor::to_hsla_of)
+        self.map_into(ToColor::to_hsla_of)
     }
 }
 impl<'a, P, T, Idx, const N: usize> ToColor<P> for GridView<'a, GridOf<T, Idx, N>, T, Idx, N>
