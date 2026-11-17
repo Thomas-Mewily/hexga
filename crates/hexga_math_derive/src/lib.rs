@@ -252,30 +252,25 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     impl<T, const N : usize> #crate_ident::MapIntern for #current_name<T,N>
                     {
                         type Item=T;
-                        fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
+
+                        fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
+                        where
+                            F: FnMut([Self::Item; M]) -> Self::Item 
                         {
-                            Self::from_array(<[T;N]>::from(self).map_intern(f))
-                        }
-                    }
-                    impl<T, const N : usize> #crate_ident::MapInternWith for #current_name<T,N>
-                    {
-                        fn map_intern_with<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
-                        {
-                            Self::from_array(<[T;N]>::from(self).map_intern_with(other.into(), f))
+                            <Self as  #crate_ident::Map>::map_elementwise(f, this)
                         }
                     }
                     impl<T, const N : usize> #crate_ident::Map for #current_name<T,N>
                     {
                         type WithType<T2> = #current_name<T2,N>;
-                        fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
-                            Self::WithType::from_array(<[T;N] as #crate_ident::Map>::map(self.into(), f))
-                        }
-                    }
-                    impl<T, const N : usize> #crate_ident::MapWith for #current_name<T,N>
-                    {
-                        fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
+
+                        fn map_elementwise<F, R, const M: usize>(mut f: F, this: [Self; M]) -> Self::WithType<R>
+                        where
+                            F: FnMut([Self::Item; M]) -> R,
                         {
-                            Self::WithType::from_array(<[T;N]>::from(self).map_with(other.into(), f))
+                            let mut iters: [::core::array::IntoIter<T, N>; M] = this.map(|v| ::core::convert::Into::<[T; N]>::into(v).into_iter());
+                            let out: [R; N] = ::core::array::from_fn(|_| f(::core::array::from_fn(|j| unsafe { iters[j].next().unwrap_unchecked() })));
+                            <Self::WithType<R> as #crate_ident::array::FromArray<R, N>>::from_array(out)
                         }
                     }
 
@@ -642,30 +637,25 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                     impl<T> #crate_ident::MapIntern for #current_name<T>
                     {
                         type Item=T;
-                        fn map_intern<F>(self, f: F) -> Self where F: FnMut(Self::Item) -> Self::Item
+
+                        fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
+                        where
+                            F: FnMut([Self::Item; M]) -> Self::Item 
                         {
-                            Self::from_array(<[T;#dim]>::from(self).map_intern(f))
-                        }
-                    }
-                    impl<T> #crate_ident::MapInternWith for #current_name<T>
-                    {
-                        fn map_intern_with<F>(self, other: Self, f: F) -> Self where F: FnMut(Self::Item, Self::Item) -> Self::Item
-                        {
-                            Self::from_array(<[T;#dim]>::from(self).map_intern_with(other.into(), f))
+                            <Self as #crate_ident::Map>::map_elementwise(f, this)
                         }
                     }
                     impl<T> #crate_ident::Map for #current_name<T>
                     {
                         type WithType<T2> = #current_name<T2>;
-                        fn map<T2,F>(self, f: F) -> Self::WithType<T2> where F: FnMut(Self::Item) -> T2 {
-                            Self::WithType::from_array(<[T;#dim] as #crate_ident::Map>::map(self.into(), f))
-                        }
-                    }
-                    impl<T> #crate_ident::MapWith for #current_name<T>
-                    {
-                        fn map_with<R,Item2,F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R> where F: FnMut(Self::Item, Item2) -> R
+
+                        fn map_elementwise<F, R, const M: usize>(mut f: F, this: [Self; M]) -> Self::WithType<R>
+                        where
+                            F: FnMut([Self::Item; M]) -> R,
                         {
-                            Self::WithType::from_array(<[T;#dim]>::from(self).map_with(other.into(), f))
+                            let mut iters: [::core::array::IntoIter<T, #dim>; M] = this.map(|v| ::core::convert::Into::<[T; #dim]>::into(v).into_iter());
+                            let out: [R; #dim] = ::core::array::from_fn(|_| f(::core::array::from_fn(|j| unsafe { iters[j].next().unwrap_unchecked() })));
+                            <Self::WithType<R> as #crate_ident::array::FromArray<R, #dim>>::from_array(out)
                         }
                     }
 

@@ -705,20 +705,11 @@ impl<T, const ROW: usize, const COL: usize> MapIntern for Matrix<T, ROW, COL>
         Self::map_elementwise(f, this)
     }
 }
-impl<T, const ROW: usize, const COL: usize> MapInternWith for Matrix<T, ROW, COL>
-{
-    fn map_intern_with<F>(self, other: Self, f: F) -> Self
-    where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item,
-    {
-        self.map_with(other, f)
-    }
-}
 impl<T, const ROW: usize, const COL: usize> Map for Matrix<T, ROW, COL>
 {
     type WithType<R> = Matrix<R, ROW, COL>;
 
-    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
+    fn map_elementwise<F, R, const M: usize>(mut f: F, this : [Self; M]) -> Self::WithType<R>
     where
         F: FnMut([Self::Item; M]) -> R
     {
@@ -727,34 +718,13 @@ impl<T, const ROW: usize, const COL: usize> Map for Matrix<T, ROW, COL>
         let mut it= this.map(|m| m.columns.into_iter());
 
         let cols = array::from_fn(|_| {
-            let cols = array::from_fn(|i| it[i].next().unwrap());
+            let cols = array::from_fn(|i| unsafe { it[i].next().unwrap_unchecked() });
             <Vector<T, ROW> as Map>::map_elementwise(&mut f, cols)
         });
-TMP
         Matrix::<R, ROW, COL>::from_col(Vector::from_array(cols))
     }
+}
 
-    fn map<R, F>(self, mut f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item) -> R,
-    {
-        let mut it = self.columns.into_iter();
-        let cols = std::array::from_fn(|_| Map::map(it.next().unwrap(), &mut f));
-        Self::WithType::<R>::from_col(Vector::from_array(cols))
-    }
-}
-impl<T, const ROW: usize, const COL: usize> MapWith for Matrix<T, ROW, COL>
-{
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, mut f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item, Item2) -> R,
-    {
-        let mut it1 = self.columns.into_iter();
-        let mut it2 = other.columns.into_iter();
-        let cols = std::array::from_fn(|_| MapWith::map_with(unsafe { it1.next().unwrap_unchecked() }, unsafe { it2.next().unwrap_unchecked() }, &mut f));
-        Self::WithType::<R>::from_col(Vector::from_array(cols))
-    }
-}
 
 impl<T, const N: usize> SquareMatrix<T, N>
 where

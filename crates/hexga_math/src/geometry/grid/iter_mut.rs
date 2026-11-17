@@ -91,6 +91,7 @@ where
 {
 }
 
+/* 
 impl<'a, G, T, Idx, const N: usize> MapIntern for GridViewMut<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
@@ -111,6 +112,13 @@ where
             }
         });
         self
+    }
+    
+    fn map_intern_elementwise<F, const M: usize>(mut f: F, mut this: [Self; M]) -> Self
+    where
+        F: FnMut([Self::Item; M]) -> Self::Item,
+    {
+
     }
 }
 
@@ -136,3 +144,4 @@ where
         self
     }
 }
+*/

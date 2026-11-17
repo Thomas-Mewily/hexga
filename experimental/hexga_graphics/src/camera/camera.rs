@@ -165,25 +165,27 @@ where
 impl<T> MapIntern for CameraOf<T>
 {
     type Item = T;
-    fn map_intern<F>(mut self, f: F) -> Self
+    fn map_intern_elementwise<F, const M: usize>(f: F, mut this : [Self; M]) -> Self
     where
-        F: FnMut(Self::Item) -> Self::Item,
+        F: FnMut([Self::Item; M]) -> Self::Item 
     {
-        self.matrix = self.matrix.map_intern(f);
-        self
+        Self::map_elementwise(f, this)
     }
 }
 impl<T> Map for CameraOf<T>
 {
     type WithType<R> = CameraOf<R>;
 
-    fn map<R, F>(self, f: F) -> Self::WithType<R>
+    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
     where
-        F: FnMut(Self::Item) -> R,
-    {
-        Self::WithType {
-            matrix: self.matrix.map(f),
-            depth: self.depth,
+        F: FnMut([Self::Item; M]) -> R {
+        assert!(M > 0);
+        let depth = this[0].depth;
+        let matrix = Map::map_elementwise(f, this.map(|v| v.matrix));
+        CameraOf
+        {
+            matrix,
+            depth,
         }
     }
 }

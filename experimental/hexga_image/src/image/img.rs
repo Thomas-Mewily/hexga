@@ -30,7 +30,7 @@ where
     pixels: Vec<C>,
 }
 
-impl<C, Idx, const N: usize> Default for ImageBaseOf<C, Idx, N>
+impl<C, Idx> Default for ImageBaseOf<C, Idx>
 where
     Idx: Integer,
 {
@@ -563,18 +563,16 @@ where
         self.pixels = self.pixels.map_intern(f);
         self
     }
-}
-impl<T, Idx> MapInternWith for ImageBaseOf<T, Idx>
-where
-    Idx: Integer,
-{
-    fn map_intern_with<F>(mut self, other: Self, f: F) -> Self
+    
+    fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
     where
-        F: FnMut(Self::Item, Self::Item) -> Self::Item,
+        F: FnMut([Self::Item; M]) -> Self::Item 
     {
-        assert_eq!(self.size(), other.size(), "size mismatch");
-        self.pixels = self.pixels.map_intern_with(other.pixels, f);
-        self
+        if M == 0 { return ___(); }
+
+        let size = this[0].size();
+        assert!((&this).all(|g| g.size() == size), "size mismatch");
+        unsafe { Self::from_vec_unchecked(size, MapIntern::map_intern_elementwise(f, this.map(|g| g.pixels))) }
     }
 }
 impl<T, Idx> Map for ImageBaseOf<T, Idx>
@@ -583,23 +581,22 @@ where
 {
     type WithType<R> = ImageBaseOf<R, Idx>;
 
-    fn map<R, F>(self, f: F) -> Self::WithType<R>
+    fn map<F, R>(self, f: F) -> Self::WithType<R>
     where
         F: FnMut(Self::Item) -> R,
     {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.pixels.map(f)) }
     }
-}
-impl<T, Idx> MapWith for ImageBaseOf<T, Idx>
-where
-    Idx: Integer,
-{
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R>
+    
+    fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
     where
-        F: FnMut(Self::Item, Item2) -> R,
+        F: FnMut([Self::Item; M]) -> R 
     {
-        assert_eq!(self.size(), other.size(), "size mismatch");
-        unsafe { ImageBaseOf::from_vec_unchecked(self.size(), self.pixels.map_with(other.pixels, f)) }
+        if M == 0 { return ___(); }
+
+        let size = this[0].size();
+        assert!((&this).all(|g| g.size() == size), "size mismatch");
+        unsafe { <Self::WithType<R>>::from_vec_unchecked(size, Map::map_elementwise(f, this.map(|g| g.pixels))) }
     }
 }
 

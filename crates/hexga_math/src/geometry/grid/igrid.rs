@@ -43,7 +43,6 @@ where
 pub trait IGrid<T, Idx, const N: usize> :
       GetRectangle<Idx,N> + GetPosition<Idx,N>
 
-
     + Get<Vector<Idx,N>,Output=T> + TryGet<Vector<Idx,N>,Output=T>
     + Index<Vector<Idx,N>,Output=T>
 
@@ -55,8 +54,8 @@ pub trait IGrid<T, Idx, const N: usize> :
     + GetMut<Vector<Idx,N>,Output = T> + TryGetMut<Vector<Idx,N>,Output = T> + GetManyMut<Vector<Idx,N>,Output=T>
     + IndexMut<Vector<Idx,N>, Output = T>
 
-    + MapIntern<Item=T>
-    + Map<Item=T>
+    //+ MapIntern<Item=T>
+    //+ Map<Item=T>
 
     + Sized
     where Idx: Integer
@@ -66,6 +65,7 @@ pub trait IGrid<T, Idx, const N: usize> :
     // Those expose the implementation, put in another trait like IGridVector
     fn values(&self) -> &[T];
     fn values_mut(&mut self) -> &mut [T];
+    
     fn into_values(self) -> Vec<T> { self.into_size_and_values().1 }
     fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T>);
 

@@ -98,18 +98,7 @@ impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<&mut V, Time>
     }
 }
 */
-//TODO impl it 
-impl<Time, V> MapIntern for  Integrate<V, Time>
-{
-    type Item=V;
 
-    fn map_intern<F>(mut self, mut f: F) -> Self
-    where
-        F: FnMut(Self::Item) -> Self::Item {
-        self.0 = f(self.0);
-        self
-    }
-}
 
 impl<Time, V> AddAssign<V> for Integrate<&mut V, Time>
 where

@@ -108,10 +108,15 @@ where
         self
     }
     
-    fn map_intern_elementwise<F, const M: usize>(mut f: F, this : [Self; M]) -> Self
+    fn map_intern_elementwise<F, const M: usize>(f: F, this : [Self; M]) -> Self
     where
-        F: FnMut([Self::Item; M]) -> Self::Item {
-        Self::map_intern(f, this)
+        F: FnMut([Self::Item; M]) -> Self::Item 
+    {
+        if M == 0 { return ___(); }
+
+        let size = this[0].size();
+        assert!((&this).all(|g| g.size() == size), "size mismatch");
+        unsafe { Self::from_vec_unchecked(size, MapIntern::map_intern_elementwise(f, this.map(|g| g.values))) }
     }
 }
 impl<T, Idx, const N: usize> Map for GridOf<T, Idx, N>
@@ -129,24 +134,13 @@ where
     
     fn map_elementwise<F, R, const M: usize>(f: F, this : [Self; M]) -> Self::WithType<R>
     where
-        F: FnMut([Self::Item; M]) -> R {
+        F: FnMut([Self::Item; M]) -> R 
+    {
         if M == 0 { return ___(); }
 
         let size = this[0].size();
-        assert!(this.all(|g| g.size() == size), "size mismatch");
-        unsafe { <Self::WithType<R>>::from_vec(size, Map::map_elementwise(f, this.map(|g| g.values))).unwrap() }
-    }
-}
-impl<T, Idx, const N: usize> MapWith for GridOf<T, Idx, N>
-where
-    Idx: Integer,
-{
-    fn map_with<R, Item2, F>(self, other: Self::WithType<Item2>, f: F) -> Self::WithType<R>
-    where
-        F: FnMut(Self::Item, Item2) -> R,
-    {
-        assert_eq!(self.size(), other.size(), "size mismatch");
-        unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map_with(other.values, f)) }
+        assert!((&this).all(|g| g.size() == size), "size mismatch");
+        unsafe { <Self::WithType<R>>::from_vec_unchecked(size, Map::map_elementwise(f, this.map(|g| g.values))) }
     }
 }
 
