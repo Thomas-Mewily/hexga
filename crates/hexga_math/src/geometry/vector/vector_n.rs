@@ -427,7 +427,7 @@ where
 
 impl<T, const N: usize> Vector<T, N>
 where
-    T: Floating,
+    T: Float,
 {
     pub fn distance_to(self, target: Self) -> T { self.vector_to(target).length() }
 

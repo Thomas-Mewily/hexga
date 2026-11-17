@@ -725,7 +725,7 @@ impl<T, const ROW: usize, const COL: usize> MapZipInto for Matrix<T, ROW, COL> {
 }
 impl<T, const N: usize> SquareMatrix<T, N>
 where
-    T: Floating,
+    T: Float,
 {
     /// Inverse the matrix, or return `None` if the matrix is singular.
     ///
@@ -951,7 +951,7 @@ matrix_have_w!(4);
 impl<T, const N: usize> RotateX<T> for SquareMatrix<T, N>
 where
     Self: HaveZ<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
-    T: Floating,
+    T: Float,
 {
     fn rotate_x(&mut self, angle: AngleOf<T>) -> &mut Self
     {
@@ -963,7 +963,7 @@ where
 impl<T, const N: usize> RotateY<T> for SquareMatrix<T, N>
 where
     Self: HaveZ<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
-    T: Floating,
+    T: Float,
 {
     fn rotate_y(&mut self, angle: AngleOf<T>) -> &mut Self
     {
@@ -975,7 +975,7 @@ where
 impl<T, const N: usize> RotateZ<T> for SquareMatrix<T, N>
 where
     Self: HaveY<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
-    T: Floating,
+    T: Float,
 {
     fn rotate_z(&mut self, angle: AngleOf<T>) -> &mut Self
     {
@@ -1035,13 +1035,13 @@ where
 
 impl<T> GetScale<T, 2> for SquareMatrix<T, 3>
 where
-    T: Floating,
+    T: Float,
 {
     fn scale(&self) -> Vector<T, 2> { Vector::from_fn(|i| Vector::<T, 2>::from(self[i]).length()) }
 }
 impl<T> SetScale<T, 2> for SquareMatrix<T, 3>
 where
-    T: Floating,
+    T: Float,
 {
     fn set_scale(&mut self, scale: Vector<T, 2>) -> &mut Self
     {
@@ -1062,13 +1062,13 @@ where
 }
 impl<T> GetScale<T, 3> for SquareMatrix<T, 4>
 where
-    T: Floating,
+    T: Float,
 {
     fn scale(&self) -> Vector<T, 3> { Vector::from_fn(|i| Vector::<T, 3>::from(self[i]).length()) }
 }
 impl<T> SetScale<T, 3> for SquareMatrix<T, 4>
 where
-    T: Floating,
+    T: Float,
 {
     fn set_scale(&mut self, scale: Vector<T, 3>) -> &mut Self
     {
@@ -1092,7 +1092,7 @@ where
 impl<T, const N: usize> SquareMatrix<T, N>
 where
     Self: HaveZ<Vector<T, N>> + Zero,
-    T: Floating,
+    T: Float,
 {
     pub fn from_rotation_axis(axis: Vector3<T>, angle: AngleOf<T>) -> Self
     {
@@ -1150,7 +1150,7 @@ where
 impl<T, const N: usize> SquareMatrix<T, N>
 where
     Self: HaveY<Vector<T, N>> + Zero,
-    T: Floating,
+    T: Float,
 {
     pub fn from_rotation_z(angle: AngleOf<T>) -> Self
     {
@@ -1207,7 +1207,7 @@ impl<T> Matrix4<T>
     #[must_use]
     pub fn look_at_rh(position: Vector3<T>, center: Vector3<T>, up: Vector3<T>) -> Self
     where
-        T: Floating,
+        T: Float,
     {
         Self::look_to_rh(position, center - position, up)
     }
@@ -1219,7 +1219,7 @@ impl<T> Matrix4<T>
     #[must_use]
     pub fn look_to_rh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self
     where
-        T: Floating,
+        T: Float,
     {
         let f = dir.normalized();
         let s = f.cross(up).normalized();
@@ -1240,7 +1240,7 @@ impl<T> Matrix4<T>
     #[must_use]
     pub fn look_at_lh(position: Vector3<T>, center: Vector3<T>, up: Vector3<T>) -> Self
     where
-        T: Floating,
+        T: Float,
     {
         Self::look_to_lh(position, center - position, up)
     }
@@ -1252,7 +1252,7 @@ impl<T> Matrix4<T>
     #[must_use]
     pub fn look_to_lh(position: Vector3<T>, dir: Vector3<T>, up: Vector3<T>) -> Self
     where
-        T: Floating,
+        T: Float,
     {
         let f = dir.normalized();
         let s = up.cross(f).normalized();

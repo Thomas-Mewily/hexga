@@ -95,12 +95,12 @@ where
 }
 */
 
-impl<T: Floating> Debug for TimeOf<T>
+impl<T: Float> Debug for TimeOf<T>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self) }
 }
 
-impl<T: Floating> TimeOf<T>
+impl<T: Float> TimeOf<T>
 {
     /// don't display the value if zero
     fn display_non_zero_unit(f: &mut Formatter<'_>, val: i32, unit: &str) -> FmtResult
@@ -119,7 +119,7 @@ impl<T: Floating> TimeOf<T>
     fn display_unit(f: &mut Formatter<'_>, val: i32, unit: &str) -> FmtResult { write!(f, "{}{}", val, unit) }
 }
 
-impl<T: Floating> Display for TimeOf<T>
+impl<T: Float> Display for TimeOf<T>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
@@ -142,7 +142,7 @@ impl<T: Floating> Display for TimeOf<T>
     }
 }
 
-impl<T: Floating> TimeOf<T>
+impl<T: Float> TimeOf<T>
 {
     /// milliseconds
     /// ```
@@ -343,7 +343,7 @@ impl<T: Floating> TimeOf<T>
     pub fn timer_days(self) -> i32 { self.days().abs().floor().to_i32() }
 }
 
-impl<T: Floating> RangeDefault for TimeOf<T>
+impl<T: Float> RangeDefault for TimeOf<T>
 where
     T: RangeDefault,
 {
@@ -356,7 +356,7 @@ where
 #[cfg(feature = "serde")]
 impl<T> Serialize for TimeOf<T>
 where
-    T: Floating + Serialize,
+    T: Float + Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -369,7 +369,7 @@ where
 #[cfg(feature = "serde")]
 impl<'de, T> Deserialize<'de> for TimeOf<T>
 where
-    T: Floating + Deserialize<'de>,
+    T: Float + Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -431,7 +431,7 @@ pub trait TimeNow: Additive
 
 impl<F> TimeNow for TimeOf<F>
 where
-    F: Floating + CastFrom<f64>,
+    F: Float + CastFrom<f64>,
 {
     fn since_launch() -> Self
     {

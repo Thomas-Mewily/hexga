@@ -95,7 +95,7 @@ impl Hash for OrderedFloat<f64>
 /// Generalized function and constant for floating point like `f32`, `f64`...
 ///
 /// The func impl and documentation are copied from the Rust std because those are the same function, generalized in this trait
-pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow
+pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow
 {
     /// 2.
     #[doc(hidden)]
@@ -721,7 +721,7 @@ pub trait Floating: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow
 
 macro_rules! impl_floating_number {
     ($primitive_name: ident) => {
-        impl Floating for $primitive_name
+        impl Float for $primitive_name
         {
             #[inline(always)]
             fn floor(self) -> Self { Self::floor(self) }

@@ -182,7 +182,7 @@ impl<T> Remap for T where T: Arithmetic
 /// Mix function in a component way. Same as [`Lerp`]
 pub trait Mix<C /*= float*/>: Sized
 where
-    C: Floating,
+    C: Float,
 {
     /// Mix function in a component way. Same as [`Lerp::lerp`].
     ///
@@ -207,7 +207,7 @@ where
 */
 
 /// Lerp function in a component way.
-pub trait Lerp<C,D=Self> : Sized //: Mix<C> ,
+pub trait Lerp<C,D=Self> : Sized
 {
     type Output;
 
@@ -221,7 +221,7 @@ pub trait Lerp<C,D=Self> : Sized //: Mix<C> ,
     /// Can cause a panic for grid if the size mismatch
     fn lerp(self, dest: D, coef: C) -> Self::Output where C: ClampUnit { self.lerp_unchecked(dest, coef.clamp(zero(), one())) }
 
-    /// Lerp function in a component way. [`Lerp::lerp_unchecked`].
+    /// Lerp function in a component way.
     ///
     /// The coef is **not** clamped between `0.0..1.`
     ///
@@ -232,7 +232,10 @@ pub trait Lerp<C,D=Self> : Sized //: Mix<C> ,
     fn lerp_unchecked(self, dest: D, coef: C) -> Self::Output;
 }
 
-//impl<T,C> Lerp<C> for T where T: Mix<C>, C: Floating {}
+
+
+
+//impl<T,C> Lerp<C> for T where T: Mix<C>, C: Float {}
 
 /*
 /// Mix function in a component way. Same as [`Lerp::lerp`].
@@ -246,7 +249,7 @@ pub trait Lerp<C,D=Self> : Sized //: Mix<C> ,
 pub fn mix<S, F>(src: S, dest: S, coef: F) -> S
 where
     S: Mix<F>,
-    F: Floating,
+    F: Float,
 {
     src.mix(dest, coef)
 }
@@ -263,7 +266,7 @@ where
 pub fn lerp<S, F>(src: S, dest: S, coef: F) -> S::Output
 where
     S: Lerp<F>,
-    F: Floating,
+    F: Float,
 {
     src.lerp(dest, coef)
 }
@@ -271,7 +274,7 @@ where
 map_on_number_and_bool!(
     ($type_name: tt) =>
     {
-        impl<F> Lerp<F> for $type_name where F: Floating
+        impl<F> Lerp<F> for $type_name where F: Float
         {
             type Output = Self;
             fn lerp_unchecked(self, dest: Self, coef: F) -> Self
@@ -464,7 +467,7 @@ macro_rules! impl_number_basic_trait {
         pub fn lerp<C>(self, other: Self, coef: C) -> <Self as Lerp<C>>::Output
         where
             Self: $crate::Lerp<C>,
-            C: $crate::Floating,
+            C: $crate::Float,
         {
             $crate::Lerp::lerp(self, other, coef)
         }
@@ -480,7 +483,7 @@ macro_rules! impl_number_basic_trait {
         pub fn lerp_unchecked<C>(self, other: Self, coef: C) -> <Self as Lerp<C>>::Output
         where
             Self: $crate::Lerp<C>,
-            C: $crate::Floating,
+            C: $crate::Float,
         {
             $crate::Lerp::lerp_unchecked(self, other, coef)
         }

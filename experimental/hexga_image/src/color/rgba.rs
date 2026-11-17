@@ -288,7 +288,7 @@ where
 
     pub fn to_hsla_of<R>(self) -> HslaOf<R>
     where
-        R: Floating + CastRangeFrom<T>,
+        R: Float + CastRangeFrom<T>,
     {
         // Thank to MacroQuad, the following code was copied and edited the code from the MacroQuad crate
         let [r, g, b, a] = self.to_array4().map(|v| R::cast_range_from(v));
@@ -397,7 +397,7 @@ where
 
     fn to_hsla_of<R>(self) -> HslaOf<R>
     where
-        R: Floating + CastRangeFrom<Self::Component>,
+        R: Float + CastRangeFrom<Self::Component>,
     {
         self.to_hsla_of()
     }

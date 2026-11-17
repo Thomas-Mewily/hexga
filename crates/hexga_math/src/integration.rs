@@ -2,12 +2,13 @@ use super::*;
 
 pub mod prelude
 {
-    use super::traits::*;
+    pub use super::Integrate;
+    pub use super::traits::*;
 }
 
 pub mod traits
 {
-    
+    pub use super::{IntegrateLinear, IntegrateProduct};
 }
 
 /// Time integration for rate `a += x`.
@@ -80,6 +81,7 @@ impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<V, Time>
 
 // https://youtu.be/LSNQuFEDOyQ *Lerp smoothing is broken* by Freya Holmér
 
+/*
 impl<Time, V, V2, C> Lerp<C, V2> for Integrate<V, Time>
     where V: Lerp<C, V2, Output=V>, C: IntegrateProduct<Time>
 {
@@ -90,10 +92,11 @@ impl<Time, V, V2, C> Lerp<C, V2> for Integrate<V, Time>
         value.lerp_unchecked(dest, coef.integrate_product(dt))
     }
 }
+*/
 
-/*
+
 impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<&mut V, Time>
-    where V: Lerp<C, V2, Output=V>, C: IntegrateProduct<Time>
+    where V: Lerp<C, V2, Output=V> + Copy, C: IntegrateProduct<Time>
 {
     type Output = ();
     fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
@@ -102,7 +105,7 @@ impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<&mut V, Time>
         ()
     }
 }
-*/
+
 
 impl<Time, V> AddAssign<V> for Integrate<&mut V, Time>
 where
