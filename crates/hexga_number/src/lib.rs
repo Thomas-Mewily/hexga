@@ -83,7 +83,7 @@ pub mod traits
         Clamp, Lerp, Remap,
         Constant, 
         Decrement, Increment,
-        Float, Half, Infinity, 
+        Float, Trigo, Half, Infinity, 
         IterSample, IterSampleDefault, IterSampleDefaultInclusive, IterStep, IterStepDefault, IterStepDefaultInclusive, IterStepMax, 
         Map, MapInto, MapZip, MapZipInto,
         Max, MaxValue, Min, MinValue, 

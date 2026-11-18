@@ -92,10 +92,263 @@ impl Hash for OrderedFloat<f64>
 }
 */
 
+/// Trigonometric and inverse trigonometric functions for floating point-like values.
+pub trait Trigo<T> {
+    /// Computes the sine of a number (in radians).
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let x = std::f32::consts::FRAC_PI_2;
+    ///
+    /// let abs_difference = (x.sin() - 1.0).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn sin(self) -> T;
+    /// Computes the cosine of a number (in radians).
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let x = 2.0 * std::f32::consts::PI;
+    ///
+    /// let abs_difference = (x.cos() - 1.0).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn cos(self) -> T;
+    /// Computes the tangent of a number (in radians).
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    /// This function currently corresponds to the `tanf` from libc on Unix and
+    /// Windows. Note that this might change in the future.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let x = std::f32::consts::FRAC_PI_4;
+    /// let abs_difference = (x.tan() - 1.0).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn tan(self) -> T;
+    /// Computes the cotangent of a number (in radians).
+    ///
+    /// Defined as `1 / tan(x)` or equivalently `cos(x) / sin(x)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use hexga_number::prelude::*;
+    ///
+    /// let x = std::f32::consts::FRAC_PI_4; // 45°
+    ///
+    /// let abs_difference = (x.cot() - 1.0).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn cot(self) -> T;
+    /// Hyperbolic sine function.
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    /// This function currently corresponds to the `sinhf` from libc on Unix
+    /// and Windows. Note that this might change in the future.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let e = std::f32::consts::E;
+    /// let x = 1.0f32;
+    ///
+    /// let f = x.sinh();
+    /// // Solving sinh() at 1 gives `(e^2-1)/(2e)`
+    /// let g = ((e * e) - 1.0) / (2.0 * e);
+    /// let abs_difference = (f - g).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn sinh(self) -> T;
+    /// Hyperbolic cosine function.
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    /// This function currently corresponds to the `coshf` from libc on Unix
+    /// and Windows. Note that this might change in the future.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let e = std::f32::consts::E;
+    /// let x = 1.0f32;
+    /// let f = x.cosh();
+    /// // Solving cosh() at 1 gives this result
+    /// let g = ((e * e) + 1.0) / (2.0 * e);
+    /// let abs_difference = (f - g).abs();
+    ///
+    /// // Same result
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn cosh(self) -> T;
+    /// Hyperbolic tangent function.
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    /// This function currently corresponds to the `tanhf` from libc on Unix
+    /// and Windows. Note that this might change in the future.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let e = std::f32::consts::E;
+    /// let x = 1.0f32;
+    ///
+    /// let f = x.tanh();
+    /// // Solving tanh() at 1 gives `(1 - e^(-2))/(1 + e^(-2))`
+    /// let g = (1.0 - e.powi(-2)) / (1.0 + e.powi(-2));
+    /// let abs_difference = (f - g).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn tanh(self) -> T;
+    /// Computes the sine and cosine of an angle in radians, in that order.
+    fn sin_cos(self) -> (T, T);
+
+    /// Computes the arcsine of a number. Return value is in radians in
+    /// the range [-pi/2, pi/2] or NaN if the number is outside the range
+    /// [-1, 1].
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    /// This function currently corresponds to the `asinf` from libc on Unix
+    /// and Windows. Note that this might change in the future.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let f = std::f32::consts::FRAC_PI_2;
+    ///
+    /// // asin(sin(pi/2))
+    /// let abs_difference = (f.sin().asin() - std::f32::consts::FRAC_PI_2).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn asin(self) -> T;
+    /// Computes the arccosine of a number. Return value is in radians in
+    /// the range [0, pi] or NaN if the number is outside the range
+    /// [-1, 1].
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    /// This function currently corresponds to the `acosf` from libc on Unix
+    /// and Windows. Note that this might change in the future.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let f = std::f32::consts::FRAC_PI_4;
+    ///
+    /// // acos(cos(pi/4))
+    /// let abs_difference = (f.cos().acos() - std::f32::consts::FRAC_PI_4).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn acos(self) -> T;
+    /// Computes the arctangent of a number. Return value is in radians in the
+    /// range [-pi/2, pi/2];
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    /// This function currently corresponds to the `atanf` from libc on Unix
+    /// and Windows. Note that this might change in the future.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let f = 1.0f32;
+    ///
+    /// // atan(tan(1))
+    /// let abs_difference = (f.tan().atan() - 1.0).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn atan(self) -> T;
+    /// Computes the four quadrant arctangent of `self` (`y`) and `other` (`x`) in radians.
+    ///
+    /// * `x = 0`, `y = 0`: `0`
+    /// * `x >= 0`: `arctan(y/x)` -> `[-pi/2, pi/2]`
+    /// * `y >= 0`: `arctan(y/x) + pi` -> `(pi/2, pi]`
+    /// * `y < 0`: `arctan(y/x) - pi` -> `(-pi, -pi/2)`
+    ///
+    /// # Unspecified precision
+    ///
+    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+    /// can even differ within the same execution from one invocation to the next.
+    /// This function currently corresponds to the `atan2f` from libc on Unix
+    /// and Windows. Note that this might change in the future.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Positive angles measured counter-clockwise
+    /// // from positive x axis
+    /// // -pi/4 radians (45 deg clockwise)
+    /// let x1 = 3.0f32;
+    /// let y1 = -3.0f32;
+    ///
+    /// // 3pi/4 radians (135 deg counter-clockwise)
+    /// let x2 = -3.0f32;
+    /// let y2 = 3.0f32;
+    ///
+    /// let abs_difference_1 = (y1.atan2(x1) - (-std::f32::consts::FRAC_PI_4)).abs();
+    /// let abs_difference_2 = (y2.atan2(x2) - (3.0 * std::f32::consts::FRAC_PI_4)).abs();
+    ///
+    /// assert!(abs_difference_1 <= f32::EPSILON);
+    /// assert!(abs_difference_2 <= f32::EPSILON);
+    /// ```
+    #[must_use]
+    fn atan2(self, other: Self) -> T;
+}
 /// Generalized function and constant for floating point like `f32`, `f64`...
 ///
 /// The func impl and documentation are copied from the Rust std because those are the same function, generalized in this trait
-pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow
+pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow<Self, Output=Self> + ClampUnit + Lerp<Self> + Trigo<Self>
 {
     /// 2.
     #[doc(hidden)]
@@ -415,265 +668,7 @@ pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow
     #[must_use]
     fn log10(self) -> Self;
 
-    /// Computes the sine of a number (in radians).
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let x = std::f32::consts::FRAC_PI_2;
-    ///
-    /// let abs_difference = (x.sin() - 1.0).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn sin(self) -> Self;
 
-    /// Computes the arcsine of a number. Return value is in radians in
-    /// the range [-pi/2, pi/2] or NaN if the number is outside the range
-    /// [-1, 1].
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    /// This function currently corresponds to the `asinf` from libc on Unix
-    /// and Windows. Note that this might change in the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let f = std::f32::consts::FRAC_PI_2;
-    ///
-    /// // asin(sin(pi/2))
-    /// let abs_difference = (f.sin().asin() - std::f32::consts::FRAC_PI_2).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn asin(self) -> Self;
-
-    /// Hyperbolic sine function.
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    /// This function currently corresponds to the `sinhf` from libc on Unix
-    /// and Windows. Note that this might change in the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let e = std::f32::consts::E;
-    /// let x = 1.0f32;
-    ///
-    /// let f = x.sinh();
-    /// // Solving sinh() at 1 gives `(e^2-1)/(2e)`
-    /// let g = ((e * e) - 1.0) / (2.0 * e);
-    /// let abs_difference = (f - g).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn sinh(self) -> Self;
-
-    /// Computes the cosine of a number (in radians).
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let x = 2.0 * std::f32::consts::PI;
-    ///
-    /// let abs_difference = (x.cos() - 1.0).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn cos(self) -> Self;
-
-    /// Computes the cotangent of a number (in radians).
-    ///
-    /// Defined as `1 / tan(x)` or equivalently `cos(x) / sin(x)`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use hexga_number::prelude::*;
-    ///
-    /// let x = std::f32::consts::FRAC_PI_4; // 45°
-    ///
-    /// let abs_difference = (x.cot() - 1.0).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn cot(self) -> Self { Self::ONE / self.tan() }
-
-    /// Computes the arccosine of a number. Return value is in radians in
-    /// the range [0, pi] or NaN if the number is outside the range
-    /// [-1, 1].
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    /// This function currently corresponds to the `acosf` from libc on Unix
-    /// and Windows. Note that this might change in the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let f = std::f32::consts::FRAC_PI_4;
-    ///
-    /// // acos(cos(pi/4))
-    /// let abs_difference = (f.cos().acos() - std::f32::consts::FRAC_PI_4).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn acos(self) -> Self;
-
-    /// Hyperbolic cosine function.
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    /// This function currently corresponds to the `coshf` from libc on Unix
-    /// and Windows. Note that this might change in the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let e = std::f32::consts::E;
-    /// let x = 1.0f32;
-    /// let f = x.cosh();
-    /// // Solving cosh() at 1 gives this result
-    /// let g = ((e * e) + 1.0) / (2.0 * e);
-    /// let abs_difference = (f - g).abs();
-    ///
-    /// // Same result
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn cosh(self) -> Self;
-
-    /// Computes the tangent of a number (in radians).
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    /// This function currently corresponds to the `tanf` from libc on Unix and
-    /// Windows. Note that this might change in the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let x = std::f32::consts::FRAC_PI_4;
-    /// let abs_difference = (x.tan() - 1.0).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn tan(self) -> Self;
-
-    /// Computes the arctangent of a number. Return value is in radians in the
-    /// range [-pi/2, pi/2];
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    /// This function currently corresponds to the `atanf` from libc on Unix
-    /// and Windows. Note that this might change in the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let f = 1.0f32;
-    ///
-    /// // atan(tan(1))
-    /// let abs_difference = (f.tan().atan() - 1.0).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn atan(self) -> Self;
-
-    /// Hyperbolic tangent function.
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    /// This function currently corresponds to the `tanhf` from libc on Unix
-    /// and Windows. Note that this might change in the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let e = std::f32::consts::E;
-    /// let x = 1.0f32;
-    ///
-    /// let f = x.tanh();
-    /// // Solving tanh() at 1 gives `(1 - e^(-2))/(1 + e^(-2))`
-    /// let g = (1.0 - e.powi(-2)) / (1.0 + e.powi(-2));
-    /// let abs_difference = (f - g).abs();
-    ///
-    /// assert!(abs_difference <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn tanh(self) -> Self;
-
-    /// Computes the four quadrant arctangent of `self` (`y`) and `other` (`x`) in radians.
-    ///
-    /// * `x = 0`, `y = 0`: `0`
-    /// * `x >= 0`: `arctan(y/x)` -> `[-pi/2, pi/2]`
-    /// * `y >= 0`: `arctan(y/x) + pi` -> `(pi/2, pi]`
-    /// * `y < 0`: `arctan(y/x) - pi` -> `(-pi, -pi/2)`
-    ///
-    /// # Unspecified precision
-    ///
-    /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
-    /// can even differ within the same execution from one invocation to the next.
-    /// This function currently corresponds to the `atan2f` from libc on Unix
-    /// and Windows. Note that this might change in the future.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// // Positive angles measured counter-clockwise
-    /// // from positive x axis
-    /// // -pi/4 radians (45 deg clockwise)
-    /// let x1 = 3.0f32;
-    /// let y1 = -3.0f32;
-    ///
-    /// // 3pi/4 radians (135 deg counter-clockwise)
-    /// let x2 = -3.0f32;
-    /// let y2 = 3.0f32;
-    ///
-    /// let abs_difference_1 = (y1.atan2(x1) - (-std::f32::consts::FRAC_PI_4)).abs();
-    /// let abs_difference_2 = (y2.atan2(x2) - (3.0 * std::f32::consts::FRAC_PI_4)).abs();
-    ///
-    /// assert!(abs_difference_1 <= f32::EPSILON);
-    /// assert!(abs_difference_2 <= f32::EPSILON);
-    /// ```
-    #[must_use]
-    fn atan2(self, other: Self) -> Self;
-
-    fn sin_cos(self) -> (Self, Self);
 
     /// between [0., 1.]
     fn normalize(self) -> Self
@@ -721,6 +716,248 @@ pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow
 
 macro_rules! impl_floating_number {
     ($primitive_name: ident) => {
+        impl Trigo<$primitive_name> for $primitive_name
+        {
+            /// Computes the sine of a number (in radians).
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let x = std::f32::consts::FRAC_PI_2;
+            ///
+            /// let abs_difference = (x.sin() - 1.0).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn sin(self) -> $primitive_name { self.sin() }
+            /// Computes the cosine of a number (in radians).
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let x = 2.0 * std::f32::consts::PI;
+            ///
+            /// let abs_difference = (x.cos() - 1.0).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn cos(self) -> $primitive_name { self.cos() }
+            /// Computes the tangent of a number (in radians).
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            /// This function currently corresponds to the `tanf` from libc on Unix and
+            /// Windows. Note that this might change in the future.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let x = std::f32::consts::FRAC_PI_4;
+            /// let abs_difference = (x.tan() - 1.0).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn tan(self) -> $primitive_name { self.tan() }
+            /// Computes the cotangent of a number (in radians).
+            ///
+            /// Defined as `1 / tan(x)` or equivalently `cos(x) / sin(x)`.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// use hexga_number::prelude::*;
+            ///
+            /// let x = std::f32::consts::FRAC_PI_4; // 45°
+            ///
+            /// let abs_difference = (x.cot() - 1.0).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn cot(self) -> $primitive_name { <$primitive_name as One>::ONE / self.tan() }
+            /// Hyperbolic sine function.
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            /// This function currently corresponds to the `sinhf` from libc on Unix
+            /// and Windows. Note that this might change in the future.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let e = std::f32::consts::E;
+            /// let x = 1.0f32;
+            ///
+            /// let f = x.sinh();
+            /// // Solving sinh() at 1 gives `(e^2-1)/(2e)`
+            /// let g = ((e * e) - 1.0) / (2.0 * e);
+            /// let abs_difference = (f - g).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn sinh(self) -> $primitive_name { self.sinh() }
+            /// Hyperbolic cosine function.
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            /// This function currently corresponds to the `coshf` from libc on Unix
+            /// and Windows. Note that this might change in the future.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let e = std::f32::consts::E;
+            /// let x = 1.0f32;
+            /// let f = x.cosh();
+            /// // Solving cosh() at 1 gives this result
+            /// let g = ((e * e) + 1.0) / (2.0 * e);
+            /// let abs_difference = (f - g).abs();
+            ///
+            /// // Same result
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn cosh(self) -> $primitive_name { self.cosh() }
+            /// Hyperbolic tangent function.
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            /// This function currently corresponds to the `tanhf` from libc on Unix
+            /// and Windows. Note that this might change in the future.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let e = std::f32::consts::E;
+            /// let x = 1.0f32;
+            ///
+            /// let f = x.tanh();
+            /// // Solving tanh() at 1 gives `(1 - e^(-2))/(1 + e^(-2))`
+            /// let g = (1.0 - e.powi(-2)) / (1.0 + e.powi(-2));
+            /// let abs_difference = (f - g).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn tanh(self) -> $primitive_name { self.tanh() }
+            fn sin_cos(self) -> ($primitive_name, $primitive_name) { self.sin_cos() }
+
+            /// Computes the arcsine of a number. Return value is in radians in
+            /// the range [-pi/2, pi/2] or NaN if the number is outside the range
+            /// [-1, 1].
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            /// This function currently corresponds to the `asinf` from libc on Unix
+            /// and Windows. Note that this might change in the future.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let f = std::f32::consts::FRAC_PI_2;
+            ///
+            /// // asin(sin(pi/2))
+            /// let abs_difference = (f.sin().asin() - std::f32::consts::FRAC_PI_2).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn asin(self) -> $primitive_name { self.asin() }
+            /// Computes the arccosine of a number. Return value is in radians in
+            /// the range [0, pi] or NaN if the number is outside the range
+            /// [-1, 1].
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            /// This function currently corresponds to the `acosf` from libc on Unix
+            /// and Windows. Note that this might change in the future.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let f = std::f32::consts::FRAC_PI_4;
+            ///
+            /// // acos(cos(pi/4))
+            /// let abs_difference = (f.cos().acos() - std::f32::consts::FRAC_PI_4).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn acos(self) -> $primitive_name { self.acos() }
+            /// Computes the arctangent of a number. Return value is in radians in the
+            /// range [-pi/2, pi/2];
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            /// This function currently corresponds to the `atanf` from libc on Unix
+            /// and Windows. Note that this might change in the future.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let f = 1.0f32;
+            ///
+            /// // atan(tan(1))
+            /// let abs_difference = (f.tan().atan() - 1.0).abs();
+            ///
+            /// assert!(abs_difference <= f32::EPSILON);
+            /// ```
+            fn atan(self) -> $primitive_name { self.atan() }
+            /// Computes the four quadrant arctangent of `self` (`y`) and `other` (`x`) in radians.
+            ///
+            /// * `x = 0`, `y = 0`: `0`
+            /// * `x >= 0`: `arctan(y/x)` -> `[-pi/2, pi/2]`
+            /// * `y >= 0`: `arctan(y/x) + pi` -> `(pi/2, pi]`
+            /// * `y < 0`: `arctan(y/x) - pi` -> `(-pi, -pi/2)`
+            ///
+            /// # Unspecified precision
+            ///
+            /// The precision of this function is non-deterministic. This means it varies by platform, Rust version, and
+            /// can even differ within the same execution from one invocation to the next.
+            /// This function currently corresponds to the `atan2f` from libc on Unix
+            /// and Windows. Note that this might change in the future.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// // Positive angles measured counter-clockwise
+            /// // from positive x axis
+            /// // -pi/4 radians (45 deg clockwise)
+            /// let x1 = 3.0f32;
+            /// let y1 = -3.0f32;
+            ///
+            /// // 3pi/4 radians (135 deg counter-clockwise)
+            /// let x2 = -3.0f32;
+            /// let y2 = 3.0f32;
+            ///
+            /// let abs_difference_1 = (y1.atan2(x1) - (-std::f32::consts::FRAC_PI_4)).abs();
+            /// let abs_difference_2 = (y2.atan2(x2) - (3.0 * std::f32::consts::FRAC_PI_4)).abs();
+            ///
+            /// assert!(abs_difference_1 <= f32::EPSILON);
+            /// assert!(abs_difference_2 <= f32::EPSILON);
+            /// ```
+            fn atan2(self, other: Self) -> $primitive_name { self.atan2(other) } 
+        }
+
         impl Float for $primitive_name
         {
             #[inline(always)]
@@ -762,22 +999,6 @@ macro_rules! impl_floating_number {
             const COLOR_330_DIV_360: Self = 330. / 360.;
 
             fn sqrt(self) -> Self { self.sqrt() }
-
-            fn cos(self) -> Self { self.cos() }
-            fn acos(self) -> Self { self.acos() }
-            fn cosh(self) -> Self { self.cosh() }
-
-            fn sin(self) -> Self { self.sin() }
-            fn asin(self) -> Self { self.asin() }
-            fn sinh(self) -> Self { self.sinh() }
-
-            fn tan(self) -> Self { self.tan() }
-            fn atan(self) -> Self { self.atan() }
-            fn tanh(self) -> Self { self.tanh() }
-
-            fn atan2(self, other: Self) -> Self { self.atan2(other) }
-
-            fn sin_cos(self) -> (Self, Self) { self.sin_cos() }
 
             fn fract(self) -> Self { self.fract() }
             fn signum(self) -> Self { self.signum() }
