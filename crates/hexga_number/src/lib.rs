@@ -74,7 +74,7 @@ pub mod prelude
 pub mod traits
 {
     pub use crate::{
-        Abs, Pow,
+        Abs, Pow, Decay,
 
         convert::cast_primitive::*,
         CastFrom, CastInto, 

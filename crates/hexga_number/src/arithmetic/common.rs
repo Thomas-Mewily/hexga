@@ -223,6 +223,7 @@ pub trait Lerp<C,D=Self> : Sized
 }
 
 
+
 //impl<T,C> Lerp<C> for T where T: Mix<C>, C: Float {}
 
 /*
@@ -504,9 +505,11 @@ macro_rules! impl_number_basic_trait {
     };
 }
 
+/// `self ^ exp`
 pub trait Pow<Exp = Self>
 {
     type Output;
+    // Raises a number to a power.
     fn pow(self, exp: Exp) -> Self::Output;
 }
 
@@ -527,6 +530,26 @@ map_on_float!(($primitive_name: ty) =>
         fn pow(self, exp: Self) -> Self::Output { self.powf(exp) }
     }
 });
+
+
+/// `self *= 1 - rate`.
+pub trait Decay<Rate = Self> {
+    type Output;
+    /// Applies `rate` once: `self *= 1 - rate`.
+    fn decay(self, rate: Rate) -> Self::Output;
+}
+
+impl<T, Rate> Decay<Rate> for T
+where
+    T: One + Sub<Rate> + Mul<<T as Sub<Rate>>::Output>
+{
+    type Output = <T as Mul<<T as Sub<Rate>>::Output>>::Output;
+
+    #[inline]
+    fn decay(self, rate: Rate) -> Self::Output {
+        self * (T::ONE - rate)
+    }
+}
 
 impl<T> Pow for Wrapping<T>
 where
