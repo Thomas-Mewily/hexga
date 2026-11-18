@@ -1,3 +1,4 @@
+/// Frame rate independent time integration
 use super::*;
 
 pub mod prelude
@@ -9,8 +10,7 @@ pub mod prelude
 pub mod traits
 {
     pub use super::{SmoothLinear, SmoothPow, SmoothExp};
-    pub use super::{Decay};
-    pub use super::{AddDt,MulDt,DecayDt,LerpDt};
+    pub use super::{AddDt,SubDt,MulDt,DivDt,DecayDt,LerpDt};
 }
 
 /// Frame rate independent time integration for rate `a += x`.
@@ -21,10 +21,10 @@ pub trait SmoothLinear<Dt>
     /// Frame rate independent time integration: replaces `a += x` with a dt scaled step.
     ///
     /// ```ignore
-    /// a += x; // not time integrated
-    /// =>
-    /// a += (x * dt); // time integrated
-    /// // replace it by
+    /// a += x;         // not time integrated
+    /// =>              // time integrated
+    /// a += (x * dt); 
+    /// <=>
     /// a += x.smooth_linear(dt);
     /// ```
     fn smooth_linear(self, dt: Dt) -> Self;
@@ -40,7 +40,7 @@ where
     }
 }
 
-/// Frame rate independent time integration for a per-second multiplicative coefficient `a *= x`.
+/// Frame rate independent time integration for a per time unit multiplicative factor `a *= x`.
 pub trait SmoothPow<Dt>
 {
     //type Output;
@@ -48,14 +48,14 @@ pub trait SmoothPow<Dt>
     /// Frame rate independent time integration: replaces `a *= x` with a dt scaled step.
     ///
     /// ```ignore
-    /// a *= x; // not time integrated
-    /// =>
-    /// a *= x.pow(dt); // time integrated
-    /// // replace it by
+    /// a *= x;         // not time integrated
+    /// =>              // time integrated
+    /// a *= x.pow(dt); 
+    /// <=>
     /// a *= x.smooth_pow(dt);
     /// ```
     ///
-    /// `dt=0 -> 1`, `dt=1 -> x`, and `f(a) * f(b) = f(a+b)`.
+    /// `dt=0 -> 1`, `dt=1 -> x`, and `f(a) * f(b) = f(a + b)`.
     fn smooth_pow(self, dt: Dt) -> Self;
 }
 
@@ -69,22 +69,24 @@ where
     }
 }
 
-/// Frame rate independent time integration for a per-second decay rate `a *= 1.0 - r`.
+/// Frame rate independent time integration for a continuous decay coefficient `a *= exp(-coef * dt)`.
 pub trait SmoothExp<Dt>
 {
     //type Output;
 
-    /// Frame rate independent time integration: replaces `a -= a * r * dt` with a dt scaled step.
+    /// Frame rate independent time integration: replaces `a *= exp(-coef)` with a dt scaled step.
     ///
     /// ```ignore
-    /// a *= 1.0 - r; // not time integrated
-    /// =>
-    /// a *= 1.0 - (r * dt).neg().exp(); // time integrated
-    /// // replace it by
-    /// a *= 1.0 - r.smooth_exp(dt);
+    /// a *= exp(-coef);        // not time integrated
+    /// =>                      // time integrated
+    /// a *= exp(-coef * dt); 
+    /// <=>
+    /// a *= coef.smooth_exp(dt);
     /// ```
     ///
-    /// Returns the **fraction decayed** over `dt`: `dt=0 -> 0`, and it composes as `1-(1-f(a))(1-f(b)) = f(a+b)`.
+    /// Returns the **retention factor** over `dt`: `exp(-coef * dt)`.
+    /// `self` is the non-negative decay coefficient per time unit, measured in inverse time units;
+    /// `dt=0 -> 1`, `dt=1 -> exp(-coef)`, and `f(a) * f(b) = f(a + b)`.
     fn smooth_exp(self, dt: Dt) -> Self;
 }
 
@@ -94,7 +96,7 @@ where
 {
     #[inline]
     fn smooth_exp(self, dt: T) -> Self {
-        Self::ONE - (self * dt).neg().exp() // 1 - exp(-self * dt)
+        (self * dt).neg().exp()
     }
 }
 
@@ -102,29 +104,12 @@ where
 
 
 
-/// Per step decay: `a *= 1 - rate`.
-pub trait Decay<Rate = Self> {
-    type Output;
-    /// Applies `rate` once: `a *= 1 - rate`.
-    fn decay(self, rate: Rate) -> Self::Output;
-}
-
-impl<T, Rate> Decay<Rate> for T
-where
-    T: One + Sub<Rate> + Mul<<T as Sub<Rate>>::Output>
-{
-    type Output = <T as Mul<<T as Sub<Rate>>::Output>>::Output;
-
-    #[inline]
-    fn decay(self, rate: Rate) -> Self::Output {
-        self * (T::ONE - rate)
-    }
-}
 
 
-/// Frame-rate independent time integration of an additive rate: `a += rate`.
+
+/// Frame rate independent time integration of an additive rate: `a += rate`.
 pub trait AddDt<Dt> {
-    /// Applies `rate` over `dt` seconds: `a += rate * dt`.
+    /// Applies `rate` over `dt`: `a += rate * dt`.
     fn add_dt(self, rate: Self, dt: Dt) -> Self;
 }
 
@@ -138,9 +123,25 @@ where
     }
 }
 
-/// Frame-rate independent time integration of a multiplicative factor: `a *= factor`.
+/// Frame rate independent time integration of a subtraction: `a -= rate`.
+pub trait SubDt<Dt> {
+    /// Applies `rate` over `dt`: `a -= rate * dt`.
+    fn sub_dt(self, rate: Self, dt: Dt) -> Self;
+}
+
+impl<T, Dt> SubDt<Dt> for T
+where
+    T: Sub<Output = Self> + SmoothLinear<Dt>,
+{
+    #[inline]
+    fn sub_dt(self, rate: Self, dt: Dt) -> Self {
+        self - rate.smooth_linear(dt)
+    }
+}
+
+/// Frame rate independent time integration of a multiplicative factor: `a *= factor`.
 pub trait MulDt<Dt> {
-    /// Applies `factor` (a per-second multiplier) over `dt` seconds: `a *= factor^dt`.
+    /// Applies `factor` (a per-time-unit multiplier) over `dt`: `a *= factor^dt`.
     fn mul_dt(self, factor: Self, dt: Dt) -> Self;
 }
 
@@ -154,25 +155,74 @@ where
     }
 }
 
-/// Frame-rate independent time integration of a decay: `a *= 1 - rate`.
+/// Frame rate independent time integration of a division: `a /= factor`.
+pub trait DivDt<Dt> {
+    /// Applies `factor` over `dt`: `a /= factor^dt`.
+    fn div_dt(self, factor: Self, dt: Dt) -> Self;
+}
+
+impl<T, Dt> DivDt<Dt> for T
+where
+    T: Div<Output = Self> + SmoothPow<Dt>,
+{
+    #[inline]
+    fn div_dt(self, factor: Self, dt: Dt) -> Self {
+        self / factor.smooth_pow(dt)
+    }
+}
+
+/// Frame rate independent time integration of exponential decay: `a *= exp(-rate)` per time unit.
 pub trait DecayDt<Rate, Dt> {
-    /// Applies a per-second decay `rate` over `dt` seconds: `a *= 1 - (1 - exp(-rate*dt))`.
+    /// Applies a non-negative decay rate, measured in inverse time units, over `dt`.
+    ///
+    /// ```ignore
+    /// a *= exp(-rate);        // not time integrated
+    /// =>                      // time integrated
+    /// a *= exp(-rate * dt); 
+    /// <=>
+    /// a = a.decay_dt(rate, dt);
+    /// ```
+    ///
+    /// `rate` is non-negative and measured in inverse time units; `dt=0` leaves `a` unchanged.
     fn decay_dt(self, rate: Rate, dt: Dt) -> Self;
 }
 
 impl<T, Rate, Dt> DecayDt<Rate, Dt> for T
 where
-    Rate : SmoothExp<Dt>, T: One + Sub<Rate, Output = Self> + Mul<Output=Self>
+    Rate: SmoothExp<Dt>,
+    T: Mul<Rate, Output=Self>,
 {
     #[inline]
     fn decay_dt(self, rate: Rate, dt: Dt) -> Self {
-        self * (T::ONE - rate.smooth_exp(dt))
+        self * rate.smooth_exp(dt)
     }
 }
 
 
 
-/// A (value, dt), so that `a += x`, `a *= x` can be written as `a += x * dt` / `a *= x * dt`.
+/// A `(value, dt)` pair for applying time-scaled arithmetic and interpolation operations.
+///
+/// ```ignore
+/// a + coef // not time integrated
+/// a - coef
+/// a * coef
+/// a / coef
+/// a.lerp(dest, coef)
+///
+/// // replace them by the time integrated version:
+/// Integrate(a, dt) + coef
+/// Integrate(a, dt) - coef
+/// Integrate(a, dt) * coef
+/// Integrate(a, dt) / coef
+/// Integrate(a, dt).lerp(dest, coef)
+///
+/// // The assignment operators work on a mutable reference
+/// Integrate(&mut a, dt) += coef;
+/// Integrate(&mut a, dt) -= coef;
+/// Integrate(&mut a, dt) *= coef;
+/// Integrate(&mut a, dt) /= coef;
+/// Integrate(&mut a, dt).lerp(dest, coef);
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Integrate<V,Time>(pub V, pub Time);
 
@@ -203,49 +253,80 @@ impl<Time, V, V2, C> Lerp<C, V2> for Integrate<V, Time>
 }
 */
 
-
+/*
+/// Frame rate independent interpolation of a mutable value.
+///
+/// ```ignore
+/// Integrate(&mut value, dt).lerp(dest, coef);
+/// ```
+///
+/// `coef` is the fraction covered per time unit. The integrated lerp weight is
+/// `1 - (1 - coef)^dt`.
 impl<F, V, V2> Lerp<F, V2> for Integrate<&mut V, F>
     where V: Lerp<F, V2, Output=V> + Copy, F: Float
 {
     type Output = ();
     fn lerp_unclamped(self, dest: V2, coef: F) -> Self::Output {
         let Integrate(value, dt) = self;
-        *value = (*value).lerp_unclamped(dest, coef.smooth_exp(dt));
+        let retention = (F::ONE - coef).smooth_pow(dt);
+        let alpha = F::ONE - retention;
+        *value = (*value).lerp_unclamped(dest, alpha);
         ()
     }
 }
+*/
 
-/// Frame rate independent linear interpolation, with the coefficient integrated over `dt` before interpolating.
+impl<F, V, V2> Lerp<F, V2> for Integrate<V, F>
+where
+    V: Lerp<F, V2, Output=V>,
+    F: Float,
+{
+    type Output = V;
+
+    fn lerp_unclamped(self, dest: V2, coef: F) -> Self::Output {
+        let Integrate(value, dt) = self;
+        let retention = (F::ONE - coef).smooth_pow(dt);
+        let alpha = F::ONE - retention;
+        value.lerp_unclamped(dest, alpha)
+    }
+}
+
+/// Frame rate independent linear interpolation, with the per-time-unit coefficient integrated over `dt`.
 ///
-/// The interpolation coefficient is integrated over `dt` before interpolation.
+/// For coefficient `c`, the interpolation weight over `dt` is `1 - (1 - c)^dt`.
 pub trait LerpDt<C, D=Self, Dt=C> : Sized
 {
     type Output;
 
-    /// `Self` in 1 second move closer to `coef_per_unit` % to `dest` (or whatever unit you are using than second).
-    /// 
-    /// `coef_per_unit` is clamped between `0.0..=1.0`.
-    fn lerp_dt(self, dest: D, coef_per_unit: C, dt: Dt) -> Self::Output
+    /// Frame rate independent time integration: replaces a per-unit lerp coefficient with a dt scaled step.
+    ///
+    /// ```ignore
+    /// value = value.lerp(dest, coef); // not time integrated
+    /// // replace it by
+    /// value.lerp_dt(dest, coef, dt);
+    /// ```
+    ///
+    /// The integrated coefficient is `1 - (1 - coef)^dt`. `coef` is clamped to `0.0..=1.0`.
+    /// `dt` should be non-negative.
+    fn lerp_dt(self, dest: D, coef: C, dt: Dt) -> Self::Output
     where
         C: ClampUnit,
     {
-        self.lerp_dt_unchecked(dest, coef_per_unit.clamp_unit(), dt)
+        self.lerp_dt_unchecked(dest, coef.clamp_unit(), dt)
     }
 
-    /// `Self` in 1 second move closer to `coef_per_unit` % to `dest` (or whatever unit you are using than second).
-    ///
-    /// `coef_per_unit` is not clamped.
-    fn lerp_dt_unchecked(self, dest: D, coef_per_unit: C, dt: Dt) -> Self::Output;
+    /// Like [`LerpDt::lerp_dt`], without clamping `coef` to `0.0..=1.0`.
+    fn lerp_dt_unchecked(self, dest: D, coef: C, dt: Dt) -> Self::Output;
 }
 
-impl<F, V, V2> LerpDt<F, V2, F> for &mut V
+impl<F, V, V2> LerpDt<F, V2, F> for V
 where
-    V: Lerp<F, V2, Output=V> + Copy,
+    V: Lerp<F, V2, Output=V>,
     F: Float
 {
-    type Output = ();
+    type Output = Self;
 
-    fn lerp_dt_unchecked(self, dest: V2, coef: F, dt: F) {
+    fn lerp_dt_unchecked(self, dest: V2, coef: F, dt: F) -> Self::Output {
         Integrate(self, dt).lerp_unclamped(dest, coef)
     }
 }
@@ -262,6 +343,18 @@ where
     }
 }
 
+impl<Dt, V> Sub<V> for Integrate<V, Dt>
+where
+    V: SubDt<Dt>
+{
+    type Output = V;
+
+    fn sub(self, rhs: V) -> Self::Output {
+        let Integrate(value, dt) = self;
+        value.sub_dt(rhs, dt)
+    }
+}
+
 impl<Dt, V> Mul<V> for Integrate<V, Dt>
 where
     V: MulDt<Dt>
@@ -271,6 +364,18 @@ where
     fn mul(self, rhs: V) -> Self::Output {
         let Integrate(value, dt) = self;
         value.mul_dt(rhs, dt)
+    }
+}
+
+impl<Dt, V> Div<V> for Integrate<V, Dt>
+where
+    V: DivDt<Dt>
+{
+    type Output = V;
+
+    fn div(self, rhs: V) -> Self::Output {
+        let Integrate(value, dt) = self;
+        value.div_dt(rhs, dt)
     }
 }
 
@@ -294,18 +399,35 @@ where
     }
 }
 
+impl<Dt, V> SubAssign<V> for Integrate<&mut V, Dt>
+where
+    V: SmoothLinear<Dt> + SubAssign<V>, Dt: Copy
+{
+    fn sub_assign(&mut self, rhs: V) {
+        *self.0 -= rhs.smooth_linear(self.1);
+    }
+}
+
 impl<Dt, V> MulAssign<V> for Integrate<&mut V, Dt>
 where
-    V: SmoothExp<Dt> + MulAssign<V>,
-    Dt: Copy,
+    V: SmoothPow<Dt> + MulAssign<V>, Dt: Copy
 {
     fn mul_assign(&mut self, rhs: V) {
-        *self.0 *= rhs.smooth_exp(self.1);
+        *self.0 *= rhs.smooth_pow(self.1);
+    }
+}
+
+impl<Dt, V> DivAssign<V> for Integrate<&mut V, Dt>
+where
+    V: SmoothPow<Dt> + DivAssign<V>, Dt: Copy
+{
+    fn div_assign(&mut self, rhs: V) {
+        *self.0 /= rhs.smooth_pow(self.1);
     }
 }
 
 // todo change some item here in other module
-// todo MoveDt for vector. LerpDt. Move the rest to 
+// todo MoveDt for vector. Move the rest to
 
 
 

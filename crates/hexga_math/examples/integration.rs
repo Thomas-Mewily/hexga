@@ -14,8 +14,8 @@ fn main() {
         let dt : float = 1. / 60.;
 
         // Even if dt change, the integration remain constant
-        Integrate(&mut pos, dt).lerp(target, 0.5);
+        pos = Integrate(pos, dt).lerp(target, 0.5);
         // or
-        pos.lerp_dt(target, 0.5, dt)
+        pos.lerp_dt(target, 0.5, dt);
     }
 }
