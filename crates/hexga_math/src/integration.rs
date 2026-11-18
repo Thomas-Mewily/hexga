@@ -9,6 +9,7 @@ pub mod prelude
 pub mod traits
 {
     pub use super::{SmoothLinear, SmoothPow, SmoothExp};
+    pub use super::{AddDt,MulDt,DecayDt};
 }
 
 /// Frame rate independent time integration for rate `a += x`.
@@ -95,6 +96,57 @@ where
         Self::ONE - (self * dt).neg().exp() // 1 - exp(-self * dt)
     }
 }
+
+
+/// Frame-rate independent time integration of an additive rate: `a += rate`.
+pub trait AddDt<Dt> {
+    /// Applies `rate` over `dt` seconds: `a += rate * dt`.
+    fn add_dt(self, rate: Self, dt: Dt) -> Self;
+}
+
+impl<T, Dt> AddDt<Dt> for T
+where
+    T: Add<Output = Self> + SmoothLinear<Dt>,
+{
+    #[inline]
+    fn add_dt(self, rate: Self, dt: Dt) -> Self {
+        self + rate.smooth_linear(dt)
+    }
+}
+
+/// Frame-rate independent time integration of a multiplicative factor: `a *= factor`.
+pub trait MulDt<Dt> {
+    /// Applies `factor` (a per-second multiplier) over `dt` seconds: `a *= factor^dt`.
+    fn mul_dt(self, factor: Self, dt: Dt) -> Self;
+}
+
+impl<T, Dt> MulDt<Dt> for T
+where
+    T: Mul<Output = Self> + SmoothPow<Dt>,
+{
+    #[inline]
+    fn mul_dt(self, factor: Self, dt: Dt) -> Self {
+        self * factor.smooth_pow(dt)
+    }
+}
+
+/// Frame-rate independent time integration of a decay: `a *= 1 - rate`.
+pub trait DecayDt<Dt> {
+    /// Applies a per-second decay `rate` over `dt` seconds: `a *= 1 - (1 - exp(-rate*dt))`.
+    fn decay_dt(self, rate: Self, dt: Dt) -> Self;
+}
+
+impl<T, Dt> DecayDt<Dt> for T
+where
+    T: Mul<Output = Self> + Sub<Output = Self> + Float + SmoothExp<Dt>,
+{
+    #[inline]
+    fn decay_dt(self, rate: Self, dt: Dt) -> Self {
+        self * (T::ONE - rate.smooth_exp(dt))
+    }
+}
+
+
 
 /// A (value, dt), so that `a += x`, `a *= x` can be written as `a += x * dt` / `a *= x * dt`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -193,6 +245,8 @@ where
         *self.0 *= rhs.smooth_exp(self.1);
     }
 }
+
+
 
 /*
 pub trait IntegrateLerp<F>
