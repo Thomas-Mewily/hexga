@@ -103,7 +103,7 @@ pub struct Integrate<V,Time>(pub V, pub Time);
 /*
 // TODO impl it
 impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<V, Time>
-    where V: Lerp<C, V2, Output=V>, C: IntegrateCoef<Time>
+    where V: Lerp<C, V2, Output=V>, C: SmoothCoef<Time>
 {
     type Output = V;
     fn lerp_unclamped(self, dest: V2, coef: C) -> Self::Output {
@@ -116,7 +116,7 @@ impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<V, Time>
 
 /*
 impl<Time, V, V2, C> Lerp<C, V2> for Integrate<V, Time>
-    where V: Lerp<C, V2, Output=V>, C: IntegrateCoef<Time>
+    where V: Lerp<C, V2, Output=V>, C: SmoothCoef<Time>
 {
     type Output = V;
 
@@ -139,14 +139,16 @@ impl<F, V, V2> Lerp<F, V2> for Integrate<&mut V, F>
     }
 }
 
-/// Linearly interpolate a mutable value with time integration.
+/// Frame rate independent linear interpolation, with the coefficient integrated over `dt` before interpolating.
 ///
 /// The interpolation coefficient is integrated over `dt` before interpolation.
 pub trait LerpDt<C, D=Self, Dt=C> : Sized
 {
     type Output;
 
-    /// Interpolate with the coefficient clamped between `0.0..=1.0` and apply the result to `self`.
+    /// `Self` in 1 second move closer to `coef_per_unit` % to `dest` (or whatever unit you are using than second).
+    /// 
+    /// `coef_per_unit` is clamped between `0.0..=1.0`.
     fn lerp_dt(self, dest: D, coef_per_unit: C, dt: Dt) -> Self::Output
     where
         C: ClampUnit,
@@ -154,17 +156,20 @@ pub trait LerpDt<C, D=Self, Dt=C> : Sized
         self.lerp_dt_unchecked(dest, coef_per_unit.clamp_unit(), dt)
     }
 
+    /// `Self` in 1 second move closer to `coef_per_unit` % to `dest` (or whatever unit you are using than second).
+    ///
+    /// `coef_per_unit` is not clamped.
     fn lerp_dt_unchecked(self, dest: D, coef_per_unit: C, dt: Dt) -> Self::Output;
 }
 
-impl<Time, V, V2, C> LerpDt<C, V2, Time> for &mut V
+impl<F, V, V2> LerpDt<F, V2, F> for &mut V
 where
-    V: Lerp<C, V2, Output=V> + Copy,
-    C: IntegrateExp<Time>
+    V: Lerp<F, V2, Output=V> + Copy,
+    F: Float
 {
     type Output = ();
 
-    fn lerp_dt_unchecked(self, dest: V2, coef: C, dt: Time) {
+    fn lerp_dt_unchecked(self, dest: V2, coef: F, dt: F) {
         Integrate(self, dt).lerp_unclamped(dest, coef)
     }
 }
@@ -172,20 +177,20 @@ where
 
 impl<Time, V> AddAssign<V> for Integrate<&mut V, Time>
 where
-    V: IntegrateLinear<Time> + AddAssign<V>, Time: Copy
+    V: SmoothLinear<Time> + AddAssign<V>, Time: Copy
 {
     fn add_assign(&mut self, rhs: V) {
-        *self.0 += rhs.integrate_linear(self.1);
+        *self.0 += rhs.smooth_linear(self.1);
     }
 }
 
 impl<Time, V> MulAssign<V> for Integrate<&mut V, Time>
 where
-    V: IntegrateExp<Time> + MulAssign<V>,
+    V: SmoothExp<Time> + MulAssign<V>,
     Time: Copy,
 {
     fn mul_assign(&mut self, rhs: V) {
-        *self.0 *= rhs.integrate_exp(self.1);
+        *self.0 *= rhs.smooth_exp(self.1);
     }
 }
 
