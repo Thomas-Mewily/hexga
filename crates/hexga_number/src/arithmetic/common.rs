@@ -233,8 +233,6 @@ pub trait Lerp<C,D=Self> : Sized
 }
 
 
-
-
 //impl<T,C> Lerp<C> for T where T: Mix<C>, C: Float {}
 
 /*

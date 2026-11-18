@@ -2,7 +2,7 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::Integrate;
+    pub use super::{Integrate, LerpDt};
     pub use super::traits::*;
 }
 
@@ -95,14 +95,46 @@ impl<Time, V, V2, C> Lerp<C, V2> for Integrate<V, Time>
 */
 
 
-impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<&mut V, Time>
-    where V: Lerp<C, V2, Output=V> + Copy, C: IntegrateProduct<Time>
+impl<Time, V, V2, C> Lerp<C, V2> for Integrate<&mut V, Time>
+    where V: Lerp<C, V2, Output=V> + Copy, C: Float, C: Mul<Time, Output=C> //IntegrateProduct<Time>, 
 {
     type Output = ();
     fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
         let Integrate(value, dt) = self;
-        *value = (*value).lerp_unchecked(dest, coef.integrate_product(dt));
+        let t : C = C::ONE - (coef * dt).neg().exp(); // 1 - exp(-rate * dt)
+        *value = (*value).lerp_unchecked(dest, t);
         ()
+    }
+}
+
+/// Linearly interpolate a mutable value with time integration.
+///
+/// The interpolation coefficient is integrated over `dt` before interpolation.
+pub trait LerpDt<C, D=Self, Dt=C> : Sized
+{
+    type Output;
+
+    /// Interpolate with the coefficient clamped between `0.0..=1.0` and apply the result to `self`.
+    fn lerp_dt(self, dest: D, coef_per_unit: C, dt: Dt) -> Self::Output
+    where
+        C: ClampUnit,
+    {
+        self.lerp_dt_unchecked(dest, coef_per_unit.clamp(zero(), one()), dt)
+    }
+
+    /// Interpolate with an unclamped coefficient and apply the result to `self`.
+    fn lerp_dt_unchecked(self, dest: D, coef_per_unit: C, dt: Dt) -> Self::Output;
+}
+
+impl<Time, V, V2, C> LerpDt<C, V2, Time> for &mut V
+where
+    V: Lerp<C, V2, Output=V> + Copy,
+    C: Float, C: Mul<Time, Output=C>
+{
+    type Output = ();
+
+    fn lerp_dt_unchecked(self, dest: V2, coef: C, dt: Time) {
+        Integrate(self, dt).lerp_unchecked(dest, coef)
     }
 }
 
