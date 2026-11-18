@@ -96,11 +96,9 @@ where
 /// Clamp function in a component way between Zero..=One
 pub trait ClampUnit : Clamp + Zero + One
 {
-    /// Clamp function in a component way
+    /// Clamp self between `Zero..=One` in a component way
     ///
-    /// Clamp self between Zero..=One (inclusive)
-    ///
-    /// Can cause a panic for grid if the size mismatch
+    /// Can cause a panic for grid if the size mismatch.
     fn clamp_unit(self) -> Self;
 }
 impl<C> ClampUnit for C where C: Clamp + Zero + One
@@ -109,9 +107,7 @@ impl<C> ClampUnit for C where C: Clamp + Zero + One
         self.clamp(zero(), one())
     }
 }
-/// Clamp function in a component way
-///
-/// Clamp self between Zero..=One (inclusive)
+/// Clamp self between `Zero..=One` in a component way
 ///
 /// Can cause a panic for grid if the size mismatch
 pub fn clamp_unit<S>(value: S) -> S
@@ -122,26 +118,22 @@ where
 }
 
 // TODO: ClampInterval ? fn clamp<R>(self, range: R); 3.clamp(0..=10); 3.clamp(Union([0..2, 6..10]);
-/// Clamp function in a component way
+/// Clamp in a component way
 pub trait Clamp
 {
-    /// Clamp function in a component way
-    ///
-    /// Clamp self between min_val and max_val (inclusive)
+    /// Clamp self between `min..=max` in a component way
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn clamp(self, min_val: Self, max_val: Self) -> Self;
+    fn clamp(self, min: Self, max: Self) -> Self;
 }
-/// Clamp function in a component way
-///
-/// Clamp self between min_val and max_val (inclusive)
+/// Clamp self between `min..=max` in a component way
 ///
 /// Can cause a panic for grid if the size mismatch
-pub fn clamp<S>(value: S, min_val: S, max_val: S) -> S
+pub fn clamp<S>(value: S, min: S, max: S) -> S
 where
     S: Clamp,
 {
-    value.clamp(min_val, max_val)
+    value.clamp(min, max)
 }
 
 impl<T> Clamp for T
@@ -194,7 +186,7 @@ where
     /// Can cause a panic for grid if the size mismatch
     fn mix(self, dest: Self, coef: C) -> Self { self.mix_unchecked(dest, coef.clamp_partial(zero(), one())) }
 
-    /// Mix function in a component way. Same as [`Lerp::lerp_unchecked`].
+    /// Mix function in a component way. Same as [`Lerp::lerp_unclamped`].
     ///
     /// The coef is **not** clamped between `0.0..1.`
     ///
@@ -215,21 +207,19 @@ pub trait Lerp<C,D=Self> : Sized
     ///
     /// The coef is clamped between `0.0..1.`
     ///
-    /// 0. => self,
-    /// 1. => dest.
+    /// `0. => self`, `1. => dest`.
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn lerp(self, dest: D, coef: C) -> Self::Output where C: ClampUnit { self.lerp_unchecked(dest, coef.clamp(zero(), one())) }
+    fn lerp(self, dest: D, coef: C) -> Self::Output where C: ClampUnit { self.lerp_unclamped(dest, coef.clamp_unit()) }
 
     /// Lerp function in a component way.
     ///
     /// The coef is **not** clamped between `0.0..1.`
     ///
-    /// 0. => self,
-    /// 1. => dest.
+    /// `0. => self`, `1. => dest`.
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn lerp_unchecked(self, dest: D, coef: C) -> Self::Output;
+    fn lerp_unclamped(self, dest: D, coef: C) -> Self::Output;
 }
 
 
@@ -253,12 +243,11 @@ where
 }
 */
 
-/// Lerp function in a component way. Same as [`Mix::mix`].
+/// Lerp function in a component way.
 ///
 /// The coef is clamped between `0.0..1.`
 ///
-/// 0. => self,
-/// 1. => dest.
+/// `0. => self`, `1. => dest`.
 ///
 /// Can cause a panic for grid if the size mismatch
 pub fn lerp<S, F>(src: S, dest: S, coef: F) -> S::Output
@@ -269,13 +258,28 @@ where
     src.lerp(dest, coef)
 }
 
+/// Lerp function in a component way.
+///
+/// The coef is **not** clamped between `0.0..1.`
+///
+/// `0. => self`, `1. => dest`.
+///
+/// Can cause a panic for grid if the size mismatch
+pub fn lerp_unclamped<S, F>(src: S, dest: S, coef: F) -> S::Output
+where
+    S: Lerp<F>,
+    F: Float,
+{
+    src.lerp_unclamped(dest, coef)
+}
+
 map_on_number_and_bool!(
     ($type_name: tt) =>
     {
         impl<F> Lerp<F> for $type_name where F: Float
         {
             type Output = Self;
-            fn lerp_unchecked(self, dest: Self, coef: F) -> Self
+            fn lerp_unclamped(self, dest: Self, coef: F) -> Self
             {
                 let src  = F::cast_from(self);
                 let dest = F::cast_from(dest);
@@ -292,7 +296,7 @@ where
     F: Copy,
 {
     type Output = S;
-    fn lerp_unchecked(self, dest: Self, coef: F) -> Self { self.map_with(dest, |a, b| a.lerp_unchecked(b, coef)) }
+    fn lerp_unclamped(self, dest: Self, coef: F) -> Self { self.map_with(dest, |a, b| a.lerp_unclamped(b, coef)) }
 }
 
 /// Abs function in a component way
@@ -478,12 +482,12 @@ macro_rules! impl_number_basic_trait {
         /// 1. => dest.
         ///
         /// Can cause a panic for grid if the size mismatch
-        pub fn lerp_unchecked<C>(self, other: Self, coef: C) -> <Self as Lerp<C>>::Output
+        pub fn lerp_unclamped<C>(self, other: Self, coef: C) -> <Self as Lerp<C>>::Output
         where
             Self: $crate::Lerp<C>,
             C: $crate::Float,
         {
-            $crate::Lerp::lerp_unchecked(self, other, coef)
+            $crate::Lerp::lerp_unclamped(self, other, coef)
         }
 
         /// Clamp function in a component way

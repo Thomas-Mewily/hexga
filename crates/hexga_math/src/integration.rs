@@ -73,7 +73,7 @@ impl<Time, V, V2, C> Lerp<C, V2> for  Integrate<V, Time>
     where V: Lerp<C, V2, Output=V>, C: IntegrateProduct<Time>
 {
     type Output = V;
-    fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
+    fn lerp_unclamped(self, dest: V2, coef: C) -> Self::Output {
 
     }
 }
@@ -87,9 +87,9 @@ impl<Time, V, V2, C> Lerp<C, V2> for Integrate<V, Time>
 {
     type Output = V;
 
-    fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
+    fn lerp_unclamped(self, dest: V2, coef: C) -> Self::Output {
         let Integrate(value, dt) = self;
-        value.lerp_unchecked(dest, coef.integrate_product(dt))
+        value.lerp_unclamped(dest, coef.integrate_product(dt))
     }
 }
 */
@@ -99,10 +99,10 @@ impl<Time, V, V2, C> Lerp<C, V2> for Integrate<&mut V, Time>
     where V: Lerp<C, V2, Output=V> + Copy, C: Float, C: Mul<Time, Output=C> //IntegrateProduct<Time>, 
 {
     type Output = ();
-    fn lerp_unchecked(self, dest: V2, coef: C) -> Self::Output {
+    fn lerp_unclamped(self, dest: V2, coef: C) -> Self::Output {
         let Integrate(value, dt) = self;
         let t : C = C::ONE - (coef * dt).neg().exp(); // 1 - exp(-rate * dt)
-        *value = (*value).lerp_unchecked(dest, t);
+        *value = (*value).lerp_unclamped(dest, t);
         ()
     }
 }
@@ -119,7 +119,7 @@ pub trait LerpDt<C, D=Self, Dt=C> : Sized
     where
         C: ClampUnit,
     {
-        self.lerp_dt_unchecked(dest, coef_per_unit.clamp(zero(), one()), dt)
+        self.lerp_dt_unchecked(dest, coef_per_unit.clamp_unit(), dt)
     }
 
     /// Interpolate with an unclamped coefficient and apply the result to `self`.
@@ -133,8 +133,9 @@ where
 {
     type Output = ();
 
+
     fn lerp_dt_unchecked(self, dest: V2, coef: C, dt: Time) {
-        Integrate(self, dt).lerp_unchecked(dest, coef)
+        Integrate(self, dt).lerp_unclamped(dest, coef)
     }
 }
 
