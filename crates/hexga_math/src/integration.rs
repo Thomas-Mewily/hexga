@@ -9,7 +9,8 @@ pub mod prelude
 pub mod traits
 {
     pub use super::{SmoothLinear, SmoothPow, SmoothExp};
-    pub use super::{AddDt,MulDt,DecayDt};
+    pub use super::{Decay};
+    pub use super::{AddDt,MulDt,DecayDt,LerpDt};
 }
 
 /// Frame rate independent time integration for rate `a += x`.
@@ -98,6 +99,29 @@ where
 }
 
 
+
+
+
+/// Per step decay: `a *= 1 - rate`.
+pub trait Decay<Rate = Self> {
+    type Output;
+    /// Applies `rate` once: `a *= 1 - rate`.
+    fn decay(self, rate: Rate) -> Self::Output;
+}
+
+impl<T, Rate> Decay<Rate> for T
+where
+    T: One + Sub<Rate> + Mul<<T as Sub<Rate>>::Output>
+{
+    type Output = <T as Mul<<T as Sub<Rate>>::Output>>::Output;
+
+    #[inline]
+    fn decay(self, rate: Rate) -> Self::Output {
+        self * (T::ONE - rate)
+    }
+}
+
+
 /// Frame-rate independent time integration of an additive rate: `a += rate`.
 pub trait AddDt<Dt> {
     /// Applies `rate` over `dt` seconds: `a += rate * dt`.
@@ -131,17 +155,17 @@ where
 }
 
 /// Frame-rate independent time integration of a decay: `a *= 1 - rate`.
-pub trait DecayDt<Dt> {
+pub trait DecayDt<Rate, Dt> {
     /// Applies a per-second decay `rate` over `dt` seconds: `a *= 1 - (1 - exp(-rate*dt))`.
-    fn decay_dt(self, rate: Self, dt: Dt) -> Self;
+    fn decay_dt(self, rate: Rate, dt: Dt) -> Self;
 }
 
-impl<T, Dt> DecayDt<Dt> for T
+impl<T, Rate, Dt> DecayDt<Rate, Dt> for T
 where
-    T: Mul<Output = Self> + Sub<Output = Self> + Float + SmoothExp<Dt>,
+    Rate : SmoothExp<Dt>, T: One + Sub<Rate, Output = Self> + Mul<Output=Self>
 {
     #[inline]
-    fn decay_dt(self, rate: Self, dt: Dt) -> Self {
+    fn decay_dt(self, rate: Rate, dt: Dt) -> Self {
         self * (T::ONE - rate.smooth_exp(dt))
     }
 }
@@ -226,25 +250,62 @@ where
     }
 }
 
-
-impl<Time, V> AddAssign<V> for Integrate<&mut V, Time>
+impl<Dt, V> Add<V> for Integrate<V, Dt>
 where
-    V: SmoothLinear<Time> + AddAssign<V>, Time: Copy
+    V: AddDt<Dt>
+{
+    type Output = V;
+
+    fn add(self, rhs: V) -> Self::Output {
+        let Integrate(value, dt) = self;
+        value.add_dt(rhs, dt)
+    }
+}
+
+impl<Dt, V> Mul<V> for Integrate<V, Dt>
+where
+    V: MulDt<Dt>
+{
+    type Output = V;
+
+    fn mul(self, rhs: V) -> Self::Output {
+        let Integrate(value, dt) = self;
+        value.mul_dt(rhs, dt)
+    }
+}
+
+impl<Dt, V, Rate> Decay<Rate> for Integrate<V, Dt>
+where
+    V: DecayDt<Rate,Dt>
+{
+    type Output = V;
+    fn decay(self, rate: Rate) -> Self::Output {
+        let Integrate(value, dt) = self;
+        value.decay_dt(rate, dt)
+    }
+}
+
+impl<Dt, V> AddAssign<V> for Integrate<&mut V, Dt>
+where
+    V: SmoothLinear<Dt> + AddAssign<V>, Dt: Copy
 {
     fn add_assign(&mut self, rhs: V) {
         *self.0 += rhs.smooth_linear(self.1);
     }
 }
 
-impl<Time, V> MulAssign<V> for Integrate<&mut V, Time>
+impl<Dt, V> MulAssign<V> for Integrate<&mut V, Dt>
 where
-    V: SmoothExp<Time> + MulAssign<V>,
-    Time: Copy,
+    V: SmoothExp<Dt> + MulAssign<V>,
+    Dt: Copy,
 {
     fn mul_assign(&mut self, rhs: V) {
         *self.0 *= rhs.smooth_exp(self.1);
     }
 }
+
+// todo change some item here in other module
+// todo MoveDt for vector. LerpDt. Move the rest to 
 
 
 
