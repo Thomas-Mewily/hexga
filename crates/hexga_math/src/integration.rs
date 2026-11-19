@@ -9,7 +9,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{SmoothLinear, SmoothPow, SmoothExp};
+    pub use super::{SmoothLinear, SmoothPow, SmoothExp, SmoothDecay};
     pub use super::{AddDt,SubDt,MulDt,DivDt,DecayDt,LerpDt};
 }
 
@@ -97,6 +97,35 @@ where
     #[inline]
     fn smooth_exp(self, dt: T) -> Self {
         (self * dt).neg().exp()
+    }
+}
+
+/// Frame rate independent time integration for a continuous decay coefficient.
+pub trait SmoothDecay<Dt>
+{
+    /// Returns the fraction decayed over `dt`: `1 - exp(-coef * dt)`.
+    ///
+    /// ```ignore
+    /// a *= 1.0 - exp(-coef);      // not time integrated
+    /// =>                          // time integrated
+    /// a *= 1.0 - exp(-coef * dt); 
+    /// <=>
+    /// a *= 1.0 - coef.smooth_decay(dt);
+    /// ```
+    ///
+    /// `self` is the non-negative decay coefficient per time unit, measured in inverse time units.
+    /// `dt=0 -> 0`, `dt=1 -> 1 - exp(-coef)`. For adjacent intervals,
+    /// `f(a + b) = f(a) + f(b) - f(a) * f(b)`.
+    fn smooth_decay(self, dt: Dt) -> Self;
+}
+
+impl<T> SmoothDecay<T> for T
+where
+    T: Float,
+{
+    #[inline]
+    fn smooth_decay(self, dt: T) -> Self {
+        Self::ONE - self.smooth_exp(dt)
     }
 }
 
@@ -221,7 +250,6 @@ where
 /// Integrate(&mut a, dt) -= coef;
 /// Integrate(&mut a, dt) *= coef;
 /// Integrate(&mut a, dt) /= coef;
-/// Integrate(&mut a, dt).lerp(dest, coef);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Integrate<V,Time>(pub V, pub Time);
@@ -276,14 +304,14 @@ impl<F, V, V2> Lerp<F, V2> for Integrate<&mut V, F>
 }
 */
 
-impl<F, V, V2> Lerp<F, V2> for Integrate<V, F>
+impl<F, V, D> Lerp<F, D> for Integrate<V, F>
 where
-    V: Lerp<F, V2, Output=V>,
+    V: Lerp<F, D, Output=V>,
     F: Float,
 {
     type Output = V;
 
-    fn lerp_unclamped(self, dest: V2, coef: F) -> Self::Output {
+    fn lerp_unclamped(self, dest: D, coef: F) -> Self::Output {
         let Integrate(value, dt) = self;
         let retention = (F::ONE - coef).smooth_pow(dt);
         let alpha = F::ONE - retention;
