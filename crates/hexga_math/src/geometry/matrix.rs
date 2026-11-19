@@ -709,7 +709,6 @@ impl<T, const ROW: usize, const COL: usize> MapInto for Matrix<T, ROW, COL> {
 }
 impl<T, const ROW: usize, const COL: usize> MapZip for Matrix<T, ROW, COL> {
     fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self where F: FnMut([T; M]) -> T {
-        assert!(M > 0);
         Matrix::from_col(MapZip::map_zip(this.map(|m| m.columns), |column| {
             <Vector<T, ROW> as MapZip>::map_zip(column, &mut f)
         }))
@@ -717,7 +716,6 @@ impl<T, const ROW: usize, const COL: usize> MapZip for Matrix<T, ROW, COL> {
 }
 impl<T, const ROW: usize, const COL: usize> MapZipInto for Matrix<T, ROW, COL> {
     fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
-        assert!(M > 0);
         Matrix::from_col(MapZipInto::map_zip_into(this.map(|m| m.columns), |column| {
             <Vector<T, ROW> as MapZipInto>::map_zip_into(column, &mut f)
         }))

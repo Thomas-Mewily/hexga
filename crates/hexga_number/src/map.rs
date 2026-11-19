@@ -189,6 +189,9 @@ impl<T> MapZip for Vec<T> {
         }
         unsafe { result.set_len(len); }
         result
+
+        // Safe version but need an new allocation
+        // Self::map_zip_into(this, f)
     }
 }
 impl<T> MapZipInto for Vec<T> {
