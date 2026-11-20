@@ -3,14 +3,16 @@ use super::*;
 
 pub mod prelude
 {
-    pub use super::{Integrate, LerpDt};
+    pub use super::Integrate;
     pub use super::traits::*;
 }
 
 pub mod traits
 {
     pub use super::{SmoothLinear, SmoothPow, SmoothExp};
-    pub use super::{AddDt,SubDt,MulDt,DivDt,DecayDt,LerpDt};
+    pub use super::{AddDt,SubDt,MulDt,DivDt,DecayDt,
+        LerpDt,LerpDecay,LerpHalfLife
+    };
 }
 
 /// Frame rate independent time integration for rate `a += x`.
@@ -285,6 +287,7 @@ where
 
     fn lerp_unclamped(self, dest: V2, coef: F) -> Self::Output {
         let Integrate(value, dt) = self;
+        debug_assert!(dt.is_strictly_positive());
         let retention = (F::ONE - coef).smooth_pow(dt);
         let alpha = F::ONE - retention;
         value.lerp_unclamped(dest, alpha)
@@ -308,15 +311,48 @@ pub trait LerpDt<C, D=Self, Dt=C> : Sized
     ///
     /// The integrated coefficient is `1 - (1 - coef)^dt`. `coef` is clamped to `0.0..=1.0`.
     /// `dt` should be non-negative.
-    fn lerp_dt(self, dest: D, coef: C, dt: Dt) -> Self::Output
+    fn lerp_dt(self, dest: D, coef_per_time_unit: C, dt: Dt) -> Self::Output
     where
         C: ClampUnit,
     {
-        self.lerp_dt_unchecked(dest, coef.clamp_unit(), dt)
+        self.lerp_dt_unchecked(dest, coef_per_time_unit.clamp_unit(), dt)
+    }
+
+    /// Performs frame rate independent interpolation in place.
+    ///
+    /// For per-time-unit coefficient `c`, the interpolation weight is
+    /// `1 - (1 - c)^dt`. `c` is clamped to `0.0..=1.0`; `dt` should be non-negative.
+    ///
+    /// ```ignore
+    /// value.lerp_dt_to(dest, coef, dt);
+    /// ```
+    fn lerp_dt_to(&mut self, dest: D, coef_per_time_unit: C, dt: Dt)
+    where
+        Self: Copy + LerpDt<C, D, Dt, Output=Self>,
+        C: ClampUnit,
+    {
+        *self = (*self).lerp_dt(dest, coef_per_time_unit, dt);
     }
 
     /// Like [`LerpDt::lerp_dt`], without clamping `coef` to `0.0..=1.0`.
-    fn lerp_dt_unchecked(self, dest: D, coef: C, dt: Dt) -> Self::Output;
+    fn lerp_dt_unchecked(self, dest: D, coef_per_time_unit: C, dt: Dt) -> Self::Output;
+
+    /// Like [`LerpDt::lerp_dt_to`], without clamping the per-time-unit coefficient to
+    /// `0.0..=1.0`.
+    ///
+    /// For coefficient `c`, the interpolation weight is `1 - (1 - c)^dt`. `dt` should be
+    /// non-negative.
+    ///
+    /// ```ignore
+    /// value.lerp_dt_unclamped_to(dest, coef, dt);
+    /// ```
+    fn lerp_dt_unclamped_to(&mut self, dest: D, coef_per_time_unit: C, dt: Dt)
+    where
+        Self: Copy + LerpDt<C, D, Dt, Output=Self>,
+    {
+        *self = (*self)
+            .lerp_dt_unchecked(dest, coef_per_time_unit, dt);
+    }
 }
 
 impl<F, V, V2> LerpDt<F, V2, F> for V
@@ -326,8 +362,154 @@ where
 {
     type Output = Self;
 
-    fn lerp_dt_unchecked(self, dest: V2, coef: F, dt: F) -> Self::Output {
-        Integrate(self, dt).lerp_unclamped(dest, coef)
+    fn lerp_dt_unchecked(self, dest: V2, coef_per_time_unit: F, dt: F) -> Self::Output {
+        debug_assert!(dt.is_strictly_positive());
+        Integrate(self, dt).lerp_unclamped(dest, coef_per_time_unit)
+    }
+}
+
+/// Frame rate independent interpolation using a continuous exponential decay rate.
+///
+/// For a non-negative rate `r`, the interpolation weight over `dt` is
+/// `1 - exp(-r * dt)`. Unlike [`LerpDt`], `rate` is measured in inverse time units.
+pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
+{
+    type Output;
+
+    /// Moves `self` toward `dest` with continuous exponential decay over `dt`.
+    ///
+    /// The interpolation weight is clamped to `0.0..=1.0`.
+    fn lerp_decay(self, dest: D, rate: Rate, dt: Dt) -> Self::Output;
+
+    /// Moves `self` toward `dest` in place using continuous exponential decay over `dt`.
+    ///
+    /// For decay rate `r`, the interpolation weight is `1 - exp(-r * dt)`, clamped to
+    /// `0.0..=1.0`. `rate` is measured in inverse time units.
+    ///
+    /// ```ignore
+    /// value.lerp_decay_to(dest, rate, dt);
+    /// ```
+    fn lerp_decay_to(&mut self, dest: D, rate: Rate, dt: Dt)
+    where
+        Self: Copy + LerpDecay<Rate, D, Dt, Output=Self>,
+    {
+        *self = (*self).lerp_decay(dest, rate, dt);
+    }
+
+    /// Like [`LerpDecay::lerp_decay`], without clamping the interpolation weight.
+    ///
+    /// `rate` and `dt` should be non-negative; this invariant is checked in debug builds.
+    fn lerp_decay_unclamped(self, dest: D, rate: Rate, dt: Dt) -> Self::Output;
+
+    /// Like [`LerpDecay::lerp_decay_to`], without clamping the interpolation weight.
+    ///
+    /// For decay rate `r`, the interpolation weight is `1 - exp(-r * dt)`. `rate` and `dt`
+    /// should be non-negative; this invariant is checked in debug builds.
+    ///
+    /// ```ignore
+    /// value.lerp_decay_unclamped_to(dest, rate, dt);
+    /// ```
+    fn lerp_decay_unclamped_to(&mut self, dest: D, rate: Rate, dt: Dt)
+    where
+        Self: Copy + LerpDecay<Rate, D, Dt, Output=Self>,
+    {
+        *self = (*self).lerp_decay_unclamped(dest, rate, dt);
+    }
+}
+
+impl<F, V, V2> LerpDecay<F, V2, F> for V
+where
+    V: Lerp<F, V2, Output=V>,
+    F: Float,
+{
+    type Output = Self;
+
+    fn lerp_decay(self, dest: V2, rate: F, dt: F) -> Self::Output {
+        debug_assert!(dt.is_strictly_positive());
+        let alpha = (F::ONE - rate.smooth_exp(dt)).clamp_unit();
+        self.lerp_unclamped(dest, alpha)
+    }
+
+    fn lerp_decay_unclamped(self, dest: V2, rate: F, dt: F) -> Self::Output {
+        debug_assert!(rate.is_strictly_positive());
+        debug_assert!(dt.is_strictly_positive());
+        let alpha = F::ONE - rate.smooth_exp(dt);
+        self.lerp_unclamped(dest, alpha)
+    }
+}
+
+/// Frame rate independent interpolation parameterized by half-life.
+///
+/// For a positive half-life `h`, the interpolation weight over `dt` is
+/// `1 - 2^(-dt / h)`. After one half-life, half of the remaining distance is covered.
+pub trait LerpHalfLife<HalfLife, D=Self, Dt=HalfLife> : Sized
+{
+    type Output;
+
+    /// Moves `self` toward `dest`, covering half of the remaining distance every `half_life`.
+    ///
+    /// The interpolation weight is clamped to `0.0..=1.0`.
+    fn lerp_half_life(self, dest: D, half_life: HalfLife, dt: Dt) -> Self::Output;
+
+    /// Moves `self` toward `dest` in place, covering half of the remaining distance every
+    /// `half_life`.
+    ///
+    /// For half-life `h`, the interpolation weight is `1 - 2^(-dt / h)`, clamped to
+    /// `0.0..=1.0`.
+    ///
+    /// ```ignore
+    /// value.lerp_half_life_to(dest, half_life, dt);
+    /// ```
+    fn lerp_half_life_to(&mut self, dest: D, half_life: HalfLife, dt: Dt)
+    where
+        Self: Copy + LerpHalfLife<HalfLife, D, Dt, Output=Self>,
+    {
+        *self = (*self).lerp_half_life(dest, half_life, dt);
+    }
+
+    /// Like [`LerpHalfLife::lerp_half_life`], without clamping the interpolation weight.
+    ///
+    /// `half_life` must be positive and `dt` should be non-negative; these invariants are
+    /// checked in debug builds.
+    fn lerp_half_life_unclamped(self, dest: D, half_life: HalfLife, dt: Dt) -> Self::Output;
+
+    /// Like [`LerpHalfLife::lerp_half_life_to`], without clamping the interpolation weight.
+    ///
+    /// For half-life `h`, the interpolation weight is `1 - 2^(-dt / h)`. `half_life` must
+    /// be positive and `dt` should be non-negative; these invariants are checked in debug builds.
+    ///
+    /// ```ignore
+    /// value.lerp_half_life_unclamped_to(dest, half_life, dt);
+    /// ```
+    fn lerp_half_life_unclamped_to(&mut self, dest: D, half_life: HalfLife, dt: Dt)
+    where
+        Self: Copy + LerpHalfLife<HalfLife, D, Dt, Output=Self>,
+    {
+        *self = (*self).lerp_half_life_unclamped(dest, half_life, dt);
+    }
+}
+
+impl<F, V, V2> LerpHalfLife<F, V2, F> for V
+where
+    V: Lerp<F, V2, Output=V>,
+    F: Float,
+{
+    type Output = Self;
+
+    fn lerp_half_life(self, dest: V2, half_life: F, dt: F) -> Self::Output {
+        debug_assert!(half_life.is_strictly_positive());
+        debug_assert!(dt.is_strictly_positive());
+        let retention = (F::ONE + F::ONE).smooth_pow(-(dt / half_life));
+        let alpha = (F::ONE - retention).clamp_unit();
+        self.lerp_unclamped(dest, alpha)
+    }
+
+    fn lerp_half_life_unclamped(self, dest: V2, half_life: F, dt: F) -> Self::Output {
+        debug_assert!(half_life.is_strictly_positive());
+        debug_assert!(dt.is_strictly_positive());
+        let retention = (F::ONE + F::ONE).smooth_pow(-(dt / half_life));
+        let alpha = F::ONE - retention;
+        self.lerp_unclamped(dest, alpha)
     }
 }
 
