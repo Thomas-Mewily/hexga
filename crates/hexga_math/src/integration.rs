@@ -396,8 +396,8 @@ where
 
 /// Frame rate independent interpolation using a continuous exponential decay rate.
 ///
-/// For a non negative rate `r`, the interpolation weight over `dt` is
-/// `1 - exp(-r * dt)`. Unlike [`LerpDt`], `rate` is measured in inverse time units.
+/// For a non negative rate `self`, the interpolation weight over `dt` is `1 - exp(-r * dt)`. 
+/// Unlike [`LerpDt`], `self` is measured in inverse time units.
 pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
 {
     type Output;
@@ -409,7 +409,7 @@ pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
 
     /// Moves `self` toward `dest` in place using continuous exponential decay over `dt`.
     ///
-    /// For decay rate `r`, the interpolation weight is `1 - exp(-r * dt)`, clamped to
+    /// For decay rate `self`, the interpolation weight is `1 - exp(-self * dt)`, clamped to
     /// `0.0..=1.0`. `rate` is measured in inverse time units.
     ///
     /// ```ignore
@@ -424,13 +424,13 @@ pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
 
     /// Like [`LerpDecay::lerp_decay`], without clamping the interpolation weight.
     ///
-    /// `rate` and `dt` should be non negative; this invariant is checked in debug builds.
+    /// `self` and `dt` should be non negative.
     fn lerp_decay_unclamped(self, dest: D, rate: Rate, dt: Dt) -> Self::Output;
 
     /// Like [`LerpDecay::lerp_decay_to`], without clamping the interpolation weight.
     ///
-    /// For decay rate `r`, the interpolation weight is `1 - exp(-r * dt)`. `rate` and `dt`
-    /// should be non negative; this invariant is checked in debug builds.
+    /// For decay rate `self`, the interpolation weight is `1 - exp(-self * dt)`. 
+    /// `self` and `dt` should be non negative.
     ///
     /// ```ignore
     /// value.lerp_decay_unclamped_to(dest, rate, dt);
@@ -633,29 +633,3 @@ where
         *self.0 /= rhs.smooth_pow(self.1);
     }
 }
-
-// todo change some item here in other module
-// todo MoveDt for vector. Move the rest to
-
-
-
-/*
-pub trait IntegrateLerp<F>
-{
-    fn integrate_rate(self, dt: DurationOf<F>) -> Self;
-}
-*/
-
-
-/*
-let mut pos = 42.;
-
-Integrate(&mut pos, dt.s()) += 2;
-pos += 2.integrate_rate(dt.s());
-
-Integrate(&mut pos, dt.s()) *= 4;
-pos *= 4.integrate_coef(dt.s());
-
-
-integrate(&mut pos, dt.s()) + 4
-*/
