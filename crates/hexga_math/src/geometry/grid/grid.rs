@@ -116,7 +116,7 @@ impl<T, Idx, const N: usize> MapZip for GridOf<T, Idx, N>
 where Idx: Integer,
 {
     fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self where F: FnMut([T; M]) -> T {
-        assert!(M > 0);
+        if M == 0 { return ___(); }
         let size = this[0].size();
         assert!((&this).all(|g| g.size() == size), "size mismatch");
         unsafe { Self::from_vec_unchecked(size, <Vec<T> as MapZip>::map_zip(this.map(|g| g.values), f)) }
@@ -126,7 +126,7 @@ impl<T, Idx, const N: usize> MapZipInto for GridOf<T, Idx, N>
 where Idx: Integer,
 {
     fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
-        assert!(M > 0);
+        if M == 0 { return ___(); }
         let size = this[0].size();
         assert!((&this).all(|g| g.size() == size), "size mismatch");
         unsafe { Self::WithType::<R>::from_vec_unchecked(size, <Vec<T> as MapZipInto>::map_zip_into(this.map(|g| g.values), f)) }

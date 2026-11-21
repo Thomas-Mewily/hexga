@@ -124,7 +124,7 @@ where
     where
         F: FnMut([T; M]) -> T,
     {
-        assert!(M > 0);
+        const { assert!(M > 0); }
 
         let mut views = this.into_iter();
         let mut result = views.next().expect("at least one grid view is required");
