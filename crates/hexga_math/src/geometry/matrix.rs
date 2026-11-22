@@ -15,7 +15,7 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::MatrixStackRefExtension;
+    pub use super::{MatrixStackExtension, MatrixStackPush, MatrixStackDup, MatrixStackPop};
 }
 
 /// 1x1 matrix
@@ -1266,31 +1266,55 @@ impl<T> Matrix4<T>
 }
 
 
-
-
-pub trait MatrixStackRefExtension<F=float, const N: usize = 4>:
-    GetMatrix<F, N, N>
-    + SetMatrix<F, N, N>
-    + CollectionStackRef<Matrix<F, N, N>>
+pub trait MatrixStackPush<F = float, const N: usize = 4>:
+    Push<Matrix<F, N, N>>
 {
-    fn push_matrix(&mut self, matrix: Matrix<F, N, N>)
-    {
+    fn push_matrix(&mut self, matrix: Matrix<F, N, N>) {
         let _ = Push::push(self, matrix);
     }
-    fn dup_matrix(&mut self) -> bool where Self: Sized, Matrix<F, N, N>: Clone { Dup::dup(self) }
-    fn pop_matrix(&mut self)
-    {
+}
+
+impl<T, F, const N: usize> MatrixStackPush<F, N> for T
+where
+    T: Push<Matrix<F, N, N>>,
+{
+}
+
+pub trait MatrixStackDup<F = float, const N: usize = 4>:
+    GetMatrix<F, N, N> + MatrixStackPush<F, N>
+{
+    fn dup_matrix(&mut self) {
+        self.push_matrix(self.matrix());
+    }
+}
+
+impl<T, F, const N: usize> MatrixStackDup<F, N> for T
+where
+    T: GetMatrix<F, N, N> + MatrixStackPush<F, N>,
+{
+}
+
+pub trait MatrixStackPop<F = float, const N: usize = 4>:
+    Pop<Matrix<F, N, N>>
+{
+    fn pop_matrix(&mut self) {
         let _ = Pop::pop(self);
     }
 }
-impl<T,F, const N: usize> MatrixStackRefExtension<F,N> for T where
-    T: GetMatrix<F, N, N>
-        + SetMatrix<F, N, N>
-        + CollectionStackRef<Matrix<F, N, N>>,
+
+impl<T, F, const N: usize> MatrixStackPop<F, N> for T
+where
+    T: Pop<Matrix<F, N, N>>,
 {
 }
 
-
+pub trait MatrixStackExtension:
+    MatrixStackPush + MatrixStackDup + MatrixStackPop
+{}
+impl<T> MatrixStackExtension for T
+where
+    T: MatrixStackPush + MatrixStackDup + MatrixStackPop,
+{}
 
 
 #[cfg(test)]
