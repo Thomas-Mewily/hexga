@@ -4,26 +4,28 @@ pub trait Pop<T>: Collection
 {
     /// Removes the last element from the collection and returns it, or [`None`] if it is empty.
     fn pop(&mut self) -> Option<T>;
-}
 
-pub trait PopIf<T> : Pop<T> + PeekLast<T>
-{
+    /// Pops a value and returns a mutable reference to the new last element.
+    fn pop_mut(&mut self) -> Option<&mut T> where Self:  PeekLastMut<T>
+    {
+        let _old = Pop::pop(self)?;
+        PeekLastMut::last_mut(self)
+    }
+
     /// Removes and returns the last element from the collection if the predicate returns `true`,
     /// or [`None`] if the predicate returns false or the collection is empty (the predicate will not be called in that case).
     fn pop_if<F>(&mut self, predicate: F) -> Option<T>
     where
+        Self: PeekLast<T>,
         F: FnOnce(&T) -> bool,
     {
-        let Some(last) = self.last() else { return None; };
-        if predicate(last)
+        if predicate(self.last()?)
         {
             return self.pop();
         }
         None
     }
 }
-impl<S,T> PopIf<T> for S where S: Pop<T> + PeekLast<T> {}
-
 
 
 /*
@@ -38,25 +40,29 @@ pub trait PopFront<T>: Collection
 {
     /// Removes the first element and returns it, or [`None`] if the collection is empty.
     fn pop_front(&mut self) -> Option<T>;
-}
 
-pub trait PopFrontIf<T> : Pop<T> + PeekFirst<T>
-{
+    /// Pops a value and returns a mutable reference to the new first element.
+    fn pop_front_mut(&mut self) -> Option<&mut T> where Self:  PeekFirstMut<T>
+    {
+        let _old = PopFront::pop_front(self)?;
+        PeekFirstMut::first_mut(self)
+    }
+
     /// Removes and returns the first element from the collection if the predicate returns `true`,
     /// or [`None`] if the predicate returns false or the collection is empty (the predicate will not be called in that case).
     fn pop_front_if<F>(&mut self, predicate: F) -> Option<T>
     where
+        Self: PeekFirst<T>,
         F: FnOnce(&T) -> bool,
     {
-        let Some(first) = self.first() else { return None; };
-        if predicate(first)
+        if predicate(self.first()?)
         {
-            return self.pop();
+            return self.pop_front();
         }
         None
     }
 }
-impl<S,T> PopFrontIf<T> for S where S: Pop<T> + PeekFirst<T> {}
+
 
 
 
