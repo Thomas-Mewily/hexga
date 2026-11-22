@@ -13,10 +13,10 @@ pub trait Push<T>: Collection
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
     /// For [`Vec`] and [`VecDeque`] the returned element is the same as the pushed value, but not for the [`BinaryHeap`] that return the next element in the heap order.
-    fn push_mut(&mut self, value: T) -> Option<&mut T> where Self:  PeekLastMut<T>
+    fn push_mut(&mut self, value: T) -> Option<&mut T> where Self:  LastMut<T>
     {
         Push::push(self, value);
-        PeekLastMut::last_mut(self)
+        LastMut::last_mut(self)
     }
 }
 
@@ -31,10 +31,10 @@ pub trait TryPush<T>: Push<T>
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
     /// For [`Vec`] and [`VecDeque`] the returned element is the same as the pushed value, but not for the [`BinaryHeap`] that return the next element in the heap order.
-    fn try_push_mut(&mut self, value: T) -> Result<Option<&mut T>, Self::Error> where Self:  PeekLastMut<T>
+    fn try_push_mut(&mut self, value: T) -> Result<Option<&mut T>, Self::Error> where Self:  LastMut<T>
     {
         let _ = TryPush::try_push(self, value)?;
-        Ok(PeekLastMut::last_mut(self))
+        Ok(LastMut::last_mut(self))
     }
 }
 
@@ -47,10 +47,10 @@ pub trait PushFront<T>: Collection
     /// Pushes a value and returns a mutable reference to the new first element.
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
-    fn push_front_mut(&mut self, value: T) -> Option<&mut T> where Self:  PeekFirstMut<T>
+    fn push_front_mut(&mut self, value: T) -> Option<&mut T> where Self:  FirstMut<T>
     {
         PushFront::push_front(self, value);
-        PeekFirstMut::first_mut(self)
+        FirstMut::first_mut(self)
     }
 }
 pub trait TryPushFront<T>: PushFront<T>
@@ -62,10 +62,10 @@ pub trait TryPushFront<T>: PushFront<T>
     /// Pushes a value and returns a mutable reference to the new first element.
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
-    fn try_push_front_mut(&mut self, value: T) -> Result<Option<&mut T>, Self::Error> where Self:  PeekFirstMut<T>
+    fn try_push_front_mut(&mut self, value: T) -> Result<Option<&mut T>, Self::Error> where Self:  FirstMut<T>
     {
         let _ = TryPushFront::try_push_front(self, value)?;
-        Ok(PeekFirstMut::first_mut(self))
+        Ok(FirstMut::first_mut(self))
     }
 }
 

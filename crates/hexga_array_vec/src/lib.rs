@@ -1355,25 +1355,25 @@ impl<T, const CAP: usize> Pop<T> for ArrayVec<T, CAP>
     */
 }
 
-impl<T, const CAP: usize> PeekFirst<T> for ArrayVec<T, CAP>
+impl<T, const CAP: usize> First<T> for ArrayVec<T, CAP>
 {
     fn first(&self) -> Option<&T> {
         self.as_slice().first()
     }
 }
-impl<T, const CAP: usize> PeekFirstMut<T> for ArrayVec<T, CAP>
+impl<T, const CAP: usize> FirstMut<T> for ArrayVec<T, CAP>
 {
     fn first_mut(&mut self) -> Option<&mut T> {
         self.as_mut_slice().first_mut()
     }
 }
-impl<T, const CAP: usize> PeekLast<T> for ArrayVec<T, CAP>
+impl<T, const CAP: usize> Last<T> for ArrayVec<T, CAP>
 {
     fn last(&self) -> Option<&T> {
         self.as_slice().last()
     }
 }
-impl<T, const CAP: usize> PeekLastMut<T> for ArrayVec<T, CAP>
+impl<T, const CAP: usize> LastMut<T> for ArrayVec<T, CAP>
 {
     fn last_mut(&mut self) -> Option<&mut T> {
         self.as_mut_slice().last_mut()

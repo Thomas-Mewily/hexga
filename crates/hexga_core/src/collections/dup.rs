@@ -11,11 +11,11 @@ pub trait Dup<T>: Collection
 impl<T, C> Dup<T> for C
 where
     T: Clone,
-    C: PeekLast<T> + Push<T>,
+    C: Last<T> + Push<T>,
 {
     fn dup(&mut self) -> bool
     {
-        let Some(value) = PeekLast::last(self).cloned() else { return false };
+        let Some(value) = Last::last(self).cloned() else { return false };
         Push::push(self, value);
         true
     }
@@ -31,11 +31,11 @@ pub trait DupFirst<T>: Collection
 impl<T, C> DupFirst<T> for C
 where
     T: Clone,
-    C: PeekFirst<T> + Push<T>,
+    C: First<T> + Push<T>,
 {
     fn dup_first(&mut self) -> bool
     {
-        let Some(value) = PeekFirst::first(self).cloned() else { return false };
+        let Some(value) = First::first(self).cloned() else { return false };
         Push::push(self, value);
         true
     }
@@ -54,11 +54,11 @@ pub trait DupBack<T>: Collection
 impl<T, C> DupBack<T> for C
 where
     T: Clone,
-    C: PeekLast<T> + PushFront<T>,
+    C: Last<T> + PushFront<T>,
 {
     fn dup_front(&mut self) -> bool
     {
-        let Some(value) = PeekLast::last(self).cloned() else { return false };
+        let Some(value) = Last::last(self).cloned() else { return false };
         PushFront::push_front(self, value);
         true
     }
@@ -75,11 +75,11 @@ pub trait DupFirstBack<T>: Collection
 impl<T, C> DupFirstBack<T> for C
 where
     T: Clone,
-    C: PeekFirst<T> + PushFront<T>,
+    C: First<T> + PushFront<T>,
 {
     fn dup_front(&mut self) -> bool
     {
-        let Some(value) = PeekFirst::first(self).cloned() else { return false };
+        let Some(value) = First::first(self).cloned() else { return false };
         PushFront::push_front(self, value);
         true
     }

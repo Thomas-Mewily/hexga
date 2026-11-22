@@ -90,24 +90,24 @@ pub trait CollectionStackRef<T> :
     // Not PeekLastMut<T> for respecting getter/setter separation, 
     // otherwise we need to set some dirty flag on the collection when mutating the last element, 
     // and I don't want to force it 
-    + PeekLast<T> 
+    + Last<T> 
     + Push<T>
     + Pop<T>
 {}
 impl<S: ?Sized,T> CollectionStackRef<T> for S where
     S: Collection
-    + PeekLast<T>
+    + Last<T>
     + Push<T>
     + Pop<T>
 {}
 
 pub trait CollectionStack<T> : 
     CollectionStackRef<T>
-    + PeekLastMut<T> 
+    + LastMut<T> 
 {}
 impl<S: ?Sized,T> CollectionStack<T> for S where
     S: CollectionStackRef<T>
-    + PeekLastMut<T> 
+    + LastMut<T> 
 {}
 
 #[cfg(feature = "std")]

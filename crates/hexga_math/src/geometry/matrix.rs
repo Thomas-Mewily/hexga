@@ -15,7 +15,7 @@ pub mod prelude
 
 pub mod traits
 {
-    
+    pub use super::MatrixStackRefExtension;
 }
 
 /// 1x1 matrix
@@ -1264,6 +1264,34 @@ impl<T> Matrix4<T>
         ))
     }
 }
+
+
+
+
+pub trait MatrixStackRefExtension<F=float, const N: usize = 4>:
+    GetMatrix<F, N, N>
+    + SetMatrix<F, N, N>
+    + CollectionStackRef<Matrix<F, N, N>>
+{
+    fn push_matrix(&mut self, matrix: Matrix<F, N, N>)
+    {
+        let _ = Push::push(self, matrix);
+    }
+    fn dup_matrix(&mut self) -> bool where Self: Sized, Matrix<F, N, N>: Clone { Dup::dup(self) }
+    fn pop_matrix(&mut self)
+    {
+        let _ = Pop::pop(self);
+    }
+}
+impl<T,F, const N: usize> MatrixStackRefExtension<F,N> for T where
+    T: GetMatrix<F, N, N>
+        + SetMatrix<F, N, N>
+        + CollectionStackRef<Matrix<F, N, N>>,
+{
+}
+
+
+
 
 #[cfg(test)]
 mod test_matrix
