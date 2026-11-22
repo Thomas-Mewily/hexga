@@ -2,11 +2,12 @@
 #![allow(unused)]
 use hexga::prelude::*;
 
-pub use hexga_wgpu as gpu;
-pub use hexga_wgpu::wgpu;
-
 use gpu::experimental::prelude::*;
 use gpu::prelude::*;
+use hexga::range::Range;
+
+pub use hexga_wgpu as gpu;
+pub use hexga_wgpu::wgpu;
 
 //#[cfg(feature = "gpu")]
 //pub use hexga_wgpu::wgpu;
