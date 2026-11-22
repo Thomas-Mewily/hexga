@@ -85,20 +85,38 @@ impl<C> CollectionStableKey for C where
 }
 
 
+/*
+Returning a mutable reference suck because it's break the getter/setter api
+Returning any kind of reference suck because it don't work with singleton
+*/
+
+// Note: work for getter/setter (no &mut exposed) and singleton (no reference returned)
+pub trait PushPopDup<T> : 
+    Collection
+    + Push<T>
+    + Pop<T>
+    + Dup<T>
+{}
+impl<S: ?Sized,T> PushPopDup<T> for S where
+    S: Collection
+    + Push<T>
+    + Pop<T>
+    + Dup<T>
+{}
+
 pub trait CollectionStackRef<T> : 
     Collection
     // Not PeekLastMut<T> for respecting getter/setter separation, 
     // otherwise we need to set some dirty flag on the collection when mutating the last element, 
     // and I don't want to force it 
     + Last<T> 
-    + Push<T>
-    + Pop<T>
+    + PushPopDup<T>
 {}
 impl<S: ?Sized,T> CollectionStackRef<T> for S where
     S: Collection
     + Last<T>
     + Push<T>
-    + Pop<T>
+    + PushPopDup<T>
 {}
 
 pub trait CollectionStack<T> : 
