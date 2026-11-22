@@ -312,6 +312,28 @@ impl<'a, T> IntoIterator for &'a mut NonEmptyStack<T>
 
 impl<T> Collection for NonEmptyStack<T> {}
 impl<T> CollectionBijective for NonEmptyStack<T> {}
+impl<T> PeekLast<T> for NonEmptyStack<T>
+{
+    fn last(&self) -> Option<&T> { Some(self.last()) }
+}
+impl<T> Push<T> for NonEmptyStack<T>
+{
+    type Output = ();
+    fn push(&mut self, value: T) { NonEmptyStack::push(self, value); }
+}
+impl<T> Pop<T> for NonEmptyStack<T>
+{
+    fn pop(&mut self) -> Option<T> { NonEmptyStack::pop(self) }
+}
+impl<T> PeekFirst<T> for NonEmptyStack<T>
+{
+    fn first(&self) -> Option<&T> { Some(self.deref()) }
+}
+impl<T> PeekFirstMut<T> for NonEmptyStack<T>
+{
+    fn first_mut(&mut self) -> Option<&mut T> { Some(self.deref_mut()) }
+}
+
 impl<T> Get<usize> for NonEmptyStack<T>
 {
     type Output = T;

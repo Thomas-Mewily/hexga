@@ -15,12 +15,16 @@ pub trait Collection
 impl<T> Collection for &T where T: Collection {}
 impl<T> Collection for &mut T where T: Collection {}
 
+impl<T> Collection for Option<T> {}
+impl<T, E> Collection for Result<T, E> {}
+
 impl<T, const N: usize> Collection for [T; N] {}
 impl<T> Collection for Vec<T> {}
 impl<T> Collection for VecDeque<T> {}
 impl<T> Collection for [T] {}
 impl<T> Collection for &[T] {}
 impl<T> Collection for &mut [T] {}
+
 
 impl Collection for str {}
 impl Collection for &str {}

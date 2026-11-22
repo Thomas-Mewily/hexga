@@ -4,12 +4,28 @@ pub trait Pop<T>: Collection
 {
     /// Removes the last element from the collection and returns it, or [`None`] if it is empty.
     fn pop(&mut self) -> Option<T>;
-    /// Removes and returns the last element from the collection if the predicate returns `true``,
+}
+
+pub trait PopIf<T> : Pop<T> + PeekLast<T>
+{
+    /// Removes and returns the last element from the collection if the predicate returns `true`,
     /// or [`None`] if the predicate returns false or the collection is empty (the predicate will not be called in that case).
     fn pop_if<F>(&mut self, predicate: F) -> Option<T>
     where
-        F: FnOnce(&mut T) -> bool;
+        F: FnOnce(&T) -> bool,
+    {
+        let Some(last) = self.last() else { return None; };
+        if predicate(last)
+        {
+            return self.pop();
+        }
+        None
+    }
 }
+impl<S,T> PopIf<T> for S where S: Pop<T> + PeekLast<T> {}
+
+
+
 /*
 pub trait TryPop<T> : Pop<T>
 {
@@ -22,10 +38,27 @@ pub trait PopFront<T>: Collection
 {
     /// Removes the first element and returns it, or [`None`] if the collection is empty.
     fn pop_front(&mut self) -> Option<T>;
-    /// Removes and returns the first element from the collection if the predicate returns `true``,
-    /// or [`None`] if the predicate returns false or the collection is empty (the predicate will not be called in that case).
-    fn pop_front_if(&mut self, predicate: impl FnOnce(&mut T) -> bool) -> Option<T>;
 }
+
+pub trait PopFrontIf<T> : Pop<T> + PeekFirst<T>
+{
+    /// Removes and returns the first element from the collection if the predicate returns `true`,
+    /// or [`None`] if the predicate returns false or the collection is empty (the predicate will not be called in that case).
+    fn pop_front_if<F>(&mut self, predicate: F) -> Option<T>
+    where
+        F: FnOnce(&T) -> bool,
+    {
+        let Some(first) = self.first() else { return None; };
+        if predicate(first)
+        {
+            return self.pop();
+        }
+        None
+    }
+}
+impl<S,T> PopFrontIf<T> for S where S: Pop<T> + PeekFirst<T> {}
+
+
 
 /*
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
@@ -35,12 +68,6 @@ pub struct EmptyError;
 impl<T> Pop<T> for Vec<T>
 {
     fn pop(&mut self) -> Option<T> { self.pop() }
-    fn pop_if<F>(&mut self, predicate: F) -> Option<T>
-    where
-        F: FnOnce(&mut T) -> bool,
-    {
-        self.pop_if(predicate)
-    }
 }
 /*
 impl<T> TryPop<T> for Vec<T>
@@ -53,17 +80,10 @@ impl<T> TryPop<T> for Vec<T>
 impl<T> Pop<T> for VecDeque<T>
 {
     fn pop(&mut self) -> Option<T> { self.pop_back() }
-    fn pop_if<F>(&mut self, predicate: F) -> Option<T>
-    where
-        F: FnOnce(&mut T) -> bool,
-    {
-        self.pop_back_if(predicate)
-    }
 }
 impl<T> PopFront<T> for VecDeque<T>
 {
     fn pop_front(&mut self) -> Option<T> { self.pop_front() }
-    fn pop_front_if(&mut self, predicate: impl FnOnce(&mut T) -> bool) -> Option<T> { self.pop_front_if(predicate) }
 }
 /*
 impl<T> TryPop<T> for VecDeque<T>
@@ -78,61 +98,15 @@ where
     T: Ord,
 {
     fn pop(&mut self) -> Option<T> { self.pop() }
-    fn pop_if<F>(&mut self, predicate: F) -> Option<T>
-    where
-        F: FnOnce(&mut T) -> bool,
-    {
-        let Some(mut v) = self.pop()
-        else
-        {
-            return None;
-        };
-        if predicate(&mut v)
-        {
-            return Some(v);
-        }
-        self.push(v);
-        None
-    }
 }
 
 impl<T> Pop<T> for LinkedList<T>
 {
     fn pop(&mut self) -> Option<T> { self.pop_back() }
-    fn pop_if<F>(&mut self, predicate: F) -> Option<T>
-    where
-        F: FnOnce(&mut T) -> bool,
-    {
-        let Some(mut v) = self.pop_back()
-        else
-        {
-            return None;
-        };
-        if predicate(&mut v)
-        {
-            return Some(v);
-        }
-        self.push_back(v);
-        None
-    }
 }
 impl<T> PopFront<T> for LinkedList<T>
 {
     fn pop_front(&mut self) -> Option<T> { self.pop_front() }
-    fn pop_front_if(&mut self, predicate: impl FnOnce(&mut T) -> bool) -> Option<T>
-    {
-        let Some(mut v) = self.pop_front()
-        else
-        {
-            return None;
-        };
-        if predicate(&mut v)
-        {
-            return Some(v);
-        }
-        self.push_front(v);
-        None
-    }
 }
 /*
 impl<T> TryPop<T> for LinkedList<T>
@@ -145,6 +119,7 @@ impl<T> TryPop<T> for LinkedList<T>
 impl Pop<char> for String
 {
     fn pop(&mut self) -> Option<char> { self.pop() }
+    /*
     fn pop_if<F>(&mut self, predicate: F) -> Option<char>
     where
         F: FnOnce(&mut char) -> bool,
@@ -161,6 +136,7 @@ impl Pop<char> for String
         self.push(v);
         None
     }
+    */
 }
 /*
 impl<T> TryPop<T> for String<T>

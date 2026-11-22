@@ -57,6 +57,12 @@ pub use insert::*;
 mod pop;
 pub use pop::*;
 
+mod dup;
+pub use dup::*;
+
+mod peek;
+pub use peek::*;
+
 mod matches;
 pub use matches::*;
 
@@ -98,5 +104,5 @@ pub mod prelude
 
 pub mod traits
 {
-    pub use super::{capacity::*, clear::*, collection::*, get::*, index_id::*, insert::*, length::*, matches::*, pop::*, push::*, remove::*, retain::*};
+    pub use super::{capacity::*, clear::*, collection::*, dup::*, peek::*, get::*, index_id::*, insert::*, length::*, matches::*, pop::*, push::*, remove::*, retain::*};
 }

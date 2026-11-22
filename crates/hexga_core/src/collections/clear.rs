@@ -1,7 +1,7 @@
 use super::*;
 
 /// Clear the collection
-pub trait Clear
+pub trait Clear : Collection
 {
     fn clear(&mut self);
 }
@@ -69,4 +69,10 @@ impl<T> Clear for Option<T>
 {
     #[inline(always)]
     fn clear(&mut self) { *self = None; }
+}
+impl<T, E> Clear for Result<T, E>
+    where E: Default
+{
+    #[inline(always)]
+    fn clear(&mut self) { *self = Err(___()); }
 }

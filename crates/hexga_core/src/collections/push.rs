@@ -163,3 +163,7 @@ where
     #[allow(clippy::unit_arg)]
     fn try_push(&mut self, value: P) -> Result<Self::Output, Self::Error> { Ok(self.push(value)) }
 }
+
+/*
+Todo: Push /TryPush for Option & Result ?
+*/

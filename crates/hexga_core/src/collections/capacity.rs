@@ -431,3 +431,25 @@ impl Truncate for String
 {
     fn truncate(&mut self, len: usize) { self.truncate(len); }
 }
+
+
+impl<T> Capacity for Option<T> {
+    #[inline(always)]
+    fn capacity(&self) -> usize { self.is_none() as usize }
+}
+impl<T> WithCapacity for Option<T> {
+    type Param = ();
+    #[inline(always)]
+    fn with_capacity_and_param(_capacity: usize, _: Self::Param) -> Self { None }
+}
+impl<T,E> Capacity for Result<T,E> {
+    #[inline(always)]
+    fn capacity(&self) -> usize { self.is_ok() as usize }
+}
+impl<T,E> WithCapacity for Result<T,E> 
+    where E: Default
+{
+    type Param = ();
+    #[inline(always)]
+    fn with_capacity_and_param(_capacity: usize, _: Self::Param) -> Self { Err(___()) }
+}
