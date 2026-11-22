@@ -91,17 +91,17 @@ Returning any kind of reference suck because it don't work with singleton
 */
 
 // Note: work for getter/setter (no &mut exposed) and singleton (no reference returned)
-pub trait PushPopDup<T> : 
+pub trait PushPop<T> : 
     Collection
     + Push<T>
     + Pop<T>
-    + Dup<T>
+    //+ Dup<T> // Dup depend on Last that return a reference, so it don't work for singleton
 {}
-impl<S: ?Sized,T> PushPopDup<T> for S where
+impl<S: ?Sized,T> PushPop<T> for S where
     S: Collection
     + Push<T>
     + Pop<T>
-    + Dup<T>
+    //+ Dup<T>
 {}
 
 pub trait CollectionStackRef<T> : 
@@ -110,13 +110,13 @@ pub trait CollectionStackRef<T> :
     // otherwise we need to set some dirty flag on the collection when mutating the last element, 
     // and I don't want to force it 
     + Last<T> 
-    + PushPopDup<T>
+    + PushPop<T>
 {}
 impl<S: ?Sized,T> CollectionStackRef<T> for S where
     S: Collection
     + Last<T>
     + Push<T>
-    + PushPopDup<T>
+    + PushPop<T>
 {}
 
 pub trait CollectionStack<T> : 
