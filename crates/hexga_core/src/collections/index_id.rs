@@ -4,7 +4,7 @@ use super::*;
 pub trait IndexID<C>: Sized
 {
     #[inline(always)]
-    fn get(self, collection: &C) -> Option<&C::Output>
+    fn get(self, collection: &C) -> Option<<C as Get<Self>>::Guard<'_>>
     where
         C: Get<Self>,
         C::Output: Sized,
@@ -13,7 +13,7 @@ pub trait IndexID<C>: Sized
     }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(self, collection: &C) -> &C::Output
+    unsafe fn get_unchecked(self, collection: &C) -> <C as Get<Self>>::Guard<'_>
     where
         C: Get<Self>,
         C::Output: Sized,

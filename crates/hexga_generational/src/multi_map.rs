@@ -599,11 +599,11 @@ impl<V,Gen,S,Q> GetMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGenera
 }
 impl<K,V,Gen,S> GetManyMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> where Gen: IGeneration, S:BuildHasher
 {
-    fn get_many_mut<const N: usize>(&mut self, indices: [MultiHashMapIDOf<Gen>; N]) -> Option<[&mut Self::Output;N]>
+    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [MultiHashMapIDOf<Gen>; N]) -> Option<[Self::GuardMut<'a>; N]> where Self::Output: 'a
     {
         self.values.get_many_mut(indices).map(|entries| entries.map(|e| &mut e.value))
     }
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [MultiHashMapIDOf<Gen>; N]) -> Result<[&mut Self::Output;N], ManyMutError>
+    fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [MultiHashMapIDOf<Gen>; N]) -> Result<[Self::GuardMut<'a>; N], ManyMutError> where Self::Output: 'a
     {
         self.values.try_get_many_mut(indices).map(|entries| entries.map(|e| &mut e.value))
     }
@@ -611,7 +611,7 @@ impl<K,V,Gen,S> GetManyMut<MultiHashMapIDOf<Gen>> for MultiHashMapOf<K,V,Gen,S> 
 // harcoded for string to avoid conflicting implementations of trait
 impl<V,Gen,S,Q> GetManyMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGeneration, S:BuildHasher, String:Borrow<Q>, Q: Eq + Hash
 {
-    fn get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Option<[&mut Self::Output;N]>
+    fn get_many_mut<'a, const N: usize>(&'a mut self, keys: [&Q; N]) -> Option<[Self::GuardMut<'a>; N]> where Self::Output: 'a
     {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let keys = keys.map(|key| self.key_to_id(key));
@@ -619,7 +619,7 @@ impl<V,Gen,S,Q> GetManyMut<&Q> for MultiHashMapOf<String,V,Gen,S> where Gen: IGe
         let indices = keys.map(|k| k.unwrap());
         self.get_many_mut(indices)
     }
-    fn try_get_many_mut<const N: usize>(&mut self, keys: [&Q; N]) -> Result<[&mut Self::Output;N], ManyMutError>
+    fn try_get_many_mut<'a, const N: usize>(&'a mut self, keys: [&Q; N]) -> Result<[Self::GuardMut<'a>; N], ManyMutError> where Self::Output: 'a
     {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let keys = keys.map(|key| self.key_to_id(key));

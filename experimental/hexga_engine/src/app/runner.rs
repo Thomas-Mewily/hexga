@@ -61,10 +61,10 @@ where
         self.app = None;
     }
 
-    fn init_stuff_if_needed(&mut self, event_loop: &mut AppInternalEventLoop)
+    fn init_stuff_if_needed(&mut self)
     {
         self.init_graphics_if_needed();
-        self.init_app_if_needed(event_loop);
+        self.init_app_if_needed();
     }
 
     fn init_graphics_if_needed(&mut self)
@@ -87,7 +87,7 @@ where
         }
     }
 
-    fn init_app_if_needed(&mut self, event_loop: &mut AppInternalEventLoop)
+    fn init_app_if_needed(&mut self)
     {
         if self.app.is_some() || Gpu::is_not_init()
         {
@@ -103,7 +103,6 @@ where
                     let mut app = (self.init)();
                     app.message(AppMessage::Event(AppEvent::WindowOpen), &mut ());
                     app.message(AppMessage::Flow(AppFlow::Resume), &mut ());
-                    //app.resume()
                     self.app = Some(app);
                     w.request_draw();
                 }
@@ -127,227 +126,67 @@ where
     F: AppInit<A>,
     A: App<(), AppCtx<'a>>,
 {
-    fn update(&mut self, dt: Duration, el: &mut AppInternalEventLoop)
+    fn update(&mut self, dt: Duration, _event_loop: &mut AppInternalEventLoop<'a>)
+    {
+        if let Some(app) = &mut self.app { app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ()); }
+    }
+
+    fn draw(&mut self, _event_loop: &mut AppInternalEventLoop<'a>)
     {
         if let Some(app) = &mut self.app
         {
-            app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ());
-        }
-    }
-
-    fn draw(&mut self, event_loop: &mut AppInternalEventLoop)
-    {
-        if let Some(app) = &mut self.app
-        {
-            /*
-            let Ok(mut graphics) = GRAPHICS.try_get_mut()
-            else
-            {
-                return;
-            };
-            let Ok(mut window) = WINDOW.try_get_mut()
-            else
-            {
-                return;
-            };
-            let Some(surface) = window.surface()
-            else
-            {
-                return;
-            };
-            */
-            /*
-            let surface = surface.surface();
-            let output = match surface.wgpu.get_current_texture()
-            {
-                Ok(s) => s,
-                Err(_) => return,
-            };
-
-            let view = output
-                .texture
-                .create_view(&wgpu::TextureViewDescriptor::default());
-
-            let mut encoder =
-                Gpu.device()
-                    .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                        label: Some("Render Encoder"),
-                    });
-
-            {
-                let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                    label: Some("Render Pass"),
-                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: &view,
-                        resolve_target: None,
-                        ops: wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(wgpu::Color {
-                                r: 0.9,
-                                g: 0.9,
-                                b: 0.2,
-                                a: 1.0,
-                            }),
-                            store: wgpu::StoreOp::Store,
-                        },
-                    })],
-                    depth_stencil_attachment: None,
-                    occlusion_query_set: None,
-                    timestamp_writes: None,
-                });
-
-                render_pass.set_pipeline(&graphics.pipeline);
-                render_pass.draw(0..3, 0..1);
-            }
-
-            Gpu.queue().submit(iter::once(encoder.finish()));
-            output.present();
-
+            if WINDOW.try_get_mut().ok().and_then(|window| window.surface().map(|_| ())).is_none() { return; }
+            if let Ok(mut graphics) = GRAPHICS.try_get_mut() { graphics.begin_draw(); } else { return; }
             app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
-            */
-
-            //app.draw(1., &mut ());
-
-            {
-                let Ok(mut window) = WINDOW.try_get_mut()
-                else
-                {
-                    return;
-                };
-
-                let Some(surface) = window.surface()
-                else
-                {
-                    return;
-                };
-            }
-
-            {
-                let Ok(mut graphics) = GRAPHICS.try_get_mut()
-                else
-                {
-                    return;
-                };
-                graphics.begin_draw();
-            }
-
-            app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
-
-            {
-                let Ok(mut graphics) = GRAPHICS.try_get_mut()
-                else
-                {
-                    return;
-                };
-                graphics.end_draw();
-            }
+            if let Ok(mut graphics) = GRAPHICS.try_get_mut() { graphics.end_draw(); }
         }
     }
 
-    fn message(&mut self, ev: AppInternalMessage, ctx: &mut AppInternalEventLoop) -> Option<AppInternalMessage>
+    fn message(&mut self, message: AppInternalMessage, event_loop: &mut AppInternalEventLoop<'a>) -> Option<AppInternalMessage>
     {
-        match ev
+        match message
         {
-            AppMessage::Custom(e) => match e
+            AppMessage::Custom(AppCustomEvent::SurfaceReady(surface)) =>
             {
-                AppCustomEvent::SurfaceReady(surface) =>
-                {
-                    let mut window = match WINDOW.try_get_mut()
-                    {
-                        Ok(w) => w,
-                        Err(_) =>
-                        {
-                            return None;
-                        }
-                    };
-                    let size = window.size();
-                    window.replace_surface(Some(GpuSurfaceConfigured::from_surface(surface, size)));
-                    window.configure_surface();
-                    window.request_draw();
-                    drop(window);
-
-                    self.init_stuff_if_needed(ctx);
-
-                    None
-                }
-                AppCustomEvent::GpuReady(gpu) =>
-                {
-                    hexga_graphics::gpu::experimental::GPU.init(gpu).ok_or_void().expect("Can't init the gpu");
-                    assert!(Gpu::is_init());
-
-                    self.init_stuff_if_needed(ctx);
-
-                    None
-                }
-                AppCustomEvent::GpuError(gpu_error) => panic!("Can't init the gpu"),
-            },
-            s => self.dispatch_message(s, ctx),
-        }
-
-        /*
-        let e: AppMessage = match ev
-        {
-            AppMessage::Event(ev) =>
-            {
-                match &ev
-                {
-                    AppEvent::Resize(size) =>
-                    {
-                        WINDOW.try_get_mut().map(|mut w| w.configure_surface());
-                    }
-                    _ =>
-                    {}
-                }
-                ev.into()
-            }
-            AppMessage::Custom(_) => return None,
-            AppMessage::Flow(flow) =>
-            {
-                flow.into()
-            },
-        };
-
-        match &mut self.app
-        {
-            Some(app) => app.message(e, &mut ()).map(|e| e.remove_custom()).flatten(),
-            None => None,
-        }
-        */
-    }
-
-    fn event(&mut self, ev: AppEvent, ctx: &mut AppInternalEventLoop<'a>) -> Option<AppEvent>
-    {
-        if let AppEvent::WindowResize(size) = &ev
-            && let Ok(mut w) = WINDOW.try_get_mut()
-        {
-            w.configure_surface()
-        };
-
-        let Some(app) = &mut self.app
-        else
-        {
-            return None;
-        };
-        let Some(ev) = app.message(ev.into(), &mut ())
-        else
-        {
-            return None;
-        };
-        match ev
-        {
-            AppMessage::Event(ev) => Some(ev),
-            _ =>
-            {
-                #[cfg(debug_assertions)]
-                {
-                    // probably a logic bug, an AppEvent should not return anythings else than another AppEvent (if the passed event was consumed)
-                    panic!("Invalid event {:?}", ev);
-                }
+                let mut window = WINDOW.try_get_mut().ok()?;
+                let size = window.size();
+                window.replace_surface(Some(GpuSurfaceConfigured::from_surface(surface, size)));
+                window.configure_surface();
+                window.request_draw();
+                drop(window);
+                self.init_stuff_if_needed();
                 None
             }
+            AppMessage::Custom(AppCustomEvent::GpuReady(gpu)) =>
+            {
+                hexga_graphics::gpu::experimental::GPU.init(gpu).ok_or_void().expect("Can't init the gpu");
+                assert!(Gpu::is_init());
+                self.init_stuff_if_needed();
+                None
+            }
+            AppMessage::Custom(AppCustomEvent::GpuError(_)) => panic!("Can't init the gpu"),
+            message => self.dispatch_message(message, event_loop),
         }
     }
 
-    fn resume(&mut self, event_loop: &mut AppInternalEventLoop)
+    fn event(&mut self, ev: AppEvent, event_loop: &mut AppInternalEventLoop<'a>) -> Option<AppEvent>
+    {
+        if matches!(ev, AppEvent::WindowResize(_))
+            && let Ok(mut window) = WINDOW.try_get_mut()
+        {
+            window.configure_surface();
+        }
+        let Some(event) = self.app.as_mut()?.message(ev.into(), &mut ()) else {
+            return None;
+        };
+        match event
+        {
+            AppMessage::Event(event) => Some(event),
+            _ => None,
+        }
+    }
+
+    fn resume(&mut self, event_loop: &mut AppInternalEventLoop<'a>)
     {
         let mut created = false;
         let mut window = WINDOW
@@ -358,37 +197,19 @@ where
             .ok_or_void()
             .expect("can't init the main window");
 
-        if created || window.surface().is_none()
-        {
-            window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface");
-        }
-
-        if let Some(app) = &mut self.app
-        {
-            app.message(AppMessage::Flow(AppFlow::Resume), &mut ());
-        }
+        if created || window.surface().is_none() { window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface"); }
+        if let Some(app) = &mut self.app { app.message(AppMessage::Flow(AppFlow::Resume), &mut ()); }
     }
 
-    fn pause(&mut self, event_loop: &mut EventLoop<AppCustomEvent>)
+    fn pause(&mut self, _event_loop: &mut AppInternalEventLoop<'a>)
     {
-        if let Some(app) = &mut self.app
-        {
-            app.message(AppMessage::Flow(AppFlow::Pause), &mut ());
-        }
-
-        if let Ok(mut w) = WINDOW.try_get_mut()
-        {
-            w.destroy_surface();
-        }
+        if let Some(app) = &mut self.app { app.message(AppMessage::Flow(AppFlow::Pause), &mut ()); }
+        if let Ok(mut window) = WINDOW.try_get_mut() { window.destroy_surface(); }
     }
 
-    fn exit(&mut self, event_loop: &mut AppInternalEventLoop)
+    fn exit(&mut self, _event_loop: &mut AppInternalEventLoop<'a>)
     {
-        if let Some(app) = &mut self.app
-        {
-            app.message(AppMessage::Flow(AppFlow::Exit), &mut ());
-        }
-
-        self.exit();
+        if let Some(app) = &mut self.app { app.message(AppMessage::Flow(AppFlow::Exit), &mut ()); }
+        AppRunner::exit(self);
     }
 }

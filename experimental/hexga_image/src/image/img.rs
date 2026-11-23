@@ -343,19 +343,21 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 }
 */
 
-impl<T, Idx> Collection for ImageBaseOf<T, Idx> where Idx: Integer {}
-impl<T, Idx> CollectionBijective for ImageBaseOf<T, Idx> where Idx: Integer {}
+impl<T, Idx> Collection<T> for ImageBaseOf<T, Idx> where Idx: Integer { type Guard<'a> = &'a T where Self: 'a; }
+impl<T, Idx> CollectionMut<T> for ImageBaseOf<T, Idx> where Idx: Integer { type GuardMut<'a> = &'a mut T where Self: 'a; }
+impl<T, Idx> CollectionBijective<T> for ImageBaseOf<T, Idx> where Idx: Integer {}
 impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
 {
     type Output = T;
+    type Guard<'a> = &'a T where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get(&self, pos: P) -> Option<&Self::Output> { self.position_to_index(pos).map(|idx| unsafe { self.pixels().get_unchecked(idx) }) }
+    fn get<'a>(&'a self, pos: P) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.position_to_index(pos).map(|idx| unsafe { self.pixels().get_unchecked(idx) }) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(&self, pos: P) -> &Self::Output
+    unsafe fn get_unchecked<'a>(&'a self, pos: P) -> Self::Guard<'a> where Self::Output: 'a
     {
         unsafe {
             let idx = self.position_to_index_unchecked(pos.into());
@@ -370,7 +372,7 @@ where
 {
     type Error = IndexOutOfBounds<Vector2<Idx>, Vector2<Idx>>;
     #[inline(always)]
-    fn try_get(&self, pos: P) -> Result<&Self::Output, Self::Error>
+    fn try_get<'a>(&'a self, pos: P) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a
     {
         let p = pos.into();
         self.get(p).ok_or_else(|| IndexOutOfBounds::new(p, self.size()))
@@ -383,7 +385,7 @@ where
     P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, pos: P) -> Result<&mut Self::Output, Self::Error>
+    fn try_get_mut<'a>(&'a mut self, pos: P) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a
     {
         let p = pos.into();
         let size = self.size();
@@ -395,11 +397,12 @@ where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
 {
+    type GuardMut<'a> = &'a mut T where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get_mut(&mut self, pos: P) -> Option<&mut Self::Output> { self.position_to_index(pos).map(|i| unsafe { self.pixels_mut().get_unchecked_mut(i) }) }
+    fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.position_to_index(pos).map(|i| unsafe { self.pixels_mut().get_unchecked_mut(i) }) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut(&mut self, pos: P) -> &mut Self::Output
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, pos: P) -> Self::GuardMut<'a> where Self::Output: 'a
     {
         unsafe {
             let idx = self.position_to_index_unchecked(pos);
@@ -414,8 +417,8 @@ where
     P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn try_get_many_mut<const N2: usize>(&mut self, indices: [P; N2]) -> Result<[&mut Self::Output; N2], ManyMutError>
-    {
+    fn try_get_many_mut<'a, const N2: usize>(&'a mut self, indices: [P; N2]) -> Result<[Self::GuardMut<'a>; N2], ManyMutError>
+     where Self::Output: 'a{
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
         if indices.any(|x| x.is_none())
@@ -428,8 +431,8 @@ where
         }
     }
 
-    fn get_many_mut<const N: usize>(&mut self, indices: [P; N]) -> Option<[&mut Self::Output; N]>
-    {
+    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [P; N]) -> Option<[Self::GuardMut<'a>; N]>
+     where Self::Output: 'a{
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
         if indices.any(|x| x.is_none())

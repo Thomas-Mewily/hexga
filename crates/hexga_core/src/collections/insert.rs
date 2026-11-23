@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait Insert<K, V = ()>: Collection
+pub trait Insert<K, V = ()>
 {
     /// Insert the (key, value), and return the old value
     fn insert(&mut self, key: K, value: V) -> Option<V>;

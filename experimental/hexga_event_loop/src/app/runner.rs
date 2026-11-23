@@ -317,7 +317,7 @@ where
             }
         }
 
-        let Some(ev) = self.app(active, |event_handler, event_loop| event_handler.message(ev, event_loop))
+        let Some(ev) = self.dispatch(active, ev)
         else
         {
             return;
@@ -376,6 +376,11 @@ where
         let mut event_loop = EventLoop::new(active, &mut self.state, &self.proxy);
         f(&mut self.event_handler, &mut event_loop)
     }
+
+    fn dispatch(&mut self, active: &WinitEventLoopActive, message: AppMessage<CustomEvent>) -> Option<AppMessage<CustomEvent>>
+    {
+        self.app(active, |handler, event_loop| handler.message(message, event_loop))
+    }
 }
 impl<EventHandler, CustomEvent> ::winit::application::ApplicationHandler<AppMessage<CustomEvent>> for AppRunner<EventHandler, CustomEvent>
 where
@@ -384,23 +389,17 @@ where
 {
     fn resumed(&mut self, active: &WinitEventLoopActive)
     {
-        self.app(active, |event_handler, event_loop| {
-            event_handler.message(AppMessage::Flow(AppFlow::Resume), event_loop)
-        });
+        self.app(active, |event_handler, event_loop| { event_handler.message(AppMessage::Flow(AppFlow::Resume), event_loop); });
     }
 
     fn suspended(&mut self, active: &WinitEventLoopActive)
     {
-        self.app(active, |event_handler, event_loop| {
-            event_handler.message(AppMessage::Flow(AppFlow::Pause), event_loop)
-        });
+        self.app(active, |event_handler, event_loop| { event_handler.message(AppMessage::Flow(AppFlow::Pause), event_loop); });
     }
 
     fn exiting(&mut self, active: &WinitEventLoopActive)
     {
-        self.app(active, |event_handler, event_loop| {
-            event_handler.message(AppMessage::Flow(AppFlow::Exit), event_loop)
-        });
+        self.app(active, |event_handler, event_loop| { event_handler.message(AppMessage::Flow(AppFlow::Exit), event_loop); });
     }
 
     fn about_to_wait(&mut self, active: &WinitEventLoopActive)
@@ -409,9 +408,7 @@ where
         let dt = time - self.state.time;
         self.state.time = time;
 
-        self.app(active, |event_handler, event_loop| {
-            event_handler.message(AppMessage::Flow(AppFlow::Update(dt)), event_loop)
-        });
+        self.app(active, |event_handler, event_loop| { event_handler.message(AppMessage::Flow(AppFlow::Update(dt)), event_loop); });
     }
 
     fn user_event(&mut self, active: &WinitEventLoopActive, event: AppMessage<CustomEvent>) { self.event(active, event); }
@@ -458,7 +455,7 @@ where
             */
             WinitWindowEvent::RedrawRequested =>
             {
-                self.app(active, |event_handler, event_loop| event_handler.draw(event_loop));
+                self.app(active, |event_handler, event_loop| { event_handler.message(AppMessage::Flow(AppFlow::Draw), event_loop); });
             }
             WinitWindowEvent::ActivationTokenDone { serial, token } =>
             {}

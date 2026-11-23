@@ -123,15 +123,14 @@ where
         }
     }
 
-    fn event(&mut self, ev: AppEvent, ctx: &mut Ctx) -> Option<AppEvent> { Some(ev) }
-    fn custom(&mut self, ev: CustomEvent, ctx: &mut Ctx) -> Option<CustomEvent> { Some(ev) }
+    fn event(&mut self, ev: AppEvent, ctx: &mut Ctx) -> Option<AppEvent> { let _ = ctx; Some(ev) }
+    fn custom(&mut self, ev: CustomEvent, ctx: &mut Ctx) -> Option<CustomEvent> { let _ = ctx; Some(ev) }
 
-    fn update(&mut self, dt: Duration, ctx: &mut Ctx) { let _ = dt; }
+    fn update(&mut self, dt: Duration, ctx: &mut Ctx) { let _ = (dt, ctx); }
     fn draw(&mut self, ctx: &mut Ctx) { let _ = ctx; }
 
     fn resume(&mut self, ctx: &mut Ctx) { let _ = ctx; }
     fn pause(&mut self, ctx: &mut Ctx) { let _ = ctx; }
-
     fn exit(&mut self, ctx: &mut Ctx) { let _ = ctx; }
 }
 

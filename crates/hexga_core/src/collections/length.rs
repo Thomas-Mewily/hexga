@@ -10,7 +10,7 @@ impl<T> SetLength for Vec<T>
     unsafe fn set_len(&mut self, new_len: usize) { unsafe { self.set_len(new_len) }; }
 }
 
-pub trait Length: Collection
+pub trait Length
 {
     // Returns the number of elements inside this collection, also referred as a 'length'.
     fn len(&self) -> usize;

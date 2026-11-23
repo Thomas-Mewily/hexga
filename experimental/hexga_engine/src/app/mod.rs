@@ -23,6 +23,7 @@ pub mod prelude
 
 pub mod traits
 {
+    pub use hexga_event_loop::app::traits::App;
     pub use super::runner::AppRun;
     pub use hexga_event_loop::app::traits::*;
 }

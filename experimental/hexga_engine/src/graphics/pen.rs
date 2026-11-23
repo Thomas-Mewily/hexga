@@ -3,15 +3,6 @@ use super::*;
 #[derive(Clone, Copy)]
 pub struct Pen;
 
-impl Pen
-{
-    pub fn set_background_color(&mut self, color: Color) -> &mut Self
-    {
-        GRAPHICS.get_mut().background_color = color;
-        self
-    }
-}
-
 impl SingletonEmptyStruct for Pen
 {
     fn is_init() -> bool { GRAPHICS.try_get_mut().is_ok() }
@@ -21,6 +12,28 @@ impl BuilderMesh for Pen
 {
     fn extend(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) { GRAPHICS.get_mut().extend(vertex, index) }
     fn geometry(&mut self, vertex: &[vertex::VertexOf<3>], index: &[VertexIndex]) { GRAPHICS.get_mut().geometry(vertex, index); }
+}
+
+impl SetDrawParam for Pen
+{
+    fn set_draw_param(&mut self, param: DrawParam) -> &mut Self { GRAPHICS.get_mut().set_draw_param(param); self }
+}
+impl GetDrawParam for Pen
+{
+    fn draw_param(&self) -> DrawParam { GRAPHICS.get_mut().draw_param() }
+}
+
+impl<T> Collection<T> for Pen
+where
+    Graphics: Collection<T>,
+{
+    type Guard<'a> = <Graphics as Collection<T>>::Guard<'a> where Self: 'a;
+}
+impl<T> CollectionMut<T> for Pen
+where
+    Graphics: CollectionMut<T>,
+{
+    type GuardMut<'a> = <Graphics as CollectionMut<T>>::GuardMut<'a> where Self: 'a;
 }
 
 impl GetMatrix<float, 4, 4> for Pen
@@ -73,6 +86,19 @@ impl SetScale for Pen
         self
     }
 }
+
+impl<T> Push<T> for Pen where Graphics: Push<T>
+{
+    type Output = <Graphics as Push<T>>::Output;
+    fn push(&mut self, value: T) -> Self::Output { GRAPHICS.get_mut().push(value) }
+}
+impl<T> Pop<T> for Pen where Graphics: Pop<T>
+{
+    fn pop(&mut self) -> Option<T> {
+        GRAPHICS.get_mut().pop()
+    }
+}
+
 impl RotateX for Pen
 {
     fn rotate_x(&mut self, angle: Angle) -> &mut Self
@@ -98,28 +124,53 @@ impl RotateZ for Pen
     }
 }
 
-impl DrawParamAttribute for Pen
+impl GetViewport for Pen
 {
     fn viewport(&self) -> Viewport { GRAPHICS.get_mut().viewport() }
+}
+impl SetViewport for Pen
+{
     fn set_viewport(&mut self, viewport: Viewport) -> &mut Self
     {
         GRAPHICS.get_mut().set_viewport(viewport);
         self
     }
-
-    fn scissor(&self) -> Rect2i { GRAPHICS.get_mut().scissor() }
-
-    fn set_scissor(&mut self, scissor: Rect2i) -> &mut Self
+}
+impl GetScissor for Pen
+{
+    fn scissor(&self) -> Scissor { GRAPHICS.get_mut().scissor() }
+}
+impl SetScissor for Pen
+{
+    fn set_scissor(&mut self, scissor: Scissor) -> &mut Self
     {
         GRAPHICS.get_mut().set_scissor(scissor);
         self
     }
-
+}
+impl GetOptionalTexture for Pen
+{
     fn texture(&self) -> Option<Texture> { GRAPHICS.get_mut().texture() }
-
+}
+impl SetOptionalTexture for Pen
+{
     fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self
     {
         GRAPHICS.get_mut().set_texture(texture);
         self
     }
 }
+
+
+
+
+/*
+impl SetBackgroundColor for Pen
+{
+    fn set_background_color(&mut self, color: Color) -> &mut Self
+    {
+        GRAPHICS.get_mut().set_background_color(color);
+        self
+    }
+}
+*/

@@ -1,38 +1,63 @@
 use super::*;
 
-pub trait Last<T>: Collection
+
+
+pub trait Last<T>: Collection<T>
 {
     /// aka `peek()`, `peek_back()`, `back()`
-    fn last(&self) -> Option<&T>;
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>>;
+}
+
+impl<S,T> Last<T> for &S where S: Last<T>
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> {
+        (*self).last()
+    }
+}
+impl<S,T> Last<T> for &mut S where S: Last<T>
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> {
+        (**self).last()
+    }
+}
+
+impl Last<char> for String
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.deref().last() }
+}
+
+impl Last<char> for str
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.chars().last().map(|c| Identity(c)) }
 }
 
 impl<T> Last<T> for Vec<T>
 {
-    fn last(&self) -> Option<&T> { self.deref().last() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.deref().last() }
 }
 
 impl<T, const N: usize> Last<T> for [T;N]
 {
-    fn last(&self) -> Option<&T> { self.as_ref().last() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().last() }
 }
 
 impl<T> Last<T> for &[T]
 {
-    fn last(&self) -> Option<&T> { self.as_ref().last() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().last() }
 }
 impl<T> Last<T> for &mut [T]
 {
-    fn last(&self) -> Option<&T> { self.as_ref().last() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().last() }
 }
 
 impl<T> Last<T> for VecDeque<T>
 {
-    fn last(&self) -> Option<&T> { self.back() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.back() }
 }
 
 impl<T> Last<T> for LinkedList<T>
 {
-    fn last(&self) -> Option<&T> { self.back() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.back() }
 }
 
 /*
@@ -49,109 +74,139 @@ impl PeekLast<char> for &str
 
 impl<T> Last<T> for Option<T>
 {
-    fn last(&self) -> Option<&T> { self.as_ref() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref() }
 }
 
 impl<T,E> Last<T> for Result<T,E>
 {
-    fn last(&self) -> Option<&T> { self.as_ref().ok() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().ok() }
 }
 
 impl<T> Last<T> for BinaryHeap<T>
 where
     T: Ord,
 {
-    fn last(&self) -> Option<&T> { self.peek() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.peek() }
 }
 
 
 
-pub trait First<T>: Collection
+pub trait First<T>: Collection<T>
 {
     /// aka `peek_front()`, `front()`
-    fn first(&self) -> Option<&T>;
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>>;
+}
+
+impl<S,T> First<T> for &S where S: First<T>
+{
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> {
+        (*self).first()
+    }
+}
+impl<S,T> First<T> for &mut S where S: First<T>
+{
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> {
+        (**self).first()
+    }
+}
+
+impl First<char> for String
+{
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.deref().first() }
+}
+
+impl First<char> for str
+{
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.chars().next().map(|c| Identity(c)) }
 }
 
 impl<T> First<T> for Vec<T>
 {
-    fn first(&self) -> Option<&T> { self.deref().first() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.deref().first() }
 }
 
 impl<T, const N: usize> First<T> for [T;N]
 {
-    fn first(&self) -> Option<&T> { self.as_ref().first() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().first() }
 }
 
 impl<T> First<T> for &[T]
 {
-    fn first(&self) -> Option<&T> { self.get(0) }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.get(0) }
 }
 impl<T> First<T> for &mut [T]
 {
-    fn first(&self) -> Option<&T> { self.get(0) }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.get(0) }
 }
 
 impl<T> First<T> for VecDeque<T>
 {
-    fn first(&self) -> Option<&T> { self.front() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.front() }
 }
 
 impl<T> First<T> for LinkedList<T>
 {
-    fn first(&self) -> Option<&T> { self.front() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.front() }
 }
 
 impl<T> First<T> for Option<T>
 {
-    fn first(&self) -> Option<&T> { self.as_ref() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref() }
 }
 
 impl<T,E> First<T> for Result<T,E>
 {
-    fn first(&self) -> Option<&T> { self.as_ref().ok() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().ok() }
 }
 
 
 
-pub trait LastMut<T>: Last<T>
+pub trait LastMut<T>: Last<T> + CollectionMut<T>
 {
     /// aka `peek()`, `peek_back()`, `back()`
-    fn last_mut(&mut self) -> Option<&mut T>;
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>>;
+}
+
+impl<S,T> LastMut<T> for &mut S where S: LastMut<T>
+{
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> {
+        (**self).last_mut()
+    }
 }
 
 impl<T> LastMut<T> for Vec<T>
 {
-    fn last_mut(&mut self) -> Option<&mut T> { self.deref_mut().last_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.deref_mut().last_mut() }
 }
 
 impl<T, const N: usize> LastMut<T> for [T;N]
 {
-    fn last_mut(&mut self) -> Option<&mut T> { self.as_mut().last_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().last_mut() }
 }
 
 impl<T> LastMut<T> for &mut [T]
 {
-    fn last_mut(&mut self) -> Option<&mut T> { self.as_mut().last_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().last_mut() }
 }
 
 impl<T> LastMut<T> for VecDeque<T>
 {
-    fn last_mut(&mut self) -> Option<&mut T> { self.back_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.back_mut() }
 }
 
 impl<T> LastMut<T> for LinkedList<T>
 {
-    fn last_mut(&mut self) -> Option<&mut T> { self.back_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.back_mut() }
 }
 
 impl<T> LastMut<T> for Option<T>
 {
-    fn last_mut(&mut self) -> Option<&mut T> { self.as_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut() }
 }
 
 impl<T,E> LastMut<T> for Result<T,E>
 {
-    fn last_mut(&mut self) -> Option<&mut T> { self.as_mut().ok() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().ok() }
 }
 
 /* 
@@ -166,43 +221,50 @@ where
 */
 
 
-pub trait FirstMut<T>: First<T>
+pub trait FirstMut<T>: First<T> + CollectionMut<T>
 {
     /// aka `peek_front()`, `front()`
-    fn first_mut(&mut self) -> Option<&mut T>;
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>>;
+}
+
+impl<S,T> FirstMut<T> for &mut S where S: FirstMut<T>
+{
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> {
+        (**self).first_mut()
+    }
 }
 
 impl<T> FirstMut<T> for Vec<T>
 {
-    fn first_mut(&mut self) -> Option<&mut T> { self.deref_mut().first_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.deref_mut().first_mut() }
 }
 
 impl<T, const N: usize> FirstMut<T> for [T;N]
 {
-    fn first_mut(&mut self) -> Option<&mut T> { self.as_mut().first_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().first_mut() }
 }
 
 impl<T> FirstMut<T> for &mut [T]
 {
-    fn first_mut(&mut self) -> Option<&mut T> { self.get_mut(0) }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.get_mut(0) }
 }
 
 impl<T> FirstMut<T> for VecDeque<T>
 {
-    fn first_mut(&mut self) -> Option<&mut T> { self.front_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.front_mut() }
 }
 
 impl<T> FirstMut<T> for LinkedList<T>
 {
-    fn first_mut(&mut self) -> Option<&mut T> { self.front_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.front_mut() }
 }
 
 impl<T> FirstMut<T> for Option<T>
 {
-    fn first_mut(&mut self) -> Option<&mut T> { self.as_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut() }
 }
 
 impl<T,E> FirstMut<T> for Result<T,E>
 {
-    fn first_mut(&mut self) -> Option<&mut T> { self.as_mut().ok() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().ok() }
 }

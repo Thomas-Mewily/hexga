@@ -39,7 +39,6 @@ impl BufferArena
     pub fn nb_used(&self) -> usize { self.offset }
 }
 
-impl Collection for BufferArena {}
 impl Arenable for BufferArena
 {
     fn contains(&self, ptr: NonNull<u8>) -> bool { self.block.deref().contains(unsafe { ptr.as_ref() }) }
@@ -54,9 +53,13 @@ impl WithCapacity for BufferArena
     type Param = ();
     fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::from_size(capacity) }
 }
-impl Capacity for BufferArena
+impl Capacity<u8> for BufferArena
 {
     fn capacity(&self) -> usize { self.capacity() }
+}
+impl Collection<u8> for BufferArena
+{
+    type Guard<'a> = &'a u8 where Self: 'a;
 }
 
 impl ManagedBox for BufferArena

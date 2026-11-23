@@ -281,7 +281,7 @@ where
     fn try_get_many_mut<const N: usize>(
         &mut self,
         indices: [Idx; N],
-    ) -> Result<[&mut Self::Output; N], ManyMutError>
+    ) -> Result<[Self::GuardMut<'a>; N], ManyMutError> where Self::Output: 'a
     {
         let idx = indices
             .try_map(|idx| self.bijection_fn.to_target(idx.into()))

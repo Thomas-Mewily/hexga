@@ -71,7 +71,7 @@ where
         let idx = self.rect.next()?;
         // # Safety
         // Each index are different
-        Some((idx, unsafe { (&mut *(&mut *self.grid as *mut G)).get_unchecked_mut(idx) }))
+        Some((idx, unsafe { (&mut *(&mut *self.grid as *mut G)).index_mut(idx) }))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) { self.rect.size_hint() }

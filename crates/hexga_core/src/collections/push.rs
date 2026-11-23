@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait Push<T>: Collection
+pub trait Push<T>
 {
     type Output;
     /// Push an value and return it's index.
@@ -13,7 +13,7 @@ pub trait Push<T>: Collection
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
     /// For [`Vec`] and [`VecDeque`] the returned element is the same as the pushed value, but not for the [`BinaryHeap`] that return the next element in the heap order.
-    fn push_mut(&mut self, value: T) -> Option<&mut T> where Self:  LastMut<T>
+    fn push_mut<'a>(&'a mut self, value: T) -> Option<Self::GuardMut<'a>> where Self: LastMut<T>
     {
         Push::push(self, value);
         LastMut::last_mut(self)
@@ -31,14 +31,14 @@ pub trait TryPush<T>: Push<T>
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
     /// For [`Vec`] and [`VecDeque`] the returned element is the same as the pushed value, but not for the [`BinaryHeap`] that return the next element in the heap order.
-    fn try_push_mut(&mut self, value: T) -> Result<Option<&mut T>, Self::Error> where Self:  LastMut<T>
+    fn try_push_mut<'a>(&'a mut self, value: T) -> Result<Option<Self::GuardMut<'a>>, Self::Error> where Self: LastMut<T>
     {
         let _ = TryPush::try_push(self, value)?;
         Ok(LastMut::last_mut(self))
     }
 }
 
-pub trait PushFront<T>: Collection
+pub trait PushFront<T>
 {
     type Output;
     /// Push an value and return it's index.
@@ -47,7 +47,7 @@ pub trait PushFront<T>: Collection
     /// Pushes a value and returns a mutable reference to the new first element.
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
-    fn push_front_mut(&mut self, value: T) -> Option<&mut T> where Self:  FirstMut<T>
+    fn push_front_mut<'a>(&'a mut self, value: T) -> Option<Self::GuardMut<'a>> where Self: FirstMut<T>
     {
         PushFront::push_front(self, value);
         FirstMut::first_mut(self)
@@ -62,7 +62,7 @@ pub trait TryPushFront<T>: PushFront<T>
     /// Pushes a value and returns a mutable reference to the new first element.
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
-    fn try_push_front_mut(&mut self, value: T) -> Result<Option<&mut T>, Self::Error> where Self:  FirstMut<T>
+    fn try_push_front_mut<'a>(&'a mut self, value: T) -> Result<Option<Self::GuardMut<'a>>, Self::Error> where Self: FirstMut<T>
     {
         let _ = TryPushFront::try_push_front(self, value)?;
         Ok(FirstMut::first_mut(self))

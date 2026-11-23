@@ -1,12 +1,12 @@
 use super::*;
 
-pub trait Pop<T>: Collection
+pub trait Pop<T>: Collection<T>
 {
     /// Removes the last element from the collection and returns it, or [`None`] if it is empty.
     fn pop(&mut self) -> Option<T>;
 
     /// Pops a value and returns a mutable reference to the new last element.
-    fn pop_mut(&mut self) -> Option<&mut T> where Self:  LastMut<T>
+    fn pop_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self: LastMut<T>
     {
         let _old = Pop::pop(self)?;
         LastMut::last_mut(self)
@@ -19,7 +19,7 @@ pub trait Pop<T>: Collection
         Self: Last<T>,
         F: FnOnce(&T) -> bool,
     {
-        if predicate(self.last()?)
+        if predicate(self.last()?.deref())
         {
             return self.pop();
         }
@@ -36,13 +36,13 @@ pub trait TryPop<T> : Pop<T>
     fn try_pop(&mut self) -> Result<T, Self::Error>;
 }
 */
-pub trait PopFront<T>: Collection
+pub trait PopFront<T>: Collection<T>
 {
     /// Removes the first element and returns it, or [`None`] if the collection is empty.
     fn pop_front(&mut self) -> Option<T>;
 
     /// Pops a value and returns a mutable reference to the new first element.
-    fn pop_front_mut(&mut self) -> Option<&mut T> where Self:  FirstMut<T>
+    fn pop_front_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self: FirstMut<T>
     {
         let _old = PopFront::pop_front(self)?;
         FirstMut::first_mut(self)
@@ -55,7 +55,7 @@ pub trait PopFront<T>: Collection
         Self: First<T>,
         F: FnOnce(&T) -> bool,
     {
-        if predicate(self.first()?)
+        if predicate(self.first()?.deref())
         {
             return self.pop_front();
         }

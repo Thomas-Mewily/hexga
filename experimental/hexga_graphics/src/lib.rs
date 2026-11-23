@@ -2,11 +2,12 @@
 #![allow(unused)]
 use hexga::prelude::*;
 
-pub use hexga_wgpu as gpu;
-pub use hexga_wgpu::wgpu;
-
 use gpu::experimental::prelude::*;
 use gpu::prelude::*;
+use hexga::range::Range;
+
+pub use hexga_wgpu as gpu;
+pub use hexga_wgpu::wgpu;
 
 //#[cfg(feature = "gpu")]
 //pub use hexga_wgpu::wgpu;
@@ -30,16 +31,22 @@ pub(crate) use vertex::*;
 pub mod typedef;
 pub(crate) use typedef::*;
 
+pub mod scissor;
+pub(crate) use scissor::*;
+
+pub mod viewport;
+pub(crate) use viewport::*;
+
 pub mod prelude
 {
     pub use super::typedef::*;
     pub use hexga_wgpu::prelude::*;
 
     pub use super::traits::*;
-    pub use super::{camera::prelude::*, mesh::prelude::*, render::prelude::*, vertex::prelude::*};
+    pub use super::{camera::prelude::*, mesh::prelude::*, render::prelude::*, vertex::prelude::*, scissor::prelude::*, viewport::prelude::*};
 }
 
 pub mod traits
 {
-    pub use super::{camera::traits::*, mesh::traits::*, render::traits::*, vertex::traits::*};
+    pub use super::{camera::traits::*, mesh::traits::*, render::traits::*, vertex::traits::*, scissor::traits::*, viewport::traits::*};
 }

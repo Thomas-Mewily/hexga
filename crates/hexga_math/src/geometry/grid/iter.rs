@@ -81,7 +81,7 @@ where
     fn next(&mut self) -> Option<Self::Item>
     {
         let idx = self.rect.next()?;
-        Some((idx, unsafe { self.grid.get_unchecked(idx) }))
+        Some((idx, self.grid.index(idx)))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) { self.rect.size_hint() }

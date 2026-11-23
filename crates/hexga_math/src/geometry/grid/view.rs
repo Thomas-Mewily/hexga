@@ -74,7 +74,7 @@ where
     where
         F: FnMut(&T) -> Dest,
     {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(&*unsafe { self.get_unchecked(idx) }))
     }
 
     fn transform_par<Dest, F>(&self, f: F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
@@ -86,7 +86,7 @@ where
         G: Sync,
         Self: Sync,
     {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(unsafe { self.get_unchecked(idx) }))
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(&*unsafe { self.get_unchecked(idx) }))
     }
 
     fn update_into_or_panic<O, G2>(&self, other: &mut O)
@@ -271,13 +271,12 @@ where
     fn size(&self) -> Vector<Idx, N> { self.rect.size }
 }
 
-impl<'a, G, T, Idx, const N: usize> Collection for GridView<'a, G, T, Idx, N>
+impl<'a, G, T, Idx, const N: usize> Collection<T> for GridView<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
-{
-}
-impl<'a, G, T, Idx, const N: usize> CollectionBijective for GridView<'a, G, T, Idx, N>
+{ type Guard<'b> = &'b T where Self: 'b; }
+impl<'a, G, T, Idx, const N: usize> CollectionBijective<T> for GridView<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
@@ -291,12 +290,13 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Output = <G as Get<Vector<Idx, N>>>::Output;
+    type Guard<'b> = <G as Get<Vector<Idx, N>>>::Guard<'b> where Self: 'b, Self::Output: 'b;
 
     #[inline(always)]
-    fn get(&self, index: P) -> Option<&Self::Output> { self.grid.get(index.into() + self.rect.pos) }
+    fn get<'b>(&'b self, index: P) -> Option<Self::Guard<'b>> where Self::Output: 'b { self.grid.get(index.into() + self.rect.pos) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked(&self, index: P) -> &Self::Output { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
+    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Guard<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
 }
 impl<'a, P, G, T, Idx, const N: usize> TryGet<P> for GridView<'a, G, T, Idx, N>
 where
@@ -305,7 +305,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Error = <G as TryGet<Vector<Idx, N>>>::Error;
-    fn try_get(&self, index: P) -> Result<&Self::Output, Self::Error> { self.grid.try_get(index.into() + self.rect.pos) }
+    fn try_get<'b>(&'b self, index: P) -> Result<Self::Guard<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get(index.into() + self.rect.pos) }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> Index<P> for GridView<'a, G, T, Idx, N>
@@ -317,7 +317,7 @@ where
     type Output = <Self as Get<Vector<Idx, N>>>::Output;
 
     #[track_caller]
-    fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
+    fn index(&self, index: P) -> &Self::Output { self.grid.index(index.into() + self.rect.pos) }
 }
 
 impl<'a, G, T, Idx, const N: usize> GridView<'a, G, T, Idx, N>

@@ -18,7 +18,6 @@ impl<const N: usize> Default for GMesh<N>
     }
 }
 
-impl<const N: usize> Collection for GMesh<N> {}
 impl<const N: usize> Clear for GMesh<N>
 {
     fn clear(&mut self)

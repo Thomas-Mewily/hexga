@@ -310,11 +310,12 @@ impl<'a, T> IntoIterator for &'a mut NonEmptyStack<T>
     }
 }
 
-impl<T> Collection for NonEmptyStack<T> {}
-impl<T> CollectionBijective for NonEmptyStack<T> {}
+impl<T> Collection<T> for NonEmptyStack<T> { type Guard<'a> = &'a T where Self: 'a; }
+impl<T> CollectionMut<T> for NonEmptyStack<T> { type GuardMut<'a> = &'a mut T where Self: 'a; }
+impl<T> CollectionBijective<T> for NonEmptyStack<T> {}
 impl<T> Last<T> for NonEmptyStack<T>
 {
-    fn last(&self) -> Option<&T> { Some(self.last()) }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { Some(self.last()) }
 }
 impl<T> Push<T> for NonEmptyStack<T>
 {
@@ -327,18 +328,19 @@ impl<T> Pop<T> for NonEmptyStack<T>
 }
 impl<T> First<T> for NonEmptyStack<T>
 {
-    fn first(&self) -> Option<&T> { Some(self.deref()) }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { Some(self.deref()) }
 }
 impl<T> FirstMut<T> for NonEmptyStack<T>
 {
-    fn first_mut(&mut self) -> Option<&mut T> { Some(self.deref_mut()) }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { Some(self.deref_mut()) }
 }
 
 impl<T> Get<usize> for NonEmptyStack<T>
 {
     type Output = T;
+    type Guard<'a> = &'a T where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get(&self, index: usize) -> Option<&Self::Output>
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a
     {
         if index == self.len() - 1
         {
@@ -350,7 +352,7 @@ impl<T> Get<usize> for NonEmptyStack<T>
         }
     }
     #[inline(always)]
-    unsafe fn get_unchecked(&self, index: usize) -> &Self::Output
+    unsafe fn get_unchecked<'a>(&'a self, index: usize) -> Self::Guard<'a> where Self::Output: 'a
     {
         if index == self.len() - 1
         {
@@ -372,8 +374,9 @@ impl<T> Index<usize> for NonEmptyStack<T>
 }
 impl<T> GetMut<usize> for NonEmptyStack<T>
 {
+    type GuardMut<'a> = &'a mut T where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get_mut(&mut self, index: usize) -> Option<&mut Self::Output>
+    fn get_mut<'a>(&'a mut self, index: usize) -> Option<Self::GuardMut<'a>> where Self::Output: 'a
     {
         if index == self.len() - 1
         {
@@ -385,7 +388,7 @@ impl<T> GetMut<usize> for NonEmptyStack<T>
         }
     }
     #[inline(always)]
-    unsafe fn get_unchecked_mut(&mut self, index: usize) -> &mut Self::Output
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: usize) -> Self::GuardMut<'a> where Self::Output: 'a
     {
         if index == self.len() - 1
         {
@@ -405,8 +408,8 @@ impl<T> IndexMut<usize> for NonEmptyStack<T>
 }
 impl<T> GetManyMut<usize> for NonEmptyStack<T>
 {
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output; N], ManyMutError>
-    {
+    fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> Result<[Self::GuardMut<'a>; N], ManyMutError>
+     where Self::Output: 'a{
         let len = self.len();
         if indices.iter().any(|&i| i >= len)
         {
@@ -448,7 +451,7 @@ impl<T> Length for NonEmptyStack<T>
     fn is_empty(&self) -> bool { false }
     fn is_not_empty(&self) -> bool { true }
 }
-impl<T> Capacity for NonEmptyStack<T>
+impl<T> Capacity<T> for NonEmptyStack<T>
 {
     fn capacity(&self) -> usize { self.stack.capacity() + 1 }
 }
@@ -457,7 +460,7 @@ impl<T> WithCapacity for NonEmptyStack<T>
     type Param = T;
     fn with_capacity_and_param(capacity: usize, value: Self::Param) -> Self { Self::with_capacity(value, capacity) }
 }
-impl<T> Reserve for NonEmptyStack<T>
+impl<T> Reserve<T> for NonEmptyStack<T>
 {
     type Error = std::collections::TryReserveError;
 
@@ -471,7 +474,7 @@ impl<T> Reserve for NonEmptyStack<T>
     }
 }
 
-impl<T> Truncate for NonEmptyStack<T>
+impl<T> Truncate<T> for NonEmptyStack<T>
 {
     fn truncate(&mut self, len: usize)
     {
@@ -490,7 +493,7 @@ impl<T> Truncate for NonEmptyStack<T>
     }
 }
 
-impl<T> Shrink for NonEmptyStack<T>
+impl<T> Shrink<T> for NonEmptyStack<T>
 {
     fn shrink_to_fit(&mut self) { self.stack.shrink_to_fit(); }
 

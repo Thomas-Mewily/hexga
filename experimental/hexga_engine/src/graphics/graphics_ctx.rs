@@ -7,10 +7,10 @@ pub struct Graphics
 {
     pub(crate) background_color: Color,
     pub(crate) immediate: ImmediateRenderBuilder,
-    pub(crate) immediate_mesh: Option<Mesh>,
+    pub(crate) immediate_mesh: Option<GMesh>,
 
     //pub(crate) camera_buffer: GpuVec<Camera>,
-    pub(crate) camera_buffer: GpuBuffer<GMat4>,
+    pub(crate) camera_buffer: GBuffer<GMat4>,
     pub(crate) camera_bind_group: wgpu::BindGroup,
     pub(crate) texture_bind_group: wgpu::BindGroupLayout,
 
@@ -107,7 +107,7 @@ impl Graphics
             multiview: None,
         });
 
-        let camera_buffer = GpuBuffer::new(&[Mat4::IDENTITY], GpuBufferUsageFlags::Uniform | GpuBufferUsageFlags::CopySource);
+        let camera_buffer = GBuffer::new(&[Mat4::IDENTITY], GBufferUsageFlags::Uniform | GBufferUsageFlags::CopySource);
 
         let camera_bind_group_layout = Gpu.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[wgpu::BindGroupLayoutEntry {
@@ -168,9 +168,7 @@ impl Graphics
 
     pub(crate) fn begin_draw(&mut self)
     {
-        self.immediate.big_mesh.clear();
-        self.immediate.draw_call.clear();
-        self.immediate.params.clear();
+        self.immediate.clear();
 
         if let Ok(mut window) = WINDOW.try_get_mut()
             && let Some(surface) = window.surface()
@@ -234,13 +232,14 @@ impl Graphics
 
             rpass.set_pipeline(&self.pipeline);
 
-            if !self.immediate.big_mesh.is_empty()
+            if !self.immediate.render.draw_call.is_empty()
             {
-                self.immediate.big_mesh.build_in_option(&mut self.immediate_mesh);
+                if !self.immediate.render.geometry.is_empty()
+                {
+                    self.immediate.render.geometry.build_in_option(&mut self.immediate_mesh);
+                }
 
-                let Mesh { vertices, indices } = self.immediate_mesh.as_ref().unwrap();
-
-                for dc in self.immediate.draw_call.iter()
+                for dc in self.immediate.render.draw_call.iter()
                 {
                     //dbg!(&dc);
 
@@ -297,16 +296,27 @@ impl Graphics
                     {
                         DrawGeometry::Immediate(im) =>
                         {
+                            let Some(mesh) = self.immediate_mesh.as_ref()
+                            else
+                            {
+                                continue;
+                            };
                             if im.is_empty()
                             {
                                 continue;
                             }
 
-                            rpass.set_vertex_buffer(0, vertices.wgpu_slice(im.vertices));
-                            rpass.set_index_buffer(indices.wgpu_slice(im.indices), VertexIndex::INDEX_FORMAT);
+                            rpass.set_vertex_buffer(0, mesh.vertices.wgpu_slice(im.vertices));
+                            rpass.set_index_buffer(mesh.indices.wgpu_slice(im.indices), VertexIndex::INDEX_FORMAT);
                             //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
                             // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
                             rpass.draw_indexed(0..((im.indices.end - im.indices.start) as _), -(im.vertices.start as i32), 0..1);
+                        }
+                        DrawGeometry::Retain(mesh) =>
+                        {
+                            rpass.set_vertex_buffer(0, mesh.vertices.wgpu_slice(..));
+                            rpass.set_index_buffer(mesh.indices.wgpu_slice(..), VertexIndex::INDEX_FORMAT);
+                            rpass.draw_indexed(0..(mesh.indices.len() as _), 0, 0..1);
                         }
                     }
                 }
@@ -322,6 +332,46 @@ impl BuilderMesh for Graphics
 {
     fn extend(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) { self.immediate.extend(vertex, index); }
     fn geometry(&mut self, vertex: &[vertex::VertexOf<3>], index: &[VertexIndex]) { self.immediate.geometry(vertex, index); }
+}
+
+impl SetDrawParam for Graphics {}
+impl GetDrawParam for Graphics {}
+
+impl SetOptionalTexture for Graphics 
+{
+    fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self {
+        self.immediate.set_texture(texture); self
+    }
+}
+impl GetOptionalTexture for Graphics 
+{
+    fn texture(&self) -> Option<Texture> { self.immediate.texture() }
+}
+
+impl GetViewport for Graphics 
+{
+    fn viewport(&self) -> Viewport {
+        self.immediate.viewport()
+    }
+}
+impl SetViewport for Graphics 
+{
+    fn set_viewport(&mut self, viewport: Viewport) -> &mut Self {
+        self.immediate.set_viewport(viewport); self
+    }
+}
+
+impl GetScissor for Graphics 
+{
+    fn scissor(&self) -> Scissor {
+        self.immediate.scissor()
+    }
+}
+impl SetScissor for Graphics 
+{
+    fn set_scissor(&mut self, scissor: Scissor) -> &mut Self {
+        self.immediate.set_scissor(scissor); self
+    }
 }
 
 impl GetMatrix<float, 4, 4> for Graphics
@@ -399,31 +449,53 @@ impl RotateZ for Graphics
     }
 }
 
-impl DrawParamAttribute for Graphics
+impl<T> Collection<T> for Graphics
+where
+    ImmediateRenderBuilder: Collection<T>,
 {
-    fn viewport(&self) -> Viewport { self.immediate.viewport() }
-    fn set_viewport(&mut self, viewport: Viewport) -> &mut Self
+    type Guard<'a> = <ImmediateRenderBuilder as Collection<T>>::Guard<'a> where Self: 'a;
+}
+impl<T> CollectionMut<T> for Graphics
+where
+    ImmediateRenderBuilder: CollectionMut<T>,
+{
+    type GuardMut<'a> = <ImmediateRenderBuilder as CollectionMut<T>>::GuardMut<'a> where Self: 'a;
+}
+impl<T> Last<T> for Graphics
+where
+    ImmediateRenderBuilder: Last<T>,
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { Last::last(&self.immediate) }
+}
+impl<T> LastMut<T> for Graphics
+where
+    ImmediateRenderBuilder: LastMut<T>,
+{
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { LastMut::last_mut(&mut self.immediate) }
+}
+impl<T> Push<T> for Graphics
+where
+    ImmediateRenderBuilder: Push<T>,
+{
+    type Output = <ImmediateRenderBuilder as Push<T>>::Output;
+    fn push(&mut self, value: T) -> Self::Output { Push::push(&mut self.immediate, value) }
+}
+impl<T> Pop<T> for Graphics
+where
+    ImmediateRenderBuilder: Pop<T>,
+{
+    fn pop(&mut self) -> Option<T> { Pop::pop(&mut self.immediate) }
+}
+/*
+impl SetBackgroundColor for Graphics
+{
+    fn set_background_color(&mut self, color: Color) -> &mut Self
     {
-        self.immediate.set_viewport(viewport);
-        self
-    }
-
-    fn scissor(&self) -> Rect2i { self.immediate.scissor() }
-
-    fn set_scissor(&mut self, scissor: Rect2i) -> &mut Self
-    {
-        self.immediate.set_scissor(scissor);
-        self
-    }
-
-    fn texture(&self) -> Option<Texture> { self.immediate.texture() }
-
-    fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self
-    {
-        self.immediate.set_texture(texture);
+        self.background_color = color;
         self
     }
 }
+*/
 
 pub(crate) trait ExternLibConvert<Output>
 {

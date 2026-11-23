@@ -270,20 +270,20 @@ where
 {
     fn len(&self) -> usize { self.used }
 }
-impl<A, C> Capacity for ArenaOf<A, C>
+impl<A, C> Capacity<u8> for ArenaOf<A, C>
 where
     A: Arenable,
     C: Push<A>,
 {
     fn capacity(&self) -> usize { self.capacity }
 }
-impl<A, C> Collection for ArenaOf<A, C>
+impl<A, C> Collection<u8> for ArenaOf<A, C>
 where
     A: Arenable,
     C: Push<A>,
 {
+    type Guard<'a> = &'a u8 where Self: 'a;
 }
-
 impl<A, C> From<AllocLayout> for ArenaOf<A, C>
 where
     A: Arenable,

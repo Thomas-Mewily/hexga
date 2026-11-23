@@ -441,7 +441,7 @@ where
     /// **must** not be used, as doing so may lead to undefined behavior.
     pub fn clear(&mut self)
     where
-        C: Clear,
+        C: Clear
     {
         self.free = usize::MAX;
         self.len = 0;
@@ -1248,17 +1248,25 @@ impl<'a, T, Gen: GenerationalIndex> ExactSizeIterator for IterMut<'a, T, Gen>
     fn len(&self) -> usize { self.len_remaining }
 }
 
-impl<T, Gen, C> Collection for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionBijective<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionBijective for GenSeq<T, Gen, C>
+impl<T, Gen, C> Collection<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
+    type Guard<'a> = &'a T where Self: 'a;
+}
+impl<T, Gen, C> CollectionMut<T> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
+    type GuardMut<'a> = &'a mut T where Self: 'a;
 }
 impl<T, Gen, C> Length for GenSeq<T, Gen, C>
 where
@@ -1371,29 +1379,29 @@ where
 }
 */
 
-impl<T, Gen, C> Shrink for GenSeq<T, Gen, C>
+impl<T, Gen, C> Shrink<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
-    C: Shrink,
+    C: Shrink<Entry<T, Gen>>,
 {
     fn shrink_to_fit(&mut self) { self.values.shrink_to_fit(); }
     fn shrink_to(&mut self, min_capacity: usize) { self.values.shrink_to(min_capacity); }
 }
-impl<T, Gen, C> Truncate for GenSeq<T, Gen, C>
+impl<T, Gen, C> Truncate<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
-    C: Truncate,
+    C: Truncate<Entry<T, Gen>>,
 {
     fn truncate(&mut self, len: usize) { self.values.truncate(len); }
 }
 
-impl<T, Gen, C> Capacity for GenSeq<T, Gen, C>
+impl<T, Gen, C> Capacity<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
-    C: Reserve,
+    C: Reserve<Entry<T, Gen>>,
 {
     #[inline(always)]
     fn capacity(&self) -> usize { self.values.capacity() }
@@ -1402,18 +1410,18 @@ impl<T, Gen, C> WithCapacity for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
-    C: Reserve,
+    C: Reserve<Entry<T, Gen>>,
 {
     type Param = ();
 
     #[inline(always)]
     fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
 }
-impl<T, Gen, C> Reserve for GenSeq<T, Gen, C>
+impl<T, Gen, C> Reserve<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
-    C: Reserve,
+    C: Reserve<Entry<T, Gen>>,
 {
     type Error = C::Error;
 
@@ -1578,8 +1586,9 @@ where
     Gen: GenerationalIndex,
 {
     type Output = <Self as Index<usize>>::Output;
+    type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get(&self, index: usize) -> Option<&Self::Output> { self.get_from_index(index) }
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get_from_index(index) }
 }
 impl<T, Gen, C> TryGet<usize> for GenSeq<T, Gen, C>
 where
@@ -1587,7 +1596,7 @@ where
     Gen: GenerationalIndex,
 {
     type Error = IndexOutOfBounds;
-    fn try_get(&self, index: usize) -> Result<&Self::Output, Self::Error>
+    fn try_get<'a>(&'a self, index: usize) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a
     {
         self.get_from_index(index).ok_or_else(|| IndexOutOfBounds::new(index, 0..self.len()))
     }
@@ -1599,8 +1608,9 @@ where
     Gen: GenerationalIndex,
 {
     type Output = <Self as Index<GenIDOf<T, Gen>>>::Output;
+    type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get(&self, index: UntypedGenIDOf<Gen>) -> Option<&Self::Output> { self.get(index.typed::<T>()) }
+    fn get<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index.typed::<T>()) }
 }
 impl<T, Gen, C> TryGet<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
@@ -1608,7 +1618,7 @@ where
     Gen: GenerationalIndex,
 {
     type Error = GenSeqError<T, Gen>;
-    fn try_get(&self, id: UntypedGenIDOf<Gen>) -> Result<&Self::Output, Self::Error> { self.try_get(id.typed::<T>()) }
+    fn try_get<'a>(&'a self, id: UntypedGenIDOf<Gen>) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.try_get(id.typed::<T>()) }
 }
 
 impl<T, Gen, C> Get<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
@@ -1617,8 +1627,9 @@ where
     Gen: GenerationalIndex,
 {
     type Output = <Self as Index<GenIDOf<T, Gen>>>::Output;
+    type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get(&self, index: GenIDOf<T, Gen>) -> Option<&Self::Output> { self.get(index) }
+    fn get<'a>(&'a self, index: GenIDOf<T, Gen>) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index) }
 }
 impl<T, Gen, C> TryGet<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
@@ -1626,7 +1637,7 @@ where
     Gen: GenerationalIndex,
 {
     type Error = GenSeqError<T, Gen>;
-    fn try_get(&self, id: GenIDOf<T, Gen>) -> Result<&Self::Output, Self::Error>
+    fn try_get<'a>(&'a self, id: GenIDOf<T, Gen>) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a
     {
         match self.get_entry_from_index(id.index())
         {
@@ -1655,15 +1666,16 @@ where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
+    type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get_mut(&mut self, index: usize) -> Option<&mut Self::Output> { self.get_mut_from_index(index) }
+    fn get_mut<'a>(&'a mut self, index: usize) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.get_mut_from_index(index) }
 }
 impl<T, Gen, C> TryGetMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
-    fn try_get_mut(&mut self, index: usize) -> Result<&mut Self::Output, Self::Error>
+    fn try_get_mut<'a>(&'a mut self, index: usize) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a
     {
         let len = self.len();
         self.get_mut_from_index(index).ok_or_else(|| IndexOutOfBounds::new(index, 0..len))
@@ -1676,8 +1688,8 @@ where
     Gen: GenerationalIndex,
 {
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Result<[&mut Self::Output; N], ManyMutError>
-    {
+    fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> Result<[Self::GuardMut<'a>; N], ManyMutError>
+     where Self::Output: 'a{
         // TODO: check the SlotMap crate for a better implementation of any overlapping indices
         // It is possible to it in O(n) be moving the value of the slot when iterating (thus, making the slot invalid),
         // then move back the value to the original slot
@@ -1702,8 +1714,8 @@ where
         }
     }
 
-    fn get_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> Option<[&mut Self::Output; N]>
-    {
+    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> Option<[Self::GuardMut<'a>; N]>
+     where Self::Output: 'a{
         // TODO: check the SlotMap crate for a better implementation of any overlapping indices
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         match self.values.as_mut().get_many_mut(indices).map(|entries| entries.map(|v| v.value_mut()))
@@ -1725,8 +1737,8 @@ where
 
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_many_unchecked_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Output; N]
-    {
+    unsafe fn get_many_unchecked_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> [Self::GuardMut<'a>; N]
+    where Self::Output: 'a {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         unsafe { self.values.as_mut().get_many_unchecked_mut(indices).map(|v| v.value_mut().unwrap()) }
     }
@@ -1737,15 +1749,16 @@ where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
+    type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get_mut(&mut self, index: GenIDOf<T, Gen>) -> Option<&mut Self::Output> { self.get_mut(index) }
+    fn get_mut<'a>(&'a mut self, index: GenIDOf<T, Gen>) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.get_mut(index) }
 }
 impl<T, Gen, C> TryGetMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
-    fn try_get_mut(&mut self, id: GenIDOf<T, Gen>) -> Result<&mut Self::Output, Self::Error>
+    fn try_get_mut<'a>(&'a mut self, id: GenIDOf<T, Gen>) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a
     {
         let len = self.len();
         match self.get_entry_mut_from_index(id.index())
@@ -1781,8 +1794,8 @@ where
     Gen: GenerationalIndex,
 {
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [GenIDOf<T, Gen>; N]) -> Result<[&mut Self::Output; N], ManyMutError>
-    {
+    fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [GenIDOf<T, Gen>; N]) -> Result<[Self::GuardMut<'a>; N], ManyMutError>
+     where Self::Output: 'a{
         // Todo: use O(N) complexity to check the overlaping
         // Check SlotMap imply that put tmp Free slot/entry in the current indices to
 
@@ -1807,8 +1820,8 @@ where
         }
     }
 
-    fn get_many_mut<const N: usize>(&mut self, indices: [GenIDOf<T, Gen>; N]) -> Option<[&mut Self::Output; N]>
-    {
+    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [GenIDOf<T, Gen>; N]) -> Option<[Self::GuardMut<'a>; N]>
+     where Self::Output: 'a{
         // Todo: use O(N) complexity to check the overlaping
         // Check SlotMap imply that put tmp Free slot/entry in the current indices to
 
@@ -1839,8 +1852,9 @@ where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
+    type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
     #[inline(always)]
-    fn get_mut(&mut self, index: UntypedGenIDOf<Gen>) -> Option<&mut Self::Output> { self.get_mut(index.typed::<T>()) }
+    fn get_mut<'a>(&'a mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.get_mut(index.typed::<T>()) }
 }
 impl<T, Gen, C> TryGetMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
@@ -1848,7 +1862,7 @@ where
     Gen: GenerationalIndex,
 {
     #[inline(always)]
-    fn try_get_mut(&mut self, id: UntypedGenIDOf<Gen>) -> Result<&mut Self::Output, Self::Error> { self.try_get_mut(id.typed::<T>()) }
+    fn try_get_mut<'a>(&'a mut self, id: UntypedGenIDOf<Gen>) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a { self.try_get_mut(id.typed::<T>()) }
 }
 
 impl<T, Gen, C> GetManyMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
@@ -1857,15 +1871,15 @@ where
     Gen: GenerationalIndex,
 {
     #[inline(always)]
-    fn try_get_many_mut<const N: usize>(&mut self, indices: [UntypedGenIDOf<Gen>; N]) -> Result<[&mut Self::Output; N], ManyMutError>
-    {
+    fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [UntypedGenIDOf<Gen>; N]) -> Result<[Self::GuardMut<'a>; N], ManyMutError>
+     where Self::Output: 'a{
         self.try_get_many_mut(indices.map(|idx| idx.typed::<T>()))
     }
 
     #[track_caller]
     #[inline(always)]
-    fn get_many_mut<const N: usize>(&mut self, indices: [UntypedGenIDOf<Gen>; N]) -> Option<[&mut Self::Output; N]>
-    {
+    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [UntypedGenIDOf<Gen>; N]) -> Option<[Self::GuardMut<'a>; N]>
+     where Self::Output: 'a{
         self.get_many_mut(indices.map(|idx| idx.typed::<T>()))
     }
 }
@@ -1897,31 +1911,31 @@ where
     fn remove(&mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::Output> { self.remove(index.typed::<T>()) }
 }
 
-impl<T, Gen, C> CollectionPushStableKey for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionPushStableKey<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionPopStableKey for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionPopStableKey<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionInsertStableKey for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionInsertStableKey<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionRemoveStableKey for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionRemoveStableKey<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionGetMutStableKey for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionGetMutStableKey<T> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,

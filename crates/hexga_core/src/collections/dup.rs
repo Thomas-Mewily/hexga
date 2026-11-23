@@ -2,7 +2,7 @@ use super::*;
 
 
 /// Duplicates the last value and push it.
-pub trait Dup<T>: Collection
+pub trait Dup<T>: Collection<T>
 {
     /// Duplicates the last value and push it if possible.
     fn dup(&mut self) -> bool;
@@ -15,7 +15,7 @@ where
 {
     fn dup(&mut self) -> bool
     {
-        let Some(value) = Last::last(self).cloned() else { return false };
+        let Some(value) = Last::last(self).map(|value| value.deref().clone()) else { return false };
         Push::push(self, value);
         true
     }
@@ -23,7 +23,7 @@ where
 
 
 /// Duplicates the first value and push it..
-pub trait DupFirst<T>: Collection
+pub trait DupFirst<T>: Collection<T>
 {
     /// Duplicates the first value and push it if possible.
     fn dup_first(&mut self) -> bool;
@@ -35,7 +35,7 @@ where
 {
     fn dup_first(&mut self) -> bool
     {
-        let Some(value) = First::first(self).cloned() else { return false };
+        let Some(value) = First::first(self).map(|value| value.deref().clone()) else { return false };
         Push::push(self, value);
         true
     }
@@ -45,7 +45,7 @@ where
 
 
 /// Duplicates the last value and push_front it.
-pub trait DupBack<T>: Collection
+pub trait DupBack<T>: Collection<T>
 {
     /// Duplicates the last value and push_front it if possible.
     fn dup_front(&mut self) -> bool;
@@ -58,7 +58,7 @@ where
 {
     fn dup_front(&mut self) -> bool
     {
-        let Some(value) = Last::last(self).cloned() else { return false };
+        let Some(value) = Last::last(self).map(|value| value.deref().clone()) else { return false };
         PushFront::push_front(self, value);
         true
     }
@@ -66,7 +66,7 @@ where
 
 
 /// Duplicates the first value and push_front it.
-pub trait DupFirstBack<T>: Collection
+pub trait DupFirstBack<T>: Collection<T>
 {
     /// Duplicates the first value and push_front it if possible.
     fn dup_front(&mut self) -> bool;
@@ -79,7 +79,7 @@ where
 {
     fn dup_front(&mut self) -> bool
     {
-        let Some(value) = First::first(self).cloned() else { return false };
+        let Some(value) = First::first(self).map(|value| value.deref().clone()) else { return false };
         PushFront::push_front(self, value);
         true
     }

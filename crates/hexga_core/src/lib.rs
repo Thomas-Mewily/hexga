@@ -266,6 +266,7 @@ pub mod hexga_prelude
         convert::prelude::*,
         bit::prelude::*,
         map_on::prelude::*,
+        identity::prelude::*,
     };
 
     pub(crate) use super::{primitive::*, ptr::*};
@@ -311,6 +312,7 @@ pub mod hexga_traits
         bit::traits::*,
         //map_on::traits::*,
         collections::traits::*,
+        identity::traits::*,
     };
 }
 

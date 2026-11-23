@@ -734,8 +734,8 @@ where
     fn try_get_many_mut<const N: usize>(
         &mut self,
         indices: [GenIDOf<V, Gen>; N],
-    ) -> Result<[&mut Self::Output; N], ManyMutError>
-    {
+    ) -> Result<[Self::GuardMut<'a>; N], ManyMutError>
+     where Self::Output: 'a{
         self.values
             .try_get_many_mut(indices.map(|i| i.typed()))
             .map(|entries| entries.map(|entry| &mut entry.value))
@@ -746,8 +746,8 @@ where
     unsafe fn get_many_unchecked_mut<const N: usize>(
         &mut self,
         indices: [GenIDOf<V, Gen>; N],
-    ) -> [&mut Self::Output; N]
-    {
+    ) -> [Self::GuardMut<'a>; N]
+    where Self::Output: 'a {
         unsafe {
             self.values
                 .get_many_unchecked_mut(indices.map(|i| i.typed()))
@@ -765,8 +765,8 @@ where
     fn try_get_many_mut<const N: usize>(
         &mut self,
         indices: [UntypedGenIDOf<Gen>; N],
-    ) -> Result<[&mut Self::Output; N], ManyMutError>
-    {
+    ) -> Result<[Self::GuardMut<'a>; N], ManyMutError>
+     where Self::Output: 'a{
         self.try_get_many_mut(indices.map(|i| i.typed()))
     }
 
@@ -775,8 +775,8 @@ where
     unsafe fn get_many_unchecked_mut<const N: usize>(
         &mut self,
         indices: [UntypedGenIDOf<Gen>; N],
-    ) -> [&mut Self::Output; N]
-    {
+    ) -> [Self::GuardMut<'a>; N]
+    where Self::Output: 'a {
         unsafe { self.get_many_unchecked_mut(indices.map(|i| i.typed())) }
     }
 }

@@ -26,7 +26,6 @@ impl<const N: usize> BuilderMesh<N> for Mesh<N>
     }
 }
 
-impl<const N: usize> Collection for Mesh<N> {}
 impl<const N: usize> Clear for Mesh<N>
 {
     fn clear(&mut self)
