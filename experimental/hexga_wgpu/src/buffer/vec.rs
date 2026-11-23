@@ -1,68 +1,70 @@
 use super::*;
 
 #[derive(Clone, Debug)]
-pub struct GpuVec<T>
+pub struct GVec<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    pub(crate) buffer: GpuBuffer<T>,
+    pub(crate) buffer: GBuffer<T>,
     pub(crate) len: usize,
 }
 
-impl<T> Collection for GpuVec<T> where T: GpuBufferElement {}
-impl<T> Length for GpuVec<T>
+impl<T> Handle for GVec<T> where T: GBufferElement {}
+
+impl<T> Collection for GVec<T> where T: GBufferElement {}
+impl<T> Length for GVec<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn len(&self) -> usize { self.len }
 }
-impl<T> Capacity for GpuVec<T>
+impl<T> Capacity for GVec<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn capacity(&self) -> usize { self.buffer.len() }
 }
 
-impl<T> GpuBufferNew<T> for GpuVec<T>
+impl<T> GpuBufferNew<T> for GVec<T>
 where
     T: BitAllUsed,
 {
-    fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self
+    fn new(value: &[T], usage: GBufferUsageFlags) -> Self
     {
         Self {
-            buffer: GpuBuffer::new(value, usage),
+            buffer: GBuffer::new(value, usage),
             len: value.len(),
         }
     }
 
-    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self { WithCapacity::with_capacity_and_param(capacity, usage) }
+    fn with_capacity(capacity: usize, usage: GBufferUsageFlags) -> Self { WithCapacity::with_capacity_and_param(capacity, usage) }
 }
 
-impl<T> WithCapacity for GpuVec<T>
+impl<T> WithCapacity for GVec<T>
 where
     T: BitAllUsed,
 {
-    type Param = GpuBufferUsageFlags;
+    type Param = GBufferUsageFlags;
 
     fn with_capacity_and_param(capacity: usize, param: Self::Param) -> Self
     {
         Self {
-            buffer: GpuBuffer::with_capacity_and_param(capacity, param),
+            buffer: GBuffer::with_capacity_and_param(capacity, param),
             len: 0,
         }
     }
 }
 
-impl<T> Clear for GpuVec<T>
+impl<T> Clear for GVec<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn clear(&mut self) { self.len = 0; }
 }
 
-impl<T> Reserve for GpuVec<T>
+impl<T> Reserve for GVec<T>
 where
-    T: GpuBufferElement + BitAllUsed,
+    T: GBufferElement + BitAllUsed,
 {
     type Error = ();
 
@@ -90,9 +92,9 @@ where
     }
 }
 
-impl<T> WgpuSliceable<T> for GpuVec<T>
+impl<T> WgpuSliceable<T> for GVec<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
     {
@@ -137,12 +139,12 @@ where
     fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.wgpu_buffer_ref() }
 }
 
-impl<T> GpuSliceable<T> for GpuVec<T>
+impl<T> GpuSliceable<T> for GVec<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn usage(&self) -> GpuBufferUsageFlags { self.buffer.usage() }
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T>
+    fn usage(&self) -> GBufferUsageFlags { self.buffer.usage() }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T>
     {
         let vec_len = self.len;
 
@@ -176,11 +178,11 @@ where
     }
 }
 
-impl<T> GpuSliceableMut<T> for GpuVec<T>
+impl<T> GpuSliceableMut<T> for GVec<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T>
+    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMut<'_, T>
     {
         let vec_len = self.len;
 
@@ -208,14 +210,14 @@ where
     }
 }
 
-impl<'a, T> Push<&'a [T]> for GpuVec<T>
+impl<'a, T> Push<&'a [T]> for GVec<T>
 where
     T: BitAllUsed,
 {
     type Output = ();
     fn push(&mut self, value: &'a [T]) -> Self::Output { self.update_part(self.len(), value); }
 }
-impl<'a, T> TryPush<&'a [T]> for GpuVec<T>
+impl<'a, T> TryPush<&'a [T]> for GVec<T>
 where
     T: BitAllUsed,
 {
@@ -223,7 +225,7 @@ where
     fn try_push(&mut self, value: &'a [T]) -> Result<Self::Output, Self::Error> { self.try_update_part(self.len(), value) }
 }
 
-impl<T> GpuVec<T>
+impl<T> GVec<T>
 where
     T: BitAllUsed,
 {
@@ -265,7 +267,7 @@ where
 
         let usage = self.buffer.usage();
 
-        if self.len > 0 && (!usage.contains(GpuBufferUsageFlags::CopySource) || !usage.contains(GpuBufferUsageFlags::CopyDest))
+        if self.len > 0 && (!usage.contains(GBufferUsageFlags::CopySource) || !usage.contains(GBufferUsageFlags::CopyDest))
         {
             return Err(());
         }
@@ -306,11 +308,11 @@ pub trait ToGpuVec<T>
 where
     T: BitAllUsed,
 {
-    fn to_gpu_vec(self, desc: GpuBufferUsageFlags) -> GpuVec<T>;
+    fn to_gpu_vec(self, desc: GBufferUsageFlags) -> GVec<T>;
 }
 impl<T> ToGpuVec<T> for &[T]
 where
     T: BitAllUsed,
 {
-    fn to_gpu_vec(self, desc: GpuBufferUsageFlags) -> GpuVec<T> { GpuVec::new(self, desc) }
+    fn to_gpu_vec(self, desc: GBufferUsageFlags) -> GVec<T> { GVec::new(self, desc) }
 }

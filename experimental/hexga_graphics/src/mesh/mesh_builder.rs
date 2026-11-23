@@ -109,11 +109,11 @@ impl<const N: usize> MeshBuilder<N>
 
 impl<const N: usize> Builder for MeshBuilder<N>
 {
-    type Output = Mesh<N>;
+    type Output = GMesh<N>;
     fn build(&self) -> Self::Output
     {
         assert!(self.is_valid());
-        Mesh::new(&self.vertices, &self.indices)
+        GMesh::new(&self.vertices, &self.indices)
     }
 
     fn build_in(&self, dest: &mut Self::Output)
@@ -123,6 +123,7 @@ impl<const N: usize> Builder for MeshBuilder<N>
     }
 }
 
+impl<const N: usize> Collection for MeshBuilder<N> {}
 impl<const N: usize> Clear for MeshBuilder<N>
 {
     fn clear(&mut self)

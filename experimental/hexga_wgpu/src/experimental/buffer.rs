@@ -12,7 +12,7 @@ impl<T> GpuBufferNew<T> for WgpuBuffer
 where
     T: BitAllUsed,
 {
-    fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self
+    fn new(value: &[T], usage: GBufferUsageFlags) -> Self
     {
         Gpu.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
@@ -21,7 +21,7 @@ where
         })
     }
 
-    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self
+    fn with_capacity(capacity: usize, usage: GBufferUsageFlags) -> Self
     {
         let size = capacity
             .checked_mul(std::mem::size_of::<T>())
@@ -40,7 +40,7 @@ where
 // AsRef<WgpuBuffer> : impossible to impl it for WgpuBuffer
 pub trait WgpuSliceable<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { self.wgpu_buffer_ref().usage() }
 
@@ -83,7 +83,7 @@ where
 
 impl<T> WgpuSliceable<T> for WgpuBuffer
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { self.usage() }
 
@@ -121,7 +121,7 @@ where
 
 impl<'a, T> WgpuSliceable<T> for WgpuBufferSlice<'a>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn wgpu_usage(&self) -> WgpuBufferUsage { self.buffer().usage() }
 

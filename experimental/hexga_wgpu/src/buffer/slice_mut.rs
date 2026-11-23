@@ -1,29 +1,29 @@
 use super::*;
 
 #[repr(C)]
-pub struct GpuSliceMut<'a, T>
+pub struct GSliceMut<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    pub(crate) buffer: &'a mut GpuBuffer<T>,
+    pub(crate) buffer: &'a mut GBuffer<T>,
     begin: usize,
     len: usize,
 }
-impl<'a, T> From<&'a mut GpuBuffer<T>> for GpuSliceMut<'a, T>
+impl<'a, T> From<&'a mut GBuffer<T>> for GSliceMut<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn from(buffer: &'a mut GpuBuffer<T>) -> Self
+    fn from(buffer: &'a mut GBuffer<T>) -> Self
     {
         let len = buffer.len();
         Self { buffer, begin: 0, len }
     }
 }
-impl<'a, T> GpuSliceMut<'a, T>
+impl<'a, T> GSliceMut<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    pub fn new<S: RangeBounds<usize>>(buffer: &'a mut GpuBuffer<T>, bounds: S) -> Self
+    pub fn new<S: RangeBounds<usize>>(buffer: &'a mut GBuffer<T>, bounds: S) -> Self
     {
         let buffer_len = buffer.len();
 
@@ -58,11 +58,11 @@ where
     }
 }
 
-impl<'a, T> Deref for GpuSliceMut<'a, T>
+impl<'a, T> Deref for GSliceMut<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    type Target = GpuSlice<'a, T>;
+    type Target = GSlice<'a, T>;
 
     fn deref(&self) -> &Self::Target
     {
@@ -70,43 +70,43 @@ where
         // but with a mutable reference instead of shared reference.
         // Since we're only exposing read-only operations through GpuSlice,
         // this is safe.
-        unsafe { &*(self as *const Self as *const GpuSlice<'a, T>) }
+        unsafe { &*(self as *const Self as *const GSlice<'a, T>) }
     }
 }
 
-impl<'a, T> Collection for GpuSliceMut<'a, T> where T: GpuBufferElement {}
-impl<'a, T> Length for GpuSliceMut<'a, T>
+impl<'a, T> Collection for GSliceMut<'a, T> where T: GBufferElement {}
+impl<'a, T> Length for GSliceMut<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn len(&self) -> usize { self.len }
 }
 
-impl<'a, T> WgpuSliceable<T> for GpuSliceMut<'a, T>
+impl<'a, T> WgpuSliceable<T> for GSliceMut<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.wgpu_buffer_ref() }
 }
 
-impl<'a, T> GpuSliceable<T> for GpuSliceMut<'a, T>
+impl<'a, T> GpuSliceable<T> for GSliceMut<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn usage(&self) -> GpuBufferUsageFlags { self.deref().usage() }
+    fn usage(&self) -> GBufferUsageFlags { self.deref().usage() }
 
-    fn as_slice(&self) -> GpuSlice<'_, T> { *self.deref() }
+    fn as_slice(&self) -> GSlice<'_, T> { *self.deref() }
 
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T> { self.deref().slice(bounds) }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T> { self.deref().slice(bounds) }
 
     fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GSliceRead<'_, T> { self.deref().read(bounds) }
 }
 
-impl<'a, T> GpuSliceableMut<T> for GpuSliceMut<'a, T>
+impl<'a, T> GpuSliceableMut<T> for GSliceMut<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T>
+    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMut<'_, T>
     {
         let slice_len = self.len;
 
@@ -148,16 +148,16 @@ where
         let absolute_begin = self.begin + relative_start;
         let absolute_len = relative_end - relative_start;
 
-        GpuSliceMut {
+        GSliceMut {
             buffer: self.buffer,
             begin: absolute_begin,
             len: absolute_len,
         }
     }
 
-    fn as_mut_slice(&mut self) -> GpuSliceMut<'_, T>
+    fn as_mut_slice(&mut self) -> GSliceMut<'_, T>
     {
-        GpuSliceMut {
+        GSliceMut {
             buffer: self.buffer,
             begin: self.begin,
             len: self.len,

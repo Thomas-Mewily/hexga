@@ -2,19 +2,19 @@ use super::*;
 
 #[derive(Clone, Copy)]
 #[repr(C)]
-pub struct GpuSlice<'a, T>
+pub struct GSlice<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    pub(crate) buffer: &'a GpuBuffer<T>,
+    pub(crate) buffer: &'a GBuffer<T>,
     pub(crate) begin: usize,
     pub(crate) len: usize,
 }
-impl<'a, T> From<&'a GpuBuffer<T>> for GpuSlice<'a, T>
+impl<'a, T> From<&'a GBuffer<T>> for GSlice<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn from(buffer: &'a GpuBuffer<T>) -> Self
+    fn from(buffer: &'a GBuffer<T>) -> Self
     {
         Self {
             buffer,
@@ -23,11 +23,11 @@ where
         }
     }
 }
-impl<'a, T> GpuSlice<'a, T>
+impl<'a, T> GSlice<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    pub fn new<S: RangeBounds<usize>>(buffer: &'a GpuBuffer<T>, bounds: S) -> Self
+    pub fn new<S: RangeBounds<usize>>(buffer: &'a GBuffer<T>, bounds: S) -> Self
     {
         let buffer_len = buffer.len();
 
@@ -62,30 +62,30 @@ where
     }
 }
 
-impl<'a, T> Collection for GpuSlice<'a, T> where T: GpuBufferElement {}
-impl<'a, T> Length for GpuSlice<'a, T>
+impl<'a, T> Collection for GSlice<'a, T> where T: GBufferElement {}
+impl<'a, T> Length for GSlice<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn len(&self) -> usize { self.len }
 }
 
-impl<'a, T> WgpuSliceable<T> for GpuSlice<'a, T>
+impl<'a, T> WgpuSliceable<T> for GSlice<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.wgpu_buffer_ref() }
 }
 
-impl<'a, T> GpuSliceable<T> for GpuSlice<'a, T>
+impl<'a, T> GpuSliceable<T> for GSlice<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn usage(&self) -> GpuBufferUsageFlags { self.buffer.usage() }
+    fn usage(&self) -> GBufferUsageFlags { self.buffer.usage() }
 
-    fn as_slice(&self) -> GpuSlice<'_, T> { *self }
+    fn as_slice(&self) -> GSlice<'_, T> { *self }
 
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T>
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T>
     {
         let slice_len = self.len;
 
@@ -127,7 +127,7 @@ where
         let absolute_begin = self.begin + relative_start;
         let absolute_len = relative_end - relative_start;
 
-        GpuSlice {
+        GSlice {
             buffer: self.buffer,
             begin: absolute_begin,
             len: absolute_len,

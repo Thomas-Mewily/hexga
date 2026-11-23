@@ -23,50 +23,50 @@ pub use vec::*;
 
 pub mod prelude
 {
-    pub use super::buffer::GpuBuffer;
-    pub use super::slice::GpuSlice;
-    pub use super::slice_mut::GpuSliceMut;
+    pub use super::buffer::GBuffer;
+    pub use super::slice::GSlice;
+    pub use super::slice_mut::GSliceMut;
     pub use super::traits::*;
-    pub use super::vec::GpuVec;
+    pub use super::vec::GVec;
 }
 
 pub mod traits
 {
     pub use super::buffer::ToGpuBuffer;
     pub use super::vec::ToGpuVec;
-    pub use crate::buffer::{GpuBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut};
+    pub use crate::buffer::{GBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut};
 }
 
 pub trait GpuBufferNew<T>
 where
     T: BitAllUsed,
 {
-    fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self;
+    fn new(value: &[T], usage: GBufferUsageFlags) -> Self;
     // Redirect to the WithCapacity. Can't impl WithCapacity for WgpuBuffer since this lib own neither.
-    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self;
+    fn with_capacity(capacity: usize, usage: GBufferUsageFlags) -> Self;
 }
 pub trait GpuSliceable<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn usage(&self) -> GpuBufferUsageFlags;
+    fn usage(&self) -> GBufferUsageFlags;
 
-    fn slice<'a, S: RangeBounds<usize>>(&'a self, bounds: S) -> GpuSlice<'a, T>;
-    fn as_slice<'a>(&'a self) -> GpuSlice<'a, T> { self.slice(..) }
+    fn slice<'a, S: RangeBounds<usize>>(&'a self, bounds: S) -> GSlice<'a, T>;
+    fn as_slice<'a>(&'a self) -> GSlice<'a, T> { self.slice(..) }
 
     fn read<'a, S: RangeBounds<usize>>(&'a self, bounds: S) -> GSliceRead<'a, T>;
     fn as_read<'a>(&'a self) -> GSliceRead<'a, T> { self.read(..) }
 }
 
-pub trait GpuBufferElement: Copy + 'static {}
-impl<T> GpuBufferElement for T where T: Copy + 'static {}
+pub trait GBufferElement: Copy + 'static {}
+impl<T> GBufferElement for T where T: Copy + 'static {}
 
 pub trait GpuSliceableMut<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T>;
-    fn as_mut_slice(&mut self) -> GpuSliceMut<'_, T> { self.slice_mut(..) }
+    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMut<'_, T>;
+    fn as_mut_slice(&mut self) -> GSliceMut<'_, T> { self.slice_mut(..) }
 
     fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMutWrite<'_, T>
     {

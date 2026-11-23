@@ -36,7 +36,7 @@ use prelude::*;
 
 pub mod prelude
 {
-    pub use super::buffer::{GpuBufferUsage, GpuBufferUsageFlags};
+    pub use super::buffer::{GBufferUsage, GBufferUsageFlags};
     pub use super::context::GpuContext;
     pub(crate) use super::experimental::*;
     pub use super::gpu::Gpu;

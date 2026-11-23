@@ -5,11 +5,11 @@ use super::*;
 /// The usages determine what kind of memory the buffer is allocated from and what
 /// actions the buffer can partake in.
 ///
-/// Corresponds to [WebGPU `GpuBufferUsageFlags`](
-/// https://gpuweb.github.io/gpuweb/#typedefdef-GpuBufferUsageFlags).
+/// Corresponds to [WebGPU `GBufferUsageFlags`](
+/// https://gpuweb.github.io/gpuweb/#typedefdef-GBufferUsageFlags).
 #[bit_index]
 #[repr(u32)]
-pub enum GpuBufferUsage
+pub enum GBufferUsage
 {
     /// Allow a buffer to be mapped for reading using [`Buffer::map_async`] + [`Buffer::get_mapped_range`].
     /// This does not include creating a buffer with [`BufferDescriptor::mapped_at_creation`] set.
@@ -59,18 +59,18 @@ pub enum GpuBufferUsage
     ///
     MapReadWrite = Self::MapRead | Self::MapWrite,
 }
-impl GpuBufferUsageFlags
+impl GBufferUsageFlags
 {
     pub const fn from_wgpu(value: wgpu::BufferUsages) -> Self { unsafe { Self::from_bits_unchecked(value.bits()) } }
 }
-impl From<wgpu::BufferUsages> for GpuBufferUsageFlags
+impl From<wgpu::BufferUsages> for GBufferUsageFlags
 {
     #[inline(always)]
     fn from(value: wgpu::BufferUsages) -> Self { Self::from_wgpu(value) }
 }
-impl From<GpuBufferUsageFlags> for wgpu::BufferUsages
+impl From<GBufferUsageFlags> for wgpu::BufferUsages
 {
-    fn from(value: GpuBufferUsageFlags) -> Self { Self::from_bits(value.bits()).expect("Oops! WGPU added more usage flags and this code is not updated") }
+    fn from(value: GBufferUsageFlags) -> Self { Self::from_bits(value.bits()).expect("Oops! WGPU added more usage flags and this code is not updated") }
 }
 
 #[cfg(test)]
@@ -82,17 +82,17 @@ mod tests
     fn check_wgpu_enum_bit()
     {
         type WgpuBuffUsage = wgpu::BufferUsages;
-        assert_eq!(GpuBufferUsage::MapRead.bits(), WgpuBuffUsage::MAP_READ.bits());
-        assert_eq!(GpuBufferUsage::MapWrite.bits(), WgpuBuffUsage::MAP_WRITE.bits());
-        assert_eq!(GpuBufferUsage::CopySource.bits(), WgpuBuffUsage::COPY_SRC.bits());
-        assert_eq!(GpuBufferUsage::CopyDest.bits(), WgpuBuffUsage::COPY_DST.bits());
-        assert_eq!(GpuBufferUsage::Index.bits(), WgpuBuffUsage::INDEX.bits());
-        assert_eq!(GpuBufferUsage::Vertex.bits(), WgpuBuffUsage::VERTEX.bits());
-        assert_eq!(GpuBufferUsage::Uniform.bits(), WgpuBuffUsage::UNIFORM.bits());
-        assert_eq!(GpuBufferUsage::Storage.bits(), WgpuBuffUsage::STORAGE.bits());
-        assert_eq!(GpuBufferUsage::Indirect.bits(), WgpuBuffUsage::INDIRECT.bits());
-        assert_eq!(GpuBufferUsage::QueryResolve.bits(), WgpuBuffUsage::QUERY_RESOLVE.bits());
-        assert_eq!(GpuBufferUsage::BlasInput.bits(), WgpuBuffUsage::BLAS_INPUT.bits());
-        assert_eq!(GpuBufferUsage::TlasInput.bits(), WgpuBuffUsage::TLAS_INPUT.bits());
+        assert_eq!(GBufferUsage::MapRead.bits(), WgpuBuffUsage::MAP_READ.bits());
+        assert_eq!(GBufferUsage::MapWrite.bits(), WgpuBuffUsage::MAP_WRITE.bits());
+        assert_eq!(GBufferUsage::CopySource.bits(), WgpuBuffUsage::COPY_SRC.bits());
+        assert_eq!(GBufferUsage::CopyDest.bits(), WgpuBuffUsage::COPY_DST.bits());
+        assert_eq!(GBufferUsage::Index.bits(), WgpuBuffUsage::INDEX.bits());
+        assert_eq!(GBufferUsage::Vertex.bits(), WgpuBuffUsage::VERTEX.bits());
+        assert_eq!(GBufferUsage::Uniform.bits(), WgpuBuffUsage::UNIFORM.bits());
+        assert_eq!(GBufferUsage::Storage.bits(), WgpuBuffUsage::STORAGE.bits());
+        assert_eq!(GBufferUsage::Indirect.bits(), WgpuBuffUsage::INDIRECT.bits());
+        assert_eq!(GBufferUsage::QueryResolve.bits(), WgpuBuffUsage::QUERY_RESOLVE.bits());
+        assert_eq!(GBufferUsage::BlasInput.bits(), WgpuBuffUsage::BLAS_INPUT.bits());
+        assert_eq!(GBufferUsage::TlasInput.bits(), WgpuBuffUsage::TLAS_INPUT.bits());
     }
 }

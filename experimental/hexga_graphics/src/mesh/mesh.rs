@@ -1,41 +1,59 @@
 use super::*;
 
-/// A mesh, stored on the Gpu.
-///
-/// Can be cheaply [`Clone`]d
+/// A mesh, stored on the Cpu and automatically send to the Gpu when needed.
 #[derive(Clone, Debug)]
-pub struct Mesh<const N: usize = 3>
+pub struct Mesh<const N: usize=3>
 {
-    pub vertices: GpuVec<VertexOf<N>>,
-    pub indices: GpuVec<VertexIndex>,
+    gmesh: GMesh<N>,
+    builder: Dirty<MeshBuilder<N>>,
 }
 
+impl<const N: usize> Default for Mesh<N>
+{
+    fn default() -> Self {
+        Self::from(MeshBuilder::default())
+    }
+}
+
+impl<const N: usize> BuilderMesh<N> for Mesh<N>
+{
+    fn extend(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>) {
+        self.builder.extend(vertex, index);
+    }
+
+    fn geometry(&mut self, vertex: &[VertexOf<N>], index: &[VertexIndex]) {
+        self.builder.geometry(vertex, index);
+    }
+}
+
+impl<const N: usize> Collection for Mesh<N> {}
 impl<const N: usize> Clear for Mesh<N>
 {
     fn clear(&mut self)
     {
-        self.vertices.clear();
-        self.indices.clear();
+        self.builder.clear();
     }
 }
 
 impl<const N: usize> Mesh<N>
 {
-    pub(crate) fn from_gpu_vec(vertices: GpuVec<VertexOf<N>>, indices: GpuVec<VertexIndex>) -> Self { Self { vertices, indices } }
+    pub fn new() -> Self { ___() }
 
-    pub fn new(vertices: &[VertexOf<N>], indices: &[VertexIndex]) -> Self
+    pub fn from_vertices_and_indices(vertices: Vec<VertexOf<N>>, indices: Vec<VertexIndex>) -> Self
     {
-        let indices = indices.to_gpu_vec(GpuBufferUsageFlags::Index | GpuBufferUsageFlags::CopySourceDest);
-        let vertices = vertices.to_gpu_vec(GpuBufferUsageFlags::Vertex | GpuBufferUsageFlags::CopySourceDest);
-        Self { vertices, indices }
+        Self::from(MeshBuilder::from_vertices_and_indices(vertices, indices))
     }
 
-    pub fn from_iterator(vertices: impl IntoIterator<Item = VertexOf<N>>, indices: impl IntoIterator<Item = VertexIndex>) -> Self
+    pub fn gmesh(&mut self) -> &GMesh<N>
     {
-        Self::new(&vertices.into_iter().to_vec(), &indices.into_iter().to_vec())
+        self.builder.undirty_lazy(|b| 
+            {
+                self.gmesh.clear_and_push(b)
+            });
+        &self.gmesh
     }
 }
-impl<const N: usize> From<&MeshBuilder<N>> for Mesh<N>
+impl<const N: usize> From<MeshBuilder<N>> for Mesh<N>
 {
-    fn from(mesh: &MeshBuilder<N>) -> Self { Self::new(mesh.vertices(), mesh.indices()) }
+    fn from(builder: MeshBuilder<N>) -> Self { Self{ gmesh: ___(),  builder: Dirty::new_dirty(builder) } }
 }

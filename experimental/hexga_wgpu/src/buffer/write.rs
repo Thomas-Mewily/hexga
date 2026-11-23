@@ -2,14 +2,14 @@ use super::*;
 
 pub struct GSliceMutWrite<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     pub(crate) view: WgpuBufferViewMut<'a>,
     phantom: PhantomData<T>,
 }
 impl<'a, T> GSliceMutWrite<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     pub unsafe fn from_wgpu(view: WgpuBufferViewMut<'a>) -> Self { Self { view, phantom: PhantomData } }
 
@@ -23,10 +23,10 @@ where
     pub fn update(&mut self, src: &[T]) { self.try_update(src).expect("bit cast failed") }
 }
 
-impl<'a, T> Collection for GSliceMutWrite<'a, T> where T: GpuBufferElement {}
+impl<'a, T> Collection for GSliceMutWrite<'a, T> where T: GBufferElement {}
 impl<'a, T> Length for GSliceMutWrite<'a, T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn len(&self) -> usize { self.view.len() }
 }

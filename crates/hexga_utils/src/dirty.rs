@@ -21,6 +21,16 @@ pub trait SetDirty: IsDirty
     fn set_dirty(&mut self, used: bool) -> &mut Self;
     fn mark_dirty(&mut self) -> &mut Self { self.set_dirty(true) }
     fn undirty(&mut self) -> &mut Self { self.set_dirty(false) }
+
+    /// Call a function if the value is dirty, and undirty it after the function call.
+    fn undirty_lazy<F,R>(&mut self, f: F) -> Option<R> where F: FnOnce(&mut Self::Target) -> R, Self: IsDirty + DerefMut
+    {
+        if self.is_not_dirty() { return None; }
+
+        let r =  f(self.deref_mut());
+        self.undirty();
+        Some(r)
+    }
 }
 
 /// A Dirty flag that is automatically marked as dirty when mutated (using [`DerefMut`])

@@ -13,17 +13,19 @@ use super::*;
 /// - Mutation is cheap when the buffer is uniquely owned; a deep clone of the GPU buffer
 ///   occurs only when the buffer is shared.
 #[derive(Clone)]
-pub struct GpuBuffer<T>
+pub struct GBuffer<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     pub(crate) buffer: Arc<WgpuBuffer>,
     typed: PhantomData<T>,
 }
 
-impl<T> Debug for GpuBuffer<T>
+impl<T> Handle for GBuffer<T> where T: GBufferElement {}
+
+impl<T> Debug for GBuffer<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
     {
@@ -33,19 +35,19 @@ where
     }
 }
 
-impl<T> Collection for GpuBuffer<T> where T: GpuBufferElement {}
-impl<T> Length for GpuBuffer<T>
+impl<T> Collection for GBuffer<T> where T: GBufferElement {}
+impl<T> Length for GBuffer<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn len(&self) -> usize { self.buffer.size() as _ }
 }
 
-impl<T> GpuBufferNew<T> for GpuBuffer<T>
+impl<T> GpuBufferNew<T> for GBuffer<T>
 where
     T: BitAllUsed,
 {
-    fn new(value: &[T], usage: GpuBufferUsageFlags) -> Self
+    fn new(value: &[T], usage: GBufferUsageFlags) -> Self
     {
         Self {
             buffer: Arc::new(<WgpuBuffer as GpuBufferNew<T>>::new(value, usage)),
@@ -53,14 +55,14 @@ where
         }
     }
 
-    fn with_capacity(capacity: usize, usage: GpuBufferUsageFlags) -> Self { WithCapacity::with_capacity_and_param(capacity, usage) }
+    fn with_capacity(capacity: usize, usage: GBufferUsageFlags) -> Self { WithCapacity::with_capacity_and_param(capacity, usage) }
 }
 
-impl<T> WithCapacity for GpuBuffer<T>
+impl<T> WithCapacity for GBuffer<T>
 where
     T: BitAllUsed,
 {
-    type Param = GpuBufferUsageFlags;
+    type Param = GBufferUsageFlags;
     fn with_capacity_and_param(capacity: usize, usage: Self::Param) -> Self
     {
         Self {
@@ -70,19 +72,19 @@ where
     }
 }
 
-impl<T> WgpuSliceable<T> for GpuBuffer<T>
+impl<T> WgpuSliceable<T> for GBuffer<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
     fn wgpu_buffer_ref(&self) -> &WgpuBuffer { &self.buffer }
 }
 
-impl<T> GpuSliceable<T> for GpuBuffer<T>
+impl<T> GpuSliceable<T> for GBuffer<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn usage(&self) -> GpuBufferUsageFlags { self.wgpu_usage().into() }
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GpuSlice<'_, T> { GpuSlice::new(self, bounds) }
+    fn usage(&self) -> GBufferUsageFlags { self.wgpu_usage().into() }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T> { GSlice::new(self, bounds) }
 
     fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GSliceRead<'_, T>
     {
@@ -90,22 +92,22 @@ where
     }
 }
 
-impl<T> GpuSliceableMut<T> for GpuBuffer<T>
+impl<T> GpuSliceableMut<T> for GBuffer<T>
 where
-    T: GpuBufferElement,
+    T: GBufferElement,
 {
-    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMut<'_, T> { GpuSliceMut::new(self, bounds) }
+    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMut<'_, T> { GSliceMut::new(self, bounds) }
 }
 
 pub trait ToGpuBuffer<T>
 where
     T: BitAllUsed,
 {
-    fn to_gpu_buffer(self, desc: GpuBufferUsageFlags) -> GpuBuffer<T>;
+    fn to_gpu_buffer(self, desc: GBufferUsageFlags) -> GBuffer<T>;
 }
 impl<T> ToGpuBuffer<T> for &[T]
 where
     T: BitAllUsed,
 {
-    fn to_gpu_buffer(self, desc: GpuBufferUsageFlags) -> GpuBuffer<T> { GpuBuffer::new(self, desc) }
+    fn to_gpu_buffer(self, desc: GBufferUsageFlags) -> GBuffer<T> { GBuffer::new(self, desc) }
 }
