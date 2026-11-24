@@ -27,7 +27,7 @@ hexga_encoding
 
 
 hexga_ansi_color
-hexga_bitflags
+hexga_bit_flags
 
 // hexga_base // moved to hexga_core
 hexga_typedef

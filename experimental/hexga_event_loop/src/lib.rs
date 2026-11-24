@@ -1,7 +1,7 @@
 #![allow(unused)]
 #![allow(dead_code)]
 
-use hexga_bitflags::bit_index;
+use hexga_bit_flags::bit_index;
 use hexga_core::prelude::*;
 use hexga_math::prelude::*;
 use hexga_utils::prelude::*;

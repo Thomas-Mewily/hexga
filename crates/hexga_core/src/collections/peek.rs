@@ -1,5 +1,17 @@
 use super::*;
 
+
+
+
+
+
+
+
+
+
+
+
+
 pub trait Last<Idx>: Collection<Idx>
 {
     /// aka `peek()`, `peek_back()`, `back()`

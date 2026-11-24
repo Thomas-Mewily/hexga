@@ -1,5 +1,5 @@
 [package]
-name = "hexga_bitflags"
+name = "hexga_bit_flags"
 version.workspace = true
 authors.workspace = true
 license.workspace = true

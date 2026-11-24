@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests
 {
-    use hexga_bitflags::*;
+    use hexga_bit_flags::*;
     use postcard;
     use serde::{Deserialize, Serialize};
     use serde_json;

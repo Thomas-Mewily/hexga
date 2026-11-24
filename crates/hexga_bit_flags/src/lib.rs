@@ -31,7 +31,7 @@
 //! ## Example
 //!
 //! ```ignore
-//! use hexga_bitflags::*;
+//! use hexga_bit_flags::*;
 //!
 //! #[bit_index]
 //! #[repr(u8)]

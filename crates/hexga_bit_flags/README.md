@@ -31,7 +31,7 @@ The `#[bit_index]` macro interprets each enum variant as defining the position o
 ## Example
 
 ```rust
-use hexga_bitflags::*;
+use hexga_bit_flags::*;
 
 #[bit_index]
 #[repr(u8)]

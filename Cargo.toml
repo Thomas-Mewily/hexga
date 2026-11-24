@@ -43,7 +43,7 @@ hexga_io               = { path = "./experimental/hexga_io",             version
 #hexga_save             = { path = "./experimental/hexga_save",           version = "0.0.12-beta.2", default-features = false }
 hexga_asset            = { path = "./experimental/hexga_asset",          version = "0.0.12-beta.2", default-features = false }
 
-hexga_bitflags         = { path = "./crates/hexga_bitflags",             version = "0.0.12-beta.2", default-features = false }
+hexga_bit_flags        = { path = "./crates/hexga_bit_flags",            version = "0.0.12-beta.2", default-features = false }
 hexga_arena            = { path = "./experimental/hexga_arena",          version = "0.0.12-beta.2", default-features = false }
 
 hexga_array_vec        = { path = "./crates/hexga_array_vec",            version = "0.0.12-beta.2", default-features = false }

@@ -1051,7 +1051,8 @@ dependencies = [
  "hexga_arena",
  "hexga_array_vec",
  "hexga_asset",
- "hexga_bitflags",
+ "hexga_bit_flags",
+ "hexga_bit_set",
  "hexga_core",
  "hexga_encoding",
  "hexga_generational",
@@ -1126,16 +1127,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hexga_bit_set"
-version = "0.0.12-beta.2"
-dependencies = [
- "hexga_core",
- "hexga_number",
- "serde",
-]
-
-[[package]]
-name = "hexga_bitflags"
+name = "hexga_bit_flags"
 version = "0.0.12-beta.2"
 dependencies = [
  "heck",
@@ -1147,6 +1139,15 @@ dependencies = [
  "serde",
  "serde_json",
  "syn",
+]
+
+[[package]]
+name = "hexga_bit_set"
+version = "0.0.12-beta.2"
+dependencies = [
+ "hexga_core",
+ "hexga_number",
+ "serde",
 ]
 
 [[package]]
@@ -1205,7 +1206,7 @@ dependencies = [
  "console_log",
  "copypasta",
  "env_logger",
- "hexga_bitflags",
+ "hexga_bit_flags",
  "hexga_core",
  "hexga_image",
  "hexga_math",

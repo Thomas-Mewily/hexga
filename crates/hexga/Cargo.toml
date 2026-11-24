@@ -39,7 +39,8 @@ print_io = ["hexga_io/print_io", "hexga_encoding/print_io", "hexga_asset/print_i
 serde = ["dep:serde",
   "hexga_generational/serde",
   "hexga_math/serde",
-  "hexga_bitflags/serde",
+  "hexga_bit_set/serde",
+  "hexga_bit_flags/serde",
   "hexga_ansi_color/serde",
   "hexga_image/serde",
   "hexga_io/serde",
@@ -54,7 +55,8 @@ serde = ["dep:serde",
 serde_rc = ["serde/rc",
   "hexga_generational/serde_rc",
   "hexga_math/serde_rc",
-  "hexga_bitflags/serde_rc",
+  "hexga_bit_set/serde_rc",
+  "hexga_bit_flags/serde_rc",
   "hexga_ansi_color/serde_rc",
   "hexga_image/serde_rc",
   "hexga_io/serde_rc", 
@@ -74,7 +76,8 @@ hexga_core.workspace = true
 hexga_arena.workspace = true
 hexga_math.workspace = true
 hexga_generational.workspace = true
-hexga_bitflags.workspace = true
+hexga_bit_set.workspace = true
+hexga_bit_flags.workspace = true
 hexga_ansi_color.workspace = true
 hexga_utils.workspace = true
 hexga_map_on.workspace = true

@@ -4,7 +4,9 @@ pub mod experimental
 }
 
 pub use hexga_ansi_color as ansi_color;
-pub use hexga_bitflags as bitflags;
+pub use hexga_bit_set as bit_set;
+pub use hexga_bit_flags as bit_flags;
+pub use bit_flags as bitflags;
 pub use hexga_core::*;
 //pub use hexga_core as core;
 pub use hexga_array_vec as array_vec;
@@ -57,7 +59,8 @@ pub mod traits
 pub mod hexga_prelude
 {
     pub use crate::array_vec::prelude::*;
-    pub use crate::bitflags::bit_index;
+    pub use crate::bit_set::prelude::*;
+    pub use crate::bit_flags::bit_index;
     pub use crate::generational::prelude::*;
     pub use crate::math::prelude::*;
     pub use crate::utils::prelude::*;
@@ -83,6 +86,8 @@ pub mod hexga_prelude
 #[doc(hidden)]
 pub mod hexga_traits
 {
+    #[allow(unused_imports)] // The bit-set traits module is currently empty.
+    pub use crate::bit_set::traits::*;
     pub use crate::generational::traits::*;
     pub use crate::math::traits::*;
     pub use crate::utils::traits::*;

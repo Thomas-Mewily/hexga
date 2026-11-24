@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests
 {
-    use hexga_bitflags::*;
+    use hexga_bit_flags::*;
     #[allow(unused_imports)]
     use serde::{Deserialize, Serialize};
 
