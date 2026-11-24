@@ -13,10 +13,10 @@
 use super::*;
 
 /// A collection have a quick way to access each element.
-pub trait Get<Idx>
+pub trait Get<Idx> : Collection<Self::Output>
 {
     type Output: ?Sized;
-    type Guard<'a>: Deref<Target = Self::Output> where Self: 'a, Self::Output: 'a;
+    //type Guard<'a>: Deref<Target = Self::Output> where Self: 'a, Self::Output: 'a;
 
     /// Returns a reference to the value.
     fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a;

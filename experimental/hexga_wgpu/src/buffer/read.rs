@@ -7,6 +7,27 @@ where
     view: WgpuBufferView<'a>,
     phantom: PhantomData<T>,
 }
+
+pub struct GElementRead<'a, T>
+where
+    T: GBufferElement,
+{
+    view: GSliceRead<'a, T>,
+    index: usize,
+}
+impl<'a, T> GElementRead<'a, T>
+where
+    T: GBufferElement,
+{
+    pub(crate) fn new(view: GSliceRead<'a, T>, index: usize) -> Self { Self { view, index } }
+}
+impl<T> Deref for GElementRead<'_, T>
+where
+    T: GBufferElement,
+{
+    type Target = T;
+    fn deref(&self) -> &T { &self.view[self.index] }
+}
 impl<'a, T> GSliceRead<'a, T>
 where
     T: GBufferElement,
@@ -21,7 +42,15 @@ where
     fn deref(&self) -> &[T] { unsafe { bit::try_transmute_slice_unchecked(&self.view) }.unwrap() }
 }
 
-impl<'a, T> Collection for GSliceRead<'a, T> where T: GBufferElement {}
+impl<'a, T> Collection<T> for GSliceRead<'a, T> where T: GBufferElement { type Guard<'b> = &'b T where Self: 'b; }
+impl<'a, T> Get<usize> for GSliceRead<'a, T>
+where
+    T: GBufferElement,
+{
+    type Output = T;
+    type Guard<'b> = &'b T where Self: 'b, Self::Output: 'b;
+    fn get<'b>(&'b self, index: usize) -> Option<Self::Guard<'b>> where Self::Output: 'b { self.deref().get(index) }
+}
 impl<'a, T> Length for GSliceRead<'a, T>
 where
     T: GBufferElement,

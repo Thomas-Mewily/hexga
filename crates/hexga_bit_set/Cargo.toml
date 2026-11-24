@@ -1,0 +1,24 @@
+[package]
+name = "hexga_bit_set"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+#homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+readme = "README.md"
+
+description = "Collections for bit oriented data like BitSet, BitArray"
+keywords = ["bit", "collection"]
+categories = ["data-structures"]
+
+[features]
+default = []
+
+serde = ["dep:serde", "hexga_core/serde", "hexga_number/serde"]
+serde_rc = ["serde/rc", "hexga_core/serde_rc", "hexga_number/serde_rc"]
+
+[dependencies]
+serde = { version = "1.0.0", features = ["derive"], optional = true }
+hexga_core.workspace = true
+hexga_number.workspace = true

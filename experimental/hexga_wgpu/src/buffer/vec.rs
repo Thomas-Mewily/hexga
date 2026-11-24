@@ -11,14 +11,32 @@ where
 
 impl<T> Handle for GVec<T> where T: GBufferElement {}
 
-impl<T> Collection for GVec<T> where T: GBufferElement {}
+impl<T> Collection<T> for GVec<T>
+where
+    T: GBufferElement,
+{
+    type Guard<'a> = GElementRead<'a, T> where Self: 'a;
+}
+impl<T> Get<usize> for GVec<T>
+where
+    T: GBufferElement,
+{
+    type Output = T;
+    type Guard<'a> = GElementRead<'a, T> where Self: 'a, Self::Output: 'a;
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a
+    {
+        if index >= self.len { return None; }
+        Some(GElementRead::new(self.buffer.read(..), index))
+    }
+}
+
 impl<T> Length for GVec<T>
 where
     T: GBufferElement,
 {
     fn len(&self) -> usize { self.len }
 }
-impl<T> Capacity for GVec<T>
+impl<T> Capacity<T> for GVec<T>
 where
     T: GBufferElement,
 {
@@ -62,7 +80,7 @@ where
     fn clear(&mut self) { self.len = 0; }
 }
 
-impl<T> Reserve for GVec<T>
+impl<T> Reserve<T> for GVec<T>
 where
     T: GBufferElement + BitAllUsed,
 {

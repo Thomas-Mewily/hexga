@@ -23,7 +23,6 @@ where
     pub fn update(&mut self, src: &[T]) { self.try_update(src).expect("bit cast failed") }
 }
 
-impl<'a, T> Collection for GSliceMutWrite<'a, T> where T: GBufferElement {}
 impl<'a, T> Length for GSliceMutWrite<'a, T>
 where
     T: GBufferElement,

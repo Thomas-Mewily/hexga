@@ -35,7 +35,24 @@ where
     }
 }
 
-impl<T> Collection for GBuffer<T> where T: GBufferElement {}
+impl<T> Collection<T> for GBuffer<T>
+where
+    T: GBufferElement,
+{
+    type Guard<'a> = GElementRead<'a, T> where Self: 'a;
+}
+impl<T> Get<usize> for GBuffer<T>
+where
+    T: GBufferElement,
+{
+    type Output = T;
+    type Guard<'a> = GElementRead<'a, T> where Self: 'a, Self::Output: 'a;
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a
+    {
+        if index >= self.buffer.size() as usize / size_of::<T>() { return None; }
+        Some(GElementRead::new(self.read(..), index))
+    }
+}
 impl<T> Length for GBuffer<T>
 where
     T: GBufferElement,

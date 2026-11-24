@@ -209,6 +209,13 @@ impl<T,E> LastMut<T> for Result<T,E>
     fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().ok() }
 }
 
+
+impl<T> LastMut<T> for BinaryHeap<T> where
+    T: Ord
+{
+    fn last_mut<'a>(&'a mut self) -> Option<collections::binary_heap::PeekMut<T>> { self.as_mut().ok() }
+}
+
 /* 
 // Not possible because BinaryHeap does not provide a mutable reference to the last element:
 fn peek_mut(&mut self) -> Option<PeekMut<'_, T, A>>

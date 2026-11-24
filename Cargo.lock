@@ -1126,10 +1126,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "hexga_bit_set"
+version = "0.0.12-beta.2"
+dependencies = [
+ "hexga_core",
+ "hexga_number",
+ "serde",
+]
+
+[[package]]
 name = "hexga_bitflags"
 version = "0.0.12-beta.2"
 dependencies = [
  "heck",
+ "hexga_map_on",
  "hexga_number",
  "postcard",
  "proc-macro2",

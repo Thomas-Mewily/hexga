@@ -24,6 +24,7 @@ serde_rc = ["serde/rc"]
 
 [dependencies]
 hexga_number.workspace = true
+hexga_map_on.workspace = true
 
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 
