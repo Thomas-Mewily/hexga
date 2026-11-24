@@ -8,7 +8,7 @@ pub mod prelude
         Mat,
         Mat1, Mat2, Mat3, Mat4,
         Mat1i, Mat2i, Mat3i, Mat4i,
-        SquareMatrix
+        MatrixSquare
     };
     pub use super::traits::*;
 }
@@ -19,13 +19,13 @@ pub mod traits
 }
 
 /// 1x1 matrix
-pub type Matrix1<T> = SquareMatrix<T, 1>;
+pub type Matrix1<T> = MatrixSquare<T, 1>;
 /// 2x2 matrix
-pub type Matrix2<T> = SquareMatrix<T, 2>;
+pub type Matrix2<T> = MatrixSquare<T, 2>;
 /// 3x3 matrix
-pub type Matrix3<T> = SquareMatrix<T, 3>;
+pub type Matrix3<T> = MatrixSquare<T, 3>;
 /// 4x4 matrix
-pub type Matrix4<T> = SquareMatrix<T, 4>;
+pub type Matrix4<T> = MatrixSquare<T, 4>;
 
 pub type Mat<const ROW: usize, const COL: usize> = Matrix<float, ROW, COL>;
 /// 1x1 matrix of float
@@ -38,16 +38,16 @@ pub type Mat3 = Mat<3, 3>;
 pub type Mat4 = Mat<4, 4>;
 
 /// 1x1 matrix of integer
-pub type Mat1i = SquareMatrix<int, 1>;
+pub type Mat1i = MatrixSquare<int, 1>;
 /// 2x2 matrix of integer
-pub type Mat2i = SquareMatrix<int, 2>;
+pub type Mat2i = MatrixSquare<int, 2>;
 /// 3x3 matrix of integer
-pub type Mat3i = SquareMatrix<int, 3>;
+pub type Mat3i = MatrixSquare<int, 3>;
 /// 4x4 matrix of integer
-pub type Mat4i = SquareMatrix<int, 4>;
+pub type Mat4i = MatrixSquare<int, 4>;
 
 /// NxN matrix
-pub type SquareMatrix<T, const N: usize> = Matrix<T, N, N>;
+pub type MatrixSquare<T, const N: usize> = Matrix<T, N, N>;
 
 /// ROW rows, COL columns.
 ///
@@ -318,10 +318,10 @@ where
 }
 
 // 2D
-impl<T> SquareMatrix<T, 2>
+impl<T> MatrixSquare<T, 2>
 where
     Self: Copy,
-    SquareMatrix<T, 2>: Mul<Vector<T, 2>, Output = Vector<T, 2>>,
+    MatrixSquare<T, 2>: Mul<Vector<T, 2>, Output = Vector<T, 2>>,
     Vector<T, 2>: Into<Vector<T, 1>>,
 {
     pub fn transform_relative(self, relative: Vector<T, 1>) -> Vector<T, 1>
@@ -340,10 +340,10 @@ where
 }
 
 // 3D
-impl<T> SquareMatrix<T, 3>
+impl<T> MatrixSquare<T, 3>
 where
     Self: Copy,
-    SquareMatrix<T, 3>: Mul<Vector<T, 3>, Output = Vector<T, 3>>,
+    MatrixSquare<T, 3>: Mul<Vector<T, 3>, Output = Vector<T, 3>>,
     Vector<T, 3>: Into<Vector<T, 2>>,
 {
     pub fn transform_relative(self, relative: Vector<T, 2>) -> Vector<T, 2>
@@ -362,10 +362,10 @@ where
 }
 
 // 4D
-impl<T> SquareMatrix<T, 4>
+impl<T> MatrixSquare<T, 4>
 where
     Self: Copy,
-    SquareMatrix<T, 4>: Mul<Vector<T, 4>, Output = Vector<T, 4>>,
+    MatrixSquare<T, 4>: Mul<Vector<T, 4>, Output = Vector<T, 4>>,
     Vector<T, 4>: Into<Vector<T, 3>>,
 {
     pub fn transform_relative(self, relative: Vector<T, 3>) -> Vector<T, 3>
@@ -383,10 +383,10 @@ where
     }
 }
 
-impl<T, const N: usize> SquareMatrix<T, N>
+impl<T, const N: usize> MatrixSquare<T, N>
 where
     Self: Copy,
-    SquareMatrix<T, N>: Mul<Vector<T, N>, Output = Vector<T, N>>,
+    MatrixSquare<T, N>: Mul<Vector<T, N>, Output = Vector<T, N>>,
 {
     /*
     /// The last value/component will be replaced by 0 because it is relative/a vector in math terms.
@@ -412,7 +412,7 @@ where
     const ZERO: Self = Self::from_col(Vector::<Vector<T, ROW>, COL>::ZERO);
 }
 
-impl<T, const N: usize> SquareMatrix<T, N>
+impl<T, const N: usize> MatrixSquare<T, N>
 where
     T: One + Zero + Copy,
 {
@@ -420,7 +420,7 @@ where
     pub const IDENTITY: Self = Self::ONE;
 }
 
-impl<T, const N: usize> One for SquareMatrix<T, N>
+impl<T, const N: usize> One for MatrixSquare<T, N>
 where
     T: One + Zero + Copy,
 {
@@ -436,7 +436,7 @@ where
     };
 }
 
-impl<T, const N: usize> MinusOne for SquareMatrix<T, N>
+impl<T, const N: usize> MinusOne for MatrixSquare<T, N>
 where
     T: MinusOne + Zero + Copy,
 {
@@ -452,7 +452,7 @@ where
     };
 }
 
-impl<T, const N: usize> Half for SquareMatrix<T, N>
+impl<T, const N: usize> Half for MatrixSquare<T, N>
 where
     T: Half + Zero + Copy,
 {
@@ -468,7 +468,7 @@ where
     };
 }
 
-impl<T, const N: usize> SquareMatrix<T, N>
+impl<T, const N: usize> MatrixSquare<T, N>
 where
     T: Copy,
 {
@@ -538,7 +538,7 @@ where
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ZERO, Self::add) }
 }
 
-impl<T, const COL: usize> Product for SquareMatrix<T, COL>
+impl<T, const COL: usize> Product for MatrixSquare<T, COL>
 where
     Self: One + Mul<Self, Output = Self>,
 {
@@ -656,7 +656,7 @@ where
     }
 }
 
-impl<T, const COL: usize> MulAssign<Self> for SquareMatrix<T, COL>
+impl<T, const COL: usize> MulAssign<Self> for MatrixSquare<T, COL>
 where
     Self: Mul<Self, Output = Self> + Copy,
 {
@@ -721,7 +721,7 @@ impl<T, const ROW: usize, const COL: usize> MapZipInto for Matrix<T, ROW, COL> {
         }))
     }
 }
-impl<T, const N: usize> SquareMatrix<T, N>
+impl<T, const N: usize> MatrixSquare<T, N>
 where
     T: Float,
 {
@@ -797,28 +797,28 @@ where
 
 // There is no generic way to compute the determinant of a matrix, because it required calculaing the submatrix, but at the moment const generic operation are not possible
 // I also don't want any heap allocation when computing the determinant
-impl<T> SquareMatrix<T, 0>
+impl<T> MatrixSquare<T, 0>
 where
     T: Numeric + One,
 {
     pub fn det(&self) -> T { T::ONE }
 }
 
-impl<T> SquareMatrix<T, 1>
+impl<T> MatrixSquare<T, 1>
 where
     T: Numeric + One,
 {
     pub fn det(&self) -> T { self[0][0] }
 }
 
-impl<T> SquareMatrix<T, 2>
+impl<T> MatrixSquare<T, 2>
 where
     T: Numeric + One,
 {
     pub fn det(&self) -> T { self[0][0] * self[1][1] - self[0][1] * self[1][0] }
 }
 
-impl<T> SquareMatrix<T, 3>
+impl<T> MatrixSquare<T, 3>
 where
     T: Numeric + One,
 {
@@ -829,7 +829,7 @@ where
     }
 }
 
-impl<T> SquareMatrix<T, 4>
+impl<T> MatrixSquare<T, 4>
 where
     T: Numeric + One,
 {
@@ -850,7 +850,7 @@ where
 
 macro_rules! matrix_have_x {
     ($dim : expr) => {
-        impl<T> HaveX<Vector<T, $dim>> for SquareMatrix<T, $dim>
+        impl<T> HaveX<Vector<T, $dim>> for MatrixSquare<T, $dim>
         {
             fn iter_x<'a>(&'a self) -> impl Iterator<Item = &'a Vector<T, $dim>>
             where
@@ -876,7 +876,7 @@ matrix_have_x!(4);
 
 macro_rules! matrix_have_y {
     ($dim : expr) => {
-        impl<T> HaveY<Vector<T, $dim>> for SquareMatrix<T, $dim>
+        impl<T> HaveY<Vector<T, $dim>> for MatrixSquare<T, $dim>
         {
             fn iter_xy<'a>(&'a self) -> impl Iterator<Item = &'a Vector<T, $dim>>
             where
@@ -901,7 +901,7 @@ matrix_have_y!(4);
 
 macro_rules! matrix_have_z {
     ($dim : expr) => {
-        impl<T> HaveZ<Vector<T, $dim>> for SquareMatrix<T, $dim>
+        impl<T> HaveZ<Vector<T, $dim>> for MatrixSquare<T, $dim>
         {
             fn iter_xyz<'a>(&'a self) -> impl Iterator<Item = &'a Vector<T, $dim>>
             where
@@ -925,7 +925,7 @@ matrix_have_z!(4);
 
 macro_rules! matrix_have_w {
     ($dim : expr) => {
-        impl<T> HaveW<Vector<T, $dim>> for SquareMatrix<T, $dim>
+        impl<T> HaveW<Vector<T, $dim>> for MatrixSquare<T, $dim>
         {
             fn iter_xyzw<'a>(&'a self) -> impl Iterator<Item = &'a Vector<T, $dim>>
             where
@@ -946,7 +946,7 @@ macro_rules! matrix_have_w {
 
 matrix_have_w!(4);
 
-impl<T, const N: usize> RotateX<T> for SquareMatrix<T, N>
+impl<T, const N: usize> RotateX<T> for MatrixSquare<T, N>
 where
     Self: HaveZ<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
     T: Float,
@@ -958,7 +958,7 @@ where
     }
 }
 
-impl<T, const N: usize> RotateY<T> for SquareMatrix<T, N>
+impl<T, const N: usize> RotateY<T> for MatrixSquare<T, N>
 where
     Self: HaveZ<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
     T: Float,
@@ -970,7 +970,7 @@ where
     }
 }
 
-impl<T, const N: usize> RotateZ<T> for SquareMatrix<T, N>
+impl<T, const N: usize> RotateZ<T> for MatrixSquare<T, N>
 where
     Self: HaveY<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
     T: Float,
@@ -983,13 +983,13 @@ where
 }
 
 /*
-impl<T, const N : usize> GetPosition<Vector<T,N>,N> for SquareMatrix<T,N> where T: Copy
+impl<T, const N : usize> GetPosition<Vector<T,N>,N> for MatrixSquare<T,N> where T: Copy
 {
     fn pos(&self) -> Vector<Vector<T,N>,N> {
         self.col()
     }
 }
-impl<T, const N : usize> SetPosition<Vector<T,N>,N> for SquareMatrix<T,N> where T: Copy
+impl<T, const N : usize> SetPosition<Vector<T,N>,N> for MatrixSquare<T,N> where T: Copy
 {
     fn set_pos(&mut self, pos : Vector<Vector<T,N>,N>) -> &mut Self {
         *self = Self::from_col(pos);
@@ -998,13 +998,13 @@ impl<T, const N : usize> SetPosition<Vector<T,N>,N> for SquareMatrix<T,N> where 
 }
 */
 
-impl<T> GetPosition<T, 2> for SquareMatrix<T, 3>
+impl<T> GetPosition<T, 2> for MatrixSquare<T, 3>
 where
     T: Copy,
 {
     fn pos(&self) -> Vector<T, 2> { self.columns[2].into() }
 }
-impl<T> SetPosition<T, 2> for SquareMatrix<T, 3>
+impl<T> SetPosition<T, 2> for MatrixSquare<T, 3>
 where
     T: Copy,
 {
@@ -1014,13 +1014,13 @@ where
         self
     }
 }
-impl<T> GetPosition<T, 3> for SquareMatrix<T, 4>
+impl<T> GetPosition<T, 3> for MatrixSquare<T, 4>
 where
     T: Copy,
 {
     fn pos(&self) -> Vector<T, 3> { self.columns[3].into() }
 }
-impl<T> SetPosition<T, 3> for SquareMatrix<T, 4>
+impl<T> SetPosition<T, 3> for MatrixSquare<T, 4>
 where
     T: Copy,
 {
@@ -1031,13 +1031,13 @@ where
     }
 }
 
-impl<T> GetScale<T, 2> for SquareMatrix<T, 3>
+impl<T> GetScale<T, 2> for MatrixSquare<T, 3>
 where
     T: Float,
 {
     fn scale(&self) -> Vector<T, 2> { Vector::from_fn(|i| Vector::<T, 2>::from(self[i]).length()) }
 }
-impl<T> SetScale<T, 2> for SquareMatrix<T, 3>
+impl<T> SetScale<T, 2> for MatrixSquare<T, 3>
 where
     T: Float,
 {
@@ -1058,13 +1058,13 @@ where
         self
     }
 }
-impl<T> GetScale<T, 3> for SquareMatrix<T, 4>
+impl<T> GetScale<T, 3> for MatrixSquare<T, 4>
 where
     T: Float,
 {
     fn scale(&self) -> Vector<T, 3> { Vector::from_fn(|i| Vector::<T, 3>::from(self[i]).length()) }
 }
-impl<T> SetScale<T, 3> for SquareMatrix<T, 4>
+impl<T> SetScale<T, 3> for MatrixSquare<T, 4>
 where
     T: Float,
 {
@@ -1087,7 +1087,7 @@ where
 }
 
 /// the rotation code is mainly based on glam code
-impl<T, const N: usize> SquareMatrix<T, N>
+impl<T, const N: usize> MatrixSquare<T, N>
 where
     Self: HaveZ<Vector<T, N>> + Zero,
     T: Float,
@@ -1145,7 +1145,7 @@ where
     }
 }
 
-impl<T, const N: usize> SquareMatrix<T, N>
+impl<T, const N: usize> MatrixSquare<T, N>
 where
     Self: HaveY<Vector<T, N>> + Zero,
     T: Float,
@@ -1163,7 +1163,7 @@ where
     }
 }
 
-impl<T, const N: usize> SquareMatrix<T, N>
+impl<T, const N: usize> MatrixSquare<T, N>
 where
     Self: HaveZ<Vector<T, N>> + One,
     T: Copy + Zero + One,
@@ -1267,53 +1267,53 @@ impl<T> Matrix4<T>
 
 
 pub trait MatrixStackPush<F = float, const N: usize = 4>:
-    Push<Matrix<F, N, N>>
+    Push<MatrixSquare<F, N>>
 {
-    fn push_matrix(&mut self, matrix: Matrix<F, N, N>) -> Self::Output {
+    fn push_matrix(&mut self, matrix: MatrixSquare<F, N>) -> Self::Output {
         Push::push(self, matrix)
     }
 }
 
 impl<T, F, const N: usize> MatrixStackPush<F, N> for T
 where
-    T: Push<Matrix<F, N, N>>,
+    T: Push<MatrixSquare<F, N>>,
 {
 }
 
-pub trait MatrixStackDup<F = float, const N: usize = 4, Idx = usize>:
-    Dup<Idx, Output = Matrix<F, N, N>>
+pub trait MatrixStackDup<Idx, F = float, const N: usize = 4>:
+    Dup<Idx, Output = MatrixSquare<F, N>>
 {
     fn dup_matrix(&mut self) -> bool {
         self.dup()
     }
 }
 
-impl<T, F, const N: usize, Idx> MatrixStackDup<F, N, Idx> for T
+impl<Idx, T, F, const N: usize> MatrixStackDup<Idx, F, N> for T
 where
-    T: Dup<Idx, Output = Matrix<F, N, N>>,
+    T: Dup<Idx, Output = MatrixSquare<F, N>>,
 {
 }
 
 pub trait MatrixStackPop<F = float, const N: usize = 4>:
-    Pop<Matrix<F, N, N>>
+    Pop<MatrixSquare<F, N>>
 {
-    fn pop_matrix(&mut self) -> Option<Matrix<F, N, N>> {
+    fn pop_matrix(&mut self) -> Option<MatrixSquare<F, N>> {
         Pop::pop(self)
     }
 }
 
 impl<T, F, const N: usize> MatrixStackPop<F, N> for T
 where
-    T: Pop<Matrix<F, N, N>>,
+    T: Pop<MatrixSquare<F, N>>,
 {
 }
 
-pub trait MatrixStackExtension<Idx = usize>:
-    MatrixStackPush + MatrixStackDup<float, 4, Idx> + MatrixStackPop
+pub trait MatrixStackExtension<Idx = usize, F = float, const N: usize = 4>:
+    MatrixStackPush<F, N> + MatrixStackDup<Idx, F, N> + MatrixStackPop<F, N>
 {}
-impl<T, Idx> MatrixStackExtension<Idx> for T
+impl<T, Idx, F, const N: usize> MatrixStackExtension<Idx, F, N> for T
 where
-    T: MatrixStackPush + MatrixStackDup<float, 4, Idx> + MatrixStackPop,
+    T: MatrixStackPush<F,N> + MatrixStackDup<Idx, F, N> + MatrixStackPop<F,N>,
 {}
 
 

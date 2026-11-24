@@ -1,5 +1,9 @@
 use super::*;
 
+/*
+Todo: make a trait IndexLast, IndexFirst ? (to return the index)
+*/
+
 pub trait Last<Idx>: Collection<Idx>
 {
     /// aka `peek()`, `peek_back()`, `back()`
