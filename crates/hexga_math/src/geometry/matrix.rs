@@ -1269,8 +1269,8 @@ impl<T> Matrix4<T>
 pub trait MatrixStackPush<F = float, const N: usize = 4>:
     Push<Matrix<F, N, N>>
 {
-    fn push_matrix(&mut self, matrix: Matrix<F, N, N>) {
-        let _ = Push::push(self, matrix);
+    fn push_matrix(&mut self, matrix: Matrix<F, N, N>) -> Self::Output {
+        Push::push(self, matrix)
     }
 }
 
@@ -1280,25 +1280,25 @@ where
 {
 }
 
-pub trait MatrixStackDup<F = float, const N: usize = 4>:
-    GetMatrix<F, N, N> + MatrixStackPush<F, N>
+pub trait MatrixStackDup<F = float, const N: usize = 4, Idx = usize>:
+    Dup<Idx, Output = Matrix<F, N, N>>
 {
-    fn dup_matrix(&mut self) {
-        self.push_matrix(self.matrix());
+    fn dup_matrix(&mut self) -> bool {
+        self.dup()
     }
 }
 
-impl<T, F, const N: usize> MatrixStackDup<F, N> for T
+impl<T, F, const N: usize, Idx> MatrixStackDup<F, N, Idx> for T
 where
-    T: GetMatrix<F, N, N> + MatrixStackPush<F, N>,
+    T: Dup<Idx, Output = Matrix<F, N, N>>,
 {
 }
 
 pub trait MatrixStackPop<F = float, const N: usize = 4>:
     Pop<Matrix<F, N, N>>
 {
-    fn pop_matrix(&mut self) {
-        let _ = Pop::pop(self);
+    fn pop_matrix(&mut self) -> Option<Matrix<F, N, N>> {
+        Pop::pop(self)
     }
 }
 
@@ -1308,12 +1308,12 @@ where
 {
 }
 
-pub trait MatrixStackExtension:
-    MatrixStackPush + MatrixStackDup + MatrixStackPop
+pub trait MatrixStackExtension<Idx = usize>:
+    MatrixStackPush + MatrixStackDup<float, 4, Idx> + MatrixStackPop
 {}
-impl<T> MatrixStackExtension for T
+impl<T, Idx> MatrixStackExtension<Idx> for T
 where
-    T: MatrixStackPush + MatrixStackDup + MatrixStackPop,
+    T: MatrixStackPush + MatrixStackDup<float, 4, Idx> + MatrixStackPop,
 {}
 
 

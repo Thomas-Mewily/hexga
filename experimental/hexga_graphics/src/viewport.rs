@@ -42,8 +42,8 @@ impl SetViewport for DrawParam
 }
 
 pub trait ViewportStackPush: Push<Viewport> {
-    fn push_viewport(&mut self, viewport: Viewport) {
-        let _ = Push::push(self, viewport);
+    fn push_viewport(&mut self, viewport: Viewport) -> Self::Output {
+        Push::push(self, viewport)
     }
 }
 
@@ -53,22 +53,21 @@ where
 {
 }
 
-pub trait ViewportStackDup: GetViewport + Push<Viewport> {
-    fn dup_viewport(&mut self)
-    {
-        Push::push(self, self.viewport());
+pub trait ViewportStackDup<Idx = DrawStackIndex<Viewport>>: Dup<Idx, Output = Viewport> {
+    fn dup_viewport(&mut self) -> bool {
+        self.dup()
     }
 }
 
-impl<T> ViewportStackDup for T
+impl<T, Idx> ViewportStackDup<Idx> for T
 where
-    T: GetViewport + Push<Viewport>
+    T: Dup<Idx, Output = Viewport>,
 {
 }
 
 pub trait ViewportStackPop: Pop<Viewport> {
-    fn pop_viewport(&mut self) {
-        let _ = Pop::pop(self);
+    fn pop_viewport(&mut self) -> Option<Viewport> {
+        Pop::pop(self)
     }
 }
 
@@ -78,12 +77,12 @@ where
 {
 }
 
-pub trait ViewportStackExtension:
-    ViewportStackPush + ViewportStackDup + ViewportStackPop
+pub trait ViewportStackExtension<Idx = DrawStackIndex<Viewport>>:
+    ViewportStackPush + ViewportStackDup<Idx> + ViewportStackPop
 {}
-impl<T> ViewportStackExtension for T
+impl<T, Idx> ViewportStackExtension<Idx> for T
 where
-    T: ViewportStackPush + ViewportStackDup + ViewportStackPop,
+    T: ViewportStackPush + ViewportStackDup<Idx> + ViewportStackPop,
 {}
 
 pub mod prelude

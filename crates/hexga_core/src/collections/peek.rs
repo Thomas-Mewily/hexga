@@ -1,17 +1,5 @@
 use super::*;
 
-
-
-
-
-
-
-
-
-
-
-
-
 pub trait Last<Idx>: Collection<Idx>
 {
     /// aka `peek()`, `peek_back()`, `back()`
@@ -259,7 +247,7 @@ mod tests
     {
         let mut values = Vec::from([1]);
         *Push::push_mut(&mut values, 2).unwrap() = 3;
-        assert!(values.dup());
+        assert!(Dup::<usize>::dup(&mut values));
         assert_eq!(Last::last(&values), Some(&3));
         *values.pop_mut().unwrap() = 4;
         assert_eq!(values, [1, 4]);

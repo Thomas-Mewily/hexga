@@ -222,8 +222,13 @@ impl<T> DrawParamExtension for T where T: GetDrawParam + SetDrawParam + RotateX 
 
 
 
-pub trait DrawStackExtension: MatrixStackExtension + ViewportStackExtension + ScissorStackExtension {}
-impl<T> DrawStackExtension for T where T: MatrixStackExtension + ViewportStackExtension + ScissorStackExtension {}
+pub trait DrawStackExtension:
+    MatrixStackExtension<DrawStackIndex<Matrix<float, 4, 4>>> + ViewportStackExtension + ScissorStackExtension
+{}
+impl<T> DrawStackExtension for T
+where
+    T: MatrixStackExtension<DrawStackIndex<Matrix<float, 4, 4>>> + ViewportStackExtension + ScissorStackExtension,
+{}
 
 /// Selects the draw stack whose elements have type `T`.
 pub struct DrawStackIndex<T>(core::marker::PhantomData<fn() -> T>);
@@ -365,5 +370,28 @@ mod tests
         assert_eq!(geometry.vertices.end, 6);
         assert_eq!(geometry.indices.start, 3);
         assert_eq!(geometry.indices.end, 6);
+    }
+
+    #[test]
+    fn duplication_uses_the_index_for_each_draw_stack()
+    {
+        let mut builder = ImmediateRenderBuilder::<3>::default();
+        let matrix = Matrix::ZERO;
+        let viewport = Viewport { depth: 0.25..0.75, ..Viewport::default() };
+        let scissor = Vec2i::new(4, 4).to_rect();
+
+        builder.push_matrix(matrix);
+        builder.push_viewport(viewport);
+        builder.push_scissor(scissor);
+        assert!(builder.dup_matrix());
+        assert!(builder.dup_viewport());
+        assert!(builder.dup_scissor());
+
+        for _ in 0..2
+        {
+            assert_eq!(builder.pop_matrix(), Some(matrix));
+            assert_eq!(builder.pop_viewport(), Some(viewport));
+            assert_eq!(builder.pop_scissor(), Some(scissor));
+        }
     }
 }

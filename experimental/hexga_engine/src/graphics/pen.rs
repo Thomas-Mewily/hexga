@@ -79,6 +79,26 @@ impl<T> Push<T> for Pen where Graphics: Push<T>
     type Output = <Graphics as Push<T>>::Output;
     fn push(&mut self, value: T) -> Self::Output { GRAPHICS.get_mut().push(value) }
 }
+impl<Idx> Collection<Idx> for Pen where Graphics: Collection<Idx>
+{
+    type Output = <Graphics as Collection<Idx>>::Output;
+    type Ref<'a> = <Graphics as Collection<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+}
+impl Dup<DrawStackIndex<Matrix<float, 4, 4>>> for Pen
+{
+    fn dup(&mut self) -> bool { Dup::<DrawStackIndex<Matrix<float, 4, 4>>>::dup(&mut *GRAPHICS.get_mut()) }
+}
+
+impl Dup<DrawStackIndex<Scissor>> for Pen
+{
+    fn dup(&mut self) -> bool { Dup::<DrawStackIndex<Scissor>>::dup(&mut *GRAPHICS.get_mut()) }
+}
+
+impl Dup<DrawStackIndex<Viewport>> for Pen
+{
+    fn dup(&mut self) -> bool { Dup::<DrawStackIndex<Viewport>>::dup(&mut *GRAPHICS.get_mut()) }
+}
+
 impl<T> Pop<T> for Pen where Graphics: Pop<T>
 {
     fn pop(&mut self) -> Option<T> {
