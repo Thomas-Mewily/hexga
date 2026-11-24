@@ -13,7 +13,7 @@ pub trait Push<T>
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
     /// For [`Vec`] and [`VecDeque`] the returned element is the same as the pushed value, but not for the [`BinaryHeap`] that return the next element in the heap order.
-    fn push_mut<'a, Idx>(&'a mut self, value: T) -> Option<Self::GuardMut<'a>>
+    fn push_mut<'a, Idx>(&'a mut self, value: T) -> Option<Self::RefMut<'a>>
     where
         Self: LastMut<Idx, Output = T>,
         T: 'a,
@@ -34,7 +34,7 @@ pub trait TryPush<T>: Push<T>
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
     /// For [`Vec`] and [`VecDeque`] the returned element is the same as the pushed value, but not for the [`BinaryHeap`] that return the next element in the heap order.
-    fn try_push_mut<'a, Idx>(&'a mut self, value: T) -> Result<Option<Self::GuardMut<'a>>, Self::Error>
+    fn try_push_mut<'a, Idx>(&'a mut self, value: T) -> Result<Option<Self::RefMut<'a>>, Self::Error>
     where
         Self: LastMut<Idx, Output = T>,
         T: 'a,
@@ -53,7 +53,7 @@ pub trait PushFront<T>
     /// Pushes a value and returns a mutable reference to the new first element.
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
-    fn push_front_mut<'a, Idx>(&'a mut self, value: T) -> Option<Self::GuardMut<'a>>
+    fn push_front_mut<'a, Idx>(&'a mut self, value: T) -> Option<Self::RefMut<'a>>
     where
         Self: FirstMut<Idx, Output = T>,
         T: 'a,
@@ -71,7 +71,7 @@ pub trait TryPushFront<T>: PushFront<T>
     /// Pushes a value and returns a mutable reference to the new first element.
     /// 
     /// The returned element is **not** guaranteed to be the same as the pushed value, it's depend on the collection type.
-    fn try_push_front_mut<'a, Idx>(&'a mut self, value: T) -> Result<Option<Self::GuardMut<'a>>, Self::Error>
+    fn try_push_front_mut<'a, Idx>(&'a mut self, value: T) -> Result<Option<Self::RefMut<'a>>, Self::Error>
     where
         Self: FirstMut<Idx, Output = T>,
         T: 'a,

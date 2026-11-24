@@ -283,7 +283,7 @@ where
     C: Push<A>,
 {
     type Output = u8;
-    type Guard<'a> = &'a u8 where Self: 'a;
+    type Ref<'a> = &'a u8 where Self: 'a;
 }
 impl<A, C> From<AllocLayout> for ArenaOf<A, C>
 where

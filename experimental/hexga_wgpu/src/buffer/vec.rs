@@ -16,13 +16,13 @@ where
     T: GBufferElement,
 {
     type Output = T;
-    type Guard<'a> = GElementRead<'a, T> where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = GElementRead<'a, T> where Self: 'a, Self::Output: 'a;
 }
 impl<T> Get<usize> for GVec<T>
 where
     T: GBufferElement,
 {
-    fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Ref<'a>> where Self::Output: 'a
     {
         if index >= self.len { return None; }
         Some(GElementRead::new(self.buffer.read(..), index))

@@ -60,7 +60,7 @@ impl Capacity<u8> for BufferArena
 impl Collection<usize> for BufferArena
 {
     type Output = u8;
-    type Guard<'a> = &'a u8 where Self: 'a;
+    type Ref<'a> = &'a u8 where Self: 'a;
 }
 
 impl ManagedBox for BufferArena

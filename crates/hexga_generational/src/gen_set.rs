@@ -181,7 +181,7 @@ where
     }
 
     #[inline(always)]
-    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Collection<Idx>>::Guard<'_>>
+    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Collection<Idx>>::Ref<'_>>
     where
         Self: Get<Idx, Output = K>,
     {
@@ -189,7 +189,7 @@ where
     }
 
     #[inline(always)]
-    pub fn try_get<Idx>(&self, index: Idx) -> Result<<Self as Collection<Idx>>::Guard<'_>, <Self as TryGet<Idx>>::Error>
+    pub fn try_get<Idx>(&self, index: Idx) -> Result<<Self as Collection<Idx>>::Ref<'_>, <Self as TryGet<Idx>>::Error>
     where
         Self: TryGet<Idx, Output = K>,
     {
@@ -331,7 +331,7 @@ where
     S: Collection<&'a Q, Output = GenIDOf<K, Gen>>,
 {
     type Output = K;
-    type Guard<'b> = &'b K where Self: 'b, Self::Output: 'b;
+    type Ref<'b> = &'b K where Self: 'b, Self::Output: 'b;
 }
 impl<'a, Q, K, Gen, S> Get<&'a Q> for GenSetOf<K, Gen, S>
 where
@@ -341,7 +341,7 @@ where
     S: Get<&'a Q, Output = GenIDOf<K, Gen>>,
 {
 
-    fn get<'b>(&'b self, index: &'a Q) -> Option<Self::Guard<'b>> where Self::Output: 'b
+    fn get<'b>(&'b self, index: &'a Q) -> Option<Self::Ref<'b>> where Self::Output: 'b
     {
         let id = *self.search.get(index)?;
         self.values.get(id)
@@ -356,7 +356,7 @@ where
     S: Get<&'a Q, Output = GenIDOf<K, Gen>>,
 {
     type Error = MissingKey<Q>;
-    fn try_get<'b>(&'b self, index: &'a Q) -> Result<Self::Guard<'b>, Self::Error> where Self::Output: 'b { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
+    fn try_get<'b>(&'b self, index: &'a Q) -> Result<Self::Ref<'b>, Self::Error> where Self::Output: 'b { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 
 impl<K, Gen, S> Collection<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
@@ -365,15 +365,15 @@ where
     Gen: GenerationalIndex,
 {
     type Output = K;
-    type Guard<'a> = &'a K where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = &'a K where Self: 'a, Self::Output: 'a;
 }
 impl<K, Gen, S> Get<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,
 {
-    fn get<'a>(&'a self, index: GenIDOf<K, Gen>) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.values.get(index) }
-    unsafe fn get_unchecked<'a>(&'a self, index: GenIDOf<K, Gen>) -> Self::Guard<'a> where Self::Output: 'a { unsafe { self.values.get_unchecked(index) } }
+    fn get<'a>(&'a self, index: GenIDOf<K, Gen>) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.values.get(index) }
+    unsafe fn get_unchecked<'a>(&'a self, index: GenIDOf<K, Gen>) -> Self::Ref<'a> where Self::Output: 'a { unsafe { self.values.get_unchecked(index) } }
 }
 
 impl<K, Gen, S> TryGet<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
@@ -382,7 +382,7 @@ where
     Gen: GenerationalIndex,
 {
     type Error = <GenSeq<K, Gen> as TryGet<GenIDOf<K, Gen>>>::Error;
-    fn try_get<'a>(&'a self, index: GenIDOf<K, Gen>) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.values.try_get(index) }
+    fn try_get<'a>(&'a self, index: GenIDOf<K, Gen>) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.values.try_get(index) }
 }
 
 impl<K, Gen, S> Collection<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
@@ -391,7 +391,7 @@ where
     Gen: GenerationalIndex,
 {
     type Output = K;
-    type Guard<'a> = &'a K where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = &'a K where Self: 'a, Self::Output: 'a;
 }
 impl<K, Gen, S> Get<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
 where
@@ -399,10 +399,10 @@ where
     Gen: GenerationalIndex,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index.typed()) }
+    fn get<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.get(index.typed()) }
     #[track_caller]
     #[inline(always)]
-    unsafe fn get_unchecked<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Self::Guard<'a> where Self::Output: 'a { unsafe { self.get_unchecked(index.typed()) } }
+    unsafe fn get_unchecked<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Self::Ref<'a> where Self::Output: 'a { unsafe { self.get_unchecked(index.typed()) } }
 }
 
 impl<K, Gen, S> TryGet<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
@@ -413,7 +413,7 @@ where
     type Error = <GenSeq<K, Gen> as TryGet<UntypedGenIDOf<Gen>>>::Error;
     #[track_caller]
     #[inline(always)]
-    fn try_get<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.try_get(index.typed()) }
+    fn try_get<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.try_get(index.typed()) }
 }
 
 impl<K, Gen, S> Insert<K, ()> for GenSetOf<K, Gen, S>

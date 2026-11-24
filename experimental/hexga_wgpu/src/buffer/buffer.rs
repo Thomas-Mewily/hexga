@@ -40,13 +40,13 @@ where
     T: GBufferElement,
 {
     type Output = T;
-    type Guard<'a> = GElementRead<'a, T> where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = GElementRead<'a, T> where Self: 'a, Self::Output: 'a;
 }
 impl<T> Get<usize> for GBuffer<T>
 where
     T: GBufferElement,
 {
-    fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Ref<'a>> where Self::Output: 'a
     {
         if index >= self.buffer.size() as usize / size_of::<T>() { return None; }
         Some(GElementRead::new(self.read(..), index))

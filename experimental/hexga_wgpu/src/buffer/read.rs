@@ -47,13 +47,13 @@ where
     T: GBufferElement,
 {
     type Output = T;
-    type Guard<'b> = &'b T where Self: 'b, Self::Output: 'b;
+    type Ref<'b> = &'b T where Self: 'b, Self::Output: 'b;
 }
 impl<'a, T> Get<usize> for GSliceRead<'a, T>
 where
     T: GBufferElement,
 {
-    fn get<'b>(&'b self, index: usize) -> Option<Self::Guard<'b>> where Self::Output: 'b { self.deref().get(index) }
+    fn get<'b>(&'b self, index: usize) -> Option<Self::Ref<'b>> where Self::Output: 'b { self.deref().get(index) }
 }
 impl<'a, T> Length for GSliceRead<'a, T>
 where

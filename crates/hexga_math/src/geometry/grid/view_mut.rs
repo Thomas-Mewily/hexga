@@ -250,7 +250,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Output = <G as Collection<Vector<Idx, N>>>::Output;
-    type Guard<'b> = <G as Collection<Vector<Idx, N>>>::Guard<'b> where Self: 'b, Self::Output: 'b;
+    type Ref<'b> = <G as Collection<Vector<Idx, N>>>::Ref<'b> where Self: 'b, Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> Get<P> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -260,10 +260,10 @@ where
 {
 
     #[inline(always)]
-    fn get<'b>(&'b self, index: P) -> Option<Self::Guard<'b>> where Self::Output: 'b { self.grid.get(index.into() + self.rect.pos) }
+    fn get<'b>(&'b self, index: P) -> Option<Self::Ref<'b>> where Self::Output: 'b { self.grid.get(index.into() + self.rect.pos) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Guard<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
+    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Ref<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
 }
 impl<'a, P, G, T, Idx, const N: usize> TryGet<P> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -274,7 +274,7 @@ where
     type Error = <G as TryGet<Vector<Idx, N>>>::Error;
 
     #[inline(always)]
-    fn try_get<'b>(&'b self, index: P) -> Result<Self::Guard<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get(index.into() + self.rect.pos) }
+    fn try_get<'b>(&'b self, index: P) -> Result<Self::Ref<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get(index.into() + self.rect.pos) }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> Index<P> for GridViewMut<'a, G, T, Idx, N>
@@ -296,7 +296,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn try_get_mut<'b>(&'b mut self, index: P) -> Result<Self::GuardMut<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get_mut(index.into() + self.rect.pos) }
+    fn try_get_mut<'b>(&'b mut self, index: P) -> Result<Self::RefMut<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get_mut(index.into() + self.rect.pos) }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> CollectionMut<P> for GridViewMut<'a, G, T, Idx, N>
@@ -305,7 +305,7 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type GuardMut<'b> = <G as CollectionMut<Vector<Idx, N>>>::GuardMut<'b> where Self: 'b, Self::Output: 'b;
+    type RefMut<'b> = <G as CollectionMut<Vector<Idx, N>>>::RefMut<'b> where Self: 'b, Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> GetMut<P> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -314,10 +314,10 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn get_mut<'b>(&'b mut self, index: P) -> Option<Self::GuardMut<'b>> where Self::Output: 'b { self.grid.get_mut(index.into() + self.rect.pos) }
+    fn get_mut<'b>(&'b mut self, index: P) -> Option<Self::RefMut<'b>> where Self::Output: 'b { self.grid.get_mut(index.into() + self.rect.pos) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut<'b>(&'b mut self, index: P) -> Self::GuardMut<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked_mut(index.into() + self.rect.pos) } }
+    unsafe fn get_unchecked_mut<'b>(&'b mut self, index: P) -> Self::RefMut<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked_mut(index.into() + self.rect.pos) } }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> IndexMut<P> for GridViewMut<'a, G, T, Idx, N>
@@ -337,16 +337,16 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    fn try_get_many_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> Result<[Self::GuardMut<'b>; N2], ManyMutError> where Self::Output: 'b {
+    fn try_get_many_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> Result<[Self::RefMut<'b>; N2], ManyMutError> where Self::Output: 'b {
         self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos))
     }
     #[inline(always)]
-    fn get_many_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> Option<[Self::GuardMut<'b>; N2]> where Self::Output: 'b {
+    fn get_many_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> Option<[Self::RefMut<'b>; N2]> where Self::Output: 'b {
         self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)).ok()
     }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_many_unchecked_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> [Self::GuardMut<'b>; N2] where Self::Output: 'b {
+    unsafe fn get_many_unchecked_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> [Self::RefMut<'b>; N2] where Self::Output: 'b {
         self.grid.get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)).expect("invalid index")
     }
 }

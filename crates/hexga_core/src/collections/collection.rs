@@ -4,58 +4,58 @@ use super::*;
 pub trait Collection<Idx>
 {
     type Output: ?Sized;
-    type Guard<'a>: Deref<Target = Self::Output> where Self: 'a, Self::Output: 'a;
+    type Ref<'a>: Deref<Target = Self::Output> where Self: 'a, Self::Output: 'a;
 }
 
 pub trait CollectionMut<Idx>: Collection<Idx>
 {
-    type GuardMut<'a>: DerefMut<Target = Self::Output> where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>: DerefMut<Target = Self::Output> where Self: 'a, Self::Output: 'a;
 }
 
 impl<Idx, S: ?Sized> Collection<Idx> for &S where S: Collection<Idx>
 {
     type Output = S::Output;
-    type Guard<'a> = S::Guard<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = S::Ref<'a> where Self: 'a, Self::Output: 'a;
 }
 
 impl<Idx, S: ?Sized> Collection<Idx> for &mut S where S: Collection<Idx>
 {
     type Output = S::Output;
-    type Guard<'a> = S::Guard<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = S::Ref<'a> where Self: 'a, Self::Output: 'a;
 }
 impl<Idx, S: ?Sized> CollectionMut<Idx> for &mut S where S: CollectionMut<Idx>
 {
-    type GuardMut<'a> = S::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+    type RefMut<'a> = S::RefMut<'a> where Self: 'a, Self::Output: 'a;
 }
 
 impl<T> Collection<()> for Option<T>
 {
     type Output = T;
-    type Guard<'a> = &'a T where Self: 'a;
+    type Ref<'a> = &'a T where Self: 'a;
 }
 impl<T> CollectionMut<()> for Option<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
+    type RefMut<'a> = &'a mut T where Self: 'a;
 }
 
 impl<T> Collection<usize> for LinkedList<T>
 {
     type Output = T;
-    type Guard<'a> = &'a T where Self: 'a;
+    type Ref<'a> = &'a T where Self: 'a;
 }
 impl<T> CollectionMut<usize> for LinkedList<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
+    type RefMut<'a> = &'a mut T where Self: 'a;
 }
 
 impl<T: Ord> Collection<()> for BinaryHeap<T>
 {
     type Output = T;
-    type Guard<'a> = &'a T where Self: 'a;
+    type Ref<'a> = &'a T where Self: 'a;
 }
 impl<T: Ord> CollectionMut<()> for BinaryHeap<T>
 {
-    type GuardMut<'a> = collections::binary_heap::PeekMut<'a, T> where Self: 'a;
+    type RefMut<'a> = collections::binary_heap::PeekMut<'a, T> where Self: 'a;
 }
 
 #[cfg(feature = "std")]
@@ -70,7 +70,7 @@ mod platform_strings
             impl Collection<usize> for $ty
             {
                 type Output = char;
-                type Guard<'a> = Identity<char> where Self: 'a;
+                type Ref<'a> = Identity<char> where Self: 'a;
             }
         }
     );

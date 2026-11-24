@@ -14,6 +14,9 @@ pub mod traits
 pub type BitIndex = u8;
 pub type Bit = bool;
 
+pub type BitRef = Identity<Bit>;
+//pub struct BitMut
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -22,7 +25,7 @@ pub struct BitSet<T>(pub T);
 impl<T> Collection<BitIndex> for BitSet<T> where T: Integer
 {
     type Output = Bit;
-    type Guard<'a> = Identity<Bit> where Self: 'a;
+    type Ref<'a> = Identity<Bit> where Self: 'a;
 }
 /*
 impl<T> Get<BitIndex> for BitSet<T> where T: Integer 

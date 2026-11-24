@@ -184,7 +184,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Output = <Self as Index<Vector<Idx, N>>>::Output;
-    type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
 }
 impl<P, T, Idx, const N: usize> Get<P> for GridOf<T, Idx, N>
 where
@@ -192,10 +192,10 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, pos: P) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.position_to_index(pos.into()).map(|idx| unsafe { self.values().get_unchecked(idx) }) }
+    fn get<'a>(&'a self, pos: P) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.position_to_index(pos.into()).map(|idx| unsafe { self.values().get_unchecked(idx) }) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, pos: P) -> Self::Guard<'a> where Self::Output: 'a
+    unsafe fn get_unchecked<'a>(&'a self, pos: P) -> Self::Ref<'a> where Self::Output: 'a
     {
         unsafe {
             let idx = self.position_to_index_unchecked(pos.into());
@@ -210,7 +210,7 @@ where
 {
     type Error = IndexOutOfBounds<Vector<Idx, N>, Vector<Idx, N>>;
 
-    fn try_get<'a>(&'a self, index: P) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a
+    fn try_get<'a>(&'a self, index: P) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a
     {
         let i = index.into();
         self.get(i).ok_or_else(|| IndexOutOfBounds::new(i, self.size()))
@@ -222,7 +222,7 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    fn try_get_mut<'a>(&'a mut self, index: P) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a
+    fn try_get_mut<'a>(&'a mut self, index: P) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a
     {
         let i = index.into();
         let size = self.size();
@@ -234,7 +234,7 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+    type RefMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
 }
 impl<P, T, Idx, const N: usize> GetMut<P> for GridOf<T, Idx, N>
 where
@@ -242,10 +242,10 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.position_to_index(pos.into()).map(|i| unsafe { self.values_mut().get_unchecked_mut(i) }) }
+    fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::RefMut<'a>> where Self::Output: 'a { self.position_to_index(pos.into()).map(|i| unsafe { self.values_mut().get_unchecked_mut(i) }) }
     #[track_caller]
     #[inline(always)]
-    unsafe fn get_unchecked_mut<'a>(&'a mut self, pos: P) -> Self::GuardMut<'a> where Self::Output: 'a
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, pos: P) -> Self::RefMut<'a> where Self::Output: 'a
     {
         unsafe {
             let idx = self.position_to_index_unchecked(pos.into());
@@ -260,7 +260,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn try_get_many_mut<'a, const N2: usize>(&'a mut self, indices: [P; N2]) -> Result<[Self::GuardMut<'a>; N2], ManyMutError>
+    fn try_get_many_mut<'a, const N2: usize>(&'a mut self, indices: [P; N2]) -> Result<[Self::RefMut<'a>; N2], ManyMutError>
      where Self::Output: 'a{
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos.into()));
@@ -274,7 +274,7 @@ where
         }
     }
 
-    fn get_many_mut<'a, const N2: usize>(&'a mut self, indices: [P; N2]) -> Option<[Self::GuardMut<'a>; N2]>
+    fn get_many_mut<'a, const N2: usize>(&'a mut self, indices: [P; N2]) -> Option<[Self::RefMut<'a>; N2]>
      where Self::Output: 'a{
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos.into()));

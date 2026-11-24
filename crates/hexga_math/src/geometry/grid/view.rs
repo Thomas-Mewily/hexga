@@ -285,7 +285,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Output = <G as Collection<Vector<Idx, N>>>::Output;
-    type Guard<'b> = <G as Collection<Vector<Idx, N>>>::Guard<'b> where Self: 'b, Self::Output: 'b;
+    type Ref<'b> = <G as Collection<Vector<Idx, N>>>::Ref<'b> where Self: 'b, Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> Get<P> for GridView<'a, G, T, Idx, N>
 where
@@ -295,10 +295,10 @@ where
 {
 
     #[inline(always)]
-    fn get<'b>(&'b self, index: P) -> Option<Self::Guard<'b>> where Self::Output: 'b { self.grid.get(index.into() + self.rect.pos) }
+    fn get<'b>(&'b self, index: P) -> Option<Self::Ref<'b>> where Self::Output: 'b { self.grid.get(index.into() + self.rect.pos) }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Guard<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
+    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Ref<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
 }
 impl<'a, P, G, T, Idx, const N: usize> TryGet<P> for GridView<'a, G, T, Idx, N>
 where
@@ -307,7 +307,7 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Error = <G as TryGet<Vector<Idx, N>>>::Error;
-    fn try_get<'b>(&'b self, index: P) -> Result<Self::Guard<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get(index.into() + self.rect.pos) }
+    fn try_get<'b>(&'b self, index: P) -> Result<Self::Ref<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get(index.into() + self.rect.pos) }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> Index<P> for GridView<'a, G, T, Idx, N>

@@ -15,7 +15,7 @@ pub struct SinglyLinkedNode<T>
 impl<T> Collection<usize> for SinglyLinkedNode<T>
 {
     type Output = T;
-    type Guard<'a> = &'a T where Self: 'a;
+    type Ref<'a> = &'a T where Self: 'a;
 }
 
 impl<T> Push<T> for SinglyLinkedNode<T>

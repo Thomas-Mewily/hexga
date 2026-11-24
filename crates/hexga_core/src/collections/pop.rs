@@ -6,7 +6,7 @@ pub trait Pop<T>
     fn pop(&mut self) -> Option<T>;
 
     /// Pops a value and returns a mutable reference to the new last element.
-    fn pop_mut<'a, Idx>(&'a mut self) -> Option<Self::GuardMut<'a>>
+    fn pop_mut<'a, Idx>(&'a mut self) -> Option<Self::RefMut<'a>>
     where
         Self: LastMut<Idx, Output = T>,
         T: 'a,
@@ -45,7 +45,7 @@ pub trait PopFront<T>
     fn pop_front(&mut self) -> Option<T>;
 
     /// Pops a value and returns a mutable reference to the new first element.
-    fn pop_front_mut<'a, Idx>(&'a mut self) -> Option<Self::GuardMut<'a>>
+    fn pop_front_mut<'a, Idx>(&'a mut self) -> Option<Self::RefMut<'a>>
     where
         Self: FirstMut<Idx, Output = T>,
         T: 'a,
