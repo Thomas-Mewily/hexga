@@ -11,7 +11,12 @@ where
 
 impl<T> Handle for GVec<T> where T: GBufferElement {}
 
-impl<T> Collection<usize> for GVec<T>
+impl<T: GBufferElement> Collection<T> for GVec<T>
+{
+    type Ref<'a> = GElementRead<'a, T> where Self: 'a, T: 'a;
+}
+
+impl<T> CollectionIndex<usize> for GVec<T>
 where
     T: GBufferElement,
 {

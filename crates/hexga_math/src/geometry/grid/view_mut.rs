@@ -243,14 +243,29 @@ where
     Idx: Integer,
 {
 }
-impl<'a, P, G, T, Idx, const N: usize> Collection<P> for GridViewMut<'a, G, T, Idx, N>
+impl<'s, G, T, Idx, const N: usize, Output: ?Sized> Collection<Output> for GridViewMut<'s, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N> + Collection<Output>,
+    Idx: Integer,
+{
+    type Ref<'a> = <G as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+}
+impl<'s, G, T, Idx, const N: usize, Output: ?Sized> CollectionMut<Output> for GridViewMut<'s, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N> + CollectionMut<Output>,
+    Idx: Integer,
+{
+    type RefMut<'a> = <G as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+}
+
+impl<'a, P, G, T, Idx, const N: usize> CollectionIndex<P> for GridViewMut<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type Output = <G as Collection<Vector<Idx, N>>>::Output;
-    type Ref<'b> = <G as Collection<Vector<Idx, N>>>::Ref<'b> where Self: 'b, Self::Output: 'b;
+    type Output = <G as CollectionIndex<Vector<Idx, N>>>::Output;
+    type Ref<'b> = <G as CollectionIndex<Vector<Idx, N>>>::Ref<'b> where Self: 'b, Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> Get<P> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -283,7 +298,7 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type Output = <Self as Collection<Vector<Idx, N>>>::Output;
+    type Output = <Self as CollectionIndex<Vector<Idx, N>>>::Output;
 
     #[track_caller]
     fn index(&self, index: P) -> &Self::Output { self.grid.index(index.into() + self.rect.pos) }
@@ -299,13 +314,13 @@ where
     fn try_get_mut<'b>(&'b mut self, index: P) -> Result<Self::RefMut<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get_mut(index.into() + self.rect.pos) }
 }
 
-impl<'a, P, G, T, Idx, const N: usize> CollectionMut<P> for GridViewMut<'a, G, T, Idx, N>
+impl<'a, P, G, T, Idx, const N: usize> CollectionIndexMut<P> for GridViewMut<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type RefMut<'b> = <G as CollectionMut<Vector<Idx, N>>>::RefMut<'b> where Self: 'b, Self::Output: 'b;
+    type RefMut<'b> = <G as CollectionIndexMut<Vector<Idx, N>>>::RefMut<'b> where Self: 'b, Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> GetMut<P> for GridViewMut<'a, G, T, Idx, N>
 where

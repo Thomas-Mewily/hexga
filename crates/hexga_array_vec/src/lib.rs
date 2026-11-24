@@ -250,7 +250,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     /// assert_eq!(vec.get(0), Some(&1));
     /// assert_eq!(vec.get(2), None);
     /// ```
-    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Collection<Idx>>::Ref<'_>>
+    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as CollectionIndex<Idx>>::Ref<'_>>
     where
         Self: Get<Idx>,
     {
@@ -271,7 +271,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     /// }
     /// assert_eq!(vec[0], 42);
     /// ```
-    pub fn get_mut<Idx>(&mut self, index: Idx) -> Option<<Self as CollectionMut<Idx>>::RefMut<'_>>
+    pub fn get_mut<Idx>(&mut self, index: Idx) -> Option<<Self as CollectionIndexMut<Idx>>::RefMut<'_>>
     where
         Self: GetMut<Idx>,
     {
@@ -1130,12 +1130,21 @@ impl<'a, T: 'a, const CAP: usize> Drop for Drain<'a, T, CAP>
 
 impl<T, const CAP: usize> CollectionBijective for ArrayVec<T, CAP> {}
 
-impl<Idx, T, const CAP: usize> Collection<Idx> for ArrayVec<T, CAP>
-where
-    [T]: Collection<Idx>,
+impl<T, const CAP: usize, Output: ?Sized> Collection<Output> for ArrayVec<T, CAP> where [T]: Collection<Output>
 {
-    type Output = <[T] as Collection<Idx>>::Output;
-    type Ref<'a> = <[T] as Collection<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = <[T] as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+}
+impl<T, const CAP: usize, Output: ?Sized> CollectionMut<Output> for ArrayVec<T, CAP> where [T]: CollectionMut<Output>
+{
+    type RefMut<'a> = <[T] as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+}
+
+impl<Idx, T, const CAP: usize> CollectionIndex<Idx> for ArrayVec<T, CAP>
+where
+    [T]: CollectionIndex<Idx>,
+{
+    type Output = <[T] as CollectionIndex<Idx>>::Output;
+    type Ref<'a> = <[T] as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
 }
 impl<Idx, T, const CAP: usize> Get<Idx> for ArrayVec<T, CAP>
 where
@@ -1167,11 +1176,11 @@ where
     fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a { TryGetMut::try_get_mut(self.as_mut_slice(), index) }
 }
 
-impl<Idx, T, const CAP: usize> CollectionMut<Idx> for ArrayVec<T, CAP>
+impl<Idx, T, const CAP: usize> CollectionIndexMut<Idx> for ArrayVec<T, CAP>
 where
-    [T]: CollectionMut<Idx>,
+    [T]: CollectionIndexMut<Idx>,
 {
-    type RefMut<'a> = <[T] as CollectionMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
+    type RefMut<'a> = <[T] as CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
 }
 impl<Idx, T, const CAP: usize> GetMut<Idx> for ArrayVec<T, CAP>
 where

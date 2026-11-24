@@ -1280,17 +1280,17 @@ where
 {
 }
 
-pub trait MatrixStackDup<Idx, F = float, const N: usize = 4>:
-    Dup<Idx, Output = MatrixSquare<F, N>>
+pub trait MatrixStackDup<F = float, const N: usize = 4>:
+    Dup<MatrixSquare<F, N>>
 {
     fn dup_matrix(&mut self) -> bool {
         self.dup()
     }
 }
 
-impl<Idx, T, F, const N: usize> MatrixStackDup<Idx, F, N> for T
+impl<T, F, const N: usize> MatrixStackDup<F, N> for T
 where
-    T: Dup<Idx, Output = MatrixSquare<F, N>>,
+    T: Dup<MatrixSquare<F, N>>,
 {
 }
 
@@ -1308,12 +1308,12 @@ where
 {
 }
 
-pub trait MatrixStackExtension<Idx = usize, F = float, const N: usize = 4>:
-    MatrixStackPush<F, N> + MatrixStackDup<Idx, F, N> + MatrixStackPop<F, N>
+pub trait MatrixStackExtension<F = float, const N: usize = 4>:
+    MatrixStackPush<F, N> + MatrixStackDup<F, N> + MatrixStackPop<F, N>
 {}
-impl<T, Idx, F, const N: usize> MatrixStackExtension<Idx, F, N> for T
+impl<T, F, const N: usize> MatrixStackExtension<F, N> for T
 where
-    T: MatrixStackPush<F,N> + MatrixStackDup<Idx, F, N> + MatrixStackPop<F,N>,
+    T: MatrixStackPush<F,N> + MatrixStackDup<F, N> + MatrixStackPop<F,N>,
 {}
 
 

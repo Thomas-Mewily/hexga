@@ -4,7 +4,7 @@ use super::*;
 Todo: make a trait IndexLast, IndexFirst ? (to return the index)
 */
 
-pub trait Last<Idx>: Collection<Idx>
+pub trait Last<Idx>: CollectionIndex<Idx>
 {
     /// aka `peek()`, `peek_back()`, `back()`
     fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a;
@@ -75,7 +75,7 @@ where
     fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.peek() }
 }
 
-pub trait First<Idx>: Collection<Idx>
+pub trait First<Idx>: CollectionIndex<Idx>
 {
     /// aka `peek_front()`, `front()`
     fn first<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a;
@@ -139,7 +139,7 @@ impl<T,E> First<ResultOk> for Result<T,E>
     fn first<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.as_ref().ok() }
 }
 
-pub trait LastMut<Idx>: Last<Idx> + CollectionMut<Idx>
+pub trait LastMut<Idx>: Last<Idx> + CollectionIndexMut<Idx>
 {
     /// aka `peek()`, `peek_back()`, `back()`
     fn last_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a;
@@ -193,7 +193,7 @@ impl<T> LastMut<()> for BinaryHeap<T> where
     fn last_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { self.peek_mut() }
 }
 
-pub trait FirstMut<Idx>: First<Idx> + CollectionMut<Idx>
+pub trait FirstMut<Idx>: First<Idx> + CollectionIndexMut<Idx>
 {
     /// aka `peek_front()`, `front()`
     fn first_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a;

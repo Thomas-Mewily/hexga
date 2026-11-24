@@ -165,10 +165,19 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                     impl<T, const N : usize> #crate_ident::hexga_core::collections::CollectionBijective for #current_name<T,N> {}
                     impl<T, const N : usize> #crate_ident::hexga_core::collections::Length for #current_name<T,N> { fn len(&self) -> usize { N }}
-                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::Collection<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::Collection<Idx>
+                    impl<T, const N: usize, Output: ?Sized> #crate_ident::hexga_core::collections::Collection<Output> for #current_name<T, N> where [T; N]: #crate_ident::hexga_core::collections::Collection<Output>
                     {
-                        type Output = <[T;N] as #crate_ident::hexga_core::collections::Collection<Idx>>::Output;
-                        type Ref<'a> = <[T;N] as #crate_ident::hexga_core::collections::Collection<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+                        type Ref<'a> = <[T; N] as #crate_ident::hexga_core::collections::Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+                    }
+                    impl<T, const N: usize, Output: ?Sized> #crate_ident::hexga_core::collections::CollectionMut<Output> for #current_name<T, N> where [T; N]: #crate_ident::hexga_core::collections::CollectionMut<Output>
+                    {
+                        type RefMut<'a> = <[T; N] as #crate_ident::hexga_core::collections::CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+                    }
+
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::CollectionIndex<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::CollectionIndex<Idx>
+                    {
+                        type Output = <[T;N] as #crate_ident::hexga_core::collections::CollectionIndex<Idx>>::Output;
+                        type Ref<'a> = <[T;N] as #crate_ident::hexga_core::collections::CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
                     }
                     impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::Get<Idx>
                     {
@@ -189,9 +198,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             #crate_ident::hexga_core::collections::TryGet::try_get(self.array(), index)
                         }
                     }
-                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::CollectionMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::CollectionMut<Idx>
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::CollectionIndexMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::CollectionIndexMut<Idx>
                     {
-                        type RefMut<'a> = <[T;N] as #crate_ident::hexga_core::collections::CollectionMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
+                        type RefMut<'a> = <[T;N] as #crate_ident::hexga_core::collections::CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
                     }
                     impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::GetMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::GetMut<Idx>
                     {
@@ -596,10 +605,19 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
                     impl<T> #crate_ident::hexga_core::collections::CollectionBijective for #current_name<T> {}
                     impl<T> #crate_ident::hexga_core::collections::Length for #current_name<T> { fn len(&self) -> usize { #dim }}
-                    impl<T, Idx> #crate_ident::hexga_core::collections::Collection<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::Collection<Idx>
+                    impl<T, Output: ?Sized> #crate_ident::hexga_core::collections::Collection<Output> for #current_name<T> where [T; #dim]: #crate_ident::hexga_core::collections::Collection<Output>
                     {
-                        type Output = <[T;#dim] as #crate_ident::hexga_core::collections::Collection<Idx>>::Output;
-                        type Ref<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::Collection<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+                        type Ref<'a> = <[T; #dim] as #crate_ident::hexga_core::collections::Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+                    }
+                    impl<T, Output: ?Sized> #crate_ident::hexga_core::collections::CollectionMut<Output> for #current_name<T> where [T; #dim]: #crate_ident::hexga_core::collections::CollectionMut<Output>
+                    {
+                        type RefMut<'a> = <[T; #dim] as #crate_ident::hexga_core::collections::CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+                    }
+
+                    impl<T, Idx> #crate_ident::hexga_core::collections::CollectionIndex<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::CollectionIndex<Idx>
+                    {
+                        type Output = <[T;#dim] as #crate_ident::hexga_core::collections::CollectionIndex<Idx>>::Output;
+                        type Ref<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
                     }
                     impl<T, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::Get<Idx>
                     {
@@ -617,9 +635,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         #[inline(always)]
                         fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { #crate_ident::hexga_core::collections::TryGet::try_get(self.array(), index) }
                     }
-                    impl<T, Idx> #crate_ident::hexga_core::collections::CollectionMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::CollectionMut<Idx>
+                    impl<T, Idx> #crate_ident::hexga_core::collections::CollectionIndexMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::CollectionIndexMut<Idx>
                     {
-                        type RefMut<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::CollectionMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
+                        type RefMut<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
                     }
                     impl<T, Idx> #crate_ident::hexga_core::collections::GetMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::GetMut<Idx>
                     {

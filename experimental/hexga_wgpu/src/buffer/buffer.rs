@@ -35,7 +35,12 @@ where
     }
 }
 
-impl<T> Collection<usize> for GBuffer<T>
+impl<T: GBufferElement> Collection<T> for GBuffer<T>
+{
+    type Ref<'a> = GElementRead<'a, T> where Self: 'a, T: 'a;
+}
+
+impl<T> CollectionIndex<usize> for GBuffer<T>
 where
     T: GBufferElement,
 {

@@ -191,7 +191,7 @@ where
     }
 
     #[inline(always)]
-    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Collection<Idx>>::Ref<'_>>
+    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as CollectionIndex<Idx>>::Ref<'_>>
     where
         Self: Get<Idx, Output = V>,
     {
@@ -199,7 +199,7 @@ where
     }
 
     #[inline(always)]
-    pub fn get_mut<Idx>(&mut self, index: Idx) -> Option<<Self as CollectionMut<Idx>>::RefMut<'_>>
+    pub fn get_mut<Idx>(&mut self, index: Idx) -> Option<<Self as CollectionIndexMut<Idx>>::RefMut<'_>>
     where
         Self: GetMut<Idx, Output = V>,
     {
@@ -207,7 +207,7 @@ where
     }
 
     #[inline(always)]
-    pub fn try_get<Idx>(&self, index: Idx) -> Result<<Self as Collection<Idx>>::Ref<'_>, <Self as TryGet<Idx>>::Error>
+    pub fn try_get<Idx>(&self, index: Idx) -> Result<<Self as CollectionIndex<Idx>>::Ref<'_>, <Self as TryGet<Idx>>::Error>
     where
         Self: TryGet<Idx, Output = V>,
     {
@@ -215,7 +215,7 @@ where
     }
 
     #[inline(always)]
-    pub fn try_get_mut<Idx>(&mut self, index: Idx) -> Result<<Self as CollectionMut<Idx>>::RefMut<'_>, <Self as TryGet<Idx>>::Error>
+    pub fn try_get_mut<Idx>(&mut self, index: Idx) -> Result<<Self as CollectionIndexMut<Idx>>::RefMut<'_>, <Self as TryGet<Idx>>::Error>
     where
         Self: TryGetMut<Idx, Output = V>,
     {
@@ -398,12 +398,27 @@ where
     fn len(&self) -> usize { self.values.len() }
 }
 
-impl<'a, Q, K, V, Gen, S> Collection<&'a Q> for GenMapOf<K, V, Gen, S>
+impl<K, V, Gen, S> Collection<V> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: GenerationalIndex,
+{
+    type Ref<'a> = &'a V where Self: 'a, V: 'a;
+}
+impl<K, V, Gen, S> CollectionMut<V> for GenMapOf<K, V, Gen, S>
+where
+    K: Clone,
+    Gen: GenerationalIndex,
+{
+    type RefMut<'a> = &'a mut V where Self: 'a, V: 'a;
+}
+
+impl<'a, Q, K, V, Gen, S> CollectionIndex<&'a Q> for GenMapOf<K, V, Gen, S>
 where
     Q: ?Sized,
     K: Clone + Borrow<Q>,
     Gen: GenerationalIndex,
-    S: Collection<&'a Q, Output = GenIDOf<V, Gen>>,
+    S: CollectionIndex<&'a Q, Output = GenIDOf<V, Gen>>,
 {
     type Output = V;
     type Ref<'b> = &'b V where Self: 'b, Self::Output: 'b;
@@ -450,7 +465,7 @@ where
     fn try_get<'b>(&'b self, index: &'a Q) -> Result<Self::Ref<'b>, Self::Error> where Self::Output: 'b { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 
-impl<K, V, Gen, S> Collection<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
+impl<K, V, Gen, S> CollectionIndex<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,
@@ -471,7 +486,7 @@ where
     #[track_caller]
     unsafe fn get_unchecked<'b>(&'b self, index: UntypedGenIDOf<Gen>) -> Self::Ref<'b> where Self::Output: 'b { unsafe { self.get_unchecked(index.typed()) } }
 }
-impl<K, V, Gen, S> Collection<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
+impl<K, V, Gen, S> CollectionIndex<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,
@@ -535,7 +550,7 @@ where
     fn try_get<'b>(&'b self, index: UntypedGenIDOf<Gen>) -> Result<Self::Ref<'b>, Self::Error> where Self::Output: 'b { self.try_get(index.typed()) }
 }
 
-impl<'a, Q, K, V, Gen, S> CollectionMut<&'a Q> for GenMapOf<K, V, Gen, S>
+impl<'a, Q, K, V, Gen, S> CollectionIndexMut<&'a Q> for GenMapOf<K, V, Gen, S>
 where
     Q: ?Sized,
     K: Clone + Borrow<Q>,
@@ -581,7 +596,7 @@ where
     fn try_get_mut<'b>(&'b mut self, index: &'a Q) -> Result<Self::RefMut<'b>, Self::Error> where Self::Output: 'b { self.get_mut(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 
-impl<K, V, Gen, S> CollectionMut<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
+impl<K, V, Gen, S> CollectionIndexMut<GenIDOf<V, Gen>> for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,
@@ -601,7 +616,7 @@ where
     unsafe fn get_unchecked_mut<'b>(&'b mut self, index: GenIDOf<V, Gen>) -> Self::RefMut<'b> where Self::Output: 'b { &mut unsafe { self.values.get_unchecked_mut(index.typed()) }.value }
 }
 
-impl<K, V, Gen, S> CollectionMut<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
+impl<K, V, Gen, S> CollectionIndexMut<UntypedGenIDOf<Gen>> for GenMapOf<K, V, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,

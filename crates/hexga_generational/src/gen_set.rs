@@ -181,7 +181,7 @@ where
     }
 
     #[inline(always)]
-    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Collection<Idx>>::Ref<'_>>
+    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as CollectionIndex<Idx>>::Ref<'_>>
     where
         Self: Get<Idx, Output = K>,
     {
@@ -189,7 +189,7 @@ where
     }
 
     #[inline(always)]
-    pub fn try_get<Idx>(&self, index: Idx) -> Result<<Self as Collection<Idx>>::Ref<'_>, <Self as TryGet<Idx>>::Error>
+    pub fn try_get<Idx>(&self, index: Idx) -> Result<<Self as CollectionIndex<Idx>>::Ref<'_>, <Self as TryGet<Idx>>::Error>
     where
         Self: TryGet<Idx, Output = K>,
     {
@@ -323,12 +323,20 @@ where
     fn len(&self) -> usize { self.values.len() }
 }
 
-impl<'a, Q, K, Gen, S> Collection<&'a Q> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> Collection<K> for GenSetOf<K, Gen, S>
+where
+    K: Clone,
+    Gen: GenerationalIndex,
+{
+    type Ref<'a> = &'a K where Self: 'a, K: 'a;
+}
+
+impl<'a, Q, K, Gen, S> CollectionIndex<&'a Q> for GenSetOf<K, Gen, S>
 where
     Q: ?Sized,
     K: Clone + Borrow<Q>,
     Gen: GenerationalIndex,
-    S: Collection<&'a Q, Output = GenIDOf<K, Gen>>,
+    S: CollectionIndex<&'a Q, Output = GenIDOf<K, Gen>>,
 {
     type Output = K;
     type Ref<'b> = &'b K where Self: 'b, Self::Output: 'b;
@@ -359,7 +367,7 @@ where
     fn try_get<'b>(&'b self, index: &'a Q) -> Result<Self::Ref<'b>, Self::Error> where Self::Output: 'b { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 
-impl<K, Gen, S> Collection<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> CollectionIndex<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,
@@ -385,7 +393,7 @@ where
     fn try_get<'a>(&'a self, index: GenIDOf<K, Gen>) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.values.try_get(index) }
 }
 
-impl<K, Gen, S> Collection<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> CollectionIndex<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,

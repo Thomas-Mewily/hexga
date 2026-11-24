@@ -53,15 +53,15 @@ where
 {
 }
 
-pub trait ViewportStackDup<Idx>: Dup<Idx, Output = Viewport> {
+pub trait ViewportStackDup: Dup<Viewport> {
     fn dup_viewport(&mut self) -> bool {
         self.dup()
     }
 }
 
-impl<T, Idx> ViewportStackDup<Idx> for T
+impl<T> ViewportStackDup for T
 where
-    T: Dup<Idx, Output = Viewport>,
+    T: Dup<Viewport>,
 {
 }
 
@@ -77,12 +77,12 @@ where
 {
 }
 
-pub trait ViewportStackExtension<Idx = DrawStackIndex<Viewport>>:
-    ViewportStackPush + ViewportStackDup<Idx> + ViewportStackPop
+pub trait ViewportStackExtension:
+    ViewportStackPush + ViewportStackDup + ViewportStackPop
 {}
-impl<T, Idx> ViewportStackExtension<Idx> for T
+impl<T> ViewportStackExtension for T
 where
-    T: ViewportStackPush + ViewportStackDup<Idx> + ViewportStackPop,
+    T: ViewportStackPush + ViewportStackDup + ViewportStackPop,
 {}
 
 pub mod prelude

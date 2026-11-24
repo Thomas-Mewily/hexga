@@ -277,7 +277,15 @@ where
 {
     fn capacity(&self) -> usize { self.capacity }
 }
-impl<A, C> Collection<usize> for ArenaOf<A, C>
+impl<A, C> Collection<u8> for ArenaOf<A, C>
+where
+    A: Arenable,
+    C: Push<A>,
+{
+    type Ref<'a> = &'a u8 where Self: 'a, u8: 'a;
+}
+
+impl<A, C> CollectionIndex<usize> for ArenaOf<A, C>
 where
     A: Arenable,
     C: Push<A>,

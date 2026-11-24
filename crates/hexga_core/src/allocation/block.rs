@@ -57,8 +57,8 @@ where
         }
     }
 }
-//impl<T> Collection<T> for AllocBlock<T> where T: BitAnyPattern { type Guard<'a>  = &'a T where Self: 'a; }
-//impl<T> CollectionMut<T> for AllocBlock<T> where T: BitAnyPattern { type GuardMut<'a>  = &'a mut T where Self: 'a; }
+//impl<T> CollectionIndex<T> for AllocBlock<T> where T: BitAnyPattern { type Guard<'a>  = &'a T where Self: 'a; }
+//impl<T> CollectionIndexMut<T> for AllocBlock<T> where T: BitAnyPattern { type GuardMut<'a>  = &'a mut T where Self: 'a; }
 impl<T> Capacity<T> for AllocBlock<T>
 where
     T: BitAnyPattern,

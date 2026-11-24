@@ -62,7 +62,12 @@ where
     }
 }
 
-impl<'a, T> Collection<usize> for GSlice<'a, T>
+impl<'s, T: GBufferElement> Collection<T> for GSlice<'s, T>
+{
+    type Ref<'a> = GElementRead<'a, T> where Self: 'a, T: 'a;
+}
+
+impl<'a, T> CollectionIndex<usize> for GSlice<'a, T>
 where
     T: GBufferElement,
 {

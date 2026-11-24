@@ -79,24 +79,29 @@ impl<T> Push<T> for Pen where Graphics: Push<T>
     type Output = <Graphics as Push<T>>::Output;
     fn push(&mut self, value: T) -> Self::Output { GRAPHICS.get_mut().push(value) }
 }
-impl<Idx> Collection<Idx> for Pen where Graphics: Collection<Idx>
+impl<Output: ?Sized> Collection<Output> for Pen where Graphics: Collection<Output>
 {
-    type Output = <Graphics as Collection<Idx>>::Output;
-    type Ref<'a> = <Graphics as Collection<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
-}
-impl Dup<DrawStackIndex<Matrix<float, 4, 4>>> for Pen
-{
-    fn dup(&mut self) -> bool { Dup::<DrawStackIndex<Matrix<float, 4, 4>>>::dup(&mut *GRAPHICS.get_mut()) }
+    type Ref<'a> = <Graphics as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
 }
 
-impl Dup<DrawStackIndex<Scissor>> for Pen
+impl<Idx> CollectionIndex<Idx> for Pen where Graphics: CollectionIndex<Idx>
 {
-    fn dup(&mut self) -> bool { Dup::<DrawStackIndex<Scissor>>::dup(&mut *GRAPHICS.get_mut()) }
+    type Output = <Graphics as CollectionIndex<Idx>>::Output;
+    type Ref<'a> = <Graphics as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+}
+impl Dup<Matrix<float, 4, 4>> for Pen
+{
+    fn dup(&mut self) -> bool { Dup::<Matrix<float, 4, 4>>::dup(&mut *GRAPHICS.get_mut()) }
 }
 
-impl Dup<DrawStackIndex<Viewport>> for Pen
+impl Dup<Scissor> for Pen
 {
-    fn dup(&mut self) -> bool { Dup::<DrawStackIndex<Viewport>>::dup(&mut *GRAPHICS.get_mut()) }
+    fn dup(&mut self) -> bool { Dup::<Scissor>::dup(&mut *GRAPHICS.get_mut()) }
+}
+
+impl Dup<Viewport> for Pen
+{
+    fn dup(&mut self) -> bool { Dup::<Viewport>::dup(&mut *GRAPHICS.get_mut()) }
 }
 
 impl<T> Pop<T> for Pen where Graphics: Pop<T>

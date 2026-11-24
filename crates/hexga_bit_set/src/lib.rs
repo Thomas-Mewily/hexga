@@ -115,13 +115,22 @@ impl<T: Zero> Clear for BitSet<T>
 
 impl<T: Integer> CollectionBijective for BitSet<T> {}
 
-impl<T: Integer> Collection<BitIndex> for BitSet<T>
+impl<T: Integer> Collection<Bit> for BitSet<T>
+{
+    type Ref<'a> = BitRef where Self: 'a, Bit: 'a;
+}
+impl<T: Integer> CollectionMut<Bit> for BitSet<T>
+{
+    type RefMut<'a> = BitMut<'a, T> where Self: 'a, Bit: 'a;
+}
+
+impl<T: Integer> CollectionIndex<BitIndex> for BitSet<T>
 {
     type Output = Bit;
     type Ref<'a> = BitRef where Self: 'a;
 }
 
-impl<T: Integer> CollectionMut<BitIndex> for BitSet<T>
+impl<T: Integer> CollectionIndexMut<BitIndex> for BitSet<T>
 {
     type RefMut<'a> = BitMut<'a, T> where Self: 'a;
 }

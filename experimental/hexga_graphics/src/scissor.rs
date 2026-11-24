@@ -23,14 +23,14 @@ where
 {
 }
 
-pub trait ScissorStackDup<Idx> : Dup<Idx, Output = Scissor> {
+pub trait ScissorStackDup : Dup<Scissor> {
     fn dup_scissor(&mut self) -> bool {
         self.dup()
     }
 }
-impl<T, Idx> ScissorStackDup<Idx> for T
+impl<T> ScissorStackDup for T
 where
-    T: Dup<Idx, Output = Scissor>,
+    T: Dup<Scissor>,
 {
 }
 
@@ -46,12 +46,12 @@ where
 {
 }
 
-pub trait ScissorStackExtension<Idx = DrawStackIndex<Scissor>>:
-    ScissorStackPush + ScissorStackDup<Idx> + ScissorStackPop
+pub trait ScissorStackExtension:
+    ScissorStackPush + ScissorStackDup + ScissorStackPop
 {}
-impl<T, Idx> ScissorStackExtension<Idx> for T
+impl<T> ScissorStackExtension for T
 where
-    T: ScissorStackPush + ScissorStackDup<Idx> + ScissorStackPop,
+    T: ScissorStackPush + ScissorStackDup + ScissorStackPop,
 {}
 
 pub mod prelude

@@ -12,7 +12,12 @@ pub struct SinglyLinkedNode<T>
     pub value: T,
 }
 
-impl<T> Collection<usize> for SinglyLinkedNode<T>
+impl<T> Collection<T> for SinglyLinkedNode<T>
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+
+impl<T> CollectionIndex<usize> for SinglyLinkedNode<T>
 {
     type Output = T;
     type Ref<'a> = &'a T where Self: 'a;

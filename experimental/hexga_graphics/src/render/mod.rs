@@ -223,28 +223,37 @@ impl<T> DrawParamExtension for T where T: GetDrawParam + SetDrawParam + RotateX 
 
 
 pub trait DrawStackExtension:
-    MatrixStackExtension<DrawStackIndex<Matrix<float, 4, 4>>> + ViewportStackExtension + ScissorStackExtension
+    MatrixStackExtension + ViewportStackExtension + ScissorStackExtension
 {}
 impl<T> DrawStackExtension for T
 where
-    T: MatrixStackExtension<DrawStackIndex<Matrix<float, 4, 4>>> + ViewportStackExtension + ScissorStackExtension,
+    T: MatrixStackExtension + ViewportStackExtension + ScissorStackExtension,
 {}
 
 
-impl<const N: usize> Collection<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
+impl<const N: usize> Collection<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
+{
+    type Ref<'a> = &'a Matrix<float, 4, 4> where Self: 'a, Matrix<float, 4, 4>: 'a;
+}
+impl<const N: usize> CollectionMut<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
+{
+    type RefMut<'a> = &'a mut Matrix<float, 4, 4> where Self: 'a, Matrix<float, 4, 4>: 'a;
+}
+
+impl<const N: usize> CollectionIndex<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
 {
     type Output = Matrix<float, 4, 4>;
     type Ref<'a> = &'a Matrix<float, 4, 4> where Self: 'a;
 }
-impl<const N: usize> CollectionMut<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
+impl<const N: usize> CollectionIndexMut<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
 {
     type RefMut<'a> = &'a mut Matrix<float, 4, 4> where Self: 'a;
 }
-impl<const N: usize> Last<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
+impl<const N: usize> Last<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
 {
     fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { Some(self.matrix_stack.last()) }
 }
-impl<const N: usize> LastMut<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
+impl<const N: usize> LastMut<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
 {
     fn last_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { Some(self.matrix_stack.last_mut()) }
 }
@@ -258,20 +267,29 @@ impl<const N: usize> Pop<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
     fn pop(&mut self) -> Option<Matrix<float, 4, 4>> { Pop::pop(&mut self.matrix_stack) }
 }
 
-impl<const N: usize> Collection<DrawStackIndex<Viewport>> for ImmediateRenderBuilder<N>
+impl<const N: usize> Collection<Viewport> for ImmediateRenderBuilder<N>
+{
+    type Ref<'a> = &'a Viewport where Self: 'a, Viewport: 'a;
+}
+impl<const N: usize> CollectionMut<Viewport> for ImmediateRenderBuilder<N>
+{
+    type RefMut<'a> = &'a mut Viewport where Self: 'a, Viewport: 'a;
+}
+
+impl<const N: usize> CollectionIndex<Viewport> for ImmediateRenderBuilder<N>
 {
     type Output = Viewport;
     type Ref<'a> = &'a Viewport where Self: 'a;
 }
-impl<const N: usize> CollectionMut<DrawStackIndex<Viewport>> for ImmediateRenderBuilder<N>
+impl<const N: usize> CollectionIndexMut<Viewport> for ImmediateRenderBuilder<N>
 {
     type RefMut<'a> = &'a mut Viewport where Self: 'a;
 }
-impl<const N: usize> Last<DrawStackIndex<Viewport>> for ImmediateRenderBuilder<N>
+impl<const N: usize> Last<Viewport> for ImmediateRenderBuilder<N>
 {
     fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { Some(self.viewports_stack.last()) }
 }
-impl<const N: usize> LastMut<DrawStackIndex<Viewport>> for ImmediateRenderBuilder<N>
+impl<const N: usize> LastMut<Viewport> for ImmediateRenderBuilder<N>
 {
     fn last_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { Some(self.viewports_stack.last_mut()) }
 }
@@ -285,20 +303,29 @@ impl<const N: usize> Pop<Viewport> for ImmediateRenderBuilder<N>
     fn pop(&mut self) -> Option<Viewport> { Pop::pop(&mut self.viewports_stack) }
 }
 
-impl<const N: usize> Collection<DrawStackIndex<Scissor>> for ImmediateRenderBuilder<N>
+impl<const N: usize> Collection<Scissor> for ImmediateRenderBuilder<N>
+{
+    type Ref<'a> = &'a Scissor where Self: 'a, Scissor: 'a;
+}
+impl<const N: usize> CollectionMut<Scissor> for ImmediateRenderBuilder<N>
+{
+    type RefMut<'a> = &'a mut Scissor where Self: 'a, Scissor: 'a;
+}
+
+impl<const N: usize> CollectionIndex<Scissor> for ImmediateRenderBuilder<N>
 {
     type Output = Scissor;
     type Ref<'a> = &'a Scissor where Self: 'a;
 }
-impl<const N: usize> CollectionMut<DrawStackIndex<Scissor>> for ImmediateRenderBuilder<N>
+impl<const N: usize> CollectionIndexMut<Scissor> for ImmediateRenderBuilder<N>
 {
     type RefMut<'a> = &'a mut Scissor where Self: 'a;
 }
-impl<const N: usize> Last<DrawStackIndex<Scissor>> for ImmediateRenderBuilder<N>
+impl<const N: usize> Last<Scissor> for ImmediateRenderBuilder<N>
 {
     fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { Some(self.scissor_stack.last()) }
 }
-impl<const N: usize> LastMut<DrawStackIndex<Scissor>> for ImmediateRenderBuilder<N>
+impl<const N: usize> LastMut<Scissor> for ImmediateRenderBuilder<N>
 {
     fn last_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { Some(self.scissor_stack.last_mut()) }
 }

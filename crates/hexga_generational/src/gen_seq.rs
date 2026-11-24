@@ -1566,7 +1566,22 @@ where
     }
 }
 
-impl<T, Gen, C> Collection<usize> for GenSeq<T, Gen, C>
+impl<T, Gen, C> Collection<T> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+impl<T, Gen, C> CollectionMut<T> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
+    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+}
+
+impl<T, Gen, C> CollectionIndex<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
@@ -1594,7 +1609,7 @@ where
     }
 }
 
-impl<T, Gen, C> Collection<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionIndex<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
@@ -1619,7 +1634,7 @@ where
     fn try_get<'a>(&'a self, id: UntypedGenIDOf<Gen>) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.try_get(id.typed::<T>()) }
 }
 
-impl<T, Gen, C> Collection<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionIndex<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
@@ -1665,7 +1680,7 @@ where
     }
 }
 
-impl<T, Gen, C> CollectionMut<usize> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionIndexMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
@@ -1754,7 +1769,7 @@ where
     }
 }
 
-impl<T, Gen, C> CollectionMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionIndexMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
@@ -1863,7 +1878,7 @@ where
     }
 }
 
-impl<T, Gen, C> CollectionMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionIndexMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,

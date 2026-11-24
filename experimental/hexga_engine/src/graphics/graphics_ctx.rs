@@ -449,18 +449,27 @@ impl RotateZ for Graphics
     }
 }
 
-impl<Idx> Collection<Idx> for Graphics
-where
-    ImmediateRenderBuilder: Collection<Idx>,
+impl<Output: ?Sized> Collection<Output> for Graphics where ImmediateRenderBuilder: Collection<Output>
 {
-    type Output = <ImmediateRenderBuilder as Collection<Idx>>::Output;
-    type Ref<'a> = <ImmediateRenderBuilder as Collection<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = <ImmediateRenderBuilder as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
 }
-impl<Idx> CollectionMut<Idx> for Graphics
-where
-    ImmediateRenderBuilder: CollectionMut<Idx>,
+impl<Output: ?Sized> CollectionMut<Output> for Graphics where ImmediateRenderBuilder: CollectionMut<Output>
 {
-    type RefMut<'a> = <ImmediateRenderBuilder as CollectionMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
+    type RefMut<'a> = <ImmediateRenderBuilder as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+}
+
+impl<Idx> CollectionIndex<Idx> for Graphics
+where
+    ImmediateRenderBuilder: CollectionIndex<Idx>,
+{
+    type Output = <ImmediateRenderBuilder as CollectionIndex<Idx>>::Output;
+    type Ref<'a> = <ImmediateRenderBuilder as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+}
+impl<Idx> CollectionIndexMut<Idx> for Graphics
+where
+    ImmediateRenderBuilder: CollectionIndexMut<Idx>,
+{
+    type RefMut<'a> = <ImmediateRenderBuilder as CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
 }
 impl<Idx> Last<Idx> for Graphics
 where

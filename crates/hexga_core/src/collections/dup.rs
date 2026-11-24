@@ -2,7 +2,7 @@ use super::*;
 
 
 /// Duplicates the last value and push it.
-pub trait Dup<T> //: Collection<Idx>
+pub trait Dup<T>
 {
     /// Duplicates the last value and push it if possible.
     fn dup(&mut self) -> bool;
@@ -10,7 +10,8 @@ pub trait Dup<T> //: Collection<Idx>
 
 impl<T, C> Dup<T> for C
 where
-    C: Last<T> + Push<T>, T: Clone,
+    C: Last<T, Output = T> + Push<T>,
+    T: Clone,
 {
     fn dup(&mut self) -> bool
     {
@@ -25,15 +26,15 @@ where
 
 
 /// Duplicates the first value and push it..
-pub trait DupFirst<Idx>: Collection<Idx>
+pub trait DupFirst<Idx>: CollectionIndex<Idx>
 {
     /// Duplicates the first value and push it if possible.
     fn dup_first(&mut self) -> bool;
 }
 impl<Idx, C> DupFirst<Idx> for C
 where
-    C: First<Idx> + Push<<C as Collection<Idx>>::Output>,
-    <C as Collection<Idx>>::Output: Clone,
+    C: First<Idx> + Push<<C as CollectionIndex<Idx>>::Output>,
+    <C as CollectionIndex<Idx>>::Output: Clone,
 {
     fn dup_first(&mut self) -> bool
     {
@@ -50,7 +51,7 @@ where
 
 
 /// Duplicates the last value and push_front it.
-pub trait DupBack<Idx>: Collection<Idx>
+pub trait DupBack<Idx>: CollectionIndex<Idx>
 {
     /// Duplicates the last value and push_front it if possible.
     fn dup_front(&mut self) -> bool;
@@ -58,8 +59,8 @@ pub trait DupBack<Idx>: Collection<Idx>
 
 impl<Idx, C> DupBack<Idx> for C
 where
-    C: Last<Idx> + PushFront<<C as Collection<Idx>>::Output>,
-    <C as Collection<Idx>>::Output: Clone,
+    C: Last<Idx> + PushFront<<C as CollectionIndex<Idx>>::Output>,
+    <C as CollectionIndex<Idx>>::Output: Clone,
 {
     fn dup_front(&mut self) -> bool
     {
@@ -74,7 +75,7 @@ where
 
 
 /// Duplicates the first value and push_front it.
-pub trait DupFirstBack<Idx>: Collection<Idx>
+pub trait DupFirstBack<Idx>: CollectionIndex<Idx>
 {
     /// Duplicates the first value and push_front it if possible.
     fn dup_front(&mut self) -> bool;
@@ -82,8 +83,8 @@ pub trait DupFirstBack<Idx>: Collection<Idx>
 
 impl<Idx, C> DupFirstBack<Idx> for C
 where
-    C: First<Idx> + PushFront<<C as Collection<Idx>>::Output>,
-    <C as Collection<Idx>>::Output: Clone,
+    C: First<Idx> + PushFront<<C as CollectionIndex<Idx>>::Output>,
+    <C as CollectionIndex<Idx>>::Output: Clone,
 {
     fn dup_front(&mut self) -> bool
     {

@@ -344,7 +344,16 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 */
 
 impl<T, Idx> CollectionBijective for ImageBaseOf<T, Idx> where Idx: Integer {}
-impl<P, T, Idx> Collection<P> for ImageBaseOf<T, Idx>
+impl<T, Idx: Integer> Collection<T> for ImageBaseOf<T, Idx>
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+impl<T, Idx: Integer> CollectionMut<T> for ImageBaseOf<T, Idx>
+{
+    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+}
+
+impl<P, T, Idx> CollectionIndex<P> for ImageBaseOf<T, Idx>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -396,7 +405,7 @@ where
         self.get_mut(p).ok_or_else(|| IndexOutOfBounds::new(p, size))
     }
 }
-impl<P, T, Idx> CollectionMut<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx> CollectionIndexMut<P> for ImageBaseOf<T, Idx>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,

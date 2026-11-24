@@ -278,14 +278,22 @@ where
 {
 }
 
-impl<'a, P, G, T, Idx, const N: usize> Collection<P> for GridView<'a, G, T, Idx, N>
+impl<'s, G, T, Idx, const N: usize, Output: ?Sized> Collection<Output> for GridView<'s, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N> + Collection<Output>,
+    Idx: Integer,
+{
+    type Ref<'a> = <G as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+}
+
+impl<'a, P, G, T, Idx, const N: usize> CollectionIndex<P> for GridView<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type Output = <G as Collection<Vector<Idx, N>>>::Output;
-    type Ref<'b> = <G as Collection<Vector<Idx, N>>>::Ref<'b> where Self: 'b, Self::Output: 'b;
+    type Output = <G as CollectionIndex<Vector<Idx, N>>>::Output;
+    type Ref<'b> = <G as CollectionIndex<Vector<Idx, N>>>::Ref<'b> where Self: 'b, Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> Get<P> for GridView<'a, G, T, Idx, N>
 where
@@ -316,7 +324,7 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type Output = <Self as Collection<Vector<Idx, N>>>::Output;
+    type Output = <Self as CollectionIndex<Vector<Idx, N>>>::Output;
 
     #[track_caller]
     fn index(&self, index: P) -> &Self::Output { self.grid.index(index.into() + self.rect.pos) }

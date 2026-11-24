@@ -178,7 +178,16 @@ where
 }
 
 impl<T, Idx, const N: usize> CollectionBijective for GridOf<T, Idx, N> where Idx: Integer {}
-impl<P, T, Idx, const N: usize> Collection<P> for GridOf<T, Idx, N>
+impl<T, Idx: Integer, const N: usize> Collection<T> for GridOf<T, Idx, N>
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+impl<T, Idx: Integer, const N: usize> CollectionMut<T> for GridOf<T, Idx, N>
+{
+    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+}
+
+impl<P, T, Idx, const N: usize> CollectionIndex<P> for GridOf<T, Idx, N>
 where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
@@ -229,7 +238,7 @@ where
         self.get_mut(i).ok_or_else(|| IndexOutOfBounds::new(i, size))
     }
 }
-impl<P, T, Idx, const N: usize> CollectionMut<P> for GridOf<T, Idx, N>
+impl<P, T, Idx, const N: usize> CollectionIndexMut<P> for GridOf<T, Idx, N>
 where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,

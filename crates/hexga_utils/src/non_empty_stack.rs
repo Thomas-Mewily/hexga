@@ -333,7 +333,16 @@ impl<T> FirstMut<usize> for NonEmptyStack<T>
     fn first_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { Some(self.deref_mut()) }
 }
 
-impl<T> Collection<usize> for NonEmptyStack<T>
+impl<T> Collection<T> for NonEmptyStack<T>
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+impl<T> CollectionMut<T> for NonEmptyStack<T>
+{
+    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+}
+
+impl<T> CollectionIndex<usize> for NonEmptyStack<T>
 {
     type Output = T;
     type Ref<'a> = &'a T where Self: 'a, Self::Output: 'a;
@@ -373,7 +382,7 @@ impl<T> Index<usize> for NonEmptyStack<T>
     #[track_caller]
     fn index(&self, index: usize) -> &Self::Output { self.get(index).unwrap() }
 }
-impl<T> CollectionMut<usize> for NonEmptyStack<T>
+impl<T> CollectionIndexMut<usize> for NonEmptyStack<T>
 {
     type RefMut<'a> = &'a mut T where Self: 'a, Self::Output: 'a;
 }

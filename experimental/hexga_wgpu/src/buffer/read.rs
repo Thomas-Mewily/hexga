@@ -42,7 +42,12 @@ where
     fn deref(&self) -> &[T] { unsafe { bit::try_transmute_slice_unchecked(&self.view) }.unwrap() }
 }
 
-impl<'a, T> Collection<usize> for GSliceRead<'a, T>
+impl<'s, T: GBufferElement> Collection<T> for GSliceRead<'s, T>
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+
+impl<'a, T> CollectionIndex<usize> for GSliceRead<'a, T>
 where
     T: GBufferElement,
 {

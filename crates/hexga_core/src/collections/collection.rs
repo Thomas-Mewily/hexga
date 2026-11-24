@@ -1,70 +1,154 @@
 use super::*;
 
-pub trait Collection2<Output>
+/// The shared reference type for a collection output.
+pub trait Collection<Output: ?Sized>
 {
     type Ref<'a>: Deref<Target = Output> where Self: 'a, Output: 'a;
 }
-pub trait CollectionMut2<Output>
+/// The mutable reference type for a collection output.
+pub trait CollectionMut<Output: ?Sized> : Collection<Output>
 {
     type RefMut<'a>: DerefMut<Target = Output> where Self: 'a, Output: 'a;
 }
 
 /// Access to a collection's output through an index of type `Idx`.
-pub trait Collection<Idx>
+///
+/// Indexed access can distinguish outputs by index even when both outputs have
+/// the same type, as with `Result<T, T>`. Generic code that also needs the
+/// output-based reference type can add a `Collection<Self::Output>` bound.
+pub trait CollectionIndex<Idx>
 {
     type Output: ?Sized;
     type Ref<'a>: Deref<Target = Self::Output> where Self: 'a, Self::Output: 'a;
 }
 
-pub trait CollectionMut<Idx>: Collection<Idx>
+pub trait CollectionIndexMut<Idx>: CollectionIndex<Idx>
 {
     type RefMut<'a>: DerefMut<Target = Self::Output> where Self: 'a, Self::Output: 'a;
 }
 
-impl<Idx, S: ?Sized> Collection<Idx> for &S where S: Collection<Idx>
+
+impl<Output: ?Sized, S: ?Sized> Collection<Output> for &S where S: Collection<Output>
+{
+    type Ref<'a> = <S as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+}
+
+impl<Idx, S: ?Sized> CollectionIndex<Idx> for &S where S: CollectionIndex<Idx>
 {
     type Output = S::Output;
-    type Ref<'a> = S::Ref<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = <S as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
 }
 
-impl<Idx, S: ?Sized> Collection<Idx> for &mut S where S: Collection<Idx>
+impl<Output: ?Sized, S: ?Sized> Collection<Output> for &mut S where S: Collection<Output>
+{
+    type Ref<'a> = <S as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+}
+
+impl<Output: ?Sized, S: ?Sized> CollectionMut<Output> for &mut S where S: CollectionMut<Output>
+{
+    type RefMut<'a> = <S as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+}
+
+impl<Idx, S: ?Sized> CollectionIndex<Idx> for &mut S where S: CollectionIndex<Idx>
 {
     type Output = S::Output;
-    type Ref<'a> = S::Ref<'a> where Self: 'a, Self::Output: 'a;
-}
-impl<Idx, S: ?Sized> CollectionMut<Idx> for &mut S where S: CollectionMut<Idx>
-{
-    type RefMut<'a> = S::RefMut<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a> = <S as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
 }
 
-impl<T> Collection<()> for Option<T>
+impl<Idx, S: ?Sized> CollectionIndexMut<Idx> for &mut S where S: CollectionIndexMut<Idx>
 {
-    type Output = T;
-    type Ref<'a> = &'a T where Self: 'a;
-}
-impl<T> CollectionMut<()> for Option<T>
-{
-    type RefMut<'a> = &'a mut T where Self: 'a;
+    type RefMut<'a> = <S as CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
 }
 
-impl<T> Collection<usize> for LinkedList<T>
+impl<T> Collection<T> for [T]
 {
-    type Output = T;
-    type Ref<'a> = &'a T where Self: 'a;
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
 }
-impl<T> CollectionMut<usize> for LinkedList<T>
+impl<T> CollectionMut<T> for [T]
 {
-    type RefMut<'a> = &'a mut T where Self: 'a;
+    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
 }
 
-impl<T: Ord> Collection<()> for BinaryHeap<T>
+impl<T> Collection<[T]> for [T]
+{
+    type Ref<'a> = &'a [T] where Self: 'a, T: 'a;
+}
+impl<T> CollectionMut<[T]> for [T]
+{
+    type RefMut<'a> = &'a mut [T] where Self: 'a, T: 'a;
+}
+
+impl<T, Idx> CollectionIndex<Idx> for [T]
+where
+    Idx: SliceIndex<[T]>,
+    [T]: Collection<Idx::Output>,
+{
+    type Output = Idx::Output;
+    type Ref<'a> = &'a Idx::Output where Self: 'a, Idx::Output: 'a;
+}
+impl<T, Idx> CollectionIndexMut<Idx> for [T]
+where
+    Idx: SliceIndex<[T]>,
+    [T]: CollectionMut<Idx::Output>,
+{
+    type RefMut<'a> = &'a mut Idx::Output where Self: 'a, Idx::Output: 'a;
+}
+
+impl<T> Collection<T> for Option<T>
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+impl<T> CollectionMut<T> for Option<T>
+{
+    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+}
+
+impl<T> CollectionIndex<()> for Option<T>
 {
     type Output = T;
-    type Ref<'a> = &'a T where Self: 'a;
+    type Ref<'a> = <Self as Collection<T>>::Ref<'a> where Self: 'a, T: 'a;
 }
-impl<T: Ord> CollectionMut<()> for BinaryHeap<T>
+impl<T> CollectionIndexMut<()> for Option<T>
 {
-    type RefMut<'a> = collections::binary_heap::PeekMut<'a, T> where Self: 'a;
+    type RefMut<'a> = <Self as CollectionMut<T>>::RefMut<'a> where Self: 'a, T: 'a;
+}
+
+impl<T> Collection<T> for LinkedList<T>
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+impl<T> CollectionMut<T> for LinkedList<T>
+{
+    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+}
+
+impl<T> CollectionIndex<usize> for LinkedList<T>
+{
+    type Output = T;
+    type Ref<'a> = <Self as Collection<T>>::Ref<'a> where Self: 'a, T: 'a;
+}
+impl<T> CollectionIndexMut<usize> for LinkedList<T>
+{
+    type RefMut<'a> = <Self as CollectionMut<T>>::RefMut<'a> where Self: 'a, T: 'a;
+}
+
+impl<T: Ord> Collection<T> for BinaryHeap<T>
+{
+    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+}
+impl<T: Ord> CollectionMut<T> for BinaryHeap<T>
+{
+    type RefMut<'a> = collections::binary_heap::PeekMut<'a, T> where Self: 'a, T: 'a;
+}
+
+impl<T: Ord> CollectionIndex<()> for BinaryHeap<T>
+{
+    type Output = T;
+    type Ref<'a> = <Self as Collection<T>>::Ref<'a> where Self: 'a, T: 'a;
+}
+impl<T: Ord> CollectionIndexMut<()> for BinaryHeap<T>
+{
+    type RefMut<'a> = <Self as CollectionMut<T>>::RefMut<'a> where Self: 'a, T: 'a;
 }
 
 #[cfg(feature = "std")]
@@ -76,10 +160,14 @@ mod platform_strings
     hexga_map_on::map_on!(
         (OsStr, OsString, Path, PathBuf),
         ($ty:ty) => {
-            impl Collection<usize> for $ty
+            impl Collection<char> for $ty
+            {
+                type Ref<'a> = Identity<char> where Self: 'a;
+            }
+            impl CollectionIndex<usize> for $ty
             {
                 type Output = char;
-                type Ref<'a> = Identity<char> where Self: 'a;
+                type Ref<'a> = <Self as Collection<char>>::Ref<'a> where Self: 'a;
             }
         }
     );
