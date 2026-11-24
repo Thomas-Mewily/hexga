@@ -1366,35 +1366,27 @@ impl<T, const CAP: usize> Pop<T> for ArrayVec<T, CAP>
     */
 }
 
-impl<T, const CAP: usize> First<T> for ArrayVec<T, CAP>
+impl<T, const CAP: usize> First<usize> for ArrayVec<T, CAP>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> {
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a {
         self.as_slice().first()
     }
 }
-impl<T, const CAP: usize> FirstMut<T> for ArrayVec<T, CAP>
+impl<T, const CAP: usize> FirstMut<usize> for ArrayVec<T, CAP>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> {
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a {
         self.as_mut_slice().first_mut()
     }
 }
-impl<T, const CAP: usize> Last<T> for ArrayVec<T, CAP>
+impl<T, const CAP: usize> Last<usize> for ArrayVec<T, CAP>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> {
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a {
         self.as_slice().last()
     }
 }
-impl<T, const CAP: usize> LastMut<T> for ArrayVec<T, CAP>
+impl<T, const CAP: usize> LastMut<usize> for ArrayVec<T, CAP>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> {
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a {
         self.as_mut_slice().last_mut()
     }
 }

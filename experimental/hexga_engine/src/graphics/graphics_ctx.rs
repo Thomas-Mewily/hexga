@@ -449,21 +449,30 @@ impl RotateZ for Graphics
     }
 }
 
-impl<T> Last<T> for Graphics
+impl<Idx> Collection<Idx> for Graphics
 where
-    ImmediateRenderBuilder: Last<T>,
+    ImmediateRenderBuilder: Collection<Idx>,
 {
-    type Guard<'a> = <ImmediateRenderBuilder as Last<T>>::Guard<'a> where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { Last::last(&self.immediate) }
+    type Output = <ImmediateRenderBuilder as Collection<Idx>>::Output;
+    type Guard<'a> = <ImmediateRenderBuilder as Collection<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
 }
-impl<T> LastMut<T> for Graphics
+impl<Idx> CollectionMut<Idx> for Graphics
 where
-    ImmediateRenderBuilder: LastMut<T>,
+    ImmediateRenderBuilder: CollectionMut<Idx>,
 {
-    type GuardMut<'a> = <ImmediateRenderBuilder as LastMut<T>>::GuardMut<'a> where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { LastMut::last_mut(&mut self.immediate) }
+    type GuardMut<'a> = <ImmediateRenderBuilder as CollectionMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+}
+impl<Idx> Last<Idx> for Graphics
+where
+    ImmediateRenderBuilder: Last<Idx>,
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { Last::last(&self.immediate) }
+}
+impl<Idx> LastMut<Idx> for Graphics
+where
+    ImmediateRenderBuilder: LastMut<Idx>,
+{
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { LastMut::last_mut(&mut self.immediate) }
 }
 impl<T> Push<T> for Graphics
 where

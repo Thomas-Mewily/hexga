@@ -12,7 +12,7 @@ pub use immediate_render_builder::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{DrawCall, DrawParam, 
+    pub use super::{DrawCall, DrawParam, DrawStackIndex,
         immediate_render::{DrawGeometry, DrawGeometryImmediate, ImmediateRender},
         immediate_render_builder::ImmediateRenderBuilder
     };
@@ -225,17 +225,25 @@ impl<T> DrawParamExtension for T where T: GetDrawParam + SetDrawParam + RotateX 
 pub trait DrawStackExtension: MatrixStackExtension + ViewportStackExtension + ScissorStackExtension {}
 impl<T> DrawStackExtension for T where T: MatrixStackExtension + ViewportStackExtension + ScissorStackExtension {}
 
-impl<const N: usize> Last<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
-{
-    type Guard<'a> = &'a Matrix<float, 4, 4> where Self: 'a;
+/// Selects the draw stack whose elements have type `T`.
+pub struct DrawStackIndex<T>(core::marker::PhantomData<fn() -> T>);
 
-    fn last(&self) -> Option<&Matrix<float, 4, 4>> { Some(self.matrix_stack.last()) }
+impl<const N: usize> Collection<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
+{
+    type Output = Matrix<float, 4, 4>;
+    type Guard<'a> = &'a Matrix<float, 4, 4> where Self: 'a;
 }
-impl<const N: usize> LastMut<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
+impl<const N: usize> CollectionMut<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
 {
     type GuardMut<'a> = &'a mut Matrix<float, 4, 4> where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { Some(self.matrix_stack.last_mut()) }
+}
+impl<const N: usize> Last<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { Some(self.matrix_stack.last()) }
+}
+impl<const N: usize> LastMut<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
+{
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { Some(self.matrix_stack.last_mut()) }
 }
 impl<const N: usize> Push<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
 {
@@ -247,17 +255,22 @@ impl<const N: usize> Pop<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
     fn pop(&mut self) -> Option<Matrix<float, 4, 4>> { Pop::pop(&mut self.matrix_stack) }
 }
 
-impl<const N: usize> Last<Viewport> for ImmediateRenderBuilder<N>
+impl<const N: usize> Collection<DrawStackIndex<Viewport>> for ImmediateRenderBuilder<N>
 {
+    type Output = Viewport;
     type Guard<'a> = &'a Viewport where Self: 'a;
-
-    fn last(&self) -> Option<&Viewport> { Some(self.viewports_stack.last()) }
 }
-impl<const N: usize> LastMut<Viewport> for ImmediateRenderBuilder<N>
+impl<const N: usize> CollectionMut<DrawStackIndex<Viewport>> for ImmediateRenderBuilder<N>
 {
     type GuardMut<'a> = &'a mut Viewport where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { Some(self.viewports_stack.last_mut()) }
+}
+impl<const N: usize> Last<DrawStackIndex<Viewport>> for ImmediateRenderBuilder<N>
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { Some(self.viewports_stack.last()) }
+}
+impl<const N: usize> LastMut<DrawStackIndex<Viewport>> for ImmediateRenderBuilder<N>
+{
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { Some(self.viewports_stack.last_mut()) }
 }
 impl<const N: usize> Push<Viewport> for ImmediateRenderBuilder<N>
 {
@@ -269,17 +282,22 @@ impl<const N: usize> Pop<Viewport> for ImmediateRenderBuilder<N>
     fn pop(&mut self) -> Option<Viewport> { Pop::pop(&mut self.viewports_stack) }
 }
 
-impl<const N: usize> Last<Scissor> for ImmediateRenderBuilder<N>
+impl<const N: usize> Collection<DrawStackIndex<Scissor>> for ImmediateRenderBuilder<N>
 {
+    type Output = Scissor;
     type Guard<'a> = &'a Scissor where Self: 'a;
-
-    fn last(&self) -> Option<&Scissor> { Some(self.scissor_stack.last()) }
 }
-impl<const N: usize> LastMut<Scissor> for ImmediateRenderBuilder<N>
+impl<const N: usize> CollectionMut<DrawStackIndex<Scissor>> for ImmediateRenderBuilder<N>
 {
     type GuardMut<'a> = &'a mut Scissor where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { Some(self.scissor_stack.last_mut()) }
+}
+impl<const N: usize> Last<DrawStackIndex<Scissor>> for ImmediateRenderBuilder<N>
+{
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { Some(self.scissor_stack.last()) }
+}
+impl<const N: usize> LastMut<DrawStackIndex<Scissor>> for ImmediateRenderBuilder<N>
+{
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { Some(self.scissor_stack.last_mut()) }
 }
 impl<const N: usize> Push<Scissor> for ImmediateRenderBuilder<N>
 {

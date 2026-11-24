@@ -311,11 +311,9 @@ impl<'a, T> IntoIterator for &'a mut NonEmptyStack<T>
 }
 
 impl<T> CollectionBijective for NonEmptyStack<T> {}
-impl<T> Last<T> for NonEmptyStack<T>
+impl<T> Last<usize> for NonEmptyStack<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { Some(self.last()) }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { Some(self.last()) }
 }
 impl<T> Push<T> for NonEmptyStack<T>
 {
@@ -326,17 +324,13 @@ impl<T> Pop<T> for NonEmptyStack<T>
 {
     fn pop(&mut self) -> Option<T> { NonEmptyStack::pop(self) }
 }
-impl<T> First<T> for NonEmptyStack<T>
+impl<T> First<usize> for NonEmptyStack<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { Some(self.deref()) }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { Some(self.deref()) }
 }
-impl<T> FirstMut<T> for NonEmptyStack<T>
+impl<T> FirstMut<usize> for NonEmptyStack<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { Some(self.deref_mut()) }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { Some(self.deref_mut()) }
 }
 
 impl<T> Collection<usize> for NonEmptyStack<T>

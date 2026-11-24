@@ -1,369 +1,266 @@
 use super::*;
 
-
-
-pub trait Last<T>
+pub trait Last<Idx>: Collection<Idx>
 {
-    type Guard<'a>: Deref<Target = T> where Self: 'a;
-
     /// aka `peek()`, `peek_back()`, `back()`
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>>;
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a;
 }
 
-impl<S,T> Last<T> for &S where S: Last<T>
+impl<S: ?Sized, Idx> Last<Idx> for &S where S: Last<Idx>
 {
-    type Guard<'a> = S::Guard<'a> where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> {
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a {
         (*self).last()
     }
 }
-impl<S,T> Last<T> for &mut S where S: Last<T>
+impl<S: ?Sized, Idx> Last<Idx> for &mut S where S: Last<Idx>
 {
-    type Guard<'a> = S::Guard<'a> where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> {
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a {
         (**self).last()
     }
 }
 
-impl Last<char> for String
+impl Last<usize> for String
 {
-    type Guard<'a> = Identity<char> where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.deref().last() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.deref().last() }
 }
 
-impl Last<char> for str
+impl Last<usize> for str
 {
-    type Guard<'a> = Identity<char> where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.chars().last().map(|c| Identity(c)) }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.chars().last().map(|c| Identity(c)) }
 }
 
-impl<T> Last<T> for Vec<T>
+impl<T> Last<usize> for Vec<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.deref().last() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.deref().last() }
 }
 
-impl<T, const N: usize> Last<T> for [T;N]
+impl<T, const N: usize> Last<usize> for [T;N]
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().last() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.as_ref().last() }
 }
 
-impl<T> Last<T> for &[T]
+impl<T> Last<usize> for [T]
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().last() }
-}
-impl<T> Last<T> for &mut [T]
-{
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().last() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { <[T]>::last(self) }
 }
 
-impl<T> Last<T> for VecDeque<T>
+impl<T> Last<usize> for VecDeque<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.back() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.back() }
 }
 
-impl<T> Last<T> for LinkedList<T>
+impl<T> Last<usize> for LinkedList<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.back() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.back() }
 }
 
-/*
-last return by value, not by reference
-impl PeekLast<char> for String
+impl<T> Last<()> for Option<T>
 {
-    fn last(&self) -> Option<&char> { self.back() }
-}
-impl PeekLast<char> for &str
-{
-    fn last(&self) -> Option<&char> { self.chars().last() }
-}
-*/
-
-impl<T> Last<T> for Option<T>
-{
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.as_ref() }
 }
 
-impl<T,E> Last<T> for Result<T,E>
+impl<T,E> Last<ResultOk> for Result<T,E>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().ok() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.as_ref().ok() }
 }
 
-impl<T> Last<T> for BinaryHeap<T>
+impl<T> Last<()> for BinaryHeap<T>
 where
     T: Ord,
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { self.peek() }
+    fn last<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.peek() }
 }
 
-
-
-pub trait First<T>
+pub trait First<Idx>: Collection<Idx>
 {
-    type Guard<'a>: Deref<Target = T> where Self: 'a;
-
     /// aka `peek_front()`, `front()`
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>>;
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a;
 }
 
-impl<S,T> First<T> for &S where S: First<T>
+impl<S: ?Sized, Idx> First<Idx> for &S where S: First<Idx>
 {
-    type Guard<'a> = S::Guard<'a> where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> {
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a {
         (*self).first()
     }
 }
-impl<S,T> First<T> for &mut S where S: First<T>
+impl<S: ?Sized, Idx> First<Idx> for &mut S where S: First<Idx>
 {
-    type Guard<'a> = S::Guard<'a> where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> {
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a {
         (**self).first()
     }
 }
 
-impl First<char> for String
+impl First<usize> for String
 {
-    type Guard<'a> = Identity<char> where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.deref().first() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.deref().first() }
 }
 
-impl First<char> for str
+impl First<usize> for str
 {
-    type Guard<'a> = Identity<char> where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.chars().next().map(|c| Identity(c)) }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.chars().next().map(|c| Identity(c)) }
 }
 
-impl<T> First<T> for Vec<T>
+impl<T> First<usize> for Vec<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.deref().first() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.deref().first() }
 }
 
-impl<T, const N: usize> First<T> for [T;N]
+impl<T, const N: usize> First<usize> for [T;N]
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().first() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.as_ref().first() }
 }
 
-impl<T> First<T> for &[T]
+impl<T> First<usize> for [T]
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.get(0) }
-}
-impl<T> First<T> for &mut [T]
-{
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.get(0) }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { <[T]>::first(self) }
 }
 
-impl<T> First<T> for VecDeque<T>
+impl<T> First<usize> for VecDeque<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.front() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.front() }
 }
 
-impl<T> First<T> for LinkedList<T>
+impl<T> First<usize> for LinkedList<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.front() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.front() }
 }
 
-impl<T> First<T> for Option<T>
+impl<T> First<()> for Option<T>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.as_ref() }
 }
 
-impl<T,E> First<T> for Result<T,E>
+impl<T,E> First<ResultOk> for Result<T,E>
 {
-    type Guard<'a> = &'a T where Self: 'a;
-
-    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> { self.as_ref().ok() }
+    fn first<'a>(&'a self) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.as_ref().ok() }
 }
 
-
-
-pub trait LastMut<T>: Last<T>
+pub trait LastMut<Idx>: Last<Idx> + CollectionMut<Idx>
 {
-    type GuardMut<'a>: DerefMut<Target = T> where Self: 'a;
-
     /// aka `peek()`, `peek_back()`, `back()`
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>>;
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a;
 }
 
-impl<S,T> LastMut<T> for &mut S where S: LastMut<T>
+impl<S: ?Sized, Idx> LastMut<Idx> for &mut S where S: LastMut<Idx>
 {
-    type GuardMut<'a> = S::GuardMut<'a> where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> {
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a {
         (**self).last_mut()
     }
 }
 
-impl<T> LastMut<T> for Vec<T>
+impl<T> LastMut<usize> for Vec<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.deref_mut().last_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.deref_mut().last_mut() }
 }
 
-impl<T, const N: usize> LastMut<T> for [T;N]
+impl<T, const N: usize> LastMut<usize> for [T;N]
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().last_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.as_mut().last_mut() }
 }
 
-impl<T> LastMut<T> for &mut [T]
+impl<T> LastMut<usize> for [T]
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().last_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { <[T]>::last_mut(self) }
 }
 
-impl<T> LastMut<T> for VecDeque<T>
+impl<T> LastMut<usize> for VecDeque<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.back_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.back_mut() }
 }
 
-impl<T> LastMut<T> for LinkedList<T>
+impl<T> LastMut<usize> for LinkedList<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.back_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.back_mut() }
 }
 
-impl<T> LastMut<T> for Option<T>
+impl<T> LastMut<()> for Option<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.as_mut() }
 }
 
-impl<T,E> LastMut<T> for Result<T,E>
+impl<T,E> LastMut<ResultOk> for Result<T,E>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().ok() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.as_mut().ok() }
 }
 
-
-impl<T> LastMut<T> for BinaryHeap<T> where
+impl<T> LastMut<()> for BinaryHeap<T> where
     T: Ord
 {
-    type GuardMut<'a> = collections::binary_heap::PeekMut<'a, T> where Self: 'a;
-
-    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.peek_mut() }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.peek_mut() }
 }
 
-/* 
-// Not possible because BinaryHeap does not provide a mutable reference to the last element:
-fn peek_mut(&mut self) -> Option<PeekMut<'_, T, A>>
-
-It is wrapped because editing it can change the heap order.
-
-impl<T> LastMut<T> for BinaryHeap<T>
-where
-    T: Ord; 
-*/
-
-
-pub trait FirstMut<T>: First<T>
+pub trait FirstMut<Idx>: First<Idx> + CollectionMut<Idx>
 {
-    type GuardMut<'a>: DerefMut<Target = T> where Self: 'a;
-
     /// aka `peek_front()`, `front()`
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>>;
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a;
 }
 
-impl<S,T> FirstMut<T> for &mut S where S: FirstMut<T>
+impl<S: ?Sized, Idx> FirstMut<Idx> for &mut S where S: FirstMut<Idx>
 {
-    type GuardMut<'a> = S::GuardMut<'a> where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> {
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a {
         (**self).first_mut()
     }
 }
 
-impl<T> FirstMut<T> for Vec<T>
+impl<T> FirstMut<usize> for Vec<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.deref_mut().first_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.deref_mut().first_mut() }
 }
 
-impl<T, const N: usize> FirstMut<T> for [T;N]
+impl<T, const N: usize> FirstMut<usize> for [T;N]
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().first_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.as_mut().first_mut() }
 }
 
-impl<T> FirstMut<T> for &mut [T]
+impl<T> FirstMut<usize> for [T]
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.get_mut(0) }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { <[T]>::first_mut(self) }
 }
 
-impl<T> FirstMut<T> for VecDeque<T>
+impl<T> FirstMut<usize> for VecDeque<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.front_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.front_mut() }
 }
 
-impl<T> FirstMut<T> for LinkedList<T>
+impl<T> FirstMut<usize> for LinkedList<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.front_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.front_mut() }
 }
 
-impl<T> FirstMut<T> for Option<T>
+impl<T> FirstMut<()> for Option<T>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
-
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut() }
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.as_mut() }
 }
 
-impl<T,E> FirstMut<T> for Result<T,E>
+impl<T,E> FirstMut<ResultOk> for Result<T,E>
 {
-    type GuardMut<'a> = &'a mut T where Self: 'a;
+    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.as_mut().ok() }
+}
 
-    fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { self.as_mut().ok() }
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+
+    #[test]
+    fn pushes_and_pops_return_the_indexed_guard()
+    {
+        let mut values = Vec::from([1]);
+        *Push::push_mut(&mut values, 2).unwrap() = 3;
+        assert!(values.dup());
+        assert_eq!(Last::last(&values), Some(&3));
+        *values.pop_mut().unwrap() = 4;
+        assert_eq!(values, [1, 4]);
+    }
+
+    #[test]
+    fn peeking_preserves_non_reference_guards()
+    {
+        assert_eq!(First::first("é🦀"), Some(Identity('é')));
+        assert_eq!(Last::last("é🦀"), Some(Identity('🦀')));
+
+        let mut heap = BinaryHeap::from([2, 3]);
+        *LastMut::last_mut(&mut heap).unwrap() = 1;
+        assert_eq!(Last::last(&heap), Some(&2));
+    }
 }

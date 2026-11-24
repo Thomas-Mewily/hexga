@@ -6,7 +6,10 @@ pub trait Pop<T>
     fn pop(&mut self) -> Option<T>;
 
     /// Pops a value and returns a mutable reference to the new last element.
-    fn pop_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self: LastMut<T>
+    fn pop_mut<'a, Idx>(&'a mut self) -> Option<Self::GuardMut<'a>>
+    where
+        Self: LastMut<Idx, Output = T>,
+        T: 'a,
     {
         let _old = Pop::pop(self)?;
         LastMut::last_mut(self)
@@ -14,9 +17,9 @@ pub trait Pop<T>
 
     /// Removes and returns the last element from the collection if the predicate returns `true`,
     /// or [`None`] if the predicate returns false or the collection is empty (the predicate will not be called in that case).
-    fn pop_if<F>(&mut self, predicate: F) -> Option<T>
+    fn pop_if<Idx, F>(&mut self, predicate: F) -> Option<T>
     where
-        Self: Last<T>,
+        Self: Last<Idx, Output = T>,
         F: FnOnce(&T) -> bool,
     {
         if predicate(self.last()?.deref())
@@ -42,7 +45,10 @@ pub trait PopFront<T>
     fn pop_front(&mut self) -> Option<T>;
 
     /// Pops a value and returns a mutable reference to the new first element.
-    fn pop_front_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> where Self: FirstMut<T>
+    fn pop_front_mut<'a, Idx>(&'a mut self) -> Option<Self::GuardMut<'a>>
+    where
+        Self: FirstMut<Idx, Output = T>,
+        T: 'a,
     {
         let _old = PopFront::pop_front(self)?;
         FirstMut::first_mut(self)
@@ -50,9 +56,9 @@ pub trait PopFront<T>
 
     /// Removes and returns the first element from the collection if the predicate returns `true`,
     /// or [`None`] if the predicate returns false or the collection is empty (the predicate will not be called in that case).
-    fn pop_front_if<F>(&mut self, predicate: F) -> Option<T>
+    fn pop_front_if<Idx, F>(&mut self, predicate: F) -> Option<T>
     where
-        Self: First<T>,
+        Self: First<Idx, Output = T>,
         F: FnOnce(&T) -> bool,
     {
         if predicate(self.first()?.deref())
@@ -126,7 +132,7 @@ impl Pop<char> for String
 {
     fn pop(&mut self) -> Option<char> { self.pop() }
     /*
-    fn pop_if<F>(&mut self, predicate: F) -> Option<char>
+    fn pop_if<Idx, F>(&mut self, predicate: F) -> Option<char>
     where
         F: FnOnce(&mut char) -> bool,
     {

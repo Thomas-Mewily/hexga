@@ -2,16 +2,16 @@ use super::*;
 
 
 /// Duplicates the last value and push it.
-pub trait Dup<T>
+pub trait Dup<Idx>
 {
     /// Duplicates the last value and push it if possible.
     fn dup(&mut self) -> bool;
 }
 
-impl<T, C> Dup<T> for C
+impl<Idx, C> Dup<Idx> for C
 where
-    T: Clone,
-    C: Last<T> + Push<T>,
+    C: Last<Idx> + Push<<C as Collection<Idx>>::Output>,
+    <C as Collection<Idx>>::Output: Clone,
 {
     fn dup(&mut self) -> bool
     {
@@ -23,15 +23,15 @@ where
 
 
 /// Duplicates the first value and push it..
-pub trait DupFirst<T>
+pub trait DupFirst<Idx>
 {
     /// Duplicates the first value and push it if possible.
     fn dup_first(&mut self) -> bool;
 }
-impl<T, C> DupFirst<T> for C
+impl<Idx, C> DupFirst<Idx> for C
 where
-    T: Clone,
-    C: First<T> + Push<T>,
+    C: First<Idx> + Push<<C as Collection<Idx>>::Output>,
+    <C as Collection<Idx>>::Output: Clone,
 {
     fn dup_first(&mut self) -> bool
     {
@@ -45,16 +45,16 @@ where
 
 
 /// Duplicates the last value and push_front it.
-pub trait DupBack<T>
+pub trait DupBack<Idx>
 {
     /// Duplicates the last value and push_front it if possible.
     fn dup_front(&mut self) -> bool;
 }
 
-impl<T, C> DupBack<T> for C
+impl<Idx, C> DupBack<Idx> for C
 where
-    T: Clone,
-    C: Last<T> + PushFront<T>,
+    C: Last<Idx> + PushFront<<C as Collection<Idx>>::Output>,
+    <C as Collection<Idx>>::Output: Clone,
 {
     fn dup_front(&mut self) -> bool
     {
@@ -66,16 +66,16 @@ where
 
 
 /// Duplicates the first value and push_front it.
-pub trait DupFirstBack<T>
+pub trait DupFirstBack<Idx>
 {
     /// Duplicates the first value and push_front it if possible.
     fn dup_front(&mut self) -> bool;
 }
 
-impl<T, C> DupFirstBack<T> for C
+impl<Idx, C> DupFirstBack<Idx> for C
 where
-    T: Clone,
-    C: First<T> + PushFront<T>,
+    C: First<Idx> + PushFront<<C as Collection<Idx>>::Output>,
+    <C as Collection<Idx>>::Output: Clone,
 {
     fn dup_front(&mut self) -> bool
     {
