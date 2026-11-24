@@ -11,18 +11,17 @@ where
 
 impl<T> Handle for GVec<T> where T: GBufferElement {}
 
-impl<T> Collection<T> for GVec<T>
-where
-    T: GBufferElement,
-{
-    type Guard<'a> = GElementRead<'a, T> where Self: 'a;
-}
-impl<T> Get<usize> for GVec<T>
+impl<T> Collection<usize> for GVec<T>
 where
     T: GBufferElement,
 {
     type Output = T;
     type Guard<'a> = GElementRead<'a, T> where Self: 'a, Self::Output: 'a;
+}
+impl<T> Get<usize> for GVec<T>
+where
+    T: GBufferElement,
+{
     fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a
     {
         if index >= self.len { return None; }

@@ -271,26 +271,28 @@ where
     fn size(&self) -> Vector<Idx, N> { self.rect.size }
 }
 
-impl<'a, G, T, Idx, const N: usize> Collection<T> for GridView<'a, G, T, Idx, N>
-where
-    G: IGrid<T, Idx, N>,
-    Idx: Integer,
-{ type Guard<'b> = &'b T where Self: 'b; }
-impl<'a, G, T, Idx, const N: usize> CollectionBijective<T> for GridView<'a, G, T, Idx, N>
+impl<'a, G, T, Idx, const N: usize> CollectionBijective for GridView<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
 }
 
+impl<'a, P, G, T, Idx, const N: usize> Collection<P> for GridView<'a, G, T, Idx, N>
+where
+    G: IGrid<T, Idx, N>,
+    Idx: Integer,
+    P: Into<Vector<Idx, N>>,
+{
+    type Output = <G as Collection<Vector<Idx, N>>>::Output;
+    type Guard<'b> = <G as Collection<Vector<Idx, N>>>::Guard<'b> where Self: 'b, Self::Output: 'b;
+}
 impl<'a, P, G, T, Idx, const N: usize> Get<P> for GridView<'a, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type Output = <G as Get<Vector<Idx, N>>>::Output;
-    type Guard<'b> = <G as Get<Vector<Idx, N>>>::Guard<'b> where Self: 'b, Self::Output: 'b;
 
     #[inline(always)]
     fn get<'b>(&'b self, index: P) -> Option<Self::Guard<'b>> where Self::Output: 'b { self.grid.get(index.into() + self.rect.pos) }
@@ -314,7 +316,7 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type Output = <Self as Get<Vector<Idx, N>>>::Output;
+    type Output = <Self as Collection<Vector<Idx, N>>>::Output;
 
     #[track_caller]
     fn index(&self, index: P) -> &Self::Output { self.grid.index(index.into() + self.rect.pos) }

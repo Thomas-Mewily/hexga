@@ -74,18 +74,17 @@ where
     }
 }
 
-impl<'a, T> Collection<T> for GSliceMut<'a, T>
-where
-    T: GBufferElement,
-{
-    type Guard<'b> = GElementRead<'b, T> where Self: 'b;
-}
-impl<'a, T> Get<usize> for GSliceMut<'a, T>
+impl<'a, T> Collection<usize> for GSliceMut<'a, T>
 where
     T: GBufferElement,
 {
     type Output = T;
     type Guard<'b> = GElementRead<'b, T> where Self: 'b, Self::Output: 'b;
+}
+impl<'a, T> Get<usize> for GSliceMut<'a, T>
+where
+    T: GBufferElement,
+{
     fn get<'b>(&'b self, index: usize) -> Option<Self::Guard<'b>> where Self::Output: 'b
     {
         if index >= self.len { return None; }

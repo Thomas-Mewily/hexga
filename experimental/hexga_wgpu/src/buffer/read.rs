@@ -42,13 +42,17 @@ where
     fn deref(&self) -> &[T] { unsafe { bit::try_transmute_slice_unchecked(&self.view) }.unwrap() }
 }
 
-impl<'a, T> Collection<T> for GSliceRead<'a, T> where T: GBufferElement { type Guard<'b> = &'b T where Self: 'b; }
-impl<'a, T> Get<usize> for GSliceRead<'a, T>
+impl<'a, T> Collection<usize> for GSliceRead<'a, T>
 where
     T: GBufferElement,
 {
     type Output = T;
     type Guard<'b> = &'b T where Self: 'b, Self::Output: 'b;
+}
+impl<'a, T> Get<usize> for GSliceRead<'a, T>
+where
+    T: GBufferElement,
+{
     fn get<'b>(&'b self, index: usize) -> Option<Self::Guard<'b>> where Self::Output: 'b { self.deref().get(index) }
 }
 impl<'a, T> Length for GSliceRead<'a, T>

@@ -35,18 +35,17 @@ where
     }
 }
 
-impl<T> Collection<T> for GBuffer<T>
-where
-    T: GBufferElement,
-{
-    type Guard<'a> = GElementRead<'a, T> where Self: 'a;
-}
-impl<T> Get<usize> for GBuffer<T>
+impl<T> Collection<usize> for GBuffer<T>
 where
     T: GBufferElement,
 {
     type Output = T;
     type Guard<'a> = GElementRead<'a, T> where Self: 'a, Self::Output: 'a;
+}
+impl<T> Get<usize> for GBuffer<T>
+where
+    T: GBufferElement,
+{
     fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a
     {
         if index >= self.buffer.size() as usize / size_of::<T>() { return None; }

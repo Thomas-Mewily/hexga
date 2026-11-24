@@ -29,21 +29,6 @@ where
     search: S,
 }
 
-impl<K, Gen, S> Collection<K> for GenSetOf<K, Gen, S>
-where
-    K: Clone,
-    Gen: GenerationalIndex,
-{
-    type Guard<'a> = &'a K where Self: 'a;
-}
-impl<K, Gen, S> CollectionMut<K> for GenSetOf<K, Gen, S>
-where
-    K: Clone,
-    Gen: GenerationalIndex,
-{
-    type GuardMut<'a> = &'a mut K where Self: 'a;
-}
-
 impl<K, Gen, S> PartialEq for GenSetOf<K, Gen, S>
 where
     K: Clone,
@@ -168,7 +153,7 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { f.debug_set().entries(self.values.iter()).finish() }
 }
 
-impl<K, Gen, S> CollectionBijective<K> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> CollectionBijective for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,
@@ -196,7 +181,7 @@ where
     }
 
     #[inline(always)]
-    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Get<Idx>>::Guard<'_>>
+    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Collection<Idx>>::Guard<'_>>
     where
         Self: Get<Idx, Output = K>,
     {
@@ -204,7 +189,7 @@ where
     }
 
     #[inline(always)]
-    pub fn try_get<Idx>(&self, index: Idx) -> Result<<Self as Get<Idx>>::Guard<'_>, <Self as TryGet<Idx>>::Error>
+    pub fn try_get<Idx>(&self, index: Idx) -> Result<<Self as Collection<Idx>>::Guard<'_>, <Self as TryGet<Idx>>::Error>
     where
         Self: TryGet<Idx, Output = K>,
     {
@@ -338,6 +323,16 @@ where
     fn len(&self) -> usize { self.values.len() }
 }
 
+impl<'a, Q, K, Gen, S> Collection<&'a Q> for GenSetOf<K, Gen, S>
+where
+    Q: ?Sized,
+    K: Clone + Borrow<Q>,
+    Gen: GenerationalIndex,
+    S: Collection<&'a Q, Output = GenIDOf<K, Gen>>,
+{
+    type Output = K;
+    type Guard<'b> = &'b K where Self: 'b, Self::Output: 'b;
+}
 impl<'a, Q, K, Gen, S> Get<&'a Q> for GenSetOf<K, Gen, S>
 where
     Q: ?Sized,
@@ -345,8 +340,6 @@ where
     Gen: GenerationalIndex,
     S: Get<&'a Q, Output = GenIDOf<K, Gen>>,
 {
-    type Output = K;
-    type Guard<'b> = &'b K where Self: 'b, Self::Output: 'b;
 
     fn get<'b>(&'b self, index: &'a Q) -> Option<Self::Guard<'b>> where Self::Output: 'b
     {
@@ -366,13 +359,19 @@ where
     fn try_get<'b>(&'b self, index: &'a Q) -> Result<Self::Guard<'b>, Self::Error> where Self::Output: 'b { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 
-impl<K, Gen, S> Get<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> Collection<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,
 {
     type Output = K;
     type Guard<'a> = &'a K where Self: 'a, Self::Output: 'a;
+}
+impl<K, Gen, S> Get<GenIDOf<K, Gen>> for GenSetOf<K, Gen, S>
+where
+    K: Clone,
+    Gen: GenerationalIndex,
+{
     fn get<'a>(&'a self, index: GenIDOf<K, Gen>) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.values.get(index) }
     unsafe fn get_unchecked<'a>(&'a self, index: GenIDOf<K, Gen>) -> Self::Guard<'a> where Self::Output: 'a { unsafe { self.values.get_unchecked(index) } }
 }
@@ -386,13 +385,19 @@ where
     fn try_get<'a>(&'a self, index: GenIDOf<K, Gen>) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.values.try_get(index) }
 }
 
-impl<K, Gen, S> Get<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
+impl<K, Gen, S> Collection<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
 where
     K: Clone,
     Gen: GenerationalIndex,
 {
     type Output = K;
     type Guard<'a> = &'a K where Self: 'a, Self::Output: 'a;
+}
+impl<K, Gen, S> Get<UntypedGenIDOf<Gen>> for GenSetOf<K, Gen, S>
+where
+    K: Clone,
+    Gen: GenerationalIndex,
+{
     #[inline(always)]
     fn get<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index.typed()) }
     #[track_caller]

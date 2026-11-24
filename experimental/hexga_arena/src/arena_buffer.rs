@@ -57,8 +57,9 @@ impl Capacity<u8> for BufferArena
 {
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl Collection<u8> for BufferArena
+impl Collection<usize> for BufferArena
 {
+    type Output = u8;
     type Guard<'a> = &'a u8 where Self: 'a;
 }
 

@@ -1,113 +1,80 @@
-#[cfg(feature = "std")]
-use std::path::Path;
 use super::*;
 
-/*
-/// Contains element. Trait marker
-pub trait Collection
+/// Access to a collection's output through an index of type `Idx`.
+pub trait Collection<Idx>
 {
-    /*
-    const SEQUENCE: bool;
-    const ASSOCIATIF: bool;
-     */
-}
-*/
-
-pub trait Collection<Idx> //: Collection
-{
-    type Output : ?Sized;
-    type Guard<'a> : Deref<Target = Self::Output> where Self: 'a;
-}
-pub trait CollectionMut<Idx> : Collection<Idx>
-{
-    type GuardMut<'a> : DerefMut<Target = Self::Output> where Self: 'a;
+    type Output: ?Sized;
+    type Guard<'a>: Deref<Target = Self::Output> where Self: 'a, Self::Output: 'a;
 }
 
-/*
-pub trait Collection<T: ?Sized> //: Collection
+pub trait CollectionMut<Idx>: Collection<Idx>
 {
-    type Guard<'a> : Deref<Target = T> where Self: 'a;
-    
+    type GuardMut<'a>: DerefMut<Target = Self::Output> where Self: 'a, Self::Output: 'a;
 }
-pub trait CollectionMut<T: ?Sized> : Collection<T>
+
+impl<Idx, S: ?Sized> Collection<Idx> for &S where S: Collection<Idx>
 {
-    type GuardMut<'a> : DerefMut<Target = T> where Self: 'a;
+    type Output = S::Output;
+    type Guard<'a> = S::Guard<'a> where Self: 'a, Self::Output: 'a;
 }
-*/
-        
-impl<T: ?Sized, S: ?Sized> Collection<T> for &S where S: Collection<T> { type Guard<'a> = <S as Collection<T>>::Guard<'a> where Self: 'a; }
 
-impl<T: ?Sized, S: ?Sized> Collection<T> for &mut S where S: Collection<T> { type Guard<'a> = <S as Collection<T>>::Guard<'a> where Self: 'a; }
-impl<T: ?Sized, S: ?Sized> CollectionMut<T> for &mut S where S: CollectionMut<T> { type GuardMut<'a> = <S as CollectionMut<T>>::GuardMut<'a> where Self: 'a; }
+impl<Idx, S: ?Sized> Collection<Idx> for &mut S where S: Collection<Idx>
+{
+    type Output = S::Output;
+    type Guard<'a> = S::Guard<'a> where Self: 'a, Self::Output: 'a;
+}
+impl<Idx, S: ?Sized> CollectionMut<Idx> for &mut S where S: CollectionMut<Idx>
+{
+    type GuardMut<'a> = S::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+}
 
+impl<T> Collection<()> for Option<T>
+{
+    type Output = T;
+    type Guard<'a> = &'a T where Self: 'a;
+}
+impl<T> CollectionMut<()> for Option<T>
+{
+    type GuardMut<'a> = &'a mut T where Self: 'a;
+}
 
-impl<T> Collection<T> for Option<T> { type Guard<'a> = &'a T where Self: 'a; }
-impl<T> CollectionMut<T> for Option<T> { type GuardMut<'a> = &'a mut T where Self: 'a; }
+impl<T> Collection<usize> for LinkedList<T>
+{
+    type Output = T;
+    type Guard<'a> = &'a T where Self: 'a;
+}
+impl<T> CollectionMut<usize> for LinkedList<T>
+{
+    type GuardMut<'a> = &'a mut T where Self: 'a;
+}
 
-impl<T, E> Collection<T> for Result<T, E> { type Guard<'a> = &'a T where Self: 'a; }
-impl<T, E> CollectionMut<T> for Result<T, E> { type GuardMut<'a> = &'a mut T where Self: 'a; }
-
-impl<T> Collection<T> for [T] { type Guard<'a> = &'a T where Self: 'a; }
-impl<T> CollectionMut<T> for [T] { type GuardMut<'a> = &'a mut T where Self: 'a; }
-impl<T> Collection<[T]> for [T] { type Guard<'a> = &'a [T] where Self: 'a; }
-impl<T> CollectionMut<[T]> for [T] { type GuardMut<'a> = &'a mut [T] where Self: 'a; }
-
-impl<T, const N: usize> Collection<T> for [T; N] { type Guard<'a> = &'a T where Self: 'a; }
-impl<T, const N: usize> CollectionMut<T> for [T; N] { type GuardMut<'a> = &'a mut T where Self: 'a; }
-impl<T, const N: usize> Collection<[T]> for [T; N] { type Guard<'a> = &'a [T] where Self: 'a; }
-impl<T, const N: usize> CollectionMut<[T]> for [T; N] { type GuardMut<'a> = &'a mut [T] where Self: 'a; }
-
-impl<T> Collection<T> for Vec<T> { type Guard<'a> = &'a T where Self: 'a; }
-impl<T> CollectionMut<T> for Vec<T> { type GuardMut<'a> = &'a mut T where Self: 'a; }
-impl<T> Collection<[T]> for Vec<T> { type Guard<'a> = &'a [T] where Self: 'a; }
-impl<T> CollectionMut<[T]> for Vec<T> { type GuardMut<'a> = &'a mut [T] where Self: 'a; }
-
-impl<T> Collection<T> for VecDeque<T> { type Guard<'a> = &'a T where Self: 'a; }
-impl<T> CollectionMut<T> for VecDeque<T> { type GuardMut<'a> = &'a mut T where Self: 'a; }
-
-
-impl Collection<u8> for str { type Guard<'a> = &'a u8 where Self: 'a; }
-impl Collection<u8> for String { type Guard<'a> = &'a u8 where Self: 'a; }
-impl CollectionMut<u8> for String { type GuardMut<'a> = &'a mut u8 where Self: 'a; }
-
-impl Collection<char> for str { type Guard<'a> = Identity<char> where Self: 'a; }
-impl Collection<char> for String { type Guard<'a> = Identity<char> where Self: 'a; }
+impl<T: Ord> Collection<()> for BinaryHeap<T>
+{
+    type Output = T;
+    type Guard<'a> = &'a T where Self: 'a;
+}
+impl<T: Ord> CollectionMut<()> for BinaryHeap<T>
+{
+    type GuardMut<'a> = collections::binary_heap::PeekMut<'a, T> where Self: 'a;
+}
 
 #[cfg(feature = "std")]
-mod std_impl
+mod platform_strings
 {
     use super::*;
-    impl Collection<u8> for OsStr { type Guard<'a> = &'a u8 where Self: 'a; }
-    impl Collection<u8> for OsString { type Guard<'a> = &'a u8 where Self: 'a; }
-    impl CollectionMut<u8> for OsString { type GuardMut<'a> = &'a mut u8 where Self: 'a; }
-    impl Collection<u8> for Path { type Guard<'a> = &'a u8 where Self: 'a; }
-    impl Collection<u8> for PathBuf { type Guard<'a> = &'a u8 where Self: 'a; }
-    impl CollectionMut<u8> for PathBuf { type GuardMut<'a> = &'a mut u8 where Self: 'a; }
+    use std::path::Path;
 
-    impl Collection<char> for OsStr { type Guard<'a> = &'a char where Self: 'a; }
-    impl Collection<char> for OsString { type Guard<'a> = &'a char where Self: 'a; }
-    impl CollectionMut<char> for OsString { type GuardMut<'a> = &'a mut char where Self: 'a; }
-    impl Collection<char> for Path { type Guard<'a> = &'a char where Self: 'a; }
-    impl Collection<char> for PathBuf { type Guard<'a> = &'a char where Self: 'a; }
-    impl CollectionMut<char> for PathBuf { type GuardMut<'a> = &'a mut char where Self: 'a; }
-
-
-    impl<K, V, S> Collection<V> for HashMap<K, V, S> { type Guard<'a> = &'a V where Self: 'a; }
-    impl<K, V, S> CollectionMut<V> for HashMap<K, V, S> { type GuardMut<'a> = &'a mut V where Self: 'a; }
-
-    impl<K, S> Collection for HashSet<K, S> { type Guard<'a> = &'a K where Self: 'a; }
+    hexga_map_on::map_on!(
+        (OsStr, OsString, Path, PathBuf),
+        ($ty:ty) => {
+            impl Collection<usize> for $ty
+            {
+                type Output = char;
+                type Guard<'a> = Identity<char> where Self: 'a;
+            }
+        }
+    );
 }
-
-impl<K, V> Collection<V> for BTreeMap<K, V> { type Guard<'a> = &'a V where Self: 'a; }
-impl<K, V> CollectionMut<V> for BTreeMap<K, V> { type GuardMut<'a> = &'a mut V where Self: 'a; }
-impl<K> Collection for BTreeSet<K> { type Guard<'a> = &'a K where Self: 'a; }
-impl<T> Collection<T> for LinkedList<T> { type Guard<'a> = &'a T where Self: 'a; }
-impl<T> CollectionMut<T> for LinkedList<T> { type GuardMut<'a> = &'a mut T where Self: 'a; }
-
-impl<T> Collection<T> for BinaryHeap<T> where T: Ord { type Guard<'a> = &'a T where Self: 'a; }
-impl<T> CollectionMut<T> for BinaryHeap<T> where T: Ord { type GuardMut<'a> = collections::binary_heap::PeekMut<'a,T> where Self: 'a; }
-
-// TODO: impl Collection<BitRef> for iX/uX... 
 
 /// Adding elements at the end don't invalidate other existing entries Key.
 /// Examples: `Vec`, `VecDeque`, `GenVec`, `HashMap`, `BTreeMap`.

@@ -250,7 +250,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     /// assert_eq!(vec.get(0), Some(&1));
     /// assert_eq!(vec.get(2), None);
     /// ```
-    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Get<Idx>>::Guard<'_>>
+    pub fn get<Idx>(&self, index: Idx) -> Option<<Self as Collection<Idx>>::Guard<'_>>
     where
         Self: Get<Idx>,
     {
@@ -271,7 +271,7 @@ impl<T, const CAP: usize> ArrayVec<T, CAP>
     /// }
     /// assert_eq!(vec[0], 42);
     /// ```
-    pub fn get_mut<Idx>(&mut self, index: Idx) -> Option<<Self as GetMut<Idx>>::GuardMut<'_>>
+    pub fn get_mut<Idx>(&mut self, index: Idx) -> Option<<Self as CollectionMut<Idx>>::GuardMut<'_>>
     where
         Self: GetMut<Idx>,
     {
@@ -1128,16 +1128,19 @@ impl<'a, T: 'a, const CAP: usize> Drop for Drain<'a, T, CAP>
     }
 }
 
-impl<T, const CAP: usize> Collection<T> for ArrayVec<T, CAP> { type Guard<'a> = &'a T where Self: 'a; }
-impl<T, const CAP: usize> CollectionMut<T> for ArrayVec<T, CAP> { type GuardMut<'a> = &'a mut T where Self: 'a; }
-impl<T, const CAP: usize> CollectionBijective<T> for ArrayVec<T, CAP> {}
+impl<T, const CAP: usize> CollectionBijective for ArrayVec<T, CAP> {}
 
+impl<Idx, T, const CAP: usize> Collection<Idx> for ArrayVec<T, CAP>
+where
+    [T]: Collection<Idx>,
+{
+    type Output = <[T] as Collection<Idx>>::Output;
+    type Guard<'a> = <[T] as Collection<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
+}
 impl<Idx, T, const CAP: usize> Get<Idx> for ArrayVec<T, CAP>
 where
     [T]: Get<Idx>,
 {
-    type Output = <[T] as Get<Idx>>::Output;
-    type Guard<'a> = <[T] as Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
 
     #[inline(always)]
     fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { Get::get(self.as_slice(), index) }
@@ -1164,11 +1167,16 @@ where
     fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a { TryGetMut::try_get_mut(self.as_mut_slice(), index) }
 }
 
+impl<Idx, T, const CAP: usize> CollectionMut<Idx> for ArrayVec<T, CAP>
+where
+    [T]: CollectionMut<Idx>,
+{
+    type GuardMut<'a> = <[T] as CollectionMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+}
 impl<Idx, T, const CAP: usize> GetMut<Idx> for ArrayVec<T, CAP>
 where
     [T]: GetMut<Idx>,
 {
-    type GuardMut<'a> = <[T] as GetMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { GetMut::get_mut(self.as_mut_slice(), index) }
 
@@ -1360,24 +1368,32 @@ impl<T, const CAP: usize> Pop<T> for ArrayVec<T, CAP>
 
 impl<T, const CAP: usize> First<T> for ArrayVec<T, CAP>
 {
+    type Guard<'a> = &'a T where Self: 'a;
+
     fn first<'a>(&'a self) -> Option<Self::Guard<'a>> {
         self.as_slice().first()
     }
 }
 impl<T, const CAP: usize> FirstMut<T> for ArrayVec<T, CAP>
 {
+    type GuardMut<'a> = &'a mut T where Self: 'a;
+
     fn first_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> {
         self.as_mut_slice().first_mut()
     }
 }
 impl<T, const CAP: usize> Last<T> for ArrayVec<T, CAP>
 {
+    type Guard<'a> = &'a T where Self: 'a;
+
     fn last<'a>(&'a self) -> Option<Self::Guard<'a>> {
         self.as_slice().last()
     }
 }
 impl<T, const CAP: usize> LastMut<T> for ArrayVec<T, CAP>
 {
+    type GuardMut<'a> = &'a mut T where Self: 'a;
+
     fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> {
         self.as_mut_slice().last_mut()
     }

@@ -163,13 +163,15 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         fn index_mut(&mut self, index: Idx) -> &mut Self::Output { <[T; N] as ::core::ops::IndexMut<Idx>>::index_mut(self.array_mut(), index) }
                     }
 
-                    impl<T, const N : usize> #crate_ident::hexga_core::collections::Collection<T> for #current_name<T,N> { type Guard<'a> = <[T;N] as #crate_ident::hexga_core::collections::Collection<T>>::Guard<'a> where Self: 'a; }
-                    impl<T, const N : usize> #crate_ident::hexga_core::collections::CollectionBijective<T> for #current_name<T,N> {}
+                    impl<T, const N : usize> #crate_ident::hexga_core::collections::CollectionBijective for #current_name<T,N> {}
                     impl<T, const N : usize> #crate_ident::hexga_core::collections::Length for #current_name<T,N> { fn len(&self) -> usize { N }}
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::Collection<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::Collection<Idx>
+                    {
+                        type Output = <[T;N] as #crate_ident::hexga_core::collections::Collection<Idx>>::Output;
+                        type Guard<'a> = <[T;N] as #crate_ident::hexga_core::collections::Collection<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
+                    }
                     impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::Get<Idx>
                     {
-                        type Output = <[T;N] as #crate_ident::hexga_core::collections::Get<Idx>>::Output;
-                        type Guard<'a> = <[T;N] as #crate_ident::hexga_core::collections::Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
 
                         #[inline(always)]
                         fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { #crate_ident::hexga_core::collections::Get::get(self.array(), index) }
@@ -187,9 +189,12 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             #crate_ident::hexga_core::collections::TryGet::try_get(self.array(), index)
                         }
                     }
+                    impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::CollectionMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::CollectionMut<Idx>
+                    {
+                        type GuardMut<'a> = <[T;N] as #crate_ident::hexga_core::collections::CollectionMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+                    }
                     impl<T, const N : usize, Idx> #crate_ident::hexga_core::collections::GetMut<Idx> for #current_name<T,N> where [T;N] : #crate_ident::hexga_core::collections::GetMut<Idx>
                     {
-                        type GuardMut<'a> = <[T;N] as #crate_ident::hexga_core::collections::GetMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
                         #[inline(always)]
                         fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { #crate_ident::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
                         #[inline(always)]
@@ -589,14 +594,15 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         fn index_mut(&mut self, index: Idx) -> &mut Self::Output { <[T; #dim] as ::core::ops::IndexMut<Idx>>::index_mut(self.array_mut(), index) }
                     }
 
-                    impl<T> #crate_ident::hexga_core::collections::Collection<T> for #current_name<T> { type Guard<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::Collection<T>>::Guard<'a> where Self: 'a; }
-                    impl<T> #crate_ident::hexga_core::collections::CollectionBijective<T> for #current_name<T> {}
-
+                    impl<T> #crate_ident::hexga_core::collections::CollectionBijective for #current_name<T> {}
                     impl<T> #crate_ident::hexga_core::collections::Length for #current_name<T> { fn len(&self) -> usize { #dim }}
+                    impl<T, Idx> #crate_ident::hexga_core::collections::Collection<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::Collection<Idx>
+                    {
+                        type Output = <[T;#dim] as #crate_ident::hexga_core::collections::Collection<Idx>>::Output;
+                        type Guard<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::Collection<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
+                    }
                     impl<T, Idx> #crate_ident::hexga_core::collections::Get<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::Get<Idx>
                     {
-                        type Output = <[T;#dim] as #crate_ident::hexga_core::collections::Get<Idx>>::Output;
-                        type Guard<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
 
                         #[inline(always)]
                         fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { #crate_ident::hexga_core::collections::Get::get(self.array(), index) }
@@ -611,9 +617,12 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         #[inline(always)]
                         fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { #crate_ident::hexga_core::collections::TryGet::try_get(self.array(), index) }
                     }
+                    impl<T, Idx> #crate_ident::hexga_core::collections::CollectionMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::CollectionMut<Idx>
+                    {
+                        type GuardMut<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::CollectionMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+                    }
                     impl<T, Idx> #crate_ident::hexga_core::collections::GetMut<Idx> for #current_name<T> where [T;#dim] : #crate_ident::hexga_core::collections::GetMut<Idx>
                     {
-                        type GuardMut<'a> = <[T;#dim] as #crate_ident::hexga_core::collections::GetMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
                         #[inline(always)]
                         fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { #crate_ident::hexga_core::collections::GetMut::get_mut(self.array_mut(), index) }
                         #[inline(always)]

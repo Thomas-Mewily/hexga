@@ -343,16 +343,20 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 }
 */
 
-impl<T, Idx> Collection<T> for ImageBaseOf<T, Idx> where Idx: Integer { type Guard<'a> = &'a T where Self: 'a; }
-impl<T, Idx> CollectionMut<T> for ImageBaseOf<T, Idx> where Idx: Integer { type GuardMut<'a> = &'a mut T where Self: 'a; }
-impl<T, Idx> CollectionBijective<T> for ImageBaseOf<T, Idx> where Idx: Integer {}
-impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>
+impl<T, Idx> CollectionBijective for ImageBaseOf<T, Idx> where Idx: Integer {}
+impl<P, T, Idx> Collection<P> for ImageBaseOf<T, Idx>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
 {
     type Output = T;
     type Guard<'a> = &'a T where Self: 'a, Self::Output: 'a;
+}
+impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
+{
     #[inline(always)]
     fn get<'a>(&'a self, pos: P) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.position_to_index(pos).map(|idx| unsafe { self.pixels().get_unchecked(idx) }) }
     #[inline(always)]
@@ -392,12 +396,18 @@ where
         self.get_mut(p).ok_or_else(|| IndexOutOfBounds::new(p, size))
     }
 }
-impl<P, T, Idx> GetMut<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx> CollectionMut<P> for ImageBaseOf<T, Idx>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
 {
     type GuardMut<'a> = &'a mut T where Self: 'a, Self::Output: 'a;
+}
+impl<P, T, Idx> GetMut<P> for ImageBaseOf<T, Idx>
+where
+    Idx: Integer,
+    P: Into<Vector2<Idx>>,
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.position_to_index(pos).map(|i| unsafe { self.pixels_mut().get_unchecked_mut(i) }) }
     #[inline(always)]

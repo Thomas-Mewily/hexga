@@ -177,15 +177,20 @@ where
     fn size(&self) -> Vector<Idx, N> { self.size }
 }
 
-impl<T, Idx, const N: usize> Collection<T> for GridOf<T, Idx, N> where Idx: Integer { type Guard<'a> = &'a T where Self: 'a; }
-impl<T, Idx, const N: usize> CollectionBijective<T> for GridOf<T, Idx, N> where Idx: Integer {}
-impl<P, T, Idx, const N: usize> Get<P> for GridOf<T, Idx, N>
+impl<T, Idx, const N: usize> CollectionBijective for GridOf<T, Idx, N> where Idx: Integer {}
+impl<P, T, Idx, const N: usize> Collection<P> for GridOf<T, Idx, N>
 where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
     type Output = <Self as Index<Vector<Idx, N>>>::Output;
     type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<P, T, Idx, const N: usize> Get<P> for GridOf<T, Idx, N>
+where
+    Idx: Integer,
+    P: Into<Vector<Idx, N>>,
+{
     #[inline(always)]
     fn get<'a>(&'a self, pos: P) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.position_to_index(pos.into()).map(|idx| unsafe { self.values().get_unchecked(idx) }) }
     #[inline(always)]
@@ -224,12 +229,18 @@ where
         self.get_mut(i).ok_or_else(|| IndexOutOfBounds::new(i, size))
     }
 }
-impl<P, T, Idx, const N: usize> GetMut<P> for GridOf<T, Idx, N>
+impl<P, T, Idx, const N: usize> CollectionMut<P> for GridOf<T, Idx, N>
 where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
     type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<P, T, Idx, const N: usize> GetMut<P> for GridOf<T, Idx, N>
+where
+    Idx: Integer,
+    P: Into<Vector<Idx, N>>,
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.position_to_index(pos.into()).map(|i| unsafe { self.values_mut().get_unchecked_mut(i) }) }
     #[track_caller]

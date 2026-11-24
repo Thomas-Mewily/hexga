@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait Capacity<T> : Collection<T>
+pub trait Capacity<T>
 {
     fn capacity(&self) -> usize;
 }
@@ -110,7 +110,7 @@ pub trait Reserve<T>: Capacity<T>
     }
 }
 
-pub trait Shrink<T> : Collection<T>
+pub trait Shrink<T>
 {
     /// Shrinks the capacity as much as possible.
     fn shrink_to_fit(&mut self);
@@ -122,7 +122,7 @@ pub trait Shrink<T> : Collection<T>
 
 /// Shortens a collection, keeping the first `len` elements and dropping
 /// the rest.
-pub trait Truncate<T> : Collection<T>
+pub trait Truncate<T>
 {
     /// Shortens it, keeping the first `len` elements and dropping
     /// the rest.

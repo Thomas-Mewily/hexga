@@ -12,7 +12,11 @@ pub struct SinglyLinkedNode<T>
     pub value: T,
 }
 
-impl<T> Collection<T> for SinglyLinkedNode<T> { type Guard<'a> = &'a T where Self: 'a; }
+impl<T> Collection<usize> for SinglyLinkedNode<T>
+{
+    type Output = T;
+    type Guard<'a> = &'a T where Self: 'a;
+}
 
 impl<T> Push<T> for SinglyLinkedNode<T>
 {

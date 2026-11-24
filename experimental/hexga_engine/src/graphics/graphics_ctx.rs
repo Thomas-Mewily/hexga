@@ -449,28 +449,20 @@ impl RotateZ for Graphics
     }
 }
 
-impl<T> Collection<T> for Graphics
-where
-    ImmediateRenderBuilder: Collection<T>,
-{
-    type Guard<'a> = <ImmediateRenderBuilder as Collection<T>>::Guard<'a> where Self: 'a;
-}
-impl<T> CollectionMut<T> for Graphics
-where
-    ImmediateRenderBuilder: CollectionMut<T>,
-{
-    type GuardMut<'a> = <ImmediateRenderBuilder as CollectionMut<T>>::GuardMut<'a> where Self: 'a;
-}
 impl<T> Last<T> for Graphics
 where
     ImmediateRenderBuilder: Last<T>,
 {
+    type Guard<'a> = <ImmediateRenderBuilder as Last<T>>::Guard<'a> where Self: 'a;
+
     fn last<'a>(&'a self) -> Option<Self::Guard<'a>> { Last::last(&self.immediate) }
 }
 impl<T> LastMut<T> for Graphics
 where
     ImmediateRenderBuilder: LastMut<T>,
 {
+    type GuardMut<'a> = <ImmediateRenderBuilder as LastMut<T>>::GuardMut<'a> where Self: 'a;
+
     fn last_mut<'a>(&'a mut self) -> Option<Self::GuardMut<'a>> { LastMut::last_mut(&mut self.immediate) }
 }
 impl<T> Push<T> for Graphics

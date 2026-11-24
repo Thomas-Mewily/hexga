@@ -2,7 +2,7 @@ use super::*;
 
 
 /// Duplicates the last value and push it.
-pub trait Dup<T>: Collection<T>
+pub trait Dup<T>
 {
     /// Duplicates the last value and push it if possible.
     fn dup(&mut self) -> bool;
@@ -23,7 +23,7 @@ where
 
 
 /// Duplicates the first value and push it..
-pub trait DupFirst<T>: Collection<T>
+pub trait DupFirst<T>
 {
     /// Duplicates the first value and push it if possible.
     fn dup_first(&mut self) -> bool;
@@ -45,7 +45,7 @@ where
 
 
 /// Duplicates the last value and push_front it.
-pub trait DupBack<T>: Collection<T>
+pub trait DupBack<T>
 {
     /// Duplicates the last value and push_front it if possible.
     fn dup_front(&mut self) -> bool;
@@ -66,7 +66,7 @@ where
 
 
 /// Duplicates the first value and push_front it.
-pub trait DupFirstBack<T>: Collection<T>
+pub trait DupFirstBack<T>
 {
     /// Duplicates the first value and push_front it if possible.
     fn dup_front(&mut self) -> bool;

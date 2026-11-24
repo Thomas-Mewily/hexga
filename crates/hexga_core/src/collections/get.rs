@@ -13,11 +13,8 @@
 use super::*;
 
 /// A collection have a quick way to access each element.
-pub trait Get<Idx> : Collection<Self::Output>
+pub trait Get<Idx> : Collection<Idx>
 {
-    type Output: ?Sized;
-    //type Guard<'a>: Deref<Target = Self::Output> where Self: 'a, Self::Output: 'a;
-
     /// Returns a reference to the value.
     fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a;
 
@@ -47,9 +44,8 @@ pub trait TryGet<Idx>: Get<Idx>
     fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a;
 }
 
-pub trait GetMut<Idx>: Get<Idx>
+pub trait GetMut<Idx>: Get<Idx> + CollectionMut<Idx>
 {
-    type GuardMut<'a>: DerefMut<Target = Self::Output> where Self: 'a, Self::Output: 'a;
     /// Returns a mutable reference to the value.
     fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::GuardMut<'a>> where Self::Output: 'a;
     #[inline(always)]
@@ -232,7 +228,7 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
 
 mod wrap_std_nightly_only_feature_to_stay_in_stable
 {
-    use super::{GetManyMut, ManyMutError, map_on};
+    use super::{GetManyMut, ManyMutError};
 
     /*
     /// To wrap [core::slice::GetDisjointMutIndex](https://doc.rust-lang.org/core/slice/trait.GetDisjointMutIndex.html) because it's nightly-only experimental API...
@@ -313,7 +309,7 @@ mod wrap_std_nightly_only_feature_to_stay_in_stable
     type StdOpsRangeInclusive = core::ops::RangeInclusive<usize>;
     type StdRangeRangeInclusive = core::range::RangeInclusive<usize>;
 
-    map_on!(
+    hexga_map_on::map_on!(
         (
             StdOpsRange,
             StdRangeRange,
@@ -399,12 +395,89 @@ impl<Idx, B> IndexOutOfBounds<Idx, B>
     pub fn new(index: Idx, bound: B) -> Self { Self { index, bound } }
 }
 
-impl<Idx, T> Get<Idx> for [T]
+/// Index for the `Ok` payload of a `Result`.
+///
+/// Bracket indexing panics if the result is `Err`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct ResultOk;
+
+/// Index for the `Err` payload of a `Result`.
+///
+/// Bracket indexing panics if the result is `Ok`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct ResultErr;
+
+impl<T, E> Collection<ResultOk> for Result<T, E>
+{
+    type Output = T;
+    type Guard<'a> = &'a T where Self: 'a;
+}
+impl<T, E> CollectionMut<ResultOk> for Result<T, E>
+{
+    type GuardMut<'a> = &'a mut T where Self: 'a;
+}
+impl<T, E> Get<ResultOk> for Result<T, E>
+{
+    fn get<'a>(&'a self, _: ResultOk) -> Option<Self::Guard<'a>> where T: 'a { self.as_ref().ok() }
+}
+impl<T, E> GetMut<ResultOk> for Result<T, E>
+{
+    fn get_mut<'a>(&'a mut self, _: ResultOk) -> Option<Self::GuardMut<'a>> where T: 'a { self.as_mut().ok() }
+}
+impl<T, E> Index<ResultOk> for Result<T, E>
+{
+    type Output = T;
+
+    #[track_caller]
+    fn index(&self, index: ResultOk) -> &T { Get::get_or_panic(self, index) }
+}
+impl<T, E> core::ops::IndexMut<ResultOk> for Result<T, E>
+{
+    #[track_caller]
+    fn index_mut(&mut self, index: ResultOk) -> &mut T { GetMut::get_mut_or_panic(self, index) }
+}
+
+impl<T, E> Collection<ResultErr> for Result<T, E>
+{
+    type Output = E;
+    type Guard<'a> = &'a E where Self: 'a;
+}
+impl<T, E> CollectionMut<ResultErr> for Result<T, E>
+{
+    type GuardMut<'a> = &'a mut E where Self: 'a;
+}
+impl<T, E> Get<ResultErr> for Result<T, E>
+{
+    fn get<'a>(&'a self, _: ResultErr) -> Option<Self::Guard<'a>> where E: 'a { self.as_ref().err() }
+}
+impl<T, E> GetMut<ResultErr> for Result<T, E>
+{
+    fn get_mut<'a>(&'a mut self, _: ResultErr) -> Option<Self::GuardMut<'a>> where E: 'a { self.as_mut().err() }
+}
+impl<T, E> Index<ResultErr> for Result<T, E>
+{
+    type Output = E;
+
+    #[track_caller]
+    fn index(&self, index: ResultErr) -> &E { Get::get_or_panic(self, index) }
+}
+impl<T, E> core::ops::IndexMut<ResultErr> for Result<T, E>
+{
+    #[track_caller]
+    fn index_mut(&mut self, index: ResultErr) -> &mut E { GetMut::get_mut_or_panic(self, index) }
+}
+
+impl<Idx, T> Collection<Idx> for [T]
 where
     Idx: SliceIndex<[T]>,
 {
     type Output = Idx::Output;
     type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<Idx, T> Get<Idx> for [T]
+where
+    Idx: SliceIndex<[T]>,
+{
     #[inline(always)]
     fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index) }
     #[inline(always)]
@@ -415,8 +488,6 @@ impl<Idx, T> Get<Idx> for &[T]
 where
     Idx: SliceIndex<[T]>,
 {
-    type Output = Idx::Output;
-    type Guard<'a> = <[T] as Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
     #[inline(always)]
     fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { (*self).get(index) }
     #[inline(always)]
@@ -427,8 +498,6 @@ impl<Idx, T> Get<Idx> for &mut [T]
 where
     Idx: SliceIndex<[T]>,
 {
-    type Output = Idx::Output;
-    type Guard<'a> = <[T] as Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
     #[inline(always)]
     fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { (**self).get(index) }
     #[inline(always)]
@@ -460,11 +529,16 @@ where
     fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { (**self).try_get(index) }
 }
 
-impl<Idx, T> GetMut<Idx> for [T]
+impl<Idx, T> CollectionMut<Idx> for [T]
 where
     Idx: SliceIndex<[T]>,
 {
     type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<Idx, T> GetMut<Idx> for [T]
+where
+    Idx: SliceIndex<[T]>,
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.get_mut(index) }
     #[inline(always)]
@@ -475,7 +549,6 @@ impl<Idx, T> GetMut<Idx> for &mut [T]
 where
     Idx: SliceIndex<[T]>,
 {
-    type GuardMut<'a> = <[T] as GetMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { (*self).get_mut(index) }
     #[inline(always)]
@@ -505,7 +578,6 @@ where
 impl<'s, Idx, T> TryGetMut<Idx> for &'s mut [T]
 where
     Idx: SliceIndex<[T]> + Clone,
-    &'s [T]: TryGetMut<Idx>,
 {
     #[inline(always)]
     fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a { (**self).try_get_mut(index) }
@@ -533,7 +605,7 @@ where
 impl<Idx, T> GetManyMut<Idx> for &mut [T]
 where
     Idx: SliceIndex<[T]>,
-    [T]: GetManyMut<Idx, Output = Self::Output>,
+    [T]: GetManyMut<Idx>,
 {
     #[inline(always)]
     fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Option<[Self::GuardMut<'a>; N]>  where Self::Output: 'a{ <[T] as GetManyMut<Idx>>::get_many_mut(*self, indices) }
@@ -558,12 +630,17 @@ where
     fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { TryGet::try_get(self.as_slice(), index) }
 }
 
+impl<Idx, T, const N: usize> Collection<Idx> for [T; N]
+where
+    [T]: Collection<Idx>,
+{
+    type Output = <[T] as Collection<Idx>>::Output;
+    type Guard<'a> = <[T] as Collection<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
+}
 impl<Idx, T, const N: usize> Get<Idx> for [T; N]
 where
     [T]: Get<Idx>,
 {
-    type Output = <[T] as Get<Idx>>::Output;
-    type Guard<'a> = <[T] as Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
     #[inline(always)]
     fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { Get::get(self.as_slice(), index) }
     #[inline(always)]
@@ -579,11 +656,16 @@ where
     fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a { TryGetMut::try_get_mut(self.as_mut_slice(), index) }
 }
 
+impl<Idx, T, const N: usize> CollectionMut<Idx> for [T; N]
+where
+    [T]: CollectionMut<Idx>,
+{
+    type GuardMut<'a> = <[T] as CollectionMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+}
 impl<Idx, T, const N: usize> GetMut<Idx> for [T; N]
 where
     [T]: GetMut<Idx>,
 {
-    type GuardMut<'a> = <[T] as GetMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { GetMut::get_mut(self.as_mut_slice(), index) }
     #[inline(always)]
@@ -621,12 +703,17 @@ where
     #[inline(always)]
     fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { TryGet::try_get(self.as_slice(), index) }
 }
+impl<Idx, T> Collection<Idx> for Vec<T>
+where
+    [T]: Collection<Idx>,
+{
+    type Output = <[T] as Collection<Idx>>::Output;
+    type Guard<'a> = <[T] as Collection<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
+}
 impl<Idx, T> Get<Idx> for Vec<T>
 where
     [T]: Get<Idx>,
 {
-    type Output = <[T] as Get<Idx>>::Output;
-    type Guard<'a> = <[T] as Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
     #[inline(always)]
     fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { Get::get(self.as_slice(), index) }
     #[track_caller]
@@ -640,11 +727,16 @@ where
     #[inline(always)]
     fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a { TryGetMut::try_get_mut(self.as_mut_slice(), index) }
 }
+impl<Idx, T> CollectionMut<Idx> for Vec<T>
+where
+    [T]: CollectionMut<Idx>,
+{
+    type GuardMut<'a> = <[T] as CollectionMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+}
 impl<Idx, T> GetMut<Idx> for Vec<T>
 where
     [T]: GetMut<Idx>,
 {
-    type GuardMut<'a> = <[T] as GetMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { GetMut::get_mut(self.as_mut_slice(), index) }
     #[inline(always)]
@@ -676,10 +768,13 @@ impl<T> TryGet<usize> for VecDeque<T>
     #[inline(always)]
     fn try_get<'a>(&'a self, index: usize) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.get(index).ok_or(IndexOutOfBounds { index, bound: 0..self.len() }) }
 }
-impl<T> Get<usize> for VecDeque<T>
+impl<T> Collection<usize> for VecDeque<T>
 {
     type Output = <Self as Index<usize>>::Output;
     type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<T> Get<usize> for VecDeque<T>
+{
     #[inline(always)]
     fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index) }
 }
@@ -692,9 +787,12 @@ impl<T> TryGetMut<usize> for VecDeque<T>
         self.get_mut(index).ok_or(IndexOutOfBounds { index, bound: 0..len })
     }
 }
-impl<T> GetMut<usize> for VecDeque<T>
+impl<T> CollectionMut<usize> for VecDeque<T>
 {
     type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<T> GetMut<usize> for VecDeque<T>
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: usize) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.get_mut(index) }
 }
@@ -719,86 +817,118 @@ impl<T> GetManyMut<usize> for VecDeque<T>
     fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> Option<[Self::GuardMut<'a>; N]>  where Self::Output: 'a{ self.make_contiguous().get_many_mut(indices) }
 }
 
-impl<Idx> Get<Idx> for str
-where
-    Idx: SliceIndex<str>,
+/// A `usize` index counts Unicode scalar values from the start of the string.
+impl Collection<usize> for str
 {
-    type Output = Idx::Output;
-    type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
-    #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index) }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Guard<'a> where Self::Output: 'a { unsafe { self.get_unchecked(index) } }
-}
-impl<Idx> TryGet<Idx> for str
-where
-    Idx: SliceIndex<str> + Clone,
-{
-    type Error = IndexOutOfBounds<Idx, Range<usize>>;
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.get(index.clone()).ok_or(IndexOutOfBounds { index, bound: 0..self.len() }) }
+    type Output = char;
+    type Guard<'a> = Identity<char> where Self: 'a;
 }
 
-impl<Idx> Get<Idx> for &str
-where
-    Idx: SliceIndex<str>,
+impl Get<usize> for str
 {
-    type Output = Idx::Output;
-    type Guard<'a> = <str as Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
-    #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { (*self).get(index) }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Guard<'a> where Self::Output: 'a { unsafe { (*self).get_unchecked(index) } }
-}
-impl<Idx> TryGet<Idx> for &str
-where
-    Idx: SliceIndex<str> + Clone,
-{
-    type Error = IndexOutOfBounds<Idx, Range<usize>>;
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { (*self).try_get(index) }
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a
+    {
+        self.chars().nth(index).map(Identity)
+    }
 }
 
-impl<Idx> Get<Idx> for &mut str
-where
-    Idx: SliceIndex<str>,
+impl TryGet<usize> for str
 {
-    type Output = Idx::Output;
-    type Guard<'a> = <str as Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
-    #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { (**self).get(index) }
-    #[inline(always)]
-    #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Guard<'a> where Self::Output: 'a { unsafe { (**self).get_unchecked(index) } }
-}
-impl<Idx> TryGet<Idx> for &mut str
-where
-    Idx: SliceIndex<str> + Clone,
-{
-    type Error = IndexOutOfBounds<Idx, Range<usize>>;
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { (**self).try_get(index) }
+    type Error = IndexOutOfBounds;
+
+    fn try_get<'a>(&'a self, index: usize) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a
+    {
+        Get::get(self, index).ok_or_else(|| IndexOutOfBounds::new(index, 0..self.chars().count()))
+    }
 }
 
-// FIXME: I'm not sure how to delegate it to `str` like delegating the TryGet for `Vec<T>` into the TryGet of `[T]`
-impl<Idx> TryGet<Idx> for String
-where
-    Idx: SliceIndex<str> + Clone,
+// Range indices retain the standard UTF-8 byte boundaries.
+macro_rules! impl_str_range_access
 {
-    type Error = IndexOutOfBounds<Idx, Range<usize>>;
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.as_str().try_get(index) }
+    ($($idx:ty),* $(,)?) => {$(
+        impl Collection<$idx> for str
+        {
+            type Output = str;
+            type Guard<'a> = &'a str where Self: 'a;
+        }
+        impl CollectionMut<$idx> for str
+        {
+            type GuardMut<'a> = &'a mut str where Self: 'a;
+        }
+        impl Get<$idx> for str
+        {
+            fn get<'a>(&'a self, index: $idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { str::get(self, index) }
+
+            #[track_caller]
+            unsafe fn get_unchecked<'a>(&'a self, index: $idx) -> Self::Guard<'a> where Self::Output: 'a
+            {
+                unsafe { str::get_unchecked(self, index) }
+            }
+        }
+        impl TryGet<$idx> for str
+        {
+            type Error = IndexOutOfBounds<$idx, Range<usize>>;
+
+            fn try_get<'a>(&'a self, index: $idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a
+            {
+                str::get(self, index.clone()).ok_or(IndexOutOfBounds::new(index, 0..self.len()))
+            }
+        }
+    )*};
 }
-impl<Idx> Get<Idx> for String
-where
-    Idx: SliceIndex<str>,
+
+impl_str_range_access!(
+    core::ops::RangeFull,
+    core::ops::Range<usize>,
+    core::ops::RangeFrom<usize>,
+    core::ops::RangeTo<usize>,
+    core::ops::RangeInclusive<usize>,
+    core::ops::RangeToInclusive<usize>,
+    core::range::Range<usize>,
+    core::range::RangeFrom<usize>,
+    core::range::RangeInclusive<usize>,
+    core::range::RangeToInclusive<usize>,
+    (core::ops::Bound<usize>, core::ops::Bound<usize>)
+);
+
+impl<Idx> Collection<Idx> for String where str: Collection<Idx>
 {
-    type Output = <str as Get<Idx>>::Output;
-    type Guard<'a> = <str as Get<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
-    #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.as_str().get(index) }
-    #[track_caller]
-    #[inline(always)]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Guard<'a> where Self::Output: 'a { unsafe { self.as_str().get_unchecked(index) } }
+    type Output = <str as Collection<Idx>>::Output;
+    type Guard<'a> = <str as Collection<Idx>>::Guard<'a> where Self: 'a, Self::Output: 'a;
 }
+
+impl<Idx> CollectionMut<Idx> for String where str: CollectionMut<Idx>
+{
+    type GuardMut<'a> = <str as CollectionMut<Idx>>::GuardMut<'a> where Self: 'a, Self::Output: 'a;
+}
+
+macro_rules! forward_str_access
+{
+    ($($ty:ty),* $(,)?) => {$(
+        impl<Idx> Get<Idx> for $ty where str: Get<Idx>
+        {
+            fn get<'a>(&'a self, index: Idx) -> Option<Self::Guard<'a>> where Self::Output: 'a { Get::get(&**self, index) }
+
+            #[track_caller]
+            unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Guard<'a> where Self::Output: 'a
+            {
+                unsafe { Get::get_unchecked(&**self, index) }
+            }
+        }
+
+        impl<Idx> TryGet<Idx> for $ty where str: TryGet<Idx>
+        {
+            type Error = <str as TryGet<Idx>>::Error;
+
+            fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a
+            {
+                TryGet::try_get(&**self, index)
+            }
+        }
+    )*};
+}
+
+forward_str_access!(&str, &mut str, String);
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
@@ -829,7 +959,7 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<K, V, S, Q> Get<&Q> for HashMap<K, V, S>
+impl<K, V, S, Q> Collection<&Q> for HashMap<K, V, S>
 where
     K: Borrow<Q>,
     Q: ?Sized + Hash + Eq,
@@ -838,6 +968,15 @@ where
 {
     type Output = V;
     type Guard<'a> = &'a V where Self: 'a, Self::Output: 'a;
+}
+#[cfg(feature = "std")]
+impl<K, V, S, Q> Get<&Q> for HashMap<K, V, S>
+where
+    K: Borrow<Q>,
+    Q: ?Sized + Hash + Eq,
+    K: Eq + Hash,
+    S: BuildHasher,
+{
     #[inline(always)]
     fn get<'a>(&'a self, k: &Q) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(k) }
 }
@@ -860,7 +999,7 @@ where
     }
 }
 #[cfg(feature = "std")]
-impl<K, V, S, Q> GetMut<&Q> for HashMap<K, V, S>
+impl<K, V, S, Q> CollectionMut<&Q> for HashMap<K, V, S>
 where
     K: Borrow<Q>,
     Q: ?Sized + Hash + Eq,
@@ -868,6 +1007,15 @@ where
     S: BuildHasher,
 {
     type GuardMut<'a> = &'a mut V where Self: 'a, Self::Output: 'a;
+}
+#[cfg(feature = "std")]
+impl<K, V, S, Q> GetMut<&Q> for HashMap<K, V, S>
+where
+    K: Borrow<Q>,
+    Q: ?Sized + Hash + Eq,
+    K: Eq + Hash,
+    S: BuildHasher,
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, k: &Q) -> Option<Self::GuardMut<'a>>
     where
@@ -932,7 +1080,7 @@ where
     type Error = MissingKey<Q>;
     fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
-impl<K, V, Q> Get<&Q> for BTreeMap<K, V>
+impl<K, V, Q> Collection<&Q> for BTreeMap<K, V>
 where
     K: Borrow<Q>,
     Q: ?Sized + Ord,
@@ -940,6 +1088,13 @@ where
 {
     type Output = V;
     type Guard<'a> = &'a V where Self: 'a, Self::Output: 'a;
+}
+impl<K, V, Q> Get<&Q> for BTreeMap<K, V>
+where
+    K: Borrow<Q>,
+    Q: ?Sized + Ord,
+    K: Ord,
+{
     #[inline(always)]
     fn get<'a>(&'a self, k: &Q) -> Option<Self::Guard<'a>>
     where
@@ -958,13 +1113,20 @@ where
 {
     fn try_get_mut<'a>(&'a mut self, index: &Q) -> Result<Self::GuardMut<'a>, Self::Error> where Self::Output: 'a { self.get_mut(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
-impl<K, V, Q> GetMut<&Q> for BTreeMap<K, V>
+impl<K, V, Q> CollectionMut<&Q> for BTreeMap<K, V>
 where
     K: Borrow<Q>,
     Q: ?Sized + Ord,
     K: Ord,
 {
     type GuardMut<'a> = &'a mut V where Self: 'a, Self::Output: 'a;
+}
+impl<K, V, Q> GetMut<&Q> for BTreeMap<K, V>
+where
+    K: Borrow<Q>,
+    Q: ?Sized + Ord,
+    K: Ord,
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, k: &Q) -> Option<Self::GuardMut<'a>>
     where
@@ -987,7 +1149,7 @@ where
     fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
 #[cfg(feature = "std")]
-impl<K, S, Q> Get<&Q> for HashSet<K, S>
+impl<K, S, Q> Collection<&Q> for HashSet<K, S>
 where
     K: Borrow<Q>,
     Q: ?Sized + Hash + Eq,
@@ -996,6 +1158,15 @@ where
 {
     type Output = K;
     type Guard<'a> = &'a K where Self: 'a, Self::Output: 'a;
+}
+#[cfg(feature = "std")]
+impl<K, S, Q> Get<&Q> for HashSet<K, S>
+where
+    K: Borrow<Q>,
+    Q: ?Sized + Hash + Eq,
+    K: Eq + Hash,
+    S: BuildHasher,
+{
     #[inline(always)]
     fn get<'a>(&'a self, k: &Q) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(k) }
 }
@@ -1009,7 +1180,7 @@ where
     type Error = MissingKey<Q>;
     fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
 }
-impl<K, Q> Get<&Q> for BTreeSet<K>
+impl<K, Q> Collection<&Q> for BTreeSet<K>
 where
     K: Borrow<Q>,
     Q: ?Sized + Ord,
@@ -1017,6 +1188,55 @@ where
 {
     type Output = K;
     type Guard<'a> = &'a K where Self: 'a, Self::Output: 'a;
+}
+impl<K, Q> Get<&Q> for BTreeSet<K>
+where
+    K: Borrow<Q>,
+    Q: ?Sized + Ord,
+    K: Ord,
+{
     #[inline(always)]
     fn get<'a>(&'a self, k: &Q) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(k) }
+}
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+
+    #[test]
+    fn result_indices_select_the_matching_payload()
+    {
+        let mut ok: Result<i32, &str> = Ok(1);
+        assert_eq!(Get::get(&ok, ResultOk), Some(&1));
+        assert_eq!(GetMut::get_mut(&mut ok, ResultErr), None);
+        ok[ResultOk] = 2;
+        assert_eq!(ok[ResultOk], 2);
+
+        let mut err: Result<i32, &str> = Err("first");
+        assert_eq!(Get::get(&err, ResultOk), None);
+        *GetMut::get_mut(&mut err, ResultErr).unwrap() = "second";
+        assert_eq!(err[ResultErr], "second");
+        err[ResultErr] = "third";
+        assert_eq!(err, Err("third"));
+    }
+
+    #[test]
+    fn string_indices_return_characters_and_ranges_return_slices()
+    {
+        let string = String::from("aé🦀");
+        assert_eq!(*Get::get(&string, 2).unwrap(), '🦀');
+        assert_eq!(Get::get(&string, 1..3), Some("é"));
+        assert_eq!(Get::get(&string, 1..2), None);
+        assert_eq!(TryGet::try_get(string.as_str(), 3), Err(IndexOutOfBounds::new(3, 0..3)));
+    }
+
+    #[test]
+    fn mutable_sequence_indices_return_elements_and_slices()
+    {
+        let mut values = [1, 2, 3];
+        *GetMut::get_mut(&mut values, 0).unwrap() = 4;
+        GetMut::get_mut(&mut values, 1..).unwrap().copy_from_slice(&[5, 6]);
+        assert_eq!(values, [4, 5, 6]);
+    }
 }

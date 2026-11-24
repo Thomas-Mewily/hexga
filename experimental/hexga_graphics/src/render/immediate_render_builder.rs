@@ -12,30 +12,6 @@ pub struct ImmediateRenderBuilder<const N: usize = 3>
     pub(crate) scissor_stack: NonEmptyStack<Rect2i>,
 }
 
-impl<const N: usize> Collection<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
-{
-    type Guard<'a> = &'a Matrix<float, 4, 4> where Self: 'a;
-}
-impl<const N: usize> CollectionMut<Matrix<float, 4, 4>> for ImmediateRenderBuilder<N>
-{
-    type GuardMut<'a> = &'a mut Matrix<float, 4, 4> where Self: 'a;
-}
-impl<const N: usize> Collection<Viewport> for ImmediateRenderBuilder<N>
-{
-    type Guard<'a> = &'a Viewport where Self: 'a;
-}
-impl<const N: usize> CollectionMut<Viewport> for ImmediateRenderBuilder<N>
-{
-    type GuardMut<'a> = &'a mut Viewport where Self: 'a;
-}
-impl<const N: usize> Collection<Scissor> for ImmediateRenderBuilder<N>
-{
-    type Guard<'a> = &'a Scissor where Self: 'a;
-}
-impl<const N: usize> CollectionMut<Scissor> for ImmediateRenderBuilder<N>
-{
-    type GuardMut<'a> = &'a mut Scissor where Self: 'a;
-}
 
 
 impl<const N: usize> Default for ImmediateRenderBuilder<N>

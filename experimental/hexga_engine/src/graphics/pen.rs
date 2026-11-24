@@ -23,19 +23,6 @@ impl GetDrawParam for Pen
     fn draw_param(&self) -> DrawParam { GRAPHICS.get_mut().draw_param() }
 }
 
-impl<T> Collection<T> for Pen
-where
-    Graphics: Collection<T>,
-{
-    type Guard<'a> = <Graphics as Collection<T>>::Guard<'a> where Self: 'a;
-}
-impl<T> CollectionMut<T> for Pen
-where
-    Graphics: CollectionMut<T>,
-{
-    type GuardMut<'a> = <Graphics as CollectionMut<T>>::GuardMut<'a> where Self: 'a;
-}
-
 impl GetMatrix<float, 4, 4> for Pen
 {
     fn matrix(&self) -> Matrix<float, 4, 4> { GRAPHICS.get_mut().matrix() }

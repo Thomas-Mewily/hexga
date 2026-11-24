@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait Pop<T>: Collection<T>
+pub trait Pop<T>
 {
     /// Removes the last element from the collection and returns it, or [`None`] if it is empty.
     fn pop(&mut self) -> Option<T>;
@@ -36,7 +36,7 @@ pub trait TryPop<T> : Pop<T>
     fn try_pop(&mut self) -> Result<T, Self::Error>;
 }
 */
-pub trait PopFront<T>: Collection<T>
+pub trait PopFront<T>
 {
     /// Removes the first element and returns it, or [`None`] if the collection is empty.
     fn pop_front(&mut self) -> Option<T>;

@@ -19,17 +19,15 @@ pub type Bit = bool;
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct BitSet<T>(pub T);
 
-impl<T> Collection<Bit> for BitSet<T> where T: Integer 
+impl<T> Collection<BitIndex> for BitSet<T> where T: Integer
 {
+    type Output = Bit;
     type Guard<'a> = Identity<Bit> where Self: 'a;
 }
 /*
 impl<T> Get<BitIndex> for BitSet<T> where T: Integer 
 {
-    type Output = Bit;
-    type Guard<'a> where Self: 'a, Self::Output: 'a;
-
-    fn get<'a>(&'a self, index: Bit) -> Option<Self::Guard<'a>> where Self::Output: 'a {
+    fn get<'a>(&'a self, index: BitIndex) -> Option<Self::Guard<'a>> where Self::Output: 'a {
         todo!()
     }
 }

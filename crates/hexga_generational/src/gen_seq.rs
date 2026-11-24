@@ -1248,25 +1248,11 @@ impl<'a, T, Gen: GenerationalIndex> ExactSizeIterator for IterMut<'a, T, Gen>
     fn len(&self) -> usize { self.len_remaining }
 }
 
-impl<T, Gen, C> CollectionBijective<T> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionBijective for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
-}
-impl<T, Gen, C> Collection<T> for GenSeq<T, Gen, C>
-where
-    C: AsRef<[Entry<T, Gen>]>,
-    Gen: GenerationalIndex,
-{
-    type Guard<'a> = &'a T where Self: 'a;
-}
-impl<T, Gen, C> CollectionMut<T> for GenSeq<T, Gen, C>
-where
-    C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
-    Gen: GenerationalIndex,
-{
-    type GuardMut<'a> = &'a mut T where Self: 'a;
 }
 impl<T, Gen, C> Length for GenSeq<T, Gen, C>
 where
@@ -1580,13 +1566,19 @@ where
     }
 }
 
-impl<T, Gen, C> Get<usize> for GenSeq<T, Gen, C>
+impl<T, Gen, C> Collection<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
     type Output = <Self as Index<usize>>::Output;
     type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<T, Gen, C> Get<usize> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
     #[inline(always)]
     fn get<'a>(&'a self, index: usize) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get_from_index(index) }
 }
@@ -1602,13 +1594,19 @@ where
     }
 }
 
-impl<T, Gen, C> Get<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
+impl<T, Gen, C> Collection<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
     type Output = <Self as Index<GenIDOf<T, Gen>>>::Output;
     type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<T, Gen, C> Get<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
     #[inline(always)]
     fn get<'a>(&'a self, index: UntypedGenIDOf<Gen>) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index.typed::<T>()) }
 }
@@ -1621,13 +1619,19 @@ where
     fn try_get<'a>(&'a self, id: UntypedGenIDOf<Gen>) -> Result<Self::Guard<'a>, Self::Error> where Self::Output: 'a { self.try_get(id.typed::<T>()) }
 }
 
-impl<T, Gen, C> Get<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
+impl<T, Gen, C> Collection<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
     type Output = <Self as Index<GenIDOf<T, Gen>>>::Output;
     type Guard<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<T, Gen, C> Get<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
     #[inline(always)]
     fn get<'a>(&'a self, index: GenIDOf<T, Gen>) -> Option<Self::Guard<'a>> where Self::Output: 'a { self.get(index) }
 }
@@ -1661,12 +1665,18 @@ where
     }
 }
 
-impl<T, Gen, C> GetMut<usize> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionMut<usize> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
     type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<T, Gen, C> GetMut<usize> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: usize) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.get_mut_from_index(index) }
 }
@@ -1744,12 +1754,18 @@ where
     }
 }
 
-impl<T, Gen, C> GetMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
     type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<T, Gen, C> GetMut<GenIDOf<T, Gen>> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: GenIDOf<T, Gen>) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.get_mut(index) }
 }
@@ -1847,12 +1863,18 @@ where
     }
 }
 
-impl<T, Gen, C> GetMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
     type GuardMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+}
+impl<T, Gen, C> GetMut<UntypedGenIDOf<Gen>> for GenSeq<T, Gen, C>
+where
+    C: AsRef<[Entry<T, Gen>]> + AsMut<[Entry<T, Gen>]>,
+    Gen: GenerationalIndex,
+{
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::GuardMut<'a>> where Self::Output: 'a { self.get_mut(index.typed::<T>()) }
 }
@@ -1911,31 +1933,31 @@ where
     fn remove(&mut self, index: UntypedGenIDOf<Gen>) -> Option<Self::Output> { self.remove(index.typed::<T>()) }
 }
 
-impl<T, Gen, C> CollectionPushStableKey<T> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionPushStableKey for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionPopStableKey<T> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionPopStableKey for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionInsertStableKey<T> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionInsertStableKey for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionRemoveStableKey<T> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionRemoveStableKey for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
 {
 }
-impl<T, Gen, C> CollectionGetMutStableKey<T> for GenSeq<T, Gen, C>
+impl<T, Gen, C> CollectionGetMutStableKey for GenSeq<T, Gen, C>
 where
     C: AsRef<[Entry<T, Gen>]>,
     Gen: GenerationalIndex,
