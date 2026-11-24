@@ -53,11 +53,11 @@ pub enum GBufferUsage
     /// operation.
     /// Allow a buffer to be the destination buffer for a [`CommandEncoder::copy_buffer_to_buffer`], [`CommandEncoder::copy_texture_to_buffer`],
     /// [`CommandEncoder::clear_buffer`] or [`Queue::write_buffer`] operation.
-    CopySourceDest = Self::CopySource | Self::CopyDest,
+    Copy = Self::CopySource | Self::CopyDest,
 
     /// `MapRead | MapWrite`
     ///
-    MapReadWrite = Self::MapRead | Self::MapWrite,
+    Map = Self::MapRead | Self::MapWrite,
 }
 impl GBufferUsageFlags
 {

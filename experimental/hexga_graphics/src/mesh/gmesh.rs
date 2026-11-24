@@ -33,8 +33,8 @@ impl<const N: usize> GMesh<N>
 
     pub fn new(vertices: &[VertexOf<N>], indices: &[VertexIndex]) -> Self
     {
-        let indices = indices.to_gpu_vec(GBufferUsageFlags::Index | GBufferUsageFlags::CopySourceDest);
-        let vertices = vertices.to_gpu_vec(GBufferUsageFlags::Vertex | GBufferUsageFlags::CopySourceDest);
+        let indices = indices.to_gpu_vec(GBufferUsageFlags::Index | GBufferUsageFlags::Copy);
+        let vertices = vertices.to_gpu_vec(GBufferUsageFlags::Vertex | GBufferUsageFlags::Copy);
         Self { vertices, indices }
     }
 
