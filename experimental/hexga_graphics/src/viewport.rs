@@ -53,7 +53,7 @@ where
 {
 }
 
-pub trait ViewportStackDup<Idx = DrawStackIndex<Viewport>>: Dup<Idx, Output = Viewport> {
+pub trait ViewportStackDup<Idx>: Dup<Idx, Output = Viewport> {
     fn dup_viewport(&mut self) -> bool {
         self.dup()
     }

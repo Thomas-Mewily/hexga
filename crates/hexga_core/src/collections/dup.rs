@@ -2,16 +2,15 @@ use super::*;
 
 
 /// Duplicates the last value and push it.
-pub trait Dup<Idx>: Collection<Idx>
+pub trait Dup<T> //: Collection<Idx>
 {
     /// Duplicates the last value and push it if possible.
     fn dup(&mut self) -> bool;
 }
 
-impl<Idx, C> Dup<Idx> for C
+impl<T, C> Dup<T> for C
 where
-    C: Last<Idx> + Push<<C as Collection<Idx>>::Output>,
-    <C as Collection<Idx>>::Output: Clone,
+    C: Last<T> + Push<T>, T: Clone,
 {
     fn dup(&mut self) -> bool
     {

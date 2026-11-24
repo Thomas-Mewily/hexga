@@ -1,5 +1,14 @@
 use super::*;
 
+pub trait Collection2<Output>
+{
+    type Ref<'a>: Deref<Target = Output> where Self: 'a, Output: 'a;
+}
+pub trait CollectionMut2<Output>
+{
+    type RefMut<'a>: DerefMut<Target = Output> where Self: 'a, Output: 'a;
+}
+
 /// Access to a collection's output through an index of type `Idx`.
 pub trait Collection<Idx>
 {

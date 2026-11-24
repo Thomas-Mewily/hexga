@@ -12,7 +12,7 @@ pub use immediate_render_builder::*;
 pub mod prelude
 {
     pub use super::traits::*;
-    pub use super::{DrawCall, DrawParam, DrawStackIndex,
+    pub use super::{DrawCall, DrawParam,
         immediate_render::{DrawGeometry, DrawGeometryImmediate, ImmediateRender},
         immediate_render_builder::ImmediateRenderBuilder
     };
@@ -230,8 +230,6 @@ where
     T: MatrixStackExtension<DrawStackIndex<Matrix<float, 4, 4>>> + ViewportStackExtension + ScissorStackExtension,
 {}
 
-/// Selects the draw stack whose elements have type `T`.
-pub struct DrawStackIndex<T>(core::marker::PhantomData<fn() -> T>);
 
 impl<const N: usize> Collection<DrawStackIndex<Matrix<float, 4, 4>>> for ImmediateRenderBuilder<N>
 {
@@ -377,7 +375,7 @@ mod tests
     {
         let mut builder = ImmediateRenderBuilder::<3>::default();
         let matrix = Matrix::ZERO;
-        let viewport = Viewport { depth: 0.25..0.75, ..Viewport::default() };
+        let viewport = Viewport { depth: (0.25..0.75).into(), ..Viewport::default() };
         let scissor = Vec2i::new(4, 4).to_rect();
 
         builder.push_matrix(matrix);

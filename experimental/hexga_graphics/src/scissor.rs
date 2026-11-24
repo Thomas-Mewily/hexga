@@ -23,12 +23,11 @@ where
 {
 }
 
-pub trait ScissorStackDup<Idx = DrawStackIndex<Scissor>>: Dup<Idx, Output = Scissor> {
+pub trait ScissorStackDup<Idx> : Dup<Idx, Output = Scissor> {
     fn dup_scissor(&mut self) -> bool {
         self.dup()
     }
 }
-
 impl<T, Idx> ScissorStackDup<Idx> for T
 where
     T: Dup<Idx, Output = Scissor>,
