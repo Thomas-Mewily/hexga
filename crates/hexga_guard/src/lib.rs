@@ -6,6 +6,10 @@ use core::ops::{Deref, DerefMut};
 
 // Todo: do a NonBlockingGuarded / NonBlockingGuardedMut
 
+/// Provides access to the resource it holds through a guard.
+///
+/// `Guarded<T>` focuses on the resource it holds,
+/// while `Get<Idx>` looks up a collection entry by index.
 pub trait Guarded<T: ?Sized>
 {
     type Guard<'a>: Deref<Target = T>
@@ -30,6 +34,10 @@ pub trait Guarded<T: ?Sized>
     fn get<'a>(&'a self) -> Self::Guard<'a> { self.try_get().expect("poisoned") }
 }
 
+/// Provides mutable access to the resource it holds through a guard.
+///
+/// `GuardedMut<T>` focuses on the resource it holds,
+/// while `GetMut<Idx>` looks up a collection entry by index for mutable access.
 pub trait GuardedMut<T: ?Sized>
 {
     type GuardMut<'a>: DerefMut<Target = T>
@@ -52,6 +60,7 @@ pub trait GuardedMut<T: ?Sized>
     #[track_caller]
     fn get_mut<'a>(&'a self) -> Self::GuardMut<'a> { self.try_get_mut().expect("poisoned") }
 }
+/// A guard that dereferences to a resource and can be mapped to one of its parts.
 pub trait Guard<'a, T>: Deref<Target = T>
 where
     T: ?Sized,
@@ -64,6 +73,7 @@ where
         F: FnOnce(&T) -> &U,
         U: 'a + ?Sized;
 }
+/// A guard that dereferences mutably to a resource and can be mapped to one of its parts.
 pub trait GuardMut<'a, T>: DerefMut<Target = T>
 where
     T: ?Sized,
