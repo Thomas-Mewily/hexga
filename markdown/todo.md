@@ -11,7 +11,7 @@ For io, I want don't want to specify the extension.
 When saving a value a value to a path, if the path don't have any extension, the extension should be deduced from the type itself. 
 
 Ex: 
-- `String` support the following extension : ["txt", "md", "csv] ( `load_custom_extensions()` ). The first one "txt" the prefered extension.
+- `String` support the following extension : ["txt", "md", "csv] ( `load_custom_extensions()` ). The first one "txt" the preferred extension.
 - `Image` support ["png", "jpg", "jepg"]
 
 When loading a value from a path, if the path don't have any extension, and if there is only one file with the same name, choose the extension of the file.
