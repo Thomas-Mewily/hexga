@@ -199,7 +199,7 @@ where
     fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMutWrite<'_, T>
     {
         unsafe {
-            GpuSliceMutWrite::from_wgpu(self.wgpu_view_mut())
+            GpuSliceMutWrite::from_wgpu(self.lib_wgpu_view_mut())
         }
     }
     fn update(&mut self, src: &mut [T]) { self.write(..).view.copy_from_slice(unsafe { bit::try_transmute_slice_unchecked(src) }.unwrap()); }

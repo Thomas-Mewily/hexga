@@ -10,7 +10,7 @@ const DEFAULT_WRITER_CAPACITY: usize = 1024;
 pub trait Save: CfgSerialize
 {
     fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
-    fn save_prefered_extension() -> &'static extension { Self::save_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }
+    fn save_prefered_extension() -> &'static extension { Self::save_custom_extensions().next().unwrap_or(Extension::PREFERED) }
 
     fn save_to_fs_at<FS: FileSystem, P: AsRef<Path>>(&self, fs: &mut FS, path: P) -> FileResult
     {
@@ -100,7 +100,7 @@ pub trait SaveExtension: Save
         }
 
         #[allow(unreachable_code)]
-        Err(EncodeError::save_unsupported_extension::<Self>(extension.map(Into::into)))
+        Err(EncodeError::save_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into())))
     }
 
     /// Also return the resolved path if it is different than the passed path.

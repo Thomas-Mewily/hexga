@@ -21,7 +21,7 @@ impl WindowInitGpu for WindowType
         if Gpu::is_not_init()
         {
             let instance = GpuInstance::new(&param.instance);
-            let surface = instance.wgpu.create_surface(self.winit_window())?.into();
+            let surface = instance.lib_wgpu.create_surface(self.lib_winit_window())?.into();
 
             async_init_gpu_in_proxy(instance, param.clone(), surface, event_loop.proxy().clone()).spawn();
 
@@ -29,7 +29,7 @@ impl WindowInitGpu for WindowType
         }
         else
         {
-            let surface = Gpu.instance().create_surface(self.winit_window())?.into();
+            let surface = Gpu.instance().create_surface(self.lib_winit_window())?.into();
             event_loop.send_event(AppMessage::Custom(AppCustomEvent::SurfaceReady(surface)));
             Ok(())
         }
@@ -67,10 +67,10 @@ pub(crate) async fn async_init_gpu_in_proxy(instance: GpuInstance, param: GpuPar
 
 pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>) -> GpuResult<(GpuSurface<'static>, GpuContext)>
 {
-    let compatible_surface = Some(&surface.wgpu);
+    let compatible_surface = Some(&surface.lib_wgpu);
 
     let adapter = instance
-        .wgpu
+        .lib_wgpu
         .request_adapter(&wgpu::RequestAdapterOptions {
             power_preference: param.power_preference.into(),
             force_fallback_adapter: false,

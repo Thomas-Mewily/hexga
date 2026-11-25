@@ -42,16 +42,16 @@ pub trait WgpuSliceable<T>
 where
     T: GBufferElement,
 {
-    fn wgpu_usage(&self) -> WgpuBufferUsage { self.wgpu_buffer_ref().usage() }
+    fn lib_wgpu_usage(&self) -> WgpuBufferUsage { self.lib_wgpu_buffer_ref().usage() }
 
-    fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::wgpu_slice(self.wgpu_buffer_ref(), bounds) }
+    fn lib_wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_> { WgpuSliceable::<T>::lib_wgpu_slice(self.lib_wgpu_buffer_ref(), bounds) }
 
-    fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { self.wgpu_slice(..) }
-    fn wgpu_view(&self) -> WgpuBufferView<'_> { self.wgpu_slice(..).get_mapped_range() }
-    fn wgpu_view_mut(&self) -> WgpuBufferViewMut<'_> { self.wgpu_slice(..).get_mapped_range_mut() }
+    fn lib_wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { self.lib_wgpu_slice(..) }
+    fn lib_wgpu_view(&self) -> WgpuBufferView<'_> { self.lib_wgpu_slice(..).get_mapped_range() }
+    fn lib_wgpu_view_mut(&self) -> WgpuBufferViewMut<'_> { self.lib_wgpu_slice(..).get_mapped_range_mut() }
 
-    fn wgpu_buffer(&self) -> WgpuBuffer { self.wgpu_buffer_ref().clone() }
-    fn wgpu_buffer_ref(&self) -> &WgpuBuffer;
+    fn lib_wgpu_buffer(&self) -> WgpuBuffer { self.lib_wgpu_buffer_ref().clone() }
+    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer;
 
     /// Performs a deep clone of the GPU buffer by submitting a copy command to the GPU.
     ///
@@ -61,7 +61,7 @@ where
     ///
     /// # Returns
     /// A new `WgpuBuffer` with the same size and usage, but the contents are not yet guaranteed to be copied.
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::wgpu_deep_clone_order(&self.wgpu_slice(..)) }
+    fn lib_wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::lib_wgpu_deep_clone_order(&self.lib_wgpu_slice(..)) }
 
     /// Performs a deep clone of the GPU buffer and blocks until the copy is complete.
     ///
@@ -72,10 +72,10 @@ where
     /// A new `WgpuBuffer` with the same size, usage, and a complete copy of the original buffer's data.
     ///
     /// # Note
-    /// This method blocks the current thread. For non-blocking behavior, use `wgpu_deep_clone_order()`.
-    fn wgpu_deep_clone_and_wait(&self) -> WgpuBuffer
+    /// This method blocks the current thread. For non-blocking behavior, use `lib_wgpu_deep_clone_order()`.
+    fn lib_wgpu_deep_clone_and_wait(&self) -> WgpuBuffer
     {
-        let buff = self.wgpu_deep_clone_order();
+        let buff = self.lib_wgpu_deep_clone_order();
         Gpu.wait();
         buff
     }
@@ -85,9 +85,9 @@ impl<T> WgpuSliceable<T> for WgpuBuffer
 where
     T: GBufferElement,
 {
-    fn wgpu_usage(&self) -> WgpuBufferUsage { self.usage() }
+    fn lib_wgpu_usage(&self) -> WgpuBufferUsage { self.usage() }
 
-    fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
+    fn lib_wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
     {
         let element_size = std::mem::size_of::<T>() as WgpuBufferAddress;
 
@@ -108,24 +108,24 @@ where
         self.slice(start_byte..end_byte)
     }
 
-    fn wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { self.slice(..) }
+    fn lib_wgpu_as_slice(&self) -> WgpuBufferSlice<'_> { self.slice(..) }
 
-    fn wgpu_view(&self) -> WgpuBufferView<'_> { self.slice(..).get_mapped_range() }
+    fn lib_wgpu_view(&self) -> WgpuBufferView<'_> { self.slice(..).get_mapped_range() }
 
-    fn wgpu_view_mut(&self) -> WgpuBufferViewMut<'_> { self.slice(..).get_mapped_range_mut() }
+    fn lib_wgpu_view_mut(&self) -> WgpuBufferViewMut<'_> { self.slice(..).get_mapped_range_mut() }
 
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::wgpu_deep_clone_order(&<wgpu::Buffer as WgpuSliceable<T>>::wgpu_slice(self, ..)) }
+    fn lib_wgpu_deep_clone_order(&self) -> WgpuBuffer { WgpuSliceable::<T>::lib_wgpu_deep_clone_order(&<wgpu::Buffer as WgpuSliceable<T>>::lib_wgpu_slice(self, ..)) }
 
-    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self }
+    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer { self }
 }
 
 impl<'a, T> WgpuSliceable<T> for WgpuBufferSlice<'a>
 where
     T: GBufferElement,
 {
-    fn wgpu_usage(&self) -> WgpuBufferUsage { self.buffer().usage() }
+    fn lib_wgpu_usage(&self) -> WgpuBufferUsage { self.buffer().usage() }
 
-    fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
+    fn lib_wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
     {
         let element_size = std::mem::size_of::<T>() as WgpuBufferAddress;
 
@@ -146,10 +146,10 @@ where
         self.slice(start_byte..end_byte)
     }
 
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer
+    fn lib_wgpu_deep_clone_order(&self) -> WgpuBuffer
     {
         let size = self.size().get();
-        let usage = WgpuSliceable::<T>::wgpu_usage(self);
+        let usage = WgpuSliceable::<T>::lib_wgpu_usage(self);
 
         let new_buffer = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
             label: None,
@@ -166,5 +166,5 @@ where
         new_buffer
     }
 
-    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer() }
+    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer() }
 }

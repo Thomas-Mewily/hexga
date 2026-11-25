@@ -12,7 +12,7 @@ pub trait RetainMut<T>
         F: FnMut(&mut T) -> bool;
 }
 
-impl<T> RetainMut<T> for Vec<T>
+impl<T, A: Allocator> RetainMut<T> for Vec<T, A>
 {
     fn retain_mut<F>(&mut self, f: F)
     where

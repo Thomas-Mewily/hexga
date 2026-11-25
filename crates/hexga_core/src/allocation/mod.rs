@@ -1,8 +1,19 @@
 use super::*;
 
+pub use core::alloc::Allocator;
+
+#[cfg(not(feature = "std"))]
+pub type AllocGlobal = ::alloc::alloc::Global;
+#[cfg(feature = "std")]
+pub type AllocGlobal = std::alloc::Global;
+#[cfg(feature = "std")]
+pub type AllocSystem = std::alloc::System;
+
 pub mod prelude
 {
-    pub use super::traits::*;
+    #[cfg(feature = "std")]
+    pub use super::AllocSystem;
+    pub use super::{Allocator, AllocGlobal, traits::*};
 }
 
 pub mod traits

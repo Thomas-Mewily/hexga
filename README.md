@@ -4,6 +4,11 @@ Theses crates are currently in **beta** and **experimental**.
 They are subject to **breaking changes** in future releases.
 Use them at your own risk, and keep in mind that the API may change in future versions.
 
+## Rust toolchain
+
+Allocator-aware `Vec` and `Box` trait implementations require stable Rust
+1.100 or later. 
+
 ## Design
 
 HexGa is **heavily trait-based**.

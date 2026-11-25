@@ -370,18 +370,18 @@ mod std_impl_3
 
 
 
-impl<T> Capacity<T> for Vec<T>
+impl<T, A: Allocator> Capacity<T> for Vec<T, A>
 {
     #[inline(always)]
     fn capacity(&self) -> usize { self.capacity() }
 }
-impl<T> WithCapacity for Vec<T>
+impl<T, A: Allocator> WithCapacity for Vec<T, A>
 {
-    type Param = ();
+    type Param = A;
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
+    fn with_capacity_and_param(capacity: usize, allocator: A) -> Self { Self::with_capacity_in(capacity, allocator) }
 }
-impl<T> Reserve<T> for Vec<T>
+impl<T, A: Allocator> Reserve<T> for Vec<T, A>
 {
     type Error = TryReserveError;
     #[inline(always)]
@@ -394,12 +394,12 @@ impl<T> Reserve<T> for Vec<T>
     #[inline(always)]
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
 }
-impl<T> Shrink<T> for Vec<T>
+impl<T, A: Allocator> Shrink<T> for Vec<T, A>
 {
     fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
     fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
 }
-impl<T> Truncate<T> for Vec<T>
+impl<T, A: Allocator> Truncate<T> for Vec<T, A>
 {
     fn truncate(&mut self, len: usize) { self.truncate(len); }
 }

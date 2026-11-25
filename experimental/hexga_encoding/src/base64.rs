@@ -22,12 +22,23 @@ pub trait FromBase64: Sized
     where
         D: AsRef<[u8]>;
 }
-impl FromBase64 for Vec<u8>
+impl<A: Allocator + Default> FromBase64 for Vec<u8, A>
 {
     fn from_base64<D>(data: D) -> EncodeResult<Self>
     where
         D: AsRef<[u8]>,
     {
-        ::base64::engine::general_purpose::STANDARD.decode(data).map_err(|e| e.into())
+        let data = data.as_ref();
+        let capacity = ::base64::decoded_len_estimate(data.len());
+        let mut decoded = Vec::with_capacity_in(capacity, A::default());
+        decoded.resize(capacity, 0);
+        let len = match ::base64::engine::general_purpose::STANDARD.decode_slice(data, &mut decoded)
+        {
+            Ok(len) => len,
+            Err(::base64::DecodeSliceError::DecodeError(error)) => return Err(error.into()),
+            Err(::base64::DecodeSliceError::OutputSliceTooSmall) => unreachable!("decoded length exceeds the upper bound"),
+        };
+        decoded.truncate(len);
+        Ok(decoded)
     }
 }

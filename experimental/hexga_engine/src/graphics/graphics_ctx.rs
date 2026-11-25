@@ -34,7 +34,7 @@ impl Graphics
 {
     pub(crate) fn new(surface: &GpuSurface, size: Vec2i) -> Self
     {
-        let surface_caps = surface.wgpu.get_capabilities(&Gpu.adapter());
+        let surface_caps = surface.lib_wgpu.get_capabilities(&Gpu.adapter());
         // Shader code in this tutorial assumes an Srgb surface texture. Using a different
         // one will result all the colors comming out darker. If you want to support non
         // Srgb surfaces, you'll need to account for that when drawing to the frame.
@@ -67,7 +67,7 @@ impl Graphics
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
-                buffers: &[Vertex::wgpu_vertex_description()],
+                buffers: &[Vertex::lib_wgpu_vertex_description()],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -127,7 +127,7 @@ impl Graphics
             layout: &camera_bind_group_layout,
             entries: &[wgpu::BindGroupEntry {
                 binding: 0,
-                resource: camera_buffer.wgpu_buffer_ref().as_entire_binding(),
+                resource: camera_buffer.lib_wgpu_buffer_ref().as_entire_binding(),
             }],
             label: Some("camera_bind_group"),
         });
@@ -204,7 +204,7 @@ impl Graphics
         let max_viewport = max_scissor.to_float();
 
         let surface = surface.surface();
-        let surface_texture = match surface.wgpu.get_current_texture()
+        let surface_texture = match surface.lib_wgpu.get_current_texture()
         {
             Ok(s) => s,
             Err(_) => return,
@@ -306,16 +306,16 @@ impl Graphics
                                 continue;
                             }
 
-                            rpass.set_vertex_buffer(0, mesh.vertices.wgpu_slice(im.vertices));
-                            rpass.set_index_buffer(mesh.indices.wgpu_slice(im.indices), VertexIndex::INDEX_FORMAT);
+                            rpass.set_vertex_buffer(0, mesh.vertices.lib_wgpu_slice(im.vertices));
+                            rpass.set_index_buffer(mesh.indices.lib_wgpu_slice(im.indices), VertexIndex::INDEX_FORMAT);
                             //rpass.draw_indexed(0 ..(indices_len as _), 0, 0..1);
                             // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
                             rpass.draw_indexed(0..((im.indices.end - im.indices.start) as _), -(im.vertices.start as i32), 0..1);
                         }
                         DrawGeometry::Retain(mesh) =>
                         {
-                            rpass.set_vertex_buffer(0, mesh.vertices.wgpu_slice(..));
-                            rpass.set_index_buffer(mesh.indices.wgpu_slice(..), VertexIndex::INDEX_FORMAT);
+                            rpass.set_vertex_buffer(0, mesh.vertices.lib_wgpu_slice(..));
+                            rpass.set_index_buffer(mesh.indices.lib_wgpu_slice(..), VertexIndex::INDEX_FORMAT);
                             rpass.draw_indexed(0..(mesh.indices.len() as _), 0, 0..1);
                         }
                     }

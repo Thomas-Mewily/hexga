@@ -118,17 +118,17 @@ impl<T> WgpuSliceable<T> for GVec<T>
 where
     T: GBufferElement,
 {
-    fn wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
+    fn lib_wgpu_slice<S: RangeBounds<usize>>(&self, bounds: S) -> WgpuBufferSlice<'_>
     {
         let range = checked_range(bounds, self.len).expect("GPU vector range out of bounds");
-        WgpuSliceable::<T>::wgpu_slice(self.wgpu_buffer_ref(), range)
+        WgpuSliceable::<T>::lib_wgpu_slice(self.lib_wgpu_buffer_ref(), range)
     }
 
     /*
-    fn wgpu_deep_clone_order(&self) -> WgpuBuffer
+    fn lib_wgpu_deep_clone_order(&self) -> WgpuBuffer
     {
         let size = self.size();
-        let usage = WgpuSliceable::<T>::wgpu_usage(self);
+        let usage = WgpuSliceable::<T>::lib_wgpu_usage(self);
 
         let new_buffer = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
             label: None,
@@ -146,7 +146,7 @@ where
     }
     */
 
-    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.wgpu_buffer_ref() }
+    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.lib_wgpu_buffer_ref() }
 }
 
 impl<T> GpuSliceable<T> for GVec<T>

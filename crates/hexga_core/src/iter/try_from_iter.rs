@@ -12,10 +12,16 @@ pub trait TryFromIterator<T>: Sized
     type Error;
     fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>;
 }
-impl<T> TryFromIterator<T> for Vec<T>
+impl<T, A: Allocator + Default> TryFromIterator<T> for Vec<T, A>
 {
     type Error = Never;
-    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error> { Ok(Self::from_iter(iter)) }
+    fn try_from_iter<It: IntoIterator<Item = T>>(iter: It) -> Result<Self, Self::Error>
+    {
+        let iter = iter.into_iter();
+        let mut collection = Self::with_capacity_in(iter.size_hint().0, A::default());
+        collection.extend(iter);
+        Ok(collection)
+    }
 }
 
 impl<T> TryFromIterator<T> for VecDeque<T>

@@ -47,7 +47,7 @@ impl<'a, T> WgpuSliceable<T> for GSlice<'a, T>
 where
     T: GBufferElement,
 {
-    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.wgpu_buffer_ref() }
+    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.lib_wgpu_buffer_ref() }
 }
 
 impl<'a, T> GpuSliceable<T> for GSlice<'a, T>

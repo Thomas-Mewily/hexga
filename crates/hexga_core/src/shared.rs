@@ -50,9 +50,10 @@ pub trait SharedIntoInner: SharedCount
 #[cfg(feature = "std")]
 mod std_impl
 {
+    use crate::allocation::Allocator;
     use super::{SharedCount, SharedDowngrade, SharedUpgrade};
 
-    impl<T: ?Sized> SharedCount for std::boxed::Box<T>
+    impl<T: ?Sized, A: Allocator> SharedCount for std::boxed::Box<T, A>
     {
         fn strong_count(&self) -> usize { 1 }
         fn weak_count(&self) -> usize { 0 }
@@ -73,13 +74,13 @@ mod std_impl
 
     impl<T: ?Sized> SharedCount for std::sync::Weak<T>
     {
-        fn strong_count(&self) -> usize { Self::weak_count(self) }
+        fn strong_count(&self) -> usize { Self::strong_count(self) }
 
         fn weak_count(&self) -> usize { Self::weak_count(self) }
     }
     impl<T: ?Sized> SharedCount for std::sync::Arc<T>
     {
-        fn strong_count(&self) -> usize { Self::weak_count(self) }
+        fn strong_count(&self) -> usize { Self::strong_count(self) }
 
         fn weak_count(&self) -> usize { Self::weak_count(self) }
     }

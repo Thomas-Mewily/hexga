@@ -703,7 +703,7 @@ where
     }
 }
 
-impl<Idx, T> TryGet<Idx> for Vec<T>
+impl<Idx, T, A: Allocator> TryGet<Idx> for Vec<T, A>
 where
     [T]: TryGet<Idx>,
 {
@@ -711,23 +711,23 @@ where
     #[inline(always)]
     fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { TryGet::try_get(self.as_slice(), index) }
 }
-impl<T, Output: ?Sized> Collection<Output> for Vec<T> where [T]: Collection<Output>
+impl<T, Output: ?Sized, A: Allocator> Collection<Output> for Vec<T, A> where [T]: Collection<Output>
 {
     type Ref<'a> = <[T] as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
 }
-impl<T, Output: ?Sized> CollectionMut<Output> for Vec<T> where [T]: CollectionMut<Output>
+impl<T, Output: ?Sized, A: Allocator> CollectionMut<Output> for Vec<T, A> where [T]: CollectionMut<Output>
 {
     type RefMut<'a> = <[T] as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
 }
 
-impl<Idx, T> CollectionIndex<Idx> for Vec<T>
+impl<Idx, T, A: Allocator> CollectionIndex<Idx> for Vec<T, A>
 where
     [T]: CollectionIndex<Idx>,
 {
     type Output = <[T] as CollectionIndex<Idx>>::Output;
     type Ref<'a> = <[T] as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
 }
-impl<Idx, T> Get<Idx> for Vec<T>
+impl<Idx, T, A: Allocator> Get<Idx> for Vec<T, A>
 where
     [T]: Get<Idx>,
 {
@@ -737,20 +737,20 @@ where
     #[inline(always)]
     unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a> where Self::Output: 'a { unsafe { Get::get_unchecked(self.as_slice(), index) } }
 }
-impl<Idx, T> TryGetMut<Idx> for Vec<T>
+impl<Idx, T, A: Allocator> TryGetMut<Idx> for Vec<T, A>
 where
     [T]: TryGetMut<Idx>,
 {
     #[inline(always)]
     fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a { TryGetMut::try_get_mut(self.as_mut_slice(), index) }
 }
-impl<Idx, T> CollectionIndexMut<Idx> for Vec<T>
+impl<Idx, T, A: Allocator> CollectionIndexMut<Idx> for Vec<T, A>
 where
     [T]: CollectionIndexMut<Idx>,
 {
     type RefMut<'a> = <[T] as CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
 }
-impl<Idx, T> GetMut<Idx> for Vec<T>
+impl<Idx, T, A: Allocator> GetMut<Idx> for Vec<T, A>
 where
     [T]: GetMut<Idx>,
 {
@@ -759,7 +759,7 @@ where
     #[inline(always)]
     unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a> where Self::Output: 'a { unsafe { GetMut::get_unchecked_mut(self.as_mut_slice(), index) } }
 }
-impl<Idx, T> GetManyMut<Idx> for Vec<T>
+impl<Idx, T, A: Allocator> GetManyMut<Idx> for Vec<T, A>
 where
     [T]: GetManyMut<Idx>,
 {

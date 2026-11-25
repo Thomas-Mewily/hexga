@@ -77,7 +77,7 @@ pub trait PopFront<T>
 pub struct EmptyError;
 */
 
-impl<T> Pop<T> for Vec<T>
+impl<T, A: Allocator> Pop<T> for Vec<T, A>
 {
     fn pop(&mut self) -> Option<T> { self.pop() }
 }

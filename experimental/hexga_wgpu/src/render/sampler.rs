@@ -4,15 +4,15 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct GpuSampler
 {
-    pub wgpu: wgpu::Sampler,
+    pub lib_wgpu: wgpu::Sampler,
 }
 impl From<wgpu::Sampler> for GpuSampler
 {
-    fn from(wgpu: wgpu::Sampler) -> Self { Self { wgpu } }
+    fn from(wgpu: wgpu::Sampler) -> Self { Self { lib_wgpu: wgpu } }
 }
 impl From<GpuSampler> for wgpu::Sampler
 {
-    fn from(sampler: GpuSampler) -> Self { sampler.wgpu }
+    fn from(sampler: GpuSampler) -> Self { sampler.lib_wgpu }
 }
 impl Default for GpuSampler
 {

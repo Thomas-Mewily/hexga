@@ -10,33 +10,10 @@ use super::*;
 //     Xml(Xml),
 // }
 
-/// Markup Langaga capable of serialize / deserializer almost everythings
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub enum FormatMarkup
-{
-    // TODO: change it to Ron by default when ron Serializer::into_inner method will be added https://github.com/ron-rs/ron/pull/588
-    #[default]
-    Ron,
-    Json,
-    Xml,
-}
+pub use crate::fs_extension::FormatMarkup;
 
 impl FormatMarkup
 {
-    // Todo: add a feature flag
-    pub const PREFERED: Self = Self::Ron;
-    pub const ALL: &'static [Self] = &[Self::Ron, Self::Json, Self::Xml];
-
-    pub const fn extension(self) -> &'static str
-    {
-        match self
-        {
-            FormatMarkup::Ron => Extension::RON,
-            FormatMarkup::Json => Extension::JSON,
-            FormatMarkup::Xml => Extension::XML,
-        }
-    }
-
     pub fn encode<T>(self, value: &T) -> EncodeResult<String>
     where
         T: Serialize + ?Sized,

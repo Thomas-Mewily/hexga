@@ -11,7 +11,7 @@ pub mod traits
     pub use super::{CollectToGenVec, GenIDUpdatable, GenIDUpdater, GenSeqEntryIntoValue};
 }
 
-pub type GenVec<T> = GenSeq<T, Generation, Vec<Entry<T, Generation>>>;
+pub type GenVec<T, A = AllocGlobal> = GenSeq<T, Generation, Vec<Entry<T, Generation>, A>>;
 pub type GenView<'a, T> = GenSeq<T, Generation, &'a [Entry<T, Generation>]>;
 pub type GenViewMut<'a, T> = GenSeq<T, Generation, &'a mut [Entry<T, Generation>]>;
 
@@ -1394,14 +1394,20 @@ where
 }
 impl<T, Gen, C> WithCapacity for GenSeq<T, Gen, C>
 where
-    C: AsRef<[Entry<T, Gen>]>,
+    C: AsRef<[Entry<T, Gen>]> + WithCapacity,
     Gen: GenerationalIndex,
-    C: Reserve<Entry<T, Gen>>,
 {
-    type Param = ();
+    type Param = C::Param;
 
-    #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
+    fn with_capacity_and_param(capacity: usize, param: Self::Param) -> Self
+    {
+        Self {
+            values: C::with_capacity_and_param(capacity, param),
+            free: usize::MAX,
+            len: 0,
+            phantom: PhantomData,
+        }
+    }
 }
 impl<T, Gen, C> Reserve<T> for GenSeq<T, Gen, C>
 where

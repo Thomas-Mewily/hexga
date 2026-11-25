@@ -3,25 +3,25 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct GpuInstance
 {
-    pub wgpu: wgpu::Instance,
+    pub lib_wgpu: wgpu::Instance,
 }
 impl<'a> From<wgpu::Instance> for GpuInstance
 {
-    fn from(surface: wgpu::Instance) -> Self { Self { wgpu: surface } }
+    fn from(surface: wgpu::Instance) -> Self { Self { lib_wgpu: surface } }
 }
 impl<'a> From<GpuInstance> for wgpu::Instance
 {
-    fn from(surface: GpuInstance) -> Self { surface.wgpu }
+    fn from(surface: GpuInstance) -> Self { surface.lib_wgpu }
 }
 impl GpuInstance
 {
     pub fn new(desc: &GpuInstanceDescriptor) -> Self
     {
         Self {
-            wgpu: wgpu::Instance::new(&wgpu::InstanceDescriptor {
+            lib_wgpu: wgpu::Instance::new(&wgpu::InstanceDescriptor {
                 backends: desc.backends.into(),
-                flags: desc.wgpu.flags,
-                backend_options: desc.wgpu.backend_options.clone(),
+                flags: desc.lib_wgpu.flags,
+                backend_options: desc.lib_wgpu.backend_options.clone(),
             }),
         }
     }
@@ -32,7 +32,7 @@ impl GpuInstance
 pub struct GpuInstanceDescriptor
 {
     pub backends: GpuBackendFlags,
-    pub wgpu: WgpuInstanceDescriptor,
+    pub lib_wgpu: WgpuInstanceDescriptor,
 }
 
 impl PartialEq for WgpuInstanceDescriptor
@@ -131,7 +131,7 @@ impl Default for GpuBackendFlags
 pub struct GpuParam
 {
     pub instance: GpuInstanceDescriptor,
-    pub wgpu_instance: WgpuInstanceDescriptor,
+    pub lib_wgpu_instance: WgpuInstanceDescriptor,
     pub power_preference: GpuPowerPreference,
     //pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
 }

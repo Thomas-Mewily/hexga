@@ -55,19 +55,22 @@ pub trait IGrid<T, Idx, const N: usize> :
     + IndexMut<Vector<Idx,N>, Output = T>
 
     + Map<Item=T> + MapInto<Item=T>
-    + MapZip<Item=T> + MapZipInto<Item=T>
 
     + Sized
     where Idx: Integer
 {
-    type WithType<U>: IGrid<U, Idx, N>;
+    /// Allocator used by the grid and by owned results derived from it.
+    type Allocator: Allocator + Clone;
+    type WithType<U>: IGrid<U, Idx, N, Allocator = Self::Allocator>;
+
+    fn allocator(&self) -> &Self::Allocator;
 
     // Those expose the implementation, put in another trait like IGridVector
     fn values(&self) -> &[T];
     fn values_mut(&mut self) -> &mut [T];
     
-    fn into_values(self) -> Vec<T> { self.into_size_and_values().1 }
-    fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T>);
+    fn into_values(self) -> Vec<T, Self::Allocator> { self.into_size_and_values().1 }
+    fn into_size_and_values(self) -> (Vector<Idx,N>, Vec<T, Self::Allocator>);
 
 
     /// Used for the memory bijection between the one dimensional vector and the N-dimensional grid.
@@ -93,85 +96,165 @@ pub trait IGrid<T, Idx, const N: usize> :
 
 
 
-    fn from_vec<P>(size: P, values: Vec<T>) -> Option<Self> where P: Into<Vector<Idx,N>> { Self::try_from_vec(size, values).ok() }
-    fn try_from_vec<P>(size: P, values: Vec<T>) -> Result<Self, GridBaseError<Idx,N>> where P: Into<Vector<Idx,N>>
+    fn from_vec<P>(size: P, values: Vec<T, Self::Allocator>) -> Option<Self> where P: Into<Vector<Idx,N>> { Self::try_from_vec(size, values).ok() }
+    fn try_from_vec<P>(size: P, values: Vec<T, Self::Allocator>) -> Result<Self, GridBaseError<Idx,N>> where P: Into<Vector<Idx,N>>
     {
         let size = size.into();
-        if *size.min_element() < Idx::ZERO { return Err(GridBaseError::NegativeSize(size)); }
+        if size.iter().any(|dimension| *dimension < Idx::ZERO)
+        {
+            return Err(GridBaseError::NegativeSize(size));
+        }
 
         let area_size = match size.area_usize_checked()
         {
             Some(v) => v,
             None => return Err(GridBaseError::ToBig(size)),
         };
-        if area_size != values.len() { return Err(GridBaseError::WrongDimension(size, area_size)); }
+        if area_size != values.len()
+        {
+            return Err(GridBaseError::WrongDimension(size, values.len()));
+        }
         Ok(unsafe { Self::from_vec_unchecked(size, values) })
     }
 
-    unsafe fn from_vec_unchecked<P>(size: P, values: Vec<T>) -> Self where P: Into<Vector<Idx,N>>;
+    /// Builds a grid from its backing vector.
+    ///
+    /// # Safety
+    /// The dimensions must be valid and their product must equal `values.len()`.
+    unsafe fn from_vec_unchecked<P>(size: P, values: Vec<T, Self::Allocator>) -> Self where P: Into<Vector<Idx,N>>;
 
     fn sized_one(value: T) -> Self
+    where
+        Self::Allocator: Default,
     {
-        Self::from_vec(Vector::<Idx,N>::ONE, vec![value]).unwrap()
+        Self::sized_one_in(value, Self::Allocator::default())
     }
 
-    /// Create a grid from a function
-    fn from_fn<P,F>(size: P, mut f: F) -> Self
-        where
+    fn sized_one_in(value: T, allocator: Self::Allocator) -> Self
+    {
+        let mut values = Vec::with_capacity_in(1, allocator);
+        values.push(value);
+        Self::from_vec(Vector::<Idx, N>::ONE, values).unwrap()
+    }
+
+    /// Create a grid from a function using the default allocator.
+    fn from_fn<P, F>(size: P, f: F) -> Self
+    where
         F: FnMut(P) -> T,
-        P: Into<Vector::<Idx,N>>,
-        Vector::<Idx,N>: Into<P>,
+        P: Into<Vector<Idx, N>>,
+        Vector<Idx, N>: Into<P>,
+        Self::Allocator: Default,
+    {
+        Self::from_fn_in(size, f, Self::Allocator::default())
+    }
+
+    /// Create a grid from a function using the supplied allocator.
+    fn from_fn_in<P, F>(size: P, mut f: F, allocator: Self::Allocator) -> Self
+    where
+        F: FnMut(P) -> T,
+        P: Into<Vector<Idx, N>>,
+        Vector<Idx, N>: Into<P>,
     {
         let size = size.into();
-        let area = size.area_usize();
-        let mut value = Vec::with_capacity(area);
-        for idx in size.iter_index()
+        let mut values = Vec::with_capacity_in(size.area_usize_checked().expect("invalid grid size"), allocator);
+        for index in size.iter_index()
         {
-            value.push(f(unsafe { Self::external_position_to_position_unchecked::<Vector<Idx,N>>(idx,size) }.into()));
+            let position = unsafe { Self::external_position_to_position_unchecked(index, size) };
+            values.push(f(position.into()));
         }
-        unsafe { Self::from_vec_unchecked(size, value) }
+        Self::try_from_vec(size, values).unwrap()
     }
-    /// Create a grid from a function in parallel
-    fn from_fn_par<P,F>(size: P, f: F) -> Self
-        where
-        F: Fn(P) -> T + Sync,
-        P: Into<Vector::<Idx,N>>,
-        Vector::<Idx,N>: Into<P>,
 
+    /// Create a grid from a function in parallel using the default allocator.
+    fn from_fn_par<P, F>(size: P, f: F) -> Self
+    where
+        F: Fn(P) -> T + Sync,
+        P: Into<Vector<Idx, N>>,
+        Vector<Idx, N>: Into<P>,
+        T: Send,
+        Idx: Sync,
+        Self::Allocator: Default,
+    {
+        Self::from_fn_par_in(size, f, Self::Allocator::default())
+    }
+
+    /// Create a grid from a function in parallel using the supplied allocator.
+    ///
+    /// Parallel generation uses a temporary buffer before moving the values into the grid.
+    fn from_fn_par_in<P, F>(size: P, f: F, allocator: Self::Allocator) -> Self
+    where
+        F: Fn(P) -> T + Sync,
+        P: Into<Vector<Idx, N>>,
+        Vector<Idx, N>: Into<P>,
         T: Send,
         Idx: Sync,
     {
         let size = size.into();
-        let area = size.area_usize();
-        let mut values = Vec::with_capacity(area);
-        (0..area).into_par_iter().map(|i| f(unsafe { Self::external_position_to_position_unchecked::<Vector<Idx,N>>(Vector::<Idx, N>::from_index_unchecked(i, size), size) }.into())).collect_into_vec(&mut values);
-        unsafe { Self::from_vec_unchecked(size, values) }
+        let area = size.area_usize_checked().expect("invalid grid size");
+        let generated: Vec<T> = (0..area).into_par_iter().map(|index| {
+            let position = unsafe {
+                Self::external_position_to_position_unchecked(Vector::<Idx, N>::from_index_unchecked(index, size), size)
+            };
+            f(position.into())
+        }).collect();
+        let mut values = Vec::with_capacity_in(area, allocator);
+        values.extend(generated);
+        Self::try_from_vec(size, values).unwrap()
     }
 
-    /// Create a new grid and fill it with the [`Default`] value
-    fn new(size: Vector::<Idx,N>) -> Self where T: Default { Self::try_from_vec(size, (0..size.area_usize()).map(|_| ___()).collect()).unwrap() }
+    fn new(size: Vector<Idx, N>) -> Self
+    where
+        T: Default,
+        Self::Allocator: Default,
+    {
+        Self::new_in(size, Self::Allocator::default())
+    }
 
-    /// Create a new grid and fill it by [`Clone`]ing the value
-    fn new_uniform(size: Vector::<Idx,N>, value: T) -> Self where T: Clone { Self::try_from_vec(size, vec![value; size.area_usize()]).unwrap() }
+    fn new_in(size: Vector<Idx, N>, allocator: Self::Allocator) -> Self
+    where
+        T: Default,
+    {
+        Self::from_fn_in(size, |_| T::default(), allocator)
+    }
 
+    fn new_uniform(size: Vector<Idx, N>, value: T) -> Self
+    where
+        T: Clone,
+        Self::Allocator: Default,
+    {
+        Self::new_uniform_in(size, value, Self::Allocator::default())
+    }
 
-
+    fn new_uniform_in(size: Vector<Idx, N>, value: T, allocator: Self::Allocator) -> Self
+    where
+        T: Clone,
+    {
+        let area = size.area_usize_checked().expect("invalid grid size");
+        let mut values = Vec::with_capacity_in(area, allocator);
+        values.resize(area, value);
+        Self::try_from_vec(size, values).unwrap()
+    }
 
     /// Create a grid from a Normalized Device Coordinates.
     ///
     /// Each component of the vector will be between `-1.0..=1.0`
     fn from_fn_ndc<P,F>(size: P, f: F) -> Self
     where
-    P: Into<Vector::<Idx,N>>,
-    float: CastFrom<Idx>,
-    F: FnMut(Vector<float,N>) -> T{ Self::from_fn_ndc_with_precision(size, f) }
+        Self::Allocator: Default,
+        P: Into<Vector<Idx, N>>,
+        float: CastFrom<Idx>,
+        F: FnMut(Vector<float, N>) -> T,
+    {
+        Self::from_fn_ndc_with_precision(size, f)
+    }
 
     /// Create a grid from a Normalized Device Coordinates.
     ///
     /// Each component of the vector will be between `-1.0..=1.0`
     fn from_fn_ndc_with_precision<P,Precision,F>(size: P, mut f: F) -> Self
-        where
-        P: Into<Vector::<Idx,N>>,
+    where
+        Self::Allocator: Default,
+        P: Into<Vector<Idx, N>>,
         Precision: Float + CastFrom<Idx>,
         F: FnMut(Vector<Precision,N>) -> T,
     {
@@ -194,16 +277,21 @@ pub trait IGrid<T, Idx, const N: usize> :
     /// Each component of the vector will be between `0..1.0`
     fn from_fn_coef<P,F>(size: P, f: F) -> Self
     where
-    P: Into<Vector::<Idx,N>>,
-    float: CastFrom<Idx>,
-    F: FnMut(Vector<float,N>) -> T{ Self::from_fn_coef_with_precision(size, f) }
+        Self::Allocator: Default,
+        P: Into<Vector<Idx, N>>,
+        float: CastFrom<Idx>,
+        F: FnMut(Vector<float, N>) -> T,
+    {
+        Self::from_fn_coef_with_precision(size, f)
+    }
 
     /// Create a grid from a coefficients.
     ///
     /// Each component of the vector will be between `0..1.0`
     fn from_fn_coef_with_precision<P,Precision,F>(size: P, mut f: F) -> Self
-        where
-        P: Into<Vector::<Idx,N>>,
+    where
+        Self::Allocator: Default,
+        P: Into<Vector<Idx, N>>,
         Precision: Float + CastFrom<Idx>,
         F: FnMut(Vector<Precision,N>) -> T,
     {
@@ -287,7 +375,7 @@ where
     fn to_grid(self) -> Self::Output;
 }
 
-impl<T, Idx, const N: usize> ToGrid<T, Idx, N> for GridOf<T, Idx, N>
+impl<T, Idx, const N: usize, A: Allocator + Clone> ToGrid<T, Idx, N> for GridOf<T, Idx, N, A>
 where
     Idx: Integer,
 {
@@ -295,20 +383,28 @@ where
     fn to_grid(self) -> Self::Output { self }
 }
 
-impl<'a, T, Idx, const N: usize> ToGrid<T, Idx, N> for GridView<'a, GridOf<T, Idx, N>, T, Idx, N>
+impl<'a, T, Idx, const N: usize, A: Allocator + Clone> ToGrid<T, Idx, N> for GridView<'a, GridOf<T, Idx, N, A>, T, Idx, N>
 where
     Idx: Integer,
     T: Clone,
 {
-    type Output = GridOf<T, Idx, N>;
-    fn to_grid(self) -> Self::Output { GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() }) }
+    type Output = GridOf<T, Idx, N, A>;
+    fn to_grid(self) -> Self::Output
+    {
+        let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
+        Self::Output::from_fn_in(self.size(), |index| unsafe { self.get_unchecked(index).clone() }, allocator)
+    }
 }
 
-impl<'a, T, Idx, const N: usize> ToGrid<T, Idx, N> for GridViewMut<'a, GridOf<T, Idx, N>, T, Idx, N>
+impl<'a, T, Idx, const N: usize, A: Allocator + Clone> ToGrid<T, Idx, N> for GridViewMut<'a, GridOf<T, Idx, N, A>, T, Idx, N>
 where
     Idx: Integer,
     T: Clone,
 {
-    type Output = GridOf<T, Idx, N>;
-    fn to_grid(self) -> Self::Output { GridOf::<T, Idx, N>::from_fn(self.size(), |idx| unsafe { self.get_unchecked(idx).clone() }) }
+    type Output = GridOf<T, Idx, N, A>;
+    fn to_grid(self) -> Self::Output
+    {
+        let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
+        Self::Output::from_fn_in(self.size(), |index| unsafe { self.get_unchecked(index).clone() }, allocator)
+    }
 }

@@ -1,7 +1,6 @@
 use super::*;
 
-#[cfg(feature = "serde")]
-pub trait WithDefault<T, P>: CfgSerialize + for<'de> CfgDeserialize<'de>
+pub trait WithDefault<T, P>: Sized + CfgSerialize + for<'de> CfgDeserialize<'de>
 where
     P: Constant<T>,
 {

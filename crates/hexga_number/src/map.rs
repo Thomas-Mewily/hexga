@@ -1,4 +1,5 @@
 use super::*;
+use std::alloc::Allocator;
 
 // Update it and add `try_map` once stabilized ?
 // https://doc.rust-lang.org/std/primitive.array.html#method.try_map
@@ -136,79 +137,74 @@ impl<T, const N: usize> MapZipInto for [T; N] {
     }
 }
 
-impl<T> Map for Vec<T> {
+impl<T, A: Allocator + Clone> Map for Vec<T, A> {
     type Item = T;
 
     fn map<F>(self, f: F) -> Self
     where
         F: FnMut(T) -> T,
     {
-        self.into_iter().map(f).collect()
+        self.map_into(f)
     }
 }
-impl<T> MapInto for Vec<T> {
-    type WithType<R> = Vec<R>;
+impl<T, A: Allocator + Clone> MapInto for Vec<T, A> {
+    type WithType<R> = Vec<R, A>;
 
     fn map_into<F, R>(self, f: F) -> Self::WithType<R>
     where
         F: FnMut(T) -> R,
     {
-        self.into_iter().map(f).collect()
+        let mut result = Vec::with_capacity_in(self.len(), self.allocator().clone());
+        result.extend(self.into_iter().map(f));
+        result
     }
 }
-impl<T> MapZip for Vec<T> {
-    fn map_zip<F, const M: usize>(mut this: [Self; M], mut f: F) -> Self
+impl<T, A: Allocator + Clone + Default> MapZip for Vec<T, A> {
+    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self
     where
         F: FnMut([T; M]) -> T,
     {
-        if M == 0 {
-            return Vec::new();
-        }
-        let len = this.iter().map(Vec::len).min().unwrap_or(0);
-        let mut result = core::mem::take(&mut this[0]);
-        result.truncate(len);
-        let mut iters = this.map(IntoIterator::into_iter);
-        let base = result.as_mut_ptr();
-        let mut out_ptr = base;
-        let mut k = 0;
-        while k < len {
-            unsafe { result.set_len(k); }
-            let mut args: [core::mem::MaybeUninit<T>; M] =
-                [const { core::mem::MaybeUninit::uninit() }; M];
-            unsafe { args[0].write(core::ptr::read(out_ptr)); }
-            for j in 1..M {
-                args[j].write(unsafe { iters[j].next().unwrap_unchecked() });
-            }
-            let args: [T; M] = unsafe { core::ptr::read(args.as_ptr() as *const [T; M]) };
-            let value = f(args);
-            unsafe {
-                core::ptr::write(out_ptr, value);
-                out_ptr = out_ptr.add(1);
-            }
-            k += 1;
-        }
-        unsafe { result.set_len(len); }
-        result
-
-        // Safe version but need an new allocation
-        // Self::map_zip_into(this, f)
+        Self::map_zip_into(this, f)
     }
 }
-impl<T> MapZipInto for Vec<T> {
+impl<T, A: Allocator + Clone + Default> MapZipInto for Vec<T, A> {
     fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R>
     where
         F: FnMut([T; M]) -> R,
     {
-        if M == 0 {
-            return Vec::new();
+        let Some(first) = this.first() else {
+            return Vec::new_in(A::default());
+        };
+        let len = this.iter().map(Vec::len).min().unwrap_or(0);
+        let mut result = Vec::with_capacity_in(len, first.allocator().clone());
+        let mut iters = this.map(IntoIterator::into_iter);
+        for _ in 0..len {
+            result.push(f(core::array::from_fn(|i| iters[i].next().unwrap())));
         }
-        let mut len = usize::MAX;
-        let mut iters = this.map(|v| {
-            len = min(v.len(), len);
-            v.into_iter()
-        });
-        Vec::from_fn(len, |_| f(core::array::from_fn(|i| unsafe {
-            iters[i].next().unwrap_unchecked()
-        })))
+        result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::alloc::System;
+
+    #[test]
+    fn maps_and_zips_vectors_with_custom_allocators() {
+        let allocator = System;
+        let mut values = Vec::new_in(&allocator);
+        values.extend([1, 2]);
+        let mapped = values.map_into(|value| value.to_string());
+        assert_eq!(mapped.as_slice(), ["1", "2"]);
+        assert!(core::ptr::eq(*mapped.allocator(), &allocator));
+
+        let mut left = Vec::new_in(System);
+        left.extend([1, 2, 3]);
+        let mut right = Vec::new_in(System);
+        right.extend([4, 5]);
+        let zipped = left.map_with(right, |a, b| a + b);
+        assert_eq!(zipped.as_slice(), [5, 7]);
+        assert!(Vec::<i32, System>::map_zip([], |_| unreachable!()).is_empty());
     }
 }

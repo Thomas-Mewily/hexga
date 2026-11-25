@@ -4,8 +4,7 @@ pub trait SetLength
 {
     unsafe fn set_len(&mut self, new_len: usize);
 }
-#[cfg(feature = "std")]
-impl<T> SetLength for Vec<T>
+impl<T, A: Allocator> SetLength for Vec<T, A>
 {
     unsafe fn set_len(&mut self, new_len: usize) { unsafe { self.set_len(new_len) }; }
 }
@@ -53,7 +52,7 @@ pub trait Length
     fn is_not_empty(&self) -> bool { !self.is_empty() }
 }
 
-impl<T> Length for Vec<T>
+impl<T, A: Allocator> Length for Vec<T, A>
 {
     fn len(&self) -> usize { self.len() }
 }

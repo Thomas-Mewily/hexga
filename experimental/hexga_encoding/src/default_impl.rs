@@ -1,3 +1,4 @@
+use std::alloc::Allocator;
 use std::borrow::Cow::Owned;
 use std::cell::{Cell, RefCell};
 use std::cmp::Reverse;
@@ -47,8 +48,11 @@ impl_load_and_save!(
     bool,
     char,
     Option<T>, Result<T,E>,
-    Vec<T>, LinkedList<T>, VecDeque<T>,
+    LinkedList<T>, VecDeque<T>,
 );
+
+impl<T: Save, A: Allocator> Save for Vec<T, A> where Self: CfgSerialize {}
+impl<T: Load, A: Allocator> Load for Vec<T, A> where Self: for<'de> CfgDeserialize<'de> {}
 
 impl<K, V, S> Save for HashMap<K, V, S>
 where

@@ -85,7 +85,7 @@ hexga_image.workspace = true
 
 #hexga_save.workspace = true
 hexga_encoding.workspace = true
-hexga_io = { workspace = true, optional = true }
+hexga_io.workspace = true
 hexga_array_vec.workspace = true
 hexga_asset = { workspace = true }
 serde = { version = "1.0.0", features = ["derive"], optional = true }

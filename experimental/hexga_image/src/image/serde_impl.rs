@@ -3,7 +3,7 @@ use super::*;
 // Todo : check https://github.com/RReverser/serde-ndim/tree/main
 // Support nested array during deserialization
 
-impl<C, Idx> Serialize for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> Serialize for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer + Serialize,
     C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + Serialize,
@@ -18,7 +18,7 @@ where
     }
 }
 
-impl<'de, C, Idx> Deserialize<'de> for ImageBaseOf<C, Idx>
+impl<'de, C, Idx, A: Allocator + Clone + Default> Deserialize<'de> for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer + for<'de2> Deserialize<'de2>,
     C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + for<'de2> Deserialize<'de2>,

@@ -270,9 +270,9 @@ mod std_impl_v2
     impl<K, S> CollectionRemoveStableKey for HashSet<K, S> {}
     impl<K, S> CollectionGetMutStableKey for HashSet<K, S> {}
 
-    impl<T> CollectionPushStableKey for Vec<T> {}
-    impl<T> CollectionPopStableKey for Vec<T> {}
-    impl<T> CollectionGetMutStableKey for Vec<T> {}
+    impl<T, A: Allocator> CollectionPushStableKey for Vec<T, A> {}
+    impl<T, A: Allocator> CollectionPopStableKey for Vec<T, A> {}
+    impl<T, A: Allocator> CollectionGetMutStableKey for Vec<T, A> {}
 }
 
 impl<K, V> CollectionPushStableKey for BTreeMap<K, V> {}
@@ -292,7 +292,7 @@ impl<K> CollectionGetMutStableKey for BTreeSet<K> {}
 pub trait CollectionBijective {}
 
 impl<T, const N: usize> CollectionBijective for [T; N] {}
-impl<T> CollectionBijective for Vec<T> {}
+impl<T, A: Allocator> CollectionBijective for Vec<T, A> {}
 impl<T> CollectionBijective for VecDeque<T> {}
 impl<T> CollectionBijective for [T] {}
 

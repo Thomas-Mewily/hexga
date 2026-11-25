@@ -82,7 +82,7 @@ pub trait TryPushFront<T>: PushFront<T>
 }
 
 
-impl<T> Push<T> for Vec<T>
+impl<T, A: Allocator> Push<T> for Vec<T, A>
 {
     type Output = usize;
     #[inline(always)]
@@ -93,7 +93,7 @@ impl<T> Push<T> for Vec<T>
         l
     }
 }
-impl<T> TryPush<T> for Vec<T>
+impl<T, A: Allocator> TryPush<T> for Vec<T, A>
 {
     type Error = (); // #proper_error
     fn try_push(&mut self, value: T) -> Result<Self::Output, Self::Error> { Ok(Push::push(self, value)) }

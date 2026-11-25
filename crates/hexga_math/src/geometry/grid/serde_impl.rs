@@ -7,7 +7,22 @@ use serde::de::{DeserializeSeed, Deserializer, SeqAccess, Visitor};
 use std::fmt;
 use std::marker::PhantomData;
 
-impl<'de, T, Idx, const N: usize> Deserialize<'de> for GridOf<T, Idx, N>
+impl<T, Idx, const N: usize, A: Allocator> Serialize for GridOf<T, Idx, N, A>
+where
+    Idx: Integer + Serialize,
+    T: Serialize,
+{
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    {
+        use serde::ser::SerializeStruct;
+        let mut grid = serializer.serialize_struct("Grid", 2)?;
+        grid.serialize_field("size", &self.size)?;
+        grid.serialize_field("values", self.values.as_slice())?;
+        grid.end()
+    }
+}
+
+impl<'de, T, Idx, const N: usize, A: Allocator + Clone + Default> Deserialize<'de> for GridOf<T, Idx, N, A>
 where
     Idx: Integer + Deserialize<'de>,
     T: Deserialize<'de>,
@@ -29,6 +44,8 @@ where
         }
 
         let Grid { size, values } = Grid::deserialize(deserializer)?;
-        GridOf::try_from_vec(size, values).map_err(serde::de::Error::custom)
+        let mut storage = Vec::with_capacity_in(values.len(), A::default());
+        storage.extend(values);
+        Self::try_from_vec(size, storage).map_err(serde::de::Error::custom)
     }
 }

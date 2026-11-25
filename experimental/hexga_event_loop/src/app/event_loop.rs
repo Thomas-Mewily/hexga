@@ -12,7 +12,7 @@ pub struct AppLoop<'a, User>
 impl<'a,User> AppLoop<'a,User>
     where User: AppUserEvent
 {
-    pub fn winit(&self) -> &WinitEventLoopActive { self.event_loop }
+    pub fn lib_winit(&self) -> &WinitEventLoopActive { self.event_loop }
 }
 impl<'a, User> AppLoop<'a, User>
     where User: AppUserEvent

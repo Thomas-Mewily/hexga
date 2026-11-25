@@ -74,7 +74,8 @@ where
     where
         F: FnMut(&T) -> Dest,
     {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn(self.size(), |idx| f(&*unsafe { self.get_unchecked(idx) }))
+        let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_in(self.size(), |idx| f(&*unsafe { self.get_unchecked(idx) }), allocator)
     }
 
     fn transform_par<Dest, F>(&self, f: F) -> <G as IGrid<T, Idx, N>>::WithType<Dest>
@@ -86,7 +87,8 @@ where
         G: Sync,
         Self: Sync,
     {
-        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par(self.size(), |idx| f(&*unsafe { self.get_unchecked(idx) }))
+        let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
+        <G as IGrid<T, Idx, N>>::WithType::<Dest>::from_fn_par_in(self.size(), |idx| f(&*unsafe { self.get_unchecked(idx) }), allocator)
     }
 
     fn update_into_or_panic<O, G2>(&self, other: &mut O)

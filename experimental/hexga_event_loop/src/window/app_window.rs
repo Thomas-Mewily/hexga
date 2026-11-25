@@ -111,7 +111,7 @@ pub trait Windowable
 
     /// Lib specific method
     #[doc(hidden)]
-    fn winit_window(&self) -> WinitWindowShared;
+    fn lib_winit_window(&self) -> WinitWindowShared;
 
     fn destroy_surface(&mut self) -> &mut Self;
 }
@@ -174,7 +174,7 @@ impl<Surface> Window<Surface>
             win_attr = win_attr.with_append(true);
         }
 
-        let window = WinitWindowShared::new(active.winit_event_loop().create_window(win_attr).expect("can't create window"));
+        let window = WinitWindowShared::new(active.lib_winit_event_loop().create_window(win_attr).expect("can't create window"));
         self.window = Some(window);
         self.set_dirty(true);
         true
@@ -305,7 +305,7 @@ impl<Surface> Windowable for Window<Surface>
 
     /// Lib specific method, expose impl details
     #[doc(hidden)]
-    fn winit_window(&self) -> WinitWindowShared { self.window.clone() }
+    fn lib_winit_window(&self) -> WinitWindowShared { self.window.clone() }
 
     fn has_focus(&self) -> bool { self.window.has_focus() }
 

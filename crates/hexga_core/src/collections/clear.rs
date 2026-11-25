@@ -6,7 +6,7 @@ pub trait Clear
     fn clear(&mut self);
 }
 
-impl<T> Clear for Vec<T>
+impl<T, A: Allocator> Clear for Vec<T, A>
 {
     #[inline(always)]
     fn clear(&mut self) { self.clear(); }

@@ -6,11 +6,11 @@ use super::*;
 
 pub(crate) mod prelude
 {
-    pub use super::{Image, ImageOf, ToImage};
+    pub use super::{Image, ImageBaseOf, ImageOf, ToImage};
 }
 
 pub type Image = ImageOf;
-pub type ImageOf<C = ColorU8> = ImageBaseOf<C>;
+pub type ImageOf<C = ColorU8, A = AllocGlobal> = ImageBaseOf<C, int, A>;
 
 pub type ImageError<Idx> = GridBaseError<Idx, 2>;
 
@@ -21,21 +21,72 @@ pub type ImageError<Idx> = GridBaseError<Idx, 2>;
 /// - An image can be saved with more extension than a grid (png, gif...)
 /// - The layout of the pixels match the saving format, saving an image don't create a temporary vector
 //#[cfg_attr(feature = "serde", derive(Serialize), serde(rename = "Image"))]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ImageBaseOf<C = ColorU8, Idx = int>
+#[derive(Clone)]
+pub struct ImageBaseOf<C = ColorU8, Idx = int, A: Allocator = AllocGlobal>
 where
     Idx: Integer,
 {
     size: Vector2<Idx>,
-    pixels: Vec<C>,
+    pixels: Vec<C, A>,
 }
 
-impl<C, Idx> Default for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator, B: Allocator> PartialEq<ImageBaseOf<C, Idx, B>> for ImageBaseOf<C, Idx, A>
+where
+    Idx: Integer,
+    C: PartialEq,
+{
+    fn eq(&self, other: &ImageBaseOf<C, Idx, B>) -> bool
+    {
+        self.size == other.size && self.pixels.as_slice() == other.pixels.as_slice()
+    }
+}
+
+impl<C, Idx, A: Allocator> Eq for ImageBaseOf<C, Idx, A>
+where
+    Idx: Integer,
+    C: Eq,
+{}
+
+impl<C, Idx, A: Allocator> PartialOrd for ImageBaseOf<C, Idx, A>
+where
+    Idx: Integer,
+    C: PartialOrd,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering>
+    {
+        (&self.size, self.pixels.as_slice()).partial_cmp(&(&other.size, other.pixels.as_slice()))
+    }
+}
+
+impl<C, Idx, A: Allocator> Ord for ImageBaseOf<C, Idx, A>
+where
+    Idx: Integer,
+    C: Ord,
+{
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering
+    {
+        (&self.size, self.pixels.as_slice()).cmp(&(&other.size, other.pixels.as_slice()))
+    }
+}
+
+impl<C, Idx, A: Allocator> core::hash::Hash for ImageBaseOf<C, Idx, A>
+where
+    Idx: Integer,
+    C: core::hash::Hash,
+{
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H)
+    {
+        self.size.hash(state);
+        self.pixels.as_slice().hash(state);
+    }
+}
+
+impl<C, Idx, A: Allocator + Default> Default for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
     fn default() -> Self {
-        Self { size: ___(), pixels: ___() }
+        Self { size: ___(), pixels: Vec::new_in(A::default()) }
     }
 }
 
@@ -60,7 +111,7 @@ macro_rules! impl_img_fmt_method {
                 .collect::<Result<Vec<_>, _>>()?;
 
             let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
-            let g = unsafe { ImageBaseOf::from_vec_unchecked(size, strings) };
+            let g = unsafe { ImageBaseOf::<_, Idx>::from_vec_unchecked(size, strings) };
 
             for y in (0..size[1].to_usize()).rev()
             {
@@ -96,7 +147,7 @@ map_on_std_fmt!(
 );
 */
 
-impl<C, Idx> Debug for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> Debug for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
     C: Debug,
@@ -124,7 +175,7 @@ where
                 .collect::<Result<Vec<_>, _>>()?;
 
             let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
-            let g = unsafe { ImageBaseOf::from_vec_unchecked(size, strings) };
+            let g = unsafe { ImageBaseOf::<_, Idx>::from_vec_unchecked(size, strings) };
 
             for y in (0..size[1].to_usize()).rev()
             {
@@ -144,7 +195,7 @@ where
     }
 }
 
-impl<C, Idx> ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
@@ -160,7 +211,7 @@ where
     }
 }
 
-impl<C, Idx> ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
@@ -177,21 +228,21 @@ pub trait ToImage
     type Output;
     fn to_image(self) -> Self::Output;
 }
-impl<C, Idx> From<GridOf<C, Idx, 2>> for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> From<GridOf<C, Idx, 2, A>> for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
-    fn from(value: GridOf<C, Idx, 2>) -> Self { value.to_image() }
+    fn from(value: GridOf<C, Idx, 2, A>) -> Self { value.to_image() }
 }
-impl<'a, C, Idx> From<GridView<'a, GridOf<C, Idx, 2>, C, Idx, 2>> for ImageBaseOf<C, Idx>
+impl<'a, C, Idx, A: Allocator + Clone> From<GridView<'a, GridOf<C, Idx, 2, A>, C, Idx, 2>> for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
     C: Clone,
 {
-    fn from(value: GridView<'a, GridOf<C, Idx, 2>, C, Idx, 2>) -> Self { value.to_image() }
+    fn from(value: GridView<'a, GridOf<C, Idx, 2, A>, C, Idx, 2>) -> Self { value.to_image() }
 }
 
-impl<C, Idx> ToImage for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> ToImage for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
@@ -199,95 +250,102 @@ where
     fn to_image(self) -> Self::Output { self }
 }
 
-impl<C, Idx> ToImage for GridOf<C, Idx, 2>
+fn reverse_rows<T>(pixels: &mut [T], width: usize, height: usize)
+{
+    if width == 0
+    {
+        return;
+    }
+    let (first, last) = pixels.split_at_mut(width * (height / 2));
+    for (top, bottom) in first.chunks_exact_mut(width).zip(last.chunks_exact_mut(width).rev())
+    {
+        top.swap_with_slice(bottom);
+    }
+}
+
+impl<C, Idx, A: Allocator + Clone> ToImage for GridOf<C, Idx, 2, A>
 where
     Idx: Integer,
 {
-    type Output = ImageBaseOf<C, Idx>;
-    fn to_image(mut self) -> Self::Output
+    type Output = ImageBaseOf<C, Idx, A>;
+    fn to_image(self) -> Self::Output
     {
-        let (w, h) = self.size().into();
-        for x in Idx::iter(w)
-        {
-            for y in Idx::iter(h / Idx::two())
-            {
-                unsafe { self.swap_unchecked(vector2(x, y), vector2(x, h - y - Idx::ONE)) };
-            }
-        }
-        let (size, values) = self.into_size_and_values();
+        let (size, mut values) = self.into_size_and_values();
+        reverse_rows(&mut values, size.x.to_usize(), size.y.to_usize());
         unsafe { ImageBaseOf::from_vec_unchecked(size, values) }
     }
 }
-impl<C, Idx> ToGrid<C, Idx, 2> for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> ToGrid<C, Idx, 2> for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
-    type Output = GridOf<C, Idx, 2>;
-    fn to_grid(mut self) -> Self::Output
+    type Output = GridOf<C, Idx, 2, A>;
+    fn to_grid(self) -> Self::Output
     {
-        let (w, h) = self.size().into();
-        for x in Idx::iter(w)
-        {
-            for y in Idx::iter(h / Idx::two())
-            {
-                unsafe { self.swap_unchecked(vector2(x, y), vector2(x, h - y - Idx::ONE)) };
-            }
-        }
-        let (size, values) = self.into_size_and_values();
+        let (size, mut values) = self.into_size_and_values();
+        reverse_rows(&mut values, size.x.to_usize(), size.y.to_usize());
         unsafe { GridOf::from_vec_unchecked(size, values) }
     }
 }
 
-impl<'a, C, Idx> ToImage for GridView<'a, GridOf<C, Idx, 2>, C, Idx, 2>
+impl<'a, C, Idx, A: Allocator + Clone> ToImage for GridView<'a, GridOf<C, Idx, 2, A>, C, Idx, 2>
 where
     Idx: Integer,
     C: Clone,
 {
-    type Output = ImageBaseOf<C, Idx>;
+    type Output = ImageBaseOf<C, Idx, A>;
     fn to_image(self) -> Self::Output
     {
         let size = self.size();
-        Self::Output::from_fn(size, |p| unsafe { self.get_unchecked(vector2(p.x, size.y - p.y - Idx::ONE)) }.clone())
+        let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
+        Self::Output::from_fn_in(size, |p| unsafe { self.get_unchecked(p) }.clone(), allocator)
     }
 }
-impl<'a, C, Idx> ToImage for GridViewMut<'a, GridOf<C, Idx, 2>, C, Idx, 2>
+impl<'a, C, Idx, A: Allocator + Clone> ToImage for GridViewMut<'a, GridOf<C, Idx, 2, A>, C, Idx, 2>
 where
     Idx: Integer,
     C: Clone,
 {
-    type Output = ImageBaseOf<C, Idx>;
+    type Output = ImageBaseOf<C, Idx, A>;
     fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
-impl<'a, C, Idx> ToImage for GridView<'a, ImageBaseOf<C, Idx>, C, Idx, 2>
+impl<'a, C, Idx, A: Allocator + Clone> ToImage for GridView<'a, ImageBaseOf<C, Idx, A>, C, Idx, 2>
 where
     Idx: Integer,
     C: Clone,
 {
-    type Output = ImageBaseOf<C, Idx>;
-    fn to_image(self) -> Self::Output { Self::Output::from_fn(self.size(), |p| unsafe { self.get_unchecked(p) }.clone()) }
+    type Output = ImageBaseOf<C, Idx, A>;
+    fn to_image(self) -> Self::Output
+    {
+        let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
+        Self::Output::from_fn_in(self.size(), |p| unsafe { self.get_unchecked(p) }.clone(), allocator)
+    }
 }
-impl<'a, C, Idx> ToImage for GridViewMut<'a, ImageBaseOf<C, Idx>, C, Idx, 2>
+impl<'a, C, Idx, A: Allocator + Clone> ToImage for GridViewMut<'a, ImageBaseOf<C, Idx, A>, C, Idx, 2>
 where
     Idx: Integer,
     C: Clone,
 {
-    type Output = ImageBaseOf<C, Idx>;
+    type Output = ImageBaseOf<C, Idx, A>;
     fn to_image(self) -> Self::Output { self.view().to_image() }
 }
 
-impl<C, Idx> IGrid<C, Idx, 2> for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> IGrid<C, Idx, 2> for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
-    type WithType<U> = ImageBaseOf<U, Idx>;
+    type WithType<U> = ImageBaseOf<U, Idx, A>;
+    type Allocator = A;
+
+    fn allocator(&self) -> &A { self.pixels.allocator() }
 
     fn values(&self) -> &[C] { &self.pixels }
     fn values_mut(&mut self) -> &mut [C] { &mut self.pixels }
 
-    fn into_size_and_values(self) -> (Vector2<Idx>, Vec<C>) { (self.size, self.pixels) }
+    fn into_size_and_values(self) -> (Vector2<Idx>, Vec<C, A>) { (self.size, self.pixels) }
 
-    unsafe fn from_vec_unchecked<P>(size: P, pixels: Vec<C>) -> Self
+    unsafe fn from_vec_unchecked<P>(size: P, pixels: Vec<C, A>) -> Self
     where
         P: Into<Vector2<Idx>>,
     {
@@ -320,14 +378,14 @@ where
     }
 }
 
-impl<T, Idx> GetPosition<Idx, 2> for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone> GetPosition<Idx, 2> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
 {
     #[inline(always)]
     fn pos(&self) -> Vector2<Idx> { zero() }
 }
-impl<T, Idx> GetSize<Idx, 2> for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone> GetSize<Idx, 2> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
 {
@@ -343,17 +401,17 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 }
 */
 
-impl<T, Idx> CollectionBijective for ImageBaseOf<T, Idx> where Idx: Integer {}
-impl<T, Idx: Integer> Collection<T> for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone> CollectionBijective for ImageBaseOf<T, Idx, A> where Idx: Integer {}
+impl<T, Idx: Integer, A: Allocator + Clone> Collection<T> for ImageBaseOf<T, Idx, A>
 {
     type Ref<'a> = &'a T where Self: 'a, T: 'a;
 }
-impl<T, Idx: Integer> CollectionMut<T> for ImageBaseOf<T, Idx>
+impl<T, Idx: Integer, A: Allocator + Clone> CollectionMut<T> for ImageBaseOf<T, Idx, A>
 {
     type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
 }
 
-impl<P, T, Idx> CollectionIndex<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> CollectionIndex<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -361,7 +419,7 @@ where
     type Output = T;
     type Ref<'a> = &'a T where Self: 'a, Self::Output: 'a;
 }
-impl<P, T, Idx> Get<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> Get<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -378,7 +436,7 @@ where
         }
     }
 }
-impl<P, T, Idx> TryGet<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> TryGet<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -392,7 +450,7 @@ where
     }
 }
 
-impl<P, T, Idx> TryGetMut<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> TryGetMut<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -405,14 +463,14 @@ where
         self.get_mut(p).ok_or_else(|| IndexOutOfBounds::new(p, size))
     }
 }
-impl<P, T, Idx> CollectionIndexMut<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> CollectionIndexMut<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
 {
     type RefMut<'a> = &'a mut T where Self: 'a, Self::Output: 'a;
 }
-impl<P, T, Idx> GetMut<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> GetMut<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -430,7 +488,7 @@ where
     }
 }
 
-impl<P, T, Idx> GetManyMut<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> GetManyMut<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -465,7 +523,7 @@ where
     }
 }
 
-impl<P, T, Idx> Index<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> Index<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -474,7 +532,7 @@ where
     #[inline(always)]
     fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
 }
-impl<P, T, Idx> IndexMut<P> for ImageBaseOf<T, Idx>
+impl<P, T, Idx, A: Allocator + Clone> IndexMut<P> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
@@ -483,7 +541,7 @@ where
     fn index_mut(&mut self, index: P) -> &mut Self::Output { self.get_mut_or_panic(index) }
 }
 
-impl<T, Idx> Length for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone> Length for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
 {
@@ -491,7 +549,7 @@ where
     fn len(&self) -> usize { self.values().len() }
 }
 
-impl<T, Idx> Crop<Idx, 2> for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone> Crop<Idx, 2> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
     T: Clone,
@@ -573,7 +631,7 @@ impl<C,Idx> ToColorComposite for ImageBase<C, Idx> where Idx: Integer, C: ToColo
 }
 */
 
-impl<T, Idx> Map for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone> Map for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
 {
@@ -583,37 +641,41 @@ where
         self
     }
 }
-impl<T, Idx> MapInto for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone> MapInto for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
 {
-    type WithType<R> = ImageBaseOf<R, Idx>;
+    type WithType<R> = ImageBaseOf<R, Idx, A>;
     fn map_into<F, R>(self, f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.pixels.map_into(f)) }
     }
 }
-impl<T, Idx> MapZip for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone + Default> MapZip for ImageBaseOf<T, Idx, A>
 where Idx: Integer,
 {
     fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self where F: FnMut([T; M]) -> T {
-        if M == 0 { return ___(); }
+        if M == 0 {
+            return ___();
+        }
         let size = this[0].size();
         assert!((&this).all(|g| g.size() == size), "size mismatch");
-        unsafe { Self::from_vec_unchecked(size, <Vec<T> as MapZip>::map_zip(this.map(|g| g.pixels), f)) }
+        unsafe { Self::from_vec_unchecked(size, <Vec<T, A> as MapZip>::map_zip(this.map(|g| g.pixels), f)) }
     }
 }
-impl<T, Idx> MapZipInto for ImageBaseOf<T, Idx>
+impl<T, Idx, A: Allocator + Clone + Default> MapZipInto for ImageBaseOf<T, Idx, A>
 where Idx: Integer,
 {
     fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
-        if M == 0 { return ___(); }
+        if M == 0 {
+            return ___();
+        }
         let size = this[0].size();
         assert!((&this).all(|g| g.size() == size), "size mismatch");
-        unsafe { Self::WithType::<R>::from_vec_unchecked(size, <Vec<T> as MapZipInto>::map_zip_into(this.map(|g| g.pixels), f)) }
+        unsafe { Self::WithType::<R>::from_vec_unchecked(size, <Vec<T, A> as MapZipInto>::map_zip_into(this.map(|g| g.pixels), f)) }
     }
 }
 
-impl<C, Idx> Save for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> Save for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer + CfgSerialize,
     C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + CfgSerialize,
@@ -677,7 +739,7 @@ where
     }
 }
 
-impl<C, Idx> MediaType for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone> MediaType for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
     C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>>,
@@ -687,7 +749,7 @@ where
     fn media_type() -> &'static str { "image" }
 }
 
-impl<C, Idx> Load for ImageBaseOf<C, Idx>
+impl<C, Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer + for<'de> CfgDeserialize<'de>, // + for<'de> Deserialize<'de>,
     C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + for<'de> CfgDeserialize<'de>, // + for<'de> Deserialize<'de>,
@@ -768,7 +830,8 @@ where
                         })
                         .collect();
 
-                    let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_u16(v)).collect();
+                    let mut pixels = Vec::with_capacity_in(rgba_vec.len(), A::default());
+                    pixels.extend(rgba_vec.into_iter().map(C::from_rgba_u16));
                     let size = vector2(w, h);
 
                     return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
@@ -801,7 +864,8 @@ where
                     })
                     .collect();
 
-                let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_f32(v)).collect();
+                let mut pixels = Vec::with_capacity_in(rgba_vec.len(), A::default());
+                pixels.extend(rgba_vec.into_iter().map(C::from_rgba_f32));
                 let size = vector2(w, h);
 
                 return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
@@ -835,7 +899,8 @@ where
             })
             .collect();
 
-        let pixels = rgba_vec.into_iter().map(|v| C::from_rgba_u8(v)).collect();
+        let mut pixels = Vec::with_capacity_in(rgba_vec.len(), A::default());
+        pixels.extend(rgba_vec.into_iter().map(C::from_rgba_u8));
         let size = vector2(w, h);
 
         Self::from_vec(size, pixels).ok_or_else(error_invalid_size)

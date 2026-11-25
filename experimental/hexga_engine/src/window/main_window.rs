@@ -24,7 +24,7 @@ impl Windowable for CurrentWindow
 
     fn request_user_attention(&mut self, request_type: impl Into<Option<UserAttentionType>>) { WINDOW.get_mut().request_user_attention(request_type); }
 
-    fn winit_window(&self) -> hexga_event_loop::window::experimental::WinitWindowShared { WINDOW.get_mut().winit_window() }
+    fn lib_winit_window(&self) -> hexga_event_loop::window::experimental::WinitWindowShared { WINDOW.get_mut().lib_winit_window() }
 
     fn current_monitor(&self) -> Option<hexga_event_loop::monitor::Monitor> { WINDOW.get_mut().current_monitor() }
 

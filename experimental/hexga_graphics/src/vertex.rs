@@ -27,13 +27,13 @@ pub struct VertexOf<const N: usize = 3>
 
 pub trait WgpuVertexDesc
 {
-    fn wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>;
+    fn lib_wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>;
 }
 impl<const N: usize> WgpuVertexDesc for VertexOf<N>
 where
     GVector<N>: WgpuVertex,
 {
-    fn wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>
+    fn lib_wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>
     {
         wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,

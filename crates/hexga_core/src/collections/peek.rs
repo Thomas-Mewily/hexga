@@ -33,7 +33,7 @@ impl Last<usize> for str
     fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.chars().last().map(|c| Identity(c)) }
 }
 
-impl<T> Last<usize> for Vec<T>
+impl<T, A: Allocator> Last<usize> for Vec<T, A>
 {
     fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.deref().last() }
 }
@@ -104,7 +104,7 @@ impl First<usize> for str
     fn first<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.chars().next().map(|c| Identity(c)) }
 }
 
-impl<T> First<usize> for Vec<T>
+impl<T, A: Allocator> First<usize> for Vec<T, A>
 {
     fn first<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.deref().first() }
 }
@@ -152,7 +152,7 @@ impl<S: ?Sized, Idx> LastMut<Idx> for &mut S where S: LastMut<Idx>
     }
 }
 
-impl<T> LastMut<usize> for Vec<T>
+impl<T, A: Allocator> LastMut<usize> for Vec<T, A>
 {
     fn last_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { self.deref_mut().last_mut() }
 }
@@ -206,7 +206,7 @@ impl<S: ?Sized, Idx> FirstMut<Idx> for &mut S where S: FirstMut<Idx>
     }
 }
 
-impl<T> FirstMut<usize> for Vec<T>
+impl<T, A: Allocator> FirstMut<usize> for Vec<T, A>
 {
     fn first_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { self.deref_mut().first_mut() }
 }

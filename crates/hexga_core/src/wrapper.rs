@@ -1,3 +1,4 @@
+use crate::allocation::Allocator;
 use core::{cell::UnsafeCell, pin::Pin};
 
 #[cfg(not(feature = "std"))]
@@ -64,15 +65,15 @@ impl<T, E> WrapperTryIntoInner for Result<T, E>
     fn into_inner(self) -> Option<Self::Inside> { self.ok() }
 }
 
-impl<T> Wrapper for Box<T>
+impl<T, A: Allocator> Wrapper for Box<T, A>
 {
     type Inside = T;
 }
-impl<T> WrapperNew for Box<T>
+impl<T, A: Allocator + Default> WrapperNew for Box<T, A>
 {
-    fn new_wrapper(value: Self::Inside) -> Self { Self::new(value) }
+    fn new_wrapper(value: Self::Inside) -> Self { Self::new_in(value, A::default()) }
 }
-impl<T> WrapperIntoInner for Box<T>
+impl<T, A: Allocator> WrapperIntoInner for Box<T, A>
 {
     fn into_inner(self) -> Self::Inside { *self }
 }

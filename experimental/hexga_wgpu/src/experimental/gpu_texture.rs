@@ -5,16 +5,16 @@ use hexga::image::ImageBaseOf;
 #[derive(Debug, Clone, PartialEq)]
 pub struct GpuTexture
 {
-    pub wgpu: wgpu::Texture,
+    pub lib_wgpu: wgpu::Texture,
 }
 impl Handle for GpuTexture {}
 impl From<wgpu::Texture> for GpuTexture
 {
-    fn from(wgpu: wgpu::Texture) -> Self { Self { wgpu } }
+    fn from(wgpu: wgpu::Texture) -> Self { Self { lib_wgpu: wgpu } }
 }
 impl From<GpuTexture> for wgpu::Texture
 {
-    fn from(value: GpuTexture) -> Self { value.wgpu }
+    fn from(value: GpuTexture) -> Self { value.lib_wgpu }
 }
 
 impl Load for GpuTexture
@@ -85,7 +85,7 @@ where
             },
             size,
         );
-        Self { wgpu: texture }
+        Self { lib_wgpu: texture }
     }
 }
 

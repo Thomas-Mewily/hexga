@@ -103,14 +103,14 @@ impl<T> WgpuSliceable<T> for GBuffer<T>
 where
     T: GBufferElement,
 {
-    fn wgpu_buffer_ref(&self) -> &WgpuBuffer { &self.buffer }
+    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer { &self.buffer }
 }
 
 impl<T> GpuSliceable<T> for GBuffer<T>
 where
     T: GBufferElement,
 {
-    fn usage(&self) -> GBufferUsageFlags { self.wgpu_usage().into() }
+    fn usage(&self) -> GBufferUsageFlags { self.lib_wgpu_usage().into() }
     fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T> { GSlice::new(self, bounds) }
 }
 

@@ -39,7 +39,7 @@ impl Monitor
 
     /// Expose external lib impl details
     #[doc(hidden)]
-    pub fn winit(&self) -> &WinitMonitorHandle { &self.handle }
+    pub fn lib_winit(&self) -> &WinitMonitorHandle { &self.handle }
 }
 impl GetPosition<int, 2> for Monitor
 {

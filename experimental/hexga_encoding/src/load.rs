@@ -8,7 +8,7 @@ pub(crate) mod prelude
 pub trait Load: Sized + for<'de> CfgDeserialize<'de>
 {
     fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
-    fn load_prefered_extension() -> &'static extension { Self::load_custom_extensions().next().unwrap_or(FormatMarkup::PREFERED.extension()) }
+    fn load_prefered_extension() -> &'static extension { Self::load_custom_extensions().next().unwrap_or(Extension::PREFERED) }
 
     fn load_from_fs_at<FS: FileSystem, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>
     {

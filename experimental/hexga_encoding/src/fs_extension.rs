@@ -11,6 +11,38 @@ pub type CowExtensionStatic = CowExtension<'static>;
 pub type CowExtension<'a> = Cow<'a, extension>;
 pub type DeducedExtension<'a> = CowExtension<'a>;
 
+/// Supported markup formats.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum FormatMarkup
+{
+    Ron,
+    Json,
+    Xml,
+}
+
+impl FormatMarkup
+{
+    // Todo: add a feature flag
+    pub const PREFERED: Self = Self::Ron;
+    pub const ALL: &'static [Self] = &[Self::Ron, Self::Json, Self::Xml];
+
+    pub const fn extension(self) -> &'static str
+    {
+        match self
+        {
+            Self::Ron => Extension::RON,
+            Self::Json => Extension::JSON,
+            Self::Xml => Extension::XML,
+        }
+    }
+}
+
+impl Default for FormatMarkup
+{
+    fn default() -> Self { Self::PREFERED }
+}
+
 pub trait CommonExtensions
 {
     const TXT: &'static str = "txt";
@@ -19,8 +51,7 @@ pub trait CommonExtensions
     const JSON: &'static str = "json";
     const XML: &'static str = "xml";
 
-    // Todo: add a cfg flag for the prefered extension
-    const PREFERED: &'static str = Self::RON;
+    const PREFERED: &'static str = FormatMarkup::PREFERED.extension();
 
     /// Intended for short-term storage of data in a binary format, such as during data transfer.
     ///

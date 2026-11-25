@@ -6,7 +6,7 @@ pub trait Remove<Idx: ?Sized>
     fn remove(&mut self, index: Idx) -> Option<Self::Output>;
 }
 
-impl<T> Remove<usize> for Vec<T>
+impl<T, A: Allocator> Remove<usize> for Vec<T, A>
 {
     type Output = T;
     fn remove(&mut self, index: usize) -> Option<Self::Output> { if index < self.len() { Some(self.remove(index)) } else { None } }

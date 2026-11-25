@@ -3,15 +3,15 @@ use super::*;
 #[derive(Debug)]
 pub struct GpuSurface<'a>
 {
-    pub wgpu: wgpu::Surface<'a>,
+    pub lib_wgpu: wgpu::Surface<'a>,
 }
 impl<'a> From<wgpu::Surface<'a>> for GpuSurface<'a>
 {
-    fn from(surface: wgpu::Surface<'a>) -> Self { Self { wgpu: surface } }
+    fn from(surface: wgpu::Surface<'a>) -> Self { Self { lib_wgpu: surface } }
 }
 impl<'a> From<GpuSurface<'a>> for wgpu::Surface<'a>
 {
-    fn from(surface: GpuSurface<'a>) -> Self { surface.wgpu }
+    fn from(surface: GpuSurface<'a>) -> Self { surface.lib_wgpu }
 }
 
 #[derive(Debug)]
@@ -26,8 +26,8 @@ impl<'a> GpuSurfaceConfigured<'a>
     pub fn from_surface(surface: GpuSurface<'a>, size: Vec2i) -> Self
     {
         let size = size.max(one());
-        let configuration = surface.wgpu.get_default_config(&Gpu.adapter(), size.x as _, size.y as _).unwrap();
-        surface.wgpu.configure(&Gpu.device(), &configuration);
+        let configuration = surface.lib_wgpu.get_default_config(&Gpu.adapter(), size.x as _, size.y as _).unwrap();
+        surface.lib_wgpu.configure(&Gpu.device(), &configuration);
         Self { surface, configuration }
     }
 
@@ -47,7 +47,7 @@ impl<'a> SetSize<int, 2> for GpuSurfaceConfigured<'a>
         let size = size.max(one());
         self.configuration.width = size.x as _;
         self.configuration.height = size.y as _;
-        self.surface.wgpu.configure(&Gpu.device(), &self.configuration);
+        self.surface.lib_wgpu.configure(&Gpu.device(), &self.configuration);
         self
     }
 }

@@ -4,7 +4,7 @@ pub struct EventLoop<'a, Ev>
 where
     Ev: IAppEvent,
 {
-    winit: &'a WinitEventLoopActive,
+    lib_winit: &'a WinitEventLoopActive,
     state: &'a mut AppState,
     //pub time : &'a mut TimeManager,
     proxy: &'a AppProxy<Ev>,
@@ -17,7 +17,7 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
         f.debug_struct("EventLoop")
-            .field("winit", &self.winit)
+            .field("lib_winit", &self.lib_winit)
             .field("state", &self.state)
             .field("proxy", &self.proxy)
             .finish()
@@ -30,7 +30,7 @@ where
 {
     fn create_window(&mut self, mut param: WindowParam) -> WindowResult<Window<Surface>>
     {
-        match self.winit.create_window(param.clone().into())
+        match self.lib_winit.create_window(param.clone().into())
         {
             Ok(window) =>
             {
@@ -57,9 +57,9 @@ where
     pub fn time(&self) -> Time { self.state.time }
     pub fn proxy(&self) -> &'a AppProxy<Ev> { self.proxy }
 
-    pub(crate) fn new(winit: &'a WinitEventLoopActive, state: &'a mut AppState, proxy: &'a AppProxy<Ev>) -> Self { Self { winit, state, proxy } }
+    pub(crate) fn new(lib_winit: &'a WinitEventLoopActive, state: &'a mut AppState, proxy: &'a AppProxy<Ev>) -> Self { Self { lib_winit, state, proxy } }
 
-    pub fn winit_event_loop(&self) -> &'a WinitEventLoopActive { self.winit }
+    pub fn lib_winit_event_loop(&self) -> &'a WinitEventLoopActive { self.lib_winit }
 }
 impl<'a, Ev> Clipboardable for EventLoop<'a, Ev>
 where
@@ -211,7 +211,7 @@ pub struct AppProxy<CustomEvent>
 where
     CustomEvent: IAppEvent,
 {
-    winit: WinitEventLoopProxy<CustomEvent>,
+    lib_winit: WinitEventLoopProxy<CustomEvent>,
 }
 impl<CustomEvent> Debug for AppProxy<CustomEvent>
 where
@@ -223,7 +223,7 @@ impl<CustomEvent> Clone for AppProxy<CustomEvent>
 where
     CustomEvent: IAppEvent,
 {
-    fn clone(&self) -> Self { Self { winit: self.winit.clone() } }
+    fn clone(&self) -> Self { Self { lib_winit: self.lib_winit.clone() } }
 }
 
 pub type ProxyResult<T = ()> = Result<T, ()>;
@@ -234,7 +234,7 @@ where
 {
     fn send_event(&self, ev: AppMessage<CustomEvent>) -> ProxyResult
     {
-        match self.winit.send_event(ev)
+        match self.lib_winit.send_event(ev)
         {
             Ok(_) => Ok(()),
             Err(e) => Err(()),
@@ -250,6 +250,6 @@ impl<CustomEvent> AppProxy<CustomEvent>
 where
     CustomEvent: IAppEvent,
 {
-    pub(crate) fn new(winit: WinitEventLoopProxy<CustomEvent>) -> Self { Self { winit } }
-    pub fn winit(&self) -> &WinitEventLoopProxy<CustomEvent> { &self.winit }
+    pub(crate) fn new(lib_winit: WinitEventLoopProxy<CustomEvent>) -> Self { Self { lib_winit } }
+    pub fn lib_winit(&self) -> &WinitEventLoopProxy<CustomEvent> { &self.lib_winit }
 }

@@ -6,28 +6,33 @@ pub mod prelude
 }
 
 /// A stack that ALWAYS have at least one element.
-#[derive(Default, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct NonEmptyStack<T>
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct NonEmptyStack<T, A: Allocator = AllocGlobal>
 {
     /// will be readed frequently
     last: T,
-    stack: Vec<T>,
+    stack: Vec<T, A>,
 }
 
-impl<T> Deref for NonEmptyStack<T>
+impl<T: Default, A: Allocator + Default> Default for NonEmptyStack<T, A>
+{
+    fn default() -> Self { Self::new_in(T::default(), A::default()) }
+}
+
+impl<T, A: Allocator> Deref for NonEmptyStack<T, A>
 {
     type Target = T;
     fn deref(&self) -> &Self::Target { &self.last }
 }
-impl<T> DerefMut for NonEmptyStack<T>
+impl<T, A: Allocator> DerefMut for NonEmptyStack<T, A>
 {
     fn deref_mut(&mut self) -> &mut Self::Target { &mut self.last }
 }
 
-impl<T> TryFrom<Vec<T>> for NonEmptyStack<T>
+impl<T, A: Allocator> TryFrom<Vec<T, A>> for NonEmptyStack<T, A>
 {
     type Error = ();
-    fn try_from(value: Vec<T>) -> std::result::Result<Self, Self::Error> { Self::from_vec(value).ok_or(()) }
+    fn try_from(value: Vec<T, A>) -> std::result::Result<Self, Self::Error> { Self::from_vec(value).ok_or(()) }
 }
 
 /// A stack that always have at least one element,
@@ -37,19 +42,27 @@ impl<T> NonEmptyStack<T>
 {
     pub const fn new(value: T) -> Self
     {
-        Self {
-            last: value,
-            stack: Vec::new(),
-        }
+        Self { last: value, stack: Vec::new() }
     }
     pub fn with_capacity(value: T, capacity: usize) -> Self
     {
-        Self {
-            last: value,
-            stack: Vec::with_capacity(capacity.saturating_sub(1)),
-        }
+        Self::with_capacity_in(value, capacity, AllocGlobal::default())
     }
-    pub fn from_vec(mut stack: Vec<T>) -> Option<Self> { stack.pop().map(|last| Self { last, stack }) }
+}
+
+impl<T, A: Allocator> NonEmptyStack<T, A>
+{
+    pub fn new_in(value: T, allocator: A) -> Self
+    {
+        Self { last: value, stack: Vec::new_in(allocator) }
+    }
+
+    pub fn with_capacity_in(value: T, capacity: usize, allocator: A) -> Self
+    {
+        Self { last: value, stack: Vec::with_capacity_in(capacity.saturating_sub(1), allocator) }
+    }
+
+    pub fn from_vec(mut stack: Vec<T, A>) -> Option<Self> { stack.pop().map(|last| Self { last, stack }) }
 
     pub fn len(&self) -> usize { self.stack.len() + 1 }
 
@@ -144,7 +157,7 @@ impl<T> NonEmptyStack<T>
         }
     }
 
-    pub fn into_values(mut self) -> Vec<T>
+    pub fn into_values(mut self) -> Vec<T, A>
     {
         self.stack.push(self.last);
         self.stack
@@ -152,13 +165,13 @@ impl<T> NonEmptyStack<T>
 }
 
 #[derive(Debug, Clone)]
-pub struct NonEmptyStackIntoIter<T>
+pub struct NonEmptyStackIntoIter<T, A: Allocator = AllocGlobal>
 {
-    stack: std::vec::IntoIter<T>,
+    stack: <Vec<T, A> as IntoIterator>::IntoIter,
     last: Option<T>,
 }
 
-impl<T> Iterator for NonEmptyStackIntoIter<T>
+impl<T, A: Allocator> Iterator for NonEmptyStackIntoIter<T, A>
 {
     type Item = T;
 
@@ -170,7 +183,7 @@ impl<T> Iterator for NonEmptyStackIntoIter<T>
         (len, Some(len))
     }
 }
-impl<T> DoubleEndedIterator for NonEmptyStackIntoIter<T>
+impl<T, A: Allocator> DoubleEndedIterator for NonEmptyStackIntoIter<T, A>
 {
     fn next_back(&mut self) -> Option<Self::Item>
     {
@@ -184,16 +197,16 @@ impl<T> DoubleEndedIterator for NonEmptyStackIntoIter<T>
         }
     }
 }
-impl<T> std::iter::FusedIterator for NonEmptyStackIntoIter<T> {}
-impl<T> std::iter::ExactSizeIterator for NonEmptyStackIntoIter<T>
+impl<T, A: Allocator> std::iter::FusedIterator for NonEmptyStackIntoIter<T, A> {}
+impl<T, A: Allocator> std::iter::ExactSizeIterator for NonEmptyStackIntoIter<T, A>
 {
     fn len(&self) -> usize { self.stack.len() + self.last.is_some() as usize }
 }
 
-impl<T> IntoIterator for NonEmptyStack<T>
+impl<T, A: Allocator> IntoIterator for NonEmptyStack<T, A>
 {
     type Item = T;
-    type IntoIter = NonEmptyStackIntoIter<T>;
+    type IntoIter = NonEmptyStackIntoIter<T, A>;
 
     fn into_iter(self) -> Self::IntoIter
     {
@@ -243,7 +256,7 @@ impl<'a, T> std::iter::ExactSizeIterator for NonEmptyStackIter<'a, T>
     fn len(&self) -> usize { self.stack.len() + self.last.is_some() as usize }
 }
 
-impl<'a, T> IntoIterator for &'a NonEmptyStack<T>
+impl<'a, T, A: Allocator> IntoIterator for &'a NonEmptyStack<T, A>
 {
     type Item = &'a T;
     type IntoIter = NonEmptyStackIter<'a, T>;
@@ -296,7 +309,7 @@ impl<'a, T> std::iter::ExactSizeIterator for NonEmptyStackIterMut<'a, T>
     fn len(&self) -> usize { self.stack.len() + self.last.is_some() as usize }
 }
 
-impl<'a, T> IntoIterator for &'a mut NonEmptyStack<T>
+impl<'a, T, A: Allocator> IntoIterator for &'a mut NonEmptyStack<T, A>
 {
     type Item = &'a mut T;
     type IntoIter = NonEmptyStackIterMut<'a, T>;
@@ -310,44 +323,44 @@ impl<'a, T> IntoIterator for &'a mut NonEmptyStack<T>
     }
 }
 
-impl<T> CollectionBijective for NonEmptyStack<T> {}
-impl<T> Last<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> CollectionBijective for NonEmptyStack<T, A> {}
+impl<T, A: Allocator> Last<usize> for NonEmptyStack<T, A>
 {
     fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { Some(self.last()) }
 }
-impl<T> Push<T> for NonEmptyStack<T>
+impl<T, A: Allocator> Push<T> for NonEmptyStack<T, A>
 {
     type Output = ();
     fn push(&mut self, value: T) { NonEmptyStack::push(self, value); }
 }
-impl<T> Pop<T> for NonEmptyStack<T>
+impl<T, A: Allocator> Pop<T> for NonEmptyStack<T, A>
 {
     fn pop(&mut self) -> Option<T> { NonEmptyStack::pop(self) }
 }
-impl<T> First<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> First<usize> for NonEmptyStack<T, A>
 {
     fn first<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { Some(self.deref()) }
 }
-impl<T> FirstMut<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> FirstMut<usize> for NonEmptyStack<T, A>
 {
     fn first_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { Some(self.deref_mut()) }
 }
 
-impl<T> Collection<T> for NonEmptyStack<T>
+impl<T, A: Allocator> Collection<T> for NonEmptyStack<T, A>
 {
     type Ref<'a> = &'a T where Self: 'a, T: 'a;
 }
-impl<T> CollectionMut<T> for NonEmptyStack<T>
+impl<T, A: Allocator> CollectionMut<T> for NonEmptyStack<T, A>
 {
     type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
 }
 
-impl<T> CollectionIndex<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> CollectionIndex<usize> for NonEmptyStack<T, A>
 {
     type Output = T;
     type Ref<'a> = &'a T where Self: 'a, Self::Output: 'a;
 }
-impl<T> Get<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> Get<usize> for NonEmptyStack<T, A>
 {
     #[inline(always)]
     fn get<'a>(&'a self, index: usize) -> Option<Self::Ref<'a>> where Self::Output: 'a
@@ -374,7 +387,7 @@ impl<T> Get<usize> for NonEmptyStack<T>
         }
     }
 }
-impl<T> Index<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> Index<usize> for NonEmptyStack<T, A>
 {
     type Output = T;
 
@@ -382,11 +395,11 @@ impl<T> Index<usize> for NonEmptyStack<T>
     #[track_caller]
     fn index(&self, index: usize) -> &Self::Output { self.get(index).unwrap() }
 }
-impl<T> CollectionIndexMut<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> CollectionIndexMut<usize> for NonEmptyStack<T, A>
 {
     type RefMut<'a> = &'a mut T where Self: 'a, Self::Output: 'a;
 }
-impl<T> GetMut<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> GetMut<usize> for NonEmptyStack<T, A>
 {
     #[inline(always)]
     fn get_mut<'a>(&'a mut self, index: usize) -> Option<Self::RefMut<'a>> where Self::Output: 'a
@@ -413,13 +426,13 @@ impl<T> GetMut<usize> for NonEmptyStack<T>
         }
     }
 }
-impl<T> IndexMut<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> IndexMut<usize> for NonEmptyStack<T, A>
 {
     #[inline(always)]
     #[track_caller]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.get_mut(index).unwrap() }
 }
-impl<T> GetManyMut<usize> for NonEmptyStack<T>
+impl<T, A: Allocator> GetManyMut<usize> for NonEmptyStack<T, A>
 {
     fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> Result<[Self::RefMut<'a>; N], ManyMutError>
      where Self::Output: 'a{
@@ -458,13 +471,13 @@ impl<T> GetManyMut<usize> for NonEmptyStack<T>
     }
 }
 
-impl<T> Length for NonEmptyStack<T>
+impl<T, A: Allocator> Length for NonEmptyStack<T, A>
 {
     fn len(&self) -> usize { self.len() }
     fn is_empty(&self) -> bool { false }
     fn is_not_empty(&self) -> bool { true }
 }
-impl<T> Capacity<T> for NonEmptyStack<T>
+impl<T, A: Allocator> Capacity<T> for NonEmptyStack<T, A>
 {
     fn capacity(&self) -> usize { self.stack.capacity() + 1 }
 }
@@ -473,7 +486,7 @@ impl<T> WithCapacity for NonEmptyStack<T>
     type Param = T;
     fn with_capacity_and_param(capacity: usize, value: Self::Param) -> Self { Self::with_capacity(value, capacity) }
 }
-impl<T> Reserve<T> for NonEmptyStack<T>
+impl<T, A: Allocator> Reserve<T> for NonEmptyStack<T, A>
 {
     type Error = std::collections::TryReserveError;
 
@@ -487,7 +500,7 @@ impl<T> Reserve<T> for NonEmptyStack<T>
     }
 }
 
-impl<T> Truncate<T> for NonEmptyStack<T>
+impl<T, A: Allocator> Truncate<T> for NonEmptyStack<T, A>
 {
     fn truncate(&mut self, len: usize)
     {
@@ -506,7 +519,7 @@ impl<T> Truncate<T> for NonEmptyStack<T>
     }
 }
 
-impl<T> Shrink<T> for NonEmptyStack<T>
+impl<T, A: Allocator> Shrink<T> for NonEmptyStack<T, A>
 {
     fn shrink_to_fit(&mut self) { self.stack.shrink_to_fit(); }
 
@@ -514,7 +527,7 @@ impl<T> Shrink<T> for NonEmptyStack<T>
 }
 
 #[cfg(feature = "serde")]
-impl<T: Serialize> Serialize for NonEmptyStack<T>
+impl<T: Serialize, A: Allocator> Serialize for NonEmptyStack<T, A>
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
