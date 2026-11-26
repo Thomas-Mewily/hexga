@@ -698,12 +698,27 @@ impl<T, Idx, A: Allocator + Clone> MapInto for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
 {
+    type Item = T;
     type WithType<R> = ImageBaseOf<R, Idx, A>;
     fn map_into<F, R>(self, f: F) -> Self::WithType<R>
     where
         F: FnMut(T) -> R,
     {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.pixels.map_into(f)) }
+    }
+}
+impl<T: Copy, Idx: Integer, A: Allocator + Clone> MapInto for &ImageBaseOf<T, Idx, A> {
+    type Item = T;
+    type WithType<R> = ImageBaseOf<R, Idx, A>;
+
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
+        ImageBaseOf {
+            size: self.size,
+            pixels: MapInto::map_into(&self.pixels, f),
+        }
     }
 }
 impl<T, Idx, A: Allocator + Clone + Default> MapZip for ImageBaseOf<T, Idx, A>
@@ -858,9 +873,8 @@ where
     where
         W: Write,
     {
-        let mut pixels = Vec::<ColorU8, _>::with_capacity_in(self.pixels.len(), self.allocator().clone());
-        pixels.extend(self.pixels.iter().copied().map(ColorU8::cast_range_from));
-        ImageBaseOf { size: self.size, pixels }.save_to_writer_with_custom_extension(writer, extension)
+        let image: ImageBaseOf<ColorU8, Idx, A> = self.cast_range_into();
+        image.save_to_writer_with_custom_extension(writer, extension)
     }
 }
 impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorU8, Idx, A>

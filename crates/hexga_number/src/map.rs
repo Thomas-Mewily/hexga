@@ -19,9 +19,11 @@ pub trait Map: Sized {
 
 /// Map item inside self, while allowing its type to change.
 ///
+/// A borrowed container can implement this trait to produce an owned output.
 /// Depending on the type, the output usually needs a fresh allocation (ex: [`Vec`]).
 /// If the mapped type is the same type as the item, consider [`Map::map`] instead because it can often reuse the allocation.
-pub trait MapInto: Map {
+pub trait MapInto: Sized {
+    type Item;
     type WithType<R>: MapInto<Item = R>;
 
     /// Elementwise apply `f` to each item, while allowing the item type to change.
@@ -62,7 +64,7 @@ pub trait MapZip: Map {
 }
 
 /// Map item from multiple self, while allowing its type to change.
-pub trait MapZipInto: MapZip + MapInto {
+pub trait MapZipInto: MapZip + MapInto<Item = <Self as Map>::Item> {
     /// Elementwise apply `f` to the corresponding items across `M` containers.
     ///
     /// # Panics
@@ -72,7 +74,7 @@ pub trait MapZipInto: MapZip + MapInto {
     /// For [`Vec`], a length mismatch is fine because it zips to the shortest length.
     fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R>
     where
-        F: FnMut([Self::Item; M]) -> R;
+        F: FnMut([<Self as Map>::Item; M]) -> R;
 
     /// Combine `self` and `other` elementwise with `f`.
     ///
@@ -83,7 +85,7 @@ pub trait MapZipInto: MapZip + MapInto {
     /// For [`Vec`], a length mismatch is fine because it zips to the shortest length.
     fn map_with_into<F, R>(self, other: Self, mut f: F) -> Self::WithType<R>
     where
-        F: FnMut(Self::Item, Self::Item) -> R,
+        F: FnMut(<Self as Map>::Item, <Self as Map>::Item) -> R,
     {
         Self::map_zip_into([self, other], |[a, b]| f(a, b))
     }
@@ -100,6 +102,7 @@ impl<T, const N: usize> Map for [T; N] {
     }
 }
 impl<T, const N: usize> MapInto for [T; N] {
+    type Item = T;
     type WithType<R> = [R; N];
 
     fn map_into<F, R>(self, f: F) -> Self::WithType<R>
@@ -139,6 +142,7 @@ impl<T, A: Allocator + Clone> Map for Vec<T, A> {
     }
 }
 impl<T, A: Allocator + Clone> MapInto for Vec<T, A> {
+    type Item = T;
     type WithType<R> = Vec<R, A>;
 
     fn map_into<F, R>(self, f: F) -> Self::WithType<R>
@@ -147,6 +151,19 @@ impl<T, A: Allocator + Clone> MapInto for Vec<T, A> {
     {
         let mut result = Vec::with_capacity_in(self.len(), self.allocator().clone());
         result.extend(self.into_iter().map(f));
+        result
+    }
+}
+impl<T: Copy, A: Allocator + Clone> MapInto for &Vec<T, A> {
+    type Item = T;
+    type WithType<R> = Vec<R, A>;
+
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
+        let mut result = Vec::with_capacity_in(self.len(), self.allocator().clone());
+        result.extend(self.iter().copied().map(f));
         result
     }
 }

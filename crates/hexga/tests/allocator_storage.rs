@@ -31,6 +31,26 @@ fn grid_and_image_conversion_reuses_the_storage() {
 }
 
 #[test]
+fn borrowed_image_casts_preserve_the_source_and_allocator() {
+    let allocator = AllocSystem;
+    let size = vec2i(2, 1);
+    let source = ImageOf::<_, _>::from_fn_in(size, |p| p.x != 0, &allocator);
+    let storage = source.pixels().as_ptr();
+
+    let cast: ImageOf<u8, _> = (&source).cast_into();
+    let scaled: ImageOf<u8, _> = (&source).cast_range_into();
+
+    assert_eq!(cast.size(), size);
+    assert_eq!(scaled.size(), size);
+    assert_eq!(cast.pixels(), &[0, 1]);
+    assert_eq!(scaled.pixels(), &[0, 255]);
+    assert!(std::ptr::eq(*cast.allocator(), &allocator));
+    assert!(std::ptr::eq(*scaled.allocator(), &allocator));
+    assert_eq!(source.pixels(), &[false, true]);
+    assert_eq!(source.pixels().as_ptr(), storage);
+}
+
+#[test]
 fn generational_sequence_uses_the_allocator_across_removal_and_growth() {
     let allocator = AllocSystem;
     let mut sequence = GenVec::<_, _>::with_capacity_and_param(4, &allocator);

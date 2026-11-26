@@ -155,6 +155,7 @@ impl<T, Idx, const N: usize, A: Allocator + Clone> MapInto for GridOf<T, Idx, N,
 where
     Idx: Integer,
 {
+    type Item = T;
     type WithType<R> = GridOf<R, Idx, N, A>;
     fn map_into<F, R>(self, f: F) -> Self::WithType<R>
     where

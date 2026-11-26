@@ -733,6 +733,7 @@ impl<T, const ROW: usize, const COL: usize> Map for Matrix<T, ROW, COL> {
     }
 }
 impl<T, const ROW: usize, const COL: usize> MapInto for Matrix<T, ROW, COL> {
+    type Item = T;
     type WithType<R> = Matrix<R, ROW, COL>;
     fn map_into<F, R>(self, mut f: F) -> Self::WithType<R>
     where

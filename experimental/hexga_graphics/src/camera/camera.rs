@@ -176,6 +176,7 @@ impl<T> Map for CameraOf<T> {
     }
 }
 impl<T> MapInto for CameraOf<T> {
+    type Item = T;
     type WithType<R> = CameraOf<R>;
     fn map_into<F, R>(self, f: F) -> Self::WithType<R>
     where
