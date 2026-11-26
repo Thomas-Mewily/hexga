@@ -112,6 +112,17 @@ impl<T, const N: usize> MapInto for [T; N] {
         self.map(f)
     }
 }
+impl<T: Copy, const N: usize> MapInto for &[T; N] {
+    type Item = T;
+    type WithType<R> = [R; N];
+
+    fn map_into<F, R>(self, mut f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
+        core::array::from_fn(|index| f(self[index]))
+    }
+}
 impl<T, const N: usize> MapZip for [T; N] {
     fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self
     where

@@ -134,6 +134,18 @@ impl CastFrom<bool> for bool {
     }
 }
 
+macro_rules! impl_borrowed_cast_from {
+    ($source:ty) => {
+        impl<T: CastFrom<$source>> CastFrom<&$source> for T {
+            fn cast_from(value: &$source) -> Self {
+                T::cast_from(*value)
+            }
+        }
+    };
+}
+map_on_number!(impl_borrowed_cast_from);
+impl_borrowed_cast_from!(bool);
+
 trait_marker!(
     /// fX
     CastIntoFloat: CastInto<f32> + ToF32<Output = f32> + CastInto<f64> + ToF64<Output = f64>

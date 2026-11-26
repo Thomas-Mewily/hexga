@@ -89,6 +89,18 @@ where
     }
 }
 
+macro_rules! impl_borrowed_cast_range_from {
+    ($source:ty) => {
+        impl<T: CastRangeFrom<$source>> CastRangeFrom<&$source> for T {
+            fn cast_range_from(value: &$source) -> Self {
+                T::cast_range_from(*value)
+            }
+        }
+    };
+}
+map_on_number!(impl_borrowed_cast_range_from);
+impl_borrowed_cast_range_from!(bool);
+
 // Double recursive macro :)
 macro_rules! impl_cast_range_to_integer {
     ($src: ty, $dest: ty) => {
