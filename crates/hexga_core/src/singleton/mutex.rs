@@ -74,7 +74,7 @@ impl<T> GuardedMut<T> for SingletonMutex<T> {
 
 #[cfg(feature = "feature_mapped_lock_guards")]
 fn map_identity_mutex_guard<'a, T>(guard: MutexGuard<'a, Identity<T>>) -> MappedMutexGuard<'a, T> {
-    MutexGuard::map(guard, |identity| &mut identity.value)
+    MutexGuard::map(guard, |identity| &mut identity.0)
 }
 
 #[cfg(not(feature = "feature_mapped_lock_guards"))]

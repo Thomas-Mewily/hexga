@@ -2,7 +2,7 @@ use super::*;
 
 #[cfg(feature = "feature_mapped_lock_guards")]
 fn map_identity_rw_read_guard<'a, T>(guard: RwLockReadGuard<'a, Identity<T>>) -> MappedRwLockReadGuard<'a, T> {
-    RwLockReadGuard::map(guard, |identity| &identity.value)
+    RwLockReadGuard::map(guard, |identity| &identity.0)
 }
 
 #[cfg(not(feature = "feature_mapped_lock_guards"))]
@@ -12,7 +12,7 @@ fn map_identity_rw_read_guard<'a, T>(guard: RwLockReadGuard<'a, Identity<T>>) ->
 
 #[cfg(feature = "feature_mapped_lock_guards")]
 fn map_identity_rw_write_guard<'a, T>(guard: RwLockWriteGuard<'a, Identity<T>>) -> MappedRwLockWriteGuard<'a, T> {
-    RwLockWriteGuard::map(guard, |identity| &mut identity.value)
+    RwLockWriteGuard::map(guard, |identity| &mut identity.0)
 }
 
 #[cfg(not(feature = "feature_mapped_lock_guards"))]

@@ -23,6 +23,11 @@ impl<T> SingleThreadCell<T> {
             id: std::sync::OnceLock::new(),
         }
     }
+    pub(crate) fn get_exclusive(&mut self) -> &mut T {
+        self.assert_same_thread();
+        RefCell::get_mut(&mut self.value)
+    }
+
     #[inline(always)]
     pub fn is_same_thread(&self) -> Result<(), DifferentThreadError> {
         if std::thread::current().id() == *self.id.get_or_init(|| std::thread::current().id()) {

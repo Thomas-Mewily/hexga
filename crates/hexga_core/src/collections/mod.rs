@@ -1,3 +1,8 @@
+//! Collection operations that return owned values can acquire a guard for
+//! the duration of the operation. For indexed access or peeking through
+//! a lock or cell, acquire its guard first and use the collection traits
+//! on that guard. This also keeps compound operations under one lock.
+
 use super::*;
 
 pub mod singly_linked;
@@ -85,6 +90,7 @@ mod view_mut;
 pub use view_mut::*;
 */
 
+mod forward;
 mod collection;
 pub use collection::*;
 

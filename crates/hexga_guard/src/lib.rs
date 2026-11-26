@@ -150,7 +150,7 @@ impl<'a, T> GuardMut<'a, T> for &'a mut T {
 }
 
 #[cfg(feature = "std")]
-impl<T> Guarded<T> for std::cell::RefCell<T> {
+impl<T: ?Sized> Guarded<T> for std::cell::RefCell<T> {
     type Guard<'a>
         = std::cell::Ref<'a, T>
     where
@@ -169,7 +169,7 @@ impl<T> Guarded<T> for std::cell::RefCell<T> {
     }
 }
 #[cfg(feature = "std")]
-impl<T> GuardedMut<T> for std::cell::RefCell<T> {
+impl<T: ?Sized> GuardedMut<T> for std::cell::RefCell<T> {
     type GuardMut<'a>
         = std::cell::RefMut<'a, T>
     where
@@ -189,7 +189,7 @@ impl<T> GuardedMut<T> for std::cell::RefCell<T> {
 }
 
 #[cfg(feature = "std")]
-impl<T> Guarded<T> for std::sync::Mutex<T> {
+impl<T: ?Sized> Guarded<T> for std::sync::Mutex<T> {
     type Guard<'a>
         = std::sync::MutexGuard<'a, T>
     where
@@ -205,7 +205,7 @@ impl<T> Guarded<T> for std::sync::Mutex<T> {
 }
 
 #[cfg(feature = "std")]
-impl<T> GuardedMut<T> for std::sync::Mutex<T> {
+impl<T: ?Sized> GuardedMut<T> for std::sync::Mutex<T> {
     type GuardMut<'a>
         = std::sync::MutexGuard<'a, T>
     where
@@ -221,7 +221,7 @@ impl<T> GuardedMut<T> for std::sync::Mutex<T> {
 }
 
 #[cfg(feature = "std")]
-impl<T> Guarded<T> for std::sync::RwLock<T> {
+impl<T: ?Sized> Guarded<T> for std::sync::RwLock<T> {
     type Guard<'a>
         = std::sync::RwLockReadGuard<'a, T>
     where
@@ -238,7 +238,7 @@ impl<T> Guarded<T> for std::sync::RwLock<T> {
 // TODO: use feature_mapped_lock_guards : MappedRwLockWriteGuard when it will be stable ?
 // That way `{ guard.get_mut().guard_map(|v| &v.x) }` will compile, currently it will complain about a temporary value dropped created by `.get_mut()`, because mapping it don't move the guard
 #[cfg(feature = "std")]
-impl<T> GuardedMut<T> for std::sync::RwLock<T> {
+impl<T: ?Sized> GuardedMut<T> for std::sync::RwLock<T> {
     type GuardMut<'a>
         = std::sync::RwLockWriteGuard<'a, T>
     where
