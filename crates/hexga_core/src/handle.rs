@@ -1,9 +1,10 @@
 use super::*;
 
 // Prevision for https://smallcultfollowing.com/babysteps/blog/2025/10/07/the-handle-trait/
-pub trait Handle: Clone
-{
-    fn clone_handle(&self) -> Self { self.clone() }
+pub trait Handle: Clone {
+    fn clone_handle(&self) -> Self {
+        self.clone()
+    }
 }
 impl<T> Handle for core::cell::RefCell<T> where T: ?Sized + Clone {}
 
@@ -19,11 +20,9 @@ where
 {
 }
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
 }
-pub mod traits
-{
+pub mod traits {
     pub use super::Handle;
 }

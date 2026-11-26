@@ -43,8 +43,7 @@ where
 {
 }
 
-pub trait ToAngleComposite
-{
+pub trait ToAngleComposite {
     type Output;
     fn degree(self) -> Self::Output;
     fn radian(self) -> Self::Output;
@@ -156,8 +155,7 @@ where
     }
 }
 
-impl<T: Float> AngleOf<T>
-{
+impl<T: Float> AngleOf<T> {
     /// `360°`
     pub const FULL: Self = AngleOf(T::TWO_PI);
     /// `180°`
@@ -167,22 +165,35 @@ impl<T: Float> AngleOf<T>
     /// `90°`
     pub const RIGHT: Self = AngleOf(T::HALF_PI);
 
-    pub fn from_radian(rad: T) -> Self { Self(rad) }
-    pub fn from_degree(degree: T) -> Self { Self(degree * (T::ANGLE_FULL_RADIAN / T::ANGLE_FULL_DEGREE)) }
-    pub fn from_turn(coef: T) -> Self { Self(coef * T::ANGLE_FULL_RADIAN) }
+    pub fn from_radian(rad: T) -> Self {
+        Self(rad)
+    }
+    pub fn from_degree(degree: T) -> Self {
+        Self(degree * (T::ANGLE_FULL_RADIAN / T::ANGLE_FULL_DEGREE))
+    }
+    pub fn from_turn(coef: T) -> Self {
+        Self(coef * T::ANGLE_FULL_RADIAN)
+    }
 
-    pub fn radian(self) -> T { self.0 }
-    pub fn degree(self) -> T { self.0 * (T::ANGLE_FULL_DEGREE / T::ANGLE_FULL_RADIAN) }
-    pub fn turn(self) -> T { self.0 / T::ANGLE_FULL_RADIAN }
+    pub fn radian(self) -> T {
+        self.0
+    }
+    pub fn degree(self) -> T {
+        self.0 * (T::ANGLE_FULL_DEGREE / T::ANGLE_FULL_RADIAN)
+    }
+    pub fn turn(self) -> T {
+        self.0 / T::ANGLE_FULL_RADIAN
+    }
 
     // Todo : check for a better way to do it
     /// `[0, 2PI[`
-    pub fn normalized_positive(self) -> Self { Self::from_radian((self.0 % T::ANGLE_FULL_RADIAN + T::ANGLE_FULL_RADIAN) % T::ANGLE_FULL_RADIAN) }
+    pub fn normalized_positive(self) -> Self {
+        Self::from_radian((self.0 % T::ANGLE_FULL_RADIAN + T::ANGLE_FULL_RADIAN) % T::ANGLE_FULL_RADIAN)
+    }
 
     // Todo : check for a better way to do it
     /// `]PI; PI]`
-    pub fn normalized(self) -> Self
-    {
+    pub fn normalized(self) -> Self {
         let tmp = self.normalized_positive();
         if tmp < Self::HALF { tmp } else { tmp - Self::FULL }
     }
@@ -191,53 +202,66 @@ impl<T: Float> AngleOf<T>
 
     /// `(cos(self), sin(self))`
     #[inline(always)]
-    pub fn cos_sin(self) -> (T, T)
-    {
+    pub fn cos_sin(self) -> (T, T) {
         let (s, c) = self.0.sin_cos();
         (c, s)
     }
     /// `(sin(self), cos(self))`
     #[inline(always)]
-    pub fn sin_cos(self) -> (T, T) { self.0.sin_cos() }
+    pub fn sin_cos(self) -> (T, T) {
+        self.0.sin_cos()
+    }
     /// `(cos(self), cos(self))`
     #[inline(always)]
-    pub fn cos_cos(self) -> (T, T)
-    {
+    pub fn cos_cos(self) -> (T, T) {
         let c = self.cos();
         (c, c)
     }
     /// `(sin(self), sin(self))`
     #[inline(always)]
-    pub fn sin_sin(self) -> (T, T)
-    {
+    pub fn sin_sin(self) -> (T, T) {
         let s = self.sin();
         (s, s)
     }
 
     /// Cosine of the angle.
     #[inline(always)]
-    pub fn cos(self) -> T { self.0.cos() }
+    pub fn cos(self) -> T {
+        self.0.cos()
+    }
     /// Hyperbolic cosine.
     #[inline(always)]
-    pub fn cosh(self) -> T { self.0.cosh() }
+    pub fn cosh(self) -> T {
+        self.0.cosh()
+    }
 
     /// Sine of the angle.
     #[inline(always)]
-    pub fn sin(self) -> T { self.0.sin() }
+    pub fn sin(self) -> T {
+        self.0.sin()
+    }
     /// Hyperbolic sine.
     #[inline(always)]
-    pub fn sinh(self) -> T { self.0.sinh() }
+    pub fn sinh(self) -> T {
+        self.0.sinh()
+    }
 
     /// Cotangent (`1 / tan(self)`).
     #[inline(always)]
-    pub fn cot(self) -> T { self.0.cot() }
+    pub fn cot(self) -> T {
+        self.0.cot()
+    }
 
     /// Tangent of the angle.
     #[inline(always)]
-    pub fn tan(self) -> T { self.0.tan() }
+    pub fn tan(self) -> T {
+        self.0.tan()
+    }
     /// Hyperbolic tangent.
     #[inline(always)]
-    pub fn tanh(self) -> T { self.0.tanh() }
+    pub fn tanh(self) -> T {
+        self.0.tanh()
+    }
 
     /// Return a normalized (length = 1) vector with the same angle
     #[inline(always)]
@@ -257,22 +281,22 @@ impl<T: Float> AngleOf<T>
 
     /// Return a normalized (length = 1) vector with the same angle
     #[inline(always)]
-    pub fn to_vector2_normalized(self) -> Vector2<T> { self.to_vector2(T::ONE) }
+    pub fn to_vector2_normalized(self) -> Vector2<T> {
+        self.to_vector2(T::ONE)
+    }
     #[inline(always)]
-    pub fn to_vector2(self, length: T) -> Vector2<T> { Vector2::new(self.cos() * length, self.sin() * length) }
+    pub fn to_vector2(self, length: T) -> Vector2<T> {
+        Vector2::new(self.cos() * length, self.sin() * length)
+    }
 
-    pub fn inside_range(self, begin: Self, end: Self) -> bool
-    {
+    pub fn inside_range(self, begin: Self, end: Self) -> bool {
         let self_normalized = self.normalized_positive();
         let begin_normalized = begin.normalized_positive();
         let end_normalized = end.normalized_positive();
 
-        if begin_normalized.0 <= end_normalized.0
-        {
+        if begin_normalized.0 <= end_normalized.0 {
             self_normalized.0 >= begin_normalized.0 && self_normalized.0 <= end_normalized.0
-        }
-        else
-        {
+        } else {
             self_normalized.0 >= begin_normalized.0 || self_normalized.0 <= end_normalized.0
         }
     }
@@ -282,17 +306,20 @@ impl<T: Float> Debug for AngleOf<T>
 where
     T: Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{:?}°", self.degree()) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "{:?}°", self.degree())
+    }
 }
 impl<T: Float> Display for AngleOf<T>
 where
     T: Display,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{:}°", self.degree()) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "{:}°", self.degree())
+    }
 }
 
-impl<T: Float> RangeDefault for AngleOf<T>
-{
+impl<T: Float> RangeDefault for AngleOf<T> {
     const RANGE_MIN: Self = Self::ZERO;
     const RANGE_HALF: Self = Self::FLAT;
     const RANGE_MAX: Self = Self::FULL;

@@ -1,7 +1,6 @@
 use super::*;
 
-pub trait Pop<T>
-{
+pub trait Pop<T> {
     /// Removes the last element from the collection and returns it, or [`None`] if it is empty.
     fn pop(&mut self) -> Option<T>;
 
@@ -22,14 +21,12 @@ pub trait Pop<T>
         Self: Last<Idx, Output = T>,
         F: FnOnce(&T) -> bool,
     {
-        if predicate(self.last()?.deref())
-        {
+        if predicate(self.last()?.deref()) {
             return self.pop();
         }
         None
     }
 }
-
 
 /*
 pub trait TryPop<T> : Pop<T>
@@ -39,8 +36,7 @@ pub trait TryPop<T> : Pop<T>
     fn try_pop(&mut self) -> Result<T, Self::Error>;
 }
 */
-pub trait PopFront<T>
-{
+pub trait PopFront<T> {
     /// Removes the first element and returns it, or [`None`] if the collection is empty.
     fn pop_front(&mut self) -> Option<T>;
 
@@ -61,25 +57,22 @@ pub trait PopFront<T>
         Self: First<Idx, Output = T>,
         F: FnOnce(&T) -> bool,
     {
-        if predicate(self.first()?.deref())
-        {
+        if predicate(self.first()?.deref()) {
             return self.pop_front();
         }
         None
     }
 }
 
-
-
-
 /*
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct EmptyError;
 */
 
-impl<T, A: Allocator> Pop<T> for Vec<T, A>
-{
-    fn pop(&mut self) -> Option<T> { self.pop() }
+impl<T, A: Allocator> Pop<T> for Vec<T, A> {
+    fn pop(&mut self) -> Option<T> {
+        self.pop()
+    }
 }
 /*
 impl<T> TryPop<T> for Vec<T>
@@ -89,13 +82,15 @@ impl<T> TryPop<T> for Vec<T>
 }
 */
 
-impl<T> Pop<T> for VecDeque<T>
-{
-    fn pop(&mut self) -> Option<T> { self.pop_back() }
+impl<T> Pop<T> for VecDeque<T> {
+    fn pop(&mut self) -> Option<T> {
+        self.pop_back()
+    }
 }
-impl<T> PopFront<T> for VecDeque<T>
-{
-    fn pop_front(&mut self) -> Option<T> { self.pop_front() }
+impl<T> PopFront<T> for VecDeque<T> {
+    fn pop_front(&mut self) -> Option<T> {
+        self.pop_front()
+    }
 }
 /*
 impl<T> TryPop<T> for VecDeque<T>
@@ -109,16 +104,20 @@ impl<T> Pop<T> for BinaryHeap<T>
 where
     T: Ord,
 {
-    fn pop(&mut self) -> Option<T> { self.pop() }
+    fn pop(&mut self) -> Option<T> {
+        self.pop()
+    }
 }
 
-impl<T> Pop<T> for LinkedList<T>
-{
-    fn pop(&mut self) -> Option<T> { self.pop_back() }
+impl<T> Pop<T> for LinkedList<T> {
+    fn pop(&mut self) -> Option<T> {
+        self.pop_back()
+    }
 }
-impl<T> PopFront<T> for LinkedList<T>
-{
-    fn pop_front(&mut self) -> Option<T> { self.pop_front() }
+impl<T> PopFront<T> for LinkedList<T> {
+    fn pop_front(&mut self) -> Option<T> {
+        self.pop_front()
+    }
 }
 /*
 impl<T> TryPop<T> for LinkedList<T>
@@ -128,9 +127,10 @@ impl<T> TryPop<T> for LinkedList<T>
 }
 */
 
-impl Pop<char> for String
-{
-    fn pop(&mut self) -> Option<char> { self.pop() }
+impl Pop<char> for String {
+    fn pop(&mut self) -> Option<char> {
+        self.pop()
+    }
     /*
     fn pop_if<Idx, F>(&mut self, predicate: F) -> Option<char>
     where

@@ -26,8 +26,7 @@ use super::*;
 /// [`padding`]: https://developer.mozilla.org/en-US/docs/Web/CSS/padding
 /// [`transform`]: https://developer.mozilla.org/en-US/docs/Web/CSS/transform
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Touch
-{
+pub struct Touch {
     pub phase: TouchPhase,
     pub pos: Vec2,
     /*

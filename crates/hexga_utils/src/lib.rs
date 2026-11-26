@@ -24,8 +24,7 @@ pub mod stable_set;
 //pub mod string_interned;
 
 use prelude::*;
-pub mod prelude
-{
+pub mod prelude {
     pub use super::non_empty_stack::prelude::*;
     // pub use super::asset::*;
     pub use super::button::prelude::*;
@@ -36,8 +35,7 @@ pub mod prelude
     //pub use super::interned_map::prelude;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::button::traits::*;
     pub use super::dirty::traits::*;
     pub use super::evolution::traits::*;

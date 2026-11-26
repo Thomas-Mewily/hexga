@@ -4,4 +4,6 @@
 mod func;
 pub use func::*;
 
-fn main() { publish_all_crate(); }
+fn main() {
+    publish_all_crate();
+}

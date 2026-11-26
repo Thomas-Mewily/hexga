@@ -31,8 +31,7 @@ use super::*;
 /// let b : Vector3::<u16> = a.cast_into(),
 /// assert_eq!(b, vector3(0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX));
 /// ```
-pub trait CastRangeFrom<T>
-{
+pub trait CastRangeFrom<T> {
     fn cast_range_from(value: T) -> Self;
 }
 impl<C1, C2> CastRangeFrom<C2> for C1
@@ -41,7 +40,9 @@ where
     C2: MapInto<WithType<C1::Item> = Self>,
     C1::Item: CastRangeFrom<C2::Item>,
 {
-    fn cast_range_from(value: C2) -> Self { value.map_into(C1::Item::cast_range_from) }
+    fn cast_range_from(value: C2) -> Self {
+        value.map_into(C1::Item::cast_range_from)
+    }
 }
 
 /// Remap the value [`RangeDefault`] to the [`RangeDefault`] of the target type,
@@ -75,172 +76,123 @@ where
 /// let b : Vector3::<u16> = a.cast_into(),
 /// assert_eq!(b, vector3(0u16, u16::MAX / 2 - u8::RANGE_MAX as u16 / 2 - 1, u16::MAX));
 /// ```
-pub trait CastRangeInto<T>: Sized
-{
+pub trait CastRangeInto<T>: Sized {
     fn cast_range_into(self) -> T;
 }
 impl<S, T> CastRangeInto<T> for S
 where
     T: CastRangeFrom<S>,
 {
-    fn cast_range_into(self) -> T { T::cast_range_from(self) }
+    fn cast_range_into(self) -> T {
+        T::cast_range_from(self)
+    }
 }
 
 // Double recursive macro :)
 macro_rules! impl_cast_range_to_integer {
     ($src: ty, $dest: ty) => {
-        impl CastRangeFrom<$src> for $dest
-        {
+        impl CastRangeFrom<$src> for $dest {
             #[inline(always)]
-            fn cast_range_from(value: $src) -> $dest
-            {
+            fn cast_range_from(value: $src) -> $dest {
                 // The match can be inlined by the compiler since it is matching on compile time constant
-                match (<$src>::PRIMITIVE_TYPE, <$dest>::PRIMITIVE_TYPE)
-                {
-                    (NumberType::IntegerSigned, NumberType::IntegerSigned) =>
-                    {
-                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>()
-                        {
+                match (<$src>::PRIMITIVE_TYPE, <$dest>::PRIMITIVE_TYPE) {
+                    (NumberType::IntegerSigned, NumberType::IntegerSigned) => {
+                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>() {
                             return value as $dest;
                         }
-                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>()
-                        {
+                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>() {
                             // down cast
                             return (value * (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest;
-                        }
-                        else
-                        {
+                        } else {
                             // up cast
                             ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     }
-                    (NumberType::IntegerSigned, NumberType::IntegerUnsigned) =>
-                    {
-                        if std::mem::size_of::<$src>() > std::mem::size_of::<$dest>()
-                        {
+                    (NumberType::IntegerSigned, NumberType::IntegerUnsigned) => {
+                        if std::mem::size_of::<$src>() > std::mem::size_of::<$dest>() {
                             // down cast
                             (value * (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest
-                        }
-                        else
-                        {
+                        } else {
                             // up cast or same size
                             ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     }
                     (NumberType::IntegerSigned, NumberType::Float) => ((value as $dest - <$src>::RANGE_MIN as $dest) / (<$src>::RANGE as $dest)),
-                    (NumberType::IntegerSigned, NumberType::Bool) =>
-                    {
-                        if (value > <$src>::ZERO)
-                        {
+                    (NumberType::IntegerSigned, NumberType::Bool) => {
+                        if (value > <$src>::ZERO) {
                             <$dest>::RANGE_MAX
-                        }
-                        else
-                        {
+                        } else {
                             <$dest>::RANGE_MIN
                         }
                     }
-                    (NumberType::IntegerUnsigned, NumberType::IntegerSigned) =>
-                    {
-                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>()
-                        {
+                    (NumberType::IntegerUnsigned, NumberType::IntegerSigned) => {
+                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>() {
                             // same size, but different range
                             return (value / (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest;
                         }
-                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>()
-                        {
+                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>() {
                             // down cast
                             (value * (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest
-                        }
-                        else
-                        {
+                        } else {
                             // up cast
                             ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     }
-                    (NumberType::IntegerUnsigned, NumberType::IntegerUnsigned) =>
-                    {
-                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>()
-                        {
+                    (NumberType::IntegerUnsigned, NumberType::IntegerUnsigned) => {
+                        if std::mem::size_of::<$src>() == std::mem::size_of::<$dest>() {
                             return value as $dest;
                         }
-                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>()
-                        {
+                        if std::mem::size_of::<$src>() >= std::mem::size_of::<$dest>() {
                             // down cast
                             (value * (<$src>::RANGE / (<$dest>::RANGE as $src))) as $dest
-                        }
-                        else
-                        {
+                        } else {
                             // up cast
                             ((value as $dest) * (<$dest>::RANGE / (<$src>::RANGE as $dest)))
                         }
                     }
                     (NumberType::IntegerUnsigned, NumberType::Float) => ((value as $dest - <$src>::RANGE_MIN as $dest) / (<$src>::RANGE as $dest)),
-                    (NumberType::IntegerUnsigned, NumberType::Bool) =>
-                    {
-                        if (value > <$src>::ZERO)
-                        {
+                    (NumberType::IntegerUnsigned, NumberType::Bool) => {
+                        if (value > <$src>::ZERO) {
                             <$dest>::RANGE_MAX
-                        }
-                        else
-                        {
+                        } else {
                             <$dest>::RANGE_MIN
                         }
                     }
                     (NumberType::Float, NumberType::IntegerSigned) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
                     (NumberType::Float, NumberType::IntegerUnsigned) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
                     (NumberType::Float, NumberType::Float) => (value * (<$dest>::RANGE as $src) + (<$dest>::RANGE_MIN as $src)) as $dest,
-                    (NumberType::Float, NumberType::Bool) =>
-                    {
-                        if (value > <$src>::ZERO)
-                        {
+                    (NumberType::Float, NumberType::Bool) => {
+                        if (value > <$src>::ZERO) {
                             <$dest>::RANGE_MAX
-                        }
-                        else
-                        {
+                        } else {
                             <$dest>::RANGE_MIN
                         }
                     }
-                    (NumberType::Bool, NumberType::IntegerSigned) =>
-                    {
-                        if value == <$src>::MIN
-                        {
+                    (NumberType::Bool, NumberType::IntegerSigned) => {
+                        if value == <$src>::MIN {
                             <$dest>::RANGE_MIN
-                        }
-                        else
-                        {
+                        } else {
                             <$dest>::RANGE_MAX
                         }
                     }
-                    (NumberType::Bool, NumberType::IntegerUnsigned) =>
-                    {
-                        if value == <$src>::MIN
-                        {
+                    (NumberType::Bool, NumberType::IntegerUnsigned) => {
+                        if value == <$src>::MIN {
                             <$dest>::RANGE_MIN
-                        }
-                        else
-                        {
+                        } else {
                             <$dest>::RANGE_MAX
                         }
                     }
-                    (NumberType::Bool, NumberType::Float) =>
-                    {
-                        if value == <$src>::MIN
-                        {
+                    (NumberType::Bool, NumberType::Float) => {
+                        if value == <$src>::MIN {
                             <$dest>::RANGE_MIN
-                        }
-                        else
-                        {
+                        } else {
                             <$dest>::RANGE_MAX
                         }
                     }
-                    (NumberType::Bool, NumberType::Bool) =>
-                    {
-                        if (value > <$src>::ZERO)
-                        {
+                    (NumberType::Bool, NumberType::Bool) => {
+                        if (value > <$src>::ZERO) {
                             <$dest>::RANGE_MAX
-                        }
-                        else
-                        {
+                        } else {
                             <$dest>::RANGE_MIN
                         }
                     }
@@ -274,9 +226,10 @@ map_on_number!(
         }
     }
 );
-impl CastRangeFrom<bool> for bool
-{
-    fn cast_range_from(value: bool) -> Self { value }
+impl CastRangeFrom<bool> for bool {
+    fn cast_range_from(value: bool) -> Self {
+        value
+    }
 }
 
 trait_marker!(
@@ -405,13 +358,11 @@ CastRangePrimitive: CastRangeIntoPrimitive + CastRangeFromPrimitive + CastRangeF
 );
 
 #[cfg(test)]
-mod cast_range_test
-{
+mod cast_range_test {
     use super::*;
 
     #[test]
-    fn identity()
-    {
+    fn identity() {
         macro_rules! check_identity {
             ($type_name : ident) => {
                 assert_eq!(<$type_name>::cast_range_from(<$type_name>::RANGE_MIN), <$type_name>::RANGE_MIN);
@@ -425,16 +376,14 @@ mod cast_range_test
     }
 
     #[test]
-    fn some_range_test()
-    {
+    fn some_range_test() {
         assert_eq!(u16::cast_range_from(0u8), 0u16);
         assert_eq!(u16::cast_range_from(u8::RANGE_MAX), u16::RANGE_MAX);
         assert_eq!(u16::cast_range_from(u8::RANGE_MAX / 2), u16::RANGE_MAX / 2 - (u8::RANGE_MAX as u16) / 2 - 1);
     }
 
     #[test]
-    fn bool_conv()
-    {
+    fn bool_conv() {
         macro_rules! check_bool {
             ($type_name : ident) => {
                 assert_eq!(<$type_name>::cast_range_from(false), <$type_name>::RANGE_MIN);
@@ -446,8 +395,7 @@ mod cast_range_test
     }
 
     #[test]
-    fn float_conv()
-    {
+    fn float_conv() {
         macro_rules! check_float {
             ($type_name : ident) => {
                 assert_eq!(<$type_name>::cast_range_from(f32::RANGE_MAX), <$type_name>::RANGE_MAX);

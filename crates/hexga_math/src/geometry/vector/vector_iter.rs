@@ -1,7 +1,6 @@
 use super::*;
 
-pub trait IterIndex<T, const N: usize>
-{
+pub trait IterIndex<T, const N: usize> {
     type IterIndex: Iterator<Item = Vector<T, N>>;
 
     /// Iter over all `Point` in self.
@@ -41,15 +40,16 @@ impl<Idx, const N: usize> VectorIter<Idx, N>
 where
     Idx: Integer,
 {
-    pub fn from_cur_to_end(cur: Vector<Idx, N>, end: Vector<Idx, N>) -> Self
-    {
+    pub fn from_cur_to_end(cur: Vector<Idx, N>, end: Vector<Idx, N>) -> Self {
         Self {
             cur,
             end: if end.have_area_usize() { end } else { Vector::ZERO },
         }
     }
 
-    pub fn new(end: Vector<Idx, N>) -> Self { Self::from_cur_to_end(Vector::ZERO, end) }
+    pub fn new(end: Vector<Idx, N>) -> Self {
+        Self::from_cur_to_end(Vector::ZERO, end)
+    }
 }
 
 impl<Idx, const N: usize> Iterator for VectorIter<Idx, N>
@@ -58,16 +58,13 @@ where
 {
     type Item = Vector<Idx, N>;
 
-    fn next(&mut self) -> Option<Self::Item>
-    {
+    fn next(&mut self) -> Option<Self::Item> {
         let v = self.cur;
         let mut i = 0;
 
-        while i < N
-        {
+        while i < N {
             self.cur[i].increment();
-            if self.cur[i] < self.end[i]
-            {
+            if self.cur[i] < self.end[i] {
                 return Some(v);
             }
             self.cur[i] = Idx::ZERO;
@@ -76,19 +73,15 @@ where
 
         self.cur = self.end;
 
-        if self.end.all_zero()
-        {
+        if self.end.all_zero() {
             None
-        }
-        else
-        {
+        } else {
             self.end = zero();
             Some(v)
         }
     }
 
-    fn size_hint(&self) -> (usize, Option<usize>)
-    {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         let len = self.len();
         (len, Some(len))
     }
@@ -98,7 +91,9 @@ impl<Idx, const N: usize> std::iter::ExactSizeIterator for VectorIter<Idx, N>
 where
     Idx: Integer,
 {
-    fn len(&self) -> usize { self.end.area_usize() - unsafe { Vector::<Idx, N>::to_index_unchecked(self.cur, self.end) } }
+    fn len(&self) -> usize {
+        self.end.area_usize() - unsafe { Vector::<Idx, N>::to_index_unchecked(self.cur, self.end) }
+    }
 }
 
 impl<Idx, const N: usize> IterIndex<Idx, N> for Vector<Idx, N>
@@ -107,5 +102,7 @@ where
 {
     type IterIndex = VectorIter<Idx, N>;
 
-    fn iter_index(&self) -> Self::IterIndex { Self::IterIndex::new(*self) }
+    fn iter_index(&self) -> Self::IterIndex {
+        Self::IterIndex::new(*self)
+    }
 }

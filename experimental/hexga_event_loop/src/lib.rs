@@ -25,13 +25,11 @@ pub mod window;
 
 use prelude::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
     pub use super::{app::prelude::*, input::prelude::*, log::prelude::*, monitor::prelude::*, window::prelude::*};
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::app::traits::*;
 }

@@ -4,8 +4,7 @@ use super::*;
 
 static INIT_PANIC: Once = Once::new();
 
-pub fn init_if_needed()
-{
+pub fn init_if_needed() {
     INIT_PANIC.call_once(|| {
         let default_hook = std::panic::take_hook();
 

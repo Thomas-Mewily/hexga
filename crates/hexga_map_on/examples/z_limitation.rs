@@ -6,8 +6,7 @@ macro_rules! print_type {
     };
 }
 
-fn main()
-{
+fn main() {
     // work fine
     map_on!((f32, f64), print_type);
 

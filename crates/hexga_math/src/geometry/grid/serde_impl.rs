@@ -12,8 +12,7 @@ where
     Idx: Integer + Serialize,
     T: Serialize,
 {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeStruct;
         let mut grid = serializer.serialize_struct("Grid", 2)?;
         grid.serialize_field("size", &self.size)?;

@@ -21,8 +21,7 @@ pub use mouse::*;
 mod touch;
 pub use touch::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::clipboard::Clipboard;
     pub use super::event::{KeyAction, KeyEvent, KeyRepeat, KeyShortcut, KeyState};
     pub use super::key::{Key, KeyModifiers, KeyModifiersFlags};
@@ -33,8 +32,7 @@ pub mod prelude
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::clipboard::Clipboardable;
     pub use super::event::{KeyConstants, KeyboardShortcuts};
     pub use super::key::KeyModifiersExtension;

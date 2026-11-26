@@ -1,8 +1,7 @@
 use super::*;
 
 impl<S, T, const N: usize> ToDimension<T, N> for S where S: ArrayWithSize<T, N> {}
-pub trait ToDimension<T, const N: usize>: ArrayWithSize<T, N>
-{
+pub trait ToDimension<T, const N: usize>: ArrayWithSize<T, N> {
     fn to_1d(self) -> Self::WithSize<1>
     where
         T: Default,

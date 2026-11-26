@@ -12,8 +12,7 @@ impl<F> AsyncSpawn for F
 where
     F: Future<Output = ()> + WasmSend + 'static,
 {
-    fn spawn(self)
-    {
+    fn spawn(self) {
         #[cfg(not(target_arch = "wasm32"))]
         smol::spawn(self).detach();
         #[cfg(target_arch = "wasm32")]

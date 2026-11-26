@@ -14,8 +14,7 @@ impl<'a, T> From<&'a GBuffer<T>> for GSlice<'a, T>
 where
     T: GBufferElement,
 {
-    fn from(buffer: &'a GBuffer<T>) -> Self
-    {
+    fn from(buffer: &'a GBuffer<T>) -> Self {
         Self {
             buffer,
             begin: 0,
@@ -27,10 +26,13 @@ impl<'a, T> GSlice<'a, T>
 where
     T: GBufferElement,
 {
-    pub fn new<S: RangeBounds<usize>>(buffer: &'a GBuffer<T>, bounds: S) -> Self
-    {
+    pub fn new<S: RangeBounds<usize>>(buffer: &'a GBuffer<T>, bounds: S) -> Self {
         let range = checked_range(bounds, buffer.len()).expect("GPU slice range out of bounds");
-        Self { buffer, begin: range.start, len: range.len() }
+        Self {
+            buffer,
+            begin: range.start,
+            len: range.len(),
+        }
     }
 }
 
@@ -40,27 +42,38 @@ impl<'a, T> Length for GSlice<'a, T>
 where
     T: GBufferElement,
 {
-    fn len(&self) -> usize { self.len }
+    fn len(&self) -> usize {
+        self.len
+    }
 }
 
 impl<'a, T> WgpuSliceable<T> for GSlice<'a, T>
 where
     T: GBufferElement,
 {
-    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer { self.buffer.lib_wgpu_buffer_ref() }
+    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer {
+        self.buffer.lib_wgpu_buffer_ref()
+    }
 }
 
 impl<'a, T> GpuSliceable<T> for GSlice<'a, T>
 where
     T: GBufferElement,
 {
-    fn usage(&self) -> GBufferUsageFlags { self.buffer.usage() }
+    fn usage(&self) -> GBufferUsageFlags {
+        self.buffer.usage()
+    }
 
-    fn as_slice(&self) -> GSlice<'_, T> { *self }
+    fn as_slice(&self) -> GSlice<'_, T> {
+        *self
+    }
 
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T>
-    {
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T> {
         let range = checked_range(bounds, self.len).expect("GPU subslice range out of bounds");
-        GSlice { buffer: self.buffer, begin: self.begin + range.start, len: range.len() }
+        GSlice {
+            buffer: self.buffer,
+            begin: self.begin + range.start,
+            len: range.len(),
+        }
     }
 }

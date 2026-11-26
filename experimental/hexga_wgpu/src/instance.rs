@@ -1,22 +1,21 @@
 use super::*;
 
 #[derive(Debug, Clone)]
-pub struct GpuInstance
-{
+pub struct GpuInstance {
     pub lib_wgpu: wgpu::Instance,
 }
-impl<'a> From<wgpu::Instance> for GpuInstance
-{
-    fn from(surface: wgpu::Instance) -> Self { Self { lib_wgpu: surface } }
+impl<'a> From<wgpu::Instance> for GpuInstance {
+    fn from(surface: wgpu::Instance) -> Self {
+        Self { lib_wgpu: surface }
+    }
 }
-impl<'a> From<GpuInstance> for wgpu::Instance
-{
-    fn from(surface: GpuInstance) -> Self { surface.lib_wgpu }
+impl<'a> From<GpuInstance> for wgpu::Instance {
+    fn from(surface: GpuInstance) -> Self {
+        surface.lib_wgpu
+    }
 }
-impl GpuInstance
-{
-    pub fn new(desc: &GpuInstanceDescriptor) -> Self
-    {
+impl GpuInstance {
+    pub fn new(desc: &GpuInstanceDescriptor) -> Self {
         Self {
             lib_wgpu: wgpu::Instance::new(&wgpu::InstanceDescriptor {
                 backends: desc.backends.into(),
@@ -29,16 +28,13 @@ impl GpuInstance
 
 #[non_exhaustive]
 #[derive(Default, Debug, Clone, PartialEq)]
-pub struct GpuInstanceDescriptor
-{
+pub struct GpuInstanceDescriptor {
     pub backends: GpuBackendFlags,
     pub lib_wgpu: WgpuInstanceDescriptor,
 }
 
-impl PartialEq for WgpuInstanceDescriptor
-{
-    fn eq(&self, other: &Self) -> bool
-    {
+impl PartialEq for WgpuInstanceDescriptor {
+    fn eq(&self, other: &Self) -> bool {
         // Todo : also take into consideration the backend_options?
         self.flags == other.flags
     }
@@ -46,8 +42,7 @@ impl PartialEq for WgpuInstanceDescriptor
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Default)]
-pub struct WgpuInstanceDescriptor
-{
+pub struct WgpuInstanceDescriptor {
     /// Flags to tune the behavior of the instance.
     pub flags: wgpu::InstanceFlags,
     /// Options the control the behavior of various backends.
@@ -56,8 +51,7 @@ pub struct WgpuInstanceDescriptor
 
 #[bit_index]
 #[repr(u8)]
-pub enum GpuBackend
-{
+pub enum GpuBackend {
     // No operation
     Noop,
     /// Supported on Windows, Linux/Android, and macOS/iOS via Vulkan Portability (with the Vulkan feature enabled)
@@ -83,13 +77,10 @@ pub enum GpuBackend
     Debug = Self::Gl,
 }
 
-impl From<GpuBackend> for wgpu::Backends
-{
-    fn from(value: GpuBackend) -> Self
-    {
+impl From<GpuBackend> for wgpu::Backends {
+    fn from(value: GpuBackend) -> Self {
         use wgpu::Backends as B;
-        match value
-        {
+        match value {
             GpuBackend::Noop => B::NOOP,
             GpuBackend::Vulkan => B::VULKAN,
             GpuBackend::Gl => B::GL,
@@ -99,46 +90,35 @@ impl From<GpuBackend> for wgpu::Backends
         }
     }
 }
-impl From<GpuBackendFlags> for wgpu::Backends
-{
-    fn from(backends: GpuBackendFlags) -> Self
-    {
+impl From<GpuBackendFlags> for wgpu::Backends {
+    fn from(backends: GpuBackendFlags) -> Self {
         let mut flags = wgpu::Backends::empty();
-        for backend in backends
-        {
+        for backend in backends {
             flags |= backend.into();
         }
         flags
     }
 }
 
-impl Default for GpuBackendFlags
-{
-    fn default() -> Self
-    {
-        if cfg!(debug_assertions)
-        {
+impl Default for GpuBackendFlags {
+    fn default() -> Self {
+        if cfg!(debug_assertions) {
             GpuBackendFlags::Debug
-        }
-        else
-        {
+        } else {
             GpuBackendFlags::Primary | GpuBackendFlags::Secondary
         }
     }
 }
 
 #[derive(Default, Clone, PartialEq)]
-pub struct GpuParam
-{
+pub struct GpuParam {
     pub instance: GpuInstanceDescriptor,
     pub lib_wgpu_instance: WgpuInstanceDescriptor,
     pub power_preference: GpuPowerPreference,
     //pub compatible_surface: Option<wgpu::SurfaceTarget<'static>>,
 }
-impl Debug for GpuParam
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
+impl Debug for GpuParam {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("GpuParam")
             .field("instance", &self.instance)
             .field("power_preference", &self.power_preference)
@@ -148,8 +128,7 @@ impl Debug for GpuParam
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum GpuPowerPreference
-{
+pub enum GpuPowerPreference {
     #[default]
     /// Power usage is not considered when choosing an adapter.
     None = 0,
@@ -158,12 +137,9 @@ pub enum GpuPowerPreference
     /// Adapter that has the highest performance. This is often a discrete GPU.
     HighPerformance = 2,
 }
-impl From<GpuPowerPreference> for wgpu::PowerPreference
-{
-    fn from(val: GpuPowerPreference) -> Self
-    {
-        match val
-        {
+impl From<GpuPowerPreference> for wgpu::PowerPreference {
+    fn from(val: GpuPowerPreference) -> Self {
+        match val {
             GpuPowerPreference::None => wgpu::PowerPreference::None,
             GpuPowerPreference::LowPower => wgpu::PowerPreference::LowPower,
             GpuPowerPreference::HighPerformance => wgpu::PowerPreference::HighPerformance,

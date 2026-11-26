@@ -1,7 +1,6 @@
 use super::*;
 
-pub trait Matches<Lexem = Self>
-{
+pub trait Matches<Lexem = Self> {
     type Output;
     fn matches(&self, lexem: &Lexem) -> Self::Output;
 }
@@ -11,10 +10,8 @@ where
     S::Output: Default,
 {
     type Output = S::Output;
-    fn matches(&self, lexem: &L) -> Self::Output
-    {
-        match self
-        {
+    fn matches(&self, lexem: &L) -> Self::Output {
+        match self {
             Some(v) => v.matches(lexem),
             None => ___(),
         }
@@ -27,10 +24,8 @@ where
     S::Output: Default,
 {
     type Output = S::Output;
-    fn matches(&self, lexem: &L) -> Self::Output
-    {
-        match self
-        {
+    fn matches(&self, lexem: &L) -> Self::Output {
+        match self {
             Ok(v) => v.matches(lexem),
             Err(_) => ___(),
         }

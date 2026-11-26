@@ -1,15 +1,12 @@
 use super::*;
 
-pub struct Keyboard
-{
+pub struct Keyboard {
     pub(crate) key: KeyCodeManager,
     pub(crate) key_repeated: KeyCodeManager,
 }
 
-impl Default for Keyboard
-{
-    fn default() -> Self
-    {
+impl Default for Keyboard {
+    fn default() -> Self {
         Self {
             key: KeyCodeManager::new(ButtonRepeat::NotRepeated),
             key_repeated: KeyCodeManager::new(ButtonRepeat::Repeated),
@@ -17,43 +14,43 @@ impl Default for Keyboard
     }
 }
 
-impl Keyboard
-{
-    pub fn handle_event(&mut self, ev: KeyEvent) { self.key_manager_mut(ev.repeat).handle_event(ev.code, ev.state); }
+impl Keyboard {
+    pub fn handle_event(&mut self, ev: KeyEvent) {
+        self.key_manager_mut(ev.repeat).handle_event(ev.code, ev.state);
+    }
 
-    pub fn keys(&self) -> &KeyCodeManager { &self.key }
-    pub fn keys_mut(&mut self) -> &mut KeyCodeManager { &mut self.key }
+    pub fn keys(&self) -> &KeyCodeManager {
+        &self.key
+    }
+    pub fn keys_mut(&mut self) -> &mut KeyCodeManager {
+        &mut self.key
+    }
 
-    pub fn keys_repeated(&self) -> &KeyCodeManager { &self.key_repeated }
-    pub fn keys_repeated_mut(&mut self) -> &mut KeyCodeManager { &mut self.key_repeated }
+    pub fn keys_repeated(&self) -> &KeyCodeManager {
+        &self.key_repeated
+    }
+    pub fn keys_repeated_mut(&mut self) -> &mut KeyCodeManager {
+        &mut self.key_repeated
+    }
 
-    pub fn key_manager(&self, repeat: ButtonRepeat) -> &KeyCodeManager
-    {
-        if repeat.is_repeated()
-        {
+    pub fn key_manager(&self, repeat: ButtonRepeat) -> &KeyCodeManager {
+        if repeat.is_repeated() {
             &self.key_repeated
-        }
-        else
-        {
+        } else {
             &self.key
         }
     }
-    pub fn key_manager_mut(&mut self, repeat: ButtonRepeat) -> &mut KeyCodeManager
-    {
-        if repeat.is_repeated()
-        {
+    pub fn key_manager_mut(&mut self, repeat: ButtonRepeat) -> &mut KeyCodeManager {
+        if repeat.is_repeated() {
             &mut self.key_repeated
-        }
-        else
-        {
+        } else {
             &mut self.key
         }
     }
 }
 
 #[derive(Clone, PartialEq, Debug, Default)]
-pub struct KeyCodeManager
-{
+pub struct KeyCodeManager {
     pub(crate) repeat: ButtonRepeat,
     pub(crate) down: HashSet<KeyCode>,
     pub(crate) old_down: HashSet<KeyCode>,
@@ -61,10 +58,8 @@ pub struct KeyCodeManager
     pub(crate) released: HashSet<KeyCode>,
 }
 
-impl KeyCodeManager
-{
-    pub fn new(repeat: ButtonRepeat) -> Self
-    {
+impl KeyCodeManager {
+    pub fn new(repeat: ButtonRepeat) -> Self {
         Self {
             repeat,
             down: ___(),
@@ -74,19 +69,14 @@ impl KeyCodeManager
         }
     }
 
-    pub fn handle_event(&mut self, code: KeyCode, pressed: ButtonState)
-    {
-        match pressed
-        {
-            ButtonState::Up =>
-            {
+    pub fn handle_event(&mut self, code: KeyCode, pressed: ButtonState) {
+        match pressed {
+            ButtonState::Up => {
                 self.down.remove(&code);
                 self.released.insert(code);
             }
-            ButtonState::Down =>
-            {
-                if !self.down.contains(&code)
-                {
+            ButtonState::Down => {
+                if !self.down.contains(&code) {
                     self.pressed.insert(code);
                 }
                 self.down.insert(code);
@@ -94,32 +84,60 @@ impl KeyCodeManager
         }
     }
 
-    pub fn pressed(&self) -> impl Iterator<Item = KeyCode> { self.pressed.iter().copied() }
-    pub fn released(&self) -> impl Iterator<Item = KeyCode> { self.released.iter().copied() }
-    pub fn down(&self) -> impl Iterator<Item = KeyCode> { self.down.iter().copied() }
+    pub fn pressed(&self) -> impl Iterator<Item = KeyCode> {
+        self.pressed.iter().copied()
+    }
+    pub fn released(&self) -> impl Iterator<Item = KeyCode> {
+        self.released.iter().copied()
+    }
+    pub fn down(&self) -> impl Iterator<Item = KeyCode> {
+        self.down.iter().copied()
+    }
 
-    pub fn is_down(&self, code: KeyCode) -> bool { self.button_state(code).is_down() }
-    pub fn is_up(&self, code: KeyCode) -> bool { self.button_state(code).is_up() }
+    pub fn is_down(&self, code: KeyCode) -> bool {
+        self.button_state(code).is_down()
+    }
+    pub fn is_up(&self, code: KeyCode) -> bool {
+        self.button_state(code).is_up()
+    }
 
-    pub fn was_down(&self, code: KeyCode) -> bool { self.old_button_state(code).is_down() }
-    pub fn was_up(&self, code: KeyCode) -> bool { self.old_button_state(code).is_up() }
+    pub fn was_down(&self, code: KeyCode) -> bool {
+        self.old_button_state(code).is_down()
+    }
+    pub fn was_up(&self, code: KeyCode) -> bool {
+        self.old_button_state(code).is_up()
+    }
 
-    pub fn is_pressed(&self, code: KeyCode) -> bool { self.evolution(code).is_pressed() }
-    pub fn is_released(&self, code: KeyCode) -> bool { self.evolution(code).is_released() }
+    pub fn is_pressed(&self, code: KeyCode) -> bool {
+        self.evolution(code).is_pressed()
+    }
+    pub fn is_released(&self, code: KeyCode) -> bool {
+        self.evolution(code).is_released()
+    }
 
-    pub fn button_state(&self, code: KeyCode) -> ButtonState { self.down.contains(&code).into() }
-    pub fn old_button_state(&self, code: KeyCode) -> ButtonState { self.old_down.contains(&code).into() }
+    pub fn button_state(&self, code: KeyCode) -> ButtonState {
+        self.down.contains(&code).into()
+    }
+    pub fn old_button_state(&self, code: KeyCode) -> ButtonState {
+        self.old_down.contains(&code).into()
+    }
 
-    pub fn evolution(&self, code: KeyCode) -> ButtonEvolution { PreviousValue::new(self.button_state(code), self.old_button_state(code)) }
+    pub fn evolution(&self, code: KeyCode) -> ButtonEvolution {
+        PreviousValue::new(self.button_state(code), self.old_button_state(code))
+    }
 }
 
 impl<Ctx> EvolutionWithContext<ButtonState, Ctx> for KeyCode
 where
     Ctx: HasMut<Keyboard>,
 {
-    fn value(&self, ctx: &mut Ctx) -> ButtonState { ctx.retrive_mut().keys().button_state(*self) }
+    fn value(&self, ctx: &mut Ctx) -> ButtonState {
+        ctx.retrive_mut().keys().button_state(*self)
+    }
 
-    fn old_value(&self, ctx: &mut Ctx) -> ButtonState { ctx.retrive_mut().keys().old_button_state(*self) }
+    fn old_value(&self, ctx: &mut Ctx) -> ButtonState {
+        ctx.retrive_mut().keys().old_button_state(*self)
+    }
 }
 /*
 impl KeyCode

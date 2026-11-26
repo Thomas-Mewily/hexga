@@ -25,16 +25,14 @@ pub mod graphics;
 pub mod window;
 
 use prelude::*;
-pub mod prelude
-{
+pub mod prelude {
     pub(crate) use super::experimental::*;
     pub use super::traits::*;
     pub use super::{app::prelude::*, graphics::prelude::*, window::prelude::*};
     pub use hexga::prelude::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::app::traits::*;
     pub use hexga::traits::*;
 }

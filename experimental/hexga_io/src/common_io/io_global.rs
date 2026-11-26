@@ -6,24 +6,24 @@ use super::*;
 #[derive(Debug, Default)]
 pub struct IoGlobal;
 
-impl FileSystemProvider for IoGlobal
-{
+impl FileSystemProvider for IoGlobal {
     type FileSystem = Self;
-    fn file_system() -> Self::FileSystem { Self }
+    fn file_system() -> Self::FileSystem {
+        Self
+    }
 }
 
-impl FileSystemDynRead for IoGlobal
-{
-    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool> { path.try_exists() }
+impl FileSystemDynRead for IoGlobal {
+    fn dyn_try_exist_at(&mut self, path: &Path) -> IoResult<bool> {
+        path.try_exists()
+    }
 
-    fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>>
-    {
+    fn dyn_read_bytes_at(&mut self, path: &Path) -> IoResult<Cow<'static, [u8]>> {
         let bytes = std::fs::read(path)?;
         Ok(Cow::Owned(bytes))
     }
 
-    fn dyn_read_dir_at(&mut self, path: &Path) -> IoResult<Vec<IoResult<PathBuf>>>
-    {
+    fn dyn_read_dir_at(&mut self, path: &Path) -> IoResult<Vec<IoResult<PathBuf>>> {
         #[cfg(feature = "print_io")]
         println!("io : read at {}", path.display());
 
@@ -32,12 +32,9 @@ impl FileSystemDynRead for IoGlobal
         Ok(paths)
     }
 
-    fn dyn_resolve_paths(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>
-    {
-        match self._dyn_resolve_paths(path)
-        {
-            Ok(v) =>
-            {
+    fn dyn_resolve_paths(&mut self, path: &Path) -> IoResult<Vec<PathBuf>> {
+        match self._dyn_resolve_paths(path) {
+            Ok(v) => {
                 #[cfg(feature = "print_io")]
                 println!(
                     "io : resolving {} -> [{}]",
@@ -46,8 +43,7 @@ impl FileSystemDynRead for IoGlobal
                 );
                 Ok(v)
             }
-            Err(e) =>
-            {
+            Err(e) => {
                 #[cfg(feature = "print_io")]
                 println!("io : resolving failed {}", e);
                 Err(e)
@@ -55,40 +51,34 @@ impl FileSystemDynRead for IoGlobal
         }
     }
 
-    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType>
-    {
+    fn dyn_file_type_at(&mut self, path: &Path) -> IoResult<FileType> {
         let meta = fs::metadata(path)?;
         let file_type = meta.file_type();
 
-        if file_type.is_dir()
-        {
+        if file_type.is_dir() {
             return Ok(Some(FileKind::Dir));
         }
-        if file_type.is_file()
-        {
+        if file_type.is_file() {
             return Ok(Some(FileKind::File));
         }
-        if file_type.is_symlink()
-        {
+        if file_type.is_symlink() {
             return Ok(Some(FileKind::Symlink));
         }
         Ok(None)
     }
 
-    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> { path.read_link() }
+    fn dyn_read_link_at(&mut self, path: &Path) -> IoResult<PathBuf> {
+        path.read_link()
+    }
 
-    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>
-    {
-        match self._dyn_canonicalize(path)
-        {
-            Ok(canonized) =>
-            {
+    fn dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf> {
+        match self._dyn_canonicalize(path) {
+            Ok(canonized) => {
                 #[cfg(feature = "print_io")]
                 println!("io : canonicalize {} -> {}", path.display(), canonized.display());
                 Ok(canonized)
             }
-            Err(e) =>
-            {
+            Err(e) => {
                 #[cfg(feature = "print_io")]
                 println!("io : canonicalize failed {}", e);
                 Err(e)
@@ -97,25 +87,20 @@ impl FileSystemDynRead for IoGlobal
     }
 }
 
-impl IoGlobal
-{
-    fn _dyn_resolve_paths(&mut self, path: &Path) -> IoResult<Vec<PathBuf>>
-    {
+impl IoGlobal {
+    fn _dyn_resolve_paths(&mut self, path: &Path) -> IoResult<Vec<PathBuf>> {
         let p = self.canonicalize(path)?;
-        if p.extension().is_some()
-        {
+        if p.extension().is_some() {
             return Ok(vec![p]);
         }
 
-        let parent = match p.parent()
-        {
+        let parent = match p.parent() {
             Some(p) => p,
             None => return Ok(vec![p]),
         };
         let stem = p.file_stem().unwrap_or(p.as_os_str());
 
-        let parent = match std::fs::read_dir(parent)
-        {
+        let parent = match std::fs::read_dir(parent) {
             Ok(dir) => dir,
             Err(_e) => return Ok(vec![p]),
         };
@@ -128,8 +113,7 @@ impl IoGlobal
         Ok(matches)
     }
 
-    fn _dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf>
-    {
+    fn _dyn_canonicalize(&mut self, path: &Path) -> IoResult<PathBuf> {
         let path: &Path = path;
 
         /*
@@ -142,34 +126,26 @@ impl IoGlobal
         let mut resolved = std::env::current_dir()?;
         resolved.reserve(path.as_os_str().len());
 
-        for component in path.components()
-        {
-            match component
-            {
-                std::path::Component::CurDir =>
-                {
+        for component in path.components() {
+            match component {
+                std::path::Component::CurDir => {
                     // Skip ".". Does nothing
                     continue;
                 }
-                std::path::Component::ParentDir =>
-                {
+                std::path::Component::ParentDir => {
                     // Pop the last component for ".."
-                    if !resolved.pop()
-                    {
+                    if !resolved.pop() {
                         return Err(IoErrorKind::InvalidInput.into());
                     };
                 }
-                std::path::Component::RootDir =>
-                {
+                std::path::Component::RootDir => {
                     resolved.push("/");
                 }
-                std::path::Component::Prefix(prefix) =>
-                {
+                std::path::Component::Prefix(prefix) => {
                     // Windows drive letter (e.g., "C:")
                     resolved.push(prefix.as_os_str());
                 }
-                std::path::Component::Normal(segment) =>
-                {
+                std::path::Component::Normal(segment) => {
                     resolved.push(segment);
                 }
             }
@@ -179,10 +155,8 @@ impl IoGlobal
     }
 }
 
-impl FileSystemDynWrite for IoGlobal
-{
-    fn dyn_write_bytes_at(&mut self, path: &Path, value: &[u8]) -> IoResult
-    {
+impl FileSystemDynWrite for IoGlobal {
+    fn dyn_write_bytes_at(&mut self, path: &Path, value: &[u8]) -> IoResult {
         #[cfg(feature = "print_io")]
         println!("io : write at {}", path.display());
 
@@ -196,10 +170,8 @@ impl FileSystemDynWrite for IoGlobal
         Ok(())
     }
 
-    fn dyn_create_dir(&mut self, path: &Path) -> IoResult
-    {
-        if path.exists() && path.is_file()
-        {
+    fn dyn_create_dir(&mut self, path: &Path) -> IoResult {
+        if path.exists() && path.is_file() {
             std::fs::remove_file(path)?;
         }
 
@@ -207,28 +179,21 @@ impl FileSystemDynWrite for IoGlobal
         Ok(())
     }
 
-    fn dyn_remove_at(&mut self, path: &Path) -> IoResult
-    {
+    fn dyn_remove_at(&mut self, path: &Path) -> IoResult {
         #[cfg(feature = "print_io")]
         println!("io : remove at {}", path.display());
 
-        if path.is_dir()
-        {
+        if path.is_dir() {
             std::fs::remove_dir_all(path)?;
-        }
-        else if path.is_file()
-        {
+        } else if path.is_file() {
             std::fs::remove_file(path)?;
-        }
-        else if !path.exists()
-        {
+        } else if !path.exists() {
             return Ok(());
         }
         Ok(())
     }
 
-    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult
-    {
+    fn dyn_rename_at(&mut self, from: &Path, to: &Path) -> IoResult {
         #[cfg(feature = "print_io")]
         println!("io : rename {} -> {}", from.display(), to.display());
         std::fs::rename(from, to)

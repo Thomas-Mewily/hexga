@@ -42,15 +42,13 @@ use image::*;
 pub mod color;
 
 use prelude::*;
-pub mod prelude
-{
+pub mod prelude {
     pub use super::color::prelude::*;
     pub use super::image::prelude::*;
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::color::traits::*;
     pub use super::image::traits::*;
 }

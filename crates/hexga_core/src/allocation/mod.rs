@@ -11,15 +11,14 @@ pub use std::alloc::Global as AllocGlobal;
 #[cfg(feature = "std")]
 pub use std::alloc::System as AllocSystem;
 
-pub mod prelude
-{
+pub mod prelude {
     #[cfg(feature = "std")]
     pub use super::AllocSystem;
     pub use super::{AllocGlobal, traits::*};
 }
 
-pub mod traits
-{
+pub mod traits {
+    pub use super::Allocator;
     pub use super::alloc::{
         Alloc,
         AllocFromLayout,
@@ -28,7 +27,6 @@ pub mod traits
         DeallocFromLayoutRaw, //MemoryAlloc,MemoryRealloc,MemoryDealloc,
     };
     pub use super::layout::FromAllocLayout;
-    pub use super::Allocator;
 }
 
 mod alloc;

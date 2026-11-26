@@ -88,8 +88,7 @@ pub use view_mut::*;
 mod collection;
 pub use collection::*;
 
-pub mod prelude
-{
+pub mod prelude {
     #[allow(unused)]
     pub(crate) use super::collections::{BinaryHeap, LinkedList};
 
@@ -102,7 +101,8 @@ pub mod prelude
     pub use super::traits::*;
 }
 
-pub mod traits
-{
-    pub use super::{capacity::*, clear::*, collection::*, dup::*, peek::*, get::*, index_id::*, insert::*, length::*, matches::*, pop::*, push::*, remove::*, retain::*};
+pub mod traits {
+    pub use super::{
+        capacity::*, clear::*, collection::*, dup::*, get::*, index_id::*, insert::*, length::*, matches::*, peek::*, pop::*, push::*, remove::*, retain::*,
+    };
 }

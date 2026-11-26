@@ -1,10 +1,8 @@
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     //pub use super::HandleEventWithContext;
     pub use super::HandleEvent;
 }
@@ -26,8 +24,7 @@ pub struct WithContext<'a,V,Ctx>
 }
 */
 
-pub trait HandleEvent<E>
-{
+pub trait HandleEvent<E> {
     fn handle_event(&mut self, event: E) -> Option<E>;
 }
 

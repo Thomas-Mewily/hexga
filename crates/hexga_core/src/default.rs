@@ -47,11 +47,12 @@
 /// let b = BigStruct { x : 42, y : 64, ..___() };
 /// assert_eq!(a, b);
 /// ```
-pub fn ___<T: Default>() -> T { core::default::Default::default() }
+pub fn ___<T: Default>() -> T {
+    core::default::Default::default()
+}
 
 /// Uniform syntax : `MyStruct::___()` instead of `MyStruct::default()`
-pub trait DefaultIsTripleUnderscore: Default
-{
+pub trait DefaultIsTripleUnderscore: Default {
     /// The `Self::default()` method.
     ///
     /// Returns the "default value" for a type.
@@ -60,30 +61,34 @@ pub trait DefaultIsTripleUnderscore: Default
     /// type T = i32; // any type with default
     /// assert_eq!(T::default(), T::___());
     /// ```
-    fn ___() -> Self { Self::default() }
+    fn ___() -> Self {
+        Self::default()
+    }
 }
 
-impl<T: Default> DefaultIsTripleUnderscore for T
-{
-    fn ___() -> Self { Self::default() }
+impl<T: Default> DefaultIsTripleUnderscore for T {
+    fn ___() -> Self {
+        Self::default()
+    }
 }
 
-pub trait DefaultExtension: Default + PartialEq
-{
-    fn is_default(&self) -> bool { self == &___() }
-    fn is_not_default(&self) -> bool { !self.is_default() }
+pub trait DefaultExtension: Default + PartialEq {
+    fn is_default(&self) -> bool {
+        self == &___()
+    }
+    fn is_not_default(&self) -> bool {
+        !self.is_default()
+    }
 }
 impl<T> DefaultExtension for T where T: Default + PartialEq {}
 
 re_export_items_from_std_or_core!(default);
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::___;
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{Default, DefaultExtension, DefaultIsTripleUnderscore};
 }

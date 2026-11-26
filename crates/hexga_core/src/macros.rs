@@ -10,7 +10,6 @@ macro_rules! trait_marker {
     };
 }
 
-pub mod prelude
-{
+pub mod prelude {
     pub use crate::trait_marker;
 }

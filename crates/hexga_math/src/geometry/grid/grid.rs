@@ -15,8 +15,7 @@ where
     Idx: Integer,
     T: PartialEq,
 {
-    fn eq(&self, other: &GridOf<T, Idx, N, B>) -> bool
-    {
+    fn eq(&self, other: &GridOf<T, Idx, N, B>) -> bool {
         self.size == other.size && self.values.as_slice() == other.values.as_slice()
     }
 }
@@ -25,15 +24,15 @@ impl<T, Idx, const N: usize, A: Allocator> Eq for GridOf<T, Idx, N, A>
 where
     Idx: Integer,
     T: Eq,
-{}
+{
+}
 
 impl<T, Idx, const N: usize, A: Allocator> PartialOrd for GridOf<T, Idx, N, A>
 where
     Idx: Integer,
     T: PartialOrd,
 {
-    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering>
-    {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         (&self.size, self.values.as_slice()).partial_cmp(&(&other.size, other.values.as_slice()))
     }
 }
@@ -43,8 +42,7 @@ where
     Idx: Integer,
     T: Ord,
 {
-    fn cmp(&self, other: &Self) -> core::cmp::Ordering
-    {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         (&self.size, self.values.as_slice()).cmp(&(&other.size, other.values.as_slice()))
     }
 }
@@ -54,8 +52,7 @@ where
     Idx: Integer,
     T: core::hash::Hash,
 {
-    fn hash<H: core::hash::Hasher>(&self, state: &mut H)
-    {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.size.hash(state);
         self.values.as_slice().hash(state);
     }
@@ -66,14 +63,16 @@ where
     Idx: Integer,
 {
     fn default() -> Self {
-        Self { size: ___(), values: Vec::new_in(A::default()) }
+        Self {
+            size: ___(),
+            values: Vec::new_in(A::default()),
+        }
     }
 }
 
 macro_rules! impl_grid_fmt_method {
     ($trait_name :ident) => {
-        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result
-        {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             writeln!(f)?;
 
             const SEP: &'static str = " ";
@@ -91,17 +90,13 @@ macro_rules! impl_grid_fmt_method {
                 })
                 .collect::<Result<Vec<_>, _>>()?;
 
-            match N
-            {
-                2 =>
-                {
+            match N {
+                2 => {
                     let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
                     let g = unsafe { GridOf::<_, _, N>::from_vec_unchecked(size, strings) };
 
-                    for y in (0..size[1].to_usize()).rev()
-                    {
-                        for x in 0..size[0].to_usize()
-                        {
+                    for y in (0..size[1].to_usize()).rev() {
+                        for x in 0..size[0].to_usize() {
                             let mut idx = Vector::<Idx, N>::ZERO;
                             idx[0] = Idx::cast_from(x);
                             idx[1] = Idx::cast_from(y);
@@ -111,10 +106,8 @@ macro_rules! impl_grid_fmt_method {
                         writeln!(f)?;
                     }
                 }
-                _ =>
-                {
-                    for v in &strings
-                    {
+                _ => {
+                    for v in &strings {
                         write!(f, "{}", v)?;
                         f.write_str(SEP)?;
                     }
@@ -146,26 +139,38 @@ map_on_std_fmt!(
 );
 
 impl<T, Idx, const N: usize, A: Allocator + Clone> Map for GridOf<T, Idx, N, A>
-where Idx: Integer,
+where
+    Idx: Integer,
 {
     type Item = T;
-    fn map<F>(mut self, f: F) -> Self where F: FnMut(T) -> T {
+    fn map<F>(mut self, f: F) -> Self
+    where
+        F: FnMut(T) -> T,
+    {
         self.values = self.values.map(f);
         self
     }
 }
 impl<T, Idx, const N: usize, A: Allocator + Clone> MapInto for GridOf<T, Idx, N, A>
-where Idx: Integer,
+where
+    Idx: Integer,
 {
     type WithType<R> = GridOf<R, Idx, N, A>;
-    fn map_into<F, R>(self, f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.values.map_into(f)) }
     }
 }
 impl<T, Idx, const N: usize, A: Allocator + Clone + Default> MapZip for GridOf<T, Idx, N, A>
-where Idx: Integer,
+where
+    Idx: Integer,
 {
-    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self where F: FnMut([T; M]) -> T {
+    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self
+    where
+        F: FnMut([T; M]) -> T,
+    {
         if M == 0 {
             return ___();
         }
@@ -175,9 +180,13 @@ where Idx: Integer,
     }
 }
 impl<T, Idx, const N: usize, A: Allocator + Clone + Default> MapZipInto for GridOf<T, Idx, N, A>
-where Idx: Integer,
+where
+    Idx: Integer,
 {
-    fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R>
+    where
+        F: FnMut([T; M]) -> R,
+    {
         if M == 0 {
             return ___();
         }
@@ -200,22 +209,27 @@ where
     type WithType<U> = GridOf<U, Idx, N, A>;
     type Allocator = A;
 
-    fn allocator(&self) -> &A { self.values.allocator() }
+    fn allocator(&self) -> &A {
+        self.values.allocator()
+    }
 
-    fn values(&self) -> &[T] { &self.values }
-    fn values_mut(&mut self) -> &mut [T] { &mut self.values }
+    fn values(&self) -> &[T] {
+        &self.values
+    }
+    fn values_mut(&mut self) -> &mut [T] {
+        &mut self.values
+    }
 
-    fn into_size_and_values(self) -> (Vector<Idx, N>, Vec<T, A>) { (self.size, self.values) }
+    fn into_size_and_values(self) -> (Vector<Idx, N>, Vec<T, A>) {
+        (self.size, self.values)
+    }
     unsafe fn from_vec_unchecked<P>(size: P, values: Vec<T, A>) -> Self
     where
         P: Into<Vector<Idx, N>>,
     {
         let size = size.into();
         debug_assert_eq!(size.area_usize_checked(), Some(values.len()));
-        Self {
-            size,
-            values,
-        }
+        Self { size, values }
     }
 }
 
@@ -224,24 +238,34 @@ where
     Idx: Integer,
 {
     #[inline(always)]
-    fn pos(&self) -> Vector<Idx, N> { zero() }
+    fn pos(&self) -> Vector<Idx, N> {
+        zero()
+    }
 }
 impl<T, Idx, const N: usize, A: Allocator + Clone> GetSize<Idx, N> for GridOf<T, Idx, N, A>
 where
     Idx: Integer,
 {
     #[inline(always)]
-    fn size(&self) -> Vector<Idx, N> { self.size }
+    fn size(&self) -> Vector<Idx, N> {
+        self.size
+    }
 }
 
 impl<T, Idx, const N: usize, A: Allocator + Clone> CollectionBijective for GridOf<T, Idx, N, A> where Idx: Integer {}
-impl<T, Idx: Integer, const N: usize, A: Allocator + Clone> Collection<T> for GridOf<T, Idx, N, A>
-{
-    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+impl<T, Idx: Integer, const N: usize, A: Allocator + Clone> Collection<T> for GridOf<T, Idx, N, A> {
+    type Ref<'a>
+        = &'a T
+    where
+        Self: 'a,
+        T: 'a;
 }
-impl<T, Idx: Integer, const N: usize, A: Allocator + Clone> CollectionMut<T> for GridOf<T, Idx, N, A>
-{
-    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+impl<T, Idx: Integer, const N: usize, A: Allocator + Clone> CollectionMut<T> for GridOf<T, Idx, N, A> {
+    type RefMut<'a>
+        = &'a mut T
+    where
+        Self: 'a,
+        T: 'a;
 }
 
 impl<P, T, Idx, const N: usize, A: Allocator + Clone> CollectionIndex<P> for GridOf<T, Idx, N, A>
@@ -250,7 +274,11 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Output = <Self as Index<Vector<Idx, N>>>::Output;
-    type Ref<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = &'a Self::Output
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<P, T, Idx, const N: usize, A: Allocator + Clone> Get<P> for GridOf<T, Idx, N, A>
 where
@@ -258,10 +286,17 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, pos: P) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.position_to_index(pos.into()).map(|idx| unsafe { self.values().get_unchecked(idx) }) }
+    fn get<'a>(&'a self, pos: P) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.position_to_index(pos.into()).map(|idx| unsafe { self.values().get_unchecked(idx) })
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, pos: P) -> Self::Ref<'a> where Self::Output: 'a
+    unsafe fn get_unchecked<'a>(&'a self, pos: P) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
     {
         unsafe {
             let idx = self.position_to_index_unchecked(pos.into());
@@ -276,7 +311,9 @@ where
 {
     type Error = IndexOutOfBounds<Vector<Idx, N>, Vector<Idx, N>>;
 
-    fn try_get<'a>(&'a self, index: P) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a
+    fn try_get<'a>(&'a self, index: P) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
     {
         let i = index.into();
         self.get(i).ok_or_else(|| IndexOutOfBounds::new(i, self.size()))
@@ -288,7 +325,9 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    fn try_get_mut<'a>(&'a mut self, index: P) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a
+    fn try_get_mut<'a>(&'a mut self, index: P) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a,
     {
         let i = index.into();
         let size = self.size();
@@ -300,7 +339,11 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type RefMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>
+        = &'a mut Self::Output
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<P, T, Idx, const N: usize, A: Allocator + Clone> GetMut<P> for GridOf<T, Idx, N, A>
 where
@@ -308,10 +351,17 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::RefMut<'a>> where Self::Output: 'a { self.position_to_index(pos.into()).map(|i| unsafe { self.values_mut().get_unchecked_mut(i) }) }
+    fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.position_to_index(pos.into()).map(|i| unsafe { self.values_mut().get_unchecked_mut(i) })
+    }
     #[track_caller]
     #[inline(always)]
-    unsafe fn get_unchecked_mut<'a>(&'a mut self, pos: P) -> Self::RefMut<'a> where Self::Output: 'a
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, pos: P) -> Self::RefMut<'a>
+    where
+        Self::Output: 'a,
     {
         unsafe {
             let idx = self.position_to_index_unchecked(pos.into());
@@ -327,29 +377,27 @@ where
 {
     #[inline(always)]
     fn try_get_many_mut<'a, const N2: usize>(&'a mut self, indices: [P; N2]) -> Result<[Self::RefMut<'a>; N2], ManyMutError>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos.into()));
-        if indices.any(|x| x.is_none())
-        {
+        if indices.any(|x| x.is_none()) {
             Err(ManyMutError::IndexOutOfBounds)
-        }
-        else
-        {
+        } else {
             self.values_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
 
     fn get_many_mut<'a, const N2: usize>(&'a mut self, indices: [P; N2]) -> Option<[Self::RefMut<'a>; N2]>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos.into()));
-        if indices.any(|x| x.is_none())
-        {
+        if indices.any(|x| x.is_none()) {
             None
-        }
-        else
-        {
+        } else {
             self.values_mut().get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
@@ -362,7 +410,9 @@ where
 {
     type Output = T;
     #[inline(always)]
-    fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
+    fn index(&self, index: P) -> &Self::Output {
+        self.get_or_panic(index)
+    }
 }
 impl<P, T, Idx, const N: usize, A: Allocator + Clone> IndexMut<P> for GridOf<T, Idx, N, A>
 where
@@ -370,7 +420,9 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn index_mut(&mut self, index: P) -> &mut Self::Output { self.get_mut_or_panic(index) }
+    fn index_mut(&mut self, index: P) -> &mut Self::Output {
+        self.get_mut_or_panic(index)
+    }
 }
 
 impl<T, Idx, const N: usize, A: Allocator + Clone> Length for GridOf<T, Idx, N, A>
@@ -378,7 +430,9 @@ where
     Idx: Integer,
 {
     #[inline(always)]
-    fn len(&self) -> usize { self.values().len() }
+    fn len(&self) -> usize {
+        self.values().len()
+    }
 }
 
 impl<T, Idx, const N: usize, A: Allocator + Clone> Crop<Idx, N> for GridOf<T, Idx, N, A>
@@ -386,17 +440,17 @@ where
     Idx: Integer,
     T: Clone,
 {
-    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> { self.view().crop(subrect).map(|v| v.to_grid()) }
+    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> {
+        self.view().crop(subrect).map(|v| v.to_grid())
+    }
 }
 
 #[cfg(test)]
-mod grid_test
-{
+mod grid_test {
     use super::*;
 
     #[test]
-    fn index_order()
-    {
+    fn index_order() {
         use super::*;
         //let x = Grid::<char>::new(vec2i(2, 4));
         let size = vec2i(2, 3);
@@ -441,8 +495,7 @@ mod grid_test
     }
 
     #[test]
-    fn out_of_range()
-    {
+    fn out_of_range() {
         use super::*;
         let grid = Grid2::from_fn(vec2i(2, 3), |_| 42);
 
@@ -458,8 +511,7 @@ mod grid_test
     }
 
     #[test]
-    fn slice_cmp()
-    {
+    fn slice_cmp() {
         use super::*;
 
         let size = vec2i(2, 3);
@@ -487,8 +539,7 @@ mod grid_test
     }
 
     #[test]
-    fn subslice()
-    {
+    fn subslice() {
         use super::*;
 
         let size = vec2i(2, 3);

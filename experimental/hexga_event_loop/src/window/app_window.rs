@@ -3,8 +3,7 @@ use super::*;
 use experimental::*;
 use hexga_image::image::Image;
 
-pub mod experimental
-{
+pub mod experimental {
     use super::*;
     pub type WinitWindow = winit::window::Window;
     pub type WinitWindowAttributes = winit::window::WindowAttributes;
@@ -13,8 +12,7 @@ pub mod experimental
 }
 
 //#[derive(Debug)]
-pub struct Window<Surface>
-{
+pub struct Window<Surface> {
     pub(crate) param: WindowParam,
     pub(crate) size: Vec2i,
     pub(crate) pos: Vec2i,
@@ -22,21 +20,20 @@ pub struct Window<Surface>
     pub(crate) surface: Option<Surface>,
 }
 
-impl<Surface> Debug for Window<Surface>
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self.param) }
+impl<Surface> Debug for Window<Surface> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.param)
+    }
 }
 
 pub type WindowError = ();
 pub type WindowResult<T> = Result<T, WindowError>;
 
-pub trait WindowManager<Surface>
-{
+pub trait WindowManager<Surface> {
     fn create_window(&mut self, param: WindowParam) -> WindowResult<Window<Surface>>;
 }
 
-pub trait Windowable
-{
+pub trait Windowable {
     /// Returns the list of all the monitors available on the system.
     fn current_monitor(&self) -> Option<Monitor>;
 
@@ -118,44 +115,35 @@ pub trait Windowable
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum Theme
-{
+pub enum Theme {
     Light,
     #[default]
     Dark,
 }
-impl From<Theme> for winit::window::Theme
-{
-    fn from(value: Theme) -> Self
-    {
-        match value
-        {
+impl From<Theme> for winit::window::Theme {
+    fn from(value: Theme) -> Self {
+        match value {
             Theme::Light => winit::window::Theme::Light,
             Theme::Dark => winit::window::Theme::Light,
         }
     }
 }
-impl From<winit::window::Theme> for Theme
-{
-    fn from(value: winit::window::Theme) -> Self
-    {
-        match value
-        {
+impl From<winit::window::Theme> for Theme {
+    fn from(value: winit::window::Theme) -> Self {
+        match value {
             winit::window::Theme::Light => Theme::Light,
             winit::window::Theme::Dark => Theme::Light,
         }
     }
 }
 
-pub trait WindowableSurface<Surface>
-{
+pub trait WindowableSurface<Surface> {
     fn surface(&self) -> Option<&Surface>;
     /// Don't forget to request_draw if needed
     fn replace_surface(&mut self, surface: Option<Surface>) -> Option<Surface>;
 }
 
-impl<Surface> Window<Surface>
-{
+impl<Surface> Window<Surface> {
     /*
     pub(crate) fn init_window_if_needed<User>(&mut self, active: &EventLoop<User>) -> bool
         where User: PlatformCustomEvent
@@ -283,112 +271,116 @@ impl<Surface> Window<Surface>
     */
 }
 
-impl<Surface> Windowable for Window<Surface>
-{
-    fn current_monitor(&self) -> Option<Monitor> { self.window.current_monitor().map(Into::into) }
+impl<Surface> Windowable for Window<Surface> {
+    fn current_monitor(&self) -> Option<Monitor> {
+        self.window.current_monitor().map(Into::into)
+    }
 
-    fn primary_monitor(&self) -> Option<Monitor> { self.window.primary_monitor().map(Into::into) }
+    fn primary_monitor(&self) -> Option<Monitor> {
+        self.window.primary_monitor().map(Into::into)
+    }
 
-    fn available_monitors(&self) -> impl Iterator<Item = Monitor> { self.window.available_monitors().map(Into::into) }
+    fn available_monitors(&self) -> impl Iterator<Item = Monitor> {
+        self.window.available_monitors().map(Into::into)
+    }
 
-    fn request_draw(&mut self) -> &mut Self
-    {
+    fn request_draw(&mut self) -> &mut Self {
         self.window.request_redraw();
         self
     }
 
-    fn request_user_attention(&mut self, request_type: impl Into<Option<UserAttentionType>>)
-    {
+    fn request_user_attention(&mut self, request_type: impl Into<Option<UserAttentionType>>) {
         let request_type = request_type.into();
         self.window.request_user_attention(request_type.map(|v| v.into()));
     }
 
     /// Lib specific method, expose impl details
     #[doc(hidden)]
-    fn lib_winit_window(&self) -> WinitWindowShared { self.window.clone() }
+    fn lib_winit_window(&self) -> WinitWindowShared {
+        self.window.clone()
+    }
 
-    fn has_focus(&self) -> bool { self.window.has_focus() }
+    fn has_focus(&self) -> bool {
+        self.window.has_focus()
+    }
 
-    fn focus(&mut self) -> &mut Self
-    {
+    fn focus(&mut self) -> &mut Self {
         self.window.focus_window();
         self
     }
 
-    fn is_minimised(&self) -> Option<bool> { self.window.is_minimized() }
+    fn is_minimised(&self) -> Option<bool> {
+        self.window.is_minimized()
+    }
 
-    fn set_minimised(&mut self, minimized: bool) -> &mut Self
-    {
+    fn set_minimised(&mut self, minimized: bool) -> &mut Self {
         self.window.set_minimized(minimized);
         self
     }
 
-    fn set_cursor(&mut self, cursor: impl Into<Cursor>) -> &mut Self
-    {
+    fn set_cursor(&mut self, cursor: impl Into<Cursor>) -> &mut Self {
         let cursor: Cursor = cursor.into();
         self.window.set_cursor(cursor);
         self
     }
 
-    fn set_cursor_pos(&mut self, pos: Vec2i) -> &mut Self
-    {
+    fn set_cursor_pos(&mut self, pos: Vec2i) -> &mut Self {
         let p: WinitPhysicialPos = pos.convert();
         self.window.set_cursor_position(p);
         self
     }
 
-    fn set_cursor_visible(&mut self, visible: bool) -> &mut Self
-    {
+    fn set_cursor_visible(&mut self, visible: bool) -> &mut Self {
         self.window.set_cursor_visible(visible);
         self
     }
 
-    fn set_cursor_grab(&mut self, mode: CursorGrab) -> CursorResult { self.window.set_cursor_grab(mode.into()).map_err(|_| CursorError) }
+    fn set_cursor_grab(&mut self, mode: CursorGrab) -> CursorResult {
+        self.window.set_cursor_grab(mode.into()).map_err(|_| CursorError)
+    }
 
-    fn set_cursor_hittest(&mut self, hittest: bool) -> CursorResult { self.window.set_cursor_hittest(hittest).map_err(|_| CursorError) }
+    fn set_cursor_hittest(&mut self, hittest: bool) -> CursorResult {
+        self.window.set_cursor_hittest(hittest).map_err(|_| CursorError)
+    }
 
-    fn destroy_surface(&mut self) -> &mut Self
-    {
+    fn destroy_surface(&mut self) -> &mut Self {
         self.surface = None;
         self
     }
 }
-impl<Surface> WindowableSurface<Surface> for Window<Surface>
-{
-    fn surface(&self) -> Option<&Surface> { self.surface.as_ref() }
+impl<Surface> WindowableSurface<Surface> for Window<Surface> {
+    fn surface(&self) -> Option<&Surface> {
+        self.surface.as_ref()
+    }
 
-    fn replace_surface(&mut self, surface: Option<Surface>) -> Option<Surface> { std::mem::replace(&mut self.surface, surface) }
+    fn replace_surface(&mut self, surface: Option<Surface>) -> Option<Surface> {
+        std::mem::replace(&mut self.surface, surface)
+    }
 }
 
-impl<Surface> GetPosition<int, 2> for Window<Surface>
-{
-    fn pos(&self) -> Vector<int, 2>
-    {
-        match &self.window.outer_position()
-        {
+impl<Surface> GetPosition<int, 2> for Window<Surface> {
+    fn pos(&self) -> Vector<int, 2> {
+        match &self.window.outer_position() {
             Ok(pos) => pos.convert(),
             Err(e) => self.pos,
         }
     }
 }
-impl<Surface> SetPosition<int, 2> for Window<Surface>
-{
-    fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self
-    {
+impl<Surface> SetPosition<int, 2> for Window<Surface> {
+    fn set_pos(&mut self, pos: Vector<int, 2>) -> &mut Self {
         self.pos = pos;
         let p: WinitPhysicialPos = pos.convert();
         self.window.set_outer_position(p);
         self
     }
 }
-impl<Surface> GetSize<int, 2> for Window<Surface>
-{
-    fn size(&self) -> Vector<int, 2> { self.window.inner_size().convert() }
+impl<Surface> GetSize<int, 2> for Window<Surface> {
+    fn size(&self) -> Vector<int, 2> {
+        self.window.inner_size().convert()
+    }
 }
-impl<Surface> SetSize<int, 2> for Window<Surface>
-{
-    fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self
-    {
+impl<Surface> SetSize<int, 2> for Window<Surface> {
+    fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self {
         self.size = size;
         let size: WinitPhysicialSize = size.convert();
         self.window.request_inner_size(size);
@@ -396,113 +388,123 @@ impl<Surface> SetSize<int, 2> for Window<Surface>
     }
 }
 
-impl<Surface> WindowAttribute for Window<Surface>
-{
-    fn title(&self) -> String { self.param.title() }
+impl<Surface> WindowAttribute for Window<Surface> {
+    fn title(&self) -> String {
+        self.param.title()
+    }
 
-    fn set_title(&mut self, title: String) -> &mut Self
-    {
+    fn set_title(&mut self, title: String) -> &mut Self {
         self.window.set_title(&title);
         self.param.set_title(title);
         self
     }
 
-    fn level(&self) -> WindowLevel { self.param.level() }
+    fn level(&self) -> WindowLevel {
+        self.param.level()
+    }
 
-    fn set_level(&mut self, level: WindowLevel) -> &mut Self
-    {
+    fn set_level(&mut self, level: WindowLevel) -> &mut Self {
         self.param.set_level(level);
         self.window.set_window_level(level.into());
         self
     }
 
-    fn is_resizable(&self) -> bool { self.param.is_resizable() }
+    fn is_resizable(&self) -> bool {
+        self.param.is_resizable()
+    }
 
-    fn set_resizable(&mut self, resizable: bool) -> &mut Self
-    {
+    fn set_resizable(&mut self, resizable: bool) -> &mut Self {
         self.param.set_resizable(resizable);
         self.window.set_resizable(resizable);
         self
     }
 
-    fn buttons(&mut self) -> WindowButtonFlags { self.param.buttons() }
+    fn buttons(&mut self) -> WindowButtonFlags {
+        self.param.buttons()
+    }
 
-    fn set_buttons(&mut self, buttons: WindowButtonFlags) -> &mut Self
-    {
+    fn set_buttons(&mut self, buttons: WindowButtonFlags) -> &mut Self {
         self.param.set_buttons(buttons);
         self.window.set_enabled_buttons(buttons.into());
         self
     }
 
-    fn is_maximised(&self) -> bool { self.param.is_maximised() }
+    fn is_maximised(&self) -> bool {
+        self.param.is_maximised()
+    }
 
-    fn set_maximized(&mut self, maximized: bool) -> &mut Self
-    {
+    fn set_maximized(&mut self, maximized: bool) -> &mut Self {
         self.param.set_maximized(maximized);
         self.window.set_maximized(maximized);
         self
     }
 
-    fn is_visible(&self) -> bool { self.param.is_visible() }
+    fn is_visible(&self) -> bool {
+        self.param.is_visible()
+    }
 
-    fn set_visible(&mut self, visible: bool) -> &mut Self
-    {
+    fn set_visible(&mut self, visible: bool) -> &mut Self {
         self.param.set_visible(visible);
         self.window.set_visible(visible);
         self
     }
 
-    fn is_transparent(&self) -> bool { self.param.is_transparent() }
+    fn is_transparent(&self) -> bool {
+        self.param.is_transparent()
+    }
 
-    fn set_transparent(&mut self, transparent: bool) -> &mut Self
-    {
+    fn set_transparent(&mut self, transparent: bool) -> &mut Self {
         self.param.set_transparent(transparent);
         self.window.set_transparent(transparent);
         self
     }
 
-    fn have_blur(&self) -> bool { self.param.have_blur() }
+    fn have_blur(&self) -> bool {
+        self.param.have_blur()
+    }
 
-    fn set_blur(&mut self, blur: bool) -> &mut Self
-    {
+    fn set_blur(&mut self, blur: bool) -> &mut Self {
         self.param.set_blur(blur);
         self.window.set_blur(blur);
         self
     }
 
-    fn have_decoration(&self) -> bool { self.param.have_decoration() }
+    fn have_decoration(&self) -> bool {
+        self.param.have_decoration()
+    }
 
-    fn set_decoration(&mut self, decorations: bool) -> &mut Self
-    {
+    fn set_decoration(&mut self, decorations: bool) -> &mut Self {
         self.param.set_decoration(decorations);
         self.window.set_decorations(decorations);
         self
     }
 
-    fn is_content_protected(&self) -> bool { self.param.is_content_protected() }
+    fn is_content_protected(&self) -> bool {
+        self.param.is_content_protected()
+    }
 
-    fn set_content_protected(&mut self, protected: bool) -> &mut Self
-    {
+    fn set_content_protected(&mut self, protected: bool) -> &mut Self {
         self.param.set_content_protected(protected);
         self.window.set_content_protected(protected);
         self
     }
 
-    fn is_active(&self) -> bool { self.param.is_active() }
+    fn is_active(&self) -> bool {
+        self.param.is_active()
+    }
 
-    fn set_active(&mut self, active: bool) -> &mut Self
-    {
+    fn set_active(&mut self, active: bool) -> &mut Self {
         self.param.set_active(active);
         self
     }
 
-    fn icon(&self) -> Option<Image> { self.param.icon.clone() }
+    fn icon(&self) -> Option<Image> {
+        self.param.icon.clone()
+    }
 
-    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self
-    {
+    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self {
         let icon = icon.into();
-        let winit_icon = match &icon
-        {
+        let winit_icon = match &icon {
             Some(icon) => image_to_winit_icon(icon),
             None => None,
         };
@@ -512,36 +514,30 @@ impl<Surface> WindowAttribute for Window<Surface>
         self
     }
 
-    fn theme(&self) -> Option<Theme>
-    {
-        match self.window.theme()
-        {
+    fn theme(&self) -> Option<Theme> {
+        match self.window.theme() {
             Some(t) => Some(t.into()),
             None => self.param.theme,
         }
     }
 
-    fn set_theme(&mut self, theme: Option<Theme>) -> &mut Self
-    {
+    fn set_theme(&mut self, theme: Option<Theme>) -> &mut Self {
         self.window.set_theme(theme.map(Into::into));
         self.param.set_theme(theme);
         self
     }
 }
 
-pub(crate) fn image_to_winit_icon(image: &Image) -> Option<winit::window::Icon>
-{
+pub(crate) fn image_to_winit_icon(image: &Image) -> Option<winit::window::Icon> {
     let pixels_bytes: &[u8] = hexga_core::bit::transmute_slice(image.pixels());
 
     winit::window::Icon::from_rgba(pixels_bytes.to_owned(), image.width() as _, image.height() as _).ok()
 }
 
-pub trait WindowAttribute: Sized
-{
+pub trait WindowAttribute: Sized {
     fn title(&self) -> String;
     fn set_title(&mut self, title: String) -> &mut Self;
-    fn with_title(mut self, title: String) -> Self
-    {
+    fn with_title(mut self, title: String) -> Self {
         self.set_title(title);
         self
     }
@@ -572,88 +568,77 @@ pub trait WindowAttribute: Sized
     /// - **X11:** Has no universal guidelines for icon sizes, so you're at the whims of the WM.
     ///   That said, it's usually in the same ballpark as on Windows.
     fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self;
-    fn with_icon(mut self, icon: impl Into<Option<Image>>) -> Self
-    {
+    fn with_icon(mut self, icon: impl Into<Option<Image>>) -> Self {
         self.set_icon(icon);
         self
     }
 
     fn level(&self) -> WindowLevel;
     fn set_level(&mut self, level: WindowLevel) -> &mut Self;
-    fn with_level(mut self, level: WindowLevel) -> Self
-    {
+    fn with_level(mut self, level: WindowLevel) -> Self {
         self.set_level(level);
         self
     }
 
     fn is_resizable(&self) -> bool;
     fn set_resizable(&mut self, resizable: bool) -> &mut Self;
-    fn with_resizable(mut self, resizable: bool) -> Self
-    {
+    fn with_resizable(mut self, resizable: bool) -> Self {
         self.set_resizable(resizable);
         self
     }
 
     fn buttons(&mut self) -> WindowButtonFlags;
     fn set_buttons(&mut self, buttons: WindowButtonFlags) -> &mut Self;
-    fn with_buttons(mut self, buttons: WindowButtonFlags) -> Self
-    {
+    fn with_buttons(mut self, buttons: WindowButtonFlags) -> Self {
         self.set_buttons(buttons);
         self
     }
 
     fn is_maximised(&self) -> bool;
     fn set_maximized(&mut self, maximized: bool) -> &mut Self;
-    fn with_maximized(mut self, maximized: bool) -> Self
-    {
+    fn with_maximized(mut self, maximized: bool) -> Self {
         self.set_maximized(maximized);
         self
     }
 
     fn is_visible(&self) -> bool;
     fn set_visible(&mut self, visible: bool) -> &mut Self;
-    fn with_visible(mut self, visible: bool) -> Self
-    {
+    fn with_visible(mut self, visible: bool) -> Self {
         self.set_visible(visible);
         self
     }
 
     fn is_transparent(&self) -> bool;
     fn set_transparent(&mut self, transparent: bool) -> &mut Self;
-    fn with_transparent(mut self, transparent: bool) -> Self
-    {
+    fn with_transparent(mut self, transparent: bool) -> Self {
         self.set_transparent(transparent);
         self
     }
 
     fn have_blur(&self) -> bool;
     fn set_blur(&mut self, blur: bool) -> &mut Self;
-    fn with_blur(mut self, blur: bool) -> Self
-    {
+    fn with_blur(mut self, blur: bool) -> Self {
         self.set_blur(blur);
         self
     }
 
     fn have_decoration(&self) -> bool;
     fn set_decoration(&mut self, decorations: bool) -> &mut Self;
-    fn with_decoration(mut self, decorations: bool) -> Self
-    {
+    fn with_decoration(mut self, decorations: bool) -> Self {
         self.set_decoration(true);
         self
     }
 
     fn is_content_protected(&self) -> bool;
     fn set_content_protected(&mut self, protected: bool) -> &mut Self;
-    fn with_content_protected(mut self, protected: bool) -> Self
-    {
+    fn with_content_protected(mut self, protected: bool) -> Self {
         self.set_content_protected(protected);
         self
     }
 
     fn is_active(&self) -> bool;
     fn set_active(&mut self, active: bool) -> &mut Self;
-    fn with_active(mut self, active: bool) -> Self
-    {
+    fn with_active(mut self, active: bool) -> Self {
         self.set_active(active);
         self
     }
@@ -661,8 +646,7 @@ pub trait WindowAttribute: Sized
 
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
-pub struct WindowParam
-{
+pub struct WindowParam {
     pub title: String,
     pub level: WindowLevel,
     pub resizable: bool,
@@ -678,10 +662,8 @@ pub struct WindowParam
     pub theme: Option<Theme>,
     //pub cursor_visible: bool,
 }
-impl Default for WindowParam
-{
-    fn default() -> Self
-    {
+impl Default for WindowParam {
+    fn default() -> Self {
         Self {
             title: "hexga app".to_owned(),
             level: ___(),
@@ -701,116 +683,126 @@ impl Default for WindowParam
     }
 }
 
-impl WindowAttribute for WindowParam
-{
-    fn title(&self) -> String { self.title.clone() }
-    fn set_title(&mut self, title: String) -> &mut Self
-    {
+impl WindowAttribute for WindowParam {
+    fn title(&self) -> String {
+        self.title.clone()
+    }
+    fn set_title(&mut self, title: String) -> &mut Self {
         self.title = title;
         self
     }
 
-    fn level(&self) -> WindowLevel { self.level }
+    fn level(&self) -> WindowLevel {
+        self.level
+    }
 
-    fn set_level(&mut self, level: WindowLevel) -> &mut Self
-    {
+    fn set_level(&mut self, level: WindowLevel) -> &mut Self {
         self.level = level;
         self
     }
 
-    fn is_resizable(&self) -> bool { self.resizable }
+    fn is_resizable(&self) -> bool {
+        self.resizable
+    }
 
-    fn set_resizable(&mut self, resizable: bool) -> &mut Self
-    {
+    fn set_resizable(&mut self, resizable: bool) -> &mut Self {
         self.resizable = resizable;
         self
     }
 
-    fn buttons(&mut self) -> WindowButtonFlags { self.buttons }
+    fn buttons(&mut self) -> WindowButtonFlags {
+        self.buttons
+    }
 
-    fn set_buttons(&mut self, buttons: WindowButtonFlags) -> &mut Self
-    {
+    fn set_buttons(&mut self, buttons: WindowButtonFlags) -> &mut Self {
         self.buttons = buttons;
         self
     }
 
-    fn is_maximised(&self) -> bool { self.maximized }
+    fn is_maximised(&self) -> bool {
+        self.maximized
+    }
 
-    fn set_maximized(&mut self, maximized: bool) -> &mut Self
-    {
+    fn set_maximized(&mut self, maximized: bool) -> &mut Self {
         self.maximized = maximized;
         self
     }
 
-    fn is_visible(&self) -> bool { self.visible }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 
-    fn set_visible(&mut self, visible: bool) -> &mut Self
-    {
+    fn set_visible(&mut self, visible: bool) -> &mut Self {
         self.visible = visible;
         self
     }
 
-    fn is_transparent(&self) -> bool { self.transparent }
+    fn is_transparent(&self) -> bool {
+        self.transparent
+    }
 
-    fn set_transparent(&mut self, transparent: bool) -> &mut Self
-    {
+    fn set_transparent(&mut self, transparent: bool) -> &mut Self {
         self.transparent = transparent;
         self
     }
 
-    fn have_blur(&self) -> bool { self.blur }
+    fn have_blur(&self) -> bool {
+        self.blur
+    }
 
-    fn set_blur(&mut self, blur: bool) -> &mut Self
-    {
+    fn set_blur(&mut self, blur: bool) -> &mut Self {
         self.blur = blur;
         self
     }
 
-    fn have_decoration(&self) -> bool { self.decoration }
+    fn have_decoration(&self) -> bool {
+        self.decoration
+    }
 
-    fn set_decoration(&mut self, decorations: bool) -> &mut Self
-    {
+    fn set_decoration(&mut self, decorations: bool) -> &mut Self {
         self.decoration = decorations;
         self
     }
 
-    fn is_content_protected(&self) -> bool { self.content_protected }
+    fn is_content_protected(&self) -> bool {
+        self.content_protected
+    }
 
-    fn set_content_protected(&mut self, protected: bool) -> &mut Self
-    {
+    fn set_content_protected(&mut self, protected: bool) -> &mut Self {
         self.content_protected = protected;
         self
     }
 
-    fn is_active(&self) -> bool { self.active }
+    fn is_active(&self) -> bool {
+        self.active
+    }
 
-    fn set_active(&mut self, active: bool) -> &mut Self
-    {
+    fn set_active(&mut self, active: bool) -> &mut Self {
         self.active = active;
         self
     }
 
-    fn theme(&self) -> Option<Theme> { self.theme }
+    fn theme(&self) -> Option<Theme> {
+        self.theme
+    }
 
-    fn set_theme(&mut self, theme: Option<Theme>) -> &mut Self
-    {
+    fn set_theme(&mut self, theme: Option<Theme>) -> &mut Self {
         self.theme = theme;
         self
     }
 
-    fn icon(&self) -> Option<Image> { self.icon.clone() }
+    fn icon(&self) -> Option<Image> {
+        self.icon.clone()
+    }
 
-    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self
-    {
+    fn set_icon(&mut self, icon: impl Into<Option<Image>>) -> &mut Self {
         self.icon = icon.into();
         self
     }
 }
 
-impl From<WindowParam> for WinitWindowAttributes
-{
-    fn from(value: WindowParam) -> Self
-    {
+impl From<WindowParam> for WinitWindowAttributes {
+    fn from(value: WindowParam) -> Self {
         let WindowParam {
             title,
             level,
@@ -869,8 +861,7 @@ impl From<WindowParam> for WinitWindowAttributes
 /// - **iOS / Android / Web / Wayland:** Unsupported.
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum WindowLevel
-{
+pub enum WindowLevel {
     /// The window will always be below normal windows.
     ///
     /// This is useful for a widget-based app.
@@ -883,13 +874,10 @@ pub enum WindowLevel
     /// The window will always be on top of normal windows.
     AlwaysOnTop,
 }
-impl From<WindowLevel> for winit::window::WindowLevel
-{
-    fn from(value: WindowLevel) -> Self
-    {
+impl From<WindowLevel> for winit::window::WindowLevel {
+    fn from(value: WindowLevel) -> Self {
         use winit::window::WindowLevel as W;
-        match value
-        {
+        match value {
             WindowLevel::AlwaysOnBottom => W::AlwaysOnBottom,
             WindowLevel::Normal => W::Normal,
             WindowLevel::AlwaysOnTop => W::AlwaysOnTop,
@@ -905,8 +893,7 @@ impl From<WindowLevel> for winit::window::WindowLevel
 /// [`Critical`]: Self::Critical
 /// [`Informational`]: Self::Informational
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub enum UserAttentionType
-{
+pub enum UserAttentionType {
     /// ## Platform-specific
     ///
     /// - **macOS:** Bounces the dock icon until the application is in focus.
@@ -921,12 +908,9 @@ pub enum UserAttentionType
     #[default]
     Informational,
 }
-impl From<UserAttentionType> for winit::window::UserAttentionType
-{
-    fn from(value: UserAttentionType) -> Self
-    {
-        match value
-        {
+impl From<UserAttentionType> for winit::window::UserAttentionType {
+    fn from(value: UserAttentionType) -> Self {
+        match value {
             UserAttentionType::Critical => winit::window::UserAttentionType::Critical,
             UserAttentionType::Informational => winit::window::UserAttentionType::Informational,
         }
@@ -935,59 +919,47 @@ impl From<UserAttentionType> for winit::window::UserAttentionType
 
 #[bit_index]
 #[repr(u8)]
-pub enum WindowButton
-{
+pub enum WindowButton {
     Close = 0,
     Minimize = 1,
     Maximize = 2,
     All = Self::Close | Self::Minimize | Self::Maximize,
 }
-impl Default for WindowButtonFlags
-{
-    fn default() -> Self { Self::ALL }
+impl Default for WindowButtonFlags {
+    fn default() -> Self {
+        Self::ALL
+    }
 }
-impl From<WindowButton> for winit::window::WindowButtons
-{
-    fn from(value: WindowButton) -> Self
-    {
+impl From<WindowButton> for winit::window::WindowButtons {
+    fn from(value: WindowButton) -> Self {
         use winit::window::WindowButtons as B;
-        match value
-        {
+        match value {
             WindowButton::Close => B::CLOSE,
             WindowButton::Minimize => B::MINIMIZE,
             WindowButton::Maximize => B::MAXIMIZE,
         }
     }
 }
-impl From<WindowButtonFlags> for winit::window::WindowButtons
-{
-    fn from(value: WindowButtonFlags) -> Self
-    {
+impl From<WindowButtonFlags> for winit::window::WindowButtons {
+    fn from(value: WindowButtonFlags) -> Self {
         let mut flags = winit::window::WindowButtons::empty();
-        for button in value
-        {
+        for button in value {
             flags |= button.into();
         }
         flags
     }
 }
-impl From<winit::window::WindowButtons> for WindowButtonFlags
-{
-    fn from(value: winit::window::WindowButtons) -> Self
-    {
+impl From<winit::window::WindowButtons> for WindowButtonFlags {
+    fn from(value: winit::window::WindowButtons) -> Self {
         let mut flags = WindowButtonFlags::EMPTY;
-        for button in value
-        {
-            if button == winit::window::WindowButtons::CLOSE
-            {
+        for button in value {
+            if button == winit::window::WindowButtons::CLOSE {
                 flags |= WindowButton::Close;
             }
-            if button == winit::window::WindowButtons::MINIMIZE
-            {
+            if button == winit::window::WindowButtons::MINIMIZE {
                 flags |= WindowButton::Minimize;
             }
-            if button == winit::window::WindowButtons::MAXIMIZE
-            {
+            if button == winit::window::WindowButtons::MAXIMIZE {
                 flags |= WindowButton::Maximize;
             }
         }

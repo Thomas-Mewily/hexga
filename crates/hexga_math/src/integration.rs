@@ -1,21 +1,18 @@
 /// Frame rate independent time integration
 use super::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::Integrate;
     pub use super::traits::*;
 }
 
-pub mod traits
-{
-    pub use super::{SmoothLinear, SmoothPow, SmoothExp, SmoothDecay};
-    pub use super::{AddDt,SubDt,MulDt,DivDt,DecayDt,LerpDt};
+pub mod traits {
+    pub use super::{AddDt, DecayDt, DivDt, LerpDt, MulDt, SubDt};
+    pub use super::{SmoothDecay, SmoothExp, SmoothLinear, SmoothPow};
 }
 
 /// Frame rate independent time integration for a linear fn `a += x` => `a += x * dt`.
-pub trait SmoothLinear<Dt>
-{
+pub trait SmoothLinear<Dt> {
     //type Output;
 
     /// Frame rate independent time integration: replaces `a += x` with a dt scaled step.
@@ -23,7 +20,7 @@ pub trait SmoothLinear<Dt>
     /// ```ignore
     /// a += x;         // not time integrated
     /// =>              // time integrated
-    /// a += x * dt; 
+    /// a += x * dt;
     /// <=>
     /// a += x.smooth_linear(dt);
     /// ```
@@ -41,8 +38,7 @@ where
 }
 
 /// Frame rate independent time integration for a multiplication `a *= x` => `x.pow(dt)`.
-pub trait SmoothPow<Dt>
-{
+pub trait SmoothPow<Dt> {
     //type Output;
 
     /// Frame rate independent time integration: replaces `a *= x` => `x.pow(dt)`.
@@ -50,7 +46,7 @@ pub trait SmoothPow<Dt>
     /// ```ignore
     /// a *= x;         // not time integrated
     /// =>              // time integrated
-    /// a *= x.pow(dt); 
+    /// a *= x.pow(dt);
     /// <=>
     /// a *= x.smooth_pow(dt);
     /// ```
@@ -70,8 +66,7 @@ where
 }
 
 /// Frame rate independent time integration for a continuous decay coefficient `a *= exp(-coef)` => `a *= exp(-coef * dt)`.
-pub trait SmoothExp<Dt>
-{
+pub trait SmoothExp<Dt> {
     //type Output;
 
     /// Frame rate independent time integration: replaces `a *= exp(-coef)` with a dt scaled step.
@@ -79,7 +74,7 @@ pub trait SmoothExp<Dt>
     /// ```ignore
     /// a *= exp(-coef);        // not time integrated
     /// =>                      // time integrated
-    /// a *= exp(-coef * dt); 
+    /// a *= exp(-coef * dt);
     /// <=>
     /// a *= coef.smooth_exp(dt);
     /// ```
@@ -101,14 +96,13 @@ where
 }
 
 /// Frame rate independent time integration for a continuous decay coefficient : `1.0 - exp(-coef)` => `1.0 - exp(-coef * dt)`
-pub trait SmoothDecay<Dt>
-{
+pub trait SmoothDecay<Dt> {
     /// Returns the fraction decayed over `dt`: `1 - exp(-coef * dt)`.
     ///
     /// ```ignore
     /// a *= 1.0 - exp(-coef);      // not time integrated
     /// =>                          // time integrated
-    /// a *= 1.0 - exp(-coef * dt); 
+    /// a *= 1.0 - exp(-coef * dt);
     /// <=>
     /// a *= 1.0 - coef.smooth_decay(dt);
     /// ```
@@ -128,13 +122,6 @@ where
         Self::ONE - self.smooth_exp(dt)
     }
 }
-
-
-
-
-
-
-
 
 /// Frame rate independent time integration of an additive rate: `a += rate`.
 pub trait AddDt<Dt> {
@@ -207,7 +194,7 @@ pub trait DecayDt<Rate, Dt> {
     /// ```ignore
     /// a *= exp(-rate);        // not time integrated
     /// =>                      // time integrated
-    /// a *= exp(-rate * dt); 
+    /// a *= exp(-rate * dt);
     /// <=>
     /// a = a.decay_dt(rate, dt);
     /// ```
@@ -219,15 +206,13 @@ pub trait DecayDt<Rate, Dt> {
 impl<T, Rate, Dt> DecayDt<Rate, Dt> for T
 where
     Rate: SmoothExp<Dt>,
-    T: Mul<Rate, Output=Self>,
+    T: Mul<Rate, Output = Self>,
 {
     #[inline]
     fn decay_dt(self, rate: Rate, dt: Dt) -> Self {
         self * rate.smooth_exp(dt)
     }
 }
-
-
 
 /// A `(value, dt)` pair for applying time-scaled arithmetic and interpolation operations.
 ///
@@ -252,7 +237,7 @@ where
 /// Integrate(&mut a, dt) /= coef;
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct Integrate<V,Time>(pub V, pub Time);
+pub struct Integrate<V, Time>(pub V, pub Time);
 
 /*
 // TODO impl it
@@ -306,7 +291,7 @@ impl<F, V, V2> Lerp<F, V2> for Integrate<&mut V, F>
 
 impl<F, V, D> Lerp<F, D> for Integrate<V, F>
 where
-    V: Lerp<F, D, Output=V>,
+    V: Lerp<F, D, Output = V>,
     F: Float,
 {
     type Output = V;
@@ -323,8 +308,7 @@ where
 /// Frame rate independent linear interpolation, with the per-time-unit coefficient integrated over `dt`.
 ///
 /// For coefficient `c`, the interpolation weight over `dt` is `1 - (1 - c).pow(dt)`.
-pub trait LerpDt<C, D=Self, Dt=C> : Sized
-{
+pub trait LerpDt<C, D = Self, Dt = C>: Sized {
     type Output;
 
     /// Frame rate independent time integration: replaces a per-unit lerp coefficient with a dt scaled step.
@@ -354,7 +338,7 @@ pub trait LerpDt<C, D=Self, Dt=C> : Sized
     /// ```
     fn lerp_dt_to(&mut self, dest: D, coef_per_time_unit: C, dt: Dt)
     where
-        Self: Copy + LerpDt<C, D, Dt, Output=Self>,
+        Self: Copy + LerpDt<C, D, Dt, Output = Self>,
         C: ClampUnit,
     {
         *self = (*self).lerp_dt(dest, coef_per_time_unit, dt);
@@ -366,7 +350,7 @@ pub trait LerpDt<C, D=Self, Dt=C> : Sized
     /// Like [`LerpDt::lerp_dt_to`], without clamping the per-time-unit coefficient to
     /// `0.0..=1.0`.
     ///
-    /// For coefficient `self`, the interpolation weight is `1 - (1 - self).pow(dt)`. 
+    /// For coefficient `self`, the interpolation weight is `1 - (1 - self).pow(dt)`.
     /// `dt` should be non negative.
     ///
     /// ```ignore
@@ -374,17 +358,16 @@ pub trait LerpDt<C, D=Self, Dt=C> : Sized
     /// ```
     fn lerp_dt_unclamped_to(&mut self, dest: D, coef_per_time_unit: C, dt: Dt)
     where
-        Self: Copy + LerpDt<C, D, Dt, Output=Self>,
+        Self: Copy + LerpDt<C, D, Dt, Output = Self>,
     {
-        *self = (*self)
-            .lerp_dt_unchecked(dest, coef_per_time_unit, dt);
+        *self = (*self).lerp_dt_unchecked(dest, coef_per_time_unit, dt);
     }
 }
 
 impl<F, V, V2> LerpDt<F, V2, F> for V
 where
-    V: Lerp<F, V2, Output=V>,
-    F: Float
+    V: Lerp<F, V2, Output = V>,
+    F: Float,
 {
     type Output = Self;
 
@@ -396,10 +379,9 @@ where
 
 /// Frame rate independent interpolation using a continuous exponential decay rate.
 ///
-/// For a non negative rate `self`, the interpolation weight over `dt` is `1 - exp(-r * dt)`. 
+/// For a non negative rate `self`, the interpolation weight over `dt` is `1 - exp(-r * dt)`.
 /// Unlike [`LerpDt`], `self` is measured in inverse time units.
-pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
-{
+pub trait LerpDecay<Rate, D = Self, Dt = Rate>: Sized {
     type Output;
 
     /// Moves `self` toward `dest` with continuous exponential decay over `dt`.
@@ -417,7 +399,7 @@ pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
     /// ```
     fn lerp_decay_to(&mut self, dest: D, rate: Rate, dt: Dt)
     where
-        Self: Copy + LerpDecay<Rate, D, Dt, Output=Self>,
+        Self: Copy + LerpDecay<Rate, D, Dt, Output = Self>,
     {
         *self = (*self).lerp_decay(dest, rate, dt);
     }
@@ -429,7 +411,7 @@ pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
 
     /// Like [`LerpDecay::lerp_decay_to`], without clamping the interpolation weight.
     ///
-    /// For decay rate `self`, the interpolation weight is `1 - exp(-self * dt)`. 
+    /// For decay rate `self`, the interpolation weight is `1 - exp(-self * dt)`.
     /// `self` and `dt` should be non negative.
     ///
     /// ```ignore
@@ -437,7 +419,7 @@ pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
     /// ```
     fn lerp_decay_unclamped_to(&mut self, dest: D, rate: Rate, dt: Dt)
     where
-        Self: Copy + LerpDecay<Rate, D, Dt, Output=Self>,
+        Self: Copy + LerpDecay<Rate, D, Dt, Output = Self>,
     {
         *self = (*self).lerp_decay_unclamped(dest, rate, dt);
     }
@@ -445,7 +427,7 @@ pub trait LerpDecay<Rate, D=Self, Dt=Rate> : Sized
 
 impl<F, V, V2> LerpDecay<F, V2, F> for V
 where
-    V: Lerp<F, V2, Output=V>,
+    V: Lerp<F, V2, Output = V>,
     F: Float,
 {
     type Output = Self;
@@ -468,8 +450,7 @@ where
 ///
 /// For a positive half-life `h`, the interpolation weight over `dt` is
 /// `1 - 2.pow(-dt / h)`. After one half-life, half of the remaining distance is covered.
-pub trait LerpHalfLife<HalfLife, D=Self, Dt=HalfLife> : Sized
-{
+pub trait LerpHalfLife<HalfLife, D = Self, Dt = HalfLife>: Sized {
     type Output;
 
     /// Moves `self` toward `dest`, covering half of the remaining distance every `half_life`.
@@ -488,7 +469,7 @@ pub trait LerpHalfLife<HalfLife, D=Self, Dt=HalfLife> : Sized
     /// ```
     fn lerp_half_life_to(&mut self, dest: D, half_life: HalfLife, dt: Dt)
     where
-        Self: Copy + LerpHalfLife<HalfLife, D, Dt, Output=Self>,
+        Self: Copy + LerpHalfLife<HalfLife, D, Dt, Output = Self>,
     {
         *self = (*self).lerp_half_life(dest, half_life, dt);
     }
@@ -509,7 +490,7 @@ pub trait LerpHalfLife<HalfLife, D=Self, Dt=HalfLife> : Sized
     /// ```
     fn lerp_half_life_unclamped_to(&mut self, dest: D, half_life: HalfLife, dt: Dt)
     where
-        Self: Copy + LerpHalfLife<HalfLife, D, Dt, Output=Self>,
+        Self: Copy + LerpHalfLife<HalfLife, D, Dt, Output = Self>,
     {
         *self = (*self).lerp_half_life_unclamped(dest, half_life, dt);
     }
@@ -517,7 +498,7 @@ pub trait LerpHalfLife<HalfLife, D=Self, Dt=HalfLife> : Sized
 
 impl<F, V, V2> LerpHalfLife<F, V2, F> for V
 where
-    V: Lerp<F, V2, Output=V>,
+    V: Lerp<F, V2, Output = V>,
     F: Float,
 {
     type Output = Self;
@@ -541,7 +522,7 @@ where
 
 impl<Dt, V> Add<V> for Integrate<V, Dt>
 where
-    V: AddDt<Dt>
+    V: AddDt<Dt>,
 {
     type Output = V;
 
@@ -553,7 +534,7 @@ where
 
 impl<Dt, V> Sub<V> for Integrate<V, Dt>
 where
-    V: SubDt<Dt>
+    V: SubDt<Dt>,
 {
     type Output = V;
 
@@ -565,7 +546,7 @@ where
 
 impl<Dt, V> Mul<V> for Integrate<V, Dt>
 where
-    V: MulDt<Dt>
+    V: MulDt<Dt>,
 {
     type Output = V;
 
@@ -577,7 +558,7 @@ where
 
 impl<Dt, V> Div<V> for Integrate<V, Dt>
 where
-    V: DivDt<Dt>
+    V: DivDt<Dt>,
 {
     type Output = V;
 
@@ -589,7 +570,7 @@ where
 
 impl<Dt, V, Rate> Decay<Rate> for Integrate<V, Dt>
 where
-    V: DecayDt<Rate,Dt>
+    V: DecayDt<Rate, Dt>,
 {
     type Output = V;
     fn decay(self, rate: Rate) -> Self::Output {
@@ -600,7 +581,8 @@ where
 
 impl<Dt, V> AddAssign<V> for Integrate<&mut V, Dt>
 where
-    V: SmoothLinear<Dt> + AddAssign<V>, Dt: Copy
+    V: SmoothLinear<Dt> + AddAssign<V>,
+    Dt: Copy,
 {
     fn add_assign(&mut self, rhs: V) {
         *self.0 += rhs.smooth_linear(self.1);
@@ -609,7 +591,8 @@ where
 
 impl<Dt, V> SubAssign<V> for Integrate<&mut V, Dt>
 where
-    V: SmoothLinear<Dt> + SubAssign<V>, Dt: Copy
+    V: SmoothLinear<Dt> + SubAssign<V>,
+    Dt: Copy,
 {
     fn sub_assign(&mut self, rhs: V) {
         *self.0 -= rhs.smooth_linear(self.1);
@@ -618,7 +601,8 @@ where
 
 impl<Dt, V> MulAssign<V> for Integrate<&mut V, Dt>
 where
-    V: SmoothPow<Dt> + MulAssign<V>, Dt: Copy
+    V: SmoothPow<Dt> + MulAssign<V>,
+    Dt: Copy,
 {
     fn mul_assign(&mut self, rhs: V) {
         *self.0 *= rhs.smooth_pow(self.1);
@@ -627,7 +611,8 @@ where
 
 impl<Dt, V> DivAssign<V> for Integrate<&mut V, Dt>
 where
-    V: SmoothPow<Dt> + DivAssign<V>, Dt: Copy
+    V: SmoothPow<Dt> + DivAssign<V>,
+    Dt: Copy,
 {
     fn div_assign(&mut self, rhs: V) {
         *self.0 /= rhs.smooth_pow(self.1);

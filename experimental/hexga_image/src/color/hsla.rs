@@ -7,8 +7,7 @@ pub type HslaF64 = HslaOf<f64>;
 
 #[math_vec]
 #[repr(C)]
-pub struct HslaOf<T>
-{
+pub struct HslaOf<T> {
     /// Hue. Color coefficient. Ex:  `0` = red, `0.25` = green, `0.5` = blue, `0.75` = magenta
     pub h: T,
     /// Saturation. Grayscale : `0`, `1`: pure color.
@@ -19,11 +18,9 @@ pub struct HslaOf<T>
     pub a: T,
 }
 
-impl<T> HslaOf<T>
-{
+impl<T> HslaOf<T> {
     #[inline(always)]
-    pub const fn new(hue: T, saturation: T, lightness: T, alpha: T) -> Self
-    {
+    pub const fn new(hue: T, saturation: T, lightness: T, alpha: T) -> Self {
         Self {
             h: hue,
             s: saturation,
@@ -49,7 +46,9 @@ impl<T> HslaOf<T>
     /// S : Grayscale : `0`, `1`: pure color.
     ///
     /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
-    pub const fn hsla(hue: T, saturation: T, lightness: T, alpha: T) -> Self { Self::new(hue, saturation, lightness, alpha) }
+    pub const fn hsla(hue: T, saturation: T, lightness: T, alpha: T) -> Self {
+        Self::new(hue, saturation, lightness, alpha)
+    }
 
     /// Alpha is at max
     ///
@@ -85,16 +84,18 @@ impl<T> HslaOf<T>
         Self::new(hsl, hsl, hsl, a)
     }
 
-    pub fn hsla_ref(&self) -> &[T; 4] { self.as_array() }
-    pub fn hsla_mut(&mut self) -> &mut [T; 4] { self.as_array_mut() }
+    pub fn hsla_ref(&self) -> &[T; 4] {
+        self.as_array()
+    }
+    pub fn hsla_mut(&mut self) -> &mut [T; 4] {
+        self.as_array_mut()
+    }
 
-    pub fn hsl_ref(&self) -> &[T; 3]
-    {
+    pub fn hsl_ref(&self) -> &[T; 3] {
         // SAFETY: ColorHSLAOf<T> always has at least 3 fields, and they are laid out contiguously.
         unsafe { &*(self.as_array().as_ptr() as *const [T; 3]) }
     }
-    pub fn hsl_mut(&mut self) -> &mut [T; 3]
-    {
+    pub fn hsl_mut(&mut self) -> &mut [T; 3] {
         // SAFETY: ColorHSLAOf<T> always has at least 3 fields, and they are laid out contiguously.
         unsafe { &mut *(self.as_array_mut().as_mut_ptr() as *mut [T; 3]) }
     }
@@ -117,13 +118,14 @@ impl<T> HslaOf<T>
         self
     }
     /// Hue
-    pub fn set_h(&mut self, h: T) -> &mut Self
-    {
+    pub fn set_h(&mut self, h: T) -> &mut Self {
         self.h = h;
         self
     }
     /// Hue
-    pub fn replace_h(mut self, h: T) -> T { self.replace_or_panic(Self::H_INDEX, h) }
+    pub fn replace_h(mut self, h: T) -> T {
+        self.replace_or_panic(Self::H_INDEX, h)
+    }
 
     /// Saturation
     pub const S_INDEX: usize = 1;
@@ -143,13 +145,14 @@ impl<T> HslaOf<T>
         self
     }
     /// Saturation
-    pub fn set_s(&mut self, s: T) -> &mut Self
-    {
+    pub fn set_s(&mut self, s: T) -> &mut Self {
         self.s = s;
         self
     }
     /// Saturation
-    pub fn replace_s(mut self, s: T) -> T { self.replace_or_panic(Self::S_INDEX, s) }
+    pub fn replace_s(mut self, s: T) -> T {
+        self.replace_or_panic(Self::S_INDEX, s)
+    }
 
     /// Light
     pub const L_INDEX: usize = 2;
@@ -169,13 +172,14 @@ impl<T> HslaOf<T>
         self
     }
     /// Light
-    pub fn set_l(&mut self, l: T) -> &mut Self
-    {
+    pub fn set_l(&mut self, l: T) -> &mut Self {
         self.l = l;
         self
     }
     /// Light
-    pub fn replace_l(mut self, l: T) -> T { self.replace_or_panic(Self::L_INDEX, l) }
+    pub fn replace_l(mut self, l: T) -> T {
+        self.replace_or_panic(Self::L_INDEX, l)
+    }
 
     /// Alpha
     pub const A_INDEX: usize = 3;
@@ -195,62 +199,64 @@ impl<T> HslaOf<T>
         self
     }
     /// Alpha
-    pub fn set_a(&mut self, a: T) -> &mut Self
-    {
+    pub fn set_a(&mut self, a: T) -> &mut Self {
         self.a = a;
         self
     }
     /// Alpha
-    pub fn replace_a(mut self, a: T) -> T { self.replace_or_panic(Self::A_INDEX, a) }
+    pub fn replace_a(mut self, a: T) -> T {
+        self.replace_or_panic(Self::A_INDEX, a)
+    }
 }
 
-impl<T> From<(T, T, T, T)> for HslaOf<T>
-{
-    fn from(value: (T, T, T, T)) -> Self { HslaOf::hsla(value.0, value.1, value.2, value.3) }
+impl<T> From<(T, T, T, T)> for HslaOf<T> {
+    fn from(value: (T, T, T, T)) -> Self {
+        HslaOf::hsla(value.0, value.1, value.2, value.3)
+    }
 }
-impl<T> From<HslaOf<T>> for (T, T, T, T)
-{
-    fn from(value: HslaOf<T>) -> Self { (value.h, value.s, value.l, value.a) }
+impl<T> From<HslaOf<T>> for (T, T, T, T) {
+    fn from(value: HslaOf<T>) -> Self {
+        (value.h, value.s, value.l, value.a)
+    }
 }
 
 impl<T> From<(T, T, T)> for HslaOf<T>
 where
     T: Float,
 {
-    fn from(value: (T, T, T)) -> Self { HslaOf::hsl(value.0, value.1, value.2) }
+    fn from(value: (T, T, T)) -> Self {
+        HslaOf::hsl(value.0, value.1, value.2)
+    }
 }
-impl<T> From<HslaOf<T>> for (T, T, T)
-{
-    fn from(value: HslaOf<T>) -> Self { (value.h, value.s, value.l) }
+impl<T> From<HslaOf<T>> for (T, T, T) {
+    fn from(value: HslaOf<T>) -> Self {
+        (value.h, value.s, value.l)
+    }
 }
 
 impl<T> From<[T; 3]> for HslaOf<T>
 where
     T: Float,
 {
-    fn from(value: [T; 3]) -> Self
-    {
+    fn from(value: [T; 3]) -> Self {
         let [r, g, b] = value;
         HslaOf::hsl(r, g, b)
     }
 }
-impl<T> From<HslaOf<T>> for [T; 3]
-{
-    fn from(value: HslaOf<T>) -> Self { [value.h, value.s, value.l] }
+impl<T> From<HslaOf<T>> for [T; 3] {
+    fn from(value: HslaOf<T>) -> Self {
+        [value.h, value.s, value.l]
+    }
 }
 
-impl<T> From<Vector4<T>> for HslaOf<T>
-{
-    fn from(value: Vector4<T>) -> Self
-    {
+impl<T> From<Vector4<T>> for HslaOf<T> {
+    fn from(value: Vector4<T>) -> Self {
         let [h, s, l, a] = value.to_array();
         HslaOf::hsla(h, s, l, a)
     }
 }
-impl<T> From<HslaOf<T>> for Vector4<T>
-{
-    fn from(value: HslaOf<T>) -> Self
-    {
+impl<T> From<HslaOf<T>> for Vector4<T> {
+    fn from(value: HslaOf<T>) -> Self {
         let [x, y, z, w] = value.into();
         vector4(x, y, z, w)
     }
@@ -260,24 +266,22 @@ impl<T> From<Vector3<T>> for HslaOf<T>
 where
     T: Float,
 {
-    fn from(value: Vector3<T>) -> Self
-    {
+    fn from(value: Vector3<T>) -> Self {
         let [h, s, l] = value.to_array();
         HslaOf::hsl(h, s, l)
     }
 }
-impl<T> From<HslaOf<T>> for Vector3<T>
-{
-    fn from(value: HslaOf<T>) -> Self
-    {
+impl<T> From<HslaOf<T>> for Vector3<T> {
+    fn from(value: HslaOf<T>) -> Self {
         let [x, y, z, _] = value.into();
         vector3(x, y, z)
     }
 }
 
-impl<C: Float> Default for HslaOf<C>
-{
-    fn default() -> Self { Self::hsla(zero(), zero(), one(), one()) }
+impl<C: Float> Default for HslaOf<C> {
+    fn default() -> Self {
+        Self::hsla(zero(), zero(), one(), one())
+    }
 }
 
 impl<T> HslaOf<T>
@@ -291,45 +295,34 @@ where
     {
         // Thank to MacroQuad, the following code was copied and edited from the MacroQuad crate
 
-        let (r, g, b) = if self.s == T::ZERO
-        {
+        let (r, g, b) = if self.s == T::ZERO {
             (self.l, self.l, self.l)
-        }
-        else
-        {
+        } else {
             fn hue_to_rgb<T>(p: T, q: T, mut t: T) -> T
             where
                 T: Float,
             {
-                if t < T::ZERO
-                {
+                if t < T::ZERO {
                     t += T::ONE
                 }
-                if t > T::ONE
-                {
+                if t > T::ONE {
                     t -= T::ONE
                 }
-                if t < T::ONE / T::SIX
-                {
+                if t < T::ONE / T::SIX {
                     return p + (q - p) * T::SIX * t;
                 }
-                if t < T::ONE / T::TWO
-                {
+                if t < T::ONE / T::TWO {
                     return q;
                 }
-                if t < T::TWO / T::THREE
-                {
+                if t < T::TWO / T::THREE {
                     return p + (q - p) * (T::TWO / T::THREE - t) * T::SIX;
                 }
                 p
             }
 
-            let q = if self.l < T::HALF
-            {
+            let q = if self.l < T::HALF {
                 self.l * (T::ONE + self.s)
-            }
-            else
-            {
+            } else {
                 self.l + self.s - self.l * self.s
             };
             let p = T::TWO * self.l - q;
@@ -394,11 +387,21 @@ where
         self.to_hsla_of()
     }
 
-    fn from_rgba_u8(rgba: RgbaU8) -> Self { rgba.to_hsla_of() }
-    fn from_rgba_u16(rgba: RgbaU16) -> Self { rgba.to_hsla_of() }
-    fn from_rgba_f32(rgba: RgbaOf<f32>) -> Self { rgba.to_hsla_of() }
-    fn from_rgba_f64(rgba: RgbaOf<f64>) -> Self { rgba.to_hsla_of() }
-    fn from_rgba_float(rgba: RgbaFloat) -> Self { rgba.to_hsla_of() }
+    fn from_rgba_u8(rgba: RgbaU8) -> Self {
+        rgba.to_hsla_of()
+    }
+    fn from_rgba_u16(rgba: RgbaU16) -> Self {
+        rgba.to_hsla_of()
+    }
+    fn from_rgba_f32(rgba: RgbaOf<f32>) -> Self {
+        rgba.to_hsla_of()
+    }
+    fn from_rgba_f64(rgba: RgbaOf<f64>) -> Self {
+        rgba.to_hsla_of()
+    }
+    fn from_rgba_float(rgba: RgbaFloat) -> Self {
+        rgba.to_hsla_of()
+    }
 }
 
 /*
@@ -439,7 +442,9 @@ impl<T> ToColorComposite for ColorHslaOf<T> where T: Float
 /// S : Grayscale : `0`, `1`: pure color.
 ///
 /// L : Black & White level. `0` = black, `0.5` = pure color, `1` = white
-pub const fn hsla<T>(hue: T, saturation: T, lightness: T, alpha: T) -> HslaOf<T> { HslaOf::hsla(hue, saturation, lightness, alpha) }
+pub const fn hsla<T>(hue: T, saturation: T, lightness: T, alpha: T) -> HslaOf<T> {
+    HslaOf::hsla(hue, saturation, lightness, alpha)
+}
 
 /// Alpha is at max
 ///

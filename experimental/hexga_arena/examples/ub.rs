@@ -1,7 +1,6 @@
 use hexga_arena::prelude::*;
 
-fn main()
-{
+fn main() {
     let mut arena = Arena::new();
     dbg!(&arena);
 

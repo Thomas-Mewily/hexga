@@ -5,16 +5,22 @@ const Y_INDEX: usize = 1;
 const Z_INDEX: usize = 2;
 const W_INDEX: usize = 3;
 
-impl<T, const N: usize> Vector<T, N>
-{
-    pub fn have_x(&self) -> bool { self.is_index_valid(X_INDEX) }
-    pub fn have_y(&self) -> bool { self.is_index_valid(Y_INDEX) }
-    pub fn have_z(&self) -> bool { self.is_index_valid(Z_INDEX) }
-    pub fn have_w(&self) -> bool { self.is_index_valid(W_INDEX) }
+impl<T, const N: usize> Vector<T, N> {
+    pub fn have_x(&self) -> bool {
+        self.is_index_valid(X_INDEX)
+    }
+    pub fn have_y(&self) -> bool {
+        self.is_index_valid(Y_INDEX)
+    }
+    pub fn have_z(&self) -> bool {
+        self.is_index_valid(Z_INDEX)
+    }
+    pub fn have_w(&self) -> bool {
+        self.is_index_valid(W_INDEX)
+    }
 }
 
-pub trait HaveX<T>: Sized
-{
+pub trait HaveX<T>: Sized {
     const X_INDEX: usize = X_INDEX;
     fn iter_x<'a>(&'a self) -> impl Iterator<Item = &'a T>
     where
@@ -23,8 +29,7 @@ pub trait HaveX<T>: Sized
     where
         T: 'a;
 }
-pub trait HaveXAndOne<T>: HaveX<T>
-{
+pub trait HaveXAndOne<T>: HaveX<T> {
     const X: Self;
 
     /// `+ X`
@@ -46,15 +51,13 @@ pub trait HaveXAndOne<T>: HaveX<T>
         self - Self::X
     }
 }
-pub trait HaveXAndMinusOne<T>: HaveX<T>
-{
+pub trait HaveXAndMinusOne<T>: HaveX<T> {
     const MINUS_X: Self;
     /// `- X`
     const LEFT: Self = Self::MINUS_X;
 }
 
-pub trait HaveY<T>: HaveX<T>
-{
+pub trait HaveY<T>: HaveX<T> {
     const Y_INDEX: usize = Y_INDEX;
     fn iter_xy<'a>(&'a self) -> impl Iterator<Item = &'a T>
     where
@@ -63,8 +66,7 @@ pub trait HaveY<T>: HaveX<T>
     where
         T: 'a;
 }
-pub trait HaveYAndOne<T>: HaveY<T>
-{
+pub trait HaveYAndOne<T>: HaveY<T> {
     const Y: Self;
 
     /// `+ Y`
@@ -86,15 +88,13 @@ pub trait HaveYAndOne<T>: HaveY<T>
         self - Self::Y
     }
 }
-pub trait HaveYAndMinusOne<T>: HaveY<T>
-{
+pub trait HaveYAndMinusOne<T>: HaveY<T> {
     const MINUS_Y: Self;
     /// `- Y`
     const DOWN: Self = Self::MINUS_Y;
 }
 
-pub trait HaveZ<T>: HaveY<T>
-{
+pub trait HaveZ<T>: HaveY<T> {
     const Z_INDEX: usize = Z_INDEX;
     fn iter_xyz<'a>(&'a self) -> impl Iterator<Item = &'a T>
     where
@@ -103,8 +103,7 @@ pub trait HaveZ<T>: HaveY<T>
     where
         T: 'a;
 }
-pub trait HaveZAndOne<T>: HaveZ<T>
-{
+pub trait HaveZAndOne<T>: HaveZ<T> {
     const Z: Self;
 
     /// `+ Z`
@@ -126,15 +125,13 @@ pub trait HaveZAndOne<T>: HaveZ<T>
         self - Self::Z
     }
 }
-pub trait HaveZAndMinusOne<T>: HaveZ<T>
-{
+pub trait HaveZAndMinusOne<T>: HaveZ<T> {
     const MINUS_Z: Self;
     /// `- Z`
     const BACKWARD: Self = Self::MINUS_Z;
 }
 
-pub trait HaveW<T>: HaveZ<T>
-{
+pub trait HaveW<T>: HaveZ<T> {
     const W_INDEX: usize = W_INDEX;
     fn iter_xyzw<'a>(&'a self) -> impl Iterator<Item = &'a T>
     where
@@ -143,8 +140,7 @@ pub trait HaveW<T>: HaveZ<T>
     where
         T: 'a;
 }
-pub trait HaveWAndOne<T>: HaveW<T>
-{
+pub trait HaveWAndOne<T>: HaveW<T> {
     const W: Self;
 
     /// `+ W`
@@ -166,8 +162,7 @@ pub trait HaveWAndOne<T>: HaveW<T>
         self - Self::W
     }
 }
-pub trait HaveWAndMinusOne<T>: HaveW<T>
-{
+pub trait HaveWAndMinusOne<T>: HaveW<T> {
     const MINUS_W: Self;
     /// `- W`
     const KATA: Self = Self::MINUS_W;

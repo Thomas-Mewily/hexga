@@ -1,9 +1,7 @@
 use super::*;
 
-
 #[derive(Debug)]
-pub struct ImmediateRenderBuilder<const N: usize = 3>
-{
+pub struct ImmediateRenderBuilder<const N: usize = 3> {
     pub render: ImmediateRender<N>,
     pub params: NonEmptyStack<DrawParam>,
 
@@ -12,12 +10,8 @@ pub struct ImmediateRenderBuilder<const N: usize = 3>
     pub(crate) scissor_stack: NonEmptyStack<Rect2i>,
 }
 
-
-
-impl<const N: usize> Default for ImmediateRenderBuilder<N>
-{
-    fn default() -> Self
-    {
+impl<const N: usize> Default for ImmediateRenderBuilder<N> {
+    fn default() -> Self {
         Self {
             render: ___(),
             params: ___(),
@@ -28,58 +22,52 @@ impl<const N: usize> Default for ImmediateRenderBuilder<N>
     }
 }
 
-impl<const N: usize> BuilderMesh<N> for ImmediateRenderBuilder<N>
-{
-    fn extend(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>)
-    {
+impl<const N: usize> BuilderMesh<N> for ImmediateRenderBuilder<N> {
+    fn extend(&mut self, vertex: impl IntoIterator<Item = VertexOf<N>>, index: impl IntoIterator<Item = VertexIndex>) {
         self.ensure_immediate_draw_call();
         self.render.geometry.extend(vertex, index);
         self.update_last_draw_call();
     }
-    fn geometry(&mut self, vertex: &[VertexOf<N>], index: &[VertexIndex])
-    {
+    fn geometry(&mut self, vertex: &[VertexOf<N>], index: &[VertexIndex]) {
         self.ensure_immediate_draw_call();
         self.render.geometry.geometry(vertex, index);
         self.update_last_draw_call();
     }
 }
 
-impl<const N: usize> GetMatrix<float, 4, 4> for ImmediateRenderBuilder<N>
-{
-    fn matrix(&self) -> Matrix<float, 4, 4> { self.params.camera.matrix() }
+impl<const N: usize> GetMatrix<float, 4, 4> for ImmediateRenderBuilder<N> {
+    fn matrix(&self) -> Matrix<float, 4, 4> {
+        self.params.camera.matrix()
+    }
 }
-impl<const N: usize> SetMatrix<float, 4, 4> for ImmediateRenderBuilder<N>
-{
-    fn set_matrix(&mut self, matrix: Matrix<float, 4, 4>) -> &mut Self
-    {
+impl<const N: usize> SetMatrix<float, 4, 4> for ImmediateRenderBuilder<N> {
+    fn set_matrix(&mut self, matrix: Matrix<float, 4, 4>) -> &mut Self {
         self.map_draw_param(|p| p.camera.matrix = matrix);
         *self.matrix_stack.last_mut() = matrix;
         self
     }
 }
 
-impl<const N: usize> GetCamera for ImmediateRenderBuilder<N>
-{
-    fn have_depth(&self) -> bool { self.params.camera.have_depth() }
+impl<const N: usize> GetCamera for ImmediateRenderBuilder<N> {
+    fn have_depth(&self) -> bool {
+        self.params.camera.have_depth()
+    }
 }
-impl<const N: usize> SetCamera for ImmediateRenderBuilder<N>
-{
-    fn set_camera(&mut self, camera: Camera) -> &mut Self
-    {
+impl<const N: usize> SetCamera for ImmediateRenderBuilder<N> {
+    fn set_camera(&mut self, camera: Camera) -> &mut Self {
         self.map_draw_param(|p| p.camera = camera);
         *self.matrix_stack.last_mut() = camera.matrix;
         self
     }
 }
 
-impl<const N: usize> GetPosition for ImmediateRenderBuilder<N>
-{
-    fn pos(&self) -> Vec3 { self.params.camera.pos() }
+impl<const N: usize> GetPosition for ImmediateRenderBuilder<N> {
+    fn pos(&self) -> Vec3 {
+        self.params.camera.pos()
+    }
 }
-impl<const N: usize> SetPosition for ImmediateRenderBuilder<N>
-{
-    fn set_pos(&mut self, pos: Vec3) -> &mut Self
-    {
+impl<const N: usize> SetPosition for ImmediateRenderBuilder<N> {
+    fn set_pos(&mut self, pos: Vec3) -> &mut Self {
         self.map_draw_param(|p| {
             p.camera.set_pos(pos);
         });
@@ -87,14 +75,13 @@ impl<const N: usize> SetPosition for ImmediateRenderBuilder<N>
         self
     }
 }
-impl<const N: usize> GetScale for ImmediateRenderBuilder<N>
-{
-    fn scale(&self) -> Vec3 { self.params.camera.scale() }
+impl<const N: usize> GetScale for ImmediateRenderBuilder<N> {
+    fn scale(&self) -> Vec3 {
+        self.params.camera.scale()
+    }
 }
-impl<const N: usize> SetScale for ImmediateRenderBuilder<N>
-{
-    fn set_scale(&mut self, scale: Vec3) -> &mut Self
-    {
+impl<const N: usize> SetScale for ImmediateRenderBuilder<N> {
+    fn set_scale(&mut self, scale: Vec3) -> &mut Self {
         self.map_draw_param(|p| {
             p.camera.set_scale(scale);
         });
@@ -102,10 +89,8 @@ impl<const N: usize> SetScale for ImmediateRenderBuilder<N>
         self
     }
 }
-impl<const N: usize> RotateX for ImmediateRenderBuilder<N>
-{
-    fn rotate_x(&mut self, angle: Angle) -> &mut Self
-    {
+impl<const N: usize> RotateX for ImmediateRenderBuilder<N> {
+    fn rotate_x(&mut self, angle: Angle) -> &mut Self {
         self.map_draw_param(|p| {
             p.camera.rotate_x(angle);
         });
@@ -113,10 +98,8 @@ impl<const N: usize> RotateX for ImmediateRenderBuilder<N>
         self
     }
 }
-impl<const N: usize> RotateY for ImmediateRenderBuilder<N>
-{
-    fn rotate_y(&mut self, angle: Angle) -> &mut Self
-    {
+impl<const N: usize> RotateY for ImmediateRenderBuilder<N> {
+    fn rotate_y(&mut self, angle: Angle) -> &mut Self {
         self.map_draw_param(|p| {
             p.camera.rotate_y(angle);
         });
@@ -124,10 +107,8 @@ impl<const N: usize> RotateY for ImmediateRenderBuilder<N>
         self
     }
 }
-impl<const N: usize> RotateZ for ImmediateRenderBuilder<N>
-{
-    fn rotate_z(&mut self, angle: Angle) -> &mut Self
-    {
+impl<const N: usize> RotateZ for ImmediateRenderBuilder<N> {
+    fn rotate_z(&mut self, angle: Angle) -> &mut Self {
         self.map_draw_param(|p| {
             p.camera.rotate_z(angle);
         });
@@ -136,51 +117,45 @@ impl<const N: usize> RotateZ for ImmediateRenderBuilder<N>
     }
 }
 
-impl<const N: usize> GetViewport for ImmediateRenderBuilder<N>
-{
-    fn viewport(&self) -> Viewport { self.params.viewport }
+impl<const N: usize> GetViewport for ImmediateRenderBuilder<N> {
+    fn viewport(&self) -> Viewport {
+        self.params.viewport
+    }
 }
-impl<const N: usize> SetViewport for ImmediateRenderBuilder<N>
-{
-    fn set_viewport(&mut self, viewport: Viewport) -> &mut Self
-    {
+impl<const N: usize> SetViewport for ImmediateRenderBuilder<N> {
+    fn set_viewport(&mut self, viewport: Viewport) -> &mut Self {
         self.map_draw_param(|p| p.viewport = viewport);
         *self.viewports_stack.last_mut() = viewport;
         self
     }
 }
-impl<const N: usize> GetScissor for ImmediateRenderBuilder<N>
-{
-    fn scissor(&self) -> Rect2i { self.params.scissor }
+impl<const N: usize> GetScissor for ImmediateRenderBuilder<N> {
+    fn scissor(&self) -> Rect2i {
+        self.params.scissor
+    }
 }
-impl<const N: usize> SetScissor for ImmediateRenderBuilder<N>
-{
-    fn set_scissor(&mut self, scissor: Rect2i) -> &mut Self
-    {
+impl<const N: usize> SetScissor for ImmediateRenderBuilder<N> {
+    fn set_scissor(&mut self, scissor: Rect2i) -> &mut Self {
         self.map_draw_param(|p| p.scissor = scissor);
         *self.scissor_stack.last_mut() = scissor;
         self
     }
 }
-impl<const N: usize> GetOptionalTexture for ImmediateRenderBuilder<N>
-{
-    fn texture(&self) -> Option<Texture> { self.params.texture.clone_handle() }
+impl<const N: usize> GetOptionalTexture for ImmediateRenderBuilder<N> {
+    fn texture(&self) -> Option<Texture> {
+        self.params.texture.clone_handle()
+    }
 }
-impl<const N: usize> SetOptionalTexture for ImmediateRenderBuilder<N>
-{
-    fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self
-    {
+impl<const N: usize> SetOptionalTexture for ImmediateRenderBuilder<N> {
+    fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self {
         self.map_draw_param(|p| p.texture = texture.into());
         self
     }
 }
 
-impl<const N: usize> SetDrawParam for ImmediateRenderBuilder<N>
-{
+impl<const N: usize> SetDrawParam for ImmediateRenderBuilder<N> {
     fn set_draw_param(&mut self, param: DrawParam) -> &mut Self {
-        
-        if self.params.last() == &param
-        {
+        if self.params.last() == &param {
             return self;
         }
         self.update_last_draw_call();
@@ -190,21 +165,18 @@ impl<const N: usize> SetDrawParam for ImmediateRenderBuilder<N>
 }
 impl<const N: usize> GetDrawParam for ImmediateRenderBuilder<N> {}
 
-impl<const N: usize> ImmediateRenderBuilder<N>
-{
-    fn ensure_immediate_draw_call(&mut self)
-    {
+impl<const N: usize> ImmediateRenderBuilder<N> {
+    fn ensure_immediate_draw_call(&mut self) {
         let param = self.params.last().clone();
-        if let Some(last) = self.render.draw_call.last_mut()
-        {
-            if let DrawGeometry::Immediate(immediate) = &last.geometry
-            {
-                if immediate.is_empty()
-                {
+        if let Some(last) = self.render.draw_call.last_mut() {
+            if let DrawGeometry::Immediate(immediate) = &last.geometry {
+                if immediate.is_empty() {
                     last.param = param;
                     return;
                 }
-                if last.param == param { return; }
+                if last.param == param {
+                    return;
+                }
             }
         }
 
@@ -213,34 +185,36 @@ impl<const N: usize> ImmediateRenderBuilder<N>
         self.render.draw_call.push(DrawCall {
             geometry: DrawGeometry::Immediate(DrawGeometryImmediate {
                 vertices: Range { start, end: start },
-                indices: Range { start: index_start, end: index_start },
+                indices: Range {
+                    start: index_start,
+                    end: index_start,
+                },
             }),
             param,
         });
     }
 
-    fn update_last_draw_call(&mut self)
-    {
-        if let Some(DrawCall { geometry: DrawGeometry::Immediate(immediate), .. }) = self.render.draw_call.last_mut()
+    fn update_last_draw_call(&mut self) {
+        if let Some(DrawCall {
+            geometry: DrawGeometry::Immediate(immediate),
+            ..
+        }) = self.render.draw_call.last_mut()
         {
             immediate.indices.end = self.render.geometry.nb_index();
             immediate.vertices.end = self.render.geometry.nb_vertex();
         }
     }
 
-    fn pop_immediate_if_empty(&mut self)
-    {
-        if matches!(self.render.draw_call.last(), Some(DrawCall { geometry: DrawGeometry::Immediate(immediate), .. }) if immediate.is_empty())
-        {
+    fn pop_immediate_if_empty(&mut self) {
+        if matches!(self.render.draw_call.last(), Some(DrawCall { geometry: DrawGeometry::Immediate(immediate), .. }) if immediate.is_empty()) {
             self.render.draw_call.pop();
         }
     }
 
-    pub fn retain(&mut self, mesh: GMesh<N>) -> &mut Self
-    {
+    pub fn retain(&mut self, mesh: GMesh<N>) -> &mut Self {
         self.update_last_draw_call();
         self.pop_immediate_if_empty();
-        
+
         self.render.draw_call.push(DrawCall {
             geometry: DrawGeometry::Retain(mesh),
             param: self.params.last().clone(),
@@ -248,8 +222,7 @@ impl<const N: usize> ImmediateRenderBuilder<N>
         self
     }
 
-    pub fn clear(&mut self)
-    {
+    pub fn clear(&mut self) {
         self.render.clear();
         self.params = NonEmptyStack::new(___());
         self.matrix_stack = NonEmptyStack::new(Matrix::IDENTITY);

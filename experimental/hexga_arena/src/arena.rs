@@ -24,8 +24,7 @@ where
     for<'a> &'a C: IntoIterator<Item = &'a A>,
     for<'a> &'a mut C: IntoIterator<Item = &'a mut A>,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let used = self.used;
         let cap = self.capacity;
         let used_pourcent = self.used_pourcent();
@@ -48,7 +47,9 @@ where
     type Item = &'a A;
     type IntoIter = <&'a C as IntoIterator>::IntoIter;
 
-    fn into_iter(self) -> Self::IntoIter { self.arenas.into_iter() }
+    fn into_iter(self) -> Self::IntoIter {
+        self.arenas.into_iter()
+    }
 }
 
 /*
@@ -74,7 +75,9 @@ where
     type Item = A;
     type IntoIter = <C as IntoIterator>::IntoIter;
 
-    fn into_iter(self) -> Self::IntoIter { self.arenas.into_iter() }
+    fn into_iter(self) -> Self::IntoIter {
+        self.arenas.into_iter()
+    }
 }
 
 impl<A, C> ArenaOf<A, C>
@@ -83,7 +86,9 @@ where
     C: Push<A> + Default,
     for<'a> &'a C: IntoIterator<Item = &'a A>,
 {
-    pub fn new() -> Self { Self::from_arenas(C::___()) }
+    pub fn new() -> Self {
+        Self::from_arenas(C::___())
+    }
 }
 
 impl<A, C> Default for ArenaOf<A, C>
@@ -92,7 +97,9 @@ where
     C: Push<A> + Default,
     for<'a> &'a C: IntoIterator<Item = &'a A>,
 {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /*
@@ -112,7 +119,9 @@ where
     C: Push<A>,
 {
     type Output = C::Output;
-    fn push(&mut self, value: A) -> Self::Output { self.arenas.push(value) }
+    fn push(&mut self, value: A) -> Self::Output {
+        self.arenas.push(value)
+    }
 }
 impl<A, C> TryPush<A> for ArenaOf<A, C>
 where
@@ -120,7 +129,9 @@ where
     C: TryPush<A>,
 {
     type Error = C::Error;
-    fn try_push(&mut self, value: A) -> Result<Self::Output, Self::Error> { self.arenas.try_push(value) }
+    fn try_push(&mut self, value: A) -> Result<Self::Output, Self::Error> {
+        self.arenas.try_push(value)
+    }
 }
 
 impl<A, C> PushFront<A> for ArenaOf<A, C>
@@ -129,7 +140,9 @@ where
     C: Push<A> + PushFront<A>,
 {
     type Output = <C as PushFront<A>>::Output;
-    fn push_front(&mut self, value: A) -> Self::Output { self.arenas.push_front(value) }
+    fn push_front(&mut self, value: A) -> Self::Output {
+        self.arenas.push_front(value)
+    }
 }
 impl<A, C> TryPushFront<A> for ArenaOf<A, C>
 where
@@ -137,7 +150,9 @@ where
     C: Push<A> + TryPushFront<A>,
 {
     type Error = <C as TryPushFront<A>>::Error;
-    fn try_push_front(&mut self, value: A) -> Result<Self::Output, Self::Error> { self.arenas.try_push_front(value) }
+    fn try_push_front(&mut self, value: A) -> Result<Self::Output, Self::Error> {
+        self.arenas.try_push_front(value)
+    }
 }
 
 // Should I impl Pop and PopFront (absolutely unsafe, but arena are all about unsafe ?)
@@ -148,12 +163,10 @@ where
     C: Push<A>,
     for<'a> &'a C: IntoIterator<Item = &'a A>,
 {
-    pub fn from_arenas(arenas: C) -> Self
-    {
+    pub fn from_arenas(arenas: C) -> Self {
         let mut capacity = 0;
         let mut used = 0;
-        for arena in &arenas
-        {
+        for arena in &arenas {
             capacity += arena.capacity();
             used += arena.nb_used();
         }
@@ -182,11 +195,9 @@ where
 {
     type Output = AllocOutput;
 
-    fn alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output>
-    {
+    fn alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output> {
         let mut empty = true;
-        for arena in self.arenas.into_iter()
-        {
+        for arena in self.arenas.into_iter() {
             empty = false;
             self.capacity -= arena.capacity();
             self.used -= arena.nb_used();
@@ -196,16 +207,14 @@ where
             self.capacity += arena.capacity();
             self.used += arena.nb_used();
 
-            if let Ok(ptr) = alloc_result
-            {
+            if let Ok(ptr) = alloc_result {
                 return Ok(ptr);
             }
         }
 
         let mut new_capacity = layout;
         new_capacity.size = (self.capacity * 2).max(layout.size);
-        if empty
-        {
+        if empty {
             // 16K bytes by default.
             // If you want any other amount, create the Arenas from an existing arena.
             new_capacity.size = new_capacity.size.max(BLOCK_DEFAULT_SIZE);
@@ -246,8 +255,7 @@ where
     C: Push<A> + Default,
 {
     type Param = A::Param;
-    fn with_capacity_and_param(capacity: usize, param: Self::Param) -> Self
-    {
+    fn with_capacity_and_param(capacity: usize, param: Self::Param) -> Self {
         let arena = A::with_capacity_and_param(capacity, param);
         Self::from_arena(arena)
     }
@@ -260,7 +268,9 @@ where
     for<'a> &'a C: IntoIterator<Item = &'a A>,
     for<'a> &'a mut C: IntoIterator<Item = &'a mut A>,
 {
-    fn contains(&self, ptr: NonNull<u8>) -> bool { self.iter().any(|a| a.contains(ptr)) }
+    fn contains(&self, ptr: NonNull<u8>) -> bool {
+        self.iter().any(|a| a.contains(ptr))
+    }
 }
 
 impl<A, C> Length for ArenaOf<A, C>
@@ -268,21 +278,29 @@ where
     A: Arenable,
     C: Push<A>,
 {
-    fn len(&self) -> usize { self.used }
+    fn len(&self) -> usize {
+        self.used
+    }
 }
 impl<A, C> Capacity<u8> for ArenaOf<A, C>
 where
     A: Arenable,
     C: Push<A>,
 {
-    fn capacity(&self) -> usize { self.capacity }
+    fn capacity(&self) -> usize {
+        self.capacity
+    }
 }
 impl<A, C> Collection<u8> for ArenaOf<A, C>
 where
     A: Arenable,
     C: Push<A>,
 {
-    type Ref<'a> = &'a u8 where Self: 'a, u8: 'a;
+    type Ref<'a>
+        = &'a u8
+    where
+        Self: 'a,
+        u8: 'a;
 }
 
 impl<A, C> CollectionIndex<usize> for ArenaOf<A, C>
@@ -291,14 +309,19 @@ where
     C: Push<A>,
 {
     type Output = u8;
-    type Ref<'a> = &'a u8 where Self: 'a;
+    type Ref<'a>
+        = &'a u8
+    where
+        Self: 'a;
 }
 impl<A, C> From<AllocLayout> for ArenaOf<A, C>
 where
     A: Arenable,
     C: Push<A> + Default,
 {
-    fn from(layout: AllocLayout) -> Self { Self::from_arena(A::from(layout)) }
+    fn from(layout: AllocLayout) -> Self {
+        Self::from_arena(A::from(layout))
+    }
 }
 
 impl<A, C> ArenaOf<A, C>

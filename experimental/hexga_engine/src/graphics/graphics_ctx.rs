@@ -3,8 +3,7 @@ use hexga_graphics::gpu::experimental::WgpuSliceable;
 use super::*;
 
 #[derive(Debug)]
-pub struct Graphics
-{
+pub struct Graphics {
     pub(crate) background_color: Color,
     pub(crate) immediate: ImmediateRenderBuilder,
     pub(crate) immediate_mesh: Option<GMesh>,
@@ -30,10 +29,8 @@ pub trait IGraphics
     //fn background_color(&mut self) ->
 }*/
 
-impl Graphics
-{
-    pub(crate) fn new(surface: &GpuSurface, size: Vec2i) -> Self
-    {
+impl Graphics {
+    pub(crate) fn new(surface: &GpuSurface, size: Vec2i) -> Self {
         let surface_caps = surface.lib_wgpu.get_capabilities(&Gpu.adapter());
         // Shader code in this tutorial assumes an Srgb surface texture. Using a different
         // one will result all the colors comming out darker. If you want to support non
@@ -166,8 +163,7 @@ impl Graphics
         }
     }
 
-    pub(crate) fn begin_draw(&mut self)
-    {
+    pub(crate) fn begin_draw(&mut self) {
         self.immediate.clear();
 
         if let Ok(mut window) = WINDOW.try_get_mut()
@@ -182,21 +178,15 @@ impl Graphics
         }
     }
 
-    pub(crate) fn end_draw(&mut self)
-    {
-        if self.white_pixel.is_none()
-        {
+    pub(crate) fn end_draw(&mut self) {
+        if self.white_pixel.is_none() {
             self.white_pixel = Some(Texture::from(Image::sized_one(ColorU8::WHITE)));
         }
 
-        let Ok(mut window) = WINDOW.try_get_mut()
-        else
-        {
+        let Ok(mut window) = WINDOW.try_get_mut() else {
             return;
         };
-        let Some(surface) = window.surface()
-        else
-        {
+        let Some(surface) = window.surface() else {
             return;
         };
 
@@ -204,8 +194,7 @@ impl Graphics
         let max_viewport = max_scissor.to_float();
 
         let surface = surface.surface();
-        let surface_texture = match surface.lib_wgpu.get_current_texture()
-        {
+        let surface_texture = match surface.lib_wgpu.get_current_texture() {
             Ok(s) => s,
             Err(_) => return,
         };
@@ -232,15 +221,12 @@ impl Graphics
 
             rpass.set_pipeline(&self.pipeline);
 
-            if !self.immediate.render.draw_call.is_empty()
-            {
-                if !self.immediate.render.geometry.is_empty()
-                {
+            if !self.immediate.render.draw_call.is_empty() {
+                if !self.immediate.render.geometry.is_empty() {
                     self.immediate.render.geometry.build_in_option(&mut self.immediate_mesh);
                 }
 
-                for dc in self.immediate.render.draw_call.iter()
-                {
+                for dc in self.immediate.render.draw_call.iter() {
                     //dbg!(&dc);
 
                     let Viewport { area: mut viewport, mut depth } = dc.viewport;
@@ -250,8 +236,7 @@ impl Graphics
                     viewport = max_viewport.intersect_or_empty(viewport);
                     scissor = max_scissor.intersect_or_empty(scissor);
 
-                    if viewport.is_empty() || scissor.size.is_empty()
-                    {
+                    if viewport.is_empty() || scissor.size.is_empty() {
                         continue;
                     }
 
@@ -292,17 +277,12 @@ impl Graphics
                     //let texture = dc.texture.as_ref().unwrap_or(self.white_pixel.as_ref().unwrap());
                     //rpass.set_bind_group(1, bindgroup, &[]);
 
-                    match &dc.geometry
-                    {
-                        DrawGeometry::Immediate(im) =>
-                        {
-                            let Some(mesh) = self.immediate_mesh.as_ref()
-                            else
-                            {
+                    match &dc.geometry {
+                        DrawGeometry::Immediate(im) => {
+                            let Some(mesh) = self.immediate_mesh.as_ref() else {
                                 continue;
                             };
-                            if im.is_empty()
-                            {
+                            if im.is_empty() {
                                 continue;
                             }
 
@@ -312,8 +292,7 @@ impl Graphics
                             // Indice are relative to global big mesh, not relative to the current vertices slice passed to wgpu, hence the -(vertices_begin as i32)
                             rpass.draw_indexed(0..((im.indices.end - im.indices.start) as _), -(im.vertices.start as i32), 0..1);
                         }
-                        DrawGeometry::Retain(mesh) =>
-                        {
+                        DrawGeometry::Retain(mesh) => {
                             rpass.set_vertex_buffer(0, mesh.vertices.lib_wgpu_slice(..));
                             rpass.set_index_buffer(mesh.indices.lib_wgpu_slice(..), VertexIndex::INDEX_FORMAT);
                             rpass.draw_indexed(0..(mesh.indices.len() as _), 0, 0..1);
@@ -328,134 +307,138 @@ impl Graphics
     }
 }
 
-impl BuilderMesh for Graphics
-{
-    fn extend(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) { self.immediate.extend(vertex, index); }
-    fn geometry(&mut self, vertex: &[vertex::VertexOf<3>], index: &[VertexIndex]) { self.immediate.geometry(vertex, index); }
+impl BuilderMesh for Graphics {
+    fn extend(&mut self, vertex: impl IntoIterator<Item = Vertex>, index: impl IntoIterator<Item = VertexIndex>) {
+        self.immediate.extend(vertex, index);
+    }
+    fn geometry(&mut self, vertex: &[vertex::VertexOf<3>], index: &[VertexIndex]) {
+        self.immediate.geometry(vertex, index);
+    }
 }
 
 impl SetDrawParam for Graphics {}
 impl GetDrawParam for Graphics {}
 
-impl SetOptionalTexture for Graphics 
-{
+impl SetOptionalTexture for Graphics {
     fn set_texture(&mut self, texture: impl Into<Option<Texture>>) -> &mut Self {
-        self.immediate.set_texture(texture); self
+        self.immediate.set_texture(texture);
+        self
     }
 }
-impl GetOptionalTexture for Graphics 
-{
-    fn texture(&self) -> Option<Texture> { self.immediate.texture() }
+impl GetOptionalTexture for Graphics {
+    fn texture(&self) -> Option<Texture> {
+        self.immediate.texture()
+    }
 }
 
-impl GetViewport for Graphics 
-{
+impl GetViewport for Graphics {
     fn viewport(&self) -> Viewport {
         self.immediate.viewport()
     }
 }
-impl SetViewport for Graphics 
-{
+impl SetViewport for Graphics {
     fn set_viewport(&mut self, viewport: Viewport) -> &mut Self {
-        self.immediate.set_viewport(viewport); self
+        self.immediate.set_viewport(viewport);
+        self
     }
 }
 
-impl GetScissor for Graphics 
-{
+impl GetScissor for Graphics {
     fn scissor(&self) -> Scissor {
         self.immediate.scissor()
     }
 }
-impl SetScissor for Graphics 
-{
+impl SetScissor for Graphics {
     fn set_scissor(&mut self, scissor: Scissor) -> &mut Self {
-        self.immediate.set_scissor(scissor); self
+        self.immediate.set_scissor(scissor);
+        self
     }
 }
 
-impl GetMatrix<float, 4, 4> for Graphics
-{
-    fn matrix(&self) -> Matrix<float, 4, 4> { self.immediate.matrix() }
+impl GetMatrix<float, 4, 4> for Graphics {
+    fn matrix(&self) -> Matrix<float, 4, 4> {
+        self.immediate.matrix()
+    }
 }
-impl SetMatrix<float, 4, 4> for Graphics
-{
-    fn set_matrix(&mut self, matrix: Matrix<float, 4, 4>) -> &mut Self
-    {
+impl SetMatrix<float, 4, 4> for Graphics {
+    fn set_matrix(&mut self, matrix: Matrix<float, 4, 4>) -> &mut Self {
         self.immediate.set_matrix(matrix);
         self
     }
 }
 
-impl GetCamera for Graphics
-{
-    fn have_depth(&self) -> bool { self.immediate.have_depth() }
+impl GetCamera for Graphics {
+    fn have_depth(&self) -> bool {
+        self.immediate.have_depth()
+    }
 }
-impl SetCamera for Graphics
-{
-    fn set_camera(&mut self, camera: Camera) -> &mut Self
-    {
+impl SetCamera for Graphics {
+    fn set_camera(&mut self, camera: Camera) -> &mut Self {
         self.immediate.set_camera(camera);
         self
     }
 }
 
-impl GetPosition for Graphics
-{
-    fn pos(&self) -> Vec3 { self.immediate.pos() }
+impl GetPosition for Graphics {
+    fn pos(&self) -> Vec3 {
+        self.immediate.pos()
+    }
 }
-impl SetPosition for Graphics
-{
-    fn set_pos(&mut self, pos: Vec3) -> &mut Self
-    {
+impl SetPosition for Graphics {
+    fn set_pos(&mut self, pos: Vec3) -> &mut Self {
         self.immediate.set_pos(pos);
         self
     }
 }
-impl GetScale for Graphics
-{
-    fn scale(&self) -> Vec3 { self.immediate.scale() }
+impl GetScale for Graphics {
+    fn scale(&self) -> Vec3 {
+        self.immediate.scale()
+    }
 }
-impl SetScale for Graphics
-{
-    fn set_scale(&mut self, scale: Vec3) -> &mut Self
-    {
+impl SetScale for Graphics {
+    fn set_scale(&mut self, scale: Vec3) -> &mut Self {
         self.immediate.set_scale(scale);
         self
     }
 }
-impl RotateX for Graphics
-{
-    fn rotate_x(&mut self, angle: Angle) -> &mut Self
-    {
+impl RotateX for Graphics {
+    fn rotate_x(&mut self, angle: Angle) -> &mut Self {
         self.immediate.rotate_x(angle);
         self
     }
 }
-impl RotateY for Graphics
-{
-    fn rotate_y(&mut self, angle: Angle) -> &mut Self
-    {
+impl RotateY for Graphics {
+    fn rotate_y(&mut self, angle: Angle) -> &mut Self {
         self.immediate.rotate_y(angle);
         self
     }
 }
-impl RotateZ for Graphics
-{
-    fn rotate_z(&mut self, angle: Angle) -> &mut Self
-    {
+impl RotateZ for Graphics {
+    fn rotate_z(&mut self, angle: Angle) -> &mut Self {
         self.immediate.rotate_z(angle);
         self
     }
 }
 
-impl<Output: ?Sized> Collection<Output> for Graphics where ImmediateRenderBuilder: Collection<Output>
+impl<Output: ?Sized> Collection<Output> for Graphics
+where
+    ImmediateRenderBuilder: Collection<Output>,
 {
-    type Ref<'a> = <ImmediateRenderBuilder as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+    type Ref<'a>
+        = <ImmediateRenderBuilder as Collection<Output>>::Ref<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
-impl<Output: ?Sized> CollectionMut<Output> for Graphics where ImmediateRenderBuilder: CollectionMut<Output>
+impl<Output: ?Sized> CollectionMut<Output> for Graphics
+where
+    ImmediateRenderBuilder: CollectionMut<Output>,
 {
-    type RefMut<'a> = <ImmediateRenderBuilder as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+    type RefMut<'a>
+        = <ImmediateRenderBuilder as CollectionMut<Output>>::RefMut<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
 
 impl<Idx> CollectionIndex<Idx> for Graphics
@@ -463,38 +446,60 @@ where
     ImmediateRenderBuilder: CollectionIndex<Idx>,
 {
     type Output = <ImmediateRenderBuilder as CollectionIndex<Idx>>::Output;
-    type Ref<'a> = <ImmediateRenderBuilder as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = <ImmediateRenderBuilder as CollectionIndex<Idx>>::Ref<'a>
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<Idx> CollectionIndexMut<Idx> for Graphics
 where
     ImmediateRenderBuilder: CollectionIndexMut<Idx>,
 {
-    type RefMut<'a> = <ImmediateRenderBuilder as CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>
+        = <ImmediateRenderBuilder as CollectionIndexMut<Idx>>::RefMut<'a>
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<Idx> Last<Idx> for Graphics
 where
     ImmediateRenderBuilder: Last<Idx>,
 {
-    fn last<'a>(&'a self) -> Option<Self::Ref<'a>> where Self::Output: 'a { Last::last(&self.immediate) }
+    fn last<'a>(&'a self) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        Last::last(&self.immediate)
+    }
 }
 impl<Idx> LastMut<Idx> for Graphics
 where
     ImmediateRenderBuilder: LastMut<Idx>,
 {
-    fn last_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>> where Self::Output: 'a { LastMut::last_mut(&mut self.immediate) }
+    fn last_mut<'a>(&'a mut self) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a,
+    {
+        LastMut::last_mut(&mut self.immediate)
+    }
 }
 impl<T> Push<T> for Graphics
 where
     ImmediateRenderBuilder: Push<T>,
 {
     type Output = <ImmediateRenderBuilder as Push<T>>::Output;
-    fn push(&mut self, value: T) -> Self::Output { Push::push(&mut self.immediate, value) }
+    fn push(&mut self, value: T) -> Self::Output {
+        Push::push(&mut self.immediate, value)
+    }
 }
 impl<T> Pop<T> for Graphics
 where
     ImmediateRenderBuilder: Pop<T>,
 {
-    fn pop(&mut self) -> Option<T> { Pop::pop(&mut self.immediate) }
+    fn pop(&mut self) -> Option<T> {
+        Pop::pop(&mut self.immediate)
+    }
 }
 /*
 impl SetBackgroundColor for Graphics
@@ -507,8 +512,7 @@ impl SetBackgroundColor for Graphics
 }
 */
 
-pub(crate) trait ExternLibConvert<Output>
-{
+pub(crate) trait ExternLibConvert<Output> {
     fn convert(self) -> Output;
 }
 impl<T> ExternLibConvert<wgpu::Color> for T
@@ -516,8 +520,7 @@ where
     T: IColor,
     f64: CastRangeFrom<<T as IColor>::Component>,
 {
-    fn convert(self) -> wgpu::Color
-    {
+    fn convert(self) -> wgpu::Color {
         let RgbaOf { r, g, b, a } = IColor::to_rgba_of::<f64>(self);
         wgpu::Color { r, g, b, a }
     }

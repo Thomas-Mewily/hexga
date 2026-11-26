@@ -9,7 +9,6 @@ pub use try_from_iter::*;
 // Warning : std::iter define the `Empty` iterator, but we also define `Empty` as the Empty type ()
 re_export_items_from_std_or_core!(iter);
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{collect_to::*, try_from_iter::*};
 }

@@ -1,63 +1,59 @@
 use super::*;
 
 /// [bytemuck::CheckedBitPattern](https://docs.rs/bytemuck/latest/bytemuck/trait.CheckedBitPattern.html) trait equivalent.
-pub trait BitPattern: Copy
-{
+pub trait BitPattern: Copy {
     type Bits: BitAnyPattern;
 
-    fn from_bits(bits: Self::Bits) -> Option<Self>
-    {
-        if Self::is_bit_pattern_valid(&bits)
-        {
+    fn from_bits(bits: Self::Bits) -> Option<Self> {
+        if Self::is_bit_pattern_valid(&bits) {
             Some(unsafe { *(&bits as *const Self::Bits as *const Self) })
-        }
-        else
-        {
+        } else {
             None
         }
     }
     fn is_bit_pattern_valid(bits: &Self::Bits) -> bool;
 }
 
-impl<T: BitAnyPattern> BitPattern for T
-{
+impl<T: BitAnyPattern> BitPattern for T {
     type Bits = T;
 
     #[inline(always)]
-    fn from_bits(bits: Self::Bits) -> Option<Self> { Some(bits) }
+    fn from_bits(bits: Self::Bits) -> Option<Self> {
+        Some(bits)
+    }
     #[inline(always)]
-    fn is_bit_pattern_valid(_bits: &Self::Bits) -> bool { true }
+    fn is_bit_pattern_valid(_bits: &Self::Bits) -> bool {
+        true
+    }
 }
 
-impl BitPattern for char
-{
+impl BitPattern for char {
     type Bits = u32;
 
     #[inline(always)]
-    fn from_bits(bits: Self::Bits) -> Option<Self> { core::char::from_u32(bits) }
+    fn from_bits(bits: Self::Bits) -> Option<Self> {
+        core::char::from_u32(bits)
+    }
     #[inline(always)]
-    fn is_bit_pattern_valid(bits: &Self::Bits) -> bool { Self::from_bits(*bits).is_some() }
+    fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
+        Self::from_bits(*bits).is_some()
+    }
 }
 
-impl BitPattern for bool
-{
+impl BitPattern for bool {
     type Bits = u8;
 
     #[inline(always)]
-    fn from_bits(bits: Self::Bits) -> Option<Self>
-    {
-        match bits
-        {
+    fn from_bits(bits: Self::Bits) -> Option<Self> {
+        match bits {
             0 => Some(false),
             1 => Some(true),
             _ => None,
         }
     }
 
-    fn is_bit_pattern_valid(bits: &Self::Bits) -> bool
-    {
-        match bits
-        {
+    fn is_bit_pattern_valid(bits: &Self::Bits) -> bool {
+        match bits {
             0 | 1 => true,
             _ => false,
         }
@@ -100,8 +96,7 @@ impl_checked_for_nonzero! {
 
 #[inline(always)]
 #[track_caller]
-pub(crate) fn is_aligned_to(ptr: *const (), align: usize) -> bool
-{
+pub(crate) fn is_aligned_to(ptr: *const (), align: usize) -> bool {
     /*
     #[cfg(feature = "align_offset")]
     {
@@ -125,18 +120,12 @@ pub(crate) fn is_aligned_to(ptr: *const (), align: usize) -> bool
 ///
 /// Don't check if the bit pattern is valid.
 #[inline(always)]
-pub unsafe fn try_from_bytes_unchecked<T>(bytes: &[u8]) -> BitResult<&T>
-{
-    if bytes.len() != size_of::<T>()
-    {
+pub unsafe fn try_from_bytes_unchecked<T>(bytes: &[u8]) -> BitResult<&T> {
+    if bytes.len() != size_of::<T>() {
         Err(BitError::SizeMismatch)
-    }
-    else if !is_aligned_to(bytes.as_ptr() as *const (), align_of::<T>())
-    {
+    } else if !is_aligned_to(bytes.as_ptr() as *const (), align_of::<T>()) {
         Err(BitError::TargetAlignmentGreaterAndInputNotAligned)
-    }
-    else
-    {
+    } else {
         Ok(unsafe { &*(bytes.as_ptr() as *const T) })
     }
 }
@@ -149,15 +138,11 @@ pub unsafe fn try_from_bytes_unchecked<T>(bytes: &[u8]) -> BitResult<&T>
 /// * If the slice's length isn’t exactly the size of the new type
 /// * If the slice contains an invalid bit pattern for `T`
 #[inline(always)]
-pub fn try_from_bytes<T: BitPattern>(bytes: &[u8]) -> BitResult<&T>
-{
+pub fn try_from_bytes<T: BitPattern>(bytes: &[u8]) -> BitResult<&T> {
     let pod = unsafe { try_from_bytes_unchecked(bytes) }?;
-    if <T as BitPattern>::is_bit_pattern_valid(pod)
-    {
+    if <T as BitPattern>::is_bit_pattern_valid(pod) {
         Ok(unsafe { &*(pod as *const <T as BitPattern>::Bits as *const T) })
-    }
-    else
-    {
+    } else {
         Err(BitError::InvalidBitPattern)
     }
 }
@@ -169,7 +154,9 @@ pub fn try_from_bytes<T: BitPattern>(bytes: &[u8]) -> BitResult<&T>
 /// This is [`try_from_bytes`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn from_bytes<T: BitPattern>(bytes: &[u8]) -> &T { try_from_bytes(bytes).expect("invalid bits pattern") }
+pub fn from_bytes<T: BitPattern>(bytes: &[u8]) -> &T {
+    try_from_bytes(bytes).expect("invalid bits pattern")
+}
 
 /// Re-interprets `&mut [u8]` as `&mut T`.
 ///
@@ -180,18 +167,12 @@ pub fn from_bytes<T: BitPattern>(bytes: &[u8]) -> &T { try_from_bytes(bytes).exp
 ///
 /// Don't check if the bit pattern is valid.
 #[inline(always)]
-pub unsafe fn try_from_bytes_mut_unchecked<T>(bytes: &mut [u8]) -> BitResult<&mut T>
-{
-    if bytes.len() != size_of::<T>()
-    {
+pub unsafe fn try_from_bytes_mut_unchecked<T>(bytes: &mut [u8]) -> BitResult<&mut T> {
+    if bytes.len() != size_of::<T>() {
         Err(BitError::SizeMismatch)
-    }
-    else if !is_aligned_to(bytes.as_mut_ptr() as *mut (), align_of::<T>())
-    {
+    } else if !is_aligned_to(bytes.as_mut_ptr() as *mut (), align_of::<T>()) {
         Err(BitError::TargetAlignmentGreaterAndInputNotAligned)
-    }
-    else
-    {
+    } else {
         Ok(unsafe { &mut *(bytes.as_mut_ptr() as *mut T) })
     }
 }
@@ -204,15 +185,11 @@ pub unsafe fn try_from_bytes_mut_unchecked<T>(bytes: &mut [u8]) -> BitResult<&mu
 /// * If the slice's length isn’t exactly the size of the new type
 /// * If the slice contains an invalid bit pattern for `T`
 #[inline(always)]
-pub fn try_from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> BitResult<&mut T>
-{
+pub fn try_from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> BitResult<&mut T> {
     let pod = unsafe { try_from_bytes_mut_unchecked(bytes) }?;
-    if <T as BitPattern>::is_bit_pattern_valid(pod)
-    {
+    if <T as BitPattern>::is_bit_pattern_valid(pod) {
         Ok(unsafe { &mut *(pod as *mut <T as BitPattern>::Bits as *mut T) })
-    }
-    else
-    {
+    } else {
         Err(BitError::InvalidBitPattern)
     }
 }
@@ -224,7 +201,9 @@ pub fn try_from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> BitResult<&mut T>
 /// This is [`try_from_bytes`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> &mut T { try_from_bytes_mut(bytes).expect("invalid bits pattern") }
+pub fn from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> &mut T {
+    try_from_bytes_mut(bytes).expect("invalid bits pattern")
+}
 
 /// Try to convert `&[Src]` into `&[Dst]` (possibly with a change in length).
 ///
@@ -240,32 +219,21 @@ pub fn from_bytes_mut<T: BitPattern>(bytes: &mut [u8]) -> &mut T { try_from_byte
 ///   accounting for the size change (eg: 3 `u16` values is 1.5 `u32` values, so
 ///   that's a failure).
 #[inline(always)]
-pub unsafe fn try_transmute_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -> BitResult<&[Dst]>
-{
+pub unsafe fn try_transmute_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -> BitResult<&[Dst]> {
     let input_bytes = core::mem::size_of_val::<[Src]>(src);
 
-    if align_of::<Dst>() > align_of::<Src>() && !is_aligned_to(src.as_ptr() as *const (), align_of::<Dst>())
-    {
+    if align_of::<Dst>() > align_of::<Src>() && !is_aligned_to(src.as_ptr() as *const (), align_of::<Dst>()) {
         Err(BitError::TargetAlignmentGreaterAndInputNotAligned)
-    }
-    else if size_of::<Dst>() == size_of::<Src>()
-    {
+    } else if size_of::<Dst>() == size_of::<Src>() {
         Ok(unsafe { core::slice::from_raw_parts(src.as_ptr() as *const Dst, src.len()) })
-    }
-    else if (size_of::<Dst>() != 0 && input_bytes.is_multiple_of(size_of::<Dst>())) || (size_of::<Dst>() == 0 && input_bytes == 0)
-    {
-        let new_len = if size_of::<Dst>() != 0
-        {
+    } else if (size_of::<Dst>() != 0 && input_bytes.is_multiple_of(size_of::<Dst>())) || (size_of::<Dst>() == 0 && input_bytes == 0) {
+        let new_len = if size_of::<Dst>() != 0 {
             input_bytes / size_of::<Dst>()
-        }
-        else
-        {
+        } else {
             0
         };
         Ok(unsafe { core::slice::from_raw_parts(src.as_ptr() as *const Dst, new_len) })
-    }
-    else
-    {
+    } else {
         Err(BitError::OutputSliceWouldHaveSlop)
     }
 }
@@ -286,16 +254,12 @@ pub unsafe fn try_transmute_slice_unchecked<Src: Copy, Dst: Copy>(src: &[Src]) -
 /// * If any element of the converted slice would contain an invalid bit pattern
 ///   for `B` this fails.
 #[inline(always)]
-pub fn try_transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> BitResult<&[Dst]>
-{
+pub fn try_transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> BitResult<&[Dst]> {
     let pod = unsafe { crate::try_transmute_slice_unchecked(a) }?;
 
-    if pod.iter().all(|pod| <Dst as BitPattern>::is_bit_pattern_valid(pod))
-    {
+    if pod.iter().all(|pod| <Dst as BitPattern>::is_bit_pattern_valid(pod)) {
         Ok(unsafe { core::slice::from_raw_parts(pod.as_ptr() as *const Dst, pod.len()) })
-    }
-    else
-    {
+    } else {
         Err(BitError::InvalidBitPattern)
     }
 }
@@ -307,7 +271,9 @@ pub fn try_transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> BitRe
 /// This is [`try_transmute_slice`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> &[Dst] { try_transmute_slice(a).expect("invalid bits pattern") }
+pub fn transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> &[Dst] {
+    try_transmute_slice(a).expect("invalid bits pattern")
+}
 
 /// Transmute `&mut [Src]` into `&mut [Dst]`.
 ///
@@ -316,8 +282,7 @@ pub fn transmute_slice<Src: BitAllUsed, Dst: BitPattern>(a: &[Src]) -> &[Dst] { 
 /// This is [`try_transmute_slice_mut`] but will panic on error.
 #[inline(always)]
 #[track_caller]
-pub fn transmute_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + BitPattern>(a: &mut [A]) -> &mut [B]
-{
+pub fn transmute_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + BitPattern>(a: &mut [A]) -> &mut [B] {
     try_transmute_slice_mut(a).expect("invalid bits pattern")
 }
 
@@ -325,16 +290,12 @@ pub fn transmute_slice_mut<A: BitAllUsed + BitAnyPattern, B: BitAllUsed + BitPat
 ///
 /// As [`try_transmute_slice`], but `&mut`.
 #[inline(always)]
-pub fn try_transmute_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern + BitAllUsed>(a: &mut [Src]) -> BitResult<&mut [Dst]>
-{
+pub fn try_transmute_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern + BitAllUsed>(a: &mut [Src]) -> BitResult<&mut [Dst]> {
     let pod = unsafe { crate::try_transmute_slice_mut_unchecked(a) }?;
 
-    if pod.iter().all(|pod| <Dst as BitPattern>::is_bit_pattern_valid(pod))
-    {
+    if pod.iter().all(|pod| <Dst as BitPattern>::is_bit_pattern_valid(pod)) {
         Ok(unsafe { core::slice::from_raw_parts_mut(pod.as_mut_ptr() as *mut Dst, pod.len()) })
-    }
-    else
-    {
+    } else {
         Err(BitError::InvalidBitPattern)
     }
 }
@@ -343,32 +304,21 @@ pub fn try_transmute_slice_mut<Src: BitAllUsed + BitAnyPattern, Dst: BitPattern 
 ///
 /// As [`try_transmute_slice`], but `&mut`.
 #[inline(always)]
-pub unsafe fn try_transmute_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut [Src]) -> BitResult<&mut [Dst]>
-{
+pub unsafe fn try_transmute_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut [Src]) -> BitResult<&mut [Dst]> {
     let input_bytes = core::mem::size_of_val::<[Src]>(src);
 
-    if align_of::<Dst>() > align_of::<Src>() && !is_aligned_to(src.as_mut_ptr() as *mut (), align_of::<Dst>())
-    {
+    if align_of::<Dst>() > align_of::<Src>() && !is_aligned_to(src.as_mut_ptr() as *mut (), align_of::<Dst>()) {
         Err(BitError::TargetAlignmentGreaterAndInputNotAligned)
-    }
-    else if size_of::<Dst>() == size_of::<Src>()
-    {
+    } else if size_of::<Dst>() == size_of::<Src>() {
         Ok(unsafe { core::slice::from_raw_parts_mut(src.as_mut_ptr() as *mut Dst, src.len()) })
-    }
-    else if (size_of::<Dst>() != 0 && input_bytes.is_multiple_of(size_of::<Dst>())) || (size_of::<Dst>() == 0 && input_bytes == 0)
-    {
-        let new_len = if size_of::<Dst>() != 0
-        {
+    } else if (size_of::<Dst>() != 0 && input_bytes.is_multiple_of(size_of::<Dst>())) || (size_of::<Dst>() == 0 && input_bytes == 0) {
+        let new_len = if size_of::<Dst>() != 0 {
             input_bytes / size_of::<Dst>()
-        }
-        else
-        {
+        } else {
             0
         };
         Ok(unsafe { core::slice::from_raw_parts_mut(src.as_mut_ptr() as *mut Dst, new_len) })
-    }
-    else
-    {
+    } else {
         Err(BitError::OutputSliceWouldHaveSlop)
     }
 }
@@ -376,14 +326,10 @@ pub unsafe fn try_transmute_slice_mut_unchecked<Src: Copy, Dst: Copy>(src: &mut 
 /// Transmute `Src` into `Dst`
 #[inline(always)]
 #[track_caller]
-pub unsafe fn try_transmute_unchecked<Src: Copy, Dst: Copy>(src: Src) -> BitResult<Dst>
-{
-    if size_of::<Src>() == size_of::<Dst>()
-    {
+pub unsafe fn try_transmute_unchecked<Src: Copy, Dst: Copy>(src: Src) -> BitResult<Dst> {
+    if size_of::<Src>() == size_of::<Dst>() {
         unsafe { Ok(core::mem::transmute_copy(&::core::mem::ManuallyDrop::new(src))) }
-    }
-    else
-    {
+    } else {
         Err(BitError::SizeMismatch)
     }
 }
@@ -391,12 +337,10 @@ pub unsafe fn try_transmute_unchecked<Src: Copy, Dst: Copy>(src: Src) -> BitResu
 /// Transmute `Src` into `Dst`
 #[inline(always)]
 #[track_caller]
-pub fn try_transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> BitResult<Dst>
-{
+pub fn try_transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> BitResult<Dst> {
     let pod = unsafe { try_transmute_unchecked(src)? };
 
-    match <Dst as BitPattern>::from_bits(pod)
-    {
+    match <Dst as BitPattern>::from_bits(pod) {
         Some(val) => Ok(val),
         None => Err(BitError::InvalidBitPattern),
     }
@@ -409,4 +353,6 @@ pub fn try_transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> BitResult<Ds
 /// * This is like [`try_transmute`](try_transmute), but will panic on a size mismatch.
 #[inline(always)]
 #[track_caller]
-pub fn transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> Dst { try_transmute(src).expect("invalid transmute") }
+pub fn transmute<Src: BitAllUsed, Dst: BitPattern>(src: Src) -> Dst {
+    try_transmute(src).expect("invalid transmute")
+}

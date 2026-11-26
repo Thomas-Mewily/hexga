@@ -14,8 +14,7 @@ map_on_operator_binary!(
     }
 );
 
-fn main()
-{
+fn main() {
     let x = X(9) + X(3) * X(4) / X(2);
     assert_eq!(x.0, 9 + 3 * 4 / 2);
     dbg!(&x);

@@ -6,12 +6,10 @@ pub use array::*;
 mod extension;
 pub use extension::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
 }
 
-pub mod traits 
-{
+pub mod traits {
     pub use super::{array::*, extension::*};
 }

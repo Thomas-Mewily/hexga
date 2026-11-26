@@ -1,12 +1,10 @@
 use super::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{UV, Vertex, VertexIndex, traits::*};
 }
 
-pub mod traits
-{}
+pub mod traits {}
 
 pub type VertexIndex = u32;
 
@@ -18,23 +16,20 @@ pub type UV = GVector<2>;
 
 #[repr(C)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, PartialOrd)]
-pub struct VertexOf<const N: usize = 3>
-{
+pub struct VertexOf<const N: usize = 3> {
     pub pos: GVector<N>,
     pub color: GColor,
     pub uv: UV,
 }
 
-pub trait WgpuVertexDesc
-{
+pub trait WgpuVertexDesc {
     fn lib_wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>;
 }
 impl<const N: usize> WgpuVertexDesc for VertexOf<N>
 where
     GVector<N>: WgpuVertex,
 {
-    fn lib_wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static>
-    {
+    fn lib_wgpu_vertex_description() -> wgpu::VertexBufferLayout<'static> {
         wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,
@@ -67,24 +62,26 @@ where
     UV: BitAllUsed,
 {
 }
-impl<const N: usize> VertexOf<N>
-{
-    pub const fn new() -> Self
-    {
+impl<const N: usize> VertexOf<N> {
+    pub const fn new() -> Self {
         Self {
             pos: GVector::ZERO,
             color: GColor::WHITE,
             uv: zero(),
         }
     }
-    pub const fn with_position(self, position: GVector<N>) -> Self { Self { pos: position, ..self } }
-    pub const fn with_color(self, color: GColor) -> Self { Self { color, ..self } }
-    pub const fn with_uv(self, uv: UV) -> Self { Self { uv, ..self } }
+    pub const fn with_position(self, position: GVector<N>) -> Self {
+        Self { pos: position, ..self }
+    }
+    pub const fn with_color(self, color: GColor) -> Self {
+        Self { color, ..self }
+    }
+    pub const fn with_uv(self, uv: UV) -> Self {
+        Self { uv, ..self }
+    }
 }
-impl From<Vertex2> for Vertex3
-{
-    fn from(value: Vertex2) -> Self
-    {
+impl From<Vertex2> for Vertex3 {
+    fn from(value: Vertex2) -> Self {
         Self {
             pos: value.pos.with_z(zero()),
             color: value.color,

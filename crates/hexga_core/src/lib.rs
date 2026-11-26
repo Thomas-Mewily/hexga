@@ -159,8 +159,7 @@ re_export_mod_from_std_or_core!(
 
 // Manually re exported because it contains unstable/experimental feature
 #[cfg(feature = "std")]
-pub mod io
-{
+pub mod io {
     // Struct
     pub use std::io::{
         BufReader, BufWriter, Bytes, Chain, Cursor, Empty, Error, IntoInnerError, IoSlice, IoSliceMut, LineWriter, Lines, PipeReader, PipeWriter, Repeat, Sink,
@@ -184,14 +183,12 @@ re_export_mod_from_std_or_alloc!(thread, fs, path);
 
 use prelude::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{hexga_prelude::*, std_prelude::*};
 }
 
 #[doc(hidden)]
-pub mod modules
-{
+pub mod modules {
     pub use super::{
         accessor,
         allocation,
@@ -237,8 +234,7 @@ pub mod modules
 /// Hexga specific prelude without the std.
 ///
 /// You are probably looking for the `prelude` module.
-pub mod hexga_prelude
-{
+pub mod hexga_prelude {
     #[rustfmt::skip]
     #[allow(unused_imports)]
     pub use super::{
@@ -279,8 +275,7 @@ pub mod hexga_prelude
 /// Hexga specific prelude without the std.
 ///
 /// You are probably looking for the `prelude` module.
-pub mod hexga_traits
-{
+pub mod hexga_traits {
     #[rustfmt::skip]
     #[allow(unused_imports)]
     pub use super::{
@@ -320,8 +315,7 @@ pub mod hexga_traits
 /// Std specific prelude.
 ///
 /// You are probably looking for the `prelude` module.
-pub mod std_prelude
-{
+pub mod std_prelude {
     // todo: use derive_more for Deref, DerefMut ? https://crates.io/crates/derive_more
     pub use core::{
         cmp::Ordering,

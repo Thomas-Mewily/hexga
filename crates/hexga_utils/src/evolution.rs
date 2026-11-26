@@ -1,13 +1,11 @@
 use super::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::PreviousValue;
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{Evolution, EvolutionWithContext};
 }
 
@@ -25,15 +23,21 @@ impl<V> PreviousValue<V>
 where
     V: Copy,
 {
-    pub fn new(value: V, old_value: V) -> Self { Self { value, old_value } }
+    pub fn new(value: V, old_value: V) -> Self {
+        Self { value, old_value }
+    }
 }
 
 impl<T> Evolution<T> for PreviousValue<T>
 where
     T: Copy,
 {
-    fn value(&self) -> T { self.value }
-    fn old_value(&self) -> T { self.old_value }
+    fn value(&self) -> T {
+        self.value
+    }
+    fn old_value(&self) -> T {
+        self.old_value
+    }
 }
 
 pub trait EvolutionWithContext<I, Ctx>
@@ -53,7 +57,9 @@ where
         self.value(ctx) - self.old_value(ctx)
     }
 
-    fn evolution(&self, ctx: &mut Ctx) -> PreviousValue<I> { PreviousValue::new(self.value(ctx), self.old_value(ctx)) }
+    fn evolution(&self, ctx: &mut Ctx) -> PreviousValue<I> {
+        PreviousValue::new(self.value(ctx), self.old_value(ctx))
+    }
 }
 
 pub trait Evolution<I>
@@ -73,7 +79,9 @@ where
         self.value() - self.old_value()
     }
 
-    fn evolution(&self) -> PreviousValue<I> { PreviousValue::new(self.value(), self.old_value()) }
+    fn evolution(&self) -> PreviousValue<I> {
+        PreviousValue::new(self.value(), self.old_value())
+    }
 
     // fn last_time_change(&self) -> T;
     // Delta time since the last change

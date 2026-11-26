@@ -1,7 +1,6 @@
 use hexga_map_on::*;
 
-trait MinusOne
-{
+trait MinusOne {
     const MINUS_ONE: Self;
 }
 
@@ -20,8 +19,7 @@ map_on!
     }
 );
 
-fn main()
-{
+fn main() {
     println!("This example impl the MinusOne trait for a lot of type with ease");
     dbg!(i16::MINUS_ONE);
 

@@ -27,14 +27,12 @@ pub use path_extension::*;
 mod result;
 pub use result::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
     pub use super::{IoData, IoError, IoErrorKind, IoGlobal, IoResult, Path, PathBuf};
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{
         FileSystem,
 

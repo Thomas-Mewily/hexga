@@ -24,12 +24,24 @@ use angle::*;
 pub mod coefficient;
 use coefficient::*;
 
-pub(crate) mod _prelude
-{
-    pub use super::{angle::{Angle, AngleOf}, coefficient::Coef, grid::prelude::*, matrix::prelude::*, rectangle::prelude::*, vector::prelude::*};
+pub(crate) mod _prelude {
+    pub use super::{
+        angle::{Angle, AngleOf},
+        coefficient::Coef,
+        grid::prelude::*,
+        matrix::prelude::*,
+        rectangle::prelude::*,
+        vector::prelude::*,
+    };
 }
 
-pub(crate) mod _traits 
-{
-    pub use super::{angle::{ToAngle,ToAngleComposite}, grid::traits::*, matrix::traits::*, rectangle::prelude::*, transform::*, vector::traits::*};
+pub(crate) mod _traits {
+    pub use super::{
+        angle::{ToAngle, ToAngleComposite},
+        grid::traits::*,
+        matrix::traits::*,
+        rectangle::prelude::*,
+        transform::*,
+        vector::traits::*,
+    };
 }

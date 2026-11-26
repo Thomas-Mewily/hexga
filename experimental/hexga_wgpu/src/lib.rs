@@ -34,8 +34,7 @@ pub use context::*;
 
 use prelude::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::buffer::{GBufferUsage, GBufferUsageFlags};
     pub use super::context::GpuContext;
     pub(crate) use super::experimental::*;
@@ -46,7 +45,6 @@ pub mod prelude
     pub use super::{buffer::prelude::*, render::prelude::*};
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{buffer::prelude::*, render::prelude::*};
 }

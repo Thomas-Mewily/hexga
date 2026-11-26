@@ -1,7 +1,6 @@
 use hexga_map_on::*;
 
-trait Zero
-{
+trait Zero {
     const ZERO: Self;
 }
 
@@ -15,8 +14,7 @@ map_on_number!(
     }
 );
 
-fn main()
-{
+fn main() {
     println!("This example impl the Zero trait for a lot of type with ease");
     dbg!(i16::ZERO);
 

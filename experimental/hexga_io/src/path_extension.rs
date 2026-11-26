@@ -1,64 +1,60 @@
 use super::*;
 
-pub trait GetPath
-{
+pub trait GetPath {
     fn get_path(&self) -> Option<PathBuf>;
 }
 
-impl GetPath for Path
-{
-    fn get_path(&self) -> Option<PathBuf> { Some(self.to_path_buf()) }
+impl GetPath for Path {
+    fn get_path(&self) -> Option<PathBuf> {
+        Some(self.to_path_buf())
+    }
 }
-impl GetPath for Option<&Path>
-{
-    fn get_path(&self) -> Option<PathBuf> { self.map(|p| p.get_path()).flatten() }
+impl GetPath for Option<&Path> {
+    fn get_path(&self) -> Option<PathBuf> {
+        self.map(|p| p.get_path()).flatten()
+    }
 }
-impl<E> GetPath for Result<&Path, E>
-{
-    fn get_path(&self) -> Option<PathBuf>
-    {
-        match self
-        {
+impl<E> GetPath for Result<&Path, E> {
+    fn get_path(&self) -> Option<PathBuf> {
+        match self {
             Ok(p) => Some(p.to_path_buf()),
             Err(_) => None,
         }
     }
 }
 
-impl GetPath for PathBuf
-{
-    fn get_path(&self) -> Option<PathBuf> { Some(self.clone()) }
+impl GetPath for PathBuf {
+    fn get_path(&self) -> Option<PathBuf> {
+        Some(self.clone())
+    }
 }
-impl GetPath for Option<&PathBuf>
-{
-    fn get_path(&self) -> Option<PathBuf> { self.map(|p| p.get_path()).flatten() }
+impl GetPath for Option<&PathBuf> {
+    fn get_path(&self) -> Option<PathBuf> {
+        self.map(|p| p.get_path()).flatten()
+    }
 }
-impl<E> GetPath for Result<&PathBuf, E>
-{
-    fn get_path(&self) -> Option<PathBuf>
-    {
-        match self
-        {
+impl<E> GetPath for Result<&PathBuf, E> {
+    fn get_path(&self) -> Option<PathBuf> {
+        match self {
             Ok(p) => Some((*p).clone()),
             Err(_) => None,
         }
     }
 }
 
-impl GetPath for &str
-{
-    fn get_path(&self) -> Option<PathBuf> { Some(self.into()) }
+impl GetPath for &str {
+    fn get_path(&self) -> Option<PathBuf> {
+        Some(self.into())
+    }
 }
-impl GetPath for Option<&str>
-{
-    fn get_path(&self) -> Option<PathBuf> { self.map(|p| p.into()) }
+impl GetPath for Option<&str> {
+    fn get_path(&self) -> Option<PathBuf> {
+        self.map(|p| p.into())
+    }
 }
-impl<E> GetPath for Result<&str, E>
-{
-    fn get_path(&self) -> Option<PathBuf>
-    {
-        match self
-        {
+impl<E> GetPath for Result<&str, E> {
+    fn get_path(&self) -> Option<PathBuf> {
+        match self {
             Ok(p) => Some(p.into()),
             Err(_) => None,
         }
@@ -74,8 +70,7 @@ impl<P> GetPath for P where P: AsRef<Path>
 }
 */
 
-pub trait SetPath
-{
+pub trait SetPath {
     /// Change the path without moving the old file.
     fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult;
 
@@ -83,25 +78,21 @@ pub trait SetPath
     /// Do not change the file path if the renaming failed.
     fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult;
 }
-impl SetPath for PathBuf
-{
-    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
-    {
-        if let Some(new_path) = path
-        {
+impl SetPath for PathBuf {
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult {
+        if let Some(new_path) = path {
             *self = new_path.as_ref().to_owned();
         }
         Ok(())
     }
 
-    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult { self.set_path(Some(to)) }
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult {
+        self.set_path(Some(to))
+    }
 }
-impl SetPath for String
-{
-    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
-    {
-        if let Some(new_path) = path
-        {
+impl SetPath for String {
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult {
+        if let Some(new_path) = path {
             *self = new_path
                 .as_ref()
                 .to_str()
@@ -110,7 +101,9 @@ impl SetPath for String
         }
         Ok(())
     }
-    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult { self.set_path(Some(to)) }
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult {
+        self.set_path(Some(to))
+    }
 }
 
 /*

@@ -1,7 +1,6 @@
 use super::*;
 
-pub trait IterSample<I = usize>
-{
+pub trait IterSample<I = usize> {
     type Output: Iterator<Item = Self::Item> + DoubleEndedIterator + FusedIterator;
     type Item;
     fn sample(self, nb_sample: I) -> Self::Output;
@@ -19,7 +18,9 @@ where
     T: RangeDefault,
     Range<T>: IterSample<I>,
 {
-    fn sample(nb_sample: I) -> <Range<Self> as IterSample<I>>::Output { (Self::RANGE_MIN..Self::RANGE_MAX).sample(nb_sample) }
+    fn sample(nb_sample: I) -> <Range<Self> as IterSample<I>>::Output {
+        (Self::RANGE_MIN..Self::RANGE_MAX).sample(nb_sample)
+    }
 }
 pub trait IterSampleDefaultInclusive<I = usize>: RangeDefault
 where
@@ -33,7 +34,9 @@ where
     T: RangeDefault,
     RangeInclusive<T>: IterSample<I>,
 {
-    fn sample_inclusive(nb_sample: I) -> <RangeInclusive<Self> as IterSample<I>>::Output { (Self::RANGE_MIN..=Self::RANGE_MAX).sample(nb_sample) }
+    fn sample_inclusive(nb_sample: I) -> <RangeInclusive<Self> as IterSample<I>>::Output {
+        (Self::RANGE_MIN..=Self::RANGE_MAX).sample(nb_sample)
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -58,16 +61,12 @@ where
 {
     type Item = U;
 
-    fn next(&mut self) -> Option<Self::Item>
-    {
-        if self.idx < self.nb
-        {
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx < self.nb {
             let val = self.begin.inner_value() + self.idx.cast_into() * self.step.inner_value();
             self.idx.increment();
             Some(U::from_inner_value(val.clamp_partial(self.begin.inner_value(), self.end.inner_value())))
-        }
-        else
-        {
+        } else {
             None
         }
     }
@@ -78,16 +77,12 @@ where
     I: Number + CastInto<U::Precision>,
     U: Unit,
 {
-    fn next_back(&mut self) -> Option<Self::Item>
-    {
-        if self.idx < self.nb
-        {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.idx < self.nb {
             self.nb.decrement();
             let val = self.begin.inner_value() + self.nb.cast_into() * self.step.inner_value();
             Some(U::from_inner_value(val.clamp_partial(self.begin.inner_value(), self.end.inner_value())))
-        }
-        else
-        {
+        } else {
             None
         }
     }
@@ -107,15 +102,11 @@ where
     type Output = RangeSample<I, U>;
     type Item = U;
 
-    fn sample(self, nb_sample: I) -> Self::Output
-    {
+    fn sample(self, nb_sample: I) -> Self::Output {
         let (start, end) = (self.start, self.end);
-        let step = if nb_sample <= one()
-        {
+        let step = if nb_sample <= one() {
             U::Precision::ZERO
-        }
-        else
-        {
+        } else {
             (end.inner_value() - start.inner_value()) / nb_sample.cast_into()
         };
         RangeSample {
@@ -136,15 +127,11 @@ where
     type Output = RangeSample<I, U>;
     type Item = U;
 
-    fn sample(self, nb_sample: I) -> Self::Output
-    {
+    fn sample(self, nb_sample: I) -> Self::Output {
         let (start, end) = self.into_inner();
-        let step = if nb_sample <= one()
-        {
+        let step = if nb_sample <= one() {
             U::Precision::ZERO
-        }
-        else
-        {
+        } else {
             (end.inner_value() - start.inner_value()) / (nb_sample - I::ONE).cast_into()
         };
         RangeSample {
@@ -165,7 +152,9 @@ where
     type Output = RangeSample<I, U>;
     type Item = U;
 
-    fn sample(self, nb_sample: I) -> Self::Output { (U::RANGE_MIN..self.end).sample(nb_sample) }
+    fn sample(self, nb_sample: I) -> Self::Output {
+        (U::RANGE_MIN..self.end).sample(nb_sample)
+    }
 }
 impl<I, U> IterSample<I> for RangeToInclusive<U>
 where
@@ -175,7 +164,9 @@ where
     type Output = RangeSample<I, U>;
     type Item = U;
 
-    fn sample(self, nb_sample: I) -> Self::Output { (U::RANGE_MIN..=self.end).sample(nb_sample) }
+    fn sample(self, nb_sample: I) -> Self::Output {
+        (U::RANGE_MIN..=self.end).sample(nb_sample)
+    }
 }
 
 impl<I, U> IterSample<I> for RangeFrom<U>
@@ -186,5 +177,7 @@ where
     type Output = RangeSample<I, U>;
     type Item = U;
 
-    fn sample(self, nb_sample: I) -> Self::Output { (self.start..=U::RANGE_MAX).sample(nb_sample) }
+    fn sample(self, nb_sample: I) -> Self::Output {
+        (self.start..=U::RANGE_MAX).sample(nb_sample)
+    }
 }

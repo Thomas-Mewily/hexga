@@ -1,8 +1,7 @@
 use super::*;
 
 /// Mostly used for indexing from some ID, for a single element.
-pub trait IndexID<C>: Sized
-{
+pub trait IndexID<C>: Sized {
     #[inline(always)]
     fn get(self, collection: &C) -> Option<<C as CollectionIndex<Self>>::Ref<'_>>
     where

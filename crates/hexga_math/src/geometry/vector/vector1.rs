@@ -2,68 +2,79 @@ use super::*;
 
 /// 1 dimension: x
 #[repr(C)]
-pub struct CoordX<T>
-{
+pub struct CoordX<T> {
     pub x: T,
 }
-impl<T> Deref for Vector<T, 1>
-{
+impl<T> Deref for Vector<T, 1> {
     type Target = CoordX<T>;
-    fn deref(&self) -> &Self::Target { unsafe { std::mem::transmute(self) } }
+    fn deref(&self) -> &Self::Target {
+        unsafe { std::mem::transmute(self) }
+    }
 }
-impl<T> DerefMut for Vector<T, 1>
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { unsafe { std::mem::transmute(self) } }
+impl<T> DerefMut for Vector<T, 1> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { std::mem::transmute(self) }
+    }
 }
 
 pub type Vector1<T> = Vector<T, 1>;
 
 impl<T> Vector<T, 1> // Hardcode N here otherwise rust-analyser will not like it
 {
-    pub const fn new(x: T) -> Self { Self::from_array([x]) }
-    pub fn with_y(self, y: T) -> Vector2<T>
-    {
+    pub const fn new(x: T) -> Self {
+        Self::from_array([x])
+    }
+    pub fn with_y(self, y: T) -> Vector2<T> {
         let [x] = self.array;
         Vector2::new(x, y)
     }
 }
 
-pub trait SplatCoord1: Sized + Copy
-{
-    fn splat1(self) -> Vector1<Self> { Vector1::splat(self) }
+pub trait SplatCoord1: Sized + Copy {
+    fn splat1(self) -> Vector1<Self> {
+        Vector1::splat(self)
+    }
 }
 impl<T: Copy> SplatCoord1 for T {}
 
-impl<T> From<(T,)> for Vector1<T>
-{
-    fn from(value: (T,)) -> Self { Vector1::new(value.0) }
+impl<T> From<(T,)> for Vector1<T> {
+    fn from(value: (T,)) -> Self {
+        Vector1::new(value.0)
+    }
 }
-impl<T> From<Vector1<T>> for (T,)
-{
-    fn from(value: Vector1<T>) -> Self
-    {
+impl<T> From<Vector1<T>> for (T,) {
+    fn from(value: Vector1<T>) -> Self {
         let [x] = value.array;
         (x,)
     }
 }
 
-pub const fn vector1<T>(x: T) -> Vector1<T> { Vector1::new(x) }
+pub const fn vector1<T>(x: T) -> Vector1<T> {
+    Vector1::new(x)
+}
 
 pub type Vec1b = VecB<1>;
-pub const fn vec1b(x: bool) -> Vec1b { Vec1b::new(x) }
+pub const fn vec1b(x: bool) -> Vec1b {
+    Vec1b::new(x)
+}
 
 pub type Vec1 = Vector1<float>;
-pub const fn vec1(x: float) -> Vec1 { Vec1::new(x) }
+pub const fn vec1(x: float) -> Vec1 {
+    Vec1::new(x)
+}
 pub type Coef1 = Vec1;
 
 pub type Vec1i = VecI<1>;
-pub const fn vec1i(x: int) -> Vec1i { Vec1i::new(x) }
+pub const fn vec1i(x: int) -> Vec1i {
+    Vec1i::new(x)
+}
 
 pub type Vec1u = VecU<1>;
-pub const fn vec1u(x: uint) -> Vec1u { Vec1u::new(x) }
+pub const fn vec1u(x: uint) -> Vec1u {
+    Vec1u::new(x)
+}
 
-impl<T> HaveX<T> for Vector1<T>
-{
+impl<T> HaveX<T> for Vector1<T> {
     fn iter_x<'a>(&'a self) -> impl Iterator<Item = &'a T>
     where
         T: 'a,
@@ -91,26 +102,20 @@ where
     const MINUS_X: Self = Vector1::new(T::MINUS_ONE);
 }
 
-impl<T> From<Vector2<T>> for Vector1<T>
-{
-    fn from(value: Vector2<T>) -> Self
-    {
+impl<T> From<Vector2<T>> for Vector1<T> {
+    fn from(value: Vector2<T>) -> Self {
         let [x, ..] = value.to_array();
         Self::new(x)
     }
 }
-impl<T> From<Vector3<T>> for Vector1<T>
-{
-    fn from(value: Vector3<T>) -> Self
-    {
+impl<T> From<Vector3<T>> for Vector1<T> {
+    fn from(value: Vector3<T>) -> Self {
         let [x, ..] = value.to_array();
         Self::new(x)
     }
 }
-impl<T> From<Vector4<T>> for Vector1<T>
-{
-    fn from(value: Vector4<T>) -> Self
-    {
+impl<T> From<Vector4<T>> for Vector1<T> {
+    fn from(value: Vector4<T>) -> Self {
         let [x, ..] = value.to_array();
         Self::new(x)
     }
@@ -118,13 +123,11 @@ impl<T> From<Vector4<T>> for Vector1<T>
 
 pub type Vector1Iter<T> = VectorIter<Vector1<T>, 1>;
 
-pub(crate) mod prelude
-{
-    pub use super::{Vec1, Vec1b, Vec1i, Vec1u, Vector1, vec1, vec1b, vec1i, vec1u, vector1};
+pub(crate) mod prelude {
     pub use super::traits::*;
+    pub use super::{Vec1, Vec1b, Vec1i, Vec1u, Vector1, vec1, vec1b, vec1i, vec1u, vector1};
 }
 
-pub(crate) mod traits
-{
-    pub use super::{SplatCoord1};
+pub(crate) mod traits {
+    pub use super::SplatCoord1;
 }

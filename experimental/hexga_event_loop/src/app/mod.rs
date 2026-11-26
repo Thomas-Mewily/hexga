@@ -18,8 +18,7 @@ pub use theme::*;
 mod event_loop;
 pub use event_loop::*;
 
-pub mod experimental
-{
+pub mod experimental {
     use super::*;
 
     pub type WinitEventLoopProxy<CustomEvent> = ::winit::event_loop::EventLoopProxy<AppMessage<CustomEvent>>;
@@ -30,8 +29,7 @@ pub mod experimental
     pub(crate) use ::winit::event as WinitEvent;
 }
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::app::EventLoop;
     pub use super::event::{AppEvent, AppFlow, AppMessage};
     pub use super::runner::{AppControlFlow, AppShortcut, EventLoopParam};
@@ -43,8 +41,7 @@ pub mod prelude
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::app::{App, AppSendEvent};
     pub use super::event::IAppEvent;
     pub use super::runner::{AppRunRaw, WithAppParam, WithAppShortcut};
@@ -54,8 +51,7 @@ pub mod traits
 pub type AppResult<T = ()> = Result<T, AppError>;
 pub type AppError = ();
 
-pub fn init_if_needed()
-{
+pub fn init_if_needed() {
     crash::init_if_needed();
     log::init_if_needed();
 }

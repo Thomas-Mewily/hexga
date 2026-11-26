@@ -1,21 +1,16 @@
 use hexga_map_on::*;
 
-trait Foo
-{
+trait Foo {
     fn foo();
 }
 
-impl Foo for i32
-{
-    fn foo()
-    {
+impl Foo for i32 {
+    fn foo() {
         println!("foo from i32");
     }
 }
-impl Foo for bool
-{
-    fn foo()
-    {
+impl Foo for bool {
+    fn foo() {
         println!("foo from bool");
     }
 }
@@ -39,8 +34,7 @@ macro_rules! impl_foo {
 
 map_on_tuple!(impl_foo);
 
-fn main()
-{
+fn main() {
     <i32>::foo();
     <bool>::foo();
 

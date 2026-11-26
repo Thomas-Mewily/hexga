@@ -55,30 +55,24 @@ where
     F: AppInit<A>,
     A: for<'a> App<(), AppCtx<'a>>,
 {
-    fn exit(&mut self)
-    {
+    fn exit(&mut self) {
         WINDOW.reset();
         self.app = None;
     }
 
-    fn init_stuff_if_needed(&mut self)
-    {
+    fn init_stuff_if_needed(&mut self) {
         self.init_graphics_if_needed();
         self.init_app_if_needed();
     }
 
-    fn init_graphics_if_needed(&mut self)
-    {
-        if CurrentWindow::is_not_init() || Gpu::is_not_init()
-        {
+    fn init_graphics_if_needed(&mut self) {
+        if CurrentWindow::is_not_init() || Gpu::is_not_init() {
             return;
         }
 
-        if GRAPHICS.try_get_mut().is_err()
-        {
+        if GRAPHICS.try_get_mut().is_err() {
             let mut w = WINDOW.get_mut();
-            if let Some(surface) = w.surface()
-            {
+            if let Some(surface) = w.surface() {
                 GRAPHICS
                     .init_from_fn(|| Graphics::new(surface.surface(), w.size()))
                     .ok_or_void()
@@ -87,19 +81,14 @@ where
         }
     }
 
-    fn init_app_if_needed(&mut self)
-    {
-        if self.app.is_some() || Gpu::is_not_init()
-        {
+    fn init_app_if_needed(&mut self) {
+        if self.app.is_some() || Gpu::is_not_init() {
             return;
         }
 
-        match WINDOW.try_get_mut()
-        {
-            Ok(mut w) =>
-            {
-                if w.surface().is_some()
-                {
+        match WINDOW.try_get_mut() {
+            Ok(mut w) => {
+                if w.surface().is_some() {
                     let mut app = (self.init)();
                     app.message(AppMessage::Event(AppEvent::WindowOpen), &mut ());
                     app.message(AppMessage::Flow(AppFlow::Resume), &mut ());
@@ -107,8 +96,7 @@ where
                     w.request_draw();
                 }
             }
-            Err(e) =>
-            {}
+            Err(e) => {}
         }
     }
 }
@@ -118,7 +106,9 @@ where
     F: AppInit<A>,
     A: for<'a> App<(), AppCtx<'a>>,
 {
-    fn drop(&mut self) { self.exit(); }
+    fn drop(&mut self) {
+        self.exit();
+    }
 }
 
 impl<'a, F, A> App<AppCustomEvent, AppInternalEventLoop<'a>> for AppRunner<F, A>
@@ -126,28 +116,32 @@ where
     F: AppInit<A>,
     A: App<(), AppCtx<'a>>,
 {
-    fn update(&mut self, dt: Duration, _event_loop: &mut AppInternalEventLoop<'a>)
-    {
-        if let Some(app) = &mut self.app { app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ()); }
-    }
-
-    fn draw(&mut self, _event_loop: &mut AppInternalEventLoop<'a>)
-    {
-        if let Some(app) = &mut self.app
-        {
-            if WINDOW.try_get_mut().ok().and_then(|window| window.surface().map(|_| ())).is_none() { return; }
-            if let Ok(mut graphics) = GRAPHICS.try_get_mut() { graphics.begin_draw(); } else { return; }
-            app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
-            if let Ok(mut graphics) = GRAPHICS.try_get_mut() { graphics.end_draw(); }
+    fn update(&mut self, dt: Duration, _event_loop: &mut AppInternalEventLoop<'a>) {
+        if let Some(app) = &mut self.app {
+            app.message(AppMessage::Flow(AppFlow::Update(dt)), &mut ());
         }
     }
 
-    fn message(&mut self, message: AppInternalMessage, event_loop: &mut AppInternalEventLoop<'a>) -> Option<AppInternalMessage>
-    {
-        match message
-        {
-            AppMessage::Custom(AppCustomEvent::SurfaceReady(surface)) =>
-            {
+    fn draw(&mut self, _event_loop: &mut AppInternalEventLoop<'a>) {
+        if let Some(app) = &mut self.app {
+            if WINDOW.try_get_mut().ok().and_then(|window| window.surface().map(|_| ())).is_none() {
+                return;
+            }
+            if let Ok(mut graphics) = GRAPHICS.try_get_mut() {
+                graphics.begin_draw();
+            } else {
+                return;
+            }
+            app.message(AppMessage::Flow(AppFlow::Draw), &mut ());
+            if let Ok(mut graphics) = GRAPHICS.try_get_mut() {
+                graphics.end_draw();
+            }
+        }
+    }
+
+    fn message(&mut self, message: AppInternalMessage, event_loop: &mut AppInternalEventLoop<'a>) -> Option<AppInternalMessage> {
+        match message {
+            AppMessage::Custom(AppCustomEvent::SurfaceReady(surface)) => {
                 let mut window = WINDOW.try_get_mut().ok()?;
                 let size = window.size();
                 window.replace_surface(Some(GpuSurfaceConfigured::from_surface(surface, size)));
@@ -157,8 +151,7 @@ where
                 self.init_stuff_if_needed();
                 None
             }
-            AppMessage::Custom(AppCustomEvent::GpuReady(gpu)) =>
-            {
+            AppMessage::Custom(AppCustomEvent::GpuReady(gpu)) => {
                 hexga_graphics::gpu::experimental::GPU.init(gpu).ok_or_void().expect("Can't init the gpu");
                 assert!(Gpu::is_init());
                 self.init_stuff_if_needed();
@@ -169,8 +162,7 @@ where
         }
     }
 
-    fn event(&mut self, ev: AppEvent, event_loop: &mut AppInternalEventLoop<'a>) -> Option<AppEvent>
-    {
+    fn event(&mut self, ev: AppEvent, event_loop: &mut AppInternalEventLoop<'a>) -> Option<AppEvent> {
         if matches!(ev, AppEvent::WindowResize(_))
             && let Ok(mut window) = WINDOW.try_get_mut()
         {
@@ -179,15 +171,13 @@ where
         let Some(event) = self.app.as_mut()?.message(ev.into(), &mut ()) else {
             return None;
         };
-        match event
-        {
+        match event {
             AppMessage::Event(event) => Some(event),
             _ => None,
         }
     }
 
-    fn resume(&mut self, event_loop: &mut AppInternalEventLoop<'a>)
-    {
+    fn resume(&mut self, event_loop: &mut AppInternalEventLoop<'a>) {
         let mut created = false;
         let mut window = WINDOW
             .init_from_fn(|| {
@@ -197,19 +187,27 @@ where
             .ok_or_void()
             .expect("can't init the main window");
 
-        if created || window.surface().is_none() { window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface"); }
-        if let Some(app) = &mut self.app { app.message(AppMessage::Flow(AppFlow::Resume), &mut ()); }
+        if created || window.surface().is_none() {
+            window.initialize_surface(&self.param.gpu, event_loop).expect("failed to init the surface");
+        }
+        if let Some(app) = &mut self.app {
+            app.message(AppMessage::Flow(AppFlow::Resume), &mut ());
+        }
     }
 
-    fn pause(&mut self, _event_loop: &mut AppInternalEventLoop<'a>)
-    {
-        if let Some(app) = &mut self.app { app.message(AppMessage::Flow(AppFlow::Pause), &mut ()); }
-        if let Ok(mut window) = WINDOW.try_get_mut() { window.destroy_surface(); }
+    fn pause(&mut self, _event_loop: &mut AppInternalEventLoop<'a>) {
+        if let Some(app) = &mut self.app {
+            app.message(AppMessage::Flow(AppFlow::Pause), &mut ());
+        }
+        if let Ok(mut window) = WINDOW.try_get_mut() {
+            window.destroy_surface();
+        }
     }
 
-    fn exit(&mut self, _event_loop: &mut AppInternalEventLoop<'a>)
-    {
-        if let Some(app) = &mut self.app { app.message(AppMessage::Flow(AppFlow::Exit), &mut ()); }
+    fn exit(&mut self, _event_loop: &mut AppInternalEventLoop<'a>) {
+        if let Some(app) = &mut self.app {
+            app.message(AppMessage::Flow(AppFlow::Exit), &mut ());
+        }
         AppRunner::exit(self);
     }
 }

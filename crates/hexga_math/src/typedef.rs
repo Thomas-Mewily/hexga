@@ -11,18 +11,21 @@ macro_rules! impl_cast_into {
     ) => {
         /// Helper trait based on [`CastInto`] and [`CastRangeInto`]
         /// Also work on composite like [`std::array`], [`Vector`]...
-        pub trait $trait_name: $target_trait_name
-        {
+        pub trait $trait_name: $target_trait_name {
             /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)
             /// keyword: `4f32 as u64`, and the [`From`] trait, but generic friendly.
             ///
             /// Like the [`as`](https://practice.course.rs/type-conversions/as.html) keyword, the result might lose some precision.
             #[inline]
-            fn $fn_map_name(self) -> Self::Output { self.$target_fn_map_name() }
+            fn $fn_map_name(self) -> Self::Output {
+                self.$target_fn_map_name()
+            }
             /// Remap the value [`RangeDefault`] to the [`RangeDefault`] of the target type,
             /// in a generic friendly way, and similar to the [`From`] trait.
             #[inline]
-            fn $fn_map_range_name(self) -> Self::Output { self.$target_fn_map_range_name() }
+            fn $fn_map_range_name(self) -> Self::Output {
+                self.$target_fn_map_range_name()
+            }
         }
         impl<T> $trait_name for T where T: $target_trait_name {}
     };

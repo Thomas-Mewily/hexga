@@ -14,8 +14,12 @@ impl<Idx, const N: usize> RectangleIter<Idx, N>
 where
     Idx: Integer,
 {
-    pub fn new(rect: Rectangle<Idx, N>) -> Self { Self::from_vec_iter(rect.pos, rect.size.iter_index()) }
-    pub const fn from_vec_iter(offset: Vector<Idx, N>, iter: VectorIter<Idx, N>) -> Self { Self { offset, iter } }
+    pub fn new(rect: Rectangle<Idx, N>) -> Self {
+        Self::from_vec_iter(rect.pos, rect.size.iter_index())
+    }
+    pub const fn from_vec_iter(offset: Vector<Idx, N>, iter: VectorIter<Idx, N>) -> Self {
+        Self { offset, iter }
+    }
 }
 
 impl<Idx, const N: usize> Iterator for RectangleIter<Idx, N>
@@ -24,9 +28,13 @@ where
 {
     type Item = <VectorIter<Idx, N> as Iterator>::Item;
 
-    fn next(&mut self) -> Option<Self::Item> { self.iter.next().map(|v| v + self.offset) }
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next().map(|v| v + self.offset)
+    }
 
-    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 impl<Idx, const N: usize> std::iter::FusedIterator for RectangleIter<Idx, N>

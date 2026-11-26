@@ -1,10 +1,15 @@
 use super::*;
 
-pub trait CollectTo<T>: Sized + IntoIterator<Item = T>
-{
-    fn to_vec(self) -> Vec<T> { self.into_iter().collect() }
-    fn to_linkedlist(self) -> LinkedList<T> { self.into_iter().collect() }
-    fn to_vecdeque(self) -> VecDeque<T> { self.into_iter().collect() }
+pub trait CollectTo<T>: Sized + IntoIterator<Item = T> {
+    fn to_vec(self) -> Vec<T> {
+        self.into_iter().collect()
+    }
+    fn to_linkedlist(self) -> LinkedList<T> {
+        self.into_iter().collect()
+    }
+    fn to_vecdeque(self) -> VecDeque<T> {
+        self.into_iter().collect()
+    }
     #[cfg(feature = "std")]
     fn to_hashset(self) -> HashSet<T>
     where
@@ -21,8 +26,7 @@ pub trait CollectTo<T>: Sized + IntoIterator<Item = T>
 }
 impl<I, T> CollectTo<T> for I where I: IntoIterator<Item = T> {}
 
-pub trait CollectToMap<T1, T2>: Sized + IntoIterator<Item = (T1, T2)>
-{
+pub trait CollectToMap<T1, T2>: Sized + IntoIterator<Item = (T1, T2)> {
     #[cfg(feature = "std")]
     fn to_hashmap(self) -> HashMap<T1, T2>
     where

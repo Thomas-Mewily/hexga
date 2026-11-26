@@ -14,23 +14,19 @@ pub type DeducedExtension<'a> = CowExtension<'a>;
 /// Supported markup formats.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum FormatMarkup
-{
+pub enum FormatMarkup {
     Ron,
     Json,
     Xml,
 }
 
-impl FormatMarkup
-{
+impl FormatMarkup {
     // Todo: add a feature flag
     pub const PREFERED: Self = Self::Ron;
     pub const ALL: &'static [Self] = &[Self::Ron, Self::Json, Self::Xml];
 
-    pub const fn extension(self) -> &'static str
-    {
-        match self
-        {
+    pub const fn extension(self) -> &'static str {
+        match self {
             Self::Ron => Extension::RON,
             Self::Json => Extension::JSON,
             Self::Xml => Extension::XML,
@@ -38,13 +34,13 @@ impl FormatMarkup
     }
 }
 
-impl Default for FormatMarkup
-{
-    fn default() -> Self { Self::PREFERED }
+impl Default for FormatMarkup {
+    fn default() -> Self {
+        Self::PREFERED
+    }
 }
 
-pub trait CommonExtensions
-{
+pub trait CommonExtensions {
     const TXT: &'static str = "txt";
 
     const RON: &'static str = "ron";
@@ -60,19 +56,16 @@ pub trait CommonExtensions
 }
 impl CommonExtensions for Extension {}
 
-pub(crate) mod prelude
-{
+pub(crate) mod prelude {
     pub use super::traits::*;
     pub use super::{CommonExtensions, Extension, extension};
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{FsResolvePathWithExtension, PreferedExtension};
 }
 
-pub trait FsResolvePathWithExtension: FileSystemRead
-{
+pub trait FsResolvePathWithExtension: FileSystemRead {
     /// Resolve incomplete file extension by finding the matching file on disk.
     /// If no file exist with the same name, return the path with the prefered extension.
     fn resolve_path_for<T, P: AsRef<Path>>(&mut self, path: P) -> PathBuf
@@ -83,8 +76,7 @@ pub trait FsResolvePathWithExtension: FileSystemRead
         let mut path = self
             .resolve_path(path)
             .unwrap_or_else(|_| self.canonicalize(path).unwrap_or_else(|_| path.to_path_buf()));
-        if path.extension().is_none()
-        {
+        if path.extension().is_none() {
             path.set_extension(T::prefered_extension());
         }
         path
@@ -92,8 +84,9 @@ pub trait FsResolvePathWithExtension: FileSystemRead
 }
 impl<T> FsResolvePathWithExtension for T where T: FileSystemRead {}
 
-pub trait PreferedExtension: Save
-{
-    fn prefered_extension() -> &'static extension { Self::save_prefered_extension() }
+pub trait PreferedExtension: Save {
+    fn prefered_extension() -> &'static extension {
+        Self::save_prefered_extension()
+    }
 }
 impl<T> PreferedExtension for T where T: Save + ?Sized {}

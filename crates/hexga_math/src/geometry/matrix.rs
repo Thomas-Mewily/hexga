@@ -1,21 +1,12 @@
 use super::*;
 
-pub mod prelude
-{
-    pub use super::{
-        Matrix, 
-        Matrix1, Matrix2, Matrix3, Matrix4,
-        Mat,
-        Mat1, Mat2, Mat3, Mat4,
-        Mat1i, Mat2i, Mat3i, Mat4i,
-        MatrixSquare
-    };
+pub mod prelude {
     pub use super::traits::*;
+    pub use super::{Mat, Mat1, Mat1i, Mat2, Mat2i, Mat3, Mat3i, Mat4, Mat4i, Matrix, Matrix1, Matrix2, Matrix3, Matrix4, MatrixSquare};
 }
 
-pub mod traits
-{
-    pub use super::{MatrixStackExtension, MatrixStackPush, MatrixStackDup, MatrixStackPop};
+pub mod traits {
+    pub use super::{MatrixStackDup, MatrixStackExtension, MatrixStackPop, MatrixStackPush};
 }
 
 /// 1x1 matrix
@@ -57,8 +48,7 @@ pub type MatrixSquare<T, const N: usize> = Matrix<T, N, N>;
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
-pub struct Matrix<T, const ROW: usize, const COL: usize>
-{
+pub struct Matrix<T, const ROW: usize, const COL: usize> {
     pub columns: Vector<Vector<T, ROW>, COL>,
 }
 
@@ -70,24 +60,26 @@ where
     [[T::Bits; ROW]; COL]: BitAnyPattern,
 {
     type Bits = [[T::Bits; ROW]; COL];
-    fn is_bit_pattern_valid(bits_col: &Self::Bits) -> bool { bits_col.iter().all(|bits_row| bits_row.iter().all(|b| T::is_bit_pattern_valid(b))) }
+    fn is_bit_pattern_valid(bits_col: &Self::Bits) -> bool {
+        bits_col.iter().all(|bits_row| bits_row.iter().all(|b| T::is_bit_pattern_valid(b)))
+    }
 }
 
-impl<T, const ROW: usize, const COL: usize> Deref for Matrix<T, ROW, COL>
-{
+impl<T, const ROW: usize, const COL: usize> Deref for Matrix<T, ROW, COL> {
     type Target = Vector<Vector<T, ROW>, COL>;
-    fn deref(&self) -> &Self::Target { &self.columns }
+    fn deref(&self) -> &Self::Target {
+        &self.columns
+    }
 }
 
-impl<T, const ROW: usize, const COL: usize> DerefMut for Matrix<T, ROW, COL>
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.columns }
+impl<T, const ROW: usize, const COL: usize> DerefMut for Matrix<T, ROW, COL> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.columns
+    }
 }
 
-impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
-{
-    fn _fmt(&self, f: &mut Formatter<'_>, d: impl Fn(&T, &mut Formatter<'_>) -> FmtResult) -> FmtResult
-    {
+impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL> {
+    fn _fmt(&self, f: &mut Formatter<'_>, d: impl Fn(&T, &mut Formatter<'_>) -> FmtResult) -> FmtResult {
         writeln!(f)?;
         const SEP: &str = " ";
 
@@ -95,10 +87,8 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
 
         let mut width = 0;
 
-        for c in 0..COL
-        {
-            for r in 0..ROW
-            {
+        for c in 0..COL {
+            for r in 0..ROW {
                 strings.push(___());
                 use std::fmt::Write;
                 let mut s = String::new();
@@ -108,10 +98,8 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
             }
         }
 
-        for c in 0..COL
-        {
-            for r in 0..ROW
-            {
+        for c in 0..COL {
+            for r in 0..ROW {
                 let idx = r * COL + c;
                 write!(f, "{:>width$}{}", strings[idx], SEP, width = width)?;
             }
@@ -126,83 +114,106 @@ impl<T, const ROW: usize, const COL: usize> fmt::Display for Matrix<T, ROW, COL>
 where
     T: fmt::Display,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 impl<T, const ROW: usize, const COL: usize> fmt::Debug for Matrix<T, ROW, COL>
 where
     T: fmt::Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 impl<T, const ROW: usize, const COL: usize> fmt::Octal for Matrix<T, ROW, COL>
 where
     T: fmt::Octal,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 impl<T, const ROW: usize, const COL: usize> fmt::Binary for Matrix<T, ROW, COL>
 where
     T: fmt::Binary,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 impl<T, const ROW: usize, const COL: usize> fmt::LowerHex for Matrix<T, ROW, COL>
 where
     T: fmt::LowerHex,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 impl<T, const ROW: usize, const COL: usize> fmt::UpperHex for Matrix<T, ROW, COL>
 where
     T: fmt::UpperHex,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 impl<T, const ROW: usize, const COL: usize> fmt::LowerExp for Matrix<T, ROW, COL>
 where
     T: fmt::LowerExp,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 impl<T, const ROW: usize, const COL: usize> fmt::UpperExp for Matrix<T, ROW, COL>
 where
     T: fmt::UpperExp,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 impl<T, const ROW: usize, const COL: usize> fmt::Pointer for Matrix<T, ROW, COL>
 where
     T: fmt::Pointer,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { self._fmt(f, T::fmt) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        self._fmt(f, T::fmt)
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> Default for Matrix<T, ROW, COL>
 where
     Vector<Vector<T, ROW>, COL>: Default,
 {
-    fn default() -> Self { Self { columns: ___() } }
+    fn default() -> Self {
+        Self { columns: ___() }
+    }
 }
 
-impl<T, const ROW: usize> Matrix<T, ROW, 1>
-{
+impl<T, const ROW: usize> Matrix<T, ROW, 1> {
     /// From a `Mx1` vector
-    pub const fn from_vector(vector: Vector<T, ROW>) -> Self { Self::from_col(Vector::from_array([vector])) }
+    pub const fn from_vector(vector: Vector<T, ROW>) -> Self {
+        Self::from_col(Vector::from_array([vector]))
+    }
 }
 
-impl<T, const ROW: usize> From<Vector<T, ROW>> for Matrix<T, ROW, 1>
-{
-    fn from(value: Vector<T, ROW>) -> Self { Self::from_vector(value) }
+impl<T, const ROW: usize> From<Vector<T, ROW>> for Matrix<T, ROW, 1> {
+    fn from(value: Vector<T, ROW>) -> Self {
+        Self::from_vector(value)
+    }
 }
 impl<T, const ROW: usize> From<Matrix<T, ROW, 1>> for Vector<T, ROW>
 where
     Vector<T, ROW>: Default,
 {
-    fn from(mut value: Matrix<T, ROW, 1>) -> Self { std::mem::take(&mut value.columns[0]) }
+    fn from(mut value: Matrix<T, ROW, 1>) -> Self {
+        std::mem::take(&mut value.columns[0])
+    }
 }
 
-impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
-{
+impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL> {
     /// Create a matrix from a `fn((columns,row))`
     pub fn from_fn<F>(mut column_then_row: F) -> Self
     where
@@ -227,9 +238,10 @@ impl<T, const ROW: usize, const COL: usize> Matrix<T, ROW, COL>
         Self::from_col_array(std::array::from_fn(|column| std::array::from_fn(|row| row_then_column(row, column))))
     }
 
-    pub const fn from_col(columns: Vector<Vector<T, ROW>, COL>) -> Self { Self { columns } }
-    pub fn from_col_array(columns: [[T; ROW]; COL]) -> Self
-    {
+    pub const fn from_col(columns: Vector<Vector<T, ROW>, COL>) -> Self {
+        Self { columns }
+    }
+    pub fn from_col_array(columns: [[T; ROW]; COL]) -> Self {
         Self {
             columns: Vector::from_array(columns.map(|array| Vector::from_array(array))),
         }
@@ -303,15 +315,16 @@ impl<T, const ROW: usize, const COL: usize> GetMatrix<T, ROW, COL> for Matrix<T,
 where
     Self: Copy,
 {
-    fn matrix(&self) -> Matrix<T, ROW, COL> { *self }
+    fn matrix(&self) -> Matrix<T, ROW, COL> {
+        *self
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> SetMatrix<T, ROW, COL> for Matrix<T, ROW, COL>
 where
     Self: Copy,
 {
-    fn set_matrix(&mut self, matrix: Matrix<T, ROW, COL>) -> &mut Self
-    {
+    fn set_matrix(&mut self, matrix: Matrix<T, ROW, COL>) -> &mut Self {
         *self = matrix;
         self
     }
@@ -402,7 +415,9 @@ where
     }
     */
     /// The last value/component is 0 if it is a relative/vector/delta, 1 if it is fixed/point/position in math terms.
-    pub fn transform(self, value: Vector<T, N>) -> Vector<T, N> { self * value }
+    pub fn transform(self, value: Vector<T, N>) -> Vector<T, N> {
+        self * value
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> Zero for Matrix<T, ROW, COL>
@@ -427,8 +442,7 @@ where
     const ONE: Self = {
         let mut col = [[T::ZERO; N]; N];
         let mut i = 0;
-        while i < N
-        {
+        while i < N {
             col[i][i] = T::ONE;
             i += 1;
         }
@@ -443,8 +457,7 @@ where
     const MINUS_ONE: Self = {
         let mut col = [[T::ZERO; N]; N];
         let mut i = 0;
-        while i < N
-        {
+        while i < N {
             col[i][i] = T::MINUS_ONE;
             i += 1;
         }
@@ -459,8 +472,7 @@ where
     const HALF: Self = {
         let mut col = [[T::ZERO; N]; N];
         let mut i = 0;
-        while i < N
-        {
+        while i < N {
             col[i][i] = T::HALF;
             i += 1;
         }
@@ -473,12 +485,12 @@ where
     T: Copy,
 {
     /// Return the diagonal
-    pub fn diag(&self) -> Vector<T, N> { Vector::from_fn(|i| self[i][i]) }
+    pub fn diag(&self) -> Vector<T, N> {
+        Vector::from_fn(|i| self[i][i])
+    }
     /// Set the value on the diagonal
-    pub fn set_diag(&mut self, diag: Vector<T, N>)
-    {
-        for i in 0..N
-        {
+    pub fn set_diag(&mut self, diag: Vector<T, N>) {
+        for i in 0..N {
             self[i][i] = diag[i];
         }
     }
@@ -505,14 +517,18 @@ where
 {
     type Output = Self;
 
-    fn add(self, rhs: Self) -> Self::Output { Self::from_col(self.columns.add(rhs.columns)) }
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::from_col(self.columns.add(rhs.columns))
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> AddAssign<Self> for Matrix<T, ROW, COL>
 where
     Self: Add<Self, Output = Self> + Copy,
 {
-    fn add_assign(&mut self, rhs: Self) { *self = (*self).add(rhs); }
+    fn add_assign(&mut self, rhs: Self) {
+        *self = (*self).add(rhs);
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> Sub<Self> for Matrix<T, ROW, COL>
@@ -521,28 +537,36 @@ where
 {
     type Output = Self;
 
-    fn sub(self, rhs: Self) -> Self::Output { Self::from_col(self.columns.sub(rhs.columns)) }
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::from_col(self.columns.sub(rhs.columns))
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> SubAssign<Self> for Matrix<T, ROW, COL>
 where
     Self: Sub<Self, Output = Self> + Copy,
 {
-    fn sub_assign(&mut self, rhs: Self) { *self = (*self).sub(rhs); }
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = (*self).sub(rhs);
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> Sum for Matrix<T, ROW, COL>
 where
     Self: Zero + Add<Self, Output = Self>,
 {
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ZERO, Self::add) }
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Self::ZERO, Self::add)
+    }
 }
 
 impl<T, const COL: usize> Product for MatrixSquare<T, COL>
 where
     Self: One + Mul<Self, Output = Self>,
 {
-    fn product<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ONE, Self::mul) }
+    fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Self::ONE, Self::mul)
+    }
 }
 
 /// ```
@@ -567,15 +591,12 @@ where
 {
     type Output = Matrix<T, ROW, COL2>;
 
-    fn mul(self, rhs: Matrix<T, COL, COL2>) -> Self::Output
-    {
+    fn mul(self, rhs: Matrix<T, COL, COL2>) -> Self::Output {
         // I'm not sure if the unrolling is necessary
 
-        match (ROW, COL, COL2)
-        {
+        match (ROW, COL, COL2) {
             // 2x2 case (manual unroll)
-            (2, 2, 2) =>
-            {
+            (2, 2, 2) => {
                 let mut r = Self::Output::ZERO;
 
                 r[0][0] = self[0][0] * rhs[0][0] + self[1][0] * rhs[0][1];
@@ -588,8 +609,7 @@ where
             }
 
             // 3x3 case (manual unroll)
-            (3, 3, 3) =>
-            {
+            (3, 3, 3) => {
                 let mut r = Self::Output::ZERO;
 
                 r[0][0] = self[0][0] * rhs[0][0] + self[1][0] * rhs[0][1] + self[2][0] * rhs[0][2];
@@ -608,8 +628,7 @@ where
             }
 
             // 4x4 case (manual unroll)
-            (4, 4, 4) =>
-            {
+            (4, 4, 4) => {
                 let mut r = Self::Output::ZERO;
 
                 r[0][0] = self[0][0] * rhs[0][0] + self[1][0] * rhs[0][1] + self[2][0] * rhs[0][2] + self[3][0] * rhs[0][3];
@@ -648,8 +667,7 @@ where
 {
     type Output = Vector<T, COL>;
 
-    fn mul(self, rhs: Vector<T, COL>) -> Self::Output
-    {
+    fn mul(self, rhs: Vector<T, COL>) -> Self::Output {
         let m: Matrix<T, COL, 1> = rhs.into();
         let r = self * m;
         r.into()
@@ -660,7 +678,9 @@ impl<T, const COL: usize> MulAssign<Self> for MatrixSquare<T, COL>
 where
     Self: Mul<Self, Output = Self> + Copy,
 {
-    fn mul_assign(&mut self, rhs: Self) { *self = *self * rhs; }
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = *self * rhs;
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> Mul<T> for Matrix<T, ROW, COL>
@@ -669,14 +689,18 @@ where
 {
     type Output = Matrix<T::Output, ROW, COL>;
 
-    fn mul(self, rhs: T) -> Self::Output { Matrix::from_col(self.columns.map_into(|v| v.map_into(|i| i.mul(rhs)))) }
+    fn mul(self, rhs: T) -> Self::Output {
+        Matrix::from_col(self.columns.map_into(|v| v.map_into(|i| i.mul(rhs))))
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> MulAssign<T> for Matrix<T, ROW, COL>
 where
     T: Copy + Mul<T, Output = T>,
 {
-    fn mul_assign(&mut self, rhs: T) { *self = (*self).mul(rhs); }
+    fn mul_assign(&mut self, rhs: T) {
+        *self = (*self).mul(rhs);
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> Div<T> for Matrix<T, ROW, COL>
@@ -685,37 +709,53 @@ where
 {
     type Output = Matrix<T::Output, ROW, COL>;
 
-    fn div(self, rhs: T) -> Self::Output { Matrix::from_col(self.columns.map_into(|v| v.map_into(|i| i.div(rhs)))) }
+    fn div(self, rhs: T) -> Self::Output {
+        Matrix::from_col(self.columns.map_into(|v| v.map_into(|i| i.div(rhs))))
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> DivAssign<T> for Matrix<T, ROW, COL>
 where
     T: Copy + Div<T, Output = T>,
 {
-    fn div_assign(&mut self, rhs: T) { *self = (*self).div(rhs); }
+    fn div_assign(&mut self, rhs: T) {
+        *self = (*self).div(rhs);
+    }
 }
 
 impl<T, const ROW: usize, const COL: usize> Map for Matrix<T, ROW, COL> {
     type Item = T;
-    fn map<F>(self, mut f: F) -> Self where F: FnMut(T) -> T {
+    fn map<F>(self, mut f: F) -> Self
+    where
+        F: FnMut(T) -> T,
+    {
         Matrix::from_col(self.columns.map(|col| col.map(&mut f)))
     }
 }
 impl<T, const ROW: usize, const COL: usize> MapInto for Matrix<T, ROW, COL> {
     type WithType<R> = Matrix<R, ROW, COL>;
-    fn map_into<F, R>(self, mut f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
+    fn map_into<F, R>(self, mut f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
         Matrix::from_col(self.columns.map_into(|col| col.map_into(&mut f)))
     }
 }
 impl<T, const ROW: usize, const COL: usize> MapZip for Matrix<T, ROW, COL> {
-    fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self where F: FnMut([T; M]) -> T {
+    fn map_zip<F, const M: usize>(this: [Self; M], mut f: F) -> Self
+    where
+        F: FnMut([T; M]) -> T,
+    {
         Matrix::from_col(MapZip::map_zip(this.map(|m| m.columns), |column| {
             <Vector<T, ROW> as MapZip>::map_zip(column, &mut f)
         }))
     }
 }
 impl<T, const ROW: usize, const COL: usize> MapZipInto for Matrix<T, ROW, COL> {
-    fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R>
+    where
+        F: FnMut([T; M]) -> R,
+    {
         Matrix::from_col(MapZipInto::map_zip_into(this.map(|m| m.columns), |column| {
             <Vector<T, ROW> as MapZipInto>::map_zip_into(column, &mut f)
         }))
@@ -742,30 +782,24 @@ where
     ///
     /// assert_eq!(m2 * m2_inv, Mat2::IDENTITY);
     /// ```
-    pub fn inverse(mut self) -> Option<Self>
-    {
+    pub fn inverse(mut self) -> Option<Self> {
         let mut augmented = Self::IDENTITY;
 
-        for i in 0..N
-        {
-            if self[i][i] == T::ZERO
-            {
+        for i in 0..N {
+            if self[i][i] == T::ZERO {
                 return None;
             }
 
             let pivot = self[i][i];
 
-            for j in 0..N
-            {
+            for j in 0..N {
                 self[i][j] /= pivot;
                 augmented[i][j] /= pivot;
             }
 
-            for k in (i + 1)..N
-            {
+            for k in (i + 1)..N {
                 let factor = self[k][i];
-                for j in 0..N
-                {
+                for j in 0..N {
                     self[k][j] = self[k][j] - factor * self[i][j];
                     let a = augmented[i][j];
                     augmented[k][j] -= factor * a;
@@ -773,13 +807,10 @@ where
             }
         }
 
-        for i in (0..N).rev()
-        {
-            for k in 0..i
-            {
+        for i in (0..N).rev() {
+            for k in 0..i {
                 let factor = self[k][i];
-                for j in 0..N
-                {
+                for j in 0..N {
                     let a = self[i][j];
                     self[k][j] -= factor * a;
                     let a = augmented[i][j];
@@ -801,29 +832,34 @@ impl<T> MatrixSquare<T, 0>
 where
     T: Numeric + One,
 {
-    pub fn det(&self) -> T { T::ONE }
+    pub fn det(&self) -> T {
+        T::ONE
+    }
 }
 
 impl<T> MatrixSquare<T, 1>
 where
     T: Numeric + One,
 {
-    pub fn det(&self) -> T { self[0][0] }
+    pub fn det(&self) -> T {
+        self[0][0]
+    }
 }
 
 impl<T> MatrixSquare<T, 2>
 where
     T: Numeric + One,
 {
-    pub fn det(&self) -> T { self[0][0] * self[1][1] - self[0][1] * self[1][0] }
+    pub fn det(&self) -> T {
+        self[0][0] * self[1][1] - self[0][1] * self[1][0]
+    }
 }
 
 impl<T> MatrixSquare<T, 3>
 where
     T: Numeric + One,
 {
-    pub fn det(&self) -> T
-    {
+    pub fn det(&self) -> T {
         self[0][0] * (self[1][1] * self[2][2] - self[1][2] * self[2][1]) - self[0][1] * (self[1][0] * self[2][2] - self[1][2] * self[2][0])
             + self[0][2] * (self[1][0] * self[2][1] - self[1][1] * self[2][0])
     }
@@ -833,8 +869,7 @@ impl<T> MatrixSquare<T, 4>
 where
     T: Numeric + One,
 {
-    pub fn det(&self) -> T
-    {
+    pub fn det(&self) -> T {
         let a = self[2][2] * self[3][3] - self[2][3] * self[3][2];
         let b = self[2][1] * self[3][3] - self[2][3] * self[3][1];
         let c = self[2][1] * self[3][2] - self[2][2] * self[3][1];
@@ -850,8 +885,7 @@ where
 
 macro_rules! matrix_have_x {
     ($dim : expr) => {
-        impl<T> HaveX<Vector<T, $dim>> for MatrixSquare<T, $dim>
-        {
+        impl<T> HaveX<Vector<T, $dim>> for MatrixSquare<T, $dim> {
             fn iter_x<'a>(&'a self) -> impl Iterator<Item = &'a Vector<T, $dim>>
             where
                 Vector<T, $dim>: 'a,
@@ -876,8 +910,7 @@ matrix_have_x!(4);
 
 macro_rules! matrix_have_y {
     ($dim : expr) => {
-        impl<T> HaveY<Vector<T, $dim>> for MatrixSquare<T, $dim>
-        {
+        impl<T> HaveY<Vector<T, $dim>> for MatrixSquare<T, $dim> {
             fn iter_xy<'a>(&'a self) -> impl Iterator<Item = &'a Vector<T, $dim>>
             where
                 Vector<T, $dim>: 'a,
@@ -901,8 +934,7 @@ matrix_have_y!(4);
 
 macro_rules! matrix_have_z {
     ($dim : expr) => {
-        impl<T> HaveZ<Vector<T, $dim>> for MatrixSquare<T, $dim>
-        {
+        impl<T> HaveZ<Vector<T, $dim>> for MatrixSquare<T, $dim> {
             fn iter_xyz<'a>(&'a self) -> impl Iterator<Item = &'a Vector<T, $dim>>
             where
                 Vector<T, $dim>: 'a,
@@ -925,8 +957,7 @@ matrix_have_z!(4);
 
 macro_rules! matrix_have_w {
     ($dim : expr) => {
-        impl<T> HaveW<Vector<T, $dim>> for MatrixSquare<T, $dim>
-        {
+        impl<T> HaveW<Vector<T, $dim>> for MatrixSquare<T, $dim> {
             fn iter_xyzw<'a>(&'a self) -> impl Iterator<Item = &'a Vector<T, $dim>>
             where
                 Vector<T, $dim>: 'a,
@@ -951,8 +982,7 @@ where
     Self: HaveZ<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
     T: Float,
 {
-    fn rotate_x(&mut self, angle: AngleOf<T>) -> &mut Self
-    {
+    fn rotate_x(&mut self, angle: AngleOf<T>) -> &mut Self {
         *self = Self::from_rotation_x(angle) * (*self);
         self
     }
@@ -963,8 +993,7 @@ where
     Self: HaveZ<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
     T: Float,
 {
-    fn rotate_y(&mut self, angle: AngleOf<T>) -> &mut Self
-    {
+    fn rotate_y(&mut self, angle: AngleOf<T>) -> &mut Self {
         *self = Self::from_rotation_y(angle) * (*self);
         self
     }
@@ -975,8 +1004,7 @@ where
     Self: HaveY<Vector<T, N>> + Zero + Mul<Self, Output = Self>,
     T: Float,
 {
-    fn rotate_z(&mut self, angle: AngleOf<T>) -> &mut Self
-    {
+    fn rotate_z(&mut self, angle: AngleOf<T>) -> &mut Self {
         *self = Self::from_rotation_z(angle) * (*self);
         self
     }
@@ -1002,14 +1030,15 @@ impl<T> GetPosition<T, 2> for MatrixSquare<T, 3>
 where
     T: Copy,
 {
-    fn pos(&self) -> Vector<T, 2> { self.columns[2].into() }
+    fn pos(&self) -> Vector<T, 2> {
+        self.columns[2].into()
+    }
 }
 impl<T> SetPosition<T, 2> for MatrixSquare<T, 3>
 where
     T: Copy,
 {
-    fn set_pos(&mut self, pos: Vector<T, 2>) -> &mut Self
-    {
+    fn set_pos(&mut self, pos: Vector<T, 2>) -> &mut Self {
         self.columns[2] = pos.with_z(self[2][2]);
         self
     }
@@ -1018,14 +1047,15 @@ impl<T> GetPosition<T, 3> for MatrixSquare<T, 4>
 where
     T: Copy,
 {
-    fn pos(&self) -> Vector<T, 3> { self.columns[3].into() }
+    fn pos(&self) -> Vector<T, 3> {
+        self.columns[3].into()
+    }
 }
 impl<T> SetPosition<T, 3> for MatrixSquare<T, 4>
 where
     T: Copy,
 {
-    fn set_pos(&mut self, pos: Vector<T, 3>) -> &mut Self
-    {
+    fn set_pos(&mut self, pos: Vector<T, 3>) -> &mut Self {
         self.columns[3] = pos.with_w(self[3][3]);
         self
     }
@@ -1035,22 +1065,20 @@ impl<T> GetScale<T, 2> for MatrixSquare<T, 3>
 where
     T: Float,
 {
-    fn scale(&self) -> Vector<T, 2> { Vector::from_fn(|i| Vector::<T, 2>::from(self[i]).length()) }
+    fn scale(&self) -> Vector<T, 2> {
+        Vector::from_fn(|i| Vector::<T, 2>::from(self[i]).length())
+    }
 }
 impl<T> SetScale<T, 2> for MatrixSquare<T, 3>
 where
     T: Float,
 {
-    fn set_scale(&mut self, scale: Vector<T, 2>) -> &mut Self
-    {
-        for i in 0..2
-        {
+    fn set_scale(&mut self, scale: Vector<T, 2>) -> &mut Self {
+        for i in 0..2 {
             let len = Vector::<T, 2>::from(self[i]).length();
-            if len.is_not_zero()
-            {
+            if len.is_not_zero() {
                 let factor = scale[i] / len;
-                for j in 0..2
-                {
+                for j in 0..2 {
                     self[i][j] *= factor;
                 }
             }
@@ -1062,22 +1090,20 @@ impl<T> GetScale<T, 3> for MatrixSquare<T, 4>
 where
     T: Float,
 {
-    fn scale(&self) -> Vector<T, 3> { Vector::from_fn(|i| Vector::<T, 3>::from(self[i]).length()) }
+    fn scale(&self) -> Vector<T, 3> {
+        Vector::from_fn(|i| Vector::<T, 3>::from(self[i]).length())
+    }
 }
 impl<T> SetScale<T, 3> for MatrixSquare<T, 4>
 where
     T: Float,
 {
-    fn set_scale(&mut self, scale: Vector<T, 3>) -> &mut Self
-    {
-        for i in 0..3
-        {
+    fn set_scale(&mut self, scale: Vector<T, 3>) -> &mut Self {
+        for i in 0..3 {
             let len = Vector::<T, 3>::from(self[i]).length();
-            if len.is_not_zero()
-            {
+            if len.is_not_zero() {
                 let factor = scale[i] / len;
-                for j in 0..3
-                {
+                for j in 0..3 {
                     self[i][j] *= factor;
                 }
             }
@@ -1092,8 +1118,7 @@ where
     Self: HaveZ<Vector<T, N>> + Zero,
     T: Float,
 {
-    pub fn from_rotation_axis(axis: Vector3<T>, angle: AngleOf<T>) -> Self
-    {
+    pub fn from_rotation_axis(axis: Vector3<T>, angle: AngleOf<T>) -> Self {
         let (sin, cos) = angle.sin_cos();
         let axis = axis.normalized();
         let axis_sin = axis * sin;
@@ -1120,8 +1145,7 @@ where
         r
     }
 
-    pub fn from_rotation_x(angle: AngleOf<T>) -> Self
-    {
+    pub fn from_rotation_x(angle: AngleOf<T>) -> Self {
         let (sina, cosa) = angle.sin_cos();
         let mut r = Self::IDENTITY;
 
@@ -1132,8 +1156,7 @@ where
         r
     }
 
-    pub fn from_rotation_y(angle: AngleOf<T>) -> Self
-    {
+    pub fn from_rotation_y(angle: AngleOf<T>) -> Self {
         let (sina, cosa) = angle.sin_cos();
         let mut r = Self::IDENTITY;
 
@@ -1150,8 +1173,7 @@ where
     Self: HaveY<Vector<T, N>> + Zero,
     T: Float,
 {
-    pub fn from_rotation_z(angle: AngleOf<T>) -> Self
-    {
+    pub fn from_rotation_z(angle: AngleOf<T>) -> Self {
         let (sina, cosa) = angle.sin_cos();
         let mut r = Self::IDENTITY;
 
@@ -1169,13 +1191,11 @@ where
     T: Copy + Zero + One,
 {
     /// Put an [`One`] for the last component
-    pub fn from_scale(scale: Vector<T, N>) -> Self
-    {
+    pub fn from_scale(scale: Vector<T, N>) -> Self {
         //let scale = scale.to_vector_filled(T::ONE);
 
         let mut r = Self::IDENTITY;
-        for i in 0..N
-        {
+        for i in 0..N {
             r[i][i] = scale[i];
         }
         r
@@ -1187,8 +1207,7 @@ where
     {
         //let translation = translation.to_vector_filled(T::ZERO);
         let mut r = Self::IDENTITY;
-        for i in 0..N
-        {
+        for i in 0..N {
             r[N - 1][i] += translation[i];
         }
         r
@@ -1196,8 +1215,7 @@ where
 }
 
 // Impl based on the glam crate
-impl<T> Matrix4<T>
-{
+impl<T> Matrix4<T> {
     /// Creates a right-handed view matrix.
     ///
     /// View space: +X = right, +Y = up, +Z = back (camera looks toward -Z).
@@ -1265,73 +1283,45 @@ impl<T> Matrix4<T>
     }
 }
 
-
-pub trait MatrixStackPush<F = float, const N: usize = 4>:
-    Push<MatrixSquare<F, N>>
-{
+pub trait MatrixStackPush<F = float, const N: usize = 4>: Push<MatrixSquare<F, N>> {
     fn push_matrix(&mut self, matrix: MatrixSquare<F, N>) -> Self::Output {
         Push::push(self, matrix)
     }
 }
 
-impl<T, F, const N: usize> MatrixStackPush<F, N> for T
-where
-    T: Push<MatrixSquare<F, N>>,
-{
-}
+impl<T, F, const N: usize> MatrixStackPush<F, N> for T where T: Push<MatrixSquare<F, N>> {}
 
-pub trait MatrixStackDup<F = float, const N: usize = 4>:
-    Dup<MatrixSquare<F, N>>
-{
+pub trait MatrixStackDup<F = float, const N: usize = 4>: Dup<MatrixSquare<F, N>> {
     fn dup_matrix(&mut self) -> bool {
         self.dup()
     }
 }
 
-impl<T, F, const N: usize> MatrixStackDup<F, N> for T
-where
-    T: Dup<MatrixSquare<F, N>>,
-{
-}
+impl<T, F, const N: usize> MatrixStackDup<F, N> for T where T: Dup<MatrixSquare<F, N>> {}
 
-pub trait MatrixStackPop<F = float, const N: usize = 4>:
-    Pop<MatrixSquare<F, N>>
-{
+pub trait MatrixStackPop<F = float, const N: usize = 4>: Pop<MatrixSquare<F, N>> {
     fn pop_matrix(&mut self) -> Option<MatrixSquare<F, N>> {
         Pop::pop(self)
     }
 }
 
-impl<T, F, const N: usize> MatrixStackPop<F, N> for T
-where
-    T: Pop<MatrixSquare<F, N>>,
-{
-}
+impl<T, F, const N: usize> MatrixStackPop<F, N> for T where T: Pop<MatrixSquare<F, N>> {}
 
-pub trait MatrixStackExtension<F = float, const N: usize = 4>:
-    MatrixStackPush<F, N> + MatrixStackDup<F, N> + MatrixStackPop<F, N>
-{}
-impl<T, F, const N: usize> MatrixStackExtension<F, N> for T
-where
-    T: MatrixStackPush<F,N> + MatrixStackDup<F, N> + MatrixStackPop<F,N>,
-{}
-
+pub trait MatrixStackExtension<F = float, const N: usize = 4>: MatrixStackPush<F, N> + MatrixStackDup<F, N> + MatrixStackPop<F, N> {}
+impl<T, F, const N: usize> MatrixStackExtension<F, N> for T where T: MatrixStackPush<F, N> + MatrixStackDup<F, N> + MatrixStackPop<F, N> {}
 
 #[cfg(test)]
-mod test_matrix
-{
+mod test_matrix {
     use super::*;
 
     #[test]
-    fn rotation_zero_on_z()
-    {
+    fn rotation_zero_on_z() {
         let m = Mat2::from_row_array([[1., 2.], [3., 4.]]);
         assert_eq!(m.rotated_z(0.degree()), m);
     }
 
     #[test]
-    fn multiplication_2x2_basic()
-    {
+    fn multiplication_2x2_basic() {
         let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
         let b = Mat2i::from_row_array([[5, 6], [7, 8]]);
         let expected = Mat2i::from_row_array([[19, 22], [43, 50]]);
@@ -1340,8 +1330,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_2x2_identity()
-    {
+    fn multiplication_2x2_identity() {
         let a = Mat2i::from_row_array([[2, 3], [4, 5]]);
         let identity = Mat2i::IDENTITY;
 
@@ -1350,8 +1339,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_2x2_zero()
-    {
+    fn multiplication_2x2_zero() {
         let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
         let zero = Mat2i::ZERO;
 
@@ -1360,8 +1348,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_2x2_float()
-    {
+    fn multiplication_2x2_float() {
         let a = Mat2::from_row_array([[1.5, 2.5], [3.5, 4.5]]);
         let b = Mat2::from_row_array([[0.5, 1.5], [2.5, 3.5]]);
         let expected = Mat2::from_row_array([[7.0, 11.0], [13.0, 21.0]]);
@@ -1370,8 +1357,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_2x2_negative()
-    {
+    fn multiplication_2x2_negative() {
         let a = Mat2i::from_row_array([[-1, -2], [-3, -4]]);
         let b = Mat2i::from_row_array([[1, 2], [-3, -4]]);
         let expected = Mat2i::from_row_array([[5, 6], [9, 10]]);
@@ -1379,16 +1365,14 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_2x2_rotation()
-    {
+    fn multiplication_2x2_rotation() {
         let rot90 = Mat2::from_row_array([[0.0, 1.0], [-1.0, 0.0]]);
         let rot180 = Mat2::from_row_array([[-1.0, 0.0], [0.0, -1.0]]);
         assert_eq!(rot90 * rot90, rot180);
     }
 
     #[test]
-    fn multiplication_3x3_basic()
-    {
+    fn multiplication_3x3_basic() {
         let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
         let b = Mat3i::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
         let expected = Mat3i::from_row_array([[30, 24, 18], [84, 69, 54], [138, 114, 90]]);
@@ -1396,8 +1380,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_3x3_identity()
-    {
+    fn multiplication_3x3_identity() {
         let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
         let identity = Mat3i::IDENTITY;
 
@@ -1406,8 +1389,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_3x3_zero()
-    {
+    fn multiplication_3x3_zero() {
         let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
         let zero = Mat3i::ZERO;
 
@@ -1416,8 +1398,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_3x3_rotation()
-    {
+    fn multiplication_3x3_rotation() {
         let rot90 = Mat3::from_row_array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]);
         let rot180 = Mat3::from_row_array([[-1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]]);
 
@@ -1426,8 +1407,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_4x4_basic()
-    {
+    fn multiplication_4x4_basic() {
         let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
         let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
         let expected = Mat4i::from_row_array([[80, 70, 60, 50], [240, 214, 188, 162], [400, 358, 316, 274], [560, 502, 444, 386]]);
@@ -1436,8 +1416,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_4x4_identity()
-    {
+    fn multiplication_4x4_identity() {
         let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
         let identity = Mat4i::IDENTITY;
 
@@ -1446,8 +1425,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_4x4_zero()
-    {
+    fn multiplication_4x4_zero() {
         let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
         let zero = Mat4i::ZERO;
 
@@ -1456,8 +1434,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_4x4_translation()
-    {
+    fn multiplication_4x4_translation() {
         let translate1 = Mat4::from_translation(vec3(1.0, 2.0, 3.0).into());
         let translate2 = Mat4::from_translation(vec3(4.0, 5.0, 6.0).into());
         let expected = Mat4::from_translation(vec3(5.0, 7.0, 9.0).into());
@@ -1466,8 +1443,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_4x4_scale()
-    {
+    fn multiplication_4x4_scale() {
         let scale1 = Mat4::from_scale(vec3(2.0, 3.0, 4.0).into());
         let scale2 = Mat4::from_scale(vec3(0.5, 0.25, 0.125).into());
         let expected = Mat4::from_scale(vec3(1.0, 0.75, 0.5).into());
@@ -1476,8 +1452,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_associativity_2x2()
-    {
+    fn multiplication_associativity_2x2() {
         let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
         let b = Mat2i::from_row_array([[5, 6], [7, 8]]);
         let c = Mat2i::from_row_array([[9, 10], [11, 12]]);
@@ -1486,8 +1461,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_associativity_3x3()
-    {
+    fn multiplication_associativity_3x3() {
         let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
         let b = Mat3i::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
         let c = Mat3i::from_row_array([[1, 0, 1], [0, 1, 0], [1, 0, 1]]);
@@ -1496,8 +1470,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_associativity_4x4()
-    {
+    fn multiplication_associativity_4x4() {
         let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
         let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
         let c = Mat4i::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
@@ -1506,8 +1479,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_distributivity_2x2()
-    {
+    fn multiplication_distributivity_2x2() {
         let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
         let b = Mat2i::from_row_array([[5, 6], [7, 8]]);
         let c = Mat2i::from_row_array([[9, 10], [11, 12]]);
@@ -1516,8 +1488,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_distributivity_3x3()
-    {
+    fn multiplication_distributivity_3x3() {
         let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
         let b = Mat3i::from_row_array([[9, 8, 7], [6, 5, 4], [3, 2, 1]]);
         let c = Mat3i::from_row_array([[1, 0, 1], [0, 1, 0], [1, 0, 1]]);
@@ -1526,8 +1497,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_distributivity_4x4()
-    {
+    fn multiplication_distributivity_4x4() {
         let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
         let b = Mat4i::from_row_array([[16, 15, 14, 13], [12, 11, 10, 9], [8, 7, 6, 5], [4, 3, 2, 1]]);
         let c = Mat4i::from_row_array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 1]]);
@@ -1536,8 +1506,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_large_numbers_2x2()
-    {
+    fn multiplication_large_numbers_2x2() {
         let a = Mat2i::from_row_array([[1000, 2000], [3000, 4000]]);
         let b = Mat2i::from_row_array([[5000, 6000], [7000, 8000]]);
         let expected = Mat2i::from_row_array([[19000000, 22000000], [43000000, 50000000]]);
@@ -1546,8 +1515,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_non_commutative_2x2()
-    {
+    fn multiplication_non_commutative_2x2() {
         let a = Mat2i::from_row_array([[1, 2], [3, 4]]);
         let b = Mat2i::from_row_array([[2, 1], [4, 3]]);
 
@@ -1555,8 +1523,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_non_commutative_3x3()
-    {
+    fn multiplication_non_commutative_3x3() {
         let a = Mat3i::from_row_array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
         let b = Mat3i::from_row_array([[2, 1, 0], [5, 4, 3], [8, 7, 6]]);
 
@@ -1564,8 +1531,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_non_commutative_4x4()
-    {
+    fn multiplication_non_commutative_4x4() {
         // Test non-commutativity for 4x4 matrices
         let a = Mat4i::from_row_array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]);
         let b = Mat4i::from_row_array([[2, 1, 0, 0], [6, 5, 4, 3], [10, 9, 8, 7], [14, 13, 12, 11]]);
@@ -1574,8 +1540,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_symmetric_2x2()
-    {
+    fn multiplication_symmetric_2x2() {
         // Test multiplication with symmetric matrices
         let a = Mat2i::from_row_array([[1, 2], [2, 3]]);
         let b = Mat2i::from_row_array([[4, 5], [5, 6]]);
@@ -1585,8 +1550,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_symmetric_3x3()
-    {
+    fn multiplication_symmetric_3x3() {
         // Test multiplication with 3x3 symmetric matrices
         let a = Mat3i::from_row_array([[1, 2, 3], [2, 4, 5], [3, 5, 6]]);
         let b = Mat3i::from_row_array([[2, 1, 0], [1, 3, 2], [0, 2, 4]]);
@@ -1596,8 +1560,7 @@ mod test_matrix
     }
 
     #[test]
-    fn multiplication_symmetric_4x4()
-    {
+    fn multiplication_symmetric_4x4() {
         // Test multiplication with 4x4 symmetric matrices
         let a = Mat4i::from_row_array([[1, 2, 3, 4], [2, 5, 6, 7], [3, 6, 8, 9], [4, 7, 9, 10]]);
         let b = Mat4i::from_row_array([[2, 1, 0, 0], [1, 3, 2, 0], [0, 2, 4, 3], [0, 0, 3, 5]]);

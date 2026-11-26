@@ -9,17 +9,14 @@ use super::*;
 //     Json(Json),
 //     Xml(Xml),
 // }
-
 pub use crate::fs_extension::FormatMarkup;
 
-impl FormatMarkup
-{
+impl FormatMarkup {
     pub fn encode<T>(self, value: &T) -> EncodeResult<String>
     where
         T: Serialize + ?Sized,
     {
-        match self
-        {
+        match self {
             FormatMarkup::Ron => value.to_ron(),
             FormatMarkup::Json => value.to_json(),
             FormatMarkup::Xml => value.to_xml(),
@@ -31,8 +28,7 @@ impl FormatMarkup
         T: Serialize + ?Sized,
         W: Write,
     {
-        match self
-        {
+        match self {
             FormatMarkup::Ron => value.to_ron_with_writer(writer),
             FormatMarkup::Json => value.to_json_with_writer(writer),
             FormatMarkup::Xml => value.to_xml_with_writer(writer),
@@ -43,8 +39,7 @@ impl FormatMarkup
     where
         T: for<'de> Deserialize<'de>,
     {
-        match self
-        {
+        match self {
             FormatMarkup::Ron => T::from_ron(markup),
             FormatMarkup::Json => T::from_json(markup),
             FormatMarkup::Xml => T::from_xml(markup),
@@ -55,8 +50,7 @@ impl FormatMarkup
     where
         T: for<'de> Deserialize<'de>,
     {
-        match self
-        {
+        match self {
             FormatMarkup::Ron => T::from_ron_bytes(bytes),
             FormatMarkup::Json => T::from_json_bytes(bytes),
             FormatMarkup::Xml => T::from_xml_bytes(bytes),
@@ -68,32 +62,30 @@ impl FormatMarkup
         T: for<'de> Deserialize<'de>,
         R: Read,
     {
-        match self
-        {
+        match self {
             FormatMarkup::Ron => T::from_ron_with_reader(reader),
             FormatMarkup::Json => T::from_json_with_reader(reader),
             FormatMarkup::Xml => T::from_xml_with_reader(reader),
         }
     }
 }
-impl Display for FormatMarkup
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self) }
+impl Display for FormatMarkup {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
-impl<'a> core::str::FromStr for FormatMarkup
-{
+impl<'a> core::str::FromStr for FormatMarkup {
     type Err = ();
 
-    fn from_str(s: &str) -> v1::Result<Self, Self::Err> { Self::try_from(s) }
+    fn from_str(s: &str) -> v1::Result<Self, Self::Err> {
+        Self::try_from(s)
+    }
 }
 
-impl<'a> TryFrom<&'a str> for FormatMarkup
-{
+impl<'a> TryFrom<&'a str> for FormatMarkup {
     type Error = ();
-    fn try_from(value: &'a str) -> Result<Self, Self::Error>
-    {
-        match value
-        {
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        match value {
             Extension::RON => Ok(Self::Ron),
             Extension::JSON => Ok(Self::Json),
             Extension::XML => Ok(Self::Xml),
@@ -103,20 +95,16 @@ impl<'a> TryFrom<&'a str> for FormatMarkup
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum FormatSpecial
-{
+pub enum FormatSpecial {
     Txt,
     TmpBin,
 }
 
-impl FormatSpecial
-{
+impl FormatSpecial {
     pub const ALL: &'static [Self] = &[Self::Txt, Self::TmpBin];
 
-    pub const fn extension(self) -> &'static str
-    {
-        match self
-        {
+    pub const fn extension(self) -> &'static str {
+        match self {
             FormatSpecial::Txt => Extension::TXT,
             FormatSpecial::TmpBin => Extension::TMP_BIN,
         }
@@ -126,16 +114,13 @@ impl FormatSpecial
     where
         T: Serialize + ?Sized,
     {
-        match self
-        {
-            FormatSpecial::Txt =>
-            {
+        match self {
+            FormatSpecial::Txt => {
                 let mut txt = String::with_capacity(1024);
                 value.serialize(SerializerString::new(&mut txt))?;
                 Ok(txt.into_bytes())
             }
-            FormatSpecial::TmpBin =>
-            {
+            FormatSpecial::TmpBin => {
                 let mut bytes = Vec::with_capacity(256);
                 value.serialize(SerializerBytes::new(&mut bytes))?;
                 Ok(bytes)
@@ -148,15 +133,12 @@ impl FormatSpecial
         T: Serialize + ?Sized,
         W: Write,
     {
-        match self
-        {
-            FormatSpecial::Txt =>
-            {
+        match self {
+            FormatSpecial::Txt => {
                 value.serialize(SerializerString::new(writer.to_fmt_writer()))?;
                 Ok(())
             }
-            FormatSpecial::TmpBin =>
-            {
+            FormatSpecial::TmpBin => {
                 value.serialize(SerializerBytes::new(writer))?;
                 Ok(())
             }
@@ -167,8 +149,7 @@ impl FormatSpecial
     where
         T: for<'de> Deserialize<'de>,
     {
-        match self
-        {
+        match self {
             FormatSpecial::Txt => T::deserialize(DeserializerString::new(str::from_utf8(bytes)?)),
             FormatSpecial::TmpBin => T::deserialize(DeserializerBytes::new(bytes)),
         }
@@ -179,16 +160,13 @@ impl FormatSpecial
         T: for<'de> Deserialize<'de>,
         R: Read,
     {
-        match self
-        {
-            FormatSpecial::Txt =>
-            {
+        match self {
+            FormatSpecial::Txt => {
                 let mut txt = String::with_capacity(1024);
                 reader.read_to_string(&mut txt)?;
                 T::deserialize(DeserializerString::new(txt))
             }
-            FormatSpecial::TmpBin =>
-            {
+            FormatSpecial::TmpBin => {
                 let mut bytes = Vec::with_capacity(256);
                 reader.read_to_end(&mut bytes)?;
                 T::deserialize(DeserializerBytes::new(bytes))
@@ -196,17 +174,15 @@ impl FormatSpecial
         }
     }
 }
-impl Display for FormatSpecial
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self) }
+impl Display for FormatSpecial {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
-impl<'a> TryFrom<&'a str> for FormatSpecial
-{
+impl<'a> TryFrom<&'a str> for FormatSpecial {
     type Error = ();
-    fn try_from(value: &'a str) -> Result<Self, Self::Error>
-    {
-        match value
-        {
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        match value {
             Extension::TXT => Ok(Self::Txt),
             Extension::TMP_BIN => Ok(Self::TmpBin),
             _ => Err(()),
@@ -215,17 +191,16 @@ impl<'a> TryFrom<&'a str> for FormatSpecial
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum AnyFormat
-{
+pub enum AnyFormat {
     Markup(FormatMarkup),
     Special(FormatSpecial),
 }
-impl Default for AnyFormat
-{
-    fn default() -> Self { Self::Markup(FormatMarkup::default()) }
+impl Default for AnyFormat {
+    fn default() -> Self {
+        Self::Markup(FormatMarkup::default())
+    }
 }
-impl AnyFormat
-{
+impl AnyFormat {
     pub const PREFERED: Self = Self::Markup(FormatMarkup::PREFERED);
     pub const ALL: &'static [Self] = &[
         Self::Markup(FormatMarkup::Ron),
@@ -235,10 +210,8 @@ impl AnyFormat
         Self::Special(FormatSpecial::TmpBin),
     ];
 
-    pub const fn extension(self) -> &'static str
-    {
-        match self
-        {
+    pub const fn extension(self) -> &'static str {
+        match self {
             AnyFormat::Markup(v) => v.extension(),
             AnyFormat::Special(v) => v.extension(),
         }
@@ -248,8 +221,7 @@ impl AnyFormat
     where
         T: Serialize + ?Sized,
     {
-        match self
-        {
+        match self {
             AnyFormat::Markup(v) => v.encode(value).map(|v| v.into_bytes()),
             AnyFormat::Special(v) => v.encode(value),
         }
@@ -260,8 +232,7 @@ impl AnyFormat
         T: Serialize + ?Sized,
         W: Write,
     {
-        match self
-        {
+        match self {
             AnyFormat::Markup(v) => v.encode_with_writer(value, writer),
             AnyFormat::Special(v) => v.encode_with_writer(value, writer),
         }
@@ -271,8 +242,7 @@ impl AnyFormat
     where
         T: for<'de> Deserialize<'de>,
     {
-        match self
-        {
+        match self {
             AnyFormat::Markup(v) => v.from_bytes(bytes),
             AnyFormat::Special(v) => v.from_bytes(bytes),
         }
@@ -283,42 +253,35 @@ impl AnyFormat
         T: for<'de> Deserialize<'de>,
         R: Read,
     {
-        match self
-        {
+        match self {
             AnyFormat::Markup(v) => v.from_reader(reader),
             AnyFormat::Special(v) => v.from_reader(reader),
         }
     }
 }
-impl Display for AnyFormat
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
-        match self
-        {
+impl Display for AnyFormat {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
             AnyFormat::Markup(v) => write!(f, "{:?}", v),
             AnyFormat::Special(v) => write!(f, "{:?}", v),
         }
     }
 }
-impl<'a> core::str::FromStr for AnyFormat
-{
+impl<'a> core::str::FromStr for AnyFormat {
     type Err = ();
 
-    fn from_str(s: &str) -> v1::Result<Self, Self::Err> { Self::try_from(s) }
+    fn from_str(s: &str) -> v1::Result<Self, Self::Err> {
+        Self::try_from(s)
+    }
 }
 
-impl<'a> TryFrom<&'a str> for AnyFormat
-{
+impl<'a> TryFrom<&'a str> for AnyFormat {
     type Error = ();
-    fn try_from(value: &'a str) -> Result<Self, Self::Error>
-    {
-        if let Ok(v) = FormatMarkup::try_from(value)
-        {
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        if let Ok(v) = FormatMarkup::try_from(value) {
             return Ok(Self::Markup(v));
         }
-        if let Ok(v) = FormatSpecial::try_from(value)
-        {
+        if let Ok(v) = FormatSpecial::try_from(value) {
             return Ok(Self::Special(v));
         }
         Err(())

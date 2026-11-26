@@ -24,24 +24,23 @@ pub type KeyRepeat = ButtonRepeat;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct KeyAction
-{
+pub struct KeyAction {
     pub code: KeyCode,
     pub state: KeyState,
 }
 
-impl Has<KeyCode> for KeyAction
-{
-    fn retrieve(&self) -> KeyCode { self.code }
+impl Has<KeyCode> for KeyAction {
+    fn retrieve(&self) -> KeyCode {
+        self.code
+    }
 }
-impl Has<KeyState> for KeyAction
-{
-    fn retrieve(&self) -> KeyState { self.state }
+impl Has<KeyState> for KeyAction {
+    fn retrieve(&self) -> KeyState {
+        self.state
+    }
 }
-impl KeyAction
-{
-    pub const fn shortcut(self) -> KeyShortcut
-    {
+impl KeyAction {
+    pub const fn shortcut(self) -> KeyShortcut {
         KeyShortcut {
             code: self.code,
             modifiers: KeyModifiersFlags::EMPTY,
@@ -51,65 +50,68 @@ impl KeyAction
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct KeyShortcut
-{
+pub struct KeyShortcut {
     pub code: KeyCode,
     pub modifiers: KeyModifiersFlags,
 }
-impl Matches<KeyCode> for KeyShortcut
-{
+impl Matches<KeyCode> for KeyShortcut {
     type Output = bool;
-    fn matches(&self, lexem: &KeyCode) -> Self::Output { self.code == *lexem }
+    fn matches(&self, lexem: &KeyCode) -> Self::Output {
+        self.code == *lexem
+    }
 }
-impl Matches<KeyEvent> for KeyShortcut
-{
+impl Matches<KeyEvent> for KeyShortcut {
     type Output = bool;
-    fn matches(&self, lexem: &KeyEvent) -> Self::Output { self.code == lexem.code && self.modifiers.matches(&lexem.modifiers) }
+    fn matches(&self, lexem: &KeyEvent) -> Self::Output {
+        self.code == lexem.code && self.modifiers.matches(&lexem.modifiers)
+    }
 }
 
-impl From<KeyCode> for KeyShortcut
-{
-    fn from(code: KeyCode) -> Self { Self::from_code(code) }
+impl From<KeyCode> for KeyShortcut {
+    fn from(code: KeyCode) -> Self {
+        Self::from_code(code)
+    }
 }
-impl From<KeyAction> for KeyShortcut
-{
-    fn from(value: KeyAction) -> Self { Self::from_action(value) }
+impl From<KeyAction> for KeyShortcut {
+    fn from(value: KeyAction) -> Self {
+        Self::from_action(value)
+    }
 }
-impl KeyShortcut
-{
-    pub const fn from_code(code: KeyCode) -> Self
-    {
+impl KeyShortcut {
+    pub const fn from_code(code: KeyCode) -> Self {
         Self {
             code,
             modifiers: KeyModifiersFlags::EMPTY,
         }
     }
 
-    pub const fn from_action(value: KeyAction) -> Self { value.shortcut() }
+    pub const fn from_action(value: KeyAction) -> Self {
+        value.shortcut()
+    }
 
-    pub const fn with_modifier(mut self, modifiers: KeyModifiersFlags) -> Self
-    {
+    pub const fn with_modifier(mut self, modifiers: KeyModifiersFlags) -> Self {
         self.modifiers = modifiers;
         self
     }
 }
 
-impl Has<KeyCode> for KeyShortcut
-{
-    fn retrieve(&self) -> KeyCode { self.code }
+impl Has<KeyCode> for KeyShortcut {
+    fn retrieve(&self) -> KeyCode {
+        self.code
+    }
 }
-impl Has<KeyModifiersFlags> for KeyShortcut
-{
-    fn retrieve(&self) -> KeyModifiersFlags { self.modifiers }
+impl Has<KeyModifiersFlags> for KeyShortcut {
+    fn retrieve(&self) -> KeyModifiersFlags {
+        self.modifiers
+    }
 }
-impl From<KeyShortcut> for KeyAction
-{
-    fn from(value: KeyShortcut) -> Self { value.action() }
+impl From<KeyShortcut> for KeyAction {
+    fn from(value: KeyShortcut) -> Self {
+        value.action()
+    }
 }
-impl KeyShortcut
-{
-    pub const fn action(self) -> KeyAction
-    {
+impl KeyShortcut {
+    pub const fn action(self) -> KeyAction {
         KeyAction {
             code: self.code,
             state: KeyState::Down,
@@ -121,8 +123,7 @@ impl KeyShortcut
 /// The text equivalent of KeyState
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct KeyEvent
-{
+pub struct KeyEvent {
     /// Physical Key.
     ///
     /// Represents the position of a key independent of the currently active layout.
@@ -207,36 +208,35 @@ pub struct KeyEvent
 
 pub type KeyText = winit::keyboard::SmolStr;
 
-impl Has<KeyState> for KeyEvent
-{
-    fn retrieve(&self) -> KeyState { self.state }
+impl Has<KeyState> for KeyEvent {
+    fn retrieve(&self) -> KeyState {
+        self.state
+    }
 }
-impl Has<KeyCode> for KeyEvent
-{
-    fn retrieve(&self) -> KeyCode { self.code }
+impl Has<KeyCode> for KeyEvent {
+    fn retrieve(&self) -> KeyCode {
+        self.code
+    }
 }
-impl Has<KeyRepeat> for KeyEvent
-{
-    fn retrieve(&self) -> KeyRepeat { self.repeat }
+impl Has<KeyRepeat> for KeyEvent {
+    fn retrieve(&self) -> KeyRepeat {
+        self.repeat
+    }
 }
-impl Has<KeyModifiersFlags> for KeyEvent
-{
-    fn retrieve(&self) -> KeyModifiersFlags { self.modifiers }
+impl Has<KeyModifiersFlags> for KeyEvent {
+    fn retrieve(&self) -> KeyModifiersFlags {
+        self.modifiers
+    }
 }
 
-impl From<winit::event::KeyEvent> for KeyEvent
-{
-    fn from(event: winit::event::KeyEvent) -> Self
-    {
+impl From<winit::event::KeyEvent> for KeyEvent {
+    fn from(event: winit::event::KeyEvent) -> Self {
         let code = KeyCode::from(event.physical_key);
         let pressed = event.state.is_pressed();
 
-        let repeat = if event.repeat
-        {
+        let repeat = if event.repeat {
             KeyRepeat::Repeated
-        }
-        else
-        {
+        } else {
             KeyRepeat::NotRepeated
         };
         let state = if pressed { KeyState::Down } else { KeyState::Up };
@@ -253,8 +253,7 @@ impl From<winit::event::KeyEvent> for KeyEvent
     }
 }
 
-pub trait KeyboardShortcuts
-{
+pub trait KeyboardShortcuts {
     /// `Alt + F4`
     fn is_exit(&self) -> bool;
     /// `F5`
@@ -293,35 +292,60 @@ impl<S> KeyboardShortcuts for S
 where
     S: KeyConstants + PartialEq,
 {
-    fn is_exit(&self) -> bool { *self == Self::EXIT }
+    fn is_exit(&self) -> bool {
+        *self == Self::EXIT
+    }
 
-    fn is_reload(&self) -> bool { *self == Self::RELOAD }
+    fn is_reload(&self) -> bool {
+        *self == Self::RELOAD
+    }
 
-    fn is_fullscreen(&self) -> bool { *self == Self::FULLSCREEN }
+    fn is_fullscreen(&self) -> bool {
+        *self == Self::FULLSCREEN
+    }
 
-    fn is_copy(&self) -> bool { *self == Self::COPY }
+    fn is_copy(&self) -> bool {
+        *self == Self::COPY
+    }
 
-    fn is_paste(&self) -> bool { *self == Self::PASTE }
+    fn is_paste(&self) -> bool {
+        *self == Self::PASTE
+    }
 
-    fn is_cut(&self) -> bool { *self == Self::CUT }
+    fn is_cut(&self) -> bool {
+        *self == Self::CUT
+    }
 
-    fn is_open(&self) -> bool { *self == Self::OPEN }
+    fn is_open(&self) -> bool {
+        *self == Self::OPEN
+    }
 
-    fn is_save(&self) -> bool { *self == Self::SAVE }
+    fn is_save(&self) -> bool {
+        *self == Self::SAVE
+    }
 
-    fn is_new(&self) -> bool { *self == Self::NEW }
+    fn is_new(&self) -> bool {
+        *self == Self::NEW
+    }
 
-    fn is_print(&self) -> bool { *self == Self::PRINT }
+    fn is_print(&self) -> bool {
+        *self == Self::PRINT
+    }
 
-    fn is_search(&self) -> bool { *self == Self::SEARCH }
+    fn is_search(&self) -> bool {
+        *self == Self::SEARCH
+    }
 
-    fn is_undo(&self) -> bool { *self == Self::UNDO }
+    fn is_undo(&self) -> bool {
+        *self == Self::UNDO
+    }
 
-    fn is_redo(&self) -> bool { *self == Self::REDO }
+    fn is_redo(&self) -> bool {
+        *self == Self::REDO
+    }
 }
 
-pub trait KeyConstants
-{
+pub trait KeyConstants {
     /// `Alt + F4`
     const EXIT: Self;
 
@@ -361,8 +385,7 @@ pub trait KeyConstants
     /// `Control + Y`
     const REDO: Self;
 }
-impl KeyConstants for KeyShortcut
-{
+impl KeyConstants for KeyShortcut {
     const EXIT: Self = KeyModifiersFlags::Alt.shortcut(KeyCode::F4);
     const RELOAD: Self = KeyCode::F5.shortcut();
     const FULLSCREEN: Self = KeyCode::F11.shortcut();

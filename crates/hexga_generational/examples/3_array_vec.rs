@@ -2,21 +2,17 @@ use hexga_core::prelude::*;
 use hexga_generational::{gen_seq::GenArrayVec, prelude::*};
 
 #[derive(Debug)]
-pub struct Entity
-{
+pub struct Entity {
     hp: i32,
 }
 
-fn increase_hp<'a>(entities: GenViewMut<'a, Entity>)
-{
-    for (_id, entity) in entities
-    {
+fn increase_hp<'a>(entities: GenViewMut<'a, Entity>) {
+    for (_id, entity) in entities {
         entity.hp += 1;
     }
 }
 
-fn main()
-{
+fn main() {
     let mut entities = GenArrayVec::<Entity, 4>::new();
     entities.push(Entity { hp: 42 });
     entities.push(Entity { hp: 99 });

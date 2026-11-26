@@ -1,7 +1,6 @@
 use super::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{EncodeError, EncodeResult};
 }
 
@@ -10,8 +9,7 @@ pub type EncodeResult<T = ()> = Result<T, EncodeError>;
 
 #[non_exhaustive]
 #[derive(Default, Clone, PartialEq, Eq)]
-pub enum EncodeError
-{
+pub enum EncodeError {
     #[default]
     Unknow,
     Unimplemented,
@@ -25,12 +23,9 @@ pub enum EncodeError
     Fmt(FmtError),
 }
 
-impl Debug for EncodeError
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
-        match self
-        {
+impl Debug for EncodeError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
             EncodeError::Unknow => write!(f, "Unknow"),
             EncodeError::Unimplemented => write!(f, "Unimplemented"),
             EncodeError::Base64(v) => write!(f, "{:?}", v),
@@ -43,65 +38,73 @@ impl Debug for EncodeError
         }
     }
 }
-impl Display for EncodeError
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{:?}", self) }
+impl Display for EncodeError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "{:?}", self)
+    }
 }
 
 pub type EncodeErrorReason = String;
 
-impl From<Base64Error> for EncodeError
-{
-    fn from(value: Base64Error) -> Self { Self::Base64(value) }
+impl From<Base64Error> for EncodeError {
+    fn from(value: Base64Error) -> Self {
+        Self::Base64(value)
+    }
 }
-impl From<EncodeErrorExtension> for EncodeError
-{
-    fn from(value: EncodeErrorExtension) -> Self { Self::Extension(value) }
+impl From<EncodeErrorExtension> for EncodeError {
+    fn from(value: EncodeErrorExtension) -> Self {
+        Self::Extension(value)
+    }
 }
-impl From<EncodeErrorUtf8> for EncodeError
-{
-    fn from(value: EncodeErrorUtf8) -> Self { Self::Utf8(value) }
+impl From<EncodeErrorUtf8> for EncodeError {
+    fn from(value: EncodeErrorUtf8) -> Self {
+        Self::Utf8(value)
+    }
 }
-impl From<Utf8Error> for EncodeError
-{
-    fn from(value: Utf8Error) -> Self { Self::Utf8(value.into()) }
+impl From<Utf8Error> for EncodeError {
+    fn from(value: Utf8Error) -> Self {
+        Self::Utf8(value.into())
+    }
 }
-impl From<EncodeErrorReason> for EncodeError
-{
-    fn from(value: EncodeErrorReason) -> Self { Self::Custom(value) }
+impl From<EncodeErrorReason> for EncodeError {
+    fn from(value: EncodeErrorReason) -> Self {
+        Self::Custom(value)
+    }
 }
-impl From<IoErrorKind> for EncodeError
-{
-    fn from(value: IoErrorKind) -> Self { Self::Io(value) }
+impl From<IoErrorKind> for EncodeError {
+    fn from(value: IoErrorKind) -> Self {
+        Self::Io(value)
+    }
 }
-impl From<IoError> for EncodeError
-{
-    fn from(value: IoError) -> Self { Self::Io(value.kind()) }
+impl From<IoError> for EncodeError {
+    fn from(value: IoError) -> Self {
+        Self::Io(value.kind())
+    }
 }
-impl From<EncodeErrorMarkup> for EncodeError
-{
-    fn from(value: EncodeErrorMarkup) -> Self { Self::Markup(value) }
+impl From<EncodeErrorMarkup> for EncodeError {
+    fn from(value: EncodeErrorMarkup) -> Self {
+        Self::Markup(value)
+    }
 }
-impl From<FmtError> for EncodeError
-{
-    fn from(value: FmtError) -> Self { Self::Fmt(value) }
+impl From<FmtError> for EncodeError {
+    fn from(value: FmtError) -> Self {
+        Self::Fmt(value)
+    }
 }
 
-impl EncodeError
-{
-    pub fn at_path(self, path: Option<PathBuf>) -> FileError { FileError::new(self).with_path(path) }
+impl EncodeError {
+    pub fn at_path(self, path: Option<PathBuf>) -> FileError {
+        FileError::new(self).with_path(path)
+    }
 }
 
 #[derive(Default, Clone, PartialEq, Eq)]
-pub struct EncodeErrorExtension
-{
+pub struct EncodeErrorExtension {
     pub got: Option<CowExtensionStatic>,
     pub expected: Vec<CowExtensionStatic>,
 }
-impl Debug for EncodeErrorExtension
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
+impl Debug for EncodeErrorExtension {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(
             f,
             "Extension {:?} is not supported, expected one of the following extension {:?}, ",
@@ -111,15 +114,12 @@ impl Debug for EncodeErrorExtension
 }
 
 #[derive(Default, Clone, PartialEq, Eq, Debug)]
-pub struct EncodeErrorUtf8
-{
+pub struct EncodeErrorUtf8 {
     pub valid_up_to: usize,
     pub error_len: Option<usize>,
 }
-impl From<Utf8Error> for EncodeErrorUtf8
-{
-    fn from(value: Utf8Error) -> Self
-    {
+impl From<Utf8Error> for EncodeErrorUtf8 {
+    fn from(value: Utf8Error) -> Self {
         Self {
             valid_up_to: value.valid_up_to(),
             error_len: value.error_len(),
@@ -128,8 +128,7 @@ impl From<Utf8Error> for EncodeErrorUtf8
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct EncodeErrorMarkup
-{
+pub struct EncodeErrorMarkup {
     pub extension: CowExtensionStatic,
     pub reason: EncodeErrorReason,
 }
@@ -249,10 +248,8 @@ impl std::fmt::Debug for EncodeError
 }
 */
 
-impl EncodeError
-{
-    pub fn save_unsupported_extension<T: Save + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self
-    {
+impl EncodeError {
+    pub fn save_unsupported_extension<T: Save + ?Sized>(got: impl Into<Option<CowExtensionStatic>>) -> Self {
         Self::Extension(EncodeErrorExtension {
             //name: std::any::type_name::<T>().to_owned(),
             got: got.into(),
@@ -260,8 +257,7 @@ impl EncodeError
         })
     }
 
-    pub fn load_unsupported_extension<T: Load>(got: impl Into<Option<CowExtensionStatic>>) -> Self
-    {
+    pub fn load_unsupported_extension<T: Load>(got: impl Into<Option<CowExtensionStatic>>) -> Self {
         Self::Extension(EncodeErrorExtension {
             //name: std::any::type_name::<T>().to_owned(),
             got: got.into(),
@@ -269,8 +265,7 @@ impl EncodeError
         })
     }
 
-    pub fn markup<T: ?Sized>(extension: impl Into<CowExtensionStatic>, reason: impl Display) -> Self
-    {
+    pub fn markup<T: ?Sized>(extension: impl Into<CowExtensionStatic>, reason: impl Display) -> Self {
         Self::Markup(EncodeErrorMarkup {
             //name: std::any::type_name::<T>().to_owned(),
             extension: extension.into(),
@@ -278,8 +273,12 @@ impl EncodeError
         })
     }
 
-    pub fn custom(reason: impl Into<EncodeErrorReason>) -> Self { Self::Custom(reason.into()) }
-    pub fn from_display(reason: impl Display) -> Self { Self::custom(reason.to_string()) }
+    pub fn custom(reason: impl Into<EncodeErrorReason>) -> Self {
+        Self::Custom(reason.into())
+    }
+    pub fn from_display(reason: impl Display) -> Self {
+        Self::custom(reason.to_string())
+    }
 }
 
 /*
@@ -351,8 +350,7 @@ impl serde::de::Error for EncodeError
 
 impl std::error::Error for EncodeError {}
 #[cfg(feature = "serde")]
-impl serde::ser::Error for EncodeError
-{
+impl serde::ser::Error for EncodeError {
     fn custom<T>(msg: T) -> Self
     where
         T: Display,
@@ -361,8 +359,7 @@ impl serde::ser::Error for EncodeError
     }
 }
 #[cfg(feature = "serde")]
-impl serde::de::Error for EncodeError
-{
+impl serde::de::Error for EncodeError {
     fn custom<T>(msg: T) -> Self
     where
         T: Display,

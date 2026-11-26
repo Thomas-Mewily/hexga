@@ -6,42 +6,33 @@ pub use main_window::*;
 
 pub(crate) type WindowType = hexga_event_loop::window::Window<GpuSurfaceConfigured<'static>>;
 
-pub(crate) trait WindowInitGpu
-{
+pub(crate) trait WindowInitGpu {
     fn initialize_surface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult;
     fn configure_surface(&mut self);
 }
 
-impl WindowInitGpu for WindowType
-{
-    fn initialize_surface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult
-    {
+impl WindowInitGpu for WindowType {
+    fn initialize_surface(&mut self, param: &GpuParam, event_loop: &AppInternalEventLoop) -> GpuResult {
         let size = self.size().max(one());
 
-        if Gpu::is_not_init()
-        {
+        if Gpu::is_not_init() {
             let instance = GpuInstance::new(&param.instance);
             let surface = instance.lib_wgpu.create_surface(self.lib_winit_window())?.into();
 
             async_init_gpu_in_proxy(instance, param.clone(), surface, event_loop.proxy().clone()).spawn();
 
             Ok(())
-        }
-        else
-        {
+        } else {
             let surface = Gpu.instance().create_surface(self.lib_winit_window())?.into();
             event_loop.send_event(AppMessage::Custom(AppCustomEvent::SurfaceReady(surface)));
             Ok(())
         }
     }
 
-    fn configure_surface(&mut self)
-    {
-        if let Some(mut surface) = self.replace_surface(None)
-        {
+    fn configure_surface(&mut self) {
+        if let Some(mut surface) = self.replace_surface(None) {
             let size = self.size().max(one());
-            if surface.size() != size
-            {
+            if surface.size() != size {
                 surface.resize(size);
             }
             self.replace_surface(Some(surface));
@@ -49,24 +40,19 @@ impl WindowInitGpu for WindowType
     }
 }
 
-pub(crate) async fn async_init_gpu_in_proxy(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>, proxy: AppInternalProxy)
-{
-    match async_init_gpu(instance, param, surface).await
-    {
-        Ok((surface, gpu)) =>
-        {
+pub(crate) async fn async_init_gpu_in_proxy(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>, proxy: AppInternalProxy) {
+    match async_init_gpu(instance, param, surface).await {
+        Ok((surface, gpu)) => {
             proxy.send_event(AppMessage::Custom(AppCustomEvent::GpuReady(gpu)));
             proxy.send_event(AppMessage::Custom(AppCustomEvent::SurfaceReady(surface)));
         }
-        Err(e) =>
-        {
+        Err(e) => {
             proxy.send_event(AppMessage::Custom(AppCustomEvent::GpuError(e)));
         }
     };
 }
 
-pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>) -> GpuResult<(GpuSurface<'static>, GpuContext)>
-{
+pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surface: GpuSurface<'static>) -> GpuResult<(GpuSurface<'static>, GpuContext)> {
     let compatible_surface = Some(&surface.lib_wgpu);
 
     let adapter = instance
@@ -85,12 +71,9 @@ pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surfa
             required_features: wgpu::Features::empty(),
             // WebGL doesn't support all of wgpu's features, so if
             // we're building for the web we'll have to disable some.
-            required_limits: if cfg!(target_arch = "wasm32")
-            {
+            required_limits: if cfg!(target_arch = "wasm32") {
                 wgpu::Limits::downlevel_webgl2_defaults()
-            }
-            else
-            {
+            } else {
                 wgpu::Limits::default()
             },
             memory_hints: Default::default(),
@@ -103,14 +86,12 @@ pub(crate) async fn async_init_gpu(instance: GpuInstance, param: GpuParam, surfa
     Ok((surface, gpu))
 }
 
-pub mod prelude
-{
+pub mod prelude {
     pub(crate) use super::WindowType;
     pub use super::main_window::CurrentWindow;
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub(crate) use super::WindowInitGpu;
 }

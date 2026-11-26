@@ -1,7 +1,6 @@
 use hexga::prelude::*;
 
-fn main()
-{
+fn main() {
     let _: f32 = 2u8.cast_into();
     let _ = f32::cast_from(2u8);
     let _ = 2u8.to_f32();

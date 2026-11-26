@@ -1,55 +1,49 @@
 use super::*;
 use copypasta::ClipboardProvider;
 
-pub mod prelude
-{
+pub mod prelude {
     pub(crate) use super::*;
     pub use super::{Clipboard, Clipboardable};
 }
 
-pub trait Clipboardable
-{
+pub trait Clipboardable {
     fn get_clipboard(&mut self) -> Option<String>;
     fn set_clipboard(&mut self, paste: String) -> Result<(), ()>;
 }
 
-pub struct Clipboard
-{
+pub struct Clipboard {
     ctx: Option<copypasta::ClipboardContext>,
 }
 
-impl Debug for Clipboard
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "Clipboard") }
+impl Debug for Clipboard {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "Clipboard")
+    }
 }
 
-impl Default for Clipboard
-{
-    fn default() -> Self { Self::new() }
+impl Default for Clipboard {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
-impl Clipboard
-{
-    pub fn new() -> Self
-    {
+impl Clipboard {
+    pub fn new() -> Self {
         Self {
             ctx: copypasta::ClipboardContext::new().ok(),
         }
     }
 }
 
-impl Clipboardable for Clipboard
-{
-    fn get_clipboard(&mut self) -> Option<String> { self.ctx.as_mut().and_then(|c| c.get_contents().ok()) }
+impl Clipboardable for Clipboard {
+    fn get_clipboard(&mut self) -> Option<String> {
+        self.ctx.as_mut().and_then(|c| c.get_contents().ok())
+    }
 
-    fn set_clipboard(&mut self, paste: String) -> Result<(), ()>
-    {
-        if let Some(c) = self.ctx.as_mut()
-        {
+    fn set_clipboard(&mut self, paste: String) -> Result<(), ()> {
+        if let Some(c) = self.ctx.as_mut() {
             c.set_contents(paste).ok_or_void()
-        }
-        else
-        {
+        } else {
             Err(())
         }
     }

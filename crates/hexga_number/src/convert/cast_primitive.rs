@@ -8,8 +8,7 @@ macro_rules! impl_cast_into {
     ($trait_name:ident, $fn_map_name:ident, $fn_map_range_name:ident, $output_type:ty) => {
         /// Helper trait based on [`CastInto`] and [`CastRangeInto`]
         /// Also work on composite like [`std::array`], `Vector`...
-        pub trait $trait_name: CastInto<Self::Output>
-        {
+        pub trait $trait_name: CastInto<Self::Output> {
             type Output;
 
             /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)
@@ -41,8 +40,12 @@ macro_rules! impl_cast_into {
             S::Item: $trait_name,
         {
             type Output = S::WithType<<S::Item as $trait_name>::Output>;
-            fn $fn_map_name(self) -> Self::Output { self.map_into($trait_name::$fn_map_name) }
-            fn $fn_map_range_name(self) -> Self::Output { self.map_into($trait_name::$fn_map_range_name) }
+            fn $fn_map_name(self) -> Self::Output {
+                self.map_into($trait_name::$fn_map_name)
+            }
+            fn $fn_map_range_name(self) -> Self::Output {
+                self.map_into($trait_name::$fn_map_range_name)
+            }
         }
     };
 }

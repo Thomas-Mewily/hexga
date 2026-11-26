@@ -1,7 +1,6 @@
 use super::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
     pub use super::{
         Color, ColorF32, ColorF64, ColorFloat, ColorU8, ColorU16,
@@ -11,8 +10,7 @@ pub mod prelude
     };
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::icolor::{ArrayToColor, IColor, ToColor};
 }
 

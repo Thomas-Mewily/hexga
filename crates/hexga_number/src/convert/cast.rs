@@ -29,8 +29,7 @@ use super::*;
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
-pub trait CastFrom<T>
-{
+pub trait CastFrom<T> {
     fn cast_from(value: T) -> Self;
 }
 impl<C1, C2> CastFrom<C2> for C1
@@ -39,7 +38,9 @@ where
     C2: MapInto<WithType<C1::Item> = Self>,
     C1::Item: CastFrom<C2::Item>,
 {
-    fn cast_from(value: C2) -> Self { value.map_into(C1::Item::cast_from) }
+    fn cast_from(value: C2) -> Self {
+        value.map_into(C1::Item::cast_from)
+    }
 }
 
 /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html)
@@ -71,23 +72,25 @@ where
 /// let b : Vec2 = a.cast_into(),
 /// assert_eq!(b, vec2(1., 2.));
 /// ```
-pub trait CastInto<T>: Sized
-{
+pub trait CastInto<T>: Sized {
     fn cast_into(self) -> T;
 }
 impl<S, T> CastInto<T> for S
 where
     T: CastFrom<S>,
 {
-    fn cast_into(self) -> T { T::cast_from(self) }
+    fn cast_into(self) -> T {
+        T::cast_from(self)
+    }
 }
 
 // Double recursive macro :)
 macro_rules! impl_cast_into {
     ($src: ty, $dest: ty) => {
-        impl CastFrom<$src> for $dest
-        {
-            fn cast_from(value: $src) -> $dest { value as $dest }
+        impl CastFrom<$src> for $dest {
+            fn cast_from(value: $src) -> $dest {
+                value as $dest
+            }
         }
     };
 
@@ -125,9 +128,10 @@ map_on_float!(
         }
     };
 );
-impl CastFrom<bool> for bool
-{
-    fn cast_from(value: bool) -> Self { value }
+impl CastFrom<bool> for bool {
+    fn cast_from(value: bool) -> Self {
+        value
+    }
 }
 
 trait_marker!(

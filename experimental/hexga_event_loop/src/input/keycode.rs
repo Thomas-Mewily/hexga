@@ -7,8 +7,7 @@ pub(crate) type WinitKeyNativeCode = winit::keyboard::NativeKeyCode;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum KeyCodeNative
-{
+pub enum KeyCodeNative {
     Unknow,
     /// An Android "scancode".
     Android(u32),
@@ -20,34 +19,26 @@ pub enum KeyCodeNative
     Xkb(u32),
 }
 
-impl Debug for KeyCodeNative
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
+impl Debug for KeyCodeNative {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let mut debug_tuple;
-        match self
-        {
-            KeyCodeNative::Unknow =>
-            {
+        match self {
+            KeyCodeNative::Unknow => {
                 debug_tuple = f.debug_tuple("Unknow");
             }
-            KeyCodeNative::Android(code) =>
-            {
+            KeyCodeNative::Android(code) => {
                 debug_tuple = f.debug_tuple("Android");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
             }
-            KeyCodeNative::MacOS(code) =>
-            {
+            KeyCodeNative::MacOS(code) => {
                 debug_tuple = f.debug_tuple("MacOS");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
             }
-            KeyCodeNative::Windows(code) =>
-            {
+            KeyCodeNative::Windows(code) => {
                 debug_tuple = f.debug_tuple("Windows");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
             }
-            KeyCodeNative::Xkb(code) =>
-            {
+            KeyCodeNative::Xkb(code) => {
                 debug_tuple = f.debug_tuple("Xkb");
                 debug_tuple.field(&format_args!("0x{code:04X}"));
             }
@@ -59,8 +50,7 @@ impl Debug for KeyCodeNative
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum KeyCode
-{
+pub enum KeyCode {
     Unknow(KeyCodeNative),
     /// <kbd>`</kbd> on a US keyboard. This is also called a backtick or grave.
     /// This is the <kbd>半角</kbd>/<kbd>全角</kbd>/<kbd>漢字</kbd>
@@ -507,17 +497,15 @@ pub enum KeyCode
     F35,
 }
 
-impl KeyCode
-{
-    pub const fn shortcut(self) -> KeyShortcut { KeyShortcut::from_code(self) }
+impl KeyCode {
+    pub const fn shortcut(self) -> KeyShortcut {
+        KeyShortcut::from_code(self)
+    }
 }
 
-impl From<WinitKeyNativeCode> for KeyCodeNative
-{
-    fn from(value: WinitKeyNativeCode) -> Self
-    {
-        match value
-        {
+impl From<WinitKeyNativeCode> for KeyCodeNative {
+    fn from(value: WinitKeyNativeCode) -> Self {
+        match value {
             WinitKeyNativeCode::Unidentified => KeyCodeNative::Unknow,
             WinitKeyNativeCode::Android(v) => KeyCodeNative::Android(v),
             WinitKeyNativeCode::MacOS(v) => KeyCodeNative::MacOS(v),
@@ -526,29 +514,24 @@ impl From<WinitKeyNativeCode> for KeyCodeNative
         }
     }
 }
-impl From<WinitKeyNativeCode> for KeyCode
-{
-    fn from(value: WinitKeyNativeCode) -> Self { KeyCode::Unknow(value.into()) }
+impl From<WinitKeyNativeCode> for KeyCode {
+    fn from(value: WinitKeyNativeCode) -> Self {
+        KeyCode::Unknow(value.into())
+    }
 }
 
-impl From<WinitKeyPhysical> for KeyCode
-{
-    fn from(value: WinitKeyPhysical) -> Self
-    {
-        match value
-        {
+impl From<WinitKeyPhysical> for KeyCode {
+    fn from(value: WinitKeyPhysical) -> Self {
+        match value {
             winit::keyboard::PhysicalKey::Code(v) => v.into(),
             winit::keyboard::PhysicalKey::Unidentified(v) => v.into(),
         }
     }
 }
 
-impl From<WinitKeyCode> for KeyCode
-{
-    fn from(value: WinitKeyCode) -> Self
-    {
-        match value
-        {
+impl From<WinitKeyCode> for KeyCode {
+    fn from(value: WinitKeyCode) -> Self {
+        match value {
             winit::keyboard::KeyCode::Backquote => KeyCode::Backquote,
             winit::keyboard::KeyCode::Backslash => KeyCode::Backslash,
             winit::keyboard::KeyCode::BracketLeft => KeyCode::BracketLeft,
@@ -748,22 +731,20 @@ impl From<WinitKeyCode> for KeyCode
     }
 }
 
-impl PartialEq<KeyCodeNative> for KeyCode
-{
+impl PartialEq<KeyCodeNative> for KeyCode {
     #[inline]
-    fn eq(&self, rhs: &KeyCodeNative) -> bool
-    {
-        match &self
-        {
+    fn eq(&self, rhs: &KeyCodeNative) -> bool {
+        match &self {
             KeyCode::Unknow(code) => code == rhs,
             _ => false,
         }
     }
 }
-impl PartialEq<KeyCode> for KeyCodeNative
-{
+impl PartialEq<KeyCode> for KeyCodeNative {
     #[inline]
-    fn eq(&self, rhs: &KeyCode) -> bool { rhs == self }
+    fn eq(&self, rhs: &KeyCode) -> bool {
+        rhs == self
+    }
 }
 
 /// The location of the key on the keyboard.
@@ -774,8 +755,7 @@ impl PartialEq<KeyCode> for KeyCodeNative
 /// them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum KeyLocation
-{
+pub enum KeyLocation {
     /// Unknow location
     Unknow,
     /// The key is in its "normal" location on the keyboard.
@@ -842,12 +822,9 @@ pub enum KeyLocation
     Numpad,
 }
 
-impl From<WinitKeyLocation> for KeyLocation
-{
-    fn from(value: WinitKeyLocation) -> Self
-    {
-        match value
-        {
+impl From<WinitKeyLocation> for KeyLocation {
+    fn from(value: WinitKeyLocation) -> Self {
+        match value {
             winit::keyboard::KeyLocation::Standard => KeyLocation::Standard,
             winit::keyboard::KeyLocation::Left => KeyLocation::Left,
             winit::keyboard::KeyLocation::Right => KeyLocation::Right,

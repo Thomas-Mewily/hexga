@@ -3,8 +3,7 @@ use super::*;
 // Most function are suffixed with `` like min, max, clamp, because there are already defiend in [std::cmp::Ord] and I don't want to fully qualify them...
 
 /// Max function in a component way.
-pub trait Max
-{
+pub trait Max {
     /// Max function in a component way.
     fn max(self, other: Self) -> Self;
 }
@@ -35,9 +34,10 @@ map_on_float!(
         }
     }
 );
-impl Max for bool
-{
-    fn max(self, other: Self) -> Self { self | other }
+impl Max for bool {
+    fn max(self, other: Self) -> Self {
+        self | other
+    }
 }
 
 impl<S> Max for S
@@ -45,12 +45,13 @@ where
     S: MapZip,
     S::Item: Max,
 {
-    fn max(self, other: Self) -> Self { self.map_with(other, Max::max) }
+    fn max(self, other: Self) -> Self {
+        self.map_with(other, Max::max)
+    }
 }
 
 /// Min function in a component way.
-pub trait Min
-{
+pub trait Min {
     /// Min function in a component way.
     fn min(self, other: Self) -> Self;
 }
@@ -80,9 +81,10 @@ map_on_float!(
         }
     }
 );
-impl Min for bool
-{
-    fn min(self, other: Self) -> Self { self & other }
+impl Min for bool {
+    fn min(self, other: Self) -> Self {
+        self & other
+    }
 }
 
 impl<S> Min for S
@@ -90,18 +92,21 @@ where
     S: MapZip,
     S::Item: Min,
 {
-    fn min(self, other: Self) -> Self { self.map_with(other, Min::min) }
+    fn min(self, other: Self) -> Self {
+        self.map_with(other, Min::min)
+    }
 }
 
 /// Clamp function in a component way between Zero..=One
-pub trait ClampUnit : Clamp + Zero + One
-{
+pub trait ClampUnit: Clamp + Zero + One {
     /// Clamp self between `Zero..=One` in a component way
     ///
     /// Can cause a panic for grid if the size mismatch.
     fn clamp_unit(self) -> Self;
 }
-impl<C> ClampUnit for C where C: Clamp + Zero + One
+impl<C> ClampUnit for C
+where
+    C: Clamp + Zero + One,
 {
     fn clamp_unit(self) -> Self {
         self.clamp(zero(), one())
@@ -119,8 +124,7 @@ where
 
 // TODO: ClampInterval ? fn clamp<R>(self, range: R); 3.clamp(0..=10); 3.clamp(Union([0..2, 6..10]);
 /// Clamp in a component way
-pub trait Clamp
-{
+pub trait Clamp {
     /// Clamp self between `min..=max` in a component way
     ///
     /// Can cause a panic for grid if the size mismatch
@@ -140,27 +144,37 @@ impl<T> Clamp for T
 where
     T: Min + Max,
 {
-    fn clamp(self, min_val: Self, max_val: Self) -> Self { self.max(min_val).min(max_val) }
+    fn clamp(self, min_val: Self, max_val: Self) -> Self {
+        self.max(min_val).min(max_val)
+    }
 }
 
 /// Clamp the value inside the `from` range, and linearly map it from `from` range to `to` range.
-pub fn remap<T>(value: T, from: std::ops::Range<T>, to: std::ops::Range<T>) -> T where T: Arithmetic + Clamp
+pub fn remap<T>(value: T, from: std::ops::Range<T>, to: std::ops::Range<T>) -> T
+where
+    T: Arithmetic + Clamp,
 {
     value.remap(from, to)
 }
 
 /// Remap a value inside a Range to another Range
-pub trait Remap : Sized
-{
+pub trait Remap: Sized {
     /// Clamp the value inside the `from` range, and linearly map it from `from` range to `to` range.
-    fn remap(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self where Self: Clamp;
+    fn remap(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self
+    where
+        Self: Clamp;
 
     /// Linearly map the value from `from` range to `to` range.
     fn remap_unchecked(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self;
 }
-impl<T> Remap for T where T: Arithmetic
+impl<T> Remap for T
+where
+    T: Arithmetic,
 {
-    fn remap(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self where Self: Clamp {
+    fn remap(self, from: std::ops::Range<Self>, to: std::ops::Range<Self>) -> Self
+    where
+        Self: Clamp,
+    {
         self.clamp(from.start, from.end).remap_unchecked(from, to)
     }
 
@@ -168,7 +182,6 @@ impl<T> Remap for T where T: Arithmetic
         to.start + (to.end - to.start) * ((self - from.start) / (from.end - from.start))
     }
 }
-
 
 /*
 /// Mix function in a component way. Same as [`Lerp`]
@@ -199,8 +212,7 @@ where
 */
 
 /// Lerp function in a component way.
-pub trait Lerp<C,D=Self> : Sized
-{
+pub trait Lerp<C, D = Self>: Sized {
     type Output;
 
     /// Lerp function in a component way.
@@ -210,7 +222,12 @@ pub trait Lerp<C,D=Self> : Sized
     /// `0. => self`, `1. => dest`.
     ///
     /// Can cause a panic for grid if the size mismatch
-    fn lerp(self, dest: D, coef: C) -> Self::Output where C: ClampUnit { self.lerp_unclamped(dest, coef.clamp_unit()) }
+    fn lerp(self, dest: D, coef: C) -> Self::Output
+    where
+        C: ClampUnit,
+    {
+        self.lerp_unclamped(dest, coef.clamp_unit())
+    }
 
     /// Lerp function in a component way.
     ///
@@ -221,8 +238,6 @@ pub trait Lerp<C,D=Self> : Sized
     /// Can cause a panic for grid if the size mismatch
     fn lerp_unclamped(self, dest: D, coef: C) -> Self::Output;
 }
-
-
 
 //impl<T,C> Lerp<C> for T where T: Mix<C>, C: Float {}
 
@@ -297,12 +312,13 @@ where
     F: Copy,
 {
     type Output = S;
-    fn lerp_unclamped(self, dest: Self, coef: F) -> Self { self.map_with(dest, |a, b| a.lerp_unclamped(b, coef)) }
+    fn lerp_unclamped(self, dest: Self, coef: F) -> Self {
+        self.map_with(dest, |a, b| a.lerp_unclamped(b, coef))
+    }
 }
 
 /// Abs function in a component way
-pub trait Abs
-{
+pub trait Abs {
     type Output;
     /// Absolute value in a component way.
     ///
@@ -380,7 +396,9 @@ where
 {
     type Output = Saturating<T::Output>;
     #[inline(always)]
-    fn abs(self) -> Self::Output { Saturating(self.0.abs()) }
+    fn abs(self) -> Self::Output {
+        Saturating(self.0.abs())
+    }
 }
 impl<T> Abs for Wrapping<T>
 where
@@ -388,13 +406,16 @@ where
 {
     type Output = Wrapping<T::Output>;
     #[inline(always)]
-    fn abs(self) -> Self::Output { Wrapping(self.0.abs()) }
+    fn abs(self) -> Self::Output {
+        Wrapping(self.0.abs())
+    }
 }
-impl Abs for bool
-{
+impl Abs for bool {
     type Output = Self;
     #[inline(always)]
-    fn abs(self) -> Self { self }
+    fn abs(self) -> Self {
+        self
+    }
 }
 impl<S> Abs for S
 where
@@ -402,7 +423,9 @@ where
     S::Item: Abs,
 {
     type Output = S::WithType<<S::Item as Abs>::Output>;
-    fn abs(self) -> Self::Output { self.map_into(Abs::abs) }
+    fn abs(self) -> Self::Output {
+        self.map_into(Abs::abs)
+    }
 }
 
 /// Absolute value in a component way.
@@ -506,8 +529,7 @@ macro_rules! impl_number_basic_trait {
 }
 
 /// `self ^ exp`
-pub trait Pow<Exp = Self>
-{
+pub trait Pow<Exp = Self> {
     type Output;
     // Raises a number to a power.
     fn pow(self, exp: Exp) -> Self::Output;
@@ -531,7 +553,6 @@ map_on_float!(($primitive_name: ty) =>
     }
 });
 
-
 /// `self *= 1 - rate`.
 pub trait Decay<Rate = Self> {
     type Output;
@@ -541,7 +562,7 @@ pub trait Decay<Rate = Self> {
 
 impl<T, Rate> Decay<Rate> for T
 where
-    T: One + Sub<Rate> + Mul<<T as Sub<Rate>>::Output>
+    T: One + Sub<Rate> + Mul<<T as Sub<Rate>>::Output>,
 {
     type Output = <T as Mul<<T as Sub<Rate>>::Output>>::Output;
 
@@ -556,18 +577,21 @@ where
     T: Pow,
 {
     type Output = Wrapping<T::Output>;
-    fn pow(self, rhs: Self) -> Self::Output { Wrapping(self.0.pow(rhs.0)) }
+    fn pow(self, rhs: Self) -> Self::Output {
+        Wrapping(self.0.pow(rhs.0))
+    }
 }
 impl<T> Pow for Saturating<T>
 where
     T: Pow,
 {
     type Output = Saturating<T::Output>;
-    fn pow(self, rhs: Self) -> Self::Output { Saturating(self.0.pow(rhs.0)) }
+    fn pow(self, rhs: Self) -> Self::Output {
+        Saturating(self.0.pow(rhs.0))
+    }
 }
 
-pub trait RemEuclid<Rhs = Self>
-{
+pub trait RemEuclid<Rhs = Self> {
     type Output;
 
     /// Calculates the least nonnegative remainder of `self` when divided by `rhs`.
@@ -611,7 +635,9 @@ where
     T: RemEuclid,
 {
     type Output = Wrapping<T::Output>;
-    fn rem_euclid(self, rhs: Self) -> Self::Output { Wrapping(self.0.rem_euclid(rhs.0)) }
+    fn rem_euclid(self, rhs: Self) -> Self::Output {
+        Wrapping(self.0.rem_euclid(rhs.0))
+    }
     //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.0.checked_rem_euclid(rhs.0).map(|v| Wrapping(v)) }
 }
 impl<T> RemEuclid for Saturating<T>
@@ -619,18 +645,18 @@ where
     T: RemEuclid,
 {
     type Output = Saturating<T::Output>;
-    fn rem_euclid(self, rhs: Self) -> Self::Output { Saturating(self.0.rem_euclid(rhs.0)) }
+    fn rem_euclid(self, rhs: Self) -> Self::Output {
+        Saturating(self.0.rem_euclid(rhs.0))
+    }
     //fn checked_rem_euclid(self, rhs: Self) -> Option<Self::Output> { self.0.checked_rem_euclid(rhs.0).map(|v| Saturating(v)) }
 }
 
 #[cfg(test)]
-mod tests
-{
+mod tests {
     use super::*;
 
     #[test]
-    fn max_test()
-    {
+    fn max_test() {
         assert_eq!(max(1, 2), 2);
         assert_eq!(max(2, 1), 2);
         assert_eq!(max([1, 10], [4, 5]), [4, 10]);
@@ -638,8 +664,7 @@ mod tests
     }
 
     #[test]
-    fn min_test()
-    {
+    fn min_test() {
         assert_eq!(min(1, 2), 1);
         assert_eq!(min(2, 1), 1);
         assert_eq!(min([1, 10], [4, 5]), [1, 5]);
@@ -647,8 +672,7 @@ mod tests
     }
 
     #[test]
-    fn mix_test()
-    {
+    fn mix_test() {
         assert_eq!(lerp(0., 1., 0.), 0.);
         assert_eq!(lerp(0., 1., 0.5), 0.5);
         assert_eq!(lerp(0., 1., 1.), 1.);
@@ -664,8 +688,7 @@ mod tests
     }
 
     #[test]
-    fn abs_test()
-    {
+    fn abs_test() {
         assert_eq!(abs(-2), 2);
         assert_eq!(abs(u8::MAX), u8::MAX);
         assert_eq!(abs(i8::MAX), i8::MAX);
@@ -674,8 +697,7 @@ mod tests
     }
 
     #[test]
-    fn clamp_test()
-    {
+    fn clamp_test() {
         assert_eq!(clamp(5, 0, 10), 5);
         assert_eq!(clamp(-5, 0, 10), 0);
         assert_eq!(clamp(15, 0, 10), 10);

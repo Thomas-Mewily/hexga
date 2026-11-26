@@ -1,7 +1,6 @@
 use super::*;
 
-pub trait RetainMut<T>
-{
+pub trait RetainMut<T> {
     /// Retains only the elements specified by the predicate.
     ///
     /// In other words, remove all elements `e` for which `f(&e)` returns `false`.
@@ -12,8 +11,7 @@ pub trait RetainMut<T>
         F: FnMut(&mut T) -> bool;
 }
 
-impl<T, A: Allocator> RetainMut<T> for Vec<T, A>
-{
+impl<T, A: Allocator> RetainMut<T> for Vec<T, A> {
     fn retain_mut<F>(&mut self, f: F)
     where
         F: FnMut(&mut T) -> bool,
@@ -22,8 +20,7 @@ impl<T, A: Allocator> RetainMut<T> for Vec<T, A>
     }
 }
 
-impl<T> RetainMut<T> for VecDeque<T>
-{
+impl<T> RetainMut<T> for VecDeque<T> {
     fn retain_mut<F>(&mut self, f: F)
     where
         F: FnMut(&mut T) -> bool,

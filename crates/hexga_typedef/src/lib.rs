@@ -5,8 +5,7 @@ mod check;
 use check::*;
 
 #[cfg(feature = "int_are_size_bits")]
-mod integer_typedef
-{
+mod integer_typedef {
     /// Default unsigned integer type
     #[allow(non_camel_case_types)]
     pub type uint = usize;
@@ -17,8 +16,7 @@ mod integer_typedef
 }
 
 #[cfg(feature = "int_are_8_bits")]
-mod integer_typedef
-{
+mod integer_typedef {
     /// Default unsigned integer type
     #[allow(non_camel_case_types)]
     pub type uint = u8;
@@ -29,8 +27,7 @@ mod integer_typedef
 }
 
 #[cfg(feature = "int_are_16_bits")]
-mod integer_typedef
-{
+mod integer_typedef {
     /// Default unsigned integer type
     #[allow(non_camel_case_types)]
     pub type uint = u16;
@@ -41,8 +38,7 @@ mod integer_typedef
 }
 
 #[cfg(feature = "int_are_32_bits")]
-mod integer_typedef
-{
+mod integer_typedef {
     /// Default unsigned integer type
     #[allow(non_camel_case_types)]
     pub type uint = u32;
@@ -53,8 +49,7 @@ mod integer_typedef
 }
 
 #[cfg(feature = "int_are_64_bits")]
-mod integer_typedef
-{
+mod integer_typedef {
     /// Default unsigned integer type
     #[allow(non_camel_case_types)]
     pub type uint = u64;
@@ -66,8 +61,7 @@ mod integer_typedef
 pub use integer_typedef::*;
 
 #[cfg(feature = "float_are_size_bits")]
-mod float_typedef
-{
+mod float_typedef {
     /// Default unsigned floating type
     #[cfg(target_pointer_width = "32")]
     #[allow(non_camel_case_types)]
@@ -80,16 +74,14 @@ mod float_typedef
 }
 
 #[cfg(feature = "float_are_32_bits")]
-mod float_typedef
-{
+mod float_typedef {
     /// Default unsigned floating type
     #[allow(non_camel_case_types)]
     pub type float = f32;
 }
 
 #[cfg(feature = "float_are_64_bits")]
-mod float_typedef
-{
+mod float_typedef {
     /// Default unsigned floating type
     #[allow(non_camel_case_types)]
     pub type float = f64;

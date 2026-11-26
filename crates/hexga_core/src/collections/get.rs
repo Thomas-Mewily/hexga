@@ -13,48 +13,77 @@
 use super::*;
 
 /// A collection have a quick way to access each element.
-pub trait Get<Idx> : CollectionIndex<Idx>
-{
+pub trait Get<Idx>: CollectionIndex<Idx> {
     /// Returns a reference to the value.
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>> where Self::Output: 'a;
+    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a;
 
     /// Returns a reference to the value.
     #[inline(always)]
     #[track_caller]
-    fn get_or_panic<'a>(&'a self, index: Idx) -> Self::Ref<'a> where Self::Output: 'a { self.get(index).expect("invalid index") }
+    fn get_or_panic<'a>(&'a self, index: Idx) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index).expect("invalid index")
+    }
     /// Returns a reference to the value.
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a> where Self::Output: 'a { self.get(index).expect("invalid index") }
+    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index).expect("invalid index")
+    }
 
     /// True if `get(index)` return [Some], false otherwise.
     #[inline(always)]
-    fn is_index_valid(&self, index: Idx) -> bool { self.get(index).is_some() }
+    fn is_index_valid(&self, index: Idx) -> bool {
+        self.get(index).is_some()
+    }
     /// True if `get(index)` return [None], false otherwise.
     #[inline(always)]
-    fn is_index_invalid(&self, index: Idx) -> bool { self.get(index).is_none() }
+    fn is_index_invalid(&self, index: Idx) -> bool {
+        self.get(index).is_none()
+    }
 
-    fn contains(&self, index: Idx) -> bool { self.get(index).is_some() }
+    fn contains(&self, index: Idx) -> bool {
+        self.get(index).is_some()
+    }
 }
 
-pub trait TryGet<Idx>: Get<Idx>
-{
+pub trait TryGet<Idx>: Get<Idx> {
     type Error;
     /// Returns a reference to the value.
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a;
+    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a;
 }
 
-pub trait GetMut<Idx>: Get<Idx> + CollectionIndexMut<Idx>
-{
+pub trait GetMut<Idx>: Get<Idx> + CollectionIndexMut<Idx> {
     /// Returns a mutable reference to the value.
-    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>> where Self::Output: 'a;
+    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a;
     #[inline(always)]
     #[track_caller]
-    fn get_mut_or_panic<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a> where Self::Output: 'a { self.get_mut(index).expect("invalid index") }
+    fn get_mut_or_panic<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a>
+    where
+        Self::Output: 'a,
+    {
+        self.get_mut(index).expect("invalid index")
+    }
     /// Returns a mutable reference to the value.
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a> where Self::Output: 'a { self.get_mut(index).expect("invalid index") }
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a>
+    where
+        Self::Output: 'a,
+    {
+        self.get_mut(index).expect("invalid index")
+    }
 
     /// Replace the value and return the old one.
     ///
@@ -122,12 +151,13 @@ pub trait GetMut<Idx>: Get<Idx> + CollectionIndexMut<Idx>
     }
 }
 
-pub trait TryGetMut<Idx>: TryGet<Idx> + GetMut<Idx>
-{
+pub trait TryGetMut<Idx>: TryGet<Idx> + GetMut<Idx> {
     // Should TryGetMut have it own error type ?
 
     /// Returns a mutable reference to the value.
-    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a;
+    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a;
 
     /// Replace the value and return the old one.
     ///
@@ -153,17 +183,20 @@ pub trait TryGetMut<Idx>: TryGet<Idx> + GetMut<Idx>
 
 pub type ManyMutError = core::slice::GetDisjointMutError;
 
-pub trait GetManyMut<Idx>: GetMut<Idx>
-{
+pub trait GetManyMut<Idx>: GetMut<Idx> {
     /// Returns mutable guards for multiple values.
     /// All values that can be accessed with the indices must be disjoint.
     #[doc(alias = "get_disjoint_mut")]
     fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Option<[Self::RefMut<'a>; N]>
-    where Self::Output: 'a
-    { self.try_get_many_mut(indices).ok() }
+    where
+        Self::Output: 'a,
+    {
+        self.try_get_many_mut(indices).ok()
+    }
 
     fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Result<[Self::RefMut<'a>; N], ManyMutError>
-    where Self::Output: 'a;
+    where
+        Self::Output: 'a;
 
     /// Returns mutable guards for multiple values.
     /// All values that can be accessed with the indices must be disjoint.
@@ -171,8 +204,11 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
     #[track_caller]
     #[doc(alias = "get_disjoint_mut_or_panic")]
     fn get_many_mut_or_panic<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> [Self::RefMut<'a>; N]
-    where Self::Output: 'a
-    { self.get_many_mut(indices).expect("invalid index") }
+    where
+        Self::Output: 'a,
+    {
+        self.get_many_mut(indices).expect("invalid index")
+    }
 
     /// Returns mutable guards for multiple values.
     /// All values that can be accessed with the indices must be disjoint.
@@ -180,7 +216,8 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
     #[track_caller]
     #[doc(alias = "get_disjoint_unchecked_mut")]
     unsafe fn get_many_unchecked_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> [Self::RefMut<'a>; N]
-    where Self::Output: 'a
+    where
+        Self::Output: 'a,
     {
         self.get_many_mut(indices).expect("invalid index")
     }
@@ -226,8 +263,7 @@ pub trait GetManyMut<Idx>: GetMut<Idx>
     }
 }
 
-mod wrap_std_nightly_only_feature_to_stay_in_stable
-{
+mod wrap_std_nightly_only_feature_to_stay_in_stable {
     use super::{GetManyMut, ManyMutError};
 
     /*
@@ -372,27 +408,27 @@ impl<T,Idx,C> Get<TypedIndex<T,Idx>> for C
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub struct IndexInvalid<Idx = usize>
-{
+pub struct IndexInvalid<Idx = usize> {
     pub index: Idx,
 }
-impl<Idx> IndexInvalid<Idx>
-{
-    pub fn new(index: Idx) -> Self { Self { index } }
+impl<Idx> IndexInvalid<Idx> {
+    pub fn new(index: Idx) -> Self {
+        Self { index }
+    }
 }
 
 pub type IndexOutOfRange<Idx = usize, B = core::ops::Range<Idx>> = IndexOutOfBounds<Idx, B>;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub struct IndexOutOfBounds<Idx = usize, B = core::ops::Range<Idx>>
-{
+pub struct IndexOutOfBounds<Idx = usize, B = core::ops::Range<Idx>> {
     pub index: Idx,
     pub bound: B,
 }
-impl<Idx, B> IndexOutOfBounds<Idx, B>
-{
-    pub fn new(index: Idx, bound: B) -> Self { Self { index, bound } }
+impl<Idx, B> IndexOutOfBounds<Idx, B> {
+    pub fn new(index: Idx, bound: B) -> Self {
+        Self { index, bound }
+    }
 }
 
 /// Index for the `Ok` payload of a `Result`.
@@ -407,64 +443,92 @@ pub struct ResultOk;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct ResultErr;
 
-impl<T, E> CollectionIndex<ResultOk> for Result<T, E>
-{
+impl<T, E> CollectionIndex<ResultOk> for Result<T, E> {
     type Output = T;
-    type Ref<'a> = &'a T where Self: 'a;
+    type Ref<'a>
+        = &'a T
+    where
+        Self: 'a;
 }
-impl<T, E> CollectionIndexMut<ResultOk> for Result<T, E>
-{
-    type RefMut<'a> = &'a mut T where Self: 'a;
+impl<T, E> CollectionIndexMut<ResultOk> for Result<T, E> {
+    type RefMut<'a>
+        = &'a mut T
+    where
+        Self: 'a;
 }
-impl<T, E> Get<ResultOk> for Result<T, E>
-{
-    fn get<'a>(&'a self, _: ResultOk) -> Option<Self::Ref<'a>> where T: 'a { self.as_ref().ok() }
+impl<T, E> Get<ResultOk> for Result<T, E> {
+    fn get<'a>(&'a self, _: ResultOk) -> Option<Self::Ref<'a>>
+    where
+        T: 'a,
+    {
+        self.as_ref().ok()
+    }
 }
-impl<T, E> GetMut<ResultOk> for Result<T, E>
-{
-    fn get_mut<'a>(&'a mut self, _: ResultOk) -> Option<Self::RefMut<'a>> where T: 'a { self.as_mut().ok() }
+impl<T, E> GetMut<ResultOk> for Result<T, E> {
+    fn get_mut<'a>(&'a mut self, _: ResultOk) -> Option<Self::RefMut<'a>>
+    where
+        T: 'a,
+    {
+        self.as_mut().ok()
+    }
 }
-impl<T, E> Index<ResultOk> for Result<T, E>
-{
+impl<T, E> Index<ResultOk> for Result<T, E> {
     type Output = T;
 
     #[track_caller]
-    fn index(&self, index: ResultOk) -> &T { Get::get_or_panic(self, index) }
+    fn index(&self, index: ResultOk) -> &T {
+        Get::get_or_panic(self, index)
+    }
 }
-impl<T, E> core::ops::IndexMut<ResultOk> for Result<T, E>
-{
+impl<T, E> core::ops::IndexMut<ResultOk> for Result<T, E> {
     #[track_caller]
-    fn index_mut(&mut self, index: ResultOk) -> &mut T { GetMut::get_mut_or_panic(self, index) }
+    fn index_mut(&mut self, index: ResultOk) -> &mut T {
+        GetMut::get_mut_or_panic(self, index)
+    }
 }
 
-impl<T, E> CollectionIndex<ResultErr> for Result<T, E>
-{
+impl<T, E> CollectionIndex<ResultErr> for Result<T, E> {
     type Output = E;
-    type Ref<'a> = &'a E where Self: 'a;
+    type Ref<'a>
+        = &'a E
+    where
+        Self: 'a;
 }
-impl<T, E> CollectionIndexMut<ResultErr> for Result<T, E>
-{
-    type RefMut<'a> = &'a mut E where Self: 'a;
+impl<T, E> CollectionIndexMut<ResultErr> for Result<T, E> {
+    type RefMut<'a>
+        = &'a mut E
+    where
+        Self: 'a;
 }
-impl<T, E> Get<ResultErr> for Result<T, E>
-{
-    fn get<'a>(&'a self, _: ResultErr) -> Option<Self::Ref<'a>> where E: 'a { self.as_ref().err() }
+impl<T, E> Get<ResultErr> for Result<T, E> {
+    fn get<'a>(&'a self, _: ResultErr) -> Option<Self::Ref<'a>>
+    where
+        E: 'a,
+    {
+        self.as_ref().err()
+    }
 }
-impl<T, E> GetMut<ResultErr> for Result<T, E>
-{
-    fn get_mut<'a>(&'a mut self, _: ResultErr) -> Option<Self::RefMut<'a>> where E: 'a { self.as_mut().err() }
+impl<T, E> GetMut<ResultErr> for Result<T, E> {
+    fn get_mut<'a>(&'a mut self, _: ResultErr) -> Option<Self::RefMut<'a>>
+    where
+        E: 'a,
+    {
+        self.as_mut().err()
+    }
 }
-impl<T, E> Index<ResultErr> for Result<T, E>
-{
+impl<T, E> Index<ResultErr> for Result<T, E> {
     type Output = E;
 
     #[track_caller]
-    fn index(&self, index: ResultErr) -> &E { Get::get_or_panic(self, index) }
+    fn index(&self, index: ResultErr) -> &E {
+        Get::get_or_panic(self, index)
+    }
 }
-impl<T, E> core::ops::IndexMut<ResultErr> for Result<T, E>
-{
+impl<T, E> core::ops::IndexMut<ResultErr> for Result<T, E> {
     #[track_caller]
-    fn index_mut(&mut self, index: ResultErr) -> &mut E { GetMut::get_mut_or_panic(self, index) }
+    fn index_mut(&mut self, index: ResultErr) -> &mut E {
+        GetMut::get_mut_or_panic(self, index)
+    }
 }
 
 impl<Idx, T> Get<Idx> for [T]
@@ -473,10 +537,20 @@ where
     [T]: Collection<Idx::Output>,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.get(index) }
+    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a> where Self::Output: 'a { unsafe { self.get_unchecked(index) } }
+    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { self.get_unchecked(index) }
+    }
 }
 impl<Idx, T> Get<Idx> for &[T]
 where
@@ -484,10 +558,20 @@ where
     [T]: Collection<Idx::Output>,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>> where Self::Output: 'a { (*self).get(index) }
+    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        (*self).get(index)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a> where Self::Output: 'a { unsafe { (*self).get_unchecked(index) } }
+    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { (*self).get_unchecked(index) }
+    }
 }
 impl<Idx, T> Get<Idx> for &mut [T]
 where
@@ -495,10 +579,20 @@ where
     [T]: Collection<Idx::Output>,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>> where Self::Output: 'a { (**self).get(index) }
+    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        (**self).get(index)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a> where Self::Output: 'a { unsafe { (**self).get_unchecked(index) } }
+    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { (**self).get_unchecked(index) }
+    }
 }
 impl<Idx, T> TryGet<Idx> for [T]
 where
@@ -507,7 +601,12 @@ where
 {
     type Error = IndexOutOfBounds<Idx, Range<usize>>;
     #[inline(always)]
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.get(index.clone()).ok_or(IndexOutOfBounds { index, bound: 0..self.len() }) }
+    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index.clone()).ok_or(IndexOutOfBounds { index, bound: 0..self.len() })
+    }
 }
 impl<Idx, T> TryGet<Idx> for &[T]
 where
@@ -516,7 +615,12 @@ where
 {
     type Error = IndexOutOfBounds<Idx, Range<usize>>;
     #[inline(always)]
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { (*self).try_get(index) }
+    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        (*self).try_get(index)
+    }
 }
 impl<Idx, T> TryGet<Idx> for &mut [T]
 where
@@ -525,7 +629,12 @@ where
 {
     type Error = IndexOutOfBounds<Idx, Range<usize>>;
     #[inline(always)]
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { (**self).try_get(index) }
+    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        (**self).try_get(index)
+    }
 }
 
 impl<Idx, T> GetMut<Idx> for [T]
@@ -534,10 +643,20 @@ where
     [T]: CollectionMut<Idx::Output>,
 {
     #[inline(always)]
-    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>> where Self::Output: 'a { self.get_mut(index) }
+    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.get_mut(index)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a> where Self::Output: 'a { unsafe { self.get_unchecked_mut(index) } }
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { self.get_unchecked_mut(index) }
+    }
 }
 impl<Idx, T> GetMut<Idx> for &mut [T]
 where
@@ -545,10 +664,20 @@ where
     [T]: CollectionMut<Idx::Output>,
 {
     #[inline(always)]
-    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>> where Self::Output: 'a { (*self).get_mut(index) }
+    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a,
+    {
+        (*self).get_mut(index)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a> where Self::Output: 'a { unsafe { (*self).get_unchecked_mut(index) } }
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { (*self).get_unchecked_mut(index) }
+    }
 }
 impl<Idx, T> TryGetMut<Idx> for [T]
 where
@@ -556,7 +685,9 @@ where
     [T]: CollectionMut<Idx::Output>,
 {
     #[inline(always)]
-    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a
+    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a,
     {
         let len = self.len();
         self.get_mut(index.clone()).ok_or(IndexOutOfBounds { index, bound: 0..len })
@@ -578,7 +709,12 @@ where
     [T]: CollectionMut<Idx::Output>,
 {
     #[inline(always)]
-    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a { (**self).try_get_mut(index) }
+    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        (**self).try_get_mut(index)
+    }
 }
 /*
 impl<Idx, T> GetManyMut<Idx> for [T]
@@ -607,15 +743,27 @@ where
     [T]: GetManyMut<Idx> + CollectionMut<Idx::Output>,
 {
     #[inline(always)]
-    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Option<[Self::RefMut<'a>; N]>  where Self::Output: 'a{ <[T] as GetManyMut<Idx>>::get_many_mut(*self, indices) }
+    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Option<[Self::RefMut<'a>; N]>
+    where
+        Self::Output: 'a,
+    {
+        <[T] as GetManyMut<Idx>>::get_many_mut(*self, indices)
+    }
 
     #[inline(always)]
-    fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Result<[Self::RefMut<'a>; N], ManyMutError>  where Self::Output: 'a{ (*self).try_get_many_mut(indices) }
+    fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Result<[Self::RefMut<'a>; N], ManyMutError>
+    where
+        Self::Output: 'a,
+    {
+        (*self).try_get_many_mut(indices)
+    }
 
     #[inline(always)]
     #[track_caller]
     unsafe fn get_many_unchecked_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> [Self::RefMut<'a>; N]
-    where Self::Output: 'a {
+    where
+        Self::Output: 'a,
+    {
         unsafe { (*self).get_many_unchecked_mut(indices) }
     }
 }
@@ -626,16 +774,33 @@ where
 {
     type Error = <[T] as TryGet<Idx>>::Error;
     #[inline(always)]
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { TryGet::try_get(self.as_slice(), index) }
+    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        TryGet::try_get(self.as_slice(), index)
+    }
 }
 
-impl<T, const N: usize, Output: ?Sized> Collection<Output> for [T; N] where [T]: Collection<Output>
+impl<T, const N: usize, Output: ?Sized> Collection<Output> for [T; N]
+where
+    [T]: Collection<Output>,
 {
-    type Ref<'a> = <[T] as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+    type Ref<'a>
+        = <[T] as Collection<Output>>::Ref<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
-impl<T, const N: usize, Output: ?Sized> CollectionMut<Output> for [T; N] where [T]: CollectionMut<Output>
+impl<T, const N: usize, Output: ?Sized> CollectionMut<Output> for [T; N]
+where
+    [T]: CollectionMut<Output>,
 {
-    type RefMut<'a> = <[T] as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+    type RefMut<'a>
+        = <[T] as CollectionMut<Output>>::RefMut<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
 
 impl<Idx, T, const N: usize> CollectionIndex<Idx> for [T; N]
@@ -643,17 +808,31 @@ where
     [T]: CollectionIndex<Idx>,
 {
     type Output = <[T] as CollectionIndex<Idx>>::Output;
-    type Ref<'a> = <[T] as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = <[T] as CollectionIndex<Idx>>::Ref<'a>
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<Idx, T, const N: usize> Get<Idx> for [T; N]
 where
     [T]: Get<Idx>,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>> where Self::Output: 'a { Get::get(self.as_slice(), index) }
+    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        Get::get(self.as_slice(), index)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a> where Self::Output: 'a { unsafe { Get::get_unchecked(self.as_slice(), index) } }
+    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { Get::get_unchecked(self.as_slice(), index) }
+    }
 }
 
 impl<Idx, T, const N: usize> TryGetMut<Idx> for [T; N]
@@ -661,23 +840,42 @@ where
     [T]: TryGetMut<Idx>,
 {
     #[inline(always)]
-    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a { TryGetMut::try_get_mut(self.as_mut_slice(), index) }
+    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        TryGetMut::try_get_mut(self.as_mut_slice(), index)
+    }
 }
 
 impl<Idx, T, const N: usize> CollectionIndexMut<Idx> for [T; N]
 where
     [T]: CollectionIndexMut<Idx>,
 {
-    type RefMut<'a> = <[T] as CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>
+        = <[T] as CollectionIndexMut<Idx>>::RefMut<'a>
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<Idx, T, const N: usize> GetMut<Idx> for [T; N]
 where
     [T]: GetMut<Idx>,
 {
     #[inline(always)]
-    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>> where Self::Output: 'a { GetMut::get_mut(self.as_mut_slice(), index) }
+    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a,
+    {
+        GetMut::get_mut(self.as_mut_slice(), index)
+    }
     #[inline(always)]
-    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a> where Self::Output: 'a { unsafe { GetMut::get_unchecked_mut(self.as_mut_slice(), index) } }
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { GetMut::get_unchecked_mut(self.as_mut_slice(), index) }
+    }
 }
 impl<Idx, T, const N: usize> GetManyMut<Idx> for [T; N]
 where
@@ -685,20 +883,26 @@ where
 {
     #[inline(always)]
     fn get_many_mut<'a, const N2: usize>(&'a mut self, indices: [Idx; N2]) -> Option<[Self::RefMut<'a>; N2]>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         GetManyMut::get_many_mut(self.as_mut_slice(), indices)
     }
 
     #[inline(always)]
     fn try_get_many_mut<'a, const N2: usize>(&'a mut self, indices: [Idx; N2]) -> Result<[Self::RefMut<'a>; N2], ManyMutError>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         GetManyMut::try_get_many_mut(self.as_mut_slice(), indices)
     }
 
     #[inline(always)]
     #[track_caller]
     unsafe fn get_many_unchecked_mut<'a, const N2: usize>(&'a mut self, indices: [Idx; N2]) -> [Self::RefMut<'a>; N2]
-    where Self::Output: 'a {
+    where
+        Self::Output: 'a,
+    {
         unsafe { GetManyMut::get_many_unchecked_mut(self.as_mut_slice(), indices) }
     }
 }
@@ -709,15 +913,32 @@ where
 {
     type Error = <[T] as TryGet<Idx>>::Error;
     #[inline(always)]
-    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { TryGet::try_get(self.as_slice(), index) }
+    fn try_get<'a>(&'a self, index: Idx) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        TryGet::try_get(self.as_slice(), index)
+    }
 }
-impl<T, Output: ?Sized, A: Allocator> Collection<Output> for Vec<T, A> where [T]: Collection<Output>
+impl<T, Output: ?Sized, A: Allocator> Collection<Output> for Vec<T, A>
+where
+    [T]: Collection<Output>,
 {
-    type Ref<'a> = <[T] as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+    type Ref<'a>
+        = <[T] as Collection<Output>>::Ref<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
-impl<T, Output: ?Sized, A: Allocator> CollectionMut<Output> for Vec<T, A> where [T]: CollectionMut<Output>
+impl<T, Output: ?Sized, A: Allocator> CollectionMut<Output> for Vec<T, A>
+where
+    [T]: CollectionMut<Output>,
 {
-    type RefMut<'a> = <[T] as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+    type RefMut<'a>
+        = <[T] as CollectionMut<Output>>::RefMut<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
 
 impl<Idx, T, A: Allocator> CollectionIndex<Idx> for Vec<T, A>
@@ -725,39 +946,72 @@ where
     [T]: CollectionIndex<Idx>,
 {
     type Output = <[T] as CollectionIndex<Idx>>::Output;
-    type Ref<'a> = <[T] as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = <[T] as CollectionIndex<Idx>>::Ref<'a>
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<Idx, T, A: Allocator> Get<Idx> for Vec<T, A>
 where
     [T]: Get<Idx>,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>> where Self::Output: 'a { Get::get(self.as_slice(), index) }
+    fn get<'a>(&'a self, index: Idx) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        Get::get(self.as_slice(), index)
+    }
     #[track_caller]
     #[inline(always)]
-    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a> where Self::Output: 'a { unsafe { Get::get_unchecked(self.as_slice(), index) } }
+    unsafe fn get_unchecked<'a>(&'a self, index: Idx) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { Get::get_unchecked(self.as_slice(), index) }
+    }
 }
 impl<Idx, T, A: Allocator> TryGetMut<Idx> for Vec<T, A>
 where
     [T]: TryGetMut<Idx>,
 {
     #[inline(always)]
-    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a { TryGetMut::try_get_mut(self.as_mut_slice(), index) }
+    fn try_get_mut<'a>(&'a mut self, index: Idx) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        TryGetMut::try_get_mut(self.as_mut_slice(), index)
+    }
 }
 impl<Idx, T, A: Allocator> CollectionIndexMut<Idx> for Vec<T, A>
 where
     [T]: CollectionIndexMut<Idx>,
 {
-    type RefMut<'a> = <[T] as CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>
+        = <[T] as CollectionIndexMut<Idx>>::RefMut<'a>
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<Idx, T, A: Allocator> GetMut<Idx> for Vec<T, A>
 where
     [T]: GetMut<Idx>,
 {
     #[inline(always)]
-    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>> where Self::Output: 'a { GetMut::get_mut(self.as_mut_slice(), index) }
+    fn get_mut<'a>(&'a mut self, index: Idx) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a,
+    {
+        GetMut::get_mut(self.as_mut_slice(), index)
+    }
     #[inline(always)]
-    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a> where Self::Output: 'a { unsafe { GetMut::get_unchecked_mut(self.as_mut_slice(), index) } }
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, index: Idx) -> Self::RefMut<'a>
+    where
+        Self::Output: 'a,
+    {
+        unsafe { GetMut::get_unchecked_mut(self.as_mut_slice(), index) }
+    }
 }
 impl<Idx, T, A: Allocator> GetManyMut<Idx> for Vec<T, A>
 where
@@ -766,69 +1020,104 @@ where
     #[track_caller]
     #[inline(always)]
     unsafe fn get_many_unchecked_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> [Self::RefMut<'a>; N]
-    where Self::Output: 'a {
+    where
+        Self::Output: 'a,
+    {
         unsafe { GetManyMut::get_many_unchecked_mut(self.as_mut_slice(), indices) }
     }
 
     #[inline(always)]
     fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Result<[Self::RefMut<'a>; N], ManyMutError>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         GetManyMut::try_get_many_mut(self.as_mut_slice(), indices)
     }
     #[inline(always)]
-    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Option<[Self::RefMut<'a>; N]>  where Self::Output: 'a{ GetManyMut::get_many_mut(self.as_mut_slice(), indices) }
+    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [Idx; N]) -> Option<[Self::RefMut<'a>; N]>
+    where
+        Self::Output: 'a,
+    {
+        GetManyMut::get_many_mut(self.as_mut_slice(), indices)
+    }
 }
 
-impl<T> TryGet<usize> for VecDeque<T>
-{
+impl<T> TryGet<usize> for VecDeque<T> {
     type Error = IndexOutOfBounds<usize, Range<usize>>;
     #[inline(always)]
-    fn try_get<'a>(&'a self, index: usize) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.get(index).ok_or(IndexOutOfBounds { index, bound: 0..self.len() }) }
+    fn try_get<'a>(&'a self, index: usize) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index).ok_or(IndexOutOfBounds { index, bound: 0..self.len() })
+    }
 }
-impl<T> Collection<T> for VecDeque<T>
-{
-    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+impl<T> Collection<T> for VecDeque<T> {
+    type Ref<'a>
+        = &'a T
+    where
+        Self: 'a,
+        T: 'a;
 }
-impl<T> CollectionMut<T> for VecDeque<T>
-{
-    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+impl<T> CollectionMut<T> for VecDeque<T> {
+    type RefMut<'a>
+        = &'a mut T
+    where
+        Self: 'a,
+        T: 'a;
 }
 
-impl<T> CollectionIndex<usize> for VecDeque<T>
-{
+impl<T> CollectionIndex<usize> for VecDeque<T> {
     type Output = <Self as Index<usize>>::Output;
-    type Ref<'a> = &'a Self::Output where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = &'a Self::Output
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
-impl<T> Get<usize> for VecDeque<T>
-{
+impl<T> Get<usize> for VecDeque<T> {
     #[inline(always)]
-    fn get<'a>(&'a self, index: usize) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.get(index) }
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index)
+    }
 }
-impl<T> TryGetMut<usize> for VecDeque<T>
-{
+impl<T> TryGetMut<usize> for VecDeque<T> {
     #[inline(always)]
-    fn try_get_mut<'a>(&'a mut self, index: usize) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a
+    fn try_get_mut<'a>(&'a mut self, index: usize) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a,
     {
         let len = self.len();
         self.get_mut(index).ok_or(IndexOutOfBounds { index, bound: 0..len })
     }
 }
-impl<T> CollectionIndexMut<usize> for VecDeque<T>
-{
-    type RefMut<'a> = &'a mut Self::Output where Self: 'a, Self::Output: 'a;
+impl<T> CollectionIndexMut<usize> for VecDeque<T> {
+    type RefMut<'a>
+        = &'a mut Self::Output
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
-impl<T> GetMut<usize> for VecDeque<T>
-{
+impl<T> GetMut<usize> for VecDeque<T> {
     #[inline(always)]
-    fn get_mut<'a>(&'a mut self, index: usize) -> Option<Self::RefMut<'a>> where Self::Output: 'a { self.get_mut(index) }
+    fn get_mut<'a>(&'a mut self, index: usize) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.get_mut(index)
+    }
 }
 
-impl<T> GetManyMut<usize> for VecDeque<T>
-{
+impl<T> GetManyMut<usize> for VecDeque<T> {
     #[track_caller]
     #[inline(always)]
     unsafe fn get_many_unchecked_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> [Self::RefMut<'a>; N]
-    where Self::Output: 'a {
+    where
+        Self::Output: 'a,
+    {
         unsafe {
             // Can probably be improved using `self.as_mut_slices()`
             self.make_contiguous().get_disjoint_unchecked_mut(indices)
@@ -836,46 +1125,66 @@ impl<T> GetManyMut<usize> for VecDeque<T>
     }
     #[inline(always)]
     fn try_get_many_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> Result<[Self::RefMut<'a>; N], ManyMutError>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         self.make_contiguous().try_get_many_mut(indices)
     }
     #[inline(always)]
-    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> Option<[Self::RefMut<'a>; N]>  where Self::Output: 'a{ self.make_contiguous().get_many_mut(indices) }
+    fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [usize; N]) -> Option<[Self::RefMut<'a>; N]>
+    where
+        Self::Output: 'a,
+    {
+        self.make_contiguous().get_many_mut(indices)
+    }
 }
 
-impl Collection<char> for str
-{
-    type Ref<'a> = Identity<char> where Self: 'a, char: 'a;
+impl Collection<char> for str {
+    type Ref<'a>
+        = Identity<char>
+    where
+        Self: 'a,
+        char: 'a;
 }
-impl Collection<str> for str
-{
-    type Ref<'a> = &'a str where Self: 'a, str: 'a;
+impl Collection<str> for str {
+    type Ref<'a>
+        = &'a str
+    where
+        Self: 'a,
+        str: 'a;
 }
-impl CollectionMut<str> for str
-{
-    type RefMut<'a> = &'a mut str where Self: 'a, str: 'a;
+impl CollectionMut<str> for str {
+    type RefMut<'a>
+        = &'a mut str
+    where
+        Self: 'a,
+        str: 'a;
 }
 
 /// A `usize` index counts Unicode scalar values from the start of the string.
-impl CollectionIndex<usize> for str
-{
+impl CollectionIndex<usize> for str {
     type Output = char;
-    type Ref<'a> = Identity<char> where Self: 'a;
+    type Ref<'a>
+        = Identity<char>
+    where
+        Self: 'a;
 }
 
-impl Get<usize> for str
-{
-    fn get<'a>(&'a self, index: usize) -> Option<Self::Ref<'a>> where Self::Output: 'a
+impl Get<usize> for str {
+    fn get<'a>(&'a self, index: usize) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
     {
         self.chars().nth(index).map(Identity)
     }
 }
 
-impl TryGet<usize> for str
-{
+impl TryGet<usize> for str {
     type Error = IndexOutOfBounds;
 
-    fn try_get<'a>(&'a self, index: usize) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a
+    fn try_get<'a>(&'a self, index: usize) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
     {
         Get::get(self, index).ok_or_else(|| IndexOutOfBounds::new(index, 0..self.chars().count()))
     }
@@ -930,24 +1239,48 @@ impl_str_range_access!(
     (core::ops::Bound<usize>, core::ops::Bound<usize>)
 );
 
-impl<Output: ?Sized> Collection<Output> for String where str: Collection<Output>
+impl<Output: ?Sized> Collection<Output> for String
+where
+    str: Collection<Output>,
 {
-    type Ref<'a> = <str as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+    type Ref<'a>
+        = <str as Collection<Output>>::Ref<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
-impl<Output: ?Sized> CollectionMut<Output> for String where str: CollectionMut<Output>
+impl<Output: ?Sized> CollectionMut<Output> for String
+where
+    str: CollectionMut<Output>,
 {
-    type RefMut<'a> = <str as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+    type RefMut<'a>
+        = <str as CollectionMut<Output>>::RefMut<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
 
-impl<Idx> CollectionIndex<Idx> for String where str: CollectionIndex<Idx>
+impl<Idx> CollectionIndex<Idx> for String
+where
+    str: CollectionIndex<Idx>,
 {
     type Output = <str as CollectionIndex<Idx>>::Output;
-    type Ref<'a> = <str as CollectionIndex<Idx>>::Ref<'a> where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = <str as CollectionIndex<Idx>>::Ref<'a>
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 
-impl<Idx> CollectionIndexMut<Idx> for String where str: CollectionIndexMut<Idx>
+impl<Idx> CollectionIndexMut<Idx> for String
+where
+    str: CollectionIndexMut<Idx>,
 {
-    type RefMut<'a> = <str as CollectionIndexMut<Idx>>::RefMut<'a> where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>
+        = <str as CollectionIndexMut<Idx>>::RefMut<'a>
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 
 macro_rules! forward_str_access
@@ -980,17 +1313,18 @@ forward_str_access!(&str, &mut str, String);
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Default)]
-pub struct MissingKey<K = ()>
-{
+pub struct MissingKey<K = ()> {
     pub key: K,
 }
-impl<K> From<K> for MissingKey<K>
-{
-    fn from(key: K) -> Self { MissingKey { key } }
+impl<K> From<K> for MissingKey<K> {
+    fn from(key: K) -> Self {
+        MissingKey { key }
+    }
 }
-impl<K> MissingKey<K>
-{
-    pub fn new(key: K) -> Self { Self { key } }
+impl<K> MissingKey<K> {
+    pub fn new(key: K) -> Self {
+        Self { key }
+    }
 }
 
 #[cfg(feature = "std")]
@@ -1003,18 +1337,29 @@ where
 {
     type Error = MissingKey<Q>;
 
-    fn try_get<'a>(&'a self, key: &Q) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.get(key).ok_or_else(|| MissingKey::new(key.clone())) }
+    fn try_get<'a>(&'a self, key: &Q) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        self.get(key).ok_or_else(|| MissingKey::new(key.clone()))
+    }
 }
 
 #[cfg(feature = "std")]
-impl<K, V, S> Collection<V> for HashMap<K, V, S>
-{
-    type Ref<'a> = &'a V where Self: 'a, V: 'a;
+impl<K, V, S> Collection<V> for HashMap<K, V, S> {
+    type Ref<'a>
+        = &'a V
+    where
+        Self: 'a,
+        V: 'a;
 }
 #[cfg(feature = "std")]
-impl<K, V, S> CollectionMut<V> for HashMap<K, V, S>
-{
-    type RefMut<'a> = &'a mut V where Self: 'a, V: 'a;
+impl<K, V, S> CollectionMut<V> for HashMap<K, V, S> {
+    type RefMut<'a>
+        = &'a mut V
+    where
+        Self: 'a,
+        V: 'a;
 }
 
 #[cfg(feature = "std")]
@@ -1026,7 +1371,11 @@ where
     S: BuildHasher,
 {
     type Output = V;
-    type Ref<'a> = &'a V where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = &'a V
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 #[cfg(feature = "std")]
 impl<K, V, S, Q> Get<&Q> for HashMap<K, V, S>
@@ -1037,7 +1386,12 @@ where
     S: BuildHasher,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, k: &Q) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.get(k) }
+    fn get<'a>(&'a self, k: &Q) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.get(k)
+    }
 }
 
 #[cfg(feature = "std")]
@@ -1065,7 +1419,11 @@ where
     K: Eq + Hash,
     S: BuildHasher,
 {
-    type RefMut<'a> = &'a mut V where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>
+        = &'a mut V
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 #[cfg(feature = "std")]
 impl<K, V, S, Q> GetMut<&Q> for HashMap<K, V, S>
@@ -1095,18 +1453,17 @@ where
 {
     #[inline(always)]
     fn try_get_many_mut<'a, const N: usize>(&'a mut self, keys: [&Q; N]) -> Result<[Self::RefMut<'a>; N], ManyMutError>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         // I wanted to check this is the get_many_mut fail, but the borrow checker is complaining for no reason about self being already borrowed.
-        for k in keys
-        {
-            if self.get_mut(k).is_none()
-            {
+        for k in keys {
+            if self.get_mut(k).is_none() {
                 return Err(ManyMutError::IndexOutOfBounds);
             }
         }
 
-        if let Some(r) = self.get_many_mut(keys)
-        {
+        if let Some(r) = self.get_many_mut(keys) {
             return Ok(r);
         }
 
@@ -1114,17 +1471,16 @@ where
     }
 
     fn get_many_mut<'a, const N: usize>(&'a mut self, keys: [&Q; N]) -> Option<[Self::RefMut<'a>; N]>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         // [Option<T>, N] to Option<[T;N]> (same for result)
         let r = self.get_disjoint_mut(keys);
 
-        if r.iter().any(|x| x.is_none())
-        {
+        if r.iter().any(|x| x.is_none()) {
             None
-        }
-        else
-        {
+        } else {
             Some(r.map(|x| x.unwrap()))
         }
     }
@@ -1137,15 +1493,26 @@ where
     K: Ord,
 {
     type Error = MissingKey<Q>;
-    fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
+    fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index).ok_or_else(|| MissingKey::new(index.clone()))
+    }
 }
-impl<K, V> Collection<V> for BTreeMap<K, V>
-{
-    type Ref<'a> = &'a V where Self: 'a, V: 'a;
+impl<K, V> Collection<V> for BTreeMap<K, V> {
+    type Ref<'a>
+        = &'a V
+    where
+        Self: 'a,
+        V: 'a;
 }
-impl<K, V> CollectionMut<V> for BTreeMap<K, V>
-{
-    type RefMut<'a> = &'a mut V where Self: 'a, V: 'a;
+impl<K, V> CollectionMut<V> for BTreeMap<K, V> {
+    type RefMut<'a>
+        = &'a mut V
+    where
+        Self: 'a,
+        V: 'a;
 }
 
 impl<K, V, Q> CollectionIndex<&Q> for BTreeMap<K, V>
@@ -1155,7 +1522,11 @@ where
     K: Ord,
 {
     type Output = V;
-    type Ref<'a> = &'a V where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = &'a V
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<K, V, Q> Get<&Q> for BTreeMap<K, V>
 where
@@ -1179,7 +1550,12 @@ where
     Q: ?Sized + Ord + Clone,
     K: Ord,
 {
-    fn try_get_mut<'a>(&'a mut self, index: &Q) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a { self.get_mut(index).ok_or_else(|| MissingKey::new(index.clone())) }
+    fn try_get_mut<'a>(&'a mut self, index: &Q) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        self.get_mut(index).ok_or_else(|| MissingKey::new(index.clone()))
+    }
 }
 impl<K, V, Q> CollectionIndexMut<&Q> for BTreeMap<K, V>
 where
@@ -1187,7 +1563,11 @@ where
     Q: ?Sized + Ord,
     K: Ord,
 {
-    type RefMut<'a> = &'a mut V where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>
+        = &'a mut V
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<K, V, Q> GetMut<&Q> for BTreeMap<K, V>
 where
@@ -1214,12 +1594,20 @@ where
     S: BuildHasher,
 {
     type Error = MissingKey<Q>;
-    fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
+    fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index).ok_or_else(|| MissingKey::new(index.clone()))
+    }
 }
 #[cfg(feature = "std")]
-impl<K, S> Collection<K> for HashSet<K, S>
-{
-    type Ref<'a> = &'a K where Self: 'a, K: 'a;
+impl<K, S> Collection<K> for HashSet<K, S> {
+    type Ref<'a>
+        = &'a K
+    where
+        Self: 'a,
+        K: 'a;
 }
 
 #[cfg(feature = "std")]
@@ -1231,7 +1619,11 @@ where
     S: BuildHasher,
 {
     type Output = K;
-    type Ref<'a> = &'a K where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = &'a K
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 #[cfg(feature = "std")]
 impl<K, S, Q> Get<&Q> for HashSet<K, S>
@@ -1242,7 +1634,12 @@ where
     S: BuildHasher,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, k: &Q) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.get(k) }
+    fn get<'a>(&'a self, k: &Q) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.get(k)
+    }
 }
 
 impl<K, Q> TryGet<&Q> for BTreeSet<K>
@@ -1252,11 +1649,19 @@ where
     K: Ord,
 {
     type Error = MissingKey<Q>;
-    fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a { self.get(index).ok_or_else(|| MissingKey::new(index.clone())) }
+    fn try_get<'a>(&'a self, index: &Q) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
+    {
+        self.get(index).ok_or_else(|| MissingKey::new(index.clone()))
+    }
 }
-impl<K> Collection<K> for BTreeSet<K>
-{
-    type Ref<'a> = &'a K where Self: 'a, K: 'a;
+impl<K> Collection<K> for BTreeSet<K> {
+    type Ref<'a>
+        = &'a K
+    where
+        Self: 'a,
+        K: 'a;
 }
 
 impl<K, Q> CollectionIndex<&Q> for BTreeSet<K>
@@ -1266,7 +1671,11 @@ where
     K: Ord,
 {
     type Output = K;
-    type Ref<'a> = &'a K where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = &'a K
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<K, Q> Get<&Q> for BTreeSet<K>
 where
@@ -1275,17 +1684,20 @@ where
     K: Ord,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, k: &Q) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.get(k) }
+    fn get<'a>(&'a self, k: &Q) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.get(k)
+    }
 }
 
 #[cfg(test)]
-mod tests
-{
+mod tests {
     use super::*;
 
     #[test]
-    fn result_indices_select_the_matching_payload()
-    {
+    fn result_indices_select_the_matching_payload() {
         let mut ok: Result<i32, &str> = Ok(1);
         assert_eq!(Get::get(&ok, ResultOk), Some(&1));
         assert_eq!(GetMut::get_mut(&mut ok, ResultErr), None);
@@ -1307,8 +1719,7 @@ mod tests
     }
 
     #[test]
-    fn string_indices_return_characters_and_ranges_return_slices()
-    {
+    fn string_indices_return_characters_and_ranges_return_slices() {
         let string = String::from("aé🦀");
         assert_eq!(*Get::get(&string, 2).unwrap(), '🦀');
         assert_eq!(Get::get(&string, 1..3), Some("é"));
@@ -1317,8 +1728,7 @@ mod tests
     }
 
     #[test]
-    fn mutable_sequence_indices_return_elements_and_slices()
-    {
+    fn mutable_sequence_indices_return_elements_and_slices() {
         let mut values = [1, 2, 3];
         *GetMut::get_mut(&mut values, 0).unwrap() = 4;
         GetMut::get_mut(&mut values, 1..).unwrap().copy_from_slice(&[5, 6]);

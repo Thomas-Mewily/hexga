@@ -7,8 +7,7 @@ mod serde_impl;
 #[cfg(feature = "serde")]
 pub use serde_impl::*;
 
-pub mod prelude
-{
+pub mod prelude {
     #[cfg(feature = "serde")]
     pub use super::serde_impl::{UrlDeserializer, UrlSerializer};
     pub use super::{FromUrl, MediaType, ToUrl};
@@ -34,8 +33,7 @@ pub mod prelude
 /// assert_eq!(url.encoding, Some("base64"));
 /// ```
 #[derive(Debug, PartialEq, Eq)]
-pub struct UrlDataMeta<'a>
-{
+pub struct UrlDataMeta<'a> {
     /// The URL scheme keyword, e.g., "data"
     pub scheme: &'a str,
 
@@ -48,20 +46,17 @@ pub struct UrlDataMeta<'a>
     /// Base64 marker if present, usually "base64"
     pub encoding: Option<&'a str>,
 }
-impl<'a> TryFrom<&'a str> for UrlDataMeta<'a>
-{
+impl<'a> TryFrom<&'a str> for UrlDataMeta<'a> {
     type Error = EncodeError;
 
-    fn try_from(value: &'a str) -> Result<Self, Self::Error>
-    {
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         let value = value.trim();
 
         let (scheme, rest) = value.split_once(':').ok_or_else(|| EncodeError::custom("URL must have a scheme"))?;
 
         let meta = rest.split(',').next().unwrap_or(rest);
 
-        let (media_type_and_ext, encoding) = match meta.split_once(';')
-        {
+        let (media_type_and_ext, encoding) = match meta.split_once(';') {
             Some((m, e)) => (m, Some(e)),
             None => (meta, None),
         };
@@ -88,25 +83,23 @@ impl<'a> TryFrom<&'a str> for UrlDataMeta<'a>
 /// data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AP8AAP8FAAH/+lyI0QAAAABJRU5ErkJggg==
 /// ```
 #[derive(Debug, PartialEq, Eq)]
-pub struct UrlData<'a>
-{
+pub struct UrlData<'a> {
     pub meta: UrlDataMeta<'a>,
     pub data: &'a str,
 }
 
 const MIN_BYTE_SEPARATOR_SEARCH: usize = 256;
 
-impl<'a> Deref for UrlData<'a>
-{
+impl<'a> Deref for UrlData<'a> {
     type Target = UrlDataMeta<'a>;
-    fn deref(&self) -> &Self::Target { &self.meta }
+    fn deref(&self) -> &Self::Target {
+        &self.meta
+    }
 }
-impl<'a> TryFrom<&'a str> for UrlData<'a>
-{
+impl<'a> TryFrom<&'a str> for UrlData<'a> {
     type Error = EncodeError;
 
-    fn try_from(value: &'a str) -> Result<Self, Self::Error>
-    {
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         // Limit the search to the first MIN_BYTE_SEPARATOR_SEARCH bytes
         let search_len = value.len().min(MIN_BYTE_SEPARATOR_SEARCH);
         let prefix = &value[..search_len];
@@ -119,12 +112,10 @@ impl<'a> TryFrom<&'a str> for UrlData<'a>
         let data = &data[1..]; // skip the comma itself
 
         let meta = UrlDataMeta::try_from(meta_str)?;
-        if meta.scheme != "data"
-        {
+        if meta.scheme != "data" {
             return Err(EncodeError::custom("Invalid URL scheme: expected scheme 'data'"));
         }
-        if meta.encoding != Some("base64")
-        {
+        if meta.encoding != Some("base64") {
             return Err(EncodeError::custom("Invalid URL scheme: expected encoding 'base64'"));
         }
 
@@ -140,22 +131,20 @@ impl<'a> TryFrom<&'a str> for UrlData<'a>
 /// data:image/png;bin,<raw bytes>
 /// ```
 #[derive(Debug, PartialEq, Eq)]
-pub struct BinUrlData<'a>
-{
+pub struct BinUrlData<'a> {
     pub meta: UrlDataMeta<'a>,
     pub data: &'a [u8],
 }
-impl<'a> Deref for BinUrlData<'a>
-{
+impl<'a> Deref for BinUrlData<'a> {
     type Target = UrlDataMeta<'a>;
-    fn deref(&self) -> &Self::Target { &self.meta }
+    fn deref(&self) -> &Self::Target {
+        &self.meta
+    }
 }
-impl<'a> TryFrom<&'a [u8]> for BinUrlData<'a>
-{
+impl<'a> TryFrom<&'a [u8]> for BinUrlData<'a> {
     type Error = EncodeError;
 
-    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error>
-    {
+    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
         // Limit the search to the first MIN_BYTE_SEPARATOR_SEARCH bytes
         let search_len = value.len().min(MIN_BYTE_SEPARATOR_SEARCH);
         let prefix = &value[..search_len];
@@ -171,12 +160,10 @@ impl<'a> TryFrom<&'a [u8]> for BinUrlData<'a>
         let meta_str = std::str::from_utf8(meta_bytes).map_err(|_| EncodeError::custom("Invalid UTF-8 in metadata"))?;
 
         let meta = UrlDataMeta::try_from(meta_str)?;
-        if meta.scheme != "data"
-        {
+        if meta.scheme != "data" {
             return Err(EncodeError::custom("Invalid URL scheme: expected scheme 'data'"));
         }
-        if meta.encoding != Some("bin")
-        {
+        if meta.encoding != Some("bin") {
             return Err(EncodeError::custom("Invalid URL scheme: expected encoding 'bin'"));
         }
 
@@ -184,36 +171,34 @@ impl<'a> TryFrom<&'a [u8]> for BinUrlData<'a>
     }
 }
 
-pub trait MediaType
-{
+pub trait MediaType {
     /// [Media types (MIME types)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types/Common_types)
     fn media_type() -> &'static str;
-    fn mime_type_in(mut inside: String, extension: &extension) -> String
-    {
+    fn mime_type_in(mut inside: String, extension: &extension) -> String {
         use std::fmt::Write;
         inside.clear();
         let media = Self::media_type();
         write!(&mut inside, "{media}/{extension}").expect("failed to write in string");
         inside
     }
-    fn mime_type(extension: &extension) -> String
-    {
+    fn mime_type(extension: &extension) -> String {
         let media = Self::media_type();
         format!("{media}/{extension}")
     }
 }
 
-impl MediaType for String
-{
-    fn media_type() -> &'static str { "text" }
+impl MediaType for String {
+    fn media_type() -> &'static str {
+        "text"
+    }
 }
-impl MediaType for &str
-{
-    fn media_type() -> &'static str { String::media_type() }
+impl MediaType for &str {
+    fn media_type() -> &'static str {
+        String::media_type()
+    }
 }
 
-pub trait ToUrl: MediaType + Save
-{
+pub trait ToUrl: MediaType + Save {
     /// Converts the encoded value into a Data URL (RFC 2397).
     ///
     /// The extension parameter should not contains any dot. (e.g., `png`, not `.png`).
@@ -221,8 +206,7 @@ pub trait ToUrl: MediaType + Save
     /// `data:<media_type>/<extension>;base64,<base64_encoded_data>`.
     ///
     /// Returns an error if the data cannot be encoded for the given extension.
-    fn to_url(&self, extension: &extension) -> EncodeResult<String>
-    {
+    fn to_url(&self, extension: &extension) -> EncodeResult<String> {
         let (bytes, _deduced_extension) = self.save_to_bytes_with_extension(Some(extension))?;
         let media = Self::media_type();
         let url = bytes.to_base64_in(format!("data:{media}/{extension};base64,"));
@@ -237,8 +221,7 @@ pub trait ToUrl: MediaType + Save
     /// `data:<media_type>/<extension>;bin,<binary_data>`.
     ///
     /// Returns an error if the data cannot be encoded for the given extension.
-    fn to_url_bin(&self, extension: &extension) -> EncodeResult<Vec<u8>>
-    {
+    fn to_url_bin(&self, extension: &extension) -> EncodeResult<Vec<u8>> {
         let media = Self::media_type();
         let mut data = Vec::with_capacity(1024);
         write!(&mut data, "data:{media}/{extension};bin,").map_err(EncodeError::from)?;
@@ -252,8 +235,7 @@ impl<T> ToUrl for T where T: MediaType + Save {}
 ///
 /// This trait extends [`Load`] and provides methods to create an the value
 /// from either a **Data URL (RFC 2397)**, a **binary URL**, or raw bytes.
-pub trait FromUrl: Load
-{
+pub trait FromUrl: Load {
     /// Loads an instance from a standard **Data URL (RFC 2397)** string.
     ///
     /// Example Data URL: (single red pixel)
@@ -293,8 +275,7 @@ pub trait FromUrl: Load
     where
         Self: Sized,
     {
-        match Self::from_bin_url(bytes)
-        {
+        match Self::from_bin_url(bytes) {
             Ok(o) => Ok(o),
             Err(_) => Self::load_from_bytes_with_extension(bytes, Some(extension)),
         }

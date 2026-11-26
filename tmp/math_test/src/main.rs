@@ -14,7 +14,8 @@ use hexga::{
 
 fn dbg_lerp<S, F>(src: S, dest: S, coef: F)
 where
-    S: Lerp<F> + Copy + Debug, S::Output: Debug,
+    S: Lerp<F> + Copy + Debug,
+    S::Output: Debug,
     F: Float,
 {
     dbg!(&src);
@@ -22,8 +23,7 @@ where
     dbg!(src.lerp(dest, coef));
 }
 
-fn x()
-{
+fn x() {
     let v = vec2(0., 1.);
 
     let size = vec2i(20, 40);
@@ -38,8 +38,7 @@ fn x()
 
     let x = 127u8.to_float_range();
 
-    for coef in (0.0..=1.).sample(10)
-    {
+    for coef in (0.0..=1.).sample(10) {
         dbg!(coef);
         dbg!(false.lerp(true, coef));
     }
@@ -57,8 +56,7 @@ fn x()
     dbg_lerp(0., 1., 0.5);
 }
 
-fn img()
-{
+fn img() {
     //let i = Image::from_fn_coef((4, 4), |v| hsl(v.x, v.y, 1.).to_rgba_of::<float>());
     let i = ImageOf::<ColorU16>::from_fn_coef((1024, 10), |v| rgb(v.x, v.y, 0.0).to_u16_range());
     let original_pixels = i.pixels().to_owned();
@@ -72,17 +70,13 @@ fn img()
     dbg!(i);
 }
 
-fn img_test()
-{
+fn img_test() {
     //let x = i32::
 
     Image::from_fn_coef((1024, 1024), |v| {
-        if (v - 0.5.splat2()).length() <= 0.5
-        {
+        if (v - 0.5.splat2()).length() <= 0.5 {
             ColorU8::WHITE
-        }
-        else
-        {
+        } else {
             ColorU8::BLACK
         }
     })
@@ -93,29 +87,25 @@ fn img_test()
 use std::{num::Saturating, ops::*};
 
 #[math_vec]
-pub struct DamageOf2<T>
-{
+pub struct DamageOf2<T> {
     physic: T,
     magic: T,
 }
 
 #[math_vec]
-pub struct DamageArray<T, const N: usize>
-{
+pub struct DamageArray<T, const N: usize> {
     boum: [T; N],
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Foo
-{
+struct Foo {
     bar: i32,
     age: i32,
 }
 
 #[math_vec]
 #[non_exhaustive]
-pub struct DamageOf<T>
-{
+pub struct DamageOf<T> {
     physic: T,
     magic: T,
     melee: T,
@@ -124,21 +114,18 @@ pub struct DamageOf<T>
 type Damage = DamageOf<i32>;
 
 #[derive(Serialize, Deserialize)]
-pub enum DamageVersion
-{
+pub enum DamageVersion {
     Version(Damage),
     Version2(Damage),
     //
 }
 
-struct Linear<T>
-{
+struct Linear<T> {
     origin: T,
     coef: T,
 }
 
-fn x2()
-{
+fn x2() {
     // A + Bx
 
     dbg!(Vector3::new(true, false, true) & Vector3::new(true, true, false));
@@ -182,8 +169,7 @@ fn x2()
 
 #[bit_index]
 #[repr(u8)]
-pub enum Color
-{
+pub enum Color {
     Red,
     Green,
     Blue = 5,
@@ -193,13 +179,11 @@ pub enum Color
     GreenAndYellowAndPurple = (Color::Yellow | Self::Purple) | Self::Green,
 }
 
-fn color()
-{
+fn color() {
     let color = Color::Red | Color::Green;
     dbg!(&color);
 
-    for c in color
-    {
+    for c in color {
         dbg!(c);
     }
 
@@ -245,8 +229,7 @@ fn grid_bijection()
 }
 */
 
-fn gen_vec_view()
-{
+fn gen_vec_view() {
     /*
     //let gen_vec : GenVecOf<i32, Generation, Vec<hexga::generational::gen_vec::Entry<i32, Generation>>> = [1i32,2,3].to_genvec();
     let gen_vec : GenVec<i32> = [1i32,2,3].to_genvec();
@@ -269,8 +252,7 @@ fn gen_vec_view()
     assert_eq!(id, id2);
 }
 
-fn grid_test()
-{
+fn grid_test() {
     use hexga_math::prelude::*;
     //use super::*;
 
@@ -295,8 +277,7 @@ fn grid_test()
     assert_eq!(grid1.view_mut().subview(rect), grid2.view_mut().subview(rect));
 }
 
-fn main()
-{
+fn main() {
 
     //x2();
     //grid_test();

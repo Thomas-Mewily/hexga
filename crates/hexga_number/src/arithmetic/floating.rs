@@ -348,8 +348,7 @@ pub trait Trigo<T> {
 /// Generalized function and constant for floating point like `f32`, `f64`...
 ///
 /// The func impl and documentation are copied from the Rust std because those are the same function, generalized in this trait
-pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow<Self, Output=Self> + ClampUnit + Lerp<Self> + Trigo<Self>
-{
+pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow<Self, Output = Self> + ClampUnit + Lerp<Self> + Trigo<Self> {
     /// 2.
     #[doc(hidden)]
     const TWO: Self;
@@ -668,8 +667,6 @@ pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow<Self, O
     #[must_use]
     fn log10(self) -> Self;
 
-
-
     /// between [0., 1.]
     fn normalize(self) -> Self
     where
@@ -690,12 +687,9 @@ pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow<Self, O
     where
         Self: PositiveOrNegative,
     {
-        if self.is_positive_or_zero()
-        {
+        if self.is_positive_or_zero() {
             self.floor()
-        }
-        else
-        {
+        } else {
             self.ceil()
         }
     }
@@ -703,12 +697,9 @@ pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow<Self, O
     where
         Self: PositiveOrNegative,
     {
-        if self.is_positive_or_zero()
-        {
+        if self.is_positive_or_zero() {
             self.ceil()
-        }
-        else
-        {
+        } else {
             self.floor()
         }
     }
@@ -716,8 +707,7 @@ pub trait Float: PrimitiveSigned + CastPrimitive + Half + NaNValue + Pow<Self, O
 
 macro_rules! impl_floating_number {
     ($primitive_name: ident) => {
-        impl Trigo<$primitive_name> for $primitive_name
-        {
+        impl Trigo<$primitive_name> for $primitive_name {
             /// Computes the sine of a number (in radians).
             ///
             /// # Unspecified precision
@@ -734,7 +724,9 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn sin(self) -> $primitive_name { self.sin() }
+            fn sin(self) -> $primitive_name {
+                self.sin()
+            }
             /// Computes the cosine of a number (in radians).
             ///
             /// # Unspecified precision
@@ -751,7 +743,9 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn cos(self) -> $primitive_name { self.cos() }
+            fn cos(self) -> $primitive_name {
+                self.cos()
+            }
             /// Computes the tangent of a number (in radians).
             ///
             /// # Unspecified precision
@@ -769,7 +763,9 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn tan(self) -> $primitive_name { self.tan() }
+            fn tan(self) -> $primitive_name {
+                self.tan()
+            }
             /// Computes the cotangent of a number (in radians).
             ///
             /// Defined as `1 / tan(x)` or equivalently `cos(x) / sin(x)`.
@@ -785,7 +781,9 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn cot(self) -> $primitive_name { <$primitive_name as One>::ONE / self.tan() }
+            fn cot(self) -> $primitive_name {
+                <$primitive_name as One>::ONE / self.tan()
+            }
             /// Hyperbolic sine function.
             ///
             /// # Unspecified precision
@@ -808,7 +806,9 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn sinh(self) -> $primitive_name { self.sinh() }
+            fn sinh(self) -> $primitive_name {
+                self.sinh()
+            }
             /// Hyperbolic cosine function.
             ///
             /// # Unspecified precision
@@ -831,7 +831,9 @@ macro_rules! impl_floating_number {
             /// // Same result
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn cosh(self) -> $primitive_name { self.cosh() }
+            fn cosh(self) -> $primitive_name {
+                self.cosh()
+            }
             /// Hyperbolic tangent function.
             ///
             /// # Unspecified precision
@@ -854,8 +856,12 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn tanh(self) -> $primitive_name { self.tanh() }
-            fn sin_cos(self) -> ($primitive_name, $primitive_name) { self.sin_cos() }
+            fn tanh(self) -> $primitive_name {
+                self.tanh()
+            }
+            fn sin_cos(self) -> ($primitive_name, $primitive_name) {
+                self.sin_cos()
+            }
 
             /// Computes the arcsine of a number. Return value is in radians in
             /// the range [-pi/2, pi/2] or NaN if the number is outside the range
@@ -878,7 +884,9 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn asin(self) -> $primitive_name { self.asin() }
+            fn asin(self) -> $primitive_name {
+                self.asin()
+            }
             /// Computes the arccosine of a number. Return value is in radians in
             /// the range [0, pi] or NaN if the number is outside the range
             /// [-1, 1].
@@ -900,7 +908,9 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn acos(self) -> $primitive_name { self.acos() }
+            fn acos(self) -> $primitive_name {
+                self.acos()
+            }
             /// Computes the arctangent of a number. Return value is in radians in the
             /// range [-pi/2, pi/2];
             ///
@@ -921,7 +931,9 @@ macro_rules! impl_floating_number {
             ///
             /// assert!(abs_difference <= f32::EPSILON);
             /// ```
-            fn atan(self) -> $primitive_name { self.atan() }
+            fn atan(self) -> $primitive_name {
+                self.atan()
+            }
             /// Computes the four quadrant arctangent of `self` (`y`) and `other` (`x`) in radians.
             ///
             /// * `x = 0`, `y = 0`: `0`
@@ -955,19 +967,28 @@ macro_rules! impl_floating_number {
             /// assert!(abs_difference_1 <= f32::EPSILON);
             /// assert!(abs_difference_2 <= f32::EPSILON);
             /// ```
-            fn atan2(self, other: Self) -> $primitive_name { self.atan2(other) } 
+            fn atan2(self, other: Self) -> $primitive_name {
+                self.atan2(other)
+            }
         }
 
-        impl Float for $primitive_name
-        {
+        impl Float for $primitive_name {
             #[inline(always)]
-            fn floor(self) -> Self { Self::floor(self) }
+            fn floor(self) -> Self {
+                Self::floor(self)
+            }
             #[inline(always)]
-            fn ceil(self) -> Self { Self::ceil(self) }
+            fn ceil(self) -> Self {
+                Self::ceil(self)
+            }
             #[inline(always)]
-            fn round(self) -> Self { Self::round(self) }
+            fn round(self) -> Self {
+                Self::round(self)
+            }
             #[inline(always)]
-            fn trunc(self) -> Self { Self::trunc(self) }
+            fn trunc(self) -> Self {
+                Self::trunc(self)
+            }
 
             const TWO: Self = 2.0;
             const THREE: Self = 3.0;
@@ -998,24 +1019,46 @@ macro_rules! impl_floating_number {
             const COLOR_300_DIV_360: Self = 300. / 360.;
             const COLOR_330_DIV_360: Self = 330. / 360.;
 
-            fn sqrt(self) -> Self { self.sqrt() }
+            fn sqrt(self) -> Self {
+                self.sqrt()
+            }
 
-            fn fract(self) -> Self { self.fract() }
-            fn signum(self) -> Self { self.signum() }
-            fn copysign(self, sign: Self) -> Self { self.copysign(sign) }
+            fn fract(self) -> Self {
+                self.fract()
+            }
+            fn signum(self) -> Self {
+                self.signum()
+            }
+            fn copysign(self, sign: Self) -> Self {
+                self.copysign(sign)
+            }
 
             //fn pow(self, n: Self) -> Self { self.powf(n) }
 
-            fn exp(self) -> Self { self.exp() }
-            fn exp2(self) -> Self { self.exp2() }
+            fn exp(self) -> Self {
+                self.exp()
+            }
+            fn exp2(self) -> Self {
+                self.exp2()
+            }
 
-            fn ln(self) -> Self { self.ln() }
-            fn log(self, base: Self) -> Self { self.log(base) }
+            fn ln(self) -> Self {
+                self.ln()
+            }
+            fn log(self, base: Self) -> Self {
+                self.log(base)
+            }
 
-            fn log2(self) -> Self { self.log2() }
-            fn log10(self) -> Self { self.log10() }
+            fn log2(self) -> Self {
+                self.log2()
+            }
+            fn log10(self) -> Self {
+                self.log10()
+            }
 
-            fn total_cmp(&self, other: &Self) -> ::std::cmp::Ordering { self.total_cmp(other) }
+            fn total_cmp(&self, other: &Self) -> ::std::cmp::Ordering {
+                self.total_cmp(other)
+            }
         }
     };
 }

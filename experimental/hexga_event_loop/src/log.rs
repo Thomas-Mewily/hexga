@@ -2,18 +2,17 @@ use super::*;
 
 pub use ::log::{debug, error, info, warn};
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{debug, error, info, warn};
 }
 
 static LOGGER_INIT: LazyLock<()> = LazyLock::new(|| {
     #[cfg(not(target_arch = "wasm32"))]
     {
-        use std::io::Write;
         use ::log::LevelFilter;
+        use std::io::Write;
 
-        const WGPU_LOG_LEVEL : LevelFilter = LevelFilter::Error;
+        const WGPU_LOG_LEVEL: LevelFilter = LevelFilter::Error;
 
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("debug"))
             .filter_module("wgpu_core", WGPU_LOG_LEVEL)
@@ -33,4 +32,6 @@ static LOGGER_INIT: LazyLock<()> = LazyLock::new(|| {
     }
 });
 
-pub fn init_if_needed() { LazyLock::force(&LOGGER_INIT); }
+pub fn init_if_needed() {
+    LazyLock::force(&LOGGER_INIT);
+}

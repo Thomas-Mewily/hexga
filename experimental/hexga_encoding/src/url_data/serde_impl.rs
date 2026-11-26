@@ -1,13 +1,11 @@
 use super::*;
 
-pub trait UrlDeserializer<'de>: Deserializer<'de>
-{
+pub trait UrlDeserializer<'de>: Deserializer<'de> {
     fn deserialize_with_encoding<T>(self) -> Result<T, Self::Error>
     where
         T: FromUrl,
     {
-        if self.is_human_readable()
-        {
+        if self.is_human_readable() {
             let url = self.deserialize_string(StringVisitor)?;
             return T::from_url(&url).map_err(serde::de::Error::custom);
         }
@@ -17,8 +15,7 @@ pub trait UrlDeserializer<'de>: Deserializer<'de>
 }
 impl<'de, S> UrlDeserializer<'de> for S where S: Deserializer<'de> {}
 
-pub trait UrlSerializer: Serializer
-{
+pub trait UrlSerializer: Serializer {
     fn serialize_with_encoding<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
         T: ToUrl,
@@ -32,13 +29,10 @@ pub trait UrlSerializer: Serializer
     {
         use serde::ser::Error;
 
-        if self.is_human_readable()
-        {
+        if self.is_human_readable() {
             let url = value.to_url(extension).map_err(Self::Error::custom)?;
             self.serialize_str(&url)
-        }
-        else
-        {
+        } else {
             let url = value.to_url_bin(extension).map_err(Self::Error::custom)?;
             self.serialize_bytes(&url)
         }
@@ -49,11 +43,12 @@ impl<F> UrlSerializer for F where F: Serializer {}
 
 pub(crate) struct BytesVisitor;
 
-impl<'de> Visitor<'de> for BytesVisitor
-{
+impl<'de> Visitor<'de> for BytesVisitor {
     type Value = Vec<u8>;
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result { formatter.write_str("a byte buffer") }
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a byte buffer")
+    }
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
     where
@@ -72,11 +67,12 @@ impl<'de> Visitor<'de> for BytesVisitor
 
 pub(crate) struct StringVisitor;
 
-impl<'de> Visitor<'de> for StringVisitor
-{
+impl<'de> Visitor<'de> for StringVisitor {
     type Value = String;
 
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result { formatter.write_str("a UTF-8 string") }
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a UTF-8 string")
+    }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where

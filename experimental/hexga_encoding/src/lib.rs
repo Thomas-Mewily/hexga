@@ -52,8 +52,7 @@ pub use serde_impl::*;
 mod url_data;
 pub use url_data::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{encode_result::prelude::*, file_result::prelude::*, fs_extension::prelude::*, load::prelude::*, save::prelude::*, url_data::prelude::*};
 
     #[cfg(feature = "serde")]
@@ -62,8 +61,7 @@ pub mod prelude
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::fs_extension::traits::*;
 
     #[cfg(feature = "serde")]
@@ -73,8 +71,7 @@ pub mod traits
     pub use hexga_encoding_derive::{Load, Save, io};
 }
 
-pub mod cfg
-{
+pub mod cfg {
     pub use hexga_core::cfg::CfgDeserialize;
     pub use hexga_core::cfg::CfgSerialize;
 }

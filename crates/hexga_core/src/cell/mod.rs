@@ -10,7 +10,8 @@ pub use single_thread_cell::*;
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DifferentThreadError;
 
-impl Debug for DifferentThreadError
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "different thread") }
+impl Debug for DifferentThreadError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "different thread")
+    }
 }

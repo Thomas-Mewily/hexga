@@ -3,35 +3,28 @@ use core::ops::{Bound, RangeBounds};
 
 /// Range compatibilty type that support `Copy`. Will be replaced by the next `core::range::Range` type when stable.
 #[derive(Clone, Copy, Default, PartialEq, Eq, Hash)]
-pub struct Range<Idx>
-{
+pub struct Range<Idx> {
     pub start: Idx,
     pub end: Idx,
 }
-impl<Idx: Debug> Debug for Range<Idx>
-{
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult
-    {
+impl<Idx: Debug> Debug for Range<Idx> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
         self.start.fmt(fmt)?;
         write!(fmt, "..")?;
         self.end.fmt(fmt)?;
         Ok(())
     }
 }
-impl<Idx> From<core::ops::Range<Idx>> for Range<Idx>
-{
-    fn from(value: core::ops::Range<Idx>) -> Self
-    {
+impl<Idx> From<core::ops::Range<Idx>> for Range<Idx> {
+    fn from(value: core::ops::Range<Idx>) -> Self {
         Self {
             start: value.start,
             end: value.end,
         }
     }
 }
-impl<Idx> From<Range<Idx>> for core::ops::Range<Idx>
-{
-    fn from(value: Range<Idx>) -> Self
-    {
+impl<Idx> From<Range<Idx>> for core::ops::Range<Idx> {
+    fn from(value: Range<Idx>) -> Self {
         Self {
             start: value.start,
             end: value.end,
@@ -39,9 +32,10 @@ impl<Idx> From<Range<Idx>> for core::ops::Range<Idx>
     }
 }
 
-impl<Idx: PartialOrd<Idx>> Range<Idx>
-{
-    pub fn as_std(self) -> core::ops::Range<Idx> { self.into() }
+impl<Idx: PartialOrd<Idx>> Range<Idx> {
+    pub fn as_std(self) -> core::ops::Range<Idx> {
+        self.into()
+    }
 
     /// Returns `true` if `item` is contained in the range.
     ///
@@ -96,8 +90,11 @@ impl<Idx: PartialOrd<Idx>> Range<Idx>
     }
 }
 
-impl<T> RangeBounds<T> for Range<T>
-{
-    fn start_bound(&self) -> Bound<&T> { Bound::Included(&self.start) }
-    fn end_bound(&self) -> Bound<&T> { Bound::Excluded(&self.end) }
+impl<T> RangeBounds<T> for Range<T> {
+    fn start_bound(&self) -> Bound<&T> {
+        Bound::Included(&self.start)
+    }
+    fn end_bound(&self) -> Bound<&T> {
+        Bound::Excluded(&self.end)
+    }
 }

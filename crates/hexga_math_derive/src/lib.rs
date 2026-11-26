@@ -37,16 +37,14 @@ use syn::{Fields, GenericParam, Ident, ItemStruct, Type, parse_macro_input};
 ///      // Missing fields during deserialization get Zero
 ///      ```
 #[proc_macro_attribute]
-pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
-{
+pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemStruct);
 
     let name = &input.ident;
 
     let hexga_math_crate = crate_name("hexga_math").unwrap_or_else(|_| FoundCrate::Name("hexga_math".to_string()));
 
-    let crate_name_str = match hexga_math_crate
-    {
+    let crate_name_str = match hexga_math_crate {
         FoundCrate::Itself => "crate",
         FoundCrate::Name(ref name) => name,
     };
@@ -59,50 +57,39 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     // Detect const generic
     let const_generic = input.generics.params.iter().find_map(|p| {
-        if let GenericParam::Const(c) = p
-        {
+        if let GenericParam::Const(c) = p {
             Some(&c.ident)
-        }
-        else
-        {
+        } else {
             None
         }
     });
 
-    let dim = match (&input.fields, const_generic)
-    {
-        (Fields::Named(fields), None) =>
-        {
+    let dim = match (&input.fields, const_generic) {
+        (Fields::Named(fields), None) => {
             let len = fields.named.len();
             quote! { #len }
         }
 
-        (Fields::Named(fields), Some(_n)) =>
-        {
-            if fields.named.len() != 1
-            {
+        (Fields::Named(fields), Some(_n)) => {
+            if fields.named.len() != 1 {
                 return syn::Error::new_spanned(fields, "math_vec with const generic requires exactly one array field")
                     .to_compile_error()
                     .into();
             }
 
             let field = fields.named.iter().next().unwrap();
-            match &field.ty
-            {
-                Type::Array(arr) =>
-                {
+            match &field.ty {
+                Type::Array(arr) => {
                     let len = &arr.len;
                     quote! { #len }
                 }
-                _ =>
-                {
+                _ => {
                     return syn::Error::new_spanned(&field.ty, "expected an array field `[T; N]`").to_compile_error().into();
                 }
             }
         }
 
-        _ =>
-        {
+        _ => {
             return syn::Error::new_spanned(&input, "math_vec only supports structs with named fields")
                 .to_compile_error()
                 .into();
@@ -115,8 +102,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
     let mut generics_with_policy = input.generics.clone();
     generics_with_policy.params.push(syn::parse_quote!(Policy));
 
-    let generic_type_ident = match input.generics.params.first()
-    {
+    let generic_type_ident = match input.generics.params.first() {
         Some(syn::GenericParam::Type(ty)) => &ty.ident,
         _ => panic!("Expected the first generic parameter to be the vector component type"),
     };
@@ -134,11 +120,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
 
     let names = [&name]; //, &name_coef];
 
-    let [array_impl, specific_impl] = if is_array_struct
-    {
+    let [array_impl, specific_impl] = if is_array_struct {
         ::core::array::from_fn(|idx| {
-            if idx <= 0
-            {
+            if idx <= 0 {
                 let current_name = names[idx];
 
                 quote! {
@@ -454,9 +438,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         }
                     );
                 }
-            }
-            else
-            {
+            } else {
                 quote! {
                     #[cfg(feature = "serde")]
                     impl<T, const N: usize> #crate_ident::serde::Serialize for #name<T, N>
@@ -578,12 +560,9 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                 }
             }
         })
-    }
-    else
-    {
+    } else {
         ::core::array::from_fn(|idx| {
-            if idx <= 0
-            {
+            if idx <= 0 {
                 let current_name = names[idx];
 
                 quote! {
@@ -886,11 +865,8 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                         }
                     );
                 }
-            }
-            else
-            {
-                if !has_non_exhaustive
-                {
+            } else {
+                if !has_non_exhaustive {
                     // serialize like a tuple
                     quote! {
                         #[cfg(feature = "serde")]
@@ -1010,14 +986,10 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
                             }
                         };
                     }
-                }
-                else
-                {
-                    let fields = match &input.fields
-                    {
+                } else {
+                    let fields = match &input.fields {
                         syn::Fields::Named(f) => &f.named,
-                        _ =>
-                        {
+                        _ => {
                             return syn::Error::new_spanned(&input, "math_vec only supports structs with named fields").to_compile_error();
                         }
                     };
@@ -1141,8 +1113,7 @@ pub fn math_vec(_attr: TokenStream, item: TokenStream) -> TokenStream
         })
     };
 
-    fn where_with_bounds(base: Option<&syn::WhereClause>, generics: &syn::Generics, bound: syn::Path) -> syn::WhereClause
-    {
+    fn where_with_bounds(base: Option<&syn::WhereClause>, generics: &syn::Generics, bound: syn::Path) -> syn::WhereClause {
         let mut wc = base.cloned().unwrap_or_else(|| syn::WhereClause {
             where_token: Default::default(),
             predicates: Default::default(),

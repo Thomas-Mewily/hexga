@@ -1,21 +1,22 @@
 use super::*;
 
-pub trait Remove<Idx: ?Sized>
-{
+pub trait Remove<Idx: ?Sized> {
     type Output;
     fn remove(&mut self, index: Idx) -> Option<Self::Output>;
 }
 
-impl<T, A: Allocator> Remove<usize> for Vec<T, A>
-{
+impl<T, A: Allocator> Remove<usize> for Vec<T, A> {
     type Output = T;
-    fn remove(&mut self, index: usize) -> Option<Self::Output> { if index < self.len() { Some(self.remove(index)) } else { None } }
+    fn remove(&mut self, index: usize) -> Option<Self::Output> {
+        if index < self.len() { Some(self.remove(index)) } else { None }
+    }
 }
 
-impl<T> Remove<usize> for VecDeque<T>
-{
+impl<T> Remove<usize> for VecDeque<T> {
     type Output = T;
-    fn remove(&mut self, index: usize) -> Option<Self::Output> { self.remove(index) }
+    fn remove(&mut self, index: usize) -> Option<Self::Output> {
+        self.remove(index)
+    }
 }
 
 #[cfg(feature = "std")]
@@ -27,7 +28,9 @@ where
     S: BuildHasher,
 {
     type Output = V;
-    fn remove(&mut self, index: &Q) -> Option<Self::Output> { self.remove(index) }
+    fn remove(&mut self, index: &Q) -> Option<Self::Output> {
+        self.remove(index)
+    }
 }
 impl<K, V, Q> Remove<&Q> for BTreeMap<K, V>
 where
@@ -36,7 +39,9 @@ where
     K: Ord,
 {
     type Output = V;
-    fn remove(&mut self, index: &Q) -> Option<Self::Output> { self.remove(index) }
+    fn remove(&mut self, index: &Q) -> Option<Self::Output> {
+        self.remove(index)
+    }
 }
 
 #[cfg(feature = "std")]
@@ -48,7 +53,9 @@ where
     S: BuildHasher,
 {
     type Output = ();
-    fn remove(&mut self, index: &Q) -> Option<Self::Output> { self.remove(index).then_some(()) }
+    fn remove(&mut self, index: &Q) -> Option<Self::Output> {
+        self.remove(index).then_some(())
+    }
 }
 impl<K, Q> Remove<&Q> for BTreeSet<K>
 where
@@ -57,5 +64,7 @@ where
     K: Ord,
 {
     type Output = ();
-    fn remove(&mut self, index: &Q) -> Option<Self::Output> { self.remove(index).then_some(()) }
+    fn remove(&mut self, index: &Q) -> Option<Self::Output> {
+        self.remove(index).then_some(())
+    }
 }

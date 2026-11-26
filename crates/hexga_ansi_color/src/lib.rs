@@ -22,8 +22,7 @@ use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
-pub enum AnsiColorKind
-{
+pub enum AnsiColorKind {
     /// The default terminal color
     #[default]
     Reset,
@@ -37,28 +36,31 @@ pub enum AnsiColorKind
     White,
     Gray,
 }
-impl AnsiColorKind
-{
+impl AnsiColorKind {
     pub const ALL: &'static [Self] = {
         pub use AnsiColorKind::*;
         &[Black, Red, Green, Yellow, Blue, Magenta, Cyan, White, Gray]
     };
 
-    pub const fn on_layer(self, layer: AnsiColorLayer) -> AnsiColor { AnsiColor::new(self, layer) }
-    pub const fn foreground(self) -> AnsiColor { self.on_layer(AnsiColorLayer::Foreground) }
-    pub const fn background(self) -> AnsiColor { self.on_layer(AnsiColorLayer::Background) }
+    pub const fn on_layer(self, layer: AnsiColorLayer) -> AnsiColor {
+        AnsiColor::new(self, layer)
+    }
+    pub const fn foreground(self) -> AnsiColor {
+        self.on_layer(AnsiColorLayer::Foreground)
+    }
+    pub const fn background(self) -> AnsiColor {
+        self.on_layer(AnsiColorLayer::Background)
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
-pub enum AnsiColorLayer
-{
+pub enum AnsiColorLayer {
     #[default]
     Foreground,
     Background,
 }
-impl AnsiColorLayer
-{
+impl AnsiColorLayer {
     pub const ALL: &'static [Self] = {
         pub use AnsiColorLayer::*;
         &[Foreground, Background]
@@ -67,30 +69,27 @@ impl AnsiColorLayer
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
-pub struct AnsiColor
-{
+pub struct AnsiColor {
     pub color: AnsiColorKind,
     pub layer: AnsiColorLayer,
 }
-impl From<AnsiColorKind> for AnsiColor
-{
-    fn from(color: AnsiColorKind) -> Self
-    {
+impl From<AnsiColorKind> for AnsiColor {
+    fn from(color: AnsiColorKind) -> Self {
         Self {
             color,
             layer: AnsiColorLayer::default(),
         }
     }
 }
-impl From<(AnsiColorKind, AnsiColorLayer)> for AnsiColor
-{
-    fn from((color, layer): (AnsiColorKind, AnsiColorLayer)) -> Self { Self { color, layer } }
+impl From<(AnsiColorKind, AnsiColorLayer)> for AnsiColor {
+    fn from((color, layer): (AnsiColorKind, AnsiColorLayer)) -> Self {
+        Self { color, layer }
+    }
 }
 
 pub type AnsiColorStr = &'static str;
 
-impl AnsiColor
-{
+impl AnsiColor {
     #[rustfmt::skip]    pub const BLACK             : AnsiColorStr = "\x1b[30m";
     #[rustfmt::skip]    pub const RED               : AnsiColorStr = "\x1b[31m";
     #[rustfmt::skip]    pub const GREEN             : AnsiColorStr = "\x1b[32m";
@@ -129,41 +128,44 @@ impl AnsiColor
     #[rustfmt::skip]    pub const RESET_FOREGROUND: &str = "\x1b[39m";
     #[rustfmt::skip]    pub const RESET_BACKGROUND: &str = "\x1b[49m";
 
-    pub const fn new(color: AnsiColorKind, layer: AnsiColorLayer) -> Self { Self { color, layer } }
-    pub const fn new_foreground(color: AnsiColorKind) -> Self { Self::new(color, AnsiColorLayer::Foreground) }
-    pub const fn new_background(color: AnsiColorKind) -> Self { Self::new(color, AnsiColorLayer::Background) }
+    pub const fn new(color: AnsiColorKind, layer: AnsiColorLayer) -> Self {
+        Self { color, layer }
+    }
+    pub const fn new_foreground(color: AnsiColorKind) -> Self {
+        Self::new(color, AnsiColorLayer::Foreground)
+    }
+    pub const fn new_background(color: AnsiColorKind) -> Self {
+        Self::new(color, AnsiColorLayer::Background)
+    }
 
-    pub const fn color(&self) -> AnsiColorKind { self.color }
-    pub const fn set_color(&mut self, color: AnsiColorKind) -> &mut Self
-    {
+    pub const fn color(&self) -> AnsiColorKind {
+        self.color
+    }
+    pub const fn set_color(&mut self, color: AnsiColorKind) -> &mut Self {
         self.color = color;
         self
     }
-    pub const fn with_color(mut self, color: AnsiColorKind) -> Self
-    {
+    pub const fn with_color(mut self, color: AnsiColorKind) -> Self {
         self.set_color(color);
         self
     }
 
-    pub const fn layer(&self) -> AnsiColorLayer { self.layer }
-    pub const fn set_layer(&mut self, layer: AnsiColorLayer) -> &mut Self
-    {
+    pub const fn layer(&self) -> AnsiColorLayer {
+        self.layer
+    }
+    pub const fn set_layer(&mut self, layer: AnsiColorLayer) -> &mut Self {
         self.layer = layer;
         self
     }
-    pub const fn with_layer(mut self, layer: AnsiColorLayer) -> Self
-    {
+    pub const fn with_layer(mut self, layer: AnsiColorLayer) -> Self {
         self.set_layer(layer);
         self
     }
 
     /// Get the ansi color code
-    pub const fn str(&self) -> AnsiColorStr
-    {
-        match self.layer
-        {
-            AnsiColorLayer::Foreground => match self.color
-            {
+    pub const fn str(&self) -> AnsiColorStr {
+        match self.layer {
+            AnsiColorLayer::Foreground => match self.color {
                 AnsiColorKind::Black => Self::BLACK_FOREGROUND,
                 AnsiColorKind::Red => Self::RED_FOREGROUND,
                 AnsiColorKind::Green => Self::GREEN_FOREGROUND,
@@ -175,8 +177,7 @@ impl AnsiColor
                 AnsiColorKind::Gray => Self::GRAY_FOREGROUND,
                 AnsiColorKind::Reset => Self::RESET_FOREGROUND,
             },
-            AnsiColorLayer::Background => match self.color
-            {
+            AnsiColorLayer::Background => match self.color {
                 AnsiColorKind::Black => Self::BLACK_BACKGROUND,
                 AnsiColorKind::Red => Self::RED_BACKGROUND,
                 AnsiColorKind::Green => Self::GREEN_BACKGROUND,
@@ -192,27 +193,31 @@ impl AnsiColor
     }
 }
 
-impl From<AnsiColor> for AnsiColorStr
-{
-    fn from(value: AnsiColor) -> Self { value.str() }
+impl From<AnsiColor> for AnsiColorStr {
+    fn from(value: AnsiColor) -> Self {
+        value.str()
+    }
 }
 
-impl Display for AnsiColor
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result { f.write_str(self.str()) }
+impl Display for AnsiColor {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        f.write_str(self.str())
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, Default)]
-pub struct TerminalColor
-{
+pub struct TerminalColor {
     pub foreground: AnsiColorKind,
     pub background: AnsiColorKind,
 }
-impl TerminalColor
-{
-    pub const fn uniform(foreground_and_background: AnsiColorKind) -> Self { Self::new(foreground_and_background, foreground_and_background) }
-    pub const fn new(foreground: AnsiColorKind, background: AnsiColorKind) -> Self { Self { foreground, background } }
+impl TerminalColor {
+    pub const fn uniform(foreground_and_background: AnsiColorKind) -> Self {
+        Self::new(foreground_and_background, foreground_and_background)
+    }
+    pub const fn new(foreground: AnsiColorKind, background: AnsiColorKind) -> Self {
+        Self { foreground, background }
+    }
 
     pub const RESET: Self = Self {
         foreground: AnsiColorKind::Reset,
@@ -220,21 +225,25 @@ impl TerminalColor
     };
 }
 
-impl From<(AnsiColorKind, AnsiColorKind)> for TerminalColor
-{
-    fn from((foreground, background): (AnsiColorKind, AnsiColorKind)) -> Self { Self::new(foreground, background) }
+impl From<(AnsiColorKind, AnsiColorKind)> for TerminalColor {
+    fn from((foreground, background): (AnsiColorKind, AnsiColorKind)) -> Self {
+        Self::new(foreground, background)
+    }
 }
-impl From<AnsiColorKind> for TerminalColor
-{
-    fn from(foreground_and_background: AnsiColorKind) -> Self { Self::uniform(foreground_and_background) }
-}
-
-impl From<TerminalColor> for (AnsiColorKind, AnsiColorKind)
-{
-    fn from(tc: TerminalColor) -> Self { (tc.foreground, tc.background) }
+impl From<AnsiColorKind> for TerminalColor {
+    fn from(foreground_and_background: AnsiColorKind) -> Self {
+        Self::uniform(foreground_and_background)
+    }
 }
 
-impl Display for TerminalColor
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result { write!(f, "{}{}", self.foreground.foreground(), self.background.background()) }
+impl From<TerminalColor> for (AnsiColorKind, AnsiColorKind) {
+    fn from(tc: TerminalColor) -> Self {
+        (tc.foreground, tc.background)
+    }
+}
+
+impl Display for TerminalColor {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}{}", self.foreground.foreground(), self.background.background())
+    }
 }

@@ -210,8 +210,7 @@ mod map_on;
 mod map_on_common;
 mod map_on_tuple;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use crate::map_on;
     pub use crate::map_on_tuple;
 

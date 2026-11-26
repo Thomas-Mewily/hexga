@@ -1,7 +1,6 @@
 use hexga_generational::prelude::*;
 
-fn main()
-{
+fn main() {
     let mut set = GenHashSet::new();
 
     let (id, first_insertion) = set.insert("abc".to_owned());

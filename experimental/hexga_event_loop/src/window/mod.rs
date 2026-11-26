@@ -12,8 +12,7 @@ pub use cursor::*;
 mod event;
 pub use event::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::app_window::{Window, WindowParam, WindowResult};
     /*
     pub(crate) use super::{Window, WindowParam, WindowLevel, WinitWindowID, WinitWindowShared, ExternLibConvert};
@@ -24,7 +23,6 @@ pub mod prelude
     pub(crate) use super::winit_convert::ExternLibConvert;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::app_window::{WindowAttribute, WindowManager, Windowable, WindowableSurface};
 }

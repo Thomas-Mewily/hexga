@@ -2,27 +2,29 @@ use super::*;
 
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-pub struct GpuSampler
-{
+pub struct GpuSampler {
     pub lib_wgpu: wgpu::Sampler,
 }
-impl From<wgpu::Sampler> for GpuSampler
-{
-    fn from(wgpu: wgpu::Sampler) -> Self { Self { lib_wgpu: wgpu } }
+impl From<wgpu::Sampler> for GpuSampler {
+    fn from(wgpu: wgpu::Sampler) -> Self {
+        Self { lib_wgpu: wgpu }
+    }
 }
-impl From<GpuSampler> for wgpu::Sampler
-{
-    fn from(sampler: GpuSampler) -> Self { sampler.lib_wgpu }
+impl From<GpuSampler> for wgpu::Sampler {
+    fn from(sampler: GpuSampler) -> Self {
+        sampler.lib_wgpu
+    }
 }
-impl Default for GpuSampler
-{
-    fn default() -> Self { Self::new_linear() }
+impl Default for GpuSampler {
+    fn default() -> Self {
+        Self::new_linear()
+    }
 }
-impl GpuSampler
-{
-    pub fn new_pixel_art() -> Self { Self::new_nearest() }
-    pub fn new_nearest() -> Self
-    {
+impl GpuSampler {
+    pub fn new_pixel_art() -> Self {
+        Self::new_nearest()
+    }
+    pub fn new_nearest() -> Self {
         Gpu.device()
             .create_sampler(&wgpu::SamplerDescriptor {
                 address_mode_u: wgpu::AddressMode::ClampToEdge,
@@ -36,8 +38,7 @@ impl GpuSampler
             .into()
     }
 
-    pub fn new_linear() -> Self
-    {
+    pub fn new_linear() -> Self {
         Gpu.device()
             .create_sampler(&wgpu::SamplerDescriptor {
                 address_mode_u: wgpu::AddressMode::ClampToEdge,

@@ -6,10 +6,8 @@ where
     G: Guarded<i32>,
 {
     print!("{} = ", std::any::type_name::<G>());
-    match guarded.try_get()
-    {
-        Ok(guard) =>
-        {
+    match guarded.try_get() {
+        Ok(guard) => {
             let value = *guard;
             println!("{value}");
         }
@@ -17,8 +15,7 @@ where
     }
 }
 
-fn main()
-{
+fn main() {
     let mutex = Mutex::new(42);
     display(&mutex);
 

@@ -1,49 +1,50 @@
 use super::*;
 
 #[derive(Debug)]
-pub struct GpuSurface<'a>
-{
+pub struct GpuSurface<'a> {
     pub lib_wgpu: wgpu::Surface<'a>,
 }
-impl<'a> From<wgpu::Surface<'a>> for GpuSurface<'a>
-{
-    fn from(surface: wgpu::Surface<'a>) -> Self { Self { lib_wgpu: surface } }
+impl<'a> From<wgpu::Surface<'a>> for GpuSurface<'a> {
+    fn from(surface: wgpu::Surface<'a>) -> Self {
+        Self { lib_wgpu: surface }
+    }
 }
-impl<'a> From<GpuSurface<'a>> for wgpu::Surface<'a>
-{
-    fn from(surface: GpuSurface<'a>) -> Self { surface.lib_wgpu }
+impl<'a> From<GpuSurface<'a>> for wgpu::Surface<'a> {
+    fn from(surface: GpuSurface<'a>) -> Self {
+        surface.lib_wgpu
+    }
 }
 
 #[derive(Debug)]
-pub struct GpuSurfaceConfigured<'a>
-{
+pub struct GpuSurfaceConfigured<'a> {
     pub(crate) surface: GpuSurface<'a>,
     pub(crate) configuration: wgpu::SurfaceConfiguration,
 }
 
-impl<'a> GpuSurfaceConfigured<'a>
-{
-    pub fn from_surface(surface: GpuSurface<'a>, size: Vec2i) -> Self
-    {
+impl<'a> GpuSurfaceConfigured<'a> {
+    pub fn from_surface(surface: GpuSurface<'a>, size: Vec2i) -> Self {
         let size = size.max(one());
         let configuration = surface.lib_wgpu.get_default_config(&Gpu.adapter(), size.x as _, size.y as _).unwrap();
         surface.lib_wgpu.configure(&Gpu.device(), &configuration);
         Self { surface, configuration }
     }
 
-    fn size(&self) -> Vec2i { GetSize::size(self) }
+    fn size(&self) -> Vec2i {
+        GetSize::size(self)
+    }
 
-    pub fn surface(&self) -> &GpuSurface<'a> { &self.surface }
+    pub fn surface(&self) -> &GpuSurface<'a> {
+        &self.surface
+    }
 }
-impl<'a> AsRef<GpuSurface<'a>> for GpuSurfaceConfigured<'a>
-{
-    fn as_ref(&self) -> &GpuSurface<'a> { self.surface() }
+impl<'a> AsRef<GpuSurface<'a>> for GpuSurfaceConfigured<'a> {
+    fn as_ref(&self) -> &GpuSurface<'a> {
+        self.surface()
+    }
 }
 
-impl<'a> SetSize<int, 2> for GpuSurfaceConfigured<'a>
-{
-    fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self
-    {
+impl<'a> SetSize<int, 2> for GpuSurfaceConfigured<'a> {
+    fn set_size(&mut self, size: Vector<int, 2>) -> &mut Self {
         let size = size.max(one());
         self.configuration.width = size.x as _;
         self.configuration.height = size.y as _;
@@ -51,7 +52,8 @@ impl<'a> SetSize<int, 2> for GpuSurfaceConfigured<'a>
         self
     }
 }
-impl<'a> GetSize<int, 2> for GpuSurfaceConfigured<'a>
-{
-    fn size(&self) -> Vector<int, 2> { vec2i(self.configuration.width as _, self.configuration.height as _) }
+impl<'a> GetSize<int, 2> for GpuSurfaceConfigured<'a> {
+    fn size(&self) -> Vector<int, 2> {
+        vec2i(self.configuration.width as _, self.configuration.height as _)
+    }
 }

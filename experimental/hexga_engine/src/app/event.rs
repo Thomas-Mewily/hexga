@@ -7,8 +7,7 @@ pub(crate) type AppInternalEventLoop<'a> = EventLoop<'a, AppCustomEvent>;
 pub(crate) type AppInternalProxy = AppProxy<AppCustomEvent>;
 pub(crate) type AppInternalMessage = AppMessage<AppCustomEvent>;
 
-pub(crate) enum AppCustomEvent
-{
+pub(crate) enum AppCustomEvent {
     SurfaceReady(GpuSurface<'static>),
     GpuReady(GpuContext),
     GpuError(GpuError),

@@ -2,22 +2,18 @@ use std::env;
 use std::process::Command;
 use std::time::Duration;
 
-pub fn publish_all_crate()
-{
+pub fn publish_all_crate() {
     let crates: Vec<&str> = include_str!("../name_2_share.md").lines().collect();
-    for name in crates
-    {
+    for name in crates {
         let name = name.trim();
-        if name.starts_with("//") | name.starts_with("#") || name.is_empty()
-        {
+        if name.starts_with("//") | name.starts_with("#") || name.is_empty() {
             continue;
         }
         publish_crate(name);
     }
 }
 
-pub fn publish_crate(name: &'static str)
-{
+pub fn publish_crate(name: &'static str) {
     const CRATES_FOLDER: [&str; 3] = ["crates", "experimental", "old"];
 
     println!("Publishing {}...", name);
@@ -33,8 +29,7 @@ pub fn publish_crate(name: &'static str)
 
     let status = Command::new("cargo").arg("publish").status().expect("Failed to execute cargo publish");
 
-    if !status.success()
-    {
+    if !status.success() {
         eprintln!("Failed to publish {}", name);
     }
 

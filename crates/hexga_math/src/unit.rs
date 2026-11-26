@@ -8,14 +8,18 @@ macro_rules! impl_new_unit_or_number {
         where
             P: ::core::ops::Add<P, Output = P> + $crate::Zero,
         {
-            fn sum<I: Iterator<Item = Self>>(iter: I) -> Self { iter.fold(Self::ZERO, <Self as ::core::ops::Add<Self>>::add) }
+            fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+                iter.fold(Self::ZERO, <Self as ::core::ops::Add<Self>>::add)
+            }
         }
 
         impl<P, P2> $crate::CastFrom<$name<P2>> for $name<P>
         where
             P: $crate::CastFrom<P2>,
         {
-            fn cast_from(value: $name<P2>) -> Self { $name(P::cast_from(value.0)) }
+            fn cast_from(value: $name<P2>) -> Self {
+                $name(P::cast_from(value.0))
+            }
         }
     };
 }

@@ -23,38 +23,38 @@ pub type SerializerXml<'se> = serde_xml_rs::Serializer<&'se mut Vec<u8>>;
 //     }
 // }
 
-pub trait MarkupSerializer<'se>
-{
+pub trait MarkupSerializer<'se> {
     const EXTENSION: &'static str;
     fn new_serializer(src: &'se mut Vec<u8>) -> Self;
 }
 
-impl<'se> MarkupSerializer<'se> for SerializerRon<'se>
-{
+impl<'se> MarkupSerializer<'se> for SerializerRon<'se> {
     const EXTENSION: &'static str = Extension::RON;
 
-    fn new_serializer(src: &'se mut Vec<u8>) -> Self { SerializerRon::new(VecWrite(src), Some(Default::default())).expect("failed to create ron serializer") }
+    fn new_serializer(src: &'se mut Vec<u8>) -> Self {
+        SerializerRon::new(VecWrite(src), Some(Default::default())).expect("failed to create ron serializer")
+    }
 }
-impl<'se> MarkupSerializer<'se> for SerializerJson<'se>
-{
+impl<'se> MarkupSerializer<'se> for SerializerJson<'se> {
     const EXTENSION: &'static str = Extension::JSON;
 
-    fn new_serializer(src: &'se mut Vec<u8>) -> Self { SerializerJson::new(src) }
+    fn new_serializer(src: &'se mut Vec<u8>) -> Self {
+        SerializerJson::new(src)
+    }
 }
-impl<'se> MarkupSerializer<'se> for SerializerXml<'se>
-{
+impl<'se> MarkupSerializer<'se> for SerializerXml<'se> {
     const EXTENSION: &'static str = Extension::XML;
 
-    fn new_serializer(src: &'se mut Vec<u8>) -> Self { SerializerXml::new_from_writer(src) }
+    fn new_serializer(src: &'se mut Vec<u8>) -> Self {
+        SerializerXml::new_from_writer(src)
+    }
 }
 
 #[doc(hidden)]
 pub struct VecWrite<'a>(&'a mut Vec<u8>);
 
-impl<'a> std::fmt::Write for VecWrite<'a>
-{
-    fn write_str(&mut self, s: &str) -> std::fmt::Result
-    {
+impl<'a> std::fmt::Write for VecWrite<'a> {
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
         self.0.extend_from_slice(s.as_bytes());
         Ok(())
     }

@@ -1,53 +1,47 @@
 use super::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{FileError, FileResult};
 }
 
 pub type FileResult<T = ()> = Result<T, FileError>;
 
 #[derive(Default)]
-pub struct FileError
-{
+pub struct FileError {
     pub path: Option<PathBuf>,
     pub kind: FileErrorKind,
 }
-impl FileError
-{
-    pub fn new(kind: impl Into<FileErrorKind>) -> Self { Self { kind: kind.into(), path: None } }
-    pub fn with_path(mut self, path: Option<PathBuf>) -> Self
-    {
+impl FileError {
+    pub fn new(kind: impl Into<FileErrorKind>) -> Self {
+        Self { kind: kind.into(), path: None }
+    }
+    pub fn with_path(mut self, path: Option<PathBuf>) -> Self {
         self.path = path;
         self
     }
 }
-impl Deref for FileError
-{
+impl Deref for FileError {
     type Target = FileErrorKind;
-    fn deref(&self) -> &Self::Target { &self.kind }
+    fn deref(&self) -> &Self::Target {
+        &self.kind
+    }
 }
-impl DerefMut for FileError
-{
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.kind }
+impl DerefMut for FileError {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.kind
+    }
 }
-impl Debug for FileError
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
-        match &self.path
-        {
+impl Debug for FileError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match &self.path {
             Some(path) => write!(f, "{:?} at {:?}", self.kind, path.display()),
             None => write!(f, "{:?} at unknow path", self.kind),
         }
     }
 }
-impl Display for FileError
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
-        match &self.path
-        {
+impl Display for FileError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match &self.path {
             Some(path) => write!(f, "{:?} at {:?}", self.kind, path.display()),
             None => write!(f, "{:?} at unknow path", self.kind),
         }
@@ -55,8 +49,7 @@ impl Display for FileError
 }
 impl std::error::Error for FileError {}
 #[cfg(feature = "serde")]
-impl serde::ser::Error for FileError
-{
+impl serde::ser::Error for FileError {
     fn custom<T>(msg: T) -> Self
     where
         T: Display,
@@ -68,8 +61,7 @@ impl serde::ser::Error for FileError
     }
 }
 #[cfg(feature = "serde")]
-impl serde::de::Error for FileError
-{
+impl serde::de::Error for FileError {
     fn custom<T>(msg: T) -> Self
     where
         T: Display,
@@ -81,46 +73,49 @@ impl serde::de::Error for FileError
     }
 }
 
-pub enum FileErrorKind
-{
+pub enum FileErrorKind {
     /// Problem when encoding the data.
     Encode(EncodeError),
     /// Problem with the file system : File not found, out of free space...
     Io(IoError),
 }
-impl Default for FileErrorKind
-{
-    fn default() -> Self { FileErrorKind::Encode(EncodeError::Unknow) }
+impl Default for FileErrorKind {
+    fn default() -> Self {
+        FileErrorKind::Encode(EncodeError::Unknow)
+    }
 }
 
-impl From<IoError> for FileErrorKind
-{
-    fn from(value: IoError) -> Self { Self::Io(value) }
+impl From<IoError> for FileErrorKind {
+    fn from(value: IoError) -> Self {
+        Self::Io(value)
+    }
 }
-impl From<IoErrorKind> for FileErrorKind
-{
-    fn from(value: IoErrorKind) -> Self { Self::Io(IoError::from(value)) }
+impl From<IoErrorKind> for FileErrorKind {
+    fn from(value: IoErrorKind) -> Self {
+        Self::Io(IoError::from(value))
+    }
 }
-impl From<EncodeError> for FileErrorKind
-{
-    fn from(value: EncodeError) -> Self { Self::Encode(value) }
+impl From<EncodeError> for FileErrorKind {
+    fn from(value: EncodeError) -> Self {
+        Self::Encode(value)
+    }
 }
-impl Debug for FileErrorKind
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
-        match self
-        {
+impl Debug for FileErrorKind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
             Self::Encode(v) => write!(f, "{:?}", v),
             Self::Io(v) => write!(f, "{:?}", v),
         }
     }
 }
 
-impl FileErrorKind
-{
-    pub fn is_io(&self) -> bool { matches!(self, Self::Io(_)) }
-    pub fn is_encode(&self) -> bool { matches!(self, Self::Encode(_)) }
+impl FileErrorKind {
+    pub fn is_io(&self) -> bool {
+        matches!(self, Self::Io(_))
+    }
+    pub fn is_encode(&self) -> bool {
+        matches!(self, Self::Encode(_))
+    }
 }
 
 /*

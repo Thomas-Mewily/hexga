@@ -1,11 +1,13 @@
-use ::image::{ColorType, DynamicImage, GenericImageView, ImageEncoder, ImageFormat, Rgba, codecs::{bmp::BmpEncoder, gif::GifEncoder, ico::IcoEncoder, jpeg::JpegEncoder, png::PngEncoder, webp::WebPEncoder}};
+use ::image::{
+    ColorType, DynamicImage, GenericImageView, ImageEncoder, ImageFormat, Rgba,
+    codecs::{bmp::BmpEncoder, gif::GifEncoder, ico::IcoEncoder, jpeg::JpegEncoder, png::PngEncoder, webp::WebPEncoder},
+};
 use hexga_encoding::{DeducedExtension, MediaType};
 use hexga_math::NumberType;
 
 use super::*;
 
-pub(crate) mod prelude
-{
+pub(crate) mod prelude {
     pub use super::{Image, ImageBaseOf, ImageOf, ToImage};
 }
 
@@ -35,7 +37,9 @@ where
     Idx: Integer,
     C: PartialEq,
 {
-    fn eq(&self, other: &ImageBaseOf<C, Idx, B>) -> bool { self.size == other.size && self.pixels.as_slice() == other.pixels.as_slice() }
+    fn eq(&self, other: &ImageBaseOf<C, Idx, B>) -> bool {
+        self.size == other.size && self.pixels.as_slice() == other.pixels.as_slice()
+    }
 }
 
 impl<C, Idx, A: Allocator> Eq for ImageBaseOf<C, Idx, A>
@@ -50,8 +54,7 @@ where
     Idx: Integer,
     C: PartialOrd,
 {
-    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering>
-    {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         (&self.size, self.pixels.as_slice()).partial_cmp(&(&other.size, other.pixels.as_slice()))
     }
 }
@@ -61,7 +64,9 @@ where
     Idx: Integer,
     C: Ord,
 {
-    fn cmp(&self, other: &Self) -> core::cmp::Ordering { (&self.size, self.pixels.as_slice()).cmp(&(&other.size, other.pixels.as_slice())) }
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        (&self.size, self.pixels.as_slice()).cmp(&(&other.size, other.pixels.as_slice()))
+    }
 }
 
 impl<C, Idx, A: Allocator> core::hash::Hash for ImageBaseOf<C, Idx, A>
@@ -69,8 +74,7 @@ where
     Idx: Integer,
     C: core::hash::Hash,
 {
-    fn hash<H: core::hash::Hasher>(&self, state: &mut H)
-    {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.size.hash(state);
         self.pixels.as_slice().hash(state);
     }
@@ -80,8 +84,7 @@ impl<C, Idx, A: Allocator + Default> Default for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
-    fn default() -> Self
-    {
+    fn default() -> Self {
         Self {
             size: ___(),
             pixels: Vec::new_in(A::default()),
@@ -151,11 +154,9 @@ where
     Idx: Integer,
     C: Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "Image({}, {:?}x{:?})", std::any::type_name::<C>(), self.size().x, self.size().y)?;
-        if self.size().area_usize() <= 16 * 16
-        {
+        if self.size().area_usize() <= 16 * 16 {
             writeln!(f)?;
 
             const SEP: &str = " ";
@@ -176,10 +177,8 @@ where
             let width = strings.iter().map(|s| s.len()).max().unwrap_or(0);
             let g = unsafe { ImageBaseOf::<_, Idx>::from_vec_unchecked(size, strings) };
 
-            for y in (0..size[1].to_usize()).rev()
-            {
-                for x in 0..size[0].to_usize()
-                {
+            for y in (0..size[1].to_usize()).rev() {
+                for x in 0..size[0].to_usize() {
                     let mut idx = Vector::<Idx, 2>::ZERO;
                     idx[0] = Idx::cast_from(x);
                     idx[1] = Idx::cast_from(y);
@@ -198,8 +197,12 @@ impl<C, Idx, A: Allocator + Clone> ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
-    pub fn pixels(&self) -> &[C] { self.values() }
-    pub fn pixels_mut(&mut self) -> &mut [C] { self.values_mut() }
+    pub fn pixels(&self) -> &[C] {
+        self.values()
+    }
+    pub fn pixels_mut(&mut self) -> &mut [C] {
+        self.values_mut()
+    }
 
     /// `self.view().crop_intersect(subrect).to_grid()`
     fn subimage(&self, rect: Rectangle2<Idx>) -> Self
@@ -222,8 +225,7 @@ where
     }
 }
 
-pub trait ToImage
-{
+pub trait ToImage {
     type Output;
     fn to_image(self) -> Self::Output;
 }
@@ -231,14 +233,18 @@ impl<C, Idx, A: Allocator + Clone> From<GridOf<C, Idx, 2, A>> for ImageBaseOf<C,
 where
     Idx: Integer,
 {
-    fn from(value: GridOf<C, Idx, 2, A>) -> Self { value.to_image() }
+    fn from(value: GridOf<C, Idx, 2, A>) -> Self {
+        value.to_image()
+    }
 }
 impl<'a, C, Idx, A: Allocator + Clone> From<GridView<'a, GridOf<C, Idx, 2, A>, C, Idx, 2>> for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
     C: Clone,
 {
-    fn from(value: GridView<'a, GridOf<C, Idx, 2, A>, C, Idx, 2>) -> Self { value.to_image() }
+    fn from(value: GridView<'a, GridOf<C, Idx, 2, A>, C, Idx, 2>) -> Self {
+        value.to_image()
+    }
 }
 
 impl<C, Idx, A: Allocator + Clone> ToImage for ImageBaseOf<C, Idx, A>
@@ -246,18 +252,17 @@ where
     Idx: Integer,
 {
     type Output = Self;
-    fn to_image(self) -> Self::Output { self }
+    fn to_image(self) -> Self::Output {
+        self
+    }
 }
 
-fn reverse_rows<T>(pixels: &mut [T], width: usize, height: usize)
-{
-    if width == 0
-    {
+fn reverse_rows<T>(pixels: &mut [T], width: usize, height: usize) {
+    if width == 0 {
         return;
     }
     let (first, last) = pixels.split_at_mut(width * (height / 2));
-    for (top, bottom) in first.chunks_exact_mut(width).zip(last.chunks_exact_mut(width).rev())
-    {
+    for (top, bottom) in first.chunks_exact_mut(width).zip(last.chunks_exact_mut(width).rev()) {
         top.swap_with_slice(bottom);
     }
 }
@@ -267,8 +272,7 @@ where
     Idx: Integer,
 {
     type Output = ImageBaseOf<C, Idx, A>;
-    fn to_image(self) -> Self::Output
-    {
+    fn to_image(self) -> Self::Output {
         let (size, mut values) = self.into_size_and_values();
         reverse_rows(&mut values, size.x.to_usize(), size.y.to_usize());
         unsafe { ImageBaseOf::from_vec_unchecked(size, values) }
@@ -279,8 +283,7 @@ where
     Idx: Integer,
 {
     type Output = GridOf<C, Idx, 2, A>;
-    fn to_grid(self) -> Self::Output
-    {
+    fn to_grid(self) -> Self::Output {
         let (size, mut values) = self.into_size_and_values();
         reverse_rows(&mut values, size.x.to_usize(), size.y.to_usize());
         unsafe { GridOf::from_vec_unchecked(size, values) }
@@ -293,8 +296,7 @@ where
     C: Clone,
 {
     type Output = ImageBaseOf<C, Idx, A>;
-    fn to_image(self) -> Self::Output
-    {
+    fn to_image(self) -> Self::Output {
         let size = self.size();
         let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
         Self::Output::from_fn_in(size, |p| unsafe { self.get_unchecked(p) }.clone(), allocator)
@@ -306,7 +308,9 @@ where
     C: Clone,
 {
     type Output = ImageBaseOf<C, Idx, A>;
-    fn to_image(self) -> Self::Output { self.view().to_image() }
+    fn to_image(self) -> Self::Output {
+        self.view().to_image()
+    }
 }
 
 impl<'a, C, Idx, A: Allocator + Clone> ToImage for GridView<'a, ImageBaseOf<C, Idx, A>, C, Idx, 2>
@@ -315,8 +319,7 @@ where
     C: Clone,
 {
     type Output = ImageBaseOf<C, Idx, A>;
-    fn to_image(self) -> Self::Output
-    {
+    fn to_image(self) -> Self::Output {
         let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
         Self::Output::from_fn_in(self.size(), |p| unsafe { self.get_unchecked(p) }.clone(), allocator)
     }
@@ -327,7 +330,9 @@ where
     C: Clone,
 {
     type Output = ImageBaseOf<C, Idx, A>;
-    fn to_image(self) -> Self::Output { self.view().to_image() }
+    fn to_image(self) -> Self::Output {
+        self.view().to_image()
+    }
 }
 
 impl<C, Idx, A: Allocator + Clone> IGrid<C, Idx, 2> for ImageBaseOf<C, Idx, A>
@@ -337,12 +342,20 @@ where
     type WithType<U> = ImageBaseOf<U, Idx, A>;
     type Allocator = A;
 
-    fn allocator(&self) -> &A { self.pixels.allocator() }
+    fn allocator(&self) -> &A {
+        self.pixels.allocator()
+    }
 
-    fn values(&self) -> &[C] { &self.pixels }
-    fn values_mut(&mut self) -> &mut [C] { &mut self.pixels }
+    fn values(&self) -> &[C] {
+        &self.pixels
+    }
+    fn values_mut(&mut self) -> &mut [C] {
+        &mut self.pixels
+    }
 
-    fn into_size_and_values(self) -> (Vector2<Idx>, Vec<C, A>) { (self.size, self.pixels) }
+    fn into_size_and_values(self) -> (Vector2<Idx>, Vec<C, A>) {
+        (self.size, self.pixels)
+    }
 
     unsafe fn from_vec_unchecked<P>(size: P, pixels: Vec<C, A>) -> Self
     where
@@ -359,8 +372,7 @@ where
     {
         unsafe { Vector2::<Idx>::to_index_unchecked(self.flip_y(pos.into()), self.size()) }
     }
-    unsafe fn index_to_position_unchecked(&self, index: usize) -> Vector2<Idx>
-    {
+    unsafe fn index_to_position_unchecked(&self, index: usize) -> Vector2<Idx> {
         self.flip_y(unsafe { Vector2::<Idx>::from_index_unchecked(index, self.size()) })
     }
     unsafe fn external_position_to_position_unchecked<P>(mut pos: P, size: P) -> P
@@ -379,14 +391,18 @@ where
     Idx: Integer,
 {
     #[inline(always)]
-    fn pos(&self) -> Vector2<Idx> { zero() }
+    fn pos(&self) -> Vector2<Idx> {
+        zero()
+    }
 }
 impl<T, Idx, A: Allocator + Clone> GetSize<Idx, 2> for ImageBaseOf<T, Idx, A>
 where
     Idx: Integer,
 {
     #[inline(always)]
-    fn size(&self) -> Vector<Idx, 2> { self.size }
+    fn size(&self) -> Vector<Idx, 2> {
+        self.size
+    }
 }
 /*
 impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
@@ -398,16 +414,14 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 */
 
 impl<T, Idx, A: Allocator + Clone> CollectionBijective for ImageBaseOf<T, Idx, A> where Idx: Integer {}
-impl<T, Idx: Integer, A: Allocator + Clone> Collection<T> for ImageBaseOf<T, Idx, A>
-{
+impl<T, Idx: Integer, A: Allocator + Clone> Collection<T> for ImageBaseOf<T, Idx, A> {
     type Ref<'a>
         = &'a T
     where
         Self: 'a,
         T: 'a;
 }
-impl<T, Idx: Integer, A: Allocator + Clone> CollectionMut<T> for ImageBaseOf<T, Idx, A>
-{
+impl<T, Idx: Integer, A: Allocator + Clone> CollectionMut<T> for ImageBaseOf<T, Idx, A> {
     type RefMut<'a>
         = &'a mut T
     where
@@ -530,12 +544,9 @@ where
     {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
-        if indices.any(|x| x.is_none())
-        {
+        if indices.any(|x| x.is_none()) {
             Err(ManyMutError::IndexOutOfBounds)
-        }
-        else
-        {
+        } else {
             self.pixels_mut().try_get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
@@ -546,12 +557,9 @@ where
     {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
-        if indices.any(|x| x.is_none())
-        {
+        if indices.any(|x| x.is_none()) {
             None
-        }
-        else
-        {
+        } else {
             self.pixels_mut().get_many_mut(indices.map(|idx| idx.unwrap()))
         }
     }
@@ -564,7 +572,9 @@ where
 {
     type Output = T;
     #[inline(always)]
-    fn index(&self, index: P) -> &Self::Output { self.get_or_panic(index) }
+    fn index(&self, index: P) -> &Self::Output {
+        self.get_or_panic(index)
+    }
 }
 impl<P, T, Idx, A: Allocator + Clone> IndexMut<P> for ImageBaseOf<T, Idx, A>
 where
@@ -572,7 +582,9 @@ where
     P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn index_mut(&mut self, index: P) -> &mut Self::Output { self.get_mut_or_panic(index) }
+    fn index_mut(&mut self, index: P) -> &mut Self::Output {
+        self.get_mut_or_panic(index)
+    }
 }
 
 impl<T, Idx, A: Allocator + Clone> Length for ImageBaseOf<T, Idx, A>
@@ -580,7 +592,9 @@ where
     Idx: Integer,
 {
     #[inline(always)]
-    fn len(&self) -> usize { self.values().len() }
+    fn len(&self) -> usize {
+        self.values().len()
+    }
 }
 
 impl<T, Idx, A: Allocator + Clone> Crop<Idx, 2> for ImageBaseOf<T, Idx, A>
@@ -588,7 +602,9 @@ where
     Idx: Integer,
     T: Clone,
 {
-    fn crop(self, subrect: Rectangle2<Idx>) -> Option<Self> { self.view().crop(subrect).map(|v| v.to_image()) }
+    fn crop(self, subrect: Rectangle2<Idx>) -> Option<Self> {
+        self.view().crop(subrect).map(|v| v.to_image())
+    }
 }
 
 /*
@@ -698,8 +714,7 @@ where
     where
         F: FnMut([T; M]) -> T,
     {
-        if M == 0
-        {
+        if M == 0 {
             return ___();
         }
         let size = this[0].size();
@@ -715,8 +730,7 @@ where
     where
         F: FnMut([T; M]) -> R,
     {
-        if M == 0
-        {
+        if M == 0 {
             return ___();
         }
         let size = this[0].size();
@@ -725,18 +739,17 @@ where
     }
 }
 
-
-
-
 //fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png"].into_iter() }
-fn save_extensions() -> impl Iterator<Item = &'static extension> { ["png", "jpg", "jpeg", "gif", "ico", "webp", "bmp"].into_iter() }
-fn load_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+fn save_extensions() -> impl Iterator<Item = &'static extension> {
+    ["png", "jpg", "jpeg", "gif", "ico", "webp", "bmp"].into_iter()
+}
+fn load_extensions() -> impl Iterator<Item = &'static extension> {
+    save_extensions()
+}
 
-fn extension_2_image_enum(extension: &str) -> Option<ImageFormat>
-{
+fn extension_2_image_enum(extension: &str) -> Option<ImageFormat> {
     //ImageFormat::from_extension(ext) // for full support
-    Some(match extension
-    {
+    Some(match extension {
         "png" => ImageFormat::Png,
         "jpg" | "jpeg" => ImageFormat::Jpeg,
         //"gif" => ImageFormat::Gif,
@@ -751,11 +764,15 @@ fn extension_2_image_enum(extension: &str) -> Option<ImageFormat>
 impl<C, Idx, A: Allocator + Clone> ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
-    C: BitAllUsed
+    C: BitAllUsed,
 {
     fn _save_to_writer<'ext, W>(&self, mut writer: W, extension: Option<&'ext extension>, color: ColorType) -> EncodeResult<DeducedExtension<'ext>>
     where
-        W: Write, Self: Save, Idx: CfgSerialize, C: IColor<ToRgba<u8> = RgbaOf<u8>>, u8: CastRangeFrom<C::Component>,
+        W: Write,
+        Self: Save,
+        Idx: CfgSerialize,
+        C: IColor<ToRgba<u8> = RgbaOf<u8>>,
+        u8: CastRangeFrom<C::Component>,
     {
         let unknow_extension = || EncodeError::save_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into()));
         let deduced_extension = extension.unwrap_or(&"png");
@@ -765,32 +782,35 @@ where
         let h = self.height().to_usize() as _;
 
         let data: &[u8] = hexga_core::bit::transmute_slice(&self.pixels);
-        
+
         let r = match image_format {
-            ImageFormat::Png  => PngEncoder::new(&mut writer).write_image(data, w, h, color.into()),
+            ImageFormat::Png => PngEncoder::new(&mut writer).write_image(data, w, h, color.into()),
             ImageFormat::Jpeg => JpegEncoder::new_with_quality(&mut writer, 95).write_image(data, w, h, color.into()),
-            ImageFormat::Bmp  => BmpEncoder::new(&mut writer).write_image(data, w, h, color.into()),
-            ImageFormat::Ico  => IcoEncoder::new(&mut writer).write_image(data, w, h, color.into()),
+            ImageFormat::Bmp => BmpEncoder::new(&mut writer).write_image(data, w, h, color.into()),
+            ImageFormat::Ico => IcoEncoder::new(&mut writer).write_image(data, w, h, color.into()),
             ImageFormat::WebP => WebPEncoder::new_lossless(&mut writer).write_image(data, w, h, color.into()),
-            ImageFormat::Gif  => { 
-                if color != ColorType::Rgba8
-                {
+            ImageFormat::Gif => {
+                if color != ColorType::Rgba8 {
                     // Gif only support RgbaU8, so cast range other color.
                     return self.to_rgba_u8()._save_to_writer(writer, extension, color);
                 }
                 GifEncoder::new(&mut writer).write_image(data, w, h, color.into())
-            },
-            _                 => return Err(unknow_extension()),
+            }
+            _ => return Err(unknow_extension()),
         };
 
-        match r
-        {
+        match r {
             Ok(_) => Ok(deduced_extension.into()),
-            Err(e) => Err(EncodeError::custom(format!("Failed to encode .{deduced_extension} {image_format:?} image : {}", e))),
+            Err(e) => Err(EncodeError::custom(format!(
+                "Failed to encode .{deduced_extension} {image_format:?} image : {}",
+                e
+            ))),
         }
     }
 
-    fn _load_from_reader<R>(mut reader: R, extension: Option<&extension>, f: impl FnOnce(DynamicImage, Vector2<Idx>) -> EncodeResult<Self>) -> EncodeResult<Self>
+    fn _load_from_reader<R>(
+        mut reader: R, extension: Option<&extension>, f: impl FnOnce(DynamicImage, Vector2<Idx>) -> EncodeResult<Self>,
+    ) -> EncodeResult<Self>
     where
         Self: Sized + Load,
         R: std::io::Read,
@@ -819,8 +839,7 @@ where
         let h = Idx::cast_from(height);
         let casted_width = w.to_u32();
         let casted_height = h.to_u32();
-        if casted_width != width || height != casted_height
-        {
+        if casted_width != width || height != casted_height {
             return Err(EncodeError::custom(format!("Image is too big: {}", vector2(width, height))));
         }
 
@@ -832,12 +851,14 @@ impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<RgbaOf<bool>, Idx, A>
 where
     Idx: Integer + CfgSerialize,
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        save_extensions()
+    }
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
     {
-        // Todo Can remove this clone() 
+        // Todo Can remove this clone()
         self.clone().to_u8_range().save_to_writer_with_custom_extension(writer, extension)
     }
 }
@@ -845,7 +866,9 @@ impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorU8, Idx, A>
 where
     Idx: Integer + CfgSerialize,
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        save_extensions()
+    }
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
@@ -857,7 +880,9 @@ impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorU16, Idx, A>
 where
     Idx: Integer + CfgSerialize,
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        save_extensions()
+    }
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
@@ -869,7 +894,9 @@ impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorF32, Idx, A>
 where
     Idx: Integer + CfgSerialize,
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        save_extensions()
+    }
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
@@ -881,7 +908,9 @@ impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorF64, Idx, A>
 where
     Idx: Integer + CfgSerialize,
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        save_extensions()
+    }
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
@@ -894,7 +923,9 @@ impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<HslaF32, Idx, A>
 where
     Idx: Integer + CfgSerialize,
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        save_extensions()
+    }
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
@@ -906,7 +937,9 @@ impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<HslaF64, Idx, A>
 where
     Idx: Integer + CfgSerialize,
 {
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        save_extensions()
+    }
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
@@ -915,44 +948,41 @@ where
     }
 }
 
-
 impl<C, Idx, A: Allocator + Clone> MediaType for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
-    fn media_type() -> &'static str { "image" }
+    fn media_type() -> &'static str {
+        "image"
+    }
 }
 
 impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<ColorU8, Idx, A>
 where
     Idx: Integer + for<'de> CfgDeserialize<'de>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        load_extensions()
+    }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: std::io::Read,
     {
-        Self::_load_from_reader(reader, extension, |img, size|
-        {
+        Self::_load_from_reader(reader, extension, |img, size| {
             let rgba_bytes = match img {
                 DynamicImage::ImageRgba8(rgba8) => rgba8,
                 x => x.to_rgba8(),
-            }.into_raw();
+            }
+            .into_raw();
 
             if rgba_bytes.len() != core::mem::size_of::<ColorU8>() * size.area_usize() {
                 return Err(EncodeError::custom("Invalid bytes len"));
             }
 
             let mut pixels = Vec::with_capacity_in(size.area_usize(), A::default());
-            pixels.extend(
-                rgba_bytes
-                    .as_chunks::<4>()
-                    .0
-                    .iter()
-                    .map(|c| ColorU8::rgba(c[0], c[1], c[2], c[3])),
-            );
+            pixels.extend(rgba_bytes.as_chunks::<4>().0.iter().map(|c| ColorU8::rgba(c[0], c[1], c[2], c[3])));
             Self::from_vec(size, pixels).ok_or_else(|| EncodeError::custom("Invalid bytes len"))
         })
     }
@@ -962,32 +992,28 @@ impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<ColorU16, Idx, A>
 where
     Idx: Integer + for<'de> CfgDeserialize<'de>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        load_extensions()
+    }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: std::io::Read,
     {
-        Self::_load_from_reader(reader, extension, |img, size|
-        {
+        Self::_load_from_reader(reader, extension, |img, size| {
             let rgba_bytes = match img {
                 DynamicImage::ImageRgba16(rgba16) => rgba16,
                 x => x.to_rgba16(),
-            }.into_raw();
+            }
+            .into_raw();
 
             if rgba_bytes.len() != core::mem::size_of::<ColorU16>() * size.area_usize() {
                 return Err(EncodeError::custom("Invalid bytes len"));
             }
 
             let mut pixels = Vec::with_capacity_in(size.area_usize(), A::default());
-            pixels.extend(
-                rgba_bytes
-                    .as_chunks::<4>()
-                    .0
-                    .iter()
-                    .map(|c| ColorU16::rgba(c[0], c[1], c[2], c[3])),
-            );
+            pixels.extend(rgba_bytes.as_chunks::<4>().0.iter().map(|c| ColorU16::rgba(c[0], c[1], c[2], c[3])));
             Self::from_vec(size, pixels).ok_or_else(|| EncodeError::custom("Invalid bytes len"))
         })
     }
@@ -996,19 +1022,21 @@ impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<RgbaOf<bool>, Idx
 where
     Idx: Integer + for<'de> CfgDeserialize<'de>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        load_extensions()
+    }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: std::io::Read,
     {
-        Self::_load_from_reader(reader, extension, |img, size|
-        {
+        Self::_load_from_reader(reader, extension, |img, size| {
             let rgba_bytes = match img {
                 DynamicImage::ImageRgba8(rgba8) => rgba8,
                 x => x.to_rgba8(),
-            }.into_raw();
+            }
+            .into_raw();
 
             if rgba_bytes.len() != core::mem::size_of::<ColorU8>() * size.area_usize() {
                 return Err(EncodeError::custom("Invalid bytes len"));
@@ -1031,32 +1059,28 @@ impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<ColorF32, Idx, A>
 where
     Idx: Integer + for<'de> CfgDeserialize<'de>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        load_extensions()
+    }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: std::io::Read,
     {
-        Self::_load_from_reader(reader, extension, |img, size|
-        {
+        Self::_load_from_reader(reader, extension, |img, size| {
             let rgba_bytes = match img {
                 DynamicImage::ImageRgba32F(rgba32) => rgba32,
                 x => x.to_rgba32f(),
-            }.into_raw();
+            }
+            .into_raw();
 
             if rgba_bytes.len() != core::mem::size_of::<ColorF32>() * size.area_usize() {
                 return Err(EncodeError::custom("Invalid bytes len"));
             }
 
             let mut pixels = Vec::with_capacity_in(size.area_usize(), A::default());
-            pixels.extend(
-                rgba_bytes
-                    .as_chunks::<4>()
-                    .0
-                    .iter()
-                    .map(|c| ColorF32::rgba(c[0], c[1], c[2], c[3])),
-            );
+            pixels.extend(rgba_bytes.as_chunks::<4>().0.iter().map(|c| ColorF32::rgba(c[0], c[1], c[2], c[3])));
             Self::from_vec(size, pixels).ok_or_else(|| EncodeError::custom("Invalid bytes len"))
         })
     }
@@ -1066,19 +1090,21 @@ impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<ColorF64, Idx, A>
 where
     Idx: Integer + for<'de> CfgDeserialize<'de>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        load_extensions()
+    }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
         Self: Sized,
         R: std::io::Read,
     {
-        Self::_load_from_reader(reader, extension, |img, size|
-        {
+        Self::_load_from_reader(reader, extension, |img, size| {
             let rgba_bytes = match img {
                 DynamicImage::ImageRgba32F(rgba32) => rgba32,
                 x => x.to_rgba32f(),
-            }.into_raw();
+            }
+            .into_raw();
 
             if rgba_bytes.len() != core::mem::size_of::<ColorF32>() * size.area_usize() {
                 return Err(EncodeError::custom("Invalid bytes len"));
@@ -1101,7 +1127,9 @@ impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<HslaF32, Idx, A>
 where
     Idx: Integer + for<'de> CfgDeserialize<'de>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        load_extensions()
+    }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where
@@ -1115,7 +1143,9 @@ impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<HslaF64, Idx, A>
 where
     Idx: Integer + for<'de> CfgDeserialize<'de>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        load_extensions()
+    }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where

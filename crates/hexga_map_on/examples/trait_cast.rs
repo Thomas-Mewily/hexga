@@ -4,8 +4,7 @@ use hexga_map_on::*;
 
 /// Might lose some precision.
 /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
-pub trait CastInto<T>
-{
+pub trait CastInto<T> {
     /// Might lose some precision.
     /// Same semantics as the [`as`](https://practice.course.rs/type-conversions/as.html) keyword: `4f32 as u64`
     fn cast_into(self) -> T;
@@ -14,9 +13,10 @@ pub trait CastInto<T>
 // Double recursive macro :)
 macro_rules! impl_cast_into {
     ($itself: ty, $cast_into: ty) => {
-        impl CastInto<$cast_into> for $itself
-        {
-            fn cast_into(self) -> $cast_into { self as _ }
+        impl CastInto<$cast_into> for $itself {
+            fn cast_into(self) -> $cast_into {
+                self as _
+            }
         }
     };
 
@@ -27,8 +27,7 @@ macro_rules! impl_cast_into {
 // Do 144 trait impl in a few lines :)
 map_on_number!(impl_cast_into);
 
-fn main()
-{
+fn main() {
     assert_eq!(20.5f32 as i8, 20.5f32.cast_into());
 
     assert_eq!(4.5 as u32, 4.5.cast_into());

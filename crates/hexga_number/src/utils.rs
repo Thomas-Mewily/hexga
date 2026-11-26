@@ -12,7 +12,7 @@ impl<T> RefMutMap for &mut T {
     /// Replaces the pointee with `f(old_value)`, moving the old value into `f`.
     ///
     /// # Panics
-    /// 
+    ///
     /// `f` must not panic. If it does, behavior is **undefined**: the slot is
     /// left logically uninitialized between `ptr::read` and `ptr::write`, and
     /// unwinding will double-drop. No abort, no guard.

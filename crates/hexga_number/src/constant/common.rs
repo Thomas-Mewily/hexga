@@ -1,16 +1,16 @@
 use super::*;
 
 /// Define the `0` representation : The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`
-pub trait Zero: Sized
-{
+pub trait Zero: Sized {
     /// The absorbing element of the multiplication such that `x * X::ZERO = X::ZERO`
     const ZERO: Self;
     #[inline(always)]
-    fn zero() -> Self { Self::ZERO }
+    fn zero() -> Self {
+        Self::ZERO
+    }
 
     #[inline(always)]
-    fn set_zero(&mut self) -> &mut Self
-    {
+    fn set_zero(&mut self) -> &mut Self {
         *self = Self::ZERO;
         self
     }
@@ -30,7 +30,9 @@ pub trait Zero: Sized
         !self.is_zero()
     }
 }
-pub const fn zero<T: Zero>() -> T { T::ZERO }
+pub const fn zero<T: Zero>() -> T {
+    T::ZERO
+}
 map_on_number!(($primitive_name: ty) => { impl Zero for $primitive_name { const ZERO : Self = 0 as Self; } });
 
 impl<T> Zero for Wrapping<T>
@@ -52,13 +54,11 @@ where
 {
     const ZERO: Self = [T::ZERO; N];
 }
-impl Zero for bool
-{
+impl Zero for bool {
     const ZERO: Self = false;
 }
 
-pub trait ZeroIter
-{
+pub trait ZeroIter {
     fn all_zero(&self) -> bool;
     fn all_non_zero(&self) -> bool;
 
@@ -70,15 +70,22 @@ where
     for<'a> &'a T: IntoIterator<Item = &'a Z>,
     Z: Zero + PartialEq,
 {
-    fn all_zero(&self) -> bool { self.into_iter().all(|v| v.is_zero()) }
-    fn all_non_zero(&self) -> bool { self.into_iter().all(|v| v.is_not_zero()) }
+    fn all_zero(&self) -> bool {
+        self.into_iter().all(|v| v.is_zero())
+    }
+    fn all_non_zero(&self) -> bool {
+        self.into_iter().all(|v| v.is_not_zero())
+    }
 
-    fn any_zero(&self) -> bool { self.into_iter().any(|v| v.is_zero()) }
-    fn any_non_zero(&self) -> bool { self.into_iter().any(|v| v.is_not_zero()) }
+    fn any_zero(&self) -> bool {
+        self.into_iter().any(|v| v.is_zero())
+    }
+    fn any_non_zero(&self) -> bool {
+        self.into_iter().any(|v| v.is_not_zero())
+    }
 }
 
-pub trait UnwrapZero
-{
+pub trait UnwrapZero {
     type Output: Zero;
     fn unwrap_or_zero(self) -> Self::Output;
 }
@@ -87,19 +94,22 @@ where
     T: Zero,
 {
     type Output = T;
-    fn unwrap_or_zero(self) -> Self::Output { self.unwrap_or(T::ZERO) }
+    fn unwrap_or_zero(self) -> Self::Output {
+        self.unwrap_or(T::ZERO)
+    }
 }
 impl<T, E> UnwrapZero for Result<T, E>
 where
     T: Zero,
 {
     type Output = T;
-    fn unwrap_or_zero(self) -> Self::Output { self.unwrap_or(T::ZERO) }
+    fn unwrap_or_zero(self) -> Self::Output {
+        self.unwrap_or(T::ZERO)
+    }
 }
 
 /// Define the `1` representation : The neutral element of the multiplication such that `x * X::ONE = x`
-pub trait One: Sized
-{
+pub trait One: Sized {
     /// The neutral element of the multiplication such that `x * X::ONE = x`
     const ONE: Self;
     #[inline(always)]
@@ -111,8 +121,7 @@ pub trait One: Sized
     }
 
     #[inline(always)]
-    fn set_one(&mut self) -> &mut Self
-    {
+    fn set_one(&mut self) -> &mut Self {
         *self = Self::ONE;
         self
     }
@@ -132,7 +141,9 @@ pub trait One: Sized
         !self.is_one()
     }
 }
-pub const fn one<T: One>() -> T { T::ONE }
+pub const fn one<T: One>() -> T {
+    T::ONE
+}
 
 map_on_number!(($primitive_name: ty) => { impl One for $primitive_name { const ONE : Self = 1 as Self; } });
 
@@ -155,13 +166,11 @@ where
 {
     const ONE: Self = [T::ONE; N];
 }
-impl One for bool
-{
+impl One for bool {
     const ONE: Self = true;
 }
 
-pub trait OneIter
-{
+pub trait OneIter {
     fn all_one(&self) -> bool;
     fn any_one(&self) -> bool;
 }
@@ -170,13 +179,16 @@ where
     for<'a> &'a T: IntoIterator<Item = &'a Z>,
     Z: One + PartialEq,
 {
-    fn all_one(&self) -> bool { self.into_iter().all(|v| v.is_one()) }
-    fn any_one(&self) -> bool { self.into_iter().any(|v| v.is_one()) }
+    fn all_one(&self) -> bool {
+        self.into_iter().all(|v| v.is_one())
+    }
+    fn any_one(&self) -> bool {
+        self.into_iter().any(|v| v.is_one())
+    }
 }
 
 /// Define the `-1` representation
-pub trait MinusOne: Sized
-{
+pub trait MinusOne: Sized {
     const MINUS_ONE: Self;
 
     #[inline(always)]
@@ -187,8 +199,7 @@ pub trait MinusOne: Sized
         Self::MINUS_ONE
     }
     #[inline(always)]
-    fn set_minus_one(&mut self) -> &mut Self
-    {
+    fn set_minus_one(&mut self) -> &mut Self {
         *self = Self::MINUS_ONE;
         self
     }
@@ -208,7 +219,9 @@ pub trait MinusOne: Sized
         !self.is_minus_one()
     }
 }
-pub const fn minus_one<T: MinusOne>() -> T { T::MINUS_ONE }
+pub const fn minus_one<T: MinusOne>() -> T {
+    T::MINUS_ONE
+}
 
 map_on_integer_signed!(($primitive_name: ty) => { impl MinusOne for $primitive_name { const MINUS_ONE : Self = -1 as Self; } });
 map_on_float!(($primitive_name: ty) => { impl MinusOne for $primitive_name { const MINUS_ONE : Self = -1 as Self; } });
@@ -232,8 +245,7 @@ where
     const MINUS_ONE: Self = [T::MINUS_ONE; N];
 }
 
-pub trait MinusOneIter
-{
+pub trait MinusOneIter {
     fn all_minusone(&self) -> bool;
     fn any_minusone(&self) -> bool;
 }
@@ -242,13 +254,16 @@ where
     for<'a> &'a T: IntoIterator<Item = &'a Z>,
     Z: MinusOne + PartialEq,
 {
-    fn all_minusone(&self) -> bool { self.into_iter().all(|v| v.is_minus_one()) }
-    fn any_minusone(&self) -> bool { self.into_iter().any(|v| v.is_minus_one()) }
+    fn all_minusone(&self) -> bool {
+        self.into_iter().all(|v| v.is_minus_one())
+    }
+    fn any_minusone(&self) -> bool {
+        self.into_iter().any(|v| v.is_minus_one())
+    }
 }
 
 /// Define the `0.5` representation
-pub trait Half: Sized
-{
+pub trait Half: Sized {
     const HALF: Self;
 
     #[inline(always)]
@@ -259,8 +274,7 @@ pub trait Half: Sized
         Self::HALF
     }
     #[inline(always)]
-    fn set_half(&mut self) -> &mut Self
-    {
+    fn set_half(&mut self) -> &mut Self {
         *self = Self::HALF;
         self
     }
@@ -280,7 +294,9 @@ pub trait Half: Sized
         !self.is_half()
     }
 }
-pub const fn half<T: Half>() -> T { T::HALF }
+pub const fn half<T: Half>() -> T {
+    T::HALF
+}
 
 map_on_float!(($primitive_name: ty) => { impl Half for $primitive_name { const HALF : Self = 0.5; } });
 impl<T> Half for Wrapping<T>
@@ -304,8 +320,7 @@ where
 }
 
 /// Define the Not a Number (NaN) representation
-pub trait NaNValue: Sized
-{
+pub trait NaNValue: Sized {
     const NAN: Self;
     #[inline(always)]
     fn is_nan(&self) -> bool
@@ -331,8 +346,7 @@ where
     const NAN: Self = [T::NAN; N];
 }
 
-pub trait MinValue: Sized
-{
+pub trait MinValue: Sized {
     const MIN: Self;
     #[inline(always)]
     fn is_min(&self) -> bool
@@ -351,12 +365,10 @@ pub trait MinValue: Sized
 }
 
 map_on_number!(($primitive_name: ty) => { impl MinValue for $primitive_name { const MIN : Self = Self::MIN; }});
-impl MinValue for bool
-{
+impl MinValue for bool {
     const MIN: Self = false;
 }
-impl MinValue for char
-{
+impl MinValue for char {
     const MIN: Self = Self::MIN;
 }
 impl<T> MinValue for Wrapping<T>
@@ -379,8 +391,7 @@ where
     const MIN: Self = [T::MIN; N];
 }
 
-pub trait MaxValue: Sized
-{
+pub trait MaxValue: Sized {
     const MAX: Self;
     #[inline(always)]
     fn is_max(&self) -> bool
@@ -398,12 +409,10 @@ pub trait MaxValue: Sized
     }
 }
 map_on_number!(($primitive_name: ty) => { impl MaxValue for $primitive_name { const MAX : Self = Self::MAX; } });
-impl MaxValue for bool
-{
+impl MaxValue for bool {
     const MAX: Self = true;
 }
-impl MaxValue for char
-{
+impl MaxValue for char {
     const MAX: Self = Self::MAX;
 }
 impl<T> MaxValue for Wrapping<T>
@@ -426,8 +435,7 @@ where
     const MAX: Self = [T::MAX; N];
 }
 
-pub trait Infinity: Sized
-{
+pub trait Infinity: Sized {
     const INFINITY: Self;
     #[inline(always)]
     fn is_infinity(&self) -> bool
@@ -465,8 +473,7 @@ where
     const INFINITY: Self = [T::INFINITY; N];
 }
 
-pub trait MinusInfinity: Sized
-{
+pub trait MinusInfinity: Sized {
     const MINUS_INFINITY: Self;
     #[inline(always)]
     fn is_minus_infinity(&self) -> bool

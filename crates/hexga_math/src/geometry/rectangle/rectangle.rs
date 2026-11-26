@@ -6,8 +6,7 @@ pub type Rectangle<T, const N: usize> = RectangleOf<Vector<T, N>>;
 ///
 #[math_vec]
 #[repr(C)]
-pub struct RectangleOf<T>
-{
+pub struct RectangleOf<T> {
     pub pos: T,
     pub size: T,
 }
@@ -16,7 +15,9 @@ impl<T> Default for RectangleOf<T>
 where
     T: Number,
 {
-    fn default() -> Self { Self::SIZED_ONE }
+    fn default() -> Self {
+        Self::SIZED_ONE
+    }
 }
 
 impl<T> RectangleOf<T>
@@ -26,14 +27,16 @@ where
     pub const SIZED_ONE: Self = Self::new_sized(T::ONE);
 }
 
-impl<T> From<(T, T)> for RectangleOf<T>
-{
-    fn from(value: (T, T)) -> Self { Self::new(value.0, value.1) }
+impl<T> From<(T, T)> for RectangleOf<T> {
+    fn from(value: (T, T)) -> Self {
+        Self::new(value.0, value.1)
+    }
 }
 
-impl<T> From<RectangleOf<T>> for (T, T)
-{
-    fn from(value: RectangleOf<T>) -> Self { (value.pos, value.size) }
+impl<T> From<RectangleOf<T>> for (T, T) {
+    fn from(value: RectangleOf<T>) -> Self {
+        (value.pos, value.size)
+    }
 }
 
 // 2D :
@@ -41,7 +44,9 @@ impl<T> Rectangle<T, 2>
 where
     T: Number,
 {
-    pub fn down_left(&self) -> Vector<T, 2> { self.pos }
+    pub fn down_left(&self) -> Vector<T, 2> {
+        self.pos
+    }
     pub fn down_right(&self) -> Vector<T, 2>
     where
         T: One + Mul<T, Output = T> + Add<T, Output = T>,
@@ -50,7 +55,9 @@ where
     }
 
     /// Same as down_left()
-    pub fn bottom_left(&self) -> Vector<T, 2> { self.down_left() }
+    pub fn bottom_left(&self) -> Vector<T, 2> {
+        self.down_left()
+    }
     /// Same as down_right()
     pub fn bottom_right(&self) -> Vector<T, 2>
     where
@@ -95,9 +102,10 @@ where
     Vector<T, N>: Number,
     T: Number,
 {
-    pub fn new_centered(pos_middle: Vector<T, N>, size: Vector<T, N>) -> Self { Self::new(pos_middle - size / (Vector::<T, N>::two()), size) }
-    pub fn new_with_center(bottom_left: Vector<T, N>, size: Vector<T, N>, center_coef: Vector<T, N>) -> Self
-    {
+    pub fn new_centered(pos_middle: Vector<T, N>, size: Vector<T, N>) -> Self {
+        Self::new(pos_middle - size / (Vector::<T, N>::two()), size)
+    }
+    pub fn new_with_center(bottom_left: Vector<T, N>, size: Vector<T, N>, center_coef: Vector<T, N>) -> Self {
         Self::new(bottom_left - center_coef * size, size)
     }
 
@@ -109,8 +117,12 @@ where
     }
 
     /// The center of the coordinate, whatever the dimension
-    pub fn middle(&self) -> Vector<T, N> { self.pos + self.size.take_half() }
-    pub fn center(&self) -> Vector<T, N> { self.pos + self.size.take_half() }
+    pub fn middle(&self) -> Vector<T, N> {
+        self.pos + self.size.take_half()
+    }
+    pub fn center(&self) -> Vector<T, N> {
+        self.pos + self.size.take_half()
+    }
 
     pub fn middle_right(&self) -> Vector<T, N>
     where
@@ -237,7 +249,9 @@ where
     T: Number,
 {
     #[inline(always)]
-    fn size(&self) -> Vector<T, N> { self.size }
+    fn size(&self) -> Vector<T, N> {
+        self.size
+    }
 }
 
 impl<T, const N: usize> SetSize<T, N> for Rectangle<T, N>
@@ -245,8 +259,7 @@ where
     T: Number,
 {
     #[inline(always)]
-    fn set_size(&mut self, size: Vector<T, N>) -> &mut Self
-    {
+    fn set_size(&mut self, size: Vector<T, N>) -> &mut Self {
         self.size = size;
         self
     }
@@ -265,8 +278,7 @@ impl<U, const N: usize> Rectangle<U, N>
 where
     U: Unit,
 {
-    pub fn split_axis(&self, nb: U, axis: usize) -> impl Iterator<Item = Self>
-    {
+    pub fn split_axis(&self, nb: U, axis: usize) -> impl Iterator<Item = Self> {
         let begin = self.pos[axis];
         let end = begin + self.size[axis];
         let step = self.size[axis] / nb.inner_value();
@@ -349,21 +361,23 @@ where
     /// assert!(!rect2i(0, 0, 2, 2).is_inside(vec2i( 10,  1)));
     ///
     /// ```
-    pub fn is_inside(&self, pos: Vector<T, N>) -> bool
-    {
+    pub fn is_inside(&self, pos: Vector<T, N>) -> bool {
         self.bounds_min().all_with(pos, |axis, other_axis| other_axis >= axis) && self.bounds_max().all_with(pos, |axis, other_axis| other_axis < axis)
     }
 
     /// Check if a position is inside the rectangle.
     /// Don't work for indexing
-    pub fn is_inside_inclusif(&self, pos: Vector<T, N>) -> bool
-    {
+    pub fn is_inside_inclusif(&self, pos: Vector<T, N>) -> bool {
         self.bounds_min().all_with(pos, |axis, other_axis| other_axis >= axis) && self.bounds_max().all_with(pos, |axis, other_axis| other_axis <= axis)
     }
 
-    pub fn is_rect_inside(&self, rect: Rectangle<T, N>) -> bool { self.is_inside(rect.bounds_min()) && self.is_inside_inclusif(rect.bounds_max()) }
+    pub fn is_rect_inside(&self, rect: Rectangle<T, N>) -> bool {
+        self.is_inside(rect.bounds_min()) && self.is_inside_inclusif(rect.bounds_max())
+    }
 
-    pub fn is_empty(&self) -> bool { self.size.is_empty() }
+    pub fn is_empty(&self) -> bool {
+        self.size.is_empty()
+    }
 
     pub fn clamp_vector(&self, vector: Vector<T, N>) -> Vector<T, N>
     where
@@ -388,10 +402,11 @@ where
     }
 }
 
-impl<T> RectangleOf<T>
-{
+impl<T> RectangleOf<T> {
     /// assume the size is valid
-    pub const fn new(pos: T, size: T) -> Self { Self { pos, size } }
+    pub const fn new(pos: T, size: T) -> Self {
+        Self { pos, size }
+    }
     /// assume the size is valid
     pub const fn new_sized(size: T) -> Self
     where
@@ -414,36 +429,36 @@ where
     /// Crop the current rectangle to the given sub rectangle.
     ///
     /// The sub rectangle will always be inside the current rectangle.
-    unsafe fn crop_unchecked(self, subrect: Rectangle<T, N>) -> Self { self.crop(subrect).expect("invalid subrect") }
+    unsafe fn crop_unchecked(self, subrect: Rectangle<T, N>) -> Self {
+        self.crop(subrect).expect("invalid subrect")
+    }
 
     /// Crop the current rectangle to the given sub rectangle.
     ///
     /// The sub rectangle will always be inside the current rectangle.
     #[track_caller]
-    fn crop_or_panic(self, subrect: Rectangle<T, N>) -> Self { self.crop(subrect).expect("invalid subrect") }
+    fn crop_or_panic(self, subrect: Rectangle<T, N>) -> Self {
+        self.crop(subrect).expect("invalid subrect")
+    }
 
     /// Crop the current rectangle to the given sub rectangle.
     ///
     /// The sub rectangle will always be inside the current rectangle.
     /// If the sub rectangle is outside or partially outside the current view, it will be intersected with the current rectangle.
-    fn crop_intersect(self, subrect: Rectangle<T, N>) -> Self
-    {
+    fn crop_intersect(self, subrect: Rectangle<T, N>) -> Self {
         let rect = self.rect().intersect_or_empty(subrect);
         unsafe { self.crop_unchecked(rect) }
     }
 
-    fn crop_margin(self, margin_start: Vector<T, N>, margin_end: Vector<T, N>) -> Option<Self>
-    {
-        if margin_start.any(|a| a < zero()) || margin_end.any(|a| a < zero())
-        {
+    fn crop_margin(self, margin_start: Vector<T, N>, margin_end: Vector<T, N>) -> Option<Self> {
+        if margin_start.any(|a| a < zero()) || margin_end.any(|a| a < zero()) {
             return None;
         }
 
         let mut subrect = self.rect();
 
         let removed_size = margin_start + margin_end;
-        if removed_size.any_with(subrect.size(), |a, b| a > b)
-        {
+        if removed_size.any_with(subrect.size(), |a, b| a > b) {
             return None;
         }
 
@@ -453,8 +468,7 @@ where
         Some(self.crop_or_panic(subrect))
     }
 
-    unsafe fn crop_margin_unchecked(self, margin_start: Vector<T, N>, margin_end: Vector<T, N>) -> Self
-    {
+    unsafe fn crop_margin_unchecked(self, margin_start: Vector<T, N>, margin_end: Vector<T, N>) -> Self {
         let mut subrect = self.rect();
         subrect.pos += margin_start;
         subrect.size -= margin_start + margin_end;
@@ -464,8 +478,7 @@ where
     /// Crop self by adding a margin to the start and the end of the current rectangle size.
     ///
     /// The sub self will always be inside the self.
-    fn crop_margin_intersect(self, margin_start: Vector<T, N>, margin_end: Vector<T, N>) -> Self
-    {
+    fn crop_margin_intersect(self, margin_start: Vector<T, N>, margin_end: Vector<T, N>) -> Self {
         let size = self.size() - margin_start - margin_end;
         self.crop_intersect(Rectangle::new(margin_start, size))
     }
@@ -478,28 +491,28 @@ where
     // The Behavior is not well defined with zero sized subrect
     // Currently it will return None
 
-    fn crop(self, mut subrect: Rectangle<T, N>) -> Option<Self>
-    {
+    fn crop(self, mut subrect: Rectangle<T, N>) -> Option<Self> {
         subrect.move_by(self.pos);
         if self.is_rect_inside(subrect) { Some(subrect) } else { None }
     }
-    unsafe fn crop_unchecked(self, subrect: Rectangle<T, N>) -> Self { subrect.moved_by(self.pos) }
+    unsafe fn crop_unchecked(self, subrect: Rectangle<T, N>) -> Self {
+        subrect.moved_by(self.pos)
+    }
 
-    fn crop_intersect(self, subrect: Rectangle<T, N>) -> Self { self.intersect_or_empty(subrect.moved_by(self.pos)) }
-    unsafe fn crop_margin_unchecked(self, margin_start: Vector<T, N>, margin_end: Vector<T, N>) -> Self
-    {
+    fn crop_intersect(self, subrect: Rectangle<T, N>) -> Self {
+        self.intersect_or_empty(subrect.moved_by(self.pos))
+    }
+    unsafe fn crop_margin_unchecked(self, margin_start: Vector<T, N>, margin_end: Vector<T, N>) -> Self {
         Self::new(self.pos + margin_start, self.size - margin_start - margin_end)
     }
 }
 
 #[cfg(test)]
-mod rect_crop_test
-{
+mod rect_crop_test {
     use crate::prelude::*;
 
     #[test]
-    fn crop_margin_unchecked()
-    {
+    fn crop_margin_unchecked() {
         unsafe {
             assert_eq!(rect2i(5, 5, 10, 10).crop_margin_unchecked(2.splat2(), 2.splat2()), rect2i(7, 7, 6, 6));
             assert_eq!(rect2i(5, 5, 10, 10).crop_margin_unchecked(-1.splat2(), zero()), rect2i(4, 4, 11, 11));
@@ -507,8 +520,7 @@ mod rect_crop_test
     }
 
     #[test]
-    fn crop_margin_intersect()
-    {
+    fn crop_margin_intersect() {
         assert_eq!(rect2i(5, 5, 10, 10).crop_margin_intersect(2.splat2(), 2.splat2()), rect2i(7, 7, 6, 6));
         assert_eq!(rect2i(5, 5, 10, 10).crop_margin_intersect(-1.splat2(), zero()), rect2i(5, 5, 10, 10));
     }
@@ -518,8 +530,7 @@ impl<T, const N: usize> Rectangle<T, N>
 where
     T: Number,
 {
-    pub fn from_pos_to_pos(start_pos: Vector<T, N>, end_pos: Vector<T, N>) -> Self
-    {
+    pub fn from_pos_to_pos(start_pos: Vector<T, N>, end_pos: Vector<T, N>) -> Self {
         Self::new(start_pos, (end_pos - start_pos).map_with(zero(), |a, b| a.max_partial(b)))
     }
 }
@@ -529,15 +540,16 @@ where
     T: Number,
 {
     #[inline(always)]
-    fn pos(&self) -> Vector<T, N> { self.pos }
+    fn pos(&self) -> Vector<T, N> {
+        self.pos
+    }
 }
 impl<T, const N: usize> SetPosition<T, N> for Rectangle<T, N>
 where
     T: Number,
 {
     #[inline(always)]
-    fn set_pos(&mut self, pos: Vector<T, N>) -> &mut Self
-    {
+    fn set_pos(&mut self, pos: Vector<T, N>) -> &mut Self {
         self.pos = pos;
         self
     }
@@ -604,7 +616,9 @@ where
     }
 
     #[inline(always)]
-    fn area(&self) -> T { self.size().area() }
+    fn area(&self) -> T {
+        self.size().area()
+    }
     #[inline(always)]
     fn area_usize(&self) -> usize
     where
@@ -619,24 +633,38 @@ where
     T: Number,
 {
     #[inline(always)]
-    fn is_inside(&self, pos: Vector<T, N>) -> bool { pos.is_inside(self.size()) }
+    fn is_inside(&self, pos: Vector<T, N>) -> bool {
+        pos.is_inside(self.size())
+    }
     #[inline(always)]
-    fn is_outside(&self, pos: Vector<T, N>) -> bool { !self.is_inside(pos) }
+    fn is_outside(&self, pos: Vector<T, N>) -> bool {
+        !self.is_inside(pos)
+    }
 
     #[inline(always)]
-    fn begin(&self) -> Vector<T, N> { self.pos() }
+    fn begin(&self) -> Vector<T, N> {
+        self.pos()
+    }
     #[inline(always)]
-    fn end(&self) -> Vector<T, N> { self.pos() + self.size() }
+    fn end(&self) -> Vector<T, N> {
+        self.pos() + self.size()
+    }
 
     /// same as `.begin()`
     #[inline(always)]
-    fn bounds_min(&self) -> Vector<T, N> { self.begin() }
+    fn bounds_min(&self) -> Vector<T, N> {
+        self.begin()
+    }
     /// same as `.end()`
     #[inline(always)]
-    fn bounds_max(&self) -> Vector<T, N> { self.end() }
+    fn bounds_max(&self) -> Vector<T, N> {
+        self.end()
+    }
 
     #[inline(always)]
-    fn rect(&self) -> Rectangle<T, N> { Rectangle::new(self.begin(), self.size()) }
+    fn rect(&self) -> Rectangle<T, N> {
+        Rectangle::new(self.begin(), self.size())
+    }
 
     fn iter_x(&self) -> Range<T>
     where
@@ -738,7 +766,9 @@ where
 {
     fn set_size(&mut self, size: Vector<T, N>) -> &mut Self;
     #[inline(always)]
-    fn resize(&mut self, size: Vector<T, N>) -> &mut Self { self.set_size(size) }
+    fn resize(&mut self, size: Vector<T, N>) -> &mut Self {
+        self.set_size(size)
+    }
 
     fn set_size_x(&mut self, x: T) -> &mut Self
     where
@@ -902,17 +932,17 @@ where
     Idx: Integer,
 {
     type IterIndex = RectangleIter<Idx, N>;
-    fn iter_index(&self) -> Self::IterIndex { RectangleIter::from_vec_iter(self.pos, self.size.iter_index()) }
+    fn iter_index(&self) -> Self::IterIndex {
+        RectangleIter::from_vec_iter(self.pos, self.size.iter_index())
+    }
 }
 
 #[cfg(test)]
-mod rect_test
-{
+mod rect_test {
     use super::*;
 
     #[test]
-    fn crop_margin_unchecked()
-    {
+    fn crop_margin_unchecked() {
         unsafe {
             assert_eq!(rect2i(5, 5, 10, 10).crop_margin_unchecked(2.splat2(), 2.splat2()), rect2i(7, 7, 6, 6));
 
@@ -925,8 +955,7 @@ mod rect_test
     }
 
     #[test]
-    fn crop_margin()
-    {
+    fn crop_margin() {
         assert_eq!(rect2i(5, 5, 10, 10).crop_margin_intersect(2.splat2(), 2.splat2()), rect2i(7, 7, 6, 6));
 
         assert_eq!(rect2i(5, 5, 10, 10).crop_margin_intersect(2.splat2(), zero()), rect2i(7, 7, 8, 8));
@@ -937,47 +966,41 @@ mod rect_test
     }
 
     #[test]
-    fn crop_normal()
-    {
+    fn crop_normal() {
         let rect = rect2i(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(vec2i(1, 1), vec2i(2, 2));
         assert_eq!(cropped, rect2i(1, 1, 7, 7));
     }
 
     #[test]
-    fn crop_to_much()
-    {
+    fn crop_to_much() {
         let rect = rect2i(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(vec2i(0, 0), vec2i(20, 20));
         assert_eq!(cropped, zero());
     }
 
     #[test]
-    fn crop_to_much_2()
-    {
+    fn crop_to_much_2() {
         let rect = rect2i(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(vec2i(20, 20), vec2i(0, 0));
         assert_eq!(cropped, rect2i(20, 20, 0, 0));
     }
 
     #[test]
-    fn crop_to_much_3()
-    {
+    fn crop_to_much_3() {
         let rect = rect2i(0, 0, 10, 10);
         let cropped = rect.crop_margin_intersect(vec2i(20, 20), vec2i(20, 20));
         assert_eq!(cropped, rect2i(20, 20, 0, 0));
     }
 
     #[test]
-    fn crop_2()
-    {
+    fn crop_2() {
         let r = rect2i(0, 0, 2, 3);
         assert_eq!(r.crop(rect2i(0, 0, 0, 0)), Some(rect2i(0, 0, 0, 0)));
         assert_eq!(r.crop(r), Some(r));
         assert_eq!(r.crop(rect2i(0, 0, 2, 4)), None);
 
-        for idx in r.iter_index()
-        {
+        for idx in r.iter_index() {
             assert_eq!(r.is_inside(idx), true);
         }
     }

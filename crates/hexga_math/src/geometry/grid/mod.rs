@@ -26,19 +26,13 @@ pub use view_mut::*;
 mod iter_mut;
 pub use iter_mut::*;
 
-pub mod prelude
-{
-    pub use super::{
-        igrid::{GridBaseError},
-        typedef::*,
-    };
+pub mod prelude {
     use super::traits::*;
+    pub use super::{igrid::GridBaseError, typedef::*};
 }
 
-pub mod traits
-{
-    pub use super::
-    {
+pub mod traits {
+    pub use super::{
         igrid::{IGrid, ToGrid},
         view::IGridView,
         view_mut::IGridViewMut,

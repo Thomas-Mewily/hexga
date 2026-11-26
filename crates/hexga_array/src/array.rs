@@ -3,8 +3,7 @@ use std::cmp::Ordering;
 
 /// An array that is indexable, without any information if the type and the size are generic.
 /// Check [`ArrayWithType`] and [ArrayWithSize] for editable generic type.
-pub trait Array<T, const N: usize>: From<[T; N]> + Into<[T; N]> + Index<usize, Output = T> + IndexMut<usize, Output = T>
-{
+pub trait Array<T, const N: usize>: From<[T; N]> + Into<[T; N]> + Index<usize, Output = T> + IndexMut<usize, Output = T> {
     const DIMENSION: usize = N;
 
     fn array(&self) -> &[T; N];
@@ -28,17 +27,19 @@ pub trait Array<T, const N: usize>: From<[T; N]> + Into<[T; N]> + Index<usize, O
         <[T; M]>::from_fn(|_| it.next().unwrap_or_else(|| fill.clone()))
     }
 }
-impl<T, const N: usize> Array<T, N> for [T; N]
-{
-    fn array(&self) -> &[T; N] { self }
-    fn array_mut(&mut self) -> &mut [T; N] { self }
+impl<T, const N: usize> Array<T, N> for [T; N] {
+    fn array(&self) -> &[T; N] {
+        self
+    }
+    fn array_mut(&mut self) -> &mut [T; N] {
+        self
+    }
 }
 
 /// An type equivalent to an array with a generic size that can be changed
 ///
 /// ex, `[T;N]` is an array with a generic size, but `struct RGBA([T;4])` don't have a generic size (always 4 components)
-pub trait ArrayWithSize<T, const N: usize>: Array<T, N>
-{
+pub trait ArrayWithSize<T, const N: usize>: Array<T, N> {
     type WithSize<const M: usize>: ArrayWithSize<T, M>;
 
     /// Resize the array to the given size, filling non existing component with [`Default`]
@@ -58,27 +59,23 @@ pub trait ArrayWithSize<T, const N: usize>: Array<T, N>
         Self::WithSize::from_array(self.to_array_resized_with_value(value))
     }
 }
-impl<T, const N: usize> ArrayWithSize<T, N> for [T; N]
-{
+impl<T, const N: usize> ArrayWithSize<T, N> for [T; N] {
     type WithSize<const M: usize> = [T; M];
 }
 
 /// An array with a generic type that can be changed
 ///
 /// ex, `[T;N]` is an array with a generic type, but `struct VecF32<const N: usize>([f32;N])` don't have a generic type (4 components)
-pub trait ArrayWithType<T, const N: usize>: Array<T, N>
-{
+pub trait ArrayWithType<T, const N: usize>: Array<T, N> {
     type WithType<T2>: ArrayWithType<T2, N>;
 }
-impl<T, const N: usize> ArrayWithType<T, N> for [T; N]
-{
+impl<T, const N: usize> ArrayWithType<T, N> for [T; N] {
     type WithType<T2> = [T2; N];
 }
 
 impl<S, T, const N: usize> ArrayMin<T, N> for S where S: Array<T, N> {}
 /// Assuming the size N != 0
-pub trait ArrayMin<T, const N: usize>: Array<T, N>
-{
+pub trait ArrayMin<T, const N: usize>: Array<T, N> {
     fn min_element_by<F>(&self, mut compare: F) -> &T
     where
         F: FnMut(&T, &T) -> Ordering,
@@ -135,8 +132,7 @@ pub trait ArrayMin<T, const N: usize>: Array<T, N>
 
 /// Assuming the size N != 0
 impl<S, T, const N: usize> ArrayMax<T, N> for S where S: Array<T, N> {}
-pub trait ArrayMax<T, const N: usize>: Array<T, N>
-{
+pub trait ArrayMax<T, const N: usize>: Array<T, N> {
     fn max_element_by<F>(&self, mut compare: F) -> &T
     where
         F: FnMut(&T, &T) -> Ordering,

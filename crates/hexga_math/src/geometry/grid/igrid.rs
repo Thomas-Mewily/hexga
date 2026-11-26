@@ -16,10 +16,8 @@ where
     Idx: Debug,
     Idx: Integer,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
-        match self
-        {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
             GridBaseError::NegativeSize(size) => write!(f, "Can't have a negative size {:?}", size),
             GridBaseError::WrongDimension(size, got) => write!(
                 f,
@@ -37,7 +35,9 @@ where
     Idx: Debug,
     Idx: Integer,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { Debug::fmt(self, f) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
 }
 
 pub trait IGrid<T, Idx, const N: usize> :
@@ -330,7 +330,9 @@ where
         GridView::new(self)
     }
 
-    unsafe fn grid_unchecked(&self) -> &Self { self }
+    unsafe fn grid_unchecked(&self) -> &Self {
+        self
+    }
 
     unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b>
     where
@@ -356,7 +358,9 @@ where
         GridViewMut::new(self)
     }
 
-    fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, N> { GridViewIterMut::new(self) }
+    fn iter_mut(&mut self) -> GridViewIterMut<'_, Self, T, Idx, N> {
+        GridViewIterMut::new(self)
+    }
     fn for_each_mut<F>(&mut self, f: F)
     where
         F: FnMut((Vector<Idx, N>, &mut T)),
@@ -364,7 +368,9 @@ where
         self.view_mut().for_each_mut(f)
     }
 
-    unsafe fn grid_mut_unchecked(&mut self) -> &mut Self { self }
+    unsafe fn grid_mut_unchecked(&mut self) -> &mut Self {
+        self
+    }
 }
 
 pub trait ToGrid<T, Idx, const N: usize>
@@ -380,7 +386,9 @@ where
     Idx: Integer,
 {
     type Output = Self;
-    fn to_grid(self) -> Self::Output { self }
+    fn to_grid(self) -> Self::Output {
+        self
+    }
 }
 
 impl<'a, T, Idx, const N: usize, A: Allocator + Clone> ToGrid<T, Idx, N> for GridView<'a, GridOf<T, Idx, N, A>, T, Idx, N>
@@ -389,8 +397,7 @@ where
     T: Clone,
 {
     type Output = GridOf<T, Idx, N, A>;
-    fn to_grid(self) -> Self::Output
-    {
+    fn to_grid(self) -> Self::Output {
         let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
         Self::Output::from_fn_in(self.size(), |index| unsafe { self.get_unchecked(index).clone() }, allocator)
     }
@@ -402,8 +409,7 @@ where
     T: Clone,
 {
     type Output = GridOf<T, Idx, N, A>;
-    fn to_grid(self) -> Self::Output
-    {
+    fn to_grid(self) -> Self::Output {
         let allocator = unsafe { self.grid_unchecked() }.allocator().clone();
         Self::Output::from_fn_in(self.size(), |index| unsafe { self.get_unchecked(index).clone() }, allocator)
     }

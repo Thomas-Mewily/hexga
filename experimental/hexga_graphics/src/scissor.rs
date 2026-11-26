@@ -2,12 +2,10 @@ use super::*;
 
 pub type Scissor = Rect2i;
 
-pub trait GetScissor
-{
+pub trait GetScissor {
     fn scissor(&self) -> Scissor;
 }
-pub trait SetScissor
-{
+pub trait SetScissor {
     fn set_scissor(&mut self, scissor: Scissor) -> &mut Self;
 }
 
@@ -17,22 +15,14 @@ pub trait ScissorStackPush: Push<Scissor> {
     }
 }
 
-impl<T> ScissorStackPush for T
-where
-    T: Push<Scissor>,
-{
-}
+impl<T> ScissorStackPush for T where T: Push<Scissor> {}
 
-pub trait ScissorStackDup : Dup<Scissor> {
+pub trait ScissorStackDup: Dup<Scissor> {
     fn dup_scissor(&mut self) -> bool {
         self.dup()
     }
 }
-impl<T> ScissorStackDup for T
-where
-    T: Dup<Scissor>,
-{
-}
+impl<T> ScissorStackDup for T where T: Dup<Scissor> {}
 
 pub trait ScissorStackPop: Pop<Scissor> {
     fn pop_scissor(&mut self) -> Option<Scissor> {
@@ -40,27 +30,15 @@ pub trait ScissorStackPop: Pop<Scissor> {
     }
 }
 
-impl<T> ScissorStackPop for T
-where
-    T: Pop<Scissor>,
-{
-}
+impl<T> ScissorStackPop for T where T: Pop<Scissor> {}
 
-pub trait ScissorStackExtension:
-    ScissorStackPush + ScissorStackDup + ScissorStackPop
-{}
-impl<T> ScissorStackExtension for T
-where
-    T: ScissorStackPush + ScissorStackDup + ScissorStackPop,
-{}
+pub trait ScissorStackExtension: ScissorStackPush + ScissorStackDup + ScissorStackPop {}
+impl<T> ScissorStackExtension for T where T: ScissorStackPush + ScissorStackDup + ScissorStackPop {}
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::Scissor;
     pub use super::traits::*;
 }
-pub mod traits
-{
-    pub use super::{GetScissor, SetScissor, 
-        ScissorStackExtension, ScissorStackPush, ScissorStackDup, ScissorStackPop};
+pub mod traits {
+    pub use super::{GetScissor, ScissorStackDup, ScissorStackExtension, ScissorStackPop, ScissorStackPush, SetScissor};
 }

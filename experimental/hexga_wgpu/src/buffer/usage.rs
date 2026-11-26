@@ -9,8 +9,7 @@ use super::*;
 /// https://gpuweb.github.io/gpuweb/#typedefdef-GBufferUsageFlags).
 #[bit_index]
 #[repr(u32)]
-pub enum GBufferUsage
-{
+pub enum GBufferUsage {
     /// Allow a buffer to be mapped for reading using [`Buffer::map_async`] + [`Buffer::get_mapped_range`].
     /// This does not include creating a buffer with [`BufferDescriptor::mapped_at_creation`] set.
     ///
@@ -59,28 +58,29 @@ pub enum GBufferUsage
     ///
     Map = Self::MapRead | Self::MapWrite,
 }
-impl GBufferUsageFlags
-{
-    pub const fn from_wgpu(value: wgpu::BufferUsages) -> Self { unsafe { Self::from_bits_unchecked(value.bits()) } }
+impl GBufferUsageFlags {
+    pub const fn from_wgpu(value: wgpu::BufferUsages) -> Self {
+        unsafe { Self::from_bits_unchecked(value.bits()) }
+    }
 }
-impl From<wgpu::BufferUsages> for GBufferUsageFlags
-{
+impl From<wgpu::BufferUsages> for GBufferUsageFlags {
     #[inline(always)]
-    fn from(value: wgpu::BufferUsages) -> Self { Self::from_wgpu(value) }
+    fn from(value: wgpu::BufferUsages) -> Self {
+        Self::from_wgpu(value)
+    }
 }
-impl From<GBufferUsageFlags> for wgpu::BufferUsages
-{
-    fn from(value: GBufferUsageFlags) -> Self { Self::from_bits(value.bits()).expect("Oops! WGPU added more usage flags and this code is not updated") }
+impl From<GBufferUsageFlags> for wgpu::BufferUsages {
+    fn from(value: GBufferUsageFlags) -> Self {
+        Self::from_bits(value.bits()).expect("Oops! WGPU added more usage flags and this code is not updated")
+    }
 }
 
 #[cfg(test)]
-mod tests
-{
+mod tests {
     use super::*;
 
     #[test]
-    fn check_wgpu_enum_bit()
-    {
+    fn check_wgpu_enum_bit() {
         type WgpuBuffUsage = wgpu::BufferUsages;
         assert_eq!(GBufferUsage::MapRead.bits(), WgpuBuffUsage::MAP_READ.bits());
         assert_eq!(GBufferUsage::MapWrite.bits(), WgpuBuffUsage::MAP_WRITE.bits());

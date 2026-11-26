@@ -41,16 +41,11 @@ pub use iter::*;
 mod rectangle;
 pub use rectangle::*;
 
-pub mod prelude
-{
-    pub use super::{
-        rectangle::Rectangle,
-        typedef::*,
-    };
+pub mod prelude {
     pub use super::*;
+    pub use super::{rectangle::Rectangle, typedef::*};
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::rectangle::{Crop, GetRectangle, GetSize, SetRectangle, SetSize};
 }

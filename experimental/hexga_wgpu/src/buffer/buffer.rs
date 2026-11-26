@@ -27,8 +27,7 @@ impl<T> Debug for GBuffer<T>
 where
     T: GBufferElement,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
-    {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct(&format!("GpuBuffer<{}>", std::any::type_name::<T>()))
             .field("buffer", &self.buffer)
             .finish()
@@ -41,23 +40,23 @@ impl<T> Length for GBuffer<T>
 where
     T: GBufferElement,
 {
-    fn len(&self) -> usize { 
+    fn len(&self) -> usize {
         let len = self.buffer.size().checked_div(size_of::<T>() as u64).unwrap_or(0);
         usize::try_from(len).expect("GPU buffer length exceeds usize")
     }
 }
 
-impl<T: GBufferElement> Capacity<T> for GBuffer<T>
-{
-    fn capacity(&self) -> usize { self.len() }
+impl<T: GBufferElement> Capacity<T> for GBuffer<T> {
+    fn capacity(&self) -> usize {
+        self.len()
+    }
 }
 
 impl<T> GpuBufferNew<T> for GBuffer<T>
 where
     T: BitAllUsed,
 {
-    fn new(value: &[T], usage: GBufferUsageFlags) -> Self
-    {
+    fn new(value: &[T], usage: GBufferUsageFlags) -> Self {
         let padded_len = size_of_val(value)
             .next_multiple_of(wgpu::COPY_BUFFER_ALIGNMENT as usize)
             .checked_div(size_of::<T>())
@@ -65,14 +64,11 @@ where
 
         // Whole padding elements must also contain valid values of T.
         let mut padded;
-        let value = if padded_len > value.len()
-        {
+        let value = if padded_len > value.len() {
             padded = value.to_vec();
             padded.resize(padded_len, value[0]);
             &padded
-        }
-        else
-        {
+        } else {
             value
         };
 
@@ -82,7 +78,9 @@ where
         }
     }
 
-    fn with_capacity(capacity: usize, usage: GBufferUsageFlags) -> Self { WithCapacity::with_capacity_and_param(capacity, usage) }
+    fn with_capacity(capacity: usize, usage: GBufferUsageFlags) -> Self {
+        WithCapacity::with_capacity_and_param(capacity, usage)
+    }
 }
 
 impl<T> WithCapacity for GBuffer<T>
@@ -90,8 +88,7 @@ where
     T: BitAllUsed,
 {
     type Param = GBufferUsageFlags;
-    fn with_capacity_and_param(capacity: usize, usage: Self::Param) -> Self
-    {
+    fn with_capacity_and_param(capacity: usize, usage: Self::Param) -> Self {
         Self {
             buffer: Arc::new(<WgpuBuffer as GpuBufferNew<T>>::with_capacity(capacity, usage)),
             typed: PhantomData,
@@ -103,23 +100,26 @@ impl<T> WgpuSliceable<T> for GBuffer<T>
 where
     T: GBufferElement,
 {
-    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer { &self.buffer }
+    fn lib_wgpu_buffer_ref(&self) -> &WgpuBuffer {
+        &self.buffer
+    }
 }
 
 impl<T> GpuSliceable<T> for GBuffer<T>
 where
     T: GBufferElement,
 {
-    fn usage(&self) -> GBufferUsageFlags { self.lib_wgpu_usage().into() }
-    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T> { GSlice::new(self, bounds) }
+    fn usage(&self) -> GBufferUsageFlags {
+        self.lib_wgpu_usage().into()
+    }
+    fn slice<S: RangeBounds<usize>>(&self, bounds: S) -> GSlice<'_, T> {
+        GSlice::new(self, bounds)
+    }
 }
 
-impl<T: GBufferElement> GBuffer<T>
-{
-    pub(crate) fn read_elements(&self, range: StdRange<usize>) -> GSliceRead<'_, T>
-    {
-        if range.is_empty()
-        {
+impl<T: GBufferElement> GBuffer<T> {
+    pub(crate) fn read_elements(&self, range: StdRange<usize>) -> GSliceRead<'_, T> {
+        if range.is_empty() {
             return GSliceRead::empty();
         }
 
@@ -140,7 +140,9 @@ impl<T> GpuSliceableMut<T> for GBuffer<T>
 where
     T: GBufferElement,
 {
-    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMut<'_, T> { GSliceMut::new(self, bounds) }
+    fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMut<'_, T> {
+        GSliceMut::new(self, bounds)
+    }
 }
 
 pub trait ToGpuBuffer<T>
@@ -153,16 +155,16 @@ impl<T> ToGpuBuffer<T> for &[T]
 where
     T: BitAllUsed,
 {
-    fn to_gpu_buffer(self, desc: GBufferUsageFlags) -> GBuffer<T> { GBuffer::new(self, desc) }
+    fn to_gpu_buffer(self, desc: GBufferUsageFlags) -> GBuffer<T> {
+        GBuffer::new(self, desc)
+    }
 }
 
 #[cfg(all(test, feature = "gpu_backend_noop"))]
-pub(super) mod tests
-{
+pub(super) mod tests {
     use super::*;
 
-    pub(crate) fn init_gpu()
-    {
+    pub(crate) fn init_gpu() {
         use std::future::Future;
         use std::pin::pin;
         use std::sync::Once;
@@ -181,16 +183,10 @@ pub(super) mod tests
 
             // The noop backend resolves both requests immediately.
             let context = &mut Context::from_waker(Waker::noop());
-            let Poll::Ready(Ok(adapter)) =
-                pin!(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).poll(context)
-            else
-            {
+            let Poll::Ready(Ok(adapter)) = pin!(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).poll(context) else {
                 panic!("Could not initialize the noop adapter");
             };
-            let Poll::Ready(Ok((device, queue))) =
-                pin!(adapter.request_device(&wgpu::DeviceDescriptor::default())).poll(context)
-            else
-            {
+            let Poll::Ready(Ok((device, queue))) = pin!(adapter.request_device(&wgpu::DeviceDescriptor::default())).poll(context) else {
                 panic!("Could not initialize the noop device");
             };
 
@@ -198,8 +194,7 @@ pub(super) mod tests
         });
     }
 
-    fn mapped_buffer() -> GBuffer<u16>
-    {
+    fn mapped_buffer() -> GBuffer<u16> {
         init_gpu();
         let raw = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
             label: None,
@@ -207,15 +202,16 @@ pub(super) mod tests
             usage: wgpu::BufferUsages::MAP_READ,
             mapped_at_creation: true,
         });
-        raw.slice(..).get_mapped_range_mut()[..10]
-            .copy_from_slice(bit::transmute_slice(&[10u16, 20, 30, 40, 50]));
+        raw.slice(..).get_mapped_range_mut()[..10].copy_from_slice(bit::transmute_slice(&[10u16, 20, 30, 40, 50]));
 
-        GBuffer { buffer: Arc::new(raw), typed: PhantomData }
+        GBuffer {
+            buffer: Arc::new(raw),
+            typed: PhantomData,
+        }
     }
 
     #[test]
-    fn clone_shares_allocation_until_mapped_write()
-    {
+    fn clone_shares_allocation_until_mapped_write() {
         let original = mapped_buffer();
         let mut clone = original.clone();
         assert!(Arc::ptr_eq(&original.buffer, &clone.buffer));
@@ -232,8 +228,7 @@ pub(super) mod tests
     }
 
     #[test]
-    fn standard_range_indices_match_slice_get()
-    {
+    fn standard_range_indices_match_slice_get() {
         fn check<Idx>(buffer: &GSlice<'_, u16>, data: &[u16], index: Idx)
         where
             Idx: std::slice::SliceIndex<[u16], Output = [u16]> + Clone,
@@ -266,14 +261,16 @@ pub(super) mod tests
     }
 
     #[test]
-    fn try_read_accepts_custom_range_bounds()
-    {
+    fn try_read_accepts_custom_range_bounds() {
         struct Tail(usize);
 
-        impl RangeBounds<usize> for Tail
-        {
-            fn start_bound(&self) -> Bound<&usize> { Bound::Excluded(&self.0) }
-            fn end_bound(&self) -> Bound<&usize> { Bound::Unbounded }
+        impl RangeBounds<usize> for Tail {
+            fn start_bound(&self) -> Bound<&usize> {
+                Bound::Excluded(&self.0)
+            }
+            fn end_bound(&self) -> Bound<&usize> {
+                Bound::Unbounded
+            }
         }
 
         let buffer = mapped_buffer();
@@ -284,8 +281,7 @@ pub(super) mod tests
     }
 
     #[test]
-    fn truncation_preserves_capacity_and_limits_collection_reads()
-    {
+    fn truncation_preserves_capacity_and_limits_collection_reads() {
         let buffer = mapped_buffer();
         assert_eq!(Capacity::<u16>::capacity(&buffer), 6);
         assert_eq!(*First::first(&buffer).unwrap(), 10);
@@ -312,8 +308,7 @@ pub(super) mod tests
     }
 
     #[test]
-    fn indexed_reads_use_allocation_and_subslice_lengths()
-    {
+    fn indexed_reads_use_allocation_and_subslice_lengths() {
         let mut buffer = mapped_buffer();
         assert_eq!(buffer.len(), 6);
         assert!(Get::get(&buffer, 6usize).is_none());

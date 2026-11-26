@@ -3,16 +3,13 @@ use hexga_core::boxed::PreAllocateBox;
 use super::*;
 
 #[derive(Clone, Default)]
-pub struct BufferArena
-{
+pub struct BufferArena {
     block: AllocBlock,
     offset: usize,
 }
 
-impl Debug for BufferArena
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
+impl Debug for BufferArena {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let used = self.nb_used();
         let cap = self.capacity();
         let used_pourcent = self.used_pourcent();
@@ -25,59 +22,70 @@ impl Debug for BufferArena
     }
 }
 
-impl From<AllocBlock> for BufferArena
-{
-    fn from(block: AllocBlock) -> Self { Self { block, offset: 0 } }
+impl From<AllocBlock> for BufferArena {
+    fn from(block: AllocBlock) -> Self {
+        Self { block, offset: 0 }
+    }
 }
-impl From<AllocLayout> for BufferArena
-{
-    fn from(layout: AllocLayout) -> Self { Self::from(AllocBlock::from(layout)) }
+impl From<AllocLayout> for BufferArena {
+    fn from(layout: AllocLayout) -> Self {
+        Self::from(AllocBlock::from(layout))
+    }
 }
-impl BufferArena
-{
-    pub fn capacity(&self) -> usize { self.block.len() }
-    pub fn nb_used(&self) -> usize { self.offset }
-}
-
-impl Arenable for BufferArena
-{
-    fn contains(&self, ptr: NonNull<u8>) -> bool { self.block.deref().contains(unsafe { ptr.as_ref() }) }
-}
-impl Length for BufferArena
-{
-    fn len(&self) -> usize { self.nb_used() }
+impl BufferArena {
+    pub fn capacity(&self) -> usize {
+        self.block.len()
+    }
+    pub fn nb_used(&self) -> usize {
+        self.offset
+    }
 }
 
-impl WithCapacity for BufferArena
-{
+impl Arenable for BufferArena {
+    fn contains(&self, ptr: NonNull<u8>) -> bool {
+        self.block.deref().contains(unsafe { ptr.as_ref() })
+    }
+}
+impl Length for BufferArena {
+    fn len(&self) -> usize {
+        self.nb_used()
+    }
+}
+
+impl WithCapacity for BufferArena {
     type Param = ();
-    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::from_size(capacity) }
+    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
+        Self::from_size(capacity)
+    }
 }
-impl Capacity<u8> for BufferArena
-{
-    fn capacity(&self) -> usize { self.capacity() }
+impl Capacity<u8> for BufferArena {
+    fn capacity(&self) -> usize {
+        self.capacity()
+    }
 }
-impl Collection<u8> for BufferArena
-{
-    type Ref<'a> = &'a u8 where Self: 'a, u8: 'a;
+impl Collection<u8> for BufferArena {
+    type Ref<'a>
+        = &'a u8
+    where
+        Self: 'a,
+        u8: 'a;
 }
 
-impl CollectionIndex<usize> for BufferArena
-{
+impl CollectionIndex<usize> for BufferArena {
     type Output = u8;
-    type Ref<'a> = &'a u8 where Self: 'a;
+    type Ref<'a>
+        = &'a u8
+    where
+        Self: 'a;
 }
 
-impl ManagedBox for BufferArena
-{
+impl ManagedBox for BufferArena {
     type Box<T> = PreAllocateBox<T>;
 }
-unsafe impl AllocFromLayout for BufferArena
-{
+unsafe impl AllocFromLayout for BufferArena {
     type Output = AllocOutput;
 
-    fn alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output>
-    {
+    fn alloc_layout(&mut self, layout: AllocLayout) -> AllocResult<Self::Output> {
         assert_ne!(layout.align, 0);
 
         let base_ptr = self.block.as_mut_ptr() as usize;
@@ -88,8 +96,7 @@ unsafe impl AllocFromLayout for BufferArena
         let offset = start - base_ptr;
         let end = offset.checked_add(layout.size).ok_or(AllocError)?;
 
-        if end > self.capacity()
-        {
+        if end > self.capacity() {
             return Err(AllocError);
         }
 

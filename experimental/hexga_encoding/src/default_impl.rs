@@ -103,9 +103,10 @@ impl<T> Load for BinaryHeap<T> where T: Load + Ord {}
 
 impl<T> Save for &[T] where T: Save {}
 
-impl Save for String
-{
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["txt", "md", "csv"].into_iter() }
+impl Save for String {
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        ["txt", "md", "csv"].into_iter()
+    }
 
     fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
@@ -114,9 +115,10 @@ impl Save for String
         self.as_str().save_to_writer_with_custom_extension(writer, extension)
     }
 }
-impl Load for String
-{
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { Self::save_custom_extensions() }
+impl Load for String {
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        Self::save_custom_extensions()
+    }
 
     fn load_from_reader_with_custom_extension<R>(mut reader: R, _extension: Option<&extension>) -> EncodeResult<Self>
     where
@@ -126,24 +128,23 @@ impl Load for String
         let mut buf: Vec<u8> = Vec::with_capacity(16);
         reader.read_to_end(&mut buf)?;
 
-        match std::str::from_utf8(&buf)
-        {
+        match std::str::from_utf8(&buf) {
             Ok(s) => Ok(s.to_owned()),
             Err(e) => Err(e.into()),
         }
     }
 }
-impl Save for &str
-{
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { String::save_custom_extensions() }
+impl Save for &str {
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        String::save_custom_extensions()
+    }
 
     fn save_to_writer_with_custom_extension<'ext, W>(&self, mut writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
     where
         W: Write,
     {
         writer.write(self.as_bytes())?;
-        match extension
-        {
+        match extension {
             Some(ex) => Ok(DeducedExtension::Borrowed(ex)),
             None => Ok(Owned("txt".to_owned())),
         }

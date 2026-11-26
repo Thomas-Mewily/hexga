@@ -19,7 +19,7 @@ where
 impl<'de, C, Idx, A: Allocator + Clone + Default> Deserialize<'de> for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer + for<'de2> Deserialize<'de2>,
-    Self: FromUrl
+    Self: FromUrl,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

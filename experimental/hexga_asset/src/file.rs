@@ -70,8 +70,7 @@ where
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct FileDataIn<T>
-        {
+        struct FileDataIn<T> {
             path: Option<PathBuf>,
             value: Option<Dirty<T>>,
         }
@@ -90,7 +89,9 @@ where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn from(value: T) -> Self { Self::from_path_and_value(None, value) }
+    fn from(value: T) -> Self {
+        Self::from_path_and_value(None, value)
+    }
 }
 
 impl<T, FS> Guarded<T> for FileIn<T, FS>
@@ -107,7 +108,9 @@ where
     where
         Self: 'a;
 
-    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> { Ok(self.value()) }
+    fn try_get<'a>(&'a self) -> Result<Self::Guard<'a>, Self::Error<'a>> {
+        Ok(self.value())
+    }
 }
 /*
 impl<T,FS> GuardedMut<T> for FileDataOf<T,FS> where
@@ -128,20 +131,15 @@ where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn save(&mut self) -> FileResult
-    {
-        if self.is_not_dirty()
-        {
+    fn save(&mut self) -> FileResult {
+        if self.is_not_dirty() {
             return Ok(());
         }
         self.save_forced()
     }
 
-    fn save_forced(&mut self) -> FileResult
-    {
-        let Some(path) = &self.path
-        else
-        {
+    fn save_forced(&mut self) -> FileResult {
+        let Some(path) = &self.path else {
             return Ok(());
         };
         self.value().save_to_fs_at(&mut FS::file_system(), path)?;
@@ -163,54 +161,39 @@ where
     type Ok = ();
     type Error = FileError;
 
-    fn try_reload(&mut self) -> Result<Self::Ok, Self::Error>
-    {
-        let Some(path) = &self.path
-        else
-        {
+    fn try_reload(&mut self) -> Result<Self::Ok, Self::Error> {
+        let Some(path) = &self.path else {
             return Ok(());
         };
 
-        match T::load_from_fs(&mut FS::file_system(), path)
-        {
-            Ok(v) =>
-            {
+        match T::load_from_fs(&mut FS::file_system(), path) {
+            Ok(v) => {
                 *self.value_mut() = v;
                 Ok(())
             }
-            Err(e) =>
-            {
-                if e.is_io() && path.extension().is_some()
-                {
+            Err(e) => {
+                if e.is_io() && path.extension().is_some() {
                     // Maybe the extension was changed
                     let resolved = FS::file_system()
                         .resolve_path(path.with_extension(""))
                         .map_err(|e| FileError::new(e).with_path(Some(path.to_path_buf())))?;
-                    if *path != resolved
-                    {
-                        match T::load_from_fs(&mut FS::file_system(), &resolved)
-                        {
-                            Ok(v) =>
-                            {
+                    if *path != resolved {
+                        match T::load_from_fs(&mut FS::file_system(), &resolved) {
+                            Ok(v) => {
                                 *self.value_mut() = v;
                                 let _ = self.set_path(Some(resolved));
                                 Ok(())
                             }
-                            Err(e) =>
-                            {
+                            Err(e) => {
                                 // Still change the path
                                 let _ = self.set_path(Some(resolved));
                                 Err(e)
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         Err(e)
                     }
-                }
-                else
-                {
+                } else {
                     Err(e)
                 }
             }
@@ -224,8 +207,7 @@ where
     T: Load + Save,
 {
     type Output = Self;
-    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output
-    {
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output {
         Self {
             path,
             value: Some(Dirty::new(value)),
@@ -239,8 +221,7 @@ where
     FS: FileSystemProvider,
     T: Load + Save + Hash,
 {
-    fn hash<H: Hasher>(&self, state: &mut H)
-    {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         self.path.hash(state);
         self.value().hash(state);
     }
@@ -251,14 +232,18 @@ where
     FS: FileSystemProvider,
     T: Load + Save + Ord,
 {
-    fn cmp(&self, other: &Self) -> Ordering { (&self.path, self.value()).cmp(&(&other.path, other.value())) }
+    fn cmp(&self, other: &Self) -> Ordering {
+        (&self.path, self.value()).cmp(&(&other.path, other.value()))
+    }
 }
 impl<T, FS> PartialOrd for FileIn<T, FS>
 where
     FS: FileSystemProvider,
     T: Load + Save + PartialOrd,
 {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { (&self.path, self.value()).partial_cmp(&(&other.path, other.value())) }
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        (&self.path, self.value()).partial_cmp(&(&other.path, other.value()))
+    }
 }
 
 impl<T, FS> Eq for FileIn<T, FS>
@@ -272,7 +257,9 @@ where
     FS: FileSystemProvider,
     T: Load + Save + PartialEq,
 {
-    fn eq(&self, other: &Self) -> bool { self.path == other.path && self.value() == other.value() }
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path && self.value() == other.value()
+    }
 }
 
 impl<T, FS> Wrapper for FileIn<T, FS>
@@ -287,21 +274,27 @@ where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    fn new_wrapper(value: Self::Inside) -> Self { Self::from_path_and_value(value.0, value.1) }
+    fn new_wrapper(value: Self::Inside) -> Self {
+        Self::from_path_and_value(value.0, value.1)
+    }
 }
 impl<T, FS> WrapperIntoInner for FileIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async,
 {
-    fn into_inner(self) -> Self::Inside { self.into_path_and_value() }
+    fn into_inner(self) -> Self::Inside {
+        self.into_path_and_value()
+    }
 }
 impl<T, FS> WrapperTryIntoInnerOrClone for FileIn<T, FS>
 where
     FS: FileSystemProvider + Async,
     T: Load + Save + Async + Clone,
 {
-    fn into_inner_or_clone(self) -> Self::Inside { self.into_path_and_value() }
+    fn into_inner_or_clone(self) -> Self::Inside {
+        self.into_path_and_value()
+    }
 }
 
 impl<T, FS> Debug for FileIn<T, FS>
@@ -309,18 +302,18 @@ where
     FS: FileSystemProvider,
     T: Load + Save + Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.debug_struct("File").field("path", &self.path).field("value", self.value()).finish() }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        f.debug_struct("File").field("path", &self.path).field("value", self.value()).finish()
+    }
 }
 impl<T, FS> Display for FileIn<T, FS>
 where
     FS: FileSystemProvider,
     T: Load + Save + Display,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
-    {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "File {}", self.value())?;
-        if let Some(path) = &self.path
-        {
+        if let Some(path) = &self.path {
             write!(f, " at {}", path.display())?;
         }
         Ok(())
@@ -332,7 +325,9 @@ where
     FS: FileSystemProvider,
     T: Load + Save + std::fmt::Write,
 {
-    fn write_str(&mut self, s: &str) -> std::fmt::Result { self.value_mut().write_str(s) }
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        self.value_mut().write_str(s)
+    }
 }
 
 impl<T, FS> std::io::Write for FileIn<T, FS>
@@ -340,9 +335,13 @@ where
     FS: FileSystemProvider,
     T: Load + Save + std::io::Write,
 {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> { self.value_mut().write(buf) }
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.value_mut().write(buf)
+    }
 
-    fn flush(&mut self) -> std::io::Result<()> { self.value_mut().flush() }
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.value_mut().flush()
+    }
 }
 
 impl<T, FS> Deref for FileIn<T, FS>
@@ -351,14 +350,18 @@ where
     T: Load + Save,
 {
     type Target = T;
-    fn deref(&self) -> &Self::Target { self.value.as_ref().unwrap().deref() }
+    fn deref(&self) -> &Self::Target {
+        self.value.as_ref().unwrap().deref()
+    }
 }
 impl<T, FS> DerefMut for FileIn<T, FS>
 where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn deref_mut(&mut self) -> &mut Self::Target { self.value.as_mut().unwrap().deref_mut() }
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.value.as_mut().unwrap().deref_mut()
+    }
 }
 
 impl<T, FS> FileIn<T, FS>
@@ -366,13 +369,21 @@ where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    pub fn value(&self) -> &T { self.deref() }
-    pub fn value_mut(&mut self) -> &mut T { self.deref_mut() }
+    pub fn value(&self) -> &T {
+        self.deref()
+    }
+    pub fn value_mut(&mut self) -> &mut T {
+        self.deref_mut()
+    }
 
     /// Extract the value without saving it.
-    pub fn into_value(self) -> T { self.into_path_and_value().1 }
+    pub fn into_value(self) -> T {
+        self.into_path_and_value().1
+    }
     /// Extract the path and value without saving it.
-    pub fn into_path_and_value(mut self) -> (Option<PathBuf>, T) { (std::mem::take(&mut self.path), std::mem::take(&mut self.value).unwrap().into_value()) }
+    pub fn into_path_and_value(mut self) -> (Option<PathBuf>, T) {
+        (std::mem::take(&mut self.path), std::mem::take(&mut self.value).unwrap().into_value())
+    }
 }
 
 impl<T, FS> IsDirty for FileIn<T, FS>
@@ -380,15 +391,16 @@ where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn is_dirty(&self) -> bool { self.value.as_ref().unwrap().is_dirty() }
+    fn is_dirty(&self) -> bool {
+        self.value.as_ref().unwrap().is_dirty()
+    }
 }
 impl<T, FS> SetDirty for FileIn<T, FS>
 where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn set_dirty(&mut self, used: bool) -> &mut Self
-    {
+    fn set_dirty(&mut self, used: bool) -> &mut Self {
         self.value.as_mut().unwrap().set_dirty(used);
         self
     }
@@ -398,20 +410,19 @@ where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn get_path(&self) -> Option<PathBuf> { self.path.clone() }
+    fn get_path(&self) -> Option<PathBuf> {
+        self.path.clone()
+    }
 }
 impl<T, FS> SetPath for FileIn<T, FS>
 where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult
-    {
+    fn set_path<P: AsRef<Path>>(&mut self, path: Option<P>) -> IoResult {
         let path = path.as_ref().map(|p| p.as_ref());
-        self.path = match path
-        {
-            Some(p) => match FS::file_system().resolve_path(p)
-            {
+        self.path = match path {
+            Some(p) => match FS::file_system().resolve_path(p) {
                 Ok(resolved) => Some(resolved),
                 Err(_) => Some(p.to_path_buf()),
             },
@@ -421,26 +432,20 @@ where
         Ok(())
     }
 
-    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult
-    {
-        let path = match &self.path
-        {
+    fn rename_path<P: AsRef<Path>>(&mut self, to: P) -> IoResult {
+        let path = match &self.path {
             Some(path) => path,
-            None =>
-            {
+            None => {
                 return self.set_path(Some(to));
             }
         };
         let dest = to.as_ref();
-        match FS::file_system().rename(path, dest)
-        {
-            Ok(path) =>
-            {
+        match FS::file_system().rename(path, dest) {
+            Ok(path) => {
                 let _ = self.set_path(Some(path));
                 Ok(())
             }
-            Err(e) =>
-            {
+            Err(e) => {
                 let _ = self.set_path(Some(dest.to_path_buf()));
                 Err(e)
             }
@@ -453,15 +458,15 @@ where
     FS: FileSystemProvider,
     T: Load + Save,
 {
-    fn drop(&mut self)
-    {
+    fn drop(&mut self) {
         // Todo: if saving fail, try to save the file somewhere else / in a recovery folder ?
         let _ = self.save();
     }
 }
 
-pub trait ToFileData: Load + Save
-{
-    fn to_file_data<FS: FileSystemProvider>(self, path: Option<PathBuf>) -> FileIn<Self, FS> { FileIn::from_path_and_value(path, self) }
+pub trait ToFileData: Load + Save {
+    fn to_file_data<FS: FileSystemProvider>(self, path: Option<PathBuf>) -> FileIn<Self, FS> {
+        FileIn::from_path_and_value(path, self)
+    }
 }
 impl<T> ToFileData for T where T: Load + Save {}

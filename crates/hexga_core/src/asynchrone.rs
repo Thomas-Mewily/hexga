@@ -4,8 +4,7 @@ use core::{any::Any, pin::Pin};
 pub trait Async: WasmSend + WasmSync + 'static {}
 impl<T> Async for T where T: WasmSend + WasmSync + 'static {}
 
-pub trait AnyAsync: Any + WasmSendSync + 'static
-{
+pub trait AnyAsync: Any + WasmSendSync + 'static {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
@@ -13,8 +12,12 @@ impl<T> AnyAsync for T
 where
     T: Any + WasmSendSync + 'static,
 {
-    fn as_any(&self) -> &dyn Any { self }
-    fn as_any_mut(&mut self) -> &mut dyn Any { self }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 pub type DynAnyAsync = dyn AnyAsync + 'static;
@@ -23,8 +26,7 @@ pub type DynAnyAsync = dyn AnyAsync + 'static;
 
 // Condition: Native OR WASM with atomics (multi-thread capable)
 #[cfg(any(not(target_arch = "wasm32"), all(target_arch = "wasm32", target_feature = "atomics")))]
-mod sync_trait
-{
+mod sync_trait {
     /// Send trait compatible with Wasm. Requires real Send on native.
     pub trait WasmSend: Send {}
 
@@ -43,8 +45,7 @@ mod sync_trait
 
 // Condition: WASM without atomics (pure single-thread)
 #[cfg(all(target_arch = "wasm32", not(target_feature = "atomics")))]
-mod sync_trait
-{
+mod sync_trait {
     /// Send compatible trait for WASM.
     pub trait WasmSend {}
 
@@ -60,12 +61,10 @@ mod sync_trait
 }
 pub use sync_trait::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::DynAnyAsync;
     pub use super::traits::*;
 }
-pub mod traits
-{
+pub mod traits {
     pub use super::{AnyAsync, Async};
 }

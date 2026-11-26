@@ -1,12 +1,12 @@
 use super::*;
 
-/// `Shl<Rhs,Output=Output> + Shr<Rhs,Output=Output>` 
-pub trait Sh<Rhs=Self,Output=Self> : Shl<Rhs,Output=Output> + Shr<Rhs,Output=Output> {}
-impl<S,Rhs,Output> Sh<Rhs,Output> for S where S: Shl<Rhs, Output = Output> + Shr<Rhs, Output = Output> {}
+/// `Shl<Rhs,Output=Output> + Shr<Rhs,Output=Output>`
+pub trait Sh<Rhs = Self, Output = Self>: Shl<Rhs, Output = Output> + Shr<Rhs, Output = Output> {}
+impl<S, Rhs, Output> Sh<Rhs, Output> for S where S: Shl<Rhs, Output = Output> + Shr<Rhs, Output = Output> {}
 
-/// `ShlAssign<Rhs> + ShrAssign<Rhs>` 
-pub trait ShAssign<Rhs=Self> : ShlAssign<Rhs> + ShrAssign<Rhs> {}
-impl<S,Rhs> ShAssign<Rhs> for S where S: ShlAssign<Rhs> + ShrAssign<Rhs> {}
+/// `ShlAssign<Rhs> + ShrAssign<Rhs>`
+pub trait ShAssign<Rhs = Self>: ShlAssign<Rhs> + ShrAssign<Rhs> {}
+impl<S, Rhs> ShAssign<Rhs> for S where S: ShlAssign<Rhs> + ShrAssign<Rhs> {}
 
 trait_marker!(
     /// Shift by every primitive integer width and `self`.
@@ -22,7 +22,6 @@ trait_marker!(
     /// Shift and shift assign by every primitive integer width and `self`.
     BitShift : ShAll + ShAssignAll
 );
-
 
 trait_marker!(
 /// For every type that support bit based operation (and `&`, or `|`, xor `^`, not `!`, shift `<<` / `>>`...)
@@ -115,14 +114,12 @@ trait_marker!(
     IntegerSigned: PrimitiveSigned + Integer
 );
 
-pub trait BitManip:
-    Sized
-    /*
-    + Shl<Self, Output = Self>
-    + ShlAssign<Self>
-    + Shr<Self, Output = Self>
-    + ShrAssign<Self>
-    */
+pub trait BitManip: Sized /*
++ Shl<Self, Output = Self>
++ ShlAssign<Self>
++ Shr<Self, Output = Self>
++ ShrAssign<Self>
+*/
 {
     /// Returns the number of zeros in the binary representation of `self`.
     ///
@@ -320,44 +317,88 @@ impl<T> BitManip for Wrapping<T>
 where
     T: BitManip,
 {
-    fn count_zeros(self) -> u32 { self.0.count_zeros() }
-    fn count_ones(self) -> u32 { self.0.count_ones() }
+    fn count_zeros(self) -> u32 {
+        self.0.count_zeros()
+    }
+    fn count_ones(self) -> u32 {
+        self.0.count_ones()
+    }
 
-    fn highest_one(self) -> Option<u32> { self.0.highest_one() }
-    fn lowest_one(self) -> Option<u32> { self.0.lowest_one() }
+    fn highest_one(self) -> Option<u32> {
+        self.0.highest_one()
+    }
+    fn lowest_one(self) -> Option<u32> {
+        self.0.lowest_one()
+    }
 
-    fn bit_width(self) -> u32 { self.0.bit_width() }
+    fn bit_width(self) -> u32 {
+        self.0.bit_width()
+    }
 
-    fn trailing_ones(self) -> u32 { self.0.trailing_ones() }
-    fn leading_ones(self) -> u32 { self.0.leading_ones() }
+    fn trailing_ones(self) -> u32 {
+        self.0.trailing_ones()
+    }
+    fn leading_ones(self) -> u32 {
+        self.0.leading_ones()
+    }
 
-    fn trailing_zeros(self) -> u32 { self.0.trailing_zeros() }
-    fn leading_zeros(self) -> u32 { self.0.leading_zeros() }
+    fn trailing_zeros(self) -> u32 {
+        self.0.trailing_zeros()
+    }
+    fn leading_zeros(self) -> u32 {
+        self.0.leading_zeros()
+    }
 
-    fn rotate_left(self, n: u32) -> Self { Wrapping(self.0.rotate_left(n)) }
-    fn rotate_right(self, n: u32) -> Self { Wrapping(self.0.rotate_right(n)) }
+    fn rotate_left(self, n: u32) -> Self {
+        Wrapping(self.0.rotate_left(n))
+    }
+    fn rotate_right(self, n: u32) -> Self {
+        Wrapping(self.0.rotate_right(n))
+    }
 }
 
 impl<T> BitManip for Saturating<T>
 where
     T: BitManip,
 {
-    fn count_zeros(self) -> u32 { self.0.count_zeros() }
-    fn count_ones(self) -> u32 { self.0.count_ones() }
+    fn count_zeros(self) -> u32 {
+        self.0.count_zeros()
+    }
+    fn count_ones(self) -> u32 {
+        self.0.count_ones()
+    }
 
-    fn highest_one(self) -> Option<u32> { self.0.highest_one() }
-    fn lowest_one(self) -> Option<u32> { self.0.lowest_one() }
+    fn highest_one(self) -> Option<u32> {
+        self.0.highest_one()
+    }
+    fn lowest_one(self) -> Option<u32> {
+        self.0.lowest_one()
+    }
 
-    fn bit_width(self) -> u32 { self.0.bit_width() }
+    fn bit_width(self) -> u32 {
+        self.0.bit_width()
+    }
 
-    fn trailing_ones(self) -> u32 { self.0.trailing_ones() }
-    fn leading_ones(self) -> u32 { self.0.leading_ones() }
+    fn trailing_ones(self) -> u32 {
+        self.0.trailing_ones()
+    }
+    fn leading_ones(self) -> u32 {
+        self.0.leading_ones()
+    }
 
-    fn trailing_zeros(self) -> u32 { self.0.trailing_zeros() }
-    fn leading_zeros(self) -> u32 { self.0.leading_zeros() }
+    fn trailing_zeros(self) -> u32 {
+        self.0.trailing_zeros()
+    }
+    fn leading_zeros(self) -> u32 {
+        self.0.leading_zeros()
+    }
 
-    fn rotate_left(self, n: u32) -> Self { Saturating(self.0.rotate_left(n)) }
-    fn rotate_right(self, n: u32) -> Self { Saturating(self.0.rotate_right(n)) }
+    fn rotate_left(self, n: u32) -> Self {
+        Saturating(self.0.rotate_left(n))
+    }
+    fn rotate_right(self, n: u32) -> Self {
+        Saturating(self.0.rotate_right(n))
+    }
 }
 
 /*

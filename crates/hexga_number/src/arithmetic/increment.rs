@@ -1,24 +1,22 @@
 use super::*;
 
 /// The `+1` operation
-pub trait Increment: One + Add<Self, Output = Self> + AddAssign<Self> + Copy + Sized
-{
+pub trait Increment: One + Add<Self, Output = Self> + AddAssign<Self> + Copy + Sized {
     /// The increment `x++` operator
     #[inline(always)]
-    fn increment(&mut self) { *self += Self::ONE; }
+    fn increment(&mut self) {
+        *self += Self::ONE;
+    }
     /// The increment `x++` operator
     #[inline(always)]
     fn increment_checked(&mut self) -> Result<(), ()>
     where
         Self: OverflowBehavior + MaxValue + PartialEq,
     {
-        if self.can_increment()
-        {
+        if self.can_increment() {
             self.increment();
             Ok(())
-        }
-        else
-        {
+        } else {
             Err(())
         }
     }
@@ -36,19 +34,18 @@ pub trait Increment: One + Add<Self, Output = Self> + AddAssign<Self> + Copy + S
 
     /// Return the successor `self + 1`
     #[inline(always)]
-    fn successor(self) -> Self { self + Self::ONE }
+    fn successor(self) -> Self {
+        self + Self::ONE
+    }
     /// Return the successor `self + 1`
     #[inline(always)]
     fn successor_checked(&mut self) -> Result<Self, ()>
     where
         Self: OverflowBehavior + MaxValue + PartialEq,
     {
-        if self.have_successor()
-        {
+        if self.have_successor() {
             Ok(self.successor())
-        }
-        else
-        {
+        } else {
             Err(())
         }
     }
@@ -67,24 +64,22 @@ pub trait Increment: One + Add<Self, Output = Self> + AddAssign<Self> + Copy + S
 impl<T> Increment for T where T: One + Add<T, Output = T> + AddAssign<Self> + Copy {}
 
 /// The `-1` operation
-pub trait Decrement: One + Sub<Self, Output = Self> + SubAssign<Self> + Copy + Sized
-{
+pub trait Decrement: One + Sub<Self, Output = Self> + SubAssign<Self> + Copy + Sized {
     /// The decrement `x--` operator
     #[inline(always)]
-    fn decrement(&mut self) { *self -= Self::ONE; }
+    fn decrement(&mut self) {
+        *self -= Self::ONE;
+    }
     /// The increment `x--` operator
     #[inline(always)]
     fn decrement_checked(&mut self) -> Result<(), ()>
     where
         Self: OverflowBehavior + MinValue + PartialEq,
     {
-        if self.can_decrement()
-        {
+        if self.can_decrement() {
             self.decrement();
             Ok(())
-        }
-        else
-        {
+        } else {
             Err(())
         }
     }
@@ -102,19 +97,18 @@ pub trait Decrement: One + Sub<Self, Output = Self> + SubAssign<Self> + Copy + S
 
     /// Return the predecessor `self - 1`
     #[inline(always)]
-    fn predecessor(self) -> Self { self - Self::ONE }
+    fn predecessor(self) -> Self {
+        self - Self::ONE
+    }
     /// Return the predecessor `self - 1`
     #[inline(always)]
     fn predecessor_checked(&mut self) -> Result<Self, ()>
     where
         Self: OverflowBehavior + MinValue + PartialEq,
     {
-        if self.have_predecessor()
-        {
+        if self.have_predecessor() {
             Ok(self.predecessor())
-        }
-        else
-        {
+        } else {
             Err(())
         }
     }

@@ -1,17 +1,18 @@
 use super::*;
 
-pub(crate) mod prelude
-{
+pub(crate) mod prelude {
     pub use super::{Load, LoadExtension, LoadFrom, LoadGlobal};
 }
 
-pub trait Load: Sized + for<'de> CfgDeserialize<'de>
-{
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { std::iter::empty() }
-    fn load_prefered_extension() -> &'static extension { Self::load_custom_extensions().next().unwrap_or(Extension::PREFERED) }
+pub trait Load: Sized + for<'de> CfgDeserialize<'de> {
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        std::iter::empty()
+    }
+    fn load_prefered_extension() -> &'static extension {
+        Self::load_custom_extensions().next().unwrap_or(Extension::PREFERED)
+    }
 
-    fn load_from_fs_at<FS: FileSystem, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self>
-    {
+    fn load_from_fs_at<FS: FileSystem, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> {
         let path = path.as_ref();
         let extension = path.extension().and_then(|v| v.to_str());
 
@@ -30,10 +31,8 @@ pub trait Load: Sized + for<'de> CfgDeserialize<'de>
     }
 }
 
-pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
-{
-    fn load_extensions() -> impl Iterator<Item = &'static extension>
-    {
+pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de> {
+    fn load_extensions() -> impl Iterator<Item = &'static extension> {
         #[cfg(feature = "serde")]
         return Self::load_custom_extensions().chain(AnyFormat::ALL.iter().map(|v| v.extension()));
 
@@ -68,19 +67,16 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
         Self: Sized,
         R: Read,
     {
-        if Self::load_custom_extensions().any(|e| Some(e) == extension)
-        {
+        if Self::load_custom_extensions().any(|e| Some(e) == extension) {
             return Self::load_from_reader_with_custom_extension(reader, extension);
         }
-        if extension.is_none()
-        {
+        if extension.is_none() {
             return Self::load_from_reader_with_custom_extension(reader, Some(Self::load_prefered_extension()));
         }
 
         #[cfg(feature = "serde")]
         {
-            if let Some(ex) = extension
-            {
+            if let Some(ex) = extension {
                 return AnyFormat::try_from(ex).unwrap_or_default().from_reader(reader);
             }
         }
@@ -118,8 +114,7 @@ pub trait LoadExtension: Load + for<'de> CfgDeserialize<'de>
 impl<T> LoadExtension for T where T: Load + for<'de> CfgDeserialize<'de> {}
 
 // TODO: Should use a singleton for the global file system.
-pub trait LoadGlobal: LoadExtension
-{
+pub trait LoadGlobal: LoadExtension {
     fn load<P: AsRef<Path>>(path: P) -> FileResult<Self>
     where
         Self: Sized,
@@ -129,17 +124,20 @@ pub trait LoadGlobal: LoadExtension
 }
 impl<T> LoadGlobal for T where T: LoadExtension + Sized {}
 
-pub trait LoadFrom: From<Self::Source>
-{
+pub trait LoadFrom: From<Self::Source> {
     type Source: Load + Into<Self>;
 }
 impl<S> Load for S
 where
     S: LoadFrom + for<'de> CfgDeserialize<'de>,
 {
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { S::Source::load_custom_extensions() }
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> {
+        S::Source::load_custom_extensions()
+    }
 
-    fn load_from_fs_at<FS: FileSystem, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> { S::Source::load_from_fs_at(fs, path).map(|v| v.into()) }
+    fn load_from_fs_at<FS: FileSystem, P: AsRef<Path>>(fs: &mut FS, path: P) -> FileResult<Self> {
+        S::Source::load_from_fs_at(fs, path).map(|v| v.into())
+    }
 
     fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
     where

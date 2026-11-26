@@ -1,12 +1,11 @@
-pub mod experimental
-{
+pub mod experimental {
     pub use hexga_arena as arena;
 }
 
-pub use hexga_ansi_color as ansi_color;
-pub use hexga_bit_set as bit_set;
-pub use hexga_bit_flags as bit_flags;
 pub use bit_flags as bitflags;
+pub use hexga_ansi_color as ansi_color;
+pub use hexga_bit_flags as bit_flags;
+pub use hexga_bit_set as bit_set;
 pub use hexga_core::*;
 //pub use hexga_core as core;
 pub use hexga_array_vec as array_vec;
@@ -34,21 +33,17 @@ pub use hexga_core::primitive::str;
 //#[cfg(all(test, feature = "serde"))]
 //mod serde_test;
 
-pub mod core_prelude
-{}
+pub mod core_prelude {}
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::hexga_prelude::*;
     pub use hexga_core::prelude::*;
 
     #[allow(hidden_glob_reexports)]
-    pub(crate) mod prelude
-    {}
+    pub(crate) mod prelude {}
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use crate::hexga_traits::*;
 }
 
@@ -56,11 +51,10 @@ pub mod traits
 /// Hexga specific prelude without the core.
 ///
 /// You are probably looking for the `prelude` module.
-pub mod hexga_prelude
-{
+pub mod hexga_prelude {
     pub use crate::array_vec::prelude::*;
-    pub use crate::bit_set::prelude::*;
     pub use crate::bit_flags::bit_index;
+    pub use crate::bit_set::prelude::*;
     pub use crate::generational::prelude::*;
     pub use crate::math::prelude::*;
     pub use crate::utils::prelude::*;
@@ -77,15 +71,13 @@ pub mod hexga_prelude
     pub use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeStruct};
 
     #[allow(hidden_glob_reexports)]
-    pub(crate) mod prelude
-    {}
+    pub(crate) mod prelude {}
 
     pub use super::hexga_traits::*;
 }
 
 #[doc(hidden)]
-pub mod hexga_traits
-{
+pub mod hexga_traits {
     #[allow(unused_imports)] // The bit-set traits module is currently empty.
     pub use crate::bit_set::traits::*;
     pub use crate::generational::traits::*;
@@ -103,8 +95,7 @@ pub mod hexga_traits
 pub use fullname_crate::*;
 
 #[doc(hidden)]
-pub mod fullname_crate
-{
+pub mod fullname_crate {
     #[doc(hidden)] // For macro like new_unit
     pub use hexga_math;
 }

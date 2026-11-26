@@ -1,9 +1,10 @@
 use super::*;
 
-pub trait RotateX<T = float>
-{
+pub trait RotateX<T = float> {
     fn rotate_x(&mut self, angle: AngleOf<T>) -> &mut Self;
-    fn rot_x(&mut self, angle: AngleOf<T>) -> &mut Self { self.rotate_x(angle) }
+    fn rot_x(&mut self, angle: AngleOf<T>) -> &mut Self {
+        self.rotate_x(angle)
+    }
     #[must_use]
     fn rotated_x(mut self, angle: AngleOf<T>) -> Self
     where
@@ -14,10 +15,11 @@ pub trait RotateX<T = float>
     }
 }
 
-pub trait RotateY<T = float>
-{
+pub trait RotateY<T = float> {
     fn rotate_y(&mut self, angle: AngleOf<T>) -> &mut Self;
-    fn rot_y(&mut self, angle: AngleOf<T>) -> &mut Self { self.rotate_y(angle) }
+    fn rot_y(&mut self, angle: AngleOf<T>) -> &mut Self {
+        self.rotate_y(angle)
+    }
     #[must_use]
     fn rotated_y(mut self, angle: AngleOf<T>) -> Self
     where
@@ -28,10 +30,11 @@ pub trait RotateY<T = float>
     }
 }
 
-pub trait RotateZ<T = float>
-{
+pub trait RotateZ<T = float> {
     fn rotate_z(&mut self, angle: AngleOf<T>) -> &mut Self;
-    fn rot_z(&mut self, angle: AngleOf<T>) -> &mut Self { self.rotate_z(angle) }
+    fn rot_z(&mut self, angle: AngleOf<T>) -> &mut Self {
+        self.rotate_z(angle)
+    }
     #[must_use]
     fn rotated_z(mut self, angle: AngleOf<T>) -> Self
     where

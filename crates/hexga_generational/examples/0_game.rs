@@ -1,8 +1,7 @@
 use hexga_core::prelude::IndexID;
 use hexga_generational::prelude::*;
 
-fn main()
-{
+fn main() {
     let mut entities = GenVec::new();
     let enemy = entities.insert("zoombie");
 
@@ -16,8 +15,7 @@ fn main()
     entities.insert("slime");
     entities.insert("skeleton");
 
-    for (id, entity) in entities
-    {
+    for (id, entity) in entities {
         println!("{:?} => {}", id, entity)
     }
 }

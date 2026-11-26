@@ -17,8 +17,7 @@ where
     Idx: Integer,
     T: 'a,
 {
-    pub fn new(grid: &'a mut G) -> Self
-    {
+    pub fn new(grid: &'a mut G) -> Self {
         let rect = grid.rect().iter_index();
         Self {
             grid,
@@ -27,20 +26,15 @@ where
         }
     }
 
-    pub fn from_rect(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Option<Self>
-    {
-        if !grid.rect().is_rect_inside(rect)
-        {
+    pub fn from_rect(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Option<Self> {
+        if !grid.rect().is_rect_inside(rect) {
             None
-        }
-        else
-        {
+        } else {
             Some(unsafe { Self::from_rect_unchecked(grid, rect) })
         }
     }
 
-    pub unsafe fn from_rect_unchecked(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Self
-    {
+    pub unsafe fn from_rect_unchecked(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Self {
         Self {
             grid,
             rect: rect.iter_index(),
@@ -48,8 +42,7 @@ where
         }
     }
 
-    pub fn from_rect_intersect(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Self
-    {
+    pub fn from_rect_intersect(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Self {
         let rect = grid.rect().intersect_or_empty(rect).iter_index();
         Self {
             grid,
@@ -66,15 +59,16 @@ where
 {
     type Item = (Vector<Idx, N>, &'a mut T);
 
-    fn next(&mut self) -> Option<Self::Item>
-    {
+    fn next(&mut self) -> Option<Self::Item> {
         let idx = self.rect.next()?;
         // # Safety
         // Each index are different
         Some((idx, unsafe { (&mut *(&mut *self.grid as *mut G)).index_mut(idx) }))
     }
 
-    fn size_hint(&self) -> (usize, Option<usize>) { self.rect.size_hint() }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.rect.size_hint()
+    }
 }
 impl<'a, G, T, Idx, const N: usize> std::iter::FusedIterator for GridViewIterMut<'a, G, T, Idx, N>
 where
@@ -90,7 +84,6 @@ where
     RectangleIter<Idx, N>: std::iter::ExactSizeIterator,
 {
 }
-
 
 /*
 impl<'a, G, T, Idx, const N: usize> Map for GridViewMut<'a, G, T, Idx, N>

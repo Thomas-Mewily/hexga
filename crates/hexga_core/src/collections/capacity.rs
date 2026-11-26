@@ -1,12 +1,10 @@
 use super::*;
 
-pub trait Capacity<T>
-{
+pub trait Capacity<T> {
     fn capacity(&self) -> usize;
 }
 
-pub trait WithCapacity
-{
+pub trait WithCapacity {
     type Param;
     fn with_capacity_and_param(capacity: usize, param: Self::Param) -> Self;
     #[inline(always)]
@@ -23,8 +21,7 @@ pub trait WithCapacity
 ///
 /// This trait extends [`Capacity`] and provides both fallible and infallible
 /// methods for reserving space for new elements.
-pub trait Reserve<T>: Capacity<T>
-{
+pub trait Reserve<T>: Capacity<T> {
     type Error: Debug;
 
     /// Reserves capacity for at least `additional` elements more than the
@@ -32,7 +29,9 @@ pub trait Reserve<T>: Capacity<T>
     /// avoid frequent allocations. After calling `reserve`,
     /// capacity will be greater than or equal to `self.len() + additional`.
     /// Does nothing if capacity is already sufficient.
-    fn reserve(&mut self, additional: usize) { let _ = self.try_reserve(additional); }
+    fn reserve(&mut self, additional: usize) {
+        let _ = self.try_reserve(additional);
+    }
     fn try_reserve(&mut self, additional: usize) -> Result<(), Self::Error>;
 
     /// Reserves the minimum capacity for at least `additional` elements more than
@@ -40,7 +39,9 @@ pub trait Reserve<T>: Capacity<T>
     /// deliberately over-allocate to speculatively avoid frequent allocations.
     /// After calling `reserve_exact`, capacity will be greater than or equal to
     /// `self.len() + additional`. Does nothing if the capacity is already
-    fn reserve_exact(&mut self, additional: usize) { let _ = self.try_reserve_exact(additional); }
+    fn reserve_exact(&mut self, additional: usize) {
+        let _ = self.try_reserve_exact(additional);
+    }
     fn try_reserve_exact(&mut self, additional: usize) -> Result<(), Self::Error>;
 
     /// Ensure total capacity is at least `total`.
@@ -51,8 +52,7 @@ pub trait Reserve<T>: Capacity<T>
     {
         let cap = self.capacity();
 
-        if total <= cap
-        {
+        if total <= cap {
             return;
         }
 
@@ -67,8 +67,7 @@ pub trait Reserve<T>: Capacity<T>
     {
         let cap = self.capacity();
 
-        if total <= cap
-        {
+        if total <= cap {
             return Ok(());
         }
 
@@ -84,8 +83,7 @@ pub trait Reserve<T>: Capacity<T>
     {
         let cap = self.capacity();
 
-        if total <= cap
-        {
+        if total <= cap {
             return;
         }
 
@@ -100,8 +98,7 @@ pub trait Reserve<T>: Capacity<T>
     {
         let cap = self.capacity();
 
-        if total <= cap
-        {
+        if total <= cap {
             return Ok(());
         }
 
@@ -110,8 +107,7 @@ pub trait Reserve<T>: Capacity<T>
     }
 }
 
-pub trait Shrink<T>
-{
+pub trait Shrink<T> {
     /// Shrinks the capacity as much as possible.
     fn shrink_to_fit(&mut self);
     /// Shrinks the capacity with a lower bound.
@@ -122,8 +118,7 @@ pub trait Shrink<T>
 
 /// Shortens a collection, keeping the first `len` elements and dropping
 /// the rest.
-pub trait Truncate<T>
-{
+pub trait Truncate<T> {
     /// Shortens it, keeping the first `len` elements and dropping
     /// the rest.
     ///
@@ -133,8 +128,7 @@ pub trait Truncate<T>
 }
 
 #[cfg(feature = "std")]
-mod std_impl
-{
+mod std_impl {
     use super::*;
 
     impl<K, V, S> Capacity<V> for std::collections::HashMap<K, V, S>
@@ -143,7 +137,9 @@ mod std_impl
         S: BuildHasher,
     {
         #[inline(always)]
-        fn capacity(&self) -> usize { self.capacity() }
+        fn capacity(&self) -> usize {
+            self.capacity()
+        }
     }
     impl<K, V, S> WithCapacity for std::collections::HashMap<K, V, S>
     where
@@ -152,7 +148,9 @@ mod std_impl
     {
         type Param = S;
         #[inline(always)]
-        fn with_capacity_and_param(capacity: usize, hasher: Self::Param) -> Self { Self::with_capacity_and_hasher(capacity, hasher) }
+        fn with_capacity_and_param(capacity: usize, hasher: Self::Param) -> Self {
+            Self::with_capacity_and_hasher(capacity, hasher)
+        }
     }
     impl<K, V, S> Reserve<V> for std::collections::HashMap<K, V, S>
     where
@@ -161,22 +159,34 @@ mod std_impl
     {
         type Error = TryReserveError;
         #[inline(always)]
-        fn reserve(&mut self, additional: usize) { self.reserve(additional); }
+        fn reserve(&mut self, additional: usize) {
+            self.reserve(additional);
+        }
         #[inline(always)]
-        fn reserve_exact(&mut self, additional: usize) { self.reserve(additional); }
+        fn reserve_exact(&mut self, additional: usize) {
+            self.reserve(additional);
+        }
 
         #[inline(always)]
-        fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+        fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+            self.try_reserve(additional)
+        }
         #[inline(always)]
-        fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+        fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+            self.try_reserve(additional)
+        }
     }
     impl<K, V, S> Shrink<V> for std::collections::HashMap<K, V, S>
     where
         K: Eq + Hash,
         S: BuildHasher,
     {
-        fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
-        fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
+        fn shrink_to_fit(&mut self) {
+            self.shrink_to_fit();
+        }
+        fn shrink_to(&mut self, min_capacity: usize) {
+            self.shrink_to(min_capacity);
+        }
     }
 }
 
@@ -185,7 +195,9 @@ where
     T: Ord,
 {
     #[inline(always)]
-    fn capacity(&self) -> usize { self.capacity() }
+    fn capacity(&self) -> usize {
+        self.capacity()
+    }
 }
 impl<T> WithCapacity for BinaryHeap<T>
 where
@@ -193,7 +205,9 @@ where
 {
     type Param = ();
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
+    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
+        Self::with_capacity(capacity)
+    }
 }
 impl<T> Reserve<T> for BinaryHeap<T>
 where
@@ -201,26 +215,37 @@ where
 {
     type Error = TryReserveError;
     #[inline(always)]
-    fn reserve(&mut self, additional: usize) { self.reserve(additional); }
+    fn reserve(&mut self, additional: usize) {
+        self.reserve(additional);
+    }
     #[inline(always)]
-    fn reserve_exact(&mut self, additional: usize) { self.reserve_exact(additional); }
+    fn reserve_exact(&mut self, additional: usize) {
+        self.reserve_exact(additional);
+    }
 
     #[inline(always)]
-    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.try_reserve(additional)
+    }
     #[inline(always)]
-    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.try_reserve_exact(additional)
+    }
 }
 impl<T> Shrink<T> for BinaryHeap<T>
 where
     T: Ord,
 {
-    fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
-    fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
+    fn shrink_to_fit(&mut self) {
+        self.shrink_to_fit();
+    }
+    fn shrink_to(&mut self, min_capacity: usize) {
+        self.shrink_to(min_capacity);
+    }
 }
 
 #[cfg(feature = "std")]
-mod std_impl_2
-{
+mod std_impl_2 {
     use super::*;
 
     impl<T, S> Capacity<T> for std::collections::HashSet<T, S>
@@ -229,7 +254,9 @@ mod std_impl_2
         S: BuildHasher,
     {
         #[inline(always)]
-        fn capacity(&self) -> usize { self.capacity() }
+        fn capacity(&self) -> usize {
+            self.capacity()
+        }
     }
     impl<T, S> WithCapacity for std::collections::HashSet<T, S>
     where
@@ -238,7 +265,9 @@ mod std_impl_2
     {
         type Param = ();
         #[inline(always)]
-        fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
+        fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
+            Self::with_capacity(capacity)
+        }
     }
     impl<T, S> Reserve<T> for std::collections::HashSet<T, S>
     where
@@ -247,215 +276,293 @@ mod std_impl_2
     {
         type Error = TryReserveError;
         #[inline(always)]
-        fn reserve(&mut self, additional: usize) { self.reserve(additional); }
+        fn reserve(&mut self, additional: usize) {
+            self.reserve(additional);
+        }
         #[inline(always)]
-        fn reserve_exact(&mut self, additional: usize) { self.reserve(additional); }
+        fn reserve_exact(&mut self, additional: usize) {
+            self.reserve(additional);
+        }
 
         #[inline(always)]
-        fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+        fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+            self.try_reserve(additional)
+        }
         #[inline(always)]
-        fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+        fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+            self.try_reserve(additional)
+        }
     }
     impl<T, S> Shrink<T> for std::collections::HashSet<T, S>
     where
         T: Eq + Hash,
         S: BuildHasher,
     {
-        fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
-        fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
+        fn shrink_to_fit(&mut self) {
+            self.shrink_to_fit();
+        }
+        fn shrink_to(&mut self, min_capacity: usize) {
+            self.shrink_to(min_capacity);
+        }
     }
 }
 
-
-
-impl<T> Capacity<T> for VecDeque<T>
-{
+impl<T> Capacity<T> for VecDeque<T> {
     #[inline(always)]
-    fn capacity(&self) -> usize { self.capacity() }
+    fn capacity(&self) -> usize {
+        self.capacity()
+    }
 }
-impl<T> WithCapacity for VecDeque<T>
-{
+impl<T> WithCapacity for VecDeque<T> {
     type Param = ();
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
+    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
+        Self::with_capacity(capacity)
+    }
 }
-impl<T> Reserve<T> for VecDeque<T>
-{
+impl<T> Reserve<T> for VecDeque<T> {
     type Error = TryReserveError;
     #[inline(always)]
-    fn reserve(&mut self, additional: usize) { self.reserve(additional); }
+    fn reserve(&mut self, additional: usize) {
+        self.reserve(additional);
+    }
     #[inline(always)]
-    fn reserve_exact(&mut self, additional: usize) { self.reserve_exact(additional); }
+    fn reserve_exact(&mut self, additional: usize) {
+        self.reserve_exact(additional);
+    }
 
     #[inline(always)]
-    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.try_reserve(additional)
+    }
     #[inline(always)]
-    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.try_reserve_exact(additional)
+    }
 }
-impl<T> Shrink<T> for VecDeque<T>
-{
-    fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
-    fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
+impl<T> Shrink<T> for VecDeque<T> {
+    fn shrink_to_fit(&mut self) {
+        self.shrink_to_fit();
+    }
+    fn shrink_to(&mut self, min_capacity: usize) {
+        self.shrink_to(min_capacity);
+    }
 }
-impl<T> Truncate<T> for VecDeque<T>
-{
-    fn truncate(&mut self, len: usize) { self.truncate(len); }
+impl<T> Truncate<T> for VecDeque<T> {
+    fn truncate(&mut self, len: usize) {
+        self.truncate(len);
+    }
 }
 
 #[cfg(feature = "std")]
-mod std_impl_3
-{
+mod std_impl_3 {
     use super::*;
 
-    impl Capacity<u8> for std::ffi::OsString
-    {
+    impl Capacity<u8> for std::ffi::OsString {
         #[inline(always)]
-        fn capacity(&self) -> usize { self.capacity() }
+        fn capacity(&self) -> usize {
+            self.capacity()
+        }
     }
-    impl WithCapacity for std::ffi::OsString
-    {
+    impl WithCapacity for std::ffi::OsString {
         type Param = ();
         #[inline(always)]
-        fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
+        fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
+            Self::with_capacity(capacity)
+        }
     }
-    impl Reserve<u8> for std::ffi::OsString
-    {
+    impl Reserve<u8> for std::ffi::OsString {
         type Error = TryReserveError;
         #[inline(always)]
-        fn reserve(&mut self, additional: usize) { self.reserve(additional); }
+        fn reserve(&mut self, additional: usize) {
+            self.reserve(additional);
+        }
         #[inline(always)]
-        fn reserve_exact(&mut self, additional: usize) { self.reserve_exact(additional); }
+        fn reserve_exact(&mut self, additional: usize) {
+            self.reserve_exact(additional);
+        }
 
         #[inline(always)]
-        fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+        fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+            self.try_reserve(additional)
+        }
         #[inline(always)]
-        fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
+        fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+            self.try_reserve_exact(additional)
+        }
     }
-    impl Shrink<u8> for std::ffi::OsString
-    {
-        fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
-        fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
+    impl Shrink<u8> for std::ffi::OsString {
+        fn shrink_to_fit(&mut self) {
+            self.shrink_to_fit();
+        }
+        fn shrink_to(&mut self, min_capacity: usize) {
+            self.shrink_to(min_capacity);
+        }
     }
 
-    impl Capacity<u8> for std::path::PathBuf
-    {
+    impl Capacity<u8> for std::path::PathBuf {
         #[inline(always)]
-        fn capacity(&self) -> usize { self.capacity() }
+        fn capacity(&self) -> usize {
+            self.capacity()
+        }
     }
-    impl WithCapacity for std::path::PathBuf
-    {
+    impl WithCapacity for std::path::PathBuf {
         type Param = ();
         #[inline(always)]
-        fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
+        fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
+            Self::with_capacity(capacity)
+        }
     }
-    impl Reserve<u8> for std::path::PathBuf
-    {
+    impl Reserve<u8> for std::path::PathBuf {
         type Error = TryReserveError;
         #[inline(always)]
-        fn reserve(&mut self, additional: usize) { self.reserve(additional); }
+        fn reserve(&mut self, additional: usize) {
+            self.reserve(additional);
+        }
         #[inline(always)]
-        fn reserve_exact(&mut self, additional: usize) { self.reserve_exact(additional); }
+        fn reserve_exact(&mut self, additional: usize) {
+            self.reserve_exact(additional);
+        }
 
         #[inline(always)]
-        fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+        fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+            self.try_reserve(additional)
+        }
         #[inline(always)]
-        fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
+        fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+            self.try_reserve_exact(additional)
+        }
     }
-    impl Shrink<u8> for std::path::PathBuf
-    {
-        fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
-        fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
+    impl Shrink<u8> for std::path::PathBuf {
+        fn shrink_to_fit(&mut self) {
+            self.shrink_to_fit();
+        }
+        fn shrink_to(&mut self, min_capacity: usize) {
+            self.shrink_to(min_capacity);
+        }
     }
 }
 
-
-
-impl<T, A: Allocator> Capacity<T> for Vec<T, A>
-{
+impl<T, A: Allocator> Capacity<T> for Vec<T, A> {
     #[inline(always)]
-    fn capacity(&self) -> usize { self.capacity() }
+    fn capacity(&self) -> usize {
+        self.capacity()
+    }
 }
-impl<T, A: Allocator> WithCapacity for Vec<T, A>
-{
+impl<T, A: Allocator> WithCapacity for Vec<T, A> {
     type Param = A;
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, allocator: A) -> Self { Self::with_capacity_in(capacity, allocator) }
+    fn with_capacity_and_param(capacity: usize, allocator: A) -> Self {
+        Self::with_capacity_in(capacity, allocator)
+    }
 }
-impl<T, A: Allocator> Reserve<T> for Vec<T, A>
-{
+impl<T, A: Allocator> Reserve<T> for Vec<T, A> {
     type Error = TryReserveError;
     #[inline(always)]
-    fn reserve(&mut self, additional: usize) { self.reserve(additional); }
+    fn reserve(&mut self, additional: usize) {
+        self.reserve(additional);
+    }
     #[inline(always)]
-    fn reserve_exact(&mut self, additional: usize) { self.reserve_exact(additional); }
+    fn reserve_exact(&mut self, additional: usize) {
+        self.reserve_exact(additional);
+    }
 
     #[inline(always)]
-    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.try_reserve(additional)
+    }
     #[inline(always)]
-    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.try_reserve_exact(additional)
+    }
 }
-impl<T, A: Allocator> Shrink<T> for Vec<T, A>
-{
-    fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
-    fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
+impl<T, A: Allocator> Shrink<T> for Vec<T, A> {
+    fn shrink_to_fit(&mut self) {
+        self.shrink_to_fit();
+    }
+    fn shrink_to(&mut self, min_capacity: usize) {
+        self.shrink_to(min_capacity);
+    }
 }
-impl<T, A: Allocator> Truncate<T> for Vec<T, A>
-{
-    fn truncate(&mut self, len: usize) { self.truncate(len); }
+impl<T, A: Allocator> Truncate<T> for Vec<T, A> {
+    fn truncate(&mut self, len: usize) {
+        self.truncate(len);
+    }
 }
 
-impl Capacity<u8> for String
-{
+impl Capacity<u8> for String {
     #[inline(always)]
-    fn capacity(&self) -> usize { self.capacity() }
+    fn capacity(&self) -> usize {
+        self.capacity()
+    }
 }
-impl WithCapacity for String
-{
+impl WithCapacity for String {
     type Param = ();
     #[inline(always)]
-    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self { Self::with_capacity(capacity) }
+    fn with_capacity_and_param(capacity: usize, _: Self::Param) -> Self {
+        Self::with_capacity(capacity)
+    }
 }
-impl Reserve<u8> for String
-{
+impl Reserve<u8> for String {
     type Error = TryReserveError;
     #[inline(always)]
-    fn reserve(&mut self, additional: usize) { self.reserve(additional); }
+    fn reserve(&mut self, additional: usize) {
+        self.reserve(additional);
+    }
     #[inline(always)]
-    fn reserve_exact(&mut self, additional: usize) { self.reserve_exact(additional); }
+    fn reserve_exact(&mut self, additional: usize) {
+        self.reserve_exact(additional);
+    }
 
     #[inline(always)]
-    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve(additional) }
+    fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.try_reserve(additional)
+    }
     #[inline(always)]
-    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> { self.try_reserve_exact(additional) }
+    fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.try_reserve_exact(additional)
+    }
 }
-impl Shrink<u8> for String
-{
-    fn shrink_to_fit(&mut self) { self.shrink_to_fit(); }
-    fn shrink_to(&mut self, min_capacity: usize) { self.shrink_to(min_capacity); }
+impl Shrink<u8> for String {
+    fn shrink_to_fit(&mut self) {
+        self.shrink_to_fit();
+    }
+    fn shrink_to(&mut self, min_capacity: usize) {
+        self.shrink_to(min_capacity);
+    }
 }
-impl Truncate<u8> for String
-{
-    fn truncate(&mut self, len: usize) { self.truncate(len); }
+impl Truncate<u8> for String {
+    fn truncate(&mut self, len: usize) {
+        self.truncate(len);
+    }
 }
-
 
 impl<T> Capacity<T> for Option<T> {
     #[inline(always)]
-    fn capacity(&self) -> usize { self.is_none() as usize }
+    fn capacity(&self) -> usize {
+        self.is_none() as usize
+    }
 }
 impl<T> WithCapacity for Option<T> {
     type Param = ();
     #[inline(always)]
-    fn with_capacity_and_param(_capacity: usize, _: Self::Param) -> Self { None }
+    fn with_capacity_and_param(_capacity: usize, _: Self::Param) -> Self {
+        None
+    }
 }
-impl<T,E> Capacity<T> for Result<T,E> {
+impl<T, E> Capacity<T> for Result<T, E> {
     #[inline(always)]
-    fn capacity(&self) -> usize { self.is_ok() as usize }
+    fn capacity(&self) -> usize {
+        self.is_ok() as usize
+    }
 }
-impl<T,E> WithCapacity for Result<T,E> 
-    where E: Default
+impl<T, E> WithCapacity for Result<T, E>
+where
+    E: Default,
 {
     type Param = ();
     #[inline(always)]
-    fn with_capacity_and_param(_capacity: usize, _: Self::Param) -> Self { Err(___()) }
+    fn with_capacity_and_param(_capacity: usize, _: Self::Param) -> Self {
+        Err(___())
+    }
 }

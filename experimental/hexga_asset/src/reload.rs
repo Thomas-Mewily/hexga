@@ -1,12 +1,13 @@
 use super::*;
 
 /// 🔥 Hot Reloading.
-pub trait Reload
-{
+pub trait Reload {
     type Ok;
     type Error;
     fn try_reload(&mut self) -> Result<Self::Ok, Self::Error>;
-    fn reload(&mut self) -> bool { self.try_reload().is_ok() }
+    fn reload(&mut self) -> bool {
+        self.try_reload().is_ok()
+    }
 }
 
 /*

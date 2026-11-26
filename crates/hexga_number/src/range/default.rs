@@ -14,14 +14,17 @@ pub trait RangeDefault: MinValue + MaxValue //+ CastTo + FromFloat + UnitArithme
     const RANGE: Self;
 
     // `Self::RANGE_MIN..Self::RANGE_MAX`
-    fn range() -> Range<Self> { Self::RANGE_MIN..Self::RANGE_MAX }
+    fn range() -> Range<Self> {
+        Self::RANGE_MIN..Self::RANGE_MAX
+    }
     // `Self::RANGE_MIN..=Self::RANGE_MAX`
-    fn range_inclusive() -> RangeInclusive<Self> { Self::RANGE_MIN..=Self::RANGE_MAX }
+    fn range_inclusive() -> RangeInclusive<Self> {
+        Self::RANGE_MIN..=Self::RANGE_MAX
+    }
 }
 macro_rules! impl_have_min_max {
     ($primitive_name: ty) => {
-        impl RangeDefault for $primitive_name
-        {
+        impl RangeDefault for $primitive_name {
             const RANGE_MIN: Self = Self::ZERO;
             const RANGE_HALF: Self = Self::MAX / 2;
             const RANGE_MAX: Self = Self::MAX;
@@ -33,8 +36,7 @@ map_on_integer!(impl_have_min_max);
 
 macro_rules! impl_have_min_max_for_float {
     ($primitive_name: ty) => {
-        impl RangeDefault for $primitive_name
-        {
+        impl RangeDefault for $primitive_name {
             const RANGE_MIN: Self = Self::ZERO;
             const RANGE_HALF: Self = Self::ONE / 2.;
             const RANGE_MAX: Self = Self::ONE;
@@ -44,8 +46,7 @@ macro_rules! impl_have_min_max_for_float {
 }
 map_on_float!(impl_have_min_max_for_float);
 
-impl RangeDefault for bool
-{
+impl RangeDefault for bool {
     const RANGE_MIN: Self = false;
     const RANGE_HALF: Self = false;
     const RANGE_MAX: Self = true;

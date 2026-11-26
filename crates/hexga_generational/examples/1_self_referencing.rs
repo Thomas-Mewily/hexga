@@ -1,16 +1,14 @@
 use hexga_generational::prelude::*;
 
 #[derive(Debug)]
-struct Entity
-{
+struct Entity {
     name: &'static str,
     // GenID, by nature, can be NULL / always return none,
     // So there is no need to wrap it in an Option
     eating: GenID<Entity>,
 }
 
-fn main()
-{
+fn main() {
     let mut entities = GenVec::new();
 
     let zombie = entities.insert(Entity {
@@ -21,13 +19,11 @@ fn main()
 
     let ouroboros = entities.insert_cyclic(|id| Entity { name: "Ouroboros", eating: id });
 
-    if let Some(slime_entity) = entities.get_mut(slime)
-    {
+    if let Some(slime_entity) = entities.get_mut(slime) {
         slime_entity.eating = ouroboros;
     }
 
-    for (id, entity) in &entities
-    {
+    for (id, entity) in &entities {
         println!("{:?} => name: {}, target: {:?}", id, entity.name, entity.eating);
     }
 }

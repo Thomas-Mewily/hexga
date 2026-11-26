@@ -37,16 +37,14 @@ pub(crate) use scissor::*;
 pub mod viewport;
 pub(crate) use viewport::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::typedef::*;
     pub use hexga_wgpu::prelude::*;
 
     pub use super::traits::*;
-    pub use super::{camera::prelude::*, mesh::prelude::*, render::prelude::*, vertex::prelude::*, scissor::prelude::*, viewport::prelude::*};
+    pub use super::{camera::prelude::*, mesh::prelude::*, render::prelude::*, scissor::prelude::*, vertex::prelude::*, viewport::prelude::*};
 }
 
-pub mod traits
-{
-    pub use super::{camera::traits::*, mesh::traits::*, render::traits::*, vertex::traits::*, scissor::traits::*, viewport::traits::*};
+pub mod traits {
+    pub use super::{camera::traits::*, mesh::traits::*, render::traits::*, scissor::traits::*, vertex::traits::*, viewport::traits::*};
 }

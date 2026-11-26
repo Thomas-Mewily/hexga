@@ -2,18 +2,15 @@ use hexga_engine::prelude::*;
 
 pub struct MyApp;
 
-impl<'a> App<(), AppCtx<'a>> for MyApp
-{
-    fn event(&mut self, ev: AppEvent, _ctx: &mut AppCtx<'a>) -> Option<AppEvent>
-    {
+impl<'a> App<(), AppCtx<'a>> for MyApp {
+    fn event(&mut self, ev: AppEvent, _ctx: &mut AppCtx<'a>) -> Option<AppEvent> {
         println!("{:?}", ev);
         None
     }
 
     fn update(&mut self, _dt: Duration, _ctx: &mut AppCtx<'a>) {}
 
-    fn draw(&mut self, _ctx: &mut AppCtx<'a>)
-    {
+    fn draw(&mut self, _ctx: &mut AppCtx<'a>) {
         //Pen.set_background_color(rgb(0.025, 0.035, 0.08));
 
         // RGB vertices blend into a smooth gradient across the triangle.
@@ -36,4 +33,6 @@ impl<'a> App<(), AppCtx<'a>> for MyApp
     }
 }
 
-fn main() { MyApp::run_with_param(|| MyApp, AppParam::default()).expect("failed to run triangle example"); }
+fn main() {
+    MyApp::run_with_param(|| MyApp, AppParam::default()).expect("failed to run triangle example");
+}

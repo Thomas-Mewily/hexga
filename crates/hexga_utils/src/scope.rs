@@ -1,17 +1,14 @@
 use super::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{Scoped, ScopedWith};
 }
 
-pub trait Scoped
-{
+pub trait Scoped {
     fn begin(&mut self);
     fn scope<F, R>(&mut self, f: F) -> R
     where
@@ -28,13 +25,16 @@ impl<S> ScopedWith<()> for S
 where
     S: Scoped,
 {
-    fn begin(&mut self, _value: &()) { Scoped::begin(self); }
+    fn begin(&mut self, _value: &()) {
+        Scoped::begin(self);
+    }
 
-    fn end(&mut self) { Scoped::end(self); }
+    fn end(&mut self) {
+        Scoped::end(self);
+    }
 }
 
-pub trait ScopedWith<T = ()>
-{
+pub trait ScopedWith<T = ()> {
     fn begin(&mut self, value: &T);
     fn scope<F, R>(&mut self, value: T, f: F) -> R
     where

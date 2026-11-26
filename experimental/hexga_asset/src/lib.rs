@@ -24,13 +24,11 @@ pub use asset::*;
 mod asset_data;
 pub use asset_data::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
     pub use super::{AssetData, AssetGlobal, AssetIn, AssetManagerData, AssetManagerGlobal, AssetManagerIn, FileData, FileGlobal, FileIn};
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{FileSystemLoadSave, FileSystemSave, Persistant, Reload, Saveable};
 }

@@ -4,8 +4,7 @@ pub trait IAppEvent: Async {}
 impl<E> IAppEvent for E where E: Async {}
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum AppEvent
-{
+pub enum AppEvent {
     Key(KeyEvent),
     KeyModifiers(KeyModifiersFlags),
 
@@ -47,22 +46,21 @@ pub enum AppEvent
     //Custom(Ev),
 }
 
-impl From<KeyEvent> for AppEvent
-{
-    fn from(key: KeyEvent) -> Self { Self::Key(key) }
+impl From<KeyEvent> for AppEvent {
+    fn from(key: KeyEvent) -> Self {
+        Self::Key(key)
+    }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum AppMessage<Ev = ()>
-{
+pub enum AppMessage<Ev = ()> {
     Event(AppEvent),
     Flow(AppFlow),
     Custom(Ev),
 }
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug)]
-pub enum AppFlow
-{
+pub enum AppFlow {
     Update(Duration),
     Draw,
     Resume,
@@ -109,24 +107,20 @@ impl<Ev> PlatformMessage<Ev>
 }
 */
 
-impl<Ev> AppMessage<Ev>
-{
+impl<Ev> AppMessage<Ev> {
     pub fn replace_custom_event_from_fn<Ev2, F>(self, init: F) -> (AppMessage<Ev2>, Option<Ev>)
     where
         F: FnOnce() -> Ev2,
     {
-        match self
-        {
+        match self {
             AppMessage::Event(v) => (AppMessage::Event(v), None),
             AppMessage::Flow(v) => (AppMessage::Flow(v), None),
             AppMessage::Custom(c) => (AppMessage::Custom(init()), Some(c)),
         }
     }
 
-    pub fn remove_custom<Ev2>(self) -> Option<AppMessage<Ev2>>
-    {
-        match self
-        {
+    pub fn remove_custom<Ev2>(self) -> Option<AppMessage<Ev2>> {
+        match self {
             AppMessage::Event(ev) => Some(AppMessage::Event(ev)),
             AppMessage::Flow(flow) => Some(AppMessage::Flow(flow)),
             AppMessage::Custom(_) => None,
@@ -134,11 +128,13 @@ impl<Ev> AppMessage<Ev>
     }
 }
 
-impl<Ev> From<AppEvent> for AppMessage<Ev>
-{
-    fn from(event: AppEvent) -> Self { Self::Event(event) }
+impl<Ev> From<AppEvent> for AppMessage<Ev> {
+    fn from(event: AppEvent) -> Self {
+        Self::Event(event)
+    }
 }
-impl<Ev> From<AppFlow> for AppMessage<Ev>
-{
-    fn from(flow: AppFlow) -> Self { Self::Flow(flow) }
+impl<Ev> From<AppFlow> for AppMessage<Ev> {
+    fn from(flow: AppFlow) -> Self {
+        Self::Flow(flow)
+    }
 }

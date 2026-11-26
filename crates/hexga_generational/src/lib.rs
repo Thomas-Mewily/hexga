@@ -38,8 +38,7 @@ pub mod table;
 */
 
 pub(crate) use prelude::*;
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{
         gen_id::prelude::*,
         gen_map::prelude::*,
@@ -50,8 +49,7 @@ pub mod prelude
     };
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{
         gen_id::traits::*,
         gen_map::traits::*,

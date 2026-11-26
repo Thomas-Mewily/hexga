@@ -6,8 +6,7 @@ macro_rules! print_type {
     };
 }
 
-fn main()
-{
+fn main() {
     // manual stuff
     print_type!(f32);
     print_type!(f64);

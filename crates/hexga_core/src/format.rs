@@ -4,21 +4,18 @@ pub use core::fmt::{Debug, Display, Formatter};
 pub type FmtResult = core::fmt::Result;
 pub type FmtError = core::fmt::Error;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
     pub use super::{FmtError, FmtResult, Formatter};
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::{Debug, Display, ToDebug};
 }
 
 re_export_item_from_std_or_alloc!(format);
 
-pub trait ToDebug
-{
+pub trait ToDebug {
     fn to_debug(&self) -> String;
 }
 impl<T> ToDebug for T
@@ -26,31 +23,27 @@ where
     T: core::fmt::Debug,
 {
     #[inline(always)]
-    fn to_debug(&self) -> String { format!("{:?}", self) }
+    fn to_debug(&self) -> String {
+        format!("{:?}", self)
+    }
 }
 
-pub trait DebugExtension
-{
+pub trait DebugExtension {
     fn field_if<T: Debug>(&mut self, name: &str, value: &T, pred: impl FnOnce(&T) -> bool) -> &mut Self;
-    fn field_if_not_default<T: Debug + Default + PartialEq>(&mut self, name: &str, value: &T) -> &mut Self
-    {
+    fn field_if_not_default<T: Debug + Default + PartialEq>(&mut self, name: &str, value: &T) -> &mut Self {
         self.field_if(name, value, |v| v.is_not_default())
     }
 
     fn field<T: Debug>(&mut self, name: &str, value: &T) -> &mut Self;
 
-    fn field_if_false(&mut self, name: &str, value: bool) -> &mut Self
-    {
-        if !value
-        {
+    fn field_if_false(&mut self, name: &str, value: bool) -> &mut Self {
+        if !value {
             self.field(name, &value);
         }
         self
     }
-    fn field_if_true(&mut self, name: &str, value: bool) -> &mut Self
-    {
-        if value
-        {
+    fn field_if_true(&mut self, name: &str, value: bool) -> &mut Self {
+        if value {
             self.field(name, &value);
         }
         self
@@ -59,32 +52,32 @@ pub trait DebugExtension
     fn field_bool(&mut self, value: bool, name_true: &str, name_false: &str) -> &mut Self;
 }
 
-impl<'a, 'b: 'a> DebugExtension for core::fmt::DebugStruct<'a, 'b>
-{
-    fn field_if<T: Debug>(&mut self, name: &str, value: &T, pred: impl FnOnce(&T) -> bool) -> &mut Self
-    {
-        if pred(value)
-        {
+impl<'a, 'b: 'a> DebugExtension for core::fmt::DebugStruct<'a, 'b> {
+    fn field_if<T: Debug>(&mut self, name: &str, value: &T, pred: impl FnOnce(&T) -> bool) -> &mut Self {
+        if pred(value) {
             self.field(name, value);
         }
         self
     }
 
-    fn field<T: Debug>(&mut self, name: &str, value: &T) -> &mut Self { self.field(name, value) }
+    fn field<T: Debug>(&mut self, name: &str, value: &T) -> &mut Self {
+        self.field(name, value)
+    }
 
-    fn field_bool(&mut self, value: bool, name_true: &str, name_false: &str) -> &mut Self { self.field(if value { name_true } else { name_false }, &()) }
+    fn field_bool(&mut self, value: bool, name_true: &str, name_false: &str) -> &mut Self {
+        self.field(if value { name_true } else { name_false }, &())
+    }
 }
 
-pub struct FmtOptional<'a, T>
-{
+pub struct FmtOptional<'a, T> {
     value: Option<&'a T>,
     separator: &'static str,
 }
-impl<'a, T> FmtOptional<'a, T>
-{
-    pub fn new(value: Option<&'a T>) -> Self { Self { value, separator: " " } }
-    pub fn with_separator(mut self, separator: &'static str) -> Self
-    {
+impl<'a, T> FmtOptional<'a, T> {
+    pub fn new(value: Option<&'a T>) -> Self {
+        Self { value, separator: " " }
+    }
+    pub fn with_separator(mut self, separator: &'static str) -> Self {
         self.separator = separator;
         self
     }

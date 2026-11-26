@@ -620,8 +620,7 @@ pub trait IColor: Sized + ToColor<Self::Component> //+ ToColor<Self::Component> 
 }
 
 impl<S, T, const N: usize> ArrayToColor<T, N> for S where S: Array<T, N> {}
-pub trait ArrayToColor<T, const N: usize>: Array<T, N>
-{
+pub trait ArrayToColor<T, const N: usize>: Array<T, N> {
     fn to_rgba(self) -> RgbaOf<T>
     where
         T: Default,

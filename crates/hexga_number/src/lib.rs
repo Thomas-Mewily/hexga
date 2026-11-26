@@ -52,49 +52,82 @@ pub use convert::*;
 mod utils;
 pub use utils::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
     pub use super::{
-        clamp, // abs
         abs,
-        
+
+        clamp, // abs
         half,
+        //mix,
+        lerp,
         max,
         min,
         minus_one,
-        //mix,
-        lerp,
-        remap,
         one,
+        remap,
         zero,
     };
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use crate::{
-        Abs, Pow, Decay,
+        Abs,
+        CastFrom,
+        CastInto,
 
-        convert::cast_primitive::*,
-        CastFrom, CastInto, 
+        CastRangeFrom,
+        CastRangeInto,
+        Clamp,
+        Constant,
+        Decay,
 
-        RangeDefault, CastRangeFrom, CastRangeInto, 
-        Clamp, Lerp, Remap,
-        Constant, 
-        Decrement, Increment,
-        Float, Trigo, Half, Infinity, 
-        IterSample, IterSampleDefault, IterSampleDefaultInclusive, IterStep, IterStepDefault, IterStepDefaultInclusive, IterStepMax, 
-        Map, MapInto, MapZip, MapZipInto,
-        Max, MaxValue, Min, MinValue, 
-        MinusOne, NaNValue, 
+        Decrement,
+        Float,
+        Half,
+        Increment,
+        Infinity,
+        IterSample,
+        IterSampleDefault,
+        IterSampleDefaultInclusive,
+        IterStep,
+        IterStepDefault,
+        IterStepDefaultInclusive,
+        IterStepMax,
+        Lerp,
+        Map,
+        MapInto,
+        MapZip,
+        MapZipInto,
+        Max,
+        MaxValue,
+        Min,
+        MinValue,
+        MinusInfinity,
+        MinusOne,
+        MinusOneIter,
+        NaNValue,
         OddOrEven,
-        Zero, One, TakeHalf, Three, Two, MinusInfinity,
-        ZeroIter, OneIter, MinusOneIter, UnwrapZero,
-        PrimitiveType, OverflowBehavior, 
-        PartialOrdExtension, PositiveOrNegative, 
-        RemEuclid, Unit, arithmetic::traits::*,
-
+        One,
+        OneIter,
+        OverflowBehavior,
+        PartialOrdExtension,
+        PositiveOrNegative,
+        Pow,
+        PrimitiveType,
+        RangeDefault,
+        RemEuclid,
+        Remap,
+        TakeHalf,
+        Three,
+        Trigo,
+        Two,
+        Unit,
+        UnwrapZero,
+        Zero,
+        ZeroIter,
+        arithmetic::traits::*,
         //RefMutMap
+        convert::cast_primitive::*,
     };
 }

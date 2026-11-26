@@ -1,15 +1,14 @@
 use super::*;
 
-pub(crate) struct DeserializerBytes<'a>
-{
+pub(crate) struct DeserializerBytes<'a> {
     pub(crate) bytes: Cow<'a, [u8]>,
 }
-impl<'a> DeserializerBytes<'a>
-{
-    pub fn new(bytes: impl Into<Cow<'a, [u8]>>) -> Self { Self { bytes: bytes.into() } }
+impl<'a> DeserializerBytes<'a> {
+    pub fn new(bytes: impl Into<Cow<'a, [u8]>>) -> Self {
+        Self { bytes: bytes.into() }
+    }
 }
-impl<'a, 'de> Deserializer<'de> for DeserializerBytes<'a>
-{
+impl<'a, 'de> Deserializer<'de> for DeserializerBytes<'a> {
     type Error = EncodeError;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -215,5 +214,7 @@ impl<'a, 'de> Deserializer<'de> for DeserializerBytes<'a>
         Err(Default::default())
     }
 
-    fn is_human_readable(&self) -> bool { false }
+    fn is_human_readable(&self) -> bool {
+        false
+    }
 }

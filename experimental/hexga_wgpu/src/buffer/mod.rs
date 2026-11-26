@@ -109,8 +109,7 @@ pub use write::*;
 mod vec;
 pub use vec::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::buffer::GBuffer;
     pub use super::read::{GElementRead, GSliceRead};
     pub use super::slice::GSlice;
@@ -119,8 +118,7 @@ pub mod prelude
     pub use super::vec::GVec;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::buffer::ToGpuBuffer;
     pub use super::vec::ToGpuVec;
     pub use crate::buffer::{GBufferElement, GpuBufferNew, GpuSliceable, GpuSliceableMut};
@@ -141,10 +139,11 @@ where
     fn usage(&self) -> GBufferUsageFlags;
 
     fn slice<'a, S: RangeBounds<usize>>(&'a self, bounds: S) -> GSlice<'a, T>;
-    fn as_slice<'a>(&'a self) -> GSlice<'a, T> { self.slice(..) }
+    fn as_slice<'a>(&'a self) -> GSlice<'a, T> {
+        self.slice(..)
+    }
 
-    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GSliceRead<'_, T>
-    {
+    fn read<S: RangeBounds<usize>>(&self, bounds: S) -> GSliceRead<'_, T> {
         self.try_read(bounds).expect("GPU read range out of bounds")
     }
 
@@ -152,14 +151,15 @@ where
     ///
     /// Nonempty ranges require a mapped buffer. wgpu may reject overlapping
     /// views, including ranges that overlap after alignment.
-    fn try_read<S: RangeBounds<usize>>(&self, bounds: S) -> Option<GSliceRead<'_, T>>
-    {
+    fn try_read<S: RangeBounds<usize>>(&self, bounds: S) -> Option<GSliceRead<'_, T>> {
         let slice = self.as_slice();
         let range = checked_range(bounds, slice.len)?;
         Some(slice.buffer.read_elements(slice.begin + range.start..slice.begin + range.end))
     }
 
-    fn as_read<'a>(&'a self) -> GSliceRead<'a, T> { self.read(..) }
+    fn as_read<'a>(&'a self) -> GSliceRead<'a, T> {
+        self.read(..)
+    }
 }
 
 pub trait GBufferElement: Copy + 'static {}
@@ -170,15 +170,15 @@ where
     T: GBufferElement,
 {
     fn slice_mut<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMut<'_, T>;
-    fn as_mut_slice(&mut self) -> GSliceMut<'_, T> { self.slice_mut(..) }
+    fn as_mut_slice(&mut self) -> GSliceMut<'_, T> {
+        self.slice_mut(..)
+    }
 
     /// Writes to an already mapped buffer, detaching from any clones first.
-    fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMutWrite<'_, T>
-    {
+    fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GSliceMutWrite<'_, T> {
         let slice = self.slice_mut(bounds);
         let buffer = &mut slice.buffer.buffer;
-        if Arc::get_mut(buffer).is_none()
-        {
+        if Arc::get_mut(buffer).is_none() {
             // A mapped buffer cannot be used in a GPU copy command.
             let replacement = Gpu.device().create_buffer(&wgpu::BufferDescriptor {
                 label: None,
@@ -186,14 +186,18 @@ where
                 usage: buffer.usage(),
                 mapped_at_creation: true,
             });
-            replacement.slice(..).get_mapped_range_mut()
+            replacement
+                .slice(..)
+                .get_mapped_range_mut()
                 .copy_from_slice(&buffer.slice(..).get_mapped_range());
             *buffer = Arc::new(replacement);
         }
 
         unsafe { GSliceMutWrite::from_wgpu(buffer.slice(..).get_mapped_range_mut()) }
     }
-    fn as_write<S: RangeBounds<usize>>(&mut self) -> GSliceMutWrite<'_, T> { self.write(..) }
+    fn as_write<S: RangeBounds<usize>>(&mut self) -> GSliceMutWrite<'_, T> {
+        self.write(..)
+    }
 
     /*
     fn write<S: RangeBounds<usize>>(&mut self, bounds: S) -> GpuSliceMutWrite<'_, T>
@@ -208,17 +212,13 @@ where
     // fn update_from_fn ?
 }
 
-
-fn checked_range(bounds: impl RangeBounds<usize>, len: usize) -> Option<StdRange<usize>>
-{
-    let start = match bounds.start_bound()
-    {
+fn checked_range(bounds: impl RangeBounds<usize>, len: usize) -> Option<StdRange<usize>> {
+    let start = match bounds.start_bound() {
         Bound::Included(&start) => start,
         Bound::Excluded(&start) => start.checked_add(1)?,
         Bound::Unbounded => 0,
     };
-    let end = match bounds.end_bound()
-    {
+    let end = match bounds.end_bound() {
         Bound::Included(&end) => end.checked_add(1)?,
         Bound::Excluded(&end) => end,
         Bound::Unbounded => len,

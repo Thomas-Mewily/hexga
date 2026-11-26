@@ -1,8 +1,7 @@
 #[allow(unused)]
 use hexga::{default, prelude::*};
 
-fn _x()
-{
+fn _x() {
     /*
     let mut f = FileData::load_or_create("_tmp/hello", || "hi".to_owned());
     dbg!(f.get_path());
@@ -78,8 +77,7 @@ where
     value.cast_into()
 }
 
-fn main()
-{
+fn main() {
 
     //let x = [1u8, 2u8] as [f32;2];
     //let x : [f32;2] = [1u8, 2u8].cast_into();

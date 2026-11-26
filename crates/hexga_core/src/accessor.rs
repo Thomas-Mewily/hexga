@@ -42,47 +42,49 @@ pub trait With<T>
 /// Used to represent types that can provide a certain context type.
 ///
 /// Based on [GGEZ Has trait](https://docs.rs/ggez/latest/ggez/context/trait.Has.html)
-pub trait Has<T>
-{
+pub trait Has<T> {
     fn retrieve(&self) -> T;
 }
 impl<T> Has<T> for T
 where
     T: Copy,
 {
-    fn retrieve(&self) -> T { *self }
+    fn retrieve(&self) -> T {
+        *self
+    }
 }
 
 /// Used to represent types that can provide a certain context type.
 ///
 /// Based on [GGEZ Has trait](https://docs.rs/ggez/latest/ggez/context/trait.Has.html)
-pub trait HasRef<T>
-{
+pub trait HasRef<T> {
     fn retrive_ref(&self) -> &T;
 }
-impl<T> HasRef<T> for T
-{
-    fn retrive_ref(&self) -> &T { self }
+impl<T> HasRef<T> for T {
+    fn retrive_ref(&self) -> &T {
+        self
+    }
 }
 
 /// Used to represent types that can provide a certain context type.
 ///
 /// Based on [GGEZ HasMut trait](https://docs.rs/ggez/latest/ggez/context/trait.HasMut.html)
-pub trait HasMut<T>
-{
+pub trait HasMut<T> {
     fn retrive_mut(&mut self) -> &mut T;
 }
-impl<T> HasMut<T> for T
-{
-    fn retrive_mut(&mut self) -> &mut T { self }
+impl<T> HasMut<T> for T {
+    fn retrive_mut(&mut self) -> &mut T {
+        self
+    }
 }
 
 #[macro_export]
 macro_rules! impl_has_mut_trait {
     ($trait_name:ident, $type_name:ty, $method_name:ident) => {
-        pub trait $trait_name: HasMut<$type_name>
-        {
-            fn $method_name(&mut self) -> &mut $type_name { self.retrive_mut() }
+        pub trait $trait_name: HasMut<$type_name> {
+            fn $method_name(&mut self) -> &mut $type_name {
+                self.retrive_mut()
+            }
         }
         impl<T> $trait_name for T where T: HasMut<$type_name> {}
     };
@@ -99,11 +101,9 @@ pub trait HasReadGuard<'a,T>
 impl<'a,T> HasReadGuard<'a,&'a T> for &'a T  { fn retrive_guard_ref(&'a self) -> &'a T { self } }
 */
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::traits::*;
 }
-pub mod traits
-{
+pub mod traits {
     pub use super::{Has, HasMut, HasRef};
 }

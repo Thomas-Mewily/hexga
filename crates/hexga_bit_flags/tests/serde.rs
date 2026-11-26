@@ -1,6 +1,5 @@
 #[cfg(test)]
-mod tests
-{
+mod tests {
     use hexga_bit_flags::*;
     use postcard;
     use serde::{Deserialize, Serialize};
@@ -8,8 +7,7 @@ mod tests
 
     #[bit_index]
     #[repr(u8)]
-    enum TestFlags
-    {
+    enum TestFlags {
         A,
         B,
         C = 2,
@@ -17,8 +15,7 @@ mod tests
     }
 
     #[test]
-    fn test_json_serialization()
-    {
+    fn test_json_serialization() {
         let flags = TestFlags::A | TestFlags::C;
 
         // Test JSON serialization (text format)
@@ -32,8 +29,7 @@ mod tests
     }
 
     #[test]
-    fn test_binary_serialization()
-    {
+    fn test_binary_serialization() {
         let flags = TestFlags::A | TestFlags::C;
 
         // Test binary serialization
@@ -46,8 +42,7 @@ mod tests
     }
 
     #[test]
-    fn test_empty_flags()
-    {
+    fn test_empty_flags() {
         let flags = TestFlagsFlags::EMPTY;
 
         // Test JSON
@@ -62,8 +57,7 @@ mod tests
     }
 
     #[test]
-    fn test_single_flag()
-    {
+    fn test_single_flag() {
         let flags = TestFlags::B.flags();
 
         // Test JSON

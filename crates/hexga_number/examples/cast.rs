@@ -15,8 +15,7 @@ where
     from.cast_range_into()
 }
 
-fn main()
-{
+fn main() {
     dbg!(cast::<_, u8>(-1f32));
     dbg!(cast::<_, u8>(-0.5f32));
     dbg!(cast::<_, u8>(0f32));

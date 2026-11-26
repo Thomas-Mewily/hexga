@@ -34,12 +34,9 @@ where
         'a: 'b,
     {
         rect.move_by(self.pos());
-        if !self.rect().is_rect_inside(rect)
-        {
+        if !self.rect().is_rect_inside(rect) {
             None
-        }
-        else
-        {
+        } else {
             Some(unsafe { self.subview_from_translated_rect_unchecked(rect) })
         }
     }
@@ -51,7 +48,9 @@ where
         unsafe { self.subview_from_translated_rect_unchecked(self.rect().intersect_or_empty(rect)) }
     }
 
-    fn iter(&self) -> GridViewIter<'_, G, T, Idx, N> { unsafe { GridViewIter::from_rect_unchecked(self.grid_unchecked(), self.rect()) } }
+    fn iter(&self) -> GridViewIter<'_, G, T, Idx, N> {
+        unsafe { GridViewIter::from_rect_unchecked(self.grid_unchecked(), self.rect()) }
+    }
     fn for_each<F>(&self, f: F)
     where
         F: FnMut((Vector<Idx, N>, &T)),
@@ -154,7 +153,9 @@ where
         unsafe { GridView::from_rect_unchecked(self.grid, self.rect) }
     }
 
-    unsafe fn grid_unchecked(&self) -> &G { self.grid }
+    unsafe fn grid_unchecked(&self) -> &G {
+        self.grid
+    }
     unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b>
     where
         'a: 'b,
@@ -174,8 +175,7 @@ where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
-    fn clone(&self) -> Self
-    {
+    fn clone(&self) -> Self {
         Self {
             grid: self.grid,
             rect: self.rect,
@@ -190,7 +190,9 @@ where
     Idx: Integer,
     T: PartialEq,
 {
-    fn eq(&self, other: &Self) -> bool { self.rect == other.rect && self.iter().eq(other.iter()) }
+    fn eq(&self, other: &Self) -> bool {
+        self.rect == other.rect && self.iter().eq(other.iter())
+    }
 }
 
 impl<'a, G, T, Idx, const N: usize> Eq for GridView<'a, G, T, Idx, N>
@@ -207,11 +209,9 @@ where
     Idx: Integer,
     T: Hash,
 {
-    fn hash<H: Hasher>(&self, state: &mut H)
-    {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         self.rect.hash(state);
-        for (_, v) in self.iter()
-        {
+        for (_, v) in self.iter() {
             v.hash(state);
         }
     }
@@ -223,14 +223,10 @@ where
     Idx: Integer,
     T: PartialOrd,
 {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering>
-    {
-        if self.rect == other.rect
-        {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.rect == other.rect {
             self.iter().partial_cmp(other.iter())
-        }
-        else
-        {
+        } else {
             self.rect.partial_cmp(&other.rect)
         }
     }
@@ -242,14 +238,10 @@ where
     Idx: Integer,
     T: Ord,
 {
-    fn cmp(&self, other: &Self) -> Ordering
-    {
-        if self.rect == other.rect
-        {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.rect == other.rect {
             self.iter().cmp(other.iter())
-        }
-        else
-        {
+        } else {
             self.rect.cmp(&other.rect)
         }
     }
@@ -262,7 +254,9 @@ where
 {
     /// The view is relative to itself, so the position is zero
     #[inline(always)]
-    fn pos(&self) -> Vector<Idx, N> { zero() }
+    fn pos(&self) -> Vector<Idx, N> {
+        zero()
+    }
 }
 impl<'a, G, T, Idx, const N: usize> GetSize<Idx, N> for GridView<'a, G, T, Idx, N>
 where
@@ -270,7 +264,9 @@ where
     Idx: Integer,
 {
     #[inline(always)]
-    fn size(&self) -> Vector<Idx, N> { self.rect.size }
+    fn size(&self) -> Vector<Idx, N> {
+        self.rect.size
+    }
 }
 
 impl<'a, G, T, Idx, const N: usize> CollectionBijective for GridView<'a, G, T, Idx, N>
@@ -285,7 +281,11 @@ where
     G: IGrid<T, Idx, N> + Collection<Output>,
     Idx: Integer,
 {
-    type Ref<'a> = <G as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+    type Ref<'a>
+        = <G as Collection<Output>>::Ref<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
 
 impl<'a, P, G, T, Idx, const N: usize> CollectionIndex<P> for GridView<'a, G, T, Idx, N>
@@ -295,7 +295,11 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Output = <G as CollectionIndex<Vector<Idx, N>>>::Output;
-    type Ref<'b> = <G as CollectionIndex<Vector<Idx, N>>>::Ref<'b> where Self: 'b, Self::Output: 'b;
+    type Ref<'b>
+        = <G as CollectionIndex<Vector<Idx, N>>>::Ref<'b>
+    where
+        Self: 'b,
+        Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> Get<P> for GridView<'a, G, T, Idx, N>
 where
@@ -303,12 +307,21 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-
     #[inline(always)]
-    fn get<'b>(&'b self, index: P) -> Option<Self::Ref<'b>> where Self::Output: 'b { self.grid.get(index.into() + self.rect.pos) }
+    fn get<'b>(&'b self, index: P) -> Option<Self::Ref<'b>>
+    where
+        Self::Output: 'b,
+    {
+        self.grid.get(index.into() + self.rect.pos)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Ref<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
+    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Ref<'b>
+    where
+        Self::Output: 'b,
+    {
+        unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) }
+    }
 }
 impl<'a, P, G, T, Idx, const N: usize> TryGet<P> for GridView<'a, G, T, Idx, N>
 where
@@ -317,7 +330,12 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Error = <G as TryGet<Vector<Idx, N>>>::Error;
-    fn try_get<'b>(&'b self, index: P) -> Result<Self::Ref<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get(index.into() + self.rect.pos) }
+    fn try_get<'b>(&'b self, index: P) -> Result<Self::Ref<'b>, Self::Error>
+    where
+        Self::Output: 'b,
+    {
+        self.grid.try_get(index.into() + self.rect.pos)
+    }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> Index<P> for GridView<'a, G, T, Idx, N>
@@ -329,7 +347,9 @@ where
     type Output = <Self as CollectionIndex<Vector<Idx, N>>>::Output;
 
     #[track_caller]
-    fn index(&self, index: P) -> &Self::Output { self.grid.index(index.into() + self.rect.pos) }
+    fn index(&self, index: P) -> &Self::Output {
+        self.grid.index(index.into() + self.rect.pos)
+    }
 }
 
 impl<'a, G, T, Idx, const N: usize> GridView<'a, G, T, Idx, N>
@@ -337,21 +357,18 @@ where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
-    pub fn new(grid: &'a G) -> Self { unsafe { Self::from_rect_unchecked(grid, grid.rect()) } }
+    pub fn new(grid: &'a G) -> Self {
+        unsafe { Self::from_rect_unchecked(grid, grid.rect()) }
+    }
 
-    pub fn from_rect(grid: &'a G, rect: Rectangle<Idx, N>) -> Option<Self>
-    {
-        if !grid.rect().is_rect_inside(rect)
-        {
+    pub fn from_rect(grid: &'a G, rect: Rectangle<Idx, N>) -> Option<Self> {
+        if !grid.rect().is_rect_inside(rect) {
             None
-        }
-        else
-        {
+        } else {
             Some(unsafe { Self::from_rect_unchecked(grid, rect) })
         }
     }
-    pub unsafe fn from_rect_unchecked(grid: &'a G, rect: Rectangle<Idx, N>) -> Self
-    {
+    pub unsafe fn from_rect_unchecked(grid: &'a G, rect: Rectangle<Idx, N>) -> Self {
         Self {
             grid,
             rect,
@@ -359,8 +376,7 @@ where
         }
     }
 
-    pub fn from_rect_intersect(grid: &'a G, rect: Rectangle<Idx, N>) -> Self
-    {
+    pub fn from_rect_intersect(grid: &'a G, rect: Rectangle<Idx, N>) -> Self {
         unsafe { Self::from_rect_unchecked(grid, grid.rect().intersect_or_empty(rect)) }
     }
 }
@@ -370,5 +386,7 @@ where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
-    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> { self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) }) }
+    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> {
+        self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) })
+    }
 }

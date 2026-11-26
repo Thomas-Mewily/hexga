@@ -1,5 +1,4 @@
-pub trait TryAsRef<T>
-{
+pub trait TryAsRef<T> {
     type Error;
     fn try_as_ref(&self) -> Result<&T, Self::Error>;
 }
@@ -8,21 +7,21 @@ where
     S: AsRef<T>,
 {
     type Error = crate::Never;
-    fn try_as_ref(&self) -> Result<&T, Self::Error> { Ok(self.as_ref()) }
+    fn try_as_ref(&self) -> Result<&T, Self::Error> {
+        Ok(self.as_ref())
+    }
 }
 
 // Todo: add TryAsMut
 
 re_export_items_from_std_or_core!(convert);
 
-pub mod prelude
-{
+pub mod prelude {
     #[allow(unused)]
     pub use super::traits::*;
     pub use super::{AsMut, AsRef, TryAsRef};
 }
-pub mod traits
-{}
+pub mod traits {}
 /*
 pub trait TryAsMut<T>
 {

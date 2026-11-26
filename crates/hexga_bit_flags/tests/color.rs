@@ -1,14 +1,12 @@
 #[cfg(test)]
-mod tests
-{
+mod tests {
     use hexga_bit_flags::*;
     #[allow(unused_imports)]
     use serde::{Deserialize, Serialize};
 
     #[bit_index]
     #[repr(u8)]
-    pub enum Color
-    {
+    pub enum Color {
         Red,
         Green,
         Blue = 5,
@@ -19,8 +17,7 @@ mod tests
     }
 
     #[test]
-    fn increment_variant()
-    {
+    fn increment_variant() {
         assert_eq!(Color::Red as u8, 0);
         assert_eq!(Color::Red.index(), 0);
         assert_eq!(Color::Red.bits(), 0b1);

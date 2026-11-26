@@ -8,13 +8,11 @@ pub use serde_impl::*;
 mod img;
 pub use img::*;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::img::prelude::*;
     pub use super::traits::*;
 }
 
-pub mod traits
-{
+pub mod traits {
     pub use super::img::ToImage;
 }

@@ -71,24 +71,21 @@ use super::*;
 // --------------------------------------------------------------
 
 #[derive(Debug)]
-pub enum Cursor
-{
+pub enum Cursor {
     Icon(CursorIcon), // Todo
                       //Custom(CustomCursor),
 }
-impl From<Cursor> for winit::window::Cursor
-{
-    fn from(value: Cursor) -> Self
-    {
-        match value
-        {
+impl From<Cursor> for winit::window::Cursor {
+    fn from(value: Cursor) -> Self {
+        match value {
             Cursor::Icon(cursor_icon) => winit::window::Cursor::Icon(cursor_icon.into()),
         }
     }
 }
-impl From<CursorIcon> for Cursor
-{
-    fn from(value: CursorIcon) -> Self { Self::Icon(value) }
+impl From<CursorIcon> for Cursor {
+    fn from(value: CursorIcon) -> Self {
+        Self::Icon(value)
+    }
 }
 
 /// Describes the appearance of the (usually mouse) cursor icon.
@@ -107,8 +104,7 @@ impl From<CursorIcon> for Cursor
 #[non_exhaustive]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum CursorIcon
-{
+pub enum CursorIcon {
     /// The platform-dependent default cursor. Often rendered as arrow.
     #[default]
     Default,
@@ -248,8 +244,7 @@ pub enum CursorIcon
     /// cursor icon themes.
     AllResize,
 }
-impl CursorIcon
-{
+impl CursorIcon {
     /// The name of the cursor icon as defined in the w3c standard.
     /// Non-standard cursors such as "DndAsk" and "AllResize" are translated as
     /// "dnd-ask" and "all-resize" respectively.
@@ -282,10 +277,8 @@ impl CursorIcon
     /// # }
     /// ```
      */
-    pub fn name(&self) -> &'static str
-    {
-        match self
-        {
+    pub fn name(&self) -> &'static str {
+        match self {
             CursorIcon::Default => "default",
             CursorIcon::ContextMenu => "context-menu",
             CursorIcon::Help => "help",
@@ -330,10 +323,8 @@ impl CursorIcon
     ///
     /// This should only be used as a fallback in case the cursor theme does not
     /// adhere to the w3c standard.
-    pub fn alt_names(&self) -> &[&'static str]
-    {
-        match self
-        {
+    pub fn alt_names(&self) -> &[&'static str] {
+        match self {
             CursorIcon::Default => &["left_ptr", "arrow", "top_left_arrow", "left_arrow"],
             CursorIcon::ContextMenu => &[],
             CursorIcon::Help => &["question_arrow", "whats_this"],
@@ -374,13 +365,13 @@ impl CursorIcon
     }
 }
 
-impl Display for CursorIcon
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { f.write_str(self.name()) }
+impl Display for CursorIcon {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        f.write_str(self.name())
+    }
 }
 
-impl core::str::FromStr for CursorIcon
-{
+impl core::str::FromStr for CursorIcon {
     type Err = CursorError;
 
     /// Parse a string slice into [`CursorIcon`].
@@ -388,10 +379,8 @@ impl core::str::FromStr for CursorIcon
     /// The `name` is a lower kebab case [`CursorIcon`] variant name, e.g.
     /// `nesw-resize`. The set of possible valid `name` values matches exactly
     /// the set of [`CursorIcon::name`] outputs.
-    fn from_str(name: &str) -> Result<Self, Self::Err>
-    {
-        match name
-        {
+    fn from_str(name: &str) -> Result<Self, Self::Err> {
+        match name {
             "default" => Ok(CursorIcon::Default),
             "context-menu" => Ok(CursorIcon::ContextMenu),
             "help" => Ok(CursorIcon::Help),
@@ -439,8 +428,7 @@ pub type CursorResult<T = ()> = Result<T, CursorError>;
 /// Use this enum with [`Window::set_cursor_grab`] to grab the cursor.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub enum CursorGrab
-{
+pub enum CursorGrab {
     /// No grabbing of the cursor is performed.
     #[default]
     None,
@@ -467,12 +455,9 @@ pub enum CursorGrab
     Locked,
 }
 
-impl From<CursorGrab> for winit::window::CursorGrabMode
-{
-    fn from(value: CursorGrab) -> Self
-    {
-        match value
-        {
+impl From<CursorGrab> for winit::window::CursorGrabMode {
+    fn from(value: CursorGrab) -> Self {
+        match value {
             CursorGrab::None => winit::window::CursorGrabMode::None,
             CursorGrab::Confined => winit::window::CursorGrabMode::Confined,
             CursorGrab::Locked => winit::window::CursorGrabMode::Locked,
@@ -480,12 +465,9 @@ impl From<CursorGrab> for winit::window::CursorGrabMode
     }
 }
 
-impl From<winit::window::CursorIcon> for CursorIcon
-{
-    fn from(value: winit::window::CursorIcon) -> Self
-    {
-        match value
-        {
+impl From<winit::window::CursorIcon> for CursorIcon {
+    fn from(value: winit::window::CursorIcon) -> Self {
+        match value {
             winit::window::CursorIcon::Default => CursorIcon::Default,
             winit::window::CursorIcon::ContextMenu => CursorIcon::ContextMenu,
             winit::window::CursorIcon::Help => CursorIcon::Help,
@@ -527,12 +509,9 @@ impl From<winit::window::CursorIcon> for CursorIcon
     }
 }
 
-impl From<CursorIcon> for winit::window::CursorIcon
-{
-    fn from(value: CursorIcon) -> Self
-    {
-        match value
-        {
+impl From<CursorIcon> for winit::window::CursorIcon {
+    fn from(value: CursorIcon) -> Self {
+        match value {
             CursorIcon::Default => winit::window::CursorIcon::Default,
             CursorIcon::ContextMenu => winit::window::CursorIcon::ContextMenu,
             CursorIcon::Help => winit::window::CursorIcon::Help,

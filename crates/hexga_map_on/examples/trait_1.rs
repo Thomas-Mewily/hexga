@@ -1,14 +1,12 @@
 use hexga_map_on::*;
 
-trait One
-{
+trait One {
     const ONE: Self;
 }
 
 macro_rules! impl_one {
     ($type_name:ty) => {
-        impl One for $type_name
-        {
+        impl One for $type_name {
             const ONE: Self = 1 as Self;
         }
     };
@@ -29,8 +27,7 @@ map_on!
 );
 */
 
-fn main()
-{
+fn main() {
     println!("This example impl the One trait for a lot of type with ease");
     dbg!(i16::ONE);
 

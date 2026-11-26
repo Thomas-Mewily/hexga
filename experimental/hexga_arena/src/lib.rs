@@ -2,22 +2,28 @@ use core::marker::PhantomData;
 use core::ptr::NonNull;
 use hexga_core::{allocation::*, collections::singly_linked::SinglyLinkedNode, prelude::*};
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{Arena, Arenable};
     pub use hexga_core::allocation::prelude::*;
 }
 
-pub trait Arenable: Length + AllocFromLayout<AllocLayout, Output = AllocOutput> + Capacity<u8> + WithCapacity + From<AllocLayout> + ManagedBox
-{
+pub trait Arenable: Length + AllocFromLayout<AllocLayout, Output = AllocOutput> + Capacity<u8> + WithCapacity + From<AllocLayout> + ManagedBox {
     /// Returns the number of bytes currently used in the buffer.
-    fn nb_used(&self) -> usize { self.len() }
+    fn nb_used(&self) -> usize {
+        self.len()
+    }
 
     /// Returns the number of bytes remaining in the buffer.
-    fn remaining(&self) -> usize { self.capacity() - self.len() }
+    fn remaining(&self) -> usize {
+        self.capacity() - self.len()
+    }
 
-    fn used_coef(&self) -> f32 { self.nb_used() as f32 / self.capacity() as f32 }
-    fn used_pourcent(&self) -> f32 { self.used_coef() * 100. }
+    fn used_coef(&self) -> f32 {
+        self.nb_used() as f32 / self.capacity() as f32
+    }
+    fn used_pourcent(&self) -> f32 {
+        self.used_coef() * 100.
+    }
 
     fn contains(&self, ptr: NonNull<u8>) -> bool;
 }

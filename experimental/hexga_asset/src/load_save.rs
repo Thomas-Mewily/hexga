@@ -13,10 +13,11 @@ pub trait PersistantValue<T> : Persistant + Into<T>
 
 trait_marker!(Persistant: Saveable + GetPath + SetPath + Reload);
 
-pub trait Saveable
-{
+pub trait Saveable {
     /// Attempts to save the value, but may skip the operation if no changes have been made.
-    fn save(&mut self) -> FileResult { self.save_forced() }
+    fn save(&mut self) -> FileResult {
+        self.save_forced()
+    }
 
     /// Forcefully saves the value, regardless of whether it has been modified.
     fn save_forced(&mut self) -> FileResult;
@@ -32,7 +33,9 @@ where
     T: Save + ?Sized,
 {
     /// Encode the value using the provided extension and write it to a file.
-    fn save<P: AsRef<Path>>(value: &T, path: P) -> FileResult { value.save_to_fs(&mut Self::file_system(), path) }
+    fn save<P: AsRef<Path>>(value: &T, path: P) -> FileResult {
+        value.save_to_fs(&mut Self::file_system(), path)
+    }
 }
 impl<S, T> FileSystemSave<T> for S
 where
@@ -60,13 +63,13 @@ where
         Ok(Self::from_path_and_value(path, value))
     }
 
-    fn from_value(value: T) -> Self::Output { Self::from_path_and_value(None, value) }
+    fn from_value(value: T) -> Self::Output {
+        Self::from_path_and_value(None, value)
+    }
 
     /// Read and decode the value using the provided extension.
-    fn load<P: AsRef<Path>>(path: P) -> FileResult<Self::Output>
-    {
-        Self::from_path_and_fn(Some(path.as_ref().to_path_buf()), |p| match p
-        {
+    fn load<P: AsRef<Path>>(path: P) -> FileResult<Self::Output> {
+        Self::from_path_and_fn(Some(path.as_ref().to_path_buf()), |p| match p {
             Some(path) => T::load_from_fs_at(&mut FS::file_system(), &path),
             None => Err(FileError::new(FileErrorKind::Io(IoError::new(IoErrorKind::InvalidData, "Missing path")))),
         })
@@ -82,13 +85,10 @@ where
         F: FnOnce() -> T,
     {
         let path = path.as_ref();
-        match Self::load(path)
-        {
+        match Self::load(path) {
             Ok(v) => Ok(v),
-            Err(e) =>
-            {
-                if e.is_encode()
-                {
+            Err(e) => {
+                if e.is_encode() {
                     // Badly encoded
                     return Err(e);
                 }
@@ -100,8 +100,7 @@ where
                     need_save = true;
                     Ok(init())
                 })?;
-                if need_save
-                {
+                if need_save {
                     let _ = fs_value.save_forced();
                 }
                 Ok(fs_value)
@@ -120,11 +119,9 @@ where
         F: FnOnce() -> T,
     {
         let path = path.as_ref();
-        match Self::load(path)
-        {
+        match Self::load(path) {
             Ok(v) => v,
-            Err(_) =>
-            {
+            Err(_) => {
                 let path = FS::file_system().resolve_path_for::<T, _>(path);
 
                 let mut need_save = false;
@@ -133,8 +130,7 @@ where
                     Ok(init())
                 })
                 .expect("Bad impl");
-                if need_save
-                {
+                if need_save {
                     let _ = fs_value.save_forced();
                 }
                 fs_value
@@ -175,5 +171,7 @@ where
     T: Load + Save,
 {
     type Output = FileIn<T, IoGlobal>;
-    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output { FileIn::<T, IoGlobal>::from_path_and_value(path, value) }
+    fn from_path_and_value(path: Option<PathBuf>, value: T) -> Self::Output {
+        FileIn::<T, IoGlobal>::from_path_and_value(path, value)
+    }
 }

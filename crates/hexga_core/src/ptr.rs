@@ -1,7 +1,6 @@
 use crate::Box;
 
-pub mod prelude
-{
+pub mod prelude {
     pub use super::{NonNull, NonNullUnaliased};
 }
 
@@ -12,48 +11,58 @@ pub type NonNull<T = u8> = ::core::ptr::NonNull<T>;
 pub trait Pointer: FromNonNull + IntoNonNull {}
 impl<T: ?Sized> Pointer for T where T: FromNonNull + IntoNonNull {}
 
-pub unsafe trait FromNonNull
-{
+pub unsafe trait FromNonNull {
     unsafe fn from_non_null(ptr: NonNull) -> Self;
 }
-pub unsafe trait IntoNonNull
-{
+pub unsafe trait IntoNonNull {
     unsafe fn into_non_null(self) -> NonNull;
     unsafe fn as_non_null(&mut self) -> NonNull;
 }
 
-unsafe impl<T> FromNonNull for &T
-{
+unsafe impl<T> FromNonNull for &T {
     #[inline(always)]
-    unsafe fn from_non_null(ptr: NonNull) -> Self { unsafe { ptr.cast().as_ref() } }
+    unsafe fn from_non_null(ptr: NonNull) -> Self {
+        unsafe { ptr.cast().as_ref() }
+    }
 }
-unsafe impl<T> FromNonNull for &mut T
-{
+unsafe impl<T> FromNonNull for &mut T {
     #[inline(always)]
-    unsafe fn from_non_null(ptr: NonNull) -> Self { unsafe { ptr.cast().as_mut() } }
+    unsafe fn from_non_null(ptr: NonNull) -> Self {
+        unsafe { ptr.cast().as_mut() }
+    }
 }
-unsafe impl<T> IntoNonNull for &T
-{
-    unsafe fn into_non_null(self) -> NonNull { unsafe { NonNull::new_unchecked(self as *const T as *const u8 as *mut u8) } }
+unsafe impl<T> IntoNonNull for &T {
+    unsafe fn into_non_null(self) -> NonNull {
+        unsafe { NonNull::new_unchecked(self as *const T as *const u8 as *mut u8) }
+    }
 
-    unsafe fn as_non_null(&mut self) -> NonNull { unsafe { NonNull::new_unchecked(*self as *const T as *const u8 as *mut u8) } }
+    unsafe fn as_non_null(&mut self) -> NonNull {
+        unsafe { NonNull::new_unchecked(*self as *const T as *const u8 as *mut u8) }
+    }
 }
-unsafe impl<T> IntoNonNull for &mut T
-{
-    unsafe fn into_non_null(self) -> NonNull { unsafe { NonNull::new_unchecked(self as *mut T as *mut u8) } }
+unsafe impl<T> IntoNonNull for &mut T {
+    unsafe fn into_non_null(self) -> NonNull {
+        unsafe { NonNull::new_unchecked(self as *mut T as *mut u8) }
+    }
 
-    unsafe fn as_non_null(&mut self) -> NonNull { unsafe { NonNull::new_unchecked(*self as *mut T as *mut u8) } }
+    unsafe fn as_non_null(&mut self) -> NonNull {
+        unsafe { NonNull::new_unchecked(*self as *mut T as *mut u8) }
+    }
 }
 
-unsafe impl<T> FromNonNull for Box<T>
-{
-    unsafe fn from_non_null(ptr: NonNull) -> Self { unsafe { Box::from_raw(ptr.as_ptr() as *mut T) } }
+unsafe impl<T> FromNonNull for Box<T> {
+    unsafe fn from_non_null(ptr: NonNull) -> Self {
+        unsafe { Box::from_raw(ptr.as_ptr() as *mut T) }
+    }
 }
-unsafe impl<T> IntoNonNull for Box<T>
-{
-    unsafe fn into_non_null(self) -> NonNull { unsafe { NonNull::new_unchecked(Self::leak(self) as *mut T as *mut u8) } }
+unsafe impl<T> IntoNonNull for Box<T> {
+    unsafe fn into_non_null(self) -> NonNull {
+        unsafe { NonNull::new_unchecked(Self::leak(self) as *mut T as *mut u8) }
+    }
 
-    unsafe fn as_non_null(&mut self) -> NonNull { unsafe { NonNull::new_unchecked(self.as_mut() as *mut T as *mut u8) } }
+    unsafe fn as_non_null(&mut self) -> NonNull {
+        unsafe { NonNull::new_unchecked(self.as_mut() as *mut T as *mut u8) }
+    }
 }
 
 // Copied from the std: https://doc.rust-lang.org/stable/src/core/ptr/unique.rs.html#46-49

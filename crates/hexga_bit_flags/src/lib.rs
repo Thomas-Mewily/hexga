@@ -132,8 +132,7 @@ use syn::{Ident, ItemEnum, parse_macro_input};
 #[cfg(feature = "serde")]
 fn emit_serde_code(
     repr_type: &Ident, struct_name: &Ident, enum_variants_name: &[Ident],
-) -> (proc_macro2::TokenStream, proc_macro2::TokenStream, proc_macro2::TokenStream)
-{
+) -> (proc_macro2::TokenStream, proc_macro2::TokenStream, proc_macro2::TokenStream) {
     let helper_struct_name = format_ident!("{}SerdeHelper", struct_name);
 
     // Generate boolean fields for the helper struct
@@ -243,14 +242,12 @@ fn emit_serde_code(
 
 #[allow(unexpected_cfgs)]
 #[cfg(not(feature = "serde"))]
-fn emit_serde_code(_: &Ident, _: &Ident, _: &[Ident]) -> (proc_macro2::TokenStream, proc_macro2::TokenStream, proc_macro2::TokenStream)
-{
+fn emit_serde_code(_: &Ident, _: &Ident, _: &[Ident]) -> (proc_macro2::TokenStream, proc_macro2::TokenStream, proc_macro2::TokenStream) {
     (quote! {}, quote! {}, quote! {})
 }
 
 #[proc_macro_attribute]
-pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
-{
+pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemEnum);
     let repr_type = find_repr_type(&input.attrs).unwrap_or_else(|| syn::parse_quote!(u8));
 
@@ -265,8 +262,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
     let enum_name = &input.ident;
     let struct_name = format_ident!("{enum_name}Flags");
 
-    let max_bits = match repr_type.to_string().as_str()
-    {
+    let max_bits = match repr_type.to_string().as_str() {
         "u8" => 8,
         "u16" => 16,
         "u32" => 32,
@@ -274,23 +270,19 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
         _ => panic!("Unsupported repr type: {}", repr_type),
     };
 
-    for variant in &input.variants
-    {
+    for variant in &input.variants {
         let var_ident = &variant.ident;
         let flag_ident = var_ident.clone();
 
         // Check if the variant has a custom discriminant
         // Can probably be abused `Self::Red | 0b01`
-        if let Some((_, expr)) = &variant.discriminant
-        {
-            index = match syn::Expr::clone(expr)
-            {
+        if let Some((_, expr)) = &variant.discriminant {
+            index = match syn::Expr::clone(expr) {
                 syn::Expr::Lit(syn::ExprLit {
                     lit: syn::Lit::Int(ref lit_int),
                     ..
                 }) => lit_int.base10_parse().unwrap(),
-                _ =>
-                {
+                _ => {
                     let tt = add_bits_field(expr);
                     struct_composite_const.push(quote! {
                         #[allow(non_upper_case_globals)]
@@ -309,8 +301,7 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
             #index as #repr_type
         };
 
-        if index >= max_bits
-        {
+        if index >= max_bits {
             return syn::Error::new_spanned(
                 var_ident,
                 format!(
@@ -837,20 +828,16 @@ pub fn bit_index(_attr: TokenStream, item: TokenStream) -> TokenStream
     output.into()
 }
 
-fn add_bits_field(expr: &syn::Expr) -> proc_macro2::TokenStream
-{
-    match expr
-    {
+fn add_bits_field(expr: &syn::Expr) -> proc_macro2::TokenStream {
+    match expr {
         syn::Expr::Path(path) => quote! { #path.bits() },
-        syn::Expr::Binary(bin) =>
-        {
+        syn::Expr::Binary(bin) => {
             let left = add_bits_field(&bin.left);
             let right = add_bits_field(&bin.right);
             let op = bin.op.to_token_stream();
             quote! { (#left #op #right) }
         }
-        syn::Expr::Paren(paren) =>
-        {
+        syn::Expr::Paren(paren) => {
             let inner = add_bits_field(&paren.expr);
             quote! { (#inner) }
         }
@@ -859,21 +846,14 @@ fn add_bits_field(expr: &syn::Expr) -> proc_macro2::TokenStream
     }
 }
 
-fn find_repr_type(attrs: &[syn::Attribute]) -> Option<syn::Ident>
-{
-    for attr in attrs
-    {
-        if attr.path().is_ident("repr")
-        {
+fn find_repr_type(attrs: &[syn::Attribute]) -> Option<syn::Ident> {
+    for attr in attrs {
+        if attr.path().is_ident("repr") {
             let parser = syn::punctuated::Punctuated::<syn::Ident, syn::Token![,]>::parse_terminated;
-            if let Ok(idents) = attr.parse_args_with(parser)
-            {
+            if let Ok(idents) = attr.parse_args_with(parser) {
                 return idents.first().cloned();
             }
         }
     }
     None
 }
-
-
-

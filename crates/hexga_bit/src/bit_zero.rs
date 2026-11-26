@@ -45,20 +45,20 @@ unsafe impl<T: BitZero> BitZero for core::cell::UnsafeCell<T> {}
 unsafe impl<T: BitZero> BitZero for core::cell::Cell<T> {}
 
 // bytemuck::Zeroable equivalent
-pub trait BitZeroed: Sized
-{
+pub trait BitZeroed: Sized {
     /// Calls [`zeroed`](core::mem::zeroed).
     ///
     /// This is a trait method so that you can write `MyType::zeroed()` in your
     /// code. It is a contract of this trait that if you implement it on your type
     /// you **must not** override this method.
     #[inline(always)]
-    fn zeroed() -> Self { unsafe { core::mem::zeroed() } }
+    fn zeroed() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
 }
 impl<T> BitZeroed for T where T: BitZero {}
 
-mod atomic_impls
-{
+mod atomic_impls {
     use super::BitZero;
 
     #[cfg(target_has_atomic = "8")]

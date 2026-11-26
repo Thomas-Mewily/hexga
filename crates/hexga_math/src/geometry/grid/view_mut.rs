@@ -56,13 +56,11 @@ where
         G2: IGrid<T, Idx, N>,
         T: Clone,
     {
-        if self.size() != other.size()
-        {
+        if self.size() != other.size() {
             return Err(());
         }
 
-        for idx in self.size().iter_index()
-        {
+        for idx in self.size().iter_index() {
             self[idx] = other[idx].clone();
         }
 
@@ -102,7 +100,9 @@ where
         unsafe { GridView::from_rect_unchecked(self.grid_unchecked(), self.rect()) }
     }
 
-    unsafe fn grid_unchecked(&self) -> &G { self.grid }
+    unsafe fn grid_unchecked(&self) -> &G {
+        self.grid
+    }
     unsafe fn subview_from_translated_rect_unchecked<'a, 'b>(&'a self, rect: Rectangle<Idx, N>) -> Self::WithLifetime<'b>
     where
         'a: 'b,
@@ -136,7 +136,9 @@ where
         }
     }
 
-    fn iter_mut(&mut self) -> GridViewIterMut<'_, G, T, Idx, N> { GridViewIterMut::from_rect(self.grid, self.rect()).unwrap() }
+    fn iter_mut(&mut self) -> GridViewIterMut<'_, G, T, Idx, N> {
+        GridViewIterMut::from_rect(self.grid, self.rect()).unwrap()
+    }
     fn for_each_mut<F>(&mut self, f: F)
     where
         F: FnMut((Vector<Idx, N>, &mut T)),
@@ -145,7 +147,9 @@ where
     }
 
     #[doc(hidden)]
-    unsafe fn grid_mut_unchecked(&mut self) -> &mut G { self.grid }
+    unsafe fn grid_mut_unchecked(&mut self) -> &mut G {
+        self.grid
+    }
 }
 
 impl<'a, G, T, Idx, const N: usize> PartialEq for GridViewMut<'a, G, T, Idx, N>
@@ -154,7 +158,9 @@ where
     Idx: Integer,
     T: PartialEq,
 {
-    fn eq(&self, other: &Self) -> bool { self.rect == other.rect && self.iter().eq(other.iter()) }
+    fn eq(&self, other: &Self) -> bool {
+        self.rect == other.rect && self.iter().eq(other.iter())
+    }
 }
 
 impl<'a, G, T, Idx, const N: usize> Eq for GridViewMut<'a, G, T, Idx, N>
@@ -171,11 +177,9 @@ where
     Idx: Integer,
     T: Hash,
 {
-    fn hash<H: Hasher>(&self, state: &mut H)
-    {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         self.rect.hash(state);
-        for (_, v) in self.iter()
-        {
+        for (_, v) in self.iter() {
             v.hash(state);
         }
     }
@@ -187,14 +191,10 @@ where
     Idx: Integer,
     T: PartialOrd,
 {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering>
-    {
-        if self.rect == other.rect
-        {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.rect == other.rect {
             self.iter().partial_cmp(other.iter())
-        }
-        else
-        {
+        } else {
             self.rect.partial_cmp(&other.rect)
         }
     }
@@ -206,14 +206,10 @@ where
     Idx: Integer,
     T: Ord,
 {
-    fn cmp(&self, other: &Self) -> Ordering
-    {
-        if self.rect == other.rect
-        {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.rect == other.rect {
             self.iter().cmp(other.iter())
-        }
-        else
-        {
+        } else {
             self.rect.cmp(&other.rect)
         }
     }
@@ -226,7 +222,9 @@ where
 {
     /// The view is relative to itself, so the position is zero
     #[inline(always)]
-    fn pos(&self) -> Vector<Idx, N> { zero() }
+    fn pos(&self) -> Vector<Idx, N> {
+        zero()
+    }
 }
 impl<'a, G, T, Idx, const N: usize> GetSize<Idx, N> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -234,7 +232,9 @@ where
     Idx: Integer,
 {
     #[inline(always)]
-    fn size(&self) -> Vector<Idx, N> { self.rect.size }
+    fn size(&self) -> Vector<Idx, N> {
+        self.rect.size
+    }
 }
 
 impl<'a, G, T, Idx, const N: usize> CollectionBijective for GridViewMut<'a, G, T, Idx, N>
@@ -248,14 +248,22 @@ where
     G: IGrid<T, Idx, N> + Collection<Output>,
     Idx: Integer,
 {
-    type Ref<'a> = <G as Collection<Output>>::Ref<'a> where Self: 'a, Output: 'a;
+    type Ref<'a>
+        = <G as Collection<Output>>::Ref<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
 impl<'s, G, T, Idx, const N: usize, Output: ?Sized> CollectionMut<Output> for GridViewMut<'s, G, T, Idx, N>
 where
     G: IGrid<T, Idx, N> + CollectionMut<Output>,
     Idx: Integer,
 {
-    type RefMut<'a> = <G as CollectionMut<Output>>::RefMut<'a> where Self: 'a, Output: 'a;
+    type RefMut<'a>
+        = <G as CollectionMut<Output>>::RefMut<'a>
+    where
+        Self: 'a,
+        Output: 'a;
 }
 
 impl<'a, P, G, T, Idx, const N: usize> CollectionIndex<P> for GridViewMut<'a, G, T, Idx, N>
@@ -265,7 +273,11 @@ where
     P: Into<Vector<Idx, N>>,
 {
     type Output = <G as CollectionIndex<Vector<Idx, N>>>::Output;
-    type Ref<'b> = <G as CollectionIndex<Vector<Idx, N>>>::Ref<'b> where Self: 'b, Self::Output: 'b;
+    type Ref<'b>
+        = <G as CollectionIndex<Vector<Idx, N>>>::Ref<'b>
+    where
+        Self: 'b,
+        Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> Get<P> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -273,12 +285,21 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-
     #[inline(always)]
-    fn get<'b>(&'b self, index: P) -> Option<Self::Ref<'b>> where Self::Output: 'b { self.grid.get(index.into() + self.rect.pos) }
+    fn get<'b>(&'b self, index: P) -> Option<Self::Ref<'b>>
+    where
+        Self::Output: 'b,
+    {
+        self.grid.get(index.into() + self.rect.pos)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Ref<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) } }
+    unsafe fn get_unchecked<'b>(&'b self, index: P) -> Self::Ref<'b>
+    where
+        Self::Output: 'b,
+    {
+        unsafe { self.grid.get_unchecked(index.into() + self.rect.pos) }
+    }
 }
 impl<'a, P, G, T, Idx, const N: usize> TryGet<P> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -289,7 +310,12 @@ where
     type Error = <G as TryGet<Vector<Idx, N>>>::Error;
 
     #[inline(always)]
-    fn try_get<'b>(&'b self, index: P) -> Result<Self::Ref<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get(index.into() + self.rect.pos) }
+    fn try_get<'b>(&'b self, index: P) -> Result<Self::Ref<'b>, Self::Error>
+    where
+        Self::Output: 'b,
+    {
+        self.grid.try_get(index.into() + self.rect.pos)
+    }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> Index<P> for GridViewMut<'a, G, T, Idx, N>
@@ -301,7 +327,9 @@ where
     type Output = <Self as CollectionIndex<Vector<Idx, N>>>::Output;
 
     #[track_caller]
-    fn index(&self, index: P) -> &Self::Output { self.grid.index(index.into() + self.rect.pos) }
+    fn index(&self, index: P) -> &Self::Output {
+        self.grid.index(index.into() + self.rect.pos)
+    }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> TryGetMut<P> for GridViewMut<'a, G, T, Idx, N>
@@ -311,7 +339,12 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn try_get_mut<'b>(&'b mut self, index: P) -> Result<Self::RefMut<'b>, Self::Error> where Self::Output: 'b { self.grid.try_get_mut(index.into() + self.rect.pos) }
+    fn try_get_mut<'b>(&'b mut self, index: P) -> Result<Self::RefMut<'b>, Self::Error>
+    where
+        Self::Output: 'b,
+    {
+        self.grid.try_get_mut(index.into() + self.rect.pos)
+    }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> CollectionIndexMut<P> for GridViewMut<'a, G, T, Idx, N>
@@ -320,7 +353,11 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    type RefMut<'b> = <G as CollectionIndexMut<Vector<Idx, N>>>::RefMut<'b> where Self: 'b, Self::Output: 'b;
+    type RefMut<'b>
+        = <G as CollectionIndexMut<Vector<Idx, N>>>::RefMut<'b>
+    where
+        Self: 'b,
+        Self::Output: 'b;
 }
 impl<'a, P, G, T, Idx, const N: usize> GetMut<P> for GridViewMut<'a, G, T, Idx, N>
 where
@@ -329,10 +366,20 @@ where
     P: Into<Vector<Idx, N>>,
 {
     #[inline(always)]
-    fn get_mut<'b>(&'b mut self, index: P) -> Option<Self::RefMut<'b>> where Self::Output: 'b { self.grid.get_mut(index.into() + self.rect.pos) }
+    fn get_mut<'b>(&'b mut self, index: P) -> Option<Self::RefMut<'b>>
+    where
+        Self::Output: 'b,
+    {
+        self.grid.get_mut(index.into() + self.rect.pos)
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut<'b>(&'b mut self, index: P) -> Self::RefMut<'b> where Self::Output: 'b { unsafe { self.grid.get_unchecked_mut(index.into() + self.rect.pos) } }
+    unsafe fn get_unchecked_mut<'b>(&'b mut self, index: P) -> Self::RefMut<'b>
+    where
+        Self::Output: 'b,
+    {
+        unsafe { self.grid.get_unchecked_mut(index.into() + self.rect.pos) }
+    }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> IndexMut<P> for GridViewMut<'a, G, T, Idx, N>
@@ -343,7 +390,9 @@ where
 {
     #[inline(always)]
     #[track_caller]
-    fn index_mut(&mut self, index: P) -> &mut Self::Output { self.grid.index_mut(index.into() + self.rect.pos) }
+    fn index_mut(&mut self, index: P) -> &mut Self::Output {
+        self.grid.index_mut(index.into() + self.rect.pos)
+    }
 }
 
 impl<'a, P, G, T, Idx, const N: usize> GetManyMut<P> for GridViewMut<'a, G, T, Idx, N>
@@ -352,16 +401,25 @@ where
     Idx: Integer,
     P: Into<Vector<Idx, N>>,
 {
-    fn try_get_many_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> Result<[Self::RefMut<'b>; N2], ManyMutError> where Self::Output: 'b {
+    fn try_get_many_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> Result<[Self::RefMut<'b>; N2], ManyMutError>
+    where
+        Self::Output: 'b,
+    {
         self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos))
     }
     #[inline(always)]
-    fn get_many_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> Option<[Self::RefMut<'b>; N2]> where Self::Output: 'b {
+    fn get_many_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> Option<[Self::RefMut<'b>; N2]>
+    where
+        Self::Output: 'b,
+    {
         self.grid.try_get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)).ok()
     }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_many_unchecked_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> [Self::RefMut<'b>; N2] where Self::Output: 'b {
+    unsafe fn get_many_unchecked_mut<'b, const N2: usize>(&'b mut self, indices: [P; N2]) -> [Self::RefMut<'b>; N2]
+    where
+        Self::Output: 'b,
+    {
         self.grid.get_many_mut(indices.map(|idx| idx.into() + self.rect.pos)).expect("invalid index")
     }
 }
@@ -371,21 +429,18 @@ where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
-    pub fn new(grid: &'a mut G) -> Self { unsafe { Self::from_rect_unchecked(grid, grid.rect()) } }
+    pub fn new(grid: &'a mut G) -> Self {
+        unsafe { Self::from_rect_unchecked(grid, grid.rect()) }
+    }
 
-    pub fn from_rect(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Option<Self>
-    {
-        if !grid.rect().is_rect_inside(rect)
-        {
+    pub fn from_rect(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Option<Self> {
+        if !grid.rect().is_rect_inside(rect) {
             None
-        }
-        else
-        {
+        } else {
             Some(unsafe { Self::from_rect_unchecked(grid, rect) })
         }
     }
-    pub unsafe fn from_rect_unchecked(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Self
-    {
+    pub unsafe fn from_rect_unchecked(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Self {
         Self {
             grid,
             rect,
@@ -393,8 +448,7 @@ where
         }
     }
 
-    pub fn from_rect_intersect(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Self
-    {
+    pub fn from_rect_intersect(grid: &'a mut G, rect: Rectangle<Idx, N>) -> Self {
         unsafe { Self::from_rect_unchecked(grid, grid.rect().intersect_or_empty(rect)) }
     }
 }
@@ -404,5 +458,7 @@ where
     G: IGrid<T, Idx, N>,
     Idx: Integer,
 {
-    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> { self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) }) }
+    fn crop(self, subrect: Rectangle<Idx, N>) -> Option<Self> {
+        self.rect.crop(subrect).map(|r| unsafe { Self::from_rect_unchecked(self.grid, r) })
+    }
 }
