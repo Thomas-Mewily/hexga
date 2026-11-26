@@ -33,10 +33,13 @@ float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_image/float_are_
 serde = ["dep:serde", "hexga_core/serde", "hexga_utils/serde", "hexga_math/serde", "hexga_image/serde", "hexga_bit_flags/serde", "winit/serde"]
 serde_rc = ["serde/rc", "hexga_core/serde_rc", "hexga_utils/serde_rc", "hexga_math/serde_rc"]
 
+log_std = ["hexga_core/log_std"]
+log_env = ["hexga_core/log_env"]
+
 #hexga_encoding_derive = ["hexga_math/hexga_encoding_derive"]
 
 [dependencies]
-hexga_core.workspace = true
+hexga_core = { workspace = true, features = ["std"] }
 hexga_bit_flags.workspace = true
 hexga_math.workspace = true
 hexga_utils.workspace = true
@@ -46,8 +49,6 @@ hexga_image.workspace = true
 serde = { version = "1.0.0", features = ["derive"], optional = true }
 winit = "0.30.11"
 copypasta = "0.10.2"
-log = { version = "0.4.22"}
-env_logger = "0.10"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # async runtme, replaced by wasm-bindgen-futures for the web
@@ -55,7 +56,7 @@ smol = "2.0.2"
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-console_log = "1.0"
+hexga_core = { workspace = true, features = ["log_web"] }
 console_error_panic_hook = "0.1"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4.30"

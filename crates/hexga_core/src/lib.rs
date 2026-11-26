@@ -149,6 +149,7 @@ pub mod singleton;
 pub mod utils;
 pub mod wrapper;
 pub use hexga_bit as bit;
+pub use hexga_log as log;
 pub use hexga_map_on as map_on;
 
 re_export_mod_from_std_or_core!(
@@ -205,6 +206,7 @@ pub mod modules {
         guard,
         handle,
         iter,
+        log,
         marker,
         ops,
         option,
@@ -263,6 +265,7 @@ pub mod hexga_prelude {
         bit::prelude::*,
         map_on::prelude::*,
         identity::prelude::*,
+        log::prelude::*,
     };
 
     pub(crate) use super::{primitive::*, ptr::*};
@@ -308,6 +311,7 @@ pub mod hexga_traits {
         //map_on::traits::*,
         collections::traits::*,
         identity::traits::*,
+        log::traits::*,
     };
 }
 

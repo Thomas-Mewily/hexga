@@ -30,6 +30,9 @@ hexga_ansi_color
 //hexga_bit_flags
 hexga_bit_flags
 
+hexga_log
+hexga_logger
+
 // hexga_base // moved to hexga_core
 hexga_typedef
 hexga_generational

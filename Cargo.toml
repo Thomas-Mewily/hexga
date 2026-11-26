@@ -31,6 +31,7 @@ hexga_bit_derive       = { path = "./crates/hexga_bit_derive",           version
 hexga_bit              = { path = "./crates/hexga_bit",                  version = "0.0.12-beta.2", default-features = false }
 hexga_bit_set          = { path = "./crates/hexga_bit_set",              version = "0.0.12-beta.2", default-features = false }
 
+hexga_log              = { path = "./crates/hexga_log",                  version = "0.0.12-beta.2", default-features = false }
 hexga_core             = { path = "./crates/hexga_core",                 version = "0.0.12-beta.2", default-features = false }
 
 

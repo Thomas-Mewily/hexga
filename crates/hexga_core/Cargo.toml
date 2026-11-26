@@ -15,7 +15,10 @@ categories = ["rust-patterns"]
 [features]
 default = ["std", "serde", "serde_rc"]
 
-std = ["hexga_guard/std"]
+std = ["hexga_guard/std", "hexga_log/std"]
+log_std = ["std", "hexga_log/log_std"]
+log_env = ["std", "hexga_log/log_env"]
+log_web = ["std", "hexga_log/log_web"]
 feature_mapped_lock_guards = ["hexga_guard/feature_mapped_lock_guards"]
 
 serde = ["dep:serde"]
@@ -24,6 +27,7 @@ serde_rc = ["serde/rc"]
 
 [dependencies]
 hexga_guard.workspace = true
+hexga_log.workspace = true
 hexga_map_on.workspace = true
 hexga_bit = { workspace = true, features = ["derive"] }
 serde = { version = "1.0.0", features = ["derive"], optional = true }
