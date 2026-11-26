@@ -26,3 +26,10 @@ I'm to lazy to write a conclusion, and I will not do the supplice to generate a 
 - Mewily.
 
 TL;DR: Mostly handwritten with selective AI help for boilerplate and complex macros. *<- This line was LLM written then human edited >:)*
+
+
+Update 26/11/2026:
+
+I started using AI a bit. Recently I had some massive but dummy/straightforward refactoring to do (mainly after modifying the collection trait, which introduced over 900 errors). I tried to refactor it manually for an hour and a half, got bored because it was trivial, and asked AI to do it.
+
+I still review every bit of code it produces and edit it again as many time as needed, because I care about architecture, how different pieces of code fit/glue and interact together, and how the code will be used by user.

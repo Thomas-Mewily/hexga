@@ -52,3 +52,26 @@ Image
 hexga logger
 tweening/easing fn
 animation <T: Displayable>, gif...
+
+
+
+make an api for enable/disbale scoping/scope trait
+
+use 
+#![doc = include_str!("../README.md")]
+in more place
+
+
+quaternion, rotor, transform
+
+spacial<float,2>
+quadtree
+
+
+
+static ACTIVE: OnceLock<Mutex<Active>> = OnceLock::new();
+static FALLBACK: OnceLock<Config> = OnceLock::new();
+
+use Hexga singleton.
+
+Move hexga singleton into a standalone crate, move the shared trait into hexga_core_utils if needed.

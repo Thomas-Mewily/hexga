@@ -11,6 +11,7 @@ hexga_bit
 
 
 hexga_guard
+hexga_core_utils
 hexga_core
 
 hexga_array_vec
@@ -31,7 +32,7 @@ hexga_ansi_color
 hexga_bit_flags
 
 hexga_log
-hexga_logger
+// hexga_logger
 
 // hexga_base // moved to hexga_core
 hexga_typedef

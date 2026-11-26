@@ -15,7 +15,7 @@ categories = ["asynchronous", "game-development"]
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde", "serde_rc", #"hexga_encoding_derive"
+            "serde", "serde_rc", "log_env", #"hexga_encoding_derive"
           ]
 
 
@@ -33,7 +33,6 @@ float_are_size_bits = ["hexga_math/float_are_size_bits", "hexga_image/float_are_
 serde = ["dep:serde", "hexga_core/serde", "hexga_utils/serde", "hexga_math/serde", "hexga_image/serde", "hexga_bit_flags/serde", "winit/serde"]
 serde_rc = ["serde/rc", "hexga_core/serde_rc", "hexga_utils/serde_rc", "hexga_math/serde_rc"]
 
-log_std = ["hexga_core/log_std"]
 log_env = ["hexga_core/log_env"]
 
 #hexga_encoding_derive = ["hexga_math/hexga_encoding_derive"]
@@ -56,7 +55,6 @@ smol = "2.0.2"
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-hexga_core = { workspace = true, features = ["log_web"] }
 console_error_panic_hook = "0.1"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4.30"

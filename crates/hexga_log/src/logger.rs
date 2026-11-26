@@ -1,50 +1,48 @@
-use crate::{DEFAULT_LEVEL, LevelFilter, Log, Metadata, Record, SetLoggerError};
-use std::sync::OnceLock;
+use crate::{DEFAULT_LEVEL, Enable, Level, LogFragment, LogLevel, LoggableDyn, Logger, Metadata, Record, SetEnable};
+use std::{
+    collections::HashMap,
+    fmt,
+    sync::{LazyLock, Mutex, MutexGuard, OnceLock, PoisonError},
+};
 
-/// Startup configuration for the process-wide logger.
+/// Startup settings for the built-in logger.
 #[derive(Clone, Debug)]
-pub struct Config
+pub struct LogConfig
 {
-    level: LevelFilter,
-    targets: Vec<(String, LevelFilter)>,
+    enabled: bool,
+    level: LogLevel,
+    targets: HashMap<String, LogLevel>,
 }
 
-impl Default for Config
+impl Default for LogConfig
 {
     fn default() -> Self
     {
         Self {
+            enabled: true,
             level: DEFAULT_LEVEL,
-            targets: Vec::new(),
+            targets: HashMap::new(),
         }
     }
 }
 
-impl Config
+impl LogConfig
 {
-    /// Sets the threshold for targets with no matching rule.
-    pub fn filter_level(mut self, level: LevelFilter) -> Self
+    /// Overrides the build's default threshold.
+    pub fn filter_level(mut self, level: impl Into<LogLevel>) -> Self
     {
-        self.level = level;
+        self.level = level.into();
         self
     }
 
-    /// Sets the threshold for a target prefix. The longest matching prefix wins.
-    pub fn filter_module(mut self, target: impl Into<String>, level: LevelFilter) -> Self
+    /// Sets a target prefix's threshold. The longest matching prefix wins.
+    /// `LogLevel::None` disables the matching target.
+    pub fn filter_module(mut self, target: impl Into<String>, level: LogLevel) -> Self
     {
-        let target = target.into();
-        if let Some((_, existing)) = self.targets.iter_mut().find(|(prefix, _)| prefix == &target)
-        {
-            *existing = level;
-        }
-        else
-        {
-            self.targets.push((target, level));
-        }
+        self.targets.insert(target.into(), level);
         self
     }
 
-    /// Applies comma-separated levels and target filters from `RUST_LOG`.
     pub fn parse_env(self) -> Self
     {
         match std::env::var("RUST_LOG")
@@ -54,8 +52,7 @@ impl Config
         }
     }
 
-    /// Applies directives such as `warn,my_app=debug,wgpu_hal=off`.
-    /// A bare target enables all levels for that target. Invalid directives are ignored.
+    /// Applies comma separated level and target rules from a `RUST_LOG` string.
     pub fn parse_filters(mut self, filters: &str) -> Self
     {
         for directive in filters.split(',').map(str::trim).filter(|directive| !directive.is_empty())
@@ -63,91 +60,269 @@ impl Config
             if let Some((target, level)) = directive.split_once('=')
             {
                 let target = target.trim();
+                let level = level.trim();
                 if !target.is_empty()
-                    && let Ok(level) = level.trim().parse()
                 {
-                    self = self.filter_module(target, level);
+                    if level.eq_ignore_ascii_case("off")
+                    {
+                        self = self.filter_module(target, LogLevel::None);
+                    }
+                    else if let Ok(level) = level.parse::<Level>()
+                    {
+                        self = self.filter_module(target, level.into());
+                    }
                 }
             }
-            else if let Ok(level) = directive.parse()
+            else if directive.eq_ignore_ascii_case("off")
             {
-                self = self.filter_level(level);
+                self.enabled = false;
+            }
+            else if let Ok(level) = directive.parse::<Level>()
+            {
+                self.enabled = true;
+                self.level = level.into();
             }
             else if !directive.contains('/') && !directive.contains(char::is_whitespace)
             {
-                self = self.filter_module(directive, LevelFilter::Trace);
+                self = self.filter_module(directive, LogLevel::Trace);
             }
         }
         self
     }
 
-    /// Installs this configuration. Returns an error if a logger already exists.
-    pub fn try_init(self) -> Result<(), SetLoggerError>
+    /// Installs these settings if the Hexga logger has yet to initialize.
+    pub fn try_init(self) -> Result<(), InitError>
     {
-        let max_level = self.targets.iter().map(|(_, level)| *level).fold(self.level, core::cmp::max);
-        log::set_boxed_logger(Box::new(Logger::new(self)))?;
-        log::set_max_level(max_level);
+        ACTIVE.set(Mutex::new(Active::configured(self))).map_err(|_| InitError)?;
+        register_facade();
         Ok(())
-    }
-
-    fn level_for(&self, target: &str) -> LevelFilter
-    {
-        self.targets
-            .iter()
-            .filter(|(prefix, _)| target.starts_with(prefix))
-            .max_by_key(|(prefix, _)| prefix.len())
-            .map_or(self.level, |(_, level)| *level)
     }
 }
 
-/// Installs the default configuration with any `RUST_LOG` overrides.
-pub fn init_if_needed() { init_if_needed_with(|| Config::default().parse_env()); }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct InitError;
 
-/// Installs a fallback configuration once. An already installed logger takes precedence.
-pub fn init_if_needed_with(configure: impl FnOnce() -> Config)
+impl fmt::Display for InitError
 {
-    static INIT: OnceLock<()> = OnceLock::new();
-    INIT.get_or_init(|| {
-        let _ = configure().try_init();
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.write_str("the Hexga logger is already initialized") }
+}
+
+impl std::error::Error for InitError {}
+
+static ACTIVE: OnceLock<Mutex<Active>> = OnceLock::new();
+static FALLBACK: OnceLock<LogConfig> = OnceLock::new();
+
+struct Active
+{
+    logger: Box<dyn Logger + Send>,
+    targets: HashMap<String, LogLevel>,
+}
+
+impl Active
+{
+    fn configured(config: LogConfig) -> Self
+    {
+        Self {
+            logger: Box::new(DefaultLogger {
+                enabled: config.enabled,
+                level: config.level,
+                output: LazyLock::new(output::Output::new),
+            }),
+            targets: config.targets,
+        }
+    }
+
+    fn allows(&self, lvl: LogLevel, target: &str) -> bool
+    {
+        if lvl == LogLevel::None
+        {
+            return false;
+        }
+
+        let target_level = self
+            .targets
+            .iter()
+            .filter(|(prefix, _)| target.starts_with(prefix.as_str()))
+            .max_by_key(|(prefix, _)| prefix.len());
+        match target_level
+        {
+            Some((_, level)) => self.logger.is_enable() && *level != LogLevel::None && lvl <= *level,
+            None => self.logger.should_log(lvl),
+        }
+    }
+}
+
+fn active() -> MutexGuard<'static, Active>
+{
+    register_facade();
+    ACTIVE
+        .get_or_init(|| {
+            let config = FALLBACK.get().cloned().unwrap_or_else(|| LogConfig::default().parse_env());
+            Mutex::new(Active::configured(config))
+        })
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+}
+
+/// A zero-sized handle to the process-wide logger.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Log;
+
+impl LoggableDyn for Log
+{
+    fn log_str(&mut self, lvl: LogLevel, msg: LogFragment<'_>)
+    {
+        if lvl != LogLevel::None
+        {
+            let msg = prefix_message(msg);
+            active().logger.log_str(lvl, msg);
+        }
+    }
+}
+
+impl Enable for Log
+{
+    fn is_enable(&self) -> bool { active().logger.is_enable() }
+}
+
+impl SetEnable for Log
+{
+    fn set_enable(&mut self, enable: bool) { active().logger.set_enable(enable); }
+}
+
+impl Logger for Log
+{
+    fn level(&self) -> LogLevel { active().logger.level() }
+
+    fn set_level(&mut self, lvl: LogLevel) { active().logger.set_level(lvl); }
+
+    fn should_log(&self, lvl: LogLevel) -> bool { lvl != LogLevel::None && active().logger.should_log(lvl) }
+}
+
+/// Registers the logging facade. The default logger is created on demand.
+pub fn init_if_needed() { register_facade(); }
+
+/// Supplies fallback settings for the first use of the logger.
+pub fn init_if_needed_with(configure: impl FnOnce() -> LogConfig)
+{
+    if ACTIVE.get().is_none()
+    {
+        FALLBACK.get_or_init(configure);
+    }
+    register_facade();
+}
+
+/// Replaces the active logger with an application-provided sink.
+pub fn set_logger(logger: impl Logger + Send + 'static)
+{
+    let replacement = Mutex::new(Active {
+        logger: Box::new(logger),
+        targets: HashMap::new(),
+    });
+    if let Err(replacement) = ACTIVE.set(replacement)
+    {
+        let replacement = replacement.into_inner().unwrap_or_else(PoisonError::into_inner);
+        let old = std::mem::replace(&mut *active(), replacement);
+        drop(old);
+    }
+    register_facade();
+}
+
+pub fn set_enabled(enable: bool) { Log.set_enable(enable); }
+
+/// Sets the current threshold.
+pub fn set_level(lvl: LogLevel) { Log.set_level(lvl); }
+
+#[doc(hidden)]
+pub fn log_lazy(lvl: impl Into<LogLevel>, target: &str, f: impl FnOnce() -> String)
+{
+    let lvl = lvl.into();
+    if !active().allows(lvl, target)
+    {
+        return;
+    }
+
+    // Formatting can run user code, so release the logger lock first.
+    let msg = prefix_message(LogFragment::Owned(f()));
+
+    let mut active = active();
+    if active.allows(lvl, target)
+    {
+        active.logger.log_str(lvl, msg);
+    }
+}
+
+fn prefix_message(msg: LogFragment<'_>) -> LogFragment<'_>
+{
+    match crate::prefix::current_prefix()
+    {
+        Some(prefix) => LogFragment::Owned(format!("[{prefix}] {msg}")),
+        None => msg,
+    }
+}
+
+struct Facade;
+
+fn register_facade()
+{
+    static FACADE: Facade = Facade;
+    static REGISTERED: OnceLock<()> = OnceLock::new();
+    REGISTERED.get_or_init(|| {
+        if log::set_logger(&FACADE).is_ok()
+        {
+            log::set_max_level(log::LevelFilter::Trace);
+        }
     });
 }
 
-struct Logger
+impl log::Log for Facade
 {
-    config: Config,
-    output: output::Output,
+    fn enabled(&self, metadata: &Metadata<'_>) -> bool { active().allows(metadata.level().into(), metadata.target()) }
+
+    fn log(&self, record: &Record<'_>) { log_lazy(record.level(), record.target(), || record.args().to_string()); }
+
+    fn flush(&self) {}
 }
 
-impl Logger
+struct DefaultLogger
 {
-    fn new(config: Config) -> Self
-    {
-        Self {
-            config,
-            output: output::Output::new(),
-        }
-    }
+    enabled: bool,
+    level: LogLevel,
+    output: LazyLock<output::Output>,
 }
 
-impl Log for Logger
+impl LoggableDyn for DefaultLogger
 {
-    fn enabled(&self, metadata: &Metadata<'_>) -> bool { metadata.level() <= self.config.level_for(metadata.target()) }
-
-    fn log(&self, record: &Record<'_>)
+    fn log_str(&mut self, lvl: LogLevel, msg: LogFragment<'_>)
     {
-        if self.enabled(record.metadata())
+        if lvl != LogLevel::None
         {
-            self.output.write(record);
+            self.output.write(msg.as_ref(), lvl);
         }
     }
-
-    fn flush(&self) { self.output.flush(); }
 }
 
-#[cfg(all(feature = "log_env", not(feature = "log_std"), not(target_arch = "wasm32")))]
+impl Enable for DefaultLogger
+{
+    fn is_enable(&self) -> bool { self.enabled }
+}
+
+impl SetEnable for DefaultLogger
+{
+    fn set_enable(&mut self, enable: bool) { self.enabled = enable; }
+}
+
+impl Logger for DefaultLogger
+{
+    fn level(&self) -> LogLevel { self.level }
+    fn set_level(&mut self, lvl: LogLevel) { self.level = lvl; }
+}
+
+#[cfg(all(feature = "log_env", not(all(target_arch = "wasm32", target_os = "unknown"))))]
 mod output
 {
-    use super::{LevelFilter, Log, Record};
+    use crate::{LogLevel, Record};
+    use log::Log;
     use std::io::Write;
 
     pub(super) struct Output(env_logger::Logger);
@@ -158,23 +333,26 @@ mod output
         {
             Self(
                 env_logger::Builder::new()
-                    .filter_level(LevelFilter::Trace)
+                    .filter_level(log::LevelFilter::Trace)
                     .format(|buf, record| writeln!(buf, "{}", record.args()))
                     .build(),
             )
         }
 
-        pub(super) fn write(&self, record: &Record<'_>) { self.0.log(record); }
-
-        pub(super) fn flush(&self) { self.0.flush(); }
+        pub(super) fn write(&self, msg: &str, lvl: LogLevel)
+        {
+            if let Ok(level) = lvl.try_into()
+            {
+                self.0.log(&Record::builder().level(level).args(format_args!("{msg}")).build());
+            }
+        }
     }
 }
 
-#[cfg(all(feature = "log_web", not(feature = "log_std"), target_arch = "wasm32"))]
+#[cfg(all(feature = "log_env", target_arch = "wasm32", target_os = "unknown"))]
 mod output
 {
-    use super::Record;
-    use crate::Level;
+    use crate::LogLevel;
     use web_sys::console;
 
     pub(super) struct Output;
@@ -183,29 +361,26 @@ mod output
     {
         pub(super) fn new() -> Self { Self }
 
-        pub(super) fn write(&self, record: &Record<'_>)
+        pub(super) fn write(&self, msg: &str, lvl: LogLevel)
         {
-            let message = record.args().to_string().into();
-            match record.level()
+            let msg = msg.into();
+            match lvl
             {
-                Level::Error => console::error_1(&message),
-                Level::Warn => console::warn_1(&message),
-                Level::Info => console::info_1(&message),
-                Level::Debug | Level::Trace => console::debug_1(&message),
+                LogLevel::Error => console::error_1(&msg),
+                LogLevel::Warn => console::warn_1(&msg),
+                LogLevel::Info => console::info_1(&msg),
+                LogLevel::Debug | LogLevel::Trace => console::debug_1(&msg),
+                LogLevel::None =>
+                {}
             }
         }
-
-        pub(super) fn flush(&self) {}
     }
 }
 
-#[cfg(not(any(
-    all(feature = "log_env", not(feature = "log_std"), not(target_arch = "wasm32")),
-    all(feature = "log_web", not(feature = "log_std"), target_arch = "wasm32"),
-)))]
+#[cfg(not(feature = "log_env"))]
 mod output
 {
-    use super::Record;
+    use crate::LogLevel;
     use std::io::{Write, stdout};
 
     pub(super) struct Output;
@@ -214,9 +389,7 @@ mod output
     {
         pub(super) fn new() -> Self { Self }
 
-        pub(super) fn write(&self, record: &Record<'_>) { let _ = writeln!(stdout().lock(), "{}", record.args()); }
-
-        pub(super) fn flush(&self) { let _ = stdout().lock().flush(); }
+        pub(super) fn write(&self, msg: &str, _lvl: LogLevel) { let _ = writeln!(stdout().lock(), "{msg}"); }
     }
 }
 
@@ -224,46 +397,163 @@ mod output
 mod tests
 {
     use super::*;
+    use crate::{EnableExtension, LoggableExtension, LoggableLazy, LoggableLazyExtension, ScopedWith, SetEnableExtension};
+    use std::sync::Arc;
+
+    type Messages = Arc<Mutex<Vec<(String, LogLevel)>>>;
+
+    struct Capture
+    {
+        enabled: bool,
+        level: LogLevel,
+        messages: Messages,
+    }
+
+    impl LoggableDyn for Capture
+    {
+        fn log_str(&mut self, lvl: LogLevel, msg: LogFragment<'_>) { self.messages.lock().unwrap().push((msg.into_owned(), lvl)); }
+    }
+
+    impl Enable for Capture
+    {
+        fn is_enable(&self) -> bool { self.enabled }
+    }
+
+    impl SetEnable for Capture
+    {
+        fn set_enable(&mut self, enable: bool) { self.enabled = enable; }
+    }
+
+    impl Logger for Capture
+    {
+        fn level(&self) -> LogLevel { self.level }
+        fn set_level(&mut self, lvl: LogLevel) { self.level = lvl; }
+    }
+
+    fn should_not_format() -> &'static str
+    {
+        panic!("a filtered log evaluated its message");
+    }
+
+    struct Unformatted;
+
+    impl fmt::Display for Unformatted
+    {
+        fn fmt(&self, _: &mut fmt::Formatter<'_>) -> fmt::Result
+        {
+            panic!("a filtered log formatted its message");
+        }
+    }
 
     #[test]
-    fn defaults_to_warn_in_debug_and_error_in_release()
+    fn default_level_matches_the_build()
     {
         let expected = if cfg!(debug_assertions)
         {
-            LevelFilter::Warn
+            LogLevel::Debug
         }
         else
         {
-            LevelFilter::Error
+            LogLevel::Error
         };
-        assert_eq!(Config::default().level_for("app"), expected);
+        assert_eq!(LogConfig::default().level, expected);
+        let logger = Active::configured(LogConfig::default());
+        assert!(logger.logger.is_enable());
+        assert_eq!(logger.logger.level(), expected);
     }
 
     #[test]
-    fn more_specific_filters_override_defaults_and_can_be_replaced()
+    fn level_override_and_enabled_state_are_independent()
     {
-        let config = Config::default()
-            .filter_module("app", LevelFilter::Info)
-            .parse_filters("error, app=debug, app::noisy=off, app::worker, app=invalid");
-
-        assert_eq!(config.level_for("other"), LevelFilter::Error);
-        assert_eq!(config.level_for("app"), LevelFilter::Debug);
-        assert_eq!(config.level_for("app::noisy::task"), LevelFilter::Off);
-        assert_eq!(config.level_for("app::worker"), LevelFilter::Trace);
+        let config = LogConfig::default().parse_filters("off");
+        assert_eq!(config.level, DEFAULT_LEVEL);
+        let logger = Active::configured(config.filter_level(Level::Info));
+        assert!(!logger.logger.is_enable());
+        assert_eq!(logger.logger.level(), LogLevel::Info);
     }
 
     #[test]
-    fn fallback_keeps_an_explicitly_installed_logger()
+    fn longest_matching_filter_wins()
     {
-        Config::default()
-            .filter_level(LevelFilter::Error)
-            .filter_module("app", LevelFilter::Trace)
-            .try_init()
-            .unwrap();
-        init_if_needed_with(|| Config::default().filter_level(LevelFilter::Off));
+        let logger = Active::configured(LogConfig::default().parse_filters("error, app=info, app=debug, app::noisy=off, app::worker"));
+        assert!(!logger.allows(LogLevel::Warn, "other"));
+        assert!(logger.allows(LogLevel::Debug, "app"));
+        assert!(!logger.allows(LogLevel::Error, "app::noisy::task"));
+        assert!(logger.allows(LogLevel::Trace, "app::worker"));
 
-        let record = Metadata::builder().target("app::worker").level(crate::Level::Trace).build();
-        assert!(log::logger().enabled(&record));
-        assert_eq!(log::max_level(), LevelFilter::Trace);
+        let unfiltered = Active::configured(LogConfig::default().filter_level(LogLevel::None));
+        assert!(unfiltered.allows(LogLevel::Trace, "app"));
+        assert!(!unfiltered.allows(LogLevel::None, "app"));
+    }
+
+    #[test]
+    fn initializes_on_first_use_and_checks_custom_logger_before_formatting()
+    {
+        init_if_needed_with(|| LogConfig::default().filter_level(LogLevel::Warn));
+        assert!(ACTIVE.get().is_none());
+        crate::trace!("{}", should_not_format());
+        assert!(ACTIVE.get().is_some());
+        assert_eq!(LogConfig::default().try_init(), Err(InitError));
+
+        let messages = Messages::default();
+        set_logger(Capture {
+            enabled: true,
+            level: LogLevel::Warn,
+            messages: messages.clone(),
+        });
+        crate::debug!("{}", should_not_format());
+        set_enabled(false);
+        crate::error!("{}", should_not_format());
+        set_enabled(true);
+
+        set_level(LogLevel::Debug);
+        Log.scope(42, |_| crate::debug!("hexga"));
+        set_level(LogLevel::Warn);
+        crate::debug!("{}", should_not_format());
+        log::warn!("facade");
+
+        let mut handle = Log;
+        assert_eq!(std::mem::size_of_val(&handle), 0);
+        assert!(handle.is_enable());
+        assert_eq!(handle.level(), LogLevel::Warn);
+        handle.disable();
+        assert!(Log.is_disable());
+        handle.error(Unformatted);
+        handle.lazy_error(should_not_format);
+        handle.enable();
+        handle.set_level(LogLevel::Info);
+        assert_eq!(Log.level(), LogLevel::Info);
+        handle.debug(Unformatted);
+        handle.lazy_debug(should_not_format);
+        Log.scope("proxy", |_| handle.lazy_info(|| 42));
+        handle.info(7);
+        let borrowed = String::from("borrowed");
+        handle.lazy_log_str(LogLevel::Info, || LogFragment::Borrowed(&borrowed));
+        handle.lazy_log(LogLevel::None, should_not_format);
+        handle.log_str(LogLevel::None, LogFragment::Borrowed("ignored"));
+        handle.set_level(LogLevel::Warn);
+        assert_eq!(Log.level(), LogLevel::Warn);
+
+        let mut local = Capture {
+            enabled: false,
+            level: LogLevel::Info,
+            messages: messages.clone(),
+        };
+        local.lazy_log_str(LogLevel::Error, || should_not_format().into());
+        local.set_enable(true);
+        local.lazy_log_str(LogLevel::Debug, || should_not_format().into());
+        local.lazy_log_str(LogLevel::Info, || "local".into());
+
+        assert_eq!(
+            *messages.lock().unwrap(),
+            [
+                ("[42] hexga".into(), LogLevel::Debug),
+                ("facade".into(), LogLevel::Warn),
+                ("[proxy] 42".into(), LogLevel::Info),
+                ("7".into(), LogLevel::Info),
+                ("borrowed".into(), LogLevel::Info),
+                ("local".into(), LogLevel::Info),
+            ]
+        );
     }
 }
