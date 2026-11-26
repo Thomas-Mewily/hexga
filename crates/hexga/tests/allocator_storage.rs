@@ -1,9 +1,8 @@
 use hexga::prelude::*;
-use std::alloc::System;
 
 #[test]
 fn grid_mapping_and_cropping_keep_the_allocator() {
-    let allocator = System;
+    let allocator = AllocSystem;
     let source = Grid::<_, 2, _>::from_fn_in(vec2i(2, 3), |p| p.x + 10 * p.y, &allocator);
     let cropped = source.crop(rect2i(1, 0, 1, 3)).unwrap();
     let mapped = cropped.map_into(|value| value as i64 * 2);
@@ -13,7 +12,7 @@ fn grid_mapping_and_cropping_keep_the_allocator() {
 
 #[test]
 fn grid_and_image_conversion_reuses_the_storage() {
-    let allocator = System;
+    let allocator = AllocSystem;
     let size = vec2i(2, 3);
     let grid = Grid::<_, 2, _>::from_fn_in(size, |p| p.x + 10 * p.y, &allocator);
     let storage = grid.values().as_ptr();
@@ -33,7 +32,7 @@ fn grid_and_image_conversion_reuses_the_storage() {
 
 #[test]
 fn generational_sequence_uses_the_allocator_across_removal_and_growth() {
-    let allocator = System;
+    let allocator = AllocSystem;
     let mut sequence = GenVec::<_, _>::with_capacity_and_param(4, &allocator);
     assert!(Capacity::capacity(&sequence) >= 4);
     sequence.extend([42, 43]);

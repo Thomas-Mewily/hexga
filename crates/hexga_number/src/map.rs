@@ -1,5 +1,5 @@
 use super::*;
-use std::alloc::Allocator;
+use ::core::alloc::Allocator;
 
 // Update it and add `try_map` once stabilized ?
 // https://doc.rust-lang.org/std/primitive.array.html#method.try_map

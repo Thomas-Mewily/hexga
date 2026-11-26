@@ -17,7 +17,7 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult
     {
         f.debug_struct("EventLoop")
-            .field("lib_winit", &self.lib_winit)
+            .field("winit", &self.lib_winit)
             .field("state", &self.state)
             .field("proxy", &self.proxy)
             .finish()

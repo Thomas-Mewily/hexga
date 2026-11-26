@@ -6,8 +6,7 @@ Use them at your own risk, and keep in mind that the API may change in future ve
 
 ## Rust toolchain
 
-Allocator-aware `Vec` and `Box` trait implementations require stable Rust
-1.100 or later. 
+Allocator trait implementations require stable Rust 1.100 or later. 
 
 ## Design
 

@@ -18,9 +18,9 @@ impl<'a> App<(), AppCtx<'a>> for MyApp
 
         // RGB vertices blend into a smooth gradient across the triangle.
         let triangle = [
-            Vertex::new().with_position(vec3(0.0, 0.85, 0.0)).with_color(rgb(1.0, 0.25, 0.15)),
-            Vertex::new().with_position(vec3(-0.9, -0.1, 0.0)).with_color(rgb(0.2, 0.9, 0.45)),
-            Vertex::new().with_position(vec3(0.9, -0.1, 0.0)).with_color(rgb(0.2, 0.45, 1.0)),
+            Vertex::new().with_position(vec3(0.0, 0.75, 0.0)).with_color(Color::RED),
+            Vertex::new().with_position(vec3(-0.9, -0.75, 0.0)).with_color(Color::GREEN),
+            Vertex::new().with_position(vec3(0.9, -0.75, 0.0)).with_color(Color::BLUE),
         ];
         Pen.geometry(&triangle, &[0, 1, 2]);
 

@@ -6,9 +6,7 @@ use super::*;
 impl<C, Idx, A: Allocator + Clone> Serialize for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer + Serialize,
-    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + Serialize,
-    u8: CastRangeFrom<C::Component>,
-    u16: CastRangeFrom<C::Component>,
+    Self: ToUrl,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -21,9 +19,7 @@ where
 impl<'de, C, Idx, A: Allocator + Clone + Default> Deserialize<'de> for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer + for<'de2> Deserialize<'de2>,
-    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + for<'de2> Deserialize<'de2>,
-    u8: CastRangeFrom<C::Component>,
-    u16: CastRangeFrom<C::Component>,
+    Self: FromUrl
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

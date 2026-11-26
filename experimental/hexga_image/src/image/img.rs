@@ -1,4 +1,4 @@
-use ::image::{DynamicImage, GenericImageView, ImageFormat};
+use ::image::{ColorType, DynamicImage, GenericImageView, ImageEncoder, ImageFormat, Rgba, codecs::{bmp::BmpEncoder, gif::GifEncoder, ico::IcoEncoder, jpeg::JpegEncoder, png::PngEncoder, webp::WebPEncoder}};
 use hexga_encoding::{DeducedExtension, MediaType};
 use hexga_math::NumberType;
 
@@ -27,7 +27,7 @@ where
     Idx: Integer,
 {
     size: Vector2<Idx>,
-    pixels: Vec<C, A>,
+    pub(crate) pixels: Vec<C, A>,
 }
 
 impl<C, Idx, A: Allocator, B: Allocator> PartialEq<ImageBaseOf<C, Idx, B>> for ImageBaseOf<C, Idx, A>
@@ -35,17 +35,15 @@ where
     Idx: Integer,
     C: PartialEq,
 {
-    fn eq(&self, other: &ImageBaseOf<C, Idx, B>) -> bool
-    {
-        self.size == other.size && self.pixels.as_slice() == other.pixels.as_slice()
-    }
+    fn eq(&self, other: &ImageBaseOf<C, Idx, B>) -> bool { self.size == other.size && self.pixels.as_slice() == other.pixels.as_slice() }
 }
 
 impl<C, Idx, A: Allocator> Eq for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
     C: Eq,
-{}
+{
+}
 
 impl<C, Idx, A: Allocator> PartialOrd for ImageBaseOf<C, Idx, A>
 where
@@ -63,10 +61,7 @@ where
     Idx: Integer,
     C: Ord,
 {
-    fn cmp(&self, other: &Self) -> core::cmp::Ordering
-    {
-        (&self.size, self.pixels.as_slice()).cmp(&(&other.size, other.pixels.as_slice()))
-    }
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering { (&self.size, self.pixels.as_slice()).cmp(&(&other.size, other.pixels.as_slice())) }
 }
 
 impl<C, Idx, A: Allocator> core::hash::Hash for ImageBaseOf<C, Idx, A>
@@ -85,8 +80,12 @@ impl<C, Idx, A: Allocator + Default> Default for ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
 {
-    fn default() -> Self {
-        Self { size: ___(), pixels: Vec::new_in(A::default()) }
+    fn default() -> Self
+    {
+        Self {
+            size: ___(),
+            pixels: Vec::new_in(A::default()),
+        }
     }
 }
 
@@ -351,10 +350,7 @@ where
     {
         let size = size.into();
         debug_assert_eq!(size.area_usize_checked(), Some(pixels.len()));
-        Self {
-            size,
-            pixels,
-        }
+        Self { size, pixels }
     }
 
     unsafe fn position_to_index_unchecked<P>(&self, pos: P) -> usize
@@ -404,11 +400,19 @@ impl<T, Idx> SetSize<Idx, 2> for ImageBaseOf<T, Idx> where Idx: Integer
 impl<T, Idx, A: Allocator + Clone> CollectionBijective for ImageBaseOf<T, Idx, A> where Idx: Integer {}
 impl<T, Idx: Integer, A: Allocator + Clone> Collection<T> for ImageBaseOf<T, Idx, A>
 {
-    type Ref<'a> = &'a T where Self: 'a, T: 'a;
+    type Ref<'a>
+        = &'a T
+    where
+        Self: 'a,
+        T: 'a;
 }
 impl<T, Idx: Integer, A: Allocator + Clone> CollectionMut<T> for ImageBaseOf<T, Idx, A>
 {
-    type RefMut<'a> = &'a mut T where Self: 'a, T: 'a;
+    type RefMut<'a>
+        = &'a mut T
+    where
+        Self: 'a,
+        T: 'a;
 }
 
 impl<P, T, Idx, A: Allocator + Clone> CollectionIndex<P> for ImageBaseOf<T, Idx, A>
@@ -417,7 +421,11 @@ where
     P: Into<Vector2<Idx>>,
 {
     type Output = T;
-    type Ref<'a> = &'a T where Self: 'a, Self::Output: 'a;
+    type Ref<'a>
+        = &'a T
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<P, T, Idx, A: Allocator + Clone> Get<P> for ImageBaseOf<T, Idx, A>
 where
@@ -425,10 +433,17 @@ where
     P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn get<'a>(&'a self, pos: P) -> Option<Self::Ref<'a>> where Self::Output: 'a { self.position_to_index(pos).map(|idx| unsafe { self.pixels().get_unchecked(idx) }) }
+    fn get<'a>(&'a self, pos: P) -> Option<Self::Ref<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.position_to_index(pos).map(|idx| unsafe { self.pixels().get_unchecked(idx) })
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked<'a>(&'a self, pos: P) -> Self::Ref<'a> where Self::Output: 'a
+    unsafe fn get_unchecked<'a>(&'a self, pos: P) -> Self::Ref<'a>
+    where
+        Self::Output: 'a,
     {
         unsafe {
             let idx = self.position_to_index_unchecked(pos.into());
@@ -443,7 +458,9 @@ where
 {
     type Error = IndexOutOfBounds<Vector2<Idx>, Vector2<Idx>>;
     #[inline(always)]
-    fn try_get<'a>(&'a self, pos: P) -> Result<Self::Ref<'a>, Self::Error> where Self::Output: 'a
+    fn try_get<'a>(&'a self, pos: P) -> Result<Self::Ref<'a>, Self::Error>
+    where
+        Self::Output: 'a,
     {
         let p = pos.into();
         self.get(p).ok_or_else(|| IndexOutOfBounds::new(p, self.size()))
@@ -456,7 +473,9 @@ where
     P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn try_get_mut<'a>(&'a mut self, pos: P) -> Result<Self::RefMut<'a>, Self::Error> where Self::Output: 'a
+    fn try_get_mut<'a>(&'a mut self, pos: P) -> Result<Self::RefMut<'a>, Self::Error>
+    where
+        Self::Output: 'a,
     {
         let p = pos.into();
         let size = self.size();
@@ -468,7 +487,11 @@ where
     Idx: Integer,
     P: Into<Vector2<Idx>>,
 {
-    type RefMut<'a> = &'a mut T where Self: 'a, Self::Output: 'a;
+    type RefMut<'a>
+        = &'a mut T
+    where
+        Self: 'a,
+        Self::Output: 'a;
 }
 impl<P, T, Idx, A: Allocator + Clone> GetMut<P> for ImageBaseOf<T, Idx, A>
 where
@@ -476,10 +499,17 @@ where
     P: Into<Vector2<Idx>>,
 {
     #[inline(always)]
-    fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::RefMut<'a>> where Self::Output: 'a { self.position_to_index(pos).map(|i| unsafe { self.pixels_mut().get_unchecked_mut(i) }) }
+    fn get_mut<'a>(&'a mut self, pos: P) -> Option<Self::RefMut<'a>>
+    where
+        Self::Output: 'a,
+    {
+        self.position_to_index(pos).map(|i| unsafe { self.pixels_mut().get_unchecked_mut(i) })
+    }
     #[inline(always)]
     #[track_caller]
-    unsafe fn get_unchecked_mut<'a>(&'a mut self, pos: P) -> Self::RefMut<'a> where Self::Output: 'a
+    unsafe fn get_unchecked_mut<'a>(&'a mut self, pos: P) -> Self::RefMut<'a>
+    where
+        Self::Output: 'a,
     {
         unsafe {
             let idx = self.position_to_index_unchecked(pos);
@@ -495,7 +525,9 @@ where
 {
     #[inline(always)]
     fn try_get_many_mut<'a, const N2: usize>(&'a mut self, indices: [P; N2]) -> Result<[Self::RefMut<'a>; N2], ManyMutError>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
         if indices.any(|x| x.is_none())
@@ -509,7 +541,9 @@ where
     }
 
     fn get_many_mut<'a, const N: usize>(&'a mut self, indices: [P; N]) -> Option<[Self::RefMut<'a>; N]>
-     where Self::Output: 'a{
+    where
+        Self::Output: 'a,
+    {
         // Use try_map https://doc.rust-lang.org/std/primitive.array.html#method.try_map when #stabilized
         let indices = indices.map(|pos| self.position_to_index(pos));
         if indices.any(|x| x.is_none())
@@ -636,7 +670,10 @@ where
     Idx: Integer,
 {
     type Item = T;
-    fn map<F>(mut self, f: F) -> Self where F: FnMut(T) -> T {
+    fn map<F>(mut self, f: F) -> Self
+    where
+        F: FnMut(T) -> T,
+    {
         self.pixels = self.pixels.map(f);
         self
     }
@@ -646,15 +683,23 @@ where
     Idx: Integer,
 {
     type WithType<R> = ImageBaseOf<R, Idx, A>;
-    fn map_into<F, R>(self, f: F) -> Self::WithType<R> where F: FnMut(T) -> R {
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
         unsafe { Self::WithType::<R>::from_vec_unchecked(self.size, self.pixels.map_into(f)) }
     }
 }
 impl<T, Idx, A: Allocator + Clone + Default> MapZip for ImageBaseOf<T, Idx, A>
-where Idx: Integer,
+where
+    Idx: Integer,
 {
-    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self where F: FnMut([T; M]) -> T {
-        if M == 0 {
+    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self
+    where
+        F: FnMut([T; M]) -> T,
+    {
+        if M == 0
+        {
             return ___();
         }
         let size = this[0].size();
@@ -663,10 +708,15 @@ where Idx: Integer,
     }
 }
 impl<T, Idx, A: Allocator + Clone + Default> MapZipInto for ImageBaseOf<T, Idx, A>
-where Idx: Integer,
+where
+    Idx: Integer,
 {
-    fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R> where F: FnMut([T; M]) -> R {
-        if M == 0 {
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], f: F) -> Self::WithType<R>
+    where
+        F: FnMut([T; M]) -> R,
+    {
+        if M == 0
+        {
             return ___();
         }
         let size = this[0].size();
@@ -675,94 +725,78 @@ where Idx: Integer,
     }
 }
 
-impl<C, Idx, A: Allocator + Clone> Save for ImageBaseOf<C, Idx, A>
-where
-    Idx: Integer + CfgSerialize,
-    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + CfgSerialize,
-    u8: CastRangeFrom<C::Component>,
-    u16: CastRangeFrom<C::Component>,
-{
-    //fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png", "jpg", "jpeg", "gif", "ico", "webp", "bmp"].into_iter() }
-    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png"].into_iter() }
 
-    // TODO only support PNG for the moment
-    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
-    where
-        W: Write,
+
+
+//fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png"].into_iter() }
+fn save_extensions() -> impl Iterator<Item = &'static extension> { ["png", "jpg", "jpeg", "gif", "ico", "webp", "bmp"].into_iter() }
+fn load_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+
+fn extension_2_image_enum(extension: &str) -> Option<ImageFormat>
+{
+    //ImageFormat::from_extension(ext) // for full support
+    Some(match extension
     {
-        match extension
-        {
-            Some("png") => match C::Component::PRIMITIVE_TYPE
-            {
-                NumberType::IntegerSigned =>
-                {
-                    if std::mem::size_of::<C::Component>() * 8 <= 8
-                    {
-                        self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension)
-                    }
-                    else
-                    {
-                        self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension)
-                    }
-                }
-                NumberType::IntegerUnsigned => match std::mem::size_of::<C::Component>() * 8
-                {
-                    8 => match ::image::ImageEncoder::write_image(
-                        ::image::codecs::png::PngEncoder::new(writer),
-                        unsafe { std::slice::from_raw_parts(self.pixels().as_ptr() as *const u8, std::mem::size_of_val(self.pixels())) },
-                        self.width().to_usize() as _,
-                        self.height().to_usize() as _,
-                        ::image::ExtendedColorType::Rgba8,
-                    )
-                    {
-                        Ok(v) => Ok("png".into()),
-                        Err(e) => Err(EncodeError::custom(format!("Failed to encode .png rgba8 image : {}", e))),
-                    },
-                    16 => match ::image::ImageEncoder::write_image(
-                        ::image::codecs::png::PngEncoder::new(writer),
-                        unsafe { std::slice::from_raw_parts(self.pixels().as_ptr() as *const u8, std::mem::size_of_val(self.pixels())) },
-                        self.width().to_usize() as _,
-                        self.height().to_usize() as _,
-                        ::image::ExtendedColorType::Rgba16,
-                    )
-                    {
-                        Ok(v) => Ok("png".into()),
-                        Err(e) => Err(EncodeError::custom(format!("Failed to encode .png rgba16 image : {}", e))),
-                    },
-                    _ => self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension),
-                },
-                NumberType::Float => self.clone().to_rgba_u16().save_to_writer_with_custom_extension(writer, extension),
-                NumberType::Bool => self.clone().to_rgba_u8().save_to_writer_with_custom_extension(writer, extension),
-            },
-            _ => Err(EncodeError::save_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into()))),
-        }
-    }
+        "png" => ImageFormat::Png,
+        "jpg" | "jpeg" => ImageFormat::Jpeg,
+        //"gif" => ImageFormat::Gif,
+        "ico" => ImageFormat::Ico,
+        "webp" => ImageFormat::WebP,
+        "bmp" => ImageFormat::Bmp,
+        "gif" => ImageFormat::Gif,
+        other => return None,
+    })
 }
 
-impl<C, Idx, A: Allocator + Clone> MediaType for ImageBaseOf<C, Idx, A>
+impl<C, Idx, A: Allocator + Clone> ImageBaseOf<C, Idx, A>
 where
     Idx: Integer,
-    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>>,
-    u8: CastRangeFrom<C::Component>,
-    u16: CastRangeFrom<C::Component>,
+    C: BitAllUsed
 {
-    fn media_type() -> &'static str { "image" }
-}
-
-impl<C, Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<C, Idx, A>
-where
-    Idx: Integer + for<'de> CfgDeserialize<'de>, // + for<'de> Deserialize<'de>,
-    C: Clone + IColor<ToRgba<u8> = RgbaOf<u8>> + IColor<ToRgba<u16> = RgbaOf<u16>> + for<'de> CfgDeserialize<'de>, // + for<'de> Deserialize<'de>,
-    u8: CastRangeFrom<C::Component>,
-    u16: CastRangeFrom<C::Component>,
-{
-    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { ["png", "jpg", "jpeg", "gif", "ico", "webp", "bmp"].into_iter() }
-
-    fn load_from_reader_with_custom_extension<R>(mut reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    fn _save_to_writer<'ext, W>(&self, mut writer: W, extension: Option<&'ext extension>, color: ColorType) -> EncodeResult<DeducedExtension<'ext>>
     where
-        Self: Sized,
+        W: Write, Self: Save, Idx: CfgSerialize, C: IColor<ToRgba<u8> = RgbaOf<u8>>, u8: CastRangeFrom<C::Component>,
+    {
+        let unknow_extension = || EncodeError::save_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into()));
+        let deduced_extension = extension.unwrap_or(&"png");
+        let image_format = extension_2_image_enum(deduced_extension).ok_or_else(unknow_extension)?;
+
+        let w = self.width().to_usize() as _;
+        let h = self.height().to_usize() as _;
+
+        let data: &[u8] = hexga_core::bit::transmute_slice(&self.pixels);
+        
+        let r = match image_format {
+            ImageFormat::Png  => PngEncoder::new(&mut writer).write_image(data, w, h, color.into()),
+            ImageFormat::Jpeg => JpegEncoder::new_with_quality(&mut writer, 95).write_image(data, w, h, color.into()),
+            ImageFormat::Bmp  => BmpEncoder::new(&mut writer).write_image(data, w, h, color.into()),
+            ImageFormat::Ico  => IcoEncoder::new(&mut writer).write_image(data, w, h, color.into()),
+            ImageFormat::WebP => WebPEncoder::new_lossless(&mut writer).write_image(data, w, h, color.into()),
+            ImageFormat::Gif  => { 
+                if color != ColorType::Rgba8
+                {
+                    // Gif only support RgbaU8, so cast range other color.
+                    return self.to_rgba_u8()._save_to_writer(writer, extension, color);
+                }
+                GifEncoder::new(&mut writer).write_image(data, w, h, color.into())
+            },
+            _                 => return Err(unknow_extension()),
+        };
+
+        match r
+        {
+            Ok(_) => Ok(deduced_extension.into()),
+            Err(e) => Err(EncodeError::custom(format!("Failed to encode .{deduced_extension} {image_format:?} image : {}", e))),
+        }
+    }
+
+    fn _load_from_reader<R>(mut reader: R, extension: Option<&extension>, f: impl FnOnce(DynamicImage, Vector2<Idx>) -> EncodeResult<Self>) -> EncodeResult<Self>
+    where
+        Self: Sized + Load,
         R: std::io::Read,
     {
+        // Todo can check image extension (orhterwise more extension are supported than the one declared)
+
         // let format = match extension
         // {
         //     "png" => ImageFormat::Png,
@@ -775,16 +809,10 @@ where
         //     other =>  Err(EncodeError::decode_unsupported_extension_with_name::<Self>(extension, "Image"))?,
         // };
 
-        let mut bytes = Vec::with_capacity(262144); // 0.25 Mo
+        let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes)?;
 
-        let img = ::image::load_from_memory(&bytes);
-        // let img = ::image::load_from_memory_with_format(&bytes, format);
-        let img = match img
-        {
-            Ok(dyn_img) => dyn_img,
-            Err(e) => Err(EncodeError::load_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into())))?,
-        };
+        let img = ::image::load_from_memory(&bytes).map_err(|e| EncodeError::load_unsupported_extension::<Self>(extension.map(|e| e.to_owned().into())))?;
 
         let (width, height): (u32, u32) = img.dimensions();
         let w = Idx::cast_from(width);
@@ -796,113 +824,304 @@ where
             return Err(EncodeError::custom(format!("Image is too big: {}", vector2(width, height))));
         }
 
-        let error_invalid_size = || EncodeError::custom("Invalid bytes len");
+        f(img, vector2(w, h))
+    }
+}
 
-        match C::Component::PRIMITIVE_TYPE
+impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<RgbaOf<bool>, Idx, A>
+where
+    Idx: Integer + CfgSerialize,
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
+    where
+        W: Write,
+    {
+        // Todo Can remove this clone() 
+        self.clone().to_u8_range().save_to_writer_with_custom_extension(writer, extension)
+    }
+}
+impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorU8, Idx, A>
+where
+    Idx: Integer + CfgSerialize,
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
+    where
+        W: Write,
+    {
+        self._save_to_writer(writer, extension, ColorType::Rgba8)
+    }
+}
+impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorU16, Idx, A>
+where
+    Idx: Integer + CfgSerialize,
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
+    where
+        W: Write,
+    {
+        self._save_to_writer(writer, extension, ColorType::Rgba16)
+    }
+}
+impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorF32, Idx, A>
+where
+    Idx: Integer + CfgSerialize,
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
+    where
+        W: Write,
+    {
+        self._save_to_writer(writer, extension, ColorType::Rgba32F)
+    }
+}
+impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorF64, Idx, A>
+where
+    Idx: Integer + CfgSerialize,
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
+    where
+        W: Write,
+    {
+        self.to_rgba_f32().save_to_writer_with_custom_extension(writer, extension)
+    }
+}
+
+impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<HslaF32, Idx, A>
+where
+    Idx: Integer + CfgSerialize,
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
+    where
+        W: Write,
+    {
+        self.to_rgba_f32().save_to_writer_with_custom_extension(writer, extension)
+    }
+}
+impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<HslaF64, Idx, A>
+where
+    Idx: Integer + CfgSerialize,
+{
+    fn save_custom_extensions() -> impl Iterator<Item = &'static extension> { save_extensions() }
+    fn save_to_writer_with_custom_extension<'ext, W>(&self, writer: W, extension: Option<&'ext extension>) -> EncodeResult<DeducedExtension<'ext>>
+    where
+        W: Write,
+    {
+        self.to_rgba_f32().save_to_writer_with_custom_extension(writer, extension)
+    }
+}
+
+
+impl<C, Idx, A: Allocator + Clone> MediaType for ImageBaseOf<C, Idx, A>
+where
+    Idx: Integer,
+{
+    fn media_type() -> &'static str { "image" }
+}
+
+impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<ColorU8, Idx, A>
+where
+    Idx: Integer + for<'de> CfgDeserialize<'de>,
+{
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
+    {
+        Self::_load_from_reader(reader, extension, |img, size|
         {
-            NumberType::IntegerSigned =>
-            {} // Todo: handle >= 16 bits signed to use u16 precision ?
-            NumberType::IntegerUnsigned =>
-            {
-                if std::mem::size_of::<C::Component>() * 8 >= 16
-                {
-                    let bytes = match img
-                    {
-                        DynamicImage::ImageRgba16(rgba) => rgba,
-                        x => x.to_rgba16(),
-                    }
-                    .into_raw();
-                    let multiple = 4 * std::mem::size_of::<u16>(); // 4 components (rbga)
-                    if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
-                    {
-                        return Err(error_invalid_size());
-                    }
+            let rgba_bytes = match img {
+                DynamicImage::ImageRgba8(rgba8) => rgba8,
+                x => x.to_rgba8(),
+            }.into_raw();
 
-                    let rgba_vec: Vec<RgbaU16> = bytes
-                        .as_chunks::<4>()
-                        .0
-                        .iter()
-                        .map(|chunk| RgbaU16 {
-                            r: chunk[0],
-                            g: chunk[1],
-                            b: chunk[2],
-                            a: chunk[3],
-                        })
-                        .collect();
-
-                    let mut pixels = Vec::with_capacity_in(rgba_vec.len(), A::default());
-                    pixels.extend(rgba_vec.into_iter().map(C::from_rgba_u16));
-                    let size = vector2(w, h);
-
-                    return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
-                }
+            if rgba_bytes.len() != core::mem::size_of::<ColorU8>() * size.area_usize() {
+                return Err(EncodeError::custom("Invalid bytes len"));
             }
-            NumberType::Float =>
-            {
-                let bytes = match img
-                {
-                    DynamicImage::ImageRgba32F(rgba) => rgba,
-                    x => x.to_rgba32f(),
-                }
-                .into_raw();
 
-                let multiple = 4 * std::mem::size_of::<float>(); // 4 components (rbga)
-                if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
-                {
-                    return Err(error_invalid_size());
-                }
-
-                let rgba_vec: Vec<RgbaF32> = bytes
+            let mut pixels = Vec::with_capacity_in(size.area_usize(), A::default());
+            pixels.extend(
+                rgba_bytes
                     .as_chunks::<4>()
                     .0
                     .iter()
-                    .map(|chunk| RgbaF32 {
-                        r: chunk[0],
-                        g: chunk[1],
-                        b: chunk[2],
-                        a: chunk[3],
-                    })
-                    .collect();
+                    .map(|c| ColorU8::rgba(c[0], c[1], c[2], c[3])),
+            );
+            Self::from_vec(size, pixels).ok_or_else(|| EncodeError::custom("Invalid bytes len"))
+        })
+    }
+}
 
-                let mut pixels = Vec::with_capacity_in(rgba_vec.len(), A::default());
-                pixels.extend(rgba_vec.into_iter().map(C::from_rgba_f32));
-                let size = vector2(w, h);
+impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<ColorU16, Idx, A>
+where
+    Idx: Integer + for<'de> CfgDeserialize<'de>,
+{
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
 
-                return Self::from_vec(size, pixels).ok_or_else(error_invalid_size);
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
+    {
+        Self::_load_from_reader(reader, extension, |img, size|
+        {
+            let rgba_bytes = match img {
+                DynamicImage::ImageRgba16(rgba16) => rgba16,
+                x => x.to_rgba16(),
+            }.into_raw();
+
+            if rgba_bytes.len() != core::mem::size_of::<ColorU16>() * size.area_usize() {
+                return Err(EncodeError::custom("Invalid bytes len"));
             }
-            NumberType::Bool =>
-            {}
-        }
 
-        // fallback on u8
-        let bytes = match img
+            let mut pixels = Vec::with_capacity_in(size.area_usize(), A::default());
+            pixels.extend(
+                rgba_bytes
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .map(|c| ColorU16::rgba(c[0], c[1], c[2], c[3])),
+            );
+            Self::from_vec(size, pixels).ok_or_else(|| EncodeError::custom("Invalid bytes len"))
+        })
+    }
+}
+impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<RgbaOf<bool>, Idx, A>
+where
+    Idx: Integer + for<'de> CfgDeserialize<'de>,
+{
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
+    {
+        Self::_load_from_reader(reader, extension, |img, size|
         {
-            DynamicImage::ImageRgba8(rgba8) => rgba8,
-            x => x.to_rgba8(),
-        }
-        .into_raw();
-        let multiple = 4 * std::mem::size_of::<u8>(); // 4 components (rbga)
-        if bytes.len() % multiple != 0 || bytes.len() / 4 != vector2(w, h).area_usize()
+            let rgba_bytes = match img {
+                DynamicImage::ImageRgba8(rgba8) => rgba8,
+                x => x.to_rgba8(),
+            }.into_raw();
+
+            if rgba_bytes.len() != core::mem::size_of::<ColorU8>() * size.area_usize() {
+                return Err(EncodeError::custom("Invalid bytes len"));
+            }
+
+            let mut pixels = Vec::with_capacity_in(size.area_usize(), A::default());
+            pixels.extend(
+                rgba_bytes
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .map(|c| RgbaOf::<bool>::rgba(c[0] != 0, c[1] != 0, c[2] != 0, c[3] != 0)),
+            );
+            Self::from_vec(size, pixels).ok_or_else(|| EncodeError::custom("Invalid bytes len"))
+        })
+    }
+}
+
+impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<ColorF32, Idx, A>
+where
+    Idx: Integer + for<'de> CfgDeserialize<'de>,
+{
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
+    {
+        Self::_load_from_reader(reader, extension, |img, size|
         {
-            return Err(error_invalid_size());
-        }
+            let rgba_bytes = match img {
+                DynamicImage::ImageRgba32F(rgba32) => rgba32,
+                x => x.to_rgba32f(),
+            }.into_raw();
 
-        let rgba_vec: Vec<RgbaU8> = bytes
-            .as_chunks::<4>()
-            .0
-            .iter()
-            .map(|chunk| RgbaU8 {
-                r: chunk[0],
-                g: chunk[1],
-                b: chunk[2],
-                a: chunk[3],
-            })
-            .collect();
+            if rgba_bytes.len() != core::mem::size_of::<ColorF32>() * size.area_usize() {
+                return Err(EncodeError::custom("Invalid bytes len"));
+            }
 
-        let mut pixels = Vec::with_capacity_in(rgba_vec.len(), A::default());
-        pixels.extend(rgba_vec.into_iter().map(C::from_rgba_u8));
-        let size = vector2(w, h);
+            let mut pixels = Vec::with_capacity_in(size.area_usize(), A::default());
+            pixels.extend(
+                rgba_bytes
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .map(|c| ColorF32::rgba(c[0], c[1], c[2], c[3])),
+            );
+            Self::from_vec(size, pixels).ok_or_else(|| EncodeError::custom("Invalid bytes len"))
+        })
+    }
+}
 
-        Self::from_vec(size, pixels).ok_or_else(error_invalid_size)
+impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<ColorF64, Idx, A>
+where
+    Idx: Integer + for<'de> CfgDeserialize<'de>,
+{
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
+    {
+        Self::_load_from_reader(reader, extension, |img, size|
+        {
+            let rgba_bytes = match img {
+                DynamicImage::ImageRgba32F(rgba32) => rgba32,
+                x => x.to_rgba32f(),
+            }.into_raw();
+
+            if rgba_bytes.len() != core::mem::size_of::<ColorF32>() * size.area_usize() {
+                return Err(EncodeError::custom("Invalid bytes len"));
+            }
+
+            let mut pixels = Vec::with_capacity_in(size.area_usize(), A::default());
+            pixels.extend(
+                rgba_bytes
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .map(|c| ColorF64::rgba(c[0].cast_into(), c[1].cast_into(), c[2].cast_into(), c[3].cast_into())),
+            );
+            Self::from_vec(size, pixels).ok_or_else(|| EncodeError::custom("Invalid bytes len"))
+        })
+    }
+}
+
+impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<HslaF32, Idx, A>
+where
+    Idx: Integer + for<'de> CfgDeserialize<'de>,
+{
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
+    {
+        ImageBaseOf::<ColorF32, Idx, A>::load_from_reader_with_custom_extension(reader, extension).map(|img| img.map_into(|c| c.to_hsla_f32()))
+    }
+}
+impl<Idx, A: Allocator + Clone + Default> Load for ImageBaseOf<HslaF64, Idx, A>
+where
+    Idx: Integer + for<'de> CfgDeserialize<'de>,
+{
+    fn load_custom_extensions() -> impl Iterator<Item = &'static extension> { load_extensions() }
+
+    fn load_from_reader_with_custom_extension<R>(reader: R, extension: Option<&extension>) -> EncodeResult<Self>
+    where
+        Self: Sized,
+        R: std::io::Read,
+    {
+        ImageBaseOf::<ColorF32, Idx, A>::load_from_reader_with_custom_extension(reader, extension).map(|img| img.map_into(|c| c.to_hsla_f64()))
     }
 }

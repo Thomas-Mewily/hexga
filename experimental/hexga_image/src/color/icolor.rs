@@ -275,6 +275,38 @@ where
         self.map_into(ToColor::to_hsla_of)
     }
 }
+impl<T, C, Idx, A: Allocator + Clone> ToColor<T> for &ImageBaseOf<C, Idx, A>
+where
+    Idx: Integer,
+    C: ToColor<T> + Copy,
+    T: Primitive,
+{
+    type ToRgba<R>
+        = ImageBaseOf<C::ToRgba<R>, Idx, A>
+    where
+        R: Primitive;
+    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    where
+        R: Primitive + CastRangeFrom<T>,
+    {
+        let mut v = Vec::with_capacity_in(self.len(), self.pixels.allocator().clone());
+        v.extend(self.values().iter().copied().map(ToColor::to_rgba_of));
+        ImageBaseOf::from_vec(self.size(), v).unwrap()
+    }
+
+    type ToHsla<R>
+        = ImageBaseOf<C::ToHsla<R>, Idx, A>
+    where
+        R: Float;
+    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    where
+        R: Float + CastRangeFrom<T>,
+    {
+        let mut v = Vec::with_capacity_in(self.len(), self.pixels.allocator().clone());
+        v.extend(self.values().iter().copied().map(ToColor::to_hsla_of));
+        ImageBaseOf::from_vec(self.size(), v).unwrap()
+    }
+}
 impl<'a, P, T, Idx, const N: usize, A: Allocator + Clone> ToColor<P> for GridView<'a, GridOf<T, Idx, N, A>, T, Idx, N>
 where
     Idx: Integer,
