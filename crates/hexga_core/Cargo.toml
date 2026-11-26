@@ -27,3 +27,7 @@ hexga_guard.workspace = true
 hexga_map_on.workspace = true
 hexga_bit = { workspace = true, features = ["derive"] }
 serde = { version = "1.0.0", features = ["derive"], optional = true }
+
+[[example]]
+name = "collection_guards"
+required-features = ["std"]
