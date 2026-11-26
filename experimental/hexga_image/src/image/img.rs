@@ -858,8 +858,9 @@ where
     where
         W: Write,
     {
-        // Todo Can remove this clone()
-        self.clone().to_u8_range().save_to_writer_with_custom_extension(writer, extension)
+        let mut pixels = Vec::<ColorU8, _>::with_capacity_in(self.pixels.len(), self.allocator().clone());
+        pixels.extend(self.pixels.iter().copied().map(ColorU8::cast_range_from));
+        ImageBaseOf { size: self.size, pixels }.save_to_writer_with_custom_extension(writer, extension)
     }
 }
 impl<Idx, A: Allocator + Clone> Save for ImageBaseOf<ColorU8, Idx, A>

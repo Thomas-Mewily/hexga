@@ -5,6 +5,7 @@ use std::slice;
 
 use super::*;
 
+/// Converts colors and color collections while borrowing the source.
 pub trait ToColor<P>: Sized
 where
     P: Primitive,
@@ -12,98 +13,98 @@ where
     type ToRgba<R>: ToColor<R>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<P>;
 
     type ToHsla<R>: ToColor<R>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<P>;
 
-    fn to_hsla(self) -> Self::ToHsla<float>
+    fn to_hsla(&self) -> Self::ToHsla<float>
     where
         float: CastRangeFrom<P>,
     {
         self.to_hsla_of()
     }
-    fn to_hsla_f32(self) -> Self::ToHsla<f32>
+    fn to_hsla_f32(&self) -> Self::ToHsla<f32>
     where
         f32: CastRangeFrom<P>,
     {
         self.to_hsla_of()
     }
-    fn to_hsla_f64(self) -> Self::ToHsla<f64>
+    fn to_hsla_f64(&self) -> Self::ToHsla<f64>
     where
         f64: CastRangeFrom<P>,
     {
         self.to_hsla_of()
     }
 
-    fn to_rgba(self) -> Self::ToRgba<float>
+    fn to_rgba(&self) -> Self::ToRgba<float>
     where
         float: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_rgba_f32(self) -> Self::ToRgba<f32>
+    fn to_rgba_f32(&self) -> Self::ToRgba<f32>
     where
         f32: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_rgba_f64(self) -> Self::ToRgba<f64>
+    fn to_rgba_f64(&self) -> Self::ToRgba<f64>
     where
         f64: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_rgba_u8(self) -> Self::ToRgba<u8>
+    fn to_rgba_u8(&self) -> Self::ToRgba<u8>
     where
         u8: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_rgba_u16(self) -> Self::ToRgba<u16>
+    fn to_rgba_u16(&self) -> Self::ToRgba<u16>
     where
         u16: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
 
-    fn to_color(self) -> Self::ToRgba<float>
+    fn to_color(&self) -> Self::ToRgba<float>
     where
         float: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_color_float(self) -> Self::ToRgba<float>
+    fn to_color_float(&self) -> Self::ToRgba<float>
     where
         float: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_color_f32(self) -> Self::ToRgba<f32>
+    fn to_color_f32(&self) -> Self::ToRgba<f32>
     where
         f32: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_color_f64(self) -> Self::ToRgba<f64>
+    fn to_color_f64(&self) -> Self::ToRgba<f64>
     where
         f64: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_color_u8(self) -> Self::ToRgba<u8>
+    fn to_color_u8(&self) -> Self::ToRgba<u8>
     where
         u8: CastRangeFrom<P>,
     {
         self.to_rgba_of()
     }
-    fn to_color_u16(self) -> Self::ToRgba<u16>
+    fn to_color_u16(&self) -> Self::ToRgba<u16>
     where
         u16: CastRangeFrom<P>,
     {
@@ -120,22 +121,22 @@ where
         = RgbaOf<R>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.to_rgba_of()
+        RgbaOf::to_rgba_of(*self)
     }
 
     type ToHsla<R>
         = HslaOf<R>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<P>,
     {
-        self.to_hsla_of()
+        RgbaOf::to_hsla_of(*self)
     }
 }
 impl<T> ToColor<T> for HslaOf<T>
@@ -146,22 +147,22 @@ where
         = RgbaOf<R>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<T>,
     {
-        self.to_rgba_of()
+        HslaOf::to_rgba_of(*self)
     }
 
     type ToHsla<R>
         = HslaOf<R>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<T>,
     {
-        self.to_hsla_of()
+        HslaOf::to_hsla_of(*self)
     }
 }
 
@@ -174,22 +175,22 @@ where
         = [T::ToRgba<R>; N]
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.map_into(ToColor::to_rgba_of)
+        core::array::from_fn(|index| self[index].to_rgba_of())
     }
 
     type ToHsla<R>
         = [T::ToHsla<R>; N]
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<P>,
     {
-        self.map_into(ToColor::to_hsla_of)
+        core::array::from_fn(|index| self[index].to_hsla_of())
     }
 }
 impl<T, P, A: std::alloc::Allocator + Clone> ToColor<P> for Vec<T, A>
@@ -201,22 +202,26 @@ where
         = Vec<T::ToRgba<R>, A>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.map_into(ToColor::to_rgba_of)
+        let mut converted = Vec::with_capacity_in(self.len(), self.allocator().clone());
+        converted.extend(self.iter().map(ToColor::to_rgba_of));
+        converted
     }
 
     type ToHsla<R>
         = Vec<T::ToHsla<R>, A>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<P>,
     {
-        self.map_into(ToColor::to_hsla_of)
+        let mut converted = Vec::with_capacity_in(self.len(), self.allocator().clone());
+        converted.extend(self.iter().map(ToColor::to_hsla_of));
+        converted
     }
 }
 impl<P, T, Idx, const N: usize, A: Allocator + Clone> ToColor<P> for GridOf<T, Idx, N, A>
@@ -229,22 +234,22 @@ where
         = GridOf<T::ToRgba<R>, Idx, N, A>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.map_into(ToColor::to_rgba_of)
+        self.view().transform(ToColor::to_rgba_of)
     }
 
     type ToHsla<R>
         = GridOf<T::ToHsla<R>, Idx, N, A>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<P>,
     {
-        self.map_into(ToColor::to_hsla_of)
+        self.view().transform(ToColor::to_hsla_of)
     }
 }
 impl<T, C, Idx, A: Allocator + Clone> ToColor<T> for ImageBaseOf<C, Idx, A>
@@ -257,22 +262,22 @@ where
         = ImageBaseOf<C::ToRgba<R>, Idx, A>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<T>,
     {
-        self.map_into(ToColor::to_rgba_of)
+        ImageBaseOf::from_vec(self.size(), self.pixels.to_rgba_of()).unwrap()
     }
 
     type ToHsla<R>
         = ImageBaseOf<C::ToHsla<R>, Idx, A>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<T>,
     {
-        self.map_into(ToColor::to_hsla_of)
+        ImageBaseOf::from_vec(self.size(), self.pixels.to_hsla_of()).unwrap()
     }
 }
 impl<T, C, Idx, A: Allocator + Clone> ToColor<T> for &ImageBaseOf<C, Idx, A>
@@ -285,82 +290,78 @@ where
         = ImageBaseOf<C::ToRgba<R>, Idx, A>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<T>,
     {
-        let mut v = Vec::with_capacity_in(self.len(), self.pixels.allocator().clone());
-        v.extend(self.values().iter().copied().map(ToColor::to_rgba_of));
-        ImageBaseOf::from_vec(self.size(), v).unwrap()
+        ToColor::to_rgba_of(*self)
     }
 
     type ToHsla<R>
         = ImageBaseOf<C::ToHsla<R>, Idx, A>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<T>,
     {
-        let mut v = Vec::with_capacity_in(self.len(), self.pixels.allocator().clone());
-        v.extend(self.values().iter().copied().map(ToColor::to_hsla_of));
-        ImageBaseOf::from_vec(self.size(), v).unwrap()
+        ToColor::to_hsla_of(*self)
     }
 }
 impl<'a, P, T, Idx, const N: usize, A: Allocator + Clone> ToColor<P> for GridView<'a, GridOf<T, Idx, N, A>, T, Idx, N>
 where
     Idx: Integer,
-    T: ToColor<P> + Copy,
+    T: ToColor<P>,
     P: Primitive,
 {
     type ToRgba<R>
         = GridOf<T::ToRgba<R>, Idx, N, A>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.transform(|v| v.to_rgba_of())
+        self.transform(ToColor::to_rgba_of)
     }
 
     type ToHsla<R>
         = GridOf<T::ToHsla<R>, Idx, N, A>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<P>,
     {
-        self.transform(|v| v.to_hsla_of())
+        self.transform(ToColor::to_hsla_of)
     }
 }
 impl<'a, P, T, Idx, const N: usize, A: Allocator + Clone> ToColor<P> for GridViewMut<'a, GridOf<T, Idx, N, A>, T, Idx, N>
 where
     Idx: Integer,
-    T: ToColor<P> + Copy,
+    T: ToColor<P>,
     P: Primitive,
 {
     type ToRgba<R>
         = GridOf<T::ToRgba<R>, Idx, N, A>
     where
         R: Primitive;
-    fn to_rgba_of<R>(self) -> Self::ToRgba<R>
+    fn to_rgba_of<R>(&self) -> Self::ToRgba<R>
     where
         R: Primitive + CastRangeFrom<P>,
     {
-        self.transform(|v| v.to_rgba_of())
+        self.transform(ToColor::to_rgba_of)
     }
 
     type ToHsla<R>
         = GridOf<T::ToHsla<R>, Idx, N, A>
     where
         R: Float;
-    fn to_hsla_of<R>(self) -> Self::ToHsla<R>
+    fn to_hsla_of<R>(&self) -> Self::ToHsla<R>
     where
         R: Float + CastRangeFrom<P>,
     {
-        self.transform(|v| v.to_hsla_of())
+        self.transform(ToColor::to_hsla_of)
     }
 }
 

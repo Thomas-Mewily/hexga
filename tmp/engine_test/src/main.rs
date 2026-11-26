@@ -23,9 +23,9 @@ impl<'a> App<(), AppCtx<'a>> for MyApp {
 
         /*
         // HSL colors convert to the same render color type as RGB values.
-        let mut purple = Circle::new(vec3(-0.48, -0.55, 0.0), 0.28, ToColor::to_rgba(hsl(0.82, 0.85, 0.58))).with_segments(48);
-        let mut cyan = Circle::new(vec3(0.0, -0.55, 0.0), 0.28, ToColor::to_rgba(hsl(0.48, 0.85, 0.55))).with_segments(48);
-        let mut orange = Circle::new(vec3(0.48, -0.55, 0.0), 0.28, ToColor::to_rgba(hsl(0.12, 0.9, 0.58))).with_segments(48);
+        let mut purple = Circle::new(vec3(-0.48, -0.55, 0.0), 0.28, ToColor::to_rgba(&hsl(0.82, 0.85, 0.58))).with_segments(48);
+        let mut cyan = Circle::new(vec3(0.0, -0.55, 0.0), 0.28, ToColor::to_rgba(&hsl(0.48, 0.85, 0.55))).with_segments(48);
+        let mut orange = Circle::new(vec3(0.48, -0.55, 0.0), 0.28, ToColor::to_rgba(&hsl(0.12, 0.9, 0.58))).with_segments(48);
         let _ = purple.draw();
         let _ = cyan.draw();
         let _ = orange.draw();
