@@ -4,10 +4,10 @@ pub use hexga_core::log::*;
 pub fn init_if_needed()
 {
     init_if_needed_with(|| {
-        Config::default()
-            .filter_module("wgpu_core", LevelFilter::Error)
-            .filter_module("wgpu_hal", LevelFilter::Error)
-            .filter_module("naga", LevelFilter::Error)
+        LogConfig::default()
+            .filter_module("wgpu_core", LogLevel::Error)
+            .filter_module("wgpu_hal", LogLevel::Error)
+            .filter_module("naga", LogLevel::Error)
             .parse_env()
     });
 }

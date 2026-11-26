@@ -1132,11 +1132,16 @@ name = "hexga_core"
 version = "0.0.12-beta.2"
 dependencies = [
  "hexga_bit",
+ "hexga_core_utils",
  "hexga_guard",
  "hexga_log",
  "hexga_map_on",
  "serde",
 ]
+
+[[package]]
+name = "hexga_core_utils"
+version = "0.0.12-beta.2"
 
 [[package]]
 name = "hexga_encoding"
@@ -1248,7 +1253,9 @@ name = "hexga_log"
 version = "0.0.12-beta.2"
 dependencies = [
  "env_logger",
+ "hexga_core_utils",
  "log",
+ "serde",
  "web-sys",
 ]
 

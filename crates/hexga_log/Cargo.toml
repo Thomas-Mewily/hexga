@@ -6,20 +6,27 @@ license.workspace = true
 repository.workspace = true
 edition.workspace = true
 readme = "README.md"
-description = "Configurable logging for Hexga applications"
+description = "Lazy configurable logging for the Hexga ecosystem"
+keywords = ["logging", "logger", "diagnostics", "filtering"]
+categories = ["development-tools::debugging"]
 
 [features]
-default = ["std"]
+default = ["log_env"]
 std = ["log/std"]
-log_std = ["std"]
-log_env = ["std", "dep:env_logger"]
-log_web = ["std", "dep:web-sys"]
+log_env = ["std", "dep:env_logger", "dep:web-sys"]
+serde = ["dep:serde"]
 
 [dependencies]
+hexga_core_utils.workspace = true
 log = { version = "0.4.22", default-features = false }
+serde = { version = "1.0.0", features = ["derive"], optional = true }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(all(target_arch = "wasm32", target_os = "unknown")))'.dependencies]
 env_logger = { version = "0.10", optional = true, default-features = false }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 web-sys = { version = "0.3", features = ["console"], optional = true }
+
+[[example]]
+name = "scoped_logging"
+required-features = ["std"]

@@ -15,7 +15,7 @@ categories = ["game-engines", "game-development", "graphics", "games"]
 [features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde", "serde_rc", "hexga_encoding_derive",
+            "serde", "serde_rc", "log_env", "hexga_encoding_derive",
 
             "gpu_backend_gles", "gpu_backend_noop", 
             "gpu_strict_asserts", "gpu_wgsl"
@@ -39,7 +39,6 @@ serde_rc = ["serde/rc", "hexga/serde_rc", "hexga_graphics/serde_rc", "hexga_even
 hexga_encoding_derive = ["hexga/hexga_encoding_derive", "hexga_graphics/hexga_encoding_derive"] #, "hexga_event_loop/hexga_encoding_derive"]
 
 print_io = ["hexga/print_io"]
-log_std = ["hexga_event_loop/log_std"]
 log_env = ["hexga_event_loop/log_env"]
 
 gpu_backend_webgpu = ["hexga_graphics/gpu_backend_webgpu"]
@@ -55,7 +54,7 @@ gpu_wgsl = ["hexga_graphics/gpu_wgsl"]
 [target.'cfg(target_arch = "wasm32")'.features]
 default = [
             "int_are_32_bits", "float_are_32_bits",
-            "serde", "serde_rc", "hexga_encoding_derive",
+            "serde", "serde_rc", "log_env", "hexga_encoding_derive",
 
             "gpu_backend_webgpu", # only on wasm ?
             "gpu_backend_gles", "gpu_backend_noop", 

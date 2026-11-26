@@ -1,11 +1,24 @@
 //! Stuff inside this module need to move somewhere else...
 use core::marker::PhantomData;
-
 use crate::prelude::*;
 
+pub use hexga_core_utils::*;
+
+pub mod prelude {
+    pub use super::Never;
+    pub use super::traits::*;
+}
+pub mod traits {
+    pub use super::{
+        DoOnce, OkOr, ResultDebugExtension, ResultInto, Toggleable,
+    };
+    pub use hexga_core_utils::*;
+}
+
+pub type Never = !;
 // Waiting for the never type `!` to be stabilized
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Never {}
+//#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+//pub enum Never {}
 
 pub trait Toggleable {
     fn toggle(&mut self);
@@ -136,14 +149,6 @@ impl<W: std::io::Write> std::fmt::Write for IoWriteAdapter<W> {
     fn write_str(&mut self, s: &crate::primitive::str) -> std::fmt::Result {
         self.writer.write_all(s.as_bytes()).map_err(|_| std::fmt::Error)
     }
-}
-
-pub mod prelude {
-    pub use super::Never;
-    pub use super::traits::*;
-}
-pub mod traits {
-    pub use super::{DoOnce, OkOr, ResultDebugExtension, ResultInto, Toggleable};
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
