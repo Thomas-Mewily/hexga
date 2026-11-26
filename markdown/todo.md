@@ -49,3 +49,6 @@ Image
 
 ## Draft
 
+hexga logger
+tweening/easing fn
+animation <T: Displayable>, gif...

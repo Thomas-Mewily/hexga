@@ -1,3 +1,6 @@
+//! For the same permissions example with named flags, run
+//! `cargo run -p hexga_bit_flags --example permission_flags`.
+
 use hexga_bit_set::prelude::*;
 use hexga_core::prelude::*;
 
