@@ -75,3 +75,6 @@ static FALLBACK: OnceLock<Config> = OnceLock::new();
 use Hexga singleton.
 
 Move hexga singleton into a standalone crate, move the shared trait into hexga_core_utils if needed.
+
+TracedAllocator<A: Allocator=???> -> track how many alloc active and how many bytes
+LoggedAllocato<A>  => log it
