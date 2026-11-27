@@ -13,7 +13,6 @@ fn main() -> Result<(), hexga_log::InitError>
     Log.lazy_info(|| "info but lazy, never called in this case");
     Log.enable();
 
-    a
     // Todo Log.lazy_scope
     Log.scope("request 42", |_| {
         info!("Accepted");
