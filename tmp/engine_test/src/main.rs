@@ -1,3 +1,4 @@
+#![recursion_limit = "256"]
 use hexga_engine::prelude::*;
 
 pub struct MyApp;
