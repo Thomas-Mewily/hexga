@@ -43,6 +43,17 @@ impl LogConfig
         self
     }
 
+    /// Sets a target prefix's threshold. The longest matching prefix wins.
+    /// `LogLevel::None` disables the matching target.
+    pub fn filter_modules(mut self, target_and_level: impl Iterator<Item = (impl Into<String>, LogLevel)>) -> Self
+    {
+        for (target, level) in target_and_level
+        {
+            self.targets.insert(target.into(), level);
+        }
+        self
+    }
+
     pub fn parse_env(self) -> Self
     {
         match std::env::var("RUST_LOG")
