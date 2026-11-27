@@ -165,6 +165,27 @@ impl<T, A: Allocator + Clone> MapInto for Vec<T, A> {
         result
     }
 }
+impl<T, A: Allocator + Clone> Map for Box<T, A> {
+    type Item = T;
+
+    fn map<F>(self, f: F) -> Self
+    where
+        F: FnMut(T) -> T,
+    {
+        self.map_into(f)
+    }
+}
+impl<T, A: Allocator + Clone> MapInto for Box<T, A> {
+    type Item = T;
+    type WithType<R> = Box<R, A>;
+
+    fn map_into<F, R>(self, f: F) -> Self::WithType<R>
+    where
+        F: FnMut(T) -> R,
+    {
+        Box::map(self, f)
+    }
+}
 impl<T: Copy, A: Allocator + Clone> MapInto for &Vec<T, A> {
     type Item = T;
     type WithType<R> = Vec<R, A>;
@@ -201,6 +222,22 @@ impl<T, A: Allocator + Clone + Default> MapZipInto for Vec<T, A> {
             result.push(f(core::array::from_fn(|i| iters[i].next().unwrap())));
         }
         result
+    }
+}
+impl<T, A: Allocator + Clone + Default> MapZip for Box<T, A> {
+    fn map_zip<F, const M: usize>(this: [Self; M], f: F) -> Self
+    where
+        F: FnMut([T; M]) -> T,
+    {
+        Self::map_zip_into(this, f)
+    }
+}
+impl<T, A: Allocator + Clone + Default> MapZipInto for Box<T, A> {
+    fn map_zip_into<F, R, const M: usize>(this: [Self; M], mut f: F) -> Self::WithType<R>
+    where
+        F: FnMut([T; M]) -> R,
+    {
+        Box::new_in(f(this.map(|b| *b)), A::default())
     }
 }
 
