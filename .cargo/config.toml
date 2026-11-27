@@ -1,0 +1,4 @@
+# Faster linking on Windows MSVC: rust-lld ships with every rustup toolchain
+# (much faster than MSVC link.exe, mostly matters for incremental rebuilds).
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe"

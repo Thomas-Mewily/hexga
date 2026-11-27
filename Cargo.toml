@@ -71,7 +71,10 @@ codegen-units = 256          # Keep high parallelism (default value, can be omit
 incremental = true           # Keep incremental compilation
 lto = false                  # Disable LTO
 
-#[profile.dev.package."*"]
+# No debuginfo for third-party deps: smaller .pdb, faster link.
+# Workspace crates keep "line-tables-only" (backtraces still have line numbers).
+[profile.dev.package."*"]
+debug = false
 #opt-level = 2
 
 [profile.wasm-dev]
@@ -82,3 +85,7 @@ debug = true
 codegen-units = 256
 lto = false
 incremental = true
+
+# Undo the dev "no debuginfo for deps" override inherited above
+[profile.wasm-dev.package."*"]
+debug = true
