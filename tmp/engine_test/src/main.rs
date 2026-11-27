@@ -22,6 +22,7 @@ impl<'a> App<(), AppCtx<'a>> for MyApp {
         ];
         Pen.geometry(&triangle, &[0, 1, 2]);
 
+
         /*
         // HSL colors convert to the same render color type as RGB values.
         let mut purple = Circle::new(vec3(-0.48, -0.55, 0.0), 0.28, ToColor::to_rgba(&hsl(0.82, 0.85, 0.58))).with_segments(48);
